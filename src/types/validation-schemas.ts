@@ -1,5 +1,5 @@
+import { parseDateTimeString, parseTimeString } from "@real1ty-obsidian-plugins/utils/date-utils";
 import { DateTime } from "luxon";
-import { parseDateTimeString, parseTimeString } from "utils/date-utils";
 import { z } from "zod";
 
 export type ISO = string;
@@ -59,9 +59,6 @@ export const requiredDateTimeTransform = z.string().transform((val, ctx) => {
 export const optionalDateTimeTransform = z
 	.union([z.string(), z.null()])
 	.transform((val) => parseDateTimeString(val))
-	.refine((val): val is DateTime | undefined => val === undefined || val instanceof DateTime, {
-		message: "Invalid datetime format",
-	})
 	.optional();
 
 export const requiredTimeTransform = z.string().transform((val, ctx) => {
@@ -79,7 +76,4 @@ export const requiredTimeTransform = z.string().transform((val, ctx) => {
 export const optionalTimeTransform = z
 	.union([z.string(), z.null()])
 	.transform((val) => parseTimeString(val))
-	.refine((val): val is DateTime | undefined => val === undefined || val instanceof DateTime, {
-		message: "Invalid time format",
-	})
 	.optional();

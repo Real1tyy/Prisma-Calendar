@@ -12,8 +12,11 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			// Mock obsidian for testing
 			obsidian: path.resolve(__dirname, "tests/mocks/obsidian.ts"),
 		},
+	},
+	// Ensure external dependencies can find obsidian
+	define: {
+		global: "globalThis",
 	},
 });

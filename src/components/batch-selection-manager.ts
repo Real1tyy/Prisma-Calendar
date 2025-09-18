@@ -1,6 +1,11 @@
 import type { Calendar } from "@fullcalendar/core";
+import {
+	type BatchOperationOptions,
+	getWeekDirection,
+	pluralize,
+	runBatchOperation,
+} from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, Notice } from "obsidian";
-import { type BatchOperationOptions, getWeekDirection, pluralize, runBatchOperation } from "utils";
 import type { EventContextMenu } from "./event-context-menu";
 
 export interface SelectedEvent {

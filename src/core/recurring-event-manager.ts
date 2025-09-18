@@ -1,12 +1,12 @@
+import {
+	calculateInstanceDateTime,
+	getNextOccurrence,
+	iterateOccurrencesInRange,
+} from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
+import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
-import {
-	calculateRecurringInstanceDateTime,
-	getNextOccurrence,
-	iterateOccurrencesInRange,
-} from "utils/date-recurrence-utils";
-import { sanitizeForFilename } from "utils/file-utils";
 import type { NodeRecurringEvent } from "../types/recurring-event-schemas";
 import type { SingleCalendarConfig } from "../types/settings-schemas";
 import type { Indexer, IndexerEvent } from "./indexer";
@@ -350,23 +350,16 @@ export class RecurringEventManager {
 		recurringEvent: NodeRecurringEvent,
 		instanceDate: DateTime
 	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
-		const startDate = recurringEvent.rrules.startTime;
+		const _startDate = recurringEvent.rrules.startTime;
 		const originalEnd = recurringEvent.rrules.endTime || null;
 
-		const instanceStart = calculateRecurringInstanceDateTime(
+		const instanceStart = calculateInstanceDateTime(
 			instanceDate,
-			startDate,
-			recurringEvent.rrules.type,
-			recurringEvent.rrules.allDay
+			recurringEvent.rrules.startTime.toFormat("HH:mm")
 		);
 
 		const instanceEnd = originalEnd
-			? calculateRecurringInstanceDateTime(
-					instanceDate,
-					originalEnd,
-					recurringEvent.rrules.type,
-					recurringEvent.rrules.allDay
-				)
+			? calculateInstanceDateTime(instanceDate, originalEnd.toFormat("HH:mm"))
 			: null;
 
 		return { instanceStart, instanceEnd };

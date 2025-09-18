@@ -1,7 +1,15 @@
+import {
+	duplicateFileWithNewZettelId,
+	withFile,
+	withFileOperation,
+} from "@real1ty-obsidian-plugins/utils/file-operations";
+import {
+	generateUniqueFilePath,
+	getFilenameFromPath,
+	sanitizeForFilename,
+} from "@real1ty-obsidian-plugins/utils/file-utils";
+import { generateDuplicatedTitle } from "@real1ty-obsidian-plugins/utils/string-utils";
 import { type App, Menu, Notice, type TFile } from "obsidian";
-import { duplicateFileWithNewZettelId, withFile, withFileOperation } from "utils/file-operations";
-import { generateUniqueFilePath, getFilenameFromPath, sanitizeForFilename } from "utils/file-utils";
-import { generateDuplicatedTitle } from "utils/string-utils";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { EventEditModal } from "./event-edit-modal";
 

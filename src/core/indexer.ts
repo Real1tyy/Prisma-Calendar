@@ -1,3 +1,4 @@
+import { isFileInConfiguredDirectory } from "@real1ty-obsidian-plugins/utils/file-utils";
 import type { App, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
 import {
 	type BehaviorSubject,
@@ -11,7 +12,6 @@ import {
 	type Subscription,
 } from "rxjs";
 import { debounceTime, filter, groupBy, map, mergeMap, switchMap } from "rxjs/operators";
-import { isFileInConfiguredDirectory } from "utils/file-utils";
 import type { SingleCalendarConfig } from "../types/index";
 import {
 	type NodeRecurringEvent,

@@ -1,5 +1,8 @@
+import {
+	formatDateTimeForInput,
+	inputValueToISOString,
+} from "@real1ty-obsidian-plugins/utils/date-utils";
 import { type App, Modal, TFile } from "obsidian";
-import { formatDateTimeForInput, inputValueToISOString } from "utils/date-utils";
 import type { CalendarBundle } from "../core/calendar-bundle";
 
 interface EventModalData {

@@ -1,5 +1,5 @@
+import { onceAsync } from "@real1ty-obsidian-plugins/utils/async-utils";
 import { Plugin } from "obsidian";
-import { onceAsync } from "utils/async-utils";
 import { CustomCalendarSettingsTab } from "./components";
 import { CalendarBundle, SettingsStore } from "./core";
 import { createDefaultCalendarConfig } from "./types";

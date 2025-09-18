@@ -1,4 +1,4 @@
-import { BaseEvaluator, type BaseRule } from "utils/evaluator-base";
+import { BaseEvaluator, type BaseRule } from "@real1ty-obsidian-plugins/utils/evaluator-base";
 import type { SingleCalendarConfig } from "../types/index";
 
 export interface FilterRule extends BaseRule {}

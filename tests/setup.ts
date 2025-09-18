@@ -1,5 +1,38 @@
 import { BehaviorSubject } from "rxjs";
 import { beforeEach, vi } from "vitest";
+import type { CustomCalendarSettings } from "../src/types/index";
+import { CustomCalendarSettingsSchema } from "../src/types/index";
+
+// Mock problematic utils modules that depend on obsidian
+vi.mock("@real1ty-obsidian-plugins/utils/templater-utils", () => ({
+	createFromTemplate: vi.fn().mockResolvedValue("created content"),
+	isTemplaterAvailable: vi.fn().mockReturnValue(false),
+}));
+
+vi.mock("@real1ty-obsidian-plugins/utils/file-operations", () => ({
+	duplicateFileWithNewZettelId: vi.fn().mockResolvedValue(undefined),
+	withFile: vi.fn().mockImplementation((callback) => callback),
+	withFileOperation: vi.fn().mockImplementation((callback) => callback),
+}));
+
+// Mock the common-plugin package that has missing files
+vi.mock("@real1ty-obsidian-plugins/common-plugin", () => ({
+	MountableView: (BaseClass: any) => {
+		return class extends BaseClass {
+			app: any;
+			constructor(...args: any[]) {
+				super(...args);
+				this.app = args[0]?.app || { vault: {}, workspace: {}, metadataCache: {} };
+			}
+		};
+	},
+}));
+
+// Mock async-utils that might be missing
+vi.mock("@real1ty-obsidian-plugins/utils/async-utils", () => ({
+	onceAsync: vi.fn().mockImplementation((fn) => fn),
+}));
+
 // Import local mocks
 import {
 	createMockApp,
@@ -12,8 +45,6 @@ import {
 	PluginSettingTab,
 	TFile,
 } from "./mocks/obsidian";
-import type { CustomCalendarSettings } from "../src/types/index";
-import { CustomCalendarSettingsSchema } from "../src/types/index";
 
 export class Menu {
 	addItem(callback: (item: any) => void) {

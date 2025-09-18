@@ -1,7 +1,10 @@
+import { generateUniqueFilePath } from "@real1ty-obsidian-plugins/utils/file-utils";
+import {
+	createFromTemplate,
+	isTemplaterAvailable,
+} from "@real1ty-obsidian-plugins/utils/templater-utils";
 import type { App, TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
-import { generateUniqueFilePath } from "utils/file-utils";
-import { createFromTemplate, isTemplaterAvailable } from "utils/templater-utils";
 import type { SingleCalendarConfig } from "../types/settings-schemas";
 
 export interface FileCreationOptions {
