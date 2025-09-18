@@ -1,10 +1,35 @@
 # Recurring Events (DSL)
 
-Define recurrence in frontmatter, for example:
+Define recurrence in frontmatter using `RRule` and `RRuleSpec`.
+
+## Weekly / Bi-weekly
 
 ```yaml
-recurrence: "every week on Mon,Wed,Fri at 07:00 for 12 weeks"
+---
+Title: Standup
+Start: 2025-02-03T09:30
+RRule: weekly
+RRuleSpec: monday, tuesday, wednesday, thursday, friday
+RRuleID: standup-2025
+---
 ```
 
-- On plugin load/unload, future notes are generated up to your configured horizon (e.g., 50).
-- Beyond that, virtual events appear as read-only.
+## Daily / Monthly / Bi-monthly / Yearly
+
+```yaml
+---
+Title: Pay Rent
+Start: 2025-02-01T09:00
+RRule: monthly
+RRuleID: rent
+---
+```
+
+## Generation horizon
+
+- “Future instances count” controls how many future notes are created (1–52)
+- Beyond that, events appear as read-only virtual items
+
+Tips:
+- Use a stable `RRuleID` to uniquely identify a recurrence series
+- Adjust the count to match your planning window
