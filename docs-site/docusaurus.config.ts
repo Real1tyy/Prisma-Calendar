@@ -69,11 +69,6 @@ const config: Config = {
       },
       items: [
         {
-          to: '/',
-          label: 'Docs',
-          position: 'left',
-        },
-        {
           to: '/features/overview',
           label: 'Features',
           position: 'left',

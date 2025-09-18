@@ -1,3 +1,7 @@
+---
+slug: /
+---
+
 # Prisma Calendar
 
 Prisma Calendar is a feature-rich, fully configurable calendar plugin for Obsidian.
