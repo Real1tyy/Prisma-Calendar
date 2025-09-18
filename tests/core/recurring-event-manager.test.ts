@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the dependencies early
 vi.mock("../../src/core/template-service");
-vi.mock("utils/date-recurrence-utils", async () => {
-	const actual = await vi.importActual("utils/date-recurrence-utils");
+vi.mock("@real1ty-obsidian-plugins/utils/date-recurrence-utils", async () => {
+	const actual = await vi.importActual("@real1ty-obsidian-plugins/utils/date-recurrence-utils");
 	return {
 		...actual,
 		getNextOccurrence: vi.fn().mockImplementation((currentDate: DateTime) => {
@@ -31,7 +31,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		vi.clearAllMocks();
 
 		// Import and setup mocks for date utilities
-		const { getNextOccurrence } = await import("utils/date-recurrence-utils");
+		const { getNextOccurrence } = await import("@real1ty-obsidian-plugins/utils/date-recurrence-utils");
 		(getNextOccurrence as any).mockImplementation(
 			(currentDate: DateTime, recurrenceType: string, originalDateTime: DateTime) => {
 				// Mock realistic next occurrence based on recurrence type
@@ -114,7 +114,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		it("should add recurring events to internal map", async () => {
 			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-			const { iterateOccurrencesInRange } = await import("utils/date-recurrence-utils");
+			const { iterateOccurrencesInRange } = await import("@real1ty-obsidian-plugins/utils/date-recurrence-utils");
 
 			// Mock the new iterateOccurrencesInRange function to return the expected dates
 			(iterateOccurrencesInRange as any).mockReturnValue([
@@ -243,7 +243,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		it("should exclude physical instance dates from virtual generation", async () => {
 			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
 			const { getNextOccurrence, isDateOnWeekdays, iterateOccurrencesInRange } = await import(
-				"utils/date-recurrence-utils"
+				"@real1ty-obsidian-plugins/utils/date-recurrence-utils"
 			);
 
 			// Mock date utility functions
@@ -779,7 +779,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		describe("Virtual Instance Generation", () => {
 			it("should generate virtual instances with correct date/time logic for different recurrence types", async () => {
 				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-				const { iterateOccurrencesInRange } = await import("utils/date-recurrence-utils");
+				const { iterateOccurrencesInRange } = await import("@real1ty-obsidian-plugins/utils/date-recurrence-utils");
 
 				// Mock the utilities to return predictable dates
 				(iterateOccurrencesInRange as any).mockReturnValue([

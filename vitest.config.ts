@@ -13,13 +13,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			// Mock obsidian for testing
-			obsidian: path.resolve(__dirname, "../../libs/utils/src/testing/mocks/obsidian.ts"),
-			"@obsidian-plugins/watchdog-plugin": path.resolve(
-				__dirname,
-				"../../libs/watchdog-plugin/src/index.ts"
-			),
-			// Utils alias - use wildcard pattern
-			utils: path.resolve(__dirname, "../../libs/utils/src"),
+			obsidian: path.resolve(__dirname, "tests/mocks/obsidian.ts"),
 		},
 	},
 });

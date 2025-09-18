@@ -1,9 +1,8 @@
 [env]
 # Dynamic plugin directory based on manifest.json id
 OBSIDIAN_VAULT_PATH = "/home/real1ty/Documents/SecondBrain/SecondBrain"
-# Make NX non-interactive for CI/headless environments
+# Make CI non-interactive for CI/headless environments
 CI = "1"
-NX_INTERACTIVE = "false"
 
 [tools]
 node = { version = "22" }       # LTS 2025-08
@@ -40,42 +39,39 @@ run = [
 ]
 
 [tasks.typecheck]
-description = "Typecheck all projects with NX caching"
+description = "Typecheck project using TypeScript"
 run = [
-    "echo '🔍 Running TypeScript type checking with NX...'",
-    "npx nx run-many -t typecheck --parallel=3",
+    "echo '🔍 Running TypeScript type checking...'",
+    "pnpm run typecheck",
     "echo '✅ TypeScript type checking completed!'",
 ]
 
 [tasks.test]
-description = "Run all tests with NX caching"
+description = "Run all tests using Vitest"
 run = [
-    "echo '🧪 Running all tests with NX...'",
-    "npx nx run-many -t test --parallel=3",
+    "echo '🧪 Running all tests...'",
+    "pnpm run test",
     "echo '✅ All tests completed!'",
 ]
 
 [tasks.test-watch]
-description = "Run tests in watch mode with NX"
-run = [
-    "echo '🧪 Running tests in watch mode with NX...'",
-    "npx nx run-many -t test:watch --parallel=4",
-]
+description = "Run tests in watch mode using Vitest"
+run = ["echo '🧪 Running tests in watch mode...'", "pnpm run test:watch"]
 
-# CI Task - Main entry point for CI/CD with NX
+# CI Task - Main entry point for CI/CD
 [tasks.ci]
-description = "CI pipeline with NX caching and parallelism"
+description = "CI pipeline for standalone project"
 run = [
-    "echo '🚀 Starting NX-powered CI Pipeline...'",
+    "echo '🚀 Starting CI Pipeline...'",
     "echo '  → Running Biome check...'",
     "pnpm run check:fix",
-    "echo '  → Running TypeScript check with NX...'",
-    "npx nx run-many -t typecheck --parallel=3",
-    "echo '  → Running tests with NX...'",
-    "npx nx run-many -t test --parallel=3",
-    "echo '  → Building all projects with NX...'",
-    "npx nx run-many -t build --parallel=3",
-    "echo '✅ NX CI Pipeline completed successfully!'",
+    "echo '  → Running TypeScript check...'",
+    "pnpm run typecheck",
+    "echo '  → Running tests...'",
+    "pnpm run test",
+    "echo '  → Building project...'",
+    "pnpm run build",
+    "echo '✅ CI Pipeline completed successfully!'",
 ]
 
 # Security & Maintenance
@@ -133,17 +129,24 @@ run = [
 ]
 
 [tasks.validate]
-description = "Validate project without making changes using NX"
+description = "Validate project without making changes"
 run = [
-    "echo '🔍 Validating project with NX...'",
+    "echo '🔍 Validating project...'",
     "pnpm run check",
-    "npx nx run-many -t typecheck --parallel=3",
+    "pnpm run typecheck",
     "echo '✅ Project validation completed!'",
 ]
 
+[tasks.build]
+description = "Build the project"
+run = [
+    "echo '🏗️ Building project...'",
+    "pnpm run build",
+    "echo '✅ Build completed successfully!'",
+]
 
 [tasks.install]
-description = "Install dependencies for the monorepo"
+description = "Install dependencies for the project"
 run = [
     "echo '📦 Installing dependencies...'",
     "pnpm install",

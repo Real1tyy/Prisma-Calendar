@@ -1,6 +1,6 @@
 import { BehaviorSubject } from "rxjs";
 import { beforeEach, vi } from "vitest";
-// Import centralized mocks from utils package
+// Import local mocks
 import {
 	createMockApp,
 	createMockFile,
@@ -11,7 +11,7 @@ import {
 	Plugin,
 	PluginSettingTab,
 	TFile,
-} from "../../../libs/utils/src/testing/index";
+} from "./mocks/obsidian";
 import type { CustomCalendarSettings } from "../src/types/index";
 import { CustomCalendarSettingsSchema } from "../src/types/index";
 

@@ -40,12 +40,13 @@
 		"@fullcalendar/interaction": "^6.1.19",
 		"@fullcalendar/list": "^6.1.19",
 		"@fullcalendar/timegrid": "^6.1.19",
-		"@obsidian-plugins/watchdog-plugin": "workspace:*",
+		"@real1ty-obsidian-plugins/common-plugin": "^1.1.0",
 		"chrono-node": "^2.8.4",
 		"luxon": "^3.7.2",
+		"nanoid": "^5.0.0",
 		"rrule": "^2.8.1",
 		"rxjs": "^7.8.2",
-		"utils": "workspace:*",
+		"@real1ty-obsidian-plugins/utils": "^1.1.0",
 		"zod": "^4.1.5"
 	}
 }
