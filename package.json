@@ -1,7 +1,7 @@
 {
 	"name": "prisma-calendar",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Feature-rich, fully configurable calendar plugin for Obsidian with multiple calendars, templater, color rules, batch ops, and recurring events.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

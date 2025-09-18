@@ -84,16 +84,14 @@ run = [
 ]
 
 [tasks.clean]
-description = "Clean build artifacts, caches, and NX cache"
+description = "Clean build artifacts and caches"
 run = [
     "echo '🧹 Cleaning build artifacts and caches...'",
     "rm -rf dist",
     "rm -rf **/dist",
     "rm -rf **/main.js",
     "rm -rf node_modules/.cache",
-    "npx nx run-many -t clean",
-    "npx nx reset",
-    "echo '✅ Cleaned build artifacts, caches, and NX cache'",
+    "echo '✅ Cleaned build artifacts and caches'",
 ]
 
 # Git Hooks Setup
@@ -107,15 +105,15 @@ run = [
 ]
 
 [tasks.pre-commit]
-description = "Pre-commit validation with NX affected detection"
+description = "Pre-commit validation for standalone project"
 run = [
-    "echo '🔍 Running NX-powered pre-commit checks...'",
+    "echo '🔍 Running pre-commit checks...'",
     "echo '  → Running Biome check...'",
     "pnpm run check:fix",
-    "echo '  → Running affected TypeScript checks...'",
-    "npx nx affected -t typecheck",
-    "echo '  → Running affected tests...'",
-    "npx nx affected -t test",
+    "echo '  → Running TypeScript check...'",
+    "pnpm run typecheck",
+    "echo '  → Running tests...'",
+    "pnpm run test",
     "echo '✅ All pre-commit checks passed!'",
 ]
 
@@ -168,39 +166,13 @@ run = [
     "echo '✅ Dependencies installed successfully'",
 ]
 
-# NX-specific tasks
-[tasks.graph]
-description = "Show NX dependency graph"
-run = ["echo '📊 Opening NX dependency graph...'", "npx nx graph"]
-
-[tasks.affected]
-description = "Run affected tasks only (build, test, typecheck)"
+# Project-specific tasks (no NX dependency)
+[tasks.dev-info]
+description = "Show project development info"
 run = [
-    "echo '🎯 Running affected tasks with NX...'",
-    "npx nx affected -t build,test,typecheck",
-    "echo '✅ Affected tasks completed!'",
-]
-
-[tasks.affected-build]
-description = "Build only affected projects"
-run = [
-    "echo '🏗️ Building affected projects...'",
-    "npx nx affected -t build",
-    "echo '✅ Affected builds completed!'",
-]
-
-[tasks.affected-test]
-description = "Test only affected projects"
-run = [
-    "echo '🧪 Testing affected projects...'",
-    "npx nx affected -t test",
-    "echo '✅ Affected tests completed!'",
-]
-
-[tasks.nx-reset]
-description = "Reset NX cache and daemon"
-run = [
-    "echo '🔄 Resetting NX cache and daemon...'",
-    "npx nx reset",
-    "echo '✅ NX cache and daemon reset!'",
+    "echo '📊 Project Info:'",
+    "echo '  → Node version:' $(node --version)",
+    "echo '  → pnpm version:' $(pnpm --version)",
+    "echo '  → TypeScript version:' $(npx tsc --version)",
+    "echo '  → Biome version:' $(npx biome --version)",
 ]

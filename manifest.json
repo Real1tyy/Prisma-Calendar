@@ -3,7 +3,7 @@
 	"name": "Prisma Calendar",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Displays a custom calendar.",
+	"description": "Feature-rich, fully configurable calendar with multiple calendars, templater, color rules, batch ops, and recurring events.",
 	"author": "Obsidian",
 	"authorUrl": "https://obsidian.md",
 	"fundingUrl": "https://obsidian.md/pricing",

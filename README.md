@@ -1,122 +1,65 @@
-# Obsidian Sample Plugin
+# Prisma Calendar
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Prisma Calendar is a feature-rich, fully configurable calendar plugin for Obsidian.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## Documentation
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+Full docs live in the Docusaurus site:
+- Local: `docs-site/`
+- Hosted: coming soon (GitHub Pages)
 
-## First time developing plugins?
+Repository: https://github.com/Real1tyy/Prisma-Calendar
 
-Quick starting guide for new plugin devs:
+Key pages:
+- Introduction
+- Installation
+- Quickstart
+- Features Overview
+- Configuration
+- FAQ, Troubleshooting, Roadmap, Changelog
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+## Demo Video
 
-## Releasing new releases
+[![Watch the demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+## Features
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+- Multiple isolated calendars (each with its own folder, filters, colors, hotkey)
+- Folder-based event scanning
+- Templater integration (requires Templater plugin)
+- Color rules and default fallback
+- Event previews on hover; open on click
+- Batch operations: delete, duplicate, move/clone to next week
+- Recurring events DSL that generates real notes
+- Virtual events (read-only) beyond generation horizon
+- Reactive settings
 
-## Adding your plugin to the community plugin list
+## Installation
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+- Obsidian Community Plugins: Search "Prisma Calendar"
+- Manual: Download release ZIP and copy to `.obsidian/plugins/prisma-calendar/`
 
-## How to use
-
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `pnpm install` to install dependencies.
-- Set the `OBSIDIAN_VAULT_PATH` environment variable to your vault path.
-- `pnpm run dev` to start compilation in watch mode.
-
-## Development Scripts
-
-This project includes automated development scripts for building and deploying to your Obsidian vault:
-
-### Build and Copy to Vault
 ```bash
-# Build plugin once and copy to Obsidian vault
-mise run build-plugin
-```
-
-### Development Mode with Auto-Copy
-```bash
-# Start development mode with file watching and auto-copy
+pnpm install
 mise run dev-watch
 ```
 
-The scripts will:
-- Build the plugin using esbuild
-- Copy `main.js`, `styles.css`, and `manifest.json` to your vault's plugin directory
-- Create the plugin directory if it doesn't exist
-- In watch mode, automatically rebuild and copy when source files change
+Build once and copy to vault:
 
-### Requirements
-- Python 3 with `watchdog` package installed (`pip3 install watchdog`)
-- `OBSIDIAN_VAULT_PATH` environment variable set to your vault path
-- The plugin ID from `manifest.json` will be used as the directory name
-
-## Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code.
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
-
-## Funding URL
-
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
+```bash
+mise run build-plugin
 ```
 
-If you have multiple URLs, you can also do:
+Run CI locally:
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
+```bash
+mise run ci
 ```
 
-## API Documentation
+## Contributing
 
-See https://github.com/obsidianmd/obsidian-api
+MIT-licensed. PRs welcome. Please run `mise run ci` before pushing.
+
+## License
+
+MIT

@@ -38,7 +38,14 @@
 		}
 	},
 	"files": {
-		"includes": ["**", "!**/node_modules/", "!**/main.js", "!**/*.d.ts", "!**/dist"],
+		"includes": [
+			"**",
+			"!**/node_modules/",
+			"!**/main.js",
+			"!**/*.d.ts",
+			"!**/dist",
+			"!**/docs-site"
+		],
 		"ignoreUnknown": true
 	}
 }
