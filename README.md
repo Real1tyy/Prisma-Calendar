@@ -6,7 +6,7 @@ Prisma Calendar is a feature-rich, fully configurable calendar plugin for Obsidi
 
 Full docs live in the Docusaurus site:
 - Local: `docs-site/`
-- Hosted: coming soon (GitHub Pages)
+- Hosted: https://real1tyy.github.io/Prisma-Calendar/
 
 Repository: https://github.com/Real1tyy/Prisma-Calendar
 
@@ -18,9 +18,6 @@ Key pages:
 - Configuration
 - FAQ, Troubleshooting, Roadmap, Changelog
 
-## Demo Video
-
-[![Watch the demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
 
 ## Features
 

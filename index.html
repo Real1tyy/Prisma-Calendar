@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Prisma Calendar - Redirecting...</title>
+    <meta name="description" content="A feature-rich, fully configurable calendar plugin for Obsidian.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="0; url=./Prisma-Calendar/">
+    <link rel="canonical" href="https://real1tyy.github.io/Prisma-Calendar/">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #1b1b1d;
+            color: #ffffff;
+            text-align: center;
+        }
+        .redirect-message {
+            max-width: 500px;
+            padding: 2rem;
+        }
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #4a9eff;
+        }
+        .message {
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+        .link {
+            color: #4a9eff;
+            text-decoration: none;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-message">
+        <div class="logo">Prisma Calendar</div>
+        <div class="message">
+            Redirecting to the documentation site...
+        </div>
+        <div>
+            If you are not redirected automatically,
+            <a href="./Prisma-Calendar/" class="link">click here</a>.
+        </div>
+    </div>
+    <script>
+        // Fallback redirect in case meta refresh doesn't work
+        setTimeout(() => {
+            if (window.location.pathname === '/') {
+                window.location.href = './Prisma-Calendar/';
+            }
+        }, 100);
+    </script>
+</body>
+</html>
