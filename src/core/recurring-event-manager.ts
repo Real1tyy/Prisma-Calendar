@@ -1,5 +1,5 @@
 import {
-	calculateInstanceDateTime,
+	calculateRecurringInstanceDateTime,
 	getNextOccurrence,
 	iterateOccurrencesInRange,
 } from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
@@ -350,16 +350,23 @@ export class RecurringEventManager {
 		recurringEvent: NodeRecurringEvent,
 		instanceDate: DateTime
 	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
-		const _startDate = recurringEvent.rrules.startTime;
+		const startDate = recurringEvent.rrules.startTime;
 		const originalEnd = recurringEvent.rrules.endTime || null;
 
-		const instanceStart = calculateInstanceDateTime(
+		const instanceStart = calculateRecurringInstanceDateTime(
 			instanceDate,
-			recurringEvent.rrules.startTime.toFormat("HH:mm")
+			startDate,
+			recurringEvent.rrules.type,
+			recurringEvent.rrules.allDay
 		);
 
 		const instanceEnd = originalEnd
-			? calculateInstanceDateTime(instanceDate, originalEnd.toFormat("HH:mm"))
+			? calculateRecurringInstanceDateTime(
+					instanceDate,
+					originalEnd,
+					recurringEvent.rrules.type,
+					recurringEvent.rrules.allDay
+				)
 			: null;
 
 		return { instanceStart, instanceEnd };
