@@ -1,0 +1,108 @@
+{
+	"name": "custom-calendar",
+	"version": "1.0.0",
+	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"main": "main.js",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"typecheck": "tsc -noEmit -skipLibCheck",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"clean": "rm -f main.js",
+		"version": "node version-bump.mjs && git add manifest.json versions.json",
+		"lint": "biome lint .",
+		"lint:fix": "biome lint --write .",
+		"format": "biome format .",
+		"format:fix": "biome format --write .",
+		"check": "biome check .",
+		"check:fix": "biome check --write ."
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"packageManager": "pnpm@9.0.0",
+	"devDependencies": {
+		"@biomejs/biome": "^2.2.2",
+		"@types/luxon": "^3.7.1",
+		"@types/node": "^24.3.0",
+		"builtin-modules": "5.0.0",
+		"esbuild": "0.25.9",
+		"jsdom": "^25.0.1",
+		"obsidian": "^1.8.7",
+		"tslib": "2.8.1",
+		"typescript": "5.9.2",
+		"vitest": "^2.0.5"
+	},
+	"nx": {
+		"sourceRoot": "apps/custom-calendar/src",
+		"targets": {
+			"build": {
+				"executor": "nx:run-commands",
+				"options": {
+					"command": "pnpm build",
+					"cwd": "{projectRoot}"
+				},
+				"dependsOn": [
+					"^build"
+				]
+			},
+			"dev": {
+				"executor": "nx:run-commands",
+				"options": {
+					"command": "pnpm dev",
+					"cwd": "{projectRoot}"
+				},
+				"dependsOn": [
+					"^build"
+				]
+			},
+			"typecheck": {
+				"executor": "nx:run-commands",
+				"options": {
+					"command": "pnpm typecheck",
+					"cwd": "{projectRoot}"
+				}
+			},
+			"test": {
+				"executor": "nx:run-commands",
+				"options": {
+					"command": "pnpm test",
+					"cwd": "{projectRoot}"
+				}
+			},
+			"clean": {
+				"executor": "nx:run-commands",
+				"options": {
+					"command": "pnpm clean",
+					"cwd": "{projectRoot}"
+				}
+			},
+			"version": {
+				"executor": "nx:run-commands",
+				"options": {
+					"command": "pnpm version",
+					"cwd": "{projectRoot}"
+				}
+			}
+		},
+		"tags": [
+			"type:app",
+			"platform:obsidian"
+		]
+	},
+	"dependencies": {
+		"@fullcalendar/core": "^6.1.19",
+		"@fullcalendar/daygrid": "^6.1.19",
+		"@fullcalendar/interaction": "^6.1.19",
+		"@fullcalendar/list": "^6.1.19",
+		"@fullcalendar/timegrid": "^6.1.19",
+		"@obsidian-plugins/watchdog-plugin": "workspace:*",
+		"chrono-node": "^2.8.4",
+		"luxon": "^3.7.2",
+		"rrule": "^2.8.1",
+		"rxjs": "^7.8.2",
+		"utils": "workspace:*",
+		"zod": "^4.1.5"
+	}
+}

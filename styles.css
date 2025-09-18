@@ -1,0 +1,644 @@
+/* Custom Calendar Plugin Styles */
+
+.custom-calendar-view {
+	padding: 8px;
+	height: 100%;
+	overflow: auto;
+}
+
+.custom-calendar-container {
+	height: 100%;
+	min-height: 400px;
+}
+
+/* FullCalendar theme integration with Obsidian */
+.custom-calendar-container .fc {
+	font-family: var(--font-interface);
+	font-size: var(--font-ui-small);
+}
+
+.custom-calendar-container .fc-theme-standard .fc-scrollgrid {
+	border-color: var(--background-modifier-border);
+}
+
+.custom-calendar-container .fc-theme-standard th,
+.custom-calendar-container .fc-theme-standard td {
+	border-color: var(--background-modifier-border);
+}
+
+.custom-calendar-container .fc-theme-standard .fc-scrollgrid-section > * {
+	border-color: var(--background-modifier-border);
+}
+
+/* Header styling */
+.custom-calendar-container .fc-toolbar {
+	margin-bottom: 1em;
+}
+
+.custom-calendar-container .fc-toolbar-title {
+	color: var(--text-normal);
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-weight-medium);
+}
+
+.custom-calendar-container .fc-button {
+	background-color: var(--interactive-normal);
+	border-color: var(--background-modifier-border);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	padding: 4px 8px;
+	border-radius: var(--radius-s);
+}
+
+.custom-calendar-container .fc-button:hover {
+	background-color: var(--interactive-hover);
+}
+
+.custom-calendar-container .fc-button:focus {
+	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+.custom-calendar-container .fc-button-active {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+/* Day headers */
+.custom-calendar-container .fc-col-header-cell {
+	background-color: var(--background-secondary);
+	color: var(--text-muted);
+	font-weight: var(--font-weight-medium);
+	font-size: var(--font-ui-smaller);
+}
+
+/* Day cells */
+.custom-calendar-container .fc-daygrid-day {
+	background-color: var(--background-primary);
+}
+
+.custom-calendar-container .fc-daygrid-day:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.custom-calendar-container .fc-day-today {
+	background-color: var(--background-modifier-form-field);
+}
+
+.custom-calendar-container .fc-day-other {
+	background-color: var(--background-secondary-alt);
+	color: var(--text-faint);
+}
+
+/* --- Event card base --- */
+.custom-calendar-event {
+	border-radius: var(--radius-s);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	/* add subtle depth without harsh borders */
+	box-shadow:
+		0 1px 0 rgba(0, 0, 0, 0.08),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+	transition:
+		transform 0.06s ease,
+		box-shadow 0.2s ease,
+		opacity 0.2s ease;
+}
+.custom-calendar-event:hover {
+	transform: translateY(-1px);
+}
+
+/* unified padding; remove inner borders */
+.fc-event-content-wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 6px; /* spacing instead of dividers */
+	padding: 6px 8px;
+	height: 100%;
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-width: thin;
+	scrollbar-color: var(--scrollbar-thumb-bg) transparent;
+}
+
+/* Webkit scrollbar for event content wrapper */
+.fc-event-content-wrapper::-webkit-scrollbar {
+	width: 4px;
+}
+
+.fc-event-content-wrapper::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.fc-event-content-wrapper::-webkit-scrollbar-thumb {
+	background-color: var(--scrollbar-thumb-bg);
+	border-radius: 2px;
+}
+
+/* --- Header: time + title --- */
+.fc-event-header {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	line-height: 1.2;
+	min-width: 0; /* enable truncation */
+}
+
+/* Time as a pill — same weight as title but visually distinct */
+.fc-event-time {
+	margin: 0; /* remove margins/divider remnants */
+	padding: 2px 6px;
+	border: 0;
+	border-radius: 6px;
+	font-weight: 600;
+	color: white;
+	background: rgba(255, 255, 255, 0.16); /* translucent pill on colored event bg */
+	white-space: nowrap;
+	flex: 0 0 auto;
+}
+
+/* Title, bold, wraps to multiple lines */
+.fc-event-title-custom {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-weight: 600;
+	color: white;
+	flex: 1 1 auto;
+	min-width: 0;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	line-height: 1.3;
+}
+
+/* Optional subtle dot between time and title (no divider lines) */
+.fc-event-title-custom::before {
+	content: "•";
+	opacity: 0.7;
+	margin-right: 6px;
+}
+
+/* --- Properties: inline, chip-like, subdued --- */
+.fc-event-props {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	line-height: 1.25;
+	/* slightly deemphasized compared to header */
+	opacity: 0.95;
+}
+
+.fc-event-prop {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin: 0;
+	padding: 1px 6px;
+	border-radius: 999px; /* pill feel */
+	background: rgba(255, 255, 255, 0.1); /* translucent */
+	color: white;
+	max-width: 100%;
+}
+
+.fc-event-prop-key {
+	opacity: 0.85; /* keys lighter */
+	flex: 0 0 auto;
+}
+
+.fc-event-prop-value {
+	opacity: 1;
+	flex: 0 1 auto;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+/* Time-grid / day-grid: ensure wrappers don't add extra padding */
+.custom-calendar-container .fc-daygrid-event .fc-event-main,
+.custom-calendar-container .fc-timegrid-event .fc-event-main {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+	padding: 0;
+}
+
+.custom-calendar-container .fc-daygrid-event {
+	min-height: auto;
+	/* Allow events to expand vertically for text wrapping */
+	height: auto;
+	display: flex;
+	flex-direction: column;
+	overflow: visible;
+}
+
+.custom-calendar-container .fc-daygrid-event-harness {
+	min-height: 2em;
+	/* Remove max-height to allow text wrapping */
+	overflow: visible;
+}
+
+/* Month view specific styling - compact layout */
+.custom-calendar-container .fc-daygrid-event .fc-event-content-wrapper {
+	padding: 4px 6px;
+	gap: 4px;
+	/* Allow content to expand vertically for text wrapping */
+	overflow: visible;
+	height: auto;
+	min-height: 2em;
+}
+
+.custom-calendar-container .fc-daygrid-event .fc-event-header {
+	gap: 4px;
+	/* Allow text wrapping in header */
+	overflow: visible;
+	white-space: normal;
+	display: flex;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
+
+.custom-calendar-container .fc-daygrid-event .fc-event-time {
+	font-size: var(--font-ui-smaller);
+	flex-shrink: 0;
+}
+
+.custom-calendar-container .fc-daygrid-event .fc-event-title-custom {
+	font-size: var(--font-ui-smaller);
+	line-height: 1.2;
+	/* Enable text wrapping for long titles */
+	overflow: visible;
+	white-space: normal;
+	word-wrap: break-word;
+	word-break: break-word;
+	flex: 1;
+	min-width: 0;
+}
+
+/* Hide properties in month view to save space */
+.custom-calendar-container .fc-daygrid-event .fc-event-props {
+	display: none;
+}
+
+.custom-calendar-container .fc-timegrid-event {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+/* List view adjustments */
+.custom-calendar-container .fc-list-event .fc-event-content-wrapper {
+	display: inline-flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.custom-calendar-container .fc-list-event .fc-event-props {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	overflow: visible;
+}
+
+.custom-calendar-container .fc-list-event .fc-event-prop {
+	display: inline;
+	margin-bottom: 0;
+}
+
+/* Time grid styling */
+.custom-calendar-container .fc-timegrid-slot {
+	border-color: var(--background-modifier-border);
+}
+
+.custom-calendar-container .fc-timegrid-slot-label {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.custom-calendar-container .fc-timegrid-axis {
+	background-color: var(--background-secondary);
+}
+
+/* List view styling */
+.custom-calendar-container .fc-list-event {
+	cursor: pointer;
+}
+
+.custom-calendar-container .fc-list-event:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.custom-calendar-container .fc-list-event-title {
+	color: var(--text-normal);
+}
+
+.custom-calendar-container .fc-list-event-time {
+	color: var(--text-muted);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.custom-calendar-container .fc-toolbar {
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.custom-calendar-container .fc-toolbar-chunk {
+		display: flex;
+		justify-content: center;
+	}
+}
+
+/* Loading state */
+.calendar-loading-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 200px;
+	gap: 16px;
+}
+
+.calendar-loading-spinner {
+	width: 32px;
+	height: 32px;
+	border: 3px solid var(--background-modifier-border);
+	border-top: 3px solid var(--interactive-accent);
+	border-radius: 50%;
+	animation: calendar-spin 1s linear infinite;
+}
+
+.calendar-loading-text {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	text-align: center;
+}
+
+@keyframes calendar-spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* Dark theme adjustments */
+.theme-dark .custom-calendar-container .fc-button {
+	background-color: var(--background-modifier-form-field);
+}
+
+.theme-dark .custom-calendar-container .fc-button:hover {
+	background-color: var(--background-modifier-form-field-highlighted);
+}
+
+/* Batch Selection Styles - Now integrated into calendar toolbar */
+.fc-button.batch-action-btn {
+	background: var(--interactive-normal);
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	padding: 4px 8px;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	transition: all 0.15s ease;
+	white-space: nowrap;
+}
+
+.fc-button.batch-action-btn:hover {
+	background: var(--interactive-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fc-button.batch-action-btn.batch-counter {
+	font-weight: var(--font-weight-medium);
+	background: var(--background-secondary);
+}
+
+.fc-button.batch-action-btn.select-all-btn {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.fc-button.batch-action-btn.clear-btn {
+	background: var(--background-modifier-form-field);
+}
+
+.fc-button.batch-action-btn.exit-btn {
+	background: var(--background-secondary);
+}
+
+.fc-button.batch-action-btn.delete-btn {
+	background: var(--color-red);
+	color: white;
+	border-color: var(--color-red);
+}
+
+.fc-button.batch-action-btn.delete-btn:hover {
+	background: var(--color-red-rgb);
+	box-shadow: 0 2px 8px rgba(var(--color-red-rgb), 0.3);
+}
+
+.fc-button.batch-action-btn.clone-next-btn,
+.fc-button.batch-action-btn.clone-prev-btn,
+.fc-button.batch-action-btn.duplicate-btn {
+	background: var(--color-blue);
+	color: white;
+	border-color: var(--color-blue);
+}
+
+.fc-button.batch-action-btn.move-next-btn,
+.fc-button.batch-action-btn.move-prev-btn {
+	background: var(--color-orange);
+	color: white;
+	border-color: var(--color-orange);
+}
+
+.fc-button.batch-action-btn.open-all-btn {
+	background: var(--color-green);
+	color: white;
+	border-color: var(--color-green);
+}
+
+/* Fix event collapsing in month view */
+.fc-daygrid-event.batch-selectable,
+.fc-daygrid-event.batch-selectable .fc-event-main {
+	overflow: visible;
+}
+
+/* Adjust checkbox position for compact month view events */
+.fc-daygrid-event.batch-selectable .fc-event-main::before {
+	top: 1px;
+	right: 1px;
+	width: 14px;
+	height: 14px;
+}
+.fc-daygrid-event.batch-selected .fc-event-main::before {
+	font-size: 9px;
+}
+
+/* Event Selection States - Updated for FullCalendar DOM structure */
+.fc-event.batch-selectable {
+	cursor: pointer;
+	transition:
+		box-shadow 0.2s ease,
+		z-index 0.2s ease;
+}
+
+/* Apply relative positioning to an inner element to avoid breaking FC's layout */
+.fc-event.batch-selectable .fc-event-main {
+	position: relative;
+}
+
+.fc-event.batch-selectable .fc-event-main::before {
+	content: "";
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	width: 16px;
+	height: 16px;
+	border: 2px solid rgba(255, 255, 255, 0.8);
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.2);
+	backdrop-filter: blur(2px);
+	z-index: 10;
+	opacity: 0.8;
+	transition: all 0.2s ease;
+}
+
+.fc-event.batch-selectable:hover .fc-event-main::before {
+	opacity: 1;
+	transform: scale(1.1);
+	border-color: var(--interactive-accent);
+}
+
+.fc-event.batch-selected {
+	box-shadow:
+		0 0 0 2px var(--interactive-accent),
+		0 4px 12px rgba(var(--interactive-accent-rgb), 0.3),
+		0 2px 4px rgba(0, 0, 0, 0.1);
+	z-index: 5;
+}
+
+.fc-event.batch-selected .fc-event-main::before {
+	background: var(--interactive-accent);
+	border-color: white;
+	content: "✓";
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	font-weight: bold;
+	color: white;
+	opacity: 1;
+}
+
+.fc-event.batch-selected:hover {
+	box-shadow:
+		0 0 0 2px var(--interactive-accent),
+		0 6px 20px rgba(var(--interactive-accent-rgb), 0.4),
+		0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Selection animations */
+/* Removed animations that could affect event sizing */
+
+/* Removed keyframes that could cause event sizing issues */
+
+/* List view batch selection adjustments */
+.custom-calendar-container .fc-list-event.batch-selectable {
+	position: relative;
+}
+
+.custom-calendar-container .fc-list-event.batch-selectable .fc-list-event-graphic {
+	position: relative;
+}
+
+.custom-calendar-container .fc-list-event.batch-selectable .fc-list-event-graphic::before {
+	content: "";
+	position: absolute;
+	left: -24px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 16px;
+	height: 16px;
+	border: 2px solid var(--text-faint);
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.2);
+}
+
+.custom-calendar-container .fc-list-event.batch-selected .fc-list-event-graphic::before {
+	background: var(--interactive-accent);
+	border-color: white;
+	content: "✓";
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	font-weight: bold;
+	color: white;
+}
+
+/* Responsive batch selection */
+@media (max-width: 768px) {
+	.batch-selection-bar {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 4px;
+		margin-left: 4px;
+		padding: 2px 4px;
+	}
+
+	.batch-actions {
+		justify-content: center;
+		gap: 6px;
+	}
+
+	.batch-action-btn {
+		flex: 1;
+		min-width: 0;
+		font-size: var(--font-ui-smaller);
+		padding: 6px 4px;
+	}
+
+	.fc-event.batch-selectable .fc-event-main::before,
+	.fc-event.batch-selected .fc-event-main::before {
+		width: 14px;
+		height: 14px;
+		font-size: 9px;
+	}
+}
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+	.custom-calendar-event {
+		transition: none;
+	}
+
+	/* Animation rules removed since animations were removed */
+
+	.fc-event.batch-selectable .fc-event-main::before,
+	.fc-event.batch-selected .fc-event-main::before {
+		transition: none;
+	}
+
+	.batch-action-btn {
+		transition: none;
+	}
+}
+
+.virtual-event {
+	opacity: 0.6;
+	font-style: italic;
+	background-image: repeating-linear-gradient(
+		45deg,
+		rgba(0, 0, 0, 0.05),
+		rgba(0, 0, 0, 0.05) 10px,
+		transparent 10px,
+		transparent 20px
+	);
+	cursor: not-allowed;
+}

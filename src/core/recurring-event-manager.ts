@@ -1,0 +1,409 @@
+import { DateTime } from "luxon";
+import type { App } from "obsidian";
+import type { BehaviorSubject, Subscription } from "rxjs";
+import {
+	calculateRecurringInstanceDateTime,
+	getNextOccurrence,
+	iterateOccurrencesInRange,
+} from "utils/date-recurrence-utils";
+import { sanitizeForFilename } from "utils/file-utils";
+import type { NodeRecurringEvent } from "../types/recurring-event-schemas";
+import type { SingleCalendarConfig } from "../types/settings-schemas";
+import type { Indexer, IndexerEvent } from "./indexer";
+import type { ParsedEvent } from "./parser";
+import { TemplateService } from "./template-service";
+
+export interface NodeRecurringEventInstance {
+	recurringEvent: NodeRecurringEvent;
+	instanceDate: DateTime;
+	filePath: string;
+	created: boolean;
+}
+
+export interface RecurringEventData {
+	recurringEvent: NodeRecurringEvent;
+	physicalInstances: Array<{
+		filePath: string;
+		instanceDate: DateTime;
+	}>;
+}
+
+export class RecurringEventManager {
+	private settings: SingleCalendarConfig;
+	private recurringEventsMap: Map<string, RecurringEventData> = new Map();
+	private subscription: Subscription | null = null;
+	private settingsSubscription: Subscription | null = null;
+	private indexingCompleteSubscription: Subscription | null = null;
+	private templateService: TemplateService;
+	private indexingComplete = false;
+
+	constructor(
+		private app: App,
+		settingsStore: BehaviorSubject<SingleCalendarConfig>,
+		private indexer: Indexer
+	) {
+		this.settings = settingsStore.value;
+		this.templateService = new TemplateService(app, settingsStore);
+
+		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
+			this.settings = newSettings;
+		});
+		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe(
+			async (isComplete) => {
+				this.indexingComplete = isComplete;
+				if (isComplete) {
+					await this.processAllRecurringEvents();
+				}
+			}
+		);
+		this.subscription = this.indexer.events$.subscribe((event: IndexerEvent) => {
+			this.handleIndexerEvent(event);
+		});
+	}
+
+	private async handleIndexerEvent(event: IndexerEvent): Promise<void> {
+		switch (event.type) {
+			case "recurring-event-found":
+				if (event.recurringEvent) {
+					this.addRecurringEvent(event.recurringEvent);
+					if (this.indexingComplete) {
+						await this.ensurePhysicalInstances(event.recurringEvent.rRuleId);
+					}
+				}
+				break;
+			case "file-changed":
+				if (event.source) {
+					await this.handleFileChanged(event.filePath, event.source.frontmatter);
+				}
+				break;
+			case "file-deleted":
+				this.handleFileDeleted(event);
+				break;
+		}
+	}
+
+	private async processAllRecurringEvents(): Promise<void> {
+		for (const [rruleId, data] of this.recurringEventsMap.entries()) {
+			try {
+				await this.ensurePhysicalInstances(rruleId);
+			} catch (error) {
+				const eventTitle = data?.recurringEvent?.title || "Unknown Event";
+				console.error(`❌ Failed to process recurring event ${eventTitle} (${rruleId}):`, error);
+			}
+		}
+	}
+
+	destroy(): void {
+		this.subscription?.unsubscribe();
+		this.subscription = null;
+		this.settingsSubscription?.unsubscribe();
+		this.settingsSubscription = null;
+		this.indexingCompleteSubscription?.unsubscribe();
+		this.indexingCompleteSubscription = null;
+		this.templateService.destroy();
+		this.recurringEventsMap.clear();
+	}
+
+	private addRecurringEvent(recurringEvent: NodeRecurringEvent): void {
+		const existingData = this.recurringEventsMap.get(recurringEvent.rRuleId);
+		if (existingData) {
+			existingData.recurringEvent = recurringEvent;
+		} else {
+			this.recurringEventsMap.set(recurringEvent.rRuleId, {
+				recurringEvent,
+				physicalInstances: [],
+			});
+		}
+	}
+
+	private async handleFileChanged(
+		filePath: string,
+		frontmatter: Record<string, unknown>
+	): Promise<void> {
+		const rruleId = frontmatter[this.settings.rruleIdProp] as string;
+		const instanceDate = frontmatter.nodeRecurringInstanceDate as string;
+
+		if (rruleId && instanceDate) {
+			const parsedInstanceDate = DateTime.fromISO(instanceDate);
+			if (parsedInstanceDate.isValid) {
+				let recurringData = this.recurringEventsMap.get(rruleId);
+
+				if (!recurringData) {
+					recurringData = {
+						recurringEvent: null as any, // Will be filled when recurring event is found
+						physicalInstances: [],
+					};
+					this.recurringEventsMap.set(rruleId, recurringData);
+				}
+
+				// Remove any existing instance with same file path
+				recurringData.physicalInstances = recurringData.physicalInstances.filter(
+					(instance) => instance.filePath !== filePath
+				);
+				// Add the updated instance
+				recurringData.physicalInstances.push({
+					filePath,
+					instanceDate: parsedInstanceDate,
+				});
+			}
+		}
+	}
+
+	private handleFileDeleted(event: IndexerEvent): void {
+		const { source } = event;
+		if (!source || !source.frontmatter) {
+			return;
+		}
+		const { frontmatter } = source;
+		const rruleId = frontmatter[this.settings.rruleIdProp] as string;
+		if (!rruleId) {
+			return;
+		}
+		if (!this.recurringEventsMap.delete(rruleId)) {
+			console.error(`❌ Failed to delete recurring event ${rruleId}`);
+		}
+	}
+
+	private async ensurePhysicalInstances(rruleId: string): Promise<void> {
+		const data = this.recurringEventsMap.get(rruleId);
+		if (!data) return;
+
+		try {
+			const { recurringEvent, physicalInstances } = data;
+			const now = DateTime.now();
+
+			const futureInstances = physicalInstances.filter(
+				(instance) => instance.instanceDate >= now.startOf("day")
+			);
+
+			const targetInstanceCount = this.calculateTargetInstanceCount(recurringEvent);
+			const currentCount = futureInstances.length;
+
+			if (currentCount >= targetInstanceCount) {
+				return;
+			}
+
+			const instancesToCreate = targetInstanceCount - currentCount;
+			let nextDate = this.getNextOccurrenceFromNow(recurringEvent, futureInstances);
+
+			for (let i = 0; i < instancesToCreate; i++) {
+				await this.createPhysicalInstance(recurringEvent, nextDate);
+				// Note: We don't add to the map here because the indexer will detect
+				// the new file and trigger a file-changed event, which will update our map
+
+				nextDate = getNextOccurrence(
+					nextDate,
+					recurringEvent.rrules.type,
+					recurringEvent.rrules.weekdays
+				);
+			}
+		} catch (error) {
+			console.error(
+				`❌ Failed to ensure physical instances for ${data.recurringEvent.title}:`,
+				error
+			);
+		}
+	}
+
+	private calculateTargetInstanceCount(recurringEvent: NodeRecurringEvent): number {
+		const intervals = this.settings.futureInstancesCount;
+		const { type, weekdays } = recurringEvent.rrules;
+
+		if (type === "weekly" || type === "bi-weekly") {
+			return (weekdays?.length || 1) * intervals;
+		}
+		return intervals;
+	}
+
+	private getNextOccurrenceFromNow(
+		recurringEvent: NodeRecurringEvent,
+		existingFutureInstances: Array<{ filePath: string; instanceDate: DateTime }>
+	): DateTime {
+		// If we have existing future instances, start from the date after the last one
+		if (existingFutureInstances.length > 0) {
+			const lastInstanceDate =
+				existingFutureInstances[existingFutureInstances.length - 1].instanceDate;
+			return getNextOccurrence(
+				lastInstanceDate,
+				recurringEvent.rrules.type,
+				recurringEvent.rrules.weekdays
+			);
+		}
+
+		// No existing future instances - find the next occurrence starting from the recurring event's start date
+		const now = DateTime.now();
+		let currentDate = recurringEvent.rrules.startTime;
+
+		// Use a while loop to iterate until currentDate is in the future
+		while (currentDate < now.startOf("day")) {
+			currentDate = getNextOccurrence(
+				currentDate,
+				recurringEvent.rrules.type,
+				recurringEvent.rrules.weekdays
+			);
+		}
+		return currentDate;
+	}
+
+	private async createPhysicalInstance(
+		recurringEvent: NodeRecurringEvent,
+		instanceDate: DateTime
+	): Promise<void> {
+		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
+		const instanceTitle = `${recurringEvent.title} ${dateStr}`;
+		const filePath = this.generateNodeInstanceFilePath(recurringEvent, instanceDate);
+
+		// Check if file already exists - if so, skip creation (fixes race condition)
+		if (this.app.vault.getAbstractFileByPath(filePath)) {
+			return;
+		}
+
+		// Create the physical file
+		const file = await this.templateService.createFile({
+			title: instanceTitle,
+			targetDirectory: this.settings.directory,
+			filename: filePath.split("/").pop()?.replace(".md", ""),
+		});
+
+		// Set frontmatter with event data and instance metadata
+		await this.app.fileManager.processFrontMatter(file, (fm) => {
+			const excludeProps = new Set([
+				this.settings.rruleProp,
+				this.settings.rruleSpecProp,
+				this.settings.startProp,
+				this.settings.endProp,
+				this.settings.allDayProp,
+			]);
+
+			for (const [key, value] of Object.entries(recurringEvent.frontmatter)) {
+				if (!excludeProps.has(key)) {
+					fm[key] = value;
+				}
+			}
+
+			// Set instance-specific properties - CRITICAL for duplication detection
+			fm[this.settings.rruleIdProp] = recurringEvent.rRuleId;
+			fm.nodeRecurringInstanceDate = instanceDate.toISODate();
+
+			const { instanceStart, instanceEnd } = this.calculateInstanceTimes(
+				recurringEvent,
+				instanceDate
+			);
+			fm[this.settings.startProp] = instanceStart.toISO();
+
+			if (instanceEnd) {
+				fm[this.settings.endProp] = instanceEnd.toISO();
+			}
+
+			// Set all day property if specified
+			if (recurringEvent.rrules.allDay !== undefined && this.settings.allDayProp) {
+				fm[this.settings.allDayProp] = recurringEvent.rrules.allDay;
+			}
+		});
+	}
+
+	async generateAllVirtualInstances(
+		rangeStart: DateTime,
+		rangeEnd: DateTime
+	): Promise<ParsedEvent[]> {
+		const virtualEvents = Array.from(this.recurringEventsMap.values()).flatMap(
+			({ recurringEvent, physicalInstances }) =>
+				this.calculateOccurrencesInRange(
+					recurringEvent,
+					rangeStart,
+					rangeEnd,
+					physicalInstances
+				).map((occurrence) => this.createVirtualEvent(occurrence))
+		);
+		return virtualEvents;
+	}
+
+	private calculateOccurrencesInRange(
+		recurringEvent: NodeRecurringEvent,
+		rangeStart: DateTime,
+		rangeEnd: DateTime,
+		physicalInstances: Array<{ filePath: string; instanceDate: DateTime }>
+	): NodeRecurringEventInstance[] {
+		const startDate = recurringEvent.rrules.startTime;
+
+		// Create a Set of dates that have physical instances for quick lookup
+		const physicalDates = new Set(
+			physicalInstances.map((instance) => instance.instanceDate.toISODate())
+		);
+
+		return Array.from(
+			iterateOccurrencesInRange(startDate, recurringEvent.rrules, rangeStart, rangeEnd)
+		)
+			.filter((occurrenceDate) => !physicalDates.has(occurrenceDate.toISODate()))
+			.map((occurrenceDate) => {
+				const filePath = this.generateNodeInstanceFilePath(recurringEvent, occurrenceDate);
+				return {
+					recurringEvent,
+					instanceDate: occurrenceDate,
+					filePath,
+					created: false,
+				};
+			});
+	}
+
+	private calculateInstanceTimes(
+		recurringEvent: NodeRecurringEvent,
+		instanceDate: DateTime
+	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
+		const startDate = recurringEvent.rrules.startTime;
+		const originalEnd = recurringEvent.rrules.endTime || null;
+
+		const instanceStart = calculateRecurringInstanceDateTime(
+			instanceDate,
+			startDate,
+			recurringEvent.rrules.type,
+			recurringEvent.rrules.allDay
+		);
+
+		const instanceEnd = originalEnd
+			? calculateRecurringInstanceDateTime(
+					instanceDate,
+					originalEnd,
+					recurringEvent.rrules.type,
+					recurringEvent.rrules.allDay
+				)
+			: null;
+
+		return { instanceStart, instanceEnd };
+	}
+
+	private createVirtualEvent(occurrence: NodeRecurringEventInstance): ParsedEvent {
+		const { recurringEvent, instanceDate } = occurrence;
+		const { instanceStart, instanceEnd } = this.calculateInstanceTimes(
+			recurringEvent,
+			instanceDate
+		);
+
+		return {
+			id: `${recurringEvent.rRuleId}-${instanceDate.toISODate()}`,
+			ref: { filePath: recurringEvent.sourceFilePath },
+			title: recurringEvent.title,
+			start: instanceStart.toISO() as string,
+			end: instanceEnd ? (instanceEnd.toISO() as string) : undefined,
+			allDay: recurringEvent.rrules.allDay,
+			timezone: "system", // Virtual events use system timezone
+			isVirtual: true,
+			meta: {
+				...recurringEvent.frontmatter,
+				rruleId: recurringEvent.rRuleId,
+			},
+		};
+	}
+
+	private generateNodeInstanceFilePath(
+		recurringEvent: NodeRecurringEvent,
+		instanceDate: DateTime
+	): string {
+		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
+		const instanceTitle = `${recurringEvent.title} ${dateStr}`;
+		const sanitizedTitle = sanitizeForFilename(instanceTitle);
+
+		const folderPath = this.settings.directory ? `${this.settings.directory}/` : "";
+		return `${folderPath}${sanitizedTitle}.md`;
+	}
+}
