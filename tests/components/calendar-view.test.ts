@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // import { CalendarView } from "../../src/components/calendar-view";
 import type { EventStore } from "../../src/core/event-store";
 import type { CalendarSettingsStore } from "../../src/core/settings-store";
-import { DEFAULT_EVENT_COLOR } from "../../src/types/settings-schemas";
+import { MockFixtures } from "../fixtures/index";
 
 // Mock FullCalendar
 vi.mock("@fullcalendar/core", () => ({
@@ -62,28 +62,13 @@ describe.skip("CalendarView", () => {
 		} as any;
 
 		// Mock CalendarSettingsStore
-		const mockSingleSettings = {
+		const mockSingleSettings = MockFixtures.singleCalendarConfig({
 			id: "default",
 			name: "Main Calendar",
 			enabled: true,
 			defaultView: "dayGridMonth",
 			directory: "calendar",
-			titleProp: "title",
-			startProp: "start",
-			endProp: "end",
-			allDayProp: "allDay",
-			zettelIdProp: "id",
-			hourStart: 8,
-			hourEnd: 20,
-			hideWeekends: false,
-			thermometerProperties: [],
-			slotDurationMinutes: 10,
-			snapDurationMinutes: 10,
-			zoomLevels: [1, 2, 3, 5, 10, 15, 20, 30, 45, 60],
-			defaultEventColor: DEFAULT_EVENT_COLOR,
-			colorRules: [],
-			filterExpressions: [],
-		};
+		});
 
 		mockSettingsStore = {
 			currentSettings: mockSingleSettings,
