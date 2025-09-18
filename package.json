@@ -34,63 +34,6 @@
 		"typescript": "5.9.2",
 		"vitest": "^2.0.5"
 	},
-	"nx": {
-		"sourceRoot": "apps/custom-calendar/src",
-		"targets": {
-			"build": {
-				"executor": "nx:run-commands",
-				"options": {
-					"command": "pnpm build",
-					"cwd": "{projectRoot}"
-				},
-				"dependsOn": [
-					"^build"
-				]
-			},
-			"dev": {
-				"executor": "nx:run-commands",
-				"options": {
-					"command": "pnpm dev",
-					"cwd": "{projectRoot}"
-				},
-				"dependsOn": [
-					"^build"
-				]
-			},
-			"typecheck": {
-				"executor": "nx:run-commands",
-				"options": {
-					"command": "pnpm typecheck",
-					"cwd": "{projectRoot}"
-				}
-			},
-			"test": {
-				"executor": "nx:run-commands",
-				"options": {
-					"command": "pnpm test",
-					"cwd": "{projectRoot}"
-				}
-			},
-			"clean": {
-				"executor": "nx:run-commands",
-				"options": {
-					"command": "pnpm clean",
-					"cwd": "{projectRoot}"
-				}
-			},
-			"version": {
-				"executor": "nx:run-commands",
-				"options": {
-					"command": "pnpm version",
-					"cwd": "{projectRoot}"
-				}
-			}
-		},
-		"tags": [
-			"type:app",
-			"platform:obsidian"
-		]
-	},
 	"dependencies": {
 		"@fullcalendar/core": "^6.1.19",
 		"@fullcalendar/daygrid": "^6.1.19",

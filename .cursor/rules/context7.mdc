@@ -1,0 +1,47 @@
+---
+alwaysApply: true
+---
+
+# Context7 MCP Integration Rule
+
+**Always use Context7 for up-to-date library and API documentation**
+
+## When to Use Context7
+
+Context7 MCP pulls up-to-date, version-specific documentation and code examples straight from the source. Use Context7 whenever you need:
+
+- **Library Documentation**: Any third-party library usage, setup, or configuration
+- **API Documentation**: REST APIs, GraphQL APIs, or any external service integration
+- **Framework Examples**: React, Vue, Angular, or any framework-specific code
+- **Tool Configuration**: Build tools, testing frameworks, deployment tools
+- **Package Setup**: Installation guides, dependency management
+- **Code Examples**: Implementation patterns from official sources
+- **Version-Specific Info**: Latest features, deprecated methods, breaking changes
+
+## Implementation
+
+Context7 should be automatically invoked when users request:
+- Code examples for any library
+- Setup or configuration steps
+- Library/API documentation
+- Integration guides
+- Best practices from official sources
+
+## Benefits
+
+- **Up-to-date Information**: Prevents using outdated documentation
+- **Version-Specific**: Gets the right info for the specific version being used
+- **Official Sources**: Pulls directly from authoritative documentation
+- **Code Examples**: Provides working, tested examples
+- **Reduced Errors**: Avoids common mistakes from outdated tutorials
+
+## Usage Pattern
+
+Instead of relying on training data that may be outdated, always use Context7 to:
+1. Get the latest API changes
+2. Find current best practices
+3. Retrieve working code examples
+4. Understand new features
+5. Check for deprecated methods
+
+**Remember**: Context7 ensures you're working with the most current and accurate information available.

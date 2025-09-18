@@ -1,0 +1,188 @@
+[env]
+# Dynamic plugin directory based on manifest.json id
+OBSIDIAN_VAULT_PATH = "/home/real1ty/Documents/SecondBrain/SecondBrain"
+# Make NX non-interactive for CI/headless environments
+CI = "1"
+NX_INTERACTIVE = "false"
+
+[tools]
+node = { version = "22" }       # LTS 2025-08
+"npm:pnpm" = "latest"           # workspace package-manager
+"npm:typescript" = "latest"     # ts-node uses this too
+"npm:@biomejs/biome" = "latest" # formatter + linter in one
+"npm:vitest" = "latest"         # unit-test runner
+
+jq = "latest" # JSON parsing in shell scripts
+
+# Code Quality Tasks (using Biome directly)
+[tasks.check]
+description = "Check code quality (format + lint) using Biome"
+run = [
+    "echo '🔍 Running Biome check (format + lint)...'",
+    "pnpm run check",
+    "echo '✅ Biome check completed successfully!'",
+]
+
+[tasks.format]
+description = "Format code using Biome"
+run = [
+    "echo '🎨 Formatting code with Biome...'",
+    "pnpm run format:fix",
+    "echo '✅ Code formatting completed!'",
+]
+
+[tasks.lint]
+description = "Lint code using Biome"
+run = [
+    "echo '🔍 Linting code with Biome...'",
+    "pnpm run lint:fix",
+    "echo '✅ Linting completed!'",
+]
+
+[tasks.typecheck]
+description = "Typecheck all projects with NX caching"
+run = [
+    "echo '🔍 Running TypeScript type checking with NX...'",
+    "npx nx run-many -t typecheck --parallel=3",
+    "echo '✅ TypeScript type checking completed!'",
+]
+
+[tasks.test]
+description = "Run all tests with NX caching"
+run = [
+    "echo '🧪 Running all tests with NX...'",
+    "npx nx run-many -t test --parallel=3",
+    "echo '✅ All tests completed!'",
+]
+
+[tasks.test-watch]
+description = "Run tests in watch mode with NX"
+run = [
+    "echo '🧪 Running tests in watch mode with NX...'",
+    "npx nx run-many -t test:watch --parallel=4",
+]
+
+# CI Task - Main entry point for CI/CD with NX
+[tasks.ci]
+description = "CI pipeline with NX caching and parallelism"
+run = [
+    "echo '🚀 Starting NX-powered CI Pipeline...'",
+    "echo '  → Running Biome check...'",
+    "pnpm run check:fix",
+    "echo '  → Running TypeScript check with NX...'",
+    "npx nx run-many -t typecheck --parallel=3",
+    "echo '  → Running tests with NX...'",
+    "npx nx run-many -t test --parallel=3",
+    "echo '  → Building all projects with NX...'",
+    "npx nx run-many -t build --parallel=3",
+    "echo '✅ NX CI Pipeline completed successfully!'",
+]
+
+# Security & Maintenance
+[tasks.security]
+description = "Lightweight OSS licence & vuln scan"
+run = [
+    "echo '🔒 Running security audit...'",
+    "pnpm audit --audit-level=high || true",
+    "echo '✅ Security audit completed!'",
+]
+
+[tasks.clean]
+description = "Clean build artifacts, caches, and NX cache"
+run = [
+    "echo '🧹 Cleaning build artifacts and caches...'",
+    "rm -rf dist",
+    "rm -rf **/dist",
+    "rm -rf **/main.js",
+    "rm -rf node_modules/.cache",
+    "npx nx run-many -t clean",
+    "npx nx reset",
+    "echo '✅ Cleaned build artifacts, caches, and NX cache'",
+]
+
+# Git Hooks Setup
+[tasks.setup-hooks]
+description = "Setup git pre-commit hooks"
+run = [
+    "echo '🪝 Setting up git pre-commit hooks...'",
+    "mise generate git-pre-commit --task=pre-commit --write",
+    "chmod +x .git/hooks/pre-commit",
+    "echo '✅ Pre-commit hooks installed and configured!'",
+]
+
+[tasks.pre-commit]
+description = "Pre-commit validation with NX affected detection"
+run = [
+    "echo '🔍 Running NX-powered pre-commit checks...'",
+    "echo '  → Running Biome check...'",
+    "pnpm run check:fix",
+    "echo '  → Running affected TypeScript checks...'",
+    "npx nx affected -t typecheck",
+    "echo '  → Running affected tests...'",
+    "npx nx affected -t test",
+    "echo '✅ All pre-commit checks passed!'",
+]
+
+# Development workflow tasks
+[tasks.fix]
+description = "Auto-fix all code quality issues"
+run = [
+    "echo '🔧 Auto-fixing code quality issues...'",
+    "pnpm run check:fix",
+    "echo '✅ Code quality issues fixed!'",
+]
+
+[tasks.validate]
+description = "Validate project without making changes using NX"
+run = [
+    "echo '🔍 Validating project with NX...'",
+    "pnpm run check",
+    "npx nx run-many -t typecheck --parallel=3",
+    "echo '✅ Project validation completed!'",
+]
+
+
+[tasks.install]
+description = "Install dependencies for the monorepo"
+run = [
+    "echo '📦 Installing dependencies...'",
+    "pnpm install",
+    "echo '✅ Dependencies installed successfully'",
+]
+
+# NX-specific tasks
+[tasks.graph]
+description = "Show NX dependency graph"
+run = ["echo '📊 Opening NX dependency graph...'", "npx nx graph"]
+
+[tasks.affected]
+description = "Run affected tasks only (build, test, typecheck)"
+run = [
+    "echo '🎯 Running affected tasks with NX...'",
+    "npx nx affected -t build,test,typecheck",
+    "echo '✅ Affected tasks completed!'",
+]
+
+[tasks.affected-build]
+description = "Build only affected projects"
+run = [
+    "echo '🏗️ Building affected projects...'",
+    "npx nx affected -t build",
+    "echo '✅ Affected builds completed!'",
+]
+
+[tasks.affected-test]
+description = "Test only affected projects"
+run = [
+    "echo '🧪 Testing affected projects...'",
+    "npx nx affected -t test",
+    "echo '✅ Affected tests completed!'",
+]
+
+[tasks.nx-reset]
+description = "Reset NX cache and daemon"
+run = [
+    "echo '🔄 Resetting NX cache and daemon...'",
+    "npx nx reset",
+    "echo '✅ NX cache and daemon reset!'",
+]

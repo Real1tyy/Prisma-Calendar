@@ -1,0 +1,56 @@
+---
+alwaysApply: true
+description: Enforce running CI checks after code changes
+---
+
+# CI Enforcement Rule
+
+**Always run `mise run ci` after making code changes and ensure it passes before completing any task.**
+
+## Required Workflow
+
+1. **After any code changes**, run:
+   ```bash
+   mise run ci
+   ```
+
+2. **If CI fails**, fix all issues before proceeding:
+   - **Linting errors**: Fix code quality issues reported by Biome
+   - **Formatting issues**: Let Biome auto-fix formatting
+   - **Test failures**: Ensure all tests pass
+   - **Type errors**: Resolve TypeScript compilation issues
+
+3. **Only complete the task when CI passes completely**
+
+## Common Issues to Fix
+
+### Biome Linting Errors
+- **`useIterableCallbackReturn`**: Don't return values from `forEach()` callbacks
+  ```typescript
+  // ❌ DON'T: Return value from forEach
+  array.forEach(item => item.process());
+
+  // ✅ DO: Use block syntax for side effects
+  array.forEach(item => {
+    item.process();
+  });
+  ```
+
+- **Formatting**: Let Biome auto-fix with `pnpm check:fix`
+- **Import ordering**: Biome will sort imports automatically
+
+### Test Issues
+- Ensure all mocks are properly configured
+- Verify test expectations match actual behavior
+- Check that setup/teardown is correct
+
+## Commands Reference
+
+- `mise run ci` - Run full CI pipeline
+- `pnpm check:fix` - Run Biome checks and auto-fix
+- `pnpm test` - Run tests only
+- `pnpm build` - Build the project
+
+## Non-Negotiable Rule
+
+**Never mark a task as complete if `mise run ci` fails.** Always fix the issues first.

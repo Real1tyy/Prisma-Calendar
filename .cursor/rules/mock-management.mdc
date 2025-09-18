@@ -1,0 +1,99 @@
+---
+alwaysApply: true
+description: Centralized mock management and DRY testing practices
+---
+
+# Mock Management and Testing Strategy
+
+**Always reuse existing mocks from the utils package before creating new ones.**
+
+## ✅ **DO: Use Centralized Mocks**
+
+All common mocks are centralized in [libs/utils/src/testing/](mdc:libs/utils/src/testing/) and should be imported:
+
+```typescript
+// Import from centralized testing utilities
+import {
+  Plugin,
+  PluginSettingTab,
+  Setting,
+  Notice,
+  MarkdownRenderer,
+  createMockApp,
+  createMockFile,
+  setupTestEnvironment
+} from "@obsidian-plugins/utils/testing";
+```
+
+### Available Centralized Mocks
+
+- **Obsidian Core**: [obsidian.ts](mdc:libs/utils/src/testing/mocks/obsidian.ts) - Plugin, PluginSettingTab, ItemView, Setting, TFile, Notice, MarkdownRenderer
+- **Utility Functions**: [utils.ts](mdc:libs/utils/src/testing/mocks/utils.ts) - mockFileOperations, mockLinkParser
+- **Setup Helpers**: [setup.ts](mdc:libs/utils/src/testing/setup.ts) - setupTestEnvironment()
+
+### Test Configuration Pattern
+
+```typescript
+// vitest.config.ts - Use centralized mock resolution
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: "jsdom",
+  },
+  resolve: {
+    alias: {
+      obsidian: new URL("../../utils/src/testing/mocks/obsidian.ts", import.meta.url).pathname,
+    },
+  },
+});
+```
+
+## ❌ **DON'T: Duplicate Common Mocks**
+
+```typescript
+// DON'T create new Obsidian mocks
+vi.mock("obsidian", () => ({
+  Plugin: vi.fn(),
+  Setting: vi.fn(),
+  // ... duplicating existing mocks
+}));
+
+// DON'T create separate mock files for common utilities
+// tests/__mocks__/obsidian.ts ❌
+```
+
+## 🎯 **ONLY Create Package-Specific Mocks When:**
+
+1. **Package-specific interfaces** not available in utils
+2. **Business logic mocks** unique to your package
+3. **Integration points** specific to your plugin
+
+### Package-Specific Mock Example
+
+```typescript
+// Only for package-specific functionality
+vi.mock("../src/my-specific-service", () => ({
+  MySpecificService: vi.fn().mockImplementation(() => ({
+    packageSpecificMethod: vi.fn(),
+  })),
+}));
+```
+
+## 🔧 **Implementation Steps**
+
+1. **Check existing mocks** in [libs/utils/src/testing/](mdc:libs/utils/src/testing/) first
+2. **Import from utils package** using `@obsidian-plugins/utils/testing`
+3. **Configure vitest** to use centralized mock resolution
+4. **Only create new mocks** for package-specific functionality
+5. **Add to utils package** if the mock could benefit other packages
+
+## 📦 **Dependencies**
+
+```json
+// package.json devDependencies
+{
+  "@obsidian-plugins/utils": "workspace:*"
+}
+```
+
+This approach ensures **DRY principles**, **consistent test behavior**, and **easier maintenance** across all packages.

@@ -1,0 +1,103 @@
+---
+alwaysApply: true
+description: Never maintain backwards compatibility unless explicitly requested
+---
+
+# No Backwards Compatibility Rule
+
+**CRITICAL: Never maintain backwards compatibility unless explicitly requested by the user.**
+
+## Core Principles
+
+- **Clean Slate Approach**: Always prefer clean, modern implementations over maintaining legacy code
+- **Remove Legacy Code**: Delete old files, deprecated functions, and outdated patterns immediately
+- **No Compatibility Layers**: Don't create adapters, wrappers, or compatibility shims
+- **Modern Standards**: Use the latest language features, libraries, and best practices
+
+## ✅ **DO: Embrace Breaking Changes**
+
+- Replace old APIs with new ones completely
+- Remove deprecated functions and classes
+- Update type definitions without maintaining old ones
+- Refactor to use modern patterns (Zod schemas vs manual validation)
+- Delete unused files and imports immediately
+
+## ❌ **DON'T: Maintain Legacy Code**
+
+```typescript
+// ❌ DON'T: Keep old exports for "compatibility"
+export * from "./schemas";
+export * from "./settings"; // Remove this immediately
+
+// ❌ DON'T: Create compatibility wrappers
+export const legacyValidateSettings = (settings: any) => {
+  return validateSettings(settings); // Just use the new function
+};
+
+// ❌ DON'T: Keep old function signatures
+function sanitizeSettings(
+  settings: unknown,
+  defaults?: CustomCalendarSettings // Remove optional parameter
+): CustomCalendarSettings;
+```
+
+## ✅ **DO: Clean Modern Implementation**
+
+```typescript
+// ✅ DO: Single source of truth
+export * from "./schemas";
+
+// ✅ DO: Clean function signatures
+export function sanitizeSettings(settings: unknown): CustomCalendarSettings {
+  // Modern implementation only
+}
+
+// ✅ DO: Use modern validation
+export const CalendarViewTypeSchema = z.enum([
+  "dayGridMonth",
+  "dayGridWeek",
+  // ... modern enum values only
+]);
+```
+
+## **When Backwards Compatibility IS Allowed**
+
+Only when the user **explicitly states**:
+- "Keep backwards compatibility"
+- "Don't break existing code"
+- "Maintain legacy support"
+- "Gradual migration"
+
+## **Default Behavior**
+
+- **Assume breaking changes are acceptable**
+- **Remove legacy code immediately**
+- **Use the most modern approach available**
+- **Prioritize clean code over compatibility**
+
+## **Examples of Immediate Removal**
+
+- Old type definition files (settings.ts ❌ REMOVED)
+- Legacy validation functions
+- Deprecated configuration options
+- Unused imports and exports
+- Old test patterns
+- Settings-based recurring events (replaced with node-based)
+
+## **Migration Strategy**
+
+1. **Identify Legacy Code**: Find old patterns, files, or functions
+2. **Replace Completely**: Implement modern equivalent
+3. **Remove Immediately**: Delete old code without transition period
+4. **Update All References**: Fix all imports and usages at once
+5. **Test Modern Implementation**: Ensure new code works correctly
+
+**Remember**: This is a new project. Clean, modern code is more important than maintaining compatibility with code that doesn't exist yet.
+
+## **Recent Examples**
+
+- ✅ **Recurring Events**: Completely removed settings-based recurring events in favor of node-based RRule system
+- ✅ **Schema Validation**: Moved from manual validation to Zod schemas without maintaining old validation logic
+- ✅ **Type Definitions**: Removed `SettingsRecurringEvent` types completely when switching to `NodeRecurringEvent`
+
+**Zero Tolerance**: If you catch yourself writing compatibility code, STOP and implement the modern approach only.
