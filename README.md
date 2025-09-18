@@ -34,28 +34,6 @@ Key pages:
 - Virtual events (read-only) beyond generation horizon
 - Reactive settings
 
-## Installation
-
-- Obsidian Community Plugins: Search "Prisma Calendar"
-- Manual: Download release ZIP and copy to `.obsidian/plugins/prisma-calendar/`
-
-```bash
-pnpm install
-mise run dev-watch
-```
-
-Build once and copy to vault:
-
-```bash
-mise run build-plugin
-```
-
-Run CI locally:
-
-```bash
-mise run ci
-```
-
 ## Contributing
 
 MIT-licensed. PRs welcome. Please run `mise run ci` before pushing.
