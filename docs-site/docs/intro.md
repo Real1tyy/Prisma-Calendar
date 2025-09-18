@@ -2,9 +2,15 @@
 slug: /
 ---
 
+<div align="center">
+
+![Prisma Calendar Logo](../static/img/PrismaCalendar.png)
+
 # Prisma Calendar
 
-Prisma Calendar is a feature-rich, fully configurable calendar plugin for Obsidian.
+**A feature-rich, fully configurable calendar plugin for Obsidian.**
+
+</div>
 
 Built for power users and newcomers alike, it gives you multiple isolated calendars, fine-grained filtering and color rules, fast folder-based indexing, and simple but powerful recurring events — all backed by plain Markdown notes.
 

@@ -1,3 +1,7 @@
+<div align="center">
+
+![Prisma Calendar Logo](docs-site/static/img/PrismaCalendar.png)
+
 # Prisma Calendar
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/Real1tyy/Prisma-Calendar/releases)
@@ -5,7 +9,9 @@
 [![Tests](https://img.shields.io/badge/tests-vitest-yellow.svg)](tests/)
 [![Obsidian](https://img.shields.io/badge/obsidian-plugin-purple.svg)](https://obsidian.md)
 
-Feature-rich, fully configurable calendar plugin for Obsidian with multiple calendars, templater integration, color rules, batch operations, and recurring events.
+**Feature-rich, fully configurable calendar plugin for Obsidian with multiple calendars, templater integration, color rules, batch operations, and recurring events.**
+
+</div>
 
 ## 📚 Documentation
 

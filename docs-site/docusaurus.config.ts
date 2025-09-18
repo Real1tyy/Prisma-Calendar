@@ -56,7 +56,7 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'img/PrismaCalendar.png',
     colorMode: {
       defaultMode: 'dark',
       respectPrefersColorScheme: true,
@@ -65,7 +65,7 @@ const config: Config = {
       title: 'Prisma Calendar',
       logo: {
         alt: 'Prisma Calendar Logo',
-        src: 'img/logo.svg',
+        src: 'img/PrismaCalendar.png',
         href: '/', // Fix: Make logo/title link to root
       },
       items: [
