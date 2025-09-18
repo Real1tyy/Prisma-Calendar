@@ -56,7 +56,7 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'img/PrismaCalendar.png',
     colorMode: {
       defaultMode: 'dark',
       respectPrefersColorScheme: true,
@@ -65,7 +65,8 @@ const config: Config = {
       title: 'Prisma Calendar',
       logo: {
         alt: 'Prisma Calendar Logo',
-        src: 'img/logo.svg',
+        src: 'img/PrismaCalendar.png',
+        href: '/', // Fix: Make logo/title link to root
       },
       items: [
         {
@@ -109,11 +110,11 @@ const config: Config = {
           title: 'Community',
           items: [
             {
-              label: 'Obsidian Forum Thread',
-              href: 'https://forum.obsidian.md/',
+              label: 'Contributing & Support',
+              to: '/contributing',
             },
             {
-              label: 'Issues',
+              label: 'GitHub Issues',
               href: 'https://github.com/Real1tyy/Prisma-Calendar/issues',
             },
           ],
@@ -126,8 +127,12 @@ const config: Config = {
               href: 'https://www.youtube.com/watch?v=YOUR_VIDEO_ID',
             },
             {
-              label: 'Donate',
-              href: 'https://buymeacoffee.com/<your-handle>',
+              label: 'Repository',
+              href: 'https://github.com/Real1tyy/Prisma-Calendar',
+            },
+            {
+              label: 'Releases',
+              href: 'https://github.com/Real1tyy/Prisma-Calendar/releases',
             },
           ],
         },
@@ -139,11 +144,12 @@ const config: Config = {
       darkTheme: prismThemes.dracula,
       additionalLanguages: ['bash', 'json', 'typescript'],
     },
-    algolia: {
-      appId: 'YOUR_APP_ID',
-      apiKey: 'YOUR_PUBLIC_API_KEY',
-      indexName: 'prisma_calendar',
-    },
+    // Disable search until properly configured
+    // algolia: {
+    //   appId: 'YOUR_APP_ID',
+    //   apiKey: 'YOUR_PUBLIC_API_KEY',
+    //   indexName: 'prisma_calendar',
+    // },
   } satisfies Preset.ThemeConfig,
 };
 

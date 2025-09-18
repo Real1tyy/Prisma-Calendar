@@ -4,8 +4,8 @@
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Feature-rich, fully configurable calendar with multiple calendars, templater, color rules, batch ops, and recurring events.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"author": "Real1tyy",
+	"authorUrl": "https://github.com/Real1tyy",
+	"fundingUrl": "https://github.com/Real1tyy/Prisma-Calendar",
 	"isDesktopOnly": false
 }

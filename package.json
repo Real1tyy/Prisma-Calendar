@@ -18,8 +18,15 @@
 		"check": "biome check .",
 		"check:fix": "biome check --write ."
 	},
-	"keywords": [],
-	"author": "",
+	"keywords": [
+		"obsidian",
+		"calendar",
+		"plugin",
+		"scheduling",
+		"events",
+		"recurring"
+	],
+	"author": "Real1tyy",
 	"license": "MIT",
 	"packageManager": "pnpm@9.0.0",
 	"devDependencies": {
