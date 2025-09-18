@@ -27,7 +27,7 @@
 		"@types/luxon": "^3.7.1",
 		"@types/node": "^24.3.0",
 		"builtin-modules": "5.0.0",
-		"esbuild": "0.25.9",
+		"esbuild": "0.25.10",
 		"jsdom": "^25.0.1",
 		"obsidian": "^1.8.7",
 		"tslib": "2.8.1",
