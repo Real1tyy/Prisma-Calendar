@@ -145,6 +145,21 @@ run = [
     "echo '✅ Build completed successfully!'",
 ]
 
+[tasks.build-plugin]
+description = "Build plugin and copy to Obsidian vault"
+run = [
+    "echo '🏗️ Building plugin and copying to vault...'",
+    "python3 scripts/dev-watcher.py --mode build",
+    "echo '✅ Plugin build and copy completed!'",
+]
+
+[tasks.dev-watch]
+description = "Start development mode with file watching and auto-copy to vault"
+run = [
+    "echo '👀 Starting development mode with file watching...'",
+    "python3 scripts/dev-watcher.py --mode watch",
+]
+
 [tasks.install]
 description = "Install dependencies for the project"
 run = [

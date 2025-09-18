@@ -48,15 +48,43 @@ Quick starting guide for new plugin devs:
 
 - Clone this repo.
 - Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+- `pnpm install` to install dependencies.
+- Set the `OBSIDIAN_VAULT_PATH` environment variable to your vault path.
+- `pnpm run dev` to start compilation in watch mode.
+
+## Development Scripts
+
+This project includes automated development scripts for building and deploying to your Obsidian vault:
+
+### Build and Copy to Vault
+```bash
+# Build plugin once and copy to Obsidian vault
+mise run build-plugin
+```
+
+### Development Mode with Auto-Copy
+```bash
+# Start development mode with file watching and auto-copy
+mise run dev-watch
+```
+
+The scripts will:
+- Build the plugin using esbuild
+- Copy `main.js`, `styles.css`, and `manifest.json` to your vault's plugin directory
+- Create the plugin directory if it doesn't exist
+- In watch mode, automatically rebuild and copy when source files change
+
+### Requirements
+- Python 3 with `watchdog` package installed (`pip3 install watchdog`)
+- `OBSIDIAN_VAULT_PATH` environment variable set to your vault path
+- The plugin ID from `manifest.json` will be used as the directory name
 
 ## Manually installing the plugin
 
 - Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
 
 ## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
+- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code.
 - To use eslint with this project, make sure to install eslint from terminal:
   - `npm install -g eslint`
 - To use eslint to analyze this project use this command:
