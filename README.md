@@ -12,8 +12,8 @@ Feature-rich, fully configurable calendar plugin for Obsidian with multiple cale
 **[View Full Documentation →](https://real1tyy.github.io/Prisma-Calendar/)**
 
 Quick Links:
-- [Installation](https://real1tyy.github.io/Prisma-Calendar/docs/installation) • [Quickstart](https://real1tyy.github.io/Prisma-Calendar/docs/quickstart) • [Configuration](https://real1tyy.github.io/Prisma-Calendar/docs/configuration)
-- [Features Overview](https://real1tyy.github.io/Prisma-Calendar/docs/features/overview) • [FAQ](https://real1tyy.github.io/Prisma-Calendar/docs/faq) • [Troubleshooting](https://real1tyy.github.io/Prisma-Calendar/docs/troubleshooting)
+- [Installation](https://real1tyy.github.io/Prisma-Calendar/installation) • [Quickstart](https://real1tyy.github.io/Prisma-Calendar/quickstart) • [Configuration](https://real1tyy.github.io/Prisma-Calendar/configuration)
+- [Features Overview](https://real1tyy.github.io/Prisma-Calendar/features/overview) • [FAQ](https://real1tyy.github.io/Prisma-Calendar/faq) • [Troubleshooting](https://real1tyy.github.io/Prisma-Calendar/troubleshooting)
 
 ## ✨ Key Features
 

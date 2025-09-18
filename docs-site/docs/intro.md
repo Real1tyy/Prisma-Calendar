@@ -18,7 +18,7 @@ What makes it different:
 
 [![Watch the demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
 
-GitHub: https://github.com/Real1tyy/Prisma-Calendar
+**Repository**: [https://github.com/Real1tyy/Prisma-Calendar](https://github.com/Real1tyy/Prisma-Calendar)
 
 > Goal: The most flexible, powerful calendar for Obsidian.
 
