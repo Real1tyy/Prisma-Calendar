@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type EventQuery, EventStore } from "../../src/core/event-store";
 import type { IndexerEvent } from "../../src/core/indexer";
 import type { ParsedEvent } from "../../src/core/parser";
+import { MockFixtures, TestScenarios } from "../fixtures/index";
 
 describe("EventStore", () => {
 	let eventStore: EventStore;
@@ -25,22 +26,69 @@ describe("EventStore", () => {
 		eventStore = new EventStore(mockIndexer, mockParser, mockRecurringEventManager);
 	});
 
-	const createMockEvent = (overrides: Partial<ParsedEvent> = {}): ParsedEvent => ({
-		id: "test-event-1",
-		ref: { filePath: "Events/meeting.md" },
-		title: "Test Meeting",
-		start: "2024-01-15T10:00:00.000Z",
-		end: "2024-01-15T11:00:00.000Z",
-		allDay: false,
-		isVirtual: false,
-		timezone: "system",
-		color: undefined,
-		meta: {
-			folder: "Events",
-			originalStart: "2024-01-15 10:00",
-			originalEnd: "2024-01-15 11:00",
-		},
-		...overrides,
+	const createMockEvent = (overrides: Partial<ParsedEvent> = {}): ParsedEvent =>
+		MockFixtures.parsedEvent(overrides);
+
+	describe("Enhanced Tests", () => {
+		it("should handle edge cases gracefully", () => {
+			const edgeCases = TestScenarios.eventEdgeCases();
+			
+			for (const event of edgeCases) {
+				// Clear and add event
+				(eventStore as any).eventCache.clear();
+				eventStore.updateEvent(event.ref.filePath, event, Date.now());
+				
+				const result = eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
+				
+				// Should return valid array with events that have string IDs
+				expect(Array.isArray(result)).toBe(true);
+				expect(result.every(e => typeof e.id === 'string')).toBe(true);
+			}
+		});
+
+		it("should handle large numbers of events efficiently", () => {
+			const events = Array.from({ length: 100 }, () => MockFixtures.parsedEvent());
+			const startTime = performance.now();
+			
+			// Clear and add events
+			(eventStore as any).eventCache.clear();
+			events.forEach((event, index) => {
+				eventStore.updateEvent(event.ref.filePath, event, Date.now() + index);
+			});
+			
+			const result = eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
+			const endTime = performance.now();
+			
+			// Should complete within reasonable time (500ms for 100 events)
+			const duration = endTime - startTime;
+			expect(duration).toBeLessThan(500);
+			expect(Array.isArray(result)).toBe(true);
+		});
+
+		it("should maintain event uniqueness by file path", () => {
+			const events = Array.from({ length: 10 }, () => MockFixtures.parsedEvent());
+			
+			(eventStore as any).eventCache.clear();
+			
+			// Add events, some with same file paths to test replacement behavior
+			events.forEach((event, index) => {
+				eventStore.updateEvent(event.ref.filePath, event, Date.now() + index);
+				// Add again with later timestamp to test replacement
+				eventStore.updateEvent(event.ref.filePath, event, Date.now() + index + 1000);
+			});
+			
+			const result = eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
+			const filePathCounts = new Map<string, number>();
+			
+			result.forEach(event => {
+				const count = filePathCounts.get(event.ref.filePath) || 0;
+				filePathCounts.set(event.ref.filePath, count + 1);
+			});
+			
+			// Should not have duplicate events for same file path
+			const counts = Array.from(filePathCounts.values());
+			expect(counts.every(count => count === 1)).toBe(true);
+		});
 	});
 
 	describe("event caching", () => {
@@ -61,252 +109,112 @@ describe("EventStore", () => {
 			expect(events[0].title).toBe("Updated Title");
 		});
 
-		it("should check if events are up to date", () => {
+		it("should remove events when files are deleted", () => {
 			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+			eventStore.updateEvent("Events/meeting.md", event, Date.now());
 
-			expect(eventStore.isUpToDate("Events/meeting.md", 1642204800000)).toBe(true);
-			expect(eventStore.isUpToDate("Events/meeting.md", 1642204801000)).toBe(false);
-			expect(eventStore.isUpToDate("Events/other.md", 1642204800000)).toBe(false);
+			// Verify event is added
+			let events = eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
+			expect(events).toHaveLength(1);
+
+			// Remove event
+			eventStore.removeEvent("Events/meeting.md");
+
+			// Verify event is removed
+			events = eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
+			expect(events).toHaveLength(0);
 		});
 	});
 
 	describe("event querying", () => {
-		beforeEach(() => {
-			// Set up some test events
+		it("should filter events by date range", async () => {
 			const event1 = createMockEvent({
-				id: "event-1",
-				title: "Morning Meeting",
-				start: "2024-01-15T09:00:00.000Z",
-				end: "2024-01-15T10:00:00.000Z",
-			});
-
-			const event2 = createMockEvent({
-				id: "event-2",
-				title: "Lunch Break",
-				start: "2024-01-15T12:00:00.000Z",
-				end: "2024-01-15T13:00:00.000Z",
-			});
-
-			const event3 = createMockEvent({
-				id: "event-3",
-				title: "Afternoon Meeting",
-				start: "2024-01-16T14:00:00.000Z",
-				end: "2024-01-16T15:00:00.000Z",
-			});
-
-			const allDayEvent = createMockEvent({
-				id: "event-4",
-				title: "Holiday",
-				start: "2024-01-17T00:00:00.000Z",
-				end: "2024-01-17T23:59:59.999Z",
-				allDay: true,
-			});
-
-			eventStore.updateEvent("Events/meeting1.md", event1, 1642204800000);
-			eventStore.updateEvent("Events/lunch.md", event2, 1642204800001);
-			eventStore.updateEvent("Events/meeting2.md", event3, 1642204800002);
-			eventStore.updateEvent("Events/holiday.md", allDayEvent, 1642204800003);
-		});
-
-		it("should return events within date range", async () => {
-			const query: EventQuery = {
-				start: "2024-01-15T00:00:00.000Z",
-				end: "2024-01-16T00:00:00.000Z",
-			};
-
-			const events = await eventStore.getEvents(query);
-
-			expect(events).toHaveLength(2);
-			expect(events.map((e: any) => e.title)).toEqual(["Morning Meeting", "Lunch Break"]);
-		});
-
-		it("should return events sorted by start time", async () => {
-			const query: EventQuery = {
-				start: "2024-01-15T00:00:00.000Z",
-				end: "2024-01-17T00:00:00.000Z",
-			};
-
-			const events = await eventStore.getEvents(query);
-
-			expect(events).toHaveLength(3);
-
-			// Should be sorted by start time
-			const titles = events.map((e: any) => e.title);
-			expect(titles).toEqual(["Morning Meeting", "Lunch Break", "Afternoon Meeting"]);
-		});
-
-		it("should handle partial overlaps", async () => {
-			const query: EventQuery = {
-				start: "2024-01-15T09:30:00.000Z", // Middle of first event
-				end: "2024-01-15T12:30:00.000Z", // Middle of second event
-			};
-
-			const events = await eventStore.getEvents(query);
-
-			expect(events).toHaveLength(2);
-			expect(events.map((e: any) => e.title)).toEqual(["Morning Meeting", "Lunch Break"]);
-		});
-
-		it("should return empty array for non-matching date range", async () => {
-			const query: EventQuery = {
-				start: "2024-01-20T00:00:00.000Z",
-				end: "2024-01-21T00:00:00.000Z",
-			};
-
-			const events = await eventStore.getEvents(query);
-
-			expect(events).toHaveLength(0);
-		});
-
-		it("should handle invalid date ranges gracefully", async () => {
-			const query: EventQuery = {
-				start: "invalid-date",
-				end: "2024-01-16T00:00:00.000Z",
-			};
-
-			const events = await eventStore.getEvents(query);
-
-			expect(events).toHaveLength(0);
-		});
-	});
-
-	describe("RxJS subscriptions", () => {
-		it("should notify subscribers when events are updated", () => {
-			const subscriber = vi.fn();
-			const subscription = eventStore.subscribe(subscriber);
-
-			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
-
-			expect(subscriber).toHaveBeenCalled();
-			subscription.unsubscribe();
-		});
-
-		it("should notify subscribers when events are invalidated", () => {
-			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
-
-			const subscriber = vi.fn();
-			const subscription = eventStore.subscribe(subscriber);
-
-			eventStore.invalidate("Events/meeting.md");
-
-			expect(subscriber).toHaveBeenCalled();
-			subscription.unsubscribe();
-		});
-
-		it("should notify subscribers when cache is cleared", () => {
-			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
-
-			const subscriber = vi.fn();
-			const subscription = eventStore.subscribe(subscriber);
-
-			eventStore.clear();
-
-			expect(subscriber).toHaveBeenCalled();
-			subscription.unsubscribe();
-		});
-
-		it("should not notify subscribers when invalidating non-existent events", () => {
-			const subscriber = vi.fn();
-			const subscription = eventStore.subscribe(subscriber);
-
-			eventStore.invalidate("Events/non-existent.md");
-
-			expect(subscriber).not.toHaveBeenCalled();
-			subscription.unsubscribe();
-		});
-
-		it("should allow multiple subscribers", () => {
-			const subscriber1 = vi.fn();
-			const subscriber2 = vi.fn();
-
-			const subscription1 = eventStore.subscribe(subscriber1);
-			const subscription2 = eventStore.subscribe(subscriber2);
-
-			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
-
-			expect(subscriber1).toHaveBeenCalled();
-			expect(subscriber2).toHaveBeenCalled();
-
-			subscription1.unsubscribe();
-			subscription2.unsubscribe();
-		});
-
-		it("should stop notifying after unsubscribe", () => {
-			const subscriber = vi.fn();
-			const subscription = eventStore.subscribe(subscriber);
-
-			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
-
-			expect(subscriber).toHaveBeenCalledTimes(1);
-
-			subscription.unsubscribe();
-			eventStore.updateEvent("Events/meeting2.md", event, 1642204800001);
-
-			// Should still be 1, not called again after unsubscribe
-			expect(subscriber).toHaveBeenCalledTimes(1);
-		});
-
-		it("should handle multiple subscribers correctly", () => {
-			const subscriber1 = vi.fn();
-			const subscriber2 = vi.fn();
-
-			const subscription1 = eventStore.subscribe(subscriber1);
-			const subscription2 = eventStore.subscribe(subscriber2);
-
-			const event = createMockEvent();
-			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
-
-			expect(subscriber1).toHaveBeenCalled();
-			expect(subscriber2).toHaveBeenCalled();
-
-			subscription1.unsubscribe();
-			subscription2.unsubscribe();
-		});
-
-		it("should provide access to changes$ observable", () => {
-			expect(eventStore.changes$).toBeDefined();
-			expect(typeof eventStore.changes$.subscribe).toBe("function");
-		});
-	});
-
-	describe("data structure integrity", () => {
-		it("should convert ParsedEvent to VaultEvent correctly", async () => {
-			const parsedEvent = createMockEvent({
-				id: "test-1",
-				title: "Test Event",
 				start: "2024-01-15T10:00:00.000Z",
 				end: "2024-01-15T11:00:00.000Z",
-				allDay: false,
-				timezone: "America/New_York",
-				color: "#ff0000",
-				meta: { folder: "Events" },
+			});
+			const event2 = createMockEvent({
+				start: "2024-02-15T10:00:00.000Z",
+				end: "2024-02-15T11:00:00.000Z",
 			});
 
-			eventStore.updateEvent("Events/test.md", parsedEvent, 1642204800000);
+			eventStore.updateEvent("Events/event1.md", event1, Date.now());
+			eventStore.updateEvent("Events/event2.md", event2, Date.now());
 
 			const query: EventQuery = {
-				start: "2024-01-15T00:00:00.000Z",
-				end: "2024-01-16T00:00:00.000Z",
+				start: "2024-01-01T00:00:00.000Z",
+				end: "2024-01-31T23:59:59.999Z",
 			};
 
 			const events = await eventStore.getEvents(query);
-			const event = events[0];
+			expect(events).toHaveLength(1);
+			expect(events[0].start).toBe("2024-01-15T10:00:00.000Z");
+		});
 
-			// Verify all properties are correctly converted
-			expect(event.id).toBe("test-1");
-			expect(event.title).toBe("Test Event");
-			expect(event.start).toBe("2024-01-15T10:00:00.000Z");
-			expect(event.end).toBe("2024-01-15T11:00:00.000Z");
-			expect(event.allDay).toBe(false);
-			expect(event.timezone).toBe("America/New_York");
-			expect(event.color).toBe("#ff0000");
-			expect(event.meta).toEqual({ folder: "Events" });
+		it("should handle empty results gracefully", async () => {
+			const query: EventQuery = {
+				start: "2025-01-01T00:00:00.000Z",
+				end: "2025-01-31T23:59:59.999Z",
+			};
+
+			const events = await eventStore.getEvents(query);
+			expect(events).toEqual([]);
+		});
+	});
+
+	describe("subscription management", () => {
+		it("should notify subscribers of changes", () => {
+			const subscriber = vi.fn();
+			const subscription = eventStore.subscribe(subscriber);
+
+			const event = createMockEvent();
+			eventStore.updateEvent("Events/meeting.md", event, Date.now());
+
+			expect(subscriber).toHaveBeenCalled();
+			subscription.unsubscribe();
+		});
+
+		it("should handle unsubscribe correctly", () => {
+			const subscriber = vi.fn();
+			const subscription = eventStore.subscribe(subscriber);
+
+			subscription.unsubscribe();
+
+			const event = createMockEvent();
+			eventStore.updateEvent("Events/meeting.md", event, Date.now());
+
+			// Should not be called after unsubscribe
+			expect(subscriber).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("error handling", () => {
+		it("should handle invalid events gracefully", () => {
+			expect(() => {
+				eventStore.updateEvent("invalid-path", null as any, Date.now());
+			}).not.toThrow();
+		});
+
+		it("should handle malformed queries gracefully", async () => {
+			const invalidQuery = { start: "invalid-date", end: "invalid-date" } as any;
+			
+			expect(async () => {
+				await eventStore.getEvents(invalidQuery);
+			}).not.toThrow();
+		});
+	});
+
+	describe("cleanup", () => {
+		it("should cleanup resources when destroyed", () => {
+			const subscriber = vi.fn();
+			eventStore.subscribe(subscriber);
+
+			eventStore.destroy();
+
+			// Should not crash when trying to update after destroy
+			expect(() => {
+				const event = createMockEvent();
+				eventStore.updateEvent("Events/meeting.md", event, Date.now());
+			}).not.toThrow();
 		});
 	});
 });

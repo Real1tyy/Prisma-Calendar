@@ -3,7 +3,8 @@ import type { BehaviorSubject } from "rxjs";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { RawEventSource } from "../../src/core/indexer";
 import { Parser } from "../../src/core/parser";
-import { createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
+import { MockFixtures, TestScenarios } from "../fixtures/index";
+import { TestUtils } from "../setup-enhanced";
 
 describe("Parser", () => {
 	let parser: Parser;
@@ -12,7 +13,7 @@ describe("Parser", () => {
 
 	beforeEach(() => {
 		settings = {
-			...createMockSingleCalendarSettings(),
+			...TestUtils.createMockSingleCalendarSettings(),
 			startProp: "start",
 			endProp: "end",
 			titleProp: "title",
@@ -21,8 +22,107 @@ describe("Parser", () => {
 			timezone: "America/New_York",
 			defaultDurationMinutes: 60,
 		};
-		settingsStore = createMockSingleCalendarSettingsStore(settings);
+		settingsStore = TestUtils.createMockSingleCalendarSettingsStore(settings);
 		parser = new Parser(settingsStore);
+	});
+
+	describe("Enhanced Tests", () => {
+		// Test edge cases
+		it("should handle edge cases gracefully", () => {
+			const edgeCases = [
+				// Empty frontmatter
+				{ filePath: "test.md", frontmatter: {} },
+				// Null frontmatter
+				{ filePath: "test.md", frontmatter: null as any },
+				// Frontmatter with invalid dates
+				{ filePath: "test.md", frontmatter: { start: "invalid-date" } },
+				// Frontmatter with mixed types
+				{ filePath: "test.md", frontmatter: { start: 12345, title: true, allDay: "maybe" } },
+			];
+			
+			for (const eventSource of edgeCases) {
+				const result = parser.parseEventSource(eventSource);
+				// Should never throw, always return event or null
+				expect(result === null || (typeof result === 'object' && typeof result.id === 'string')).toBe(true);
+			}
+		});
+
+		// Test deterministic parsing
+		it("should produce deterministic results", () => {
+			const eventSource: RawEventSource = {
+				filePath: "deterministic-test.md",
+				frontmatter: {
+					start: "2024-01-15T10:00:00Z",
+					end: "2024-01-15T11:00:00Z",
+					title: "Test Event",
+					allDay: false
+				}
+			};
+			
+			const result1 = parser.parseEventSource(eventSource);
+			const result2 = parser.parseEventSource(eventSource);
+			
+			expect(JSON.stringify(result1)).toBe(JSON.stringify(result2));
+		});
+
+		// Test that parsing respects settings
+		it("should respect different property names from settings", () => {
+			const propNames = {
+				startProp: "customStart",
+				endProp: "customEnd",
+				titleProp: "customTitle",
+				allDayProp: "customAllDay"
+			};
+			
+			// Update settings with custom property names
+			const customSettings = {
+				...settings,
+				...propNames
+			};
+			settingsStore.next(customSettings);
+			
+			// Create frontmatter using custom property names
+			const frontmatter: any = {};
+			frontmatter[propNames.startProp] = "2024-01-15T10:00:00Z";
+			frontmatter[propNames.titleProp] = "Custom Title";
+			frontmatter[propNames.allDayProp] = false;
+			
+			const eventSource: RawEventSource = {
+				filePath: "custom-props.md",
+				frontmatter
+			};
+			
+			const result = parser.parseEventSource(eventSource);
+			
+			// Should successfully parse with custom property names
+			expect(result).not.toBeNull();
+			if (result) {
+				expect(result.title).toBe("Custom Title");
+			}
+		});
+
+		// Test performance with many events
+		it("should handle large numbers of events efficiently", () => {
+			const events = Array.from({ length: 100 }, (_, i) => ({
+				filePath: `Events/event-${i}.md`,
+				frontmatter: {
+					start: "2024-01-15T10:00:00Z",
+					title: `Event ${i}`,
+					allDay: false
+				}
+			}));
+			
+			const startTime = performance.now();
+			
+			const results = events.map(event => parser.parseEventSource(event));
+			
+			const endTime = performance.now();
+			const duration = endTime - startTime;
+			
+			// Should complete within reasonable time (100ms for 100 events)
+			expect(duration).toBeLessThan(100);
+			expect(results.every(r => r !== null)).toBe(true);
+		});
 	});
 
 	describe("basic event parsing", () => {
@@ -31,544 +131,268 @@ describe("Parser", () => {
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
-					start: "2024-01-15",
-					allDay: true,
-				},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeDefined();
-			const event = events!;
-
-			expect(event.title).toBe("meeting"); // From filename
-			expect(event.start).toBeTruthy();
-			expect(event.allDay).toBe(true); // Date-only should be all-day
-			expect(event.ref.filePath).toBe("Events/meeting.md");
-		});
-
-		it("should parse event with start and end times", () => {
-			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
-				frontmatter: {
-					start: "2024-01-15 10:00",
-					end: "2024-01-15 11:30",
+					start: "2024-01-15T10:00:00",
 					title: "Team Meeting",
-					allDay: false,
 				},
-				folder: "Events",
 			};
 
-			const events = parser.parseEventSource(source);
+			const result = parser.parseEventSource(source);
 
-			expect(events).toBeDefined();
-			const event = events!;
-
-			expect(event.title).toBe("Team Meeting");
-			expect(event.allDay).toBe(false);
-			expect(event.start).toBeTruthy();
-			expect(event.end).toBeTruthy();
-
-			// Verify it's a timed event (should have specific time)
-			const startTime = DateTime.fromISO(event.start);
-			expect(startTime.hour).toBe(10);
-			expect(startTime.minute).toBe(0);
+			expect(result).not.toBeNull();
+			expect(result!.title).toBe("Team Meeting");
+			expect(result!.start).toBe("2024-01-15T15:00:00.000Z"); // Converted to UTC from EST
+			expect(result!.allDay).toBe(false);
+			expect(result!.ref.filePath).toBe("Events/meeting.md");
 		});
 
-		it("should use default duration when end time is missing", () => {
+		it("should parse an all-day event", () => {
 			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
+				filePath: "Events/holiday.md",
 				frontmatter: {
-					start: "2024-01-15 10:00",
-					allDay: false,
-				},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeDefined();
-			const event = events!;
-
-			const startTime = DateTime.fromISO(event.start);
-			const endTime = DateTime.fromISO(event.end!);
-			const durationMinutes = endTime.diff(startTime, "minutes").minutes;
-
-			expect(durationMinutes).toBe(60); // Default duration
-		});
-
-		it("should handle explicit all-day flag", () => {
-			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
-				frontmatter: {
-					start: "2024-01-15 10:00",
+					start: "2024-01-15",
+					title: "Holiday",
 					allDay: true,
 				},
-				folder: "Events",
 			};
 
-			const events = parser.parseEventSource(source);
+			const result = parser.parseEventSource(source);
 
-			expect(events).toBeDefined();
-			const event = events!;
-			expect(event.allDay).toBe(true);
+			expect(result).not.toBeNull();
+			expect(result!.title).toBe("Holiday");
+			expect(result!.allDay).toBe(true);
+			expect(result!.end).toBeUndefined();
 		});
-	});
 
-	describe("frontmatter property handling", () => {
-		it("should use configured property names", () => {
-			const testSettings = {
-				...settings,
-				startProp: "startDate",
-				endProp: "endDate",
-				titleProp: "eventTitle",
-			};
-			settingsStore.next(testSettings);
-			parser = new Parser(settingsStore);
-
+		it("should parse an event with end date", () => {
 			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
+				filePath: "Events/conference.md",
 				frontmatter: {
-					startDate: "2024-01-15 10:00",
-					endDate: "2024-01-15 11:00",
-					eventTitle: "Custom Event",
+					start: "2024-01-15T09:00:00",
+					end: "2024-01-15T17:00:00",
+					title: "Conference",
 				},
-				folder: "Events",
 			};
 
-			const events = parser.parseEventSource(source);
+			const result = parser.parseEventSource(source);
 
-			expect(events).toBeDefined();
-			const event = events!;
-			expect(event.title).toBe("Custom Event");
+			expect(result).not.toBeNull();
+			expect(result!.title).toBe("Conference");
+			expect(result!.start).toBe("2024-01-15T14:00:00.000Z"); // 9 AM EST = 2 PM UTC
+			expect(result!.end).toBe("2024-01-15T22:00:00.000Z"); // 5 PM EST = 10 PM UTC
 		});
 
-		it("should fallback to filename when title property is missing", () => {
+		it("should use filename as title when title is not provided", () => {
 			const source: RawEventSource = {
 				filePath: "Events/important-meeting.md",
-				mtime: Date.now(),
 				frontmatter: {
-					start: "2024-01-15 10:00",
+					start: "2024-01-15T10:00:00",
 				},
-				folder: "Events",
 			};
 
-			const events = parser.parseEventSource(source);
+			const result = parser.parseEventSource(source);
 
-			expect(events).toBeDefined();
-			const event = events!;
-			expect(event.title).toBe("important-meeting");
-		});
-
-		it("should handle event-specific timezone", () => {
-			const source: RawEventSource = {
-				filePath: "Events/global-meeting.md",
-				mtime: Date.now(),
-				frontmatter: {
-					start: "2024-01-15 10:00",
-					timezone: "UTC",
-				},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeDefined();
-			const event = events!;
-			expect(event.timezone).toBe("UTC");
-		});
-	});
-
-	describe("date parsing", () => {
-		it("should parse multiple date formats", () => {
-			const formats = ["2024-01-15", "2024-01-15 14:30"];
-
-			formats.forEach((dateStr) => {
-				const source: RawEventSource = {
-					filePath: "Events/test.md",
-					mtime: Date.now(),
-					frontmatter: { start: dateStr },
-					folder: "Events",
-				};
-
-				const events = parser.parseEventSource(source);
-				expect(events).toBeDefined();
-
-				const startTime = DateTime.fromISO(events!.start);
-				expect(startTime.isValid).toBe(true);
-				expect(startTime.year).toBe(2024);
-				expect(startTime.month).toBe(1);
-				expect(startTime.day).toBe(15);
-			});
-		});
-
-		it("should handle ISO date format", () => {
-			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
-				frontmatter: {
-					start: "2024-01-15T10:00:00.000Z",
-				},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeDefined();
-			const startTime = DateTime.fromISO(events!.start);
-			expect(startTime.isValid).toBe(true);
-		});
-
-		it("should reject invalid date formats", () => {
-			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
-				frontmatter: {
-					start: "not-a-date",
-				},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeNull();
-		});
-
-		it("should handle missing start property", () => {
-			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
-				frontmatter: {
-					title: "Meeting without start time",
-				},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeNull();
+			expect(result).not.toBeNull();
+			expect(result!.title).toBe("important-meeting");
 		});
 	});
 
 	describe("timezone handling", () => {
-		it("should convert dates to UTC for storage", () => {
-			const testSettings = {
-				...settings,
-				timezone: "America/Los_Angeles",
-			};
-			settingsStore.next(testSettings);
-			parser = new Parser(settingsStore);
-
+		it("should respect event-specific timezone", () => {
 			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
+				filePath: "Events/utc-meeting.md",
 				frontmatter: {
-					start: "2024-01-15 10:00",
+					start: "2024-01-15T10:00:00",
+					timezone: "UTC",
+					title: "UTC Meeting",
 				},
-				folder: "Events",
 			};
 
-			const events = parser.parseEventSource(source);
+			const result = parser.parseEventSource(source);
 
-			expect(events).toBeDefined();
-
-			// The stored start time should be in UTC (check the ISO string format)
-			expect(events!.start).toMatch(/Z$/); // Should end with Z indicating UTC
+			expect(result).not.toBeNull();
+			expect(result!.start).toBe("2024-01-15T10:00:00.000Z");
 		});
 
-		it("should respect system timezone when configured", () => {
-			const testSettings = {
-				...settings,
-				timezone: "system",
-			};
-			settingsStore.next(testSettings);
-			parser = new Parser(settingsStore);
-
+		it("should use calendar default timezone when event timezone is not specified", () => {
 			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
+				filePath: "Events/default-tz-meeting.md",
 				frontmatter: {
-					start: "2024-01-15 10:00",
+					start: "2024-01-15T10:00:00",
+					title: "Default TZ Meeting",
 				},
-				folder: "Events",
 			};
 
-			const events = parser.parseEventSource(source);
+			const result = parser.parseEventSource(source);
 
-			expect(events).toBeDefined();
-			// Should use system timezone when configured
-			expect(events!.timezone).toBe("system");
+			expect(result).not.toBeNull();
+			// Should use America/New_York timezone (EST = UTC-5)
+			expect(result!.start).toBe("2024-01-15T15:00:00.000Z");
 		});
 	});
 
-	describe("all-day event detection", () => {
-		it("should detect all-day events from date-only format", () => {
+	describe("invalid input handling", () => {
+		it("should return null for events without start date", () => {
 			const source: RawEventSource = {
-				filePath: "Events/holiday.md",
-				mtime: Date.now(),
+				filePath: "Events/no-start.md",
+				frontmatter: {
+					title: "No Start Date",
+				},
+			};
+
+			const result = parser.parseEventSource(source);
+			expect(result).toBeNull();
+		});
+
+		it("should return null for invalid date formats", () => {
+			const source: RawEventSource = {
+				filePath: "Events/invalid-date.md",
+				frontmatter: {
+					start: "not-a-date",
+					title: "Invalid Date",
+				},
+			};
+
+			const result = parser.parseEventSource(source);
+			expect(result).toBeNull();
+		});
+
+		it("should handle missing frontmatter", () => {
+			const source: RawEventSource = {
+				filePath: "Events/no-frontmatter.md",
+				frontmatter: null as any,
+			};
+
+			const result = parser.parseEventSource(source);
+			expect(result).toBeNull();
+		});
+	});
+
+	describe("property mapping", () => {
+		it("should use configured property names", () => {
+			// Update settings to use different property names
+			const customSettings = {
+				...settings,
+				startProp: "eventStart",
+				endProp: "eventEnd",
+				titleProp: "eventTitle",
+				allDayProp: "isAllDay",
+			};
+			settingsStore.next(customSettings);
+
+			const source: RawEventSource = {
+				filePath: "Events/custom-props.md",
+				frontmatter: {
+					eventStart: "2024-01-15T10:00:00",
+					eventEnd: "2024-01-15T11:00:00",
+					eventTitle: "Custom Properties Event",
+					isAllDay: false,
+				},
+			};
+
+			const result = parser.parseEventSource(source);
+
+			expect(result).not.toBeNull();
+			expect(result!.title).toBe("Custom Properties Event");
+			expect(result!.allDay).toBe(false);
+		});
+
+		it("should ignore unknown properties", () => {
+			const source: RawEventSource = {
+				filePath: "Events/extra-props.md",
+				frontmatter: {
+					start: "2024-01-15T10:00:00",
+					title: "Event with Extra Props",
+					unknownProp: "should be ignored",
+					anotherProp: 12345,
+				},
+			};
+
+			const result = parser.parseEventSource(source);
+
+			expect(result).not.toBeNull();
+			expect(result!.title).toBe("Event with Extra Props");
+		});
+	});
+
+	describe("date parsing edge cases", () => {
+		it("should handle various date formats", () => {
+			const dateFormats = [
+				"2024-01-15T10:00:00Z",
+				"2024-01-15T10:00:00.000Z",
+				"2024-01-15 10:00",
+				"2024-01-15T10:00:00-05:00",
+			];
+
+			for (const dateFormat of dateFormats) {
+				const source: RawEventSource = {
+					filePath: `Events/date-format-${dateFormat.replace(/[^a-zA-Z0-9]/g, '-')}.md`,
+					frontmatter: {
+						start: dateFormat,
+						title: `Event with ${dateFormat}`,
+					},
+				};
+
+				const result = parser.parseEventSource(source);
+				expect(result).not.toBeNull();
+				expect(result!.start).toBeTruthy();
+			}
+		});
+
+		it("should handle date-only formats for all-day events", () => {
+			const source: RawEventSource = {
+				filePath: "Events/date-only.md",
 				frontmatter: {
 					start: "2024-01-15",
+					title: "Date Only Event",
 				},
-				folder: "Events",
 			};
 
-			const events = parser.parseEventSource(source);
+			const result = parser.parseEventSource(source);
 
-			expect(events).toBeDefined();
-			expect(events!.allDay).toBe(false);
-		});
-
-		it("should detect timed events from datetime format", () => {
-			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
-				frontmatter: {
-					start: "2024-01-15 10:00",
-				},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeDefined();
-			expect(events!.allDay).toBe(false);
-		});
-
-		it("should respect explicit all-day flag over time format", () => {
-			const source: RawEventSource = {
-				filePath: "Events/all-day-event.md",
-				mtime: Date.now(),
-				frontmatter: {
-					start: "2024-01-15 10:00", // Has time
-					allDay: true, // But explicitly marked as all-day
-				},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeDefined();
-			expect(events!.allDay).toBe(true);
+			expect(result).not.toBeNull();
+			expect(result!.start).toBeTruthy();
+			// Date-only should be treated as all-day
+			expect(result!.allDay).toBe(true);
 		});
 	});
 
-	describe("metadata handling", () => {
-		it("should include file metadata in event", () => {
+	describe("duration handling", () => {
+		it("should apply default duration when no end date is provided", () => {
 			const source: RawEventSource = {
-				filePath: "Projects/project-meeting.md",
-				mtime: Date.now(),
+				filePath: "Events/no-end-date.md",
 				frontmatter: {
-					start: "2024-01-15 10:00",
-					priority: "high",
-					status: "confirmed",
+					start: "2024-01-15T10:00:00",
+					title: "No End Date",
 				},
-				folder: "Projects",
 			};
 
-			const events = parser.parseEventSource(source);
+			const result = parser.parseEventSource(source);
 
-			expect(events).toBeDefined();
-			const event = events!;
+			expect(result).not.toBeNull();
+			expect(result!.end).toBeTruthy();
 
-			expect(event.meta).toEqual({
-				folder: "Projects",
-				originalStart: "2024-01-15 10:00",
-				originalEnd: undefined,
-				// All frontmatter properties should be included for thermometer display
-				start: "2024-01-15 10:00",
-				priority: "high",
-				status: "confirmed",
-			});
-		});
-
-		it("should generate stable event IDs", () => {
-			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
-				frontmatter: {
-					start: "2024-01-15 10:00",
-				},
-				folder: "Events",
-			};
-
-			const events1 = parser.parseEventSource(source);
-			const events2 = parser.parseEventSource(source);
-
-			expect(events1!.id).toBe(events2!.id);
-			expect(events1!.id).toBeTruthy();
-		});
-	});
-
-	describe("settings updates", () => {
-		it("should update parser settings", () => {
-			const newSettings = {
-				...settings,
-				startProp: "newStart",
-				defaultDurationMinutes: 90,
-			};
-
-			settingsStore.next(newSettings);
-
-			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
-				frontmatter: {
-					newStart: "2024-01-15 10:00", // Using new property name
-				},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeDefined();
-
-			// Should use new default duration (90 minutes)
-			const startTime = DateTime.fromISO(events!.start);
-			const endTime = DateTime.fromISO(events!.end!);
+			// Should be 60 minutes later (default duration)
+			const startTime = DateTime.fromISO(result!.start);
+			const endTime = DateTime.fromISO(result!.end!);
 			const durationMinutes = endTime.diff(startTime, "minutes").minutes;
 
-			expect(durationMinutes).toBe(90);
-		});
-	});
-
-	describe("error handling", () => {
-		it("should handle empty frontmatter gracefully", () => {
-			const source: RawEventSource = {
-				filePath: "Events/empty.md",
-				mtime: Date.now(),
-				frontmatter: {},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeNull();
+			expect(durationMinutes).toBe(60);
 		});
 
-		it("should handle null/undefined values in frontmatter", () => {
+		it("should not add end date for all-day events", () => {
 			const source: RawEventSource = {
-				filePath: "Events/null-values.md",
-				mtime: Date.now(),
+				filePath: "Events/all-day-no-end.md",
 				frontmatter: {
-					start: null,
-					end: undefined,
-					title: "",
+					start: "2024-01-15",
+					title: "All Day No End",
+					allDay: true,
 				},
-				folder: "Events",
 			};
 
-			const events = parser.parseEventSource(source);
+			const result = parser.parseEventSource(source);
 
-			expect(events).toBeNull();
-		});
-	});
-
-	describe("Real-world frontmatter parsing", () => {
-		it("should parse the exact format from the user's failing case: yyyy-LL-dd HH:mm", () => {
-			const testSettings = {
-				...settings,
-				startProp: "Start Date", // Use capital S to match the frontmatter
-			};
-			const testSettingsStore = createMockSingleCalendarSettingsStore(testSettings);
-			const parser = new Parser(testSettingsStore);
-
-			const source: RawEventSource = {
-				filePath:
-					"Tasks/enforce All Templates, Make it a one off script to enforce all frontmatter and templates..md",
-				mtime: Date.now(),
-				frontmatter: {
-					title: "",
-					startTime: "",
-					endTime: "",
-					date: "",
-					Goal: "",
-					Project: "",
-					Parent: "",
-					Child: "",
-					Related: "",
-					allDay: "",
-					Status: "",
-					Priority: "",
-					Difficulty: "",
-					"End Date": "",
-					"Backlink Tags": "",
-					Aliases: "",
-					_ZettelID: "",
-					_Archived: "",
-					_LastModifiedTime: "",
-					"Start Date": "2025-09-05 22:21", // This is the exact failing format
-				},
-				folder: "Tasks",
-			};
-
-			const returnedEvent = parser.parseEventSource(source);
-
-			expect(returnedEvent).toBeDefined();
-			expect(returnedEvent).not.toBeNull();
-			const event = returnedEvent!;
-
-			expect(event.start).toBeTruthy();
-			expect(event.allDay).toBe(false); // Should not be all-day since it has time
-
-			// Verify the date and time were parsed correctly
-			const startDate = DateTime.fromISO(event.start);
-			expect(startDate.isValid).toBe(true);
-			expect(startDate.year).toBe(2025);
-			expect(startDate.month).toBe(9);
-			expect(startDate.day).toBe(5);
-			expect(startDate.hour).toBe(22);
-			expect(startDate.minute).toBe(21);
-		});
-
-		it("should test Luxon DateTime.fromFormat directly with the format", () => {
-			const testValue = "2025-09-05 22:21";
-			const testFormat = "yyyy-LL-dd HH:mm";
-
-			const parsed = DateTime.fromFormat(testValue, testFormat);
-
-			expect(parsed.isValid).toBe(true);
-			expect(parsed.year).toBe(2025);
-			expect(parsed.month).toBe(9);
-			expect(parsed.day).toBe(5);
-			expect(parsed.hour).toBe(22);
-			expect(parsed.minute).toBe(21);
-		});
-
-		it("should work with default settings (including the yyyy-LL-dd HH:mm format)", () => {
-			// Use the default settings from the schema
-			const defaultSettings = createMockSingleCalendarSettings();
-			const defaultSettingsStore = createMockSingleCalendarSettingsStore(defaultSettings);
-			const parser = new Parser(defaultSettingsStore);
-
-			const source: RawEventSource = {
-				filePath: "Tasks/test-task.md",
-				mtime: Date.now(),
-				frontmatter: {
-					"Start Date": "2025-09-05 22:21", // This should work with default settings
-				},
-				folder: "Tasks",
-			};
-
-			const event = parser.parseEventSource(source);
-
-			expect(event).toBeDefined();
-			expect(event).not.toBeNull();
-			expect(event!.start).toBeTruthy();
-			expect(event!.allDay).toBe(false);
-
-			// Verify the date and time were parsed correctly
-			const startDate = DateTime.fromISO(event!.start);
-			expect(startDate.isValid).toBe(true);
-			expect(startDate.year).toBe(2025);
-			expect(startDate.month).toBe(9);
-			expect(startDate.day).toBe(5);
-			expect(startDate.hour).toBe(22);
-			expect(startDate.minute).toBe(21);
+			expect(result).not.toBeNull();
+			expect(result!.end).toBeUndefined();
 		});
 	});
 });

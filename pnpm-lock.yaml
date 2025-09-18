@@ -51,6 +51,9 @@ importers:
       '@biomejs/biome':
         specifier: ^2.2.2
         version: 2.2.4
+      '@fast-check/vitest':
+        specifier: ^0.2.2
+        version: 0.2.2(vitest@3.2.4(@types/node@24.5.2)(jsdom@25.0.1))
       '@types/luxon':
         specifier: ^3.7.1
         version: 3.7.1
@@ -63,6 +66,9 @@ importers:
       esbuild:
         specifier: 0.25.10
         version: 0.25.10
+      fast-check:
+        specifier: ^4.3.0
+        version: 4.3.0
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1
@@ -465,6 +471,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@fast-check/vitest@0.2.2':
+    resolution: {integrity: sha512-bL7uiHj3PetEUSDoEANFzIY2QQIR2svQdCRbe6RgWxYO+QGaJD8PdyshM4hNA2ieqrtrDWuUs+1S34DWJQjn9A==}
+    peerDependencies:
+      vitest: ^1 || ^2 || ^3
+
   '@fullcalendar/core@6.1.19':
     resolution: {integrity: sha512-z0aVlO5e4Wah6p6mouM0UEqtRf1MZZPt4mwzEyU6kusaNL+dlWQgAasF2cK23hwT4cmxkEmr4inULXgpyeExdQ==}
 
@@ -784,6 +795,10 @@ packages:
     resolution: {integrity: sha512-zCnTtlxNoAiDc3gqY2aYAWFx7XWWiasuF2K8Me5WbN8otHKTUKBwjPtNpRs/rbUZm7KxWAaNj7P1a/p52GbVug==}
     engines: {node: '>=0.10.0'}
 
+  fast-check@4.3.0:
+    resolution: {integrity: sha512-JVw/DJSxVKl8uhCb7GrwanT9VWsCIdBkK3WpP37B/Au4pyaspriSjtrY2ApbSFwTg3ViPfniT13n75PhzE7VEQ==}
+    engines: {node: '>=12.17.0'}
+
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
     engines: {node: '>=12.0.0'}
@@ -953,6 +968,9 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  pure-rand@7.0.1:
+    resolution: {integrity: sha512-oTUZM/NAZS8p7ANR3SHh30kXB+zK2r2BPcEn/awJIbOvq82WoMN4p62AWWp3Hhw50G0xMsw1mhIBLqHw64EcNQ==}
 
   rollup@4.50.2:
     resolution: {integrity: sha512-BgLRGy7tNS9H66aIMASq1qSYbAAJV6Z6WR4QYTvj5FgF15rZ/ympT1uixHXwzbZUBDbkvqUI1KR0fH1FhMaQ9w==}
@@ -1396,6 +1414,11 @@ snapshots:
   '@esbuild/win32-x64@0.25.10':
     optional: true
 
+  '@fast-check/vitest@0.2.2(vitest@3.2.4(@types/node@24.5.2)(jsdom@25.0.1))':
+    dependencies:
+      fast-check: 4.3.0
+      vitest: 3.2.4(@types/node@24.5.2)(jsdom@25.0.1)
+
   '@fullcalendar/core@6.1.19':
     dependencies:
       preact: 10.12.1
@@ -1722,6 +1745,10 @@ snapshots:
     dependencies:
       is-extendable: 0.1.1
 
+  fast-check@4.3.0:
+    dependencies:
+      pure-rand: 7.0.1
+
   fdir@6.5.0(picomatch@4.0.3):
     optionalDependencies:
       picomatch: 4.0.3
@@ -1895,6 +1922,8 @@ snapshots:
   preact@10.12.1: {}
 
   punycode@2.3.1: {}
+
+  pure-rand@7.0.1: {}
 
   rollup@4.50.2:
     dependencies:
