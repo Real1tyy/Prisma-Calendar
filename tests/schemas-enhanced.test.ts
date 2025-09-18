@@ -1,14 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { EventFrontmatterSchema, type ParsedEventFrontmatter } from "../src/types/event-schemas";
+import { EventFrontmatterSchema } from "../src/types/event-schemas";
+import { RRuleFrontmatterSchema } from "../src/types/recurring-event-schemas";
 import {
-	type RRuleFrontmatter,
-	RRuleFrontmatterSchema,
-} from "../src/types/recurring-event-schemas";
-import {
-	type CustomCalendarSettings,
 	CustomCalendarSettingsSchema,
-	type SingleCalendarConfig,
 	SingleCalendarConfigSchema,
 } from "../src/types/settings-schemas";
 import { MockFixtures, TestScenarios } from "./fixtures/index";

@@ -1,12 +1,9 @@
-import * as fc from "fast-check";
 import type { WorkspaceLeaf } from "obsidian";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // import { CalendarView } from "../../src/components/calendar-view";
 import type { EventStore } from "../../src/core/event-store";
 import type { CalendarSettingsStore } from "../../src/core/settings-store";
-import { DEFAULT_EVENT_COLOR } from "../../src/types/settings-schemas";
-import { MockFixtures, TestScenarios } from "../fixtures/index";
-import { TestUtils } from "../setup-enhanced";
+import { MockFixtures } from "../fixtures/index";
 
 // Mock FullCalendar
 vi.mock("@fullcalendar/core", () => ({

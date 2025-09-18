@@ -214,8 +214,8 @@ export class TestUtils {
 			},
 			unsubscribeAll: () => {
 				subscriptions.forEach((sub) => {
-				sub.unsubscribe();
-			});
+					sub.unsubscribe();
+				});
 				subscriptions.length = 0;
 			},
 			count: () => subscriptions.length,
@@ -241,14 +241,14 @@ export class TestUtils {
 			addEvent: vi.fn().mockImplementation((event) => {
 				events.set(event.id, event);
 				subscribers.forEach((callback) => {
-				callback(Array.from(events.values()));
-			});
+					callback(Array.from(events.values()));
+				});
 			}),
 			removeEvent: vi.fn().mockImplementation((id) => {
 				events.delete(id);
 				subscribers.forEach((callback) => {
-				callback(Array.from(events.values()));
-			});
+					callback(Array.from(events.values()));
+				});
 			}),
 			subscribe: vi.fn().mockImplementation((callback) => {
 				subscribers.add(callback);

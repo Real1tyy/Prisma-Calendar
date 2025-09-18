@@ -2,13 +2,8 @@ import * as fc from "fast-check";
 import type { z } from "zod";
 import type { VaultEvent } from "../../src/core/event-store";
 import type { ParsedEvent } from "../../src/core/parser";
-import { EventFrontmatterSchema, type ParsedEventFrontmatter } from "../../src/types/event-schemas";
 import type { CustomCalendarSettings, SingleCalendarConfig } from "../../src/types/index";
 import { CustomCalendarSettingsSchema, SingleCalendarConfigSchema } from "../../src/types/index";
-import {
-	type RRuleFrontmatter,
-	RRuleFrontmatterSchema,
-} from "../../src/types/recurring-event-schemas";
 
 /**
  * Property-based test data generators using fast-check
@@ -437,7 +432,7 @@ export class InvariantHelpers {
 	static isIdempotent<T>(fn: (input: T) => T, description: string) {
 		return InvariantHelpers.preservesProperty(
 			fn,
-			(input: T, output: T) => {
+			(_input: T, output: T) => {
 				const secondOutput = fn(output);
 				return JSON.stringify(secondOutput) === JSON.stringify(output);
 			},

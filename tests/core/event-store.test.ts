@@ -30,71 +30,79 @@ describe("EventStore", () => {
 		MockFixtures.parsedEvent(overrides);
 
 	describe("Enhanced Tests", () => {
-		it("should handle edge cases gracefully", () => {
+		it("should handle edge cases gracefully", async () => {
 			const edgeCases = TestScenarios.eventEdgeCases();
-			
+
 			for (const event of edgeCases) {
 				// Clear and add event
-				(eventStore as any).eventCache.clear();
+				eventStore.clear();
 				eventStore.updateEvent(event.ref.filePath, event, Date.now());
-				
-				const result = eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
-				
+
+				const result = await eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
+
 				// Should return valid array with events that have string IDs
 				expect(Array.isArray(result)).toBe(true);
-				expect(result.every(e => typeof e.id === 'string')).toBe(true);
+				expect(result.every((e) => typeof e.id === "string")).toBe(true);
 			}
 		});
 
-		it("should handle large numbers of events efficiently", () => {
+		it("should handle large numbers of events efficiently", async () => {
 			const events = Array.from({ length: 100 }, () => MockFixtures.parsedEvent());
 			const startTime = performance.now();
-			
+
 			// Clear and add events
-			(eventStore as any).eventCache.clear();
+			eventStore.clear();
 			events.forEach((event, index) => {
 				eventStore.updateEvent(event.ref.filePath, event, Date.now() + index);
 			});
-			
-			const result = eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
+
+			const result = await eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
 			const endTime = performance.now();
-			
+
 			// Should complete within reasonable time (500ms for 100 events)
 			const duration = endTime - startTime;
 			expect(duration).toBeLessThan(500);
 			expect(Array.isArray(result)).toBe(true);
 		});
 
-		it("should maintain event uniqueness by file path", () => {
+		it("should maintain event uniqueness by file path", async () => {
 			const events = Array.from({ length: 10 }, () => MockFixtures.parsedEvent());
-			
-			(eventStore as any).eventCache.clear();
-			
+
+			eventStore.clear();
+
 			// Add events, some with same file paths to test replacement behavior
 			events.forEach((event, index) => {
 				eventStore.updateEvent(event.ref.filePath, event, Date.now() + index);
 				// Add again with later timestamp to test replacement
 				eventStore.updateEvent(event.ref.filePath, event, Date.now() + index + 1000);
 			});
-			
-			const result = eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
+
+			const result = await eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
 			const filePathCounts = new Map<string, number>();
-			
-			result.forEach(event => {
+
+			result.forEach((event) => {
 				const count = filePathCounts.get(event.ref.filePath) || 0;
 				filePathCounts.set(event.ref.filePath, count + 1);
 			});
-			
+
 			// Should not have duplicate events for same file path
 			const counts = Array.from(filePathCounts.values());
-			expect(counts.every(count => count === 1)).toBe(true);
+			expect(counts.every((count) => count === 1)).toBe(true);
 		});
 	});
 
 	describe("event caching", () => {
 		it("should update existing cached events", async () => {
-			const event1 = createMockEvent({ title: "Original Title" });
-			const event2 = createMockEvent({ title: "Updated Title" });
+			const event1 = createMockEvent({
+				title: "Original Title",
+				start: "2024-01-15T10:00:00Z",
+				end: "2024-01-15T11:00:00Z",
+			});
+			const event2 = createMockEvent({
+				title: "Updated Title",
+				start: "2024-01-15T10:00:00Z",
+				end: "2024-01-15T11:00:00Z",
+			});
 
 			eventStore.updateEvent("Events/meeting.md", event1, 1642204800000);
 			eventStore.updateEvent("Events/meeting.md", event2, 1642204801000);
@@ -109,19 +117,22 @@ describe("EventStore", () => {
 			expect(events[0].title).toBe("Updated Title");
 		});
 
-		it("should remove events when files are deleted", () => {
-			const event = createMockEvent();
+		it("should remove events when files are deleted", async () => {
+			const event = createMockEvent({
+				start: "2024-01-15T10:00:00Z",
+				end: "2024-01-15T11:00:00Z",
+			});
 			eventStore.updateEvent("Events/meeting.md", event, Date.now());
 
 			// Verify event is added
-			let events = eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
+			let events = await eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
 			expect(events).toHaveLength(1);
 
 			// Remove event
-			eventStore.removeEvent("Events/meeting.md");
+			eventStore.invalidate("Events/meeting.md");
 
 			// Verify event is removed
-			events = eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
+			events = await eventStore.getEvents({ start: "2024-01-01", end: "2024-12-31" });
 			expect(events).toHaveLength(0);
 		});
 	});
@@ -196,7 +207,7 @@ describe("EventStore", () => {
 
 		it("should handle malformed queries gracefully", async () => {
 			const invalidQuery = { start: "invalid-date", end: "invalid-date" } as any;
-			
+
 			expect(async () => {
 				await eventStore.getEvents(invalidQuery);
 			}).not.toThrow();
