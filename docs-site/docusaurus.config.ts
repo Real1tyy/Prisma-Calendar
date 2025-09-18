@@ -93,7 +93,7 @@ const config: Config = {
           title: 'Docs',
           items: [
             {
-              label: 'Introduction',
+              label: 'Prisma Calendar',
               to: '/',
             },
             {

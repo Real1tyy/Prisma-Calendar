@@ -1,5 +1,6 @@
 ---
 slug: /
+title: Prisma Calendar
 ---
 
 <div align="center">
