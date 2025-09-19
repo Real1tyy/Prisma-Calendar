@@ -41,6 +41,20 @@ The configuration node serves as a complete template - whatever you put in it be
 - All markdown formatting and structure
 - Any template placeholders or custom text
 
+### The "Start" Date Is a Calculation Point
+
+A critical concept to understand is that the `Start` date in your frontmatter is a **calculation starting point**, not necessarily the date of the first event.
+
+This is most relevant for `weekly` and `biweekly` events. The system will begin its search **on or after** the `Start` date to find the first day that matches your `RRuleSpec` (e.g., the first `sunday`).
+
+**Example:**
+- You set `Start: 2025-09-19` (a Friday)
+- You set `RRule: weekly` and `RRuleSpec: sunday`
+
+**Result**: The system will **not** create an event on Friday the 19th. It will correctly find the next Sunday, the 21st, and create the first event there.
+
+For `daily`, `monthly`, and `yearly` events, the `Start` date is typically the first instance, as there are no weekday constraints.
+
 ### Internal ID Management
 
 ⚠️ **CRITICAL: Do Not Modify RRuleID**

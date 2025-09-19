@@ -15,6 +15,9 @@ Go to Properties Settings and set your Start/End/AllDay/Title keys. You can also
 - Verify filters aren’t excluding it (Rules → Event Filtering)
 - Check color rules or filters for typos (expressions use `fm` for frontmatter)
 
+**Why did my weekly recurring event start on a different day than its `Start` date?**
+The `Start` date is a **calculation starting point**, not always the first event's date. For weekly/bi-weekly rules, the system finds the first day **on or after** the `Start` date that matches your `RRuleSpec` (e.g., the first "sunday"). If your start date is a Friday but the rule is for every Sunday, the first event will be created on the following Sunday.
+
 **How do color rules work?**
 Color rules are evaluated top-to-bottom. The first expression that evaluates to true sets the color. Example: `fm.Priority === 'High' → red`.
 
