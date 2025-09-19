@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Prisma Calendar',
   tagline: 'A feature-rich, fully configurable calendar for Obsidian.',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/PrismaCalendar.png',
 
   // Set the production url of your site here
   url: 'https://Real1tyy.github.io',
