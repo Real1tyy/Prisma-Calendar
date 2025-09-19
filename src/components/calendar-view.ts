@@ -370,7 +370,7 @@ export class CalendarView extends MountableView(ItemView) {
 						filePath: event.ref.filePath,
 						folder: event.meta?.folder || "",
 						originalTitle: event.title,
-						thermometerData: event.meta || {},
+						frontmatterDisplayData: event.meta || {},
 						isVirtual: event.isVirtual,
 					},
 					backgroundColor: eventColor,
@@ -434,12 +434,15 @@ export class CalendarView extends MountableView(ItemView) {
 
 		container.appendChild(headerEl);
 
-		if (settings.thermometerProperties.length > 0 && event.extendedProps.thermometerData) {
+		if (
+			settings.frontmatterDisplayProperties.length > 0 &&
+			event.extendedProps.frontmatterDisplayData
+		) {
 			const propsContainer = document.createElement("div");
 			propsContainer.className = "fc-event-props";
 
-			for (const prop of settings.thermometerProperties) {
-				const value = event.extendedProps.thermometerData[prop];
+			for (const prop of settings.frontmatterDisplayProperties) {
+				const value = event.extendedProps.frontmatterDisplayData[prop];
 				if (
 					value !== undefined &&
 					value !== null &&
@@ -498,20 +501,23 @@ export class CalendarView extends MountableView(ItemView) {
 		// Ensure the event color is properly applied
 		const eventColor = this.getEventColor({
 			title: event.title,
-			meta: event.extendedProps.thermometerData,
+			meta: event.extendedProps.frontmatterDisplayData,
 		});
 		element.style.backgroundColor = eventColor;
 		element.style.borderColor = eventColor;
 
-		// Add tooltip with file path and thermometer data
+		// Add tooltip with file path and frontmatter display data
 		const tooltipParts = [`File: ${event.extendedProps.filePath}`];
 
-		// Add thermometer properties to tooltip
+		// Add frontmatter display properties to tooltip
 		const settings = this.bundle.settingsStore.currentSettings;
-		if (settings.thermometerProperties.length > 0 && event.extendedProps.thermometerData) {
-			const thermometerData = event.extendedProps.thermometerData;
-			for (const prop of settings.thermometerProperties) {
-				const value = thermometerData[prop];
+		if (
+			settings.frontmatterDisplayProperties.length > 0 &&
+			event.extendedProps.frontmatterDisplayData
+		) {
+			const displayData = event.extendedProps.frontmatterDisplayData;
+			for (const prop of settings.frontmatterDisplayProperties) {
+				const value = displayData[prop];
 				if (value !== undefined && value !== null && value !== "") {
 					tooltipParts.push(`${prop}: ${value}`);
 				}

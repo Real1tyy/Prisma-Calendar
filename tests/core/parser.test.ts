@@ -379,7 +379,7 @@ describe("Parser", () => {
 				folder: "Projects",
 				originalStart: "2024-01-15 10:00",
 				originalEnd: undefined,
-				// All frontmatter properties should be included for thermometer display
+				// All frontmatter properties should be included for Frontmatter Display
 				start: "2024-01-15 10:00",
 				priority: "high",
 				status: "confirmed",

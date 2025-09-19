@@ -76,7 +76,7 @@ describe.skip("CalendarView", () => {
 			hourStart: 8,
 			hourEnd: 20,
 			hideWeekends: false,
-			thermometerProperties: [],
+			frontmatterDisplayProperties: [],
 			slotDurationMinutes: 10,
 			snapDurationMinutes: 10,
 			zoomLevels: [1, 2, 3, 5, 10, 15, 20, 30, 45, 60],

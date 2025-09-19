@@ -45,7 +45,7 @@ Quick Links:
 ### 🎨 **Dynamic Visual Customization**
 - **JavaScript-powered color rules** - `fm.Priority === 'High' → #ef4444`
 - **Property-based filtering** - show/hide events with complex expressions
-- **Thermometer display** - show extra frontmatter properties inside event chips
+- **Frontmatter Display** - show extra frontmatter properties inside event chips
 - **Multiple view modes** - month, week, day, list with customizable time ranges
 - **Zoom controls** - CTRL+scroll with configurable zoom levels (1-60 minutes)
 
