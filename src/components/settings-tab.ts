@@ -1,4 +1,4 @@
-import { type App, PluginSettingTab, Setting } from "obsidian";
+import { type App, Modal, PluginSettingTab, Setting } from "obsidian";
 import { CalendarSettingsStore } from "../core/settings-store";
 import type CustomCalendarPlugin from "../main";
 import {
@@ -276,77 +276,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			return;
 		}
 
-		// Create a simple prompt-like modal using Obsidian's built-in functionality
-		const modal = document.createElement("div");
-		modal.style.position = "fixed";
-		modal.style.top = "50%";
-		modal.style.left = "50%";
-		modal.style.transform = "translate(-50%, -50%)";
-		modal.style.backgroundColor = "var(--background-primary)";
-		modal.style.border = "1px solid var(--background-modifier-border)";
-		modal.style.borderRadius = "8px";
-		modal.style.padding = "20px";
-		modal.style.zIndex = "1000";
-		modal.style.minWidth = "300px";
-		modal.style.boxShadow = "0 4px 16px rgba(0, 0, 0, 0.2)";
-
-		// Create backdrop
-		const backdrop = document.createElement("div");
-		backdrop.style.position = "fixed";
-		backdrop.style.top = "0";
-		backdrop.style.left = "0";
-		backdrop.style.width = "100%";
-		backdrop.style.height = "100%";
-		backdrop.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-		backdrop.style.zIndex = "999";
-
-		// Modal content
-		const title = modal.createEl("h3", { text: "Rename Calendar" });
-		title.style.marginBottom = "16px";
-
-		const input = modal.createEl("input", { type: "text" }) as HTMLInputElement;
-		input.value = currentCalendar.name;
-		input.style.width = "100%";
-		input.style.padding = "8px";
-		input.style.marginBottom = "16px";
-		input.style.border = "1px solid var(--background-modifier-border)";
-		input.style.borderRadius = "4px";
-		input.style.backgroundColor = "var(--background-secondary)";
-		input.style.color = "var(--text-normal)";
-
-		// Buttons container
-		const buttonsContainer = modal.createDiv();
-		buttonsContainer.style.display = "flex";
-		buttonsContainer.style.gap = "8px";
-		buttonsContainer.style.justifyContent = "flex-end";
-
-		const cancelButton = buttonsContainer.createEl("button", { text: "Cancel" });
-		cancelButton.style.padding = "6px 12px";
-		cancelButton.style.border = "1px solid var(--background-modifier-border)";
-		cancelButton.style.borderRadius = "4px";
-		cancelButton.style.backgroundColor = "var(--background-secondary)";
-		cancelButton.style.cursor = "pointer";
-
-		const saveButton = buttonsContainer.createEl("button", { text: "Save" });
-		saveButton.style.padding = "6px 12px";
-		saveButton.style.border = "1px solid var(--interactive-accent)";
-		saveButton.style.borderRadius = "4px";
-		saveButton.style.backgroundColor = "var(--interactive-accent)";
-		saveButton.style.color = "var(--text-on-accent)";
-		saveButton.style.cursor = "pointer";
-
-		// Close modal function
-		const closeModal = () => {
-			document.body.removeChild(backdrop);
-			document.body.removeChild(modal);
-		};
-
-		// Event handlers
-		backdrop.addEventListener("click", closeModal);
-		cancelButton.addEventListener("click", closeModal);
-
-		saveButton.addEventListener("click", async () => {
-			const newName = input.value.trim();
+		new RenameCalendarModal(this.app, currentCalendar.name, async (newName) => {
 			if (newName && newName !== currentCalendar.name) {
 				await this.plugin.settingsStore.updateSettings((currentSettings) => ({
 					...currentSettings,
@@ -358,22 +288,77 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 				await this.plugin.refreshCalendarBundles();
 				this.display();
 			}
-			closeModal();
-		});
+		}).open();
+	}
+}
 
-		// Handle Enter key
-		input.addEventListener("keydown", (e) => {
-			if (e.key === "Enter") {
-				saveButton.click();
-			} else if (e.key === "Escape") {
-				closeModal();
+class RenameCalendarModal extends Modal {
+	private newName: string;
+	private currentName: string;
+	private onSubmit: (name: string) => void;
+
+	constructor(app: App, currentName: string, onSubmit: (name: string) => void) {
+		super(app);
+		this.currentName = currentName;
+		this.newName = currentName;
+		this.onSubmit = onSubmit;
+	}
+
+	onOpen() {
+		const { contentEl } = this;
+		contentEl.empty();
+		contentEl.createEl("h2", { text: "Rename Calendar" });
+
+		new Setting(contentEl)
+			.setName("Calendar name")
+			.setDesc("Enter the new name for the calendar.")
+			.addText((text) => {
+				text.setValue(this.currentName).onChange((value) => {
+					this.newName = value.trim();
+				});
+				text.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
+					if (e.key === "Enter") {
+						e.preventDefault();
+						this.submit();
+					}
+				});
+				text.inputEl.setAttribute("data-cy", "rename-calendar-input");
+			});
+
+		new Setting(contentEl)
+			.addButton((button) =>
+				button.setButtonText("Cancel").onClick(() => {
+					this.close();
+				})
+			)
+			.addButton((button) =>
+				button
+					.setButtonText("Save")
+					.setCta()
+					.onClick(() => {
+						this.submit();
+					})
+			);
+
+		// Ensure the input is focused when the modal opens
+		setTimeout(() => {
+			const inputEl = this.contentEl.querySelector("input");
+			if (inputEl) {
+				inputEl.focus();
+				inputEl.select();
 			}
-		});
+		}, 50);
+	}
 
-		// Add to DOM and focus
-		document.body.appendChild(backdrop);
-		document.body.appendChild(modal);
-		input.focus();
-		input.select();
+	submit() {
+		if (this.newName && this.newName !== this.currentName) {
+			this.onSubmit(this.newName);
+		}
+		this.close();
+	}
+
+	onClose() {
+		const { contentEl } = this;
+		contentEl.empty();
 	}
 }
