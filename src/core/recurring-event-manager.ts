@@ -21,7 +21,7 @@ export interface NodeRecurringEventInstance {
 }
 
 export interface RecurringEventData {
-	recurringEvent: NodeRecurringEvent;
+	recurringEvent: NodeRecurringEvent | null;
 	physicalInstances: Array<{
 		filePath: string;
 		instanceDate: DateTime;
@@ -130,7 +130,7 @@ export class RecurringEventManager {
 
 				if (!recurringData) {
 					recurringData = {
-						recurringEvent: null as any, // Will be filled when recurring event is found
+						recurringEvent: null, // Will be filled when recurring event is found
 						physicalInstances: [],
 					};
 					this.recurringEventsMap.set(rruleId, recurringData);
@@ -166,7 +166,7 @@ export class RecurringEventManager {
 
 	private async ensurePhysicalInstances(rruleId: string): Promise<void> {
 		const data = this.recurringEventsMap.get(rruleId);
-		if (!data) return;
+		if (!data || !data.recurringEvent) return;
 
 		try {
 			const { recurringEvent, physicalInstances } = data;
@@ -343,11 +343,12 @@ export class RecurringEventManager {
 	}
 
 	private calculateOccurrencesInRange(
-		recurringEvent: NodeRecurringEvent,
+		recurringEvent: NodeRecurringEvent | null,
 		rangeStart: DateTime,
 		rangeEnd: DateTime,
 		physicalInstances: Array<{ filePath: string; instanceDate: DateTime }>
 	): NodeRecurringEventInstance[] {
+		if (!recurringEvent) return [];
 		const startDate = recurringEvent.rrules.startTime;
 
 		// Create a Set of dates that have physical instances for quick lookup
