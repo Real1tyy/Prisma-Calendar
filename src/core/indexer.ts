@@ -240,12 +240,31 @@ export class Indexer {
 			});
 		}
 
+		// Read file content (excluding frontmatter)
+		const fullContent = await this.app.vault.read(file);
+		const content = this.extractContentAfterFrontmatter(fullContent);
+
 		return {
 			sourceFilePath: file.path,
 			title: file.basename,
 			rRuleId,
 			rrules,
 			frontmatter: { ...frontmatter },
+			content,
 		};
+	}
+
+	private extractContentAfterFrontmatter(fullContent: string): string {
+		// Find the end of frontmatter (second occurrence of ---)
+		const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
+		const match = fullContent.match(frontmatterRegex);
+
+		if (match) {
+			// Return content after frontmatter
+			return fullContent.substring(match.index! + match[0].length);
+		}
+
+		// If no frontmatter found, return the entire content
+		return fullContent;
 	}
 }
