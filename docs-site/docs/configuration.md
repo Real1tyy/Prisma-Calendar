@@ -75,6 +75,7 @@ RRuleID: standup-2025
 - Snap duration (minutes): drag/resize snapping interval
 - Zoom levels (minutes): comma-separated list for CTRL+scroll zoom (e.g., `1, 5, 10, 15, 30`)
 - Display density: `comfortable` or `compact`
+- Past event contrast: visual contrast of past events (0% = invisible, 100% = normal)
 
 ## Rules Settings
 

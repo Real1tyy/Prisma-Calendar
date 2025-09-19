@@ -11,6 +11,7 @@ import { type App, ItemView, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type { SingleCalendarConfig } from "../types/index";
 import { ColorEvaluator } from "../utils/color-evaluator";
+import { hslToString, parseColor } from "../utils/color-parser";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
@@ -499,10 +500,29 @@ export class CalendarView extends MountableView(ItemView) {
 		const event = info.event;
 
 		// Ensure the event color is properly applied
-		const eventColor = this.getEventColor({
+		let eventColor = this.getEventColor({
 			title: event.title,
 			meta: event.extendedProps.frontmatterDisplayData,
 		});
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (info.isPast) {
+			const contrast = settings.pastEventContrast;
+			if (contrast === 0) {
+				element.style.display = "none";
+				return;
+			}
+
+			if (contrast < 100) {
+				const hsl = parseColor(eventColor);
+				if (hsl) {
+					hsl.s = Math.round(hsl.s * (contrast / 100));
+					hsl.l = Math.round(hsl.l * (contrast / 100) + (100 - contrast));
+					eventColor = hslToString(hsl);
+				}
+			}
+		}
+
 		element.style.backgroundColor = eventColor;
 		element.style.borderColor = eventColor;
 
@@ -510,13 +530,13 @@ export class CalendarView extends MountableView(ItemView) {
 		const tooltipParts = [`File: ${event.extendedProps.filePath}`];
 
 		// Add frontmatter display properties to tooltip
-		const settings = this.bundle.settingsStore.currentSettings;
+		const tooltipSettings = this.bundle.settingsStore.currentSettings;
 		if (
-			settings.frontmatterDisplayProperties.length > 0 &&
+			tooltipSettings.frontmatterDisplayProperties.length > 0 &&
 			event.extendedProps.frontmatterDisplayData
 		) {
 			const displayData = event.extendedProps.frontmatterDisplayData;
-			for (const prop of settings.frontmatterDisplayProperties) {
+			for (const prop of tooltipSettings.frontmatterDisplayProperties) {
 				const value = displayData[prop];
 				if (value !== undefined && value !== null && value !== "") {
 					tooltipParts.push(`${prop}: ${value}`);

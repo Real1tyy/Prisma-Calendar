@@ -41,6 +41,7 @@ export const CalendarSettingsSchema = z.object({
 	density: z.enum(["comfortable", "compact"]).default("comfortable"),
 	enableEventPreview: z.boolean().default(true), // Enable hover preview for events
 	nowIndicator: z.boolean().default(true), // Show current time indicator line
+	pastEventContrast: z.number().int().min(0).max(100).default(70), // Contrast of past events in %
 });
 
 export const RulesSettingsSchema = z.object({

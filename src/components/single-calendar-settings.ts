@@ -428,6 +428,22 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 			);
 
 		new Setting(containerEl)
+			.setName("Past event contrast")
+			.setDesc("Visual contrast of past events (0% = invisible, 100% = normal)")
+			.addSlider((slider) => {
+				slider
+					.setLimits(0, 100, 1)
+					.setValue(settings.pastEventContrast)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							pastEventContrast: value,
+						}));
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("First day of week")
 			.setDesc("Which day should be the first day of the week in calendar views")
 			.addDropdown((dropdown) => {
