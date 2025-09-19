@@ -105,6 +105,14 @@ export class RecurringEventManager {
 	}
 
 	private addRecurringEvent(recurringEvent: NodeRecurringEvent): void {
+		// Validate that rrules exists before adding
+		if (!recurringEvent?.rrules) {
+			console.warn(
+				`Skipping recurring event with missing rrules: ${recurringEvent?.title || "Unknown"} at ${recurringEvent?.sourceFilePath || "Unknown path"}`
+			);
+			return;
+		}
+
 		const existingData = this.recurringEventsMap.get(recurringEvent.rRuleId);
 		if (existingData) {
 			existingData.recurringEvent = recurringEvent;
@@ -170,6 +178,14 @@ export class RecurringEventManager {
 
 		try {
 			const { recurringEvent, physicalInstances } = data;
+
+			// Safety check for rrules
+			if (!recurringEvent?.rrules) {
+				console.warn(
+					`Cannot ensure physical instances for event with missing rrules: ${recurringEvent?.title || "Unknown"}`
+				);
+				return;
+			}
 			const now = DateTime.now();
 
 			const futureInstances = physicalInstances.filter(
@@ -207,6 +223,12 @@ export class RecurringEventManager {
 
 	private calculateTargetInstanceCount(recurringEvent: NodeRecurringEvent): number {
 		const intervals = this.settings.futureInstancesCount;
+
+		// Safety check for rrules
+		if (!recurringEvent?.rrules) {
+			return intervals; // Return default if rrules is missing
+		}
+
 		const { type, weekdays } = recurringEvent.rrules;
 
 		if (type === "weekly" || type === "bi-weekly") {
@@ -219,6 +241,13 @@ export class RecurringEventManager {
 		recurringEvent: NodeRecurringEvent,
 		existingFutureInstances: Array<{ filePath: string; instanceDate: DateTime }>
 	): DateTime {
+		// Safety check for rrules
+		if (!recurringEvent?.rrules) {
+			throw new Error(
+				`Cannot get next occurrence for event with missing rrules: ${recurringEvent?.title || "Unknown"}`
+			);
+		}
+
 		// If we have existing future instances, start from the date after the last one
 		if (existingFutureInstances.length > 0) {
 			const lastInstanceDate =
@@ -249,6 +278,13 @@ export class RecurringEventManager {
 		recurringEvent: NodeRecurringEvent,
 		instanceDate: DateTime
 	): Promise<void> {
+		// Safety check for rrules
+		if (!recurringEvent?.rrules) {
+			throw new Error(
+				`Cannot create physical instance for event with missing rrules: ${recurringEvent?.title || "Unknown"}`
+			);
+		}
+
 		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
 		const instanceTitle = `${recurringEvent.title} ${dateStr}`;
 		const filePath = this.generateNodeInstanceFilePath(recurringEvent, instanceDate);
@@ -307,15 +343,25 @@ export class RecurringEventManager {
 		rangeStart: DateTime,
 		rangeEnd: DateTime
 	): Promise<ParsedEvent[]> {
-		const virtualEvents = Array.from(this.recurringEventsMap.values()).flatMap(
-			({ recurringEvent, physicalInstances }) =>
+		const virtualEvents = Array.from(this.recurringEventsMap.values())
+			.filter(({ recurringEvent }) => {
+				// Filter out any events with missing rrules
+				if (!recurringEvent?.rrules) {
+					console.warn(
+						`Skipping virtual instance generation for event with missing rrules: ${recurringEvent?.title || "Unknown"}`
+					);
+					return false;
+				}
+				return true;
+			})
+			.flatMap(({ recurringEvent, physicalInstances }) =>
 				this.calculateOccurrencesInRange(
 					recurringEvent,
 					rangeStart,
 					rangeEnd,
 					physicalInstances
 				).map((occurrence) => this.createVirtualEvent(occurrence))
-		);
+			);
 		return virtualEvents;
 	}
 
@@ -325,6 +371,14 @@ export class RecurringEventManager {
 		rangeEnd: DateTime,
 		physicalInstances: Array<{ filePath: string; instanceDate: DateTime }>
 	): NodeRecurringEventInstance[] {
+		// Safety check for rrules
+		if (!recurringEvent?.rrules) {
+			console.warn(
+				`Cannot calculate occurrences for event with missing rrules: ${recurringEvent?.title || "Unknown"}`
+			);
+			return [];
+		}
+
 		const startDate = recurringEvent.rrules.startTime;
 
 		// Create a Set of dates that have physical instances for quick lookup
@@ -351,6 +405,13 @@ export class RecurringEventManager {
 		recurringEvent: NodeRecurringEvent,
 		instanceDate: DateTime
 	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
+		// Safety check for rrules
+		if (!recurringEvent?.rrules) {
+			throw new Error(
+				`Cannot calculate instance times for event with missing rrules: ${recurringEvent?.title || "Unknown"}`
+			);
+		}
+
 		const startDate = recurringEvent.rrules.startTime;
 		const originalEnd = recurringEvent.rrules.endTime || null;
 
@@ -375,6 +436,14 @@ export class RecurringEventManager {
 
 	private createVirtualEvent(occurrence: NodeRecurringEventInstance): ParsedEvent {
 		const { recurringEvent, instanceDate } = occurrence;
+
+		// Safety check for rrules
+		if (!recurringEvent?.rrules) {
+			throw new Error(
+				`Cannot create virtual event for event with missing rrules: ${recurringEvent?.title || "Unknown"}`
+			);
+		}
+
 		const { instanceStart, instanceEnd } = this.calculateInstanceTimes(
 			recurringEvent,
 			instanceDate

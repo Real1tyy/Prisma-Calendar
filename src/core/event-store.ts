@@ -103,11 +103,18 @@ export class EventStore {
 				results.push(event);
 			}
 		}
-		const virtualEvents = await this.recurringEventManager.generateAllVirtualInstances(
-			queryStart,
-			queryEnd
-		);
-		results.push(...virtualEvents);
+
+		// Safely get virtual events, handling any errors gracefully
+		try {
+			const virtualEvents = await this.recurringEventManager.generateAllVirtualInstances(
+				queryStart,
+				queryEnd
+			);
+			results.push(...virtualEvents);
+		} catch (error) {
+			console.error("Error generating virtual recurring event instances:", error);
+			// Continue without virtual events rather than failing completely
+		}
 
 		return results.sort((a, b) => a.start.localeCompare(b.start));
 	}
