@@ -37,6 +37,13 @@ export class TemplateService {
 		const { title, targetDirectory, filename, content } = options;
 
 		const finalFilename = filename || title;
+
+		// If content is provided (e.g., for recurring event instances), use manual creation
+		// to preserve the inherited content instead of using templates
+		if (content) {
+			return this.createManually(title, targetDirectory, finalFilename, content);
+		}
+
 		if (this.shouldUseTemplate()) {
 			const templateFile = await this.createFromTemplate(targetDirectory, finalFilename);
 			if (templateFile) {

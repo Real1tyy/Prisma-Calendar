@@ -74,6 +74,7 @@ export interface NodeRecurringEvent {
 	rRuleId: string; // unique ID for this recurring event
 	rrules: RRuleFrontmatter;
 	frontmatter: Record<string, unknown>;
+	content: string; // Source file content (excluding frontmatter)
 }
 
 export function parseRRuleFromFrontmatter(

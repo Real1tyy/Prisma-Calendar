@@ -258,11 +258,12 @@ export class RecurringEventManager {
 			return;
 		}
 
-		// Create the physical file
+		// Create the physical file with inherited content
 		const file = await this.templateService.createFile({
 			title: instanceTitle,
 			targetDirectory: this.settings.directory,
 			filename: filePath.split("/").pop()?.replace(".md", ""),
+			content: recurringEvent.content,
 		});
 
 		// Set frontmatter with event data and instance metadata
