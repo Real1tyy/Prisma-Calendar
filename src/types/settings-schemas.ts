@@ -23,7 +23,7 @@ export const PropsSettingsSchema = z.object({
 	rruleProp: z.string().default("RRule"), // property name for RRule type (daily, weekly, etc.)
 	rruleSpecProp: z.string().default("RRuleSpec"), // property name for RRule specification (weekdays, etc.)
 	rruleIdProp: z.string().default("RRuleID"), // property name for recurring event ID
-	thermometerProperties: z.array(z.string()).default([]), // properties to display in calendar nodes
+	frontmatterDisplayProperties: z.array(z.string()).default([]), // frontmatter properties to display inside event chips
 });
 
 export const CalendarSettingsSchema = z.object({

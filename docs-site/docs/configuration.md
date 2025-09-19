@@ -108,7 +108,7 @@ fm.Status === 'Done' || fm.Status === 'In Progress'
 Array.isArray(fm.Project) && fm.Project.length > 0
 ```
 
-## Display Properties (Thermometer)
+## Frontmatter Display
 
 Show extra frontmatter properties inside event chips (scrollable when space is tight).
 

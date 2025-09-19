@@ -106,7 +106,7 @@ export class SingleCalendarSettings {
 
 	private addPropertiesSettings(containerEl: HTMLElement): void {
 		this.addFrontmatterSettings(containerEl);
-		this.addThermometerSettings(containerEl);
+		this.addFrontmatterDisplaySettings(containerEl);
 	}
 
 	private addCalendarSettings(containerEl: HTMLElement): void {
@@ -551,10 +551,10 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 			});
 	}
 
-	private addThermometerSettings(containerEl: HTMLElement): void {
+	private addFrontmatterDisplaySettings(containerEl: HTMLElement): void {
 		const settings = this.settingsStore.currentSettings;
 
-		containerEl.createEl("h3", { text: "Thermometer Properties" });
+		containerEl.createEl("h3", { text: "Frontmatter Display" });
 
 		const desc = containerEl.createDiv();
 		desc.createEl("p", {
@@ -570,7 +570,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 			.setDesc("Comma-separated list of frontmatter property names to display in events")
 			.addTextArea((text) => {
 				text.setPlaceholder("status, priority, project, tags, category");
-				text.setValue(settings.thermometerProperties.join(", "));
+				text.setValue(settings.frontmatterDisplayProperties.join(", "));
 				text.onChange(async (value) => {
 					const properties = value
 						.split(",")
@@ -578,7 +578,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 						.filter((prop) => prop.length > 0);
 					await this.settingsStore.updateSettings((s) => ({
 						...s,
-						thermometerProperties: properties,
+						frontmatterDisplayProperties: properties,
 					}));
 				});
 				text.inputEl.rows = 3;
@@ -586,7 +586,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 			});
 
 		// Add example display
-		const exampleContainer = containerEl.createDiv("thermometer-example");
+		const exampleContainer = containerEl.createDiv("frontmatter-display-example");
 		exampleContainer.createEl("p", {
 			text: "Example display in calendar:",
 			cls: "setting-item-description",
