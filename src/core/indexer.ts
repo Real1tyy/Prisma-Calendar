@@ -240,8 +240,7 @@ export class Indexer {
 			});
 		}
 
-		// Read file content (excluding frontmatter)
-		const fullContent = await this.app.vault.read(file);
+		const fullContent = await this.app.vault.cachedRead(file);
 		const content = this.extractContentAfterFrontmatter(fullContent);
 
 		return {
@@ -255,7 +254,6 @@ export class Indexer {
 	}
 
 	private extractContentAfterFrontmatter(fullContent: string): string {
-		// Find the end of frontmatter (second occurrence of ---)
 		const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
 		const match = fullContent.match(frontmatterRegex);
 
