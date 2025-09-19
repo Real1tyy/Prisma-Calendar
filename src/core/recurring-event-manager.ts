@@ -215,6 +215,30 @@ export class RecurringEventManager {
 		return intervals;
 	}
 
+	private findFirstValidStartDate(recurringEvent: NodeRecurringEvent): DateTime {
+		const { rrules } = recurringEvent;
+
+		// For weekly/bi-weekly, the start date might not match the weekday rule.
+		// We must find the first date that IS a valid weekday on or after the start time.
+		if ((rrules.type === "weekly" || rrules.type === "bi-weekly") && rrules.weekdays?.length) {
+			// Use the iterator to find the true first occurrence.
+			const iterator = iterateOccurrencesInRange(
+				rrules.startTime,
+				rrules,
+				rrules.startTime, // Start searching from the start time
+				rrules.startTime.plus({ years: 1 }) // Search a year ahead
+			);
+			const result = iterator.next();
+			// If the iterator finds a value, that's our true start. Otherwise, fall back to the original start time.
+			if (!result.done) {
+				return result.value;
+			}
+		}
+
+		// For all other types (daily, monthly, etc.), the start time IS the first occurrence.
+		return rrules.startTime;
+	}
+
 	private getNextOccurrenceFromNow(
 		recurringEvent: NodeRecurringEvent,
 		existingFutureInstances: Array<{ filePath: string; instanceDate: DateTime }>
@@ -230,11 +254,10 @@ export class RecurringEventManager {
 			);
 		}
 
-		// No existing future instances - find the next occurrence starting from the recurring event's start date
+		// No existing future instances. Find the first valid occurrence that is on or after today.
 		const now = DateTime.now();
-		let currentDate = recurringEvent.rrules.startTime;
+		let currentDate = this.findFirstValidStartDate(recurringEvent);
 
-		// Use a while loop to iterate until currentDate is in the future
 		while (currentDate < now.startOf("day")) {
 			currentDate = getNextOccurrence(
 				currentDate,

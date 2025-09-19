@@ -15,7 +15,22 @@ vi.mock("@real1ty-obsidian-plugins/utils/date-recurrence-utils", async () => {
 		isDateOnWeekdays: vi.fn(),
 		// Use the real function for calculateRecurringInstanceDateTime
 		calculateRecurringInstanceDateTime: actual.calculateRecurringInstanceDateTime,
-		iterateOccurrencesInRange: vi.fn(),
+		// Return a generator function for iterateOccurrencesInRange
+		iterateOccurrencesInRange: vi.fn().mockImplementation(function* (
+			startDate,
+			rrules,
+			rangeStart,
+			rangeEnd
+		) {
+			// Simple mock generator: yield a few dates for testing purposes.
+			let currentDate = startDate;
+			for (let i = 0; i < 5; i++) {
+				currentDate = currentDate.plus({ days: i + 1 });
+				if (currentDate >= rangeStart && currentDate <= rangeEnd) {
+					yield currentDate;
+				}
+			}
+		}),
 	};
 });
 vi.mock("utils/file-utils", () => ({
@@ -116,15 +131,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		it("should add recurring events to internal map", async () => {
 			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-			const { iterateOccurrencesInRange } = await import(
-				"@real1ty-obsidian-plugins/utils/date-recurrence-utils"
-			);
 
-			// Mock the new iterateOccurrencesInRange function to return the expected dates
-			(iterateOccurrencesInRange as any).mockReturnValue([
-				DateTime.fromISO("2024-01-02"),
-				DateTime.fromISO("2024-01-04"),
-			]);
+			// No need to mock iterateOccurrencesInRange here, it's handled globally now
 
 			// Using default calculateRecurringInstanceDateTime mock
 
@@ -246,7 +254,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		it("should exclude physical instance dates from virtual generation", async () => {
 			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-			const { getNextOccurrence, isDateOnWeekdays, iterateOccurrencesInRange } = await import(
+			const { getNextOccurrence, isDateOnWeekdays } = await import(
 				"@real1ty-obsidian-plugins/utils/date-recurrence-utils"
 			);
 
@@ -258,13 +266,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 			(isDateOnWeekdays as any).mockReturnValue(true);
 			// Using default calculateRecurringInstanceDateTime mock
-
-			// Mock the new iterateOccurrencesInRange function to return the expected dates
-			(iterateOccurrencesInRange as any).mockReturnValue([
-				DateTime.fromISO("2024-01-02"),
-				DateTime.fromISO("2024-01-04"),
-				DateTime.fromISO("2024-01-06"),
-			]);
 
 			// Mock existing physical instance
 			mockApp.vault.getMarkdownFiles.mockReturnValue([
