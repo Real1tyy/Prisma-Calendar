@@ -398,8 +398,12 @@ export class CalendarView extends MountableView(ItemView) {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const event = arg.event;
 
+		const mainEl = document.createElement("div");
+		mainEl.className = "fc-event-main";
+
 		const container = document.createElement("div");
 		container.className = "fc-event-content-wrapper";
+		mainEl.appendChild(container);
 
 		const headerEl = document.createElement("div");
 		headerEl.className = "fc-event-header";
@@ -459,7 +463,7 @@ export class CalendarView extends MountableView(ItemView) {
 			}
 		}
 
-		return { domNodes: [container] };
+		return { domNodes: [mainEl] };
 	}
 
 	private getEventColor(event: any): string {

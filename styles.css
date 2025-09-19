@@ -491,6 +491,8 @@
 /* Apply relative positioning to an inner element to avoid breaking FC's layout */
 .fc-event.batch-selectable .fc-event-main {
 	position: relative;
+	height: 100%;
+	width: 100%;
 }
 
 .fc-event.batch-selectable .fc-event-main::before {
