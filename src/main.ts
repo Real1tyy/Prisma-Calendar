@@ -1,5 +1,5 @@
 import { onceAsync } from "@real1ty-obsidian-plugins/utils/async-utils";
-import { Plugin } from "obsidian";
+import { Notice, Plugin } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { CalendarBundle, SettingsStore } from "./core";
 import { createDefaultCalendarConfig } from "./types";
@@ -28,6 +28,42 @@ export default class CustomCalendarPlugin extends Plugin {
 				}
 			},
 		});
+
+		type CalendarViewAction = (view: CalendarView) => void;
+
+		const addBatchCommand = (id: string, name: string, action: CalendarViewAction): void => {
+			this.addCommand({
+				id,
+				name: `Batch: ${name}`,
+				callback: () => {
+					const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
+					if (!calendarView) return;
+					if (calendarView.isInBatchSelectionMode()) {
+						action(calendarView);
+					} else {
+						new Notice("Prisma Calendar: Batch selection mode is not active");
+					}
+				},
+			});
+		};
+
+		addBatchCommand("batch-select-all", "Select All", (view) => view.selectAll());
+		addBatchCommand("batch-clear-selection", "Clear Selection", (view) => view.clearSelection());
+		addBatchCommand("batch-duplicate-selection", "Duplicate Selection", (view) =>
+			view.duplicateSelection()
+		);
+		addBatchCommand("batch-delete-selection", "Delete Selection", (view) => view.deleteSelection());
+		addBatchCommand("batch-open-selection", "Open Selection", (view) => view.openSelection());
+		addBatchCommand("batch-clone-next-week", "Clone to Next Week", (view) =>
+			view.cloneSelection(1)
+		);
+		addBatchCommand("batch-clone-prev-week", "Clone to Previous Week", (view) =>
+			view.cloneSelection(-1)
+		);
+		addBatchCommand("batch-move-next-week", "Move to Next Week", (view) => view.moveSelection(1));
+		addBatchCommand("batch-move-prev-week", "Move to Previous Week", (view) =>
+			view.moveSelection(-1)
+		);
 
 		this.app.workspace.onLayoutReady(() => {
 			this.ensureCalendarBundlesReady();

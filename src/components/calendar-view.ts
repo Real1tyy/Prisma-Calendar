@@ -712,6 +712,38 @@ export class CalendarView extends MountableView(ItemView) {
 		this.batchSelectionManager?.toggleSelectionMode();
 	}
 
+	isInBatchSelectionMode(): boolean {
+		return this.batchSelectionManager?.isInSelectionMode() ?? false;
+	}
+
+	selectAll(): void {
+		this.batchSelectionManager?.selectAllVisibleEvents();
+	}
+
+	clearSelection(): void {
+		this.batchSelectionManager?.clearSelection();
+	}
+
+	duplicateSelection(): void {
+		this.batchSelectionManager?.executeDuplicate();
+	}
+
+	cloneSelection(weeks: number): void {
+		this.batchSelectionManager?.executeClone(weeks);
+	}
+
+	moveSelection(weeks: number): void {
+		this.batchSelectionManager?.executeMove(weeks);
+	}
+
+	deleteSelection(): void {
+		this.batchSelectionManager?.executeDelete();
+	}
+
+	openSelection(): void {
+		this.batchSelectionManager?.executeOpenAll();
+	}
+
 	private isRestoring = false;
 
 	private saveCurrentState(): void {
