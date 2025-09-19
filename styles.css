@@ -471,13 +471,38 @@
 
 /* Adjust checkbox position for compact month view events */
 .fc-daygrid-event.batch-selectable .fc-event-main::before {
+	content: "";
+	position: absolute;
 	top: 1px;
 	right: 1px;
 	width: 14px;
 	height: 14px;
+	border: 2px solid rgba(255, 255, 255, 0.8);
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.2);
+	backdrop-filter: blur(2px);
+	z-index: 10;
+	opacity: 0.8;
+	transition: all 0.2s ease;
 }
+
+.fc-daygrid-event.batch-selectable:hover .fc-event-main::before {
+	opacity: 1;
+	transform: scale(1.1);
+	border-color: var(--interactive-accent);
+}
+
 .fc-daygrid-event.batch-selected .fc-event-main::before {
+	background: var(--interactive-accent);
+	border-color: white;
+	content: "✓";
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	font-size: 9px;
+	font-weight: bold;
+	color: white;
+	opacity: 1;
 }
 
 /* Event Selection States - Updated for FullCalendar DOM structure */
@@ -605,7 +630,9 @@
 	}
 
 	.fc-event.batch-selectable .fc-event-main::before,
-	.fc-event.batch-selected .fc-event-main::before {
+	.fc-event.batch-selected .fc-event-main::before,
+	.fc-daygrid-event.batch-selectable .fc-event-main::before,
+	.fc-daygrid-event.batch-selected .fc-event-main::before {
 		width: 14px;
 		height: 14px;
 		font-size: 9px;
@@ -621,7 +648,9 @@
 	/* Animation rules removed since animations were removed */
 
 	.fc-event.batch-selectable .fc-event-main::before,
-	.fc-event.batch-selected .fc-event-main::before {
+	.fc-event.batch-selected .fc-event-main::before,
+	.fc-daygrid-event.batch-selectable .fc-event-main::before,
+	.fc-daygrid-event.batch-selected .fc-event-main::before {
 		transition: none;
 	}
 
