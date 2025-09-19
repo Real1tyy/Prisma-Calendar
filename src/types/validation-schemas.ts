@@ -13,14 +13,22 @@ export const ColorSchema = z.string().refine((color) => {
 export const timezoneSchema = z
 	.unknown()
 	.transform((value) => {
-		if (typeof value === "string" && value.trim()) {
-			return value.trim();
+		if (typeof value === "string") {
+			const trimmed = value.trim();
+			if (trimmed.toLowerCase() === "utc") {
+				return "UTC";
+			}
+			if (trimmed) {
+				return trimmed;
+			}
 		}
 		return undefined;
 	})
 	.pipe(z.string().optional())
 	.refine((timezone) => {
-		if (!timezone || timezone === "system") return true;
+		if (!timezone || timezone === "system") {
+			return true;
+		}
 
 		// Validate timezone using Luxon
 		try {

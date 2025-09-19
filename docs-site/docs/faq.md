@@ -26,3 +26,17 @@ Yes. Enable “Enable event preview” in Calendar Settings (UI).
 
 **Is Google Calendar integration supported?**
 Planned for a future Pro tier.
+
+**Why are my event times shifted by a few hours? (Timezone Configuration)**
+This usually happens when your event files have UTC timestamps, but the calendar is set to display in your local timezone.
+
+Many Obsidian plugins (like Metadata Menu) save date-time values in UTC format, which ends with a `Z`. For example: `2025-09-19T15:30:00.000Z`.
+
+By default, Prisma Calendar will convert this UTC time to your system's local timezone. If your local timezone is UTC+2, `15:30Z` will be displayed on the calendar as `17:30`. This is the correct behavior, but it might not be what you want if you prefer to work directly with UTC.
+
+To fix this and see the times exactly as they are written in your files, you need to tell the calendar to operate in UTC as well:
+1. Go to the settings for the specific calendar.
+2. Find the **General Settings** section.
+3. Set the **Timezone** option to `UTC`.
+
+Now, the calendar will interpret and display all times in UTC, matching what's in your notes.
