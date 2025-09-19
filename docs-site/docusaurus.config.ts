@@ -144,6 +144,9 @@ const config: Config = {
       darkTheme: prismThemes.dracula,
       additionalLanguages: ['bash', 'json', 'typescript'],
     },
+    metadata: [
+      { name: 'algolia-site-verification', content: '6D4AC65541FD3B7E' },
+    ],
     // Disable search until properly configured
     // algolia: {
     //   appId: 'YOUR_APP_ID',
