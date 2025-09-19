@@ -15,19 +15,46 @@ title: Prisma Calendar
 
 Built for power users and newcomers alike, it gives you multiple isolated calendars, fine-grained filtering and color rules, fast folder-based indexing, and simple but powerful recurring events — all backed by plain Markdown notes.
 
-What makes it different:
+## What makes Prisma Calendar different?
 
-- Multiple calendars with their own folders, rules, and hotkeys
-- Real notes as events (frontmatter-driven), not a proprietary database
-- A simple recurring DSL and node-based recurrence that pre-generates future notes
-- Virtual events for far-future instances to keep your vault light
-- Reactive settings – changes are reflected instantly
+Prisma Calendar is built on a foundation of extreme flexibility and power, designed to adapt to your unique workflow, not the other way around.
+
+-   **Total Configurability**: Almost every aspect of the calendar is customizable. Don't like our frontmatter keys? Change them. Want a different view, custom colors, or specific time slots? It's all in the settings. You control:
+    -   **Frontmatter**: Define your own property names for start/end dates, titles, all-day events, and more.
+    -   **Calendar View**: Tweak everything from the default view, first day of the week, and displayed hours to UI density and zoom levels.
+    -   **Event Display**: Show custom frontmatter properties directly inside calendar events.
+
+-   **Powerful Rule-Based Engine**: Use a simple but powerful expression language (`fm.*`) to control your calendar's appearance and content dynamically:
+    -   **Coloring**: Assign colors to events based on frontmatter. For example, make all events with `fm.Priority === 'High'` red.
+    -   **Filtering**: Create sophisticated views by filtering events based on frontmatter. For instance, hide all events where `fm.Status === 'Done'`.
+
+-   **Power-User Features**:
+    -   **Multiple Calendars**: Create isolated calendars, each with its own folder, settings, filters, and colors.
+    -   **Recurring Events DSL**: A simple yet powerful system for creating recurring events (`weekly`, `monthly`, etc.) that generate real, editable Markdown notes.
+    -   **Batch Operations**: Quickly duplicate, delete, or move multiple events at once.
+    -   **Event Previews**: Hover over any event to see a preview of the note's content.
+
+-   **Reactive & Modern**: All settings changes are applied instantly, with no need to reload Obsidian. The UI is fast, fluid, and built for a modern user experience.
+
+-   **Lightweight & Performant**:
+    -   Events are plain Markdown notes. You own your data.
+    -   Uses virtual events for far-future recurrences to keep your vault clean and fast.
 
 [![Watch the demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
 
 **Repository**: [https://github.com/Real1tyy/Prisma-Calendar](https://github.com/Real1tyy/Prisma-Calendar)
 
 > Goal: The most flexible, powerful calendar for Obsidian.
+
+## Help Shape the Future
+
+This plugin is under active development and is personally used every day by the developer. The goal is to make it the best calendar for Obsidian, and community feedback is crucial.
+
+Have an idea or a feature request?
+1.  **Open an Issue** on our [GitHub repository](https://github.com/Real1tyy/Prisma-Calendar/issues).
+2.  **Upvote Existing Ideas**: If you see a feature request you'd like, give it a 👍 reaction.
+
+We prioritize development based on community demand, so your voice helps us build a better calendar for everyone.
 
 ## Highlights
 

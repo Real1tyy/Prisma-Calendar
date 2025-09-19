@@ -19,6 +19,7 @@ const sidebars: SidebarsConfig = {
         "features/folder-scanning",
         "features/templater",
         "features/color-rules",
+        "features/filtering",
         "features/event-previews",
         "features/batch-operations",
         "features/recurring-dsl",
