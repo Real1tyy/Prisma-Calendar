@@ -54,6 +54,23 @@ const config: Config = {
     ],
   ],
 
+  themes: [
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        // Your docs are at '/' route
+        docsRouteBasePath: '/',
+        indexDocs: true,
+        indexBlog: false,
+        indexPages: true,
+        highlightSearchTermsOnTargetPage: true,
+        // Optional: Customize search placeholder
+        searchBarShortcutHint: false,
+      },
+    ],
+  ],
+
   themeConfig: {
     // Replace with your project's social card
     image: 'img/PrismaCalendar.png',
