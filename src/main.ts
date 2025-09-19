@@ -1,6 +1,6 @@
 import { onceAsync } from "@real1ty-obsidian-plugins/utils/async-utils";
 import { Plugin } from "obsidian";
-import { CustomCalendarSettingsTab } from "./components";
+import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { CalendarBundle, SettingsStore } from "./core";
 import { createDefaultCalendarConfig } from "./types";
 
@@ -17,6 +17,17 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		this.initializeCalendarBundles();
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
+
+		this.addCommand({
+			id: "toggle-batch-selection",
+			name: "Toggle Batch Selection",
+			callback: () => {
+				const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
+				if (calendarView) {
+					calendarView.toggleBatchSelection();
+				}
+			},
+		});
 
 		this.app.workspace.onLayoutReady(() => {
 			this.ensureCalendarBundlesReady();

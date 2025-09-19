@@ -62,14 +62,6 @@ export class CalendarBundle {
 				},
 			});
 
-			this.plugin.addCommand({
-				id: `toggle-batch-selection-${this.calendarId}`,
-				name: `Toggle Batch Selection (${this.settingsStore.currentSettings.name})`,
-				callback: () => {
-					this.toggleBatchSelection();
-				},
-			});
-
 			await this.indexer.start();
 		})();
 	}
@@ -113,14 +105,6 @@ export class CalendarBundle {
 		await workspace.revealLeaf(newLeaf);
 	}
 
-	private toggleBatchSelection(): void {
-		const calendarLeaves = this.app.workspace.getLeavesOfType(this.viewType);
-		if (calendarLeaves.length > 0) {
-			const calendarView = calendarLeaves[0].view as CalendarView;
-			calendarView.toggleBatchSelection();
-		}
-	}
-
 	destroy(): void {
 		this.app.workspace.detachLeavesOfType(this.viewType);
 		this.indexer?.stop();
@@ -130,6 +114,5 @@ export class CalendarBundle {
 		this.templateService?.destroy?.();
 		this.settingsStore?.destroy?.();
 		this.plugin.removeCommand(`open-calendar-${this.calendarId}`);
-		this.plugin.removeCommand(`toggle-batch-selection-${this.calendarId}`);
 	}
 }
