@@ -26,6 +26,10 @@
 		"events",
 		"recurring"
 	],
+	"funding": {
+		"type": "github",
+		"url": "https://github.com/sponsors/Real1tyy"
+	},
 	"author": "Real1tyy",
 	"license": "MIT",
 	"packageManager": "pnpm@9.0.0",

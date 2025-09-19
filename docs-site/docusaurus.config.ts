@@ -153,6 +153,19 @@ const config: Config = {
             },
           ],
         },
+        {
+          title: 'Support',
+          items: [
+            {
+              label: 'Sponsor on GitHub',
+              href: 'https://github.com/sponsors/Real1tyy',
+            },
+            {
+              label: 'Buy Me a Coffee',
+              href: 'https://www.buymeacoffee.com/real1ty',
+            },
+          ],
+        },
       ],
       copyright: `© ${new Date().getFullYear()} Prisma Calendar`,
     },

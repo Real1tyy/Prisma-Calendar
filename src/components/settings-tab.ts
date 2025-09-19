@@ -31,6 +31,19 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		this.createCalendarManagementHeader();
 		this.renderSelectedCalendarSettings();
+
+		const footerEl = containerEl.createDiv({ cls: "setting-item" });
+		footerEl.style.marginTop = "2rem";
+		footerEl.style.textAlign = "center";
+		footerEl.style.fontSize = "var(--font-ui-smaller)";
+		footerEl.style.color = "var(--text-faint)";
+
+		const supportLink = footerEl.createEl("a", {
+			text: "Support Prisma Calendar Development",
+			href: "https://github.com/sponsors/Real1tyy",
+		});
+		supportLink.style.textDecoration = "none";
+		supportLink.style.color = "var(--text-accent)";
 	}
 
 	private createCalendarManagementHeader(): void {

@@ -39,9 +39,15 @@ Found a typo or want to improve the documentation? Documentation contributions a
 - Edit pages directly on GitHub or submit a PR
 - Follow the existing style and structure
 
+## Financial Support
+
+If you find this plugin valuable, consider supporting its development. Your sponsorship helps fund new features, ongoing maintenance, and bug fixes. Thank you for your support!
+
+-   [Sponsor on GitHub](https://github.com/sponsors/Real1tyy)
+-   [Buy Me a Coffee](https://www.buymeacoffee.com/real1ty)
+
 ## Getting Help
 
 - **Documentation**: Check our [comprehensive docs](https://real1tyy.github.io/Prisma-Calendar/)
 - **FAQ**: Common questions are answered in our [FAQ section](/faq)
 - **Issues**: For bugs and feature requests, use [GitHub Issues](https://github.com/Real1tyy/Prisma-Calendar/issues)
-

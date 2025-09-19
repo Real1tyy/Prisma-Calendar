@@ -56,7 +56,16 @@ Quick Links:
 - **Debounced scanning** - efficient file watching and processing
 - **Compact/comfortable** display density options
 
-##  Contributing
+## Support & Sponsorship
+
+If you find Prisma Calendar useful and want to support its ongoing development, please consider becoming a sponsor. Your contribution helps ensure continuous maintenance, bug fixes, and the introduction of new features.
+
+-   [Sponsor on GitHub](https://github.com/sponsors/Real1tyy)
+-   [Buy Me a Coffee](https://www.buymeacoffee.com/real1ty)
+
+Every contribution, no matter the size, is greatly appreciated!
+
+## Contributing
 
 MIT-licensed. PRs welcome! Please run `mise run ci` before pushing.
 
