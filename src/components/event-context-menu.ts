@@ -1,16 +1,16 @@
 import {
-	duplicateFileWithNewZettelId,
-	withFile,
-	withFileOperation,
-} from "@real1ty-obsidian-plugins/utils/file-operations";
-import {
 	generateUniqueFilePath,
-	getFilenameFromPath,
 	sanitizeForFilename,
 } from "@real1ty-obsidian-plugins/utils/file-utils";
-import { generateDuplicatedTitle } from "@real1ty-obsidian-plugins/utils/string-utils";
-import { type App, Menu, Notice, type TFile } from "obsidian";
+import { type App, Menu, Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
+import {
+	CloneEventCommand,
+	DeleteEventCommand,
+	EditEventCommand,
+	MoveEventCommand,
+} from "../core/commands";
+import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import { EventEditModal } from "./event-edit-modal";
 
 export class EventContextMenu {
@@ -20,6 +20,15 @@ export class EventContextMenu {
 	constructor(app: App, bundle: CalendarBundle) {
 		this.app = app;
 		this.bundle = bundle;
+	}
+
+	private getFilePathOrNotice(event: any, operation: string): string | null {
+		const filePath = event.extendedProps?.filePath;
+		if (!filePath) {
+			new Notice(`Failed to ${operation}: No file path found`);
+			return null;
+		}
+		return filePath;
 	}
 
 	show(e: MouseEvent, info: any): void {
@@ -107,96 +116,78 @@ export class EventContextMenu {
 	}
 
 	async moveEventByWeeks(event: any, weeks: number): Promise<void> {
-		await withFileOperation(
-			this.app,
-			event,
-			async (file) => {
-				await this.moveFileEventByWeeks(file, weeks);
-				const direction = weeks > 0 ? "next" : "previous";
-				new Notice(`Event moved to ${direction} week`);
-			},
-			"Failed to move event"
-		);
-	}
+		const filePath = this.getFilePathOrNotice(event, "move event");
+		if (!filePath) return;
 
-	private async moveFileEventByWeeks(file: TFile, weeks: number): Promise<void> {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const daysToAdd = weeks * 7;
+		try {
+			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
+			const command = new MoveEventCommand(this.app, this.bundle, filePath, startOffset, endOffset);
 
-		await this.app.fileManager.processFrontMatter(file, (fm) => {
-			if (fm[settings.startProp]) {
-				const startDate = new Date(fm[settings.startProp]);
-				startDate.setDate(startDate.getDate() + daysToAdd);
-				fm[settings.startProp] = startDate.toISOString();
-			}
+			await this.bundle.commandManager.executeCommand(command);
 
-			if (fm[settings.endProp]) {
-				const endDate = new Date(fm[settings.endProp]);
-				endDate.setDate(endDate.getDate() + daysToAdd);
-				fm[settings.endProp] = endDate.toISOString();
-			}
-		});
+			const direction = weeks > 0 ? "next" : "previous";
+			new Notice(`Event moved to ${direction} week`);
+		} catch (error) {
+			console.error("Failed to move event:", error);
+			new Notice("Failed to move event");
+		}
 	}
 
 	async cloneEventByWeeks(event: any, weeks: number): Promise<void> {
-		await withFileOperation(
-			this.app,
-			event,
-			async (file) => {
-				const settings = this.bundle.settingsStore.currentSettings;
-				const clonedFile = await duplicateFileWithNewZettelId(
-					this.app,
-					file,
-					settings.zettelIdProp
-				);
-				await this.moveFileEventByWeeks(clonedFile, weeks);
-				const fileName = getFilenameFromPath(clonedFile.path);
-				const direction = weeks > 0 ? "next" : "previous";
-				new Notice(`Event cloned to ${direction} week: ${fileName}`);
-			},
-			"Failed to clone event"
-		);
+		const filePath = this.getFilePathOrNotice(event, "clone event");
+		if (!filePath) return;
+
+		try {
+			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
+			const command = new CloneEventCommand(
+				this.app,
+				this.bundle,
+				filePath,
+				startOffset,
+				endOffset
+			);
+
+			await this.bundle.commandManager.executeCommand(command);
+
+			const direction = weeks > 0 ? "next" : "previous";
+			new Notice(`Event cloned to ${direction} week`);
+		} catch (error) {
+			console.error("Failed to clone event:", error);
+			new Notice("Failed to clone event");
+		}
 	}
 
 	async duplicateEvent(event: any): Promise<void> {
-		await withFileOperation(
-			this.app,
-			event,
-			async (file) => {
-				const settings = this.bundle.settingsStore.currentSettings;
-				const duplicatedFile = await duplicateFileWithNewZettelId(
-					this.app,
-					file,
-					settings.zettelIdProp
-				);
-				await this.updateDuplicateTitle(duplicatedFile, file.basename);
-				const fileName = getFilenameFromPath(duplicatedFile.path);
-				new Notice(`Event duplicated: ${fileName}`);
-			},
-			"Failed to duplicate event"
-		);
-	}
+		const filePath = this.getFilePathOrNotice(event, "duplicate event");
+		if (!filePath) return;
 
-	private async updateDuplicateTitle(file: TFile, originalBasename: string): Promise<void> {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.titleProp) return;
+		try {
+			// Use CloneEventCommand without offsets for duplication
+			const command = new CloneEventCommand(this.app, this.bundle, filePath);
 
-		await this.app.fileManager.processFrontMatter(file, (fm) => {
-			const currentTitle = fm[settings.titleProp!] || originalBasename;
-			fm[settings.titleProp!] = generateDuplicatedTitle(currentTitle);
-		});
+			await this.bundle.commandManager.executeCommand(command);
+
+			new Notice("Event duplicated");
+		} catch (error) {
+			console.error("Failed to duplicate event:", error);
+			new Notice("Failed to duplicate event");
+		}
 	}
 
 	async deleteEvent(event: any): Promise<void> {
-		await withFileOperation(
-			this.app,
-			event,
-			async (file) => {
-				await this.app.vault.delete(file);
-				new Notice("Event deleted successfully");
-			},
-			"Failed to delete event"
-		);
+		const filePath = this.getFilePathOrNotice(event, "delete event");
+		if (!filePath) return;
+
+		try {
+			const command = new DeleteEventCommand(this.app, this.bundle, filePath);
+
+			await this.bundle.commandManager.executeCommand(command);
+
+			new Notice("Event deleted successfully");
+		} catch (error) {
+			console.error("Failed to delete event:", error);
+			new Notice("Failed to delete event");
+		}
 	}
 
 	private openEventEditModal(event: any): void {
@@ -206,47 +197,35 @@ export class EventContextMenu {
 	}
 
 	private async updateEventFile(eventData: any): Promise<void> {
-		await withFile(
-			this.app,
-			eventData.filePath,
-			async (file) => {
-				const settings = this.bundle.settingsStore.currentSettings;
+		if (!eventData.filePath) {
+			new Notice("Failed to update event: No file path found");
+			return;
+		}
 
-				// Handle file renaming when titleProp is undefined/empty
-				if (eventData.title && !settings.titleProp) {
+		try {
+			// Handle file renaming when titleProp is undefined/empty
+			const settings = this.bundle.settingsStore.currentSettings;
+			if (eventData.title && !settings.titleProp) {
+				const file = this.app.vault.getAbstractFileByPath(eventData.filePath);
+				if (file instanceof TFile) {
 					const sanitizedTitle = sanitizeForFilename(eventData.title);
 					if (sanitizedTitle && sanitizedTitle !== file.basename) {
 						const parentPath = file.parent?.path || "";
 						const newFilePath = generateUniqueFilePath(this.app, parentPath, sanitizedTitle);
 						await this.app.vault.rename(file, newFilePath);
+						eventData.filePath = newFilePath; // Update the path for the command
 					}
 				}
+			}
 
-				await this.app.fileManager.processFrontMatter(file, (fm) => {
-					if (eventData.preservedFrontmatter) {
-						// Use preserved frontmatter approach - update each property individually
-						for (const [key, value] of Object.entries(eventData.preservedFrontmatter)) {
-							fm[key] = value;
-						}
-					} else {
-						// Update only calendar-specific properties
-						if (eventData.title && settings.titleProp) {
-							fm[settings.titleProp] = eventData.title;
-						}
-						if (eventData.start) {
-							fm[settings.startProp] = eventData.start;
-						}
-						if (eventData.end) {
-							fm[settings.endProp] = eventData.end;
-						}
-						if (eventData.allDay !== undefined && settings.allDayProp) {
-							fm[settings.allDayProp] = eventData.allDay;
-						}
-					}
-				});
-				new Notice("Event updated successfully");
-			},
-			"Failed to update event"
-		);
+			const command = new EditEventCommand(this.app, this.bundle, eventData.filePath, eventData);
+
+			await this.bundle.commandManager.executeCommand(command);
+
+			new Notice("Event updated successfully");
+		} catch (error) {
+			console.error("Failed to update event:", error);
+			new Notice("Failed to update event");
+		}
 	}
 }

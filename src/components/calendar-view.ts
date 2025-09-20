@@ -294,8 +294,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 		this.calendar.render();
 
-		this.batchSelectionManager = new BatchSelectionManager(this.app, this.calendar);
-		this.batchSelectionManager.setEventContextMenu(this.eventContextMenu);
+		this.batchSelectionManager = new BatchSelectionManager(this.app, this.calendar, this.bundle);
 		this.batchSelectionManager.setOnSelectionChangeCallback(() => this.updateToolbar());
 		this.updateToolbar();
 
