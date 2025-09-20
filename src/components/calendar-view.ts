@@ -731,6 +731,11 @@ export class CalendarView extends MountableView(ItemView) {
 		const eventStoreSubscription = this.bundle.eventStore.subscribe(() => this.refreshEvents());
 		this.addSub(eventStoreSubscription);
 
+		const recurringEventManagerSubscription = this.bundle.recurringEventManager.subscribe(() =>
+			this.refreshEvents()
+		);
+		this.addSub(recurringEventManagerSubscription);
+
 		this.hideLoading();
 	}
 

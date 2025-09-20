@@ -8,7 +8,7 @@ import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils"
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
-import type { BehaviorSubject, Subscription } from "rxjs";
+import { type BehaviorSubject, Subject, type Subscription } from "rxjs";
 import type { NodeRecurringEvent } from "../types/recurring-event-schemas";
 import type { SingleCalendarConfig } from "../types/settings-schemas";
 import type { Indexer, IndexerEvent } from "./indexer";
@@ -38,6 +38,8 @@ export class RecurringEventManager {
 	private indexingCompleteSubscription: Subscription | null = null;
 	private templateService: TemplateService;
 	private indexingComplete = false;
+	private changeSubject = new Subject<void>();
+	public readonly changes$ = this.changeSubject.asObservable();
 
 	constructor(
 		private app: App,
@@ -102,6 +104,7 @@ export class RecurringEventManager {
 		this.settingsSubscription = null;
 		this.indexingCompleteSubscription?.unsubscribe();
 		this.indexingCompleteSubscription = null;
+		this.changeSubject.complete();
 		this.templateService.destroy();
 		this.recurringEventsMap.clear();
 	}
@@ -116,6 +119,7 @@ export class RecurringEventManager {
 				physicalInstances: [],
 			});
 		}
+		this.notifyChange();
 	}
 
 	private async handleFileChanged(
@@ -147,6 +151,7 @@ export class RecurringEventManager {
 					filePath,
 					instanceDate: parsedInstanceDate,
 				});
+				this.notifyChange();
 			}
 		}
 	}
@@ -161,7 +166,9 @@ export class RecurringEventManager {
 		if (!rruleId) {
 			return;
 		}
-		if (!this.recurringEventsMap.delete(rruleId)) {
+		if (this.recurringEventsMap.delete(rruleId)) {
+			this.notifyChange();
+		} else {
 			console.error(`❌ Failed to delete recurring event ${rruleId}`);
 		}
 	}
@@ -331,6 +338,9 @@ export class RecurringEventManager {
 				fm[this.settings.allDayProp] = recurringEvent.rrules.allDay;
 			}
 		});
+
+		// Notify that physical instances have changed
+		this.notifyChange();
 	}
 
 	async generateAllVirtualInstances(
@@ -437,5 +447,20 @@ export class RecurringEventManager {
 
 		const folderPath = this.settings.directory ? `${this.settings.directory}/` : "";
 		return `${folderPath}${sanitizedTitle}.md`;
+	}
+
+	/**
+	 * Subscribe to recurring event changes
+	 */
+	subscribe(observer: () => void): Subscription {
+		return this.changes$.subscribe(observer);
+	}
+
+	private notifyChange(): void {
+		try {
+			this.changeSubject.next();
+		} catch (error) {
+			console.error("Error notifying RecurringEventManager change:", error);
+		}
 	}
 }
