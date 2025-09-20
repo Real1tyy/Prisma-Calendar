@@ -33,6 +33,7 @@ Quick Links:
 - **Folder-based scanning** - any note with frontmatter becomes an event
 - **Templater integration** - scaffold consistent event metadata automatically
 - **Batch operations** - select multiple events to delete, duplicate, move, or clone to next/previous week
+- **Undo/Redo system** - command pattern with semantic undo for all operations ("Undo Create Event", "Undo Batch Delete")
 - **File linking** - click events to open notes, batch-open multiple files in tabs
 
 ### 🔄 **Powerful Recurring Events**

@@ -3,6 +3,7 @@ import type { App, WorkspaceLeaf } from "obsidian";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type CustomCalendarPlugin from "../main";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
+import { BatchCommandFactory, CommandManager } from "./commands";
 import { EventStore } from "./event-store";
 import { Indexer } from "./indexer";
 import { Parser } from "./parser";
@@ -18,6 +19,8 @@ export class CalendarBundle {
 	public readonly recurringEventManager: RecurringEventManager;
 	public readonly templateService: TemplateService;
 	public readonly viewStateManager: CalendarViewStateManager;
+	public readonly commandManager: CommandManager;
+	public readonly batchCommandFactory: BatchCommandFactory;
 	public readonly viewType: string;
 	private app: App;
 
@@ -34,6 +37,8 @@ export class CalendarBundle {
 		this.indexer = new Indexer(this.app, this.settingsStore.settings$);
 		this.templateService = new TemplateService(this.app, this.settingsStore.settings$);
 		this.viewStateManager = new CalendarViewStateManager();
+		this.commandManager = new CommandManager(50); // 50 commands max history
+		this.batchCommandFactory = new BatchCommandFactory(this.app, this);
 
 		this.recurringEventManager = new RecurringEventManager(
 			this.app,
@@ -105,8 +110,60 @@ export class CalendarBundle {
 		await workspace.revealLeaf(newLeaf);
 	}
 
+	/**
+	 * Undo the last command in this calendar's history.
+	 * Returns true if an operation was undone, false if no commands to undo.
+	 */
+	async undo(): Promise<boolean> {
+		return await this.commandManager.undo();
+	}
+
+	/**
+	 * Redo the last undone command in this calendar's history.
+	 * Returns true if an operation was redone, false if no commands to redo.
+	 */
+	async redo(): Promise<boolean> {
+		return await this.commandManager.redo();
+	}
+
+	/**
+	 * Check if undo is available for this calendar.
+	 */
+	canUndo(): boolean {
+		return this.commandManager.canUndo();
+	}
+
+	/**
+	 * Check if redo is available for this calendar.
+	 */
+	canRedo(): boolean {
+		return this.commandManager.canRedo();
+	}
+
+	/**
+	 * Get description of the next command that would be undone.
+	 */
+	getUndoDescription(): string | null {
+		return this.commandManager.getUndoDescription();
+	}
+
+	/**
+	 * Get description of the next command that would be redone.
+	 */
+	getRedoDescription(): string | null {
+		return this.commandManager.getRedoDescription();
+	}
+
+	/**
+	 * Clear command history for this calendar.
+	 */
+	clearCommandHistory(): void {
+		this.commandManager.clearHistory();
+	}
+
 	destroy(): void {
 		this.app.workspace.detachLeavesOfType(this.viewType);
+		this.commandManager.clearHistory();
 		this.indexer?.stop();
 		this.parser?.destroy?.();
 		this.eventStore?.destroy?.();

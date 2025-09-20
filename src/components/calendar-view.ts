@@ -5,10 +5,9 @@ import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
 import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
-import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils";
-import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
 import { type App, ItemView, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
+import { CreateEventCommand, type EventData } from "../core/commands";
 import type { SingleCalendarConfig } from "../types/index";
 import { ColorEvaluator } from "../utils/color-evaluator";
 import { hslToString, parseColor } from "../utils/color-parser";
@@ -60,6 +59,20 @@ export class CalendarView extends MountableView(ItemView) {
 		this.eventContextMenu = new EventContextMenu(this.app, bundle);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 		this.zoomManager = new ZoomManager(bundle.settingsStore);
+	}
+
+	/**
+	 * Undo the last operation in this calendar.
+	 */
+	async undo(): Promise<boolean> {
+		return await this.bundle.undo();
+	}
+
+	/**
+	 * Redo the last undone operation in this calendar.
+	 */
+	async redo(): Promise<boolean> {
+		return await this.bundle.redo();
 	}
 
 	private updateToolbar(): void {
@@ -580,50 +593,29 @@ export class CalendarView extends MountableView(ItemView) {
 	private async createNewEvent(eventData: any, clickedDate: Date): Promise<void> {
 		const settings = this.bundle.settingsStore.currentSettings;
 		try {
-			// Generate a filename based on the title or date
-			const title = eventData.title || `Event ${clickedDate.toISOString().split("T")[0]}`;
-			const sanitizedTitle = sanitizeForFilename(title);
+			// Convert eventData to EventData format
+			const commandEventData: EventData = {
+				filePath: null, // Will be set by the command
+				title: eventData.title || `Event ${clickedDate.toISOString().split("T")[0]}`,
+				start: eventData.start,
+				end: eventData.end || null,
+				allDay: eventData.allDay || false,
+				preservedFrontmatter: eventData.preservedFrontmatter || {},
+			};
 
-			const zettelId = generateZettelId();
-			const filenameWithZettel = `${sanitizedTitle}-${zettelId}`;
+			// Create and execute the command
+			const command = new CreateEventCommand(
+				this.app,
+				this.bundle,
+				commandEventData,
+				settings.directory,
+				clickedDate
+			);
 
-			const file = await this.bundle.templateService.createFile({
-				title,
-				targetDirectory: settings.directory,
-				filename: filenameWithZettel,
-			});
-
-			await this.setEventFrontmatter(file, eventData, settings, zettelId);
+			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {
 			console.error("Error creating new event:", error);
 		}
-	}
-
-	private async setEventFrontmatter(
-		file: TFile,
-		eventData: any,
-		settings: SingleCalendarConfig,
-		zettelId: number
-	): Promise<void> {
-		await this.app.fileManager.processFrontMatter(file, (fm) => {
-			if (eventData.title) {
-				fm.title = eventData.title;
-			}
-
-			fm[settings.startProp] = eventData.start;
-
-			if (eventData.end) {
-				fm[settings.endProp] = eventData.end;
-			}
-
-			if (eventData.allDay && settings.allDayProp) {
-				fm[settings.allDayProp] = eventData.allDay;
-			}
-
-			if (settings.zettelIdProp && zettelId) {
-				fm[settings.zettelIdProp] = zettelId;
-			}
-		});
 	}
 
 	private async handleEventDrop(info: any): Promise<void> {
