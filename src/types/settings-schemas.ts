@@ -23,6 +23,7 @@ export const PropsSettingsSchema = z.object({
 	rruleProp: z.string().default("RRule"), // property name for RRule type (daily, weekly, etc.)
 	rruleSpecProp: z.string().default("RRuleSpec"), // property name for RRule specification (weekdays, etc.)
 	rruleIdProp: z.string().default("RRuleID"), // property name for recurring event ID
+	sourceProp: z.string().default("Source"), // property name for linking physical instances to their source recurring event
 	frontmatterDisplayProperties: z.array(z.string()).default([]), // frontmatter properties to display inside event chips
 });
 

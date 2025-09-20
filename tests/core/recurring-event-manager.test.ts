@@ -18,7 +18,7 @@ vi.mock("@real1ty-obsidian-plugins/utils/date-recurrence-utils", async () => {
 		// Return a generator function for iterateOccurrencesInRange
 		iterateOccurrencesInRange: vi
 			.fn()
-			.mockImplementation(function* (startDate, rrules, rangeStart, rangeEnd) {
+			.mockImplementation(function* (startDate, _rrules, rangeStart, rangeEnd) {
 				// Simple mock generator: yield a few dates for testing purposes.
 				let currentDate = startDate;
 				for (let i = 0; i < 5; i++) {

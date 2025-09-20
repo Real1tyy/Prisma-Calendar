@@ -284,6 +284,23 @@ export class SingleCalendarSettings {
 					})
 			);
 
+		new Setting(containerEl)
+			.setName("Source property")
+			.setDesc(
+				"Frontmatter property name for linking recurring event instances to their source event file"
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("Source")
+					.setValue(settings.sourceProp)
+					.onChange(async (value) => {
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							sourceProp: value || "Source",
+						}));
+					})
+			);
+
 		// Add description for recurring events
 		const recurringDesc = containerEl.createDiv();
 		recurringDesc.style.marginTop = "16px";

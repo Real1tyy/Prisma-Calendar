@@ -57,7 +57,7 @@
 		"nanoid": "^5.0.0",
 		"rrule": "^2.8.1",
 		"rxjs": "^7.8.2",
-		"@real1ty-obsidian-plugins/utils": "^1.1.0",
+		"@real1ty-obsidian-plugins/utils": "^1.2.0",
 		"zod": "^4.1.5"
 	}
 }
