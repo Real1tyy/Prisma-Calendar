@@ -1,26 +1,29 @@
-import type { App } from "obsidian";
-import { TFile } from "obsidian";
 import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils";
 import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
+import type { App } from "obsidian";
+import { TFile } from "obsidian";
+import { applyStartEndOffsets, setEventBasics } from "../../utils/calendar";
+import {
+	backupFrontmatter,
+	getTFileOrThrow,
+	restoreFrontmatter,
+	withFrontmatter,
+} from "../../utils/obsidian-fm";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { Command } from "./command";
 
-/**
- * Event data structure for command operations
- */
 export interface EventData {
 	filePath: string | null;
 	title: string;
 	start: string;
-	end: string | null;
-	allDay: boolean;
+	end?: string;
+	allDay?: boolean;
+}
+
+export interface EditEventData extends EventData {
 	preservedFrontmatter: Record<string, unknown>;
 }
 
-/**
- * Command to create a new event.
- * Stores all data needed to recreate or delete the event.
- */
 export class CreateEventCommand implements Command {
 	private createdFilePath: string | null = null;
 
@@ -34,83 +37,53 @@ export class CreateEventCommand implements Command {
 
 	async execute(): Promise<void> {
 		if (this.createdFilePath) {
-			// Command already executed, ensure file exists
-			const existingFile = this.app.vault.getAbstractFileByPath(this.createdFilePath);
-			if (existingFile instanceof TFile) return;
+			const existing = this.app.vault.getAbstractFileByPath(this.createdFilePath);
+			if (existing instanceof TFile) return;
 		}
 
 		const settings = this.bundle.settingsStore.currentSettings;
-
-		// Generate filename
-		const title =
-			this.eventData.title ||
-			`Event ${this.clickedDate?.toISOString().split("T")[0] || "Untitled"}`;
-		const sanitizedTitle = sanitizeForFilename(title);
+		const title = this.eventData.title || `Event ${this.clickedDate?.toISOString().split("T")[0]}`;
 		const zettelId = generateZettelId();
-		const filenameWithZettel = `${sanitizedTitle}-${zettelId}`;
+		const filename = `${sanitizeForFilename(title)}-${zettelId}`;
 
-		// Create file using template service
 		const file = await this.bundle.templateService.createFile({
 			title,
 			targetDirectory: this.targetDirectory,
-			filename: filenameWithZettel,
+			filename,
 		});
 
 		this.createdFilePath = file.path;
 
-		// Set frontmatter using Obsidian API
-		await this.app.fileManager.processFrontMatter(file, (fm) => {
-			// Apply all preserved frontmatter
-			Object.assign(fm, this.eventData.preservedFrontmatter);
-
-			// Set event-specific properties
-			if (this.eventData.title && settings.titleProp) {
-				fm[settings.titleProp] = this.eventData.title;
-			}
-			fm[settings.startProp] = this.eventData.start;
-			if (this.eventData.end && settings.endProp) {
-				fm[settings.endProp] = this.eventData.end;
-			}
-			if (settings.allDayProp) {
-				fm[settings.allDayProp] = this.eventData.allDay;
-			}
-			if (settings.zettelIdProp) {
-				fm[settings.zettelIdProp] = zettelId;
-			}
+		await withFrontmatter(this.app, file, (fm) => {
+			setEventBasics(fm, settings, {
+				title: this.eventData.title,
+				start: this.eventData.start,
+				end: this.eventData.end,
+				allDay: this.eventData.allDay,
+				zettelId,
+			});
 		});
 	}
 
 	async undo(): Promise<void> {
 		if (!this.createdFilePath) return;
-
-		const file = this.app.vault.getAbstractFileByPath(this.createdFilePath);
-		if (file instanceof TFile) {
-			await this.app.vault.delete(file);
-		}
+		const f = this.app.vault.getAbstractFileByPath(this.createdFilePath);
+		if (f instanceof TFile) await this.app.vault.delete(f);
 	}
 
-	getDescription(): string {
-		return `Create Event: ${this.eventData.title || "Untitled"}`;
-	}
-
-	getType(): string {
+	getType() {
 		return "create-event";
 	}
 
-	async canUndo(): Promise<boolean> {
+	async canUndo() {
 		if (!this.createdFilePath) return false;
-		const file = this.app.vault.getAbstractFileByPath(this.createdFilePath);
-		return file instanceof TFile;
+		return this.app.vault.getAbstractFileByPath(this.createdFilePath) instanceof TFile;
 	}
 }
 
-/**
- * Command to delete an existing event.
- * Stores the file content to enable recreation.
- */
 export class DeleteEventCommand implements Command {
 	private originalContent: string | null = null;
-	private originalPath: string;
+	private readonly originalPath: string;
 
 	constructor(
 		private app: App,
@@ -121,206 +94,102 @@ export class DeleteEventCommand implements Command {
 	}
 
 	async execute(): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(this.filePath);
-		if (!(file instanceof TFile)) {
-			throw new Error(`File not found: ${this.filePath}`);
-		}
-
-		// Store content for undo
+		const file = getTFileOrThrow(this.app, this.filePath);
 		this.originalContent = await this.app.vault.read(file);
-
-		// Delete the file
 		await this.app.vault.delete(file);
 	}
 
 	async undo(): Promise<void> {
-		if (!this.originalContent) {
-			throw new Error("Cannot undo: original content not stored");
-		}
-
-		// Recreate the file with original content
+		if (!this.originalContent) throw new Error("Cannot undo: original content not stored");
 		await this.app.vault.create(this.originalPath, this.originalContent);
 	}
 
-	getDescription(): string {
-		const filename = this.originalPath.split("/").pop() || this.originalPath;
-		return `Delete Event: ${filename}`;
-	}
-
-	getType(): string {
+	getType() {
 		return "delete-event";
 	}
 
-	async canUndo(): Promise<boolean> {
-		// Can undo if we have the original content and file doesn't exist
+	async canUndo() {
 		if (!this.originalContent) return false;
-		const file = this.app.vault.getAbstractFileByPath(this.originalPath);
-		return !(file instanceof TFile);
+		return !(this.app.vault.getAbstractFileByPath(this.originalPath) instanceof TFile);
 	}
 }
 
-/**
- * Command to edit an existing event.
- * Stores the previous frontmatter state for undo.
- */
 export class EditEventCommand implements Command {
-	private originalFrontmatter: Record<string, unknown> | null = null;
+	private originalFrontmatter?: Record<string, unknown>;
 
 	constructor(
 		private app: App,
 		_bundle: CalendarBundle,
 		private filePath: string,
-		private newEventData: EventData
+		private newEventData: EditEventData
 	) {}
 
 	async execute(): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(this.filePath);
-		if (!(file instanceof TFile)) {
-			throw new Error(`File not found: ${this.filePath}`);
-		}
-
-		// Store original frontmatter for undo
-		if (!this.originalFrontmatter) {
-			const content = await this.app.vault.read(file);
-			const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
-			if (frontmatterMatch) {
-				// Parse the existing frontmatter to store original values
-				this.originalFrontmatter = {};
-				await this.app.fileManager.processFrontMatter(file, (fm) => {
-					this.originalFrontmatter = { ...fm };
-				});
-			} else {
-				this.originalFrontmatter = {};
-			}
-		}
-
-		// Apply new frontmatter
-		await this.app.fileManager.processFrontMatter(file, (fm) => {
-			// Apply all preserved frontmatter from the edit
-			Object.assign(fm, this.newEventData.preservedFrontmatter);
-		});
+		const file = getTFileOrThrow(this.app, this.filePath);
+		if (!this.originalFrontmatter)
+			this.originalFrontmatter = await backupFrontmatter(this.app, file);
+		await withFrontmatter(this.app, file, (fm) =>
+			Object.assign(fm, this.newEventData.preservedFrontmatter)
+		);
 	}
 
 	async undo(): Promise<void> {
-		if (!this.originalFrontmatter) {
-			throw new Error("Cannot undo: original frontmatter not stored");
-		}
-
-		const file = this.app.vault.getAbstractFileByPath(this.filePath);
-		if (!(file instanceof TFile)) {
-			throw new Error(`File not found: ${this.filePath}`);
-		}
-
-		// Restore original frontmatter
-		await this.app.fileManager.processFrontMatter(file, (fm) => {
-			// Clear current frontmatter and restore original
-			Object.keys(fm).forEach((key) => {
-				delete fm[key];
-			});
-			Object.assign(fm, this.originalFrontmatter);
-		});
+		if (!this.originalFrontmatter) return;
+		const file = getTFileOrThrow(this.app, this.filePath);
+		await restoreFrontmatter(this.app, file, this.originalFrontmatter);
 	}
 
-	getDescription(): string {
-		const filename = this.filePath.split("/").pop() || this.filePath;
-		return `Edit Event: ${filename}`;
-	}
-
-	getType(): string {
+	getType() {
 		return "edit-event";
 	}
 
 	async canUndo(): Promise<boolean> {
-		if (!this.originalFrontmatter) return false;
-		const file = this.app.vault.getAbstractFileByPath(this.filePath);
-		return file instanceof TFile;
+		return true;
 	}
 }
 
-/**
- * Command to move an event by a time offset.
- * Stores the original dates for undo.
- */
 export class MoveEventCommand implements Command {
-	private originalStart: string | null = null;
-	private originalEnd: string | null = null;
+	private originalFrontmatter?: Record<string, unknown>;
 
 	constructor(
 		private app: App,
 		private bundle: CalendarBundle,
 		private filePath: string,
-		private startOffset: number, // milliseconds to add to start
-		private endOffset: number, // milliseconds to add to end
-		private description: string
+		private startOffset: number,
+		private endOffset: number
 	) {}
 
 	async execute(): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(this.filePath);
-		if (!(file instanceof TFile)) {
-			throw new Error(`File not found: ${this.filePath}`);
-		}
+		const file = getTFileOrThrow(this.app, this.filePath);
+		if (!this.originalFrontmatter)
+			this.originalFrontmatter = await backupFrontmatter(this.app, file);
 
 		const settings = this.bundle.settingsStore.currentSettings;
-
-		await this.app.fileManager.processFrontMatter(file, (fm) => {
-			// Store original values for undo
-			if (this.originalStart === null) {
-				this.originalStart = (fm[settings.startProp] as string) || null;
-				this.originalEnd = (fm[settings.endProp] as string) || null;
-			}
-
-			// Apply time offsets
-			if (fm[settings.startProp]) {
-				const startDate = new Date(fm[settings.startProp] as string);
-				startDate.setTime(startDate.getTime() + this.startOffset);
-				fm[settings.startProp] = startDate.toISOString();
-			}
-
-			if (fm[settings.endProp]) {
-				const endDate = new Date(fm[settings.endProp] as string);
-				endDate.setTime(endDate.getTime() + this.endOffset);
-				fm[settings.endProp] = endDate.toISOString();
-			}
-		});
+		await withFrontmatter(this.app, file, (fm) =>
+			applyStartEndOffsets(fm, settings, this.startOffset, this.endOffset)
+		);
 	}
 
 	async undo(): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(this.filePath);
-		if (!(file instanceof TFile)) {
-			throw new Error(`File not found: ${this.filePath}`);
-		}
-
-		const settings = this.bundle.settingsStore.currentSettings;
-
-		await this.app.fileManager.processFrontMatter(file, (fm) => {
-			// Restore original values
-			if (this.originalStart !== null) {
-				fm[settings.startProp] = this.originalStart;
-			}
-			if (this.originalEnd !== null) {
-				fm[settings.endProp] = this.originalEnd;
-			}
+		if (!this.originalFrontmatter) return;
+		const file = getTFileOrThrow(this.app, this.filePath);
+		await withFrontmatter(this.app, file, (fm) => {
+			Object.keys(fm).forEach((k) => {
+				delete fm[k];
+			});
+			Object.assign(fm, this.originalFrontmatter!);
 		});
 	}
 
-	getDescription(): string {
-		return this.description;
-	}
-
-	getType(): string {
+	getType() {
 		return "move-event";
 	}
 
 	async canUndo(): Promise<boolean> {
-		const file = this.app.vault.getAbstractFileByPath(this.filePath);
-		return file instanceof TFile;
+		return true;
 	}
 }
 
-/**
- * Command to clone/duplicate an event.
- * Creates a new file with modified dates.
- */
 export class CloneEventCommand implements Command {
 	private clonedFilePath: string | null = null;
 
@@ -328,82 +197,47 @@ export class CloneEventCommand implements Command {
 		private app: App,
 		private bundle: CalendarBundle,
 		private sourceFilePath: string,
-		private startOffset: number, // milliseconds to add to start
-		private endOffset: number, // milliseconds to add to end
-		private description: string
+		private startOffset?: number,
+		private endOffset?: number
 	) {}
 
 	async execute(): Promise<void> {
 		if (this.clonedFilePath) {
-			// Command already executed, ensure file exists
-			const existingFile = this.app.vault.getAbstractFileByPath(this.clonedFilePath);
-			if (existingFile instanceof TFile) return;
+			const existing = this.app.vault.getAbstractFileByPath(this.clonedFilePath);
+			if (existing instanceof TFile) return;
 		}
+		const src = getTFileOrThrow(this.app, this.sourceFilePath);
+		const content = await this.app.vault.read(src);
 
-		const sourceFile = this.app.vault.getAbstractFileByPath(this.sourceFilePath);
-		if (!(sourceFile instanceof TFile)) {
-			throw new Error(`Source file not found: ${this.sourceFilePath}`);
-		}
-
-		// Read source content
-		const sourceContent = await this.app.vault.read(sourceFile);
-
-		// Generate new filename
-		const baseName = sourceFile.basename;
 		const zettelId = generateZettelId();
-		const newName = `${baseName}-clone-${zettelId}.md`;
-		const newPath = sourceFile.parent ? `${sourceFile.parent.path}/${newName}` : newName;
+		const newName = `${src.basename}-clone-${zettelId}.md`;
+		const newPath = src.parent ? `${src.parent.path}/${newName}` : newName;
 
-		// Create cloned file
-		await this.app.vault.create(newPath, sourceContent);
+		await this.app.vault.create(newPath, content);
 		this.clonedFilePath = newPath;
 
-		// Update dates in cloned file
-		const clonedFile = this.app.vault.getAbstractFileByPath(newPath);
-		if (!(clonedFile instanceof TFile)) return;
+		const cloned = this.app.vault.getAbstractFileByPath(newPath);
+		if (!(cloned instanceof TFile)) return;
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		await this.app.fileManager.processFrontMatter(clonedFile, (fm) => {
-			// Apply time offsets to dates
-			if (fm[settings.startProp]) {
-				const startDate = new Date(fm[settings.startProp] as string);
-				startDate.setTime(startDate.getTime() + this.startOffset);
-				fm[settings.startProp] = startDate.toISOString();
-			}
-
-			if (fm[settings.endProp]) {
-				const endDate = new Date(fm[settings.endProp] as string);
-				endDate.setTime(endDate.getTime() + this.endOffset);
-				fm[settings.endProp] = endDate.toISOString();
-			}
-
-			// Update zettel ID if used
-			if (settings.zettelIdProp) {
-				fm[settings.zettelIdProp] = zettelId;
-			}
+		await withFrontmatter(this.app, cloned, (fm) => {
+			applyStartEndOffsets(fm, settings, this.startOffset, this.endOffset);
+			if (settings.zettelIdProp) fm[settings.zettelIdProp] = zettelId;
 		});
 	}
 
 	async undo(): Promise<void> {
 		if (!this.clonedFilePath) return;
-
-		const clonedFile = this.app.vault.getAbstractFileByPath(this.clonedFilePath);
-		if (clonedFile instanceof TFile) {
-			await this.app.vault.delete(clonedFile);
-		}
+		const f = this.app.vault.getAbstractFileByPath(this.clonedFilePath);
+		if (f instanceof TFile) await this.app.vault.delete(f);
 	}
 
-	getDescription(): string {
-		return this.description;
-	}
-
-	getType(): string {
+	getType() {
 		return "clone-event";
 	}
 
-	async canUndo(): Promise<boolean> {
+	async canUndo() {
 		if (!this.clonedFilePath) return false;
-		const file = this.app.vault.getAbstractFileByPath(this.clonedFilePath);
-		return file instanceof TFile;
+		return this.app.vault.getAbstractFileByPath(this.clonedFilePath) instanceof TFile;
 	}
 }

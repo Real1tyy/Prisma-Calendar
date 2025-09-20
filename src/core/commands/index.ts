@@ -14,6 +14,7 @@ export {
 	CreateEventCommand,
 	DeleteEventCommand,
 	EditEventCommand,
+	type EditEventData,
 	type EventData,
 	MoveEventCommand,
 } from "./event-commands";
