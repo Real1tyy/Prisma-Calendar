@@ -241,3 +241,56 @@ export class CloneEventCommand implements Command {
 		return this.app.vault.getAbstractFileByPath(this.clonedFilePath) instanceof TFile;
 	}
 }
+
+export class UpdateEventCommand implements Command {
+	private originalFrontmatter?: Record<string, unknown>;
+
+	constructor(
+		private app: App,
+		private bundle: CalendarBundle,
+		private filePath: string,
+		private newStart: string,
+		private newEnd: string | undefined,
+		private oldStart: string,
+		private oldEnd: string | undefined
+	) {}
+
+	async execute(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+		if (!this.originalFrontmatter) {
+			this.originalFrontmatter = await backupFrontmatter(this.app, file);
+		}
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		await withFrontmatter(this.app, file, (fm) => {
+			fm[settings.startProp] = this.newStart;
+			if (this.newEnd && settings.endProp) {
+				fm[settings.endProp] = this.newEnd;
+			}
+		});
+	}
+
+	async undo(): Promise<void> {
+		if (!this.originalFrontmatter) return;
+
+		const file = getTFileOrThrow(this.app, this.filePath);
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		await withFrontmatter(this.app, file, (fm) => {
+			fm[settings.startProp] = this.oldStart;
+			if (this.oldEnd && settings.endProp) {
+				fm[settings.endProp] = this.oldEnd;
+			} else if (settings.endProp) {
+				delete fm[settings.endProp];
+			}
+		});
+	}
+
+	getType(): string {
+		return "update-event-time";
+	}
+
+	async canUndo(): Promise<boolean> {
+		return this.originalFrontmatter !== undefined;
+	}
+}

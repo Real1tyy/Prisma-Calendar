@@ -5,9 +5,9 @@ import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
 import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
-import { type App, ItemView, TFile, type WorkspaceLeaf } from "obsidian";
+import { type App, ItemView, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
-import { CreateEventCommand, type EventData } from "../core/commands";
+import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
 import type { SingleCalendarConfig } from "../types/index";
 import { ColorEvaluator } from "../utils/color-evaluator";
 import { hslToString, parseColor } from "../utils/color-parser";
@@ -624,24 +624,17 @@ export class CalendarView extends MountableView(ItemView) {
 		}
 
 		try {
-			const file = this.app.vault.getAbstractFileByPath(filePath);
-			if (!file || !(file instanceof TFile)) {
-				console.error("File not found:", filePath);
-				info.revert();
-				return;
-			}
+			const command = new UpdateEventCommand(
+				this.app,
+				this.bundle,
+				filePath,
+				info.event.start.toISOString(),
+				info.event.end?.toISOString(),
+				info.oldEvent.start.toISOString(),
+				info.oldEvent.end?.toISOString()
+			);
 
-			const settings = this.bundle.settingsStore.currentSettings;
-
-			await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-				// Update start time
-				frontmatter[settings.startProp] = info.event.start.toISOString();
-
-				// Update end time if it exists
-				if (info.event.end && settings.endProp) {
-					frontmatter[settings.endProp] = info.event.end.toISOString();
-				}
-			});
+			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {
 			console.error("Error updating event dates:", error);
 			info.revert();
@@ -662,24 +655,17 @@ export class CalendarView extends MountableView(ItemView) {
 		}
 
 		try {
-			const file = this.app.vault.getAbstractFileByPath(filePath);
-			if (!file || !(file instanceof TFile)) {
-				console.error("File not found:", filePath);
-				info.revert();
-				return;
-			}
+			const command = new UpdateEventCommand(
+				this.app,
+				this.bundle,
+				filePath,
+				info.event.start.toISOString(),
+				info.event.end?.toISOString(),
+				info.oldEvent.start.toISOString(),
+				info.oldEvent.end?.toISOString()
+			);
 
-			const settings = this.bundle.settingsStore.currentSettings;
-
-			await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-				// Update start time (in case it changed during resize)
-				frontmatter[settings.startProp] = info.event.start.toISOString();
-
-				// Update end time
-				if (info.event.end && settings.endProp) {
-					frontmatter[settings.endProp] = info.event.end.toISOString();
-				}
-			});
+			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {
 			console.error("Error updating event duration:", error);
 			info.revert();

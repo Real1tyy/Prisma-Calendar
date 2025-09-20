@@ -17,4 +17,5 @@ export {
 	type EditEventData,
 	type EventData,
 	MoveEventCommand,
+	UpdateEventCommand,
 } from "./event-commands";
