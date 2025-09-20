@@ -1,12 +1,9 @@
 import type { Calendar } from "@fullcalendar/core";
-import {
-	type BatchOperationOptions,
-	getWeekDirection,
-	pluralize,
-	runBatchOperation,
-} from "@real1ty-obsidian-plugins/utils";
+import { getWeekDirection, pluralize, runBatchOperation } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, Notice } from "obsidian";
-import type { EventContextMenu } from "./event-context-menu";
+import type { CalendarBundle } from "../core/calendar-bundle";
+import { BatchCommandFactory } from "../core/commands/batch-commands";
+import type { Command } from "../core/commands/command";
 
 export interface SelectedEvent {
 	id: string;
@@ -18,20 +15,80 @@ export interface SelectedEvent {
 }
 
 export class BatchSelectionManager {
-	private app: App;
-	private calendar: Calendar;
-	private eventContextMenu!: EventContextMenu; // Will be set later to avoid circular dependency
 	private selectedEvents = new Map<string, SelectedEvent>();
 	private isSelectionMode = false;
 	private onSelectionChangeCallback: () => void = () => {};
+	private batchCommandFactory: BatchCommandFactory;
 
-	constructor(app: App, calendar: Calendar) {
-		this.app = app;
-		this.calendar = calendar;
+	constructor(
+		private app: App,
+		private calendar: Calendar,
+		private bundle: CalendarBundle
+	) {
+		this.batchCommandFactory = new BatchCommandFactory(app, bundle);
 	}
 
-	setEventContextMenu(eventContextMenu: EventContextMenu): void {
-		this.eventContextMenu = eventContextMenu;
+	private returnIfEmpty(): boolean {
+		if (this.selectedEvents.size === 0) {
+			new Notice("No events selected");
+			return true;
+		}
+		return false;
+	}
+
+	private async executeWithSelection<T extends Command>(
+		commandFactory: (filePaths: string[]) => T,
+		successMessage: (count: number) => string,
+		errorMessage: string,
+		postHook?: () => void
+	): Promise<void> {
+		if (this.returnIfEmpty()) return;
+
+		try {
+			const filePaths = Array.from(this.selectedEvents.values()).map((event) => event.filePath);
+			const command = commandFactory(filePaths);
+
+			await this.bundle.commandManager.executeCommand(command);
+
+			new Notice(successMessage(filePaths.length));
+			this.clearSelection();
+			this.calendar.refetchEvents();
+
+			if (postHook) postHook();
+		} catch (error) {
+			console.error(`Failed operation: ${errorMessage}`, error);
+			new Notice(errorMessage);
+		}
+	}
+
+	private async executeWithConfirmation<T extends Command>(
+		confirmationTitle: string,
+		confirmationMessage: (count: number) => string,
+		commandFactory: (filePaths: string[]) => T,
+		successMessage: (count: number) => string,
+		errorMessage: string
+	): Promise<void> {
+		if (this.returnIfEmpty()) return;
+
+		const confirmModal = new Modal(this.app);
+		const { contentEl } = confirmModal;
+
+		contentEl.createEl("h2", { text: confirmationTitle });
+		contentEl.createEl("p", { text: confirmationMessage(this.selectedEvents.size) });
+
+		const buttonContainer = contentEl.createDiv("modal-button-container");
+		buttonContainer.createEl("button", { text: "Cancel" }).onclick = () => confirmModal.close();
+
+		const confirmBtn = buttonContainer.createEl("button", {
+			text: confirmationTitle,
+			cls: "mod-warning",
+		});
+		confirmBtn.onclick = async () => {
+			confirmModal.close();
+			await this.executeWithSelection(commandFactory, successMessage, errorMessage);
+		};
+
+		confirmModal.open();
 	}
 
 	setOnSelectionChangeCallback(callback: () => void): void {
@@ -186,116 +243,55 @@ export class BatchSelectionManager {
 	}
 
 	public async executeDelete(): Promise<void> {
-		await this.confirmAndExecuteBatch(
-			"Delete Events",
-			`Are you sure you want to delete ${this.selectedEvents.size} event${pluralize(
-				this.selectedEvents.size
-			)}? This action cannot be undone.`,
+		await this.executeWithConfirmation(
 			"Delete",
-			async (sel) => {
-				await this.eventContextMenu.deleteEvent(this.toCtxEvent(sel));
-			}
+			(count) =>
+				`Are you sure you want to delete ${count} event${pluralize(count)}? This action can be undone.`,
+			(filePaths) => this.batchCommandFactory.createDelete(filePaths),
+			(count) => `Deleted ${count} event${pluralize(count)}`,
+			"Failed to delete events"
 		);
 	}
 
 	public async executeDuplicate(): Promise<void> {
-		await this.runBatch(
-			"Duplicate events",
-			async (sel) => {
-				await this.eventContextMenu.duplicateEvent(this.toCtxEvent(sel));
-			},
-			{ callOnComplete: true }
+		await this.executeWithSelection(
+			(filePaths) => this.batchCommandFactory.createDuplicate(filePaths),
+			(count) => `Duplicated ${count} event${pluralize(count)}`,
+			"Failed to duplicate events"
 		);
 	}
 
 	public async executeClone(weeks: number): Promise<void> {
 		const direction = getWeekDirection(weeks);
-		await this.runBatch(`Clone to ${direction} week`, async (sel) => {
-			await this.eventContextMenu.cloneEventByWeeks(this.toCtxEvent(sel), weeks);
-		});
+		await this.executeWithSelection(
+			(filePaths) => this.batchCommandFactory.createClone(filePaths, weeks),
+			(count) => `Cloned ${count} event${pluralize(count)} to ${direction} week`,
+			"Failed to clone events"
+		);
 	}
 
 	public async executeMove(weeks: number): Promise<void> {
 		const direction = getWeekDirection(weeks);
-		await this.runBatch(`Move to ${direction} week`, async (sel) => {
-			await this.eventContextMenu.moveEventByWeeks(this.toCtxEvent(sel), weeks);
-		});
-	}
-
-	public async executeOpenAll(): Promise<void> {
-		await this.runBatch(
-			"Open files",
-			async (sel) => {
-				await this.app.workspace.openLinkText(sel.filePath, "", true);
-			},
-			{ closeAfter: false, callOnComplete: false }
+		await this.executeWithSelection(
+			(filePaths) => this.batchCommandFactory.createMove(filePaths, weeks),
+			(count) => `Moved ${count} event${pluralize(count)} to ${direction} week`,
+			"Failed to move events"
 		);
 	}
 
-	private async runBatch(
-		operationLabel: string,
-		handler: (selected: SelectedEvent) => Promise<void>,
-		opts: BatchOperationOptions = { closeAfter: false, callOnComplete: true }
-	): Promise<void> {
-		if (this.selectedEvents.size === 0) {
-			new Notice("No events selected");
-			return;
-		}
+	public async executeOpenAll(): Promise<void> {
+		if (this.returnIfEmpty()) return;
 
-		const selectedEventsArray = Array.from(this.selectedEvents.values());
-		await runBatchOperation(selectedEventsArray, operationLabel, handler);
-
-		if (opts.callOnComplete) {
+		try {
+			const selectedEventsArray = Array.from(this.selectedEvents.values());
+			await runBatchOperation(selectedEventsArray, "Open files", async (sel) => {
+				await this.app.workspace.openLinkText(sel.filePath, "", true);
+			});
 			this.clearSelection();
-			this.calendar.refetchEvents();
+		} catch (error) {
+			console.error("Failed to open files:", error);
+			new Notice("Failed to open files");
 		}
-	}
-
-	private confirmAndExecuteBatch(
-		title: string,
-		message: string,
-		operationLabel: string,
-		handler: (selected: SelectedEvent) => Promise<void>
-	): void {
-		if (this.selectedEvents.size === 0) {
-			new Notice("No events selected");
-			return;
-		}
-
-		const confirmModal = new Modal(this.app);
-		const { contentEl } = confirmModal;
-
-		contentEl.createEl("h2", { text: title });
-		contentEl.createEl("p", { text: message });
-
-		const buttonContainer = contentEl.createDiv("modal-button-container");
-
-		buttonContainer.createEl("button", { text: "Cancel" }).onclick = () => confirmModal.close();
-
-		const confirmBtn = buttonContainer.createEl("button", {
-			text: "Confirm",
-			cls: "mod-warning",
-		});
-		confirmBtn.onclick = async () => {
-			confirmModal.close();
-			await this.runBatch(operationLabel, handler);
-		};
-
-		confirmModal.open();
-	}
-
-	private toCtxEvent(selectedEvent: SelectedEvent): any {
-		return {
-			id: selectedEvent.id,
-			title: selectedEvent.title,
-			start: new Date(selectedEvent.start),
-			end: selectedEvent.end ? new Date(selectedEvent.end) : null,
-			allDay: selectedEvent.allDay,
-			extendedProps: {
-				filePath: selectedEvent.filePath,
-				originalTitle: selectedEvent.title,
-			},
-		};
 	}
 
 	refreshSelectionStyling(): void {
