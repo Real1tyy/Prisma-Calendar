@@ -17,7 +17,6 @@ import {
 	type NodeRecurringEvent,
 	parseRRuleFromFrontmatter,
 } from "../types/recurring-event-schemas";
-import { FilterEvaluator } from "../utils/filter-evaluator";
 import { generateUniqueRruleId } from "../utils/rrule";
 
 export interface RawEventSource {
@@ -43,7 +42,6 @@ type FileIntent =
 
 export class Indexer {
 	private _settings: SingleCalendarConfig;
-	private filterEvaluator: FilterEvaluator;
 	private fileSub: Subscription | null = null;
 	private settingsSubscription: Subscription | null = null;
 	private vault: Vault;
@@ -61,7 +59,6 @@ export class Indexer {
 		this.vault = app.vault;
 		this.metadataCache = app.metadataCache;
 		this._settings = settingsStore.value;
-		this.filterEvaluator = new FilterEvaluator(settingsStore);
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			const filtersChanged =
@@ -96,7 +93,6 @@ export class Indexer {
 		this.settingsSubscription = null;
 
 		this.indexingCompleteSubject.complete();
-		this.filterEvaluator.destroy();
 	}
 
 	private async scanAllFiles(): Promise<void> {
@@ -197,7 +193,10 @@ export class Indexer {
 			};
 		}
 
-		if (!this.hasRelevantFrontmatter(frontmatter)) return null;
+		// Always emit file-changed events for files with start property
+		// Let EventStore/Parser handle filtering - this ensures cached events
+		// get invalidated when properties change and no longer pass filters
+		if (!frontmatter[this._settings.startProp]) return null;
 
 		const source: RawEventSource = {
 			filePath: file.path,
@@ -211,14 +210,6 @@ export class Indexer {
 
 	private isRelevantFile(file: TFile): boolean {
 		return isFileInConfiguredDirectory(file.path, this._settings.directory);
-	}
-
-	private hasRelevantFrontmatter(frontmatter: Record<string, unknown>): boolean {
-		if (!frontmatter[this._settings.startProp]) {
-			return false;
-		}
-
-		return this.filterEvaluator.evaluateFilters(frontmatter);
 	}
 
 	private async tryParseRecurring(

@@ -3,6 +3,7 @@ import type { DateTime } from "luxon";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { convertToISO, parseEventFrontmatter } from "../types/event-schemas";
 import type { ISO, SingleCalendarConfig } from "../types/index";
+import { FilterEvaluator } from "../utils/filter-evaluator";
 import type { VaultEventId } from "./event-store";
 import type { RawEventSource } from "./indexer";
 
@@ -22,9 +23,11 @@ export interface ParsedEvent {
 export class Parser {
 	private settings: SingleCalendarConfig;
 	private subscription: Subscription | null = null;
+	private filterEvaluator: FilterEvaluator;
 
 	constructor(settingsStore: BehaviorSubject<SingleCalendarConfig>) {
 		this.settings = settingsStore.value;
+		this.filterEvaluator = new FilterEvaluator(settingsStore);
 		this.subscription = settingsStore.subscribe((newSettings) => {
 			this.settings = newSettings;
 		});
@@ -36,6 +39,10 @@ export class Parser {
 
 	parseEventSource(source: RawEventSource): ParsedEvent | null {
 		const { filePath, frontmatter, folder } = source;
+
+		if (!this.filterEvaluator.evaluateFilters(frontmatter)) {
+			return null;
+		}
 
 		const parsed = parseEventFrontmatter(frontmatter, this.settings);
 		if (!parsed) {

@@ -380,12 +380,13 @@ export class CalendarView extends MountableView(ItemView) {
 				};
 			});
 
-			// Force complete calendar refresh to ensure colors update
+			// CRITICAL: Remove ALL events and event sources to prevent accumulation
 			this.calendar.removeAllEvents();
+			this.calendar.removeAllEventSources();
 
-			// Add events with a timestamp to force refresh
+			// Add fresh event source with new events
 			this.calendar.addEventSource({
-				id: `events-${Date.now()}`,
+				id: "main-events",
 				events: calendarEvents,
 			});
 
