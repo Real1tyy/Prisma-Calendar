@@ -65,6 +65,39 @@ export default class CustomCalendarPlugin extends Plugin {
 			view.moveSelection(-1)
 		);
 
+		// Add undo/redo commands
+		this.addCommand({
+			id: "undo",
+			name: "Undo",
+			callback: async () => {
+				const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
+				if (calendarView) {
+					const success = await calendarView.undo();
+					if (!success) {
+						new Notice("Nothing to undo");
+					}
+				} else {
+					new Notice("No active calendar view");
+				}
+			},
+		});
+
+		this.addCommand({
+			id: "redo",
+			name: "Redo",
+			callback: async () => {
+				const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
+				if (calendarView) {
+					const success = await calendarView.redo();
+					if (!success) {
+						new Notice("Nothing to redo");
+					}
+				} else {
+					new Notice("No active calendar view");
+				}
+			},
+		});
+
 		this.app.workspace.onLayoutReady(() => {
 			this.ensureCalendarBundlesReady();
 		});
