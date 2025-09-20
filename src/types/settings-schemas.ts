@@ -3,7 +3,7 @@ import { ColorSchema, timezoneSchema } from "./validation-schemas";
 import { CalendarViewTypeSchema } from "./view-schemas";
 
 export const DEFAULT_EVENT_COLOR = "hsl(270, 70%, 50%)";
-export const MAX_CALENDARS = 5;
+export const MAX_CALENDARS = 10;
 export const BASE_NAME = "calendar";
 
 export const GeneralSettingsSchema = z.object({
@@ -27,7 +27,7 @@ export const PropsSettingsSchema = z.object({
 });
 
 export const CalendarSettingsSchema = z.object({
-	futureInstancesCount: z.number().int().min(1).max(52).default(12), // how many future instances to generate for recurring events
+	futureInstancesCount: z.number().int().min(1).max(52).default(2), // how many future instances to generate for recurring events
 	defaultView: CalendarViewTypeSchema.default("dayGridMonth"),
 	hideWeekends: z.boolean().default(false),
 	hourStart: z.number().int().min(0).max(23).default(7),
