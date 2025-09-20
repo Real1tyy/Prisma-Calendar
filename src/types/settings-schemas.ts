@@ -3,6 +3,7 @@ import { ColorSchema, timezoneSchema } from "./validation-schemas";
 import { CalendarViewTypeSchema } from "./view-schemas";
 
 export const DEFAULT_EVENT_COLOR = "hsl(270, 70%, 50%)";
+export const COMMANDS_HISTORY_LIMIT = 50;
 export const MAX_CALENDARS = 10;
 export const BASE_NAME = "calendar";
 

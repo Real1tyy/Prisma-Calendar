@@ -593,17 +593,14 @@ export class CalendarView extends MountableView(ItemView) {
 	private async createNewEvent(eventData: any, clickedDate: Date): Promise<void> {
 		const settings = this.bundle.settingsStore.currentSettings;
 		try {
-			// Convert eventData to EventData format
 			const commandEventData: EventData = {
-				filePath: null, // Will be set by the command
+				filePath: null,
 				title: eventData.title || `Event ${clickedDate.toISOString().split("T")[0]}`,
 				start: eventData.start,
-				end: eventData.end || null,
-				allDay: eventData.allDay || false,
-				preservedFrontmatter: eventData.preservedFrontmatter || {},
+				end: eventData.end,
+				allDay: eventData.allDay,
 			};
 
-			// Create and execute the command
 			const command = new CreateEventCommand(
 				this.app,
 				this.bundle,

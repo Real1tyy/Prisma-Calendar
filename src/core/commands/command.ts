@@ -18,12 +18,6 @@ export interface Command {
 	undo(): Promise<void>;
 
 	/**
-	 * Human-readable description of the command for UI display.
-	 * Examples: "Create Event", "Delete 3 Events", "Move Event to Next Week"
-	 */
-	getDescription(): string;
-
-	/**
 	 * Unique identifier for the command type.
 	 * Used for debugging and potential command filtering.
 	 */
@@ -43,10 +37,7 @@ export interface Command {
 export class MacroCommand implements Command {
 	private commands: Command[] = [];
 
-	constructor(
-		private description: string,
-		commands: Command[] = []
-	) {
+	constructor(commands: Command[] = []) {
 		this.commands = [...commands];
 	}
 
@@ -66,12 +57,6 @@ export class MacroCommand implements Command {
 		for (let i = this.commands.length - 1; i >= 0; i--) {
 			await this.commands[i].undo();
 		}
-	}
-
-	getDescription(): string {
-		if (this.commands.length === 0) return this.description;
-		if (this.commands.length === 1) return this.commands[0].getDescription();
-		return `${this.description} (${this.commands.length} operations)`;
 	}
 
 	getType(): string {
