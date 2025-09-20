@@ -288,6 +288,10 @@ export class CalendarView extends MountableView(ItemView) {
 				setTimeout(() => this.saveCurrentState(), 200);
 			},
 
+			eventsSet: () => {
+				this.batchSelectionManager?.refreshSelectionStyling();
+			},
+
 			height: "auto",
 			aspectRatio: 1.35,
 		});
@@ -400,14 +404,6 @@ export class CalendarView extends MountableView(ItemView) {
 				id: `events-${Date.now()}`,
 				events: calendarEvents,
 			});
-
-			// Force complete re-render after a brief delay
-			setTimeout(() => {
-				if (this.calendar) {
-					this.calendar.render();
-				}
-				this.batchSelectionManager?.refreshSelectionStyling();
-			}, 50);
 		} catch (error) {
 			console.error("Error refreshing calendar events:", error);
 		}

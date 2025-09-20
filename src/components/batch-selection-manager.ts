@@ -297,9 +297,7 @@ export class BatchSelectionManager {
 	refreshSelectionStyling(): void {
 		if (this.isSelectionMode) {
 			this.removeSelectionStylingFromEvents();
-			setTimeout(() => {
-				this.addSelectionStylingToEvents();
-			}, 100);
+			this.addSelectionStylingToEvents();
 		}
 	}
 
