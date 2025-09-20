@@ -61,16 +61,10 @@ export class CalendarView extends MountableView(ItemView) {
 		this.zoomManager = new ZoomManager(bundle.settingsStore);
 	}
 
-	/**
-	 * Undo the last operation in this calendar.
-	 */
 	async undo(): Promise<boolean> {
 		return await this.bundle.undo();
 	}
 
-	/**
-	 * Redo the last undone operation in this calendar.
-	 */
 	async redo(): Promise<boolean> {
 		return await this.bundle.redo();
 	}
