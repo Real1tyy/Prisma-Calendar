@@ -3,6 +3,7 @@ import {
 	getNextOccurrence,
 	iterateOccurrencesInRange,
 } from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
+import { createFileLink } from "@real1ty-obsidian-plugins/utils/file-operations";
 import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
@@ -10,7 +11,6 @@ import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import type { NodeRecurringEvent } from "../types/recurring-event-schemas";
 import type { SingleCalendarConfig } from "../types/settings-schemas";
-import { createFileLink } from "@real1ty-obsidian-plugins/utils/file-operations";
 import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
 import { TemplateService } from "./template-service";
