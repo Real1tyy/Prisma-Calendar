@@ -1,6 +1,9 @@
 <div align="center">
 
-[![Prisma Calendar Demo](https://img.youtube.com/vi/JjZmNJkQlnc/hqdefault.jpg)](https://www.youtube.com/watch?v=JjZmNJkQlnc)
+<a href="https://www.youtube.com/watch?v=JjZmNJkQlnc" target="_blank">
+  <img src="https://img.youtube.com/vi/JjZmNJkQlnc/maxresdefault.jpg" alt="Prisma Calendar Demo" style="width:100%;">
+</a>
+<p><em>Play the demo to see Prisma Calendar in action!</em></p>
 
 # Prisma Calendar
 

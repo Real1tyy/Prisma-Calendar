@@ -5,7 +5,17 @@ title: Prisma Calendar
 
 <div align="center">
 
-[![Prisma Calendar Demo](https://img.youtube.com/vi/JjZmNJkQlnc/hqdefault.jpg)](https://www.youtube.com/watch?v=JjZmNJkQlnc)
+<div class="video-container" style="text-align: center; margin-bottom: 1em;">
+  <iframe
+    width="560"
+    height="315"
+    src="https://www.youtube.com/embed/JjZmNJkQlnc"
+    title="YouTube video player"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen>
+  </iframe>
+</div>
 
 # Prisma Calendar
 
