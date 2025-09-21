@@ -72,7 +72,3 @@ Every contribution, no matter the size, is greatly appreciated!
 ## Contributing
 
 MIT-licensed. PRs welcome!
-
----
-
-[Repository](https://github.com/Real1tyy/Prisma-Calendar) • [Documentation](https://real1tyy.github.io/Prisma-Calendar/) • [Issues](https://github.com/Real1tyy/Prisma-Calendar/issues)
