@@ -3,7 +3,7 @@
 	"name": "Prisma Calendar",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "A feature-rich, fully configurable calendar for Obsidian. Manage events across multiple calendars with support for recurring events, templates, and folder-based scanning.",
+	"description": "A feature-rich, fully configurable calendar. Manage events across multiple calendars with support for recurring events, templates, and folder-based scanning.",
 	"author": "Real1tyy",
 	"authorUrl": "https://github.com/Real1tyy",
 	"fundingUrl": "https://github.com/sponsors/Real1tyy",
