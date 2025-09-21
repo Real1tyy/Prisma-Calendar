@@ -7,14 +7,14 @@ title: Prisma Calendar
 
 <div class="video-container" style="text-align: center; margin-bottom: 1em;">
   <iframe
-    width="560"
-    height="315"
+    style="width:100%; aspect-ratio: 16/9;"
     src="https://www.youtube.com/embed/JjZmNJkQlnc"
     title="YouTube video player"
     frameborder="0"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowfullscreen>
   </iframe>
+  <p><em>Play the demo to see Prisma Calendar in action!</em></p>
 </div>
 
 # Prisma Calendar
