@@ -5,14 +5,14 @@ title: Prisma Calendar
 
 <div align="center">
 
-<div class="video-container" style="text-align: center; margin-bottom: 1em;">
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "1em"}}>
   <iframe
-    style="width:100%; aspect-ratio: 16/9;"
+    style={{"width":"100%", "aspectRatio": "16/9"}}
     src="https://www.youtube.com/embed/JjZmNJkQlnc"
     title="YouTube video player"
-    frameborder="0"
+    frameBorder="0"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowfullscreen>
+    allowFullScreen>
   </iframe>
   <p><em>Play the demo to see Prisma Calendar in action!</em></p>
 </div>
