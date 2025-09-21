@@ -98,18 +98,13 @@ export class Indexer {
 	private async scanAllFiles(): Promise<void> {
 		const allFiles = this.vault.getMarkdownFiles();
 		const relevantFiles = allFiles.filter((file) => this.isRelevantFile(file));
-		let filesSuccessfullyProcessed = 0;
 
 		for (const file of relevantFiles) {
 			const event = await this.buildExclusiveEvent(file);
 			if (event) {
 				this.scanEventsSubject.next(event);
-				filesSuccessfullyProcessed++;
 			}
 		}
-
-		console.log(`📊 Calendar Indexer: Scan complete
-  • Files successfully processed: ${filesSuccessfullyProcessed}`);
 
 		this.indexingCompleteSubject.next(true);
 	}

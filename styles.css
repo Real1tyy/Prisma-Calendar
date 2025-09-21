@@ -644,3 +644,185 @@
 	);
 	cursor: not-allowed;
 }
+
+.view-header-title-container {
+	flex-grow: unset;
+	flex-shrink: 0;
+}
+
+/* Settings Tabs */
+.settings-nav {
+	margin-bottom: 24px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	padding-bottom: 16px;
+}
+
+.nav-buttons {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.nav-buttons button {
+	padding: 8px 16px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.nav-buttons button.active {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.nav-buttons button:hover:not(.active) {
+	background-color: var(--background-modifier-hover);
+}
+
+.settings-info-box {
+	margin-top: 16px;
+	padding: 12px;
+	background-color: var(--background-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.settings-info-box h4 {
+	margin-top: 0;
+}
+
+.settings-info-box-example {
+	background-color: var(--background-primary);
+	padding: 8px;
+	border-radius: 4px;
+	margin-top: 8px;
+	font-size: 12px;
+	font-family: var(--font-monospace);
+	white-space: pre-wrap;
+}
+
+.settings-info-box ul {
+	margin-top: 4px;
+	padding-inline-start: 20px;
+}
+
+.settings-warning-box {
+	margin-top: 12px;
+	padding: 12px;
+	background-color: var(--background-modifier-error-rgb);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-error);
+}
+
+.settings-warning-box strong {
+	color: var(--text-error);
+}
+
+.frontmatter-display-example .example-event-box {
+	border: 1px solid var(--background-modifier-border);
+	padding: 8px;
+	border-radius: 4px;
+	max-width: 300px;
+	margin-top: 8px;
+}
+
+.example-event-box .title {
+	font-weight: 500;
+}
+
+.example-event-box .properties {
+	font-size: 0.9em;
+	color: var(--text-muted);
+	margin-top: 4px;
+}
+
+.color-preview-container {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 8px;
+}
+
+.color-preview-box {
+	width: 24px;
+	height: 24px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.color-preview-label {
+	font-family: var(--font-monospace);
+	font-size: 12px;
+	color: var(--text-muted);
+}
+
+.color-rule-item {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	padding: 16px;
+	margin-bottom: 12px;
+	background-color: var(--background-secondary);
+}
+
+.color-rule-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 12px;
+}
+
+.color-rule-header-left,
+.color-rule-header-right {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.color-rule-order {
+	font-size: 12px;
+	font-weight: bold;
+	color: var(--text-muted);
+	min-width: 24px;
+}
+
+.color-rule-preview {
+	width: 20px;
+	height: 20px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+}
+
+.color-rule-header-right {
+	gap: 8px;
+}
+
+.color-rule-header-right button[title="Delete rule"] {
+	color: var(--text-error);
+}
+
+.color-rule-input-group label {
+	display: block;
+	margin-bottom: 4px;
+	font-weight: 500;
+}
+
+.color-rule-input-group input[type="text"] {
+	width: 100%;
+	font-family: var(--font-monospace);
+}
+
+.color-rule-color-input {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	margin-top: 8px;
+}
+
+.color-rule-color-input .setting-item {
+	border: none;
+	padding: 0;
+}

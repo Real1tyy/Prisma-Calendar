@@ -38,7 +38,7 @@ export class EventContextMenu {
 
 		menu.addItem((item) => {
 			item
-				.setTitle("Edit Event")
+				.setTitle("Edit event")
 				.setIcon("edit")
 				.onClick(() => {
 					this.openEventEditModal(event);
@@ -47,7 +47,7 @@ export class EventContextMenu {
 
 		menu.addItem((item) => {
 			item
-				.setTitle("Duplicate Event")
+				.setTitle("Duplicate event")
 				.setIcon("copy")
 				.onClick(() => {
 					this.duplicateEvent(event);
@@ -58,7 +58,7 @@ export class EventContextMenu {
 
 		menu.addItem((item) => {
 			item
-				.setTitle("Move to Next Week")
+				.setTitle("Move to next week")
 				.setIcon("arrow-right")
 				.onClick(() => {
 					this.moveEventByWeeks(event, 1);
@@ -67,7 +67,7 @@ export class EventContextMenu {
 
 		menu.addItem((item) => {
 			item
-				.setTitle("Clone to Next Week")
+				.setTitle("Clone to next week")
 				.setIcon("copy-plus")
 				.onClick(() => {
 					this.cloneEventByWeeks(event, 1);
@@ -76,7 +76,7 @@ export class EventContextMenu {
 
 		menu.addItem((item) => {
 			item
-				.setTitle("Move to Previous Week")
+				.setTitle("Move to previous week")
 				.setIcon("arrow-left")
 				.onClick(() => {
 					this.moveEventByWeeks(event, -1);
@@ -85,7 +85,7 @@ export class EventContextMenu {
 
 		menu.addItem((item) => {
 			item
-				.setTitle("Clone to Previous Week")
+				.setTitle("Clone to previous week")
 				.setIcon("copy-minus")
 				.onClick(() => {
 					this.cloneEventByWeeks(event, -1);
@@ -96,7 +96,7 @@ export class EventContextMenu {
 
 		menu.addItem((item) => {
 			item
-				.setTitle("Delete Event")
+				.setTitle("Delete event")
 				.setIcon("trash")
 				.onClick(() => {
 					this.deleteEvent(event);
@@ -105,7 +105,7 @@ export class EventContextMenu {
 
 		menu.addItem((item) => {
 			item
-				.setTitle("Open File")
+				.setTitle("Open file")
 				.setIcon("file-text")
 				.onClick(() => {
 					this.app.workspace.openLinkText(filePath, "", false);
@@ -197,29 +197,33 @@ export class EventContextMenu {
 	}
 
 	private async updateEventFile(eventData: any): Promise<void> {
-		if (!eventData.filePath) {
+		const { filePath } = eventData;
+		if (!filePath) {
 			new Notice("Failed to update event: No file path found");
 			return;
 		}
 
 		try {
+			const file = this.app.vault.getAbstractFileByPath(filePath);
+			if (!(file instanceof TFile)) {
+				new Notice(`File not found: ${filePath}`);
+				return;
+			}
+
 			// Handle file renaming when titleProp is undefined/empty
 			const settings = this.bundle.settingsStore.currentSettings;
+			let finalFilePath = filePath;
 			if (eventData.title && !settings.titleProp) {
-				const file = this.app.vault.getAbstractFileByPath(eventData.filePath);
-				if (file instanceof TFile) {
-					const sanitizedTitle = sanitizeForFilename(eventData.title);
-					if (sanitizedTitle && sanitizedTitle !== file.basename) {
-						const parentPath = file.parent?.path || "";
-						const newFilePath = generateUniqueFilePath(this.app, parentPath, sanitizedTitle);
-						await this.app.vault.rename(file, newFilePath);
-						eventData.filePath = newFilePath; // Update the path for the command
-					}
+				const sanitizedTitle = sanitizeForFilename(eventData.title);
+				if (sanitizedTitle && sanitizedTitle !== file.basename) {
+					const parentPath = file.parent?.path || "";
+					const newFilePath = generateUniqueFilePath(this.app, parentPath, sanitizedTitle);
+					await this.app.fileManager.renameFile(file, newFilePath);
+					finalFilePath = newFilePath;
 				}
 			}
 
-			const command = new EditEventCommand(this.app, this.bundle, eventData.filePath, eventData);
-
+			const command = new EditEventCommand(this.app, this.bundle, finalFilePath, eventData);
 			await this.bundle.commandManager.executeCommand(command);
 
 			new Notice("Event updated successfully");

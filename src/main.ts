@@ -20,12 +20,16 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		this.addCommand({
 			id: "toggle-batch-selection",
-			name: "Toggle Batch Selection",
-			callback: () => {
+			name: "Toggle batch selection",
+			checkCallback: (checking: boolean) => {
 				const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
 				if (calendarView) {
-					calendarView.toggleBatchSelection();
+					if (!checking) {
+						calendarView.toggleBatchSelection();
+					}
+					return true;
 				}
+				return false;
 			},
 		});
 
@@ -35,33 +39,40 @@ export default class CustomCalendarPlugin extends Plugin {
 			this.addCommand({
 				id,
 				name: `Batch: ${name}`,
-				callback: () => {
+				checkCallback: (checking: boolean) => {
 					const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
-					if (!calendarView) return;
-					if (calendarView.isInBatchSelectionMode()) {
-						action(calendarView);
-					} else {
-						new Notice("Prisma Calendar: Batch selection mode is not active");
+					if (calendarView?.isInBatchSelectionMode()) {
+						if (!checking) {
+							action(calendarView);
+						}
+						return true;
 					}
+					if (calendarView && !calendarView.isInBatchSelectionMode()) {
+						if (!checking) {
+							new Notice("Prisma Calendar: Batch selection mode is not active");
+						}
+						return true; // Still show the command, but notify user
+					}
+					return false;
 				},
 			});
 		};
 
-		addBatchCommand("batch-select-all", "Select All", (view) => view.selectAll());
-		addBatchCommand("batch-clear-selection", "Clear Selection", (view) => view.clearSelection());
-		addBatchCommand("batch-duplicate-selection", "Duplicate Selection", (view) =>
+		addBatchCommand("batch-select-all", "Select all", (view) => view.selectAll());
+		addBatchCommand("batch-clear-selection", "Clear selection", (view) => view.clearSelection());
+		addBatchCommand("batch-duplicate-selection", "Duplicate selection", (view) =>
 			view.duplicateSelection()
 		);
-		addBatchCommand("batch-delete-selection", "Delete Selection", (view) => view.deleteSelection());
-		addBatchCommand("batch-open-selection", "Open Selection", (view) => view.openSelection());
-		addBatchCommand("batch-clone-next-week", "Clone to Next Week", (view) =>
+		addBatchCommand("batch-delete-selection", "Delete selection", (view) => view.deleteSelection());
+		addBatchCommand("batch-open-selection", "Open selection", (view) => view.openSelection());
+		addBatchCommand("batch-clone-next-week", "Clone to next week", (view) =>
 			view.cloneSelection(1)
 		);
-		addBatchCommand("batch-clone-prev-week", "Clone to Previous Week", (view) =>
+		addBatchCommand("batch-clone-prev-week", "Clone to previous week", (view) =>
 			view.cloneSelection(-1)
 		);
-		addBatchCommand("batch-move-next-week", "Move to Next Week", (view) => view.moveSelection(1));
-		addBatchCommand("batch-move-prev-week", "Move to Previous Week", (view) =>
+		addBatchCommand("batch-move-next-week", "Move to next week", (view) => view.moveSelection(1));
+		addBatchCommand("batch-move-prev-week", "Move to previous week", (view) =>
 			view.moveSelection(-1)
 		);
 
@@ -71,16 +82,19 @@ export default class CustomCalendarPlugin extends Plugin {
 			this.addCommand({
 				id,
 				name,
-				callback: async () => {
+				checkCallback: (checking: boolean) => {
 					const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
 					if (calendarView) {
-						const success = await action(calendarView);
-						if (!success) {
-							new Notice(`Nothing to ${name.toLowerCase()}`);
+						if (!checking) {
+							action(calendarView).then((success) => {
+								if (!success) {
+									new Notice(`Nothing to ${name.toLowerCase()}`);
+								}
+							});
 						}
-					} else {
-						new Notice("No active calendar view");
+						return true;
 					}
+					return false;
 				},
 			});
 		};

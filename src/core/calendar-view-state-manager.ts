@@ -37,9 +37,8 @@ export class CalendarViewStateManager {
 		return this.state;
 	}
 
-	clearState(): void {
+	clear(): void {
 		this.state = null;
-		console.info("Calendar state cleared");
 	}
 
 	hasState(): boolean {

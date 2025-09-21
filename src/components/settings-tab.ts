@@ -27,8 +27,6 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Custom Calendar Settings" });
-
 		this.createCalendarManagementHeader();
 		this.renderSelectedCalendarSettings();
 
@@ -50,14 +48,14 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 		const settings = this.plugin.settingsStore.currentSettings;
 
+		new Setting(containerEl).setName("Calendar Management").setHeading();
+
 		const headerContainer = containerEl.createDiv("calendar-management");
 		headerContainer.style.marginBottom = "24px";
 		headerContainer.style.padding = "16px";
 		headerContainer.style.backgroundColor = "var(--background-secondary)";
 		headerContainer.style.borderRadius = "8px";
 		headerContainer.style.border = "1px solid var(--background-modifier-border)";
-
-		headerContainer.createEl("h3", { text: "Calendar Management" });
 
 		new Setting(headerContainer)
 			.setName("Active Calendar")
@@ -118,7 +116,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		cloneButton.addEventListener("click", () => this.cloneCurrentCalendar());
 
 		// Rename Calendar button
-		const renameButton = actionsContainer.createEl("button", { text: "Rename Current" });
+		const renameButton = actionsContainer.createEl("button", { text: "Rename current" });
 		renameButton.style.padding = "6px 12px";
 		renameButton.style.border = "1px solid var(--background-modifier-border)";
 		renameButton.style.borderRadius = "4px";
@@ -128,7 +126,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		renameButton.addEventListener("click", () => this.renameCurrentCalendar());
 
 		// Delete Calendar button
-		const deleteButton = actionsContainer.createEl("button", { text: "Delete Current" });
+		const deleteButton = actionsContainer.createEl("button", { text: "Delete current" });
 		deleteButton.style.padding = "6px 12px";
 		deleteButton.style.border = "1px solid var(--text-error)";
 		deleteButton.style.borderRadius = "4px";
@@ -320,7 +318,7 @@ class RenameCalendarModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl("h2", { text: "Rename Calendar" });
+		contentEl.createEl("h2", { text: "Rename calendar" });
 
 		new Setting(contentEl)
 			.setName("Calendar name")

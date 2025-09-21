@@ -127,6 +127,5 @@ export class CalendarBundle {
 		this.recurringEventManager?.destroy?.();
 		this.templateService?.destroy?.();
 		this.settingsStore?.destroy?.();
-		this.plugin.removeCommand(`open-calendar-${this.calendarId}`);
 	}
 }

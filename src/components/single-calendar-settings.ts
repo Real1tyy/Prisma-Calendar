@@ -1,4 +1,4 @@
-import { Setting } from "obsidian";
+import { normalizePath, Setting } from "obsidian";
 import type { CalendarSettingsStore } from "../core/settings-store";
 import {
 	CALENDAR_VIEW_OPTIONS,
@@ -20,60 +20,30 @@ export class SingleCalendarSettings {
 	display(containerEl: HTMLElement): void {
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Calendar Settings" });
-
 		this.createSectionNavigation(containerEl);
 		this.renderActiveSection(containerEl);
 	}
 
 	private createSectionNavigation(containerEl: HTMLElement): void {
 		const navContainer = containerEl.createDiv("settings-nav");
-		navContainer.style.marginBottom = "24px";
-		navContainer.style.borderBottom = "1px solid var(--background-modifier-border)";
-		navContainer.style.paddingBottom = "16px";
+		const buttonContainer = navContainer.createDiv("nav-buttons");
 
 		const sections = [
-			{ id: "general" as const, label: "General Settings" },
-			{ id: "properties" as const, label: "Properties Settings" },
-			{ id: "calendar" as const, label: "Calendar Settings" },
-			{ id: "rules" as const, label: "Rules Settings" },
+			{ id: "general" as const, label: "General" },
+			{ id: "properties" as const, label: "Properties" },
+			{ id: "calendar" as const, label: "Calendar" },
+			{ id: "rules" as const, label: "Rules" },
 		];
-
-		const buttonContainer = navContainer.createDiv("nav-buttons");
-		buttonContainer.style.display = "flex";
-		buttonContainer.style.gap = "8px";
-		buttonContainer.style.flexWrap = "wrap";
 
 		sections.forEach((section) => {
 			const button = buttonContainer.createEl("button", { text: section.label });
-			button.style.padding = "8px 16px";
-			button.style.border = "1px solid var(--background-modifier-border)";
-			button.style.borderRadius = "6px";
-			button.style.backgroundColor =
-				this.activeSection === section.id
-					? "var(--interactive-accent)"
-					: "var(--background-secondary)";
-			button.style.color =
-				this.activeSection === section.id ? "var(--text-on-accent)" : "var(--text-normal)";
-			button.style.cursor = "pointer";
-			button.style.transition = "all 0.2s ease";
+			if (this.activeSection === section.id) {
+				button.addClass("active");
+			}
 
 			button.addEventListener("click", () => {
 				this.activeSection = section.id;
 				this.display(containerEl); // Re-render with new active section
-			});
-
-			// Hover effects
-			button.addEventListener("mouseenter", () => {
-				if (this.activeSection !== section.id) {
-					button.style.backgroundColor = "var(--background-modifier-hover)";
-				}
-			});
-
-			button.addEventListener("mouseleave", () => {
-				if (this.activeSection !== section.id) {
-					button.style.backgroundColor = "var(--background-secondary)";
-				}
 			});
 		});
 	}
@@ -122,7 +92,7 @@ export class SingleCalendarSettings {
 	private addDirectorySettings(containerEl: HTMLElement): void {
 		const settings = this.settingsStore.currentSettings;
 
-		containerEl.createEl("h3", { text: "Calendar Directory" });
+		new Setting(containerEl).setName("Calendar directory").setHeading();
 
 		new Setting(containerEl)
 			.setName("Directory")
@@ -131,7 +101,10 @@ export class SingleCalendarSettings {
 				text.setValue(settings.directory);
 				text.setPlaceholder("e.g., tasks, calendar, events");
 				text.onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({ ...s, directory: value }));
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						directory: normalizePath(value),
+					}));
 				});
 			});
 
@@ -146,7 +119,7 @@ export class SingleCalendarSettings {
 				text.onChange(async (value) => {
 					await this.settingsStore.updateSettings((s) => ({
 						...s,
-						templatePath: value || undefined,
+						templatePath: value ? normalizePath(value) : undefined,
 					}));
 				});
 			});
@@ -155,7 +128,7 @@ export class SingleCalendarSettings {
 	private addFrontmatterSettings(containerEl: HTMLElement): void {
 		const settings = this.settingsStore.currentSettings;
 
-		containerEl.createEl("h3", { text: "Frontmatter Properties" });
+		new Setting(containerEl).setName("Frontmatter properties").setHeading();
 
 		new Setting(containerEl)
 			.setName("Start property")
@@ -302,47 +275,36 @@ export class SingleCalendarSettings {
 			);
 
 		// Add description for recurring events
-		const recurringDesc = containerEl.createDiv();
-		recurringDesc.style.marginTop = "16px";
-		recurringDesc.style.padding = "12px";
-		recurringDesc.style.backgroundColor = "var(--background-secondary)";
-		recurringDesc.style.borderRadius = "8px";
-		recurringDesc.style.border = "1px solid var(--background-modifier-border)";
+		const recurringDesc = containerEl.createDiv("settings-info-box");
 
-		recurringDesc.createEl("h4", { text: "Node-Based Recurring Events" });
+		recurringDesc.createEl("h4", { text: "Node-based recurring events" });
 		recurringDesc.createEl("p", {
 			text: "To create recurring events, add the RRule property to any event file's frontmatter. The plugin will automatically detect these and create recurring instances.",
 		});
 
 		const exampleContainer = recurringDesc.createDiv();
 		exampleContainer.createEl("strong", { text: "Example:" });
-		const exampleCode = exampleContainer.createEl("pre");
-		exampleCode.style.backgroundColor = "var(--background-primary)";
-		exampleCode.style.padding = "8px";
-		exampleCode.style.borderRadius = "4px";
-		exampleCode.style.marginTop = "8px";
-		exampleCode.style.fontSize = "12px";
-		exampleCode.textContent = `---
+		exampleContainer.createEl("pre", {
+			text: `---
 ${settings.startProp}: 2024-01-15T09:00
 ${settings.endProp}: 2024-01-15T10:30
 ${settings.rruleProp}: weekly
 ${settings.rruleSpecProp}: monday, wednesday, friday
 ---
 
-# Weekly Team Meeting`;
+# Weekly Team Meeting`,
+			cls: "settings-info-box-example",
+		});
 
 		const typesContainer = recurringDesc.createDiv();
-		typesContainer.style.marginTop = "12px";
-		typesContainer.createEl("strong", { text: "Supported RRule types:" });
+		typesContainer.createEl("strong", { text: "Supported RRule types" });
 		const typesList = typesContainer.createEl("ul");
-		typesList.style.marginTop = "4px";
 		["daily", "weekly", "bi-weekly", "monthly", "bi-monthly", "yearly"].forEach((type) => {
 			typesList.createEl("li", { text: type });
 		});
 
 		const specContainer = recurringDesc.createDiv();
-		specContainer.style.marginTop = "8px";
-		specContainer.createEl("strong", { text: "RRuleSpec (for weekly/bi-weekly):" });
+		specContainer.createEl("strong", { text: "RRuleSpec (for weekly/bi-weekly)" });
 		specContainer.createEl("p", {
 			text: "Comma-separated weekdays: sunday, monday, tuesday, wednesday, thursday, friday, saturday",
 		});
@@ -351,7 +313,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 	private addRecurringEventSettings(containerEl: HTMLElement): void {
 		const settings = this.settingsStore.currentSettings;
 
-		containerEl.createEl("h3", { text: "Recurring Event Settings" });
+		new Setting(containerEl).setName("Recurring events").setHeading();
 
 		new Setting(containerEl)
 			.setName("Future instances count")
@@ -375,7 +337,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 	private addParsingSettings(containerEl: HTMLElement): void {
 		const settings = this.settingsStore.currentSettings;
 
-		containerEl.createEl("h3", { text: "Parsing Settings" });
+		new Setting(containerEl).setName("Parsing").setHeading();
 
 		new Setting(containerEl)
 			.setName("Default duration (minutes)")
@@ -399,7 +361,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 	private addUISettings(containerEl: HTMLElement): void {
 		const settings = this.settingsStore.currentSettings;
 
-		containerEl.createEl("h3", { text: "UI Settings" });
+		new Setting(containerEl).setName("User interface").setHeading();
 
 		new Setting(containerEl)
 			.setName("Default view")
@@ -587,7 +549,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 	private addFrontmatterDisplaySettings(containerEl: HTMLElement): void {
 		const settings = this.settingsStore.currentSettings;
 
-		containerEl.createEl("h3", { text: "Frontmatter Display" });
+		new Setting(containerEl).setName("Frontmatter display").setHeading();
 
 		const desc = containerEl.createDiv();
 		desc.createEl("p", {
@@ -624,23 +586,19 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 			text: "Example display in calendar:",
 			cls: "setting-item-description",
 		});
+
 		const exampleBox = exampleContainer.createDiv("example-event-box");
-		exampleBox.innerHTML = `
-			<div style="border: 1px solid var(--background-modifier-border); padding: 8px; border-radius: 4px; max-width: 300px;">
-				<div style="font-weight: 500;">Meeting with Team</div>
-				<div style="font-size: 0.9em; color: var(--text-muted); margin-top: 4px;">
-					<div>status: In Progress</div>
-					<div>priority: High</div>
-					<div>project: Q4 Planning</div>
-				</div>
-			</div>
-		`;
+		exampleBox.createEl("div", { text: "Meeting with Team", cls: "title" });
+		const propertiesContainer = exampleBox.createDiv("properties");
+		propertiesContainer.createEl("div", { text: "status: In Progress" });
+		propertiesContainer.createEl("div", { text: "priority: High" });
+		propertiesContainer.createEl("div", { text: "project: Q4 Planning" });
 	}
 
 	private addColorSettings(containerEl: HTMLElement): void {
 		const settings = this.settingsStore.currentSettings;
 
-		containerEl.createEl("h3", { text: "Event Colors" });
+		new Setting(containerEl).setName("Event colors").setHeading();
 
 		// Default color setting with color picker and preview
 		const defaultColorSetting = new Setting(containerEl)
@@ -648,25 +606,14 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 			.setDesc("Default color for events when no color rules match");
 
 		// Add color preview
-		const previewContainer = defaultColorSetting.settingEl.createDiv();
-		previewContainer.style.display = "flex";
-		previewContainer.style.alignItems = "center";
-		previewContainer.style.gap = "12px";
-		previewContainer.style.marginTop = "8px";
-
-		const colorPreview = previewContainer.createEl("div");
-		colorPreview.style.width = "24px";
-		colorPreview.style.height = "24px";
+		const previewContainer = defaultColorSetting.settingEl.createDiv("color-preview-container");
+		const colorPreview = previewContainer.createDiv("color-preview-box");
 		colorPreview.style.backgroundColor = settings.defaultEventColor;
-		colorPreview.style.border = "1px solid var(--background-modifier-border)";
-		colorPreview.style.borderRadius = "6px";
-		colorPreview.style.boxShadow = "0 1px 3px rgba(0,0,0,0.12)";
 
-		const previewLabel = previewContainer.createSpan();
-		previewLabel.textContent = settings.defaultEventColor;
-		previewLabel.style.fontFamily = "var(--font-monospace)";
-		previewLabel.style.fontSize = "12px";
-		previewLabel.style.color = "var(--text-muted)";
+		const previewLabel = previewContainer.createSpan({
+			text: settings.defaultEventColor,
+			cls: "color-preview-label",
+		});
 
 		// Add color picker
 		defaultColorSetting.addColorPicker((colorPicker) => {
@@ -683,26 +630,17 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 
 		// Color rules section
 		const colorRulesContainer = containerEl.createDiv();
-		colorRulesContainer.style.marginTop = "16px";
 
 		const desc = colorRulesContainer.createDiv();
-		desc.style.marginBottom = "16px";
 		desc.createEl("p", {
 			text: "Define color rules based on frontmatter properties. Rules are evaluated in order - the first matching rule determines the event color.",
 		});
 
 		// Examples section
-		const examplesContainer = desc.createDiv();
-		examplesContainer.style.marginTop = "12px";
-		examplesContainer.style.padding = "12px";
-		examplesContainer.style.backgroundColor = "var(--background-secondary)";
-		examplesContainer.style.borderRadius = "8px";
-		examplesContainer.style.border = "1px solid var(--background-modifier-border)";
+		const examplesContainer = desc.createDiv("settings-info-box");
 
 		examplesContainer.createEl("strong", { text: "Example color rules:" });
 		const examplesList = examplesContainer.createEl("ul");
-		examplesList.style.marginTop = "8px";
-		examplesList.style.marginBottom = "0";
 
 		const examples = [
 			{
@@ -725,37 +663,23 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 
 		examples.forEach((example) => {
 			const li = examplesList.createEl("li");
-			li.style.marginBottom = "4px";
 
-			const expressionCode = li.createEl("code");
-			expressionCode.textContent = example.expression;
-			expressionCode.style.backgroundColor = "var(--background-primary)";
-			expressionCode.style.padding = "2px 4px";
-			expressionCode.style.borderRadius = "3px";
+			const expressionCode = li.createEl("code", { text: example.expression });
+			expressionCode.addClass("settings-info-box-example");
 
 			li.createSpan({ text: " → " });
 
 			const colorSpan = li.createEl("span");
-			colorSpan.style.display = "inline-block";
-			colorSpan.style.width = "16px";
-			colorSpan.style.height = "16px";
-			colorSpan.style.backgroundColor = example.color;
-			colorSpan.style.border = "1px solid var(--background-modifier-border)";
-			colorSpan.style.borderRadius = "3px";
-			colorSpan.style.marginRight = "8px";
-			colorSpan.style.verticalAlign = "middle";
+			colorSpan.setAttr(
+				"style",
+				`display: inline-block; width: 16px; height: 16px; background-color: ${example.color}; border: 1px solid var(--background-modifier-border); border-radius: 3px; margin-right: 8px; vertical-align: middle;`
+			);
 
 			li.createSpan({ text: example.description, cls: "setting-item-description" });
 		});
 
 		// Warning section
-		const warningContainer = desc.createDiv();
-		warningContainer.style.marginTop = "12px";
-		warningContainer.style.padding = "12px";
-		warningContainer.style.backgroundColor = "var(--background-modifier-error-rgb)";
-		warningContainer.style.borderRadius = "8px";
-		warningContainer.style.border = "1px solid var(--background-modifier-error)";
-
+		const warningContainer = desc.createDiv("settings-warning-box");
 		warningContainer.createEl("strong", { text: "⚠️ Important:" });
 		warningContainer.createEl("p", {
 			text: "Use 'fm' to access frontmatter properties. Invalid expressions will be ignored. Colors can be CSS color names, hex codes, or HSL values.",
@@ -763,7 +687,6 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 
 		// Color rules list
 		const colorRulesListContainer = colorRulesContainer.createDiv();
-		colorRulesListContainer.style.marginTop = "16px";
 
 		this.renderColorRulesList(colorRulesListContainer);
 
@@ -798,51 +721,21 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 
 		if (colorRules.length === 0) {
 			const emptyState = container.createDiv();
-			emptyState.style.textAlign = "center";
-			emptyState.style.padding = "20px";
-			emptyState.style.color = "var(--text-muted)";
-			emptyState.style.fontStyle = "italic";
 			emptyState.textContent = "No color rules defined. Click 'Add Rule' to create one.";
 			return;
 		}
 
 		colorRules.forEach((rule, index) => {
-			const ruleContainer = container.createDiv();
-			ruleContainer.style.border = "1px solid var(--background-modifier-border)";
-			ruleContainer.style.borderRadius = "8px";
-			ruleContainer.style.padding = "16px";
-			ruleContainer.style.marginBottom = "12px";
-			ruleContainer.style.backgroundColor = "var(--background-secondary)";
-
-			// Rule header with enable/disable toggle and delete button
-			const headerContainer = ruleContainer.createDiv();
-			headerContainer.style.display = "flex";
-			headerContainer.style.justifyContent = "space-between";
-			headerContainer.style.alignItems = "center";
-			headerContainer.style.marginBottom = "12px";
-
-			const leftSection = headerContainer.createDiv();
-			leftSection.style.display = "flex";
-			leftSection.style.alignItems = "center";
-			leftSection.style.gap = "12px";
-
-			// Rule order indicator
-			const orderIndicator = leftSection.createEl("span");
-			orderIndicator.textContent = `#${index + 1}`;
-			orderIndicator.style.fontSize = "12px";
-			orderIndicator.style.fontWeight = "bold";
-			orderIndicator.style.color = "var(--text-muted)";
-			orderIndicator.style.minWidth = "24px";
-
-			// Color preview
-			const colorPreview = leftSection.createEl("div");
-			colorPreview.style.width = "20px";
-			colorPreview.style.height = "20px";
+			const ruleContainer = container.createDiv("color-rule-item");
+			const headerContainer = ruleContainer.createDiv("color-rule-header");
+			const leftSection = headerContainer.createDiv("color-rule-header-left");
+			leftSection.createEl("span", {
+				text: `#${index + 1}`,
+				cls: "color-rule-order",
+			});
+			const colorPreview = leftSection.createDiv("color-rule-preview");
 			colorPreview.style.backgroundColor = rule.color;
-			colorPreview.style.border = "1px solid var(--background-modifier-border)";
-			colorPreview.style.borderRadius = "4px";
 
-			// Enable/disable toggle
 			const enableToggle = leftSection.createEl("input");
 			enableToggle.type = "checkbox";
 			enableToggle.checked = rule.enabled;
@@ -855,15 +748,13 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 				}));
 			};
 
-			const rightSection = headerContainer.createDiv();
-			rightSection.style.display = "flex";
-			rightSection.style.gap = "8px";
+			const rightSection = headerContainer.createDiv("color-rule-header-right");
 
-			// Move up button
 			if (index > 0) {
-				const moveUpButton = rightSection.createEl("button");
-				moveUpButton.textContent = "↑";
-				moveUpButton.title = "Move up";
+				const moveUpButton = rightSection.createEl("button", {
+					text: "↑",
+					attr: { title: "Move up" },
+				});
 				moveUpButton.onclick = async () => {
 					await this.settingsStore.updateSettings((s) => {
 						const currentRules = [...s.colorRules];
@@ -880,11 +771,11 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 				};
 			}
 
-			// Move down button
 			if (index < colorRules.length - 1) {
-				const moveDownButton = rightSection.createEl("button");
-				moveDownButton.textContent = "↓";
-				moveDownButton.title = "Move down";
+				const moveDownButton = rightSection.createEl("button", {
+					text: "↓",
+					attr: { title: "Move down" },
+				});
 				moveDownButton.onclick = async () => {
 					await this.settingsStore.updateSettings((s) => {
 						const currentRules = [...s.colorRules];
@@ -901,11 +792,10 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 				};
 			}
 
-			// Delete button
-			const deleteButton = rightSection.createEl("button");
-			deleteButton.textContent = "×";
-			deleteButton.title = "Delete rule";
-			deleteButton.style.color = "var(--text-error)";
+			const deleteButton = rightSection.createEl("button", {
+				text: "×",
+				attr: { title: "Delete rule" },
+			});
 			deleteButton.onclick = async () => {
 				await this.settingsStore.updateSettings((s) => ({
 					...s,
@@ -914,22 +804,13 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 				this.renderColorRulesList(container);
 			};
 
-			// Expression input
-			const expressionContainer = ruleContainer.createDiv();
-			expressionContainer.style.marginBottom = "12px";
-
-			const expressionLabel = expressionContainer.createEl("label");
-			expressionLabel.textContent = "Expression:";
-			expressionLabel.style.display = "block";
-			expressionLabel.style.marginBottom = "4px";
-			expressionLabel.style.fontWeight = "500";
-
-			const expressionInput = expressionContainer.createEl("input");
-			expressionInput.type = "text";
-			expressionInput.value = rule.expression;
-			expressionInput.placeholder = "fm.Priority === 'High'";
-			expressionInput.style.width = "100%";
-			expressionInput.style.fontFamily = "var(--font-monospace)";
+			const expressionContainer = ruleContainer.createDiv("color-rule-input-group");
+			expressionContainer.createEl("label", { text: "Expression:" });
+			const expressionInput = expressionContainer.createEl("input", {
+				type: "text",
+				value: rule.expression,
+				placeholder: "fm.Priority === 'High'",
+			});
 
 			expressionInput.oninput = async () => {
 				await this.settingsStore.updateSettings((s) => ({
@@ -940,46 +821,26 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 				}));
 			};
 
-			// Color input with color picker
-			const colorContainer = ruleContainer.createDiv();
-			colorContainer.style.display = "flex";
-			colorContainer.style.gap = "12px";
-			colorContainer.style.alignItems = "center";
-			colorContainer.style.marginTop = "8px";
-
-			const colorLabel = colorContainer.createEl("label");
-			colorLabel.textContent = "Color:";
-			colorLabel.style.fontWeight = "500";
-			colorLabel.style.minWidth = "50px";
-
-			// Create a wrapper for the color picker and preview
+			const colorContainer = ruleContainer.createDiv("color-rule-color-input");
+			colorContainer.createEl("label", { text: "Color:" });
 			const colorPickerContainer = colorContainer.createDiv();
 			colorPickerContainer.style.display = "flex";
 			colorPickerContainer.style.alignItems = "center";
 			colorPickerContainer.style.gap = "8px";
 			colorPickerContainer.style.flex = "1";
 
-			// Color value display
-			const colorValueDisplay = colorPickerContainer.createSpan();
-			colorValueDisplay.textContent = rule.color;
-			colorValueDisplay.style.fontFamily = "var(--font-monospace)";
-			colorValueDisplay.style.fontSize = "12px";
-			colorValueDisplay.style.color = "var(--text-muted)";
-			colorValueDisplay.style.minWidth = "100px";
+			const colorValueDisplay = colorPickerContainer.createSpan({
+				text: rule.color,
+				cls: "color-preview-label",
+			});
 
-			// Create a Setting specifically for the color picker
-			const colorPickerSetting = new Setting(colorPickerContainer);
-			colorPickerSetting.settingEl.style.border = "none";
-			colorPickerSetting.settingEl.style.padding = "0";
-			colorPickerSetting.addColorPicker((colorPicker) => {
+			new Setting(colorPickerContainer).addColorPicker((colorPicker) => {
 				colorPicker.setValue(rule.color);
 				colorPicker.onChange(async (value) => {
 					await this.settingsStore.updateSettings((s) => ({
 						...s,
 						colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, color: value } : r)),
 					}));
-
-					// Update color preview and value display
 					colorPreview.style.backgroundColor = value;
 					colorValueDisplay.textContent = value;
 				});
@@ -990,26 +851,18 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 	private addFilterSettings(containerEl: HTMLElement): void {
 		const settings = this.settingsStore.currentSettings;
 
-		containerEl.createEl("h3", { text: "Event Filtering" });
+		new Setting(containerEl).setName("Event filtering").setHeading();
 
 		const desc = containerEl.createDiv();
-		desc.style.marginBottom = "16px";
 		desc.createEl("p", {
 			text: "Filter events based on their frontmatter properties using JavaScript expressions. Each expression should evaluate to true/false. Events must pass ALL filters to be included.",
 		});
 
 		// Examples section
-		const examplesContainer = desc.createDiv();
-		examplesContainer.style.marginTop = "12px";
-		examplesContainer.style.padding = "12px";
-		examplesContainer.style.backgroundColor = "var(--background-secondary)";
-		examplesContainer.style.borderRadius = "8px";
-		examplesContainer.style.border = "1px solid var(--background-modifier-border)";
+		const examplesContainer = desc.createDiv("settings-info-box");
 
 		examplesContainer.createEl("strong", { text: "Examples:" });
 		const examplesList = examplesContainer.createEl("ul");
-		examplesList.style.marginTop = "8px";
-		examplesList.style.marginBottom = "0";
 
 		const examples = [
 			"fm.Status !== 'Inbox'",
@@ -1021,21 +874,12 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 
 		examples.forEach((example) => {
 			const li = examplesList.createEl("li");
-			const code = li.createEl("code");
-			code.textContent = example;
-			code.style.backgroundColor = "var(--background-primary)";
-			code.style.padding = "2px 4px";
-			code.style.borderRadius = "3px";
+			const code = li.createEl("code", { text: example });
+			code.addClass("settings-info-box-example");
 		});
 
 		// Warning section
-		const warningContainer = desc.createDiv();
-		warningContainer.style.marginTop = "12px";
-		warningContainer.style.padding = "12px";
-		warningContainer.style.backgroundColor = "var(--background-modifier-error-rgb)";
-		warningContainer.style.borderRadius = "8px";
-		warningContainer.style.border = "1px solid var(--background-modifier-error)";
-
+		const warningContainer = desc.createDiv("settings-warning-box");
 		warningContainer.createEl("strong", { text: "⚠️ Important:" });
 		warningContainer.createEl("p", {
 			text: "Use 'fm' to access frontmatter properties (e.g., fm.Status, fm.Priority). Invalid expressions will be ignored and logged to console.",
@@ -1058,14 +902,14 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 					}));
 				});
 				text.inputEl.rows = 5;
-				text.inputEl.style.fontFamily = "var(--font-monospace)";
+				text.inputEl.addClass("settings-info-box-example");
 			});
 	}
 
 	private addTimezoneSettings(containerEl: HTMLElement): void {
 		const settings = this.settingsStore.currentSettings;
 
-		containerEl.createEl("h3", { text: "Timezone Settings" });
+		new Setting(containerEl).setName("Timezone").setHeading();
 
 		new Setting(containerEl)
 			.setName("Default timezone")
