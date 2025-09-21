@@ -92,7 +92,7 @@ const config: Config = {
           position: 'left',
         },
         {
-          href: 'https://www.youtube.com/watch?v=YOUR_VIDEO_ID',
+          href: 'https://www.youtube.com/watch?v=JjZmNJkQlnc',
           label: 'Demo',
           position: 'right',
         },
@@ -141,7 +141,7 @@ const config: Config = {
           items: [
             {
               label: 'Demo Video',
-              href: 'https://www.youtube.com/watch?v=YOUR_VIDEO_ID',
+              href: 'https://www.youtube.com/watch?v=JjZmNJkQlnc',
             },
             {
               label: 'Repository',

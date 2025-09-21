@@ -5,7 +5,7 @@ title: Prisma Calendar
 
 <div align="center">
 
-![Prisma Calendar Logo](../static/img/PrismaCalendar.png)
+[![Prisma Calendar Demo](https://img.youtube.com/vi/JjZmNJkQlnc/hqdefault.jpg)](https://www.youtube.com/watch?v=JjZmNJkQlnc)
 
 # Prisma Calendar
 
@@ -40,22 +40,6 @@ Prisma Calendar is built on a foundation of extreme flexibility and power, desig
     -   Events are plain Markdown notes. You own your data.
     -   Uses virtual events for far-future recurrences to keep your vault clean and fast.
 
-[![Watch the demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
-
-**Repository**: [https://github.com/Real1tyy/Prisma-Calendar](https://github.com/Real1tyy/Prisma-Calendar)
-
-> Goal: The most flexible, powerful calendar for Obsidian.
-
-## Help Shape the Future
-
-This plugin is under active development and is personally used every day by the developer. The goal is to make it the best calendar for Obsidian, and community feedback is crucial.
-
-Have an idea or a feature request?
-1.  **Open an Issue** on our [GitHub repository](https://github.com/Real1tyy/Prisma-Calendar/issues).
-2.  **Upvote Existing Ideas**: If you see a feature request you'd like, give it a 👍 reaction.
-
-We prioritize development based on community demand, so your voice helps us build a better calendar for everyone.
-
 ## Highlights
 
 - Multiple isolated calendars (each with its own folder, filters, colors, hotkey)
@@ -88,3 +72,13 @@ Agenda...
 ```
 
 See Configuration for how to map these property names to your preferences and how to display extra properties inside event chips.
+
+## Help Shape the Future
+
+This plugin is under active development and is personally used every day by the developer. The goal is to make it the best calendar for Obsidian, and community feedback is crucial.
+
+Have an idea or a feature request?
+1.  **Open an Issue** on our [GitHub repository](https://github.com/Real1tyy/Prisma-Calendar/issues).
+2.  **Upvote Existing Ideas**: If you see a feature request you'd like, give it a 👍 reaction.
+
+We prioritize development based on community demand, so your voice helps us build a better calendar for everyone.

@@ -1,6 +1,6 @@
 <div align="center">
 
-![Prisma Calendar Logo](docs-site/static/img/PrismaCalendar.png)
+[![Prisma Calendar Demo](https://img.youtube.com/vi/JjZmNJkQlnc/hqdefault.jpg)](https://www.youtube.com/watch?v=JjZmNJkQlnc)
 
 # Prisma Calendar
 
