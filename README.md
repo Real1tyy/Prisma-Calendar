@@ -71,7 +71,7 @@ Every contribution, no matter the size, is greatly appreciated!
 
 ## Contributing
 
-MIT-licensed. PRs welcome! Please run `mise run ci` before pushing.
+MIT-licensed. PRs welcome!
 
 ---
 
