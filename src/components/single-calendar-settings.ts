@@ -595,7 +595,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 		// Add color preview
 		const previewContainer = defaultColorSetting.settingEl.createDiv("color-preview-container");
 		const colorPreview = previewContainer.createDiv("color-preview-box");
-		colorPreview.style.backgroundColor = settings.defaultEventColor;
+		colorPreview.style.setProperty("--preview-color", settings.defaultEventColor);
 
 		const previewLabel = previewContainer.createSpan({
 			text: settings.defaultEventColor,
@@ -610,7 +610,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 				await this.settingsStore.updateSettings((s) => ({ ...s, defaultEventColor: color }));
 
 				// Update preview
-				colorPreview.style.backgroundColor = color;
+				colorPreview.style.setProperty("--preview-color", color);
 				previewLabel.textContent = color;
 			});
 		});
@@ -656,11 +656,8 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 
 			li.createSpan({ text: " → " });
 
-			const colorSpan = li.createEl("span");
-			colorSpan.setAttr(
-				"style",
-				`display: inline-block; width: 16px; height: 16px; background-color: ${example.color}; border: 1px solid var(--background-modifier-border); border-radius: 3px; margin-right: 8px; vertical-align: middle;`
-			);
+			const colorSpan = li.createEl("span", { cls: "color-example-dot" });
+			colorSpan.style.setProperty("--example-color", example.color);
 
 			li.createSpan({ text: example.description, cls: "setting-item-description" });
 		});
@@ -721,7 +718,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 				cls: "color-rule-order",
 			});
 			const colorPreview = leftSection.createDiv("color-rule-preview");
-			colorPreview.style.backgroundColor = rule.color;
+			colorPreview.style.setProperty("--preview-color", rule.color);
 
 			const enableToggle = leftSection.createEl("input");
 			enableToggle.type = "checkbox";
@@ -806,11 +803,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 
 			const colorContainer = ruleContainer.createDiv("color-rule-color-input");
 			colorContainer.createEl("label", { text: "Color:" });
-			const colorPickerContainer = colorContainer.createDiv();
-			colorPickerContainer.style.display = "flex";
-			colorPickerContainer.style.alignItems = "center";
-			colorPickerContainer.style.gap = "8px";
-			colorPickerContainer.style.flex = "1";
+			const colorPickerContainer = colorContainer.createDiv("color-picker-container");
 
 			const colorValueDisplay = colorPickerContainer.createSpan({
 				text: rule.color,
@@ -824,7 +817,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 						...s,
 						colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, color: value } : r)),
 					}));
-					colorPreview.style.backgroundColor = value;
+					colorPreview.style.setProperty("--preview-color", value);
 					colorValueDisplay.textContent = value;
 				});
 			});

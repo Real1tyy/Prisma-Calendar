@@ -105,6 +105,9 @@
 		transform 0.06s ease,
 		box-shadow 0.2s ease,
 		opacity 0.2s ease;
+	/* Use CSS custom property for dynamic colors */
+	background-color: var(--event-color);
+	border-color: var(--event-color);
 }
 .fc-event-hidden {
 	display: none;
@@ -755,6 +758,7 @@
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 6px;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+	background-color: var(--preview-color);
 }
 
 .color-preview-label {
@@ -797,6 +801,7 @@
 	height: 20px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
+	background-color: var(--preview-color);
 }
 
 .color-rule-header-right {
@@ -828,4 +833,151 @@
 .color-rule-color-input .setting-item {
 	border: none;
 	padding: 0;
+}
+
+/* Virtual Event Styles */
+.virtual-event-opacity {
+	opacity: 0.6;
+}
+
+.virtual-event-cursor {
+	cursor: default;
+}
+
+.virtual-event-italic {
+	opacity: 0.7;
+	font-style: italic;
+}
+
+/* Hidden Element */
+.element-hidden {
+	display: none;
+}
+
+/* Zoom Button Styles */
+.zoom-button-visible {
+	display: "";
+}
+
+.zoom-button-hidden {
+	display: none;
+}
+
+/* Settings Tab Styles */
+.settings-footer {
+	margin-top: 2rem;
+	text-align: center;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+}
+
+.settings-support-link {
+	text-decoration: none;
+	color: var(--text-accent);
+}
+
+.calendar-management-header {
+	margin-bottom: 24px;
+	padding: 16px;
+	background-color: var(--background-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.calendar-actions {
+	display: flex;
+	gap: 8px;
+	margin-top: 12px;
+	flex-wrap: wrap;
+}
+
+.calendar-action-button {
+	padding: 6px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-weight-medium);
+	transition: all 0.2s ease;
+	border: 1px solid transparent;
+	outline: none;
+}
+
+.calendar-action-button:hover:not(:disabled) {
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-action-button:active:not(:disabled) {
+	transform: translateY(0);
+}
+
+.calendar-create-button {
+	border: 1px solid var(--interactive-accent);
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.calendar-create-button:hover:not(:disabled) {
+	background-color: var(--interactive-accent-hover);
+	border-color: var(--interactive-accent-hover);
+}
+
+.calendar-clone-button,
+.calendar-rename-button {
+	border: 1px solid var(--background-modifier-border);
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+}
+
+.calendar-clone-button:hover:not(:disabled),
+.calendar-rename-button:hover:not(:disabled) {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--background-modifier-border-hover);
+}
+
+.calendar-delete-button {
+	border: 1px solid var(--text-error);
+	background-color: var(--background-primary);
+	color: var(--text-error);
+}
+
+.calendar-delete-button:hover:not(:disabled) {
+	background-color: var(--background-modifier-error);
+	border-color: var(--text-error);
+}
+
+.calendar-button-disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.calendar-button-disabled:hover {
+	transform: none;
+	box-shadow: none;
+}
+
+.calendar-count-info {
+	margin-top: 8px;
+	font-size: 12px;
+	color: var(--text-muted);
+}
+
+/* Color Picker Styles */
+.color-picker-container {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1;
+}
+
+/* Color Example Dot */
+.color-example-dot {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 3px;
+	margin-right: 8px;
+	vertical-align: middle;
+	background-color: var(--example-color);
 }

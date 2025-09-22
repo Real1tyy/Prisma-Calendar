@@ -30,18 +30,13 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		this.createCalendarManagementHeader();
 		this.renderSelectedCalendarSettings();
 
-		const footerEl = containerEl.createDiv({ cls: "setting-item" });
-		footerEl.style.marginTop = "2rem";
-		footerEl.style.textAlign = "center";
-		footerEl.style.fontSize = "var(--font-ui-smaller)";
-		footerEl.style.color = "var(--text-faint)";
+		const footerEl = containerEl.createDiv({ cls: "setting-item settings-footer" });
 
-		const supportLink = footerEl.createEl("a", {
+		footerEl.createEl("a", {
 			text: "Support Prisma Calendar Development",
 			href: "https://github.com/sponsors/Real1tyy",
+			cls: "settings-support-link",
 		});
-		supportLink.style.textDecoration = "none";
-		supportLink.style.color = "var(--text-accent)";
 	}
 
 	private createCalendarManagementHeader(): void {
@@ -50,12 +45,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl).setName("Calendar Management").setHeading();
 
-		const headerContainer = containerEl.createDiv("calendar-management");
-		headerContainer.style.marginBottom = "24px";
-		headerContainer.style.padding = "16px";
-		headerContainer.style.backgroundColor = "var(--background-secondary)";
-		headerContainer.style.borderRadius = "8px";
-		headerContainer.style.border = "1px solid var(--background-modifier-border)";
+		const headerContainer = containerEl.createDiv("calendar-management calendar-management-header");
 
 		new Setting(headerContainer)
 			.setName("Active Calendar")
@@ -74,76 +64,59 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		// Calendar actions
 		const actionsContainer = headerContainer.createDiv("calendar-actions");
-		actionsContainer.style.display = "flex";
-		actionsContainer.style.gap = "8px";
-		actionsContainer.style.marginTop = "12px";
-		actionsContainer.style.flexWrap = "wrap";
 
 		// Create New Calendar button
-		const createButton = actionsContainer.createEl("button", { text: "Create New" });
-		createButton.style.padding = "6px 12px";
-		createButton.style.border = "1px solid var(--interactive-accent)";
-		createButton.style.borderRadius = "4px";
-		createButton.style.backgroundColor = "var(--interactive-accent)";
-		createButton.style.color = "var(--text-on-accent)";
-		createButton.style.cursor = "pointer";
+		const createButton = actionsContainer.createEl("button", {
+			text: "Create New",
+			cls: "calendar-action-button calendar-create-button",
+		});
 
 		if (settings.calendars.length >= MAX_CALENDARS) {
 			createButton.disabled = true;
-			createButton.style.opacity = "0.5";
+			createButton.classList.add("calendar-button-disabled");
 			createButton.title = `Maximum ${MAX_CALENDARS} calendars allowed`;
 		}
 
 		createButton.addEventListener("click", () => this.createNewCalendar());
 
 		// Clone Calendar button
-		const cloneButton = actionsContainer.createEl("button", { text: "Clone Current" });
-		cloneButton.style.padding = "6px 12px";
-		cloneButton.style.border = "1px solid var(--background-modifier-border)";
-		cloneButton.style.borderRadius = "4px";
-		cloneButton.style.backgroundColor = "var(--background-secondary)";
-		cloneButton.style.cursor = "pointer";
+		const cloneButton = actionsContainer.createEl("button", {
+			text: "Clone Current",
+			cls: "calendar-action-button calendar-clone-button",
+		});
 
 		if (settings.calendars.length >= MAX_CALENDARS) {
 			cloneButton.disabled = true;
-			cloneButton.style.opacity = "0.5";
+			cloneButton.classList.add("calendar-button-disabled");
 			cloneButton.title = `Maximum ${MAX_CALENDARS} calendars allowed`;
 		}
 
 		cloneButton.addEventListener("click", () => this.cloneCurrentCalendar());
 
 		// Rename Calendar button
-		const renameButton = actionsContainer.createEl("button", { text: "Rename current" });
-		renameButton.style.padding = "6px 12px";
-		renameButton.style.border = "1px solid var(--background-modifier-border)";
-		renameButton.style.borderRadius = "4px";
-		renameButton.style.backgroundColor = "var(--background-secondary)";
-		renameButton.style.cursor = "pointer";
+		const renameButton = actionsContainer.createEl("button", {
+			text: "Rename current",
+			cls: "calendar-action-button calendar-rename-button",
+		});
 
 		renameButton.addEventListener("click", () => this.renameCurrentCalendar());
 
 		// Delete Calendar button
-		const deleteButton = actionsContainer.createEl("button", { text: "Delete current" });
-		deleteButton.style.padding = "6px 12px";
-		deleteButton.style.border = "1px solid var(--text-error)";
-		deleteButton.style.borderRadius = "4px";
-		deleteButton.style.backgroundColor = "var(--background-primary)";
-		deleteButton.style.color = "var(--text-error)";
-		deleteButton.style.cursor = "pointer";
+		const deleteButton = actionsContainer.createEl("button", {
+			text: "Delete current",
+			cls: "calendar-action-button calendar-delete-button",
+		});
 
 		if (settings.calendars.length <= 1) {
 			deleteButton.disabled = true;
-			deleteButton.style.opacity = "0.5";
+			deleteButton.classList.add("calendar-button-disabled");
 			deleteButton.title = "At least one calendar is required";
 		}
 
 		deleteButton.addEventListener("click", () => this.deleteCurrentCalendar());
 
 		// Calendar count info
-		const countInfo = headerContainer.createDiv();
-		countInfo.style.marginTop = "8px";
-		countInfo.style.fontSize = "12px";
-		countInfo.style.color = "var(--text-muted)";
+		const countInfo = headerContainer.createDiv("calendar-count-info");
 		countInfo.textContent = `${settings.calendars.length}/${MAX_CALENDARS} calendars`;
 	}
 

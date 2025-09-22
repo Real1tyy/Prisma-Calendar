@@ -4,11 +4,7 @@ import { z } from "zod";
 
 export type ISO = string;
 
-export const ColorSchema = z.string().refine((color) => {
-	const testEl = document.createElement("div");
-	testEl.style.color = color;
-	return testEl.style.color !== "";
-}, "Invalid CSS color format");
+export const ColorSchema = z.string().refine((color) => CSS?.supports?.("color", color), "Invalid CSS color format");
 
 export const timezoneSchema = z
 	.unknown()

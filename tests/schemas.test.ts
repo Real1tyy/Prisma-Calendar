@@ -1,5 +1,25 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { CustomCalendarSettingsSchema } from "../src/types/index";
+
+// Mock CSS.supports for color validation tests
+beforeAll(() => {
+	// @ts-expect-error - Mock global CSS object
+	global.CSS = {
+		supports: (propertyOrCondition: string, value?: string) => {
+			// Handle both overloads of CSS.supports
+			if (value !== undefined) {
+				// Two-parameter version: supports(property, value)
+				if (propertyOrCondition === "color") {
+					return /^(#[0-9a-fA-F]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+)/.test(value);
+				}
+				return false;
+			} else {
+				// Single-parameter version: supports(conditionText)
+				return false;
+			}
+		},
+	};
+});
 
 describe("Calendar Schemas", () => {
 	describe("CustomCalendarSettingsSchema", () => {

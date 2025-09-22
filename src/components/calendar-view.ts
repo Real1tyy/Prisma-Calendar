@@ -233,8 +233,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 			eventDidMount: (info) => {
 				if (info.event.extendedProps.isVirtual) {
-					info.el.style.opacity = "0.6";
-					info.el.style.cursor = "default";
+					info.el.classList.add("virtual-event-opacity", "virtual-event-cursor");
 					info.el.title = "Virtual recurring event (read-only)";
 				} else {
 					// Only register non-virtual events for batch selection
@@ -484,8 +483,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 	private handleEventMount(info: any): void {
 		if (info.event.extendedProps.isVirtual) {
-			info.el.style.opacity = "0.7";
-			info.el.style.fontStyle = "italic";
+			info.el.classList.add("virtual-event-italic");
 		}
 		// Add custom classes or tooltips here if needed
 		const element = info.el;
@@ -501,7 +499,7 @@ export class CalendarView extends MountableView(ItemView) {
 		if (info.isPast) {
 			const contrast = settings.pastEventContrast;
 			if (contrast === 0) {
-				element.style.display = "none";
+				element.classList.add("element-hidden");
 				return;
 			}
 
@@ -515,8 +513,8 @@ export class CalendarView extends MountableView(ItemView) {
 			}
 		}
 
-		element.style.backgroundColor = eventColor;
-		element.style.borderColor = eventColor;
+		element.style.setProperty("--event-color", eventColor);
+		element.classList.add("custom-calendar-event");
 
 		// Add tooltip with file path and frontmatter display data
 		const tooltipParts = [`File: ${event.extendedProps.filePath}`];

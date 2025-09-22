@@ -46,9 +46,11 @@ export class ZoomManager {
 		if (isTimeGridView) {
 			// Show button and update text for time-based views
 			button.textContent = this.getZoomLevelText();
-			(button as HTMLElement).style.display = "";
+			button.classList.remove("zoom-button-hidden");
+			button.classList.add("zoom-button-visible");
 		} else {
-			(button as HTMLElement).style.display = "none";
+			button.classList.remove("zoom-button-visible");
+			button.classList.add("zoom-button-hidden");
 		}
 	}
 
