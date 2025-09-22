@@ -32,11 +32,7 @@ export class EventStore {
 		private recurringEventManager: RecurringEventManager
 	) {
 		this.subscription = this.indexer.events$
-			.pipe(
-				filter(
-					(event: IndexerEvent) => event.type === "file-changed" || event.type === "file-deleted"
-				)
-			)
+			.pipe(filter((event: IndexerEvent) => event.type === "file-changed" || event.type === "file-deleted"))
 			.subscribe((event: IndexerEvent) => {
 				this.handleIndexerEvent(event);
 			});
@@ -103,10 +99,7 @@ export class EventStore {
 				results.push(event);
 			}
 		}
-		const virtualEvents = await this.recurringEventManager.generateAllVirtualInstances(
-			queryStart,
-			queryEnd
-		);
+		const virtualEvents = await this.recurringEventManager.generateAllVirtualInstances(queryStart, queryEnd);
 		results.push(...virtualEvents);
 
 		return results.sort((a, b) => a.start.localeCompare(b.start));
@@ -121,11 +114,7 @@ export class EventStore {
 		return this.changes$.subscribe(observer);
 	}
 
-	private eventIntersectsRange(
-		event: ParsedEvent,
-		rangeStart: DateTime,
-		rangeEnd: DateTime
-	): boolean {
+	private eventIntersectsRange(event: ParsedEvent, rangeStart: DateTime, rangeEnd: DateTime): boolean {
 		const eventStart = DateTime.fromISO(event.start);
 		const eventEnd = event.end ? DateTime.fromISO(event.end) : eventStart.endOf("day");
 

@@ -158,9 +158,7 @@ describe("FilterEvaluator", () => {
 		it("should handle complex logical expressions", () => {
 			settingsStore.next({
 				...mockSettings,
-				filterExpressions: [
-					"(fm.Status === 'Done' || fm.Status === 'In Progress') && fm.Priority !== 'Low'",
-				],
+				filterExpressions: ["(fm.Status === 'Done' || fm.Status === 'In Progress') && fm.Priority !== 'Low'"],
 			});
 
 			expect(evaluator.evaluateFilters({ Status: "Done", Priority: "High" })).toBe(true);
@@ -313,11 +311,7 @@ describe("FilterEvaluator", () => {
 		it("should handle multiple complex filters", () => {
 			settingsStore.next({
 				...mockSettings,
-				filterExpressions: [
-					"fm.Status !== 'Inbox'",
-					"!fm._Archived",
-					"fm.Priority === 'High' || fm.Difficulty <= 2",
-				],
+				filterExpressions: ["fm.Status !== 'Inbox'", "!fm._Archived", "fm.Priority === 'High' || fm.Difficulty <= 2"],
 			});
 
 			const frontmatter = {

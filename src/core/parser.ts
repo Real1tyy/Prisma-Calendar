@@ -59,8 +59,7 @@ export class Parser {
 		if (parsed.endTime) {
 			end = convertToISO(parsed.endTime, timezone);
 		} else {
-			const startInTimezone =
-				timezone && timezone !== "system" ? parsed.startTime.setZone(timezone) : parsed.startTime;
+			const startInTimezone = timezone && timezone !== "system" ? parsed.startTime.setZone(timezone) : parsed.startTime;
 			const defaultEnd = this.calculateDefaultEnd(startInTimezone, parsed.allDay);
 			end = defaultEnd.toUTC().toISO({ suppressMilliseconds: true }) || undefined;
 		}

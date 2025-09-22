@@ -112,12 +112,8 @@ describe("Indexer", () => {
 	describe("performance and debouncing", () => {
 		it("should register debounced event handlers", () => {
 			// Verify that the RxJS stream has registered event handlers
-			const createHandler = mockVault.on.mock.calls.find(
-				(call: any[]) => call[0] === "create"
-			)?.[1];
-			const modifyHandler = mockVault.on.mock.calls.find(
-				(call: any[]) => call[0] === "modify"
-			)?.[1];
+			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
+			const modifyHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "modify")?.[1];
 
 			expect(createHandler).toBeDefined();
 			expect(modifyHandler).toBeDefined();
@@ -147,9 +143,7 @@ describe("Indexer", () => {
 
 			// Simulate a file event that should be filtered out
 			const file = createMockFile("Events/meeting.md");
-			const createHandler = mockVault.on.mock.calls.find(
-				(call: any[]) => call[0] === "create"
-			)?.[1];
+			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
 
 			if (createHandler) {
 				createHandler(file);
@@ -171,9 +165,7 @@ describe("Indexer", () => {
 			});
 
 			// Simulate the file creation event
-			const createHandler = mockVault.on.mock.calls.find(
-				(call: any[]) => call[0] === "create"
-			)?.[1];
+			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
 
 			if (createHandler) {
 				createHandler(rootFile);

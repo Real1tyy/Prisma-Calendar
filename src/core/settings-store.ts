@@ -1,11 +1,7 @@
 import { SettingsStore as GenericSettingsStore } from "@real1ty-obsidian-plugins/utils/settings-store";
 import type { Plugin } from "obsidian";
 import { BehaviorSubject, type Subscription } from "rxjs";
-import {
-	CustomCalendarSettingsSchema,
-	getCalendarById,
-	type SingleCalendarConfig,
-} from "../types/index";
+import { CustomCalendarSettingsSchema, getCalendarById, type SingleCalendarConfig } from "../types/index";
 
 export class SettingsStore extends GenericSettingsStore<typeof CustomCalendarSettingsSchema> {
 	constructor(plugin: Plugin) {
@@ -42,16 +38,12 @@ export class CalendarSettingsStore {
 		});
 	}
 
-	async updateSettings(
-		updater: (settings: SingleCalendarConfig) => SingleCalendarConfig
-	): Promise<void> {
+	async updateSettings(updater: (settings: SingleCalendarConfig) => SingleCalendarConfig): Promise<void> {
 		const newSettings = updater(this.currentSettings);
 		await this.mainSettingsStore.updateSettings((fullSettings) => {
 			return {
 				...fullSettings,
-				calendars: fullSettings.calendars.map((calendar) =>
-					calendar.id === this.calendarId ? newSettings : calendar
-				),
+				calendars: fullSettings.calendars.map((calendar) => (calendar.id === this.calendarId ? newSettings : calendar)),
 			};
 		});
 	}

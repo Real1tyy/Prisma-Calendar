@@ -15,13 +15,9 @@ export const mockLinkParser = {
 // Default mock implementations that match the actual behavior
 export function setupDefaultMockImplementations() {
 	// Set up file operations mocks
-	mockFileOperations.normalizeArray.mockImplementation((arr) =>
-		Array.isArray(arr) ? arr : arr ? [arr] : []
-	);
+	mockFileOperations.normalizeArray.mockImplementation((arr) => (Array.isArray(arr) ? arr : arr ? [arr] : []));
 
-	mockFileOperations.arraysEqual.mockImplementation(
-		(a, b) => JSON.stringify(a) === JSON.stringify(b)
-	);
+	mockFileOperations.arraysEqual.mockImplementation((a, b) => JSON.stringify(a) === JSON.stringify(b));
 
 	mockFileOperations.createFileLink.mockImplementation((file) => {
 		if (!file) return "[[Unknown File]]";
@@ -102,9 +98,7 @@ export function verifyMockCalls(
 	expectedCalls: any[][]
 ) {
 	const mock =
-		mockName in mockFileOperations
-			? (mockFileOperations as any)[mockName]
-			: (mockLinkParser as any)[mockName];
+		mockName in mockFileOperations ? (mockFileOperations as any)[mockName] : (mockLinkParser as any)[mockName];
 
 	expect(mock).toHaveBeenCalledTimes(expectedCalls.length);
 	expectedCalls.forEach((args, index) => {

@@ -245,8 +245,7 @@ export class BatchSelectionManager {
 	public async executeDelete(): Promise<void> {
 		await this.executeWithConfirmation(
 			"Delete",
-			(count) =>
-				`Are you sure you want to delete ${count} event${pluralize(count)}? This action can be undone.`,
+			(count) => `Are you sure you want to delete ${count} event${pluralize(count)}? This action can be undone.`,
 			(filePaths) => this.batchCommandFactory.createDelete(filePaths),
 			(count) => `Deleted ${count} event${pluralize(count)}`,
 			"Failed to delete events"

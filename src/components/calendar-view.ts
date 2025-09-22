@@ -328,10 +328,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private updateCalendarSettings(settings: SingleCalendarConfig): void {
 		if (!this.calendar) return;
 
-		this.calendar.setOption(
-			"timeZone",
-			settings.timezone === "system" ? "local" : settings.timezone
-		);
+		this.calendar.setOption("timeZone", settings.timezone === "system" ? "local" : settings.timezone);
 		this.calendar.setOption("slotMinTime", `${String(settings.hourStart).padStart(2, "0")}:00:00`);
 		this.calendar.setOption("slotMaxTime", `${String(settings.hourEnd).padStart(2, "0")}:00:00`);
 
@@ -438,21 +435,13 @@ export class CalendarView extends MountableView(ItemView) {
 
 		container.appendChild(headerEl);
 
-		if (
-			settings.frontmatterDisplayProperties.length > 0 &&
-			event.extendedProps.frontmatterDisplayData
-		) {
+		if (settings.frontmatterDisplayProperties.length > 0 && event.extendedProps.frontmatterDisplayData) {
 			const propsContainer = document.createElement("div");
 			propsContainer.className = "fc-event-props";
 
 			for (const prop of settings.frontmatterDisplayProperties) {
 				const value = event.extendedProps.frontmatterDisplayData[prop];
-				if (
-					value !== undefined &&
-					value !== null &&
-					value !== "" &&
-					(!Array.isArray(value) || value.length > 0)
-				) {
+				if (value !== undefined && value !== null && value !== "" && (!Array.isArray(value) || value.length > 0)) {
 					const propEl = document.createElement("div");
 					propEl.className = "fc-event-prop";
 
@@ -534,10 +523,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 		// Add frontmatter display properties to tooltip
 		const tooltipSettings = this.bundle.settingsStore.currentSettings;
-		if (
-			tooltipSettings.frontmatterDisplayProperties.length > 0 &&
-			event.extendedProps.frontmatterDisplayData
-		) {
+		if (tooltipSettings.frontmatterDisplayProperties.length > 0 && event.extendedProps.frontmatterDisplayData) {
 			const displayData = event.extendedProps.frontmatterDisplayData;
 			for (const prop of tooltipSettings.frontmatterDisplayProperties) {
 				const value = displayData[prop];
@@ -591,13 +577,7 @@ export class CalendarView extends MountableView(ItemView) {
 				allDay: eventData.allDay,
 			};
 
-			const command = new CreateEventCommand(
-				this.app,
-				this.bundle,
-				commandEventData,
-				settings.directory,
-				clickedDate
-			);
+			const command = new CreateEventCommand(this.app, this.bundle, commandEventData, settings.directory, clickedDate);
 
 			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {
@@ -685,20 +665,16 @@ export class CalendarView extends MountableView(ItemView) {
 		this.observeResize(this.container, () => this.calendar?.updateSize());
 
 		// Settings subscription
-		const settingsSubscription = this.bundle.settingsStore.settings$.subscribe(
-			(settings: SingleCalendarConfig) => {
-				this.updateCalendarSettings(settings);
-			}
-		);
+		const settingsSubscription = this.bundle.settingsStore.settings$.subscribe((settings: SingleCalendarConfig) => {
+			this.updateCalendarSettings(settings);
+		});
 		this.addSub(settingsSubscription);
 
 		// Event store updates
 		const eventStoreSubscription = this.bundle.eventStore.subscribe(() => this.refreshEvents());
 		this.addSub(eventStoreSubscription);
 
-		const recurringEventManagerSubscription = this.bundle.recurringEventManager.subscribe(() =>
-			this.refreshEvents()
-		);
+		const recurringEventManagerSubscription = this.bundle.recurringEventManager.subscribe(() => this.refreshEvents());
 		this.addSub(recurringEventManagerSubscription);
 
 		this.hideLoading();

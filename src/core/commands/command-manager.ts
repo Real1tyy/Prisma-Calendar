@@ -44,9 +44,7 @@ export class CommandManager {
 
 		try {
 			if (command.canUndo && !(await command.canUndo())) {
-				console.warn(
-					`Cannot undo command: ${command.getType()} - referenced resources no longer exist`
-				);
+				console.warn(`Cannot undo command: ${command.getType()} - referenced resources no longer exist`);
 				return false;
 			}
 

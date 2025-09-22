@@ -85,9 +85,7 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 			});
 
 			// Simulate file creation event
-			const createHandler = mockVault.on.mock.calls.find(
-				(call: any[]) => call[0] === "create"
-			)?.[1];
+			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
 
 			if (createHandler) {
 				createHandler(file);
@@ -103,9 +101,7 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 			const file = createMockFile("Events/meeting.md");
 
 			// Simulate file deletion event
-			const deleteHandler = mockVault.on.mock.calls.find(
-				(call: any[]) => call[0] === "delete"
-			)?.[1];
+			const deleteHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "delete")?.[1];
 
 			if (deleteHandler) {
 				deleteHandler(file);
@@ -121,9 +117,7 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 			});
 
 			// Simulate file creation event
-			const createHandler = mockVault.on.mock.calls.find(
-				(call: any[]) => call[0] === "create"
-			)?.[1];
+			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
 
 			if (createHandler) {
 				createHandler(file);
@@ -143,9 +137,7 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 			});
 
 			// Simulate concurrent file events
-			const createHandler = mockVault.on.mock.calls.find(
-				(call: any[]) => call[0] === "create"
-			)?.[1];
+			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
 
 			if (createHandler) {
 				createHandler(file1);
@@ -172,9 +164,7 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 			});
 
 			// Simulate file creation event
-			const createHandler = mockVault.on.mock.calls.find(
-				(call: any[]) => call[0] === "create"
-			)?.[1];
+			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
 
 			if (createHandler) {
 				expect(() => createHandler(file)).not.toThrow();
@@ -188,9 +178,7 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 				frontmatter: { start: "2024-01-15T10:00:00" },
 			});
 
-			const createHandler = mockVault.on.mock.calls.find(
-				(call: any[]) => call[0] === "create"
-			)?.[1];
+			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
 
 			if (createHandler) {
 				expect(() => {

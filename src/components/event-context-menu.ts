@@ -1,15 +1,7 @@
-import {
-	generateUniqueFilePath,
-	sanitizeForFilename,
-} from "@real1ty-obsidian-plugins/utils/file-utils";
+import { generateUniqueFilePath, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils";
 import { type App, Menu, Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
-import {
-	CloneEventCommand,
-	DeleteEventCommand,
-	EditEventCommand,
-	MoveEventCommand,
-} from "../core/commands";
+import { CloneEventCommand, DeleteEventCommand, EditEventCommand, MoveEventCommand } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import { EventEditModal } from "./event-edit-modal";
 
@@ -139,13 +131,7 @@ export class EventContextMenu {
 
 		try {
 			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
-			const command = new CloneEventCommand(
-				this.app,
-				this.bundle,
-				filePath,
-				startOffset,
-				endOffset
-			);
+			const command = new CloneEventCommand(this.app, this.bundle, filePath, startOffset, endOffset);
 
 			await this.bundle.commandManager.executeCommand(command);
 

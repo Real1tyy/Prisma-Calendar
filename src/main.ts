@@ -60,21 +60,13 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		addBatchCommand("batch-select-all", "Select all", (view) => view.selectAll());
 		addBatchCommand("batch-clear-selection", "Clear selection", (view) => view.clearSelection());
-		addBatchCommand("batch-duplicate-selection", "Duplicate selection", (view) =>
-			view.duplicateSelection()
-		);
+		addBatchCommand("batch-duplicate-selection", "Duplicate selection", (view) => view.duplicateSelection());
 		addBatchCommand("batch-delete-selection", "Delete selection", (view) => view.deleteSelection());
 		addBatchCommand("batch-open-selection", "Open selection", (view) => view.openSelection());
-		addBatchCommand("batch-clone-next-week", "Clone to next week", (view) =>
-			view.cloneSelection(1)
-		);
-		addBatchCommand("batch-clone-prev-week", "Clone to previous week", (view) =>
-			view.cloneSelection(-1)
-		);
+		addBatchCommand("batch-clone-next-week", "Clone to next week", (view) => view.cloneSelection(1));
+		addBatchCommand("batch-clone-prev-week", "Clone to previous week", (view) => view.cloneSelection(-1));
 		addBatchCommand("batch-move-next-week", "Move to next week", (view) => view.moveSelection(1));
-		addBatchCommand("batch-move-prev-week", "Move to previous week", (view) =>
-			view.moveSelection(-1)
-		);
+		addBatchCommand("batch-move-prev-week", "Move to previous week", (view) => view.moveSelection(-1));
 
 		type UndoRedoAction = (view: CalendarView) => Promise<boolean>;
 

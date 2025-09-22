@@ -40,11 +40,7 @@ export class CalendarBundle {
 		this.commandManager = new CommandManager();
 		this.batchCommandFactory = new BatchCommandFactory(this.app, this);
 
-		this.recurringEventManager = new RecurringEventManager(
-			this.app,
-			this.settingsStore.settings$,
-			this.indexer
-		);
+		this.recurringEventManager = new RecurringEventManager(this.app, this.settingsStore.settings$, this.indexer);
 
 		this.eventStore = new EventStore(this.indexer, this.parser, this.recurringEventManager);
 	}

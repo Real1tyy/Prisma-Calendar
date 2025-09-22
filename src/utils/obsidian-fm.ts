@@ -6,11 +6,8 @@ export const getTFileOrThrow = (app: App, path: string): TFile => {
 	return f;
 };
 
-export const withFrontmatter = async (
-	app: App,
-	file: TFile,
-	update: (fm: Record<string, unknown>) => void
-) => app.fileManager.processFrontMatter(file, update);
+export const withFrontmatter = async (app: App, file: TFile, update: (fm: Record<string, unknown>) => void) =>
+	app.fileManager.processFrontMatter(file, update);
 
 export const backupFrontmatter = async (app: App, file: TFile) => {
 	let copy: Record<string, unknown> = {};
@@ -20,11 +17,7 @@ export const backupFrontmatter = async (app: App, file: TFile) => {
 	return copy;
 };
 
-export const restoreFrontmatter = async (
-	app: App,
-	file: TFile,
-	original: Record<string, unknown>
-) =>
+export const restoreFrontmatter = async (app: App, file: TFile, original: Record<string, unknown>) =>
 	withFrontmatter(app, file, (fm) => {
 		Object.keys(fm).forEach((k) => {
 			delete fm[k];

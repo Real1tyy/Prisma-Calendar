@@ -1,8 +1,5 @@
 import { generateUniqueFilePath } from "@real1ty-obsidian-plugins/utils/file-utils";
-import {
-	createFromTemplate,
-	isTemplaterAvailable,
-} from "@real1ty-obsidian-plugins/utils/templater-utils";
+import { createFromTemplate, isTemplaterAvailable } from "@real1ty-obsidian-plugins/utils/templater-utils";
 import type { App, TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import type { SingleCalendarConfig } from "../types/settings-schemas";
@@ -63,19 +60,11 @@ export class TemplateService {
 		);
 	}
 
-	private async createFromTemplate(
-		targetDirectory: string,
-		filename: string
-	): Promise<TFile | null> {
+	private async createFromTemplate(targetDirectory: string, filename: string): Promise<TFile | null> {
 		if (!this.settings.templatePath) return null;
 
 		try {
-			const templateFile = await createFromTemplate(
-				this.app,
-				this.settings.templatePath,
-				targetDirectory,
-				filename
-			);
+			const templateFile = await createFromTemplate(this.app, this.settings.templatePath, targetDirectory, filename);
 
 			if (templateFile) {
 				return templateFile;

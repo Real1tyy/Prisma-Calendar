@@ -13,10 +13,7 @@ import {
 } from "rxjs";
 import { debounceTime, filter, groupBy, map, mergeMap, switchMap } from "rxjs/operators";
 import type { SingleCalendarConfig } from "../types/index";
-import {
-	type NodeRecurringEvent,
-	parseRRuleFromFrontmatter,
-} from "../types/recurring-event-schemas";
+import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event-schemas";
 import { generateUniqueRruleId } from "../utils/rrule";
 
 export interface RawEventSource {
@@ -36,9 +33,7 @@ export interface IndexerEvent {
 }
 
 type VaultEvent = "create" | "modify" | "delete" | "rename";
-type FileIntent =
-	| { kind: "changed"; file: TFile; path: string }
-	| { kind: "deleted"; path: string };
+type FileIntent = { kind: "changed"; file: TFile; path: string } | { kind: "deleted"; path: string };
 
 export class Indexer {
 	private _settings: SingleCalendarConfig;
@@ -62,8 +57,7 @@ export class Indexer {
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			const filtersChanged =
-				JSON.stringify(this._settings.filterExpressions) !==
-				JSON.stringify(newSettings.filterExpressions);
+				JSON.stringify(this._settings.filterExpressions) !== JSON.stringify(newSettings.filterExpressions);
 			this._settings = newSettings;
 
 			if (filtersChanged) {
@@ -147,9 +141,7 @@ export class Indexer {
 			map((file): FileIntent => ({ kind: "changed", file, path: file.path }))
 		);
 
-		const deletedIntents$ = deleted$.pipe(
-			map((file): FileIntent => ({ kind: "deleted", path: file.path }))
-		);
+		const deletedIntents$ = deleted$.pipe(map((file): FileIntent => ({ kind: "deleted", path: file.path })));
 
 		const renamedIntents$ = renamed$.pipe(
 			map(([f, oldPath]) => [f, oldPath] as const),

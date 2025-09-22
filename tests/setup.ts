@@ -63,17 +63,7 @@ export class Menu {
 }
 
 // Re-export centralized mocks for use in tests
-export {
-	Plugin,
-	PluginSettingTab,
-	ItemView,
-	TFile,
-	Notice,
-	Modal,
-	debounce,
-	createMockApp,
-	createMockFile,
-};
+export { Plugin, PluginSettingTab, ItemView, TFile, Notice, Modal, debounce, createMockApp, createMockFile };
 
 export function createMockSettingsStore(
 	initialSettings?: Partial<CustomCalendarSettings>
@@ -90,9 +80,7 @@ export function createMockSingleCalendarSettings() {
 }
 
 // Create a mock settings store that returns single calendar settings (for legacy test compatibility)
-export function createMockSingleCalendarSettingsStore(
-	calendarOverrides?: any
-): BehaviorSubject<any> {
+export function createMockSingleCalendarSettingsStore(calendarOverrides?: any): BehaviorSubject<any> {
 	const singleCalendarSettings = createMockSingleCalendarSettings();
 	const settings = { ...singleCalendarSettings, ...calendarOverrides };
 	return new BehaviorSubject(settings);

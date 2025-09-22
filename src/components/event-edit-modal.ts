@@ -1,7 +1,4 @@
-import {
-	formatDateTimeForInput,
-	inputValueToISOString,
-} from "@real1ty-obsidian-plugins/utils/date-utils";
+import { formatDateTimeForInput, inputValueToISOString } from "@real1ty-obsidian-plugins/utils/date-utils";
 import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 
@@ -35,12 +32,7 @@ abstract class BaseEventModal extends Modal {
 	protected allDayCheckbox!: HTMLInputElement;
 	protected originalFrontmatter: Record<string, unknown> = {};
 
-	constructor(
-		app: App,
-		bundle: CalendarBundle,
-		event: EventModalData,
-		onSave: (eventData: EventSaveData) => void
-	) {
+	constructor(app: App, bundle: CalendarBundle, event: EventModalData, onSave: (eventData: EventSaveData) => void) {
 		super(app);
 		this.event = event;
 		this.bundle = bundle;
@@ -180,9 +172,7 @@ abstract class BaseEventModal extends Modal {
 		const eventData: EventSaveData = {
 			filePath: this.event.extendedProps?.filePath || null,
 			title: this.titleInput.value,
-			start: this.allDayCheckbox.checked
-				? this.startInput.value
-				: inputValueToISOString(this.startInput.value),
+			start: this.allDayCheckbox.checked ? this.startInput.value : inputValueToISOString(this.startInput.value),
 			end: this.endInput.value
 				? this.allDayCheckbox.checked
 					? this.endInput.value

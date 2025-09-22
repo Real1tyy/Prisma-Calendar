@@ -25,9 +25,7 @@ export class ColorEvaluator extends BaseEvaluator<ColorRule, SingleCalendarConfi
 	}
 
 	evaluateColor(frontmatter: Record<string, unknown>): string {
-		const match = this.compiledRules.find((rule) =>
-			this.isTruthy(this.evaluateRule(rule, frontmatter))
-		);
+		const match = this.compiledRules.find((rule) => this.isTruthy(this.evaluateRule(rule, frontmatter)));
 		return match?.color ?? this.defaultColor;
 	}
 }

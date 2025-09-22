@@ -478,8 +478,7 @@ describe("Parser", () => {
 			const parser = new Parser(testSettingsStore);
 
 			const source: RawEventSource = {
-				filePath:
-					"Tasks/enforce All Templates, Make it a one off script to enforce all frontmatter and templates..md",
+				filePath: "Tasks/enforce All Templates, Make it a one off script to enforce all frontmatter and templates..md",
 				mtime: Date.now(),
 				frontmatter: {
 					title: "",

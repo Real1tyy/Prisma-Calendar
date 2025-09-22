@@ -3,11 +3,7 @@ import type { CalendarBundle } from "../calendar-bundle";
 import { MacroCommand } from "./command";
 import { CloneEventCommand, DeleteEventCommand, MoveEventCommand } from "./event-commands";
 
-export function createBatchDeleteCommand(
-	app: App,
-	bundle: CalendarBundle,
-	filePaths: string[]
-): MacroCommand {
+export function createBatchDeleteCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
 	const deleteCommands = filePaths.map((filePath) => new DeleteEventCommand(app, bundle, filePath));
 
 	return new MacroCommand(deleteCommands);
@@ -20,9 +16,7 @@ export function createBatchMoveCommand(
 	startOffset: number,
 	endOffset: number
 ): MacroCommand {
-	const moveCommands = filePaths.map(
-		(filePath) => new MoveEventCommand(app, bundle, filePath, startOffset, endOffset)
-	);
+	const moveCommands = filePaths.map((filePath) => new MoveEventCommand(app, bundle, filePath, startOffset, endOffset));
 
 	return new MacroCommand(moveCommands);
 }
@@ -41,14 +35,8 @@ export function createBatchCloneCommand(
 	return new MacroCommand(cloneCommands);
 }
 
-export function createBatchDuplicateCommand(
-	app: App,
-	bundle: CalendarBundle,
-	filePaths: string[]
-): MacroCommand {
-	const duplicateCommands = filePaths.map(
-		(filePath) => new CloneEventCommand(app, bundle, filePath)
-	);
+export function createBatchDuplicateCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
+	const duplicateCommands = filePaths.map((filePath) => new CloneEventCommand(app, bundle, filePath));
 
 	return new MacroCommand(duplicateCommands);
 }

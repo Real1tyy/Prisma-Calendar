@@ -37,9 +37,7 @@ export const CalendarSettingsSchema = z.object({
 	firstDayOfWeek: z.number().int().min(0).max(6).default(0), // 0 = Sunday, 1 = Monday, etc.
 	slotDurationMinutes: z.number().int().min(1).max(60).default(10), // time slot duration in minutes
 	snapDurationMinutes: z.number().int().min(1).max(60).default(10), // snap duration for dragging/resizing in minutes
-	zoomLevels: z
-		.array(z.number().int().min(1).max(60))
-		.default([1, 2, 3, 5, 10, 15, 20, 30, 45, 60]), // available zoom levels for slot duration
+	zoomLevels: z.array(z.number().int().min(1).max(60)).default([1, 2, 3, 5, 10, 15, 20, 30, 45, 60]), // available zoom levels for slot duration
 	density: z.enum(["comfortable", "compact"]).default("comfortable"),
 	enableEventPreview: z.boolean().default(true), // Enable hover preview for events
 	nowIndicator: z.boolean().default(true), // Show current time indicator line
@@ -116,10 +114,7 @@ export function validatePartialSettings(settings: unknown): Partial<CustomCalend
 	return CustomCalendarSettingsSchema.partial().parse(settings);
 }
 
-export function getCalendarById(
-	settings: CustomCalendarSettings,
-	id: string
-): SingleCalendarConfig | undefined {
+export function getCalendarById(settings: CustomCalendarSettings, id: string): SingleCalendarConfig | undefined {
 	return settings.calendars.find((calendar) => calendar.id === id);
 }
 
@@ -130,9 +125,7 @@ export function updateCalendarById(
 ): CustomCalendarSettings {
 	return {
 		...settings,
-		calendars: settings.calendars.map((calendar) =>
-			calendar.id === id ? { ...calendar, ...updates } : calendar
-		),
+		calendars: settings.calendars.map((calendar) => (calendar.id === id ? { ...calendar, ...updates } : calendar)),
 	};
 }
 

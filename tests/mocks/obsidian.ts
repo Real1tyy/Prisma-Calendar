@@ -208,11 +208,7 @@ export const MarkdownRenderer = {
 };
 
 // Debounce function mock
-export function debounce<T extends (...args: any[]) => any>(
-	func: T,
-	wait: number,
-	immediate?: boolean
-): T {
+export function debounce<T extends (...args: any[]) => any>(func: T, wait: number, immediate?: boolean): T {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
 
 	return ((...args: Parameters<T>) => {

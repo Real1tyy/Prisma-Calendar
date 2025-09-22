@@ -62,10 +62,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			.setDesc("Select which calendar to configure")
 			.addDropdown((dropdown) => {
 				settings.calendars.forEach((calendar) => {
-					dropdown.addOption(
-						calendar.id,
-						`${calendar.name} ${calendar.enabled ? "" : "(disabled)"}`
-					);
+					dropdown.addOption(calendar.id, `${calendar.name} ${calendar.enabled ? "" : "(disabled)"}`);
 				});
 
 				dropdown.setValue(this.selectedCalendarId);
@@ -182,9 +179,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		return this.calendarStores.get(calendarId)!;
 	}
 
-	private getOrCreateSingleCalendarSettings(
-		calendarStore: CalendarSettingsStore
-	): SingleCalendarSettings {
+	private getOrCreateSingleCalendarSettings(calendarStore: CalendarSettingsStore): SingleCalendarSettings {
 		const calendarId = calendarStore.calendarId;
 		if (!this.calendarSettings.has(calendarId)) {
 			const settings = new SingleCalendarSettings(calendarStore);
@@ -248,9 +243,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			return;
 		}
 
-		const currentCalendarIndex = settings.calendars.findIndex(
-			(c) => c.id === this.selectedCalendarId
-		);
+		const currentCalendarIndex = settings.calendars.findIndex((c) => c.id === this.selectedCalendarId);
 		if (currentCalendarIndex === -1) {
 			return;
 		}
@@ -266,8 +259,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const updatedCalendars = settings.calendars.filter((c) => c.id !== this.selectedCalendarId);
 
 		// Select next available calendar
-		const nextCalendar =
-			updatedCalendars[Math.min(currentCalendarIndex, updatedCalendars.length - 1)];
+		const nextCalendar = updatedCalendars[Math.min(currentCalendarIndex, updatedCalendars.length - 1)];
 		this.selectedCalendarId = nextCalendar.id;
 
 		await this.plugin.settingsStore.updateSettings((currentSettings) => ({

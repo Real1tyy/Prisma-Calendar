@@ -28,8 +28,7 @@ export const EventFrontmatterSchema = z
 	})
 	.loose()
 	.refine((data) => (data.allDay ? data.endTime === undefined : true), {
-		message:
-			"When allDay is true, endTime must be undefined. All-day events should not have end times in frontmatter.",
+		message: "When allDay is true, endTime must be undefined. All-day events should not have end times in frontmatter.",
 	});
 
 export type ParsedEventFrontmatter = z.infer<typeof EventFrontmatterSchema>;
@@ -53,7 +52,6 @@ export function parseEventFrontmatter(
 }
 
 export function convertToISO(parsedDateTime: DateTime, timezone: string): ISO {
-	const dateTimeInTimezone =
-		timezone !== "system" ? parsedDateTime.setZone(timezone) : parsedDateTime;
+	const dateTimeInTimezone = timezone !== "system" ? parsedDateTime.setZone(timezone) : parsedDateTime;
 	return dateTimeInTimezone.toUTC().toISO({ suppressMilliseconds: true }) || "";
 }

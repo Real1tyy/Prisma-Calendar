@@ -1,11 +1,6 @@
 import { normalizePath, Setting } from "obsidian";
 import type { CalendarSettingsStore } from "../core/settings-store";
-import {
-	CALENDAR_VIEW_OPTIONS,
-	type CalendarViewType,
-	DENSITY_OPTIONS,
-	FIRST_DAY_OPTIONS,
-} from "../types/index";
+import { CALENDAR_VIEW_OPTIONS, type CalendarViewType, DENSITY_OPTIONS, FIRST_DAY_OPTIONS } from "../types/index";
 import { DEFAULT_EVENT_COLOR } from "../types/settings-schemas";
 import type { ColorRule } from "../utils/color-evaluator";
 
@@ -110,9 +105,7 @@ export class SingleCalendarSettings {
 
 		new Setting(containerEl)
 			.setName("Template path")
-			.setDesc(
-				"Path to Templater template file for new events (optional, requires Templater plugin)"
-			)
+			.setDesc("Path to Templater template file for new events (optional, requires Templater plugin)")
 			.addText((text) => {
 				text.setValue(settings.templatePath || "");
 				text.setPlaceholder("e.g., Templates/event-template.md");
@@ -227,9 +220,7 @@ export class SingleCalendarSettings {
 
 		new Setting(containerEl)
 			.setName("RRule specification property")
-			.setDesc(
-				"Frontmatter property name for recurring event specification (weekdays for weekly/bi-weekly events)"
-			)
+			.setDesc("Frontmatter property name for recurring event specification (weekdays for weekly/bi-weekly events)")
 			.addText((text) =>
 				text
 					.setPlaceholder("RRuleSpec")
@@ -259,9 +250,7 @@ export class SingleCalendarSettings {
 
 		new Setting(containerEl)
 			.setName("Source property")
-			.setDesc(
-				"Frontmatter property name for linking recurring event instances to their source event file"
-			)
+			.setDesc("Frontmatter property name for linking recurring event instances to their source event file")
 			.addText((text) =>
 				text
 					.setPlaceholder("Source")
@@ -509,9 +498,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 
 		new Setting(containerEl)
 			.setName("Zoom levels (minutes)")
-			.setDesc(
-				"Available zoom levels for CTRL+scroll zooming. Enter comma-separated values (1-60 minutes each)"
-			)
+			.setDesc("Available zoom levels for CTRL+scroll zooming. Enter comma-separated values (1-60 minutes each)")
 			.addTextArea((text) => {
 				text.setPlaceholder("1, 2, 3, 5, 10, 15, 20, 30, 45, 60");
 				text.setValue(settings.zoomLevels.join(", "));
@@ -742,9 +729,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 			enableToggle.onchange = async () => {
 				await this.settingsStore.updateSettings((s) => ({
 					...s,
-					colorRules: s.colorRules.map((r) =>
-						r.id === rule.id ? { ...r, enabled: enableToggle.checked } : r
-					),
+					colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, enabled: enableToggle.checked } : r)),
 				}));
 			};
 
@@ -815,9 +800,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 			expressionInput.oninput = async () => {
 				await this.settingsStore.updateSettings((s) => ({
 					...s,
-					colorRules: s.colorRules.map((r) =>
-						r.id === rule.id ? { ...r, expression: expressionInput.value } : r
-					),
+					colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, expression: expressionInput.value } : r)),
 				}));
 			};
 

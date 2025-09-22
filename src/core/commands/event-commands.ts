@@ -3,12 +3,7 @@ import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import { applyStartEndOffsets, setEventBasics } from "../../utils/calendar";
-import {
-	backupFrontmatter,
-	getTFileOrThrow,
-	restoreFrontmatter,
-	withFrontmatter,
-} from "../../utils/obsidian-fm";
+import { backupFrontmatter, getTFileOrThrow, restoreFrontmatter, withFrontmatter } from "../../utils/obsidian-fm";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { Command } from "./command";
 
@@ -126,11 +121,8 @@ export class EditEventCommand implements Command {
 
 	async execute(): Promise<void> {
 		const file = getTFileOrThrow(this.app, this.filePath);
-		if (!this.originalFrontmatter)
-			this.originalFrontmatter = await backupFrontmatter(this.app, file);
-		await withFrontmatter(this.app, file, (fm) =>
-			Object.assign(fm, this.newEventData.preservedFrontmatter)
-		);
+		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
+		await withFrontmatter(this.app, file, (fm) => Object.assign(fm, this.newEventData.preservedFrontmatter));
 	}
 
 	async undo(): Promise<void> {
@@ -161,13 +153,10 @@ export class MoveEventCommand implements Command {
 
 	async execute(): Promise<void> {
 		const file = getTFileOrThrow(this.app, this.filePath);
-		if (!this.originalFrontmatter)
-			this.originalFrontmatter = await backupFrontmatter(this.app, file);
+		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		await withFrontmatter(this.app, file, (fm) =>
-			applyStartEndOffsets(fm, settings, this.startOffset, this.endOffset)
-		);
+		await withFrontmatter(this.app, file, (fm) => applyStartEndOffsets(fm, settings, this.startOffset, this.endOffset));
 	}
 
 	async undo(): Promise<void> {
