@@ -1,4 +1,4 @@
-import type { Calendar } from "@fullcalendar/core";
+import type { Calendar, EventApi } from "@fullcalendar/core";
 import { getWeekDirection, pluralize, runBatchOperation } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
@@ -19,6 +19,7 @@ export class BatchSelectionManager {
 	private isSelectionMode = false;
 	private onSelectionChangeCallback: () => void = () => {};
 	private batchCommandFactory: BatchCommandFactory;
+	private clickHandlers = new Map<HTMLElement, (e: Event) => void>();
 
 	constructor(
 		private app: App,
@@ -146,16 +147,16 @@ export class BatchSelectionManager {
 			};
 
 			eventEl.addEventListener("click", clickHandler);
-			(eventEl as any)._batchClickHandler = clickHandler;
+			this.clickHandlers.set(eventEl, clickHandler);
 		});
 	}
 
 	private removeSelectionStylingFromEvents(): void {
 		this.forEachEventElement(this.calendar.el, (eventEl) => {
-			const clickHandler = (eventEl as any)._batchClickHandler;
+			const clickHandler = this.clickHandlers.get(eventEl);
 			if (clickHandler) {
 				eventEl.removeEventListener("click", clickHandler);
-				delete (eventEl as any)._batchClickHandler;
+				this.clickHandlers.delete(eventEl);
 			}
 			eventEl.classList.remove("batch-selectable", "batch-selected");
 		});
@@ -168,7 +169,7 @@ export class BatchSelectionManager {
 		return this.mapFCEventToSelectedEvent(fcEvent);
 	}
 
-	private mapFCEventToSelectedEvent(fcEvent: any): SelectedEvent {
+	private mapFCEventToSelectedEvent(fcEvent: EventApi): SelectedEvent {
 		return {
 			id: fcEvent.id,
 			filePath: fcEvent.extendedProps.filePath,

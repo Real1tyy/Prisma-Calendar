@@ -88,8 +88,7 @@ export function createMockSingleCalendarSettingsStore(calendarOverrides?: any): 
 
 // Setup DOM environment for FullCalendar tests
 beforeEach(() => {
-	// Clear any existing DOM elements
-	document.body.innerHTML = "";
+	document.body.replaceChildren();
 
 	// Add any global test setup here
 });

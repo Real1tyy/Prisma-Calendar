@@ -63,7 +63,7 @@ export class CreateEventCommand implements Command {
 	async undo(): Promise<void> {
 		if (!this.createdFilePath) return;
 		const f = this.app.vault.getAbstractFileByPath(this.createdFilePath);
-		if (f instanceof TFile) await this.app.vault.delete(f);
+		if (f instanceof TFile) await this.app.fileManager.trashFile(f);
 	}
 
 	getType() {
@@ -91,7 +91,7 @@ export class DeleteEventCommand implements Command {
 	async execute(): Promise<void> {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		this.originalContent = await this.app.vault.read(file);
-		await this.app.vault.delete(file);
+		await this.app.fileManager.trashFile(file);
 	}
 
 	async undo(): Promise<void> {
@@ -218,7 +218,7 @@ export class CloneEventCommand implements Command {
 	async undo(): Promise<void> {
 		if (!this.clonedFilePath) return;
 		const f = this.app.vault.getAbstractFileByPath(this.clonedFilePath);
-		if (f instanceof TFile) await this.app.vault.delete(f);
+		if (f instanceof TFile) await this.app.fileManager.trashFile(f);
 	}
 
 	getType() {

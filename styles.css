@@ -106,6 +106,9 @@
 		box-shadow 0.2s ease,
 		opacity 0.2s ease;
 }
+.fc-event-hidden {
+	display: none;
+}
 .custom-calendar-event:hover {
 	transform: translateY(-1px);
 }

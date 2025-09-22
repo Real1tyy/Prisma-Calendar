@@ -1,5 +1,5 @@
 import { isFileInConfiguredDirectory } from "@real1ty-obsidian-plugins/utils/file-utils";
-import type { App, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
+import { type App, type MetadataCache, type TAbstractFile, TFile, type Vault } from "obsidian";
 import {
 	type BehaviorSubject,
 	from,
@@ -111,7 +111,7 @@ export class Indexer {
 	}
 
 	private static isMarkdownFile(f: TAbstractFile): f is TFile {
-		return (f as TFile).extension === "md";
+		return f instanceof TFile && f.extension === "md";
 	}
 
 	private toRelevantFiles<T extends TAbstractFile>() {
@@ -145,10 +145,10 @@ export class Indexer {
 
 		const renamedIntents$ = renamed$.pipe(
 			map(([f, oldPath]) => [f, oldPath] as const),
-			filter(([f]) => Indexer.isMarkdownFile(f) && this.isRelevantFile(f as TFile)),
+			filter(([f]) => Indexer.isMarkdownFile(f) && this.isRelevantFile(f)),
 			mergeMap(([f, oldPath]) => [
 				{ kind: "deleted", path: oldPath } as FileIntent,
-				{ kind: "changed", file: f as TFile, path: (f as TFile).path } as FileIntent,
+				{ kind: "changed", file: f, path: f.path } as FileIntent,
 			])
 		);
 
@@ -213,7 +213,7 @@ export class Indexer {
 			rRuleId = existingRRuleId;
 		} else {
 			rRuleId = generateUniqueRruleId();
-			await this.app.fileManager.processFrontMatter(file, (fm: any) => {
+			await this.app.fileManager.processFrontMatter(file, (fm) => {
 				fm[this._settings.rruleIdProp] = rRuleId;
 			});
 		}
