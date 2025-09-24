@@ -199,7 +199,9 @@ export class CloneEventCommand implements Command {
 		const content = await this.app.vault.read(src);
 
 		const zettelId = generateZettelId();
-		const newName = `${src.basename}-clone-${zettelId}.md`;
+		// Remove existing ZettelID from basename and replace with new one
+		const baseNameWithoutZettel = src.basename.replace(/-\d{14}$/, "");
+		const newName = `${baseNameWithoutZettel}-${zettelId}.md`;
 		const newPath = src.parent ? `${src.parent.path}/${newName}` : newName;
 
 		await this.app.vault.create(newPath, content);
