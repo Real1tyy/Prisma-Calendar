@@ -42,6 +42,9 @@ export const CalendarSettingsSchema = z.object({
 	enableEventPreview: z.boolean().default(true), // Enable hover preview for events
 	nowIndicator: z.boolean().default(true), // Show current time indicator line
 	pastEventContrast: z.number().int().min(0).max(100).default(70), // Contrast of past events in %
+	eventOverlap: z.boolean().default(true), // Allow events to visually overlap (all views)
+	slotEventOverlap: z.boolean().default(true), // Allow events to overlap within the same time slot (timeGrid views only)
+	eventMaxStack: z.number().int().min(1).max(10).default(3), // Maximum number of events to stack before showing "+ more" link
 });
 
 export const RulesSettingsSchema = z.object({

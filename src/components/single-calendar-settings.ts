@@ -531,6 +531,49 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 					}));
 				});
 			});
+
+		// Event overlap settings section
+		new Setting(containerEl).setName("Event overlap").setHeading();
+
+		new Setting(containerEl)
+			.setName("Allow event overlap")
+			.setDesc(
+				"Allow events to visually overlap in all calendar views. When disabled, overlapping events display side-by-side in columns."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(settings.eventOverlap).onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({ ...s, eventOverlap: value }));
+				})
+			);
+
+		new Setting(containerEl)
+			.setName("Allow slot event overlap")
+			.setDesc(
+				"Allow events to overlap within the same time slot in time grid views. Only affects events that share exact slot boundaries."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(settings.slotEventOverlap).onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({ ...s, slotEventOverlap: value }));
+				})
+			);
+
+		new Setting(containerEl)
+			.setName("Event stack limit")
+			.setDesc("Maximum number of events to stack vertically before showing '+ more' link (1-10)")
+			.addText((text) =>
+				text
+					.setPlaceholder("3")
+					.setValue(settings.eventMaxStack.toString())
+					.onChange(async (value) => {
+						const stackLimit = parseInt(value, 10);
+						if (!Number.isNaN(stackLimit) && stackLimit >= 1 && stackLimit <= 10) {
+							await this.settingsStore.updateSettings((s) => ({
+								...s,
+								eventMaxStack: stackLimit,
+							}));
+						}
+					})
+			);
 	}
 
 	private addFrontmatterDisplaySettings(containerEl: HTMLElement): void {

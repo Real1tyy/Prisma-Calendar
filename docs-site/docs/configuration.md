@@ -77,6 +77,12 @@ RRuleID: standup-2025
 - Display density: `comfortable` or `compact`
 - Past event contrast: visual contrast of past events (0% = invisible, 100% = normal)
 
+### Event Overlap
+
+- Allow event overlap: whether events can visually overlap in all views (default: enabled)
+- Allow slot event overlap: whether events can overlap within the same time slot in time grid views (default: enabled)
+- Event stack limit: maximum events to stack before showing "+ more" link (1-10, default: 3)
+
 ## Rules Settings
 
 ### Event Colors

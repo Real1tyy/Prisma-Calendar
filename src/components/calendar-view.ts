@@ -211,6 +211,11 @@ export class CalendarView extends MountableView(ItemView) {
 			weekends: !settings.hideWeekends,
 			firstDay: settings.firstDayOfWeek,
 
+			// Event overlap settings
+			eventOverlap: settings.eventOverlap,
+			slotEventOverlap: settings.slotEventOverlap,
+			eventMaxStack: settings.eventMaxStack,
+
 			editable: true,
 			eventStartEditable: true,
 			eventDurationEditable: true,
@@ -339,6 +344,11 @@ export class CalendarView extends MountableView(ItemView) {
 		this.calendar.setOption("weekends", !settings.hideWeekends);
 		this.calendar.setOption("firstDay", settings.firstDayOfWeek);
 		this.calendar.setOption("nowIndicator", settings.nowIndicator);
+
+		// Update event overlap settings
+		this.calendar.setOption("eventOverlap", settings.eventOverlap);
+		this.calendar.setOption("slotEventOverlap", settings.slotEventOverlap);
+		this.calendar.setOption("eventMaxStack", settings.eventMaxStack);
 
 		this.refreshEvents();
 	}

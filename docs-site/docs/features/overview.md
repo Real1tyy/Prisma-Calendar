@@ -18,6 +18,8 @@
   - Keeps your vault light while still seeing future context
 - Reactive settings (instant updates)
   - Changes reflect immediately in the calendar
+- Event overlap control
+  - Configure how overlapping events display (stacked vs columns)
 
 ### Example frontmatter
 
