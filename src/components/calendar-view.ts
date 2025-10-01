@@ -5,12 +5,13 @@ import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
 import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
+import { colord } from "colord";
 import { type App, ItemView, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
 import type { SingleCalendarConfig } from "../types/index";
 import { ColorEvaluator } from "../utils/color-evaluator";
-import { hslToString, parseColor } from "../utils/color-parser";
+import { parseColor } from "../utils/color-parser";
 import type { PropertyRendererConfig } from "../utils/property-renderer";
 import { createDefaultSeparator, renderPropertyValue as renderProperty } from "../utils/property-renderer";
 import { BatchSelectionManager } from "./batch-selection-manager";
@@ -534,7 +535,7 @@ export class CalendarView extends MountableView(ItemView) {
 				if (hsl) {
 					hsl.s = Math.round(hsl.s * (contrast / 100));
 					hsl.l = Math.round(hsl.l * (contrast / 100) + (100 - contrast));
-					eventColor = hslToString(hsl);
+					eventColor = colord(hsl).toHslString();
 				}
 			}
 		}
