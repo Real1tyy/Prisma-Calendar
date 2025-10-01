@@ -1023,27 +1023,46 @@
 
 .event-preview-header {
 	display: flex;
-	justify-content: space-between;
+	flex-direction: column;
 	align-items: center;
-	padding: 24px 24px 16px 24px;
+	padding: 32px 24px 24px 24px;
 	border-bottom: 2px solid var(--background-modifier-border);
-	background: var(--background-secondary);
+	background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-secondary-alt) 100%);
 	border-radius: 12px 12px 0 0;
 	position: sticky;
 	top: 0;
 	z-index: 10;
+	gap: 16px;
 }
 
 .event-preview-header h2 {
 	margin: 0;
-	font-size: var(--font-ui-larger);
-	font-weight: var(--font-weight-bold);
+	font-size: 28px;
+	font-weight: var(--font-weight-extrabold);
 	color: var(--text-normal);
-	flex: 1;
-	padding-right: 16px;
+	text-align: center;
+	width: 100%;
+	cursor: pointer;
+	padding: 16px 48px;
+	border-radius: 12px;
+	background: var(--background-primary);
+	border: 2px solid var(--background-modifier-border);
+	transition: all 0.2s ease;
+	line-height: 1.4;
+	word-wrap: break-word;
+}
+
+.event-preview-header h2:hover {
+	background: var(--interactive-hover);
+	border-color: var(--interactive-accent);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .event-preview-close-btn {
+	position: absolute;
+	top: 16px;
+	right: 16px;
 	width: 32px;
 	height: 32px;
 	border: none;
@@ -1174,6 +1193,21 @@
 	word-break: break-word;
 }
 
+.event-preview-prop-value-link {
+	color: var(--text-accent);
+	text-decoration: none;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-weight: var(--font-weight-medium);
+}
+
+.event-preview-prop-value-link:hover {
+	background: var(--background-modifier-hover);
+	text-decoration: underline;
+}
+
 .event-preview-empty-message {
 	text-align: center;
 	color: var(--text-muted);
@@ -1188,11 +1222,12 @@
 	}
 
 	.event-preview-header {
-		padding: 16px;
+		padding: 24px 16px 16px 16px;
 	}
 
 	.event-preview-header h2 {
-		font-size: var(--font-ui-medium);
+		font-size: 22px;
+		padding: 12px 32px;
 	}
 
 	.event-preview-section {
@@ -1201,5 +1236,10 @@
 
 	.event-preview-time-grid {
 		grid-template-columns: 1fr;
+	}
+
+	.event-preview-close-btn {
+		top: 12px;
+		right: 12px;
 	}
 }

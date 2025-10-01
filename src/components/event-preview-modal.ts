@@ -1,5 +1,6 @@
 import { type App, Modal } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
+import { getObsidianLinkDisplay, getObsidianLinkPath, isFilePath, isObsidianLink } from "../utils/obsidian-link-utils";
 
 export class EventPreviewModal extends Modal {
 	private event: any;
@@ -31,7 +32,16 @@ export class EventPreviewModal extends Modal {
 		const title = this.event.title || "Untitled Event";
 		// Remove ZettelID from title if it exists
 		const cleanTitle = title.replace(/-\d{14}$/, "");
-		header.createEl("h2", { text: cleanTitle });
+		const titleEl = header.createEl("h2", { text: cleanTitle });
+
+		// Make title clickable to open file
+		const filePath = this.event.extendedProps?.filePath;
+		if (filePath) {
+			titleEl.onclick = () => {
+				this.app.workspace.openLinkText(filePath, "", false);
+				this.close();
+			};
+		}
 
 		// Close button
 		const closeBtn = header.createEl("button", {
@@ -44,22 +54,6 @@ export class EventPreviewModal extends Modal {
 		// Time and date section
 		const timeSection = contentEl.createDiv("event-preview-section event-preview-time-section");
 		this.renderTimeInfo(timeSection);
-
-		// File path section
-		const filePath = this.event.extendedProps?.filePath;
-		if (filePath) {
-			const fileSection = contentEl.createDiv("event-preview-section event-preview-file-section");
-			fileSection.createEl("div", { text: "File", cls: "event-preview-label" });
-			const fileLink = fileSection.createEl("a", {
-				text: filePath,
-				cls: "event-preview-file-link",
-			});
-			fileLink.onclick = (e) => {
-				e.preventDefault();
-				this.app.workspace.openLinkText(filePath, "", false);
-				this.close();
-			};
-		}
 
 		// Frontmatter properties section
 		const settings = this.bundle.settingsStore.currentSettings;
@@ -138,12 +132,59 @@ export class EventPreviewModal extends Modal {
 
 		// Handle different value types
 		if (Array.isArray(value)) {
-			valueEl.setText(value.join(", "));
+			const hasClickableLinks = value.some((item) => isFilePath(item) || isObsidianLink(item));
+
+			if (hasClickableLinks) {
+				// Render each item separately, making file paths and links clickable
+				value.forEach((item, index) => {
+					if (index > 0) {
+						valueEl.createSpan({ text: ", " });
+					}
+					this.renderValue(valueEl, item);
+				});
+			} else {
+				valueEl.setText(value.join(", "));
+			}
 		} else if (typeof value === "object") {
 			valueEl.setText(JSON.stringify(value));
 		} else {
-			valueEl.setText(String(value));
+			this.renderValue(valueEl, value);
 		}
+	}
+
+	private renderValue(container: HTMLElement, value: any): void {
+		const stringValue = String(value).trim();
+
+		if (isObsidianLink(stringValue)) {
+			const displayText = getObsidianLinkDisplay(stringValue);
+			const linkPath = getObsidianLinkPath(stringValue);
+
+			const link = container.createEl("a", {
+				text: displayText,
+				cls: "event-preview-prop-value-link",
+			});
+			link.onclick = (e) => {
+				e.preventDefault();
+				this.app.workspace.openLinkText(linkPath, "", false);
+				this.close();
+			};
+			return;
+		}
+
+		if (isFilePath(stringValue)) {
+			const link = container.createEl("a", {
+				text: stringValue,
+				cls: "event-preview-prop-value-link",
+			});
+			link.onclick = (e) => {
+				e.preventDefault();
+				this.app.workspace.openLinkText(stringValue, "", false);
+				this.close();
+			};
+			return;
+		}
+
+		container.createSpan({ text: stringValue });
 	}
 
 	private formatDateTime(date: Date | null, allDay: boolean): string {
