@@ -1,6 +1,7 @@
 import { type App, Modal } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
-import { getObsidianLinkDisplay, getObsidianLinkPath, isFilePath, isObsidianLink } from "../utils/obsidian-link-utils";
+import type { PropertyRendererConfig } from "../utils/property-renderer";
+import { createDefaultSeparator, renderPropertyValue } from "../utils/property-renderer";
 
 export class EventPreviewModal extends Modal {
 	private event: any;
@@ -130,61 +131,25 @@ export class EventPreviewModal extends Modal {
 			cls: "event-preview-prop-value",
 		});
 
-		// Handle different value types
-		if (Array.isArray(value)) {
-			const hasClickableLinks = value.some((item) => isFilePath(item) || isObsidianLink(item));
+		const config: PropertyRendererConfig = {
+			createLink: (text: string, path: string) => {
+				const link = document.createElement("a");
+				link.textContent = text;
+				link.className = "event-preview-prop-value-link";
+				link.onclick = (e) => {
+					e.preventDefault();
+					this.app.workspace.openLinkText(path, "", false);
+					this.close();
+				};
+				return link;
+			},
+			createText: (text: string) => {
+				return document.createTextNode(text);
+			},
+			createSeparator: createDefaultSeparator,
+		};
 
-			if (hasClickableLinks) {
-				// Render each item separately, making file paths and links clickable
-				value.forEach((item, index) => {
-					if (index > 0) {
-						valueEl.createSpan({ text: ", " });
-					}
-					this.renderValue(valueEl, item);
-				});
-			} else {
-				valueEl.setText(value.join(", "));
-			}
-		} else if (typeof value === "object") {
-			valueEl.setText(JSON.stringify(value));
-		} else {
-			this.renderValue(valueEl, value);
-		}
-	}
-
-	private renderValue(container: HTMLElement, value: any): void {
-		const stringValue = String(value).trim();
-
-		if (isObsidianLink(stringValue)) {
-			const displayText = getObsidianLinkDisplay(stringValue);
-			const linkPath = getObsidianLinkPath(stringValue);
-
-			const link = container.createEl("a", {
-				text: displayText,
-				cls: "event-preview-prop-value-link",
-			});
-			link.onclick = (e) => {
-				e.preventDefault();
-				this.app.workspace.openLinkText(linkPath, "", false);
-				this.close();
-			};
-			return;
-		}
-
-		if (isFilePath(stringValue)) {
-			const link = container.createEl("a", {
-				text: stringValue,
-				cls: "event-preview-prop-value-link",
-			});
-			link.onclick = (e) => {
-				e.preventDefault();
-				this.app.workspace.openLinkText(stringValue, "", false);
-				this.close();
-			};
-			return;
-		}
-
-		container.createSpan({ text: stringValue });
+		renderPropertyValue(valueEl, value, config);
 	}
 
 	private formatDateTime(date: Date | null, allDay: boolean): string {

@@ -11,6 +11,8 @@ import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/
 import type { SingleCalendarConfig } from "../types/index";
 import { ColorEvaluator } from "../utils/color-evaluator";
 import { hslToString, parseColor } from "../utils/color-parser";
+import type { PropertyRendererConfig } from "../utils/property-renderer";
+import { createDefaultSeparator, renderPropertyValue as renderProperty } from "../utils/property-renderer";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
@@ -444,7 +446,6 @@ export class CalendarView extends MountableView(ItemView) {
 					const propEl = document.createElement("div");
 					propEl.className = "fc-event-prop";
 
-					// Format as "key: value"
 					const keyEl = document.createElement("span");
 					keyEl.className = "fc-event-prop-key";
 					keyEl.textContent = `${prop}:`;
@@ -452,7 +453,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 					const valueEl = document.createElement("span");
 					valueEl.className = "fc-event-prop-value";
-					valueEl.textContent = ` ${String(value)}`;
+					this.renderPropertyValue(valueEl, value);
 					propEl.appendChild(valueEl);
 
 					propsContainer.appendChild(propEl);
@@ -465,6 +466,31 @@ export class CalendarView extends MountableView(ItemView) {
 		}
 
 		return { domNodes: [mainEl] };
+	}
+
+	private renderPropertyValue(container: HTMLElement, value: any): void {
+		const config: PropertyRendererConfig = {
+			createLink: (text: string, path: string) => {
+				const link = document.createElement("a");
+				link.className = "fc-event-prop-link";
+				link.textContent = text;
+				link.onclick = (e) => {
+					e.preventDefault();
+					e.stopPropagation(); // Prevent event card click
+					this.app.workspace.openLinkText(path, "", false);
+				};
+				return link;
+			},
+			createText: (text: string) => {
+				// For calendar events, add space prefix for non-empty values
+				const isFirstChild = container.childNodes.length === 0;
+				const prefixedText = isFirstChild && text.trim() ? ` ${text}` : text;
+				return document.createTextNode(prefixedText);
+			},
+			createSeparator: createDefaultSeparator,
+		};
+
+		renderProperty(container, value, config);
 	}
 
 	private getEventColor(event: any): string {

@@ -220,6 +220,30 @@
 	overflow-wrap: break-word;
 }
 
+.fc-event-prop-link {
+	color: white;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-decoration-thickness: 1.5px;
+	text-underline-offset: 2px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-weight: var(--font-weight-bold);
+	padding: 1px 3px;
+	border-radius: 2px;
+	background: rgba(255, 255, 255, 0.1);
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.fc-event-prop-link:hover {
+	color: white;
+	text-decoration-style: solid;
+	text-decoration-thickness: 2px;
+	background: rgba(255, 255, 255, 0.2);
+	text-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+	transform: translateY(-1px);
+}
+
 /* Time-grid / day-grid: ensure wrappers don't add extra padding */
 .custom-calendar-container .fc-daygrid-event .fc-event-main,
 .custom-calendar-container .fc-timegrid-event .fc-event-main {
