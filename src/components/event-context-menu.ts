@@ -4,6 +4,7 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import { CloneEventCommand, DeleteEventCommand, EditEventCommand, MoveEventCommand } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import { EventEditModal } from "./event-edit-modal";
+import { EventPreviewModal } from "./event-preview-modal";
 
 export class EventContextMenu {
 	private app: App;
@@ -27,6 +28,17 @@ export class EventContextMenu {
 		const menu = new Menu();
 		const event = info.event;
 		const filePath = event.extendedProps.filePath;
+
+		menu.addItem((item) => {
+			item
+				.setTitle("Enlarge")
+				.setIcon("maximize-2")
+				.onClick(() => {
+					this.openEventPreview(event);
+				});
+		});
+
+		menu.addSeparator();
 
 		menu.addItem((item) => {
 			item
@@ -174,6 +186,10 @@ export class EventContextMenu {
 			console.error("Failed to delete event:", error);
 			new Notice("Failed to delete event");
 		}
+	}
+
+	private openEventPreview(event: any): void {
+		new EventPreviewModal(this.app, this.bundle, event).open();
 	}
 
 	private openEventEditModal(event: any): void {
