@@ -62,6 +62,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		addBatchCommand("batch-clear-selection", "Clear selection", (view) => view.clearSelection());
 		addBatchCommand("batch-duplicate-selection", "Duplicate selection", (view) => view.duplicateSelection());
 		addBatchCommand("batch-delete-selection", "Delete selection", (view) => view.deleteSelection());
+		addBatchCommand("batch-skip-selection", "Skip selection", (view) => view.skipSelection());
 		addBatchCommand("batch-open-selection", "Open selection", (view) => view.openSelection());
 		addBatchCommand("batch-clone-next-week", "Clone to next week", (view) => view.cloneSelection(1));
 		addBatchCommand("batch-clone-prev-week", "Clone to previous week", (view) => view.cloneSelection(-1));
@@ -93,6 +94,21 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		addUndoRedoCommand("undo", "Undo", (view) => view.undo());
 		addUndoRedoCommand("redo", "Redo", (view) => view.redo());
+
+		this.addCommand({
+			id: "show-skipped-events",
+			name: "Show skipped events",
+			checkCallback: (checking: boolean) => {
+				const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
+				if (calendarView) {
+					if (!checking) {
+						calendarView.showSkippedEventsModal();
+					}
+					return true;
+				}
+				return false;
+			},
+		});
 
 		this.app.workspace.onLayoutReady(() => {
 			this.ensureCalendarBundlesReady();

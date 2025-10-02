@@ -1,4 +1,3 @@
-import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
 import { DateTime } from "luxon";
 import { type App, Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
@@ -59,8 +58,8 @@ export class SkippedEventsModal extends Modal {
 		} else {
 			const endTime = event.end ? DateTime.fromISO(event.end) : null;
 			if (endTime) {
-				const durationMs = endTime.diff(startTime).toMillis();
-				timeEl.textContent = `${startTime.toFormat("MMM d, yyyy - h:mm a")} (${formatDuration(durationMs)})`;
+				const durationText = this.formatDurationHumanReadable(startTime, endTime);
+				timeEl.textContent = `${startTime.toFormat("MMM d, yyyy - h:mm a")} (${durationText})`;
 			} else {
 				timeEl.textContent = startTime.toFormat("MMM d, yyyy - h:mm a");
 			}
@@ -112,6 +111,20 @@ export class SkippedEventsModal extends Modal {
 			console.error("Failed to un-skip event:", error);
 			new Notice("Failed to un-skip event");
 		}
+	}
+
+	private formatDurationHumanReadable(start: DateTime, end: DateTime): string {
+		const durationMs = end.diff(start).toMillis();
+		const hours = Math.floor(durationMs / (1000 * 60 * 60));
+		const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+
+		if (hours === 0) {
+			return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+		}
+		if (minutes === 0) {
+			return `${hours} hour${hours === 1 ? "" : "s"}`;
+		}
+		return `${hours} hour${hours === 1 ? "" : "s"} ${minutes} minute${minutes === 1 ? "" : "s"}`;
 	}
 
 	onClose(): void {

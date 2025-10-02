@@ -93,7 +93,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 		if (inSelectionMode) {
 			const batchButtons =
-				"batchCounter batchSelectAll batchClear batchDuplicate batchCloneNext batchClonePrev batchMoveNext batchMovePrev batchOpenAll batchDelete batchExit";
+				"batchCounter batchSelectAll batchClear batchDuplicate batchCloneNext batchClonePrev batchMoveNext batchMovePrev batchOpenAll batchSkip batchDelete batchExit";
 			headerToolbar.right = `${batchButtons} ${viewSwitchers}`;
 
 			// Define all batch buttons
@@ -151,14 +151,22 @@ export class CalendarView extends MountableView(ItemView) {
 				click: () => bsm.executeOpenAll(),
 				className: "batch-action-btn open-all-btn",
 			};
+			customButtons.batchSkip = {
+				text: "Skip",
+				click: () => bsm.executeSkip(),
+				className: "batch-action-btn skip-btn",
+			};
 		} else {
 			headerToolbar.right = `skippedEvents batchSelect ${viewSwitchers}`;
 			customButtons.batchSelect = {
 				text: "Batch Select",
 				click: () => this.toggleBatchSelection(),
 			};
+			// Preserve button text from previous update (important for batch mode toggle)
+			const currentButton = this.calendar.getOption("customButtons")?.skippedEvents;
+			const currentText = currentButton?.text || "0 skipped";
 			customButtons.skippedEvents = {
-				text: "0 skipped",
+				text: currentText,
 				click: () => this.showSkippedEventsModal(),
 			};
 		}
@@ -166,11 +174,13 @@ export class CalendarView extends MountableView(ItemView) {
 		this.calendar.setOption("headerToolbar", headerToolbar);
 		this.calendar.setOption("customButtons", customButtons);
 
-		// Hide button initially (will be shown when skipped events exist)
+		// Preserve button visibility based on current text
 		setTimeout(() => {
 			const btn = this.container.querySelector(".fc-skippedEvents-button");
 			if (btn instanceof HTMLElement) {
-				btn.style.display = "none";
+				const currentText = btn.textContent || "";
+				const hasSkipped = !currentText.startsWith("0 ");
+				btn.style.display = hasSkipped ? "inline-block" : "none";
 			}
 		}, 0);
 	}
@@ -190,11 +200,14 @@ export class CalendarView extends MountableView(ItemView) {
 	private updateSkippedEventsButton(count: number): void {
 		if (!this.calendar) return;
 
-		// Update button text and handler
-		const customButtons = this.calendar.getOption("customButtons") || {};
-		customButtons.skippedEvents = {
-			text: `${count} skipped`,
-			click: () => this.showSkippedEventsModal(),
+		// Create NEW customButtons object so FullCalendar detects the change
+		const oldButtons = this.calendar.getOption("customButtons") || {};
+		const customButtons = {
+			...oldButtons,
+			skippedEvents: {
+				text: `${count} skipped`,
+				click: () => this.showSkippedEventsModal(),
+			},
 		};
 		this.calendar.setOption("customButtons", customButtons);
 
@@ -208,7 +221,7 @@ export class CalendarView extends MountableView(ItemView) {
 		}, 0);
 	}
 
-	private async showSkippedEventsModal(): Promise<void> {
+	async showSkippedEventsModal(): Promise<void> {
 		if (!this.calendar) return;
 
 		const view = this.calendar.view;
@@ -773,6 +786,10 @@ export class CalendarView extends MountableView(ItemView) {
 
 	clearSelection(): void {
 		this.batchSelectionManager?.clearSelection();
+	}
+
+	skipSelection(): void {
+		this.batchSelectionManager?.executeSkip();
 	}
 
 	duplicateSelection(): void {

@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 import { MacroCommand } from "./command";
-import { CloneEventCommand, DeleteEventCommand, MoveEventCommand } from "./event-commands";
+import { CloneEventCommand, DeleteEventCommand, MoveEventCommand, ToggleSkipCommand } from "./event-commands";
 
 export function createBatchDeleteCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
 	const deleteCommands = filePaths.map((filePath) => new DeleteEventCommand(app, bundle, filePath));
@@ -41,6 +41,12 @@ export function createBatchDuplicateCommand(app: App, bundle: CalendarBundle, fi
 	return new MacroCommand(duplicateCommands);
 }
 
+export function createBatchSkipCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
+	const skipCommands = filePaths.map((filePath) => new ToggleSkipCommand(app, bundle, filePath));
+
+	return new MacroCommand(skipCommands);
+}
+
 export function calculateWeekOffsets(weeks: number): [number, number] {
 	const weekInMs = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 	const offset = weeks * weekInMs;
@@ -69,5 +75,9 @@ export class BatchCommandFactory {
 	createClone(filePaths: string[], weeks: number): MacroCommand {
 		const [startOffset, endOffset] = calculateWeekOffsets(weeks);
 		return createBatchCloneCommand(this.app, this.bundle, filePaths, startOffset, endOffset);
+	}
+
+	createSkip(filePaths: string[]): MacroCommand {
+		return createBatchSkipCommand(this.app, this.bundle, filePaths);
 	}
 }
