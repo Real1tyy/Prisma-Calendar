@@ -1,4 +1,4 @@
-import { getObsidianLinkDisplay, getObsidianLinkPath, isFilePath, isObsidianLink } from "./obsidian-link-utils";
+import { getObsidianLinkAlias, getObsidianLinkPath, isObsidianLink } from "./obsidian-link-utils";
 
 export interface PropertyRendererConfig {
 	createLink: (text: string, path: string, isObsidianLink: boolean) => HTMLElement;
@@ -9,7 +9,7 @@ export interface PropertyRendererConfig {
 export function renderPropertyValue(container: HTMLElement, value: any, config: PropertyRendererConfig): void {
 	// Handle arrays - render each item separately
 	if (Array.isArray(value)) {
-		const hasClickableLinks = value.some((item) => isFilePath(item) || isObsidianLink(item));
+		const hasClickableLinks = value.some(isObsidianLink);
 
 		if (hasClickableLinks) {
 			value.forEach((item, index) => {
@@ -25,33 +25,16 @@ export function renderPropertyValue(container: HTMLElement, value: any, config: 
 		}
 		return;
 	}
-
-	// Handle objects
-	if (typeof value === "object" && value !== null) {
-		const textNode = config.createText(JSON.stringify(value));
-		container.appendChild(textNode);
-		return;
-	}
-
-	// Handle single values
 	renderSingleValue(container, value, config);
 }
 
 function renderSingleValue(container: HTMLElement, value: any, config: PropertyRendererConfig): void {
 	const stringValue = String(value).trim();
 
-	// Handle Obsidian internal links
 	if (isObsidianLink(stringValue)) {
-		const displayText = getObsidianLinkDisplay(stringValue);
+		const displayText = getObsidianLinkAlias(stringValue);
 		const linkPath = getObsidianLinkPath(stringValue);
 		const link = config.createLink(displayText, linkPath, true);
-		container.appendChild(link);
-		return;
-	}
-
-	// Handle file paths
-	if (isFilePath(stringValue)) {
-		const link = config.createLink(stringValue, stringValue, false);
 		container.appendChild(link);
 		return;
 	}

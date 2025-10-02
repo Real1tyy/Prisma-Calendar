@@ -1,6 +1,5 @@
 import { nanoid } from "nanoid";
 import type { SingleCalendarConfig } from "../types";
-import { shiftISO } from "./obsidian";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
 	return allDayValue === true || (typeof allDayValue === "string" && allDayValue.toLowerCase() === "true");
@@ -60,4 +59,13 @@ export const setEventBasics = (
 
 export const generateUniqueRruleId = (): string => {
 	return `${Date.now()}-${nanoid(5)}`;
+};
+
+// Safe ISO shift (stays ISO even if undefined)
+export const shiftISO = (iso: unknown, offsetMs?: number) => {
+	if (!iso || typeof iso !== "string" || !offsetMs) return iso;
+	const d = new Date(iso);
+	if (Number.isNaN(d.getTime())) return iso;
+	d.setTime(d.getTime() + offsetMs);
+	return d.toISOString();
 };

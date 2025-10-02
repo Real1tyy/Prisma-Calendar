@@ -12,7 +12,7 @@ import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/
 import type { SingleCalendarConfig } from "../types/index";
 import { ColorEvaluator, parseColor } from "../utils/colors";
 import type { PropertyRendererConfig } from "../utils/property-renderer";
-import { createDefaultSeparator, renderPropertyValue as renderProperty } from "../utils/property-renderer";
+import { createDefaultSeparator, renderPropertyValue } from "../utils/property-renderer";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
@@ -563,7 +563,7 @@ export class CalendarView extends MountableView(ItemView) {
 			createSeparator: createDefaultSeparator,
 		};
 
-		renderProperty(container, value, config);
+		renderPropertyValue(container, value, config);
 	}
 
 	private getEventColor(event: any): string {

@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-	getObsidianLinkDisplay,
+	getObsidianLinkAlias,
 	getObsidianLinkPath,
-	isFilePath,
 	isObsidianLink,
 	parseObsidianLink,
 } from "../../src/utils/obsidian-link-utils";
@@ -52,8 +51,7 @@ describe("parseObsidianLink", () => {
 			expect(result).toEqual({
 				raw: "[[Page Name]]",
 				path: "Page Name",
-				display: "Page Name",
-				hasPipe: false,
+				alias: "Page Name",
 			});
 		});
 
@@ -62,8 +60,7 @@ describe("parseObsidianLink", () => {
 			expect(result).toEqual({
 				raw: "[[  Page Name  ]]",
 				path: "Page Name",
-				display: "Page Name",
-				hasPipe: false,
+				alias: "Page Name",
 			});
 		});
 
@@ -72,8 +69,7 @@ describe("parseObsidianLink", () => {
 			expect(result).toEqual({
 				raw: "[[Projects/Travel/Paris]]",
 				path: "Projects/Travel/Paris",
-				display: "Projects/Travel/Paris",
-				hasPipe: false,
+				alias: "Projects/Travel/Paris",
 			});
 		});
 	});
@@ -84,8 +80,7 @@ describe("parseObsidianLink", () => {
 			expect(result).toEqual({
 				raw: "[[Path/To/Page|Display Name]]",
 				path: "Path/To/Page",
-				display: "Display Name",
-				hasPipe: true,
+				alias: "Display Name",
 			});
 		});
 
@@ -96,8 +91,7 @@ describe("parseObsidianLink", () => {
 			expect(result).toEqual({
 				raw: "[[Projects/Travel Around The World – Paris Visit|Travel Around The World – Paris Visit]]",
 				path: "Projects/Travel Around The World – Paris Visit",
-				display: "Travel Around The World – Paris Visit",
-				hasPipe: true,
+				alias: "Travel Around The World – Paris Visit",
 			});
 		});
 
@@ -106,8 +100,7 @@ describe("parseObsidianLink", () => {
 			expect(result).toEqual({
 				raw: "[[Path|Display|Extra]]",
 				path: "Path",
-				display: "Display|Extra",
-				hasPipe: true,
+				alias: "Display|Extra",
 			});
 		});
 
@@ -116,8 +109,7 @@ describe("parseObsidianLink", () => {
 			expect(result).toEqual({
 				raw: "[[  Path  |  Display  ]]",
 				path: "Path",
-				display: "Display",
-				hasPipe: true,
+				alias: "Display",
 			});
 		});
 	});
@@ -138,20 +130,20 @@ describe("parseObsidianLink", () => {
 
 describe("getObsidianLinkDisplay", () => {
 	it("should extract display text from simple links", () => {
-		expect(getObsidianLinkDisplay("[[Page Name]]")).toBe("Page Name");
-		expect(getObsidianLinkDisplay("[[Travel Around The World]]")).toBe("Travel Around The World");
+		expect(getObsidianLinkAlias("[[Page Name]]")).toBe("Page Name");
+		expect(getObsidianLinkAlias("[[Travel Around The World]]")).toBe("Travel Around The World");
 	});
 
 	it("should extract display text from pipe syntax", () => {
-		expect(getObsidianLinkDisplay("[[Path/To/Page|Display Name]]")).toBe("Display Name");
-		expect(getObsidianLinkDisplay("[[Projects/Travel|Travel Around The World – Paris Visit]]")).toBe(
+		expect(getObsidianLinkAlias("[[Path/To/Page|Display Name]]")).toBe("Display Name");
+		expect(getObsidianLinkAlias("[[Projects/Travel|Travel Around The World – Paris Visit]]")).toBe(
 			"Travel Around The World – Paris Visit"
 		);
 	});
 
 	it("should return original string for invalid links", () => {
-		expect(getObsidianLinkDisplay("Not a link")).toBe("Not a link");
-		expect(getObsidianLinkDisplay("[Page Name]")).toBe("[Page Name]");
+		expect(getObsidianLinkAlias("Not a link")).toBe("Not a link");
+		expect(getObsidianLinkAlias("[Page Name]")).toBe("[Page Name]");
 	});
 });
 
@@ -174,62 +166,14 @@ describe("getObsidianLinkPath", () => {
 	});
 });
 
-describe("isFilePath", () => {
-	it("should detect .md files", () => {
-		expect(isFilePath("file.md")).toBe(true);
-		expect(isFilePath("path/to/file.md")).toBe(true);
-	});
-
-	it("should detect paths with separators", () => {
-		expect(isFilePath("folder/file")).toBe(true);
-		expect(isFilePath("folder\\file")).toBe(true);
-		expect(isFilePath("a/b/c/d")).toBe(true);
-	});
-
-	it("should reject Obsidian links", () => {
-		expect(isFilePath("[[Page Name]]")).toBe(false);
-		expect(isFilePath("[[Path/To/Page|Display]]")).toBe(false);
-	});
-
-	it("should reject URLs", () => {
-		expect(isFilePath("http://example.com/file")).toBe(false);
-		expect(isFilePath("https://example.com/path/to/file")).toBe(false);
-	});
-
-	it("should reject paths with spaces", () => {
-		expect(isFilePath("path with spaces/file")).toBe(false);
-	});
-
-	it("should reject plain text", () => {
-		expect(isFilePath("Just some text")).toBe(false);
-		expect(isFilePath("Single word")).toBe(false);
-	});
-
-	it("should reject non-string values", () => {
-		expect(isFilePath(null)).toBe(false);
-		expect(isFilePath(undefined)).toBe(false);
-		expect(isFilePath(123)).toBe(false);
-		expect(isFilePath({})).toBe(false);
-	});
-
-	it("should handle edge cases", () => {
-		expect(isFilePath("")).toBe(false);
-		expect(isFilePath("   ")).toBe(false);
-		expect(isFilePath(".md")).toBe(true);
-		expect(isFilePath("/")).toBe(true);
-	});
-});
-
 describe("Integration scenarios", () => {
 	it("should correctly differentiate between links and file paths", () => {
 		const obsidianLink = "[[Projects/Travel Around The World|Travel]]";
 		const filePath = "Projects/Travel.md";
 
 		expect(isObsidianLink(obsidianLink)).toBe(true);
-		expect(isFilePath(obsidianLink)).toBe(false);
 
 		expect(isObsidianLink(filePath)).toBe(false);
-		expect(isFilePath(filePath)).toBe(true);
 	});
 
 	it("should handle arrays of mixed values", () => {
@@ -241,10 +185,8 @@ describe("Integration scenarios", () => {
 		];
 
 		const links = values.filter(isObsidianLink);
-		const paths = values.filter(isFilePath);
 
 		expect(links).toHaveLength(2);
-		expect(paths).toHaveLength(1);
 	});
 
 	it("should extract correct information from real-world examples", () => {
@@ -253,10 +195,10 @@ describe("Integration scenarios", () => {
 
 		const goalParsed = parseObsidianLink(goalLink);
 		expect(goalParsed?.path).toBe("Travel Around The World");
-		expect(goalParsed?.display).toBe("Travel Around The World");
+		expect(goalParsed?.alias).toBe("Travel Around The World");
 
 		const projectParsed = parseObsidianLink(projectLink);
 		expect(projectParsed?.path).toBe("Projects/Travel Around The World – Paris Visit");
-		expect(projectParsed?.display).toBe("Travel Around The World – Paris Visit");
+		expect(projectParsed?.alias).toBe("Travel Around The World – Paris Visit");
 	});
 });

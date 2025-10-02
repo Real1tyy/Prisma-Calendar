@@ -24,12 +24,3 @@ export const restoreFrontmatter = async (app: App, file: TFile, original: Record
 		});
 		Object.assign(fm, original);
 	});
-
-// Safe ISO shift (stays ISO even if undefined)
-export const shiftISO = (iso: unknown, offsetMs?: number) => {
-	if (!iso || typeof iso !== "string" || !offsetMs) return iso;
-	const d = new Date(iso);
-	if (Number.isNaN(d.getTime())) return iso;
-	d.setTime(d.getTime() + offsetMs);
-	return d.toISOString();
-};
