@@ -140,15 +140,30 @@ export class SingleCalendarSettings {
 
 		new Setting(containerEl)
 			.setName("End property")
-			.setDesc("Frontmatter property name for event end date/time (optional)")
+			.setDesc("Frontmatter property name for event end date/time (for timed events)")
 			.addText((text) =>
 				text
-					.setPlaceholder("End")
+					.setPlaceholder("End Date")
 					.setValue(settings.endProp || "")
 					.onChange(async (value) => {
 						await this.settingsStore.updateSettings((s) => ({
 							...s,
-							endProp: value || "End",
+							endProp: value || "End Date",
+						}));
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Date property")
+			.setDesc("Frontmatter property name for all-day events (date only, no time)")
+			.addText((text) =>
+				text
+					.setPlaceholder("Date")
+					.setValue(settings.dateProp)
+					.onChange(async (value) => {
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							dateProp: value || "Date",
 						}));
 					})
 			);
@@ -158,7 +173,7 @@ export class SingleCalendarSettings {
 			.setDesc("Frontmatter property name for all-day flag (optional)")
 			.addText((text) =>
 				text
-					.setPlaceholder("AllDay")
+					.setPlaceholder("All Day")
 					.setValue(settings.allDayProp || "")
 					.onChange(async (value) => {
 						await this.settingsStore.updateSettings((s) => ({ ...s, allDayProp: value }));
@@ -200,6 +215,18 @@ export class SingleCalendarSettings {
 					.setValue(settings.zettelIdProp || "")
 					.onChange(async (value) => {
 						await this.settingsStore.updateSettings((s) => ({ ...s, zettelIdProp: value }));
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Skip property")
+			.setDesc("Frontmatter property name to hide events from calendar (when set to true)")
+			.addText((text) =>
+				text
+					.setPlaceholder("Skip")
+					.setValue(settings.skipProp || "")
+					.onChange(async (value) => {
+						await this.settingsStore.updateSettings((s) => ({ ...s, skipProp: value || "Skip" }));
 					})
 			);
 
@@ -263,17 +290,50 @@ export class SingleCalendarSettings {
 					})
 			);
 
+		// Add description for event types
+		const eventTypesDesc = containerEl.createDiv("settings-info-box");
+
+		eventTypesDesc.createEl("h4", { text: "Event types" });
+		eventTypesDesc.createEl("p", {
+			text: "There are two types of events: timed events and all-day events. Each uses different properties.",
+		});
+
+		const timedExample = eventTypesDesc.createDiv();
+		timedExample.createEl("strong", { text: "Timed event example:" });
+		timedExample.createEl("pre", {
+			text: `---
+${settings.startProp}: 2024-01-15T09:00
+${settings.endProp}: 2024-01-15T10:30
+${settings.allDayProp}: false
+---
+
+# Team Meeting`,
+			cls: "settings-info-box-example",
+		});
+
+		const allDayExample = eventTypesDesc.createDiv();
+		allDayExample.createEl("strong", { text: "All-day event example:" });
+		allDayExample.createEl("pre", {
+			text: `---
+${settings.dateProp}: 2024-01-15
+${settings.allDayProp}: true
+---
+
+# Conference Day`,
+			cls: "settings-info-box-example",
+		});
+
 		// Add description for recurring events
 		const recurringDesc = containerEl.createDiv("settings-info-box");
 
-		recurringDesc.createEl("h4", { text: "Node-based recurring events" });
+		recurringDesc.createEl("h4", { text: "Recurring events" });
 		recurringDesc.createEl("p", {
 			text: "To create recurring events, add the RRule property to any event file's frontmatter. The plugin will automatically detect these and create recurring instances.",
 		});
 
-		const exampleContainer = recurringDesc.createDiv();
-		exampleContainer.createEl("strong", { text: "Example:" });
-		exampleContainer.createEl("pre", {
+		const recurringExample = recurringDesc.createDiv();
+		recurringExample.createEl("strong", { text: "Example:" });
+		recurringExample.createEl("pre", {
 			text: `---
 ${settings.startProp}: 2024-01-15T09:00
 ${settings.endProp}: 2024-01-15T10:30

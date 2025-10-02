@@ -5,15 +5,19 @@ import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
 import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
+import { colord } from "colord";
 import { type App, ItemView, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
 import type { SingleCalendarConfig } from "../types/index";
 import { ColorEvaluator } from "../utils/color-evaluator";
-import { hslToString, parseColor } from "../utils/color-parser";
+import { parseColor } from "../utils/color-parser";
+import type { PropertyRendererConfig } from "../utils/property-renderer";
+import { createDefaultSeparator, renderPropertyValue as renderProperty } from "../utils/property-renderer";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
+import { SkippedEventsModal } from "./skipped-events-modal";
 import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";
@@ -89,7 +93,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 		if (inSelectionMode) {
 			const batchButtons =
-				"batchCounter batchSelectAll batchClear batchDuplicate batchCloneNext batchClonePrev batchMoveNext batchMovePrev batchOpenAll batchDelete batchExit";
+				"batchCounter batchSelectAll batchClear batchDuplicate batchCloneNext batchClonePrev batchMoveNext batchMovePrev batchOpenAll batchSkip batchDelete batchExit";
 			headerToolbar.right = `${batchButtons} ${viewSwitchers}`;
 
 			// Define all batch buttons
@@ -147,16 +151,38 @@ export class CalendarView extends MountableView(ItemView) {
 				click: () => bsm.executeOpenAll(),
 				className: "batch-action-btn open-all-btn",
 			};
+			customButtons.batchSkip = {
+				text: "Skip",
+				click: () => bsm.executeSkip(),
+				className: "batch-action-btn skip-btn",
+			};
 		} else {
-			headerToolbar.right = `batchSelect ${viewSwitchers}`;
+			headerToolbar.right = `skippedEvents batchSelect ${viewSwitchers}`;
 			customButtons.batchSelect = {
 				text: "Batch Select",
 				click: () => this.toggleBatchSelection(),
+			};
+			// Preserve button text from previous update (important for batch mode toggle)
+			const currentButton = this.calendar.getOption("customButtons")?.skippedEvents;
+			const currentText = currentButton?.text || "0 skipped";
+			customButtons.skippedEvents = {
+				text: currentText,
+				click: () => this.showSkippedEventsModal(),
 			};
 		}
 
 		this.calendar.setOption("headerToolbar", headerToolbar);
 		this.calendar.setOption("customButtons", customButtons);
+
+		// Preserve button visibility based on current text
+		setTimeout(() => {
+			const btn = this.container.querySelector(".fc-skippedEvents-button");
+			if (btn instanceof HTMLElement) {
+				const currentText = btn.textContent || "";
+				const hasSkipped = !currentText.startsWith("0 ");
+				btn.style.display = hasSkipped ? "inline-block" : "none";
+			}
+		}, 0);
 	}
 
 	getViewType(): string {
@@ -169,6 +195,43 @@ export class CalendarView extends MountableView(ItemView) {
 
 	getIcon(): string {
 		return "calendar";
+	}
+
+	private updateSkippedEventsButton(count: number): void {
+		if (!this.calendar) return;
+
+		// Create NEW customButtons object so FullCalendar detects the change
+		const oldButtons = this.calendar.getOption("customButtons") || {};
+		const customButtons = {
+			...oldButtons,
+			skippedEvents: {
+				text: `${count} skipped`,
+				click: () => this.showSkippedEventsModal(),
+			},
+		};
+		this.calendar.setOption("customButtons", customButtons);
+
+		// Update button visibility and tooltip (re-query after customButtons update since DOM may be recreated)
+		setTimeout(() => {
+			const btn = this.container.querySelector(".fc-skippedEvents-button");
+			if (btn instanceof HTMLElement) {
+				btn.style.display = count > 0 ? "inline-block" : "none";
+				btn.title = `${count} event${count === 1 ? "" : "s"} hidden from calendar`;
+			}
+		}, 0);
+	}
+
+	async showSkippedEventsModal(): Promise<void> {
+		if (!this.calendar) return;
+
+		const view = this.calendar.view;
+		if (!view) return;
+
+		const start = view.activeStart.toISOString();
+		const end = view.activeEnd.toISOString();
+		const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
+
+		new SkippedEventsModal(this.app, this.bundle, skippedEvents).open();
 	}
 
 	private async initializeCalendar(container: HTMLElement): Promise<void> {
@@ -367,7 +430,10 @@ export class CalendarView extends MountableView(ItemView) {
 			const start = view.activeStart.toISOString();
 			const end = view.activeEnd.toISOString();
 
-			const events = await this.bundle.eventStore.getEvents({ start, end });
+			const events = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
+
+			const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
+			this.updateSkippedEventsButton(skippedEvents.length);
 
 			// Convert to FullCalendar event format
 			const calendarEvents = events.map((event) => {
@@ -454,7 +520,6 @@ export class CalendarView extends MountableView(ItemView) {
 					const propEl = document.createElement("div");
 					propEl.className = "fc-event-prop";
 
-					// Format as "key: value"
 					const keyEl = document.createElement("span");
 					keyEl.className = "fc-event-prop-key";
 					keyEl.textContent = `${prop}:`;
@@ -462,7 +527,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 					const valueEl = document.createElement("span");
 					valueEl.className = "fc-event-prop-value";
-					valueEl.textContent = ` ${String(value)}`;
+					this.renderPropertyValue(valueEl, value);
 					propEl.appendChild(valueEl);
 
 					propsContainer.appendChild(propEl);
@@ -475,6 +540,31 @@ export class CalendarView extends MountableView(ItemView) {
 		}
 
 		return { domNodes: [mainEl] };
+	}
+
+	private renderPropertyValue(container: HTMLElement, value: any): void {
+		const config: PropertyRendererConfig = {
+			createLink: (text: string, path: string) => {
+				const link = document.createElement("a");
+				link.className = "fc-event-prop-link";
+				link.textContent = text;
+				link.onclick = (e) => {
+					e.preventDefault();
+					e.stopPropagation(); // Prevent event card click
+					this.app.workspace.openLinkText(path, "", false);
+				};
+				return link;
+			},
+			createText: (text: string) => {
+				// For calendar events, add space prefix for non-empty values
+				const isFirstChild = container.childNodes.length === 0;
+				const prefixedText = isFirstChild && text.trim() ? ` ${text}` : text;
+				return document.createTextNode(prefixedText);
+			},
+			createSeparator: createDefaultSeparator,
+		};
+
+		renderProperty(container, value, config);
 	}
 
 	private getEventColor(event: any): string {
@@ -518,7 +608,7 @@ export class CalendarView extends MountableView(ItemView) {
 				if (hsl) {
 					hsl.s = Math.round(hsl.s * (contrast / 100));
 					hsl.l = Math.round(hsl.l * (contrast / 100) + (100 - contrast));
-					eventColor = hslToString(hsl);
+					eventColor = colord(hsl).toHslString();
 				}
 			}
 		}
@@ -613,8 +703,10 @@ export class CalendarView extends MountableView(ItemView) {
 				filePath,
 				info.event.start.toISOString(),
 				info.event.end?.toISOString(),
+				info.event.allDay || false,
 				info.oldEvent.start.toISOString(),
-				info.oldEvent.end?.toISOString()
+				info.oldEvent.end?.toISOString(),
+				info.oldEvent.allDay || false
 			);
 
 			await this.bundle.commandManager.executeCommand(command);
@@ -644,8 +736,10 @@ export class CalendarView extends MountableView(ItemView) {
 				filePath,
 				info.event.start.toISOString(),
 				info.event.end?.toISOString(),
+				info.event.allDay || false,
 				info.oldEvent.start.toISOString(),
-				info.oldEvent.end?.toISOString()
+				info.oldEvent.end?.toISOString(),
+				info.oldEvent.allDay || false
 			);
 
 			await this.bundle.commandManager.executeCommand(command);
@@ -702,6 +796,10 @@ export class CalendarView extends MountableView(ItemView) {
 
 	clearSelection(): void {
 		this.batchSelectionManager?.clearSelection();
+	}
+
+	skipSelection(): void {
+		this.batchSelectionManager?.executeSkip();
 	}
 
 	duplicateSelection(): void {

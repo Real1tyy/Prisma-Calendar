@@ -1,5 +1,6 @@
 import type { Calendar } from "@fullcalendar/core";
 import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
+import { Menu } from "obsidian";
 import type { CalendarSettingsStore } from "../core/settings-store";
 
 export class ZoomManager {
@@ -135,12 +136,34 @@ export class ZoomManager {
 		this.onZoomChangeCallback = callback;
 	}
 
-	createZoomLevelButton(): { text: string; click: () => void } {
+	createZoomLevelButton(): { text: string; click: (e: MouseEvent) => void } {
 		return {
 			text: this.getZoomLevelText(),
-			click: () => {
-				// Button is read-only, just for display
+			click: (e: MouseEvent) => {
+				this.showZoomMenu(e);
 			},
 		};
+	}
+
+	private showZoomMenu(e: MouseEvent): void {
+		const menu = new Menu();
+
+		const currentZoomIndex = this.getCurrentZoomIndex();
+
+		this.zoomLevels.forEach((zoomLevel, index) => {
+			menu.addItem((item) => {
+				item
+					.setTitle(`${zoomLevel} min`)
+					.setIcon(index === currentZoomIndex ? "check" : "")
+					.onClick(() => {
+						this.setZoomLevel(index);
+					});
+			});
+		});
+
+		// Show menu at button position
+		const target = e.target as HTMLElement;
+		const rect = target.getBoundingClientRect();
+		menu.showAtPosition({ x: rect.left, y: rect.bottom + 4 });
 	}
 }

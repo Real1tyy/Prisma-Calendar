@@ -388,6 +388,7 @@ export class RecurringEventManager {
 			allDay: recurringEvent.rrules.allDay,
 			timezone: this.settings.timezone,
 			isVirtual: true,
+			skipped: false,
 			meta: {
 				...recurringEvent.frontmatter,
 				rruleId: recurringEvent.rRuleId,

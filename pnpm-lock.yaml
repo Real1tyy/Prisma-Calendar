@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  obsidian: 1.8.7
+
 importers:
 
   .:
@@ -27,11 +30,14 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)
       '@real1ty-obsidian-plugins/utils':
-        specifier: ^1.2.0
-        version: 1.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)
+        specifier: ^1.2.2
+        version: 1.2.2(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)
       chrono-node:
         specifier: ^2.8.4
         version: 2.8.4
+      colord:
+        specifier: ^2.9.3
+        version: 2.9.3
       luxon:
         specifier: ^3.7.2
         version: 3.7.2
@@ -67,7 +73,7 @@ importers:
         specifier: ^25.0.1
         version: 25.0.1
       obsidian:
-        specifier: ^1.8.7
+        specifier: 1.8.7
         version: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)
       tslib:
         specifier: 2.8.1
@@ -497,8 +503,8 @@ packages:
   '@real1ty-obsidian-plugins/common-plugin@1.1.0':
     resolution: {integrity: sha512-Yr8FSHDV98rsGH1qQvwlnOw+ORoSDhjDXOKWlPi+kvslhKYaIFrsocVaC7LAxB11x9F7HNdQkRWN3kXX3UPxfQ==}
 
-  '@real1ty-obsidian-plugins/utils@1.2.0':
-    resolution: {integrity: sha512-CpXUbbzcAodzk0/3rL9gRns/B/dO9lSfFn7BrCI4Tu/CHrZuuJRYV37S66bpbfEAX3P9byLc4inGnWhMrd0VQg==}
+  '@real1ty-obsidian-plugins/utils@1.2.2':
+    resolution: {integrity: sha512-7ZoXrMOTqa5Oz6LnwoLIdgl/TsVjklQM+tf3e1klhS+DIvKoAJv3O3y0C7+knW3QEALJUXJcRFm1jcWZBP78ZA==}
 
   '@rollup/rollup-android-arm-eabi@4.50.2':
     resolution: {integrity: sha512-uLN8NAiFVIRKX9ZQha8wy6UUs06UNSZ32xj6giK/rmMXAgKahwExvK6SsmgU5/brh4w/nSgj8e0k3c1HBQpa0A==}
@@ -692,6 +698,9 @@ packages:
   chrono-node@2.8.4:
     resolution: {integrity: sha512-F+Rq88qF3H2dwjnFrl3TZrn5v4ZO57XxeQ+AhuL1C685So1hdUV/hT/q8Ja5UbmPYEZfx8VrxFDa72Dgldcxpg==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  colord@2.9.3:
+    resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
 
   combined-stream@1.0.8:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
@@ -1423,14 +1432,14 @@ snapshots:
 
   '@real1ty-obsidian-plugins/common-plugin@1.1.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)':
     dependencies:
-      '@real1ty-obsidian-plugins/utils': 1.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)
+      '@real1ty-obsidian-plugins/utils': 1.2.2(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)
       obsidian: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)
       tslib: 2.8.1
     transitivePeerDependencies:
       - '@codemirror/state'
       - '@codemirror/view'
 
-  '@real1ty-obsidian-plugins/utils@1.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)':
+  '@real1ty-obsidian-plugins/utils@1.2.2(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)':
     dependencies:
       gray-matter: 4.0.3
       luxon: 3.7.2
@@ -1601,6 +1610,8 @@ snapshots:
   chrono-node@2.8.4:
     dependencies:
       dayjs: 1.11.18
+
+  colord@2.9.3: {}
 
   combined-stream@1.0.8:
     dependencies:

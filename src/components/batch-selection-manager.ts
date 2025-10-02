@@ -294,6 +294,14 @@ export class BatchSelectionManager {
 		}
 	}
 
+	public async executeSkip(): Promise<void> {
+		await this.executeWithSelection(
+			(filePaths) => this.batchCommandFactory.createSkip(filePaths),
+			(count) => `Toggled skip for ${count} event${pluralize(count)}`,
+			"Failed to skip events"
+		);
+	}
+
 	refreshSelectionStyling(): void {
 		if (this.isSelectionMode) {
 			this.removeSelectionStylingFromEvents();

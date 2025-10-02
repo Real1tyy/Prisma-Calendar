@@ -33,6 +33,7 @@ describe("EventStore", () => {
 		end: "2024-01-15T11:00:00.000Z",
 		allDay: false,
 		isVirtual: false,
+		skipped: false,
 		timezone: "system",
 		color: undefined,
 		meta: {

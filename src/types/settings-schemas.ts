@@ -17,10 +17,12 @@ export const GeneralSettingsSchema = z.object({
 export const PropsSettingsSchema = z.object({
 	startProp: z.string().default("Start Date"),
 	endProp: z.string().default("End Date"),
+	dateProp: z.string().default("Date"), // property name for all-day events (date only, no time)
 	allDayProp: z.string().default("All Day"),
 	titleProp: z.string().optional(), // optional; fallback to file name
 	timezoneProp: z.string().optional(), // optional; default calendar TZ
 	zettelIdProp: z.string().optional(), // optional; property name for ZettelID generation
+	skipProp: z.string().default("Skip"), // property name to skip/hide event from calendar
 	rruleProp: z.string().default("RRule"), // property name for RRule type (daily, weekly, etc.)
 	rruleSpecProp: z.string().default("RRuleSpec"), // property name for RRule specification (weekdays, etc.)
 	rruleIdProp: z.string().default("RRuleID"), // property name for recurring event ID

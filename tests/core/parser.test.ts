@@ -15,8 +15,9 @@ describe("Parser", () => {
 			...createMockSingleCalendarSettings(),
 			startProp: "start",
 			endProp: "end",
+			dateProp: "Date",
 			titleProp: "title",
-			allDayProp: "allDay",
+			allDayProp: "All Day",
 			timezoneProp: "timezone",
 			timezone: "America/New_York",
 			defaultDurationMinutes: 60,
@@ -31,8 +32,8 @@ describe("Parser", () => {
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
-					start: "2024-01-15",
-					allDay: true,
+					Date: "2024-01-15",
+					"All Day": true,
 				},
 				folder: "Events",
 			};
@@ -44,7 +45,7 @@ describe("Parser", () => {
 
 			expect(event.title).toBe("meeting"); // From filename
 			expect(event.start).toBeTruthy();
-			expect(event.allDay).toBe(true); // Date-only should be all-day
+			expect(event.allDay).toBe(true);
 			expect(event.ref.filePath).toBe("Events/meeting.md");
 		});
 
@@ -105,8 +106,8 @@ describe("Parser", () => {
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
-					start: "2024-01-15 10:00",
-					allDay: true,
+					Date: "2024-01-15",
+					"All Day": true,
 				},
 				folder: "Events",
 			};
@@ -344,8 +345,8 @@ describe("Parser", () => {
 				filePath: "Events/all-day-event.md",
 				mtime: Date.now(),
 				frontmatter: {
-					start: "2024-01-15 10:00", // Has time
-					allDay: true, // But explicitly marked as all-day
+					Date: "2024-01-15",
+					"All Day": true,
 				},
 				folder: "Events",
 			};
