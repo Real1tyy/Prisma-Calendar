@@ -9,7 +9,7 @@ import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import { type BehaviorSubject, Subject, type Subscription } from "rxjs";
-import type { NodeRecurringEvent } from "../types/recurring-event-schemas";
+import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-event-schemas";
 import type { SingleCalendarConfig } from "../types/settings-schemas";
 import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
@@ -210,18 +210,23 @@ export class RecurringEventManager {
 		return intervals;
 	}
 
+	private getStartDateTime(rrules: RRuleFrontmatter): DateTime {
+		return rrules.allDay ? rrules.date! : rrules.startTime!;
+	}
+
 	private findFirstValidStartDate(recurringEvent: NodeRecurringEvent): DateTime {
 		const { rrules } = recurringEvent;
+		const startDateTime = this.getStartDateTime(rrules);
 
 		// For weekly/bi-weekly, the start date might not match the weekday rule.
 		// We must find the first date that IS a valid weekday on or after the start time.
 		if ((rrules.type === "weekly" || rrules.type === "bi-weekly") && rrules.weekdays?.length) {
 			// Use the iterator to find the true first occurrence.
 			const iterator = iterateOccurrencesInRange(
-				rrules.startTime,
+				startDateTime,
 				rrules,
-				rrules.startTime, // Start searching from the start time
-				rrules.startTime.plus({ years: 1 }) // Search a year ahead
+				startDateTime, // Start searching from the start time
+				startDateTime.plus({ years: 1 }) // Search a year ahead
 			);
 			const result = iterator.next();
 			// If the iterator finds a value, that's our true start. Otherwise, fall back to the original start time.
@@ -231,7 +236,7 @@ export class RecurringEventManager {
 		}
 
 		// For all other types (daily, monthly, etc.), the start time IS the first occurrence.
-		return rrules.startTime;
+		return startDateTime;
 	}
 
 	private getNextOccurrenceFromNow(
@@ -331,7 +336,7 @@ export class RecurringEventManager {
 		physicalInstances: Array<{ filePath: string; instanceDate: DateTime }>
 	): NodeRecurringEventInstance[] {
 		if (!recurringEvent) return [];
-		const startDate = recurringEvent.rrules.startTime;
+		const startDate = this.getStartDateTime(recurringEvent.rrules);
 
 		// Create a Set of dates that have physical instances for quick lookup
 		const physicalDates = new Set(physicalInstances.map((instance) => instance.instanceDate.toISODate()));
@@ -353,23 +358,14 @@ export class RecurringEventManager {
 		recurringEvent: NodeRecurringEvent,
 		instanceDate: DateTime
 	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
-		const startDate = recurringEvent.rrules.startTime;
-		const originalEnd = recurringEvent.rrules.endTime || null;
+		const { rrules } = recurringEvent;
+		const startDate = this.getStartDateTime(rrules);
+		const originalEnd = rrules.allDay ? null : rrules.endTime || null;
 
-		const instanceStart = calculateRecurringInstanceDateTime(
-			instanceDate,
-			startDate,
-			recurringEvent.rrules.type,
-			recurringEvent.rrules.allDay
-		);
+		const instanceStart = calculateRecurringInstanceDateTime(instanceDate, startDate, rrules.type, rrules.allDay);
 
 		const instanceEnd = originalEnd
-			? calculateRecurringInstanceDateTime(
-					instanceDate,
-					originalEnd,
-					recurringEvent.rrules.type,
-					recurringEvent.rrules.allDay
-				)
+			? calculateRecurringInstanceDateTime(instanceDate, originalEnd, rrules.type, rrules.allDay)
 			: null;
 
 		return { instanceStart, instanceEnd };

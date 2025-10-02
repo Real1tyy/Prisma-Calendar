@@ -51,10 +51,37 @@ describe("RRuleFrontmatterSchema validation", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should accept allDay true with both times undefined", () => {
+		it("should accept allDay true with date defined", () => {
 			const result = RRuleFrontmatterSchema.safeParse({
 				type: "weekly",
 				weekdays: "friday, saturday, sunday",
+				date: "2024-01-15",
+				startTime: undefined,
+				endTime: undefined,
+				allDay: true,
+			});
+
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject allDay true with startTime defined but no date", () => {
+			const result = RRuleFrontmatterSchema.safeParse({
+				type: "weekly",
+				weekdays: "wednesday",
+				date: undefined,
+				startTime: "2024-01-01T10:45:00",
+				endTime: undefined,
+				allDay: true,
+			});
+
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject allDay true without date", () => {
+			const result = RRuleFrontmatterSchema.safeParse({
+				type: "weekly",
+				weekdays: "wednesday",
+				date: undefined,
 				startTime: undefined,
 				endTime: undefined,
 				allDay: true,
@@ -63,40 +90,18 @@ describe("RRuleFrontmatterSchema validation", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should reject allDay true with startTime defined", () => {
+		it("should ignore startTime/endTime when allDay is true and date is provided", () => {
 			const result = RRuleFrontmatterSchema.safeParse({
 				type: "weekly",
 				weekdays: "wednesday",
-				startTime: "2024-01-01T10:45:00",
-				endTime: undefined,
-				allDay: true,
-			});
-
-			expect(result).toMatchObject({ success: true });
-		});
-
-		it("should reject allDay true with endTime defined", () => {
-			const result = RRuleFrontmatterSchema.safeParse({
-				type: "weekly",
-				weekdays: "wednesday",
-				startTime: undefined,
-				endTime: "2024-01-01T12:30:00",
-				allDay: true,
-			});
-
-			expect(result.success).toBe(false);
-		});
-
-		it("should reject allDay true with both times defined", () => {
-			const result = RRuleFrontmatterSchema.safeParse({
-				type: "weekly",
-				weekdays: "wednesday",
+				date: "2024-01-15",
 				startTime: "2024-01-01T10:45:00",
 				endTime: "2024-01-01T12:30:00",
 				allDay: true,
 			});
 
-			expect(result.success).toBe(false);
+			// Should succeed - we ignore startTime/endTime when allDay is true
+			expect(result.success).toBe(true);
 		});
 	});
 
@@ -116,16 +121,17 @@ describe("RRuleFrontmatterSchema validation", () => {
 			}
 		});
 
-		it("should accept null startTime and endTime when allDay is true", () => {
+		it("should accept null startTime and endTime when allDay is true and date is provided", () => {
 			const result = RRuleFrontmatterSchema.safeParse({
-				type: "yearly",
+				type: "daily",
 				weekdays: null,
+				date: "2024-01-15",
 				startTime: null,
 				endTime: null,
 				allDay: true,
 			});
 
-			expect(result.success).toBe(false);
+			expect(result.success).toBe(true);
 		});
 
 		it("should reject null startTime when allDay is false", () => {
@@ -166,7 +172,7 @@ describe("RRuleFrontmatterSchema validation", () => {
 
 			expect(result.success).toBe(true);
 			if (result.success) {
-				expect(result.data.startTime.toFormat("HH:mm")).toBe("08:45");
+				expect(result.data.startTime?.toFormat("HH:mm")).toBe("08:45");
 				expect(result.data.endTime?.toFormat("HH:mm")).toBe("10:45");
 			}
 		});
@@ -182,7 +188,7 @@ describe("RRuleFrontmatterSchema validation", () => {
 
 			expect(result.success).toBe(true);
 			if (result.success) {
-				expect(result.data.startTime.toFormat("HH:mm")).toBe("14:30");
+				expect(result.data.startTime?.toFormat("HH:mm")).toBe("14:30");
 				expect(result.data.endTime?.toFormat("HH:mm")).toBe("16:15");
 			}
 		});
@@ -211,7 +217,7 @@ describe("RRuleFrontmatterSchema validation", () => {
 			});
 			expect(result1.success).toBe(true);
 			if (result1.success) {
-				expect(result1.data.startTime.toFormat("HH:mm")).toBe("08:45");
+				expect(result1.data.startTime?.toFormat("HH:mm")).toBe("08:45");
 				expect(result1.data.endTime?.toFormat("HH:mm")).toBe("10:45");
 			}
 
@@ -225,7 +231,7 @@ describe("RRuleFrontmatterSchema validation", () => {
 			});
 			expect(result2.success).toBe(true);
 			if (result2.success) {
-				expect(result2.data.startTime.toFormat("HH:mm")).toBe("08:45");
+				expect(result2.data.startTime?.toFormat("HH:mm")).toBe("08:45");
 				expect(result2.data.endTime?.toFormat("HH:mm")).toBe("10:45");
 			}
 		});

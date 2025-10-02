@@ -4,99 +4,91 @@ import { z } from "zod";
 
 export type ISO = string;
 
-export const ColorSchema = z.string().refine((color) => CSS?.supports?.("color", color), "Invalid CSS color format");
+function requiredParsed<T>(what: string, parse: (s: string) => T | undefined) {
+	return z.string().transform((val, ctx) => {
+		const result = parse(val);
+		if (result === undefined) {
+			ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Invalid ${what} format: ${val}` });
+			return z.NEVER;
+		}
+		return result;
+	});
+}
+
+function optionalParsed<T>(what: string, parse: (s: string) => T | undefined) {
+	return z
+		.preprocess(
+			(val) => {
+				if (val == null) return undefined;
+				if (typeof val !== "string") return val;
+				const trimmed = val.trim();
+				return trimmed === "" ? undefined : trimmed;
+			},
+			z
+				.string()
+				.transform((val, ctx) => {
+					const result = parse(val);
+					if (result === undefined) {
+						ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Invalid ${what} format` });
+						return z.NEVER;
+					}
+					return result;
+				})
+				.optional()
+		)
+		.optional();
+}
+
+const parseDT = (s: string) => parseDateTimeString(s);
+const parseTime = (s: string) => parseTimeString(s);
+
+const parseISODateStart = (s: string) => {
+	const dt = DateTime.fromISO(s, { zone: "utc" });
+	return dt.isValid ? dt.startOf("day") : undefined;
+};
+
+
+export const ColorSchema = z
+	.string()
+	.refine(
+		(color) => (typeof CSS !== "undefined" && typeof CSS.supports === "function" ? CSS.supports("color", color) : true),
+		"Invalid CSS color format"
+	);
 
 export const timezoneSchema = z
-	.unknown()
-	.transform((value) => {
-		if (typeof value === "string") {
-			const trimmed = value.trim();
-			if (trimmed.toLowerCase() === "utc") {
-				return "UTC";
-			}
-			if (trimmed) {
-				return trimmed;
-			}
-		}
-		return undefined;
-	})
-	.pipe(z.string().optional())
-	.refine((timezone) => {
-		if (!timezone || timezone === "system") {
-			return true;
-		}
-
-		// Validate timezone using Luxon
+	.preprocess((value) => {
+		if (typeof value !== "string") return undefined;
+		const trimmed = value.trim();
+		if (!trimmed) return undefined;
+		if (trimmed.toLowerCase() === "utc") return "UTC";
+		return trimmed;
+	}, z.string().optional())
+	.refine((tz) => {
+		if (!tz || tz === "system") return true;
 		try {
-			const testDate = DateTime.now().setZone(timezone);
-			return testDate.isValid;
+			return DateTime.now().setZone(tz).isValid;
 		} catch {
 			return false;
 		}
 	}, "Invalid timezone identifier");
 
-export const booleanTransform = z
-	.unknown()
-	.transform((value) => {
-		if (typeof value === "boolean") return value;
-		if (typeof value === "string") {
-			const lower = value.toLowerCase();
-			if (lower === "true") return true;
-			if (lower === "false") return false;
-		}
-		return false;
-	})
-	.pipe(z.boolean());
-
-export const requiredDateTimeTransform = z.string().transform((val, ctx) => {
-	const result = parseDateTimeString(val);
-	if (!result) {
-		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
-			message: `Invalid datetime format: ${val}`,
-		});
-		return z.NEVER;
+export const booleanTransform = z.preprocess((value) => {
+	if (typeof value === "boolean") return value;
+	if (typeof value === "string") {
+		const lower = value.toLowerCase();
+		if (lower === "true") return true;
+		if (lower === "false") return false;
 	}
-	return result;
-});
+	return false;
+}, z.boolean());
 
-export const optionalDateTimeTransform = z
-	.union([z.string(), z.null()])
-	.transform((val) => parseDateTimeString(val))
-	.refine((val): val is DateTime | undefined => val === undefined || val instanceof DateTime, {
-		message: "Invalid datetime format",
-	})
-	.optional();
+export const requiredDateTimeTransform = requiredParsed<DateTime>("datetime", parseDT);
+export const optionalDateTimeTransform = optionalParsed<DateTime>("datetime", parseDT);
 
-export const requiredTimeTransform = z.string().transform((val, ctx) => {
-	const result = parseTimeString(val);
-	if (!result) {
-		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
-			message: `Invalid time format: ${val}`,
-		});
-		return z.NEVER;
-	}
-	return result;
-});
+// Time
+export const requiredTimeTransform = requiredParsed<DateTime>("time", parseTime);
+export const optionalTimeTransform = optionalParsed<DateTime>("time", parseTime);
 
-export const optionalTimeTransform = z
-	.union([z.string(), z.null()])
-	.transform((val) => parseTimeString(val))
-	.refine((val): val is DateTime | undefined => val === undefined || val instanceof DateTime, {
-		message: "Invalid time format",
-	})
-	.optional();
-
-export const requiredDateTransform = z.string().transform((val, ctx) => {
-	// Parse as date only (no time component)
-	const result = DateTime.fromISO(val, { zone: "utc" });
-	if (!result.isValid) {
-		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
-			message: `Invalid date format: ${val}. Expected YYYY-MM-DD format.`,
-		});
-		return z.NEVER;
-	}
-	return result.startOf("day");
-});
+// Date
+export const requiredDateTransform = requiredParsed<DateTime>("date", parseISODateStart);
+export const optionalDateTransform = optionalParsed<DateTime>("date", parseISODateStart);

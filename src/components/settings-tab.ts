@@ -1,12 +1,12 @@
 import { type App, Modal, PluginSettingTab, Setting } from "obsidian";
 import { CalendarSettingsStore } from "../core/settings-store";
 import type CustomCalendarPlugin from "../main";
+import { MAX_CALENDARS } from "../types/settings-schemas";
 import {
 	createDefaultCalendarConfig,
 	duplicateCalendarConfig,
 	generateUniqueCalendarId,
 } from "../utils/calendar-settings";
-import { MAX_CALENDARS } from "../types/settings-schemas";
 import { SingleCalendarSettings } from "./single-calendar-settings";
 
 export class CustomCalendarSettingsTab extends PluginSettingTab {

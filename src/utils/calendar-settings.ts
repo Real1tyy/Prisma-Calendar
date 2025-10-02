@@ -1,5 +1,10 @@
-import { BASE_NAME, type SingleCalendarConfig, SingleCalendarConfigSchema } from "src/types";
-import { type CustomCalendarSettings, CustomCalendarSettingsSchema } from "src/types";
+import {
+	BASE_NAME,
+	type CustomCalendarSettings,
+	CustomCalendarSettingsSchema,
+	type SingleCalendarConfig,
+	SingleCalendarConfigSchema,
+} from "src/types";
 
 export function createDefaultCalendarConfig(id: string, name: string): SingleCalendarConfig {
 	return SingleCalendarConfigSchema.parse({

@@ -3,7 +3,7 @@ import { WEEKDAY_TO_NUMBER } from "@real1ty-obsidian-plugins/utils/date-recurren
 import { capitalize } from "@real1ty-obsidian-plugins/utils/string-utils";
 import { z } from "zod";
 import type { SingleCalendarConfig } from "./settings-schemas";
-import { booleanTransform, optionalTimeTransform, requiredTimeTransform } from "./validation-schemas";
+import { booleanTransform, optionalDateTransform, optionalTimeTransform } from "./validation-schemas";
 
 export const RECURRENCE_TYPE_OPTIONS = {
 	daily: "Daily",
@@ -46,16 +46,23 @@ export const RRuleFrontmatterSchema = z
 	.object({
 		type: RecurrenceTypeSchema,
 		weekdays: weekdaysTransform,
-		startTime: requiredTimeTransform,
+		date: optionalDateTransform,
+		startTime: optionalTimeTransform,
 		endTime: optionalTimeTransform,
 		allDay: booleanTransform,
 	})
 	.refine(
-		<T extends { allDay: boolean; endTime?: unknown }>(data: T) =>
-			!data.allDay ? data.endTime !== undefined : data.endTime === undefined,
+		(data) => {
+			if (data.allDay) {
+				// All-day event: date must be defined
+				return data.date !== undefined;
+			}
+			// Timed event (allDay is false or undefined): both startTime and endTime must be defined
+			return data.startTime !== undefined && data.endTime !== undefined;
+		},
 		{
 			message:
-				"When allDay is false, both startTime and endTime are required. When allDay is true, startTime is required but endTime must be undefined.",
+				"When allDay is true, date is required. When allDay is false or undefined, both startTime and endTime are required.",
 		}
 	);
 
@@ -74,11 +81,12 @@ export function parseRRuleFromFrontmatter(
 	frontmatter: Record<string, unknown>,
 	settings: SingleCalendarConfig
 ): RRuleFrontmatter | null {
-	const { rruleProp, rruleSpecProp, startProp, endProp, allDayProp } = settings;
+	const { rruleProp, rruleSpecProp, dateProp, startProp, endProp, allDayProp } = settings;
 
 	const candidateData = {
 		type: frontmatter[rruleProp],
 		weekdays: frontmatter[rruleSpecProp],
+		date: frontmatter[dateProp],
 		startTime: frontmatter[startProp],
 		endTime: frontmatter[endProp],
 		allDay: frontmatter[allDayProp],

@@ -379,12 +379,13 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "daily" as const,
 						allDay: true,
-						startTime: DateTime.fromISO("2024-01-01T00:00:00"), // Should be ignored for all-day
+						date: DateTime.fromISO("2024-01-15"), // All-day events use date field
+						startTime: undefined,
 						endTime: undefined,
 						weekdays: [],
 					},
 					frontmatter: {
-						"Start Date": "2024-01-15T00:00:00", // Monday
+						Date: "2024-01-15", // All-day uses Date property
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
@@ -589,12 +590,13 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "monthly" as const,
 						allDay: true,
-						startTime: DateTime.fromISO("2024-01-15T00:00:00"), // 15th of January - should inherit day 15
+						date: DateTime.fromISO("2024-01-15"), // 15th of January - should inherit day 15
+						startTime: undefined,
 						endTime: undefined,
 						weekdays: [],
 					},
 					frontmatter: {
-						"Start Date": "2024-01-15T00:00:00", // 15th of January - should inherit day 15
+						Date: "2024-01-15", // 15th of January - should inherit day 15
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
@@ -690,12 +692,13 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "yearly" as const,
 						allDay: true,
-						startTime: DateTime.fromISO("2024-06-20T00:00:00"), // June 20th - should inherit month and day
+						date: DateTime.fromISO("2024-06-20"), // June 20th - should inherit month and day
+						startTime: undefined,
 						endTime: undefined,
 						weekdays: [],
 					},
 					frontmatter: {
-						"Start Date": "2024-06-20T00:00:00", // June 20th - should inherit month and day
+						Date: "2024-06-20", // June 20th - should inherit month and day
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
