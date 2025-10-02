@@ -1267,3 +1267,53 @@
 		right: 12px;
 	}
 }
+
+/* Skipped Events Modal */
+.skipped-events-modal h2 {
+	margin-bottom: 1rem;
+}
+
+.skipped-events-modal .skipped-count {
+	margin-bottom: 1.5rem;
+	color: var(--text-muted);
+}
+
+.skipped-events-list {
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+.skipped-event-item {
+	padding: 0.75rem;
+	margin-bottom: 0.5rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	transition: opacity 0.2s;
+}
+
+.skipped-event-item:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.skipped-event-item .event-info {
+	flex: 1;
+}
+
+.skipped-event-item .event-title {
+	font-weight: 500;
+	margin-bottom: 0.25rem;
+}
+
+.skipped-event-item .event-time {
+	font-size: 0.85em;
+	color: var(--text-muted);
+}
+
+.skipped-event-item .event-actions {
+	display: flex;
+	gap: 0.5rem;
+}

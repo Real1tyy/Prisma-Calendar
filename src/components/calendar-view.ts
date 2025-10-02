@@ -17,6 +17,7 @@ import { createDefaultSeparator, renderPropertyValue as renderProperty } from ".
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
+import { SkippedEventsModal } from "./skipped-events-modal";
 import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";
@@ -151,15 +152,27 @@ export class CalendarView extends MountableView(ItemView) {
 				className: "batch-action-btn open-all-btn",
 			};
 		} else {
-			headerToolbar.right = `batchSelect ${viewSwitchers}`;
+			headerToolbar.right = `skippedEvents batchSelect ${viewSwitchers}`;
 			customButtons.batchSelect = {
 				text: "Batch Select",
 				click: () => this.toggleBatchSelection(),
+			};
+			customButtons.skippedEvents = {
+				text: "0 skipped",
+				click: () => this.showSkippedEventsModal(),
 			};
 		}
 
 		this.calendar.setOption("headerToolbar", headerToolbar);
 		this.calendar.setOption("customButtons", customButtons);
+
+		// Hide button initially (will be shown when skipped events exist)
+		setTimeout(() => {
+			const btn = this.container.querySelector(".fc-skippedEvents-button");
+			if (btn instanceof HTMLElement) {
+				btn.style.display = "none";
+			}
+		}, 0);
 	}
 
 	getViewType(): string {
@@ -172,6 +185,40 @@ export class CalendarView extends MountableView(ItemView) {
 
 	getIcon(): string {
 		return "calendar";
+	}
+
+	private updateSkippedEventsButton(count: number): void {
+		if (!this.calendar) return;
+
+		// Update button text and handler
+		const customButtons = this.calendar.getOption("customButtons") || {};
+		customButtons.skippedEvents = {
+			text: `${count} skipped`,
+			click: () => this.showSkippedEventsModal(),
+		};
+		this.calendar.setOption("customButtons", customButtons);
+
+		// Update button visibility and tooltip (re-query after customButtons update since DOM may be recreated)
+		setTimeout(() => {
+			const btn = this.container.querySelector(".fc-skippedEvents-button");
+			if (btn instanceof HTMLElement) {
+				btn.style.display = count > 0 ? "inline-block" : "none";
+				btn.title = `${count} event${count === 1 ? "" : "s"} hidden from calendar`;
+			}
+		}, 0);
+	}
+
+	private async showSkippedEventsModal(): Promise<void> {
+		if (!this.calendar) return;
+
+		const view = this.calendar.view;
+		if (!view) return;
+
+		const start = view.activeStart.toISOString();
+		const end = view.activeEnd.toISOString();
+		const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
+
+		new SkippedEventsModal(this.app, this.bundle, skippedEvents).open();
 	}
 
 	private async initializeCalendar(container: HTMLElement): Promise<void> {
@@ -360,7 +407,10 @@ export class CalendarView extends MountableView(ItemView) {
 			const start = view.activeStart.toISOString();
 			const end = view.activeEnd.toISOString();
 
-			const events = await this.bundle.eventStore.getEvents({ start, end });
+			const events = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
+
+			const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
+			this.updateSkippedEventsButton(skippedEvents.length);
 
 			// Convert to FullCalendar event format
 			const calendarEvents = events.map((event) => {

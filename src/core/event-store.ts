@@ -105,6 +105,16 @@ export class EventStore {
 		return results.sort((a, b) => a.start.localeCompare(b.start));
 	}
 
+	async getSkippedEvents(query: EventQuery): Promise<ParsedEvent[]> {
+		const allEvents = await this.getEvents(query);
+		return allEvents.filter((event) => event.skipped && !event.isVirtual);
+	}
+
+	async getNonSkippedEvents(query: EventQuery): Promise<ParsedEvent[]> {
+		const allEvents = await this.getEvents(query);
+		return allEvents.filter((event) => !event.skipped);
+	}
+
 	clear(): void {
 		this.cache.clear();
 		this.notifyChange();

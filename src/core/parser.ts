@@ -15,6 +15,7 @@ export interface ParsedEvent {
 	end?: ISO;
 	allDay: boolean;
 	isVirtual: boolean;
+	skipped: boolean;
 	timezone: string;
 	color?: string;
 	meta?: Record<string, unknown>;
@@ -40,11 +41,6 @@ export class Parser {
 	parseEventSource(source: RawEventSource): ParsedEvent | null {
 		const { filePath, frontmatter, folder } = source;
 
-		// Skip events with skip property set to true
-		if (this.settings.skipProp && frontmatter[this.settings.skipProp] === true) {
-			return null;
-		}
-
 		if (!this.filterEvaluator.evaluateFilters(frontmatter)) {
 			return null;
 		}
@@ -53,6 +49,8 @@ export class Parser {
 		if (!parsed) {
 			return null;
 		}
+
+		const isSkipped = !!(this.settings.skipProp && frontmatter[this.settings.skipProp] === true);
 
 		const id = this.generateEventId(filePath);
 		const title = parsed.title || this.getFallbackTitle(filePath);
@@ -99,6 +97,7 @@ export class Parser {
 			end,
 			allDay,
 			isVirtual: false,
+			skipped: isSkipped,
 			timezone,
 			meta,
 		};
