@@ -126,12 +126,9 @@ export default class CustomCalendarPlugin extends Plugin {
 	private initializeCalendarBundles(): void {
 		const settings = this.settingsStore.currentSettings;
 
-		for (const calendarConfig of settings.calendars) {
-			if (calendarConfig.enabled) {
-				const bundle = new CalendarBundle(this, calendarConfig.id, this.settingsStore);
-				this.calendarBundles.push(bundle);
-			}
-		}
+		this.calendarBundles = settings.calendars
+			.filter((calendarConfig) => calendarConfig.enabled)
+			.map((calendarConfig) => new CalendarBundle(this, calendarConfig.id, this.settingsStore));
 	}
 
 	async ensureCalendarBundlesReady(): Promise<void> {
