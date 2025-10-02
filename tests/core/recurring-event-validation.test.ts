@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RRuleFrontmatterSchema } from "../../src/types/recurring-event-schemas";
+import { RRuleFrontmatterSchema } from "../../src/types/recurring-event";
 
 describe("RRuleFrontmatterSchema validation", () => {
 	describe("allDay and time field validation", () => {

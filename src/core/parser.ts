@@ -1,7 +1,7 @@
 import { getFilenameFromPath } from "@real1ty-obsidian-plugins/utils/file-utils";
 import type { DateTime } from "luxon";
 import type { BehaviorSubject, Subscription } from "rxjs";
-import { convertToISO, parseEventFrontmatter } from "../types/event-schemas";
+import { convertToISO, parseEventFrontmatter } from "../types/event";
 import type { ISO, SingleCalendarConfig } from "../types/index";
 import { FilterEvaluator } from "../utils/filter-evaluator";
 import type { VaultEventId } from "./event-store";

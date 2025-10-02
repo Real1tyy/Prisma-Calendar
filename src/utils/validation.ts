@@ -4,6 +4,16 @@ import { z } from "zod";
 
 export type ISO = string;
 
+export const titleTransform = z
+	.unknown()
+	.transform((value) => {
+		if (typeof value === "string" && value.trim()) {
+			return value.trim();
+		}
+		return undefined;
+	})
+	.pipe(z.string().optional());
+
 function requiredParsed<T>(what: string, parse: (s: string) => T | undefined) {
 	return z.string().transform((val, ctx) => {
 		const result = parse(val);
@@ -46,7 +56,6 @@ const parseISODateStart = (s: string) => {
 	const dt = DateTime.fromISO(s, { zone: "utc" });
 	return dt.isValid ? dt.startOf("day") : undefined;
 };
-
 
 export const ColorSchema = z
 	.string()

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ColorSchema, timezoneSchema } from "./validation-schemas";
-import { CalendarViewTypeSchema } from "./view-schemas";
+import { ColorSchema, timezoneSchema } from "../utils/validation";
+import { CalendarViewTypeSchema } from "./view";
 
 export const DEFAULT_EVENT_COLOR = "hsl(270, 70%, 50%)";
 export const COMMANDS_HISTORY_LIMIT = 50;

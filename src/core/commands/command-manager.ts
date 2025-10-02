@@ -1,4 +1,4 @@
-import { COMMANDS_HISTORY_LIMIT } from "src/types/settings-schemas";
+import { COMMANDS_HISTORY_LIMIT } from "src/types/settings";
 import type { Command } from "./command";
 
 /**

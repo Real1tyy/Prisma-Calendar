@@ -1,23 +1,14 @@
 import type { DateTime } from "luxon";
 import { z } from "zod";
 import { isAllDayEvent } from "../utils/calendar-events";
-import type { ISO, SingleCalendarConfig } from "./index";
 import {
 	optionalDateTimeTransform,
 	requiredDateTimeTransform,
 	requiredDateTransform,
 	timezoneSchema,
-} from "./validation-schemas";
-
-const titleTransform = z
-	.unknown()
-	.transform((value) => {
-		if (typeof value === "string" && value.trim()) {
-			return value.trim();
-		}
-		return undefined;
-	})
-	.pipe(z.string().optional());
+	titleTransform,
+} from "../utils/validation";
+import type { ISO, SingleCalendarConfig } from "./index";
 
 const BaseEventFrontmatterSchema = z.object({
 	title: titleTransform,

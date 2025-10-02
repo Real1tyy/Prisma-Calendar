@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // import { CalendarView } from "../../src/components/calendar-view";
 import type { EventStore } from "../../src/core/event-store";
 import type { CalendarSettingsStore } from "../../src/core/settings-store";
-import { DEFAULT_EVENT_COLOR } from "../../src/types/settings-schemas";
+import { DEFAULT_EVENT_COLOR } from "../../src/types/settings";
 
 // Mock FullCalendar
 vi.mock("@fullcalendar/core", () => ({

@@ -13,7 +13,7 @@ import {
 } from "rxjs";
 import { debounceTime, filter, groupBy, map, mergeMap, switchMap } from "rxjs/operators";
 import type { SingleCalendarConfig } from "../types/index";
-import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event-schemas";
+import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import { generateUniqueRruleId } from "../utils/calendar-events";
 
 export interface RawEventSource {

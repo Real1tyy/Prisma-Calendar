@@ -1,7 +1,7 @@
 import type { Weekday } from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
 import { WEEKDAY_TO_NUMBER } from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
 import { z } from "zod";
-import { WEEKDAY_OPTIONS } from "./recurring-event-schemas";
+import { WEEKDAY_OPTIONS } from "./recurring-event";
 
 export const CALENDAR_VIEW_OPTIONS = {
 	dayGridMonth: "Month",
