@@ -180,10 +180,13 @@ export class Indexer {
 			};
 		}
 
-		// Always emit file-changed events for files with start property
+		// Always emit file-changed events for files with start property OR date property
 		// Let EventStore/Parser handle filtering - this ensures cached events
 		// get invalidated when properties change and no longer pass filters
-		if (!frontmatter[this._settings.startProp]) return null;
+		const hasTimedEvent = frontmatter[this._settings.startProp];
+		const hasAllDayEvent = frontmatter[this._settings.dateProp];
+
+		if (!hasTimedEvent && !hasAllDayEvent) return null;
 
 		const source: RawEventSource = {
 			filePath: file.path,

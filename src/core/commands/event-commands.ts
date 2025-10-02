@@ -242,8 +242,10 @@ export class UpdateEventCommand implements Command {
 		private filePath: string,
 		private newStart: string,
 		private newEnd: string | undefined,
+		private newAllDay: boolean,
 		private oldStart: string,
-		private oldEnd: string | undefined
+		private oldEnd: string | undefined,
+		private oldAllDay: boolean
 	) {}
 
 	async execute(): Promise<void> {
@@ -254,9 +256,33 @@ export class UpdateEventCommand implements Command {
 
 		const settings = this.bundle.settingsStore.currentSettings;
 		await withFrontmatter(this.app, file, (fm) => {
-			fm[settings.startProp] = this.newStart;
-			if (this.newEnd && settings.endProp) {
-				fm[settings.endProp] = this.newEnd;
+			// Update allDay property if it changed
+			if (settings.allDayProp && this.newAllDay !== this.oldAllDay) {
+				fm[settings.allDayProp] = this.newAllDay;
+			}
+
+			if (this.newAllDay) {
+				// NOW ALL-DAY: Convert to dateProp, remove startProp/endProp
+				const dateOnly = this.newStart.split("T")[0];
+				fm[settings.dateProp] = dateOnly;
+				delete fm[settings.startProp];
+				delete fm[settings.endProp];
+			} else {
+				// NOW TIMED: Convert to startProp/endProp, remove dateProp
+				fm[settings.startProp] = this.newStart;
+
+				// Generate end time if not provided (e.g., when converting from all-day)
+				let endTime = this.newEnd;
+				if (!endTime) {
+					const startDate = new Date(this.newStart);
+					startDate.setHours(startDate.getHours() + 1);
+					endTime = startDate.toISOString();
+				}
+
+				if (settings.endProp) {
+					fm[settings.endProp] = endTime;
+				}
+				delete fm[settings.dateProp];
 			}
 		});
 	}
@@ -268,11 +294,26 @@ export class UpdateEventCommand implements Command {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		await withFrontmatter(this.app, file, (fm) => {
-			fm[settings.startProp] = this.oldStart;
-			if (this.oldEnd && settings.endProp) {
-				fm[settings.endProp] = this.oldEnd;
-			} else if (settings.endProp) {
+			// Restore allDay property if it changed
+			if (settings.allDayProp && this.newAllDay !== this.oldAllDay) {
+				fm[settings.allDayProp] = this.oldAllDay;
+			}
+
+			if (this.oldAllDay) {
+				// WAS ALL-DAY: Restore dateProp, remove startProp/endProp
+				const dateOnly = this.oldStart.split("T")[0];
+				fm[settings.dateProp] = dateOnly;
+				delete fm[settings.startProp];
 				delete fm[settings.endProp];
+			} else {
+				// WAS TIMED: Restore startProp/endProp, remove dateProp
+				fm[settings.startProp] = this.oldStart;
+				if (this.oldEnd && settings.endProp) {
+					fm[settings.endProp] = this.oldEnd;
+				} else if (settings.endProp) {
+					delete fm[settings.endProp];
+				}
+				delete fm[settings.dateProp];
 			}
 		});
 	}

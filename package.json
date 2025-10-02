@@ -33,6 +33,11 @@
 	"author": "Real1tyy",
 	"license": "MIT",
 	"packageManager": "pnpm@9.0.0",
+	"pnpm": {
+		"overrides": {
+			"obsidian": "1.8.7"
+		}
+	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.2.2",
 		"@types/luxon": "^3.7.1",

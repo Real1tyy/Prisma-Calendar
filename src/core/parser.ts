@@ -53,21 +53,36 @@ export class Parser {
 		const title = parsed.title || this.getFallbackTitle(filePath);
 		const timezone = parsed.timezone || this.settings.timezone;
 
-		const start = convertToISO(parsed.startTime, timezone);
-
+		let start: ISO;
 		let end: ISO | undefined;
-		if (parsed.endTime) {
-			end = convertToISO(parsed.endTime, timezone);
+		let allDay: boolean;
+
+		if (parsed.allDay) {
+			// ALL-DAY EVENT: Use the date field, set to full day
+			allDay = true;
+			const dateInTimezone = timezone && timezone !== "system" ? parsed.date.setZone(timezone) : parsed.date;
+			start = dateInTimezone.startOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
+			end = dateInTimezone.endOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
 		} else {
-			const startInTimezone = timezone && timezone !== "system" ? parsed.startTime.setZone(timezone) : parsed.startTime;
-			const defaultEnd = this.calculateDefaultEnd(startInTimezone, parsed.allDay);
-			end = defaultEnd.toUTC().toISO({ suppressMilliseconds: true }) || undefined;
+			// TIMED EVENT: Use startTime and optional endTime
+			allDay = false;
+			start = convertToISO(parsed.startTime, timezone);
+
+			if (parsed.endTime) {
+				end = convertToISO(parsed.endTime, timezone);
+			} else {
+				const startInTimezone =
+					timezone && timezone !== "system" ? parsed.startTime.setZone(timezone) : parsed.startTime;
+				const defaultEnd = this.calculateDefaultEnd(startInTimezone, false);
+				end = defaultEnd.toUTC().toISO({ suppressMilliseconds: true }) || undefined;
+			}
 		}
 
 		const meta: Record<string, unknown> = {
 			folder,
 			originalStart: frontmatter[this.settings.startProp],
 			originalEnd: frontmatter[this.settings.endProp],
+			originalDate: frontmatter[this.settings.dateProp],
 			...frontmatter,
 		};
 
@@ -77,7 +92,7 @@ export class Parser {
 			title,
 			start,
 			end,
-			allDay: parsed.allDay,
+			allDay,
 			isVirtual: false,
 			timezone,
 			meta,

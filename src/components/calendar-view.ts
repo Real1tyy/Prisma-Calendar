@@ -630,8 +630,10 @@ export class CalendarView extends MountableView(ItemView) {
 				filePath,
 				info.event.start.toISOString(),
 				info.event.end?.toISOString(),
+				info.event.allDay || false,
 				info.oldEvent.start.toISOString(),
-				info.oldEvent.end?.toISOString()
+				info.oldEvent.end?.toISOString(),
+				info.oldEvent.allDay || false
 			);
 
 			await this.bundle.commandManager.executeCommand(command);
@@ -661,8 +663,10 @@ export class CalendarView extends MountableView(ItemView) {
 				filePath,
 				info.event.start.toISOString(),
 				info.event.end?.toISOString(),
+				info.event.allDay || false,
 				info.oldEvent.start.toISOString(),
-				info.oldEvent.end?.toISOString()
+				info.oldEvent.end?.toISOString(),
+				info.oldEvent.allDay || false
 			);
 
 			await this.bundle.commandManager.executeCommand(command);

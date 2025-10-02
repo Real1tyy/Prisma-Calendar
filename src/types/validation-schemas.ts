@@ -87,3 +87,16 @@ export const optionalTimeTransform = z
 		message: "Invalid time format",
 	})
 	.optional();
+
+export const requiredDateTransform = z.string().transform((val, ctx) => {
+	// Parse as date only (no time component)
+	const result = DateTime.fromISO(val, { zone: "utc" });
+	if (!result.isValid) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: `Invalid date format: ${val}. Expected YYYY-MM-DD format.`,
+		});
+		return z.NEVER;
+	}
+	return result.startOf("day");
+});

@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  obsidian: 1.8.7
+
 importers:
 
   .:
@@ -70,7 +73,7 @@ importers:
         specifier: ^25.0.1
         version: 25.0.1
       obsidian:
-        specifier: ^1.8.7
+        specifier: 1.8.7
         version: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)
       tslib:
         specifier: 2.8.1
@@ -926,12 +929,6 @@ packages:
   nwsapi@2.2.22:
     resolution: {integrity: sha512-ujSMe1OWVn55euT1ihwCI1ZcAaAU3nxUiDwfDQldc51ZXaB9m2AyOn6/jh1BLe2t/G8xd6uKG1UBF2aZJeg2SQ==}
 
-  obsidian@1.10.0:
-    resolution: {integrity: sha512-F7hhnmGRQD1TanDPFT//LD3iKNUVd7N8sKL7flCCHRszfTxpDJ39j3T7LHbcGpyid906i6lD5oO+cnfLBzJMKw==}
-    peerDependencies:
-      '@codemirror/state': 6.5.0
-      '@codemirror/view': 6.38.1
-
   obsidian@1.8.7:
     resolution: {integrity: sha512-h4bWwNFAGRXlMlMAzdEiIM2ppTGlrh7uGOJS6w4gClrsjc+ei/3YAtU2VdFUlCiPuTHpY4aBpFJJW75S1Tl/JA==}
     peerDependencies:
@@ -1436,7 +1433,7 @@ snapshots:
   '@real1ty-obsidian-plugins/common-plugin@1.1.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)':
     dependencies:
       '@real1ty-obsidian-plugins/utils': 1.2.2(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)
-      obsidian: 1.10.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)
+      obsidian: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.2)
       tslib: 2.8.1
     transitivePeerDependencies:
       - '@codemirror/state'
@@ -1880,13 +1877,6 @@ snapshots:
   nanoid@5.1.5: {}
 
   nwsapi@2.2.22: {}
-
-  obsidian@1.10.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.2):
-    dependencies:
-      '@codemirror/state': 6.5.2
-      '@codemirror/view': 6.38.2
-      '@types/codemirror': 5.60.8
-      moment: 2.29.4
 
   obsidian@1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.2):
     dependencies:

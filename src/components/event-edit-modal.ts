@@ -29,8 +29,11 @@ abstract class BaseEventModal extends Modal {
 	protected titleInput!: HTMLInputElement;
 	protected startInput!: HTMLInputElement;
 	protected endInput!: HTMLInputElement;
+	protected dateInput!: HTMLInputElement;
 	protected allDayCheckbox!: HTMLInputElement;
 	protected originalFrontmatter: Record<string, unknown> = {};
+	protected timedContainer!: HTMLElement;
+	protected allDayContainer!: HTMLElement;
 
 	constructor(app: App, bundle: CalendarBundle, event: EventModalData, onSave: (eventData: EventSaveData) => void) {
 		super(app);
@@ -76,24 +79,6 @@ abstract class BaseEventModal extends Modal {
 			cls: "setting-item-control",
 		});
 
-		// Start date/time field
-		const startContainer = contentEl.createDiv("setting-item");
-		startContainer.createEl("div", { text: "Start", cls: "setting-item-name" });
-		this.startInput = startContainer.createEl("input", {
-			type: "datetime-local",
-			value: this.event.start ? formatDateTimeForInput(this.event.start.toString()) : "",
-			cls: "setting-item-control",
-		});
-
-		// End date/time field
-		const endContainer = contentEl.createDiv("setting-item");
-		endContainer.createEl("div", { text: "End", cls: "setting-item-name" });
-		this.endInput = endContainer.createEl("input", {
-			type: "datetime-local",
-			value: this.event.end ? formatDateTimeForInput(this.event.end.toString()) : "",
-			cls: "setting-item-control",
-		});
-
 		// All day checkbox
 		const allDayContainer = contentEl.createDiv("setting-item");
 		allDayContainer.createEl("div", { text: "All Day", cls: "setting-item-name" });
@@ -102,17 +87,71 @@ abstract class BaseEventModal extends Modal {
 			cls: "setting-item-control",
 		});
 		this.allDayCheckbox.checked = this.event.allDay || false;
+
+		// Container for TIMED event fields (Start Date/Time + End Date/Time)
+		this.timedContainer = contentEl.createDiv("timed-event-fields");
+		this.timedContainer.style.display = this.event.allDay ? "none" : "block";
+
+		// Start date/time field (for timed events)
+		const startContainer = this.timedContainer.createDiv("setting-item");
+		startContainer.createEl("div", { text: "Start Date", cls: "setting-item-name" });
+		this.startInput = startContainer.createEl("input", {
+			type: "datetime-local",
+			value: this.event.start ? formatDateTimeForInput(this.event.start.toString()) : "",
+			cls: "setting-item-control",
+		});
+
+		// End date/time field (for timed events)
+		const endContainer = this.timedContainer.createDiv("setting-item");
+		endContainer.createEl("div", { text: "End Date", cls: "setting-item-name" });
+		this.endInput = endContainer.createEl("input", {
+			type: "datetime-local",
+			value: this.event.end ? formatDateTimeForInput(this.event.end.toString()) : "",
+			cls: "setting-item-control",
+		});
+
+		// Container for ALL-DAY event fields (Date only)
+		this.allDayContainer = contentEl.createDiv("allday-event-fields");
+		this.allDayContainer.style.display = this.event.allDay ? "block" : "none";
+
+		// Date field (for all-day events)
+		const dateContainer = this.allDayContainer.createDiv("setting-item");
+		dateContainer.createEl("div", { text: "Date", cls: "setting-item-name" });
+		this.dateInput = dateContainer.createEl("input", {
+			type: "date",
+			value: this.event.start ? this.formatDateOnly(this.event.start.toString()) : "",
+			cls: "setting-item-control",
+		});
+	}
+
+	private formatDateOnly(dateString: string): string {
+		const date = new Date(dateString);
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, "0");
+		const day = String(date.getDate()).padStart(2, "0");
+		return `${year}-${month}-${day}`;
 	}
 
 	private setupEventHandlers(contentEl: HTMLElement): void {
 		// Handle all-day toggle
 		this.allDayCheckbox.addEventListener("change", () => {
 			if (this.allDayCheckbox.checked) {
-				this.startInput.type = "date";
-				this.endInput.type = "date";
+				// Switching TO all-day
+				this.timedContainer.style.display = "none";
+				this.allDayContainer.style.display = "block";
+				// Copy start date to date field if available
+				if (this.startInput.value) {
+					this.dateInput.value = this.formatDateOnly(this.startInput.value);
+				}
 			} else {
-				this.startInput.type = "datetime-local";
-				this.endInput.type = "datetime-local";
+				// Switching TO timed
+				this.timedContainer.style.display = "block";
+				this.allDayContainer.style.display = "none";
+				// Copy date to start field if available
+				if (this.dateInput.value) {
+					this.startInput.value = `${this.dateInput.value}T09:00`;
+					this.endInput.value = `${this.dateInput.value}T10:00`;
+				}
 			}
 		});
 
@@ -150,34 +189,45 @@ abstract class BaseEventModal extends Modal {
 		// Start with original frontmatter to preserve all existing properties
 		const preservedFrontmatter = { ...this.originalFrontmatter };
 
-		// Update only the changed properties
+		// Update title if provided
 		if (this.titleInput.value && settings.titleProp) {
 			preservedFrontmatter[settings.titleProp] = this.titleInput.value;
 		}
 
-		preservedFrontmatter[settings.startProp] = this.allDayCheckbox.checked
-			? this.startInput.value
-			: inputValueToISOString(this.startInput.value);
-
-		if (this.endInput.value) {
-			preservedFrontmatter[settings.endProp] = this.allDayCheckbox.checked
-				? this.endInput.value
-				: inputValueToISOString(this.endInput.value);
-		}
-
+		// Update allDay property
 		if (settings.allDayProp) {
 			preservedFrontmatter[settings.allDayProp] = this.allDayCheckbox.checked;
+		}
+
+		let start: string | null;
+		let end: string | null;
+
+		if (this.allDayCheckbox.checked) {
+			// ALL-DAY EVENT: Use dateProp, clear startProp/endProp
+			preservedFrontmatter[settings.dateProp] = this.dateInput.value;
+			delete preservedFrontmatter[settings.startProp];
+			delete preservedFrontmatter[settings.endProp];
+
+			// For FullCalendar compatibility, we still return ISO strings
+			start = `${this.dateInput.value}T00:00:00`;
+			end = `${this.dateInput.value}T23:59:59`;
+		} else {
+			// TIMED EVENT: Use startProp/endProp, clear dateProp
+			preservedFrontmatter[settings.startProp] = inputValueToISOString(this.startInput.value);
+			if (this.endInput.value) {
+				preservedFrontmatter[settings.endProp] = inputValueToISOString(this.endInput.value);
+			}
+			delete preservedFrontmatter[settings.dateProp];
+
+			start = inputValueToISOString(this.startInput.value);
+			end = this.endInput.value ? inputValueToISOString(this.endInput.value) : null;
 		}
 
 		const eventData: EventSaveData = {
 			filePath: this.event.extendedProps?.filePath || null,
 			title: this.titleInput.value,
-			start: this.allDayCheckbox.checked ? this.startInput.value : inputValueToISOString(this.startInput.value),
-			end: this.endInput.value
-				? this.allDayCheckbox.checked
-					? this.endInput.value
-					: inputValueToISOString(this.endInput.value)
-				: null,
+			start,
+			end,
 			allDay: this.allDayCheckbox.checked,
 			preservedFrontmatter,
 		};

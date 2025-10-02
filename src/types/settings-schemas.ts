@@ -17,6 +17,7 @@ export const GeneralSettingsSchema = z.object({
 export const PropsSettingsSchema = z.object({
 	startProp: z.string().default("Start Date"),
 	endProp: z.string().default("End Date"),
+	dateProp: z.string().default("Date"), // property name for all-day events (date only, no time)
 	allDayProp: z.string().default("All Day"),
 	titleProp: z.string().optional(), // optional; fallback to file name
 	timezoneProp: z.string().optional(), // optional; default calendar TZ
