@@ -2,7 +2,7 @@ import { onceAsync } from "@real1ty-obsidian-plugins/utils/async-utils";
 import { Notice, Plugin } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { CalendarBundle, SettingsStore } from "./core";
-import { createDefaultCalendarConfig } from "./types";
+import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;

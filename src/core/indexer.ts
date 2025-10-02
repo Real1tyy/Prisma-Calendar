@@ -14,7 +14,7 @@ import {
 import { debounceTime, filter, groupBy, map, mergeMap, switchMap } from "rxjs/operators";
 import type { SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event-schemas";
-import { generateUniqueRruleId } from "../utils/calendar";
+import { generateUniqueRruleId } from "../utils/calendar-events";
 
 export interface RawEventSource {
 	filePath: string;

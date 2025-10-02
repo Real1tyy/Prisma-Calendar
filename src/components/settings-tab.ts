@@ -5,8 +5,8 @@ import {
 	createDefaultCalendarConfig,
 	duplicateCalendarConfig,
 	generateUniqueCalendarId,
-	MAX_CALENDARS,
-} from "../types/settings-schemas";
+} from "../utils/calendar-settings";
+import { MAX_CALENDARS } from "../types/settings-schemas";
 import { SingleCalendarSettings } from "./single-calendar-settings";
 
 export class CustomCalendarSettingsTab extends PluginSettingTab {
