@@ -9,7 +9,7 @@ import { Indexer } from "./indexer";
 import { Parser } from "./parser";
 import { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore, type SettingsStore } from "./settings-store";
-import { TemplateService } from "./template-service";
+import { TemplateService } from "./templates";
 
 export class CalendarBundle {
 	public readonly settingsStore: CalendarSettingsStore;

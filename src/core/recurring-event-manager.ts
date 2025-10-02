@@ -13,7 +13,7 @@ import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-ev
 import type { SingleCalendarConfig } from "../types/settings";
 import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
-import { TemplateService } from "./template-service";
+import { TemplateService } from "./templates";
 
 export interface NodeRecurringEventInstance {
 	recurringEvent: NodeRecurringEvent;

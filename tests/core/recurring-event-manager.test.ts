@@ -364,7 +364,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		describe("Daily Recurrence", () => {
 			it("should create all-day daily instances correctly", async () => {
 				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-				const { TemplateService } = await import("../../src/core/template-service");
+				const { TemplateService } = await import("../../src/core/templates");
 
 				// Mock template service to capture frontmatter operations
 				const mockFile = { path: "test.md" };
@@ -420,7 +420,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 			it("should create timed daily instances with correct time extraction", async () => {
 				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-				const { TemplateService } = await import("../../src/core/template-service");
+				const { TemplateService } = await import("../../src/core/templates");
 
 				// Mock template service
 				const mockFile = { path: "test.md" };
@@ -474,7 +474,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		describe("Weekly/Bi-Weekly Recurrence", () => {
 			it("should create weekly instances with time extraction", async () => {
 				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-				const { TemplateService } = await import("../../src/core/template-service");
+				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
 				const mockCreate = vi.fn().mockResolvedValue(mockFile);
@@ -524,7 +524,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 			it("should create bi-weekly instances with time extraction", async () => {
 				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-				const { TemplateService } = await import("../../src/core/template-service");
+				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
 				const mockCreate = vi.fn().mockResolvedValue(mockFile);
@@ -576,7 +576,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		describe("Monthly Recurrence", () => {
 			it("should create monthly all-day instances inheriting day of month", async () => {
 				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-				const { TemplateService } = await import("../../src/core/template-service");
+				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
 				const mockCreate = vi.fn().mockResolvedValue(mockFile);
@@ -626,7 +626,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 			it("should create monthly timed instances inheriting day and time", async () => {
 				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-				const { TemplateService } = await import("../../src/core/template-service");
+				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
 				const mockCreate = vi.fn().mockResolvedValue(mockFile);
@@ -678,7 +678,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		describe("Yearly Recurrence", () => {
 			it("should create yearly all-day instances inheriting day and month", async () => {
 				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-				const { TemplateService } = await import("../../src/core/template-service");
+				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
 				const mockCreate = vi.fn().mockResolvedValue(mockFile);
@@ -728,7 +728,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 			it("should create yearly timed instances inheriting day, month and time", async () => {
 				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-				const { TemplateService } = await import("../../src/core/template-service");
+				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
 				const mockCreate = vi.fn().mockResolvedValue(mockFile);
