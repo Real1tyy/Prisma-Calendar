@@ -40,6 +40,11 @@ export class Parser {
 	parseEventSource(source: RawEventSource): ParsedEvent | null {
 		const { filePath, frontmatter, folder } = source;
 
+		// Skip events with skip property set to true
+		if (this.settings.skipProp && frontmatter[this.settings.skipProp] === true) {
+			return null;
+		}
+
 		if (!this.filterEvaluator.evaluateFilters(frontmatter)) {
 			return null;
 		}

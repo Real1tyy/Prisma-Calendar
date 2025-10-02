@@ -1,7 +1,13 @@
 import { generateUniqueFilePath, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils";
 import { type App, Menu, Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
-import { CloneEventCommand, DeleteEventCommand, EditEventCommand, MoveEventCommand } from "../core/commands";
+import {
+	CloneEventCommand,
+	DeleteEventCommand,
+	EditEventCommand,
+	MoveEventCommand,
+	ToggleSkipCommand,
+} from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import { EventEditModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
@@ -107,6 +113,17 @@ export class EventContextMenu {
 				});
 		});
 
+		menu.addSeparator();
+
+		menu.addItem((item) => {
+			item
+				.setTitle("Skip event")
+				.setIcon("eye-off")
+				.onClick(() => {
+					this.toggleSkipEvent(event);
+				});
+		});
+
 		menu.addItem((item) => {
 			item
 				.setTitle("Open file")
@@ -185,6 +202,22 @@ export class EventContextMenu {
 		} catch (error) {
 			console.error("Failed to delete event:", error);
 			new Notice("Failed to delete event");
+		}
+	}
+
+	async toggleSkipEvent(event: any): Promise<void> {
+		const filePath = this.getFilePathOrNotice(event, "toggle skip event");
+		if (!filePath) return;
+
+		try {
+			const command = new ToggleSkipCommand(this.app, this.bundle, filePath);
+
+			await this.bundle.commandManager.executeCommand(command);
+
+			new Notice("Event skip toggled");
+		} catch (error) {
+			console.error("Failed to toggle skip event:", error);
+			new Notice("Failed to toggle skip event");
 		}
 	}
 

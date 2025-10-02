@@ -219,6 +219,18 @@ export class SingleCalendarSettings {
 			);
 
 		new Setting(containerEl)
+			.setName("Skip property")
+			.setDesc("Frontmatter property name to hide events from calendar (when set to true)")
+			.addText((text) =>
+				text
+					.setPlaceholder("Skip")
+					.setValue(settings.skipProp || "")
+					.onChange(async (value) => {
+						await this.settingsStore.updateSettings((s) => ({ ...s, skipProp: value || "Skip" }));
+					})
+			);
+
+		new Setting(containerEl)
 			.setName("RRule property")
 			.setDesc("Frontmatter property name for recurring event type (daily, weekly, monthly, etc.)")
 			.addText((text) =>

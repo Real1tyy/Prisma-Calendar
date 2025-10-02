@@ -22,6 +22,7 @@ export const PropsSettingsSchema = z.object({
 	titleProp: z.string().optional(), // optional; fallback to file name
 	timezoneProp: z.string().optional(), // optional; default calendar TZ
 	zettelIdProp: z.string().optional(), // optional; property name for ZettelID generation
+	skipProp: z.string().default("Skip"), // property name to skip/hide event from calendar
 	rruleProp: z.string().default("RRule"), // property name for RRule type (daily, weekly, etc.)
 	rruleSpecProp: z.string().default("RRuleSpec"), // property name for RRule specification (weekdays, etc.)
 	rruleIdProp: z.string().default("RRuleID"), // property name for recurring event ID

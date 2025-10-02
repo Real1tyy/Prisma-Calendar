@@ -326,3 +326,62 @@ export class UpdateEventCommand implements Command {
 		return this.originalFrontmatter !== undefined;
 	}
 }
+
+export class ToggleSkipCommand implements Command {
+	private originalSkipValue?: boolean;
+
+	constructor(
+		private app: App,
+		private bundle: CalendarBundle,
+		private filePath: string
+	) {}
+
+	async execute(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		if (!settings.skipProp) {
+			throw new Error("Skip property not configured in settings");
+		}
+
+		await withFrontmatter(this.app, file, (fm) => {
+			// Store original value on first execution
+			if (this.originalSkipValue === undefined) {
+				this.originalSkipValue = fm[settings.skipProp] === true;
+			}
+
+			// Toggle: if currently true or missing, set to true; if false, remove property
+			const currentValue = fm[settings.skipProp] === true;
+			if (currentValue) {
+				delete fm[settings.skipProp];
+			} else {
+				fm[settings.skipProp] = true;
+			}
+		});
+	}
+
+	async undo(): Promise<void> {
+		if (this.originalSkipValue === undefined) return;
+
+		const file = getTFileOrThrow(this.app, this.filePath);
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		if (!settings.skipProp) return;
+
+		await withFrontmatter(this.app, file, (fm) => {
+			if (this.originalSkipValue) {
+				fm[settings.skipProp] = true;
+			} else {
+				delete fm[settings.skipProp];
+			}
+		});
+	}
+
+	getType(): string {
+		return "toggle-skip";
+	}
+
+	async canUndo(): Promise<boolean> {
+		return this.originalSkipValue !== undefined;
+	}
+}
