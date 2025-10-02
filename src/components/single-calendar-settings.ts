@@ -2,7 +2,7 @@ import { normalizePath, Setting } from "obsidian";
 import type { CalendarSettingsStore } from "../core/settings-store";
 import { CALENDAR_VIEW_OPTIONS, type CalendarViewType, DENSITY_OPTIONS, FIRST_DAY_OPTIONS } from "../types/index";
 import { DEFAULT_EVENT_COLOR } from "../types/settings-schemas";
-import type { ColorRule } from "../utils/color-evaluator";
+import type { ColorRule } from "../utils/colors";
 
 export class SingleCalendarSettings {
 	private settingsStore: CalendarSettingsStore;

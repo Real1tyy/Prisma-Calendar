@@ -1,5 +1,5 @@
 import type { SingleCalendarConfig } from "../types";
-import { shiftISO } from "./obsidian-fm";
+import { shiftISO } from "./obsidian";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
 	return allDayValue === true || (typeof allDayValue === "string" && allDayValue.toLowerCase() === "true");
@@ -43,7 +43,6 @@ export const setEventBasics = (
 
 	if (data.allDay) {
 		// ALL-DAY EVENT: Use dateProp, clear startProp/endProp
-		// Extract date from ISO string (YYYY-MM-DD format)
 		const dateOnly = data.start.split("T")[0];
 		fm[dateProp] = dateOnly;
 		delete fm[startProp];

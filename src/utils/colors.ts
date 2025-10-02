@@ -1,4 +1,5 @@
 import { BaseEvaluator, type BaseRule } from "@real1ty-obsidian-plugins/utils/evaluator-base";
+import { colord } from "colord";
 import type { BehaviorSubject } from "rxjs";
 import type { SingleCalendarConfig } from "../types/index";
 
@@ -28,4 +29,12 @@ export class ColorEvaluator extends BaseEvaluator<ColorRule, SingleCalendarConfi
 		const match = this.compiledRules.find((rule) => this.isTruthy(this.evaluateRule(rule, frontmatter)));
 		return match?.color ?? this.defaultColor;
 	}
+}
+
+export function parseColor(color: string): { h: number; s: number; l: number } | null {
+	const parsed = colord(color);
+	if (!parsed.isValid()) {
+		return null;
+	}
+	return parsed.toHsl();
 }
