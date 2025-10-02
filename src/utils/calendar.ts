@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import type { SingleCalendarConfig } from "../types";
 import { shiftISO } from "./obsidian";
 
@@ -55,4 +56,8 @@ export const setEventBasics = (
 	}
 
 	if (zettelIdProp && data.zettelId) fm[zettelIdProp] = data.zettelId;
+};
+
+export const generateUniqueRruleId = (): string => {
+	return `${Date.now()}-${nanoid(5)}`;
 };
