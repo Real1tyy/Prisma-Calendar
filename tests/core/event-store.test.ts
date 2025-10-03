@@ -34,7 +34,6 @@ describe("EventStore", () => {
 		allDay: false,
 		isVirtual: false,
 		skipped: false,
-		timezone: "system",
 		color: undefined,
 		meta: {
 			folder: "Events",
@@ -284,7 +283,6 @@ describe("EventStore", () => {
 				start: "2024-01-15T10:00:00.000Z",
 				end: "2024-01-15T11:00:00.000Z",
 				allDay: false,
-				timezone: "America/New_York",
 				color: "#ff0000",
 				meta: { folder: "Events" },
 			});
@@ -299,13 +297,11 @@ describe("EventStore", () => {
 			const events = await eventStore.getEvents(query);
 			const event = events[0];
 
-			// Verify all properties are correctly converted
 			expect(event.id).toBe("test-1");
 			expect(event.title).toBe("Test Event");
 			expect(event.start).toBe("2024-01-15T10:00:00.000Z");
 			expect(event.end).toBe("2024-01-15T11:00:00.000Z");
 			expect(event.allDay).toBe(false);
-			expect(event.timezone).toBe("America/New_York");
 			expect(event.color).toBe("#ff0000");
 			expect(event.meta).toEqual({ folder: "Events" });
 		});

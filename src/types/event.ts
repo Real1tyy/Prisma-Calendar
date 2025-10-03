@@ -5,14 +5,12 @@ import {
 	optionalDateTimeTransform,
 	requiredDateTimeTransform,
 	requiredDateTransform,
-	timezoneSchema,
 	titleTransform,
 } from "../utils/validation";
 import type { ISO, SingleCalendarConfig } from "./index";
 
 const BaseEventFrontmatterSchema = z.object({
 	title: titleTransform,
-	timezone: timezoneSchema,
 });
 
 // Schema for TIMED events (has startTime, optional endTime, allDay = false)
@@ -42,7 +40,7 @@ export function parseEventFrontmatter(
 	frontmatter: Record<string, unknown>,
 	settings: SingleCalendarConfig
 ): ParsedEventFrontmatter | null {
-	const { startProp, endProp, dateProp, allDayProp, titleProp, timezoneProp } = settings;
+	const { startProp, endProp, dateProp, allDayProp, titleProp } = settings;
 
 	if (isAllDayEvent(frontmatter[allDayProp])) {
 		// ALL-DAY EVENT: Only use dateProp, ignore startProp/endProp
@@ -50,7 +48,6 @@ export function parseEventFrontmatter(
 			date: frontmatter[dateProp],
 			allDay: true as const,
 			title: titleProp ? frontmatter[titleProp] : undefined,
-			timezone: timezoneProp ? frontmatter[timezoneProp] : undefined,
 		};
 
 		const result = AllDayEventFrontmatterSchema.safeParse(candidateData);
@@ -63,14 +60,12 @@ export function parseEventFrontmatter(
 		endTime: frontmatter[endProp],
 		allDay: false as const,
 		title: titleProp ? frontmatter[titleProp] : undefined,
-		timezone: timezoneProp ? frontmatter[timezoneProp] : undefined,
 	};
 
 	const result = TimedEventFrontmatterSchema.safeParse(candidateData);
 	return result.success ? result.data : null;
 }
 
-export function convertToISO(parsedDateTime: DateTime, timezone: string): ISO {
-	const dateTimeInTimezone = timezone !== "system" ? parsedDateTime.setZone(timezone) : parsedDateTime;
-	return dateTimeInTimezone.toUTC().toISO({ suppressMilliseconds: true }) || "";
+export function convertToISO(parsedDateTime: DateTime): ISO {
+	return parsedDateTime.toUTC().toISO({ suppressMilliseconds: true }) || "";
 }

@@ -239,7 +239,7 @@ export class CalendarView extends MountableView(ItemView) {
 		this.calendar = new Calendar(container, {
 			plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
 
-			timeZone: settings.timezone === "system" ? "local" : settings.timezone,
+			timeZone: "UTC",
 
 			initialView: settings.defaultView,
 
@@ -394,7 +394,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private updateCalendarSettings(settings: SingleCalendarConfig): void {
 		if (!this.calendar) return;
 
-		this.calendar.setOption("timeZone", settings.timezone === "system" ? "local" : settings.timezone);
+		this.calendar.setOption("timeZone", "UTC");
 		this.calendar.setOption("slotMinTime", `${String(settings.hourStart).padStart(2, "0")}:00:00`);
 		this.calendar.setOption("slotMaxTime", `${String(settings.hourEnd).padStart(2, "0")}:00:00`);
 

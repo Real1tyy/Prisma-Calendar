@@ -66,7 +66,6 @@ export class SingleCalendarSettings {
 	private addGeneralSettings(containerEl: HTMLElement): void {
 		this.addDirectorySettings(containerEl);
 		this.addParsingSettings(containerEl);
-		this.addTimezoneSettings(containerEl);
 	}
 
 	private addPropertiesSettings(containerEl: HTMLElement): void {
@@ -189,18 +188,6 @@ export class SingleCalendarSettings {
 					.setValue(settings.titleProp || "")
 					.onChange(async (value) => {
 						await this.settingsStore.updateSettings((s) => ({ ...s, titleProp: value }));
-					})
-			);
-
-		new Setting(containerEl)
-			.setName("Timezone property")
-			.setDesc("Frontmatter property name for event-specific timezone (optional)")
-			.addText((text) =>
-				text
-					.setPlaceholder("Timezone")
-					.setValue(settings.timezoneProp || "")
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({ ...s, timezoneProp: value }));
 					})
 			);
 
@@ -983,26 +970,5 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 				text.inputEl.rows = 5;
 				text.inputEl.addClass("settings-info-box-example");
 			});
-	}
-
-	private addTimezoneSettings(containerEl: HTMLElement): void {
-		const settings = this.settingsStore.currentSettings;
-
-		new Setting(containerEl).setName("Timezone").setHeading();
-
-		new Setting(containerEl)
-			.setName("Default timezone")
-			.setDesc("Default timezone for events (use 'system' for local timezone)")
-			.addText((text) =>
-				text
-					.setPlaceholder("system")
-					.setValue(settings.timezone)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							timezone: value || "system",
-						}));
-					})
-			);
 	}
 }

@@ -64,23 +64,6 @@ export const ColorSchema = z
 		"Invalid CSS color format"
 	);
 
-export const timezoneSchema = z
-	.preprocess((value) => {
-		if (typeof value !== "string") return undefined;
-		const trimmed = value.trim();
-		if (!trimmed) return undefined;
-		if (trimmed.toLowerCase() === "utc") return "UTC";
-		return trimmed;
-	}, z.string().optional())
-	.refine((tz) => {
-		if (!tz || tz === "system") return true;
-		try {
-			return DateTime.now().setZone(tz).isValid;
-		} catch {
-			return false;
-		}
-	}, "Invalid timezone identifier");
-
 export const booleanTransform = z.preprocess((value) => {
 	if (typeof value === "boolean") return value;
 	if (typeof value === "string") {

@@ -1,5 +1,5 @@
 export { CalendarBundle } from "./calendar-bundle";
-export { CalendarViewStateManager, type CalendarViewState } from "./calendar-view-state-manager";
+export { type CalendarViewState, CalendarViewStateManager } from "./calendar-view-state-manager";
 export { EventStore } from "./event-store";
 export { Indexer } from "./indexer";
 export { Parser } from "./parser";

@@ -18,8 +18,6 @@ describe("Parser", () => {
 			dateProp: "Date",
 			titleProp: "title",
 			allDayProp: "All Day",
-			timezoneProp: "timezone",
-			timezone: "America/New_York",
 			defaultDurationMinutes: 60,
 		};
 		settingsStore = createMockSingleCalendarSettingsStore(settings);
@@ -165,24 +163,6 @@ describe("Parser", () => {
 			const event = events!;
 			expect(event.title).toBe("important-meeting");
 		});
-
-		it("should handle event-specific timezone", () => {
-			const source: RawEventSource = {
-				filePath: "Events/global-meeting.md",
-				mtime: Date.now(),
-				frontmatter: {
-					start: "2024-01-15 10:00",
-					timezone: "UTC",
-				},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeDefined();
-			const event = events!;
-			expect(event.timezone).toBe("UTC");
-		});
 	});
 
 	describe("date parsing", () => {
@@ -256,15 +236,8 @@ describe("Parser", () => {
 		});
 	});
 
-	describe("timezone handling", () => {
-		it("should convert dates to UTC for storage", () => {
-			const testSettings = {
-				...settings,
-				timezone: "America/Los_Angeles",
-			};
-			settingsStore.next(testSettings);
-			parser = new Parser(settingsStore);
-
+	describe("UTC handling", () => {
+		it("should store dates in UTC format", () => {
 			const source: RawEventSource = {
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
@@ -280,30 +253,6 @@ describe("Parser", () => {
 
 			// The stored start time should be in UTC (check the ISO string format)
 			expect(events!.start).toMatch(/Z$/); // Should end with Z indicating UTC
-		});
-
-		it("should respect system timezone when configured", () => {
-			const testSettings = {
-				...settings,
-				timezone: "system",
-			};
-			settingsStore.next(testSettings);
-			parser = new Parser(settingsStore);
-
-			const source: RawEventSource = {
-				filePath: "Events/meeting.md",
-				mtime: Date.now(),
-				frontmatter: {
-					start: "2024-01-15 10:00",
-				},
-				folder: "Events",
-			};
-
-			const events = parser.parseEventSource(source);
-
-			expect(events).toBeDefined();
-			// Should use system timezone when configured
-			expect(events!.timezone).toBe("system");
 		});
 	});
 

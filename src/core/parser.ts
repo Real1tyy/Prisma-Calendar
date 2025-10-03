@@ -16,7 +16,6 @@ export interface ParsedEvent {
 	allDay: boolean;
 	isVirtual: boolean;
 	skipped: boolean;
-	timezone: string;
 	color?: string;
 	meta?: Record<string, unknown>;
 }
@@ -54,29 +53,25 @@ export class Parser {
 
 		const id = this.generateEventId(filePath);
 		const title = parsed.title || this.getFallbackTitle(filePath);
-		const timezone = parsed.timezone || this.settings.timezone;
 
 		let start: ISO;
 		let end: ISO | undefined;
 		let allDay: boolean;
 
 		if (parsed.allDay) {
-			// ALL-DAY EVENT: Use the date field, set to full day
+			// ALL-DAY EVENT: Use the date field, set to full day in UTC
 			allDay = true;
-			const dateInTimezone = timezone && timezone !== "system" ? parsed.date.setZone(timezone) : parsed.date;
-			start = dateInTimezone.startOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
-			end = dateInTimezone.endOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
+			start = parsed.date.startOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
+			end = parsed.date.endOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
 		} else {
-			// TIMED EVENT: Use startTime and optional endTime
+			// TIMED EVENT: Use startTime and optional endTime, convert to UTC
 			allDay = false;
-			start = convertToISO(parsed.startTime, timezone);
+			start = convertToISO(parsed.startTime);
 
 			if (parsed.endTime) {
-				end = convertToISO(parsed.endTime, timezone);
+				end = convertToISO(parsed.endTime);
 			} else {
-				const startInTimezone =
-					timezone && timezone !== "system" ? parsed.startTime.setZone(timezone) : parsed.startTime;
-				const defaultEnd = this.calculateDefaultEnd(startInTimezone, false);
+				const defaultEnd = this.calculateDefaultEnd(parsed.startTime, false);
 				end = defaultEnd.toUTC().toISO({ suppressMilliseconds: true }) || undefined;
 			}
 		}
@@ -98,7 +93,6 @@ export class Parser {
 			allDay,
 			isVirtual: false,
 			skipped: isSkipped,
-			timezone,
 			meta,
 		};
 	}

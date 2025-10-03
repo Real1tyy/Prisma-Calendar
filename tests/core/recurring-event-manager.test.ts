@@ -176,6 +176,10 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		it("should find existing physical instances based on RRuleID", async () => {
 			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
 
+			// Set indexing to incomplete to prevent auto-creation of instances
+			// This test is specifically about tracking existing instances, not creating new ones
+			mockIndexer.indexingComplete$ = new BehaviorSubject(false);
+
 			// Mock existing files
 			mockApp.vault.getMarkdownFiles.mockReturnValue([
 				{ path: "Calendar/Meeting 2024-01-02.md", stat: { mtime: Date.now() } },

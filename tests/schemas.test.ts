@@ -71,19 +71,6 @@ describe("Calendar Schemas", () => {
 				}).success
 			).toBe(false);
 
-			// Invalid timezone
-			expect(
-				CustomCalendarSettingsSchema.safeParse({
-					...defaultSettings,
-					calendars: [
-						{
-							...defaultSettings.calendars[0],
-							timezone: "Invalid/Timezone",
-						},
-					],
-				}).success
-			).toBe(false);
-
 			// Invalid density
 			expect(
 				CustomCalendarSettingsSchema.safeParse({
@@ -161,12 +148,10 @@ describe("Calendar Schemas", () => {
 						id: "default",
 						name: "Main Calendar",
 						enabled: true,
-						timezone: "UTC",
 					},
 				],
 			};
 			const result = CustomCalendarSettingsSchema.parse(partialSettings);
-			expect(result.calendars[0].timezone).toBe("UTC");
 			expect(result.calendars[0].startProp).toBe("Start Date"); // default
 			expect(result.version).toBe(1); // default
 		});

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ColorSchema, timezoneSchema } from "../utils/validation";
+import { ColorSchema } from "../utils/validation";
 import { CalendarViewTypeSchema } from "./view";
 
 export const DEFAULT_EVENT_COLOR = "hsl(270, 70%, 50%)";
@@ -9,7 +9,6 @@ export const BASE_NAME = "calendar";
 
 export const GeneralSettingsSchema = z.object({
 	directory: z.string().default(""),
-	timezone: timezoneSchema.default("system"),
 	defaultDurationMinutes: z.number().int().positive().default(60),
 	templatePath: z.string().optional(), // path to Templater template for new events
 });
@@ -20,7 +19,6 @@ export const PropsSettingsSchema = z.object({
 	dateProp: z.string().default("Date"), // property name for all-day events (date only, no time)
 	allDayProp: z.string().default("All Day"),
 	titleProp: z.string().optional(), // optional; fallback to file name
-	timezoneProp: z.string().optional(), // optional; default calendar TZ
 	zettelIdProp: z.string().optional(), // optional; property name for ZettelID generation
 	skipProp: z.string().default("Skip"), // property name to skip/hide event from calendar
 	rruleProp: z.string().default("RRule"), // property name for RRule type (daily, weekly, etc.)
