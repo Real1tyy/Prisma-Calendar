@@ -297,6 +297,9 @@ export class EventCreateModal extends BaseEventModal {
 }
 
 export class EventEditModal extends BaseEventModal {
+	private originalZettelId: string | null = null;
+	private displayTitle: string = "";
+
 	protected getModalTitle(): string {
 		return "Edit Event";
 	}
@@ -307,5 +310,47 @@ export class EventEditModal extends BaseEventModal {
 
 	protected async initialize(): Promise<void> {
 		await this.loadExistingFrontmatter();
+
+		// Extract and store ZettelID from the original title
+		if (this.event.title) {
+			const zettelIdMatch = this.event.title.match(/-(\d{14})$/);
+			if (zettelIdMatch) {
+				this.originalZettelId = zettelIdMatch[0]; // Store "-20250103123456" format
+				this.displayTitle = this.event.title.replace(/-\d{14}$/, "");
+			} else {
+				this.displayTitle = this.event.title;
+			}
+		}
+	}
+
+	async onOpen(): Promise<void> {
+		// Call parent onOpen first
+		await super.onOpen();
+
+		// Update the title input with the display title (without ZettelID)
+		if (this.displayTitle && this.titleInput) {
+			this.titleInput.value = this.displayTitle;
+		}
+	}
+
+	protected saveEvent(): void {
+		// Reconstruct the title with ZettelID before saving
+		const userTitle = this.titleInput.value;
+		let finalTitle = userTitle;
+
+		// If there was a ZettelID, append it back
+		if (this.originalZettelId) {
+			finalTitle = `${userTitle}${this.originalZettelId}`;
+		}
+
+		// Temporarily update the input value with the full title for the parent save logic
+		const originalInputValue = this.titleInput.value;
+		this.titleInput.value = finalTitle;
+
+		// Call parent save logic
+		super.saveEvent();
+
+		// Restore the input value (though the modal will close anyway)
+		this.titleInput.value = originalInputValue;
 	}
 }
