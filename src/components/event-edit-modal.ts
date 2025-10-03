@@ -155,7 +155,6 @@ abstract class BaseEventModal extends Modal {
 		});
 	}
 
-
 	private setupEventHandlers(contentEl: HTMLElement): void {
 		// Handle all-day toggle
 		this.allDayCheckbox.addEventListener("change", () => {
