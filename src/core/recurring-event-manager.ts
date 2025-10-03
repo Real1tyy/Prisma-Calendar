@@ -40,6 +40,7 @@ export class RecurringEventManager {
 	private indexingComplete = false;
 	private changeSubject = new Subject<void>();
 	public readonly changes$ = this.changeSubject.asObservable();
+	private creationLocks: Map<string, Promise<string | null>> = new Map();
 
 	constructor(
 		private app: App,
@@ -105,6 +106,7 @@ export class RecurringEventManager {
 		this.changeSubject.complete();
 		this.templateService.destroy();
 		this.recurringEventsMap.clear();
+		this.creationLocks.clear();
 	}
 
 	private addRecurringEvent(recurringEvent: NodeRecurringEvent): void {
@@ -137,15 +139,22 @@ export class RecurringEventManager {
 					this.recurringEventsMap.set(rruleId, recurringData);
 				}
 
-				// Remove any existing instance with same file path
-				recurringData.physicalInstances = recurringData.physicalInstances.filter(
-					(instance) => instance.filePath !== filePath
+				// Check if this instance already exists (either same file path or same date)
+				const existingIndex = recurringData.physicalInstances.findIndex(
+					(instance) => instance.filePath === filePath || instance.instanceDate.equals(parsedInstanceDate)
 				);
-				// Add the updated instance
-				recurringData.physicalInstances.push({
+
+				const instance = {
 					filePath,
 					instanceDate: parsedInstanceDate,
-				});
+				};
+
+				if (existingIndex !== -1) {
+					// Update existing instance
+					recurringData.physicalInstances[existingIndex] = instance;
+				} else {
+					recurringData.physicalInstances.push(instance);
+				}
 				this.notifyChange();
 			}
 		}
@@ -189,9 +198,14 @@ export class RecurringEventManager {
 			let nextDate = this.getNextOccurrenceFromNow(recurringEvent, futureInstances);
 
 			for (let i = 0; i < instancesToCreate; i++) {
-				await this.createPhysicalInstance(recurringEvent, nextDate);
-				// Note: We don't add to the map here because the indexer will detect
-				// the new file and trigger a file-changed event, which will update our map
+				const filePath = await this.createPhysicalInstance(recurringEvent, nextDate);
+
+				if (filePath) {
+					data.physicalInstances.push({
+						filePath,
+						instanceDate: nextDate,
+					});
+				}
 
 				nextDate = getNextOccurrence(nextDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 			}
@@ -243,10 +257,14 @@ export class RecurringEventManager {
 		recurringEvent: NodeRecurringEvent,
 		existingFutureInstances: Array<{ filePath: string; instanceDate: DateTime }>
 	): DateTime {
-		// If we have existing future instances, start from the date after the last one
+		// If we have existing future instances, start from the date after the latest one
 		if (existingFutureInstances.length > 0) {
-			const lastInstanceDate = existingFutureInstances[existingFutureInstances.length - 1].instanceDate;
-			return getNextOccurrence(lastInstanceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
+			// Sort by date and get the latest instance
+			const sortedInstances = [...existingFutureInstances].sort(
+				(a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis()
+			);
+			const latestInstanceDate = sortedInstances[sortedInstances.length - 1].instanceDate;
+			return getNextOccurrence(latestInstanceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
 
 		// No existing future instances. Find the first valid occurrence that is on or after today.
@@ -259,14 +277,42 @@ export class RecurringEventManager {
 		return currentDate;
 	}
 
-	private async createPhysicalInstance(recurringEvent: NodeRecurringEvent, instanceDate: DateTime): Promise<void> {
-		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
-		const instanceTitle = `${recurringEvent.title} ${dateStr}`;
+	private async createPhysicalInstance(
+		recurringEvent: NodeRecurringEvent,
+		instanceDate: DateTime
+	): Promise<string | null> {
 		const filePath = this.generateNodeInstanceFilePath(recurringEvent, instanceDate);
 
-		// Check if file already exists - if so, skip creation (fixes race condition)
+		// Check if there's already a creation in progress for this file path
+		const existingCreation = this.creationLocks.get(filePath);
+		if (existingCreation) {
+			// Wait for the existing creation to complete and return its result
+			return await existingCreation;
+		}
+
+		// Create a new promise for this creation and store it in the locks map
+		const creationPromise = this.doCreatePhysicalInstance(recurringEvent, instanceDate, filePath);
+		this.creationLocks.set(filePath, creationPromise);
+
+		try {
+			const result = await creationPromise;
+			return result;
+		} finally {
+			this.creationLocks.delete(filePath);
+		}
+	}
+
+	private async doCreatePhysicalInstance(
+		recurringEvent: NodeRecurringEvent,
+		instanceDate: DateTime,
+		filePath: string
+	): Promise<string | null> {
+		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
+		const instanceTitle = `${recurringEvent.title} ${dateStr}`;
+
+		// Check if file already exists - if so, skip creation
 		if (this.app.vault.getAbstractFileByPath(filePath)) {
-			return;
+			return null;
 		}
 
 		// Create the physical file with inherited content
@@ -317,6 +363,7 @@ export class RecurringEventManager {
 
 		// Notify that physical instances have changed
 		this.notifyChange();
+		return filePath;
 	}
 
 	async generateAllVirtualInstances(rangeStart: DateTime, rangeEnd: DateTime): Promise<ParsedEvent[]> {
@@ -382,7 +429,6 @@ export class RecurringEventManager {
 			start: instanceStart.toISO() as string,
 			end: instanceEnd ? (instanceEnd.toISO() as string) : undefined,
 			allDay: recurringEvent.rrules.allDay,
-			timezone: this.settings.timezone,
 			isVirtual: true,
 			skipped: false,
 			meta: {
