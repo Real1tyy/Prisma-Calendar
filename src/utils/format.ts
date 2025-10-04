@@ -83,3 +83,16 @@ export function toLocalISOString(date: Date): string {
 
 	return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${ms}Z`;
 }
+
+/**
+ * Copies time components from sourceDateTime to instanceDate WITHOUT any timezone conversion.
+ * This directly copies the hour/minute/second values regardless of timezone.
+ */
+export function applySourceTimeToInstanceDate(instanceDate: DateTime, sourceDateTime: DateTime): DateTime {
+	return instanceDate.set({
+		hour: sourceDateTime.hour,
+		minute: sourceDateTime.minute,
+		second: sourceDateTime.second,
+		millisecond: sourceDateTime.millisecond,
+	});
+}

@@ -1,8 +1,4 @@
-import {
-	calculateRecurringInstanceDateTime,
-	getNextOccurrence,
-	iterateOccurrencesInRange,
-} from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
+import { getNextOccurrence, iterateOccurrencesInRange } from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
 import { createFileLink } from "@real1ty-obsidian-plugins/utils/file-operations";
 import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils";
 import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
@@ -13,6 +9,7 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { ChangeNotifier } from "../utils/change-notifier";
+import { applySourceTimeToInstanceDate } from "../utils/format";
 import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
 import { TemplateService } from "./templates";
@@ -265,10 +262,10 @@ export class RecurringEventManager extends ChangeNotifier {
 		// No existing future instances. Find the first valid start date (source date)
 		// then advance by one occurrence to exclude the source itself.
 		const now = DateTime.now();
-		const sourceDate = this.findFirstValidStartDate(recurringEvent);
+		const firstValidDate = this.findFirstValidStartDate(recurringEvent);
 
 		// Always skip the source date and start from the next occurrence
-		let currentDate = getNextOccurrence(sourceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
+		let currentDate = getNextOccurrence(firstValidDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 
 		// If the next occurrence is still in the past, keep advancing until we reach today or later
 		while (currentDate < now.startOf("day")) {
@@ -371,36 +368,68 @@ export class RecurringEventManager extends ChangeNotifier {
 	async generateAllVirtualInstances(rangeStart: DateTime, rangeEnd: DateTime): Promise<ParsedEvent[]> {
 		const virtualEvents = Array.from(this.recurringEventsMap.values()).flatMap(
 			({ recurringEvent, physicalInstances }) =>
-				this.calculateOccurrencesInRange(recurringEvent, rangeStart, rangeEnd, physicalInstances).map((occurrence) =>
-					this.createVirtualEvent(occurrence)
+				this.calculateVirtualOccurrencesInRange(recurringEvent, rangeStart, rangeEnd, physicalInstances).map(
+					(occurrence) => this.createVirtualEvent(occurrence)
 				)
 		);
 		return virtualEvents;
 	}
 
-	private calculateOccurrencesInRange(
+	private calculateVirtualOccurrencesInRange(
 		recurringEvent: NodeRecurringEvent | null,
 		rangeStart: DateTime,
 		rangeEnd: DateTime,
 		physicalInstances: Array<{ filePath: string; instanceDate: DateTime }>
 	): NodeRecurringEventInstance[] {
 		if (!recurringEvent) return [];
-		const startDate = this.getStartDateTime(recurringEvent.rrules);
 
-		// Create a Set of dates that have physical instances for quick lookup
-		const physicalDates = new Set(physicalInstances.map((instance) => instance.instanceDate.toISODate()));
+		// Start virtual events AFTER the latest physical instance
+		let virtualStartDate: DateTime;
 
-		return Array.from(iterateOccurrencesInRange(startDate, recurringEvent.rrules, rangeStart, rangeEnd))
-			.filter((occurrenceDate) => !physicalDates.has(occurrenceDate.toISODate()))
-			.map((occurrenceDate) => {
-				const filePath = this.generateNodeInstanceFilePath(recurringEvent, occurrenceDate);
-				return {
-					recurringEvent,
-					instanceDate: occurrenceDate,
-					filePath,
-					created: false,
-				};
+		if (physicalInstances.length > 0) {
+			// Sort physical instances and get the latest one
+			const sortedInstances = [...physicalInstances].sort(
+				(a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis()
+			);
+			const latestPhysicalDate = sortedInstances[sortedInstances.length - 1].instanceDate;
+
+			// Start from the next occurrence after the latest physical instance
+			virtualStartDate = getNextOccurrence(
+				latestPhysicalDate,
+				recurringEvent.rrules.type,
+				recurringEvent.rrules.weekdays
+			);
+		} else {
+			// No physical instances, start from the first valid date after source
+			const sourceDate = this.getStartDateTime(recurringEvent.rrules);
+			virtualStartDate = getNextOccurrence(sourceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
+		}
+
+		// Ensure we start at or after the range start
+		while (virtualStartDate < rangeStart) {
+			virtualStartDate = getNextOccurrence(
+				virtualStartDate,
+				recurringEvent.rrules.type,
+				recurringEvent.rrules.weekdays
+			);
+		}
+
+		// Generate virtual instances from virtualStartDate to rangeEnd
+		const virtualInstances: NodeRecurringEventInstance[] = [];
+		let currentDate = virtualStartDate;
+
+		while (currentDate <= rangeEnd) {
+			const filePath = this.generateNodeInstanceFilePath(recurringEvent, currentDate);
+			virtualInstances.push({
+				recurringEvent,
+				instanceDate: currentDate,
+				filePath,
+				created: false,
 			});
+			currentDate = getNextOccurrence(currentDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
+		}
+
+		return virtualInstances;
 	}
 
 	private calculateInstanceTimes(
@@ -408,14 +437,11 @@ export class RecurringEventManager extends ChangeNotifier {
 		instanceDate: DateTime
 	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
 		const { rrules } = recurringEvent;
-		const startDate = this.getStartDateTime(rrules);
-		const originalEnd = rrules.allDay ? null : rrules.endTime || null;
+		const sourceStart = this.getStartDateTime(rrules);
+		const sourceEnd = rrules.allDay ? null : rrules.endTime || null;
 
-		const instanceStart = calculateRecurringInstanceDateTime(instanceDate, startDate, rrules.type, rrules.allDay);
-
-		const instanceEnd = originalEnd
-			? calculateRecurringInstanceDateTime(instanceDate, originalEnd, rrules.type, rrules.allDay)
-			: null;
+		const instanceStart = applySourceTimeToInstanceDate(instanceDate, sourceStart);
+		const instanceEnd = sourceEnd ? applySourceTimeToInstanceDate(instanceDate, sourceEnd) : null;
 
 		return { instanceStart, instanceEnd };
 	}
@@ -428,8 +454,8 @@ export class RecurringEventManager extends ChangeNotifier {
 			id: `${recurringEvent.rRuleId}-${instanceDate.toISODate()}`,
 			ref: { filePath: recurringEvent.sourceFilePath },
 			title: recurringEvent.title,
-			start: instanceStart.toISO() as string,
-			end: instanceEnd ? (instanceEnd.toISO() as string) : undefined,
+			start: instanceStart.toISO({ suppressMilliseconds: true }) || "",
+			end: instanceEnd ? instanceEnd.toISO({ suppressMilliseconds: true }) || "" : undefined,
 			allDay: recurringEvent.rrules.allDay,
 			isVirtual: true,
 			skipped: false,

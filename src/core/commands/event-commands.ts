@@ -13,11 +13,10 @@ export interface EventData {
 	start: string;
 	end?: string;
 	allDay?: boolean;
-}
-
-export interface EditEventData extends EventData {
 	preservedFrontmatter: Record<string, unknown>;
 }
+
+export interface EditEventData extends EventData {}
 
 export class CreateEventCommand implements Command {
 	private createdFilePath: string | null = null;
@@ -36,7 +35,6 @@ export class CreateEventCommand implements Command {
 			if (existing instanceof TFile) return;
 		}
 
-		const settings = this.bundle.settingsStore.currentSettings;
 		const title = this.eventData.title || `Event ${this.clickedDate?.toISOString().split("T")[0]}`;
 		const zettelId = generateZettelId();
 		const filename = `${sanitizeForFilename(title)}-${zettelId}`;
@@ -50,13 +48,7 @@ export class CreateEventCommand implements Command {
 		this.createdFilePath = file.path;
 
 		await withFrontmatter(this.app, file, (fm) => {
-			setEventBasics(fm, settings, {
-				title: this.eventData.title,
-				start: this.eventData.start,
-				end: this.eventData.end,
-				allDay: this.eventData.allDay,
-				zettelId,
-			});
+			Object.assign(fm, this.eventData.preservedFrontmatter);
 		});
 	}
 
@@ -208,7 +200,9 @@ export class CloneEventCommand implements Command {
 		const settings = this.bundle.settingsStore.currentSettings;
 		await withFrontmatter(this.app, cloned, (fm) => {
 			applyStartEndOffsets(fm, settings, this.startOffset, this.endOffset);
-			if (settings.zettelIdProp) fm[settings.zettelIdProp] = zettelId;
+			if (settings.zettelIdProp) {
+				fm[settings.zettelIdProp] = zettelId;
+			}
 		});
 	}
 
@@ -305,10 +299,6 @@ export class ToggleSkipCommand implements Command {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		if (!settings.skipProp) {
-			throw new Error("Skip property not configured in settings");
-		}
-
 		await withFrontmatter(this.app, file, (fm) => {
 			// Store original value on first execution
 			if (this.originalSkipValue === undefined) {
@@ -330,8 +320,6 @@ export class ToggleSkipCommand implements Command {
 
 		const file = getTFileOrThrow(this.app, this.filePath);
 		const settings = this.bundle.settingsStore.currentSettings;
-
-		if (!settings.skipProp) return;
 
 		await withFrontmatter(this.app, file, (fm) => {
 			if (this.originalSkipValue) {
