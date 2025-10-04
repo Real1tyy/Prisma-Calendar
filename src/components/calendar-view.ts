@@ -38,6 +38,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private container!: HTMLElement;
 	private viewType: string;
 	private skippedEventsModal: SkippedEventsModal | null = null;
+	private isIndexingComplete = false;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -431,6 +432,11 @@ export class CalendarView extends MountableView(ItemView) {
 		if (!this.calendar) {
 			return;
 		}
+
+		if (!this.isIndexingComplete) {
+			return;
+		}
+
 		const view = this.calendar.view;
 		if (!view) {
 			return;
@@ -796,7 +802,7 @@ export class CalendarView extends MountableView(ItemView) {
 		root.empty();
 		root.addClass(getCalendarViewType(this.bundle.calendarId));
 
-		this.showLoading(root, "Loading calendar events…");
+		this.showLoading(root, "Indexing calendar events…");
 
 		// Create calendar host
 		this.container = root.createDiv("custom-calendar-container");
@@ -814,14 +820,22 @@ export class CalendarView extends MountableView(ItemView) {
 		});
 		this.addSub(settingsSubscription);
 
-		// Event store updates
+		// Subscribe to indexing complete state
+		const indexingCompleteSubscription = this.bundle.indexer.indexingComplete$.subscribe((isComplete) => {
+			this.isIndexingComplete = isComplete;
+			if (isComplete) {
+				this.hideLoading();
+				this.refreshEvents();
+			}
+		});
+		this.addSub(indexingCompleteSubscription);
+
+		// Event store updates (only refreshes if indexing is complete)
 		const eventStoreSubscription = this.bundle.eventStore.subscribe(() => this.refreshEvents());
 		this.addSub(eventStoreSubscription);
 
 		const recurringEventManagerSubscription = this.bundle.recurringEventManager.subscribe(() => this.refreshEvents());
 		this.addSub(recurringEventManagerSubscription);
-
-		this.hideLoading();
 	}
 
 	toggleBatchSelection(): void {

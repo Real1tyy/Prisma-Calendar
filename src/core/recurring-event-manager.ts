@@ -166,7 +166,6 @@ export class RecurringEventManager extends ChangeNotifier {
 		if (rruleId) {
 			this.recurringEventsMap.delete(rruleId);
 			this.sourceFileToRRuleId.delete(event.filePath);
-			console.log("deleting source file", event.filePath);
 			this.notifyChange();
 			return;
 		}
@@ -175,7 +174,6 @@ export class RecurringEventManager extends ChangeNotifier {
 		for (const [_rruleId, data] of this.recurringEventsMap.entries()) {
 			const index = data.physicalInstances.findIndex((instance) => instance.filePath === event.filePath);
 			if (index !== -1) {
-				console.log("deleting instance", event.filePath);
 				data.physicalInstances.splice(index, 1);
 				this.notifyChange();
 				return;
