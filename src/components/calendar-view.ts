@@ -699,13 +699,13 @@ export class CalendarView extends MountableView(ItemView) {
 		}
 	}
 
-	private async handleEventDrop(info: any): Promise<void> {
+	private async handleEventUpdate(info: any, errorMessage: string): Promise<void> {
 		if (info.event.extendedProps.isVirtual) {
 			info.revert();
 			return;
 		}
-		const filePath = info.event.extendedProps.filePath;
 
+		const filePath = info.event.extendedProps.filePath;
 		if (!filePath) {
 			console.error("No file path found for event");
 			info.revert();
@@ -727,42 +727,17 @@ export class CalendarView extends MountableView(ItemView) {
 
 			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {
-			console.error("Error updating event dates:", error);
+			console.error(errorMessage, error);
 			info.revert();
 		}
 	}
 
+	private async handleEventDrop(info: any): Promise<void> {
+		await this.handleEventUpdate(info, "Error updating event dates:");
+	}
+
 	private async handleEventResize(info: any): Promise<void> {
-		if (info.event.extendedProps.isVirtual) {
-			info.revert();
-			return;
-		}
-		const filePath = info.event.extendedProps.filePath;
-
-		if (!filePath) {
-			console.error("No file path found for event");
-			info.revert();
-			return;
-		}
-
-		try {
-			const command = new UpdateEventCommand(
-				this.app,
-				this.bundle,
-				filePath,
-				toLocalISOString(info.event.start),
-				info.event.end ? toLocalISOString(info.event.end) : undefined,
-				info.event.allDay || false,
-				toLocalISOString(info.oldEvent.start),
-				info.oldEvent.end ? toLocalISOString(info.oldEvent.end) : undefined,
-				info.oldEvent.allDay || false
-			);
-
-			await this.bundle.commandManager.executeCommand(command);
-		} catch (error) {
-			console.error("Error updating event duration:", error);
-			info.revert();
-		}
+		await this.handleEventUpdate(info, "Error updating event duration:");
 	}
 
 	async mount(): Promise<void> {
