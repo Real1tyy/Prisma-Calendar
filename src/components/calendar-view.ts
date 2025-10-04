@@ -712,6 +712,7 @@ export class CalendarView extends MountableView(ItemView) {
 				start: eventData.start,
 				end: eventData.end,
 				allDay: eventData.allDay,
+				preservedFrontmatter: eventData.preservedFrontmatter,
 			};
 
 			const command = new CreateEventCommand(this.app, this.bundle, commandEventData, settings.directory, clickedDate);

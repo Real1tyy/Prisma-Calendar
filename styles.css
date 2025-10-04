@@ -1493,6 +1493,116 @@
 	}
 }
 
+/* Event Modal - Recurring Event Section */
+.recurring-event-fields {
+	margin-top: 16px;
+	padding: 16px;
+	background-color: var(--background-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.weekday-selection {
+	margin-top: 12px;
+}
+
+.weekday-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.weekday-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px;
+	background-color: var(--background-primary);
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	transition: all 0.2s ease;
+}
+
+.weekday-item:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.weekday-item input[type="checkbox"] {
+	cursor: pointer;
+}
+
+.weekday-item label {
+	cursor: pointer;
+	user-select: none;
+	flex: 1;
+}
+
+/* Event Modal - Custom Properties Section */
+.custom-properties-container {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.custom-property-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	padding: 8px;
+	background-color: var(--background-secondary);
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.custom-property-row input[type="text"] {
+	flex: 1;
+	padding: 6px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+}
+
+.custom-property-row input[type="text"]:focus {
+	border-color: var(--interactive-accent);
+	outline: none;
+}
+
+.custom-property-row button {
+	padding: 6px 12px;
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	background-color: var(--background-primary);
+	color: var(--text-error);
+	cursor: pointer;
+	font-size: var(--font-ui-smaller);
+	transition: all 0.2s ease;
+}
+
+.custom-property-row button:hover {
+	background-color: var(--background-modifier-error);
+	border-color: var(--text-error);
+}
+
+/* Event Modal Responsive */
+@media (max-width: 768px) {
+	.weekday-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.custom-property-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.custom-property-row button {
+		width: 100%;
+	}
+}
+
 /* Skipped Events Modal */
 .skipped-events-modal h2 {
 	margin-bottom: 1rem;
