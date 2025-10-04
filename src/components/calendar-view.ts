@@ -798,7 +798,13 @@ export class CalendarView extends MountableView(ItemView) {
 	}
 
 	toggleBatchSelection(): void {
+		const wasInSelectionMode = this.batchSelectionManager?.isInSelectionMode() ?? false;
 		this.batchSelectionManager?.toggleSelectionMode();
+
+		// Refresh events when exiting batch mode to restore skipped events button
+		if (wasInSelectionMode) {
+			this.refreshEvents();
+		}
 	}
 
 	isInBatchSelectionMode(): boolean {
