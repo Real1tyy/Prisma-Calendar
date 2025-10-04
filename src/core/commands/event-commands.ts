@@ -3,6 +3,7 @@ import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import { applyStartEndOffsets, setEventBasics } from "../../utils/calendar-events";
+import { getInternalProperties } from "../../utils/format";
 import { backupFrontmatter, getTFileOrThrow, restoreFrontmatter, withFrontmatter } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { Command } from "./command";
@@ -106,7 +107,7 @@ export class EditEventCommand implements Command {
 
 	constructor(
 		private app: App,
-		_bundle: CalendarBundle,
+		private bundle: CalendarBundle,
 		private filePath: string,
 		private newEventData: EditEventData
 	) {}
@@ -114,7 +115,34 @@ export class EditEventCommand implements Command {
 	async execute(): Promise<void> {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
-		await withFrontmatter(this.app, file, (fm) => Object.assign(fm, this.newEventData.preservedFrontmatter));
+		await withFrontmatter(this.app, file, (fm) => {
+			const settings = this.bundle.settingsStore.currentSettings;
+			const internalProps = getInternalProperties(settings);
+			const handledKeys = new Set<string>();
+
+			// First pass: update or delete existing properties (preserves order)
+			for (const key of Object.keys(fm)) {
+				if (internalProps.has(key)) {
+					continue;
+				}
+
+				if (key in this.newEventData.preservedFrontmatter) {
+					// Update existing property
+					fm[key] = this.newEventData.preservedFrontmatter[key];
+					handledKeys.add(key);
+				} else {
+					// Delete properties not in preservedFrontmatter
+					delete fm[key];
+				}
+			}
+
+			// Second pass: add new properties that weren't in original
+			for (const [key, value] of Object.entries(this.newEventData.preservedFrontmatter)) {
+				if (!handledKeys.has(key)) {
+					fm[key] = value;
+				}
+			}
+		});
 	}
 
 	async undo(): Promise<void> {
