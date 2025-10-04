@@ -433,6 +433,7 @@ export class CalendarView extends MountableView(ItemView) {
 			return;
 		}
 
+		// Don't refresh events until indexing is complete
 		if (!this.isIndexingComplete) {
 			return;
 		}
@@ -826,6 +827,10 @@ export class CalendarView extends MountableView(ItemView) {
 			if (isComplete) {
 				this.hideLoading();
 				this.refreshEvents();
+			} else {
+				// Indexing started (e.g., filter expressions changed)
+				const root = this.containerEl.children[1] as HTMLElement;
+				this.showLoading(root, "Re-indexing calendar events…");
 			}
 		});
 		this.addSub(indexingCompleteSubscription);
