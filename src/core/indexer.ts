@@ -94,8 +94,8 @@ export class Indexer {
 		const relevantFiles = allFiles.filter((file) => this.isRelevantFile(file));
 
 		for (const file of relevantFiles) {
-			const event = await this.buildExclusiveEvent(file);
-			if (event) {
+			const events = await this.buildEvents(file);
+			for (const event of events) {
 				this.scanEventsSubject.next(event);
 			}
 		}
@@ -159,43 +159,49 @@ export class Indexer {
 				if (intent.kind === "deleted") {
 					return of<IndexerEvent>({ type: "file-deleted", filePath: intent.path });
 				}
-				return from(this.buildExclusiveEvent(intent.file));
+				// buildEvents returns an array of events, convert to observable and flatten
+				return from(this.buildEvents(intent.file)).pipe(mergeMap((events) => events));
 			}),
-			// buildExclusiveEvent returns null for non-relevant frontmatter
 			filter((e): e is IndexerEvent => e !== null)
 		);
 	}
 
-	private async buildExclusiveEvent(file: TFile): Promise<IndexerEvent | null> {
+	private async buildEvents(file: TFile): Promise<IndexerEvent[]> {
 		const cache = this.metadataCache.getFileCache(file);
-		if (!cache || !cache.frontmatter) return null;
+		if (!cache || !cache.frontmatter) return [];
 		const { frontmatter } = cache;
 
+		const events: IndexerEvent[] = [];
+
+		// Check if this is a recurring event source
 		const recurring = await this.tryParseRecurring(file, frontmatter);
 		if (recurring) {
-			return {
+			events.push({
 				type: "recurring-event-found",
 				filePath: file.path,
 				recurringEvent: recurring,
-			};
+			});
 		}
 
 		// Always emit file-changed events for files with start property OR date property
 		// Let EventStore/Parser handle filtering - this ensures cached events
 		// get invalidated when properties change and no longer pass filters
+		// This allows recurring source files to ALSO appear as regular events on the calendar
 		const hasTimedEvent = frontmatter[this._settings.startProp];
 		const hasAllDayEvent = frontmatter[this._settings.dateProp];
 
-		if (!hasTimedEvent && !hasAllDayEvent) return null;
+		if (hasTimedEvent || hasAllDayEvent) {
+			const source: RawEventSource = {
+				filePath: file.path,
+				mtime: file.stat.mtime,
+				frontmatter,
+				folder: file.parent?.path || "",
+			};
 
-		const source: RawEventSource = {
-			filePath: file.path,
-			mtime: file.stat.mtime,
-			frontmatter,
-			folder: file.parent?.path || "",
-		};
+			events.push({ type: "file-changed", filePath: file.path, source });
+		}
 
-		return { type: "file-changed", filePath: file.path, source };
+		return events;
 	}
 
 	private isRelevantFile(file: TFile): boolean {
