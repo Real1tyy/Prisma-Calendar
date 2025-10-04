@@ -1,6 +1,7 @@
 import { onceAsync } from "@real1ty-obsidian-plugins/utils/async-utils";
 import { Notice, Plugin } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
+import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, SettingsStore } from "./core";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 
@@ -19,7 +20,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
 
 		this.addCommand({
-			id: "toggle-batch-selection",
+			id: COMMAND_IDS.TOGGLE_BATCH_SELECTION,
 			name: "Toggle batch selection",
 			checkCallback: (checking: boolean) => {
 				const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
@@ -58,16 +59,16 @@ export default class CustomCalendarPlugin extends Plugin {
 			});
 		};
 
-		addBatchCommand("batch-select-all", "Select all", (view) => view.selectAll());
-		addBatchCommand("batch-clear-selection", "Clear selection", (view) => view.clearSelection());
-		addBatchCommand("batch-duplicate-selection", "Duplicate selection", (view) => view.duplicateSelection());
-		addBatchCommand("batch-delete-selection", "Delete selection", (view) => view.deleteSelection());
-		addBatchCommand("batch-skip-selection", "Skip selection", (view) => view.skipSelection());
-		addBatchCommand("batch-open-selection", "Open selection", (view) => view.openSelection());
-		addBatchCommand("batch-clone-next-week", "Clone to next week", (view) => view.cloneSelection(1));
-		addBatchCommand("batch-clone-prev-week", "Clone to previous week", (view) => view.cloneSelection(-1));
-		addBatchCommand("batch-move-next-week", "Move to next week", (view) => view.moveSelection(1));
-		addBatchCommand("batch-move-prev-week", "Move to previous week", (view) => view.moveSelection(-1));
+		addBatchCommand(COMMAND_IDS.BATCH_SELECT_ALL, "Select all", (view) => view.selectAll());
+		addBatchCommand(COMMAND_IDS.BATCH_CLEAR_SELECTION, "Clear selection", (view) => view.clearSelection());
+		addBatchCommand(COMMAND_IDS.BATCH_DUPLICATE_SELECTION, "Duplicate selection", (view) => view.duplicateSelection());
+		addBatchCommand(COMMAND_IDS.BATCH_DELETE_SELECTION, "Delete selection", (view) => view.deleteSelection());
+		addBatchCommand(COMMAND_IDS.BATCH_SKIP_SELECTION, "Skip selection", (view) => view.skipSelection());
+		addBatchCommand(COMMAND_IDS.BATCH_OPEN_SELECTION, "Open selection", (view) => view.openSelection());
+		addBatchCommand(COMMAND_IDS.BATCH_CLONE_NEXT_WEEK, "Clone to next week", (view) => view.cloneSelection(1));
+		addBatchCommand(COMMAND_IDS.BATCH_CLONE_PREV_WEEK, "Clone to previous week", (view) => view.cloneSelection(-1));
+		addBatchCommand(COMMAND_IDS.BATCH_MOVE_NEXT_WEEK, "Move to next week", (view) => view.moveSelection(1));
+		addBatchCommand(COMMAND_IDS.BATCH_MOVE_PREV_WEEK, "Move to previous week", (view) => view.moveSelection(-1));
 
 		type UndoRedoAction = (view: CalendarView) => Promise<boolean>;
 
@@ -92,11 +93,11 @@ export default class CustomCalendarPlugin extends Plugin {
 			});
 		};
 
-		addUndoRedoCommand("undo", "Undo", (view) => view.undo());
-		addUndoRedoCommand("redo", "Redo", (view) => view.redo());
+		addUndoRedoCommand(COMMAND_IDS.UNDO, "Undo", (view) => view.undo());
+		addUndoRedoCommand(COMMAND_IDS.REDO, "Redo", (view) => view.redo());
 
 		this.addCommand({
-			id: "show-skipped-events",
+			id: COMMAND_IDS.SHOW_SKIPPED_EVENTS,
 			name: "Show skipped events",
 			checkCallback: (checking: boolean) => {
 				const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
