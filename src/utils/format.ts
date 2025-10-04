@@ -88,6 +88,26 @@ export function toLocalISOString(date: Date): string {
 }
 
 /**
+ * Rounds a date to the nearest hour.
+ * Minutes < 30: rounds down to current hour
+ * Minutes >= 30: rounds up to next hour
+ */
+export function roundToNearestHour(date: Date): Date {
+	const rounded = new Date(date);
+	const minutes = rounded.getMinutes();
+
+	if (minutes >= 30) {
+		rounded.setHours(rounded.getHours() + 1);
+	}
+
+	rounded.setMinutes(0);
+	rounded.setSeconds(0);
+	rounded.setMilliseconds(0);
+
+	return rounded;
+}
+
+/**
  * Copies time components from sourceDateTime to instanceDate WITHOUT any timezone conversion.
  * This directly copies the hour/minute/second values regardless of timezone.
  */

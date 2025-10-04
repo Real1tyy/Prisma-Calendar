@@ -7,7 +7,7 @@ import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
 import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
 import { colord } from "colord";
 import { ItemView, TFile, type WorkspaceLeaf } from "obsidian";
-import { toLocalISOString } from "src/utils/format";
+import { roundToNearestHour, toLocalISOString } from "src/utils/format";
 import { emitHover } from "src/utils/obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
@@ -65,12 +65,16 @@ export class CalendarView extends MountableView(ItemView) {
 		const inSelectionMode = bsm.isInSelectionMode();
 
 		const headerToolbar: any = {
-			left: "prev,next today zoomLevel",
+			left: "prev,next today createEvent zoomLevel",
 			center: "title",
 			right: "", // Will be constructed dynamically
 		};
 
 		const customButtons: Record<string, any> = {
+			createEvent: {
+				text: "Create Event",
+				click: () => this.createEventAtCurrentTime(),
+			},
 			zoomLevel: this.zoomManager.createZoomLevelButton(),
 		};
 
@@ -698,6 +702,31 @@ export class CalendarView extends MountableView(ItemView) {
 
 		new EventCreateModal(this.app, this.bundle, newEvent, (eventData) => {
 			this.createNewEvent(eventData, clickedDate);
+		}).open();
+	}
+
+	private createEventAtCurrentTime(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const now = new Date();
+		const roundedStart = roundToNearestHour(now);
+
+		// Calculate end time using default duration from settings
+		const endDate = new Date(roundedStart);
+		endDate.setMinutes(endDate.getMinutes() + settings.defaultDurationMinutes);
+
+		// Create event object for the modal
+		const newEvent: any = {
+			title: "",
+			start: toLocalISOString(roundedStart),
+			end: toLocalISOString(endDate),
+			allDay: false,
+			extendedProps: {
+				filePath: null,
+			},
+		};
+
+		new EventCreateModal(this.app, this.bundle, newEvent, (eventData) => {
+			this.createNewEvent(eventData, roundedStart);
 		}).open();
 	}
 
