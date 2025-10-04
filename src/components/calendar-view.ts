@@ -13,6 +13,7 @@ import type { SingleCalendarConfig } from "../types/index";
 import { ColorEvaluator, parseColor } from "../utils/colors";
 import type { PropertyRendererConfig } from "../utils/property-renderer";
 import { createDefaultSeparator, renderPropertyValue } from "../utils/property-renderer";
+import { isNotEmpty } from "../utils/value-checks";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
@@ -555,7 +556,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 			for (const prop of settings.frontmatterDisplayProperties) {
 				const value = event.extendedProps.frontmatterDisplayData[prop];
-				if (value !== undefined && value !== null && value !== "" && (!Array.isArray(value) || value.length > 0)) {
+				if (isNotEmpty(value)) {
 					const propEl = document.createElement("div");
 					propEl.className = "fc-event-prop";
 
@@ -664,7 +665,7 @@ export class CalendarView extends MountableView(ItemView) {
 			const displayData = event.extendedProps.frontmatterDisplayData;
 			for (const prop of tooltipSettings.frontmatterDisplayProperties) {
 				const value = displayData[prop];
-				if (value !== undefined && value !== null && value !== "") {
+				if (isNotEmpty(value)) {
 					tooltipParts.push(`${prop}: ${value}`);
 				}
 			}

@@ -350,7 +350,7 @@ export class RecurringEventManager extends ChangeNotifier {
 			}
 
 			// Set all day property if specified
-			if (recurringEvent.rrules.allDay !== undefined && this.settings.allDayProp) {
+			if (recurringEvent.rrules.allDay !== undefined) {
 				fm[this.settings.allDayProp] = recurringEvent.rrules.allDay;
 			}
 		});

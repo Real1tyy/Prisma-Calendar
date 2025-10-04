@@ -54,7 +54,7 @@ export class Parser {
 			return null;
 		}
 
-		const isSkipped = !!(this.settings.skipProp && frontmatter[this.settings.skipProp] === true);
+		const isSkipped = frontmatter[this.settings.skipProp] === true;
 
 		const id = uuidv5(filePath, PRISMA_CALENDAR_NAMESPACE);
 		const title = parsed.title || this.getFallbackTitle(filePath);

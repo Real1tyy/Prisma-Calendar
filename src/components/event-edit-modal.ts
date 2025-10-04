@@ -4,6 +4,7 @@ import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../types/recurring-event";
 import { formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../utils/format";
+import { isNotEmpty } from "../utils/value-checks";
 
 interface EventModalData {
 	title: string;
@@ -321,15 +322,12 @@ abstract class BaseEventModal extends Modal {
 		// Start with original frontmatter to preserve all existing properties
 		const preservedFrontmatter = { ...this.originalFrontmatter };
 
-		// Update title if provided
+		// Update title if titleProp is configured and value is provided
 		if (this.titleInput.value && settings.titleProp) {
 			preservedFrontmatter[settings.titleProp] = this.titleInput.value;
 		}
 
-		// Update allDay property
-		if (settings.allDayProp) {
-			preservedFrontmatter[settings.allDayProp] = this.allDayCheckbox.checked;
-		}
+		preservedFrontmatter[settings.allDayProp] = this.allDayCheckbox.checked;
 
 		let start: string | null;
 		let end: string | null;
@@ -511,8 +509,6 @@ export class EventEditModal extends BaseEventModal {
 			settings.endProp,
 			settings.dateProp,
 			settings.allDayProp,
-			settings.titleProp,
-			settings.zettelIdProp,
 			settings.skipProp,
 			settings.rruleProp,
 			settings.rruleSpecProp,
@@ -522,9 +518,16 @@ export class EventEditModal extends BaseEventModal {
 			"nodeRecurringInstanceDate", // Internal recurring event property
 		]);
 
+		if (settings.titleProp) {
+			knownProperties.add(settings.titleProp);
+		}
+		if (settings.zettelIdProp) {
+			knownProperties.add(settings.zettelIdProp);
+		}
+
 		// Load custom properties that are not in the known list
 		for (const [key, value] of Object.entries(this.originalFrontmatter)) {
-			if (!knownProperties.has(key) && value !== undefined && value !== null) {
+			if (!knownProperties.has(key) && isNotEmpty(value)) {
 				this.originalCustomPropertyKeys.add(key);
 
 				// Serialize value to string for display (preserves type information)

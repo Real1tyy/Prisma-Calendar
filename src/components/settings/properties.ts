@@ -36,7 +36,7 @@ export class PropertiesSettings {
 			.addText((text) =>
 				text
 					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_END_PROP)
-					.setValue(settings.endProp || "")
+					.setValue(settings.endProp)
 					.onChange(async (value) => {
 						await this.settingsStore.updateSettings((s) => ({
 							...s,
@@ -62,13 +62,16 @@ export class PropertiesSettings {
 
 		new Setting(containerEl)
 			.setName("All-day property")
-			.setDesc("Frontmatter property name for all-day flag (optional)")
+			.setDesc("Frontmatter property name for all-day flag")
 			.addText((text) =>
 				text
 					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_PROP)
-					.setValue(settings.allDayProp || "")
+					.setValue(settings.allDayProp)
 					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({ ...s, allDayProp: value }));
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							allDayProp: value || SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_PROP,
+						}));
 					})
 			);
 
@@ -104,7 +107,7 @@ export class PropertiesSettings {
 			.addText((text) =>
 				text
 					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_SKIP_PROP)
-					.setValue(settings.skipProp || "")
+					.setValue(settings.skipProp)
 					.onChange(async (value) => {
 						await this.settingsStore.updateSettings((s) => ({
 							...s,

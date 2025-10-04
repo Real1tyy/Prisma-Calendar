@@ -39,7 +39,8 @@ export const setEventBasics = (
 	const { titleProp, startProp, endProp, dateProp, allDayProp, zettelIdProp } = settings;
 
 	if (titleProp && data.title) fm[titleProp] = data.title;
-	if (allDayProp && data.allDay) fm[allDayProp] = data.allDay;
+
+	if (data.allDay !== undefined) fm[allDayProp] = data.allDay;
 
 	if (data.allDay) {
 		// ALL-DAY EVENT: Use dateProp, clear startProp/endProp
@@ -50,7 +51,7 @@ export const setEventBasics = (
 	} else {
 		// TIMED EVENT: Use startProp/endProp, clear dateProp
 		fm[startProp] = data.start;
-		if (endProp && data.end) fm[endProp] = data.end;
+		if (data.end) fm[endProp] = data.end;
 		delete fm[dateProp];
 	}
 

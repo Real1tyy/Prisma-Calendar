@@ -2,6 +2,7 @@ import { type App, Modal } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type { PropertyRendererConfig } from "../utils/property-renderer";
 import { createDefaultSeparator, renderPropertyValue } from "../utils/property-renderer";
+import { isNotEmpty } from "../utils/value-checks";
 
 export class EventPreviewModal extends Modal {
 	private event: any;
@@ -18,11 +19,6 @@ export class EventPreviewModal extends Modal {
 		contentEl.addClass("event-preview-modal");
 
 		this.renderEventPreview();
-
-		// Allow closing with ESC (Modal handles this by default)
-		this.scope.register([], "Escape", () => {
-			this.close();
-		});
 	}
 
 	private renderEventPreview(): void {
@@ -68,7 +64,7 @@ export class EventPreviewModal extends Modal {
 
 			for (const prop of settings.frontmatterDisplayProperties) {
 				const value = displayData[prop];
-				if (value !== undefined && value !== null && value !== "" && (!Array.isArray(value) || value.length > 0)) {
+				if (isNotEmpty(value)) {
 					this.renderProperty(propsGrid, prop, value);
 				}
 			}
