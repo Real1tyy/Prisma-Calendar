@@ -1,6 +1,5 @@
 export { BatchSelectionManager } from "./batch-selection-manager";
 export { CalendarView, getCalendarViewType } from "./calendar-view";
-export { ConfirmationModal } from "./confirmation-modal";
 export { EventContextMenu } from "./event-context-menu";
 export { EventCreateModal, EventEditModal } from "./event-edit-modal";
 export { EventPreviewModal } from "./event-preview-modal";
