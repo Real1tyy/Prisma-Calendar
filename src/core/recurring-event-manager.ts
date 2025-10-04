@@ -1,6 +1,5 @@
 import { getNextOccurrence, iterateOccurrencesInRange } from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
 import { createFileLink } from "@real1ty-obsidian-plugins/utils/file-operations";
-import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils";
 import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
@@ -9,6 +8,7 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { ChangeNotifier } from "../utils/change-notifier";
+import { sanitizeForFilename } from "../utils/file-utils";
 import { applySourceTimeToInstanceDate } from "../utils/format";
 import { extractContentAfterFrontmatter } from "../utils/obsidian";
 import type { Indexer, IndexerEvent } from "./indexer";

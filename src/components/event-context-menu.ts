@@ -1,4 +1,4 @@
-import { generateUniqueFilePath, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils";
+import { generateUniqueFilePath } from "@real1ty-obsidian-plugins/utils/file-utils";
 import { type App, Menu, Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
@@ -9,6 +9,7 @@ import {
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
+import { sanitizeForFilename } from "../utils/file-utils";
 import { getObsidianLinkPath } from "../utils/obsidian-link-utils";
 import { EventEditModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";

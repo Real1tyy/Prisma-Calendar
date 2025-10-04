@@ -1,8 +1,8 @@
-import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils";
 import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import { applyStartEndOffsets, setEventBasics } from "../../utils/calendar-events";
+import { sanitizeForFilename } from "../../utils/file-utils";
 import { getInternalProperties } from "../../utils/format";
 import { backupFrontmatter, getTFileOrThrow, restoreFrontmatter, withFrontmatter } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
