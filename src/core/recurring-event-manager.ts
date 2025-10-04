@@ -37,6 +37,7 @@ export class RecurringEventManager extends ChangeNotifier {
 	private templateService: TemplateService;
 	private indexingComplete = false;
 	private creationLocks: Map<string, Promise<string | null>> = new Map();
+	private sourceFileToRRuleId: Map<string, string> = new Map();
 
 	constructor(
 		private app: App,
@@ -104,6 +105,7 @@ export class RecurringEventManager extends ChangeNotifier {
 		this.templateService.destroy();
 		this.recurringEventsMap.clear();
 		this.creationLocks.clear();
+		this.sourceFileToRRuleId.clear();
 	}
 
 	private addRecurringEvent(recurringEvent: NodeRecurringEvent): void {
@@ -116,6 +118,7 @@ export class RecurringEventManager extends ChangeNotifier {
 				physicalInstances: [],
 			});
 		}
+		this.sourceFileToRRuleId.set(recurringEvent.sourceFilePath, recurringEvent.rRuleId);
 		this.notifyChange();
 	}
 
@@ -158,14 +161,25 @@ export class RecurringEventManager extends ChangeNotifier {
 	}
 
 	private handleFileDeleted(event: IndexerEvent): void {
-		const rruleId = event.source?.frontmatter[this.settings.rruleIdProp] as string;
-		if (!rruleId) {
+		const rruleId = this.sourceFileToRRuleId.get(event.filePath);
+
+		if (rruleId) {
+			this.recurringEventsMap.delete(rruleId);
+			this.sourceFileToRRuleId.delete(event.filePath);
+			console.log("deleting source file", event.filePath);
+			this.notifyChange();
 			return;
 		}
-		if (this.recurringEventsMap.delete(rruleId)) {
-			this.notifyChange();
-		} else {
-			console.error(`❌ Failed to delete recurring event ${rruleId}`);
+
+		// Check if this is an instance file - search through all physical instances
+		for (const [_rruleId, data] of this.recurringEventsMap.entries()) {
+			const index = data.physicalInstances.findIndex((instance) => instance.filePath === event.filePath);
+			if (index !== -1) {
+				console.log("deleting instance", event.filePath);
+				data.physicalInstances.splice(index, 1);
+				this.notifyChange();
+				return;
+			}
 		}
 	}
 
