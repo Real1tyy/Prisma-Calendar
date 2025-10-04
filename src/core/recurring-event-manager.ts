@@ -175,7 +175,7 @@ export class RecurringEventManager extends ChangeNotifier {
 
 		try {
 			const { recurringEvent, physicalInstances } = data;
-			const now = DateTime.now();
+			const now = DateTime.now().toUTC();
 
 			const futureInstances = physicalInstances.filter((instance) => instance.instanceDate >= now.startOf("day"));
 
@@ -261,7 +261,7 @@ export class RecurringEventManager extends ChangeNotifier {
 
 		// No existing future instances. Find the first valid start date (source date)
 		// then advance by one occurrence to exclude the source itself.
-		const now = DateTime.now();
+		const now = DateTime.now().toUTC();
 		const firstValidDate = this.findFirstValidStartDate(recurringEvent);
 
 		// Always skip the source date and start from the next occurrence
@@ -440,8 +440,21 @@ export class RecurringEventManager extends ChangeNotifier {
 		const sourceStart = this.getStartDateTime(rrules);
 		const sourceEnd = rrules.allDay ? null : rrules.endTime || null;
 
-		const instanceStart = applySourceTimeToInstanceDate(instanceDate, sourceStart);
-		const instanceEnd = sourceEnd ? applySourceTimeToInstanceDate(instanceDate, sourceEnd) : null;
+		// For all-day events, preserve the date without timezone conversion
+		// For timed events, ensure UTC timezone is used
+		const normalizedInstanceDate = rrules.allDay
+			? DateTime.fromObject(
+					{
+						year: instanceDate.year,
+						month: instanceDate.month,
+						day: instanceDate.day,
+					},
+					{ zone: "utc" }
+				)
+			: instanceDate;
+
+		const instanceStart = applySourceTimeToInstanceDate(normalizedInstanceDate, sourceStart);
+		const instanceEnd = sourceEnd ? applySourceTimeToInstanceDate(normalizedInstanceDate, sourceEnd) : null;
 
 		return { instanceStart, instanceEnd };
 	}
