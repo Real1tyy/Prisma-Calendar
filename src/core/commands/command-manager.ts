@@ -1,4 +1,4 @@
-import { COMMANDS_HISTORY_LIMIT } from "src/types/settings";
+import { SETTINGS_DEFAULTS } from "src/constants";
 import type { Command } from "./command";
 
 /**
@@ -12,8 +12,8 @@ export class CommandManager {
 	private redoStack: Command[] = [];
 	private maxHistorySize: number;
 
-	constructor(maxHistorySize = COMMANDS_HISTORY_LIMIT) {
-		this.maxHistorySize = maxHistorySize;
+	constructor() {
+		this.maxHistorySize = SETTINGS_DEFAULTS.COMMANDS_HISTORY_LIMIT;
 	}
 
 	/**
