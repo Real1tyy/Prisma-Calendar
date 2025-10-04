@@ -479,4 +479,18 @@ export class RecurringEventManager extends ChangeNotifier {
 		const folderPath = this.settings.directory ? `${this.settings.directory}/` : "";
 		return `${folderPath}${sanitizedTitle}.md`;
 	}
+
+	getPhysicalInstancesByRRuleId(rruleId: string): Array<{ filePath: string; instanceDate: DateTime }> {
+		const data = this.recurringEventsMap.get(rruleId);
+		return data?.physicalInstances || [];
+	}
+
+	getSourceEventPath(rruleId: string): string | null {
+		const data = this.recurringEventsMap.get(rruleId);
+		return data?.recurringEvent?.sourceFilePath || null;
+	}
+
+	getAllRRuleIds(): string[] {
+		return Array.from(this.recurringEventsMap.keys());
+	}
 }
