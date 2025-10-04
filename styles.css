@@ -1539,11 +1539,21 @@
 }
 
 /* Event Modal - Custom Properties Section */
-.custom-properties-container {
+.custom-properties-container,
+.property-container {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 	margin-top: 8px;
+}
+
+.other-section-spacing {
+	margin-top: 16px;
+}
+
+/* Button positioning in setting-item for property sections */
+.setting-item button.mod-cta {
+	margin-left: auto;
 }
 
 .custom-property-row {
@@ -1564,6 +1574,7 @@
 	background-color: var(--background-primary);
 	color: var(--text-normal);
 	font-size: var(--font-ui-small);
+	text-align: left;
 }
 
 .custom-property-row input[type="text"]:focus {

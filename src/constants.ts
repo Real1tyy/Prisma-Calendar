@@ -60,3 +60,8 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_DEFAULT_VIEW: "dayGridMonth",
 	DEFAULT_FIRST_DAY_OF_WEEK: 0,
 } as const;
+
+export const INTERNAL_FRONTMATTER_PROPERTIES = [
+	"position", // Internal Obsidian property
+	"nodeRecurringInstanceDate", // Internal recurring event instance marker
+] as const;
