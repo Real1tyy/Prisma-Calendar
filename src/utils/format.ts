@@ -57,3 +57,17 @@ export function formatDurationHumanReadable(start: DateTime, end: DateTime): str
 	}
 	return `${hours} hour${hours === 1 ? "" : "s"} ${minutes} minute${minutes === 1 ? "" : "s"}`;
 }
+
+export function calculateDuration(start: Date, end: Date): string {
+	const durationMs = end.getTime() - start.getTime();
+	const hours = Math.floor(durationMs / (1000 * 60 * 60));
+	const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+
+	if (hours === 0) {
+		return `${minutes}m`;
+	}
+	if (minutes === 0) {
+		return `${hours}h`;
+	}
+	return `${hours}h ${minutes}m`;
+}

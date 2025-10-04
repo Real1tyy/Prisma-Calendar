@@ -1,5 +1,7 @@
 import { type App, Modal } from "obsidian";
+import { calculateDuration } from "src/utils/format";
 import type { CalendarBundle } from "../core/calendar-bundle";
+import { createTextDiv } from "../utils/dom-utils";
 import type { PropertyRendererConfig } from "../utils/property-renderer";
 import { createDefaultSeparator, renderPropertyValue } from "../utils/property-renderer";
 import { isNotEmpty } from "../utils/value-checks";
@@ -87,45 +89,29 @@ export class EventPreviewModal extends Modal {
 
 		// Start date/time
 		const startItem = timeGrid.createDiv("event-preview-time-item");
-		startItem.createEl("div", { text: "Start", cls: "event-preview-label" });
-		startItem.createEl("div", {
-			text: this.formatDateTime(start, allDay),
-			cls: "event-preview-value",
-		});
+		createTextDiv(startItem, "Start", "event-preview-label");
+		createTextDiv(startItem, this.formatDateTime(start, allDay), "event-preview-value");
 
 		// End date/time
 		if (end) {
 			const endItem = timeGrid.createDiv("event-preview-time-item");
-			endItem.createEl("div", { text: "End", cls: "event-preview-label" });
-			endItem.createEl("div", {
-				text: this.formatDateTime(end, allDay),
-				cls: "event-preview-value",
-			});
+			createTextDiv(endItem, "End", "event-preview-label");
+			createTextDiv(endItem, this.formatDateTime(end, allDay), "event-preview-value");
 		}
 
 		// Duration (if applicable)
 		if (start && end && !allDay) {
-			const duration = this.calculateDuration(start, end);
+			const duration = calculateDuration(start, end);
 			const durationItem = timeGrid.createDiv("event-preview-time-item");
-			durationItem.createEl("div", { text: "Duration", cls: "event-preview-label" });
-			durationItem.createEl("div", {
-				text: duration,
-				cls: "event-preview-value",
-			});
+			createTextDiv(durationItem, "Duration", "event-preview-label");
+			createTextDiv(durationItem, duration, "event-preview-value");
 		}
 	}
 
 	private renderProperty(container: HTMLElement, key: string, value: any): void {
 		const propItem = container.createDiv("event-preview-prop-item");
-
-		propItem.createEl("div", {
-			text: key,
-			cls: "event-preview-prop-key",
-		});
-
-		const valueEl = propItem.createEl("div", {
-			cls: "event-preview-prop-value",
-		});
+		createTextDiv(propItem, key, "event-preview-prop-key");
+		const valueEl = propItem.createEl("div", { cls: "event-preview-prop-value" });
 
 		const config: PropertyRendererConfig = {
 			createLink: (text: string, path: string) => {
@@ -162,20 +148,6 @@ export class EventPreviewModal extends Modal {
 				};
 
 		return date.toLocaleDateString(undefined, options);
-	}
-
-	private calculateDuration(start: Date, end: Date): string {
-		const durationMs = end.getTime() - start.getTime();
-		const hours = Math.floor(durationMs / (1000 * 60 * 60));
-		const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-
-		if (hours === 0) {
-			return `${minutes}m`;
-		}
-		if (minutes === 0) {
-			return `${hours}h`;
-		}
-		return `${hours}h ${minutes}m`;
 	}
 
 	onClose(): void {
