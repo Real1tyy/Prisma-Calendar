@@ -884,12 +884,20 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 				placeholder: "fm.Priority === 'High'",
 			});
 
-			expressionInput.oninput = async () => {
+			const updateExpression = async () => {
 				await this.settingsStore.updateSettings((s) => ({
 					...s,
 					colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, expression: expressionInput.value } : r)),
 				}));
 			};
+
+			expressionInput.addEventListener("blur", updateExpression);
+			expressionInput.addEventListener("keydown", (e: KeyboardEvent) => {
+				if (e.key === "Enter") {
+					e.preventDefault();
+					updateExpression();
+				}
+			});
 
 			const colorContainer = ruleContainer.createDiv("color-rule-color-input");
 			colorContainer.createEl("label", { text: "Color:" });
@@ -953,11 +961,14 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 
 		new Setting(containerEl)
 			.setName("Filter expressions")
-			.setDesc("JavaScript expressions to filter events (one per line)")
+			.setDesc(
+				"JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing."
+			)
 			.addTextArea((text) => {
 				text.setPlaceholder("fm.Status !== 'Inbox'\nfm.Priority === 'High'");
 				text.setValue(settings.filterExpressions.join("\n"));
-				text.onChange(async (value) => {
+
+				const updateFilterExpressions = async (value: string) => {
 					const expressions = value
 						.split("\n")
 						.map((expr) => expr.trim())
@@ -966,7 +977,19 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 						...s,
 						filterExpressions: expressions,
 					}));
+				};
+
+				text.inputEl.addEventListener("blur", () => {
+					updateFilterExpressions(text.inputEl.value);
 				});
+
+				text.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
+					if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+						e.preventDefault();
+						updateFilterExpressions(text.inputEl.value);
+					}
+				});
+
 				text.inputEl.rows = 5;
 				text.inputEl.addClass("settings-info-box-example");
 			});
