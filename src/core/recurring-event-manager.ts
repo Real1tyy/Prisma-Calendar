@@ -8,9 +8,10 @@ import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils"
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
-import { type BehaviorSubject, Subject, type Subscription } from "rxjs";
+import type { BehaviorSubject, Subscription } from "rxjs";
 import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
+import { ChangeNotifier } from "../utils/change-notifier";
 import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
 import { TemplateService } from "./templates";
@@ -29,8 +30,7 @@ export interface RecurringEventData {
 		instanceDate: DateTime;
 	}>;
 }
-
-export class RecurringEventManager {
+export class RecurringEventManager extends ChangeNotifier {
 	private settings: SingleCalendarConfig;
 	private recurringEventsMap: Map<string, RecurringEventData> = new Map();
 	private subscription: Subscription | null = null;
@@ -38,8 +38,6 @@ export class RecurringEventManager {
 	private indexingCompleteSubscription: Subscription | null = null;
 	private templateService: TemplateService;
 	private indexingComplete = false;
-	private changeSubject = new Subject<void>();
-	public readonly changes$ = this.changeSubject.asObservable();
 	private creationLocks: Map<string, Promise<string | null>> = new Map();
 
 	constructor(
@@ -47,6 +45,7 @@ export class RecurringEventManager {
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
 		private indexer: Indexer
 	) {
+		super();
 		this.settings = settingsStore.value;
 		this.templateService = new TemplateService(app, settingsStore);
 
@@ -103,7 +102,7 @@ export class RecurringEventManager {
 		this.settingsSubscription = null;
 		this.indexingCompleteSubscription?.unsubscribe();
 		this.indexingCompleteSubscription = null;
-		this.changeSubject.complete();
+		super.destroy();
 		this.templateService.destroy();
 		this.recurringEventsMap.clear();
 		this.creationLocks.clear();
@@ -440,20 +439,5 @@ export class RecurringEventManager {
 
 		const folderPath = this.settings.directory ? `${this.settings.directory}/` : "";
 		return `${folderPath}${sanitizedTitle}.md`;
-	}
-
-	/**
-	 * Subscribe to recurring event changes
-	 */
-	subscribe(observer: () => void): Subscription {
-		return this.changes$.subscribe(observer);
-	}
-
-	private notifyChange(): void {
-		try {
-			this.changeSubject.next();
-		} catch (error) {
-			console.error("Error notifying RecurringEventManager change:", error);
-		}
 	}
 }

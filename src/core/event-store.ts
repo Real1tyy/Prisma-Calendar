@@ -1,7 +1,8 @@
 import { DateTime } from "luxon";
-import { Subject, type Subscription } from "rxjs";
+import type { Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { ISO } from "../types/index";
+import { ChangeNotifier } from "../utils/change-notifier";
 import type { Indexer, IndexerEvent, RawEventSource } from "./indexer";
 import type { ParsedEvent, Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
@@ -20,17 +21,16 @@ export interface CachedEvent {
 	mtime: number;
 }
 
-export class EventStore {
+export class EventStore extends ChangeNotifier {
 	private cache = new Map<string, CachedEvent>();
-	private changeSubject = new Subject<void>();
 	private subscription: Subscription | null = null;
-	public readonly changes$ = this.changeSubject.asObservable();
 
 	constructor(
 		private indexer: Indexer,
 		private parser: Parser,
 		private recurringEventManager: RecurringEventManager
 	) {
+		super();
 		this.subscription = this.indexer.events$
 			.pipe(filter((event: IndexerEvent) => event.type === "file-changed" || event.type === "file-deleted"))
 			.subscribe((event: IndexerEvent) => {
@@ -68,7 +68,7 @@ export class EventStore {
 	destroy(): void {
 		this.subscription?.unsubscribe();
 		this.subscription = null;
-		this.changeSubject.complete();
+		super.destroy();
 		this.clear();
 	}
 
@@ -120,22 +120,10 @@ export class EventStore {
 		this.notifyChange();
 	}
 
-	subscribe(observer: () => void): Subscription {
-		return this.changes$.subscribe(observer);
-	}
-
 	private eventIntersectsRange(event: ParsedEvent, rangeStart: DateTime, rangeEnd: DateTime): boolean {
 		const eventStart = DateTime.fromISO(event.start);
 		const eventEnd = event.end ? DateTime.fromISO(event.end) : eventStart.endOf("day");
 
 		return eventStart < rangeEnd && eventEnd > rangeStart;
-	}
-
-	private notifyChange(): void {
-		try {
-			this.changeSubject.next();
-		} catch (error) {
-			console.error("Error notifying EventStore change:", error);
-		}
 	}
 }

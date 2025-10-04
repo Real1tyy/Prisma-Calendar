@@ -1,3 +1,4 @@
+export { ChangeNotifier } from "../utils/change-notifier";
 export { CalendarBundle } from "./calendar-bundle";
 export { type CalendarViewState, CalendarViewStateManager } from "./calendar-view-state-manager";
 export { EventStore } from "./event-store";
