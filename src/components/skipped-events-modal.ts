@@ -1,22 +1,48 @@
 import { DateTime } from "luxon";
 import { type App, Modal, Notice } from "obsidian";
+import { FULL_COMMAND_IDS } from "../constants";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { ToggleSkipCommand } from "../core/commands";
 import type { ParsedEvent } from "../core/parser";
 
 export class SkippedEventsModal extends Modal {
+	private closeCallback?: () => void;
+
 	constructor(
 		app: App,
 		private bundle: CalendarBundle,
-		private skippedEvents: ParsedEvent[]
+		private skippedEvents: ParsedEvent[],
+		closeCallback?: () => void
 	) {
 		super(app);
+		this.closeCallback = closeCallback;
 	}
 
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass("skipped-events-modal");
+
+		// Register keyboard shortcut to close modal
+		this.scope.register([], "Escape", () => {
+			this.close();
+			return false;
+		});
+
+		// Listen for the show-skipped-events command hotkey to toggle close
+		if (this.closeCallback) {
+			const hotkeys = (this.app as any).hotkeyManager?.getHotkeys(FULL_COMMAND_IDS.SHOW_SKIPPED_EVENTS);
+			if (hotkeys && hotkeys.length > 0) {
+				for (const hotkey of hotkeys) {
+					this.scope.register(hotkey.modifiers, hotkey.key, () => {
+						if (this.closeCallback) {
+							this.closeCallback();
+						}
+						return false;
+					});
+				}
+			}
+		}
 
 		// Title
 		contentEl.createEl("h2", { text: "Skipped Events" });

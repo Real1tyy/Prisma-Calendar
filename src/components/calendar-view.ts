@@ -64,6 +64,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private zoomManager: ZoomManager;
 	private container!: HTMLElement;
 	private viewType: string;
+	private skippedEventsModal: SkippedEventsModal | null = null;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -233,6 +234,13 @@ export class CalendarView extends MountableView(ItemView) {
 	}
 
 	async showSkippedEventsModal(): Promise<void> {
+		if (this.skippedEventsModal) {
+			const modalToClose = this.skippedEventsModal;
+			this.skippedEventsModal = null;
+			modalToClose.close();
+			return;
+		}
+
 		if (!this.calendar) return;
 
 		const view = this.calendar.view;
@@ -242,7 +250,23 @@ export class CalendarView extends MountableView(ItemView) {
 		const end = view.activeEnd.toISOString();
 		const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
 
-		new SkippedEventsModal(this.app, this.bundle, skippedEvents).open();
+		this.skippedEventsModal = new SkippedEventsModal(this.app, this.bundle, skippedEvents, () => {
+			// Called when hotkey is pressed while modal is open
+			if (this.skippedEventsModal) {
+				const modalToClose = this.skippedEventsModal;
+				this.skippedEventsModal = null;
+				modalToClose.close();
+			}
+		});
+
+		const modal = this.skippedEventsModal;
+		const originalOnClose = modal.onClose.bind(modal);
+		modal.onClose = () => {
+			originalOnClose();
+			this.skippedEventsModal = null;
+		};
+
+		modal.open();
 	}
 
 	private async initializeCalendar(container: HTMLElement): Promise<void> {
