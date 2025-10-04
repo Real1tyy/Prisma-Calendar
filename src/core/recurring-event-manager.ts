@@ -5,6 +5,7 @@ import {
 } from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
 import { createFileLink } from "@real1ty-obsidian-plugins/utils/file-operations";
 import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils/file-utils";
+import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
@@ -275,24 +276,26 @@ export class RecurringEventManager extends ChangeNotifier {
 		recurringEvent: NodeRecurringEvent,
 		instanceDate: DateTime
 	): Promise<string | null> {
-		const filePath = this.generateNodeInstanceFilePath(recurringEvent, instanceDate);
+		// Use instance date + recurring event ID as lock key to prevent duplicate creation
+		const lockKey = `${recurringEvent.rRuleId}-${instanceDate.toISODate()}`;
 
-		// Check if there's already a creation in progress for this file path
-		const existingCreation = this.creationLocks.get(filePath);
+		// Check if there's already a creation in progress for this instance
+		const existingCreation = this.creationLocks.get(lockKey);
 		if (existingCreation) {
 			// Wait for the existing creation to complete and return its result
 			return await existingCreation;
 		}
 
-		// Create a new promise for this creation and store it in the locks map
+		// Generate filepath and create a new promise for this creation
+		const filePath = this.generateNodeInstanceFilePath(recurringEvent, instanceDate);
 		const creationPromise = this.doCreatePhysicalInstance(recurringEvent, instanceDate, filePath);
-		this.creationLocks.set(filePath, creationPromise);
+		this.creationLocks.set(lockKey, creationPromise);
 
 		try {
 			const result = await creationPromise;
 			return result;
 		} finally {
-			this.creationLocks.delete(filePath);
+			this.creationLocks.delete(lockKey);
 		}
 	}
 
@@ -301,19 +304,19 @@ export class RecurringEventManager extends ChangeNotifier {
 		instanceDate: DateTime,
 		filePath: string
 	): Promise<string | null> {
-		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
-		const instanceTitle = `${recurringEvent.title} ${dateStr}`;
-
 		// Check if file already exists - if so, skip creation
 		if (this.app.vault.getAbstractFileByPath(filePath)) {
 			return null;
 		}
 
+		// Extract the instance title from the filename (already has ZettelID from generateNodeInstanceFilePath)
+		const filename = filePath.split("/").pop()?.replace(".md", "") || "";
+
 		// Create the physical file with inherited content
 		const file = await this.templateService.createFile({
-			title: instanceTitle,
+			title: filename,
 			targetDirectory: this.settings.directory,
-			filename: filePath.split("/").pop()?.replace(".md", ""),
+			filename: filename,
 			content: recurringEvent.content,
 		});
 
@@ -434,7 +437,12 @@ export class RecurringEventManager extends ChangeNotifier {
 
 	private generateNodeInstanceFilePath(recurringEvent: NodeRecurringEvent, instanceDate: DateTime): string {
 		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
-		const instanceTitle = `${recurringEvent.title} ${dateStr}`;
+
+		// Strip ZettelID from recurring event title and generate new one for this instance
+		const titleWithoutZettel = recurringEvent.title.replace(/-\d{14}$/, "");
+		const newZettelId = generateZettelId();
+		const instanceTitle = `${titleWithoutZettel} ${dateStr}-${newZettelId}`;
+
 		const sanitizedTitle = sanitizeForFilename(instanceTitle);
 
 		const folderPath = this.settings.directory ? `${this.settings.directory}/` : "";
