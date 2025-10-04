@@ -1,6 +1,7 @@
 import { getFilenameFromPath } from "@real1ty-obsidian-plugins/utils/file-utils";
 import type { DateTime } from "luxon";
 import type { BehaviorSubject, Subscription } from "rxjs";
+import { v5 as uuidv5 } from "uuid";
 import { convertToISO, parseEventFrontmatter } from "../types/event";
 import type { ISO, SingleCalendarConfig } from "../types/index";
 import { FilterEvaluator } from "../utils/filter-evaluator";
@@ -19,6 +20,10 @@ export interface ParsedEvent {
 	color?: string;
 	meta?: Record<string, unknown>;
 }
+
+// Custom namespace UUID for Prisma Calendar events
+// This ensures our event IDs are unique to this application
+const PRISMA_CALENDAR_NAMESPACE = "a8f9e6d4-7c2b-4e1a-9f3d-5b8c1a2e4d6f";
 
 export class Parser {
 	private settings: SingleCalendarConfig;
@@ -51,7 +56,7 @@ export class Parser {
 
 		const isSkipped = !!(this.settings.skipProp && frontmatter[this.settings.skipProp] === true);
 
-		const id = this.generateEventId(filePath);
+		const id = uuidv5(filePath, PRISMA_CALENDAR_NAMESPACE);
 		const title = parsed.title || this.getFallbackTitle(filePath);
 
 		let start: ISO;
@@ -95,17 +100,6 @@ export class Parser {
 			skipped: isSkipped,
 			meta,
 		};
-	}
-
-	private generateEventId(filePath: string): string {
-		const base = filePath;
-		let hash = 0;
-		for (let i = 0; i < base.length; i++) {
-			const char = base.charCodeAt(i);
-			hash = (hash << 5) - hash + char;
-			hash = hash & hash;
-		}
-		return Math.abs(hash).toString(36);
 	}
 
 	private getFallbackTitle(filePath: string): string {
