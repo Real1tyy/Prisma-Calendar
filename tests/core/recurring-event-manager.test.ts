@@ -76,6 +76,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				getMarkdownFiles: vi.fn(() => []),
 				create: vi.fn(),
 				getAbstractFileByPath: vi.fn(() => null), // Return null = file doesn't exist
+				cachedRead: vi.fn().mockResolvedValue(""),
 			},
 			metadataCache: {
 				getFileCache: vi.fn(() => null),
@@ -419,7 +420,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				// For daily all-day events, should preserve all-day status
 				expect(mockFrontmatter["All Day"]).toBe(true);
 				// All-day events should use Date property, not Start Date
-				expect(mockFrontmatter["Date"]).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+				expect(mockFrontmatter.Date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 				expect(mockFrontmatter["Start Date"]).toBeUndefined();
 				expect(mockFrontmatter["End Date"]).toBeUndefined();
 			});
@@ -627,7 +628,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				// For monthly all-day events, should inherit the day (15th) and be all-day
 				expect(mockFrontmatter["All Day"]).toBe(true);
 				// All-day events should use Date property, not Start Date
-				expect(mockFrontmatter["Date"]).toMatch(/^\d{4}-\d{2}-15$/); // Should be 15th day of the month
+				expect(mockFrontmatter.Date).toMatch(/^\d{4}-\d{2}-15$/); // Should be 15th day of the month
 				expect(mockFrontmatter["Start Date"]).toBeUndefined();
 				expect(mockFrontmatter["End Date"]).toBeUndefined();
 			});
@@ -731,7 +732,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				// For yearly all-day events, should inherit month (06) and day (20)
 				expect(mockFrontmatter["All Day"]).toBe(true);
 				// All-day events should use Date property, not Start Date
-				expect(mockFrontmatter["Date"]).toMatch(/-06-20$/); // Should be June 20th
+				expect(mockFrontmatter.Date).toMatch(/-06-20$/); // Should be June 20th
 				expect(mockFrontmatter["Start Date"]).toBeUndefined();
 				expect(mockFrontmatter["End Date"]).toBeUndefined();
 			});

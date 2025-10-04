@@ -244,6 +244,7 @@ export interface MockApp {
 		getAbstractFileByPath: ReturnType<typeof vi.fn>;
 		on: ReturnType<typeof vi.fn>;
 		read: ReturnType<typeof vi.fn>;
+		cachedRead: ReturnType<typeof vi.fn>;
 		modify: ReturnType<typeof vi.fn>;
 		create: ReturnType<typeof vi.fn>;
 		delete: ReturnType<typeof vi.fn>;
@@ -271,6 +272,7 @@ export function createMockApp(): MockApp {
 			getAbstractFileByPath: vi.fn(),
 			on: vi.fn(),
 			read: vi.fn(),
+			cachedRead: vi.fn(),
 			modify: vi.fn(),
 			create: vi.fn(),
 			delete: vi.fn(),

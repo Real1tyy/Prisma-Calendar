@@ -1,5 +1,5 @@
 import { type App, TFile } from "obsidian";
-import { getCalendarViewType } from "src/components/calendar-view";
+import { getCalendarViewType } from "../components/calendar-view";
 
 export const getTFileOrThrow = (app: App, path: string): TFile => {
 	const f = app.vault.getAbstractFileByPath(path);
@@ -43,3 +43,16 @@ export const emitHover = (
 		linktext,
 		sourcePath: sourcePath ?? app.workspace.getActiveFile()?.path ?? "",
 	});
+
+export const extractContentAfterFrontmatter = (fullContent: string): string => {
+	const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
+	const match = fullContent.match(frontmatterRegex);
+
+	if (match) {
+		// Return content after frontmatter
+		return fullContent.substring(match.index! + match[0].length);
+	}
+
+	// If no frontmatter found, return the entire content
+	return fullContent;
+};

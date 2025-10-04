@@ -1,10 +1,10 @@
-import { SETTINGS_DEFAULTS } from "src/constants";
+import { SETTINGS_DEFAULTS } from "../constants";
 import {
 	type CustomCalendarSettings,
 	CustomCalendarSettingsSchema,
 	type SingleCalendarConfig,
 	SingleCalendarConfigSchema,
-} from "src/types";
+} from "../types";
 
 export function createDefaultCalendarConfig(id: string, name: string): SingleCalendarConfig {
 	return SingleCalendarConfigSchema.parse({

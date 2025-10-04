@@ -1,4 +1,7 @@
 export const PLUGIN_ID = "prisma-calendar";
+// Concurrency control for parallel file processing
+// Higher values = faster initial scan but more memory/CPU usage
+export const SCAN_CONCURRENCY = 10;
 
 // Command IDs (without plugin prefix)
 export const COMMAND_IDS = {

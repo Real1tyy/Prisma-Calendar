@@ -1,4 +1,4 @@
-import { SETTINGS_DEFAULTS } from "src/constants";
+import { SETTINGS_DEFAULTS } from "../../constants";
 import type { Command } from "./command";
 
 /**

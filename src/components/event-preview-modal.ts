@@ -1,7 +1,7 @@
 import { type App, Modal, TFile } from "obsidian";
-import { calculateDuration, categorizeProperties } from "src/utils/format";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { createTextDiv } from "../utils/dom-utils";
+import { calculateDuration, categorizeProperties } from "../utils/format";
 import type { PropertyRendererConfig } from "../utils/property-renderer";
 import { createDefaultSeparator, renderPropertyValue } from "../utils/property-renderer";
 

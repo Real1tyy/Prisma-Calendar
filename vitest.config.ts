@@ -9,11 +9,17 @@ export default defineConfig({
 		globals: true,
 		environment: "jsdom",
 		setupFiles: ["./tests/setup.ts"],
+		server: {
+			deps: {
+				inline: ["@real1ty-obsidian-plugins/utils", "@real1ty-obsidian-plugins/common-plugin"],
+			},
+		},
 	},
 	resolve: {
 		alias: {
 			obsidian: path.resolve(__dirname, "tests/mocks/obsidian.ts"),
 		},
+		extensions: [".ts", ".tsx", ".js", ".mjs", ".json"],
 	},
 	// Ensure external dependencies can find obsidian
 	define: {

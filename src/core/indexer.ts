@@ -4,6 +4,7 @@ import {
 	type BehaviorSubject,
 	from,
 	fromEventPattern,
+	lastValueFrom,
 	merge,
 	type Observable,
 	of,
@@ -11,7 +12,8 @@ import {
 	Subject,
 	type Subscription,
 } from "rxjs";
-import { debounceTime, filter, groupBy, map, mergeMap, switchMap } from "rxjs/operators";
+import { debounceTime, filter, groupBy, map, mergeMap, switchMap, toArray } from "rxjs/operators";
+import { SCAN_CONCURRENCY } from "../constants";
 import type { SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import { generateUniqueRruleId } from "../utils/calendar-events";
@@ -93,14 +95,30 @@ export class Indexer {
 		const allFiles = this.vault.getMarkdownFiles();
 		const relevantFiles = allFiles.filter((file) => this.isRelevantFile(file));
 
-		for (const file of relevantFiles) {
-			const events = await this.buildEvents(file);
-			for (const event of events) {
+		const events$ = from(relevantFiles).pipe(
+			mergeMap(async (file) => {
+				try {
+					return await this.buildEvents(file);
+				} catch (error) {
+					console.error(`Error processing file ${file.path}:`, error);
+					return [];
+				}
+			}, SCAN_CONCURRENCY),
+			mergeMap((events) => events),
+			toArray()
+		);
+
+		try {
+			const allEvents = await lastValueFrom(events$);
+
+			for (const event of allEvents) {
 				this.scanEventsSubject.next(event);
 			}
+			this.indexingCompleteSubject.next(true);
+		} catch (error) {
+			console.error("❌ Error during file scanning:", error);
+			this.indexingCompleteSubject.next(true);
 		}
-
-		this.indexingCompleteSubject.next(true);
 	}
 
 	private fromVaultEvent(eventName: VaultEvent): Observable<any> {
@@ -227,29 +245,15 @@ export class Indexer {
 			});
 		}
 
-		const fullContent = await this.app.vault.cachedRead(file);
-		const content = this.extractContentAfterFrontmatter(fullContent);
-
+		// Defer content reading - we'll read it lazily when needed
+		// This avoids blocking I/O during the initial scan
 		return {
 			sourceFilePath: file.path,
 			title: file.basename,
 			rRuleId,
 			rrules,
 			frontmatter: { ...frontmatter },
-			content,
+			content: undefined, // Empty initially - will be loaded on-demand by RecurringEventManager
 		};
-	}
-
-	private extractContentAfterFrontmatter(fullContent: string): string {
-		const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
-		const match = fullContent.match(frontmatterRegex);
-
-		if (match) {
-			// Return content after frontmatter
-			return fullContent.substring(match.index! + match[0].length);
-		}
-
-		// If no frontmatter found, return the entire content
-		return fullContent;
 	}
 }

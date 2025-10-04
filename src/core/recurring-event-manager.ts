@@ -10,6 +10,7 @@ import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-ev
 import type { SingleCalendarConfig } from "../types/settings";
 import { ChangeNotifier } from "../utils/change-notifier";
 import { applySourceTimeToInstanceDate } from "../utils/format";
+import { extractContentAfterFrontmatter } from "../utils/obsidian";
 import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
 import { TemplateService } from "./templates";
@@ -84,14 +85,16 @@ export class RecurringEventManager extends ChangeNotifier {
 	}
 
 	private async processAllRecurringEvents(): Promise<void> {
-		for (const [rruleId, data] of this.recurringEventsMap.entries()) {
-			try {
-				await this.ensurePhysicalInstances(rruleId);
-			} catch (error) {
-				const eventTitle = data?.recurringEvent?.title || "Unknown Event";
-				console.error(`❌ Failed to process recurring event ${eventTitle} (${rruleId}):`, error);
-			}
-		}
+		await Promise.all(
+			Array.from(this.recurringEventsMap.entries()).map(async ([rruleId, data]) => {
+				try {
+					await this.ensurePhysicalInstances(rruleId);
+				} catch (error) {
+					const eventTitle = data?.recurringEvent?.title || "Unknown Event";
+					console.error(`❌ Failed to process recurring event ${eventTitle} (${rruleId}):`, error);
+				}
+			})
+		);
 	}
 
 	destroy(): void {
@@ -331,12 +334,21 @@ export class RecurringEventManager extends ChangeNotifier {
 		// Extract the instance title from the filename (already has ZettelID from generateNodeInstanceFilePath)
 		const filename = filePath.split("/").pop()?.replace(".md", "") || "";
 
+		// Lazy load content if not already loaded (deferred from initial scan)
+		let content = recurringEvent.content;
+		if (!content) {
+			const sourceFile = this.app.vault.getAbstractFileByPath(recurringEvent.sourceFilePath);
+			const fullContent = await this.app.vault.cachedRead(sourceFile as TFile); // already verified to be a TFile in indexer
+			content = extractContentAfterFrontmatter(fullContent);
+			recurringEvent.content = content;
+		}
+
 		// Create the physical file with inherited content
 		const file = await this.templateService.createFile({
 			title: filename,
 			targetDirectory: this.settings.directory,
 			filename: filename,
-			content: recurringEvent.content,
+			content,
 		});
 
 		// Set frontmatter with event data and instance metadata
