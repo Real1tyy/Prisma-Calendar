@@ -1,9 +1,9 @@
 import type { WorkspaceLeaf } from "obsidian";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { SETTINGS_DEFAULTS } from "../../src/constants";
 // import { CalendarView } from "../../src/components/calendar-view";
 import type { EventStore } from "../../src/core/event-store";
 import type { CalendarSettingsStore } from "../../src/core/settings-store";
-import { DEFAULT_EVENT_COLOR } from "../../src/types/settings";
 
 // Mock FullCalendar
 vi.mock("@fullcalendar/core", () => ({
@@ -80,7 +80,7 @@ describe.skip("CalendarView", () => {
 			slotDurationMinutes: 10,
 			snapDurationMinutes: 10,
 			zoomLevels: [1, 2, 3, 5, 10, 15, 20, 30, 45, 60],
-			defaultEventColor: DEFAULT_EVENT_COLOR,
+			defaultEventColor: SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR,
 			colorRules: [],
 			filterExpressions: [],
 		};
