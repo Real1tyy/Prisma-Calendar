@@ -329,6 +329,7 @@ export class RecurringEventManager extends ChangeNotifier {
 				this.settings.rruleSpecProp,
 				this.settings.startProp,
 				this.settings.endProp,
+				this.settings.dateProp,
 				this.settings.allDayProp,
 			]);
 
@@ -348,15 +349,27 @@ export class RecurringEventManager extends ChangeNotifier {
 			}
 
 			const { instanceStart, instanceEnd } = this.calculateInstanceTimes(recurringEvent, instanceDate);
-			fm[this.settings.startProp] = instanceStart.toISO();
-
-			if (instanceEnd) {
-				fm[this.settings.endProp] = instanceEnd.toISO();
-			}
 
 			// Set all day property if specified
 			if (recurringEvent.rrules.allDay !== undefined) {
 				fm[this.settings.allDayProp] = recurringEvent.rrules.allDay;
+			}
+
+			// Use appropriate date properties based on all-day status
+			if (recurringEvent.rrules.allDay) {
+				// ALL-DAY EVENT: Use dateProp only (date without time)
+				fm[this.settings.dateProp] = instanceStart.toISODate();
+				// Clear timed event properties
+				delete fm[this.settings.startProp];
+				delete fm[this.settings.endProp];
+			} else {
+				// TIMED EVENT: Use startProp/endProp
+				fm[this.settings.startProp] = instanceStart.toISO();
+				if (instanceEnd) {
+					fm[this.settings.endProp] = instanceEnd.toISO();
+				}
+				// Clear all-day event property
+				delete fm[this.settings.dateProp];
 			}
 		});
 
