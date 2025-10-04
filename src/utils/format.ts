@@ -1,4 +1,7 @@
 import type { DateTime } from "luxon";
+import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
+import type { SingleCalendarConfig } from "../types/settings";
+import { isNotEmpty } from "./value-checks";
 
 /**
  * Formats a date/datetime for HTML datetime-local input fields.
@@ -95,4 +98,58 @@ export function applySourceTimeToInstanceDate(instanceDate: DateTime, sourceDate
 		second: sourceDateTime.second,
 		millisecond: sourceDateTime.millisecond,
 	});
+}
+
+/**
+ * Returns a Set of internal properties that should not be displayed in UI.
+ * Includes calendar-specific property names and global internal properties.
+ */
+export function getInternalProperties(settings: SingleCalendarConfig): Set<string> {
+	const properties = [
+		settings.startProp,
+		settings.endProp,
+		settings.dateProp,
+		settings.allDayProp,
+		settings.skipProp,
+		settings.rruleProp,
+		settings.rruleSpecProp,
+		settings.rruleIdProp,
+		settings.titleProp,
+		settings.zettelIdProp,
+		...INTERNAL_FRONTMATTER_PROPERTIES,
+	].filter((prop): prop is string => prop !== undefined);
+
+	return new Set(properties);
+}
+
+/**
+ * Categorizes frontmatter properties into display and other properties based on settings.
+ * Filters out internal properties that should not be shown.
+ */
+export function categorizeProperties(
+	frontmatter: Record<string, unknown>,
+	settings: SingleCalendarConfig
+): {
+	displayProperties: [string, unknown][];
+	otherProperties: [string, unknown][];
+} {
+	const internalProperties = getInternalProperties(settings);
+	const displayPropertyKeys = new Set(settings.frontmatterDisplayProperties);
+
+	const displayProperties: [string, unknown][] = [];
+	const otherProperties: [string, unknown][] = [];
+
+	for (const [key, value] of Object.entries(frontmatter)) {
+		if (internalProperties.has(key) || !isNotEmpty(value)) {
+			continue;
+		}
+
+		if (displayPropertyKeys.has(key)) {
+			displayProperties.push([key, value]);
+		} else {
+			otherProperties.push([key, value]);
+		}
+	}
+
+	return { displayProperties, otherProperties };
 }

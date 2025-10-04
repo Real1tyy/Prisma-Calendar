@@ -1,10 +1,9 @@
 import { type App, Modal, TFile } from "obsidian";
-import { calculateDuration } from "src/utils/format";
+import { calculateDuration, categorizeProperties } from "src/utils/format";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { createTextDiv } from "../utils/dom-utils";
 import type { PropertyRendererConfig } from "../utils/property-renderer";
 import { createDefaultSeparator, renderPropertyValue } from "../utils/property-renderer";
-import { isNotEmpty } from "../utils/value-checks";
 
 export class EventPreviewModal extends Modal {
 	private event: any;
@@ -65,48 +64,23 @@ export class EventPreviewModal extends Modal {
 		const timeSection = contentEl.createDiv("event-preview-section event-preview-time-section");
 		this.renderTimeInfo(timeSection);
 
-		// Frontmatter properties section - show ALL properties
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		// Get known properties to filter out (same as edit modal)
-		const knownProperties = new Set([
-			settings.startProp,
-			settings.endProp,
-			settings.dateProp,
-			settings.allDayProp,
-			settings.skipProp,
-			settings.rruleProp,
-			settings.rruleSpecProp,
-			settings.rruleIdProp,
-			settings.sourceProp,
-			"position", // Internal Obsidian properties
-			"nodeRecurringInstanceDate", // Internal recurring event property
-		]);
+		const { displayProperties, otherProperties } = categorizeProperties(this.allFrontmatter, settings);
 
-		if (settings.titleProp) {
-			knownProperties.add(settings.titleProp);
-		}
-		if (settings.zettelIdProp) {
-			knownProperties.add(settings.zettelIdProp);
-		}
+		this.renderPropertiesSection(contentEl, "Display Properties", displayProperties);
+		this.renderPropertiesSection(contentEl, "Other Properties", otherProperties);
+	}
 
-		// Filter out known properties and display all remaining ones
-		const customProperties: [string, unknown][] = [];
-		for (const [key, value] of Object.entries(this.allFrontmatter)) {
-			if (!knownProperties.has(key) && isNotEmpty(value)) {
-				customProperties.push([key, value]);
-			}
-		}
+	private renderPropertiesSection(parent: HTMLElement, title: string, properties: [string, unknown][]): void {
+		if (properties.length === 0) return;
 
-		if (customProperties.length > 0) {
-			const propsSection = contentEl.createDiv("event-preview-section event-preview-props-section");
-			createTextDiv(propsSection, "Properties", "event-preview-section-title");
+		const section = parent.createDiv("event-preview-section event-preview-props-section");
+		createTextDiv(section, title, "event-preview-section-title");
+		const grid = section.createDiv("event-preview-props-grid");
 
-			const propsGrid = propsSection.createDiv("event-preview-props-grid");
-
-			for (const [key, value] of customProperties) {
-				this.renderProperty(propsGrid, key, value);
-			}
+		for (const [key, value] of properties) {
+			this.renderProperty(grid, key, value);
 		}
 	}
 

@@ -3,8 +3,7 @@ import { parseFrontmatterRecord, serializeFrontmatterValue } from "@real1ty-obsi
 import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../types/recurring-event";
-import { formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../utils/format";
-import { isNotEmpty } from "../utils/value-checks";
+import { categorizeProperties, formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../utils/format";
 
 interface EventModalData {
 	title: string;
@@ -53,7 +52,8 @@ abstract class BaseEventModal extends Modal {
 
 	// Custom properties
 	protected customProperties: CustomProperty[] = [];
-	protected customPropertiesContainer!: HTMLElement;
+	protected displayPropertiesContainer!: HTMLElement;
+	protected otherPropertiesContainer!: HTMLElement;
 	public originalCustomPropertyKeys: Set<string> = new Set();
 
 	constructor(app: App, bundle: CalendarBundle, event: EventModalData, onSave: (eventData: EventSaveData) => void) {
@@ -167,12 +167,10 @@ abstract class BaseEventModal extends Modal {
 		this.weekdayContainer.createEl("div", { text: "Days of Week", cls: "setting-item-name" });
 
 		const weekdayGrid = this.weekdayContainer.createDiv("weekday-grid");
-		weekdayGrid.style.cssText = "display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px;";
 
 		// Create checkboxes for each weekday
 		for (const [value, label] of Object.entries(WEEKDAY_OPTIONS)) {
 			const weekdayItem = weekdayGrid.createDiv("weekday-item");
-			weekdayItem.style.cssText = "display: flex; align-items: center; gap: 8px;";
 
 			const checkbox = weekdayItem.createEl("input", {
 				type: "checkbox",
@@ -185,44 +183,49 @@ abstract class BaseEventModal extends Modal {
 	}
 
 	private createCustomPropertiesFields(contentEl: HTMLElement): void {
-		// Custom properties section header
-		const headerContainer = contentEl.createDiv("setting-item");
+		this.displayPropertiesContainer = this.createPropertySection(contentEl, "Display Properties", () =>
+			this.addCustomProperty("", "", "display")
+		);
+
+		const otherSectionParent = contentEl.createDiv("other-section-spacing");
+		this.otherPropertiesContainer = this.createPropertySection(otherSectionParent, "Other Properties", () =>
+			this.addCustomProperty("", "", "other")
+		);
+	}
+
+	private createPropertySection(parent: HTMLElement, title: string, onAddClick: () => void): HTMLElement {
+		const headerContainer = parent.createDiv("setting-item");
 		const headerDiv = headerContainer.createDiv("setting-item-name");
-		headerDiv.createEl("div", { text: "Custom Properties", cls: "setting-item-heading" });
+		headerDiv.createEl("div", { text: title, cls: "setting-item-heading" });
 
 		const addButton = headerContainer.createEl("button", {
 			text: "+ Add Property",
 			cls: "mod-cta",
 		});
-		addButton.style.marginLeft = "auto";
-		addButton.addEventListener("click", () => {
-			this.addCustomProperty();
-		});
+		addButton.addEventListener("click", onAddClick);
 
-		// Container for custom property rows
-		this.customPropertiesContainer = contentEl.createDiv("custom-properties-container");
-		this.customPropertiesContainer.style.cssText = "display: flex; flex-direction: column; gap: 8px; margin-top: 8px;";
+		const container = parent.createDiv("property-container");
+
+		return container;
 	}
 
-	protected addCustomProperty(key = "", value = ""): void {
-		const propertyRow = this.customPropertiesContainer.createDiv("custom-property-row");
-		propertyRow.style.cssText = "display: flex; gap: 8px; align-items: center;";
+	protected addCustomProperty(key = "", value = "", section: "display" | "other" = "other"): void {
+		const container = section === "display" ? this.displayPropertiesContainer : this.otherPropertiesContainer;
+		const propertyRow = container.createDiv("custom-property-row");
 
-		const keyInput = propertyRow.createEl("input", {
+		propertyRow.createEl("input", {
 			type: "text",
 			placeholder: "Property name",
 			value: key,
 			cls: "setting-item-control",
 		});
-		keyInput.style.flex = "1";
 
-		const valueInput = propertyRow.createEl("input", {
+		propertyRow.createEl("input", {
 			type: "text",
 			placeholder: "Value",
 			value: value,
 			cls: "setting-item-control",
 		});
-		valueInput.style.flex = "1";
 
 		const removeButton = propertyRow.createEl("button", {
 			text: "Remove",
@@ -237,9 +240,13 @@ abstract class BaseEventModal extends Modal {
 
 	public getCustomProperties(): Record<string, unknown> {
 		const properties: Record<string, string> = {};
-		const rows = this.customPropertiesContainer.querySelectorAll(".custom-property-row");
 
-		for (const row of Array.from(rows)) {
+		// Collect from both display and other properties containers
+		const displayRows = this.displayPropertiesContainer.querySelectorAll(".custom-property-row");
+		const otherRows = this.otherPropertiesContainer.querySelectorAll(".custom-property-row");
+		const allRows = [...Array.from(displayRows), ...Array.from(otherRows)];
+
+		for (const row of allRows) {
 			const keyInput = row.querySelector("input[placeholder='Property name']") as HTMLInputElement;
 			const valueInput = row.querySelector("input[placeholder='Value']") as HTMLInputElement;
 
@@ -503,37 +510,21 @@ export class EventEditModal extends BaseEventModal {
 	private async loadCustomPropertiesData(): Promise<void> {
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		// List of known properties that should not be treated as custom
-		const knownProperties = new Set([
-			settings.startProp,
-			settings.endProp,
-			settings.dateProp,
-			settings.allDayProp,
-			settings.skipProp,
-			settings.rruleProp,
-			settings.rruleSpecProp,
-			settings.rruleIdProp,
-			settings.sourceProp,
-			"position", // Internal Obsidian properties
-			"nodeRecurringInstanceDate", // Internal recurring event property
-		]);
+		// Categorize properties using shared utility
+		const { displayProperties, otherProperties } = categorizeProperties(this.originalFrontmatter, settings);
 
-		if (settings.titleProp) {
-			knownProperties.add(settings.titleProp);
-		}
-		if (settings.zettelIdProp) {
-			knownProperties.add(settings.zettelIdProp);
+		// Load display properties
+		for (const [key, value] of displayProperties) {
+			this.originalCustomPropertyKeys.add(key);
+			const stringValue = serializeFrontmatterValue(value);
+			this.addCustomProperty(key, stringValue, "display");
 		}
 
-		// Load custom properties that are not in the known list
-		for (const [key, value] of Object.entries(this.originalFrontmatter)) {
-			if (!knownProperties.has(key) && isNotEmpty(value)) {
-				this.originalCustomPropertyKeys.add(key);
-
-				// Serialize value to string for display (preserves type information)
-				const stringValue = serializeFrontmatterValue(value);
-				this.addCustomProperty(key, stringValue);
-			}
+		// Load other properties
+		for (const [key, value] of otherProperties) {
+			this.originalCustomPropertyKeys.add(key);
+			const stringValue = serializeFrontmatterValue(value);
+			this.addCustomProperty(key, stringValue, "other");
 		}
 	}
 
