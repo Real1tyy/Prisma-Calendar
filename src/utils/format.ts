@@ -1,3 +1,5 @@
+import type { DateTime } from "luxon";
+
 /**
  * Formats a date/datetime for HTML datetime-local input fields.
  * Strips Z suffix to treat as local time and returns YYYY-MM-DDTHH:MM format.
@@ -40,4 +42,18 @@ export function formatDateOnly(dateInput: string | Date): string {
 export function inputValueToISOString(inputValue: string): string {
 	// Append seconds and Z to maintain consistent format (Z is ignored, time is treated as local)
 	return `${inputValue}:00.000Z`;
+}
+
+export function formatDurationHumanReadable(start: DateTime, end: DateTime): string {
+	const durationMs = end.diff(start).toMillis();
+	const hours = Math.floor(durationMs / (1000 * 60 * 60));
+	const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+
+	if (hours === 0) {
+		return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+	}
+	if (minutes === 0) {
+		return `${hours} hour${hours === 1 ? "" : "s"}`;
+	}
+	return `${hours} hour${hours === 1 ? "" : "s"} ${minutes} minute${minutes === 1 ? "" : "s"}`;
 }
