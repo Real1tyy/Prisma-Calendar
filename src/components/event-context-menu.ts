@@ -9,8 +9,10 @@ import {
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
+import { getObsidianLinkPath } from "../utils/obsidian-link-utils";
 import { EventEditModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
+import { RecurringEventsListModal } from "./recurring-events-list-modal";
 
 export class EventContextMenu {
 	private app: App;
@@ -32,12 +34,13 @@ export class EventContextMenu {
 
 	private isSourceEvent(event: any): boolean {
 		const settings = this.bundle.settingsStore.currentSettings;
-		return !!event.extendedProps?.[settings.rruleProp];
+		return !!event.extendedProps?.frontmatterDisplayData?.[settings.rruleProp];
 	}
 
 	private isPhysicalEvent(event: any): boolean {
 		const settings = this.bundle.settingsStore.currentSettings;
-		return !!event.extendedProps?.[settings.rruleIdProp];
+		const frontmatter = event.extendedProps?.frontmatterDisplayData;
+		return !!frontmatter?.[settings.rruleIdProp] && !frontmatter?.[settings.rruleProp];
 	}
 
 	private isVirtualEvent(event: any): boolean {
@@ -46,12 +49,19 @@ export class EventContextMenu {
 
 	private getRRuleId(event: any): string | null {
 		const settings = this.bundle.settingsStore.currentSettings;
-		if (this.isPhysicalEvent(event)) {
-			return event.extendedProps[settings.rruleIdProp];
+		const frontmatter = event.extendedProps?.frontmatterDisplayData;
+
+		// Source events and physical events both have rruleIdProp in frontmatter
+		const rruleIdFromProp = frontmatter?.[settings.rruleIdProp];
+		if (rruleIdFromProp) {
+			return rruleIdFromProp;
 		}
+
+		// Virtual events have rruleId in meta
 		if (this.isVirtualEvent(event)) {
-			return event.extendedProps?.rruleId || null;
+			return frontmatter?.rruleId || null;
 		}
+
 		return null;
 	}
 
@@ -69,8 +79,7 @@ export class EventContextMenu {
 				});
 		});
 
-		// Add "Go to source" for virtual and physical events
-		if (this.isVirtualEvent(event) || this.isPhysicalEvent(event)) {
+		if (this.isPhysicalEvent(event)) {
 			menu.addItem((item) => {
 				item
 					.setTitle("Go to source")
@@ -81,14 +90,13 @@ export class EventContextMenu {
 			});
 		}
 
-		// Add "View recurring events" submenu for source and physical events
 		if (this.isSourceEvent(event) || this.isPhysicalEvent(event)) {
 			menu.addItem((item) => {
 				item
 					.setTitle("View recurring events")
 					.setIcon("calendar-range")
 					.onClick(() => {
-						this.showRecurringEventsMenu(e, event);
+						this.showRecurringEventsList(event);
 					});
 			});
 		}
@@ -318,86 +326,59 @@ export class EventContextMenu {
 	}
 
 	private goToSourceEvent(event: any): void {
-		let sourceFilePath: string | null = null;
+		const settings = this.bundle.settingsStore.currentSettings;
+		const frontmatter = event.extendedProps?.frontmatterDisplayData;
+		const sourceLink = frontmatter?.[settings.sourceProp];
 
-		// For physical events, get source from frontmatter
-		if (this.isPhysicalEvent(event)) {
-			const settings = this.bundle.settingsStore.currentSettings;
-			const sourceLink = event.extendedProps?.[settings.sourceProp];
-			if (typeof sourceLink === "string") {
-				// Extract file path from wiki link format: [[path/to/file]] or [[path/to/file|alias]]
-				const match = sourceLink.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
-				sourceFilePath = match?.[1] || null;
+		if (typeof sourceLink === "string") {
+			const sourceFilePath = getObsidianLinkPath(sourceLink);
+
+			if (sourceFilePath && sourceFilePath !== sourceLink) {
+				this.app.workspace.openLinkText(sourceFilePath, "", false);
+				return;
 			}
 		}
 
-		// For virtual events, source is the filePath
-		if (this.isVirtualEvent(event)) {
-			sourceFilePath = event.extendedProps?.filePath;
-		}
-
-		if (sourceFilePath) {
-			this.app.workspace.openLinkText(sourceFilePath, "", false);
-		} else {
-			new Notice("Source event not found");
-		}
+		new Notice("Source event not found");
 	}
 
-	private showRecurringEventsMenu(e: MouseEvent, event: any): void {
-		const menu = new Menu();
-		let rruleId: string | null = null;
-
-		// Get rruleId based on event type
-		if (this.isSourceEvent(event)) {
-			const settings = this.bundle.settingsStore.currentSettings;
-			rruleId = event.extendedProps?.[settings.rruleIdProp];
-		} else if (this.isPhysicalEvent(event)) {
-			rruleId = this.getRRuleId(event);
-		}
+	private showRecurringEventsList(event: any): void {
+		const rruleId = this.getRRuleId(event);
 
 		if (!rruleId) {
 			new Notice("No recurring event ID found");
 			return;
 		}
 
+		const sourceEventPath = this.bundle.recurringEventManager.getSourceEventPath(rruleId);
+		let sourceTitle = "Unknown Event";
+		if (sourceEventPath) {
+			const sourceFile = this.app.vault.getAbstractFileByPath(sourceEventPath);
+			if (sourceFile instanceof TFile) {
+				sourceTitle = sourceFile.basename;
+			}
+		}
+
 		// Get all physical instances for this recurring event
 		const physicalInstances = this.bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
 
 		if (physicalInstances.length === 0) {
-			menu.addItem((item) => {
-				item.setTitle("No physical instances found").setDisabled(true);
-			});
-		} else {
-			// Sort instances by date
-			const sortedInstances = [...physicalInstances].sort(
-				(a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis()
-			);
-
-			// Filter out the current event if it's a physical event
-			const currentFilePath = event.extendedProps?.filePath;
-			const filteredInstances = sortedInstances.filter(
-				(instance) => !currentFilePath || instance.filePath !== currentFilePath
-			);
-
-			if (filteredInstances.length === 0) {
-				menu.addItem((item) => {
-					item.setTitle("No other physical instances").setDisabled(true);
-				});
-			} else {
-				for (const instance of filteredInstances) {
-					const dateStr = instance.instanceDate.toFormat("yyyy-MM-dd");
-					menu.addItem((item) => {
-						item
-							.setTitle(dateStr)
-							.setIcon("calendar-days")
-							.onClick(() => {
-								this.app.workspace.openLinkText(instance.filePath, "", false);
-							});
-					});
-				}
-			}
+			new Notice("No physical instances found");
+			return;
 		}
 
-		menu.showAtMouseEvent(e);
+		// Get file titles for each instance
+		const instancesWithTitles = physicalInstances.map((instance) => {
+			const file = this.app.vault.getAbstractFileByPath(instance.filePath);
+			const title = file instanceof TFile ? file.basename : instance.filePath;
+			return {
+				filePath: instance.filePath,
+				instanceDate: instance.instanceDate,
+				title,
+			};
+		});
+
+		// Open the modal
+		new RecurringEventsListModal(this.app, instancesWithTitles, sourceTitle).open();
 	}
 }

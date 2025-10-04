@@ -42,14 +42,6 @@ export class EventPreviewModal extends Modal {
 			};
 		}
 
-		// Close button
-		const closeBtn = header.createEl("button", {
-			cls: "event-preview-close-btn",
-			attr: { "aria-label": "Close" },
-		});
-		closeBtn.innerHTML = "×";
-		closeBtn.onclick = () => this.close();
-
 		// Time and date section
 		const timeSection = contentEl.createDiv("event-preview-section event-preview-time-section");
 		this.renderTimeInfo(timeSection);
