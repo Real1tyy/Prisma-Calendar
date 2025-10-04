@@ -327,13 +327,13 @@
 	background: var(--background-primary);
 }
 
-/* Date headers in list view */
+/* Date headers in list view - compact */
 .custom-calendar-container .fc-list-day-cushion {
 	background: var(--background-secondary);
-	padding: 10px 16px;
-	font-weight: var(--font-weight-medium);
-	font-size: var(--font-ui-small);
-	color: var(--text-muted);
+	padding: 6px 12px;
+	font-weight: var(--font-weight-semibold);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-normal);
 	border-top: 1px solid var(--background-modifier-border);
 	border-bottom: 1px solid var(--background-modifier-border);
 	position: sticky;
@@ -372,91 +372,114 @@
 /* Event row container */
 .custom-calendar-container .fc-list-event {
 	cursor: pointer;
-	transition: all 0.1s ease;
-	border-bottom: 1px solid rgba(var(--mono-rgb-0), 0.05);
+	transition: all 0.15s ease;
+	border-bottom: 1px solid var(--background-modifier-border);
 	background: var(--background-primary);
 }
 
-.custom-calendar-container .fc-list-event:hover {
-	background: rgba(var(--mono-rgb-0), 0.02);
-	border-left: 2px solid var(--interactive-accent);
-	padding-left: 0;
+/* Apply event color to list view rows with transparency */
+.custom-calendar-container .fc-list-event.custom-calendar-event {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--event-color) 8%, var(--background-primary)) 0%,
+		var(--background-primary) 100%
+	);
+	border-left: 3px solid var(--event-color);
 }
 
-.custom-calendar-container .fc-list-event:active {
-	background: rgba(var(--mono-rgb-0), 0.04);
+/* Hover state - subtle blue accent, NO WHITE */
+.custom-calendar-container .fc-list-event.custom-calendar-event:hover,
+.custom-calendar-container .fc-list-event:hover,
+.custom-calendar-container tr.fc-list-event:hover,
+.custom-calendar-container tr.fc-list-event:hover td {
+	background: rgba(var(--interactive-accent-rgb), 0.08);
+	background-color: rgba(var(--interactive-accent-rgb), 0.08);
+	border-left-color: var(--interactive-accent);
 }
 
-/* Event row cells */
+/* Active/focus state - slightly more accent, still NO WHITE */
+.custom-calendar-container .fc-list-event.custom-calendar-event:active,
+.custom-calendar-container .fc-list-event.custom-calendar-event:focus,
+.custom-calendar-container .fc-list-event:active,
+.custom-calendar-container .fc-list-event:focus,
+.custom-calendar-container tr.fc-list-event:active td,
+.custom-calendar-container tr.fc-list-event:focus td {
+	background: rgba(var(--interactive-accent-rgb), 0.06);
+	background-color: rgba(var(--interactive-accent-rgb), 0.06);
+	outline: none;
+}
+
+/* Event row cells - more compact */
 .custom-calendar-container .fc-list-event > td {
-	padding: 10px 12px;
+	padding: 8px 12px;
 	border: none;
 }
 
-/* Event dot/graphic column */
+/* Event dot/graphic column - compact */
 .custom-calendar-container .fc-list-event-graphic {
-	padding: 10px 16px;
-	width: 40px;
-	min-width: 40px;
+	padding: 8px 10px;
+	width: 32px;
+	min-width: 32px;
 	text-align: center;
 }
 
-/* Event color dot */
+/* Event color dot - inherit event color */
 .custom-calendar-container .fc-list-event-dot {
 	width: 10px;
 	height: 10px;
 	border-radius: 50%;
 	display: inline-block;
 	border: 2px solid var(--background-primary);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-	transition: all 0.1s ease;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	transition: all 0.15s ease;
 }
 
 .custom-calendar-container .fc-list-event:hover .fc-list-event-dot {
-	transform: scale(1.1);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+	transform: scale(1.15);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-/* Event time column */
+/* Event time column - compact */
 .custom-calendar-container .fc-list-event-time {
-	width: 100px;
-	min-width: 100px;
-	padding: 10px 12px;
+	width: 90px;
+	min-width: 90px;
+	padding: 8px 10px;
 	color: var(--text-muted);
-	font-size: var(--font-ui-small);
+	font-size: var(--font-ui-smaller);
 	font-weight: var(--font-weight-medium);
 	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 }
 
-/* Event title/content column */
+/* Event title/content column - compact */
 .custom-calendar-container .fc-list-event-title {
-	padding: 10px 16px 10px 12px;
+	padding: 8px 12px;
 	color: var(--text-normal);
 	font-size: var(--font-ui-medium);
 }
 
-/* Event content wrapper */
+/* Event content wrapper - compact vertical layout */
 .custom-calendar-container .fc-list-event .fc-event-content-wrapper {
 	display: flex;
-	align-items: center;
-	gap: 12px;
-	flex-wrap: wrap;
-	padding: 2px 0;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	padding: 0;
 }
 
-/* Event title styling */
+/* Event title styling - prominent but compact */
 .custom-calendar-container .fc-list-event .fc-event-title-custom {
-	font-weight: var(--font-weight-normal);
+	font-weight: var(--font-weight-semibold);
 	color: var(--text-normal);
 	font-size: var(--font-ui-medium);
-	line-height: 1.4;
-	flex: 1 1 auto;
-	min-width: 200px;
+	line-height: 1.3;
+	width: 100%;
+	letter-spacing: 0.01em;
 }
 
 .custom-calendar-container .fc-list-event:hover .fc-event-title-custom {
-	font-weight: var(--font-weight-medium);
+	font-weight: var(--font-weight-bold);
+	color: var(--text-accent);
 }
 
 /* Hide default FullCalendar title */
@@ -464,39 +487,42 @@
 	display: none;
 }
 
-/* Event properties in list view */
+/* Event properties in list view - compact */
 .custom-calendar-container .fc-list-event .fc-event-props {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 6px;
+	gap: 4px;
 	align-items: center;
-	margin-top: 4px;
+	margin-top: 2px;
 	width: 100%;
 }
 
 .custom-calendar-container .fc-list-event .fc-event-prop {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
+	gap: 3px;
 	padding: 2px 6px;
 	background: rgba(var(--mono-rgb-0), 0.05);
 	border-radius: 3px;
-	font-size: var(--font-ui-smaller);
+	font-size: 11px;
 	color: var(--text-muted);
-	border: none;
+	border: 1px solid rgba(var(--mono-rgb-0), 0.08);
 }
 
 .custom-calendar-container .fc-list-event:hover .fc-event-prop {
 	background: rgba(var(--mono-rgb-0), 0.08);
+	border-color: rgba(var(--mono-rgb-0), 0.12);
 }
 
 .custom-calendar-container .fc-list-event .fc-event-prop-key {
 	font-weight: var(--font-weight-medium);
 	color: var(--text-muted);
+	opacity: 0.8;
 }
 
 .custom-calendar-container .fc-list-event .fc-event-prop-value {
 	color: var(--text-normal);
+	opacity: 0.9;
 }
 
 /* Property links in list view */
@@ -504,25 +530,25 @@
 	color: var(--text-accent);
 	text-decoration: none;
 	font-weight: var(--font-weight-medium);
-	padding: 2px 4px;
-	border-radius: 3px;
+	padding: 1px 3px;
+	border-radius: 2px;
 	transition: all 0.15s ease;
 }
 
 .custom-calendar-container .fc-list-event .fc-event-prop-link:hover {
-	background: var(--background-modifier-hover);
+	background: rgba(var(--interactive-accent-rgb), 0.1);
 	text-decoration: underline;
 	text-underline-offset: 2px;
 }
 
 /* Virtual events in list view */
 .custom-calendar-container .fc-list-event.virtual-event {
-	opacity: 0.6;
+	opacity: 0.5;
 	font-style: italic;
 }
 
 .custom-calendar-container .fc-list-event.virtual-event .fc-list-event-dot {
-	opacity: 0.5;
+	opacity: 0.4;
 	border-style: dashed;
 }
 
@@ -560,23 +586,23 @@
 
 /* Dark mode refinements for list view */
 .theme-dark .custom-calendar-container .fc-list-day-cushion {
-	background: rgba(var(--mono-rgb-100), 0.03);
+	background: var(--background-secondary);
 }
 
 .theme-dark .custom-calendar-container .fc-list-event:hover {
-	background: rgba(var(--mono-rgb-100), 0.04);
+	background: var(--background-modifier-hover);
 }
 
 .theme-dark .custom-calendar-container .fc-list-event-dot {
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .theme-dark .custom-calendar-container .fc-list-event .fc-event-prop {
-	background: rgba(var(--mono-rgb-100), 0.08);
+	background: var(--background-secondary);
 }
 
 .theme-dark .custom-calendar-container .fc-list-event:hover .fc-event-prop {
-	background: rgba(var(--mono-rgb-100), 0.12);
+	background: var(--background-modifier-hover);
 }
 
 /* Time grid styling */
