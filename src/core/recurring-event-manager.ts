@@ -262,10 +262,15 @@ export class RecurringEventManager extends ChangeNotifier {
 			return getNextOccurrence(latestInstanceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
 
-		// No existing future instances. Find the first valid occurrence that is on or after today.
+		// No existing future instances. Find the first valid start date (source date)
+		// then advance by one occurrence to exclude the source itself.
 		const now = DateTime.now();
-		let currentDate = this.findFirstValidStartDate(recurringEvent);
+		const sourceDate = this.findFirstValidStartDate(recurringEvent);
 
+		// Always skip the source date and start from the next occurrence
+		let currentDate = getNextOccurrence(sourceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
+
+		// If the next occurrence is still in the past, keep advancing until we reach today or later
 		while (currentDate < now.startOf("day")) {
 			currentDate = getNextOccurrence(currentDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
