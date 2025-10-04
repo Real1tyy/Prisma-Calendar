@@ -1,4 +1,5 @@
 import { type App, TFile } from "obsidian";
+import { getCalendarViewType } from "src/components/calendar-view";
 
 export const getTFileOrThrow = (app: App, path: string): TFile => {
 	const f = app.vault.getAbstractFileByPath(path);
@@ -23,4 +24,22 @@ export const restoreFrontmatter = async (app: App, file: TFile, original: Record
 			delete fm[k];
 		});
 		Object.assign(fm, original);
+	});
+
+export const emitHover = (
+	app: App,
+	containerEl: HTMLElement,
+	targetEl: HTMLElement,
+	jsEvent: MouseEvent,
+	linktext: string,
+	calendarId: string,
+	sourcePath?: string
+) =>
+	app.workspace.trigger("hover-link", {
+		event: jsEvent,
+		source: getCalendarViewType(calendarId),
+		hoverParent: containerEl,
+		targetEl,
+		linktext,
+		sourcePath: sourcePath ?? app.workspace.getActiveFile()?.path ?? "",
 	});

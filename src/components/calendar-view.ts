@@ -6,7 +6,9 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
 import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
 import { colord } from "colord";
-import { type App, ItemView, type WorkspaceLeaf } from "obsidian";
+import { ItemView, type WorkspaceLeaf } from "obsidian";
+import { toLocalISOString } from "src/utils/format";
+import { emitHover } from "src/utils/obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
 import type { SingleCalendarConfig } from "../types/index";
@@ -24,37 +26,6 @@ const CALENDAR_VIEW_TYPE = "custom-calendar-view";
 
 export function getCalendarViewType(calendarId: string): string {
 	return `${CALENDAR_VIEW_TYPE}-${calendarId}`;
-}
-
-function toLocalISOString(date: Date): string {
-	const year = date.getFullYear();
-	const month = String(date.getMonth() + 1).padStart(2, "0");
-	const day = String(date.getDate()).padStart(2, "0");
-	const hours = String(date.getHours()).padStart(2, "0");
-	const minutes = String(date.getMinutes()).padStart(2, "0");
-	const seconds = String(date.getSeconds()).padStart(2, "0");
-	const ms = String(date.getMilliseconds()).padStart(3, "0");
-
-	return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${ms}Z`;
-}
-
-function emitHover(
-	app: App,
-	containerEl: HTMLElement,
-	targetEl: HTMLElement,
-	jsEvent: MouseEvent,
-	linktext: string,
-	calendarId: string,
-	sourcePath?: string
-) {
-	app.workspace.trigger("hover-link", {
-		event: jsEvent,
-		source: getCalendarViewType(calendarId),
-		hoverParent: containerEl,
-		targetEl,
-		linktext,
-		sourcePath: sourcePath ?? app.workspace.getActiveFile()?.path ?? "",
-	});
 }
 
 export class CalendarView extends MountableView(ItemView) {
@@ -456,13 +427,12 @@ export class CalendarView extends MountableView(ItemView) {
 		if (!this.calendar) {
 			return;
 		}
+		const view = this.calendar.view;
+		if (!view) {
+			return;
+		}
 
 		try {
-			const view = this.calendar.view;
-			if (!view) {
-				return;
-			}
-
 			const start = view.activeStart.toISOString();
 			const end = view.activeEnd.toISOString();
 
@@ -517,7 +487,6 @@ export class CalendarView extends MountableView(ItemView) {
 	}
 
 	private renderEventContent(arg: EventContentArg): any {
-		const settings = this.bundle.settingsStore.currentSettings;
 		const event = arg.event;
 
 		const mainEl = document.createElement("div");
@@ -550,36 +519,46 @@ export class CalendarView extends MountableView(ItemView) {
 
 		container.appendChild(headerEl);
 
-		if (settings.frontmatterDisplayProperties.length > 0 && event.extendedProps.frontmatterDisplayData) {
+		const displayProperties = this.getDisplayProperties(event);
+		if (displayProperties.length > 0) {
 			const propsContainer = document.createElement("div");
 			propsContainer.className = "fc-event-props";
 
-			for (const prop of settings.frontmatterDisplayProperties) {
-				const value = event.extendedProps.frontmatterDisplayData[prop];
-				if (isNotEmpty(value)) {
-					const propEl = document.createElement("div");
-					propEl.className = "fc-event-prop";
+			for (const [prop, value] of displayProperties) {
+				const propEl = document.createElement("div");
+				propEl.className = "fc-event-prop";
 
-					const keyEl = document.createElement("span");
-					keyEl.className = "fc-event-prop-key";
-					keyEl.textContent = `${prop}:`;
-					propEl.appendChild(keyEl);
+				const keyEl = document.createElement("span");
+				keyEl.className = "fc-event-prop-key";
+				keyEl.textContent = `${prop}:`;
+				propEl.appendChild(keyEl);
 
-					const valueEl = document.createElement("span");
-					valueEl.className = "fc-event-prop-value";
-					this.renderPropertyValue(valueEl, value);
-					propEl.appendChild(valueEl);
+				const valueEl = document.createElement("span");
+				valueEl.className = "fc-event-prop-value";
+				this.renderPropertyValue(valueEl, value);
+				propEl.appendChild(valueEl);
 
-					propsContainer.appendChild(propEl);
-				}
+				propsContainer.appendChild(propEl);
 			}
-
-			if (propsContainer.children.length > 0) {
-				container.appendChild(propsContainer);
-			}
+			container.appendChild(propsContainer);
 		}
 
 		return { domNodes: [mainEl] };
+	}
+
+	private getDisplayProperties(event: { extendedProps: { frontmatterDisplayData?: any } }): [string, any][] {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const properties: [string, any][] = [];
+
+		if (settings.frontmatterDisplayProperties.length > 0 && event.extendedProps.frontmatterDisplayData) {
+			for (const prop of settings.frontmatterDisplayProperties) {
+				const value = event.extendedProps.frontmatterDisplayData[prop];
+				if (isNotEmpty(value)) {
+					properties.push([prop, value]);
+				}
+			}
+		}
+		return properties;
 	}
 
 	private renderPropertyValue(container: HTMLElement, value: any): void {
@@ -659,16 +638,12 @@ export class CalendarView extends MountableView(ItemView) {
 		// Add tooltip with file path and frontmatter display data
 		const tooltipParts = [`File: ${event.extendedProps.filePath}`];
 
-		// Add frontmatter display properties to tooltip
-		const tooltipSettings = this.bundle.settingsStore.currentSettings;
-		if (tooltipSettings.frontmatterDisplayProperties.length > 0 && event.extendedProps.frontmatterDisplayData) {
-			const displayData = event.extendedProps.frontmatterDisplayData;
-			for (const prop of tooltipSettings.frontmatterDisplayProperties) {
-				const value = displayData[prop];
-				if (isNotEmpty(value)) {
-					tooltipParts.push(`${prop}: ${value}`);
-				}
-			}
+		const displayProperties = this.getDisplayProperties(event);
+		for (const [prop, value] of displayProperties) {
+			// Note: The value might be an array or object, so we need to stringify it for the tooltip.
+			// Simple string interpolation `${value}` works for arrays but shows `[object Object]` for objects.
+			// The existing behavior is maintained here.
+			tooltipParts.push(`${prop}: ${value}`);
 		}
 
 		element.setAttribute("title", tooltipParts.join("\n"));

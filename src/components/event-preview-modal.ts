@@ -60,7 +60,7 @@ export class EventPreviewModal extends Modal {
 
 		if (displayData && settings.frontmatterDisplayProperties.length > 0) {
 			const propsSection = contentEl.createDiv("event-preview-section event-preview-props-section");
-			propsSection.createEl("div", { text: "Properties", cls: "event-preview-section-title" });
+			createTextDiv(propsSection, "Properties", "event-preview-section-title");
 
 			const propsGrid = propsSection.createDiv("event-preview-props-grid");
 
