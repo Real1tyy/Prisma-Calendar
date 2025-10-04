@@ -75,6 +75,15 @@ export class CalendarSettings {
 			);
 
 		new Setting(containerEl)
+			.setName("Skip underscore properties")
+			.setDesc("Hide frontmatter properties that start with underscore (e.g., _ZLID) in event previews and edit modals")
+			.addToggle((toggle) =>
+				toggle.setValue(settings.skipUnderscoreProperties).onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({ ...s, skipUnderscoreProperties: value }));
+				})
+			);
+
+		new Setting(containerEl)
 			.setName("Show current time indicator")
 			.setDesc("Display a line showing the current time in weekly and daily calendar views")
 			.addToggle((toggle) =>

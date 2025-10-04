@@ -124,7 +124,7 @@ export function getInternalProperties(settings: SingleCalendarConfig): Set<strin
 
 /**
  * Categorizes frontmatter properties into display and other properties based on settings.
- * Filters out internal properties that should not be shown.
+ * Filters out internal properties and optionally underscore-prefixed properties.
  */
 export function categorizeProperties(
 	frontmatter: Record<string, unknown>,
@@ -140,7 +140,13 @@ export function categorizeProperties(
 	const otherProperties: [string, unknown][] = [];
 
 	for (const [key, value] of Object.entries(frontmatter)) {
+		// Skip internal properties and empty values
 		if (internalProperties.has(key) || !isNotEmpty(value)) {
+			continue;
+		}
+
+		// Skip properties starting with underscore if configured
+		if (settings.skipUnderscoreProperties && key.startsWith("_")) {
 			continue;
 		}
 
