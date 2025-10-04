@@ -162,12 +162,7 @@ export class MoveEventCommand implements Command {
 	async undo(): Promise<void> {
 		if (!this.originalFrontmatter) return;
 		const file = getTFileOrThrow(this.app, this.filePath);
-		await withFrontmatter(this.app, file, (fm) => {
-			Object.keys(fm).forEach((k) => {
-				delete fm[k];
-			});
-			Object.assign(fm, this.originalFrontmatter!);
-		});
+		await restoreFrontmatter(this.app, file, this.originalFrontmatter);
 	}
 
 	getType() {
@@ -255,35 +250,21 @@ export class UpdateEventCommand implements Command {
 		}
 
 		const settings = this.bundle.settingsStore.currentSettings;
+
+		// Generate end time if not provided (e.g., when converting from all-day)
+		let endTime = this.newEnd;
+		if (!endTime && !this.newAllDay) {
+			const startDate = new Date(this.newStart);
+			startDate.setHours(startDate.getHours() + 1);
+			endTime = startDate.toISOString();
+		}
+
 		await withFrontmatter(this.app, file, (fm) => {
-			// Update allDay property if it changed
-			if (settings.allDayProp && this.newAllDay !== this.oldAllDay) {
-				fm[settings.allDayProp] = this.newAllDay;
-			}
-
-			if (this.newAllDay) {
-				// NOW ALL-DAY: Convert to dateProp, remove startProp/endProp
-				const dateOnly = this.newStart.split("T")[0];
-				fm[settings.dateProp] = dateOnly;
-				delete fm[settings.startProp];
-				delete fm[settings.endProp];
-			} else {
-				// NOW TIMED: Convert to startProp/endProp, remove dateProp
-				fm[settings.startProp] = this.newStart;
-
-				// Generate end time if not provided (e.g., when converting from all-day)
-				let endTime = this.newEnd;
-				if (!endTime) {
-					const startDate = new Date(this.newStart);
-					startDate.setHours(startDate.getHours() + 1);
-					endTime = startDate.toISOString();
-				}
-
-				if (settings.endProp) {
-					fm[settings.endProp] = endTime;
-				}
-				delete fm[settings.dateProp];
-			}
+			setEventBasics(fm, settings, {
+				start: this.newStart,
+				end: endTime,
+				allDay: this.newAllDay,
+			});
 		});
 	}
 
@@ -294,27 +275,11 @@ export class UpdateEventCommand implements Command {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		await withFrontmatter(this.app, file, (fm) => {
-			// Restore allDay property if it changed
-			if (settings.allDayProp && this.newAllDay !== this.oldAllDay) {
-				fm[settings.allDayProp] = this.oldAllDay;
-			}
-
-			if (this.oldAllDay) {
-				// WAS ALL-DAY: Restore dateProp, remove startProp/endProp
-				const dateOnly = this.oldStart.split("T")[0];
-				fm[settings.dateProp] = dateOnly;
-				delete fm[settings.startProp];
-				delete fm[settings.endProp];
-			} else {
-				// WAS TIMED: Restore startProp/endProp, remove dateProp
-				fm[settings.startProp] = this.oldStart;
-				if (this.oldEnd && settings.endProp) {
-					fm[settings.endProp] = this.oldEnd;
-				} else if (settings.endProp) {
-					delete fm[settings.endProp];
-				}
-				delete fm[settings.dateProp];
-			}
+			setEventBasics(fm, settings, {
+				start: this.oldStart,
+				end: this.oldEnd,
+				allDay: this.oldAllDay,
+			});
 		});
 	}
 
