@@ -30,6 +30,31 @@ export class EventContextMenu {
 		return filePath;
 	}
 
+	private isSourceEvent(event: any): boolean {
+		const settings = this.bundle.settingsStore.currentSettings;
+		return !!event.extendedProps?.[settings.rruleProp];
+	}
+
+	private isPhysicalEvent(event: any): boolean {
+		const settings = this.bundle.settingsStore.currentSettings;
+		return !!event.extendedProps?.[settings.rruleIdProp];
+	}
+
+	private isVirtualEvent(event: any): boolean {
+		return !!event.extendedProps?.isVirtual;
+	}
+
+	private getRRuleId(event: any): string | null {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (this.isPhysicalEvent(event)) {
+			return event.extendedProps[settings.rruleIdProp];
+		}
+		if (this.isVirtualEvent(event)) {
+			return event.extendedProps?.rruleId || null;
+		}
+		return null;
+	}
+
 	show(e: MouseEvent, info: any): void {
 		const menu = new Menu();
 		const event = info.event;
@@ -43,6 +68,30 @@ export class EventContextMenu {
 					this.openEventPreview(event);
 				});
 		});
+
+		// Add "Go to source" for virtual and physical events
+		if (this.isVirtualEvent(event) || this.isPhysicalEvent(event)) {
+			menu.addItem((item) => {
+				item
+					.setTitle("Go to source")
+					.setIcon("corner-up-left")
+					.onClick(() => {
+						this.goToSourceEvent(event);
+					});
+			});
+		}
+
+		// Add "View recurring events" submenu for source and physical events
+		if (this.isSourceEvent(event) || this.isPhysicalEvent(event)) {
+			menu.addItem((item) => {
+				item
+					.setTitle("View recurring events")
+					.setIcon("calendar-range")
+					.onClick(() => {
+						this.showRecurringEventsMenu(e, event);
+					});
+			});
+		}
 
 		menu.addSeparator();
 
@@ -266,5 +315,89 @@ export class EventContextMenu {
 			console.error("Failed to update event:", error);
 			new Notice("Failed to update event");
 		}
+	}
+
+	private goToSourceEvent(event: any): void {
+		let sourceFilePath: string | null = null;
+
+		// For physical events, get source from frontmatter
+		if (this.isPhysicalEvent(event)) {
+			const settings = this.bundle.settingsStore.currentSettings;
+			const sourceLink = event.extendedProps?.[settings.sourceProp];
+			if (typeof sourceLink === "string") {
+				// Extract file path from wiki link format: [[path/to/file]] or [[path/to/file|alias]]
+				const match = sourceLink.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
+				sourceFilePath = match?.[1] || null;
+			}
+		}
+
+		// For virtual events, source is the filePath
+		if (this.isVirtualEvent(event)) {
+			sourceFilePath = event.extendedProps?.filePath;
+		}
+
+		if (sourceFilePath) {
+			this.app.workspace.openLinkText(sourceFilePath, "", false);
+		} else {
+			new Notice("Source event not found");
+		}
+	}
+
+	private showRecurringEventsMenu(e: MouseEvent, event: any): void {
+		const menu = new Menu();
+		let rruleId: string | null = null;
+
+		// Get rruleId based on event type
+		if (this.isSourceEvent(event)) {
+			const settings = this.bundle.settingsStore.currentSettings;
+			rruleId = event.extendedProps?.[settings.rruleIdProp];
+		} else if (this.isPhysicalEvent(event)) {
+			rruleId = this.getRRuleId(event);
+		}
+
+		if (!rruleId) {
+			new Notice("No recurring event ID found");
+			return;
+		}
+
+		// Get all physical instances for this recurring event
+		const physicalInstances = this.bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
+
+		if (physicalInstances.length === 0) {
+			menu.addItem((item) => {
+				item.setTitle("No physical instances found").setDisabled(true);
+			});
+		} else {
+			// Sort instances by date
+			const sortedInstances = [...physicalInstances].sort(
+				(a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis()
+			);
+
+			// Filter out the current event if it's a physical event
+			const currentFilePath = event.extendedProps?.filePath;
+			const filteredInstances = sortedInstances.filter(
+				(instance) => !currentFilePath || instance.filePath !== currentFilePath
+			);
+
+			if (filteredInstances.length === 0) {
+				menu.addItem((item) => {
+					item.setTitle("No other physical instances").setDisabled(true);
+				});
+			} else {
+				for (const instance of filteredInstances) {
+					const dateStr = instance.instanceDate.toFormat("yyyy-MM-dd");
+					menu.addItem((item) => {
+						item
+							.setTitle(dateStr)
+							.setIcon("calendar-days")
+							.onClick(() => {
+								this.app.workspace.openLinkText(instance.filePath, "", false);
+							});
+					});
+				}
+			}
+		}
+
+		menu.showAtMouseEvent(e);
 	}
 }
