@@ -6,7 +6,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
 import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
 import { colord } from "colord";
-import { ItemView, type WorkspaceLeaf } from "obsidian";
+import { ItemView, TFile, type WorkspaceLeaf } from "obsidian";
 import { toLocalISOString } from "src/utils/format";
 import { emitHover } from "src/utils/obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
@@ -19,6 +19,7 @@ import { isNotEmpty } from "../utils/value-checks";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
+import { EventPreviewModal } from "./event-preview-modal";
 import { SkippedEventsModal } from "./skipped-events-modal";
 import { ZoomManager } from "./zoom-manager";
 
@@ -296,11 +297,10 @@ export class CalendarView extends MountableView(ItemView) {
 			},
 
 			eventClick: (info) => {
-				if (info.event.extendedProps.isVirtual) {
-					return;
-				}
 				if (this.batchSelectionManager?.isInSelectionMode()) {
-					this.batchSelectionManager.handleEventClick(info.event.id);
+					if (!info.event.extendedProps.isVirtual) {
+						this.batchSelectionManager.handleEventClick(info.event.id);
+					}
 				} else {
 					this.handleEventClick(info);
 				}
@@ -591,11 +591,33 @@ export class CalendarView extends MountableView(ItemView) {
 		return this.colorEvaluator.evaluateColor(frontmatter);
 	}
 
-	private handleEventClick(info: any): void {
-		const filePath = info.event.extendedProps.filePath;
+	private async handleEventClick(info: any): Promise<void> {
+		const event = info.event;
+		const filePath = event.extendedProps.filePath;
+		const isVirtual = event.extendedProps.isVirtual;
 
+		// For virtual events, show preview of the source event
+		if (isVirtual && filePath) {
+			const sourceFile = this.app.vault.getAbstractFileByPath(filePath);
+			if (sourceFile instanceof TFile) {
+				const cache = this.app.metadataCache.getFileCache(sourceFile);
+				if (cache?.frontmatter) {
+					// Create a pseudo-event object with source file data for the preview
+					const sourceEvent = {
+						title: event.title,
+						extendedProps: {
+							filePath: filePath,
+							frontmatterDisplayData: cache.frontmatter,
+						},
+					};
+					new EventPreviewModal(this.app, this.bundle, sourceEvent).open();
+					return;
+				}
+			}
+		}
+
+		// For regular and physical events, open the file
 		if (filePath) {
-			// Open the file in Obsidian
 			this.app.workspace.openLinkText(filePath, "", false);
 		}
 	}
