@@ -1,4 +1,4 @@
-import { type App, Modal } from "obsidian";
+import { type App, Modal, TFile } from "obsidian";
 import { calculateDuration } from "src/utils/format";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { createTextDiv } from "../utils/dom-utils";
@@ -9,6 +9,7 @@ import { isNotEmpty } from "../utils/value-checks";
 export class EventPreviewModal extends Modal {
 	private event: any;
 	private bundle: CalendarBundle;
+	private allFrontmatter: Record<string, unknown> = {};
 
 	constructor(app: App, bundle: CalendarBundle, event: any) {
 		super(app);
@@ -16,11 +17,29 @@ export class EventPreviewModal extends Modal {
 		this.event = event;
 	}
 
-	onOpen(): void {
+	async onOpen(): Promise<void> {
 		const { contentEl } = this;
 		contentEl.addClass("event-preview-modal");
 
+		await this.loadAllFrontmatter();
 		this.renderEventPreview();
+	}
+
+	private async loadAllFrontmatter(): Promise<void> {
+		try {
+			const filePath = this.event.extendedProps?.filePath;
+			if (!filePath) return;
+
+			const file = this.app.vault.getAbstractFileByPath(filePath);
+			if (!(file instanceof TFile)) return;
+
+			const cache = this.app.metadataCache.getFileCache(file);
+			if (cache?.frontmatter) {
+				this.allFrontmatter = { ...cache.frontmatter };
+			}
+		} catch (error) {
+			console.error("Error loading frontmatter:", error);
+		}
 	}
 
 	private renderEventPreview(): void {
@@ -54,28 +73,47 @@ export class EventPreviewModal extends Modal {
 		const timeSection = contentEl.createDiv("event-preview-section event-preview-time-section");
 		this.renderTimeInfo(timeSection);
 
-		// Frontmatter properties section
+		// Frontmatter properties section - show ALL properties
 		const settings = this.bundle.settingsStore.currentSettings;
-		const displayData = this.event.extendedProps?.frontmatterDisplayData;
 
-		if (displayData && settings.frontmatterDisplayProperties.length > 0) {
+		// Get known properties to filter out (same as edit modal)
+		const knownProperties = new Set([
+			settings.startProp,
+			settings.endProp,
+			settings.dateProp,
+			settings.allDayProp,
+			settings.skipProp,
+			settings.rruleProp,
+			settings.rruleSpecProp,
+			settings.rruleIdProp,
+			settings.sourceProp,
+			"position", // Internal Obsidian properties
+			"nodeRecurringInstanceDate", // Internal recurring event property
+		]);
+
+		if (settings.titleProp) {
+			knownProperties.add(settings.titleProp);
+		}
+		if (settings.zettelIdProp) {
+			knownProperties.add(settings.zettelIdProp);
+		}
+
+		// Filter out known properties and display all remaining ones
+		const customProperties: [string, unknown][] = [];
+		for (const [key, value] of Object.entries(this.allFrontmatter)) {
+			if (!knownProperties.has(key) && isNotEmpty(value)) {
+				customProperties.push([key, value]);
+			}
+		}
+
+		if (customProperties.length > 0) {
 			const propsSection = contentEl.createDiv("event-preview-section event-preview-props-section");
 			createTextDiv(propsSection, "Properties", "event-preview-section-title");
 
 			const propsGrid = propsSection.createDiv("event-preview-props-grid");
 
-			for (const prop of settings.frontmatterDisplayProperties) {
-				const value = displayData[prop];
-				if (isNotEmpty(value)) {
-					this.renderProperty(propsGrid, prop, value);
-				}
-			}
-
-			if (propsGrid.children.length === 0) {
-				propsSection.createEl("p", {
-					text: "No properties to display",
-					cls: "event-preview-empty-message",
-				});
+			for (const [key, value] of customProperties) {
+				this.renderProperty(propsGrid, key, value);
 			}
 		}
 	}
