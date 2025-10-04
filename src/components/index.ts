@@ -4,6 +4,6 @@ export { ConfirmationModal } from "./confirmation-modal";
 export { EventContextMenu } from "./event-context-menu";
 export { EventCreateModal, EventEditModal } from "./event-edit-modal";
 export { EventPreviewModal } from "./event-preview-modal";
-export { CustomCalendarSettingsTab } from "./settings-tab";
-export { SingleCalendarSettings } from "./single-calendar-settings";
+export { CustomCalendarSettingsTab } from "./settings/settings-tab";
+export { SingleCalendarSettings } from "./settings/single-calendar-settings";
 export { ZoomManager } from "./zoom-manager";

@@ -1,12 +1,12 @@
 import { type App, Modal, PluginSettingTab, Setting } from "obsidian";
-import { CalendarSettingsStore } from "../core/settings-store";
-import type CustomCalendarPlugin from "../main";
-import { MAX_CALENDARS } from "../types/settings";
+import { SETTINGS_DEFAULTS } from "../../constants";
+import { CalendarSettingsStore } from "../../core/settings-store";
+import type CustomCalendarPlugin from "../../main";
 import {
 	createDefaultCalendarConfig,
 	duplicateCalendarConfig,
 	generateUniqueCalendarId,
-} from "../utils/calendar-settings";
+} from "../../utils/calendar-settings";
 import { SingleCalendarSettings } from "./single-calendar-settings";
 
 export class CustomCalendarSettingsTab extends PluginSettingTab {
@@ -14,6 +14,27 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 	private selectedCalendarId: string = "default";
 	private calendarSettings: Map<string, SingleCalendarSettings> = new Map();
 	private calendarStores: Map<string, CalendarSettingsStore> = new Map();
+
+	private isAtMaxCalendars(): boolean {
+		return this.plugin.settingsStore.currentSettings.calendars.length >= SETTINGS_DEFAULTS.MAX_CALENDARS;
+	}
+
+	private configureMaxCalendarsButton(button: HTMLButtonElement): void {
+		if (this.isAtMaxCalendars()) {
+			button.disabled = true;
+			button.classList.add("calendar-button-disabled");
+			button.title = `Maximum ${SETTINGS_DEFAULTS.MAX_CALENDARS} calendars allowed`;
+		}
+	}
+
+	private configureMinCalendarsButton(button: HTMLButtonElement): void {
+		const settings = this.plugin.settingsStore.currentSettings;
+		if (settings.calendars.length <= 1) {
+			button.disabled = true;
+			button.classList.add("calendar-button-disabled");
+			button.title = "At least one calendar is required";
+		}
+	}
 
 	constructor(app: App, plugin: CustomCalendarPlugin) {
 		super(app, plugin);
@@ -71,12 +92,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			cls: "calendar-action-button calendar-create-button",
 		});
 
-		if (settings.calendars.length >= MAX_CALENDARS) {
-			createButton.disabled = true;
-			createButton.classList.add("calendar-button-disabled");
-			createButton.title = `Maximum ${MAX_CALENDARS} calendars allowed`;
-		}
-
+		this.configureMaxCalendarsButton(createButton);
 		createButton.addEventListener("click", () => this.createNewCalendar());
 
 		// Clone Calendar button
@@ -85,12 +101,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			cls: "calendar-action-button calendar-clone-button",
 		});
 
-		if (settings.calendars.length >= MAX_CALENDARS) {
-			cloneButton.disabled = true;
-			cloneButton.classList.add("calendar-button-disabled");
-			cloneButton.title = `Maximum ${MAX_CALENDARS} calendars allowed`;
-		}
-
+		this.configureMaxCalendarsButton(cloneButton);
 		cloneButton.addEventListener("click", () => this.cloneCurrentCalendar());
 
 		// Rename Calendar button
@@ -107,17 +118,12 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			cls: "calendar-action-button calendar-delete-button",
 		});
 
-		if (settings.calendars.length <= 1) {
-			deleteButton.disabled = true;
-			deleteButton.classList.add("calendar-button-disabled");
-			deleteButton.title = "At least one calendar is required";
-		}
-
+		this.configureMinCalendarsButton(deleteButton);
 		deleteButton.addEventListener("click", () => this.deleteCurrentCalendar());
 
 		// Calendar count info
 		const countInfo = headerContainer.createDiv("calendar-count-info");
-		countInfo.textContent = `${settings.calendars.length}/${MAX_CALENDARS} calendars`;
+		countInfo.textContent = `${settings.calendars.length}/${SETTINGS_DEFAULTS.MAX_CALENDARS} calendars`;
 	}
 
 	private renderSelectedCalendarSettings(): void {
@@ -164,8 +170,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 	private async createNewCalendar(): Promise<void> {
 		const settings = this.plugin.settingsStore.currentSettings;
-
-		if (settings.calendars.length >= MAX_CALENDARS) {
+		if (this.isAtMaxCalendars()) {
 			return;
 		}
 
@@ -185,8 +190,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 	private async cloneCurrentCalendar(): Promise<void> {
 		const settings = this.plugin.settingsStore.currentSettings;
-
-		if (settings.calendars.length >= MAX_CALENDARS) {
+		if (this.isAtMaxCalendars()) {
 			return;
 		}
 
@@ -211,7 +215,6 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 	private async deleteCurrentCalendar(): Promise<void> {
 		const settings = this.plugin.settingsStore.currentSettings;
-
 		if (settings.calendars.length <= 1) {
 			return;
 		}

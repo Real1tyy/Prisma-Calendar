@@ -1,5 +1,5 @@
+import { SETTINGS_DEFAULTS } from "src/constants";
 import {
-	BASE_NAME,
 	type CustomCalendarSettings,
 	CustomCalendarSettingsSchema,
 	type SingleCalendarConfig,
@@ -48,14 +48,14 @@ export function updateCalendarById(
 export function generateUniqueCalendarId(settings: CustomCalendarSettings): string {
 	const existingIds = new Set(settings.calendars.map((calendar) => calendar.id));
 
-	if (!existingIds.has(BASE_NAME)) {
-		return BASE_NAME;
+	if (!existingIds.has(SETTINGS_DEFAULTS.BASE_NAME)) {
+		return SETTINGS_DEFAULTS.BASE_NAME;
 	}
 
 	let counter = 2;
-	while (existingIds.has(`${BASE_NAME}-${counter}`)) {
+	while (existingIds.has(`${SETTINGS_DEFAULTS.BASE_NAME}-${counter}`)) {
 		counter++;
 	}
 
-	return `${BASE_NAME}-${counter}`;
+	return `${SETTINGS_DEFAULTS.BASE_NAME}-${counter}`;
 }
