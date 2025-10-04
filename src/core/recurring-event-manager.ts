@@ -161,12 +161,7 @@ export class RecurringEventManager {
 	}
 
 	private handleFileDeleted(event: IndexerEvent): void {
-		const { source } = event;
-		if (!source || !source.frontmatter) {
-			return;
-		}
-		const { frontmatter } = source;
-		const rruleId = frontmatter[this.settings.rruleIdProp] as string;
+		const rruleId = event.source?.frontmatter[this.settings.rruleIdProp] as string;
 		if (!rruleId) {
 			return;
 		}
