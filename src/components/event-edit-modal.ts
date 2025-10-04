@@ -1,35 +1,39 @@
 import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 
-function formatDateTimeForInputUTC(dateInput: string | Date): string {
-	// Convert to Date object if it's a string
-	const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+function formatDateTimeForInput(dateInput: string | Date): string {
+	// Strip Z suffix if present to treat as local time
+	const dateStr = typeof dateInput === "string" ? dateInput.replace(/Z$/, "") : dateInput;
+	const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
 
-	// Extract UTC components directly
-	const year = date.getUTCFullYear();
-	const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-	const day = String(date.getUTCDate()).padStart(2, "0");
-	const hours = String(date.getUTCHours()).padStart(2, "0");
-	const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+	// Extract local time components (no UTC conversion)
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
+	const hours = String(date.getHours()).padStart(2, "0");
+	const minutes = String(date.getMinutes()).padStart(2, "0");
 
 	return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 function formatDateOnly(dateInput: string | Date): string {
-	const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
-	// Use UTC components to avoid timezone conversion
-	const year = date.getUTCFullYear();
-	const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-	const day = String(date.getUTCDate()).padStart(2, "0");
+	// Strip Z suffix if present to treat as local time
+	const dateStr = typeof dateInput === "string" ? dateInput.replace(/Z$/, "") : dateInput;
+	const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
+
+	// Use local time components
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
 	return `${year}-${month}-${day}`;
 }
 
 /**
- * Converts datetime-local input value to UTC ISO string without timezone conversion.
+ * Converts datetime-local input value to ISO string with Z suffix (treating as local time).
  * Takes "2025-10-03T17:30" and returns "2025-10-03T17:30:00.000Z"
  */
-function inputValueToISOStringUTC(inputValue: string): string {
-	// Append seconds and Z to make it a UTC ISO string
+function inputValueToISOString(inputValue: string): string {
+	// Append seconds and Z to maintain consistent format (Z is ignored, time is treated as local)
 	return `${inputValue}:00.000Z`;
 }
 
@@ -128,7 +132,7 @@ abstract class BaseEventModal extends Modal {
 		startContainer.createEl("div", { text: "Start Date", cls: "setting-item-name" });
 		this.startInput = startContainer.createEl("input", {
 			type: "datetime-local",
-			value: this.event.start ? formatDateTimeForInputUTC(this.event.start) : "",
+			value: this.event.start ? formatDateTimeForInput(this.event.start) : "",
 			cls: "setting-item-control",
 		});
 
@@ -137,7 +141,7 @@ abstract class BaseEventModal extends Modal {
 		endContainer.createEl("div", { text: "End Date", cls: "setting-item-name" });
 		this.endInput = endContainer.createEl("input", {
 			type: "datetime-local",
-			value: this.event.end ? formatDateTimeForInputUTC(this.event.end) : "",
+			value: this.event.end ? formatDateTimeForInput(this.event.end) : "",
 			cls: "setting-item-control",
 		});
 
@@ -236,14 +240,14 @@ abstract class BaseEventModal extends Modal {
 			end = `${this.dateInput.value}T23:59:59`;
 		} else {
 			// TIMED EVENT: Use startProp/endProp, clear dateProp
-			preservedFrontmatter[settings.startProp] = inputValueToISOStringUTC(this.startInput.value);
+			preservedFrontmatter[settings.startProp] = inputValueToISOString(this.startInput.value);
 			if (this.endInput.value) {
-				preservedFrontmatter[settings.endProp] = inputValueToISOStringUTC(this.endInput.value);
+				preservedFrontmatter[settings.endProp] = inputValueToISOString(this.endInput.value);
 			}
 			delete preservedFrontmatter[settings.dateProp];
 
-			start = inputValueToISOStringUTC(this.startInput.value);
-			end = this.endInput.value ? inputValueToISOStringUTC(this.endInput.value) : null;
+			start = inputValueToISOString(this.startInput.value);
+			end = this.endInput.value ? inputValueToISOString(this.endInput.value) : null;
 		}
 
 		const eventData: EventSaveData = {

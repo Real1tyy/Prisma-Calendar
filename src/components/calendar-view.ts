@@ -25,6 +25,18 @@ export function getCalendarViewType(calendarId: string): string {
 	return `${CALENDAR_VIEW_TYPE}-${calendarId}`;
 }
 
+function toLocalISOString(date: Date): string {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
+	const hours = String(date.getHours()).padStart(2, "0");
+	const minutes = String(date.getMinutes()).padStart(2, "0");
+	const seconds = String(date.getSeconds()).padStart(2, "0");
+	const ms = String(date.getMilliseconds()).padStart(3, "0");
+
+	return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${ms}Z`;
+}
+
 function emitHover(
 	app: App,
 	containerEl: HTMLElement,
@@ -239,7 +251,7 @@ export class CalendarView extends MountableView(ItemView) {
 		this.calendar = new Calendar(container, {
 			plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
 
-			timeZone: "UTC",
+			timeZone: "local",
 
 			initialView: settings.defaultView,
 
@@ -394,7 +406,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private updateCalendarSettings(settings: SingleCalendarConfig): void {
 		if (!this.calendar) return;
 
-		this.calendar.setOption("timeZone", "UTC");
+		this.calendar.setOption("timeZone", "local");
 		this.calendar.setOption("slotMinTime", `${String(settings.hourStart).padStart(2, "0")}:00:00`);
 		this.calendar.setOption("slotMaxTime", `${String(settings.hourEnd).padStart(2, "0")}:00:00`);
 
@@ -442,11 +454,15 @@ export class CalendarView extends MountableView(ItemView) {
 				}
 				const eventColor = this.getEventColor(event);
 
+				// Strip Z suffix to treat times as naive local times (no timezone conversion)
+				const start = event.start.replace(/Z$/, "");
+				const end = event.end ? event.end.replace(/Z$/, "") : event.end;
+
 				return {
 					id: event.id,
 					title: event.title, // Keep original title for search/filtering
-					start: event.start,
-					end: event.end,
+					start: start,
+					end: end,
 					allDay: event.allDay,
 					extendedProps: {
 						filePath: event.ref.filePath,
@@ -644,7 +660,7 @@ export class CalendarView extends MountableView(ItemView) {
 		// Create a mock event object for the modal
 		const newEvent: any = {
 			title: "",
-			start: clickedDate.toISOString(),
+			start: toLocalISOString(clickedDate),
 			allDay: isAllDay,
 			extendedProps: {
 				filePath: null, // Will be created
@@ -655,7 +671,7 @@ export class CalendarView extends MountableView(ItemView) {
 		if (!isAllDay) {
 			const endDate = new Date(clickedDate);
 			endDate.setHours(endDate.getHours() + 1);
-			newEvent.end = endDate.toISOString();
+			newEvent.end = toLocalISOString(endDate);
 		}
 
 		new EventCreateModal(this.app, this.bundle, newEvent, (eventData) => {
@@ -668,7 +684,7 @@ export class CalendarView extends MountableView(ItemView) {
 		try {
 			const commandEventData: EventData = {
 				filePath: null,
-				title: eventData.title || `Event ${clickedDate.toISOString().split("T")[0]}`,
+				title: eventData.title || `Event ${toLocalISOString(clickedDate).split("T")[0]}`,
 				start: eventData.start,
 				end: eventData.end,
 				allDay: eventData.allDay,
@@ -700,11 +716,11 @@ export class CalendarView extends MountableView(ItemView) {
 				this.app,
 				this.bundle,
 				filePath,
-				info.event.start.toISOString(),
-				info.event.end?.toISOString(),
+				toLocalISOString(info.event.start),
+				info.event.end ? toLocalISOString(info.event.end) : undefined,
 				info.event.allDay || false,
-				info.oldEvent.start.toISOString(),
-				info.oldEvent.end?.toISOString(),
+				toLocalISOString(info.oldEvent.start),
+				info.oldEvent.end ? toLocalISOString(info.oldEvent.end) : undefined,
 				info.oldEvent.allDay || false
 			);
 
@@ -733,11 +749,11 @@ export class CalendarView extends MountableView(ItemView) {
 				this.app,
 				this.bundle,
 				filePath,
-				info.event.start.toISOString(),
-				info.event.end?.toISOString(),
+				toLocalISOString(info.event.start),
+				info.event.end ? toLocalISOString(info.event.end) : undefined,
 				info.event.allDay || false,
-				info.oldEvent.start.toISOString(),
-				info.oldEvent.end?.toISOString(),
+				toLocalISOString(info.oldEvent.start),
+				info.oldEvent.end ? toLocalISOString(info.oldEvent.end) : undefined,
 				info.oldEvent.allDay || false
 			);
 
