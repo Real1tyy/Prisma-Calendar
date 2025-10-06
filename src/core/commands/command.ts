@@ -33,9 +33,14 @@ export interface Command {
 /**
  * Macro command that groups multiple commands into a single undoable unit.
  * Perfect for batch operations where multiple events are modified together.
+ *
+ * Executes commands individually and continues on failure, collecting errors
+ * to report at the end. Only successfully executed commands are tracked for undo.
  */
 export class MacroCommand implements Command {
 	private commands: Command[] = [];
+	private executedCommands: Command[] = [];
+	private executionErrors: Array<{ command: Command; error: Error }> = [];
 
 	constructor(commands: Command[] = []) {
 		this.commands = [...commands];
@@ -46,16 +51,42 @@ export class MacroCommand implements Command {
 	}
 
 	async execute(): Promise<void> {
-		// Execute all commands in order
+		this.executedCommands = [];
+		this.executionErrors = [];
+
+		// Execute all commands, continuing on failure
 		for (const command of this.commands) {
-			await command.execute();
+			try {
+				await command.execute();
+				this.executedCommands.push(command);
+			} catch (error) {
+				const errorObj = error instanceof Error ? error : new Error(String(error));
+				this.executionErrors.push({ command, error: errorObj });
+				console.warn(`Command ${command.getType()} failed:`, errorObj.message);
+			}
+		}
+
+		// If some commands failed, throw an error with details
+		if (this.executionErrors.length > 0) {
+			const successCount = this.executedCommands.length;
+			const failCount = this.executionErrors.length;
+			const totalCount = this.commands.length;
+
+			if (successCount === 0) {
+				// All commands failed
+				throw new Error(`All ${totalCount} operations failed`);
+			}
+
+			// Some commands succeeded, some failed
+			const errorMessages = this.executionErrors.map((e) => e.error.message).join("; ");
+			throw new Error(`Completed ${successCount}/${totalCount} operations. ${failCount} failed: ${errorMessages}`);
 		}
 	}
 
 	async undo(): Promise<void> {
-		// Undo all commands in reverse order
-		for (let i = this.commands.length - 1; i >= 0; i--) {
-			await this.commands[i].undo();
+		// Only undo commands that were successfully executed
+		for (let i = this.executedCommands.length - 1; i >= 0; i--) {
+			await this.executedCommands[i].undo();
 		}
 	}
 
@@ -64,8 +95,8 @@ export class MacroCommand implements Command {
 	}
 
 	async canUndo(): Promise<boolean> {
-		// All sub-commands must be undoable
-		for (const command of this.commands) {
+		// Only check commands that were successfully executed
+		for (const command of this.executedCommands) {
 			if (command.canUndo && !(await command.canUndo())) {
 				return false;
 			}
@@ -79,5 +110,17 @@ export class MacroCommand implements Command {
 
 	isEmpty(): boolean {
 		return this.commands.length === 0;
+	}
+
+	getExecutionSummary(): {
+		successCount: number;
+		failCount: number;
+		errors: Array<{ command: Command; error: Error }>;
+	} {
+		return {
+			successCount: this.executedCommands.length,
+			failCount: this.executionErrors.length,
+			errors: [...this.executionErrors],
+		};
 	}
 }

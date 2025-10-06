@@ -58,7 +58,18 @@ export class BatchSelectionManager {
 			if (postHook) postHook();
 		} catch (error) {
 			console.error(`Failed operation: ${errorMessage}`, error);
-			new Notice(errorMessage);
+
+			// Check if this is a partial failure (some succeeded)
+			const errorMsg = error instanceof Error ? error.message : String(error);
+			if (errorMsg.includes("Completed")) {
+				// Partial success - show the detailed message
+				new Notice(errorMsg, 6000);
+				this.clearSelection();
+				this.calendar.refetchEvents();
+			} else {
+				// Complete failure
+				new Notice(errorMsg);
+			}
 		}
 	}
 
@@ -86,7 +97,34 @@ export class BatchSelectionManager {
 		});
 		confirmBtn.onclick = async () => {
 			confirmModal.close();
-			await this.executeWithSelection(commandFactory, successMessage, errorMessage);
+
+			// Use the same logic as executeWithSelection
+			if (this.returnIfEmpty()) return;
+
+			try {
+				const filePaths = Array.from(this.selectedEvents.values()).map((event) => event.filePath);
+				const command = commandFactory(filePaths);
+
+				await this.bundle.commandManager.executeCommand(command);
+
+				new Notice(successMessage(filePaths.length));
+				this.clearSelection();
+				this.calendar.refetchEvents();
+			} catch (error) {
+				console.error(`Failed operation: ${errorMessage}`, error);
+
+				// Check if this is a partial failure (some succeeded)
+				const errorMsg = error instanceof Error ? error.message : String(error);
+				if (errorMsg.includes("Completed")) {
+					// Partial success - show the detailed message
+					new Notice(errorMsg, 6000);
+					this.clearSelection();
+					this.calendar.refetchEvents();
+				} else {
+					// Complete failure
+					new Notice(errorMsg);
+				}
+			}
 		};
 
 		confirmModal.open();
