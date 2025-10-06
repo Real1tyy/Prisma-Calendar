@@ -12,22 +12,28 @@ export class RecurringEventsListModal extends Modal {
 	private hidePastEvents = true;
 	private contentContainer: HTMLElement | null = null;
 	private sourceTitle: string;
+	private sourceFilePath: string;
 
-	constructor(app: App, instances: RecurringEventInstance[], sourceTitle: string) {
+	constructor(app: App, instances: RecurringEventInstance[], sourceTitle: string, sourceFilePath: string) {
 		super(app);
 		this.instances = instances;
 		this.sourceTitle = sourceTitle;
+		this.sourceFilePath = sourceFilePath;
 	}
 
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.addClass("recurring-events-list-modal");
 
-		// Header
+		// Header with source title as clickable link
 		const header = contentEl.createDiv("recurring-events-list-header");
-		// Remove ZettelID from title if it exists
 		const cleanTitle = this.sourceTitle.replace(/-\d{14}$/, "");
-		header.createEl("h2", { text: `Recurring Event Instances: ${cleanTitle}` });
+		const titleEl = header.createEl("h2", { text: cleanTitle });
+		titleEl.addClass("recurring-events-source-title");
+		titleEl.onclick = () => {
+			this.app.workspace.openLinkText(this.sourceFilePath, "", false);
+			this.close();
+		};
 
 		// Filter toggle
 		new Setting(contentEl)
@@ -53,8 +59,8 @@ export class RecurringEventsListModal extends Modal {
 
 		const now = DateTime.now();
 
-		// Filter and sort instances
-		let filteredInstances = [...this.instances];
+		// Filter out source and sort instances
+		let filteredInstances = [...this.instances].filter((instance) => instance.filePath !== this.sourceFilePath);
 
 		if (this.hidePastEvents) {
 			filteredInstances = filteredInstances.filter((instance) => instance.instanceDate >= now.startOf("day"));

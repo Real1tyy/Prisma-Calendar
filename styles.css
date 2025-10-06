@@ -1700,8 +1700,18 @@
 	text-align: center;
 }
 
-.recurring-events-list-header h2 {
+.recurring-events-source-title {
 	margin: 0 0 0.5rem 0;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	padding: 0.5rem;
+	border-radius: 6px;
+}
+
+.recurring-events-source-title:hover {
+	color: var(--text-accent);
+	background-color: var(--background-modifier-hover);
+	transform: translateY(-1px);
 }
 
 .recurring-events-list-modal .setting-item {

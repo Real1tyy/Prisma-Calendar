@@ -353,11 +353,14 @@ export class EventContextMenu {
 
 		const sourceEventPath = this.bundle.recurringEventManager.getSourceEventPath(rruleId);
 		let sourceTitle = "Unknown Event";
-		if (sourceEventPath) {
-			const sourceFile = this.app.vault.getAbstractFileByPath(sourceEventPath);
-			if (sourceFile instanceof TFile) {
-				sourceTitle = sourceFile.basename;
-			}
+		if (!sourceEventPath) {
+			new Notice("Source event not found");
+			return;
+		}
+
+		const sourceFile = this.app.vault.getAbstractFileByPath(sourceEventPath);
+		if (sourceFile instanceof TFile) {
+			sourceTitle = sourceFile.basename;
 		}
 
 		// Get all physical instances for this recurring event
@@ -380,6 +383,6 @@ export class EventContextMenu {
 		});
 
 		// Open the modal
-		new RecurringEventsListModal(this.app, instancesWithTitles, sourceTitle).open();
+		new RecurringEventsListModal(this.app, instancesWithTitles, sourceTitle, sourceEventPath).open();
 	}
 }
