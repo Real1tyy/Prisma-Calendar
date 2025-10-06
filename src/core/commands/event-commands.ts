@@ -1,7 +1,6 @@
-import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
-import { applyStartEndOffsets, setEventBasics } from "../../utils/calendar-events";
+import { applyStartEndOffsets, generateUniqueEventPath, setEventBasics } from "../../utils/calendar-events";
 import { sanitizeForFilename } from "../../utils/file-utils";
 import { getInternalProperties } from "../../utils/format";
 import { backupFrontmatter, getTFileOrThrow, restoreFrontmatter, withFrontmatter } from "../../utils/obsidian";
@@ -37,8 +36,8 @@ export class CreateEventCommand implements Command {
 		}
 
 		const title = this.eventData.title || `Event ${this.clickedDate?.toISOString().split("T")[0]}`;
-		const zettelId = generateZettelId();
-		const filename = `${sanitizeForFilename(title)}-${zettelId}`;
+		const sanitizedTitle = sanitizeForFilename(title);
+		const { filename } = generateUniqueEventPath(this.app, this.targetDirectory, sanitizedTitle);
 
 		const file = await this.bundle.templateService.createFile({
 			title,
@@ -213,16 +212,15 @@ export class CloneEventCommand implements Command {
 		const src = getTFileOrThrow(this.app, this.sourceFilePath);
 		const content = await this.app.vault.read(src);
 
-		const zettelId = generateZettelId();
 		// Remove existing ZettelID from basename and replace with new one
 		const baseNameWithoutZettel = src.basename.replace(/-\d{14}$/, "");
-		const newName = `${baseNameWithoutZettel}-${zettelId}.md`;
-		const newPath = src.parent ? `${src.parent.path}/${newName}` : newName;
+		const directory = src.parent?.path || "";
+		const { fullPath, zettelId } = generateUniqueEventPath(this.app, directory, baseNameWithoutZettel);
 
-		await this.app.vault.create(newPath, content);
-		this.clonedFilePath = newPath;
+		await this.app.vault.create(fullPath, content);
+		this.clonedFilePath = fullPath;
 
-		const cloned = this.app.vault.getAbstractFileByPath(newPath);
+		const cloned = this.app.vault.getAbstractFileByPath(fullPath);
 		if (!(cloned instanceof TFile)) return;
 
 		const settings = this.bundle.settingsStore.currentSettings;

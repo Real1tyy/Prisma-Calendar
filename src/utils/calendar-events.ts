@@ -1,4 +1,6 @@
+import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
 import { nanoid } from "nanoid";
+import type { App } from "obsidian";
 import type { SingleCalendarConfig } from "../types";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
@@ -60,6 +62,51 @@ export const setEventBasics = (
 
 export const generateUniqueRruleId = (): string => {
 	return `${Date.now()}-${nanoid(5)}`;
+};
+
+/**
+ * Generates a unique ZettelID by checking if the resulting path already exists.
+ * If it does, increments the ID until an unused one is found.
+ */
+export const generateUniqueZettelId = (app: App, basePath: string, baseNameWithoutZettel: string): string => {
+	let zettelIdStr = String(generateZettelId());
+	let attempts = 0;
+	const maxAttempts = 1000;
+
+	while (attempts < maxAttempts) {
+		const testPath = `${basePath}${baseNameWithoutZettel}-${zettelIdStr}.md`;
+		const existing = app.vault.getAbstractFileByPath(testPath);
+
+		if (!existing) {
+			return zettelIdStr;
+		}
+
+		// Increment the zettelId (it's a 14-digit number as a string)
+		const numericId = Number.parseInt(zettelIdStr, 10);
+		const incrementedId = numericId + 1;
+		zettelIdStr = incrementedId.toString().padStart(14, "0");
+		attempts++;
+	}
+
+	// Fallback: use timestamp with random suffix
+	return `${String(generateZettelId())}${Math.floor(Math.random() * 1000)}`;
+};
+
+/**
+ * Generates a unique file path with ZettelID for event files.
+ * Returns both the filename and full path with a guaranteed unique ZettelID.
+ */
+export const generateUniqueEventPath = (
+	app: App,
+	directory: string,
+	baseName: string
+): { filename: string; fullPath: string; zettelId: string } => {
+	const basePath = directory ? `${directory}/` : "";
+	const zettelId = generateUniqueZettelId(app, basePath, baseName);
+	const filename = `${baseName}-${zettelId}`;
+	const fullPath = `${basePath}${filename}.md`;
+
+	return { filename, fullPath, zettelId };
 };
 
 // Safe ISO shift (stays ISO even if undefined)
