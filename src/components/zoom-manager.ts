@@ -46,6 +46,8 @@ export class ZoomManager {
 
 		if (isTimeGridView) {
 			// Show button and update text for time-based views
+			// Clear any existing content first to prevent duplication
+			button.textContent = "";
 			button.textContent = this.getZoomLevelText();
 			button.classList.remove("zoom-button-hidden");
 			button.classList.add("zoom-button-visible");
@@ -138,7 +140,7 @@ export class ZoomManager {
 
 	createZoomLevelButton(): { text: string; click: (e: MouseEvent) => void } {
 		return {
-			text: this.getZoomLevelText(),
+			text: "", // Empty - updateZoomLevelButton() will set the actual text
 			click: (e: MouseEvent) => {
 				this.showZoomMenu(e);
 			},
