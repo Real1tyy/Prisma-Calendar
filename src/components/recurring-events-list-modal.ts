@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { type App, Modal, Setting } from "obsidian";
+import { removeZettelId } from "../utils/calendar-events";
 
 interface RecurringEventInstance {
 	filePath: string;
@@ -27,7 +28,7 @@ export class RecurringEventsListModal extends Modal {
 
 		// Header with source title as clickable link
 		const header = contentEl.createDiv("recurring-events-list-header");
-		const cleanTitle = this.sourceTitle.replace(/-\d{14}$/, "");
+		const cleanTitle = removeZettelId(this.sourceTitle);
 		const titleEl = header.createEl("h2", { text: cleanTitle });
 		titleEl.addClass("recurring-events-source-title");
 		titleEl.onclick = () => {
@@ -85,7 +86,7 @@ export class RecurringEventsListModal extends Modal {
 			dateEl.textContent = instance.instanceDate.toFormat("yyyy-MM-dd (EEE)");
 
 			const titleEl = row.createDiv("recurring-event-title");
-			const cleanTitle = instance.title.replace(/-\d{14}$/, "");
+			const cleanTitle = removeZettelId(instance.title);
 			titleEl.textContent = cleanTitle;
 
 			row.onclick = () => {

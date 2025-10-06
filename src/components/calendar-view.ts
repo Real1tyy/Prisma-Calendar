@@ -10,6 +10,7 @@ import { ItemView, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
 import type { SingleCalendarConfig } from "../types/index";
+import { removeZettelId } from "../utils/calendar-events";
 import { ColorEvaluator, parseColor } from "../utils/colors";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
@@ -521,9 +522,8 @@ export class CalendarView extends MountableView(ItemView) {
 		const titleEl = document.createElement("div");
 		titleEl.className = "fc-event-title-custom";
 		let title = event.title;
-		// Remove ZettelID from title if it exists
 		if (title) {
-			title = title.replace(/-\d{14}$/, "");
+			title = removeZettelId(title);
 		}
 		titleEl.textContent = title;
 		headerEl.appendChild(titleEl);

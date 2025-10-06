@@ -1,6 +1,12 @@
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
-import { applyStartEndOffsets, generateUniqueEventPath, setEventBasics } from "../../utils/calendar-events";
+import {
+	applyStartEndOffsets,
+	ensureFileHasZettelId,
+	generateUniqueEventPath,
+	removeZettelId,
+	setEventBasics,
+} from "../../utils/calendar-events";
 import { sanitizeForFilename } from "../../utils/file-utils";
 import { getInternalProperties } from "../../utils/format";
 import { backupFrontmatter, getTFileOrThrow, restoreFrontmatter, withFrontmatter } from "../../utils/obsidian";
@@ -209,11 +215,16 @@ export class CloneEventCommand implements Command {
 			const existing = this.app.vault.getAbstractFileByPath(this.clonedFilePath);
 			if (existing instanceof TFile) return;
 		}
-		const src = getTFileOrThrow(this.app, this.sourceFilePath);
-		const content = await this.app.vault.read(src);
 
-		// Remove existing ZettelID from basename and replace with new one
-		const baseNameWithoutZettel = src.basename.replace(/-\d{14}$/, "");
+		let src = getTFileOrThrow(this.app, this.sourceFilePath);
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		// Ensure source file has ZettelID (embed if missing)
+		const sourceResult = await ensureFileHasZettelId(this.app, src, settings.zettelIdProp);
+		src = sourceResult.file;
+
+		const content = await this.app.vault.read(src);
+		const baseNameWithoutZettel = removeZettelId(src.basename);
 		const directory = src.parent?.path || "";
 		const { fullPath, zettelId } = generateUniqueEventPath(this.app, directory, baseNameWithoutZettel);
 
@@ -223,7 +234,6 @@ export class CloneEventCommand implements Command {
 		const cloned = this.app.vault.getAbstractFileByPath(fullPath);
 		if (!(cloned instanceof TFile)) return;
 
-		const settings = this.bundle.settingsStore.currentSettings;
 		await withFrontmatter(this.app, cloned, (fm) => {
 			applyStartEndOffsets(fm, settings, this.startOffset, this.endOffset);
 			if (settings.zettelIdProp) {

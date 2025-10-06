@@ -1,12 +1,12 @@
 import { getNextOccurrence, iterateOccurrencesInRange } from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
 import { createFileLink } from "@real1ty-obsidian-plugins/utils/file-operations";
-import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
+import { generateUniqueZettelId, removeZettelId } from "../utils/calendar-events";
 import { ChangeNotifier } from "../utils/change-notifier";
 import { sanitizeForFilename } from "../utils/file-utils";
 import { applySourceTimeToInstanceDate } from "../utils/format";
@@ -523,16 +523,16 @@ export class RecurringEventManager extends ChangeNotifier {
 
 	private generateNodeInstanceFilePath(recurringEvent: NodeRecurringEvent, instanceDate: DateTime): string {
 		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
+		const titleWithoutZettel = removeZettelId(recurringEvent.title);
+		const instanceBaseName = `${titleWithoutZettel} ${dateStr}`;
+		const sanitizedBaseName = sanitizeForFilename(instanceBaseName);
 
-		// Strip ZettelID from recurring event title and generate new one for this instance
-		const titleWithoutZettel = recurringEvent.title.replace(/-\d{14}$/, "");
-		const newZettelId = generateZettelId();
-		const instanceTitle = `${titleWithoutZettel} ${dateStr}-${newZettelId}`;
-
-		const sanitizedTitle = sanitizeForFilename(instanceTitle);
-
+		// Use generateUniqueZettelId to ensure no collisions when creating multiple instances
 		const folderPath = this.settings.directory ? `${this.settings.directory}/` : "";
-		return `${folderPath}${sanitizedTitle}.md`;
+		const zettelId = generateUniqueZettelId(this.app, folderPath, sanitizedBaseName);
+		const instanceTitle = `${sanitizedBaseName}-${zettelId}`;
+
+		return `${folderPath}${instanceTitle}.md`;
 	}
 
 	getPhysicalInstancesByRRuleId(rruleId: string): Array<{ filePath: string; instanceDate: DateTime }> {

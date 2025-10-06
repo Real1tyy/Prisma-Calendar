@@ -3,6 +3,7 @@ import { parseFrontmatterRecord, serializeFrontmatterValue } from "@real1ty-obsi
 import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../types/recurring-event";
+import { extractZettelId, removeZettelId } from "../utils/calendar-events";
 import { categorizeProperties, formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../utils/format";
 
 interface EventModalData {
@@ -468,10 +469,10 @@ export class EventEditModal extends BaseEventModal {
 
 		// Extract and store ZettelID from the original title
 		if (this.event.title) {
-			const zettelIdMatch = this.event.title.match(/-(\d{14})$/);
-			if (zettelIdMatch) {
-				this.originalZettelId = zettelIdMatch[0]; // Store "-20250103123456" format
-				this.displayTitle = this.event.title.replace(/-\d{14}$/, "");
+			const zettelId = extractZettelId(this.event.title);
+			if (zettelId) {
+				this.originalZettelId = `-${zettelId}`; // Store "-20250103123456" format
+				this.displayTitle = removeZettelId(this.event.title);
 			} else {
 				this.displayTitle = this.event.title;
 			}

@@ -1,7 +1,8 @@
 import { generateZettelId } from "@real1ty-obsidian-plugins/utils/generate";
 import { nanoid } from "nanoid";
-import type { App } from "obsidian";
+import type { App, TFile } from "obsidian";
 import type { SingleCalendarConfig } from "../types";
+import { withFrontmatter } from "./obsidian";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
 	return allDayValue === true || (typeof allDayValue === "string" && allDayValue.toLowerCase() === "true");
@@ -65,6 +66,63 @@ export const generateUniqueRruleId = (): string => {
 };
 
 /**
+ * Extracts ZettelID from a filename or title.
+ * Returns the ZettelID string if found, null otherwise.
+ */
+export const extractZettelId = (text: string): string | null => {
+	const match = text.match(/-(\d{14})$/);
+	return match ? match[1] : null;
+};
+
+/**
+ * Removes ZettelID from a filename or title for display purposes.
+ */
+export const removeZettelId = (text: string): string => {
+	return text.replace(/-\d{14}$/, "");
+};
+
+/**
+ * Ensures a file has a ZettelID embedded in both its filename and frontmatter.
+ * If the file already has a ZettelID, returns it. If not, generates one and embeds it.
+ * Returns the ZettelID and the potentially updated file path.
+ */
+export const ensureFileHasZettelId = async (
+	app: App,
+	file: TFile,
+	zettelIdProp?: string
+): Promise<{ zettelId: string; file: TFile }> => {
+	const existingZettelId = extractZettelId(file.basename);
+
+	if (existingZettelId) {
+		// File already has ZettelID, just ensure it's in frontmatter
+		if (zettelIdProp) {
+			await withFrontmatter(app, file, (fm) => {
+				if (!fm[zettelIdProp]) {
+					fm[zettelIdProp] = existingZettelId;
+				}
+			});
+		}
+		return { zettelId: existingZettelId, file };
+	}
+
+	// File doesn't have ZettelID, we need to add it
+	const baseNameWithoutZettel = file.basename;
+	const directory = file.parent?.path || "";
+	const { fullPath, zettelId } = generateUniqueEventPath(app, directory, baseNameWithoutZettel);
+
+	await app.fileManager.renameFile(file, fullPath);
+
+	// Update frontmatter with ZettelID
+	if (zettelIdProp) {
+		await withFrontmatter(app, file, (fm) => {
+			fm[zettelIdProp] = zettelId;
+		});
+	}
+
+	return { zettelId, file };
+};
+
+/**
  * Generates a unique ZettelID by checking if the resulting path already exists.
  * If it does, increments the ID until an unused one is found.
  */
@@ -101,7 +159,7 @@ export const generateUniqueEventPath = (
 	directory: string,
 	baseName: string
 ): { filename: string; fullPath: string; zettelId: string } => {
-	const basePath = directory ? `${directory}/` : "";
+	const basePath = directory ? `${directory.replace(/\/+$/, "")}/` : "";
 	const zettelId = generateUniqueZettelId(app, basePath, baseName);
 	const filename = `${baseName}-${zettelId}`;
 	const fullPath = `${basePath}${filename}.md`;

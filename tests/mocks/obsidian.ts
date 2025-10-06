@@ -236,6 +236,7 @@ export const App = vi.fn();
 export interface MockApp {
 	fileManager: {
 		processFrontMatter: ReturnType<typeof vi.fn>;
+		renameFile: ReturnType<typeof vi.fn>;
 	};
 	metadataCache: {
 		getFileCache: ReturnType<typeof vi.fn>;
@@ -264,6 +265,7 @@ export function createMockApp(): MockApp {
 	return {
 		fileManager: {
 			processFrontMatter: vi.fn(),
+			renameFile: vi.fn().mockResolvedValue(undefined),
 		},
 		metadataCache: {
 			getFileCache: vi.fn(),

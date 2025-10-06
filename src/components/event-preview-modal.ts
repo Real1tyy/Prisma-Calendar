@@ -1,5 +1,6 @@
 import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
+import { removeZettelId } from "../utils/calendar-events";
 import { createTextDiv } from "../utils/dom-utils";
 import { calculateDuration, categorizeProperties } from "../utils/format";
 import type { PropertyRendererConfig } from "../utils/property-renderer";
@@ -47,8 +48,7 @@ export class EventPreviewModal extends Modal {
 		// Header section with title
 		const header = contentEl.createDiv("event-preview-header");
 		const title = this.event.title || "Untitled Event";
-		// Remove ZettelID from title if it exists
-		const cleanTitle = title.replace(/-\d{14}$/, "");
+		const cleanTitle = removeZettelId(title);
 		const titleEl = header.createEl("h2", { text: cleanTitle });
 
 		// Make title clickable to open file
