@@ -42,7 +42,7 @@ export class CalendarBundle {
 
 		this.recurringEventManager = new RecurringEventManager(this.app, this.settingsStore.settings$, this.indexer);
 
-		this.eventStore = new EventStore(this.indexer, this.parser, this.recurringEventManager);
+		this.eventStore = new EventStore(this.indexer, this.parser, this.recurringEventManager, this.settingsStore);
 	}
 
 	async initialize(): Promise<void> {

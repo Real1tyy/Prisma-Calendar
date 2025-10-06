@@ -21,6 +21,7 @@ export const PropsSettingsSchema = z.object({
 	rruleSpecProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_RRULE_SPEC_PROP), // property name for RRule specification (weekdays, etc.)
 	rruleIdProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_RRULE_ID_PROP), // property name for recurring event ID
 	sourceProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_SOURCE_PROP), // property name for linking physical instances to their source recurring event
+	googleIdProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_GOOGLE_ID_PROP), // property name for storing Google Calendar event ID
 	frontmatterDisplayProperties: z.array(z.string()).default([]), // frontmatter properties to display inside event chips
 });
 
@@ -44,6 +45,11 @@ export const CalendarSettingsSchema = z.object({
 	skipUnderscoreProperties: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SKIP_UNDERSCORE_PROPERTIES), // Skip displaying properties that start with underscore
 });
 
+export const GoogleCalendarSettingsSchema = z.object({
+	enableGoogleCalendar: z.boolean().default(false), // Enable Google Calendar integration
+	googleCalendarIcalUrls: z.array(z.string()).default([]), // Array of Google Calendar iCal/ICS URLs
+});
+
 export const RulesSettingsSchema = z.object({
 	filterExpressions: z.array(z.string()).default([]), // JavaScript expressions to filter events based on frontmatter
 	defaultEventColor: ColorSchema.default(SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR), // Default purple color
@@ -61,6 +67,7 @@ export const RulesSettingsSchema = z.object({
 
 export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSettingsSchema.shape)
 	.extend(CalendarSettingsSchema.shape)
+	.extend(GoogleCalendarSettingsSchema.shape)
 	.extend(RulesSettingsSchema.shape)
 	.extend({
 		id: z.string(),
@@ -82,6 +89,7 @@ export const CustomCalendarSettingsSchema = z.object({
 				...GeneralSettingsSchema.parse({}),
 				...PropsSettingsSchema.parse({}),
 				...CalendarSettingsSchema.parse({}),
+				...GoogleCalendarSettingsSchema.parse({}),
 				...RulesSettingsSchema.parse({}),
 			},
 		]),

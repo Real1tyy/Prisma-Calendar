@@ -51,7 +51,13 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 			settingsStore,
 			indexer
 		) as unknown as RecurringEventManager;
-		eventStore = new EventStore(indexer, parser, recurringEventManager);
+
+		// Wrap settingsStore to match CalendarSettingsStore interface
+		const wrappedSettingsStore = {
+			currentSettings: settingsStore.value,
+			settings$: settingsStore,
+		};
+		eventStore = new EventStore(indexer, parser, recurringEventManager, wrappedSettingsStore as any);
 
 		// EventStore now handles its own subscription to indexer events
 		// No manual wiring needed

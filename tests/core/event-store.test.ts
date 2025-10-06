@@ -9,10 +9,14 @@ describe("EventStore", () => {
 	let mockIndexer: any;
 	let mockParser: any;
 	let mockRecurringEventManager: any;
+	let mockSettingsStore: any;
 	let eventsSubject: Subject<IndexerEvent>;
+	let settingsSubject: Subject<any>;
 
 	beforeEach(() => {
 		eventsSubject = new Subject<IndexerEvent>();
+		settingsSubject = new Subject<any>();
+
 		mockIndexer = {
 			events$: eventsSubject.asObservable(),
 		};
@@ -22,7 +26,13 @@ describe("EventStore", () => {
 		mockRecurringEventManager = {
 			generateAllVirtualInstances: vi.fn().mockResolvedValue([]),
 		};
-		eventStore = new EventStore(mockIndexer, mockParser, mockRecurringEventManager);
+		mockSettingsStore = {
+			currentSettings: {
+				googleIdProp: "GoogleID",
+			},
+			settings$: settingsSubject.asObservable(),
+		};
+		eventStore = new EventStore(mockIndexer, mockParser, mockRecurringEventManager, mockSettingsStore);
 	});
 
 	const createMockEvent = (overrides: Partial<ParsedEvent> = {}): ParsedEvent => ({

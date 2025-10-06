@@ -17,6 +17,12 @@ importers:
       '@fullcalendar/daygrid':
         specifier: ^6.1.19
         version: 6.1.19(@fullcalendar/core@6.1.19)
+      '@fullcalendar/google-calendar':
+        specifier: ^6.1.19
+        version: 6.1.19(@fullcalendar/core@6.1.19)
+      '@fullcalendar/icalendar':
+        specifier: ^6.1.19
+        version: 6.1.19(@fullcalendar/core@6.1.19)(ical.js@1.5.0)
       '@fullcalendar/interaction':
         specifier: ^6.1.19
         version: 6.1.19(@fullcalendar/core@6.1.19)
@@ -343,6 +349,17 @@ packages:
     resolution: {integrity: sha512-IAAfnMICnVWPjpT4zi87i3FEw0xxSza0avqY/HedKEz+l5MTBYvCDPOWDATpzXoLut3aACsjktIyw9thvIcRYQ==}
     peerDependencies:
       '@fullcalendar/core': ~6.1.19
+
+  '@fullcalendar/google-calendar@6.1.19':
+    resolution: {integrity: sha512-FjA8l4GmudRtNQqQfZ34RzDrLwzL74UGiTU37ghSIHvK7sCTMwyefPq+u/oQznA+2vur8u9fkqpFSbwe8r0AWQ==}
+    peerDependencies:
+      '@fullcalendar/core': ~6.1.19
+
+  '@fullcalendar/icalendar@6.1.19':
+    resolution: {integrity: sha512-uaJnTP99cM2ZiFmYaSLfayX9TmF0DklIf2SpgwMDCMEqtNYm+TbCotDUrfMDWVFYPr4uCHk0TjlM5mS3U3wB9g==}
+    peerDependencies:
+      '@fullcalendar/core': ~6.1.19
+      ical.js: ^1.4.0
 
   '@fullcalendar/interaction@6.1.19':
     resolution: {integrity: sha512-GOciy79xe8JMVp+1evAU3ytdwN/7tv35t5i1vFkifiuWcQMLC/JnLg/RA2s4sYmQwoYhTw/p4GLcP0gO5B3X5w==}
@@ -718,6 +735,9 @@ packages:
   https-proxy-agent@7.0.6:
     resolution: {integrity: sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==}
     engines: {node: '>= 14'}
+
+  ical.js@1.5.0:
+    resolution: {integrity: sha512-7ZxMkogUkkaCx810yp0ZGKvq1ZpRgJeornPttpoxe6nYZ3NLesZe1wWMXDdwTkj/b5NtXT+Y16Aakph/ao98ZQ==}
 
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
@@ -1222,6 +1242,15 @@ snapshots:
     dependencies:
       '@fullcalendar/core': 6.1.19
 
+  '@fullcalendar/google-calendar@6.1.19(@fullcalendar/core@6.1.19)':
+    dependencies:
+      '@fullcalendar/core': 6.1.19
+
+  '@fullcalendar/icalendar@6.1.19(@fullcalendar/core@6.1.19)(ical.js@1.5.0)':
+    dependencies:
+      '@fullcalendar/core': 6.1.19
+      ical.js: 1.5.0
+
   '@fullcalendar/interaction@6.1.19(@fullcalendar/core@6.1.19)':
     dependencies:
       '@fullcalendar/core': 6.1.19
@@ -1598,6 +1627,8 @@ snapshots:
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
+
+  ical.js@1.5.0: {}
 
   iconv-lite@0.6.3:
     dependencies:

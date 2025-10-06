@@ -1,5 +1,6 @@
 import { Calendar, type EventContentArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import iCalendarPlugin from "@fullcalendar/icalendar";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -40,6 +41,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private viewType: string;
 	private skippedEventsModal: SkippedEventsModal | null = null;
 	private isIndexingComplete = false;
+	private syncedGoogleEventIds = new Set<string>();
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -252,7 +254,7 @@ export class CalendarView extends MountableView(ItemView) {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		this.calendar = new Calendar(container, {
-			plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+			plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin, iCalendarPlugin],
 
 			timeZone: "local",
 
@@ -493,8 +495,142 @@ export class CalendarView extends MountableView(ItemView) {
 				id: "main-events",
 				events: calendarEvents,
 			});
+
+			await this.syncGoogleCalendar();
 		} catch (error) {
 			console.error("Error refreshing calendar events:", error);
+		}
+	}
+
+	private async syncGoogleCalendar(): Promise<void> {
+		if (!this.calendar) return;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		console.log("[Google Calendar] Setting up iCal feeds...", {
+			enabled: settings.enableGoogleCalendar,
+			urlCount: settings.googleCalendarIcalUrls.length,
+		});
+
+		// Remove existing Google Calendar sources
+		const existingSources = this.calendar.getEventSources();
+		for (const source of existingSources) {
+			if (source.id?.startsWith("google-ical-")) {
+				source.remove();
+			}
+		}
+
+		// Clear synced event tracking when refreshing
+		this.syncedGoogleEventIds.clear();
+
+		// If disabled or no URLs configured, we're done
+		if (!settings.enableGoogleCalendar || settings.googleCalendarIcalUrls.length === 0) {
+			return;
+		}
+
+		for (let i = 0; i < settings.googleCalendarIcalUrls.length; i++) {
+			const icalUrl = settings.googleCalendarIcalUrls[i];
+			console.log(`[Google Calendar] Configuring iCal feed ${i + 1}: ${icalUrl.substring(0, 50)}...`);
+
+			this.calendar.addEventSource({
+				id: `google-ical-${i}`,
+				url: icalUrl,
+				format: "ics",
+				className: "google-calendar-event",
+				display: "none", // Don't display Google Calendar events (we only show Obsidian-backed versions)
+				eventDataTransform: (eventData) => {
+					// Process this Google Calendar event asynchronously
+					this.processGoogleCalendarEvent(eventData);
+					// Return the event data but it won't display due to display: "none"
+					return eventData;
+				},
+				failure: (error: any) => {
+					console.error(`[Google Calendar] ❌ Failed to fetch iCal feed ${i + 1}:`, error);
+					console.error("[Google Calendar] 🔍 Troubleshooting steps:");
+					console.error("  1. Get your Secret iCal URL:");
+					console.error("     - Google Calendar → Settings → [Your Calendar]");
+					console.error("     - Scroll to 'Integrate calendar'");
+					console.error("     - Copy 'Secret address in iCal format'");
+					console.error("  2. Check the URL format:");
+					console.error(`     - Should look like: https://calendar.google.com/calendar/ical/...`);
+					console.error("  3. Calendar must be accessible:");
+					console.error("     - Works with private calendars (no need to make public!)");
+					console.error("     - URL contains authentication token");
+				},
+				success: () => {
+					console.log(`[Google Calendar] ✅ Successfully loaded iCal feed ${i + 1}`);
+				},
+			});
+		}
+	}
+
+	private async processGoogleCalendarEvent(gcalEvent: any): Promise<void> {
+		const googleId = gcalEvent.id;
+		const eventTitle = gcalEvent.title || "Untitled Event";
+
+		console.log(`[Google Calendar] Processing event: "${eventTitle}" (ID: ${googleId})`);
+
+		// Skip if already synced in this session
+		if (this.syncedGoogleEventIds.has(googleId)) {
+			console.log(`[Google Calendar] ⏭️  Skipping "${eventTitle}" - already synced in this session`);
+			return;
+		}
+
+		// Mark as synced to avoid duplicate processing
+		this.syncedGoogleEventIds.add(googleId);
+
+		// Check if we already have a local Obsidian note for this Google Calendar event
+		const existingLocalEvent = this.bundle.eventStore.findEventByGoogleId(googleId);
+		if (existingLocalEvent) {
+			console.log(
+				`[Google Calendar] ✓ Event "${eventTitle}" already exists in Obsidian at: ${existingLocalEvent.ref.filePath}`
+			);
+			return; // Already synced to Obsidian
+		}
+
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		console.log(`[Google Calendar] 🆕 Creating new Obsidian note for: "${eventTitle}"`, {
+			start: gcalEvent.start,
+			end: gcalEvent.end,
+			allDay: gcalEvent.allDay,
+		});
+
+		// Create a new Obsidian note for this Google Calendar event
+		const eventData: EventData = {
+			filePath: null,
+			title: eventTitle,
+			start: gcalEvent.start || new Date().toISOString(),
+			end: gcalEvent.end,
+			allDay: gcalEvent.allDay || false,
+			preservedFrontmatter: {
+				[settings.googleIdProp]: googleId,
+				[settings.startProp]: gcalEvent.start || new Date().toISOString(),
+			},
+		};
+
+		if (gcalEvent.end && settings.endProp) {
+			eventData.preservedFrontmatter[settings.endProp] = gcalEvent.end;
+		}
+		if (gcalEvent.allDay !== undefined && settings.allDayProp) {
+			eventData.preservedFrontmatter[settings.allDayProp] = gcalEvent.allDay;
+		}
+		if (gcalEvent.title && settings.titleProp) {
+			eventData.preservedFrontmatter[settings.titleProp] = gcalEvent.title;
+		}
+
+		try {
+			const cmd = new CreateEventCommand(
+				this.app,
+				this.bundle,
+				eventData,
+				settings.directory,
+				gcalEvent.start ? new Date(gcalEvent.start) : new Date()
+			);
+			await this.bundle.commandManager.executeCommand(cmd);
+			console.log(`[Google Calendar] ✅ Successfully created Obsidian note for: "${eventTitle}"`);
+		} catch (error) {
+			console.error(`[Google Calendar] ❌ Error creating Obsidian note for "${eventTitle}":`, error);
 		}
 	}
 
