@@ -66,6 +66,46 @@ When you create a recurring event, the system automatically assigns a unique `RR
 
 **Never manually set or modify the `RRuleID`** - this is entirely managed by the system and changing it will break the association between events.
 
+---
+
+## Creating Recurring Events
+
+### Via Calendar Interface (Recommended)
+
+Right-click any time slot → "Create Event" → Set RRule properties along with all other frontmatter → Create.
+
+This creates the source atomically with all properties set, ensuring complete inheritance.
+
+### Manual File Creation
+
+Create a note with frontmatter. **Tip:** Add the `RRule` property last, as the indexer starts generating instances immediately when it detects it. This way all your other frontmatter and content is already in place before generation begins.
+
+```yaml
+---
+Title: Weekly Meeting
+Start: 2025-10-06T10:00
+Project: [[Alpha]]
+Priority: High
+# Add RRule last so everything above is already set
+RRule: weekly
+RRuleSpec: monday
+---
+
+Your content here
+```
+
+---
+
+## Source Navigation & Instance Management
+
+**Source Button:** Available on recurring instances - click to navigate to the source event.
+
+**Instance Dropdown:** View all physical instances of a recurring series. Available on source events and instances. Toggle "Show Past" to filter old events.
+
+**Virtual Events:** Clicking a virtual event (far future) shows the source event that generates it.
+
+---
+
 ## Examples
 
 ### Weekly Standup

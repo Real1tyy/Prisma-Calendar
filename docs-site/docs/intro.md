@@ -19,48 +19,113 @@ title: Prisma Calendar
 
 # Prisma Calendar
 
-**A feature-rich, fully configurable calendar plugin for Obsidian.**
+**The most powerful and flexible calendar plugin for Obsidian — fully configurable, reactive, and built for power users.**
 
 </div>
 
-Built for power users and newcomers alike, it gives you multiple isolated calendars, fine-grained filtering and color rules, fast folder-based indexing, and simple but powerful recurring events — all backed by plain Markdown notes.
+Built for power users and workflow optimization enthusiasts, Prisma Calendar delivers multiple isolated calendars, fine-grained filtering and color rules, fast folder-based indexing, and a sophisticated recurring event system — all backed by plain Markdown notes.
 
-## What makes Prisma Calendar different?
+---
 
-Prisma Calendar is built on a foundation of extreme flexibility and power, designed to adapt to your unique workflow, not the other way around.
+## 🎬 **Top 5 Killer Features**
 
--   **Total Configurability**: Almost every aspect of the calendar is customizable. Don't like our frontmatter keys? Change them. Want a different view, custom colors, or specific time slots? It's all in the settings. You control:
-    -   **Frontmatter**: Define your own property names for start/end dates, titles, all-day events, and more.
-    -   **Calendar View**: Tweak everything from the default view, first day of the week, and displayed hours to UI density and zoom levels.
-    -   **Event Display**: Show custom frontmatter properties directly inside calendar events.
+### **1️⃣ Flexibility — Fully Configurable Everything**
+Every aspect of Prisma Calendar is customizable. From frontmatter properties to calendar appearance and behavior, everything adapts to **your** workflow. You define the rules — Prisma Calendar follows.
 
--   **Powerful Rule-Based Engine**: Use a simple but powerful expression language (`fm.*`) to control your calendar's appearance and content dynamically:
-    -   **Coloring**: Assign colors to events based on frontmatter. For example, make all events with `fm.Priority === 'High'` red.
-    -   **Filtering**: Create sophisticated views by filtering events based on frontmatter. For instance, hide all events where `fm.Status === 'Done'`.
+**What you can configure:**
+- **Frontmatter mapping** - Use your own property names (`Start`, `Begin`, `EventDate` — your choice)
+- **Dynamic color rules** - JavaScript expressions for intelligent event coloring (`fm.Priority === 'High' → #ef4444`)
+- **Advanced filtering** - Show/hide events based on any frontmatter property or complex expressions
+- **View customization** - Adjust time ranges, zoom levels, display density, themes, and layouts
+- **Multiple calendars** - Up to 10 isolated calendars, each with completely independent settings
 
--   **Power-User Features**:
-    -   **Multiple Calendars**: Create isolated calendars, each with its own folder, settings, filters, and colors.
-    -   **Recurring Events DSL**: A simple yet powerful system for creating recurring events (`weekly`, `monthly`, etc.) that generate real, editable Markdown notes.
-    -   **Batch Operations**: Quickly duplicate, delete, or move multiple events at once.
-    -   **Event Previews**: Hover over any event to see a preview of the note's content.
+### **2️⃣ Reactivity — No Restarts. Ever.**
+Change a setting → The calendar **immediately updates**. No more restarting Obsidian. Every parameter, toggle, or setting change is applied live, instantly reflecting in your workspace.
 
--   **Reactive & Modern**: All settings changes are applied instantly, with no need to reload Obsidian. The UI is fast, fluid, and built for a modern user experience.
+**Real-time updates for:**
+- All settings changes apply instantly
+- Color rules and filters recalculate automatically
+- View changes reflect immediately
+- Zero downtime — never interrupt your workflow
 
--   **Lightweight & Performant**:
-    -   Events are plain Markdown notes. You own your data.
-    -   Uses virtual events for far-future recurrences to keep your vault clean and fast.
+### **3️⃣ History & Memento System — Undo / Redo Like a Pro**
+Prisma Calendar keeps a complete memento history of your actions. Every move, edit, or deletion can be undone or redone instantly. Misclicked? Don't worry — we've got you covered.
 
-## Highlights
+**Safety net features:**
+- **Command pattern architecture** - Every action is undoable
+- **Semantic undo** - See exactly what you're undoing ("Undo Create Event", "Undo Batch Delete", "Undo Move Event")
+- **Full operation history** - Undo/redo across all calendar operations
+- **Confidence to experiment** - Try anything knowing you can always revert
 
-- Multiple isolated calendars (each with its own folder, filters, colors, hotkey)
-- Folder-based event scanning (subfolders supported)
-- Templater integration for creating event notes from your template
-- Color rules with sensible default and rule-based overrides
-- Event previews on hover; open on click
-- Batch operations: delete, duplicate, move/clone to next week
-- Recurring events DSL that generates real notes (node-based recurrence)
-- Virtual events (read-only) beyond the generation horizon
-- Reactive settings: changes reflect instantly
+### **4️⃣ Recurring Events — Smart, Linked, Isolated**
+Recurring events are built around a **source node** that defines frequency (daily, weekly, bi-weekly, monthly, etc.). Each instance is an independent Obsidian note, fully linked to its source — giving you both structure and freedom.
+
+**Advanced recurrence system:**
+- **Source node architecture** - One configuration file controls the entire series
+- **Real note generation** - Physical Obsidian notes, not just calendar entries
+- **Complete inheritance** - All frontmatter properties and content copied to each instance
+- **Virtual previews** - See far-future instances without cluttering your vault
+- **Source navigation** - Jump between instances and their source with one click
+- **Calendar creation** - Create recurring events directly from the calendar with full frontmatter support
+- **Instance management** - View all recurring instances in a dropdown, filter past events
+
+### **5️⃣ Batch Operations — Work Fast, Think Big**
+Select multiple events and perform bulk actions: **clone, move, skip, delete, or open them** — all at once. Perfect for power users who value efficiency and speed.
+
+**Bulk operation capabilities:**
+- **Multi-select mode** - Click to select multiple events across your calendar
+- **Batch delete** - Remove multiple events with one confirmation
+- **Batch duplicate** - Create copies of selected events instantly
+- **Week shifting** - Move or clone entire sets of events forward/backward
+- **Skip functionality** - Mark events as skipped without breaking recurring series
+- **Batch open** - Open all selected event files in editor tabs simultaneously
+
+---
+
+## ✨ **Additional Powerful Features**
+
+### 📋 **Enhanced Event Interaction**
+- **Clickable frontmatter** - All frontmatter properties are interactive, wikilinks are clickable
+- **Enlarged previews** - Expanded modal view showing complete frontmatter and full content
+- **Quick create button** - Create events instantly from the calendar interface
+- **Event skipping** - Skip individual recurring event instances without breaking the series
+- **Hover previews** - See note content without opening files
+- **Direct file access** - Click events to open the underlying note immediately
+
+### 🔗 **Recurring Event Management**
+- **Source button** - Navigate to source node from any recurring instance
+- **Instance dropdown** - View all physical instances of a recurring series in one list
+- **Past filter** - Toggle past event visibility to reduce visual clutter
+- **Virtual event source preview** - Click virtual events to see their source configuration
+- **Atomic creation** - Recurring events created via calendar are instantly indexed and processed
+- **Frontmatter inheritance** - Set all frontmatter properties in the source, they copy to every instance
+
+### 🗓️ **Multiple Isolated Calendars**
+- **Up to 10 separate calendars** with completely independent configuration
+- **Dedicated folders** - Each calendar scans its own directory tree (subfolders included)
+- **Custom hotkeys** - Instant switching between calendars with keyboard shortcuts
+- **Clone & duplicate** - Copy entire calendars with all settings, rules, and configurations intact
+- **Independent rules** - Each calendar has its own color rules, filters, and display settings
+
+### 📁 **Smart Event Management**
+- **Folder-based scanning** - Any note with frontmatter becomes an event automatically
+- **Templater integration** - Scaffold consistent event metadata using your templates
+- **Deep linking** - Click events to open notes, follow wikilinks, navigate references
+- **Batch file operations** - Open multiple event files simultaneously in tabs
+- **Automatic indexing** - File changes are detected and processed instantly
+
+### 🎨 **Dynamic Visual Customization**
+- **JavaScript-powered color rules** - `fm.Priority === 'High' → #ef4444`
+- **Property-based filtering** - Complex expressions to show/hide events (`fm.Status !== 'Done'`)
+- **Frontmatter display** - Show extra frontmatter properties inside event chips
+- **Multiple view modes** - Month, week, day, list with fully customizable time ranges
+- **Zoom controls** - CTRL+scroll with configurable zoom levels (1-60 minute increments)
+- **Display density** - Compact or comfortable modes for different screen sizes
+
+### ⚡ **Performance & UX**
+- **Debounced scanning** - Efficient file watching and processing for large vaults
+- **Fast indexing** - Optimized parser for vaults with hundreds or thousands of events
+- **Lightweight** - Events are plain Markdown — you own your data, no proprietary formats
 
 ### What does an event look like?
 

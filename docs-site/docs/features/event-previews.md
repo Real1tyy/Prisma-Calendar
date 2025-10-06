@@ -1,14 +1,36 @@
 # Event Previews
 
-See note content at a glance.
+See note content and navigate links without opening files.
 
-## Usage
+## Hover Previews
 
-- Enable “Enable event preview” in Calendar Settings (UI)
-- Hover an event to see a preview of the note
-- Click an event to open the file
+- Enable in Calendar Settings (UI) → "Enable event preview"
+- Hover over any event to see a quick preview
+- Shows note title and first few lines of content
 
-## Tips
+## Enlarged Modal Preview
 
-- Keep the first lines of your notes concise for better previews
-- Use frontmatter `Title` to improve the displayed heading
+**Access:** Shift+Click event, or right-click → "Preview Event"
+
+**Shows:**
+- Complete frontmatter with all properties
+- Clickable wikilinks, tags, and URLs in frontmatter
+
+**Special features:**
+- **Recurring instances**: Source button to navigate to source event
+- **Virtual events**: Shows the source event configuration
+- **Source events**: Instance dropdown to view all generated instances with past filter
+
+## Clickable Frontmatter
+
+All frontmatter properties in enlarged preview are interactive:
+
+```yaml
+---
+Project: [[Alpha Project]]        # Click to navigate
+Tags: [work, meeting]             # Click tags to search
+VideoCall: https://zoom.us/...    # Click to open in browser
+---
+```
+
+Works with wikilinks, tags, URLs, and file paths.

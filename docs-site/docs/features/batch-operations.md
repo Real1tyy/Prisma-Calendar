@@ -2,36 +2,60 @@
 
 Quickly make changes to many events at once.
 
-## What you can do
+## Entering Selection Mode
 
-- Enter selection mode to click-select multiple events
-- Delete selected notes (with confirmation)
-- Duplicate selected notes in-place
-- Move selected notes to next/previous week
-- Clone selected notes to next/previous week (keep originals)
-- Open all selected files in editor tabs
+**Activate:** Toolbar button, keyboard shortcut, or right-click → "Enter Selection Mode"
 
-Notes:
-- Batch selection is not available in List view
-- Virtual events (far future) are excluded from selection
+**Select:** Click events to add to selection. Use "Select All Visible" to grab everything on screen.
 
-## Typical workflows
+**Note:** Virtual events (far future) are excluded from selection.
 
-### 1) Shift next week’s meetings by one week
+## Available Actions
+
+### Delete Selected
+- Permanently removes event files (with confirmation)
+- Clean up old or placeholder events
+
+### Duplicate Selected
+- Creates exact copies at same time/date
+- Useful for template copies
+
+### Move to Next/Previous Week
+- Shifts events ±7 days
+- Original events are moved (not copied)
+
+### Clone to Next/Previous Week
+- Creates copies ±7 days away
+- Keeps originals in place
+- Perfect for repeating weekly patterns
+
+### Skip Selected
+- Mark events as skipped without deletion
+- Preserves recurring series
+- View/restore via Calendar menu → "View Skipped Events"
+
+### Open All in Tabs
+- Opens all selected event files in editor tabs
+- Quick access for batch reviewing/editing
+
+## Typical Workflows
+
+**Shift meetings by one week:**
 1. Switch to Week view
-2. Toggle selection mode, click the relevant meetings
-3. Choose Move → Next week
+2. Toggle selection mode
+3. Select relevant meetings
+4. Move → Next week
 
-### 2) Create copies of planning blocks
-1. Select all “Planning” sessions on Monday
-2. Choose Clone → Next week
-3. Adjust any times as needed
+**Skip holiday week:**
+1. Navigate to holiday week
+2. Select all recurring instances
+3. Click "Skip"
+4. Series continues after
 
-### 3) Housekeeping: remove stale placeholders
-1. Select placeholder events you no longer need
-2. Delete → Confirm
 
 ## Tips
 
-- Use Select All Visible to quickly grab everything on screen
+- Use "Select All Visible" to quickly grab everything on screen
+- Filter before selecting to narrow down to intended events
+- Batch selection not available in List view
 - Snap duration and slot duration affect drag/resize behavior after cloning
