@@ -31,3 +31,4 @@ Here is a complete list of the batch operations you can assign hotkeys to:
 -   `Batch: Clone to Previous Week`: Clones each selected event to the same day of the previous week.
 -   `Batch: Move to Next Week`: Moves each selected event to the same day of the following week.
 -   `Batch: Move to Previous Week`: Moves each selected event to the same day of the previous week.
+-   `Batch: Move By`: Opens a dialog to move selected events by a custom number of days. Supports positive values (move forward) and negative values (move backward). For example, enter `7` to move events one week forward, or `-3` to move them 3 days back.

@@ -28,6 +28,7 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 ### Parsing
 
 - Default duration (minutes): used when only `Start` is present
+- Mark past events as done: automatically mark past events as done during startup by updating their status property (configure the status property and done value in the Properties section)
 
 ### Timezone
 
@@ -44,6 +45,8 @@ Tell Prisma Calendar which frontmatter keys you use.
 - Title property (optional): default to file name when missing
 - Timezone property (optional): default `Timezone`
 - ZettelID property (optional): when set, a timestamp-based ID is generated on creation/cloning
+- Status property: frontmatter property name for event status (default: `STATUS`), used when automatically marking past events as done
+- Done value: value to set in the status property when marking an event as done (default: `Done`)
 
 ### Recurring (node-based)
 
@@ -60,6 +63,35 @@ End: 2025-01-15T10:30
 RRule: weekly
 RRuleSpec: monday, wednesday, friday
 RRuleID: standup-2025
+---
+```
+
+### Auto-mark Past Events
+
+When enabled in General settings, Prisma Calendar will automatically update the status property of past events during startup:
+
+- **For all-day events**: Checks if the date is in the past
+- **For timed events**: Checks if the end date/time is in the past
+- **Runs asynchronously**: Doesn't block the calendar from loading
+- **Smart updates**: Only writes to files when the status needs to be changed
+
+Example behavior:
+
+```yaml
+---
+Start: 2025-01-10T14:00
+End: 2025-01-10T15:00
+STATUS: In Progress
+---
+```
+
+After the end time passes, Prisma Calendar will automatically update it to:
+
+```yaml
+---
+Start: 2025-01-10T14:00
+End: 2025-01-10T15:00
+STATUS: Done
 ---
 ```
 
