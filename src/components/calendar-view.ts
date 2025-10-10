@@ -84,7 +84,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 		if (inSelectionMode) {
 			const batchButtons =
-				"batchCounter batchSelectAll batchClear batchDuplicate batchCloneNext batchClonePrev batchMoveNext batchMovePrev batchOpenAll batchSkip batchDelete batchExit";
+				"batchCounter batchSelectAll batchClear batchDuplicate batchMoveBy batchCloneNext batchClonePrev batchMoveNext batchMovePrev batchOpenAll batchSkip batchDelete batchExit";
 			headerToolbar.right = `${batchButtons} ${viewSwitchers}`;
 
 			// Define all batch buttons
@@ -106,6 +106,11 @@ export class CalendarView extends MountableView(ItemView) {
 				text: "Duplicate",
 				click: () => bsm.executeDuplicate(),
 				className: "batch-action-btn duplicate-btn",
+			};
+			customButtons.batchMoveBy = {
+				text: "Move By",
+				click: () => bsm.executeMoveBy(),
+				className: "batch-action-btn move-by-btn",
 			};
 			customButtons.batchExit = {
 				text: "Exit",
@@ -887,6 +892,10 @@ export class CalendarView extends MountableView(ItemView) {
 
 	openSelection(): void {
 		this.batchSelectionManager?.executeOpenAll();
+	}
+
+	moveBySelection(): void {
+		this.batchSelectionManager?.executeMoveBy();
 	}
 
 	private isRestoring = false;

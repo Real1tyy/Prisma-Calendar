@@ -374,3 +374,36 @@ export class ToggleSkipCommand implements Command {
 		return this.originalSkipValue !== undefined;
 	}
 }
+
+export class MoveByCommand implements Command {
+	private originalFrontmatter?: Record<string, unknown>;
+
+	constructor(
+		private app: App,
+		private bundle: CalendarBundle,
+		private filePath: string,
+		private offsetMs: number
+	) {}
+
+	async execute(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		await withFrontmatter(this.app, file, (fm) => applyStartEndOffsets(fm, settings, this.offsetMs, this.offsetMs));
+	}
+
+	async undo(): Promise<void> {
+		if (!this.originalFrontmatter) return;
+		const file = getTFileOrThrow(this.app, this.filePath);
+		await restoreFrontmatter(this.app, file, this.originalFrontmatter);
+	}
+
+	getType() {
+		return "move-by";
+	}
+
+	async canUndo(): Promise<boolean> {
+		return true;
+	}
+}

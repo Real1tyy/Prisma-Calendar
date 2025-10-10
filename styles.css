@@ -1778,3 +1778,165 @@
 	color: var(--text-muted);
 	padding: 2rem;
 }
+
+/* Move By Modal - Compact Button-Based UI */
+.move-by-modal h3 {
+	margin: 0 0 16px 0;
+	font-size: var(--font-ui-large);
+	text-align: center;
+}
+
+.move-by-form {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.move-by-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.move-by-label {
+	min-width: 80px;
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-muted);
+}
+
+/* Direction buttons */
+.move-by-button-group {
+	display: flex;
+	gap: 8px;
+}
+
+.move-by-btn {
+	padding: 8px 24px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-weight-semibold);
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.move-by-btn:hover {
+	background: var(--interactive-hover);
+}
+
+.move-by-btn.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+/* Amount input group */
+.move-by-amount-group {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.move-by-input {
+	width: 80px;
+	padding: 6px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-medium);
+	text-align: center;
+}
+
+.move-by-input:focus {
+	border-color: var(--interactive-accent);
+	outline: none;
+}
+
+.move-by-increment-btn {
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: 18px;
+	font-weight: bold;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.move-by-increment-btn:hover {
+	background: var(--interactive-hover);
+	border-color: var(--interactive-accent);
+}
+
+.move-by-increment-btn:active {
+	transform: scale(0.95);
+}
+
+/* Time unit buttons */
+.move-by-unit-group {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+.move-by-unit-btn {
+	padding: 6px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-weight-medium);
+	cursor: pointer;
+	transition: all 0.15s ease;
+	white-space: nowrap;
+}
+
+.move-by-unit-btn:hover {
+	background: var(--interactive-hover);
+}
+
+.move-by-unit-btn.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.move-by-row {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
+	.move-by-label {
+		min-width: 0;
+		width: 100%;
+	}
+
+	.move-by-button-group,
+	.move-by-amount-group,
+	.move-by-unit-group {
+		width: 100%;
+	}
+
+	.move-by-btn {
+		flex: 1;
+	}
+
+	.move-by-unit-btn {
+		flex: 1 1 calc(33.333% - 4px);
+	}
+}

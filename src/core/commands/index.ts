@@ -4,6 +4,7 @@ export {
 	createBatchCloneCommand,
 	createBatchDeleteCommand,
 	createBatchDuplicateCommand,
+	createBatchMoveByCommand,
 	createBatchMoveCommand,
 } from "./batch-commands";
 export type { Command } from "./command";
@@ -16,6 +17,7 @@ export {
 	EditEventCommand,
 	type EditEventData,
 	type EventData,
+	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,
 	UpdateEventCommand,

@@ -4,6 +4,8 @@ import { type App, Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
 import type { Command } from "../core/commands/command";
+import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
+import { MoveByModal } from "./move-by-modal";
 
 export interface SelectedEvent {
 	id: string;
@@ -338,6 +340,34 @@ export class BatchSelectionManager {
 			(count) => `Toggled skip for ${count} event${pluralize(count)}`,
 			"Failed to skip events"
 		);
+	}
+
+	public executeMoveBy(): void {
+		if (this.returnIfEmpty()) return;
+
+		const selectedEventsArray = Array.from(this.selectedEvents.values());
+
+		// Check if any selected events are all-day
+		const hasAllDayEvents = selectedEventsArray.some((event) => event.allDay);
+
+		new MoveByModal(this.app, async (result) => {
+			const { offsetMs, unit } = calculateTimeOffset(result);
+
+			// Validate time unit for all-day events
+			if (hasAllDayEvents && !isTimeUnitAllowedForAllDay(unit)) {
+				console.warn(
+					`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
+				);
+				new Notice(`Cannot move all-day events by ${unit}. Please use days, weeks, months, or years.`, 5000);
+				return;
+			}
+
+			await this.executeWithSelection(
+				(filePaths) => this.batchCommandFactory.createMoveBy(filePaths, offsetMs),
+				(count) => `Moved ${count} event${pluralize(count)} by ${result.value} ${result.unit}`,
+				"Failed to move events by custom offset"
+			);
+		}).open();
 	}
 
 	refreshSelectionStyling(): void {

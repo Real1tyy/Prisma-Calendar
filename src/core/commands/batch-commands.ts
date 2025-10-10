@@ -1,7 +1,13 @@
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 import { MacroCommand } from "./command";
-import { CloneEventCommand, DeleteEventCommand, MoveEventCommand, ToggleSkipCommand } from "./event-commands";
+import {
+	CloneEventCommand,
+	DeleteEventCommand,
+	MoveByCommand,
+	MoveEventCommand,
+	ToggleSkipCommand,
+} from "./event-commands";
 
 export function createBatchDeleteCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
 	const deleteCommands = filePaths.map((filePath) => new DeleteEventCommand(app, bundle, filePath));
@@ -47,6 +53,17 @@ export function createBatchSkipCommand(app: App, bundle: CalendarBundle, filePat
 	return new MacroCommand(skipCommands);
 }
 
+export function createBatchMoveByCommand(
+	app: App,
+	bundle: CalendarBundle,
+	filePaths: string[],
+	offsetMs: number
+): MacroCommand {
+	const moveByCommands = filePaths.map((filePath) => new MoveByCommand(app, bundle, filePath, offsetMs));
+
+	return new MacroCommand(moveByCommands);
+}
+
 export function calculateWeekOffsets(weeks: number): [number, number] {
 	const weekInMs = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 	const offset = weeks * weekInMs;
@@ -79,5 +96,9 @@ export class BatchCommandFactory {
 
 	createSkip(filePaths: string[]): MacroCommand {
 		return createBatchSkipCommand(this.app, this.bundle, filePaths);
+	}
+
+	createMoveBy(filePaths: string[], offsetMs: number): MacroCommand {
+		return createBatchMoveByCommand(this.app, this.bundle, filePaths, offsetMs);
 	}
 }

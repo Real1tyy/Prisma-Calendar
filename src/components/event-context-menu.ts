@@ -5,14 +5,17 @@ import {
 	CloneEventCommand,
 	DeleteEventCommand,
 	EditEventCommand,
+	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import { sanitizeForFilename } from "../utils/file-utils";
 import { getObsidianLinkPath } from "../utils/obsidian-link-utils";
+import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import { EventEditModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
+import { MoveByModal } from "./move-by-modal";
 import { RecurringEventsListModal } from "./recurring-events-list-modal";
 
 export class EventContextMenu {
@@ -126,6 +129,15 @@ export class EventContextMenu {
 
 		menu.addItem((item) => {
 			item
+				.setTitle("Move by...")
+				.setIcon("move")
+				.onClick(() => {
+					this.moveEventBy(event);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
 				.setTitle("Move to next week")
 				.setIcon("arrow-right")
 				.onClick(() => {
@@ -192,6 +204,36 @@ export class EventContextMenu {
 		});
 
 		menu.showAtMouseEvent(e);
+	}
+
+	moveEventBy(event: any): void {
+		const filePath = this.getFilePathOrNotice(event, "move event");
+		if (!filePath) return;
+
+		const isAllDay = event.allDay || false;
+
+		new MoveByModal(this.app, async (result) => {
+			const { offsetMs, unit } = calculateTimeOffset(result);
+
+			// Validate time unit for all-day events
+			if (isAllDay && !isTimeUnitAllowedForAllDay(unit)) {
+				console.warn(
+					`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
+				);
+				new Notice(`Cannot move all-day event by ${unit}. Please use days, weeks, months, or years.`, 5000);
+				return;
+			}
+
+			try {
+				const command = new MoveByCommand(this.app, this.bundle, filePath, offsetMs);
+				await this.bundle.commandManager.executeCommand(command);
+
+				new Notice(`Event moved by ${result.value} ${result.unit}`);
+			} catch (error) {
+				console.error("Failed to move event:", error);
+				new Notice("Failed to move event");
+			}
+		}).open();
 	}
 
 	async moveEventByWeeks(event: any, weeks: number): Promise<void> {
