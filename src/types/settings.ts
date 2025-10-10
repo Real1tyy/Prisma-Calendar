@@ -7,6 +7,7 @@ export const GeneralSettingsSchema = z.object({
 	directory: z.string().default(""),
 	defaultDurationMinutes: z.number().int().positive().default(SETTINGS_DEFAULTS.DEFAULT_DURATION_MINUTES),
 	templatePath: z.string().optional(), // path to Templater template for new events
+	markPastInstancesAsDone: z.boolean().default(false), // automatically mark past events as done on startup
 });
 
 export const PropsSettingsSchema = z.object({
@@ -22,6 +23,8 @@ export const PropsSettingsSchema = z.object({
 	rruleIdProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_RRULE_ID_PROP), // property name for recurring event ID
 	sourceProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_SOURCE_PROP), // property name for linking physical instances to their source recurring event
 	frontmatterDisplayProperties: z.array(z.string()).default([]), // frontmatter properties to display inside event chips
+	statusProperty: z.string().default(SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY), // property name to manage event status
+	doneValue: z.string().default(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE), // value to set when marking event as done
 });
 
 export const CalendarSettingsSchema = z.object({

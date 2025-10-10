@@ -176,6 +176,36 @@ export class PropertiesSettings {
 					})
 			);
 
+		new Setting(containerEl)
+			.setName("Status property")
+			.setDesc("Frontmatter property name for event status (used when automatically marking past events as done)")
+			.addText((text) =>
+				text
+					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY)
+					.setValue(settings.statusProperty)
+					.onChange(async (value) => {
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							statusProperty: value || SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY,
+						}));
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Done value")
+			.setDesc("Value to set in the status property when marking an event as done")
+			.addText((text) =>
+				text
+					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE)
+					.setValue(settings.doneValue)
+					.onChange(async (value) => {
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							doneValue: value || SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE,
+						}));
+					})
+			);
+
 		// Add description for event types
 		const eventTypesDesc = containerEl.createDiv("settings-info-box");
 

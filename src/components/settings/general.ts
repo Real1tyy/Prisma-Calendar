@@ -66,5 +66,19 @@ export class GeneralSettings {
 						}
 					})
 			);
+
+		new Setting(containerEl)
+			.setName("Mark past events as done")
+			.setDesc(
+				"Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(settings.markPastInstancesAsDone).onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						markPastInstancesAsDone: value,
+					}));
+				})
+			);
 	}
 }

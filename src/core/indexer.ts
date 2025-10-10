@@ -209,6 +209,12 @@ export class Indexer {
 		const hasAllDayEvent = frontmatter[this._settings.dateProp];
 
 		if (hasTimedEvent || hasAllDayEvent) {
+			if (this._settings.markPastInstancesAsDone) {
+				this.markPastEventAsDone(file, frontmatter).catch((error) => {
+					console.error(`Error in background marking of past event ${file.path}:`, error);
+				});
+			}
+
 			const source: RawEventSource = {
 				filePath: file.path,
 				mtime: file.stat.mtime,
@@ -255,5 +261,49 @@ export class Indexer {
 			frontmatter: { ...frontmatter },
 			content: undefined, // Empty initially - will be loaded on-demand by RecurringEventManager
 		};
+	}
+
+	private async markPastEventAsDone(file: TFile, frontmatter: Record<string, unknown>): Promise<void> {
+		const now = new Date();
+		let isPastEvent = false;
+
+		// Check if event is in the past
+		const allDayValue = frontmatter[this._settings.allDayProp];
+		const isAllDay = allDayValue === true || allDayValue === "true";
+
+		if (isAllDay) {
+			// For all-day events, check the date property
+			const dateValue = frontmatter[this._settings.dateProp];
+			if (dateValue) {
+				const eventDate = new Date(String(dateValue));
+				// Set to end of day for comparison
+				eventDate.setHours(23, 59, 59, 999);
+				isPastEvent = eventDate < now;
+			}
+		} else {
+			// For timed events, check the end date
+			const endValue = frontmatter[this._settings.endProp];
+			if (endValue) {
+				const eventEnd = new Date(String(endValue));
+				isPastEvent = eventEnd < now;
+			}
+		}
+
+		// If event is in the past, mark it as done
+		if (isPastEvent) {
+			const currentStatus = frontmatter[this._settings.statusProperty];
+			const doneValue = this._settings.doneValue;
+
+			// Only update if status is not already the done value
+			if (currentStatus !== doneValue) {
+				try {
+					await this.app.fileManager.processFrontMatter(file, (fm) => {
+						fm[this._settings.statusProperty] = doneValue;
+					});
+				} catch (error) {
+					console.error(`Error marking event as done in file ${file.path}:`, error);
+				}
+			}
+		}
 	}
 }
