@@ -239,6 +239,11 @@ export class CloneEventCommand implements Command {
 			if (settings.zettelIdProp) {
 				fm[settings.zettelIdProp] = zettelId;
 			}
+
+			// Remove recurring event metadata to prevent duplicate from being treated as recurring instance
+			delete fm[settings.rruleIdProp];
+			delete fm.nodeRecurringInstanceDate;
+			delete fm[settings.sourceProp];
 		});
 	}
 

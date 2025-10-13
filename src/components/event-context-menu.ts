@@ -413,14 +413,26 @@ export class EventContextMenu {
 			return;
 		}
 
-		// Get file titles for each instance
+		// Get file titles and skipped status for each instance
 		const instancesWithTitles = physicalInstances.map((instance) => {
 			const file = this.app.vault.getAbstractFileByPath(instance.filePath);
 			const title = file instanceof TFile ? file.basename : instance.filePath;
+
+			// Get skipped status from frontmatter
+			let skipped = false;
+			if (file instanceof TFile) {
+				const metadata = this.app.metadataCache.getFileCache(file);
+				const frontmatter = metadata?.frontmatter;
+				if (frontmatter) {
+					skipped = frontmatter[this.bundle.settingsStore.currentSettings.skipProp] === true;
+				}
+			}
+
 			return {
 				filePath: instance.filePath,
 				instanceDate: instance.instanceDate,
 				title,
+				skipped,
 			};
 		});
 

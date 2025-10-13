@@ -1696,12 +1696,12 @@
 }
 
 .recurring-events-list-header {
-	margin-bottom: 1.5rem;
+	margin-bottom: 0.5rem;
 	text-align: center;
 }
 
 .recurring-events-source-title {
-	margin: 0 0 0.5rem 0;
+	margin: 0 0 0.25rem 0;
 	cursor: pointer;
 	transition: all 0.2s ease;
 	padding: 0.5rem;
@@ -1714,26 +1714,42 @@
 	transform: translateY(-1px);
 }
 
-.recurring-events-list-modal .setting-item {
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
-	padding: 1rem;
+.recurring-events-filters {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: center;
 	margin-bottom: 1rem;
-	background-color: var(--background-primary-alt);
+	flex-wrap: wrap;
 }
 
-.recurring-events-list-modal .setting-item-info {
-	flex: 1;
+.recurring-events-filters .setting-item {
+	border: none;
+	padding: 0;
+	margin: 0;
+	background-color: transparent;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 
-.recurring-events-list-modal .setting-item-name {
-	font-weight: 500;
-	margin-bottom: 0.25rem;
+.recurring-events-filters .setting-item-info {
+	flex: 0 0 auto;
+	padding: 0;
 }
 
-.recurring-events-list-modal .setting-item-description {
+.recurring-events-filters .setting-item-name {
+	font-weight: 400;
+	margin: 0;
 	font-size: 0.9em;
-	color: var(--text-muted);
+}
+
+.recurring-events-filters .setting-item-description {
+	display: none;
+}
+
+.recurring-events-filters .setting-item-control {
+	flex-shrink: 0;
 }
 
 .recurring-events-list-container {
@@ -1777,6 +1793,30 @@
 	text-align: center;
 	color: var(--text-muted);
 	padding: 2rem;
+}
+
+.recurring-events-stats {
+	background-color: var(--background-primary-alt);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 0.75rem 1rem;
+	margin-bottom: 0.75rem;
+	text-align: center;
+}
+
+.recurring-events-stats-text {
+	margin: 0;
+	font-size: 0.95em;
+	font-weight: 500;
+	color: var(--text-normal);
+	letter-spacing: 0.3px;
+	word-spacing: 2px;
+}
+
+.recurring-event-title.recurring-event-skipped {
+	opacity: 0.6;
+	text-decoration: line-through;
+	color: var(--text-muted);
 }
 
 /* Move By Modal - Compact Button-Based UI */
