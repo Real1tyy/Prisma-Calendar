@@ -5,13 +5,12 @@ import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
 import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
-import { colord } from "colord";
 import { ItemView, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
 import type { SingleCalendarConfig } from "../types/index";
 import { removeZettelId } from "../utils/calendar-events";
-import { ColorEvaluator, parseColor } from "../utils/colors";
+import { ColorEvaluator } from "../utils/colors";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
 import type { PropertyRendererConfig } from "../utils/property-renderer";
@@ -363,6 +362,25 @@ export class CalendarView extends MountableView(ItemView) {
 
 			eventContent: (arg) => {
 				return this.renderEventContent(arg);
+			},
+
+			eventClassNames: (arg) => {
+				const now = new Date();
+				const eventEnd = arg.event.end || arg.event.start;
+				if (!eventEnd) return [];
+
+				const isPast = eventEnd < now;
+
+				const classes = [];
+				if (isPast) {
+					const contrast = this.bundle.settingsStore.currentSettings.pastEventContrast;
+					if (contrast === 0) {
+						classes.push("past-event-hidden");
+					} else if (contrast < 100) {
+						classes.push("past-event-faded");
+					}
+				}
+				return classes;
 			},
 
 			customButtons: {}, // Initially empty, will be set by updateToolbar
@@ -727,36 +745,29 @@ export class CalendarView extends MountableView(ItemView) {
 		if (info.event.extendedProps.isVirtual) {
 			info.el.classList.add("virtual-event-italic");
 		}
-		// Add custom classes or tooltips here if needed
+
 		const element = info.el;
 		const event = info.event;
 
-		// Ensure the event color is properly applied
-		let eventColor = this.getEventColor({
+		// Apply event color
+		const eventColor = this.getEventColor({
 			title: event.title,
 			meta: event.extendedProps.frontmatterDisplayData,
 		});
 
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (info.isPast) {
-			const contrast = settings.pastEventContrast;
-			if (contrast === 0) {
-				element.classList.add("element-hidden");
-				return;
-			}
-
-			if (contrast < 100) {
-				const hsl = parseColor(eventColor);
-				if (hsl) {
-					hsl.s = Math.round(hsl.s * (contrast / 100));
-					hsl.l = Math.round(hsl.l * (contrast / 100) + (100 - contrast));
-					eventColor = colord(hsl).toHslString();
-				}
-			}
-		}
-
 		element.style.setProperty("--event-color", eventColor);
 		element.classList.add("custom-calendar-event");
+
+		// Set opacity CSS variable for past events
+		const now = new Date();
+		const eventEnd = event.end || event.start;
+		const isPast = eventEnd < now;
+
+		if (isPast) {
+			const contrast = this.bundle.settingsStore.currentSettings.pastEventContrast;
+			const opacity = contrast / 100;
+			element.style.setProperty("--past-event-opacity", opacity.toString());
+		}
 
 		// Add tooltip with file path and frontmatter display data
 		const tooltipParts = [`File: ${event.extendedProps.filePath}`];

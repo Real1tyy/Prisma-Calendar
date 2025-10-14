@@ -1129,6 +1129,15 @@
 	display: none;
 }
 
+/* Past Event Contrast - Applied via JavaScript based on settings */
+.custom-calendar-container .past-event-hidden {
+	display: none;
+}
+
+.custom-calendar-container .past-event-faded {
+	opacity: var(--past-event-opacity, 0.7);
+}
+
 /* Zoom Button Styles */
 .zoom-button-visible {
 	display: "";
