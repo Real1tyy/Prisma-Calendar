@@ -245,9 +245,9 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 			// Check that physical instances are tracked in the map
 			const recurringData = (manager as any).recurringEventsMap.get("test-rrule-123");
-			expect(recurringData.physicalInstances).toHaveLength(2);
-			expect(recurringData.physicalInstances[0].instanceDate.toISODate()).toBe("2024-01-02");
-			expect(recurringData.physicalInstances[1].instanceDate.toISODate()).toBe("2024-01-04");
+			expect(recurringData.physicalInstances.size).toBe(2);
+			expect(recurringData.physicalInstances.has("2024-01-02")).toBe(true);
+			expect(recurringData.physicalInstances.has("2024-01-04")).toBe(true);
 		});
 
 		it("should exclude physical instance dates from virtual generation", async () => {

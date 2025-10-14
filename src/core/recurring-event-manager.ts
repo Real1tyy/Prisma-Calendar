@@ -22,12 +22,14 @@ export interface NodeRecurringEventInstance {
 	created: boolean;
 }
 
+export interface PhysicalInstance {
+	filePath: string;
+	instanceDate: DateTime;
+}
+
 export interface RecurringEventData {
 	recurringEvent: NodeRecurringEvent | null;
-	physicalInstances: Array<{
-		filePath: string;
-		instanceDate: DateTime;
-	}>;
+	physicalInstances: Map<string, PhysicalInstance>;
 }
 export class RecurringEventManager extends ChangeNotifier {
 	private settings: SingleCalendarConfig;
@@ -39,6 +41,7 @@ export class RecurringEventManager extends ChangeNotifier {
 	private indexingComplete = false;
 	private creationLocks: Map<string, Promise<string | null>> = new Map();
 	private sourceFileToRRuleId: Map<string, string> = new Map();
+	private ensureInstancesLocks: Map<string, Promise<void>> = new Map();
 
 	constructor(
 		private app: App,
@@ -69,7 +72,7 @@ export class RecurringEventManager extends ChangeNotifier {
 				if (event.recurringEvent) {
 					this.addRecurringEvent(event.recurringEvent);
 					if (this.indexingComplete) {
-						await this.ensurePhysicalInstances(event.recurringEvent.rRuleId);
+						await this.ensurePhysicalInstancesWithLock(event.recurringEvent.rRuleId);
 					}
 				}
 				break;
@@ -88,7 +91,7 @@ export class RecurringEventManager extends ChangeNotifier {
 		await Promise.all(
 			Array.from(this.recurringEventsMap.entries()).map(async ([rruleId, data]) => {
 				try {
-					await this.ensurePhysicalInstances(rruleId);
+					await this.ensurePhysicalInstancesWithLock(rruleId);
 				} catch (error) {
 					const eventTitle = data?.recurringEvent?.title || "Unknown Event";
 					console.error(`❌ Failed to process recurring event ${eventTitle} (${rruleId}):`, error);
@@ -109,6 +112,7 @@ export class RecurringEventManager extends ChangeNotifier {
 		this.recurringEventsMap.clear();
 		this.creationLocks.clear();
 		this.sourceFileToRRuleId.clear();
+		this.ensureInstancesLocks.clear();
 	}
 
 	private addRecurringEvent(recurringEvent: NodeRecurringEvent): void {
@@ -118,7 +122,7 @@ export class RecurringEventManager extends ChangeNotifier {
 		} else {
 			this.recurringEventsMap.set(recurringEvent.rRuleId, {
 				recurringEvent,
-				physicalInstances: [],
+				physicalInstances: new Map(),
 			});
 		}
 		this.sourceFileToRRuleId.set(recurringEvent.sourceFilePath, recurringEvent.rRuleId);
@@ -137,28 +141,20 @@ export class RecurringEventManager extends ChangeNotifier {
 				if (!recurringData) {
 					recurringData = {
 						recurringEvent: null, // Will be filled when recurring event is found
-						physicalInstances: [],
+						physicalInstances: new Map(),
 					};
 					this.recurringEventsMap.set(rruleId, recurringData);
 				}
 
-				// Check if this instance already exists (either same file path or same date)
-				const existingIndex = recurringData.physicalInstances.findIndex(
-					(instance) => instance.filePath === filePath || instance.instanceDate.equals(parsedInstanceDate)
-				);
-
-				const instance = {
-					filePath,
-					instanceDate: parsedInstanceDate,
-				};
-
-				if (existingIndex !== -1) {
-					// Update existing instance
-					recurringData.physicalInstances[existingIndex] = instance;
-				} else {
-					recurringData.physicalInstances.push(instance);
+				// Use ISO date as key - this automatically prevents duplicates for the same date
+				const dateKey = parsedInstanceDate.toISODate();
+				if (dateKey) {
+					recurringData.physicalInstances.set(dateKey, {
+						filePath,
+						instanceDate: parsedInstanceDate,
+					});
+					this.notifyChange();
 				}
-				this.notifyChange();
 			}
 		}
 	}
@@ -175,12 +171,34 @@ export class RecurringEventManager extends ChangeNotifier {
 
 		// Check if this is an instance file - search through all physical instances
 		for (const [_rruleId, data] of this.recurringEventsMap.entries()) {
-			const index = data.physicalInstances.findIndex((instance) => instance.filePath === event.filePath);
-			if (index !== -1) {
-				data.physicalInstances.splice(index, 1);
-				this.notifyChange();
-				return;
+			// Find and delete the instance by filePath
+			for (const [dateKey, instance] of data.physicalInstances.entries()) {
+				if (instance.filePath === event.filePath) {
+					data.physicalInstances.delete(dateKey);
+					this.notifyChange();
+					return;
+				}
 			}
+		}
+	}
+
+	private async ensurePhysicalInstancesWithLock(rruleId: string): Promise<void> {
+		// Check if there's already an ensure operation in progress for this rruleId
+		const existingLock = this.ensureInstancesLocks.get(rruleId);
+		if (existingLock) {
+			// Wait for the existing operation to complete instead of starting a new one
+			return await existingLock;
+		}
+
+		// Create a new locked operation
+		const lockPromise = this.ensurePhysicalInstances(rruleId);
+		this.ensureInstancesLocks.set(rruleId, lockPromise);
+
+		try {
+			await lockPromise;
+		} finally {
+			// Always remove the lock when done
+			this.ensureInstancesLocks.delete(rruleId);
 		}
 	}
 
@@ -198,7 +216,9 @@ export class RecurringEventManager extends ChangeNotifier {
 
 			const now = DateTime.now().toUTC();
 
-			const futureInstances = physicalInstances.filter((instance) => instance.instanceDate >= now.startOf("day"));
+			const futureInstances = Array.from(physicalInstances.values()).filter(
+				(instance) => instance.instanceDate >= now.startOf("day")
+			);
 
 			const targetInstanceCount = this.calculateTargetInstanceCount(recurringEvent);
 			const currentCount = futureInstances.length;
@@ -211,13 +231,18 @@ export class RecurringEventManager extends ChangeNotifier {
 			let nextDate = this.getNextOccurrenceFromNow(recurringEvent, futureInstances);
 
 			for (let i = 0; i < instancesToCreate; i++) {
-				const filePath = await this.createPhysicalInstance(recurringEvent, nextDate);
+				const dateKey = nextDate.toISODate();
 
-				if (filePath) {
-					data.physicalInstances.push({
-						filePath,
-						instanceDate: nextDate,
-					});
+				// CRITICAL: Check if instance for this date already exists before creating
+				if (dateKey && !physicalInstances.has(dateKey)) {
+					const filePath = await this.createPhysicalInstance(recurringEvent, nextDate);
+
+					if (filePath) {
+						physicalInstances.set(dateKey, {
+							filePath,
+							instanceDate: nextDate,
+						});
+					}
 				}
 
 				nextDate = getNextOccurrence(nextDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
@@ -428,7 +453,7 @@ export class RecurringEventManager extends ChangeNotifier {
 		recurringEvent: NodeRecurringEvent | null,
 		rangeStart: DateTime,
 		rangeEnd: DateTime,
-		physicalInstances: Array<{ filePath: string; instanceDate: DateTime }>
+		physicalInstances: Map<string, PhysicalInstance>
 	): NodeRecurringEventInstance[] {
 		if (!recurringEvent) return [];
 
@@ -441,11 +466,10 @@ export class RecurringEventManager extends ChangeNotifier {
 		// Start virtual events AFTER the latest physical instance
 		let virtualStartDate: DateTime;
 
-		if (physicalInstances.length > 0) {
+		if (physicalInstances.size > 0) {
 			// Sort physical instances and get the latest one
-			const sortedInstances = [...physicalInstances].sort(
-				(a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis()
-			);
+			const instancesArray = Array.from(physicalInstances.values());
+			const sortedInstances = instancesArray.sort((a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis());
 			const latestPhysicalDate = sortedInstances[sortedInstances.length - 1].instanceDate;
 
 			// Start from the next occurrence after the latest physical instance
@@ -548,9 +572,9 @@ export class RecurringEventManager extends ChangeNotifier {
 		return `${folderPath}${instanceTitle}.md`;
 	}
 
-	getPhysicalInstancesByRRuleId(rruleId: string): Array<{ filePath: string; instanceDate: DateTime }> {
+	getPhysicalInstancesByRRuleId(rruleId: string): PhysicalInstance[] {
 		const data = this.recurringEventsMap.get(rruleId);
-		return data?.physicalInstances || [];
+		return data ? Array.from(data.physicalInstances.values()) : [];
 	}
 
 	getSourceEventPath(rruleId: string): string | null {
