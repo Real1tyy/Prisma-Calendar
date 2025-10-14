@@ -6,6 +6,7 @@ export const SCAN_CONCURRENCY = 10;
 // Command IDs (without plugin prefix)
 export const COMMAND_IDS = {
 	SHOW_SKIPPED_EVENTS: "show-skipped-events",
+	SHOW_DISABLED_RECURRING_EVENTS: "show-disabled-recurring-events",
 	UNDO: "undo",
 	REDO: "redo",
 	TOGGLE_BATCH_SELECTION: "toggle-batch-selection",

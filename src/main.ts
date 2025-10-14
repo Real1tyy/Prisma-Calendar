@@ -96,20 +96,34 @@ export default class CustomCalendarPlugin extends Plugin {
 		addUndoRedoCommand(COMMAND_IDS.UNDO, "Undo", (view) => view.undo());
 		addUndoRedoCommand(COMMAND_IDS.REDO, "Redo", (view) => view.redo());
 
-		this.addCommand({
-			id: COMMAND_IDS.SHOW_SKIPPED_EVENTS,
-			name: "Show skipped events",
-			checkCallback: (checking: boolean) => {
-				const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
-				if (calendarView) {
-					if (!checking) {
-						calendarView.showSkippedEventsModal();
+		const addSimpleViewCommand = (
+			id: string,
+			name: string,
+			modalMethod: "showSkippedEventsModal" | "showDisabledRecurringEventsModal"
+		): void => {
+			this.addCommand({
+				id,
+				name,
+				checkCallback: (checking: boolean) => {
+					const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
+					if (calendarView) {
+						if (!checking) {
+							calendarView[modalMethod]();
+						}
+						return true;
 					}
-					return true;
-				}
-				return false;
-			},
-		});
+					return false;
+				},
+			});
+		};
+
+		addSimpleViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", "showSkippedEventsModal");
+
+		addSimpleViewCommand(
+			COMMAND_IDS.SHOW_DISABLED_RECURRING_EVENTS,
+			"Show disabled recurring events",
+			"showDisabledRecurringEventsModal"
+		);
 
 		this.app.workspace.onLayoutReady(() => {
 			this.ensureCalendarBundlesReady();

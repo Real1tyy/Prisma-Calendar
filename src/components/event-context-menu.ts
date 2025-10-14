@@ -69,6 +69,35 @@ export class EventContextMenu {
 		return null;
 	}
 
+	private getSourceFilePath(event: any): string | null {
+		// For source events, return the file path directly
+		if (this.isSourceEvent(event)) {
+			return event.extendedProps?.filePath || null;
+		}
+
+		// For virtual events, the source file path is the event's file path
+		if (this.isVirtualEvent(event)) {
+			return event.extendedProps?.filePath || null;
+		}
+
+		// For physical instances, extract source file path from the source property
+		if (this.isPhysicalEvent(event)) {
+			const settings = this.bundle.settingsStore.currentSettings;
+			const frontmatter = event.extendedProps?.frontmatterDisplayData;
+			const sourceLink = frontmatter?.[settings.sourceProp];
+
+			if (!sourceLink) return null;
+
+			// Use Obsidian's link resolution to get the actual file
+			const linkPath = getObsidianLinkPath(sourceLink);
+			const sourceFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, event.extendedProps?.filePath || "");
+
+			return sourceFile?.path || null;
+		}
+
+		return null;
+	}
+
 	show(e: MouseEvent, info: any): void {
 		const menu = new Menu();
 		const event = info.event;
@@ -94,7 +123,7 @@ export class EventContextMenu {
 			});
 		}
 
-		if (this.isSourceEvent(event) || this.isPhysicalEvent(event)) {
+		if (this.isSourceEvent(event) || this.isPhysicalEvent(event) || this.isVirtualEvent(event)) {
 			menu.addItem((item) => {
 				item
 					.setTitle("View recurring events")
@@ -105,103 +134,129 @@ export class EventContextMenu {
 			});
 		}
 
+		// Only show file-based operations for non-virtual events
+		if (!this.isVirtualEvent(event)) {
+			menu.addSeparator();
+
+			menu.addItem((item) => {
+				item
+					.setTitle("Edit event")
+					.setIcon("edit")
+					.onClick(() => {
+						this.openEventEditModal(event);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle("Duplicate event")
+					.setIcon("copy")
+					.onClick(() => {
+						this.duplicateEvent(event);
+					});
+			});
+
+			menu.addSeparator();
+
+			menu.addItem((item) => {
+				item
+					.setTitle("Move by...")
+					.setIcon("move")
+					.onClick(() => {
+						this.moveEventBy(event);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle("Move to next week")
+					.setIcon("arrow-right")
+					.onClick(() => {
+						this.moveEventByWeeks(event, 1);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle("Clone to next week")
+					.setIcon("copy-plus")
+					.onClick(() => {
+						this.cloneEventByWeeks(event, 1);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle("Move to previous week")
+					.setIcon("arrow-left")
+					.onClick(() => {
+						this.moveEventByWeeks(event, -1);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle("Clone to previous week")
+					.setIcon("copy-minus")
+					.onClick(() => {
+						this.cloneEventByWeeks(event, -1);
+					});
+			});
+
+			menu.addSeparator();
+
+			menu.addItem((item) => {
+				item
+					.setTitle("Delete event")
+					.setIcon("trash")
+					.onClick(() => {
+						this.deleteEvent(event);
+					});
+			});
+			menu.addItem((item) => {
+				item
+					.setTitle("Skip event")
+					.setIcon("eye-off")
+					.onClick(() => {
+						this.toggleSkipEvent(event);
+					});
+			});
+			menu.addItem((item) => {
+				item
+					.setTitle("Open file")
+					.setIcon("file-text")
+					.onClick(() => {
+						this.app.workspace.openLinkText(filePath, "", false);
+					});
+			});
+		}
+
 		menu.addSeparator();
 
-		menu.addItem((item) => {
-			item
-				.setTitle("Edit event")
-				.setIcon("edit")
-				.onClick(() => {
-					this.openEventEditModal(event);
-				});
-		});
+		// Show "Disable"/"Enable" button for recurring events (source, physical, virtual)
+		if (this.isSourceEvent(event) || this.isPhysicalEvent(event) || this.isVirtualEvent(event)) {
+			// Determine if the source is currently disabled (skipped)
+			let isDisabled = false;
+			const settings = this.bundle.settingsStore.currentSettings;
 
-		menu.addItem((item) => {
-			item
-				.setTitle("Duplicate event")
-				.setIcon("copy")
-				.onClick(() => {
-					this.duplicateEvent(event);
-				});
-		});
+			const sourceFilePath = this.getSourceFilePath(event);
+			if (sourceFilePath) {
+				const sourceFile = this.app.vault.getAbstractFileByPath(sourceFilePath);
+				if (sourceFile instanceof TFile) {
+					const metadata = this.app.metadataCache.getFileCache(sourceFile);
+					isDisabled = metadata?.frontmatter?.[settings.skipProp] === true;
+				}
+			}
 
-		menu.addSeparator();
-
-		menu.addItem((item) => {
-			item
-				.setTitle("Move by...")
-				.setIcon("move")
-				.onClick(() => {
-					this.moveEventBy(event);
-				});
-		});
-
-		menu.addItem((item) => {
-			item
-				.setTitle("Move to next week")
-				.setIcon("arrow-right")
-				.onClick(() => {
-					this.moveEventByWeeks(event, 1);
-				});
-		});
-
-		menu.addItem((item) => {
-			item
-				.setTitle("Clone to next week")
-				.setIcon("copy-plus")
-				.onClick(() => {
-					this.cloneEventByWeeks(event, 1);
-				});
-		});
-
-		menu.addItem((item) => {
-			item
-				.setTitle("Move to previous week")
-				.setIcon("arrow-left")
-				.onClick(() => {
-					this.moveEventByWeeks(event, -1);
-				});
-		});
-
-		menu.addItem((item) => {
-			item
-				.setTitle("Clone to previous week")
-				.setIcon("copy-minus")
-				.onClick(() => {
-					this.cloneEventByWeeks(event, -1);
-				});
-		});
-
-		menu.addSeparator();
-
-		menu.addItem((item) => {
-			item
-				.setTitle("Delete event")
-				.setIcon("trash")
-				.onClick(() => {
-					this.deleteEvent(event);
-				});
-		});
-
-		menu.addSeparator();
-
-		menu.addItem((item) => {
-			item
-				.setTitle("Skip event")
-				.setIcon("eye-off")
-				.onClick(() => {
-					this.toggleSkipEvent(event);
-				});
-		});
-
-		menu.addItem((item) => {
-			item
-				.setTitle("Open file")
-				.setIcon("file-text")
-				.onClick(() => {
-					this.app.workspace.openLinkText(filePath, "", false);
-				});
-		});
+			menu.addItem((item) => {
+				item
+					.setTitle(isDisabled ? "Enable recurring event" : "Disable recurring event")
+					.setIcon(isDisabled ? "eye" : "eye-off")
+					.onClick(() => {
+						this.toggleRecurringEvent(event);
+					});
+			});
+		}
 
 		menu.showAtMouseEvent(e);
 	}
@@ -305,6 +360,24 @@ export class EventContextMenu {
 		}
 	}
 
+	async toggleRecurringEvent(event: any): Promise<void> {
+		const sourceFilePath = this.getSourceFilePath(event);
+		if (!sourceFilePath) {
+			new Notice("Failed to toggle recurring event: No source file found");
+			return;
+		}
+
+		try {
+			const command = new ToggleSkipCommand(this.app, this.bundle, sourceFilePath);
+			await this.bundle.commandManager.executeCommand(command);
+
+			new Notice("Recurring event toggled");
+		} catch (error) {
+			console.error("Failed to toggle recurring event:", error);
+			new Notice("Failed to toggle recurring event");
+		}
+	}
+
 	async toggleSkipEvent(event: any): Promise<void> {
 		const filePath = this.getFilePathOrNotice(event, "toggle skip event");
 		if (!filePath) return;
@@ -369,17 +442,11 @@ export class EventContextMenu {
 	}
 
 	private goToSourceEvent(event: any): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const frontmatter = event.extendedProps?.frontmatterDisplayData;
-		const sourceLink = frontmatter?.[settings.sourceProp];
+		const sourceFilePath = this.getSourceFilePath(event);
 
-		if (typeof sourceLink === "string") {
-			const sourceFilePath = getObsidianLinkPath(sourceLink);
-
-			if (sourceFilePath && sourceFilePath !== sourceLink) {
-				this.app.workspace.openLinkText(sourceFilePath, "", false);
-				return;
-			}
+		if (sourceFilePath) {
+			this.app.workspace.openLinkText(sourceFilePath, "", false);
+			return;
 		}
 
 		new Notice("Source event not found");

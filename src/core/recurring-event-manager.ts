@@ -190,6 +190,12 @@ export class RecurringEventManager extends ChangeNotifier {
 
 		try {
 			const { recurringEvent, physicalInstances } = data;
+
+			const isSkipped = recurringEvent.frontmatter[this.settings.skipProp] === true;
+			if (isSkipped) {
+				return;
+			}
+
 			const now = DateTime.now().toUTC();
 
 			const futureInstances = physicalInstances.filter((instance) => instance.instanceDate >= now.startOf("day"));
@@ -360,6 +366,7 @@ export class RecurringEventManager extends ChangeNotifier {
 				this.settings.endProp,
 				this.settings.dateProp,
 				this.settings.allDayProp,
+				"_Archived", // Don't copy _Archived property from source to instances
 			]);
 
 			for (const [key, value] of Object.entries(recurringEvent.frontmatter)) {
@@ -424,6 +431,12 @@ export class RecurringEventManager extends ChangeNotifier {
 		physicalInstances: Array<{ filePath: string; instanceDate: DateTime }>
 	): NodeRecurringEventInstance[] {
 		if (!recurringEvent) return [];
+
+		// Don't generate virtual events if recurring event is disabled (skipped)
+		const isSkipped = recurringEvent.frontmatter[this.settings.skipProp] === true;
+		if (isSkipped) {
+			return [];
+		}
 
 		// Start virtual events AFTER the latest physical instance
 		let virtualStartDate: DateTime;
@@ -547,5 +560,25 @@ export class RecurringEventManager extends ChangeNotifier {
 
 	getAllRRuleIds(): string[] {
 		return Array.from(this.recurringEventsMap.keys());
+	}
+
+	getDisabledRecurringEvents(): Array<{ filePath: string; title: string }> {
+		const disabledEvents: Array<{ filePath: string; title: string }> = [];
+
+		// Iterate through the already-tracked recurring events
+		for (const data of this.recurringEventsMap.values()) {
+			if (!data.recurringEvent) continue;
+
+			// Check if this recurring event is disabled (skipped)
+			const isSkipped = data.recurringEvent.frontmatter[this.settings.skipProp] === true;
+			if (isSkipped) {
+				disabledEvents.push({
+					filePath: data.recurringEvent.sourceFilePath,
+					title: data.recurringEvent.title,
+				});
+			}
+		}
+
+		return disabledEvents;
 	}
 }

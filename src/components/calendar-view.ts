@@ -21,6 +21,7 @@ import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
+import { createDisabledRecurringEventsModal, type GenericEventListModal } from "./generic-event-list-modal";
 import { SkippedEventsModal } from "./skipped-events-modal";
 import { ZoomManager } from "./zoom-manager";
 
@@ -39,6 +40,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private container!: HTMLElement;
 	private viewType: string;
 	private skippedEventsModal: SkippedEventsModal | null = null;
+	private disabledRecurringEventsModal: GenericEventListModal | null = null;
 	private isIndexingComplete = false;
 
 	constructor(
@@ -153,17 +155,24 @@ export class CalendarView extends MountableView(ItemView) {
 				className: "batch-action-btn skip-btn",
 			};
 		} else {
-			headerToolbar.right = `skippedEvents batchSelect ${viewSwitchers}`;
+			headerToolbar.right = `disabledRecurringEvents skippedEvents batchSelect ${viewSwitchers}`;
 			customButtons.batchSelect = {
 				text: "Batch Select",
 				click: () => this.toggleBatchSelection(),
 			};
 			// Preserve button text from previous update (important for batch mode toggle)
-			const currentButton = this.calendar.getOption("customButtons")?.skippedEvents;
-			const currentText = currentButton?.text || "0 skipped";
+			const currentSkippedButton = this.calendar.getOption("customButtons")?.skippedEvents;
+			const currentSkippedText = currentSkippedButton?.text || "0 skipped";
 			customButtons.skippedEvents = {
-				text: currentText,
+				text: currentSkippedText,
 				click: () => this.showSkippedEventsModal(),
+			};
+
+			const currentDisabledButton = this.calendar.getOption("customButtons")?.disabledRecurringEvents;
+			const currentDisabledText = currentDisabledButton?.text || "0 disabled";
+			customButtons.disabledRecurringEvents = {
+				text: currentDisabledText,
+				click: () => this.showDisabledRecurringEventsModal(),
 			};
 		}
 
@@ -172,11 +181,18 @@ export class CalendarView extends MountableView(ItemView) {
 
 		// Preserve button visibility based on current text
 		setTimeout(() => {
-			const btn = this.container.querySelector(".fc-skippedEvents-button");
-			if (btn instanceof HTMLElement) {
-				const currentText = btn.textContent || "";
+			const skippedBtn = this.container.querySelector(".fc-skippedEvents-button");
+			if (skippedBtn instanceof HTMLElement) {
+				const currentText = skippedBtn.textContent || "";
 				const hasSkipped = !currentText.startsWith("0 ");
-				btn.style.display = hasSkipped ? "inline-block" : "none";
+				skippedBtn.style.display = hasSkipped ? "inline-block" : "none";
+			}
+
+			const disabledBtn = this.container.querySelector(".fc-disabledRecurringEvents-button");
+			if (disabledBtn instanceof HTMLElement) {
+				const currentText = disabledBtn.textContent || "";
+				const hasDisabled = !currentText.startsWith("0 ");
+				disabledBtn.style.display = hasDisabled ? "inline-block" : "none";
 			}
 		}, 0);
 	}
@@ -217,6 +233,33 @@ export class CalendarView extends MountableView(ItemView) {
 		}, 0);
 	}
 
+	private updateDisabledRecurringEventsButton(): void {
+		if (!this.calendar) return;
+
+		const disabledEvents = this.bundle.recurringEventManager.getDisabledRecurringEvents();
+		const count = disabledEvents.length;
+
+		// Create NEW customButtons object so FullCalendar detects the change
+		const oldButtons = this.calendar.getOption("customButtons") || {};
+		const customButtons = {
+			...oldButtons,
+			disabledRecurringEvents: {
+				text: `${count} disabled`,
+				click: () => this.showDisabledRecurringEventsModal(),
+			},
+		};
+		this.calendar.setOption("customButtons", customButtons);
+
+		// Update button visibility and tooltip (re-query after customButtons update since DOM may be recreated)
+		setTimeout(() => {
+			const btn = this.container.querySelector(".fc-disabledRecurringEvents-button");
+			if (btn instanceof HTMLElement) {
+				btn.style.display = count > 0 ? "inline-block" : "none";
+				btn.title = `${count} recurring event${count === 1 ? "" : "s"} disabled`;
+			}
+		}, 0);
+	}
+
 	async showSkippedEventsModal(): Promise<void> {
 		if (this.skippedEventsModal) {
 			const modalToClose = this.skippedEventsModal;
@@ -248,6 +291,42 @@ export class CalendarView extends MountableView(ItemView) {
 		modal.onClose = () => {
 			originalOnClose();
 			this.skippedEventsModal = null;
+		};
+
+		modal.open();
+	}
+
+	showDisabledRecurringEventsModal(): void {
+		if (this.disabledRecurringEventsModal) {
+			const modalToClose = this.disabledRecurringEventsModal;
+			this.disabledRecurringEventsModal = null;
+			modalToClose.close();
+			return;
+		}
+
+		const disabledEvents = this.bundle.recurringEventManager.getDisabledRecurringEvents();
+
+		this.disabledRecurringEventsModal = createDisabledRecurringEventsModal(
+			this.app,
+			this.bundle,
+			disabledEvents,
+			() => {
+				// Called when hotkey is pressed while modal is open
+				if (this.disabledRecurringEventsModal) {
+					const modalToClose = this.disabledRecurringEventsModal;
+					this.disabledRecurringEventsModal = null;
+					modalToClose.close();
+				}
+			}
+		);
+
+		const modal = this.disabledRecurringEventsModal;
+		const originalOnClose = modal.onClose.bind(modal);
+		modal.onClose = () => {
+			originalOnClose();
+			this.disabledRecurringEventsModal = null;
+			// Refresh the button count when modal closes
+			this.updateDisabledRecurringEventsButton();
 		};
 
 		modal.open();
@@ -329,21 +408,21 @@ export class CalendarView extends MountableView(ItemView) {
 			},
 
 			eventMouseEnter: (info) => {
-				if (info.event.extendedProps.isVirtual) {
-					return;
-				}
-
+				// Always add context menu for all events (including virtual)
 				info.el.addEventListener("contextmenu", (e) => {
 					e.preventDefault();
 					this.eventContextMenu.show(e, info);
 				});
 
-				const settings = this.bundle.settingsStore.currentSettings;
-				const filePath = info.event.extendedProps.filePath as string | undefined;
-				if (settings.enableEventPreview && filePath) {
-					info.el.addEventListener("mouseenter", (e) => {
-						emitHover(this.app, this.container, info.el, e, filePath, this.bundle.calendarId);
-					});
+				// Only add hover preview for non-virtual events
+				if (!info.event.extendedProps.isVirtual) {
+					const settings = this.bundle.settingsStore.currentSettings;
+					const filePath = info.event.extendedProps.filePath as string | undefined;
+					if (settings.enableEventPreview && filePath) {
+						info.el.addEventListener("mouseenter", (e) => {
+							emitHover(this.app, this.container, info.el, e, filePath, this.bundle.calendarId);
+						});
+					}
 				}
 			},
 
@@ -457,6 +536,9 @@ export class CalendarView extends MountableView(ItemView) {
 
 			const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
 			this.updateSkippedEventsButton(skippedEvents.length);
+
+			// Update disabled recurring events button
+			this.updateDisabledRecurringEventsButton();
 
 			// Convert to FullCalendar event format
 			const calendarEvents = events.map((event) => {

@@ -191,9 +191,11 @@ export class Indexer {
 
 		const events: IndexerEvent[] = [];
 
-		// Check if this is a recurring event source
 		const recurring = await this.tryParseRecurring(file, frontmatter);
 		if (recurring) {
+			// Always add recurring events even if skipped - this allows navigation
+			// to source from physical instances and viewing recurring event lists.
+			// The RecurringEventManager will check skip property and not generate new instances.
 			events.push({
 				type: "recurring-event-found",
 				filePath: file.path,
@@ -264,6 +266,12 @@ export class Indexer {
 	}
 
 	private async markPastEventAsDone(file: TFile, frontmatter: Record<string, unknown>): Promise<void> {
+		// Don't mark source recurring events as done - they are templates for future instances
+		const isSourceRecurringEvent = !!frontmatter[this._settings.rruleProp];
+		if (isSourceRecurringEvent) {
+			return;
+		}
+
 		const now = new Date();
 		let isPastEvent = false;
 
