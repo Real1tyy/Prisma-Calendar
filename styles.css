@@ -1640,22 +1640,22 @@
 	}
 }
 
-/* Skipped Events Modal */
-.skipped-events-modal h2 {
+/* Generic Event List Modal (used by Skipped Events and Disabled Recurring Events) */
+.generic-event-list-modal h2 {
 	margin-bottom: 1rem;
 }
 
-.skipped-events-modal .skipped-count {
+.generic-event-list-modal .generic-event-list-count {
 	margin-bottom: 1.5rem;
 	color: var(--text-muted);
 }
 
-.skipped-events-list {
+.generic-event-list {
 	max-height: 400px;
 	overflow-y: auto;
 }
 
-.skipped-event-item {
+.generic-event-list-item {
 	padding: 0.75rem;
 	margin-bottom: 0.5rem;
 	border: 1px solid var(--background-modifier-border);
@@ -1667,25 +1667,25 @@
 	transition: opacity 0.2s;
 }
 
-.skipped-event-item:hover {
+.generic-event-list-item:hover {
 	background-color: var(--background-modifier-hover);
 }
 
-.skipped-event-item .event-info {
+.generic-event-list-item .generic-event-info {
 	flex: 1;
 }
 
-.skipped-event-item .event-title {
+.generic-event-list-item .generic-event-title {
 	font-weight: 500;
 	margin-bottom: 0.25rem;
 }
 
-.skipped-event-item .event-time {
+.generic-event-list-item .generic-event-subtitle {
 	font-size: 0.85em;
 	color: var(--text-muted);
 }
 
-.skipped-event-item .event-actions {
+.generic-event-list-item .generic-event-actions {
 	display: flex;
 	gap: 0.5rem;
 }

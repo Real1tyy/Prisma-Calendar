@@ -1,10 +1,14 @@
+import { DateTime } from "luxon";
 import { type App, Modal, Notice } from "obsidian";
 import { FULL_COMMAND_IDS } from "../constants";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { ToggleSkipCommand } from "../core/commands";
+import type { ParsedEvent } from "../core/parser";
 import { removeZettelId } from "../utils/calendar-events";
+import { formatDurationHumanReadable } from "../utils/format";
 
 export interface EventListItem {
+	id?: string; // Optional unique identifier (used for skipped events)
 	filePath: string;
 	title: string;
 	subtitle?: string; // Optional secondary info (e.g., date, path)
@@ -20,11 +24,13 @@ export interface EventListAction {
 export interface EventListModalConfig {
 	title: string;
 	emptyMessage: string;
+	countSuffix?: string; // Optional suffix for count text (e.g., "currently skipped")
 	items: EventListItem[];
 	actions: EventListAction[];
 	closeCallback?: () => void;
 	hotkeyCommandId?: string;
 	onItemClick?: (item: EventListItem) => void;
+	successMessage?: string; // Optional message shown when all items are processed
 }
 
 export class GenericEventListModal extends Modal {
@@ -70,13 +76,16 @@ export class GenericEventListModal extends Modal {
 		}
 
 		// Count
+		const countText = this.config.countSuffix
+			? `${this.config.items.length} event${this.config.items.length === 1 ? "" : "s"} ${this.config.countSuffix}`
+			: `${this.config.items.length} event${this.config.items.length === 1 ? "" : "s"}`;
 		contentEl.createEl("p", {
-			text: `${this.config.items.length} event${this.config.items.length === 1 ? "" : "s"}`,
-			cls: "event-list-count",
+			text: countText,
+			cls: "generic-event-list-count",
 		});
 
 		// Event list
-		const listEl = contentEl.createEl("div", { cls: "event-list" });
+		const listEl = contentEl.createEl("div", { cls: "generic-event-list" });
 
 		for (const item of this.config.items) {
 			this.createEventItem(listEl, item);
@@ -84,35 +93,25 @@ export class GenericEventListModal extends Modal {
 	}
 
 	private createEventItem(container: HTMLElement, item: EventListItem): void {
-		const itemEl = container.createEl("div", { cls: "event-list-item" });
+		const itemEl = container.createEl("div", { cls: "generic-event-list-item" });
 
 		// Event info
-		const infoEl = itemEl.createEl("div", { cls: "event-info" });
+		const infoEl = itemEl.createEl("div", { cls: "generic-event-info" });
 
-		// Title (clickable)
-		const titleEl = infoEl.createEl("div", { cls: "event-title" });
+		// Title
+		const titleEl = infoEl.createEl("div", { cls: "generic-event-title" });
 		const cleanTitle = removeZettelId(item.title);
 		titleEl.textContent = cleanTitle;
 
-		if (this.config.onItemClick) {
-			titleEl.addClass("clickable");
-			titleEl.onclick = () => {
-				if (this.config.onItemClick) {
-					this.config.onItemClick(item);
-					this.close();
-				}
-			};
-		}
-
-		// Subtitle (optional)
+		// Subtitle (time/path info)
 		if (item.subtitle) {
-			const subtitleEl = infoEl.createEl("div", { cls: "event-subtitle" });
+			const subtitleEl = infoEl.createEl("div", { cls: "generic-event-subtitle" });
 			subtitleEl.textContent = item.subtitle;
 		}
 
 		// Action buttons
 		if (this.config.actions.length > 0) {
-			const actionsEl = itemEl.createEl("div", { cls: "event-actions" });
+			const actionsEl = itemEl.createEl("div", { cls: "generic-event-actions" });
 
 			for (const action of this.config.actions) {
 				const btn = actionsEl.createEl("button", { text: action.label });
@@ -139,15 +138,23 @@ export class GenericEventListModal extends Modal {
 		setTimeout(() => {
 			itemEl.remove();
 
-			// Update remaining items
-			this.config.items = this.config.items.filter((i) => i.filePath !== item.filePath);
+			// Update remaining items - prefer id over filePath for filtering
+			if (item.id) {
+				this.config.items = this.config.items.filter((i) => i.id !== item.id);
+			} else {
+				this.config.items = this.config.items.filter((i) => i.filePath !== item.filePath);
+			}
 
 			// Update count or close if empty
-			const countEl = this.contentEl.querySelector(".event-list-count");
+			const countEl = this.contentEl.querySelector(".generic-event-list-count");
 			if (countEl && this.config.items.length > 0) {
-				countEl.textContent = `${this.config.items.length} event${this.config.items.length === 1 ? "" : "s"}`;
+				const countText = this.config.countSuffix
+					? `${this.config.items.length} event${this.config.items.length === 1 ? "" : "s"} ${this.config.countSuffix}`
+					: `${this.config.items.length} event${this.config.items.length === 1 ? "" : "s"}`;
+				countEl.textContent = countText;
 			} else if (this.config.items.length === 0) {
-				new Notice("All items processed!");
+				const message = this.config.successMessage || "All items processed!";
+				new Notice(message);
 				this.close();
 			}
 		}, 200);
@@ -200,6 +207,73 @@ export function createDisabledRecurringEventsModal(
 		],
 		closeCallback,
 		hotkeyCommandId: FULL_COMMAND_IDS.SHOW_DISABLED_RECURRING_EVENTS,
+	};
+
+	modalInstance = new GenericEventListModal(app, config);
+	return modalInstance;
+}
+
+// Factory function for creating skipped events modal
+export function createSkippedEventsModal(
+	app: App,
+	bundle: CalendarBundle,
+	skippedEvents: ParsedEvent[],
+	closeCallback?: () => void
+): GenericEventListModal {
+	let modalInstance: GenericEventListModal;
+
+	// Helper to format time info for subtitle
+	const formatTimeInfo = (event: ParsedEvent): string => {
+		const startTime = DateTime.fromISO(event.start);
+		if (event.allDay) {
+			return `All Day - ${startTime.toFormat("MMM d, yyyy")}`;
+		}
+		const endTime = event.end ? DateTime.fromISO(event.end) : null;
+		if (endTime) {
+			const durationText = formatDurationHumanReadable(startTime, endTime);
+			return `${startTime.toFormat("MMM d, yyyy - h:mm a")} (${durationText})`;
+		}
+		return startTime.toFormat("MMM d, yyyy - h:mm a");
+	};
+
+	const config: EventListModalConfig = {
+		title: "Skipped Events",
+		emptyMessage: "No skipped events in the current view.",
+		countSuffix: "currently skipped",
+		items: skippedEvents.map((event) => ({
+			id: event.id,
+			filePath: event.ref.filePath,
+			title: event.title,
+			subtitle: formatTimeInfo(event),
+		})),
+		actions: [
+			{
+				label: "Un-skip",
+				isPrimary: true,
+				handler: async (item, itemEl) => {
+					try {
+						const command = new ToggleSkipCommand(app, bundle, item.filePath);
+						await bundle.commandManager.executeCommand(command);
+
+						modalInstance.removeItem(itemEl, item);
+
+						new Notice("Event un-skipped");
+					} catch (error) {
+						console.error("Failed to un-skip event:", error);
+						new Notice("Failed to un-skip event");
+					}
+				},
+			},
+			{
+				label: "Open",
+				handler: (item) => {
+					app.workspace.openLinkText(item.filePath, "", false);
+				},
+			},
+		],
+		closeCallback,
+		hotkeyCommandId: FULL_COMMAND_IDS.SHOW_SKIPPED_EVENTS,
+		successMessage: "All events un-skipped!",
 	};
 
 	modalInstance = new GenericEventListModal(app, config);

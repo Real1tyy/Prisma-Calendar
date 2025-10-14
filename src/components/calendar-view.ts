@@ -21,8 +21,11 @@ import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
-import { createDisabledRecurringEventsModal, type GenericEventListModal } from "./generic-event-list-modal";
-import { SkippedEventsModal } from "./skipped-events-modal";
+import {
+	createDisabledRecurringEventsModal,
+	createSkippedEventsModal,
+	type GenericEventListModal,
+} from "./generic-event-list-modal";
 import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";
@@ -39,7 +42,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private zoomManager: ZoomManager;
 	private container!: HTMLElement;
 	private viewType: string;
-	private skippedEventsModal: SkippedEventsModal | null = null;
+	private skippedEventsModal: GenericEventListModal | null = null;
 	private disabledRecurringEventsModal: GenericEventListModal | null = null;
 	private isIndexingComplete = false;
 
@@ -277,7 +280,7 @@ export class CalendarView extends MountableView(ItemView) {
 		const end = view.activeEnd.toISOString();
 		const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
 
-		this.skippedEventsModal = new SkippedEventsModal(this.app, this.bundle, skippedEvents, () => {
+		this.skippedEventsModal = createSkippedEventsModal(this.app, this.bundle, skippedEvents, () => {
 			// Called when hotkey is pressed while modal is open
 			if (this.skippedEventsModal) {
 				const modalToClose = this.skippedEventsModal;
