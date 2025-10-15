@@ -155,7 +155,7 @@ export class Indexer {
 		const renamed$ = this.fromVaultEvent("rename");
 
 		const changedIntents$ = merge(created$, modified$).pipe(
-			this.debounceByPath(250, (f) => f.path),
+			this.debounceByPath(100, (f) => f.path),
 			map((file): FileIntent => ({ kind: "changed", file, path: file.path }))
 		);
 
