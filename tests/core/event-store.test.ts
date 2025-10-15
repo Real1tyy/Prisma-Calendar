@@ -1,5 +1,5 @@
 import { Subject } from "rxjs";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type EventQuery, EventStore } from "../../src/core/event-store";
 import type { IndexerEvent } from "../../src/core/indexer";
 import type { ParsedEvent } from "../../src/core/parser";
@@ -172,12 +172,23 @@ describe("EventStore", () => {
 	});
 
 	describe("RxJS subscriptions", () => {
+		beforeEach(() => {
+			vi.useFakeTimers();
+		});
+
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
 		it("should notify subscribers when events are updated", () => {
 			const subscriber = vi.fn();
 			const subscription = eventStore.subscribe(subscriber);
 
 			const event = createMockEvent();
 			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+
+			// Advance time to trigger debounced notification
+			vi.advanceTimersByTime(150);
 
 			expect(subscriber).toHaveBeenCalled();
 			subscription.unsubscribe();
@@ -186,11 +197,13 @@ describe("EventStore", () => {
 		it("should notify subscribers when events are invalidated", () => {
 			const event = createMockEvent();
 			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+			vi.advanceTimersByTime(150);
 
 			const subscriber = vi.fn();
 			const subscription = eventStore.subscribe(subscriber);
 
 			eventStore.invalidate("Events/meeting.md");
+			vi.advanceTimersByTime(150);
 
 			expect(subscriber).toHaveBeenCalled();
 			subscription.unsubscribe();
@@ -214,6 +227,7 @@ describe("EventStore", () => {
 			const subscription = eventStore.subscribe(subscriber);
 
 			eventStore.invalidate("Events/non-existent.md");
+			vi.advanceTimersByTime(150);
 
 			expect(subscriber).not.toHaveBeenCalled();
 			subscription.unsubscribe();
@@ -228,6 +242,7 @@ describe("EventStore", () => {
 
 			const event = createMockEvent();
 			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+			vi.advanceTimersByTime(150);
 
 			expect(subscriber1).toHaveBeenCalled();
 			expect(subscriber2).toHaveBeenCalled();
@@ -242,11 +257,13 @@ describe("EventStore", () => {
 
 			const event = createMockEvent();
 			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+			vi.advanceTimersByTime(150);
 
 			expect(subscriber).toHaveBeenCalledTimes(1);
 
 			subscription.unsubscribe();
 			eventStore.updateEvent("Events/meeting2.md", event, 1642204800001);
+			vi.advanceTimersByTime(150);
 
 			// Should still be 1, not called again after unsubscribe
 			expect(subscriber).toHaveBeenCalledTimes(1);
@@ -261,6 +278,7 @@ describe("EventStore", () => {
 
 			const event = createMockEvent();
 			eventStore.updateEvent("Events/meeting.md", event, 1642204800000);
+			vi.advanceTimersByTime(150);
 
 			expect(subscriber1).toHaveBeenCalled();
 			expect(subscriber2).toHaveBeenCalled();

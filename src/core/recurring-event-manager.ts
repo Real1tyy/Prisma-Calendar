@@ -42,6 +42,7 @@ export class RecurringEventManager extends ChangeNotifier {
 	private creationLocks: Map<string, Promise<string | null>> = new Map();
 	private sourceFileToRRuleId: Map<string, string> = new Map();
 	private ensureInstancesLocks: Map<string, Promise<void>> = new Map();
+	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(
 		private app: App,
@@ -101,6 +102,10 @@ export class RecurringEventManager extends ChangeNotifier {
 	}
 
 	destroy(): void {
+		if (this.refreshTimeout) {
+			clearTimeout(this.refreshTimeout);
+			this.refreshTimeout = null;
+		}
 		this.subscription?.unsubscribe();
 		this.subscription = null;
 		this.settingsSubscription?.unsubscribe();
@@ -153,10 +158,24 @@ export class RecurringEventManager extends ChangeNotifier {
 						filePath,
 						instanceDate: parsedInstanceDate,
 					});
-					this.notifyChange();
+					this.scheduleRefresh();
 				}
 			}
 		}
+	}
+
+	/**
+	 * Debounced refresh to prevent excessive notifications when many physical instances are created/updated rapidly.
+	 * Batches rapid changes into a single notification after 150ms of inactivity.
+	 */
+	private scheduleRefresh(): void {
+		if (this.refreshTimeout) {
+			clearTimeout(this.refreshTimeout);
+		}
+		this.refreshTimeout = setTimeout(() => {
+			this.notifyChange();
+			this.refreshTimeout = null;
+		}, 150);
 	}
 
 	private handleFileDeleted(event: IndexerEvent): void {
@@ -165,7 +184,7 @@ export class RecurringEventManager extends ChangeNotifier {
 		if (rruleId) {
 			this.recurringEventsMap.delete(rruleId);
 			this.sourceFileToRRuleId.delete(event.filePath);
-			this.notifyChange();
+			this.scheduleRefresh();
 			return;
 		}
 
@@ -175,7 +194,7 @@ export class RecurringEventManager extends ChangeNotifier {
 			for (const [dateKey, instance] of data.physicalInstances.entries()) {
 				if (instance.filePath === event.filePath) {
 					data.physicalInstances.delete(dateKey);
-					this.notifyChange();
+					this.scheduleRefresh();
 					return;
 				}
 			}

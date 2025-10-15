@@ -24,6 +24,7 @@ export interface CachedEvent {
 export class EventStore extends ChangeNotifier {
 	private cache = new Map<string, CachedEvent>();
 	private subscription: Subscription | null = null;
+	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(
 		private indexer: Indexer,
@@ -66,20 +67,38 @@ export class EventStore extends ChangeNotifier {
 	}
 
 	destroy(): void {
+		if (this.refreshTimeout) {
+			clearTimeout(this.refreshTimeout);
+			this.refreshTimeout = null;
+		}
 		this.subscription?.unsubscribe();
 		this.subscription = null;
 		super.destroy();
 		this.clear();
 	}
 
+	/**
+	 * Debounced refresh to prevent excessive notifications when many files are processed rapidly.
+	 * Batches rapid changes into a single notification after 150ms of inactivity.
+	 */
+	private scheduleRefresh(): void {
+		if (this.refreshTimeout) {
+			clearTimeout(this.refreshTimeout);
+		}
+		this.refreshTimeout = setTimeout(() => {
+			this.notifyChange();
+			this.refreshTimeout = null;
+		}, 150);
+	}
+
 	updateEvent(filePath: string, template: ParsedEvent, mtime: number): void {
 		this.cache.set(filePath, { template, mtime });
-		this.notifyChange();
+		this.scheduleRefresh();
 	}
 
 	invalidate(filePath: string): void {
 		if (this.cache.delete(filePath)) {
-			this.notifyChange();
+			this.scheduleRefresh();
 		}
 	}
 
@@ -117,6 +136,7 @@ export class EventStore extends ChangeNotifier {
 
 	clear(): void {
 		this.cache.clear();
+		// Clear is immediate - no debouncing
 		this.notifyChange();
 	}
 
