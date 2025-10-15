@@ -33,6 +33,24 @@ Use this checklist to diagnose common issues.
 - "Future instances count" is high enough to cover the date you expect
 - Virtual events show beyond the generation horizon (read-only)
 
+## Calendar stuck on "Indexing calendar events..." after duplicating
+
+**Problem**: After duplicating a calendar or creating a second calendar that points to the same directory, one or both calendars hang on "Indexing calendar events..." and never complete.
+
+**Root Cause**: When multiple calendars share the same directory, they share infrastructure (indexer, parser, event store). The initialization flow when duplicating calendars can cause synchronization issues where the shared infrastructure doesn't properly notify all calendar views.
+
+**Solution**: Reload the plugin after creating/duplicating calendars:
+
+1. **Option 1**: Disable and re-enable the plugin
+   - Go to Settings → Community Plugins
+   - Toggle "Prisma Calendar" off then on
+
+2. **Option 2**: Restart Obsidian
+
+**Prevention**: If you frequently create multiple calendars for the same directory, consider:
+- Creating all calendars at once, then reloading the plugin once
+- Using different directories for different calendars if you don't need them to share events
+
 ## Multiple calendars creating duplicate events
 
 If you're seeing duplicate events or recurring instances being created multiple times, this may be caused by multiple calendars using overlapping directories.
@@ -67,3 +85,33 @@ Filter: fm.type === 'task'   Filter: fm.type === 'event'
 Calendar A: Directory: tasks/          ❌ Will conflict
 Calendar B: Directory: tasks/homework/ ❌ Will conflict
 ```
+
+## Calendars sharing directory have different frontmatter property settings
+
+**Problem**: You have two calendars pointing to the same directory, but want Calendar 1 to use `start` property and Calendar 2 to use `scheduledDate` property. However, both calendars seem to use the same property mappings.
+
+**Root Cause**: When multiple calendars share the same directory, they share the Parser and Indexer. These components are created with the FIRST calendar's settings and are reused by all subsequent calendars pointing to that directory.
+
+**What's Shared**:
+- Frontmatter property mappings (Start, End, Date, Title, etc.)
+- Event filtering expressions
+- Recurring event settings (RRule properties)
+- Skip property, Source property, etc.
+
+**What's Individual**:
+- Calendar name
+- View settings (hour range, default view, slot duration)
+- Color rules
+- Display properties (which frontmatter fields to show)
+- UI preferences
+
+**Solution**: Use separate directories for calendars that need different property mappings:
+```
+Calendar "Tasks":          Directory: tasks/
+  Properties: start, end, due
+
+Calendar "Schedule":       Directory: schedule/
+  Properties: scheduledDate, deadline
+```
+
+**Alternative**: If events truly belong in the same directory, standardize on one set of property names and use that across all calendars viewing that directory.
