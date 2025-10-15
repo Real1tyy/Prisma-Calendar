@@ -121,6 +121,21 @@ export class RecurringEventManager extends ChangeNotifier {
 	}
 
 	private addRecurringEvent(recurringEvent: NodeRecurringEvent): void {
+		// CRITICAL: Check if this source file already has an RRuleID
+		const existingRRuleId = this.sourceFileToRRuleId.get(recurringEvent.sourceFilePath);
+
+		if (existingRRuleId && existingRRuleId !== recurringEvent.rRuleId) {
+			// RACE CONDITION DETECTED: Same source file with different RRuleID
+			// Merge into existing entry using the first RRuleID
+			const existingData = this.recurringEventsMap.get(existingRRuleId);
+			if (existingData) {
+				existingData.recurringEvent = recurringEvent;
+			}
+
+			// Don't create a new entry for the duplicate RRuleID
+			return;
+		}
+
 		const existingData = this.recurringEventsMap.get(recurringEvent.rRuleId);
 		if (existingData) {
 			existingData.recurringEvent = recurringEvent;
