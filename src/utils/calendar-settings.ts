@@ -23,6 +23,7 @@ export function duplicateCalendarConfig(
 		...source,
 		id: newId,
 		name: newName,
+		directory: "", // Don't duplicate directory - each calendar should have its own
 	});
 }
 
