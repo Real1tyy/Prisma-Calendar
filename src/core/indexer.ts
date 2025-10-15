@@ -243,7 +243,6 @@ export class Indexer {
 
 		const existingRRuleId = frontmatter[this._settings.rruleIdProp];
 		let rRuleId: string;
-		const frontmatterCopy = { ...frontmatter };
 
 		if (typeof existingRRuleId === "string") {
 			rRuleId = existingRRuleId;
@@ -252,10 +251,6 @@ export class Indexer {
 			await this.app.fileManager.processFrontMatter(file, (fm) => {
 				fm[this._settings.rruleIdProp] = rRuleId;
 			});
-			// CRITICAL: Update our frontmatter copy to include the RRuleID we just wrote
-			// This prevents race conditions where the file modification event triggers
-			// another scan before the cache updates, causing a new RRuleID to be generated
-			frontmatterCopy[this._settings.rruleIdProp] = rRuleId;
 		}
 
 		// Defer content reading - we'll read it lazily when needed
@@ -265,7 +260,7 @@ export class Indexer {
 			title: file.basename,
 			rRuleId,
 			rrules,
-			frontmatter: frontmatterCopy,
+			frontmatter,
 			content: undefined, // Empty initially - will be loaded on-demand by RecurringEventManager
 		};
 	}
