@@ -2,21 +2,31 @@ import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 import type { SingleCalendarConfig } from "../types/settings";
 import { normalizeDirectoryPath } from "../utils/file-utils";
+import { EventStore } from "./event-store";
 import { Indexer } from "./indexer";
+import { Parser } from "./parser";
 import { RecurringEventManager } from "./recurring-event-manager";
 
 interface IndexerEntry {
 	indexer: Indexer;
+	parser: Parser;
+	eventStore: EventStore;
 	recurringEventManager: RecurringEventManager;
 	refCount: number;
 	calendarIds: Set<string>;
 }
 
+type SharedInfrastructure = Pick<IndexerEntry, "indexer" | "parser" | "eventStore" | "recurringEventManager">;
+
 /**
- * Registry to manage shared indexers and recurring event managers across multiple calendars.
+ * Registry to manage shared indexers, parsers, event stores, and recurring event managers across multiple calendars.
  *
- * When multiple calendars use the same directory, they share the same indexer to prevent conflicts.
- * This ensures file events are processed once and physical recurring instances aren't duplicated.
+ * When multiple calendars use the same directory, they share the same infrastructure to prevent conflicts
+ * and improve efficiency. This ensures:
+ * - File events are processed once
+ * - Physical recurring instances aren't duplicated
+ * - Events are parsed and cached once
+ * - Virtual events are generated from a single source
  *
  * **Limitation**: Cannot detect subset overlaps (e.g., "tasks" vs "tasks/homework" will create separate indexers).
  */
@@ -34,16 +44,13 @@ export class IndexerRegistry {
 	}
 
 	/**
-	 * Get or create an indexer for the specified directory.
-	 * Returns existing indexer if another calendar is already using this directory.
+	 * Get or create shared infrastructure for the specified directory.
+	 * Returns existing instances if another calendar is already using this directory.
 	 */
-	getOrCreateIndexer(
-		calendarId: string,
-		settingsStore: BehaviorSubject<SingleCalendarConfig>
-	): { indexer: Indexer; recurringEventManager: RecurringEventManager } {
+	getOrCreateIndexer(calendarId: string, settingsStore: BehaviorSubject<SingleCalendarConfig>): SharedInfrastructure {
 		const directory = normalizeDirectoryPath(settingsStore.value.directory);
 
-		let entry = this.registry.get(directory);
+		let entry: IndexerEntry | undefined = this.registry.get(directory);
 
 		if (entry) {
 			entry.refCount++;
@@ -51,19 +58,25 @@ export class IndexerRegistry {
 		} else {
 			const indexer = new Indexer(this.app, settingsStore);
 			const recurringEventManager = new RecurringEventManager(this.app, settingsStore, indexer);
+			const parser = new Parser(settingsStore);
+			const eventStore = new EventStore(indexer, parser, recurringEventManager);
 
 			entry = {
 				indexer,
+				parser,
+				eventStore,
 				recurringEventManager,
 				refCount: 1,
 				calendarIds: new Set([calendarId]),
-			};
+			} satisfies IndexerEntry;
 
 			this.registry.set(directory, entry);
 		}
 
 		return {
 			indexer: entry.indexer,
+			parser: entry.parser,
+			eventStore: entry.eventStore,
 			recurringEventManager: entry.recurringEventManager,
 		};
 	}
@@ -85,6 +98,8 @@ export class IndexerRegistry {
 
 		if (entry.refCount <= 0) {
 			entry.indexer.stop();
+			entry.eventStore.destroy();
+			entry.parser.destroy();
 			entry.recurringEventManager.destroy();
 			this.registry.delete(normalizedDir);
 		}
@@ -93,6 +108,8 @@ export class IndexerRegistry {
 	destroy(): void {
 		for (const entry of this.registry.values()) {
 			entry.indexer.stop();
+			entry.eventStore.destroy();
+			entry.parser.destroy();
 			entry.recurringEventManager.destroy();
 		}
 

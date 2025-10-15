@@ -4,10 +4,10 @@ import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type CustomCalendarPlugin from "../main";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import { BatchCommandFactory, CommandManager } from "./commands";
-import { EventStore } from "./event-store";
+import type { EventStore } from "./event-store";
 import type { Indexer } from "./indexer";
 import { IndexerRegistry } from "./indexer-registry";
-import { Parser } from "./parser";
+import type { Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore, type SettingsStore } from "./settings-store";
 import { TemplateService } from "./templates";
@@ -39,21 +39,20 @@ export class CalendarBundle {
 
 		this.indexerRegistry = IndexerRegistry.getInstance(this.app);
 
-		const { indexer, recurringEventManager } = this.indexerRegistry.getOrCreateIndexer(
+		const { indexer, parser, eventStore, recurringEventManager } = this.indexerRegistry.getOrCreateIndexer(
 			this.calendarId,
 			this.settingsStore.settings$
 		);
 
 		this.indexer = indexer;
+		this.parser = parser;
+		this.eventStore = eventStore;
 		this.recurringEventManager = recurringEventManager;
 
-		this.parser = new Parser(this.settingsStore.settings$);
 		this.templateService = new TemplateService(this.app, this.settingsStore.settings$);
 		this.viewStateManager = new CalendarViewStateManager();
 		this.commandManager = new CommandManager();
 		this.batchCommandFactory = new BatchCommandFactory(this.app, this);
-
-		this.eventStore = new EventStore(this.indexer, this.parser, this.recurringEventManager);
 	}
 
 	async initialize(): Promise<void> {
@@ -129,11 +128,9 @@ export class CalendarBundle {
 		this.app.workspace.detachLeavesOfType(this.viewType);
 		this.commandManager.clearHistory();
 
-		// Release indexer through registry (will only destroy if no other calendars are using it)
+		// Release shared infrastructure through registry (will only destroy if no other calendars are using it)
 		this.indexerRegistry.releaseIndexer(this.calendarId, this.directory);
-		// Don't destroy indexer/recurringEventManager directly - the registry handles that
-		this.parser?.destroy?.();
-		this.eventStore?.destroy?.();
+		// Don't destroy indexer/parser/eventStore/recurringEventManager directly - the registry handles that
 		this.templateService?.destroy?.();
 		this.settingsStore?.destroy?.();
 	}
