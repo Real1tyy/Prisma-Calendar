@@ -3,6 +3,16 @@
 **Can I use multiple calendars at once?**
 Yes. Each calendar is fully isolated with its own directory, filters, color rules, and UI settings. Use shortcuts to switch quickly.
 
+**What happens if multiple calendars use the same directory?**
+When multiple calendars share the same directory, they automatically share the same indexer to prevent conflicts. This ensures:
+- File changes are processed once (not duplicated)
+- Recurring event instances aren't created multiple times
+- No conflicts between calendar instances
+
+However, each calendar still maintains its own view settings, filters, and color rules, so you can have different perspectives on the same events.
+
+**⚠️ Important**: If one calendar uses a parent directory (e.g., `tasks`) and another uses a subdirectory (e.g., `tasks/homework`), they will have separate indexers and may conflict. Always ensure overlapping calendars use the **exact same directory path**.
+
 **Are recurring events real notes?**
 Yes. Prisma Calendar generates real notes up to your configured “Future instances count.” Farther-out instances show as read-only virtual events to keep your vault lean.
 

@@ -241,17 +241,16 @@ export class Indexer {
 		const rrules = parseRRuleFromFrontmatter(frontmatter, this._settings);
 		if (!rrules) return null;
 
-		const existingRRuleId = frontmatter[this._settings.rruleIdProp];
-		let rRuleId: string;
+		let rRuleId: string = frontmatter[this._settings.rruleIdProp] as string;
+		const frontmatterCopy = { ...frontmatter };
 
-		if (typeof existingRRuleId === "string") {
-			rRuleId = existingRRuleId;
-		} else {
+		if (!rRuleId) {
 			rRuleId = generateUniqueRruleId();
 			await this.app.fileManager.processFrontMatter(file, (fm) => {
 				fm[this._settings.rruleIdProp] = rRuleId;
 			});
 		}
+		frontmatterCopy[this._settings.rruleIdProp] = rRuleId;
 
 		// Defer content reading - we'll read it lazily when needed
 		// This avoids blocking I/O during the initial scan
@@ -260,7 +259,7 @@ export class Indexer {
 			title: file.basename,
 			rRuleId,
 			rrules,
-			frontmatter,
+			frontmatter: frontmatterCopy,
 			content: undefined, // Empty initially - will be loaded on-demand by RecurringEventManager
 		};
 	}

@@ -30,5 +30,40 @@ Use this checklist to diagnose common issues.
 ## Recurring events missing
 
 - `RRule` is set (e.g., `weekly`) and valid `RRuleSpec` for week-based schedules
-- “Future instances count” is high enough to cover the date you expect
+- "Future instances count" is high enough to cover the date you expect
 - Virtual events show beyond the generation horizon (read-only)
+
+## Multiple calendars creating duplicate events
+
+If you're seeing duplicate events or recurring instances being created multiple times, this may be caused by multiple calendars using overlapping directories.
+
+**Automatic Conflict Prevention:**
+When multiple calendars use the **exact same directory path**, they automatically share the same indexer and recurring event manager. This prevents duplicates and conflicts.
+
+**Known Limitation - Directory Subsets:**
+The system **cannot detect** when one calendar uses a parent directory and another uses a subdirectory. For example:
+- Calendar A uses `tasks`
+- Calendar B uses `tasks/homework`
+
+These will create **separate indexers** that may conflict, potentially causing:
+- Duplicate recurring event instances
+- File change events processed multiple times
+- Inconsistent event states
+
+**Solutions:**
+1. **Recommended**: Use the same exact directory path for all calendars that should see the same events, then use filters to differentiate views
+2. **Alternative**: Use completely separate directory trees (e.g., `work/` and `personal/`) with no overlap
+3. **Workaround**: Keep parent/child directory calendars, but disable recurring events in one of them
+
+**Example - Good Configuration:**
+```
+Calendar "Work - Tasks":    Directory: tasks/
+Calendar "Work - Calendar":  Directory: tasks/
+Filter: fm.type === 'task'   Filter: fm.type === 'event'
+```
+
+**Example - Problematic Configuration:**
+```
+Calendar A: Directory: tasks/          ❌ Will conflict
+Calendar B: Directory: tasks/homework/ ❌ Will conflict
+```

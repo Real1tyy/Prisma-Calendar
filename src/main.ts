@@ -2,7 +2,7 @@ import { onceAsync } from "@real1ty-obsidian-plugins/utils/async-utils";
 import { Notice, Plugin } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { COMMAND_IDS } from "./constants";
-import { CalendarBundle, SettingsStore } from "./core";
+import { CalendarBundle, IndexerRegistry, SettingsStore } from "./core";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 
 export default class CustomCalendarPlugin extends Plugin {
@@ -136,6 +136,10 @@ export default class CustomCalendarPlugin extends Plugin {
 		}
 		this.calendarBundles = [];
 		this.registeredViewTypes.clear();
+
+		// Destroy the indexer registry (cleans up any remaining indexers)
+		const registry = IndexerRegistry.getInstance(this.app);
+		registry.destroy();
 	}
 
 	private initializeCalendarBundles(): void {

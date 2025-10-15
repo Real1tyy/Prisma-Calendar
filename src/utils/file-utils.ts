@@ -17,3 +17,23 @@ export const sanitizeForFilename = (input: string): string => {
 			.trim()
 	);
 };
+
+/**
+ * Normalizes a directory path for consistent comparison.
+ *
+ * - Trims whitespace
+ * - Removes leading and trailing slashes
+ * - Converts empty/whitespace-only strings to empty string
+ *
+ * Examples:
+ * - "tasks/" → "tasks"
+ * - "/tasks" → "tasks"
+ * - "/tasks/" → "tasks"
+ * - "  tasks  " → "tasks"
+ * - "" → ""
+ * - "   " → ""
+ * - "tasks/homework" → "tasks/homework"
+ */
+export const normalizeDirectoryPath = (directory: string): string => {
+	return directory.trim().replace(/^\/+|\/+$/g, "");
+};
