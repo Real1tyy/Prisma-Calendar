@@ -1,34 +1,45 @@
 # FAQ
 
 **Can I use multiple calendars at once?**
-Yes. Each calendar is fully isolated with its own directory, filters, color rules, and UI settings. Use shortcuts to switch quickly.
+Yes. Calendars can use separate directories for full isolation, or share the same directory for different visual perspectives of the same events.
 
 **What happens if multiple calendars use the same directory?**
 
-⚠️ **Known Limitation**: When duplicating or creating a second calendar that points to the same directory as an existing calendar, you **must reload the plugin** for both calendars to work correctly. Without reloading, the first calendar may hang on "Indexing calendar events..."
+Multiple calendars **can** share the same directory! This is great for creating different views and color schemes of the same events.
 
-**Why this happens**: Multiple calendars pointing to the same directory automatically share infrastructure (indexer, parser, event store) to prevent conflicts. However, this sharing is complex and the initialization flow when duplicating calendars can cause synchronization issues.
+**✅ Perfect Use Case: Different Visual Perspectives**
 
-**Workaround**: After creating/duplicating a calendar that shares a directory:
-1. Disable and re-enable the plugin in Settings → Community Plugins
-2. Or restart Obsidian
+Example - Same events, different views:
+```
+Calendar "Work - Timeline"    Directory: work/
+  → Month view, priority-based colors, all details
 
-**What gets shared** when calendars point to the same directory:
-- ✅ **Frontmatter property mappings** (Start, End, Date, Title, etc.) - uses FIRST calendar's settings
-- ✅ **Event filtering expressions** - uses FIRST calendar's settings
-- ✅ **Recurring event settings** (RRule properties) - uses FIRST calendar's settings
-- ✅ **File indexing and parsing** - shared for efficiency
+Calendar "Work - Daily Focus" Directory: work/ (same!)
+  → Day view, project-based colors, minimal display
+```
 
-**What remains individual** per calendar:
+**What you CAN customize per calendar** (even with shared directory):
 - ✅ Calendar name
 - ✅ View settings (hour range, default view, time slot duration)
-- ✅ Color rules (each calendar can have different colors for same events)
-- ✅ Display properties (which frontmatter to show on events)
+- ✅ Color rules (different colors for same events)
+- ✅ Display properties (which frontmatter fields to show)
 - ✅ UI preferences (event preview, past event contrast)
 
-**⚠️ Important**: You **cannot customize frontmatter property mappings** differently for calendars sharing the same directory. If Calendar 1 uses `start` and Calendar 2 wants to use `scheduledDate`, they must use different directories. The property settings from whichever calendar is initialized first will be used for all calendars on that directory.
+**❌ Shared Settings** (cannot differ between calendars on same directory):
+- ❌ Frontmatter property mappings (Start, End, Date, Title, etc.) - uses FIRST calendar's settings
+- ❌ Event filtering expressions - uses FIRST calendar's settings
+- ❌ Recurring event settings (RRule properties) - uses FIRST calendar's settings
 
-**Additional Note**: If one calendar uses a parent directory (e.g., `tasks`) and another uses a subdirectory (e.g., `tasks/homework`), they will have separate indexers and may conflict. Always ensure overlapping calendars use the **exact same directory path**.
+**Why some settings are shared**: Calendars pointing to the same directory share infrastructure (indexer, parser, event store) to prevent conflicts and duplicate event creation. This means one set of filters and property mappings per directory.
+
+**When to use SEPARATE directories:**
+- You need different filter expressions
+- You need different property mappings (e.g., `start` vs. `scheduledDate`)
+- You're managing completely different types of events
+
+**⚠️ Known Issue**: After duplicating a calendar to the same directory, reload the plugin (Settings → Community Plugins → Disable/Enable) to avoid initialization issues.
+
+**Additional Note**: Never use overlapping directories (e.g., `tasks` and `tasks/homework`). Use either the exact same path or completely separate directory trees to avoid conflicts.
 
 **Are recurring events real notes?**
 Yes. Prisma Calendar generates real notes up to your configured “Future instances count.” Farther-out instances show as read-only virtual events to keep your vault lean.

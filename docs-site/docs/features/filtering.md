@@ -43,18 +43,42 @@ fm.Status === 'Active' && (fm.Priority === 'High' || (fm.DueDate && new Date(fm.
 
 The filter expression is **fully flexible** - you can combine as many conditions as needed using JavaScript's logical operators.
 
-## When to Use Multiple Calendars for Different Views
+## Using Multiple Calendars with Different Filters
 
-Multiple calendars provide the ultimate flexibility for viewing the same data in different contexts. This is perfect when you want to apply different filters to create distinct views.
+Multiple calendars provide flexibility for viewing different event sources. **Each calendar must use its own separate directory** to have independent filter settings.
 
--   **Use Complex Single Expressions When...** you want one comprehensive filter that shows exactly what you need in a single calendar view.
+**✅ CORRECT: Separate Directories for Different Filters**
+```
+Calendar "Work Tasks":
+  Directory: work/
+  Filter: fm.Status !== 'Done'
 
--   **Use Multiple Calendars When...** you want to create different contextual views of the same or overlapping data sources:
-    -   A "Work Focus" calendar with filter: `fm.Category === 'Work' && fm.Status !== 'Done'`
-    -   An "Urgent Tasks" calendar with filter: `fm.Priority === 'High' || (fm.Tags && fm.Tags.includes('urgent'))`
-    -   A "This Week" calendar with filter: `new Date(fm.DueDate) <= new Date(Date.now() + 7*24*60*60*1000)`
+Calendar "Personal Events":
+  Directory: personal/
+  Filter: fm.Priority === 'High'
 
-Each calendar can scan the same folders but apply different filters, colors, and display settings. You can then toggle the visibility of these different views on your main calendar. This approach lets you see the same data through multiple lenses without losing context.
+Calendar "Project Deadlines":
+  Directory: projects/
+  Filter: fm.Type === 'deadline'
+```
+
+**❌ INCORRECT: Same Directory with Different Filters**
+```
+Calendar "Active Tasks":
+  Directory: tasks/
+  Filter: fm.Status !== 'Done'
+
+Calendar "All Tasks":
+  Directory: tasks/        ← Will NOT work!
+  Filter: (no filter)      ← Will use first calendar's filter!
+```
+
+**Why?** Calendars sharing a directory share the same indexer and parser, which means they **must use the FIRST calendar's filter settings**. You cannot create different "filtered views" of the same directory.
+
+**Workaround:** If you need different views of the same event set:
+- Use a single comprehensive filter expression with AND/OR logic
+- Use color rules to differentiate event types visually
+- Or organize events into separate directories by type/status
 
 ## Troubleshooting
 
