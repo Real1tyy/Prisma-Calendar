@@ -1020,94 +1020,145 @@
 	margin-top: 4px;
 }
 
-.color-preview-container {
+/* Color example list items */
+.color-example-item {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	margin-top: 8px;
+	gap: 8px;
+	margin-bottom: 6px;
 }
 
-.color-preview-box {
-	width: 24px;
-	height: 24px;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-	background-color: var(--preview-color);
+.color-example-item .settings-info-box-example {
+	flex: 0 0 auto;
 }
 
-.color-preview-label {
-	font-family: var(--font-monospace);
-	font-size: 12px;
+.color-arrow {
+	flex-shrink: 0;
 	color: var(--text-muted);
 }
 
+/* Color example dot in examples */
+.color-example-dot {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	border-radius: 3px;
+	background-color: var(--example-color);
+	border: 1px solid var(--background-modifier-border);
+	vertical-align: middle;
+	flex-shrink: 0;
+}
+
+.color-example-description {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+/* Color rule items - Compact single row layout */
 .color-rule-item {
 	border: 1px solid var(--background-modifier-border);
-	border-radius: 8px;
-	padding: 16px;
-	margin-bottom: 12px;
+	border-radius: 6px;
+	padding: 8px 12px;
+	margin-bottom: 8px;
 	background-color: var(--background-secondary);
 }
 
-.color-rule-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 12px;
-}
-
-.color-rule-header-left,
-.color-rule-header-right {
+.color-rule-main-row {
 	display: flex;
 	align-items: center;
 	gap: 12px;
+}
+
+.color-rule-left {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1;
+	min-width: 0;
 }
 
 .color-rule-order {
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: bold;
 	color: var(--text-muted);
-	min-width: 24px;
+	min-width: 20px;
+	flex-shrink: 0;
 }
 
-.color-rule-preview {
-	width: 20px;
-	height: 20px;
+.color-rule-left input[type="checkbox"] {
+	flex-shrink: 0;
+	cursor: pointer;
+}
+
+.color-rule-expression-input {
+	flex: 1;
+	min-width: 0;
+	padding: 4px 8px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
-	background-color: var(--preview-color);
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-small);
 }
 
-.color-rule-header-right {
+.color-rule-expression-input:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+}
+
+.color-rule-right {
+	display: flex;
+	align-items: center;
 	gap: 8px;
+	flex-shrink: 0;
 }
 
-.color-rule-header-right button[title="Delete rule"] {
+.color-rule-picker-wrapper {
+	display: flex;
+	align-items: center;
+}
+
+.color-rule-picker-wrapper .setting-item {
+	border: none;
+	padding: 0;
+	margin: 0;
+	background: transparent;
+}
+
+.color-rule-picker-wrapper .setting-item-control {
+	display: flex;
+	align-items: center;
+}
+
+.color-rule-controls {
+	display: flex;
+	gap: 4px;
+}
+
+.color-rule-btn {
+	padding: 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	cursor: pointer;
+	font-size: 14px;
+	line-height: 1;
+	transition: all 0.15s ease;
+}
+
+.color-rule-btn:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.color-rule-btn-delete {
 	color: var(--text-error);
 }
 
-.color-rule-input-group label {
-	display: block;
-	margin-bottom: 4px;
-	font-weight: 500;
-}
-
-.color-rule-input-group input[type="text"] {
-	width: 100%;
-	font-family: var(--font-monospace);
-}
-
-.color-rule-color-input {
-	display: flex;
-	gap: 12px;
-	align-items: center;
-	margin-top: 8px;
-}
-
-.color-rule-color-input .setting-item {
-	border: none;
-	padding: 0;
+.color-rule-btn-delete:hover {
+	background-color: var(--background-modifier-error);
+	border-color: var(--text-error);
 }
 
 /* Virtual Event Styles */

@@ -16,33 +16,19 @@ export class RulesSettings {
 
 		new Setting(containerEl).setName("Event colors").setHeading();
 
-		// Default color setting with color picker and preview
-		const defaultColorSetting = new Setting(containerEl)
+		// Default color setting with color picker
+		new Setting(containerEl)
 			.setName("Default event color")
-			.setDesc("Default color for events when no color rules match");
-
-		// Add color preview
-		const previewContainer = defaultColorSetting.settingEl.createDiv("color-preview-container");
-		const colorPreview = previewContainer.createDiv("color-preview-box");
-		colorPreview.style.setProperty("--preview-color", settings.defaultEventColor);
-
-		const previewLabel = previewContainer.createSpan({
-			text: settings.defaultEventColor,
-			cls: "color-preview-label",
-		});
-
-		// Add color picker
-		defaultColorSetting.addColorPicker((colorPicker) => {
-			colorPicker.setValue(settings.defaultEventColor);
-			colorPicker.onChange(async (value) => {
-				const color = value || SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR;
-				await this.settingsStore.updateSettings((s) => ({ ...s, defaultEventColor: color }));
-
-				// Update preview
-				colorPreview.style.setProperty("--preview-color", color);
-				previewLabel.textContent = color;
+			.setDesc("Default color for events when no color rules match")
+			.addColorPicker((colorPicker) => {
+				colorPicker.setValue(settings.defaultEventColor);
+				colorPicker.onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						defaultEventColor: value || SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR,
+					}));
+				});
 			});
-		});
 
 		// Color rules section
 		const colorRulesContainer = containerEl.createDiv();
@@ -61,7 +47,7 @@ export class RulesSettings {
 		const examples = [
 			{
 				expression: "fm.Priority === 'High'",
-				color: "red",
+				color: "#ef4444",
 				description: "High priority events in red",
 			},
 			{
@@ -71,25 +57,28 @@ export class RulesSettings {
 			},
 			{
 				expression: "fm.Project === 'Work'",
-				color: "hsl(210, 70%, 50%)",
+				color: "#3b82f6",
 				description: "Work projects in blue",
 			},
-			{ expression: "fm.Type === 'Meeting'", color: "#f59e0b", description: "Meetings in orange" },
+			{
+				expression: "fm.Type === 'Meeting'",
+				color: "#f59e0b",
+				description: "Meetings in orange",
+			},
 		];
 
-		examples.forEach((example) => {
-			const li = examplesList.createEl("li");
+		for (const example of examples) {
+			const li = examplesList.createEl("li", { cls: "color-example-item" });
 
-			const expressionCode = li.createEl("code", { text: example.expression });
-			expressionCode.addClass("settings-info-box-example");
+			li.createEl("code", { text: example.expression, cls: "settings-info-box-example" });
 
-			li.createSpan({ text: " → " });
+			li.createSpan({ text: "→", cls: "color-arrow" });
 
 			const colorSpan = li.createEl("span", { cls: "color-example-dot" });
 			colorSpan.style.setProperty("--example-color", example.color);
 
-			li.createSpan({ text: example.description, cls: "setting-item-description" });
-		});
+			li.createSpan({ text: example.description, cls: "color-example-description" });
+		}
 
 		// Warning section
 		const warningContainer = desc.createDiv("settings-warning-box");
@@ -140,17 +129,19 @@ export class RulesSettings {
 
 		colorRules.forEach((rule, index) => {
 			const ruleContainer = container.createDiv("color-rule-item");
-			const headerContainer = ruleContainer.createDiv("color-rule-header");
-			const leftSection = headerContainer.createDiv("color-rule-header-left");
+
+			// Single row with all controls
+			const mainRow = ruleContainer.createDiv("color-rule-main-row");
+
+			// Left section: order, checkbox, expression
+			const leftSection = mainRow.createDiv("color-rule-left");
+
 			leftSection.createEl("span", {
 				text: `#${index + 1}`,
 				cls: "color-rule-order",
 			});
-			const colorPreview = leftSection.createDiv("color-rule-preview");
-			colorPreview.style.setProperty("--preview-color", rule.color);
 
-			const enableToggle = leftSection.createEl("input");
-			enableToggle.type = "checkbox";
+			const enableToggle = leftSection.createEl("input", { type: "checkbox" });
 			enableToggle.checked = rule.enabled;
 			enableToggle.onchange = async () => {
 				await this.settingsStore.updateSettings((s) => ({
@@ -159,12 +150,51 @@ export class RulesSettings {
 				}));
 			};
 
-			const rightSection = headerContainer.createDiv("color-rule-header-right");
+			const expressionInput = leftSection.createEl("input", {
+				type: "text",
+				value: rule.expression,
+				placeholder: "fm.Priority === 'High'",
+				cls: "color-rule-expression-input",
+			});
+
+			const updateExpression = async () => {
+				await this.settingsStore.updateSettings((s) => ({
+					...s,
+					colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, expression: expressionInput.value } : r)),
+				}));
+			};
+
+			expressionInput.addEventListener("blur", updateExpression);
+			expressionInput.addEventListener("keydown", (e: KeyboardEvent) => {
+				if (e.key === "Enter") {
+					e.preventDefault();
+					updateExpression();
+				}
+			});
+
+			// Right section: color picker + controls
+			const rightSection = mainRow.createDiv("color-rule-right");
+
+			// Integrated color picker using Setting
+			const colorPickerWrapper = rightSection.createDiv("color-rule-picker-wrapper");
+			new Setting(colorPickerWrapper).addColorPicker((colorPicker) => {
+				colorPicker.setValue(rule.color);
+				colorPicker.onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, color: value } : r)),
+					}));
+				});
+			});
+
+			// Control buttons
+			const controlsSection = rightSection.createDiv("color-rule-controls");
 
 			if (index > 0) {
-				const moveUpButton = rightSection.createEl("button", {
+				const moveUpButton = controlsSection.createEl("button", {
 					text: "↑",
 					attr: { title: "Move up" },
+					cls: "color-rule-btn",
 				});
 				moveUpButton.onclick = async () => {
 					await this.settingsStore.updateSettings((s) => {
@@ -183,9 +213,10 @@ export class RulesSettings {
 			}
 
 			if (index < colorRules.length - 1) {
-				const moveDownButton = rightSection.createEl("button", {
+				const moveDownButton = controlsSection.createEl("button", {
 					text: "↓",
 					attr: { title: "Move down" },
+					cls: "color-rule-btn",
 				});
 				moveDownButton.onclick = async () => {
 					await this.settingsStore.updateSettings((s) => {
@@ -203,9 +234,10 @@ export class RulesSettings {
 				};
 			}
 
-			const deleteButton = rightSection.createEl("button", {
+			const deleteButton = controlsSection.createEl("button", {
 				text: "×",
 				attr: { title: "Delete rule" },
+				cls: "color-rule-btn color-rule-btn-delete",
 			});
 			deleteButton.onclick = async () => {
 				await this.settingsStore.updateSettings((s) => ({
@@ -214,50 +246,6 @@ export class RulesSettings {
 				}));
 				this.renderColorRulesList(container);
 			};
-
-			const expressionContainer = ruleContainer.createDiv("color-rule-input-group");
-			expressionContainer.createEl("label", { text: "Expression:" });
-			const expressionInput = expressionContainer.createEl("input", {
-				type: "text",
-				value: rule.expression,
-				placeholder: "fm.Priority === 'High'",
-			});
-
-			const updateExpression = async () => {
-				await this.settingsStore.updateSettings((s) => ({
-					...s,
-					colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, expression: expressionInput.value } : r)),
-				}));
-			};
-
-			expressionInput.addEventListener("blur", updateExpression);
-			expressionInput.addEventListener("keydown", (e: KeyboardEvent) => {
-				if (e.key === "Enter") {
-					e.preventDefault();
-					updateExpression();
-				}
-			});
-
-			const colorContainer = ruleContainer.createDiv("color-rule-color-input");
-			colorContainer.createEl("label", { text: "Color:" });
-			const colorPickerContainer = colorContainer.createDiv("color-picker-container");
-
-			const colorValueDisplay = colorPickerContainer.createSpan({
-				text: rule.color,
-				cls: "color-preview-label",
-			});
-
-			new Setting(colorPickerContainer).addColorPicker((colorPicker) => {
-				colorPicker.setValue(rule.color);
-				colorPicker.onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, color: value } : r)),
-					}));
-					colorPreview.style.setProperty("--preview-color", value);
-					colorValueDisplay.textContent = value;
-				});
-			});
 		});
 	}
 
