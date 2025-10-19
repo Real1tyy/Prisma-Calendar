@@ -1,10 +1,16 @@
+import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils/settings-ui-builder";
 import { Setting } from "obsidian";
 import { SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
+import type { SingleCalendarConfigSchema } from "../../types/settings";
 import type { ColorRule } from "../../utils/colors";
 
 export class RulesSettings {
-	constructor(private settingsStore: CalendarSettingsStore) {}
+	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
+
+	constructor(private settingsStore: CalendarSettingsStore) {
+		this.ui = new SettingsUIBuilder(settingsStore as any);
+	}
 
 	display(containerEl: HTMLElement): void {
 		this.addColorSettings(containerEl);
@@ -250,8 +256,6 @@ export class RulesSettings {
 	}
 
 	private addFilterSettings(containerEl: HTMLElement): void {
-		const settings = this.settingsStore.currentSettings;
-
 		new Setting(containerEl).setName("Event filtering").setHeading();
 
 		const desc = containerEl.createDiv();
@@ -273,11 +277,11 @@ export class RulesSettings {
 			"Array.isArray(fm.Project) && fm.Project.length > 0",
 		];
 
-		examples.forEach((example) => {
+		for (const example of examples) {
 			const li = examplesList.createEl("li");
 			const code = li.createEl("code", { text: example });
 			code.addClass("settings-info-box-example");
-		});
+		}
 
 		// Warning section
 		const warningContainer = desc.createDiv("settings-warning-box");
@@ -286,39 +290,12 @@ export class RulesSettings {
 			text: "Use 'fm' to access frontmatter properties (e.g., fm.Status, fm.Priority). Invalid expressions will be ignored and logged to console.",
 		});
 
-		new Setting(containerEl)
-			.setName("Filter expressions")
-			.setDesc(
-				"JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing."
-			)
-			.addTextArea((text) => {
-				text.setPlaceholder("fm.Status !== 'Inbox'\nfm.Priority === 'High'");
-				text.setValue(settings.filterExpressions.join("\n"));
-
-				const updateFilterExpressions = async (value: string) => {
-					const expressions = value
-						.split("\n")
-						.map((expr) => expr.trim())
-						.filter((expr) => expr.length > 0);
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						filterExpressions: expressions,
-					}));
-				};
-
-				text.inputEl.addEventListener("blur", () => {
-					updateFilterExpressions(text.inputEl.value);
-				});
-
-				text.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
-					if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-						e.preventDefault();
-						updateFilterExpressions(text.inputEl.value);
-					}
-				});
-
-				text.inputEl.rows = 5;
-				text.inputEl.addClass("settings-info-box-example");
-			});
+		this.ui.addTextArray(containerEl, {
+			key: "filterExpressions",
+			name: "Filter expressions",
+			desc: "JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing.",
+			placeholder: "fm.Status !== 'Inbox'\nfm.Priority === 'High'",
+			multiline: true,
+		});
 	}
 }
