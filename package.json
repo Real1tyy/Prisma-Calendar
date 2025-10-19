@@ -57,7 +57,7 @@
 		"@fullcalendar/list": "^6.1.19",
 		"@fullcalendar/timegrid": "^6.1.19",
 		"@real1ty-obsidian-plugins/common-plugin": "^1.1.0",
-		"@real1ty-obsidian-plugins/utils": "^2.0.1",
+		"@real1ty-obsidian-plugins/utils": "^2.1.0",
 		"chrono-node": "^2.8.4",
 		"colord": "^2.9.3",
 		"luxon": "^3.7.2",
