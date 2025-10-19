@@ -1,10 +1,16 @@
+import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils/settings-ui-builder";
 import { Setting } from "obsidian";
 import { SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { CALENDAR_VIEW_OPTIONS, type CalendarViewType, DENSITY_OPTIONS, FIRST_DAY_OPTIONS } from "../../types/index";
+import type { SingleCalendarConfigSchema } from "../../types/settings";
 
 export class CalendarSettings {
-	constructor(private settingsStore: CalendarSettingsStore) {}
+	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
+
+	constructor(private settingsStore: CalendarSettingsStore) {
+		this.ui = new SettingsUIBuilder(settingsStore as any);
+	}
 
 	display(containerEl: HTMLElement): void {
 		this.addRecurringEventSettings(containerEl);
@@ -12,32 +18,19 @@ export class CalendarSettings {
 	}
 
 	private addRecurringEventSettings(containerEl: HTMLElement): void {
-		const settings = this.settingsStore.currentSettings;
-
 		new Setting(containerEl).setName("Recurring events").setHeading();
 
-		new Setting(containerEl)
-			.setName("Future instances count")
-			.setDesc("Maximum number of future recurring event instances to generate (1-52)")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT.toString())
-					.setValue(settings.futureInstancesCount.toString())
-					.onChange(async (value) => {
-						const count = parseInt(value, 10);
-						if (!Number.isNaN(count) && count >= 1 && count <= 52) {
-							await this.settingsStore.updateSettings((s) => ({
-								...s,
-								futureInstancesCount: count,
-							}));
-						}
-					})
-			);
+		this.ui.addSlider(containerEl, {
+			key: "futureInstancesCount",
+			name: "Future instances count",
+			desc: "Maximum number of future recurring event instances to generate (1-52)",
+			min: 1,
+			max: 52,
+			step: 1,
+		});
 	}
 
 	private addUISettings(containerEl: HTMLElement): void {
-		const settings = this.settingsStore.currentSettings;
-
 		new Setting(containerEl).setName("User interface").setHeading();
 
 		new Setting(containerEl)
@@ -48,7 +41,7 @@ export class CalendarSettings {
 					dropdown.addOption(value, label);
 				});
 
-				dropdown.setValue(settings.defaultView).onChange(async (value: string) => {
+				dropdown.setValue(this.settingsStore.currentSettings.defaultView).onChange(async (value: string) => {
 					await this.settingsStore.updateSettings((s) => ({
 						...s,
 						defaultView: value as CalendarViewType,
@@ -56,58 +49,40 @@ export class CalendarSettings {
 				});
 			});
 
-		new Setting(containerEl)
-			.setName("Hide weekends")
-			.setDesc("Hide Saturday and Sunday in calendar views")
-			.addToggle((toggle) =>
-				toggle.setValue(settings.hideWeekends).onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({ ...s, hideWeekends: value }));
-				})
-			);
+		this.ui.addToggle(containerEl, {
+			key: "hideWeekends",
+			name: "Hide weekends",
+			desc: "Hide Saturday and Sunday in calendar views",
+		});
 
-		new Setting(containerEl)
-			.setName("Enable event preview")
-			.setDesc("Show preview of event notes when hovering over events in the calendar")
-			.addToggle((toggle) =>
-				toggle.setValue(settings.enableEventPreview).onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({ ...s, enableEventPreview: value }));
-				})
-			);
+		this.ui.addToggle(containerEl, {
+			key: "enableEventPreview",
+			name: "Enable event preview",
+			desc: "Show preview of event notes when hovering over events in the calendar",
+		});
 
-		new Setting(containerEl)
-			.setName("Skip underscore properties")
-			.setDesc("Hide frontmatter properties that start with underscore (e.g., _ZLID) in event previews and edit modals")
-			.addToggle((toggle) =>
-				toggle.setValue(settings.skipUnderscoreProperties).onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({ ...s, skipUnderscoreProperties: value }));
-				})
-			);
+		this.ui.addToggle(containerEl, {
+			key: "skipUnderscoreProperties",
+			name: "Skip underscore properties",
+			desc: "Hide frontmatter properties that start with underscore (e.g., _ZLID) in event previews and edit modals",
+		});
 
-		new Setting(containerEl)
-			.setName("Show current time indicator")
-			.setDesc("Display a line showing the current time in weekly and daily calendar views")
-			.addToggle((toggle) =>
-				toggle.setValue(settings.nowIndicator).onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({ ...s, nowIndicator: value }));
-				})
-			);
+		this.ui.addToggle(containerEl, {
+			key: "nowIndicator",
+			name: "Show current time indicator",
+			desc: "Display a line showing the current time in weekly and daily calendar views",
+		});
 
-		new Setting(containerEl)
-			.setName("Past event contrast")
-			.setDesc("Visual contrast of past events (0% = invisible, 100% = normal)")
-			.addSlider((slider) => {
-				slider
-					.setLimits(0, 100, 1)
-					.setValue(settings.pastEventContrast)
-					.setDynamicTooltip()
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							pastEventContrast: value,
-						}));
-					});
-			});
+		this.ui.addSlider(containerEl, {
+			key: "pastEventContrast",
+			name: "Past event contrast",
+			desc: "Visual contrast of past events (0% = invisible, 100% = normal)",
+			min: 0,
+			max: 100,
+			step: 1,
+		});
 
+		// First day of week dropdown
 		new Setting(containerEl)
 			.setName("First day of week")
 			.setDesc("Which day should be the first day of the week in calendar views")
@@ -116,95 +91,67 @@ export class CalendarSettings {
 					dropdown.addOption(value, label);
 				});
 
-				dropdown.setValue(settings.firstDayOfWeek.toString()).onChange(async (value: string) => {
-					const dayNumber = parseInt(value, 10);
-					if (!Number.isNaN(dayNumber) && dayNumber >= 0 && dayNumber <= 6) {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							firstDayOfWeek: dayNumber,
-						}));
-					}
-				});
+				dropdown
+					.setValue(this.settingsStore.currentSettings.firstDayOfWeek.toString())
+					.onChange(async (value: string) => {
+						const dayNumber = parseInt(value, 10);
+						if (!Number.isNaN(dayNumber) && dayNumber >= 0 && dayNumber <= 6) {
+							await this.settingsStore.updateSettings((s) => ({
+								...s,
+								firstDayOfWeek: dayNumber,
+							}));
+						}
+					});
 			});
 
-		new Setting(containerEl)
-			.setName("Day start hour")
-			.setDesc("First hour to show in time grid views")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_HOUR_START.toString())
-					.setValue(settings.hourStart.toString())
-					.onChange(async (value) => {
-						const hour = parseInt(value, 10);
-						if (!Number.isNaN(hour) && hour >= 0 && hour <= 23) {
-							await this.settingsStore.updateSettings((s) => ({ ...s, hourStart: hour }));
-						}
-					})
-			);
+		this.ui.addSlider(containerEl, {
+			key: "hourStart",
+			name: "Day start hour",
+			desc: "First hour to show in time grid views",
+			min: 0,
+			max: 23,
+			step: 1,
+		});
 
-		new Setting(containerEl)
-			.setName("Day end hour")
-			.setDesc("Last hour to show in time grid views")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_HOUR_END.toString())
-					.setValue(settings.hourEnd.toString())
-					.onChange(async (value) => {
-						const hour = parseInt(value, 10);
-						if (!Number.isNaN(hour) && hour >= 1 && hour <= 24) {
-							await this.settingsStore.updateSettings((s) => ({ ...s, hourEnd: hour }));
-						}
-					})
-			);
+		this.ui.addSlider(containerEl, {
+			key: "hourEnd",
+			name: "Day end hour",
+			desc: "Last hour to show in time grid views",
+			min: 1,
+			max: 24,
+			step: 1,
+		});
 
-		new Setting(containerEl)
-			.setName("Slot duration (minutes)")
-			.setDesc("Duration of time slots in the calendar grid (1-60 minutes)")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_SLOT_DURATION_MINUTES.toString())
-					.setValue(settings.slotDurationMinutes.toString())
-					.onChange(async (value) => {
-						const duration = parseInt(value, 10);
-						if (!Number.isNaN(duration) && duration >= 1 && duration <= 60) {
-							await this.settingsStore.updateSettings((s) => ({
-								...s,
-								slotDurationMinutes: duration,
-							}));
-						}
-					})
-			);
+		this.ui.addSlider(containerEl, {
+			key: "slotDurationMinutes",
+			name: "Slot duration (minutes)",
+			desc: "Duration of time slots in the calendar grid (1-60 minutes)",
+			min: 1,
+			max: 60,
+			step: 1,
+		});
 
-		new Setting(containerEl)
-			.setName("Snap duration (minutes)")
-			.setDesc("Snap interval when dragging or resizing events (1-60 minutes)")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_SNAP_DURATION_MINUTES.toString())
-					.setValue(settings.snapDurationMinutes.toString())
-					.onChange(async (value) => {
-						const duration = parseInt(value, 10);
-						if (!Number.isNaN(duration) && duration >= 1 && duration <= 60) {
-							await this.settingsStore.updateSettings((s) => ({
-								...s,
-								snapDurationMinutes: duration,
-							}));
-						}
-					})
-			);
+		this.ui.addSlider(containerEl, {
+			key: "snapDurationMinutes",
+			name: "Snap duration (minutes)",
+			desc: "Snap interval when dragging or resizing events (1-60 minutes)",
+			min: 1,
+			max: 60,
+			step: 1,
+		});
 
 		new Setting(containerEl)
 			.setName("Zoom levels (minutes)")
 			.setDesc("Available zoom levels for CTRL+scroll zooming. Enter comma-separated values (1-60 minutes each)")
 			.addTextArea((text) => {
 				text.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_ZOOM_LEVELS.join(", "));
-				text.setValue(settings.zoomLevels.join(", "));
+				text.setValue(this.settingsStore.currentSettings.zoomLevels.join(", "));
 				text.onChange(async (value) => {
 					const levels = value
 						.split(",")
 						.map((level) => parseInt(level.trim(), 10))
 						.filter((level) => !Number.isNaN(level) && level >= 1 && level <= 60)
-						.sort((a, b) => a - b); // Sort ascending
+						.sort((a, b) => a - b);
 
 					if (levels.length > 0) {
 						await this.settingsStore.updateSettings((s) => ({ ...s, zoomLevels: levels }));
@@ -213,6 +160,7 @@ export class CalendarSettings {
 				text.inputEl.rows = 2;
 			});
 
+		// Display density dropdown
 		new Setting(containerEl)
 			.setName("Display density")
 			.setDesc("How compact to make the calendar display")
@@ -221,7 +169,7 @@ export class CalendarSettings {
 					dropdown.addOption(value, label);
 				});
 
-				dropdown.setValue(settings.density).onChange(async (value: string) => {
+				dropdown.setValue(this.settingsStore.currentSettings.density).onChange(async (value: string) => {
 					await this.settingsStore.updateSettings((s) => ({
 						...s,
 						density: value as "comfortable" | "compact",
@@ -232,44 +180,25 @@ export class CalendarSettings {
 		// Event overlap settings section
 		new Setting(containerEl).setName("Event overlap").setHeading();
 
-		new Setting(containerEl)
-			.setName("Allow event overlap")
-			.setDesc(
-				"Allow events to visually overlap in all calendar views. When disabled, overlapping events display side-by-side in columns."
-			)
-			.addToggle((toggle) =>
-				toggle.setValue(settings.eventOverlap).onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({ ...s, eventOverlap: value }));
-				})
-			);
+		this.ui.addToggle(containerEl, {
+			key: "eventOverlap",
+			name: "Allow event overlap",
+			desc: "Allow events to visually overlap in all calendar views. When disabled, overlapping events display side-by-side in columns.",
+		});
 
-		new Setting(containerEl)
-			.setName("Allow slot event overlap")
-			.setDesc(
-				"Allow events to overlap within the same time slot in time grid views. Only affects events that share exact slot boundaries."
-			)
-			.addToggle((toggle) =>
-				toggle.setValue(settings.slotEventOverlap).onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({ ...s, slotEventOverlap: value }));
-				})
-			);
+		this.ui.addToggle(containerEl, {
+			key: "slotEventOverlap",
+			name: "Allow slot event overlap",
+			desc: "Allow events to overlap within the same time slot in time grid views. Only affects events that share exact slot boundaries.",
+		});
 
-		new Setting(containerEl)
-			.setName("Event stack limit")
-			.setDesc("Maximum number of events to stack vertically before showing '+ more' link (1-10)")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_EVENT_MAX_STACK.toString())
-					.setValue(settings.eventMaxStack.toString())
-					.onChange(async (value) => {
-						const stackLimit = parseInt(value, 10);
-						if (!Number.isNaN(stackLimit) && stackLimit >= 1 && stackLimit <= 10) {
-							await this.settingsStore.updateSettings((s) => ({
-								...s,
-								eventMaxStack: stackLimit,
-							}));
-						}
-					})
-			);
+		this.ui.addSlider(containerEl, {
+			key: "eventMaxStack",
+			name: "Event stack limit",
+			desc: "Maximum number of events to stack vertically before showing '+ more' link (1-10)",
+			min: 1,
+			max: 10,
+			step: 1,
+		});
 	}
 }
