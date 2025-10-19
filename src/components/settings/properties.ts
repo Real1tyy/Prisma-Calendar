@@ -1,9 +1,15 @@
+import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils/settings-ui-builder";
 import { Setting } from "obsidian";
 import { SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
+import type { SingleCalendarConfigSchema } from "../../types/settings";
 
 export class PropertiesSettings {
-	constructor(private settingsStore: CalendarSettingsStore) {}
+	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
+
+	constructor(private settingsStore: CalendarSettingsStore) {
+		this.ui = new SettingsUIBuilder(settingsStore as any);
+	}
 
 	display(containerEl: HTMLElement): void {
 		this.addFrontmatterSettings(containerEl);
@@ -15,196 +21,96 @@ export class PropertiesSettings {
 
 		new Setting(containerEl).setName("Frontmatter properties").setHeading();
 
-		new Setting(containerEl)
-			.setName("Start property")
-			.setDesc("Frontmatter property name for event start date/time")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_START_PROP)
-					.setValue(settings.startProp)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							startProp: value || SETTINGS_DEFAULTS.DEFAULT_START_PROP,
-						}));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "startProp",
+			name: "Start property",
+			desc: "Frontmatter property name for event start date/time",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_START_PROP,
+		});
 
-		new Setting(containerEl)
-			.setName("End property")
-			.setDesc("Frontmatter property name for event end date/time (for timed events)")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_END_PROP)
-					.setValue(settings.endProp)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							endProp: value || SETTINGS_DEFAULTS.DEFAULT_END_PROP,
-						}));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "endProp",
+			name: "End property",
+			desc: "Frontmatter property name for event end date/time (for timed events)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_END_PROP,
+		});
 
-		new Setting(containerEl)
-			.setName("Date property")
-			.setDesc("Frontmatter property name for all-day events (date only, no time)")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_DATE_PROP)
-					.setValue(settings.dateProp)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							dateProp: value || SETTINGS_DEFAULTS.DEFAULT_DATE_PROP,
-						}));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "dateProp",
+			name: "Date property",
+			desc: "Frontmatter property name for all-day events (date only, no time)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_DATE_PROP,
+		});
 
-		new Setting(containerEl)
-			.setName("All-day property")
-			.setDesc("Frontmatter property name for all-day flag")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_PROP)
-					.setValue(settings.allDayProp)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							allDayProp: value || SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_PROP,
-						}));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "allDayProp",
+			name: "All-day property",
+			desc: "Frontmatter property name for all-day flag",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_PROP,
+		});
 
-		new Setting(containerEl)
-			.setName("Title property")
-			.setDesc("Frontmatter property name for event title (optional, defaults to file name)")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_TITLE_PROP)
-					.setValue(settings.titleProp || "")
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({ ...s, titleProp: value }));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "titleProp",
+			name: "Title property",
+			desc: "Frontmatter property name for event title (optional, defaults to file name)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_TITLE_PROP,
+		});
 
-		new Setting(containerEl)
-			.setName("ZettelID property")
-			.setDesc(
-				"Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)"
-			)
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_ZETTEL_ID_PROP)
-					.setValue(settings.zettelIdProp || "")
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({ ...s, zettelIdProp: value }));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "zettelIdProp",
+			name: "ZettelID property",
+			desc: "Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_ZETTEL_ID_PROP,
+		});
 
-		new Setting(containerEl)
-			.setName("Skip property")
-			.setDesc("Frontmatter property name to hide events from calendar (when set to true)")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_SKIP_PROP)
-					.setValue(settings.skipProp)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							skipProp: value || SETTINGS_DEFAULTS.DEFAULT_SKIP_PROP,
-						}));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "skipProp",
+			name: "Skip property",
+			desc: "Frontmatter property name to hide events from calendar (when set to true)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_SKIP_PROP,
+		});
 
-		new Setting(containerEl)
-			.setName("RRule property")
-			.setDesc("Frontmatter property name for recurring event type (daily, weekly, monthly, etc.)")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_RRULE_PROP)
-					.setValue(settings.rruleProp)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							rruleProp: value || SETTINGS_DEFAULTS.DEFAULT_RRULE_PROP,
-						}));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "rruleProp",
+			name: "RRule property",
+			desc: "Frontmatter property name for recurring event type (daily, weekly, monthly, etc.)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_RRULE_PROP,
+		});
 
-		new Setting(containerEl)
-			.setName("RRule specification property")
-			.setDesc("Frontmatter property name for recurring event specification (weekdays for weekly/bi-weekly events)")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_RRULE_SPEC_PROP)
-					.setValue(settings.rruleSpecProp)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							rruleSpecProp: value || SETTINGS_DEFAULTS.DEFAULT_RRULE_SPEC_PROP,
-						}));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "rruleSpecProp",
+			name: "RRule specification property",
+			desc: "Frontmatter property name for recurring event specification (weekdays for weekly/bi-weekly events)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_RRULE_SPEC_PROP,
+		});
 
-		new Setting(containerEl)
-			.setName("RRule ID property")
-			.setDesc("Frontmatter property name for recurring event unique identifier")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_RRULE_ID_PROP)
-					.setValue(settings.rruleIdProp)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							rruleIdProp: value || SETTINGS_DEFAULTS.DEFAULT_RRULE_ID_PROP,
-						}));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "rruleIdProp",
+			name: "RRule ID property",
+			desc: "Frontmatter property name for recurring event unique identifier",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_RRULE_ID_PROP,
+		});
 
-		new Setting(containerEl)
-			.setName("Source property")
-			.setDesc("Frontmatter property name for linking recurring event instances to their source event file")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_SOURCE_PROP)
-					.setValue(settings.sourceProp)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							sourceProp: value || SETTINGS_DEFAULTS.DEFAULT_SOURCE_PROP,
-						}));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "sourceProp",
+			name: "Source property",
+			desc: "Frontmatter property name for linking recurring event instances to their source event file",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_SOURCE_PROP,
+		});
 
-		new Setting(containerEl)
-			.setName("Status property")
-			.setDesc("Frontmatter property name for event status (used when automatically marking past events as done)")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY)
-					.setValue(settings.statusProperty)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							statusProperty: value || SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY,
-						}));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "statusProperty",
+			name: "Status property",
+			desc: "Frontmatter property name for event status (used when automatically marking past events as done)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY,
+		});
 
-		new Setting(containerEl)
-			.setName("Done value")
-			.setDesc("Value to set in the status property when marking an event as done")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE)
-					.setValue(settings.doneValue)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							doneValue: value || SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE,
-						}));
-					})
-			);
+		this.ui.addText(containerEl, {
+			key: "doneValue",
+			name: "Done value",
+			desc: "Value to set in the status property when marking an event as done",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE,
+		});
 
 		// Add description for event types
 		const eventTypesDesc = containerEl.createDiv("settings-info-box");
@@ -276,8 +182,6 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 	}
 
 	private addFrontmatterDisplaySettings(containerEl: HTMLElement): void {
-		const settings = this.settingsStore.currentSettings;
-
 		new Setting(containerEl).setName("Frontmatter display").setHeading();
 
 		const desc = containerEl.createDiv();
@@ -289,25 +193,13 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 			cls: "setting-item-description",
 		});
 
-		new Setting(containerEl)
-			.setName("Display properties")
-			.setDesc("Comma-separated list of frontmatter property names to display in events")
-			.addTextArea((text) => {
-				text.setPlaceholder("status, priority, project, tags, category");
-				text.setValue(settings.frontmatterDisplayProperties.join(", "));
-				text.onChange(async (value) => {
-					const properties = value
-						.split(",")
-						.map((prop) => prop.trim())
-						.filter((prop) => prop.length > 0);
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						frontmatterDisplayProperties: properties,
-					}));
-				});
-				text.inputEl.rows = 3;
-				text.inputEl.cols = 50;
-			});
+		this.ui.addTextArray(containerEl, {
+			key: "frontmatterDisplayProperties",
+			name: "Display properties",
+			desc: "Comma-separated list of frontmatter property names to display in events",
+			placeholder: "status, priority, project, tags, category",
+			arrayDelimiter: ", ",
+		});
 
 		// Add example display
 		const exampleContainer = containerEl.createDiv("frontmatter-display-example");
