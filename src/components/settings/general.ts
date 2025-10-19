@@ -1,9 +1,14 @@
-import { normalizePath, Setting } from "obsidian";
-import { SETTINGS_DEFAULTS } from "../../constants";
+import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils/settings-ui-builder";
+import { Setting } from "obsidian";
 import type { CalendarSettingsStore } from "../../core/settings-store";
+import type { SingleCalendarConfigSchema } from "../../types/settings";
 
 export class GeneralSettings {
-	constructor(private settingsStore: CalendarSettingsStore) {}
+	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
+
+	constructor(settingsStore: CalendarSettingsStore) {
+		this.ui = new SettingsUIBuilder(settingsStore as any);
+	}
 
 	display(containerEl: HTMLElement): void {
 		this.addDirectorySettings(containerEl);
@@ -11,74 +16,39 @@ export class GeneralSettings {
 	}
 
 	private addDirectorySettings(containerEl: HTMLElement): void {
-		const settings = this.settingsStore.currentSettings;
-
 		new Setting(containerEl).setName("Calendar directory").setHeading();
 
-		new Setting(containerEl)
-			.setName("Directory")
-			.setDesc("Folder to scan for calendar events and create new events in")
-			.addText((text) => {
-				text.setValue(settings.directory);
-				text.setPlaceholder("e.g., tasks, calendar, events");
-				text.onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						directory: normalizePath(value),
-					}));
-				});
-			});
+		this.ui.addText(containerEl, {
+			key: "directory",
+			name: "Directory",
+			desc: "Folder to scan for calendar events and create new events in",
+			placeholder: "e.g., tasks, calendar, events",
+		});
 
-		new Setting(containerEl)
-			.setName("Template path")
-			.setDesc("Path to Templater template file for new events (optional, requires Templater plugin)")
-			.addText((text) => {
-				text.setValue(settings.templatePath || "");
-				text.setPlaceholder("e.g., Templates/event-template.md");
-				text.onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						templatePath: value ? normalizePath(value) : undefined,
-					}));
-				});
-			});
+		this.ui.addText(containerEl, {
+			key: "templatePath",
+			name: "Template path",
+			desc: "Path to Templater template file for new events (optional, requires Templater plugin)",
+			placeholder: "e.g., Templates/event-template.md",
+		});
 	}
 
 	private addParsingSettings(containerEl: HTMLElement): void {
-		const settings = this.settingsStore.currentSettings;
-
 		new Setting(containerEl).setName("Parsing").setHeading();
 
-		new Setting(containerEl)
-			.setName("Default duration (minutes)")
-			.setDesc("Default event duration when only start time is provided")
-			.addText((text) =>
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_DURATION_MINUTES.toString())
-					.setValue(settings.defaultDurationMinutes.toString())
-					.onChange(async (value) => {
-						const duration = parseInt(value, 10);
-						if (!Number.isNaN(duration) && duration > 0) {
-							await this.settingsStore.updateSettings((s) => ({
-								...s,
-								defaultDurationMinutes: duration,
-							}));
-						}
-					})
-			);
+		this.ui.addSlider(containerEl, {
+			key: "defaultDurationMinutes",
+			name: "Default duration (minutes)",
+			desc: "Default event duration when only start time is provided",
+			min: 1,
+			max: 240,
+			step: 1,
+		});
 
-		new Setting(containerEl)
-			.setName("Mark past events as done")
-			.setDesc(
-				"Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section."
-			)
-			.addToggle((toggle) =>
-				toggle.setValue(settings.markPastInstancesAsDone).onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						markPastInstancesAsDone: value,
-					}));
-				})
-			);
+		this.ui.addToggle(containerEl, {
+			key: "markPastInstancesAsDone",
+			name: "Mark past events as done",
+			desc: "Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section.",
+		});
 	}
 }
