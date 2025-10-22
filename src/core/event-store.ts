@@ -109,8 +109,8 @@ export class EventStore extends ChangeNotifier {
 
 	async getEvents(query: EventQuery): Promise<ParsedEvent[]> {
 		const results: ParsedEvent[] = [];
-		const queryStart = DateTime.fromISO(query.start);
-		const queryEnd = DateTime.fromISO(query.end);
+		const queryStart = DateTime.fromISO(query.start, { zone: "utc" });
+		const queryEnd = DateTime.fromISO(query.end, { zone: "utc" });
 
 		for (const cached of this.cache.values()) {
 			const { template: event } = cached;
@@ -141,8 +141,8 @@ export class EventStore extends ChangeNotifier {
 	}
 
 	private eventIntersectsRange(event: ParsedEvent, rangeStart: DateTime, rangeEnd: DateTime): boolean {
-		const eventStart = DateTime.fromISO(event.start);
-		const eventEnd = event.end ? DateTime.fromISO(event.end) : eventStart.endOf("day");
+		const eventStart = DateTime.fromISO(event.start, { zone: "utc" });
+		const eventEnd = event.end ? DateTime.fromISO(event.end, { zone: "utc" }) : eventStart.endOf("day");
 
 		return eventStart < rangeEnd && eventEnd > rangeStart;
 	}

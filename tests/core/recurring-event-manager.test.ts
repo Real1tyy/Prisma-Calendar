@@ -147,12 +147,12 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 						| "friday"
 						| "saturday"
 					)[],
-					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
 					allDay: false,
 				},
 				frontmatter: {
-					"Start Date": "2024-01-01T10:00:00",
+					"Start Date": "2024-01-01T10:00:00Z",
 				},
 				futureInstancesCount: 2,
 			};
@@ -293,12 +293,12 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 						| "friday"
 						| "saturday"
 					)[],
-					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
 					allDay: false,
 				},
 				frontmatter: {
-					"Start Date": "2024-01-01T10:00:00",
+					"Start Date": "2024-01-01T10:00:00Z",
 				},
 				futureInstancesCount: 2,
 				sourceFilePath: "recurring.md",
@@ -442,13 +442,13 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "daily" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-01T09:30:00"), // Should extract this time
-						endTime: DateTime.fromISO("2024-01-01T10:15:00"), // Should extract this time
+						startTime: DateTime.fromISO("2024-01-01T09:30:00Z"), // Should extract this time
+						endTime: DateTime.fromISO("2024-01-01T10:15:00Z"), // Should extract this time
 						weekdays: [],
 					},
 					frontmatter: {
-						"Start Date": "2024-01-15T14:00:00", // Original date/time (should extract only time)
-						"End Date": "2024-01-15T15:30:00",
+						"Start Date": "2024-01-15T14:00:00Z",
+						"End Date": "2024-01-15T15:30:00Z",
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
@@ -495,8 +495,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "weekly" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-01T10:00:00"), // Should extract this time
-						endTime: DateTime.fromISO("2024-01-01T11:30:00"), // Should extract this time
+						startTime: DateTime.fromISO("2024-01-01T10:00:00Z"), // Should extract this time
+						endTime: DateTime.fromISO("2024-01-01T11:30:00Z"), // Should extract this time
 						weekdays: ["tuesday", "thursday"] as const,
 					},
 					frontmatter: {
@@ -545,8 +545,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "bi-weekly" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-01T09:15:00"), // Should extract this time
-						endTime: DateTime.fromISO("2024-01-01T10:00:00"), // Should extract this time
+						startTime: DateTime.fromISO("2024-01-01T09:15:00Z"), // Should extract this time
+						endTime: DateTime.fromISO("2024-01-01T10:00:00Z"), // Should extract this time
 						weekdays: ["monday", "friday"] as const,
 					},
 					frontmatter: {
@@ -649,8 +649,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "monthly" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-25T14:30:00"), // 25th at 14:30 - should inherit both day and time
-						endTime: DateTime.fromISO("2024-01-25T16:00:00"), // 25th at 16:00 - should inherit both day and time
+						startTime: DateTime.fromISO("2024-01-25T14:30:00Z"), // 25th at 14:30 - should inherit both day and time
+						endTime: DateTime.fromISO("2024-01-25T16:00:00Z"), // 25th at 16:00 - should inherit both day and time
 						weekdays: [],
 					},
 					frontmatter: {
@@ -753,8 +753,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "yearly" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-03-12T18:00:00"), // March 12th at 18:00 - should inherit all
-						endTime: DateTime.fromISO("2024-03-12T22:30:00"), // March 12th at 22:30 - should inherit all
+						startTime: DateTime.fromISO("2024-03-12T18:00:00Z"), // March 12th at 18:00 - should inherit all
+						endTime: DateTime.fromISO("2024-03-12T22:30:00Z"), // March 12th at 22:30 - should inherit all
 						weekdays: [],
 					},
 					frontmatter: {
@@ -800,8 +800,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "monthly" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-15T14:30:00"), // January 15th
-						endTime: DateTime.fromISO("2024-01-15T16:00:00"),
+						startTime: DateTime.fromISO("2024-01-15T14:30:00Z"), // January 15th
+						endTime: DateTime.fromISO("2024-01-15T16:00:00Z"),
 						weekdays: [],
 					},
 					frontmatter: {

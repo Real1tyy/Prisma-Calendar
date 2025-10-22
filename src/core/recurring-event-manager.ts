@@ -1,4 +1,3 @@
-import { getNextOccurrence, iterateOccurrencesInRange } from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
 import { createFileLink } from "@real1ty-obsidian-plugins/utils/file-operations";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
@@ -8,6 +7,7 @@ import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-ev
 import type { SingleCalendarConfig } from "../types/settings";
 import { generateUniqueZettelId, removeZettelId } from "../utils/calendar-events";
 import { ChangeNotifier } from "../utils/change-notifier";
+import { getNextOccurrence, iterateOccurrencesInRange } from "../utils/date-recurrence";
 import { sanitizeForFilename } from "../utils/file-utils";
 import { applySourceTimeToInstanceDate } from "../utils/format";
 import { extractContentAfterFrontmatter } from "../utils/obsidian";
@@ -154,19 +154,18 @@ export class RecurringEventManager extends ChangeNotifier {
 		const instanceDate = frontmatter.nodeRecurringInstanceDate as string;
 
 		if (rruleId && instanceDate) {
-			const parsedInstanceDate = DateTime.fromISO(instanceDate);
+			const parsedInstanceDate = DateTime.fromISO(instanceDate, { zone: "utc" });
 			if (parsedInstanceDate.isValid) {
 				let recurringData = this.recurringEventsMap.get(rruleId);
 
 				if (!recurringData) {
 					recurringData = {
-						recurringEvent: null, // Will be filled when recurring event is found
+						recurringEvent: null,
 						physicalInstances: new Map(),
 					};
 					this.recurringEventsMap.set(rruleId, recurringData);
 				}
 
-				// Use ISO date as key - this automatically prevents duplicates for the same date
 				const dateKey = parsedInstanceDate.toISODate();
 				if (dateKey) {
 					recurringData.physicalInstances.set(dateKey, {
@@ -329,9 +328,7 @@ export class RecurringEventManager extends ChangeNotifier {
 		recurringEvent: NodeRecurringEvent,
 		existingFutureInstances: Array<{ filePath: string; instanceDate: DateTime }>
 	): DateTime {
-		// If we have existing future instances, start from the date after the latest one
 		if (existingFutureInstances.length > 0) {
-			// Sort by date and get the latest instance
 			const sortedInstances = [...existingFutureInstances].sort(
 				(a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis()
 			);
@@ -339,21 +336,16 @@ export class RecurringEventManager extends ChangeNotifier {
 			return getNextOccurrence(latestInstanceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
 
-		// No existing future instances. Find the first valid start date
 		const now = DateTime.now().toUTC();
 		const sourceDateTime = this.getStartDateTime(recurringEvent.rrules);
 		const firstValidDate = this.findFirstValidStartDate(recurringEvent);
 
-		// Only skip the first valid date if it equals the source date
-		// (e.g., if source is Wednesday and rule includes Wednesday)
 		let currentDate = firstValidDate;
 		if (firstValidDate.hasSame(sourceDateTime, "day")) {
-			// Skip the source date itself
 			currentDate = getNextOccurrence(firstValidDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
 
-		// If the occurrence is still in the past, keep advancing until we reach today or later
-		while (currentDate < now.startOf("day")) {
+		while (currentDate <= now.startOf("day")) {
 			currentDate = getNextOccurrence(currentDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
 		return currentDate;
@@ -452,18 +444,14 @@ export class RecurringEventManager extends ChangeNotifier {
 
 			// Use appropriate date properties based on all-day status
 			if (recurringEvent.rrules.allDay) {
-				// ALL-DAY EVENT: Use dateProp only (date without time)
 				fm[this.settings.dateProp] = instanceStart.toISODate();
-				// Clear timed event properties
 				delete fm[this.settings.startProp];
 				delete fm[this.settings.endProp];
 			} else {
-				// TIMED EVENT: Use startProp/endProp
-				fm[this.settings.startProp] = instanceStart.toISO();
+				fm[this.settings.startProp] = instanceStart.toUTC().toISO();
 				if (instanceEnd) {
-					fm[this.settings.endProp] = instanceEnd.toISO();
+					fm[this.settings.endProp] = instanceEnd.toUTC().toISO();
 				}
-				// Clear all-day event property
 				delete fm[this.settings.dateProp];
 			}
 		});
@@ -550,11 +538,9 @@ export class RecurringEventManager extends ChangeNotifier {
 		instanceDate: DateTime
 	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
 		const { rrules } = recurringEvent;
-		const sourceStart = this.getStartDateTime(rrules);
-		const sourceEnd = rrules.allDay ? null : rrules.endTime || null;
+		const sourceStart = this.getStartDateTime(rrules).toUTC();
+		const sourceEnd = rrules.allDay ? null : rrules.endTime?.toUTC() || null;
 
-		// For all-day events, preserve the date without timezone conversion
-		// For timed events, ensure UTC timezone is used
 		const normalizedInstanceDate = rrules.allDay
 			? DateTime.fromObject(
 					{
@@ -564,7 +550,7 @@ export class RecurringEventManager extends ChangeNotifier {
 					},
 					{ zone: "utc" }
 				)
-			: instanceDate;
+			: instanceDate.toUTC();
 
 		const instanceStart = applySourceTimeToInstanceDate(normalizedInstanceDate, sourceStart);
 		const instanceEnd = sourceEnd ? applySourceTimeToInstanceDate(normalizedInstanceDate, sourceEnd) : null;

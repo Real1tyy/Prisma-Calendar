@@ -71,7 +71,7 @@ export class RecurringEventsListModal extends Modal {
 		this.contentContainer.empty();
 		this.statsContainer.empty();
 
-		const now = DateTime.now();
+		const now = DateTime.now().toUTC();
 
 		// Filter out source file from instances
 		const allInstancesExcludingSource = [...this.instances].filter(

@@ -1,7 +1,7 @@
-import type { RecurrenceType, Weekday } from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
-import { WEEKDAY_TO_NUMBER } from "@real1ty-obsidian-plugins/utils/date-recurrence-utils";
 import { capitalize } from "@real1ty-obsidian-plugins/utils/string-utils";
 import { z } from "zod";
+import type { RecurrenceType, Weekday } from "../utils/date-recurrence";
+import { WEEKDAY_TO_NUMBER } from "../utils/date-recurrence";
 import { booleanTransform, optionalDateTransform, optionalTimeTransform } from "../utils/validation";
 import type { SingleCalendarConfig } from "./settings";
 

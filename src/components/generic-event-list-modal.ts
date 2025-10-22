@@ -224,11 +224,11 @@ export function createSkippedEventsModal(
 
 	// Helper to format time info for subtitle
 	const formatTimeInfo = (event: ParsedEvent): string => {
-		const startTime = DateTime.fromISO(event.start);
+		const startTime = DateTime.fromISO(event.start, { zone: "utc" });
 		if (event.allDay) {
 			return `All Day - ${startTime.toFormat("MMM d, yyyy")}`;
 		}
-		const endTime = event.end ? DateTime.fromISO(event.end) : null;
+		const endTime = event.end ? DateTime.fromISO(event.end, { zone: "utc" }) : null;
 		if (endTime) {
 			const durationText = formatDurationHumanReadable(startTime, endTime);
 			return `${startTime.toFormat("MMM d, yyyy - h:mm a")} (${durationText})`;
