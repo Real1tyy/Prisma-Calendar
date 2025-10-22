@@ -48,11 +48,27 @@ export function getNextWeekdayOccurrence(currentDate: DateTime, weekdays: Weekda
 }
 
 /**
- * Finds the next bi-weekly occurrence on specified weekdays
+ * Finds the next bi-weekly occurrence on specified weekdays.
+ * Returns next matching weekday in current week, OR first matching weekday 2 weeks later.
  */
 export function getNextBiWeeklyOccurrence(currentDate: DateTime, weekdays: Weekday[]): DateTime {
-	const nextWeekly = getNextWeekdayOccurrence(currentDate, weekdays);
-	return nextWeekly.plus({ weeks: 1 });
+	const currentWeekday = currentDate.weekday;
+	const luxonWeekdays = weekdays.map((day) => {
+		const dayNumber = WEEKDAY_TO_NUMBER[day];
+		return dayNumber === 0 ? 7 : dayNumber;
+	});
+
+	// Check if there's a matching weekday later in the current week
+	const futureWeekdays = luxonWeekdays.filter((day) => day > currentWeekday);
+	if (futureWeekdays.length > 0) {
+		// Stay in same bi-weekly cycle - return next matching weekday this week
+		const nextWeekday = Math.min(...futureWeekdays);
+		return currentDate.set({ weekday: nextWeekday as 1 | 2 | 3 | 4 | 5 | 6 | 7 });
+	}
+
+	// No more matching weekdays this week, jump to next bi-weekly cycle (2 weeks later)
+	const firstWeekday = Math.min(...luxonWeekdays);
+	return currentDate.plus({ weeks: 2 }).set({ weekday: firstWeekday as 1 | 2 | 3 | 4 | 5 | 6 | 7 });
 }
 
 /**
