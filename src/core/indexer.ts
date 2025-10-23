@@ -188,7 +188,7 @@ export class Indexer {
 	private async buildEvents(file: TFile, oldPath?: string): Promise<IndexerEvent[]> {
 		const cache = this.metadataCache.getFileCache(file);
 		if (!cache || !cache.frontmatter) return [];
-		const { frontmatter } = cache;
+		let { frontmatter } = cache;
 
 		const events: IndexerEvent[] = [];
 
@@ -203,6 +203,13 @@ export class Indexer {
 				oldPath,
 				recurringEvent: recurring,
 			});
+
+			// CRITICAL: Update frontmatter object with rRuleId from the recurring event
+			// tryParseRecurring returns a NodeRecurringEvent with the rRuleId (either existing or newly generated)
+			// We update the frontmatter object directly to ensure file-changed events have the correct data
+			if (!frontmatter[this._settings.rruleIdProp]) {
+				frontmatter = { ...frontmatter, [this._settings.rruleIdProp]: recurring.rRuleId };
+			}
 		}
 
 		// Always emit file-changed events for files with start property OR date property
