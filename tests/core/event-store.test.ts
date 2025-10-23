@@ -1,4 +1,4 @@
-import { Subject } from "rxjs";
+import { BehaviorSubject, Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type EventQuery, EventStore } from "../../src/core/event-store";
 import type { IndexerEvent } from "../../src/core/indexer";
@@ -10,11 +10,14 @@ describe("EventStore", () => {
 	let mockParser: any;
 	let mockRecurringEventManager: any;
 	let eventsSubject: Subject<IndexerEvent>;
+	let indexingCompleteSubject: BehaviorSubject<boolean>;
 
 	beforeEach(() => {
 		eventsSubject = new Subject<IndexerEvent>();
+		indexingCompleteSubject = new BehaviorSubject<boolean>(false);
 		mockIndexer = {
 			events$: eventsSubject.asObservable(),
+			indexingComplete$: indexingCompleteSubject.asObservable(),
 		};
 		mockParser = {
 			parseEventSource: vi.fn(),
@@ -322,6 +325,110 @@ describe("EventStore", () => {
 			expect(event.allDay).toBe(false);
 			expect(event.color).toBe("#ff0000");
 			expect(event.meta).toEqual({ folder: "Events" });
+		});
+	});
+
+	describe("Notification on Indexing Complete", () => {
+		beforeEach(() => {
+			vi.useFakeTimers();
+		});
+
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
+		it("should flush pending debounced refresh when indexing completes", () => {
+			const subscriber = vi.fn();
+			const subscription = eventStore.subscribe(subscriber);
+
+			// Add multiple events rapidly (would normally be debounced)
+			const event1 = createMockEvent({ id: "event-1", title: "Event 1" });
+			const event2 = createMockEvent({ id: "event-2", title: "Event 2" });
+			const event3 = createMockEvent({ id: "event-3", title: "Event 3" });
+
+			eventStore.updateEvent("Events/event1.md", event1, 1642204800000);
+			eventStore.updateEvent("Events/event2.md", event2, 1642204800001);
+			eventStore.updateEvent("Events/event3.md", event3, 1642204800002);
+
+			// Without indexing complete, notifications would be debounced
+			// Advance time only slightly (less than debounce timeout)
+			vi.advanceTimersByTime(50);
+
+			// Should not have been called yet due to debouncing
+			expect(subscriber).not.toHaveBeenCalled();
+
+			// Trigger indexing complete
+			indexingCompleteSubject.next(true);
+
+			// Should be notified immediately without waiting for full debounce
+			expect(subscriber).toHaveBeenCalled();
+
+			subscription.unsubscribe();
+		});
+
+		it("should only flush if there is a pending refresh", () => {
+			const subscriber = vi.fn();
+			const subscription = eventStore.subscribe(subscriber);
+
+			// Trigger indexing complete without any pending changes
+			indexingCompleteSubject.next(true);
+
+			// Should not notify if there's nothing pending
+			expect(subscriber).not.toHaveBeenCalled();
+
+			subscription.unsubscribe();
+		});
+
+		it("should handle multiple indexing complete events", () => {
+			const subscriber = vi.fn();
+			const subscription = eventStore.subscribe(subscriber);
+
+			// First batch of events
+			const event1 = createMockEvent({ id: "event-1" });
+			eventStore.updateEvent("Events/event1.md", event1, 1642204800000);
+
+			// First indexing complete
+			indexingCompleteSubject.next(true);
+			expect(subscriber).toHaveBeenCalledTimes(1);
+
+			subscriber.mockClear();
+
+			// Second batch of events
+			const event2 = createMockEvent({ id: "event-2" });
+			eventStore.updateEvent("Events/event2.md", event2, 1642204800001);
+
+			// Second indexing complete
+			indexingCompleteSubject.next(true);
+			expect(subscriber).toHaveBeenCalledTimes(1);
+
+			subscription.unsubscribe();
+		});
+
+		it("should work correctly with debounced updates after indexing completes", () => {
+			const subscriber = vi.fn();
+			const subscription = eventStore.subscribe(subscriber);
+
+			// Add events rapidly
+			for (let i = 0; i < 5; i++) {
+				const event = createMockEvent({ id: `event-${i}`, title: `Event ${i}` });
+				eventStore.updateEvent(`Events/event${i}.md`, event, 1642204800000 + i);
+			}
+
+			// Trigger indexing complete - should flush immediately
+			indexingCompleteSubject.next(true);
+			expect(subscriber).toHaveBeenCalledTimes(1);
+
+			subscriber.mockClear();
+
+			// Add more events after indexing complete
+			const newEvent = createMockEvent({ id: "new-event" });
+			eventStore.updateEvent("Events/new.md", newEvent, 1642204810000);
+
+			// This should follow normal debouncing
+			vi.advanceTimersByTime(150);
+			expect(subscriber).toHaveBeenCalledTimes(1);
+
+			subscription.unsubscribe();
 		});
 	});
 });

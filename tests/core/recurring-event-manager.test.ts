@@ -836,4 +836,188 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			});
 		});
 	});
+
+	describe("Calendar Notification After Rapid Recurring Event Generation", () => {
+		it("should notify subscribers after bulk recurring event processing completes", async () => {
+			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
+
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+
+			// Mock the subscribe method to track notifications
+			const notificationCallback = vi.fn();
+			manager.subscribe(notificationCallback);
+
+			// Create multiple recurring events that will generate physical instances
+			const recurringEvents = [
+				{
+					rRuleId: "daily-event-1",
+					title: "Daily Event 1",
+					rrules: {
+						type: "daily" as const,
+						allDay: false,
+						startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+						endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+						weekdays: [],
+					},
+					frontmatter: {
+						"Start Date": "2024-01-01T10:00:00.000Z",
+					},
+					sourceFilePath: "daily1.md",
+					content: "Daily event content",
+				},
+				{
+					rRuleId: "daily-event-2",
+					title: "Daily Event 2",
+					rrules: {
+						type: "daily" as const,
+						allDay: false,
+						startTime: DateTime.fromISO("2024-01-01T14:00:00Z"),
+						endTime: DateTime.fromISO("2024-01-01T15:00:00Z"),
+						weekdays: [],
+					},
+					frontmatter: {
+						"Start Date": "2024-01-01T14:00:00.000Z",
+					},
+					sourceFilePath: "daily2.md",
+					content: "Daily event content 2",
+				},
+				{
+					rRuleId: "weekly-event",
+					title: "Weekly Event",
+					rrules: {
+						type: "weekly" as const,
+						allDay: false,
+						startTime: DateTime.fromISO("2024-01-01T09:00:00Z"),
+						endTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+						weekdays: [1], // Monday
+					},
+					frontmatter: {
+						"Start Date": "2024-01-01T09:00:00.000Z",
+					},
+					sourceFilePath: "weekly.md",
+					content: "Weekly event content",
+				},
+			];
+
+			// Add all recurring events
+			for (const event of recurringEvents) {
+				await (manager as any).handleIndexerEvent({
+					type: "recurring-event-found",
+					filePath: event.sourceFilePath,
+					recurringEvent: event,
+				});
+			}
+
+			// Clear notification callback calls from adding events
+			notificationCallback.mockClear();
+
+			// Trigger indexing complete which should process all recurring events
+			mockIndexer.indexingComplete$.next(true);
+
+			// Wait for async processing to complete
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			// Should have received at least one notification after processing completes
+			expect(notificationCallback).toHaveBeenCalled();
+
+			// Verify the notification was called (could be multiple times during debouncing)
+			expect(notificationCallback.mock.calls.length).toBeGreaterThanOrEqual(1);
+		});
+
+		it("should flush pending debounced refreshes when processing completes", async () => {
+			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
+
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+
+			const notificationCallback = vi.fn();
+			manager.subscribe(notificationCallback);
+
+			// Create a recurring event
+			const recurringEvent = {
+				rRuleId: "test-event",
+				title: "Test Event",
+				rrules: {
+					type: "daily" as const,
+					allDay: false,
+					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					weekdays: [],
+				},
+				frontmatter: {
+					"Start Date": "2024-01-01T10:00:00.000Z",
+				},
+				sourceFilePath: "test.md",
+				content: "Test content",
+			};
+
+			await (manager as any).handleIndexerEvent({
+				type: "recurring-event-found",
+				filePath: "test.md",
+				recurringEvent,
+			});
+
+			notificationCallback.mockClear();
+
+			// Simulate rapid file changes (which would normally be debounced)
+			for (let i = 0; i < 5; i++) {
+				await (manager as any).handleFileChanged(`instance-${i}.md`, {
+					RRuleID: "test-event",
+					nodeRecurringInstanceDate: `2024-01-0${i + 2}`,
+				});
+			}
+
+			// Without flush, notifications would be debounced
+			// Trigger indexing complete to flush pending refreshes
+			mockIndexer.indexingComplete$.next(true);
+
+			// Wait a bit for the flush to happen
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			// Should have been notified immediately without waiting for debounce timeout
+			expect(notificationCallback).toHaveBeenCalled();
+		});
+
+		it("should notify after individual recurring event is added when indexing is already complete", async () => {
+			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
+
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+
+			// Set indexing as complete first
+			mockIndexer.indexingComplete$.next(true);
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const notificationCallback = vi.fn();
+			manager.subscribe(notificationCallback);
+
+			// Add a recurring event after indexing is complete
+			const recurringEvent = {
+				rRuleId: "new-event",
+				title: "New Event",
+				rrules: {
+					type: "daily" as const,
+					allDay: false,
+					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					weekdays: [],
+				},
+				frontmatter: {
+					"Start Date": "2024-01-01T10:00:00.000Z",
+				},
+				sourceFilePath: "new.md",
+				content: "New content",
+			};
+
+			await (manager as any).handleIndexerEvent({
+				type: "recurring-event-found",
+				filePath: "new.md",
+				recurringEvent,
+			});
+
+			// Wait for async instance creation
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			// Should have been notified after adding the event and creating instances
+			expect(notificationCallback).toHaveBeenCalled();
+		});
+	});
 });

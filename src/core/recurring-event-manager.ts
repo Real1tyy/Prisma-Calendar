@@ -7,8 +7,8 @@ import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-ev
 import type { SingleCalendarConfig } from "../types/settings";
 import { withLock } from "../utils/async-lock";
 import { generateUniqueZettelId, removeZettelId } from "../utils/calendar-events";
-import { ChangeNotifier } from "../utils/change-notifier";
 import { getNextOccurrence, iterateOccurrencesInRange } from "../utils/date-recurrence";
+import { DebouncedNotifier } from "../utils/debounced-notifier";
 import { rebuildPhysicalInstanceFilename, sanitizeForFilename } from "../utils/file-utils";
 import { applySourceTimeToInstanceDate } from "../utils/format";
 import { extractContentAfterFrontmatter } from "../utils/obsidian";
@@ -32,7 +32,7 @@ export interface RecurringEventData {
 	recurringEvent: NodeRecurringEvent | null;
 	physicalInstances: Map<string, PhysicalInstance>;
 }
-export class RecurringEventManager extends ChangeNotifier {
+export class RecurringEventManager extends DebouncedNotifier {
 	private settings: SingleCalendarConfig;
 	private recurringEventsMap: Map<string, RecurringEventData> = new Map();
 	private subscription: Subscription | null = null;
@@ -43,7 +43,6 @@ export class RecurringEventManager extends ChangeNotifier {
 	private creationLocks: Map<string, Promise<string | null>> = new Map();
 	private sourceFileToRRuleId: Map<string, string> = new Map();
 	private ensureInstancesLocks: Map<string, Promise<void>> = new Map();
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(
 		private app: App,
@@ -146,13 +145,12 @@ export class RecurringEventManager extends ChangeNotifier {
 				}
 			})
 		);
+
+		// Force immediate notification after all recurring events are processed
+		this.flushPendingRefresh();
 	}
 
 	destroy(): void {
-		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
-			this.refreshTimeout = null;
-		}
 		this.subscription?.unsubscribe();
 		this.subscription = null;
 		this.settingsSubscription?.unsubscribe();
@@ -223,20 +221,6 @@ export class RecurringEventManager extends ChangeNotifier {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Debounced refresh to prevent excessive notifications when many physical instances are created/updated rapidly.
-	 * Batches rapid changes into a single notification after 150ms of inactivity.
-	 */
-	private scheduleRefresh(): void {
-		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
-		}
-		this.refreshTimeout = setTimeout(() => {
-			this.notifyChange();
-			this.refreshTimeout = null;
-		}, 150);
 	}
 
 	private handleFileDeleted(event: IndexerEvent): void {
@@ -311,6 +295,7 @@ export class RecurringEventManager extends ChangeNotifier {
 
 				nextDate = getNextOccurrence(nextDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 			}
+			this.scheduleRefresh();
 		} catch (error) {
 			console.error(`❌ Failed to ensure physical instances for ${data.recurringEvent.title}:`, error);
 		}
@@ -472,8 +457,8 @@ export class RecurringEventManager extends ChangeNotifier {
 			}
 		});
 
-		// Notify that physical instances have changed
-		this.notifyChange();
+		// Don't notify here - let the batch operation handle notification
+		// Individual file creations will be picked up by the indexer
 		return filePath;
 	}
 

@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import type { Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { ISO } from "../types/index";
-import { ChangeNotifier } from "../utils/change-notifier";
+import { DebouncedNotifier } from "../utils/debounced-notifier";
 import type { Indexer, IndexerEvent, RawEventSource } from "./indexer";
 import type { ParsedEvent, Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
@@ -21,10 +21,10 @@ export interface CachedEvent {
 	mtime: number;
 }
 
-export class EventStore extends ChangeNotifier {
+export class EventStore extends DebouncedNotifier {
 	private cache = new Map<string, CachedEvent>();
 	private subscription: Subscription | null = null;
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private indexingCompleteSubscription: Subscription | null = null;
 
 	constructor(
 		private indexer: Indexer,
@@ -37,6 +37,13 @@ export class EventStore extends ChangeNotifier {
 			.subscribe((event: IndexerEvent) => {
 				this.handleIndexerEvent(event);
 			});
+
+		// Subscribe to indexing complete to flush any pending refreshes
+		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
+			if (isComplete) {
+				this.flushPendingRefresh();
+			}
+		});
 	}
 
 	private handleIndexerEvent(event: IndexerEvent): void {
@@ -67,28 +74,12 @@ export class EventStore extends ChangeNotifier {
 	}
 
 	destroy(): void {
-		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
-			this.refreshTimeout = null;
-		}
 		this.subscription?.unsubscribe();
 		this.subscription = null;
+		this.indexingCompleteSubscription?.unsubscribe();
+		this.indexingCompleteSubscription = null;
 		super.destroy();
 		this.clear();
-	}
-
-	/**
-	 * Debounced refresh to prevent excessive notifications when many files are processed rapidly.
-	 * Batches rapid changes into a single notification after 150ms of inactivity.
-	 */
-	private scheduleRefresh(): void {
-		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
-		}
-		this.refreshTimeout = setTimeout(() => {
-			this.notifyChange();
-			this.refreshTimeout = null;
-		}, 150);
 	}
 
 	updateEvent(filePath: string, template: ParsedEvent, mtime: number): void {
