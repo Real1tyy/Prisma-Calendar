@@ -30,12 +30,13 @@ export type IndexerEventType = "file-changed" | "file-deleted" | "recurring-even
 export interface IndexerEvent {
 	type: IndexerEventType;
 	filePath: string;
+	oldPath?: string;
 	source?: RawEventSource;
 	recurringEvent?: NodeRecurringEvent;
 }
 
 type VaultEvent = "create" | "modify" | "delete" | "rename";
-type FileIntent = { kind: "changed"; file: TFile; path: string } | { kind: "deleted"; path: string };
+type FileIntent = { kind: "changed"; file: TFile; path: string; oldPath?: string } | { kind: "deleted"; path: string };
 
 export class Indexer {
 	private _settings: SingleCalendarConfig;
@@ -166,7 +167,7 @@ export class Indexer {
 			filter(([f]) => Indexer.isMarkdownFile(f) && this.isRelevantFile(f)),
 			mergeMap(([f, oldPath]) => [
 				{ kind: "deleted", path: oldPath } as FileIntent,
-				{ kind: "changed", file: f, path: f.path } as FileIntent,
+				{ kind: "changed", file: f, path: f.path, oldPath } as FileIntent,
 			])
 		);
 
@@ -178,13 +179,13 @@ export class Indexer {
 					return of<IndexerEvent>({ type: "file-deleted", filePath: intent.path });
 				}
 				// buildEvents returns an array of events, convert to observable and flatten
-				return from(this.buildEvents(intent.file)).pipe(mergeMap((events) => events));
+				return from(this.buildEvents(intent.file, intent.oldPath)).pipe(mergeMap((events) => events));
 			}),
 			filter((e): e is IndexerEvent => e !== null)
 		);
 	}
 
-	private async buildEvents(file: TFile): Promise<IndexerEvent[]> {
+	private async buildEvents(file: TFile, oldPath?: string): Promise<IndexerEvent[]> {
 		const cache = this.metadataCache.getFileCache(file);
 		if (!cache || !cache.frontmatter) return [];
 		const { frontmatter } = cache;
@@ -199,6 +200,7 @@ export class Indexer {
 			events.push({
 				type: "recurring-event-found",
 				filePath: file.path,
+				oldPath,
 				recurringEvent: recurring,
 			});
 		}
@@ -224,7 +226,7 @@ export class Indexer {
 				folder: file.parent?.path || "",
 			};
 
-			events.push({ type: "file-changed", filePath: file.path, source });
+			events.push({ type: "file-changed", filePath: file.path, oldPath, source });
 		}
 
 		return events;

@@ -5,10 +5,11 @@ import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
+import { withLock } from "../utils/async-lock";
 import { generateUniqueZettelId, removeZettelId } from "../utils/calendar-events";
 import { ChangeNotifier } from "../utils/change-notifier";
 import { getNextOccurrence, iterateOccurrencesInRange } from "../utils/date-recurrence";
-import { sanitizeForFilename } from "../utils/file-utils";
+import { rebuildPhysicalInstanceFilename, sanitizeForFilename } from "../utils/file-utils";
 import { applySourceTimeToInstanceDate } from "../utils/format";
 import { extractContentAfterFrontmatter } from "../utils/obsidian";
 import type { Indexer, IndexerEvent } from "./indexer";
@@ -74,6 +75,10 @@ export class RecurringEventManager extends ChangeNotifier {
 					this.addRecurringEvent(event.recurringEvent);
 					if (this.indexingComplete) {
 						await this.ensurePhysicalInstancesWithLock(event.recurringEvent.rRuleId);
+						// Check if this is a rename (oldPath exists)
+						if (event.oldPath) {
+							await this.handleRecurringEventRenamedWithLock(event.recurringEvent);
+						}
 					}
 				}
 				break;
@@ -85,6 +90,48 @@ export class RecurringEventManager extends ChangeNotifier {
 			case "file-deleted":
 				this.handleFileDeleted(event);
 				break;
+		}
+	}
+
+	private async handleRecurringEventRenamedWithLock(recurringEvent: NodeRecurringEvent): Promise<void> {
+		return withLock(this.ensureInstancesLocks, recurringEvent.rRuleId, () =>
+			this.handleRecurringEventRenamed(recurringEvent)
+		);
+	}
+
+	private async handleRecurringEventRenamed(recurringEvent: NodeRecurringEvent): Promise<void> {
+		const data = this.recurringEventsMap.get(recurringEvent.rRuleId);
+		if (!data || data.physicalInstances.size === 0) {
+			return;
+		}
+
+		await Promise.all(
+			Array.from(data.physicalInstances.values()).map((instance) =>
+				this.renamePhysicalInstance(instance, recurringEvent.title)
+			)
+		);
+	}
+
+	private async renamePhysicalInstance(instance: PhysicalInstance, newTitle: string): Promise<void> {
+		try {
+			const file = this.app.vault.getAbstractFileByPath(instance.filePath);
+			if (!(file instanceof TFile)) {
+				console.warn(`Physical instance file not found: ${instance.filePath}`);
+				return;
+			}
+
+			const newBasename = rebuildPhysicalInstanceFilename(file.basename, newTitle);
+			if (!newBasename) {
+				console.warn(`Could not rebuild filename for physical instance: ${file.basename}`);
+				return;
+			}
+
+			const folderPath = file.parent?.path ? `${file.parent.path}/` : "";
+			const newPath = `${folderPath}${newBasename}.md`;
+			await this.app.fileManager.renameFile(file, newPath);
+			instance.filePath = newPath;
+		} catch (error) {
+			console.error(`Error renaming physical instance ${instance.filePath}:`, error);
 		}
 	}
 
@@ -216,23 +263,7 @@ export class RecurringEventManager extends ChangeNotifier {
 	}
 
 	private async ensurePhysicalInstancesWithLock(rruleId: string): Promise<void> {
-		// Check if there's already an ensure operation in progress for this rruleId
-		const existingLock = this.ensureInstancesLocks.get(rruleId);
-		if (existingLock) {
-			// Wait for the existing operation to complete instead of starting a new one
-			return await existingLock;
-		}
-
-		// Create a new locked operation
-		const lockPromise = this.ensurePhysicalInstances(rruleId);
-		this.ensureInstancesLocks.set(rruleId, lockPromise);
-
-		try {
-			await lockPromise;
-		} finally {
-			// Always remove the lock when done
-			this.ensureInstancesLocks.delete(rruleId);
-		}
+		return withLock(this.ensureInstancesLocks, rruleId, () => this.ensurePhysicalInstances(rruleId));
 	}
 
 	private async ensurePhysicalInstances(rruleId: string): Promise<void> {
@@ -355,27 +386,12 @@ export class RecurringEventManager extends ChangeNotifier {
 		recurringEvent: NodeRecurringEvent,
 		instanceDate: DateTime
 	): Promise<string | null> {
-		// Use instance date + recurring event ID as lock key to prevent duplicate creation
 		const lockKey = `${recurringEvent.rRuleId}-${instanceDate.toISODate()}`;
-
-		// Check if there's already a creation in progress for this instance
-		const existingCreation = this.creationLocks.get(lockKey);
-		if (existingCreation) {
-			// Wait for the existing creation to complete and return its result
-			return await existingCreation;
-		}
-
-		// Generate filepath and create a new promise for this creation
 		const filePath = this.generateNodeInstanceFilePath(recurringEvent, instanceDate);
-		const creationPromise = this.doCreatePhysicalInstance(recurringEvent, instanceDate, filePath);
-		this.creationLocks.set(lockKey, creationPromise);
 
-		try {
-			const result = await creationPromise;
-			return result;
-		} finally {
-			this.creationLocks.delete(lockKey);
-		}
+		return withLock(this.creationLocks, lockKey, () =>
+			this.doCreatePhysicalInstance(recurringEvent, instanceDate, filePath)
+		);
 	}
 
 	private async doCreatePhysicalInstance(
