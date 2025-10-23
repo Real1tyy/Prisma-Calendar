@@ -20,6 +20,7 @@ export const COMMAND_IDS = {
 	BATCH_CLONE_PREV_WEEK: "batch-clone-prev-week",
 	BATCH_MOVE_NEXT_WEEK: "batch-move-next-week",
 	BATCH_MOVE_PREV_WEEK: "batch-move-prev-week",
+	OPEN_CURRENT_NOTE_IN_CALENDAR: "open-current-note-in-calendar",
 } as const;
 
 export const FULL_COMMAND_IDS = Object.fromEntries(

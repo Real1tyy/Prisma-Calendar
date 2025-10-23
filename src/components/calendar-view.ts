@@ -334,6 +334,36 @@ export class CalendarView extends MountableView(ItemView) {
 		modal.open();
 	}
 
+	navigateToDate(date: Date, viewType?: string): void {
+		if (!this.calendar) return;
+
+		if (viewType) {
+			this.calendar.changeView(viewType);
+		}
+
+		this.calendar.gotoDate(date);
+	}
+
+	highlightEventByPath(filePath: string, durationMs = 5000): void {
+		if (!this.calendar) return;
+
+		// Find all events with matching file path
+		const events = this.calendar.getEvents();
+		const matchingEvents = events.filter((event) => event.extendedProps?.filePath === filePath);
+
+		for (const event of matchingEvents) {
+			const eventElements = Array.from(document.querySelectorAll(`[data-event-id="${event.id}"]`));
+			for (const element of eventElements) {
+				if (element instanceof HTMLElement) {
+					element.classList.add("event-highlighted");
+					setTimeout(() => {
+						element.classList.remove("event-highlighted");
+					}, durationMs);
+				}
+			}
+		}
+	}
+
 	private async initializeCalendar(container: HTMLElement): Promise<void> {
 		const settings = this.bundle.settingsStore.currentSettings;
 

@@ -1,5 +1,5 @@
 import { onceAsync } from "@real1ty-obsidian-plugins/utils/async-utils";
-import { Notice, Plugin } from "obsidian";
+import { Notice, Plugin, TFile } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, SettingsStore } from "./core";
@@ -125,6 +125,14 @@ export default class CustomCalendarPlugin extends Plugin {
 			"showDisabledRecurringEventsModal"
 		);
 
+		this.addCommand({
+			id: COMMAND_IDS.OPEN_CURRENT_NOTE_IN_CALENDAR,
+			name: "Open current note in calendar",
+			callback: async () => {
+				await this.openCurrentNoteInCalendar();
+			},
+		});
+
 		this.app.workspace.onLayoutReady(() => {
 			this.ensureCalendarBundlesReady();
 		});
@@ -190,5 +198,89 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.registerView(viewType, viewCreator);
 		this.registeredViewTypes.add(viewType);
 		return true;
+	}
+
+	private async openCurrentNoteInCalendar(): Promise<void> {
+		const activeFile = this.app.workspace.getActiveFile();
+
+		if (!activeFile || !(activeFile instanceof TFile)) {
+			new Notice("No file is currently open");
+			return;
+		}
+
+		const cache = this.app.metadataCache.getFileCache(activeFile);
+		const frontmatter = cache?.frontmatter;
+
+		if (!frontmatter) {
+			new Notice("Current note has no frontmatter");
+			return;
+		}
+
+		// Find the calendar bundle that contains this file
+		let targetBundle: CalendarBundle | null = null;
+		let startDate: Date | null = null;
+		let isInAnyCalendarDirectory = false;
+
+		for (const bundle of this.calendarBundles) {
+			const settings = bundle.settingsStore.currentSettings;
+			const directory = settings.directory;
+
+			// Check if file is within this calendar's directory
+			if (!activeFile.path.startsWith(directory)) {
+				continue;
+			}
+
+			isInAnyCalendarDirectory = true;
+
+			// Try to find a date property (start date, date, or start)
+			const dateValue =
+				frontmatter[settings.startProp] || frontmatter[settings.dateProp] || frontmatter.Start || frontmatter.Date;
+
+			if (dateValue) {
+				const parsedDate = new Date(dateValue);
+				if (!Number.isNaN(parsedDate.getTime())) {
+					targetBundle = bundle;
+					startDate = parsedDate;
+					break;
+				}
+			}
+		}
+
+		if (!isInAnyCalendarDirectory) {
+			new Notice("This note is not in any calendar directory");
+			return;
+		}
+
+		if (!targetBundle || !startDate) {
+			new Notice("Could not find a valid date property in the current note's frontmatter");
+			return;
+		}
+
+		// Open/focus the calendar
+		const { workspace } = this.app;
+		const viewType = targetBundle.viewType;
+		const existingLeaves = workspace.getLeavesOfType(viewType);
+
+		let calendarLeaf = existingLeaves[0];
+
+		if (!calendarLeaf) {
+			// Calendar is not open - open it
+			calendarLeaf = workspace.getLeaf("tab");
+			await calendarLeaf.setViewState({ type: viewType, active: true });
+		}
+
+		// Focus the calendar leaf
+		await workspace.revealLeaf(calendarLeaf);
+
+		// Get the calendar view and navigate to the date
+		const calendarView = calendarLeaf.view;
+		if (calendarView instanceof CalendarView) {
+			calendarView.navigateToDate(startDate, "timeGridWeek");
+
+			// Highlight the event after a short delay to ensure the calendar has rendered
+			setTimeout(() => {
+				calendarView.highlightEventByPath(activeFile.path, 5000);
+			}, 100);
+		}
 	}
 }
