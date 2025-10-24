@@ -29,16 +29,16 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 ## 🎨 **Customization & Visual Control**
 
 ### **Dynamic Color Rules**
-- **JavaScript expressions** - `fm.Priority === 'High' → #ef4444`
+- **JavaScript expressions** - `Priority === 'High' → #ef4444`
 - **First match wins** - Rules evaluated in order, first matching rule applies
 - **Default fallback** - Set a default color for events that don't match any rule
 - **Live updates** - Color changes reflect immediately as you edit rules
 
 ### **Advanced Filtering**
-- **Expression-based** - Use `fm.*` expressions to show/hide events
+- **Expression-based** - Use property names directly to show/hide events
 - **Complex logic** - Combine conditions with `&&`, `||`, and comparison operators
 - **Dynamic visibility** - Filter events by any frontmatter property
-- **Example**: `fm.Status !== 'Done'` to hide completed tasks
+- **Example**: `Status !== 'Done'` to hide completed tasks
 
 ### **Frontmatter Display**
 - **Show custom properties** - Display additional frontmatter fields inside event chips

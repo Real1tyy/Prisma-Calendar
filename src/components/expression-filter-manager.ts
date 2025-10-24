@@ -6,7 +6,7 @@ export class ExpressionFilterManager extends InputFilterManager {
 	private propertyMapping = new Map<string, string>();
 
 	constructor(onFilterChange: () => void) {
-		super(onFilterChange, "Filter: Status === 'Done'", "fc-expression-input", 50);
+		super(onFilterChange, "Status === 'Done'", "fc-expression-input", 50);
 	}
 
 	protected updateFilterValue(filterValue: string): void {

@@ -13,7 +13,7 @@ Use this checklist to diagnose common issues.
 ## Wrong colors or no color applied
 
 - The first matching color rule wins — check rule order
-- Expressions use `fm` (e.g., `fm.Priority === 'High'`)
+- Expressions use property names directly (e.g., `Priority === 'High'`)
 - Color value is valid CSS (hex/name/HSL)
 
 ## Templater not working

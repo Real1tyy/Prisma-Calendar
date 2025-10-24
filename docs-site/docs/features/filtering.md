@@ -6,7 +6,7 @@ Dynamically filter which events appear on your calendar using powerful, frontmat
 
 Each calendar has **one filter expression** in its settings. This expression uses standard JavaScript logic to determine which events are displayed.
 
--   **Expressions use `fm`** to access frontmatter properties (e.g., `fm.Status`, `fm.Priority`).
+-   **Reference frontmatter properties directly by name** (e.g., `Status`, `Priority`).
 -   **An event is displayed only if the expression evaluates to `true`.**
 -   **Use `&&` (AND) and `||` (OR)** to combine multiple conditions as needed.
 
@@ -17,28 +17,28 @@ You can create sophisticated filtering logic using standard JavaScript operators
 ### Simple Filters
 ```javascript
 // Show only high-priority items
-fm.Priority === 'High'
+Priority === 'High'
 
 // Show everything except completed tasks
-fm.Status !== 'Done'
+Status !== 'Done'
 
 // Show items tagged with 'urgent'
-fm.Tags && fm.Tags.includes('urgent')
+Tags && Tags.includes('urgent')
 ```
 
 ### Complex Filters with AND/OR Logic
 ```javascript
 // High-priority active tasks for Project Phoenix
-fm.Project === 'Project Phoenix' && fm.Priority === 'High' && fm.Status !== 'Done'
+Project === 'Project Phoenix' && Priority === 'High' && Status !== 'Done'
 
 // Show urgent items OR high-priority work items
-(fm.Tags && fm.Tags.includes('urgent')) || (fm.Priority === 'High' && fm.Category === 'Work')
+(Tags && Tags.includes('urgent')) || (Priority === 'High' && Category === 'Work')
 
 // Show active tasks from multiple projects
-(fm.Project === 'Phoenix' || fm.Project === 'Atlas') && fm.Status !== 'Done'
+(Project === 'Phoenix' || Project === 'Atlas') && Status !== 'Done'
 
 // Complex conditional logic
-fm.Status === 'Active' && (fm.Priority === 'High' || (fm.DueDate && new Date(fm.DueDate) < new Date()))
+Status === 'Active' && (Priority === 'High' || (DueDate && new Date(DueDate) < new Date()))
 ```
 
 The filter expression is **fully flexible** - you can combine as many conditions as needed using JavaScript's logical operators.
@@ -51,15 +51,15 @@ Multiple calendars provide flexibility for viewing different event sources. **Ea
 ```
 Calendar "Work Tasks":
   Directory: work/
-  Filter: fm.Status !== 'Done'
+  Filter: Status !== 'Done'
 
 Calendar "Personal Events":
   Directory: personal/
-  Filter: fm.Priority === 'High'
+  Filter: Priority === 'High'
 
 Calendar "Project Deadlines":
   Directory: projects/
-  Filter: fm.Type === 'deadline'
+  Filter: Type === 'deadline'
 ```
 
 **❌ INCORRECT: Same Directory with Different Filters**
@@ -80,9 +80,20 @@ Calendar "All Tasks":
 - Use color rules to differentiate event types visually
 - Or organize events into separate directories by type/status
 
+## Filter Presets
+
+For frequently used filters, you can create **named presets** in the settings. These presets appear in a dropdown in the calendar toolbar for quick access:
+
+1. Go to Settings → Rules → Filter Presets
+2. Click "Add Preset"
+3. Enter a name (e.g., "Done Tasks")
+4. Enter the filter expression (e.g., `Status === 'Done'`)
+
+The preset dropdown appears next to the zoom button with a "Clear" option to reset the filter.
+
 ## Troubleshooting
 
 -   **Check your logic**: If an event is unexpectedly hidden, verify that your filter expression logic is correct. Use parentheses to group conditions clearly.
 -   **Use strict equality**: Use `===` for strict equality checks and `!==` for inequality.
--   **Handle missing properties**: If a property might not exist, your expression should account for it. For example, `fm.Tags && fm.Tags.includes('urgent')` checks if `fm.Tags` exists before trying to check its contents.
+-   **Handle missing properties**: If a property might not exist, your expression should account for it. For example, `Tags && Tags.includes('urgent')` checks if `Tags` exists before trying to check its contents.
 -   **Expressions must be valid JavaScript**: Invalid expressions will be ignored and logged to the developer console. Check the console if your filter isn't working as expected.

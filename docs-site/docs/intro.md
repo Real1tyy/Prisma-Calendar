@@ -34,7 +34,7 @@ Every aspect of Prisma Calendar is customizable. From frontmatter properties to 
 
 **What you can configure:**
 - **Frontmatter mapping** - Use your own property names (`Start`, `Begin`, `EventDate` — your choice)
-- **Dynamic color rules** - JavaScript expressions for intelligent event coloring (`fm.Priority === 'High' → #ef4444`)
+- **Dynamic color rules** - JavaScript expressions for intelligent event coloring (`Priority === 'High' → #ef4444`)
 - **Advanced filtering** - Show/hide events based on any frontmatter property or complex expressions
 - **View customization** - Adjust time ranges, zoom levels, display density, themes, and layouts
 - **Multiple calendars** - Up to 10 isolated calendars, each with completely independent settings

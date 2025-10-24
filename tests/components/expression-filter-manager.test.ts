@@ -32,7 +32,7 @@ describe("ExpressionFilterManager", () => {
 
 			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
 			expect(input).toBeTruthy();
-			expect(input.placeholder).toBe("Filter: Status === 'Done'");
+			expect(input.placeholder).toBe("Status === 'Done'");
 		});
 
 		it("should use correct CSS class", () => {

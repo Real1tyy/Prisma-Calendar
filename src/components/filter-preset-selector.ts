@@ -32,10 +32,10 @@ export class FilterPresetSelector {
 		this.select = document.createElement("select");
 		this.select.className = "fc-filter-preset-select";
 
-		const defaultOption = document.createElement("option");
-		defaultOption.value = "";
-		defaultOption.textContent = "Filter presets";
-		this.select.appendChild(defaultOption);
+		const clearOption = document.createElement("option");
+		clearOption.value = "clear";
+		clearOption.textContent = "Clear";
+		this.select.appendChild(clearOption);
 
 		this.presets.forEach((preset) => {
 			const option = document.createElement("option");
@@ -45,12 +45,14 @@ export class FilterPresetSelector {
 		});
 
 		this.select.addEventListener("change", () => {
-			const expression = this.select?.value || "";
-			if (expression) {
-				this.onPresetSelected(expression);
-				if (this.select) {
-					this.select.value = "";
-				}
+			const value = this.select?.value || "";
+			if (value === "clear") {
+				this.onPresetSelected("");
+			} else if (value) {
+				this.onPresetSelected(value);
+			}
+			if (this.select) {
+				this.select.value = "clear";
 			}
 		});
 
@@ -77,6 +79,8 @@ export class FilterPresetSelector {
 			option.textContent = preset.name;
 			this.select?.appendChild(option);
 		});
+
+		this.select.value = "clear";
 	}
 
 	destroy(): void {

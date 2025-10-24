@@ -53,22 +53,22 @@ export class RulesSettings {
 
 		const examples = [
 			{
-				expression: "fm.Priority === 'High'",
+				expression: "Priority === 'High'",
 				color: "#ef4444",
 				description: "High priority events in red",
 			},
 			{
-				expression: "fm.Status === 'Done'",
+				expression: "Status === 'Done'",
 				color: "#22c55e",
 				description: "Completed events in green",
 			},
 			{
-				expression: "fm.Project === 'Work'",
+				expression: "Project === 'Work'",
 				color: "#3b82f6",
 				description: "Work projects in blue",
 			},
 			{
-				expression: "fm.Type === 'Meeting'",
+				expression: "Type === 'Meeting'",
 				color: "#f59e0b",
 				description: "Meetings in orange",
 			},
@@ -91,7 +91,7 @@ export class RulesSettings {
 		const warningContainer = desc.createDiv("settings-warning-box");
 		warningContainer.createEl("strong", { text: "⚠️ Important:" });
 		warningContainer.createEl("p", {
-			text: "Use 'fm' to access frontmatter properties. Invalid expressions will be ignored. Colors can be CSS color names, hex codes, or HSL values.",
+			text: "Use property names directly (e.g., Priority, Status). Invalid expressions will be ignored. Colors can be CSS color names, hex codes, or HSL values.",
 		});
 
 		// Color rules list
@@ -160,7 +160,7 @@ export class RulesSettings {
 			const expressionInput = leftSection.createEl("input", {
 				type: "text",
 				value: rule.expression,
-				placeholder: "fm.Priority === 'High'",
+				placeholder: "Priority === 'High'",
 				cls: "color-rule-expression-input",
 			});
 
@@ -271,11 +271,11 @@ export class RulesSettings {
 		const examplesList = examplesContainer.createEl("ul");
 
 		const examples = [
-			"fm.Status !== 'Inbox'",
-			"fm.Priority === 'High'",
-			"fm.Status === 'Done' || fm.Status === 'In Progress'",
-			"!fm._Archived",
-			"Array.isArray(fm.Project) && fm.Project.length > 0",
+			"Status !== 'Inbox'",
+			"Priority === 'High'",
+			"Status === 'Done' || Status === 'In Progress'",
+			"!_Archived",
+			"Array.isArray(Project) && Project.length > 0",
 		];
 
 		for (const example of examples) {
@@ -288,14 +288,14 @@ export class RulesSettings {
 		const warningContainer = desc.createDiv("settings-warning-box");
 		warningContainer.createEl("strong", { text: "⚠️ Important:" });
 		warningContainer.createEl("p", {
-			text: "Use 'fm' to access frontmatter properties (e.g., fm.Status, fm.Priority). Invalid expressions will be ignored and logged to console.",
+			text: "Use property names directly (e.g., Status, Priority). Invalid expressions will be ignored and logged to console.",
 		});
 
 		this.ui.addTextArray(containerEl, {
 			key: "filterExpressions",
 			name: "Filter expressions",
 			desc: "JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing.",
-			placeholder: "fm.Status !== 'Inbox'\nfm.Priority === 'High'",
+			placeholder: "Status !== 'Inbox'\nPriority === 'High'",
 			multiline: true,
 		});
 	}
@@ -315,10 +315,10 @@ export class RulesSettings {
 		const examplesList = examplesContainer.createEl("ul");
 
 		const examples = [
-			{ name: "Done", expression: "fm.Status === 'Done'" },
-			{ name: "High Priority", expression: "fm.Priority === 'High'" },
-			{ name: "Work Projects", expression: "fm.Project === 'Work'" },
-			{ name: "Not Archived", expression: "!fm._Archived" },
+			{ name: "Done", expression: "Status === 'Done'" },
+			{ name: "High Priority", expression: "Priority === 'High'" },
+			{ name: "Work Projects", expression: "Project === 'Work'" },
+			{ name: "Not Archived", expression: "!_Archived" },
 		];
 
 		for (const example of examples) {
@@ -401,7 +401,7 @@ export class RulesSettings {
 			const expressionInput = presetContainer.createEl("input", {
 				type: "text",
 				value: preset.expression,
-				placeholder: "Filter expression (e.g., fm.Status === 'Done')",
+				placeholder: "Filter expression (e.g., Status === 'Done')",
 				cls: "filter-preset-expression-input",
 			});
 

@@ -125,14 +125,14 @@ STATUS: Done
 Examples:
 
 ```text
-fm.Priority === 'High'         → red
-fm.Status === 'Done'           → #22c55e
-fm.Project === 'Work'          → hsl(210, 70%, 50%)
-fm.Type === 'Meeting'          → #f59e0b
+Priority === 'High'         → red
+Status === 'Done'           → #22c55e
+Project === 'Work'          → hsl(210, 70%, 50%)
+Type === 'Meeting'          → #f59e0b
 ```
 
 Tips:
-- Use `fm` to reference frontmatter keys
+- Use property names directly (no prefix needed)
 - Colors support CSS names, hex, or HSL
 
 ### Event Filtering
@@ -140,11 +140,11 @@ Tips:
 All expressions must evaluate to true; events failing any filter are excluded.
 
 ```text
-fm.Status !== 'Inbox'
-fm.Priority === 'High'
-fm.Status === 'Done' || fm.Status === 'In Progress'
-!fm._Archived
-Array.isArray(fm.Project) && fm.Project.length > 0
+Status !== 'Inbox'
+Priority === 'High'
+Status === 'Done' || Status === 'In Progress'
+!_Archived
+Array.isArray(Project) && Project.length > 0
 ```
 
 ## Frontmatter Display

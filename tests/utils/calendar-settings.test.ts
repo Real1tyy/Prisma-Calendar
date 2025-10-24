@@ -52,11 +52,11 @@ describe("Calendar Settings Utils", () => {
 				dateProp: "customDate",
 				titleProp: "customTitle",
 				defaultDurationMinutes: 45,
-				filterExpressions: ["fm.status !== 'done'"],
+				filterExpressions: ["status !== 'done'"],
 				colorRules: [
 					{
 						id: "rule-1",
-						expression: "fm.priority === 'high'",
+						expression: "priority === 'high'",
 						enabled: true,
 						color: "#ff0000",
 					},
@@ -76,11 +76,11 @@ describe("Calendar Settings Utils", () => {
 			expect(duplicated.dateProp).toBe("customDate");
 			expect(duplicated.titleProp).toBe("customTitle");
 			expect(duplicated.defaultDurationMinutes).toBe(45);
-			expect(duplicated.filterExpressions).toEqual(["fm.status !== 'done'"]);
+			expect(duplicated.filterExpressions).toEqual(["status !== 'done'"]);
 			expect(duplicated.colorRules).toEqual([
 				{
 					id: "rule-1",
-					expression: "fm.priority === 'high'",
+					expression: "priority === 'high'",
 					enabled: true,
 					color: "#ff0000",
 				},
