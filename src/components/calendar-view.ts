@@ -1056,6 +1056,10 @@ export class CalendarView extends MountableView(ItemView) {
 		this.batchSelectionManager?.executeMoveBy();
 	}
 
+	openFilterPresetSelector(): void {
+		this.filterPresetSelector.open();
+	}
+
 	focusSearch(): void {
 		this.searchFilter.focus();
 	}

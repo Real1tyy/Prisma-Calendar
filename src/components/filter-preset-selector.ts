@@ -22,6 +22,38 @@ export class FilterPresetSelector {
 		}
 	}
 
+	open(): void {
+		if (!this.select) return;
+
+		// Focus the select element
+		this.select.focus();
+
+		// Use showPicker() if available (modern browsers)
+		if ("showPicker" in this.select) {
+			try {
+				(this.select as any).showPicker();
+			} catch (_error) {
+				// Fallback if showPicker fails
+				this.triggerDropdownOpen();
+			}
+		} else {
+			// Fallback for older browsers
+			this.triggerDropdownOpen();
+		}
+	}
+
+	private triggerDropdownOpen(): void {
+		if (!this.select) return;
+
+		// Create and dispatch a mousedown event to open the dropdown
+		const event = new MouseEvent("mousedown", {
+			bubbles: true,
+			cancelable: true,
+			view: window,
+		});
+		this.select.dispatchEvent(event);
+	}
+
 	private injectSelect(container: HTMLElement): void {
 		const toolbarLeft = container.querySelector(".fc-toolbar-chunk:first-child");
 		if (!toolbarLeft) return;
