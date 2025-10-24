@@ -30,13 +30,24 @@ export class FilterPresetSelector {
 		wrapper.className = "fc-filter-preset-wrapper";
 
 		this.select = document.createElement("select");
-		this.select.className = "fc-filter-preset-select";
+		this.select.className = "fc-filter-preset-select fc-button fc-button-primary";
 
+		// Hidden placeholder option that shows the arrow
+		const placeholderOption = document.createElement("option");
+		placeholderOption.value = "";
+		placeholderOption.textContent = "▼";
+		placeholderOption.disabled = true;
+		placeholderOption.selected = true;
+		placeholderOption.hidden = true;
+		this.select.appendChild(placeholderOption);
+
+		// Clear option
 		const clearOption = document.createElement("option");
 		clearOption.value = "clear";
 		clearOption.textContent = "Clear";
 		this.select.appendChild(clearOption);
 
+		// User presets
 		this.presets.forEach((preset) => {
 			const option = document.createElement("option");
 			option.value = preset.expression;
@@ -51,8 +62,9 @@ export class FilterPresetSelector {
 			} else if (value) {
 				this.onPresetSelected(value);
 			}
+			// Reset to placeholder after selection
 			if (this.select) {
-				this.select.value = "clear";
+				this.select.selectedIndex = 0;
 			}
 		});
 
@@ -69,10 +81,12 @@ export class FilterPresetSelector {
 	private rebuildSelectOptions(): void {
 		if (!this.select) return;
 
-		while (this.select.options.length > 1) {
-			this.select.remove(1);
+		// Remove all options except placeholder and clear
+		while (this.select.options.length > 2) {
+			this.select.remove(2);
 		}
 
+		// Add user presets
 		this.presets.forEach((preset) => {
 			const option = document.createElement("option");
 			option.value = preset.expression;
@@ -80,7 +94,8 @@ export class FilterPresetSelector {
 			this.select?.appendChild(option);
 		});
 
-		this.select.value = "clear";
+		// Reset to placeholder
+		this.select.selectedIndex = 0;
 	}
 
 	destroy(): void {
