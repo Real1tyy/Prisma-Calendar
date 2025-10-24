@@ -21,6 +21,7 @@ import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
 import { ExpressionFilterManager } from "./expression-filter-manager";
+import { FilterPresetSelector } from "./filter-preset-selector";
 import {
 	createDisabledRecurringEventsModal,
 	createSkippedEventsModal,
@@ -43,6 +44,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private zoomManager: ZoomManager;
 	private searchFilter: SearchFilterManager;
 	private expressionFilter: ExpressionFilterManager;
+	private filterPresetSelector: FilterPresetSelector;
 	private container!: HTMLElement;
 	private viewType: string;
 	private skippedEventsModal: GenericEventListModal | null = null;
@@ -60,6 +62,12 @@ export class CalendarView extends MountableView(ItemView) {
 		this.zoomManager = new ZoomManager(bundle.settingsStore);
 		this.searchFilter = new SearchFilterManager(() => this.refreshEvents());
 		this.expressionFilter = new ExpressionFilterManager(() => this.refreshEvents());
+		this.filterPresetSelector = new FilterPresetSelector(
+			bundle.settingsStore.currentSettings.filterPresets,
+			(expression: string) => {
+				this.expressionFilter.setFilterValue(expression);
+			}
+		);
 	}
 
 	async undo(): Promise<boolean> {
@@ -524,6 +532,7 @@ export class CalendarView extends MountableView(ItemView) {
 		this.zoomManager.initialize(this.calendar, this.container);
 		this.zoomManager.setOnZoomChangeCallback(() => this.saveCurrentState());
 
+		this.filterPresetSelector.initialize(this.calendar, this.container);
 		this.searchFilter.initialize(this.calendar, this.container);
 		this.expressionFilter.initialize(this.calendar, this.container);
 
@@ -573,6 +582,8 @@ export class CalendarView extends MountableView(ItemView) {
 		this.calendar.setOption("eventOverlap", settings.eventOverlap);
 		this.calendar.setOption("slotEventOverlap", settings.slotEventOverlap);
 		this.calendar.setOption("eventMaxStack", settings.eventMaxStack);
+
+		this.filterPresetSelector.updatePresets(settings.filterPresets);
 
 		this.refreshEvents();
 	}

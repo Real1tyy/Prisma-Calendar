@@ -29,6 +29,13 @@ export abstract class InputFilterManager {
 		return this.currentFilterValue;
 	}
 
+	setFilterValue(value: string): void {
+		if (this.input) {
+			this.input.value = value;
+		}
+		this.updateFilterValue(value);
+	}
+
 	focus(): void {
 		this.input?.focus();
 	}

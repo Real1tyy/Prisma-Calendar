@@ -27,6 +27,11 @@ export const PropsSettingsSchema = z.object({
 	doneValue: z.string().default(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE), // value to set when marking event as done
 });
 
+export const FilterPresetSchema = z.object({
+	name: z.string(),
+	expression: z.string(),
+});
+
 export const CalendarSettingsSchema = z.object({
 	futureInstancesCount: z.number().int().min(1).max(52).default(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT), // how many future instances to generate for recurring events
 	defaultView: CalendarViewTypeSchema.default(SETTINGS_DEFAULTS.DEFAULT_DEFAULT_VIEW),
@@ -45,6 +50,7 @@ export const CalendarSettingsSchema = z.object({
 	slotEventOverlap: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SLOT_EVENT_OVERLAP), // Allow events to overlap within the same time slot (timeGrid views only)
 	eventMaxStack: z.number().int().min(1).max(10).default(SETTINGS_DEFAULTS.DEFAULT_EVENT_MAX_STACK), // Maximum number of events to stack before showing "+ more" link
 	skipUnderscoreProperties: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SKIP_UNDERSCORE_PROPERTIES), // Skip displaying properties that start with underscore
+	filterPresets: z.array(FilterPresetSchema).default([]), // Named filter expressions for quick access
 });
 
 export const RulesSettingsSchema = z.object({
@@ -90,5 +96,6 @@ export const CustomCalendarSettingsSchema = z.object({
 		]),
 });
 
+export type FilterPreset = z.infer<typeof FilterPresetSchema>;
 export type SingleCalendarConfig = z.infer<typeof SingleCalendarConfigSchema>;
 export type CustomCalendarSettings = z.infer<typeof CustomCalendarSettingsSchema>;

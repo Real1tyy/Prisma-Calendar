@@ -15,6 +15,7 @@ export class RulesSettings {
 	display(containerEl: HTMLElement): void {
 		this.addColorSettings(containerEl);
 		this.addFilterSettings(containerEl);
+		this.addFilterPresetSettings(containerEl);
 	}
 
 	private addColorSettings(containerEl: HTMLElement): void {
@@ -296,6 +297,142 @@ export class RulesSettings {
 			desc: "JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing.",
 			placeholder: "fm.Status !== 'Inbox'\nfm.Priority === 'High'",
 			multiline: true,
+		});
+	}
+
+	private addFilterPresetSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("Filter presets").setHeading();
+
+		const desc = containerEl.createDiv();
+		desc.createEl("p", {
+			text: "Create named filter presets for quick access via a dropdown in the calendar toolbar. These presets auto-fill the filter expression input.",
+		});
+
+		// Examples section
+		const examplesContainer = desc.createDiv("settings-info-box");
+
+		examplesContainer.createEl("strong", { text: "Example presets:" });
+		const examplesList = examplesContainer.createEl("ul");
+
+		const examples = [
+			{ name: "Done", expression: "fm.Status === 'Done'" },
+			{ name: "High Priority", expression: "fm.Priority === 'High'" },
+			{ name: "Work Projects", expression: "fm.Project === 'Work'" },
+			{ name: "Not Archived", expression: "!fm._Archived" },
+		];
+
+		for (const example of examples) {
+			const li = examplesList.createEl("li");
+			li.createEl("strong", { text: `${example.name}: ` });
+			const code = li.createEl("code", { text: example.expression });
+			code.addClass("settings-info-box-example");
+		}
+
+		// Warning section
+		const warningContainer = desc.createDiv("settings-warning-box");
+		warningContainer.createEl("strong", { text: "💡 Tip:" });
+		warningContainer.createEl("p", {
+			text: "Filter presets appear in a dropdown next to the zoom button. Click a preset to instantly apply its filter expression.",
+		});
+
+		// Presets list
+		const presetsListContainer = containerEl.createDiv();
+		this.renderFilterPresetsList(presetsListContainer);
+
+		// Add new preset button
+		new Setting(containerEl)
+			.setName("Add filter preset")
+			.setDesc("Add a new filter preset")
+			.addButton((button) => {
+				button.setButtonText("Add Preset");
+				button.onClick(async () => {
+					const newPreset = {
+						name: "",
+						expression: "",
+					};
+
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						filterPresets: [...s.filterPresets, newPreset],
+					}));
+
+					this.renderFilterPresetsList(presetsListContainer);
+				});
+			});
+	}
+
+	private renderFilterPresetsList(container: HTMLElement): void {
+		container.empty();
+		const { filterPresets } = this.settingsStore.currentSettings;
+
+		if (filterPresets.length === 0) {
+			const emptyState = container.createDiv();
+			emptyState.textContent = "No filter presets defined. Click 'Add Preset' to create one.";
+			return;
+		}
+
+		filterPresets.forEach((preset, index) => {
+			const presetContainer = container.createDiv("filter-preset-item");
+
+			// Name input
+			const nameInput = presetContainer.createEl("input", {
+				type: "text",
+				value: preset.name,
+				placeholder: "Preset name (e.g., 'Done', 'High Priority')",
+				cls: "filter-preset-name-input",
+			});
+
+			const updateName = async () => {
+				await this.settingsStore.updateSettings((s) => ({
+					...s,
+					filterPresets: s.filterPresets.map((p, i) => (i === index ? { ...p, name: nameInput.value } : p)),
+				}));
+			};
+
+			nameInput.addEventListener("blur", updateName);
+			nameInput.addEventListener("keydown", (e: KeyboardEvent) => {
+				if (e.key === "Enter") {
+					e.preventDefault();
+					updateName();
+				}
+			});
+
+			// Expression input
+			const expressionInput = presetContainer.createEl("input", {
+				type: "text",
+				value: preset.expression,
+				placeholder: "Filter expression (e.g., fm.Status === 'Done')",
+				cls: "filter-preset-expression-input",
+			});
+
+			const updateExpression = async () => {
+				await this.settingsStore.updateSettings((s) => ({
+					...s,
+					filterPresets: s.filterPresets.map((p, i) => (i === index ? { ...p, expression: expressionInput.value } : p)),
+				}));
+			};
+
+			expressionInput.addEventListener("blur", updateExpression);
+			expressionInput.addEventListener("keydown", (e: KeyboardEvent) => {
+				if (e.key === "Enter") {
+					e.preventDefault();
+					updateExpression();
+				}
+			});
+
+			// Delete button
+			const deleteButton = presetContainer.createEl("button", {
+				text: "×",
+				attr: { title: "Delete preset" },
+				cls: "filter-preset-btn-delete",
+			});
+			deleteButton.onclick = async () => {
+				await this.settingsStore.updateSettings((s) => ({
+					...s,
+					filterPresets: s.filterPresets.filter((_, i) => i !== index),
+				}));
+				this.renderFilterPresetsList(container);
+			};
 		});
 	}
 }
