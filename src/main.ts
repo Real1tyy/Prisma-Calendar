@@ -120,6 +120,9 @@ export default class CustomCalendarPlugin extends Plugin {
 			view.showDisabledRecurringEventsModal()
 		);
 		addCalendarViewCommand(COMMAND_IDS.FOCUS_SEARCH, "Focus search", (view) => view.focusSearch());
+		addCalendarViewCommand(COMMAND_IDS.FOCUS_EXPRESSION_FILTER, "Focus expression filter", (view) =>
+			view.focusExpressionFilter()
+		);
 
 		this.addCommand({
 			id: COMMAND_IDS.OPEN_CURRENT_NOTE_IN_CALENDAR,

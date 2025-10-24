@@ -8,6 +8,7 @@ export const COMMAND_IDS = {
 	SHOW_SKIPPED_EVENTS: "show-skipped-events",
 	SHOW_DISABLED_RECURRING_EVENTS: "show-disabled-recurring-events",
 	FOCUS_SEARCH: "focus-search",
+	FOCUS_EXPRESSION_FILTER: "focus-expression-filter",
 	UNDO: "undo",
 	REDO: "redo",
 	TOGGLE_BATCH_SELECTION: "toggle-batch-selection",
