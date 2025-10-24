@@ -140,7 +140,7 @@ export class ZoomManager {
 
 	createZoomLevelButton(): { text: string; click: (e: MouseEvent) => void } {
 		return {
-			text: "", // Empty - updateZoomLevelButton() will set the actual text
+			text: this.getZoomLevelText(), // Return current zoom level text immediately
 			click: (e: MouseEvent) => {
 				this.showZoomMenu(e);
 			},

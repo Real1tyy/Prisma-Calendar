@@ -214,6 +214,11 @@ export class CalendarView extends MountableView(ItemView) {
 				const hasDisabled = !currentText.startsWith("0 ");
 				disabledBtn.style.display = hasDisabled ? "inline-block" : "none";
 			}
+
+			// Update zoom button text after toolbar is rendered
+			if (!inSelectionMode) {
+				this.zoomManager.updateZoomLevelButton();
+			}
 		}, 0);
 	}
 
