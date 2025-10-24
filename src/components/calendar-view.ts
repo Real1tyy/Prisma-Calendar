@@ -25,6 +25,7 @@ import {
 	createSkippedEventsModal,
 	type GenericEventListModal,
 } from "./generic-event-list-modal";
+import { SearchManager } from "./search-manager";
 import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";
@@ -39,6 +40,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private colorEvaluator: ColorEvaluator;
 	private batchSelectionManager: BatchSelectionManager | null = null;
 	private zoomManager: ZoomManager;
+	private searchManager: SearchManager;
 	private container!: HTMLElement;
 	private viewType: string;
 	private skippedEventsModal: GenericEventListModal | null = null;
@@ -54,6 +56,7 @@ export class CalendarView extends MountableView(ItemView) {
 		this.eventContextMenu = new EventContextMenu(this.app, bundle);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 		this.zoomManager = new ZoomManager(bundle.settingsStore);
+		this.searchManager = new SearchManager(() => this.refreshEvents());
 	}
 
 	async undo(): Promise<boolean> {
@@ -514,6 +517,8 @@ export class CalendarView extends MountableView(ItemView) {
 		this.zoomManager.initialize(this.calendar, this.container);
 		this.zoomManager.setOnZoomChangeCallback(() => this.saveCurrentState());
 
+		this.searchManager.initialize(this.calendar, this.container);
+
 		if (this.bundle.viewStateManager.hasState()) {
 			this.isRestoring = true;
 
@@ -583,7 +588,13 @@ export class CalendarView extends MountableView(ItemView) {
 			const start = view.activeStart.toISOString();
 			const end = view.activeEnd.toISOString();
 
-			const events = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
+			let events = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
+
+			// Apply search filter if active
+			const searchTerm = this.searchManager.getCurrentSearchTerm();
+			if (searchTerm) {
+				events = events.filter((event) => this.searchManager.matchesSearch(event.title));
+			}
 
 			const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
 			this.updateSkippedEventsButton(skippedEvents.length);
@@ -1024,6 +1035,10 @@ export class CalendarView extends MountableView(ItemView) {
 		this.batchSelectionManager?.executeMoveBy();
 	}
 
+	focusSearch(): void {
+		this.searchManager.focus();
+	}
+
 	private isRestoring = false;
 
 	private saveCurrentState(): void {
@@ -1037,6 +1052,7 @@ export class CalendarView extends MountableView(ItemView) {
 		this.saveCurrentState();
 
 		this.zoomManager.destroy();
+		this.searchManager.destroy();
 
 		this.calendar?.destroy();
 		this.calendar = null;

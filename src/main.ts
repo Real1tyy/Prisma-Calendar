@@ -36,6 +36,23 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		type CalendarViewAction = (view: CalendarView) => void;
 
+		const addCalendarViewCommand = (id: string, name: string, action: CalendarViewAction): void => {
+			this.addCommand({
+				id,
+				name,
+				checkCallback: (checking: boolean) => {
+					const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
+					if (calendarView) {
+						if (!checking) {
+							action(calendarView);
+						}
+						return true;
+					}
+					return false;
+				},
+			});
+		};
+
 		const addBatchCommand = (id: string, name: string, action: CalendarViewAction): void => {
 			this.addCommand({
 				id,
@@ -96,34 +113,13 @@ export default class CustomCalendarPlugin extends Plugin {
 		addUndoRedoCommand(COMMAND_IDS.UNDO, "Undo", (view) => view.undo());
 		addUndoRedoCommand(COMMAND_IDS.REDO, "Redo", (view) => view.redo());
 
-		const addSimpleViewCommand = (
-			id: string,
-			name: string,
-			modalMethod: "showSkippedEventsModal" | "showDisabledRecurringEventsModal"
-		): void => {
-			this.addCommand({
-				id,
-				name,
-				checkCallback: (checking: boolean) => {
-					const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
-					if (calendarView) {
-						if (!checking) {
-							calendarView[modalMethod]();
-						}
-						return true;
-					}
-					return false;
-				},
-			});
-		};
-
-		addSimpleViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", "showSkippedEventsModal");
-
-		addSimpleViewCommand(
-			COMMAND_IDS.SHOW_DISABLED_RECURRING_EVENTS,
-			"Show disabled recurring events",
-			"showDisabledRecurringEventsModal"
+		addCalendarViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", (view) =>
+			view.showSkippedEventsModal()
 		);
+		addCalendarViewCommand(COMMAND_IDS.SHOW_DISABLED_RECURRING_EVENTS, "Show disabled recurring events", (view) =>
+			view.showDisabledRecurringEventsModal()
+		);
+		addCalendarViewCommand(COMMAND_IDS.FOCUS_SEARCH, "Focus search", (view) => view.focusSearch());
 
 		this.addCommand({
 			id: COMMAND_IDS.OPEN_CURRENT_NOTE_IN_CALENDAR,

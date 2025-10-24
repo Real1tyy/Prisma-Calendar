@@ -9,6 +9,7 @@ export {
 	GenericEventListModal,
 } from "./generic-event-list-modal";
 export { MoveByModal } from "./move-by-modal";
+export { SearchManager } from "./search-manager";
 export { CustomCalendarSettingsTab } from "./settings/settings-tab";
 export { SingleCalendarSettings } from "./settings/single-calendar-settings";
 export { ZoomManager } from "./zoom-manager";

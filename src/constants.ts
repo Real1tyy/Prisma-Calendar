@@ -7,6 +7,7 @@ export const SCAN_CONCURRENCY = 10;
 export const COMMAND_IDS = {
 	SHOW_SKIPPED_EVENTS: "show-skipped-events",
 	SHOW_DISABLED_RECURRING_EVENTS: "show-disabled-recurring-events",
+	FOCUS_SEARCH: "focus-search",
 	UNDO: "undo",
 	REDO: "redo",
 	TOGGLE_BATCH_SELECTION: "toggle-batch-selection",
