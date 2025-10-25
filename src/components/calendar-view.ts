@@ -537,9 +537,11 @@ export class CalendarView extends MountableView(ItemView) {
 		this.zoomManager.initialize(this.calendar, this.container);
 		this.zoomManager.setOnZoomChangeCallback(() => this.saveCurrentState());
 
-		this.filterPresetSelector.initialize(this.calendar, this.container);
+		// Initialize filters in reverse order since they all insert after zoom button
+		// Order will be: Zoom → FilterPresetSelector → ExpressionFilter → SearchFilter
 		this.searchFilter.initialize(this.calendar, this.container);
 		this.expressionFilter.initialize(this.calendar, this.container);
+		this.filterPresetSelector.initialize(this.calendar, this.container);
 
 		if (this.bundle.viewStateManager.hasState()) {
 			this.isRestoring = true;
