@@ -147,6 +147,25 @@ Status === 'Done' || Status === 'In Progress'
 Array.isArray(Project) && Project.length > 0
 ```
 
+### Filter Presets
+
+Create named filter expressions for quick access via the calendar toolbar dropdown:
+
+1. Go to Settings → Rules → Filter Presets
+2. Click "Add Preset"
+3. Enter a name (e.g., "High Priority Only")
+4. Enter the filter expression (e.g., `Priority === 'High'`)
+
+**Using Presets:**
+- Click the ▼ dropdown button in the calendar toolbar (next to the zoom button)
+- Select a preset to apply its filter instantly
+- Select "Clear" to remove the active filter
+
+**Notes:**
+- Filter presets use the same expression syntax as event filtering
+- Presets are per-calendar configuration
+- Active preset filters are temporary and reset when the calendar is reloaded
+
 ## Frontmatter Display
 
 Show extra frontmatter properties inside event chips (scrollable when space is tight).

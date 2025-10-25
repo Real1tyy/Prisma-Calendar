@@ -32,3 +32,90 @@ Here is a complete list of the batch operations you can assign hotkeys to:
 -   `Batch: Move to Next Week`: Moves each selected event to the same day of the following week.
 -   `Batch: Move to Previous Week`: Moves each selected event to the same day of the previous week.
 -   `Batch: Move By`: Opens a dialog to move selected events by a custom number of days. Supports positive values (move forward) and negative values (move backward). For example, enter `7` to move events one week forward, or `-3` to move them 3 days back.
+-   `Batch: Skip Selection`: Marks all selected events as skipped (hidden from calendar).
+
+## Navigation Commands
+
+### Open Current Note in Calendar
+
+The **Open Current Note in Calendar** command provides quick navigation from any note to its corresponding event in the calendar:
+
+-   **Function**: Opens the calendar view and navigates to the date of the currently active note
+-   **Behavior**:
+    -   Automatically detects which calendar the note belongs to (based on directory)
+    -   Opens the calendar view if not already open, or focuses it if already open
+    -   Switches to week view and navigates to the event's date
+    -   Highlights the event for 5 seconds for easy identification
+-   **Requirements**: The active note must:
+    -   Be located in a calendar directory
+    -   Have frontmatter with a date property (Start, Date, or configured start property)
+
+## Filtering & Search Commands
+
+The filtering commands enable keyboard-driven navigation of the calendar's powerful filtering system:
+
+### Focus Search
+
+-   **Function**: Jumps directly to the search bar input in the calendar toolbar
+-   **Use Case**: Quick text-based filtering by event title
+
+### Focus Expression Filter
+
+-   **Function**: Jumps directly to the expression filter input
+-   **Use Case**: Advanced property-based filtering with JavaScript expressions
+
+### Open Filter Preset Selector
+
+-   **Function**: Opens the filter presets dropdown for quick preset selection
+-   **Use Case**: Apply saved filter expressions with a single click
+
+## Event Management Commands
+
+### Show Skipped Events
+
+-   **Function**: Opens a modal listing all events marked as skipped
+-   **Features**: Quickly enable, navigate to, or open skipped events
+
+### Show Disabled Recurring Events
+
+-   **Function**: Opens a modal listing all disabled recurring events
+-   **Features**: Quickly enable, navigate to, or open disabled recurring event sources
+
+## Undo/Redo Commands
+
+-   **Undo**: Reverses the last calendar operation
+-   **Redo**: Reapplies a previously undone operation
+
+## Recommended Keybindings
+
+Here are suggested keybindings organized by workflow:
+
+### Essential Bindings
+| Command | Suggested Binding | Why |
+|---------|------------------|-----|
+| Open current note in calendar | `Ctrl/Cmd+Shift+C` | Quick calendar navigation from any note |
+| Focus search | `Ctrl/Cmd+F` | Standard search shortcut |
+| Toggle batch selection | `Ctrl/Cmd+B` | Quick access to batch operations |
+| Undo | `Ctrl/Cmd+Z` | Standard undo binding |
+| Redo | `Ctrl/Cmd+Y` | Standard redo binding |
+
+### Advanced Filtering
+| Command | Suggested Binding | Why |
+|---------|------------------|-----|
+| Focus expression filter | `Ctrl/Cmd+Shift+F` | Advanced search variant |
+| Open filter preset selector | `Ctrl/Cmd+Shift+P` | Quick preset access |
+
+### Batch Operations
+| Command | Suggested Binding | Why |
+|---------|------------------|-----|
+| Batch: Delete Selection | `Ctrl/Cmd+Shift+Delete` | Clear batch delete |
+| Batch: Duplicate Selection | `Ctrl/Cmd+D` | Quick duplication |
+| Batch: Move By | `Ctrl/Cmd+M` | Precise date adjustments |
+
+## Tips
+
+-   **Batch operations** require batch selection mode to be active first
+-   **Undo/redo** supports all event modifications (create, delete, move, edit)
+-   **Command palette**: Access all commands via `Ctrl/Cmd+P` → search "Prisma Calendar"
+-   **Filter commands** enable mouse-free navigation between filtering options
+-   **Navigation commands** work even when the calendar is not currently open
