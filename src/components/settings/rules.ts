@@ -267,21 +267,25 @@ export class RulesSettings {
 		// Examples section
 		const examplesContainer = desc.createDiv("settings-info-box");
 
-		examplesContainer.createEl("strong", { text: "Examples:" });
+		examplesContainer.createEl("strong", { text: "Example filter expressions:" });
 		const examplesList = examplesContainer.createEl("ul");
 
 		const examples = [
-			"Status !== 'Inbox'",
-			"Priority === 'High'",
-			"Status === 'Done' || Status === 'In Progress'",
-			"!_Archived",
-			"Array.isArray(Project) && Project.length > 0",
+			{ expression: "Status !== 'Inbox'", description: "Exclude inbox items" },
+			{ expression: "Priority === 'High'", description: "Only high priority events" },
+			{ expression: "Status === 'Done' || Status === 'In Progress'", description: "Active or completed events" },
+			{ expression: "!_Archived", description: "Exclude archived events" },
+			{ expression: "Array.isArray(Project) && Project.length > 0", description: "Events with projects assigned" },
 		];
 
 		for (const example of examples) {
-			const li = examplesList.createEl("li");
-			const code = li.createEl("code", { text: example });
-			code.addClass("settings-info-box-example");
+			const li = examplesList.createEl("li", { cls: "color-example-item" });
+
+			li.createEl("code", { text: example.expression, cls: "settings-info-box-example" });
+
+			li.createSpan({ text: "→", cls: "color-arrow" });
+
+			li.createSpan({ text: example.description, cls: "color-example-description" });
 		}
 
 		// Warning section
@@ -311,21 +315,24 @@ export class RulesSettings {
 		// Examples section
 		const examplesContainer = desc.createDiv("settings-info-box");
 
-		examplesContainer.createEl("strong", { text: "Example presets:" });
+		examplesContainer.createEl("strong", { text: "Example filter presets:" });
 		const examplesList = examplesContainer.createEl("ul");
 
 		const examples = [
-			{ name: "Done", expression: "Status === 'Done'" },
-			{ name: "High Priority", expression: "Priority === 'High'" },
-			{ name: "Work Projects", expression: "Project === 'Work'" },
-			{ name: "Not Archived", expression: "!_Archived" },
+			{ expression: "Status === 'Done'", description: "Done tasks preset" },
+			{ expression: "Priority === 'High'", description: "High priority preset" },
+			{ expression: "Project === 'Work'", description: "Work projects preset" },
+			{ expression: "!_Archived", description: "Not archived preset" },
 		];
 
 		for (const example of examples) {
-			const li = examplesList.createEl("li");
-			li.createEl("strong", { text: `${example.name}: ` });
-			const code = li.createEl("code", { text: example.expression });
-			code.addClass("settings-info-box-example");
+			const li = examplesList.createEl("li", { cls: "color-example-item" });
+
+			li.createEl("code", { text: example.expression, cls: "settings-info-box-example" });
+
+			li.createSpan({ text: "→", cls: "color-arrow" });
+
+			li.createSpan({ text: example.description, cls: "color-example-description" });
 		}
 
 		// Warning section
