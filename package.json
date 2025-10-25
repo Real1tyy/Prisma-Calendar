@@ -39,13 +39,13 @@
 		}
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.2.6",
+		"@biomejs/biome": "^2.3.0",
 		"@types/luxon": "^3.7.1",
-		"@types/node": "^24.8.1",
+		"@types/node": "^24.9.1",
 		"builtin-modules": "5.0.0",
 		"esbuild": "0.25.11",
 		"jsdom": "^27.0.1",
-		"obsidian": "1.10.0",
+		"obsidian": "1.8.7",
 		"tslib": "2.8.1",
 		"typescript": "5.9.3",
 		"vitest": "^3.2.4"
@@ -57,7 +57,7 @@
 		"@fullcalendar/list": "^6.1.19",
 		"@fullcalendar/timegrid": "^6.1.19",
 		"@real1ty-obsidian-plugins/common-plugin": "^1.1.1",
-		"@real1ty-obsidian-plugins/utils": "^2.2.2",
+		"@real1ty-obsidian-plugins/utils": "^2.2.3",
 		"chrono-node": "^2.9.0",
 		"colord": "^2.9.3",
 		"luxon": "^3.7.2",
