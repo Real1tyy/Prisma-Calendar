@@ -34,6 +34,7 @@ describe("Parser", () => {
 					"All Day": true,
 				},
 				folder: "Events",
+				isAllDay: true,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -58,6 +59,7 @@ describe("Parser", () => {
 					allDay: false,
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -85,6 +87,7 @@ describe("Parser", () => {
 					allDay: false,
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -108,6 +111,7 @@ describe("Parser", () => {
 					"All Day": true,
 				},
 				folder: "Events",
+				isAllDay: true,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -138,6 +142,7 @@ describe("Parser", () => {
 					eventTitle: "Custom Event",
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -155,6 +160,7 @@ describe("Parser", () => {
 					start: "2024-01-15 10:00",
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -175,6 +181,7 @@ describe("Parser", () => {
 					mtime: Date.now(),
 					frontmatter: { start: dateStr },
 					folder: "Events",
+					isAllDay: false,
 				};
 
 				const events = parser.parseEventSource(source);
@@ -196,6 +203,7 @@ describe("Parser", () => {
 					start: "2024-01-15T10:00:00.000Z",
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -213,6 +221,7 @@ describe("Parser", () => {
 					start: "not-a-date",
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -228,6 +237,7 @@ describe("Parser", () => {
 					title: "Meeting without start time",
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -245,6 +255,7 @@ describe("Parser", () => {
 					start: "2024-01-15 10:00",
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -265,6 +276,7 @@ describe("Parser", () => {
 					start: "2024-01-15",
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -281,6 +293,7 @@ describe("Parser", () => {
 					start: "2024-01-15 10:00",
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -298,6 +311,7 @@ describe("Parser", () => {
 					"All Day": true,
 				},
 				folder: "Events",
+				isAllDay: true,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -318,6 +332,7 @@ describe("Parser", () => {
 					status: "confirmed",
 				},
 				folder: "Projects",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -327,6 +342,7 @@ describe("Parser", () => {
 
 			expect(event.meta).toEqual({
 				folder: "Projects",
+				isAllDay: false,
 				originalStart: "2024-01-15 10:00",
 				originalEnd: undefined,
 				// All frontmatter properties should be included for Frontmatter Display
@@ -344,6 +360,7 @@ describe("Parser", () => {
 					start: "2024-01-15 10:00",
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events1 = parser.parseEventSource(source);
@@ -371,6 +388,7 @@ describe("Parser", () => {
 					newStart: "2024-01-15 10:00", // Using new property name
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -393,6 +411,7 @@ describe("Parser", () => {
 				mtime: Date.now(),
 				frontmatter: {},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -410,6 +429,7 @@ describe("Parser", () => {
 					title: "",
 				},
 				folder: "Events",
+				isAllDay: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -453,6 +473,7 @@ describe("Parser", () => {
 					"Start Date": "2025-09-05 22:21", // This is the exact failing format
 				},
 				folder: "Tasks",
+				isAllDay: false,
 			};
 
 			const returnedEvent = parser.parseEventSource(source);
@@ -501,6 +522,7 @@ describe("Parser", () => {
 					"Start Date": "2025-09-05 22:21", // This should work with default settings
 				},
 				folder: "Tasks",
+				isAllDay: false,
 			};
 
 			const event = parser.parseEventSource(source);

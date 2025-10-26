@@ -83,6 +83,7 @@ export class Parser {
 
 		const meta: Record<string, unknown> = {
 			folder,
+			isAllDay: source.isAllDay,
 			originalStart: frontmatter[this.settings.startProp],
 			originalEnd: frontmatter[this.settings.endProp],
 			originalDate: frontmatter[this.settings.dateProp],

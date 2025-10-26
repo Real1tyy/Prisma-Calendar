@@ -23,6 +23,7 @@ export interface RawEventSource {
 	mtime: number;
 	frontmatter: Record<string, unknown>;
 	folder: string;
+	isAllDay: boolean;
 }
 
 export type IndexerEventType = "file-changed" | "file-deleted" | "recurring-event-found";
@@ -226,11 +227,15 @@ export class Indexer {
 				});
 			}
 
+			const allDayProp = frontmatter[this._settings.allDayProp];
+			const isAllDay = allDayProp === true || allDayProp === "true" || !!hasAllDayEvent;
+
 			const source: RawEventSource = {
 				filePath: file.path,
 				mtime: file.stat.mtime,
 				frontmatter,
 				folder: file.parent?.path || "",
+				isAllDay,
 			};
 
 			events.push({ type: "file-changed", filePath: file.path, oldPath, source });

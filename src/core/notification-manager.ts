@@ -73,7 +73,7 @@ export class NotificationManager {
 		switch (event.type) {
 			case "file-changed":
 				if (event.source) {
-					this.processEventSource(event.source.filePath, event.source.frontmatter);
+					this.processEventSource(event.source.filePath, event.source.frontmatter, event.source.isAllDay);
 				}
 				break;
 			case "file-deleted":
@@ -82,7 +82,11 @@ export class NotificationManager {
 		}
 	}
 
-	private async processEventSource(filePath: string, frontmatter: Record<string, unknown>): Promise<void> {
+	private async processEventSource(
+		filePath: string,
+		frontmatter: Record<string, unknown>,
+		isAllDay: boolean
+	): Promise<void> {
 		// Check if already notified
 		const alreadyNotified = frontmatter[this.settings.alreadyNotifiedProp];
 		if (alreadyNotified === true || alreadyNotified === "true") {
@@ -90,71 +94,76 @@ export class NotificationManager {
 			return;
 		}
 
-		// Determine if this is a timed event or all-day event
+		// Get start date based on event type
 		const startProp = frontmatter[this.settings.startProp];
 		const dateProp = frontmatter[this.settings.dateProp];
-		const allDayProp = frontmatter[this.settings.allDayProp];
+		const startDate =
+			isAllDay && dateProp ? new Date(String(dateProp)) : startProp ? new Date(String(startProp)) : null;
 
-		const isAllDay = allDayProp === true || allDayProp === "true" || !!dateProp;
-
-		let startDate: Date | null = null;
-		let minutesBefore: number | null = null;
-		let daysBefore: number | null = null;
-
-		if (isAllDay && dateProp) {
-			// All-day event
-			startDate = new Date(String(dateProp));
-
-			// Check for per-event override
-			const daysBeforePropValue = frontmatter[this.settings.daysBeforeProp];
-			if (daysBeforePropValue !== undefined && daysBeforePropValue !== null) {
-				daysBefore = Number(daysBeforePropValue);
-			} else if (this.settings.defaultDaysBefore !== undefined) {
-				daysBefore = this.settings.defaultDaysBefore;
-			}
-		} else if (!isAllDay && startProp) {
-			// Timed event
-			startDate = new Date(String(startProp));
-
-			// Check for per-event override
-			const minutesBeforePropValue = frontmatter[this.settings.minutesBeforeProp];
-			if (minutesBeforePropValue !== undefined && minutesBeforePropValue !== null) {
-				minutesBefore = Number(minutesBeforePropValue);
-			} else if (this.settings.defaultMinutesBefore !== undefined) {
-				minutesBefore = this.settings.defaultMinutesBefore;
-			}
+		if (!startDate) {
+			this.removeNotification(filePath);
+			return;
 		}
 
-		// If we don't have a notification time, remove from queue
-		if (!startDate || (minutesBefore === null && daysBefore === null)) {
+		// Determine notification time based on event type
+		let notificationMinutes: number | undefined;
+
+		if (isAllDay) {
+			// All-day event: check for per-event override, then default days
+			const daysBeforePropValue = frontmatter[this.settings.daysBeforeProp];
+			const daysBefore =
+				daysBeforePropValue !== undefined && daysBeforePropValue !== null
+					? Number(daysBeforePropValue)
+					: this.settings.defaultDaysBefore;
+
+			if (daysBefore !== undefined) {
+				notificationMinutes = daysBefore * 24 * 60; // Convert days to minutes
+			}
+		} else {
+			// Timed event: check for per-event override, then default minutes
+			const minutesBeforePropValue = frontmatter[this.settings.minutesBeforeProp];
+			notificationMinutes =
+				minutesBeforePropValue !== undefined && minutesBeforePropValue !== null
+					? Number(minutesBeforePropValue)
+					: this.settings.defaultMinutesBefore;
+		}
+
+		// If no notification time configured, remove from queue
+		if (notificationMinutes === undefined) {
 			this.removeNotification(filePath);
 			return;
 		}
 
 		// Calculate notification time
 		const notifyAt = new Date(startDate);
-		if (daysBefore !== null) {
-			notifyAt.setDate(notifyAt.getDate() - daysBefore);
-			// For all-day events, notify at 9 AM on the notification day
-			notifyAt.setHours(9, 0, 0, 0);
-		} else if (minutesBefore !== null) {
-			notifyAt.setMinutes(notifyAt.getMinutes() - minutesBefore);
+		notifyAt.setMinutes(notifyAt.getMinutes() - notificationMinutes);
+
+		// For all-day events, set to midnight (00:00) on the notification day
+		if (isAllDay) {
+			notifyAt.setHours(0, 0, 0, 0);
 		}
 
-		// Get title from frontmatter or file name
 		const file = this.app.vault.getAbstractFileByPath(filePath);
 		const title =
 			(frontmatter[this.settings.titleProp || ""] as string) || (file instanceof TFile ? file.basename : filePath);
 
-		// Add or update in notification queue
-		this.addOrUpdateNotification({
+		const entry: NotificationEntry = {
 			eventId: filePath,
 			filePath,
 			title,
 			notifyAt,
 			startDate,
 			isAllDay,
-		});
+		};
+
+		// If notification time is in the past, trigger immediately (for all-day events on the notification day)
+		if (notifyAt <= new Date()) {
+			// Trigger notification immediately
+			this.triggerNotification(entry);
+		} else {
+			// Add to queue for future notification
+			this.addOrUpdateNotification(entry);
+		}
 	}
 
 	private addOrUpdateNotification(entry: NotificationEntry): void {

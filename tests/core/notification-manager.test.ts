@@ -144,6 +144,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -178,6 +179,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15, // Override default 30
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -215,6 +217,7 @@ describe("NotificationManager", () => {
 						"Start Date": futureDate.toISOString(),
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -243,6 +246,7 @@ describe("NotificationManager", () => {
 						// No Minutes Before and no default
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -270,6 +274,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 0,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -306,6 +311,7 @@ describe("NotificationManager", () => {
 						"Days Before": 1, // Override default 2
 					},
 					folder: "",
+					isAllDay: true,
 				},
 			});
 
@@ -314,7 +320,7 @@ describe("NotificationManager", () => {
 
 			const expectedNotifyTime = new Date(futureDate);
 			expectedNotifyTime.setDate(expectedNotifyTime.getDate() - 1);
-			expectedNotifyTime.setHours(9, 0, 0, 0); // 9 AM notification time
+			expectedNotifyTime.setHours(0, 0, 0, 0); // Midnight notification time
 			expect(queue[0].notifyAt.getTime()).toBe(expectedNotifyTime.getTime());
 			expect(queue[0].isAllDay).toBe(true);
 		});
@@ -345,6 +351,7 @@ describe("NotificationManager", () => {
 						"All Day": true,
 					},
 					folder: "",
+					isAllDay: true,
 				},
 			});
 
@@ -353,7 +360,7 @@ describe("NotificationManager", () => {
 
 			const expectedNotifyTime = new Date(futureDate);
 			expectedNotifyTime.setDate(expectedNotifyTime.getDate() - 1);
-			expectedNotifyTime.setHours(9, 0, 0, 0);
+			expectedNotifyTime.setHours(0, 0, 0, 0); // Midnight notification time
 			expect(queue[0].notifyAt.getTime()).toBe(expectedNotifyTime.getTime());
 		});
 
@@ -378,6 +385,7 @@ describe("NotificationManager", () => {
 						"Days Before": 0,
 					},
 					folder: "",
+					isAllDay: true,
 				},
 			});
 
@@ -385,7 +393,7 @@ describe("NotificationManager", () => {
 			expect(queue).toHaveLength(1);
 
 			const expectedNotifyTime = new Date(futureDate);
-			expectedNotifyTime.setHours(9, 0, 0, 0);
+			expectedNotifyTime.setHours(0, 0, 0, 0); // Midnight notification time
 			expect(queue[0].notifyAt.getTime()).toBe(expectedNotifyTime.getTime());
 		});
 	});
@@ -409,6 +417,7 @@ describe("NotificationManager", () => {
 						"Already Notified": true,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -433,6 +442,7 @@ describe("NotificationManager", () => {
 						"Already Notified": "true",
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -461,6 +471,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -479,6 +490,7 @@ describe("NotificationManager", () => {
 						"Already Notified": true,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -527,6 +539,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -541,6 +554,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -555,6 +569,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -587,6 +602,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -608,6 +624,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -638,6 +655,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -669,6 +687,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -722,6 +741,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 0, // Notify at start time
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -791,6 +811,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 0,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -805,6 +826,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 0,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -844,6 +866,7 @@ describe("NotificationManager", () => {
 						Title: "Custom Title",
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -873,6 +896,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
@@ -900,6 +924,7 @@ describe("NotificationManager", () => {
 						"Minutes Before": 15,
 					},
 					folder: "",
+					isAllDay: false,
 				},
 			});
 
