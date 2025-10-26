@@ -73,6 +73,12 @@ export class CalendarSettings {
 			desc: "Display a line showing the current time in weekly and daily calendar views",
 		});
 
+		this.ui.addToggle(containerEl, {
+			key: "highlightUpcomingEvent",
+			name: "Highlight upcoming event",
+			desc: "Subtly highlight events that are currently active (if any), or the next upcoming event. Only visible when the current time is within the visible date range.",
+		});
+
 		this.ui.addSlider(containerEl, {
 			key: "pastEventContrast",
 			name: "Past event contrast",

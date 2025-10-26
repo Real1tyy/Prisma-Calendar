@@ -50,6 +50,8 @@ export class CalendarView extends MountableView(ItemView) {
 	private skippedEventsModal: GenericEventListModal | null = null;
 	private disabledRecurringEventsModal: GenericEventListModal | null = null;
 	private isIndexingComplete = false;
+	private currentUpcomingEventIds: Set<string> = new Set();
+	private upcomingEventCheckInterval: number | null = null;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -387,6 +389,148 @@ export class CalendarView extends MountableView(ItemView) {
 		}
 	}
 
+	private findUpcomingEventIds(): Set<string> {
+		const result = new Set<string>();
+
+		if (!this.calendar) return result;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.highlightUpcomingEvent) return result;
+
+		const view = this.calendar.view;
+		if (!view) return result;
+
+		const now = new Date();
+		const viewStart = view.activeStart;
+		const viewEnd = view.activeEnd;
+
+		// Only highlight if "now" is within the current view's date range
+		if (now < viewStart || now > viewEnd) {
+			return result;
+		}
+
+		// Get all events from the calendar
+		const events = this.calendar.getEvents();
+
+		// First, find all events that are currently active (now is between start and end)
+		const activeEvents = events.filter((event) => {
+			const eventStart = event.start;
+			if (!eventStart) return false;
+			// Exclude virtual events from being highlighted
+			if (event.extendedProps?.isVirtual) return false;
+
+			const eventEnd = event.end || eventStart;
+			// Check if now is between start and end
+			return eventStart <= now && now <= eventEnd;
+		});
+
+		// If there are active events, highlight all of them
+		if (activeEvents.length > 0) {
+			for (const event of activeEvents) {
+				result.add(event.id);
+			}
+			return result;
+		}
+
+		// If no active events, find the next upcoming event (closest future start time)
+		const upcomingEvents = events
+			.filter((event) => {
+				const eventStart = event.start;
+				if (!eventStart) return false;
+				// Exclude virtual events from being highlighted
+				if (event.extendedProps?.isVirtual) return false;
+				return eventStart > now;
+			})
+			.sort((a, b) => {
+				const aStart = a.start?.getTime() || 0;
+				const bStart = b.start?.getTime() || 0;
+				return aStart - bStart;
+			});
+
+		// Return the ID of the first upcoming event
+		if (upcomingEvents.length > 0) {
+			result.add(upcomingEvents[0].id);
+		}
+
+		return result;
+	}
+
+	private updateUpcomingEventHighlight(): void {
+		if (!this.calendar) return;
+
+		const newUpcomingEventIds = this.findUpcomingEventIds();
+
+		// Check if the set of highlighted events has changed
+		const hasChanged =
+			newUpcomingEventIds.size !== this.currentUpcomingEventIds.size ||
+			Array.from(newUpcomingEventIds).some((id) => !this.currentUpcomingEventIds.has(id));
+
+		if (!hasChanged) {
+			return;
+		}
+
+		// Remove highlight from previous upcoming events that are no longer active
+		for (const oldId of this.currentUpcomingEventIds) {
+			if (!newUpcomingEventIds.has(oldId)) {
+				const oldEventElements = Array.from(document.querySelectorAll(`[data-event-id="${oldId}"]`));
+				for (const element of oldEventElements) {
+					if (element instanceof HTMLElement) {
+						element.classList.remove("event-upcoming");
+					}
+				}
+			}
+		}
+
+		// Add highlight to new upcoming events
+		for (const newId of newUpcomingEventIds) {
+			if (!this.currentUpcomingEventIds.has(newId)) {
+				const newEventElements = Array.from(document.querySelectorAll(`[data-event-id="${newId}"]`));
+				for (const element of newEventElements) {
+					if (element instanceof HTMLElement) {
+						element.classList.add("event-upcoming");
+					}
+				}
+			}
+		}
+
+		// Update tracked IDs
+		this.currentUpcomingEventIds = newUpcomingEventIds;
+	}
+
+	private startUpcomingEventCheck(): void {
+		// Clear any existing interval
+		this.stopUpcomingEventCheck();
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.highlightUpcomingEvent) return;
+
+		// Initial check
+		this.updateUpcomingEventHighlight();
+
+		// Set up interval to check once per minute (60000ms)
+		this.upcomingEventCheckInterval = window.setInterval(() => {
+			this.updateUpcomingEventHighlight();
+		}, 60000);
+	}
+
+	private stopUpcomingEventCheck(): void {
+		if (this.upcomingEventCheckInterval !== null) {
+			window.clearInterval(this.upcomingEventCheckInterval);
+			this.upcomingEventCheckInterval = null;
+		}
+
+		// Clear all highlighted upcoming events
+		for (const eventId of this.currentUpcomingEventIds) {
+			const eventElements = Array.from(document.querySelectorAll(`[data-event-id="${eventId}"]`));
+			for (const element of eventElements) {
+				if (element instanceof HTMLElement) {
+					element.classList.remove("event-upcoming");
+				}
+			}
+		}
+		this.currentUpcomingEventIds.clear();
+	}
+
 	private async initializeCalendar(container: HTMLElement): Promise<void> {
 		const settings = this.bundle.settingsStore.currentSettings;
 
@@ -518,10 +662,14 @@ export class CalendarView extends MountableView(ItemView) {
 				setTimeout(() => this.zoomManager.updateZoomLevelButton(), 100);
 				// Save current state when view or date changes
 				setTimeout(() => this.saveCurrentState(), 200);
+				// Update upcoming event highlight when view changes
+				setTimeout(() => this.updateUpcomingEventHighlight(), 300);
 			},
 
 			eventsSet: () => {
 				this.batchSelectionManager?.refreshSelectionStyling();
+				// Update upcoming event highlight when events change
+				this.updateUpcomingEventHighlight();
 			},
 
 			height: "auto",
@@ -567,6 +715,9 @@ export class CalendarView extends MountableView(ItemView) {
 
 		// Ensure initial events are loaded after calendar is fully rendered
 		await this.refreshEvents();
+
+		// Start the upcoming event check interval
+		this.startUpcomingEventCheck();
 	}
 
 	private updateCalendarSettings(settings: SingleCalendarConfig): void {
@@ -591,6 +742,13 @@ export class CalendarView extends MountableView(ItemView) {
 		this.calendar.setOption("eventMaxStack", settings.eventMaxStack);
 
 		this.filterPresetSelector.updatePresets(settings.filterPresets);
+
+		// Restart or stop upcoming event check based on setting
+		if (settings.highlightUpcomingEvent) {
+			this.startUpcomingEventCheck();
+		} else {
+			this.stopUpcomingEventCheck();
+		}
 
 		this.refreshEvents();
 	}
@@ -1081,6 +1239,9 @@ export class CalendarView extends MountableView(ItemView) {
 
 	async unmount(): Promise<void> {
 		this.saveCurrentState();
+
+		// Stop upcoming event check interval
+		this.stopUpcomingEventCheck();
 
 		this.zoomManager.destroy();
 		this.searchFilter.destroy();
