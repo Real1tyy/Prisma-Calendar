@@ -7,6 +7,7 @@ import { BatchCommandFactory, CommandManager } from "./commands";
 import type { EventStore } from "./event-store";
 import type { Indexer } from "./indexer";
 import { IndexerRegistry } from "./indexer-registry";
+import type { NotificationManager } from "./notification-manager";
 import type { Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore, type SettingsStore } from "./settings-store";
@@ -18,6 +19,7 @@ export class CalendarBundle {
 	public readonly parser: Parser;
 	public readonly eventStore: EventStore;
 	public readonly recurringEventManager: RecurringEventManager;
+	public readonly notificationManager: NotificationManager;
 	public readonly templateService: TemplateService;
 	public readonly viewStateManager: CalendarViewStateManager;
 	public readonly commandManager: CommandManager;
@@ -39,15 +41,14 @@ export class CalendarBundle {
 
 		this.indexerRegistry = IndexerRegistry.getInstance(this.app);
 
-		const { indexer, parser, eventStore, recurringEventManager } = this.indexerRegistry.getOrCreateIndexer(
-			this.calendarId,
-			this.settingsStore.settings$
-		);
+		const { indexer, parser, eventStore, recurringEventManager, notificationManager } =
+			this.indexerRegistry.getOrCreateIndexer(this.calendarId, this.settingsStore.settings$);
 
 		this.indexer = indexer;
 		this.parser = parser;
 		this.eventStore = eventStore;
 		this.recurringEventManager = recurringEventManager;
+		this.notificationManager = notificationManager;
 
 		this.templateService = new TemplateService(this.app, this.settingsStore.settings$);
 		this.viewStateManager = new CalendarViewStateManager();
@@ -74,6 +75,7 @@ export class CalendarBundle {
 			});
 
 			await this.indexer.start();
+			await this.notificationManager.start();
 		})();
 	}
 

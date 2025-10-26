@@ -53,6 +53,8 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_STATUS_PROPERTY: "Status",
 	DEFAULT_DONE_VALUE: "Done",
 	DEFAULT_MINUTES_BEFORE_PROP: "Minutes Before",
+	DEFAULT_DAYS_BEFORE_PROP: "Days Before",
+	DEFAULT_ALREADY_NOTIFIED_PROP: "Already Notified",
 
 	// Notification Settings
 	DEFAULT_ENABLE_NOTIFICATIONS: true,

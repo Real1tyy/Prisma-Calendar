@@ -4,6 +4,7 @@ import type { SingleCalendarConfig } from "../types/settings";
 import { normalizeDirectoryPath } from "../utils/file-utils";
 import { EventStore } from "./event-store";
 import { Indexer } from "./indexer";
+import { NotificationManager } from "./notification-manager";
 import { Parser } from "./parser";
 import { RecurringEventManager } from "./recurring-event-manager";
 
@@ -12,11 +13,15 @@ interface IndexerEntry {
 	parser: Parser;
 	eventStore: EventStore;
 	recurringEventManager: RecurringEventManager;
+	notificationManager: NotificationManager;
 	refCount: number;
 	calendarIds: Set<string>;
 }
 
-type SharedInfrastructure = Pick<IndexerEntry, "indexer" | "parser" | "eventStore" | "recurringEventManager">;
+type SharedInfrastructure = Pick<
+	IndexerEntry,
+	"indexer" | "parser" | "eventStore" | "recurringEventManager" | "notificationManager"
+>;
 
 /**
  * Registry to manage shared indexers, parsers, event stores, and recurring event managers across multiple calendars.
@@ -58,6 +63,7 @@ export class IndexerRegistry {
 		} else {
 			const indexer = new Indexer(this.app, settingsStore);
 			const recurringEventManager = new RecurringEventManager(this.app, settingsStore, indexer);
+			const notificationManager = new NotificationManager(this.app, settingsStore, indexer);
 			const parser = new Parser(settingsStore);
 			const eventStore = new EventStore(indexer, parser, recurringEventManager);
 
@@ -66,6 +72,7 @@ export class IndexerRegistry {
 				parser,
 				eventStore,
 				recurringEventManager,
+				notificationManager,
 				refCount: 1,
 				calendarIds: new Set([calendarId]),
 			} satisfies IndexerEntry;
@@ -78,6 +85,7 @@ export class IndexerRegistry {
 			parser: entry.parser,
 			eventStore: entry.eventStore,
 			recurringEventManager: entry.recurringEventManager,
+			notificationManager: entry.notificationManager,
 		};
 	}
 
@@ -101,6 +109,7 @@ export class IndexerRegistry {
 			entry.eventStore.destroy();
 			entry.parser.destroy();
 			entry.recurringEventManager.destroy();
+			entry.notificationManager.stop();
 			this.registry.delete(normalizedDir);
 		}
 	}
@@ -111,6 +120,7 @@ export class IndexerRegistry {
 			entry.eventStore.destroy();
 			entry.parser.destroy();
 			entry.recurringEventManager.destroy();
+			entry.notificationManager.stop();
 		}
 
 		this.registry.clear();

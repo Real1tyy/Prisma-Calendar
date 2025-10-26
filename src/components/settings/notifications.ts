@@ -23,12 +23,12 @@ export class NotificationsSettings {
 			desc: "Enable event notifications. When disabled, all notification settings below are ignored.",
 		});
 
-		new Setting(containerEl).setName("Normal events").setHeading();
+		new Setting(containerEl).setName("Timed events").setHeading();
 
 		this.ui.addText(containerEl, {
 			key: "defaultMinutesBefore",
 			name: "Default minutes before",
-			desc: "Default notification time for normal events (with start and end dates). Leave empty for no default notification. 0 = notify when event starts, 15 = notify 15 minutes before.",
+			desc: "Default notification time for timed events (with start and end dates). Leave empty for no default notification. 0 = notify when event starts, 15 = notify 15 minutes before.",
 			placeholder: "e.g., 15 (leave empty for no default)",
 		});
 
@@ -36,7 +36,32 @@ export class NotificationsSettings {
 			key: "minutesBeforeProp",
 			name: "Minutes before property",
 			desc: "Frontmatter property name to read per-event notification times. This allows individual events to override the default notification time.",
-			placeholder: "minutesBefore",
+			placeholder: "Minutes Before",
+		});
+
+		new Setting(containerEl).setName("All-day events").setHeading();
+
+		this.ui.addText(containerEl, {
+			key: "defaultDaysBefore",
+			name: "Default days before",
+			desc: "Default notification time for all-day events. Leave empty for no default notification. 0 = notify on the day of the event, 1 = notify 1 day before.",
+			placeholder: "e.g., 1 (leave empty for no default)",
+		});
+
+		this.ui.addText(containerEl, {
+			key: "daysBeforeProp",
+			name: "Days before property",
+			desc: "Frontmatter property name to read per-event notification days for all-day events. This allows individual events to override the default notification days.",
+			placeholder: "Days Before",
+		});
+
+		new Setting(containerEl).setName("General").setHeading();
+
+		this.ui.addText(containerEl, {
+			key: "alreadyNotifiedProp",
+			name: "Already notified property",
+			desc: "Frontmatter property used to mark events as already notified. When a notification is shown, this property is set to true. Unmark it manually to get notified again.",
+			placeholder: "Already Notified",
 		});
 	}
 }

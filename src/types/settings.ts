@@ -31,6 +31,9 @@ export const NotificationsSettingsSchema = z.object({
 	enableNotifications: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_ENABLE_NOTIFICATIONS),
 	defaultMinutesBefore: z.number().int().nonnegative().optional(), // minutes before event to notify, undefined = no default notification
 	minutesBeforeProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_MINUTES_BEFORE_PROP), // frontmatter property to read per-event notification times
+	defaultDaysBefore: z.number().int().nonnegative().optional(), // days before all-day event to notify, undefined = no default notification
+	daysBeforeProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_DAYS_BEFORE_PROP), // frontmatter property to read per-event notification days for all-day events
+	alreadyNotifiedProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_ALREADY_NOTIFIED_PROP), // frontmatter property to mark events as already notified
 });
 
 export const FilterPresetSchema = z.object({
