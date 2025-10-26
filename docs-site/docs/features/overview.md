@@ -86,6 +86,14 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 
 ## ⚡ **Event Interaction & Management**
 
+### **Hidden ZettelID Naming System**
+- **Clean display names** - Events shown without timestamp clutter in the calendar
+- **Unique filenames** - Every event file includes a hidden timestamp suffix (ZettelID)
+- **Multiple same-named events** - Create unlimited events with identical user-facing names
+- **Automatic uniqueness** - No manual numbering or naming conflicts
+- **Transparent UX** - ZLID stripped from display when editing, previewing, or viewing events
+- **Example**: File stored as `Meeting-20250106143022.md` but displayed as `Meeting`
+
 ### **Enhanced Event Previews**
 - **Hover previews** - See note content without opening files
 - **Enlarged modal** - Expanded view showing complete frontmatter and full content

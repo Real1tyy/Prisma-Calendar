@@ -21,6 +21,7 @@ const sidebars: SidebarsConfig = {
         "features/color-rules",
         "features/filtering",
         "features/event-previews",
+        "features/zettelid-naming",
         "features/batch-operations",
         "features/event-skipping",
         "features/undo-redo",

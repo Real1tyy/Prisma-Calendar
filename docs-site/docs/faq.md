@@ -42,7 +42,63 @@ Calendar "Work - Daily Focus" Directory: work/ (same!)
 **Additional Note**: Never use overlapping directories (e.g., `tasks` and `tasks/homework`). Use either the exact same path or completely separate directory trees to avoid conflicts.
 
 **Are recurring events real notes?**
-Yes. Prisma Calendar generates real notes up to your configured “Future instances count.” Farther-out instances show as read-only virtual events to keep your vault lean.
+Yes. Prisma Calendar generates real notes up to your configured "Future instances count." Farther-out instances show as read-only virtual events to keep your vault lean.
+
+**Why do my event files have timestamps in their names, but the calendar shows clean titles?**
+
+This is one of Prisma Calendar's core UX features: **hidden ZettelID naming**.
+
+**📝 What You See vs. What's Stored:**
+
+- **In the calendar**: `Team Meeting` (clean, readable)
+- **On disk**: `Team Meeting-20250106143022.md` (unique, timestamped)
+
+**🎯 Why This Matters:**
+
+The ZettelID (timestamp suffix like `-20250106143022`) acts as a unique identifier, allowing you to:
+
+1. **Create multiple events with the same name** - Have ten "Team Meeting" events without conflicts
+2. **Maintain uniqueness automatically** - The timestamp ensures every file is unique
+3. **Work with clean names** - You never see the timestamp when editing, viewing, or previewing events
+4. **Avoid manual naming** - No need to add "Team Meeting 1", "Team Meeting 2", etc.
+
+**🔧 How It Works:**
+
+1. When you create an event called "Team Meeting", the file is saved as `Team Meeting-20250106143022.md`
+2. The calendar automatically strips the `-20250106143022` part when displaying events
+3. When editing, enlarging, previewing, or interacting with the event, you only see "Team Meeting"
+4. The ZLID stays hidden in the background, ensuring uniqueness
+
+**💡 Example Use Case:**
+
+You have a recurring daily standup:
+```
+Files in vault:
+- Standup-20250103090000.md
+- Standup-20250104090000.md
+- Standup-20250105090000.md
+
+What you see in calendar:
+- Standup (Jan 3)
+- Standup (Jan 4)
+- Standup (Jan 5)
+```
+
+All have the same clean "Standup" title in the UI, but unique filenames on disk.
+
+**⚙️ Configuration:**
+
+To enable automatic ZettelID generation:
+1. Go to **Properties Settings**
+2. Set the **ZettelID property** field (e.g., `ZettelID`)
+3. New events created via the calendar will automatically include the ZLID in both filename and frontmatter
+
+**📌 Key Benefits:**
+
+- **No naming conflicts** - Create as many same-named events as you want
+- **Better UX** - Clean calendar display without timestamp clutter
+- **Automatic management** - The calendar handles naming complexity behind the scenes
+- **Full compatibility** - Works with recurring events, batch operations, and cloning
 
 **How do I change which frontmatter keys the calendar uses?**
 Go to Properties Settings and set your Start/End/AllDay/Title keys. You can also specify a per-note Timezone property and a ZettelID property if you want automatic IDs.

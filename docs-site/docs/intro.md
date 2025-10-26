@@ -85,6 +85,7 @@ Select multiple events and perform bulk actions: **clone, move, skip, delete, or
 ## ✨ **Additional Powerful Features**
 
 ### 📋 **Enhanced Event Interaction**
+- **Hidden ZettelID naming** - Events display with clean names in the calendar, but files include unique timestamp suffixes for collision-free storage
 - **Clickable frontmatter** - All frontmatter properties are interactive, wikilinks are clickable
 - **Enlarged previews** - Expanded modal view showing complete frontmatter and full content
 - **Quick create button** - Create events instantly from the calendar interface
