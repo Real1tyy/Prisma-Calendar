@@ -52,6 +52,10 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_SOURCE_PROP: "Source",
 	DEFAULT_STATUS_PROPERTY: "Status",
 	DEFAULT_DONE_VALUE: "Done",
+	DEFAULT_MINUTES_BEFORE_PROP: "Minutes Before",
+
+	// Notification Settings
+	DEFAULT_ENABLE_NOTIFICATIONS: true,
 
 	// Calendar Settings
 	DEFAULT_FUTURE_INSTANCES_COUNT: 2,

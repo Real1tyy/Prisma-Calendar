@@ -27,6 +27,12 @@ export const PropsSettingsSchema = z.object({
 	doneValue: z.string().default(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE), // value to set when marking event as done
 });
 
+export const NotificationsSettingsSchema = z.object({
+	enableNotifications: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_ENABLE_NOTIFICATIONS),
+	defaultMinutesBefore: z.number().int().nonnegative().optional(), // minutes before event to notify, undefined = no default notification
+	minutesBeforeProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_MINUTES_BEFORE_PROP), // frontmatter property to read per-event notification times
+});
+
 export const FilterPresetSchema = z.object({
 	name: z.string(),
 	expression: z.string(),
@@ -72,6 +78,7 @@ export const RulesSettingsSchema = z.object({
 export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSettingsSchema.shape)
 	.extend(CalendarSettingsSchema.shape)
 	.extend(RulesSettingsSchema.shape)
+	.extend(NotificationsSettingsSchema.shape)
 	.extend({
 		id: z.string(),
 		name: z.string().default(SETTINGS_DEFAULTS.DEFAULT_CALENDAR_NAME),
@@ -93,6 +100,7 @@ export const CustomCalendarSettingsSchema = z.object({
 				...PropsSettingsSchema.parse({}),
 				...CalendarSettingsSchema.parse({}),
 				...RulesSettingsSchema.parse({}),
+				...NotificationsSettingsSchema.parse({}),
 			},
 		]),
 });

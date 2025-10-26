@@ -1,18 +1,20 @@
 import type { CalendarSettingsStore } from "../../core/settings-store";
-import { CalendarSettings, GeneralSettings, PropertiesSettings, RulesSettings } from ".";
+import { CalendarSettings, GeneralSettings, NotificationsSettings, PropertiesSettings, RulesSettings } from ".";
 
 export class SingleCalendarSettings {
-	private activeSection: "general" | "properties" | "calendar" | "rules" = "general";
+	private activeSection: "general" | "properties" | "calendar" | "notifications" | "rules" = "general";
 
 	private generalSettings: GeneralSettings;
 	private propertiesSettings: PropertiesSettings;
 	private calendarSettings: CalendarSettings;
+	private notificationsSettings: NotificationsSettings;
 	private rulesSettings: RulesSettings;
 
 	constructor(settingsStore: CalendarSettingsStore) {
 		this.generalSettings = new GeneralSettings(settingsStore);
 		this.propertiesSettings = new PropertiesSettings(settingsStore);
 		this.calendarSettings = new CalendarSettings(settingsStore);
+		this.notificationsSettings = new NotificationsSettings(settingsStore);
 		this.rulesSettings = new RulesSettings(settingsStore);
 	}
 
@@ -31,6 +33,7 @@ export class SingleCalendarSettings {
 			{ id: "general" as const, label: "General" },
 			{ id: "properties" as const, label: "Properties" },
 			{ id: "calendar" as const, label: "Calendar" },
+			{ id: "notifications" as const, label: "Notifications" },
 			{ id: "rules" as const, label: "Rules" },
 		];
 
@@ -60,6 +63,9 @@ export class SingleCalendarSettings {
 				break;
 			case "calendar":
 				this.calendarSettings.display(contentContainer);
+				break;
+			case "notifications":
+				this.notificationsSettings.display(contentContainer);
 				break;
 			case "rules":
 				this.rulesSettings.display(contentContainer);
