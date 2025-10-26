@@ -1270,20 +1270,45 @@
 	border: 2.5px solid color-mix(in srgb, var(--event-color) 85%, white);
 }
 
-/* Upcoming Event Highlight - Subtle persistent highlight for next upcoming event */
-.custom-calendar-container .fc-event.event-upcoming {
+/* Upcoming Event Highlight - Persistent highlight for active/next upcoming event */
+.custom-calendar-container .fc-event.custom-calendar-event.event-upcoming {
 	box-shadow:
-		0 0 15px 6px color-mix(in srgb, var(--event-color) 45%, transparent),
-		0 0 28px 12px color-mix(in srgb, var(--event-color) 28%, transparent);
+		0 0 20px 9px color-mix(in srgb, var(--event-color) 55%, transparent),
+		0 0 38px 16px color-mix(in srgb, var(--event-color) 35%, transparent),
+		0 2px 8px rgba(0, 0, 0, 0.15);
 	z-index: 10;
 	transition:
 		box-shadow 0.5s ease,
-		filter 0.5s ease;
-	filter: brightness(1.12) saturate(1.15);
+		filter 0.5s ease,
+		transform 0.3s ease;
+	filter: brightness(1.18) saturate(1.22) contrast(1.05);
+	position: relative;
 }
 
-.custom-calendar-container .fc-event.event-upcoming .fc-event-main {
-	border: 2px solid color-mix(in srgb, var(--event-color) 75%, white);
+.custom-calendar-container .fc-event.custom-calendar-event.event-upcoming .fc-event-main {
+	border: 2.5px solid color-mix(in srgb, var(--event-color) 85%, white);
+	border-radius: var(--radius-s);
+}
+
+/* Enhance upcoming highlight on hover */
+.custom-calendar-container .fc-event.custom-calendar-event.event-upcoming:hover {
+	box-shadow:
+		0 0 24px 11px color-mix(in srgb, var(--event-color) 60%, transparent),
+		0 0 44px 18px color-mix(in srgb, var(--event-color) 40%, transparent),
+		0 4px 12px rgba(0, 0, 0, 0.2);
+	filter: brightness(1.22) saturate(1.26) contrast(1.08);
+	transform: translateY(-2px) scale(1.02);
+}
+
+/* Maintain upcoming highlight when clicked/focused */
+.custom-calendar-container .fc-event.custom-calendar-event.event-upcoming:active,
+.custom-calendar-container .fc-event.custom-calendar-event.event-upcoming:focus {
+	box-shadow:
+		0 0 22px 10px color-mix(in srgb, var(--event-color) 58%, transparent),
+		0 0 40px 17px color-mix(in srgb, var(--event-color) 38%, transparent),
+		0 3px 10px rgba(0, 0, 0, 0.18);
+	filter: brightness(1.2) saturate(1.24) contrast(1.06);
+	transform: translateY(-1px) scale(1.01);
 }
 
 /* Pulse animation for initial highlight */
@@ -1325,23 +1350,73 @@
 	filter: brightness(1.25);
 }
 
-/* List view upcoming event highlight - Subtle persistent */
-.custom-calendar-container .fc-list-event.event-upcoming {
-	background: color-mix(in srgb, var(--event-color) 16%, var(--background-primary));
-	border-left: 4px solid color-mix(in srgb, var(--event-color) 85%, white);
-	box-shadow: 0 0 12px 5px color-mix(in srgb, var(--event-color) 28%, transparent);
+/* List view upcoming event highlight - Persistent */
+.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--event-color) 20%, var(--background-primary)) 0%,
+		color-mix(in srgb, var(--event-color) 12%, var(--background-primary)) 100%
+	);
+	border-left: 4.5px solid color-mix(in srgb, var(--event-color) 90%, white);
+	box-shadow:
+		0 0 16px 7px color-mix(in srgb, var(--event-color) 35%, transparent),
+		0 2px 6px rgba(0, 0, 0, 0.12);
 	transition:
 		background 0.5s ease,
 		box-shadow 0.5s ease,
-		border-left 0.5s ease;
-	filter: brightness(1.08);
+		border-left 0.5s ease,
+		transform 0.3s ease,
+		filter 0.5s ease;
+	filter: brightness(1.12) saturate(1.08);
+	position: relative;
 }
 
-.custom-calendar-container .fc-list-event.event-upcoming .fc-list-event-dot {
-	box-shadow: 0 0 12px 5px color-mix(in srgb, var(--event-color) 60%, transparent);
-	transform: scale(1.2);
-	filter: brightness(1.2);
+.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming .fc-list-event-dot {
+	box-shadow:
+		0 0 16px 7px color-mix(in srgb, var(--event-color) 70%, transparent),
+		0 2px 6px rgba(0, 0, 0, 0.2);
+	transform: scale(1.3);
+	filter: brightness(1.28) saturate(1.15);
 	transition: all 0.5s ease;
+}
+
+/* Enhance list view upcoming highlight on hover */
+.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:hover {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--event-color) 24%, var(--background-primary)) 0%,
+		color-mix(in srgb, var(--event-color) 14%, var(--background-primary)) 100%
+	);
+	border-left: 4.5px solid color-mix(in srgb, var(--event-color) 95%, white);
+	box-shadow:
+		0 0 20px 9px color-mix(in srgb, var(--event-color) 40%, transparent),
+		0 3px 8px rgba(0, 0, 0, 0.15);
+	filter: brightness(1.15) saturate(1.12);
+	transform: translateX(2px) scale(1.005);
+}
+
+.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:hover .fc-list-event-dot {
+	box-shadow:
+		0 0 20px 9px color-mix(in srgb, var(--event-color) 75%, transparent),
+		0 2px 8px rgba(0, 0, 0, 0.25);
+	transform: scale(1.4);
+	filter: brightness(1.32) saturate(1.2);
+}
+
+/* Maintain list view upcoming highlight when clicked/focused */
+.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:active,
+.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:focus {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--event-color) 22%, var(--background-primary)) 0%,
+		color-mix(in srgb, var(--event-color) 13%, var(--background-primary)) 100%
+	);
+	border-left: 4.5px solid color-mix(in srgb, var(--event-color) 92%, white);
+	box-shadow:
+		0 0 18px 8px color-mix(in srgb, var(--event-color) 38%, transparent),
+		0 2px 7px rgba(0, 0, 0, 0.14);
+	filter: brightness(1.13) saturate(1.1);
+	transform: translateX(1px) scale(1.002);
 }
 
 @keyframes event-highlight-pulse-list {
