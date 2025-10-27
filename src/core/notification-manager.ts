@@ -252,8 +252,6 @@ export class NotificationManager {
 
 	private async triggerNotification(entry: NotificationEntry): Promise<void> {
 		try {
-			console.log(`[NotificationManager] 🔔 TRIGGERING notification for: "${entry.title}" (${entry.filePath})`);
-
 			// Remove from queue immediately
 			this.removeNotification(entry.filePath);
 
@@ -273,7 +271,6 @@ export class NotificationManager {
 	private async showSystemNotification(entry: NotificationEntry): Promise<void> {
 		// Check if Web Notifications API is available (Electron/Browser)
 		if (!("Notification" in window)) {
-			console.warn("Web Notifications API not available");
 			return;
 		}
 
@@ -282,7 +279,6 @@ export class NotificationManager {
 			if (Notification.permission === "default") {
 				const permission = await Notification.requestPermission();
 				if (permission !== "granted") {
-					console.warn("Notification permission denied");
 					return;
 				}
 			}
