@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatEventTimeInfo } from "../../src/utils/time-formatter";
+import { formatEventTimeInfo, parseAsLocalDate } from "../../src/utils/time-formatter";
 
 describe("formatEventTimeInfo", () => {
 	describe("All-day events", () => {
@@ -203,6 +203,155 @@ describe("formatEventTimeInfo", () => {
 				allDay: false,
 			};
 			expect(formatEventTimeInfo(event)).toContain(abbr);
+		});
+	});
+});
+
+describe("parseAsLocalDate", () => {
+	describe("Timezone stripping", () => {
+		it("should strip Z timezone indicator", () => {
+			const result = parseAsLocalDate("2024-01-15T15:00:00Z");
+			expect(result).not.toBeNull();
+			expect(result?.getHours()).toBe(15); // Should be 15 in local time, not converted
+		});
+
+		it("should strip positive timezone offset with colon (+HH:MM)", () => {
+			const result = parseAsLocalDate("2024-01-15T15:00:00+01:00");
+			expect(result).not.toBeNull();
+			expect(result?.getHours()).toBe(15); // Should be 15 in local time
+		});
+
+		it("should strip negative timezone offset with colon (-HH:MM)", () => {
+			const result = parseAsLocalDate("2024-01-15T15:00:00-05:00");
+			expect(result).not.toBeNull();
+			expect(result?.getHours()).toBe(15); // Should be 15 in local time
+		});
+
+		it("should strip positive timezone offset without colon (+HHMM)", () => {
+			const result = parseAsLocalDate("2024-01-15T15:00:00+0100");
+			expect(result).not.toBeNull();
+			expect(result?.getHours()).toBe(15); // Should be 15 in local time
+		});
+
+		it("should strip negative timezone offset without colon (-HHMM)", () => {
+			const result = parseAsLocalDate("2024-01-15T15:00:00-0500");
+			expect(result).not.toBeNull();
+			expect(result?.getHours()).toBe(15); // Should be 15 in local time
+		});
+
+		it("should handle lowercase z", () => {
+			const result = parseAsLocalDate("2024-01-15T15:00:00z");
+			expect(result).not.toBeNull();
+			expect(result?.getHours()).toBe(15);
+		});
+	});
+
+	describe("Date formats", () => {
+		it("should parse full ISO datetime with seconds", () => {
+			const result = parseAsLocalDate("2024-01-15T15:30:45Z");
+			expect(result).not.toBeNull();
+			expect(result?.getFullYear()).toBe(2024);
+			expect(result?.getMonth()).toBe(0); // January (0-indexed)
+			expect(result?.getDate()).toBe(15);
+			expect(result?.getHours()).toBe(15);
+			expect(result?.getMinutes()).toBe(30);
+			expect(result?.getSeconds()).toBe(45);
+		});
+
+		it("should parse ISO datetime without seconds", () => {
+			const result = parseAsLocalDate("2024-01-15T15:30Z");
+			expect(result).not.toBeNull();
+			expect(result?.getHours()).toBe(15);
+			expect(result?.getMinutes()).toBe(30);
+		});
+
+		it("should parse date-only format", () => {
+			const result = parseAsLocalDate("2024-01-15");
+			expect(result).not.toBeNull();
+			expect(result?.getFullYear()).toBe(2024);
+			expect(result?.getMonth()).toBe(0);
+			expect(result?.getDate()).toBe(15);
+		});
+
+		it("should parse datetime without timezone", () => {
+			const result = parseAsLocalDate("2024-01-15T15:00:00");
+			expect(result).not.toBeNull();
+			expect(result?.getHours()).toBe(15);
+		});
+	});
+
+	describe("Edge cases", () => {
+		it("should handle dates at midnight", () => {
+			const result = parseAsLocalDate("2024-01-15T00:00:00Z");
+			expect(result).not.toBeNull();
+			expect(result?.getHours()).toBe(0);
+		});
+
+		it("should handle dates at end of day", () => {
+			const result = parseAsLocalDate("2024-01-15T23:59:59Z");
+			expect(result).not.toBeNull();
+			expect(result?.getHours()).toBe(23);
+			expect(result?.getMinutes()).toBe(59);
+		});
+
+		it("should handle whitespace in date string", () => {
+			const result = parseAsLocalDate("  2024-01-15T15:00:00Z  ");
+			expect(result).not.toBeNull();
+			expect(result?.getHours()).toBe(15);
+		});
+
+		it("should handle leap year dates", () => {
+			const result = parseAsLocalDate("2024-02-29T12:00:00Z");
+			expect(result).not.toBeNull();
+			expect(result?.getMonth()).toBe(1); // February
+			expect(result?.getDate()).toBe(29);
+		});
+
+		it("should handle dates across different months", () => {
+			const dates = ["2024-01-15T10:00:00Z", "2024-06-15T10:00:00Z", "2024-12-15T10:00:00Z"];
+
+			for (const dateStr of dates) {
+				const result = parseAsLocalDate(dateStr);
+				expect(result).not.toBeNull();
+				expect(result?.getHours()).toBe(10);
+			}
+		});
+	});
+
+	describe("Invalid inputs", () => {
+		it("should return null for invalid date string", () => {
+			const result = parseAsLocalDate("invalid-date");
+			expect(result).toBeNull();
+		});
+
+		it("should return null for empty string", () => {
+			const result = parseAsLocalDate("");
+			expect(result).toBeNull();
+		});
+
+		it("should return null for completely invalid format", () => {
+			const result = parseAsLocalDate("not a date at all");
+			expect(result).toBeNull();
+		});
+
+		it("should return null for invalid date values", () => {
+			const result = parseAsLocalDate("2024-13-45T25:99:99Z"); // Invalid month, day, hour, minute
+			expect(result).toBeNull();
+		});
+	});
+
+	describe("Consistency", () => {
+		it("should produce same local time regardless of timezone in input", () => {
+			const utcDate = parseAsLocalDate("2024-01-15T15:00:00Z");
+			const plusOneDate = parseAsLocalDate("2024-01-15T15:00:00+01:00");
+			const minusFiveDate = parseAsLocalDate("2024-01-15T15:00:00-05:00");
+			const noTzDate = parseAsLocalDate("2024-01-15T15:00:00");
+
+			// All should have 15:00 in local time
+			expect(utcDate?.getHours()).toBe(15);
+			expect(plusOneDate?.getHours()).toBe(15);
+			expect(minusFiveDate?.getHours()).toBe(15);
+			expect(noTzDate?.getHours()).toBe(15);
 		});
 	});
 });

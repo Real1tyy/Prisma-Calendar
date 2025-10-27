@@ -2,6 +2,7 @@ import { type App, TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { EventPreviewModal } from "../components/event-preview-modal";
 import type { SingleCalendarConfig } from "../types/settings";
+import { parseAsLocalDate } from "../utils/time-formatter";
 import type { Indexer, IndexerEvent } from "./indexer";
 
 interface NotificationEntry {
@@ -45,6 +46,11 @@ export class NotificationManager {
 	}
 
 	async start(): Promise<void> {
+		// Request notification permission if notifications are enabled
+		if (this.settings.enableNotifications) {
+			await this.requestNotificationPermission();
+		}
+
 		// Listen to indexer events
 		this.indexerSubscription = this.indexer.events$.subscribe((event) => {
 			this.handleIndexerEvent(event);
@@ -52,6 +58,16 @@ export class NotificationManager {
 
 		// Start periodic check (every minute)
 		this.startPeriodicCheck();
+	}
+
+	private async requestNotificationPermission(): Promise<void> {
+		if ("Notification" in window && Notification.permission === "default") {
+			try {
+				await Notification.requestPermission();
+			} catch (error) {
+				console.warn("Could not request notification permission:", error);
+			}
+		}
 	}
 
 	stop(): void {
@@ -95,10 +111,11 @@ export class NotificationManager {
 		}
 
 		// Get start date based on event type
+		// Parse as local time, ignoring timezone information
 		const startProp = frontmatter[this.settings.startProp];
 		const dateProp = frontmatter[this.settings.dateProp];
-		const startDate =
-			isAllDay && dateProp ? new Date(String(dateProp)) : startProp ? new Date(String(startProp)) : null;
+		const dateString = isAllDay && dateProp ? String(dateProp) : startProp ? String(startProp) : null;
+		const startDate = dateString ? parseAsLocalDate(dateString) : null;
 
 		if (!startDate) {
 			this.removeNotification(filePath);
@@ -233,16 +250,68 @@ export class NotificationManager {
 
 	private async triggerNotification(entry: NotificationEntry): Promise<void> {
 		try {
+			console.log(`[NotificationManager] 🔔 TRIGGERING notification for: "${entry.title}" (${entry.filePath})`);
+
 			// Remove from queue immediately
 			this.removeNotification(entry.filePath);
 
 			// Mark as notified in frontmatter
 			await this.markAsNotified(entry.filePath);
 
-			// Show notification modal
+			// Show system notification with sound
+			await this.showSystemNotification(entry);
+
+			// Show notification modal for detailed preview
 			this.showNotificationModal(entry);
 		} catch (error) {
-			console.error(`Error triggering notification for ${entry.filePath}:`, error);
+			console.error(`[NotificationManager] ❌ Error triggering notification for ${entry.filePath}:`, error);
+		}
+	}
+
+	private async showSystemNotification(entry: NotificationEntry): Promise<void> {
+		// Check if Web Notifications API is available (Electron/Browser)
+		if (!("Notification" in window)) {
+			console.warn("Web Notifications API not available");
+			return;
+		}
+
+		try {
+			// Request permission if not already granted
+			if (Notification.permission === "default") {
+				const permission = await Notification.requestPermission();
+				if (permission !== "granted") {
+					console.warn("Notification permission denied");
+					return;
+				}
+			}
+
+			// Only show notification if permission is granted
+			if (Notification.permission === "granted") {
+				const eventTime = entry.isAllDay
+					? "All-day event"
+					: entry.startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+				const notification = new Notification("🔔 Prisma Calendar", {
+					body: `${entry.title}\n${eventTime}`,
+					icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>📅</text></svg>",
+					tag: entry.filePath, // Prevents duplicate notifications for the same event
+					requireInteraction: false, // Auto-dismiss after a few seconds
+					silent: false, // Play system sound
+				});
+
+				// Handle notification click - focus Obsidian and open the event
+				notification.onclick = () => {
+					window.focus();
+					notification.close();
+					// The modal will already be open or can be opened
+					const file = this.app.vault.getAbstractFileByPath(entry.filePath);
+					if (file instanceof TFile) {
+						this.app.workspace.getLeaf(false).openFile(file);
+					}
+				};
+			}
+		} catch (error) {
+			console.error("Error showing system notification:", error);
 		}
 	}
 

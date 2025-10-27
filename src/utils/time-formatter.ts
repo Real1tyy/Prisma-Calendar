@@ -13,3 +13,36 @@ export function formatEventTimeInfo(event: { start: string; end?: string; allDay
 	}
 	return startTime.toFormat("MMM d, yyyy - h:mm a");
 }
+
+/**
+ * Parse date string and treat it as local time, ignoring any timezone information.
+ * This ensures events are processed based on local time regardless of how they're stored in UTC.
+ *
+ * @param dateString ISO date string, potentially with timezone info (e.g., "2024-01-15T10:00:00Z")
+ * @returns Date object in local timezone, or null if parsing fails
+ *
+ * @example
+ * parseAsLocalDate("2024-01-15T15:00:00Z") // Returns Date with 15:00 in LOCAL time (ignores Z)
+ * parseAsLocalDate("2024-01-15T15:00:00+01:00") // Returns Date with 15:00 in LOCAL time (ignores +01:00)
+ * parseAsLocalDate("2024-01-15") // Returns Date with 00:00 in LOCAL time
+ */
+export function parseAsLocalDate(dateString: string): Date | null {
+	try {
+		// Remove timezone indicators: Z, +00:00, -05:00, +0000, -0500, etc.
+		// This regex matches timezone suffixes at the end of ISO strings
+		const localDateString = String(dateString)
+			.trim()
+			.replace(/([+-]\d{2}:?\d{2}|Z)$/i, "");
+
+		const date = new Date(localDateString);
+
+		// Validate the date
+		if (Number.isNaN(date.getTime())) {
+			return null;
+		}
+
+		return date;
+	} catch {
+		return null;
+	}
+}

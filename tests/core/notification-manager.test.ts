@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { IndexerEvent } from "../../src/core/indexer";
 import { NotificationManager } from "../../src/core/notification-manager";
 import type { SingleCalendarConfig } from "../../src/types/settings";
+import { parseAsLocalDate } from "../../src/utils/time-formatter";
 import type { MockApp } from "../mocks/obsidian";
 import { TFile } from "../mocks/obsidian";
 
@@ -40,6 +41,17 @@ describe("NotificationManager", () => {
 		vi.clearAllMocks();
 		vi.useFakeTimers();
 
+		// Mock Web Notifications API
+		const mockNotification = vi.fn().mockImplementation((_title: string, _options?: NotificationOptions) => {
+			return {
+				onclick: null,
+				close: vi.fn(),
+			};
+		}) as any;
+		mockNotification.permission = "granted" as NotificationPermission;
+		mockNotification.requestPermission = vi.fn().mockResolvedValue("granted");
+		(global as any).Notification = mockNotification;
+
 		// Initialize mock app and its components
 		mockApp = {
 			fileManager: {
@@ -65,7 +77,10 @@ describe("NotificationManager", () => {
 			workspace: {
 				getActiveFile: vi.fn(),
 				on: vi.fn(),
-			},
+				getLeaf: vi.fn().mockReturnValue({
+					openFile: vi.fn(),
+				}),
+			} as any,
 		};
 
 		mockVault = mockApp.vault;
@@ -84,6 +99,7 @@ describe("NotificationManager", () => {
 	afterEach(() => {
 		notificationManager.stop();
 		vi.useRealTimers();
+		delete (global as any).Notification;
 	});
 
 	describe("Initialization and Lifecycle", () => {
@@ -187,7 +203,9 @@ describe("NotificationManager", () => {
 			expect(queue).toHaveLength(1);
 			expect(queue[0].filePath).toBe("event.md");
 
-			const expectedNotifyTime = new Date(futureDate);
+			// Since we parse ISO string as local time, calculate expected time accordingly
+			const parsedStartDate = parseAsLocalDate(futureDate.toISOString())!;
+			const expectedNotifyTime = new Date(parsedStartDate);
 			expectedNotifyTime.setMinutes(expectedNotifyTime.getMinutes() - 15);
 			expect(queue[0].notifyAt.getTime()).toBe(expectedNotifyTime.getTime());
 		});
@@ -224,7 +242,9 @@ describe("NotificationManager", () => {
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
 
-			const expectedNotifyTime = new Date(futureDate);
+			// Since we parse ISO string as local time, calculate expected time accordingly
+			const parsedStartDate = parseAsLocalDate(futureDate.toISOString())!;
+			const expectedNotifyTime = new Date(parsedStartDate);
 			expectedNotifyTime.setMinutes(expectedNotifyTime.getMinutes() - 30);
 			expect(queue[0].notifyAt.getTime()).toBe(expectedNotifyTime.getTime());
 		});
@@ -280,7 +300,9 @@ describe("NotificationManager", () => {
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
-			expect(queue[0].notifyAt.getTime()).toBe(futureDate.getTime());
+			// Since we parse ISO string as local time, use parsed date
+			const parsedStartDate = parseAsLocalDate(futureDate.toISOString())!;
+			expect(queue[0].notifyAt.getTime()).toBe(parsedStartDate.getTime());
 		});
 	});
 
@@ -520,13 +542,13 @@ describe("NotificationManager", () => {
 
 			// Add events in non-chronological order
 			const date1 = new Date();
-			date1.setHours(date1.getHours() + 3); // Notify in 2h45m
+			date1.setHours(date1.getHours() + 5); // Event at +5h, notify at +4h45m
 
 			const date2 = new Date();
-			date2.setHours(date2.getHours() + 1); // Notify in 45m
+			date2.setHours(date2.getHours() + 3); // Event at +3h, notify at +2h45m
 
 			const date3 = new Date();
-			date3.setHours(date3.getHours() + 2); // Notify in 1h45m
+			date3.setHours(date3.getHours() + 4); // Event at +4h, notify at +3h45m
 
 			indexerEventsSubject.next({
 				type: "file-changed",
@@ -719,12 +741,15 @@ describe("NotificationManager", () => {
 			mockFile.basename = "Test Event";
 			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
 
-			const nearFutureDate = new Date();
-			nearFutureDate.setSeconds(nearFutureDate.getSeconds() + 30);
+			// Create a date string that will be 1 hour in the future when parsed as local time
+			const futureLocalTime = new Date();
+			futureLocalTime.setHours(futureLocalTime.getHours() + 1);
+			// Format as ISO string without timezone (YYYY-MM-DDTHH:mm:ss)
+			const futureIsoString = `${futureLocalTime.getFullYear()}-${String(futureLocalTime.getMonth() + 1).padStart(2, "0")}-${String(futureLocalTime.getDate()).padStart(2, "0")}T${String(futureLocalTime.getHours()).padStart(2, "0")}:${String(futureLocalTime.getMinutes()).padStart(2, "0")}:${String(futureLocalTime.getSeconds()).padStart(2, "0")}`;
 
 			mockMetadataCache.getFileCache.mockReturnValue({
 				frontmatter: {
-					"Start Date": nearFutureDate.toISOString(),
+					"Start Date": futureIsoString,
 					Title: "Test Event",
 				},
 			});
@@ -737,7 +762,7 @@ describe("NotificationManager", () => {
 					filePath: "event.md",
 					mtime: Date.now(),
 					frontmatter: {
-						"Start Date": nearFutureDate.toISOString(),
+						"Start Date": futureIsoString,
 						"Minutes Before": 0, // Notify at start time
 					},
 					folder: "",
@@ -747,8 +772,8 @@ describe("NotificationManager", () => {
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(1);
 
-			// Advance time past notification time
-			vi.advanceTimersByTime(60000);
+			// Advance time past notification time (more than 1 hour)
+			vi.advanceTimersByTime(3600000 + 60000); // 1 hour + 1 minute
 
 			// Notification should be removed from queue
 			expect((notificationManager as any).notificationQueue).toHaveLength(0);
@@ -794,10 +819,12 @@ describe("NotificationManager", () => {
 			});
 
 			const nearFutureDate1 = new Date();
-			nearFutureDate1.setSeconds(nearFutureDate1.getSeconds() + 30);
+			nearFutureDate1.setHours(nearFutureDate1.getHours() + 1); // 1 hour in future
+			const futureIsoString1 = `${nearFutureDate1.getFullYear()}-${String(nearFutureDate1.getMonth() + 1).padStart(2, "0")}-${String(nearFutureDate1.getDate()).padStart(2, "0")}T${String(nearFutureDate1.getHours()).padStart(2, "0")}:${String(nearFutureDate1.getMinutes()).padStart(2, "0")}:${String(nearFutureDate1.getSeconds()).padStart(2, "0")}`;
 
 			const nearFutureDate2 = new Date();
-			nearFutureDate2.setSeconds(nearFutureDate2.getSeconds() + 45);
+			nearFutureDate2.setHours(nearFutureDate2.getHours() + 1); // 1 hour in future
+			const futureIsoString2 = `${nearFutureDate2.getFullYear()}-${String(nearFutureDate2.getMonth() + 1).padStart(2, "0")}-${String(nearFutureDate2.getDate()).padStart(2, "0")}T${String(nearFutureDate2.getHours()).padStart(2, "0")}:${String(nearFutureDate2.getMinutes()).padStart(2, "0")}:${String(nearFutureDate2.getSeconds()).padStart(2, "0")}`;
 
 			// Add two notifications that should both trigger
 			indexerEventsSubject.next({
@@ -807,7 +834,7 @@ describe("NotificationManager", () => {
 					filePath: "event1.md",
 					mtime: Date.now(),
 					frontmatter: {
-						"Start Date": nearFutureDate1.toISOString(),
+						"Start Date": futureIsoString1,
 						"Minutes Before": 0,
 					},
 					folder: "",
@@ -822,7 +849,7 @@ describe("NotificationManager", () => {
 					filePath: "event2.md",
 					mtime: Date.now(),
 					frontmatter: {
-						"Start Date": nearFutureDate2.toISOString(),
+						"Start Date": futureIsoString2,
 						"Minutes Before": 0,
 					},
 					folder: "",
@@ -832,8 +859,8 @@ describe("NotificationManager", () => {
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(2);
 
-			// Advance time past both notification times
-			vi.advanceTimersByTime(60000);
+			// Advance time past both notification times (more than 1 hour)
+			vi.advanceTimersByTime(3600000 + 60000); // 1 hour + 1 minute
 
 			// Both should be removed
 			expect((notificationManager as any).notificationQueue).toHaveLength(0);

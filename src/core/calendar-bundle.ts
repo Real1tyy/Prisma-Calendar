@@ -74,8 +74,8 @@ export class CalendarBundle {
 				},
 			});
 
-			await this.indexer.start();
 			await this.notificationManager.start();
+			await this.indexer.start();
 		})();
 	}
 
