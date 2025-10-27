@@ -123,6 +123,15 @@ export class NotificationManager {
 			return;
 		}
 
+		const endProp = frontmatter[this.settings.endProp];
+		const endDate = endProp ? parseAsLocalDate(String(endProp)) : null;
+		const eventEndTime = endDate || startDate; // Use end date if available, otherwise start date
+		const now = new Date();
+
+		if (eventEndTime <= now) {
+			return;
+		}
+
 		// Determine notification time based on event type
 		let notificationMinutes: number | undefined;
 
