@@ -22,12 +22,7 @@ import { EventCreateModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
 import { ExpressionFilterManager } from "./expression-filter-manager";
 import { FilterPresetSelector } from "./filter-preset-selector";
-import {
-	createDisabledRecurringEventsModal,
-	createFilteredEventsModal,
-	createSkippedEventsModal,
-	type GenericEventListModal,
-} from "./generic-event-list-modal";
+import { DisabledRecurringEventsModal, FilteredEventsModal, SkippedEventsModal } from "./list-modals";
 import { SearchFilterManager } from "./search-filter-manager";
 import { ZoomManager } from "./zoom-manager";
 
@@ -48,9 +43,9 @@ export class CalendarView extends MountableView(ItemView) {
 	private filterPresetSelector: FilterPresetSelector;
 	private container!: HTMLElement;
 	private viewType: string;
-	private skippedEventsModal: GenericEventListModal | null = null;
-	private disabledRecurringEventsModal: GenericEventListModal | null = null;
-	private filteredEventsModal: GenericEventListModal | null = null;
+	private skippedEventsModal: SkippedEventsModal | null = null;
+	private disabledRecurringEventsModal: DisabledRecurringEventsModal | null = null;
+	private filteredEventsModal: FilteredEventsModal | null = null;
 	private filteredEvents: Array<{ filePath: string; title: string; start: string; end?: string; allDay: boolean }> = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
@@ -345,14 +340,7 @@ export class CalendarView extends MountableView(ItemView) {
 		const end = view.activeEnd.toISOString();
 		const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
 
-		this.skippedEventsModal = createSkippedEventsModal(this.app, this.bundle, skippedEvents, () => {
-			// Called when hotkey is pressed while modal is open
-			if (this.skippedEventsModal) {
-				const modalToClose = this.skippedEventsModal;
-				this.skippedEventsModal = null;
-				modalToClose.close();
-			}
-		});
+		this.skippedEventsModal = new SkippedEventsModal(this.app, this.bundle, skippedEvents);
 
 		const modal = this.skippedEventsModal;
 		const originalOnClose = modal.onClose.bind(modal);
@@ -374,19 +362,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 		const disabledEvents = this.bundle.recurringEventManager.getDisabledRecurringEvents();
 
-		this.disabledRecurringEventsModal = createDisabledRecurringEventsModal(
-			this.app,
-			this.bundle,
-			disabledEvents,
-			() => {
-				// Called when hotkey is pressed while modal is open
-				if (this.disabledRecurringEventsModal) {
-					const modalToClose = this.disabledRecurringEventsModal;
-					this.disabledRecurringEventsModal = null;
-					modalToClose.close();
-				}
-			}
-		);
+		this.disabledRecurringEventsModal = new DisabledRecurringEventsModal(this.app, this.bundle, disabledEvents);
 
 		const modal = this.disabledRecurringEventsModal;
 		const originalOnClose = modal.onClose.bind(modal);
@@ -408,14 +384,7 @@ export class CalendarView extends MountableView(ItemView) {
 			return;
 		}
 
-		this.filteredEventsModal = createFilteredEventsModal(this.app, this.filteredEvents, () => {
-			// Called when hotkey is pressed while modal is open
-			if (this.filteredEventsModal) {
-				const modalToClose = this.filteredEventsModal;
-				this.filteredEventsModal = null;
-				modalToClose.close();
-			}
-		});
+		this.filteredEventsModal = new FilteredEventsModal(this.app, this.filteredEvents);
 
 		const modal = this.filteredEventsModal;
 		const originalOnClose = modal.onClose.bind(modal);

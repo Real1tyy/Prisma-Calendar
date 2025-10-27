@@ -4,6 +4,7 @@ import { InputFilterManager } from "./input-filter-manager";
 export class ExpressionFilterManager extends InputFilterManager {
 	private compiledFunc: ((...args: any[]) => boolean) | null = null;
 	private propertyMapping = new Map<string, string>();
+	private lastWarnedExpression: string | null = null;
 
 	constructor(onFilterChange: () => void) {
 		super(onFilterChange, "Status === 'Done'", "fc-expression-input", 50);
@@ -13,6 +14,7 @@ export class ExpressionFilterManager extends InputFilterManager {
 		super.updateFilterValue(filterValue);
 		this.compiledFunc = null;
 		this.propertyMapping.clear();
+		this.lastWarnedExpression = null; // Clear warning tracker on filter change
 	}
 
 	shouldInclude(event: { meta?: Record<string, any> }): boolean {
@@ -36,7 +38,11 @@ export class ExpressionFilterManager extends InputFilterManager {
 			const values = Array.from(this.propertyMapping.keys()).map((key) => frontmatter[key]);
 			return this.compiledFunc(...values);
 		} catch (error) {
-			console.warn("Invalid filter expression:", this.currentFilterValue, error);
+			// Only warn once per unique expression to avoid console spam
+			if (this.lastWarnedExpression !== this.currentFilterValue) {
+				console.warn("Invalid filter expression:", this.currentFilterValue, error);
+				this.lastWarnedExpression = this.currentFilterValue;
+			}
 			return true;
 		}
 	}
