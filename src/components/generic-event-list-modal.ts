@@ -349,3 +349,47 @@ export function createSkippedEventsModal(
 	modalInstance = new GenericEventListModal(app, config);
 	return modalInstance;
 }
+
+// Factory function for creating filtered events modal
+export function createFilteredEventsModal(
+	app: App,
+	filteredEvents: Array<{ filePath: string; title: string; start: string; end?: string; allDay: boolean }>,
+	closeCallback?: () => void
+): GenericEventListModal {
+	// Helper to format time info for subtitle
+	const formatTimeInfo = (event: { start: string; end?: string; allDay: boolean }): string => {
+		const startTime = DateTime.fromISO(event.start, { zone: "utc" });
+		if (event.allDay) {
+			return `All Day - ${startTime.toFormat("MMM d, yyyy")}`;
+		}
+		const endTime = event.end ? DateTime.fromISO(event.end, { zone: "utc" }) : null;
+		if (endTime) {
+			const durationText = formatDurationHumanReadable(startTime, endTime);
+			return `${startTime.toFormat("MMM d, yyyy - h:mm a")} (${durationText})`;
+		}
+		return startTime.toFormat("MMM d, yyyy - h:mm a");
+	};
+
+	const config: EventListModalConfig = {
+		title: "Filtered Events",
+		emptyMessage: "No events are currently filtered out.",
+		countSuffix: "filtered out",
+		items: filteredEvents.map((event) => ({
+			filePath: event.filePath,
+			title: event.title,
+			subtitle: formatTimeInfo(event),
+		})),
+		actions: [
+			{
+				label: "Open",
+				isPrimary: true,
+				handler: (item) => {
+					app.workspace.openLinkText(item.filePath, "", false);
+				},
+			},
+		],
+		closeCallback,
+	};
+
+	return new GenericEventListModal(app, config);
+}

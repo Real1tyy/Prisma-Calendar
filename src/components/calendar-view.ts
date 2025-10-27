@@ -24,6 +24,7 @@ import { ExpressionFilterManager } from "./expression-filter-manager";
 import { FilterPresetSelector } from "./filter-preset-selector";
 import {
 	createDisabledRecurringEventsModal,
+	createFilteredEventsModal,
 	createSkippedEventsModal,
 	type GenericEventListModal,
 } from "./generic-event-list-modal";
@@ -49,6 +50,8 @@ export class CalendarView extends MountableView(ItemView) {
 	private viewType: string;
 	private skippedEventsModal: GenericEventListModal | null = null;
 	private disabledRecurringEventsModal: GenericEventListModal | null = null;
+	private filteredEventsModal: GenericEventListModal | null = null;
+	private filteredEvents: Array<{ filePath: string; title: string; start: string; end?: string; allDay: boolean }> = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
 	private upcomingEventCheckInterval: number | null = null;
@@ -177,12 +180,19 @@ export class CalendarView extends MountableView(ItemView) {
 				className: "batch-action-btn skip-btn",
 			};
 		} else {
-			headerToolbar.right = `disabledRecurringEvents skippedEvents batchSelect ${viewSwitchers}`;
+			headerToolbar.right = `filteredEvents disabledRecurringEvents skippedEvents batchSelect ${viewSwitchers}`;
 			customButtons.batchSelect = {
 				text: "Batch Select",
 				click: () => this.toggleBatchSelection(),
 			};
 			// Preserve button text from previous update (important for batch mode toggle)
+			const currentFilteredButton = this.calendar.getOption("customButtons")?.filteredEvents;
+			const currentFilteredText = currentFilteredButton?.text || "0 filtered";
+			customButtons.filteredEvents = {
+				text: currentFilteredText,
+				click: () => this.showFilteredEventsModal(),
+			};
+
 			const currentSkippedButton = this.calendar.getOption("customButtons")?.skippedEvents;
 			const currentSkippedText = currentSkippedButton?.text || "0 skipped";
 			customButtons.skippedEvents = {
@@ -203,6 +213,13 @@ export class CalendarView extends MountableView(ItemView) {
 
 		// Preserve button visibility based on current text
 		setTimeout(() => {
+			const filteredBtn = this.container.querySelector(".fc-filteredEvents-button");
+			if (filteredBtn instanceof HTMLElement) {
+				const currentText = filteredBtn.textContent || "";
+				const hasFiltered = !currentText.startsWith("0 ");
+				filteredBtn.style.display = hasFiltered ? "inline-block" : "none";
+			}
+
 			const skippedBtn = this.container.querySelector(".fc-skippedEvents-button");
 			if (skippedBtn instanceof HTMLElement) {
 				const currentText = skippedBtn.textContent || "";
@@ -287,6 +304,30 @@ export class CalendarView extends MountableView(ItemView) {
 		}, 0);
 	}
 
+	private updateFilteredEventsButton(count: number): void {
+		if (!this.calendar) return;
+
+		// Create NEW customButtons object so FullCalendar detects the change
+		const oldButtons = this.calendar.getOption("customButtons") || {};
+		const customButtons = {
+			...oldButtons,
+			filteredEvents: {
+				text: `${count} filtered`,
+				click: () => this.showFilteredEventsModal(),
+			},
+		};
+		this.calendar.setOption("customButtons", customButtons);
+
+		// Update button visibility and tooltip (re-query after customButtons update since DOM may be recreated)
+		setTimeout(() => {
+			const btn = this.container.querySelector(".fc-filteredEvents-button");
+			if (btn instanceof HTMLElement) {
+				btn.style.display = count > 0 ? "inline-block" : "none";
+				btn.title = `${count} event${count === 1 ? "" : "s"} filtered out by search or expression filters`;
+			}
+		}, 0);
+	}
+
 	async showSkippedEventsModal(): Promise<void> {
 		if (this.skippedEventsModal) {
 			const modalToClose = this.skippedEventsModal;
@@ -354,6 +395,33 @@ export class CalendarView extends MountableView(ItemView) {
 			this.disabledRecurringEventsModal = null;
 			// Refresh the button count when modal closes
 			this.updateDisabledRecurringEventsButton();
+		};
+
+		modal.open();
+	}
+
+	showFilteredEventsModal(): void {
+		if (this.filteredEventsModal) {
+			const modalToClose = this.filteredEventsModal;
+			this.filteredEventsModal = null;
+			modalToClose.close();
+			return;
+		}
+
+		this.filteredEventsModal = createFilteredEventsModal(this.app, this.filteredEvents, () => {
+			// Called when hotkey is pressed while modal is open
+			if (this.filteredEventsModal) {
+				const modalToClose = this.filteredEventsModal;
+				this.filteredEventsModal = null;
+				modalToClose.close();
+			}
+		});
+
+		const modal = this.filteredEventsModal;
+		const originalOnClose = modal.onClose.bind(modal);
+		modal.onClose = () => {
+			originalOnClose();
+			this.filteredEventsModal = null;
 		};
 
 		modal.open();
@@ -774,14 +842,39 @@ export class CalendarView extends MountableView(ItemView) {
 
 			let events = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
 
+			// Track events before filtering
+			const totalEventsBeforeFilter = events.length;
+
 			events = events.filter((event) => this.searchFilter.shouldInclude(event));
 			events = events.filter((event) => this.expressionFilter.shouldInclude(event));
+
+			// Calculate filtered events
+			const filteredOutCount = totalEventsBeforeFilter - events.length;
+
+			// Store filtered events for modal display
+			if (filteredOutCount > 0) {
+				const allEvents = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
+				this.filteredEvents = allEvents
+					.filter((event) => !this.searchFilter.shouldInclude(event) || !this.expressionFilter.shouldInclude(event))
+					.map((event) => ({
+						filePath: event.ref.filePath,
+						title: event.title,
+						start: event.start,
+						end: event.end,
+						allDay: event.allDay,
+					}));
+			} else {
+				this.filteredEvents = [];
+			}
 
 			const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
 			this.updateSkippedEventsButton(skippedEvents.length);
 
 			// Update disabled recurring events button
 			this.updateDisabledRecurringEventsButton();
+
+			// Update filtered events button
+			this.updateFilteredEventsButton(filteredOutCount);
 
 			// Convert to FullCalendar event format
 			const calendarEvents = events.map((event) => {
