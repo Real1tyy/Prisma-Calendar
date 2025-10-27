@@ -59,6 +59,12 @@ export class NotificationsSettings {
 
 		new Setting(containerEl).setName("General").setHeading();
 
+		this.ui.addToggle(containerEl, {
+			key: "notificationSound",
+			name: "Play notification sound",
+			desc: "Whether to play a system sound when notifications are shown. When disabled, notifications will be silent.",
+		});
+
 		this.ui.addText(containerEl, {
 			key: "alreadyNotifiedProp",
 			name: "Already notified property",

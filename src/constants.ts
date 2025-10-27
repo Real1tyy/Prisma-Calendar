@@ -59,6 +59,7 @@ export const SETTINGS_DEFAULTS = {
 
 	// Notification Settings
 	DEFAULT_ENABLE_NOTIFICATIONS: true,
+	DEFAULT_NOTIFICATION_SOUND: false,
 
 	// Calendar Settings
 	DEFAULT_FUTURE_INSTANCES_COUNT: 2,

@@ -25,6 +25,7 @@ describe("NotificationManager", () => {
 			enabled: true,
 			directory: "test-dir",
 			enableNotifications: true,
+			notificationSound: false,
 			defaultMinutesBefore: undefined,
 			minutesBeforeProp: "Minutes Before",
 			defaultDaysBefore: undefined,
@@ -958,6 +959,14 @@ describe("NotificationManager", () => {
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
 			expect(queue[0].title).toBe("event.md");
+		});
+	});
+
+	describe("Notification Sound Settings", () => {
+		it("should include notificationSound setting in settings schema", () => {
+			const settings = createDefaultSettings();
+			expect(settings).toHaveProperty("notificationSound");
+			expect(typeof settings.notificationSound).toBe("boolean");
 		});
 	});
 });

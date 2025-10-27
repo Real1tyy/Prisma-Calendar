@@ -1,6 +1,6 @@
 import { type App, TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
-import { EventPreviewModal } from "../components/event-preview-modal";
+import { NotificationModal } from "../components/notification-modal";
 import type { SingleCalendarConfig } from "../types/settings";
 import { parseAsLocalDate } from "../utils/time-formatter";
 import type { Indexer, IndexerEvent } from "./indexer";
@@ -12,6 +12,7 @@ interface NotificationEntry {
 	notifyAt: Date;
 	startDate: Date;
 	isAllDay: boolean;
+	frontmatter: Record<string, unknown>;
 }
 
 /**
@@ -33,7 +34,7 @@ export class NotificationManager {
 
 	constructor(
 		private app: App,
-		private settingsStore: BehaviorSubject<SingleCalendarConfig>,
+		settingsStore: BehaviorSubject<SingleCalendarConfig>,
 		private indexer: Indexer
 	) {
 		this.settings = settingsStore.value;
@@ -171,6 +172,7 @@ export class NotificationManager {
 			notifyAt,
 			startDate,
 			isAllDay,
+			frontmatter,
 		};
 
 		// If notification time is in the past, trigger immediately (for all-day events on the notification day)
@@ -262,7 +264,7 @@ export class NotificationManager {
 			await this.showSystemNotification(entry);
 
 			// Show notification modal for detailed preview
-			this.showNotificationModal(entry);
+			await this.showNotificationModal(entry);
 		} catch (error) {
 			console.error(`[NotificationManager] ❌ Error triggering notification for ${entry.filePath}:`, error);
 		}
@@ -296,7 +298,7 @@ export class NotificationManager {
 					icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>📅</text></svg>",
 					tag: entry.filePath, // Prevents duplicate notifications for the same event
 					requireInteraction: false, // Auto-dismiss after a few seconds
-					silent: false, // Play system sound
+					silent: !this.settings.notificationSound, // Play system sound based on setting
 				});
 
 				// Handle notification click - focus Obsidian and open the event
@@ -330,50 +332,18 @@ export class NotificationManager {
 		}
 	}
 
-	private showNotificationModal(entry: NotificationEntry): void {
-		const file = this.app.vault.getAbstractFileByPath(entry.filePath);
-		if (!(file instanceof TFile)) {
-			return;
-		}
-
-		// Create a mock event object for EventPreviewModal
-		const mockEvent = {
+	private async showNotificationModal(entry: NotificationEntry): Promise<void> {
+		// Create event data for NotificationModal using frontmatter from the entry
+		const eventData = {
 			title: entry.title,
-			start: entry.startDate,
-			end: entry.isAllDay ? null : entry.startDate,
-			allDay: entry.isAllDay,
-			extendedProps: {
-				filePath: entry.filePath,
-				frontmatterDisplayData: {},
-			},
+			filePath: entry.filePath,
+			startDate: entry.startDate,
+			isAllDay: entry.isAllDay,
+			frontmatter: entry.frontmatter,
 		};
-
-		// Create custom modal that extends EventPreviewModal with custom title
-		class NotificationModal extends EventPreviewModal {
-			getModalTitle(): string {
-				return "Event Notification";
-			}
-
-			async onOpen(): Promise<void> {
-				await super.onOpen();
-				// Override the title after rendering
-				const titleEl = this.contentEl.querySelector(".event-preview-header h2");
-				if (titleEl) {
-					const originalTitle = titleEl.textContent || "";
-					titleEl.textContent = `🔔 ${originalTitle}`;
-				}
-			}
-		}
 
 		// Show the notification modal
-		new NotificationModal(this.app, this.getBundleStub(), mockEvent).open();
-	}
-
-	// Create a minimal bundle stub for EventPreviewModal
-	private getBundleStub(): any {
-		return {
-			settingsStore: this.settingsStore,
-		};
+		new NotificationModal(this.app, eventData, this.settings).open();
 	}
 
 	private async rebuildNotificationQueue(): Promise<void> {
