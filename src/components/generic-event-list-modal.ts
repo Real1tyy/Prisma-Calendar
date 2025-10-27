@@ -35,10 +35,14 @@ export interface EventListModalConfig {
 
 export class GenericEventListModal extends Modal {
 	private config: EventListModalConfig;
+	private searchInput: HTMLInputElement | null = null;
+	private listContainer: HTMLElement | null = null;
+	private filteredItems: EventListItem[] = [];
 
 	constructor(app: App, config: EventListModalConfig) {
 		super(app);
 		this.config = config;
+		this.filteredItems = [...config.items];
 	}
 
 	onOpen(): void {
@@ -46,8 +50,28 @@ export class GenericEventListModal extends Modal {
 		contentEl.empty();
 		contentEl.addClass("generic-event-list-modal");
 
-		// Register keyboard shortcut to close modal
+		// Register Ctrl/Cmd+F to focus search
+		this.scope.register(["Mod"], "f", (evt) => {
+			evt.preventDefault();
+			this.searchInput?.focus();
+			this.searchInput?.select();
+			return false;
+		});
+
+		// Register Escape to close modal or clear search
 		this.scope.register([], "Escape", () => {
+			// If search is focused and has content, clear it first
+			if (this.searchInput && document.activeElement === this.searchInput) {
+				if (this.searchInput.value) {
+					this.searchInput.value = "";
+					this.filterItems("");
+					return false;
+				}
+				// If search is empty, unfocus it
+				this.searchInput.blur();
+				return false;
+			}
+			// Otherwise close the modal
 			this.close();
 			return false;
 		});
@@ -75,6 +99,19 @@ export class GenericEventListModal extends Modal {
 			return;
 		}
 
+		// Search input
+		const searchContainer = contentEl.createEl("div", { cls: "generic-event-list-search" });
+		this.searchInput = searchContainer.createEl("input", {
+			type: "text",
+			placeholder: "Search events... (Ctrl/Cmd+F)",
+			cls: "generic-event-search-input",
+		});
+
+		this.searchInput.addEventListener("input", (e) => {
+			const target = e.target as HTMLInputElement;
+			this.filterItems(target.value);
+		});
+
 		// Count
 		const countText = this.config.countSuffix
 			? `${this.config.items.length} event${this.config.items.length === 1 ? "" : "s"} ${this.config.countSuffix}`
@@ -85,10 +122,41 @@ export class GenericEventListModal extends Modal {
 		});
 
 		// Event list
-		const listEl = contentEl.createEl("div", { cls: "generic-event-list" });
+		this.listContainer = contentEl.createEl("div", { cls: "generic-event-list" });
 
-		for (const item of this.config.items) {
-			this.createEventItem(listEl, item);
+		this.renderItems();
+	}
+
+	private filterItems(searchText: string): void {
+		const normalizedSearch = searchText.toLowerCase().trim();
+
+		if (!normalizedSearch) {
+			this.filteredItems = [...this.config.items];
+		} else {
+			this.filteredItems = this.config.items.filter((item) => {
+				const cleanTitle = removeZettelId(item.title).toLowerCase();
+				return cleanTitle.includes(normalizedSearch);
+			});
+		}
+
+		this.renderItems();
+	}
+
+	private renderItems(): void {
+		if (!this.listContainer) return;
+
+		this.listContainer.empty();
+
+		if (this.filteredItems.length === 0) {
+			this.listContainer.createEl("p", {
+				text: "No events match your search.",
+				cls: "generic-event-list-empty",
+			});
+			return;
+		}
+
+		for (const item of this.filteredItems) {
+			this.createEventItem(this.listContainer, item);
 		}
 	}
 
@@ -141,8 +209,10 @@ export class GenericEventListModal extends Modal {
 			// Update remaining items - prefer id over filePath for filtering
 			if (item.id) {
 				this.config.items = this.config.items.filter((i) => i.id !== item.id);
+				this.filteredItems = this.filteredItems.filter((i) => i.id !== item.id);
 			} else {
 				this.config.items = this.config.items.filter((i) => i.filePath !== item.filePath);
+				this.filteredItems = this.filteredItems.filter((i) => i.filePath !== item.filePath);
 			}
 
 			// Update count or close if empty

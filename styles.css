@@ -2018,6 +2018,30 @@
 	margin-bottom: 1rem;
 }
 
+.generic-event-list-search {
+	margin-bottom: 1rem;
+}
+
+.generic-event-search-input {
+	width: 100%;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+}
+
+.generic-event-search-input:focus {
+	border-color: var(--interactive-accent);
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
+}
+
+.generic-event-search-input::placeholder {
+	color: var(--text-muted);
+}
+
 .generic-event-list-modal .generic-event-list-count {
 	margin-bottom: 1.5rem;
 	color: var(--text-muted);
@@ -2026,6 +2050,13 @@
 .generic-event-list {
 	max-height: 400px;
 	overflow-y: auto;
+}
+
+.generic-event-list-empty {
+	padding: 1rem;
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
 }
 
 .generic-event-list-item {
