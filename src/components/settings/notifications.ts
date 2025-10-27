@@ -1,12 +1,12 @@
 import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils/settings-ui-builder";
 import { Setting } from "obsidian";
 import type { CalendarSettingsStore } from "../../core/settings-store";
-import type { SingleCalendarConfigSchema } from "../../types/settings";
+import type { SingleCalendarConfig, SingleCalendarConfigSchema } from "../../types/settings";
 
 export class NotificationsSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 
-	constructor(settingsStore: CalendarSettingsStore) {
+	constructor(private settingsStore: CalendarSettingsStore) {
 		this.ui = new SettingsUIBuilder(settingsStore as any);
 	}
 
@@ -25,12 +25,13 @@ export class NotificationsSettings {
 
 		new Setting(containerEl).setName("Timed events").setHeading();
 
-		this.ui.addText(containerEl, {
-			key: "defaultMinutesBefore",
-			name: "Default minutes before",
-			desc: "Default notification time for timed events (with start and end dates). Leave empty for no default notification. 0 = notify when event starts, 15 = notify 15 minutes before.",
-			placeholder: "e.g., 15 (leave empty for no default)",
-		});
+		this.addOptionalNumberInput(
+			containerEl,
+			"defaultMinutesBefore",
+			"Default minutes before",
+			"Default notification time for timed events (with start and end dates). Leave empty for no default notification. 0 = notify when event starts, 15 = notify 15 minutes before.",
+			"e.g., 15 (leave empty for no default)"
+		);
 
 		this.ui.addText(containerEl, {
 			key: "minutesBeforeProp",
@@ -41,12 +42,13 @@ export class NotificationsSettings {
 
 		new Setting(containerEl).setName("All-day events").setHeading();
 
-		this.ui.addText(containerEl, {
-			key: "defaultDaysBefore",
-			name: "Default days before",
-			desc: "Default notification time for all-day events. Leave empty for no default notification. 0 = notify on the day of the event, 1 = notify 1 day before.",
-			placeholder: "e.g., 1 (leave empty for no default)",
-		});
+		this.addOptionalNumberInput(
+			containerEl,
+			"defaultDaysBefore",
+			"Default days before",
+			"Default notification time for all-day events. Leave empty for no default notification. 0 = notify on the day of the event, 1 = notify 1 day before.",
+			"e.g., 1 (leave empty for no default)"
+		);
 
 		this.ui.addText(containerEl, {
 			key: "daysBeforeProp",
@@ -63,5 +65,50 @@ export class NotificationsSettings {
 			desc: "Frontmatter property used to mark events as already notified. When a notification is shown, this property is set to true. Unmark it manually to get notified again.",
 			placeholder: "Already Notified",
 		});
+	}
+
+	private addOptionalNumberInput(
+		containerEl: HTMLElement,
+		key: keyof SingleCalendarConfig,
+		name: string,
+		desc: string,
+		placeholder: string
+	): void {
+		const settings = this.settingsStore.currentSettings;
+		const currentValue = settings[key] as number | undefined;
+
+		new Setting(containerEl)
+			.setName(name)
+			.setDesc(desc)
+			.addText((text) => {
+				text.setPlaceholder(placeholder);
+				text.setValue(currentValue !== undefined ? String(currentValue) : "");
+
+				text.inputEl.addEventListener("blur", async () => {
+					const inputValue = text.inputEl.value.trim();
+
+					if (inputValue === "") {
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							[key]: undefined,
+						}));
+					} else {
+						const numValue = Number(inputValue);
+						if (!Number.isNaN(numValue) && Number.isInteger(numValue) && numValue >= 0) {
+							await this.settingsStore.updateSettings((s) => ({
+								...s,
+								[key]: numValue,
+							}));
+						}
+					}
+				});
+
+				text.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
+					if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+						e.preventDefault();
+						text.inputEl.blur();
+					}
+				});
+			});
 	}
 }
