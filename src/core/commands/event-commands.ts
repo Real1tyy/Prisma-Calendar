@@ -49,13 +49,10 @@ export class CreateEventCommand implements Command {
 			title,
 			targetDirectory: this.targetDirectory,
 			filename,
+			frontmatter: this.eventData.preservedFrontmatter,
 		});
 
 		this.createdFilePath = file.path;
-
-		await withFrontmatter(this.app, file, (fm) => {
-			Object.assign(fm, this.eventData.preservedFrontmatter);
-		});
 	}
 
 	async undo(): Promise<void> {

@@ -1,37 +1,76 @@
 import { generateUniqueFilePath } from "@real1ty-obsidian-plugins/utils/file-utils";
 import { createFromTemplate, isTemplaterAvailable } from "@real1ty-obsidian-plugins/utils/templater-utils";
-import type { App, TFile } from "obsidian";
+import type { App } from "obsidian";
+import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import type { SingleCalendarConfig } from "../types/settings";
+import type { Indexer, IndexerEvent } from "./indexer";
 
 export interface FileCreationOptions {
 	title: string;
 	targetDirectory: string;
 	filename?: string;
 	content?: string;
+	/** Frontmatter to apply when indexer picks up the file */
+	frontmatter?: Record<string, unknown>;
 }
 
 export class TemplateService {
 	private settings: SingleCalendarConfig;
 	private settingsSubscription: Subscription | null = null;
+	private indexerSubscription: Subscription | null = null;
+
+	/**
+	 * Files awaiting frontmatter application when indexer picks them up.
+	 * Maps file path -> frontmatter to apply
+	 */
+	private pendingFrontmatter: Map<string, Record<string, unknown>> = new Map();
 
 	constructor(
 		private app: App,
-		settingsStore: BehaviorSubject<SingleCalendarConfig>
+		settingsStore: BehaviorSubject<SingleCalendarConfig>,
+		indexer: Indexer
 	) {
 		this.settings = settingsStore.value;
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			this.settings = newSettings;
 		});
+
+		this.indexerSubscription = indexer.events$.subscribe((event: IndexerEvent) => {
+			this.handleIndexerEvent(event);
+		});
+	}
+
+	private async handleIndexerEvent(event: IndexerEvent): Promise<void> {
+		if (event.type !== "file-changed") return;
+
+		const frontmatter = this.pendingFrontmatter.get(event.filePath);
+		if (!frontmatter) return;
+
+		this.pendingFrontmatter.delete(event.filePath);
+
+		try {
+			const file = this.app.vault.getAbstractFileByPath(event.filePath);
+			if (file instanceof TFile) {
+				await this.app.fileManager.processFrontMatter(file, (fm) => {
+					Object.assign(fm, frontmatter);
+				});
+			}
+		} catch (error) {
+			console.error(`[Template Service] ❌ Error applying frontmatter:`, error);
+		}
 	}
 
 	destroy(): void {
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
+		this.indexerSubscription?.unsubscribe();
+		this.indexerSubscription = null;
+		this.pendingFrontmatter.clear();
 	}
 
 	async createFile(options: FileCreationOptions): Promise<TFile> {
-		const { title, targetDirectory, filename, content } = options;
+		const { title, targetDirectory, filename, content, frontmatter } = options;
 
 		const finalFilename = filename || title;
 
@@ -44,11 +83,11 @@ export class TemplateService {
 		if (this.shouldUseTemplate()) {
 			const templateFile = await this.createFromTemplate(targetDirectory, finalFilename);
 			if (templateFile) {
-				// Wait for Templater to finish processing (if used)
-				// Templater processes templates asynchronously and might overwrite our frontmatter
-				// with template expressions like {{date}} or {{time}} that evaluate to "now"
-				// We need to wait for that processing to complete before setting our own values
-				await new Promise((resolve) => setTimeout(resolve, 150));
+				// If frontmatter needs to be applied, register it for when indexer picks up the file
+				if (frontmatter && Object.keys(frontmatter).length > 0) {
+					this.pendingFrontmatter.set(templateFile.path, frontmatter);
+				}
+
 				return templateFile;
 			}
 		}

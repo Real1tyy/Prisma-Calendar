@@ -50,7 +50,7 @@ export class CalendarBundle {
 		this.recurringEventManager = recurringEventManager;
 		this.notificationManager = notificationManager;
 
-		this.templateService = new TemplateService(this.app, this.settingsStore.settings$);
+		this.templateService = new TemplateService(this.app, this.settingsStore.settings$, this.indexer);
 		this.viewStateManager = new CalendarViewStateManager();
 		this.commandManager = new CommandManager();
 		this.batchCommandFactory = new BatchCommandFactory(this.app, this);

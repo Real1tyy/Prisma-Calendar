@@ -51,7 +51,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	) {
 		super();
 		this.settings = settingsStore.value;
-		this.templateService = new TemplateService(app, settingsStore);
+		this.templateService = new TemplateService(app, settingsStore, indexer);
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			this.settings = newSettings;
@@ -401,60 +401,58 @@ export class RecurringEventManager extends DebouncedNotifier {
 			recurringEvent.content = content;
 		}
 
-		// Create the physical file with inherited content
-		const file = await this.templateService.createFile({
+		// Build frontmatter for the instance
+		const excludeProps = new Set([
+			this.settings.rruleProp,
+			this.settings.rruleSpecProp,
+			this.settings.startProp,
+			this.settings.endProp,
+			this.settings.dateProp,
+			this.settings.allDayProp,
+			"_Archived", // Don't copy _Archived property from source to instances
+		]);
+
+		const instanceFrontmatter: Record<string, unknown> = {};
+
+		// Copy non-excluded properties from source
+		for (const [key, value] of Object.entries(recurringEvent.frontmatter)) {
+			if (!excludeProps.has(key)) {
+				instanceFrontmatter[key] = value;
+			}
+		}
+
+		// Set instance-specific properties - CRITICAL for duplication detection
+		instanceFrontmatter[this.settings.rruleIdProp] = recurringEvent.rRuleId;
+		instanceFrontmatter.nodeRecurringInstanceDate = instanceDate.toISODate();
+
+		const sourceFile = this.app.vault.getAbstractFileByPath(recurringEvent.sourceFilePath);
+		if (sourceFile instanceof TFile) {
+			instanceFrontmatter[this.settings.sourceProp] = createFileLink(sourceFile);
+		}
+
+		const { instanceStart, instanceEnd } = this.calculateInstanceTimes(recurringEvent, instanceDate);
+
+		// Set all day property if specified
+		if (recurringEvent.rrules.allDay !== undefined) {
+			instanceFrontmatter[this.settings.allDayProp] = recurringEvent.rrules.allDay;
+		}
+
+		// Use appropriate date properties based on all-day status
+		if (recurringEvent.rrules.allDay) {
+			instanceFrontmatter[this.settings.dateProp] = instanceStart.toISODate();
+		} else {
+			instanceFrontmatter[this.settings.startProp] = instanceStart.toUTC().toISO();
+			if (instanceEnd) {
+				instanceFrontmatter[this.settings.endProp] = instanceEnd.toUTC().toISO();
+			}
+		}
+
+		await this.templateService.createFile({
 			title: filename,
 			targetDirectory: this.settings.directory,
 			filename: filename,
 			content,
-		});
-
-		// Set frontmatter with event data and instance metadata
-		await this.app.fileManager.processFrontMatter(file, (fm) => {
-			const excludeProps = new Set([
-				this.settings.rruleProp,
-				this.settings.rruleSpecProp,
-				this.settings.startProp,
-				this.settings.endProp,
-				this.settings.dateProp,
-				this.settings.allDayProp,
-				"_Archived", // Don't copy _Archived property from source to instances
-			]);
-
-			for (const [key, value] of Object.entries(recurringEvent.frontmatter)) {
-				if (!excludeProps.has(key)) {
-					fm[key] = value;
-				}
-			}
-
-			// Set instance-specific properties - CRITICAL for duplication detection
-			fm[this.settings.rruleIdProp] = recurringEvent.rRuleId;
-			fm.nodeRecurringInstanceDate = instanceDate.toISODate();
-
-			const sourceFile = this.app.vault.getAbstractFileByPath(recurringEvent.sourceFilePath);
-			if (sourceFile instanceof TFile) {
-				fm[this.settings.sourceProp] = createFileLink(sourceFile);
-			}
-
-			const { instanceStart, instanceEnd } = this.calculateInstanceTimes(recurringEvent, instanceDate);
-
-			// Set all day property if specified
-			if (recurringEvent.rrules.allDay !== undefined) {
-				fm[this.settings.allDayProp] = recurringEvent.rrules.allDay;
-			}
-
-			// Use appropriate date properties based on all-day status
-			if (recurringEvent.rrules.allDay) {
-				fm[this.settings.dateProp] = instanceStart.toISODate();
-				delete fm[this.settings.startProp];
-				delete fm[this.settings.endProp];
-			} else {
-				fm[this.settings.startProp] = instanceStart.toUTC().toISO();
-				if (instanceEnd) {
-					fm[this.settings.endProp] = instanceEnd.toUTC().toISO();
-				}
-				delete fm[this.settings.dateProp];
-			}
+			frontmatter: instanceFrontmatter,
 		});
 
 		// Don't notify here - let the batch operation handle notification

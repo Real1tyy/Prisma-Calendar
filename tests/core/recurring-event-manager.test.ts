@@ -406,23 +406,17 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				// Trigger physical instance creation
 				await (manager as any).ensurePhysicalInstances("daily-all-day-123");
 
-				// Verify processFrontMatter was called with correct data
-				expect(mockApp.fileManager.processFrontMatter).toHaveBeenCalled();
-
-				// Get the frontmatter updater function from the call
-				const processFrontMatterCall = mockApp.fileManager.processFrontMatter.mock.calls[0];
-				const frontmatterUpdater = processFrontMatterCall[1];
-
-				// Test what the updater function does
-				const mockFrontmatter: any = {};
-				frontmatterUpdater(mockFrontmatter);
+				// Verify createFile was called with correct frontmatter
+				expect(mockCreate).toHaveBeenCalled();
+				const createCall = mockCreate.mock.calls[0][0];
+				const frontmatter = createCall.frontmatter;
 
 				// For daily all-day events, should preserve all-day status
-				expect(mockFrontmatter["All Day"]).toBe(true);
+				expect(frontmatter["All Day"]).toBe(true);
 				// All-day events should use Date property, not Start Date
-				expect(mockFrontmatter.Date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-				expect(mockFrontmatter["Start Date"]).toBeUndefined();
-				expect(mockFrontmatter["End Date"]).toBeUndefined();
+				expect(frontmatter.Date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+				expect(frontmatter["Start Date"]).toBeUndefined();
+				expect(frontmatter["End Date"]).toBeUndefined();
 			});
 
 			it("should create timed daily instances with correct time extraction", async () => {
@@ -462,19 +456,15 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("daily-timed-123");
 
-				// Verify processFrontMatter was called
-				expect(mockApp.fileManager.processFrontMatter).toHaveBeenCalled();
-
-				const processFrontMatterCall = mockApp.fileManager.processFrontMatter.mock.calls[0];
-				const frontmatterUpdater = processFrontMatterCall[1];
-
-				const mockFrontmatter: any = {};
-				frontmatterUpdater(mockFrontmatter);
+				// Verify createFile was called with correct frontmatter
+				expect(mockCreate).toHaveBeenCalled();
+				const createCall = mockCreate.mock.calls[0][0];
+				const frontmatter = createCall.frontmatter;
 
 				// For daily timed events, should use extracted time (09:30-10:15) not original time (14:00-15:30)
-				expect(mockFrontmatter["All Day"]).toBe(false);
-				expect(mockFrontmatter["Start Date"]).toMatch(/T09:30:00/);
-				expect(mockFrontmatter["End Date"]).toMatch(/T10:15:00/);
+				expect(frontmatter["All Day"]).toBe(false);
+				expect(frontmatter["Start Date"]).toMatch(/T09:30:00/);
+				expect(frontmatter["End Date"]).toMatch(/T10:15:00/);
 			});
 		});
 
@@ -515,18 +505,14 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("weekly-123");
 
-				expect(mockApp.fileManager.processFrontMatter).toHaveBeenCalled();
-
-				const processFrontMatterCall = mockApp.fileManager.processFrontMatter.mock.calls[0];
-				const frontmatterUpdater = processFrontMatterCall[1];
-
-				const mockFrontmatter: any = {};
-				frontmatterUpdater(mockFrontmatter);
+				expect(mockCreate).toHaveBeenCalled();
+				const createCall = mockCreate.mock.calls[0][0];
+				const frontmatter = createCall.frontmatter;
 
 				// For weekly events, should use extracted time (10:00-11:30) not original (16:45-18:00)
-				expect(mockFrontmatter["All Day"]).toBe(false);
-				expect(mockFrontmatter["Start Date"]).toMatch(/T10:00:00/);
-				expect(mockFrontmatter["End Date"]).toMatch(/T11:30:00/);
+				expect(frontmatter["All Day"]).toBe(false);
+				expect(frontmatter["Start Date"]).toMatch(/T10:00:00/);
+				expect(frontmatter["End Date"]).toMatch(/T11:30:00/);
 			});
 
 			it("should create bi-weekly instances with time extraction", async () => {
@@ -565,18 +551,14 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("bi-weekly-123");
 
-				expect(mockApp.fileManager.processFrontMatter).toHaveBeenCalled();
-
-				const processFrontMatterCall = mockApp.fileManager.processFrontMatter.mock.calls[0];
-				const frontmatterUpdater = processFrontMatterCall[1];
-
-				const mockFrontmatter: any = {};
-				frontmatterUpdater(mockFrontmatter);
+				expect(mockCreate).toHaveBeenCalled();
+				const createCall = mockCreate.mock.calls[0][0];
+				const frontmatter = createCall.frontmatter;
 
 				// For bi-weekly events, should use extracted time (09:15-10:00) not original (13:20-14:45)
-				expect(mockFrontmatter["All Day"]).toBe(false);
-				expect(mockFrontmatter["Start Date"]).toMatch(/T09:15:00/);
-				expect(mockFrontmatter["End Date"]).toMatch(/T10:00:00/);
+				expect(frontmatter["All Day"]).toBe(false);
+				expect(frontmatter["Start Date"]).toMatch(/T09:15:00/);
+				expect(frontmatter["End Date"]).toMatch(/T10:00:00/);
 			});
 		});
 
@@ -617,20 +599,16 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("monthly-all-day-123");
 
-				expect(mockApp.fileManager.processFrontMatter).toHaveBeenCalled();
-
-				const processFrontMatterCall = mockApp.fileManager.processFrontMatter.mock.calls[0];
-				const frontmatterUpdater = processFrontMatterCall[1];
-
-				const mockFrontmatter: any = {};
-				frontmatterUpdater(mockFrontmatter);
+				expect(mockCreate).toHaveBeenCalled();
+				const createCall = mockCreate.mock.calls[0][0];
+				const frontmatter = createCall.frontmatter;
 
 				// For monthly all-day events, should inherit the day (15th) and be all-day
-				expect(mockFrontmatter["All Day"]).toBe(true);
+				expect(frontmatter["All Day"]).toBe(true);
 				// All-day events should use Date property, not Start Date
-				expect(mockFrontmatter.Date).toMatch(/^\d{4}-\d{2}-15$/); // Should be 15th day of the month
-				expect(mockFrontmatter["Start Date"]).toBeUndefined();
-				expect(mockFrontmatter["End Date"]).toBeUndefined();
+				expect(frontmatter.Date).toMatch(/^\d{4}-\d{2}-15$/); // Should be 15th day of the month
+				expect(frontmatter["Start Date"]).toBeUndefined();
+				expect(frontmatter["End Date"]).toBeUndefined();
 			});
 
 			it("should create monthly timed instances inheriting day and time", async () => {
@@ -669,18 +647,14 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("monthly-timed-123");
 
-				expect(mockApp.fileManager.processFrontMatter).toHaveBeenCalled();
-
-				const processFrontMatterCall = mockApp.fileManager.processFrontMatter.mock.calls[0];
-				const frontmatterUpdater = processFrontMatterCall[1];
-
-				const mockFrontmatter: any = {};
-				frontmatterUpdater(mockFrontmatter);
+				expect(mockCreate).toHaveBeenCalled();
+				const createCall = mockCreate.mock.calls[0][0];
+				const frontmatter = createCall.frontmatter;
 
 				// For monthly timed events, should inherit day (25th) and time (14:30-16:00)
-				expect(mockFrontmatter["All Day"]).toBe(false);
-				expect(mockFrontmatter["Start Date"]).toMatch(/-25T14:30:00/); // Should be 25th at 14:30
-				expect(mockFrontmatter["End Date"]).toMatch(/-25T16:00:00/); // Should be 25th at 16:00
+				expect(frontmatter["All Day"]).toBe(false);
+				expect(frontmatter["Start Date"]).toMatch(/-25T14:30:00/); // Should be 25th at 14:30
+				expect(frontmatter["End Date"]).toMatch(/-25T16:00:00/); // Should be 25th at 16:00
 			});
 		});
 
@@ -721,20 +695,16 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("yearly-all-day-123");
 
-				expect(mockApp.fileManager.processFrontMatter).toHaveBeenCalled();
-
-				const processFrontMatterCall = mockApp.fileManager.processFrontMatter.mock.calls[0];
-				const frontmatterUpdater = processFrontMatterCall[1];
-
-				const mockFrontmatter: any = {};
-				frontmatterUpdater(mockFrontmatter);
+				expect(mockCreate).toHaveBeenCalled();
+				const createCall = mockCreate.mock.calls[0][0];
+				const frontmatter = createCall.frontmatter;
 
 				// For yearly all-day events, should inherit month (06) and day (20)
-				expect(mockFrontmatter["All Day"]).toBe(true);
+				expect(frontmatter["All Day"]).toBe(true);
 				// All-day events should use Date property, not Start Date
-				expect(mockFrontmatter.Date).toMatch(/-06-20$/); // Should be June 20th
-				expect(mockFrontmatter["Start Date"]).toBeUndefined();
-				expect(mockFrontmatter["End Date"]).toBeUndefined();
+				expect(frontmatter.Date).toMatch(/-06-20$/); // Should be June 20th
+				expect(frontmatter["Start Date"]).toBeUndefined();
+				expect(frontmatter["End Date"]).toBeUndefined();
 			});
 
 			it("should create yearly timed instances inheriting day, month and time", async () => {
@@ -773,18 +743,14 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("yearly-timed-123");
 
-				expect(mockApp.fileManager.processFrontMatter).toHaveBeenCalled();
-
-				const processFrontMatterCall = mockApp.fileManager.processFrontMatter.mock.calls[0];
-				const frontmatterUpdater = processFrontMatterCall[1];
-
-				const mockFrontmatter: any = {};
-				frontmatterUpdater(mockFrontmatter);
+				expect(mockCreate).toHaveBeenCalled();
+				const createCall = mockCreate.mock.calls[0][0];
+				const frontmatter = createCall.frontmatter;
 
 				// For yearly timed events, should inherit month (03), day (12) and time (18:00-22:30)
-				expect(mockFrontmatter["All Day"]).toBe(false);
-				expect(mockFrontmatter["Start Date"]).toMatch(/-03-12T18:00:00/); // Should be March 12th at 18:00
-				expect(mockFrontmatter["End Date"]).toMatch(/-03-12T22:30:00/); // Should be March 12th at 22:30
+				expect(frontmatter["All Day"]).toBe(false);
+				expect(frontmatter["Start Date"]).toMatch(/-03-12T18:00:00/); // Should be March 12th at 18:00
+				expect(frontmatter["End Date"]).toMatch(/-03-12T22:30:00/); // Should be March 12th at 22:30
 			});
 		});
 
