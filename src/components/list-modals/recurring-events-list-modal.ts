@@ -13,6 +13,8 @@ export class RecurringEventsListModal extends Modal {
 	private instances: RecurringEventInstance[];
 	private hidePastEvents = true;
 	private hideSkippedEvents = true;
+	private searchQuery = "";
+	private searchInput: HTMLInputElement | null = null;
 	private contentContainer: HTMLElement | null = null;
 	private statsContainer: HTMLElement | null = null;
 	private sourceTitle: string;
@@ -59,10 +61,53 @@ export class RecurringEventsListModal extends Modal {
 			})
 		);
 
+		// Search input
+		const searchContainer = contentEl.createDiv("generic-event-list-search");
+		this.searchInput = searchContainer.createEl("input", {
+			type: "text",
+			placeholder: "Search instances... (Ctrl/Cmd+F)",
+			cls: "generic-event-search-input",
+		});
+
+		this.searchInput.addEventListener("input", (e) => {
+			const target = e.target as HTMLInputElement;
+			this.searchQuery = target.value;
+			this.renderEventsList();
+		});
+
+		// Register keyboard shortcuts
+		this.registerHotkeys();
+
 		// Container for events list
 		this.contentContainer = contentEl.createDiv("recurring-events-list-container");
 
 		this.renderEventsList();
+	}
+
+	private registerHotkeys(): void {
+		// Ctrl/Cmd+F to focus search
+		this.scope.register(["Mod"], "f", (evt) => {
+			evt.preventDefault();
+			this.searchInput?.focus();
+			this.searchInput?.select();
+			return false;
+		});
+
+		// Escape to clear search or close modal
+		this.scope.register([], "Escape", () => {
+			if (this.searchInput && document.activeElement === this.searchInput) {
+				if (this.searchInput.value) {
+					this.searchInput.value = "";
+					this.searchQuery = "";
+					this.renderEventsList();
+					return false;
+				}
+				this.searchInput.blur();
+				return false;
+			}
+			this.close();
+			return false;
+		});
 	}
 
 	private renderEventsList(): void {
@@ -103,12 +148,23 @@ export class RecurringEventsListModal extends Modal {
 			filteredInstances = filteredInstances.filter((instance) => !instance.skipped);
 		}
 
+		// Apply search filter
+		if (this.searchQuery.trim()) {
+			const normalizedSearch = this.searchQuery.toLowerCase().trim();
+			filteredInstances = filteredInstances.filter((instance) => {
+				const cleanTitle = removeZettelId(instance.title).toLowerCase();
+				return cleanTitle.includes(normalizedSearch);
+			});
+		}
+
 		// Sort by date (ascending)
 		filteredInstances.sort((a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis());
 
 		if (filteredInstances.length === 0) {
 			let emptyMessage = "No instances found";
-			if (this.hidePastEvents && this.hideSkippedEvents) {
+			if (this.searchQuery.trim()) {
+				emptyMessage = "No events match your search";
+			} else if (this.hidePastEvents && this.hideSkippedEvents) {
 				emptyMessage = "No future non-skipped instances found";
 			} else if (this.hidePastEvents) {
 				emptyMessage = "No future instances found";
@@ -126,6 +182,12 @@ export class RecurringEventsListModal extends Modal {
 		// Render each instance as a row
 		for (const instance of filteredInstances) {
 			const row = this.contentContainer.createDiv("recurring-event-row");
+
+			// Check if event is in the past
+			const isPast = instance.instanceDate < now.startOf("day");
+			if (isPast) {
+				row.addClass("recurring-event-past");
+			}
 
 			const dateEl = row.createDiv("recurring-event-date");
 			dateEl.textContent = instance.instanceDate.toFormat("yyyy-MM-dd (EEE)");

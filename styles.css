@@ -2223,6 +2223,10 @@
 	color: var(--text-muted);
 }
 
+.recurring-event-row.recurring-event-past .recurring-event-title {
+	opacity: 0.7;
+}
+
 /* Move By Modal - Compact Button-Based UI */
 .move-by-modal h3 {
 	margin: 0 0 16px 0;
