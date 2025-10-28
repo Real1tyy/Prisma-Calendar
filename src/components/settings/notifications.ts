@@ -65,6 +65,15 @@ export class NotificationsSettings {
 			desc: "Whether to play a system sound when notifications are shown. When disabled, notifications will be silent.",
 		});
 
+		this.ui.addSlider(containerEl, {
+			key: "snoozeMinutes",
+			name: "Snooze duration (minutes)",
+			desc: "How many minutes to snooze a notification when pressing the Snooze button. The notification will be triggered again after this duration.",
+			min: 1,
+			max: 200,
+			step: 1,
+		});
+
 		this.ui.addText(containerEl, {
 			key: "alreadyNotifiedProp",
 			name: "Already notified property",

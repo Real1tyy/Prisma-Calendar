@@ -347,8 +347,12 @@ export class NotificationManager {
 			frontmatter: entry.frontmatter,
 		};
 
+		const onSnooze = () => {
+			this.snoozeNotification(entry);
+		};
+
 		// Show the notification modal
-		new NotificationModal(this.app, eventData, this.settings).open();
+		new NotificationModal(this.app, eventData, this.settings, onSnooze).open();
 	}
 
 	private async rebuildNotificationQueue(): Promise<void> {
@@ -357,5 +361,36 @@ export class NotificationManager {
 
 		// Re-scan all files and rebuild notifications
 		// This will be handled naturally by indexer events when settings change triggers re-index
+	}
+
+	private async snoozeNotification(entry: NotificationEntry): Promise<void> {
+		const file = this.app.vault.getAbstractFileByPath(entry.filePath);
+		if (!(file instanceof TFile)) {
+			return;
+		}
+
+		if (entry.isAllDay) {
+			console.warn(`[NotificationManager] ⚠️ Cannot snooze all-day event: ${entry.filePath}`);
+			return;
+		}
+
+		try {
+			await this.app.fileManager.processFrontMatter(file, (fm) => {
+				// Reset the already notified flag
+				fm[this.settings.alreadyNotifiedProp] = false;
+
+				// Update minutesBefore for timed events
+				const currentMinutesBefore = fm[this.settings.minutesBeforeProp];
+				const currentValue =
+					currentMinutesBefore !== undefined && currentMinutesBefore !== null
+						? Number(currentMinutesBefore)
+						: (this.settings.defaultMinutesBefore ?? 0);
+
+				const newMinutesBefore = currentValue - this.settings.snoozeMinutes;
+				fm[this.settings.minutesBeforeProp] = newMinutesBefore;
+			});
+		} catch (error) {
+			console.error(`[NotificationManager] ❌ Error snoozing notification for ${entry.filePath}:`, error);
+		}
 	}
 }

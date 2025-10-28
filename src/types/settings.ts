@@ -30,6 +30,7 @@ export const PropsSettingsSchema = z.object({
 export const NotificationsSettingsSchema = z.object({
 	enableNotifications: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_ENABLE_NOTIFICATIONS),
 	notificationSound: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_NOTIFICATION_SOUND), // whether to play sound with notifications
+	snoozeMinutes: z.number().int().positive().default(SETTINGS_DEFAULTS.DEFAULT_SNOOZE_MINUTES), // how many minutes to snooze notifications
 	defaultMinutesBefore: z.number().int().nonnegative().optional(), // minutes before event to notify, undefined = no default notification
 	minutesBeforeProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_MINUTES_BEFORE_PROP), // frontmatter property to read per-event notification times
 	defaultDaysBefore: z.number().int().nonnegative().optional(), // days before all-day event to notify, undefined = no default notification

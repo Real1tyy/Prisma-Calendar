@@ -17,11 +17,13 @@ interface NotificationEventData {
 export class NotificationModal extends Modal {
 	private eventData: NotificationEventData;
 	private settings: SingleCalendarConfig;
+	private onSnooze?: () => void;
 
-	constructor(app: App, eventData: NotificationEventData, settings: SingleCalendarConfig) {
+	constructor(app: App, eventData: NotificationEventData, settings: SingleCalendarConfig, onSnooze?: () => void) {
 		super(app);
 		this.eventData = eventData;
 		this.settings = settings;
+		this.onSnooze = onSnooze;
 	}
 
 	async onOpen(): Promise<void> {
@@ -183,6 +185,16 @@ export class NotificationModal extends Modal {
 			this.app.workspace.openLinkText(this.eventData.filePath, "", false);
 			this.close();
 		};
+
+		if (this.onSnooze && !this.eventData.isAllDay) {
+			const snoozeButton = buttonContainer.createEl("button", {
+				text: `Snooze (${this.settings.snoozeMinutes}m)`,
+			});
+			snoozeButton.onclick = () => {
+				this.onSnooze?.();
+				this.close();
+			};
+		}
 
 		// Dismiss button
 		const dismissButton = buttonContainer.createEl("button", {
