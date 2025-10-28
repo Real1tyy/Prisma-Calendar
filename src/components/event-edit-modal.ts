@@ -351,14 +351,14 @@ abstract class BaseEventModal extends Modal {
 			end = `${this.dateInput.value}T23:59:59`;
 		} else {
 			// TIMED EVENT: Use startProp/endProp, clear dateProp
-			preservedFrontmatter[settings.startProp] = inputValueToISOString(this.startInput.value);
-			if (this.endInput.value) {
-				preservedFrontmatter[settings.endProp] = inputValueToISOString(this.endInput.value);
-			}
-			delete preservedFrontmatter[settings.dateProp];
-
 			start = inputValueToISOString(this.startInput.value);
 			end = this.endInput.value ? inputValueToISOString(this.endInput.value) : null;
+
+			preservedFrontmatter[settings.startProp] = start;
+			if (end) {
+				preservedFrontmatter[settings.endProp] = end;
+			}
+			delete preservedFrontmatter[settings.dateProp];
 		}
 
 		// Handle recurring event properties
