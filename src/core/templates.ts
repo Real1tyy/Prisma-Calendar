@@ -44,6 +44,11 @@ export class TemplateService {
 		if (this.shouldUseTemplate()) {
 			const templateFile = await this.createFromTemplate(targetDirectory, finalFilename);
 			if (templateFile) {
+				// Wait for Templater to finish processing (if used)
+				// Templater processes templates asynchronously and might overwrite our frontmatter
+				// with template expressions like {{date}} or {{time}} that evaluate to "now"
+				// We need to wait for that processing to complete before setting our own values
+				await new Promise((resolve) => setTimeout(resolve, 150));
 				return templateFile;
 			}
 		}
