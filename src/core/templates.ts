@@ -86,7 +86,11 @@ export class TemplateService {
 				// If frontmatter needs to be applied, register it for when indexer picks up the file
 				if (frontmatter && Object.keys(frontmatter).length > 0) {
 					this.pendingFrontmatter.set(templateFile.path, frontmatter);
+					await this.app.fileManager.processFrontMatter(templateFile, (fm) => {
+						Object.assign(fm, frontmatter);
+					});
 				}
+
 
 				return templateFile;
 			}
