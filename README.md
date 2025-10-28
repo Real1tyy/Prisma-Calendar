@@ -26,6 +26,43 @@ Quick Links:
 
 ---
 
+## 📦 Installation
+
+Prisma Calendar is currently **awaiting approval** for the Obsidian Community Plugin store. In the meantime, you can install it using one of these methods:
+
+### 🎯 Recommended: BRAT (Beta Reviewers Auto-update Tool)
+
+The easiest way to install and keep Prisma Calendar up to date:
+
+1. Install the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) from Obsidian's Community Plugins
+2. Open BRAT settings (Settings → BRAT)
+3. Click **Add Beta Plugin**
+4. Enter this repository URL: `https://github.com/Real1tyy/Prisma-Calendar`
+5. Click **Add Plugin**
+6. Enable Prisma Calendar in Settings → Community Plugins
+
+**Benefits**: Automatic updates, smooth experience, one-click installation
+
+### 📥 Manual Installation from GitHub Releases
+
+1. Go to [Releases](https://github.com/Real1tyy/Prisma-Calendar/releases)
+2. Download the latest release assets:
+   - `main.js`
+   - `manifest.json`
+   - `styles.css`
+3. Create folder: `{VaultFolder}/.obsidian/plugins/prisma-calendar/`
+4. Move downloaded files into the folder
+5. Reload Obsidian (Ctrl/Cmd + R)
+6. Enable Prisma Calendar in Settings → Community Plugins
+
+**Note**: All releases are versioned and tagged for easy reference.
+
+### ✨ Coming Soon
+
+Once approved for the Community Plugin store, you'll be able to install Prisma Calendar directly from Settings → Community Plugins → Browse.
+
+---
+
 ## **Top 5 Killer Features**
 
 ### **1️⃣ Flexibility — Fully Configurable Everything**
