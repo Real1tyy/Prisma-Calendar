@@ -91,7 +91,6 @@ export class TemplateService {
 					});
 				}
 
-
 				return templateFile;
 			}
 		}
