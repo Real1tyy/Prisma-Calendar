@@ -47,13 +47,8 @@ export class ZoomManager {
 		if (isTimeGridView) {
 			const newText = this.getZoomLevelText();
 
-			// Only update if text has changed or button is empty to prevent unnecessary DOM manipulation
+			// Only update if text has changed to prevent unnecessary DOM manipulation
 			if (button.textContent !== newText) {
-				// Clear all existing content completely
-				button.innerHTML = "";
-				button.textContent = "";
-
-				// Set new text content
 				button.textContent = newText;
 			}
 
