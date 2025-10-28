@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { type App, Modal, Setting } from "obsidian";
-import { removeZettelId } from "../utils/calendar-events";
+import { removeZettelId } from "../../utils/calendar-events";
 
 interface RecurringEventInstance {
 	filePath: string;
