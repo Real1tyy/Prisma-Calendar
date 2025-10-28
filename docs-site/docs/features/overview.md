@@ -26,6 +26,23 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 
 ---
 
+## 🔔 **Notifications & Alerts**
+
+### **Smart Notification System**
+- **Desktop notifications** - System alerts before events start
+- **Rich modal interface** - Complete event details with interactive properties
+- **Flexible timing** - Separate defaults for timed events (minutes) and all-day events (days)
+- **Per-event overrides** - Each event can specify custom notification timing
+- **Snooze functionality** - Postpone notifications with smart recalculation (timed events only)
+- **Automatic tracking** - Prevents duplicate notifications with "Already Notified" property
+- **Example**: `Minutes Before: 15` notifies 15 minutes before event starts
+
+### **Visual Enhancements**
+- **Highlight upcoming events** - Automatically highlights current or next upcoming event
+- **Higher contrast** - Makes active and upcoming events stand out
+- **Smart detection** - Highlights all currently active events, or if none, the closest upcoming one
+- **Configurable** - Enable/disable in settings (enabled by default)
+
 ## 🎨 **Customization & Visual Control**
 
 ### **Dynamic Color Rules**
@@ -35,7 +52,11 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Live updates** - Color changes reflect immediately as you edit rules
 
 ### **Advanced Filtering**
-- **Expression-based** - Use property names directly to show/hide events
+- **Search bar** - Quick text-based filtering by event title
+- **Expression filter** - Use property names directly to show/hide events
+- **Filter presets** - Save and reuse common filter expressions
+- **Filtered events modal** - See what's being hidden by active filters
+- **Search in list modals** - Find events in disabled/skipped event lists
 - **Complex logic** - Combine conditions with `&&`, `||`, and comparison operators
 - **Dynamic visibility** - Filter events by any frontmatter property
 - **Example**: `Status !== 'Done'` to hide completed tasks
@@ -207,5 +228,7 @@ fm.Project === 'Work' || fm.Tags?.includes('work')
 1. **[Installation](../installation)** - Get Prisma Calendar installed
 2. **[Quickstart](../quickstart)** - Basic setup and first calendar
 3. **[Configuration](../configuration)** - Deep dive into customization
-4. **[Recurring Events](./recurring-dsl)** - Master recurring event patterns
-5. **[Batch Operations](./batch-operations)** - Learn efficiency workflows
+4. **[Notifications](./notifications)** - Set up event alerts and reminders
+5. **[Filtering](./filtering)** - Master search and filter expressions
+6. **[Recurring Events](./recurring-dsl)** - Master recurring event patterns
+7. **[Batch Operations](./batch-operations)** - Learn efficiency workflows

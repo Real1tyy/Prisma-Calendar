@@ -163,6 +163,50 @@ Calendar "All Tasks":
 - Use color rules to differentiate event types visually
 - Or organize events into separate directories by type/status
 
+## Viewing Filtered Events
+
+### Filtered Event List Modal
+
+When you have active search or expression filters, you might wonder what events are being hidden. The **Filtered Event List Modal** shows you exactly which events are currently excluded by your active filters.
+
+- **Access**: Command palette → "Show filtered events"
+- **Shows**: All events that don't pass current search and expression filters
+- **Features**:
+  - Search within filtered events by name
+  - Click any event to open its file
+  - See why events are hidden (they don't match your active filters)
+  - Useful for debugging complex filter expressions
+
+**Use Case:**
+```
+Active Filter: Status !== 'Done'
+Filtered Events Modal: Shows all events where Status === 'Done'
+```
+
+This helps you:
+- Verify your filter is working correctly
+- Find events you thought should be visible
+- Understand the impact of your filter expressions
+
+### Search in List Modals
+
+Several list modals now include search functionality to help you find specific events quickly:
+
+#### Disabled Recurring Events Modal
+- **Access**: Click the disabled recurring events counter in calendar header
+- **Search**: Type event name to filter the list
+- **Actions**: Enable or open any disabled recurring event
+
+#### Skipped Events Modal
+- **Access**: Command palette → "Show skipped events"
+- **Search**: Type event name to filter the list
+- **Actions**: View and manage all events marked as skipped
+
+**Benefits:**
+- Quickly locate specific events in large lists
+- No need to scroll through hundreds of entries
+- Real-time search as you type
+
 ## Keyboard Shortcuts
 
 Prisma Calendar provides commands that you can bind to hotkeys for quick filter access:
@@ -172,6 +216,9 @@ Prisma Calendar provides commands that you can bind to hotkeys for quick filter 
 | `Focus search` | Jump to the search bar input |
 | `Focus expression filter` | Jump to the expression filter input |
 | `Open filter preset selector` | Open the filter presets dropdown |
+| `Show filtered events` | Open modal showing events hidden by active filters |
+| `Show skipped events` | Open modal listing all skipped events (with search) |
+| `Show disabled recurring events` | Open modal listing disabled recurring events (with search) |
 
 **Setting Up Hotkeys:**
 1. Go to Settings → Hotkeys

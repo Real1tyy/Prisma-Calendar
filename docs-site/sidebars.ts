@@ -20,6 +20,7 @@ const sidebars: SidebarsConfig = {
         "features/templater",
         "features/color-rules",
         "features/filtering",
+        "features/notifications",
         "features/event-previews",
         "features/zettelid-naming",
         "features/batch-operations",
