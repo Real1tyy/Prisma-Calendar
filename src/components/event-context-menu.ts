@@ -15,8 +15,8 @@ import { getObsidianLinkPath } from "../utils/obsidian-link-utils";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import { EventEditModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
+import { RecurringEventsListModal } from "./list-modals/recurring-events-list-modal";
 import { MoveByModal } from "./move-by-modal";
-import { RecurringEventsListModal } from "./recurring-events-list-modal";
 
 export class EventContextMenu {
 	private app: App;

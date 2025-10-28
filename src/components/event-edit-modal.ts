@@ -173,13 +173,29 @@ abstract class BaseEventModal extends Modal {
 		for (const [value, label] of Object.entries(WEEKDAY_OPTIONS)) {
 			const weekdayItem = weekdayGrid.createDiv("weekday-item");
 
+			const checkboxId = `weekday-${value}`;
 			const checkbox = weekdayItem.createEl("input", {
 				type: "checkbox",
-				attr: { "data-weekday": value },
+				attr: {
+					"data-weekday": value,
+					id: checkboxId,
+				},
 			});
-			weekdayItem.createEl("label", { text: label });
+			weekdayItem.createEl("label", {
+				text: label,
+				attr: { for: checkboxId },
+			});
 
 			this.weekdayCheckboxes.set(value as Weekday, checkbox);
+
+			// Make the entire weekday item clickable
+			weekdayItem.addEventListener("click", (e) => {
+				// Prevent double-toggle when clicking directly on checkbox or label
+				if (e.target === checkbox || (e.target as HTMLElement).tagName === "LABEL") {
+					return;
+				}
+				checkbox.checked = !checkbox.checked;
+			});
 		}
 	}
 
