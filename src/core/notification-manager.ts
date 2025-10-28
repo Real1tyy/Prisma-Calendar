@@ -376,17 +376,22 @@ export class NotificationManager {
 
 		try {
 			await this.app.fileManager.processFrontMatter(file, (fm) => {
-				// Reset the already notified flag
 				fm[this.settings.alreadyNotifiedProp] = false;
 
-				// Update minutesBefore for timed events
-				const currentMinutesBefore = fm[this.settings.minutesBeforeProp];
-				const currentValue =
-					currentMinutesBefore !== undefined && currentMinutesBefore !== null
-						? Number(currentMinutesBefore)
-						: (this.settings.defaultMinutesBefore ?? 0);
+				// Calculate minutesBefore so notification triggers exactly snoozeMinutes from NOW
+				// Formula: We want notification at (now + snoozeMinutes)
+				// minutesBefore = eventStart - desiredNotificationTime (in minutes)
+				// minutesBefore = eventStart - (now + snoozeMinutes)
+				// minutesBefore = (eventStart - now) - snoozeMinutes
+				// minutesBefore = -(now - eventStart) - snoozeMinutes
 
-				const newMinutesBefore = currentValue - this.settings.snoozeMinutes;
+				const now = new Date();
+				const minutesFromEventStartToNow = (now.getTime() - entry.startDate.getTime()) / 60000;
+
+				// If event hasn't started yet, calculate from event start
+				// If event has started, calculate from now (will be negative)
+				const newMinutesBefore = -minutesFromEventStartToNow - this.settings.snoozeMinutes;
+
 				fm[this.settings.minutesBeforeProp] = newMinutesBefore;
 			});
 		} catch (error) {
