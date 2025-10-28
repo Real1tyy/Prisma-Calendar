@@ -35,6 +35,7 @@ const sidebars: SidebarsConfig = {
     "faq",
     "troubleshooting",
     "contributing",
+    "support",
     "changelog"
   ]
 };

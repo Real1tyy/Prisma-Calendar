@@ -179,18 +179,3 @@ For consistency, it's recommended to create events via the calendar interface wh
 ### Can I customize the ZLID format?
 
 Currently, the format (`-YYYYMMDDHHmmss`) is fixed. This ensures consistency across all calendars and prevents parsing ambiguities.
-
----
-
-## 🎉 Summary
-
-The hidden ZettelID naming system is a powerful feature that provides:
-
-- **Uniqueness** without manual effort
-- **Cleanliness** in the user interface
-- **Flexibility** to name events semantically
-- **Compatibility** with all calendar features
-
-By handling naming complexity behind the scenes, Prisma Calendar lets you focus on your events and workflow, not on avoiding file collisions.
-
-**Result**: A calendar that *just works* the way you expect it to, without sacrificing the power and flexibility of file-based storage.

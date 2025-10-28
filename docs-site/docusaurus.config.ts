@@ -157,6 +157,10 @@ const config: Config = {
           title: 'Support',
           items: [
             {
+              label: 'Support Me',
+              to: '/support',
+            },
+            {
               label: 'Sponsor on GitHub',
               href: 'https://github.com/sponsors/Real1tyy',
             },

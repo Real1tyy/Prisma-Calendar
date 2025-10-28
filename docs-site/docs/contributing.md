@@ -1,4 +1,4 @@
-# Contributing & Support
+# Contributing
 
 We welcome contributions and feedback from the community! Here's how you can help make Prisma Calendar better.
 
@@ -50,13 +50,6 @@ Documentation contributions are **highly appreciated** and help everyone in the 
 - Edit pages directly on GitHub or submit a PR
 - Follow the existing style and structure
 - No contribution is too small — typo fixes are welcome!
-
-## Financial Support
-
-If you find this plugin valuable, consider supporting its development. Your sponsorship helps fund new features, ongoing maintenance, and bug fixes. Thank you for your support!
-
--   [Sponsor on GitHub](https://github.com/sponsors/Real1tyy)
--   [Buy Me a Coffee](https://www.buymeacoffee.com/real1ty)
 
 ## Getting Help
 

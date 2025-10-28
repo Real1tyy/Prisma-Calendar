@@ -1,7 +1,5 @@
 # Configuration
 
-This page maps directly to the in-app settings. Most changes apply instantly.
-
 ## Calendar Management
 
 - Add, clone, or delete calendars from Settings → Prisma Calendar
