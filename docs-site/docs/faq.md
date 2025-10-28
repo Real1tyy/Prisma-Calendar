@@ -1,5 +1,20 @@
 # FAQ
 
+## About This Documentation
+
+**Is the documentation complete and accurate?**
+
+We strive for accuracy, but Prisma Calendar is a **large, feature-rich project** with extensive documentation. It's quite complex for one person to manage everything perfectly, so there may be occasional inaccuracies or outdated information.
+
+**If you spot something wrong, please help us!**
+- Create a [Pull Request](https://github.com/Real1tyy/Prisma-Calendar/pulls) to fix it
+- [Open an issue](https://github.com/Real1tyy/Prisma-Calendar/issues) to report it
+- Suggest improvements or clarifications
+
+Community contributions help us continuously improve the documentation and keep it accurate. Every correction, no matter how small, makes the docs better for everyone. Thank you for helping us improve! 🙏
+
+---
+
 **Can I use multiple calendars at once?**
 Yes. Calendars can use separate directories for full isolation, or share the same directory for different visual perspectives of the same events.
 

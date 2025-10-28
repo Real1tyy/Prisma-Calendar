@@ -84,6 +84,19 @@ Select multiple events and perform bulk actions: **clone, move, skip, delete, or
 
 ## ✨ **Additional Powerful Features**
 
+### 🔔 **Smart Notification System**
+Never miss a deadline with Prisma Calendar's comprehensive notification system — fully configurable, intelligent, and built for reliability.
+
+- **Desktop notifications** - System alerts appear before events start with event details and quick actions
+- **Rich notification modal** - Complete event preview showing all properties and action buttons
+- **Flexible timing** - Separate defaults for timed events (minutes before) and all-day events (days before)
+- **Per-event overrides** - Each event can specify its own notification timing via frontmatter
+- **Smart snooze** - Postpone notifications with intelligent recalculation (timed events only)
+- **Automatic tracking** - "Already Notified" property prevents duplicate alerts
+- **Configurable snooze duration** - Set custom snooze intervals (default: 15 minutes)
+- **Sound alerts** - Optional notification sound when alerts appear
+- **Never miss deadlines** - Reliable notification queue with precise timing down to the second
+
 ### 📋 **Enhanced Event Interaction**
 - **Hidden ZettelID naming** - Events display with clean names in the calendar, but files include unique timestamp suffixes for collision-free storage
 - **Clickable frontmatter** - All frontmatter properties are interactive, wikilinks are clickable
@@ -130,11 +143,10 @@ Select multiple events and perform bulk actions: **clone, move, skip, delete, or
 
 ### What does an event look like?
 
-Events are plain Markdown notes with frontmatter. You pick which frontmatter keys the calendar should read (e.g., `Start`, `End`, `AllDay`, `Title`).
+Events are plain Markdown notes with frontmatter. You pick which frontmatter keys the calendar should read (e.g., `Start`, `End`, `AllDay`).
 
 ```yaml
 ---
-Title: Weekly Team Meeting
 Start: 2025-01-15T09:00
 End: 2025-01-15T10:30
 AllDay: false

@@ -31,13 +31,25 @@ Have an idea for a new feature? We'd love to hear it! **[Submit a feature reques
 7. **Push to your branch** (`git push origin feature/amazing-feature`)
 8. **Open a Pull Request** on GitHub
 
-## 📝 Documentation
+## 📝 Documentation Contributions
 
-Found a typo or want to improve the documentation? Documentation contributions are highly appreciated!
+### Help Us Improve the Docs
 
+Prisma Calendar has **extensive documentation** covering a wide range of features and configurations. With such a large and complex project, it's challenging for one person to maintain complete accuracy across all pages. If you spot something that's incorrect, outdated, or unclear, **we'd love your help!**
+
+**How you can contribute:**
+- **Spot an error?** Create a PR to fix it
+- **Found unclear explanations?** Suggest improvements
+- **Missing information?** Add what's needed
+- **Better examples?** Share them with us
+
+Documentation contributions are **highly appreciated** and help everyone in the community. Together, we can keep improving the docs over time and ensure they stay accurate and helpful.
+
+**Where to contribute:**
 - Documentation source is in `docs-site/docs/`
 - Edit pages directly on GitHub or submit a PR
 - Follow the existing style and structure
+- No contribution is too small — typo fixes are welcome!
 
 ## Financial Support
 
