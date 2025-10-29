@@ -71,77 +71,24 @@ export class GlobalSearchModal extends BaseEventListModal {
 		return undefined;
 	}
 
-	onClose(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-		this.onModalClose();
-	}
-
 	protected onModalClose(): void {
 		// No special cleanup needed
 	}
 
-	async onOpen(): Promise<void> {
-		const { contentEl } = this;
-		contentEl.empty();
-		contentEl.addClass("global-search-modal");
-		contentEl.addClass("generic-event-list-modal");
+	protected async onBeforeRender(): Promise<void> {
+		// Add custom CSS class for this modal
+		this.contentEl.addClass("global-search-modal");
 
 		// Load all events from the store
 		await this.loadAllEvents();
 
 		// Apply initial filters
 		await this.applyFilters();
+	}
 
-		// Initialize items
-		this.items = this.getItems();
-		this.filteredItems = [...this.items];
-
-		this.registerHotkeys();
-
-		// Title
-		contentEl.createEl("h2", { text: this.getTitle() });
-
-		// Render filter toggles AFTER title
+	protected renderCustomHeaderElements(contentEl: HTMLElement): void {
+		// Render filter toggles after title
 		this.renderFilterToggles(contentEl);
-
-		if (this.items.length === 0) {
-			contentEl.createEl("p", { text: this.getEmptyMessage() });
-			return;
-		}
-
-		// Search input
-		const searchContainer = contentEl.createEl("div", { cls: "generic-event-list-search" });
-		this.searchInput = searchContainer.createEl("input", {
-			type: "text",
-			placeholder: "Search events... (Ctrl/Cmd+F)",
-			cls: "generic-event-search-input",
-		});
-
-		this.searchInput.addEventListener("input", (e) => {
-			const target = e.target as HTMLInputElement;
-			this.filterItems(target.value);
-		});
-
-		// Auto-focus the search input when modal opens
-		setTimeout(() => {
-			this.searchInput?.focus();
-		}, 50);
-
-		// Count
-		const countSuffix = this.getCountSuffix();
-		const countText = countSuffix
-			? `${this.items.length} event${this.items.length === 1 ? "" : "s"} ${countSuffix}`
-			: `${this.items.length} event${this.items.length === 1 ? "" : "s"}`;
-		contentEl.createEl("p", {
-			text: countText,
-			cls: "generic-event-list-count",
-		});
-
-		// Event list
-		this.listContainer = contentEl.createEl("div", { cls: "generic-event-list" });
-
-		this.renderItems();
 	}
 
 	protected filterItems(searchText: string): void {
@@ -150,6 +97,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		if (!normalizedSearch) {
 			this.filteredItems = [...this.items];
 		} else {
+			// Override to search both title and subtitle
 			this.filteredItems = this.items.filter((item) => {
 				const cleanTitle = item.title.toLowerCase();
 				const cleanSubtitle = item.subtitle?.toLowerCase() || "";
@@ -157,101 +105,8 @@ export class GlobalSearchModal extends BaseEventListModal {
 			});
 		}
 
+		this.updateEventCount();
 		this.renderItems();
-	}
-
-	protected renderItems(): void {
-		if (!this.listContainer) return;
-
-		this.listContainer.empty();
-
-		if (this.filteredItems.length === 0) {
-			this.listContainer.createEl("p", {
-				text: "No events match your search.",
-				cls: "generic-event-list-empty",
-			});
-			return;
-		}
-
-		for (const item of this.filteredItems) {
-			this.createEventItem(this.listContainer, item);
-		}
-	}
-
-	protected createEventItem(container: HTMLElement, item: EventListItem): void {
-		const itemEl = container.createEl("div", { cls: "generic-event-list-item" });
-
-		// Event info
-		const infoEl = itemEl.createEl("div", { cls: "generic-event-info" });
-
-		// Title
-		const titleEl = infoEl.createEl("div", { cls: "generic-event-title" });
-		titleEl.textContent = item.title;
-
-		// Subtitle (time/path info)
-		if (item.subtitle) {
-			const subtitleEl = infoEl.createEl("div", { cls: "generic-event-subtitle" });
-			subtitleEl.textContent = item.subtitle;
-		}
-
-		// Action buttons
-		const actions = this.getActions();
-		if (actions.length > 0) {
-			const actionsEl = itemEl.createEl("div", { cls: "generic-event-actions" });
-
-			for (const action of actions) {
-				const btn = actionsEl.createEl("button", { text: action.label });
-				if (action.isPrimary) {
-					btn.addClass("mod-cta");
-				}
-				btn.addEventListener("click", async (e) => {
-					e.stopPropagation();
-					await action.handler(item, itemEl);
-				});
-			}
-		}
-	}
-
-	protected registerHotkeys(): void {
-		// Register Ctrl/Cmd+F to focus search
-		this.scope.register(["Mod"], "f", (evt) => {
-			evt.preventDefault();
-			this.searchInput?.focus();
-			this.searchInput?.select();
-			return false;
-		});
-
-		// Register Escape to close modal or clear search
-		this.scope.register([], "Escape", () => {
-			// If search is focused and has content, clear it first
-			if (this.searchInput && document.activeElement === this.searchInput) {
-				if (this.searchInput.value) {
-					this.searchInput.value = "";
-					this.filterItems("");
-					return false;
-				}
-				// If search is empty, unfocus it
-				this.searchInput.blur();
-				return false;
-			}
-			// Otherwise close the modal
-			this.close();
-			return false;
-		});
-
-		// Listen for command hotkey to toggle close
-		const hotkeyCommandId = this.getHotkeyCommandId();
-		if (hotkeyCommandId) {
-			const hotkeys = (this.app as any).hotkeyManager?.getHotkeys(hotkeyCommandId);
-			if (hotkeys && hotkeys.length > 0) {
-				for (const hotkey of hotkeys) {
-					this.scope.register(hotkey.modifiers, hotkey.key, () => {
-						this.close();
-						return false;
-					});
-				}
-			}
-		}
 	}
 
 	private async loadAllEvents(): Promise<void> {
@@ -395,17 +250,6 @@ export class GlobalSearchModal extends BaseEventListModal {
 			button.textContent = `Skip ${label.toLowerCase()}`;
 		} else {
 			button.textContent = `Only ${label.toLowerCase()}`;
-		}
-	}
-
-	private updateEventCount(): void {
-		const countEl = this.contentEl.querySelector(".generic-event-list-count");
-		if (countEl) {
-			const countSuffix = this.getCountSuffix();
-			const countText = countSuffix
-				? `${this.items.length} event${this.items.length === 1 ? "" : "s"} ${countSuffix}`
-				: `${this.items.length} event${this.items.length === 1 ? "" : "s"}`;
-			countEl.textContent = countText;
 		}
 	}
 

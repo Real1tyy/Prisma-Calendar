@@ -31,10 +31,23 @@ export abstract class BaseEventListModal extends Modal {
 	protected abstract getSuccessMessage(): string | undefined;
 	protected abstract onModalClose(): void;
 
-	onOpen(): void {
+	// Optional hook for subclasses to render custom UI after title
+	protected renderCustomHeaderElements(_contentEl: HTMLElement): void {
+		// Default: no custom elements
+	}
+
+	// Optional hook for subclasses to perform async initialization
+	protected async onBeforeRender(): Promise<void> {
+		// Default: no async initialization
+	}
+
+	async onOpen(): Promise<void> {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass("generic-event-list-modal");
+
+		// Allow subclasses to perform async initialization
+		await this.onBeforeRender();
 
 		// Initialize items after subclass properties are set
 		this.items = this.getItems();
@@ -44,6 +57,9 @@ export abstract class BaseEventListModal extends Modal {
 
 		// Title
 		contentEl.createEl("h2", { text: this.getTitle() });
+
+		// Allow subclasses to inject custom header elements (e.g., filter toggles)
+		this.renderCustomHeaderElements(contentEl);
 
 		if (this.items.length === 0) {
 			contentEl.createEl("p", { text: this.getEmptyMessage() });
@@ -62,6 +78,11 @@ export abstract class BaseEventListModal extends Modal {
 			const target = e.target as HTMLInputElement;
 			this.filterItems(target.value);
 		});
+
+		// Auto-focus the search input when modal opens
+		setTimeout(() => {
+			this.searchInput?.focus();
+		}, 50);
 
 		// Count
 		const countSuffix = this.getCountSuffix();
@@ -133,7 +154,31 @@ export abstract class BaseEventListModal extends Modal {
 			});
 		}
 
+		this.updateEventCount();
 		this.renderItems();
+	}
+
+	protected updateEventCount(): void {
+		const countEl = this.contentEl.querySelector(".generic-event-list-count");
+		if (!countEl) return;
+
+		const countSuffix = this.getCountSuffix();
+		const isFiltered = this.filteredItems.length !== this.items.length;
+
+		let countText: string;
+		if (isFiltered) {
+			// Show "X of Y events" when filtered
+			countText = countSuffix
+				? `${this.filteredItems.length} of ${this.items.length} event${this.items.length === 1 ? "" : "s"} ${countSuffix}`
+				: `${this.filteredItems.length} of ${this.items.length} event${this.items.length === 1 ? "" : "s"}`;
+		} else {
+			// Show "Y events" when not filtered
+			countText = countSuffix
+				? `${this.items.length} event${this.items.length === 1 ? "" : "s"} ${countSuffix}`
+				: `${this.items.length} event${this.items.length === 1 ? "" : "s"}`;
+		}
+
+		countEl.textContent = countText;
 	}
 
 	protected renderItems(): void {
@@ -212,14 +257,9 @@ export abstract class BaseEventListModal extends Modal {
 			}
 
 			// Update count or close if empty
-			const countEl = this.contentEl.querySelector(".generic-event-list-count");
-			if (countEl && this.items.length > 0) {
-				const countSuffix = this.getCountSuffix();
-				const countText = countSuffix
-					? `${this.items.length} event${this.items.length === 1 ? "" : "s"} ${countSuffix}`
-					: `${this.items.length} event${this.items.length === 1 ? "" : "s"}`;
-				countEl.textContent = countText;
-			} else if (this.items.length === 0) {
+			if (this.items.length > 0) {
+				this.updateEventCount();
+			} else {
 				const message = this.getSuccessMessage() || "All items processed!";
 				new Notice(message);
 				this.close();
