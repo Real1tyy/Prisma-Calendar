@@ -108,13 +108,36 @@ export class WeeklyStatsModal extends Modal {
 			return;
 		}
 
-		// Chart container
-		const chartContainer = contentEl.createDiv("prisma-stats-chart-container");
+		// Chart section with toggle
+		const chartSection = contentEl.createDiv("prisma-stats-chart-section");
+
+		const chartHeader = chartSection.createDiv("prisma-stats-chart-header");
+		chartHeader.createEl("h3", { text: "Distribution" });
+
+		const toggleButton = chartHeader.createEl("button", {
+			text: "Hide Chart",
+			cls: "prisma-stats-toggle-chart-btn",
+		});
+
+		const chartContainer = chartSection.createDiv("prisma-stats-chart-container");
 		const canvas = chartContainer.createEl("canvas");
 		canvas.setAttribute("id", "prisma-stats-chart");
 
 		// Create pie chart
 		this.renderChart(canvas, stats.entries, stats.totalDuration);
+
+		// Toggle functionality
+		let chartVisible = true;
+		toggleButton.addEventListener("click", () => {
+			chartVisible = !chartVisible;
+			if (chartVisible) {
+				chartContainer.style.display = "flex";
+				toggleButton.setText("Hide Chart");
+			} else {
+				chartContainer.style.display = "none";
+				toggleButton.setText("Show Chart");
+			}
+		});
 
 		// Statistics table
 		const tableContainer = contentEl.createDiv("prisma-stats-table-container");

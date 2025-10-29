@@ -2753,7 +2753,7 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 }
 
 .prisma-stats-summary {
-	margin-bottom: 1.5rem;
+	margin-bottom: 1rem;
 	padding: 1rem;
 	background-color: var(--background-secondary);
 	border-radius: var(--radius-m);
@@ -2784,6 +2784,41 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	padding: 1rem;
 	background-color: var(--background-secondary);
 	border-radius: var(--radius-m);
+}
+
+.prisma-stats-chart-section {
+	margin-bottom: 1.5rem;
+	padding: 1rem;
+	background-color: var(--background-secondary);
+	border-radius: var(--radius-m);
+}
+
+.prisma-stats-chart-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+
+.prisma-stats-chart-header h3 {
+	margin: 0;
+	font-size: var(--font-ui-medium);
+	color: var(--text-normal);
+}
+
+.prisma-stats-toggle-chart-btn {
+	background-color: var(--interactive-normal);
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+	padding: 0.35rem 0.75rem;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-ui-smaller);
+	transition: background-color 0.2s;
+}
+
+.prisma-stats-toggle-chart-btn:hover {
+	background-color: var(--interactive-hover);
 }
 
 .prisma-stats-chart-container {

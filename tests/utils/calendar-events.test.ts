@@ -98,6 +98,29 @@ describe("ZettelID Utilities", () => {
 			const result = removeZettelId("Event  20250203140530");
 			expect(result).toBe("Event");
 		});
+
+		it("should remove ISO date suffix without dash separator", () => {
+			const result = removeZettelId("Go To The Gym 2025-10-29");
+			expect(result).toBe("Go To The Gym");
+			const result2 = removeZettelId("Go To The Gym 2025-10-31");
+			expect(result2).toBe("Go To The Gym");
+		});
+
+		it("should handle various date-suffixed event names", () => {
+			expect(removeZettelId("Thai Boxing 2025-10-28")).toBe("Thai Boxing");
+			expect(removeZettelId("Sauna 2025-11-02")).toBe("Sauna");
+			expect(removeZettelId("Mid Week Sprint Sync 2025-10-30")).toBe("Mid Week Sprint Sync");
+		});
+
+		it("should not remove date from middle of string", () => {
+			const result = removeZettelId("Event 2025-10-29 Important");
+			expect(result).toBe("Event 2025-10-29 Important");
+		});
+
+		it("should handle edge case with only date", () => {
+			const result = removeZettelId("2025-10-29");
+			expect(result).toBe("2025-10-29");
+		});
 	});
 
 	describe("generateUniqueZettelId", () => {
