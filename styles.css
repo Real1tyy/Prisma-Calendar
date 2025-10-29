@@ -2686,9 +2686,12 @@
    Weekly Statistics Modal
    =================================== */
 
-.prisma-weekly-stats-modal .modal {
-	max-width: 900px;
+/* Use higher specificity to override default modal styles */
+.app-container .modal-container:has(.prisma-weekly-stats-modal) > .modal,
+body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
+	max-width: 1120px;
 	width: 90vw;
+	min-width: 800px;
 }
 
 .prisma-stats-header {
@@ -2701,11 +2704,18 @@
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
+.prisma-stats-middle-section {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	flex: 1;
+}
+
 .prisma-stats-week-label {
 	font-size: var(--font-ui-large);
 	font-weight: var(--font-weight-bold);
 	color: var(--text-normal);
-	flex: 1;
 	text-align: center;
 }
 
@@ -2722,6 +2732,24 @@
 
 .prisma-stats-nav-button:hover {
 	background-color: var(--interactive-hover);
+}
+
+.prisma-stats-today-button {
+	background-color: var(--interactive-accent);
+	border: 1px solid var(--interactive-accent);
+	color: var(--text-on-accent);
+	padding: 0.35rem 0.75rem;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-weight-medium);
+	transition: all 0.2s;
+}
+
+.prisma-stats-today-button:hover {
+	background-color: var(--interactive-accent-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .prisma-stats-summary {
@@ -2758,8 +2786,19 @@
 	border-radius: var(--radius-m);
 }
 
-.prisma-stats-chart-container canvas {
-	max-height: 400px;
+.prisma-stats-chart-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 500px;
+	max-height: 600px;
+}
+
+.prisma-weekly-stats-modal .prisma-stats-chart-container canvas {
+	max-height: 600px;
+	max-width: 100%;
+	width: 100%;
+	height: auto;
 }
 
 .prisma-stats-table-container {

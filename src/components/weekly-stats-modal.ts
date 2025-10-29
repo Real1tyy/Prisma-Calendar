@@ -62,8 +62,21 @@ export class WeeklyStatsModal extends Modal {
 			await this.renderContent();
 		});
 
-		const weekLabel = header.createDiv("prisma-stats-week-label");
+		// Middle section with week label and today button
+		const middleSection = header.createDiv("prisma-stats-middle-section");
+
+		const weekLabel = middleSection.createDiv("prisma-stats-week-label");
 		weekLabel.setText(`${this.formatDate(weekStart)} - ${this.formatDate(weekEnd)}`);
+
+		const todayButton = middleSection.createEl("button", {
+			text: "Today",
+			cls: "prisma-stats-today-button",
+		});
+		todayButton.addEventListener("click", async () => {
+			this.currentWeekDate = new Date();
+			this.destroyChart();
+			await this.renderContent();
+		});
 
 		const nextButton = header.createEl("button", {
 			text: "Next Week →",
@@ -159,15 +172,15 @@ export class WeeklyStatsModal extends Modal {
 			},
 			options: {
 				responsive: true,
-				maintainAspectRatio: true,
+				maintainAspectRatio: false,
 				plugins: {
 					legend: {
 						position: "right",
 						labels: {
 							font: {
-								size: 12,
+								size: 13,
 							},
-							padding: 10,
+							padding: 12,
 						},
 					},
 					tooltip: {
