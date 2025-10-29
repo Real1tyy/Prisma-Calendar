@@ -62,6 +62,15 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Dynamic visibility** - Filter events by any frontmatter property
 - **Example**: `Status !== 'Done'` to hide completed tasks
 
+### **Weekly Statistics & Time Tracking**
+- **Visual time tracking** - Pie chart and breakdown table showing how you spend your time
+- **Smart event grouping** - Automatically groups events by name (strips Zettel IDs) and type
+- **Recurring event aggregation** - All recurring events grouped as "Recurring Events"
+- **Week navigation** - Browse through past and future weeks with arrow controls
+- **Timed events focus** - Only includes timed events for meaningful duration tracking
+- **Detailed metrics** - See event count, total duration, and percentage for each category
+- **Example**: See that "Meetings" took 12h (35%), "Deep Work" 18h (53%), "Recurring" 4h (12%)
+
 ### **Frontmatter Display**
 - **Show custom properties** - Display additional frontmatter fields inside event chips
 - **Configurable** - Choose which properties to show in calendar view
@@ -232,5 +241,6 @@ fm.Project === 'Work' || fm.Tags?.includes('work')
 4. **[Notifications](./notifications)** - Set up event alerts and reminders
 5. **[Global Search](./global-search)** - Search and navigate all events
 6. **[Filtering](./filtering)** - Master search and filter expressions
-7. **[Recurring Events](./recurring-dsl)** - Master recurring event patterns
-8. **[Batch Operations](./batch-operations)** - Learn efficiency workflows
+7. **[Weekly Statistics](./weekly-stats)** - Track time with visual insights
+8. **[Recurring Events](./recurring-dsl)** - Master recurring event patterns
+9. **[Batch Operations](./batch-operations)** - Learn efficiency workflows

@@ -6,6 +6,20 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+#### Weekly Statistics
+- **Time Tracking Visualization**: New weekly statistics modal that shows how you spend your time across different event categories. View a pie chart and detailed breakdown table for any week.
+- **Smart Event Grouping**:
+  - Recurring events are automatically grouped together under "Recurring Events"
+  - Non-recurring events are grouped by name (automatically strips Zettel IDs and timestamps)
+  - Example: "Gym 20250203140530" and "Gym 20250205140530" are grouped as "Gym"
+- **Timed Events Only**: Statistics focus on timed events only (all-day events are excluded as they don't have meaningful durations for time tracking)
+- **Week Navigation**: Easy navigation between weeks with previous/next week arrows
+- **Visual Insights**:
+  - Pie chart showing duration distribution with color-coded categories
+  - Sortable statistics table showing event count, total duration, and percentage for each category
+  - Interactive tooltips with detailed information
+- **Access via Command**: Open weekly statistics for the current week via command palette (`Show weekly statistics`)
+
 #### Global Event Search
 - **Search All Events**: New global search modal that searches across all events in the current calendar. Access via command palette or hotkey.
 - **Quick Filtering**: Three cycle-filter buttons for recurring, all-day, and skipped events. Each button cycles through: show all → only this type → skip this type.
