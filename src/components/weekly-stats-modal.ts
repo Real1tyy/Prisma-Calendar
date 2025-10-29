@@ -1,26 +1,26 @@
 import Chart from "chart.js/auto";
 import type { App } from "obsidian";
 import { Modal } from "obsidian";
-import type { ParsedEvent } from "../core/parser";
+import type { CalendarBundle } from "../core/calendar-bundle";
 import { aggregateWeeklyStats, formatDuration, formatPercentage, getWeekBounds } from "../utils/weekly-stats";
 
 export class WeeklyStatsModal extends Modal {
-	private events: ParsedEvent[];
+	private bundle: CalendarBundle;
 	private currentWeekDate: Date;
 	private chart: Chart | null = null;
 
-	constructor(app: App, events: ParsedEvent[], initialDate?: Date) {
+	constructor(app: App, bundle: CalendarBundle, initialDate?: Date) {
 		super(app);
-		this.events = events;
+		this.bundle = bundle;
 		this.currentWeekDate = initialDate || new Date();
 	}
 
-	onOpen(): void {
+	async onOpen(): Promise<void> {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass("prisma-weekly-stats-modal");
 
-		this.renderContent();
+		await this.renderContent();
 	}
 
 	onClose(): void {
@@ -36,24 +36,30 @@ export class WeeklyStatsModal extends Modal {
 		}
 	}
 
-	private renderContent(): void {
+	private async renderContent(): Promise<void> {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		const stats = aggregateWeeklyStats(this.events, this.currentWeekDate);
 		const { start: weekStart, end: weekEnd } = getWeekBounds(this.currentWeekDate);
 
-		// Header with navigation
+		// Fetch events for the current week from the event store
+		const weekEvents = await this.bundle.eventStore.getEvents({
+			start: weekStart.toISOString(),
+			end: weekEnd.toISOString(),
+		});
+
+		const stats = aggregateWeeklyStats(weekEvents, this.currentWeekDate);
+
 		const header = contentEl.createDiv("prisma-stats-header");
 
 		const prevButton = header.createEl("button", {
 			text: "← Previous Week",
 			cls: "prisma-stats-nav-button",
 		});
-		prevButton.addEventListener("click", () => {
+		prevButton.addEventListener("click", async () => {
 			this.currentWeekDate.setDate(this.currentWeekDate.getDate() - 7);
 			this.destroyChart();
-			this.renderContent();
+			await this.renderContent();
 		});
 
 		const weekLabel = header.createDiv("prisma-stats-week-label");
@@ -63,10 +69,10 @@ export class WeeklyStatsModal extends Modal {
 			text: "Next Week →",
 			cls: "prisma-stats-nav-button",
 		});
-		nextButton.addEventListener("click", () => {
+		nextButton.addEventListener("click", async () => {
 			this.currentWeekDate.setDate(this.currentWeekDate.getDate() + 7);
 			this.destroyChart();
-			this.renderContent();
+			await this.renderContent();
 		});
 
 		// Summary

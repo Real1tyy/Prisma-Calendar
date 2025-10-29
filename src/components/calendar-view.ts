@@ -428,21 +428,9 @@ export class CalendarView extends MountableView(ItemView) {
 			(modal) => {
 				this.weeklyStatsModal = modal;
 			},
-			async () => {
+			() => {
 				const currentDate = this.calendar?.getDate() || new Date();
-
-				// Get events from 1 year ago to 1 year in future to cover a reasonable range
-				const oneYearAgo = new Date(currentDate);
-				oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-				const oneYearLater = new Date(currentDate);
-				oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
-
-				const allEvents = await this.bundle.eventStore.getEvents({
-					start: oneYearAgo.toISOString(),
-					end: oneYearLater.toISOString(),
-				});
-
-				return new WeeklyStatsModal(this.app, allEvents, currentDate);
+				return new WeeklyStatsModal(this.app, this.bundle, currentDate);
 			}
 		);
 	}
