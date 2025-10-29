@@ -22,7 +22,12 @@ import { EventCreateModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
 import { ExpressionFilterManager } from "./expression-filter-manager";
 import { FilterPresetSelector } from "./filter-preset-selector";
-import { DisabledRecurringEventsModal, FilteredEventsModal, SkippedEventsModal } from "./list-modals";
+import {
+	DisabledRecurringEventsModal,
+	FilteredEventsModal,
+	GlobalSearchModal,
+	SkippedEventsModal,
+} from "./list-modals";
 import { SearchFilterManager } from "./search-filter-manager";
 import { ZoomManager } from "./zoom-manager";
 
@@ -46,6 +51,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private skippedEventsModal: SkippedEventsModal | null = null;
 	private disabledRecurringEventsModal: DisabledRecurringEventsModal | null = null;
 	private filteredEventsModal: FilteredEventsModal | null = null;
+	private globalSearchModal: GlobalSearchModal | null = null;
 	private filteredEvents: Array<{ filePath: string; title: string; start: string; end?: string; allDay: boolean }> = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
@@ -391,6 +397,26 @@ export class CalendarView extends MountableView(ItemView) {
 		modal.onClose = () => {
 			originalOnClose();
 			this.filteredEventsModal = null;
+		};
+
+		modal.open();
+	}
+
+	showGlobalSearchModal(): void {
+		if (this.globalSearchModal) {
+			const modalToClose = this.globalSearchModal;
+			this.globalSearchModal = null;
+			modalToClose.close();
+			return;
+		}
+
+		this.globalSearchModal = new GlobalSearchModal(this.app, this.bundle, this);
+
+		const modal = this.globalSearchModal;
+		const originalOnClose = modal.onClose.bind(modal);
+		modal.onClose = () => {
+			originalOnClose();
+			this.globalSearchModal = null;
 		};
 
 		modal.open();

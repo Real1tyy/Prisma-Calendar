@@ -99,16 +99,9 @@ export class EventStore extends DebouncedNotifier {
 	}
 
 	async getEvents(query: EventQuery): Promise<ParsedEvent[]> {
-		const results: ParsedEvent[] = [];
+		const results: ParsedEvent[] = await this.getPhysicalEvents(query);
 		const queryStart = DateTime.fromISO(query.start, { zone: "utc" });
 		const queryEnd = DateTime.fromISO(query.end, { zone: "utc" });
-
-		for (const cached of this.cache.values()) {
-			const { template: event } = cached;
-			if (this.eventIntersectsRange(event, queryStart, queryEnd)) {
-				results.push(event);
-			}
-		}
 		const virtualEvents = await this.recurringEventManager.generateAllVirtualInstances(queryStart, queryEnd);
 		results.push(...virtualEvents);
 
@@ -123,6 +116,21 @@ export class EventStore extends DebouncedNotifier {
 	async getNonSkippedEvents(query: EventQuery): Promise<ParsedEvent[]> {
 		const allEvents = await this.getEvents(query);
 		return allEvents.filter((event) => !event.skipped);
+	}
+
+	async getPhysicalEvents(query: EventQuery): Promise<ParsedEvent[]> {
+		const results: ParsedEvent[] = [];
+		const queryStart = DateTime.fromISO(query.start, { zone: "utc" });
+		const queryEnd = DateTime.fromISO(query.end, { zone: "utc" });
+
+		for (const cached of this.cache.values()) {
+			const { template: event } = cached;
+			if (this.eventIntersectsRange(event, queryStart, queryEnd)) {
+				results.push(event);
+			}
+		}
+
+		return results.sort((a, b) => a.start.localeCompare(b.start));
 	}
 
 	clear(): void {

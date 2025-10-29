@@ -122,6 +122,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.SHOW_FILTERED_EVENTS, "Show filtered events", (view) =>
 			view.showFilteredEventsModal()
 		);
+		addCalendarViewCommand(COMMAND_IDS.GLOBAL_SEARCH, "Global event search", (view) => view.showGlobalSearchModal());
 		addCalendarViewCommand(COMMAND_IDS.FOCUS_SEARCH, "Focus search", (view) => view.focusSearch());
 		addCalendarViewCommand(COMMAND_IDS.FOCUS_EXPRESSION_FILTER, "Focus expression filter", (view) =>
 			view.focusExpressionFilter()

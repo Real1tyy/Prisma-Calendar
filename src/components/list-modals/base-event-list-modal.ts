@@ -16,9 +16,9 @@ export interface EventListAction {
 }
 
 export abstract class BaseEventListModal extends Modal {
-	private searchInput: HTMLInputElement | null = null;
-	private listContainer: HTMLElement | null = null;
-	private filteredItems: EventListItem[] = [];
+	protected searchInput: HTMLInputElement | null = null;
+	protected listContainer: HTMLElement | null = null;
+	protected filteredItems: EventListItem[] = [];
 	protected items: EventListItem[] = [];
 
 	// Abstract methods that subclasses must implement
@@ -79,7 +79,7 @@ export abstract class BaseEventListModal extends Modal {
 		this.renderItems();
 	}
 
-	private registerHotkeys(): void {
+	protected registerHotkeys(): void {
 		// Register Ctrl/Cmd+F to focus search
 		this.scope.register(["Mod"], "f", (evt) => {
 			evt.preventDefault();
@@ -121,7 +121,7 @@ export abstract class BaseEventListModal extends Modal {
 		}
 	}
 
-	private filterItems(searchText: string): void {
+	protected filterItems(searchText: string): void {
 		const normalizedSearch = searchText.toLowerCase().trim();
 
 		if (!normalizedSearch) {
@@ -136,7 +136,7 @@ export abstract class BaseEventListModal extends Modal {
 		this.renderItems();
 	}
 
-	private renderItems(): void {
+	protected renderItems(): void {
 		if (!this.listContainer) return;
 
 		this.listContainer.empty();
@@ -154,7 +154,7 @@ export abstract class BaseEventListModal extends Modal {
 		}
 	}
 
-	private createEventItem(container: HTMLElement, item: EventListItem): void {
+	protected createEventItem(container: HTMLElement, item: EventListItem): void {
 		const itemEl = container.createEl("div", { cls: "generic-event-list-item" });
 
 		// Event info
