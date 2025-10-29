@@ -51,8 +51,9 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Default fallback** - Set a default color for events that don't match any rule
 - **Live updates** - Color changes reflect immediately as you edit rules
 
-### **Advanced Filtering**
-- **Search bar** - Quick text-based filtering by event title
+### **Advanced Filtering & Search**
+- **Global event search** - Search across all events in calendar with cycle filters for recurring, all-day, and skipped events
+- **Search bar** - Quick text-based filtering by event title in calendar view
 - **Expression filter** - Use property names directly to show/hide events
 - **Filter presets** - Save and reuse common filter expressions
 - **Filtered events modal** - See what's being hidden by active filters
@@ -229,6 +230,7 @@ fm.Project === 'Work' || fm.Tags?.includes('work')
 2. **[Quickstart](../quickstart)** - Basic setup and first calendar
 3. **[Configuration](../configuration)** - Deep dive into customization
 4. **[Notifications](./notifications)** - Set up event alerts and reminders
-5. **[Filtering](./filtering)** - Master search and filter expressions
-6. **[Recurring Events](./recurring-dsl)** - Master recurring event patterns
-7. **[Batch Operations](./batch-operations)** - Learn efficiency workflows
+5. **[Global Search](./global-search)** - Search and navigate all events
+6. **[Filtering](./filtering)** - Master search and filter expressions
+7. **[Recurring Events](./recurring-dsl)** - Master recurring event patterns
+8. **[Batch Operations](./batch-operations)** - Learn efficiency workflows

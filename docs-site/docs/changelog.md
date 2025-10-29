@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented here.
 
+## 1.5.0
+
+### New Features
+
+#### Global Event Search
+- **Search All Events**: New global search modal that searches across all events in the current calendar. Access via command palette or hotkey.
+- **Quick Filtering**: Three cycle-filter buttons for recurring, all-day, and skipped events. Each button cycles through: show all → only this type → skip this type.
+- **Event Details**: See event type (timed/all-day/recurring), date/time ranges, and recurring indicators at a glance.
+- **Quick Actions**: Open event files or navigate the calendar to the event's week directly from search results.
+
 ## 1.4.0
 
 ### New Features
