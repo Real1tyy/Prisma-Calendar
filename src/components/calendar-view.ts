@@ -5,7 +5,7 @@ import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
 import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
-import { ItemView, TFile, type WorkspaceLeaf } from "obsidian";
+import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
 import type { SingleCalendarConfig } from "../types/index";
@@ -29,6 +29,7 @@ import {
 	SkippedEventsModal,
 } from "./list-modals";
 import { SearchFilterManager } from "./search-filter-manager";
+import { WeeklyStatsModal } from "./weekly-stats-modal";
 import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";
@@ -52,6 +53,7 @@ export class CalendarView extends MountableView(ItemView) {
 	private disabledRecurringEventsModal: DisabledRecurringEventsModal | null = null;
 	private filteredEventsModal: FilteredEventsModal | null = null;
 	private globalSearchModal: GlobalSearchModal | null = null;
+	private weeklyStatsModal: WeeklyStatsModal | null = null;
 	private filteredEvents: Array<{ filePath: string; title: string; start: string; end?: string; allDay: boolean }> = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
@@ -181,10 +183,18 @@ export class CalendarView extends MountableView(ItemView) {
 				className: "batch-action-btn skip-btn",
 			};
 		} else {
-			headerToolbar.right = `filteredEvents disabledRecurringEvents skippedEvents batchSelect ${viewSwitchers}`;
+			headerToolbar.right = `globalSearch weeklyStats filteredEvents disabledRecurringEvents skippedEvents batchSelect ${viewSwitchers}`;
 			customButtons.batchSelect = {
 				text: "Batch Select",
 				click: () => this.toggleBatchSelection(),
+			};
+			customButtons.globalSearch = {
+				text: "Global Search",
+				click: () => this.showGlobalSearchModal(),
+			};
+			customButtons.weeklyStats = {
+				text: "Weekly Stats",
+				click: () => this.showWeeklyStatsModal(),
 			};
 			// Preserve button text from previous update (important for batch mode toggle)
 			const currentFilteredButton = this.calendar.getOption("customButtons")?.filteredEvents;
@@ -329,97 +339,112 @@ export class CalendarView extends MountableView(ItemView) {
 		}, 0);
 	}
 
+	private async toggleModal<T extends Modal>(
+		getCurrentModal: () => T | null,
+		setModal: (modal: T | null) => void,
+		modalFactory: () => Promise<T> | T
+	): Promise<void> {
+		const currentModal = getCurrentModal();
+
+		if (currentModal) {
+			setModal(null);
+			currentModal.close();
+			return;
+		}
+
+		const modal = await modalFactory();
+		setModal(modal);
+
+		const originalOnClose = modal.onClose.bind(modal);
+		modal.onClose = () => {
+			originalOnClose();
+			setModal(null);
+		};
+
+		modal.open();
+	}
+
 	async showSkippedEventsModal(): Promise<void> {
-		if (this.skippedEventsModal) {
-			const modalToClose = this.skippedEventsModal;
-			this.skippedEventsModal = null;
-			modalToClose.close();
-			return;
-		}
+		await this.toggleModal(
+			() => this.skippedEventsModal,
+			(modal) => {
+				this.skippedEventsModal = modal;
+			},
+			async () => {
+				if (!this.calendar) throw new Error("Calendar not initialized");
 
-		if (!this.calendar) return;
+				const view = this.calendar.view;
+				if (!view) throw new Error("Calendar view not available");
 
-		const view = this.calendar.view;
-		if (!view) return;
+				const start = view.activeStart.toISOString();
+				const end = view.activeEnd.toISOString();
+				const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
 
-		const start = view.activeStart.toISOString();
-		const end = view.activeEnd.toISOString();
-		const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
-
-		this.skippedEventsModal = new SkippedEventsModal(this.app, this.bundle, skippedEvents);
-
-		const modal = this.skippedEventsModal;
-		const originalOnClose = modal.onClose.bind(modal);
-		modal.onClose = () => {
-			originalOnClose();
-			this.skippedEventsModal = null;
-		};
-
-		modal.open();
+				return new SkippedEventsModal(this.app, this.bundle, skippedEvents);
+			}
+		);
 	}
 
-	showDisabledRecurringEventsModal(): void {
-		if (this.disabledRecurringEventsModal) {
-			const modalToClose = this.disabledRecurringEventsModal;
-			this.disabledRecurringEventsModal = null;
-			modalToClose.close();
-			return;
-		}
-
-		const disabledEvents = this.bundle.recurringEventManager.getDisabledRecurringEvents();
-
-		this.disabledRecurringEventsModal = new DisabledRecurringEventsModal(this.app, this.bundle, disabledEvents);
-
-		const modal = this.disabledRecurringEventsModal;
-		const originalOnClose = modal.onClose.bind(modal);
-		modal.onClose = () => {
-			originalOnClose();
-			this.disabledRecurringEventsModal = null;
-			// Refresh the button count when modal closes
-			this.updateDisabledRecurringEventsButton();
-		};
-
-		modal.open();
+	async showDisabledRecurringEventsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.disabledRecurringEventsModal,
+			(modal) => {
+				this.disabledRecurringEventsModal = modal;
+				// Refresh the button count when modal closes
+				if (!modal) {
+					this.updateDisabledRecurringEventsButton();
+				}
+			},
+			() => {
+				const disabledEvents = this.bundle.recurringEventManager.getDisabledRecurringEvents();
+				return new DisabledRecurringEventsModal(this.app, this.bundle, disabledEvents);
+			}
+		);
 	}
 
-	showFilteredEventsModal(): void {
-		if (this.filteredEventsModal) {
-			const modalToClose = this.filteredEventsModal;
-			this.filteredEventsModal = null;
-			modalToClose.close();
-			return;
-		}
-
-		this.filteredEventsModal = new FilteredEventsModal(this.app, this.filteredEvents);
-
-		const modal = this.filteredEventsModal;
-		const originalOnClose = modal.onClose.bind(modal);
-		modal.onClose = () => {
-			originalOnClose();
-			this.filteredEventsModal = null;
-		};
-
-		modal.open();
+	async showFilteredEventsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.filteredEventsModal,
+			(modal) => {
+				this.filteredEventsModal = modal;
+			},
+			() => new FilteredEventsModal(this.app, this.filteredEvents)
+		);
 	}
 
-	showGlobalSearchModal(): void {
-		if (this.globalSearchModal) {
-			const modalToClose = this.globalSearchModal;
-			this.globalSearchModal = null;
-			modalToClose.close();
-			return;
-		}
+	async showGlobalSearchModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.globalSearchModal,
+			(modal) => {
+				this.globalSearchModal = modal;
+			},
+			() => new GlobalSearchModal(this.app, this.bundle, this)
+		);
+	}
 
-		this.globalSearchModal = new GlobalSearchModal(this.app, this.bundle, this);
+	async showWeeklyStatsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.weeklyStatsModal,
+			(modal) => {
+				this.weeklyStatsModal = modal;
+			},
+			async () => {
+				const currentDate = this.calendar?.getDate() || new Date();
 
-		const modal = this.globalSearchModal;
-		const originalOnClose = modal.onClose.bind(modal);
-		modal.onClose = () => {
-			originalOnClose();
-			this.globalSearchModal = null;
-		};
+				// Get events from 1 year ago to 1 year in future to cover a reasonable range
+				const oneYearAgo = new Date(currentDate);
+				oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+				const oneYearLater = new Date(currentDate);
+				oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
 
-		modal.open();
+				const allEvents = await this.bundle.eventStore.getEvents({
+					start: oneYearAgo.toISOString(),
+					end: oneYearLater.toISOString(),
+				});
+
+				return new WeeklyStatsModal(this.app, allEvents, currentDate);
+			}
+		);
 	}
 
 	navigateToDate(date: Date, viewType?: string): void {

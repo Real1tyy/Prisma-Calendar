@@ -43,14 +43,35 @@ describe("ZettelID Utilities", () => {
 	});
 
 	describe("removeZettelId", () => {
-		it("should remove ZettelID from filename", () => {
+		it("should remove ZettelID with hyphen from filename", () => {
 			const result = removeZettelId("Meeting Notes-20250106120000");
 			expect(result).toBe("Meeting Notes");
 		});
 
-		it("should return original filename if no ZettelID", () => {
+		it("should remove space-separated ZettelID from filename", () => {
+			const result = removeZettelId("Gym 20250203140530");
+			expect(result).toBe("Gym");
+		});
+
+		it("should remove ISO date formats", () => {
+			const result = removeZettelId("Meeting - 2025-02-03");
+			expect(result).toBe("Meeting");
+			const result2 = removeZettelId("Event - 2025-02-03 14:00");
+			expect(result2).toBe("Event");
+		});
+
+		it("should remove trailing timestamps (8+ digits)", () => {
+			const result = removeZettelId("Task 20250203");
+			expect(result).toBe("Task");
+			const result2 = removeZettelId("Event 123456789");
+			expect(result2).toBe("Event");
+		});
+
+		it("should return original filename if no ZettelID or timestamp", () => {
 			const result = removeZettelId("Meeting Notes");
 			expect(result).toBe("Meeting Notes");
+			const result2 = removeZettelId("Recurring Event");
+			expect(result2).toBe("Recurring Event");
 		});
 
 		it("should handle multiple hyphens correctly", () => {
@@ -63,9 +84,19 @@ describe("ZettelID Utilities", () => {
 			expect(result).toBe("Meeting-2025");
 		});
 
+		it("should handle multiple spaces before timestamp", () => {
+			const result = removeZettelId("Event   20250203140530");
+			expect(result).toBe("Event");
+		});
+
 		it("should handle empty string", () => {
 			const result = removeZettelId("");
 			expect(result).toBe("");
+		});
+
+		it("should trim result after stripping", () => {
+			const result = removeZettelId("Event  20250203140530");
+			expect(result).toBe("Event");
 		});
 	});
 

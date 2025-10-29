@@ -2681,3 +2681,127 @@
 	margin-top: 0.25rem;
 	line-height: 1.4;
 }
+
+/* ===================================
+   Weekly Statistics Modal
+   =================================== */
+
+.prisma-weekly-stats-modal .modal {
+	max-width: 900px;
+	width: 90vw;
+}
+
+.prisma-stats-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.prisma-stats-week-label {
+	font-size: var(--font-ui-large);
+	font-weight: var(--font-weight-bold);
+	color: var(--text-normal);
+	flex: 1;
+	text-align: center;
+}
+
+.prisma-stats-nav-button {
+	background-color: var(--interactive-normal);
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+	padding: 0.5rem 1rem;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+	transition: background-color 0.2s;
+}
+
+.prisma-stats-nav-button:hover {
+	background-color: var(--interactive-hover);
+}
+
+.prisma-stats-summary {
+	margin-bottom: 1.5rem;
+	padding: 1rem;
+	background-color: var(--background-secondary);
+	border-radius: var(--radius-m);
+}
+
+.prisma-stats-summary h3 {
+	margin: 0 0 0.75rem 0;
+	font-size: var(--font-ui-medium);
+	color: var(--text-normal);
+}
+
+.prisma-stats-total,
+.prisma-stats-count {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	margin-bottom: 0.25rem;
+}
+
+.prisma-stats-empty {
+	text-align: center;
+	padding: 2rem;
+	color: var(--text-muted);
+	font-size: var(--font-ui-medium);
+}
+
+.prisma-stats-chart-container {
+	margin-bottom: 2rem;
+	padding: 1rem;
+	background-color: var(--background-secondary);
+	border-radius: var(--radius-m);
+}
+
+.prisma-stats-chart-container canvas {
+	max-height: 400px;
+}
+
+.prisma-stats-table-container {
+	margin-top: 1.5rem;
+}
+
+.prisma-stats-table-container h3 {
+	margin: 0 0 1rem 0;
+	font-size: var(--font-ui-medium);
+	color: var(--text-normal);
+}
+
+.prisma-stats-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--font-ui-small);
+}
+
+.prisma-weekly-stats-modal .prisma-stats-table th {
+	text-align: left;
+	padding: 0.75rem;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-weight: var(--font-weight-medium);
+	border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.prisma-weekly-stats-modal .prisma-stats-table td {
+	padding: 0.75rem;
+	border-bottom: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+}
+
+.prisma-stats-table tr:last-child td {
+	border-bottom: none;
+}
+
+.prisma-stats-table tr:hover {
+	background-color: var(--background-secondary-alt);
+}
+
+.prisma-stats-recurring {
+	font-style: italic;
+	color: var(--text-accent);
+}

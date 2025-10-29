@@ -26,6 +26,7 @@ export const COMMAND_IDS = {
 	BATCH_MOVE_NEXT_WEEK: "batch-move-next-week",
 	BATCH_MOVE_PREV_WEEK: "batch-move-prev-week",
 	OPEN_CURRENT_NOTE_IN_CALENDAR: "open-current-note-in-calendar",
+	SHOW_WEEKLY_STATS: "show-weekly-stats",
 } as const;
 
 export const FULL_COMMAND_IDS = Object.fromEntries(

@@ -75,10 +75,26 @@ export const extractZettelId = (text: string): string | null => {
 };
 
 /**
- * Removes ZettelID from a filename or title for display purposes.
+ * Removes ZettelID and other timestamp-based identifiers from a filename or title for display purposes.
+ * Handles multiple formats:
+ * - Zettel ID format (14 digits): "Event-20250203140530" -> "Event"
+ * - Space-separated timestamps: "Event 20250203140530" -> "Event"
+ * - ISO date formats: "Event - 2025-02-03" -> "Event"
+ * - Trailing timestamps: "Event 123456789" -> "Event"
  */
 export const removeZettelId = (text: string): string => {
-	return text.replace(/-\d{14}$/, "");
+	return (
+		text
+			// Strip Zettel ID format with hyphen (14 digits)
+			.replace(/-\d{14}$/, "")
+			// Strip space-separated Zettel ID (14 digits)
+			.replace(/\s+\d{14}$/, "")
+			// Strip ISO date formats
+			.replace(/\s+-\s+\d{4}-\d{2}-\d{2}.*$/, "")
+			// Strip trailing timestamps (8+ digits)
+			.replace(/\s+\d{8,}$/, "")
+			.trim()
+	);
 };
 
 /**
