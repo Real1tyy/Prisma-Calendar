@@ -2877,3 +2877,39 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	font-style: italic;
 	color: var(--text-accent);
 }
+
+/* Pagination Styles */
+.prisma-stats-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	margin-top: 1rem;
+	padding: 0.75rem;
+}
+
+.prisma-stats-pagination-button {
+	padding: 0.5rem 1rem;
+	background-color: var(--interactive-normal);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+	transition: background-color 0.2s;
+}
+
+.prisma-stats-pagination-button:hover:not(:disabled) {
+	background-color: var(--interactive-hover);
+}
+
+.prisma-stats-pagination-button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.prisma-stats-pagination-info {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	white-space: nowrap;
+}
