@@ -578,7 +578,7 @@ describe("aggregateWeeklyStats", () => {
 		expect(stats.entries[0].name).toBe("Timed Event");
 	});
 
-	it("should group recurring events together", () => {
+	it("should group recurring events by their actual title", () => {
 		const events: ParsedEvent[] = [
 			{
 				id: "1",
@@ -617,10 +617,10 @@ describe("aggregateWeeklyStats", () => {
 
 		expect(stats.entries).toHaveLength(2);
 
-		const recurringEntry = stats.entries.find((e) => e.name === "Recurring Events");
-		expect(recurringEntry).toBeDefined();
-		expect(recurringEntry?.count).toBe(2);
-		expect(recurringEntry?.isRecurring).toBe(true);
+		const standupEntry = stats.entries.find((e) => e.name === "Daily Standup");
+		expect(standupEntry).toBeDefined();
+		expect(standupEntry?.count).toBe(2);
+		expect(standupEntry?.isRecurring).toBe(true);
 
 		const normalEntry = stats.entries.find((e) => e.name === "Meeting");
 		expect(normalEntry).toBeDefined();
@@ -721,7 +721,7 @@ describe("aggregateWeeklyStats", () => {
 		expect(stats.entries[0].duration).toBe(60 * 60 * 1000);
 	});
 
-	it("should not group recurring and non-recurring events with same name", () => {
+	it("should group all events by their cleaned title regardless of virtual status", () => {
 		const events: ParsedEvent[] = [
 			{
 				id: "1",
@@ -748,14 +748,11 @@ describe("aggregateWeeklyStats", () => {
 		const date = new Date("2025-02-05");
 		const stats = aggregateWeeklyStats(events, date);
 
-		expect(stats.entries).toHaveLength(2);
-		const recurringEntry = stats.entries.find((e) => e.isRecurring);
-		const normalEntry = stats.entries.find((e) => !e.isRecurring);
-
-		expect(recurringEntry).toBeDefined();
-		expect(recurringEntry?.name).toBe("Recurring Events");
-		expect(normalEntry).toBeDefined();
-		expect(normalEntry?.name).toBe("Daily Standup");
+		// Both should be grouped under "Daily Standup" regardless of virtual status
+		expect(stats.entries).toHaveLength(1);
+		expect(stats.entries[0].name).toBe("Daily Standup");
+		expect(stats.entries[0].count).toBe(2);
+		expect(stats.entries[0].duration).toBe(30 * 60 * 1000); // 30 minutes total
 	});
 
 	it("should handle events with zero duration", () => {
@@ -818,9 +815,10 @@ describe("aggregateWeeklyStats", () => {
 
 		expect(stats.entries).toHaveLength(2);
 
-		const recurringEntry = stats.entries.find((e) => e.isRecurring);
-		expect(recurringEntry?.name).toBe("Recurring Events");
-		expect(recurringEntry?.count).toBe(2);
+		// Virtual events are now grouped by their actual title
+		const standupEntry = stats.entries.find((e) => e.name === "Standup");
+		expect(standupEntry?.count).toBe(2);
+		expect(standupEntry?.isRecurring).toBe(true); // Marked as recurring since they're virtual
 
 		const gymEntry = stats.entries.find((e) => e.name === "Gym");
 		expect(gymEntry?.count).toBe(1);

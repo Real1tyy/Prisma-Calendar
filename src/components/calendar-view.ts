@@ -29,7 +29,7 @@ import {
 	SkippedEventsModal,
 } from "./list-modals";
 import { SearchFilterManager } from "./search-filter-manager";
-import { WeeklyStatsModal } from "./weekly-stats-modal";
+import { WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";

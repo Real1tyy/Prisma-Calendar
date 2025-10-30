@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 import {
 	ensureFileHasZettelId,
+	extractNotesCoreName,
 	extractZettelId,
 	generateUniqueEventPath,
 	generateUniqueZettelId,
@@ -42,6 +43,134 @@ describe("ZettelID Utilities", () => {
 		});
 	});
 
+	describe("extractNotesCoreName", () => {
+		it("should remove ZettelID with hyphen from filename", () => {
+			const result = extractNotesCoreName("Meeting Notes-20250106120000");
+			expect(result).toBe("Meeting Notes");
+		});
+
+		it("should remove space-separated ZettelID from filename", () => {
+			const result = extractNotesCoreName("Gym 20250203140530");
+			expect(result).toBe("Gym");
+		});
+
+		it("should remove ISO date formats", () => {
+			const result = extractNotesCoreName("Meeting - 2025-02-03");
+			expect(result).toBe("Meeting");
+			const result2 = extractNotesCoreName("Event - 2025-02-03 14:00");
+			expect(result2).toBe("Event");
+		});
+
+		it("should remove trailing timestamps (8+ digits)", () => {
+			const result = extractNotesCoreName("Task 20250203");
+			expect(result).toBe("Task");
+			const result2 = extractNotesCoreName("Event 123456789");
+			expect(result2).toBe("Event");
+		});
+
+		it("should return original filename if no ZettelID or timestamp", () => {
+			const result = extractNotesCoreName("Meeting Notes");
+			expect(result).toBe("Meeting Notes");
+			const result2 = extractNotesCoreName("Recurring Event");
+			expect(result2).toBe("Recurring Event");
+		});
+
+		it("should handle multiple hyphens correctly", () => {
+			const result = extractNotesCoreName("My-Important-Meeting-20250106120000");
+			expect(result).toBe("My-Important-Meeting");
+		});
+
+		it("should not remove partial number sequences", () => {
+			const result = extractNotesCoreName("Meeting-2025");
+			expect(result).toBe("Meeting-2025");
+		});
+
+		it("should handle multiple spaces before timestamp", () => {
+			const result = extractNotesCoreName("Event   20250203140530");
+			expect(result).toBe("Event");
+		});
+
+		it("should handle empty string", () => {
+			const result = extractNotesCoreName("");
+			expect(result).toBe("");
+		});
+
+		it("should trim result after stripping", () => {
+			const result = extractNotesCoreName("Event  20250203140530");
+			expect(result).toBe("Event");
+		});
+
+		it("should remove ISO date suffix without dash separator", () => {
+			const result = extractNotesCoreName("Go To The Gym 2025-10-29");
+			expect(result).toBe("Go To The Gym");
+			const result2 = extractNotesCoreName("Go To The Gym 2025-10-31");
+			expect(result2).toBe("Go To The Gym");
+		});
+
+		it("should handle various date-suffixed event names", () => {
+			expect(extractNotesCoreName("Thai Boxing 2025-10-28")).toBe("Thai Boxing");
+			expect(extractNotesCoreName("Sauna 2025-11-02")).toBe("Sauna");
+			expect(extractNotesCoreName("Mid Week Sprint Sync 2025-10-30")).toBe("Mid Week Sprint Sync");
+		});
+
+		it("should not remove date from middle of string", () => {
+			const result = extractNotesCoreName("Event 2025-10-29 Important");
+			expect(result).toBe("Event 2025-10-29 Important");
+		});
+
+		it("should handle edge case with only date", () => {
+			const result = extractNotesCoreName("2025-10-29");
+			expect(result).toBe("2025-10-29");
+		});
+
+		it("should remove kebab-case date suffix", () => {
+			expect(extractNotesCoreName("mid-sprint-sync-2025-10-28")).toBe("mid-sprint-sync");
+			expect(extractNotesCoreName("weekly-standup-2025-11-02")).toBe("weekly-standup");
+			expect(extractNotesCoreName("team-meeting-2025-12-31")).toBe("team-meeting");
+		});
+
+		it("should handle multiple hyphens with date suffix", () => {
+			const result = extractNotesCoreName("my-very-long-event-name-2025-10-30");
+			expect(result).toBe("my-very-long-event-name");
+		});
+
+		it("should not remove date from middle of kebab-case string", () => {
+			const result = extractNotesCoreName("event-2025-10-29-important");
+			expect(result).toBe("event-2025-10-29-important");
+		});
+
+		it("should remove day abbreviations", () => {
+			expect(extractNotesCoreName("Thai Box Tue")).toBe("Thai Box");
+			expect(extractNotesCoreName("Meeting Mon")).toBe("Meeting");
+			expect(extractNotesCoreName("Workout Wed")).toBe("Workout");
+			expect(extractNotesCoreName("Gym Thu")).toBe("Gym");
+			expect(extractNotesCoreName("Dinner Fri")).toBe("Dinner");
+			expect(extractNotesCoreName("Party Sat")).toBe("Party");
+			expect(extractNotesCoreName("Brunch Sun")).toBe("Brunch");
+		});
+
+		it("should remove full day names", () => {
+			expect(extractNotesCoreName("Thai Box Monday")).toBe("Thai Box");
+			expect(extractNotesCoreName("Meeting Tuesday")).toBe("Meeting");
+			expect(extractNotesCoreName("Workout Wednesday")).toBe("Workout");
+			expect(extractNotesCoreName("Gym Thursday")).toBe("Gym");
+			expect(extractNotesCoreName("Dinner Friday")).toBe("Dinner");
+			expect(extractNotesCoreName("Party Saturday")).toBe("Party");
+			expect(extractNotesCoreName("Brunch Sunday")).toBe("Brunch");
+		});
+
+		it("should handle case-insensitive day names", () => {
+			expect(extractNotesCoreName("Event tue")).toBe("Event");
+			expect(extractNotesCoreName("Event TUESDAY")).toBe("Event");
+			expect(extractNotesCoreName("Event TuEsDaY")).toBe("Event");
+		});
+
+		it("should not remove day names from middle of string", () => {
+			const result = extractNotesCoreName("Tuesday Meeting Tomorrow");
+			expect(result).toBe("Tuesday Meeting Tomorrow");
+		});
+	});
+
 	describe("removeZettelId", () => {
 		it("should remove ZettelID with hyphen from filename", () => {
 			const result = removeZettelId("Meeting Notes-20250106120000");
@@ -53,40 +182,14 @@ describe("ZettelID Utilities", () => {
 			expect(result).toBe("Gym");
 		});
 
-		it("should remove ISO date formats", () => {
-			const result = removeZettelId("Meeting - 2025-02-03");
-			expect(result).toBe("Meeting");
-			const result2 = removeZettelId("Event - 2025-02-03 14:00");
-			expect(result2).toBe("Event");
-		});
-
-		it("should remove trailing timestamps (8+ digits)", () => {
-			const result = removeZettelId("Task 20250203");
-			expect(result).toBe("Task");
-			const result2 = removeZettelId("Event 123456789");
-			expect(result2).toBe("Event");
-		});
-
-		it("should return original filename if no ZettelID or timestamp", () => {
+		it("should return original filename if no ZettelID", () => {
 			const result = removeZettelId("Meeting Notes");
 			expect(result).toBe("Meeting Notes");
-			const result2 = removeZettelId("Recurring Event");
-			expect(result2).toBe("Recurring Event");
 		});
 
 		it("should handle multiple hyphens correctly", () => {
 			const result = removeZettelId("My-Important-Meeting-20250106120000");
 			expect(result).toBe("My-Important-Meeting");
-		});
-
-		it("should not remove partial number sequences", () => {
-			const result = removeZettelId("Meeting-2025");
-			expect(result).toBe("Meeting-2025");
-		});
-
-		it("should handle multiple spaces before timestamp", () => {
-			const result = removeZettelId("Event   20250203140530");
-			expect(result).toBe("Event");
 		});
 
 		it("should handle empty string", () => {
@@ -99,43 +202,11 @@ describe("ZettelID Utilities", () => {
 			expect(result).toBe("Event");
 		});
 
-		it("should remove ISO date suffix without dash separator", () => {
-			const result = removeZettelId("Go To The Gym 2025-10-29");
-			expect(result).toBe("Go To The Gym");
-			const result2 = removeZettelId("Go To The Gym 2025-10-31");
-			expect(result2).toBe("Go To The Gym");
-		});
-
-		it("should handle various date-suffixed event names", () => {
-			expect(removeZettelId("Thai Boxing 2025-10-28")).toBe("Thai Boxing");
-			expect(removeZettelId("Sauna 2025-11-02")).toBe("Sauna");
-			expect(removeZettelId("Mid Week Sprint Sync 2025-10-30")).toBe("Mid Week Sprint Sync");
-		});
-
-		it("should not remove date from middle of string", () => {
-			const result = removeZettelId("Event 2025-10-29 Important");
-			expect(result).toBe("Event 2025-10-29 Important");
-		});
-
-		it("should handle edge case with only date", () => {
-			const result = removeZettelId("2025-10-29");
-			expect(result).toBe("2025-10-29");
-		});
-
-		it("should remove kebab-case date suffix", () => {
-			expect(removeZettelId("mid-sprint-sync-2025-10-28")).toBe("mid-sprint-sync");
-			expect(removeZettelId("weekly-standup-2025-11-02")).toBe("weekly-standup");
-			expect(removeZettelId("team-meeting-2025-12-31")).toBe("team-meeting");
-		});
-
-		it("should handle multiple hyphens with date suffix", () => {
-			const result = removeZettelId("my-very-long-event-name-2025-10-30");
-			expect(result).toBe("my-very-long-event-name");
-		});
-
-		it("should not remove date from middle of kebab-case string", () => {
-			const result = removeZettelId("event-2025-10-29-important");
-			expect(result).toBe("event-2025-10-29-important");
+		it("should NOT remove dates or day names (simpler than extractNotesCoreName)", () => {
+			// removeZettelId only removes 14-digit ZettelIDs, nothing else
+			expect(removeZettelId("Thai Box Tue")).toBe("Thai Box Tue");
+			expect(removeZettelId("Event 2025-10-29")).toBe("Event 2025-10-29");
+			expect(removeZettelId("mid-sprint-sync-2025-10-28")).toBe("mid-sprint-sync-2025-10-28");
 		});
 	});
 

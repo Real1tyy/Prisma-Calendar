@@ -16,5 +16,5 @@ export { NotificationModal } from "./notification-modal";
 export { SearchFilterManager } from "./search-filter-manager";
 export { CustomCalendarSettingsTab } from "./settings/settings-tab";
 export { SingleCalendarSettings } from "./settings/single-calendar-settings";
-export { WeeklyStatsModal } from "./weekly-stats-modal";
+export { WeeklyStatsModal } from "./weekly-stats";
 export { ZoomManager } from "./zoom-manager";

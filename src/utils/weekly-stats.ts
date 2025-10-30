@@ -1,5 +1,5 @@
 import type { ParsedEvent } from "../core/parser";
-import { removeZettelId } from "./calendar-events";
+import { extractNotesCoreName } from "./calendar-events";
 
 export interface WeeklyStatEntry {
 	name: string;
@@ -88,7 +88,7 @@ export function aggregateWeeklyStats(events: ParsedEvent[], weekDate: Date): Wee
 	const groups = new Map<string, { duration: number; count: number; isRecurring: boolean }>();
 
 	for (const event of timedEvents) {
-		const groupKey = removeZettelId(event.title);
+		const groupKey = extractNotesCoreName(event.title);
 		const isRecurring = event.isVirtual;
 
 		const duration = getEventDuration(event);

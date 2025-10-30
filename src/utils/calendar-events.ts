@@ -74,17 +74,31 @@ export const extractZettelId = (text: string): string | null => {
 	return match ? match[1] : null;
 };
 
+export const removeZettelId = (text: string): string => {
+	return (
+		text
+			// Strip Zettel ID format with hyphen (14 digits)
+			.replace(/-\d{14}$/, "")
+			// Strip space-separated Zettel ID (14 digits)
+			.replace(/\s+\d{14}$/, "")
+			.trim()
+	);
+};
+
 /**
- * Removes ZettelID and other timestamp-based identifiers from a filename or title for display purposes.
+ * Extracts the core name from a note title by removing timestamps, dates, and day suffixes.
+ * This groups related events together by their base name for aggregation and display.
+ *
  * Handles multiple formats:
  * - Zettel ID format (14 digits): "Event-20250203140530" -> "Event"
  * - Space-separated timestamps: "Event 20250203140530" -> "Event"
  * - ISO date formats: "Event - 2025-02-03" -> "Event"
  * - ISO date suffix: "Go To The Gym 2025-10-29" -> "Go To The Gym"
  * - Kebab-case date suffix: "mid-sprint-sync-2025-10-28" -> "mid-sprint-sync"
+ * - Day names: "Thai Box Tue" -> "Thai Box", "Meeting Monday" -> "Meeting"
  * - Trailing timestamps: "Event 123456789" -> "Event"
  */
-export const removeZettelId = (text: string): string => {
+export const extractNotesCoreName = (text: string): string => {
 	return (
 		text
 			// Strip Zettel ID format with hyphen (14 digits)
@@ -97,6 +111,10 @@ export const removeZettelId = (text: string): string => {
 			.replace(/\s+\d{4}-\d{2}-\d{2}$/, "")
 			// Strip kebab-case date suffix "-YYYY-MM-DD"
 			.replace(/-\d{4}-\d{2}-\d{2}$/, "")
+			// Strip day abbreviations (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
+			.replace(/\s+(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/i, "")
+			// Strip full day names (Monday, Tuesday, etc.)
+			.replace(/\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$/i, "")
 			// Strip trailing timestamps (8+ digits)
 			.replace(/\s+\d{8,}$/, "")
 			.trim()
