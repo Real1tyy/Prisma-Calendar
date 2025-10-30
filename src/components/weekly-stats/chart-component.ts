@@ -51,7 +51,6 @@ export class ChartComponent {
 		const labels = limitedEntries.map((e) => e.name);
 		const data = limitedEntries.map((e) => e.duration);
 
-
 		this.chart = new Chart(canvas, {
 			type: "pie",
 			data: {
@@ -68,10 +67,17 @@ export class ChartComponent {
 			options: {
 				responsive: true,
 				maintainAspectRatio: false,
+				layout: {
+					padding: {
+						left: 20,
+						right: 20,
+					},
+				},
 				plugins: {
 					legend: {
 						position: "right",
 						align: "start",
+						maxWidth: 350,
 						labels: {
 							font: {
 								size: 14,
@@ -86,8 +92,9 @@ export class ChartComponent {
 									chart.data.labels?.map((label, i) => {
 										const value = datasets[0].data[i] as number;
 										const percentage = ((value / totalDuration) * 100).toFixed(1);
+										const labelText = `${label} (${percentage}%)`;
 										return {
-											text: `${label} (${percentage}%)`,
+											text: labelText.length > 35 ? `${labelText.substring(0, 32)}...` : labelText,
 											fillStyle: (datasets[0].backgroundColor as string[])[i],
 											fontColor: "#ffffff",
 											hidden: false,

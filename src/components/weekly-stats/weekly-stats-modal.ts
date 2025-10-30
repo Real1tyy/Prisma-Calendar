@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import { Modal } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { aggregateWeeklyStats, getWeekBounds } from "../../utils/weekly-stats";
+import { aggregateWeeklyStats, formatDuration, getWeekBounds } from "../../utils/weekly-stats";
 import { ChartComponent } from "./chart-component";
 import { TableComponent } from "./table-component";
 
@@ -22,6 +22,31 @@ export class WeeklyStatsModal extends Modal {
 		contentEl.empty();
 		contentEl.addClass("prisma-weekly-stats-modal");
 
+		this.setupKeyboardShortcuts();
+		await this.renderContent();
+	}
+
+	private setupKeyboardShortcuts(): void {
+		this.scope.register([], "ArrowLeft", async () => {
+			await this.navigatePreviousWeek();
+			return false;
+		});
+
+		this.scope.register([], "ArrowRight", async () => {
+			await this.navigateNextWeek();
+			return false;
+		});
+	}
+
+	private async navigatePreviousWeek(): Promise<void> {
+		this.currentWeekDate.setDate(this.currentWeekDate.getDate() - 7);
+		this.destroyComponents();
+		await this.renderContent();
+	}
+
+	private async navigateNextWeek(): Promise<void> {
+		this.currentWeekDate.setDate(this.currentWeekDate.getDate() + 7);
+		this.destroyComponents();
 		await this.renderContent();
 	}
 
@@ -51,7 +76,7 @@ export class WeeklyStatsModal extends Modal {
 
 		const stats = aggregateWeeklyStats(weekEvents, this.currentWeekDate);
 
-		this.renderHeader(contentEl, weekStart, weekEnd);
+		this.renderHeader(contentEl, weekStart, weekEnd, stats);
 
 		if (stats.entries.length === 0) {
 			contentEl.createDiv({
@@ -65,7 +90,12 @@ export class WeeklyStatsModal extends Modal {
 		this.tableComponent = new TableComponent(contentEl, stats.entries, stats.totalDuration);
 	}
 
-	private renderHeader(contentEl: HTMLElement, weekStart: Date, weekEnd: Date): void {
+	private renderHeader(
+		contentEl: HTMLElement,
+		weekStart: Date,
+		weekEnd: Date,
+		stats: { entries: Array<{ count: number }>; totalDuration: number }
+	): void {
 		const header = contentEl.createDiv("prisma-stats-header");
 
 		const prevButton = header.createEl("button", {
@@ -73,10 +103,11 @@ export class WeeklyStatsModal extends Modal {
 			cls: "prisma-stats-nav-button",
 		});
 		prevButton.addEventListener("click", async () => {
-			this.currentWeekDate.setDate(this.currentWeekDate.getDate() - 7);
-			this.destroyComponents();
-			await this.renderContent();
+			await this.navigatePreviousWeek();
 		});
+
+		const durationStat = header.createDiv("prisma-stats-header-stat");
+		durationStat.setText(`⏱ ${formatDuration(stats.totalDuration)}`);
 
 		const middleSection = header.createDiv("prisma-stats-middle-section");
 
@@ -93,14 +124,15 @@ export class WeeklyStatsModal extends Modal {
 			await this.renderContent();
 		});
 
+		const eventsStat = header.createDiv("prisma-stats-header-stat");
+		eventsStat.setText(`📅 ${stats.entries.reduce((sum, e) => sum + e.count, 0)} events`);
+
 		const nextButton = header.createEl("button", {
 			text: "Next Week →",
 			cls: "prisma-stats-nav-button",
 		});
 		nextButton.addEventListener("click", async () => {
-			this.currentWeekDate.setDate(this.currentWeekDate.getDate() + 7);
-			this.destroyComponents();
-			await this.renderContent();
+			await this.navigateNextWeek();
 		});
 	}
 

@@ -2704,6 +2704,16 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
+.prisma-stats-header-stat {
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-weight-semibold);
+	color: var(--text-normal);
+	padding: 0.5rem 1rem;
+	background-color: var(--background-secondary);
+	border-radius: var(--radius-s);
+	white-space: nowrap;
+}
+
 .prisma-stats-middle-section {
 	display: flex;
 	flex-direction: column;
@@ -2752,41 +2762,11 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.prisma-stats-summary {
-	margin-bottom: 1rem;
-	padding: 1.5rem;
-	background-color: var(--background-secondary);
-	border-radius: var(--radius-m);
-	text-align: center;
-}
-
-.prisma-stats-summary h3 {
-	margin: 0 0 1rem 0;
-	font-size: var(--font-ui-larger);
-	font-weight: var(--font-weight-bold);
-	color: var(--text-normal);
-}
-
-.prisma-stats-total,
-.prisma-stats-count {
-	font-size: var(--font-ui-large);
-	font-weight: var(--font-weight-semibold);
-	color: var(--text-normal);
-	margin-bottom: 0.5rem;
-}
-
 .prisma-stats-empty {
 	text-align: center;
 	padding: 2rem;
 	color: var(--text-muted);
 	font-size: var(--font-ui-medium);
-}
-
-.prisma-stats-chart-container {
-	margin-bottom: 2rem;
-	padding: 1rem;
-	background-color: var(--background-secondary);
-	border-radius: var(--radius-m);
 }
 
 .prisma-stats-chart-section {
@@ -2833,13 +2813,13 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	min-height: 500px;
 	max-height: 600px;
 	padding: 1rem 2rem;
+	position: relative;
 }
 
 .prisma-weekly-stats-modal .prisma-stats-chart-container canvas {
 	max-height: 600px;
-	max-width: 900px;
 	width: 100%;
-	height: auto;
+	height: 100%;
 }
 
 .prisma-stats-table-container {
