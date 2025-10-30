@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented here.
 
+## 1.6.0
+
+### New Features
+
+#### Enhanced Statistics System
+- **Monthly Statistics**: New statistics modal for analyzing entire calendar months. Navigate between months with previous/next arrows and "Today" button to return to the current month. Access via command palette (`Show monthly statistics`) or custom hotkey.
+- **All-Time Statistics**: View lifetime statistics across all events in your vault. No navigation controls—shows cumulative totals for your entire event history. Perfect for annual reviews and long-term pattern identification. Access via command palette (`Show all-time statistics`) or custom hotkey.
+
+#### Performance & Usability
+- **Table Pagination**: Statistics tables now paginate at 20 entries per page for optimal performance with large datasets. Pagination controls appear automatically when more than 20 event categories exist, with Previous/Next buttons and page counter (e.g., "Page 2 of 5 (98 entries)"). Especially useful for all-time statistics with hundreds of event categories.
+
+#### Command Additions
+- **`Show monthly statistics`**: Open monthly statistics modal for the current month
+- **`Show all-time statistics`**: Open all-time statistics modal showing lifetime totals
+
 ## 1.5.0
 
 ### New Features

@@ -1,27 +1,71 @@
-# Weekly Statistics
+# Statistics
 
-Track how you spend your time with visual insights and detailed breakdowns of your events.
+Track how you spend your time with visual insights and detailed breakdowns of your events across different time periods.
 
 ## Overview
 
-The Weekly Statistics feature provides a comprehensive time tracking visualization that shows how your time is distributed across different event categories. It generates a pie chart and detailed statistics table for any given week, making it easy to understand your time allocation patterns.
+The Statistics feature provides comprehensive time tracking visualizations that show how your time is distributed across different event categories. Choose from three different views:
+
+- **📅 Weekly Statistics**: Analyze a specific week (Monday-Sunday)
+- **📆 Monthly Statistics**: Review an entire month's time allocation
+- **🌍 All-Time Statistics**: See lifetime totals across all your events
+
+Each view generates a pie chart and detailed statistics table, making it easy to understand your time allocation patterns at different scales.
 
 ## Key Features
 
 - **📊 Visual Pie Chart**: Color-coded pie chart showing duration distribution across event categories
-- **📋 Detailed Breakdown Table**: See event count, total duration, and percentage for each category
-- **🔄 Week Navigation**: Easily browse through past and future weeks with arrow buttons
+- **📋 Paginated Breakdown Table**: Detailed table with event count, duration, and percentage (20 entries per page for better performance)
+- **🔄 Period Navigation**: Browse through weeks, months, or view all-time totals
 - **🎯 Smart Grouping**: Automatic grouping of events by name and type
 - **⏱️ Timed Events Focus**: Only includes timed events for meaningful duration tracking
 
-## Opening Weekly Statistics
+## Statistics Types
 
-Access the weekly statistics modal in two ways:
+### Weekly Statistics
 
-1. **Command Palette**: Open the command palette and search for `Show weekly statistics`
-2. **Hotkey**: Assign a custom hotkey in Obsidian settings under Hotkeys
+Analyze time spent during a specific week (Monday-Sunday).
 
-The modal opens showing statistics for the current week (based on the calendar's displayed date).
+**Opening:**
+1. **Command Palette**: `Show weekly statistics`
+2. **Hotkey**: Assign a custom hotkey in Obsidian settings
+
+**Navigation:**
+- **← Previous**: Jump back 7 days
+- **Next →**: Jump forward 7 days
+- **Today**: Return to the current week
+
+The modal opens showing statistics for the current week based on the calendar's displayed date.
+
+### Monthly Statistics
+
+Review time allocation across an entire calendar month.
+
+**Opening:**
+1. **Command Palette**: `Show monthly statistics`
+2. **Hotkey**: Assign a custom hotkey in Obsidian settings
+
+**Navigation:**
+- **← Previous**: Jump to previous month
+- **Next →**: Jump to next month
+- **Today**: Return to the current month
+
+Perfect for monthly reviews, billing periods, or monthly goal tracking.
+
+### All-Time Statistics
+
+View cumulative statistics across all events in your vault.
+
+**Opening:**
+1. **Command Palette**: `Show all-time statistics`
+2. **Hotkey**: Assign a custom hotkey in Obsidian settings
+
+**Features:**
+- No navigation controls (shows everything)
+- Pagination automatically enabled for large datasets
+- Great for lifetime productivity analysis and long-term pattern identification
+
+The modal shows statistics for all events across your entire calendar history.
 
 ## How Event Grouping Works
 
@@ -106,39 +150,55 @@ The breakdown table shows:
 - **Event Name**: The grouped event category name
 - **Count**: Number of individual events in this category
 - **Duration**: Total time spent (formatted as days, hours, minutes)
-- **Percentage**: Proportion of total weekly time
+- **Percentage**: Proportion of total time
 
 **Sorting:**
 - Entries are automatically sorted by duration (longest first)
 - Helps you quickly identify your biggest time commitments
 
-### Weekly Summary
+**Pagination:**
+- Tables display **20 entries per page** for optimal performance
+- Navigation controls appear when more than 20 categories exist:
+  - **← Previous**: Go to previous page
+  - **Page X of Y (Z entries)**: Current position indicator
+  - **Next →**: Go to next page
+- Especially useful for all-time statistics with many event categories
 
-At the top of the modal, see:
+### Period Summary
 
-- **Week Range**: Monday - Sunday dates for the current view
-- **Total Duration**: Sum of all timed events in the week
-- **Total Events**: Count of all included events
+At the top of each modal, see:
+
+- **Period Range**: Week dates, month name, or "All Time"
+- **Total Duration**: Sum of all timed events (⏱ emoji)
+- **Total Events**: Count of all included events (📅 emoji)
+- **Navigation Controls**: Period-specific navigation buttons (weekly/monthly only)
 
 ## Navigation
 
-### Week Arrows
+### Weekly Statistics
 
-- **← Previous Week**: Jump back 7 days
-- **Next Week →**: Jump forward 7 days
+- **← Previous**: Jump back 7 days
+- **Next →**: Jump forward 7 days
+- **Today**: Return to the current week
 
-The week range updates automatically, and statistics recalculate instantly.
+### Monthly Statistics
 
-### Current Week
+- **← Previous**: Jump to previous month
+- **Next →**: Jump to next month
+- **Today**: Return to the current month
 
-The modal opens showing the week containing the date currently displayed in the calendar view. If the calendar shows February 5th, you'll see statistics for the week of February 3-9.
+### All-Time Statistics
+
+No navigation controls (shows all events across all time).
+
+The period displayed updates automatically, and statistics recalculate instantly based on the new date range.
 
 ## Use Cases
 
-### 🎯 Time Tracking
+### 🎯 Weekly Time Tracking
 Monitor how much time you spend on different activities throughout the week.
 
-**Example:**
+**Example (Weekly):**
 ```
 Weekly Statistics (Feb 3 - Feb 9)
 - Meetings: 12h 30m (35%)
@@ -146,27 +206,61 @@ Weekly Statistics (Feb 3 - Feb 9)
 - Recurring Events: 4h 15m (12%)
 ```
 
-### 📊 Productivity Analysis
-Compare weeks to identify productivity patterns and time allocation trends.
+**Use:** Perfect for weekly reviews, sprint retrospectives, or time blocking adjustments.
 
-**Example:**
-Compare last week's "Deep Work" time (18h) vs. this week (12h) to spot changes in focus time.
+### 📊 Monthly Productivity Analysis
+Review entire months to understand broader patterns and trends.
+
+**Example (Monthly):**
+```
+Monthly Statistics (February 2025)
+- Client Work: 120h 30m (60%)
+- Internal Projects: 50h 15m (25%)
+- Learning: 30h 45m (15%)
+Total: 201h 30m
+```
+
+**Use:** Ideal for monthly reports, billing summaries, or monthly goal reviews.
+
+### 🌍 Lifetime Pattern Identification
+Analyze cumulative statistics to understand long-term time allocation.
+
+**Example (All-Time):**
+```
+All-Time Statistics
+- Development: 1,240h (42%)
+- Meetings: 680h (23%)
+- Learning: 520h (18%)
+- Planning: 490h (17%)
+Total: 2,930h across 1,247 events
+```
+
+**Use:** Great for annual reviews, career reflection, or understanding long-term priorities.
 
 ### ⚖️ Work-Life Balance
 Ensure you're allocating time appropriately across work, personal, and recurring activities.
 
-**Example:**
+**Weekly Example:**
 ```
 - Work Events: 40h (70%)
 - Personal Events: 12h (21%)
 - Recurring Events: 5h (9%)
 ```
 
-### 🔍 Category Review
-See which activity categories dominate your schedule and adjust accordingly.
+**Monthly Example:**
+```
+- Work Events: 165h (75%)
+- Personal Events: 45h (20%)
+- Recurring Events: 10h (5%)
+```
 
-**Example:**
-If "Meetings" takes up 60% of your week, you might want to reduce meeting time and increase focus work.
+### 🔍 Category Comparison
+Compare time allocation across different periods to spot trends.
+
+**Examples:**
+- Compare this week vs. last week's "Deep Work" time
+- Review this month vs. last month's "Meeting" hours
+- Analyze all-time category distribution to identify career focus areas
 
 ## Tips & Best Practices
 
@@ -267,20 +361,32 @@ Make weekly statistics review part of your routine:
 
 ## Technical Details
 
-### Week Definition
+### Period Definitions
 
+**Weekly:**
 - **Start**: Monday at 00:00:00 (local timezone)
 - **End**: Following Monday at 00:00:00 (local timezone)
 - **Duration**: Exactly 7 days
+
+**Monthly:**
+- **Start**: First day of month at 00:00:00 (local timezone)
+- **End**: First day of next month at 00:00:00 (local timezone)
+- **Duration**: Varies by month (28-31 days)
+
+**All-Time:**
+- **Start**: None (includes all events)
+- **End**: None (includes all events)
+- **Duration**: Entire event history
 
 ### Event Inclusion Criteria
 
 An event is included if:
 1. It's a timed event (`allDay === false`)
 2. It has an end time (or duration > 0)
-3. It overlaps with the week range:
-   - Event starts before week ends AND
-   - Event ends after week starts
+3. For weekly/monthly: It overlaps with the period range
+   - Event starts before period ends AND
+   - Event ends after period starts
+4. For all-time: Always included (no date filtering)
 
 ### Duration Calculation
 
@@ -288,6 +394,14 @@ An event is included if:
 - **Without End Time**: 0 (excluded from stats)
 - **All-Day Events**: Excluded entirely
 
+### Pagination
+
+- **Threshold**: 20 entries per page
+- **When Applied**: Automatically when more than 20 categories exist
+- **Performance**: Only renders visible rows for optimal speed
+- **Navigation**: Previous/Next buttons with page counter
+
 ### Data Source
 
-Statistics use events from 1 year before to 1 year after the current week to ensure all relevant events are available as you navigate between weeks.
+- **Weekly/Monthly**: Queries events within the specific period range
+- **All-Time**: Retrieves all events from the vault cache (no date filtering)
