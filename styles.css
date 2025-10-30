@@ -2754,22 +2754,25 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 
 .prisma-stats-summary {
 	margin-bottom: 1rem;
-	padding: 1rem;
+	padding: 1.5rem;
 	background-color: var(--background-secondary);
 	border-radius: var(--radius-m);
+	text-align: center;
 }
 
 .prisma-stats-summary h3 {
-	margin: 0 0 0.75rem 0;
-	font-size: var(--font-ui-medium);
+	margin: 0 0 1rem 0;
+	font-size: var(--font-ui-larger);
+	font-weight: var(--font-weight-bold);
 	color: var(--text-normal);
 }
 
 .prisma-stats-total,
 .prisma-stats-count {
-	font-size: var(--font-ui-small);
-	color: var(--text-muted);
-	margin-bottom: 0.25rem;
+	font-size: var(--font-ui-large);
+	font-weight: var(--font-weight-semibold);
+	color: var(--text-normal);
+	margin-bottom: 0.5rem;
 }
 
 .prisma-stats-empty {
@@ -2804,6 +2807,8 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	margin: 0;
 	font-size: var(--font-ui-medium);
 	color: var(--text-normal);
+	flex: 1;
+	text-align: center;
 }
 
 .prisma-stats-toggle-chart-btn {
@@ -2827,23 +2832,26 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	align-items: center;
 	min-height: 500px;
 	max-height: 600px;
+	padding: 1rem 2rem;
 }
 
 .prisma-weekly-stats-modal .prisma-stats-chart-container canvas {
 	max-height: 600px;
-	max-width: 100%;
+	max-width: 900px;
 	width: 100%;
 	height: auto;
 }
 
 .prisma-stats-table-container {
 	margin-top: 1.5rem;
+	text-align: center;
 }
 
 .prisma-stats-table-container h3 {
 	margin: 0 0 1rem 0;
 	font-size: var(--font-ui-medium);
 	color: var(--text-normal);
+	text-align: center;
 }
 
 .prisma-stats-table {
@@ -2853,18 +2861,28 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 }
 
 .prisma-weekly-stats-modal .prisma-stats-table th {
-	text-align: left;
+	text-align: center;
 	padding: 0.75rem;
 	background-color: var(--background-secondary);
 	color: var(--text-normal);
 	font-weight: var(--font-weight-medium);
 	border-bottom: 2px solid var(--background-modifier-border);
+	border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.prisma-weekly-stats-modal .prisma-stats-table th:last-child {
+	border-right: none;
 }
 
 .prisma-weekly-stats-modal .prisma-stats-table td {
 	padding: 0.75rem;
 	border-bottom: 1px solid var(--background-modifier-border);
+	border-right: 1px solid rgba(255, 255, 255, 0.1);
 	color: var(--text-normal);
+}
+
+.prisma-weekly-stats-modal .prisma-stats-table td:last-child {
+	border-right: none;
 }
 
 .prisma-stats-table tr:last-child td {
