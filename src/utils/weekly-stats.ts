@@ -73,8 +73,8 @@ export function getWeekBounds(date: Date): { start: Date; end: Date } {
  *
  * Rules:
  * 1. Only timed events are included (all-day events are skipped)
- * 2. All recurring events are grouped together under "Recurring Events"
- * 3. Non-recurring events are grouped by name (with IDs stripped)
+ * 2. Events are grouped by their cleaned name (with IDs and dates stripped)
+ * 3. Both virtual (recurring) and regular events use their actual title
  * 4. Calculates total duration and count for each group
  */
 export function aggregateWeeklyStats(events: ParsedEvent[], weekDate: Date): WeeklyStats {
@@ -88,16 +88,8 @@ export function aggregateWeeklyStats(events: ParsedEvent[], weekDate: Date): Wee
 	const groups = new Map<string, { duration: number; count: number; isRecurring: boolean }>();
 
 	for (const event of timedEvents) {
-		let groupKey: string;
-		let isRecurring: boolean;
-
-		if (event.isVirtual) {
-			groupKey = "Recurring Events";
-			isRecurring = true;
-		} else {
-			groupKey = removeZettelId(event.title);
-			isRecurring = false;
-		}
+		const groupKey = removeZettelId(event.title);
+		const isRecurring = event.isVirtual;
 
 		const duration = getEventDuration(event);
 		const existing = groups.get(groupKey);

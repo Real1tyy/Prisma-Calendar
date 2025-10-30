@@ -81,6 +81,7 @@ export const extractZettelId = (text: string): string | null => {
  * - Space-separated timestamps: "Event 20250203140530" -> "Event"
  * - ISO date formats: "Event - 2025-02-03" -> "Event"
  * - ISO date suffix: "Go To The Gym 2025-10-29" -> "Go To The Gym"
+ * - Kebab-case date suffix: "mid-sprint-sync-2025-10-28" -> "mid-sprint-sync"
  * - Trailing timestamps: "Event 123456789" -> "Event"
  */
 export const removeZettelId = (text: string): string => {
@@ -94,6 +95,8 @@ export const removeZettelId = (text: string): string => {
 			.replace(/\s+-\s+\d{4}-\d{2}-\d{2}.*$/, "")
 			// Strip ISO date formats at the end " YYYY-MM-DD"
 			.replace(/\s+\d{4}-\d{2}-\d{2}$/, "")
+			// Strip kebab-case date suffix "-YYYY-MM-DD"
+			.replace(/-\d{4}-\d{2}-\d{2}$/, "")
 			// Strip trailing timestamps (8+ digits)
 			.replace(/\s+\d{8,}$/, "")
 			.trim()

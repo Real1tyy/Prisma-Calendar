@@ -121,6 +121,22 @@ describe("ZettelID Utilities", () => {
 			const result = removeZettelId("2025-10-29");
 			expect(result).toBe("2025-10-29");
 		});
+
+		it("should remove kebab-case date suffix", () => {
+			expect(removeZettelId("mid-sprint-sync-2025-10-28")).toBe("mid-sprint-sync");
+			expect(removeZettelId("weekly-standup-2025-11-02")).toBe("weekly-standup");
+			expect(removeZettelId("team-meeting-2025-12-31")).toBe("team-meeting");
+		});
+
+		it("should handle multiple hyphens with date suffix", () => {
+			const result = removeZettelId("my-very-long-event-name-2025-10-30");
+			expect(result).toBe("my-very-long-event-name");
+		});
+
+		it("should not remove date from middle of kebab-case string", () => {
+			const result = removeZettelId("event-2025-10-29-important");
+			expect(result).toBe("event-2025-10-29-important");
+		});
 	});
 
 	describe("generateUniqueZettelId", () => {

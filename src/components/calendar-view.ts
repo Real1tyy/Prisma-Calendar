@@ -183,18 +183,10 @@ export class CalendarView extends MountableView(ItemView) {
 				className: "batch-action-btn skip-btn",
 			};
 		} else {
-			headerToolbar.right = `globalSearch weeklyStats filteredEvents disabledRecurringEvents skippedEvents batchSelect ${viewSwitchers}`;
+			headerToolbar.right = `filteredEvents disabledRecurringEvents skippedEvents batchSelect ${viewSwitchers}`;
 			customButtons.batchSelect = {
 				text: "Batch Select",
 				click: () => this.toggleBatchSelection(),
-			};
-			customButtons.globalSearch = {
-				text: "Global Search",
-				click: () => this.showGlobalSearchModal(),
-			};
-			customButtons.weeklyStats = {
-				text: "Weekly Stats",
-				click: () => this.showWeeklyStatsModal(),
 			};
 			// Preserve button text from previous update (important for batch mode toggle)
 			const currentFilteredButton = this.calendar.getOption("customButtons")?.filteredEvents;
