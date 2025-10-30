@@ -1,19 +1,22 @@
 import type { ParsedEvent } from "../core/parser";
 import { extractNotesCoreName } from "./calendar-events";
 
-export interface WeeklyStatEntry {
+export interface StatEntry {
 	name: string;
 	duration: number; // in milliseconds
 	count: number;
 	isRecurring: boolean;
 }
 
-export interface WeeklyStats {
-	weekStart: Date;
-	weekEnd: Date;
-	entries: WeeklyStatEntry[];
+export interface Stats {
+	periodStart?: Date;
+	periodEnd?: Date;
+	entries: StatEntry[];
 	totalDuration: number;
 }
+
+export type WeeklyStatEntry = StatEntry;
+export type WeeklyStats = Stats;
 
 /**
  * Calculates the duration of an event in milliseconds.
@@ -38,16 +41,16 @@ export function getEventDuration(event: ParsedEvent): number {
 }
 
 /**
- * Filters events that fall within a given week.
- * An event is included if it starts OR ends within the week range.
+ * Filters events that fall within a given date range.
+ * An event is included if it starts OR ends within the range.
  */
-export function getEventsInWeek(events: ParsedEvent[], weekStart: Date, weekEnd: Date): ParsedEvent[] {
+export function getEventsInRange(events: ParsedEvent[], rangeStart: Date, rangeEnd: Date): ParsedEvent[] {
 	return events.filter((event) => {
 		const start = new Date(event.start);
 		const end = event.end ? new Date(event.end) : start;
 
-		// Event overlaps with week if it starts before week ends AND ends after week starts
-		return start < weekEnd && end > weekStart;
+		// Event overlaps with range if it starts before range ends AND ends after range starts
+		return start < rangeEnd && end > rangeStart;
 	});
 }
 
@@ -69,7 +72,21 @@ export function getWeekBounds(date: Date): { start: Date; end: Date } {
 }
 
 /**
- * Aggregates events for a given week, grouping by name and calculating total durations.
+ * Gets the start and end of the month for a given date.
+ */
+export function getMonthBounds(date: Date): { start: Date; end: Date } {
+	const start = new Date(date);
+	start.setDate(1);
+	start.setHours(0, 0, 0, 0);
+
+	const end = new Date(start);
+	end.setMonth(end.getMonth() + 1);
+
+	return { start, end };
+}
+
+/**
+ * Aggregates events for a given date range, grouping by name and calculating total durations.
  *
  * Rules:
  * 1. Only timed events are included (all-day events are skipped)
@@ -77,12 +94,16 @@ export function getWeekBounds(date: Date): { start: Date; end: Date } {
  * 3. Both virtual (recurring) and regular events use their actual title
  * 4. Calculates total duration and count for each group
  */
-export function aggregateWeeklyStats(events: ParsedEvent[], weekDate: Date): WeeklyStats {
-	const { start: weekStart, end: weekEnd } = getWeekBounds(weekDate);
-	const weekEvents = getEventsInWeek(events, weekStart, weekEnd);
+export function aggregateStats(events: ParsedEvent[], periodStart?: Date, periodEnd?: Date): Stats {
+	let filteredEvents = events;
+
+	// Filter to date range if provided
+	if (periodStart && periodEnd) {
+		filteredEvents = getEventsInRange(events, periodStart, periodEnd);
+	}
 
 	// Filter to only timed events (skip all-day events)
-	const timedEvents = weekEvents.filter((event) => !event.allDay);
+	const timedEvents = filteredEvents.filter((event) => !event.allDay);
 
 	// Group events
 	const groups = new Map<string, { duration: number; count: number; isRecurring: boolean }>();
@@ -103,7 +124,7 @@ export function aggregateWeeklyStats(events: ParsedEvent[], weekDate: Date): Wee
 	}
 
 	// Convert to array and sort by duration (descending)
-	const entries: WeeklyStatEntry[] = Array.from(groups.entries())
+	const entries: StatEntry[] = Array.from(groups.entries())
 		.map(([name, { duration, count, isRecurring }]) => ({
 			name,
 			duration,
@@ -115,11 +136,27 @@ export function aggregateWeeklyStats(events: ParsedEvent[], weekDate: Date): Wee
 	const totalDuration = entries.reduce((sum, entry) => sum + entry.duration, 0);
 
 	return {
-		weekStart,
-		weekEnd,
+		periodStart,
+		periodEnd,
 		entries,
 		totalDuration,
 	};
+}
+
+/**
+ * Aggregates events for a given week, grouping by name and calculating total durations.
+ */
+export function aggregateWeeklyStats(events: ParsedEvent[], weekDate: Date): WeeklyStats {
+	const { start, end } = getWeekBounds(weekDate);
+	return aggregateStats(events, start, end);
+}
+
+/**
+ * Aggregates events for a given month, grouping by name and calculating total durations.
+ */
+export function aggregateMonthlyStats(events: ParsedEvent[], monthDate: Date): Stats {
+	const { start, end } = getMonthBounds(monthDate);
+	return aggregateStats(events, start, end);
 }
 
 /**

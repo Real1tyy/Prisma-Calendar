@@ -1,146 +1,38 @@
-import type { App } from "obsidian";
-import { Modal } from "obsidian";
-import type { CalendarBundle } from "../../core/calendar-bundle";
-import { aggregateWeeklyStats, formatDuration, getWeekBounds } from "../../utils/weekly-stats";
-import { ChartComponent } from "./chart-component";
-import { TableComponent } from "./table-component";
+import type { ParsedEvent } from "../../core/parser";
+import type { Stats } from "../../utils/weekly-stats";
+import { aggregateWeeklyStats, getWeekBounds } from "../../utils/weekly-stats";
+import type { IntervalConfig } from "./interval-stats-modal";
+import { IntervalStatsModal } from "./interval-stats-modal";
 
-export class WeeklyStatsModal extends Modal {
-	private bundle: CalendarBundle;
-	private currentWeekDate: Date;
-	private chartComponent: ChartComponent | null = null;
-	private tableComponent: TableComponent | null = null;
+export class WeeklyStatsModal extends IntervalStatsModal {
+	protected intervalConfig: IntervalConfig = {
+		getBounds: (date: Date) => getWeekBounds(date),
 
-	constructor(app: App, bundle: CalendarBundle, initialDate?: Date) {
-		super(app);
-		this.bundle = bundle;
-		this.currentWeekDate = initialDate || new Date();
-	}
+		navigateNext: (date: Date) => {
+			date.setDate(date.getDate() + 7);
+		},
 
-	async onOpen(): Promise<void> {
-		const { contentEl } = this;
-		contentEl.empty();
-		contentEl.addClass("prisma-weekly-stats-modal");
+		navigatePrevious: (date: Date) => {
+			date.setDate(date.getDate() - 7);
+		},
 
-		this.setupKeyboardShortcuts();
-		await this.renderContent();
-	}
+		aggregateStats: (events: ParsedEvent[], date: Date): Stats => {
+			return aggregateWeeklyStats(events, date);
+		},
 
-	private setupKeyboardShortcuts(): void {
-		this.scope.register([], "ArrowLeft", async () => {
-			await this.navigatePreviousWeek();
-			return false;
-		});
+		formatDateRange: (start: Date, end: Date): string => {
+			const formatDate = (date: Date): string => {
+				return date.toLocaleDateString("en-US", {
+					month: "short",
+					day: "numeric",
+					year: "numeric",
+				});
+			};
+			return `${formatDate(start)} - ${formatDate(end)}`;
+		},
+	};
 
-		this.scope.register([], "ArrowRight", async () => {
-			await this.navigateNextWeek();
-			return false;
-		});
-	}
-
-	private async navigatePreviousWeek(): Promise<void> {
-		this.currentWeekDate.setDate(this.currentWeekDate.getDate() - 7);
-		this.destroyComponents();
-		await this.renderContent();
-	}
-
-	private async navigateNextWeek(): Promise<void> {
-		this.currentWeekDate.setDate(this.currentWeekDate.getDate() + 7);
-		this.destroyComponents();
-		await this.renderContent();
-	}
-
-	onClose(): void {
-		this.destroyComponents();
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-
-	private destroyComponents(): void {
-		this.chartComponent?.destroy();
-		this.chartComponent = null;
-		this.tableComponent?.destroy();
-		this.tableComponent = null;
-	}
-
-	private async renderContent(): Promise<void> {
-		const { contentEl } = this;
-		contentEl.empty();
-
-		const { start: weekStart, end: weekEnd } = getWeekBounds(this.currentWeekDate);
-
-		const weekEvents = await this.bundle.eventStore.getEvents({
-			start: weekStart.toISOString(),
-			end: weekEnd.toISOString(),
-		});
-
-		const stats = aggregateWeeklyStats(weekEvents, this.currentWeekDate);
-
-		this.renderHeader(contentEl, weekStart, weekEnd, stats);
-
-		if (stats.entries.length === 0) {
-			contentEl.createDiv({
-				text: "No events found for this week.",
-				cls: "prisma-stats-empty",
-			});
-			return;
-		}
-
-		this.chartComponent = new ChartComponent(contentEl, stats.entries, stats.totalDuration);
-		this.tableComponent = new TableComponent(contentEl, stats.entries, stats.totalDuration);
-	}
-
-	private renderHeader(
-		contentEl: HTMLElement,
-		weekStart: Date,
-		weekEnd: Date,
-		stats: { entries: Array<{ count: number }>; totalDuration: number }
-	): void {
-		const header = contentEl.createDiv("prisma-stats-header");
-
-		const prevButton = header.createEl("button", {
-			text: "← Previous Week",
-			cls: "prisma-stats-nav-button",
-		});
-		prevButton.addEventListener("click", async () => {
-			await this.navigatePreviousWeek();
-		});
-
-		const durationStat = header.createDiv("prisma-stats-header-stat");
-		durationStat.setText(`⏱ ${formatDuration(stats.totalDuration)}`);
-
-		const middleSection = header.createDiv("prisma-stats-middle-section");
-
-		const weekLabel = middleSection.createDiv("prisma-stats-week-label");
-		weekLabel.setText(`${this.formatDate(weekStart)} - ${this.formatDate(weekEnd)}`);
-
-		const todayButton = middleSection.createEl("button", {
-			text: "Today",
-			cls: "prisma-stats-today-button",
-		});
-		todayButton.addEventListener("click", async () => {
-			this.currentWeekDate = new Date();
-			this.destroyComponents();
-			await this.renderContent();
-		});
-
-		const eventsStat = header.createDiv("prisma-stats-header-stat");
-		eventsStat.setText(`📅 ${stats.entries.reduce((sum, e) => sum + e.count, 0)} events`);
-
-		const nextButton = header.createEl("button", {
-			text: "Next Week →",
-			cls: "prisma-stats-nav-button",
-		});
-		nextButton.addEventListener("click", async () => {
-			await this.navigateNextWeek();
-		});
-	}
-
-	private formatDate(date: Date): string {
-		return date.toLocaleDateString("en-US", {
-			month: "short",
-			day: "numeric",
-			year: "numeric",
-		});
+	protected getModalTitle(): string {
+		return "Weekly Statistics";
 	}
 }

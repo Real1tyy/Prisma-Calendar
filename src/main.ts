@@ -133,6 +133,12 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.SHOW_WEEKLY_STATS, "Show weekly statistics", (view) =>
 			view.showWeeklyStatsModal()
 		);
+		addCalendarViewCommand(COMMAND_IDS.SHOW_MONTHLY_STATS, "Show monthly statistics", (view) =>
+			view.showMonthlyStatsModal()
+		);
+		addCalendarViewCommand(COMMAND_IDS.SHOW_ALLTIME_STATS, "Show all-time statistics", (view) =>
+			view.showAllTimeStatsModal()
+		);
 
 		this.addCommand({
 			id: COMMAND_IDS.OPEN_CURRENT_NOTE_IN_CALENDAR,

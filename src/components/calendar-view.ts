@@ -29,7 +29,7 @@ import {
 	SkippedEventsModal,
 } from "./list-modals";
 import { SearchFilterManager } from "./search-filter-manager";
-import { WeeklyStatsModal } from "./weekly-stats";
+import { AllTimeStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";
@@ -54,6 +54,8 @@ export class CalendarView extends MountableView(ItemView) {
 	private filteredEventsModal: FilteredEventsModal | null = null;
 	private globalSearchModal: GlobalSearchModal | null = null;
 	private weeklyStatsModal: WeeklyStatsModal | null = null;
+	private monthlyStatsModal: MonthlyStatsModal | null = null;
+	private alltimeStatsModal: AllTimeStatsModal | null = null;
 	private filteredEvents: Array<{ filePath: string; title: string; start: string; end?: string; allDay: boolean }> = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
@@ -423,6 +425,31 @@ export class CalendarView extends MountableView(ItemView) {
 			() => {
 				const currentDate = this.calendar?.getDate() || new Date();
 				return new WeeklyStatsModal(this.app, this.bundle, currentDate);
+			}
+		);
+	}
+
+	async showMonthlyStatsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.monthlyStatsModal,
+			(modal) => {
+				this.monthlyStatsModal = modal;
+			},
+			() => {
+				const currentDate = this.calendar?.getDate() || new Date();
+				return new MonthlyStatsModal(this.app, this.bundle, currentDate);
+			}
+		);
+	}
+
+	async showAllTimeStatsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.alltimeStatsModal,
+			(modal) => {
+				this.alltimeStatsModal = modal;
+			},
+			() => {
+				return new AllTimeStatsModal(this.app, this.bundle);
 			}
 		);
 	}

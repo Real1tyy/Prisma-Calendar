@@ -133,6 +133,16 @@ export class EventStore extends DebouncedNotifier {
 		return results.sort((a, b) => a.start.localeCompare(b.start));
 	}
 
+	async getAllEvents(): Promise<ParsedEvent[]> {
+		const results: ParsedEvent[] = [];
+
+		for (const cached of this.cache.values()) {
+			results.push(cached.template);
+		}
+
+		return results.sort((a, b) => a.start.localeCompare(b.start));
+	}
+
 	clear(): void {
 		this.cache.clear();
 		// Clear is immediate - no debouncing

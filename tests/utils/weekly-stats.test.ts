@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { ParsedEvent } from "../../src/core/parser";
 import {
+	aggregateMonthlyStats,
 	aggregateWeeklyStats,
 	formatDuration,
 	formatPercentage,
 	getEventDuration,
-	getEventsInWeek,
+	getEventsInRange,
+	getMonthBounds,
 	getWeekBounds,
 } from "../../src/utils/weekly-stats";
 
@@ -265,7 +267,7 @@ describe("getWeekBounds", () => {
 	});
 });
 
-describe("getEventsInWeek", () => {
+describe("getEventsInRange", () => {
 	const weekStart = new Date("2025-02-03T00:00:00Z"); // Monday
 	const weekEnd = new Date("2025-02-10T00:00:00Z"); // Next Monday
 
@@ -283,7 +285,7 @@ describe("getEventsInWeek", () => {
 			},
 		];
 
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(1);
 	});
 
@@ -301,7 +303,7 @@ describe("getEventsInWeek", () => {
 			},
 		];
 
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(1);
 	});
 
@@ -319,7 +321,7 @@ describe("getEventsInWeek", () => {
 			},
 		];
 
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(0);
 	});
 
@@ -336,7 +338,7 @@ describe("getEventsInWeek", () => {
 			},
 		];
 
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(1);
 	});
 
@@ -354,7 +356,7 @@ describe("getEventsInWeek", () => {
 			},
 		];
 
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(1);
 	});
 
@@ -372,7 +374,7 @@ describe("getEventsInWeek", () => {
 			},
 		];
 
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(0);
 	});
 
@@ -390,7 +392,7 @@ describe("getEventsInWeek", () => {
 			},
 		];
 
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(1);
 	});
 
@@ -408,7 +410,7 @@ describe("getEventsInWeek", () => {
 			},
 		];
 
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(1);
 	});
 
@@ -446,7 +448,7 @@ describe("getEventsInWeek", () => {
 			},
 		];
 
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(3);
 	});
 
@@ -464,7 +466,7 @@ describe("getEventsInWeek", () => {
 			},
 		];
 
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(1);
 	});
 
@@ -502,14 +504,14 @@ describe("getEventsInWeek", () => {
 			},
 		];
 
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(1);
 		expect(result[0].title).toBe("During Week");
 	});
 
 	it("should handle empty events array", () => {
 		const events: ParsedEvent[] = [];
-		const result = getEventsInWeek(events, weekStart, weekEnd);
+		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(0);
 	});
 });
@@ -903,10 +905,10 @@ describe("aggregateWeeklyStats", () => {
 
 		const stats = aggregateWeeklyStats(events, date);
 
-		expect(stats.weekStart.getDay()).toBe(1); // Monday
-		expect(stats.weekEnd.getDay()).toBe(1); // Monday (next week)
-		expect(stats.weekStart.getHours()).toBe(0);
-		expect(stats.weekStart.getMinutes()).toBe(0);
+		expect(stats.periodStart?.getDay()).toBe(1); // Monday
+		expect(stats.periodEnd?.getDay()).toBe(1); // Monday (next week)
+		expect(stats.periodStart?.getHours()).toBe(0);
+		expect(stats.periodStart?.getMinutes()).toBe(0);
 	});
 });
 
@@ -950,5 +952,384 @@ describe("formatPercentage", () => {
 	it("should round to one decimal place", () => {
 		expect(formatPercentage(33.333, 100)).toBe("33.3%");
 		expect(formatPercentage(66.666, 100)).toBe("66.7%");
+	});
+});
+
+describe("getMonthBounds", () => {
+	it("should return first day to first day of next month", () => {
+		const date = new Date("2025-02-15T12:00:00"); // Middle of February
+		const { start, end } = getMonthBounds(date);
+
+		expect(start.getDate()).toBe(1); // 1st of February
+		expect(start.getMonth()).toBe(1); // February (0-indexed)
+		expect(start.getFullYear()).toBe(2025);
+		expect(end.getDate()).toBe(1); // 1st of March
+		expect(end.getMonth()).toBe(2); // March (0-indexed)
+		expect(start.getHours()).toBe(0);
+		expect(start.getMinutes()).toBe(0);
+		expect(start.getSeconds()).toBe(0);
+	});
+
+	it("should handle first day of month correctly", () => {
+		const date = new Date("2025-02-01T12:00:00");
+		const { start, end } = getMonthBounds(date);
+
+		expect(start.getDate()).toBe(1);
+		expect(start.getMonth()).toBe(1); // February
+		expect(end.getDate()).toBe(1);
+		expect(end.getMonth()).toBe(2); // March
+	});
+
+	it("should handle last day of month correctly", () => {
+		const date = new Date("2025-02-28T23:59:59");
+		const { start, end } = getMonthBounds(date);
+
+		expect(start.getDate()).toBe(1);
+		expect(start.getMonth()).toBe(1); // February
+		expect(end.getDate()).toBe(1);
+		expect(end.getMonth()).toBe(2); // March
+	});
+
+	it("should handle January correctly", () => {
+		const date = new Date("2025-01-15T12:00:00");
+		const { start, end } = getMonthBounds(date);
+
+		expect(start.getMonth()).toBe(0); // January
+		expect(end.getMonth()).toBe(1); // February
+		expect(start.getFullYear()).toBe(2025);
+		expect(end.getFullYear()).toBe(2025);
+	});
+
+	it("should handle December correctly (year rollover)", () => {
+		const date = new Date("2025-12-15T12:00:00");
+		const { start, end } = getMonthBounds(date);
+
+		expect(start.getMonth()).toBe(11); // December
+		expect(start.getFullYear()).toBe(2025);
+		expect(end.getMonth()).toBe(0); // January
+		expect(end.getFullYear()).toBe(2026);
+	});
+
+	it("should handle leap year February correctly", () => {
+		const date = new Date("2024-02-15T12:00:00"); // 2024 is a leap year
+		const { start, end } = getMonthBounds(date);
+
+		expect(start.getDate()).toBe(1);
+		expect(start.getMonth()).toBe(1); // February
+		expect(end.getDate()).toBe(1);
+		expect(end.getMonth()).toBe(2); // March
+
+		// Verify February 2024 has 29 days
+		const febDuration = end.getTime() - start.getTime();
+		const daysInFeb = febDuration / (24 * 60 * 60 * 1000);
+		expect(daysInFeb).toBe(29);
+	});
+
+	it("should handle 31-day months correctly", () => {
+		const date = new Date("2025-01-15T12:00:00");
+		const { start, end } = getMonthBounds(date);
+
+		const monthDuration = end.getTime() - start.getTime();
+		const daysInMonth = monthDuration / (24 * 60 * 60 * 1000);
+		expect(daysInMonth).toBe(31); // January has 31 days
+	});
+
+	it("should handle 30-day months correctly", () => {
+		const date = new Date("2025-04-15T12:00:00");
+		const { start, end } = getMonthBounds(date);
+
+		const monthDuration = end.getTime() - start.getTime();
+		const daysInMonth = monthDuration / (24 * 60 * 60 * 1000);
+		expect(daysInMonth).toBe(30); // April has 30 days
+	});
+});
+
+describe("aggregateMonthlyStats", () => {
+	it("should aggregate events within a month", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "gym1.md" },
+				title: "Gym Session 2025-02-05",
+				start: "2025-02-05T10:00:00Z",
+				end: "2025-02-05T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "2",
+				ref: { filePath: "gym2.md" },
+				title: "Gym Session 2025-02-12",
+				start: "2025-02-12T10:00:00Z",
+				end: "2025-02-12T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "3",
+				ref: { filePath: "gym3.md" },
+				title: "Gym Session 2025-02-19",
+				start: "2025-02-19T10:00:00Z",
+				end: "2025-02-19T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const monthDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateMonthlyStats(events, monthDate);
+
+		expect(stats.entries).toHaveLength(1);
+		expect(stats.entries[0].name).toBe("Gym Session");
+		expect(stats.entries[0].count).toBe(3);
+		expect(stats.entries[0].duration).toBe(3 * 60 * 60 * 1000); // 3 hours total
+		expect(stats.totalDuration).toBe(3 * 60 * 60 * 1000);
+	});
+
+	it("should exclude events outside the month", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "event1.md" },
+				title: "January Event",
+				start: "2025-01-28T10:00:00Z",
+				end: "2025-01-28T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "2",
+				ref: { filePath: "event2.md" },
+				title: "February Event",
+				start: "2025-02-05T10:00:00Z",
+				end: "2025-02-05T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "3",
+				ref: { filePath: "event3.md" },
+				title: "March Event",
+				start: "2025-03-05T10:00:00Z",
+				end: "2025-03-05T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const monthDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateMonthlyStats(events, monthDate);
+
+		expect(stats.entries).toHaveLength(1);
+		expect(stats.entries[0].name).toBe("February Event");
+	});
+
+	it("should skip all-day events", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "allday.md" },
+				title: "All Day Event",
+				start: "2025-02-05T00:00:00Z",
+				allDay: true,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "2",
+				ref: { filePath: "timed.md" },
+				title: "Timed Event",
+				start: "2025-02-05T10:00:00Z",
+				end: "2025-02-05T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const monthDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateMonthlyStats(events, monthDate);
+
+		expect(stats.entries).toHaveLength(1);
+		expect(stats.entries[0].name).toBe("Timed Event");
+	});
+
+	it("should group events by cleaned name", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "meeting1.md" },
+				title: "Team Meeting 2025-02-05",
+				start: "2025-02-05T10:00:00Z",
+				end: "2025-02-05T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "2",
+				ref: { filePath: "meeting2.md" },
+				title: "Team Meeting 2025-02-12",
+				start: "2025-02-12T14:00:00Z",
+				end: "2025-02-12T15:30:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const monthDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateMonthlyStats(events, monthDate);
+
+		expect(stats.entries).toHaveLength(1);
+		expect(stats.entries[0].name).toBe("Team Meeting");
+		expect(stats.entries[0].count).toBe(2);
+		expect(stats.entries[0].duration).toBe((60 + 90) * 60 * 1000); // 1h + 1.5h
+	});
+
+	it("should handle virtual (recurring) events", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "recurring.md" },
+				title: "Daily Standup",
+				start: "2025-02-05T09:00:00Z",
+				end: "2025-02-05T09:15:00Z",
+				allDay: false,
+				isVirtual: true,
+				skipped: false,
+			},
+			{
+				id: "2",
+				ref: { filePath: "recurring.md" },
+				title: "Daily Standup",
+				start: "2025-02-06T09:00:00Z",
+				end: "2025-02-06T09:15:00Z",
+				allDay: false,
+				isVirtual: true,
+				skipped: false,
+			},
+		];
+
+		const monthDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateMonthlyStats(events, monthDate);
+
+		expect(stats.entries).toHaveLength(1);
+		expect(stats.entries[0].name).toBe("Daily Standup");
+		expect(stats.entries[0].count).toBe(2);
+		expect(stats.entries[0].isRecurring).toBe(true);
+	});
+
+	it("should return empty results for empty events array", () => {
+		const monthDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateMonthlyStats([], monthDate);
+
+		expect(stats.entries).toHaveLength(0);
+		expect(stats.totalDuration).toBe(0);
+	});
+
+	it("should sort entries by duration descending", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "short.md" },
+				title: "Short Meeting",
+				start: "2025-02-05T10:00:00Z",
+				end: "2025-02-05T10:30:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "2",
+				ref: { filePath: "long.md" },
+				title: "Long Workshop",
+				start: "2025-02-05T14:00:00Z",
+				end: "2025-02-05T17:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const monthDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateMonthlyStats(events, monthDate);
+
+		expect(stats.entries).toHaveLength(2);
+		expect(stats.entries[0].name).toBe("Long Workshop");
+		expect(stats.entries[0].duration).toBe(3 * 60 * 60 * 1000);
+		expect(stats.entries[1].name).toBe("Short Meeting");
+		expect(stats.entries[1].duration).toBe(30 * 60 * 1000);
+	});
+
+	it("should correctly set month bounds in result", () => {
+		const events: ParsedEvent[] = [];
+		const date = new Date("2025-02-15T15:30:00");
+
+		const stats = aggregateMonthlyStats(events, date);
+
+		expect(stats.periodStart?.getDate()).toBe(1);
+		expect(stats.periodStart?.getMonth()).toBe(1); // February
+		expect(stats.periodEnd?.getDate()).toBe(1);
+		expect(stats.periodEnd?.getMonth()).toBe(2); // March
+		expect(stats.periodStart?.getHours()).toBe(0);
+		expect(stats.periodStart?.getMinutes()).toBe(0);
+	});
+
+	it("should handle month with 31 days", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "event.md" },
+				title: "Event",
+				start: "2025-01-01T10:00:00Z",
+				end: "2025-01-01T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "2",
+				ref: { filePath: "event2.md" },
+				title: "Event",
+				start: "2025-01-31T10:00:00Z",
+				end: "2025-01-31T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const monthDate = new Date("2025-01-15T12:00:00");
+		const stats = aggregateMonthlyStats(events, monthDate);
+
+		expect(stats.entries[0].count).toBe(2);
+	});
+
+	it("should handle events spanning across month boundary", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "event.md" },
+				title: "Event",
+				start: "2025-01-31T23:00:00Z", // Last day of January
+				end: "2025-02-01T01:00:00Z", // First day of February
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const febMonth = new Date("2025-02-15T12:00:00");
+		const febStats = aggregateMonthlyStats(events, febMonth);
+
+		// Event should be included in February because it overlaps
+		expect(febStats.entries).toHaveLength(1);
 	});
 });
