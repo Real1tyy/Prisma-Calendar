@@ -66,6 +66,25 @@ export const generateUniqueRruleId = (): string => {
 };
 
 /**
+ * Converts an rRuleId into a deterministic 14-digit number for use as a zettel ID suffix.
+ * This ensures physical instances have stable, predictable filenames based on (rRuleId, date).
+ */
+export const hashRRuleIdToZettelFormat = (rRuleId: string): string => {
+	let hash = 0;
+	for (let i = 0; i < rRuleId.length; i++) {
+		const char = rRuleId.charCodeAt(i);
+		hash = (hash << 5) - hash + char;
+		hash = hash & hash; // Convert to 32-bit integer
+	}
+
+	// Ensure positive number and pad to 14 digits
+	const positiveHash = Math.abs(hash);
+	// Take modulo to ensure it fits in 14 digits, then pad
+	const normalized = positiveHash % 100000000000000; // Max 14-digit number
+	return normalized.toString().padStart(14, "0");
+};
+
+/**
  * Extracts ZettelID from a filename or title.
  * Returns the ZettelID string if found, null otherwise.
  */

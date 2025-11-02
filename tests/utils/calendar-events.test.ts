@@ -6,6 +6,7 @@ import {
 	extractZettelId,
 	generateUniqueEventPath,
 	generateUniqueZettelId,
+	hashRRuleIdToZettelFormat,
 	removeZettelId,
 } from "../../src/utils/calendar-events";
 import { createMockApp, createMockFile } from "../mocks/obsidian";
@@ -450,6 +451,105 @@ describe("ZettelID Utilities", () => {
 			// Should be different from both previous
 			expect(result3.zettelId).not.toBe(result1.zettelId);
 			expect(result3.zettelId).not.toBe(result2.zettelId);
+		});
+	});
+
+	describe("hashRRuleIdToZettelFormat", () => {
+		it("should generate a deterministic 14-digit hash", () => {
+			const rRuleId = "1730000000000-abc12";
+			const hash = hashRRuleIdToZettelFormat(rRuleId);
+
+			expect(hash).toMatch(/^\d{14}$/);
+			expect(hash.length).toBe(14);
+		});
+
+		it("should be deterministic (same input = same output)", () => {
+			const rRuleId = "1730000000000-abc12";
+			const hash1 = hashRRuleIdToZettelFormat(rRuleId);
+			const hash2 = hashRRuleIdToZettelFormat(rRuleId);
+
+			expect(hash1).toBe(hash2);
+		});
+
+		it("should generate different hashes for different rRuleIds", () => {
+			const rRuleId1 = "1730000000000-abc12";
+			const rRuleId2 = "1730000000000-xyz99";
+			const hash1 = hashRRuleIdToZettelFormat(rRuleId1);
+			const hash2 = hashRRuleIdToZettelFormat(rRuleId2);
+
+			expect(hash1).not.toBe(hash2);
+		});
+
+		it("should handle short rRuleIds", () => {
+			const rRuleId = "abc";
+			const hash = hashRRuleIdToZettelFormat(rRuleId);
+
+			expect(hash).toMatch(/^\d{14}$/);
+		});
+
+		it("should handle long rRuleIds", () => {
+			const rRuleId = "very-long-rrule-id-with-many-characters-1234567890";
+			const hash = hashRRuleIdToZettelFormat(rRuleId);
+
+			expect(hash).toMatch(/^\d{14}$/);
+		});
+
+		it("should pad with leading zeros when necessary", () => {
+			const rRuleId = "a"; // Short input likely produces small hash
+			const hash = hashRRuleIdToZettelFormat(rRuleId);
+
+			expect(hash.length).toBe(14);
+			expect(hash).toMatch(/^\d{14}$/);
+		});
+
+		it("should generate stable hashes for common rRuleId formats", () => {
+			const rRuleIds = ["1730000000000-abc12", "1730000000000-xyz99", "1730123456789-def45", "1730987654321-ghi78"];
+
+			const hashes = rRuleIds.map((id) => hashRRuleIdToZettelFormat(id));
+
+			// All should be 14 digits
+			hashes.forEach((hash) => {
+				expect(hash).toMatch(/^\d{14}$/);
+			});
+
+			// All should be unique
+			const uniqueHashes = new Set(hashes);
+			expect(uniqueHashes.size).toBe(rRuleIds.length);
+		});
+
+		it("should maintain consistency across multiple calls", () => {
+			const rRuleId = "1730000000000-test123";
+			const hashes = Array.from({ length: 100 }, () => hashRRuleIdToZettelFormat(rRuleId));
+
+			// All hashes should be identical
+			const uniqueHashes = new Set(hashes);
+			expect(uniqueHashes.size).toBe(1);
+		});
+
+		it("should work with rRuleIds containing special characters", () => {
+			const rRuleId = "1730000000000-special_chars!@#$%";
+			const hash = hashRRuleIdToZettelFormat(rRuleId);
+
+			expect(hash).toMatch(/^\d{14}$/);
+		});
+
+		it("should be compatible with existing zettel ID format", () => {
+			const rRuleId = "1730000000000-abc12";
+			const hash = hashRRuleIdToZettelFormat(rRuleId);
+
+			// Should be extractable by extractZettelId
+			const filename = `My Event 2025-01-15-${hash}`;
+			const extracted = extractZettelId(filename);
+			expect(extracted).toBe(hash);
+		});
+
+		it("should be removable by removeZettelId", () => {
+			const rRuleId = "1730000000000-abc12";
+			const hash = hashRRuleIdToZettelFormat(rRuleId);
+			const filename = `My Event-${hash}`;
+
+			const cleaned = removeZettelId(filename);
+			expect(cleaned).toBe("My Event");
 		});
 	});
 });

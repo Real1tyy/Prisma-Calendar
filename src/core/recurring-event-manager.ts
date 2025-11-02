@@ -6,7 +6,7 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { withLock } from "../utils/async-lock";
-import { generateUniqueZettelId, removeZettelId } from "../utils/calendar-events";
+import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/calendar-events";
 import { getNextOccurrence, iterateOccurrencesInRange } from "../utils/date-recurrence";
 import { DebouncedNotifier } from "../utils/debounced-notifier";
 import { rebuildPhysicalInstanceFilename, sanitizeForFilename } from "../utils/file-utils";
@@ -374,90 +374,82 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const lockKey = `${recurringEvent.rRuleId}-${instanceDate.toISODate()}`;
 		const filePath = this.generateNodeInstanceFilePath(recurringEvent, instanceDate);
 
-		return withLock(this.creationLocks, lockKey, () =>
-			this.doCreatePhysicalInstance(recurringEvent, instanceDate, filePath)
-		);
-	}
+		return withLock(this.creationLocks, lockKey, async () => {
+			// Check if file already exists - if so, skip creation
+			if (this.app.vault.getAbstractFileByPath(filePath)) {
+				return null;
+			}
 
-	private async doCreatePhysicalInstance(
-		recurringEvent: NodeRecurringEvent,
-		instanceDate: DateTime,
-		filePath: string
-	): Promise<string | null> {
-		// Check if file already exists - if so, skip creation
-		if (this.app.vault.getAbstractFileByPath(filePath)) {
-			return null;
-		}
+			// Extract the instance title from the filename (already has ZettelID from generateNodeInstanceFilePath)
+			const filename = filePath.split("/").pop()?.replace(".md", "") || "";
 
-		// Extract the instance title from the filename (already has ZettelID from generateNodeInstanceFilePath)
-		const filename = filePath.split("/").pop()?.replace(".md", "") || "";
+			// Lazy load content if not already loaded (deferred from initial scan)
+			let content = recurringEvent.content;
+			if (!content) {
+				const sourceFile = this.app.vault.getAbstractFileByPath(recurringEvent.sourceFilePath);
+				const fullContent = await this.app.vault.cachedRead(sourceFile as TFile);
+				content = extractContentAfterFrontmatter(fullContent);
+				recurringEvent.content = content;
+			}
 
-		// Lazy load content if not already loaded (deferred from initial scan)
-		let content = recurringEvent.content;
-		if (!content) {
+			// Build frontmatter for the instance
+			const excludeProps = new Set([
+				this.settings.rruleProp,
+				this.settings.rruleSpecProp,
+				this.settings.startProp,
+				this.settings.endProp,
+				this.settings.dateProp,
+				this.settings.allDayProp,
+				"_Archived", // Don't copy _Archived property from source to instances
+			]);
+
+			const instanceFrontmatter: Record<string, unknown> = {};
+
+			// Copy non-excluded properties from source
+			for (const [key, value] of Object.entries(recurringEvent.frontmatter)) {
+				if (!excludeProps.has(key)) {
+					instanceFrontmatter[key] = value;
+				}
+			}
+
+			// Set instance-specific properties - CRITICAL for duplication detection
+			instanceFrontmatter[this.settings.rruleIdProp] = recurringEvent.rRuleId;
+			instanceFrontmatter.nodeRecurringInstanceDate = instanceDate.toISODate();
+
 			const sourceFile = this.app.vault.getAbstractFileByPath(recurringEvent.sourceFilePath);
-			const fullContent = await this.app.vault.cachedRead(sourceFile as TFile); // already verified to be a TFile in indexer
-			content = extractContentAfterFrontmatter(fullContent);
-			recurringEvent.content = content;
-		}
-
-		// Build frontmatter for the instance
-		const excludeProps = new Set([
-			this.settings.rruleProp,
-			this.settings.rruleSpecProp,
-			this.settings.startProp,
-			this.settings.endProp,
-			this.settings.dateProp,
-			this.settings.allDayProp,
-			"_Archived", // Don't copy _Archived property from source to instances
-		]);
-
-		const instanceFrontmatter: Record<string, unknown> = {};
-
-		// Copy non-excluded properties from source
-		for (const [key, value] of Object.entries(recurringEvent.frontmatter)) {
-			if (!excludeProps.has(key)) {
-				instanceFrontmatter[key] = value;
+			if (sourceFile instanceof TFile) {
+				instanceFrontmatter[this.settings.sourceProp] = createFileLink(sourceFile);
 			}
-		}
 
-		// Set instance-specific properties - CRITICAL for duplication detection
-		instanceFrontmatter[this.settings.rruleIdProp] = recurringEvent.rRuleId;
-		instanceFrontmatter.nodeRecurringInstanceDate = instanceDate.toISODate();
+			const { instanceStart, instanceEnd } = this.calculateInstanceTimes(recurringEvent, instanceDate);
 
-		const sourceFile = this.app.vault.getAbstractFileByPath(recurringEvent.sourceFilePath);
-		if (sourceFile instanceof TFile) {
-			instanceFrontmatter[this.settings.sourceProp] = createFileLink(sourceFile);
-		}
-
-		const { instanceStart, instanceEnd } = this.calculateInstanceTimes(recurringEvent, instanceDate);
-
-		// Set all day property if specified
-		if (recurringEvent.rrules.allDay !== undefined) {
-			instanceFrontmatter[this.settings.allDayProp] = recurringEvent.rrules.allDay;
-		}
-
-		// Use appropriate date properties based on all-day status
-		if (recurringEvent.rrules.allDay) {
-			instanceFrontmatter[this.settings.dateProp] = instanceStart.toISODate();
-		} else {
-			instanceFrontmatter[this.settings.startProp] = instanceStart.toUTC().toISO();
-			if (instanceEnd) {
-				instanceFrontmatter[this.settings.endProp] = instanceEnd.toUTC().toISO();
+			// Set all day property if specified
+			if (recurringEvent.rrules.allDay !== undefined) {
+				instanceFrontmatter[this.settings.allDayProp] = recurringEvent.rrules.allDay;
 			}
-		}
 
-		await this.templateService.createFile({
-			title: filename,
-			targetDirectory: this.settings.directory,
-			filename: filename,
-			content,
-			frontmatter: instanceFrontmatter,
+			// Use appropriate date properties based on all-day status
+			if (recurringEvent.rrules.allDay) {
+				instanceFrontmatter[this.settings.dateProp] = instanceStart.toISODate();
+			} else {
+				instanceFrontmatter[this.settings.startProp] = instanceStart.toUTC().toISO();
+				if (instanceEnd) {
+					instanceFrontmatter[this.settings.endProp] = instanceEnd.toUTC().toISO();
+				}
+			}
+
+			await this.templateService.createFile({
+				title: filename,
+				targetDirectory: this.settings.directory,
+				filename: filename,
+				content,
+				frontmatter: instanceFrontmatter,
+			});
+
+			// Don't notify here - let the batch operation handle notification
+			// Individual file creations will be picked up by the indexer
+			return filePath;
 		});
-
-		// Don't notify here - let the batch operation handle notification
-		// Individual file creations will be picked up by the indexer
-		return filePath;
 	}
 
 	async generateAllVirtualInstances(rangeStart: DateTime, rangeEnd: DateTime): Promise<ParsedEvent[]> {
@@ -579,16 +571,11 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 	private generateNodeInstanceFilePath(recurringEvent: NodeRecurringEvent, instanceDate: DateTime): string {
 		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
-		const titleWithoutZettel = removeZettelId(recurringEvent.title);
-		const instanceBaseName = `${titleWithoutZettel} ${dateStr}`;
-		const sanitizedBaseName = sanitizeForFilename(instanceBaseName);
-
-		// Use generateUniqueZettelId to ensure no collisions when creating multiple instances
-		const folderPath = this.settings.directory ? `${this.settings.directory}/` : "";
-		const zettelId = generateUniqueZettelId(this.app, folderPath, sanitizedBaseName);
-		const instanceTitle = `${sanitizedBaseName}-${zettelId}`;
-
-		return `${folderPath}${instanceTitle}.md`;
+		const titleNoZettel = removeZettelId(recurringEvent.title);
+		const zettelHash = hashRRuleIdToZettelFormat(recurringEvent.rRuleId);
+		const base = sanitizeForFilename(`${titleNoZettel} ${dateStr}`);
+		const folder = this.settings.directory ? `${this.settings.directory}/` : "";
+		return `${folder}${base}-${zettelHash}.md`;
 	}
 
 	getPhysicalInstancesByRRuleId(rruleId: string): PhysicalInstance[] {

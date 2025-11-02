@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 import { BehaviorSubject, Subject } from "rxjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { RecurringEventManager } from "../../src/core/recurring-event-manager";
 
 // Mock the dependencies early
 vi.mock("../../src/core/template-service");
@@ -115,17 +116,12 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 	describe("Basic Physical Instance Creation", () => {
 		it("should be able to instantiate RecurringEventManager", async () => {
-			// Dynamic import to avoid early initialization issues
-			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-
 			expect(() => {
 				new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 			}).not.toThrow();
 		});
 
 		it("should add recurring events to internal map", async () => {
-			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-
 			// No need to mock iterateOccurrencesInRange here, it's handled globally now
 
 			// Using default calculateRecurringInstanceDateTime mock
@@ -175,8 +171,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should find existing physical instances based on RRuleID", async () => {
-			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-
 			// Set indexing to incomplete to prevent auto-creation of instances
 			// This test is specifically about tracking existing instances, not creating new ones
 			mockIndexer.indexingComplete$ = new BehaviorSubject(false);
@@ -251,7 +245,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should exclude physical instance dates from virtual generation", async () => {
-			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
 			const { getNextOccurrence, isDateOnWeekdays } = await import(
 				"@real1ty-obsidian-plugins/utils/date-recurrence-utils"
 			);
@@ -332,8 +325,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 	describe("Settings Integration", () => {
 		it("should use futureInstancesCount from recurring event", async () => {
-			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-
 			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
 			const mockRecurringEvent = {
@@ -368,7 +359,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 	describe("Recurrence Type Specific Logic", () => {
 		describe("Daily Recurrence", () => {
 			it("should create all-day daily instances correctly", async () => {
-				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
 				const { TemplateService } = await import("../../src/core/templates");
 
 				// Mock template service to capture frontmatter operations
@@ -420,7 +410,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			});
 
 			it("should create timed daily instances with correct time extraction", async () => {
-				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
 				const { TemplateService } = await import("../../src/core/templates");
 
 				// Mock template service
@@ -470,7 +459,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		describe("Weekly/Bi-Weekly Recurrence", () => {
 			it("should create weekly instances with time extraction", async () => {
-				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
 				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
@@ -516,7 +504,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			});
 
 			it("should create bi-weekly instances with time extraction", async () => {
-				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
 				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
@@ -564,7 +551,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		describe("Monthly Recurrence", () => {
 			it("should create monthly all-day instances inheriting day of month", async () => {
-				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
 				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
@@ -612,7 +598,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			});
 
 			it("should create monthly timed instances inheriting day and time", async () => {
-				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
 				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
@@ -660,7 +645,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		describe("Yearly Recurrence", () => {
 			it("should create yearly all-day instances inheriting day and month", async () => {
-				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
 				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
@@ -708,7 +692,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			});
 
 			it("should create yearly timed instances inheriting day, month and time", async () => {
-				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
 				const { TemplateService } = await import("../../src/core/templates");
 
 				const mockFile = { path: "test.md" };
@@ -756,8 +739,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		describe("Virtual Instance Generation", () => {
 			it.skip("should generate virtual instances with correct date/time logic for different recurrence types", async () => {
-				const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-
 				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
 				const monthlyRecurringEvent = {
@@ -805,8 +786,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 	describe("Calendar Notification After Rapid Recurring Event Generation", () => {
 		it("should notify subscribers after bulk recurring event processing completes", async () => {
-			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-
 			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
 			// Mock the subscribe method to track notifications
@@ -891,8 +870,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should flush pending debounced refreshes when processing completes", async () => {
-			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-
 			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
 			const notificationCallback = vi.fn();
@@ -944,8 +921,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should notify after individual recurring event is added when indexing is already complete", async () => {
-			const { RecurringEventManager } = await import("../../src/core/recurring-event-manager");
-
 			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
 			// Set indexing as complete first
@@ -984,6 +959,280 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 			// Should have been notified after adding the event and creating instances
 			expect(notificationCallback).toHaveBeenCalled();
+		});
+	});
+
+	describe("Deterministic File Path Generation", () => {
+		it("should generate deterministic file paths based on (rRuleId, date)", async () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+
+			const recurringEvent = {
+				rRuleId: "1730000000000-abc12",
+				title: "Test Event",
+				rrules: {
+					type: "daily" as const,
+					allDay: false,
+					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					weekdays: [],
+				},
+				frontmatter: {
+					"Start Date": "2024-01-01T10:00:00.000Z",
+				},
+				sourceFilePath: "source.md",
+				content: "Test content",
+			};
+
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+
+			// Generate path twice - should be identical
+			const path1 = (manager as any).generateNodeInstanceFilePath(recurringEvent, instanceDate);
+			const path2 = (manager as any).generateNodeInstanceFilePath(recurringEvent, instanceDate);
+
+			expect(path1).toBe(path2);
+			expect(path1).toMatch(/Test Event 2024-01-15-\d{14}\.md$/);
+
+			manager.destroy();
+		});
+
+		it("should generate different paths for different dates", async () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+
+			const recurringEvent = {
+				rRuleId: "1730000000000-abc12",
+				title: "Test Event",
+				rrules: {
+					type: "daily" as const,
+					allDay: false,
+					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					weekdays: [],
+				},
+				frontmatter: {
+					"Start Date": "2024-01-01T10:00:00.000Z",
+				},
+				sourceFilePath: "source.md",
+				content: "Test content",
+			};
+
+			const date1 = DateTime.fromISO("2024-01-15T00:00:00Z");
+			const date2 = DateTime.fromISO("2024-01-16T00:00:00Z");
+
+			const path1 = (manager as any).generateNodeInstanceFilePath(recurringEvent, date1);
+			const path2 = (manager as any).generateNodeInstanceFilePath(recurringEvent, date2);
+
+			expect(path1).not.toBe(path2);
+			expect(path1).toContain("2024-01-15");
+			expect(path2).toContain("2024-01-16");
+
+			// But both should have the same zettel hash (from same rRuleId)
+			const hash1 = path1.match(/-(\d{14})\.md$/)?.[1];
+			const hash2 = path2.match(/-(\d{14})\.md$/)?.[1];
+			expect(hash1).toBe(hash2);
+
+			manager.destroy();
+		});
+
+		it("should generate different paths for different rRuleIds", async () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+
+			const event1 = {
+				rRuleId: "1730000000000-abc12",
+				title: "Test Event",
+				rrules: {
+					type: "daily" as const,
+					allDay: false,
+					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					weekdays: [],
+				},
+				frontmatter: {},
+				sourceFilePath: "source1.md",
+				content: "Test content",
+			};
+
+			const event2 = {
+				...event1,
+				rRuleId: "1730000000000-xyz99",
+				sourceFilePath: "source2.md",
+			};
+
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+
+			const path1 = (manager as any).generateNodeInstanceFilePath(event1, instanceDate);
+			const path2 = (manager as any).generateNodeInstanceFilePath(event2, instanceDate);
+
+			expect(path1).not.toBe(path2);
+
+			// Dates should be the same
+			expect(path1).toContain("2024-01-15");
+			expect(path2).toContain("2024-01-15");
+
+			// But zettel hashes should be different
+			const hash1 = path1.match(/-(\d{14})\.md$/)?.[1];
+			const hash2 = path2.match(/-(\d{14})\.md$/)?.[1];
+			expect(hash1).not.toBe(hash2);
+
+			manager.destroy();
+		});
+
+		it("should not create duplicate instances if file already exists", async () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+
+			const recurringEvent = {
+				rRuleId: "1730000000000-abc12",
+				title: "Test Event",
+				rrules: {
+					type: "daily" as const,
+					allDay: false,
+					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					weekdays: [],
+				},
+				frontmatter: {
+					"Start Date": "2024-01-01T10:00:00.000Z",
+				},
+				sourceFilePath: "source.md",
+				content: "Test content",
+			};
+
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+			const expectedPath = (manager as any).generateNodeInstanceFilePath(recurringEvent, instanceDate);
+
+			// Simulate file already exists
+			vi.mocked(mockApp.vault.getAbstractFileByPath).mockReturnValueOnce({
+				path: expectedPath,
+				basename: "Test Event 2024-01-15-12345678901234",
+			} as any);
+
+			// Try to create instance - should return null (not created)
+			const result = await (manager as any).createPhysicalInstance(recurringEvent, instanceDate);
+
+			expect(result).toBeNull();
+			expect(mockApp.vault.create).not.toHaveBeenCalled();
+
+			manager.destroy();
+		});
+
+		it("should create instance if file does not exist", async () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+
+			const recurringEvent = {
+				rRuleId: "1730000000000-abc12",
+				title: "Test Event",
+				rrules: {
+					type: "daily" as const,
+					allDay: false,
+					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					weekdays: [],
+				},
+				frontmatter: {
+					"Start Date": "2024-01-01T10:00:00.000Z",
+				},
+				sourceFilePath: "source.md",
+				content: "Test content",
+			};
+
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+
+			// File doesn't exist
+			vi.mocked(mockApp.vault.getAbstractFileByPath).mockReturnValue(null);
+
+			// Try to create instance - should succeed
+			const result = await (manager as any).createPhysicalInstance(recurringEvent, instanceDate);
+
+			expect(result).toBeTruthy();
+			expect(result).toMatch(/Test Event 2024-01-15-\d{14}\.md$/);
+
+			manager.destroy();
+		});
+
+		it("should prevent race condition with deterministic paths", async () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+
+			const recurringEvent = {
+				rRuleId: "1730000000000-abc12",
+				title: "Test Event",
+				rrules: {
+					type: "daily" as const,
+					allDay: false,
+					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					weekdays: [],
+				},
+				frontmatter: {
+					"Start Date": "2024-01-01T10:00:00.000Z",
+				},
+				sourceFilePath: "source.md",
+				content: "Test content",
+			};
+
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+
+			// First call: file doesn't exist, create it
+			vi.mocked(mockApp.vault.getAbstractFileByPath).mockReturnValueOnce(null);
+
+			const result1 = await (manager as any).createPhysicalInstance(recurringEvent, instanceDate);
+			expect(result1).toBeTruthy();
+
+			// Second call: file now exists (from first call)
+			const createdPath = result1;
+			vi.mocked(mockApp.vault.getAbstractFileByPath).mockReturnValueOnce({
+				path: createdPath,
+				basename: createdPath.split("/").pop()?.replace(".md", ""),
+			} as any);
+
+			const result2 = await (manager as any).createPhysicalInstance(recurringEvent, instanceDate);
+			expect(result2).toBeNull(); // Should not create duplicate
+
+			// Both attempts used the same deterministic path
+			expect(result1).toBe(createdPath);
+
+			manager.destroy();
+		});
+
+		it("should use consistent zettel hash for same rRuleId across title changes", async () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+
+			const event1 = {
+				rRuleId: "1730000000000-abc12",
+				title: "Original Title",
+				rrules: {
+					type: "daily" as const,
+					allDay: false,
+					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					weekdays: [],
+				},
+				frontmatter: {},
+				sourceFilePath: "source.md",
+				content: "Test content",
+			};
+
+			const event2 = {
+				...event1,
+				title: "Updated Title",
+			};
+
+			const path1 = (manager as any).generateNodeInstanceFilePath(event1, instanceDate);
+			const path2 = (manager as any).generateNodeInstanceFilePath(event2, instanceDate);
+
+			// Paths should be different (different titles)
+			expect(path1).not.toBe(path2);
+
+			// But zettel hashes should be identical (same rRuleId)
+			const hash1 = path1.match(/-(\d{14})\.md$/)?.[1];
+			const hash2 = path2.match(/-(\d{14})\.md$/)?.[1];
+			expect(hash1).toBe(hash2);
+
+			// Title parts should be different
+			expect(path1).toContain("Original Title");
+			expect(path2).toContain("Updated Title");
+
+			manager.destroy();
 		});
 	});
 });
