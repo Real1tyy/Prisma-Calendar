@@ -66,6 +66,61 @@ When you create a recurring event, the system automatically assigns a unique `RR
 
 **Never manually set or modify the `RRuleID`** - this is entirely managed by the system and changing it will break the association between events.
 
+### Duplicate Prevention
+
+The system uses a sophisticated mechanism to prevent duplicate instance creation, even in complex scenarios like:
+- Multiple file scans happening simultaneously
+- Vault sync conflicts
+- Plugin restarts during instance generation
+- Race conditions from concurrent operations
+
+**How it works:**
+
+For every recurring event instance, the system generates a **deterministic file path** based on two pieces of information:
+
+1. **RRuleID** (the unique identifier for the recurring series)
+2. **Instance Date** (the specific date for this occurrence)
+
+The file path format is:
+```
+[Title] [YYYY-MM-DD]-[14-digit-hash].md
+```
+
+**Example:**
+- RRuleID: `1730000000000-abc12`
+- Instance Date: `2025-01-15`
+- Generated Path: `Weekly Meeting 2025-01-15-12345678901234.md`
+
+**Key Properties:**
+
+✅ **Determinism**: For any given (RRuleID, date) pair, the file path is **always identical**
+- Same RRuleID + same date = same file path (every time)
+- The 14-digit hash is computed deterministically from the RRuleID
+
+✅ **Uniqueness**: Different RRuleIDs produce different hashes
+- Different recurring events never collide
+- Each series has its own unique identifier
+
+✅ **Filesystem Deduplication**: The file path itself acts as the deduplication gate
+- If file exists → creation is skipped (returns immediately)
+- No duplicates can be created, regardless of how many times the system tries
+
+**Why this matters:**
+
+This design ensures that **no matter how many times** the system attempts to create an instance for a specific date, only **one file** is ever created. The filesystem itself becomes the source of truth for existence, making the system resilient to:
+
+- Race conditions (multiple threads trying to create the same instance)
+- Plugin reloads (reprocessing the same events)
+- Vault synchronization (files being scanned multiple times)
+- Indexer restarts (re-scanning existing files)
+
+**Technical Note:**
+
+The deterministic hash is a 14-digit number generated from the RRuleID using a consistent hash function. This format:
+- Matches the existing Zettel ID pattern (`-\d{14}`)
+- Is compatible with all existing file naming utilities
+- Remains stable across title changes (only the title part changes, hash stays the same)
+
 ---
 
 ## Creating Recurring Events
