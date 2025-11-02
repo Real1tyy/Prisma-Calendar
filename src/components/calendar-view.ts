@@ -1241,6 +1241,36 @@ export class CalendarView extends MountableView(ItemView) {
 		await this.handleEventUpdate(info, "Error updating event duration:");
 	}
 
+	private setupKeyboardShortcuts(): void {
+		this.containerEl.setAttribute("tabindex", "-1");
+
+		const keydownHandler = (e: KeyboardEvent) => {
+			if (!this.calendar) return;
+
+			// Only handle arrow keys without any modifiers
+			if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+
+			if (e.key === "ArrowLeft") {
+				e.preventDefault();
+				this.calendar.prev();
+			} else if (e.key === "ArrowRight") {
+				e.preventDefault();
+				this.calendar.next();
+			}
+		};
+
+		this.containerEl.addEventListener("keydown", keydownHandler);
+
+		this.containerEl.addEventListener("click", () => {
+			this.containerEl.focus();
+		});
+
+		// Register cleanup
+		this.register(() => {
+			this.containerEl.removeEventListener("keydown", keydownHandler);
+		});
+	}
+
 	async mount(): Promise<void> {
 		const root = this.containerEl.children[1] as HTMLElement;
 		root.empty();
@@ -1254,6 +1284,10 @@ export class CalendarView extends MountableView(ItemView) {
 		// Wait for layout before rendering FullCalendar
 		await this.waitForLayout(this.container);
 		await this.initializeCalendar(this.container);
+
+		this.setupKeyboardShortcuts();
+
+		setTimeout(() => this.containerEl.focus(), 100);
 
 		// Resize updates
 		this.observeResize(this.container, () => this.calendar?.updateSize());
