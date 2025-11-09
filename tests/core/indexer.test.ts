@@ -176,6 +176,277 @@ describe("Indexer", () => {
 		});
 	});
 
+	describe("markPastInstancesAsDone", () => {
+		let mockApp: any;
+		let processFrontMatterSpy: MockedFunction<any>;
+
+		beforeEach(() => {
+			processFrontMatterSpy = vi.fn((_file: TFile, callback: (fm: Record<string, any>) => void) => {
+				// Simulate calling the callback with a mutable frontmatter object
+				const fm: Record<string, any> = {};
+				callback(fm);
+				return Promise.resolve();
+			});
+
+			mockApp = {
+				vault: mockVault,
+				metadataCache: mockMetadataCache,
+				fileManager: { processFrontMatter: processFrontMatterSpy },
+			};
+		});
+
+		it("should NOT mark source recurring events as done even if they are in the past", async () => {
+			// Setup: Enable the markPastInstancesAsDone setting
+			const settingsWithMarkDone = {
+				...settings,
+				markPastInstancesAsDone: true,
+				startProp: "start",
+				endProp: "end",
+				rruleProp: "RRule",
+				statusProperty: "Status",
+				doneValue: "Done",
+			};
+			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
+			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone);
+
+			// Create a source recurring event that is in the past
+			const pastRecurringFile = createMockFile("Events/weekly-meeting.md");
+			const pastDate = new Date();
+			pastDate.setDate(pastDate.getDate() - 7); // 7 days ago
+
+			mockMetadataCache.getFileCache.mockReturnValue({
+				frontmatter: {
+					start: pastDate.toISOString(),
+					end: new Date(pastDate.getTime() + 3600000).toISOString(), // 1 hour later
+					RRule: "weekly", // This makes it a SOURCE recurring event
+					Status: "active",
+				},
+			});
+
+			mockVault.getMarkdownFiles.mockReturnValue([pastRecurringFile]);
+
+			// Act: Start indexing which triggers markPastEventAsDone
+			await indexerWithMarkDone.start();
+
+			// Wait for async operations
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			// Assert: processFrontMatter should NOT be called because this is a source recurring event
+			expect(processFrontMatterSpy).not.toHaveBeenCalled();
+
+			indexerWithMarkDone.stop();
+		});
+
+		it("should mark regular past events as done when setting is enabled", async () => {
+			// Setup: Enable the markPastInstancesAsDone setting
+			const settingsWithMarkDone = {
+				...settings,
+				markPastInstancesAsDone: true,
+				startProp: "start",
+				endProp: "end",
+				statusProperty: "Status",
+				doneValue: "Done",
+				rruleProp: "RRule",
+			};
+			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
+			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone);
+
+			// Create a regular event (NOT a recurring source) that is in the past
+			const pastEventFile = createMockFile("Events/past-meeting.md");
+			const pastDate = new Date();
+			pastDate.setDate(pastDate.getDate() - 3); // 3 days ago
+
+			mockMetadataCache.getFileCache.mockReturnValue({
+				frontmatter: {
+					start: pastDate.toISOString(),
+					end: new Date(pastDate.getTime() + 3600000).toISOString(), // 1 hour later
+					Status: "active",
+					// No RRule property - this is a regular event
+				},
+			});
+
+			mockVault.getMarkdownFiles.mockReturnValue([pastEventFile]);
+
+			// Act: Start indexing
+			await indexerWithMarkDone.start();
+
+			// Wait for async operations
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			// Assert: processFrontMatter should be called to mark the event as done
+			expect(processFrontMatterSpy).toHaveBeenCalledWith(pastEventFile, expect.any(Function));
+
+			// Verify the callback sets the status to done
+			const callback = processFrontMatterSpy.mock.calls[0][1] as (fm: Record<string, any>) => void;
+			const testFm: Record<string, any> = {};
+			callback(testFm);
+			expect(testFm.Status).toBe("Done");
+
+			indexerWithMarkDone.stop();
+		});
+
+		it("should NOT mark future events as done", async () => {
+			// Setup: Enable the markPastInstancesAsDone setting
+			const settingsWithMarkDone = {
+				...settings,
+				markPastInstancesAsDone: true,
+				startProp: "start",
+				endProp: "end",
+				statusProperty: "Status",
+				doneValue: "Done",
+			};
+			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
+			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone);
+
+			// Create a future event
+			const futureEventFile = createMockFile("Events/future-meeting.md");
+			const futureDate = new Date();
+			futureDate.setDate(futureDate.getDate() + 7); // 7 days in the future
+
+			mockMetadataCache.getFileCache.mockReturnValue({
+				frontmatter: {
+					start: futureDate.toISOString(),
+					end: new Date(futureDate.getTime() + 3600000).toISOString(),
+					Status: "active",
+				},
+			});
+
+			mockVault.getMarkdownFiles.mockReturnValue([futureEventFile]);
+
+			// Act: Start indexing
+			await indexerWithMarkDone.start();
+
+			// Wait for async operations
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			// Assert: processFrontMatter should NOT be called
+			expect(processFrontMatterSpy).not.toHaveBeenCalled();
+
+			indexerWithMarkDone.stop();
+		});
+
+		it("should NOT mark events as done when setting is disabled", async () => {
+			// Setup: Disable the markPastInstancesAsDone setting
+			const settingsWithoutMarkDone = {
+				...settings,
+				markPastInstancesAsDone: false,
+				startProp: "start",
+				endProp: "end",
+			};
+			const settingsStoreWithoutMarkDone = createMockSingleCalendarSettingsStore(settingsWithoutMarkDone);
+			const indexerWithoutMarkDone = new Indexer(mockApp, settingsStoreWithoutMarkDone);
+
+			// Create a past event
+			const pastEventFile = createMockFile("Events/past-meeting.md");
+			const pastDate = new Date();
+			pastDate.setDate(pastDate.getDate() - 3);
+
+			mockMetadataCache.getFileCache.mockReturnValue({
+				frontmatter: {
+					start: pastDate.toISOString(),
+					end: new Date(pastDate.getTime() + 3600000).toISOString(),
+					Status: "active",
+				},
+			});
+
+			mockVault.getMarkdownFiles.mockReturnValue([pastEventFile]);
+
+			// Act: Start indexing
+			await indexerWithoutMarkDone.start();
+
+			// Wait for async operations
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			// Assert: processFrontMatter should NOT be called because setting is disabled
+			expect(processFrontMatterSpy).not.toHaveBeenCalled();
+
+			indexerWithoutMarkDone.stop();
+		});
+
+		it("should handle all-day past events correctly and NOT mark recurring sources", async () => {
+			// Setup: Enable the markPastInstancesAsDone setting
+			const settingsWithMarkDone = {
+				...settings,
+				markPastInstancesAsDone: true,
+				dateProp: "Date",
+				allDayProp: "All Day",
+				statusProperty: "Status",
+				doneValue: "Done",
+				rruleProp: "RRule",
+			};
+			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
+			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone);
+
+			// Create an all-day recurring source event in the past
+			const pastAllDayRecurringFile = createMockFile("Events/daily-task.md");
+			const pastDate = new Date();
+			pastDate.setDate(pastDate.getDate() - 5);
+			const dateString = pastDate.toISOString().split("T")[0];
+
+			mockMetadataCache.getFileCache.mockReturnValue({
+				frontmatter: {
+					Date: dateString,
+					"All Day": true,
+					RRule: "daily", // SOURCE recurring event
+					Status: "active",
+				},
+			});
+
+			mockVault.getMarkdownFiles.mockReturnValue([pastAllDayRecurringFile]);
+
+			// Act: Start indexing
+			await indexerWithMarkDone.start();
+
+			// Wait for async operations
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			// Assert: Should NOT mark as done because it's a source recurring event
+			expect(processFrontMatterSpy).not.toHaveBeenCalled();
+
+			indexerWithMarkDone.stop();
+		});
+
+		it("should NOT update status if already set to done value", async () => {
+			// Setup: Enable the markPastInstancesAsDone setting
+			const settingsWithMarkDone = {
+				...settings,
+				markPastInstancesAsDone: true,
+				startProp: "start",
+				endProp: "end",
+				statusProperty: "Status",
+				doneValue: "Done",
+			};
+			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
+			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone);
+
+			// Create a past event that is already marked as done
+			const pastEventFile = createMockFile("Events/completed-meeting.md");
+			const pastDate = new Date();
+			pastDate.setDate(pastDate.getDate() - 3);
+
+			mockMetadataCache.getFileCache.mockReturnValue({
+				frontmatter: {
+					start: pastDate.toISOString(),
+					end: new Date(pastDate.getTime() + 3600000).toISOString(),
+					Status: "Done", // Already done
+				},
+			});
+
+			mockVault.getMarkdownFiles.mockReturnValue([pastEventFile]);
+
+			// Act: Start indexing
+			await indexerWithMarkDone.start();
+
+			// Wait for async operations
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			// Assert: processFrontMatter should NOT be called because status is already "Done"
+			expect(processFrontMatterSpy).not.toHaveBeenCalled();
+
+			indexerWithMarkDone.stop();
+		});
+	});
+
 	function createMockFile(path: string): TFile {
 		return {
 			path,

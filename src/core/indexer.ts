@@ -279,7 +279,12 @@ export class Indexer {
 	}
 
 	private async markPastEventAsDone(file: TFile, frontmatter: Record<string, unknown>): Promise<void> {
-		// Don't mark source recurring events as done - they are templates for future instances
+		// CRITICAL PROTECTION: Don't mark source recurring events as done
+		// Source recurring events (identified by the presence of rruleProp) are templates
+		// that generate virtual and physical instances. Marking them as done would:
+		// 1. Break the recurring event system
+		// 2. Prevent generation of future instances
+		// 3. Cause all instances to appear as "done" since they inherit from the source
 		const isSourceRecurringEvent = !!frontmatter[this._settings.rruleProp];
 		if (isSourceRecurringEvent) {
 			return;
