@@ -75,6 +75,13 @@ export function calculateDuration(start: Date, end: Date): string {
 	return `${hours}h ${minutes}m`;
 }
 
+export function calculateDurationMinutes(start: string | Date, end: string | Date): number {
+	const startDate = typeof start === "string" ? new Date(start) : start;
+	const endDate = typeof end === "string" ? new Date(end) : end;
+	const durationMs = endDate.getTime() - startDate.getTime();
+	return Math.round(durationMs / (1000 * 60));
+}
+
 export function toLocalISOString(date: Date): string {
 	const year = date.getFullYear();
 	const month = String(date.getMonth() + 1).padStart(2, "0");

@@ -26,6 +26,7 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 ### Parsing
 
 - Default duration (minutes): used when only `Start` is present
+- Show duration field in event modal: display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa (enabled by default)
 - Mark past events as done: automatically mark past events as done during startup by updating their status property (configure the status property and done value in the Properties section)
 
 ### Timezone

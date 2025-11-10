@@ -4,7 +4,13 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../types/recurring-event";
 import { extractZettelId, removeZettelId } from "../utils/calendar-events";
 import type { RecurrenceType, Weekday } from "../utils/date-recurrence";
-import { categorizeProperties, formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../utils/format";
+import {
+	calculateDurationMinutes,
+	categorizeProperties,
+	formatDateOnly,
+	formatDateTimeForInput,
+	inputValueToISOString,
+} from "../utils/format";
 
 interface EventModalData {
 	title: string;
@@ -38,6 +44,8 @@ abstract class BaseEventModal extends Modal {
 	public titleInput!: HTMLInputElement;
 	public startInput!: HTMLInputElement;
 	public endInput!: HTMLInputElement;
+	public durationInput!: HTMLInputElement;
+	protected durationContainer!: HTMLElement;
 	protected dateInput!: HTMLInputElement;
 	public allDayCheckbox!: HTMLInputElement;
 	public originalFrontmatter: Record<string, unknown> = {};
@@ -120,6 +128,26 @@ abstract class BaseEventModal extends Modal {
 			value: this.event.end ? formatDateTimeForInput(this.event.end) : "",
 			cls: "setting-item-control",
 		});
+
+		// Duration field (for timed events) - conditionally shown based on settings
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (settings.showDurationField) {
+			this.durationContainer = this.timedContainer.createDiv("setting-item");
+			this.durationContainer.createEl("div", { text: "Duration (minutes)", cls: "setting-item-name" });
+			this.durationInput = this.durationContainer.createEl("input", {
+				type: "number",
+				cls: "setting-item-control",
+				attr: {
+					min: "0",
+					step: "1",
+				},
+			});
+
+			if (this.event.start && this.event.end) {
+				const durationMinutes = calculateDurationMinutes(this.event.start, this.event.end);
+				this.durationInput.value = durationMinutes.toString();
+			}
+		}
 
 		// Container for ALL-DAY event fields (Date only)
 		this.allDayContainer = contentEl.createDiv("allday-event-fields");
@@ -276,7 +304,34 @@ abstract class BaseEventModal extends Modal {
 		return parseFrontmatterRecord(properties);
 	}
 
+	private updateDurationFromDates(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.showDurationField || !this.durationInput) return;
+
+		if (this.startInput.value && this.endInput.value) {
+			const durationMinutes = calculateDurationMinutes(this.startInput.value, this.endInput.value);
+			this.durationInput.value = durationMinutes.toString();
+		}
+	}
+
+	private updateEndFromDuration(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.showDurationField || !this.durationInput) return;
+
+		if (this.startInput.value && this.durationInput.value) {
+			const startDate = new Date(this.startInput.value);
+			const durationMinutes = Number.parseInt(this.durationInput.value, 10);
+
+			if (!Number.isNaN(durationMinutes) && durationMinutes >= 0) {
+				const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
+				this.endInput.value = formatDateTimeForInput(endDate);
+			}
+		}
+	}
+
 	private setupEventHandlers(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+
 		// Handle all-day toggle
 		this.allDayCheckbox.addEventListener("change", () => {
 			if (this.allDayCheckbox.checked) {
@@ -295,9 +350,22 @@ abstract class BaseEventModal extends Modal {
 				if (this.dateInput.value) {
 					this.startInput.value = `${this.dateInput.value}T09:00`;
 					this.endInput.value = `${this.dateInput.value}T10:00`;
+					this.updateDurationFromDates();
 				}
 			}
 		});
+
+		if (settings.showDurationField && this.durationInput) {
+			this.startInput.addEventListener("change", () => {
+				this.updateDurationFromDates();
+			});
+			this.endInput.addEventListener("change", () => {
+				this.updateDurationFromDates();
+			});
+			this.durationInput.addEventListener("input", () => {
+				this.updateEndFromDuration();
+			});
+		}
 
 		// Handle recurring event checkbox toggle
 		this.recurringCheckbox.addEventListener("change", () => {

@@ -46,6 +46,12 @@ export class GeneralSettings {
 		});
 
 		this.ui.addToggle(containerEl, {
+			key: "showDurationField",
+			name: "Show duration field in event modal",
+			desc: "Display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa.",
+		});
+
+		this.ui.addToggle(containerEl, {
 			key: "markPastInstancesAsDone",
 			name: "Mark past events as done",
 			desc: "Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section.",
