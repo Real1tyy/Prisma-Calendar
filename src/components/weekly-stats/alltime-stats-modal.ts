@@ -10,23 +10,29 @@ export class AllTimeStatsModal extends StatsModal {
 
 	protected async renderContent(): Promise<void> {
 		const { contentEl } = this;
-		contentEl.empty();
+
+		if (this.contentContainer) {
+			this.contentContainer.remove();
+		}
+
+		this.contentContainer = contentEl.createDiv("prisma-stats-content");
 
 		const events = await this.bundle.eventStore.getAllEvents();
-		const stats = aggregateStats(events);
+		const categoryProp = this.bundle.settingsStore.currentSettings.categoryProp || "Category";
+		const stats = aggregateStats(events, undefined, undefined, this.aggregationMode, categoryProp);
 
-		this.renderHeader(contentEl, stats);
+		this.renderHeader(this.contentContainer, stats);
 
 		if (stats.entries.length === 0) {
-			contentEl.createDiv({
+			this.contentContainer.createDiv({
 				text: "No events found.",
 				cls: "prisma-stats-empty",
 			});
 			return;
 		}
 
-		this.chartComponent = new ChartComponent(contentEl, stats.entries, stats.totalDuration);
-		this.tableComponent = new TableComponent(contentEl, stats.entries, stats.totalDuration);
+		this.chartComponent = new ChartComponent(this.contentContainer, stats.entries, stats.totalDuration);
+		this.tableComponent = new TableComponent(this.contentContainer, stats.entries, stats.totalDuration);
 	}
 
 	protected getModalTitle(): string {

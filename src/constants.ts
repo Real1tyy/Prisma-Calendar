@@ -61,6 +61,7 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_MINUTES_BEFORE_PROP: "Minutes Before",
 	DEFAULT_DAYS_BEFORE_PROP: "Days Before",
 	DEFAULT_ALREADY_NOTIFIED_PROP: "Already Notified",
+	DEFAULT_CATEGORY_PROP: "Category",
 
 	// Notification Settings
 	DEFAULT_ENABLE_NOTIFICATIONS: true,

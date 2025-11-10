@@ -26,6 +26,7 @@ export const PropsSettingsSchema = z.object({
 	frontmatterDisplayProperties: z.array(z.string()).default([]), // frontmatter properties to display inside event chips
 	statusProperty: z.string().default(SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY), // property name to manage event status
 	doneValue: z.string().default(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE), // value to set when marking event as done
+	categoryProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_CATEGORY_PROP), // property name for event categories used in statistics
 });
 
 export const NotificationsSettingsSchema = z.object({

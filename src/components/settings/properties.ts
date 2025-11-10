@@ -112,6 +112,13 @@ export class PropertiesSettings {
 			placeholder: SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE,
 		});
 
+		this.ui.addText(containerEl, {
+			key: "categoryProp",
+			name: "Category property",
+			desc: "Frontmatter property name for event categories (used for grouping in statistics)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_CATEGORY_PROP,
+		});
+
 		// Add description for event types
 		const eventTypesDesc = containerEl.createDiv("settings-info-box");
 

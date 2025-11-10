@@ -13,6 +13,11 @@ All notable changes to this project will be documented here.
 - **Use Case**: Instead of clicking through the date picker to change an event's end time, simply type the desired duration in minutes for instant adjustment.
 
 #### Enhanced Statistics System
+- **Category-Based Aggregation**: Toggle between two aggregation modes in all statistics views (weekly, monthly, and all-time):
+  - **Event Name Mode** (default): Groups events by their cleaned title names (strips IDs and timestamps)
+  - **Category Mode**: Groups events by their frontmatter category property value. Events without a category are grouped under "No Category"
+  - Single toggle button at the top of each statistics modal displays current mode and cycles between modes on click
+  - Configurable category property name in Settings → Properties
 - **Monthly Statistics**: New statistics modal for analyzing entire calendar months. Navigate between months with previous/next arrows and "Today" button to return to the current month. Access via command palette (`Show monthly statistics`) or custom hotkey.
 - **All-Time Statistics**: View lifetime statistics across all events in your vault. No navigation controls—shows cumulative totals for your entire event history. Perfect for annual reviews and long-term pattern identification. Access via command palette (`Show all-time statistics`) or custom hotkey.
 

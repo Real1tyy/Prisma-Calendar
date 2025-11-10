@@ -65,13 +65,15 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 ### **Statistics & Time Tracking**
 - **Multiple time periods** - Weekly, monthly, and all-time statistics views
 - **Visual time tracking** - Pie chart and breakdown table showing how you spend your time
-- **Smart event grouping** - Automatically groups events by name (strips Zettel IDs) and type
-- **Recurring event aggregation** - All recurring events grouped as "Recurring Events"
+- **Dual aggregation modes** - Toggle between "Event Name" and "Category" grouping:
+  - **Event Name mode**: Groups by cleaned event title (strips Zettel IDs and timestamps)
+  - **Category mode**: Groups by frontmatter category property (configurable in settings)
+- **Smart event grouping** - Automatically groups events by name or category with fallback to "No Category"
 - **Period navigation** - Browse through weeks, months, or view lifetime totals
 - **Paginated tables** - 20 entries per page for optimal performance with large datasets
 - **Timed events focus** - Only includes timed events for meaningful duration tracking
 - **Detailed metrics** - See event count, total duration, and percentage for each category
-- **Example**: See that "Meetings" took 12h (35%), "Deep Work" 18h (53%), "Recurring" 4h (12%)
+- **Example**: See that "Work" took 18h (52%), "Personal" 10h (29%), "Health" 6h (17%)
 
 ### **Frontmatter Display**
 - **Show custom properties** - Display additional frontmatter fields inside event chips

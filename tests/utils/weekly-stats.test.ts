@@ -1333,3 +1333,429 @@ describe("aggregateMonthlyStats", () => {
 		expect(febStats.entries).toHaveLength(1);
 	});
 });
+
+describe("Category-based aggregation", () => {
+	describe("aggregateWeeklyStats with category mode", () => {
+		it("should aggregate events by category property", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Team Meeting",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Client Call",
+					start: "2025-02-04T14:00:00Z",
+					end: "2025-02-04T15:30:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+				{
+					id: "3",
+					ref: { filePath: "event3.md" },
+					title: "Gym Session",
+					start: "2025-02-05T18:00:00Z",
+					end: "2025-02-05T19:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Personal",
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries).toHaveLength(2);
+
+			const workEntry = stats.entries.find((e) => e.name === "Work");
+			expect(workEntry).toBeDefined();
+			expect(workEntry?.count).toBe(2);
+			expect(workEntry?.duration).toBe(150 * 60 * 1000); // 150 minutes total
+
+			const personalEntry = stats.entries.find((e) => e.name === "Personal");
+			expect(personalEntry).toBeDefined();
+			expect(personalEntry?.count).toBe(1);
+			expect(personalEntry?.duration).toBe(60 * 60 * 1000); // 60 minutes
+		});
+
+		it("should use 'No Category' for events without category property", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Team Meeting",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Random Event",
+					start: "2025-02-04T14:00:00Z",
+					end: "2025-02-04T15:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					// No meta at all
+				},
+				{
+					id: "3",
+					ref: { filePath: "event3.md" },
+					title: "Another Event",
+					start: "2025-02-05T10:00:00Z",
+					end: "2025-02-05T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						// Has meta but no Category property
+						Status: "Active",
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries).toHaveLength(2);
+
+			const noCategoryEntry = stats.entries.find((e) => e.name === "No Category");
+			expect(noCategoryEntry).toBeDefined();
+			expect(noCategoryEntry?.count).toBe(2);
+
+			const workEntry = stats.entries.find((e) => e.name === "Work");
+			expect(workEntry).toBeDefined();
+			expect(workEntry?.count).toBe(1);
+		});
+
+		it("should handle custom category property name", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Event 1",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Type: "Meeting",
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Event 2",
+					start: "2025-02-04T10:00:00Z",
+					end: "2025-02-04T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Type: "Task",
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Type");
+
+			expect(stats.entries).toHaveLength(2);
+			expect(stats.entries.some((e) => e.name === "Meeting")).toBe(true);
+			expect(stats.entries.some((e) => e.name === "Task")).toBe(true);
+		});
+
+		it("should still skip all-day events in category mode", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "All Day Event",
+					start: "2025-02-03T00:00:00Z",
+					allDay: true,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Timed Event",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].name).toBe("Work");
+			expect(stats.entries[0].count).toBe(1);
+		});
+
+		it("should preserve isRecurring flag for virtual events in category mode", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "recurring.md" },
+					title: "Standup",
+					start: "2025-02-03T09:00:00Z",
+					end: "2025-02-03T09:15:00Z",
+					allDay: false,
+					isVirtual: true,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "recurring.md" },
+					title: "Standup",
+					start: "2025-02-04T09:00:00Z",
+					end: "2025-02-04T09:15:00Z",
+					allDay: false,
+					isVirtual: true,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].name).toBe("Work");
+			expect(stats.entries[0].isRecurring).toBe(true);
+		});
+
+		it("should handle empty category values as 'No Category'", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Event 1",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "",
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].name).toBe("No Category");
+		});
+
+		it("should sort categories by duration descending", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Short Work",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T10:30:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Long Personal",
+					start: "2025-02-04T10:00:00Z",
+					end: "2025-02-04T13:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Personal",
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries[0].name).toBe("Personal");
+			expect(stats.entries[1].name).toBe("Work");
+		});
+
+		it("should default to name mode when mode parameter is 'name'", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Meeting 20250203",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Meeting 20250204",
+					start: "2025-02-04T10:00:00Z",
+					end: "2025-02-04T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "name", "Category");
+
+			// Should group by cleaned name, not category
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].name).toBe("Meeting");
+			expect(stats.entries[0].count).toBe(2);
+		});
+	});
+
+	describe("aggregateMonthlyStats with category mode", () => {
+		it("should aggregate monthly events by category", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Meeting 1",
+					start: "2025-02-05T10:00:00Z",
+					end: "2025-02-05T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Meeting 2",
+					start: "2025-02-12T10:00:00Z",
+					end: "2025-02-12T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+				{
+					id: "3",
+					ref: { filePath: "event3.md" },
+					title: "Gym",
+					start: "2025-02-15T18:00:00Z",
+					end: "2025-02-15T19:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Health",
+					},
+				},
+			];
+
+			const monthDate = new Date("2025-02-15T12:00:00");
+			const stats = aggregateMonthlyStats(events, monthDate, "category", "Category");
+
+			expect(stats.entries).toHaveLength(2);
+
+			const workEntry = stats.entries.find((e) => e.name === "Work");
+			expect(workEntry).toBeDefined();
+			expect(workEntry?.count).toBe(2);
+
+			const healthEntry = stats.entries.find((e) => e.name === "Health");
+			expect(healthEntry).toBeDefined();
+			expect(healthEntry?.count).toBe(1);
+		});
+
+		it("should handle 'No Category' for monthly stats", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Event 1",
+					start: "2025-02-05T10:00:00Z",
+					end: "2025-02-05T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Event 2",
+					start: "2025-02-12T10:00:00Z",
+					end: "2025-02-12T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+					},
+				},
+			];
+
+			const monthDate = new Date("2025-02-15T12:00:00");
+			const stats = aggregateMonthlyStats(events, monthDate, "category", "Category");
+
+			expect(stats.entries).toHaveLength(2);
+			expect(stats.entries.some((e) => e.name === "No Category")).toBe(true);
+			expect(stats.entries.some((e) => e.name === "Work")).toBe(true);
+		});
+	});
+});

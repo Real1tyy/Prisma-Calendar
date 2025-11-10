@@ -46,6 +46,7 @@ Tell Prisma Calendar which frontmatter keys you use.
 - ZettelID property (optional): when set, a timestamp-based ID is generated on creation/cloning (see [ZettelID Naming System](./features/zettelid-naming) for details)
 - Status property: frontmatter property name for event status (default: `STATUS`), used when automatically marking past events as done
 - Done value: value to set in the status property when marking an event as done (default: `Done`)
+- Category property: frontmatter property name for event categories (default: `Category`), used for grouping in statistics views
 
 ### Recurring (node-based)
 

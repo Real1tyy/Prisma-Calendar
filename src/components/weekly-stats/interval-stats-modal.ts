@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { ParsedEvent } from "../../core/parser";
-import type { Stats } from "../../utils/weekly-stats";
+import type { AggregationMode, Stats } from "../../utils/weekly-stats";
 import { formatDuration } from "../../utils/weekly-stats";
 import { StatsModal } from "./base-stats-modal";
 import { ChartComponent } from "./chart-component";
@@ -11,7 +11,7 @@ export interface IntervalConfig {
 	getBounds(date: Date): { start: Date; end: Date };
 	navigateNext(date: Date): void;
 	navigatePrevious(date: Date): void;
-	aggregateStats(events: ParsedEvent[], date: Date): Stats;
+	aggregateStats(events: ParsedEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats;
 	formatDateRange(start: Date, end: Date): string;
 }
 
@@ -56,7 +56,12 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 	protected async renderContent(): Promise<void> {
 		const { contentEl } = this;
-		contentEl.empty();
+
+		if (this.contentContainer) {
+			this.contentContainer.remove();
+		}
+
+		this.contentContainer = contentEl.createDiv("prisma-stats-content");
 
 		const { start, end } = this.intervalConfig.getBounds(this.currentDate);
 
@@ -65,20 +70,21 @@ export abstract class IntervalStatsModal extends StatsModal {
 			end: end.toISOString(),
 		});
 
-		const stats = this.intervalConfig.aggregateStats(events, this.currentDate);
+		const categoryProp = this.bundle.settingsStore.currentSettings.categoryProp || "Category";
+		const stats = this.intervalConfig.aggregateStats(events, this.currentDate, this.aggregationMode, categoryProp);
 
-		this.renderHeader(contentEl, start, end, stats);
+		this.renderHeader(this.contentContainer, start, end, stats);
 
 		if (stats.entries.length === 0) {
-			contentEl.createDiv({
+			this.contentContainer.createDiv({
 				text: "No events found for this period.",
 				cls: "prisma-stats-empty",
 			});
 			return;
 		}
 
-		this.chartComponent = new ChartComponent(contentEl, stats.entries, stats.totalDuration);
-		this.tableComponent = new TableComponent(contentEl, stats.entries, stats.totalDuration);
+		this.chartComponent = new ChartComponent(this.contentContainer, stats.entries, stats.totalDuration);
+		this.tableComponent = new TableComponent(this.contentContainer, stats.entries, stats.totalDuration);
 	}
 
 	private renderHeader(contentEl: HTMLElement, start: Date, end: Date, stats: Stats): void {

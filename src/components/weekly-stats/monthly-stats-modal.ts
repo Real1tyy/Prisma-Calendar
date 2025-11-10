@@ -1,5 +1,5 @@
 import type { ParsedEvent } from "../../core/parser";
-import type { Stats } from "../../utils/weekly-stats";
+import type { AggregationMode, Stats } from "../../utils/weekly-stats";
 import { aggregateMonthlyStats, getMonthBounds } from "../../utils/weekly-stats";
 import type { IntervalConfig } from "./interval-stats-modal";
 import { IntervalStatsModal } from "./interval-stats-modal";
@@ -16,8 +16,8 @@ export class MonthlyStatsModal extends IntervalStatsModal {
 			date.setMonth(date.getMonth() - 1);
 		},
 
-		aggregateStats: (events: ParsedEvent[], date: Date): Stats => {
-			return aggregateMonthlyStats(events, date);
+		aggregateStats: (events: ParsedEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats => {
+			return aggregateMonthlyStats(events, date, mode, categoryProp);
 		},
 
 		formatDateRange: (start: Date, _end: Date): string => {

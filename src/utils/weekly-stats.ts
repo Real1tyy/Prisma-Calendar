@@ -1,6 +1,8 @@
 import type { ParsedEvent } from "../core/parser";
 import { extractNotesCoreName } from "./calendar-events";
 
+export type AggregationMode = "name" | "category";
+
 export interface StatEntry {
 	name: string;
 	duration: number; // in milliseconds
@@ -86,15 +88,22 @@ export function getMonthBounds(date: Date): { start: Date; end: Date } {
 }
 
 /**
- * Aggregates events for a given date range, grouping by name and calculating total durations.
+ * Aggregates events for a given date range, grouping by name or category.
  *
  * Rules:
  * 1. Only timed events are included (all-day events are skipped)
- * 2. Events are grouped by their cleaned name (with IDs and dates stripped)
- * 3. Both virtual (recurring) and regular events use their actual title
+ * 2. Events are grouped by their cleaned name (with IDs and dates stripped) or category
+ * 3. Both virtual (recurring) and regular events use their actual title/category
  * 4. Calculates total duration and count for each group
+ * 5. Events without a category are grouped under "No Category" when mode is "category"
  */
-export function aggregateStats(events: ParsedEvent[], periodStart?: Date, periodEnd?: Date): Stats {
+export function aggregateStats(
+	events: ParsedEvent[],
+	periodStart?: Date,
+	periodEnd?: Date,
+	mode: AggregationMode = "name",
+	categoryProp = "Category"
+): Stats {
 	let filteredEvents = events;
 
 	// Filter to date range if provided
@@ -109,9 +118,17 @@ export function aggregateStats(events: ParsedEvent[], periodStart?: Date, period
 	const groups = new Map<string, { duration: number; count: number; isRecurring: boolean }>();
 
 	for (const event of timedEvents) {
-		const groupKey = extractNotesCoreName(event.title);
-		const isRecurring = event.isVirtual;
+		let groupKey: string;
 
+		if (mode === "category") {
+			// Group by category property value, fallback to "No Category"
+			groupKey = (event.meta?.[categoryProp] as string) || "No Category";
+		} else {
+			// Group by cleaned event name (default behavior)
+			groupKey = extractNotesCoreName(event.title);
+		}
+
+		const isRecurring = event.isVirtual;
 		const duration = getEventDuration(event);
 		const existing = groups.get(groupKey);
 
@@ -144,19 +161,29 @@ export function aggregateStats(events: ParsedEvent[], periodStart?: Date, period
 }
 
 /**
- * Aggregates events for a given week, grouping by name and calculating total durations.
+ * Aggregates events for a given week, grouping by name or category.
  */
-export function aggregateWeeklyStats(events: ParsedEvent[], weekDate: Date): WeeklyStats {
+export function aggregateWeeklyStats(
+	events: ParsedEvent[],
+	weekDate: Date,
+	mode: AggregationMode = "name",
+	categoryProp = "Category"
+): WeeklyStats {
 	const { start, end } = getWeekBounds(weekDate);
-	return aggregateStats(events, start, end);
+	return aggregateStats(events, start, end, mode, categoryProp);
 }
 
 /**
- * Aggregates events for a given month, grouping by name and calculating total durations.
+ * Aggregates events for a given month, grouping by name or category.
  */
-export function aggregateMonthlyStats(events: ParsedEvent[], monthDate: Date): Stats {
+export function aggregateMonthlyStats(
+	events: ParsedEvent[],
+	monthDate: Date,
+	mode: AggregationMode = "name",
+	categoryProp = "Category"
+): Stats {
 	const { start, end } = getMonthBounds(monthDate);
-	return aggregateStats(events, start, end);
+	return aggregateStats(events, start, end, mode, categoryProp);
 }
 
 /**

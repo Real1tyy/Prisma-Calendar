@@ -1,6 +1,7 @@
 import type { App } from "obsidian";
 import { Modal } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import type { AggregationMode } from "../../utils/weekly-stats";
 import type { ChartComponent } from "./chart-component";
 import type { TableComponent } from "./table-component";
 
@@ -8,6 +9,8 @@ export abstract class StatsModal extends Modal {
 	protected bundle: CalendarBundle;
 	protected chartComponent: ChartComponent | null = null;
 	protected tableComponent: TableComponent | null = null;
+	protected aggregationMode: AggregationMode = "name";
+	protected contentContainer: HTMLElement | null = null;
 
 	constructor(app: App, bundle: CalendarBundle) {
 		super(app);
@@ -19,8 +22,31 @@ export abstract class StatsModal extends Modal {
 		contentEl.empty();
 		contentEl.addClass("prisma-weekly-stats-modal");
 
+		this.renderAggregationModeToggle(contentEl);
 		this.setupKeyboardShortcuts();
 		await this.renderContent();
+	}
+
+	private renderAggregationModeToggle(contentEl: HTMLElement): void {
+		const toggleContainer = contentEl.createDiv("prisma-stats-mode-toggle");
+
+		toggleContainer.createEl("span", {
+			text: "Group by: ",
+			cls: "prisma-stats-mode-label",
+		});
+
+		const toggleButton = toggleContainer.createEl("button", {
+			text: this.aggregationMode === "name" ? "Event Name" : "Category",
+			cls: "prisma-stats-mode-button-single",
+		});
+
+		toggleButton.addEventListener("click", async () => {
+			this.aggregationMode = this.aggregationMode === "name" ? "category" : "name";
+			toggleButton.setText(this.aggregationMode === "name" ? "Event Name" : "Category");
+
+			this.destroyComponents();
+			await this.renderContent();
+		});
 	}
 
 	onClose(): void {
