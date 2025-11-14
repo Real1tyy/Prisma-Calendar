@@ -1098,7 +1098,7 @@ export class CalendarView extends MountableView(ItemView) {
 		});
 
 		element.style.setProperty("--event-color", eventColor);
-		element.classList.add("custom-calendar-event");
+		element.classList.add("prisma-calendar-event");
 
 		// Set opacity CSS variable for past events
 		const now = new Date();
@@ -1123,7 +1123,7 @@ export class CalendarView extends MountableView(ItemView) {
 		}
 
 		element.setAttribute("title", tooltipParts.join("\n"));
-		element.addClass("custom-calendar-event");
+		element.addClass("prisma-calendar-event");
 	}
 
 	private handleDateClick(info: any): void {
