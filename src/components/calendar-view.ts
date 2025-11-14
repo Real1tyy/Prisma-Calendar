@@ -1123,8 +1123,6 @@ export class CalendarView extends MountableView(ItemView) {
 		}
 
 		element.setAttribute("title", tooltipParts.join("\n"));
-
-		// Add custom CSS classes
 		element.addClass("custom-calendar-event");
 	}
 
@@ -1279,7 +1277,7 @@ export class CalendarView extends MountableView(ItemView) {
 		this.showLoading(root, "Indexing calendar events…");
 
 		// Create calendar host
-		this.container = root.createDiv("custom-calendar-container");
+		this.container = root.createDiv("prisma-calendar-container");
 
 		// Wait for layout before rendering FullCalendar
 		await this.waitForLayout(this.container);

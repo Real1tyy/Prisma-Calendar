@@ -1,47 +1,47 @@
 /* Custom Calendar Plugin Styles */
 
-.custom-calendar-view {
+.prisma-calendar-view {
 	padding: 8px;
 	height: 100%;
 	overflow: auto;
 }
 
-.custom-calendar-container {
+.prisma-calendar-container {
 	height: 100%;
 	min-height: 400px;
 }
 
 /* FullCalendar theme integration with Obsidian */
-.custom-calendar-container .fc {
+.prisma-calendar-container .fc {
 	font-family: var(--font-interface);
 	font-size: var(--font-ui-small);
 }
 
-.custom-calendar-container .fc-theme-standard .fc-scrollgrid {
+.prisma-calendar-container .fc-theme-standard .fc-scrollgrid {
 	border-color: var(--background-modifier-border);
 }
 
-.custom-calendar-container .fc-theme-standard th,
-.custom-calendar-container .fc-theme-standard td {
+.prisma-calendar-container .fc-theme-standard th,
+.prisma-calendar-container .fc-theme-standard td {
 	border-color: var(--background-modifier-border);
 }
 
-.custom-calendar-container .fc-theme-standard .fc-scrollgrid-section > * {
+.prisma-calendar-container .fc-theme-standard .fc-scrollgrid-section > * {
 	border-color: var(--background-modifier-border);
 }
 
 /* Header styling */
-.custom-calendar-container .fc-toolbar {
+.prisma-calendar-container .fc-toolbar {
 	margin-bottom: 1em;
 }
 
-.custom-calendar-container .fc-toolbar-title {
+.prisma-calendar-container .fc-toolbar-title {
 	color: var(--text-normal);
 	font-size: var(--font-ui-medium);
 	font-weight: var(--font-weight-medium);
 }
 
-.custom-calendar-container .fc-button {
+.prisma-calendar-container .fc-button {
 	background-color: var(--interactive-normal);
 	border-color: var(--background-modifier-border);
 	color: var(--text-normal);
@@ -50,21 +50,21 @@
 	border-radius: var(--radius-s);
 }
 
-.custom-calendar-container .fc-button:hover {
+.prisma-calendar-container .fc-button:hover {
 	background-color: var(--interactive-hover);
 }
 
-.custom-calendar-container .fc-button:focus {
+.prisma-calendar-container .fc-button:focus {
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
-.custom-calendar-container .fc-button-active {
+.prisma-calendar-container .fc-button-active {
 	background-color: var(--interactive-accent);
 	color: var(--text-on-accent);
 }
 
 /* Day headers */
-.custom-calendar-container .fc-col-header-cell {
+.prisma-calendar-container .fc-col-header-cell {
 	background-color: var(--background-secondary);
 	color: var(--text-muted);
 	font-weight: var(--font-weight-medium);
@@ -72,19 +72,19 @@
 }
 
 /* Day cells */
-.custom-calendar-container .fc-daygrid-day {
+.prisma-calendar-container .fc-daygrid-day {
 	background-color: var(--background-primary);
 }
 
-.custom-calendar-container .fc-daygrid-day:hover {
+.prisma-calendar-container .fc-daygrid-day:hover {
 	background-color: var(--background-modifier-hover);
 }
 
-.custom-calendar-container .fc-day-today {
+.prisma-calendar-container .fc-day-today {
 	background-color: var(--background-modifier-form-field);
 }
 
-.custom-calendar-container .fc-day-other {
+.prisma-calendar-container .fc-day-other {
 	background-color: var(--background-secondary-alt);
 	color: var(--text-faint);
 }
@@ -245,8 +245,8 @@
 }
 
 /* Time-grid / day-grid: ensure wrappers don't add extra padding */
-.custom-calendar-container .fc-daygrid-event .fc-event-main,
-.custom-calendar-container .fc-timegrid-event .fc-event-main {
+.prisma-calendar-container .fc-daygrid-event .fc-event-main,
+.prisma-calendar-container .fc-timegrid-event .fc-event-main {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
@@ -254,7 +254,7 @@
 	padding: 0;
 }
 
-.custom-calendar-container .fc-daygrid-event {
+.prisma-calendar-container .fc-daygrid-event {
 	min-height: auto;
 	/* Allow events to expand vertically for text wrapping */
 	height: auto;
@@ -263,14 +263,14 @@
 	overflow: visible;
 }
 
-.custom-calendar-container .fc-daygrid-event-harness {
+.prisma-calendar-container .fc-daygrid-event-harness {
 	min-height: 2em;
 	/* Remove max-height to allow text wrapping */
 	overflow: visible;
 }
 
 /* Month view specific styling - compact layout */
-.custom-calendar-container .fc-daygrid-event .fc-event-content-wrapper {
+.prisma-calendar-container .fc-daygrid-event .fc-event-content-wrapper {
 	padding: 4px 6px;
 	gap: 4px;
 	/* Allow content to expand vertically for text wrapping */
@@ -279,7 +279,7 @@
 	min-height: 2em;
 }
 
-.custom-calendar-container .fc-daygrid-event .fc-event-header {
+.prisma-calendar-container .fc-daygrid-event .fc-event-header {
 	gap: 4px;
 	/* Allow text wrapping in header */
 	overflow: visible;
@@ -289,12 +289,12 @@
 	flex-wrap: wrap;
 }
 
-.custom-calendar-container .fc-daygrid-event .fc-event-time {
+.prisma-calendar-container .fc-daygrid-event .fc-event-time {
 	font-size: var(--font-ui-smaller);
 	flex-shrink: 0;
 }
 
-.custom-calendar-container .fc-daygrid-event .fc-event-title-custom {
+.prisma-calendar-container .fc-daygrid-event .fc-event-title-custom {
 	font-size: var(--font-ui-smaller);
 	line-height: 1.2;
 	/* Enable text wrapping for long titles */
@@ -307,11 +307,11 @@
 }
 
 /* Hide properties in month view to save space */
-.custom-calendar-container .fc-daygrid-event .fc-event-props {
+.prisma-calendar-container .fc-daygrid-event .fc-event-props {
 	display: none;
 }
 
-.custom-calendar-container .fc-timegrid-event {
+.prisma-calendar-container .fc-timegrid-event {
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
@@ -322,13 +322,13 @@
    ======================================== */
 
 /* List view table structure */
-.custom-calendar-container .fc-list {
+.prisma-calendar-container .fc-list {
 	border: none;
 	background: var(--background-primary);
 }
 
 /* Date headers in list view - compact */
-.custom-calendar-container .fc-list-day-cushion {
+.prisma-calendar-container .fc-list-day-cushion {
 	background: var(--background-secondary);
 	padding: 6px 12px;
 	font-weight: var(--font-weight-semibold);
@@ -344,7 +344,7 @@
 }
 
 /* Empty state - no events message */
-.custom-calendar-container .fc-list-empty {
+.prisma-calendar-container .fc-list-empty {
 	background: var(--background-primary);
 	color: var(--text-muted);
 	padding: 32px;
@@ -353,7 +353,7 @@
 	font-size: var(--font-ui-medium);
 }
 
-.custom-calendar-container .fc-list-empty-cushion {
+.prisma-calendar-container .fc-list-empty-cushion {
 	padding: 24px;
 	background: var(--background-secondary);
 	border-radius: var(--radius-m);
@@ -361,16 +361,16 @@
 }
 
 /* List table structure */
-.custom-calendar-container .fc-list-table {
+.prisma-calendar-container .fc-list-table {
 	border: none;
 }
 
-.custom-calendar-container .fc-list-table tbody > tr:first-child > td {
+.prisma-calendar-container .fc-list-table tbody > tr:first-child > td {
 	border-top: none;
 }
 
 /* Event row container */
-.custom-calendar-container .fc-list-event {
+.prisma-calendar-container .fc-list-event {
 	cursor: pointer;
 	transition: all 0.15s ease;
 	border-bottom: 1px solid var(--background-modifier-border);
@@ -378,7 +378,7 @@
 }
 
 /* Apply event color to list view rows with transparency */
-.custom-calendar-container .fc-list-event.custom-calendar-event {
+.prisma-calendar-container .fc-list-event.custom-calendar-event {
 	background: linear-gradient(
 		90deg,
 		color-mix(in srgb, var(--event-color) 8%, var(--background-primary)) 0%,
@@ -388,35 +388,35 @@
 }
 
 /* Hover state - subtle blue accent, NO WHITE */
-.custom-calendar-container .fc-list-event.custom-calendar-event:hover,
-.custom-calendar-container .fc-list-event:hover,
-.custom-calendar-container tr.fc-list-event:hover,
-.custom-calendar-container tr.fc-list-event:hover td {
+.prisma-calendar-container .fc-list-event.custom-calendar-event:hover,
+.prisma-calendar-container .fc-list-event:hover,
+.prisma-calendar-container tr.fc-list-event:hover,
+.prisma-calendar-container tr.fc-list-event:hover td {
 	background: rgba(var(--interactive-accent-rgb), 0.08);
 	background-color: rgba(var(--interactive-accent-rgb), 0.08);
 	border-left-color: var(--interactive-accent);
 }
 
 /* Active/focus state - slightly more accent, still NO WHITE */
-.custom-calendar-container .fc-list-event.custom-calendar-event:active,
-.custom-calendar-container .fc-list-event.custom-calendar-event:focus,
-.custom-calendar-container .fc-list-event:active,
-.custom-calendar-container .fc-list-event:focus,
-.custom-calendar-container tr.fc-list-event:active td,
-.custom-calendar-container tr.fc-list-event:focus td {
+.prisma-calendar-container .fc-list-event.custom-calendar-event:active,
+.prisma-calendar-container .fc-list-event.custom-calendar-event:focus,
+.prisma-calendar-container .fc-list-event:active,
+.prisma-calendar-container .fc-list-event:focus,
+.prisma-calendar-container tr.fc-list-event:active td,
+.prisma-calendar-container tr.fc-list-event:focus td {
 	background: rgba(var(--interactive-accent-rgb), 0.06);
 	background-color: rgba(var(--interactive-accent-rgb), 0.06);
 	outline: none;
 }
 
 /* Event row cells - more compact */
-.custom-calendar-container .fc-list-event > td {
+.prisma-calendar-container .fc-list-event > td {
 	padding: 8px 12px;
 	border: none;
 }
 
 /* Event dot/graphic column - compact */
-.custom-calendar-container .fc-list-event-graphic {
+.prisma-calendar-container .fc-list-event-graphic {
 	padding: 8px 10px;
 	width: 32px;
 	min-width: 32px;
@@ -424,7 +424,7 @@
 }
 
 /* Event color dot - inherit event color */
-.custom-calendar-container .fc-list-event-dot {
+.prisma-calendar-container .fc-list-event-dot {
 	width: 10px;
 	height: 10px;
 	border-radius: 50%;
@@ -434,13 +434,13 @@
 	transition: all 0.15s ease;
 }
 
-.custom-calendar-container .fc-list-event:hover .fc-list-event-dot {
+.prisma-calendar-container .fc-list-event:hover .fc-list-event-dot {
 	transform: scale(1.15);
 	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* Event time column - compact */
-.custom-calendar-container .fc-list-event-time {
+.prisma-calendar-container .fc-list-event-time {
 	width: 90px;
 	min-width: 90px;
 	padding: 8px 10px;
@@ -452,14 +452,14 @@
 }
 
 /* Event title/content column - compact */
-.custom-calendar-container .fc-list-event-title {
+.prisma-calendar-container .fc-list-event-title {
 	padding: 8px 12px;
 	color: var(--text-normal);
 	font-size: var(--font-ui-medium);
 }
 
 /* Event content wrapper - compact vertical layout */
-.custom-calendar-container .fc-list-event .fc-event-content-wrapper {
+.prisma-calendar-container .fc-list-event .fc-event-content-wrapper {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -468,7 +468,7 @@
 }
 
 /* Event title styling - prominent but compact */
-.custom-calendar-container .fc-list-event .fc-event-title-custom {
+.prisma-calendar-container .fc-list-event .fc-event-title-custom {
 	font-weight: var(--font-weight-semibold);
 	color: var(--text-normal);
 	font-size: var(--font-ui-medium);
@@ -477,18 +477,18 @@
 	letter-spacing: 0.01em;
 }
 
-.custom-calendar-container .fc-list-event:hover .fc-event-title-custom {
+.prisma-calendar-container .fc-list-event:hover .fc-event-title-custom {
 	font-weight: var(--font-weight-bold);
 	color: var(--text-accent);
 }
 
 /* Hide default FullCalendar title */
-.custom-calendar-container .fc-list-event .fc-list-event-title > a {
+.prisma-calendar-container .fc-list-event .fc-list-event-title > a {
 	display: none;
 }
 
 /* Event properties in list view - compact */
-.custom-calendar-container .fc-list-event .fc-event-props {
+.prisma-calendar-container .fc-list-event .fc-event-props {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px;
@@ -497,7 +497,7 @@
 	width: 100%;
 }
 
-.custom-calendar-container .fc-list-event .fc-event-prop {
+.prisma-calendar-container .fc-list-event .fc-event-prop {
 	display: inline-flex;
 	align-items: center;
 	gap: 3px;
@@ -509,24 +509,24 @@
 	border: 1px solid rgba(var(--mono-rgb-0), 0.08);
 }
 
-.custom-calendar-container .fc-list-event:hover .fc-event-prop {
+.prisma-calendar-container .fc-list-event:hover .fc-event-prop {
 	background: rgba(var(--mono-rgb-0), 0.08);
 	border-color: rgba(var(--mono-rgb-0), 0.12);
 }
 
-.custom-calendar-container .fc-list-event .fc-event-prop-key {
+.prisma-calendar-container .fc-list-event .fc-event-prop-key {
 	font-weight: var(--font-weight-medium);
 	color: var(--text-muted);
 	opacity: 0.8;
 }
 
-.custom-calendar-container .fc-list-event .fc-event-prop-value {
+.prisma-calendar-container .fc-list-event .fc-event-prop-value {
 	color: var(--text-normal);
 	opacity: 0.9;
 }
 
 /* Property links in list view */
-.custom-calendar-container .fc-list-event .fc-event-prop-link {
+.prisma-calendar-container .fc-list-event .fc-event-prop-link {
 	color: var(--text-accent);
 	text-decoration: none;
 	font-weight: var(--font-weight-medium);
@@ -535,98 +535,98 @@
 	transition: all 0.15s ease;
 }
 
-.custom-calendar-container .fc-list-event .fc-event-prop-link:hover {
+.prisma-calendar-container .fc-list-event .fc-event-prop-link:hover {
 	background: rgba(var(--interactive-accent-rgb), 0.1);
 	text-decoration: underline;
 	text-underline-offset: 2px;
 }
 
 /* Virtual events in list view */
-.custom-calendar-container .fc-list-event.virtual-event {
+.prisma-calendar-container .fc-list-event.virtual-event {
 	opacity: 0.5;
 	font-style: italic;
 }
 
-.custom-calendar-container .fc-list-event.virtual-event .fc-list-event-dot {
+.prisma-calendar-container .fc-list-event.virtual-event .fc-list-event-dot {
 	opacity: 0.4;
 	border-style: dashed;
 }
 
 /* Responsive list view */
 @media (max-width: 768px) {
-	.custom-calendar-container .fc-list-event-time {
+	.prisma-calendar-container .fc-list-event-time {
 		width: 80px;
 		min-width: 80px;
 		font-size: var(--font-ui-smaller);
 	}
 
-	.custom-calendar-container .fc-list-event .fc-event-title-custom {
+	.prisma-calendar-container .fc-list-event .fc-event-title-custom {
 		min-width: 150px;
 		font-size: var(--font-ui-small);
 	}
 
-	.custom-calendar-container .fc-list-day-cushion {
+	.prisma-calendar-container .fc-list-day-cushion {
 		padding: 8px 12px;
 		font-size: var(--font-ui-small);
 	}
 
-	.custom-calendar-container .fc-list-event > td {
+	.prisma-calendar-container .fc-list-event > td {
 		padding: 8px 10px;
 	}
 
-	.custom-calendar-container .fc-list-event .fc-event-props {
+	.prisma-calendar-container .fc-list-event .fc-event-props {
 		gap: 4px;
 	}
 
-	.custom-calendar-container .fc-list-event .fc-event-prop {
+	.prisma-calendar-container .fc-list-event .fc-event-prop {
 		padding: 2px 6px;
 		font-size: 11px;
 	}
 }
 
 /* Dark mode refinements for list view */
-.theme-dark .custom-calendar-container .fc-list-day-cushion {
+.theme-dark .prisma-calendar-container .fc-list-day-cushion {
 	background: var(--background-secondary);
 }
 
-.theme-dark .custom-calendar-container .fc-list-event:hover {
+.theme-dark .prisma-calendar-container .fc-list-event:hover {
 	background: var(--background-modifier-hover);
 }
 
-.theme-dark .custom-calendar-container .fc-list-event-dot {
+.theme-dark .prisma-calendar-container .fc-list-event-dot {
 	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
-.theme-dark .custom-calendar-container .fc-list-event .fc-event-prop {
+.theme-dark .prisma-calendar-container .fc-list-event .fc-event-prop {
 	background: var(--background-secondary);
 }
 
-.theme-dark .custom-calendar-container .fc-list-event:hover .fc-event-prop {
+.theme-dark .prisma-calendar-container .fc-list-event:hover .fc-event-prop {
 	background: var(--background-modifier-hover);
 }
 
 /* Time grid styling */
-.custom-calendar-container .fc-timegrid-slot {
+.prisma-calendar-container .fc-timegrid-slot {
 	border-color: var(--background-modifier-border);
 }
 
-.custom-calendar-container .fc-timegrid-slot-label {
+.prisma-calendar-container .fc-timegrid-slot-label {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);
 }
 
-.custom-calendar-container .fc-timegrid-axis {
+.prisma-calendar-container .fc-timegrid-axis {
 	background-color: var(--background-secondary);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-	.custom-calendar-container .fc-toolbar {
+	.prisma-calendar-container .fc-toolbar {
 		flex-direction: column;
 		gap: 8px;
 	}
 
-	.custom-calendar-container .fc-toolbar-chunk {
+	.prisma-calendar-container .fc-toolbar-chunk {
 		display: flex;
 		justify-content: center;
 	}
@@ -667,11 +667,11 @@
 }
 
 /* Dark theme adjustments */
-.theme-dark .custom-calendar-container .fc-button {
+.theme-dark .prisma-calendar-container .fc-button {
 	background-color: var(--background-modifier-form-field);
 }
 
-.theme-dark .custom-calendar-container .fc-button:hover {
+.theme-dark .prisma-calendar-container .fc-button:hover {
 	background-color: var(--background-modifier-form-field-highlighted);
 }
 
@@ -832,15 +832,15 @@
 /* Removed keyframes that could cause event sizing issues */
 
 /* List view batch selection adjustments */
-.custom-calendar-container .fc-list-event.batch-selectable {
+.prisma-calendar-container .fc-list-event.batch-selectable {
 	position: relative;
 }
 
-.custom-calendar-container .fc-list-event.batch-selectable .fc-list-event-graphic {
+.prisma-calendar-container .fc-list-event.batch-selectable .fc-list-event-graphic {
 	position: relative;
 }
 
-.custom-calendar-container .fc-list-event.batch-selectable .fc-list-event-graphic::before {
+.prisma-calendar-container .fc-list-event.batch-selectable .fc-list-event-graphic::before {
 	content: "";
 	position: absolute;
 	left: -24px;
@@ -853,7 +853,7 @@
 	background: rgba(0, 0, 0, 0.2);
 }
 
-.custom-calendar-container .fc-list-event.batch-selected .fc-list-event-graphic::before {
+.prisma-calendar-container .fc-list-event.batch-selected .fc-list-event-graphic::before {
 	background: var(--interactive-accent);
 	border-color: white;
 	content: "✓";
@@ -1244,16 +1244,16 @@
 }
 
 /* Past Event Contrast - Applied via JavaScript based on settings */
-.custom-calendar-container .past-event-hidden {
+.prisma-calendar-container .past-event-hidden {
 	display: none;
 }
 
-.custom-calendar-container .past-event-faded {
+.prisma-calendar-container .past-event-faded {
 	opacity: var(--past-event-opacity, 0.7);
 }
 
 /* Event Highlight - Temporary highlight when navigating to an event */
-.custom-calendar-container .fc-event.event-highlighted {
+.prisma-calendar-container .fc-event.event-highlighted {
 	animation: event-highlight-pulse 0.7s ease-in-out;
 	box-shadow:
 		0 0 25px 10px color-mix(in srgb, var(--event-color) 70%, transparent),
@@ -1263,12 +1263,12 @@
 	filter: brightness(1.15) saturate(1.2);
 }
 
-.custom-calendar-container .fc-event.event-highlighted .fc-event-main {
+.prisma-calendar-container .fc-event.event-highlighted .fc-event-main {
 	border: 2.5px solid color-mix(in srgb, var(--event-color) 85%, white);
 }
 
 /* Upcoming Event Highlight - Persistent highlight for active/next upcoming event */
-.custom-calendar-container .fc-event.custom-calendar-event.event-upcoming {
+.prisma-calendar-container .fc-event.custom-calendar-event.event-upcoming {
 	box-shadow:
 		0 0 20px 9px color-mix(in srgb, var(--event-color) 55%, transparent),
 		0 0 38px 16px color-mix(in srgb, var(--event-color) 35%, transparent),
@@ -1280,13 +1280,13 @@
 	filter: brightness(1.18) saturate(1.22) contrast(1.05);
 }
 
-.custom-calendar-container .fc-event.custom-calendar-event.event-upcoming .fc-event-main {
+.prisma-calendar-container .fc-event.custom-calendar-event.event-upcoming .fc-event-main {
 	border: 2.5px solid color-mix(in srgb, var(--event-color) 85%, white);
 	border-radius: var(--radius-s);
 }
 
 /* Enhance upcoming highlight on hover */
-.custom-calendar-container .fc-event.custom-calendar-event.event-upcoming:hover {
+.prisma-calendar-container .fc-event.custom-calendar-event.event-upcoming:hover {
 	box-shadow:
 		0 0 24px 11px color-mix(in srgb, var(--event-color) 60%, transparent),
 		0 0 44px 18px color-mix(in srgb, var(--event-color) 40%, transparent),
@@ -1295,8 +1295,8 @@
 }
 
 /* Maintain upcoming highlight when clicked/focused */
-.custom-calendar-container .fc-event.custom-calendar-event.event-upcoming:active,
-.custom-calendar-container .fc-event.custom-calendar-event.event-upcoming:focus {
+.prisma-calendar-container .fc-event.custom-calendar-event.event-upcoming:active,
+.prisma-calendar-container .fc-event.custom-calendar-event.event-upcoming:focus {
 	box-shadow:
 		0 0 22px 10px color-mix(in srgb, var(--event-color) 58%, transparent),
 		0 0 40px 17px color-mix(in srgb, var(--event-color) 38%, transparent),
@@ -1325,7 +1325,7 @@
 }
 
 /* List view highlight */
-.custom-calendar-container .fc-list-event.event-highlighted {
+.prisma-calendar-container .fc-list-event.event-highlighted {
 	animation: event-highlight-pulse-list 0.7s ease-in-out;
 	background: color-mix(in srgb, var(--event-color) 20%, var(--background-primary));
 	border-left: 5px solid var(--event-color);
@@ -1333,14 +1333,14 @@
 	filter: brightness(1.1);
 }
 
-.custom-calendar-container .fc-list-event.event-highlighted .fc-list-event-dot {
+.prisma-calendar-container .fc-list-event.event-highlighted .fc-list-event-dot {
 	box-shadow: 0 0 15px 6px color-mix(in srgb, var(--event-color) 70%, transparent);
 	transform: scale(1.4);
 	filter: brightness(1.25);
 }
 
 /* List view upcoming event highlight - Persistent */
-.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming {
+.prisma-calendar-container .fc-list-event.custom-calendar-event.event-upcoming {
 	background: linear-gradient(
 		90deg,
 		color-mix(in srgb, var(--event-color) 20%, var(--background-primary)) 0%,
@@ -1358,7 +1358,7 @@
 	filter: brightness(1.12) saturate(1.08);
 }
 
-.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming .fc-list-event-dot {
+.prisma-calendar-container .fc-list-event.custom-calendar-event.event-upcoming .fc-list-event-dot {
 	box-shadow:
 		0 0 16px 7px color-mix(in srgb, var(--event-color) 70%, transparent),
 		0 2px 6px rgba(0, 0, 0, 0.2);
@@ -1368,7 +1368,7 @@
 }
 
 /* Enhance list view upcoming highlight on hover */
-.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:hover {
+.prisma-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:hover {
 	background: linear-gradient(
 		90deg,
 		color-mix(in srgb, var(--event-color) 24%, var(--background-primary)) 0%,
@@ -1381,7 +1381,7 @@
 	filter: brightness(1.15) saturate(1.12);
 }
 
-.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:hover .fc-list-event-dot {
+.prisma-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:hover .fc-list-event-dot {
 	box-shadow:
 		0 0 20px 9px color-mix(in srgb, var(--event-color) 75%, transparent),
 		0 2px 8px rgba(0, 0, 0, 0.25);
@@ -1390,8 +1390,8 @@
 }
 
 /* Maintain list view upcoming highlight when clicked/focused */
-.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:active,
-.custom-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:focus {
+.prisma-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:active,
+.prisma-calendar-container .fc-list-event.custom-calendar-event.event-upcoming:focus {
 	background: linear-gradient(
 		90deg,
 		color-mix(in srgb, var(--event-color) 22%, var(--background-primary)) 0%,
@@ -1429,14 +1429,14 @@
 }
 
 /* Make zoom button look clickable */
-.custom-calendar-container .fc-zoomLevel-button {
+.prisma-calendar-container .fc-zoomLevel-button {
 	cursor: pointer;
 	position: relative;
 	padding-right: 24px;
 }
 
 /* Add dropdown indicator */
-.custom-calendar-container .fc-zoomLevel-button::after {
+.prisma-calendar-container .fc-zoomLevel-button::after {
 	content: "";
 	position: absolute;
 	right: 8px;
@@ -1450,7 +1450,7 @@
 	opacity: 0.7;
 }
 
-.custom-calendar-container .fc-zoomLevel-button:hover::after {
+.prisma-calendar-container .fc-zoomLevel-button:hover::after {
 	opacity: 1;
 }
 
