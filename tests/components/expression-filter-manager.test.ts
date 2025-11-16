@@ -30,7 +30,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			expect(input).toBeTruthy();
 			expect(input.placeholder).toBe("Status === 'Done'");
 		});
@@ -40,9 +40,9 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input");
+			const input = container.querySelector(".prisma-fc-expression-input");
 			expect(input).toBeTruthy();
-			expect(input?.className).toBe("fc-expression-input");
+			expect(input?.className).toBe("prisma-fc-expression-input");
 		});
 	});
 
@@ -60,7 +60,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = 'Status === "Done"';
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -74,7 +74,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = 'Status !== "Done"';
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -88,7 +88,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = "Priority > 5";
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -103,7 +103,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = "Important === true";
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -117,7 +117,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = 'Status === "Done" && Priority > 5';
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -132,7 +132,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = 'Status === "Done" || Status === "Archived"';
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -147,7 +147,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = 'Tags.includes("important")';
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -161,7 +161,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = 'User.Name === "Alice"';
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -177,7 +177,7 @@ describe("ExpressionFilterManager", () => {
 
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = 'Status === "Done"';
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -196,7 +196,7 @@ describe("ExpressionFilterManager", () => {
 
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = 'Status === "Done"';
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -216,7 +216,7 @@ describe("ExpressionFilterManager", () => {
 
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = "Status === ";
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -234,7 +234,7 @@ describe("ExpressionFilterManager", () => {
 
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = "Status === 'unclosed string";
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -252,7 +252,7 @@ describe("ExpressionFilterManager", () => {
 
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = "NonExistentProperty.toString()";
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -270,7 +270,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			input.value = 'Status === "Done"';
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
@@ -285,7 +285,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 			const focusSpy = vi.spyOn(input, "focus");
 
 			expressionFilter.focus();
@@ -299,7 +299,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 
 			input.value = 'Status === "Done"';
 			input.dispatchEvent(new Event("input"));
@@ -316,7 +316,7 @@ describe("ExpressionFilterManager", () => {
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-expression-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
 
 			input.value = 'Status === "Done"';
 			input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));

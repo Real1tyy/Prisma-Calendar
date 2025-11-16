@@ -47,7 +47,7 @@ export abstract class InputFilterManager {
 		if (!toolbarLeft) return;
 
 		const wrapper = document.createElement("div");
-		wrapper.className = "fc-filter-wrapper";
+		wrapper.className = "prisma-fc-filter-wrapper";
 
 		this.input = document.createElement("input");
 		this.input.type = "text";

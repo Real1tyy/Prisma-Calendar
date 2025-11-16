@@ -77,7 +77,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 	protected async onBeforeRender(): Promise<void> {
 		// Add custom CSS class for this modal
-		this.contentEl.addClass("prisma-global-search-modal");
+		this.contentEl.addClass("global-search-modal");
 
 		// Load all events from the store
 		await this.loadAllEvents();

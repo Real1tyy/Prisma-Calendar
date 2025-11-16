@@ -31,7 +31,7 @@ describe("SearchFilterManager", () => {
 
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 			expect(input).toBeTruthy();
 			expect(input.placeholder).toBe("Search events...");
 			expect(input.type).toBe("text");
@@ -47,7 +47,7 @@ describe("SearchFilterManager", () => {
 			searchFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const wrapper = container.querySelector(".fc-filter-wrapper");
+			const wrapper = container.querySelector(".prisma-fc-filter-wrapper");
 			expect(wrapper?.previousElementSibling).toBe(zoomButton);
 		});
 
@@ -58,7 +58,7 @@ describe("SearchFilterManager", () => {
 			searchFilter.initialize(mockCalendar, emptyContainer);
 			vi.advanceTimersByTime(100);
 
-			const input = emptyContainer.querySelector(".fc-search-input");
+			const input = emptyContainer.querySelector(".prisma-fc-search-input");
 			expect(input).toBeNull();
 		});
 	});
@@ -69,7 +69,7 @@ describe("SearchFilterManager", () => {
 			searchFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 			const focusSpy = vi.spyOn(input, "focus");
 
 			searchFilter.focus();
@@ -89,7 +89,7 @@ describe("SearchFilterManager", () => {
 		});
 
 		it("should trigger filter change after debounce delay on input", () => {
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 
 			input.value = "meeting";
 			input.dispatchEvent(new Event("input"));
@@ -102,7 +102,7 @@ describe("SearchFilterManager", () => {
 		});
 
 		it("should debounce multiple rapid inputs", () => {
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 
 			input.value = "m";
 			input.dispatchEvent(new Event("input"));
@@ -124,7 +124,7 @@ describe("SearchFilterManager", () => {
 		});
 
 		it("should trigger immediately on Enter key", () => {
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 
 			input.value = "test";
 			input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
@@ -133,7 +133,7 @@ describe("SearchFilterManager", () => {
 		});
 
 		it("should trigger immediately on blur", () => {
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 
 			input.value = "test";
 			input.dispatchEvent(new Event("blur"));
@@ -142,7 +142,7 @@ describe("SearchFilterManager", () => {
 		});
 
 		it("should not trigger if value has not changed", () => {
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 
 			input.value = "test";
 			input.dispatchEvent(new Event("input"));
@@ -157,7 +157,7 @@ describe("SearchFilterManager", () => {
 		});
 
 		it("should trim whitespace from input value", () => {
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 
 			input.value = "  test  ";
 			input.dispatchEvent(new Event("input"));
@@ -176,7 +176,7 @@ describe("SearchFilterManager", () => {
 			searchFilter.initialize({} as any, container);
 			vi.advanceTimersByTime(100);
 
-			const inputElement = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const inputElement = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 			inputElement.value = "meeting";
 			inputElement.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(150);
@@ -191,7 +191,7 @@ describe("SearchFilterManager", () => {
 			searchFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 			input.value = "meeting";
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(150);
@@ -205,7 +205,7 @@ describe("SearchFilterManager", () => {
 			searchFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 			input.value = "meet";
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(150);
@@ -225,7 +225,7 @@ describe("SearchFilterManager", () => {
 			searchFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 			input.value = "test value";
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(150);
@@ -240,7 +240,7 @@ describe("SearchFilterManager", () => {
 			searchFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
 
-			const input = container.querySelector(".fc-search-input") as HTMLInputElement;
+			const input = container.querySelector(".prisma-fc-search-input") as HTMLInputElement;
 			input.value = "test";
 			input.dispatchEvent(new Event("input"));
 

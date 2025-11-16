@@ -750,7 +750,7 @@
 	border-color: var(--color-yellow);
 }
 
-.fc-button.prisma-batch-action-btn.prisma-move-by-btn {
+.fc-button.prisma-batch-action-btn.prisma-prisma-move-by-btn {
 	background: var(--interactive-normal);
 	color: var(--text-normal);
 	border-color: var(--background-modifier-border);
@@ -1174,7 +1174,7 @@
 }
 
 /* Filter preset items */
-.filter-preset-item {
+.prisma-filter-preset-item {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -1185,7 +1185,7 @@
 	background-color: var(--background-secondary);
 }
 
-.filter-preset-name-input {
+.prisma-filter-preset-name-input {
 	flex: 0 0 180px;
 	padding: 4px 8px;
 	border: 1px solid var(--background-modifier-border);
@@ -1196,12 +1196,12 @@
 	font-weight: var(--font-weight-medium);
 }
 
-.filter-preset-name-input:focus {
+.prisma-filter-preset-name-input:focus {
 	outline: none;
 	border-color: var(--interactive-accent);
 }
 
-.filter-preset-expression-input {
+.prisma-filter-preset-expression-input {
 	flex: 1;
 	min-width: 0;
 	padding: 4px 8px;
@@ -1213,12 +1213,12 @@
 	font-size: var(--font-ui-small);
 }
 
-.filter-preset-expression-input:focus {
+.prisma-filter-preset-expression-input:focus {
 	outline: none;
 	border-color: var(--interactive-accent);
 }
 
-.filter-preset-btn-delete {
+.prisma-filter-preset-btn-delete {
 	padding: 4px 8px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
@@ -1231,7 +1231,7 @@
 	flex-shrink: 0;
 }
 
-.filter-preset-btn-delete:hover {
+.prisma-filter-preset-btn-delete:hover {
 	background-color: var(--background-modifier-error);
 	border-color: var(--text-error);
 }
@@ -1467,15 +1467,15 @@
 }
 
 /* Filter Input Styles (Search & Expression) */
-.fc-filter-wrapper {
+.prisma-fc-filter-wrapper {
 	position: relative;
 	display: inline-flex;
 	align-items: center;
 	margin-left: 8px;
 }
 
-.fc-search-input,
-.fc-expression-input {
+.prisma-fc-search-input,
+.prisma-fc-expression-input {
 	padding: 4px 8px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-s);
@@ -1489,28 +1489,28 @@
 		box-shadow 0.2s ease;
 }
 
-.fc-search-input:focus,
-.fc-expression-input:focus {
+.prisma-fc-search-input:focus,
+.prisma-fc-expression-input:focus {
 	outline: none;
 	border-color: var(--interactive-accent);
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
-.fc-search-input::placeholder,
-.fc-expression-input::placeholder {
+.prisma-fc-search-input::placeholder,
+.prisma-fc-expression-input::placeholder {
 	color: var(--text-faint);
 	font-style: italic;
 }
 
 /* Filter Preset Selector */
-.fc-filter-preset-wrapper {
+.prisma-fc-filter-preset-wrapper {
 	position: relative;
 	display: inline-flex;
 	align-items: center;
 	margin-left: 8px;
 }
 
-.fc-filter-preset-select {
+.prisma-fc-filter-preset-select {
 	-webkit-appearance: none;
 	-moz-appearance: none;
 	appearance: none;
@@ -1532,19 +1532,19 @@
 	background-size: 10px;
 }
 
-.fc-filter-preset-select:hover {
+.prisma-fc-filter-preset-select:hover {
 	background-color: var(--interactive-hover);
 	border-color: var(--background-modifier-border-hover);
 }
 
-.fc-filter-preset-select:focus {
+.prisma-fc-filter-preset-select:focus {
 	outline: none;
 	background-color: var(--interactive-hover);
 	border-color: var(--interactive-accent);
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
-.fc-filter-preset-select option {
+.prisma-fc-filter-preset-select option {
 	background-color: var(--background-primary);
 	color: var(--text-normal);
 }
@@ -1905,7 +1905,7 @@
 }
 
 /* Event Modal - Recurring Event Section */
-.recurring-event-fields {
+.prisma-recurring-event-fields {
 	margin-top: 16px;
 	padding: 16px;
 	background-color: var(--background-secondary);
@@ -1913,18 +1913,18 @@
 	border: 1px solid var(--background-modifier-border);
 }
 
-.weekday-selection {
+.prisma-weekday-selection {
 	margin-top: 12px;
 }
 
-.weekday-grid {
+.prisma-weekday-grid {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
 	gap: 8px;
 	margin-top: 8px;
 }
 
-.weekday-item {
+.prisma-weekday-item {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -1935,23 +1935,23 @@
 	transition: all 0.2s ease;
 }
 
-.weekday-item:hover {
+.prisma-weekday-item:hover {
 	background-color: var(--background-modifier-hover);
 }
 
-.weekday-item input[type="checkbox"] {
+.prisma-weekday-item input[type="checkbox"] {
 	cursor: pointer;
 }
 
-.weekday-item label {
+.prisma-weekday-item label {
 	cursor: pointer;
 	user-select: none;
 	flex: 1;
 }
 
 /* Event Modal - Custom Properties Section */
-.custom-properties-container,
-.property-container {
+.prisma-custom-properties-container,
+.prisma-property-container {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
@@ -1967,7 +1967,7 @@
 	margin-left: auto;
 }
 
-.custom-property-row {
+.prisma-custom-property-row {
 	display: flex;
 	gap: 8px;
 	align-items: center;
@@ -1977,7 +1977,7 @@
 	border: 1px solid var(--background-modifier-border);
 }
 
-.custom-property-row input[type="text"] {
+.prisma-custom-property-row input[type="text"] {
 	flex: 1;
 	padding: 6px 8px;
 	border: 1px solid var(--background-modifier-border);
@@ -1988,12 +1988,12 @@
 	text-align: left;
 }
 
-.custom-property-row input[type="text"]:focus {
+.prisma-custom-property-row input[type="text"]:focus {
 	border-color: var(--interactive-accent);
 	outline: none;
 }
 
-.custom-property-row button {
+.prisma-custom-property-row button {
 	padding: 6px 12px;
 	border-radius: 4px;
 	border: 1px solid var(--background-modifier-border);
@@ -2004,23 +2004,23 @@
 	transition: all 0.2s ease;
 }
 
-.custom-property-row button:hover {
+.prisma-custom-property-row button:hover {
 	background-color: var(--background-modifier-error);
 	border-color: var(--text-error);
 }
 
 /* Event Modal Responsive */
 @media (max-width: 768px) {
-	.weekday-grid {
+	.prisma-weekday-grid {
 		grid-template-columns: 1fr;
 	}
 
-	.custom-property-row {
+	.prisma-custom-property-row {
 		flex-direction: column;
 		align-items: stretch;
 	}
 
-	.custom-property-row button {
+	.prisma-custom-property-row button {
 		width: 100%;
 	}
 }
@@ -2107,16 +2107,16 @@
 }
 
 /* Recurring Events List Modal */
-.recurring-events-list-modal {
+.prisma-recurring-events-list-modal {
 	padding: 1.5rem;
 }
 
-.recurring-events-list-header {
+.prisma-recurring-events-list-header {
 	margin-bottom: 0.5rem;
 	text-align: center;
 }
 
-.recurring-events-source-title {
+.prisma-recurring-events-source-title {
 	margin: 0 0 0.25rem 0;
 	cursor: pointer;
 	transition: all 0.2s ease;
@@ -2124,13 +2124,13 @@
 	border-radius: 6px;
 }
 
-.recurring-events-source-title:hover {
+.prisma-recurring-events-source-title:hover {
 	color: var(--text-accent);
 	background-color: var(--background-modifier-hover);
 	transform: translateY(-1px);
 }
 
-.recurring-events-filters {
+.prisma-recurring-events-filters {
 	display: flex;
 	gap: 1rem;
 	align-items: center;
@@ -2139,7 +2139,7 @@
 	flex-wrap: wrap;
 }
 
-.recurring-events-filters .setting-item {
+.prisma-recurring-events-filters .setting-item {
 	border: none;
 	padding: 0;
 	margin: 0;
@@ -2149,33 +2149,33 @@
 	gap: 0.5rem;
 }
 
-.recurring-events-filters .setting-item-info {
+.prisma-recurring-events-filters .setting-item-info {
 	flex: 0 0 auto;
 	padding: 0;
 }
 
-.recurring-events-filters .setting-item-name {
+.prisma-recurring-events-filters .setting-item-name {
 	font-weight: 400;
 	margin: 0;
 	font-size: 0.9em;
 }
 
-.recurring-events-filters .setting-item-description {
+.prisma-recurring-events-filters .setting-item-description {
 	display: none;
 }
 
-.recurring-events-filters .setting-item-control {
+.prisma-recurring-events-filters .setting-item-control {
 	flex-shrink: 0;
 }
 
-.recurring-events-list-container {
+.prisma-recurring-events-list-container {
 	max-height: 500px;
 	overflow-y: auto;
 	margin-top: 0;
 	padding-top: 0;
 }
 
-.recurring-event-row {
+.prisma-recurring-event-row {
 	display: flex;
 	gap: 1rem;
 	padding: 0.875rem 1rem;
@@ -2187,31 +2187,31 @@
 	background-color: var(--background-primary);
 }
 
-.recurring-event-row:hover {
+.prisma-recurring-event-row:hover {
 	background-color: var(--background-modifier-hover);
 	border-color: var(--text-accent);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.recurring-event-date {
+.prisma-recurring-event-date {
 	font-weight: 500;
 	color: var(--text-accent);
 	min-width: 160px;
 	font-family: var(--font-monospace);
 }
 
-.recurring-event-title {
+.prisma-recurring-event-title {
 	flex: 1;
 	color: var(--text-normal);
 }
 
-.recurring-events-list-empty {
+.prisma-recurring-events-list-empty {
 	text-align: center;
 	color: var(--text-muted);
 	padding: 2rem;
 }
 
-.recurring-events-stats {
+.prisma-recurring-events-stats {
 	background-color: var(--background-primary-alt);
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 6px;
@@ -2220,7 +2220,7 @@
 	text-align: center;
 }
 
-.recurring-events-stats-text {
+.prisma-recurring-events-stats-text {
 	margin: 0;
 	font-size: 0.95em;
 	font-weight: 500;
@@ -2229,13 +2229,13 @@
 	word-spacing: 2px;
 }
 
-.recurring-event-title.recurring-event-skipped {
+.prisma-recurring-event-title.prisma-recurring-event-skipped {
 	opacity: 0.6;
 	text-decoration: line-through;
 	color: var(--text-muted);
 }
 
-.recurring-event-row.recurring-event-past .recurring-event-title {
+.prisma-recurring-event-row.prisma-recurring-event-past .prisma-recurring-event-title {
 	opacity: 0.7;
 }
 
@@ -2246,20 +2246,20 @@
 	text-align: center;
 }
 
-.move-by-form {
+.prisma-move-by-form {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
 	margin-bottom: 16px;
 }
 
-.move-by-row {
+.prisma-move-by-row {
 	display: flex;
 	align-items: center;
 	gap: 12px;
 }
 
-.move-by-label {
+.prisma-move-by-label {
 	min-width: 80px;
 	font-size: var(--font-ui-small);
 	font-weight: var(--font-weight-medium);
@@ -2267,12 +2267,12 @@
 }
 
 /* Direction buttons */
-.move-by-button-group {
+.prisma-move-by-button-group {
 	display: flex;
 	gap: 8px;
 }
 
-.move-by-btn {
+.prisma-move-by-btn {
 	padding: 8px 24px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-s);
@@ -2284,24 +2284,24 @@
 	transition: all 0.15s ease;
 }
 
-.move-by-btn:hover {
+.prisma-move-by-btn:hover {
 	background: var(--interactive-hover);
 }
 
-.move-by-btn.is-active {
+.prisma-move-by-btn.is-active {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border-color: var(--interactive-accent);
 }
 
 /* Amount input group */
-.move-by-amount-group {
+.prisma-move-by-amount-group {
 	display: flex;
 	align-items: center;
 	gap: 4px;
 }
 
-.move-by-input {
+.prisma-move-by-input {
 	width: 80px;
 	padding: 6px 8px;
 	border: 1px solid var(--background-modifier-border);
@@ -2312,12 +2312,12 @@
 	text-align: center;
 }
 
-.move-by-input:focus {
+.prisma-move-by-input:focus {
 	border-color: var(--interactive-accent);
 	outline: none;
 }
 
-.move-by-increment-btn {
+.prisma-move-by-increment-btn {
 	width: 32px;
 	height: 32px;
 	padding: 0;
@@ -2334,23 +2334,23 @@
 	justify-content: center;
 }
 
-.move-by-increment-btn:hover {
+.prisma-move-by-increment-btn:hover {
 	background: var(--interactive-hover);
 	border-color: var(--interactive-accent);
 }
 
-.move-by-increment-btn:active {
+.prisma-move-by-increment-btn:active {
 	transform: scale(0.95);
 }
 
 /* Time unit buttons */
-.move-by-unit-group {
+.prisma-move-by-unit-group {
 	display: flex;
 	gap: 6px;
 	flex-wrap: wrap;
 }
 
-.move-by-unit-btn {
+.prisma-move-by-unit-btn {
 	padding: 6px 12px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-s);
@@ -2363,11 +2363,11 @@
 	white-space: nowrap;
 }
 
-.move-by-unit-btn:hover {
+.prisma-move-by-unit-btn:hover {
 	background: var(--interactive-hover);
 }
 
-.move-by-unit-btn.is-active {
+.prisma-move-by-unit-btn.is-active {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border-color: var(--interactive-accent);
@@ -2375,46 +2375,46 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-	.move-by-row {
+	.prisma-move-by-row {
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 8px;
 	}
 
-	.move-by-label {
+	.prisma-move-by-label {
 		min-width: 0;
 		width: 100%;
 	}
 
-	.move-by-button-group,
-	.move-by-amount-group,
-	.move-by-unit-group {
+	.prisma-move-by-button-group,
+	.prisma-move-by-amount-group,
+	.prisma-move-by-unit-group {
 		width: 100%;
 	}
 
-	.move-by-btn {
+	.prisma-move-by-btn {
 		flex: 1;
 	}
 
-	.move-by-unit-btn {
+	.prisma-move-by-unit-btn {
 		flex: 1 1 calc(33.333% - 4px);
 	}
 }
 
 /* Event Notification Modal */
-.event-notification-modal .modal {
+.prisma-event-notification-modal .modal {
 	max-width: 600px;
 	width: 90%;
 }
 
-.event-notification-modal .modal-content {
+.prisma-event-notification-modal .modal-content {
 	padding: 0;
 	max-height: 70vh;
 	overflow-y: auto;
 	border-radius: 12px;
 }
 
-.event-notification-header {
+.prisma-event-notification-header {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -2424,7 +2424,7 @@
 	text-align: center;
 }
 
-.event-notification-timing {
+.prisma-event-notification-timing {
 	font-size: var(--font-ui-medium);
 	font-weight: 600;
 	color: var(--text-accent);
@@ -2435,7 +2435,7 @@
 	border: 1px solid var(--color-accent);
 }
 
-.event-notification-title {
+.prisma-event-notification-title {
 	font-size: 24px;
 	font-weight: 700;
 	color: var(--text-normal);
@@ -2446,21 +2446,21 @@
 	border-radius: var(--radius-m);
 }
 
-.event-notification-title:hover {
+.prisma-event-notification-title:hover {
 	color: var(--text-accent);
 	background: var(--background-modifier-hover);
 }
 
-.event-notification-section {
+.prisma-event-notification-section {
 	padding: 24px;
 	border-bottom: 1px solid var(--background-modifier-border-focus);
 }
 
-.event-notification-section:last-child {
+.prisma-event-notification-section:last-child {
 	border-bottom: none;
 }
 
-.event-notification-section-title {
+.prisma-event-notification-section-title {
 	font-size: var(--font-ui-medium);
 	font-weight: 600;
 	color: var(--text-normal);
@@ -2469,20 +2469,20 @@
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.event-notification-time-grid {
+.prisma-event-notification-time-grid {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 20px;
 	margin-bottom: 16px;
 }
 
-.event-notification-time-item {
+.prisma-event-notification-time-item {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
 }
 
-.event-notification-label {
+.prisma-event-notification-label {
 	font-size: var(--font-ui-smaller);
 	font-weight: 600;
 	color: var(--text-muted);
@@ -2490,30 +2490,30 @@
 	letter-spacing: 0.5px;
 }
 
-.event-notification-value {
+.prisma-event-notification-value {
 	font-size: var(--font-ui-medium);
 	color: var(--text-normal);
 	font-weight: 500;
 }
 
-.event-notification-file-link {
+.prisma-event-notification-file-link {
 	cursor: pointer;
 	color: var(--text-accent);
 	text-decoration: underline;
 	transition: color 0.2s ease;
 }
 
-.event-notification-file-link:hover {
+.prisma-event-notification-file-link:hover {
 	color: var(--text-accent-hover);
 }
 
-.event-notification-props-grid {
+.prisma-event-notification-props-grid {
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 16px;
 }
 
-.event-notification-prop-item {
+.prisma-event-notification-prop-item {
 	display: flex;
 	align-items: flex-start;
 	gap: 16px;
@@ -2523,7 +2523,7 @@
 	border: 1px solid var(--background-modifier-border);
 }
 
-.event-notification-prop-key {
+.prisma-event-notification-prop-key {
 	font-size: var(--font-ui-small);
 	font-weight: 600;
 	color: var(--text-muted);
@@ -2531,25 +2531,25 @@
 	flex-shrink: 0;
 }
 
-.event-notification-prop-value {
+.prisma-event-notification-prop-value {
 	font-size: var(--font-ui-small);
 	color: var(--text-normal);
 	flex: 1;
 	word-break: break-word;
 }
 
-.event-notification-prop-value-link {
+.prisma-event-notification-prop-value-link {
 	color: var(--text-accent);
 	text-decoration: underline;
 	cursor: pointer;
 	transition: color 0.2s ease;
 }
 
-.event-notification-prop-value-link:hover {
+.prisma-event-notification-prop-value-link:hover {
 	color: var(--text-accent-hover);
 }
 
-.event-notification-buttons {
+.prisma-event-notification-buttons {
 	display: flex;
 	justify-content: flex-end;
 	gap: 12px;
@@ -2558,7 +2558,7 @@
 	border-top: 1px solid var(--background-modifier-border);
 }
 
-.event-notification-buttons button {
+.prisma-event-notification-buttons button {
 	padding: 8px 16px;
 	border-radius: var(--radius-s);
 	font-size: var(--font-ui-small);
@@ -2569,60 +2569,60 @@
 
 /* Responsive adjustments for notification modal */
 @media (max-width: 768px) {
-	.event-notification-modal .modal {
+	.prisma-event-notification-modal .modal {
 		max-width: 95%;
 	}
 
-	.event-notification-header {
+	.prisma-event-notification-header {
 		padding: 24px 16px 16px 16px;
 	}
 
-	.event-notification-title {
+	.prisma-event-notification-title {
 		font-size: 20px;
 		padding: 6px 12px;
 	}
 
-	.event-notification-timing {
+	.prisma-event-notification-timing {
 		font-size: var(--font-ui-small);
 		padding: 6px 12px;
 	}
 
-	.event-notification-time-grid {
+	.prisma-event-notification-time-grid {
 		grid-template-columns: 1fr;
 		gap: 16px;
 	}
 
-	.event-notification-props-grid {
+	.prisma-event-notification-props-grid {
 		grid-template-columns: 1fr;
 		gap: 12px;
 	}
 
-	.event-notification-prop-item {
+	.prisma-event-notification-prop-item {
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 4px;
 	}
 
-	.event-notification-prop-key {
+	.prisma-event-notification-prop-key {
 		min-width: auto;
 		font-weight: 600;
 	}
 
-	.event-notification-buttons {
+	.prisma-event-notification-buttons {
 		flex-direction: column;
 		gap: 8px;
 	}
 }
 
 /* Global Search Modal Styles */
-.prisma-global-search-modal .modal {
+.global-search-modal .modal {
 	width: 85vw;
 	max-width: 1170px;
 	height: 80vh;
 	max-height: 800px;
 }
 
-.prisma-global-search-modal .modal-content {
+.global-search-modal .modal-content {
 	height: 100%;
 	display: flex;
 	flex-direction: column;
@@ -2681,13 +2681,13 @@
 }
 
 /* Make the event list taller for global search */
-.prisma-global-search-modal .generic-event-list {
+.global-search-modal .generic-event-list {
 	max-height: 50vh;
 	flex: 1;
 	overflow-y: auto;
 }
 
-.prisma-global-search-modal .generic-event-subtitle {
+.global-search-modal .generic-event-subtitle {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 	margin-top: 0.25rem;

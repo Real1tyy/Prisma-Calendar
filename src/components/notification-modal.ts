@@ -28,7 +28,7 @@ export class NotificationModal extends Modal {
 
 	async onOpen(): Promise<void> {
 		const { contentEl } = this;
-		contentEl.addClass("event-notification-modal");
+		contentEl.addClass("prisma-event-notification-modal");
 
 		this.renderNotificationContent();
 	}
@@ -37,18 +37,18 @@ export class NotificationModal extends Modal {
 		const { contentEl } = this;
 
 		// Header with notification timing
-		const header = contentEl.createDiv("event-notification-header");
+		const header = contentEl.createDiv("prisma-event-notification-header");
 		const timingInfo = this.getTimingInfo();
 		header.createEl("div", {
 			text: timingInfo,
-			cls: "event-notification-timing",
+			cls: "prisma-event-notification-timing",
 		});
 
 		// Event title
 		const cleanTitle = removeZettelId(this.eventData.title);
 		const titleEl = header.createEl("h2", {
 			text: `🔔 ${cleanTitle}`,
-			cls: "event-notification-title",
+			cls: "prisma-event-notification-title",
 		});
 
 		// Make title clickable to open file
@@ -58,7 +58,7 @@ export class NotificationModal extends Modal {
 		};
 
 		// Event details section
-		const detailsSection = contentEl.createDiv("event-notification-section");
+		const detailsSection = contentEl.createDiv("prisma-event-notification-section");
 		this.renderEventDetails(detailsSection);
 
 		// Properties section
@@ -110,24 +110,24 @@ export class NotificationModal extends Modal {
 	}
 
 	private renderEventDetails(container: HTMLElement): void {
-		const timeGrid = container.createDiv("event-notification-time-grid");
+		const timeGrid = container.createDiv("prisma-event-notification-time-grid");
 
 		// Start date/time
-		const startItem = timeGrid.createDiv("event-notification-time-item");
-		createTextDiv(startItem, "Start", "event-notification-label");
+		const startItem = timeGrid.createDiv("prisma-event-notification-time-item");
+		createTextDiv(startItem, "Start", "prisma-event-notification-label");
 		createTextDiv(
 			startItem,
 			this.formatDateTime(this.eventData.startDate, this.eventData.isAllDay),
-			"event-notification-value"
+			"prisma-event-notification-value"
 		);
 
 		// File path
-		const fileItem = timeGrid.createDiv("event-notification-time-item");
-		createTextDiv(fileItem, "File", "event-notification-label");
+		const fileItem = timeGrid.createDiv("prisma-event-notification-time-item");
+		createTextDiv(fileItem, "File", "prisma-event-notification-label");
 		const fileEl = createTextDiv(
 			fileItem,
 			this.eventData.filePath,
-			"event-notification-value event-notification-file-link"
+			"prisma-event-notification-value prisma-event-notification-file-link"
 		);
 		fileEl.onclick = () => {
 			this.app.workspace.openLinkText(this.eventData.filePath, "", false);
@@ -138,9 +138,9 @@ export class NotificationModal extends Modal {
 	private renderPropertiesSection(parent: HTMLElement, title: string, properties: [string, unknown][]): void {
 		if (properties.length === 0) return;
 
-		const section = parent.createDiv("event-notification-section");
-		createTextDiv(section, title, "event-notification-section-title");
-		const grid = section.createDiv("event-notification-props-grid");
+		const section = parent.createDiv("prisma-event-notification-section");
+		createTextDiv(section, title, "prisma-event-notification-section-title");
+		const grid = section.createDiv("prisma-event-notification-props-grid");
 
 		for (const [key, value] of properties) {
 			this.renderProperty(grid, key, value);
@@ -148,15 +148,15 @@ export class NotificationModal extends Modal {
 	}
 
 	private renderProperty(container: HTMLElement, key: string, value: any): void {
-		const propItem = container.createDiv("event-notification-prop-item");
-		createTextDiv(propItem, key, "event-notification-prop-key");
-		const valueEl = propItem.createEl("div", { cls: "event-notification-prop-value" });
+		const propItem = container.createDiv("prisma-event-notification-prop-item");
+		createTextDiv(propItem, key, "prisma-event-notification-prop-key");
+		const valueEl = propItem.createEl("div", { cls: "prisma-event-notification-prop-value" });
 
 		const config: PropertyRendererConfig = {
 			createLink: (text: string, path: string) => {
 				const link = document.createElement("a");
 				link.textContent = text;
-				link.className = "event-notification-prop-value-link";
+				link.className = "prisma-event-notification-prop-value-link";
 				link.onclick = (e) => {
 					e.preventDefault();
 					this.app.workspace.openLinkText(path, "", false);
@@ -174,7 +174,7 @@ export class NotificationModal extends Modal {
 	}
 
 	private renderActionButtons(container: HTMLElement): void {
-		const buttonContainer = container.createDiv("event-notification-buttons");
+		const buttonContainer = container.createDiv("prisma-event-notification-buttons");
 
 		// Open file button
 		const openButton = buttonContainer.createEl("button", {

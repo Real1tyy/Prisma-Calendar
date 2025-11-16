@@ -2,7 +2,7 @@ import { InputFilterManager } from "./input-filter-manager";
 
 export class SearchFilterManager extends InputFilterManager {
 	constructor(onFilterChange: () => void) {
-		super(onFilterChange, "Search events...", "fc-search-input");
+		super(onFilterChange, "Search events...", "prisma-fc-search-input");
 	}
 
 	shouldInclude(event: { title: string }): boolean {

@@ -178,7 +178,7 @@ abstract class BaseEventModal extends Modal {
 		});
 
 		// Container for recurring event options (initially hidden)
-		this.recurringContainer = contentEl.createDiv("recurring-event-fields");
+		this.recurringContainer = contentEl.createDiv("prisma-recurring-event-fields");
 		this.recurringContainer.style.display = "none";
 
 		// RRule type dropdown
@@ -193,15 +193,15 @@ abstract class BaseEventModal extends Modal {
 		}
 
 		// Weekday selection (initially hidden, shown when weekly/bi-weekly selected)
-		this.weekdayContainer = this.recurringContainer.createDiv("setting-item weekday-selection");
+		this.weekdayContainer = this.recurringContainer.createDiv("setting-item prisma-weekday-selection");
 		this.weekdayContainer.style.display = "none";
 		this.weekdayContainer.createEl("div", { text: "Days of Week", cls: "setting-item-name" });
 
-		const weekdayGrid = this.weekdayContainer.createDiv("weekday-grid");
+		const weekdayGrid = this.weekdayContainer.createDiv("prisma-weekday-grid");
 
 		// Create checkboxes for each weekday
 		for (const [value, label] of Object.entries(WEEKDAY_OPTIONS)) {
-			const weekdayItem = weekdayGrid.createDiv("weekday-item");
+			const weekdayItem = weekdayGrid.createDiv("prisma-weekday-item");
 
 			const checkboxId = `weekday-${value}`;
 			const checkbox = weekdayItem.createEl("input", {
@@ -251,14 +251,14 @@ abstract class BaseEventModal extends Modal {
 		});
 		addButton.addEventListener("click", onAddClick);
 
-		const container = parent.createDiv("property-container");
+		const container = parent.createDiv("prisma-property-container");
 
 		return container;
 	}
 
 	protected addCustomProperty(key = "", value = "", section: "display" | "other" = "other"): void {
 		const container = section === "display" ? this.displayPropertiesContainer : this.otherPropertiesContainer;
-		const propertyRow = container.createDiv("custom-property-row");
+		const propertyRow = container.createDiv("prisma-custom-property-row");
 
 		propertyRow.createEl("input", {
 			type: "text",
@@ -289,8 +289,8 @@ abstract class BaseEventModal extends Modal {
 		const properties: Record<string, string> = {};
 
 		// Collect from both display and other properties containers
-		const displayRows = this.displayPropertiesContainer.querySelectorAll(".custom-property-row");
-		const otherRows = this.otherPropertiesContainer.querySelectorAll(".custom-property-row");
+		const displayRows = this.displayPropertiesContainer.querySelectorAll(".prisma-custom-property-row");
+		const otherRows = this.otherPropertiesContainer.querySelectorAll(".prisma-custom-property-row");
 		const allRows = [...Array.from(displayRows), ...Array.from(otherRows)];
 
 		for (const row of allRows) {

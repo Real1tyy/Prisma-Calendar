@@ -59,10 +59,10 @@ export class FilterPresetSelector {
 		if (!toolbarLeft) return;
 
 		const wrapper = document.createElement("div");
-		wrapper.className = "fc-filter-preset-wrapper";
+		wrapper.className = "prisma-fc-filter-preset-wrapper";
 
 		this.select = document.createElement("select");
-		this.select.className = "fc-filter-preset-select fc-button fc-button-primary";
+		this.select.className = "prisma-fc-filter-preset-select fc-button fc-button-primary";
 
 		// Hidden placeholder option that shows the arrow
 		const placeholderOption = document.createElement("option");

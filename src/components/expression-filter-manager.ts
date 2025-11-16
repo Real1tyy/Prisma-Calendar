@@ -7,7 +7,7 @@ export class ExpressionFilterManager extends InputFilterManager {
 	private lastWarnedExpression: string | null = null;
 
 	constructor(onFilterChange: () => void) {
-		super(onFilterChange, "Status === 'Done'", "fc-expression-input", 50);
+		super(onFilterChange, "Status === 'Done'", "prisma-fc-expression-input", 50);
 	}
 
 	protected updateFilterValue(filterValue: string): void {

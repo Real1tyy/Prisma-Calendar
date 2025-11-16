@@ -379,14 +379,14 @@ export class RulesSettings {
 		}
 
 		filterPresets.forEach((preset, index) => {
-			const presetContainer = container.createDiv("filter-preset-item");
+			const presetContainer = container.createDiv("prisma-filter-preset-item");
 
 			// Name input
 			const nameInput = presetContainer.createEl("input", {
 				type: "text",
 				value: preset.name,
 				placeholder: "Preset name (e.g., 'Done', 'High Priority')",
-				cls: "filter-preset-name-input",
+				cls: "prisma-filter-preset-name-input",
 			});
 
 			const updateName = async () => {
@@ -409,7 +409,7 @@ export class RulesSettings {
 				type: "text",
 				value: preset.expression,
 				placeholder: "Filter expression (e.g., Status === 'Done')",
-				cls: "filter-preset-expression-input",
+				cls: "prisma-filter-preset-expression-input",
 			});
 
 			const updateExpression = async () => {
@@ -431,7 +431,7 @@ export class RulesSettings {
 			const deleteButton = presetContainer.createEl("button", {
 				text: "×",
 				attr: { title: "Delete preset" },
-				cls: "filter-preset-btn-delete",
+				cls: "prisma-filter-preset-btn-delete",
 			});
 			deleteButton.onclick = async () => {
 				await this.settingsStore.updateSettings((s) => ({
