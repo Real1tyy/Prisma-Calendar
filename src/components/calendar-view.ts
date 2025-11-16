@@ -711,7 +711,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 			eventDidMount: (info) => {
 				if (info.event.extendedProps.isVirtual) {
-					info.el.classList.add("virtual-event-opacity", "virtual-event-cursor");
+					info.el.classList.add("prisma-virtual-event-opacity", "prisma-virtual-event-cursor");
 					info.el.title = "Virtual recurring event (read-only)";
 				} else {
 					// Only register non-virtual events for batch selection
@@ -905,10 +905,10 @@ export class CalendarView extends MountableView(ItemView) {
 
 			// Convert to FullCalendar event format
 			const calendarEvents = events.map((event) => {
-				const classNames = ["regular-event"];
-				if (event.isVirtual) {
-					classNames.push("virtual-event");
-				}
+			const classNames = ["regular-event"];
+			if (event.isVirtual) {
+				classNames.push("prisma-virtual-event");
+			}
 				const eventColor = this.getEventColor(event);
 
 				// Strip Z suffix to treat times as naive local times (no timezone conversion)
@@ -1085,7 +1085,7 @@ export class CalendarView extends MountableView(ItemView) {
 
 	private handleEventMount(info: any): void {
 		if (info.event.extendedProps.isVirtual) {
-			info.el.classList.add("virtual-event-italic");
+			info.el.classList.add("prisma-virtual-event-italic");
 		}
 
 		const element = info.el;

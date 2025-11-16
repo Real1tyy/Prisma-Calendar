@@ -542,12 +542,12 @@
 }
 
 /* Virtual events in list view */
-.prisma-calendar-container .fc-list-event.virtual-event {
+.prisma-calendar-container .fc-list-event.prisma-virtual-event {
 	opacity: 0.5;
 	font-style: italic;
 }
 
-.prisma-calendar-container .fc-list-event.virtual-event .fc-list-event-dot {
+.prisma-calendar-container .fc-list-event.prisma-virtual-event .fc-list-event-dot {
 	opacity: 0.4;
 	border-style: dashed;
 }
@@ -633,7 +633,7 @@
 }
 
 /* Loading state */
-.calendar-loading-container {
+.prisma-calendar-loading-container {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -642,22 +642,22 @@
 	gap: 16px;
 }
 
-.calendar-loading-spinner {
+.prisma-calendar-loading-spinner {
 	width: 32px;
 	height: 32px;
 	border: 3px solid var(--background-modifier-border);
 	border-top: 3px solid var(--interactive-accent);
 	border-radius: 50%;
-	animation: calendar-spin 1s linear infinite;
+	animation: prisma-calendar-spin 1s linear infinite;
 }
 
-.calendar-loading-text {
+.prisma-calendar-loading-text {
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 	text-align: center;
 }
 
-@keyframes calendar-spin {
+@keyframes prisma-calendar-spin {
 	0% {
 		transform: rotate(0deg);
 	}
@@ -925,7 +925,7 @@
 	}
 }
 
-.virtual-event {
+.prisma-virtual-event {
 	opacity: 0.6;
 	font-style: italic;
 	background-image: repeating-linear-gradient(
@@ -938,7 +938,7 @@
 	cursor: not-allowed;
 }
 
-.view-header-title-container {
+.prisma-view-header-title-container {
 	flex-grow: unset;
 	flex-shrink: 0;
 }
@@ -1033,24 +1033,24 @@
 }
 
 /* Color example list items */
-.color-example-item {
+.prisma-color-example-item {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	margin-bottom: 6px;
 }
 
-.color-example-item .prisma-settings-info-box-example {
+.prisma-color-example-item .prisma-settings-info-box-example {
 	flex: 0 0 auto;
 }
 
-.color-arrow {
+.prisma-color-arrow {
 	flex-shrink: 0;
 	color: var(--text-muted);
 }
 
 /* Color example dot in examples */
-.color-example-dot {
+.prisma-color-example-dot {
 	display: inline-block;
 	width: 16px;
 	height: 16px;
@@ -1061,13 +1061,13 @@
 	flex-shrink: 0;
 }
 
-.color-example-description {
+.prisma-color-example-description {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);
 }
 
 /* Color rule items - Compact single row layout */
-.color-rule-item {
+.prisma-color-rule-item {
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 6px;
 	padding: 8px 12px;
@@ -1075,13 +1075,13 @@
 	background-color: var(--background-secondary);
 }
 
-.color-rule-main-row {
+.prisma-color-rule-main-row {
 	display: flex;
 	align-items: center;
 	gap: 12px;
 }
 
-.color-rule-left {
+.prisma-color-rule-left {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -1089,7 +1089,7 @@
 	min-width: 0;
 }
 
-.color-rule-order {
+.prisma-color-rule-order {
 	font-size: 11px;
 	font-weight: bold;
 	color: var(--text-muted);
@@ -1097,12 +1097,12 @@
 	flex-shrink: 0;
 }
 
-.color-rule-left input[type="checkbox"] {
+.prisma-color-rule-left input[type="checkbox"] {
 	flex-shrink: 0;
 	cursor: pointer;
 }
 
-.color-rule-expression-input {
+.prisma-color-rule-expression-input {
 	flex: 1;
 	min-width: 0;
 	padding: 4px 8px;
@@ -1114,41 +1114,41 @@
 	font-size: var(--font-ui-small);
 }
 
-.color-rule-expression-input:focus {
+.prisma-color-rule-expression-input:focus {
 	outline: none;
 	border-color: var(--interactive-accent);
 }
 
-.color-rule-right {
+.prisma-color-rule-right {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	flex-shrink: 0;
 }
 
-.color-rule-picker-wrapper {
+.prisma-color-rule-picker-wrapper {
 	display: flex;
 	align-items: center;
 }
 
-.color-rule-picker-wrapper .setting-item {
+.prisma-color-rule-picker-wrapper .setting-item {
 	border: none;
 	padding: 0;
 	margin: 0;
 	background: transparent;
 }
 
-.color-rule-picker-wrapper .setting-item-control {
+.prisma-color-rule-picker-wrapper .setting-item-control {
 	display: flex;
 	align-items: center;
 }
 
-.color-rule-controls {
+.prisma-color-rule-controls {
 	display: flex;
 	gap: 4px;
 }
 
-.color-rule-btn {
+.prisma-color-rule-btn {
 	padding: 4px 8px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
@@ -1160,15 +1160,15 @@
 	transition: all 0.15s ease;
 }
 
-.color-rule-btn:hover {
+.prisma-color-rule-btn:hover {
 	background-color: var(--background-modifier-hover);
 }
 
-.color-rule-btn-delete {
+.prisma-color-rule-btn-delete {
 	color: var(--text-error);
 }
 
-.color-rule-btn-delete:hover {
+.prisma-color-rule-btn-delete:hover {
 	background-color: var(--background-modifier-error);
 	border-color: var(--text-error);
 }
@@ -1237,21 +1237,21 @@
 }
 
 /* Virtual Event Styles */
-.virtual-event-opacity {
+.prisma-virtual-event-opacity {
 	opacity: 0.6;
 }
 
-.virtual-event-cursor {
+.prisma-virtual-event-cursor {
 	cursor: default;
 }
 
-.virtual-event-italic {
+.prisma-virtual-event-italic {
 	opacity: 0.7;
 	font-style: italic;
 }
 
 /* Hidden Element */
-.element-hidden {
+.prisma-element-hidden {
 	display: none;
 }
 
@@ -1649,7 +1649,7 @@
 }
 
 /* Color Picker Styles */
-.color-picker-container {
+.prisma-color-picker-container {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -1657,7 +1657,7 @@
 }
 
 /* Color Example Dot */
-.color-example-dot {
+.prisma-color-example-dot {
 	display: inline-block;
 	width: 16px;
 	height: 16px;
