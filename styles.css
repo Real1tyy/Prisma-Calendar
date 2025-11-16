@@ -676,7 +676,7 @@
 }
 
 /* Batch Selection Styles - Now integrated into calendar toolbar */
-.fc-button.batch-action-btn {
+.fc-button.prisma-batch-action-btn {
 	background: var(--interactive-normal);
 	border: 1px solid var(--background-modifier-border);
 	color: var(--text-normal);
@@ -688,60 +688,72 @@
 	white-space: nowrap;
 }
 
-.fc-button.batch-action-btn:hover {
+.fc-button.prisma-batch-action-btn:hover {
 	background: var(--interactive-hover);
 	transform: translateY(-1px);
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.fc-button.batch-action-btn.batch-counter {
+.fc-button.prisma-batch-action-btn.prisma-batch-counter {
 	font-weight: var(--font-weight-medium);
 	background: var(--background-secondary);
 }
 
-.fc-button.batch-action-btn.select-all-btn {
+.fc-button.prisma-batch-action-btn.prisma-select-all-btn {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 }
 
-.fc-button.batch-action-btn.clear-btn {
+.fc-button.prisma-batch-action-btn.prisma-clear-btn {
 	background: var(--background-modifier-form-field);
 }
 
-.fc-button.batch-action-btn.exit-btn {
+.fc-button.prisma-batch-action-btn.prisma-exit-btn {
 	background: var(--background-secondary);
 }
 
-.fc-button.batch-action-btn.delete-btn {
+.fc-button.prisma-batch-action-btn.prisma-delete-btn {
 	background: var(--color-red);
 	color: white;
 	border-color: var(--color-red);
 }
 
-.fc-button.batch-action-btn.delete-btn:hover {
+.fc-button.prisma-batch-action-btn.prisma-delete-btn:hover {
 	background: var(--color-red-rgb);
 	box-shadow: 0 2px 8px rgba(var(--color-red-rgb), 0.3);
 }
 
-.fc-button.batch-action-btn.clone-next-btn,
-.fc-button.batch-action-btn.clone-prev-btn,
-.fc-button.batch-action-btn.duplicate-btn {
+.fc-button.prisma-batch-action-btn.prisma-clone-next-btn,
+.fc-button.prisma-batch-action-btn.prisma-clone-prev-btn,
+.fc-button.prisma-batch-action-btn.prisma-duplicate-btn {
 	background: var(--color-blue);
 	color: white;
 	border-color: var(--color-blue);
 }
 
-.fc-button.batch-action-btn.move-next-btn,
-.fc-button.batch-action-btn.move-prev-btn {
+.fc-button.prisma-batch-action-btn.prisma-move-next-btn,
+.fc-button.prisma-batch-action-btn.prisma-move-prev-btn {
 	background: var(--color-orange);
 	color: white;
 	border-color: var(--color-orange);
 }
 
-.fc-button.batch-action-btn.open-all-btn {
+.fc-button.prisma-batch-action-btn.prisma-open-all-btn {
 	background: var(--color-green);
 	color: white;
 	border-color: var(--color-green);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-skip-btn {
+	background: var(--color-yellow);
+	color: white;
+	border-color: var(--color-yellow);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-move-by-btn {
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	border-color: var(--background-modifier-border);
 }
 
 /* Fix event collapsing in month view */
@@ -880,7 +892,7 @@
 		gap: 6px;
 	}
 
-	.batch-action-btn {
+	.prisma-batch-action-btn {
 		flex: 1;
 		min-width: 0;
 		font-size: var(--font-ui-smaller);
@@ -908,7 +920,7 @@
 		transition: none;
 	}
 
-	.batch-action-btn {
+	.prisma-batch-action-btn {
 		transition: none;
 	}
 }
@@ -932,19 +944,19 @@
 }
 
 /* Settings Tabs */
-.settings-nav {
+.prisma-settings-nav {
 	margin-bottom: 24px;
 	border-bottom: 1px solid var(--background-modifier-border);
 	padding-bottom: 16px;
 }
 
-.nav-buttons {
+.prisma-nav-buttons {
 	display: flex;
 	gap: 8px;
 	flex-wrap: wrap;
 }
 
-.nav-buttons button {
+.prisma-nav-buttons button {
 	padding: 8px 16px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 6px;
@@ -954,16 +966,16 @@
 	transition: all 0.2s ease;
 }
 
-.nav-buttons button.active {
+.prisma-nav-buttons button.active {
 	background-color: var(--interactive-accent);
 	color: var(--text-on-accent);
 }
 
-.nav-buttons button:hover:not(.active) {
+.prisma-nav-buttons button:hover:not(.active) {
 	background-color: var(--background-modifier-hover);
 }
 
-.settings-info-box {
+.prisma-settings-info-box {
 	margin-top: 16px;
 	padding: 12px;
 	background-color: var(--background-secondary);
@@ -971,11 +983,11 @@
 	border: 1px solid var(--background-modifier-border);
 }
 
-.settings-info-box h4 {
+.prisma-settings-info-box h4 {
 	margin-top: 0;
 }
 
-.settings-info-box-example {
+.prisma-settings-info-box-example {
 	background-color: var(--background-primary);
 	padding: 8px;
 	border-radius: 4px;
@@ -985,12 +997,12 @@
 	white-space: pre-wrap;
 }
 
-.settings-info-box ul {
+.prisma-settings-info-box ul {
 	margin-top: 4px;
 	padding-inline-start: 20px;
 }
 
-.settings-warning-box {
+.prisma-settings-warning-box {
 	margin-top: 12px;
 	padding: 12px;
 	background-color: var(--background-modifier-error-rgb);
@@ -998,11 +1010,11 @@
 	border: 1px solid var(--background-modifier-error);
 }
 
-.settings-warning-box strong {
+.prisma-settings-warning-box strong {
 	color: var(--text-error);
 }
 
-.frontmatter-display-example .example-event-box {
+.prisma-frontmatter-display-example .prisma-example-event-box {
 	border: 1px solid var(--background-modifier-border);
 	padding: 8px;
 	border-radius: 4px;
@@ -1010,11 +1022,11 @@
 	margin-top: 8px;
 }
 
-.example-event-box .title {
+.prisma-example-event-box .title {
 	font-weight: 500;
 }
 
-.example-event-box .properties {
+.prisma-example-event-box .properties {
 	font-size: 0.9em;
 	color: var(--text-muted);
 	margin-top: 4px;
@@ -1028,7 +1040,7 @@
 	margin-bottom: 6px;
 }
 
-.color-example-item .settings-info-box-example {
+.color-example-item .prisma-settings-info-box-example {
 	flex: 0 0 auto;
 }
 
@@ -1420,11 +1432,11 @@
 }
 
 /* Zoom Button Styles */
-.zoom-button-visible {
+.prisma-zoom-button-visible {
 	display: "";
 }
 
-.zoom-button-hidden {
+.prisma-zoom-button-hidden {
 	display: none;
 }
 
@@ -1946,7 +1958,7 @@
 	margin-top: 8px;
 }
 
-.other-section-spacing {
+.prisma-other-section-spacing {
 	margin-top: 16px;
 }
 
@@ -2603,21 +2615,21 @@
 }
 
 /* Global Search Modal Styles */
-.global-search-modal .modal {
+.prisma-global-search-modal .modal {
 	width: 85vw;
 	max-width: 1170px;
 	height: 80vh;
 	max-height: 800px;
 }
 
-.global-search-modal .modal-content {
+.prisma-global-search-modal .modal-content {
 	height: 100%;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
 }
 
-.global-search-filters {
+.prisma-global-search-filters {
 	padding: 0.75rem;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
@@ -2625,7 +2637,7 @@
 	background-color: var(--background-secondary);
 }
 
-.global-search-toggles {
+.prisma-global-search-toggles {
 	display: flex;
 	gap: 0.75rem;
 	flex-wrap: wrap;
@@ -2669,13 +2681,13 @@
 }
 
 /* Make the event list taller for global search */
-.global-search-modal .generic-event-list {
+.prisma-global-search-modal .generic-event-list {
 	max-height: 50vh;
 	flex: 1;
 	overflow-y: auto;
 }
 
-.global-search-modal .generic-event-subtitle {
+.prisma-global-search-modal .generic-event-subtitle {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 	margin-top: 0.25rem;

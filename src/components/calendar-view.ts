@@ -122,67 +122,67 @@ export class CalendarView extends MountableView(ItemView) {
 			// Define all batch buttons
 			customButtons.batchCounter = {
 				text: bsm.getSelectionCountText(),
-				className: "batch-action-btn batch-counter",
+				className: "prisma-batch-action-btn prisma-batch-counter",
 			};
 			customButtons.batchSelectAll = {
 				text: "Select All",
 				click: () => bsm.selectAllVisibleEvents(),
-				className: "batch-action-btn select-all-btn",
+				className: "prisma-batch-action-btn prisma-select-all-btn",
 			};
 			customButtons.batchClear = {
 				text: "Clear",
 				click: () => bsm.clearSelection(),
-				className: "batch-action-btn clear-btn",
+				className: "prisma-batch-action-btn prisma-clear-btn",
 			};
 			customButtons.batchDuplicate = {
 				text: "Duplicate",
 				click: () => bsm.executeDuplicate(),
-				className: "batch-action-btn duplicate-btn",
+				className: "prisma-batch-action-btn prisma-duplicate-btn",
 			};
 			customButtons.batchMoveBy = {
 				text: "Move By",
 				click: () => bsm.executeMoveBy(),
-				className: "batch-action-btn move-by-btn",
+				className: "prisma-batch-action-btn prisma-move-by-btn",
 			};
 			customButtons.batchExit = {
 				text: "Exit",
 				click: () => this.toggleBatchSelection(),
-				className: "batch-action-btn exit-btn",
+				className: "prisma-batch-action-btn prisma-exit-btn",
 			};
 			customButtons.batchDelete = {
 				text: "Delete",
 				click: () => bsm.executeDelete(),
-				className: "batch-action-btn delete-btn",
+				className: "prisma-batch-action-btn prisma-delete-btn",
 			};
 			customButtons.batchCloneNext = {
 				text: "Clone Next",
 				click: () => bsm.executeClone(1),
-				className: "batch-action-btn clone-next-btn",
+				className: "prisma-batch-action-btn prisma-clone-next-btn",
 			};
 			customButtons.batchClonePrev = {
 				text: "Clone Prev",
 				click: () => bsm.executeClone(-1),
-				className: "batch-action-btn clone-prev-btn",
+				className: "prisma-batch-action-btn prisma-clone-prev-btn",
 			};
 			customButtons.batchMoveNext = {
 				text: "Move Next",
 				click: () => bsm.executeMove(1),
-				className: "batch-action-btn move-next-btn",
+				className: "prisma-batch-action-btn prisma-move-next-btn",
 			};
 			customButtons.batchMovePrev = {
 				text: "Move Prev",
 				click: () => bsm.executeMove(-1),
-				className: "batch-action-btn move-prev-btn",
+				className: "prisma-batch-action-btn prisma-move-prev-btn",
 			};
 			customButtons.batchOpenAll = {
 				text: "Open All",
 				click: () => bsm.executeOpenAll(),
-				className: "batch-action-btn open-all-btn",
+				className: "prisma-batch-action-btn prisma-open-all-btn",
 			};
 			customButtons.batchSkip = {
 				text: "Skip",
 				click: () => bsm.executeSkip(),
-				className: "batch-action-btn skip-btn",
+				className: "prisma-batch-action-btn prisma-skip-btn",
 			};
 		} else {
 			headerToolbar.right = `filteredEvents disabledRecurringEvents skippedEvents batchSelect ${viewSwitchers}`;

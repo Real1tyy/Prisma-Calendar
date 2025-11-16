@@ -76,6 +76,8 @@ abstract class BaseEventModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 
+		this.modalEl.addClass("prisma-event-modal");
+
 		// Allow subclasses to perform initialization
 		await this.initialize();
 
@@ -232,7 +234,7 @@ abstract class BaseEventModal extends Modal {
 			this.addCustomProperty("", "", "display")
 		);
 
-		const otherSectionParent = contentEl.createDiv("other-section-spacing");
+		const otherSectionParent = contentEl.createDiv("prisma-other-section-spacing");
 		this.otherPropertiesContainer = this.createPropertySection(otherSectionParent, "Other Properties", () =>
 			this.addCustomProperty("", "", "other")
 		);

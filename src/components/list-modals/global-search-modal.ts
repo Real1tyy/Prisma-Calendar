@@ -77,7 +77,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 	protected async onBeforeRender(): Promise<void> {
 		// Add custom CSS class for this modal
-		this.contentEl.addClass("global-search-modal");
+		this.contentEl.addClass("prisma-global-search-modal");
 
 		// Load all events from the store
 		await this.loadAllEvents();
@@ -194,9 +194,9 @@ export class GlobalSearchModal extends BaseEventListModal {
 	}
 
 	private renderFilterToggles(contentEl: HTMLElement): void {
-		const filtersContainer = contentEl.createEl("div", { cls: "global-search-filters" });
+		const filtersContainer = contentEl.createEl("div", { cls: "prisma-global-search-filters" });
 
-		const togglesContainer = filtersContainer.createEl("div", { cls: "global-search-toggles" });
+		const togglesContainer = filtersContainer.createEl("div", { cls: "prisma-global-search-toggles" });
 
 		this.createFilterButton(togglesContainer, "Recurring", "recurring");
 

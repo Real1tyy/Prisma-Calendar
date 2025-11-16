@@ -120,7 +120,7 @@ export class PropertiesSettings {
 		});
 
 		// Add description for event types
-		const eventTypesDesc = containerEl.createDiv("settings-info-box");
+		const eventTypesDesc = containerEl.createDiv("prisma-settings-info-box");
 
 		eventTypesDesc.createEl("h4", { text: "Event types" });
 		eventTypesDesc.createEl("p", {
@@ -137,7 +137,7 @@ ${settings.allDayProp}: false
 ---
 
 # Team Meeting`,
-			cls: "settings-info-box-example",
+			cls: "prisma-settings-info-box-example",
 		});
 
 		const allDayExample = eventTypesDesc.createDiv();
@@ -149,11 +149,11 @@ ${settings.allDayProp}: true
 ---
 
 # Conference Day`,
-			cls: "settings-info-box-example",
+			cls: "prisma-settings-info-box-example",
 		});
 
 		// Add description for recurring events
-		const recurringDesc = containerEl.createDiv("settings-info-box");
+		const recurringDesc = containerEl.createDiv("prisma-settings-info-box");
 
 		recurringDesc.createEl("h4", { text: "Recurring events" });
 		recurringDesc.createEl("p", {
@@ -171,7 +171,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 ---
 
 # Weekly Team Meeting`,
-			cls: "settings-info-box-example",
+			cls: "prisma-settings-info-box-example",
 		});
 
 		const typesContainer = recurringDesc.createDiv();
@@ -209,13 +209,13 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 		});
 
 		// Add example display
-		const exampleContainer = containerEl.createDiv("frontmatter-display-example");
+		const exampleContainer = containerEl.createDiv("prisma-frontmatter-display-example");
 		exampleContainer.createEl("p", {
 			text: "Example display in calendar:",
 			cls: "setting-item-description",
 		});
 
-		const exampleBox = exampleContainer.createDiv("example-event-box");
+		const exampleBox = exampleContainer.createDiv("prisma-example-event-box");
 		exampleBox.createEl("div", { text: "Meeting with Team", cls: "title" });
 		const propertiesContainer = exampleBox.createDiv("properties");
 		propertiesContainer.createEl("div", { text: "status: In Progress" });

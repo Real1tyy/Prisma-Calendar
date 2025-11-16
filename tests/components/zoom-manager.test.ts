@@ -139,8 +139,8 @@ describe("ZoomManager", () => {
 			manager.initialize(timeGridCalendar, mockContainer);
 			manager.updateZoomLevelButton();
 
-			expect(mockButton.classList.contains("zoom-button-visible")).toBe(true);
-			expect(mockButton.classList.contains("zoom-button-hidden")).toBe(false);
+			expect(mockButton.classList.contains("prisma-zoom-button-visible")).toBe(true);
+			expect(mockButton.classList.contains("prisma-zoom-button-hidden")).toBe(false);
 		});
 
 		it("should hide button for non-timeGrid views", () => {
@@ -155,8 +155,8 @@ describe("ZoomManager", () => {
 			manager.initialize(monthViewCalendar, mockContainer);
 			manager.updateZoomLevelButton();
 
-			expect(mockButton.classList.contains("zoom-button-hidden")).toBe(true);
-			expect(mockButton.classList.contains("zoom-button-visible")).toBe(false);
+			expect(mockButton.classList.contains("prisma-zoom-button-hidden")).toBe(true);
+			expect(mockButton.classList.contains("prisma-zoom-button-visible")).toBe(false);
 		});
 
 		it("should handle button not found gracefully", () => {

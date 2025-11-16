@@ -26,8 +26,8 @@ export class SingleCalendarSettings {
 	}
 
 	private createSectionNavigation(containerEl: HTMLElement): void {
-		const navContainer = containerEl.createDiv("settings-nav");
-		const buttonContainer = navContainer.createDiv("nav-buttons");
+		const navContainer = containerEl.createDiv("prisma-settings-nav");
+		const buttonContainer = navContainer.createDiv("prisma-nav-buttons");
 
 		const sections = [
 			{ id: "general" as const, label: "General" },

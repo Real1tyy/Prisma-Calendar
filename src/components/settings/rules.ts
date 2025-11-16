@@ -46,7 +46,7 @@ export class RulesSettings {
 		});
 
 		// Examples section
-		const examplesContainer = desc.createDiv("settings-info-box");
+		const examplesContainer = desc.createDiv("prisma-settings-info-box");
 
 		examplesContainer.createEl("strong", { text: "Example color rules:" });
 		const examplesList = examplesContainer.createEl("ul");
@@ -77,7 +77,7 @@ export class RulesSettings {
 		for (const example of examples) {
 			const li = examplesList.createEl("li", { cls: "color-example-item" });
 
-			li.createEl("code", { text: example.expression, cls: "settings-info-box-example" });
+			li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
 
 			li.createSpan({ text: "→", cls: "color-arrow" });
 
@@ -88,7 +88,7 @@ export class RulesSettings {
 		}
 
 		// Warning section
-		const warningContainer = desc.createDiv("settings-warning-box");
+		const warningContainer = desc.createDiv("prisma-settings-warning-box");
 		warningContainer.createEl("strong", { text: "⚠️ Important:" });
 		warningContainer.createEl("p", {
 			text: "Use property names directly (e.g., Priority, Status). Invalid expressions will be ignored. Colors can be CSS color names, hex codes, or HSL values.",
@@ -265,7 +265,7 @@ export class RulesSettings {
 		});
 
 		// Examples section
-		const examplesContainer = desc.createDiv("settings-info-box");
+		const examplesContainer = desc.createDiv("prisma-settings-info-box");
 
 		examplesContainer.createEl("strong", { text: "Example filter expressions:" });
 		const examplesList = examplesContainer.createEl("ul");
@@ -281,7 +281,7 @@ export class RulesSettings {
 		for (const example of examples) {
 			const li = examplesList.createEl("li", { cls: "color-example-item" });
 
-			li.createEl("code", { text: example.expression, cls: "settings-info-box-example" });
+			li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
 
 			li.createSpan({ text: "→", cls: "color-arrow" });
 
@@ -289,7 +289,7 @@ export class RulesSettings {
 		}
 
 		// Warning section
-		const warningContainer = desc.createDiv("settings-warning-box");
+		const warningContainer = desc.createDiv("prisma-settings-warning-box");
 		warningContainer.createEl("strong", { text: "⚠️ Important:" });
 		warningContainer.createEl("p", {
 			text: "Use property names directly (e.g., Status, Priority). Invalid expressions will be ignored and logged to console.",
@@ -313,7 +313,7 @@ export class RulesSettings {
 		});
 
 		// Examples section
-		const examplesContainer = desc.createDiv("settings-info-box");
+		const examplesContainer = desc.createDiv("prisma-settings-info-box");
 
 		examplesContainer.createEl("strong", { text: "Example filter presets:" });
 		const examplesList = examplesContainer.createEl("ul");
@@ -328,7 +328,7 @@ export class RulesSettings {
 		for (const example of examples) {
 			const li = examplesList.createEl("li", { cls: "color-example-item" });
 
-			li.createEl("code", { text: example.expression, cls: "settings-info-box-example" });
+			li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
 
 			li.createSpan({ text: "→", cls: "color-arrow" });
 
@@ -336,7 +336,7 @@ export class RulesSettings {
 		}
 
 		// Warning section
-		const warningContainer = desc.createDiv("settings-warning-box");
+		const warningContainer = desc.createDiv("prisma-settings-warning-box");
 		warningContainer.createEl("strong", { text: "💡 Tip:" });
 		warningContainer.createEl("p", {
 			text: "Filter presets appear in a dropdown next to the zoom button. Click a preset to instantly apply its filter expression.",

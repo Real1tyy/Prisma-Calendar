@@ -52,11 +52,11 @@ export class ZoomManager {
 				button.textContent = newText;
 			}
 
-			button.classList.remove("zoom-button-hidden");
-			button.classList.add("zoom-button-visible");
+			button.classList.remove("prisma-zoom-button-hidden");
+			button.classList.add("prisma-zoom-button-visible");
 		} else {
-			button.classList.remove("zoom-button-visible");
-			button.classList.add("zoom-button-hidden");
+			button.classList.remove("prisma-zoom-button-visible");
+			button.classList.add("prisma-zoom-button-hidden");
 		}
 	}
 
