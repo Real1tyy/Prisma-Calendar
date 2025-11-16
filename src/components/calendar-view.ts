@@ -905,10 +905,10 @@ export class CalendarView extends MountableView(ItemView) {
 
 			// Convert to FullCalendar event format
 			const calendarEvents = events.map((event) => {
-			const classNames = ["regular-event"];
-			if (event.isVirtual) {
-				classNames.push("prisma-virtual-event");
-			}
+				const classNames = ["regular-event"];
+				if (event.isVirtual) {
+					classNames.push("prisma-virtual-event");
+				}
 				const eventColor = this.getEventColor(event);
 
 				// Strip Z suffix to treat times as naive local times (no timezone conversion)

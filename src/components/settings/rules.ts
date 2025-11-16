@@ -74,18 +74,18 @@ export class RulesSettings {
 			},
 		];
 
-	for (const example of examples) {
-		const li = examplesList.createEl("li", { cls: "prisma-color-example-item" });
+		for (const example of examples) {
+			const li = examplesList.createEl("li", { cls: "prisma-color-example-item" });
 
-		li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
+			li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
 
-		li.createSpan({ text: "→", cls: "prisma-color-arrow" });
+			li.createSpan({ text: "→", cls: "prisma-color-arrow" });
 
-		const colorSpan = li.createEl("span", { cls: "prisma-color-example-dot" });
-		colorSpan.style.setProperty("--example-color", example.color);
+			const colorSpan = li.createEl("span", { cls: "prisma-color-example-dot" });
+			colorSpan.style.setProperty("--example-color", example.color);
 
-		li.createSpan({ text: example.description, cls: "prisma-color-example-description" });
-	}
+			li.createSpan({ text: example.description, cls: "prisma-color-example-description" });
+		}
 
 		// Warning section
 		const warningContainer = desc.createDiv("prisma-settings-warning-box");
@@ -134,19 +134,19 @@ export class RulesSettings {
 			return;
 		}
 
-	colorRules.forEach((rule, index) => {
-		const ruleContainer = container.createDiv("prisma-color-rule-item");
+		colorRules.forEach((rule, index) => {
+			const ruleContainer = container.createDiv("prisma-color-rule-item");
 
-		// Single row with all controls
-		const mainRow = ruleContainer.createDiv("prisma-color-rule-main-row");
+			// Single row with all controls
+			const mainRow = ruleContainer.createDiv("prisma-color-rule-main-row");
 
-		// Left section: order, checkbox, expression
-		const leftSection = mainRow.createDiv("prisma-color-rule-left");
+			// Left section: order, checkbox, expression
+			const leftSection = mainRow.createDiv("prisma-color-rule-left");
 
-		leftSection.createEl("span", {
-			text: `#${index + 1}`,
-			cls: "prisma-color-rule-order",
-		});
+			leftSection.createEl("span", {
+				text: `#${index + 1}`,
+				cls: "prisma-color-rule-order",
+			});
 
 			const enableToggle = leftSection.createEl("input", { type: "checkbox" });
 			enableToggle.checked = rule.enabled;
@@ -157,33 +157,33 @@ export class RulesSettings {
 				}));
 			};
 
-		const expressionInput = leftSection.createEl("input", {
-			type: "text",
-			value: rule.expression,
-			placeholder: "Priority === 'High'",
-			cls: "prisma-color-rule-expression-input",
-		});
+			const expressionInput = leftSection.createEl("input", {
+				type: "text",
+				value: rule.expression,
+				placeholder: "Priority === 'High'",
+				cls: "prisma-color-rule-expression-input",
+			});
 
-		const updateExpression = async () => {
-			await this.settingsStore.updateSettings((s) => ({
-				...s,
-				colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, expression: expressionInput.value } : r)),
-			}));
-		};
+			const updateExpression = async () => {
+				await this.settingsStore.updateSettings((s) => ({
+					...s,
+					colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, expression: expressionInput.value } : r)),
+				}));
+			};
 
-		expressionInput.addEventListener("blur", updateExpression);
-		expressionInput.addEventListener("keydown", (e: KeyboardEvent) => {
-			if (e.key === "Enter") {
-				e.preventDefault();
-				updateExpression();
-			}
-		});
+			expressionInput.addEventListener("blur", updateExpression);
+			expressionInput.addEventListener("keydown", (e: KeyboardEvent) => {
+				if (e.key === "Enter") {
+					e.preventDefault();
+					updateExpression();
+				}
+			});
 
-		// Right section: color picker + controls
-		const rightSection = mainRow.createDiv("prisma-color-rule-right");
+			// Right section: color picker + controls
+			const rightSection = mainRow.createDiv("prisma-color-rule-right");
 
-		// Integrated color picker using Setting
-		const colorPickerWrapper = rightSection.createDiv("prisma-color-rule-picker-wrapper");
+			// Integrated color picker using Setting
+			const colorPickerWrapper = rightSection.createDiv("prisma-color-rule-picker-wrapper");
 			new Setting(colorPickerWrapper).addColorPicker((colorPicker) => {
 				colorPicker.setValue(rule.color);
 				colorPicker.onChange(async (value) => {
@@ -194,15 +194,15 @@ export class RulesSettings {
 				});
 			});
 
-		// Control buttons
-		const controlsSection = rightSection.createDiv("prisma-color-rule-controls");
+			// Control buttons
+			const controlsSection = rightSection.createDiv("prisma-color-rule-controls");
 
-		if (index > 0) {
-			const moveUpButton = controlsSection.createEl("button", {
-				text: "↑",
-				attr: { title: "Move up" },
-				cls: "prisma-color-rule-btn",
-			});
+			if (index > 0) {
+				const moveUpButton = controlsSection.createEl("button", {
+					text: "↑",
+					attr: { title: "Move up" },
+					cls: "prisma-color-rule-btn",
+				});
 				moveUpButton.onclick = async () => {
 					await this.settingsStore.updateSettings((s) => {
 						const currentRules = [...s.colorRules];
@@ -219,12 +219,12 @@ export class RulesSettings {
 				};
 			}
 
-		if (index < colorRules.length - 1) {
-			const moveDownButton = controlsSection.createEl("button", {
-				text: "↓",
-				attr: { title: "Move down" },
-				cls: "prisma-color-rule-btn",
-			});
+			if (index < colorRules.length - 1) {
+				const moveDownButton = controlsSection.createEl("button", {
+					text: "↓",
+					attr: { title: "Move down" },
+					cls: "prisma-color-rule-btn",
+				});
 				moveDownButton.onclick = async () => {
 					await this.settingsStore.updateSettings((s) => {
 						const currentRules = [...s.colorRules];
@@ -241,11 +241,11 @@ export class RulesSettings {
 				};
 			}
 
-		const deleteButton = controlsSection.createEl("button", {
-			text: "×",
-			attr: { title: "Delete rule" },
-			cls: "prisma-color-rule-btn prisma-color-rule-btn-delete",
-		});
+			const deleteButton = controlsSection.createEl("button", {
+				text: "×",
+				attr: { title: "Delete rule" },
+				cls: "prisma-color-rule-btn prisma-color-rule-btn-delete",
+			});
 			deleteButton.onclick = async () => {
 				await this.settingsStore.updateSettings((s) => ({
 					...s,
@@ -271,22 +271,22 @@ export class RulesSettings {
 		const examplesList = examplesContainer.createEl("ul");
 
 		const examples = [
-		{ expression: "Status !== 'Inbox'", description: "Exclude inbox items" },
-		{ expression: "Priority === 'High'", description: "Only high priority events" },
-		{ expression: "Status === 'Done' || Status === 'In Progress'", description: "Active or completed events" },
-		{ expression: "!_Archived", description: "Exclude archived events" },
-		{ expression: "Array.isArray(Project) && Project.length > 0", description: "Events with projects assigned" },
-	];
+			{ expression: "Status !== 'Inbox'", description: "Exclude inbox items" },
+			{ expression: "Priority === 'High'", description: "Only high priority events" },
+			{ expression: "Status === 'Done' || Status === 'In Progress'", description: "Active or completed events" },
+			{ expression: "!_Archived", description: "Exclude archived events" },
+			{ expression: "Array.isArray(Project) && Project.length > 0", description: "Events with projects assigned" },
+		];
 
-	for (const example of examples) {
-		const li = examplesList.createEl("li", { cls: "prisma-color-example-item" });
+		for (const example of examples) {
+			const li = examplesList.createEl("li", { cls: "prisma-color-example-item" });
 
-		li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
+			li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
 
-		li.createSpan({ text: "→", cls: "prisma-color-arrow" });
+			li.createSpan({ text: "→", cls: "prisma-color-arrow" });
 
-		li.createSpan({ text: example.description, cls: "prisma-color-example-description" });
-	}
+			li.createSpan({ text: example.description, cls: "prisma-color-example-description" });
+		}
 
 		// Warning section
 		const warningContainer = desc.createDiv("prisma-settings-warning-box");
@@ -319,21 +319,21 @@ export class RulesSettings {
 		const examplesList = examplesContainer.createEl("ul");
 
 		const examples = [
-		{ expression: "Status === 'Done'", description: "Done tasks preset" },
-		{ expression: "Priority === 'High'", description: "High priority preset" },
-		{ expression: "Project === 'Work'", description: "Work projects preset" },
-		{ expression: "!_Archived", description: "Not archived preset" },
-	];
+			{ expression: "Status === 'Done'", description: "Done tasks preset" },
+			{ expression: "Priority === 'High'", description: "High priority preset" },
+			{ expression: "Project === 'Work'", description: "Work projects preset" },
+			{ expression: "!_Archived", description: "Not archived preset" },
+		];
 
-	for (const example of examples) {
-		const li = examplesList.createEl("li", { cls: "prisma-color-example-item" });
+		for (const example of examples) {
+			const li = examplesList.createEl("li", { cls: "prisma-color-example-item" });
 
-		li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
+			li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
 
-		li.createSpan({ text: "→", cls: "prisma-color-arrow" });
+			li.createSpan({ text: "→", cls: "prisma-color-arrow" });
 
-		li.createSpan({ text: example.description, cls: "prisma-color-example-description" });
-	}
+			li.createSpan({ text: example.description, cls: "prisma-color-example-description" });
+		}
 
 		// Warning section
 		const warningContainer = desc.createDiv("prisma-settings-warning-box");

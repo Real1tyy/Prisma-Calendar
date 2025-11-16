@@ -1550,19 +1550,19 @@
 }
 
 /* Settings Tab Styles */
-.settings-footer {
+.prisma-settings-footer {
 	margin-top: 2rem;
 	text-align: center;
 	font-size: var(--font-ui-smaller);
 	color: var(--text-faint);
 }
 
-.settings-support-link {
+.prisma-settings-support-link {
 	text-decoration: none;
 	color: var(--text-accent);
 }
 
-.calendar-management-header {
+.prisma-calendar-management-header {
 	margin-bottom: 24px;
 	padding: 16px;
 	background-color: var(--background-secondary);
@@ -1570,14 +1570,14 @@
 	border: 1px solid var(--background-modifier-border);
 }
 
-.calendar-actions {
+.prisma-calendar-actions {
 	display: flex;
 	gap: 8px;
 	margin-top: 12px;
 	flex-wrap: wrap;
 }
 
-.calendar-action-button {
+.prisma-calendar-action-button {
 	padding: 6px 12px;
 	border-radius: 4px;
 	cursor: pointer;
@@ -1588,61 +1588,61 @@
 	outline: none;
 }
 
-.calendar-action-button:hover:not(:disabled) {
+.prisma-calendar-action-button:hover:not(:disabled) {
 	transform: translateY(-1px);
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.calendar-action-button:active:not(:disabled) {
+.prisma-calendar-action-button:active:not(:disabled) {
 	transform: translateY(0);
 }
 
-.calendar-create-button {
+.prisma-calendar-create-button {
 	border: 1px solid var(--interactive-accent);
 	background-color: var(--interactive-accent);
 	color: var(--text-on-accent);
 }
 
-.calendar-create-button:hover:not(:disabled) {
+.prisma-calendar-create-button:hover:not(:disabled) {
 	background-color: var(--interactive-accent-hover);
 	border-color: var(--interactive-accent-hover);
 }
 
-.calendar-clone-button,
-.calendar-rename-button {
+.prisma-calendar-clone-button,
+.prisma-calendar-rename-button {
 	border: 1px solid var(--background-modifier-border);
 	background-color: var(--background-secondary);
 	color: var(--text-normal);
 }
 
-.calendar-clone-button:hover:not(:disabled),
-.calendar-rename-button:hover:not(:disabled) {
+.prisma-calendar-clone-button:hover:not(:disabled),
+.prisma-calendar-rename-button:hover:not(:disabled) {
 	background-color: var(--background-modifier-hover);
 	border-color: var(--background-modifier-border-hover);
 }
 
-.calendar-delete-button {
+.prisma-calendar-delete-button {
 	border: 1px solid var(--text-error);
 	background-color: var(--background-primary);
 	color: var(--text-error);
 }
 
-.calendar-delete-button:hover:not(:disabled) {
+.prisma-calendar-delete-button:hover:not(:disabled) {
 	background-color: var(--background-modifier-error);
 	border-color: var(--text-error);
 }
 
-.calendar-button-disabled {
+.prisma-calendar-button-disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
 
-.calendar-button-disabled:hover {
+.prisma-calendar-button-disabled:hover {
 	transform: none;
 	box-shadow: none;
 }
 
-.calendar-count-info {
+.prisma-calendar-count-info {
 	margin-top: 8px;
 	font-size: 12px;
 	color: var(--text-muted);
