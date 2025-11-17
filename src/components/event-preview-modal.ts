@@ -19,7 +19,7 @@ export class EventPreviewModal extends Modal {
 
 	async onOpen(): Promise<void> {
 		const { contentEl } = this;
-		contentEl.addClass("event-preview-modal");
+		contentEl.addClass("prisma-event-preview-modal");
 
 		await this.loadAllFrontmatter();
 		this.renderEventPreview();
@@ -46,7 +46,7 @@ export class EventPreviewModal extends Modal {
 		const { contentEl } = this;
 
 		// Header section with title
-		const header = contentEl.createDiv("event-preview-header");
+		const header = contentEl.createDiv("prisma-event-preview-header");
 		const title = this.event.title || "Untitled Event";
 		const cleanTitle = removeZettelId(title);
 		const titleEl = header.createEl("h2", { text: cleanTitle });
@@ -61,7 +61,7 @@ export class EventPreviewModal extends Modal {
 		}
 
 		// Time and date section
-		const timeSection = contentEl.createDiv("event-preview-section event-preview-time-section");
+		const timeSection = contentEl.createDiv("prisma-event-preview-section prisma-event-preview-time-section");
 		this.renderTimeInfo(timeSection);
 
 		const settings = this.bundle.settingsStore.currentSettings;
@@ -75,9 +75,9 @@ export class EventPreviewModal extends Modal {
 	private renderPropertiesSection(parent: HTMLElement, title: string, properties: [string, unknown][]): void {
 		if (properties.length === 0) return;
 
-		const section = parent.createDiv("event-preview-section event-preview-props-section");
-		createTextDiv(section, title, "event-preview-section-title");
-		const grid = section.createDiv("event-preview-props-grid");
+		const section = parent.createDiv("prisma-event-preview-section prisma-event-preview-props-section");
+		createTextDiv(section, title, "prisma-event-preview-section-title");
+		const grid = section.createDiv("prisma-event-preview-props-grid");
 
 		for (const [key, value] of properties) {
 			this.renderProperty(grid, key, value);
@@ -89,39 +89,39 @@ export class EventPreviewModal extends Modal {
 		const end = this.event.end;
 		const allDay = this.event.allDay;
 
-		const timeGrid = container.createDiv("event-preview-time-grid");
+		const timeGrid = container.createDiv("prisma-event-preview-time-grid");
 
 		// Start date/time
-		const startItem = timeGrid.createDiv("event-preview-time-item");
-		createTextDiv(startItem, "Start", "event-preview-label");
-		createTextDiv(startItem, this.formatDateTime(start, allDay), "event-preview-value");
+		const startItem = timeGrid.createDiv("prisma-event-preview-time-item");
+		createTextDiv(startItem, "Start", "prisma-event-preview-label");
+		createTextDiv(startItem, this.formatDateTime(start, allDay), "prisma-event-preview-value");
 
 		// End date/time
 		if (end) {
-			const endItem = timeGrid.createDiv("event-preview-time-item");
-			createTextDiv(endItem, "End", "event-preview-label");
-			createTextDiv(endItem, this.formatDateTime(end, allDay), "event-preview-value");
+			const endItem = timeGrid.createDiv("prisma-event-preview-time-item");
+			createTextDiv(endItem, "End", "prisma-event-preview-label");
+			createTextDiv(endItem, this.formatDateTime(end, allDay), "prisma-event-preview-value");
 		}
 
 		// Duration (if applicable)
 		if (start && end && !allDay) {
 			const duration = calculateDuration(start, end);
-			const durationItem = timeGrid.createDiv("event-preview-time-item");
-			createTextDiv(durationItem, "Duration", "event-preview-label");
-			createTextDiv(durationItem, duration, "event-preview-value");
+			const durationItem = timeGrid.createDiv("prisma-event-preview-time-item");
+			createTextDiv(durationItem, "Duration", "prisma-event-preview-label");
+			createTextDiv(durationItem, duration, "prisma-event-preview-value");
 		}
 	}
 
 	private renderProperty(container: HTMLElement, key: string, value: any): void {
-		const propItem = container.createDiv("event-preview-prop-item");
-		createTextDiv(propItem, key, "event-preview-prop-key");
-		const valueEl = propItem.createEl("div", { cls: "event-preview-prop-value" });
+		const propItem = container.createDiv("prisma-event-preview-prop-item");
+		createTextDiv(propItem, key, "prisma-event-preview-prop-key");
+		const valueEl = propItem.createEl("div", { cls: "prisma-event-preview-prop-value" });
 
 		const config: PropertyRendererConfig = {
 			createLink: (text: string, path: string) => {
 				const link = document.createElement("a");
 				link.textContent = text;
-				link.className = "event-preview-prop-value-link";
+				link.className = "prisma-event-preview-prop-value-link";
 				link.onclick = (e) => {
 					e.preventDefault();
 					this.app.workspace.openLinkText(path, "", false);

@@ -1669,19 +1669,19 @@
 }
 
 /* Event Preview Modal */
-.event-preview-modal .modal {
+.prisma-event-preview-modal .modal {
 	max-width: 600px;
 	width: 90%;
 }
 
-.event-preview-modal .modal-content {
+.prisma-event-preview-modal .modal-content {
 	padding: 0;
 	max-height: 70vh;
 	overflow-y: auto;
 	border-radius: 12px;
 }
 
-.event-preview-header {
+.prisma-event-preview-header {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -1695,7 +1695,7 @@
 	gap: 16px;
 }
 
-.event-preview-header h2 {
+.prisma-event-preview-header h2 {
 	margin: 0;
 	font-size: 28px;
 	font-weight: var(--font-weight-extrabold);
@@ -1712,14 +1712,14 @@
 	word-wrap: break-word;
 }
 
-.event-preview-header h2:hover {
+.prisma-event-preview-header h2:hover {
 	background: var(--interactive-hover);
 	border-color: var(--interactive-accent);
 	transform: translateY(-2px);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.event-preview-close-btn {
+.prisma-event-preview-close-btn {
 	position: absolute;
 	top: 16px;
 	right: 16px;
@@ -1739,25 +1739,25 @@
 	flex-shrink: 0;
 }
 
-.event-preview-close-btn:hover {
+.prisma-event-preview-close-btn:hover {
 	background: var(--interactive-hover);
 	transform: scale(1.05);
 }
 
-.event-preview-close-btn:active {
+.prisma-event-preview-close-btn:active {
 	transform: scale(0.95);
 }
 
-.event-preview-section {
+.prisma-event-preview-section {
 	padding: 20px 24px;
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.event-preview-section:last-child {
+.prisma-event-preview-section:last-child {
 	border-bottom: none;
 }
 
-.event-preview-section-title {
+.prisma-event-preview-section-title {
 	font-size: var(--font-ui-small);
 	font-weight: var(--font-weight-semibold);
 	color: var(--text-normal);
@@ -1767,7 +1767,7 @@
 	opacity: 0.8;
 }
 
-.event-preview-label {
+.prisma-event-preview-label {
 	font-size: var(--font-ui-smaller);
 	font-weight: var(--font-weight-medium);
 	color: var(--text-muted);
@@ -1776,26 +1776,26 @@
 	margin-bottom: 4px;
 }
 
-.event-preview-value {
+.prisma-event-preview-value {
 	font-size: var(--font-ui-medium);
 	color: var(--text-normal);
 	font-weight: var(--font-weight-medium);
 }
 
-.event-preview-time-grid {
+.prisma-event-preview-time-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 	gap: 16px;
 }
 
-.event-preview-time-item {
+.prisma-event-preview-time-item {
 	background: var(--background-primary);
 	padding: 12px;
 	border-radius: 8px;
 	border: 1px solid var(--background-modifier-border);
 }
 
-.event-preview-file-link {
+.prisma-event-preview-file-link {
 	display: inline-block;
 	padding: 8px 12px;
 	background: var(--background-primary);
@@ -1810,19 +1810,19 @@
 	word-break: break-all;
 }
 
-.event-preview-file-link:hover {
+.prisma-event-preview-file-link:hover {
 	background: var(--background-modifier-hover);
 	border-color: var(--text-accent);
 	transform: translateY(-1px);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.event-preview-props-grid {
+.prisma-event-preview-props-grid {
 	display: grid;
 	gap: 12px;
 }
 
-.event-preview-prop-item {
+.prisma-event-preview-prop-item {
 	background: var(--background-primary);
 	padding: 12px 16px;
 	border-radius: 8px;
@@ -1834,12 +1834,12 @@
 	transition: all 0.2s ease;
 }
 
-.event-preview-prop-item:hover {
+.prisma-event-preview-prop-item:hover {
 	background: var(--background-modifier-hover);
 	border-color: var(--background-modifier-border-hover);
 }
 
-.event-preview-prop-key {
+.prisma-event-preview-prop-key {
 	font-size: var(--font-ui-small);
 	font-weight: var(--font-weight-semibold);
 	color: var(--text-muted);
@@ -1847,13 +1847,13 @@
 	white-space: nowrap;
 }
 
-.event-preview-prop-value {
+.prisma-event-preview-prop-value {
 	font-size: var(--font-ui-small);
 	color: var(--text-normal);
 	word-break: break-word;
 }
 
-.event-preview-prop-value-link {
+.prisma-event-preview-prop-value-link {
 	color: var(--text-accent);
 	text-decoration: none;
 	cursor: pointer;
@@ -1863,12 +1863,12 @@
 	font-weight: var(--font-weight-medium);
 }
 
-.event-preview-prop-value-link:hover {
+.prisma-event-preview-prop-value-link:hover {
 	background: var(--background-modifier-hover);
 	text-decoration: underline;
 }
 
-.event-preview-empty-message {
+.prisma-event-preview-empty-message {
 	text-align: center;
 	color: var(--text-muted);
 	font-style: italic;
@@ -1877,28 +1877,28 @@
 
 /* Responsive adjustments for event preview modal */
 @media (max-width: 768px) {
-	.event-preview-modal .modal {
+	.prisma-event-preview-modal .modal {
 		max-width: 95%;
 	}
 
-	.event-preview-header {
+	.prisma-event-preview-header {
 		padding: 24px 16px 16px 16px;
 	}
 
-	.event-preview-header h2 {
+	.prisma-event-preview-header h2 {
 		font-size: 22px;
 		padding: 12px 32px;
 	}
 
-	.event-preview-section {
+	.prisma-event-preview-section {
 		padding: 16px;
 	}
 
-	.event-preview-time-grid {
+	.prisma-event-preview-time-grid {
 		grid-template-columns: 1fr;
 	}
 
-	.event-preview-close-btn {
+	.prisma-event-preview-close-btn {
 		top: 12px;
 		right: 12px;
 	}
