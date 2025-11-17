@@ -2026,15 +2026,15 @@
 }
 
 /* Generic Event List Modal (used by Skipped Events and Disabled Recurring Events) */
-.generic-event-list-modal h2 {
+.prisma-generic-event-list-modal h2 {
 	margin-bottom: 1rem;
 }
 
-.generic-event-list-search {
+.prisma-generic-event-list-search {
 	margin-bottom: 1rem;
 }
 
-.generic-event-search-input {
+.prisma-generic-event-search-input {
 	width: 100%;
 	padding: 0.5rem 0.75rem;
 	border: 1px solid var(--background-modifier-border);
@@ -2044,34 +2044,34 @@
 	font-size: var(--font-ui-small);
 }
 
-.generic-event-search-input:focus {
+.prisma-generic-event-search-input:focus {
 	border-color: var(--interactive-accent);
 	outline: none;
 	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
 }
 
-.generic-event-search-input::placeholder {
+.prisma-generic-event-search-input::placeholder {
 	color: var(--text-muted);
 }
 
-.generic-event-list-modal .generic-event-list-count {
+.prisma-generic-event-list-modal .prisma-generic-event-list-count {
 	margin-bottom: 1.5rem;
 	color: var(--text-muted);
 }
 
-.generic-event-list {
+.prisma-generic-event-list {
 	max-height: 400px;
 	overflow-y: auto;
 }
 
-.generic-event-list-empty {
+.prisma-generic-event-list-empty {
 	padding: 1rem;
 	text-align: center;
 	color: var(--text-muted);
 	font-style: italic;
 }
 
-.generic-event-list-item {
+.prisma-generic-event-list-item {
 	padding: 0.75rem;
 	margin-bottom: 0.5rem;
 	border: 1px solid var(--background-modifier-border);
@@ -2083,25 +2083,25 @@
 	transition: opacity 0.2s;
 }
 
-.generic-event-list-item:hover {
+.prisma-generic-event-list-item:hover {
 	background-color: var(--background-modifier-hover);
 }
 
-.generic-event-list-item .generic-event-info {
+.prisma-generic-event-list-item .prisma-generic-event-info {
 	flex: 1;
 }
 
-.generic-event-list-item .generic-event-title {
+.prisma-generic-event-list-item .prisma-generic-event-title {
 	font-weight: 500;
 	margin-bottom: 0.25rem;
 }
 
-.generic-event-list-item .generic-event-subtitle {
+.prisma-generic-event-list-item .prisma-generic-event-subtitle {
 	font-size: 0.85em;
 	color: var(--text-muted);
 }
 
-.generic-event-list-item .generic-event-actions {
+.prisma-generic-event-list-item .prisma-generic-event-actions {
 	display: flex;
 	gap: 0.5rem;
 }
@@ -2681,13 +2681,13 @@
 }
 
 /* Make the event list taller for global search */
-.global-search-modal .generic-event-list {
+.global-search-modal .prisma-generic-event-list {
 	max-height: 50vh;
 	flex: 1;
 	overflow-y: auto;
 }
 
-.global-search-modal .generic-event-subtitle {
+.global-search-modal .prisma-generic-event-subtitle {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 	margin-top: 0.25rem;

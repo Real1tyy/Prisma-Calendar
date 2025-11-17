@@ -62,11 +62,11 @@ export class RecurringEventsListModal extends Modal {
 		);
 
 		// Search input
-		const searchContainer = contentEl.createDiv("generic-event-list-search");
+		const searchContainer = contentEl.createDiv("prisma-generic-event-list-search");
 		this.searchInput = searchContainer.createEl("input", {
 			type: "text",
 			placeholder: "Search instances... (Ctrl/Cmd+F)",
-			cls: "generic-event-search-input",
+			cls: "prisma-generic-event-search-input",
 		});
 
 		this.searchInput.addEventListener("input", (e) => {

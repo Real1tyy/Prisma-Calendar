@@ -44,7 +44,7 @@ export abstract class BaseEventListModal extends Modal {
 	async onOpen(): Promise<void> {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.addClass("generic-event-list-modal");
+		contentEl.addClass("prisma-generic-event-list-modal");
 
 		// Allow subclasses to perform async initialization
 		await this.onBeforeRender();
@@ -67,11 +67,11 @@ export abstract class BaseEventListModal extends Modal {
 		}
 
 		// Search input
-		const searchContainer = contentEl.createEl("div", { cls: "generic-event-list-search" });
+		const searchContainer = contentEl.createEl("div", { cls: "prisma-generic-event-list-search" });
 		this.searchInput = searchContainer.createEl("input", {
 			type: "text",
 			placeholder: "Search events... (Ctrl/Cmd+F)",
-			cls: "generic-event-search-input",
+			cls: "prisma-generic-event-search-input",
 		});
 
 		this.searchInput.addEventListener("input", (e) => {
@@ -91,11 +91,11 @@ export abstract class BaseEventListModal extends Modal {
 			: `${this.items.length} event${this.items.length === 1 ? "" : "s"}`;
 		contentEl.createEl("p", {
 			text: countText,
-			cls: "generic-event-list-count",
+			cls: "prisma-generic-event-list-count",
 		});
 
 		// Event list
-		this.listContainer = contentEl.createEl("div", { cls: "generic-event-list" });
+		this.listContainer = contentEl.createEl("div", { cls: "prisma-generic-event-list" });
 
 		this.renderItems();
 	}
@@ -159,7 +159,7 @@ export abstract class BaseEventListModal extends Modal {
 	}
 
 	protected updateEventCount(): void {
-		const countEl = this.contentEl.querySelector(".generic-event-list-count");
+		const countEl = this.contentEl.querySelector(".prisma-generic-event-list-count");
 		if (!countEl) return;
 
 		const countSuffix = this.getCountSuffix();
@@ -189,7 +189,7 @@ export abstract class BaseEventListModal extends Modal {
 		if (this.filteredItems.length === 0) {
 			this.listContainer.createEl("p", {
 				text: "No events match your search.",
-				cls: "generic-event-list-empty",
+				cls: "prisma-generic-event-list-empty",
 			});
 			return;
 		}
@@ -200,26 +200,26 @@ export abstract class BaseEventListModal extends Modal {
 	}
 
 	protected createEventItem(container: HTMLElement, item: EventListItem): void {
-		const itemEl = container.createEl("div", { cls: "generic-event-list-item" });
+		const itemEl = container.createEl("div", { cls: "prisma-generic-event-list-item" });
 
 		// Event info
-		const infoEl = itemEl.createEl("div", { cls: "generic-event-info" });
+		const infoEl = itemEl.createEl("div", { cls: "prisma-generic-event-info" });
 
 		// Title
-		const titleEl = infoEl.createEl("div", { cls: "generic-event-title" });
+		const titleEl = infoEl.createEl("div", { cls: "prisma-generic-event-title" });
 		const cleanTitle = removeZettelId(item.title);
 		titleEl.textContent = cleanTitle;
 
 		// Subtitle (time/path info)
 		if (item.subtitle) {
-			const subtitleEl = infoEl.createEl("div", { cls: "generic-event-subtitle" });
+			const subtitleEl = infoEl.createEl("div", { cls: "prisma-generic-event-subtitle" });
 			subtitleEl.textContent = item.subtitle;
 		}
 
 		// Action buttons
 		const actions = this.getActions();
 		if (actions.length > 0) {
-			const actionsEl = itemEl.createEl("div", { cls: "generic-event-actions" });
+			const actionsEl = itemEl.createEl("div", { cls: "prisma-generic-event-actions" });
 
 			for (const action of actions) {
 				const btn = actionsEl.createEl("button", { text: action.label });
