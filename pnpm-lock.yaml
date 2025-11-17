@@ -27,11 +27,11 @@ importers:
         specifier: ^6.1.19
         version: 6.1.19(@fullcalendar/core@6.1.19)
       '@real1ty-obsidian-plugins/common-plugin':
-        specifier: ^1.1.1
-        version: 1.1.1(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)
+        specifier: ^1.2.0
+        version: 1.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
       '@real1ty-obsidian-plugins/utils':
         specifier: ^2.2.3
-        version: 2.2.3(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)
+        version: 2.2.3(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
       chart.js:
         specifier: ^4.5.1
         version: 4.5.1
@@ -80,7 +80,7 @@ importers:
         version: 27.0.1(postcss@8.5.6)
       obsidian:
         specifier: 1.8.7
-        version: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)
+        version: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
       tslib:
         specifier: 2.8.1
         version: 2.8.1
@@ -158,8 +158,8 @@ packages:
   '@codemirror/state@6.5.2':
     resolution: {integrity: sha512-FVqsPqtPWKVVL3dPSxy8wEF/ymIEuVzF1PK3VbUgrxXpJUSHQWWZz4JMToquRxnkw+36LTamCZG2iua2Ptq0fA==}
 
-  '@codemirror/view@6.38.6':
-    resolution: {integrity: sha512-qiS0z1bKs5WOvHIAC0Cybmv4AJSkAXgX5aD6Mqd2epSLlVJsQl8NG23jCVouIgkh4All/mrbdsf2UOLFnJw0tw==}
+  '@codemirror/view@6.38.8':
+    resolution: {integrity: sha512-XcE9fcnkHCbWkjeKyi0lllwXmBLtyYb5dt89dJyx23I9+LSh5vZDIuk7OLG4VM1lgrXZQcY6cxyZyk5WVPRv/A==}
 
   '@csstools/color-helpers@5.1.0':
     resolution: {integrity: sha512-S11EXWJyy0Mz5SYvRmY8nJYTFFd1LCNV+7cXyAgQtOOuzb4EsgfqDufL+9esx72/eLhsRdGZwaldu/h+E4t4BA==}
@@ -383,8 +383,8 @@ packages:
   '@marijn/find-cluster-break@1.0.2':
     resolution: {integrity: sha512-l0h88YhZFyKdXIFNfSWpyjStDjGHwZ/U7iobcK1cQQD8sejsONdQtTVU+1wVN1PBw40PiiHB1vA5S7VTfQiP9g==}
 
-  '@real1ty-obsidian-plugins/common-plugin@1.1.1':
-    resolution: {integrity: sha512-9WgEWbFznGrJOuIoBayV5/UTDQ+31p4+GtNkYPf1pSeHhLNg4YwGgPU9+ilTxzsLW/GPz8OQ9brNOyl/RkJepg==}
+  '@real1ty-obsidian-plugins/common-plugin@1.2.0':
+    resolution: {integrity: sha512-Ayqj9LVmW26jJfvsu/NrKfYyCjyOAlqth7h9XPYQdFkk8cfuJ9Sjosr4jFpWG72sFj5O3MUsQUoadCby4HBXsQ==}
 
   '@real1ty-obsidian-plugins/utils@1.2.2':
     resolution: {integrity: sha512-7ZoXrMOTqa5Oz6LnwoLIdgl/TsVjklQM+tf3e1klhS+DIvKoAJv3O3y0C7+knW3QEALJUXJcRFm1jcWZBP78ZA==}
@@ -1072,7 +1072,7 @@ snapshots:
     dependencies:
       '@marijn/find-cluster-break': 1.0.2
 
-  '@codemirror/view@6.38.6':
+  '@codemirror/view@6.38.8':
     dependencies:
       '@codemirror/state': 6.5.2
       crelt: 1.0.6
@@ -1208,20 +1208,20 @@ snapshots:
 
   '@marijn/find-cluster-break@1.0.2': {}
 
-  '@real1ty-obsidian-plugins/common-plugin@1.1.1(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)':
+  '@real1ty-obsidian-plugins/common-plugin@1.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)':
     dependencies:
-      '@real1ty-obsidian-plugins/utils': 1.2.2(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)
-      obsidian: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)
+      '@real1ty-obsidian-plugins/utils': 1.2.2(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
+      obsidian: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
       tslib: 2.8.1
     transitivePeerDependencies:
       - '@codemirror/state'
       - '@codemirror/view'
 
-  '@real1ty-obsidian-plugins/utils@1.2.2(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)':
+  '@real1ty-obsidian-plugins/utils@1.2.2(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)':
     dependencies:
       gray-matter: 4.0.3
       luxon: 3.7.2
-      obsidian: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)
+      obsidian: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
       rxjs: 7.8.2
       tslib: 2.8.1
       zod: 4.1.12
@@ -1229,11 +1229,11 @@ snapshots:
       - '@codemirror/state'
       - '@codemirror/view'
 
-  '@real1ty-obsidian-plugins/utils@2.2.3(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)':
+  '@real1ty-obsidian-plugins/utils@2.2.3(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)':
     dependencies:
       gray-matter: 4.0.3
       luxon: 3.7.2
-      obsidian: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.6)
+      obsidian: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
       rxjs: 7.8.2
       tslib: 2.8.1
       zod: 4.1.12
@@ -1576,10 +1576,10 @@ snapshots:
 
   nanoid@5.1.6: {}
 
-  obsidian@1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.6):
+  obsidian@1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.8):
     dependencies:
       '@codemirror/state': 6.5.2
-      '@codemirror/view': 6.38.6
+      '@codemirror/view': 6.38.8
       '@types/codemirror': 5.60.8
       moment: 2.29.4
 
