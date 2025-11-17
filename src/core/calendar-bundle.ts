@@ -84,23 +84,14 @@ export class CalendarBundle {
 
 		const existingLeaves = workspace.getLeavesOfType(this.viewType);
 
-		const activeView = workspace.getActiveViewOfType(CalendarView);
-		const activeCalendarLeaf = activeView ? existingLeaves.find((leaf) => leaf.view === activeView) : null;
-
-		// Case 1: Calendar is already open and focused - close it
-		if (activeCalendarLeaf) {
-			activeCalendarLeaf.detach();
-			return;
-		}
-
-		// Case 2: Calendar is already open but not focused - focus it
+		// Case 1: Calendar is already open - reveal/focus it
 		const existingLeaf = existingLeaves[0];
 		if (existingLeaf) {
 			await workspace.revealLeaf(existingLeaf);
 			return;
 		}
 
-		// Case 3: Calendar is not open - open it and focus it
+		// Case 2: Calendar is not open - open it and focus it
 		const newLeaf = workspace.getLeaf("tab");
 		await newLeaf.setViewState({ type: this.viewType, active: true });
 		await workspace.revealLeaf(newLeaf);
@@ -115,7 +106,10 @@ export class CalendarBundle {
 	}
 
 	destroy(): void {
-		this.app.workspace.detachLeavesOfType(this.viewType);
+		// Don't detach leaves here - Obsidian handles that automatically during plugin updates
+		// Detaching in onunload causes leaves to reset to their original positions
+		// See: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60
+
 		this.commandManager.clearHistory();
 
 		// Release shared infrastructure through registry (will only destroy if no other calendars are using it)
