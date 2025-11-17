@@ -2240,7 +2240,7 @@
 }
 
 /* Move By Modal - Compact Button-Based UI */
-.move-by-modal h3 {
+.prisma-move-by-modal h3 {
 	margin: 0 0 16px 0;
 	font-size: var(--font-ui-large);
 	text-align: center;

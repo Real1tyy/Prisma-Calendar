@@ -28,19 +28,19 @@ export class MoveByModal extends Modal {
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.addClass("move-by-modal");
+		contentEl.addClass("prisma-move-by-modal");
 
 		contentEl.createEl("h3", { text: "Move Event By" });
 
-		const formContainer = contentEl.createDiv("move-by-form");
+		const formContainer = contentEl.createDiv("prisma-move-by-form");
 
 		// Direction buttons
-		const directionContainer = formContainer.createDiv("move-by-row");
-		directionContainer.createEl("div", { text: "Direction", cls: "move-by-label" });
-		const directionButtons = directionContainer.createDiv("move-by-button-group");
+		const directionContainer = formContainer.createDiv("prisma-move-by-row");
+		directionContainer.createEl("div", { text: "Direction", cls: "prisma-move-by-label" });
+		const directionButtons = directionContainer.createDiv("prisma-move-by-button-group");
 
-		const plusBtn = directionButtons.createEl("button", { text: "+", cls: "move-by-btn" });
-		const minusBtn = directionButtons.createEl("button", { text: "−", cls: "move-by-btn" });
+		const plusBtn = directionButtons.createEl("button", { text: "+", cls: "prisma-move-by-btn" });
+		const minusBtn = directionButtons.createEl("button", { text: "−", cls: "prisma-move-by-btn" });
 
 		this.directionButtons.set("plus", plusBtn);
 		this.directionButtons.set("minus", minusBtn);
@@ -49,33 +49,33 @@ export class MoveByModal extends Modal {
 		minusBtn.addEventListener("click", () => this.selectDirection("minus"));
 
 		// Amount input with increment/decrement buttons
-		const amountContainer = formContainer.createDiv("move-by-row");
-		amountContainer.createEl("div", { text: "Amount", cls: "move-by-label" });
-		const amountInputGroup = amountContainer.createDiv("move-by-amount-group");
+		const amountContainer = formContainer.createDiv("prisma-move-by-row");
+		amountContainer.createEl("div", { text: "Amount", cls: "prisma-move-by-label" });
+		const amountInputGroup = amountContainer.createDiv("prisma-move-by-amount-group");
 
-		const decrementBtn = amountInputGroup.createEl("button", { text: "−", cls: "move-by-increment-btn" });
+		const decrementBtn = amountInputGroup.createEl("button", { text: "−", cls: "prisma-move-by-increment-btn" });
 		this.valueInput = amountInputGroup.createEl("input", {
 			type: "number",
 			value: "15",
-			cls: "move-by-input",
+			cls: "prisma-move-by-input",
 			attr: {
 				min: "1",
 				step: "1",
 			},
 		});
-		const incrementBtn = amountInputGroup.createEl("button", { text: "+", cls: "move-by-increment-btn" });
+		const incrementBtn = amountInputGroup.createEl("button", { text: "+", cls: "prisma-move-by-increment-btn" });
 
 		decrementBtn.addEventListener("click", () => this.adjustValue(-1));
 		incrementBtn.addEventListener("click", () => this.adjustValue(1));
 
 		// Time unit buttons
-		const unitContainer = formContainer.createDiv("move-by-row");
-		unitContainer.createEl("div", { text: "Time Unit", cls: "move-by-label" });
-		const unitButtons = unitContainer.createDiv("move-by-unit-group");
+		const unitContainer = formContainer.createDiv("prisma-move-by-row");
+		unitContainer.createEl("div", { text: "Time Unit", cls: "prisma-move-by-label" });
+		const unitButtons = unitContainer.createDiv("prisma-move-by-unit-group");
 
 		for (const unit of TIME_UNITS) {
 			const label = unit.charAt(0).toUpperCase() + unit.slice(1);
-			const btn = unitButtons.createEl("button", { text: label, cls: "move-by-unit-btn" });
+			const btn = unitButtons.createEl("button", { text: label, cls: "prisma-move-by-unit-btn" });
 			this.unitButtons.set(unit, btn);
 			btn.addEventListener("click", () => this.selectUnit(unit));
 		}
