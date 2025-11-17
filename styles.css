@@ -11,6 +11,41 @@
 	min-height: 400px;
 }
 
+/* Mountable View Loading Indicator */
+@keyframes mountable-spin {
+	0% {
+		transform: rotate(0);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.mountable-loading-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 2rem;
+	min-height: 100px;
+}
+
+.mountable-loading-spinner {
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--background-modifier-border);
+	border-top: 2px solid var(--interactive-accent);
+	border-radius: 50%;
+	animation: mountable-spin 1s linear infinite;
+	margin: 0 auto 8px;
+}
+
+.mountable-loading-text {
+	text-align: center;
+	color: var(--text-muted);
+	font-size: 0.9em;
+}
+
 /* FullCalendar theme integration with Obsidian */
 .prisma-calendar-container .fc {
 	font-family: var(--font-interface);
@@ -2615,14 +2650,14 @@
 }
 
 /* Global Search Modal Styles */
-.global-search-modal .modal {
+.prisma-global-search-modal .modal {
 	width: 85vw;
 	max-width: 1170px;
 	height: 80vh;
 	max-height: 800px;
 }
 
-.global-search-modal .modal-content {
+.prisma-global-search-modal .modal-content {
 	height: 100%;
 	display: flex;
 	flex-direction: column;
@@ -2643,7 +2678,7 @@
 	flex-wrap: wrap;
 }
 
-.filter-cycle-button {
+.prisma-filter-cycle-button {
 	padding: 0.5rem 1rem;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
@@ -2655,39 +2690,39 @@
 	user-select: none;
 }
 
-.filter-cycle-button:hover {
+.prisma-filter-cycle-button:hover {
 	background-color: var(--background-modifier-hover);
 }
 
 /* State: none (normal) */
-.filter-cycle-button.filter-state-none {
+.prisma-filter-cycle-button.filter-state-none {
 	border-color: var(--background-modifier-border);
 	background-color: var(--background-primary);
 	color: var(--text-muted);
 }
 
 /* State: skip (hiding events) */
-.filter-cycle-button.filter-state-skip {
+.prisma-filter-cycle-button.filter-state-skip {
 	border-color: var(--text-error);
 	background-color: rgba(var(--color-red-rgb), 0.1);
 	color: var(--text-error);
 }
 
 /* State: only (showing only certain events) */
-.filter-cycle-button.filter-state-only {
+.prisma-filter-cycle-button.filter-state-only {
 	border-color: var(--interactive-accent);
 	background-color: var(--interactive-accent);
 	color: var(--text-on-accent);
 }
 
 /* Make the event list taller for global search */
-.global-search-modal .prisma-generic-event-list {
+.prisma-global-search-modal .prisma-generic-event-list {
 	max-height: 50vh;
 	flex: 1;
 	overflow-y: auto;
 }
 
-.global-search-modal .prisma-generic-event-subtitle {
+.prisma-global-search-modal .prisma-generic-event-subtitle {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 	margin-top: 0.25rem;
