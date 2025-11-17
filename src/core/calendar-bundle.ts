@@ -1,5 +1,5 @@
 import { onceAsync } from "@real1ty-obsidian-plugins/utils/async-utils";
-import type { App, WorkspaceLeaf } from "obsidian";
+import type { App } from "obsidian";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type CustomCalendarPlugin from "../main";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
@@ -84,20 +84,8 @@ export class CalendarBundle {
 
 		const existingLeaves = workspace.getLeavesOfType(this.viewType);
 
-		// Check if any calendar leaf is currently active by checking each leaf's view state
-		// and comparing with the active tab
-		let activeCalendarLeaf: WorkspaceLeaf | null = null;
-
-		for (const leaf of existingLeaves) {
-			const viewState = leaf.getViewState();
-			const isActiveLeaf = workspace.activeLeaf === leaf;
-
-			// Check if this leaf is currently visible/active by checking if it's the active leaf
-			if (viewState.active || isActiveLeaf) {
-				activeCalendarLeaf = leaf;
-				break;
-			}
-		}
+		const activeView = workspace.getActiveViewOfType(CalendarView);
+		const activeCalendarLeaf = activeView ? existingLeaves.find((leaf) => leaf.view === activeView) : null;
 
 		// Case 1: Calendar is already open and focused - close it
 		if (activeCalendarLeaf) {
