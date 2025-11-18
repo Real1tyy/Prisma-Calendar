@@ -27,8 +27,8 @@ importers:
         specifier: ^6.1.19
         version: 6.1.19(@fullcalendar/core@6.1.19)
       '@real1ty-obsidian-plugins/common-plugin':
-        specifier: ^1.2.0
-        version: 1.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
+        specifier: ^1.3.0
+        version: 1.3.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
       '@real1ty-obsidian-plugins/utils':
         specifier: ^2.2.3
         version: 2.2.3(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
@@ -383,8 +383,8 @@ packages:
   '@marijn/find-cluster-break@1.0.2':
     resolution: {integrity: sha512-l0h88YhZFyKdXIFNfSWpyjStDjGHwZ/U7iobcK1cQQD8sejsONdQtTVU+1wVN1PBw40PiiHB1vA5S7VTfQiP9g==}
 
-  '@real1ty-obsidian-plugins/common-plugin@1.2.0':
-    resolution: {integrity: sha512-Ayqj9LVmW26jJfvsu/NrKfYyCjyOAlqth7h9XPYQdFkk8cfuJ9Sjosr4jFpWG72sFj5O3MUsQUoadCby4HBXsQ==}
+  '@real1ty-obsidian-plugins/common-plugin@1.3.0':
+    resolution: {integrity: sha512-WBOhWgaBtDLtTGqsJ00ZLApTXHOEw9IB/dQImr8br6p8Rd9MsMQZNaatbkW6kpOIUyQwx6saI4w1qz4zKPQTgA==}
 
   '@real1ty-obsidian-plugins/utils@1.2.2':
     resolution: {integrity: sha512-7ZoXrMOTqa5Oz6LnwoLIdgl/TsVjklQM+tf3e1klhS+DIvKoAJv3O3y0C7+knW3QEALJUXJcRFm1jcWZBP78ZA==}
@@ -1208,7 +1208,7 @@ snapshots:
 
   '@marijn/find-cluster-break@1.0.2': {}
 
-  '@real1ty-obsidian-plugins/common-plugin@1.2.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)':
+  '@real1ty-obsidian-plugins/common-plugin@1.3.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)':
     dependencies:
       '@real1ty-obsidian-plugins/utils': 1.2.2(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
       obsidian: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)

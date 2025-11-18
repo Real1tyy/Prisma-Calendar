@@ -38,7 +38,7 @@ export function getCalendarViewType(calendarId: string): string {
 	return `${CALENDAR_VIEW_TYPE}-${calendarId}`;
 }
 
-export class CalendarView extends MountableView(ItemView) {
+export class CalendarView extends MountableView(ItemView, "prisma") {
 	calendar: Calendar | null = null;
 	private eventContextMenu: EventContextMenu;
 	private colorEvaluator: ColorEvaluator;
