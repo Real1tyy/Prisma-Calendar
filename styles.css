@@ -12,7 +12,7 @@
 }
 
 /* Mountable View Loading Indicator */
-@keyframes mountable-spin {
+@keyframes prisma-mountable-spin {
 	0% {
 		transform: rotate(0);
 	}
@@ -21,7 +21,7 @@
 	}
 }
 
-.mountable-loading-container {
+.prisma-mountable-loading-container {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -30,17 +30,17 @@
 	min-height: 100px;
 }
 
-.mountable-loading-spinner {
+.prisma-mountable-loading-spinner {
 	width: 20px;
 	height: 20px;
 	border: 2px solid var(--background-modifier-border);
 	border-top: 2px solid var(--interactive-accent);
 	border-radius: 50%;
-	animation: mountable-spin 1s linear infinite;
+	animation: prisma-mountable-spin 1s linear infinite;
 	margin: 0 auto 8px;
 }
 
-.mountable-loading-text {
+.prisma-mountable-loading-text {
 	text-align: center;
 	color: var(--text-muted);
 	font-size: 0.9em;
@@ -792,24 +792,24 @@
 }
 
 /* Fix event collapsing in month view */
-.fc-daygrid-event.batch-selectable,
-.fc-daygrid-event.batch-selectable .fc-event-main {
+.fc-daygrid-event.prisma-batch-selectable,
+.fc-daygrid-event.prisma-batch-selectable .fc-event-main {
 	overflow: visible;
 }
 
 /* Adjust checkbox position for compact month view events */
-.fc-daygrid-event.batch-selectable .fc-event-main::before {
+.fc-daygrid-event.prisma-batch-selectable .fc-event-main::before {
 	top: 1px;
 	right: 1px;
 	width: 14px;
 	height: 14px;
 }
-.fc-daygrid-event.batch-selected .fc-event-main::before {
+.fc-daygrid-event.prisma-batch-selected .fc-event-main::before {
 	font-size: 9px;
 }
 
 /* Event Selection States - Updated for FullCalendar DOM structure */
-.fc-event.batch-selectable {
+.fc-event.prisma-batch-selectable {
 	cursor: pointer;
 	transition:
 		box-shadow 0.2s ease,
@@ -817,13 +817,13 @@
 }
 
 /* Apply relative positioning to an inner element to avoid breaking FC's layout */
-.fc-event.batch-selectable .fc-event-main {
+.fc-event.prisma-batch-selectable .fc-event-main {
 	position: relative;
 	height: 100%;
 	width: 100%;
 }
 
-.fc-event.batch-selectable .fc-event-main::before {
+.fc-event.prisma-batch-selectable .fc-event-main::before {
 	content: "";
 	position: absolute;
 	top: 4px;
@@ -839,13 +839,13 @@
 	transition: all 0.2s ease;
 }
 
-.fc-event.batch-selectable:hover .fc-event-main::before {
+.fc-event.prisma-batch-selectable:hover .fc-event-main::before {
 	opacity: 1;
 	transform: scale(1.1);
 	border-color: var(--interactive-accent);
 }
 
-.fc-event.batch-selected {
+.fc-event.prisma-batch-selected {
 	box-shadow:
 		0 0 0 2px var(--interactive-accent),
 		0 4px 12px rgba(var(--interactive-accent-rgb), 0.3),
@@ -853,7 +853,7 @@
 	z-index: 5;
 }
 
-.fc-event.batch-selected .fc-event-main::before {
+.fc-event.prisma-batch-selected .fc-event-main::before {
 	background: var(--interactive-accent);
 	border-color: white;
 	content: "✓";
@@ -866,7 +866,7 @@
 	opacity: 1;
 }
 
-.fc-event.batch-selected:hover {
+.fc-event.prisma-batch-selected:hover {
 	box-shadow:
 		0 0 0 2px var(--interactive-accent),
 		0 6px 20px rgba(var(--interactive-accent-rgb), 0.4),
@@ -879,15 +879,15 @@
 /* Removed keyframes that could cause event sizing issues */
 
 /* List view batch selection adjustments */
-.prisma-calendar-container .fc-list-event.batch-selectable {
+.prisma-calendar-container .fc-list-event.prisma-batch-selectable {
 	position: relative;
 }
 
-.prisma-calendar-container .fc-list-event.batch-selectable .fc-list-event-graphic {
+.prisma-calendar-container .fc-list-event.prisma-batch-selectable .fc-list-event-graphic {
 	position: relative;
 }
 
-.prisma-calendar-container .fc-list-event.batch-selectable .fc-list-event-graphic::before {
+.prisma-calendar-container .fc-list-event.prisma-batch-selectable .fc-list-event-graphic::before {
 	content: "";
 	position: absolute;
 	left: -24px;
@@ -900,7 +900,7 @@
 	background: rgba(0, 0, 0, 0.2);
 }
 
-.prisma-calendar-container .fc-list-event.batch-selected .fc-list-event-graphic::before {
+.prisma-calendar-container .fc-list-event.prisma-batch-selected .fc-list-event-graphic::before {
 	background: var(--interactive-accent);
 	border-color: white;
 	content: "✓";
@@ -914,7 +914,7 @@
 
 /* Responsive batch selection */
 @media (max-width: 768px) {
-	.batch-selection-bar {
+	.prisma-batch-selection-bar {
 		flex-direction: column;
 		align-items: stretch;
 		gap: 4px;
@@ -922,7 +922,7 @@
 		padding: 2px 4px;
 	}
 
-	.batch-actions {
+	.prisma-batch-actions {
 		justify-content: center;
 		gap: 6px;
 	}
@@ -934,8 +934,8 @@
 		padding: 6px 4px;
 	}
 
-	.fc-event.batch-selectable .fc-event-main::before,
-	.fc-event.batch-selected .fc-event-main::before {
+	.fc-event.prisma-batch-selectable .fc-event-main::before,
+	.fc-event.prisma-batch-selected .fc-event-main::before {
 		width: 14px;
 		height: 14px;
 		font-size: 9px;
@@ -950,8 +950,8 @@
 
 	/* Animation rules removed since animations were removed */
 
-	.fc-event.batch-selectable .fc-event-main::before,
-	.fc-event.batch-selected .fc-event-main::before {
+	.fc-event.prisma-batch-selectable .fc-event-main::before,
+	.fc-event.prisma-batch-selected .fc-event-main::before {
 		transition: none;
 	}
 
@@ -1997,8 +1997,9 @@
 	margin-top: 16px;
 }
 
-/* Button positioning in setting-item for property sections */
-.setting-item button.mod-cta {
+/* Button positioning in setting-item for property sections - scoped to plugin modals only */
+.modal.prisma-generic-event-list-modal .setting-item button.mod-cta,
+.modal-container:has(.prisma-custom-properties-container) .setting-item button.mod-cta {
 	margin-left: auto;
 }
 

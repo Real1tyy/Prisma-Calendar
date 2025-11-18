@@ -174,9 +174,9 @@ export class BatchSelectionManager {
 
 	private addSelectionStylingToEvents(): void {
 		this.forEachEventElement(this.calendar.el, (eventEl, eventId) => {
-			eventEl.classList.add("batch-selectable");
+			eventEl.classList.add("prisma-batch-selectable");
 			if (this.selectedEvents.has(eventId)) {
-				eventEl.classList.add("batch-selected");
+				eventEl.classList.add("prisma-batch-selected");
 			}
 
 			const clickHandler = (e: Event) => {
@@ -198,7 +198,7 @@ export class BatchSelectionManager {
 				eventEl.removeEventListener("click", clickHandler);
 				this.clickHandlers.delete(eventEl);
 			}
-			eventEl.classList.remove("batch-selectable", "batch-selected");
+			eventEl.classList.remove("prisma-batch-selectable", "prisma-batch-selected");
 		});
 	}
 
@@ -242,9 +242,9 @@ export class BatchSelectionManager {
 		}
 
 		if (isSelected) {
-			eventEl.classList.add("batch-selected");
+			eventEl.classList.add("prisma-batch-selected");
 		} else {
-			eventEl.classList.remove("batch-selected");
+			eventEl.classList.remove("prisma-batch-selected");
 		}
 	}
 
