@@ -23,6 +23,7 @@ export const PropsSettingsSchema = z.object({
 	rruleSpecProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_RRULE_SPEC_PROP), // property name for RRule specification (weekdays, etc.)
 	rruleIdProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_RRULE_ID_PROP), // property name for recurring event ID
 	sourceProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_SOURCE_PROP), // property name for linking physical instances to their source recurring event
+	futureInstancesCountProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT_PROP), // property name to override default future instances count per recurring event
 	frontmatterDisplayProperties: z.array(z.string()).default([]), // frontmatter properties to display inside event chips
 	statusProperty: z.string().default(SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY), // property name to manage event status
 	doneValue: z.string().default(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE), // value to set when marking event as done
