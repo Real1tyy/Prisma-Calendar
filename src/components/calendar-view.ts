@@ -1,4 +1,4 @@
-import { Calendar, type EventContentArg } from "@fullcalendar/core";
+import { Calendar, type EventContentArg, type EventInput } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
@@ -8,6 +8,7 @@ import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
+import type { ParsedEvent } from "../core/parser";
 import type { SingleCalendarConfig } from "../types/index";
 import { removeZettelId } from "../utils/calendar-events";
 import { ColorEvaluator } from "../utils/colors";
@@ -37,6 +38,19 @@ import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";
 
+// FullCalendar-specific types
+interface FullCalendarExtendedProps {
+	filePath: string;
+	folder: string;
+	originalTitle: string;
+	frontmatterDisplayData: Record<string, unknown>;
+	isVirtual: boolean;
+}
+
+interface PrismaEventInput extends EventInput {
+	extendedProps: FullCalendarExtendedProps;
+}
+
 export function getCalendarViewType(calendarId: string): string {
 	return `${CALENDAR_VIEW_TYPE}-${calendarId}`;
 }
@@ -60,7 +74,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private weeklyStatsModal: WeeklyStatsModal | null = null;
 	private monthlyStatsModal: MonthlyStatsModal | null = null;
 	private alltimeStatsModal: AllTimeStatsModal | null = null;
-	private filteredEvents: Array<{ filePath: string; title: string; start: string; end?: string; allDay: boolean }> = [];
+	private filteredEvents: ParsedEvent[] = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
 	private upcomingEventCheckInterval: number | null = null;
@@ -96,136 +110,157 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return await this.bundle.redo();
 	}
 
+	private buildBatchButtons(): Record<string, any> {
+		const bsm = this.batchSelectionManager!;
+		const clsBase = cls("batch-action-btn");
+
+		return {
+			batchCounter: {
+				text: this.getSelectedEventsButtonText(),
+				click: () => this.showSelectedEventsModal(),
+				className: `${clsBase} ${cls("batch-counter")}`,
+			},
+			batchSelectAll: {
+				text: "All",
+				click: () => bsm.selectAllVisibleEvents(),
+				className: `${clsBase} ${cls("select-all-btn")}`,
+			},
+			batchClear: {
+				text: "Clear",
+				click: () => bsm.clearSelection(),
+				className: `${clsBase} ${cls("clear-btn")}`,
+			},
+			batchDuplicate: {
+				text: "Duplicate",
+				click: () => bsm.executeDuplicate(),
+				className: `${clsBase} ${cls("duplicate-btn")}`,
+			},
+			batchMoveBy: {
+				text: "Move By",
+				click: () => bsm.executeMoveBy(),
+				className: `${clsBase} ${cls("move-by-btn")}`,
+			},
+			batchCloneNext: {
+				text: "Clone Next",
+				click: () => bsm.executeClone(1),
+				className: `${clsBase} ${cls("clone-next-btn")}`,
+			},
+			batchClonePrev: {
+				text: "Clone Prev",
+				click: () => bsm.executeClone(-1),
+				className: `${clsBase} ${cls("clone-prev-btn")}`,
+			},
+			batchMoveNext: {
+				text: "Move Next",
+				click: () => bsm.executeMove(1),
+				className: `${clsBase} ${cls("move-next-btn")}`,
+			},
+			batchMovePrev: {
+				text: "Move Prev",
+				click: () => bsm.executeMove(-1),
+				className: `${clsBase} ${cls("move-prev-btn")}`,
+			},
+			batchOpenAll: {
+				text: "Open",
+				click: () => bsm.executeOpenAll(),
+				className: `${clsBase} ${cls("open-all-btn")}`,
+			},
+			batchSkip: {
+				text: "Skip",
+				click: () => bsm.executeSkip(),
+				className: `${clsBase} ${cls("skip-btn")}`,
+			},
+			batchDelete: {
+				text: "Delete",
+				click: () => bsm.executeDelete(),
+				className: `${clsBase} ${cls("delete-btn")}`,
+			},
+			batchExit: {
+				text: "Exit",
+				click: () => this.toggleBatchSelection(),
+				className: `${clsBase} ${cls("exit-btn")}`,
+			},
+		};
+	}
+
+	private buildRegularButtons(): Record<string, any> {
+		return {
+			createEvent: {
+				text: "Create Event",
+				click: () => this.createEventAtCurrentTime(),
+			},
+			zoomLevel: this.zoomManager.createZoomLevelButton(),
+			batchSelect: {
+				text: "Batch Select",
+				click: () => this.toggleBatchSelection(),
+			},
+			filteredEvents: {
+				text: this.getFilteredEventsButtonText(),
+				click: () => this.showFilteredEventsModal(),
+				className: this.filteredEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
+			},
+			skippedEvents: {
+				text: this.getSkippedEventsButtonText(),
+				click: () => this.showSkippedEventsModal(),
+				className: this.skippedEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
+			},
+			disabledRecurringEvents: {
+				text: this.getDisabledRecurringEventsButtonText(),
+				click: () => this.showDisabledRecurringEventsModal(),
+				className: this.disabledRecurringEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
+			},
+		};
+	}
+
+	private buildToolbarConfig(inSelectionMode: boolean): {
+		headerToolbar: { left: string; center: string; right: string };
+		customButtons: Record<string, any>;
+	} {
+		const viewSwitchers = "dayGridMonth,timeGridWeek,timeGridDay,listWeek";
+
+		if (inSelectionMode) {
+			const left = "prev,next today";
+			const right = [
+				"batchCounter",
+				"batchSelectAll",
+				"batchClear",
+				"batchDuplicate",
+				"batchMoveBy",
+				"batchCloneNext",
+				"batchClonePrev",
+				"batchMoveNext",
+				"batchMovePrev",
+				"batchOpenAll",
+				"batchSkip",
+				"batchDelete",
+				"batchExit",
+			].join(" ");
+
+			return {
+				headerToolbar: { left, center: "title", right },
+				customButtons: this.buildBatchButtons(),
+			};
+		}
+
+		const left = "prev,next today createEvent zoomLevel";
+		const right = `filteredEvents disabledRecurringEvents skippedEvents batchSelect ${viewSwitchers}`;
+
+		return {
+			headerToolbar: { left, center: "title", right },
+			customButtons: this.buildRegularButtons(),
+		};
+	}
+
 	private updateToolbar(): void {
 		if (!this.calendar || !this.batchSelectionManager) return;
 
-		const bsm = this.batchSelectionManager;
-		const inSelectionMode = bsm.isInSelectionMode();
+		const inSelectionMode = this.batchSelectionManager.isInSelectionMode();
 
 		if (inSelectionMode) {
 			this.cleanupEventCountButtons();
 		}
 
-		const leftButtons = inSelectionMode ? "prev,next today" : "prev,next today createEvent zoomLevel";
-
-		const headerToolbar: any = {
-			left: leftButtons,
-			center: "title",
-			right: "", // Will be constructed dynamically
-		};
-
-		const customButtons: Record<string, any> = {};
-
-		if (!inSelectionMode) {
-			customButtons.createEvent = {
-				text: "Create Event",
-				click: () => this.createEventAtCurrentTime(),
-			};
-			customButtons.zoomLevel = this.zoomManager.createZoomLevelButton();
-		}
-
-		const viewSwitchers = "dayGridMonth,timeGridWeek,timeGridDay,listWeek";
-
-		if (inSelectionMode) {
-			const batchButtons =
-				"batchCounter batchSelectAll batchClear batchDuplicate batchMoveBy batchCloneNext batchClonePrev batchMoveNext batchMovePrev batchOpenAll batchSkip batchDelete batchExit";
-			headerToolbar.right = batchButtons;
-
-			// Define all batch buttons
-			customButtons.batchCounter = {
-				text: this.getSelectedEventsButtonText(),
-				click: () => this.showSelectedEventsModal(),
-				className: `${cls("batch-action-btn")} ${cls("batch-counter")}`,
-			};
-			customButtons.batchSelectAll = {
-				text: "All",
-				click: () => bsm.selectAllVisibleEvents(),
-				className: `${cls("batch-action-btn")} ${cls("select-all-btn")}`,
-			};
-			customButtons.batchClear = {
-				text: "Clear",
-				click: () => bsm.clearSelection(),
-				className: `${cls("batch-action-btn")} ${cls("clear-btn")}`,
-			};
-			customButtons.batchDuplicate = {
-				text: "Duplicate",
-				click: () => bsm.executeDuplicate(),
-				className: `${cls("batch-action-btn")} ${cls("duplicate-btn")}`,
-			};
-			customButtons.batchMoveBy = {
-				text: "Move By",
-				click: () => bsm.executeMoveBy(),
-				className: `${cls("batch-action-btn")} ${cls("move-by-btn")}`,
-			};
-			customButtons.batchExit = {
-				text: "Exit",
-				click: () => this.toggleBatchSelection(),
-				className: `${cls("batch-action-btn")} ${cls("exit-btn")}`,
-			};
-			customButtons.batchDelete = {
-				text: "Delete",
-				click: () => bsm.executeDelete(),
-				className: `${cls("batch-action-btn")} ${cls("delete-btn")}`,
-			};
-			customButtons.batchCloneNext = {
-				text: "Clone Next",
-				click: () => bsm.executeClone(1),
-				className: `${cls("batch-action-btn")} ${cls("clone-next-btn")}`,
-			};
-			customButtons.batchClonePrev = {
-				text: "Clone Prev",
-				click: () => bsm.executeClone(-1),
-				className: `${cls("batch-action-btn")} ${cls("clone-prev-btn")}`,
-			};
-			customButtons.batchMoveNext = {
-				text: "Move Next",
-				click: () => bsm.executeMove(1),
-				className: `${cls("batch-action-btn")} ${cls("move-next-btn")}`,
-			};
-			customButtons.batchMovePrev = {
-				text: "Move Prev",
-				click: () => bsm.executeMove(-1),
-				className: `${cls("batch-action-btn")} ${cls("move-prev-btn")}`,
-			};
-			customButtons.batchOpenAll = {
-				text: "Open",
-				click: () => bsm.executeOpenAll(),
-				className: `${cls("batch-action-btn")} ${cls("open-all-btn")}`,
-			};
-			customButtons.batchSkip = {
-				text: "Skip",
-				click: () => bsm.executeSkip(),
-				className: `${cls("batch-action-btn")} ${cls("skip-btn")}`,
-			};
-		} else {
-			headerToolbar.right = `filteredEvents disabledRecurringEvents skippedEvents batchSelect ${viewSwitchers}`;
-			customButtons.batchSelect = {
-				text: "Batch Select",
-				click: () => this.toggleBatchSelection(),
-			};
-
-			const filteredClassName = this.filteredEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden");
-			customButtons.filteredEvents = {
-				text: this.getFilteredEventsButtonText(),
-				click: () => this.showFilteredEventsModal(),
-				className: filteredClassName,
-			};
-
-			const skippedClassName = this.skippedEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden");
-			customButtons.skippedEvents = {
-				text: this.getSkippedEventsButtonText(),
-				click: () => this.showSkippedEventsModal(),
-				className: skippedClassName,
-			};
-
-			const disabledClassName =
-				this.disabledRecurringEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden");
-			customButtons.disabledRecurringEvents = {
-				text: this.getDisabledRecurringEventsButtonText(),
-				click: () => this.showDisabledRecurringEventsModal(),
-				className: disabledClassName,
-			};
-		}
+		const { headerToolbar, customButtons } = this.buildToolbarConfig(inSelectionMode);
 
 		this.calendar.setOption("headerToolbar", headerToolbar);
 		this.calendar.setOption("customButtons", customButtons);
@@ -880,50 +915,34 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	private async refreshEvents(): Promise<void> {
-		if (!this.calendar) {
-			return;
-		}
-
 		// Don't refresh events until indexing is complete
-		if (!this.isIndexingComplete) {
+		if (!this.calendar || !this.isIndexingComplete || !this.calendar.view) {
 			return;
 		}
-
-		const view = this.calendar.view;
-		if (!view) {
-			return;
-		}
+		const { view } = this.calendar;
 
 		try {
 			const start = view.activeStart.toISOString();
 			const end = view.activeEnd.toISOString();
 
-			let events = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
+			const allEvents = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
 
-			// Track events before filtering
-			const totalEventsBeforeFilter = events.length;
+			const filteredEvents: ParsedEvent[] = [];
+			const visibleEvents: ParsedEvent[] = [];
 
-			events = events.filter((event) => this.searchFilter.shouldInclude(event));
-			events = events.filter((event) => this.expressionFilter.shouldInclude(event));
+			for (const event of allEvents) {
+				const passesSearch = this.searchFilter.shouldInclude(event);
+				const passesExpression = this.expressionFilter.shouldInclude(event);
 
-			// Calculate filtered events
-			const filteredOutCount = totalEventsBeforeFilter - events.length;
-
-			// Store filtered events for modal display
-			if (filteredOutCount > 0) {
-				const allEvents = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
-				this.filteredEvents = allEvents
-					.filter((event) => !this.searchFilter.shouldInclude(event) || !this.expressionFilter.shouldInclude(event))
-					.map((event) => ({
-						filePath: event.ref.filePath,
-						title: event.title,
-						start: event.start,
-						end: event.end,
-						allDay: event.allDay,
-					}));
-			} else {
-				this.filteredEvents = [];
+				if (passesSearch && passesExpression) {
+					visibleEvents.push(event);
+				} else {
+					filteredEvents.push(event);
+				}
 			}
+
+			this.filteredEvents = filteredEvents;
+			this.updateFilteredEventsButton(filteredEvents.length);
 
 			const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
 			this.updateSkippedEventsButton(skippedEvents.length);
@@ -931,11 +950,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			// Update disabled recurring events button
 			this.updateDisabledRecurringEventsButton();
 
-			// Update filtered events button
-			this.updateFilteredEventsButton(filteredOutCount);
-
 			// Convert to FullCalendar event format
-			const calendarEvents = events.map((event) => {
+			const calendarEvents: PrismaEventInput[] = visibleEvents.map((event) => {
 				const classNames = ["regular-event"];
 				if (event.isVirtual) {
 					classNames.push(cls("virtual-event"));
@@ -944,19 +960,22 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 				// Strip Z suffix to treat times as naive local times (no timezone conversion)
 				const start = event.start.replace(/Z$/, "");
-				const end = event.end ? event.end.replace(/Z$/, "") : event.end;
+				const end = event.end ? event.end.replace(/Z$/, "") : undefined;
+
+				const folder = event.meta?.folder;
+				const folderStr = typeof folder === "string" ? folder : "";
 
 				return {
 					id: event.id,
 					title: event.title, // Keep original title for search/filtering
-					start: start,
-					end: end,
+					start,
+					end,
 					allDay: event.allDay,
 					extendedProps: {
 						filePath: event.ref.filePath,
-						folder: event.meta?.folder || "",
+						folder: folderStr,
 						originalTitle: event.title,
-						frontmatterDisplayData: event.meta || {},
+						frontmatterDisplayData: event.meta ?? {},
 						isVirtual: event.isVirtual,
 					},
 					backgroundColor: eventColor,
@@ -1038,9 +1057,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return { domNodes: [mainEl] };
 	}
 
-	private getDisplayProperties(event: { extendedProps: { frontmatterDisplayData?: any } }): [string, any][] {
+	private getDisplayProperties(event: {
+		extendedProps: { frontmatterDisplayData?: Record<string, unknown> };
+	}): [string, unknown][] {
 		const settings = this.bundle.settingsStore.currentSettings;
-		const properties: [string, any][] = [];
+		const properties: [string, unknown][] = [];
 
 		if (settings.frontmatterDisplayProperties.length > 0 && event.extendedProps.frontmatterDisplayData) {
 			for (const prop of settings.frontmatterDisplayProperties) {
@@ -1053,7 +1074,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return properties;
 	}
 
-	private renderPropertyValue(container: HTMLElement, value: any): void {
+	private renderPropertyValue(container: HTMLElement, value: unknown): void {
 		const config: PropertyRendererConfig = {
 			createLink: (text: string, path: string) => {
 				const link = document.createElement("a");
@@ -1078,8 +1099,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		renderPropertyValue(container, value, config);
 	}
 
-	private getEventColor(event: any): string {
-		const frontmatter = event.meta || {};
+	private getEventColor(event: Pick<ParsedEvent, "meta">): string {
+		const frontmatter = event.meta ?? {};
 		return this.colorEvaluator.evaluateColor(frontmatter);
 	}
 
@@ -1124,7 +1145,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		// Apply event color
 		const eventColor = this.getEventColor({
-			title: event.title,
 			meta: event.extendedProps.frontmatterDisplayData,
 		});
 

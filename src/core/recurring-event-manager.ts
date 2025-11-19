@@ -597,8 +597,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 		return Array.from(this.recurringEventsMap.keys());
 	}
 
-	getDisabledRecurringEvents(): Array<{ filePath: string; title: string }> {
-		const disabledEvents: Array<{ filePath: string; title: string }> = [];
+	getDisabledRecurringEvents(): NodeRecurringEvent[] {
+		const disabledEvents: NodeRecurringEvent[] = [];
 
 		// Iterate through the already-tracked recurring events
 		for (const data of this.recurringEventsMap.values()) {
@@ -607,10 +607,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			// Check if this recurring event is disabled (skipped)
 			const isSkipped = data.recurringEvent.frontmatter[this.settings.skipProp] === true;
 			if (isSkipped) {
-				disabledEvents.push({
-					filePath: data.recurringEvent.sourceFilePath,
-					title: data.recurringEvent.title,
-				});
+				disabledEvents.push(data.recurringEvent);
 			}
 		}
 

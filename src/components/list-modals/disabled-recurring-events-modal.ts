@@ -2,13 +2,14 @@ import { type App, Notice } from "obsidian";
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { ToggleSkipCommand } from "../../core/commands";
+import type { NodeRecurringEvent } from "../../types/recurring-event";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 export class DisabledRecurringEventsModal extends BaseEventListModal {
 	constructor(
 		app: App,
 		private bundle: CalendarBundle,
-		private disabledEvents: Array<{ filePath: string; title: string }>
+		private disabledEvents: NodeRecurringEvent[]
 	) {
 		super(app);
 	}
@@ -27,9 +28,9 @@ export class DisabledRecurringEventsModal extends BaseEventListModal {
 
 	protected getItems(): EventListItem[] {
 		return this.disabledEvents.map((event) => ({
-			filePath: event.filePath,
+			filePath: event.sourceFilePath,
 			title: event.title,
-			subtitle: event.filePath,
+			subtitle: event.sourceFilePath,
 		}));
 	}
 

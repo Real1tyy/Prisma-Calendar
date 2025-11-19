@@ -1,11 +1,12 @@
 import type { App } from "obsidian";
+import type { ParsedEvent } from "../../core/parser";
 import { formatEventTimeInfo } from "../../utils/time-formatter";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 export class FilteredEventsModal extends BaseEventListModal {
 	constructor(
 		app: App,
-		private filteredEvents: Array<{ filePath: string; title: string; start: string; end?: string; allDay: boolean }>
+		private filteredEvents: ParsedEvent[]
 	) {
 		super(app);
 	}
@@ -24,7 +25,7 @@ export class FilteredEventsModal extends BaseEventListModal {
 
 	protected getItems(): EventListItem[] {
 		return this.filteredEvents.map((event) => ({
-			filePath: event.filePath,
+			filePath: event.ref.filePath,
 			title: event.title,
 			subtitle: formatEventTimeInfo(event),
 		}));
