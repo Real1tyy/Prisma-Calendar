@@ -567,26 +567,26 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// Remove highlight from previous upcoming events that are no longer active
 		for (const oldId of this.currentUpcomingEventIds) {
 			if (!newUpcomingEventIds.has(oldId)) {
-				const oldEventElements = Array.from(document.querySelectorAll(`[data-event-id="${oldId}"]`));
-				for (const element of oldEventElements) {
-					if (element instanceof HTMLElement) {
-						element.classList.remove("event-upcoming");
-					}
+			const oldEventElements = Array.from(document.querySelectorAll(`[data-event-id="${oldId}"]`));
+			for (const element of oldEventElements) {
+				if (element instanceof HTMLElement) {
+					element.classList.remove("prisma-event-upcoming");
 				}
 			}
 		}
+	}
 
-		// Add highlight to new upcoming events
-		for (const newId of newUpcomingEventIds) {
-			if (!this.currentUpcomingEventIds.has(newId)) {
-				const newEventElements = Array.from(document.querySelectorAll(`[data-event-id="${newId}"]`));
-				for (const element of newEventElements) {
-					if (element instanceof HTMLElement) {
-						element.classList.add("event-upcoming");
-					}
+	// Add highlight to new upcoming events
+	for (const newId of newUpcomingEventIds) {
+		if (!this.currentUpcomingEventIds.has(newId)) {
+			const newEventElements = Array.from(document.querySelectorAll(`[data-event-id="${newId}"]`));
+			for (const element of newEventElements) {
+				if (element instanceof HTMLElement) {
+					element.classList.add("prisma-event-upcoming");
 				}
 			}
 		}
+	}
 
 		// Update tracked IDs
 		this.currentUpcomingEventIds = newUpcomingEventIds;
@@ -619,7 +619,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const eventElements = Array.from(document.querySelectorAll(`[data-event-id="${eventId}"]`));
 			for (const element of eventElements) {
 				if (element instanceof HTMLElement) {
-					element.classList.remove("event-upcoming");
+					element.classList.remove("prisma-event-upcoming");
 				}
 			}
 		}
