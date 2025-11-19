@@ -667,9 +667,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				if (isPast) {
 					const contrast = this.bundle.settingsStore.currentSettings.pastEventContrast;
 					if (contrast === 0) {
-						classes.push("past-event-hidden");
+						classes.push("prisma-past-event-hidden");
 					} else if (contrast < 100) {
-						classes.push("past-event-faded");
+						classes.push("prisma-past-event-faded");
 					}
 				}
 				return classes;

@@ -1291,17 +1291,17 @@
 }
 
 /* Past Event Contrast - Applied via JavaScript based on settings */
-.prisma-calendar-container .past-event-hidden {
+.prisma-calendar-container .prisma-past-event-hidden {
 	display: none;
 }
 
-.prisma-calendar-container .past-event-faded {
+.prisma-calendar-container .prisma-past-event-faded {
 	opacity: var(--past-event-opacity, 0.7);
 }
 
 /* Event Highlight - Temporary highlight when navigating to an event */
 .prisma-calendar-container .fc-event.prisma-event-highlighted {
-	animation: event-highlight-pulse 0.7s ease-in-out;
+	animation: prisma-event-highlight-pulse 0.7s ease-in-out;
 	box-shadow:
 		0 0 25px 10px color-mix(in srgb, var(--event-color) 70%, transparent),
 		0 0 45px 18px color-mix(in srgb, var(--event-color) 40%, transparent);
@@ -1352,7 +1352,7 @@
 }
 
 /* Pulse animation for initial highlight */
-@keyframes event-highlight-pulse {
+@keyframes prisma-event-highlight-pulse {
 	0% {
 		box-shadow: 0 0 0 0 color-mix(in srgb, var(--event-color) 85%, transparent);
 		filter: brightness(1) saturate(1);
@@ -1373,7 +1373,7 @@
 
 /* List view highlight */
 .prisma-calendar-container .fc-list-event.prisma-event-highlighted {
-	animation: event-highlight-pulse-list 0.7s ease-in-out;
+	animation: prisma-event-highlight-pulse-list 0.7s ease-in-out;
 	background: color-mix(in srgb, var(--event-color) 20%, var(--background-primary));
 	border-left: 5px solid var(--event-color);
 	box-shadow: 0 0 15px 6px color-mix(in srgb, var(--event-color) 35%, transparent);
@@ -1451,7 +1451,7 @@
 	filter: brightness(1.13) saturate(1.1);
 }
 
-@keyframes event-highlight-pulse-list {
+@keyframes prisma-event-highlight-pulse-list {
 	0% {
 		background: var(--background-primary);
 		box-shadow: 0 0 0 0 transparent;
