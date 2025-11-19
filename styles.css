@@ -2595,6 +2595,7 @@
 .prisma-event-notification-buttons {
 	display: flex;
 	justify-content: flex-end;
+	align-items: center;
 	gap: 12px;
 	padding: 24px;
 	background: var(--background-secondary-alt);
@@ -2608,6 +2609,46 @@
 	font-weight: 500;
 	cursor: pointer;
 	transition: all 0.2s ease;
+}
+
+.prisma-event-notification-snooze-container {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.prisma-event-notification-snooze-input-group {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+}
+
+.prisma-event-notification-snooze-input {
+	width: 50px;
+	padding: 4px;
+	border: none;
+	background: transparent;
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	text-align: center;
+}
+
+.prisma-event-notification-snooze-input:focus {
+	outline: none;
+}
+
+.prisma-event-notification-snooze-input-group:focus-within {
+	border-color: var(--interactive-accent);
+}
+
+.prisma-event-notification-snooze-unit {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	user-select: none;
 }
 
 /* Responsive adjustments for notification modal */
@@ -2654,6 +2695,14 @@
 	.prisma-event-notification-buttons {
 		flex-direction: column;
 		gap: 8px;
+	}
+
+	.prisma-event-notification-snooze-container {
+		width: 100%;
+	}
+
+	.prisma-event-notification-snooze-input-group {
+		flex: 1;
 	}
 }
 

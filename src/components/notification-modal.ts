@@ -188,13 +188,7 @@ export class NotificationModal extends Modal {
 		};
 
 		if (this.onSnooze && !this.eventData.isAllDay) {
-			const snoozeButton = buttonContainer.createEl("button", {
-				text: `Snooze (${this.settings.snoozeMinutes}m)`,
-			});
-			snoozeButton.onclick = () => {
-				this.onSnooze?.();
-				this.close();
-			};
+			this.renderSnoozeControl(buttonContainer);
 		}
 
 		// Dismiss button
@@ -204,6 +198,45 @@ export class NotificationModal extends Modal {
 		dismissButton.onclick = () => {
 			this.close();
 		};
+	}
+
+	private renderSnoozeControl(container: HTMLElement): void {
+		const snoozeContainer = container.createDiv(cls("event-notification-snooze-container"));
+
+		const snoozeButton = snoozeContainer.createEl("button", {
+			text: "Snooze",
+		});
+
+		const inputGroup = snoozeContainer.createDiv(cls("event-notification-snooze-input-group"));
+
+		const snoozeInput = inputGroup.createEl("input", {
+			type: "number",
+			value: this.settings.snoozeMinutes.toString(),
+			cls: cls("event-notification-snooze-input"),
+		});
+		snoozeInput.min = "1";
+		snoozeInput.max = "1440";
+
+		inputGroup.createEl("span", {
+			text: "mins",
+			cls: cls("event-notification-snooze-unit"),
+		});
+
+		snoozeButton.onclick = () => {
+			const minutes = Number.parseInt(snoozeInput.value, 10);
+			if (Number.isNaN(minutes) || minutes < 1) {
+				snoozeInput.value = this.settings.snoozeMinutes.toString();
+				return;
+			}
+			this.onSnooze?.();
+			this.close();
+		};
+
+		snoozeInput.addEventListener("keydown", (e) => {
+			if (e.key === "Enter") {
+				snoozeButton.click();
+			}
+		});
 	}
 
 	private formatDateTime(date: Date | null, allDay: boolean): string {

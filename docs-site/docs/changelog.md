@@ -6,6 +6,11 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+#### Flexible Snooze Duration in Notifications
+- **Customizable Snooze Time**: The notification modal now features an editable snooze duration input that's prefilled with your default snooze minutes setting but can be adjusted on-the-fly.
+- **Quick Adjustments**: Change the snooze duration to any value (1-1440 minutes) directly in the notification modal without visiting settings.
+- **Use Case**: Need 45 minutes instead of your default 15? Just change the number before hitting snooze—perfect for adapting to different situations without changing your default preference.
+
 #### Selected Events Modal in Batch Mode
 - **Interactive Selection Counter**: The batch selection counter button (showing "X selected") is now clickable and opens a modal displaying all currently selected events
 - **Event Management**:
