@@ -11,7 +11,7 @@ export interface TimeOffset {
 }
 
 export function calculateTimeOffset(moveBy: MoveByResult): TimeOffset {
-	const { value, unit, direction } = moveBy;
+	const { value, unit } = moveBy;
 
 	let offsetMs = 0;
 
@@ -36,11 +36,6 @@ export function calculateTimeOffset(moveBy: MoveByResult): TimeOffset {
 			// Approximate: 365 days per year
 			offsetMs = value * 365 * MS_PER_DAY;
 			break;
-	}
-
-	// Apply direction
-	if (direction === "minus") {
-		offsetMs = -offsetMs;
 	}
 
 	return { offsetMs, unit };

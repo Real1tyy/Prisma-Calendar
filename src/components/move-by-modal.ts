@@ -4,21 +4,17 @@ import { addCls, cls, removeCls } from "../utils/css-utils";
 const TIME_UNITS = ["minutes", "hours", "days", "weeks", "months", "years"] as const;
 
 export type TimeUnit = (typeof TIME_UNITS)[number];
-export type Direction = "plus" | "minus";
 
 export interface MoveByResult {
 	value: number;
 	unit: TimeUnit;
-	direction: Direction;
 }
 
 export class MoveByModal extends Modal {
 	private valueInput!: HTMLInputElement;
-	private selectedDirection: Direction = "plus";
 	private selectedUnit: TimeUnit = "minutes";
 	private onSubmit: (result: MoveByResult) => void;
 
-	private directionButtons: Map<Direction, HTMLButtonElement> = new Map();
 	private unitButtons: Map<TimeUnit, HTMLButtonElement> = new Map();
 
 	constructor(app: App, onSubmit: (result: MoveByResult) => void) {
@@ -35,21 +31,7 @@ export class MoveByModal extends Modal {
 
 		const formContainer = contentEl.createDiv(cls("move-by-form"));
 
-		// Direction buttons
-		const directionContainer = formContainer.createDiv(cls("move-by-row"));
-		directionContainer.createEl("div", { text: "Direction", cls: cls("move-by-label") });
-		const directionButtons = directionContainer.createDiv(cls("move-by-button-group"));
-
-		const plusBtn = directionButtons.createEl("button", { text: "+", cls: cls("move-by-btn") });
-		const minusBtn = directionButtons.createEl("button", { text: "−", cls: cls("move-by-btn") });
-
-		this.directionButtons.set("plus", plusBtn);
-		this.directionButtons.set("minus", minusBtn);
-
-		plusBtn.addEventListener("click", () => this.selectDirection("plus"));
-		minusBtn.addEventListener("click", () => this.selectDirection("minus"));
-
-		// Amount input with increment/decrement buttons
+		// Amount input with increment/decrement/toggle buttons
 		const amountContainer = formContainer.createDiv(cls("move-by-row"));
 		amountContainer.createEl("div", { text: "Amount", cls: cls("move-by-label") });
 		const amountInputGroup = amountContainer.createDiv(cls("move-by-amount-group"));
@@ -60,14 +42,16 @@ export class MoveByModal extends Modal {
 			value: "15",
 			cls: cls("move-by-input"),
 			attr: {
-				min: "1",
 				step: "1",
 			},
 		});
 		const incrementBtn = amountInputGroup.createEl("button", { text: "+", cls: cls("move-by-increment-btn") });
+		const toggleBtn = amountInputGroup.createEl("button", { text: "+/−", cls: cls("move-by-toggle-btn") });
+		toggleBtn.setAttribute("aria-label", "Toggle sign");
 
 		decrementBtn.addEventListener("click", () => this.adjustValue(-1));
 		incrementBtn.addEventListener("click", () => this.adjustValue(1));
+		toggleBtn.addEventListener("click", () => this.toggleSign());
 
 		// Time unit buttons
 		const unitContainer = formContainer.createDiv(cls("move-by-row"));
@@ -108,23 +92,12 @@ export class MoveByModal extends Modal {
 		});
 
 		// Initialize selection states
-		this.selectDirection("plus");
 		this.selectUnit("minutes");
 
-		// Focus on value input
-		this.valueInput.focus();
-		this.valueInput.select();
-	}
-
-	private selectDirection(direction: Direction): void {
-		this.selectedDirection = direction;
-		for (const [dir, btn] of this.directionButtons.entries()) {
-			if (dir === direction) {
-				addCls(btn, "is-active");
-			} else {
-				removeCls(btn, "is-active");
-			}
-		}
+		setTimeout(() => {
+			this.valueInput.focus();
+			this.valueInput.select();
+		}, 50);
 	}
 
 	private selectUnit(unit: TimeUnit): void {
@@ -144,21 +117,34 @@ export class MoveByModal extends Modal {
 			this.valueInput.value = "1";
 			return;
 		}
-		const newValue = Math.max(1, currentValue + delta);
+		const newValue = currentValue + delta;
+		// Don't allow zero
+		if (newValue === 0) {
+			this.valueInput.value = delta > 0 ? "1" : "-1";
+			return;
+		}
 		this.valueInput.value = String(newValue);
+	}
+
+	private toggleSign(): void {
+		const currentValue = Number.parseInt(this.valueInput.value, 10);
+		if (Number.isNaN(currentValue)) {
+			this.valueInput.value = "1";
+			return;
+		}
+		this.valueInput.value = String(-currentValue);
 	}
 
 	private submit(): void {
 		const value = Number.parseInt(this.valueInput.value, 10);
 
-		if (Number.isNaN(value) || value <= 0) {
+		if (Number.isNaN(value) || value === 0) {
 			return;
 		}
 
 		const result: MoveByResult = {
 			value,
 			unit: this.selectedUnit,
-			direction: this.selectedDirection,
 		};
 
 		this.onSubmit(result);
