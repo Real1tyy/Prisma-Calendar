@@ -21,15 +21,15 @@ import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
-import { ExpressionFilterInputManager } from "./input-managers/expression-filter";
 import { FilterPresetSelector } from "./filter-preset-selector";
+import { ExpressionFilterInputManager } from "./input-managers/expression-filter";
+import { SearchFilterInputManager } from "./input-managers/search-filter";
 import {
 	DisabledRecurringEventsModal,
 	FilteredEventsModal,
 	GlobalSearchModal,
 	SkippedEventsModal,
 } from "./list-modals";
-import { SearchFilterInputManager } from "./input-managers/search-filter";
 import { AllTimeStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 
@@ -61,6 +61,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
 	private upcomingEventCheckInterval: number | null = null;
+	private filteredEventsCount = 0;
+	private skippedEventsCount = 0;
+	private disabledRecurringEventsCount = 0;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -94,6 +97,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		const bsm = this.batchSelectionManager;
 		const inSelectionMode = bsm.isInSelectionMode();
+
+		if (inSelectionMode) {
+			this.cleanupEventCountButtons();
+		}
 
 		const leftButtons = inSelectionMode ? "prev,next today" : "prev,next today createEvent zoomLevel";
 
@@ -191,25 +198,18 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				text: "Batch Select",
 				click: () => this.toggleBatchSelection(),
 			};
-			// Preserve button text from previous update (important for batch mode toggle)
-			const currentFilteredButton = this.calendar.getOption("customButtons")?.filteredEvents;
-			const currentFilteredText = currentFilteredButton?.text || "0 filtered";
 			customButtons.filteredEvents = {
-				text: currentFilteredText,
+				text: this.getFilteredEventsButtonText(),
 				click: () => this.showFilteredEventsModal(),
 			};
 
-			const currentSkippedButton = this.calendar.getOption("customButtons")?.skippedEvents;
-			const currentSkippedText = currentSkippedButton?.text || "0 skipped";
 			customButtons.skippedEvents = {
-				text: currentSkippedText,
+				text: this.getSkippedEventsButtonText(),
 				click: () => this.showSkippedEventsModal(),
 			};
 
-			const currentDisabledButton = this.calendar.getOption("customButtons")?.disabledRecurringEvents;
-			const currentDisabledText = currentDisabledButton?.text || "0 disabled";
 			customButtons.disabledRecurringEvents = {
-				text: currentDisabledText,
+				text: this.getDisabledRecurringEventsButtonText(),
 				click: () => this.showDisabledRecurringEventsModal(),
 			};
 		}
@@ -217,31 +217,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.calendar.setOption("headerToolbar", headerToolbar);
 		this.calendar.setOption("customButtons", customButtons);
 
-		// Preserve button visibility based on current text
 		setTimeout(() => {
-			const filteredBtn = this.container.querySelector(".fc-filteredEvents-button");
-			if (filteredBtn instanceof HTMLElement) {
-				const currentText = filteredBtn.textContent || "";
-				const hasFiltered = !currentText.startsWith("0 ");
-				filteredBtn.style.display = hasFiltered ? "inline-block" : "none";
-			}
-
-			const skippedBtn = this.container.querySelector(".fc-skippedEvents-button");
-			if (skippedBtn instanceof HTMLElement) {
-				const currentText = skippedBtn.textContent || "";
-				const hasSkipped = !currentText.startsWith("0 ");
-				skippedBtn.style.display = hasSkipped ? "inline-block" : "none";
-			}
-
-			const disabledBtn = this.container.querySelector(".fc-disabledRecurringEvents-button");
-			if (disabledBtn instanceof HTMLElement) {
-				const currentText = disabledBtn.textContent || "";
-				const hasDisabled = !currentText.startsWith("0 ");
-				disabledBtn.style.display = hasDisabled ? "inline-block" : "none";
-			}
-
-			// Update zoom button text after toolbar is rendered
 			if (!inSelectionMode) {
+				this.applyFilteredEventsButtonState();
+				this.applySkippedEventsButtonState();
+				this.applyDisabledRecurringEventsButtonState();
 				this.zoomManager.updateZoomLevelButton();
 			}
 		}, 0);
@@ -260,78 +240,91 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	private updateSkippedEventsButton(count: number): void {
-		if (!this.calendar) return;
-
-		// Create NEW customButtons object so FullCalendar detects the change
-		const oldButtons = this.calendar.getOption("customButtons") || {};
-		const customButtons = {
-			...oldButtons,
-			skippedEvents: {
-				text: `${count} skipped`,
-				click: () => this.showSkippedEventsModal(),
-			},
-		};
-		this.calendar.setOption("customButtons", customButtons);
-
-		// Update button visibility and tooltip (re-query after customButtons update since DOM may be recreated)
-		setTimeout(() => {
-			const btn = this.container.querySelector(".fc-skippedEvents-button");
-			if (btn instanceof HTMLElement) {
-				btn.style.display = count > 0 ? "inline-block" : "none";
-				btn.title = `${count} event${count === 1 ? "" : "s"} hidden from calendar`;
-			}
-		}, 0);
+		this.skippedEventsCount = count;
+		this.applySkippedEventsButtonState();
 	}
 
 	private updateDisabledRecurringEventsButton(): void {
-		if (!this.calendar) return;
+		if (!this.calendar) return; // Keep existing guard for recurring manager access
 
 		const disabledEvents = this.bundle.recurringEventManager.getDisabledRecurringEvents();
 		const count = disabledEvents.length;
 
-		// Create NEW customButtons object so FullCalendar detects the change
-		const oldButtons = this.calendar.getOption("customButtons") || {};
-		const customButtons = {
-			...oldButtons,
-			disabledRecurringEvents: {
-				text: `${count} disabled`,
-				click: () => this.showDisabledRecurringEventsModal(),
-			},
-		};
-		this.calendar.setOption("customButtons", customButtons);
-
-		// Update button visibility and tooltip (re-query after customButtons update since DOM may be recreated)
-		setTimeout(() => {
-			const btn = this.container.querySelector(".fc-disabledRecurringEvents-button");
-			if (btn instanceof HTMLElement) {
-				btn.style.display = count > 0 ? "inline-block" : "none";
-				btn.title = `${count} recurring event${count === 1 ? "" : "s"} disabled`;
-			}
-		}, 0);
+		this.disabledRecurringEventsCount = count;
+		this.applyDisabledRecurringEventsButtonState();
 	}
 
 	private updateFilteredEventsButton(count: number): void {
+		this.filteredEventsCount = count;
+		this.applyFilteredEventsButtonState();
+	}
+
+	private applyFilteredEventsButtonState(): void {
 		if (!this.calendar) return;
+		const text = this.getFilteredEventsButtonText();
+		const tooltip = `${this.filteredEventsCount} event${this.filteredEventsCount === 1 ? "" : "s"} filtered out by search or expression filters`;
+		this.updateButtonElement(".fc-filteredEvents-button", text, this.filteredEventsCount > 0, tooltip);
+	}
 
-		// Create NEW customButtons object so FullCalendar detects the change
-		const oldButtons = this.calendar.getOption("customButtons") || {};
-		const customButtons = {
-			...oldButtons,
-			filteredEvents: {
-				text: `${count} filtered`,
-				click: () => this.showFilteredEventsModal(),
-			},
-		};
-		this.calendar.setOption("customButtons", customButtons);
+	private applySkippedEventsButtonState(): void {
+		if (!this.calendar) return;
+		const text = this.getSkippedEventsButtonText();
+		const tooltip = `${this.skippedEventsCount} event${this.skippedEventsCount === 1 ? "" : "s"} hidden from calendar`;
+		this.updateButtonElement(".fc-skippedEvents-button", text, this.skippedEventsCount > 0, tooltip);
+	}
 
-		// Update button visibility and tooltip (re-query after customButtons update since DOM may be recreated)
-		setTimeout(() => {
-			const btn = this.container.querySelector(".fc-filteredEvents-button");
+	private applyDisabledRecurringEventsButtonState(): void {
+		if (!this.calendar) return;
+		const text = this.getDisabledRecurringEventsButtonText();
+		const tooltip = `${this.disabledRecurringEventsCount} recurring event${this.disabledRecurringEventsCount === 1 ? "" : "s"} disabled`;
+		this.updateButtonElement(
+			".fc-disabledRecurringEvents-button",
+			text,
+			this.disabledRecurringEventsCount > 0,
+			tooltip
+		);
+	}
+
+	private getFilteredEventsButtonText(): string {
+		return `${this.filteredEventsCount} filtered`;
+	}
+
+	private getSkippedEventsButtonText(): string {
+		return `${this.skippedEventsCount} skipped`;
+	}
+
+	private getDisabledRecurringEventsButtonText(): string {
+		return `${this.disabledRecurringEventsCount} disabled`;
+	}
+
+	private updateButtonElement(selector: string, text: string, isVisible: boolean, tooltip?: string): void {
+		if (!this.container) return;
+		const btn = this.container.querySelector(selector);
+		if (!(btn instanceof HTMLElement)) {
+			return;
+		}
+		btn.textContent = text;
+		btn.style.display = isVisible ? "inline-block" : "none";
+		if (tooltip !== undefined) {
+			btn.title = tooltip;
+		}
+	}
+
+	private cleanupEventCountButtons(): void {
+		if (!this.container) return;
+
+		const cleanupButton = (selector: string) => {
+			const btn = this.container?.querySelector(selector);
 			if (btn instanceof HTMLElement) {
-				btn.style.display = count > 0 ? "inline-block" : "none";
-				btn.title = `${count} event${count === 1 ? "" : "s"} filtered out by search or expression filters`;
+				btn.textContent = "";
+				btn.title = "";
+				btn.style.display = "none";
 			}
-		}, 0);
+		};
+
+		cleanupButton(".fc-filteredEvents-button");
+		cleanupButton(".fc-skippedEvents-button");
+		cleanupButton(".fc-disabledRecurringEvents-button");
 	}
 
 	private async toggleModal<T extends Modal>(
@@ -565,27 +558,26 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			return;
 		}
 
+		const toggleHighlight = (eventId: string, highlight: boolean) => {
+			const elements = Array.from(document.querySelectorAll(`[data-event-id="${eventId}"]`));
+			for (const element of elements) {
+				if (element instanceof HTMLElement) {
+					element.classList.toggle(cls("event-upcoming"), highlight);
+				}
+			}
+		};
+
 		// Remove highlight from previous upcoming events that are no longer active
 		for (const oldId of this.currentUpcomingEventIds) {
 			if (!newUpcomingEventIds.has(oldId)) {
-				const oldEventElements = Array.from(document.querySelectorAll(`[data-event-id="${oldId}"]`));
-				for (const element of oldEventElements) {
-					if (element instanceof HTMLElement) {
-						element.classList.remove(cls("event-upcoming"));
-					}
-				}
+				toggleHighlight(oldId, false);
 			}
 		}
 
 		// Add highlight to new upcoming events
 		for (const newId of newUpcomingEventIds) {
 			if (!this.currentUpcomingEventIds.has(newId)) {
-				const newEventElements = Array.from(document.querySelectorAll(`[data-event-id="${newId}"]`));
-				for (const element of newEventElements) {
-					if (element instanceof HTMLElement) {
-						element.classList.add(cls("event-upcoming"));
-					}
-				}
+				toggleHighlight(newId, true);
 			}
 		}
 
