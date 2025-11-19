@@ -12,6 +12,7 @@ import type { SingleCalendarConfig } from "../types/index";
 import { removeZettelId } from "../utils/calendar-events";
 import { ColorEvaluator } from "../utils/colors";
 import { cls } from "../utils/css-utils";
+import { toggleEventHighlight } from "../utils/dom-utils";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
 import type { PropertyRendererConfig } from "../utils/property-renderer";
@@ -198,19 +199,27 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				text: "Batch Select",
 				click: () => this.toggleBatchSelection(),
 			};
+
+			const filteredClassName = this.filteredEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden");
 			customButtons.filteredEvents = {
 				text: this.getFilteredEventsButtonText(),
 				click: () => this.showFilteredEventsModal(),
+				className: filteredClassName,
 			};
 
+			const skippedClassName = this.skippedEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden");
 			customButtons.skippedEvents = {
 				text: this.getSkippedEventsButtonText(),
 				click: () => this.showSkippedEventsModal(),
+				className: skippedClassName,
 			};
 
+			const disabledClassName =
+				this.disabledRecurringEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden");
 			customButtons.disabledRecurringEvents = {
 				text: this.getDisabledRecurringEventsButtonText(),
 				click: () => this.showDisabledRecurringEventsModal(),
+				className: disabledClassName,
 			};
 		}
 
@@ -304,9 +313,16 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			return;
 		}
 		btn.textContent = text;
-		btn.style.display = isVisible ? "inline-block" : "none";
 		if (tooltip !== undefined) {
 			btn.title = tooltip;
+		}
+
+		if (isVisible) {
+			btn.classList.remove(cls("fc-button-hidden"));
+			btn.classList.add(cls("fc-button-visible"));
+		} else {
+			btn.classList.remove(cls("fc-button-visible"));
+			btn.classList.add(cls("fc-button-hidden"));
 		}
 	}
 
@@ -318,7 +334,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			if (btn instanceof HTMLElement) {
 				btn.textContent = "";
 				btn.title = "";
-				btn.style.display = "none";
+				btn.classList.remove(cls("fc-button-visible"));
+				btn.classList.add(cls("fc-button-hidden"));
 			}
 		};
 
@@ -558,26 +575,17 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			return;
 		}
 
-		const toggleHighlight = (eventId: string, highlight: boolean) => {
-			const elements = Array.from(document.querySelectorAll(`[data-event-id="${eventId}"]`));
-			for (const element of elements) {
-				if (element instanceof HTMLElement) {
-					element.classList.toggle(cls("event-upcoming"), highlight);
-				}
-			}
-		};
-
 		// Remove highlight from previous upcoming events that are no longer active
 		for (const oldId of this.currentUpcomingEventIds) {
 			if (!newUpcomingEventIds.has(oldId)) {
-				toggleHighlight(oldId, false);
+				toggleEventHighlight(oldId, cls("event-upcoming"), false);
 			}
 		}
 
 		// Add highlight to new upcoming events
 		for (const newId of newUpcomingEventIds) {
 			if (!this.currentUpcomingEventIds.has(newId)) {
-				toggleHighlight(newId, true);
+				toggleEventHighlight(newId, cls("event-upcoming"), true);
 			}
 		}
 

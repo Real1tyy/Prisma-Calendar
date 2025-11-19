@@ -124,6 +124,15 @@
 	color: var(--text-faint);
 }
 
+/* Button visibility utilities - using proper selector chain for specificity without !important */
+.prisma-calendar-container .fc-header-toolbar .fc-toolbar-chunk .fc-button.prisma-fc-button-hidden {
+	display: none;
+}
+
+.prisma-calendar-container .fc-header-toolbar .fc-toolbar-chunk .fc-button.prisma-fc-button-visible {
+	display: inline-block;
+}
+
 /* --- Event card base --- */
 .prisma-calendar-event {
 	border-radius: var(--radius-s);
