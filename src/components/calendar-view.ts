@@ -21,7 +21,7 @@ import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
-import { ExpressionFilterManager } from "./expression-filter-manager";
+import { ExpressionFilterInputManager } from "./input-managers/expression-filter";
 import { FilterPresetSelector } from "./filter-preset-selector";
 import {
 	DisabledRecurringEventsModal,
@@ -29,7 +29,7 @@ import {
 	GlobalSearchModal,
 	SkippedEventsModal,
 } from "./list-modals";
-import { SearchFilterManager } from "./search-filter-manager";
+import { SearchFilterInputManager } from "./input-managers/search-filter";
 import { AllTimeStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 
@@ -45,8 +45,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private colorEvaluator: ColorEvaluator;
 	private batchSelectionManager: BatchSelectionManager | null = null;
 	private zoomManager: ZoomManager;
-	private searchFilter: SearchFilterManager;
-	private expressionFilter: ExpressionFilterManager;
+	private searchFilter: SearchFilterInputManager;
+	private expressionFilter: ExpressionFilterInputManager;
 	private filterPresetSelector: FilterPresetSelector;
 	private container!: HTMLElement;
 	private viewType: string;
@@ -71,8 +71,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.eventContextMenu = new EventContextMenu(this.app, bundle);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 		this.zoomManager = new ZoomManager(bundle.settingsStore);
-		this.searchFilter = new SearchFilterManager(() => this.refreshEvents());
-		this.expressionFilter = new ExpressionFilterManager(() => this.refreshEvents());
+		this.searchFilter = new SearchFilterInputManager(() => this.refreshEvents());
+		this.expressionFilter = new ExpressionFilterInputManager(() => this.refreshEvents());
 		this.filterPresetSelector = new FilterPresetSelector(
 			bundle.settingsStore.currentSettings.filterPresets,
 			(expression: string) => {

@@ -1,8 +1,8 @@
-import { cls } from "../utils/css-utils";
-import { buildPropertyMapping, sanitizeExpression } from "../utils/expression-utils";
-import { InputFilterManager } from "./input-filter-manager";
+import { cls } from "../../utils/css-utils";
+import { buildPropertyMapping, sanitizeExpression } from "../../utils/expression-utils";
+import { InputFilterManager } from "./base";
 
-export class ExpressionFilterManager extends InputFilterManager {
+export class ExpressionFilterInputManager extends InputFilterManager {
 	private compiledFunc: ((...args: any[]) => boolean) | null = null;
 	private propertyMapping = new Map<string, string>();
 	private lastWarnedExpression: string | null = null;

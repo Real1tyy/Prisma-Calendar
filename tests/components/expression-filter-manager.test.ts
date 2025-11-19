@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ExpressionFilterManager } from "../../src/components/expression-filter-manager";
+import { ExpressionFilterInputManager } from "../../src/components/input-managers/expression-filter";
 
 describe("ExpressionFilterManager", () => {
-	let expressionFilter: ExpressionFilterManager;
+	let expressionFilter: ExpressionFilterInputManager;
 	let onFilterChange: ReturnType<typeof vi.fn>;
 	let container: HTMLElement;
 
 	beforeEach(() => {
 		onFilterChange = vi.fn();
-		expressionFilter = new ExpressionFilterManager(onFilterChange);
+		expressionFilter = new ExpressionFilterInputManager(onFilterChange);
 
 		container = document.createElement("div");
 		const toolbarLeft = document.createElement("div");

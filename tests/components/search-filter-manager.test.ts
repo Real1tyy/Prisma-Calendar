@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SearchFilterManager } from "../../src/components/search-filter-manager";
+import { SearchFilterInputManager } from "../../src/components/input-managers/search-filter";
 
 describe("SearchFilterManager", () => {
-	let searchFilter: SearchFilterManager;
+	let searchFilter: SearchFilterInputManager;
 	let onFilterChange: ReturnType<typeof vi.fn>;
 	let container: HTMLElement;
 
 	beforeEach(() => {
 		onFilterChange = vi.fn();
-		searchFilter = new SearchFilterManager(onFilterChange);
+		searchFilter = new SearchFilterInputManager(onFilterChange);
 
 		container = document.createElement("div");
 		const toolbarLeft = document.createElement("div");

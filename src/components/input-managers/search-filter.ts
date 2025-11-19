@@ -1,7 +1,7 @@
-import { cls } from "../utils/css-utils";
-import { InputFilterManager } from "./input-filter-manager";
+import { cls } from "../../utils/css-utils";
+import { InputFilterManager } from "./base";
 
-export class SearchFilterManager extends InputFilterManager {
+export class SearchFilterInputManager extends InputFilterManager {
 	constructor(onFilterChange: () => void) {
 		super(onFilterChange, "Search events...", cls("fc-search-input"));
 	}
