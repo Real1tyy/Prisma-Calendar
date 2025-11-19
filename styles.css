@@ -2696,21 +2696,21 @@
 }
 
 /* State: none (normal) */
-.prisma-filter-cycle-button.filter-state-none {
+.prisma-filter-cycle-button.prisma-filter-state-none {
 	border-color: var(--background-modifier-border);
 	background-color: var(--background-primary);
 	color: var(--text-muted);
 }
 
 /* State: skip (hiding events) */
-.prisma-filter-cycle-button.filter-state-skip {
+.prisma-filter-cycle-button.prisma-filter-state-skip {
 	border-color: var(--text-error);
 	background-color: rgba(var(--color-red-rgb), 0.1);
 	color: var(--text-error);
 }
 
 /* State: only (showing only certain events) */
-.prisma-filter-cycle-button.filter-state-only {
+.prisma-filter-cycle-button.prisma-filter-state-only {
 	border-color: var(--interactive-accent);
 	background-color: var(--interactive-accent);
 	color: var(--text-on-accent);

@@ -29,23 +29,23 @@ export class RecurringEventsListModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.addClass("recurring-events-list-modal");
+		contentEl.addClass("prisma-recurring-events-list-modal");
 
 		// Header with source title as clickable link
-		const header = contentEl.createDiv("recurring-events-list-header");
+		const header = contentEl.createDiv("prisma-recurring-events-list-header");
 		const cleanTitle = removeZettelId(this.sourceTitle);
 		const titleEl = header.createEl("h2", { text: cleanTitle });
-		titleEl.addClass("recurring-events-source-title");
+		titleEl.addClass("prisma-recurring-events-source-title");
 		titleEl.onclick = () => {
 			this.app.workspace.openLinkText(this.sourceFilePath, "", false);
 			this.close();
 		};
 
 		// Statistics container
-		this.statsContainer = contentEl.createDiv("recurring-events-stats");
+		this.statsContainer = contentEl.createDiv("prisma-recurring-events-stats");
 
 		// Filter toggles container
-		const filtersContainer = contentEl.createDiv("recurring-events-filters");
+		const filtersContainer = contentEl.createDiv("prisma-recurring-events-filters");
 
 		new Setting(filtersContainer).setName("Hide past events").addToggle((toggle) =>
 			toggle.setValue(this.hidePastEvents).onChange((value) => {
@@ -79,7 +79,7 @@ export class RecurringEventsListModal extends Modal {
 		this.registerHotkeys();
 
 		// Container for events list
-		this.contentContainer = contentEl.createDiv("recurring-events-list-container");
+		this.contentContainer = contentEl.createDiv("prisma-recurring-events-list-container");
 
 		this.renderEventsList();
 	}
@@ -134,7 +134,7 @@ export class RecurringEventsListModal extends Modal {
 		// Render statistics
 		this.statsContainer.createEl("p", {
 			text: `Past events: ${totalPastInstances}  •  Skipped: ${skippedPastInstances}  •  Completed: ${completedPercentage}%`,
-			cls: "recurring-events-stats-text",
+			cls: "prisma-recurring-events-stats-text",
 		});
 
 		// Apply filters
@@ -174,31 +174,31 @@ export class RecurringEventsListModal extends Modal {
 
 			this.contentContainer.createEl("p", {
 				text: emptyMessage,
-				cls: "recurring-events-list-empty",
+				cls: "prisma-recurring-events-list-empty",
 			});
 			return;
 		}
 
 		// Render each instance as a row
 		for (const instance of filteredInstances) {
-			const row = this.contentContainer.createDiv("recurring-event-row");
+			const row = this.contentContainer.createDiv("prisma-recurring-event-row");
 
 			// Check if event is in the past
 			const isPast = instance.instanceDate < now.startOf("day");
 			if (isPast) {
-				row.addClass("recurring-event-past");
+				row.addClass("prisma-recurring-event-past");
 			}
 
-			const dateEl = row.createDiv("recurring-event-date");
+			const dateEl = row.createDiv("prisma-recurring-event-date");
 			dateEl.textContent = instance.instanceDate.toFormat("yyyy-MM-dd (EEE)");
 
-			const titleEl = row.createDiv("recurring-event-title");
+			const titleEl = row.createDiv("prisma-recurring-event-title");
 			const cleanTitle = removeZettelId(instance.title);
 			titleEl.textContent = cleanTitle;
 
 			// Add skipped indicator if event is skipped (and we're showing skipped events)
 			if (instance.skipped && !this.hideSkippedEvents) {
-				titleEl.addClass("recurring-event-skipped");
+				titleEl.addClass("prisma-recurring-event-skipped");
 			}
 
 			row.onclick = () => {

@@ -236,12 +236,12 @@ export class GlobalSearchModal extends BaseEventListModal {
 	}
 
 	private updateButtonText(button: HTMLElement, label: string, state: FilterState): void {
-		button.removeClass("filter-state-none");
-		button.removeClass("filter-state-skip");
-		button.removeClass("filter-state-only");
+		button.removeClass("prisma-filter-state-none");
+		button.removeClass("prisma-filter-state-skip");
+		button.removeClass("prisma-filter-state-only");
 
 		// Add current state class
-		button.addClass(`filter-state-${state}`);
+		button.addClass(`prisma-filter-state-${state}`);
 
 		// Update button text
 		if (state === "none") {
