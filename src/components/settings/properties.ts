@@ -100,6 +100,13 @@ export class PropertiesSettings {
 		});
 
 		this.ui.addText(containerEl, {
+			key: "futureInstancesCountProp",
+			name: "Future instances count property",
+			desc: "Frontmatter property name for per-event override of future instances count (defaults to global setting if not specified)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT_PROP,
+		});
+
+		this.ui.addText(containerEl, {
 			key: "statusProperty",
 			name: "Status property",
 			desc: "Frontmatter property name for event status (used when automatically marking past events as done)",
@@ -169,6 +176,7 @@ ${settings.startProp}: 2024-01-15T09:00
 ${settings.endProp}: 2024-01-15T10:30
 ${settings.rruleProp}: weekly
 ${settings.rruleSpecProp}: monday, wednesday, friday
+${settings.futureInstancesCountProp}: 5
 ---
 
 # Weekly Team Meeting`,

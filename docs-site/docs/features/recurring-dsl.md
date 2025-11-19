@@ -263,6 +263,27 @@ Configure how many physical note files are created ahead of time (1-52 instances
 - **3-8 instances**: For intensive planning periods or project phases
 - **12+ instances**: Only for extensive advance preparation needs
 
+#### Per-Event Override
+You can override the global "Future instances count" setting for individual recurring events by adding the `Future Instances Count` property to the event's frontmatter:
+
+```yaml
+---
+Title: Critical Team Standup
+Start: 2025-02-03T09:00
+End: 2025-02-03T09:30
+RRule: weekly
+RRuleSpec: monday, wednesday, friday
+Future Instances Count: 10
+---
+```
+
+**When to use per-event overrides:**
+- **More instances**: Generate extra instances for critical recurring events you need to plan far ahead (e.g., weekly standups, important check-ins)
+- **Fewer instances**: Reduce clutter for infrequent events (e.g., 1 instance for yearly reviews)
+- **No override**: Omit the property to use the global setting (recommended for most events)
+
+**Note**: The property name `Future Instances Count` can be customized in Settings → Properties → "Future instances count property".
+
 ### Virtual Events
 Beyond your generation horizon, events appear as read-only virtual items in the calendar. These don't create files but show you the complete recurring pattern.
 
