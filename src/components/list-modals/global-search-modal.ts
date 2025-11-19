@@ -230,9 +230,9 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 			await this.applyFilters();
 			this.items = this.getItems();
-			this.filteredItems = [...this.items];
-			this.updateEventCount();
-			this.renderItems();
+
+			const searchValue = this.searchInput?.value || "";
+			this.filterItems(searchValue);
 		});
 	}
 
