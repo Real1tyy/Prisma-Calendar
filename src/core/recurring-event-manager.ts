@@ -400,6 +400,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 				this.settings.endProp,
 				this.settings.dateProp,
 				this.settings.allDayProp,
+				this.settings.alreadyNotifiedProp, // Don't copy notification status - each instance needs its own notification
 				"_Archived", // Don't copy _Archived property from source to instances
 			]);
 
