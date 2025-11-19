@@ -6,15 +6,6 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
-#### Selected Events Modal in Batch Mode
-- **Interactive Selection Counter**: The batch selection counter button (showing "X selected") is now clickable and opens a modal displaying all currently selected events
-- **Event Management**:
-  - View all selected events with their titles and time information
-  - Search and filter through selected events
-  - **Unselect** individual events directly from the modal
-  - **Open** event files in Obsidian with one click
-- **Use Case**: Quickly review and manage your batch selection before performing bulk operations, or selectively remove events from the selection without manually clicking through the calendar
-
 #### Per-Event Future Instances Count Override
 - **Flexible Recurring Event Control**: Configure the number of future instances to generate on a per-event basis by adding the `Future Instances Count` property to any recurring event's frontmatter.
 - **Overrides Global Setting**: If not specified, uses the global "Future instances count" setting. When specified, overrides the default for that specific recurring event.
