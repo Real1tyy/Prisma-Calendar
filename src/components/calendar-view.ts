@@ -475,9 +475,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const eventElements = Array.from(document.querySelectorAll(`[data-event-id="${event.id}"]`));
 			for (const element of eventElements) {
 				if (element instanceof HTMLElement) {
-					element.classList.add("event-highlighted");
+					element.classList.add("prisma-event-highlighted");
 					setTimeout(() => {
-						element.classList.remove("event-highlighted");
+						element.classList.remove("prisma-event-highlighted");
 					}, durationMs);
 				}
 			}

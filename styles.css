@@ -1300,7 +1300,7 @@
 }
 
 /* Event Highlight - Temporary highlight when navigating to an event */
-.prisma-calendar-container .fc-event.event-highlighted {
+.prisma-calendar-container .fc-event.prisma-event-highlighted {
 	animation: event-highlight-pulse 0.7s ease-in-out;
 	box-shadow:
 		0 0 25px 10px color-mix(in srgb, var(--event-color) 70%, transparent),
@@ -1310,7 +1310,7 @@
 	filter: brightness(1.15) saturate(1.2);
 }
 
-.prisma-calendar-container .fc-event.event-highlighted .fc-event-main {
+.prisma-calendar-container .fc-event.prisma-event-highlighted .fc-event-main {
 	border: 2.5px solid color-mix(in srgb, var(--event-color) 85%, white);
 }
 
@@ -1372,7 +1372,7 @@
 }
 
 /* List view highlight */
-.prisma-calendar-container .fc-list-event.event-highlighted {
+.prisma-calendar-container .fc-list-event.prisma-event-highlighted {
 	animation: event-highlight-pulse-list 0.7s ease-in-out;
 	background: color-mix(in srgb, var(--event-color) 20%, var(--background-primary));
 	border-left: 5px solid var(--event-color);
@@ -1380,7 +1380,7 @@
 	filter: brightness(1.1);
 }
 
-.prisma-calendar-container .fc-list-event.event-highlighted .fc-list-event-dot {
+.prisma-calendar-container .fc-list-event.prisma-event-highlighted .fc-list-event-dot {
 	box-shadow: 0 0 15px 6px color-mix(in srgb, var(--event-color) 70%, transparent);
 	transform: scale(1.4);
 	filter: brightness(1.25);
