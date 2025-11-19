@@ -955,22 +955,22 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		mainEl.className = "fc-event-main";
 
 		const container = document.createElement("div");
-		container.className = "fc-event-content-wrapper";
+		container.className = "prisma-fc-event-content-wrapper";
 		mainEl.appendChild(container);
 
 		const headerEl = document.createElement("div");
-		headerEl.className = "fc-event-header";
+		headerEl.className = "prisma-fc-event-header";
 
 		if (!event.allDay && event.start) {
 			const timeEl = document.createElement("div");
-			timeEl.className = "fc-event-time";
+			timeEl.className = "prisma-fc-event-time";
 			timeEl.textContent = arg.timeText;
 			headerEl.appendChild(timeEl);
 		}
 
 		// Add title
 		const titleEl = document.createElement("div");
-		titleEl.className = "fc-event-title-custom";
+		titleEl.className = "prisma-fc-event-title-custom";
 		let title = event.title;
 		if (title) {
 			title = removeZettelId(title);
@@ -983,19 +983,19 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const displayProperties = this.getDisplayProperties(event);
 		if (displayProperties.length > 0) {
 			const propsContainer = document.createElement("div");
-			propsContainer.className = "fc-event-props";
+			propsContainer.className = "prisma-fc-event-props";
 
 			for (const [prop, value] of displayProperties) {
 				const propEl = document.createElement("div");
-				propEl.className = "fc-event-prop";
+				propEl.className = "prisma-fc-event-prop";
 
 				const keyEl = document.createElement("span");
-				keyEl.className = "fc-event-prop-key";
+				keyEl.className = "prisma-fc-event-prop-key";
 				keyEl.textContent = `${prop}:`;
 				propEl.appendChild(keyEl);
 
 				const valueEl = document.createElement("span");
-				valueEl.className = "fc-event-prop-value";
+				valueEl.className = "prisma-fc-event-prop-value";
 				this.renderPropertyValue(valueEl, value);
 				propEl.appendChild(valueEl);
 
@@ -1026,7 +1026,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const config: PropertyRendererConfig = {
 			createLink: (text: string, path: string) => {
 				const link = document.createElement("a");
-				link.className = "fc-event-prop-link";
+				link.className = "prisma-fc-event-prop-link";
 				link.textContent = text;
 				link.onclick = (e) => {
 					e.preventDefault();
