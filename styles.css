@@ -785,7 +785,7 @@
 	border-color: var(--color-yellow);
 }
 
-.fc-button.prisma-batch-action-btn.prisma-prisma-move-by-btn {
+.fc-button.prisma-batch-action-btn.prisma-move-by-btn {
 	background: var(--interactive-normal);
 	color: var(--text-normal);
 	border-color: var(--background-modifier-border);
@@ -947,8 +947,6 @@
 	.prisma-calendar-event {
 		transition: none;
 	}
-
-	/* Animation rules removed since animations were removed */
 
 	.fc-event.prisma-batch-selectable .fc-event-main::before,
 	.fc-event.prisma-batch-selected .fc-event-main::before {
