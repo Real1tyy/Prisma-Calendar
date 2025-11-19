@@ -7,6 +7,7 @@ import {
 	duplicateCalendarConfig,
 	generateUniqueCalendarId,
 } from "../../utils/calendar-settings";
+import { addCls, cls } from "../../utils/css-utils";
 import { SingleCalendarSettings } from "./single-calendar-settings";
 
 export class CustomCalendarSettingsTab extends PluginSettingTab {
@@ -22,7 +23,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 	private configureMaxCalendarsButton(button: HTMLButtonElement): void {
 		if (this.isAtMaxCalendars()) {
 			button.disabled = true;
-			button.classList.add("prisma-calendar-button-disabled");
+			addCls(button, "calendar-button-disabled");
 			button.title = `Maximum ${SETTINGS_DEFAULTS.MAX_CALENDARS} calendars allowed`;
 		}
 	}
@@ -31,7 +32,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const settings = this.plugin.settingsStore.currentSettings;
 		if (settings.calendars.length <= 1) {
 			button.disabled = true;
-			button.classList.add("prisma-calendar-button-disabled");
+			addCls(button, "calendar-button-disabled");
 			button.title = "At least one calendar is required";
 		}
 	}
@@ -51,12 +52,12 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		this.createCalendarManagementHeader();
 		this.renderSelectedCalendarSettings();
 
-		const footerEl = containerEl.createDiv({ cls: "setting-item prisma-settings-footer" });
+		const footerEl = containerEl.createDiv({ cls: `setting-item ${cls("settings-footer")}` });
 
 		footerEl.createEl("a", {
 			text: "Support Prisma Calendar Development",
 			href: "https://github.com/sponsors/Real1tyy",
-			cls: "prisma-settings-support-link",
+			cls: cls("settings-support-link"),
 		});
 	}
 
@@ -66,7 +67,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl).setName("Calendar Management").setHeading();
 
-		const headerContainer = containerEl.createDiv("prisma-calendar-management prisma-calendar-management-header");
+		const headerContainer = containerEl.createDiv(`${cls("calendar-management")} ${cls("calendar-management-header")}`);
 
 		new Setting(headerContainer)
 			.setName("Active Calendar")
@@ -84,12 +85,12 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			});
 
 		// Calendar actions
-		const actionsContainer = headerContainer.createDiv("prisma-calendar-actions");
+		const actionsContainer = headerContainer.createDiv(cls("calendar-actions"));
 
 		// Create New Calendar button
 		const createButton = actionsContainer.createEl("button", {
 			text: "Create New",
-			cls: "prisma-calendar-action-button prisma-calendar-create-button",
+			cls: `${cls("calendar-action-button")} ${cls("calendar-create-button")}`,
 		});
 
 		this.configureMaxCalendarsButton(createButton);
@@ -98,7 +99,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		// Clone Calendar button
 		const cloneButton = actionsContainer.createEl("button", {
 			text: "Clone Current",
-			cls: "prisma-calendar-action-button prisma-calendar-clone-button",
+			cls: `${cls("calendar-action-button")} ${cls("calendar-clone-button")}`,
 		});
 
 		this.configureMaxCalendarsButton(cloneButton);
@@ -107,7 +108,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		// Rename Calendar button
 		const renameButton = actionsContainer.createEl("button", {
 			text: "Rename current",
-			cls: "prisma-calendar-action-button prisma-calendar-rename-button",
+			cls: `${cls("calendar-action-button")} ${cls("calendar-rename-button")}`,
 		});
 
 		renameButton.addEventListener("click", () => this.renameCurrentCalendar());
@@ -115,14 +116,14 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		// Delete Calendar button
 		const deleteButton = actionsContainer.createEl("button", {
 			text: "Delete current",
-			cls: "prisma-calendar-action-button prisma-calendar-delete-button",
+			cls: `${cls("calendar-action-button")} ${cls("calendar-delete-button")}`,
 		});
 
 		this.configureMinCalendarsButton(deleteButton);
 		deleteButton.addEventListener("click", () => this.deleteCurrentCalendar());
 
 		// Calendar count info
-		const countInfo = headerContainer.createDiv("prisma-calendar-count-info");
+		const countInfo = headerContainer.createDiv(cls("calendar-count-info"));
 		countInfo.textContent = `${settings.calendars.length}/${SETTINGS_DEFAULTS.MAX_CALENDARS} calendars`;
 	}
 

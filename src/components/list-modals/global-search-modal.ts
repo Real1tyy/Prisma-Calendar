@@ -1,6 +1,7 @@
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import { addCls, cls } from "../../utils/css-utils";
 import type { CalendarView } from "../calendar-view";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
@@ -77,7 +78,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 	protected async onBeforeRender(): Promise<void> {
 		// Add custom CSS class for this modal
-		this.contentEl.addClass("prisma-global-search-modal");
+		addCls(this.contentEl, "global-search-modal");
 
 		// Load all events from the store
 		await this.loadAllEvents();
@@ -194,9 +195,9 @@ export class GlobalSearchModal extends BaseEventListModal {
 	}
 
 	private renderFilterToggles(contentEl: HTMLElement): void {
-		const filtersContainer = contentEl.createEl("div", { cls: "prisma-global-search-filters" });
+		const filtersContainer = contentEl.createEl("div", { cls: cls("global-search-filters") });
 
-		const togglesContainer = filtersContainer.createEl("div", { cls: "prisma-global-search-toggles" });
+		const togglesContainer = filtersContainer.createEl("div", { cls: cls("global-search-toggles") });
 
 		this.createFilterButton(togglesContainer, "Recurring", "recurring");
 
@@ -206,7 +207,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 	}
 
 	private createFilterButton(container: HTMLElement, label: string, filterKey: keyof GlobalSearchFilters): void {
-		const button = container.createEl("button", { cls: "prisma-filter-cycle-button" });
+		const button = container.createEl("button", { cls: cls("filter-cycle-button") });
 		button.setAttribute("data-filter-key", filterKey);
 
 		this.updateButtonText(button, label, this.filters[filterKey]);
@@ -236,12 +237,12 @@ export class GlobalSearchModal extends BaseEventListModal {
 	}
 
 	private updateButtonText(button: HTMLElement, label: string, state: FilterState): void {
-		button.removeClass("prisma-filter-state-none");
-		button.removeClass("prisma-filter-state-skip");
-		button.removeClass("prisma-filter-state-only");
+		button.removeClass(cls("filter-state-none"));
+		button.removeClass(cls("filter-state-skip"));
+		button.removeClass(cls("filter-state-only"));
 
 		// Add current state class
-		button.addClass(`prisma-filter-state-${state}`);
+		button.addClass(cls(`filter-state-${state}`));
 
 		// Update button text
 		if (state === "none") {

@@ -1,6 +1,7 @@
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { ParsedEvent } from "../../core/parser";
+import { cls } from "../../utils/css-utils";
 import type { AggregationMode, Stats } from "../../utils/weekly-stats";
 import { formatDuration } from "../../utils/weekly-stats";
 import { StatsModal } from "./base-stats-modal";
@@ -61,7 +62,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 			this.contentContainer.remove();
 		}
 
-		this.contentContainer = contentEl.createDiv("prisma-stats-content");
+		this.contentContainer = contentEl.createDiv(cls("stats-content"));
 
 		const { start, end } = this.intervalConfig.getBounds(this.currentDate);
 
@@ -78,7 +79,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		if (stats.entries.length === 0) {
 			this.contentContainer.createDiv({
 				text: "No events found for this period.",
-				cls: "prisma-stats-empty",
+				cls: cls("stats-empty"),
 			});
 			return;
 		}
@@ -88,38 +89,38 @@ export abstract class IntervalStatsModal extends StatsModal {
 	}
 
 	private renderHeader(contentEl: HTMLElement, start: Date, end: Date, stats: Stats): void {
-		const header = contentEl.createDiv("prisma-stats-header");
+		const header = contentEl.createDiv(cls("stats-header"));
 
 		const prevButton = header.createEl("button", {
 			text: "← Previous",
-			cls: "prisma-stats-nav-button",
+			cls: cls("stats-nav-button"),
 		});
 		prevButton.addEventListener("click", async () => {
 			await this.navigatePrevious();
 		});
 
-		const durationStat = header.createDiv("prisma-stats-header-stat");
+		const durationStat = header.createDiv(cls("stats-header-stat"));
 		durationStat.setText(`⏱ ${formatDuration(stats.totalDuration)}`);
 
-		const middleSection = header.createDiv("prisma-stats-middle-section");
+		const middleSection = header.createDiv(cls("stats-middle-section"));
 
-		const periodLabel = middleSection.createDiv("prisma-stats-week-label");
+		const periodLabel = middleSection.createDiv(cls("stats-week-label"));
 		periodLabel.setText(this.intervalConfig.formatDateRange(start, end));
 
 		const todayButton = middleSection.createEl("button", {
 			text: "Today",
-			cls: "prisma-stats-today-button",
+			cls: cls("stats-today-button"),
 		});
 		todayButton.addEventListener("click", async () => {
 			await this.navigateToToday();
 		});
 
-		const eventsStat = header.createDiv("prisma-stats-header-stat");
+		const eventsStat = header.createDiv(cls("stats-header-stat"));
 		eventsStat.setText(`📅 ${stats.entries.reduce((sum, e) => sum + e.count, 0)} events`);
 
 		const nextButton = header.createEl("button", {
 			text: "Next →",
-			cls: "prisma-stats-nav-button",
+			cls: cls("stats-nav-button"),
 		});
 		nextButton.addEventListener("click", async () => {
 			await this.navigateNext();

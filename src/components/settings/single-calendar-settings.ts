@@ -1,4 +1,5 @@
 import type { CalendarSettingsStore } from "../../core/settings-store";
+import { addCls, cls } from "../../utils/css-utils";
 import { CalendarSettings, GeneralSettings, NotificationsSettings, PropertiesSettings, RulesSettings } from ".";
 
 export class SingleCalendarSettings {
@@ -26,8 +27,8 @@ export class SingleCalendarSettings {
 	}
 
 	private createSectionNavigation(containerEl: HTMLElement): void {
-		const navContainer = containerEl.createDiv("prisma-settings-nav");
-		const buttonContainer = navContainer.createDiv("prisma-nav-buttons");
+		const navContainer = containerEl.createDiv(cls("settings-nav"));
+		const buttonContainer = navContainer.createDiv(cls("nav-buttons"));
 
 		const sections = [
 			{ id: "general" as const, label: "General" },
@@ -40,7 +41,7 @@ export class SingleCalendarSettings {
 		sections.forEach((section) => {
 			const button = buttonContainer.createEl("button", { text: section.label });
 			if (this.activeSection === section.id) {
-				button.addClass("prisma-active");
+				addCls(button, "active");
 			}
 
 			button.addEventListener("click", () => {

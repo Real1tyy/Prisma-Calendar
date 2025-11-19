@@ -1,3 +1,4 @@
+import { cls } from "../../utils/css-utils";
 import type { WeeklyStatEntry } from "../../utils/weekly-stats";
 import { formatDuration, formatPercentage } from "../../utils/weekly-stats";
 
@@ -20,10 +21,10 @@ export class TableComponent {
 	}
 
 	private createTableSection(parentEl: HTMLElement): void {
-		const tableContainer = parentEl.createDiv("prisma-stats-table-container");
+		const tableContainer = parentEl.createDiv(cls("stats-table-container"));
 		tableContainer.createEl("h3", { text: "Breakdown" });
 
-		const table = tableContainer.createEl("table", { cls: "prisma-stats-table" });
+		const table = tableContainer.createEl("table", { cls: cls("stats-table") });
 
 		// Table header
 		const thead = table.createEl("thead");
@@ -39,7 +40,7 @@ export class TableComponent {
 
 		// Pagination controls
 		if (this.totalPages > 1) {
-			this.paginationContainer = tableContainer.createDiv("prisma-stats-pagination");
+			this.paginationContainer = tableContainer.createDiv(cls("stats-pagination"));
 		}
 	}
 
@@ -59,7 +60,7 @@ export class TableComponent {
 			const row = this.tableBody.createEl("tr");
 			row.createEl("td", {
 				text: entry.name,
-				cls: entry.isRecurring ? "prisma-stats-recurring" : "",
+				cls: entry.isRecurring ? cls("stats-recurring") : "",
 			});
 			row.createEl("td", { text: entry.count.toString() });
 			row.createEl("td", { text: formatDuration(entry.duration) });
@@ -80,7 +81,7 @@ export class TableComponent {
 		// Previous button
 		const prevButton = this.paginationContainer.createEl("button", {
 			text: "← Previous",
-			cls: "prisma-stats-pagination-button",
+			cls: cls("stats-pagination-button"),
 		});
 		prevButton.disabled = this.currentPage === 0;
 		prevButton.addEventListener("click", () => {
@@ -91,13 +92,13 @@ export class TableComponent {
 		});
 
 		// Page info
-		const pageInfo = this.paginationContainer.createDiv("prisma-stats-pagination-info");
+		const pageInfo = this.paginationContainer.createDiv(cls("stats-pagination-info"));
 		pageInfo.setText(`Page ${this.currentPage + 1} of ${this.totalPages} (${this.entries.length} entries)`);
 
 		// Next button
 		const nextButton = this.paginationContainer.createEl("button", {
 			text: "Next →",
-			cls: "prisma-stats-pagination-button",
+			cls: cls("stats-pagination-button"),
 		});
 		nextButton.disabled = this.currentPage >= this.totalPages - 1;
 		nextButton.addEventListener("click", () => {

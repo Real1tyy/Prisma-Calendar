@@ -1,5 +1,6 @@
 import Chart from "chart.js/auto";
 import { generateColors } from "../../utils/colors";
+import { cls } from "../../utils/css-utils";
 import { formatDuration, type WeeklyStatEntry } from "../../utils/weekly-stats";
 
 const MAX_LABELS = 25; // to prevent label overflow
@@ -15,19 +16,19 @@ export class ChartComponent {
 	}
 
 	private createChartSection(parentEl: HTMLElement): HTMLElement {
-		const chartSection = parentEl.createDiv("prisma-stats-chart-section");
+		const chartSection = parentEl.createDiv(cls("stats-chart-section"));
 
-		const chartHeader = chartSection.createDiv("prisma-stats-chart-header");
+		const chartHeader = chartSection.createDiv(cls("stats-chart-header"));
 		chartHeader.createEl("h3", { text: "Distribution" });
 
 		const toggleButton = chartHeader.createEl("button", {
 			text: "Hide Chart",
-			cls: "prisma-stats-toggle-chart-btn",
+			cls: cls("stats-toggle-chart-btn"),
 		});
 
-		const chartContainer = chartSection.createDiv("prisma-stats-chart-container");
+		const chartContainer = chartSection.createDiv(cls("stats-chart-container"));
 		const canvas = chartContainer.createEl("canvas");
-		canvas.setAttribute("id", "prisma-stats-chart");
+		canvas.setAttribute("id", cls("stats-chart"));
 
 		toggleButton.addEventListener("click", () => {
 			this.chartVisible = !this.chartVisible;

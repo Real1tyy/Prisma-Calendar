@@ -3,6 +3,7 @@ import { Setting } from "obsidian";
 import { SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
+import { cls } from "../../utils/css-utils";
 
 export class PropertiesSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -120,7 +121,7 @@ export class PropertiesSettings {
 		});
 
 		// Add description for event types
-		const eventTypesDesc = containerEl.createDiv("prisma-settings-info-box");
+		const eventTypesDesc = containerEl.createDiv(cls("settings-info-box"));
 
 		eventTypesDesc.createEl("h4", { text: "Event types" });
 		eventTypesDesc.createEl("p", {
@@ -137,7 +138,7 @@ ${settings.allDayProp}: false
 ---
 
 # Team Meeting`,
-			cls: "prisma-settings-info-box-example",
+			cls: cls("settings-info-box-example"),
 		});
 
 		const allDayExample = eventTypesDesc.createDiv();
@@ -149,11 +150,11 @@ ${settings.allDayProp}: true
 ---
 
 # Conference Day`,
-			cls: "prisma-settings-info-box-example",
+			cls: cls("settings-info-box-example"),
 		});
 
 		// Add description for recurring events
-		const recurringDesc = containerEl.createDiv("prisma-settings-info-box");
+		const recurringDesc = containerEl.createDiv(cls("settings-info-box"));
 
 		recurringDesc.createEl("h4", { text: "Recurring events" });
 		recurringDesc.createEl("p", {
@@ -171,7 +172,7 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 ---
 
 # Weekly Team Meeting`,
-			cls: "prisma-settings-info-box-example",
+			cls: cls("settings-info-box-example"),
 		});
 
 		const typesContainer = recurringDesc.createDiv();
@@ -209,15 +210,15 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 		});
 
 		// Add example display
-		const exampleContainer = containerEl.createDiv("prisma-frontmatter-display-example");
+		const exampleContainer = containerEl.createDiv(cls("frontmatter-display-example"));
 		exampleContainer.createEl("p", {
 			text: "Example display in calendar:",
 			cls: "setting-item-description",
 		});
 
-		const exampleBox = exampleContainer.createDiv("prisma-example-event-box");
-		exampleBox.createEl("div", { text: "Meeting with Team", cls: "prisma-title" });
-		const propertiesContainer = exampleBox.createDiv("prisma-properties");
+		const exampleBox = exampleContainer.createDiv(cls("example-event-box"));
+		exampleBox.createEl("div", { text: "Meeting with Team", cls: cls("title") });
+		const propertiesContainer = exampleBox.createDiv(cls("properties"));
 		propertiesContainer.createEl("div", { text: "status: In Progress" });
 		propertiesContainer.createEl("div", { text: "priority: High" });
 		propertiesContainer.createEl("div", { text: "project: Q4 Planning" });

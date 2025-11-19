@@ -4,6 +4,7 @@ import { SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
 import type { ColorRule } from "../../utils/colors";
+import { cls } from "../../utils/css-utils";
 
 export class RulesSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -46,7 +47,7 @@ export class RulesSettings {
 		});
 
 		// Examples section
-		const examplesContainer = desc.createDiv("prisma-settings-info-box");
+		const examplesContainer = desc.createDiv(cls("settings-info-box"));
 
 		examplesContainer.createEl("strong", { text: "Example color rules:" });
 		const examplesList = examplesContainer.createEl("ul");
@@ -75,20 +76,20 @@ export class RulesSettings {
 		];
 
 		for (const example of examples) {
-			const li = examplesList.createEl("li", { cls: "prisma-color-example-item" });
+			const li = examplesList.createEl("li", { cls: cls("color-example-item") });
 
-			li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
+			li.createEl("code", { text: example.expression, cls: cls("settings-info-box-example") });
 
-			li.createSpan({ text: "→", cls: "prisma-color-arrow" });
+			li.createSpan({ text: "→", cls: cls("color-arrow") });
 
-			const colorSpan = li.createEl("span", { cls: "prisma-color-example-dot" });
+			const colorSpan = li.createEl("span", { cls: cls("color-example-dot") });
 			colorSpan.style.setProperty("--example-color", example.color);
 
-			li.createSpan({ text: example.description, cls: "prisma-color-example-description" });
+			li.createSpan({ text: example.description, cls: cls("color-example-description") });
 		}
 
 		// Warning section
-		const warningContainer = desc.createDiv("prisma-settings-warning-box");
+		const warningContainer = desc.createDiv(cls("settings-warning-box"));
 		warningContainer.createEl("strong", { text: "⚠️ Important:" });
 		warningContainer.createEl("p", {
 			text: "Use property names directly (e.g., Priority, Status). Invalid expressions will be ignored. Colors can be CSS color names, hex codes, or HSL values.",
@@ -135,17 +136,17 @@ export class RulesSettings {
 		}
 
 		colorRules.forEach((rule, index) => {
-			const ruleContainer = container.createDiv("prisma-color-rule-item");
+			const ruleContainer = container.createDiv(cls("color-rule-item"));
 
 			// Single row with all controls
-			const mainRow = ruleContainer.createDiv("prisma-color-rule-main-row");
+			const mainRow = ruleContainer.createDiv(cls("color-rule-main-row"));
 
 			// Left section: order, checkbox, expression
-			const leftSection = mainRow.createDiv("prisma-color-rule-left");
+			const leftSection = mainRow.createDiv(cls("color-rule-left"));
 
 			leftSection.createEl("span", {
 				text: `#${index + 1}`,
-				cls: "prisma-color-rule-order",
+				cls: cls("color-rule-order"),
 			});
 
 			const enableToggle = leftSection.createEl("input", { type: "checkbox" });
@@ -161,7 +162,7 @@ export class RulesSettings {
 				type: "text",
 				value: rule.expression,
 				placeholder: "Priority === 'High'",
-				cls: "prisma-color-rule-expression-input",
+				cls: cls("color-rule-expression-input"),
 			});
 
 			const updateExpression = async () => {
@@ -180,10 +181,10 @@ export class RulesSettings {
 			});
 
 			// Right section: color picker + controls
-			const rightSection = mainRow.createDiv("prisma-color-rule-right");
+			const rightSection = mainRow.createDiv(cls("color-rule-right"));
 
 			// Integrated color picker using Setting
-			const colorPickerWrapper = rightSection.createDiv("prisma-color-rule-picker-wrapper");
+			const colorPickerWrapper = rightSection.createDiv(cls("color-rule-picker-wrapper"));
 			new Setting(colorPickerWrapper).addColorPicker((colorPicker) => {
 				colorPicker.setValue(rule.color);
 				colorPicker.onChange(async (value) => {
@@ -195,13 +196,13 @@ export class RulesSettings {
 			});
 
 			// Control buttons
-			const controlsSection = rightSection.createDiv("prisma-color-rule-controls");
+			const controlsSection = rightSection.createDiv(cls("color-rule-controls"));
 
 			if (index > 0) {
 				const moveUpButton = controlsSection.createEl("button", {
 					text: "↑",
 					attr: { title: "Move up" },
-					cls: "prisma-color-rule-btn",
+					cls: cls("color-rule-btn"),
 				});
 				moveUpButton.onclick = async () => {
 					await this.settingsStore.updateSettings((s) => {
@@ -223,7 +224,7 @@ export class RulesSettings {
 				const moveDownButton = controlsSection.createEl("button", {
 					text: "↓",
 					attr: { title: "Move down" },
-					cls: "prisma-color-rule-btn",
+					cls: cls("color-rule-btn"),
 				});
 				moveDownButton.onclick = async () => {
 					await this.settingsStore.updateSettings((s) => {
@@ -244,7 +245,7 @@ export class RulesSettings {
 			const deleteButton = controlsSection.createEl("button", {
 				text: "×",
 				attr: { title: "Delete rule" },
-				cls: "prisma-color-rule-btn prisma-color-rule-btn-delete",
+				cls: `${cls("color-rule-btn")} ${cls("color-rule-btn-delete")}`,
 			});
 			deleteButton.onclick = async () => {
 				await this.settingsStore.updateSettings((s) => ({
@@ -265,7 +266,7 @@ export class RulesSettings {
 		});
 
 		// Examples section
-		const examplesContainer = desc.createDiv("prisma-settings-info-box");
+		const examplesContainer = desc.createDiv(cls("settings-info-box"));
 
 		examplesContainer.createEl("strong", { text: "Example filter expressions:" });
 		const examplesList = examplesContainer.createEl("ul");
@@ -313,7 +314,7 @@ export class RulesSettings {
 		});
 
 		// Examples section
-		const examplesContainer = desc.createDiv("prisma-settings-info-box");
+		const examplesContainer = desc.createDiv(cls("settings-info-box"));
 
 		examplesContainer.createEl("strong", { text: "Example filter presets:" });
 		const examplesList = examplesContainer.createEl("ul");
@@ -326,17 +327,17 @@ export class RulesSettings {
 		];
 
 		for (const example of examples) {
-			const li = examplesList.createEl("li", { cls: "prisma-color-example-item" });
+			const li = examplesList.createEl("li", { cls: cls("color-example-item") });
 
-			li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
+			li.createEl("code", { text: example.expression, cls: cls("settings-info-box-example") });
 
-			li.createSpan({ text: "→", cls: "prisma-color-arrow" });
+			li.createSpan({ text: "→", cls: cls("color-arrow") });
 
-			li.createSpan({ text: example.description, cls: "prisma-color-example-description" });
+			li.createSpan({ text: example.description, cls: cls("color-example-description") });
 		}
 
 		// Warning section
-		const warningContainer = desc.createDiv("prisma-settings-warning-box");
+		const warningContainer = desc.createDiv(cls("settings-warning-box"));
 		warningContainer.createEl("strong", { text: "💡 Tip:" });
 		warningContainer.createEl("p", {
 			text: "Filter presets appear in a dropdown next to the zoom button. Click a preset to instantly apply its filter expression.",
@@ -379,14 +380,14 @@ export class RulesSettings {
 		}
 
 		filterPresets.forEach((preset, index) => {
-			const presetContainer = container.createDiv("prisma-filter-preset-item");
+			const presetContainer = container.createDiv(cls("filter-preset-item"));
 
 			// Name input
 			const nameInput = presetContainer.createEl("input", {
 				type: "text",
 				value: preset.name,
 				placeholder: "Preset name (e.g., 'Done', 'High Priority')",
-				cls: "prisma-filter-preset-name-input",
+				cls: cls("filter-preset-name-input"),
 			});
 
 			const updateName = async () => {
@@ -409,7 +410,7 @@ export class RulesSettings {
 				type: "text",
 				value: preset.expression,
 				placeholder: "Filter expression (e.g., Status === 'Done')",
-				cls: "prisma-filter-preset-expression-input",
+				cls: cls("filter-preset-expression-input"),
 			});
 
 			const updateExpression = async () => {
@@ -431,7 +432,7 @@ export class RulesSettings {
 			const deleteButton = presetContainer.createEl("button", {
 				text: "×",
 				attr: { title: "Delete preset" },
-				cls: "prisma-filter-preset-btn-delete",
+				cls: cls("filter-preset-btn-delete"),
 			});
 			deleteButton.onclick = async () => {
 				await this.settingsStore.updateSettings((s) => ({
