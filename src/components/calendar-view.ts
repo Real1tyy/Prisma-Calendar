@@ -29,6 +29,7 @@ import {
 	DisabledRecurringEventsModal,
 	FilteredEventsModal,
 	GlobalSearchModal,
+	SelectedEventsModal,
 	SkippedEventsModal,
 } from "./list-modals";
 import { AllTimeStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
@@ -54,6 +55,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private skippedEventsModal: SkippedEventsModal | null = null;
 	private disabledRecurringEventsModal: DisabledRecurringEventsModal | null = null;
 	private filteredEventsModal: FilteredEventsModal | null = null;
+	private selectedEventsModal: SelectedEventsModal | null = null;
 	private globalSearchModal: GlobalSearchModal | null = null;
 	private weeklyStatsModal: WeeklyStatsModal | null = null;
 	private monthlyStatsModal: MonthlyStatsModal | null = null;
@@ -65,6 +67,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private filteredEventsCount = 0;
 	private skippedEventsCount = 0;
 	private disabledRecurringEventsCount = 0;
+	private selectedEventsCount = 0;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -126,15 +129,16 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		if (inSelectionMode) {
 			const batchButtons =
 				"batchCounter batchSelectAll batchClear batchDuplicate batchMoveBy batchCloneNext batchClonePrev batchMoveNext batchMovePrev batchOpenAll batchSkip batchDelete batchExit";
-			headerToolbar.right = `${batchButtons} ${viewSwitchers}`;
+			headerToolbar.right = batchButtons;
 
 			// Define all batch buttons
 			customButtons.batchCounter = {
-				text: bsm.getSelectionCountText(),
+				text: this.getSelectedEventsButtonText(),
+				click: () => this.showSelectedEventsModal(),
 				className: `${cls("batch-action-btn")} ${cls("batch-counter")}`,
 			};
 			customButtons.batchSelectAll = {
-				text: "Select All",
+				text: "All",
 				click: () => bsm.selectAllVisibleEvents(),
 				className: `${cls("batch-action-btn")} ${cls("select-all-btn")}`,
 			};
@@ -184,7 +188,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				className: `${cls("batch-action-btn")} ${cls("move-prev-btn")}`,
 			};
 			customButtons.batchOpenAll = {
-				text: "Open All",
+				text: "Open",
 				click: () => bsm.executeOpenAll(),
 				className: `${cls("batch-action-btn")} ${cls("open-all-btn")}`,
 			};
@@ -306,6 +310,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return `${this.disabledRecurringEventsCount} disabled`;
 	}
 
+	private getSelectedEventsButtonText(): string {
+		return `${this.selectedEventsCount} selected`;
+	}
+
 	private updateButtonElement(selector: string, text: string, isVisible: boolean, tooltip?: string): void {
 		if (!this.container) return;
 		const btn = this.container.querySelector(selector);
@@ -414,6 +422,23 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				this.filteredEventsModal = modal;
 			},
 			() => new FilteredEventsModal(this.app, this.filteredEvents)
+		);
+	}
+
+	async showSelectedEventsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.selectedEventsModal,
+			(modal) => {
+				this.selectedEventsModal = modal;
+			},
+			() => {
+				if (!this.batchSelectionManager) throw new Error("Batch selection manager not initialized");
+
+				const selected = this.batchSelectionManager.getSelectedEvents();
+				return new SelectedEventsModal(this.app, selected, (eventId: string) => {
+					this.batchSelectionManager?.unselectEvent(eventId);
+				});
+			}
 		);
 	}
 
@@ -775,7 +800,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.calendar.render();
 
 		this.batchSelectionManager = new BatchSelectionManager(this.app, this.calendar, this.bundle);
-		this.batchSelectionManager.setOnSelectionChangeCallback(() => this.updateToolbar());
+		this.batchSelectionManager.setOnSelectionChangeCallback(() => {
+			if (this.batchSelectionManager) {
+				this.selectedEventsCount = this.batchSelectionManager.getSelectionCount();
+			}
+			this.updateToolbar();
+		});
 		this.updateToolbar();
 
 		this.zoomManager.initialize(this.calendar, this.container);

@@ -2,4 +2,5 @@ export { BaseEventListModal, type EventListAction, type EventListItem } from "./
 export { DisabledRecurringEventsModal } from "./disabled-recurring-events-modal";
 export { FilteredEventsModal } from "./filtered-events-modal";
 export { GlobalSearchModal } from "./global-search-modal";
+export { SelectedEventsModal } from "./selected-events-modal";
 export { SkippedEventsModal } from "./skipped-events-modal";

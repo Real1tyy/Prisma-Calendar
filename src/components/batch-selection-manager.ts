@@ -281,7 +281,21 @@ export class BatchSelectionManager {
 
 	public getSelectionCountText(): string {
 		const count = this.selectedEvents.size;
-		return count === 0 ? "No events selected" : `${count} event${count === 1 ? "" : "s"} selected`;
+		return count === 0 ? "No selected" : `${count} event${count === 1 ? "" : "s"} selected`;
+	}
+
+	public getSelectionCount(): number {
+		return this.selectedEvents.size;
+	}
+
+	public getSelectedEvents(): SelectedEvent[] {
+		return Array.from(this.selectedEvents.values());
+	}
+
+	public unselectEvent(eventId: string): void {
+		if (this.selectedEvents.has(eventId)) {
+			this.toggleEventSelection(eventId, false);
+		}
 	}
 
 	public async executeDelete(): Promise<void> {

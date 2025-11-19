@@ -6,6 +6,15 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+#### Selected Events Modal in Batch Mode
+- **Interactive Selection Counter**: The batch selection counter button (showing "X selected") is now clickable and opens a modal displaying all currently selected events
+- **Event Management**:
+  - View all selected events with their titles and time information
+  - Search and filter through selected events
+  - **Unselect** individual events directly from the modal
+  - **Open** event files in Obsidian with one click
+- **Use Case**: Quickly review and manage your batch selection before performing bulk operations, or selectively remove events from the selection without manually clicking through the calendar
+
 #### Duration Field in Event Modal
 - **Quick Duration Editing**: New optional duration in minutes field in the event creation/edit modal for rapid event timing adjustments. Enabled by default.
 - **Bidirectional Sync**: Changes to duration automatically update the end date (keeping start date fixed). Changes to start or end dates automatically update the displayed duration.
