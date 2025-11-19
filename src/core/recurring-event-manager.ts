@@ -302,7 +302,11 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	private calculateTargetInstanceCount(recurringEvent: NodeRecurringEvent): number {
-		const intervals = this.settings.futureInstancesCount;
+		// Check for per-event override in frontmatter
+		const overrideValue = recurringEvent.frontmatter[this.settings.futureInstancesCountProp];
+		const intervals =
+			typeof overrideValue === "number" && overrideValue > 0 ? overrideValue : this.settings.futureInstancesCount;
+
 		const { type, weekdays } = recurringEvent.rrules;
 
 		if (type === "weekly" || type === "bi-weekly") {

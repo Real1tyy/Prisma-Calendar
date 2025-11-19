@@ -15,6 +15,15 @@ All notable changes to this project will be documented here.
   - **Open** event files in Obsidian with one click
 - **Use Case**: Quickly review and manage your batch selection before performing bulk operations, or selectively remove events from the selection without manually clicking through the calendar
 
+#### Per-Event Future Instances Count Override
+- **Flexible Recurring Event Control**: Configure the number of future instances to generate on a per-event basis by adding the `Future Instances Count` property to any recurring event's frontmatter.
+- **Overrides Global Setting**: If not specified, uses the global "Future instances count" setting. When specified, overrides the default for that specific recurring event.
+- **Configurable Property Name**: Customize the property name in Settings → Properties → "Future instances count property" (defaults to "Future Instances Count").
+- **Use Cases**:
+  - Generate more instances for critical recurring events (e.g., 10 instances for weekly standup meetings)
+  - Generate fewer instances for infrequent events (e.g., 1 instance for yearly reviews)
+  - Minimize vault clutter by customizing instance generation per event type
+
 #### Duration Field in Event Modal
 - **Quick Duration Editing**: New optional duration in minutes field in the event creation/edit modal for rapid event timing adjustments. Enabled by default.
 - **Bidirectional Sync**: Changes to duration automatically update the end date (keeping start date fixed). Changes to start or end dates automatically update the displayed duration.
