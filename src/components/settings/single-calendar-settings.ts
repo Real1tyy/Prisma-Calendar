@@ -40,7 +40,7 @@ export class SingleCalendarSettings {
 		sections.forEach((section) => {
 			const button = buttonContainer.createEl("button", { text: section.label });
 			if (this.activeSection === section.id) {
-				button.addClass("active");
+				button.addClass("prisma-active");
 			}
 
 			button.addEventListener("click", () => {

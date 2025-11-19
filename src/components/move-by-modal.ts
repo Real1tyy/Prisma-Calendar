@@ -119,9 +119,9 @@ export class MoveByModal extends Modal {
 		this.selectedDirection = direction;
 		for (const [dir, btn] of this.directionButtons.entries()) {
 			if (dir === direction) {
-				btn.addClass("is-active");
+				btn.addClass("prisma-is-active");
 			} else {
-				btn.removeClass("is-active");
+				btn.removeClass("prisma-is-active");
 			}
 		}
 	}
@@ -130,9 +130,9 @@ export class MoveByModal extends Modal {
 		this.selectedUnit = unit;
 		for (const [u, btn] of this.unitButtons.entries()) {
 			if (u === unit) {
-				btn.addClass("is-active");
+				btn.addClass("prisma-is-active");
 			} else {
-				btn.removeClass("is-active");
+				btn.removeClass("prisma-is-active");
 			}
 		}
 	}

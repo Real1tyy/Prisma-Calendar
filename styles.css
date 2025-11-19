@@ -1001,12 +1001,12 @@
 	transition: all 0.2s ease;
 }
 
-.prisma-nav-buttons button.active {
+.prisma-nav-buttons button.prisma-active {
 	background-color: var(--interactive-accent);
 	color: var(--text-on-accent);
 }
 
-.prisma-nav-buttons button:hover:not(.active) {
+.prisma-nav-buttons button:hover:not(.prisma-active) {
 	background-color: var(--background-modifier-hover);
 }
 
@@ -1057,11 +1057,11 @@
 	margin-top: 8px;
 }
 
-.prisma-example-event-box .title {
+.prisma-example-event-box .prisma-title {
 	font-weight: 500;
 }
 
-.prisma-example-event-box .properties {
+.prisma-example-event-box .prisma-properties {
 	font-size: 0.9em;
 	color: var(--text-muted);
 	margin-top: 4px;
@@ -2324,7 +2324,7 @@
 	background: var(--interactive-hover);
 }
 
-.prisma-move-by-btn.is-active {
+.prisma-move-by-btn.prisma-is-active {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border-color: var(--interactive-accent);
@@ -2403,7 +2403,7 @@
 	background: var(--interactive-hover);
 }
 
-.prisma-move-by-unit-btn.is-active {
+.prisma-move-by-unit-btn.prisma-is-active {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border-color: var(--interactive-accent);

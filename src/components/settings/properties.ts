@@ -216,8 +216,8 @@ ${settings.rruleSpecProp}: monday, wednesday, friday
 		});
 
 		const exampleBox = exampleContainer.createDiv("prisma-example-event-box");
-		exampleBox.createEl("div", { text: "Meeting with Team", cls: "title" });
-		const propertiesContainer = exampleBox.createDiv("properties");
+		exampleBox.createEl("div", { text: "Meeting with Team", cls: "prisma-title" });
+		const propertiesContainer = exampleBox.createDiv("prisma-properties");
 		propertiesContainer.createEl("div", { text: "status: In Progress" });
 		propertiesContainer.createEl("div", { text: "priority: High" });
 		propertiesContainer.createEl("div", { text: "project: Q4 Planning" });
