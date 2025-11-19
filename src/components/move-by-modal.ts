@@ -1,4 +1,5 @@
 import { type App, Modal } from "obsidian";
+import { addCls, cls, removeCls } from "../utils/css-utils";
 
 const TIME_UNITS = ["minutes", "hours", "days", "weeks", "months", "years"] as const;
 
@@ -28,19 +29,19 @@ export class MoveByModal extends Modal {
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.addClass("prisma-move-by-modal");
+		addCls(contentEl, "move-by-modal");
 
 		contentEl.createEl("h3", { text: "Move Event By" });
 
-		const formContainer = contentEl.createDiv("prisma-move-by-form");
+		const formContainer = contentEl.createDiv(cls("move-by-form"));
 
 		// Direction buttons
-		const directionContainer = formContainer.createDiv("prisma-move-by-row");
-		directionContainer.createEl("div", { text: "Direction", cls: "prisma-move-by-label" });
-		const directionButtons = directionContainer.createDiv("prisma-move-by-button-group");
+		const directionContainer = formContainer.createDiv(cls("move-by-row"));
+		directionContainer.createEl("div", { text: "Direction", cls: cls("move-by-label") });
+		const directionButtons = directionContainer.createDiv(cls("move-by-button-group"));
 
-		const plusBtn = directionButtons.createEl("button", { text: "+", cls: "prisma-move-by-btn" });
-		const minusBtn = directionButtons.createEl("button", { text: "−", cls: "prisma-move-by-btn" });
+		const plusBtn = directionButtons.createEl("button", { text: "+", cls: cls("move-by-btn") });
+		const minusBtn = directionButtons.createEl("button", { text: "−", cls: cls("move-by-btn") });
 
 		this.directionButtons.set("plus", plusBtn);
 		this.directionButtons.set("minus", minusBtn);
@@ -49,33 +50,33 @@ export class MoveByModal extends Modal {
 		minusBtn.addEventListener("click", () => this.selectDirection("minus"));
 
 		// Amount input with increment/decrement buttons
-		const amountContainer = formContainer.createDiv("prisma-move-by-row");
-		amountContainer.createEl("div", { text: "Amount", cls: "prisma-move-by-label" });
-		const amountInputGroup = amountContainer.createDiv("prisma-move-by-amount-group");
+		const amountContainer = formContainer.createDiv(cls("move-by-row"));
+		amountContainer.createEl("div", { text: "Amount", cls: cls("move-by-label") });
+		const amountInputGroup = amountContainer.createDiv(cls("move-by-amount-group"));
 
-		const decrementBtn = amountInputGroup.createEl("button", { text: "−", cls: "prisma-move-by-increment-btn" });
+		const decrementBtn = amountInputGroup.createEl("button", { text: "−", cls: cls("move-by-increment-btn") });
 		this.valueInput = amountInputGroup.createEl("input", {
 			type: "number",
 			value: "15",
-			cls: "prisma-move-by-input",
+			cls: cls("move-by-input"),
 			attr: {
 				min: "1",
 				step: "1",
 			},
 		});
-		const incrementBtn = amountInputGroup.createEl("button", { text: "+", cls: "prisma-move-by-increment-btn" });
+		const incrementBtn = amountInputGroup.createEl("button", { text: "+", cls: cls("move-by-increment-btn") });
 
 		decrementBtn.addEventListener("click", () => this.adjustValue(-1));
 		incrementBtn.addEventListener("click", () => this.adjustValue(1));
 
 		// Time unit buttons
-		const unitContainer = formContainer.createDiv("prisma-move-by-row");
-		unitContainer.createEl("div", { text: "Time Unit", cls: "prisma-move-by-label" });
-		const unitButtons = unitContainer.createDiv("prisma-move-by-unit-group");
+		const unitContainer = formContainer.createDiv(cls("move-by-row"));
+		unitContainer.createEl("div", { text: "Time Unit", cls: cls("move-by-label") });
+		const unitButtons = unitContainer.createDiv(cls("move-by-unit-group"));
 
 		for (const unit of TIME_UNITS) {
 			const label = unit.charAt(0).toUpperCase() + unit.slice(1);
-			const btn = unitButtons.createEl("button", { text: label, cls: "prisma-move-by-unit-btn" });
+			const btn = unitButtons.createEl("button", { text: label, cls: cls("move-by-unit-btn") });
 			this.unitButtons.set(unit, btn);
 			btn.addEventListener("click", () => this.selectUnit(unit));
 		}
@@ -119,9 +120,9 @@ export class MoveByModal extends Modal {
 		this.selectedDirection = direction;
 		for (const [dir, btn] of this.directionButtons.entries()) {
 			if (dir === direction) {
-				btn.addClass("prisma-is-active");
+				addCls(btn, "is-active");
 			} else {
-				btn.removeClass("prisma-is-active");
+				removeCls(btn, "is-active");
 			}
 		}
 	}
@@ -130,9 +131,9 @@ export class MoveByModal extends Modal {
 		this.selectedUnit = unit;
 		for (const [u, btn] of this.unitButtons.entries()) {
 			if (u === unit) {
-				btn.addClass("prisma-is-active");
+				addCls(btn, "is-active");
 			} else {
-				btn.removeClass("prisma-is-active");
+				removeCls(btn, "is-active");
 			}
 		}
 	}

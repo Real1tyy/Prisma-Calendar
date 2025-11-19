@@ -3,6 +3,7 @@ import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../types/recurring-event";
 import { extractZettelId, removeZettelId } from "../utils/calendar-events";
+import { addCls, cls } from "../utils/css-utils";
 import type { RecurrenceType, Weekday } from "../utils/date-recurrence";
 import {
 	calculateDurationMinutes,
@@ -76,7 +77,7 @@ abstract class BaseEventModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		this.modalEl.addClass("prisma-event-modal");
+		addCls(this.modalEl, "event-modal");
 
 		// Allow subclasses to perform initialization
 		await this.initialize();
@@ -178,7 +179,7 @@ abstract class BaseEventModal extends Modal {
 		});
 
 		// Container for recurring event options (initially hidden)
-		this.recurringContainer = contentEl.createDiv("prisma-recurring-event-fields");
+		this.recurringContainer = contentEl.createDiv(cls("recurring-event-fields"));
 		this.recurringContainer.style.display = "none";
 
 		// RRule type dropdown
@@ -193,15 +194,15 @@ abstract class BaseEventModal extends Modal {
 		}
 
 		// Weekday selection (initially hidden, shown when weekly/bi-weekly selected)
-		this.weekdayContainer = this.recurringContainer.createDiv("setting-item prisma-weekday-selection");
+		this.weekdayContainer = this.recurringContainer.createDiv(`setting-item ${cls("weekday-selection")}`);
 		this.weekdayContainer.style.display = "none";
 		this.weekdayContainer.createEl("div", { text: "Days of Week", cls: "setting-item-name" });
 
-		const weekdayGrid = this.weekdayContainer.createDiv("prisma-weekday-grid");
+		const weekdayGrid = this.weekdayContainer.createDiv(cls("weekday-grid"));
 
 		// Create checkboxes for each weekday
 		for (const [value, label] of Object.entries(WEEKDAY_OPTIONS)) {
-			const weekdayItem = weekdayGrid.createDiv("prisma-weekday-item");
+			const weekdayItem = weekdayGrid.createDiv(cls("weekday-item"));
 
 			const checkboxId = `weekday-${value}`;
 			const checkbox = weekdayItem.createEl("input", {
@@ -234,7 +235,7 @@ abstract class BaseEventModal extends Modal {
 			this.addCustomProperty("", "", "display")
 		);
 
-		const otherSectionParent = contentEl.createDiv("prisma-other-section-spacing");
+		const otherSectionParent = contentEl.createDiv(cls("other-section-spacing"));
 		this.otherPropertiesContainer = this.createPropertySection(otherSectionParent, "Other Properties", () =>
 			this.addCustomProperty("", "", "other")
 		);
@@ -251,14 +252,14 @@ abstract class BaseEventModal extends Modal {
 		});
 		addButton.addEventListener("click", onAddClick);
 
-		const container = parent.createDiv("prisma-property-container");
+		const container = parent.createDiv(cls("property-container"));
 
 		return container;
 	}
 
 	protected addCustomProperty(key = "", value = "", section: "display" | "other" = "other"): void {
 		const container = section === "display" ? this.displayPropertiesContainer : this.otherPropertiesContainer;
-		const propertyRow = container.createDiv("prisma-custom-property-row");
+		const propertyRow = container.createDiv(cls("custom-property-row"));
 
 		propertyRow.createEl("input", {
 			type: "text",
@@ -289,8 +290,8 @@ abstract class BaseEventModal extends Modal {
 		const properties: Record<string, string> = {};
 
 		// Collect from both display and other properties containers
-		const displayRows = this.displayPropertiesContainer.querySelectorAll(".prisma-custom-property-row");
-		const otherRows = this.otherPropertiesContainer.querySelectorAll(".prisma-custom-property-row");
+		const displayRows = this.displayPropertiesContainer.querySelectorAll(`.${cls("custom-property-row")}`);
+		const otherRows = this.otherPropertiesContainer.querySelectorAll(`.${cls("custom-property-row")}`);
 		const allRows = [...Array.from(displayRows), ...Array.from(otherRows)];
 
 		for (const row of allRows) {

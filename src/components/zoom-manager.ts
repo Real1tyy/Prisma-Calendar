@@ -2,6 +2,7 @@ import type { Calendar } from "@fullcalendar/core";
 import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
 import { Menu } from "obsidian";
 import type { CalendarSettingsStore } from "../core/settings-store";
+import { addCls, removeCls } from "../utils/css-utils";
 
 export class ZoomManager {
 	private calendar: Calendar | null = null;
@@ -52,11 +53,11 @@ export class ZoomManager {
 				button.textContent = newText;
 			}
 
-			button.classList.remove("prisma-zoom-button-hidden");
-			button.classList.add("prisma-zoom-button-visible");
+			removeCls(button as HTMLElement, "zoom-button-hidden");
+			addCls(button as HTMLElement, "zoom-button-visible");
 		} else {
-			button.classList.remove("prisma-zoom-button-visible");
-			button.classList.add("prisma-zoom-button-hidden");
+			removeCls(button as HTMLElement, "zoom-button-visible");
+			addCls(button as HTMLElement, "zoom-button-hidden");
 		}
 	}
 

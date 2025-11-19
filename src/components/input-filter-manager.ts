@@ -1,4 +1,5 @@
 import type { Calendar } from "@fullcalendar/core";
+import { cls } from "../utils/css-utils";
 
 export type FilterChangeCallback = () => void;
 
@@ -47,7 +48,7 @@ export abstract class InputFilterManager {
 		if (!toolbarLeft) return;
 
 		const wrapper = document.createElement("div");
-		wrapper.className = "prisma-fc-filter-wrapper";
+		wrapper.className = cls("fc-filter-wrapper");
 
 		this.input = document.createElement("input");
 		this.input.type = "text";

@@ -1,5 +1,6 @@
 import type { Calendar } from "@fullcalendar/core";
 import type { FilterPreset } from "../types/settings";
+import { cls } from "../utils/css-utils";
 
 export class FilterPresetSelector {
 	private select: HTMLSelectElement | null = null;
@@ -59,10 +60,10 @@ export class FilterPresetSelector {
 		if (!toolbarLeft) return;
 
 		const wrapper = document.createElement("div");
-		wrapper.className = "prisma-fc-filter-preset-wrapper";
+		wrapper.className = cls("fc-filter-preset-wrapper");
 
 		this.select = document.createElement("select");
-		this.select.className = "prisma-fc-filter-preset-select fc-button fc-button-primary";
+		this.select.className = `${cls("fc-filter-preset-select")} fc-button fc-button-primary`;
 
 		// Hidden placeholder option that shows the arrow
 		const placeholderOption = document.createElement("option");

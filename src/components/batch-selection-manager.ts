@@ -4,6 +4,7 @@ import { type App, Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
 import type { Command } from "../core/commands/command";
+import { addCls, removeCls } from "../utils/css-utils";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import { MoveByModal } from "./move-by-modal";
 
@@ -174,9 +175,9 @@ export class BatchSelectionManager {
 
 	private addSelectionStylingToEvents(): void {
 		this.forEachEventElement(this.calendar.el, (eventEl, eventId) => {
-			eventEl.classList.add("prisma-batch-selectable");
+			addCls(eventEl, "batch-selectable");
 			if (this.selectedEvents.has(eventId)) {
-				eventEl.classList.add("prisma-batch-selected");
+				addCls(eventEl, "batch-selected");
 			}
 
 			const clickHandler = (e: Event) => {
@@ -198,7 +199,7 @@ export class BatchSelectionManager {
 				eventEl.removeEventListener("click", clickHandler);
 				this.clickHandlers.delete(eventEl);
 			}
-			eventEl.classList.remove("prisma-batch-selectable", "prisma-batch-selected");
+			removeCls(eventEl, "batch-selectable", "batch-selected");
 		});
 	}
 
@@ -242,9 +243,9 @@ export class BatchSelectionManager {
 		}
 
 		if (isSelected) {
-			eventEl.classList.add("prisma-batch-selected");
+			addCls(eventEl, "batch-selected");
 		} else {
-			eventEl.classList.remove("prisma-batch-selected");
+			removeCls(eventEl, "batch-selected");
 		}
 	}
 

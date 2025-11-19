@@ -1,3 +1,4 @@
+import { cls } from "../utils/css-utils";
 import { buildPropertyMapping, sanitizeExpression } from "../utils/expression-utils";
 import { InputFilterManager } from "./input-filter-manager";
 
@@ -7,7 +8,7 @@ export class ExpressionFilterManager extends InputFilterManager {
 	private lastWarnedExpression: string | null = null;
 
 	constructor(onFilterChange: () => void) {
-		super(onFilterChange, "Status === 'Done'", "prisma-fc-expression-input", 50);
+		super(onFilterChange, "Status === 'Done'", cls("fc-expression-input"), 50);
 	}
 
 	protected updateFilterValue(filterValue: string): void {
