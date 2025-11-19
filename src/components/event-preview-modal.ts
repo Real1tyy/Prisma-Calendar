@@ -122,7 +122,7 @@ export class EventPreviewModal extends Modal {
 			createLink: (text: string, path: string) => {
 				const link = document.createElement("a");
 				link.textContent = text;
-				link.className = "prisma-event-preview-prop-value-link";
+				link.className = cls("event-preview-prop-value-link");
 				link.onclick = (e) => {
 					e.preventDefault();
 					this.app.workspace.openLinkText(path, "", false);

@@ -190,7 +190,7 @@ export abstract class BaseEventListModal extends Modal {
 		if (this.filteredItems.length === 0) {
 			this.listContainer.createEl("p", {
 				text: "No events match your search.",
-				cls: "prisma-generic-event-list-empty",
+				cls: cls("generic-event-list-empty"),
 			});
 			return;
 		}

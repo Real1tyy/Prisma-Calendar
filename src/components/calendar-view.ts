@@ -476,9 +476,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const eventElements = Array.from(document.querySelectorAll(`[data-event-id="${event.id}"]`));
 			for (const element of eventElements) {
 				if (element instanceof HTMLElement) {
-					element.classList.add("prisma-event-highlighted");
+					element.classList.add(cls("event-highlighted"));
 					setTimeout(() => {
-						element.classList.remove("prisma-event-highlighted");
+						element.classList.remove(cls("event-highlighted"));
 					}, durationMs);
 				}
 			}
@@ -571,7 +571,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				const oldEventElements = Array.from(document.querySelectorAll(`[data-event-id="${oldId}"]`));
 				for (const element of oldEventElements) {
 					if (element instanceof HTMLElement) {
-						element.classList.remove("prisma-event-upcoming");
+						element.classList.remove(cls("event-upcoming"));
 					}
 				}
 			}
@@ -583,7 +583,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				const newEventElements = Array.from(document.querySelectorAll(`[data-event-id="${newId}"]`));
 				for (const element of newEventElements) {
 					if (element instanceof HTMLElement) {
-						element.classList.add("prisma-event-upcoming");
+						element.classList.add(cls("event-upcoming"));
 					}
 				}
 			}
@@ -620,7 +620,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const eventElements = Array.from(document.querySelectorAll(`[data-event-id="${eventId}"]`));
 			for (const element of eventElements) {
 				if (element instanceof HTMLElement) {
-					element.classList.remove("prisma-event-upcoming");
+					element.classList.remove(cls("event-upcoming"));
 				}
 			}
 		}
@@ -668,9 +668,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				if (isPast) {
 					const contrast = this.bundle.settingsStore.currentSettings.pastEventContrast;
 					if (contrast === 0) {
-						classes.push("prisma-past-event-hidden");
+						classes.push(cls("past-event-hidden"));
 					} else if (contrast < 100) {
-						classes.push("prisma-past-event-faded");
+						classes.push(cls("past-event-faded"));
 					}
 				}
 				return classes;
@@ -712,7 +712,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			eventDidMount: (info) => {
 				if (info.event.extendedProps.isVirtual) {
-					info.el.classList.add("prisma-virtual-event-opacity", "prisma-virtual-event-cursor");
+					info.el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
 					info.el.title = "Virtual recurring event (read-only)";
 				} else {
 					// Only register non-virtual events for batch selection
@@ -908,7 +908,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const calendarEvents = events.map((event) => {
 				const classNames = ["regular-event"];
 				if (event.isVirtual) {
-					classNames.push("prisma-virtual-event");
+					classNames.push(cls("virtual-event"));
 				}
 				const eventColor = this.getEventColor(event);
 
@@ -956,22 +956,22 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		mainEl.className = "fc-event-main";
 
 		const container = document.createElement("div");
-		container.className = "prisma-fc-event-content-wrapper";
+		container.className = cls("fc-event-content-wrapper");
 		mainEl.appendChild(container);
 
 		const headerEl = document.createElement("div");
-		headerEl.className = "prisma-fc-event-header";
+		headerEl.className = cls("fc-event-header");
 
 		if (!event.allDay && event.start) {
 			const timeEl = document.createElement("div");
-			timeEl.className = "prisma-fc-event-time";
+			timeEl.className = cls("fc-event-time");
 			timeEl.textContent = arg.timeText;
 			headerEl.appendChild(timeEl);
 		}
 
 		// Add title
 		const titleEl = document.createElement("div");
-		titleEl.className = "prisma-fc-event-title-custom";
+		titleEl.className = cls("fc-event-title-custom");
 		let title = event.title;
 		if (title) {
 			title = removeZettelId(title);
@@ -984,19 +984,19 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const displayProperties = this.getDisplayProperties(event);
 		if (displayProperties.length > 0) {
 			const propsContainer = document.createElement("div");
-			propsContainer.className = "prisma-fc-event-props";
+			propsContainer.className = cls("fc-event-props");
 
 			for (const [prop, value] of displayProperties) {
 				const propEl = document.createElement("div");
-				propEl.className = "prisma-fc-event-prop";
+				propEl.className = cls("fc-event-prop");
 
 				const keyEl = document.createElement("span");
-				keyEl.className = "prisma-fc-event-prop-key";
+				keyEl.className = cls("fc-event-prop-key");
 				keyEl.textContent = `${prop}:`;
 				propEl.appendChild(keyEl);
 
 				const valueEl = document.createElement("span");
-				valueEl.className = "prisma-fc-event-prop-value";
+				valueEl.className = cls("fc-event-prop-value");
 				this.renderPropertyValue(valueEl, value);
 				propEl.appendChild(valueEl);
 
@@ -1027,7 +1027,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const config: PropertyRendererConfig = {
 			createLink: (text: string, path: string) => {
 				const link = document.createElement("a");
-				link.className = "prisma-fc-event-prop-link";
+				link.className = cls("fc-event-prop-link");
 				link.textContent = text;
 				link.onclick = (e) => {
 					e.preventDefault();
@@ -1086,7 +1086,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	private handleEventMount(info: any): void {
 		if (info.event.extendedProps.isVirtual) {
-			info.el.classList.add("prisma-virtual-event-italic");
+			info.el.classList.add(cls("virtual-event-italic"));
 		}
 
 		const element = info.el;
@@ -1099,7 +1099,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		});
 
 		element.style.setProperty("--event-color", eventColor);
-		element.classList.add("prisma-calendar-event");
+		element.classList.add(cls("calendar-event"));
 
 		// Set opacity CSS variable for past events
 		const now = new Date();
@@ -1124,7 +1124,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		element.setAttribute("title", tooltipParts.join("\n"));
-		element.addClass("prisma-calendar-event");
+		element.addClass(cls("calendar-event"));
 	}
 
 	private handleDateClick(info: any): void {
@@ -1278,7 +1278,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.showLoading(root, "Indexing calendar events…");
 
 		// Create calendar host
-		this.container = root.createDiv("prisma-calendar-container");
+		this.container = root.createDiv(cls("calendar-container"));
 
 		// Wait for layout before rendering FullCalendar
 		await this.waitForLayout(this.container);

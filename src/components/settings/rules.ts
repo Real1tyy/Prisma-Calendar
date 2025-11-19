@@ -280,17 +280,17 @@ export class RulesSettings {
 		];
 
 		for (const example of examples) {
-			const li = examplesList.createEl("li", { cls: "prisma-color-example-item" });
+			const li = examplesList.createEl("li", { cls: cls("color-example-item") });
 
-			li.createEl("code", { text: example.expression, cls: "prisma-settings-info-box-example" });
+			li.createEl("code", { text: example.expression, cls: cls("settings-info-box-example") });
 
-			li.createSpan({ text: "→", cls: "prisma-color-arrow" });
+			li.createSpan({ text: "→", cls: cls("color-arrow") });
 
-			li.createSpan({ text: example.description, cls: "prisma-color-example-description" });
+			li.createSpan({ text: example.description, cls: cls("color-example-description") });
 		}
 
 		// Warning section
-		const warningContainer = desc.createDiv("prisma-settings-warning-box");
+		const warningContainer = desc.createDiv(cls("settings-warning-box"));
 		warningContainer.createEl("strong", { text: "⚠️ Important:" });
 		warningContainer.createEl("p", {
 			text: "Use property names directly (e.g., Status, Priority). Invalid expressions will be ignored and logged to console.",
