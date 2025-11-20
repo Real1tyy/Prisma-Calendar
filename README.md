@@ -1,18 +1,32 @@
 <div align="center">
 
-<a href="https://www.youtube.com/watch?v=aULuB6petbU" target="_blank">
-  <img src="https://img.youtube.com/vi/aULuB6petbU/maxresdefault.jpg" alt="Prisma Calendar Demo" style="width:100%;">
-</a>
-<p><em>Play the demo to see Prisma Calendar in action!</em></p>
-
 # Prisma Calendar
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/Real1tyy/Prisma-Calendar/releases)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-vitest-yellow.svg)](tests/)
-[![Obsidian](https://img.shields.io/badge/obsidian-plugin-purple.svg)](https://obsidian.md)
+![Downloads](https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge)
+![Release](https://img.shields.io/github/v/release/Real1tyy/Prisma-Calendar?label=Latest%20Release&style=for-the-badge)
+![Stars](https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge)
+![License](https://img.shields.io/github/license/Real1tyy/Prisma-Calendar?style=for-the-badge)
+![Obsidian](https://img.shields.io/badge/obsidian-plugin-purple.svg?style=for-the-badge)
 
 **The most powerful and flexible calendar plugin for Obsidian — fully configurable, reactive, and built for power users.**
+
+---
+
+## 🎬 Video Tutorials
+
+### Part 1: Feature Showcase — Core Capabilities
+<a href="https://www.youtube.com/watch?v=aULuB6petbU" target="_blank">
+  <img src="https://img.youtube.com/vi/aULuB6petbU/maxresdefault.jpg" alt="Prisma Calendar - Feature Showcase (Part 1)" style="width:100%;">
+</a>
+
+**Full walkthrough of core features**: Event creation, editing, drag-and-drop, batch operations, undo/redo system, recurring events with source nodes, dynamic color rules, filtering, and calendar customization. See how Prisma Calendar gives you real control over your time-linked notes inside Obsidian.
+
+### Part 2: Deep Dive — Intelligence & Automation
+<a href="https://www.youtube.com/watch?v=JCYGWltxQQ0" target="_blank">
+  <img src="https://img.youtube.com/vi/JCYGWltxQQ0/maxresdefault.jpg" alt="Prisma Calendar - Deep Dive (Part 2)" style="width:100%;">
+</a>
+
+**Advanced systems and workflows**: Intelligent notification system with desktop alerts and snooze, global event search across all calendars, quick navigation tools, weekly statistics and time-tracking insights, filtering presets for complex workflows, and automation patterns. Discover the tools that bring clarity, structure, and total control to your scheduling and time analysis.
 
 </div>
 
