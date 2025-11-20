@@ -11,6 +11,7 @@ export abstract class StatsModal extends Modal {
 	protected chartComponent: ChartComponent | null = null;
 	protected tableComponent: TableComponent | null = null;
 	protected aggregationMode: AggregationMode = "name";
+	protected includeSkippedEvents = false;
 	protected contentContainer: HTMLElement | null = null;
 
 	constructor(app: App, bundle: CalendarBundle) {
@@ -23,22 +24,42 @@ export abstract class StatsModal extends Modal {
 		contentEl.empty();
 		addCls(contentEl, "weekly-stats-modal");
 
-		this.renderAggregationModeToggle(contentEl);
 		this.setupKeyboardShortcuts();
 		await this.renderContent();
 	}
 
-	private renderAggregationModeToggle(contentEl: HTMLElement): void {
-		const toggleContainer = contentEl.createDiv(cls("stats-mode-toggle"));
+	protected createSkipCheckbox(container: HTMLElement): void {
+		const label = container.createEl("label", {
+			cls: cls("stats-skip-checkbox-label"),
+		});
 
-		toggleContainer.createEl("span", {
-			text: "Group by: ",
+		const checkbox = label.createEl("input", {
+			type: "checkbox",
+			cls: cls("stats-skip-checkbox"),
+		});
+		checkbox.checked = this.includeSkippedEvents;
+
+		label.createSpan({
+			text: "Include skipped events",
+			cls: cls("stats-skip-checkbox-text"),
+		});
+
+		checkbox.addEventListener("change", async () => {
+			this.includeSkippedEvents = checkbox.checked;
+			this.destroyComponents();
+			await this.renderContent();
+		});
+	}
+
+	protected createAggregationToggle(container: HTMLElement): void {
+		container.createEl("span", {
+			text: "Group by:",
 			cls: cls("stats-mode-label"),
 		});
 
-		const toggleButton = toggleContainer.createEl("button", {
+		const toggleButton = container.createEl("button", {
 			text: this.aggregationMode === "name" ? "Event Name" : "Category",
-			cls: cls("stats-mode-button-single"),
+			cls: cls("stats-mode-button-compact"),
 		});
 
 		toggleButton.addEventListener("click", async () => {

@@ -66,10 +66,14 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 		const { start, end } = this.intervalConfig.getBounds(this.currentDate);
 
-		const events = await this.bundle.eventStore.getEvents({
+		let events = await this.bundle.eventStore.getEvents({
 			start: start.toISOString(),
 			end: end.toISOString(),
 		});
+
+		if (!this.includeSkippedEvents) {
+			events = events.filter((event) => !event.skipped);
+		}
 
 		const categoryProp = this.bundle.settingsStore.currentSettings.categoryProp || "Category";
 		const stats = this.intervalConfig.aggregateStats(events, this.currentDate, this.aggregationMode, categoryProp);
@@ -107,13 +111,21 @@ export abstract class IntervalStatsModal extends StatsModal {
 		const periodLabel = middleSection.createDiv(cls("stats-week-label"));
 		periodLabel.setText(this.intervalConfig.formatDateRange(start, end));
 
-		const todayButton = middleSection.createEl("button", {
+		const controlsRow = middleSection.createDiv(cls("stats-controls-row"));
+
+		const skipCheckboxContainer = controlsRow.createDiv(cls("stats-skip-checkbox-container"));
+		this.createSkipCheckbox(skipCheckboxContainer);
+
+		const todayButton = controlsRow.createEl("button", {
 			text: "Today",
 			cls: cls("stats-today-button"),
 		});
 		todayButton.addEventListener("click", async () => {
 			await this.navigateToToday();
 		});
+
+		const aggregationToggle = controlsRow.createDiv(cls("stats-aggregation-toggle"));
+		this.createAggregationToggle(aggregationToggle);
 
 		const eventsStat = header.createDiv(cls("stats-header-stat"));
 		eventsStat.setText(`📅 ${stats.entries.reduce((sum, e) => sum + e.count, 0)} events`);
