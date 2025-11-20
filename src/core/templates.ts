@@ -77,7 +77,7 @@ export class TemplateService {
 		// If content is provided (e.g., for recurring event instances), use manual creation
 		// to preserve the inherited content instead of using templates
 		if (content) {
-			return this.createManually(title, targetDirectory, finalFilename, content);
+			return this.createManually(title, targetDirectory, finalFilename, content, frontmatter);
 		}
 
 		if (this.shouldUseTemplate()) {
@@ -96,7 +96,7 @@ export class TemplateService {
 		}
 
 		// Fallback to manual creation
-		return this.createManually(title, targetDirectory, finalFilename, content);
+		return this.createManually(title, targetDirectory, finalFilename, content, frontmatter);
 	}
 
 	private shouldUseTemplate(): boolean {
@@ -127,7 +127,8 @@ export class TemplateService {
 		title: string,
 		targetDirectory: string,
 		filename: string,
-		customContent?: string
+		customContent?: string,
+		frontmatter?: Record<string, unknown>
 	): Promise<TFile> {
 		// Generate unique file path to avoid conflicts
 		const filePath = generateUniqueFilePath(this.app, targetDirectory, filename);
@@ -136,6 +137,13 @@ export class TemplateService {
 		const content = customContent || `# ${title}\n\n`;
 
 		const file = await this.app.vault.create(filePath, content);
+
+		// Apply frontmatter if provided
+		if (frontmatter && Object.keys(frontmatter).length > 0) {
+			await this.app.fileManager.processFrontMatter(file, (fm) => {
+				Object.assign(fm, frontmatter);
+			});
+		}
 
 		return file;
 	}
