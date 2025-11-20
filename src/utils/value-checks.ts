@@ -14,3 +14,17 @@ export function isNotEmpty(value: unknown): boolean {
 
 	return true;
 }
+
+/**
+ * Parses a value to a positive integer.
+ * Handles both number and string types from frontmatter.
+ * Returns the parsed integer if valid and positive, otherwise returns the fallback value.
+ */
+export function parsePositiveInt(value: unknown, fallback: number): number {
+	if (value === undefined || value === null) {
+		return fallback;
+	}
+
+	const parsed = typeof value === "number" ? value : Number.parseInt(String(value), 10);
+	return !Number.isNaN(parsed) && parsed > 0 ? parsed : fallback;
+}

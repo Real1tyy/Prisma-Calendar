@@ -12,6 +12,7 @@ import {
 	formatDateTimeForInput,
 	inputValueToISOString,
 } from "../utils/format";
+import { parsePositiveInt } from "../utils/value-checks";
 
 interface EventModalData {
 	title: string;
@@ -59,6 +60,7 @@ abstract class BaseEventModal extends Modal {
 	protected rruleSelect!: HTMLSelectElement;
 	protected weekdayContainer!: HTMLElement;
 	protected weekdayCheckboxes: Map<Weekday, HTMLInputElement> = new Map();
+	protected futureInstancesCountInput!: HTMLInputElement;
 
 	// Custom properties
 	protected customProperties: CustomProperty[] = [];
@@ -228,6 +230,25 @@ abstract class BaseEventModal extends Modal {
 				checkbox.checked = !checkbox.checked;
 			});
 		}
+
+		const futureInstancesContainer = this.recurringContainer.createDiv("setting-item");
+		futureInstancesContainer.createEl("div", {
+			text: "Future instances count",
+			cls: "setting-item-name",
+		});
+		const futureInstancesDesc = futureInstancesContainer.createEl("div", {
+			cls: "setting-item-description",
+		});
+		futureInstancesDesc.setText("Override the global setting for this event. Leave empty to use the default.");
+		this.futureInstancesCountInput = futureInstancesContainer.createEl("input", {
+			type: "number",
+			cls: "setting-item-control",
+			attr: {
+				min: "1",
+				step: "1",
+				placeholder: "Default",
+			},
+		});
 	}
 
 	private createCustomPropertiesFields(contentEl: HTMLElement): void {
@@ -470,10 +491,21 @@ abstract class BaseEventModal extends Modal {
 				// Clear RRuleSpec for non-weekly events
 				delete preservedFrontmatter[settings.rruleSpecProp];
 			}
+
+			// Handle future instances count override
+			if (this.futureInstancesCountInput?.value) {
+				const futureCount = Number.parseInt(this.futureInstancesCountInput.value, 10);
+				if (!Number.isNaN(futureCount) && futureCount > 0) {
+					preservedFrontmatter[settings.futureInstancesCountProp] = futureCount;
+				}
+			} else {
+				delete preservedFrontmatter[settings.futureInstancesCountProp];
+			}
 		} else {
 			// Clear recurring event properties if not checked
 			delete preservedFrontmatter[settings.rruleProp];
 			delete preservedFrontmatter[settings.rruleSpecProp];
+			delete preservedFrontmatter[settings.futureInstancesCountProp];
 		}
 
 		const customProps = this.getCustomProperties();
@@ -591,6 +623,12 @@ export class EventEditModal extends BaseEventModal {
 						}
 					}
 				}
+			}
+
+			const futureCount = this.originalFrontmatter[settings.futureInstancesCountProp];
+			const parsed = parsePositiveInt(futureCount, 0);
+			if (parsed > 0) {
+				this.futureInstancesCountInput.value = String(parsed);
 			}
 		}
 	}

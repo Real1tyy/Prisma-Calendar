@@ -21,7 +21,10 @@ All notable changes to this project will be documented here.
 - **Use Case**: Quickly review and manage your batch selection before performing bulk operations, or selectively remove events from the selection without manually clicking through the calendar
 
 #### Per-Event Future Instances Count Override
-- **Flexible Recurring Event Control**: Configure the number of future instances to generate on a per-event basis by adding the `Future Instances Count` property to any recurring event's frontmatter.
+- **Flexible Recurring Event Control**: Configure the number of future instances to generate on a per-event basis
+  - **UI Configuration**: Edit the "Future instances count" field directly in the event edit modal when creating or editing recurring events
+  - **Manual Configuration**: Add the `Future Instances Count` property to any recurring event's frontmatter
+  - **Dynamic Updates**: Changing the count for existing events and reloading Obsidian automatically generates additional instances as needed
 - **Overrides Global Setting**: If not specified, uses the global "Future instances count" setting. When specified, overrides the default for that specific recurring event.
 - **Configurable Property Name**: Customize the property name in Settings → Properties → "Future instances count property" (defaults to "Future Instances Count").
 - **Use Cases**:

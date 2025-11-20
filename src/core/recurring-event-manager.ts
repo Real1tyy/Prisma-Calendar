@@ -12,6 +12,7 @@ import { DebouncedNotifier } from "../utils/debounced-notifier";
 import { rebuildPhysicalInstanceFilename, sanitizeForFilename } from "../utils/file-utils";
 import { applySourceTimeToInstanceDate } from "../utils/format";
 import { extractContentAfterFrontmatter } from "../utils/obsidian";
+import { parsePositiveInt } from "../utils/value-checks";
 import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
 import { TemplateService } from "./templates";
@@ -302,10 +303,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	private calculateTargetInstanceCount(recurringEvent: NodeRecurringEvent): number {
-		// Check for per-event override in frontmatter
 		const overrideValue = recurringEvent.frontmatter[this.settings.futureInstancesCountProp];
-		const intervals =
-			typeof overrideValue === "number" && overrideValue > 0 ? overrideValue : this.settings.futureInstancesCount;
+		const intervals = parsePositiveInt(overrideValue, this.settings.futureInstancesCount);
 
 		const { type, weekdays } = recurringEvent.rrules;
 

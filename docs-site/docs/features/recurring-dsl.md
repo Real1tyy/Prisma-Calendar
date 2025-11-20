@@ -264,7 +264,22 @@ Configure how many physical note files are created ahead of time (1-52 instances
 - **12+ instances**: Only for extensive advance preparation needs
 
 #### Per-Event Override
-You can override the global "Future instances count" setting for individual recurring events by adding the `Future Instances Count` property to the event's frontmatter:
+
+You can override the global "Future instances count" setting for individual recurring events in two ways:
+
+##### **Via Event Edit Modal** (Recommended)
+
+When creating or editing a recurring event:
+1. Enable "Recurring Event" checkbox
+2. Scroll to the "Future instances count" field
+3. Enter a custom number (or leave empty to use the global default)
+4. Save the event
+
+The UI automatically handles the frontmatter property for you.
+
+##### **Via Manual Frontmatter**
+
+Alternatively, add the `Future Instances Count` property directly to the event's frontmatter:
 
 ```yaml
 ---
@@ -281,6 +296,8 @@ Future Instances Count: 10
 - **More instances**: Generate extra instances for critical recurring events you need to plan far ahead (e.g., weekly standups, important check-ins)
 - **Fewer instances**: Reduce clutter for infrequent events (e.g., 1 instance for yearly reviews)
 - **No override**: Omit the property to use the global setting (recommended for most events)
+
+**Dynamic Updates**: If you change the future instances count for an existing recurring event and reload Obsidian, the plugin will automatically generate additional physical instances as needed to match the new target count.
 
 **Note**: The property name `Future Instances Count` can be customized in Settings → Properties → "Future instances count property".
 
