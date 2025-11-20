@@ -66,17 +66,20 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 		const { start, end } = this.intervalConfig.getBounds(this.currentDate);
 
-		let events = await this.bundle.eventStore.getEvents({
+		const events = await this.bundle.eventStore.getEvents({
 			start: start.toISOString(),
 			end: end.toISOString(),
 		});
 
-		if (!this.includeSkippedEvents) {
-			events = events.filter((event) => !event.skipped);
-		}
+		const filteredEvents = this.filterSkippedEvents(events);
 
 		const categoryProp = this.bundle.settingsStore.currentSettings.categoryProp || "Category";
-		const stats = this.intervalConfig.aggregateStats(events, this.currentDate, this.aggregationMode, categoryProp);
+		const stats = this.intervalConfig.aggregateStats(
+			filteredEvents,
+			this.currentDate,
+			this.aggregationMode,
+			categoryProp
+		);
 
 		this.renderHeader(this.contentContainer, start, end, stats);
 

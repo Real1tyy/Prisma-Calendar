@@ -1,6 +1,7 @@
 import type { App } from "obsidian";
 import { Modal } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import type { ParsedEvent } from "../../core/parser";
 import { addCls, cls } from "../../utils/css-utils";
 import type { AggregationMode } from "../../utils/weekly-stats";
 import type { ChartComponent } from "./chart-component";
@@ -69,6 +70,23 @@ export abstract class StatsModal extends Modal {
 			this.destroyComponents();
 			await this.renderContent();
 		});
+	}
+
+	protected filterSkippedEvents(events: ParsedEvent[]): ParsedEvent[] {
+		if (this.includeSkippedEvents) {
+			return events;
+		}
+		return events.filter((event) => !event.skipped);
+	}
+
+	protected createControlsRow(container: HTMLElement): void {
+		const controlsRow = container.createDiv(cls("stats-controls-row"));
+
+		const skipCheckboxContainer = controlsRow.createDiv(cls("stats-skip-checkbox-container"));
+		this.createSkipCheckbox(skipCheckboxContainer);
+
+		const aggregationToggle = controlsRow.createDiv(cls("stats-aggregation-toggle"));
+		this.createAggregationToggle(aggregationToggle);
 	}
 
 	onClose(): void {
