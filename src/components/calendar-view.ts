@@ -1347,7 +1347,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		this.containerEl.addEventListener("keydown", keydownHandler);
 
-		this.containerEl.addEventListener("click", () => {
+		this.containerEl.addEventListener("click", (e: MouseEvent) => {
+			// Don't steal focus from input elements
+			const target = e.target as HTMLElement;
+			if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT") {
+				return;
+			}
 			this.containerEl.focus();
 		});
 

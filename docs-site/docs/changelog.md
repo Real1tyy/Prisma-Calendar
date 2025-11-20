@@ -6,6 +6,7 @@ All notable changes to this project will be documented here.
 
 ### Bug Fixes
 - **Fixed scroll jumping during event edits**: Prevented race conditions in event refresh logic that caused the calendar to jump to highlighted events when editing/moving events in different parts of the view.
+- **Fixed input field focus loss**: Search and expression filter input fields now maintain focus when clicked, allowing users to type in them without the focus being immediately stolen by the calendar container.
 
 ### New Features
 
