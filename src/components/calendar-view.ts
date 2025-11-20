@@ -82,6 +82,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private skippedEventsCount = 0;
 	private disabledRecurringEventsCount = 0;
 	private selectedEventsCount = 0;
+	private isRefreshingEvents = false;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -919,7 +920,23 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		if (!this.calendar || !this.isIndexingComplete || !this.calendar.view) {
 			return;
 		}
+
+		if (this.isRefreshingEvents) {
+			return;
+		}
+
+		this.isRefreshingEvents = true;
 		const { view } = this.calendar;
+
+		// Capture scroll position before touching events
+		// The REAL scroller is the Obsidian view-content wrapper
+		const viewContent = this.containerEl.querySelector(".view-content") as HTMLElement | null;
+
+		// FullCalendar internal scroller (for some views like list)
+		const innerScroller = this.container.querySelector(".fc-scroller") as HTMLElement | null;
+
+		const viewContentScrollTop = viewContent?.scrollTop ?? 0;
+		const innerScrollTop = innerScroller?.scrollTop ?? 0;
 
 		try {
 			const start = view.activeStart.toISOString();
@@ -995,6 +1012,26 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			});
 		} catch (error) {
 			console.error("Error refreshing calendar events:", error);
+		} finally {
+			// Restore scroll after FC finishes layout
+			requestAnimationFrame(() => {
+				// Re-query in case DOM changed
+				const viewContentRestored = this.containerEl.querySelector(".view-content") as HTMLElement | null;
+				const inner = this.container.querySelector(".fc-scroller") as HTMLElement | null;
+
+				if (viewContentRestored) {
+					viewContentRestored.scrollTop = viewContentScrollTop;
+				}
+
+				if (inner) {
+					inner.scrollTop = innerScrollTop;
+				}
+
+				// Release the lock after scroll restoration completes
+				setTimeout(() => {
+					this.isRefreshingEvents = false;
+				}, 50);
+			});
 		}
 	}
 

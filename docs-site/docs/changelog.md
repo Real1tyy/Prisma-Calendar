@@ -4,6 +4,9 @@ All notable changes to this project will be documented here.
 
 ## 1.6.0
 
+### Bug Fixes
+- **Fixed scroll jumping during event edits**: Prevented race conditions in event refresh logic that caused the calendar to jump to highlighted events when editing/moving events in different parts of the view.
+
 ### New Features
 
 #### Flexible Snooze Duration in Notifications
