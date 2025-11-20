@@ -18,7 +18,12 @@ export class AllTimeStatsModal extends StatsModal {
 
 		this.contentContainer = contentEl.createDiv(cls("stats-content"));
 
-		const events = await this.bundle.eventStore.getAllEvents();
+		let events = await this.bundle.eventStore.getAllEvents();
+
+		if (!this.includeSkippedEvents) {
+			events = events.filter((event) => !event.skipped);
+		}
+
 		const categoryProp = this.bundle.settingsStore.currentSettings.categoryProp || "Category";
 		const stats = aggregateStats(events, undefined, undefined, this.aggregationMode, categoryProp);
 
@@ -53,6 +58,14 @@ export class AllTimeStatsModal extends StatsModal {
 
 		const titleLabel = middleSection.createDiv(cls("stats-week-label"));
 		titleLabel.setText("All Time");
+
+		const controlsRow = middleSection.createDiv(cls("stats-controls-row"));
+
+		const skipCheckboxContainer = controlsRow.createDiv(cls("stats-skip-checkbox-container"));
+		this.createSkipCheckbox(skipCheckboxContainer);
+
+		const aggregationToggle = controlsRow.createDiv(cls("stats-aggregation-toggle"));
+		this.createAggregationToggle(aggregationToggle);
 
 		const eventsStat = header.createDiv(cls("stats-header-stat"));
 		eventsStat.setText(`📅 ${stats.entries.reduce((sum, e) => sum + e.count, 0)} events`);

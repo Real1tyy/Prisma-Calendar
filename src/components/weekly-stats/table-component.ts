@@ -22,7 +22,8 @@ export class TableComponent {
 
 	private createTableSection(parentEl: HTMLElement): void {
 		const tableContainer = parentEl.createDiv(cls("stats-table-container"));
-		tableContainer.createEl("h3", { text: "Breakdown" });
+
+		tableContainer.createDiv(cls("stats-table-divider"));
 
 		const table = tableContainer.createEl("table", { cls: cls("stats-table") });
 
@@ -78,6 +79,17 @@ export class TableComponent {
 
 		this.paginationContainer.empty();
 
+		// First page button
+		const firstButton = this.paginationContainer.createEl("button", {
+			text: "⟪ First",
+			cls: cls("stats-pagination-button"),
+		});
+		firstButton.disabled = this.currentPage === 0;
+		firstButton.addEventListener("click", () => {
+			this.currentPage = 0;
+			this.render();
+		});
+
 		// Previous button
 		const prevButton = this.paginationContainer.createEl("button", {
 			text: "← Previous",
@@ -91,9 +103,41 @@ export class TableComponent {
 			}
 		});
 
-		// Page info
-		const pageInfo = this.paginationContainer.createDiv(cls("stats-pagination-info"));
-		pageInfo.setText(`Page ${this.currentPage + 1} of ${this.totalPages} (${this.entries.length} entries)`);
+		// Page input and info
+		const pageInputContainer = this.paginationContainer.createDiv(cls("stats-pagination-input-container"));
+
+		pageInputContainer.createEl("span", {
+			text: "Page ",
+			cls: cls("stats-pagination-label"),
+		});
+
+		const pageInput = pageInputContainer.createEl("input", {
+			type: "number",
+			cls: cls("stats-pagination-input"),
+			attr: {
+				min: "1",
+				max: this.totalPages.toString(),
+			},
+		}) as HTMLInputElement;
+		pageInput.value = (this.currentPage + 1).toString();
+
+		pageInput.addEventListener("keydown", (e) => {
+			if (e.key === "Enter") {
+				this.handlePageInput(pageInput);
+			}
+		});
+
+		pageInput.addEventListener("blur", () => {
+			this.handlePageInput(pageInput);
+		});
+
+		pageInputContainer.createEl("span", {
+			text: ` of ${this.totalPages}`,
+			cls: cls("stats-pagination-label"),
+		});
+
+		const entriesInfo = this.paginationContainer.createDiv(cls("stats-pagination-info"));
+		entriesInfo.setText(`(${this.entries.length} entries)`);
 
 		// Next button
 		const nextButton = this.paginationContainer.createEl("button", {
@@ -107,6 +151,32 @@ export class TableComponent {
 				this.render();
 			}
 		});
+
+		// Last page button
+		const lastButton = this.paginationContainer.createEl("button", {
+			text: "Last ⟫",
+			cls: cls("stats-pagination-button"),
+		});
+		lastButton.disabled = this.currentPage >= this.totalPages - 1;
+		lastButton.addEventListener("click", () => {
+			this.currentPage = this.totalPages - 1;
+			this.render();
+		});
+	}
+
+	private handlePageInput(input: HTMLInputElement): void {
+		const value = Number.parseInt(input.value, 10);
+
+		if (Number.isNaN(value) || value < 1 || value > this.totalPages) {
+			input.value = (this.currentPage + 1).toString();
+			return;
+		}
+
+		const newPage = value - 1;
+		if (newPage !== this.currentPage) {
+			this.currentPage = newPage;
+			this.render();
+		}
 	}
 
 	destroy(): void {

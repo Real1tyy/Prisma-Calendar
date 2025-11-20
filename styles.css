@@ -2918,18 +2918,23 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 }
 
 .prisma-stats-chart-header {
+	position: relative;
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	justify-content: flex-end;
 	margin-bottom: 0.5rem;
+	min-height: 2rem;
 }
 
 .prisma-stats-chart-header h3 {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
 	margin: 0;
 	font-size: var(--font-ui-medium);
 	color: var(--text-normal);
-	flex: 1;
 	text-align: center;
+	pointer-events: none;
 }
 
 .prisma-stats-toggle-chart-btn {
@@ -2971,11 +2976,15 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	text-align: center;
 }
 
-.prisma-stats-table-container h3 {
-	margin: 0 0 1rem 0;
-	font-size: var(--font-ui-medium);
-	color: var(--text-normal);
-	text-align: center;
+.prisma-stats-table-divider {
+	height: 1px;
+	background: linear-gradient(
+		to right,
+		transparent,
+		var(--background-modifier-border) 20%,
+		var(--background-modifier-border) 80%,
+		transparent
+	);
 }
 
 .prisma-stats-table {
@@ -3056,6 +3065,45 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	font-size: var(--font-ui-small);
 	color: var(--text-muted);
 	white-space: nowrap;
+}
+
+.prisma-stats-pagination-input-container {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.prisma-stats-pagination-label {
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	white-space: nowrap;
+}
+
+.prisma-stats-pagination-input {
+	width: 60px;
+	padding: 0.35rem 0.5rem;
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	text-align: center;
+	transition: border-color 0.2s;
+}
+
+.prisma-stats-pagination-input:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+}
+
+.prisma-stats-pagination-input::-webkit-inner-spin-button,
+.prisma-stats-pagination-input::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.prisma-stats-pagination-input[type="number"] {
+	-moz-appearance: textfield;
 }
 
 /* Aggregation Mode Toggle Styles */
