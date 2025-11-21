@@ -139,6 +139,7 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 ### **Event Creation & Editing**
 - **Quick create button** - Create events instantly from calendar interface
 - **Enhanced edit modal** - Full frontmatter editing with all configured properties
+- **"Now" button** - Quickly set Start or End date to current time with minute precision
 - **Drag & drop** - Move events by dragging to new time slots
 - **Resize support** - Adjust event duration by dragging edges
 - **Click to open** - Open event files directly from calendar

@@ -4,6 +4,13 @@ All notable changes to this project will be documented here.
 
 ## 1.7.0
 
+### New Features
+
+#### "Now" Button in Event Modal
+- **Quick Time Setting**: Added a "Now" button next to the Start Date and End Date inputs in the Create/Edit Event modal
+- **Minute Precision**: Clicking "Now" sets the datetime field to the current moment with minute-level precision (not just rounded to the hour)
+- **Location**: Button appears between the datetime input field and the right edge of the modal
+
 ### Improvements
 - **Go to Source for Virtual Events**: The "Go to source" option in the context menu (right-click) is now available for virtual events, allowing you to navigate directly to the recurring event source note from any virtual instance displayed in the calendar.
 

@@ -117,22 +117,18 @@ abstract class BaseEventModal extends Modal {
 		this.timedContainer.style.display = this.event.allDay ? "none" : "block";
 
 		// Start date/time field (for timed events)
-		const startContainer = this.timedContainer.createDiv("setting-item");
-		startContainer.createEl("div", { text: "Start Date", cls: "setting-item-name" });
-		this.startInput = startContainer.createEl("input", {
-			type: "datetime-local",
-			value: this.event.start ? formatDateTimeForInput(this.event.start) : "",
-			cls: "setting-item-control",
-		});
+		this.startInput = this.createDateTimeInputWithNowButton(
+			this.timedContainer,
+			"Start Date",
+			this.event.start ? formatDateTimeForInput(this.event.start) : ""
+		);
 
 		// End date/time field (for timed events)
-		const endContainer = this.timedContainer.createDiv("setting-item");
-		endContainer.createEl("div", { text: "End Date", cls: "setting-item-name" });
-		this.endInput = endContainer.createEl("input", {
-			type: "datetime-local",
-			value: this.event.end ? formatDateTimeForInput(this.event.end) : "",
-			cls: "setting-item-control",
-		});
+		this.endInput = this.createDateTimeInputWithNowButton(
+			this.timedContainer,
+			"End Date",
+			this.event.end ? formatDateTimeForInput(this.event.end) : ""
+		);
 
 		// Duration field (for timed events) - conditionally shown based on settings
 		const settings = this.bundle.settingsStore.currentSettings;
@@ -169,6 +165,30 @@ abstract class BaseEventModal extends Modal {
 
 		this.createRecurringEventFields(contentEl);
 		this.createCustomPropertiesFields(contentEl);
+	}
+
+	private createDateTimeInputWithNowButton(parent: HTMLElement, label: string, initialValue: string): HTMLInputElement {
+		const container = parent.createDiv("setting-item");
+		container.createEl("div", { text: label, cls: "setting-item-name" });
+		const inputWrapper = container.createDiv("prisma-datetime-input-wrapper");
+
+		const nowButton = inputWrapper.createEl("button", {
+			text: "Now",
+			cls: "prisma-now-button",
+			type: "button",
+		});
+
+		const input = inputWrapper.createEl("input", {
+			type: "datetime-local",
+			value: initialValue,
+			cls: "setting-item-control",
+		});
+
+		nowButton.addEventListener("click", () => {
+			this.setToCurrentTime(input);
+		});
+
+		return input;
 	}
 
 	private createRecurringEventFields(contentEl: HTMLElement): void {
@@ -351,6 +371,15 @@ abstract class BaseEventModal extends Modal {
 				this.endInput.value = formatDateTimeForInput(endDate);
 			}
 		}
+	}
+
+	private setToCurrentTime(input: HTMLInputElement): void {
+		const now = new Date();
+		input.value = formatDateTimeForInput(now);
+
+		// Trigger change event to update duration field if present
+		const event = new Event("change", { bubbles: true });
+		input.dispatchEvent(event);
 	}
 
 	private setupEventHandlers(contentEl: HTMLElement): void {
