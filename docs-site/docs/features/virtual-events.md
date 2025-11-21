@@ -115,4 +115,10 @@ Virtual events appear with:
 - Indicators showing they're read-only
 - Display basic scheduling information (title, time) from the recurring pattern
 
+### 6. Navigation to Source
+You can navigate from virtual events to their source:
+- Right-click any virtual event → "Go to source"
+- Opens the recurring event configuration note
+- Useful for checking settings or modifying the recurring pattern
+
 Virtual events give you the best of both worlds: complete visibility of your recurring patterns while keeping your vault focused on actionable, current events.

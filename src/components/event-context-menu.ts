@@ -112,7 +112,7 @@ export class EventContextMenu {
 				});
 		});
 
-		if (this.isPhysicalEvent(event)) {
+		if (this.isPhysicalEvent(event) || this.isVirtualEvent(event)) {
 			menu.addItem((item) => {
 				item
 					.setTitle("Go to source")

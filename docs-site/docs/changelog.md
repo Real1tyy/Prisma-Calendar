@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented here.
 
+## 1.7.0
+
+### Improvements
+- **Go to Source for Virtual Events**: The "Go to source" option in the context menu (right-click) is now available for virtual events, allowing you to navigate directly to the recurring event source note from any virtual instance displayed in the calendar.
+
 ## 1.6.0
 
 ### Bug Fixes
