@@ -1,5 +1,4 @@
-import { generateUniqueFilePath } from "@real1ty-obsidian-plugins/utils/file-utils";
-import { createFromTemplate, isTemplaterAvailable } from "@real1ty-obsidian-plugins/utils/templater-utils";
+import { createFromTemplate, generateUniqueFilePath, isTemplaterAvailable } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";

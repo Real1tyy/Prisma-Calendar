@@ -1,4 +1,4 @@
-import { SettingsStore as GenericSettingsStore } from "@real1ty-obsidian-plugins/utils/settings-store";
+import { SettingsStore as GenericSettingsStore } from "@real1ty-obsidian-plugins/utils";
 import type { Plugin } from "obsidian";
 import { BehaviorSubject, type Subscription } from "rxjs";
 import { CustomCalendarSettingsSchema, type SingleCalendarConfig, SingleCalendarConfigSchema } from "../types/index";

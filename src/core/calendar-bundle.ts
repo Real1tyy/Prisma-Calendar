@@ -1,4 +1,4 @@
-import { onceAsync } from "@real1ty-obsidian-plugins/utils/async-utils";
+import { onceAsync } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type CustomCalendarPlugin from "../main";

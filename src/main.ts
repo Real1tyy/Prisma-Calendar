@@ -1,4 +1,4 @@
-import { onceAsync } from "@real1ty-obsidian-plugins/utils/async-utils";
+import { onceAsync } from "@real1ty-obsidian-plugins/utils";
 import { Notice, Plugin, TFile } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { COMMAND_IDS } from "./constants";

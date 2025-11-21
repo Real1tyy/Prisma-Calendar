@@ -1,4 +1,4 @@
-import { createFileLink } from "@real1ty-obsidian-plugins/utils/file-operations";
+import { createFileLink } from "@real1ty-obsidian-plugins/utils";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";

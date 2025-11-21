@@ -1,4 +1,4 @@
-import { generateUniqueFilePath } from "@real1ty-obsidian-plugins/utils/file-utils";
+import { generateUniqueFilePath } from "@real1ty-obsidian-plugins/utils";
 import { type App, Menu, Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {

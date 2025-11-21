@@ -1,4 +1,4 @@
-import { isFileInConfiguredDirectory } from "@real1ty-obsidian-plugins/utils/file-utils";
+import { isFileInConfiguredDirectory } from "@real1ty-obsidian-plugins/utils";
 import { type App, type MetadataCache, type TAbstractFile, TFile, type Vault } from "obsidian";
 import {
 	type BehaviorSubject,

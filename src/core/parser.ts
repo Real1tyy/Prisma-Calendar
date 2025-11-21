@@ -1,4 +1,4 @@
-import { getFilenameFromPath } from "@real1ty-obsidian-plugins/utils/file-utils";
+import { getFilenameFromPath } from "@real1ty-obsidian-plugins/utils";
 import type { DateTime } from "luxon";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { v5 as uuidv5 } from "uuid";

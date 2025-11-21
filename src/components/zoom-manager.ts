@@ -1,5 +1,5 @@
 import type { Calendar } from "@fullcalendar/core";
-import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
+import { formatDuration } from "@real1ty-obsidian-plugins/utils";
 import { Menu } from "obsidian";
 import type { CalendarSettingsStore } from "../core/settings-store";
 import { addCls, removeCls } from "../utils/css-utils";
