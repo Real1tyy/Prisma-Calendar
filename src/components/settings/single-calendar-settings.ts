@@ -1,5 +1,5 @@
+import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import type { CalendarSettingsStore } from "../../core/settings-store";
-import { addCls, cls } from "../../utils/css-utils";
 import { CalendarSettings, GeneralSettings, NotificationsSettings, PropertiesSettings, RulesSettings } from ".";
 
 export class SingleCalendarSettings {

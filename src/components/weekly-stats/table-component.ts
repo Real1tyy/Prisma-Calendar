@@ -1,4 +1,4 @@
-import { cls } from "../../utils/css-utils";
+import { cls } from "@real1ty-obsidian-plugins/utils";
 import type { WeeklyStatEntry } from "../../utils/weekly-stats";
 import { formatDuration, formatPercentage } from "../../utils/weekly-stats";
 

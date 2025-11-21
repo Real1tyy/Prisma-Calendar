@@ -1,7 +1,7 @@
+import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal } from "obsidian";
 import type { SingleCalendarConfig } from "../types/settings";
 import { removeZettelId } from "../utils/calendar-events";
-import { addCls, cls } from "../utils/css-utils";
 import { createTextDiv } from "../utils/dom-utils";
 import { categorizeProperties } from "../utils/format";
 import type { PropertyRendererConfig } from "../utils/property-renderer";

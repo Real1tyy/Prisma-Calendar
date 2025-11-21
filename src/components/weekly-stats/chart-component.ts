@@ -1,6 +1,5 @@
+import { cls, generateColors } from "@real1ty-obsidian-plugins/utils";
 import Chart from "chart.js/auto";
-import { generateColors } from "../../utils/colors";
-import { cls } from "../../utils/css-utils";
 import { formatDuration, type WeeklyStatEntry } from "../../utils/weekly-stats";
 
 const MAX_LABELS = 25; // to prevent label overflow

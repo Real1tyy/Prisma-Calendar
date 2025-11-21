@@ -1,3 +1,4 @@
+import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, PluginSettingTab, Setting } from "obsidian";
 import { SETTINGS_DEFAULTS } from "../../constants";
 import { CalendarSettingsStore } from "../../core/settings-store";
@@ -7,7 +8,6 @@ import {
 	duplicateCalendarConfig,
 	generateUniqueCalendarId,
 } from "../../utils/calendar-settings";
-import { addCls, cls } from "../../utils/css-utils";
 import { SingleCalendarSettings } from "./single-calendar-settings";
 
 export class CustomCalendarSettingsTab extends PluginSettingTab {

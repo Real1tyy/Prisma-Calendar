@@ -1,4 +1,4 @@
-import { cls } from "../../utils/css-utils";
+import { cls } from "@real1ty-obsidian-plugins/utils";
 import { buildPropertyMapping, sanitizeExpression } from "../../utils/expression-utils";
 import { InputFilterManager } from "./base";
 

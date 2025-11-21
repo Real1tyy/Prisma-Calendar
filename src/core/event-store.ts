@@ -1,3 +1,4 @@
+import { DebouncedNotifier } from "@real1ty-obsidian-plugins/utils";
 import { DateTime } from "luxon";
 import type { Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
@@ -5,7 +6,6 @@ import type { ISO } from "../types/index";
 import type { Indexer, IndexerEvent, RawEventSource } from "./indexer";
 import type { ParsedEvent, Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
-import { DebouncedNotifier } from "@real1ty-obsidian-plugins/utils";
 
 export interface EventQuery {
 	start: ISO;

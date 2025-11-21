@@ -1,9 +1,8 @@
-import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
+import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
 import { Setting } from "obsidian";
 import { SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
-import { cls } from "../../utils/css-utils";
 
 export class PropertiesSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;

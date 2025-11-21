@@ -1,6 +1,6 @@
+import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import { Modal, Notice } from "obsidian";
 import { removeZettelId } from "../../utils/calendar-events";
-import { addCls, cls } from "../../utils/css-utils";
 
 export interface EventListItem {
 	id?: string; // Optional unique identifier (used for skipped events)

@@ -1,7 +1,7 @@
+import { parsePositiveInt } from "@real1ty-obsidian-plugins/utils";
 import type { DateTime } from "luxon";
 import type { RRuleFrontmatter } from "../types/recurring-event";
 import { iterateOccurrencesInRange } from "./date-recurrence";
-import { parsePositiveInt } from "@real1ty-obsidian-plugins/utils";
 
 /**
  * Calculates the target number of physical instances to maintain for a recurring event.

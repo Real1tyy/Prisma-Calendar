@@ -1,7 +1,7 @@
+import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { addCls, cls } from "../../utils/css-utils";
 import type { CalendarView } from "../calendar-view";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 

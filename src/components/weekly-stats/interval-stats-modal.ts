@@ -1,7 +1,7 @@
+import { cls } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { ParsedEvent } from "../../core/parser";
-import { cls } from "../../utils/css-utils";
 import type { AggregationMode, Stats } from "../../utils/weekly-stats";
 import { formatDuration } from "../../utils/weekly-stats";
 import { StatsModal } from "./base-stats-modal";

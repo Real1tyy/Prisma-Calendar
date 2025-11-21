@@ -1,4 +1,4 @@
-import { cls } from "../../utils/css-utils";
+import { cls } from "@real1ty-obsidian-plugins/utils";
 import { aggregateStats, formatDuration } from "../../utils/weekly-stats";
 import { StatsModal } from "./base-stats-modal";
 import { ChartComponent } from "./chart-component";

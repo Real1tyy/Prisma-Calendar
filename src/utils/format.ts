@@ -1,7 +1,7 @@
+import { isNotEmpty } from "@real1ty-obsidian-plugins/utils";
 import type { DateTime } from "luxon";
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { SingleCalendarConfig } from "../types/settings";
-import { isNotEmpty } from "@real1ty-obsidian-plugins/utils";
 /**
  * Formats a date/datetime for HTML datetime-local input fields.
  * Strips Z suffix to treat as local time and returns YYYY-MM-DDTHH:MM format.

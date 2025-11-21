@@ -1,5 +1,5 @@
 import type { Calendar } from "@fullcalendar/core";
-import { cls } from "../../utils/css-utils";
+import { cls } from "@real1ty-obsidian-plugins/utils";
 
 export type FilterChangeCallback = () => void;
 

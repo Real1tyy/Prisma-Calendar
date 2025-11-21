@@ -1,7 +1,7 @@
+import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import { DateTime } from "luxon";
 import { type App, Modal, Setting } from "obsidian";
 import { removeZettelId } from "../../utils/calendar-events";
-import { addCls, cls } from "../../utils/css-utils";
 
 interface RecurringEventInstance {
 	filePath: string;

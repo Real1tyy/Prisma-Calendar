@@ -1,6 +1,6 @@
 import type { Calendar } from "@fullcalendar/core";
+import { cls } from "@real1ty-obsidian-plugins/utils";
 import type { FilterPreset } from "../types/settings";
-import { cls } from "../utils/css-utils";
 
 export class FilterPresetSelector {
 	private select: HTMLSelectElement | null = null;

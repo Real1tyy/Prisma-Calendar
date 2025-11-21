@@ -1,5 +1,5 @@
+import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal } from "obsidian";
-import { addCls, cls, removeCls } from "../utils/css-utils";
 
 const TIME_UNITS = ["minutes", "hours", "days", "weeks", "months", "years"] as const;
 

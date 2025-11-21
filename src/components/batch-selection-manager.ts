@@ -1,10 +1,9 @@
 import type { Calendar, EventApi } from "@fullcalendar/core";
-import { getWeekDirection, pluralize, runBatchOperation } from "@real1ty-obsidian-plugins/utils";
+import { addCls, getWeekDirection, pluralize, removeCls, runBatchOperation } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
 import type { Command } from "../core/commands/command";
-import { addCls, removeCls } from "../utils/css-utils";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import { MoveByModal } from "./move-by-modal";
 

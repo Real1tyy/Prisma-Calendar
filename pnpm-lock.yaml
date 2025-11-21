@@ -30,8 +30,8 @@ importers:
         specifier: ^1.3.2
         version: 1.3.2(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
       '@real1ty-obsidian-plugins/utils':
-        specifier: ^2.10.0
-        version: 2.10.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
+        specifier: ^2.12.0
+        version: 2.12.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
       chart.js:
         specifier: ^4.5.1
         version: 4.5.1
@@ -390,8 +390,8 @@ packages:
   '@real1ty-obsidian-plugins/utils@1.2.2':
     resolution: {integrity: sha512-7ZoXrMOTqa5Oz6LnwoLIdgl/TsVjklQM+tf3e1klhS+DIvKoAJv3O3y0C7+knW3QEALJUXJcRFm1jcWZBP78ZA==}
 
-  '@real1ty-obsidian-plugins/utils@2.10.0':
-    resolution: {integrity: sha512-cm9HTxXU9tl7GU2rASURJJNifN078g2p8LFXl/HGo4oVTb+YadQuxfl6QZKospw7r2pTHq9NoLufpKWze3xrJA==}
+  '@real1ty-obsidian-plugins/utils@2.12.0':
+    resolution: {integrity: sha512-jt1Nw3Y2KN56zqC0s+vVC7YblM48EPS0tns696P2QgOzBYD8WKqfIjw3EdpYLon2dHZ109go8Z7DNb3m3FZ1SA==}
 
   '@rollup/rollup-android-arm-eabi@4.53.3':
     resolution: {integrity: sha512-mRSi+4cBjrRLoaal2PnqH82Wqyb+d3HsPUN/W+WslCXsZsyHa9ZeQQX/pQsZaVIWDkPcpV6jJ+3KLbTbgnwv8w==}
@@ -1227,8 +1227,9 @@ snapshots:
       - '@codemirror/state'
       - '@codemirror/view'
 
-  '@real1ty-obsidian-plugins/utils@2.10.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)':
+  '@real1ty-obsidian-plugins/utils@2.12.0(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)':
     dependencies:
+      colord: 2.9.3
       gray-matter: 4.0.3
       luxon: 3.7.2
       obsidian: 1.8.7(@codemirror/state@6.5.2)(@codemirror/view@6.38.8)
