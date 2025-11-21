@@ -1,4 +1,4 @@
-import { parseFrontmatterRecord, serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
+import { parseFrontmatterRecord, parsePositiveInt, serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../types/recurring-event";
@@ -12,7 +12,6 @@ import {
 	formatDateTimeForInput,
 	inputValueToISOString,
 } from "../utils/format";
-import { parsePositiveInt } from "../utils/value-checks";
 
 interface EventModalData {
 	title: string;
