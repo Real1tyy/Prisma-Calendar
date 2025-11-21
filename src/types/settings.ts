@@ -70,7 +70,7 @@ export const CalendarSettingsSchema = z.object({
 
 export const RulesSettingsSchema = z.object({
 	filterExpressions: z.array(z.string()).default([]), // JavaScript expressions to filter events based on frontmatter
-	defaultEventColor: ColorSchema.default(SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR), // Default purple color
+	defaultNodeColor: ColorSchema.default(SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR), // Default purple color
 	colorRules: z
 		.array(
 			z.object({

@@ -1,10 +1,9 @@
-import { getFilenameFromPath } from "@real1ty-obsidian-plugins/utils";
+import { FilterEvaluator, getFilenameFromPath } from "@real1ty-obsidian-plugins/utils";
 import type { DateTime } from "luxon";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { v5 as uuidv5 } from "uuid";
 import { convertToISO, parseEventFrontmatter } from "../types/event";
 import type { ISO, SingleCalendarConfig } from "../types/index";
-import { FilterEvaluator } from "../utils/filter-evaluator";
 import type { VaultEventId } from "./event-store";
 import type { RawEventSource } from "./indexer";
 
@@ -28,11 +27,11 @@ const PRISMA_CALENDAR_NAMESPACE = "a8f9e6d4-7c2b-4e1a-9f3d-5b8c1a2e4d6f";
 export class Parser {
 	private settings: SingleCalendarConfig;
 	private subscription: Subscription | null = null;
-	private filterEvaluator: FilterEvaluator;
+	private filterEvaluator: FilterEvaluator<SingleCalendarConfig>;
 
 	constructor(settingsStore: BehaviorSubject<SingleCalendarConfig>) {
 		this.settings = settingsStore.value;
-		this.filterEvaluator = new FilterEvaluator(settingsStore);
+		this.filterEvaluator = new FilterEvaluator<SingleCalendarConfig>(settingsStore);
 		this.subscription = settingsStore.subscribe((newSettings) => {
 			this.settings = newSettings;
 		});

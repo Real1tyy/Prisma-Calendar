@@ -4,14 +4,13 @@ import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
-import { formatDuration } from "@real1ty-obsidian-plugins/utils";
+import { ColorEvaluator, formatDuration } from "@real1ty-obsidian-plugins/utils";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
 import type { ParsedEvent } from "../core/parser";
 import type { SingleCalendarConfig } from "../types/index";
 import { removeZettelId } from "../utils/calendar-events";
-import { ColorEvaluator } from "../utils/colors";
 import { cls } from "../utils/css-utils";
 import { toggleEventHighlight } from "../utils/dom-utils";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
@@ -58,7 +57,7 @@ export function getCalendarViewType(calendarId: string): string {
 export class CalendarView extends MountableView(ItemView, "prisma") {
 	calendar: Calendar | null = null;
 	private eventContextMenu: EventContextMenu;
-	private colorEvaluator: ColorEvaluator;
+	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 	private batchSelectionManager: BatchSelectionManager | null = null;
 	private zoomManager: ZoomManager;
 	private searchFilter: SearchFilterInputManager;

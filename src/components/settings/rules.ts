@@ -1,9 +1,9 @@
+import type { ColorRule } from "@real1ty-obsidian-plugins/utils";
 import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
 import { Setting } from "obsidian";
 import { SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
-import type { ColorRule } from "../../utils/colors";
 import { cls } from "../../utils/css-utils";
 
 export class RulesSettings {
@@ -29,11 +29,11 @@ export class RulesSettings {
 			.setName("Default event color")
 			.setDesc("Default color for events when no color rules match")
 			.addColorPicker((colorPicker) => {
-				colorPicker.setValue(settings.defaultEventColor);
+				colorPicker.setValue(settings.defaultNodeColor);
 				colorPicker.onChange(async (value) => {
 					await this.settingsStore.updateSettings((s) => ({
 						...s,
-						defaultEventColor: value || SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR,
+						defaultNodeColor: value || SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR,
 					}));
 				});
 			});
