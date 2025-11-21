@@ -1,3 +1,10 @@
+import {
+	backupFrontmatter,
+	getTFileOrThrow,
+	restoreFrontmatter,
+	sanitizeForFilename,
+	withFrontmatter,
+} from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import {
@@ -7,9 +14,7 @@ import {
 	removeZettelId,
 	setEventBasics,
 } from "../../utils/calendar-events";
-import { sanitizeForFilename } from "../../utils/file-utils";
 import { getInternalProperties } from "../../utils/format";
-import { backupFrontmatter, getTFileOrThrow, restoreFrontmatter, withFrontmatter } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { Command } from "./command";
 
@@ -42,7 +47,7 @@ export class CreateEventCommand implements Command {
 		}
 
 		const title = this.eventData.title || `Event ${this.clickedDate?.toISOString().split("T")[0]}`;
-		const sanitizedTitle = sanitizeForFilename(title);
+		const sanitizedTitle = sanitizeForFilename(title, { style: "preserve" });
 		const { filename } = generateUniqueEventPath(this.app, this.targetDirectory, sanitizedTitle);
 
 		const file = await this.bundle.templateService.createFile({
@@ -117,7 +122,7 @@ export class EditEventCommand implements Command {
 	async execute(): Promise<void> {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
-		await withFrontmatter(this.app, file, (fm) => {
+		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) => {
 			const settings = this.bundle.settingsStore.currentSettings;
 			const internalProps = getInternalProperties(settings);
 			const handledKeys = new Set<string>();
@@ -178,7 +183,9 @@ export class MoveEventCommand implements Command {
 		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		await withFrontmatter(this.app, file, (fm) => applyStartEndOffsets(fm, settings, this.startOffset, this.endOffset));
+		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) =>
+			applyStartEndOffsets(fm, settings, this.startOffset, this.endOffset)
+		);
 	}
 
 	async undo(): Promise<void> {
@@ -294,7 +301,7 @@ export class UpdateEventCommand implements Command {
 			endTime = startDate.toISOString();
 		}
 
-		await withFrontmatter(this.app, file, (fm) => {
+		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) => {
 			setEventBasics(fm, settings, {
 				start: this.newStart,
 				end: endTime,
@@ -309,7 +316,7 @@ export class UpdateEventCommand implements Command {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		await withFrontmatter(this.app, file, (fm) => {
+		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) => {
 			setEventBasics(fm, settings, {
 				start: this.oldStart,
 				end: this.oldEnd,
@@ -340,7 +347,7 @@ export class ToggleSkipCommand implements Command {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		await withFrontmatter(this.app, file, (fm) => {
+		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) => {
 			// Store original value on first execution
 			if (this.originalSkipValue === undefined) {
 				this.originalSkipValue = fm[settings.skipProp] === true;
@@ -362,7 +369,7 @@ export class ToggleSkipCommand implements Command {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		await withFrontmatter(this.app, file, (fm) => {
+		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) => {
 			if (this.originalSkipValue) {
 				fm[settings.skipProp] = true;
 			} else {
@@ -395,7 +402,9 @@ export class MoveByCommand implements Command {
 		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		await withFrontmatter(this.app, file, (fm) => applyStartEndOffsets(fm, settings, this.offsetMs, this.offsetMs));
+		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) =>
+			applyStartEndOffsets(fm, settings, this.offsetMs, this.offsetMs)
+		);
 	}
 
 	async undo(): Promise<void> {

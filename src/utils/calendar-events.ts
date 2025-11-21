@@ -1,8 +1,7 @@
-import { generateZettelId } from "@real1ty-obsidian-plugins/utils";
+import { generateZettelId, withFrontmatter } from "@real1ty-obsidian-plugins/utils";
 import { nanoid } from "nanoid";
 import type { App, TFile } from "obsidian";
 import type { SingleCalendarConfig } from "../types";
-import { withFrontmatter } from "./obsidian";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
 	return allDayValue === true || (typeof allDayValue === "string" && allDayValue.toLowerCase() === "true");

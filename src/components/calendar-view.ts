@@ -4,7 +4,15 @@ import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
-import { ColorEvaluator, cls, formatDuration, isNotEmpty } from "@real1ty-obsidian-plugins/utils";
+import {
+	ColorEvaluator,
+	cls,
+	createDefaultSeparator,
+	formatDuration,
+	isNotEmpty,
+	type PropertyRendererConfig,
+	renderPropertyValue,
+} from "@real1ty-obsidian-plugins/utils";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
@@ -14,8 +22,6 @@ import { removeZettelId } from "../utils/calendar-events";
 import { toggleEventHighlight } from "../utils/dom-utils";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
-import type { PropertyRendererConfig } from "../utils/property-renderer";
-import { createDefaultSeparator, renderPropertyValue } from "../utils/property-renderer";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";

@@ -1,4 +1,11 @@
-import { createFileLink, DebouncedNotifier, withLock } from "@real1ty-obsidian-plugins/utils";
+import {
+	createFileLink,
+	DebouncedNotifier,
+	extractContentAfterFrontmatter,
+	rebuildPhysicalInstanceFilename,
+	sanitizeForFilename,
+	withLock,
+} from "@real1ty-obsidian-plugins/utils";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
@@ -7,9 +14,7 @@ import type { NodeRecurringEvent } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/calendar-events";
 import { getNextOccurrence } from "../utils/date-recurrence";
-import { rebuildPhysicalInstanceFilename, sanitizeForFilename } from "../utils/file-utils";
 import { applySourceTimeToInstanceDate } from "../utils/format";
-import { extractContentAfterFrontmatter } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
@@ -538,7 +543,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
 		const titleNoZettel = removeZettelId(recurringEvent.title);
 		const zettelHash = hashRRuleIdToZettelFormat(recurringEvent.rRuleId);
-		const base = sanitizeForFilename(`${titleNoZettel} ${dateStr}`);
+		const base = sanitizeForFilename(`${titleNoZettel} ${dateStr}`, { style: "preserve" });
 		const folder = this.settings.directory ? `${this.settings.directory}/` : "";
 		return `${folder}${base}-${zettelHash}.md`;
 	}

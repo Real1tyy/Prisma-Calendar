@@ -1,11 +1,15 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
+import {
+	addCls,
+	cls,
+	createDefaultSeparator,
+	type PropertyRendererConfig,
+	renderPropertyValue,
+} from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal } from "obsidian";
 import type { SingleCalendarConfig } from "../types/settings";
 import { removeZettelId } from "../utils/calendar-events";
 import { createTextDiv } from "../utils/dom-utils";
 import { categorizeProperties } from "../utils/format";
-import type { PropertyRendererConfig } from "../utils/property-renderer";
-import { createDefaultSeparator, renderPropertyValue } from "../utils/property-renderer";
 
 interface NotificationEventData {
 	title: string;

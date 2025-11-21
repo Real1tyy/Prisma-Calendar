@@ -1,11 +1,15 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
+import {
+	addCls,
+	cls,
+	createDefaultSeparator,
+	type PropertyRendererConfig,
+	renderPropertyValue,
+} from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { removeZettelId } from "../utils/calendar-events";
 import { createTextDiv } from "../utils/dom-utils";
 import { calculateDuration, categorizeProperties } from "../utils/format";
-import type { PropertyRendererConfig } from "../utils/property-renderer";
-import { createDefaultSeparator, renderPropertyValue } from "../utils/property-renderer";
 
 export class EventPreviewModal extends Modal {
 	private event: any;

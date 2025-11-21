@@ -1,7 +1,7 @@
+import { normalizeDirectoryPath } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 import type { SingleCalendarConfig } from "../types/settings";
-import { normalizeDirectoryPath } from "../utils/file-utils";
 import { EventStore } from "./event-store";
 import { Indexer } from "./indexer";
 import { NotificationManager } from "./notification-manager";

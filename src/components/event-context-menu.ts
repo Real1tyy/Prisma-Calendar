@@ -1,4 +1,4 @@
-import { generateUniqueFilePath } from "@real1ty-obsidian-plugins/utils";
+import { generateUniqueFilePath, getObsidianLinkPath, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
 import { type App, Menu, Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
@@ -10,8 +10,6 @@ import {
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
-import { sanitizeForFilename } from "../utils/file-utils";
-import { getObsidianLinkPath } from "../utils/obsidian-link-utils";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import { EventEditModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
@@ -422,7 +420,7 @@ export class EventContextMenu {
 			const settings = this.bundle.settingsStore.currentSettings;
 			let finalFilePath = filePath;
 			if (eventData.title && !settings.titleProp) {
-				const sanitizedTitle = sanitizeForFilename(eventData.title);
+				const sanitizedTitle = sanitizeForFilename(eventData.title, { style: "preserve" });
 				if (sanitizedTitle && sanitizedTitle !== file.basename) {
 					const parentPath = file.parent?.path || "";
 					const newFilePath = generateUniqueFilePath(this.app, parentPath, sanitizedTitle);
