@@ -3,16 +3,16 @@ import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
-import type { NodeRecurringEvent, RRuleFrontmatter } from "../types/recurring-event";
+import type { NodeRecurringEvent } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { withLock } from "../utils/async-lock";
 import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/calendar-events";
-import { getNextOccurrence, iterateOccurrencesInRange } from "../utils/date-recurrence";
+import { getNextOccurrence } from "../utils/date-recurrence";
 import { DebouncedNotifier } from "../utils/debounced-notifier";
 import { rebuildPhysicalInstanceFilename, sanitizeForFilename } from "../utils/file-utils";
 import { applySourceTimeToInstanceDate } from "../utils/format";
 import { extractContentAfterFrontmatter } from "../utils/obsidian";
-import { parsePositiveInt } from "../utils/value-checks";
+import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
 import { TemplateService } from "./templates";
@@ -269,7 +269,11 @@ export class RecurringEventManager extends DebouncedNotifier {
 				(instance) => instance.instanceDate >= now.startOf("day")
 			);
 
-			const targetInstanceCount = this.calculateTargetInstanceCount(recurringEvent);
+			const targetInstanceCount = calculateTargetInstanceCount(
+				recurringEvent.rrules,
+				recurringEvent.frontmatter[this.settings.futureInstancesCountProp],
+				this.settings.futureInstancesCount
+			);
 			const currentCount = futureInstances.length;
 
 			if (currentCount >= targetInstanceCount) {
@@ -302,47 +306,6 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 	}
 
-	private calculateTargetInstanceCount(recurringEvent: NodeRecurringEvent): number {
-		const overrideValue = recurringEvent.frontmatter[this.settings.futureInstancesCountProp];
-		const intervals = parsePositiveInt(overrideValue, this.settings.futureInstancesCount);
-
-		const { type, weekdays } = recurringEvent.rrules;
-
-		if (type === "weekly" || type === "bi-weekly") {
-			return (weekdays?.length || 1) * intervals;
-		}
-		return intervals;
-	}
-
-	private getStartDateTime(rrules: RRuleFrontmatter): DateTime {
-		return rrules.allDay ? rrules.date! : rrules.startTime!;
-	}
-
-	private findFirstValidStartDate(recurringEvent: NodeRecurringEvent): DateTime {
-		const { rrules } = recurringEvent;
-		const startDateTime = this.getStartDateTime(rrules);
-
-		// For weekly/bi-weekly, the start date might not match the weekday rule.
-		// We must find the first date that IS a valid weekday on or after the start time.
-		if ((rrules.type === "weekly" || rrules.type === "bi-weekly") && rrules.weekdays?.length) {
-			// Use the iterator to find the true first occurrence.
-			const iterator = iterateOccurrencesInRange(
-				startDateTime,
-				rrules,
-				startDateTime, // Start searching from the start time
-				startDateTime.plus({ years: 1 }) // Search a year ahead
-			);
-			const result = iterator.next();
-			// If the iterator finds a value, that's our true start. Otherwise, fall back to the original start time.
-			if (!result.done) {
-				return result.value;
-			}
-		}
-
-		// For all other types (daily, monthly, etc.), the start time IS the first occurrence.
-		return startDateTime;
-	}
-
 	private getNextOccurrenceFromNow(
 		recurringEvent: NodeRecurringEvent,
 		existingFutureInstances: Array<{ filePath: string; instanceDate: DateTime }>
@@ -356,8 +319,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 
 		const now = DateTime.now().toUTC();
-		const sourceDateTime = this.getStartDateTime(recurringEvent.rrules);
-		const firstValidDate = this.findFirstValidStartDate(recurringEvent);
+		const sourceDateTime = getStartDateTime(recurringEvent.rrules);
+		const firstValidDate = findFirstValidStartDate(recurringEvent.rrules);
 
 		let currentDate = firstValidDate;
 		if (firstValidDate.hasSame(sourceDateTime, "day")) {
@@ -497,7 +460,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			);
 		} else {
 			// No physical instances, start from the first valid date after source
-			const sourceDate = this.getStartDateTime(recurringEvent.rrules);
+			const sourceDate = getStartDateTime(recurringEvent.rrules);
 			virtualStartDate = getNextOccurrence(sourceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
 
@@ -533,7 +496,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		instanceDate: DateTime
 	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
 		const { rrules } = recurringEvent;
-		const sourceStart = this.getStartDateTime(rrules).toUTC();
+		const sourceStart = getStartDateTime(rrules).toUTC();
 		const sourceEnd = rrules.allDay ? null : rrules.endTime?.toUTC() || null;
 
 		const normalizedInstanceDate = rrules.allDay
