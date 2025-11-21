@@ -13,7 +13,7 @@ Generate consistent event notes with your favorite tokens.
 ---
 Title: <% tp.file.title %>
 Start: <% tp.date.now("YYYY-MM-DDTHH:mm") %>
-End: <% tp.date.now("YYYY-MM-DDTHH:mm", 60*60*1000) %>
+End: <% tp.date.now("YYYY-MM-DDTHH:mm", "PT1H") %>
 AllDay: false
 Status: Inbox
 ---
