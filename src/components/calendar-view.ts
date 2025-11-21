@@ -4,7 +4,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
-import { formatDuration } from "@real1ty-obsidian-plugins/utils/date-utils";
+import { formatDuration } from "@real1ty-obsidian-plugins/utils";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
@@ -1391,7 +1391,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const settingsSubscription = this.bundle.settingsStore.settings$.subscribe((settings: SingleCalendarConfig) => {
 			this.updateCalendarSettings(settings);
 		});
-		this.addSub(settingsSubscription);
+		this.register(() => settingsSubscription.unsubscribe());
 
 		// Subscribe to indexing complete state
 		const indexingCompleteSubscription = this.bundle.indexer.indexingComplete$.subscribe((isComplete) => {
@@ -1405,14 +1405,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				this.showLoading(root, "Re-indexing calendar events…");
 			}
 		});
-		this.addSub(indexingCompleteSubscription);
+		this.register(() => indexingCompleteSubscription.unsubscribe());
 
 		// Event store updates (only refreshes if indexing is complete)
 		const eventStoreSubscription = this.bundle.eventStore.subscribe(() => this.refreshEvents());
-		this.addSub(eventStoreSubscription);
+		this.register(() => eventStoreSubscription.unsubscribe());
 
 		const recurringEventManagerSubscription = this.bundle.recurringEventManager.subscribe(() => this.refreshEvents());
-		this.addSub(recurringEventManagerSubscription);
+		this.register(() => recurringEventManagerSubscription.unsubscribe());
 	}
 
 	toggleBatchSelection(): void {
