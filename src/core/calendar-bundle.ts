@@ -105,6 +105,10 @@ export class CalendarBundle {
 		return await this.commandManager.redo();
 	}
 
+	async refreshCalendar(): Promise<void> {
+		this.indexer.resync();
+	}
+
 	destroy(): void {
 		// Don't detach leaves here - Obsidian handles that automatically during plugin updates
 		// Detaching in onunload causes leaves to reset to their original positions

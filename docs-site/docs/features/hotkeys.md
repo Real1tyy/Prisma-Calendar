@@ -81,6 +81,14 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Function**: Opens a modal listing all disabled recurring events
 -   **Features**: Quickly enable, navigate to, or open disabled recurring event sources
 
+### Refresh Calendar
+
+-   **Function**: Manually triggers a full resync of the indexer and refreshes all calendar events
+-   **Use Cases**:
+    -   Force refresh when events appear out of sync
+    -   Update calendar after bulk file operations outside Obsidian
+    -   Refresh after modifying event files through external scripts or sync tools
+
 ## Undo/Redo Commands
 
 -   **Undo**: Reverses the last calendar operation

@@ -29,6 +29,7 @@ export const COMMAND_IDS = {
 	SHOW_WEEKLY_STATS: "show-weekly-stats",
 	SHOW_MONTHLY_STATS: "show-monthly-stats",
 	SHOW_ALLTIME_STATS: "show-alltime-stats",
+	REFRESH_CALENDAR: "refresh-calendar",
 } as const;
 
 export const FULL_COMMAND_IDS = Object.fromEntries(

@@ -6,6 +6,15 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+#### Refresh Calendar Command
+- **Manual Resync**: New "Refresh calendar" command available in the command palette to manually trigger a full resync of the indexer and refresh all calendar events
+- **Use Cases**:
+  - Force refresh when you suspect events are out of sync
+  - Immediately update calendar after bulk file operations outside Obsidian
+  - Refresh after modifying event files through external scripts or sync tools
+- **How to Use**: Open command palette (Ctrl/Cmd+P) and search for "Refresh calendar" to trigger a full resync
+- **Automatic Refresh**: Calendar automatically refreshes once indexing completes, showing a loading indicator during the resync process
+
 #### "Now" Button in Event Modal
 - **Quick Time Setting**: Added a "Now" button next to the Start Date and End Date inputs in the Create/Edit Event modal
 - **Minute Precision**: Clicking "Now" sets the datetime field to the current moment with minute-level precision (not just rounded to the hour)

@@ -93,6 +93,11 @@ export class Indexer {
 		this.indexingCompleteSubject.complete();
 	}
 
+	resync(): void {
+		this.indexingCompleteSubject.next(false);
+		this.scanAllFiles();
+	}
+
 	private async scanAllFiles(): Promise<void> {
 		const allFiles = this.vault.getMarkdownFiles();
 		const relevantFiles = allFiles.filter((file) => this.isRelevantFile(file));

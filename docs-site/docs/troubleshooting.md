@@ -7,8 +7,9 @@ Use this checklist to diagnose common issues.
 - Plugin enabled and vault reloaded
 - Calendar Directory points to the correct folder (subfolders included)
 - Note has a valid `Start` property (ISO format recommended, e.g., `2025-02-10T14:00`)
-- Filters aren’t excluding your note (Rules → Event Filtering)
+- Filters aren't excluding your note (Rules → Event Filtering)
 - Frontmatter keys match your Properties Settings (e.g., `Start` vs `start`)
+- **Try refreshing**: Open command palette (Ctrl/Cmd+P) and run "Refresh calendar" to force a full resync
 
 ## Wrong colors or no color applied
 

@@ -139,6 +139,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.SHOW_ALLTIME_STATS, "Show all-time statistics", (view) =>
 			view.showAllTimeStatsModal()
 		);
+		addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh calendar", (view) => view.refreshCalendar());
 
 		this.addCommand({
 			id: COMMAND_IDS.OPEN_CURRENT_NOTE_IN_CALENDAR,

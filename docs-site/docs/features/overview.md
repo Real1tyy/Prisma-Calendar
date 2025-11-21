@@ -171,6 +171,12 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 
 ## 🔧 **System Features**
 
+### **Manual Calendar Refresh**
+- **Refresh command** - Manually trigger a full resync of the indexer and refresh all calendar events
+- **Force update** - Use when events appear out of sync or after bulk file operations
+- **Command palette access** - Search for "Refresh calendar" in the command palette (Ctrl/Cmd+P)
+- **Automatic refresh** - Calendar automatically refreshes once indexing completes with loading indicator
+
 ### **Reactive Settings**
 - **Instant updates** - All settings changes apply immediately without restart
 - **Live recalculation** - Color rules, filters, and views update automatically
