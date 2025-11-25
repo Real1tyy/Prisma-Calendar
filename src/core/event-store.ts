@@ -149,6 +149,14 @@ export class EventStore extends DebouncedNotifier {
 		this.notifyChange();
 	}
 
+	/**
+	 * Clears the cache without notifying subscribers.
+	 * Used during resync to avoid triggering a refresh before new data is loaded.
+	 */
+	clearWithoutNotify(): void {
+		this.cache.clear();
+	}
+
 	private eventIntersectsRange(event: ParsedEvent, rangeStart: DateTime, rangeEnd: DateTime): boolean {
 		const eventStart = DateTime.fromISO(event.start, { zone: "utc" });
 		const eventEnd = event.end ? DateTime.fromISO(event.end, { zone: "utc" }) : eventStart.endOf("day");

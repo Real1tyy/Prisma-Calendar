@@ -169,6 +169,16 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.ensureInstancesLocks.clear();
 	}
 
+	/**
+	 * Clears all internal state without notifying subscribers.
+	 * Used during resync to avoid triggering a refresh before new data is loaded.
+	 */
+	clearWithoutNotify(): void {
+		this.recurringEventsMap.clear();
+		this.sourceFileToRRuleId.clear();
+		// Keep locks intact to prevent race conditions during resync
+	}
+
 	private addRecurringEvent(recurringEvent: NodeRecurringEvent): void {
 		// CRITICAL: Check if this source file already has an RRuleID
 		const existingRRuleId = this.sourceFileToRRuleId.get(recurringEvent.sourceFilePath);

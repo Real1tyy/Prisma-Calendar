@@ -106,6 +106,11 @@ export class CalendarBundle {
 	}
 
 	async refreshCalendar(): Promise<void> {
+		// Clear caches before resync to ensure full rebuild
+		// Without this, EventStore's isUpToDate() check would skip files
+		// whose mtime hasn't changed, causing the refresh to have no effect
+		this.eventStore.clearWithoutNotify();
+		this.recurringEventManager.clearWithoutNotify();
 		this.indexer.resync();
 	}
 
