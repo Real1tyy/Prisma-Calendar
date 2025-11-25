@@ -75,13 +75,13 @@ export class BatchSelectionManager {
 		}
 	}
 
-	private async executeWithConfirmation<T extends Command>(
+	private executeWithConfirmation<T extends Command>(
 		confirmationTitle: string,
 		confirmationMessage: (count: number) => string,
 		commandFactory: (filePaths: string[]) => T,
 		successMessage: (count: number) => string,
 		errorMessage: string
-	): Promise<void> {
+	): void {
 		if (this.returnIfEmpty()) return;
 
 		const confirmModal = new Modal(this.app);
@@ -297,8 +297,8 @@ export class BatchSelectionManager {
 		}
 	}
 
-	public async executeDelete(): Promise<void> {
-		await this.executeWithConfirmation(
+	public executeDelete(): void {
+		this.executeWithConfirmation(
 			"Delete",
 			(count) => `Are you sure you want to delete ${count} event${pluralize(count)}? This action can be undone.`,
 			(filePaths) => this.batchCommandFactory.createDelete(filePaths),

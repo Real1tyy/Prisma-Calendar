@@ -238,7 +238,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 
 		// Check if this is an instance file - search through all physical instances
-		for (const [_rruleId, data] of this.recurringEventsMap.entries()) {
+		for (const data of this.recurringEventsMap.values()) {
 			// Find and delete the instance by filePath
 			for (const [dateKey, instance] of data.physicalInstances.entries()) {
 				if (instance.filePath === event.filePath) {
@@ -353,10 +353,17 @@ export class RecurringEventManager extends DebouncedNotifier {
 			const filename = filePath.split("/").pop()?.replace(".md", "") || "";
 
 			// Lazy load content if not already loaded (deferred from initial scan)
+			// Note: content can be empty string ("") which is valid, so check for undefined/null specifically
 			let content = recurringEvent.content;
-			if (!content) {
+			if (content === undefined || content === null) {
 				const sourceFile = this.app.vault.getAbstractFileByPath(recurringEvent.sourceFilePath);
-				const fullContent = await this.app.vault.cachedRead(sourceFile as TFile);
+				if (!(sourceFile instanceof TFile)) {
+					console.error(
+						`Source file not found: ${recurringEvent.sourceFilePath}, this shouldn't happen, please report this as an issue.`
+					);
+					return null;
+				}
+				const fullContent = await this.app.vault.cachedRead(sourceFile);
 				content = extractContentAfterFrontmatter(fullContent);
 				recurringEvent.content = content;
 			}
@@ -422,7 +429,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		});
 	}
 
-	async generateAllVirtualInstances(rangeStart: DateTime, rangeEnd: DateTime): Promise<ParsedEvent[]> {
+	generateAllVirtualInstances(rangeStart: DateTime, rangeEnd: DateTime): ParsedEvent[] {
 		const virtualEvents = Array.from(this.recurringEventsMap.values()).flatMap(
 			({ recurringEvent, physicalInstances }) =>
 				this.calculateVirtualOccurrencesInRange(recurringEvent, rangeStart, rangeEnd, physicalInstances).map(

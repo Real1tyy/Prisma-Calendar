@@ -32,7 +32,7 @@ interface EventModalData {
 interface EventSaveData {
 	filePath: string | null;
 	title: string;
-	start: string | null;
+	start: string;
 	end: string | null;
 	allDay: boolean;
 	preservedFrontmatter: Record<string, unknown>;
@@ -109,7 +109,7 @@ abstract class BaseEventModal extends Modal {
 		});
 
 		const allDayContainer = contentEl.createDiv("setting-item");
-		allDayContainer.createEl("div", { text: "All Day", cls: "setting-item-name" });
+		allDayContainer.createEl("div", { text: "All day", cls: "setting-item-name" });
 		this.allDayCheckbox = allDayContainer.createEl("input", {
 			type: "checkbox",
 			cls: "setting-item-control",
@@ -118,7 +118,9 @@ abstract class BaseEventModal extends Modal {
 
 		// Container for TIMED event fields (Start Date/Time + End Date/Time)
 		this.timedContainer = contentEl.createDiv("timed-event-fields");
-		this.timedContainer.style.display = this.event.allDay ? "none" : "block";
+		if (this.event.allDay) {
+			this.timedContainer.classList.add("prisma-hidden");
+		}
 
 		// Start date/time field (for timed events)
 		this.startInput = this.createDateTimeInputWithNowButton(
@@ -156,7 +158,9 @@ abstract class BaseEventModal extends Modal {
 
 		// Container for ALL-DAY event fields (Date only)
 		this.allDayContainer = contentEl.createDiv("allday-event-fields");
-		this.allDayContainer.style.display = this.event.allDay ? "block" : "none";
+		if (!this.event.allDay) {
+			this.allDayContainer.classList.add("prisma-hidden");
+		}
 
 		// Date field (for all-day events)
 		const dateContainer = this.allDayContainer.createDiv("setting-item");
@@ -198,7 +202,7 @@ abstract class BaseEventModal extends Modal {
 	private createRecurringEventFields(contentEl: HTMLElement): void {
 		// Recurring event checkbox
 		const recurringCheckboxContainer = contentEl.createDiv("setting-item");
-		recurringCheckboxContainer.createEl("div", { text: "Recurring Event", cls: "setting-item-name" });
+		recurringCheckboxContainer.createEl("div", { text: "Recurring event", cls: "setting-item-name" });
 		this.recurringCheckbox = recurringCheckboxContainer.createEl("input", {
 			type: "checkbox",
 			cls: "setting-item-control",
@@ -206,11 +210,11 @@ abstract class BaseEventModal extends Modal {
 
 		// Container for recurring event options (initially hidden)
 		this.recurringContainer = contentEl.createDiv(cls("recurring-event-fields"));
-		this.recurringContainer.style.display = "none";
+		this.recurringContainer.classList.add("prisma-hidden");
 
 		// RRule type dropdown
 		const rruleContainer = this.recurringContainer.createDiv("setting-item");
-		rruleContainer.createEl("div", { text: "Recurrence Pattern", cls: "setting-item-name" });
+		rruleContainer.createEl("div", { text: "Recurrence pattern", cls: "setting-item-name" });
 		this.rruleSelect = rruleContainer.createEl("select", { cls: "setting-item-control" });
 
 		// Add options to the select
@@ -221,8 +225,8 @@ abstract class BaseEventModal extends Modal {
 
 		// Weekday selection (initially hidden, shown when weekly/bi-weekly selected)
 		this.weekdayContainer = this.recurringContainer.createDiv(`setting-item ${cls("weekday-selection")}`);
-		this.weekdayContainer.style.display = "none";
-		this.weekdayContainer.createEl("div", { text: "Days of Week", cls: "setting-item-name" });
+		this.weekdayContainer.classList.add("prisma-hidden");
+		this.weekdayContainer.createEl("div", { text: "Days of week", cls: "setting-item-name" });
 
 		const weekdayGrid = this.weekdayContainer.createDiv(cls("weekday-grid"));
 
@@ -292,7 +296,7 @@ abstract class BaseEventModal extends Modal {
 		headerDiv.createEl("div", { text: title, cls: "setting-item-heading" });
 
 		const addButton = headerContainer.createEl("button", {
-			text: "+ Add Property",
+			text: "+ add property",
 			cls: "mod-cta",
 		});
 		addButton.addEventListener("click", onAddClick);
@@ -393,16 +397,16 @@ abstract class BaseEventModal extends Modal {
 		this.allDayCheckbox.addEventListener("change", () => {
 			if (this.allDayCheckbox.checked) {
 				// Switching TO all-day
-				this.timedContainer.style.display = "none";
-				this.allDayContainer.style.display = "block";
+				this.timedContainer.classList.add("prisma-hidden");
+				this.allDayContainer.classList.remove("prisma-hidden");
 				// Copy start date to date field if available
 				if (this.startInput.value) {
 					this.dateInput.value = formatDateOnly(this.startInput.value);
 				}
 			} else {
 				// Switching TO timed
-				this.timedContainer.style.display = "block";
-				this.allDayContainer.style.display = "none";
+				this.timedContainer.classList.remove("prisma-hidden");
+				this.allDayContainer.classList.add("prisma-hidden");
 				// Copy date to start field if available
 				if (this.dateInput.value) {
 					this.startInput.value = `${this.dateInput.value}T09:00`;
@@ -426,7 +430,7 @@ abstract class BaseEventModal extends Modal {
 
 		// Handle recurring event checkbox toggle
 		this.recurringCheckbox.addEventListener("change", () => {
-			this.recurringContainer.style.display = this.recurringCheckbox.checked ? "block" : "none";
+			this.recurringContainer.classList.toggle("prisma-hidden", !this.recurringCheckbox.checked);
 		});
 
 		// Handle RRule type selection
@@ -434,7 +438,7 @@ abstract class BaseEventModal extends Modal {
 			const selectedType = this.rruleSelect.value as RecurrenceType;
 			// Show weekday selection only for weekly and bi-weekly
 			const showWeekdays = WEEKDAY_SUPPORTED_TYPES.includes(selectedType as any);
-			this.weekdayContainer.style.display = showWeekdays ? "block" : "none";
+			this.weekdayContainer.classList.toggle("prisma-hidden", !showWeekdays);
 		});
 
 		// Add Enter key handler for the modal
@@ -638,12 +642,12 @@ export class EventEditModal extends BaseEventModal {
 		if (rruleType) {
 			// Event has recurring rule
 			this.recurringCheckbox.checked = true;
-			this.recurringContainer.style.display = "block";
+			this.recurringContainer.classList.remove("prisma-hidden");
 			this.rruleSelect.value = rruleType;
 
 			// Load weekdays if applicable
 			if (WEEKDAY_SUPPORTED_TYPES.includes(rruleType as any)) {
-				this.weekdayContainer.style.display = "block";
+				this.weekdayContainer.classList.remove("prisma-hidden");
 
 				const rruleSpec = this.originalFrontmatter[settings.rruleSpecProp] as string | undefined;
 				if (rruleSpec) {

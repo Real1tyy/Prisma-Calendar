@@ -27,7 +27,7 @@ export interface EventData {
 	preservedFrontmatter: Record<string, unknown>;
 }
 
-export interface EditEventData extends EventData {}
+export type EditEventData = EventData;
 
 export class CreateEventCommand implements Command {
 	private createdFilePath: string | null = null;
@@ -70,7 +70,7 @@ export class CreateEventCommand implements Command {
 		return "create-event";
 	}
 
-	async canUndo() {
+	canUndo(): boolean {
 		if (!this.createdFilePath) return false;
 		return this.app.vault.getAbstractFileByPath(this.createdFilePath) instanceof TFile;
 	}
@@ -103,7 +103,7 @@ export class DeleteEventCommand implements Command {
 		return "delete-event";
 	}
 
-	async canUndo() {
+	canUndo(): boolean {
 		if (!this.originalContent) return false;
 		return !(this.app.vault.getAbstractFileByPath(this.originalPath) instanceof TFile);
 	}
@@ -162,7 +162,7 @@ export class EditEventCommand implements Command {
 		return "edit-event";
 	}
 
-	async canUndo(): Promise<boolean> {
+	canUndo(): boolean {
 		return true;
 	}
 }
@@ -198,7 +198,7 @@ export class MoveEventCommand implements Command {
 		return "move-event";
 	}
 
-	async canUndo(): Promise<boolean> {
+	canUndo(): boolean {
 		return true;
 	}
 }
@@ -264,7 +264,7 @@ export class CloneEventCommand implements Command {
 		return "clone-event";
 	}
 
-	async canUndo() {
+	canUndo(): boolean {
 		if (!this.clonedFilePath) return false;
 		return this.app.vault.getAbstractFileByPath(this.clonedFilePath) instanceof TFile;
 	}
@@ -329,7 +329,7 @@ export class UpdateEventCommand implements Command {
 		return "update-event-time";
 	}
 
-	async canUndo(): Promise<boolean> {
+	canUndo(): boolean {
 		return this.originalFrontmatter !== undefined;
 	}
 }
@@ -382,7 +382,7 @@ export class ToggleSkipCommand implements Command {
 		return "toggle-skip";
 	}
 
-	async canUndo(): Promise<boolean> {
+	canUndo(): boolean {
 		return this.originalSkipValue !== undefined;
 	}
 }
@@ -417,7 +417,7 @@ export class MoveByCommand implements Command {
 		return "move-by";
 	}
 
-	async canUndo(): Promise<boolean> {
+	canUndo(): boolean {
 		return true;
 	}
 }

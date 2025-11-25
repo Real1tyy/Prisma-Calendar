@@ -27,7 +27,7 @@ export interface Command {
 	 * Optional: Check if the command can still be undone.
 	 * Returns false if referenced files/events no longer exist.
 	 */
-	canUndo?(): Promise<boolean>;
+	canUndo?(): boolean | Promise<boolean>;
 }
 
 /**

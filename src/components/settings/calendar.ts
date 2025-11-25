@@ -148,7 +148,7 @@ export class CalendarSettings {
 
 		new Setting(containerEl)
 			.setName("Zoom levels (minutes)")
-			.setDesc("Available zoom levels for CTRL+scroll zooming. Enter comma-separated values (1-60 minutes each)")
+			.setDesc("Available zoom levels for Ctrl+scroll zooming. Enter comma-separated values (1-60 minutes each)")
 			.addTextArea((text) => {
 				text.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_ZOOM_LEVELS.join(", "));
 				text.setValue(this.settingsStore.currentSettings.zoomLevels.join(", "));

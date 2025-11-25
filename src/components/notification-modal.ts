@@ -183,7 +183,7 @@ export class NotificationModal extends Modal {
 
 		// Open file button
 		const openButton = buttonContainer.createEl("button", {
-			text: "Open Event",
+			text: "Open event",
 			cls: "mod-cta",
 		});
 		openButton.onclick = () => {
@@ -222,7 +222,7 @@ export class NotificationModal extends Modal {
 		snoozeInput.max = "1440";
 
 		inputGroup.createEl("span", {
-			text: "mins",
+			text: "Min",
 			cls: cls("event-notification-snooze-unit"),
 		});
 

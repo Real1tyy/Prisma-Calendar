@@ -21,7 +21,7 @@ export class ChartComponent {
 		chartHeader.createEl("h3", { text: "Distribution" });
 
 		const toggleButton = chartHeader.createEl("button", {
-			text: "Hide Chart",
+			text: "Hide chart",
 			cls: cls("stats-toggle-chart-btn"),
 		});
 
@@ -32,11 +32,11 @@ export class ChartComponent {
 		toggleButton.addEventListener("click", () => {
 			this.chartVisible = !this.chartVisible;
 			if (this.chartVisible) {
-				chartContainer.style.display = "flex";
-				toggleButton.setText("Hide Chart");
+				chartContainer.classList.remove("prisma-hidden");
+				toggleButton.setText("Hide chart");
 			} else {
-				chartContainer.style.display = "none";
-				toggleButton.setText("Show Chart");
+				chartContainer.classList.add("prisma-hidden");
+				toggleButton.setText("Show chart");
 			}
 		});
 

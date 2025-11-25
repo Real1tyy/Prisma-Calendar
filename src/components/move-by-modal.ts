@@ -27,7 +27,7 @@ export class MoveByModal extends Modal {
 		contentEl.empty();
 		addCls(contentEl, "move-by-modal");
 
-		contentEl.createEl("h3", { text: "Move Event By" });
+		contentEl.createEl("h3", { text: "Move event by" });
 
 		const formContainer = contentEl.createDiv(cls("move-by-form"));
 
@@ -55,7 +55,7 @@ export class MoveByModal extends Modal {
 
 		// Time unit buttons
 		const unitContainer = formContainer.createDiv(cls("move-by-row"));
-		unitContainer.createEl("div", { text: "Time Unit", cls: cls("move-by-label") });
+		unitContainer.createEl("div", { text: "Time unit", cls: cls("move-by-label") });
 		const unitButtons = unitContainer.createDiv(cls("move-by-unit-group"));
 
 		for (const unit of TIME_UNITS) {

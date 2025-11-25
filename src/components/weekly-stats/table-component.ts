@@ -31,7 +31,7 @@ export class TableComponent {
 		const thead = table.createEl("thead");
 		const headerRow = thead.createEl("tr");
 
-		headerRow.createEl("th", { text: "Event Name" });
+		headerRow.createEl("th", { text: "Event name" });
 		headerRow.createEl("th", { text: "Count" });
 		headerRow.createEl("th", { text: "Duration" });
 		headerRow.createEl("th", { text: "Percentage" });
@@ -81,7 +81,7 @@ export class TableComponent {
 
 		// First page button
 		const firstButton = this.paginationContainer.createEl("button", {
-			text: "⟪ First",
+			text: "First",
 			cls: cls("stats-pagination-button"),
 		});
 		firstButton.disabled = this.currentPage === 0;
@@ -92,7 +92,7 @@ export class TableComponent {
 
 		// Previous button
 		const prevButton = this.paginationContainer.createEl("button", {
-			text: "← Previous",
+			text: "Previous",
 			cls: cls("stats-pagination-button"),
 		});
 		prevButton.disabled = this.currentPage === 0;
@@ -141,7 +141,7 @@ export class TableComponent {
 
 		// Next button
 		const nextButton = this.paginationContainer.createEl("button", {
-			text: "Next →",
+			text: "Next",
 			cls: cls("stats-pagination-button"),
 		});
 		nextButton.disabled = this.currentPage >= this.totalPages - 1;
@@ -154,7 +154,7 @@ export class TableComponent {
 
 		// Last page button
 		const lastButton = this.paginationContainer.createEl("button", {
-			text: "Last ⟫",
+			text: "Last",
 			cls: cls("stats-pagination-button"),
 		});
 		lastButton.disabled = this.currentPage >= this.totalPages - 1;

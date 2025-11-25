@@ -99,11 +99,7 @@ export class NotificationManager {
 		}
 	}
 
-	private async processEventSource(
-		filePath: string,
-		frontmatter: Record<string, unknown>,
-		isAllDay: boolean
-	): Promise<void> {
+	private processEventSource(filePath: string, frontmatter: Record<string, unknown>, isAllDay: boolean): void {
 		// Check if already notified
 		const alreadyNotified = frontmatter[this.settings.alreadyNotifiedProp];
 		if (alreadyNotified === true || alreadyNotified === "true") {
@@ -337,7 +333,7 @@ export class NotificationManager {
 		}
 	}
 
-	private async showNotificationModal(entry: NotificationEntry): Promise<void> {
+	private showNotificationModal(entry: NotificationEntry): void {
 		// Create event data for NotificationModal using frontmatter from the entry
 		const eventData = {
 			title: entry.title,
@@ -355,7 +351,7 @@ export class NotificationManager {
 		new NotificationModal(this.app, eventData, this.settings, onSnooze).open();
 	}
 
-	private async rebuildNotificationQueue(): Promise<void> {
+	private rebuildNotificationQueue(): void {
 		// Clear existing queue
 		this.notificationQueue = [];
 

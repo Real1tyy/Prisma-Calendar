@@ -1,5 +1,5 @@
 import { onceAsync } from "@real1ty-obsidian-plugins/utils";
-import type { App } from "obsidian";
+import type { App, WorkspaceLeaf } from "obsidian";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type CustomCalendarPlugin from "../main";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
@@ -58,7 +58,7 @@ export class CalendarBundle {
 
 	async initialize(): Promise<void> {
 		return await onceAsync(async () => {
-			this.plugin.registerViewTypeSafe(this.viewType, (leaf) => new CalendarView(leaf, this));
+			this.plugin.registerViewTypeSafe(this.viewType, (leaf: WorkspaceLeaf) => new CalendarView(leaf, this));
 
 			// @ts-expect-error - registerHoverLinkSource is not in public types but exists in runtime
 			this.app.workspace.registerHoverLinkSource(this.viewType, {

@@ -243,7 +243,7 @@ export abstract class BaseEventListModal extends Modal {
 
 	// Helper method for removing items with animation
 	protected removeItem(itemEl: HTMLElement, item: EventListItem): void {
-		itemEl.style.opacity = "0";
+		itemEl.classList.add("prisma-fade-out");
 
 		setTimeout(() => {
 			itemEl.remove();

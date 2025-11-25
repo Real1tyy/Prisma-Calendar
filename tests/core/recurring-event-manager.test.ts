@@ -154,6 +154,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					"Start Date": "2024-01-01T10:00:00Z",
 				},
 				futureInstancesCount: 2,
+				content: "",
 			};
 
 			// Simulate the indexer finding a recurring event
@@ -219,6 +220,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				frontmatter: {},
 				futureInstancesCount: 2,
 				sourceFilePath: "recurring.md",
+				content: "",
 			};
 
 			// The new implementation tracks physical instances automatically through indexer events
@@ -294,6 +296,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				},
 				futureInstancesCount: 2,
 				sourceFilePath: "recurring.md",
+				content: "",
 			};
 
 			// Simulate the indexer finding a recurring event
@@ -339,6 +342,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				},
 				frontmatter: { "Start Date": "2024-01-01T10:00:00" },
 				sourceFilePath: "recurring.md",
+				content: "",
 			};
 
 			// Test that the event stores the correct future instance count
@@ -383,6 +387,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					content: "",
 				};
 
 				// Simulate adding the recurring event
@@ -434,6 +439,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					content: "",
 				};
 
 				await (manager as any).handleIndexerEvent({
@@ -482,6 +488,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					content: "",
 				};
 
 				await (manager as any).handleIndexerEvent({
@@ -527,6 +534,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					content: "",
 				};
 
 				await (manager as any).handleIndexerEvent({
@@ -574,6 +582,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					content: "",
 				};
 
 				await (manager as any).handleIndexerEvent({
@@ -621,6 +630,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					content: "",
 				};
 
 				await (manager as any).handleIndexerEvent({
@@ -668,6 +678,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					content: "",
 				};
 
 				await (manager as any).handleIndexerEvent({
@@ -715,6 +726,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					content: "",
 				};
 
 				await (manager as any).handleIndexerEvent({

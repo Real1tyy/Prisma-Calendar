@@ -16,6 +16,27 @@ import { EventPreviewModal } from "./event-preview-modal";
 import { RecurringEventsListModal } from "./list-modals/recurring-events-list-modal";
 import { MoveByModal } from "./move-by-modal";
 
+interface CalendarEventInfo {
+	title: string;
+	start: string | Date | null;
+	end?: string | Date | null;
+	allDay?: boolean;
+	extendedProps?: {
+		filePath?: string;
+		isVirtual?: boolean;
+		frontmatterDisplayData?: Record<string, unknown>;
+	};
+}
+
+interface EventSaveData {
+	filePath: string | null;
+	title: string;
+	start: string;
+	end: string | null;
+	allDay: boolean;
+	preservedFrontmatter: Record<string, unknown>;
+}
+
 export class EventContextMenu {
 	private app: App;
 	private bundle: CalendarBundle;
@@ -25,7 +46,7 @@ export class EventContextMenu {
 		this.bundle = bundle;
 	}
 
-	private getFilePathOrNotice(event: any, operation: string): string | null {
+	private getFilePathOrNotice(event: CalendarEventInfo, operation: string): string | null {
 		const filePath = event.extendedProps?.filePath;
 		if (!filePath) {
 			new Notice(`Failed to ${operation}: No file path found`);
@@ -34,40 +55,41 @@ export class EventContextMenu {
 		return filePath;
 	}
 
-	private isSourceEvent(event: any): boolean {
+	private isSourceEvent(event: CalendarEventInfo): boolean {
 		const settings = this.bundle.settingsStore.currentSettings;
 		return !!event.extendedProps?.frontmatterDisplayData?.[settings.rruleProp];
 	}
 
-	private isPhysicalEvent(event: any): boolean {
+	private isPhysicalEvent(event: CalendarEventInfo): boolean {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const frontmatter = event.extendedProps?.frontmatterDisplayData;
 		return !!frontmatter?.[settings.rruleIdProp] && !frontmatter?.[settings.rruleProp];
 	}
 
-	private isVirtualEvent(event: any): boolean {
+	private isVirtualEvent(event: CalendarEventInfo): boolean {
 		return !!event.extendedProps?.isVirtual;
 	}
 
-	private getRRuleId(event: any): string | null {
+	private getRRuleId(event: CalendarEventInfo): string | null {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const frontmatter = event.extendedProps?.frontmatterDisplayData;
 
 		// Source events and physical events both have rruleIdProp in frontmatter
 		const rruleIdFromProp = frontmatter?.[settings.rruleIdProp];
-		if (rruleIdFromProp) {
+		if (rruleIdFromProp && typeof rruleIdFromProp === "string") {
 			return rruleIdFromProp;
 		}
 
 		// Virtual events have rruleId in meta
 		if (this.isVirtualEvent(event)) {
-			return frontmatter?.rruleId || null;
+			const virtualRruleId = frontmatter?.rruleId;
+			return typeof virtualRruleId === "string" ? virtualRruleId : null;
 		}
 
 		return null;
 	}
 
-	private getSourceFilePath(event: any): string | null {
+	private getSourceFilePath(event: CalendarEventInfo): string | null {
 		// For source events, return the file path directly
 		if (this.isSourceEvent(event)) {
 			return event.extendedProps?.filePath || null;
@@ -84,7 +106,7 @@ export class EventContextMenu {
 			const frontmatter = event.extendedProps?.frontmatterDisplayData;
 			const sourceLink = frontmatter?.[settings.sourceProp];
 
-			if (!sourceLink) return null;
+			if (!sourceLink || typeof sourceLink !== "string") return null;
 
 			// Use Obsidian's link resolution to get the actual file
 			const linkPath = getObsidianLinkPath(sourceLink);
@@ -96,10 +118,10 @@ export class EventContextMenu {
 		return null;
 	}
 
-	show(e: MouseEvent, info: any): void {
+	show(e: MouseEvent, info: { event: CalendarEventInfo }): void {
 		const menu = new Menu();
 		const event = info.event;
-		const filePath = event.extendedProps.filePath;
+		const filePath = event.extendedProps?.filePath;
 
 		menu.addItem((item) => {
 			item
@@ -219,14 +241,16 @@ export class EventContextMenu {
 						this.toggleSkipEvent(event);
 					});
 			});
-			menu.addItem((item) => {
-				item
-					.setTitle("Open file")
-					.setIcon("file-text")
-					.onClick(() => {
-						this.app.workspace.openLinkText(filePath, "", false);
-					});
-			});
+			if (filePath) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Open file")
+						.setIcon("file-text")
+						.onClick(() => {
+							this.app.workspace.openLinkText(filePath, "", false);
+						});
+				});
+			}
 		}
 
 		menu.addSeparator();
@@ -259,7 +283,7 @@ export class EventContextMenu {
 		menu.showAtMouseEvent(e);
 	}
 
-	moveEventBy(event: any): void {
+	moveEventBy(event: CalendarEventInfo): void {
 		const filePath = this.getFilePathOrNotice(event, "move event");
 		if (!filePath) return;
 
@@ -289,7 +313,7 @@ export class EventContextMenu {
 		}).open();
 	}
 
-	async moveEventByWeeks(event: any, weeks: number): Promise<void> {
+	async moveEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
 		const filePath = this.getFilePathOrNotice(event, "move event");
 		if (!filePath) return;
 
@@ -307,7 +331,7 @@ export class EventContextMenu {
 		}
 	}
 
-	async cloneEventByWeeks(event: any, weeks: number): Promise<void> {
+	async cloneEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
 		const filePath = this.getFilePathOrNotice(event, "clone event");
 		if (!filePath) return;
 
@@ -325,7 +349,7 @@ export class EventContextMenu {
 		}
 	}
 
-	async duplicateEvent(event: any): Promise<void> {
+	async duplicateEvent(event: CalendarEventInfo): Promise<void> {
 		const filePath = this.getFilePathOrNotice(event, "duplicate event");
 		if (!filePath) return;
 
@@ -342,7 +366,7 @@ export class EventContextMenu {
 		}
 	}
 
-	async deleteEvent(event: any): Promise<void> {
+	async deleteEvent(event: CalendarEventInfo): Promise<void> {
 		const filePath = this.getFilePathOrNotice(event, "delete event");
 		if (!filePath) return;
 
@@ -358,10 +382,10 @@ export class EventContextMenu {
 		}
 	}
 
-	async toggleRecurringEvent(event: any): Promise<void> {
+	async toggleRecurringEvent(event: CalendarEventInfo): Promise<void> {
 		const sourceFilePath = this.getSourceFilePath(event);
 		if (!sourceFilePath) {
-			new Notice("Failed to toggle recurring event: No source file found");
+			new Notice("Failed to toggle recurring event: no source file found");
 			return;
 		}
 
@@ -376,7 +400,7 @@ export class EventContextMenu {
 		}
 	}
 
-	async toggleSkipEvent(event: any): Promise<void> {
+	async toggleSkipEvent(event: CalendarEventInfo): Promise<void> {
 		const filePath = this.getFilePathOrNotice(event, "toggle skip event");
 		if (!filePath) return;
 
@@ -392,20 +416,20 @@ export class EventContextMenu {
 		}
 	}
 
-	private openEventPreview(event: any): void {
+	private openEventPreview(event: CalendarEventInfo): void {
 		new EventPreviewModal(this.app, this.bundle, event).open();
 	}
 
-	private openEventEditModal(event: any): void {
+	private openEventEditModal(event: CalendarEventInfo): void {
 		new EventEditModal(this.app, this.bundle, event, (updatedEvent) => {
-			this.updateEventFile(updatedEvent);
+			void this.updateEventFile(updatedEvent);
 		}).open();
 	}
 
-	private async updateEventFile(eventData: any): Promise<void> {
+	private async updateEventFile(eventData: EventSaveData): Promise<void> {
 		const { filePath } = eventData;
 		if (!filePath) {
-			new Notice("Failed to update event: No file path found");
+			new Notice("Failed to update event: no file path found");
 			return;
 		}
 
@@ -429,7 +453,11 @@ export class EventContextMenu {
 				}
 			}
 
-			const command = new EditEventCommand(this.app, this.bundle, finalFilePath, eventData);
+			const eventDataForCommand = {
+				...eventData,
+				end: eventData.end ?? undefined,
+			};
+			const command = new EditEventCommand(this.app, this.bundle, finalFilePath, eventDataForCommand);
 			await this.bundle.commandManager.executeCommand(command);
 
 			new Notice("Event updated successfully");
@@ -439,7 +467,7 @@ export class EventContextMenu {
 		}
 	}
 
-	private goToSourceEvent(event: any): void {
+	private goToSourceEvent(event: CalendarEventInfo): void {
 		const sourceFilePath = this.getSourceFilePath(event);
 
 		if (sourceFilePath) {
@@ -450,7 +478,7 @@ export class EventContextMenu {
 		new Notice("Source event not found");
 	}
 
-	private showRecurringEventsList(event: any): void {
+	private showRecurringEventsList(event: CalendarEventInfo): void {
 		const rruleId = this.getRRuleId(event);
 
 		if (!rruleId) {

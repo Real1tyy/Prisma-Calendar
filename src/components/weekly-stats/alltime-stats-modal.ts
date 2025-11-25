@@ -18,7 +18,7 @@ export class AllTimeStatsModal extends StatsModal {
 
 		this.contentContainer = contentEl.createDiv(cls("stats-content"));
 
-		const events = await this.bundle.eventStore.getAllEvents();
+		const events = this.bundle.eventStore.getAllEvents();
 		const filteredEvents = this.filterSkippedEvents(events);
 
 		const categoryProp = this.bundle.settingsStore.currentSettings.categoryProp || "Category";
@@ -54,7 +54,7 @@ export class AllTimeStatsModal extends StatsModal {
 		const middleSection = header.createDiv(cls("stats-middle-section"));
 
 		const titleLabel = middleSection.createDiv(cls("stats-week-label"));
-		titleLabel.setText("All Time");
+		titleLabel.setText("All time");
 
 		this.createControlsRow(middleSection);
 

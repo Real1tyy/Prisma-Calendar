@@ -23,7 +23,7 @@ describe("EventStore", () => {
 			parseEventSource: vi.fn(),
 		};
 		mockRecurringEventManager = {
-			generateAllVirtualInstances: vi.fn().mockResolvedValue([]),
+			generateAllVirtualInstances: vi.fn().mockReturnValue([]),
 		};
 		eventStore = new EventStore(mockIndexer, mockParser, mockRecurringEventManager);
 	});

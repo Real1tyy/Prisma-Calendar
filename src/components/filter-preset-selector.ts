@@ -33,7 +33,7 @@ export class FilterPresetSelector {
 		if ("showPicker" in this.select) {
 			try {
 				(this.select as any).showPicker();
-			} catch (_error) {
+			} catch {
 				// Fallback if showPicker fails
 				this.triggerDropdownOpen();
 			}

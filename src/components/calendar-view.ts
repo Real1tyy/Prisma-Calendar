@@ -41,8 +41,8 @@ import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";
 
-// FullCalendar-specific types
-interface FullCalendarExtendedProps {
+// Prisma-specific extended props stored on FullCalendar events
+interface PrismaExtendedProps {
 	filePath: string;
 	folder: string;
 	originalTitle: string;
@@ -50,8 +50,38 @@ interface FullCalendarExtendedProps {
 	isVirtual: boolean;
 }
 
+// Event input type for creating FullCalendar events
 interface PrismaEventInput extends EventInput {
-	extendedProps: FullCalendarExtendedProps;
+	extendedProps: PrismaExtendedProps;
+}
+
+interface FlexibleExtendedProps {
+	filePath?: string;
+	folder?: string;
+	originalTitle?: string;
+	frontmatterDisplayData?: Record<string, unknown>;
+	isVirtual?: boolean;
+	[key: string]: unknown; // Allow any other props from FullCalendar
+}
+
+// Common event shape for internal handlers (accepts FullCalendar's loose typing)
+interface CalendarEventData {
+	title: string;
+	start: Date | null;
+	end: Date | null;
+	allDay: boolean;
+	extendedProps: FlexibleExtendedProps;
+}
+
+interface EventMountInfo {
+	el: HTMLElement;
+	event: CalendarEventData;
+}
+
+interface EventUpdateInfo {
+	event: CalendarEventData & { start: Date };
+	oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay"> & { start: Date };
+	revert: () => void;
 }
 
 export function getCalendarViewType(calendarId: string): string {
@@ -114,7 +144,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return await this.bundle.redo();
 	}
 
-	private buildBatchButtons(): Record<string, any> {
+	private buildBatchButtons(): Record<string, unknown> {
 		const bsm = this.batchSelectionManager!;
 		const clsBase = cls("batch-action-btn");
 
@@ -187,7 +217,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		};
 	}
 
-	private buildRegularButtons(): Record<string, any> {
+	private buildRegularButtons(): Record<string, unknown> {
 		return {
 			createEvent: {
 				text: "Create Event",
@@ -422,7 +452,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			(modal) => {
 				this.skippedEventsModal = modal;
 			},
-			async () => {
+			() => {
 				if (!this.calendar) throw new Error("Calendar not initialized");
 
 				const view = this.calendar.view;
@@ -430,7 +460,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 				const start = view.activeStart.toISOString();
 				const end = view.activeEnd.toISOString();
-				const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
+				const skippedEvents = this.bundle.eventStore.getSkippedEvents({ start, end });
 
 				return new SkippedEventsModal(this.app, this.bundle, skippedEvents);
 			}
@@ -949,7 +979,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const start = view.activeStart.toISOString();
 			const end = view.activeEnd.toISOString();
 
-			const allEvents = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
+			const allEvents = this.bundle.eventStore.getNonSkippedEvents({ start, end });
 
 			const filteredEvents: ParsedEvent[] = [];
 			const visibleEvents: ParsedEvent[] = [];
@@ -968,7 +998,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			this.filteredEvents = filteredEvents;
 			this.updateFilteredEventsButton(filteredEvents.length);
 
-			const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
+			const skippedEvents = this.bundle.eventStore.getSkippedEvents({ start, end });
 			this.updateSkippedEventsButton(skippedEvents.length);
 
 			// Update disabled recurring events button
@@ -1042,7 +1072,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
-	private renderEventContent(arg: EventContentArg): any {
+	private renderEventContent(arg: EventContentArg): { domNodes: HTMLElement[] } {
 		const event = arg.event;
 
 		const mainEl = document.createElement("div");
@@ -1101,15 +1131,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return { domNodes: [mainEl] };
 	}
 
-	private getDisplayProperties(event: {
-		extendedProps: { frontmatterDisplayData?: Record<string, unknown> };
-	}): [string, unknown][] {
+	private getDisplayProperties(event: Pick<CalendarEventData, "extendedProps">): [string, unknown][] {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const properties: [string, unknown][] = [];
+		const displayData = event.extendedProps.frontmatterDisplayData;
 
-		if (settings.frontmatterDisplayProperties.length > 0 && event.extendedProps.frontmatterDisplayData) {
+		if (settings.frontmatterDisplayProperties.length > 0 && displayData) {
 			for (const prop of settings.frontmatterDisplayProperties) {
-				const value = event.extendedProps.frontmatterDisplayData[prop];
+				const value = displayData[prop];
 				if (isNotEmpty(value)) {
 					properties.push([prop, value]);
 				}
@@ -1148,13 +1177,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return this.colorEvaluator.evaluateColor(frontmatter);
 	}
 
-	private async handleEventClick(info: any): Promise<void> {
+	private handleEventClick(info: { event: Pick<CalendarEventData, "title" | "extendedProps"> }): void {
 		const event = info.event;
 		const filePath = event.extendedProps.filePath;
 		const isVirtual = event.extendedProps.isVirtual;
 
 		// For virtual events, show preview of the source event
-		if (isVirtual && filePath) {
+		if (isVirtual && filePath && typeof filePath === "string") {
 			const sourceFile = this.app.vault.getAbstractFileByPath(filePath);
 			if (sourceFile instanceof TFile) {
 				const cache = this.app.metadataCache.getFileCache(sourceFile);
@@ -1174,12 +1203,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		// For regular and physical events, open the file
-		if (filePath) {
-			this.app.workspace.openLinkText(filePath, "", false);
+		if (filePath && typeof filePath === "string") {
+			void this.app.workspace.openLinkText(filePath, "", false);
 		}
 	}
 
-	private handleEventMount(info: any): void {
+	private handleEventMount(info: EventMountInfo): void {
 		if (info.event.extendedProps.isVirtual) {
 			info.el.classList.add(cls("virtual-event-italic"));
 		}
@@ -1188,9 +1217,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const event = info.event;
 
 		// Apply event color
-		const eventColor = this.getEventColor({
-			meta: event.extendedProps.frontmatterDisplayData,
-		});
+		const eventColor = this.getEventColor({ meta: event.extendedProps.frontmatterDisplayData });
 
 		element.style.setProperty("--event-color", eventColor);
 		element.classList.add(cls("calendar-event"));
@@ -1198,7 +1225,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// Set opacity CSS variable for past events
 		const now = new Date();
 		const eventEnd = event.end || event.start;
-		const isPast = eventEnd < now;
+		const isPast = eventEnd !== null && eventEnd < now;
 
 		if (isPast) {
 			const contrast = this.bundle.settingsStore.currentSettings.pastEventContrast;
@@ -1221,30 +1248,24 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		element.addClass(cls("calendar-event"));
 	}
 
-	private handleDateClick(info: any): void {
+	private handleDateClick(info: { date: Date; allDay: boolean }): void {
 		// Create a new event with pre-filled date/time
 		const clickedDate = info.date;
 		const isAllDay = info.allDay;
 
 		// Create a mock event object for the modal
-		const newEvent: any = {
+		const newEvent = {
 			title: "",
 			start: toLocalISOString(clickedDate),
+			end: isAllDay ? undefined : toLocalISOString(new Date(clickedDate.getTime() + 60 * 60 * 1000)),
 			allDay: isAllDay,
 			extendedProps: {
-				filePath: null, // Will be created
+				filePath: null as string | null,
 			},
 		};
 
-		// Only add end time for timed events (not all-day events)
-		if (!isAllDay) {
-			const endDate = new Date(clickedDate);
-			endDate.setHours(endDate.getHours() + 1);
-			newEvent.end = toLocalISOString(endDate);
-		}
-
 		new EventCreateModal(this.app, this.bundle, newEvent, (eventData) => {
-			this.createNewEvent(eventData, clickedDate);
+			void this.createNewEvent(eventData, clickedDate);
 		}).open();
 	}
 
@@ -1258,29 +1279,38 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		endDate.setMinutes(endDate.getMinutes() + settings.defaultDurationMinutes);
 
 		// Create event object for the modal
-		const newEvent: any = {
+		const newEvent = {
 			title: "",
 			start: toLocalISOString(roundedStart),
 			end: toLocalISOString(endDate),
 			allDay: false,
 			extendedProps: {
-				filePath: null,
+				filePath: null as string | null,
 			},
 		};
 
 		new EventCreateModal(this.app, this.bundle, newEvent, (eventData) => {
-			this.createNewEvent(eventData, roundedStart);
+			void this.createNewEvent(eventData, roundedStart);
 		}).open();
 	}
 
-	private async createNewEvent(eventData: any, clickedDate: Date): Promise<void> {
+	private async createNewEvent(
+		eventData: {
+			title: string;
+			start: string | null;
+			end: string | null;
+			allDay: boolean;
+			preservedFrontmatter: Record<string, unknown>;
+		},
+		clickedDate: Date
+	): Promise<void> {
 		const settings = this.bundle.settingsStore.currentSettings;
 		try {
 			const commandEventData: EventData = {
 				filePath: null,
 				title: eventData.title || `Event ${toLocalISOString(clickedDate).split("T")[0]}`,
-				start: eventData.start,
-				end: eventData.end,
+				start: eventData.start || toLocalISOString(clickedDate),
+				end: eventData.end ?? undefined,
 				allDay: eventData.allDay,
 				preservedFrontmatter: eventData.preservedFrontmatter,
 			};
@@ -1293,14 +1323,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
-	private async handleEventUpdate(info: any, errorMessage: string): Promise<void> {
-		if (info.event.extendedProps.isVirtual) {
+	private async handleEventUpdate(info: EventUpdateInfo, errorMessage: string): Promise<void> {
+		if (info.event.extendedProps.isVirtual === true) {
 			info.revert();
 			return;
 		}
 
 		const filePath = info.event.extendedProps.filePath;
-		if (!filePath) {
+		if (!filePath || typeof filePath !== "string") {
 			console.error("No file path found for event");
 			info.revert();
 			return;
@@ -1310,7 +1340,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const command = new UpdateEventCommand(
 				this.app,
 				this.bundle,
-				filePath,
+				filePath as string,
 				toLocalISOString(info.event.start),
 				info.event.end ? toLocalISOString(info.event.end) : undefined,
 				info.event.allDay || false,

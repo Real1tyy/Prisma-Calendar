@@ -89,9 +89,9 @@ export class RulesSettings {
 
 		// Warning section
 		const warningContainer = desc.createDiv(cls("settings-warning-box"));
-		warningContainer.createEl("strong", { text: "⚠️ Important:" });
+		warningContainer.createEl("strong", { text: "⚠️ important:" });
 		warningContainer.createEl("p", {
-			text: "Use property names directly (e.g., Priority, Status). Invalid expressions will be ignored. Colors can be CSS color names, hex codes, or HSL values.",
+			text: "Use property names directly — invalid expressions will be ignored",
 		});
 
 		// Color rules list
@@ -104,7 +104,7 @@ export class RulesSettings {
 			.setName("Add color rule")
 			.setDesc("Add a new color rule")
 			.addButton((button) => {
-				button.setButtonText("Add Rule");
+				button.setButtonText("Add rule");
 				button.onClick(async () => {
 					const newRule: ColorRule = {
 						id: `color-rule-${Date.now()}`,
@@ -130,7 +130,7 @@ export class RulesSettings {
 
 		if (colorRules.length === 0) {
 			const emptyState = container.createDiv();
-			emptyState.textContent = "No color rules defined. Click 'Add Rule' to create one.";
+			emptyState.textContent = "No color rules defined. Click 'add rule' to create one.";
 			return;
 		}
 
@@ -261,13 +261,13 @@ export class RulesSettings {
 
 		const desc = containerEl.createDiv();
 		desc.createEl("p", {
-			text: "Filter events based on their frontmatter properties using JavaScript expressions. Each expression should evaluate to true/false. Events must pass ALL filters to be included.",
+			text: "Filter events based on their frontmatter properties using JavaScript expressions. Each expression should evaluate to true/false. Events must pass all filters to be included.",
 		});
 
 		// Examples section
 		const examplesContainer = desc.createDiv(cls("settings-info-box"));
 
-		examplesContainer.createEl("strong", { text: "Example filter expressions:" });
+		examplesContainer.createEl("strong", { text: "Example filter expressions" });
 		const examplesList = examplesContainer.createEl("ul");
 
 		const examples = [
@@ -290,9 +290,9 @@ export class RulesSettings {
 
 		// Warning section
 		const warningContainer = desc.createDiv(cls("settings-warning-box"));
-		warningContainer.createEl("strong", { text: "⚠️ Important:" });
+		warningContainer.createEl("strong", { text: "⚠️ important:" });
 		warningContainer.createEl("p", {
-			text: "Use property names directly (e.g., Status, Priority). Invalid expressions will be ignored and logged to console.",
+			text: "Use property names directly (e.g., status, priority). Invalid expressions will be ignored and logged to console.",
 		});
 
 		this.ui.addTextArray(containerEl, {
@@ -315,7 +315,7 @@ export class RulesSettings {
 		// Examples section
 		const examplesContainer = desc.createDiv(cls("settings-info-box"));
 
-		examplesContainer.createEl("strong", { text: "Example filter presets:" });
+		examplesContainer.createEl("strong", { text: "Example filter presets" });
 		const examplesList = examplesContainer.createEl("ul");
 
 		const examples = [
@@ -337,7 +337,7 @@ export class RulesSettings {
 
 		// Warning section
 		const warningContainer = desc.createDiv(cls("settings-warning-box"));
-		warningContainer.createEl("strong", { text: "💡 Tip:" });
+		warningContainer.createEl("strong", { text: "💡 tip:" });
 		warningContainer.createEl("p", {
 			text: "Filter presets appear in a dropdown next to the zoom button. Click a preset to instantly apply its filter expression.",
 		});
@@ -351,7 +351,7 @@ export class RulesSettings {
 			.setName("Add filter preset")
 			.setDesc("Add a new filter preset")
 			.addButton((button) => {
-				button.setButtonText("Add Preset");
+				button.setButtonText("Add preset");
 				button.onClick(async () => {
 					const newPreset = {
 						name: "",
@@ -374,7 +374,7 @@ export class RulesSettings {
 
 		if (filterPresets.length === 0) {
 			const emptyState = container.createDiv();
-			emptyState.textContent = "No filter presets defined. Click 'Add Preset' to create one.";
+			emptyState.textContent = "No filter presets defined. Click 'add preset' to create one.";
 			return;
 		}
 

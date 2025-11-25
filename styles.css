@@ -1,5 +1,15 @@
 /* Custom Calendar Plugin Styles */
 
+/* Utility classes */
+.prisma-hidden {
+	display: none;
+}
+
+.prisma-fade-out {
+	opacity: 0;
+	transition: opacity 0.2s ease-out;
+}
+
 .prisma-calendar-view {
 	padding: 8px;
 	height: 100%;
@@ -3004,7 +3014,7 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	background-color: var(--interactive-hover);
 }
 
-.prisma-stats-chart-container {
+.prisma-stats-chart-container:not(.prisma-hidden) {
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -3012,6 +3022,10 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	max-height: 600px;
 	padding-bottom: 2rem;
 	position: relative;
+}
+
+.prisma-stats-chart-container.prisma-hidden {
+	display: none;
 }
 
 .prisma-weekly-stats-modal .prisma-stats-chart-container canvas {

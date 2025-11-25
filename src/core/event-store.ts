@@ -98,27 +98,27 @@ export class EventStore extends DebouncedNotifier {
 		return cached ? cached.mtime === mtime : false;
 	}
 
-	async getEvents(query: EventQuery): Promise<ParsedEvent[]> {
-		const results: ParsedEvent[] = await this.getPhysicalEvents(query);
+	getEvents(query: EventQuery): ParsedEvent[] {
+		const results: ParsedEvent[] = this.getPhysicalEvents(query);
 		const queryStart = DateTime.fromISO(query.start, { zone: "utc" });
 		const queryEnd = DateTime.fromISO(query.end, { zone: "utc" });
-		const virtualEvents = await this.recurringEventManager.generateAllVirtualInstances(queryStart, queryEnd);
+		const virtualEvents = this.recurringEventManager.generateAllVirtualInstances(queryStart, queryEnd);
 		results.push(...virtualEvents);
 
 		return results.sort((a, b) => a.start.localeCompare(b.start));
 	}
 
-	async getSkippedEvents(query: EventQuery): Promise<ParsedEvent[]> {
-		const allEvents = await this.getEvents(query);
+	getSkippedEvents(query: EventQuery): ParsedEvent[] {
+		const allEvents = this.getEvents(query);
 		return allEvents.filter((event) => event.skipped && !event.isVirtual);
 	}
 
-	async getNonSkippedEvents(query: EventQuery): Promise<ParsedEvent[]> {
-		const allEvents = await this.getEvents(query);
+	getNonSkippedEvents(query: EventQuery): ParsedEvent[] {
+		const allEvents = this.getEvents(query);
 		return allEvents.filter((event) => !event.skipped);
 	}
 
-	async getPhysicalEvents(query: EventQuery): Promise<ParsedEvent[]> {
+	getPhysicalEvents(query: EventQuery): ParsedEvent[] {
 		const results: ParsedEvent[] = [];
 		const queryStart = DateTime.fromISO(query.start, { zone: "utc" });
 		const queryEnd = DateTime.fromISO(query.end, { zone: "utc" });
@@ -133,7 +133,7 @@ export class EventStore extends DebouncedNotifier {
 		return results.sort((a, b) => a.start.localeCompare(b.start));
 	}
 
-	async getAllEvents(): Promise<ParsedEvent[]> {
+	getAllEvents(): ParsedEvent[] {
 		const results: ParsedEvent[] = [];
 
 		for (const cached of this.cache.values()) {

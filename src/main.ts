@@ -1,5 +1,5 @@
 import { onceAsync } from "@real1ty-obsidian-plugins/utils";
-import { Notice, Plugin, TFile } from "obsidian";
+import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, SettingsStore } from "./core";
@@ -67,7 +67,7 @@ export default class CustomCalendarPlugin extends Plugin {
 					}
 					if (calendarView && !calendarView.isInBatchSelectionMode()) {
 						if (!checking) {
-							new Notice("Prisma Calendar: Batch selection mode is not active");
+							new Notice("Prisma calendar: batch selection mode is not active");
 						}
 						return true; // Still show the command, but notify user
 					}
@@ -154,7 +154,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		});
 	}
 
-	async onunload() {
+	onunload(): void {
 		for (const bundle of this.calendarBundles) {
 			bundle.destroy();
 		}
@@ -193,7 +193,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				calendars: [defaultCalendar],
 			}));
 
-			console.info("Created default calendar as none existed");
+			console.debug("Created default calendar as none existed");
 		}
 	}
 
@@ -207,7 +207,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		await this.ensureCalendarBundlesReady();
 	}
 
-	registerViewTypeSafe(viewType: string, viewCreator: (leaf: any) => any): boolean {
+	registerViewTypeSafe(viewType: string, viewCreator: (leaf: WorkspaceLeaf) => View): boolean {
 		if (this.registeredViewTypes.has(viewType)) {
 			return false;
 		}

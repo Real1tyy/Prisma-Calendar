@@ -224,10 +224,10 @@ ${settings.futureInstancesCountProp}: 5
 		});
 
 		const exampleBox = exampleContainer.createDiv(cls("example-event-box"));
-		exampleBox.createEl("div", { text: "Meeting with Team", cls: cls("title") });
+		exampleBox.createEl("div", { text: "Meeting with team", cls: cls("title") });
 		const propertiesContainer = exampleBox.createDiv(cls("properties"));
-		propertiesContainer.createEl("div", { text: "status: In Progress" });
-		propertiesContainer.createEl("div", { text: "priority: High" });
-		propertiesContainer.createEl("div", { text: "project: Q4 Planning" });
+		propertiesContainer.createEl("div", { text: "Status: in progress" });
+		propertiesContainer.createEl("div", { text: "Priority: high" });
+		propertiesContainer.createEl("div", { text: "Project: q4 planning" });
 	}
 }

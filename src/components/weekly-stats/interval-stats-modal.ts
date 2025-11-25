@@ -66,7 +66,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 		const { start, end } = this.intervalConfig.getBounds(this.currentDate);
 
-		const events = await this.bundle.eventStore.getEvents({
+		const events = this.bundle.eventStore.getEvents({
 			start: start.toISOString(),
 			end: end.toISOString(),
 		});
@@ -99,7 +99,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		const header = contentEl.createDiv(cls("stats-header"));
 
 		const prevButton = header.createEl("button", {
-			text: "← Previous",
+			text: "Previous",
 			cls: cls("stats-nav-button"),
 		});
 		prevButton.addEventListener("click", async () => {
@@ -134,7 +134,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		eventsStat.setText(`📅 ${stats.entries.reduce((sum, e) => sum + e.count, 0)} events`);
 
 		const nextButton = header.createEl("button", {
-			text: "Next →",
+			text: "Next",
 			cls: cls("stats-nav-button"),
 		});
 		nextButton.addEventListener("click", async () => {

@@ -55,7 +55,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const footerEl = containerEl.createDiv({ cls: `setting-item ${cls("settings-footer")}` });
 
 		footerEl.createEl("a", {
-			text: "Support Prisma Calendar Development",
+			text: "Support prisma calendar development",
 			href: "https://github.com/sponsors/Real1tyy",
 			cls: cls("settings-support-link"),
 		});
@@ -65,12 +65,12 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 		const settings = this.plugin.settingsStore.currentSettings;
 
-		new Setting(containerEl).setName("Calendar Management").setHeading();
+		new Setting(containerEl).setName("Calendar management").setHeading();
 
 		const headerContainer = containerEl.createDiv(`${cls("calendar-management")} ${cls("calendar-management-header")}`);
 
 		new Setting(headerContainer)
-			.setName("Active Calendar")
+			.setName("Active calendar")
 			.setDesc("Select which calendar to configure")
 			.addDropdown((dropdown) => {
 				settings.calendars.forEach((calendar) => {
@@ -89,7 +89,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		// Create New Calendar button
 		const createButton = actionsContainer.createEl("button", {
-			text: "Create New",
+			text: "Create new",
 			cls: `${cls("calendar-action-button")} ${cls("calendar-create-button")}`,
 		});
 
@@ -98,7 +98,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		// Clone Calendar button
 		const cloneButton = actionsContainer.createEl("button", {
-			text: "Clone Current",
+			text: "Clone current",
 			cls: `${cls("calendar-action-button")} ${cls("calendar-clone-button")}`,
 		});
 
