@@ -140,6 +140,101 @@ describe("getEventDuration", () => {
 		expect(duration).toBe(0);
 	});
 
+	it("should subtract break time when breakProp is provided", () => {
+		const event: ParsedEvent = {
+			id: "1",
+			ref: { filePath: "test.md" },
+			title: "Meeting with Break",
+			start: "2025-02-03T10:00:00Z",
+			end: "2025-02-03T12:00:00Z", // 2 hours
+			allDay: false,
+			isVirtual: false,
+			skipped: false,
+			meta: {
+				POS: 30, // 30 minutes break
+			},
+		};
+
+		const duration = getEventDuration(event, "POS");
+		expect(duration).toBe(90 * 60 * 1000); // 90 minutes (2h - 30min break)
+	});
+
+	it("should not subtract break time when breakProp is not provided", () => {
+		const event: ParsedEvent = {
+			id: "1",
+			ref: { filePath: "test.md" },
+			title: "Meeting with Break",
+			start: "2025-02-03T10:00:00Z",
+			end: "2025-02-03T12:00:00Z", // 2 hours
+			allDay: false,
+			isVirtual: false,
+			skipped: false,
+			meta: {
+				POS: 30,
+			},
+		};
+
+		const duration = getEventDuration(event);
+		expect(duration).toBe(120 * 60 * 1000); // 120 minutes (full duration)
+	});
+
+	it("should handle break time greater than duration by returning 0", () => {
+		const event: ParsedEvent = {
+			id: "1",
+			ref: { filePath: "test.md" },
+			title: "Short Meeting",
+			start: "2025-02-03T10:00:00Z",
+			end: "2025-02-03T10:30:00Z", // 30 minutes
+			allDay: false,
+			isVirtual: false,
+			skipped: false,
+			meta: {
+				POS: 60, // 60 minutes break (more than duration)
+			},
+		};
+
+		const duration = getEventDuration(event, "POS");
+		expect(duration).toBe(0);
+	});
+
+	it("should ignore non-positive break values", () => {
+		const event: ParsedEvent = {
+			id: "1",
+			ref: { filePath: "test.md" },
+			title: "Meeting",
+			start: "2025-02-03T10:00:00Z",
+			end: "2025-02-03T11:00:00Z",
+			allDay: false,
+			isVirtual: false,
+			skipped: false,
+			meta: {
+				POS: 0,
+			},
+		};
+
+		const duration = getEventDuration(event, "POS");
+		expect(duration).toBe(60 * 60 * 1000); // Full duration
+	});
+
+	it("should handle string break values", () => {
+		const event: ParsedEvent = {
+			id: "1",
+			ref: { filePath: "test.md" },
+			title: "Meeting",
+			start: "2025-02-03T10:00:00Z",
+			end: "2025-02-03T12:00:00Z",
+			allDay: false,
+			isVirtual: false,
+			skipped: false,
+			meta: {
+				POS: "30",
+			},
+		};
+
+		const duration = getEventDuration(event, "POS");
+		expect(duration).toBe(90 * 60 * 1000); // 90 minutes
+	});
+
 	it("should handle all-day events spanning a week", () => {
 		const event: ParsedEvent = {
 			id: "1",
@@ -1423,7 +1518,7 @@ describe("Category-based aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+			const stats = aggregateWeeklyStats(events, date, { mode: "category", categoryProp: "Category" });
 
 			expect(stats.entries).toHaveLength(2);
 
@@ -1481,7 +1576,7 @@ describe("Category-based aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+			const stats = aggregateWeeklyStats(events, date, { mode: "category", categoryProp: "Category" });
 
 			expect(stats.entries).toHaveLength(2);
 
@@ -1525,7 +1620,7 @@ describe("Category-based aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "category", "Type");
+			const stats = aggregateWeeklyStats(events, date, { mode: "category", categoryProp: "Type" });
 
 			expect(stats.entries).toHaveLength(2);
 			expect(stats.entries.some((e) => e.name === "Meeting")).toBe(true);
@@ -1562,7 +1657,7 @@ describe("Category-based aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+			const stats = aggregateWeeklyStats(events, date, { mode: "category", categoryProp: "Category" });
 
 			expect(stats.entries).toHaveLength(1);
 			expect(stats.entries[0].name).toBe("Work");
@@ -1600,7 +1695,7 @@ describe("Category-based aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+			const stats = aggregateWeeklyStats(events, date, { mode: "category", categoryProp: "Category" });
 
 			expect(stats.entries).toHaveLength(1);
 			expect(stats.entries[0].name).toBe("Work");
@@ -1625,7 +1720,7 @@ describe("Category-based aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+			const stats = aggregateWeeklyStats(events, date, { mode: "category", categoryProp: "Category" });
 
 			expect(stats.entries).toHaveLength(1);
 			expect(stats.entries[0].name).toBe("No Category");
@@ -1662,7 +1757,7 @@ describe("Category-based aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+			const stats = aggregateWeeklyStats(events, date, { mode: "category", categoryProp: "Category" });
 
 			expect(stats.entries[0].name).toBe("Personal");
 			expect(stats.entries[1].name).toBe("Work");
@@ -1699,12 +1794,57 @@ describe("Category-based aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "name", "Category");
+			const stats = aggregateWeeklyStats(events, date, { mode: "name", categoryProp: "Category" });
 
 			// Should group by cleaned name, not category
 			expect(stats.entries).toHaveLength(1);
 			expect(stats.entries[0].name).toBe("Meeting");
 			expect(stats.entries[0].count).toBe(2);
+		});
+
+		it("should subtract break time when breakProp is provided", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Long Meeting",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T12:00:00Z", // 2 hours
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+						POS: 30, // 30 minutes break
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Short Meeting",
+					start: "2025-02-04T10:00:00Z",
+					end: "2025-02-04T11:00:00Z", // 1 hour
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+						// No break
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, {
+				mode: "category",
+				categoryProp: "Category",
+				breakProp: "POS",
+			});
+
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].name).toBe("Work");
+			// Total: 90min (2h - 30min break) + 60min = 150min
+			expect(stats.entries[0].duration).toBe(150 * 60 * 1000);
 		});
 	});
 
@@ -1753,7 +1893,7 @@ describe("Category-based aggregation", () => {
 			];
 
 			const monthDate = new Date("2025-02-15T12:00:00");
-			const stats = aggregateMonthlyStats(events, monthDate, "category", "Category");
+			const stats = aggregateMonthlyStats(events, monthDate, { mode: "category", categoryProp: "Category" });
 
 			expect(stats.entries).toHaveLength(2);
 
@@ -1794,11 +1934,56 @@ describe("Category-based aggregation", () => {
 			];
 
 			const monthDate = new Date("2025-02-15T12:00:00");
-			const stats = aggregateMonthlyStats(events, monthDate, "category", "Category");
+			const stats = aggregateMonthlyStats(events, monthDate, { mode: "category", categoryProp: "Category" });
 
 			expect(stats.entries).toHaveLength(2);
 			expect(stats.entries.some((e) => e.name === "No Category")).toBe(true);
 			expect(stats.entries.some((e) => e.name === "Work")).toBe(true);
+		});
+
+		it("should subtract break time when breakProp is provided", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Meeting 1",
+					start: "2025-02-05T10:00:00Z",
+					end: "2025-02-05T12:00:00Z", // 2 hours
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+						POS: 30, // 30 minutes break
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Meeting 2",
+					start: "2025-02-12T10:00:00Z",
+					end: "2025-02-12T11:00:00Z", // 1 hour
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+						POS: 15, // 15 minutes break
+					},
+				},
+			];
+
+			const monthDate = new Date("2025-02-15T12:00:00");
+			const stats = aggregateMonthlyStats(events, monthDate, {
+				mode: "category",
+				categoryProp: "Category",
+				breakProp: "POS",
+			});
+
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].name).toBe("Work");
+			// Total: 90min (2h - 30min) + 45min (1h - 15min) = 135min
+			expect(stats.entries[0].duration).toBe(135 * 60 * 1000);
 		});
 	});
 });

@@ -64,6 +64,7 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_DAYS_BEFORE_PROP: "Days Before",
 	DEFAULT_ALREADY_NOTIFIED_PROP: "Already Notified",
 	DEFAULT_CATEGORY_PROP: "Category",
+	DEFAULT_BREAK_PROP: "POS", // Property for break/pause time in minutes to subtract from statistics
 
 	// Notification Settings
 	DEFAULT_ENABLE_NOTIFICATIONS: true,

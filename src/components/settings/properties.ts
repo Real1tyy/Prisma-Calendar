@@ -126,6 +126,13 @@ export class PropertiesSettings {
 			placeholder: SETTINGS_DEFAULTS.DEFAULT_CATEGORY_PROP,
 		});
 
+		this.ui.addText(containerEl, {
+			key: "breakProp",
+			name: "Break/Pause property",
+			desc: "Frontmatter property name for break time in minutes (subtracted from duration in statistics)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_BREAK_PROP,
+		});
+
 		// Add description for event types
 		const eventTypesDesc = containerEl.createDiv(cls("settings-info-box"));
 

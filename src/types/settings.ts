@@ -28,6 +28,7 @@ export const PropsSettingsSchema = z.object({
 	doneValue: z.string().default(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE), // value to set when marking event as done
 	categoryProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_CATEGORY_PROP), // property name for event categories used in statistics
 	futureInstancesCountProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT_PROP), // property name for per-event override of future instances count
+	breakProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_BREAK_PROP), // property name for break/pause time in minutes to subtract from statistics
 });
 
 export const NotificationsSettingsSchema = z.object({

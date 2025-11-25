@@ -66,6 +66,12 @@ abstract class BaseEventModal extends Modal {
 	protected weekdayCheckboxes: Map<Weekday, HTMLInputElement> = new Map();
 	protected futureInstancesCountInput!: HTMLInputElement;
 
+	// Category field
+	protected categoryInput!: HTMLInputElement;
+
+	// Break/Pause field
+	protected breakInput!: HTMLInputElement;
+
 	// Custom properties
 	protected customProperties: CustomProperty[] = [];
 	protected displayPropertiesContainer!: HTMLElement;
@@ -172,7 +178,181 @@ abstract class BaseEventModal extends Modal {
 		});
 
 		this.createRecurringEventFields(contentEl);
+		this.createCategoryField(contentEl);
+		this.createBreakField(contentEl);
 		this.createCustomPropertiesFields(contentEl);
+	}
+
+	private createCategoryField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.categoryProp) return;
+
+		const categoryContainer = contentEl.createDiv(`setting-item ${cls("category-field")}`);
+		const labelContainer = categoryContainer.createDiv("setting-item-name");
+		labelContainer.createEl("div", { text: "Categories" });
+		labelContainer.createEl("div", {
+			text: "Comma-separated for multiple",
+			cls: "setting-item-description",
+		});
+
+		const inputWrapper = categoryContainer.createDiv(cls("category-input-wrapper"));
+
+		// Text input for typing or editing categories (comma-separated)
+		this.categoryInput = inputWrapper.createEl("input", {
+			type: "text",
+			placeholder: "e.g., Work, Meeting, Important",
+			cls: "setting-item-control",
+		});
+
+		const dropdownContainer = inputWrapper.createDiv(cls("category-dropdown-container"));
+
+		const addButton = dropdownContainer.createEl("button", {
+			text: "+ Add",
+			cls: cls("category-add-button"),
+			type: "button",
+		});
+
+		const dropdownPanel = dropdownContainer.createDiv(cls("category-dropdown-panel"));
+		dropdownPanel.classList.add("prisma-hidden");
+
+		const searchInput = dropdownPanel.createEl("input", {
+			type: "text",
+			placeholder: "Search categories...",
+			cls: cls("category-search-input"),
+		});
+
+		const listContainer = dropdownPanel.createDiv(cls("category-list"));
+		// Get all categories from existing events if available
+		const allCategories = this.getAllCategories();
+
+		const renderCategoryList = (filter: string) => {
+			listContainer.empty();
+			const lowerFilter = filter.toLowerCase();
+			const filteredCategories = allCategories.filter((cat: string) => cat.toLowerCase().includes(lowerFilter));
+
+			if (filteredCategories.length === 0) {
+				listContainer.createDiv({
+					text: filter ? "No matching categories" : "No categories yet",
+					cls: cls("category-empty-message"),
+				});
+				return;
+			}
+
+			for (const category of filteredCategories) {
+				const item = listContainer.createDiv({
+					text: category,
+					cls: cls("category-list-item"),
+				});
+				item.addEventListener("click", () => {
+					this.addCategoryToInput(category);
+					closeDropdown();
+				});
+			}
+		};
+
+		const closeDropdown = () => {
+			dropdownPanel.classList.add("prisma-hidden");
+			searchInput.value = "";
+		};
+
+		const openDropdown = () => {
+			dropdownPanel.classList.remove("prisma-hidden");
+			renderCategoryList("");
+			searchInput.focus();
+		};
+
+		addButton.addEventListener("click", (e) => {
+			e.stopPropagation();
+			if (dropdownPanel.classList.contains("prisma-hidden")) {
+				openDropdown();
+			} else {
+				closeDropdown();
+			}
+		});
+
+		searchInput.addEventListener("input", () => {
+			renderCategoryList(searchInput.value);
+		});
+
+		searchInput.addEventListener("keydown", (e) => {
+			if (e.key === "Escape") {
+				closeDropdown();
+			} else if (e.key === "Enter") {
+				e.preventDefault();
+				const firstItem = listContainer.querySelector(`.${cls("category-list-item")}`) as HTMLElement;
+				if (firstItem) {
+					firstItem.click();
+				}
+			}
+		});
+
+		document.addEventListener("click", (e) => {
+			if (!dropdownContainer.contains(e.target as Node)) {
+				closeDropdown();
+			}
+		});
+
+		dropdownPanel.addEventListener("click", (e) => {
+			e.stopPropagation();
+		});
+	}
+
+	private addCategoryToInput(category: string): void {
+		const currentValue = this.categoryInput.value.trim();
+		if (currentValue) {
+			const existingCategories = currentValue.split(",").map((c) => c.trim());
+			if (!existingCategories.includes(category)) {
+				this.categoryInput.value = `${currentValue}, ${category}`;
+			}
+		} else {
+			this.categoryInput.value = category;
+		}
+	}
+
+	private getAllCategories(): string[] {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.categoryProp) return [];
+
+		const categories = new Set<string>();
+		const events = this.bundle.eventStore.getAllEvents();
+
+		for (const event of events) {
+			const categoryValue = event.meta?.[settings.categoryProp];
+			if (Array.isArray(categoryValue)) {
+				for (const cat of categoryValue) {
+					if (typeof cat === "string" && cat.trim()) {
+						categories.add(cat.trim());
+					}
+				}
+			} else if (typeof categoryValue === "string" && categoryValue.trim()) {
+				categories.add(categoryValue.trim());
+			}
+		}
+
+		return Array.from(categories).sort();
+	}
+
+	private createBreakField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.breakProp) return;
+
+		const breakContainer = contentEl.createDiv(`setting-item ${cls("break-field")}`);
+		const labelContainer = breakContainer.createDiv("setting-item-name");
+		labelContainer.createEl("div", { text: "Break/Pause (minutes)" });
+		labelContainer.createEl("div", {
+			text: "Time to subtract from duration in statistics",
+			cls: "setting-item-description",
+		});
+
+		this.breakInput = breakContainer.createEl("input", {
+			type: "number",
+			placeholder: "0",
+			cls: "setting-item-control",
+			attr: {
+				min: "0",
+				step: "1",
+			},
+		});
 	}
 
 	private createDateTimeInputWithNowButton(parent: HTMLElement, label: string, initialValue: string): HTMLInputElement {
@@ -545,6 +725,45 @@ abstract class BaseEventModal extends Modal {
 			delete preservedFrontmatter[settings.futureInstancesCountProp];
 		}
 
+		// Handle category property (supports multiple comma-separated categories)
+		if (settings.categoryProp && this.categoryInput) {
+			const rawValue = this.categoryInput.value.trim();
+			if (rawValue) {
+				// Parse comma-separated categories and trim whitespace
+				const categories = rawValue
+					.split(",")
+					.map((c) => c.trim())
+					.filter((c) => c.length > 0);
+
+				if (categories.length === 0) {
+					delete preservedFrontmatter[settings.categoryProp];
+				} else if (categories.length === 1) {
+					// Single category: store as string
+					preservedFrontmatter[settings.categoryProp] = categories[0];
+				} else {
+					// Multiple categories: store as array
+					preservedFrontmatter[settings.categoryProp] = categories;
+				}
+			} else {
+				delete preservedFrontmatter[settings.categoryProp];
+			}
+		}
+
+		// Handle break/pause property
+		if (settings.breakProp && this.breakInput) {
+			const breakValue = this.breakInput.value.trim();
+			if (breakValue) {
+				const breakMinutes = Number.parseInt(breakValue, 10);
+				if (!Number.isNaN(breakMinutes) && breakMinutes > 0) {
+					preservedFrontmatter[settings.breakProp] = breakMinutes;
+				} else {
+					delete preservedFrontmatter[settings.breakProp];
+				}
+			} else {
+				delete preservedFrontmatter[settings.breakProp];
+			}
+		}
+
 		const customProps = this.getCustomProperties();
 		const currentCustomKeys = new Set(Object.keys(customProps));
 
@@ -691,6 +910,36 @@ export class EventEditModal extends BaseEventModal {
 		}
 	}
 
+	private loadCategoryData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.categoryProp || !this.categoryInput) return;
+
+		const categoryValue = this.originalFrontmatter[settings.categoryProp];
+		if (Array.isArray(categoryValue)) {
+			// Multiple categories stored as array
+			const joined = categoryValue.filter((c) => typeof c === "string" && c.trim()).join(", ");
+			this.categoryInput.value = joined;
+		} else if (typeof categoryValue === "string" && categoryValue.trim()) {
+			// Single category stored as string
+			this.categoryInput.value = categoryValue.trim();
+		}
+	}
+
+	private loadBreakData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.breakProp || !this.breakInput) return;
+
+		const breakValue = this.originalFrontmatter[settings.breakProp];
+		if (typeof breakValue === "number" && breakValue > 0) {
+			this.breakInput.value = String(breakValue);
+		} else if (typeof breakValue === "string") {
+			const parsed = Number.parseInt(breakValue, 10);
+			if (!Number.isNaN(parsed) && parsed > 0) {
+				this.breakInput.value = String(parsed);
+			}
+		}
+	}
+
 	async onOpen(): Promise<void> {
 		// Call parent onOpen first
 		await super.onOpen();
@@ -701,6 +950,8 @@ export class EventEditModal extends BaseEventModal {
 		}
 
 		await this.loadRecurringEventData();
+		this.loadCategoryData();
+		this.loadBreakData();
 		await this.loadCustomPropertiesData();
 	}
 
