@@ -10,6 +10,7 @@ import {
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
+import { emitHover } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import { EventEditModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
@@ -118,7 +119,7 @@ export class EventContextMenu {
 		return null;
 	}
 
-	show(e: MouseEvent, info: { event: CalendarEventInfo }): void {
+	show(e: MouseEvent, info: { event: CalendarEventInfo }, targetEl?: HTMLElement, containerEl?: HTMLElement): void {
 		const menu = new Menu();
 		const event = info.event;
 		const filePath = event.extendedProps?.filePath;
@@ -131,6 +132,18 @@ export class EventContextMenu {
 					this.openEventPreview(event);
 				});
 		});
+
+		// Show preview button for non-virtual events with a file path
+		if (filePath && targetEl && containerEl) {
+			menu.addItem((item) => {
+				item
+					.setTitle("Preview")
+					.setIcon("eye")
+					.onClick((clickEvent) => {
+						this.showHoverPreview(targetEl, containerEl, clickEvent, filePath);
+					});
+			});
+		}
 
 		if (this.isPhysicalEvent(event) || this.isVirtualEvent(event)) {
 			menu.addItem((item) => {
@@ -418,6 +431,30 @@ export class EventContextMenu {
 
 	private openEventPreview(event: CalendarEventInfo): void {
 		new EventPreviewModal(this.app, this.bundle, event).open();
+	}
+
+	private showHoverPreview(
+		targetEl: HTMLElement,
+		containerEl: HTMLElement,
+		_clickEvent: MouseEvent | KeyboardEvent,
+		filePath: string
+	): void {
+		// Create a synthetic mouse event positioned at the target element for the hover
+		const rect = targetEl.getBoundingClientRect();
+		const syntheticEvent = new MouseEvent("mouseover", {
+			clientX: rect.left + rect.width / 2,
+			clientY: rect.top + rect.height / 2,
+			bubbles: true,
+			cancelable: true,
+			ctrlKey: true,
+			view: window,
+		});
+
+		// Dispatch the event on the target element first to simulate actual hover
+		targetEl.dispatchEvent(syntheticEvent);
+
+		// Then trigger Obsidian's hover-link event
+		emitHover(this.app, containerEl, targetEl, syntheticEvent, filePath, this.bundle.calendarId);
 	}
 
 	private openEventEditModal(event: CalendarEventInfo): void {

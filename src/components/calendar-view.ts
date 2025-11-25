@@ -819,7 +819,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				// Always add context menu for all events (including virtual)
 				info.el.addEventListener("contextmenu", (e) => {
 					e.preventDefault();
-					this.eventContextMenu.show(e, info);
+					this.eventContextMenu.show(e, info, info.el, this.container);
 				});
 
 				// Only add hover preview for non-virtual events

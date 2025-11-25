@@ -30,6 +30,14 @@ All notable changes to this project will be documented here.
 - **Minute Precision**: Clicking "Now" sets the datetime field to the current moment with minute-level precision (not just rounded to the hour)
 - **Location**: Button appears between the datetime input field and the right edge of the modal
 
+#### Preview Button in Context Menu
+- **Quick Event Preview**: New "Preview" button in the event context menu (right-click) that triggers Obsidian's hover preview for the event note
+- **Same as Ctrl+Hover**: Provides the same preview functionality as holding Ctrl while hovering over an event, but accessible via right-click menu
+- **Use Cases**:
+  - Preview event details without holding modifier keys
+  - Quick access to note preview on touchscreen or trackpad devices
+  - More accessible alternative to keyboard-based hover preview
+
 ### Improvements
 - **Go to Source for Virtual Events**: The "Go to source" option in the context menu (right-click) is now available for virtual events, allowing you to navigate directly to the recurring event source note from any virtual instance displayed in the calendar.
 
