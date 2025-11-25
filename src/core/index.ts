@@ -1,5 +1,6 @@
 export { CalendarBundle } from "./calendar-bundle";
 export { type CalendarViewState, CalendarViewStateManager } from "./calendar-view-state-manager";
+export { CategoryTracker } from "./category-tracker";
 export { EventStore } from "./event-store";
 export { Indexer } from "./indexer";
 export { IndexerRegistry } from "./indexer-registry";

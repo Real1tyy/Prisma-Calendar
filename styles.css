@@ -2102,6 +2102,112 @@
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Event Modal Category Field */
+.prisma-category-field {
+	margin-top: 8px;
+}
+
+.prisma-category-input-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1;
+}
+
+.prisma-category-input-wrapper input[type="text"] {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Searchable Category Dropdown */
+.prisma-category-dropdown-container {
+	position: relative;
+	flex-shrink: 0;
+}
+
+.prisma-category-add-button {
+	padding: 6px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--interactive-normal);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-weight-medium);
+	cursor: pointer;
+	transition: all 0.15s ease;
+	white-space: nowrap;
+}
+
+.prisma-category-add-button:hover {
+	background-color: var(--interactive-hover);
+	border-color: var(--interactive-accent);
+}
+
+.prisma-category-dropdown-panel {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	margin-top: 4px;
+	min-width: 200px;
+	max-width: 280px;
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	z-index: 100;
+	overflow: hidden;
+}
+
+.prisma-category-search-input {
+	width: 100%;
+	padding: 8px 12px;
+	border: none;
+	border-bottom: 1px solid var(--background-modifier-border);
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	outline: none;
+	box-sizing: border-box;
+}
+
+.prisma-category-search-input::placeholder {
+	color: var(--text-muted);
+}
+
+.prisma-category-search-input:focus {
+	background-color: var(--background-primary);
+}
+
+.prisma-category-list {
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.prisma-category-list-item {
+	padding: 8px 12px;
+	cursor: pointer;
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	transition: background-color 0.1s ease;
+}
+
+.prisma-category-list-item:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.prisma-category-list-item:active {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.prisma-category-empty-message {
+	padding: 12px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	font-style: italic;
+	text-align: center;
+}
+
 /* Event Modal Responsive */
 @media (max-width: 768px) {
 	.prisma-weekday-grid {

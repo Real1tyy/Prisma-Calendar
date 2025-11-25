@@ -17,6 +17,7 @@ import {
 	formatDateTimeForInput,
 	inputValueToISOString,
 } from "../utils/format";
+import { CategoryInput } from "./category-input";
 
 interface EventModalData {
 	title: string;
@@ -65,6 +66,8 @@ abstract class BaseEventModal extends Modal {
 	protected weekdayContainer!: HTMLElement;
 	protected weekdayCheckboxes: Map<Weekday, HTMLInputElement> = new Map();
 	protected futureInstancesCountInput!: HTMLInputElement;
+
+	protected categoryInput?: CategoryInput;
 
 	// Custom properties
 	protected customProperties: CustomProperty[] = [];
@@ -172,7 +175,16 @@ abstract class BaseEventModal extends Modal {
 		});
 
 		this.createRecurringEventFields(contentEl);
+		this.createCategoryField(contentEl);
 		this.createCustomPropertiesFields(contentEl);
+	}
+
+	private createCategoryField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.categoryProp) return;
+
+		this.categoryInput = new CategoryInput(this.bundle.categoryTracker);
+		this.categoryInput.render(contentEl);
 	}
 
 	private createDateTimeInputWithNowButton(parent: HTMLElement, label: string, initialValue: string): HTMLInputElement {
@@ -506,6 +518,30 @@ abstract class BaseEventModal extends Modal {
 			delete preservedFrontmatter[settings.dateProp];
 		}
 
+		// Handle category property (supports multiple comma-separated categories)
+		if (settings.categoryProp && this.categoryInput) {
+			const rawValue = this.categoryInput.getValue();
+			if (rawValue) {
+				// Parse comma-separated categories and trim whitespace
+				const categories = rawValue
+					.split(",")
+					.map((c) => c.trim())
+					.filter((c) => c.length > 0);
+
+				if (categories.length === 0) {
+					delete preservedFrontmatter[settings.categoryProp];
+				} else if (categories.length === 1) {
+					// Single category: store as string
+					preservedFrontmatter[settings.categoryProp] = categories[0];
+				} else {
+					// Multiple categories: store as array
+					preservedFrontmatter[settings.categoryProp] = categories;
+				}
+			} else {
+				delete preservedFrontmatter[settings.categoryProp];
+			}
+		}
+
 		// Handle recurring event properties
 		if (this.recurringCheckbox.checked) {
 			const rruleType = this.rruleSelect.value as RecurrenceType;
@@ -701,7 +737,16 @@ export class EventEditModal extends BaseEventModal {
 		}
 
 		await this.loadRecurringEventData();
+		this.loadCategoryData();
 		await this.loadCustomPropertiesData();
+	}
+
+	private loadCategoryData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.categoryProp || !this.categoryInput) return;
+
+		const categoryValue = this.originalFrontmatter[settings.categoryProp];
+		this.categoryInput.setValue(categoryValue);
 	}
 
 	public saveEvent(): void {

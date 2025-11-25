@@ -3,6 +3,7 @@ import type { App, WorkspaceLeaf } from "obsidian";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type CustomCalendarPlugin from "../main";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
+import type { CategoryTracker } from "./category-tracker";
 import { BatchCommandFactory, CommandManager } from "./commands";
 import type { EventStore } from "./event-store";
 import type { Indexer } from "./indexer";
@@ -20,6 +21,7 @@ export class CalendarBundle {
 	public readonly eventStore: EventStore;
 	public readonly recurringEventManager: RecurringEventManager;
 	public readonly notificationManager: NotificationManager;
+	public readonly categoryTracker: CategoryTracker;
 	public readonly templateService: TemplateService;
 	public readonly viewStateManager: CalendarViewStateManager;
 	public readonly commandManager: CommandManager;
@@ -41,7 +43,7 @@ export class CalendarBundle {
 
 		this.indexerRegistry = IndexerRegistry.getInstance(this.app);
 
-		const { indexer, parser, eventStore, recurringEventManager, notificationManager } =
+		const { indexer, parser, eventStore, recurringEventManager, notificationManager, categoryTracker } =
 			this.indexerRegistry.getOrCreateIndexer(this.calendarId, this.settingsStore.settings$);
 
 		this.indexer = indexer;
@@ -49,6 +51,7 @@ export class CalendarBundle {
 		this.eventStore = eventStore;
 		this.recurringEventManager = recurringEventManager;
 		this.notificationManager = notificationManager;
+		this.categoryTracker = categoryTracker;
 
 		this.templateService = new TemplateService(this.app, this.settingsStore.settings$, this.indexer);
 		this.viewStateManager = new CalendarViewStateManager();

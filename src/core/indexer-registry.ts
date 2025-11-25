@@ -2,6 +2,7 @@ import { normalizeDirectoryPath } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 import type { SingleCalendarConfig } from "../types/settings";
+import { CategoryTracker } from "./category-tracker";
 import { EventStore } from "./event-store";
 import { Indexer } from "./indexer";
 import { NotificationManager } from "./notification-manager";
@@ -14,13 +15,14 @@ interface IndexerEntry {
 	eventStore: EventStore;
 	recurringEventManager: RecurringEventManager;
 	notificationManager: NotificationManager;
+	categoryTracker: CategoryTracker;
 	refCount: number;
 	calendarIds: Set<string>;
 }
 
 type SharedInfrastructure = Pick<
 	IndexerEntry,
-	"indexer" | "parser" | "eventStore" | "recurringEventManager" | "notificationManager"
+	"indexer" | "parser" | "eventStore" | "recurringEventManager" | "notificationManager" | "categoryTracker"
 >;
 
 /**
@@ -64,6 +66,7 @@ export class IndexerRegistry {
 			const indexer = new Indexer(this.app, settingsStore);
 			const recurringEventManager = new RecurringEventManager(this.app, settingsStore, indexer);
 			const notificationManager = new NotificationManager(this.app, settingsStore, indexer);
+			const categoryTracker = new CategoryTracker(indexer, settingsStore);
 			const parser = new Parser(settingsStore);
 			const eventStore = new EventStore(indexer, parser, recurringEventManager);
 
@@ -73,6 +76,7 @@ export class IndexerRegistry {
 				eventStore,
 				recurringEventManager,
 				notificationManager,
+				categoryTracker,
 				refCount: 1,
 				calendarIds: new Set([calendarId]),
 			} satisfies IndexerEntry;
@@ -86,6 +90,7 @@ export class IndexerRegistry {
 			eventStore: entry.eventStore,
 			recurringEventManager: entry.recurringEventManager,
 			notificationManager: entry.notificationManager,
+			categoryTracker: entry.categoryTracker,
 		};
 	}
 
@@ -110,6 +115,7 @@ export class IndexerRegistry {
 			entry.parser.destroy();
 			entry.recurringEventManager.destroy();
 			entry.notificationManager.stop();
+			entry.categoryTracker.destroy();
 			this.registry.delete(normalizedDir);
 		}
 	}
@@ -121,6 +127,7 @@ export class IndexerRegistry {
 			entry.parser.destroy();
 			entry.recurringEventManager.destroy();
 			entry.notificationManager.stop();
+			entry.categoryTracker.destroy();
 		}
 
 		this.registry.clear();

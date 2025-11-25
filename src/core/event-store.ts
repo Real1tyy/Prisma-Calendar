@@ -143,6 +143,10 @@ export class EventStore extends DebouncedNotifier {
 		return results.sort((a, b) => a.start.localeCompare(b.start));
 	}
 
+	getEventByPath(filePath: string): ParsedEvent | null {
+		return this.cache.get(filePath)?.template ?? null;
+	}
+
 	clear(): void {
 		this.cache.clear();
 		// Clear is immediate - no debouncing

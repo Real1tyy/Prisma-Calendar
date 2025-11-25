@@ -34,7 +34,11 @@ describe("EventEditModal - Custom Properties", () => {
 					rruleSpecProp: "RRuleSpec",
 					rruleIdProp: "RRuleID",
 					sourceProp: "Source",
+					categoryProp: "Category",
 				},
+			},
+			categoryTracker: {
+				getCategories: vi.fn().mockReturnValue(["Work", "Personal", "Meeting"]),
 			},
 		} as unknown as CalendarBundle;
 
@@ -329,6 +333,143 @@ describe("EventEditModal - Custom Properties", () => {
 
 			// Custom property should be deleted
 			expect(frontmatter.CustomProp).toBeUndefined();
+		});
+	});
+
+	describe("Category saving", () => {
+		const mockEmptyContainer = {
+			querySelectorAll: vi.fn().mockReturnValue([]),
+		} as unknown as HTMLElement;
+
+		it("should save single category as string", () => {
+			const event = {
+				title: "Test Event",
+				start: "2025-10-07T10:15:00.000Z",
+				extendedProps: { filePath: "test.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			modal.originalFrontmatter = {
+				"Start Date": "2025-10-07T10:15:00.000Z",
+			};
+
+			// Mock the category input with a single category
+			modal.titleInput = { value: "Test Event" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+			// @ts-expect-error - accessing protected property for testing
+			modal.categoryInput = { getValue: () => "Work" };
+			// @ts-expect-error - accessing protected property for testing
+			modal.displayPropertiesContainer = mockEmptyContainer;
+			// @ts-expect-error - accessing protected property for testing
+			modal.otherPropertiesContainer = mockEmptyContainer;
+
+			modal.saveEvent();
+
+			const savedData = onSaveMock.mock.calls[0][0];
+			const frontmatter = savedData.preservedFrontmatter;
+
+			expect(frontmatter.Category).toBe("Work");
+		});
+
+		it("should save multiple categories as array", () => {
+			const event = {
+				title: "Test Event",
+				start: "2025-10-07T10:15:00.000Z",
+				extendedProps: { filePath: "test.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			modal.originalFrontmatter = {
+				"Start Date": "2025-10-07T10:15:00.000Z",
+			};
+
+			modal.titleInput = { value: "Test Event" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+			// @ts-expect-error - accessing protected property for testing
+			modal.categoryInput = { getValue: () => "Work, Meeting, Important" };
+			// @ts-expect-error - accessing protected property for testing
+			modal.displayPropertiesContainer = mockEmptyContainer;
+			// @ts-expect-error - accessing protected property for testing
+			modal.otherPropertiesContainer = mockEmptyContainer;
+
+			modal.saveEvent();
+
+			const savedData = onSaveMock.mock.calls[0][0];
+			const frontmatter = savedData.preservedFrontmatter;
+
+			expect(frontmatter.Category).toEqual(["Work", "Meeting", "Important"]);
+		});
+
+		it("should delete category when input is empty", () => {
+			const event = {
+				title: "Test Event",
+				start: "2025-10-07T10:15:00.000Z",
+				extendedProps: { filePath: "test.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			modal.originalFrontmatter = {
+				"Start Date": "2025-10-07T10:15:00.000Z",
+				Category: "OldCategory",
+			};
+
+			modal.titleInput = { value: "Test Event" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+			// @ts-expect-error - accessing protected property for testing
+			modal.categoryInput = { getValue: () => "" };
+			// @ts-expect-error - accessing protected property for testing
+			modal.displayPropertiesContainer = mockEmptyContainer;
+			// @ts-expect-error - accessing protected property for testing
+			modal.otherPropertiesContainer = mockEmptyContainer;
+
+			modal.saveEvent();
+
+			const savedData = onSaveMock.mock.calls[0][0];
+			const frontmatter = savedData.preservedFrontmatter;
+
+			expect(frontmatter.Category).toBeUndefined();
+		});
+
+		it("should update existing category", () => {
+			const event = {
+				title: "Test Event",
+				start: "2025-10-07T10:15:00.000Z",
+				extendedProps: { filePath: "test.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			modal.originalFrontmatter = {
+				"Start Date": "2025-10-07T10:15:00.000Z",
+				Category: "OldCategory",
+			};
+
+			modal.titleInput = { value: "Test Event" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+			// @ts-expect-error - accessing protected property for testing
+			modal.categoryInput = { getValue: () => "NewCategory" };
+			// @ts-expect-error - accessing protected property for testing
+			modal.displayPropertiesContainer = mockEmptyContainer;
+			// @ts-expect-error - accessing protected property for testing
+			modal.otherPropertiesContainer = mockEmptyContainer;
+
+			modal.saveEvent();
+
+			const savedData = onSaveMock.mock.calls[0][0];
+			const frontmatter = savedData.preservedFrontmatter;
+
+			expect(frontmatter.Category).toBe("NewCategory");
 		});
 	});
 });
