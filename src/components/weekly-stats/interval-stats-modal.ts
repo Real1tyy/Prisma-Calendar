@@ -3,7 +3,7 @@ import type { App } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { ParsedEvent } from "../../core/parser";
 import type { AggregationMode, Stats } from "../../utils/weekly-stats";
-import { formatDuration } from "../../utils/weekly-stats";
+import { formatDuration, formatDurationAsDecimalHours } from "../../utils/weekly-stats";
 import { StatsModal } from "./base-stats-modal";
 import { ChartComponent } from "./chart-component";
 import { TableComponent } from "./table-component";
@@ -106,8 +106,17 @@ export abstract class IntervalStatsModal extends StatsModal {
 			await this.navigatePrevious();
 		});
 
-		const durationStat = header.createDiv(cls("stats-header-stat"));
-		durationStat.setText(`⏱ ${formatDuration(stats.totalDuration)}`);
+		const durationStat = header.createEl("button", {
+			cls: cls("stats-header-stat", "stats-duration-toggle"),
+		});
+		durationStat.setText(
+			`⏱ ${this.showDecimalHours ? formatDurationAsDecimalHours(stats.totalDuration) : formatDuration(stats.totalDuration)}`
+		);
+		durationStat.addEventListener("click", async () => {
+			this.showDecimalHours = !this.showDecimalHours;
+			this.destroyComponents();
+			await this.renderContent();
+		});
 
 		const middleSection = header.createDiv(cls("stats-middle-section"));
 

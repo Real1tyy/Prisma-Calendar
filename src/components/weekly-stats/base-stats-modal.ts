@@ -14,6 +14,7 @@ export abstract class StatsModal extends Modal {
 	protected aggregationMode: AggregationMode = "name";
 	protected includeSkippedEvents = false;
 	protected contentContainer: HTMLElement | null = null;
+	protected showDecimalHours = false;
 
 	constructor(app: App, bundle: CalendarBundle) {
 		super(app);

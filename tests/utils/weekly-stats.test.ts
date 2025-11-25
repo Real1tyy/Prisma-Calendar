@@ -4,6 +4,7 @@ import {
 	aggregateMonthlyStats,
 	aggregateWeeklyStats,
 	formatDuration,
+	formatDurationAsDecimalHours,
 	formatPercentage,
 	getEventDuration,
 	getEventsInRange,
@@ -935,6 +936,48 @@ describe("formatDuration", () => {
 
 	it("should format days only", () => {
 		expect(formatDuration(2 * 24 * 60 * 60 * 1000)).toBe("2d");
+	});
+});
+
+describe("formatDurationAsDecimalHours", () => {
+	it("should format zero duration", () => {
+		expect(formatDurationAsDecimalHours(0)).toBe("0.0h");
+	});
+
+	it("should format minutes as decimal hours", () => {
+		// 30 minutes = 0.5 hours
+		expect(formatDurationAsDecimalHours(30 * 60 * 1000)).toBe("0.5h");
+	});
+
+	it("should format hours as decimal", () => {
+		// 2 hours
+		expect(formatDurationAsDecimalHours(2 * 60 * 60 * 1000)).toBe("2.0h");
+	});
+
+	it("should format hours and minutes as decimal", () => {
+		// 2 hours 30 minutes = 2.5 hours
+		expect(formatDurationAsDecimalHours(150 * 60 * 1000)).toBe("2.5h");
+	});
+
+	it("should format days as decimal hours", () => {
+		// 1 day = 24 hours
+		expect(formatDurationAsDecimalHours(24 * 60 * 60 * 1000)).toBe("24.0h");
+	});
+
+	it("should format days, hours, and minutes as decimal hours", () => {
+		// 1 day, 12 hours, 30 minutes = 36.5 hours
+		const ms = (1 * 24 * 60 + 12 * 60 + 30) * 60 * 1000;
+		expect(formatDurationAsDecimalHours(ms)).toBe("36.5h");
+	});
+
+	it("should round to one decimal place", () => {
+		// 1 hour 20 minutes = 1.333... hours -> 1.3h
+		expect(formatDurationAsDecimalHours(80 * 60 * 1000)).toBe("1.3h");
+	});
+
+	it("should handle large durations", () => {
+		// 10 days = 240 hours
+		expect(formatDurationAsDecimalHours(10 * 24 * 60 * 60 * 1000)).toBe("240.0h");
 	});
 });
 

@@ -214,6 +214,15 @@ export function formatDuration(ms: number): string {
 }
 
 /**
+ * Formats duration in milliseconds to decimal hours.
+ * Example: 90000000ms (25 hours) -> "25.0h"
+ */
+export function formatDurationAsDecimalHours(ms: number): string {
+	const hours = ms / (1000 * 60 * 60);
+	return `${hours.toFixed(1)}h`;
+}
+
+/**
  * Formats duration as a percentage of total.
  */
 export function formatPercentage(duration: number, total: number): string {

@@ -6,6 +6,16 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+#### Clickable Duration Display in Statistics
+- **Toggle Duration Format**: The duration display in all statistics modals (Weekly, Monthly, All-Time) is now clickable, allowing you to toggle between formatted duration (e.g., "3d 8h 45m") and decimal hours (e.g., "80.8h")
+- **Visual Feedback**: Button has hover effects and smooth transitions to indicate it's interactive
+- **Persistent Toggle**: The format preference persists while navigating between different time periods
+- **Use Cases**:
+  - Quick conversion for time tracking reports that require hours
+  - Easier calculation of billable hours or project time
+  - Compare durations more easily in decimal format
+  - Switch back to human-readable format for quick understanding
+
 #### Refresh Calendar Command
 - **Manual Resync**: New "Refresh calendar" command available in the command palette to manually trigger a full resync of the indexer and refresh all calendar events
 - **Use Cases**:
