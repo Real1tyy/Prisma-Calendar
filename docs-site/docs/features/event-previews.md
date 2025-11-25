@@ -17,8 +17,8 @@ See note content and navigate links without opening files.
 - Clickable wikilinks, tags, and URLs in frontmatter
 
 **Special features:**
-- **Recurring instances (physical)**: Source button to navigate to source event, or right-click → "Go to source"
-- **Virtual events**: Shows the source event configuration, right-click → "Go to source" to open source note
+- **Recurring instances (physical)**: Source button to navigate to source event in calendar, or right-click → "Go to source" (navigates to source event in week view)
+- **Virtual events**: Shows the source event configuration, right-click → "Go to source" to navigate to source event in calendar
 - **Source events**: Instance dropdown to view all generated instances with past filter
 
 ## Clickable Frontmatter

@@ -6,6 +6,25 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+#### Navigate to Source Event Instead of Opening File
+- **Go to Source Navigation**: The "Go to Source" button for physical and virtual recurring events now navigates to the source event in the calendar instead of opening the file
+- **Week View Navigation**: Automatically switches to week view and centers the calendar on the source event's date
+- **Event Highlighting**: The source event is highlighted for 5 seconds after navigation for easy identification
+- **Improved Workflow**: Better for quickly jumping between recurring event instances and their source without leaving the calendar view
+
+#### Category Autocomplete in Event Modal
+- **Category Input Field**: New category input field in the Create/Edit Event modal, located right above the custom properties section
+- **Multiple Categories Support**: Enter multiple categories separated by commas (e.g., "Work, Meeting, Important"). Single categories are stored as strings, multiple as arrays.
+- **Searchable Category Dropdown**: Click "+ Add" to open a searchable dropdown with all existing categories. Type to filter through categories, press Enter to select the first match, or click any category to add it.
+- **Smart Category Tracking**: Categories are automatically collected from all indexed events during startup, building a comprehensive set of existing categories
+- **Mixed Input Support**: Type new categories directly or select from existing ones - perfect for maintaining consistent category naming across events
+- **Use Cases**:
+  - Quickly categorize events with consistent naming
+  - Assign multiple categories to a single event for flexible filtering
+  - Discover existing categories you've used before
+  - Reduce typos by selecting from predefined options
+  - Build a coherent category taxonomy over time
+
 #### Clickable Duration Display in Statistics
 - **Toggle Duration Format**: The duration display in all statistics modals (Weekly, Monthly, All-Time) is now clickable, allowing you to toggle between formatted duration (e.g., "3d 8h 45m") and decimal hours (e.g., "80.8h")
 - **Visual Feedback**: Button has hover effects and smooth transitions to indicate it's interactive
@@ -39,7 +58,7 @@ All notable changes to this project will be documented here.
   - More accessible alternative to keyboard-based hover preview
 
 ### Improvements
-- **Go to Source for Virtual Events**: The "Go to source" option in the context menu (right-click) is now available for virtual events, allowing you to navigate directly to the recurring event source note from any virtual instance displayed in the calendar.
+- **Calendar Integration**: Context menu actions now provide better integration with calendar navigation, allowing you to stay in calendar view when working with recurring events.
 
 ## 1.6.0
 

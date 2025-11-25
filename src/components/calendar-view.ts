@@ -123,7 +123,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	) {
 		super(leaf);
 		this.viewType = getCalendarViewType(bundle.calendarId);
-		this.eventContextMenu = new EventContextMenu(this.app, bundle);
+		this.eventContextMenu = new EventContextMenu(this.app, bundle, this);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 		this.zoomManager = new ZoomManager(bundle.settingsStore);
 		this.searchFilter = new SearchFilterInputManager(() => this.refreshEvents());

@@ -12,6 +12,7 @@ import {
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import { emitHover } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
+import type { CalendarView } from "./calendar-view";
 import { EventEditModal } from "./event-edit-modal";
 import { EventPreviewModal } from "./event-preview-modal";
 import { RecurringEventsListModal } from "./list-modals/recurring-events-list-modal";
@@ -41,10 +42,12 @@ interface EventSaveData {
 export class EventContextMenu {
 	private app: App;
 	private bundle: CalendarBundle;
+	private calendarView: CalendarView;
 
-	constructor(app: App, bundle: CalendarBundle) {
+	constructor(app: App, bundle: CalendarBundle, calendarView: CalendarView) {
 		this.app = app;
 		this.bundle = bundle;
+		this.calendarView = calendarView;
 	}
 
 	private getFilePathOrNotice(event: CalendarEventInfo, operation: string): string | null {
@@ -507,12 +510,25 @@ export class EventContextMenu {
 	private goToSourceEvent(event: CalendarEventInfo): void {
 		const sourceFilePath = this.getSourceFilePath(event);
 
-		if (sourceFilePath) {
-			this.app.workspace.openLinkText(sourceFilePath, "", false);
+		if (!sourceFilePath) {
+			new Notice("Source event not found");
 			return;
 		}
 
-		new Notice("Source event not found");
+		const sourceEvent = this.bundle.eventStore.getEventByPath(sourceFilePath);
+		if (!sourceEvent) {
+			new Notice("Source event not found in calendar");
+			return;
+		}
+
+		const eventDate = new Date(sourceEvent.start);
+		this.calendarView.navigateToDate(eventDate, "timeGridWeek");
+
+		setTimeout(() => {
+			this.calendarView.highlightEventByPath(sourceFilePath, 5000);
+		}, 300);
+
+		new Notice("Navigated to source event");
 	}
 
 	private showRecurringEventsList(event: CalendarEventInfo): void {

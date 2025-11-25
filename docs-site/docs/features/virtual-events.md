@@ -118,7 +118,8 @@ Virtual events appear with:
 ### 6. Navigation to Source
 You can navigate from virtual events to their source:
 - Right-click any virtual event → "Go to source"
-- Opens the recurring event configuration note
-- Useful for checking settings or modifying the recurring pattern
+- Navigates to the source event in the calendar (switches to week view and highlights the source event for 5 seconds)
+- Useful for quickly reviewing or editing the recurring event configuration
+- Stay in calendar context instead of switching to note editing mode
 
 Virtual events give you the best of both worlds: complete visibility of your recurring patterns while keeping your vault focused on actionable, current events.
