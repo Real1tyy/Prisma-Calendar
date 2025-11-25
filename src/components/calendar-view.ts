@@ -116,6 +116,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private disabledRecurringEventsCount = 0;
 	private selectedEventsCount = 0;
 	private isRefreshingEvents = false;
+	private pendingRefreshRequest = false;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -959,10 +960,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		if (this.isRefreshingEvents) {
+			// Mark that a refresh was requested while we're busy
+			// This ensures we refresh again after the current one completes
+			this.pendingRefreshRequest = true;
 			return;
 		}
 
 		this.isRefreshingEvents = true;
+		this.pendingRefreshRequest = false;
 		const { view } = this.calendar;
 
 		// Capture scroll position before touching events
@@ -1067,6 +1072,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				// Release the lock after scroll restoration completes
 				setTimeout(() => {
 					this.isRefreshingEvents = false;
+
+					// If a refresh was requested while we were busy, trigger it now
+					// This handles rapid navigation where multiple datesSet events fire
+					if (this.pendingRefreshRequest) {
+						this.pendingRefreshRequest = false;
+						this.refreshEvents();
+					}
 				}, 50);
 			});
 		}
