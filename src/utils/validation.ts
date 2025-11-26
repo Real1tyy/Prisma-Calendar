@@ -18,7 +18,7 @@ function requiredParsed<T>(what: string, parse: (s: string) => T | undefined) {
 	return z.string().transform((val, ctx) => {
 		const result = parse(val);
 		if (result === undefined) {
-			ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Invalid ${what} format: ${val}` });
+			ctx.addIssue({ code: "custom", message: `Invalid ${what} format: ${val}` });
 			return z.NEVER;
 		}
 		return result;
@@ -39,7 +39,7 @@ function optionalParsed<T>(what: string, parse: (s: string) => T | undefined) {
 				.transform((val, ctx) => {
 					const result = parse(val);
 					if (result === undefined) {
-						ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Invalid ${what} format` });
+						ctx.addIssue({ code: "custom", message: `Invalid ${what} format` });
 						return z.NEVER;
 					}
 					return result;

@@ -203,19 +203,21 @@ export class RulesSettings {
 					attr: { title: "Move up" },
 					cls: cls("color-rule-btn"),
 				});
-				moveUpButton.onclick = async () => {
-					await this.settingsStore.updateSettings((s) => {
-						const currentRules = [...s.colorRules];
-						const ruleIndex = currentRules.findIndex((r) => r.id === rule.id);
-						if (ruleIndex > 0) {
-							[currentRules[ruleIndex], currentRules[ruleIndex - 1]] = [
-								currentRules[ruleIndex - 1],
-								currentRules[ruleIndex],
-							];
-						}
-						return { ...s, colorRules: currentRules };
-					});
-					this.renderColorRulesList(container);
+				moveUpButton.onclick = () => {
+					void (async () => {
+						await this.settingsStore.updateSettings((s) => {
+							const currentRules = [...s.colorRules];
+							const ruleIndex = currentRules.findIndex((r) => r.id === rule.id);
+							if (ruleIndex > 0) {
+								[currentRules[ruleIndex], currentRules[ruleIndex - 1]] = [
+									currentRules[ruleIndex - 1],
+									currentRules[ruleIndex],
+								];
+							}
+							return { ...s, colorRules: currentRules };
+						});
+						this.renderColorRulesList(container);
+					})();
 				};
 			}
 
@@ -225,19 +227,21 @@ export class RulesSettings {
 					attr: { title: "Move down" },
 					cls: cls("color-rule-btn"),
 				});
-				moveDownButton.onclick = async () => {
-					await this.settingsStore.updateSettings((s) => {
-						const currentRules = [...s.colorRules];
-						const ruleIndex = currentRules.findIndex((r) => r.id === rule.id);
-						if (ruleIndex !== -1 && ruleIndex < currentRules.length - 1) {
-							[currentRules[ruleIndex], currentRules[ruleIndex + 1]] = [
-								currentRules[ruleIndex + 1],
-								currentRules[ruleIndex],
-							];
-						}
-						return { ...s, colorRules: currentRules };
-					});
-					this.renderColorRulesList(container);
+				moveDownButton.onclick = () => {
+					void (async () => {
+						await this.settingsStore.updateSettings((s) => {
+							const currentRules = [...s.colorRules];
+							const ruleIndex = currentRules.findIndex((r) => r.id === rule.id);
+							if (ruleIndex !== -1 && ruleIndex < currentRules.length - 1) {
+								[currentRules[ruleIndex], currentRules[ruleIndex + 1]] = [
+									currentRules[ruleIndex + 1],
+									currentRules[ruleIndex],
+								];
+							}
+							return { ...s, colorRules: currentRules };
+						});
+						this.renderColorRulesList(container);
+					})();
 				};
 			}
 
@@ -246,12 +250,14 @@ export class RulesSettings {
 				attr: { title: "Delete rule" },
 				cls: `${cls("color-rule-btn")} ${cls("color-rule-btn-delete")}`,
 			});
-			deleteButton.onclick = async () => {
-				await this.settingsStore.updateSettings((s) => ({
-					...s,
-					colorRules: s.colorRules.filter((r) => r.id !== rule.id),
-				}));
-				this.renderColorRulesList(container);
+			deleteButton.onclick = () => {
+				void (async () => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						colorRules: s.colorRules.filter((r) => r.id !== rule.id),
+					}));
+					this.renderColorRulesList(container);
+				})();
 			};
 		});
 	}
@@ -433,12 +439,14 @@ export class RulesSettings {
 				attr: { title: "Delete preset" },
 				cls: cls("filter-preset-btn-delete"),
 			});
-			deleteButton.onclick = async () => {
-				await this.settingsStore.updateSettings((s) => ({
-					...s,
-					filterPresets: s.filterPresets.filter((_, i) => i !== index),
-				}));
-				this.renderFilterPresetsList(container);
+			deleteButton.onclick = () => {
+				void (async () => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						filterPresets: s.filterPresets.filter((_, i) => i !== index),
+					}));
+					this.renderFilterPresetsList(container);
+				})();
 			};
 		});
 	}

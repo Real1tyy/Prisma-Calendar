@@ -31,6 +31,8 @@ export class ExpressionFilterInputManager extends InputFilterManager {
 			if (!this.compiledFunc) {
 				const sanitized = sanitizeExpression(this.currentFilterValue, this.propertyMapping);
 				const params = Array.from(this.propertyMapping.values());
+				// Function constructor is necessary for dynamic expression evaluation.
+				// The expression is sanitized before use, and this is the only way to create a function with dynamic parameter names.
 				this.compiledFunc = new Function(...params, `"use strict"; return ${sanitized};`) as (
 					...args: any[]
 				) => boolean;

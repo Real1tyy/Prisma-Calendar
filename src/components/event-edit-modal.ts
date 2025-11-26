@@ -449,7 +449,7 @@ abstract class BaseEventModal extends Modal {
 		this.rruleSelect.addEventListener("change", () => {
 			const selectedType = this.rruleSelect.value as RecurrenceType;
 			// Show weekday selection only for weekly and bi-weekly
-			const showWeekdays = WEEKDAY_SUPPORTED_TYPES.includes(selectedType as any);
+			const showWeekdays = (WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(selectedType);
 			this.weekdayContainer.classList.toggle("prisma-hidden", !showWeekdays);
 		});
 
@@ -548,7 +548,7 @@ abstract class BaseEventModal extends Modal {
 			preservedFrontmatter[settings.rruleProp] = rruleType;
 
 			// Handle weekdays for weekly/bi-weekly events
-			if (WEEKDAY_SUPPORTED_TYPES.includes(rruleType as any)) {
+			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(rruleType)) {
 				const selectedWeekdays: Weekday[] = [];
 				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
 					if (checkbox.checked) {
@@ -607,7 +607,7 @@ abstract class BaseEventModal extends Modal {
 		this.close();
 	}
 
-	protected async loadExistingFrontmatter(): Promise<void> {
+	protected loadExistingFrontmatter(): void {
 		try {
 			const filePath = this.event.extendedProps?.filePath;
 			if (!filePath) return;
@@ -657,7 +657,7 @@ export class EventEditModal extends BaseEventModal {
 	}
 
 	protected async initialize(): Promise<void> {
-		await this.loadExistingFrontmatter();
+		this.loadExistingFrontmatter();
 
 		// Extract and store ZettelID from the original title
 		if (this.event.title) {
@@ -671,7 +671,7 @@ export class EventEditModal extends BaseEventModal {
 		}
 	}
 
-	private async loadRecurringEventData(): Promise<void> {
+	private loadRecurringEventData(): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const rruleType = this.originalFrontmatter[settings.rruleProp] as RecurrenceType | undefined;
 
@@ -682,7 +682,7 @@ export class EventEditModal extends BaseEventModal {
 			this.rruleSelect.value = rruleType;
 
 			// Load weekdays if applicable
-			if (WEEKDAY_SUPPORTED_TYPES.includes(rruleType as any)) {
+			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(rruleType)) {
 				this.weekdayContainer.classList.remove("prisma-hidden");
 
 				const rruleSpec = this.originalFrontmatter[settings.rruleSpecProp] as string | undefined;
@@ -706,7 +706,7 @@ export class EventEditModal extends BaseEventModal {
 		}
 	}
 
-	private async loadCustomPropertiesData(): Promise<void> {
+	private loadCustomPropertiesData(): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		// Categorize properties using shared utility
@@ -736,9 +736,9 @@ export class EventEditModal extends BaseEventModal {
 			this.titleInput.value = this.displayTitle;
 		}
 
-		await this.loadRecurringEventData();
+		this.loadRecurringEventData();
 		this.loadCategoryData();
-		await this.loadCustomPropertiesData();
+		this.loadCustomPropertiesData();
 	}
 
 	private loadCategoryData(): void {

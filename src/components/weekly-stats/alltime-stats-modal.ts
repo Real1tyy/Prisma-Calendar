@@ -54,10 +54,12 @@ export class AllTimeStatsModal extends StatsModal {
 		durationStat.setText(
 			`⏱ ${this.showDecimalHours ? formatDurationAsDecimalHours(stats.totalDuration) : formatDuration(stats.totalDuration)}`
 		);
-		durationStat.addEventListener("click", async () => {
-			this.showDecimalHours = !this.showDecimalHours;
-			this.destroyComponents();
-			await this.renderContent();
+		durationStat.addEventListener("click", () => {
+			void (async () => {
+				this.showDecimalHours = !this.showDecimalHours;
+				this.destroyComponents();
+				await this.renderContent();
+			})();
 		});
 
 		const middleSection = header.createDiv(cls("stats-middle-section"));

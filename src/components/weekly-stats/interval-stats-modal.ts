@@ -102,8 +102,8 @@ export abstract class IntervalStatsModal extends StatsModal {
 			text: "Previous",
 			cls: cls("stats-nav-button"),
 		});
-		prevButton.addEventListener("click", async () => {
-			await this.navigatePrevious();
+		prevButton.addEventListener("click", () => {
+			void this.navigatePrevious();
 		});
 
 		const durationStat = header.createEl("button", {
@@ -112,10 +112,12 @@ export abstract class IntervalStatsModal extends StatsModal {
 		durationStat.setText(
 			`⏱ ${this.showDecimalHours ? formatDurationAsDecimalHours(stats.totalDuration) : formatDuration(stats.totalDuration)}`
 		);
-		durationStat.addEventListener("click", async () => {
-			this.showDecimalHours = !this.showDecimalHours;
-			this.destroyComponents();
-			await this.renderContent();
+		durationStat.addEventListener("click", () => {
+			void (async () => {
+				this.showDecimalHours = !this.showDecimalHours;
+				this.destroyComponents();
+				await this.renderContent();
+			})();
 		});
 
 		const middleSection = header.createDiv(cls("stats-middle-section"));
@@ -132,8 +134,8 @@ export abstract class IntervalStatsModal extends StatsModal {
 			text: "Today",
 			cls: cls("stats-today-button"),
 		});
-		todayButton.addEventListener("click", async () => {
-			await this.navigateToToday();
+		todayButton.addEventListener("click", () => {
+			void this.navigateToToday();
 		});
 
 		const aggregationToggle = controlsRow.createDiv(cls("stats-aggregation-toggle"));
@@ -146,8 +148,8 @@ export abstract class IntervalStatsModal extends StatsModal {
 			text: "Next",
 			cls: cls("stats-nav-button"),
 		});
-		nextButton.addEventListener("click", async () => {
-			await this.navigateNext();
+		nextButton.addEventListener("click", () => {
+			void this.navigateNext();
 		});
 	}
 }

@@ -99,23 +99,25 @@ export class NotificationsSettings {
 				text.setPlaceholder(placeholder);
 				text.setValue(currentValue !== undefined ? String(currentValue) : "");
 
-				text.inputEl.addEventListener("blur", async () => {
-					const inputValue = text.inputEl.value.trim();
+				text.inputEl.addEventListener("blur", () => {
+					void (async () => {
+						const inputValue = text.inputEl.value.trim();
 
-					if (inputValue === "") {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							[key]: undefined,
-						}));
-					} else {
-						const numValue = Number(inputValue);
-						if (!Number.isNaN(numValue) && Number.isInteger(numValue) && numValue >= 0) {
+						if (inputValue === "") {
 							await this.settingsStore.updateSettings((s) => ({
 								...s,
-								[key]: numValue,
+								[key]: undefined,
 							}));
+						} else {
+							const numValue = Number(inputValue);
+							if (!Number.isNaN(numValue) && Number.isInteger(numValue) && numValue >= 0) {
+								await this.settingsStore.updateSettings((s) => ({
+									...s,
+									[key]: numValue,
+								}));
+							}
 						}
-					}
+					})();
 				});
 
 				text.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {

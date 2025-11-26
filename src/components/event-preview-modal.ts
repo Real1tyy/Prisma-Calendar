@@ -11,26 +11,38 @@ import { removeZettelId } from "../utils/calendar-events";
 import { createTextDiv } from "../utils/dom-utils";
 import { calculateDuration, categorizeProperties } from "../utils/format";
 
+interface PreviewEvent {
+	title?: string;
+	start?: Date | null;
+	end?: Date | null;
+	allDay?: boolean;
+	extendedProps?: {
+		filePath?: string;
+		isVirtual?: boolean;
+		frontmatterDisplayData?: Record<string, unknown>;
+	};
+}
+
 export class EventPreviewModal extends Modal {
-	private event: any;
+	private event: PreviewEvent;
 	private bundle: CalendarBundle;
 	private allFrontmatter: Record<string, unknown> = {};
 
-	constructor(app: App, bundle: CalendarBundle, event: any) {
+	constructor(app: App, bundle: CalendarBundle, event: PreviewEvent) {
 		super(app);
 		this.bundle = bundle;
 		this.event = event;
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): void {
 		const { contentEl } = this;
 		addCls(contentEl, "event-preview-modal");
 
-		await this.loadAllFrontmatter();
+		this.loadAllFrontmatter();
 		this.renderEventPreview();
 	}
 
-	private async loadAllFrontmatter(): Promise<void> {
+	private loadAllFrontmatter(): void {
 		try {
 			const filePath = this.event.extendedProps?.filePath;
 			if (!filePath) return;
@@ -117,7 +129,7 @@ export class EventPreviewModal extends Modal {
 		}
 	}
 
-	private renderProperty(container: HTMLElement, key: string, value: any): void {
+	private renderProperty(container: HTMLElement, key: string, value: unknown): void {
 		const propItem = container.createDiv(cls("event-preview-prop-item"));
 		createTextDiv(propItem, key, cls("event-preview-prop-key"));
 		const valueEl = propItem.createEl("div", { cls: cls("event-preview-prop-value") });

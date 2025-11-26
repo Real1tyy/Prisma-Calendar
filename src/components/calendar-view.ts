@@ -953,7 +953,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.bundle.refreshCalendar();
 	}
 
-	private async refreshEvents(): Promise<void> {
+	private refreshEvents(): void {
 		// Don't refresh events until indexing is complete
 		if (!this.calendar || !this.isIndexingComplete || !this.calendar.view) {
 			return;
@@ -1531,7 +1531,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.bundle.viewStateManager.saveState(this.calendar, currentZoomLevel);
 	}
 
-	async unmount(): Promise<void> {
+	unmount(): void {
 		this.saveCurrentState();
 
 		// Stop upcoming event check interval

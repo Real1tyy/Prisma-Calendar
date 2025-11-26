@@ -46,10 +46,12 @@ export abstract class StatsModal extends Modal {
 			cls: cls("stats-skip-checkbox-text"),
 		});
 
-		checkbox.addEventListener("change", async () => {
-			this.includeSkippedEvents = checkbox.checked;
-			this.destroyComponents();
-			await this.renderContent();
+		checkbox.addEventListener("change", () => {
+			void (async () => {
+				this.includeSkippedEvents = checkbox.checked;
+				this.destroyComponents();
+				await this.renderContent();
+			})();
 		});
 	}
 
@@ -64,12 +66,14 @@ export abstract class StatsModal extends Modal {
 			cls: cls("stats-mode-button-compact"),
 		});
 
-		toggleButton.addEventListener("click", async () => {
-			this.aggregationMode = this.aggregationMode === "name" ? "category" : "name";
-			toggleButton.setText(this.aggregationMode === "name" ? "Event Name" : "Category");
+		toggleButton.addEventListener("click", () => {
+			void (async () => {
+				this.aggregationMode = this.aggregationMode === "name" ? "category" : "name";
+				toggleButton.setText(this.aggregationMode === "name" ? "Event Name" : "Category");
 
-			this.destroyComponents();
-			await this.renderContent();
+				this.destroyComponents();
+				await this.renderContent();
+			})();
 		});
 	}
 

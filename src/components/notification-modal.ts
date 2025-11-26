@@ -31,7 +31,7 @@ export class NotificationModal extends Modal {
 		this.onSnooze = onSnooze;
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): void {
 		const { contentEl } = this;
 		addCls(contentEl, "event-notification-modal");
 

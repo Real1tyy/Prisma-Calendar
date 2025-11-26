@@ -248,7 +248,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		this.display();
 	}
 
-	private async renameCurrentCalendar(): Promise<void> {
+	private renameCurrentCalendar(): void {
 		const settings = this.plugin.settingsStore.currentSettings;
 		const currentCalendar = settings.calendars.find((c) => c.id === this.selectedCalendarId);
 
@@ -256,18 +256,20 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			return;
 		}
 
-		new RenameCalendarModal(this.app, currentCalendar.name, async (newName) => {
-			if (newName && newName !== currentCalendar.name) {
-				await this.plugin.settingsStore.updateSettings((currentSettings) => ({
-					...currentSettings,
-					calendars: currentSettings.calendars.map((calendar) =>
-						calendar.id === this.selectedCalendarId ? { ...calendar, name: newName } : calendar
-					),
-				}));
+		new RenameCalendarModal(this.app, currentCalendar.name, (newName) => {
+			void (async () => {
+				if (newName && newName !== currentCalendar.name) {
+					await this.plugin.settingsStore.updateSettings((currentSettings) => ({
+						...currentSettings,
+						calendars: currentSettings.calendars.map((calendar) =>
+							calendar.id === this.selectedCalendarId ? { ...calendar, name: newName } : calendar
+						),
+					}));
 
-				await this.plugin.refreshCalendarBundles();
-				this.display();
-			}
+					await this.plugin.refreshCalendarBundles();
+					this.display();
+				}
+			})();
 		}).open();
 	}
 }

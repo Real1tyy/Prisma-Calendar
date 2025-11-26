@@ -227,9 +227,11 @@ export abstract class BaseEventListModal extends Modal {
 				if (action.isPrimary) {
 					btn.addClass("mod-cta");
 				}
-				btn.addEventListener("click", async (e) => {
+				btn.addEventListener("click", (e) => {
 					e.stopPropagation(); // Prevent triggering item click
-					await action.handler(item, itemEl);
+					void (async () => {
+						await action.handler(item, itemEl);
+					})();
 				});
 			}
 		}

@@ -97,36 +97,38 @@ export class BatchSelectionManager {
 			text: confirmationTitle,
 			cls: "mod-warning",
 		});
-		confirmBtn.onclick = async () => {
-			confirmModal.close();
+		confirmBtn.onclick = () => {
+			void (async () => {
+				confirmModal.close();
 
-			// Use the same logic as executeWithSelection
-			if (this.returnIfEmpty()) return;
+				// Use the same logic as executeWithSelection
+				if (this.returnIfEmpty()) return;
 
-			try {
-				const filePaths = Array.from(this.selectedEvents.values()).map((event) => event.filePath);
-				const command = commandFactory(filePaths);
+				try {
+					const filePaths = Array.from(this.selectedEvents.values()).map((event) => event.filePath);
+					const command = commandFactory(filePaths);
 
-				await this.bundle.commandManager.executeCommand(command);
+					await this.bundle.commandManager.executeCommand(command);
 
-				new Notice(successMessage(filePaths.length));
-				this.clearSelection();
-				this.calendar.refetchEvents();
-			} catch (error) {
-				console.error(`Failed operation: ${errorMessage}`, error);
-
-				// Check if this is a partial failure (some succeeded)
-				const errorMsg = error instanceof Error ? error.message : String(error);
-				if (errorMsg.includes("Completed")) {
-					// Partial success - show the detailed message
-					new Notice(errorMsg, 6000);
+					new Notice(successMessage(filePaths.length));
 					this.clearSelection();
 					this.calendar.refetchEvents();
-				} else {
-					// Complete failure
-					new Notice(errorMsg);
+				} catch (error) {
+					console.error(`Failed operation: ${errorMessage}`, error);
+
+					// Check if this is a partial failure (some succeeded)
+					const errorMsg = error instanceof Error ? error.message : String(error);
+					if (errorMsg.includes("Completed")) {
+						// Partial success - show the detailed message
+						new Notice(errorMsg, 6000);
+						this.clearSelection();
+						this.calendar.refetchEvents();
+					} else {
+						// Complete failure
+						new Notice(errorMsg);
+					}
 				}
-			}
+			})();
 		};
 
 		confirmModal.open();
