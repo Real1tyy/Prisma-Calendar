@@ -579,6 +579,18 @@ export class RecurringEventManager extends DebouncedNotifier {
 		return Array.from(this.recurringEventsMap.keys());
 	}
 
+	getAllRecurringEvents(): NodeRecurringEvent[] {
+		return Array.from(this.recurringEventsMap.values())
+			.filter((data) => !!data.recurringEvent)
+			.map((data) => data.recurringEvent as NodeRecurringEvent);
+	}
+
+	getEnabledRecurringEvents(): NodeRecurringEvent[] {
+		return Array.from(this.recurringEventsMap.values())
+			.filter((data) => data.recurringEvent && data.recurringEvent.frontmatter[this.settings.skipProp] !== true)
+			.map((data) => data.recurringEvent as NodeRecurringEvent);
+	}
+
 	getDisabledRecurringEvents(): NodeRecurringEvent[] {
 		const disabledEvents: NodeRecurringEvent[] = [];
 

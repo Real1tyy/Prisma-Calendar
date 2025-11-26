@@ -8,8 +8,8 @@ export { ExpressionFilterInputManager as ExpressionFilterManager } from "./input
 export { SearchFilterInputManager as SearchFilterManager } from "./input-managers/search-filter";
 export {
 	BaseEventListModal,
-	DisabledRecurringEventsModal,
 	FilteredEventsModal,
+	RecurringEventsModal,
 	SkippedEventsModal,
 } from "./list-modals";
 export { MoveByModal } from "./move-by-modal";

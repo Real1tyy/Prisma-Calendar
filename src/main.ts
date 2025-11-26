@@ -116,8 +116,8 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", (view) =>
 			view.showSkippedEventsModal()
 		);
-		addCalendarViewCommand(COMMAND_IDS.SHOW_DISABLED_RECURRING_EVENTS, "Show disabled recurring events", (view) =>
-			view.showDisabledRecurringEventsModal()
+		addCalendarViewCommand(COMMAND_IDS.SHOW_RECURRING_EVENTS, "Show recurring events", (view) =>
+			view.showRecurringEventsModal()
 		);
 		addCalendarViewCommand(COMMAND_IDS.SHOW_FILTERED_EVENTS, "Show filtered events", (view) =>
 			view.showFilteredEventsModal()

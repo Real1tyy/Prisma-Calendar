@@ -2233,7 +2233,7 @@
 	}
 }
 
-/* Generic Event List Modal (used by Skipped Events and Disabled Recurring Events) */
+/* Generic Event List Modal (used by Skipped Events and Recurring Events) */
 .prisma-generic-event-list-modal h2 {
 	margin-bottom: 1rem;
 }
@@ -2314,7 +2314,24 @@
 	gap: 0.5rem;
 }
 
-/* Recurring Events List Modal */
+/* Recurring Events Modal - Toggle Styles */
+.prisma-recurring-events-toggle {
+	margin-bottom: 1rem;
+}
+
+.prisma-recurring-events-toggle .prisma-checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	cursor: pointer;
+	color: var(--text-normal);
+}
+
+.prisma-recurring-events-toggle input[type="checkbox"] {
+	cursor: pointer;
+}
+
+/* Recurring Events List Modal (Legacy) */
 .prisma-recurring-events-list-modal {
 	padding: 1.5rem;
 }

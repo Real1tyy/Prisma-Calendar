@@ -6,6 +6,22 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+#### Unified Recurring Events Modal
+- **View All Recurring Events**: New "Show recurring events" command that displays all your recurring events in one place
+- **Toggle Between Enabled/Disabled**: Checkbox to switch between viewing enabled recurring events (default) or disabled ones. Search filter is preserved when toggling.
+- **Quick Enable/Disable**: Primary action button dynamically changes:
+  - When viewing enabled events: "Disable" button to quickly disable recurring events
+  - When viewing disabled events: "Enable" button to re-enable them
+- **Navigate to Source**: "Navigate" button that jumps to the source recurring event in the calendar (week view), highlighting it for easy identification
+- **Search and Filter**: Search through recurring events by title, just like other event list modals.
+- **Smart Button Display**: Calendar toolbar button shows count of enabled recurring events and is only visible when enabled recurring events exist
+- **Replaces Old Modal**: The "Show disabled recurring events" command has been removed in favor of this more comprehensive modal
+- **Use Cases**:
+  - Get an overview of all your recurring events
+  - Quickly enable or disable recurring events without opening files
+  - Navigate to source recurring events for editing or context
+  - Manage recurring events from a single interface
+
 #### Navigate to Source Event Instead of Opening File
 - **Go to Source Navigation**: The "Go to Source" button for physical and virtual recurring events now navigates to the source event in the calendar instead of opening the file
 - **Week View Navigation**: Automatically switches to week view and centers the calendar on the source event's date
