@@ -13,6 +13,8 @@
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"lint": "biome lint .",
 		"lint:fix": "biome lint --write .",
+		"lint:eslint": "eslint src/",
+		"lint:eslint:fix": "eslint --fix src/",
 		"format": "biome format .",
 		"format:fix": "biome format --write .",
 		"check": "biome check .",
