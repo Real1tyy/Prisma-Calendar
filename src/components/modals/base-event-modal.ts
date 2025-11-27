@@ -1,26 +1,19 @@
-import {
-	addCls,
-	cls,
-	parseFrontmatterRecord,
-	parsePositiveInt,
-	serializeFrontmatterValue,
-} from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls, parseFrontmatterRecord, serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, Notice, TFile } from "obsidian";
-import type { CalendarBundle } from "../core/calendar-bundle";
-import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../types/recurring-event";
-import type { EventPreset } from "../types/settings";
-import { extractZettelId, removeZettelId } from "../utils/calendar-events";
-import type { RecurrenceType, Weekday } from "../utils/date-recurrence";
+import type { CalendarBundle } from "../../core/calendar-bundle";
+import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
+import type { EventPreset } from "../../types/settings";
+import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
 import {
 	calculateDurationMinutes,
-	categorizeProperties,
 	formatDateOnly,
 	formatDateTimeForInput,
 	inputValueToISOString,
-} from "../utils/format";
-import { CategoryInput } from "./category-input";
+} from "../../utils/format";
+import { CategoryInput } from "../category-input";
+import { SavePresetModal } from "./save-preset-modal";
 
-interface EventModalData {
+export interface EventModalData {
 	title: string;
 	start: string | Date | null;
 	end?: string | Date | null;
@@ -31,7 +24,7 @@ interface EventModalData {
 	};
 }
 
-interface EventSaveData {
+export interface EventSaveData {
 	filePath: string | null;
 	title: string;
 	start: string;
@@ -45,7 +38,7 @@ interface CustomProperty {
 	value: string;
 }
 
-abstract class BaseEventModal extends Modal {
+export abstract class BaseEventModal extends Modal {
 	protected event: EventModalData;
 	protected bundle: CalendarBundle;
 	protected onSave: (eventData: EventSaveData) => void;
@@ -903,277 +896,5 @@ abstract class BaseEventModal extends Modal {
 	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-	}
-}
-
-class SavePresetModal extends Modal {
-	private onSave: (name: string, overridePresetId: string | null) => void;
-	private existingPresets: EventPreset[];
-	private nameInput!: HTMLInputElement;
-	private overrideSelect!: HTMLSelectElement;
-
-	constructor(
-		app: App,
-		existingPresets: EventPreset[],
-		onSave: (name: string, overridePresetId: string | null) => void
-	) {
-		super(app);
-		this.existingPresets = existingPresets;
-		this.onSave = onSave;
-	}
-
-	onOpen(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-
-		addCls(this.modalEl, "save-preset-modal");
-
-		contentEl.createEl("h3", { text: "Save as preset" });
-
-		// Override existing preset selector
-		const overrideContainer = contentEl.createDiv("setting-item");
-		overrideContainer.createEl("div", { text: "Save to", cls: "setting-item-name" });
-		this.overrideSelect = overrideContainer.createEl("select", {
-			cls: "setting-item-control",
-		});
-
-		// Add "Create new" option
-		const newOption = this.overrideSelect.createEl("option", {
-			value: "",
-			text: "Create new preset",
-		});
-		newOption.value = "";
-
-		// Add existing presets
-		for (const preset of this.existingPresets) {
-			const option = this.overrideSelect.createEl("option", {
-				value: preset.id,
-				text: `Override: ${preset.name}`,
-			});
-			option.value = preset.id;
-		}
-
-		// Update name field when override selection changes
-		this.overrideSelect.addEventListener("change", () => {
-			const selectedId = this.overrideSelect.value;
-			if (selectedId) {
-				const preset = this.existingPresets.find((p) => p.id === selectedId);
-				if (preset) {
-					this.nameInput.value = preset.name;
-				}
-			}
-		});
-
-		// Preset name input
-		const inputContainer = contentEl.createDiv("setting-item");
-		inputContainer.createEl("div", { text: "Preset name", cls: "setting-item-name" });
-		this.nameInput = inputContainer.createEl("input", {
-			type: "text",
-			placeholder: "e.g., 30 min meeting, All-day event",
-			cls: "setting-item-control",
-		});
-
-		const buttonContainer = contentEl.createDiv("modal-button-container");
-
-		const cancelButton = buttonContainer.createEl("button", {
-			text: "Cancel",
-		});
-		cancelButton.addEventListener("click", () => {
-			this.close();
-		});
-
-		const saveButton = buttonContainer.createEl("button", {
-			text: "Save",
-			cls: "mod-cta",
-		});
-		saveButton.addEventListener("click", () => {
-			this.handleSave();
-		});
-
-		// Handle Enter key
-		contentEl.addEventListener("keydown", (e) => {
-			if (e.key === "Enter" && !e.shiftKey) {
-				e.preventDefault();
-				this.handleSave();
-			}
-		});
-
-		this.nameInput.focus();
-	}
-
-	private handleSave(): void {
-		const name = this.nameInput.value.trim();
-		if (!name) {
-			new Notice("Please enter a preset name");
-			return;
-		}
-
-		const overridePresetId = this.overrideSelect.value || null;
-		this.onSave(name, overridePresetId);
-		this.close();
-	}
-
-	onClose(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}
-
-export class EventCreateModal extends BaseEventModal {
-	protected getModalTitle(): string {
-		return "Create Event";
-	}
-
-	protected getSaveButtonText(): string {
-		return "Create";
-	}
-
-	protected async initialize(): Promise<void> {
-		// No initialization needed for create mode
-	}
-
-	protected applyDefaultPreset(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-
-		if (settings.defaultPresetId) {
-			const presets = settings.eventPresets || [];
-			const defaultPreset = presets.find((p) => p.id === settings.defaultPresetId);
-
-			if (defaultPreset) {
-				this.applyPreset(defaultPreset);
-
-				// Also set the selector to show the selected preset
-				if (this.presetSelector) {
-					this.presetSelector.value = defaultPreset.id;
-				}
-			}
-		}
-	}
-}
-
-export class EventEditModal extends BaseEventModal {
-	private originalZettelId: string | null = null;
-	private displayTitle: string = "";
-
-	protected getModalTitle(): string {
-		return "Edit Event";
-	}
-
-	protected getSaveButtonText(): string {
-		return "Save";
-	}
-
-	protected async initialize(): Promise<void> {
-		this.loadExistingFrontmatter();
-
-		// Extract and store ZettelID from the original title
-		if (this.event.title) {
-			const zettelId = extractZettelId(this.event.title);
-			if (zettelId) {
-				this.originalZettelId = `-${zettelId}`; // Store "-20250103123456" format
-				this.displayTitle = removeZettelId(this.event.title);
-			} else {
-				this.displayTitle = this.event.title;
-			}
-		}
-	}
-
-	private loadRecurringEventData(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const rruleType = this.originalFrontmatter[settings.rruleProp] as RecurrenceType | undefined;
-
-		if (rruleType) {
-			// Event has recurring rule
-			this.recurringCheckbox.checked = true;
-			this.recurringContainer.classList.remove("prisma-hidden");
-			this.rruleSelect.value = rruleType;
-
-			// Load weekdays if applicable
-			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(rruleType)) {
-				this.weekdayContainer.classList.remove("prisma-hidden");
-
-				const rruleSpec = this.originalFrontmatter[settings.rruleSpecProp] as string | undefined;
-				if (rruleSpec) {
-					const weekdays = rruleSpec.split(",").map((day) => day.trim().toLowerCase());
-
-					for (const weekday of weekdays) {
-						const checkbox = this.weekdayCheckboxes.get(weekday as Weekday);
-						if (checkbox) {
-							checkbox.checked = true;
-						}
-					}
-				}
-			}
-
-			const futureCount = this.originalFrontmatter[settings.futureInstancesCountProp];
-			const parsed = parsePositiveInt(futureCount, 0);
-			if (parsed > 0) {
-				this.futureInstancesCountInput.value = String(parsed);
-			}
-		}
-	}
-
-	private loadCustomPropertiesData(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-
-		// Categorize properties using shared utility
-		const { displayProperties, otherProperties } = categorizeProperties(this.originalFrontmatter, settings);
-
-		// Load display properties
-		for (const [key, value] of displayProperties) {
-			this.originalCustomPropertyKeys.add(key);
-			const stringValue = serializeFrontmatterValue(value);
-			this.addCustomProperty(key, stringValue, "display");
-		}
-
-		// Load other properties
-		for (const [key, value] of otherProperties) {
-			this.originalCustomPropertyKeys.add(key);
-			const stringValue = serializeFrontmatterValue(value);
-			this.addCustomProperty(key, stringValue, "other");
-		}
-	}
-
-	onOpen(): void {
-		// Call parent onOpen first
-		super.onOpen();
-
-		// Update the title input with the display title (without ZettelID)
-		if (this.displayTitle && this.titleInput) {
-			this.titleInput.value = this.displayTitle;
-		}
-
-		this.loadRecurringEventData();
-		this.loadCategoryData();
-		this.loadCustomPropertiesData();
-	}
-
-	private loadCategoryData(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.categoryProp || !this.categoryInput) return;
-
-		const categoryValue = this.originalFrontmatter[settings.categoryProp];
-		this.categoryInput.setValue(categoryValue);
-	}
-
-	public saveEvent(): void {
-		// Reconstruct the title with ZettelID before saving
-		const userTitle = this.titleInput.value;
-		let finalTitle = userTitle;
-
-		// If there was a ZettelID, append it back
-		if (this.originalZettelId) {
-			finalTitle = `${userTitle}${this.originalZettelId}`;
-		}
-
-		// Temporarily update the input value with the full title for the parent save logic
-		const originalInputValue = this.titleInput.value;
-		this.titleInput.value = finalTitle;
-
-		// Call parent save logic
-		super.saveEvent();
-
-		// Restore the input value (though the modal will close anyway)
-		this.titleInput.value = originalInputValue;
 	}
 }

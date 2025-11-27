@@ -24,7 +24,6 @@ import { roundToNearestHour, toLocalISOString } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
-import { EventCreateModal } from "./event-edit-modal";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { FilterPresetSelector } from "./filter-preset-selector";
 import { ExpressionFilterInputManager } from "./input-managers/expression-filter";
@@ -36,6 +35,7 @@ import {
 	SelectedEventsModal,
 	SkippedEventsModal,
 } from "./list-modals";
+import { EventCreateModal } from "./modals";
 import { AllTimeStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 

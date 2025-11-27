@@ -1,6 +1,6 @@
 import type { App } from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { EventEditModal } from "../../src/components/event-edit-modal";
+import { EventEditModal } from "../../src/components/modals";
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
 
 describe("EventEditModal - Custom Properties", () => {

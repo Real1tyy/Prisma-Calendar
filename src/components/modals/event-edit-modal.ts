@@ -1,0 +1,133 @@
+import { parsePositiveInt, serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
+import { WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
+import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
+import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
+import { categorizeProperties } from "../../utils/format";
+import { BaseEventModal } from "./base-event-modal";
+
+export class EventEditModal extends BaseEventModal {
+	private originalZettelId: string | null = null;
+	private displayTitle = "";
+
+	protected getModalTitle(): string {
+		return "Edit Event";
+	}
+
+	protected getSaveButtonText(): string {
+		return "Save";
+	}
+
+	protected async initialize(): Promise<void> {
+		this.loadExistingFrontmatter();
+
+		// Extract and store ZettelID from the original title
+		if (this.event.title) {
+			const zettelId = extractZettelId(this.event.title);
+			if (zettelId) {
+				this.originalZettelId = `-${zettelId}`; // Store "-20250103123456" format
+				this.displayTitle = removeZettelId(this.event.title);
+			} else {
+				this.displayTitle = this.event.title;
+			}
+		}
+	}
+
+	private loadRecurringEventData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const rruleType = this.originalFrontmatter[settings.rruleProp] as RecurrenceType | undefined;
+
+		if (rruleType) {
+			// Event has recurring rule
+			this.recurringCheckbox.checked = true;
+			this.recurringContainer.classList.remove("prisma-hidden");
+			this.rruleSelect.value = rruleType;
+
+			// Load weekdays if applicable
+			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(rruleType)) {
+				this.weekdayContainer.classList.remove("prisma-hidden");
+
+				const rruleSpec = this.originalFrontmatter[settings.rruleSpecProp] as string | undefined;
+				if (rruleSpec) {
+					const weekdays = rruleSpec.split(",").map((day) => day.trim().toLowerCase());
+
+					for (const weekday of weekdays) {
+						const checkbox = this.weekdayCheckboxes.get(weekday as Weekday);
+						if (checkbox) {
+							checkbox.checked = true;
+						}
+					}
+				}
+			}
+
+			const futureCount = this.originalFrontmatter[settings.futureInstancesCountProp];
+			const parsed = parsePositiveInt(futureCount, 0);
+			if (parsed > 0) {
+				this.futureInstancesCountInput.value = String(parsed);
+			}
+		}
+	}
+
+	private loadCustomPropertiesData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		// Categorize properties using shared utility
+		const { displayProperties, otherProperties } = categorizeProperties(this.originalFrontmatter, settings);
+
+		// Load display properties
+		for (const [key, value] of displayProperties) {
+			this.originalCustomPropertyKeys.add(key);
+			const stringValue = serializeFrontmatterValue(value);
+			this.addCustomProperty(key, stringValue, "display");
+		}
+
+		// Load other properties
+		for (const [key, value] of otherProperties) {
+			this.originalCustomPropertyKeys.add(key);
+			const stringValue = serializeFrontmatterValue(value);
+			this.addCustomProperty(key, stringValue, "other");
+		}
+	}
+
+	onOpen(): void {
+		// Call parent onOpen first
+		super.onOpen();
+
+		// Update the title input with the display title (without ZettelID)
+		if (this.displayTitle && this.titleInput) {
+			this.titleInput.value = this.displayTitle;
+		}
+
+		this.loadRecurringEventData();
+		this.loadCategoryData();
+		this.loadCustomPropertiesData();
+	}
+
+	private loadCategoryData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.categoryProp || !this.categoryInput) return;
+
+		const categoryValue = this.originalFrontmatter[settings.categoryProp];
+		this.categoryInput.setValue(categoryValue);
+	}
+
+	public saveEvent(): void {
+		// Reconstruct the title with ZettelID before saving
+		const userTitle = this.titleInput.value;
+		let finalTitle = userTitle;
+
+		// If there was a ZettelID, append it back
+		if (this.originalZettelId) {
+			finalTitle = `${userTitle}${this.originalZettelId}`;
+		}
+
+		// Temporarily update the input value with the full title for the parent save logic
+		const originalInputValue = this.titleInput.value;
+		this.titleInput.value = finalTitle;
+
+		// Call parent save logic
+		super.saveEvent();
+
+		// Restore the input value (though the modal will close anyway)
+		this.titleInput.value = originalInputValue;
+	}
+}

@@ -14,9 +14,9 @@ import { intoDate } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import type { CalendarView } from "./calendar-view";
-import { EventEditModal } from "./event-edit-modal";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { RecurringEventsListModal } from "./list-modals/recurring-events-list-modal";
+import { EventEditModal } from "./modals";
 import { MoveByModal } from "./move-by-modal";
 
 interface CalendarEventInfo {
