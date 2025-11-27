@@ -3,12 +3,30 @@ import { SETTINGS_DEFAULTS } from "../constants";
 import { ColorSchema } from "../utils/validation";
 import { CalendarViewTypeSchema } from "./view";
 
+export const EventPresetSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	allDay: z.boolean().optional(), // Whether this is an all-day event
+	date: z.string().optional(), // Date for all-day events (YYYY-MM-DD format)
+	startDate: z.string().optional(), // Start datetime for timed events (ISO string)
+	endDate: z.string().optional(), // End datetime for timed events (ISO string)
+	categories: z.string().optional(), // Event categories (comma-separated string)
+	rruleType: z.string().optional(), // Recurrence type
+	rruleSpec: z.string().optional(), // Weekdays for recurring events
+	futureInstancesCount: z.number().int().positive().optional(), // Per-preset override of future instances count
+	customProperties: z.record(z.string(), z.unknown()).optional(), // Additional frontmatter properties
+	createdAt: z.number().int().positive(), // Timestamp when preset was created
+	updatedAt: z.number().int().positive().optional(), // Timestamp when preset was last modified
+});
+
 export const GeneralSettingsSchema = z.object({
 	directory: z.string().default(""),
 	defaultDurationMinutes: z.number().int().positive().default(SETTINGS_DEFAULTS.DEFAULT_DURATION_MINUTES),
 	showDurationField: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SHOW_DURATION_FIELD), // show duration in minutes field in event modal for quick editing
 	templatePath: z.string().optional(), // path to Templater template for new events
 	markPastInstancesAsDone: z.boolean().default(false), // automatically mark past events as done on startup
+	eventPresets: z.array(EventPresetSchema).default([]), // Event creation presets with pre-filled values
+	defaultPresetId: z.string().optional(), // ID of default preset to auto-fill on create modal open
 });
 
 export const PropsSettingsSchema = z.object({
@@ -114,5 +132,6 @@ export const CustomCalendarSettingsSchema = z.object({
 });
 
 export type FilterPreset = z.infer<typeof FilterPresetSchema>;
+export type EventPreset = z.infer<typeof EventPresetSchema>;
 export type SingleCalendarConfig = z.infer<typeof SingleCalendarConfigSchema>;
 export type CustomCalendarSettings = z.infer<typeof CustomCalendarSettingsSchema>;

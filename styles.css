@@ -1956,6 +1956,186 @@
 	}
 }
 
+/* Event Modal - Header with Preset Selector */
+.prisma-event-modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.prisma-event-modal-header h2 {
+	margin: 0;
+	flex: 1;
+}
+
+.prisma-event-preset-selector-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.prisma-event-preset-label {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	font-weight: var(--font-weight-medium);
+}
+
+.prisma-event-preset-select {
+	padding: 4px 24px 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--interactive-normal);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	cursor: pointer;
+	min-width: 120px;
+	transition: all 0.15s ease;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='currentColor' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 6px center;
+	background-size: 10px;
+}
+
+.prisma-event-preset-select:hover {
+	background-color: var(--interactive-hover);
+	border-color: var(--background-modifier-border-hover);
+}
+
+.prisma-event-preset-select:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+.prisma-event-preset-select option {
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+}
+
+/* Event Preset Settings */
+.prisma-event-preset-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 10px 14px;
+	margin-bottom: 8px;
+	background-color: var(--background-secondary);
+	transition: all 0.15s ease;
+}
+
+.prisma-event-preset-item:hover {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--background-modifier-border-hover);
+}
+
+.prisma-event-preset-name {
+	flex: 1;
+	font-weight: var(--font-weight-medium);
+	color: var(--text-normal);
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.prisma-event-preset-details {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	flex: 2;
+	align-items: center;
+}
+
+.prisma-event-preset-tag {
+	padding: 2px 8px;
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+
+.prisma-event-preset-controls {
+	display: flex;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+.prisma-event-preset-btn {
+	padding: 4px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	cursor: pointer;
+	font-size: var(--font-ui-smaller);
+	transition: all 0.15s ease;
+}
+
+.prisma-event-preset-btn:hover {
+	background-color: var(--interactive-hover);
+}
+
+.prisma-event-preset-btn-delete {
+	color: var(--text-error);
+}
+
+.prisma-event-preset-btn-delete:hover {
+	background-color: var(--background-modifier-error);
+	border-color: var(--text-error);
+}
+
+.prisma-event-preset-empty {
+	padding: 16px;
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
+	background-color: var(--background-secondary);
+	border-radius: 6px;
+	border: 1px dashed var(--background-modifier-border);
+}
+
+/* Responsive adjustments for preset selector */
+@media (max-width: 768px) {
+	.prisma-event-modal-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+
+	.prisma-event-preset-selector-wrapper {
+		width: 100%;
+	}
+
+	.prisma-event-preset-select {
+		flex: 1;
+	}
+
+	.prisma-event-preset-item {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
+	.prisma-event-preset-details {
+		width: 100%;
+	}
+
+	.prisma-event-preset-controls {
+		width: 100%;
+		justify-content: flex-end;
+	}
+}
+
 /* Event Modal - Recurring Event Section */
 .prisma-recurring-event-fields {
 	margin-top: 16px;

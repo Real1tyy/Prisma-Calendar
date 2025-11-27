@@ -5,9 +5,10 @@ import {
 	parsePositiveInt,
 	serializeFrontmatterValue,
 } from "@real1ty-obsidian-plugins/utils";
-import { type App, Modal, TFile } from "obsidian";
+import { type App, Modal, Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../types/recurring-event";
+import type { EventPreset } from "../types/settings";
 import { extractZettelId, removeZettelId } from "../utils/calendar-events";
 import type { RecurrenceType, Weekday } from "../utils/date-recurrence";
 import {
@@ -75,6 +76,8 @@ abstract class BaseEventModal extends Modal {
 	protected otherPropertiesContainer!: HTMLElement;
 	public originalCustomPropertyKeys: Set<string> = new Set();
 
+	protected presetSelector!: HTMLSelectElement;
+
 	constructor(app: App, bundle: CalendarBundle, event: EventModalData, onSave: (eventData: EventSaveData) => void) {
 		super(app);
 		this.event = event;
@@ -91,11 +94,149 @@ abstract class BaseEventModal extends Modal {
 		// Allow subclasses to perform initialization
 		void this.initialize();
 
-		contentEl.createEl("h2", { text: this.getModalTitle() });
+		// Header with title and preset selector
+		this.createModalHeader(contentEl);
 		this.createFormFields(contentEl);
 		this.setupEventHandlers(contentEl);
 		this.titleInput.focus();
 		this.createActionButtons(contentEl);
+
+		// Apply default preset for create mode
+		this.applyDefaultPreset();
+	}
+
+	private createModalHeader(contentEl: HTMLElement): void {
+		const headerContainer = contentEl.createDiv(cls("event-modal-header"));
+
+		headerContainer.createEl("h2", { text: this.getModalTitle() });
+
+		// Preset selector (only for create mode, but rendered for all - hidden via CSS if needed)
+		this.createPresetSelector(headerContainer);
+	}
+
+	private createPresetSelector(container: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const presets = settings.eventPresets || [];
+
+		const selectorWrapper = container.createDiv(cls("event-preset-selector-wrapper"));
+
+		selectorWrapper.createEl("span", {
+			text: "Preset:",
+			cls: cls("event-preset-label"),
+		});
+
+		this.presetSelector = selectorWrapper.createEl("select", {
+			cls: cls("event-preset-select"),
+		});
+
+		// Add default "None" option
+		const noneOption = this.presetSelector.createEl("option", {
+			value: "",
+			text: "None",
+		});
+		noneOption.value = "";
+
+		// Add preset options
+		for (const preset of presets) {
+			const option = this.presetSelector.createEl("option", {
+				value: preset.id,
+				text: preset.name,
+			});
+			option.value = preset.id;
+		}
+
+		// Handle preset selection
+		this.presetSelector.addEventListener("change", () => {
+			const selectedId = this.presetSelector.value;
+			if (selectedId) {
+				const preset = presets.find((p) => p.id === selectedId);
+				if (preset) {
+					this.applyPreset(preset);
+				}
+			}
+		});
+	}
+
+	protected applyDefaultPreset(): void {
+		// Override in subclasses if needed
+	}
+
+	protected applyPreset(preset: EventPreset): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		// Apply all-day setting
+		if (preset.allDay !== undefined) {
+			this.allDayCheckbox.checked = preset.allDay;
+			const changeEvent = new Event("change", { bubbles: true });
+			this.allDayCheckbox.dispatchEvent(changeEvent);
+		}
+
+		// Apply date for all-day events
+		if (preset.date) {
+			this.dateInput.value = preset.date;
+		}
+
+		// Apply start/end dates for timed events
+		if (preset.startDate) {
+			this.startInput.value = formatDateTimeForInput(preset.startDate);
+		}
+		if (preset.endDate) {
+			this.endInput.value = formatDateTimeForInput(preset.endDate);
+		}
+
+		// Update duration field if both dates are set
+		if (preset.startDate && preset.endDate && this.durationInput) {
+			const durationMinutes = calculateDurationMinutes(preset.startDate, preset.endDate);
+			this.durationInput.value = durationMinutes.toString();
+		}
+
+		// Apply categories
+		if (preset.categories !== undefined && this.categoryInput) {
+			this.categoryInput.setValue(preset.categories);
+		}
+
+		// Apply recurring settings
+		if (preset.rruleType) {
+			this.recurringCheckbox.checked = true;
+			this.recurringContainer.classList.remove("prisma-hidden");
+			this.rruleSelect.value = preset.rruleType;
+
+			// Trigger change to show/hide weekday selector
+			const rruleChangeEvent = new Event("change", { bubbles: true });
+			this.rruleSelect.dispatchEvent(rruleChangeEvent);
+
+			// Apply weekdays if set
+			if (preset.rruleSpec && (WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(preset.rruleType)) {
+				const weekdays = preset.rruleSpec.split(",").map((day) => day.trim().toLowerCase());
+				for (const weekday of weekdays) {
+					const checkbox = this.weekdayCheckboxes.get(weekday as Weekday);
+					if (checkbox) {
+						checkbox.checked = true;
+					}
+				}
+			}
+
+			// Apply future instances count override
+			if (preset.futureInstancesCount !== undefined && this.futureInstancesCountInput) {
+				this.futureInstancesCountInput.value = preset.futureInstancesCount.toString();
+			}
+		}
+
+		// Apply custom properties
+		if (preset.customProperties) {
+			// Clear existing custom properties
+			this.displayPropertiesContainer.empty();
+			this.otherPropertiesContainer.empty();
+
+			// Get display properties list to categorize
+			const displayPropsSet = new Set(settings.frontmatterDisplayProperties || []);
+
+			for (const [key, value] of Object.entries(preset.customProperties)) {
+				const stringValue = serializeFrontmatterValue(value);
+				const section = displayPropsSet.has(key) ? "display" : "other";
+				this.addCustomProperty(key, stringValue, section);
+			}
+		}
 	}
 
 	protected abstract getModalTitle(): string;
@@ -465,6 +606,21 @@ abstract class BaseEventModal extends Modal {
 	private createActionButtons(contentEl: HTMLElement): void {
 		const buttonContainer = contentEl.createDiv("modal-button-container");
 
+		const cancelButton = buttonContainer.createEl("button", {
+			text: "Cancel",
+		});
+		cancelButton.addEventListener("click", () => {
+			this.close();
+		});
+
+		// Save as Preset button - available in both Create and Edit modals
+		const savePresetButton = buttonContainer.createEl("button", {
+			text: "Save as preset",
+		});
+		savePresetButton.addEventListener("click", () => {
+			this.openSavePresetModal();
+		});
+
 		const saveButton = buttonContainer.createEl("button", {
 			text: this.getSaveButtonText(),
 			cls: "mod-cta",
@@ -472,13 +628,133 @@ abstract class BaseEventModal extends Modal {
 		saveButton.addEventListener("click", () => {
 			this.saveEvent();
 		});
+	}
 
-		const cancelButton = buttonContainer.createEl("button", {
-			text: "Cancel",
+	private openSavePresetModal(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const existingPresets = settings.eventPresets || [];
+
+		const modal = new SavePresetModal(this.app, existingPresets, (presetName, overridePresetId) => {
+			this.saveCurrentAsPreset(presetName, overridePresetId);
 		});
-		cancelButton.addEventListener("click", () => {
-			this.close();
-		});
+		modal.open();
+	}
+
+	private saveCurrentAsPreset(presetName: string, overridePresetId: string | null): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const now = Date.now();
+
+		// Build preset from current form values
+		const preset: EventPreset = {
+			id: overridePresetId || `preset-${now}`,
+			name: presetName,
+			createdAt: now,
+		};
+
+		// If overriding, preserve the original createdAt
+		if (overridePresetId) {
+			const existingPreset = (settings.eventPresets || []).find((p) => p.id === overridePresetId);
+			if (existingPreset) {
+				preset.createdAt = existingPreset.createdAt;
+				preset.updatedAt = now;
+			}
+		}
+
+		// All-day and date fields
+		preset.allDay = this.allDayCheckbox.checked;
+		if (this.allDayCheckbox.checked) {
+			// All-day event: save date
+			if (this.dateInput.value) {
+				preset.date = this.dateInput.value;
+			}
+		} else {
+			// Timed event: save start and end dates
+			if (this.startInput.value) {
+				preset.startDate = inputValueToISOString(this.startInput.value);
+			}
+			if (this.endInput.value) {
+				preset.endDate = inputValueToISOString(this.endInput.value);
+			}
+		}
+
+		// Categories
+		if (this.categoryInput) {
+			const categoryValue = this.categoryInput.getValue();
+			if (categoryValue) {
+				preset.categories = categoryValue;
+			}
+		}
+
+		// Recurring settings
+		if (this.recurringCheckbox.checked) {
+			preset.rruleType = this.rruleSelect.value;
+
+			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(this.rruleSelect.value)) {
+				const selectedWeekdays: Weekday[] = [];
+				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
+					if (checkbox.checked) {
+						selectedWeekdays.push(weekday);
+					}
+				}
+				if (selectedWeekdays.length > 0) {
+					preset.rruleSpec = selectedWeekdays.join(", ");
+				}
+			}
+
+			// Future instances count
+			if (this.futureInstancesCountInput?.value) {
+				const futureCount = Number.parseInt(this.futureInstancesCountInput.value, 10);
+				if (!Number.isNaN(futureCount) && futureCount > 0) {
+					preset.futureInstancesCount = futureCount;
+				}
+			}
+		}
+
+		// Custom properties
+		const customProps = this.getCustomProperties();
+		if (Object.keys(customProps).length > 0) {
+			preset.customProperties = customProps;
+		}
+
+		// Save to settings
+		const currentPresets = settings.eventPresets || [];
+		let updatedPresets: EventPreset[];
+
+		if (overridePresetId) {
+			// Replace existing preset
+			updatedPresets = currentPresets.map((p) => (p.id === overridePresetId ? preset : p));
+			new Notice(`Preset "${presetName}" updated!`);
+		} else {
+			// Add new preset
+			updatedPresets = [...currentPresets, preset];
+			new Notice(`Preset "${presetName}" saved!`);
+		}
+
+		void this.bundle.settingsStore.updateSettings((s) => ({
+			...s,
+			eventPresets: updatedPresets,
+		}));
+
+		// Update the preset selector
+		this.refreshPresetSelector(updatedPresets);
+	}
+
+	private refreshPresetSelector(presets: EventPreset[]): void {
+		if (!this.presetSelector) return;
+
+		// Clear existing options except "None"
+		while (this.presetSelector.options.length > 1) {
+			this.presetSelector.remove(1);
+		}
+
+		// Add all preset options
+		for (const preset of presets) {
+			const option = this.presetSelector.createEl("option", {
+				value: preset.id,
+				text: preset.name,
+			});
+			option.value = preset.id;
+		}
 	}
 
 	public saveEvent(): void {
@@ -630,6 +906,119 @@ abstract class BaseEventModal extends Modal {
 	}
 }
 
+class SavePresetModal extends Modal {
+	private onSave: (name: string, overridePresetId: string | null) => void;
+	private existingPresets: EventPreset[];
+	private nameInput!: HTMLInputElement;
+	private overrideSelect!: HTMLSelectElement;
+
+	constructor(
+		app: App,
+		existingPresets: EventPreset[],
+		onSave: (name: string, overridePresetId: string | null) => void
+	) {
+		super(app);
+		this.existingPresets = existingPresets;
+		this.onSave = onSave;
+	}
+
+	onOpen(): void {
+		const { contentEl } = this;
+		contentEl.empty();
+
+		addCls(this.modalEl, "save-preset-modal");
+
+		contentEl.createEl("h3", { text: "Save as preset" });
+
+		// Override existing preset selector
+		const overrideContainer = contentEl.createDiv("setting-item");
+		overrideContainer.createEl("div", { text: "Save to", cls: "setting-item-name" });
+		this.overrideSelect = overrideContainer.createEl("select", {
+			cls: "setting-item-control",
+		});
+
+		// Add "Create new" option
+		const newOption = this.overrideSelect.createEl("option", {
+			value: "",
+			text: "Create new preset",
+		});
+		newOption.value = "";
+
+		// Add existing presets
+		for (const preset of this.existingPresets) {
+			const option = this.overrideSelect.createEl("option", {
+				value: preset.id,
+				text: `Override: ${preset.name}`,
+			});
+			option.value = preset.id;
+		}
+
+		// Update name field when override selection changes
+		this.overrideSelect.addEventListener("change", () => {
+			const selectedId = this.overrideSelect.value;
+			if (selectedId) {
+				const preset = this.existingPresets.find((p) => p.id === selectedId);
+				if (preset) {
+					this.nameInput.value = preset.name;
+				}
+			}
+		});
+
+		// Preset name input
+		const inputContainer = contentEl.createDiv("setting-item");
+		inputContainer.createEl("div", { text: "Preset name", cls: "setting-item-name" });
+		this.nameInput = inputContainer.createEl("input", {
+			type: "text",
+			placeholder: "e.g., 30 min meeting, All-day event",
+			cls: "setting-item-control",
+		});
+
+		const buttonContainer = contentEl.createDiv("modal-button-container");
+
+		const cancelButton = buttonContainer.createEl("button", {
+			text: "Cancel",
+		});
+		cancelButton.addEventListener("click", () => {
+			this.close();
+		});
+
+		const saveButton = buttonContainer.createEl("button", {
+			text: "Save",
+			cls: "mod-cta",
+		});
+		saveButton.addEventListener("click", () => {
+			this.handleSave();
+		});
+
+		// Handle Enter key
+		contentEl.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" && !e.shiftKey) {
+				e.preventDefault();
+				this.handleSave();
+			}
+		});
+
+		this.nameInput.focus();
+	}
+
+	private handleSave(): void {
+		const name = this.nameInput.value.trim();
+		if (!name) {
+			new Notice("Please enter a preset name");
+			return;
+		}
+
+		const overridePresetId = this.overrideSelect.value || null;
+		this.onSave(name, overridePresetId);
+		this.close();
+	}
+
+	onClose(): void {
+		const { contentEl } = this;
+		contentEl.empty();
+	}
+}
+
 export class EventCreateModal extends BaseEventModal {
 	protected getModalTitle(): string {
 		return "Create Event";
@@ -641,6 +1030,24 @@ export class EventCreateModal extends BaseEventModal {
 
 	protected async initialize(): Promise<void> {
 		// No initialization needed for create mode
+	}
+
+	protected applyDefaultPreset(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		if (settings.defaultPresetId) {
+			const presets = settings.eventPresets || [];
+			const defaultPreset = presets.find((p) => p.id === settings.defaultPresetId);
+
+			if (defaultPreset) {
+				this.applyPreset(defaultPreset);
+
+				// Also set the selector to show the selected preset
+				if (this.presetSelector) {
+					this.presetSelector.value = defaultPreset.id;
+				}
+			}
+		}
 	}
 }
 

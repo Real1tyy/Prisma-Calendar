@@ -1,19 +1,21 @@
-import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
+import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
 import { Setting } from "obsidian";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
+import { calculateDurationMinutes } from "../../utils/format";
 
 export class GeneralSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 
-	constructor(settingsStore: CalendarSettingsStore) {
+	constructor(private settingsStore: CalendarSettingsStore) {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-		this.ui = new SettingsUIBuilder(settingsStore as any);
+		this.ui = new SettingsUIBuilder(this.settingsStore as any);
 	}
 
 	display(containerEl: HTMLElement): void {
 		this.addDirectorySettings(containerEl);
 		this.addParsingSettings(containerEl);
+		this.addEventPresetSettings(containerEl);
 	}
 
 	private addDirectorySettings(containerEl: HTMLElement): void {
@@ -56,6 +58,145 @@ export class GeneralSettings {
 			key: "markPastInstancesAsDone",
 			name: "Mark past events as done",
 			desc: "Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section.",
+		});
+	}
+
+	private addEventPresetSettings(containerEl: HTMLElement): void {
+		const settings = this.settingsStore.currentSettings;
+
+		new Setting(containerEl).setName("Event presets").setHeading();
+
+		const desc = containerEl.createDiv();
+		desc.createEl("p", {
+			text: "Create presets with pre-configured event settings (duration, category, recurring pattern, etc.) for quick event creation. Select a preset from the dropdown when creating an event to auto-fill the form.",
+		});
+
+		// Examples section
+		const examplesContainer = desc.createDiv(cls("settings-info-box"));
+
+		examplesContainer.createEl("strong", { text: "Example presets:" });
+		const examplesList = examplesContainer.createEl("ul");
+
+		const examples = [
+			{ name: "30 min meeting", description: "Duration: 30 minutes" },
+			{ name: "1 hour focus block", description: "Duration: 60 minutes, Category: Focus" },
+			{ name: "Daily standup", description: "Duration: 15 min, Recurring: daily" },
+			{ name: "All-day event", description: "All-day: enabled" },
+		];
+
+		for (const example of examples) {
+			const li = examplesList.createEl("li", { cls: cls("color-example-item") });
+			li.createEl("strong", { text: example.name });
+			li.createSpan({ text: ` — ${example.description}` });
+		}
+
+		desc.createEl("p", {
+			text: "Create and edit presets from the event modal. Here you can select a default preset and delete existing ones.",
+			cls: cls("settings-muted"),
+		});
+
+		// Default preset selector
+		new Setting(containerEl)
+			.setName("Default preset")
+			.setDesc("Preset to auto-fill when opening the create event modal")
+			.addDropdown((dropdown) => {
+				// Add "None" option
+				dropdown.addOption("", "None");
+
+				// Add preset options
+				const presets = settings.eventPresets || [];
+				for (const preset of presets) {
+					dropdown.addOption(preset.id, preset.name);
+				}
+
+				// Set current value
+				dropdown.setValue(settings.defaultPresetId || "");
+
+				dropdown.onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						defaultPresetId: value || undefined,
+					}));
+				});
+			});
+
+		// Presets list
+		const presetsListContainer = containerEl.createDiv();
+		this.renderEventPresetsList(presetsListContainer);
+	}
+
+	private renderEventPresetsList(container: HTMLElement): void {
+		container.empty();
+		const { eventPresets } = this.settingsStore.currentSettings;
+
+		if (!eventPresets || eventPresets.length === 0) {
+			const emptyState = container.createDiv(cls("event-preset-empty"));
+			emptyState.textContent = "No event presets defined. Create presets from the event modal.";
+			return;
+		}
+
+		for (const preset of eventPresets) {
+			const presetContainer = container.createDiv(cls("event-preset-item"));
+
+			// Name
+			const nameEl = presetContainer.createDiv(cls("event-preset-name"));
+			nameEl.textContent = preset.name;
+
+			// Details (tags showing what's configured)
+			const detailsEl = presetContainer.createDiv(cls("event-preset-details"));
+
+			if (preset.allDay) {
+				this.createPresetTag(detailsEl, "All-day");
+				if (preset.date) {
+					this.createPresetTag(detailsEl, preset.date);
+				}
+			} else if (preset.startDate && preset.endDate) {
+				const durationMinutes = calculateDurationMinutes(preset.startDate, preset.endDate);
+				if (durationMinutes > 0) {
+					this.createPresetTag(detailsEl, `${durationMinutes} min`);
+				}
+			}
+
+			if (preset.categories) {
+				this.createPresetTag(detailsEl, preset.categories);
+			}
+
+			if (preset.rruleType) {
+				this.createPresetTag(detailsEl, preset.rruleType);
+			}
+
+			if (preset.futureInstancesCount) {
+				this.createPresetTag(detailsEl, `${preset.futureInstancesCount} instances`);
+			}
+
+			const customPropsCount = Object.keys(preset.customProperties ?? {}).length;
+			if (customPropsCount > 0) {
+				this.createPresetTag(detailsEl, `${customPropsCount} props`);
+			}
+
+			// Controls - only delete button
+			const controlsEl = presetContainer.createDiv(cls("event-preset-controls"));
+
+			const deleteButton = controlsEl.createEl("button", {
+				text: "Delete",
+				cls: `${cls("event-preset-btn")} ${cls("event-preset-btn-delete")}`,
+			});
+			deleteButton.onclick = async () => {
+				await this.settingsStore.updateSettings((s) => ({
+					...s,
+					eventPresets: (s.eventPresets || []).filter((p) => p.id !== preset.id),
+					// Clear default preset if it was deleted
+					defaultPresetId: s.defaultPresetId === preset.id ? undefined : s.defaultPresetId,
+				}));
+				this.renderEventPresetsList(container);
+			};
+		}
+	}
+
+	private createPresetTag(container: HTMLElement, text: string): void {
+		container.createEl("span", {
+			text,
+			cls: cls("event-preset-tag"),
 		});
 	}
 }
