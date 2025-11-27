@@ -26,6 +26,18 @@ export default defineConfig([
 			parserOptions: {
 				project: "./tsconfig.json",
 			},
+			globals: {
+				console: "readonly",
+				document: "readonly",
+				window: "readonly",
+				setTimeout: "readonly",
+				clearTimeout: "readonly",
+				setInterval: "readonly",
+				clearInterval: "readonly",
+				requestAnimationFrame: "readonly",
+				cancelAnimationFrame: "readonly",
+				NodeJS: "readonly",
+			},
 		},
 	},
 ]);

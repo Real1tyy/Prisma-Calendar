@@ -115,6 +115,7 @@ run = [
     "echo '  → Running tests...'",
     "pnpm run test",
     "echo '✅ All pre-commit checks passed!'",
+    "pnpm run lint:eslint"
 ]
 
 # Development workflow tasks
