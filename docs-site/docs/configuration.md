@@ -47,6 +47,7 @@ Tell Prisma Calendar which frontmatter keys you use.
 - Status property: frontmatter property name for event status (default: `STATUS`), used when automatically marking past events as done
 - Done value: value to set in the status property when marking an event as done (default: `Done`)
 - Category property: frontmatter property name for event categories (default: `Category`), used for grouping in statistics views
+- Break property: frontmatter property name for break time in minutes (default: `Break`), subtracted from duration in statistics
 
 ### Recurring (node-based)
 
@@ -180,6 +181,76 @@ status: In Progress
 priority: High
 project: Q4 Planning
 ```
+
+## Event Presets
+
+Save reusable event templates with pre-filled values for quick event creation.
+
+### Creating Presets
+
+1. Open the Create or Edit Event modal
+2. Fill in the fields you want to save (title, dates, categories, recurring settings, custom properties)
+3. Click "Save as preset" button
+4. Enter a name for the preset (e.g., "Weekly Team Meeting")
+5. Choose to create a new preset or override an existing one
+
+### Using Presets
+
+- **Apply preset**: Select from the dropdown in the modal header to populate all fields
+- **Clear button**: Reset all fields to empty state if the preset doesn't match your needs
+- **Default preset**: Configure a default preset in General Settings that auto-applies when creating new events
+
+### What Presets Save
+
+| Field | Saved | Notes |
+|-------|-------|-------|
+| Title | ✅ | Pre-fill event name |
+| All-day | ✅ | Timed vs all-day mode |
+| Date/Start/End | ✅ | Date and time values |
+| Categories | ✅ | Category assignment |
+| Recurring settings | ✅ | RRule type, weekdays, future count |
+| Custom properties | ✅ | Any additional frontmatter |
+
+### Example Use Cases
+
+- **"Gym Session"**: Title + 1 hour duration + "Health" category
+- **"Weekly Standup"**: Title + recurring weekly on Mon/Wed/Fri + custom properties
+- **"Client Meeting"**: Title + all-day + custom properties for project tracking
+
+## Break Time for Statistics
+
+Track accurate productive time by excluding breaks from event duration.
+
+### Configuration
+
+- **Break property**: Configure the property name in Settings → Properties (default: `Break`)
+- **Event modal**: When break property is configured, a "Break (minutes)" field appears in the Create/Edit Event modal
+
+### Usage
+
+Add the `Break` property to your event frontmatter:
+
+```yaml
+---
+Title: Work Session
+Start Date: 2025-01-15T09:00
+End Date: 2025-01-15T17:00
+Break: 60  # 1 hour lunch break
+---
+```
+
+### How It Works
+
+- **Statistics calculation**: Break time is subtracted from total duration
+- **Example**: An 8-hour event with `Break: 60` shows as 7 hours in statistics
+- **Decimal support**: Enter partial minutes (e.g., `45.5` for 45.5 minutes)
+- **Per-event**: Each event can have its own break time
+
+### Use Cases
+
+- Exclude lunch breaks from work sessions
+- Track actual meeting time excluding breaks
+- Accurate time tracking for billing purposes
 
 ## Recurring Instances (Generation Horizon)
 

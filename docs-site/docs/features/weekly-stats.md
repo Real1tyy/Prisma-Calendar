@@ -111,6 +111,88 @@ End Date: 2025-02-05T11:30
 # Both grouped as: "Gym" (2 events, 150 minutes total)
 ```
 
+## Break Time Property
+
+Track actual productive time by subtracting breaks from event duration.
+
+### Overview
+
+When you have long events that include breaks (like lunch breaks during work sessions), you can specify a `Break` property to exclude that time from statistics. This gives you accurate time tracking without needing to split events into multiple smaller ones.
+
+### Usage
+
+Add the `Break` property to your event's frontmatter with the break time in minutes:
+
+```yaml
+---
+Title: Work Session
+Start Date: 2025-02-03T09:00
+End Date: 2025-02-03T17:00
+Break: 60  # 1 hour lunch break
+---
+```
+
+**Result:** This 8-hour event will show as **7 hours** in statistics (8h - 1h break).
+
+### Features
+
+- **Decimal Support**: Use decimal values for precise break times (e.g., `30.5` for 30 minutes 30 seconds)
+- **Per-Event Configuration**: Set break time individually for each event in the Create/Edit Event modal
+- **Automatic Calculation**: Break time is automatically subtracted when calculating statistics
+- **Custom Property Name**: Configurable in Settings → Properties → "Break property" (default: `Break`)
+- **Non-Destructive**: Original event duration remains unchanged in calendar view; break subtraction only affects statistics
+
+### Examples
+
+**Half-day with lunch break:**
+```yaml
+---
+Title: Morning Work
+Start Date: 2025-02-03T09:00
+End Date: 2025-02-03T14:00
+Break: 30  # 30-minute lunch
+---
+# Duration: 5 hours → Statistics: 4.5 hours
+```
+
+**Full day with multiple breaks:**
+```yaml
+---
+Title: Workshop
+Start Date: 2025-02-03T09:00
+End Date: 2025-02-03T18:00
+Break: 90  # 1 hour lunch + 30 min coffee breaks
+---
+# Duration: 9 hours → Statistics: 7.5 hours
+```
+
+**Gym session with rest periods:**
+```yaml
+---
+Title: Gym Session
+Start Date: 2025-02-03T10:00
+End Date: 2025-02-03T12:30
+Break: 15.5  # 15.5 minutes of rest between sets
+---
+# Duration: 2.5 hours → Statistics: ~2.25 hours
+```
+
+### Setting Break Time in Event Modal
+
+1. Open the Create or Edit Event modal
+2. Find the **Break (minutes)** field below the Category input
+3. Enter the break time in minutes (decimals supported)
+4. Save the event
+
+The break time is stored in frontmatter and automatically applied to all statistics calculations.
+
+### Best Practices
+
+- **Be Consistent**: Use the same break conventions for similar events
+- **Include All Breaks**: Add up lunch, coffee, and rest breaks together
+- **Use Realistic Values**: Round to nearest minute for simplicity
+- **Document Large Breaks**: Add a note in the event content explaining what the break time covers
+
 ## What Gets Included
 
 ### ✅ Included in Statistics
@@ -118,12 +200,14 @@ End Date: 2025-02-05T11:30
 - **Timed Events**: Events with specific start and end times
 - **Events with Duration**: Only events that have a meaningful duration (start + end time)
 - **Events in Week Range**: Events that fall within Monday to Sunday of the selected week
+- **Break Adjustment**: Duration minus break time (if configured)
 
 ### ❌ Excluded from Statistics
 
 - **All-Day Events**: Events marked as all-day don't have meaningful durations for time tracking
 - **Events Without End Time**: Timed events missing an end time (duration = 0)
 - **Events Outside Week**: Events that don't overlap with the selected week
+- **Break Time**: The break property value is subtracted from event duration
 
 ## Understanding the Statistics
 
@@ -391,8 +475,10 @@ An event is included if:
 ### Duration Calculation
 
 - **With End Time**: `end - start` (in milliseconds)
+- **With Break Time**: `(end - start) - (break * 60000)` (break in minutes converted to ms)
 - **Without End Time**: 0 (excluded from stats)
 - **All-Day Events**: Excluded entirely
+- **Minimum Duration**: 0 (duration never goes negative even if break > event duration)
 
 ### Pagination
 

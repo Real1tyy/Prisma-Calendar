@@ -68,6 +68,7 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Dual aggregation modes** - Toggle between "Event Name" and "Category" grouping:
   - **Event Name mode**: Groups by cleaned event title (strips Zettel IDs and timestamps)
   - **Category mode**: Groups by frontmatter category property (configurable in settings)
+- **Break time support** - Subtract break time from duration using the `Break` property (e.g., exclude lunch breaks from work sessions)
 - **Smart event grouping** - Automatically groups events by name or category with fallback to "No Category"
 - **Period navigation** - Browse through weeks, months, or view lifetime totals
 - **Paginated tables** - 20 entries per page for optimal performance with large datasets
@@ -140,9 +141,18 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Quick create button** - Create events instantly from calendar interface
 - **Enhanced edit modal** - Full frontmatter editing with all configured properties
 - **"Now" button** - Quickly set Start or End date to current time with minute precision
+- **Clear button** - Reset all form fields instantly with one click
 - **Drag & drop** - Move events by dragging to new time slots
 - **Resize support** - Adjust event duration by dragging edges
 - **Click to open** - Open event files directly from calendar
+
+### **Event Presets**
+- **Save event templates** - Create reusable presets with pre-filled values
+- **Title in presets** - Store event title for consistent naming (e.g., "Weekly Standup")
+- **Full configuration** - Save all-day settings, dates, categories, recurring patterns, and custom properties
+- **Default preset** - Configure a preset that auto-applies when creating new events
+- **Quick apply** - Select from dropdown in modal header to populate all fields instantly
+- **Override existing** - Update presets with current form values or create new ones
 
 ### **Event Skipping**
 - **Skip individual instances** - Mark events as skipped without deletion

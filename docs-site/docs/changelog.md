@@ -6,6 +6,44 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+#### Event Presets with Title Support
+- **Save Event Templates**: Create reusable presets that save all form values including title, dates, categories, recurring settings, and custom properties
+- **Title Field in Presets**: Presets now store and apply the event title, perfect for recurring task types like "Go to Gym" or "Weekly Meeting"
+- **Quick Apply**: Select a preset from the dropdown in the Create/Edit Event modal header to instantly populate all fields
+- **Default Preset**: Configure a default preset that auto-applies when opening the Create Event modal
+- **Override Existing**: Update existing presets with current form values or create new ones
+- **Use Cases**:
+  - Create a "Gym Session" preset with title, duration, and category pre-filled
+  - Save a "Client Meeting" template with custom properties and recurring settings
+  - Standardize event creation across your team with shared preset configurations
+
+#### Clear Button in Event Modal
+- **Quick Reset**: New "Clear" button in the event modal header that resets all form fields to empty state
+- **Full Form Reset**: Clears title, dates, all-day checkbox, recurring settings, categories, and all custom properties
+- **Preset Reset**: Also resets the preset selector back to "None"
+- **Use Cases**:
+  - Start fresh after applying a preset that doesn't match your needs
+  - Quickly clear a complex form without manually emptying each field
+  - Reset the modal when creating multiple different events
+
+#### Break Time Property for Statistics
+- **Break Time Tracking**: New `Break` property to subtract break time from event duration in statistics
+- **Accurate Time Tracking**: Track actual productive time by excluding lunch breaks, coffee breaks, etc.
+- **Decimal Support**: Enter break time in minutes with decimal precision (e.g., `30` for 30 minutes, `45.5` for 45.5 minutes)
+- **Statistics Integration**: Break time is automatically subtracted from event duration when calculating weekly/monthly/all-time statistics
+- **Per-Event Configuration**: Set break time for individual events directly in the Create/Edit Event modal
+- **Property Name**: Configurable via settings (default: `Break`)
+- **Example Usage**:
+  ```yaml
+  ---
+  Title: Work Session
+  Start Date: 2025-01-15T09:00
+  End Date: 2025-01-15T17:00
+  Break: 60  # 1 hour lunch break
+  ---
+  ```
+  This 8-hour event will show as 7 hours in statistics (8h - 1h break)
+
 #### Unified Recurring Events Modal
 - **View All Recurring Events**: New "Show recurring events" command that displays all your recurring events in one place
 - **Toggle Between Enabled/Disabled**: Checkbox to switch between viewing enabled recurring events (default) or disabled ones. Search filter is preserved when toggling.
