@@ -6,6 +6,7 @@ import { CalendarViewTypeSchema } from "./view";
 export const EventPresetSchema = z.object({
 	id: z.string(),
 	name: z.string(),
+	title: z.string().optional(), // Event title to pre-fill
 	allDay: z.boolean().optional(), // Whether this is an all-day event
 	date: z.string().optional(), // Date for all-day events (YYYY-MM-DD format)
 	startDate: z.string().optional(), // Start datetime for timed events (ISO string)

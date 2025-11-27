@@ -213,6 +213,11 @@ export abstract class BaseEventModal extends Modal {
 	protected applyPreset(preset: EventPreset): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 
+		// Apply title
+		if (preset.title !== undefined) {
+			this.titleInput.value = preset.title;
+		}
+
 		// Apply all-day setting
 		if (preset.allDay !== undefined) {
 			this.allDayCheckbox.checked = preset.allDay;
@@ -707,6 +712,11 @@ export abstract class BaseEventModal extends Modal {
 				preset.createdAt = existingPreset.createdAt;
 				preset.updatedAt = now;
 			}
+		}
+
+		// Title
+		if (this.titleInput.value) {
+			preset.title = this.titleInput.value;
 		}
 
 		// All-day and date fields
