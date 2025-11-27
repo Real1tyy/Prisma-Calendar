@@ -19,14 +19,14 @@
   <img src="https://img.youtube.com/vi/aULuB6petbU/maxresdefault.jpg" alt="Prisma Calendar - Feature Showcase (Part 1)" style="width:100%;">
 </a>
 
-**Full walkthrough of core features**: Event creation, editing, drag-and-drop, batch operations, undo/redo system, recurring events with source nodes, dynamic color rules, filtering, and calendar customization. See how Prisma Calendar gives you real control over your time-linked notes inside Obsidian.
+**Core Features Walkthrough**: This video covers many of the fundamental features of Prisma Calendar including event creation, editing, batch operations, undo/redo system, recurring events, color rules, and more. A comprehensive introduction to the essential tools that make Prisma Calendar powerful.
 
 ### Part 2: Deep Dive — Intelligence & Automation
 <a href="https://www.youtube.com/watch?v=JCYGWltxQQ0" target="_blank">
   <img src="https://img.youtube.com/vi/JCYGWltxQQ0/maxresdefault.jpg" alt="Prisma Calendar - Deep Dive (Part 2)" style="width:100%;">
 </a>
 
-**Advanced systems and workflows**: Intelligent notification system with desktop alerts and snooze, global event search across all calendars, quick navigation tools, weekly statistics and time-tracking insights, filtering presets for complex workflows, and automation patterns. Discover the tools that bring clarity, structure, and total control to your scheduling and time analysis.
+**Advanced Features Deep Dive**: This Part 2 explores additional features that didn't make it into the first video: intelligent notifications, global event search, navigation tools, statistics and time-tracking insights, and filtering presets. Discover the advanced systems that bring even more power to your workflow.
 
 </div>
 
