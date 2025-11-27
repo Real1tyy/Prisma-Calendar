@@ -71,6 +71,8 @@ run = [
     "pnpm run test",
     "echo '  → Building project...'",
     "pnpm run build",
+    "echo '  → Running ESLint...'",
+    "pnpm run lint:eslint",
     "echo '✅ CI Pipeline completed successfully!'",
 ]
 
@@ -114,8 +116,9 @@ run = [
     "pnpm run typecheck",
     "echo '  → Running tests...'",
     "pnpm run test",
+    "echo '  → Running ESLint...'",
+    "pnpm run lint:eslint",
     "echo '✅ All pre-commit checks passed!'",
-    "pnpm run lint:eslint"
 ]
 
 # Development workflow tasks
