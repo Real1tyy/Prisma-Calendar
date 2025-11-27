@@ -103,8 +103,20 @@ export abstract class BaseEventModal extends Modal {
 
 		headerContainer.createEl("h2", { text: this.getModalTitle() });
 
+		const controlsContainer = headerContainer.createDiv(cls("event-modal-header-controls"));
+
+		// Clear button to reset all fields
+		const clearButton = controlsContainer.createEl("button", {
+			text: "Clear",
+			cls: cls("event-modal-clear-button"),
+			type: "button",
+		});
+		clearButton.addEventListener("click", () => {
+			this.clearAllFields();
+		});
+
 		// Preset selector (only for create mode, but rendered for all - hidden via CSS if needed)
-		this.createPresetSelector(headerContainer);
+		this.createPresetSelector(controlsContainer);
 	}
 
 	private createPresetSelector(container: HTMLElement): void {
@@ -152,6 +164,50 @@ export abstract class BaseEventModal extends Modal {
 
 	protected applyDefaultPreset(): void {
 		// Override in subclasses if needed
+	}
+
+	protected clearAllFields(): void {
+		// Clear title
+		this.titleInput.value = "";
+
+		// Reset all-day checkbox
+		this.allDayCheckbox.checked = false;
+		this.timedContainer.classList.remove("prisma-hidden");
+		this.allDayContainer.classList.add("prisma-hidden");
+
+		// Clear date/time fields
+		this.startInput.value = "";
+		this.endInput.value = "";
+		this.dateInput.value = "";
+		if (this.durationInput) {
+			this.durationInput.value = "";
+		}
+
+		// Clear recurring event fields
+		this.recurringCheckbox.checked = false;
+		this.recurringContainer.classList.add("prisma-hidden");
+		this.rruleSelect.value = Object.keys(RECURRENCE_TYPE_OPTIONS)[0];
+		this.weekdayContainer.classList.add("prisma-hidden");
+		for (const checkbox of this.weekdayCheckboxes.values()) {
+			checkbox.checked = false;
+		}
+		this.futureInstancesCountInput.value = "";
+
+		// Clear category
+		if (this.categoryInput) {
+			this.categoryInput.setValue("");
+		}
+
+		// Clear custom properties
+		this.displayPropertiesContainer.empty();
+		this.otherPropertiesContainer.empty();
+		this.customProperties = [];
+
+		// Reset preset selector
+		this.presetSelector.value = "";
+
+		// Focus on title input
+		this.titleInput.focus();
 	}
 
 	protected applyPreset(preset: EventPreset): void {

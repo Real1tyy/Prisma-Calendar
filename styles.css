@@ -1963,11 +1963,35 @@
 	justify-content: space-between;
 	gap: 16px;
 	margin-bottom: 16px;
+	margin-top: 1rem;
 }
 
 .prisma-event-modal-header h2 {
 	margin: 0;
 	flex: 1;
+}
+
+.prisma-event-modal-header-controls {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-shrink: 0;
+}
+
+.prisma-event-modal-clear-button {
+	padding: 4px 12px;
+	font-size: var(--font-ui-small);
+	background-color: var(--background-modifier-hover);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	color: var(--text-muted);
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.prisma-event-modal-clear-button:hover {
+	background-color: var(--background-modifier-border);
+	color: var(--text-normal);
 }
 
 .prisma-event-preset-selector-wrapper {
@@ -2110,6 +2134,11 @@
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 12px;
+	}
+
+	.prisma-event-modal-header-controls {
+		width: 100%;
+		justify-content: space-between;
 	}
 
 	.prisma-event-preset-selector-wrapper {
