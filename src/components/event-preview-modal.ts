@@ -124,7 +124,7 @@ export class EventPreviewModal extends Modal {
 		if (start && end && !allDay) {
 			const startDate = intoDate(start);
 			const endDate = intoDate(end);
-			if (startDate && endDate && !Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())) {
+			if (startDate && endDate) {
 				const duration = calculateDuration(startDate, endDate);
 				const durationItem = timeGrid.createDiv(cls("event-preview-time-item"));
 				createTextDiv(durationItem, "Duration", cls("event-preview-label"));
