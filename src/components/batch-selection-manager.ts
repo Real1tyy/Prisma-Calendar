@@ -212,8 +212,8 @@ export class BatchSelectionManager {
 	private mapFCEventToSelectedEvent(fcEvent: EventApi): SelectedEvent {
 		return {
 			id: fcEvent.id,
-			filePath: fcEvent.extendedProps.filePath,
-			title: fcEvent.extendedProps.originalTitle || fcEvent.title,
+			filePath: fcEvent.extendedProps.filePath as string,
+			title: (fcEvent.extendedProps.originalTitle || fcEvent.title) as string,
 			start: fcEvent.start?.toISOString() || "",
 			end: fcEvent.end?.toISOString(),
 			allDay: fcEvent.allDay,
@@ -364,23 +364,25 @@ export class BatchSelectionManager {
 		// Check if any selected events are all-day
 		const hasAllDayEvents = selectedEventsArray.some((event) => event.allDay);
 
-		new MoveByModal(this.app, async (result) => {
-			const { offsetMs, unit } = calculateTimeOffset(result);
+		new MoveByModal(this.app, (result) => {
+			void (async () => {
+				const { offsetMs, unit } = calculateTimeOffset(result);
 
-			// Validate time unit for all-day events
-			if (hasAllDayEvents && !isTimeUnitAllowedForAllDay(unit)) {
-				console.warn(
-					`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
+				// Validate time unit for all-day events
+				if (hasAllDayEvents && !isTimeUnitAllowedForAllDay(unit)) {
+					console.warn(
+						`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
+					);
+					new Notice(`Cannot move all-day events by ${unit}. Please use days, weeks, months, or years.`, 5000);
+					return;
+				}
+
+				await this.executeWithSelection(
+					(filePaths) => this.batchCommandFactory.createMoveBy(filePaths, offsetMs),
+					(count) => `Moved ${count} event${pluralize(count)} by ${result.value} ${result.unit}`,
+					"Failed to move events by custom offset"
 				);
-				new Notice(`Cannot move all-day events by ${unit}. Please use days, weeks, months, or years.`, 5000);
-				return;
-			}
-
-			await this.executeWithSelection(
-				(filePaths) => this.batchCommandFactory.createMoveBy(filePaths, offsetMs),
-				(count) => `Moved ${count} event${pluralize(count)} by ${result.value} ${result.unit}`,
-				"Failed to move events by custom offset"
-			);
+			})();
 		}).open();
 	}
 

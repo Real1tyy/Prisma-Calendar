@@ -17,6 +17,7 @@ import { SCAN_CONCURRENCY } from "../constants";
 import type { SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import { generateUniqueRruleId } from "../utils/calendar-events";
+import { intoDate } from "../utils/format";
 
 export interface RawEventSource {
 	filePath: string;
@@ -66,7 +67,7 @@ export class Indexer {
 
 			if (filtersChanged) {
 				this.indexingCompleteSubject.next(false);
-				this.scanAllFiles();
+				void this.scanAllFiles();
 			}
 		});
 		this.events$ = this.scanEventsSubject.asObservable();
@@ -95,7 +96,7 @@ export class Indexer {
 
 	resync(): void {
 		this.indexingCompleteSubject.next(false);
-		this.scanAllFiles();
+		void this.scanAllFiles();
 	}
 
 	private async scanAllFiles(): Promise<void> {
@@ -128,11 +129,30 @@ export class Indexer {
 		}
 	}
 
-	private fromVaultEvent(eventName: VaultEvent): Observable<any> {
-		return fromEventPattern(
-			(handler) => this.vault.on(eventName as any, handler),
-			(handler) => this.vault.off(eventName as any, handler)
-		);
+	private fromVaultEvent(eventName: VaultEvent): Observable<TAbstractFile> {
+		if (eventName === "create") {
+			return fromEventPattern<TAbstractFile>(
+				(handler) => this.vault.on("create", handler),
+				(handler) => this.vault.off("create", handler)
+			);
+		}
+		if (eventName === "modify") {
+			return fromEventPattern<TAbstractFile>(
+				(handler) => this.vault.on("modify", handler),
+				(handler) => this.vault.off("modify", handler)
+			);
+		}
+		if (eventName === "delete") {
+			return fromEventPattern<TAbstractFile>(
+				(handler) => this.vault.on("delete", handler),
+				(handler) => this.vault.off("delete", handler)
+			);
+		}
+		// eventName === "rename"
+		return fromEventPattern<[TAbstractFile, string]>(
+			(handler) => this.vault.on("rename", handler),
+			(handler) => this.vault.off("rename", handler)
+		).pipe(map(([file]) => file));
 	}
 
 	private static isMarkdownFile(f: TAbstractFile): f is TFile {
@@ -142,7 +162,7 @@ export class Indexer {
 	private toRelevantFiles<T extends TAbstractFile>() {
 		return (source: Observable<T>) =>
 			source.pipe(
-				filter(Indexer.isMarkdownFile),
+				filter((f: TAbstractFile): f is TFile => Indexer.isMarkdownFile(f)),
 				filter((f) => this.isRelevantFile(f))
 			);
 	}
@@ -159,7 +179,10 @@ export class Indexer {
 		const created$ = this.fromVaultEvent("create").pipe(this.toRelevantFiles());
 		const modified$ = this.fromVaultEvent("modify").pipe(this.toRelevantFiles());
 		const deleted$ = this.fromVaultEvent("delete").pipe(this.toRelevantFiles());
-		const renamed$ = this.fromVaultEvent("rename");
+		const renamed$ = fromEventPattern<[TAbstractFile, string]>(
+			(handler) => this.vault.on("rename", handler),
+			(handler) => this.vault.off("rename", handler)
+		);
 
 		const changedIntents$ = merge(created$, modified$).pipe(
 			this.debounceByPath(100, (f) => f.path),
@@ -222,17 +245,17 @@ export class Indexer {
 		// Let EventStore/Parser handle filtering - this ensures cached events
 		// get invalidated when properties change and no longer pass filters
 		// This allows recurring source files to ALSO appear as regular events on the calendar
-		const hasTimedEvent = frontmatter[this._settings.startProp];
-		const hasAllDayEvent = frontmatter[this._settings.dateProp];
+		const hasTimedEvent = frontmatter[this._settings.startProp] as unknown;
+		const hasAllDayEvent = frontmatter[this._settings.dateProp] as unknown;
 
 		if (hasTimedEvent || hasAllDayEvent) {
 			if (this._settings.markPastInstancesAsDone) {
-				this.markPastEventAsDone(file, frontmatter).catch((error) => {
+				void this.markPastEventAsDone(file, frontmatter).catch((error) => {
 					console.error(`Error in background marking of past event ${file.path}:`, error);
 				});
 			}
 
-			const allDayProp = frontmatter[this._settings.allDayProp];
+			const allDayProp = frontmatter[this._settings.allDayProp] as unknown;
 			const isAllDay = allDayProp === true || allDayProp === "true" || !!hasAllDayEvent;
 
 			const source: RawEventSource = {
@@ -266,6 +289,7 @@ export class Indexer {
 		if (!rRuleId) {
 			rRuleId = generateUniqueRruleId();
 			await this.app.fileManager.processFrontMatter(file, (fm) => {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				fm[this._settings.rruleIdProp] = rRuleId;
 			});
 		}
@@ -304,19 +328,19 @@ export class Indexer {
 
 		if (isAllDay) {
 			// For all-day events, check the date property
-			const dateValue = frontmatter[this._settings.dateProp];
-			if (dateValue) {
-				const eventDate = new Date(String(dateValue));
+			const rawDate = frontmatter[this._settings.dateProp];
+			const date = intoDate(rawDate);
+			if (date) {
 				// Set to end of day for comparison
-				eventDate.setHours(23, 59, 59, 999);
-				isPastEvent = eventDate < now;
+				date.setHours(23, 59, 59, 999);
+				isPastEvent = date < now;
 			}
 		} else {
 			// For timed events, check the end date
 			const endValue = frontmatter[this._settings.endProp];
-			if (endValue) {
-				const eventEnd = new Date(String(endValue));
-				isPastEvent = eventEnd < now;
+			const endDate = intoDate(endValue);
+			if (endDate) {
+				isPastEvent = endDate < now;
 			}
 		}
 
@@ -329,6 +353,7 @@ export class Indexer {
 			if (currentStatus !== doneValue) {
 				try {
 					await this.app.fileManager.processFrontMatter(file, (fm) => {
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 						fm[this._settings.statusProperty] = doneValue;
 					});
 				} catch (error) {

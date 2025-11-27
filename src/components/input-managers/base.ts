@@ -41,7 +41,7 @@ export abstract class InputFilterManager {
 		this.input?.focus();
 	}
 
-	abstract shouldInclude(data: any): boolean;
+	abstract shouldInclude(data: { meta?: Record<string, unknown> }): boolean;
 
 	private injectInput(container: HTMLElement): void {
 		const toolbarLeft = container.querySelector(".fc-toolbar-chunk:first-child");

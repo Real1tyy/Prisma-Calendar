@@ -2,6 +2,36 @@ import { isNotEmpty } from "@real1ty-obsidian-plugins/utils";
 import type { DateTime } from "luxon";
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { SingleCalendarConfig } from "../types/settings";
+
+/**
+ * Safely converts a value to a string if it's a primitive type.
+ * Returns null if value is null/undefined or not a primitive (object/array).
+ */
+export function toSafeString(value: unknown): string | null {
+	if (value == null) return null;
+	if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+		return String(value);
+	}
+	return null;
+}
+
+/**
+ * Converts a string to a Date, or returns the Date unchanged if already a Date.
+ * Returns null if the input is null/undefined or if the resulting Date is invalid (NaN).
+ * @param input - String date or Date object
+ * @returns Date object or null if invalid
+ */
+export function intoDate(input: unknown): Date | null {
+	if (input === null || input === undefined) {
+		return null;
+	}
+	const date = typeof input === "string" ? new Date(input) : input instanceof Date ? input : null;
+	if (date === null || Number.isNaN(date.getTime())) {
+		return null;
+	}
+	return date;
+}
+
 /**
  * Formats a date/datetime for HTML datetime-local input fields.
  * Strips Z suffix to treat as local time and returns YYYY-MM-DDTHH:MM format.
@@ -9,7 +39,10 @@ import type { SingleCalendarConfig } from "../types/settings";
 export function formatDateTimeForInput(dateInput: string | Date): string {
 	// Strip Z suffix if present to treat as local time
 	const dateStr = typeof dateInput === "string" ? dateInput.replace(/Z$/, "") : dateInput;
-	const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
+	const date = intoDate(dateStr);
+	if (!date) {
+		throw new Error("Invalid date input");
+	}
 
 	// Extract local time components (no UTC conversion)
 	const year = date.getFullYear();
@@ -28,7 +61,10 @@ export function formatDateTimeForInput(dateInput: string | Date): string {
 export function formatDateOnly(dateInput: string | Date): string {
 	// Strip Z suffix if present to treat as local time
 	const dateStr = typeof dateInput === "string" ? dateInput.replace(/Z$/, "") : dateInput;
-	const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
+	const date = intoDate(dateStr);
+	if (!date) {
+		throw new Error("Invalid date input");
+	}
 
 	// Use local time components
 	const year = date.getFullYear();
@@ -75,8 +111,11 @@ export function calculateDuration(start: Date, end: Date): string {
 }
 
 export function calculateDurationMinutes(start: string | Date, end: string | Date): number {
-	const startDate = typeof start === "string" ? new Date(start) : start;
-	const endDate = typeof end === "string" ? new Date(end) : end;
+	const startDate = intoDate(start);
+	const endDate = intoDate(end);
+	if (!startDate || !endDate) {
+		return 0;
+	}
 	const durationMs = endDate.getTime() - startDate.getTime();
 	return Math.round(durationMs / (1000 * 60));
 }

@@ -60,14 +60,14 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			this.settings = newSettings;
 		});
-		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe(async (isComplete) => {
+		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
 			this.indexingComplete = isComplete;
 			if (isComplete) {
-				await this.processAllRecurringEvents();
+				void this.processAllRecurringEvents();
 			}
 		});
 		this.subscription = this.indexer.events$.subscribe((event: IndexerEvent) => {
-			this.handleIndexerEvent(event);
+			void this.handleIndexerEvent(event);
 		});
 	}
 

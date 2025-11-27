@@ -3,7 +3,7 @@ import { buildPropertyMapping, sanitizeExpression } from "../../utils/expression
 import { InputFilterManager } from "./base";
 
 export class ExpressionFilterInputManager extends InputFilterManager {
-	private compiledFunc: ((...args: any[]) => boolean) | null = null;
+	private compiledFunc: ((...args: unknown[]) => boolean) | null = null;
 	private propertyMapping = new Map<string, string>();
 	private lastWarnedExpression: string | null = null;
 
@@ -18,7 +18,7 @@ export class ExpressionFilterInputManager extends InputFilterManager {
 		this.lastWarnedExpression = null; // Clear warning tracker on filter change
 	}
 
-	shouldInclude(event: { meta?: Record<string, any> }): boolean {
+	shouldInclude(event: { meta?: Record<string, unknown> }): boolean {
 		if (!this.currentFilterValue) return true;
 
 		const frontmatter = event.meta || {};
@@ -31,8 +31,9 @@ export class ExpressionFilterInputManager extends InputFilterManager {
 			if (!this.compiledFunc) {
 				const sanitized = sanitizeExpression(this.currentFilterValue, this.propertyMapping);
 				const params = Array.from(this.propertyMapping.values());
+				// eslint-disable-next-line @typescript-eslint/no-implied-eval
 				this.compiledFunc = new Function(...params, `"use strict"; return ${sanitized};`) as (
-					...args: any[]
+					...args: unknown[]
 				) => boolean;
 			}
 

@@ -64,6 +64,7 @@ export class CalendarBundle {
 			this.plugin.registerViewTypeSafe(this.viewType, (leaf: WorkspaceLeaf) => new CalendarView(leaf, this));
 
 			// @ts-expect-error - registerHoverLinkSource is not in public types but exists in runtime
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			this.app.workspace.registerHoverLinkSource(this.viewType, {
 				display: this.settingsStore.currentSettings.name,
 				defaultMod: true,
@@ -73,7 +74,7 @@ export class CalendarBundle {
 				id: `open-calendar-${this.calendarId}`,
 				name: `Open ${this.settingsStore.currentSettings.name}`,
 				callback: () => {
-					this.activateCalendarView();
+					void this.activateCalendarView();
 				},
 			});
 
@@ -108,7 +109,7 @@ export class CalendarBundle {
 		return await this.commandManager.redo();
 	}
 
-	async refreshCalendar(): Promise<void> {
+	refreshCalendar(): void {
 		// Clear caches before resync to ensure full rebuild
 		// Without this, EventStore's isUpToDate() check would skip files
 		// whose mtime hasn't changed, causing the refresh to have no effect

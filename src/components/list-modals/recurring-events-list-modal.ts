@@ -38,7 +38,7 @@ export class RecurringEventsListModal extends Modal {
 		const titleEl = header.createEl("h2", { text: cleanTitle });
 		addCls(titleEl, "recurring-events-source-title");
 		titleEl.onclick = () => {
-			this.app.workspace.openLinkText(this.sourceFilePath, "", false);
+			void this.app.workspace.openLinkText(this.sourceFilePath, "", false);
 			this.close();
 		};
 
@@ -203,7 +203,7 @@ export class RecurringEventsListModal extends Modal {
 			}
 
 			row.onclick = () => {
-				this.app.workspace.openLinkText(instance.filePath, "", false);
+				void this.app.workspace.openLinkText(instance.filePath, "", false);
 				this.close();
 			};
 		}

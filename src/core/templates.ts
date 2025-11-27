@@ -36,7 +36,7 @@ export class TemplateService {
 		});
 
 		this.indexerSubscription = indexer.events$.subscribe((event: IndexerEvent) => {
-			this.handleIndexerEvent(event);
+			void this.handleIndexerEvent(event);
 		});
 	}
 

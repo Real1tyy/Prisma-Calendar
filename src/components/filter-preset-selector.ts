@@ -32,7 +32,7 @@ export class FilterPresetSelector {
 		// Use showPicker() if available (modern browsers)
 		if ("showPicker" in this.select) {
 			try {
-				(this.select as any).showPicker();
+				(this.select as unknown as { showPicker: () => void }).showPicker();
 			} catch {
 				// Fallback if showPicker fails
 				this.triggerDropdownOpen();

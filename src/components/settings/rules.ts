@@ -9,6 +9,7 @@ export class RulesSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 
 	constructor(private settingsStore: CalendarSettingsStore) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
 		this.ui = new SettingsUIBuilder(settingsStore as any);
 	}
 
@@ -171,11 +172,13 @@ export class RulesSettings {
 				}));
 			};
 
-			expressionInput.addEventListener("blur", updateExpression);
+			expressionInput.addEventListener("blur", () => {
+				void updateExpression();
+			});
 			expressionInput.addEventListener("keydown", (e: KeyboardEvent) => {
 				if (e.key === "Enter") {
 					e.preventDefault();
-					updateExpression();
+					void updateExpression();
 				}
 			});
 
@@ -396,11 +399,13 @@ export class RulesSettings {
 				}));
 			};
 
-			nameInput.addEventListener("blur", updateName);
+			nameInput.addEventListener("blur", () => {
+				void updateName();
+			});
 			nameInput.addEventListener("keydown", (e: KeyboardEvent) => {
 				if (e.key === "Enter") {
 					e.preventDefault();
-					updateName();
+					void updateName();
 				}
 			});
 
@@ -419,11 +424,13 @@ export class RulesSettings {
 				}));
 			};
 
-			expressionInput.addEventListener("blur", updateExpression);
+			expressionInput.addEventListener("blur", () => {
+				void updateExpression();
+			});
 			expressionInput.addEventListener("keydown", (e: KeyboardEvent) => {
 				if (e.key === "Enter") {
 					e.preventDefault();
-					updateExpression();
+					void updateExpression();
 				}
 			});
 

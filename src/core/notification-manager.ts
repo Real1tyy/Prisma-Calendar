@@ -2,6 +2,7 @@ import { type App, TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { NotificationModal } from "../components/notification-modal";
 import type { SingleCalendarConfig } from "../types/settings";
+import { toSafeString } from "../utils/format";
 import { parseAsLocalDate } from "../utils/time-formatter";
 import type { Indexer, IndexerEvent } from "./indexer";
 
@@ -109,9 +110,10 @@ export class NotificationManager {
 
 		// Get start date based on event type
 		// Parse as local time, ignoring timezone information
-		const startProp = frontmatter[this.settings.startProp];
-		const dateProp = frontmatter[this.settings.dateProp];
-		const dateString = isAllDay && dateProp ? String(dateProp) : startProp ? String(startProp) : null;
+		const startPropValue = frontmatter[this.settings.startProp];
+		const datePropValue = frontmatter[this.settings.dateProp];
+
+		const dateString = isAllDay && datePropValue != null ? toSafeString(datePropValue) : toSafeString(startPropValue);
 		const startDate = dateString ? parseAsLocalDate(dateString) : null;
 
 		if (!startDate) {
@@ -119,8 +121,8 @@ export class NotificationManager {
 			return;
 		}
 
-		const endProp = frontmatter[this.settings.endProp];
-		const endDate = endProp ? parseAsLocalDate(String(endProp)) : null;
+		const endPropValue = frontmatter[this.settings.endProp];
+		const endDate = endPropValue != null ? parseAsLocalDate(toSafeString(endPropValue) ?? "") : null;
 		const eventEndTime = endDate || startDate; // Use end date if available, otherwise start date
 		const now = new Date();
 
@@ -183,7 +185,7 @@ export class NotificationManager {
 		// If notification time is in the past, trigger immediately (for all-day events on the notification day)
 		if (notifyAt <= new Date()) {
 			// Trigger notification immediately
-			this.triggerNotification(entry);
+			void this.triggerNotification(entry);
 		} else {
 			// Add to queue for future notification
 			this.addOrUpdateNotification(entry);
@@ -251,7 +253,7 @@ export class NotificationManager {
 
 		// Trigger notifications and mark as notified
 		for (const entry of toNotify) {
-			this.triggerNotification(entry);
+			void this.triggerNotification(entry);
 		}
 	}
 
@@ -267,7 +269,7 @@ export class NotificationManager {
 			await this.showSystemNotification(entry);
 
 			// Show notification modal for detailed preview
-			await this.showNotificationModal(entry);
+			this.showNotificationModal(entry);
 		} catch (error) {
 			console.error(`[NotificationManager] ❌ Error triggering notification for ${entry.filePath}:`, error);
 		}
@@ -309,7 +311,7 @@ export class NotificationManager {
 					// The modal will already be open or can be opened
 					const file = this.app.vault.getAbstractFileByPath(entry.filePath);
 					if (file instanceof TFile) {
-						this.app.workspace.getLeaf(false).openFile(file);
+						void this.app.workspace.getLeaf(false).openFile(file);
 					}
 				};
 			}
@@ -326,6 +328,7 @@ export class NotificationManager {
 
 		try {
 			await this.app.fileManager.processFrontMatter(file, (fm) => {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				fm[this.settings.alreadyNotifiedProp] = true;
 			});
 		} catch (error) {
@@ -344,7 +347,7 @@ export class NotificationManager {
 		};
 
 		const onSnooze = () => {
-			this.snoozeNotification(entry);
+			void this.snoozeNotification(entry);
 		};
 
 		// Show the notification modal
@@ -372,6 +375,7 @@ export class NotificationManager {
 
 		try {
 			await this.app.fileManager.processFrontMatter(file, (fm) => {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				fm[this.settings.alreadyNotifiedProp] = false;
 
 				// Calculate minutesBefore so notification triggers exactly snoozeMinutes from NOW
@@ -386,8 +390,10 @@ export class NotificationManager {
 
 				// If event hasn't started yet, calculate from event start
 				// If event has started, calculate from now (will be negative)
-				const newMinutesBefore = -minutesFromEventStartToNow - this.settings.snoozeMinutes;
+				const snoozeMinutes: number = this.settings.snoozeMinutes;
+				const newMinutesBefore = -minutesFromEventStartToNow - snoozeMinutes;
 
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				fm[this.settings.minutesBeforeProp] = newMinutesBefore;
 			});
 		} catch (error) {

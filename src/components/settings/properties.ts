@@ -8,6 +8,7 @@ export class PropertiesSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 
 	constructor(private settingsStore: CalendarSettingsStore) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
 		this.ui = new SettingsUIBuilder(settingsStore as any);
 	}
 
@@ -164,11 +165,11 @@ ${settings.allDayProp}: true
 
 		recurringDesc.createEl("h4", { text: "Recurring events" });
 		recurringDesc.createEl("p", {
-			text: "To create recurring events, add the RRule property to any event file's frontmatter. The plugin will automatically detect these and create recurring instances.",
+			text: "To create recurring events, add the rrule property to any event file's frontmatter. The plugin will automatically detect these and create recurring instances.",
 		});
 
 		const recurringExample = recurringDesc.createDiv();
-		recurringExample.createEl("strong", { text: "Example:" });
+		recurringExample.createEl("strong", { text: "Example" });
 		recurringExample.createEl("pre", {
 			text: `---
 ${settings.startProp}: 2024-01-15T09:00
@@ -183,14 +184,14 @@ ${settings.futureInstancesCountProp}: 5
 		});
 
 		const typesContainer = recurringDesc.createDiv();
-		typesContainer.createEl("strong", { text: "Supported RRule types" });
+		typesContainer.createEl("strong", { text: "Supported rrule types" });
 		const typesList = typesContainer.createEl("ul");
 		["daily", "weekly", "bi-weekly", "monthly", "bi-monthly", "yearly"].forEach((type) => {
 			typesList.createEl("li", { text: type });
 		});
 
 		const specContainer = recurringDesc.createDiv();
-		specContainer.createEl("strong", { text: "RRuleSpec (for weekly/bi-weekly)" });
+		specContainer.createEl("strong", { text: "Rrule spec (for weekly and bi-weekly)" });
 		specContainer.createEl("p", {
 			text: "Comma-separated weekdays: sunday, monday, tuesday, wednesday, thursday, friday, saturday",
 		});

@@ -9,25 +9,37 @@ import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { removeZettelId } from "../utils/calendar-events";
 import { createTextDiv } from "../utils/dom-utils";
-import { calculateDuration, categorizeProperties } from "../utils/format";
+import { calculateDuration, categorizeProperties, intoDate } from "../utils/format";
+
+export interface PreviewEventData {
+	title: string;
+	start: Date | null;
+	end?: Date | null;
+	allDay: boolean;
+	extendedProps?: {
+		filePath?: string;
+		[key: string]: unknown;
+	};
+}
 
 export class EventPreviewModal extends Modal {
-	private event: any;
+	private event: PreviewEventData;
 	private bundle: CalendarBundle;
 	private allFrontmatter: Record<string, unknown> = {};
 
-	constructor(app: App, bundle: CalendarBundle, event: any) {
+	constructor(app: App, bundle: CalendarBundle, event: PreviewEventData) {
 		super(app);
 		this.bundle = bundle;
 		this.event = event;
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): void {
 		const { contentEl } = this;
 		addCls(contentEl, "event-preview-modal");
 
-		await this.loadAllFrontmatter();
-		this.renderEventPreview();
+		void this.loadAllFrontmatter().then(() => {
+			this.renderEventPreview();
+		});
 	}
 
 	private async loadAllFrontmatter(): Promise<void> {
@@ -60,7 +72,7 @@ export class EventPreviewModal extends Modal {
 		const filePath = this.event.extendedProps?.filePath;
 		if (filePath) {
 			titleEl.onclick = () => {
-				this.app.workspace.openLinkText(filePath, "", false);
+				void this.app.workspace.openLinkText(filePath, "", false);
 				this.close();
 			};
 		}
@@ -110,14 +122,18 @@ export class EventPreviewModal extends Modal {
 
 		// Duration (if applicable)
 		if (start && end && !allDay) {
-			const duration = calculateDuration(start, end);
-			const durationItem = timeGrid.createDiv(cls("event-preview-time-item"));
-			createTextDiv(durationItem, "Duration", cls("event-preview-label"));
-			createTextDiv(durationItem, duration, cls("event-preview-value"));
+			const startDate = intoDate(start);
+			const endDate = intoDate(end);
+			if (startDate && endDate && !Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())) {
+				const duration = calculateDuration(startDate, endDate);
+				const durationItem = timeGrid.createDiv(cls("event-preview-time-item"));
+				createTextDiv(durationItem, "Duration", cls("event-preview-label"));
+				createTextDiv(durationItem, duration, cls("event-preview-value"));
+			}
 		}
 	}
 
-	private renderProperty(container: HTMLElement, key: string, value: any): void {
+	private renderProperty(container: HTMLElement, key: string, value: unknown): void {
 		const propItem = container.createDiv(cls("event-preview-prop-item"));
 		createTextDiv(propItem, key, cls("event-preview-prop-key"));
 		const valueEl = propItem.createEl("div", { cls: cls("event-preview-prop-value") });
@@ -129,7 +145,7 @@ export class EventPreviewModal extends Modal {
 				link.className = cls("event-preview-prop-value-link");
 				link.onclick = (e) => {
 					e.preventDefault();
-					this.app.workspace.openLinkText(path, "", false);
+					void this.app.workspace.openLinkText(path, "", false);
 					this.close();
 				};
 				return link;
@@ -144,7 +160,7 @@ export class EventPreviewModal extends Modal {
 	}
 
 	private formatDateTime(date: Date | null, allDay: boolean): string {
-		if (!date) return "N/A";
+		if (!date || Number.isNaN(date.getTime())) return "N/A";
 
 		const options: Intl.DateTimeFormatOptions = allDay
 			? { year: "numeric", month: "long", day: "numeric" }

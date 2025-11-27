@@ -31,7 +31,7 @@ export class NotificationModal extends Modal {
 		this.onSnooze = onSnooze;
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): void {
 		const { contentEl } = this;
 		addCls(contentEl, "event-notification-modal");
 
@@ -58,7 +58,7 @@ export class NotificationModal extends Modal {
 
 		// Make title clickable to open file
 		titleEl.onclick = () => {
-			this.app.workspace.openLinkText(this.eventData.filePath, "", false);
+			void this.app.workspace.openLinkText(this.eventData.filePath, "", false);
 			this.close();
 		};
 
@@ -135,7 +135,7 @@ export class NotificationModal extends Modal {
 			cls("event-notification-value event-notification-file-link")
 		);
 		fileEl.onclick = () => {
-			this.app.workspace.openLinkText(this.eventData.filePath, "", false);
+			void this.app.workspace.openLinkText(this.eventData.filePath, "", false);
 			this.close();
 		};
 	}
@@ -152,7 +152,7 @@ export class NotificationModal extends Modal {
 		}
 	}
 
-	private renderProperty(container: HTMLElement, key: string, value: any): void {
+	private renderProperty(container: HTMLElement, key: string, value: unknown): void {
 		const propItem = container.createDiv(cls("event-notification-prop-item"));
 		createTextDiv(propItem, key, cls("event-notification-prop-key"));
 		const valueEl = propItem.createEl("div", { cls: cls("event-notification-prop-value") });
@@ -164,7 +164,7 @@ export class NotificationModal extends Modal {
 				link.className = cls("event-notification-prop-value-link");
 				link.onclick = (e) => {
 					e.preventDefault();
-					this.app.workspace.openLinkText(path, "", false);
+					void this.app.workspace.openLinkText(path, "", false);
 					this.close();
 				};
 				return link;
@@ -187,7 +187,7 @@ export class NotificationModal extends Modal {
 			cls: "mod-cta",
 		});
 		openButton.onclick = () => {
-			this.app.workspace.openLinkText(this.eventData.filePath, "", false);
+			void this.app.workspace.openLinkText(this.eventData.filePath, "", false);
 			this.close();
 		};
 

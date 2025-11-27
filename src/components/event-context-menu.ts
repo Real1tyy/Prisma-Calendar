@@ -10,11 +10,12 @@ import {
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
+import { intoDate } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import type { CalendarView } from "./calendar-view";
 import { EventEditModal } from "./event-edit-modal";
-import { EventPreviewModal } from "./event-preview-modal";
+import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { RecurringEventsListModal } from "./list-modals/recurring-events-list-modal";
 import { MoveByModal } from "./move-by-modal";
 
@@ -188,7 +189,7 @@ export class EventContextMenu {
 					.setTitle("Duplicate event")
 					.setIcon("copy")
 					.onClick(() => {
-						this.duplicateEvent(event);
+						void this.duplicateEvent(event);
 					});
 			});
 
@@ -199,7 +200,7 @@ export class EventContextMenu {
 					.setTitle("Move by...")
 					.setIcon("move")
 					.onClick(() => {
-						this.moveEventBy(event);
+						void this.moveEventBy(event);
 					});
 			});
 
@@ -208,7 +209,7 @@ export class EventContextMenu {
 					.setTitle("Move to next week")
 					.setIcon("arrow-right")
 					.onClick(() => {
-						this.moveEventByWeeks(event, 1);
+						void this.moveEventByWeeks(event, 1);
 					});
 			});
 
@@ -217,7 +218,7 @@ export class EventContextMenu {
 					.setTitle("Clone to next week")
 					.setIcon("copy-plus")
 					.onClick(() => {
-						this.cloneEventByWeeks(event, 1);
+						void this.cloneEventByWeeks(event, 1);
 					});
 			});
 
@@ -226,7 +227,7 @@ export class EventContextMenu {
 					.setTitle("Move to previous week")
 					.setIcon("arrow-left")
 					.onClick(() => {
-						this.moveEventByWeeks(event, -1);
+						void this.moveEventByWeeks(event, -1);
 					});
 			});
 
@@ -235,7 +236,7 @@ export class EventContextMenu {
 					.setTitle("Clone to previous week")
 					.setIcon("copy-minus")
 					.onClick(() => {
-						this.cloneEventByWeeks(event, -1);
+						void this.cloneEventByWeeks(event, -1);
 					});
 			});
 
@@ -246,7 +247,7 @@ export class EventContextMenu {
 					.setTitle("Delete event")
 					.setIcon("trash")
 					.onClick(() => {
-						this.deleteEvent(event);
+						void this.deleteEvent(event);
 					});
 			});
 			menu.addItem((item) => {
@@ -254,7 +255,7 @@ export class EventContextMenu {
 					.setTitle("Skip event")
 					.setIcon("eye-off")
 					.onClick(() => {
-						this.toggleSkipEvent(event);
+						void this.toggleSkipEvent(event);
 					});
 			});
 			if (filePath) {
@@ -263,7 +264,7 @@ export class EventContextMenu {
 						.setTitle("Open file")
 						.setIcon("file-text")
 						.onClick(() => {
-							this.app.workspace.openLinkText(filePath, "", false);
+							void this.app.workspace.openLinkText(filePath, "", false);
 						});
 				});
 			}
@@ -291,7 +292,7 @@ export class EventContextMenu {
 					.setTitle(isDisabled ? "Enable recurring event" : "Disable recurring event")
 					.setIcon(isDisabled ? "eye" : "eye-off")
 					.onClick(() => {
-						this.toggleRecurringEvent(event);
+						void this.toggleRecurringEvent(event);
 					});
 			});
 		}
@@ -305,27 +306,29 @@ export class EventContextMenu {
 
 		const isAllDay = event.allDay || false;
 
-		new MoveByModal(this.app, async (result) => {
-			const { offsetMs, unit } = calculateTimeOffset(result);
+		new MoveByModal(this.app, (result) => {
+			void (async () => {
+				const { offsetMs, unit } = calculateTimeOffset(result);
 
-			// Validate time unit for all-day events
-			if (isAllDay && !isTimeUnitAllowedForAllDay(unit)) {
-				console.warn(
-					`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
-				);
-				new Notice(`Cannot move all-day event by ${unit}. Please use days, weeks, months, or years.`, 5000);
-				return;
-			}
+				// Validate time unit for all-day events
+				if (isAllDay && !isTimeUnitAllowedForAllDay(unit)) {
+					console.warn(
+						`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
+					);
+					new Notice(`Cannot move all-day event by ${unit}. Please use days, weeks, months, or years.`, 5000);
+					return;
+				}
 
-			try {
-				const command = new MoveByCommand(this.app, this.bundle, filePath, offsetMs);
-				await this.bundle.commandManager.executeCommand(command);
+				try {
+					const command = new MoveByCommand(this.app, this.bundle, filePath, offsetMs);
+					await this.bundle.commandManager.executeCommand(command);
 
-				new Notice(`Event moved by ${result.value} ${result.unit}`);
-			} catch (error) {
-				console.error("Failed to move event:", error);
-				new Notice("Failed to move event");
-			}
+					new Notice(`Event moved by ${result.value} ${result.unit}`);
+				} catch (error) {
+					console.error("Failed to move event:", error);
+					new Notice("Failed to move event");
+				}
+			})();
 		}).open();
 	}
 
@@ -433,7 +436,14 @@ export class EventContextMenu {
 	}
 
 	private openEventPreview(event: CalendarEventInfo): void {
-		new EventPreviewModal(this.app, this.bundle, event).open();
+		const previewEvent: PreviewEventData = {
+			title: event.title,
+			start: intoDate(event.start),
+			end: event.end ? intoDate(event.end) : undefined,
+			allDay: event.allDay || false,
+			extendedProps: event.extendedProps,
+		};
+		new EventPreviewModal(this.app, this.bundle, previewEvent).open();
 	}
 
 	private showHoverPreview(

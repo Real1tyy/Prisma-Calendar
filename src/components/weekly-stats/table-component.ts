@@ -118,7 +118,7 @@ export class TableComponent {
 				min: "1",
 				max: this.totalPages.toString(),
 			},
-		}) as HTMLInputElement;
+		});
 		pageInput.value = (this.currentPage + 1).toString();
 
 		pageInput.addEventListener("keydown", (e) => {

@@ -1,4 +1,4 @@
-import { Calendar, type EventContentArg, type EventInput } from "@fullcalendar/core";
+import { Calendar, type CustomButtonInput, type EventContentArg, type EventInput } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
@@ -25,7 +25,7 @@ import { emitHover } from "../utils/obsidian";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventCreateModal } from "./event-edit-modal";
-import { EventPreviewModal } from "./event-preview-modal";
+import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { FilterPresetSelector } from "./filter-preset-selector";
 import { ExpressionFilterInputManager } from "./input-managers/expression-filter";
 import { SearchFilterInputManager } from "./input-managers/search-filter";
@@ -82,6 +82,11 @@ interface EventUpdateInfo {
 	event: CalendarEventData & { start: Date };
 	oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay"> & { start: Date };
 	revert: () => void;
+}
+
+// Extended button input with className support (FullCalendar accepts it at runtime but doesn't type it)
+interface ExtendedButtonInput extends CustomButtonInput {
+	className?: string;
 }
 
 export function getCalendarViewType(calendarId: string): string {
@@ -145,14 +150,16 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return await this.bundle.redo();
 	}
 
-	private buildBatchButtons(): Record<string, unknown> {
+	private buildBatchButtons(): Record<string, ExtendedButtonInput> {
 		const bsm = this.batchSelectionManager!;
 		const clsBase = cls("batch-action-btn");
 
 		return {
 			batchCounter: {
 				text: this.getSelectedEventsButtonText(),
-				click: () => this.showSelectedEventsModal(),
+				click: () => {
+					void this.showSelectedEventsModal();
+				},
 				className: `${clsBase} ${cls("batch-counter")}`,
 			},
 			batchSelectAll: {
@@ -167,7 +174,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 			batchDuplicate: {
 				text: "Duplicate",
-				click: () => bsm.executeDuplicate(),
+				click: () => {
+					void bsm.executeDuplicate();
+				},
 				className: `${clsBase} ${cls("duplicate-btn")}`,
 			},
 			batchMoveBy: {
@@ -177,37 +186,51 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 			batchCloneNext: {
 				text: "Clone Next",
-				click: () => bsm.executeClone(1),
+				click: () => {
+					void bsm.executeClone(1);
+				},
 				className: `${clsBase} ${cls("clone-next-btn")}`,
 			},
 			batchClonePrev: {
 				text: "Clone Prev",
-				click: () => bsm.executeClone(-1),
+				click: () => {
+					void bsm.executeClone(-1);
+				},
 				className: `${clsBase} ${cls("clone-prev-btn")}`,
 			},
 			batchMoveNext: {
 				text: "Move Next",
-				click: () => bsm.executeMove(1),
+				click: () => {
+					void bsm.executeMove(1);
+				},
 				className: `${clsBase} ${cls("move-next-btn")}`,
 			},
 			batchMovePrev: {
 				text: "Move Prev",
-				click: () => bsm.executeMove(-1),
+				click: () => {
+					void bsm.executeMove(-1);
+				},
 				className: `${clsBase} ${cls("move-prev-btn")}`,
 			},
 			batchOpenAll: {
 				text: "Open",
-				click: () => bsm.executeOpenAll(),
+				click: () => {
+					void bsm.executeOpenAll();
+				},
 				className: `${clsBase} ${cls("open-all-btn")}`,
 			},
 			batchSkip: {
 				text: "Skip",
-				click: () => bsm.executeSkip(),
+				click: () => {
+					void bsm.executeSkip();
+				},
 				className: `${clsBase} ${cls("skip-btn")}`,
 			},
 			batchDelete: {
 				text: "Delete",
-				click: () => bsm.executeDelete(),
+				click: () => {
+					void bsm.executeDelete();
+				},
 				className: `${clsBase} ${cls("delete-btn")}`,
 			},
 			batchExit: {
@@ -218,7 +241,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		};
 	}
 
-	private buildRegularButtons(): Record<string, unknown> {
+	private buildRegularButtons(): Record<string, ExtendedButtonInput> {
 		return {
 			createEvent: {
 				text: "Create Event",
@@ -231,17 +254,23 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 			filteredEvents: {
 				text: this.getFilteredEventsButtonText(),
-				click: () => this.showFilteredEventsModal(),
+				click: () => {
+					void this.showFilteredEventsModal();
+				},
 				className: this.filteredEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
 			skippedEvents: {
 				text: this.getSkippedEventsButtonText(),
-				click: () => this.showSkippedEventsModal(),
+				click: () => {
+					void this.showSkippedEventsModal();
+				},
 				className: this.skippedEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
 			recurringEvents: {
 				text: this.getEnabledRecurringEventsButtonText(),
-				click: () => this.showRecurringEventsModal(),
+				click: () => {
+					void this.showRecurringEventsModal();
+				},
 				className: this.enabledRecurringEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
 		};
@@ -249,7 +278,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	private buildToolbarConfig(inSelectionMode: boolean): {
 		headerToolbar: { left: string; center: string; right: string };
-		customButtons: Record<string, any>;
+		customButtons: Record<string, ExtendedButtonInput>;
 	} {
 		const viewSwitchers = "dayGridMonth,timeGridWeek,timeGridDay,listWeek";
 
@@ -298,7 +327,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const { headerToolbar, customButtons } = this.buildToolbarConfig(inSelectionMode);
 
 		this.calendar.setOption("headerToolbar", headerToolbar);
-		this.calendar.setOption("customButtons", customButtons);
+		// Cast to CustomButtonInput - className is accepted at runtime but not in FullCalendar's types
+		this.calendar.setOption("customButtons", customButtons as Record<string, CustomButtonInput>);
 
 		setTimeout(() => {
 			if (!inSelectionMode) {
@@ -433,7 +463,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const modal = await modalFactory();
 		setModal(modal);
 
-		const originalOnClose = modal.onClose.bind(modal);
+		const originalOnClose = modal.onClose.bind(modal) as () => void;
 		modal.onClose = () => {
 			originalOnClose();
 			setModal(null);
@@ -830,11 +860,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 
 			eventDrop: (info) => {
-				this.handleEventDrop(info);
+				void this.handleEventDrop(info);
 			},
 
 			eventResize: (info) => {
-				this.handleEventResize(info);
+				void this.handleEventResize(info);
 			},
 
 			dateClick: (info) => {
@@ -904,7 +934,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}, 100);
 
 		// Ensure initial events are loaded after calendar is fully rendered
-		await this.refreshEvents();
+		this.refreshEvents();
 
 		// Start the upcoming event check interval
 		this.startUpcomingEventCheck();
@@ -947,7 +977,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.bundle.refreshCalendar();
 	}
 
-	private async refreshEvents(): Promise<void> {
+	private refreshEvents(): void {
 		// Don't refresh events until indexing is complete
 		if (!this.calendar || !this.isIndexingComplete || !this.calendar.view) {
 			return;
@@ -966,10 +996,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		// Capture scroll position before touching events
 		// The REAL scroller is the Obsidian view-content wrapper
-		const viewContent = this.containerEl.querySelector(".view-content") as HTMLElement | null;
+		const viewContent = this.containerEl.querySelector(".view-content");
 
 		// FullCalendar internal scroller (for some views like list)
-		const innerScroller = this.container.querySelector(".fc-scroller") as HTMLElement | null;
+		const innerScroller = this.container.querySelector(".fc-scroller");
 
 		const viewContentScrollTop = viewContent?.scrollTop ?? 0;
 		const innerScrollTop = innerScroller?.scrollTop ?? 0;
@@ -984,7 +1014,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const visibleEvents: ParsedEvent[] = [];
 
 			for (const event of allEvents) {
-				const passesSearch = this.searchFilter.shouldInclude(event);
+				const passesSearch = this.searchFilter.shouldInclude({ meta: event.meta, title: event.title });
 				const passesExpression = this.expressionFilter.shouldInclude(event);
 
 				if (passesSearch && passesExpression) {
@@ -1052,8 +1082,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			// Restore scroll after FC finishes layout
 			requestAnimationFrame(() => {
 				// Re-query in case DOM changed
-				const viewContentRestored = this.containerEl.querySelector(".view-content") as HTMLElement | null;
-				const inner = this.container.querySelector(".fc-scroller") as HTMLElement | null;
+				const viewContentRestored = this.containerEl.querySelector(".view-content");
+				const inner = this.container.querySelector(".fc-scroller");
 
 				if (viewContentRestored) {
 					viewContentRestored.scrollTop = viewContentScrollTop;
@@ -1162,7 +1192,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				link.onclick = (e) => {
 					e.preventDefault();
 					e.stopPropagation(); // Prevent event card click
-					this.app.workspace.openLinkText(path, "", false);
+					void this.app.workspace.openLinkText(path, "", false);
 				};
 				return link;
 			},
@@ -1202,7 +1232,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 							frontmatterDisplayData: cache.frontmatter,
 						},
 					};
-					new EventPreviewModal(this.app, this.bundle, sourceEvent).open();
+					const previewEvent: PreviewEventData = {
+						title: sourceEvent.title,
+						start: null,
+						end: null,
+						allDay: false,
+						extendedProps: sourceEvent.extendedProps,
+					};
+					new EventPreviewModal(this.app, this.bundle, previewEvent).open();
 					return;
 				}
 			}
@@ -1247,7 +1284,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			// Note: The value might be an array or object, so we need to stringify it for the tooltip.
 			// Simple string interpolation `${value}` works for arrays but shows `[object Object]` for objects.
 			// The existing behavior is maintained here.
-			tooltipParts.push(`${prop}: ${value}`);
+			tooltipParts.push(`${prop}: ${String(value)}`);
 		}
 
 		element.setAttribute("title", tooltipParts.join("\n"));
@@ -1346,7 +1383,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const command = new UpdateEventCommand(
 				this.app,
 				this.bundle,
-				filePath as string,
+				filePath,
 				toLocalISOString(info.event.start),
 				info.event.end ? toLocalISOString(info.event.end) : undefined,
 				info.event.allDay || false,
@@ -1362,12 +1399,42 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
-	private async handleEventDrop(info: any): Promise<void> {
-		await this.handleEventUpdate(info, "Error updating event dates:");
+	private async handleEventDrop(info: {
+		event: CalendarEventData;
+		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
+		revert: () => void;
+	}): Promise<void> {
+		if (!info.event.start) {
+			info.revert();
+			return;
+		}
+		await this.handleEventUpdate(
+			{
+				event: { ...info.event, start: info.event.start },
+				oldEvent: { ...info.oldEvent, start: info.oldEvent.start || new Date() },
+				revert: info.revert,
+			},
+			"Error updating event dates:"
+		);
 	}
 
-	private async handleEventResize(info: any): Promise<void> {
-		await this.handleEventUpdate(info, "Error updating event duration:");
+	private async handleEventResize(info: {
+		event: CalendarEventData;
+		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
+		revert: () => void;
+	}): Promise<void> {
+		if (!info.event.start) {
+			info.revert();
+			return;
+		}
+		await this.handleEventUpdate(
+			{
+				event: { ...info.event, start: info.event.start },
+				oldEvent: { ...info.oldEvent, start: info.oldEvent.start || new Date() },
+				revert: info.revert,
+			},
+			"Error updating event duration:"
+		);
 	}
 
 	private setupKeyboardShortcuts(): void {
@@ -1477,27 +1544,27 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	skipSelection(): void {
-		this.batchSelectionManager?.executeSkip();
+		void this.batchSelectionManager?.executeSkip();
 	}
 
 	duplicateSelection(): void {
-		this.batchSelectionManager?.executeDuplicate();
+		void this.batchSelectionManager?.executeDuplicate();
 	}
 
 	cloneSelection(weeks: number): void {
-		this.batchSelectionManager?.executeClone(weeks);
+		void this.batchSelectionManager?.executeClone(weeks);
 	}
 
 	moveSelection(weeks: number): void {
-		this.batchSelectionManager?.executeMove(weeks);
+		void this.batchSelectionManager?.executeMove(weeks);
 	}
 
 	deleteSelection(): void {
-		this.batchSelectionManager?.executeDelete();
+		void this.batchSelectionManager?.executeDelete();
 	}
 
 	openSelection(): void {
-		this.batchSelectionManager?.executeOpenAll();
+		void this.batchSelectionManager?.executeOpenAll();
 	}
 
 	moveBySelection(): void {

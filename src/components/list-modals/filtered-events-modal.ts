@@ -37,7 +37,7 @@ export class FilteredEventsModal extends BaseEventListModal {
 				label: "Open",
 				isPrimary: true,
 				handler: (item) => {
-					this.app.workspace.openLinkText(item.filePath, "", false);
+					void this.app.workspace.openLinkText(item.filePath, "", false);
 				},
 			},
 		];

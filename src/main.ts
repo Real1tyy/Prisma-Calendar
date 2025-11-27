@@ -4,6 +4,7 @@ import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, SettingsStore } from "./core";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
+import { intoDate } from "./utils/format";
 
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;
@@ -97,7 +98,7 @@ export default class CustomCalendarPlugin extends Plugin {
 					const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
 					if (calendarView) {
 						if (!checking) {
-							action(calendarView).then((success) => {
+							void action(calendarView).then((success) => {
 								if (!success) {
 									new Notice(`Nothing to ${name.toLowerCase()}`);
 								}
@@ -113,33 +114,39 @@ export default class CustomCalendarPlugin extends Plugin {
 		addUndoRedoCommand(COMMAND_IDS.UNDO, "Undo", (view) => view.undo());
 		addUndoRedoCommand(COMMAND_IDS.REDO, "Redo", (view) => view.redo());
 
-		addCalendarViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", (view) =>
-			view.showSkippedEventsModal()
-		);
-		addCalendarViewCommand(COMMAND_IDS.SHOW_RECURRING_EVENTS, "Show recurring events", (view) =>
-			view.showRecurringEventsModal()
-		);
-		addCalendarViewCommand(COMMAND_IDS.SHOW_FILTERED_EVENTS, "Show filtered events", (view) =>
-			view.showFilteredEventsModal()
-		);
-		addCalendarViewCommand(COMMAND_IDS.GLOBAL_SEARCH, "Global event search", (view) => view.showGlobalSearchModal());
-		addCalendarViewCommand(COMMAND_IDS.FOCUS_SEARCH, "Focus search", (view) => view.focusSearch());
-		addCalendarViewCommand(COMMAND_IDS.FOCUS_EXPRESSION_FILTER, "Focus expression filter", (view) =>
-			view.focusExpressionFilter()
-		);
-		addCalendarViewCommand(COMMAND_IDS.OPEN_FILTER_PRESET_SELECTOR, "Open filter preset selector", (view) =>
-			view.openFilterPresetSelector()
-		);
-		addCalendarViewCommand(COMMAND_IDS.SHOW_WEEKLY_STATS, "Show weekly statistics", (view) =>
-			view.showWeeklyStatsModal()
-		);
-		addCalendarViewCommand(COMMAND_IDS.SHOW_MONTHLY_STATS, "Show monthly statistics", (view) =>
-			view.showMonthlyStatsModal()
-		);
-		addCalendarViewCommand(COMMAND_IDS.SHOW_ALLTIME_STATS, "Show all-time statistics", (view) =>
-			view.showAllTimeStatsModal()
-		);
-		addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh calendar", (view) => view.refreshCalendar());
+		addCalendarViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", (view) => {
+			void view.showSkippedEventsModal();
+		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_RECURRING_EVENTS, "Show recurring events", (view) => {
+			void view.showRecurringEventsModal();
+		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_FILTERED_EVENTS, "Show filtered events", (view) => {
+			void view.showFilteredEventsModal();
+		});
+		addCalendarViewCommand(COMMAND_IDS.GLOBAL_SEARCH, "Global event search", (view) => {
+			void view.showGlobalSearchModal();
+		});
+		addCalendarViewCommand(COMMAND_IDS.FOCUS_SEARCH, "Focus search", (view) => {
+			void view.focusSearch();
+		});
+		addCalendarViewCommand(COMMAND_IDS.FOCUS_EXPRESSION_FILTER, "Focus expression filter", (view) => {
+			void view.focusExpressionFilter();
+		});
+		addCalendarViewCommand(COMMAND_IDS.OPEN_FILTER_PRESET_SELECTOR, "Open filter preset selector", (view) => {
+			void view.openFilterPresetSelector();
+		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_WEEKLY_STATS, "Show weekly statistics", (view) => {
+			void view.showWeeklyStatsModal();
+		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_MONTHLY_STATS, "Show monthly statistics", (view) => {
+			void view.showMonthlyStatsModal();
+		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_ALLTIME_STATS, "Show all-time statistics", (view) => {
+			void view.showAllTimeStatsModal();
+		});
+		addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh calendar", (view) => {
+			void view.refreshCalendar();
+		});
 
 		this.addCommand({
 			id: COMMAND_IDS.OPEN_CURRENT_NOTE_IN_CALENDAR,
@@ -150,7 +157,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		});
 
 		this.app.workspace.onLayoutReady(() => {
-			this.ensureCalendarBundlesReady();
+			void this.ensureCalendarBundlesReady();
 		});
 	}
 
@@ -249,16 +256,14 @@ export default class CustomCalendarPlugin extends Plugin {
 			isInAnyCalendarDirectory = true;
 
 			// Try to find a date property (start date, date, or start)
-			const dateValue =
+			const dateValue: unknown =
 				frontmatter[settings.startProp] || frontmatter[settings.dateProp] || frontmatter.Start || frontmatter.Date;
+			const parsedDate = intoDate(dateValue);
 
-			if (dateValue) {
-				const parsedDate = new Date(dateValue);
-				if (!Number.isNaN(parsedDate.getTime())) {
-					targetBundle = bundle;
-					startDate = parsedDate;
-					break;
-				}
+			if (parsedDate) {
+				targetBundle = bundle;
+				startDate = parsedDate;
+				break;
 			}
 		}
 

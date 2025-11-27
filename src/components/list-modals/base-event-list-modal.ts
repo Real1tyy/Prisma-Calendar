@@ -1,5 +1,5 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
-import { Modal, Notice } from "obsidian";
+import { Modal, type Modifier, Notice } from "obsidian";
 import { removeZettelId } from "../../utils/calendar-events";
 
 export interface EventListItem {
@@ -42,63 +42,63 @@ export abstract class BaseEventListModal extends Modal {
 		// Default: no async initialization
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		addCls(contentEl, "generic-event-list-modal");
 
 		// Allow subclasses to perform async initialization
-		await this.onBeforeRender();
+		void this.onBeforeRender().then(() => {
+			// Initialize items after subclass properties are set
+			this.items = this.getItems();
+			this.filteredItems = [...this.items];
 
-		// Initialize items after subclass properties are set
-		this.items = this.getItems();
-		this.filteredItems = [...this.items];
+			this.registerHotkeys();
 
-		this.registerHotkeys();
+			// Title
+			contentEl.createEl("h2", { text: this.getTitle() });
 
-		// Title
-		contentEl.createEl("h2", { text: this.getTitle() });
+			// Allow subclasses to inject custom header elements (e.g., filter toggles)
+			this.renderCustomHeaderElements(contentEl);
 
-		// Allow subclasses to inject custom header elements (e.g., filter toggles)
-		this.renderCustomHeaderElements(contentEl);
+			if (this.items.length === 0) {
+				contentEl.createEl("p", { text: this.getEmptyMessage() });
+				return;
+			}
 
-		if (this.items.length === 0) {
-			contentEl.createEl("p", { text: this.getEmptyMessage() });
-			return;
-		}
+			// Search input
+			const searchContainer = contentEl.createEl("div", { cls: cls("generic-event-list-search") });
+			this.searchInput = searchContainer.createEl("input", {
+				type: "text",
+				placeholder: "Search events... (Ctrl/Cmd+F)",
+				cls: cls("generic-event-search-input"),
+			});
 
-		// Search input
-		const searchContainer = contentEl.createEl("div", { cls: cls("generic-event-list-search") });
-		this.searchInput = searchContainer.createEl("input", {
-			type: "text",
-			placeholder: "Search events... (Ctrl/Cmd+F)",
-			cls: cls("generic-event-search-input"),
+			this.searchInput.addEventListener("input", (e) => {
+				const target = e.target as HTMLInputElement;
+				this.filterItems(target.value);
+			});
+
+			// Auto-focus the search input when modal opens
+			setTimeout(() => {
+				this.searchInput?.focus();
+			}, 50);
+
+			// Count
+			const countSuffix = this.getCountSuffix();
+			const countText = countSuffix
+				? `${this.items.length} event${this.items.length === 1 ? "" : "s"} ${countSuffix}`
+				: `${this.items.length} event${this.items.length === 1 ? "" : "s"}`;
+			contentEl.createEl("p", {
+				text: countText,
+				cls: cls("generic-event-list-count"),
+			});
+
+			// Event list
+			this.listContainer = contentEl.createEl("div", { cls: cls("generic-event-list") });
+
+			this.renderItems();
 		});
-
-		this.searchInput.addEventListener("input", (e) => {
-			const target = e.target as HTMLInputElement;
-			this.filterItems(target.value);
-		});
-
-		// Auto-focus the search input when modal opens
-		setTimeout(() => {
-			this.searchInput?.focus();
-		}, 50);
-
-		// Count
-		const countSuffix = this.getCountSuffix();
-		const countText = countSuffix
-			? `${this.items.length} event${this.items.length === 1 ? "" : "s"} ${countSuffix}`
-			: `${this.items.length} event${this.items.length === 1 ? "" : "s"}`;
-		contentEl.createEl("p", {
-			text: countText,
-			cls: cls("generic-event-list-count"),
-		});
-
-		// Event list
-		this.listContainer = contentEl.createEl("div", { cls: cls("generic-event-list") });
-
-		this.renderItems();
 	}
 
 	protected registerHotkeys(): void {
@@ -131,7 +131,12 @@ export abstract class BaseEventListModal extends Modal {
 		// Listen for command hotkey to toggle close
 		const hotkeyCommandId = this.getHotkeyCommandId();
 		if (hotkeyCommandId) {
-			const hotkeys = (this.app as any).hotkeyManager?.getHotkeys(hotkeyCommandId);
+			const appWithHotkeys = this.app as unknown as {
+				hotkeyManager?: {
+					getHotkeys: (id: string) => Array<{ modifiers: Modifier[]; key: string }>;
+				};
+			};
+			const hotkeys = appWithHotkeys.hotkeyManager?.getHotkeys(hotkeyCommandId);
 			if (hotkeys && hotkeys.length > 0) {
 				for (const hotkey of hotkeys) {
 					this.scope.register(hotkey.modifiers, hotkey.key, () => {
@@ -227,9 +232,9 @@ export abstract class BaseEventListModal extends Modal {
 				if (action.isPrimary) {
 					btn.addClass("mod-cta");
 				}
-				btn.addEventListener("click", async (e) => {
+				btn.addEventListener("click", (e) => {
 					e.stopPropagation(); // Prevent triggering item click
-					await action.handler(item, itemEl);
+					void action.handler(item, itemEl);
 				});
 			}
 		}

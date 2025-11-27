@@ -119,7 +119,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 			end.setFullYear(end.getFullYear() + 5);
 
 			// Events are already filtered by global filter rules in the parser
-			const events = await this.bundle.eventStore.getPhysicalEvents({
+			const events = this.bundle.eventStore.getPhysicalEvents({
 				start: start.toISOString(),
 				end: end.toISOString(),
 			});
@@ -138,7 +138,12 @@ export class GlobalSearchModal extends BaseEventListModal {
 		}
 	}
 
-	private formatEventSubtitle(event: any): string {
+	private formatEventSubtitle(event: {
+		allDay: boolean;
+		start: string;
+		end?: string;
+		meta?: Record<string, unknown>;
+	}): string {
 		const parts: string[] = [];
 		const settings = this.bundle.settingsStore.currentSettings;
 
@@ -212,27 +217,29 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 		this.updateButtonText(button, label, this.filters[filterKey]);
 
-		button.addEventListener("click", async () => {
-			// Cycle through states: none → only → skip → none
-			const currentState = this.filters[filterKey];
-			let nextState: FilterState;
+		button.addEventListener("click", () => {
+			void (async () => {
+				// Cycle through states: none → only → skip → none
+				const currentState = this.filters[filterKey];
+				let nextState: FilterState;
 
-			if (currentState === "none") {
-				nextState = "only";
-			} else if (currentState === "only") {
-				nextState = "skip";
-			} else {
-				nextState = "none";
-			}
+				if (currentState === "none") {
+					nextState = "only";
+				} else if (currentState === "only") {
+					nextState = "skip";
+				} else {
+					nextState = "none";
+				}
 
-			this.filters[filterKey] = nextState;
-			this.updateButtonText(button, label, nextState);
+				this.filters[filterKey] = nextState;
+				this.updateButtonText(button, label, nextState);
 
-			await this.applyFilters();
-			this.items = this.getItems();
+				await this.applyFilters();
+				this.items = this.getItems();
 
-			const searchValue = this.searchInput?.value || "";
-			this.filterItems(searchValue);
+				const searchValue = this.searchInput?.value || "";
+				this.filterItems(searchValue);
+			})();
 		});
 	}
 
@@ -264,7 +271,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 			// Use getPhysicalEvents for better performance (skips virtual event generation)
 			// Events are already filtered by global filter rules in the parser
-			const events = await this.bundle.eventStore.getPhysicalEvents({
+			const events = this.bundle.eventStore.getPhysicalEvents({
 				start: start.toISOString(),
 				end: end.toISOString(),
 			});
@@ -332,7 +339,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 			end.setFullYear(end.getFullYear() + 5);
 
 			// Use getPhysicalEvents for better performance
-			const events = await this.bundle.eventStore.getPhysicalEvents({
+			const events = this.bundle.eventStore.getPhysicalEvents({
 				start: start.toISOString(),
 				end: end.toISOString(),
 			});

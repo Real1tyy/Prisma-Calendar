@@ -52,7 +52,7 @@ export class SelectedEventsModal extends BaseEventListModal {
 			{
 				label: "Open",
 				handler: (item) => {
-					this.app.workspace.openLinkText(item.filePath, "", false);
+					void this.app.workspace.openLinkText(item.filePath, "", false);
 				},
 			},
 		];

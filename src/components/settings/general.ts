@@ -7,6 +7,7 @@ export class GeneralSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 
 	constructor(settingsStore: CalendarSettingsStore) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
 		this.ui = new SettingsUIBuilder(settingsStore as any);
 	}
 

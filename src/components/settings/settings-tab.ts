@@ -94,7 +94,9 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		});
 
 		this.configureMaxCalendarsButton(createButton);
-		createButton.addEventListener("click", () => this.createNewCalendar());
+		createButton.addEventListener("click", () => {
+			void this.createNewCalendar();
+		});
 
 		// Clone Calendar button
 		const cloneButton = actionsContainer.createEl("button", {
@@ -103,7 +105,9 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		});
 
 		this.configureMaxCalendarsButton(cloneButton);
-		cloneButton.addEventListener("click", () => this.cloneCurrentCalendar());
+		cloneButton.addEventListener("click", () => {
+			void this.cloneCurrentCalendar();
+		});
 
 		// Rename Calendar button
 		const renameButton = actionsContainer.createEl("button", {
@@ -111,7 +115,9 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			cls: `${cls("calendar-action-button")} ${cls("calendar-rename-button")}`,
 		});
 
-		renameButton.addEventListener("click", () => this.renameCurrentCalendar());
+		renameButton.addEventListener("click", () => {
+			void this.renameCurrentCalendar();
+		});
 
 		// Delete Calendar button
 		const deleteButton = actionsContainer.createEl("button", {
@@ -120,7 +126,9 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		});
 
 		this.configureMinCalendarsButton(deleteButton);
-		deleteButton.addEventListener("click", () => this.deleteCurrentCalendar());
+		deleteButton.addEventListener("click", () => {
+			void this.deleteCurrentCalendar();
+		});
 
 		// Calendar count info
 		const countInfo = headerContainer.createDiv(cls("calendar-count-info"));
@@ -256,18 +264,20 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			return;
 		}
 
-		new RenameCalendarModal(this.app, currentCalendar.name, async (newName) => {
-			if (newName && newName !== currentCalendar.name) {
-				await this.plugin.settingsStore.updateSettings((currentSettings) => ({
-					...currentSettings,
-					calendars: currentSettings.calendars.map((calendar) =>
-						calendar.id === this.selectedCalendarId ? { ...calendar, name: newName } : calendar
-					),
-				}));
+		new RenameCalendarModal(this.app, currentCalendar.name, (newName) => {
+			void (async () => {
+				if (newName && newName !== currentCalendar.name) {
+					await this.plugin.settingsStore.updateSettings((currentSettings) => ({
+						...currentSettings,
+						calendars: currentSettings.calendars.map((calendar) =>
+							calendar.id === this.selectedCalendarId ? { ...calendar, name: newName } : calendar
+						),
+					}));
 
-				await this.plugin.refreshCalendarBundles();
-				this.display();
-			}
+					await this.plugin.refreshCalendarBundles();
+					this.display();
+				}
+			})();
 		}).open();
 	}
 }

@@ -21,13 +21,13 @@ export abstract class StatsModal extends Modal {
 		this.bundle = bundle;
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		addCls(contentEl, "weekly-stats-modal");
 
 		this.setupKeyboardShortcuts();
-		await this.renderContent();
+		void this.renderContent();
 	}
 
 	protected createSkipCheckbox(container: HTMLElement): void {
@@ -46,10 +46,10 @@ export abstract class StatsModal extends Modal {
 			cls: cls("stats-skip-checkbox-text"),
 		});
 
-		checkbox.addEventListener("change", async () => {
+		checkbox.addEventListener("change", () => {
 			this.includeSkippedEvents = checkbox.checked;
 			this.destroyComponents();
-			await this.renderContent();
+			void this.renderContent();
 		});
 	}
 
@@ -64,12 +64,12 @@ export abstract class StatsModal extends Modal {
 			cls: cls("stats-mode-button-compact"),
 		});
 
-		toggleButton.addEventListener("click", async () => {
+		toggleButton.addEventListener("click", () => {
 			this.aggregationMode = this.aggregationMode === "name" ? "category" : "name";
 			toggleButton.setText(this.aggregationMode === "name" ? "Event Name" : "Category");
 
 			this.destroyComponents();
-			await this.renderContent();
+			void this.renderContent();
 		});
 	}
 

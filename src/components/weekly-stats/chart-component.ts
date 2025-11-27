@@ -92,7 +92,7 @@ export class ChartComponent {
 									chart.data.labels?.map((label, i) => {
 										const value = datasets[0].data[i] as number;
 										const percentage = ((value / totalDuration) * 100).toFixed(1);
-										const labelText = `${label} (${percentage}%)`;
+										const labelText = `${String(label)} (${percentage}%)`;
 										return {
 											text: labelText.length > 35 ? `${labelText.substring(0, 32)}...` : labelText,
 											fillStyle: (datasets[0].backgroundColor as string[])[i],
