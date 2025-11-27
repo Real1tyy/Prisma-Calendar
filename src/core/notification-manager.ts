@@ -328,7 +328,7 @@ export class NotificationManager {
 
 		try {
 			await this.app.fileManager.processFrontMatter(file, (fm) => {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Dynamic property access based on settings configuration
 				fm[this.settings.alreadyNotifiedProp] = true;
 			});
 		} catch (error) {
@@ -375,7 +375,7 @@ export class NotificationManager {
 
 		try {
 			await this.app.fileManager.processFrontMatter(file, (fm) => {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Dynamic property access based on settings configuration
 				fm[this.settings.alreadyNotifiedProp] = false;
 
 				// Calculate minutesBefore so notification triggers exactly snoozeMinutes from NOW
@@ -393,7 +393,7 @@ export class NotificationManager {
 				const snoozeMinutes: number = this.settings.snoozeMinutes;
 				const newMinutesBefore = -minutesFromEventStartToNow - snoozeMinutes;
 
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Dynamic property access based on settings configuration
 				fm[this.settings.minutesBeforeProp] = newMinutesBefore;
 			});
 		} catch (error) {

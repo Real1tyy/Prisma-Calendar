@@ -256,7 +256,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		this.display();
 	}
 
-	private async renameCurrentCalendar(): Promise<void> {
+	private renameCurrentCalendar(): void {
 		const settings = this.plugin.settingsStore.currentSettings;
 		const currentCalendar = settings.calendars.find((c) => c.id === this.selectedCalendarId);
 

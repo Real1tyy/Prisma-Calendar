@@ -63,8 +63,8 @@ export class CalendarBundle {
 		return await onceAsync(async () => {
 			this.plugin.registerViewTypeSafe(this.viewType, (leaf: WorkspaceLeaf) => new CalendarView(leaf, this));
 
-			// @ts-expect-error - registerHoverLinkSource is not in public types but exists in runtime
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+			// @ts-expect-error -- registerHoverLinkSource is not in public types but exists in runtime
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call -- registerHoverLinkSource exists at runtime but not in types
 			this.app.workspace.registerHoverLinkSource(this.viewType, {
 				display: this.settingsStore.currentSettings.name,
 				defaultMod: true,

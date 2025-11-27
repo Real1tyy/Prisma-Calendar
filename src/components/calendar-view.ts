@@ -746,7 +746,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.currentUpcomingEventIds.clear();
 	}
 
-	private async initializeCalendar(container: HTMLElement): Promise<void> {
+	private initializeCalendar(container: HTMLElement): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		this.calendar = new Calendar(container, {
@@ -1484,7 +1484,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		// Wait for layout before rendering FullCalendar
 		await this.waitForLayout(this.container);
-		await this.initializeCalendar(this.container);
+		this.initializeCalendar(this.container);
 
 		this.setupKeyboardShortcuts();
 

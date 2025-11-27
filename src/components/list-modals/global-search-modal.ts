@@ -57,8 +57,8 @@ export class GlobalSearchModal extends BaseEventListModal {
 			{
 				label: "Navigate to",
 				isPrimary: true,
-				handler: async (item) => {
-					await this.handleNavigateTo(item);
+				handler: (item) => {
+					this.handleNavigateTo(item);
 				},
 			},
 		];
@@ -76,15 +76,15 @@ export class GlobalSearchModal extends BaseEventListModal {
 		// No special cleanup needed
 	}
 
-	protected async onBeforeRender(): Promise<void> {
+	protected onBeforeRender(): void {
 		// Add custom CSS class for this modal
 		addCls(this.contentEl, "global-search-modal");
 
 		// Load all events from the store
-		await this.loadAllEvents();
+		this.loadAllEvents();
 
 		// Apply initial filters
-		await this.applyFilters();
+		this.applyFilters();
 	}
 
 	protected renderCustomHeaderElements(contentEl: HTMLElement): void {
@@ -110,7 +110,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		this.renderItems();
 	}
 
-	private async loadAllEvents(): Promise<void> {
+	private loadAllEvents(): void {
 		try {
 			// Get a wide date range to capture all events
 			const start = new Date();
@@ -234,7 +234,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 				this.filters[filterKey] = nextState;
 				this.updateButtonText(button, label, nextState);
 
-				await this.applyFilters();
+				this.applyFilters();
 				this.items = this.getItems();
 
 				const searchValue = this.searchInput?.value || "";
@@ -261,7 +261,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		}
 	}
 
-	private async applyFilters(): Promise<void> {
+	private applyFilters(): void {
 		try {
 			// Get fresh event data for filtering
 			const start = new Date();
@@ -330,7 +330,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		}
 	}
 
-	private async handleNavigateTo(item: EventListItem): Promise<void> {
+	private handleNavigateTo(item: EventListItem): void {
 		try {
 			// Find the event in the store to get its date
 			const start = new Date();

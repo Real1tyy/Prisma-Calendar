@@ -21,7 +21,7 @@ export class RecurringEventsModal extends BaseEventListModal {
 		super(app);
 	}
 
-	protected async onBeforeRender(): Promise<void> {
+	protected onBeforeRender(): void {
 		this.enabledEvents = this.bundle.recurringEventManager.getEnabledRecurringEvents();
 		this.disabledEvents = this.bundle.recurringEventManager.getDisabledRecurringEvents();
 	}
@@ -126,14 +126,14 @@ export class RecurringEventsModal extends BaseEventListModal {
 			primaryAction,
 			{
 				label: "Navigate",
-				handler: async (item) => {
-					await this.handleNavigate(item);
+				handler: (item) => {
+					this.handleNavigate(item);
 				},
 			},
 		];
 	}
 
-	private async handleNavigate(item: EventListItem): Promise<void> {
+	private handleNavigate(item: EventListItem): void {
 		try {
 			// Find the recurring event
 			const events = this.showDisabledOnly ? this.disabledEvents : this.enabledEvents;

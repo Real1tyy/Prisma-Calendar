@@ -37,12 +37,11 @@ export class EventPreviewModal extends Modal {
 		const { contentEl } = this;
 		addCls(contentEl, "event-preview-modal");
 
-		void this.loadAllFrontmatter().then(() => {
-			this.renderEventPreview();
-		});
+		this.loadAllFrontmatter();
+		this.renderEventPreview();
 	}
 
-	private async loadAllFrontmatter(): Promise<void> {
+	private loadAllFrontmatter(): void {
 		try {
 			const filePath = this.event.extendedProps?.filePath;
 			if (!filePath) return;

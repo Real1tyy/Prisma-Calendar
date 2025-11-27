@@ -87,7 +87,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 				break;
 			case "file-changed":
 				if (event.source) {
-					await this.handleFileChanged(event.filePath, event.source.frontmatter);
+					this.handleFileChanged(event.filePath, event.source.frontmatter);
 				}
 				break;
 			case "file-deleted":
@@ -208,7 +208,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.notifyChange();
 	}
 
-	private async handleFileChanged(filePath: string, frontmatter: Record<string, unknown>): Promise<void> {
+	private handleFileChanged(filePath: string, frontmatter: Record<string, unknown>): void {
 		const rruleId = frontmatter[this.settings.rruleIdProp] as string;
 		const instanceDate = frontmatter.nodeRecurringInstanceDate as string;
 

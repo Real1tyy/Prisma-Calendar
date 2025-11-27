@@ -8,8 +8,7 @@ export class GeneralSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 
 	constructor(private settingsStore: CalendarSettingsStore) {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-		this.ui = new SettingsUIBuilder(this.settingsStore as any);
+		this.ui = new SettingsUIBuilder(this.settingsStore as never);
 	}
 
 	display(containerEl: HTMLElement): void {
