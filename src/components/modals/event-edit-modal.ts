@@ -99,6 +99,7 @@ export class EventEditModal extends BaseEventModal {
 
 		this.loadRecurringEventData();
 		this.loadCategoryData();
+		this.loadBreakData();
 		this.loadCustomPropertiesData();
 	}
 
@@ -108,6 +109,16 @@ export class EventEditModal extends BaseEventModal {
 
 		const categoryValue = this.originalFrontmatter[settings.categoryProp];
 		this.categoryInput.setValue(categoryValue);
+	}
+
+	private loadBreakData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.breakProp || !this.breakInput) return;
+
+		const breakValue = this.originalFrontmatter[settings.breakProp];
+		if (typeof breakValue === "number" && breakValue > 0) {
+			this.breakInput.value = breakValue.toString();
+		}
 	}
 
 	public saveEvent(): void {

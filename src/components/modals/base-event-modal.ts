@@ -62,6 +62,7 @@ export abstract class BaseEventModal extends Modal {
 	protected futureInstancesCountInput!: HTMLInputElement;
 
 	protected categoryInput?: CategoryInput;
+	protected breakInput!: HTMLInputElement;
 
 	// Custom properties
 	protected customProperties: CustomProperty[] = [];
@@ -198,6 +199,11 @@ export abstract class BaseEventModal extends Modal {
 			this.categoryInput.setValue("");
 		}
 
+		// Clear break
+		if (this.breakInput) {
+			this.breakInput.value = "";
+		}
+
 		// Clear custom properties
 		this.displayPropertiesContainer.empty();
 		this.otherPropertiesContainer.empty();
@@ -247,6 +253,11 @@ export abstract class BaseEventModal extends Modal {
 		// Apply categories
 		if (preset.categories !== undefined && this.categoryInput) {
 			this.categoryInput.setValue(preset.categories);
+		}
+
+		// Apply break time
+		if (preset.breakMinutes !== undefined && this.breakInput) {
+			this.breakInput.value = preset.breakMinutes.toString();
 		}
 
 		// Apply recurring settings
@@ -371,6 +382,7 @@ export abstract class BaseEventModal extends Modal {
 
 		this.createRecurringEventFields(contentEl);
 		this.createCategoryField(contentEl);
+		this.createBreakField(contentEl);
 		this.createCustomPropertiesFields(contentEl);
 	}
 
@@ -380,6 +392,27 @@ export abstract class BaseEventModal extends Modal {
 
 		this.categoryInput = new CategoryInput(this.bundle.categoryTracker);
 		this.categoryInput.render(contentEl);
+	}
+
+	private createBreakField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.breakProp) return;
+
+		const breakContainer = contentEl.createDiv("setting-item");
+		breakContainer.createEl("div", { text: "Break (minutes)", cls: "setting-item-name" });
+		const breakDesc = breakContainer.createEl("div", {
+			cls: "setting-item-description",
+		});
+		breakDesc.setText("Time to subtract from duration in statistics (decimals supported)");
+		this.breakInput = breakContainer.createEl("input", {
+			type: "number",
+			cls: "setting-item-control",
+			attr: {
+				min: "0",
+				step: "any",
+				placeholder: "0",
+			},
+		});
 	}
 
 	private createDateTimeInputWithNowButton(parent: HTMLElement, label: string, initialValue: string): HTMLInputElement {
@@ -744,6 +777,14 @@ export abstract class BaseEventModal extends Modal {
 			}
 		}
 
+		// Break time
+		if (this.breakInput?.value) {
+			const breakValue = Number.parseFloat(this.breakInput.value);
+			if (!Number.isNaN(breakValue) && breakValue > 0) {
+				preset.breakMinutes = breakValue;
+			}
+		}
+
 		// Recurring settings
 		if (this.recurringCheckbox.checked) {
 			preset.rruleType = this.rruleSelect.value;
@@ -874,6 +915,16 @@ export abstract class BaseEventModal extends Modal {
 				}
 			} else {
 				delete preservedFrontmatter[settings.categoryProp];
+			}
+		}
+
+		// Handle break property
+		if (settings.breakProp && this.breakInput) {
+			const breakValue = Number.parseFloat(this.breakInput.value);
+			if (!Number.isNaN(breakValue) && breakValue > 0) {
+				preservedFrontmatter[settings.breakProp] = breakValue;
+			} else {
+				delete preservedFrontmatter[settings.breakProp];
 			}
 		}
 

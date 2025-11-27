@@ -23,8 +23,9 @@ export type WeeklyStats = Stats;
 /**
  * Calculates the duration of an event in milliseconds.
  * For all-day events without explicit end time, assumes 1 day duration.
+ * If breakProp is provided and the event has a break value, it's subtracted from the duration.
  */
-export function getEventDuration(event: ParsedEvent): number {
+export function getEventDuration(event: ParsedEvent, breakProp?: string): number {
 	const start = new Date(event.start);
 	let end: Date;
 
@@ -39,7 +40,18 @@ export function getEventDuration(event: ParsedEvent): number {
 		return 0;
 	}
 
-	return end.getTime() - start.getTime();
+	let duration = end.getTime() - start.getTime();
+
+	// Subtract break time if breakProp is configured and event has a break value
+	if (breakProp && event.meta?.[breakProp]) {
+		const breakMinutes = Number(event.meta[breakProp]);
+		if (!Number.isNaN(breakMinutes) && breakMinutes > 0) {
+			const breakMs = breakMinutes * 60 * 1000;
+			duration = Math.max(0, duration - breakMs);
+		}
+	}
+
+	return duration;
 }
 
 /**
@@ -96,13 +108,15 @@ export function getMonthBounds(date: Date): { start: Date; end: Date } {
  * 3. Both virtual (recurring) and regular events use their actual title/category
  * 4. Calculates total duration and count for each group
  * 5. Events without a category are grouped under "No Category" when mode is "category"
+ * 6. Break time is subtracted from duration if breakProp is configured
  */
 export function aggregateStats(
 	events: ParsedEvent[],
 	periodStart?: Date,
 	periodEnd?: Date,
 	mode: AggregationMode = "name",
-	categoryProp = "Category"
+	categoryProp = "Category",
+	breakProp?: string
 ): Stats {
 	let filteredEvents = events;
 
@@ -129,7 +143,7 @@ export function aggregateStats(
 		}
 
 		const isRecurring = event.isVirtual;
-		const duration = getEventDuration(event);
+		const duration = getEventDuration(event, breakProp);
 		const existing = groups.get(groupKey);
 
 		if (existing) {
@@ -167,10 +181,11 @@ export function aggregateWeeklyStats(
 	events: ParsedEvent[],
 	weekDate: Date,
 	mode: AggregationMode = "name",
-	categoryProp = "Category"
+	categoryProp = "Category",
+	breakProp?: string
 ): WeeklyStats {
 	const { start, end } = getWeekBounds(weekDate);
-	return aggregateStats(events, start, end, mode, categoryProp);
+	return aggregateStats(events, start, end, mode, categoryProp, breakProp);
 }
 
 /**
@@ -180,10 +195,11 @@ export function aggregateMonthlyStats(
 	events: ParsedEvent[],
 	monthDate: Date,
 	mode: AggregationMode = "name",
-	categoryProp = "Category"
+	categoryProp = "Category",
+	breakProp?: string
 ): Stats {
 	const { start, end } = getMonthBounds(monthDate);
-	return aggregateStats(events, start, end, mode, categoryProp);
+	return aggregateStats(events, start, end, mode, categoryProp, breakProp);
 }
 
 /**

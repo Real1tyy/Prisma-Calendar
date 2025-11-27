@@ -12,7 +12,13 @@ export interface IntervalConfig {
 	getBounds(date: Date): { start: Date; end: Date };
 	navigateNext(date: Date): void;
 	navigatePrevious(date: Date): void;
-	aggregateStats(events: ParsedEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats;
+	aggregateStats(
+		events: ParsedEvent[],
+		date: Date,
+		mode: AggregationMode,
+		categoryProp: string,
+		breakProp?: string
+	): Stats;
 	formatDateRange(start: Date, end: Date): string;
 }
 
@@ -73,12 +79,15 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 		const filteredEvents = this.filterSkippedEvents(events);
 
-		const categoryProp = this.bundle.settingsStore.currentSettings.categoryProp || "Category";
+		const settings = this.bundle.settingsStore.currentSettings;
+		const categoryProp = settings.categoryProp || "Category";
+		const breakProp = settings.breakProp || undefined;
 		const stats = this.intervalConfig.aggregateStats(
 			filteredEvents,
 			this.currentDate,
 			this.aggregationMode,
-			categoryProp
+			categoryProp,
+			breakProp
 		);
 
 		this.renderHeader(this.contentContainer, start, end, stats);

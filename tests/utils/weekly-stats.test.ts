@@ -155,6 +155,177 @@ describe("getEventDuration", () => {
 		const duration = getEventDuration(event);
 		expect(duration).toBe(7 * 24 * 60 * 60 * 1000); // 7 days
 	});
+
+	describe("break time subtraction", () => {
+		it("should subtract break time from duration when breakProp is provided", () => {
+			const event: ParsedEvent = {
+				id: "1",
+				ref: { filePath: "test.md" },
+				title: "Meeting",
+				start: "2025-02-03T10:00:00Z",
+				end: "2025-02-03T12:30:00Z", // 150 minutes
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Break: 30, // 30 minute break
+				},
+			};
+
+			const duration = getEventDuration(event, "Break");
+			expect(duration).toBe(120 * 60 * 1000); // 150 - 30 = 120 minutes
+		});
+
+		it("should handle decimal break values", () => {
+			const event: ParsedEvent = {
+				id: "1",
+				ref: { filePath: "test.md" },
+				title: "Meeting",
+				start: "2025-02-03T10:00:00Z",
+				end: "2025-02-03T11:30:00Z", // 90 minutes
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Break: 15.5, // 15.5 minute break
+				},
+			};
+
+			const duration = getEventDuration(event, "Break");
+			expect(duration).toBe(74.5 * 60 * 1000); // 90 - 15.5 = 74.5 minutes
+		});
+
+		it("should not subtract break when breakProp is not provided", () => {
+			const event: ParsedEvent = {
+				id: "1",
+				ref: { filePath: "test.md" },
+				title: "Meeting",
+				start: "2025-02-03T10:00:00Z",
+				end: "2025-02-03T12:30:00Z", // 150 minutes
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Break: 30,
+				},
+			};
+
+			const duration = getEventDuration(event);
+			expect(duration).toBe(150 * 60 * 1000); // Full duration without break subtraction
+		});
+
+		it("should not subtract break when event has no break value", () => {
+			const event: ParsedEvent = {
+				id: "1",
+				ref: { filePath: "test.md" },
+				title: "Meeting",
+				start: "2025-02-03T10:00:00Z",
+				end: "2025-02-03T11:30:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {},
+			};
+
+			const duration = getEventDuration(event, "Break");
+			expect(duration).toBe(90 * 60 * 1000);
+		});
+
+		it("should not go below zero duration", () => {
+			const event: ParsedEvent = {
+				id: "1",
+				ref: { filePath: "test.md" },
+				title: "Meeting",
+				start: "2025-02-03T10:00:00Z",
+				end: "2025-02-03T10:30:00Z", // 30 minutes
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Break: 60, // 60 minute break (more than duration)
+				},
+			};
+
+			const duration = getEventDuration(event, "Break");
+			expect(duration).toBe(0); // Should clamp to 0
+		});
+
+		it("should ignore invalid break values", () => {
+			const event: ParsedEvent = {
+				id: "1",
+				ref: { filePath: "test.md" },
+				title: "Meeting",
+				start: "2025-02-03T10:00:00Z",
+				end: "2025-02-03T11:30:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Break: "invalid",
+				},
+			};
+
+			const duration = getEventDuration(event, "Break");
+			expect(duration).toBe(90 * 60 * 1000);
+		});
+
+		it("should ignore negative break values", () => {
+			const event: ParsedEvent = {
+				id: "1",
+				ref: { filePath: "test.md" },
+				title: "Meeting",
+				start: "2025-02-03T10:00:00Z",
+				end: "2025-02-03T11:30:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Break: -30,
+				},
+			};
+
+			const duration = getEventDuration(event, "Break");
+			expect(duration).toBe(90 * 60 * 1000);
+		});
+
+		it("should ignore zero break values", () => {
+			const event: ParsedEvent = {
+				id: "1",
+				ref: { filePath: "test.md" },
+				title: "Meeting",
+				start: "2025-02-03T10:00:00Z",
+				end: "2025-02-03T11:30:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Break: 0,
+				},
+			};
+
+			const duration = getEventDuration(event, "Break");
+			expect(duration).toBe(90 * 60 * 1000);
+		});
+
+		it("should work with custom break property name", () => {
+			const event: ParsedEvent = {
+				id: "1",
+				ref: { filePath: "test.md" },
+				title: "Meeting",
+				start: "2025-02-03T10:00:00Z",
+				end: "2025-02-03T12:00:00Z", // 120 minutes
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Pause: 45,
+				},
+			};
+
+			const duration = getEventDuration(event, "Pause");
+			expect(duration).toBe(75 * 60 * 1000); // 120 - 45 = 75 minutes
+		});
+	});
 });
 
 describe("getWeekBounds", () => {
@@ -1374,6 +1545,205 @@ describe("aggregateMonthlyStats", () => {
 
 		// Event should be included in February because it overlaps
 		expect(febStats.entries).toHaveLength(1);
+	});
+});
+
+describe("Break time in aggregation", () => {
+	describe("aggregateWeeklyStats with break", () => {
+		it("should subtract break time from total duration", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "gym1.md" },
+					title: "Gym Session",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T12:30:00Z", // 150 minutes
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Break: 30, // 30 minute break
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "name", "Category", "Break");
+
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].duration).toBe(120 * 60 * 1000); // 150 - 30 = 120 minutes
+			expect(stats.totalDuration).toBe(120 * 60 * 1000);
+		});
+
+		it("should aggregate multiple events with breaks correctly", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "work1.md" },
+					title: "Work Session",
+					start: "2025-02-03T09:00:00Z",
+					end: "2025-02-03T12:00:00Z", // 180 minutes
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Break: 30, // 30 minute break
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "work2.md" },
+					title: "Work Session",
+					start: "2025-02-04T09:00:00Z",
+					end: "2025-02-04T12:30:00Z", // 210 minutes
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Break: 45, // 45 minute break
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "name", "Category", "Break");
+
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].name).toBe("Work Session");
+			// (180 - 30) + (210 - 45) = 150 + 165 = 315 minutes
+			expect(stats.entries[0].duration).toBe(315 * 60 * 1000);
+			expect(stats.totalDuration).toBe(315 * 60 * 1000);
+		});
+
+		it("should handle mixed events with and without breaks", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Event 1",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T12:00:00Z", // 120 minutes
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Break: 30, // Has break
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Event 2",
+					start: "2025-02-04T10:00:00Z",
+					end: "2025-02-04T11:00:00Z", // 60 minutes, no break
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "name", "Category", "Break");
+
+			expect(stats.entries).toHaveLength(2);
+			// Event 1: 120 - 30 = 90 minutes
+			// Event 2: 60 minutes (no break)
+			expect(stats.totalDuration).toBe(150 * 60 * 1000);
+		});
+
+		it("should work with category aggregation mode", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "work.md" },
+					title: "Work",
+					start: "2025-02-03T09:00:00Z",
+					end: "2025-02-03T12:00:00Z", // 180 minutes
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work",
+						Break: 45,
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "gym.md" },
+					title: "Gym",
+					start: "2025-02-04T18:00:00Z",
+					end: "2025-02-04T20:00:00Z", // 120 minutes
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Health",
+						Break: 15,
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category", "Break");
+
+			expect(stats.entries).toHaveLength(2);
+
+			const workEntry = stats.entries.find((e) => e.name === "Work");
+			expect(workEntry?.duration).toBe(135 * 60 * 1000); // 180 - 45 = 135
+
+			const healthEntry = stats.entries.find((e) => e.name === "Health");
+			expect(healthEntry?.duration).toBe(105 * 60 * 1000); // 120 - 15 = 105
+		});
+
+		it("should not subtract break when breakProp is not provided", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "gym.md" },
+					title: "Gym",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T12:30:00Z", // 150 minutes
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Break: 30,
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date); // No breakProp
+
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].duration).toBe(150 * 60 * 1000); // Full duration
+		});
+	});
+
+	describe("aggregateMonthlyStats with break", () => {
+		it("should subtract break time from monthly stats", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event.md" },
+					title: "Event",
+					start: "2025-02-05T10:00:00Z",
+					end: "2025-02-05T13:00:00Z", // 180 minutes
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Break: 30,
+					},
+				},
+			];
+
+			const monthDate = new Date("2025-02-15T12:00:00");
+			const stats = aggregateMonthlyStats(events, monthDate, "name", "Category", "Break");
+
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].duration).toBe(150 * 60 * 1000); // 180 - 30 = 150
+		});
 	});
 });
 

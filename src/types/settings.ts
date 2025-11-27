@@ -12,6 +12,7 @@ export const EventPresetSchema = z.object({
 	startDate: z.string().optional(), // Start datetime for timed events (ISO string)
 	endDate: z.string().optional(), // End datetime for timed events (ISO string)
 	categories: z.string().optional(), // Event categories (comma-separated string)
+	breakMinutes: z.number().nonnegative().optional(), // Break time in minutes to subtract from duration
 	rruleType: z.string().optional(), // Recurrence type
 	rruleSpec: z.string().optional(), // Weekdays for recurring events
 	futureInstancesCount: z.number().int().positive().optional(), // Per-preset override of future instances count
@@ -46,6 +47,7 @@ export const PropsSettingsSchema = z.object({
 	statusProperty: z.string().default(SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY), // property name to manage event status
 	doneValue: z.string().default(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE), // value to set when marking event as done
 	categoryProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_CATEGORY_PROP), // property name for event categories used in statistics
+	breakProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_BREAK_PROP), // property name for break time in minutes (subtracted from duration in statistics)
 	futureInstancesCountProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT_PROP), // property name for per-event override of future instances count
 });
 

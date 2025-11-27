@@ -16,8 +16,14 @@ export class MonthlyStatsModal extends IntervalStatsModal {
 			date.setMonth(date.getMonth() - 1);
 		},
 
-		aggregateStats: (events: ParsedEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats => {
-			return aggregateMonthlyStats(events, date, mode, categoryProp);
+		aggregateStats: (
+			events: ParsedEvent[],
+			date: Date,
+			mode: AggregationMode,
+			categoryProp: string,
+			breakProp?: string
+		): Stats => {
+			return aggregateMonthlyStats(events, date, mode, categoryProp, breakProp);
 		},
 
 		formatDateRange: (start: Date, _end: Date): string => {
