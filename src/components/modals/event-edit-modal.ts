@@ -17,7 +17,7 @@ export class EventEditModal extends BaseEventModal {
 		return "Save";
 	}
 
-	protected async initialize(): Promise<void> {
+	protected initialize(): Promise<void> {
 		this.loadExistingFrontmatter();
 
 		// Extract and store ZettelID from the original title
@@ -30,6 +30,8 @@ export class EventEditModal extends BaseEventModal {
 				this.displayTitle = this.event.title;
 			}
 		}
+
+		return Promise.resolve();
 	}
 
 	private loadRecurringEventData(): void {

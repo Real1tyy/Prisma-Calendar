@@ -1592,7 +1592,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.bundle.viewStateManager.saveState(this.calendar, currentZoomLevel);
 	}
 
-	async unmount(): Promise<void> {
+	unmount(): Promise<void> {
 		this.saveCurrentState();
 
 		// Stop upcoming event check interval
@@ -1607,5 +1607,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		this.colorEvaluator.destroy();
 		this.batchSelectionManager = null;
+
+		return Promise.resolve();
 	}
 }

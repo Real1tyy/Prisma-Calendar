@@ -9,7 +9,7 @@ export class AllTimeStatsModal extends StatsModal {
 		// No keyboard shortcuts for all-time stats (no navigation)
 	}
 
-	protected async renderContent(): Promise<void> {
+	protected renderContent(): Promise<void> {
 		const { contentEl } = this;
 
 		if (this.contentContainer) {
@@ -33,11 +33,13 @@ export class AllTimeStatsModal extends StatsModal {
 				text: "No events found.",
 				cls: cls("stats-empty"),
 			});
-			return;
+			return Promise.resolve();
 		}
 
 		this.chartComponent = new ChartComponent(this.contentContainer, stats.entries, stats.totalDuration);
 		this.tableComponent = new TableComponent(this.contentContainer, stats.entries, stats.totalDuration);
+
+		return Promise.resolve();
 	}
 
 	protected getModalTitle(): string {

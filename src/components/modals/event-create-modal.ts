@@ -9,8 +9,9 @@ export class EventCreateModal extends BaseEventModal {
 		return "Create";
 	}
 
-	protected async initialize(): Promise<void> {
+	protected initialize(): Promise<void> {
 		// No initialization needed for create mode
+		return Promise.resolve();
 	}
 
 	protected applyDefaultPreset(): void {
