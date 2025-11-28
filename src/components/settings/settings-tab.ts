@@ -78,7 +78,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 				});
 
 				dropdown.setValue(this.selectedCalendarId);
-				dropdown.onChange(async (value) => {
+				dropdown.onChange((value) => {
 					this.selectedCalendarId = value;
 					this.display();
 				});

@@ -61,7 +61,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		await this.renderContent();
 	}
 
-	protected async renderContent(): Promise<void> {
+	protected renderContent(): Promise<void> {
 		const { contentEl } = this;
 
 		if (this.contentContainer) {
@@ -97,11 +97,13 @@ export abstract class IntervalStatsModal extends StatsModal {
 				text: "No events found for this period.",
 				cls: cls("stats-empty"),
 			});
-			return;
+			return Promise.resolve();
 		}
 
 		this.chartComponent = new ChartComponent(this.contentContainer, stats.entries, stats.totalDuration);
 		this.tableComponent = new TableComponent(this.contentContainer, stats.entries, stats.totalDuration);
+
+		return Promise.resolve();
 	}
 
 	private renderHeader(contentEl: HTMLElement, start: Date, end: Date, stats: Stats): void {

@@ -218,28 +218,26 @@ export class GlobalSearchModal extends BaseEventListModal {
 		this.updateButtonText(button, label, this.filters[filterKey]);
 
 		button.addEventListener("click", () => {
-			void (async () => {
-				// Cycle through states: none → only → skip → none
-				const currentState = this.filters[filterKey];
-				let nextState: FilterState;
+			// Cycle through states: none → only → skip → none
+			const currentState = this.filters[filterKey];
+			let nextState: FilterState;
 
-				if (currentState === "none") {
-					nextState = "only";
-				} else if (currentState === "only") {
-					nextState = "skip";
-				} else {
-					nextState = "none";
-				}
+			if (currentState === "none") {
+				nextState = "only";
+			} else if (currentState === "only") {
+				nextState = "skip";
+			} else {
+				nextState = "none";
+			}
 
-				this.filters[filterKey] = nextState;
-				this.updateButtonText(button, label, nextState);
+			this.filters[filterKey] = nextState;
+			this.updateButtonText(button, label, nextState);
 
-				this.applyFilters();
-				this.items = this.getItems();
+			this.applyFilters();
+			this.items = this.getItems();
 
-				const searchValue = this.searchInput?.value || "";
-				this.filterItems(searchValue);
-			})();
+			const searchValue = this.searchInput?.value || "";
+			this.filterItems(searchValue);
 		});
 	}
 
