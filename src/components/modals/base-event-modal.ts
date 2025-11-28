@@ -105,7 +105,6 @@ export abstract class BaseEventModal extends Modal {
 		this.createModalHeader(contentEl);
 		this.createFormFields(contentEl);
 		this.setupEventHandlers(contentEl);
-		this.titleInput.focus();
 		this.createActionButtons(contentEl);
 
 		// Check if we're restoring from minimized state
@@ -116,6 +115,12 @@ export abstract class BaseEventModal extends Modal {
 			// Apply default preset for create mode (only when not restoring)
 			this.applyDefaultPreset();
 		}
+
+		requestAnimationFrame(() => {
+			setTimeout(() => {
+				this.titleInput.focus();
+			}, 50);
+		});
 	}
 
 	private createModalHeader(contentEl: HTMLElement): void {
