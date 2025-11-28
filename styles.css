@@ -1978,6 +1978,31 @@
 	flex-shrink: 0;
 }
 
+.prisma-event-modal-minimize-button {
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	font-size: 18px;
+	font-weight: bold;
+	line-height: 1;
+	background-color: var(--background-modifier-hover);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	color: var(--text-muted);
+	cursor: pointer;
+	transition: all 0.15s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.prisma-event-modal-minimize-button:hover {
+	background-color: var(--interactive-accent);
+	border-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	transform: scale(1.05);
+}
+
 .prisma-event-modal-clear-button {
 	padding: 4px 12px;
 	font-size: var(--font-ui-small);
@@ -2415,6 +2440,206 @@
 	font-size: var(--font-ui-small);
 	font-style: italic;
 	text-align: center;
+}
+
+/* ===================================
+   Stopwatch / Time Tracker
+   =================================== */
+
+.prisma-stopwatch-field {
+	margin-top: 16px;
+	margin-bottom: 8px;
+}
+
+.prisma-stopwatch-container {
+	background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-secondary-alt) 100%);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	margin-top: 12px;
+	overflow: hidden;
+}
+
+.prisma-stopwatch-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 16px;
+	cursor: pointer;
+	user-select: none;
+	transition: background-color 0.15s ease;
+}
+
+.prisma-stopwatch-header:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.prisma-stopwatch-toggle-icon {
+	font-size: 10px;
+	color: var(--text-muted);
+	transition: transform 0.2s ease;
+	width: 12px;
+	text-align: center;
+}
+
+.prisma-stopwatch-header-text {
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-normal);
+}
+
+.prisma-stopwatch-content {
+	padding: 16px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.prisma-stopwatch-display-section {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 32px;
+	margin-bottom: 16px;
+}
+
+.prisma-stopwatch-main-display {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.prisma-stopwatch-break-display {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.prisma-stopwatch-label {
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.prisma-stopwatch-time {
+	font-size: 2rem;
+	font-weight: var(--font-weight-bold);
+	font-family: var(--font-monospace);
+	color: var(--text-normal);
+	background: var(--background-primary);
+	padding: 8px 16px;
+	border-radius: var(--radius-s);
+	border: 1px solid var(--background-modifier-border);
+	letter-spacing: 2px;
+}
+
+.prisma-stopwatch-break-time {
+	font-size: 1.25rem;
+	font-weight: var(--font-weight-semibold);
+	font-family: var(--font-monospace);
+	color: var(--text-accent);
+	background: var(--background-primary);
+	padding: 6px 12px;
+	border-radius: var(--radius-s);
+	border: 1px solid var(--interactive-accent);
+	letter-spacing: 1px;
+}
+
+.prisma-stopwatch-controls {
+	display: flex;
+	justify-content: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.prisma-stopwatch-btn {
+	padding: 10px 20px;
+	border-radius: var(--radius-s);
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-weight-semibold);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	border: 1px solid transparent;
+	min-width: 100px;
+}
+
+.prisma-stopwatch-btn:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.prisma-stopwatch-btn:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.prisma-stopwatch-start-btn {
+	background: linear-gradient(135deg, var(--color-green) 0%, color-mix(in srgb, var(--color-green) 80%, black) 100%);
+	color: white;
+	border-color: var(--color-green);
+}
+
+.prisma-stopwatch-start-btn:hover {
+	background: linear-gradient(135deg, color-mix(in srgb, var(--color-green) 90%, white) 0%, var(--color-green) 100%);
+}
+
+.prisma-stopwatch-pause-btn {
+	background: linear-gradient(135deg, var(--color-orange) 0%, color-mix(in srgb, var(--color-orange) 80%, black) 100%);
+	color: white;
+	border-color: var(--color-orange);
+}
+
+.prisma-stopwatch-pause-btn:hover {
+	background: linear-gradient(135deg, color-mix(in srgb, var(--color-orange) 90%, white) 0%, var(--color-orange) 100%);
+}
+
+.prisma-stopwatch-resume-btn {
+	background: linear-gradient(135deg, var(--color-cyan) 0%, color-mix(in srgb, var(--color-cyan) 80%, black) 100%);
+	color: white;
+	border-color: var(--color-cyan);
+}
+
+.prisma-stopwatch-resume-btn:hover {
+	background: linear-gradient(135deg, color-mix(in srgb, var(--color-cyan) 90%, white) 0%, var(--color-cyan) 100%);
+}
+
+.prisma-stopwatch-stop-btn {
+	background: linear-gradient(135deg, var(--color-red) 0%, color-mix(in srgb, var(--color-red) 80%, black) 100%);
+	color: white;
+	border-color: var(--color-red);
+}
+
+.prisma-stopwatch-stop-btn:hover {
+	background: linear-gradient(135deg, color-mix(in srgb, var(--color-red) 90%, white) 0%, var(--color-red) 100%);
+}
+
+/* Responsive stopwatch adjustments */
+@media (max-width: 768px) {
+	.prisma-stopwatch-display-section {
+		flex-direction: column;
+		gap: 16px;
+	}
+
+	.prisma-stopwatch-time {
+		font-size: 1.5rem;
+		padding: 6px 12px;
+	}
+
+	.prisma-stopwatch-break-time {
+		font-size: 1rem;
+		padding: 4px 8px;
+	}
+
+	.prisma-stopwatch-controls {
+		gap: 8px;
+	}
+
+	.prisma-stopwatch-btn {
+		padding: 8px 16px;
+		font-size: var(--font-ui-small);
+		min-width: 80px;
+	}
 }
 
 /* Event Modal Responsive */

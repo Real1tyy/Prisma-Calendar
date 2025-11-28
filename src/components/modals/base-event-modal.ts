@@ -1,6 +1,7 @@
 import { addCls, cls, parseFrontmatterRecord, serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import { type FormData, MinimizedModalManager, type MinimizedModalState } from "../../core/minimized-modal-manager";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
 import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
@@ -11,6 +12,7 @@ import {
 	inputValueToISOString,
 } from "../../utils/format";
 import { CategoryInput } from "../category-input";
+import { Stopwatch } from "../stopwatch";
 import { SavePresetModal } from "./save-preset-modal";
 
 export interface EventModalData {
@@ -64,6 +66,10 @@ export abstract class BaseEventModal extends Modal {
 	protected categoryInput?: CategoryInput;
 	protected breakInput!: HTMLInputElement;
 
+	// Stopwatch for time tracking
+	protected stopwatch?: Stopwatch;
+	protected stopwatchContainer?: HTMLElement;
+
 	// Custom properties
 	protected customProperties: CustomProperty[] = [];
 	protected displayPropertiesContainer!: HTMLElement;
@@ -72,11 +78,18 @@ export abstract class BaseEventModal extends Modal {
 
 	protected presetSelector!: HTMLSelectElement;
 
+	// State to restore from minimized modal (set before opening)
+	private pendingRestoreState: MinimizedModalState | null = null;
+
 	constructor(app: App, bundle: CalendarBundle, event: EventModalData, onSave: (eventData: EventSaveData) => void) {
 		super(app);
 		this.event = event;
 		this.bundle = bundle;
 		this.onSave = onSave;
+	}
+
+	setRestoreState(state: MinimizedModalState): void {
+		this.pendingRestoreState = state;
 	}
 
 	onOpen(): void {
@@ -95,8 +108,14 @@ export abstract class BaseEventModal extends Modal {
 		this.titleInput.focus();
 		this.createActionButtons(contentEl);
 
-		// Apply default preset for create mode
-		this.applyDefaultPreset();
+		// Check if we're restoring from minimized state
+		if (this.pendingRestoreState) {
+			this.restoreFromState(this.pendingRestoreState);
+			this.pendingRestoreState = null;
+		} else {
+			// Apply default preset for create mode (only when not restoring)
+			this.applyDefaultPreset();
+		}
 	}
 
 	private createModalHeader(contentEl: HTMLElement): void {
@@ -105,6 +124,17 @@ export abstract class BaseEventModal extends Modal {
 		headerContainer.createEl("h2", { text: this.getModalTitle() });
 
 		const controlsContainer = headerContainer.createDiv(cls("event-modal-header-controls"));
+
+		// Minimize button - saves modal state and allows reopening later
+		const minimizeButton = controlsContainer.createEl("button", {
+			text: "−",
+			cls: cls("event-modal-minimize-button"),
+			type: "button",
+			attr: { title: "Minimize modal (preserves all form data)" },
+		});
+		minimizeButton.addEventListener("click", () => {
+			this.minimize();
+		});
 
 		// Clear button to reset all fields
 		const clearButton = controlsContainer.createEl("button", {
@@ -204,6 +234,9 @@ export abstract class BaseEventModal extends Modal {
 			this.breakInput.value = "";
 		}
 
+		// Reset stopwatch
+		this.stopwatch?.reset();
+
 		// Clear custom properties
 		this.displayPropertiesContainer.empty();
 		this.otherPropertiesContainer.empty();
@@ -216,7 +249,7 @@ export abstract class BaseEventModal extends Modal {
 		this.titleInput.focus();
 	}
 
-	protected applyPreset(preset: EventPreset): void {
+	protected applyPreset(preset: FormData | EventPreset): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		// Apply title
@@ -380,6 +413,9 @@ export abstract class BaseEventModal extends Modal {
 			cls: "setting-item-control",
 		});
 
+		// Stopwatch for time tracking (only for timed events)
+		this.createStopwatchField(contentEl);
+
 		this.createRecurringEventFields(contentEl);
 		this.createCategoryField(contentEl);
 		this.createBreakField(contentEl);
@@ -413,6 +449,40 @@ export abstract class BaseEventModal extends Modal {
 				placeholder: "0",
 			},
 		});
+	}
+
+	private createStopwatchField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.showStopwatch) return;
+
+		this.stopwatchContainer = contentEl.createDiv(cls("stopwatch-field"));
+
+		// Initially hidden when all-day is selected
+		if (this.event.allDay) {
+			this.stopwatchContainer.classList.add("prisma-hidden");
+		}
+
+		this.stopwatch = new Stopwatch({
+			onStart: (startTime: Date) => {
+				this.startInput.value = formatDateTimeForInput(startTime);
+				// Trigger change event to update duration field
+				const event = new Event("change", { bubbles: true });
+				this.startInput.dispatchEvent(event);
+			},
+			onStop: (endTime: Date) => {
+				this.endInput.value = formatDateTimeForInput(endTime);
+				// Trigger change event to update duration field
+				const event = new Event("change", { bubbles: true });
+				this.endInput.dispatchEvent(event);
+			},
+			onBreakUpdate: (breakMinutes: number) => {
+				if (this.breakInput) {
+					this.breakInput.value = breakMinutes.toString();
+				}
+			},
+		});
+
+		this.stopwatch.render(this.stopwatchContainer);
 	}
 
 	private createDateTimeInputWithNowButton(parent: HTMLElement, label: string, initialValue: string): HTMLInputElement {
@@ -639,6 +709,8 @@ export abstract class BaseEventModal extends Modal {
 				// Switching TO all-day
 				this.timedContainer.classList.add("prisma-hidden");
 				this.allDayContainer.classList.remove("prisma-hidden");
+				// Hide stopwatch for all-day events
+				this.stopwatchContainer?.classList.add("prisma-hidden");
 				// Copy start date to date field if available
 				if (this.startInput.value) {
 					this.dateInput.value = formatDateOnly(this.startInput.value);
@@ -647,6 +719,8 @@ export abstract class BaseEventModal extends Modal {
 				// Switching TO timed
 				this.timedContainer.classList.remove("prisma-hidden");
 				this.allDayContainer.classList.add("prisma-hidden");
+				// Show stopwatch for timed events
+				this.stopwatchContainer?.classList.remove("prisma-hidden");
 				// Copy date to start field if available
 				if (this.dateInput.value) {
 					this.startInput.value = `${this.dateInput.value}T09:00`;
@@ -731,8 +805,10 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const now = Date.now();
 
-		// Build preset from current form values
+		const formData = this.extractFormData();
+
 		const preset: EventPreset = {
+			...formData,
 			id: overridePresetId || `preset-${now}`,
 			name: presetName,
 			createdAt: now,
@@ -747,76 +823,6 @@ export abstract class BaseEventModal extends Modal {
 			}
 		}
 
-		// Title
-		if (this.titleInput.value) {
-			preset.title = this.titleInput.value;
-		}
-
-		// All-day and date fields
-		preset.allDay = this.allDayCheckbox.checked;
-		if (this.allDayCheckbox.checked) {
-			// All-day event: save date
-			if (this.dateInput.value) {
-				preset.date = this.dateInput.value;
-			}
-		} else {
-			// Timed event: save start and end dates
-			if (this.startInput.value) {
-				preset.startDate = inputValueToISOString(this.startInput.value);
-			}
-			if (this.endInput.value) {
-				preset.endDate = inputValueToISOString(this.endInput.value);
-			}
-		}
-
-		// Categories
-		if (this.categoryInput) {
-			const categoryValue = this.categoryInput.getValue();
-			if (categoryValue) {
-				preset.categories = categoryValue;
-			}
-		}
-
-		// Break time
-		if (this.breakInput?.value) {
-			const breakValue = Number.parseFloat(this.breakInput.value);
-			if (!Number.isNaN(breakValue) && breakValue > 0) {
-				preset.breakMinutes = breakValue;
-			}
-		}
-
-		// Recurring settings
-		if (this.recurringCheckbox.checked) {
-			preset.rruleType = this.rruleSelect.value;
-
-			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(this.rruleSelect.value)) {
-				const selectedWeekdays: Weekday[] = [];
-				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
-					if (checkbox.checked) {
-						selectedWeekdays.push(weekday);
-					}
-				}
-				if (selectedWeekdays.length > 0) {
-					preset.rruleSpec = selectedWeekdays.join(", ");
-				}
-			}
-
-			// Future instances count
-			if (this.futureInstancesCountInput?.value) {
-				const futureCount = Number.parseInt(this.futureInstancesCountInput.value, 10);
-				if (!Number.isNaN(futureCount) && futureCount > 0) {
-					preset.futureInstancesCount = futureCount;
-				}
-			}
-		}
-
-		// Custom properties
-		const customProps = this.getCustomProperties();
-		if (Object.keys(customProps).length > 0) {
-			preset.customProperties = customProps;
-		}
-
-		// Save to settings
 		const currentPresets = settings.eventPresets || [];
 		let updatedPresets: EventPreset[];
 
@@ -1011,7 +1017,132 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	onClose(): void {
+		// Clean up stopwatch to stop any running intervals
+		this.stopwatch?.destroy();
+
 		const { contentEl } = this;
 		contentEl.empty();
+	}
+
+	/**
+	 * Minimize the modal - saves state and closes the modal.
+	 * Time tracking continues via MinimizedModalManager.
+	 * The modal can be restored later using the "Restore minimized modal" command.
+	 */
+	minimize(): void {
+		const state = this.extractMinimizedState();
+		MinimizedModalManager.saveState(state);
+		new Notice("Modal minimized. Run command: restore minimized event modal");
+		this.close();
+	}
+
+	protected extractFormData(): FormData {
+		const formData: FormData = {};
+
+		if (this.titleInput.value) {
+			formData.title = this.titleInput.value;
+		}
+
+		formData.allDay = this.allDayCheckbox.checked;
+		if (this.allDayCheckbox.checked) {
+			if (this.dateInput.value) {
+				formData.date = this.dateInput.value;
+			}
+		} else {
+			if (this.startInput.value) {
+				formData.startDate = inputValueToISOString(this.startInput.value);
+			}
+			if (this.endInput.value) {
+				formData.endDate = inputValueToISOString(this.endInput.value);
+			}
+		}
+
+		if (this.categoryInput) {
+			const categoryValue = this.categoryInput.getValue();
+			if (categoryValue) {
+				formData.categories = categoryValue;
+			}
+		}
+
+		if (this.breakInput?.value) {
+			const breakValue = Number.parseFloat(this.breakInput.value);
+			if (!Number.isNaN(breakValue) && breakValue > 0) {
+				formData.breakMinutes = breakValue;
+			}
+		}
+
+		if (this.recurringCheckbox.checked) {
+			formData.rruleType = this.rruleSelect.value;
+
+			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(this.rruleSelect.value)) {
+				const selectedWeekdays: Weekday[] = [];
+				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
+					if (checkbox.checked) {
+						selectedWeekdays.push(weekday);
+					}
+				}
+				if (selectedWeekdays.length > 0) {
+					formData.rruleSpec = selectedWeekdays.join(", ");
+				}
+			}
+
+			if (this.futureInstancesCountInput?.value) {
+				const futureCount = Number.parseInt(this.futureInstancesCountInput.value, 10);
+				if (!Number.isNaN(futureCount) && futureCount > 0) {
+					formData.futureInstancesCount = futureCount;
+				}
+			}
+		}
+
+		const customProps = this.getCustomProperties();
+		if (Object.keys(customProps).length > 0) {
+			formData.customProperties = customProps;
+		}
+
+		return formData;
+	}
+
+	private extractMinimizedState(): MinimizedModalState {
+		const formData = this.extractFormData();
+		const stopwatchState = this.stopwatch?.exportState() ?? {
+			state: "idle" as const,
+			startTime: null,
+			breakStartTime: null,
+			totalBreakMs: 0,
+		};
+
+		return {
+			...formData,
+			stopwatch: stopwatchState,
+			modalType: this.getModalType(),
+			filePath: this.event.extendedProps?.filePath ?? null,
+			originalFrontmatter: this.originalFrontmatter,
+			calendarId: this.bundle.calendarId,
+		};
+	}
+
+	private restoreFromState(state: MinimizedModalState): void {
+		this.applyPreset(state);
+		this.originalFrontmatter = state.originalFrontmatter;
+
+		if (this.stopwatch) {
+			this.stopwatch.importState(state.stopwatch);
+		}
+	}
+
+	protected getModalType(): "create" | "edit" {
+		return "create";
+	}
+
+	isStopwatchActive(): boolean {
+		return this.stopwatch?.isActive() ?? false;
+	}
+
+	getBundle(): CalendarBundle {
+		return this.bundle;
+	}
+
+	getOnSave(): (eventData: EventSaveData) => void {
+		return this.onSave;
 	}
 }

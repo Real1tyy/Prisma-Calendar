@@ -1,10 +1,9 @@
-import { generateUniqueFilePath, getObsidianLinkPath, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
+import { getObsidianLinkPath } from "@real1ty-obsidian-plugins/utils";
 import { type App, Menu, Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
 	CloneEventCommand,
 	DeleteEventCommand,
-	EditEventCommand,
 	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,
@@ -477,44 +476,7 @@ export class EventContextMenu {
 	}
 
 	private async updateEventFile(eventData: EventSaveData): Promise<void> {
-		const { filePath } = eventData;
-		if (!filePath) {
-			new Notice("Failed to update event: no file path found");
-			return;
-		}
-
-		try {
-			const file = this.app.vault.getAbstractFileByPath(filePath);
-			if (!(file instanceof TFile)) {
-				new Notice(`File not found: ${filePath}`);
-				return;
-			}
-
-			// Handle file renaming when titleProp is undefined/empty
-			const settings = this.bundle.settingsStore.currentSettings;
-			let finalFilePath = filePath;
-			if (eventData.title && !settings.titleProp) {
-				const sanitizedTitle = sanitizeForFilename(eventData.title, { style: "preserve" });
-				if (sanitizedTitle && sanitizedTitle !== file.basename) {
-					const parentPath = file.parent?.path || "";
-					const newFilePath = generateUniqueFilePath(this.app, parentPath, sanitizedTitle);
-					await this.app.fileManager.renameFile(file, newFilePath);
-					finalFilePath = newFilePath;
-				}
-			}
-
-			const eventDataForCommand = {
-				...eventData,
-				end: eventData.end ?? undefined,
-			};
-			const command = new EditEventCommand(this.app, this.bundle, finalFilePath, eventDataForCommand);
-			await this.bundle.commandManager.executeCommand(command);
-
-			new Notice("Event updated successfully");
-		} catch (error) {
-			console.error("Failed to update event:", error);
-			new Notice("Failed to update event");
-		}
+		await this.bundle.updateEvent(eventData);
 	}
 
 	private goToSourceEvent(event: CalendarEventInfo): void {

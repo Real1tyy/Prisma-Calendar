@@ -1,10 +1,11 @@
-import { onceAsync } from "@real1ty-obsidian-plugins/utils";
-import type { App, WorkspaceLeaf } from "obsidian";
+import { generateUniqueFilePath, onceAsync, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
+import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
+import type { EventSaveData } from "../components/modals/base-event-modal";
 import type CustomCalendarPlugin from "../main";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import type { CategoryTracker } from "./category-tracker";
-import { BatchCommandFactory, CommandManager } from "./commands";
+import { BatchCommandFactory, CommandManager, CreateEventCommand, EditEventCommand, type EventData } from "./commands";
 import type { EventStore } from "./event-store";
 import type { Indexer } from "./indexer";
 import { IndexerRegistry } from "./indexer-registry";
@@ -132,5 +133,67 @@ export class CalendarBundle {
 		// Don't destroy indexer/parser/eventStore/recurringEventManager directly - the registry handles that
 		this.templateService?.destroy?.();
 		this.settingsStore?.destroy?.();
+	}
+
+	async createEvent(eventData: EventSaveData): Promise<void> {
+		const settings = this.settingsStore.currentSettings;
+		try {
+			const commandEventData: EventData = {
+				filePath: null,
+				title: eventData.title || `Event ${new Date().toISOString().split("T")[0]}`,
+				start: eventData.start,
+				end: eventData.end ?? undefined,
+				allDay: eventData.allDay,
+				preservedFrontmatter: eventData.preservedFrontmatter,
+			};
+
+			const command = new CreateEventCommand(this.app, this, commandEventData, settings.directory, new Date());
+			await this.commandManager.executeCommand(command);
+			new Notice("Event created successfully");
+		} catch (error) {
+			console.error("Error creating new event:", error);
+			new Notice("Failed to create event");
+		}
+	}
+
+	async updateEvent(eventData: EventSaveData): Promise<void> {
+		const { filePath } = eventData;
+		if (!filePath) {
+			new Notice("Failed to update event: no file path found");
+			return;
+		}
+
+		try {
+			const file = this.app.vault.getAbstractFileByPath(filePath);
+			if (!(file instanceof TFile)) {
+				new Notice(`File not found: ${filePath}`);
+				return;
+			}
+
+			// Handle file renaming when titleProp is undefined/empty
+			const settings = this.settingsStore.currentSettings;
+			let finalFilePath = filePath;
+			if (eventData.title && !settings.titleProp) {
+				const sanitizedTitle = sanitizeForFilename(eventData.title, { style: "preserve" });
+				if (sanitizedTitle && sanitizedTitle !== file.basename) {
+					const parentPath = file.parent?.path || "";
+					const newFilePath = generateUniqueFilePath(this.app, parentPath, sanitizedTitle);
+					await this.app.fileManager.renameFile(file, newFilePath);
+					finalFilePath = newFilePath;
+				}
+			}
+
+			const eventDataForCommand = {
+				...eventData,
+				end: eventData.end ?? undefined,
+			};
+			const command = new EditEventCommand(this.app, this, finalFilePath, eventDataForCommand);
+			await this.commandManager.executeCommand(command);
+
+			new Notice("Event updated successfully");
+		} catch (error) {
+			console.error("Failed to update event:", error);
+			new Notice("Failed to update event");
+		}
 	}
 }

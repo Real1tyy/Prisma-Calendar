@@ -25,6 +25,7 @@ export const GeneralSettingsSchema = z.object({
 	directory: z.string().default(""),
 	defaultDurationMinutes: z.number().int().positive().default(SETTINGS_DEFAULTS.DEFAULT_DURATION_MINUTES),
 	showDurationField: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SHOW_DURATION_FIELD), // show duration in minutes field in event modal for quick editing
+	showStopwatch: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SHOW_STOPWATCH), // show stopwatch in event modal for precise time tracking
 	templatePath: z.string().optional(), // path to Templater template for new events
 	markPastInstancesAsDone: z.boolean().default(false), // automatically mark past events as done on startup
 	eventPresets: z.array(EventPresetSchema).default([]), // Event creation presets with pre-filled values

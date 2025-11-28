@@ -54,6 +54,12 @@ export class GeneralSettings {
 		});
 
 		this.ui.addToggle(containerEl, {
+			key: "showStopwatch",
+			name: "Show time tracker in event modal",
+			desc: "Display a stopwatch in the event creation/edit modal for precise time tracking. Start fills the start date, stop fills the end date, and break time is tracked automatically.",
+		});
+
+		this.ui.addToggle(containerEl, {
 			key: "markPastInstancesAsDone",
 			name: "Mark past events as done",
 			desc: "Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section.",

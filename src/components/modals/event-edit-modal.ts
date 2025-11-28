@@ -17,6 +17,10 @@ export class EventEditModal extends BaseEventModal {
 		return "Save";
 	}
 
+	protected getModalType(): "create" | "edit" {
+		return "edit";
+	}
+
 	protected initialize(): Promise<void> {
 		this.loadExistingFrontmatter();
 

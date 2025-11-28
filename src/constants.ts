@@ -30,6 +30,7 @@ export const COMMAND_IDS = {
 	SHOW_MONTHLY_STATS: "show-monthly-stats",
 	SHOW_ALLTIME_STATS: "show-alltime-stats",
 	REFRESH_CALENDAR: "refresh-calendar",
+	RESTORE_MINIMIZED_MODAL: "restore-minimized-modal",
 } as const;
 
 export const FULL_COMMAND_IDS = Object.fromEntries(
@@ -40,6 +41,7 @@ export const SETTINGS_DEFAULTS = {
 	// General Settings
 	DEFAULT_DURATION_MINUTES: 60,
 	DEFAULT_SHOW_DURATION_FIELD: true,
+	DEFAULT_SHOW_STOPWATCH: true,
 	DEFAULT_CALENDAR_NAME: "Calendar",
 	DEFAULT_EVENT_COLOR: "hsl(270, 70%, 50%)",
 	COMMANDS_HISTORY_LIMIT: 50,

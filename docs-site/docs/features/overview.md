@@ -141,6 +141,7 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Quick create button** - Create events instantly from calendar interface
 - **Enhanced edit modal** - Full frontmatter editing with all configured properties
 - **"Now" button** - Quickly set Start or End date to current time with minute precision
+- **[Time tracker](./time-tracker.md)** - Built-in stopwatch for precise time tracking with break time support
 - **Clear button** - Reset all form fields instantly with one click
 - **Drag & drop** - Move events by dragging to new time slots
 - **Resize support** - Adjust event duration by dragging edges
@@ -263,5 +264,6 @@ fm.Project === 'Work' || fm.Tags?.includes('work')
 5. **[Global Search](./global-search)** - Search and navigate all events
 6. **[Filtering](./filtering)** - Master search and filter expressions
 7. **[Statistics](./weekly-stats)** - Track time with weekly, monthly, and all-time insights
-8. **[Recurring Events](./recurring-dsl)** - Master recurring event patterns
-9. **[Batch Operations](./batch-operations)** - Learn efficiency workflows
+8. **[Time Tracker](./time-tracker)** - Precision stopwatch for tracking work sessions
+9. **[Recurring Events](./recurring-dsl)** - Master recurring event patterns
+10. **[Batch Operations](./batch-operations)** - Learn efficiency workflows

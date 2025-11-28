@@ -4,6 +4,7 @@ export { CategoryTracker } from "./category-tracker";
 export { EventStore } from "./event-store";
 export { Indexer } from "./indexer";
 export { IndexerRegistry } from "./indexer-registry";
+export { MinimizedModalManager } from "./minimized-modal-manager";
 export { Parser } from "./parser";
 export { RecurringEventManager } from "./recurring-event-manager";
 export { CalendarSettingsStore, SettingsStore } from "./settings-store";

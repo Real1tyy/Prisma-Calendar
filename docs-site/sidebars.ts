@@ -21,6 +21,7 @@ const sidebars: SidebarsConfig = {
         "features/color-rules",
         "features/filtering",
         "features/weekly-stats",
+        "features/time-tracker",
         "features/global-search",
         "features/notifications",
         "features/event-previews",

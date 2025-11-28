@@ -186,6 +186,19 @@ Break: 15.5  # 15.5 minutes of rest between sets
 
 The break time is stored in frontmatter and automatically applied to all statistics calculations.
 
+### Automatic Break Tracking with Time Tracker
+
+For automatic break time calculation, use the [Time Tracker](./time-tracker.md) feature:
+
+1. Open the Create Event modal
+2. Expand the **Time tracker** section
+3. Click **▶ start** when you begin working
+4. Click **⏸ break** when you take a break
+5. Click **▶ resume** to continue working
+6. Click **⏹ stop** when finished
+
+The time tracker automatically calculates and fills in the Break field with your total break time.
+
 ### Best Practices
 
 - **Be Consistent**: Use the same break conventions for similar events
@@ -438,6 +451,7 @@ Make weekly statistics review part of your routine:
 
 ## Related Features
 
+- **[Time Tracker](./time-tracker.md)**: Track work sessions with precision using the built-in stopwatch
 - **[Global Event Search](./global-search.md)**: Search and filter events across your calendar
 - **[Filtering](./filtering.md)**: Filter events by properties and expressions
 - **[Recurring Events](./recurring-dsl.md)**: Set up recurring event series

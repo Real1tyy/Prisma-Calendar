@@ -1,8 +1,9 @@
 import { onceAsync } from "@real1ty-obsidian-plugins/utils";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
+import { EventCreateModal, EventEditModal } from "./components/modals";
 import { COMMAND_IDS } from "./constants";
-import { CalendarBundle, IndexerRegistry, SettingsStore } from "./core";
+import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 import { intoDate } from "./utils/format";
 
@@ -156,6 +157,20 @@ export default class CustomCalendarPlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: COMMAND_IDS.RESTORE_MINIMIZED_MODAL,
+			name: "Restore minimized event modal",
+			checkCallback: (checking: boolean) => {
+				if (MinimizedModalManager.hasMinimizedModal()) {
+					if (!checking) {
+						this.restoreMinimizedModal();
+					}
+					return true;
+				}
+				return false;
+			},
+		});
+
 		this.app.workspace.onLayoutReady(() => {
 			void this.ensureCalendarBundlesReady();
 		});
@@ -303,5 +318,54 @@ export default class CustomCalendarPlugin extends Plugin {
 				calendarView.highlightEventByPath(activeFile.path, 5000);
 			}, 100);
 		}
+	}
+
+	private restoreMinimizedModal(): void {
+		const state = MinimizedModalManager.getState();
+		if (!state) {
+			new Notice("No minimized modal to restore");
+			return;
+		}
+
+		// Find the calendar bundle
+		const bundle = this.calendarBundles.find((b) => b.calendarId === state.calendarId);
+		if (!bundle) {
+			new Notice("Calendar not found for minimized modal");
+			MinimizedModalManager.clear();
+			return;
+		}
+
+		// Create minimal event data for modal construction
+		const eventData = {
+			title: state.title ?? "",
+			start: state.startDate ?? null,
+			end: state.endDate ?? null,
+			allDay: state.allDay ?? false,
+			extendedProps: {
+				filePath: state.filePath,
+			},
+		};
+
+		let modal: EventCreateModal | EventEditModal;
+		if (state.modalType === "edit" && state.filePath) {
+			// Edit mode - use bundle's updateEvent method
+			modal = new EventEditModal(this.app, bundle, eventData, (saveData) => {
+				void bundle.updateEvent(saveData);
+			});
+		} else {
+			// Create mode - use bundle's createEvent method
+			modal = new EventCreateModal(this.app, bundle, eventData, (saveData) => {
+				void bundle.createEvent(saveData);
+			});
+		}
+
+		// Set the state to restore before opening
+		modal.setRestoreState(state);
+
+		// Clear the saved state
+		MinimizedModalManager.clear();
+
+		// Open the modal
+		modal.open();
 	}
 }

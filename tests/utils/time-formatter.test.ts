@@ -1,5 +1,81 @@
 import { describe, expect, it } from "vitest";
-import { formatEventTimeInfo, parseAsLocalDate } from "../../src/utils/time-formatter";
+import {
+	formatEventTimeInfo,
+	formatMsToHHMMSS,
+	formatMsToMMSS,
+	parseAsLocalDate,
+} from "../../src/utils/time-formatter";
+
+describe("formatMsToHHMMSS", () => {
+	it("should format 0 as 00:00:00", () => {
+		expect(formatMsToHHMMSS(0)).toBe("00:00:00");
+	});
+
+	it("should format seconds correctly", () => {
+		expect(formatMsToHHMMSS(1000)).toBe("00:00:01");
+		expect(formatMsToHHMMSS(45000)).toBe("00:00:45");
+		expect(formatMsToHHMMSS(59000)).toBe("00:00:59");
+	});
+
+	it("should format minutes correctly", () => {
+		expect(formatMsToHHMMSS(60000)).toBe("00:01:00");
+		expect(formatMsToHHMMSS(185000)).toBe("00:03:05");
+		expect(formatMsToHHMMSS(3599000)).toBe("00:59:59");
+	});
+
+	it("should format hours correctly", () => {
+		expect(formatMsToHHMMSS(3600000)).toBe("01:00:00");
+		expect(formatMsToHHMMSS(3723000)).toBe("01:02:03");
+		expect(formatMsToHHMMSS(36000000)).toBe("10:00:00");
+	});
+
+	it("should handle large values", () => {
+		expect(formatMsToHHMMSS(86400000)).toBe("24:00:00"); // 24 hours
+		expect(formatMsToHHMMSS(360000000)).toBe("100:00:00"); // 100 hours
+	});
+
+	it("should pad single digits", () => {
+		expect(formatMsToHHMMSS(3661000)).toBe("01:01:01");
+	});
+
+	it("should truncate milliseconds (not round)", () => {
+		expect(formatMsToHHMMSS(1500)).toBe("00:00:01"); // 1.5 seconds -> 1 second
+		expect(formatMsToHHMMSS(999)).toBe("00:00:00"); // < 1 second -> 0
+	});
+});
+
+describe("formatMsToMMSS", () => {
+	it("should format 0 as 00:00", () => {
+		expect(formatMsToMMSS(0)).toBe("00:00");
+	});
+
+	it("should format seconds correctly", () => {
+		expect(formatMsToMMSS(1000)).toBe("00:01");
+		expect(formatMsToMMSS(30000)).toBe("00:30");
+		expect(formatMsToMMSS(59000)).toBe("00:59");
+	});
+
+	it("should format minutes correctly", () => {
+		expect(formatMsToMMSS(60000)).toBe("01:00");
+		expect(formatMsToMMSS(125000)).toBe("02:05");
+		expect(formatMsToMMSS(599000)).toBe("09:59");
+	});
+
+	it("should handle large minute values (no hour conversion)", () => {
+		expect(formatMsToMMSS(3600000)).toBe("60:00"); // 60 minutes
+		expect(formatMsToMMSS(7200000)).toBe("120:00"); // 120 minutes
+		expect(formatMsToMMSS(36000000)).toBe("600:00"); // 600 minutes
+	});
+
+	it("should pad single digits", () => {
+		expect(formatMsToMMSS(61000)).toBe("01:01");
+	});
+
+	it("should truncate milliseconds (not round)", () => {
+		expect(formatMsToMMSS(1500)).toBe("00:01"); // 1.5 seconds -> 1 second
+		expect(formatMsToMMSS(999)).toBe("00:00"); // < 1 second -> 0
+	});
+});
 
 describe("formatEventTimeInfo", () => {
 	describe("All-day events", () => {

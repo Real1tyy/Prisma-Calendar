@@ -103,6 +103,27 @@ All notable changes to this project will be documented here.
 - **Minute Precision**: Clicking "Now" sets the datetime field to the current moment with minute-level precision (not just rounded to the hour)
 - **Location**: Button appears between the datetime input field and the right edge of the modal
 
+#### Time Tracker / Stopwatch in Event Modal
+- **Precise Time Tracking**: New stopwatch feature in the Create/Edit Event modal for tracking work sessions with precision
+- **Start Button**: Click "start" to begin tracking - automatically fills the Start Date field with the current time
+- **Break Tracking**: Click "break" to start tracking break time. The stopwatch continues running, but time is counted towards the break value instead of work time
+- **Resume Button**: Click "resume" to end the break and continue tracking work time
+- **Stop Button**: Click "stop" to finish tracking - automatically fills the End Date field with the current time and calculates total break time
+- **Break Time Integration**: Break time is automatically calculated and saved to the Break property in minutes (with decimal precision)
+- **Start New**: After stopping, click "start new" to reset and begin tracking a new session
+- **Minimize Modal**: Click the "−" button in the modal header to save the modal state and close it. Works for any modal state, not just when stopwatch is active.
+- **Restore Minimized Modal**: Use the command "Restore minimized event modal" (Ctrl/Cmd+P) to reopen the modal with all form data, stopwatch state, and file path preserved
+- **Collapsible UI**: The time tracker can be collapsed/expanded by clicking the "Time tracker" header
+- **Display**: Shows elapsed time (HH:MM:SS) and break time (MM:SS) in real-time
+- **Timed Events Only**: Stopwatch is only shown for timed events (hidden for all-day events)
+- **Configurable**: Toggle the time tracker on/off in Settings → General → Parsing → "Show time tracker in event modal" (enabled by default)
+- **Use Cases**:
+  - Track work sessions with precise start/end times
+  - Account for lunch breaks, coffee breaks, or interruptions during work
+  - Create events with accurate duration for time tracking
+  - Pomodoro-style work sessions with break tracking
+  - Minimize the modal to continue working in Obsidian while tracking time in the background
+
 #### Preview Button in Context Menu
 - **Quick Event Preview**: New "Preview" button in the event context menu (right-click) that triggers Obsidian's hover preview for the event note
 - **Same as Ctrl+Hover**: Provides the same preview functionality as holding Ctrl while hovering over an event, but accessible via right-click menu

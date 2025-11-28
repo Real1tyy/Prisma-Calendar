@@ -1,6 +1,29 @@
 import { DateTime } from "luxon";
 import { formatDurationHumanReadable } from "./format";
 
+/**
+ * Format milliseconds as HH:MM:SS (e.g., "01:23:45").
+ */
+export function formatMsToHHMMSS(ms: number): string {
+	const totalSeconds = Math.floor(ms / 1000);
+	const hours = Math.floor(totalSeconds / 3600);
+	const minutes = Math.floor((totalSeconds % 3600) / 60);
+	const seconds = totalSeconds % 60;
+
+	return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
+/**
+ * Format milliseconds as MM:SS (e.g., "23:45").
+ */
+export function formatMsToMMSS(ms: number): string {
+	const totalSeconds = Math.floor(ms / 1000);
+	const minutes = Math.floor(totalSeconds / 60);
+	const seconds = totalSeconds % 60;
+
+	return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
 export function formatEventTimeInfo(event: { start: string; end?: string; allDay: boolean }): string {
 	const startTime = DateTime.fromISO(event.start, { zone: "utc" });
 	if (event.allDay) {
