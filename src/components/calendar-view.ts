@@ -1399,23 +1399,46 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
+	/**
+	 * Extracts plain object data from FullCalendar EventApi objects.
+	 * EventApi uses getters on the prototype, so spread operator doesn't work.
+	 */
+	private extractEventUpdateInfo(info: {
+		event: CalendarEventData;
+		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
+		revert: () => void;
+	}): EventUpdateInfo | null {
+		if (!info.event.start) {
+			info.revert();
+			return null;
+		}
+
+		return {
+			event: {
+				title: info.event.title,
+				start: info.event.start,
+				end: info.event.end,
+				allDay: info.event.allDay,
+				extendedProps: info.event.extendedProps,
+			},
+			oldEvent: {
+				start: info.oldEvent.start || new Date(),
+				end: info.oldEvent.end,
+				allDay: info.oldEvent.allDay,
+			},
+			revert: info.revert,
+		};
+	}
+
 	private async handleEventDrop(info: {
 		event: CalendarEventData;
 		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
 		revert: () => void;
 	}): Promise<void> {
-		if (!info.event.start) {
-			info.revert();
-			return;
+		const updateInfo = this.extractEventUpdateInfo(info);
+		if (updateInfo) {
+			await this.handleEventUpdate(updateInfo, "Error updating event dates:");
 		}
-		await this.handleEventUpdate(
-			{
-				event: { ...info.event, start: info.event.start },
-				oldEvent: { ...info.oldEvent, start: info.oldEvent.start || new Date() },
-				revert: info.revert,
-			},
-			"Error updating event dates:"
-		);
 	}
 
 	private async handleEventResize(info: {
@@ -1423,18 +1446,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
 		revert: () => void;
 	}): Promise<void> {
-		if (!info.event.start) {
-			info.revert();
-			return;
+		const updateInfo = this.extractEventUpdateInfo(info);
+		if (updateInfo) {
+			await this.handleEventUpdate(updateInfo, "Error updating event duration:");
 		}
-		await this.handleEventUpdate(
-			{
-				event: { ...info.event, start: info.event.start },
-				oldEvent: { ...info.oldEvent, start: info.oldEvent.start || new Date() },
-				revert: info.revert,
-			},
-			"Error updating event duration:"
-		);
 	}
 
 	private setupKeyboardShortcuts(): void {
