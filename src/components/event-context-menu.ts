@@ -40,6 +40,13 @@ interface EventSaveData {
 	preservedFrontmatter: Record<string, unknown>;
 }
 
+interface CommandMessages {
+	success: string;
+	error: string;
+}
+
+type EventKind = "source" | "physical" | "virtual" | "normal";
+
 export class EventContextMenu {
 	private app: App;
 	private bundle: CalendarBundle;
@@ -51,33 +58,64 @@ export class EventContextMenu {
 		this.calendarView = calendarView;
 	}
 
-	private getFilePathOrNotice(event: CalendarEventInfo, operation: string): string | null {
+	private async runCommand(createCommand: () => unknown, messages: CommandMessages): Promise<void> {
+		try {
+			const command = createCommand();
+			await this.bundle.commandManager.executeCommand(
+				command as Parameters<typeof this.bundle.commandManager.executeCommand>[0]
+			);
+			new Notice(messages.success);
+		} catch (error) {
+			console.error(messages.error, error);
+			new Notice(messages.error);
+		}
+	}
+
+	private withFilePath(
+		event: CalendarEventInfo,
+		operation: string,
+		fn: (filePath: string) => void | Promise<void>
+	): void {
 		const filePath = event.extendedProps?.filePath;
 		if (!filePath) {
 			new Notice(`Failed to ${operation}: No file path found`);
-			return null;
+			return;
 		}
-		return filePath;
+		void fn(filePath);
 	}
 
-	private isSourceEvent(event: CalendarEventInfo): boolean {
-		const settings = this.bundle.settingsStore.currentSettings;
-		return !!event.extendedProps?.frontmatterDisplayData?.[settings.rruleProp];
+	private withSourceFilePath(
+		event: CalendarEventInfo,
+		operation: string,
+		fn: (sourceFilePath: string) => void | Promise<void>
+	): void {
+		const sourceFilePath = this.getSourceFilePath(event);
+		if (!sourceFilePath) {
+			new Notice(`Failed to ${operation}: source event not found`);
+			return;
+		}
+		void fn(sourceFilePath);
 	}
 
-	private isPhysicalEvent(event: CalendarEventInfo): boolean {
+	private getEventKind(event: CalendarEventInfo): EventKind {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const frontmatter = event.extendedProps?.frontmatterDisplayData;
-		return !!frontmatter?.[settings.rruleIdProp] && !frontmatter?.[settings.rruleProp];
+
+		if (frontmatter?.[settings.rruleProp]) return "source";
+		if (frontmatter?.[settings.rruleIdProp] && !frontmatter?.[settings.rruleProp]) return "physical";
+		if (event.extendedProps?.isVirtual) return "virtual";
+		return "normal";
 	}
 
-	private isVirtualEvent(event: CalendarEventInfo): boolean {
-		return !!event.extendedProps?.isVirtual;
+	private isRecurringEvent(event: CalendarEventInfo): boolean {
+		const kind = this.getEventKind(event);
+		return kind === "source" || kind === "physical" || kind === "virtual";
 	}
 
 	private getRRuleId(event: CalendarEventInfo): string | null {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const frontmatter = event.extendedProps?.frontmatterDisplayData;
+		const kind = this.getEventKind(event);
 
 		// Source events and physical events both have rruleIdProp in frontmatter
 		const rruleIdFromProp = frontmatter?.[settings.rruleIdProp];
@@ -86,7 +124,7 @@ export class EventContextMenu {
 		}
 
 		// Virtual events have rruleId in meta
-		if (this.isVirtualEvent(event)) {
+		if (kind === "virtual") {
 			const virtualRruleId = frontmatter?.rruleId;
 			return typeof virtualRruleId === "string" ? virtualRruleId : null;
 		}
@@ -95,18 +133,20 @@ export class EventContextMenu {
 	}
 
 	private getSourceFilePath(event: CalendarEventInfo): string | null {
+		const kind = this.getEventKind(event);
+
 		// For source events, return the file path directly
-		if (this.isSourceEvent(event)) {
+		if (kind === "source") {
 			return event.extendedProps?.filePath || null;
 		}
 
 		// For virtual events, the source file path is the event's file path
-		if (this.isVirtualEvent(event)) {
+		if (kind === "virtual") {
 			return event.extendedProps?.filePath || null;
 		}
 
 		// For physical instances, extract source file path from the source property
-		if (this.isPhysicalEvent(event)) {
+		if (kind === "physical") {
 			const settings = this.bundle.settingsStore.currentSettings;
 			const frontmatter = event.extendedProps?.frontmatterDisplayData;
 			const sourceLink = frontmatter?.[settings.sourceProp];
@@ -127,6 +167,11 @@ export class EventContextMenu {
 		const menu = new Menu();
 		const event = info.event;
 		const filePath = event.extendedProps?.filePath;
+
+		const kind = this.getEventKind(event);
+		const isRecurring = this.isRecurringEvent(event);
+		const isVirtual = kind === "virtual";
+		const isPhysical = kind === "physical";
 
 		menu.addItem((item) => {
 			item
@@ -149,7 +194,7 @@ export class EventContextMenu {
 			});
 		}
 
-		if (this.isPhysicalEvent(event) || this.isVirtualEvent(event)) {
+		if (isPhysical || isVirtual) {
 			menu.addItem((item) => {
 				item
 					.setTitle("Go to source")
@@ -161,7 +206,7 @@ export class EventContextMenu {
 		}
 
 		// Duplicate recurring instance - only available for physical events (not virtual)
-		if (this.isPhysicalEvent(event)) {
+		if (isPhysical) {
 			menu.addItem((item) => {
 				item
 					.setTitle("Duplicate recurring instance")
@@ -172,7 +217,7 @@ export class EventContextMenu {
 			});
 		}
 
-		if (this.isSourceEvent(event) || this.isPhysicalEvent(event) || this.isVirtualEvent(event)) {
+		if (isRecurring) {
 			menu.addItem((item) => {
 				item
 					.setTitle("View recurring events")
@@ -184,7 +229,7 @@ export class EventContextMenu {
 		}
 
 		// Only show file-based operations for non-virtual events
-		if (!this.isVirtualEvent(event)) {
+		if (!isVirtual) {
 			menu.addSeparator();
 
 			menu.addItem((item) => {
@@ -212,7 +257,7 @@ export class EventContextMenu {
 					.setTitle("Move by...")
 					.setIcon("move")
 					.onClick(() => {
-						void this.moveEventBy(event);
+						this.moveEventBy(event);
 					});
 			});
 
@@ -285,19 +330,9 @@ export class EventContextMenu {
 		menu.addSeparator();
 
 		// Show "Disable"/"Enable" button for recurring events (source, physical, virtual)
-		if (this.isSourceEvent(event) || this.isPhysicalEvent(event) || this.isVirtualEvent(event)) {
+		if (isRecurring) {
 			// Determine if the source is currently disabled (skipped)
-			let isDisabled = false;
-			const settings = this.bundle.settingsStore.currentSettings;
-
-			const sourceFilePath = this.getSourceFilePath(event);
-			if (sourceFilePath) {
-				const sourceFile = this.app.vault.getAbstractFileByPath(sourceFilePath);
-				if (sourceFile instanceof TFile) {
-					const metadata = this.app.metadataCache.getFileCache(sourceFile);
-					isDisabled = metadata?.frontmatter?.[settings.skipProp] === true;
-				}
-			}
+			const isDisabled = this.isSourceEventDisabled(event);
 
 			menu.addItem((item) => {
 				item
@@ -312,153 +347,111 @@ export class EventContextMenu {
 		menu.showAtMouseEvent(e);
 	}
 
-	moveEventBy(event: CalendarEventInfo): void {
-		const filePath = this.getFilePathOrNotice(event, "move event");
-		if (!filePath) return;
+	private isSourceEventDisabled(event: CalendarEventInfo): boolean {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const sourceFilePath = this.getSourceFilePath(event);
+		if (!sourceFilePath) return false;
 
+		const sourceFile = this.app.vault.getAbstractFileByPath(sourceFilePath);
+		if (!(sourceFile instanceof TFile)) return false;
+
+		const metadata = this.app.metadataCache.getFileCache(sourceFile);
+		return metadata?.frontmatter?.[settings.skipProp] === true;
+	}
+
+	moveEventBy(event: CalendarEventInfo): void {
 		const isAllDay = event.allDay || false;
 
-		new MoveByModal(this.app, (result) => {
-			void (async () => {
-				const { offsetMs, unit } = calculateTimeOffset(result);
+		this.withFilePath(event, "move event", (filePath) => {
+			new MoveByModal(this.app, (result) => {
+				void (async () => {
+					const { offsetMs, unit } = calculateTimeOffset(result);
 
-				// Validate time unit for all-day events
-				if (isAllDay && !isTimeUnitAllowedForAllDay(unit)) {
-					console.warn(
-						`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
-					);
-					new Notice(`Cannot move all-day event by ${unit}. Please use days, weeks, months, or years.`, 5000);
-					return;
-				}
+					// Validate time unit for all-day events
+					if (isAllDay && !isTimeUnitAllowedForAllDay(unit)) {
+						console.warn(
+							`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
+						);
+						new Notice(`Cannot move all-day event by ${unit}. Please use days, weeks, months, or years.`, 5000);
+						return;
+					}
 
-				try {
-					const command = new MoveByCommand(this.app, this.bundle, filePath, offsetMs);
-					await this.bundle.commandManager.executeCommand(command);
-
-					new Notice(`Event moved by ${result.value} ${result.unit}`);
-				} catch (error) {
-					console.error("Failed to move event:", error);
-					new Notice("Failed to move event");
-				}
-			})();
-		}).open();
+					await this.runCommand(() => new MoveByCommand(this.app, this.bundle, filePath, offsetMs), {
+						success: `Event moved by ${result.value} ${result.unit}`,
+						error: "Failed to move event",
+					});
+				})();
+			}).open();
+		});
 	}
 
 	async moveEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
-		const filePath = this.getFilePathOrNotice(event, "move event");
-		if (!filePath) return;
+		const direction = weeks > 0 ? "next" : "previous";
 
-		try {
+		this.withFilePath(event, "move event", async (filePath) => {
 			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
-			const command = new MoveEventCommand(this.app, this.bundle, filePath, startOffset, endOffset);
-
-			await this.bundle.commandManager.executeCommand(command);
-
-			const direction = weeks > 0 ? "next" : "previous";
-			new Notice(`Event moved to ${direction} week`);
-		} catch (error) {
-			console.error("Failed to move event:", error);
-			new Notice("Failed to move event");
-		}
+			await this.runCommand(() => new MoveEventCommand(this.app, this.bundle, filePath, startOffset, endOffset), {
+				success: `Event moved to ${direction} week`,
+				error: "Failed to move event",
+			});
+		});
 	}
 
 	async cloneEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
-		const filePath = this.getFilePathOrNotice(event, "clone event");
-		if (!filePath) return;
+		const direction = weeks > 0 ? "next" : "previous";
 
-		try {
+		this.withFilePath(event, "clone event", async (filePath) => {
 			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
-			const command = new CloneEventCommand(this.app, this.bundle, filePath, startOffset, endOffset);
-
-			await this.bundle.commandManager.executeCommand(command);
-
-			const direction = weeks > 0 ? "next" : "previous";
-			new Notice(`Event cloned to ${direction} week`);
-		} catch (error) {
-			console.error("Failed to clone event:", error);
-			new Notice("Failed to clone event");
-		}
+			await this.runCommand(() => new CloneEventCommand(this.app, this.bundle, filePath, startOffset, endOffset), {
+				success: `Event cloned to ${direction} week`,
+				error: "Failed to clone event",
+			});
+		});
 	}
 
 	async duplicateEvent(event: CalendarEventInfo): Promise<void> {
-		const filePath = this.getFilePathOrNotice(event, "duplicate event");
-		if (!filePath) return;
-
-		try {
-			// Use CloneEventCommand without offsets for duplication
-			const command = new CloneEventCommand(this.app, this.bundle, filePath);
-
-			await this.bundle.commandManager.executeCommand(command);
-
-			new Notice("Event duplicated");
-		} catch (error) {
-			console.error("Failed to duplicate event:", error);
-			new Notice("Failed to duplicate event");
-		}
+		this.withFilePath(event, "duplicate event", async (filePath) => {
+			await this.runCommand(() => new CloneEventCommand(this.app, this.bundle, filePath), {
+				success: "Event duplicated",
+				error: "Failed to duplicate event",
+			});
+		});
 	}
 
 	async duplicateRecurringEvent(event: CalendarEventInfo): Promise<void> {
-		const filePath = this.getFilePathOrNotice(event, "duplicate recurring event");
-		if (!filePath) return;
-
-		try {
-			const command = new DuplicateRecurringEventCommand(this.app, this.bundle, filePath);
-			await this.bundle.commandManager.executeCommand(command);
-			new Notice("Recurring instance duplicated");
-		} catch (error) {
-			console.error("Failed to duplicate recurring event:", error);
-			new Notice("Failed to duplicate recurring event");
-		}
+		this.withFilePath(event, "duplicate recurring event", async (filePath) => {
+			await this.runCommand(() => new DuplicateRecurringEventCommand(this.app, this.bundle, filePath), {
+				success: "Recurring instance duplicated",
+				error: "Failed to duplicate recurring event",
+			});
+		});
 	}
 
 	async deleteEvent(event: CalendarEventInfo): Promise<void> {
-		const filePath = this.getFilePathOrNotice(event, "delete event");
-		if (!filePath) return;
-
-		try {
-			const command = new DeleteEventCommand(this.app, this.bundle, filePath);
-
-			await this.bundle.commandManager.executeCommand(command);
-
-			new Notice("Event deleted successfully");
-		} catch (error) {
-			console.error("Failed to delete event:", error);
-			new Notice("Failed to delete event");
-		}
+		this.withFilePath(event, "delete event", async (filePath) => {
+			await this.runCommand(() => new DeleteEventCommand(this.app, this.bundle, filePath), {
+				success: "Event deleted successfully",
+				error: "Failed to delete event",
+			});
+		});
 	}
 
 	async toggleRecurringEvent(event: CalendarEventInfo): Promise<void> {
-		const sourceFilePath = this.getSourceFilePath(event);
-		if (!sourceFilePath) {
-			new Notice("Failed to toggle recurring event: no source file found");
-			return;
-		}
-
-		try {
-			const command = new ToggleSkipCommand(this.app, this.bundle, sourceFilePath);
-			await this.bundle.commandManager.executeCommand(command);
-
-			new Notice("Recurring event toggled");
-		} catch (error) {
-			console.error("Failed to toggle recurring event:", error);
-			new Notice("Failed to toggle recurring event");
-		}
+		this.withSourceFilePath(event, "toggle recurring event", async (sourceFilePath) => {
+			await this.runCommand(() => new ToggleSkipCommand(this.app, this.bundle, sourceFilePath), {
+				success: "Recurring event toggled",
+				error: "Failed to toggle recurring event",
+			});
+		});
 	}
 
 	async toggleSkipEvent(event: CalendarEventInfo): Promise<void> {
-		const filePath = this.getFilePathOrNotice(event, "toggle skip event");
-		if (!filePath) return;
-
-		try {
-			const command = new ToggleSkipCommand(this.app, this.bundle, filePath);
-
-			await this.bundle.commandManager.executeCommand(command);
-
-			new Notice("Event skip toggled");
-		} catch (error) {
-			console.error("Failed to toggle skip event:", error);
-			new Notice("Failed to toggle skip event");
-		}
+		this.withFilePath(event, "toggle skip event", async (filePath) => {
+			await this.runCommand(() => new ToggleSkipCommand(this.app, this.bundle, filePath), {
+				success: "Event skip toggled",
+				error: "Failed to toggle skip event",
+			});
+		});
 	}
 
 	private openEventPreview(event: CalendarEventInfo): void {
