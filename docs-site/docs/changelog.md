@@ -46,6 +46,14 @@ All notable changes to this project will be documented here.
 
 #### Unified Recurring Events Modal
 - **View All Recurring Events**: New "Show recurring events" command that displays all your recurring events in one place
+- **Type Filter Dropdown**: Filter recurring events by recurrence type (Daily, Weekly, Bi-weekly, Monthly, Bi-monthly, Yearly) or show all types at once
+- **Colored Type Badges**: Each recurring event displays a vibrant, color-coded badge indicating its recurrence type for quick visual identification:
+  - 🔵 **Daily** - Blue badge
+  - 🟢 **Weekly** - Green badge
+  - 🟣 **Bi-weekly** - Purple badge
+  - 🟠 **Monthly** - Orange badge
+  - 🩷 **Bi-monthly** - Pink badge
+  - 🩵 **Yearly** - Teal badge
 - **Toggle Between Enabled/Disabled**: Checkbox to switch between viewing enabled recurring events (default) or disabled ones. Search filter is preserved when toggling.
 - **Quick Enable/Disable**: Primary action button dynamically changes:
   - When viewing enabled events: "Disable" button to quickly disable recurring events
@@ -56,6 +64,8 @@ All notable changes to this project will be documented here.
 - **Replaces Old Modal**: The "Show disabled recurring events" command has been removed in favor of this more comprehensive modal
 - **Use Cases**:
   - Get an overview of all your recurring events
+  - Filter by recurrence frequency to find specific event types
+  - Quickly identify event patterns with color-coded type badges
   - Quickly enable or disable recurring events without opening files
   - Navigate to source recurring events for editing or context
   - Manage recurring events from a single interface

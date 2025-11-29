@@ -118,6 +118,12 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Past filter** - Toggle past event visibility to reduce clutter
 - **Linked navigation** - Jump between related recurring events seamlessly
 
+### **Recurring Events Modal**
+- **View all recurring events** - Centralized modal to manage all recurring events
+- **Type filter dropdown** - Filter by recurrence type (Daily, Weekly, Bi-weekly, Monthly, Bi-monthly, Yearly)
+- **Color-coded type badges** - Instantly identify recurrence frequency with vibrant colored badges
+- **Quick actions** - Enable/disable recurring events or navigate to source with one click
+
 ---
 
 ## ⚡ **Event Interaction & Management**

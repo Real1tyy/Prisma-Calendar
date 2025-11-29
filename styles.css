@@ -3773,3 +3773,224 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 .prisma-stats-mode-button-compact:active {
 	transform: translateY(0);
 }
+
+/* ===================================
+   Recurring Events Modal - Type Filter & Badges
+   =================================== */
+
+/* Filters container - horizontal layout with items */
+.prisma-recurring-events-modal-filters {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+	margin-bottom: 1rem;
+	padding: 0.75rem 1rem;
+	background-color: var(--background-secondary);
+	border-radius: var(--radius-m);
+	border: 1px solid var(--background-modifier-border);
+	flex-wrap: wrap;
+}
+
+/* Type filter section */
+.prisma-recurring-events-type-filter {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.prisma-recurring-events-filter-label {
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-muted);
+}
+
+.prisma-recurring-events-type-select {
+	padding: 0.35rem 1.75rem 0.35rem 0.75rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	cursor: pointer;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='currentColor' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 0.5rem center;
+	background-size: 10px;
+	transition: all 0.15s ease;
+}
+
+.prisma-recurring-events-type-select:hover {
+	border-color: var(--interactive-accent);
+}
+
+.prisma-recurring-events-type-select:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+/* Toggle checkbox section */
+.prisma-recurring-events-toggle {
+	display: flex;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+
+.prisma-recurring-events-checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	user-select: none;
+}
+
+.prisma-recurring-events-checkbox-label input[type="checkbox"] {
+	cursor: pointer;
+	width: 16px;
+	height: 16px;
+	accent-color: var(--interactive-accent);
+}
+
+/* Title row with type badge */
+.prisma-recurring-event-title-row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+/* Type badge base styles */
+.prisma-recurring-type-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: var(--font-weight-semibold);
+	letter-spacing: 0.3px;
+	text-transform: uppercase;
+	white-space: nowrap;
+	transition: all 0.2s ease;
+}
+
+/* Type-specific colors - vibrant and distinct */
+.prisma-recurring-type-daily {
+	background-color: rgba(59, 130, 246, 0.15);
+	color: rgb(59, 130, 246);
+	border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.prisma-recurring-type-weekly {
+	background-color: rgba(34, 197, 94, 0.15);
+	color: rgb(34, 197, 94);
+	border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.prisma-recurring-type-bi-weekly {
+	background-color: rgba(168, 85, 247, 0.15);
+	color: rgb(168, 85, 247);
+	border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.prisma-recurring-type-monthly {
+	background-color: rgba(249, 115, 22, 0.15);
+	color: rgb(249, 115, 22);
+	border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.prisma-recurring-type-bi-monthly {
+	background-color: rgba(236, 72, 153, 0.15);
+	color: rgb(236, 72, 153);
+	border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.prisma-recurring-type-yearly {
+	background-color: rgba(20, 184, 166, 0.15);
+	color: rgb(20, 184, 166);
+	border: 1px solid rgba(20, 184, 166, 0.3);
+}
+
+/* Hover states for badges */
+.prisma-recurring-type-badge:hover {
+	transform: scale(1.05);
+}
+
+.prisma-recurring-type-daily:hover {
+	background-color: rgba(59, 130, 246, 0.25);
+}
+
+.prisma-recurring-type-weekly:hover {
+	background-color: rgba(34, 197, 94, 0.25);
+}
+
+.prisma-recurring-type-bi-weekly:hover {
+	background-color: rgba(168, 85, 247, 0.25);
+}
+
+.prisma-recurring-type-monthly:hover {
+	background-color: rgba(249, 115, 22, 0.25);
+}
+
+.prisma-recurring-type-bi-monthly:hover {
+	background-color: rgba(236, 72, 153, 0.25);
+}
+
+.prisma-recurring-type-yearly:hover {
+	background-color: rgba(20, 184, 166, 0.25);
+}
+
+/* Dark theme adjustments for type badges */
+.theme-dark .prisma-recurring-type-daily {
+	background-color: rgba(59, 130, 246, 0.2);
+	color: rgb(96, 165, 250);
+}
+
+.theme-dark .prisma-recurring-type-weekly {
+	background-color: rgba(34, 197, 94, 0.2);
+	color: rgb(74, 222, 128);
+}
+
+.theme-dark .prisma-recurring-type-bi-weekly {
+	background-color: rgba(168, 85, 247, 0.2);
+	color: rgb(192, 132, 252);
+}
+
+.theme-dark .prisma-recurring-type-monthly {
+	background-color: rgba(249, 115, 22, 0.2);
+	color: rgb(251, 146, 60);
+}
+
+.theme-dark .prisma-recurring-type-bi-monthly {
+	background-color: rgba(236, 72, 153, 0.2);
+	color: rgb(244, 114, 182);
+}
+
+.theme-dark .prisma-recurring-type-yearly {
+	background-color: rgba(20, 184, 166, 0.2);
+	color: rgb(45, 212, 191);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.prisma-recurring-events-modal-filters {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.75rem;
+	}
+
+	.prisma-recurring-event-title-row {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+	}
+
+	.prisma-recurring-type-badge {
+		font-size: 10px;
+		padding: 0.15rem 0.5rem;
+	}
+}
