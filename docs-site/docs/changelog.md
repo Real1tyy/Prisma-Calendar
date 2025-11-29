@@ -89,6 +89,21 @@ All notable changes to this project will be documented here.
   - Reduce typos by selecting from predefined options
   - Build a coherent category taxonomy over time
 
+#### Multi-Category Statistics Support
+- **Comma-Separated Categories**: Events with multiple comma-separated categories (e.g., `Category: Work, Learning`) are now counted under EACH category separately in statistics
+- **Accurate Time Tracking**: If an event belongs to "Work" and "Learning", its full duration is counted toward both categories
+- **Flexible Categorization**: Assign multiple categories to events and see accurate breakdowns for each category
+- **Example**:
+  ```yaml
+  ---
+  Title: Team Workshop
+  Start Date: 2025-02-15T09:00
+  End Date: 2025-02-15T12:00
+  Category: Work, Learning, Team Building
+  ---
+  ```
+  This 3-hour event contributes 3 hours to each of: Work, Learning, and Team Building categories in statistics
+
 #### Clickable Duration Display in Statistics
 - **Toggle Duration Format**: The duration display in all statistics modals (Weekly, Monthly, All-Time) is now clickable, allowing you to toggle between formatted duration (e.g., "3d 8h 45m") and decimal hours (e.g., "80.8h")
 - **Visual Feedback**: Button has hover effects and smooth transitions to indicate it's interactive

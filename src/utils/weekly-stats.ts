@@ -100,6 +100,42 @@ export function getMonthBounds(date: Date): { start: Date; end: Date } {
 }
 
 /**
+ * Parses a category value that may contain multiple comma-separated categories.
+ * Returns an array of trimmed category names, or ["No Category"] if empty/undefined.
+ */
+export function parseCategories(categoryValue: unknown): string[] {
+	if (!categoryValue) {
+		return ["No Category"];
+	}
+
+	// Handle string values (most common case)
+	if (typeof categoryValue === "string") {
+		const categories = categoryValue
+			.split(",")
+			.map((cat) => cat.trim())
+			.filter((cat) => cat.length > 0);
+		return categories.length > 0 ? categories : ["No Category"];
+	}
+
+	// Handle numbers (convert to string)
+	if (typeof categoryValue === "number") {
+		return [categoryValue.toString()];
+	}
+
+	// Handle arrays (join and parse)
+	if (Array.isArray(categoryValue)) {
+		const categories = categoryValue
+			.flatMap((item) => (typeof item === "string" ? item.split(",") : []))
+			.map((cat) => cat.trim())
+			.filter((cat) => cat.length > 0);
+		return categories.length > 0 ? categories : ["No Category"];
+	}
+
+	// Fallback for other types
+	return ["No Category"];
+}
+
+/**
  * Aggregates events for a given date range, grouping by name or category.
  *
  * Rules:
@@ -109,6 +145,7 @@ export function getMonthBounds(date: Date): { start: Date; end: Date } {
  * 4. Calculates total duration and count for each group
  * 5. Events without a category are grouped under "No Category" when mode is "category"
  * 6. Break time is subtracted from duration if breakProp is configured
+ * 7. Events with multiple comma-separated categories are counted under EACH category
  */
 export function aggregateStats(
 	events: ParsedEvent[],
@@ -132,25 +169,30 @@ export function aggregateStats(
 	const groups = new Map<string, { duration: number; count: number; isRecurring: boolean }>();
 
 	for (const event of timedEvents) {
-		let groupKey: string;
-
-		if (mode === "category") {
-			// Group by category property value, fallback to "No Category"
-			groupKey = (event.meta?.[categoryProp] as string) || "No Category";
-		} else {
-			// Group by cleaned event name (default behavior)
-			groupKey = extractNotesCoreName(event.title);
-		}
-
 		const isRecurring = event.isVirtual;
 		const duration = getEventDuration(event, breakProp);
-		const existing = groups.get(groupKey);
 
-		if (existing) {
-			existing.duration += duration;
-			existing.count += 1;
+		// Get all group keys for this event (may be multiple for category mode)
+		let groupKeys: string[];
+
+		if (mode === "category") {
+			// Parse comma-separated categories - event is counted under each category
+			groupKeys = parseCategories(event.meta?.[categoryProp]);
 		} else {
-			groups.set(groupKey, { duration, count: 1, isRecurring });
+			// Group by cleaned event name (default behavior)
+			groupKeys = [extractNotesCoreName(event.title)];
+		}
+
+		// Add this event's duration and count to each group
+		for (const groupKey of groupKeys) {
+			const existing = groups.get(groupKey);
+
+			if (existing) {
+				existing.duration += duration;
+				existing.count += 1;
+			} else {
+				groups.set(groupKey, { duration, count: 1, isRecurring });
+			}
 		}
 	}
 

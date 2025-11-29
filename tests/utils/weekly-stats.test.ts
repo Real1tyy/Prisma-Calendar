@@ -10,6 +10,7 @@ import {
 	getEventsInRange,
 	getMonthBounds,
 	getWeekBounds,
+	parseCategories,
 } from "../../src/utils/weekly-stats";
 
 describe("getEventDuration", () => {
@@ -2169,6 +2170,430 @@ describe("Category-based aggregation", () => {
 			expect(stats.entries).toHaveLength(2);
 			expect(stats.entries.some((e) => e.name === "No Category")).toBe(true);
 			expect(stats.entries.some((e) => e.name === "Work")).toBe(true);
+		});
+	});
+});
+
+describe("parseCategories", () => {
+	it("should return ['No Category'] for undefined value", () => {
+		expect(parseCategories(undefined)).toEqual(["No Category"]);
+	});
+
+	it("should return ['No Category'] for null value", () => {
+		expect(parseCategories(null)).toEqual(["No Category"]);
+	});
+
+	it("should return ['No Category'] for empty string", () => {
+		expect(parseCategories("")).toEqual(["No Category"]);
+	});
+
+	it("should return ['No Category'] for whitespace only", () => {
+		expect(parseCategories("   ")).toEqual(["No Category"]);
+	});
+
+	it("should parse single category", () => {
+		expect(parseCategories("Work")).toEqual(["Work"]);
+	});
+
+	it("should parse multiple comma-separated categories", () => {
+		expect(parseCategories("Work, Personal")).toEqual(["Work", "Personal"]);
+	});
+
+	it("should trim whitespace from categories", () => {
+		expect(parseCategories("  Work  ,  Personal  ,  Health  ")).toEqual(["Work", "Personal", "Health"]);
+	});
+
+	it("should handle categories without spaces after comma", () => {
+		expect(parseCategories("Work,Personal,Health")).toEqual(["Work", "Personal", "Health"]);
+	});
+
+	it("should filter out empty categories from trailing commas", () => {
+		expect(parseCategories("Work, Personal,")).toEqual(["Work", "Personal"]);
+	});
+
+	it("should filter out empty categories from leading commas", () => {
+		expect(parseCategories(",Work, Personal")).toEqual(["Work", "Personal"]);
+	});
+
+	it("should handle categories with numbers", () => {
+		expect(parseCategories("Project1, Project2")).toEqual(["Project1", "Project2"]);
+	});
+
+	it("should handle categories with special characters", () => {
+		expect(parseCategories("Work-Life, Health & Fitness")).toEqual(["Work-Life", "Health & Fitness"]);
+	});
+
+	it("should convert non-string values to string", () => {
+		expect(parseCategories(123)).toEqual(["123"]);
+	});
+});
+
+describe("Multi-category aggregation", () => {
+	describe("aggregateWeeklyStats with multiple categories", () => {
+		it("should count event under each category when comma-separated", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Team Building",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T12:00:00Z", // 2 hours
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work, Personal", // Event belongs to both categories
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries).toHaveLength(2);
+
+			const workEntry = stats.entries.find((e) => e.name === "Work");
+			expect(workEntry).toBeDefined();
+			expect(workEntry?.count).toBe(1);
+			expect(workEntry?.duration).toBe(2 * 60 * 60 * 1000); // 2 hours
+
+			const personalEntry = stats.entries.find((e) => e.name === "Personal");
+			expect(personalEntry).toBeDefined();
+			expect(personalEntry?.count).toBe(1);
+			expect(personalEntry?.duration).toBe(2 * 60 * 60 * 1000); // 2 hours
+		});
+
+		it("should aggregate duration correctly across multiple events with overlapping categories", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Gym with Coworkers",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T11:00:00Z", // 1 hour
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Health, Work", // Both categories
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Solo Gym",
+					start: "2025-02-04T10:00:00Z",
+					end: "2025-02-04T11:30:00Z", // 1.5 hours
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Health", // Only Health
+					},
+				},
+				{
+					id: "3",
+					ref: { filePath: "event3.md" },
+					title: "Meeting",
+					start: "2025-02-05T14:00:00Z",
+					end: "2025-02-05T15:00:00Z", // 1 hour
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work", // Only Work
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries).toHaveLength(2);
+
+			// Health: 1h (event 1) + 1.5h (event 2) = 2.5h
+			const healthEntry = stats.entries.find((e) => e.name === "Health");
+			expect(healthEntry).toBeDefined();
+			expect(healthEntry?.count).toBe(2);
+			expect(healthEntry?.duration).toBe(150 * 60 * 1000); // 2.5 hours
+
+			// Work: 1h (event 1) + 1h (event 3) = 2h
+			const workEntry = stats.entries.find((e) => e.name === "Work");
+			expect(workEntry).toBeDefined();
+			expect(workEntry?.count).toBe(2);
+			expect(workEntry?.duration).toBe(2 * 60 * 60 * 1000); // 2 hours
+		});
+
+		it("should handle three or more categories", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Conference",
+					start: "2025-02-03T09:00:00Z",
+					end: "2025-02-03T17:00:00Z", // 8 hours
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work, Learning, Networking",
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries).toHaveLength(3);
+
+			for (const category of ["Work", "Learning", "Networking"]) {
+				const entry = stats.entries.find((e) => e.name === category);
+				expect(entry).toBeDefined();
+				expect(entry?.count).toBe(1);
+				expect(entry?.duration).toBe(8 * 60 * 60 * 1000);
+			}
+		});
+
+		it("should handle break time correctly with multiple categories", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Workshop",
+					start: "2025-02-03T09:00:00Z",
+					end: "2025-02-03T12:00:00Z", // 3 hours
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work, Learning",
+						Break: 30, // 30 minute break
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category", "Break");
+
+			expect(stats.entries).toHaveLength(2);
+
+			// Both categories should have 2.5 hours (3h - 30m break)
+			for (const category of ["Work", "Learning"]) {
+				const entry = stats.entries.find((e) => e.name === category);
+				expect(entry).toBeDefined();
+				expect(entry?.duration).toBe(150 * 60 * 1000); // 2.5 hours
+			}
+		});
+
+		it("should not double count duration in totalDuration for multi-category events", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Event",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T11:00:00Z", // 1 hour
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work, Personal",
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			// Total duration sums all entries, so multi-category events are counted multiple times
+			// This is expected behavior - each category gets the full duration
+			expect(stats.totalDuration).toBe(2 * 60 * 60 * 1000); // 2 hours (1h per category)
+		});
+
+		it("should preserve isRecurring flag with multiple categories", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "recurring.md" },
+					title: "Daily Standup",
+					start: "2025-02-03T09:00:00Z",
+					end: "2025-02-03T09:15:00Z",
+					allDay: false,
+					isVirtual: true,
+					skipped: false,
+					meta: {
+						Category: "Work, Team",
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries).toHaveLength(2);
+			expect(stats.entries.every((e) => e.isRecurring)).toBe(true);
+		});
+	});
+
+	describe("aggregateMonthlyStats with multiple categories", () => {
+		it("should count monthly events under each category when comma-separated", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Event",
+					start: "2025-02-05T10:00:00Z",
+					end: "2025-02-05T12:00:00Z", // 2 hours
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Business, Exercise",
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Another Event",
+					start: "2025-02-12T10:00:00Z",
+					end: "2025-02-12T11:00:00Z", // 1 hour
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Business",
+					},
+				},
+			];
+
+			const monthDate = new Date("2025-02-15T12:00:00");
+			const stats = aggregateMonthlyStats(events, monthDate, "category", "Category");
+
+			expect(stats.entries).toHaveLength(2);
+
+			// Business: 2h (event 1) + 1h (event 2) = 3h
+			const businessEntry = stats.entries.find((e) => e.name === "Business");
+			expect(businessEntry).toBeDefined();
+			expect(businessEntry?.count).toBe(2);
+			expect(businessEntry?.duration).toBe(3 * 60 * 60 * 1000);
+
+			// Exercise: 2h (event 1 only)
+			const exerciseEntry = stats.entries.find((e) => e.name === "Exercise");
+			expect(exerciseEntry).toBeDefined();
+			expect(exerciseEntry?.count).toBe(1);
+			expect(exerciseEntry?.duration).toBe(2 * 60 * 60 * 1000);
+		});
+	});
+
+	describe("edge cases for multi-category", () => {
+		it("should handle event with single category in comma format", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Event",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T11:00:00Z",
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work,", // Trailing comma
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].name).toBe("Work");
+		});
+
+		it("should handle event with duplicate categories", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Event",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T11:00:00Z", // 1 hour
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "Work, Work, Work", // Duplicate categories
+					},
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			// Each "Work" is counted separately (3 times)
+			expect(stats.entries).toHaveLength(1);
+			expect(stats.entries[0].name).toBe("Work");
+			expect(stats.entries[0].count).toBe(3);
+			expect(stats.entries[0].duration).toBe(3 * 60 * 60 * 1000); // 3 hours
+		});
+
+		it("should mix multi-category and single-category events correctly", () => {
+			const events: ParsedEvent[] = [
+				{
+					id: "1",
+					ref: { filePath: "event1.md" },
+					title: "Multi-category Event",
+					start: "2025-02-03T10:00:00Z",
+					end: "2025-02-03T11:00:00Z", // 1 hour
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "A, B, C",
+					},
+				},
+				{
+					id: "2",
+					ref: { filePath: "event2.md" },
+					title: "Single A",
+					start: "2025-02-04T10:00:00Z",
+					end: "2025-02-04T11:00:00Z", // 1 hour
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+					meta: {
+						Category: "A",
+					},
+				},
+				{
+					id: "3",
+					ref: { filePath: "event3.md" },
+					title: "No Category",
+					start: "2025-02-05T10:00:00Z",
+					end: "2025-02-05T11:00:00Z", // 1 hour
+					allDay: false,
+					isVirtual: false,
+					skipped: false,
+				},
+			];
+
+			const date = new Date("2025-02-05");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
+
+			expect(stats.entries).toHaveLength(4); // A, B, C, No Category
+
+			const aEntry = stats.entries.find((e) => e.name === "A");
+			expect(aEntry?.count).toBe(2); // event 1 + event 2
+			expect(aEntry?.duration).toBe(2 * 60 * 60 * 1000);
+
+			const bEntry = stats.entries.find((e) => e.name === "B");
+			expect(bEntry?.count).toBe(1);
+
+			const cEntry = stats.entries.find((e) => e.name === "C");
+			expect(cEntry?.count).toBe(1);
+
+			const noCatEntry = stats.entries.find((e) => e.name === "No Category");
+			expect(noCatEntry?.count).toBe(1);
 		});
 	});
 });

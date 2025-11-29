@@ -69,7 +69,14 @@ The modal shows statistics for all events across your entire calendar history.
 
 ## How Event Grouping Works
 
-### Recurring Events
+### Aggregation Modes
+
+Statistics support two aggregation modes, toggled via the mode button in the statistics modal:
+
+1. **Event Name Mode** (default): Groups events by their cleaned title names
+2. **Category Mode**: Groups events by their frontmatter category property
+
+### Recurring Events (Name Mode)
 
 All recurring (virtual) events are automatically grouped together under a single "Recurring Events" category, regardless of their individual names. This provides a clear view of how much time your recurring activities take up.
 
@@ -83,7 +90,7 @@ All recurring (virtual) events are automatically grouped together under a single
 # Grouped as: "Recurring Events" (45 minutes total)
 ```
 
-### Non-Recurring Events
+### Non-Recurring Events (Name Mode)
 
 Non-recurring events are grouped by name after automatically stripping common ID patterns:
 
@@ -110,6 +117,91 @@ End Date: 2025-02-05T11:30
 
 # Both grouped as: "Gym" (2 events, 150 minutes total)
 ```
+
+### Multi-Category Support (Category Mode)
+
+When using **Category Mode**, events with multiple comma-separated categories are counted under **each category separately**. This enables flexible categorization where a single event can contribute to multiple statistical groupings.
+
+#### How It Works
+
+If an event has `Category: Work, Learning`, its full duration is added to both the "Work" and "Learning" categories in statistics. This reflects the reality that many activities serve multiple purposes.
+
+**Example:**
+```yaml
+---
+Title: Team Workshop
+Start Date: 2025-02-03T09:00
+End Date: 2025-02-03T12:00
+Category: Work, Learning, Team Building
+---
+```
+
+This 3-hour event contributes:
+- **Work**: 3 hours
+- **Learning**: 3 hours
+- **Team Building**: 3 hours
+
+#### Category Format
+
+Categories can be specified in several formats:
+
+```yaml
+# Single category
+Category: Work
+
+# Multiple categories (comma-separated)
+Category: Work, Personal
+
+# Multiple categories (no spaces)
+Category: Work,Personal,Health
+
+# Whitespace is trimmed automatically
+Category:   Work  ,  Personal  ,  Health
+```
+
+#### Use Cases
+
+**Cross-functional activities:**
+```yaml
+---
+Title: Gym with Coworkers
+Category: Health, Work, Social
+---
+# Counts toward Health, Work, AND Social statistics
+```
+
+**Project overlap:**
+```yaml
+---
+Title: Client Meeting
+Category: Client A, Sales, Q4 Planning
+---
+# Tracks time for client work, sales activities, and quarterly planning
+```
+
+**Learning on the job:**
+```yaml
+---
+Title: Python Workshop
+Category: Work, Learning, Development
+---
+# Shows contribution to work hours and professional development
+```
+
+#### Total Duration Note
+
+When viewing statistics in Category Mode with multi-category events, the **total duration** displayed at the top sums all category entries. This means multi-category events contribute their duration multiple times to the total—once per category. This is intentional, as it shows the total "category-hours" tracked.
+
+**Example:**
+- One 2-hour event with `Category: Work, Learning`
+- **Work**: 2h, **Learning**: 2h
+- **Total**: 4h (representing 2 category-hours for Work + 2 category-hours for Learning)
+
+To see actual unique time spent, use **Name Mode** instead.
+
+#### Events Without Categories
+
+Events without a category property (or with an empty category) are grouped under **"No Category"** when viewing statistics in Category Mode.
 
 ## Break Time Property
 
