@@ -1,5 +1,9 @@
 # Configuration
 
+![Settings Panel](/img/settings.png)
+
+*Prisma Calendar settings with tabs for General, Properties, Calendar UI, Notifications, and Rules*
+
 ## Calendar Management
 
 - Add, clone, or delete calendars from Settings → Prisma Calendar

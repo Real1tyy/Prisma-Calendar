@@ -2,6 +2,10 @@
 
 Search across all events in your calendar with powerful filtering and quick navigation.
 
+![Global Event Search](/img/global_event_search.png)
+
+*Search all events with cycle filters for recurring, all-day, and skipped events*
+
 ## Overview
 
 The Global Event Search modal provides a fast way to find and navigate to any event in your current calendar. Unlike the toolbar search which filters the visible calendar, this modal shows all matching events in a searchable list.

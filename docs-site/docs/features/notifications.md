@@ -107,6 +107,10 @@ When an event enters the notification window:
 
 ### Notification Modal
 
+![Notification Modal](/img/notification_modal.png)
+
+*Rich notification modal with event details, snooze functionality, and quick actions*
+
 The modal provides rich event information:
 
 - **Timing Info**: Shows how soon the event is ("In 15 minutes → at 2:00 PM")

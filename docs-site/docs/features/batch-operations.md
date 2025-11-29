@@ -2,6 +2,10 @@
 
 Quickly make changes to many events at once.
 
+![Batch Selection Mode](/img/batch_select.png)
+
+*Select multiple events across your calendar for bulk operations*
+
 ## Entering Selection Mode
 
 **Activate:** Toolbar button, keyboard shortcut, or right-click → "Enter Selection Mode"

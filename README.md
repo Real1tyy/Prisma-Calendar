@@ -30,6 +30,36 @@
 
 </div>
 
+---
+
+## 📸 Screenshots
+
+### Full Calendar View
+![Full Calendar View](docs-site/static/img/full_calendar.png)
+*Weekly calendar view with color-coded events, time grid, and powerful toolbar*
+
+### Batch Operations
+![Batch Selection Mode](docs-site/static/img/batch_select.png)
+*Select multiple events for bulk operations like delete, duplicate, move, or skip*
+
+### Event Creation & Editing
+<p align="center">
+<img src="docs-site/static/img/create_event_modal.png" alt="Create Event Modal" width="45%">
+<img src="docs-site/static/img/edit_event_modal.png" alt="Edit Event Modal" width="45%">
+</p>
+
+*Create and edit events with full frontmatter support, recurring event options, and built-in time tracker*
+
+### Weekly Statistics
+![Weekly Statistics](docs-site/static/img/weekly_stats_pie.png)
+*Visual time tracking with pie charts and detailed breakdown tables*
+
+### Settings
+![Settings Panel](docs-site/static/img/settings.png)
+*Fully configurable settings for each calendar with tabs for General, Properties, Calendar UI, Notifications, and Rules*
+
+---
+
 ## 📚 Documentation
 
 **[View Full Documentation →](https://real1tyy.github.io/Prisma-Calendar/)**

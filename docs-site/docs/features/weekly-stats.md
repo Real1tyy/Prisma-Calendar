@@ -2,6 +2,26 @@
 
 Track how you spend your time with visual insights and detailed breakdowns of your events across different time periods.
 
+## Screenshots
+
+### Statistics by Event Name
+
+![Weekly Statistics - Event Name Mode](/img/weekly_stats_pie.png)
+
+*Pie chart and breakdown table showing time distribution grouped by event name*
+
+### Statistics by Category
+
+![Weekly Statistics - Category Mode](/img/weekly_stats_pie_category.png)
+
+*Pie chart showing time distribution grouped by frontmatter category property*
+
+### Detailed Breakdown Table
+
+![Statistics Table](/img/weekly_stats_table.png)
+
+*Complete breakdown with event count, duration, and percentage for each category*
+
 ## Overview
 
 The Statistics feature provides comprehensive time tracking visualizations that show how your time is distributed across different event categories. Choose from three different views:

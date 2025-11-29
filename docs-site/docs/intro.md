@@ -59,6 +59,22 @@ Built for power users and workflow optimization enthusiasts, Prisma Calendar del
 
 ---
 
+## 📸 **Screenshots**
+
+### Full Calendar View
+
+![Full Calendar View](/img/full_calendar.png)
+
+*Weekly calendar view with color-coded events, time grid, search, filtering, and batch operations*
+
+### Settings Panel
+
+![Settings Panel](/img/settings.png)
+
+*Fully configurable settings with tabs for General, Properties, Calendar UI, Notifications, and Rules*
+
+---
+
 ## 🎬 **Top 5 Killer Features**
 
 ### **1️⃣ Flexibility — Fully Configurable Everything**

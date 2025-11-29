@@ -2,6 +2,10 @@
 
 Show recurring events beyond your generation horizon without creating physical files.
 
+![Virtual Events](/img/virtual_events.png)
+
+*Calendar view showing both physical events (solid) and virtual events (far future recurring instances)*
+
 ## How Virtual Events Work
 
 Virtual events are **read-only calendar entries** that extend your recurring series beyond the physical notes you've generated. They appear in the calendar view but don't create actual files in your vault.

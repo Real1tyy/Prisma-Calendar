@@ -169,6 +169,10 @@ Calendar "All Tasks":
 
 When you have active search or expression filters, you might wonder what events are being hidden. The **Filtered Event List Modal** shows you exactly which events are currently excluded by your active filters.
 
+![Filtered Events Modal](/img/filtered_events_modal.png)
+
+*View all events hidden by your active filters with search functionality*
+
 - **Access**: Command palette → "Show filtered events"
 - **Shows**: All events that don't pass current search and expression filters
 - **Features**:

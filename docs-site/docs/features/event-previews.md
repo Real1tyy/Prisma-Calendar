@@ -4,11 +4,19 @@ See note content and navigate links without opening files.
 
 ## Hover Previews
 
+![Hover Preview](/img/hover_event.png)
+
+*Quick hover preview showing event time, title, and configured display properties*
+
 - Enable in Calendar Settings (UI) → "Enable event preview"
 - Hover over any event to see a quick preview
 - Shows note title and first few lines of content
 
 ## Enlarged Modal Preview
+
+![Enlarged Event Preview](/img/enlarge.png)
+
+*Expanded modal view showing complete event details, properties, and clickable links*
 
 **Access:** Shift+Click event, or right-click → "Preview Event"
 

@@ -27,6 +27,10 @@ Skipping preserves files and history while hiding events from calendar view. Use
 
 **View skipped:** Calendar menu → "View Skipped Events"
 
+![Skipped Events Modal](/img/skipped_events_modal.png)
+
+*View all skipped events with search functionality and quick un-skip/open actions*
+
 The dialog shows all skipped events with options to restore them.
 
 **Restore:** Open dialog → Click "Restore" next to event(s)

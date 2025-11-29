@@ -153,11 +153,21 @@ Your content here
 
 ## Source Navigation & Instance Management
 
+![Recurring Instance Modal](/img/view_recurring_events_modal.png)
+
+*View all instances of a recurring event with past/skipped filters and completion tracking*
+
 **Source Button:** Available on recurring instances - click to navigate to the source event.
 
 **Instance Dropdown:** View all physical instances of a recurring series. Available on source events and instances. Toggle "Show Past" to filter old events.
 
 **Virtual Events:** Clicking a virtual event (far future) shows the source event that generates it.
+
+### Recurring Events Management Modal
+
+![Recurring Events Modal](/img/recurring_events_list_modal.png)
+
+*Centralized modal to view, filter, enable/disable, and navigate to all recurring events*
 
 ---
 

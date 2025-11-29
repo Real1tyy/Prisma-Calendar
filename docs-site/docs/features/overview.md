@@ -144,6 +144,14 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Complete context** - See all event details in one comprehensive view
 
 ### **Event Creation & Editing**
+
+<div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem'}}>
+  <img src="/img/create_event_modal.png" alt="Create Event Modal" style={{maxWidth: '48%', minWidth: '300px'}} />
+  <img src="/img/edit_event_modal.png" alt="Edit Event Modal" style={{maxWidth: '48%', minWidth: '300px'}} />
+</div>
+
+*Create and edit events with full frontmatter support, recurring options, categories, break time, and built-in time tracker*
+
 - **Quick create button** - Create events instantly from calendar interface
 - **Enhanced edit modal** - Full frontmatter editing with all configured properties
 - **"Now" button** - Quickly set Start or End date to current time with minute precision
