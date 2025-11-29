@@ -82,17 +82,52 @@ When expanded, you'll see:
 - **Restore**: Use the command "Restore minimized event modal" (Ctrl/Cmd+P) to bring it back
 - **Use for**: Continue working in Obsidian while keeping your event form data saved
 
-## Minimize Feature
+## Minimize & Auto-Save Feature
 
-The minimize feature saves your event modal state and closes the modal, allowing you to continue working in Obsidian. If you have an active stopwatch, it continues tracking time in the background. When you restore the modal, all form fields and stopwatch state are preserved.
+The minimize feature provides two powerful workflows for managing your event modal state. Understanding these workflows helps you track time more effectively.
 
-**Note**: The minimize feature works for **any modal state**, not just when the stopwatch is running. You can fill in event details, minimize, and restore later to continue editing.
+### Two Workflows
 
-### How to Minimize
+#### Workflow 1: Manual Minimize (Pre-configuration)
 
-1. Click the **−** button in the modal header
-2. The modal closes but its state is preserved internally
-3. A notice appears confirming the modal was minimized
+**Use case**: You want to set up an event for later but aren't ready to start working yet.
+
+**How it works**:
+1. Open the Create/Edit Event modal
+2. Fill in event details (title, categories, custom properties, etc.)
+3. Click the **−** minimize button in the modal header
+4. The modal closes and your configuration is saved
+5. Later, restore the modal and continue editing or start the timer
+
+**Example scenario**: You know you'll be working on "Project Report" after lunch. Open the modal now, fill in the title and category, minimize it, and restore it when you're ready to start tracking.
+
+#### Workflow 2: Auto-Save on Close (Background Timer)
+
+**Use case**: You're actively tracking time and want to close the modal without losing your timer.
+
+**How it works**:
+1. Open the Create/Edit Event modal
+2. Start the stopwatch (click **▶ start**)
+3. Close the modal **by any means**:
+   - Press **ESC**
+   - Click outside the modal
+   - Click the **Cancel** button
+4. ✨ **The timer automatically saves in the background** ✨
+5. The stopwatch continues running invisibly
+6. Restore the modal later—your elapsed time is preserved
+
+**Key insight**: When the timer is running, you don't need to manually click minimize. **Just close the modal however you want**—ESC, clicking outside, whatever feels natural. The plugin automatically saves your state because it detects the active stopwatch.
+
+**Example scenario**: You're tracking time on a task, but you need to quickly look something up in another note. Just press ESC to close the modal. The timer keeps running. When you're done, restore the modal and your time is still being tracked.
+
+### Comparison
+
+| Action | Timer Running | Timer NOT Running |
+|--------|---------------|-------------------|
+| Click **−** minimize button | ✅ State saved, timer continues | ✅ State saved |
+| Press **ESC** | ✅ **Auto-saved**, timer continues | ❌ Modal closed, nothing saved |
+| Click outside modal | ✅ **Auto-saved**, timer continues | ❌ Modal closed, nothing saved |
+| Click **Cancel** button | ✅ **Auto-saved**, timer continues | ❌ Modal closed, nothing saved |
 
 ### How to Restore
 
@@ -106,13 +141,13 @@ The modal returns with:
 - For edit modals: the same file path is used, so changes save to the original file
 - Ready to continue editing or save
 
-### Notes on Minimizing
+### Important Notes
 
-- **Only one modal**: Only one modal can be minimized at a time. Minimizing a new modal discards the previously minimized one.
+- **Only one modal**: Only one modal can be minimized at a time. Minimizing/auto-saving a new modal discards the previously saved one.
 - **Command availability**: The restore command only appears in the palette when there's a minimized modal
 - **Closing Obsidian**: Minimized modal state is lost if Obsidian is closed
 - **Edit vs Create**: When editing an existing event, the file path is preserved so changes save to the correct file
-- **Always available**: The minimize button is always visible in the modal header
+- **Minimize button always available**: You can always click the **−** button to manually save state, regardless of timer status
 
 ## Displays
 
@@ -340,12 +375,16 @@ Use [Weekly Statistics](./weekly-stats.md) to review:
 
 ### Timer Keeps Running After Closing Modal
 
-**Problem**: Concerned about the timer continuing.
+**Problem**: Concerned about the timer continuing after closing.
 
-**Solution**: The timer is properly cleaned up when you close the modal. If you close without stopping:
-- No event is created
-- Timer state is lost
-- Just start fresh with a new event
+**Solution**: This is intentional! When the timer is running and you close the modal (ESC, click outside, etc.), the timer state is **automatically saved** and continues in the background. This lets you:
+- Close the modal without worrying about losing your tracked time
+- Continue working in Obsidian while the timer runs
+- Restore the modal later with all your time preserved
+
+To restore: Open command palette (**Ctrl/Cmd+P**) → Search **"Restore minimized event modal"**
+
+**Note**: If the timer is NOT running when you close the modal, the state is NOT saved (unless you explicitly click the minimize button).
 
 ### Can't Find Minimized Modal
 

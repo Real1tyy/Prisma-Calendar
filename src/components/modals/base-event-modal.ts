@@ -81,6 +81,9 @@ export abstract class BaseEventModal extends Modal {
 	// State to restore from minimized modal (set before opening)
 	private pendingRestoreState: MinimizedModalState | null = null;
 
+	// Flag to prevent double-saving when minimize() is called explicitly
+	private isMinimizing = false;
+
 	constructor(app: App, bundle: CalendarBundle, event: EventModalData, onSave: (eventData: EventSaveData) => void) {
 		super(app);
 		this.event = event;
@@ -1022,6 +1025,13 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	onClose(): void {
+		// If stopwatch is active and we're NOT already in the minimize flow,
+		// auto-save state before closing (handles ESC key, clicking outside, etc.)
+		if (this.isStopwatchActive() && !this.isMinimizing) {
+			const state = this.extractMinimizedState();
+			MinimizedModalManager.saveState(state);
+		}
+
 		// Clean up stopwatch to stop any running intervals
 		this.stopwatch?.destroy();
 
@@ -1035,6 +1045,9 @@ export abstract class BaseEventModal extends Modal {
 	 * The modal can be restored later using the "Restore minimized modal" command.
 	 */
 	minimize(): void {
+		// Set flag to prevent double-saving in onClose
+		this.isMinimizing = true;
+
 		const state = this.extractMinimizedState();
 		MinimizedModalManager.saveState(state);
 		new Notice("Modal minimized. Run command: restore minimized event modal");
