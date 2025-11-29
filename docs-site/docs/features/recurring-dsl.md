@@ -318,7 +318,7 @@ Right-click on any **physical** recurring event and select **"Duplicate recurrin
 #### What Happens
 
 The duplicated event:
-- Preserves all frontmatter properties including `RRuleID`, `Source`, and `nodeRecurringInstanceDate`
+- Preserves all frontmatter properties including `RRuleID`, `Source`, and `Recurring Instance Date`
 - Receives a new unique ZettelID (making it a distinct file)
 - Gets an `Ignore Recurring: true` property set automatically
 

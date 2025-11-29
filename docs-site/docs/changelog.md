@@ -135,7 +135,7 @@ All notable changes to this project will be documented here.
 #### Duplicate Recurring Instance
 - **Duplicate Without Affecting Future Generation**: New "Duplicate recurring instance" option in the context menu for physical recurring events
 - **Ignore Recurring Property**: Duplicated events get an `Ignore Recurring` property set to `true`, excluding them from future instance count calculations
-- **Preserved Tracking**: Duplicated events retain their `RRuleID`, `Source`, and `nodeRecurringInstanceDate` properties, allowing them to be tracked as part of the recurring series
+- **Preserved Tracking**: Duplicated events retain their `RRuleID`, `Source`, and `Recurring Instance Date` properties, allowing them to be tracked as part of the recurring series
 - **Property Name**: Configurable via settings (default: `Ignore Recurring`)
 - **Use Cases**:
   - Create a one-off variation of a recurring event without disrupting the regular schedule
