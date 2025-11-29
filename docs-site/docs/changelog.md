@@ -132,6 +132,23 @@ All notable changes to this project will be documented here.
   - Quick access to note preview on touchscreen or trackpad devices
   - More accessible alternative to keyboard-based hover preview
 
+#### Duplicate Recurring Instance
+- **Duplicate Without Affecting Future Generation**: New "Duplicate recurring instance" option in the context menu for physical recurring events
+- **Ignore Recurring Property**: Duplicated events get an `Ignore Recurring` property set to `true`, excluding them from future instance count calculations
+- **Preserved Tracking**: Duplicated events retain their `RRuleID`, `Source`, and `nodeRecurringInstanceDate` properties, allowing them to be tracked as part of the recurring series
+- **Property Name**: Configurable via settings (default: `Ignore Recurring`)
+- **Use Cases**:
+  - Create a one-off variation of a recurring event without disrupting the regular schedule
+  - Archive past recurring events while keeping them linked to their source
+- ⚠️ **Important**: The `Ignore Recurring` property is automatically managed by the system. Always use the "Duplicate recurring instance" context menu option.
+
+#### Smart Recurring Event Renaming on Drop
+- **Automatic Filename Update**: When you drag and drop a physical recurring event to a new date, the filename is automatically updated to reflect the new date
+- **Smart Instance Date Handling**:
+  - **Normal physical instances**: Only the filename is updated; `nodeRecurringInstanceDate` stays the same to preserve the original scheduled date
+  - **Duplicated/ignored instances** (`Ignore Recurring: true`): Both the filename AND `nodeRecurringInstanceDate` are updated to the new date
+- **Format Preserved**: Filename format remains consistent: `Title YYYY-MM-DD-ZettelID.md`
+
 ### Improvements
 - **Calendar Integration**: Context menu actions now provide better integration with calendar navigation, allowing you to stay in calendar view when working with recurring events.
 

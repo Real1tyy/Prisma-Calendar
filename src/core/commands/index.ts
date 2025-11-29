@@ -14,6 +14,7 @@ export {
 	CloneEventCommand,
 	CreateEventCommand,
 	DeleteEventCommand,
+	DuplicateRecurringEventCommand,
 	EditEventCommand,
 	type EditEventData,
 	type EventData,

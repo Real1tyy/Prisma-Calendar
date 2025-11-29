@@ -67,6 +67,7 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_ALREADY_NOTIFIED_PROP: "Already Notified",
 	DEFAULT_CATEGORY_PROP: "Category",
 	DEFAULT_BREAK_PROP: "Break",
+	DEFAULT_IGNORE_RECURRING_PROP: "Ignore Recurring",
 
 	// Notification Settings
 	DEFAULT_ENABLE_NOTIFICATIONS: true,

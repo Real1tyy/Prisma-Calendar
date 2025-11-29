@@ -30,6 +30,7 @@ export interface NodeRecurringEventInstance {
 export interface PhysicalInstance {
 	filePath: string;
 	instanceDate: DateTime;
+	ignored?: boolean;
 }
 
 export interface RecurringEventData {
@@ -211,6 +212,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private handleFileChanged(filePath: string, frontmatter: Record<string, unknown>): void {
 		const rruleId = frontmatter[this.settings.rruleIdProp] as string;
 		const instanceDate = frontmatter.nodeRecurringInstanceDate as string;
+		const isIgnored = frontmatter[this.settings.ignoreRecurringProp] === true;
 
 		if (rruleId && instanceDate) {
 			const parsedInstanceDate = DateTime.fromISO(instanceDate, { zone: "utc" });
@@ -230,6 +232,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 					recurringData.physicalInstances.set(dateKey, {
 						filePath,
 						instanceDate: parsedInstanceDate,
+						ignored: isIgnored,
 					});
 					this.scheduleRefresh();
 				}
@@ -278,8 +281,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 			const now = DateTime.now().toUTC();
 
+			// Filter future instances, excluding those marked as ignored (duplicated recurring events)
 			const futureInstances = Array.from(physicalInstances.values()).filter(
-				(instance) => instance.instanceDate >= now.startOf("day")
+				(instance) => instance.instanceDate >= now.startOf("day") && !instance.ignored
 			);
 
 			const targetInstanceCount = calculateTargetInstanceCount(
@@ -321,10 +325,13 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 	private getNextOccurrenceFromNow(
 		recurringEvent: NodeRecurringEvent,
-		existingFutureInstances: Array<{ filePath: string; instanceDate: DateTime }>
+		existingFutureInstances: Array<PhysicalInstance>
 	): DateTime {
-		if (existingFutureInstances.length > 0) {
-			const sortedInstances = [...existingFutureInstances].sort(
+		// Filter out ignored instances when determining next occurrence
+		const nonIgnoredInstances = existingFutureInstances.filter((instance) => !instance.ignored);
+
+		if (nonIgnoredInstances.length > 0) {
+			const sortedInstances = [...nonIgnoredInstances].sort(
 				(a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis()
 			);
 			const latestInstanceDate = sortedInstances[sortedInstances.length - 1].instanceDate;
@@ -463,23 +470,25 @@ export class RecurringEventManager extends DebouncedNotifier {
 			return [];
 		}
 
-		// Start virtual events AFTER the latest physical instance
+		// Start virtual events AFTER the latest non-ignored physical instance
 		let virtualStartDate: DateTime;
 
-		if (physicalInstances.size > 0) {
+		// Filter out ignored instances (duplicated recurring events) when determining virtual event start
+		const nonIgnoredInstances = Array.from(physicalInstances.values()).filter((instance) => !instance.ignored);
+
+		if (nonIgnoredInstances.length > 0) {
 			// Sort physical instances and get the latest one
-			const instancesArray = Array.from(physicalInstances.values());
-			const sortedInstances = instancesArray.sort((a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis());
+			const sortedInstances = nonIgnoredInstances.sort((a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis());
 			const latestPhysicalDate = sortedInstances[sortedInstances.length - 1].instanceDate;
 
-			// Start from the next occurrence after the latest physical instance
+			// Start from the next occurrence after the latest non-ignored physical instance
 			virtualStartDate = getNextOccurrence(
 				latestPhysicalDate,
 				recurringEvent.rrules.type,
 				recurringEvent.rrules.weekdays
 			);
 		} else {
-			// No physical instances, start from the first valid date after source
+			// No non-ignored physical instances, start from the first valid date after source
 			const sourceDate = getStartDateTime(recurringEvent.rrules);
 			virtualStartDate = getNextOccurrence(sourceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}

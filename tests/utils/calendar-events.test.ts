@@ -7,7 +7,10 @@ import {
 	generateUniqueEventPath,
 	generateUniqueZettelId,
 	hashRRuleIdToZettelFormat,
+	isPhysicalRecurringEvent,
+	rebuildPhysicalInstanceWithNewDate,
 	removeZettelId,
+	shouldUpdateInstanceDateOnMove,
 } from "../../src/utils/calendar-events";
 import { createMockApp, createMockFile } from "../mocks/obsidian";
 
@@ -550,6 +553,161 @@ describe("ZettelID Utilities", () => {
 
 			const cleaned = removeZettelId(filename);
 			expect(cleaned).toBe("My Event");
+		});
+	});
+});
+
+describe("Physical Recurring Event Utilities", () => {
+	describe("rebuildPhysicalInstanceWithNewDate", () => {
+		it("should rebuild filename with new date", () => {
+			const basename = "Weekly Meeting 2025-01-15-12345678901234";
+			const newDate = "2025-01-22";
+			const result = rebuildPhysicalInstanceWithNewDate(basename, newDate);
+			expect(result).toBe("Weekly Meeting 2025-01-22-12345678901234");
+		});
+
+		it("should handle multi-word titles", () => {
+			const basename = "My Important Team Meeting 2025-02-10-98765432109876";
+			const newDate = "2025-02-17";
+			const result = rebuildPhysicalInstanceWithNewDate(basename, newDate);
+			expect(result).toBe("My Important Team Meeting 2025-02-17-98765432109876");
+		});
+
+		it("should return null for invalid format (no date)", () => {
+			const basename = "Meeting-12345678901234";
+			const newDate = "2025-01-22";
+			const result = rebuildPhysicalInstanceWithNewDate(basename, newDate);
+			expect(result).toBeNull();
+		});
+
+		it("should return null for invalid format (no zettel id)", () => {
+			const basename = "Meeting 2025-01-15";
+			const newDate = "2025-01-22";
+			const result = rebuildPhysicalInstanceWithNewDate(basename, newDate);
+			expect(result).toBeNull();
+		});
+
+		it("should return null for invalid format (wrong zettel id length)", () => {
+			const basename = "Meeting 2025-01-15-123456";
+			const newDate = "2025-01-22";
+			const result = rebuildPhysicalInstanceWithNewDate(basename, newDate);
+			expect(result).toBeNull();
+		});
+
+		it("should preserve zettel id exactly", () => {
+			const basename = "Event 2025-03-01-00000000000001";
+			const newDate = "2025-03-08";
+			const result = rebuildPhysicalInstanceWithNewDate(basename, newDate);
+			expect(result).toBe("Event 2025-03-08-00000000000001");
+		});
+
+		it("should handle titles with numbers", () => {
+			const basename = "Task 123 2025-01-15-12345678901234";
+			const newDate = "2025-01-16";
+			const result = rebuildPhysicalInstanceWithNewDate(basename, newDate);
+			expect(result).toBe("Task 123 2025-01-16-12345678901234");
+		});
+
+		it("should handle titles with special characters", () => {
+			const basename = "Team Sync (Weekly) 2025-01-15-12345678901234";
+			const newDate = "2025-01-22";
+			const result = rebuildPhysicalInstanceWithNewDate(basename, newDate);
+			expect(result).toBe("Team Sync (Weekly) 2025-01-22-12345678901234");
+		});
+	});
+
+	describe("isPhysicalRecurringEvent", () => {
+		const rruleIdProp = "RRuleID";
+		const rruleProp = "RRule";
+
+		it("should return true for physical recurring event", () => {
+			const frontmatter = {
+				[rruleIdProp]: "1730000000000-abc12",
+				nodeRecurringInstanceDate: "2025-01-15",
+				Source: "[[Source Event]]",
+			};
+			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp)).toBe(true);
+		});
+
+		it("should return false for source event (has RRule)", () => {
+			const frontmatter = {
+				[rruleIdProp]: "1730000000000-abc12",
+				nodeRecurringInstanceDate: "2025-01-15",
+				[rruleProp]: "every week",
+			};
+			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp)).toBe(false);
+		});
+
+		it("should return false if missing rruleId", () => {
+			const frontmatter = {
+				nodeRecurringInstanceDate: "2025-01-15",
+			};
+			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp)).toBe(false);
+		});
+
+		it("should return false if missing nodeRecurringInstanceDate", () => {
+			const frontmatter = {
+				[rruleIdProp]: "1730000000000-abc12",
+			};
+			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp)).toBe(false);
+		});
+
+		it("should return false for undefined frontmatter", () => {
+			expect(isPhysicalRecurringEvent(undefined, rruleIdProp, rruleProp)).toBe(false);
+		});
+
+		it("should return false for regular event", () => {
+			const frontmatter = {
+				Title: "Regular Event",
+				"Start Date": "2025-01-15T10:00",
+			};
+			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp)).toBe(false);
+		});
+	});
+
+	describe("shouldUpdateInstanceDateOnMove", () => {
+		const ignoreRecurringProp = "Ignore Recurring";
+
+		it("should return true when ignoreRecurring is true", () => {
+			const frontmatter = {
+				[ignoreRecurringProp]: true,
+				RRuleID: "1730000000000-abc12",
+			};
+			expect(shouldUpdateInstanceDateOnMove(frontmatter, ignoreRecurringProp)).toBe(true);
+		});
+
+		it("should return false when ignoreRecurring is false", () => {
+			const frontmatter = {
+				[ignoreRecurringProp]: false,
+				RRuleID: "1730000000000-abc12",
+			};
+			expect(shouldUpdateInstanceDateOnMove(frontmatter, ignoreRecurringProp)).toBe(false);
+		});
+
+		it("should return false when ignoreRecurring is not present", () => {
+			const frontmatter = {
+				RRuleID: "1730000000000-abc12",
+			};
+			expect(shouldUpdateInstanceDateOnMove(frontmatter, ignoreRecurringProp)).toBe(false);
+		});
+
+		it("should return false for undefined frontmatter", () => {
+			expect(shouldUpdateInstanceDateOnMove(undefined, ignoreRecurringProp)).toBe(false);
+		});
+
+		it("should return false when ignoreRecurring is string 'true' (not boolean)", () => {
+			const frontmatter = {
+				[ignoreRecurringProp]: "true",
+			};
+			expect(shouldUpdateInstanceDateOnMove(frontmatter, ignoreRecurringProp)).toBe(false);
+		});
+
+		it("should handle different prop names", () => {
+			const customProp = "Skip Instance";
+			const frontmatter = {
+				[customProp]: true,
+			};
+			expect(shouldUpdateInstanceDateOnMove(frontmatter, customProp)).toBe(true);
 		});
 	});
 });

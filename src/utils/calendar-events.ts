@@ -104,6 +104,47 @@ export const removeZettelId = (text: string): string => {
 };
 
 /**
+ * Rebuilds a physical recurring instance filename with a new date.
+ * Format: "Title YYYY-MM-DD-ZETTELID" -> "Title NEW-DATE-ZETTELID"
+ *
+ * @param basename - Current filename without extension (e.g., "Meeting 2025-01-15-12345678901234")
+ * @param newDate - New date string in YYYY-MM-DD format
+ * @returns New basename or null if the format is not recognized
+ */
+export const rebuildPhysicalInstanceWithNewDate = (basename: string, newDate: string): string | null => {
+	// Pattern: "Title YYYY-MM-DD-ZETTELID" where ZETTELID is 14 digits
+	const match = basename.match(/^(.+)\s+(\d{4}-\d{2}-\d{2})-(\d{14})$/);
+	if (!match) return null;
+
+	const [, title, , zettelId] = match;
+	return `${title} ${newDate}-${zettelId}`;
+};
+
+/**
+ * Checks if a physical recurring event file should have its instance date updated on move.
+ * Only events with ignoreRecurring = true should have their instance date updated.
+ */
+export const shouldUpdateInstanceDateOnMove = (
+	frontmatter: Record<string, unknown> | undefined,
+	ignoreRecurringProp: string
+): boolean => {
+	if (!frontmatter) return false;
+	return frontmatter[ignoreRecurringProp] === true;
+};
+
+/**
+ * Checks if an event is a physical recurring event (has rruleId and nodeRecurringInstanceDate, but no rrule).
+ */
+export const isPhysicalRecurringEvent = (
+	frontmatter: Record<string, unknown> | undefined,
+	rruleIdProp: string,
+	rruleProp: string
+): boolean => {
+	if (!frontmatter) return false;
+	return Boolean(frontmatter[rruleIdProp] && frontmatter.nodeRecurringInstanceDate && !frontmatter[rruleProp]);
+};
+
+/**
  * Extracts the core name from a note title by removing timestamps, dates, and day suffixes.
  * This groups related events together by their base name for aggregation and display.
  *

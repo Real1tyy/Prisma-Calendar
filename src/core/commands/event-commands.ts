@@ -270,6 +270,74 @@ export class CloneEventCommand implements Command {
 	}
 }
 
+/**
+ * Duplicates a physical recurring event instance.
+ * Copies frontmatter (preserves RRuleID, Source, instanceDate) and marks as ignored for instance count.
+ */
+export class DuplicateRecurringEventCommand implements Command {
+	private createdFilePath: string | null = null;
+
+	constructor(
+		private app: App,
+		private bundle: CalendarBundle,
+		private physicalFilePath: string
+	) {}
+
+	async execute(): Promise<void> {
+		if (this.createdFilePath) {
+			const existing = this.app.vault.getAbstractFileByPath(this.createdFilePath);
+			if (existing instanceof TFile) return;
+		}
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const physicalFile = getTFileOrThrow(this.app, this.physicalFilePath);
+
+		// Read the full content of the physical file
+		const content = await this.app.vault.read(physicalFile);
+
+		// Generate unique path for the duplicate
+		const baseNameWithoutZettel = removeZettelId(physicalFile.basename);
+		const directory = physicalFile.parent?.path || "";
+		const { fullPath, zettelId } = generateUniqueEventPath(this.app, directory, baseNameWithoutZettel);
+
+		// Create the duplicate file with same content
+		await this.app.vault.create(fullPath, content);
+		this.createdFilePath = fullPath;
+
+		const createdFile = this.app.vault.getAbstractFileByPath(fullPath);
+		if (!(createdFile instanceof TFile)) return;
+
+		// Update frontmatter: set ignoreRecurring flag and new zettelId
+		await withFrontmatter(this.app, createdFile, (fm) => {
+			// Mark as ignored so it doesn't count towards future instance generation
+			fm[settings.ignoreRecurringProp] = true;
+
+			// Update zettelId to the new unique value
+			if (settings.zettelIdProp) {
+				fm[settings.zettelIdProp] = zettelId;
+			}
+
+			// Remove notification status so duplicated events can trigger notifications
+			delete fm[settings.alreadyNotifiedProp];
+		});
+	}
+
+	async undo(): Promise<void> {
+		if (!this.createdFilePath) return;
+		const f = this.app.vault.getAbstractFileByPath(this.createdFilePath);
+		if (f instanceof TFile) await this.app.fileManager.trashFile(f);
+	}
+
+	getType() {
+		return "duplicate-recurring-event";
+	}
+
+	canUndo(): boolean {
+		if (!this.createdFilePath) return false;
+		return this.app.vault.getAbstractFileByPath(this.createdFilePath) instanceof TFile;
+	}
+}
+
 export class UpdateEventCommand implements Command {
 	private originalFrontmatter?: Record<string, unknown>;
 

@@ -99,6 +99,13 @@ export class PropertiesSettings {
 		});
 
 		this.ui.addText(containerEl, {
+			key: "ignoreRecurringProp",
+			name: "Ignore recurring property",
+			desc: "Frontmatter property name for excluding duplicated recurring events from future instance generation (events with this set to true are tracked but don't count towards the future instances limit)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_IGNORE_RECURRING_PROP,
+		});
+
+		this.ui.addText(containerEl, {
 			key: "futureInstancesCountProp",
 			name: "Future instances count property",
 			desc: "Frontmatter property name for per-event override of future instances count (defaults to global setting if not specified)",

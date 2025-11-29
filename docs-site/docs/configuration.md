@@ -54,6 +54,8 @@ Tell Prisma Calendar which frontmatter keys you use.
 - RRule property: e.g., `daily`, `weekly`, `bi-weekly`, `monthly`, `bi-monthly`, `yearly`
 - RRule specification property: weekdays for weekly/bi-weekly (e.g., `monday, wednesday, friday`)
 - RRule ID property: unique identifier for recurrence
+- Source property: link to the source recurring event
+- Ignore recurring property: when set to `true`, excludes the event from future instance generation count (useful for duplicated recurring events)
 
 Example:
 
@@ -66,6 +68,27 @@ RRuleSpec: monday, wednesday, friday
 RRuleID: standup-2025
 ---
 ```
+
+#### Ignored Recurring Instances
+
+When you duplicate a recurring instance using the context menu, the duplicated event gets `Ignore Recurring: true`. This means:
+- The event is still tracked as part of the recurring series
+- It does NOT count towards the "Future instances count" limit
+- The recurring event manager won't create new instances to replace it
+
+```yaml
+---
+Start: 2025-01-22T09:00
+End: 2025-01-22T10:30
+RRuleID: standup-2025
+Source: "[[Weekly Meeting Source]]"
+Ignore Recurring: true
+---
+```
+
+⚠️ **WARNING: Do Not Manually Modify This Property**
+
+The `Ignore Recurring` property is automatically managed by the system when you use the "Duplicate recurring instance" feature. Never manually add, change, or remove this property—doing so may break the recurring event generation logic.
 
 ### Auto-mark Past Events
 

@@ -304,6 +304,47 @@ Future Instances Count: 10
 ### Virtual Events
 Beyond your generation horizon, events appear as read-only virtual items in the calendar. These don't create files but show you the complete recurring pattern.
 
+### Duplicating Recurring Instances
+
+You can duplicate physical recurring instances without affecting future instance generation. This is useful when you need to:
+
+- Create a one-off variation of a recurring event (e.g., a special team meeting)
+- Archive past recurring events while keeping them linked to their source
+
+#### How to Duplicate
+
+Right-click on any **physical** recurring event and select **"Duplicate recurring instance"**.
+
+#### What Happens
+
+The duplicated event:
+- Preserves all frontmatter properties including `RRuleID`, `Source`, and `nodeRecurringInstanceDate`
+- Receives a new unique ZettelID (making it a distinct file)
+- Gets an `Ignore Recurring: true` property set automatically
+
+#### The Ignore Recurring Property
+
+When an event has `Ignore Recurring: true`, it:
+- **Is tracked** in the recurring event's list of instances
+- **Is NOT counted** towards the "Future instances count" limit
+- **Does NOT influence** when new physical instances are generated
+
+This means the duplicate won't disrupt your regular recurring schedule.
+
+⚠️ **Important**: The `Ignore Recurring` property is automatically managed by the system. Always use the "Duplicate recurring instance" context menu option.
+
+### Moving Physical Recurring Events
+
+When you drag and drop a physical recurring event to a new date:
+- The event's date properties are updated automatically
+- The filename is automatically renamed to reflect the new date (format: `Title YYYY-MM-DD-ZettelID.md`)
+
+**Instance Date Handling**:
+- **Normal physical instances**: The `nodeRecurringInstanceDate` stays unchanged to preserve the original scheduled date
+- **Duplicated/ignored instances** (`Ignore Recurring: true`): The `nodeRecurringInstanceDate` is also updated to match the new date
+
+This distinction ensures that normal recurring instances maintain their original schedule reference, while duplicated instances (which are independent of the schedule) can be freely reorganized.
+
 ## Best Practices
 
 ### 1. Start Simple

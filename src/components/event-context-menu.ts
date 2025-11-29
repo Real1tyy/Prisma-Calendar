@@ -4,6 +4,7 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import {
 	CloneEventCommand,
 	DeleteEventCommand,
+	DuplicateRecurringEventCommand,
 	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,
@@ -155,6 +156,18 @@ export class EventContextMenu {
 					.setIcon("corner-up-left")
 					.onClick(() => {
 						this.goToSourceEvent(event);
+					});
+			});
+		}
+
+		// Duplicate recurring instance - only available for physical events (not virtual)
+		if (this.isPhysicalEvent(event)) {
+			menu.addItem((item) => {
+				item
+					.setTitle("Duplicate recurring instance")
+					.setIcon("copy-plus")
+					.onClick(() => {
+						void this.duplicateRecurringEvent(event);
 					});
 			});
 		}
@@ -381,6 +394,20 @@ export class EventContextMenu {
 		} catch (error) {
 			console.error("Failed to duplicate event:", error);
 			new Notice("Failed to duplicate event");
+		}
+	}
+
+	async duplicateRecurringEvent(event: CalendarEventInfo): Promise<void> {
+		const filePath = this.getFilePathOrNotice(event, "duplicate recurring event");
+		if (!filePath) return;
+
+		try {
+			const command = new DuplicateRecurringEventCommand(this.app, this.bundle, filePath);
+			await this.bundle.commandManager.executeCommand(command);
+			new Notice("Recurring instance duplicated");
+		} catch (error) {
+			console.error("Failed to duplicate recurring event:", error);
+			new Notice("Failed to duplicate recurring event");
 		}
 	}
 
