@@ -71,30 +71,30 @@ export class EventContextMenu {
 		}
 	}
 
-	private withFilePath(
+	private async withFilePath(
 		event: CalendarEventInfo,
 		operation: string,
 		fn: (filePath: string) => void | Promise<void>
-	): void {
+	): Promise<void> {
 		const filePath = event.extendedProps?.filePath;
 		if (!filePath) {
 			new Notice(`Failed to ${operation}: No file path found`);
 			return;
 		}
-		void fn(filePath);
+		await fn(filePath);
 	}
 
-	private withSourceFilePath(
+	private async withSourceFilePath(
 		event: CalendarEventInfo,
 		operation: string,
 		fn: (sourceFilePath: string) => void | Promise<void>
-	): void {
+	): Promise<void> {
 		const sourceFilePath = this.getSourceFilePath(event);
 		if (!sourceFilePath) {
 			new Notice(`Failed to ${operation}: source event not found`);
 			return;
 		}
-		void fn(sourceFilePath);
+		await fn(sourceFilePath);
 	}
 
 	private getEventKind(event: CalendarEventInfo): EventKind {
@@ -362,7 +362,7 @@ export class EventContextMenu {
 	moveEventBy(event: CalendarEventInfo): void {
 		const isAllDay = event.allDay || false;
 
-		this.withFilePath(event, "move event", (filePath) => {
+		void this.withFilePath(event, "move event", (filePath) => {
 			new MoveByModal(this.app, (result) => {
 				void (async () => {
 					const { offsetMs, unit } = calculateTimeOffset(result);
@@ -388,7 +388,7 @@ export class EventContextMenu {
 	async moveEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
 		const direction = weeks > 0 ? "next" : "previous";
 
-		this.withFilePath(event, "move event", async (filePath) => {
+		await this.withFilePath(event, "move event", async (filePath) => {
 			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
 			await this.runCommand(() => new MoveEventCommand(this.app, this.bundle, filePath, startOffset, endOffset), {
 				success: `Event moved to ${direction} week`,
@@ -400,7 +400,7 @@ export class EventContextMenu {
 	async cloneEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
 		const direction = weeks > 0 ? "next" : "previous";
 
-		this.withFilePath(event, "clone event", async (filePath) => {
+		await this.withFilePath(event, "clone event", async (filePath) => {
 			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
 			await this.runCommand(() => new CloneEventCommand(this.app, this.bundle, filePath, startOffset, endOffset), {
 				success: `Event cloned to ${direction} week`,
@@ -410,7 +410,7 @@ export class EventContextMenu {
 	}
 
 	async duplicateEvent(event: CalendarEventInfo): Promise<void> {
-		this.withFilePath(event, "duplicate event", async (filePath) => {
+		await this.withFilePath(event, "duplicate event", async (filePath) => {
 			await this.runCommand(() => new CloneEventCommand(this.app, this.bundle, filePath), {
 				success: "Event duplicated",
 				error: "Failed to duplicate event",
@@ -419,7 +419,7 @@ export class EventContextMenu {
 	}
 
 	async duplicateRecurringEvent(event: CalendarEventInfo): Promise<void> {
-		this.withFilePath(event, "duplicate recurring event", async (filePath) => {
+		await this.withFilePath(event, "duplicate recurring event", async (filePath) => {
 			await this.runCommand(() => new DuplicateRecurringEventCommand(this.app, this.bundle, filePath), {
 				success: "Recurring instance duplicated",
 				error: "Failed to duplicate recurring event",
@@ -428,7 +428,7 @@ export class EventContextMenu {
 	}
 
 	async deleteEvent(event: CalendarEventInfo): Promise<void> {
-		this.withFilePath(event, "delete event", async (filePath) => {
+		await this.withFilePath(event, "delete event", async (filePath) => {
 			await this.runCommand(() => new DeleteEventCommand(this.app, this.bundle, filePath), {
 				success: "Event deleted successfully",
 				error: "Failed to delete event",
@@ -437,7 +437,7 @@ export class EventContextMenu {
 	}
 
 	async toggleRecurringEvent(event: CalendarEventInfo): Promise<void> {
-		this.withSourceFilePath(event, "toggle recurring event", async (sourceFilePath) => {
+		await this.withSourceFilePath(event, "toggle recurring event", async (sourceFilePath) => {
 			await this.runCommand(() => new ToggleSkipCommand(this.app, this.bundle, sourceFilePath), {
 				success: "Recurring event toggled",
 				error: "Failed to toggle recurring event",
@@ -446,7 +446,7 @@ export class EventContextMenu {
 	}
 
 	async toggleSkipEvent(event: CalendarEventInfo): Promise<void> {
-		this.withFilePath(event, "toggle skip event", async (filePath) => {
+		await this.withFilePath(event, "toggle skip event", async (filePath) => {
 			await this.runCommand(() => new ToggleSkipCommand(this.app, this.bundle, filePath), {
 				success: "Event skip toggled",
 				error: "Failed to toggle skip event",
