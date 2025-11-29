@@ -101,6 +101,11 @@ export class NotificationManager {
 	}
 
 	private processEventSource(filePath: string, frontmatter: Record<string, unknown>, isAllDay: boolean): void {
+		if (frontmatter[this.settings.skipProp] === true) {
+			this.removeNotification(filePath);
+			return;
+		}
+
 		// Check if already notified
 		const alreadyNotified = frontmatter[this.settings.alreadyNotifiedProp];
 		if (alreadyNotified === true || alreadyNotified === "true") {
