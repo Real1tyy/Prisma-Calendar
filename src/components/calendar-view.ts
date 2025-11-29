@@ -1410,8 +1410,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	 * Renames physical recurring event files when dropped to a new date.
 	 *
 	 * Behavior:
-	 * - Normal physical recurring events: Only rename file, keep nodeRecurringInstanceDate unchanged
-	 * - Ignored/duplicated events (ignoreRecurring=true): Rename file AND update nodeRecurringInstanceDate
+	 * - Normal physical recurring events: Only rename file, keep instance date unchanged
+	 * - Ignored/duplicated events (ignoreRecurring=true): Rename file AND update instance date
 	 */
 	private async handlePhysicalRecurringEventRename(filePath: string, newStart: Date, oldStart: Date): Promise<void> {
 		const file = this.app.vault.getAbstractFileByPath(filePath);
@@ -1422,17 +1422,19 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const frontmatter = metadata?.frontmatter as Record<string, unknown> | undefined;
 
 		// Check if this is a physical recurring event
-		if (!isPhysicalRecurringEvent(frontmatter, settings.rruleIdProp, settings.rruleProp)) return;
+		if (!isPhysicalRecurringEvent(frontmatter, settings.rruleIdProp, settings.rruleProp, settings.instanceDateProp)) {
+			return;
+		}
 
 		// Check if date actually changed (not just time)
 		const oldDateStr = oldStart.toISOString().split("T")[0];
 		const newDateStr = newStart.toISOString().split("T")[0];
 		if (oldDateStr === newDateStr) return;
 
-		// Only update nodeRecurringInstanceDate if this is an ignored/duplicated event
+		// Only update instance date if this is an ignored/duplicated event
 		if (shouldUpdateInstanceDateOnMove(frontmatter, settings.ignoreRecurringProp)) {
 			await withFrontmatter(this.app, file, (fm) => {
-				fm.nodeRecurringInstanceDate = newDateStr;
+				fm[settings.instanceDateProp] = newDateStr;
 			});
 		}
 

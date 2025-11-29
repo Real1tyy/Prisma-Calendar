@@ -211,7 +211,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 	private handleFileChanged(filePath: string, frontmatter: Record<string, unknown>): void {
 		const rruleId = frontmatter[this.settings.rruleIdProp] as string;
-		const instanceDate = frontmatter.nodeRecurringInstanceDate as string;
+		const instanceDate = frontmatter[this.settings.instanceDateProp] as string;
 		const isIgnored = frontmatter[this.settings.ignoreRecurringProp] === true;
 
 		if (rruleId && instanceDate) {
@@ -408,7 +408,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 			// Set instance-specific properties - CRITICAL for duplication detection
 			instanceFrontmatter[this.settings.rruleIdProp] = recurringEvent.rRuleId;
-			instanceFrontmatter.nodeRecurringInstanceDate = instanceDate.toISODate();
+			instanceFrontmatter[this.settings.instanceDateProp] = instanceDate.toISODate();
 
 			const sourceFile = this.app.vault.getAbstractFileByPath(recurringEvent.sourceFilePath);
 			if (sourceFile instanceof TFile) {

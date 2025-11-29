@@ -246,7 +246,7 @@ export class CloneEventCommand implements Command {
 
 			// Remove recurring event metadata to prevent duplicate from being treated as recurring instance
 			delete fm[settings.rruleIdProp];
-			delete fm.nodeRecurringInstanceDate;
+			delete fm[settings.instanceDateProp];
 			delete fm[settings.sourceProp];
 
 			// Remove notification status so duplicated events can trigger notifications

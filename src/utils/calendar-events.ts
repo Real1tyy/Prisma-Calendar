@@ -133,15 +133,16 @@ export const shouldUpdateInstanceDateOnMove = (
 };
 
 /**
- * Checks if an event is a physical recurring event (has rruleId and nodeRecurringInstanceDate, but no rrule).
+ * Checks if an event is a physical recurring event (has rruleId and instanceDate, but no rrule).
  */
 export const isPhysicalRecurringEvent = (
 	frontmatter: Record<string, unknown> | undefined,
 	rruleIdProp: string,
-	rruleProp: string
+	rruleProp: string,
+	instanceDateProp: string
 ): boolean => {
 	if (!frontmatter) return false;
-	return Boolean(frontmatter[rruleIdProp] && frontmatter.nodeRecurringInstanceDate && !frontmatter[rruleProp]);
+	return Boolean(frontmatter[rruleIdProp] && frontmatter[instanceDateProp] && !frontmatter[rruleProp]);
 };
 
 /**

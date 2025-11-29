@@ -340,10 +340,12 @@ When you drag and drop a physical recurring event to a new date:
 - The filename is automatically renamed to reflect the new date (format: `Title YYYY-MM-DD-ZettelID.md`)
 
 **Instance Date Handling**:
-- **Normal physical instances**: The `nodeRecurringInstanceDate` stays unchanged to preserve the original scheduled date
-- **Duplicated/ignored instances** (`Ignore Recurring: true`): The `nodeRecurringInstanceDate` is also updated to match the new date
+- **Normal physical instances**: The `Recurring Instance Date` stays unchanged to preserve the original scheduled date
+- **Duplicated/ignored instances** (`Ignore Recurring: true`): The `Recurring Instance Date` is also updated to match the new date
 
 This distinction ensures that normal recurring instances maintain their original schedule reference, while duplicated instances (which are independent of the schedule) can be freely reorganized.
+
+**Note**: The `Recurring Instance Date` property name can be customized in Settings → Properties → "Instance date property".
 
 ## Best Practices
 

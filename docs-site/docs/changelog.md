@@ -145,9 +145,10 @@ All notable changes to this project will be documented here.
 #### Smart Recurring Event Renaming on Drop
 - **Automatic Filename Update**: When you drag and drop a physical recurring event to a new date, the filename is automatically updated to reflect the new date
 - **Smart Instance Date Handling**:
-  - **Normal physical instances**: Only the filename is updated; `nodeRecurringInstanceDate` stays the same to preserve the original scheduled date
-  - **Duplicated/ignored instances** (`Ignore Recurring: true`): Both the filename AND `nodeRecurringInstanceDate` are updated to the new date
+  - **Normal physical instances**: Only the filename is updated; `Recurring Instance Date` stays the same to preserve the original scheduled date
+  - **Duplicated/ignored instances** (`Ignore Recurring: true`): Both the filename AND `Recurring Instance Date` are updated to the new date
 - **Format Preserved**: Filename format remains consistent: `Title YYYY-MM-DD-ZettelID.md`
+- **Configurable Property**: The instance date property name (`Recurring Instance Date` by default) can be customized in Settings → Properties
 
 ### Improvements
 - **Calendar Integration**: Context menu actions now provide better integration with calendar navigation, allowing you to stay in calendar view when working with recurring events.

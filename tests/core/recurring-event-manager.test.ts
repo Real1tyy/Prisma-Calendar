@@ -102,6 +102,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			rruleProp: "RRule",
 			rruleSpecProp: "RRuleSpec",
 			rruleIdProp: "RRuleID",
+			instanceDateProp: "Recurring Instance Date",
 			futureInstancesCount: 2,
 		};
 
@@ -190,7 +191,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					return {
 						frontmatter: {
 							RRuleID: "test-rrule-123",
-							nodeRecurringInstanceDate: "2024-01-02",
+							"Recurring Instance Date": "2024-01-02",
 						},
 					};
 				}
@@ -198,7 +199,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					return {
 						frontmatter: {
 							RRuleID: "test-rrule-123",
-							nodeRecurringInstanceDate: "2024-01-04",
+							"Recurring Instance Date": "2024-01-04",
 						},
 					};
 				}
@@ -235,11 +236,11 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			// Simulate file-changed events for physical instances
 			await (manager as any).handleFileChanged("Calendar/Meeting 2024-01-02.md", {
 				RRuleID: "test-rrule-123",
-				nodeRecurringInstanceDate: "2024-01-02",
+				"Recurring Instance Date": "2024-01-02",
 			});
 			await (manager as any).handleFileChanged("Calendar/Meeting 2024-01-04.md", {
 				RRuleID: "test-rrule-123",
-				nodeRecurringInstanceDate: "2024-01-04",
+				"Recurring Instance Date": "2024-01-04",
 			});
 
 			// Check that physical instances are tracked in the map
@@ -267,7 +268,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			mockApp.metadataCache.getFileCache.mockReturnValue({
 				frontmatter: {
 					RRuleID: "test-rrule-123",
-					nodeRecurringInstanceDate: "2024-01-02",
+					"Recurring Instance Date": "2024-01-02",
 				},
 			});
 
@@ -309,7 +310,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			// Simulate a physical instance for 2024-01-02
 			await (manager as any).handleFileChanged("Calendar/Meeting 2024-01-02.md", {
 				RRuleID: "test-rrule-123",
-				nodeRecurringInstanceDate: "2024-01-02",
+				"Recurring Instance Date": "2024-01-02",
 			});
 
 			const virtualEvents = await manager.generateAllVirtualInstances(
@@ -916,7 +917,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			for (let i = 0; i < 5; i++) {
 				await (manager as any).handleFileChanged(`instance-${i}.md`, {
 					RRuleID: "test-event",
-					nodeRecurringInstanceDate: `2024-01-0${i + 2}`,
+					"Recurring Instance Date": `2024-01-0${i + 2}`,
 				});
 			}
 

@@ -182,6 +182,7 @@ export function getInternalProperties(settings: SingleCalendarConfig): Set<strin
 		settings.titleProp,
 		settings.zettelIdProp,
 		settings.categoryProp,
+		settings.ignoreRecurringProp,
 		...INTERNAL_FRONTMATTER_PROPERTIES,
 	].filter((prop): prop is string => prop !== undefined);
 

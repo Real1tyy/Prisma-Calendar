@@ -619,41 +619,42 @@ describe("Physical Recurring Event Utilities", () => {
 	describe("isPhysicalRecurringEvent", () => {
 		const rruleIdProp = "RRuleID";
 		const rruleProp = "RRule";
+		const instanceDateProp = "Recurring Instance Date";
 
 		it("should return true for physical recurring event", () => {
 			const frontmatter = {
 				[rruleIdProp]: "1730000000000-abc12",
-				nodeRecurringInstanceDate: "2025-01-15",
+				[instanceDateProp]: "2025-01-15",
 				Source: "[[Source Event]]",
 			};
-			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp)).toBe(true);
+			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp, instanceDateProp)).toBe(true);
 		});
 
 		it("should return false for source event (has RRule)", () => {
 			const frontmatter = {
 				[rruleIdProp]: "1730000000000-abc12",
-				nodeRecurringInstanceDate: "2025-01-15",
+				[instanceDateProp]: "2025-01-15",
 				[rruleProp]: "every week",
 			};
-			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp)).toBe(false);
+			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp, instanceDateProp)).toBe(false);
 		});
 
 		it("should return false if missing rruleId", () => {
 			const frontmatter = {
-				nodeRecurringInstanceDate: "2025-01-15",
+				[instanceDateProp]: "2025-01-15",
 			};
-			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp)).toBe(false);
+			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp, instanceDateProp)).toBe(false);
 		});
 
-		it("should return false if missing nodeRecurringInstanceDate", () => {
+		it("should return false if missing instanceDate", () => {
 			const frontmatter = {
 				[rruleIdProp]: "1730000000000-abc12",
 			};
-			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp)).toBe(false);
+			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp, instanceDateProp)).toBe(false);
 		});
 
 		it("should return false for undefined frontmatter", () => {
-			expect(isPhysicalRecurringEvent(undefined, rruleIdProp, rruleProp)).toBe(false);
+			expect(isPhysicalRecurringEvent(undefined, rruleIdProp, rruleProp, instanceDateProp)).toBe(false);
 		});
 
 		it("should return false for regular event", () => {
@@ -661,7 +662,16 @@ describe("Physical Recurring Event Utilities", () => {
 				Title: "Regular Event",
 				"Start Date": "2025-01-15T10:00",
 			};
-			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp)).toBe(false);
+			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp, instanceDateProp)).toBe(false);
+		});
+
+		it("should work with custom instanceDateProp name", () => {
+			const customInstanceDateProp = "Custom Instance Date";
+			const frontmatter = {
+				[rruleIdProp]: "1730000000000-abc12",
+				[customInstanceDateProp]: "2025-01-15",
+			};
+			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp, customInstanceDateProp)).toBe(true);
 		});
 	});
 

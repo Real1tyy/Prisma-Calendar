@@ -59,6 +59,7 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_RRULE_SPEC_PROP: "RRuleSpec",
 	DEFAULT_RRULE_ID_PROP: "RRuleID",
 	DEFAULT_SOURCE_PROP: "Source",
+	DEFAULT_INSTANCE_DATE_PROP: "Recurring Instance Date",
 	DEFAULT_STATUS_PROPERTY: "Status",
 	DEFAULT_DONE_VALUE: "Done",
 	DEFAULT_FUTURE_INSTANCES_COUNT_PROP: "Future Instances Count",
@@ -96,5 +97,4 @@ export const SETTINGS_DEFAULTS = {
 
 export const INTERNAL_FRONTMATTER_PROPERTIES = [
 	"position", // Internal Obsidian property
-	"nodeRecurringInstanceDate", // Internal recurring event instance marker
 ] as const;
