@@ -1,6 +1,7 @@
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { SingleCalendarConfig } from "../types/index";
+import { parseIntoList } from "../utils/list-utils";
 import type { Indexer, IndexerEvent } from "./indexer";
 
 /**
@@ -60,18 +61,9 @@ export class CategoryTracker {
 		const categoryProp = this._settings.categoryProp;
 		if (!categoryProp) return;
 
-		const categoryValue = frontmatter[categoryProp];
-		if (categoryValue === undefined || categoryValue === null) return;
-
-		// Handle both single string and array of categories
-		if (Array.isArray(categoryValue)) {
-			for (const cat of categoryValue) {
-				if (typeof cat === "string" && cat.trim()) {
-					this.categories.add(cat.trim());
-				}
-			}
-		} else if (typeof categoryValue === "string" && categoryValue.trim()) {
-			this.categories.add(categoryValue.trim());
+		const categories = parseIntoList(frontmatter[categoryProp]);
+		for (const cat of categories) {
+			this.categories.add(cat);
 		}
 	}
 

@@ -1,5 +1,6 @@
 import { cls } from "@real1ty-obsidian-plugins/utils";
 import type { CategoryTracker } from "../core/category-tracker";
+import { parseIntoList } from "../utils/list-utils";
 
 export class CategoryInput {
 	private categoryInput!: HTMLInputElement;
@@ -152,13 +153,8 @@ export class CategoryInput {
 	}
 
 	setValue(value: unknown): void {
-		if (Array.isArray(value)) {
-			// Multiple categories stored as array
-			this.categoryInput.value = value.filter((c) => typeof c === "string" && c.trim()).join(", ");
-		} else if (typeof value === "string" && value.trim()) {
-			// Single category stored as string
-			this.categoryInput.value = value.trim();
-		}
+		const categories = parseIntoList(value, { splitCommas: false });
+		this.categoryInput.value = categories.join(", ");
 	}
 
 	getContainer(): HTMLElement {

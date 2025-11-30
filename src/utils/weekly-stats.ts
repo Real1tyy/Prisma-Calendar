@@ -1,5 +1,6 @@
 import type { ParsedEvent } from "../core/parser";
 import { extractNotesCoreName } from "./calendar-events";
+import { parseIntoList } from "./list-utils";
 
 export type AggregationMode = "name" | "category";
 
@@ -104,35 +105,7 @@ export function getMonthBounds(date: Date): { start: Date; end: Date } {
  * Returns an array of trimmed category names, or ["No Category"] if empty/undefined.
  */
 export function parseCategories(categoryValue: unknown): string[] {
-	if (!categoryValue) {
-		return ["No Category"];
-	}
-
-	// Handle string values (most common case)
-	if (typeof categoryValue === "string") {
-		const categories = categoryValue
-			.split(",")
-			.map((cat) => cat.trim())
-			.filter((cat) => cat.length > 0);
-		return categories.length > 0 ? categories : ["No Category"];
-	}
-
-	// Handle numbers (convert to string)
-	if (typeof categoryValue === "number") {
-		return [categoryValue.toString()];
-	}
-
-	// Handle arrays (join and parse)
-	if (Array.isArray(categoryValue)) {
-		const categories = categoryValue
-			.flatMap((item) => (typeof item === "string" ? item.split(",") : []))
-			.map((cat) => cat.trim())
-			.filter((cat) => cat.length > 0);
-		return categories.length > 0 ? categories : ["No Category"];
-	}
-
-	// Fallback for other types
-	return ["No Category"];
+	return parseIntoList(categoryValue, { defaultValue: ["No Category"] });
 }
 
 /**
