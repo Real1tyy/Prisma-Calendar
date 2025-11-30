@@ -1,8 +1,51 @@
 import ICAL from "ical.js";
 import { PLUGIN_ID } from "../constants";
 import type { ParsedEvent } from "../core/parser";
+import { extractZettelId, removeZettelId } from "./calendar-events";
+import { parseIntoList } from "./list-utils";
 
-function dateToICALTime(date: Date, allDay: boolean): ICAL.Time {
+export interface NotificationSettings {
+	minutesBeforeProp?: string;
+	defaultMinutesBefore?: number;
+	daysBeforeProp?: string;
+	defaultDaysBefore?: number;
+}
+
+export interface ICSExportOptions {
+	calendarName: string;
+	vaultName: string;
+	timezone: string;
+	noteContents: Map<string, string>;
+	categoryProp: string;
+	notifications?: NotificationSettings;
+}
+
+export interface ICSExportResult {
+	success: boolean;
+	content?: string;
+	error?: Error;
+}
+
+function zettelIdToICALTime(zettelId: string | null): ICAL.Time {
+	if (!zettelId || zettelId.length !== 14) {
+		return ICAL.Time.now();
+	}
+
+	const year = Number.parseInt(zettelId.slice(0, 4), 10);
+	const month = Number.parseInt(zettelId.slice(4, 6), 10);
+	const day = Number.parseInt(zettelId.slice(6, 8), 10);
+	const hour = Number.parseInt(zettelId.slice(8, 10), 10);
+	const minute = Number.parseInt(zettelId.slice(10, 12), 10);
+	const second = Number.parseInt(zettelId.slice(12, 14), 10);
+
+	if ([year, month, day, hour, minute, second].some(Number.isNaN)) {
+		return ICAL.Time.now();
+	}
+
+	return new ICAL.Time({ year, month, day, hour, minute, second, isDate: false }, ICAL.Timezone.utcTimezone);
+}
+
+function dateToICALTime(date: Date, allDay: boolean, timezone?: ICAL.Timezone): ICAL.Time {
 	if (allDay) {
 		return new ICAL.Time(
 			{
@@ -14,51 +57,119 @@ function dateToICALTime(date: Date, allDay: boolean): ICAL.Time {
 			ICAL.Timezone.utcTimezone
 		);
 	}
-	return ICAL.Time.fromJSDate(date, true);
+
+	const time = ICAL.Time.fromJSDate(date, true);
+	if (timezone && timezone !== ICAL.Timezone.utcTimezone) {
+		time.zone = timezone;
+	}
+	return time;
 }
 
-function parsedEventToVEvent(event: ParsedEvent, noteContent?: string): ICAL.Component {
+function generateUID(filePath: string): string {
+	const sanitized = filePath.replace(/[^a-zA-Z0-9._-]/g, "_");
+	return `${sanitized}@${PLUGIN_ID}`;
+}
+
+function generateObsidianURI(vaultName: string, filePath: string): string {
+	const encodedVault = encodeURIComponent(vaultName);
+	const encodedFile = encodeURIComponent(filePath.replace(/\.md$/, ""));
+	return `obsidian://open?vault=${encodedVault}&file=${encodedFile}`;
+}
+
+function createVAlarm(triggerMinutes: number): ICAL.Component {
+	const valarm = new ICAL.Component("valarm");
+	valarm.addPropertyWithValue("action", "DISPLAY");
+	valarm.addPropertyWithValue("description", "Reminder");
+
+	const roundedMinutes = Math.round(triggerMinutes);
+	const duration = new ICAL.Duration({ minutes: -roundedMinutes });
+	valarm.addPropertyWithValue("trigger", duration);
+
+	return valarm;
+}
+
+function getNotificationMinutes(event: ParsedEvent, notifications?: NotificationSettings): number | null {
+	if (!notifications) return null;
+
+	if (event.allDay) {
+		if (notifications.daysBeforeProp) {
+			const daysBeforeValue = event.meta?.[notifications.daysBeforeProp];
+			if (daysBeforeValue !== undefined && daysBeforeValue !== null) {
+				const days = Number(daysBeforeValue);
+				if (!Number.isNaN(days) && days >= 0) {
+					return Math.round(days * 24 * 60);
+				}
+			}
+		}
+		if (notifications.defaultDaysBefore !== undefined) {
+			return Math.round(notifications.defaultDaysBefore * 24 * 60);
+		}
+	} else {
+		if (notifications.minutesBeforeProp) {
+			const minutesBeforeValue = event.meta?.[notifications.minutesBeforeProp];
+			if (minutesBeforeValue !== undefined && minutesBeforeValue !== null) {
+				const minutes = Number(minutesBeforeValue);
+				if (!Number.isNaN(minutes) && minutes >= 0) {
+					return Math.round(minutes);
+				}
+			}
+		}
+		if (notifications.defaultMinutesBefore !== undefined) {
+			return Math.round(notifications.defaultMinutesBefore);
+		}
+	}
+
+	return null;
+}
+
+function parsedEventToVEvent(event: ParsedEvent, options: ICSExportOptions, timezone?: ICAL.Timezone): ICAL.Component {
 	const vevent = new ICAL.Component("vevent");
 
-	vevent.addPropertyWithValue("uid", `${event.id}@${PLUGIN_ID}`);
-	vevent.addPropertyWithValue("dtstamp", ICAL.Time.now());
-	vevent.addPropertyWithValue("summary", event.title);
+	const zettelId = extractZettelId(event.ref.filePath);
+	const createdTime = zettelIdToICALTime(zettelId);
+	const strippedTitle = removeZettelId(event.title);
+
+	vevent.addPropertyWithValue("uid", generateUID(event.ref.filePath));
+	vevent.addPropertyWithValue("dtstamp", createdTime);
+	vevent.addPropertyWithValue("created", createdTime);
+	vevent.addPropertyWithValue("last-modified", createdTime);
+	vevent.addPropertyWithValue("summary", strippedTitle);
 
 	const startDate = new Date(event.start);
-	const dtstart = dateToICALTime(startDate, event.allDay);
+	const dtstart = dateToICALTime(startDate, event.allDay, timezone);
 	vevent.addPropertyWithValue("dtstart", dtstart);
 
 	if (event.end) {
 		const endDate = new Date(event.end);
-		const dtend = dateToICALTime(endDate, event.allDay);
+		const dtend = dateToICALTime(endDate, event.allDay, timezone);
 		vevent.addPropertyWithValue("dtend", dtend);
 	}
 
+	const noteContent = options.noteContents.get(event.ref.filePath);
 	if (noteContent) {
 		vevent.addPropertyWithValue("description", noteContent);
 	}
 
-	const categories = event.meta?.tags as string[] | undefined;
-	if (categories && Array.isArray(categories) && categories.length > 0) {
+	const categories = parseIntoList(event.meta?.[options.categoryProp]);
+	if (categories.length > 0) {
 		vevent.addPropertyWithValue("categories", categories.join(","));
 	}
 
+	const notificationMinutes = getNotificationMinutes(event, options.notifications);
+	if (notificationMinutes !== null) {
+		const valarm = createVAlarm(notificationMinutes);
+		vevent.addSubcomponent(valarm);
+	}
+
+	vevent.addPropertyWithValue("url", generateObsidianURI(options.vaultName, event.ref.filePath));
 	vevent.addPropertyWithValue("x-prisma-file", event.ref.filePath);
+	vevent.addPropertyWithValue("x-prisma-vault", options.vaultName);
+	vevent.addPropertyWithValue("x-prisma-event-id", event.id);
 
 	return vevent;
 }
 
-export interface ICSExportResult {
-	success: boolean;
-	content?: string;
-	error?: Error;
-}
-
-export function createICSFromEvents(
-	events: ParsedEvent[],
-	calendarName: string,
-	noteContents: Map<string, string>
-): ICSExportResult {
+export function createICSFromEvents(events: ParsedEvent[], options: ICSExportOptions): ICSExportResult {
 	if (events.length === 0) {
 		return {
 			success: false,
@@ -69,13 +180,19 @@ export function createICSFromEvents(
 	try {
 		const vcalendar = new ICAL.Component("vcalendar");
 		vcalendar.addPropertyWithValue("version", "2.0");
-		vcalendar.addPropertyWithValue("prodid", `-//${calendarName}//Prisma Calendar//EN`);
+		vcalendar.addPropertyWithValue("prodid", `-//${options.calendarName}//Prisma Calendar//EN`);
 		vcalendar.addPropertyWithValue("calscale", "GREGORIAN");
 		vcalendar.addPropertyWithValue("method", "PUBLISH");
+		vcalendar.addPropertyWithValue("x-wr-calname", options.calendarName);
+
+		let timezone: ICAL.Timezone | undefined;
+		if (options.timezone && options.timezone !== "UTC") {
+			vcalendar.addPropertyWithValue("x-wr-timezone", options.timezone);
+			timezone = new ICAL.Timezone({ tzid: options.timezone });
+		}
 
 		for (const event of events) {
-			const noteContent = noteContents.get(event.ref.filePath);
-			const vevent = parsedEventToVEvent(event, noteContent);
+			const vevent = parsedEventToVEvent(event, options, timezone);
 			vcalendar.addSubcomponent(vevent);
 		}
 
@@ -96,3 +213,26 @@ export function generateICSFilename(calendarName: string): string {
 	const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
 	return `${sanitizedName}-export-${timestamp}.ics`;
 }
+
+export const COMMON_TIMEZONES = [
+	"UTC",
+	"Europe/London",
+	"Europe/Paris",
+	"Europe/Berlin",
+	"Europe/Prague",
+	"Europe/Moscow",
+	"America/New_York",
+	"America/Chicago",
+	"America/Denver",
+	"America/Los_Angeles",
+	"America/Sao_Paulo",
+	"Asia/Tokyo",
+	"Asia/Shanghai",
+	"Asia/Singapore",
+	"Asia/Dubai",
+	"Asia/Kolkata",
+	"Australia/Sydney",
+	"Pacific/Auckland",
+] as const;
+
+export type CommonTimezone = (typeof COMMON_TIMEZONES)[number];
