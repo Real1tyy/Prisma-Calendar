@@ -27,6 +27,15 @@ All notable changes to this project will be documented here.
   - Create backups of your calendar events in a universal format
   - Sync events between external calendar services and Obsidian
 
+### Bug Fixes
+
+#### Notification System
+- **Skip Notifications for Skipped Events**: Notifications are no longer triggered for events marked as skipped, ensuring you only receive alerts for active events.
+
+#### Time Tracker Auto-Save
+- **Background Timer Tracking**: When the stopwatch is running and you close the event modal (via ESC, clicking outside, or Cancel button), the timer state is automatically saved and continues tracking in the background. This allows you to close the modal naturally without losing your tracked time or needing to explicitly click the minimize button.
+- **Preserved State**: All form data, elapsed time, break time, and stopwatch state are preserved when auto-saved and can be restored later using the "Restore minimized event modal" command.
+
 ---
 
 ## 1.7.0
