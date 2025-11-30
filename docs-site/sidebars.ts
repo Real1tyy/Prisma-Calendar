@@ -31,6 +31,7 @@ const sidebars: SidebarsConfig = {
         "features/undo-redo",
         "features/recurring-dsl",
         "features/virtual-events",
+        "features/integrations",
         "features/hotkeys"
       ]
     },

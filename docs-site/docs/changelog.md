@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented here.
 
+## 1.8.0
+
+### New Features
+
+#### ICS Calendar Export & Import
+- **Export to ICS**: New command "Export calendar as .ics" exports all calendar events to a standard `.ics` file
+- **Import from ICS**: New command "Import .ics file" imports events from external calendar applications
+- **Calendar Selection**: Choose which calendar to export from or import to
+- **Timezone Selection**: Select target timezone for export - events stored in UTC are converted to your chosen timezone
+- **Skip Filtering**: Option to exclude skipped events from exports (enabled by default)
+- **Notification Export**: VALARM reminders included based on "Minutes Before" / "Days Before" settings
+- **Universal Compatibility**: Generated ICS files work with Google Calendar, Apple Calendar, Outlook, Nextcloud, and any other iCalendar-compatible application
+- **Event Preview**: Preview imported events before confirming the import
+- **Full Event Support**: Both export and import handle timed events and all-day events correctly
+- **Automatic Note Creation**: Imported events are created as new Obsidian notes with proper frontmatter
+- **Description Handling**: Export includes note content as description; Import preserves event descriptions in note body
+- **Categories Support**: Event categories are exported and imported correctly
+- **Custom Metadata**: Exported ICS includes `X-PRISMA-FILE`, `X-PRISMA-VAULT`, and Obsidian URI for linking back
+- **Use Cases**:
+  - Share your Obsidian calendar with colleagues using different calendar apps
+  - Import schedules from Google Calendar, Apple Calendar, or Outlook
+  - Migrate events from other calendar applications to Prisma Calendar
+  - Create backups of your calendar events in a universal format
+  - Sync events between external calendar services and Obsidian
+
+---
+
 ## 1.7.0
 
 ### New Features

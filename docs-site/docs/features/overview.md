@@ -220,6 +220,14 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Timezone support** - Automatic system timezone detection with custom override
 - **Lightweight** - Events are plain Markdown — you own your data
 
+### **[ICS Integrations](./integrations)**
+- **Export to ICS** - Export your calendar to standard `.ics` files
+- **Import from ICS** - Import events from external calendar applications
+- **Timezone selection** - Choose export timezone (internal storage uses UTC)
+- **Skip filtering** - Option to exclude skipped events from exports
+- **Wide compatibility** - Works with Google Calendar, Apple Calendar, Outlook, Nextcloud, and more
+- **Reminders included** - VALARM notifications exported for supported apps
+
 ---
 
 ## 📋 **Example Configurations**
@@ -281,3 +289,4 @@ fm.Project === 'Work' || fm.Tags?.includes('work')
 8. **[Time Tracker](./time-tracker)** - Precision stopwatch for tracking work sessions
 9. **[Recurring Events](./recurring-dsl)** - Master recurring event patterns
 10. **[Batch Operations](./batch-operations)** - Learn efficiency workflows
+11. **[Integrations](./integrations)** - Export and import with external calendars
