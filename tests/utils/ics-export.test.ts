@@ -536,13 +536,19 @@ describe("ICS Export", () => {
 
 	describe("COMMON_TIMEZONES", () => {
 		it("should include UTC as first option", () => {
-			expect(COMMON_TIMEZONES[0]).toBe("UTC");
+			expect(COMMON_TIMEZONES[0].id).toBe("UTC");
 		});
 
-		it("should include common timezones", () => {
-			expect(COMMON_TIMEZONES).toContain("Europe/Prague");
-			expect(COMMON_TIMEZONES).toContain("America/New_York");
-			expect(COMMON_TIMEZONES).toContain("Asia/Tokyo");
+		it("should include common timezones with UTC offsets", () => {
+			const ids = COMMON_TIMEZONES.map((tz) => tz.id);
+			expect(ids).toContain("Europe/Prague");
+			expect(ids).toContain("America/New_York");
+			expect(ids).toContain("Asia/Tokyo");
+		});
+
+		it("should have labels with UTC offset info", () => {
+			const prague = COMMON_TIMEZONES.find((tz) => tz.id === "Europe/Prague");
+			expect(prague?.label).toBe("Europe/Prague (UTC+1)");
 		});
 	});
 });

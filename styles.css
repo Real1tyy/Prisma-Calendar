@@ -3994,3 +3994,147 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 		padding: 0.15rem 0.5rem;
 	}
 }
+
+/* Calendar Export Modal */
+.prisma-calendar-export-modal {
+	min-width: 400px;
+}
+
+.prisma-calendar-export-modal h2 {
+	margin-bottom: 1rem;
+	font-size: 1.2rem;
+	font-weight: 600;
+}
+
+.prisma-export-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.prisma-export-section {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.prisma-export-section label {
+	font-weight: 500;
+	color: var(--text-normal);
+}
+
+.prisma-export-select {
+	width: 100%;
+	padding: 0.2rem;
+	border-radius: var(--radius-s);
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9rem;
+	cursor: pointer;
+}
+
+.prisma-export-select:hover {
+	border-color: var(--interactive-accent);
+}
+
+.prisma-export-select:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.prisma-export-info {
+	padding: 0.75rem;
+	background: var(--background-secondary);
+	border-radius: var(--radius-s);
+	font-size: 0.85rem;
+	color: var(--text-muted);
+}
+
+.prisma-export-info p {
+	margin: 0;
+}
+
+.prisma-export-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+}
+
+/* ICS Import Modal */
+.prisma-ics-import-modal h2 {
+	margin-bottom: 1rem;
+	font-size: 1.2rem;
+	font-weight: 600;
+}
+
+.prisma-ics-import-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.prisma-ics-import-section {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.prisma-ics-import-section label {
+	font-weight: 500;
+	color: var(--text-normal);
+}
+
+.prisma-ics-import-section select {
+	padding: 0.5rem;
+	border-radius: var(--radius-s);
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+}
+
+.prisma-ics-import-preview {
+	padding: 1rem;
+	background: var(--background-secondary);
+	border-radius: var(--radius-s);
+	max-height: 250px;
+	overflow-y: auto;
+}
+
+.prisma-ics-import-preview h4 {
+	margin: 0 0 0.75rem 0;
+	font-size: 0.95rem;
+}
+
+.prisma-ics-import-preview-placeholder {
+	color: var(--text-muted);
+	margin: 0;
+}
+
+.prisma-ics-import-event-list {
+	margin: 0;
+	padding-left: 1.25rem;
+}
+
+.prisma-ics-import-event-list li {
+	margin-bottom: 0.5rem;
+	font-size: 0.9rem;
+}
+
+.prisma-ics-import-more {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.prisma-ics-import-error {
+	color: var(--text-error);
+	margin: 0;
+}
+
+.prisma-ics-import-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+}

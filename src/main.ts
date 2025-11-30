@@ -1,7 +1,13 @@
 import { extractContentAfterFrontmatter, onceAsync, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
-import { CalendarSelectModal, EventCreateModal, EventEditModal, ICSImportModal } from "./components/modals";
+import {
+	CalendarSelectModal,
+	EventCreateModal,
+	EventEditModal,
+	type ExportOptions,
+	ICSImportModal,
+} from "./components/modals";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
@@ -344,19 +350,16 @@ export default class CustomCalendarPlugin extends Plugin {
 			return;
 		}
 
-		if (this.calendarBundles.length === 1) {
-			void this.exportCalendarAsICS(this.calendarBundles[0]);
-			return;
-		}
-
-		new CalendarSelectModal(this.app, this.calendarBundles, (bundle) => {
-			void this.exportCalendarAsICS(bundle);
+		new CalendarSelectModal(this.app, this.calendarBundles, (options) => {
+			void this.exportCalendarAsICS(options);
 		}).open();
 	}
 
-	private async exportCalendarAsICS(bundle: CalendarBundle): Promise<void> {
+	private async exportCalendarAsICS(options: ExportOptions): Promise<void> {
+		const { bundle, timezone } = options;
 		const settings = bundle.settingsStore.currentSettings;
 		const calendarName = settings.name;
+		const vaultName = this.app.vault.getName();
 
 		try {
 			const events = bundle.eventStore.getAllEvents();
@@ -378,7 +381,19 @@ export default class CustomCalendarPlugin extends Plugin {
 				}
 			}
 
-			const result = createICSFromEvents(events, calendarName, noteContents);
+			const result = createICSFromEvents(events, {
+				calendarName,
+				vaultName,
+				timezone,
+				noteContents,
+				categoryProp: settings.categoryProp,
+				notifications: {
+					minutesBeforeProp: settings.minutesBeforeProp,
+					defaultMinutesBefore: settings.defaultMinutesBefore,
+					daysBeforeProp: settings.daysBeforeProp,
+					defaultDaysBefore: settings.defaultDaysBefore,
+				},
+			});
 
 			if (!result.success || !result.content) {
 				new Notice(`Failed to generate ICS: ${result.error?.message || "Unknown error"}`);
@@ -451,7 +466,15 @@ export default class CustomCalendarPlugin extends Plugin {
 
 	private buildFrontmatterFromImportedEvent(
 		event: ImportedEvent,
-		settings: { startProp: string; endProp: string; dateProp: string; allDayProp: string; titleProp?: string }
+		settings: {
+			startProp: string;
+			endProp: string;
+			dateProp: string;
+			allDayProp: string;
+			titleProp?: string;
+			minutesBeforeProp: string;
+			daysBeforeProp: string;
+		}
 	): Record<string, unknown> {
 		const fm: Record<string, unknown> = {};
 
@@ -462,10 +485,19 @@ export default class CustomCalendarPlugin extends Plugin {
 		if (event.allDay) {
 			fm[settings.allDayProp] = true;
 			fm[settings.dateProp] = event.start.toISOString().split("T")[0];
+			if (event.reminderMinutes !== undefined) {
+				const days = Math.round(event.reminderMinutes / (24 * 60));
+				if (days > 0) {
+					fm[settings.daysBeforeProp] = days;
+				}
+			}
 		} else {
 			fm[settings.startProp] = event.start.toISOString();
 			if (event.end) {
 				fm[settings.endProp] = event.end.toISOString();
+			}
+			if (event.reminderMinutes !== undefined) {
+				fm[settings.minutesBeforeProp] = event.reminderMinutes;
 			}
 		}
 

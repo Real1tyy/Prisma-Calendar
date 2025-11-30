@@ -214,25 +214,30 @@ export function generateICSFilename(calendarName: string): string {
 	return `${sanitizedName}-export-${timestamp}.ics`;
 }
 
-export const COMMON_TIMEZONES = [
-	"UTC",
-	"Europe/London",
-	"Europe/Paris",
-	"Europe/Berlin",
-	"Europe/Prague",
-	"Europe/Moscow",
-	"America/New_York",
-	"America/Chicago",
-	"America/Denver",
-	"America/Los_Angeles",
-	"America/Sao_Paulo",
-	"Asia/Tokyo",
-	"Asia/Shanghai",
-	"Asia/Singapore",
-	"Asia/Dubai",
-	"Asia/Kolkata",
-	"Australia/Sydney",
-	"Pacific/Auckland",
-] as const;
+export interface TimezoneInfo {
+	id: string;
+	label: string;
+}
 
-export type CommonTimezone = (typeof COMMON_TIMEZONES)[number];
+export const COMMON_TIMEZONES: TimezoneInfo[] = [
+	{ id: "UTC", label: "UTC" },
+	{ id: "Europe/London", label: "Europe/London (UTC)" },
+	{ id: "Europe/Paris", label: "Europe/Paris (UTC+1)" },
+	{ id: "Europe/Berlin", label: "Europe/Berlin (UTC+1)" },
+	{ id: "Europe/Prague", label: "Europe/Prague (UTC+1)" },
+	{ id: "Europe/Moscow", label: "Europe/Moscow (UTC+3)" },
+	{ id: "America/New_York", label: "America/New_York (UTC-5)" },
+	{ id: "America/Chicago", label: "America/Chicago (UTC-6)" },
+	{ id: "America/Denver", label: "America/Denver (UTC-7)" },
+	{ id: "America/Los_Angeles", label: "America/Los_Angeles (UTC-8)" },
+	{ id: "America/Sao_Paulo", label: "America/São Paulo (UTC-3)" },
+	{ id: "Asia/Tokyo", label: "Asia/Tokyo (UTC+9)" },
+	{ id: "Asia/Shanghai", label: "Asia/Shanghai (UTC+8)" },
+	{ id: "Asia/Singapore", label: "Asia/Singapore (UTC+8)" },
+	{ id: "Asia/Dubai", label: "Asia/Dubai (UTC+4)" },
+	{ id: "Asia/Kolkata", label: "Asia/Kolkata (UTC+5:30)" },
+	{ id: "Australia/Sydney", label: "Australia/Sydney (UTC+10)" },
+	{ id: "Pacific/Auckland", label: "Pacific/Auckland (UTC+12)" },
+];
+
+export type CommonTimezone = string;
