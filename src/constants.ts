@@ -31,6 +31,8 @@ export const COMMAND_IDS = {
 	SHOW_ALLTIME_STATS: "show-alltime-stats",
 	REFRESH_CALENDAR: "refresh-calendar",
 	RESTORE_MINIMIZED_MODAL: "restore-minimized-modal",
+	EXPORT_CALENDAR_ICS: "export-calendar-ics",
+	IMPORT_CALENDAR_ICS: "import-calendar-ics",
 } as const;
 
 export const FULL_COMMAND_IDS = Object.fromEntries(

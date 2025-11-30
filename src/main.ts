@@ -1,11 +1,13 @@
-import { onceAsync } from "@real1ty-obsidian-plugins/utils";
+import { extractContentAfterFrontmatter, onceAsync, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
-import { EventCreateModal, EventEditModal } from "./components/modals";
+import { CalendarSelectModal, EventCreateModal, EventEditModal, ICSImportModal } from "./components/modals";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 import { intoDate } from "./utils/format";
+import { createICSFromEvents, generateICSFilename } from "./utils/ics-export";
+import type { ImportedEvent } from "./utils/ics-import";
 
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;
@@ -147,6 +149,22 @@ export default class CustomCalendarPlugin extends Plugin {
 		});
 		addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh calendar", (view) => {
 			void view.refreshCalendar();
+		});
+
+		this.addCommand({
+			id: COMMAND_IDS.EXPORT_CALENDAR_ICS,
+			name: "Export calendar as .ics",
+			callback: () => {
+				this.showCalendarExportModal();
+			},
+		});
+
+		this.addCommand({
+			id: COMMAND_IDS.IMPORT_CALENDAR_ICS,
+			name: "Import .ics file",
+			callback: () => {
+				this.showCalendarImportModal();
+			},
 		});
 
 		this.addCommand({
@@ -318,6 +336,151 @@ export default class CustomCalendarPlugin extends Plugin {
 				calendarView.highlightEventByPath(activeFile.path, 5000);
 			}, 100);
 		}
+	}
+
+	private showCalendarExportModal(): void {
+		if (this.calendarBundles.length === 0) {
+			new Notice("No calendars available to export");
+			return;
+		}
+
+		if (this.calendarBundles.length === 1) {
+			void this.exportCalendarAsICS(this.calendarBundles[0]);
+			return;
+		}
+
+		new CalendarSelectModal(this.app, this.calendarBundles, (bundle) => {
+			void this.exportCalendarAsICS(bundle);
+		}).open();
+	}
+
+	private async exportCalendarAsICS(bundle: CalendarBundle): Promise<void> {
+		const settings = bundle.settingsStore.currentSettings;
+		const calendarName = settings.name;
+
+		try {
+			const events = bundle.eventStore.getAllEvents();
+
+			if (events.length === 0) {
+				new Notice("No events to export");
+				return;
+			}
+
+			const noteContents = new Map<string, string>();
+			for (const event of events) {
+				const file = this.app.vault.getAbstractFileByPath(event.ref.filePath);
+				if (file instanceof TFile) {
+					const fullContent = await this.app.vault.cachedRead(file);
+					const content = extractContentAfterFrontmatter(fullContent);
+					if (content) {
+						noteContents.set(event.ref.filePath, content);
+					}
+				}
+			}
+
+			const result = createICSFromEvents(events, calendarName, noteContents);
+
+			if (!result.success || !result.content) {
+				new Notice(`Failed to generate ICS: ${result.error?.message || "Unknown error"}`);
+				console.error("ICS export error:", result.error);
+				return;
+			}
+
+			const exportFolder = "Prisma-Exports";
+			const folderExists = this.app.vault.getAbstractFileByPath(exportFolder);
+			if (!folderExists) {
+				await this.app.vault.createFolder(exportFolder);
+			}
+
+			const filename = generateICSFilename(calendarName);
+			const filePath = `${exportFolder}/${filename}`;
+
+			await this.app.vault.create(filePath, result.content);
+			new Notice(`Exported ${events.length} events to ${filePath}`);
+		} catch (error) {
+			console.error("ICS export failed:", error);
+			new Notice("Failed to export calendar. See console for details.");
+		}
+	}
+
+	private showCalendarImportModal(): void {
+		if (this.calendarBundles.length === 0) {
+			new Notice("No calendars available to import to");
+			return;
+		}
+
+		new ICSImportModal(this.app, this.calendarBundles, async (bundle, events) => {
+			await this.importEventsToCalendar(bundle, events);
+		}).open();
+	}
+
+	private async importEventsToCalendar(bundle: CalendarBundle, events: ImportedEvent[]): Promise<void> {
+		const settings = bundle.settingsStore.currentSettings;
+		const directory = settings.directory;
+
+		let successCount = 0;
+		let errorCount = 0;
+
+		for (const event of events) {
+			try {
+				const frontmatter = this.buildFrontmatterFromImportedEvent(event, settings);
+				const content = event.description || "";
+
+				const baseName = sanitizeForFilename(event.title, { style: "preserve" }) || "Imported Event";
+				const timestamp = new Date().toISOString().replace(/[:.]/g, "").slice(0, 15);
+				const fileName = `${baseName}-${timestamp}.md`;
+				const filePath = `${directory}/${fileName}`;
+
+				const frontmatterStr = this.formatFrontmatter(frontmatter);
+				const fileContent = `---\n${frontmatterStr}---\n\n${content}`;
+
+				await this.app.vault.create(filePath, fileContent);
+				successCount++;
+			} catch (error) {
+				console.error(`Failed to import event "${event.title}":`, error);
+				errorCount++;
+			}
+		}
+
+		if (errorCount === 0) {
+			new Notice(`Successfully imported ${successCount} events`);
+		} else {
+			new Notice(`Imported ${successCount} events, ${errorCount} failed`);
+		}
+	}
+
+	private buildFrontmatterFromImportedEvent(
+		event: ImportedEvent,
+		settings: { startProp: string; endProp: string; dateProp: string; allDayProp: string; titleProp?: string }
+	): Record<string, unknown> {
+		const fm: Record<string, unknown> = {};
+
+		if (settings.titleProp) {
+			fm[settings.titleProp] = event.title;
+		}
+
+		if (event.allDay) {
+			fm[settings.allDayProp] = true;
+			fm[settings.dateProp] = event.start.toISOString().split("T")[0];
+		} else {
+			fm[settings.startProp] = event.start.toISOString();
+			if (event.end) {
+				fm[settings.endProp] = event.end.toISOString();
+			}
+		}
+
+		return fm;
+	}
+
+	private formatFrontmatter(fm: Record<string, unknown>): string {
+		return Object.entries(fm)
+			.map(([key, value]) => {
+				if (typeof value === "string") {
+					return `${key}: "${value}"`;
+				}
+				return `${key}: ${String(value)}`;
+			})
+			.join("\n");
 	}
 
 	private restoreMinimizedModal(): void {

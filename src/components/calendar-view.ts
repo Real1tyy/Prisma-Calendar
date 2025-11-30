@@ -1298,11 +1298,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	private handleDateClick(info: { date: Date; allDay: boolean }): void {
-		// Create a new event with pre-filled date/time
 		const clickedDate = info.date;
 		const isAllDay = info.allDay;
 
-		// Create a mock event object for the modal
 		const newEvent = {
 			title: "",
 			start: toLocalISOString(clickedDate),
