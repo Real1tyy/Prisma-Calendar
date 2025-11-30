@@ -27,7 +27,7 @@ Exported ICS files work with:
    - **Timezone**: Select the timezone for exported events
    - **Exclude skipped events**: Toggle to include/exclude skipped events
 
-![Export Modal](/img/export_modal.png)
+![Export Modal](/img/integrations_export.png)
 
 ### Timezone Selection
 
