@@ -64,7 +64,7 @@ export class CalendarSettings {
 		this.ui.addToggle(containerEl, {
 			key: "skipUnderscoreProperties",
 			name: "Skip underscore properties",
-			desc: "Hide frontmatter properties that start with underscore (e.g., _ZLID) in event previews and edit modals",
+			desc: "Hide frontmatter properties that start with underscore (e.g., _ZettelID) in event previews and edit modals",
 		});
 
 		this.ui.addToggle(containerEl, {

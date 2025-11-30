@@ -1,5 +1,5 @@
+import { serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
 import ICAL from "ical.js";
-import { PLUGIN_ID } from "../constants";
 import type { ParsedEvent } from "../core/parser";
 import { extractZettelId, removeZettelId } from "./calendar-events";
 import { parseIntoList } from "./list-utils";
@@ -17,7 +17,15 @@ export interface ICSExportOptions {
 	timezone: string;
 	noteContents: Map<string, string>;
 	categoryProp: string;
-	notifications?: NotificationSettings;
+	notifications: NotificationSettings;
+	/** Property names that are already exported via standard ICS fields and should be excluded from X-PRISMA-FM-* */
+	excludeProps: {
+		startProp: string;
+		endProp: string;
+		dateProp: string;
+		allDayProp: string;
+		titleProp?: string;
+	};
 }
 
 export interface ICSExportResult {
@@ -63,11 +71,6 @@ function dateToICALTime(date: Date, allDay: boolean, timezone?: ICAL.Timezone): 
 		time.zone = timezone;
 	}
 	return time;
-}
-
-function generateUID(filePath: string): string {
-	const sanitized = filePath.replace(/[^a-zA-Z0-9._-]/g, "_");
-	return `${sanitized}@${PLUGIN_ID}`;
 }
 
 function generateObsidianURI(vaultName: string, filePath: string): string {
@@ -129,7 +132,7 @@ function parsedEventToVEvent(event: ParsedEvent, options: ICSExportOptions, time
 	const createdTime = zettelIdToICALTime(zettelId);
 	const strippedTitle = removeZettelId(event.title);
 
-	vevent.addPropertyWithValue("uid", generateUID(event.ref.filePath));
+	vevent.addPropertyWithValue("uid", event.id);
 	vevent.addPropertyWithValue("dtstamp", createdTime);
 	vevent.addPropertyWithValue("created", createdTime);
 	vevent.addPropertyWithValue("last-modified", createdTime);
@@ -164,7 +167,44 @@ function parsedEventToVEvent(event: ParsedEvent, options: ICSExportOptions, time
 	vevent.addPropertyWithValue("url", generateObsidianURI(options.vaultName, event.ref.filePath));
 	vevent.addPropertyWithValue("x-prisma-file", event.ref.filePath);
 	vevent.addPropertyWithValue("x-prisma-vault", options.vaultName);
-	vevent.addPropertyWithValue("x-prisma-event-id", event.id);
+
+	// Export additional frontmatter as X-PRISMA-FM-* properties for round-trip preservation
+	// Excludes: standard ICS fields, empty arrays, and internal parser metadata
+	if (event.meta) {
+		const excludedProps = new Set<string>([
+			// Standard ICS field properties
+			options.excludeProps.startProp,
+			options.excludeProps.endProp,
+			options.excludeProps.dateProp,
+			options.excludeProps.allDayProp,
+			options.categoryProp,
+			// Internal parser metadata (added by parser.ts, not user frontmatter)
+			"folder",
+			"isAllDay",
+			"originalStart",
+			"originalEnd",
+			"originalDate",
+		]);
+
+		if (options.excludeProps.titleProp) excludedProps.add(options.excludeProps.titleProp);
+		if (options.notifications.minutesBeforeProp) excludedProps.add(options.notifications.minutesBeforeProp);
+		if (options.notifications.daysBeforeProp) excludedProps.add(options.notifications.daysBeforeProp);
+
+		for (const [key, value] of Object.entries(event.meta)) {
+			if (value === undefined || value === null) continue;
+			if (excludedProps.has(key)) continue;
+			if (Array.isArray(value) && value.length === 0) continue;
+
+			const sanitizedKey = key.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+			const propName = `x-prisma-fm-${sanitizedKey}`;
+			const serialized = serializeFrontmatterValue(value);
+
+			const prop = new ICAL.Property(propName);
+			prop.setParameter("original", key);
+			prop.setValue(serialized);
+			vevent.addProperty(prop);
+		}
+	}
 
 	return vevent;
 }

@@ -136,7 +136,6 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		countInfo.textContent = `${settings.calendars.length}/${SETTINGS_DEFAULTS.MAX_CALENDARS} calendars`;
 	}
 
-	/* eslint-disable obsidianmd/ui/sentence-case -- Integrations section uses descriptive text */
 	private createIntegrationsSection(): void {
 		const { containerEl } = this;
 		const calendarStore = this.getOrCreateCalendarStore(this.selectedCalendarId);
@@ -147,9 +146,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		descContainer
 			.createEl("p")
-			.setText(
-				"Export and import events using the ICS format. Compatible with Google Calendar, Apple Calendar, Outlook, and more."
-			);
+			.setText("Export and import events using the .ics format, compatible with most calendar apps.");
 
 		descContainer
 			.createEl("a", {
@@ -157,12 +154,12 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 				cls: cls("settings-docs-link"),
 				attr: { target: "_blank" },
 			})
-			.setText("📖 Documentation");
+			.setText("Documentation");
 
 		if (calendarStore) {
 			new Setting(containerEl)
 				.setName("Export folder")
-				.setDesc("Folder where exported ICS files are saved")
+				.setDesc("Folder where exported .ics files are saved")
 				.addText((text) => {
 					text
 						.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER)
@@ -191,14 +188,13 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const importButton = buttonsContainer.createEl("button", {
 			cls: cls("settings-integration-button"),
 		});
-		importButton.setText("Import ICS");
+		importButton.setText("Import .ics");
 		importButton.addEventListener("click", () => {
 			(this.app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
 				`prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`
 			);
 		});
 	}
-	/* eslint-enable obsidianmd/ui/sentence-case */
 
 	private renderSelectedCalendarSettings(): void {
 		const { containerEl } = this;
