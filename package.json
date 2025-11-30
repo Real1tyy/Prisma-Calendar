@@ -66,6 +66,7 @@
 		"chart.js": "^4.5.1",
 		"chrono-node": "^2.9.0",
 		"colord": "^2.9.3",
+		"ical.js": "^2.2.1",
 		"luxon": "^3.7.2",
 		"nanoid": "^5.1.6",
 		"rrule": "^2.8.1",
