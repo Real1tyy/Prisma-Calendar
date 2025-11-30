@@ -356,13 +356,17 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	private async exportCalendarAsICS(options: ExportOptions): Promise<void> {
-		const { bundle, timezone } = options;
+		const { bundle, timezone, excludeSkipped } = options;
 		const settings = bundle.settingsStore.currentSettings;
 		const calendarName = settings.name;
 		const vaultName = this.app.vault.getName();
 
 		try {
-			const events = bundle.eventStore.getAllEvents();
+			let events = bundle.eventStore.getAllEvents();
+
+			if (excludeSkipped) {
+				events = events.filter((e) => !e.skipped);
+			}
 
 			if (events.length === 0) {
 				new Notice("No events to export");
@@ -401,7 +405,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				return;
 			}
 
-			const exportFolder = "Prisma-Exports";
+			const exportFolder = settings.exportFolder;
 			const folderExists = this.app.vault.getAbstractFileByPath(exportFolder);
 			if (!folderExists) {
 				await this.app.vault.createFolder(exportFolder);

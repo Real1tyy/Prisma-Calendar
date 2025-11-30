@@ -1,6 +1,6 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, PluginSettingTab, Setting } from "obsidian";
-import { SETTINGS_DEFAULTS } from "../../constants";
+import { COMMAND_IDS, SETTINGS_DEFAULTS } from "../../constants";
 import { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import {
@@ -51,6 +51,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		this.createCalendarManagementHeader();
 		this.renderSelectedCalendarSettings();
+		this.createIntegrationsSection();
 
 		const footerEl = containerEl.createDiv({ cls: `setting-item ${cls("settings-footer")}` });
 
@@ -134,6 +135,70 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const countInfo = headerContainer.createDiv(cls("calendar-count-info"));
 		countInfo.textContent = `${settings.calendars.length}/${SETTINGS_DEFAULTS.MAX_CALENDARS} calendars`;
 	}
+
+	/* eslint-disable obsidianmd/ui/sentence-case -- Integrations section uses descriptive text */
+	private createIntegrationsSection(): void {
+		const { containerEl } = this;
+		const calendarStore = this.getOrCreateCalendarStore(this.selectedCalendarId);
+
+		new Setting(containerEl).setName("Integrations").setHeading();
+
+		const descContainer = containerEl.createDiv(cls("settings-integrations-desc"));
+
+		descContainer
+			.createEl("p")
+			.setText(
+				"Export and import events using the ICS format. Compatible with Google Calendar, Apple Calendar, Outlook, and more."
+			);
+
+		descContainer
+			.createEl("a", {
+				href: "https://real1tyy.github.io/Prisma-Calendar/docs/features/integrations",
+				cls: cls("settings-docs-link"),
+				attr: { target: "_blank" },
+			})
+			.setText("📖 Documentation");
+
+		if (calendarStore) {
+			new Setting(containerEl)
+				.setName("Export folder")
+				.setDesc("Folder where exported ICS files are saved")
+				.addText((text) => {
+					text
+						.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER)
+						.setValue(calendarStore.currentSettings.exportFolder || SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER)
+						.onChange(async (value) => {
+							await calendarStore.updateSettings((s) => ({
+								...s,
+								exportFolder: value.trim() || SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER,
+							}));
+						});
+				});
+		}
+
+		const buttonsContainer = containerEl.createDiv(cls("settings-integrations-buttons"));
+
+		const exportButton = buttonsContainer.createEl("button", {
+			cls: cls("settings-integration-button"),
+		});
+		exportButton.setText("Export calendar");
+		exportButton.addEventListener("click", () => {
+			(this.app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
+				`prisma-calendar:${COMMAND_IDS.EXPORT_CALENDAR_ICS}`
+			);
+		});
+
+		const importButton = buttonsContainer.createEl("button", {
+			cls: cls("settings-integration-button"),
+		});
+		importButton.setText("Import ICS");
+		importButton.addEventListener("click", () => {
+			(this.app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
+				`prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`
+			);
+		});
+	}
+	/* eslint-enable obsidianmd/ui/sentence-case */
 
 	private renderSelectedCalendarSettings(): void {
 		const { containerEl } = this;

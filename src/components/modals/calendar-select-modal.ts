@@ -7,6 +7,7 @@ import { COMMON_TIMEZONES } from "../../utils/ics-export";
 export interface ExportOptions {
 	bundle: CalendarBundle;
 	timezone: string;
+	excludeSkipped: boolean;
 }
 
 export class CalendarSelectModal extends Modal {
@@ -14,6 +15,7 @@ export class CalendarSelectModal extends Modal {
 	private calendars: CalendarBundle[];
 	private selectedBundle: CalendarBundle | null = null;
 	private selectedTimezone: string = "UTC";
+	private excludeSkipped: boolean = true;
 
 	constructor(app: App, calendars: CalendarBundle[], onSelect: (options: ExportOptions) => void) {
 		super(app);
@@ -69,9 +71,19 @@ export class CalendarSelectModal extends Modal {
 			this.selectedTimezone = timezoneSelect.value;
 		});
 
+		const checkboxSection = formEl.createDiv({ cls: cls("export-checkbox-section") });
+		const checkboxLabel = checkboxSection.createEl("label", { cls: cls("export-checkbox-label") });
+		const checkbox = checkboxLabel.createEl("input", { type: "checkbox" });
+		checkbox.checked = this.excludeSkipped;
+		checkboxLabel.createSpan({ text: "Exclude skipped events" });
+
+		checkbox.addEventListener("change", () => {
+			this.excludeSkipped = checkbox.checked;
+		});
+
 		const infoEl = formEl.createDiv({ cls: cls("export-info") });
 		infoEl.createEl("p", {
-			text: "Events will be exported with the selected timezone.",
+			text: "Events will be exported with the selected timezone. Skipped events are marked as hidden in your calendar.",
 		});
 
 		const buttonRow = formEl.createDiv({ cls: cls("export-buttons") });
@@ -92,6 +104,7 @@ export class CalendarSelectModal extends Modal {
 		this.onSelect({
 			bundle: this.selectedBundle,
 			timezone: this.selectedTimezone,
+			excludeSkipped: this.excludeSkipped,
 		});
 		this.close();
 	}

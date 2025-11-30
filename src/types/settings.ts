@@ -30,6 +30,7 @@ export const GeneralSettingsSchema = z.object({
 	markPastInstancesAsDone: z.boolean().default(false), // automatically mark past events as done on startup
 	eventPresets: z.array(EventPresetSchema).default([]), // Event creation presets with pre-filled values
 	defaultPresetId: z.string().optional(), // ID of default preset to auto-fill on create modal open
+	exportFolder: z.string().default(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER), // folder for ICS exports
 });
 
 export const PropsSettingsSchema = z.object({
