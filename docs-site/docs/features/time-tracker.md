@@ -35,16 +35,9 @@ Click the header to expand it.
 
 ### Expanded State
 
-When expanded, you'll see:
+When expanded, you'll see the stopwatch interface with elapsed time, break time, and control buttons:
 
-```
-▼ Time tracker
-┌─────────────────────────────────────────┐
-│   Elapsed: 00:00:00    Break: 00:00    │
-│                                         │
-│         [▶ start]                       │
-└─────────────────────────────────────────┘
-```
+![Time Tracker Stopwatch](/img/stopwatch.png)
 
 ## Controls
 

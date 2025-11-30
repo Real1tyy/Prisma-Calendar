@@ -92,8 +92,10 @@ Prisma-Exports/
 2. Run **"Prisma Calendar: Import ICS file"**
 3. Select the ICS file to import
 4. Choose the destination calendar
-5. Preview events before importing
+5. Select the timezone for conversion
 6. Click "Import" to create notes
+
+![Import Modal](/img/integrations_import.png)
 
 ### Import Process
 

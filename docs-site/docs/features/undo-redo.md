@@ -17,6 +17,8 @@ Simply use Obsidian's hotkeys for undo and redo.
 -   **Assign Shortcuts**: Go to `Settings -> Hotkeys` and set your preferred shortcuts for `Prisma Calendar: Undo` and `Prisma Calendar: Redo`.
 -   **Active Calendar**: The undo/redo actions will always apply to the calendar pane you are currently focused on.
 
+![Undo/Redo Commands](/img/undo_redo.png)
+
 ## What You Can Undo and Redo
 
 Virtually every operation in the calendar is tracked, giving you complete control.
