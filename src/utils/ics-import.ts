@@ -98,9 +98,7 @@ function getPrismaProperty(vevent: ICAL.Component, propName: string): string | u
 
 export function parseICSContent(icsContent: string): ICSImportResult {
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-		const jcalData = ICAL.parse(icsContent);
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+		const jcalData = ICAL.parse(icsContent) as string | unknown[];
 		const vcalendar = new ICAL.Component(jcalData);
 		const vevents = vcalendar.getAllSubcomponents("vevent");
 
