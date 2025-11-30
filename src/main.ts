@@ -13,7 +13,11 @@ import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore }
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 import { intoDate } from "./utils/format";
 import { createICSFromEvents, generateICSFilename } from "./utils/ics-export";
-import type { ImportedEvent } from "./utils/ics-import";
+import {
+	buildFrontmatterFromImportedEvent,
+	extractBasenameFromOriginalPath,
+	type ImportedEvent,
+} from "./utils/ics-import";
 
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;
@@ -397,6 +401,13 @@ export default class CustomCalendarPlugin extends Plugin {
 					daysBeforeProp: settings.daysBeforeProp,
 					defaultDaysBefore: settings.defaultDaysBefore,
 				},
+				excludeProps: {
+					startProp: settings.startProp,
+					endProp: settings.endProp,
+					dateProp: settings.dateProp,
+					allDayProp: settings.allDayProp,
+					titleProp: settings.titleProp,
+				},
 			});
 
 			if (!result.success || !result.content) {
@@ -428,32 +439,54 @@ export default class CustomCalendarPlugin extends Plugin {
 			return;
 		}
 
-		new ICSImportModal(this.app, this.calendarBundles, async (bundle, events) => {
-			await this.importEventsToCalendar(bundle, events);
+		new ICSImportModal(this.app, this.calendarBundles, async (bundle, events, timezone) => {
+			await this.importEventsToCalendar(bundle, events, timezone);
 		}).open();
 	}
 
-	private async importEventsToCalendar(bundle: CalendarBundle, events: ImportedEvent[]): Promise<void> {
+	private async importEventsToCalendar(
+		bundle: CalendarBundle,
+		events: ImportedEvent[],
+		timezone: string
+	): Promise<void> {
 		const settings = bundle.settingsStore.currentSettings;
-		const directory = settings.directory;
+
+		// Get existing event IDs for duplicate detection
+		const existingEventIds = new Set(bundle.eventStore.getAllEvents().map((e) => e.id));
+
+		// Filter out events that already exist
+		const newEvents = events.filter((e) => !existingEventIds.has(e.uid));
+		const skippedCount = events.length - newEvents.length;
+
+		if (skippedCount > 0) {
+			new Notice(`Skipping ${skippedCount} events that already exist`);
+		}
+
+		if (newEvents.length === 0) {
+			new Notice("No new events to import");
+			return;
+		}
 
 		let successCount = 0;
 		let errorCount = 0;
 
-		for (const event of events) {
+		for (const event of newEvents) {
 			try {
-				const frontmatter = this.buildFrontmatterFromImportedEvent(event, settings);
-				const content = event.description || "";
+				const frontmatter = buildFrontmatterFromImportedEvent(event, settings, timezone);
+				const content = event.description ? `\n${event.description}\n` : "";
 
-				const baseName = sanitizeForFilename(event.title, { style: "preserve" }) || "Imported Event";
-				const timestamp = new Date().toISOString().replace(/[:.]/g, "").slice(0, 15);
-				const fileName = `${baseName}-${timestamp}.md`;
-				const filePath = `${directory}/${fileName}`;
+				const baseName =
+					extractBasenameFromOriginalPath(event.originalFilePath) ||
+					sanitizeForFilename(event.title, { style: "preserve" }) ||
+					"Imported Event";
 
-				const frontmatterStr = this.formatFrontmatter(frontmatter);
-				const fileContent = `---\n${frontmatterStr}---\n\n${content}`;
-
-				await this.app.vault.create(filePath, fileContent);
+				await bundle.templateService.createFile({
+					title: event.title,
+					targetDirectory: settings.directory,
+					filename: baseName,
+					content: content || undefined,
+					frontmatter,
+				});
 				successCount++;
 			} catch (error) {
 				console.error(`Failed to import event "${event.title}":`, error);
@@ -466,57 +499,6 @@ export default class CustomCalendarPlugin extends Plugin {
 		} else {
 			new Notice(`Imported ${successCount} events, ${errorCount} failed`);
 		}
-	}
-
-	private buildFrontmatterFromImportedEvent(
-		event: ImportedEvent,
-		settings: {
-			startProp: string;
-			endProp: string;
-			dateProp: string;
-			allDayProp: string;
-			titleProp?: string;
-			minutesBeforeProp: string;
-			daysBeforeProp: string;
-		}
-	): Record<string, unknown> {
-		const fm: Record<string, unknown> = {};
-
-		if (settings.titleProp) {
-			fm[settings.titleProp] = event.title;
-		}
-
-		if (event.allDay) {
-			fm[settings.allDayProp] = true;
-			fm[settings.dateProp] = event.start.toISOString().split("T")[0];
-			if (event.reminderMinutes !== undefined) {
-				const days = Math.round(event.reminderMinutes / (24 * 60));
-				if (days > 0) {
-					fm[settings.daysBeforeProp] = days;
-				}
-			}
-		} else {
-			fm[settings.startProp] = event.start.toISOString();
-			if (event.end) {
-				fm[settings.endProp] = event.end.toISOString();
-			}
-			if (event.reminderMinutes !== undefined) {
-				fm[settings.minutesBeforeProp] = event.reminderMinutes;
-			}
-		}
-
-		return fm;
-	}
-
-	private formatFrontmatter(fm: Record<string, unknown>): string {
-		return Object.entries(fm)
-			.map(([key, value]) => {
-				if (typeof value === "string") {
-					return `${key}: "${value}"`;
-				}
-				return `${key}: ${String(value)}`;
-			})
-			.join("\n");
 	}
 
 	private restoreMinimizedModal(): void {

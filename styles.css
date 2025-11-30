@@ -1614,6 +1614,53 @@
 	color: var(--text-accent);
 }
 
+/* Settings Integrations Section */
+.prisma-settings-integrations-desc {
+	margin-bottom: 1rem;
+}
+
+.prisma-settings-integrations-desc p {
+	margin: 0 0 0.5rem 0;
+	line-height: 1.5;
+}
+
+.prisma-settings-muted {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.prisma-settings-docs-link {
+	display: inline-block;
+	margin-top: 0.5rem;
+	color: var(--text-accent);
+	text-decoration: none;
+}
+
+.prisma-settings-docs-link:hover {
+	text-decoration: underline;
+}
+
+.prisma-settings-integrations-buttons {
+	display: flex;
+	gap: 0.75rem;
+	margin-top: 1rem;
+}
+
+.prisma-settings-integration-button {
+	padding: 0.5rem 1rem;
+	border-radius: var(--radius-s);
+	border: 1px solid var(--background-modifier-border);
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.prisma-settings-integration-button:hover {
+	background: var(--interactive-hover);
+	border-color: var(--interactive-accent);
+}
+
 .prisma-calendar-management-header {
 	margin-bottom: 24px;
 	padding: 16px;
@@ -4044,6 +4091,25 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
 }
 
+.prisma-export-checkbox-section {
+	display: flex;
+	align-items: center;
+}
+
+.prisma-export-checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	cursor: pointer;
+	color: var(--text-normal);
+}
+
+.prisma-export-checkbox-label input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}
+
 .prisma-export-info {
 	padding: 0.75rem;
 	background: var(--background-secondary);
@@ -4092,6 +4158,10 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	border-radius: var(--radius-s);
 	border: 1px solid var(--background-modifier-border);
 	background: var(--background-primary);
+}
+
+.prisma-ics-import-section .prisma-ics-import-calendar-select {
+	padding: 0.2rem;
 }
 
 .prisma-ics-import-preview {
