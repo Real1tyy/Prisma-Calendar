@@ -659,6 +659,58 @@
 	background: var(--background-modifier-hover);
 }
 
+/* "+more" link styling for dayMaxEventRows */
+.prisma-calendar-container .fc-daygrid-more-link {
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-accent);
+	padding: 2px 6px;
+	border-radius: var(--radius-s);
+	background: var(--background-secondary);
+	transition: all 0.15s ease;
+	cursor: pointer;
+	margin-top: 2px;
+}
+
+.prisma-calendar-container .fc-daygrid-more-link:hover {
+	background: var(--interactive-hover);
+	color: var(--text-accent-hover);
+}
+
+/* Popover styling for "+more" events */
+.prisma-calendar-container .fc-popover {
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+	max-width: 300px;
+}
+
+.prisma-calendar-container .fc-popover-header {
+	background: var(--background-secondary);
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-normal);
+}
+
+.prisma-calendar-container .fc-popover-body {
+	padding: 8px;
+	max-height: 300px;
+	overflow-y: auto;
+}
+
+.prisma-calendar-container .fc-popover-close {
+	color: var(--text-muted);
+	font-size: 18px;
+	cursor: pointer;
+	transition: color 0.15s ease;
+}
+
+.prisma-calendar-container .fc-popover-close:hover {
+	color: var(--text-normal);
+}
+
 /* Time grid styling */
 .prisma-calendar-container .fc-timegrid-slot {
 	border-color: var(--background-modifier-border);

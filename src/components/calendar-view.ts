@@ -734,6 +734,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}, 60000);
 	}
 
+	private isMobileView(): boolean {
+		return window.innerWidth <= 768;
+	}
+
 	private stopUpcomingEventCheck(): void {
 		if (this.upcomingEventCheckInterval !== null) {
 			window.clearInterval(this.upcomingEventCheckInterval);
@@ -815,6 +819,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			eventOverlap: settings.eventOverlap,
 			slotEventOverlap: settings.slotEventOverlap,
 			eventMaxStack: settings.eventMaxStack,
+
+			dayMaxEventRows: this.isMobileView() ? 1 : false,
+
+			windowResize: () => {
+				this.calendar?.setOption("dayMaxEventRows", this.isMobileView() ? 1 : false);
+			},
 
 			editable: true,
 			eventStartEditable: true,
