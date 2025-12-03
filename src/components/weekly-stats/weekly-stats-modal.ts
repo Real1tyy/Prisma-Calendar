@@ -16,6 +16,14 @@ export class WeeklyStatsModal extends IntervalStatsModal {
 			date.setDate(date.getDate() - 7);
 		},
 
+		navigateFastNext: (date: Date) => {
+			date.setDate(date.getDate() + 28);
+		},
+
+		navigateFastPrevious: (date: Date) => {
+			date.setDate(date.getDate() - 28);
+		},
+
 		aggregateStats: (
 			events: ParsedEvent[],
 			date: Date,

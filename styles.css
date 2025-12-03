@@ -3552,19 +3552,34 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	font-weight: var(--font-weight-medium);
 }
 
+.prisma-stats-nav-group {
+	display: flex;
+	gap: 0.25rem;
+}
+
 .prisma-stats-nav-button {
 	background-color: var(--interactive-normal);
 	border: 1px solid var(--background-modifier-border);
 	color: var(--text-normal);
-	padding: 0.5rem 1rem;
+	padding: 0.5rem 0.75rem;
 	border-radius: var(--radius-s);
 	cursor: pointer;
-	font-size: var(--font-ui-small);
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-weight-bold);
 	transition: background-color 0.2s;
+	min-width: 2rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .prisma-stats-nav-button:hover {
 	background-color: var(--interactive-hover);
+}
+
+.prisma-stats-nav-button-fast {
+	color: var(--text-muted);
+	font-size: var(--font-ui-large);
 }
 
 .prisma-stats-today-button {
@@ -4207,4 +4222,170 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	justify-content: flex-end;
 	gap: 0.5rem;
 	margin-top: 0.5rem;
+}
+
+.prisma-settings-caldav-desc {
+	margin-bottom: 1rem;
+}
+
+.prisma-settings-caldav-desc p {
+	margin: 0 0 0.5rem 0;
+}
+
+.prisma-caldav-accounts-container {
+	margin: 1rem 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.prisma-caldav-accounts-empty {
+	padding: 1.5rem;
+	text-align: center;
+	color: var(--text-muted);
+	background: var(--background-secondary);
+	border-radius: var(--radius-s);
+}
+
+.prisma-caldav-account-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1rem;
+	background: var(--background-secondary);
+	border-radius: var(--radius-s);
+	border: 1px solid var(--background-modifier-border);
+}
+
+.prisma-caldav-account-info {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	flex: 1;
+}
+
+.prisma-caldav-account-name {
+	font-weight: 600;
+	font-size: 1rem;
+}
+
+.prisma-caldav-account-url {
+	font-size: 0.85rem;
+	color: var(--text-muted);
+	word-break: break-all;
+}
+
+.prisma-caldav-account-dir {
+	font-size: 0.85rem;
+	color: var(--text-accent);
+	font-family: var(--font-monospace);
+}
+
+.prisma-caldav-account-status {
+	font-size: 0.8rem;
+	padding: 0.15rem 0.5rem;
+	border-radius: var(--radius-s);
+	width: fit-content;
+}
+
+.prisma-caldav-status-enabled {
+	background: var(--background-modifier-success);
+	color: var(--text-on-accent);
+}
+
+.prisma-caldav-status-disabled {
+	background: var(--background-modifier-error);
+	color: var(--text-on-accent);
+}
+
+.prisma-caldav-account-calendars {
+	font-size: 0.85rem;
+	color: var(--text-muted);
+}
+
+.prisma-caldav-account-controls {
+	display: flex;
+	gap: 0.5rem;
+	flex-shrink: 0;
+}
+
+.prisma-caldav-account-btn {
+	padding: 0.4rem 0.75rem;
+	font-size: 0.85rem;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	transition: background 0.15s ease;
+}
+
+.prisma-caldav-account-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.prisma-caldav-account-btn-delete {
+	color: var(--text-error);
+}
+
+.prisma-caldav-account-btn-delete:hover {
+	background: var(--background-modifier-error);
+	color: var(--text-on-accent);
+}
+
+.prisma-caldav-add-account-button {
+	margin-top: 0.5rem;
+	padding: 0.5rem 1rem;
+	cursor: pointer;
+}
+
+/* CalDAV Modal */
+
+.prisma-caldav-modal {
+	min-width: 500px;
+}
+
+.prisma-caldav-form {
+	margin: 1rem 0;
+}
+
+.prisma-caldav-test-button,
+.prisma-caldav-refresh-button {
+	margin-top: 0.5rem;
+	padding: 0.5rem 1rem;
+	cursor: pointer;
+}
+
+.prisma-caldav-calendar-selector {
+	margin: 1rem 0;
+	padding: 1rem;
+	background: var(--background-secondary);
+	border-radius: var(--radius-s);
+}
+
+.prisma-caldav-calendar-selector h3 {
+	margin: 0 0 0.75rem 0;
+	font-size: 0.95rem;
+}
+
+.prisma-caldav-calendar-item {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.prisma-caldav-calendar-item:last-child {
+	border-bottom: none;
+}
+
+.prisma-caldav-calendar-item input[type="checkbox"] {
+	margin: 0;
+	cursor: pointer;
+}
+
+.prisma-caldav-calendar-item label {
+	flex: 1;
+	cursor: pointer;
 }

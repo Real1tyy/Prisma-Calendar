@@ -1,0 +1,246 @@
+import { type DAVCalendar, type DAVCalendarObject, DAVClient } from "tsdav";
+import type {
+	CalDAVAccount,
+	CalDAVBasicCredentials,
+	CalDAVCalendarInfo,
+	CalDAVOAuthCredentials,
+	CalDAVStoredCalendar,
+} from "../types/caldav";
+
+export interface CalDAVConnectionResult {
+	success: boolean;
+	error?: string;
+	calendars?: CalDAVCalendarInfo[];
+}
+
+export interface CalDAVFetchEventsOptions {
+	calendar: CalDAVCalendarInfo;
+	timeRange?: {
+		start: string;
+		end: string;
+	};
+}
+
+export interface CalDAVFetchedEvent {
+	url: string;
+	etag: string;
+	data: string;
+	uid?: string;
+}
+
+function isOAuthCredentials(
+	credentials: CalDAVBasicCredentials | CalDAVOAuthCredentials
+): credentials is CalDAVOAuthCredentials {
+	return "refreshToken" in credentials;
+}
+
+function buildCredentials(account: CalDAVAccount): Record<string, string> {
+	if (isOAuthCredentials(account.credentials)) {
+		return {
+			tokenUrl: account.credentials.tokenUrl,
+			username: account.credentials.username,
+			refreshToken: account.credentials.refreshToken,
+			clientId: account.credentials.clientId,
+			clientSecret: account.credentials.clientSecret,
+		};
+	}
+	return {
+		username: account.credentials.username,
+		password: account.credentials.password,
+	};
+}
+
+export class CalDAVClientService {
+	private clients: Map<string, DAVClient> = new Map();
+
+	private async getOrCreateClient(account: CalDAVAccount): Promise<DAVClient> {
+		const existing = this.clients.get(account.id);
+		if (existing) return existing;
+
+		const client = new DAVClient({
+			serverUrl: account.serverUrl,
+			credentials: buildCredentials(account),
+			authMethod: account.authMethod,
+			defaultAccountType: "caldav",
+		});
+
+		await client.login();
+		this.clients.set(account.id, client);
+		return client;
+	}
+
+	async testConnection(account: CalDAVAccount): Promise<CalDAVConnectionResult> {
+		try {
+			const client = new DAVClient({
+				serverUrl: account.serverUrl,
+				credentials: buildCredentials(account),
+				authMethod: account.authMethod,
+				defaultAccountType: "caldav",
+			});
+
+			await client.login();
+			const calendars = await client.fetchCalendars();
+
+			return {
+				success: true,
+				calendars: calendars.map((cal) => this.mapCalendarInfo(cal)),
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : String(error),
+			};
+		}
+	}
+
+	async fetchCalendars(account: CalDAVAccount): Promise<CalDAVCalendarInfo[]> {
+		const client = await this.getOrCreateClient(account);
+		const calendars = await client.fetchCalendars();
+		return calendars.map((cal) => this.mapCalendarInfo(cal));
+	}
+
+	async fetchCalendarEvents(account: CalDAVAccount, options: CalDAVFetchEventsOptions): Promise<CalDAVFetchedEvent[]> {
+		const client = await this.getOrCreateClient(account);
+
+		const davCalendar: DAVCalendar = {
+			url: options.calendar.url,
+			displayName: options.calendar.displayName,
+			ctag: options.calendar.ctag,
+			syncToken: options.calendar.syncToken,
+		};
+
+		const objects = await client.fetchCalendarObjects({
+			calendar: davCalendar,
+			timeRange: options.timeRange,
+		});
+
+		return objects.map((obj) => this.mapCalendarObject(obj));
+	}
+
+	async syncCalendar(
+		account: CalDAVAccount,
+		storedCalendar: CalDAVStoredCalendar
+	): Promise<{
+		created: CalDAVFetchedEvent[];
+		updated: CalDAVFetchedEvent[];
+		deleted: string[];
+		newSyncToken?: string;
+		newCtag?: string;
+	}> {
+		const client = await this.getOrCreateClient(account);
+
+		const davCalendar: DAVCalendar = {
+			url: storedCalendar.url,
+			displayName: storedCalendar.displayName,
+			ctag: storedCalendar.ctag,
+			syncToken: storedCalendar.syncToken,
+			objects: storedCalendar.objects.map((obj) => ({
+				url: obj.url,
+				etag: obj.etag,
+				data: "",
+			})),
+		};
+
+		const syncResult = await client.smartCollectionSync({
+			collection: davCalendar,
+			detailedResult: true,
+		});
+
+		const created: CalDAVFetchedEvent[] = [];
+		const updated: CalDAVFetchedEvent[] = [];
+		const deleted: string[] = [];
+
+		if (syncResult.objects && typeof syncResult.objects === "object") {
+			const syncObjects = syncResult.objects as {
+				created?: DAVCalendarObject[];
+				updated?: DAVCalendarObject[];
+				deleted?: DAVCalendarObject[];
+			};
+
+			if (syncObjects.created) {
+				for (const obj of syncObjects.created) {
+					created.push(this.mapCalendarObject(obj));
+				}
+			}
+			if (syncObjects.updated) {
+				for (const obj of syncObjects.updated) {
+					updated.push(this.mapCalendarObject(obj));
+				}
+			}
+			if (syncObjects.deleted) {
+				for (const obj of syncObjects.deleted) {
+					deleted.push(obj.url);
+				}
+			}
+		}
+
+		return {
+			created,
+			updated,
+			deleted,
+			newSyncToken: typeof syncResult.syncToken === "string" ? syncResult.syncToken : undefined,
+			newCtag: syncResult.ctag,
+		};
+	}
+
+	async isCalendarDirty(account: CalDAVAccount, calendar: CalDAVCalendarInfo): Promise<boolean> {
+		const client = await this.getOrCreateClient(account);
+
+		const davCalendar: DAVCalendar = {
+			url: calendar.url,
+			displayName: calendar.displayName,
+			ctag: calendar.ctag,
+			syncToken: calendar.syncToken,
+		};
+
+		const result = await client.isCollectionDirty({
+			collection: davCalendar,
+		});
+
+		return result.isDirty;
+	}
+
+	clearClient(accountId: string): void {
+		this.clients.delete(accountId);
+	}
+
+	clearAllClients(): void {
+		this.clients.clear();
+	}
+
+	private mapCalendarInfo(cal: DAVCalendar): CalDAVCalendarInfo {
+		const getStringValue = (val: unknown): string | undefined => {
+			if (typeof val === "string") return val;
+			return undefined;
+		};
+
+		return {
+			url: cal.url,
+			displayName: getStringValue(cal.displayName) ?? "Unnamed Calendar",
+			description: getStringValue(cal.description),
+			color: getStringValue(cal.calendarColor),
+			ctag: getStringValue(cal.ctag),
+			syncToken: getStringValue(cal.syncToken),
+			components: cal.components,
+		};
+	}
+
+	private mapCalendarObject(obj: DAVCalendarObject): CalDAVFetchedEvent {
+		let uid: string | undefined;
+		const data = typeof obj.data === "string" ? obj.data : "";
+
+		if (data) {
+			const uidMatch = data.match(/UID:([^\r\n]+)/i);
+			if (uidMatch?.[1]) {
+				uid = uidMatch[1].trim();
+			}
+		}
+
+		return {
+			url: obj.url,
+			etag: typeof obj.etag === "string" ? obj.etag : "",
+			data,
+			uid,
+		};
+	}
+}

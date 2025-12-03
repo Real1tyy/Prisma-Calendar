@@ -1,3 +1,4 @@
+export { CalDAVSettings } from "./caldav";
 export { CalendarSettings } from "./calendar";
 export { GeneralSettings } from "./general";
 export { NotificationsSettings } from "./notifications";

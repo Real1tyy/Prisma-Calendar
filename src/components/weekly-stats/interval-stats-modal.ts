@@ -12,6 +12,8 @@ export interface IntervalConfig {
 	getBounds(date: Date): { start: Date; end: Date };
 	navigateNext(date: Date): void;
 	navigatePrevious(date: Date): void;
+	navigateFastNext(date: Date): void;
+	navigateFastPrevious(date: Date): void;
 	aggregateStats(
 		events: ParsedEvent[],
 		date: Date,
@@ -41,6 +43,16 @@ export abstract class IntervalStatsModal extends StatsModal {
 			await this.navigateNext();
 			return false;
 		});
+
+		this.scope.register(["Shift"], "ArrowLeft", async () => {
+			await this.navigateFastPrevious();
+			return false;
+		});
+
+		this.scope.register(["Shift"], "ArrowRight", async () => {
+			await this.navigateFastNext();
+			return false;
+		});
 	}
 
 	protected async navigatePrevious(): Promise<void> {
@@ -51,6 +63,18 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 	protected async navigateNext(): Promise<void> {
 		this.intervalConfig.navigateNext(this.currentDate);
+		this.destroyComponents();
+		await this.renderContent();
+	}
+
+	protected async navigateFastPrevious(): Promise<void> {
+		this.intervalConfig.navigateFastPrevious(this.currentDate);
+		this.destroyComponents();
+		await this.renderContent();
+	}
+
+	protected async navigateFastNext(): Promise<void> {
+		this.intervalConfig.navigateFastNext(this.currentDate);
 		this.destroyComponents();
 		await this.renderContent();
 	}
@@ -109,10 +133,22 @@ export abstract class IntervalStatsModal extends StatsModal {
 	private renderHeader(contentEl: HTMLElement, start: Date, end: Date, stats: Stats): void {
 		const header = contentEl.createDiv(cls("stats-header"));
 
-		const prevButton = header.createEl("button", {
-			text: "Previous",
+		const leftNavGroup = header.createDiv(cls("stats-nav-group"));
+
+		const fastPrevButton = leftNavGroup.createEl("button", {
+			text: "«",
+			cls: cls("stats-nav-button", "stats-nav-button-fast"),
+		});
+		fastPrevButton.ariaLabel = "Fast previous";
+		fastPrevButton.addEventListener("click", () => {
+			void this.navigateFastPrevious();
+		});
+
+		const prevButton = leftNavGroup.createEl("button", {
+			text: "‹",
 			cls: cls("stats-nav-button"),
 		});
+		prevButton.ariaLabel = "Previous";
 		prevButton.addEventListener("click", () => {
 			void this.navigatePrevious();
 		});
@@ -153,12 +189,24 @@ export abstract class IntervalStatsModal extends StatsModal {
 		const eventsStat = header.createDiv(cls("stats-header-stat"));
 		eventsStat.setText(`📅 ${stats.entries.reduce((sum, e) => sum + e.count, 0)} events`);
 
-		const nextButton = header.createEl("button", {
-			text: "Next",
+		const rightNavGroup = header.createDiv(cls("stats-nav-group"));
+
+		const nextButton = rightNavGroup.createEl("button", {
+			text: "›",
 			cls: cls("stats-nav-button"),
 		});
+		nextButton.ariaLabel = "Next";
 		nextButton.addEventListener("click", () => {
 			void this.navigateNext();
+		});
+
+		const fastNextButton = rightNavGroup.createEl("button", {
+			text: "»",
+			cls: cls("stats-nav-button", "stats-nav-button-fast"),
+		});
+		fastNextButton.ariaLabel = "Fast next";
+		fastNextButton.addEventListener("click", () => {
+			void this.navigateFastNext();
 		});
 	}
 }
