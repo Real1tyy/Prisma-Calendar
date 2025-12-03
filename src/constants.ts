@@ -26,6 +26,7 @@ export const COMMAND_IDS = {
 	BATCH_MOVE_NEXT_WEEK: "batch-move-next-week",
 	BATCH_MOVE_PREV_WEEK: "batch-move-prev-week",
 	OPEN_CURRENT_NOTE_IN_CALENDAR: "open-current-note-in-calendar",
+	SHOW_DAILY_STATS: "show-daily-stats",
 	SHOW_WEEKLY_STATS: "show-weekly-stats",
 	SHOW_MONTHLY_STATS: "show-monthly-stats",
 	SHOW_ALLTIME_STATS: "show-alltime-stats",
@@ -101,3 +102,10 @@ export const SETTINGS_DEFAULTS = {
 export const INTERNAL_FRONTMATTER_PROPERTIES = [
 	"position", // Internal Obsidian property
 ] as const;
+
+export const CALDAV_DEFAULTS = {
+	SYNC_FOLDER: "CalDAV",
+	SYNC_INTERVAL_MINUTES: 15,
+	CALDAV_PROP: "Caldav",
+	MAX_ACCOUNTS: 10,
+} as const;
