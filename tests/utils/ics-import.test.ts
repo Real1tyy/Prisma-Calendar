@@ -589,7 +589,7 @@ END:VCALENDAR`;
 			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "UTC");
 
 			expect(fm["All Day"]).toBe(true);
-			expect(fm["Date"]).toBe("2025-01-15");
+			expect(fm.Date).toBe("2025-01-15");
 		});
 
 		it("should preserve all-day event date in Europe/Berlin timezone", () => {
@@ -602,7 +602,7 @@ END:VCALENDAR`;
 			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "Europe/Berlin");
 
 			expect(fm["All Day"]).toBe(true);
-			expect(fm["Date"]).toBe("2025-01-15");
+			expect(fm.Date).toBe("2025-01-15");
 		});
 
 		it("should handle all-day event near date boundary correctly", () => {
@@ -616,7 +616,7 @@ END:VCALENDAR`;
 
 			expect(fm["All Day"]).toBe(true);
 			// Should be the 15th in Berlin timezone
-			expect(fm["Date"]).toBe("2025-01-15");
+			expect(fm.Date).toBe("2025-01-15");
 		});
 	});
 });
