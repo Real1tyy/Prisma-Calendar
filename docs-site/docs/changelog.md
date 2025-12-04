@@ -16,7 +16,28 @@ All notable changes to this project will be documented here.
 - **Keyboard Shortcuts**: `Shift+←` and `Shift+→` for fast navigation in all stats modals
 - **Full Feature Parity**: Daily stats supports all existing features - group by name/category, include skipped events toggle, break time subtraction, and decimal hours display
 
----
+#### Mobile Responsiveness Improvements
+- **Calendar View on Mobile**:
+  - **"+more" Events**: On mobile monthly view, events are condensed with a "+more" link that opens a clean popover showing all events for that day
+  - **Responsive Toolbar**: Calendar toolbar buttons wrap intelligently on narrow screens with compact sizing
+  - **Touch-Friendly Controls**: Filter inputs and preset selectors adapt to full-width on mobile
+
+- **Statistics Modals on Mobile**:
+  - **Compact Modal Width**: Statistics modal fits properly on mobile screens
+  - **Optimized Header Layout**: Header controls condensed into 2 rows instead of 6, using CSS Grid for efficient space usage
+  - **Larger Pie Chart**: Chart takes full advantage of available width with legend positioned below
+  - **Readable Table**: Larger font size (13px) with optimized column widths (40% name, 20% each for count/duration/percentage)
+  - **Compact Controls**: Navigation buttons, toggles, and pagination all sized appropriately for touch
+
+- **Notification Modal on Mobile**:
+  - **Responsive Layout**: Modal width constrained w for proper mobile display
+  - **Inline Action Buttons**: "Open event", "Snooze", and "Dismiss" buttons displayed in a row for easier access
+  - **Compact Spacing**: Reduced padding and font sizes while maintaining readability
+
+- **Event Modal on Mobile**:
+  - **Full-Width Inputs**: Form inputs and preset selectors expand to full width
+  - **Wrapped Controls**: Header controls wrap gracefully on narrow screens
+--
 
 ## 1.8.0
 
