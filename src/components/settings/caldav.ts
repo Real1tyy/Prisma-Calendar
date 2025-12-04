@@ -16,18 +16,11 @@ export class CalDAVSettings {
 	}
 
 	display(containerEl: HTMLElement): void {
-		// eslint-disable-next-line obsidianmd/ui/sentence-case -- CalDAV is a proper noun
-		new Setting(containerEl).setName("CalDAV sync (read-only)").setHeading();
+		new Setting(containerEl).setName("Calendar sync (read-only)").setHeading();
 
 		const descContainer = containerEl.createDiv(cls("settings-caldav-desc"));
-		descContainer
-			.createEl("p")
-			// eslint-disable-next-line obsidianmd/ui/sentence-case -- CalDAV, Nextcloud, iCloud, Google are proper nouns
-			.setText("Sync events from external CalDAV calendars (Nextcloud, iCloud, Google, etc.).");
-		descContainer
-			.createEl("p", { cls: cls("settings-muted") })
-			// eslint-disable-next-line obsidianmd/ui/sentence-case -- CalDAV, Obsidian are proper nouns
-			.setText("Events are synced one-way from the CalDAV server to Obsidian.");
+		descContainer.createEl("p").setText("Sync events from external calendar servers.");
+		descContainer.createEl("p", { cls: cls("settings-muted") }).setText("Events are synced one-way from the server.");
 
 		this.renderAccountsList(containerEl);
 		this.renderGlobalSettings(containerEl);
@@ -38,8 +31,7 @@ export class CalDAVSettings {
 
 		new Setting(containerEl)
 			.setName("Sync on startup")
-			// eslint-disable-next-line obsidianmd/ui/sentence-case -- CalDAV, Obsidian are proper nouns
-			.setDesc("Automatically sync CalDAV calendars when Obsidian starts")
+			.setDesc("Automatically sync calendars when the app starts")
 			.addToggle((toggle) => {
 				toggle.setValue(caldavSettings.syncOnStartup).onChange(async (value) => {
 					await this.settingsStore.updateSettings((s) => ({
@@ -59,8 +51,7 @@ export class CalDAVSettings {
 
 		if (caldavSettings.accounts.length === 0) {
 			const emptyState = accountsContainer.createDiv(cls("caldav-accounts-empty"));
-			// eslint-disable-next-line obsidianmd/ui/sentence-case -- CalDAV is a proper noun
-			emptyState.setText("No CalDAV accounts configured.");
+			emptyState.setText("No accounts configured.");
 		} else {
 			for (const account of caldavSettings.accounts) {
 				this.renderAccountItem(accountsContainer, account);
@@ -68,8 +59,7 @@ export class CalDAVSettings {
 		}
 
 		const addButton = containerEl.createEl("button", {
-			// eslint-disable-next-line obsidianmd/ui/sentence-case -- CalDAV is a proper noun
-			text: "Add CalDAV account",
+			text: "Add account",
 			cls: cls("caldav-add-account-button"),
 		});
 		addButton.addEventListener("click", () => {
@@ -186,7 +176,7 @@ class ConfirmDeleteAccountModal extends Modal {
 		contentEl.empty();
 
 		contentEl.createEl("h2", { text: "Delete account" });
-		contentEl.createEl("p", { text: `Are you sure you want to delete the CalDAV account "${this.accountName}"?` });
+		contentEl.createEl("p", { text: `Are you sure you want to delete the account "${this.accountName}"?` });
 
 		new Setting(contentEl)
 			.addButton((button) => {
@@ -236,8 +226,7 @@ class AddCalDAVAccountModal extends Modal {
 		contentEl.empty();
 		contentEl.addClass(cls("caldav-modal"));
 
-		// eslint-disable-next-line obsidianmd/ui/sentence-case -- CalDAV is a proper noun
-		contentEl.createEl("h2", { text: "Add CalDAV account" });
+		contentEl.createEl("h2", { text: "Add account" });
 
 		this.renderPresetSelector(contentEl);
 		this.renderForm(contentEl);
@@ -248,7 +237,7 @@ class AddCalDAVAccountModal extends Modal {
 	private renderPresetSelector(container: HTMLElement): void {
 		new Setting(container)
 			.setName("Provider preset")
-			.setDesc("Select a provider to pre-fill server URL")
+			.setDesc("Select a provider to pre-fill the server address")
 			.addDropdown((dropdown) => {
 				dropdown.addOption("", "Custom");
 				for (const [key, preset] of Object.entries(CALDAV_PRESETS)) {
@@ -279,7 +268,7 @@ class AddCalDAVAccountModal extends Modal {
 					.onChange((value) => {
 						this.name = value;
 						if (!this.syncDirectory) {
-							this.syncDirectory = `CalDAV/${value.replace(/[/\\?%*:|"<>]/g, "-")}`;
+							this.syncDirectory = `Calendars/${value.replace(/[/\\?%*:|"<>]/g, "-")}`;
 						}
 					});
 			});
@@ -289,8 +278,7 @@ class AddCalDAVAccountModal extends Modal {
 			.setDesc("Folder where events from this account will be stored")
 			.addText((text) => {
 				text
-					// eslint-disable-next-line obsidianmd/ui/sentence-case -- CalDAV is a proper noun
-					.setPlaceholder("CalDAV/MyAccount")
+					.setPlaceholder("Folder name")
 					.setValue(this.syncDirectory)
 					.onChange((value) => {
 						this.syncDirectory = value;
@@ -298,9 +286,8 @@ class AddCalDAVAccountModal extends Modal {
 			});
 
 		new Setting(formContainer)
-			.setName("Server URL")
-			// eslint-disable-next-line obsidianmd/ui/sentence-case -- CalDAV is a proper noun
-			.setDesc("CalDAV server URL")
+			.setName("Server address")
+			.setDesc("The calendar server address")
 			.addText((text) => {
 				text
 					.setPlaceholder("https://caldav.example.com/dav/")
@@ -313,8 +300,7 @@ class AddCalDAVAccountModal extends Modal {
 
 		new Setting(formContainer).setName("Username").addText((text) => {
 			text
-				// eslint-disable-next-line obsidianmd/ui/sentence-case -- Email placeholder
-				.setPlaceholder("user@example.com")
+				.setPlaceholder("Your username")
 				.setValue(this.username)
 				.onChange((value) => {
 					this.username = value;
@@ -324,8 +310,7 @@ class AddCalDAVAccountModal extends Modal {
 
 		new Setting(formContainer)
 			.setName("Password / app password")
-			// eslint-disable-next-line obsidianmd/ui/sentence-case -- iCloud, Google are proper nouns
-			.setDesc("Use an app-specific password for iCloud and Google")
+			.setDesc("Use an app-specific password for cloud providers")
 			.addText((text) => {
 				text.inputEl.type = "password";
 				text
@@ -399,7 +384,7 @@ class AddCalDAVAccountModal extends Modal {
 
 	private async testConnection(button: HTMLButtonElement): Promise<void> {
 		if (!this.serverUrl || !this.username || !this.password) {
-			new Notice("Please fill in server URL, username, and password");
+			new Notice("Please fill in server address, username, and password");
 			return;
 		}
 
@@ -417,7 +402,7 @@ class AddCalDAVAccountModal extends Modal {
 					password: this.password,
 				},
 				enabled: true,
-				syncDirectory: this.syncDirectory || "CalDAV",
+				syncDirectory: this.syncDirectory || "Calendars",
 				selectedCalendars: [],
 				syncIntervalMinutes: 15,
 				createdAt: Date.now(),
@@ -482,7 +467,7 @@ class AddCalDAVAccountModal extends Modal {
 			},
 		}));
 
-		new Notice(`Added CalDAV account: ${this.name}`);
+		new Notice(`Added account: ${this.name}`);
 		this.onSave();
 		this.close();
 	}
@@ -594,8 +579,7 @@ class EditCalDAVAccountModal extends Modal {
 
 		if (this.discoveredCalendars.length === 0 && this.selectedCalendars.length === 0) {
 			selectorContainer.createEl("p", {
-				// eslint-disable-next-line obsidianmd/ui/sentence-case -- Referring to button name
-				text: "Click 'Refresh calendars' to see available calendars",
+				text: "Click the refresh button to see available calendars",
 				cls: cls("settings-muted"),
 			});
 			return;
@@ -679,7 +663,7 @@ class EditCalDAVAccountModal extends Modal {
 			},
 		}));
 
-		new Notice(`Updated CalDAV account: ${this.name}`);
+		new Notice(`Updated account: ${this.name}`);
 		this.onSave();
 		this.close();
 	}
