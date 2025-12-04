@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { ParsedEvent } from "../../src/core/parser";
 import {
+	aggregateDailyStats,
 	aggregateMonthlyStats,
 	aggregateWeeklyStats,
 	formatDuration,
 	formatDurationAsDecimalHours,
 	formatPercentage,
+	getDayBounds,
 	getEventDuration,
 	getEventsInRange,
 	getMonthBounds,
@@ -1256,6 +1258,361 @@ describe("getMonthBounds", () => {
 		const monthDuration = end.getTime() - start.getTime();
 		const daysInMonth = monthDuration / (24 * 60 * 60 * 1000);
 		expect(daysInMonth).toBe(30); // April has 30 days
+	});
+});
+
+describe("getDayBounds", () => {
+	it("should return start and end of the day", () => {
+		const date = new Date("2025-02-15T14:30:00");
+		const { start, end } = getDayBounds(date);
+
+		expect(start.getDate()).toBe(15);
+		expect(start.getMonth()).toBe(1); // February
+		expect(start.getFullYear()).toBe(2025);
+		expect(start.getHours()).toBe(0);
+		expect(start.getMinutes()).toBe(0);
+		expect(start.getSeconds()).toBe(0);
+		expect(start.getMilliseconds()).toBe(0);
+
+		expect(end.getDate()).toBe(16);
+		expect(end.getMonth()).toBe(1);
+	});
+
+	it("should handle midnight correctly", () => {
+		const date = new Date("2025-02-15T00:00:00");
+		const { start, end } = getDayBounds(date);
+
+		expect(start.getDate()).toBe(15);
+		expect(end.getDate()).toBe(16);
+	});
+
+	it("should handle end of day correctly", () => {
+		const date = new Date("2025-02-15T23:59:59");
+		const { start, end } = getDayBounds(date);
+
+		expect(start.getDate()).toBe(15);
+		expect(end.getDate()).toBe(16);
+	});
+
+	it("should handle month boundary correctly", () => {
+		const date = new Date("2025-02-28T12:00:00");
+		const { start, end } = getDayBounds(date);
+
+		expect(start.getDate()).toBe(28);
+		expect(start.getMonth()).toBe(1); // February
+		expect(end.getDate()).toBe(1);
+		expect(end.getMonth()).toBe(2); // March
+	});
+
+	it("should handle leap year February 29 correctly", () => {
+		const date = new Date("2024-02-29T12:00:00"); // 2024 is a leap year
+		const { start, end } = getDayBounds(date);
+
+		expect(start.getDate()).toBe(29);
+		expect(start.getMonth()).toBe(1); // February
+		expect(end.getDate()).toBe(1);
+		expect(end.getMonth()).toBe(2); // March
+	});
+
+	it("should handle year boundary correctly", () => {
+		const date = new Date("2025-12-31T12:00:00");
+		const { start, end } = getDayBounds(date);
+
+		expect(start.getDate()).toBe(31);
+		expect(start.getMonth()).toBe(11); // December
+		expect(start.getFullYear()).toBe(2025);
+		expect(end.getDate()).toBe(1);
+		expect(end.getMonth()).toBe(0); // January
+		expect(end.getFullYear()).toBe(2026);
+	});
+
+	it("should always return exactly 1 day difference", () => {
+		const testDates = [
+			new Date("2025-02-01T00:00:00"),
+			new Date("2025-02-15T12:00:00"),
+			new Date("2025-02-28T23:59:59"),
+			new Date("2025-03-01T06:30:00"),
+		];
+
+		for (const date of testDates) {
+			const { start, end } = getDayBounds(date);
+			const diffInDays = (end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000);
+			expect(diffInDays).toBe(1);
+		}
+	});
+});
+
+describe("aggregateDailyStats", () => {
+	it("should aggregate events for a single day", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "meeting1.md" },
+				title: "Morning Meeting",
+				start: "2025-02-15T09:00:00Z",
+				end: "2025-02-15T10:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "2",
+				ref: { filePath: "meeting2.md" },
+				title: "Afternoon Meeting",
+				start: "2025-02-15T14:00:00Z",
+				end: "2025-02-15T15:30:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const dayDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateDailyStats(events, dayDate);
+
+		expect(stats.entries).toHaveLength(2);
+		expect(stats.totalDuration).toBe(150 * 60 * 1000); // 150 minutes
+	});
+
+	it("should exclude events from other days", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "yesterday.md" },
+				title: "Yesterday Event",
+				start: "2025-02-14T10:00:00Z",
+				end: "2025-02-14T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "2",
+				ref: { filePath: "today.md" },
+				title: "Today Event",
+				start: "2025-02-15T10:00:00Z",
+				end: "2025-02-15T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "3",
+				ref: { filePath: "tomorrow.md" },
+				title: "Tomorrow Event",
+				start: "2025-02-16T10:00:00Z",
+				end: "2025-02-16T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const dayDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateDailyStats(events, dayDate);
+
+		expect(stats.entries).toHaveLength(1);
+		expect(stats.entries[0].name).toBe("Today Event");
+	});
+
+	it("should skip all-day events", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "allday.md" },
+				title: "All Day Event",
+				start: "2025-02-15T00:00:00Z",
+				allDay: true,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "2",
+				ref: { filePath: "timed.md" },
+				title: "Timed Event",
+				start: "2025-02-15T10:00:00Z",
+				end: "2025-02-15T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const dayDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateDailyStats(events, dayDate);
+
+		expect(stats.entries).toHaveLength(1);
+		expect(stats.entries[0].name).toBe("Timed Event");
+	});
+
+	it("should group events by cleaned name", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "standup1.md" },
+				title: "Standup 20250215090000",
+				start: "2025-02-15T09:00:00Z",
+				end: "2025-02-15T09:15:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+			{
+				id: "2",
+				ref: { filePath: "standup2.md" },
+				title: "Standup 20250215140000",
+				start: "2025-02-15T14:00:00Z",
+				end: "2025-02-15T14:15:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const dayDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateDailyStats(events, dayDate);
+
+		expect(stats.entries).toHaveLength(1);
+		expect(stats.entries[0].name).toBe("Standup");
+		expect(stats.entries[0].count).toBe(2);
+		expect(stats.entries[0].duration).toBe(30 * 60 * 1000); // 30 minutes total
+	});
+
+	it("should support category aggregation mode", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "event1.md" },
+				title: "Meeting 1",
+				start: "2025-02-15T09:00:00Z",
+				end: "2025-02-15T10:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Category: "Work",
+				},
+			},
+			{
+				id: "2",
+				ref: { filePath: "event2.md" },
+				title: "Meeting 2",
+				start: "2025-02-15T14:00:00Z",
+				end: "2025-02-15T15:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Category: "Work",
+				},
+			},
+			{
+				id: "3",
+				ref: { filePath: "event3.md" },
+				title: "Gym",
+				start: "2025-02-15T18:00:00Z",
+				end: "2025-02-15T19:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Category: "Personal",
+				},
+			},
+		];
+
+		const dayDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateDailyStats(events, dayDate, "category", "Category");
+
+		expect(stats.entries).toHaveLength(2);
+
+		const workEntry = stats.entries.find((e) => e.name === "Work");
+		expect(workEntry?.count).toBe(2);
+		expect(workEntry?.duration).toBe(2 * 60 * 60 * 1000); // 2 hours
+
+		const personalEntry = stats.entries.find((e) => e.name === "Personal");
+		expect(personalEntry?.count).toBe(1);
+		expect(personalEntry?.duration).toBe(60 * 60 * 1000); // 1 hour
+	});
+
+	it("should handle break time subtraction", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "work.md" },
+				title: "Work Session",
+				start: "2025-02-15T09:00:00Z",
+				end: "2025-02-15T12:00:00Z", // 3 hours
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+				meta: {
+					Break: 30, // 30 minute break
+				},
+			},
+		];
+
+		const dayDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateDailyStats(events, dayDate, "name", "Category", "Break");
+
+		expect(stats.entries).toHaveLength(1);
+		expect(stats.entries[0].duration).toBe(150 * 60 * 1000); // 180 - 30 = 150 minutes
+	});
+
+	it("should return empty results for days with no events", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "event.md" },
+				title: "Event",
+				start: "2025-02-14T10:00:00Z",
+				end: "2025-02-14T11:00:00Z",
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const dayDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateDailyStats(events, dayDate);
+
+		expect(stats.entries).toHaveLength(0);
+		expect(stats.totalDuration).toBe(0);
+	});
+
+	it("should correctly set day bounds in result", () => {
+		const events: ParsedEvent[] = [];
+		const date = new Date("2025-02-15T15:30:00");
+
+		const stats = aggregateDailyStats(events, date);
+
+		expect(stats.periodStart?.getDate()).toBe(15);
+		expect(stats.periodStart?.getMonth()).toBe(1); // February
+		expect(stats.periodEnd?.getDate()).toBe(16);
+		expect(stats.periodStart?.getHours()).toBe(0);
+		expect(stats.periodStart?.getMinutes()).toBe(0);
+	});
+
+	it("should handle events spanning across day boundary", () => {
+		const events: ParsedEvent[] = [
+			{
+				id: "1",
+				ref: { filePath: "spanning.md" },
+				title: "Spanning Event",
+				start: "2025-02-14T20:00:00", // Starts yesterday at 8pm local
+				end: "2025-02-15T04:00:00", // Ends today at 4am local
+				allDay: false,
+				isVirtual: false,
+				skipped: false,
+			},
+		];
+
+		const dayDate = new Date("2025-02-15T12:00:00");
+		const stats = aggregateDailyStats(events, dayDate);
+
+		// Event should be included as it overlaps with the target day
+		expect(stats.entries).toHaveLength(1);
+		expect(stats.entries[0].name).toBe("Spanning Event");
 	});
 });
 

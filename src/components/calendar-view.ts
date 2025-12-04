@@ -42,7 +42,7 @@ import {
 	SkippedEventsModal,
 } from "./list-modals";
 import { EventCreateModal } from "./modals";
-import { AllTimeStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
+import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";
@@ -115,6 +115,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private filteredEventsModal: FilteredEventsModal | null = null;
 	private selectedEventsModal: SelectedEventsModal | null = null;
 	private globalSearchModal: GlobalSearchModal | null = null;
+	private dailyStatsModal: DailyStatsModal | null = null;
 	private weeklyStatsModal: WeeklyStatsModal | null = null;
 	private monthlyStatsModal: MonthlyStatsModal | null = null;
 	private alltimeStatsModal: AllTimeStatsModal | null = null;
@@ -549,6 +550,19 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				this.globalSearchModal = modal;
 			},
 			() => new GlobalSearchModal(this.app, this.bundle, this)
+		);
+	}
+
+	async showDailyStatsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.dailyStatsModal,
+			(modal) => {
+				this.dailyStatsModal = modal;
+			},
+			() => {
+				const currentDate = this.calendar?.getDate() || new Date();
+				return new DailyStatsModal(this.app, this.bundle, currentDate);
+			}
 		);
 	}
 

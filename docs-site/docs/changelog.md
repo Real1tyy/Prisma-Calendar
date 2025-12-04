@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented here.
 
+## 1.9.0
+
+### New Features
+
+#### Daily Statistics View
+- **New Daily Stats Command**: "Show daily statistics" command displays event statistics for a single day
+- **Smart Date Selection**: When opening daily stats, automatically shows today if it's within the current calendar view interval, otherwise shows the first day of that interval
+- **Fast Navigation on All Stats Modals**: All statistics modals (daily, weekly, monthly) now include fast navigation buttons:
+  - **Daily**: `«`/`»` jumps ±10 days, `‹`/`›` jumps ±1 day
+  - **Weekly**: `«`/`»` jumps ±4 weeks, `‹`/`›` jumps ±1 week
+  - **Monthly**: `«`/`»` jumps ±1 year, `‹`/`›` jumps ±1 month
+- **Keyboard Shortcuts**: `Shift+←` and `Shift+→` for fast navigation in all stats modals
+- **Full Feature Parity**: Daily stats supports all existing features - group by name/category, include skipped events toggle, break time subtraction, and decimal hours display
+
+---
+
 ## 1.8.0
 
 ### New Features

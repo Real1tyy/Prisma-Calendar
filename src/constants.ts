@@ -26,6 +26,7 @@ export const COMMAND_IDS = {
 	BATCH_MOVE_NEXT_WEEK: "batch-move-next-week",
 	BATCH_MOVE_PREV_WEEK: "batch-move-prev-week",
 	OPEN_CURRENT_NOTE_IN_CALENDAR: "open-current-note-in-calendar",
+	SHOW_DAILY_STATS: "show-daily-stats",
 	SHOW_WEEKLY_STATS: "show-weekly-stats",
 	SHOW_MONTHLY_STATS: "show-monthly-stats",
 	SHOW_ALLTIME_STATS: "show-alltime-stats",
@@ -85,7 +86,7 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_SLOT_DURATION_MINUTES: 10,
 	DEFAULT_SNAP_DURATION_MINUTES: 10,
 	DEFAULT_ZOOM_LEVELS: [1, 2, 3, 5, 10, 15, 20, 30, 45, 60],
-	DEFAULT_EVENT_MAX_STACK: 3,
+	DEFAULT_EVENT_MAX_STACK: 1,
 	DEFAULT_PAST_EVENT_CONTRAST: 70,
 	DEFAULT_EVENT_OVERLAP: true,
 	DEFAULT_SLOT_EVENT_OVERLAP: true,
@@ -101,3 +102,10 @@ export const SETTINGS_DEFAULTS = {
 export const INTERNAL_FRONTMATTER_PROPERTIES = [
 	"position", // Internal Obsidian property
 ] as const;
+
+export const CALDAV_DEFAULTS = {
+	SYNC_FOLDER: "CalDAV",
+	SYNC_INTERVAL_MINUTES: 15,
+	CALDAV_PROP: "Caldav",
+	MAX_ACCOUNTS: 10,
+} as const;

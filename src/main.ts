@@ -148,6 +148,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.OPEN_FILTER_PRESET_SELECTOR, "Open filter preset selector", (view) => {
 			void view.openFilterPresetSelector();
 		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_DAILY_STATS, "Show daily statistics", (view) => {
+			void view.showDailyStatsModal();
+		});
 		addCalendarViewCommand(COMMAND_IDS.SHOW_WEEKLY_STATS, "Show weekly statistics", (view) => {
 			void view.showWeeklyStatsModal();
 		});

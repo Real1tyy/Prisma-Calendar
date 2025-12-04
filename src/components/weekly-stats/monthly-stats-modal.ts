@@ -16,6 +16,14 @@ export class MonthlyStatsModal extends IntervalStatsModal {
 			date.setMonth(date.getMonth() - 1);
 		},
 
+		navigateFastNext: (date: Date) => {
+			date.setFullYear(date.getFullYear() + 1);
+		},
+
+		navigateFastPrevious: (date: Date) => {
+			date.setFullYear(date.getFullYear() - 1);
+		},
+
 		aggregateStats: (
 			events: ParsedEvent[],
 			date: Date,

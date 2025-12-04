@@ -101,6 +101,19 @@ export function getMonthBounds(date: Date): { start: Date; end: Date } {
 }
 
 /**
+ * Gets the start and end of the day for a given date.
+ */
+export function getDayBounds(date: Date): { start: Date; end: Date } {
+	const start = new Date(date);
+	start.setHours(0, 0, 0, 0);
+
+	const end = new Date(start);
+	end.setDate(end.getDate() + 1);
+
+	return { start, end };
+}
+
+/**
  * Parses a category value that may contain multiple comma-separated categories.
  * Returns an array of trimmed category names, or ["No Category"] if empty/undefined.
  */
@@ -214,6 +227,20 @@ export function aggregateMonthlyStats(
 	breakProp?: string
 ): Stats {
 	const { start, end } = getMonthBounds(monthDate);
+	return aggregateStats(events, start, end, mode, categoryProp, breakProp);
+}
+
+/**
+ * Aggregates events for a given day, grouping by name or category.
+ */
+export function aggregateDailyStats(
+	events: ParsedEvent[],
+	dayDate: Date,
+	mode: AggregationMode = "name",
+	categoryProp = "Category",
+	breakProp?: string
+): Stats {
+	const { start, end } = getDayBounds(dayDate);
 	return aggregateStats(events, start, end, mode, categoryProp, breakProp);
 }
 

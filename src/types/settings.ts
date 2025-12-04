@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { SETTINGS_DEFAULTS } from "../constants";
 import { ColorSchema } from "../utils/validation";
+import { CalDAVSettingsSchema } from "./caldav";
 import { CalendarViewTypeSchema } from "./view";
 
 export const EventPresetSchema = z.object({
@@ -136,6 +137,7 @@ export const CustomCalendarSettingsSchema = z.object({
 				...NotificationsSettingsSchema.parse({}),
 			},
 		]),
+	caldav: CalDAVSettingsSchema.default(CalDAVSettingsSchema.parse({})),
 });
 
 export type FilterPreset = z.infer<typeof FilterPresetSchema>;
