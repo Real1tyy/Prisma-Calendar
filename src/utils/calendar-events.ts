@@ -104,6 +104,20 @@ export const removeZettelId = (text: string): string => {
 };
 
 /**
+ * Removes the instance date from recurring event titles.
+ * Pattern: "Name YYYY-MM-DD" -> "Name"
+ * This is used on mobile to save space.
+ */
+export const removeInstanceDate = (text: string): string => {
+	return (
+		text
+			// Strip date format at the end (YYYY-MM-DD)
+			.replace(/\s+\d{4}-\d{2}-\d{2}$/, "")
+			.trim()
+	);
+};
+
+/**
  * Rebuilds a physical recurring instance filename with a new date.
  * Format: "Title YYYY-MM-DD-ZETTELID" -> "Title NEW-DATE-ZETTELID"
  *

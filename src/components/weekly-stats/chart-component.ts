@@ -14,6 +14,10 @@ export class ChartComponent {
 		this.renderChart(entries, totalDuration);
 	}
 
+	private isMobileView(): boolean {
+		return window.innerWidth <= 768;
+	}
+
 	private createChartSection(parentEl: HTMLElement): HTMLElement {
 		const chartSection = parentEl.createDiv(cls("stats-chart-section"));
 
@@ -50,6 +54,7 @@ export class ChartComponent {
 		const limitedEntries = entries.slice(0, MAX_LABELS);
 		const labels = limitedEntries.map((e) => e.name);
 		const data = limitedEntries.map((e) => e.duration);
+		const isMobile = this.isMobileView();
 
 		this.chart = new Chart(canvas, {
 			type: "pie",
@@ -68,33 +73,32 @@ export class ChartComponent {
 				responsive: true,
 				maintainAspectRatio: false,
 				layout: {
-					padding: {
-						left: 20,
-						right: 20,
-					},
+					padding: isMobile ? { left: 4, right: 4, top: 10, bottom: 10 } : { left: 20, right: 20 },
 				},
 				plugins: {
 					legend: {
-						position: "right",
-						align: "start",
-						maxWidth: 350,
+						position: isMobile ? "bottom" : "right",
+						align: isMobile ? "center" : "start",
+						maxWidth: isMobile ? undefined : 350,
 						labels: {
 							font: {
-								size: 14,
+								size: isMobile ? 10 : 14,
 							},
-							padding: 8,
+							padding: isMobile ? 6 : 8,
 							color: "#ffffff",
-							boxWidth: 12,
-							boxHeight: 12,
+							boxWidth: isMobile ? 10 : 12,
+							boxHeight: isMobile ? 10 : 12,
 							generateLabels: (chart) => {
 								const datasets = chart.data.datasets;
+								const maxLen = isMobile ? 20 : 35;
+								const truncateLen = isMobile ? 17 : 32;
 								return (
 									chart.data.labels?.map((label, i) => {
 										const value = datasets[0].data[i] as number;
 										const percentage = ((value / totalDuration) * 100).toFixed(1);
 										const labelText = `${String(label)} (${percentage}%)`;
 										return {
-											text: labelText.length > 35 ? `${labelText.substring(0, 32)}...` : labelText,
+											text: labelText.length > maxLen ? `${labelText.substring(0, truncateLen)}...` : labelText,
 											fillStyle: (datasets[0].backgroundColor as string[])[i],
 											fontColor: "#ffffff",
 											hidden: false,

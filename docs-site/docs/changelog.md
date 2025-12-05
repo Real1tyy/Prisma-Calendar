@@ -16,6 +16,41 @@ All notable changes to this project will be documented here.
 - **Keyboard Shortcuts**: `Shift+←` and `Shift+→` for fast navigation in all stats modals
 - **Full Feature Parity**: Daily stats supports all existing features - group by name/category, include skipped events toggle, break time subtraction, and decimal hours display
 
+#### Mobile Responsiveness Improvements
+- **Calendar View on Mobile**:
+  - **Configurable Event Limit**: New setting "Mobile events per day" controls how many events show before "+more" link (default: 4, range: 0-10)
+  - **Title-Only Events**: Monthly view shows only event title (no time) for cleaner display
+  - **Compact Weekly View**: Weekly events show title, time, and compact frontmatter properties (7px font)
+  - **Larger Daily View**: Daily view uses larger fonts (13px title, 11px time, 10px properties) since more space is available
+  - **All-Day Events**: All-day events in daily view also use larger fonts for consistency
+  - **No Event Gaps**: Monthly view events fit tightly with no unnecessary min-height gaps
+  - **Title Word-Break**: Long event titles wrap properly instead of being cut off
+  - **Responsive Toolbar**: Calendar toolbar buttons wrap intelligently on narrow screens with compact sizing
+  - **Touch-Friendly Controls**: Filter inputs and preset selectors adapt to full-width on mobile
+
+- **Calendar View Improvements (Desktop & Mobile)**:
+  - **Configurable Color Dots**: New setting "Show color dots" to toggle color indicator dots in monthly view (default: enabled)
+  - **Clean Recurring Titles**: Instance dates removed from recurring event titles to save space
+  - **Color Indicator Dots**: Each day cell displays colored dots representing unique event colors at a glance
+  - **Clean Event Dots**: Removed FullCalendar's default event dots for cleaner appearance
+  - **"+more" Popover**: Shows event time alongside title for better context
+
+- **Statistics Modals on Mobile**:
+  - **Compact Modal Width**: Statistics modal fits properly on mobile screens
+  - **Optimized Header Layout**: Header controls condensed into 2 rows instead of 6, using CSS Grid for efficient space usage
+  - **Larger Pie Chart**: Chart takes full advantage of available width with legend positioned below
+  - **Readable Table**: Larger font size (13px) with optimized column widths (40% name, 20% each for count/duration/percentage)
+  - **Compact Controls**: Navigation buttons, toggles, and pagination all sized appropriately for touch
+
+- **Notification Modal on Mobile**:
+  - **Responsive Layout**: Modal width constrained for proper mobile display
+  - **Inline Action Buttons**: "Open event", "Snooze", and "Dismiss" buttons displayed in a row for easier access
+  - **Compact Spacing**: Reduced padding and font sizes while maintaining readability
+
+- **Event Modal on Mobile**:
+  - **Full-Width Inputs**: Form inputs and preset selectors expand to full width
+  - **Wrapped Controls**: Header controls wrap gracefully on narrow screens
+
 ---
 
 ## 1.8.0

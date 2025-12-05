@@ -90,6 +90,8 @@ export const CalendarSettingsSchema = z.object({
 	eventOverlap: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_EVENT_OVERLAP), // Allow events to visually overlap (all views)
 	slotEventOverlap: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SLOT_EVENT_OVERLAP), // Allow events to overlap within the same time slot (timeGrid views only)
 	eventMaxStack: z.number().int().min(1).max(10).default(SETTINGS_DEFAULTS.DEFAULT_EVENT_MAX_STACK), // Maximum number of events to stack before showing "+ more" link
+	mobileMaxEventsPerDay: z.number().int().min(0).max(10).default(SETTINGS_DEFAULTS.DEFAULT_MOBILE_MAX_EVENTS_PER_DAY), // Maximum events to show per day on mobile before showing "+more"
+	showColorDots: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SHOW_COLOR_DOTS), // Show color indicator dots in monthly view
 	skipUnderscoreProperties: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SKIP_UNDERSCORE_PROPERTIES), // Skip displaying properties that start with underscore
 	filterPresets: z.array(FilterPresetSchema).default([]), // Named filter expressions for quick access
 });
