@@ -22,6 +22,7 @@ import type { SingleCalendarConfig } from "../types/index";
 import {
 	isPhysicalRecurringEvent,
 	rebuildPhysicalInstanceWithNewDate,
+	removeInstanceDate,
 	removeZettelId,
 	shouldUpdateInstanceDateOnMove,
 } from "../utils/calendar-events";
@@ -834,10 +835,15 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			slotEventOverlap: settings.slotEventOverlap,
 			eventMaxStack: settings.eventMaxStack,
 
-			dayMaxEventRows: this.isMobileView() ? 1 : false,
+			// Mobile: Show limited events then "+more" link for cleaner display
+			dayMaxEventRows: this.isMobileView() ? settings.mobileMaxEventsPerDay : false,
 
 			windowResize: () => {
-				this.calendar?.setOption("dayMaxEventRows", this.isMobileView() ? 1 : false);
+				const currentSettings = this.bundle.settingsStore.currentSettings;
+				this.calendar?.setOption(
+					"dayMaxEventRows",
+					this.isMobileView() ? currentSettings.mobileMaxEventsPerDay : false
+				);
 			},
 
 			editable: true,
@@ -1106,6 +1112,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				id: "main-events",
 				events: calendarEvents,
 			});
+
+			this.updateColorDots();
 		} catch (error) {
 			console.error("Error refreshing calendar events:", error);
 		} finally {
@@ -1140,18 +1148,19 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	private renderEventContent(arg: EventContentArg): { domNodes: HTMLElement[] } {
 		const event = arg.event;
+		const isMobile = this.isMobileView();
+		const isMonthView = arg.view.type === "dayGridMonth";
 
-		const mainEl = document.createElement("div");
-		mainEl.className = "fc-event-main";
-
+		// Don't create our own fc-event-main - FullCalendar already provides one
 		const container = document.createElement("div");
 		container.className = cls("fc-event-content-wrapper");
-		mainEl.appendChild(container);
 
 		const headerEl = document.createElement("div");
 		headerEl.className = cls("fc-event-header");
 
-		if (!event.allDay && event.start) {
+		// On mobile monthly view, hide time to save space - show only event name
+		const showTime = !event.allDay && event.start && !(isMobile && isMonthView);
+		if (showTime) {
 			const timeEl = document.createElement("div");
 			timeEl.className = cls("fc-event-time");
 			timeEl.textContent = arg.timeText;
@@ -1164,37 +1173,42 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		let title = event.title;
 		if (title) {
 			title = removeZettelId(title);
+			title = removeInstanceDate(title);
 		}
 		titleEl.textContent = title;
 		headerEl.appendChild(titleEl);
 
 		container.appendChild(headerEl);
 
-		const displayProperties = this.getDisplayProperties(event);
-		if (displayProperties.length > 0) {
-			const propsContainer = document.createElement("div");
-			propsContainer.className = cls("fc-event-props");
+		// On mobile only: hide display properties to save space (monthly)
+		const hideProperties = isMobile && isMonthView;
+		if (!hideProperties) {
+			const displayProperties = this.getDisplayProperties(event);
+			if (displayProperties.length > 0) {
+				const propsContainer = document.createElement("div");
+				propsContainer.className = cls("fc-event-props");
 
-			for (const [prop, value] of displayProperties) {
-				const propEl = document.createElement("div");
-				propEl.className = cls("fc-event-prop");
+				for (const [prop, value] of displayProperties) {
+					const propEl = document.createElement("div");
+					propEl.className = cls("fc-event-prop");
 
-				const keyEl = document.createElement("span");
-				keyEl.className = cls("fc-event-prop-key");
-				keyEl.textContent = `${prop}:`;
-				propEl.appendChild(keyEl);
+					const keyEl = document.createElement("span");
+					keyEl.className = cls("fc-event-prop-key");
+					keyEl.textContent = `${prop}:`;
+					propEl.appendChild(keyEl);
 
-				const valueEl = document.createElement("span");
-				valueEl.className = cls("fc-event-prop-value");
-				this.renderPropertyValue(valueEl, value);
-				propEl.appendChild(valueEl);
+					const valueEl = document.createElement("span");
+					valueEl.className = cls("fc-event-prop-value");
+					this.renderPropertyValue(valueEl, value);
+					propEl.appendChild(valueEl);
 
-				propsContainer.appendChild(propEl);
+					propsContainer.appendChild(propEl);
+				}
+				container.appendChild(propsContainer);
 			}
-			container.appendChild(propsContainer);
 		}
 
-		return { domNodes: [mainEl] };
+		return { domNodes: [container] };
 	}
 
 	private getDisplayProperties(event: Pick<CalendarEventData, "extendedProps">): [string, unknown][] {
@@ -1241,6 +1255,74 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private getEventColor(event: Pick<ParsedEvent, "meta">): string {
 		const frontmatter = event.meta ?? {};
 		return this.colorEvaluator.evaluateColor(frontmatter);
+	}
+
+	private updateColorDots(): void {
+		if (!this.calendar) return;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		// Remove existing dots first
+		const existingDots = Array.from(this.container.querySelectorAll(`.${cls("day-color-dots")}`));
+		for (const dot of existingDots) {
+			dot.remove();
+		}
+
+		// Only render if setting is enabled and on monthly view
+		const viewType = this.calendar.view?.type;
+		if (!settings.showColorDots || viewType !== "dayGridMonth") return;
+
+		// Get all day cells
+		const dayCells = Array.from(this.container.querySelectorAll(".fc-daygrid-day"));
+		const events = this.calendar.getEvents();
+		const maxDots = this.isMobileView() ? 6 : 8;
+
+		for (const dayCell of dayCells) {
+			const dateAttr = dayCell.getAttribute("data-date");
+			if (!dateAttr) continue;
+
+			// Parse the date
+			const dayDate = new Date(dateAttr);
+			const dayStart = new Date(dayDate);
+			dayStart.setHours(0, 0, 0, 0);
+			const dayEnd = new Date(dayDate);
+			dayEnd.setHours(23, 59, 59, 999);
+
+			// Get events for this day
+			const dayEvents = events.filter((event) => {
+				const eventStart = event.start;
+				if (!eventStart) return false;
+				const eventStartTime = eventStart.getTime();
+				return eventStartTime >= dayStart.getTime() && eventStartTime <= dayEnd.getTime();
+			});
+
+			if (dayEvents.length === 0) continue;
+
+			// Collect unique colors
+			const colors = new Set<string>();
+			for (const event of dayEvents) {
+				if (colors.size >= maxDots) break;
+				const color = event.backgroundColor || event.borderColor || "#3788d8";
+				colors.add(color);
+			}
+
+			// Create dots container
+			const dotsContainer = document.createElement("div");
+			dotsContainer.className = cls("day-color-dots");
+
+			for (const color of colors) {
+				const dot = document.createElement("div");
+				dot.className = cls("day-color-dot");
+				dot.style.setProperty("--dot-color", color);
+				dotsContainer.appendChild(dot);
+			}
+
+			// Insert at top of day cell
+			const dayFrame = dayCell.querySelector(".fc-daygrid-day-frame");
+			if (dayFrame) {
+				dayFrame.insertBefore(dotsContainer, dayFrame.firstChild);
+			}
+		}
 	}
 
 	private handleEventClick(info: { event: Pick<CalendarEventData, "title" | "extendedProps"> }): void {

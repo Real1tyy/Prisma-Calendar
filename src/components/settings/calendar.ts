@@ -206,5 +206,20 @@ export class CalendarSettings {
 			max: 10,
 			step: 1,
 		});
+
+		this.ui.addSlider(containerEl, {
+			key: "mobileMaxEventsPerDay",
+			name: "Mobile events per day",
+			desc: "Maximum events to show per day on mobile before showing '+more' link (1-10)",
+			min: 1,
+			max: 10,
+			step: 1,
+		});
+
+		this.ui.addToggle(containerEl, {
+			key: "showColorDots",
+			name: "Show color dots",
+			desc: "Show color indicator dots at the top of each day in monthly view",
+		});
 	}
 }

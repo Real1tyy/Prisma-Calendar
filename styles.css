@@ -251,8 +251,9 @@
 }
 
 .prisma-fc-event-prop {
-	display: inline-flex;
-	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
 	gap: 4px;
 	margin: 0;
 	padding: 1px 6px;
@@ -269,9 +270,12 @@
 
 .prisma-fc-event-prop-value {
 	opacity: 1;
-	flex: 0 1 auto;
+	flex: 1 1 auto;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
+	word-break: break-word;
+	min-width: 0;
+	display: inline;
 }
 
 .prisma-fc-event-prop-link {
@@ -310,7 +314,6 @@
 
 .prisma-calendar-container .fc-daygrid-event {
 	min-height: auto;
-	/* Allow events to expand vertically for text wrapping */
 	height: auto;
 	display: flex;
 	flex-direction: column;
@@ -318,24 +321,21 @@
 }
 
 .prisma-calendar-container .fc-daygrid-event-harness {
-	min-height: 2em;
-	/* Remove max-height to allow text wrapping */
+	min-height: auto;
 	overflow: visible;
 }
 
-/* Month view specific styling - compact layout */
+/* Month view specific styling - desktop defaults */
 .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-content-wrapper {
 	padding: 4px 6px;
 	gap: 4px;
-	/* Allow content to expand vertically for text wrapping */
 	overflow: visible;
 	height: auto;
-	min-height: 2em;
+	min-height: auto;
 }
 
 .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-header {
 	gap: 4px;
-	/* Allow text wrapping in header */
 	overflow: visible;
 	white-space: normal;
 	display: flex;
@@ -351,7 +351,6 @@
 .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-title-custom {
 	font-size: var(--font-ui-smaller);
 	line-height: 1.2;
-	/* Enable text wrapping for long titles */
 	overflow: visible;
 	white-space: normal;
 	word-wrap: break-word;
@@ -778,6 +777,209 @@
 		font-size: 10px;
 		padding: 4px 6px;
 	}
+
+	/* Mobile Monthly View: Compact event display - minimize gaps */
+	.prisma-calendar-container .fc-daygrid-event-harness {
+		min-height: auto;
+	}
+
+	.prisma-calendar-container .fc-daygrid-event {
+		font-size: 11px;
+		padding: 1px 3px;
+		margin-bottom: 1px;
+	}
+
+	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-content-wrapper {
+		padding: 2px 4px;
+		gap: 2px;
+		overflow: visible;
+		min-height: auto;
+	}
+
+	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-header {
+		gap: 3px;
+		overflow: visible;
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-time {
+		font-size: 10px;
+	}
+
+	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-title-custom {
+		font-size: 10px;
+		white-space: normal;
+		word-break: break-word;
+		overflow-wrap: break-word;
+		line-height: 1.2;
+	}
+
+	/* Mobile Weekly/Daily View: Compact event display */
+	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-content-wrapper {
+		padding: 1px 3px;
+		display: flex;
+		flex-direction: column;
+		overflow: visible;
+		max-width: 100%;
+	}
+
+	/* Header (time + title) always at top, never pushed down */
+	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-header {
+		flex-shrink: 0;
+		order: -1;
+		max-width: 100%;
+		overflow: visible;
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+	}
+
+	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-title-custom {
+		font-size: 9px;
+		word-break: break-word;
+		overflow-wrap: break-word;
+		white-space: normal;
+		line-height: 1.2;
+		max-width: 100%;
+		font-weight: 500;
+	}
+
+	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-time {
+		font-size: 8px;
+		opacity: 0.85;
+	}
+
+	/* Mobile Weekly/Daily View: Compact frontmatter properties - lower priority, overflow downward */
+	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-props {
+		margin-top: 1px;
+		gap: 1px;
+		flex-shrink: 1;
+		overflow: hidden;
+	}
+
+	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop {
+		font-size: 7px;
+		line-height: 1.1;
+		padding: 0;
+		gap: 2px;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: baseline;
+		max-width: 100%;
+	}
+
+	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-key {
+		font-size: 7px;
+		opacity: 0.7;
+		flex-shrink: 0;
+	}
+
+	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-value {
+		font-size: 7px;
+		word-break: break-word;
+		overflow-wrap: break-word;
+		flex: 1 1 auto;
+		min-width: 0;
+		max-width: 100%;
+	}
+
+	/* Mobile Daily View ONLY: Larger text since we have more horizontal space */
+	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-title-custom {
+		font-size: 13px;
+		font-weight: 500;
+		line-height: 1.3;
+	}
+
+	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-time {
+		font-size: 11px;
+	}
+
+	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-props {
+		margin-top: 4px;
+		gap: 3px;
+	}
+
+	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop {
+		font-size: 10px;
+		line-height: 1.2;
+		padding: 1px 4px;
+		gap: 4px;
+	}
+
+	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-key {
+		font-size: 10px;
+	}
+
+	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-value {
+		font-size: 10px;
+	}
+
+	/* Mobile Daily View: All-day events - larger text */
+	.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-title-custom {
+		font-size: 13px;
+		font-weight: 500;
+		line-height: 1.3;
+	}
+
+	.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-content-wrapper {
+		padding: 4px 8px;
+	}
+}
+
+/* Hide FullCalendar's default event dots - we use our own color indicator system */
+.prisma-calendar-container .fc-daygrid-event-dot {
+	display: none;
+}
+
+/* Color Indicator Dots - Shows event colors at the top of each day cell (monthly view) */
+.prisma-day-color-dots {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	padding: 3px 6px;
+	justify-content: center;
+	max-width: 100%;
+}
+
+.prisma-day-color-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background-color: var(--dot-color, #3788d8);
+	flex-shrink: 0;
+}
+
+/* Desktop: Slightly larger dots */
+@media (min-width: 769px) {
+	.prisma-day-color-dot {
+		width: 12px;
+		height: 12px;
+	}
+}
+
+/* Popover styling - show time for events in the +more popover */
+.prisma-calendar-container .fc-popover .fc-popover-body .fc-daygrid-event {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 8px;
+}
+
+.prisma-calendar-container .fc-popover .fc-popover-body .fc-event-time {
+	display: inline-block;
+	font-size: 12px;
+	color: var(--text-muted);
+	flex-shrink: 0;
+	min-width: 50px;
+}
+
+.prisma-calendar-container .fc-popover .fc-popover-body .fc-event-title {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 /* Loading state */
