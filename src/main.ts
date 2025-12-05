@@ -9,7 +9,8 @@ import {
 	ICSImportModal,
 } from "./components/modals";
 import { COMMAND_IDS } from "./constants";
-import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
+import { CalDAVSyncService, CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
+import type { CalDAVSyncResult } from "./types/caldav";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 import { intoDate } from "./utils/format";
 import { createICSFromEvents, generateICSFilename } from "./utils/ics-export";
@@ -22,7 +23,9 @@ import {
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;
 	calendarBundles: CalendarBundle[] = [];
+	caldavSyncService: CalDAVSyncService | null = null;
 	private registeredViewTypes: Set<string> = new Set();
+	private autoSyncIntervalId: number | null = null;
 
 	async onload() {
 		this.settingsStore = new SettingsStore(this);
@@ -181,6 +184,14 @@ export default class CustomCalendarPlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: COMMAND_IDS.SYNC_CALDAV,
+			name: "Sync calendar accounts",
+			callback: () => {
+				void this.syncCalDAVAccounts();
+			},
+		});
+
+		this.addCommand({
 			id: COMMAND_IDS.OPEN_CURRENT_NOTE_IN_CALENDAR,
 			name: "Open current note in calendar",
 			callback: async () => {
@@ -203,7 +214,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		});
 
 		this.app.workspace.onLayoutReady(() => {
-			void this.ensureCalendarBundlesReady();
+			void this.ensureCalendarBundlesReady().then(() => {
+				this.initializeCalDAVSync();
+			});
 		});
 	}
 
@@ -213,6 +226,11 @@ export default class CustomCalendarPlugin extends Plugin {
 		}
 		this.calendarBundles = [];
 		this.registeredViewTypes.clear();
+
+		// Clean up CalDAV sync
+		this.stopAutoSync();
+		this.caldavSyncService?.destroy();
+		this.caldavSyncService = null;
 
 		// Destroy the indexer registry (cleans up any remaining indexers)
 		const registry = IndexerRegistry.getInstance(this.app);
@@ -551,5 +569,195 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		// Open the modal
 		modal.open();
+	}
+
+	private initializeCalDAVSync(): void {
+		const settings = this.settingsStore.currentSettings;
+		const caldavSettings = settings.caldav;
+
+		if (caldavSettings.accounts.length === 0) {
+			return;
+		}
+
+		// Use the first calendar's config for frontmatter property names
+		const calendarConfig = settings.calendars[0];
+		if (!calendarConfig) {
+			return;
+		}
+
+		this.caldavSyncService = new CalDAVSyncService({
+			app: this.app,
+			caldavSettings,
+			calendarConfig,
+		});
+
+		// Restore previous sync state for incremental syncing
+		if (caldavSettings.syncState && Object.keys(caldavSettings.syncState).length > 0) {
+			this.caldavSyncService.loadSyncState(caldavSettings.syncState);
+		}
+
+		// Sync on startup if enabled
+		if (caldavSettings.syncOnStartup) {
+			void this.syncCalDAVAccounts(true);
+		}
+
+		// Set up auto-sync if any account has it enabled
+		this.startAutoSync();
+	}
+
+	async syncCalDAVAccounts(silent = false): Promise<void> {
+		if (!this.caldavSyncService) {
+			const settings = this.settingsStore.currentSettings;
+			const caldavSettings = settings.caldav;
+
+			if (caldavSettings.accounts.length === 0) {
+				if (!silent) {
+					new Notice("No calendar accounts configured");
+				}
+				return;
+			}
+
+			const calendarConfig = settings.calendars[0];
+			if (!calendarConfig) {
+				return;
+			}
+
+			this.caldavSyncService = new CalDAVSyncService({
+				app: this.app,
+				caldavSettings,
+				calendarConfig,
+			});
+		}
+
+		if (!silent) {
+			new Notice("Syncing calendar accounts...");
+		}
+
+		try {
+			const results = await this.caldavSyncService.syncAllAccounts();
+			this.handleSyncResults(results, silent);
+			await this.persistSyncState();
+		} catch (error) {
+			console.error("CalDAV sync failed:", error);
+			if (!silent) {
+				new Notice(`Calendar sync failed: ${error instanceof Error ? error.message : String(error)}`);
+			}
+		}
+	}
+
+	async syncSingleAccount(accountId: string): Promise<CalDAVSyncResult[]> {
+		const settings = this.settingsStore.currentSettings;
+		const caldavSettings = settings.caldav;
+		const account = caldavSettings.accounts.find((a) => a.id === accountId);
+
+		if (!account) {
+			new Notice("Account not found");
+			return [];
+		}
+
+		if (!this.caldavSyncService) {
+			const calendarConfig = settings.calendars[0];
+			if (!calendarConfig) {
+				return [];
+			}
+
+			this.caldavSyncService = new CalDAVSyncService({
+				app: this.app,
+				caldavSettings,
+				calendarConfig,
+			});
+		}
+
+		new Notice(`Syncing ${account.name}...`);
+
+		try {
+			const results = await this.caldavSyncService.syncAccount(account);
+			this.handleSyncResults(results, false);
+			await this.persistSyncState();
+			return results;
+		} catch (error) {
+			console.error(`CalDAV sync failed for ${account.name}:`, error);
+			new Notice(`Sync failed for ${account.name}: ${error instanceof Error ? error.message : String(error)}`);
+			return [];
+		}
+	}
+
+	private handleSyncResults(results: CalDAVSyncResult[], silent: boolean): void {
+		const totalCreated = results.reduce((sum, r) => sum + r.created, 0);
+		const totalUpdated = results.reduce((sum, r) => sum + r.updated, 0);
+		const totalDeleted = results.reduce((sum, r) => sum + r.deleted, 0);
+		const errors = results.flatMap((r) => r.errors);
+
+		if (errors.length > 0) {
+			console.error("CalDAV sync errors:", errors);
+			if (!silent) {
+				new Notice(`Calendar sync completed with ${errors.length} error(s)`);
+			}
+		} else if (!silent) {
+			if (totalCreated === 0 && totalUpdated === 0 && totalDeleted === 0) {
+				new Notice("Calendar sync complete - no changes");
+			} else {
+				new Notice(`Calendar sync complete: ${totalCreated} created, ${totalUpdated} updated, ${totalDeleted} deleted`);
+			}
+		}
+	}
+
+	private startAutoSync(): void {
+		this.stopAutoSync();
+
+		const settings = this.settingsStore.currentSettings;
+		const enabledAccounts = settings.caldav.accounts.filter((a) => a.enabled);
+
+		if (enabledAccounts.length === 0) {
+			return;
+		}
+
+		// Use the shortest interval among all enabled accounts
+		const minIntervalMinutes = Math.min(...enabledAccounts.map((a) => a.syncIntervalMinutes));
+		const intervalMs = minIntervalMinutes * 60 * 1000;
+
+		this.autoSyncIntervalId = window.setInterval(() => {
+			void this.syncCalDAVAccounts(true);
+		}, intervalMs);
+
+		console.debug(`CalDAV auto-sync started with ${minIntervalMinutes} minute interval`);
+	}
+
+	private stopAutoSync(): void {
+		if (this.autoSyncIntervalId !== null) {
+			window.clearInterval(this.autoSyncIntervalId);
+			this.autoSyncIntervalId = null;
+			console.debug("CalDAV auto-sync stopped");
+		}
+	}
+
+	updateCalDAVSyncService(): void {
+		const settings = this.settingsStore.currentSettings;
+		const caldavSettings = settings.caldav;
+
+		if (this.caldavSyncService) {
+			const calendarConfig = settings.calendars[0];
+			if (calendarConfig) {
+				this.caldavSyncService.updateSettings(caldavSettings, calendarConfig);
+			}
+		}
+
+		// Restart auto-sync with potentially new intervals
+		this.startAutoSync();
+	}
+
+	private async persistSyncState(): Promise<void> {
+		if (!this.caldavSyncService) {
+			return;
+		}
+
+		const syncState = this.caldavSyncService.serializeSyncState();
+		await this.settingsStore.updateSettings((s) => ({
+			...s,
+			caldav: {
+				...s.caldav,
+				syncState,
+			},
+		}));
 	}
 }

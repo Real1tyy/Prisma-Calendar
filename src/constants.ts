@@ -34,6 +34,7 @@ export const COMMAND_IDS = {
 	RESTORE_MINIMIZED_MODAL: "restore-minimized-modal",
 	EXPORT_CALENDAR_ICS: "export-calendar-ics",
 	IMPORT_CALENDAR_ICS: "import-calendar-ics",
+	SYNC_CALDAV: "sync-caldav",
 } as const;
 
 export const FULL_COMMAND_IDS = Object.fromEntries(

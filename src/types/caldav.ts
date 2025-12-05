@@ -91,6 +91,35 @@ export interface CalDAVSyncResult {
 }
 
 /**
+ * Schema for stored sync state (used for incremental sync)
+ */
+export const CalDAVSyncStateDataSchema = z.record(
+	z.string(),
+	z.object({
+		calendars: z.array(
+			z.object({
+				url: z.string(),
+				displayName: z.string(),
+				accountId: z.string(),
+				ctag: z.string().optional(),
+				syncToken: z.string().optional(),
+				objects: z.array(
+					z.object({
+						url: z.string(),
+						etag: z.string(),
+						uid: z.string(),
+						localFilePath: z.string().optional(),
+					})
+				),
+			})
+		),
+		lastSyncTime: z.number(),
+	})
+);
+
+export type CalDAVSyncStateData = z.infer<typeof CalDAVSyncStateDataSchema>;
+
+/**
  * CalDAV settings section
  */
 export const CalDAVSettingsSchema = z.object({
@@ -98,6 +127,7 @@ export const CalDAVSettingsSchema = z.object({
 	enableAutoSync: z.boolean().default(false),
 	syncOnStartup: z.boolean().default(true),
 	caldavProp: z.string().default(CALDAV_DEFAULTS.CALDAV_PROP),
+	syncState: CalDAVSyncStateDataSchema.default({}),
 });
 
 export type CalDAVSettings = z.infer<typeof CalDAVSettingsSchema>;
