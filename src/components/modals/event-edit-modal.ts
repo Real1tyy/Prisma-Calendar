@@ -106,6 +106,7 @@ export class EventEditModal extends BaseEventModal {
 		this.loadRecurringEventData();
 		this.loadCategoryData();
 		this.loadBreakData();
+		this.loadNotificationData();
 		this.loadCustomPropertiesData();
 	}
 
@@ -124,6 +125,19 @@ export class EventEditModal extends BaseEventModal {
 		const breakValue = this.originalFrontmatter[settings.breakProp];
 		if (typeof breakValue === "number" && breakValue > 0) {
 			this.breakInput.value = breakValue.toString();
+		}
+	}
+
+	private loadNotificationData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.enableNotifications || !this.notificationInput) return;
+
+		const isAllDay = this.event.allDay ?? false;
+		const propName = isAllDay ? settings.daysBeforeProp : settings.minutesBeforeProp;
+		const notifyValue = this.originalFrontmatter[propName];
+
+		if (typeof notifyValue === "number" && notifyValue >= 0) {
+			this.notificationInput.value = notifyValue.toString();
 		}
 	}
 

@@ -1,20 +1,22 @@
 import { cls } from "@real1ty-obsidian-plugins/utils";
 import type { WeeklyStatEntry } from "../../utils/weekly-stats";
-import { formatDuration, formatPercentage } from "../../utils/weekly-stats";
+import { formatDuration, formatDurationAsDecimalHours, formatPercentage } from "../../utils/weekly-stats";
 
 const ENTRIES_PER_PAGE = 20;
 
 export class TableComponent {
 	private entries: WeeklyStatEntry[];
 	private totalDuration: number;
+	private showDecimalHours: boolean;
 	private currentPage = 0;
 	private totalPages: number;
 	private tableBody: HTMLElement | null = null;
 	private paginationContainer: HTMLElement | null = null;
 
-	constructor(parentEl: HTMLElement, entries: WeeklyStatEntry[], totalDuration: number) {
+	constructor(parentEl: HTMLElement, entries: WeeklyStatEntry[], totalDuration: number, showDecimalHours = false) {
 		this.entries = entries;
 		this.totalDuration = totalDuration;
+		this.showDecimalHours = showDecimalHours;
 		this.totalPages = Math.ceil(entries.length / ENTRIES_PER_PAGE);
 		this.createTableSection(parentEl);
 		this.render();
@@ -64,7 +66,9 @@ export class TableComponent {
 				cls: entry.isRecurring ? cls("stats-recurring") : "",
 			});
 			row.createEl("td", { text: entry.count.toString() });
-			row.createEl("td", { text: formatDuration(entry.duration) });
+			row.createEl("td", {
+				text: this.showDecimalHours ? formatDurationAsDecimalHours(entry.duration) : formatDuration(entry.duration),
+			});
 			row.createEl("td", {
 				text: formatPercentage(entry.duration, this.totalDuration),
 			});

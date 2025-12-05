@@ -14,6 +14,7 @@ export const EventPresetSchema = z.object({
 	endDate: z.string().optional(), // End datetime for timed events (ISO string)
 	categories: z.string().optional(), // Event categories (comma-separated string)
 	breakMinutes: z.number().nonnegative().optional(), // Break time in minutes to subtract from duration
+	notifyBefore: z.number().int().nonnegative().optional(), // Override notification timing (minutes for timed, days for all-day)
 	rruleType: z.string().optional(), // Recurrence type
 	rruleSpec: z.string().optional(), // Weekdays for recurring events
 	futureInstancesCount: z.number().int().positive().optional(), // Per-preset override of future instances count
@@ -76,6 +77,7 @@ export const CalendarSettingsSchema = z.object({
 	futureInstancesCount: z.number().int().min(1).max(52).default(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT), // how many future instances to generate for recurring events
 	defaultView: CalendarViewTypeSchema.default(SETTINGS_DEFAULTS.DEFAULT_DEFAULT_VIEW),
 	hideWeekends: z.boolean().default(false),
+	showDecimalHours: z.boolean().default(false), // Show durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m)
 	hourStart: z.number().int().min(0).max(23).default(SETTINGS_DEFAULTS.DEFAULT_HOUR_START),
 	hourEnd: z.number().int().min(1).max(24).default(SETTINGS_DEFAULTS.DEFAULT_HOUR_END),
 	firstDayOfWeek: z.number().int().min(0).max(6).default(SETTINGS_DEFAULTS.DEFAULT_FIRST_DAY_OF_WEEK), // 0 = Sunday, 1 = Monday, etc.

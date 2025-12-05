@@ -64,6 +64,12 @@ export class GeneralSettings {
 			name: "Mark past events as done",
 			desc: "Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section.",
 		});
+
+		this.ui.addToggle(containerEl, {
+			key: "showDecimalHours",
+			name: "Show decimal hours in statistics",
+			desc: "Display durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m) in statistics modals. Can be temporarily toggled by clicking the duration in the statistics header.",
+		});
 	}
 
 	private addEventPresetSettings(containerEl: HTMLElement): void {

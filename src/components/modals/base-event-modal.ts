@@ -65,6 +65,9 @@ export abstract class BaseEventModal extends Modal {
 
 	protected categoryInput?: CategoryInput;
 	protected breakInput!: HTMLInputElement;
+	protected notificationInput!: HTMLInputElement;
+	protected notificationContainer!: HTMLElement;
+	protected notificationLabel!: HTMLElement;
 
 	// Stopwatch for time tracking
 	protected stopwatch?: Stopwatch;
@@ -242,6 +245,11 @@ export abstract class BaseEventModal extends Modal {
 			this.breakInput.value = "";
 		}
 
+		// Clear notification
+		if (this.notificationInput) {
+			this.notificationInput.value = "";
+		}
+
 		// Reset stopwatch
 		this.stopwatch?.reset();
 
@@ -299,6 +307,11 @@ export abstract class BaseEventModal extends Modal {
 		// Apply break time
 		if (preset.breakMinutes !== undefined && this.breakInput) {
 			this.breakInput.value = preset.breakMinutes.toString();
+		}
+
+		// Apply notification timing
+		if (preset.notifyBefore !== undefined && this.notificationInput) {
+			this.notificationInput.value = preset.notifyBefore.toString();
 		}
 
 		// Apply recurring settings
@@ -427,6 +440,7 @@ export abstract class BaseEventModal extends Modal {
 		this.createRecurringEventFields(contentEl);
 		this.createCategoryField(contentEl);
 		this.createBreakField(contentEl);
+		this.createNotificationField(contentEl);
 		this.createCustomPropertiesFields(contentEl);
 	}
 
@@ -455,6 +469,33 @@ export abstract class BaseEventModal extends Modal {
 				min: "0",
 				step: "any",
 				placeholder: "0",
+			},
+		});
+	}
+
+	private createNotificationField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.enableNotifications) return;
+
+		this.notificationContainer = contentEl.createDiv("setting-item");
+		const isAllDay = this.event.allDay ?? false;
+		const labelText = isAllDay ? "Notify days before" : "Notify minutes before";
+
+		this.notificationLabel = this.notificationContainer.createEl("div", {
+			text: labelText,
+			cls: "setting-item-name",
+		});
+		const notificationDesc = this.notificationContainer.createEl("div", {
+			cls: "setting-item-description",
+		});
+		notificationDesc.setText("Override default notification timing for this event");
+		this.notificationInput = this.notificationContainer.createEl("input", {
+			type: "number",
+			cls: "setting-item-control",
+			attr: {
+				min: "0",
+				step: "1",
+				placeholder: "Default",
 			},
 		});
 	}
@@ -723,6 +764,10 @@ export abstract class BaseEventModal extends Modal {
 				if (this.startInput.value) {
 					this.dateInput.value = formatDateOnly(this.startInput.value);
 				}
+				// Update notification label
+				if (this.notificationLabel) {
+					this.notificationLabel.setText("Notify days before");
+				}
 			} else {
 				// Switching TO timed
 				this.timedContainer.classList.remove("prisma-hidden");
@@ -734,6 +779,10 @@ export abstract class BaseEventModal extends Modal {
 					this.startInput.value = `${this.dateInput.value}T09:00`;
 					this.endInput.value = `${this.dateInput.value}T10:00`;
 					this.updateDurationFromDates();
+				}
+				// Update notification label
+				if (this.notificationLabel) {
+					this.notificationLabel.setText("Notify minutes before");
 				}
 			}
 		});
@@ -942,6 +991,23 @@ export abstract class BaseEventModal extends Modal {
 			}
 		}
 
+		// Handle notification property (minutes before for timed, days before for all-day)
+		if (this.notificationInput) {
+			const notifyValue = Number.parseInt(this.notificationInput.value, 10);
+			if (!Number.isNaN(notifyValue) && notifyValue >= 0) {
+				if (this.allDayCheckbox.checked) {
+					preservedFrontmatter[settings.daysBeforeProp] = notifyValue;
+					delete preservedFrontmatter[settings.minutesBeforeProp];
+				} else {
+					preservedFrontmatter[settings.minutesBeforeProp] = notifyValue;
+					delete preservedFrontmatter[settings.daysBeforeProp];
+				}
+			} else {
+				delete preservedFrontmatter[settings.minutesBeforeProp];
+				delete preservedFrontmatter[settings.daysBeforeProp];
+			}
+		}
+
 		// Handle recurring event properties
 		if (this.recurringCheckbox.checked) {
 			const rruleType = this.rruleSelect.value as RecurrenceType;
@@ -1086,6 +1152,13 @@ export abstract class BaseEventModal extends Modal {
 			const breakValue = Number.parseFloat(this.breakInput.value);
 			if (!Number.isNaN(breakValue) && breakValue > 0) {
 				formData.breakMinutes = breakValue;
+			}
+		}
+
+		if (this.notificationInput?.value) {
+			const notifyValue = Number.parseInt(this.notificationInput.value, 10);
+			if (!Number.isNaN(notifyValue) && notifyValue >= 0) {
+				formData.notifyBefore = notifyValue;
 			}
 		}
 

@@ -37,7 +37,12 @@ export class AllTimeStatsModal extends StatsModal {
 		}
 
 		this.chartComponent = new ChartComponent(this.contentContainer, stats.entries, stats.totalDuration);
-		this.tableComponent = new TableComponent(this.contentContainer, stats.entries, stats.totalDuration);
+		this.tableComponent = new TableComponent(
+			this.contentContainer,
+			stats.entries,
+			stats.totalDuration,
+			this.showDecimalHours
+		);
 
 		return Promise.resolve();
 	}
@@ -59,9 +64,7 @@ export class AllTimeStatsModal extends StatsModal {
 			`⏱ ${this.showDecimalHours ? formatDurationAsDecimalHours(stats.totalDuration) : formatDuration(stats.totalDuration)}`
 		);
 		durationStat.addEventListener("click", () => {
-			this.showDecimalHours = !this.showDecimalHours;
-			this.destroyComponents();
-			void this.renderContent();
+			this.toggleDecimalHours();
 		});
 
 		const middleSection = header.createDiv(cls("stats-middle-section"));

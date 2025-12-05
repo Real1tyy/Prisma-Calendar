@@ -21,10 +21,18 @@ export abstract class StatsModal extends Modal {
 		this.bundle = bundle;
 	}
 
+	protected toggleDecimalHours(): void {
+		this.showDecimalHours = !this.showDecimalHours;
+		this.destroyComponents();
+		void this.renderContent();
+	}
+
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		addCls(contentEl, "weekly-stats-modal");
+
+		this.showDecimalHours = this.bundle.settingsStore.currentSettings.showDecimalHours;
 
 		this.setupKeyboardShortcuts();
 		void this.renderContent();
