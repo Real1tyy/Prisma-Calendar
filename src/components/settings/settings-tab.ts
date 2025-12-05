@@ -200,7 +200,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 	private createCalDAVSection(): void {
 		const { containerEl } = this;
-		const caldavSettings = new CalDAVSettings(this.app, this.plugin.settingsStore);
+		const caldavSettings = new CalDAVSettings(this.app, this.plugin.settingsStore, this.plugin);
 		caldavSettings.display(containerEl);
 	}
 

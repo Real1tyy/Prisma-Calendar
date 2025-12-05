@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { type App, Modal, Notice, Setting } from "obsidian";
 import { CalDAVClientService } from "../../core/caldav-client";
 import type { SettingsStore } from "../../core/settings-store";
+import type CustomCalendarPlugin from "../../main";
 import { CALDAV_PRESETS, type CalDAVAccount, type CalDAVCalendarInfo, type CalDAVPresetKey } from "../../types/caldav";
 
 export class CalDAVSettings {
@@ -10,7 +11,8 @@ export class CalDAVSettings {
 
 	constructor(
 		private app: App,
-		private settingsStore: SettingsStore
+		private settingsStore: SettingsStore,
+		private plugin: CustomCalendarPlugin
 	) {
 		this.client = new CalDAVClientService();
 	}
@@ -125,16 +127,15 @@ export class CalDAVSettings {
 	private handleSyncClick(button: HTMLButtonElement, account: CalDAVAccount): void {
 		button.disabled = true;
 		button.setText("Syncing...");
-		try {
-			new Notice(`Syncing ${account.name}...`);
-			// TODO: Implement actual sync when CalDAVSyncService is integrated with plugin
-			new Notice(`Sync complete for ${account.name}`);
-		} catch (error) {
-			new Notice(`Sync failed: ${error}`);
-		} finally {
-			button.disabled = false;
-			button.setText("Sync now");
-		}
+
+		void (async () => {
+			try {
+				await this.plugin.syncSingleAccount(account.id);
+			} finally {
+				button.disabled = false;
+				button.setText("Sync now");
+			}
+		})();
 	}
 
 	private async deleteAccount(accountId: string, container: HTMLElement): Promise<void> {
