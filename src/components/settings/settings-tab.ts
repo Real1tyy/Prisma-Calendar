@@ -8,6 +8,7 @@ import {
 	duplicateCalendarConfig,
 	generateUniqueCalendarId,
 } from "../../utils/calendar-settings";
+import { CalDAVSettings } from "./caldav";
 import { SingleCalendarSettings } from "./single-calendar-settings";
 
 export class CustomCalendarSettingsTab extends PluginSettingTab {
@@ -52,6 +53,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		this.createCalendarManagementHeader();
 		this.renderSelectedCalendarSettings();
 		this.createIntegrationsSection();
+		this.createCalDAVSection();
 
 		const footerEl = containerEl.createDiv({ cls: `setting-item ${cls("settings-footer")}` });
 
@@ -194,6 +196,12 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 				`prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`
 			);
 		});
+	}
+
+	private createCalDAVSection(): void {
+		const { containerEl } = this;
+		const caldavSettings = new CalDAVSettings(this.app, this.plugin.settingsStore);
+		caldavSettings.display(containerEl);
 	}
 
 	private renderSelectedCalendarSettings(): void {
