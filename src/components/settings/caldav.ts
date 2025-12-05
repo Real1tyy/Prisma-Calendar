@@ -23,6 +23,7 @@ export class CalDAVSettings {
 		descContainer.createEl("p", { cls: cls("settings-muted") }).setText("Events are synced one-way from the server.");
 
 		this.renderAccountsList(containerEl);
+		this.renderGlobalSettings(containerEl);
 	}
 
 	private renderAccountsList(containerEl: HTMLElement): void {
@@ -47,6 +48,24 @@ export class CalDAVSettings {
 				this.refreshAccountsList(accountsContainer);
 			}).open();
 		});
+	}
+
+	private renderGlobalSettings(containerEl: HTMLElement): void {
+		const caldavSettings = this.settingsStore.currentSettings.caldav;
+		new Setting(containerEl)
+			.setName("Sync on startup")
+			.setDesc("Automatically sync calendars when the app starts")
+			.addToggle((toggle) => {
+				toggle.setValue(caldavSettings.syncOnStartup).onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						caldav: {
+							...s.caldav,
+							syncOnStartup: value,
+						},
+					}));
+				});
+			});
 	}
 
 	private renderAccountItem(container: HTMLElement, account: CalDAVAccount): void {
