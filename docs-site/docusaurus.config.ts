@@ -97,6 +97,11 @@ const config: Config = {
           position: 'right',
         },
         {
+          href: 'https://www.youtube.com/watch?v=aARXf9ehgaw',
+          label: 'Tutorial',
+          position: 'right',
+        },
+        {
           href: 'https://github.com/Real1tyy/Prisma-Calendar',
           label: 'GitHub',
           position: 'right',
@@ -139,6 +144,10 @@ const config: Config = {
         {
           title: 'More',
           items: [
+            {
+              label: 'Full Tutorial',
+              href: 'https://www.youtube.com/watch?v=aARXf9ehgaw',
+            },
             {
               label: 'Demo Video',
               href: 'https://www.youtube.com/watch?v=aULuB6petbU',

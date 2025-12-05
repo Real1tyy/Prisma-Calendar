@@ -14,6 +14,13 @@
 
 ## 🎬 Video Tutorials
 
+### Full Tutorial — Zero to Mastery
+<a href="https://www.youtube.com/watch?v=aARXf9ehgaw" target="_blank">
+  <img src="https://img.youtube.com/vi/aARXf9ehgaw/maxresdefault.jpg" alt="Prisma Calendar - Full Tutorial" style="width:100%;">
+</a>
+
+**Complete Workflow Guide**: In this full tutorial, I walk you through exactly how to use Prisma Calendar in practice — from installation and creating your first events, to categories, color rules, recurring event systems, presets, notifications, timers, and more.
+
 ### Part 1: Feature Showcase — Core Capabilities
 <a href="https://www.youtube.com/watch?v=aULuB6petbU" target="_blank">
   <img src="https://img.youtube.com/vi/aULuB6petbU/maxresdefault.jpg" alt="Prisma Calendar - Feature Showcase (Part 1)" style="width:100%;">
