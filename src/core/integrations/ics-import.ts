@@ -1,7 +1,7 @@
 import { getFilenameFromPath, parseFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
-import { parseIntoList } from "./list-utils";
+import { parseIntoList } from "../../utils/list-utils";
 
 export interface ImportedEvent {
 	title: string;

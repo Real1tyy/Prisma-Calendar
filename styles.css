@@ -4896,7 +4896,7 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 }
 
 .prisma-caldav-add-account-button {
-	margin-top: 0.5rem;
+	margin-bottom: 1rem;
 	padding: 0.5rem 1rem;
 	cursor: pointer;
 }

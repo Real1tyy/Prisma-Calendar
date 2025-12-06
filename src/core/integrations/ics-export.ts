@@ -1,8 +1,8 @@
 import { serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
 import ICAL from "ical.js";
-import type { ParsedEvent } from "../core/parser";
-import { extractZettelId, removeZettelId } from "./calendar-events";
-import { parseIntoList } from "./list-utils";
+import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
+import { parseIntoList } from "../../utils/list-utils";
+import type { ParsedEvent } from "../parser";
 
 export interface NotificationSettings {
 	minutesBeforeProp?: string;

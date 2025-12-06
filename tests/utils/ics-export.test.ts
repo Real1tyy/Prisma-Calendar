@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ParsedEvent } from "../../src/core/parser";
 import {
 	COMMON_TIMEZONES,
 	createICSFromEvents,
 	generateICSFilename,
 	type ICSExportOptions,
-} from "../../src/utils/ics-export";
+} from "../../src/core/integrations/ics-export";
+import type { ParsedEvent } from "../../src/core/parser";
 
 function createMockEvent(overrides: Partial<ParsedEvent> = {}): ParsedEvent {
 	return {

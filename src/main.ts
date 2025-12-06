@@ -11,14 +11,14 @@ import {
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
 import { type CalDAVSyncResult, CalDAVSyncService } from "./core/integrations/caldav";
-import { createDefaultCalendarConfig } from "./utils/calendar-settings";
-import { intoDate } from "./utils/format";
-import { createICSFromEvents, generateICSFilename } from "./utils/ics-export";
+import { createICSFromEvents, generateICSFilename } from "./core/integrations/ics-export";
 import {
 	buildFrontmatterFromImportedEvent,
 	extractBasenameFromOriginalPath,
 	type ImportedEvent,
-} from "./utils/ics-import";
+} from "./core/integrations/ics-import";
+import { createDefaultCalendarConfig } from "./utils/calendar-settings";
+import { intoDate } from "./utils/format";
 
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;
