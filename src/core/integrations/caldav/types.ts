@@ -91,6 +91,8 @@ export const CalDAVSettingsSchema = z.object({
 	accounts: z.array(CalDAVAccountSchema).default([]),
 	enableAutoSync: z.boolean().default(true),
 	syncOnStartup: z.boolean().default(true),
+	notifyOnSync: z.boolean().default(true),
+	integrationEventColor: z.string().default("#8b5cf6"), // Default purple for CalDAV events
 });
 
 export type CalDAVSettings = z.infer<typeof CalDAVSettingsSchema>;

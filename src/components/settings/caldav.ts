@@ -88,6 +88,37 @@ export class CalDAVSettings {
 					}));
 				});
 			});
+
+		new Setting(containerEl)
+			.setName("Show sync notifications")
+			.setDesc("Show notifications when calendar sync completes")
+			.addToggle((toggle) => {
+				toggle.setValue(caldavSettings.notifyOnSync).onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						caldav: {
+							...s.caldav,
+							notifyOnSync: value,
+						},
+					}));
+				});
+			});
+
+		new Setting(containerEl)
+			.setName("Integration event color")
+			.setDesc("Color to apply to calendar-synced events (overrides color rules)")
+			.addColorPicker((colorPicker) => {
+				colorPicker.setValue(caldavSettings.integrationEventColor);
+				colorPicker.onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						caldav: {
+							...s.caldav,
+							integrationEventColor: value || "#8b5cf6",
+						},
+					}));
+				});
+			});
 	}
 
 	private renderAccountItem(container: HTMLElement, account: CalDAVAccount): void {
