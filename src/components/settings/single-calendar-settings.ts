@@ -1,5 +1,7 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
-import type { CalendarSettingsStore } from "../../core/settings-store";
+import type { App } from "obsidian";
+import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
+import type CustomCalendarPlugin from "../../main";
 import { CalendarSettings, GeneralSettings, NotificationsSettings, PropertiesSettings, RulesSettings } from ".";
 
 export class SingleCalendarSettings {
@@ -11,8 +13,13 @@ export class SingleCalendarSettings {
 	private notificationsSettings: NotificationsSettings;
 	private rulesSettings: RulesSettings;
 
-	constructor(settingsStore: CalendarSettingsStore) {
-		this.generalSettings = new GeneralSettings(settingsStore);
+	constructor(
+		settingsStore: CalendarSettingsStore,
+		app: App,
+		plugin: CustomCalendarPlugin,
+		mainSettingsStore: SettingsStore
+	) {
+		this.generalSettings = new GeneralSettings(settingsStore, app, plugin, mainSettingsStore);
 		this.propertiesSettings = new PropertiesSettings(settingsStore);
 		this.calendarSettings = new CalendarSettings(settingsStore);
 		this.notificationsSettings = new NotificationsSettings(settingsStore);
