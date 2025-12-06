@@ -38,6 +38,7 @@ export class CalendarBundle {
 	private mainSettingsStore: SettingsStore;
 	private caldavSyncServices: Map<string, CalDAVSyncService> = new Map();
 	private autoSyncIntervals: Map<string, number> = new Map();
+	private syncPromises: Map<string, Promise<void>> = new Map();
 
 	constructor(
 		private plugin: CustomCalendarPlugin,
@@ -284,6 +285,23 @@ export class CalendarBundle {
 	}
 
 	async syncAccount(accountId: string): Promise<void> {
+		const existingSync = this.syncPromises.get(accountId);
+		if (existingSync) {
+			console.debug(`[CalDAV][${this.calendarId}] Sync already in progress for account ${accountId}, reusing promise`);
+			return existingSync;
+		}
+
+		const syncPromise = this.performSync(accountId);
+		this.syncPromises.set(accountId, syncPromise);
+
+		try {
+			await syncPromise;
+		} finally {
+			this.syncPromises.delete(accountId);
+		}
+	}
+
+	private async performSync(accountId: string): Promise<void> {
 		const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
 		const account = caldavSettings.accounts.find((a) => a.id === accountId && a.calendarId === this.calendarId);
 
@@ -303,7 +321,6 @@ export class CalendarBundle {
 			return;
 		}
 
-		// Sync each selected calendar
 		for (const calendarUrl of account.selectedCalendars) {
 			const syncServiceKey = `${accountId}-${calendarUrl}`;
 			let syncService = this.caldavSyncServices.get(syncServiceKey);
@@ -357,5 +374,6 @@ export class CalendarBundle {
 			window.clearInterval(intervalId);
 		}
 		this.autoSyncIntervals.clear();
+		this.syncPromises.clear();
 	}
 }
