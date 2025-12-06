@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { CALDAV_DEFAULTS } from "../../../constants";
 
 export const CalDAVAuthMethodSchema = z.enum(["Basic", "Oauth"]);
 export type CalDAVAuthMethod = z.infer<typeof CalDAVAuthMethodSchema>;
@@ -24,7 +23,7 @@ export const CalDAVAccountSchema = z.object({
 	authMethod: CalDAVAuthMethodSchema,
 	credentials: z.union([CalDAVBasicCredentialsSchema, CalDAVOAuthCredentialsSchema]),
 	enabled: z.boolean().default(true),
-	syncDirectory: z.string().min(1),
+	calendarId: z.string().min(1),
 	selectedCalendars: z.array(z.string()).default([]),
 	syncIntervalMinutes: z.number().int().min(1).max(1440).default(15),
 	lastSyncTime: z.number().int().optional(),
@@ -111,7 +110,6 @@ export const CalDAVSettingsSchema = z.object({
 	accounts: z.array(CalDAVAccountSchema).default([]),
 	enableAutoSync: z.boolean().default(false),
 	syncOnStartup: z.boolean().default(true),
-	caldavProp: z.string().default(CALDAV_DEFAULTS.CALDAV_PROP),
 	syncState: CalDAVSyncStateDataSchema.default({}),
 });
 

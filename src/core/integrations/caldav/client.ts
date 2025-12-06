@@ -56,39 +56,42 @@ async function getTsdav() {
 }
 
 export class CalDAVClientService {
-	private clients: Map<string, InstanceType<typeof import("tsdav").DAVClient>> = new Map();
+	private client: InstanceType<typeof import("tsdav").DAVClient> | null = null;
+	private account: CalDAVAccount;
 
-	private async createClient(account: CalDAVAccount): Promise<InstanceType<typeof import("tsdav").DAVClient>> {
+	constructor(account: CalDAVAccount) {
+		this.account = account;
+	}
+
+	async initialize(): Promise<void> {
 		const { DAVClient } = await getTsdav();
 
-		const client = new DAVClient({
-			serverUrl: account.serverUrl,
-			credentials: buildCredentials(account),
-			authMethod: account.authMethod,
+		this.client = new DAVClient({
+			serverUrl: this.account.serverUrl,
+			credentials: buildCredentials(this.account),
+			authMethod: this.account.authMethod,
 			defaultAccountType: "caldav",
 		});
 
-		await client.login();
-		return client;
+		await this.client.login();
 	}
 
-	private async getOrCreateClient(account: CalDAVAccount): Promise<InstanceType<typeof import("tsdav").DAVClient>> {
-		const existing = this.clients.get(account.id);
-		if (existing) return existing;
-
-		const client = await this.createClient(account);
-		this.clients.set(account.id, client);
-		return client;
-	}
-
-	async testConnection(account: CalDAVAccount): Promise<CalDAVConnectionResult> {
+	static async testConnection(account: CalDAVAccount): Promise<CalDAVConnectionResult> {
 		try {
-			const client = await this.createClient(account);
+			const { DAVClient } = await getTsdav();
+			const client = new DAVClient({
+				serverUrl: account.serverUrl,
+				credentials: buildCredentials(account),
+				authMethod: account.authMethod,
+				defaultAccountType: "caldav",
+			});
+
+			await client.login();
 			const calendars = await client.fetchCalendars();
 
 			return {
 				success: true,
-				calendars: calendars.map((cal) => this.mapCalendarInfo(cal)),
+				calendars: calendars.map((cal) => CalDAVClientService.mapCalendarInfo(cal)),
 			};
 		} catch (error) {
 			return {
@@ -98,14 +101,18 @@ export class CalDAVClientService {
 		}
 	}
 
-	async fetchCalendars(account: CalDAVAccount): Promise<CalDAVCalendarInfo[]> {
-		const client = await this.getOrCreateClient(account);
-		const calendars = await client.fetchCalendars();
-		return calendars.map((cal) => this.mapCalendarInfo(cal));
+	async fetchCalendars(): Promise<CalDAVCalendarInfo[]> {
+		if (!this.client) {
+			throw new Error("Client not initialized");
+		}
+		const calendars = await this.client.fetchCalendars();
+		return calendars.map((cal) => CalDAVClientService.mapCalendarInfo(cal));
 	}
 
-	async fetchCalendarEvents(account: CalDAVAccount, options: CalDAVFetchEventsOptions): Promise<CalDAVFetchedEvent[]> {
-		const client = await this.getOrCreateClient(account);
+	async fetchCalendarEvents(options: CalDAVFetchEventsOptions): Promise<CalDAVFetchedEvent[]> {
+		if (!this.client) {
+			throw new Error("Client not initialized");
+		}
 
 		const calendar = {
 			url: options.calendar.url,
@@ -114,23 +121,22 @@ export class CalDAVClientService {
 			syncToken: options.calendar.syncToken,
 		};
 
-		const objects = await client.fetchCalendarObjects({
+		const objects = await this.client.fetchCalendarObjects({
 			calendar,
 		});
-		return objects.map(this.mapCalendarObject);
+		return objects.map((obj) => this.mapCalendarObject(obj));
 	}
 
-	async syncCalendar(
-		account: CalDAVAccount,
-		storedCalendar: CalDAVStoredCalendar
-	): Promise<{
+	async syncCalendar(storedCalendar: CalDAVStoredCalendar): Promise<{
 		created: CalDAVFetchedEvent[];
 		updated: CalDAVFetchedEvent[];
 		deleted: string[];
 		newSyncToken?: string;
 		newCtag?: string;
 	}> {
-		const client = await this.getOrCreateClient(account);
+		if (!this.client) {
+			throw new Error("Client not initialized");
+		}
 
 		const collection = {
 			url: storedCalendar.url,
@@ -144,7 +150,7 @@ export class CalDAVClientService {
 			})),
 		};
 
-		const syncResult = await client.smartCollectionSync({
+		const syncResult = await this.client.smartCollectionSync({
 			collection,
 			detailedResult: true,
 		});
@@ -186,32 +192,11 @@ export class CalDAVClientService {
 		};
 	}
 
-	async isCalendarDirty(account: CalDAVAccount, calendar: CalDAVCalendarInfo): Promise<boolean> {
-		const client = await this.getOrCreateClient(account);
-
-		const davCalendar = {
-			url: calendar.url,
-			displayName: calendar.displayName,
-			ctag: calendar.ctag,
-			syncToken: calendar.syncToken,
-		};
-
-		const result = await client.isCollectionDirty({
-			collection: davCalendar,
-		});
-
-		return result.isDirty;
+	destroy(): void {
+		this.client = null;
 	}
 
-	clearClient(accountId: string): void {
-		this.clients.delete(accountId);
-	}
-
-	clearAllClients(): void {
-		this.clients.clear();
-	}
-
-	private mapCalendarInfo(cal: {
+	private static mapCalendarInfo(cal: {
 		url: string;
 		displayName?: unknown;
 		description?: unknown;

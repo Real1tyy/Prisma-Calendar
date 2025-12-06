@@ -269,7 +269,8 @@ export class GeneralSettings {
 	}
 
 	private addCalDAVSettings(containerEl: HTMLElement): void {
-		const caldavSettings = new CalDAVSettings(this.app, this.mainSettingsStore, this.plugin);
+		const calendarId = this.settingsStore.calendarId;
+		const caldavSettings = new CalDAVSettings(this.app, this.mainSettingsStore, this.plugin, calendarId);
 		caldavSettings.display(containerEl);
 	}
 }

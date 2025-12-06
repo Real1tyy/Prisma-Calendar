@@ -13,15 +13,12 @@ import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 
 export class CalDAVSettings {
-	private client: CalDAVClientService;
-
 	constructor(
 		private app: App,
 		private settingsStore: SettingsStore,
-		private plugin: CustomCalendarPlugin
-	) {
-		this.client = new CalDAVClientService();
-	}
+		private plugin: CustomCalendarPlugin,
+		private calendarId: string
+	) {}
 
 	display(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Calendar sync (read-only)").setHeading();
@@ -52,7 +49,7 @@ export class CalDAVSettings {
 			cls: cls("caldav-add-account-button"),
 		});
 		addButton.addEventListener("click", () => {
-			new AddCalDAVAccountModal(this.app, this.settingsStore, this.client, () => {
+			new AddCalDAVAccountModal(this.app, this.settingsStore, this.calendarId, () => {
 				this.refreshAccountsList(containerEl);
 			}).open();
 		});
@@ -86,9 +83,6 @@ export class CalDAVSettings {
 		const urlEl = infoEl.createEl("div", { cls: cls("caldav-account-url") });
 		urlEl.setText(account.serverUrl);
 
-		const dirEl = infoEl.createEl("div", { cls: cls("caldav-account-dir") });
-		dirEl.setText(`📁 ${account.syncDirectory}`);
-
 		const statusEl = infoEl.createEl("div", {
 			cls: `${cls("caldav-account-status")} ${account.enabled ? cls("caldav-status-enabled") : cls("caldav-status-disabled")}`,
 		});
@@ -114,7 +108,7 @@ export class CalDAVSettings {
 			cls: cls("caldav-account-btn"),
 		});
 		editButton.addEventListener("click", () => {
-			new EditCalDAVAccountModal(this.app, this.settingsStore, this.client, account, () => {
+			new EditCalDAVAccountModal(this.app, this.settingsStore, account, () => {
 				this.refreshAccountsList(container.parentElement!);
 			}).open();
 		});
@@ -212,7 +206,6 @@ class AddCalDAVAccountModal extends Modal {
 	private serverUrl = "";
 	private username = "";
 	private password = "";
-	private syncDirectory = "";
 	private syncIntervalMinutes: number = CALDAV_DEFAULTS.SYNC_INTERVAL_MINUTES;
 	private authMethod: "Basic" | "Oauth" = "Basic";
 	private discoveredCalendars: CalDAVCalendarInfo[] = [];
@@ -222,7 +215,7 @@ class AddCalDAVAccountModal extends Modal {
 	constructor(
 		app: App,
 		private settingsStore: SettingsStore,
-		private client: CalDAVClientService,
+		private calendarId: string,
 		private onSave: () => void
 	) {
 		super(app);
@@ -274,21 +267,6 @@ class AddCalDAVAccountModal extends Modal {
 					.setValue(this.name)
 					.onChange((value) => {
 						this.name = value;
-						if (!this.syncDirectory) {
-							this.syncDirectory = `Calendars/${value.replace(/[/\\?%*:|"<>]/g, "-")}`;
-						}
-					});
-			});
-
-		new Setting(formContainer)
-			.setName("Sync directory")
-			.setDesc("Folder where events from this account will be stored")
-			.addText((text) => {
-				text
-					.setPlaceholder("Folder name")
-					.setValue(this.syncDirectory)
-					.onChange((value) => {
-						this.syncDirectory = value;
 					});
 			});
 
@@ -416,7 +394,7 @@ class AddCalDAVAccountModal extends Modal {
 		button.setText("Testing...");
 
 		try {
-			const result = await this.client.testConnection({
+			const result = await CalDAVClientService.testConnection({
 				id: "test",
 				name: this.name || "Test",
 				serverUrl: this.serverUrl,
@@ -426,7 +404,7 @@ class AddCalDAVAccountModal extends Modal {
 					password: this.password,
 				},
 				enabled: true,
-				syncDirectory: this.syncDirectory || "Calendars",
+				calendarId: this.calendarId,
 				selectedCalendars: [],
 				syncIntervalMinutes: this.syncIntervalMinutes,
 				createdAt: Date.now(),
@@ -434,7 +412,7 @@ class AddCalDAVAccountModal extends Modal {
 
 			if (result.success && result.calendars) {
 				this.discoveredCalendars = result.calendars;
-				this.selectedCalendars = result.calendars.map((c) => c.url);
+				this.selectedCalendars = result.calendars.map((c: CalDAVCalendarInfo) => c.url);
 				this.testPassed = true;
 				new Notice(`Found ${result.calendars.length} calendar(s)`);
 				this.refreshCalendarSelector();
@@ -457,11 +435,6 @@ class AddCalDAVAccountModal extends Modal {
 			return;
 		}
 
-		if (!this.syncDirectory) {
-			new Notice("Please specify a sync directory");
-			return;
-		}
-
 		if (!this.testPassed) {
 			new Notice("Please test the connection first");
 			return;
@@ -477,7 +450,7 @@ class AddCalDAVAccountModal extends Modal {
 				password: this.password,
 			},
 			enabled: true,
-			syncDirectory: this.syncDirectory,
+			calendarId: this.calendarId,
 			selectedCalendars: this.selectedCalendars,
 			syncIntervalMinutes: this.syncIntervalMinutes,
 			createdAt: Date.now(),
@@ -522,7 +495,6 @@ class AddCalDAVAccountModal extends Modal {
 
 class EditCalDAVAccountModal extends Modal {
 	private name: string;
-	private syncDirectory: string;
 	private enabled: boolean;
 	private syncIntervalMinutes: number;
 	private selectedCalendars: string[];
@@ -531,13 +503,11 @@ class EditCalDAVAccountModal extends Modal {
 	constructor(
 		app: App,
 		private settingsStore: SettingsStore,
-		private client: CalDAVClientService,
 		private account: CalDAVAccount,
 		private onSave: () => void
 	) {
 		super(app);
 		this.name = account.name;
-		this.syncDirectory = account.syncDirectory;
 		this.enabled = account.enabled;
 		this.syncIntervalMinutes = account.syncIntervalMinutes ?? CALDAV_DEFAULTS.SYNC_INTERVAL_MINUTES;
 		this.selectedCalendars = [...account.selectedCalendars];
@@ -555,15 +525,6 @@ class EditCalDAVAccountModal extends Modal {
 				this.name = value;
 			});
 		});
-
-		new Setting(contentEl)
-			.setName("Sync directory")
-			.setDesc("Folder where events from this account are stored")
-			.addText((text) => {
-				text.setValue(this.syncDirectory).onChange((value) => {
-					this.syncDirectory = value;
-				});
-			});
 
 		new Setting(contentEl)
 			.setName("Enabled")
@@ -661,7 +622,11 @@ class EditCalDAVAccountModal extends Modal {
 		button.setText("Refreshing...");
 
 		try {
-			const calendars = await this.client.fetchCalendars(this.account);
+			const client = new CalDAVClientService(this.account);
+			await client.initialize();
+			const calendars = await client.fetchCalendars();
+			client.destroy();
+
 			this.discoveredCalendars = calendars;
 			new Notice(`Found ${calendars.length} calendar(s)`);
 
@@ -683,11 +648,6 @@ class EditCalDAVAccountModal extends Modal {
 	}
 
 	private async saveAccount(): Promise<void> {
-		if (!this.syncDirectory) {
-			new Notice("Please specify a sync directory");
-			return;
-		}
-
 		await this.settingsStore.updateSettings((s) => ({
 			...s,
 			caldav: {
@@ -697,7 +657,6 @@ class EditCalDAVAccountModal extends Modal {
 						? {
 								...a,
 								name: this.name,
-								syncDirectory: this.syncDirectory,
 								enabled: this.enabled,
 								syncIntervalMinutes: this.syncIntervalMinutes,
 								selectedCalendars: this.selectedCalendars,
