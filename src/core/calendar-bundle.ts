@@ -11,6 +11,7 @@ import type { EventStore } from "./event-store";
 import type { Indexer } from "./indexer";
 import { IndexerRegistry } from "./indexer-registry";
 import { CalDAVSyncService } from "./integrations/caldav/sync";
+import { CalDAVSyncStateManager } from "./integrations/caldav/sync-state-manager";
 import type { NotificationManager } from "./notification-manager";
 import type { Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
@@ -29,6 +30,7 @@ export class CalendarBundle {
 	public readonly viewStateManager: CalendarViewStateManager;
 	public readonly commandManager: CommandManager;
 	public readonly batchCommandFactory: BatchCommandFactory;
+	public readonly caldavSyncStateManager: CalDAVSyncStateManager;
 	public readonly viewType: string;
 	private app: App;
 	private directory: string;
@@ -61,6 +63,7 @@ export class CalendarBundle {
 		this.categoryTracker = categoryTracker;
 
 		this.templateService = new TemplateService(this.app, this.settingsStore.settings$, this.indexer);
+		this.caldavSyncStateManager = new CalDAVSyncStateManager(this.indexer, this.settingsStore.settings$);
 		this.viewStateManager = new CalendarViewStateManager();
 		this.commandManager = new CommandManager();
 		this.batchCommandFactory = new BatchCommandFactory(this.app, this);
@@ -95,23 +98,13 @@ export class CalendarBundle {
 			await this.indexer.start();
 
 			const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
-			console.debug(`[CalDAV][${this.calendarId}] Startup - syncOnStartup: ${caldavSettings.syncOnStartup}`);
-			console.debug(`[CalDAV][${this.calendarId}] Total accounts: ${caldavSettings.accounts.length}`);
 
 			if (caldavSettings.syncOnStartup) {
 				const accountsForThisCalendar = caldavSettings.accounts.filter(
 					(a) => a.enabled && a.calendarId === this.calendarId
 				);
-				console.debug(`[CalDAV][${this.calendarId}] Accounts for this calendar: ${accountsForThisCalendar.length}`);
-				console.debug(
-					`[CalDAV][${this.calendarId}] Account IDs:`,
-					accountsForThisCalendar.map((a) => ({ id: a.id, name: a.name, enabled: a.enabled, calendarId: a.calendarId }))
-				);
 
 				for (const account of accountsForThisCalendar) {
-					console.debug(
-						`[CalDAV][${this.calendarId}] Triggering startup sync for account: ${account.name} (${account.id})`
-					);
 					void this.syncAccount(account.id);
 				}
 			}
@@ -338,6 +331,7 @@ export class CalendarBundle {
 					app: this.app,
 					bundle: this,
 					mainSettingsStore: this.mainSettingsStore,
+					syncStateManager: this.caldavSyncStateManager,
 					account,
 					calendar: {
 						url: calendarUrl,
