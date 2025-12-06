@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CALDAV_DEFAULTS } from "../constants";
+import { CALDAV_DEFAULTS } from "../../../constants";
 
 export const CalDAVAuthMethodSchema = z.enum(["Basic", "Oauth"]);
 export type CalDAVAuthMethod = z.infer<typeof CalDAVAuthMethodSchema>;
@@ -55,9 +55,6 @@ export const CalDAVSyncMetadataSchema = z.object({
 
 export type CalDAVSyncMetadata = z.infer<typeof CalDAVSyncMetadataSchema>;
 
-/**
- * Stored calendar state for incremental sync
- */
 export interface CalDAVStoredCalendar {
 	url: string;
 	displayName: string;
@@ -67,9 +64,6 @@ export interface CalDAVStoredCalendar {
 	objects: CalDAVStoredObject[];
 }
 
-/**
- * Stored calendar object state for tracking changes
- */
 export interface CalDAVStoredObject {
 	url: string;
 	etag: string;
@@ -77,9 +71,6 @@ export interface CalDAVStoredObject {
 	localFilePath?: string;
 }
 
-/**
- * CalDAV sync result
- */
 export interface CalDAVSyncResult {
 	success: boolean;
 	accountId: string;
@@ -90,9 +81,6 @@ export interface CalDAVSyncResult {
 	errors: string[];
 }
 
-/**
- * Schema for stored sync state (used for incremental sync)
- */
 export const CalDAVSyncStateDataSchema = z.record(
 	z.string(),
 	z.object({
@@ -119,9 +107,6 @@ export const CalDAVSyncStateDataSchema = z.record(
 
 export type CalDAVSyncStateData = z.infer<typeof CalDAVSyncStateDataSchema>;
 
-/**
- * CalDAV settings section
- */
 export const CalDAVSettingsSchema = z.object({
 	accounts: z.array(CalDAVAccountSchema).default([]),
 	enableAutoSync: z.boolean().default(false),
@@ -132,9 +117,6 @@ export const CalDAVSettingsSchema = z.object({
 
 export type CalDAVSettings = z.infer<typeof CalDAVSettingsSchema>;
 
-/**
- * Common CalDAV server presets
- */
 export const CALDAV_PRESETS = {
 	nextcloud: {
 		name: "Nextcloud",

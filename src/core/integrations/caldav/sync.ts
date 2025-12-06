@@ -1,4 +1,12 @@
 import { type App, normalizePath, TFile, TFolder } from "obsidian";
+import type { SingleCalendarConfig } from "../../../types/settings";
+import {
+	buildFrontmatterFromImportedEvent,
+	type ImportedEvent,
+	type ImportFrontmatterSettings,
+	parseICSContent,
+} from "../../../utils/ics-import";
+import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
 import type {
 	CalDAVAccount,
 	CalDAVCalendarInfo,
@@ -7,15 +15,7 @@ import type {
 	CalDAVStoredObject,
 	CalDAVSyncMetadata,
 	CalDAVSyncResult,
-} from "../types/caldav";
-import type { SingleCalendarConfig } from "../types/settings";
-import {
-	buildFrontmatterFromImportedEvent,
-	type ImportedEvent,
-	type ImportFrontmatterSettings,
-	parseICSContent,
-} from "../utils/ics-import";
-import { CalDAVClientService, type CalDAVFetchedEvent } from "./caldav-client";
+} from "./types";
 
 export interface CalDAVSyncServiceOptions {
 	app: App;

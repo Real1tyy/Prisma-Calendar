@@ -1,10 +1,15 @@
 import { cls } from "@real1ty-obsidian-plugins/utils";
 import { nanoid } from "nanoid";
 import { type App, Modal, Notice, Setting } from "obsidian";
-import { CalDAVClientService } from "../../core/caldav-client";
+import {
+	CALDAV_PRESETS,
+	type CalDAVAccount,
+	type CalDAVCalendarInfo,
+	CalDAVClientService,
+	type CalDAVPresetKey,
+} from "../../core/integrations/caldav";
 import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
-import { CALDAV_PRESETS, type CalDAVAccount, type CalDAVCalendarInfo, type CalDAVPresetKey } from "../../types/caldav";
 
 export class CalDAVSettings {
 	private client: CalDAVClientService;
@@ -47,7 +52,7 @@ export class CalDAVSettings {
 		});
 		addButton.addEventListener("click", () => {
 			new AddCalDAVAccountModal(this.app, this.settingsStore, this.client, () => {
-				this.refreshAccountsList(accountsContainer);
+				this.refreshAccountsList(containerEl);
 			}).open();
 		});
 	}

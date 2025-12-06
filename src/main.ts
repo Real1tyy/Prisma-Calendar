@@ -9,8 +9,8 @@ import {
 	ICSImportModal,
 } from "./components/modals";
 import { COMMAND_IDS } from "./constants";
-import { CalDAVSyncService, CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
-import type { CalDAVSyncResult } from "./types/caldav";
+import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
+import { type CalDAVSyncResult, CalDAVSyncService } from "./core/integrations/caldav";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 import { intoDate } from "./utils/format";
 import { createICSFromEvents, generateICSFilename } from "./utils/ics-export";

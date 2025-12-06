@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { SETTINGS_DEFAULTS } from "../constants";
+import { CalDAVSettingsSchema } from "../core/integrations/caldav";
 import { ColorSchema } from "../utils/validation";
-import { CalDAVSettingsSchema } from "./caldav";
 import { CalendarViewTypeSchema } from "./view";
 
 export const EventPresetSchema = z.object({
