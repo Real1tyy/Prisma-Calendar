@@ -36,6 +36,31 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.initializeCalendarBundles();
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
 
+		this.registerCommands();
+
+		this.app.workspace.onLayoutReady(() => {
+			void this.ensureCalendarBundlesReady().then(() => {
+				this.initializeCalDAVSync();
+			});
+		});
+	}
+
+	onunload(): void {
+		for (const bundle of this.calendarBundles) {
+			bundle.destroy();
+		}
+		this.calendarBundles = [];
+		this.registeredViewTypes.clear();
+
+		this.stopAutoSync();
+		this.caldavSyncService?.destroy();
+		this.caldavSyncService = null;
+
+		const registry = IndexerRegistry.getInstance(this.app);
+		registry.destroy();
+	}
+
+	private registerCommands(): void {
 		type CalendarViewAction = (view: CalendarView) => void;
 
 		const addCalendarViewCommand = (id: string, name: string, action: CalendarViewAction): void => {
@@ -71,23 +96,12 @@ export default class CustomCalendarPlugin extends Plugin {
 						if (!checking) {
 							new Notice("Prisma calendar: batch selection mode is not active");
 						}
-						return true; // Still show the command, but notify user
+						return true;
 					}
 					return false;
 				},
 			});
 		};
-
-		addBatchCommand(COMMAND_IDS.BATCH_SELECT_ALL, "Select all", (view) => view.selectAll());
-		addBatchCommand(COMMAND_IDS.BATCH_CLEAR_SELECTION, "Clear selection", (view) => view.clearSelection());
-		addBatchCommand(COMMAND_IDS.BATCH_DUPLICATE_SELECTION, "Duplicate selection", (view) => view.duplicateSelection());
-		addBatchCommand(COMMAND_IDS.BATCH_DELETE_SELECTION, "Delete selection", (view) => view.deleteSelection());
-		addBatchCommand(COMMAND_IDS.BATCH_SKIP_SELECTION, "Skip selection", (view) => view.skipSelection());
-		addBatchCommand(COMMAND_IDS.BATCH_OPEN_SELECTION, "Open selection", (view) => view.openSelection());
-		addBatchCommand(COMMAND_IDS.BATCH_CLONE_NEXT_WEEK, "Clone to next week", (view) => view.cloneSelection(1));
-		addBatchCommand(COMMAND_IDS.BATCH_CLONE_PREV_WEEK, "Clone to previous week", (view) => view.cloneSelection(-1));
-		addBatchCommand(COMMAND_IDS.BATCH_MOVE_NEXT_WEEK, "Move to next week", (view) => view.moveSelection(1));
-		addBatchCommand(COMMAND_IDS.BATCH_MOVE_PREV_WEEK, "Move to previous week", (view) => view.moveSelection(-1));
 
 		type UndoRedoAction = (view: CalendarView) => Promise<boolean>;
 
@@ -112,13 +126,23 @@ export default class CustomCalendarPlugin extends Plugin {
 			});
 		};
 
+		addBatchCommand(COMMAND_IDS.BATCH_SELECT_ALL, "Select all", (view) => view.selectAll());
+		addBatchCommand(COMMAND_IDS.BATCH_CLEAR_SELECTION, "Clear selection", (view) => view.clearSelection());
+		addBatchCommand(COMMAND_IDS.BATCH_DUPLICATE_SELECTION, "Duplicate selection", (view) => view.duplicateSelection());
+		addBatchCommand(COMMAND_IDS.BATCH_DELETE_SELECTION, "Delete selection", (view) => view.deleteSelection());
+		addBatchCommand(COMMAND_IDS.BATCH_SKIP_SELECTION, "Skip selection", (view) => view.skipSelection());
+		addBatchCommand(COMMAND_IDS.BATCH_OPEN_SELECTION, "Open selection", (view) => view.openSelection());
+		addBatchCommand(COMMAND_IDS.BATCH_CLONE_NEXT_WEEK, "Clone to next week", (view) => view.cloneSelection(1));
+		addBatchCommand(COMMAND_IDS.BATCH_CLONE_PREV_WEEK, "Clone to previous week", (view) => view.cloneSelection(-1));
+		addBatchCommand(COMMAND_IDS.BATCH_MOVE_NEXT_WEEK, "Move to next week", (view) => view.moveSelection(1));
+		addBatchCommand(COMMAND_IDS.BATCH_MOVE_PREV_WEEK, "Move to previous week", (view) => view.moveSelection(-1));
+
 		addUndoRedoCommand(COMMAND_IDS.UNDO, "Undo", (view) => view.undo());
 		addUndoRedoCommand(COMMAND_IDS.REDO, "Redo", (view) => view.redo());
 
 		addCalendarViewCommand(COMMAND_IDS.TOGGLE_BATCH_SELECTION, "Toggle batch selection", (view) => {
 			view.toggleBatchSelection();
 		});
-
 		addCalendarViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", (view) => {
 			void view.showSkippedEventsModal();
 		});
@@ -201,29 +225,6 @@ export default class CustomCalendarPlugin extends Plugin {
 				return false;
 			},
 		});
-
-		this.app.workspace.onLayoutReady(() => {
-			void this.ensureCalendarBundlesReady().then(() => {
-				this.initializeCalDAVSync();
-			});
-		});
-	}
-
-	onunload(): void {
-		for (const bundle of this.calendarBundles) {
-			bundle.destroy();
-		}
-		this.calendarBundles = [];
-		this.registeredViewTypes.clear();
-
-		// Clean up CalDAV sync
-		this.stopAutoSync();
-		this.caldavSyncService?.destroy();
-		this.caldavSyncService = null;
-
-		// Destroy the indexer registry (cleans up any remaining indexers)
-		const registry = IndexerRegistry.getInstance(this.app);
-		registry.destroy();
 	}
 
 	private initializeCalendarBundles(): void {
@@ -461,10 +462,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	): Promise<void> {
 		const settings = bundle.settingsStore.currentSettings;
 
-		// Get existing event IDs for duplicate detection
 		const existingEventIds = new Set(bundle.eventStore.getAllEvents().map((e) => e.id));
-
-		// Filter out events that already exist
 		const newEvents = events.filter((e) => !existingEventIds.has(e.uid));
 		const skippedCount = events.length - newEvents.length;
 
@@ -518,7 +516,6 @@ export default class CustomCalendarPlugin extends Plugin {
 			return;
 		}
 
-		// Find the calendar bundle
 		const bundle = this.calendarBundles.find((b) => b.calendarId === state.calendarId);
 		if (!bundle) {
 			new Notice("Calendar not found for minimized modal");
@@ -526,7 +523,6 @@ export default class CustomCalendarPlugin extends Plugin {
 			return;
 		}
 
-		// Create minimal event data for modal construction
 		const eventData = {
 			title: state.title ?? "",
 			start: state.startDate ?? null,
@@ -539,24 +535,17 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		let modal: EventCreateModal | EventEditModal;
 		if (state.modalType === "edit" && state.filePath) {
-			// Edit mode - use bundle's updateEvent method
 			modal = new EventEditModal(this.app, bundle, eventData, (saveData) => {
 				void bundle.updateEvent(saveData);
 			});
 		} else {
-			// Create mode - use bundle's createEvent method
 			modal = new EventCreateModal(this.app, bundle, eventData, (saveData) => {
 				void bundle.createEvent(saveData);
 			});
 		}
 
-		// Set the state to restore before opening
 		modal.setRestoreState(state);
-
-		// Clear the saved state
 		MinimizedModalManager.clear();
-
-		// Open the modal
 		modal.open();
 	}
 
@@ -568,7 +557,6 @@ export default class CustomCalendarPlugin extends Plugin {
 			return;
 		}
 
-		// Use the first calendar's config for frontmatter property names
 		const calendarConfig = settings.calendars[0];
 		if (!calendarConfig) {
 			return;
