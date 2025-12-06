@@ -3,6 +3,7 @@ import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type { EventSaveData } from "../components/modals/base-event-modal";
 import type CustomCalendarPlugin from "../main";
+import { intoDate } from "../utils/format";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import type { CategoryTracker } from "./category-tracker";
 import { BatchCommandFactory, CommandManager, CreateEventCommand, EditEventCommand, type EventData } from "./commands";
@@ -102,6 +103,55 @@ export class CalendarBundle {
 		const newLeaf = workspace.getLeaf("tab");
 		await newLeaf.setViewState({ type: this.viewType, active: true });
 		await workspace.revealLeaf(newLeaf);
+	}
+
+	async openFileInCalendar(file: TFile): Promise<boolean> {
+		const settings = this.settingsStore.currentSettings;
+
+		// Check if file is within this calendar's directory
+		if (!file.path.startsWith(settings.directory)) {
+			return false;
+		}
+
+		// Get frontmatter and extract date
+		const cache = this.app.metadataCache.getFileCache(file);
+		const frontmatter = cache?.frontmatter;
+
+		if (!frontmatter) {
+			return false;
+		}
+
+		// Try to find a date property (start date, date, or start)
+		const dateValue: unknown =
+			frontmatter[settings.startProp] || frontmatter[settings.dateProp] || frontmatter.Start || frontmatter.Date;
+
+		const parsedDate = intoDate(dateValue);
+
+		if (!parsedDate) {
+			return false;
+		}
+
+		// Activate calendar view
+		await this.activateCalendarView();
+
+		// Get the calendar view and navigate to the date
+		const { workspace } = this.app;
+		const existingLeaves = workspace.getLeavesOfType(this.viewType);
+		const calendarLeaf = existingLeaves[0];
+
+		if (calendarLeaf) {
+			const calendarView = calendarLeaf.view;
+			if (calendarView instanceof CalendarView) {
+				calendarView.navigateToDate(parsedDate, "timeGridWeek");
+
+				// Highlight the event after a short delay to ensure the calendar has rendered
+				setTimeout(() => {
+					calendarView.highlightEventByPath(file.path, 5000);
+				}, 100);
+			}
+		}
+
+		return true;
 	}
 
 	async undo(): Promise<boolean> {

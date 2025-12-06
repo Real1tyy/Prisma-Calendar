@@ -18,7 +18,6 @@ import {
 	type ImportedEvent,
 } from "./core/integrations/ics-import";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
-import { intoDate } from "./utils/format";
 
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;
@@ -285,78 +284,16 @@ export default class CustomCalendarPlugin extends Plugin {
 			return;
 		}
 
-		const cache = this.app.metadataCache.getFileCache(activeFile);
-		const frontmatter = cache?.frontmatter;
-
-		if (!frontmatter) {
-			new Notice("Current note has no frontmatter");
-			return;
-		}
-
-		// Find the calendar bundle that contains this file
-		let targetBundle: CalendarBundle | null = null;
-		let startDate: Date | null = null;
-		let isInAnyCalendarDirectory = false;
-
+		// Find the first calendar bundle that can handle this file
 		for (const bundle of this.calendarBundles) {
-			const settings = bundle.settingsStore.currentSettings;
-			const directory = settings.directory;
-
-			// Check if file is within this calendar's directory
-			if (!activeFile.path.startsWith(directory)) {
-				continue;
-			}
-
-			isInAnyCalendarDirectory = true;
-
-			// Try to find a date property (start date, date, or start)
-			const dateValue: unknown =
-				frontmatter[settings.startProp] || frontmatter[settings.dateProp] || frontmatter.Start || frontmatter.Date;
-			const parsedDate = intoDate(dateValue);
-
-			if (parsedDate) {
-				targetBundle = bundle;
-				startDate = parsedDate;
-				break;
+			const opened = await bundle.openFileInCalendar(activeFile);
+			if (opened) {
+				return;
 			}
 		}
 
-		if (!isInAnyCalendarDirectory) {
-			new Notice("This note is not in any calendar directory");
-			return;
-		}
-
-		if (!targetBundle || !startDate) {
-			new Notice("Could not find a valid date property in the current note's frontmatter");
-			return;
-		}
-
-		// Open/focus the calendar
-		const { workspace } = this.app;
-		const viewType = targetBundle.viewType;
-		const existingLeaves = workspace.getLeavesOfType(viewType);
-
-		let calendarLeaf = existingLeaves[0];
-
-		if (!calendarLeaf) {
-			// Calendar is not open - open it
-			calendarLeaf = workspace.getLeaf("tab");
-			await calendarLeaf.setViewState({ type: viewType, active: true });
-		}
-
-		// Focus the calendar leaf
-		await workspace.revealLeaf(calendarLeaf);
-
-		// Get the calendar view and navigate to the date
-		const calendarView = calendarLeaf.view;
-		if (calendarView instanceof CalendarView) {
-			calendarView.navigateToDate(startDate, "timeGridWeek");
-
-			// Highlight the event after a short delay to ensure the calendar has rendered
-			setTimeout(() => {
-				calendarView.highlightEventByPath(activeFile.path, 5000);
-			}, 100);
-		}
+		// No matching calendar found
+		new Notice("This note is not a calendar event");
 	}
 
 	private showCalendarExportModal(): void {
