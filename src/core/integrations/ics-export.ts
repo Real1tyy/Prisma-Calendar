@@ -261,6 +261,9 @@ export interface TimezoneInfo {
 	label: string;
 }
 
+/**
+ * Common timezones for use in ICS export and CalDAV sync settings
+ */
 export const COMMON_TIMEZONES: TimezoneInfo[] = [
 	{ id: "UTC", label: "UTC" },
 	{ id: "Europe/London", label: "Europe/London (UTC)" },

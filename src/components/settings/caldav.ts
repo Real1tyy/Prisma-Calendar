@@ -9,6 +9,7 @@ import {
 	CalDAVClientService,
 	type CalDAVPresetKey,
 } from "../../core/integrations/caldav";
+import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
 import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 
@@ -223,6 +224,7 @@ class AddCalDAVAccountModal extends Modal {
 	private username = "";
 	private password = "";
 	private syncIntervalMinutes: number = CALDAV_DEFAULTS.SYNC_INTERVAL_MINUTES;
+	private timezone: string = "UTC";
 	private authMethod: "Basic" | "Oauth" = "Basic";
 	private discoveredCalendars: CalDAVCalendarInfo[] = [];
 	private selectedCalendars: string[] = [];
@@ -300,6 +302,20 @@ class AddCalDAVAccountModal extends Modal {
 					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
 						this.syncIntervalMinutes = numValue;
 					}
+				});
+			});
+
+		new Setting(formContainer)
+			.setName("Timezone")
+			.setDesc("Timezone for event times. If it matches your calendar events, times are preserved as-is.")
+			.addDropdown((dropdown) => {
+				for (const tz of COMMON_TIMEZONES) {
+					dropdown.addOption(tz.id, tz.label);
+				}
+
+				dropdown.setValue(this.timezone);
+				dropdown.onChange((value) => {
+					this.timezone = value;
 				});
 			});
 
@@ -423,6 +439,7 @@ class AddCalDAVAccountModal extends Modal {
 				calendarId: this.calendarId,
 				selectedCalendars: [],
 				syncIntervalMinutes: this.syncIntervalMinutes,
+				timezone: this.timezone,
 				createdAt: Date.now(),
 			});
 
@@ -469,6 +486,7 @@ class AddCalDAVAccountModal extends Modal {
 			calendarId: this.calendarId,
 			selectedCalendars: this.selectedCalendars,
 			syncIntervalMinutes: this.syncIntervalMinutes,
+			timezone: this.timezone,
 			createdAt: Date.now(),
 		};
 
@@ -513,6 +531,7 @@ class EditCalDAVAccountModal extends Modal {
 	private name: string;
 	private enabled: boolean;
 	private syncIntervalMinutes: number;
+	private timezone: string;
 	private selectedCalendars: string[];
 	private discoveredCalendars: CalDAVCalendarInfo[] = [];
 
@@ -526,6 +545,7 @@ class EditCalDAVAccountModal extends Modal {
 		this.name = account.name;
 		this.enabled = account.enabled;
 		this.syncIntervalMinutes = account.syncIntervalMinutes ?? CALDAV_DEFAULTS.SYNC_INTERVAL_MINUTES;
+		this.timezone = account.timezone ?? "UTC";
 		this.selectedCalendars = [...account.selectedCalendars];
 	}
 
@@ -565,6 +585,20 @@ class EditCalDAVAccountModal extends Modal {
 					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
 						this.syncIntervalMinutes = numValue;
 					}
+				});
+			});
+
+		new Setting(contentEl)
+			.setName("Timezone")
+			.setDesc("Timezone for event times. If it matches your calendar events, times are preserved as-is.")
+			.addDropdown((dropdown) => {
+				for (const tz of COMMON_TIMEZONES) {
+					dropdown.addOption(tz.id, tz.label);
+				}
+
+				dropdown.setValue(this.timezone);
+				dropdown.onChange((value) => {
+					this.timezone = value;
 				});
 			});
 
@@ -675,6 +709,7 @@ class EditCalDAVAccountModal extends Modal {
 								name: this.name,
 								enabled: this.enabled,
 								syncIntervalMinutes: this.syncIntervalMinutes,
+								timezone: this.timezone,
 								selectedCalendars: this.selectedCalendars,
 							}
 						: a

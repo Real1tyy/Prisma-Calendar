@@ -26,6 +26,7 @@ export const CalDAVAccountSchema = z.object({
 	calendarId: z.string().min(1),
 	selectedCalendars: z.array(z.string()).default([]),
 	syncIntervalMinutes: z.number().int().min(1).max(1440).default(15),
+	timezone: z.string().default("UTC"),
 	lastSyncTime: z.number().int().optional(),
 	createdAt: z.number().int().positive(),
 });
@@ -44,13 +45,18 @@ export interface CalDAVCalendarInfo {
 	components?: string[];
 }
 
+/**
+ * CalDAV sync metadata stored in frontmatter under the caldavProp setting
+ * This structure allows incremental sync using etags and UIDs
+ */
 export const CalDAVSyncMetadataSchema = z.object({
-	href: z.string(),
-	etag: z.string(),
 	accountId: z.string(),
-	calendarUrl: z.string(),
+	calendarHref: z.string(),
+	objectHref: z.string(),
+	etag: z.string(),
 	uid: z.string(),
 	lastModified: z.number().int().positive().optional(),
+	lastSyncedAt: z.number().int().positive(),
 });
 
 export type CalDAVSyncMetadata = z.infer<typeof CalDAVSyncMetadataSchema>;
@@ -81,37 +87,10 @@ export interface CalDAVSyncResult {
 	errors: string[];
 }
 
-export const CalDAVSyncStateDataSchema = z.record(
-	z.string(),
-	z.object({
-		calendars: z.array(
-			z.object({
-				url: z.string(),
-				displayName: z.string(),
-				accountId: z.string(),
-				ctag: z.string().optional(),
-				syncToken: z.string().optional(),
-				objects: z.array(
-					z.object({
-						url: z.string(),
-						etag: z.string(),
-						uid: z.string(),
-						localFilePath: z.string().optional(),
-					})
-				),
-			})
-		),
-		lastSyncTime: z.number(),
-	})
-);
-
-export type CalDAVSyncStateData = z.infer<typeof CalDAVSyncStateDataSchema>;
-
 export const CalDAVSettingsSchema = z.object({
 	accounts: z.array(CalDAVAccountSchema).default([]),
 	enableAutoSync: z.boolean().default(true),
 	syncOnStartup: z.boolean().default(true),
-	syncState: CalDAVSyncStateDataSchema.default({}),
 });
 
 export type CalDAVSettings = z.infer<typeof CalDAVSettingsSchema>;
