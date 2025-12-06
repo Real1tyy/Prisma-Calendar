@@ -1,7 +1,7 @@
 import { onceAsync } from "@real1ty-obsidian-plugins/utils";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
-import { CalendarSelectModal, EventCreateModal, EventEditModal, ICSImportModal } from "./components/modals";
+import { CalendarSelectModal, ICSImportModal } from "./components/modals";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
 import { type CalDAVSyncResult, CalDAVSyncService } from "./core/integrations/caldav";
@@ -207,7 +207,7 @@ export default class CustomCalendarPlugin extends Plugin {
 			checkCallback: (checking: boolean) => {
 				if (MinimizedModalManager.hasMinimizedModal()) {
 					if (!checking) {
-						this.restoreMinimizedModal();
+						MinimizedModalManager.restoreModal(this.app, this.calendarBundles);
 					}
 					return true;
 				}
@@ -306,46 +306,6 @@ export default class CustomCalendarPlugin extends Plugin {
 		new ICSImportModal(this.app, this.calendarBundles, async (bundle, events, timezone) => {
 			await importEventsToCalendar(bundle, events, timezone);
 		}).open();
-	}
-
-	private restoreMinimizedModal(): void {
-		const state = MinimizedModalManager.getState();
-		if (!state) {
-			new Notice("No minimized modal to restore");
-			return;
-		}
-
-		const bundle = this.calendarBundles.find((b) => b.calendarId === state.calendarId);
-		if (!bundle) {
-			new Notice("Calendar not found for minimized modal");
-			MinimizedModalManager.clear();
-			return;
-		}
-
-		const eventData = {
-			title: state.title ?? "",
-			start: state.startDate ?? null,
-			end: state.endDate ?? null,
-			allDay: state.allDay ?? false,
-			extendedProps: {
-				filePath: state.filePath,
-			},
-		};
-
-		let modal: EventCreateModal | EventEditModal;
-		if (state.modalType === "edit" && state.filePath) {
-			modal = new EventEditModal(this.app, bundle, eventData, (saveData) => {
-				void bundle.updateEvent(saveData);
-			});
-		} else {
-			modal = new EventCreateModal(this.app, bundle, eventData, (saveData) => {
-				void bundle.createEvent(saveData);
-			});
-		}
-
-		modal.setRestoreState(state);
-		MinimizedModalManager.clear();
-		modal.open();
 	}
 
 	private initializeCalDAVSync(): void {
