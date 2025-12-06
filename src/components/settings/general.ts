@@ -238,20 +238,12 @@ export class GeneralSettings {
 			})
 			.setText("Documentation");
 
-		new Setting(containerEl)
-			.setName("Export folder")
-			.setDesc("Folder where exported .ics files are saved")
-			.addText((text) => {
-				text
-					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER)
-					.setValue(this.settingsStore.currentSettings.exportFolder || SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER)
-					.onChange(async (value) => {
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							exportFolder: value.trim() || SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER,
-						}));
-					});
-			});
+		this.ui.addText(containerEl, {
+			key: "exportFolder",
+			name: "Export folder",
+			desc: "Folder where exported .ics files are saved",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER,
+		});
 
 		const buttonsContainer = containerEl.createDiv(cls("settings-integrations-buttons"));
 

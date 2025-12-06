@@ -1,6 +1,7 @@
 import { cls } from "@real1ty-obsidian-plugins/utils";
 import { nanoid } from "nanoid";
 import { type App, Modal, Notice, Setting } from "obsidian";
+import { CALDAV_DEFAULTS } from "../../constants";
 import {
 	CALDAV_PRESETS,
 	type CalDAVAccount,
@@ -212,7 +213,7 @@ class AddCalDAVAccountModal extends Modal {
 	private username = "";
 	private password = "";
 	private syncDirectory = "";
-	private syncIntervalMinutes = 15;
+	private syncIntervalMinutes: number = CALDAV_DEFAULTS.SYNC_INTERVAL_MINUTES;
 	private authMethod: "Basic" | "Oauth" = "Basic";
 	private discoveredCalendars: CalDAVCalendarInfo[] = [];
 	private selectedCalendars: string[] = [];
@@ -534,7 +535,7 @@ class EditCalDAVAccountModal extends Modal {
 		this.name = account.name;
 		this.syncDirectory = account.syncDirectory;
 		this.enabled = account.enabled;
-		this.syncIntervalMinutes = account.syncIntervalMinutes ?? 15;
+		this.syncIntervalMinutes = account.syncIntervalMinutes ?? CALDAV_DEFAULTS.SYNC_INTERVAL_MINUTES;
 		this.selectedCalendars = [...account.selectedCalendars];
 	}
 
