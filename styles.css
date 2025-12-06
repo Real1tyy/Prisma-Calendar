@@ -2722,6 +2722,32 @@
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+.prisma-fill-button {
+	padding: 6px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--interactive-normal);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-weight-medium);
+	cursor: pointer;
+	transition: all 0.15s ease;
+	white-space: nowrap;
+	margin-left: 4px;
+}
+
+.prisma-fill-button:hover {
+	background-color: var(--interactive-hover);
+	border-color: var(--interactive-accent);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.prisma-fill-button:active {
+	transform: translateY(0);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
 /* Event Modal Category Field */
 .prisma-category-field {
 	margin-top: 8px;
@@ -3048,6 +3074,11 @@
 	}
 
 	.prisma-now-button {
+		flex: 1;
+		min-width: 80px;
+	}
+
+	.prisma-fill-button {
 		flex: 1;
 		min-width: 80px;
 	}

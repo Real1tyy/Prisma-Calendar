@@ -5,11 +5,13 @@ import {
 	CloneEventCommand,
 	DeleteEventCommand,
 	DuplicateRecurringEventCommand,
+	FillTimeCommand,
 	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
+import { type AdjacentEvent, findAdjacentEvent } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
@@ -297,6 +299,26 @@ export class EventContextMenu {
 					});
 			});
 
+			// Fill time options - only for timed events
+			if (!event.allDay) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Fill start time from previous event")
+						.setIcon("arrow-left")
+						.onClick(() => {
+							void this.fillStartTimeFromPrevious(event);
+						});
+				});
+				menu.addItem((item) => {
+					item
+						.setTitle("Fill end time from next event")
+						.setIcon("arrow-right")
+						.onClick(() => {
+							void this.fillEndTimeFromNext(event);
+						});
+				});
+			}
+
 			menu.addSeparator();
 
 			menu.addItem((item) => {
@@ -576,5 +598,78 @@ export class EventContextMenu {
 
 		// Open the modal
 		new RecurringEventsListModal(this.app, instancesWithTitles, sourceTitle, sourceEventPath).open();
+	}
+
+	async fillEndTimeFromNext(event: CalendarEventInfo): Promise<void> {
+		const settings = this.bundle.settingsStore.currentSettings;
+		await this.fillTimeFromAdjacent(event, {
+			direction: "next",
+			propertyName: settings.endProp,
+			getTimeValue: (adj) => adj.start,
+			successMessage: "End time filled from next event",
+			errorMessage: "Failed to fill end time",
+		});
+	}
+
+	async fillStartTimeFromPrevious(event: CalendarEventInfo): Promise<void> {
+		const settings = this.bundle.settingsStore.currentSettings;
+		await this.fillTimeFromAdjacent(event, {
+			direction: "previous",
+			propertyName: settings.startProp,
+			getTimeValue: (adj) => adj.end,
+			successMessage: "Start time filled from previous event",
+			errorMessage: "Failed to fill start time",
+		});
+	}
+
+	private async fillTimeFromAdjacent(
+		event: CalendarEventInfo,
+		config: {
+			direction: "next" | "previous";
+			propertyName: string;
+			getTimeValue: (adj: AdjacentEvent) => string | undefined;
+			successMessage: string;
+			errorMessage: string;
+		}
+	): Promise<void> {
+		await this.withFilePath(event, "fill time", async (filePath) => {
+			const file = this.app.vault.getAbstractFileByPath(filePath);
+			let currentValue: string | undefined;
+			if (file instanceof TFile) {
+				const cache = this.app.metadataCache.getFileCache(file);
+				currentValue = cache?.frontmatter?.[config.propertyName] as string | undefined;
+			}
+
+			const adjacentEvent = findAdjacentEvent(
+				this.bundle.eventStore,
+				event.start,
+				event.extendedProps?.filePath,
+				config.direction,
+				currentValue || ""
+			);
+
+			if (!adjacentEvent) {
+				new Notice(`No ${config.direction} event found`);
+				return;
+			}
+
+			const timeValue = config.getTimeValue(adjacentEvent);
+			if (!timeValue) {
+				new Notice(
+					`${config.direction === "previous" ? "Previous" : "Next"} event has no ${config.direction === "previous" ? "end" : "start"} time`
+				);
+				return;
+			}
+
+			const timeValueISO = new Date(timeValue).toISOString();
+
+			await this.runCommand(
+				() => new FillTimeCommand(this.app, this.bundle, filePath, config.propertyName, timeValueISO),
+				{
+					success: config.successMessage,
+					error: config.errorMessage,
+				}
+			);
+		});
 	}
 }

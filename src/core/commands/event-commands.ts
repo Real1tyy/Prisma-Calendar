@@ -402,6 +402,53 @@ export class UpdateEventCommand implements Command {
 	}
 }
 
+export class FillTimeCommand implements Command {
+	private originalValue?: string;
+
+	constructor(
+		private app: App,
+		_bundle: CalendarBundle,
+		private filePath: string,
+		private propertyName: string,
+		private newTimeValue: string
+	) {}
+
+	async execute(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+
+		// Backup original value
+		if (this.originalValue === undefined) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			this.originalValue = fm?.[this.propertyName] as string | undefined;
+		}
+
+		await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+			fm[this.propertyName] = this.newTimeValue;
+		});
+	}
+
+	async undo(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+
+		await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+			if (this.originalValue === undefined) {
+				delete fm[this.propertyName];
+			} else {
+				fm[this.propertyName] = this.originalValue;
+			}
+		});
+	}
+
+	getType(): string {
+		return "fill-time";
+	}
+
+	canUndo(): boolean {
+		return this.app.vault.getAbstractFileByPath(this.filePath) instanceof TFile;
+	}
+}
+
 export class ToggleSkipCommand implements Command {
 	private originalSkipValue?: boolean;
 

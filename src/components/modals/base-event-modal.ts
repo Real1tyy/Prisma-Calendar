@@ -4,6 +4,7 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import { type FormData, MinimizedModalManager, type MinimizedModalState } from "../../core/minimized-modal-manager";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
+import { findAdjacentEvent } from "../../utils/calendar-events";
 import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
 import {
 	calculateDurationMinutes,
@@ -545,6 +546,16 @@ export abstract class BaseEventModal extends Modal {
 			type: "button",
 		});
 
+		const isStartInput = label.toLowerCase().includes("start");
+		const fillButton = inputWrapper.createEl("button", {
+			text: isStartInput ? "Fill prev" : "Fill next",
+			cls: "prisma-fill-button",
+			type: "button",
+			attr: {
+				title: isStartInput ? "Fill from previous event's end time" : "Fill from next event's start time",
+			},
+		});
+
 		const input = inputWrapper.createEl("input", {
 			type: "datetime-local",
 			value: initialValue,
@@ -553,6 +564,14 @@ export abstract class BaseEventModal extends Modal {
 
 		nowButton.addEventListener("click", () => {
 			this.setToCurrentTime(input);
+		});
+
+		fillButton.addEventListener("click", () => {
+			if (isStartInput) {
+				this.fillStartTimeFromPrevious(input);
+			} else {
+				this.fillEndTimeFromNext(input);
+			}
 		});
 
 		return input;
@@ -747,6 +766,50 @@ export abstract class BaseEventModal extends Modal {
 		// Trigger change event to update duration field if present
 		const event = new Event("change", { bubbles: true });
 		input.dispatchEvent(event);
+	}
+
+	private fillStartTimeFromPrevious(input: HTMLInputElement): void {
+		this.fillTimeFromAdjacent(input, "previous", "end", "Start time filled from previous event");
+	}
+
+	private fillEndTimeFromNext(input: HTMLInputElement): void {
+		this.fillTimeFromAdjacent(input, "next", "start", "End time filled from next event");
+	}
+
+	private fillTimeFromAdjacent(
+		input: HTMLInputElement,
+		direction: "next" | "previous",
+		timeField: "start" | "end",
+		successMessage: string
+	): void {
+		const currentValue = inputValueToISOString(input.value);
+
+		const adjacentEvent = findAdjacentEvent(
+			this.bundle.eventStore,
+			this.event.start,
+			this.event.extendedProps?.filePath,
+			direction,
+			currentValue
+		);
+
+		if (!adjacentEvent) {
+			new Notice(`No ${direction} event found`);
+			return;
+		}
+
+		const timeValue = timeField === "start" ? adjacentEvent.start : adjacentEvent.end;
+
+		if (!timeValue) {
+			new Notice(`${direction === "previous" ? "Previous" : "Next"} event has no ${timeField} time`);
+			return;
+		}
+
+		input.value = formatDateTimeForInput(timeValue);
+
+		const event = new Event("change", { bubbles: true });
+		input.dispatchEvent(event);
+
+		new Notice(successMessage);
 	}
 
 	private setupEventHandlers(contentEl: HTMLElement): void {

@@ -18,6 +18,7 @@ export {
 	EditEventCommand,
 	type EditEventData,
 	type EventData,
+	FillTimeCommand,
 	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,

@@ -1,6 +1,7 @@
 import { generateZettelId, withFrontmatter } from "@real1ty-obsidian-plugins/utils";
 import { nanoid } from "nanoid";
 import type { App, TFile } from "obsidian";
+import type { EventStore } from "../core/event-store";
 import type { SingleCalendarConfig } from "../types";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
@@ -288,4 +289,64 @@ export const shiftISO = (iso: unknown, offsetMs?: number) => {
 	if (Number.isNaN(d.getTime())) return iso;
 	d.setTime(d.getTime() + offsetMs);
 	return d.toISOString();
+};
+
+export interface AdjacentEvent {
+	title: string;
+	start: string;
+	end?: string;
+	allDay: boolean;
+	filePath: string;
+}
+
+export const findAdjacentEvent = (
+	eventStore: EventStore,
+	currentStart: string | Date | null,
+	currentFilePath: string | null | undefined,
+	direction: "next" | "previous",
+	skipValueIfSame: string
+): AdjacentEvent | null => {
+	const DAY_RANGE = 1;
+	const currentStartTime = new Date(currentStart || "").getTime();
+	const skipTimeISO = skipValueIfSame ? new Date(skipValueIfSame).toISOString() : undefined;
+
+	const searchStart = new Date(currentStartTime);
+	searchStart.setDate(searchStart.getDate() - DAY_RANGE);
+	const searchEnd = new Date(currentStartTime);
+	searchEnd.setDate(searchEnd.getDate() + DAY_RANGE);
+
+	const allEvents = eventStore.getNonSkippedEvents({
+		start: searchStart.toISOString(),
+		end: searchEnd.toISOString(),
+	});
+
+	const currentIndex = allEvents.findIndex((e) => e.ref.filePath === currentFilePath);
+	if (currentIndex === -1) return null;
+
+	// Determine iteration range and step based on direction
+	const startIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
+	const endIndex = direction === "next" ? allEvents.length : -1;
+	const step = direction === "next" ? 1 : -1;
+
+	for (let i = startIndex; i !== endIndex; i += step) {
+		const e = allEvents[i];
+		const eventStartISO = new Date(e.start).toISOString();
+		const eventEndISO = e.end ? new Date(e.end).toISOString() : null;
+
+		if (e.allDay) continue;
+		if (direction === "previous" && !e.end) continue;
+
+		const timeToCheck = direction === "next" ? eventStartISO : eventEndISO;
+		if (skipTimeISO && timeToCheck === skipTimeISO) continue;
+
+		return {
+			title: e.title,
+			start: e.start,
+			end: e.end,
+			allDay: e.allDay,
+			filePath: e.ref.filePath,
+		};
+	}
+
+	return null;
 };
