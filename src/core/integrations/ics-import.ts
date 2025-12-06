@@ -1,8 +1,10 @@
 import { getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
-import { Notice } from "obsidian";
+import { type App, Notice, type TFile } from "obsidian";
+import { generateUniqueEventPath } from "../../utils/calendar-events";
 import { parseIntoList } from "../../utils/list-utils";
+import { ensureFolderExists } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 
 export interface ImportedEvent {
@@ -270,7 +272,49 @@ export function buildFrontmatterFromImportedEvent(
 	return fm;
 }
 
+export async function createEventNoteFromImportedEvent(
+	app: App,
+	bundle: CalendarBundle,
+	event: ImportedEvent,
+	options: {
+		targetDirectory: string;
+		timezone: string;
+		additionalFrontmatter?: Record<string, unknown>;
+	}
+): Promise<TFile> {
+	const { targetDirectory, timezone, additionalFrontmatter } = options;
+	await ensureFolderExists(app, targetDirectory);
+
+	const baseName =
+		extractBasenameFromOriginalPath(event.originalFilePath) ||
+		sanitizeForFilename(event.title, { style: "preserve" });
+
+	const { filename, zettelId } = generateUniqueEventPath(app, targetDirectory, baseName);
+
+	const calendarSettings = bundle.settingsStore.currentSettings;
+	const frontmatter = buildFrontmatterFromImportedEvent(event, calendarSettings, timezone);
+
+	if (calendarSettings.zettelIdProp) {
+		frontmatter[calendarSettings.zettelIdProp] = zettelId;
+	}
+
+	if (additionalFrontmatter) {
+		Object.assign(frontmatter, additionalFrontmatter);
+	}
+
+	const content = event.description ? `\n${event.description}\n` : undefined;
+
+	return await bundle.templateService.createFile({
+		title: event.title,
+		targetDirectory,
+		filename,
+		content,
+		frontmatter,
+	});
+}
+
 export async function importEventsToCalendar(
+	app: App,
 	bundle: CalendarBundle,
 	events: ImportedEvent[],
 	timezone: string
@@ -295,20 +339,9 @@ export async function importEventsToCalendar(
 
 	for (const event of newEvents) {
 		try {
-			const frontmatter = buildFrontmatterFromImportedEvent(event, settings, timezone);
-			const content = event.description ? `\n${event.description}\n` : "";
-
-			const baseName =
-				extractBasenameFromOriginalPath(event.originalFilePath) ||
-				sanitizeForFilename(event.title, { style: "preserve" }) ||
-				"Imported Event";
-
-			await bundle.templateService.createFile({
-				title: event.title,
+			await createEventNoteFromImportedEvent(app, bundle, event, {
 				targetDirectory: settings.directory,
-				filename: baseName,
-				content: content || undefined,
-				frontmatter,
+				timezone,
 			});
 			successCount++;
 		} catch (error) {
