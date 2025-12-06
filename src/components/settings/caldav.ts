@@ -212,6 +212,7 @@ class AddCalDAVAccountModal extends Modal {
 	private username = "";
 	private password = "";
 	private syncDirectory = "";
+	private syncIntervalMinutes = 15;
 	private authMethod: "Basic" | "Oauth" = "Basic";
 	private discoveredCalendars: CalDAVCalendarInfo[] = [];
 	private selectedCalendars: string[] = [];
@@ -287,6 +288,19 @@ class AddCalDAVAccountModal extends Modal {
 					.setValue(this.syncDirectory)
 					.onChange((value) => {
 						this.syncDirectory = value;
+					});
+			});
+
+		new Setting(formContainer)
+			.setName("Sync interval (minutes)")
+			.setDesc("How often to automatically sync this account (1-1440 minutes)")
+			.addSlider((slider) => {
+				slider
+					.setLimits(1, 1440, 1)
+					.setValue(this.syncIntervalMinutes)
+					.setDynamicTooltip()
+					.onChange((value) => {
+						this.syncIntervalMinutes = value;
 					});
 			});
 
@@ -409,7 +423,7 @@ class AddCalDAVAccountModal extends Modal {
 				enabled: true,
 				syncDirectory: this.syncDirectory || "Calendars",
 				selectedCalendars: [],
-				syncIntervalMinutes: 15,
+				syncIntervalMinutes: this.syncIntervalMinutes,
 				createdAt: Date.now(),
 			});
 
@@ -460,7 +474,7 @@ class AddCalDAVAccountModal extends Modal {
 			enabled: true,
 			syncDirectory: this.syncDirectory,
 			selectedCalendars: this.selectedCalendars,
-			syncIntervalMinutes: 15,
+			syncIntervalMinutes: this.syncIntervalMinutes,
 			createdAt: Date.now(),
 		};
 
@@ -505,6 +519,7 @@ class EditCalDAVAccountModal extends Modal {
 	private name: string;
 	private syncDirectory: string;
 	private enabled: boolean;
+	private syncIntervalMinutes: number;
 	private selectedCalendars: string[];
 	private discoveredCalendars: CalDAVCalendarInfo[] = [];
 
@@ -519,6 +534,7 @@ class EditCalDAVAccountModal extends Modal {
 		this.name = account.name;
 		this.syncDirectory = account.syncDirectory;
 		this.enabled = account.enabled;
+		this.syncIntervalMinutes = account.syncIntervalMinutes ?? 15;
 		this.selectedCalendars = [...account.selectedCalendars];
 	}
 
@@ -551,6 +567,19 @@ class EditCalDAVAccountModal extends Modal {
 				toggle.setValue(this.enabled).onChange((value) => {
 					this.enabled = value;
 				});
+			});
+
+		new Setting(contentEl)
+			.setName("Sync interval (minutes)")
+			.setDesc("How often to automatically sync this account (1-1440 minutes)")
+			.addSlider((slider) => {
+				slider
+					.setLimits(1, 1440, 1)
+					.setValue(this.syncIntervalMinutes)
+					.setDynamicTooltip()
+					.onChange((value) => {
+						this.syncIntervalMinutes = value;
+					});
 			});
 
 		const refreshButton = contentEl.createEl("button", {
@@ -661,6 +690,7 @@ class EditCalDAVAccountModal extends Modal {
 								name: this.name,
 								syncDirectory: this.syncDirectory,
 								enabled: this.enabled,
+								syncIntervalMinutes: this.syncIntervalMinutes,
 								selectedCalendars: this.selectedCalendars,
 							}
 						: a
