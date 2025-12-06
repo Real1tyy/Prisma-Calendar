@@ -2,6 +2,7 @@ import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
 import { type App, normalizePath, TFile, TFolder } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CustomCalendarSettings } from "../../../types/settings";
+import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../../utils/calendar-events";
 import type { CalendarBundle } from "../../calendar-bundle";
 import type { SettingsStore } from "../../settings-store";
 import {
@@ -58,8 +59,6 @@ export class CalDAVSyncService {
 	}
 
 	async sync(): Promise<CalDAVSyncResult> {
-		console.debug(`[CalDAV] Syncing ${this.calendar.displayName}`);
-
 		if (!this.account.enabled) {
 			return {
 				success: false,
@@ -84,8 +83,6 @@ export class CalDAVSyncService {
 
 		try {
 			const events = await this.client.fetchCalendarEvents({ calendar: this.calendar });
-			console.debug(`[CalDAV Sync] Fetched ${events.length} event(s) from server`);
-			console.debug(`[CalDAV Sync] Checking sync state for existing events...`);
 
 			for (const event of events) {
 				try {
@@ -93,16 +90,12 @@ export class CalDAVSyncService {
 					const existingEvent = this.syncStateManager.findByUid(this.account.id, this.calendar.url, uid);
 
 					if (existingEvent) {
-						console.debug(`[CalDAV Sync] Event ${uid} exists locally at ${existingEvent.filePath}`);
 						if (existingEvent.metadata.etag === event.etag) {
-							console.debug(`[CalDAV Sync] Event ${uid} unchanged (etag match), skipping`);
-							continue;
+							continue; // Event unchanged, skip
 						}
-						console.debug(`[CalDAV Sync] Event ${uid} changed (etag mismatch), updating...`);
 						await this.updateNoteFromEvent(existingEvent.filePath, event);
 						result.updated++;
 					} else {
-						console.debug(`[CalDAV Sync] Event ${uid} is new, creating note...`);
 						await this.createNoteFromEvent(event);
 						result.created++;
 					}
@@ -113,9 +106,11 @@ export class CalDAVSyncService {
 				}
 			}
 
-			console.debug(
-				`[CalDAV] Sync complete - created: ${result.created}, updated: ${result.updated}, errors: ${result.errors.length}`
-			);
+			if (result.created > 0 || result.updated > 0 || result.errors.length > 0) {
+				console.debug(
+					`[CalDAV] ${this.calendar.displayName} sync: ${result.created} created, ${result.updated} updated, ${result.errors.length} errors`
+				);
+			}
 		} catch (error) {
 			result.success = false;
 			const errorMsg = error instanceof Error ? error.message : String(error);
@@ -134,15 +129,24 @@ export class CalDAVSyncService {
 		}
 
 		const importedEvent = parsed.events[0];
-		console.debug(`[CalDAV Sync] Creating note for: ${importedEvent.title}`);
-
 		const folderPath = this.getSyncFolderPath();
 		await this.ensureFolderExists(folderPath);
+
+		const baseName =
+			extractBasenameFromOriginalPath(importedEvent.originalFilePath) ||
+			sanitizeForFilename(importedEvent.title, { style: "preserve" });
+
+		const { filename, zettelId } = generateUniqueEventPath(this.app, folderPath, baseName);
 
 		const settings = this.getImportFrontmatterSettings();
 		const frontmatter = buildFrontmatterFromImportedEvent(importedEvent, settings, this.account.timezone);
 
-		const caldavProp = this.bundle.settingsStore.currentSettings.caldavProp;
+		const calendarSettings = this.bundle.settingsStore.currentSettings;
+		if (calendarSettings.zettelIdProp) {
+			frontmatter[calendarSettings.zettelIdProp] = zettelId;
+		}
+
+		const caldavProp = calendarSettings.caldavProp;
 		const syncMeta: CalDAVSyncMetadata = {
 			accountId: this.account.id,
 			calendarHref: this.calendar.url,
@@ -155,22 +159,18 @@ export class CalDAVSyncService {
 		frontmatter[caldavProp] = syncMeta;
 
 		const content = importedEvent.description ? `\n${importedEvent.description}\n` : undefined;
-		const baseName =
-			extractBasenameFromOriginalPath(importedEvent.originalFilePath) ||
-			sanitizeForFilename(importedEvent.title, { style: "preserve" }) ||
-			"CalDAV Event";
 
 		await this.bundle.templateService.createFile({
 			title: importedEvent.title,
 			targetDirectory: folderPath,
-			filename: baseName,
+			filename,
 			content,
 			frontmatter,
 		});
 	}
 
 	private async updateNoteFromEvent(filePath: string, event: CalDAVFetchedEvent): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(filePath);
+		let file = this.app.vault.getAbstractFileByPath(filePath);
 		if (!(file instanceof TFile)) {
 			throw new Error(`File not found: ${filePath}`);
 		}
@@ -182,6 +182,29 @@ export class CalDAVSyncService {
 
 		const importedEvent = parsed.events[0];
 		const settings = this.getImportFrontmatterSettings();
+
+		// Check if title changed by comparing with the file's basename
+		const currentBasenameWithoutZettel = removeZettelId(file.basename);
+		const newTitle = sanitizeForFilename(importedEvent.title, { style: "preserve" });
+
+		const titleChanged = currentBasenameWithoutZettel !== newTitle;
+
+		// If title changed, rename the file first (preserving ZettelID)
+		if (titleChanged) {
+			const existingZettelId = extractZettelId(file.basename);
+			if (existingZettelId) {
+				const directory = file.parent?.path || "";
+				const newFilename = `${newTitle} - ${existingZettelId}`;
+				const newPath = directory ? `${directory}/${newFilename}.md` : `${newFilename}.md`;
+
+				await this.app.fileManager.renameFile(file, newPath);
+
+				file = this.app.vault.getAbstractFileByPath(newPath);
+				if (!(file instanceof TFile)) {
+					throw new Error(`File not found after rename: ${newPath}`);
+				}
+			}
+		}
 
 		await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
 			const eventFm = buildFrontmatterFromImportedEvent(importedEvent, settings, this.account.timezone);

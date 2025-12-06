@@ -1,5 +1,4 @@
 import {
-	generateZettelId,
 	getFilenameFromPath,
 	parseFrontmatterValue,
 	sanitizeForFilename,
@@ -270,10 +269,6 @@ export function buildFrontmatterFromImportedEvent(
 
 	if (event.categories && event.categories.length > 0) {
 		fm[settings.categoryProp] = event.categories;
-	}
-
-	if (settings.zettelIdProp) {
-		fm[settings.zettelIdProp] = generateZettelId();
 	}
 
 	return fm;

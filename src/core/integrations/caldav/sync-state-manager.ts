@@ -151,9 +151,6 @@ export class CalDAVSyncStateManager {
 		if (caldavData && typeof caldavData === "object") {
 			const metadata = this.parseCaldavMetadata(caldavData);
 			if (metadata) {
-				console.debug(
-					`[CalDAV Sync State] ✅ Tracked: ${filePath} (UID: ${metadata.uid}, Account: ${metadata.accountId})`
-				);
 				this.track(filePath, metadata);
 				return;
 			}
@@ -165,10 +162,7 @@ export class CalDAVSyncStateManager {
 	}
 
 	private processFileDeletion(filePath: string): void {
-		const wasTracked = this.untrackByPath(filePath);
-		if (wasTracked) {
-			console.debug(`[CalDAV Sync State] 🗑️ Untracked deleted file: ${filePath}`);
-		}
+		this.untrackByPath(filePath);
 	}
 
 	private parseCaldavMetadata(caldav: Record<string, unknown>): CalDAVSyncMetadata | null {
