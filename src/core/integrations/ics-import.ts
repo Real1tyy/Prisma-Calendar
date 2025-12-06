@@ -19,6 +19,8 @@ export interface ImportedEvent {
 	originalFilePath?: string;
 	/** Event UID from ICS - used for duplicate detection */
 	uid: string;
+	/** Last modified timestamp (DTSTAMP or LAST-MODIFIED) in milliseconds */
+	lastModified?: number;
 }
 
 export interface ICSImportResult {
@@ -120,8 +122,21 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 			const dtstart = vevent.getFirstPropertyValue("dtstart") as ICAL.Time | null;
 			if (!dtstart) continue;
 
-			const dtend = vevent.getFirstPropertyValue("dtend") as ICAL.Time | null;
 			const allDay = isAllDayEvent(dtstart);
+
+			// Calculate end time: prefer DTEND, fall back to DURATION
+			let endDate: Date | undefined;
+			const dtend = vevent.getFirstPropertyValue("dtend") as ICAL.Time | null;
+			if (dtend) {
+				endDate = icalTimeToDate(dtend);
+			} else {
+				const duration = vevent.getFirstPropertyValue("duration") as ICAL.Duration | null;
+				if (duration) {
+					const startDate = icalTimeToDate(dtstart);
+					const durationSeconds = duration.toSeconds();
+					endDate = new Date(startDate.getTime() + durationSeconds * 1000);
+				}
+			}
 
 			const categoriesProp = vevent.getFirstPropertyValue("categories");
 			const categories = parseIntoList(categoriesProp);
@@ -132,17 +147,30 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 			const originalFilePath = getPrismaProperty(vevent, "x-prisma-file");
 			const uid = event.uid;
 
+			// Extract last modified timestamp (prefer LAST-MODIFIED, fall back to DTSTAMP)
+			let lastModified: number | undefined;
+			const lastModifiedTime = vevent.getFirstPropertyValue("last-modified") as ICAL.Time | null;
+			if (lastModifiedTime) {
+				lastModified = icalTimeToDate(lastModifiedTime).getTime();
+			} else {
+				const dtstamp = vevent.getFirstPropertyValue("dtstamp") as ICAL.Time | null;
+				if (dtstamp) {
+					lastModified = icalTimeToDate(dtstamp).getTime();
+				}
+			}
+
 			events.push({
 				title: event.summary || "Untitled Event",
 				description: event.description || undefined,
 				start: icalTimeToDate(dtstart),
-				end: dtend ? icalTimeToDate(dtend) : undefined,
+				end: endDate,
 				allDay,
 				categories: parsedCategories,
 				reminderMinutes,
 				frontmatter,
 				originalFilePath,
 				uid,
+				lastModified,
 			});
 		}
 

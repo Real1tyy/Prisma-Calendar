@@ -50,6 +50,7 @@ export const CalDAVSyncMetadataSchema = z.object({
 	accountId: z.string(),
 	calendarUrl: z.string(),
 	uid: z.string(),
+	lastModified: z.number().int().positive().optional(),
 });
 
 export type CalDAVSyncMetadata = z.infer<typeof CalDAVSyncMetadataSchema>;
@@ -108,7 +109,7 @@ export type CalDAVSyncStateData = z.infer<typeof CalDAVSyncStateDataSchema>;
 
 export const CalDAVSettingsSchema = z.object({
 	accounts: z.array(CalDAVAccountSchema).default([]),
-	enableAutoSync: z.boolean().default(false),
+	enableAutoSync: z.boolean().default(true),
 	syncOnStartup: z.boolean().default(true),
 	syncState: CalDAVSyncStateDataSchema.default({}),
 });

@@ -95,11 +95,23 @@ export class CalendarBundle {
 			await this.indexer.start();
 
 			const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
+			console.debug(`[CalDAV][${this.calendarId}] Startup - syncOnStartup: ${caldavSettings.syncOnStartup}`);
+			console.debug(`[CalDAV][${this.calendarId}] Total accounts: ${caldavSettings.accounts.length}`);
+
 			if (caldavSettings.syncOnStartup) {
 				const accountsForThisCalendar = caldavSettings.accounts.filter(
 					(a) => a.enabled && a.calendarId === this.calendarId
 				);
+				console.debug(`[CalDAV][${this.calendarId}] Accounts for this calendar: ${accountsForThisCalendar.length}`);
+				console.debug(
+					`[CalDAV][${this.calendarId}] Account IDs:`,
+					accountsForThisCalendar.map((a) => ({ id: a.id, name: a.name, enabled: a.enabled, calendarId: a.calendarId }))
+				);
+
 				for (const account of accountsForThisCalendar) {
+					console.debug(
+						`[CalDAV][${this.calendarId}] Triggering startup sync for account: ${account.name} (${account.id})`
+					);
 					void this.syncAccount(account.id);
 				}
 			}
@@ -275,41 +287,80 @@ export class CalendarBundle {
 	}
 
 	async syncAccount(accountId: string): Promise<void> {
+		console.debug(`[CalDAV][${this.calendarId}] syncAccount called for accountId: ${accountId}`);
+
 		const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
 		const account = caldavSettings.accounts.find((a) => a.id === accountId && a.calendarId === this.calendarId);
 
+		console.debug(
+			`[CalDAV][${this.calendarId}] Account lookup result:`,
+			account ? { id: account.id, name: account.name, calendarId: account.calendarId } : "NOT FOUND"
+		);
+
 		if (!account) {
-			new Notice("CalDAV account not found for this calendar");
+			console.error(
+				`[CalDAV][${this.calendarId}] Account not found for accountId: ${accountId}, calendarId: ${this.calendarId}`
+			);
+			new Notice("Account not found for this calendar");
 			return;
 		}
 
 		if (!account.enabled) {
+			console.warn(`[CalDAV][${this.calendarId}] Account ${account.name} is disabled`);
 			new Notice(`Account ${account.name} is disabled`);
 			return;
 		}
 
-		let syncService = this.caldavSyncServices.get(accountId);
-		if (!syncService) {
-			syncService = new CalDAVSyncService({
-				app: this.app,
-				bundle: this,
-				mainSettingsStore: this.mainSettingsStore,
-				account,
-				calendar: { url: account.serverUrl.toString(), displayName: account.name },
-			});
-			await syncService.initialize();
-			this.caldavSyncServices.set(accountId, syncService);
+		console.debug(`[CalDAV][${this.calendarId}] Starting sync for account: ${account.name}`);
+		console.debug(`[CalDAV][${this.calendarId}] Account details:`, {
+			serverUrl: account.serverUrl,
+			authMethod: account.authMethod,
+			selectedCalendars: account.selectedCalendars,
+			syncIntervalMinutes: account.syncIntervalMinutes,
+		});
+
+		if (account.selectedCalendars.length === 0) {
+			console.warn(`[CalDAV][${this.calendarId}] No calendars selected for account: ${account.name}`);
+			new Notice("No calendars selected for this account");
+			return;
 		}
 
-		const result = await syncService.sync();
+		let totalCreated = 0;
+		let totalErrors: string[] = [];
 
-		if (result.errors.length > 0) {
-			console.error("CalDAV sync errors:", result.errors);
-			new Notice(`Sync completed with ${result.errors.length} error(s)`);
-		} else if (result.created === 0) {
+		// Sync each selected calendar
+		for (const calendarUrl of account.selectedCalendars) {
+			const syncServiceKey = `${accountId}-${calendarUrl}`;
+			let syncService = this.caldavSyncServices.get(syncServiceKey);
+
+			if (!syncService) {
+				syncService = new CalDAVSyncService({
+					app: this.app,
+					bundle: this,
+					mainSettingsStore: this.mainSettingsStore,
+					account,
+					calendar: {
+						url: calendarUrl,
+						displayName: `${account.name} - ${calendarUrl.split("/").pop() || "Calendar"}`,
+					},
+				});
+				await syncService.initialize();
+				this.caldavSyncServices.set(syncServiceKey, syncService);
+			}
+
+			const result = await syncService.sync();
+
+			totalCreated += result.created;
+			totalErrors = totalErrors.concat(result.errors);
+		}
+
+		if (totalErrors.length > 0) {
+			console.error(`[CalDAV] Sync errors:`, totalErrors);
+			new Notice(`Sync completed with ${totalErrors.length} error(s)`);
+		} else if (totalCreated === 0) {
 			new Notice("Sync complete - no new events");
 		} else {
-			new Notice(`Synced ${result.created} event(s)`);
+			new Notice(`Synced ${totalCreated} event(s)`);
 		}
 	}
 
@@ -317,6 +368,7 @@ export class CalendarBundle {
 		this.stopAutoSync();
 
 		const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
+
 		if (!caldavSettings.enableAutoSync) {
 			return;
 		}
@@ -327,21 +379,18 @@ export class CalendarBundle {
 
 		for (const account of accountsForThisCalendar) {
 			const intervalMs = account.syncIntervalMinutes * 60 * 1000;
+
 			const intervalId = window.setInterval(() => {
 				void this.syncAccount(account.id);
 			}, intervalMs);
 
 			this.autoSyncIntervals.set(account.id, intervalId);
-			console.debug(
-				`CalDAV auto-sync started for account ${account.name} (${this.calendarId}) with ${account.syncIntervalMinutes} minute interval`
-			);
 		}
 	}
 
 	stopAutoSync(): void {
-		for (const [accountId, intervalId] of this.autoSyncIntervals.entries()) {
+		for (const intervalId of this.autoSyncIntervals.values()) {
 			window.clearInterval(intervalId);
-			console.debug(`CalDAV auto-sync stopped for account ${accountId} (${this.calendarId})`);
 		}
 		this.autoSyncIntervals.clear();
 	}
