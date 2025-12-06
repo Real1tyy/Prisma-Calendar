@@ -1,5 +1,7 @@
-import { serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
+import { extractContentAfterFrontmatter, serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
 import ICAL from "ical.js";
+import { type App, Notice, TFile } from "obsidian";
+import type { ExportOptions } from "../../components/modals/calendar-select-modal";
 import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
 import { parseIntoList } from "../../utils/list-utils";
 import type { ParsedEvent } from "../parser";
@@ -281,3 +283,77 @@ export const COMMON_TIMEZONES: TimezoneInfo[] = [
 ];
 
 export type CommonTimezone = string;
+
+export async function exportCalendarAsICS(app: App, options: ExportOptions): Promise<void> {
+	const { bundle, timezone, excludeSkipped } = options;
+	const settings = bundle.settingsStore.currentSettings;
+	const calendarName = settings.name;
+	const vaultName = app.vault.getName();
+
+	try {
+		let events = bundle.eventStore.getAllEvents();
+
+		if (excludeSkipped) {
+			events = events.filter((e) => !e.skipped);
+		}
+
+		if (events.length === 0) {
+			new Notice("No events to export");
+			return;
+		}
+
+		const noteContents = new Map<string, string>();
+		for (const event of events) {
+			const file = app.vault.getAbstractFileByPath(event.ref.filePath);
+			if (file instanceof TFile) {
+				const fullContent = await app.vault.cachedRead(file);
+				const content = extractContentAfterFrontmatter(fullContent);
+				if (content) {
+					noteContents.set(event.ref.filePath, content);
+				}
+			}
+		}
+
+		const result = createICSFromEvents(events, {
+			calendarName,
+			vaultName,
+			timezone,
+			noteContents,
+			categoryProp: settings.categoryProp,
+			notifications: {
+				minutesBeforeProp: settings.minutesBeforeProp,
+				defaultMinutesBefore: settings.defaultMinutesBefore,
+				daysBeforeProp: settings.daysBeforeProp,
+				defaultDaysBefore: settings.defaultDaysBefore,
+			},
+			excludeProps: {
+				startProp: settings.startProp,
+				endProp: settings.endProp,
+				dateProp: settings.dateProp,
+				allDayProp: settings.allDayProp,
+				titleProp: settings.titleProp,
+			},
+		});
+
+		if (!result.success || !result.content) {
+			new Notice(`Failed to generate ICS: ${result.error?.message || "Unknown error"}`);
+			console.error("ICS export error:", result.error);
+			return;
+		}
+
+		const exportFolder = settings.exportFolder;
+		const folderExists = app.vault.getAbstractFileByPath(exportFolder);
+		if (!folderExists) {
+			await app.vault.createFolder(exportFolder);
+		}
+
+		const filename = generateICSFilename(calendarName);
+		const filePath = `${exportFolder}/${filename}`;
+
+		await app.vault.create(filePath, result.content);
+		new Notice(`Exported ${events.length} events to ${filePath}`);
+	} catch (error) {
+		console.error("ICS export failed:", error);
+		new Notice("Failed to export calendar. See console for details.");
+	}
+}

@@ -1,7 +1,9 @@
-import { getFilenameFromPath, parseFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
+import { getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
+import { Notice } from "obsidian";
 import { parseIntoList } from "../../utils/list-utils";
+import type { CalendarBundle } from "../calendar-bundle";
 
 export interface ImportedEvent {
 	title: string;
@@ -237,4 +239,58 @@ export function buildFrontmatterFromImportedEvent(
 	}
 
 	return fm;
+}
+
+export async function importEventsToCalendar(
+	bundle: CalendarBundle,
+	events: ImportedEvent[],
+	timezone: string
+): Promise<void> {
+	const settings = bundle.settingsStore.currentSettings;
+
+	const existingEventIds = new Set(bundle.eventStore.getAllEvents().map((e) => e.id));
+	const newEvents = events.filter((e) => !existingEventIds.has(e.uid));
+	const skippedCount = events.length - newEvents.length;
+
+	if (skippedCount > 0) {
+		new Notice(`Skipping ${skippedCount} events that already exist`);
+	}
+
+	if (newEvents.length === 0) {
+		new Notice("No new events to import");
+		return;
+	}
+
+	let successCount = 0;
+	let errorCount = 0;
+
+	for (const event of newEvents) {
+		try {
+			const frontmatter = buildFrontmatterFromImportedEvent(event, settings, timezone);
+			const content = event.description ? `\n${event.description}\n` : "";
+
+			const baseName =
+				extractBasenameFromOriginalPath(event.originalFilePath) ||
+				sanitizeForFilename(event.title, { style: "preserve" }) ||
+				"Imported Event";
+
+			await bundle.templateService.createFile({
+				title: event.title,
+				targetDirectory: settings.directory,
+				filename: baseName,
+				content: content || undefined,
+				frontmatter,
+			});
+			successCount++;
+		} catch (error) {
+			console.error(`Failed to import event "${event.title}":`, error);
+			errorCount++;
+		}
+	}
+
+	if (errorCount === 0) {
+		new Notice(`Successfully imported ${successCount} events`);
+	} else {
+		new Notice(`Imported ${successCount} events, ${errorCount} failed`);
+	}
 }
