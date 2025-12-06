@@ -362,7 +362,16 @@ export class CalendarBundle {
 			const intervalMs = account.syncIntervalMinutes * 60 * 1000;
 
 			const intervalId = window.setInterval(() => {
-				void this.syncAccount(account.id);
+				if ("scheduler" in window && window.scheduler) {
+					const scheduler = window.scheduler as {
+						postTask: (callback: () => Promise<void>, options?: { priority?: string }) => Promise<void>;
+					};
+					void scheduler.postTask(() => this.syncAccount(account.id), {
+						priority: "background",
+					});
+				} else {
+					void this.syncAccount(account.id);
+				}
 			}, intervalMs);
 
 			this.autoSyncIntervals.set(account.id, intervalId);

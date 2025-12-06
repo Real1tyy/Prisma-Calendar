@@ -10,8 +10,15 @@ import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
 import type { CalDAVSyncStateManager } from "./sync-state-manager";
 import type { CalDAVAccount, CalDAVCalendarInfo, CalDAVSyncMetadata, CalDAVSyncResult } from "./types";
 
-function yieldToMainThread(): Promise<void> {
-	return new Promise((resolve) => window.setTimeout(resolve, 0));
+async function yieldToMainThread(): Promise<void> {
+	if ("scheduler" in window && window.scheduler) {
+		const scheduler = window.scheduler as { yield?: () => Promise<void> };
+		if (scheduler.yield) {
+			await scheduler.yield();
+			return;
+		}
+	}
+	await new Promise((resolve) => window.setTimeout(resolve, 0));
 }
 
 export interface CalDAVSyncServiceOptions {
@@ -99,7 +106,7 @@ export class CalDAVSyncService {
 					}
 
 					processedCount++;
-					if (processedCount % 5 === 0) {
+					if (processedCount % 3 === 0) {
 						await yieldToMainThread();
 					}
 				} catch (error) {
