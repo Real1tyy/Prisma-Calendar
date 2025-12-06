@@ -4,6 +4,7 @@ import { type App, Notice, TFile } from "obsidian";
 import type { ExportOptions } from "../../components/modals/calendar-select-modal";
 import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
 import { parseIntoList } from "../../utils/list-utils";
+import { ensureFolderExists } from "../../utils/obsidian";
 import type { ParsedEvent } from "../parser";
 
 export interface NotificationSettings {
@@ -345,10 +346,7 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 		}
 
 		const exportFolder = settings.exportFolder;
-		const folderExists = app.vault.getAbstractFileByPath(exportFolder);
-		if (!folderExists) {
-			await app.vault.createFolder(exportFolder);
-		}
+		await ensureFolderExists(app, exportFolder);
 
 		const filename = generateICSFilename(calendarName);
 		const filePath = `${exportFolder}/${filename}`;

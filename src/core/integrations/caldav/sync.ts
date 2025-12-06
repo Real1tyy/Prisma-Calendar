@@ -1,16 +1,12 @@
 import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
-import { type App, Notice, normalizePath, TFile, TFolder } from "obsidian";
+import { type App, Notice, normalizePath, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../../utils/calendar-events";
+import { ensureFolderExists } from "../../../utils/obsidian";
 import type { CalendarBundle } from "../../calendar-bundle";
 import type { SettingsStore } from "../../settings-store";
-import {
-	buildFrontmatterFromImportedEvent,
-	extractBasenameFromOriginalPath,
-	type ImportFrontmatterSettings,
-	parseICSContent,
-} from "../ics-import";
+import { buildFrontmatterFromImportedEvent, extractBasenameFromOriginalPath, parseICSContent } from "../ics-import";
 import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
 import type { CalDAVSyncStateManager } from "./sync-state-manager";
 import type { CalDAVAccount, CalDAVCalendarInfo, CalDAVSyncMetadata, CalDAVSyncResult } from "./types";
@@ -59,27 +55,25 @@ export class CalDAVSyncService {
 	}
 
 	async sync(): Promise<CalDAVSyncResult> {
-		if (!this.account.enabled) {
-			return {
-				success: false,
-				accountId: this.account.id,
-				calendarUrl: this.calendar.url,
-				created: 0,
-				updated: 0,
-				deleted: 0,
-				errors: ["Account is disabled"],
-			};
-		}
-
-		const result: CalDAVSyncResult = {
+		const defaultResult = {
 			success: true,
 			accountId: this.account.id,
 			calendarUrl: this.calendar.url,
 			created: 0,
 			updated: 0,
 			deleted: 0,
-			errors: [],
+			errors: [] as string[],
 		};
+
+		if (!this.account.enabled) {
+			return {
+				...defaultResult,
+				success: false,
+				errors: ["Account is disabled"],
+			};
+		}
+
+		const result: CalDAVSyncResult = { ...defaultResult };
 
 		try {
 			const events = await this.client.fetchCalendarEvents({ calendar: this.calendar });
@@ -139,7 +133,7 @@ export class CalDAVSyncService {
 
 		const importedEvent = parsed.events[0];
 		const folderPath = this.getSyncFolderPath();
-		await this.ensureFolderExists(folderPath);
+		await ensureFolderExists(this.app, folderPath);
 
 		const baseName =
 			extractBasenameFromOriginalPath(importedEvent.originalFilePath) ||
@@ -147,10 +141,9 @@ export class CalDAVSyncService {
 
 		const { filename, zettelId } = generateUniqueEventPath(this.app, folderPath, baseName);
 
-		const settings = this.getImportFrontmatterSettings();
-		const frontmatter = buildFrontmatterFromImportedEvent(importedEvent, settings, this.account.timezone);
-
 		const calendarSettings = this.bundle.settingsStore.currentSettings;
+		const frontmatter = buildFrontmatterFromImportedEvent(importedEvent, calendarSettings, this.account.timezone);
+
 		if (calendarSettings.zettelIdProp) {
 			frontmatter[calendarSettings.zettelIdProp] = zettelId;
 		}
@@ -190,7 +183,7 @@ export class CalDAVSyncService {
 		}
 
 		const importedEvent = parsed.events[0];
-		const settings = this.getImportFrontmatterSettings();
+		const settings = this.bundle.settingsStore.currentSettings;
 
 		// Check if title changed by comparing with the file's basename
 		const currentBasenameWithoutZettel = removeZettelId(file.basename);
@@ -232,35 +225,6 @@ export class CalDAVSyncService {
 
 	private getSyncFolderPath(): string {
 		return normalizePath(this.bundle.settingsStore.currentSettings.directory);
-	}
-
-	private async ensureFolderExists(folderPath: string): Promise<void> {
-		const parts = folderPath.split("/");
-		let currentPath = "";
-
-		for (const part of parts) {
-			currentPath = currentPath ? `${currentPath}/${part}` : part;
-			const existing = this.app.vault.getAbstractFileByPath(currentPath);
-			if (!existing) {
-				await this.app.vault.createFolder(currentPath);
-			} else if (!(existing instanceof TFolder)) {
-				throw new Error(`Path ${currentPath} exists but is not a folder`);
-			}
-		}
-	}
-
-	private getImportFrontmatterSettings(): ImportFrontmatterSettings {
-		const config = this.bundle.settingsStore.currentSettings;
-		return {
-			startProp: config.startProp,
-			endProp: config.endProp,
-			dateProp: config.dateProp,
-			allDayProp: config.allDayProp,
-			titleProp: config.titleProp,
-			minutesBeforeProp: config.minutesBeforeProp,
-			daysBeforeProp: config.daysBeforeProp,
-			categoryProp: config.categoryProp,
-		};
 	}
 
 	destroy(): void {
