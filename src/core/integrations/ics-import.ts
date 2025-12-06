@@ -2,7 +2,7 @@ import { getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from 
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
 import { type App, Notice, type TFile } from "obsidian";
-import { generateUniqueEventPath } from "../../utils/calendar-events";
+import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/calendar-events";
 import { parseIntoList } from "../../utils/list-utils";
 import { ensureFolderExists } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -285,11 +285,22 @@ export async function createEventNoteFromImportedEvent(
 	const { targetDirectory, timezone, additionalFrontmatter } = options;
 	await ensureFolderExists(app, targetDirectory);
 
-	const baseName =
-		extractBasenameFromOriginalPath(event.originalFilePath) ||
-		sanitizeForFilename(event.title, { style: "preserve" });
+	let filename: string;
+	let zettelId: string;
 
-	const { filename, zettelId } = generateUniqueEventPath(app, targetDirectory, baseName);
+	const originalBasename = extractBasenameFromOriginalPath(event.originalFilePath);
+	const existingZettelId = originalBasename ? extractZettelId(originalBasename) : null;
+
+	if (existingZettelId && originalBasename) {
+		const titleWithoutZettel = removeZettelId(originalBasename);
+		filename = `${titleWithoutZettel}-${existingZettelId}`;
+		zettelId = existingZettelId;
+	} else {
+		const baseName = originalBasename || sanitizeForFilename(event.title, { style: "preserve" });
+		const generated = generateUniqueEventPath(app, targetDirectory, baseName);
+		filename = generated.filename;
+		zettelId = generated.zettelId;
+	}
 
 	const calendarSettings = bundle.settingsStore.currentSettings;
 	const frontmatter = buildFrontmatterFromImportedEvent(event, calendarSettings, timezone);
