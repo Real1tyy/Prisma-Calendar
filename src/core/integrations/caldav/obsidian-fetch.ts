@@ -34,32 +34,32 @@ class ObsidianResponse {
 		return new Headers(this.res.headers);
 	}
 
-	async text(): Promise<string> {
-		return this.res.text;
+	text(): Promise<string> {
+		return Promise.resolve(this.res.text);
 	}
 
-	async json(): Promise<unknown> {
-		return JSON.parse(this.res.text);
+	json(): Promise<unknown> {
+		return Promise.resolve(JSON.parse(this.res.text));
 	}
 
-	async arrayBuffer(): Promise<ArrayBuffer> {
-		return this.res.arrayBuffer;
+	arrayBuffer(): Promise<ArrayBuffer> {
+		return Promise.resolve(this.res.arrayBuffer);
 	}
 
-	async blob(): Promise<Blob> {
-		return new Blob([this.res.arrayBuffer]);
+	blob(): Promise<Blob> {
+		return Promise.resolve(new Blob([this.res.arrayBuffer]));
 	}
 
-	async formData(): Promise<FormData> {
-		throw new Error("formData() not supported");
+	formData(): Promise<FormData> {
+		return Promise.reject(new Error("formData() not supported"));
 	}
 
 	clone(): ObsidianResponse {
 		return new ObsidianResponse(this.res, this.url);
 	}
 
-	async bytes(): Promise<Uint8Array> {
-		return new Uint8Array(this.res.arrayBuffer);
+	bytes(): Promise<Uint8Array> {
+		return Promise.resolve(new Uint8Array(this.res.arrayBuffer));
 	}
 }
 
