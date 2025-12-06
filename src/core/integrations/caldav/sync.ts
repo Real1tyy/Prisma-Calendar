@@ -10,6 +10,10 @@ import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
 import type { CalDAVSyncStateManager } from "./sync-state-manager";
 import type { CalDAVAccount, CalDAVCalendarInfo, CalDAVSyncMetadata, CalDAVSyncResult } from "./types";
 
+function yieldToMainThread(): Promise<void> {
+	return new Promise((resolve) => window.setTimeout(resolve, 0));
+}
+
 export interface CalDAVSyncServiceOptions {
 	app: App;
 	bundle: CalendarBundle;
@@ -77,6 +81,7 @@ export class CalDAVSyncService {
 		try {
 			const events = await this.client.fetchCalendarEvents({ calendar: this.calendar });
 
+			let processedCount = 0;
 			for (const event of events) {
 				try {
 					const uid = event.uid ?? "";
@@ -91,6 +96,11 @@ export class CalDAVSyncService {
 					} else {
 						await this.createNoteFromEvent(event);
 						result.created++;
+					}
+
+					processedCount++;
+					if (processedCount % 5 === 0) {
+						await yieldToMainThread();
 					}
 				} catch (error) {
 					const errorMsg = `Failed to sync event ${event.url}: ${error}`;
