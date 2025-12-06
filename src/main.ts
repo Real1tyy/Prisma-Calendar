@@ -1,22 +1,12 @@
-import { extractContentAfterFrontmatter, onceAsync, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
+import { onceAsync } from "@real1ty-obsidian-plugins/utils";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
-import {
-	CalendarSelectModal,
-	EventCreateModal,
-	EventEditModal,
-	type ExportOptions,
-	ICSImportModal,
-} from "./components/modals";
+import { CalendarSelectModal, EventCreateModal, EventEditModal, ICSImportModal } from "./components/modals";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
 import { type CalDAVSyncResult, CalDAVSyncService } from "./core/integrations/caldav";
-import { createICSFromEvents, generateICSFilename } from "./core/integrations/ics-export";
-import {
-	buildFrontmatterFromImportedEvent,
-	extractBasenameFromOriginalPath,
-	type ImportedEvent,
-} from "./core/integrations/ics-import";
+import { exportCalendarAsICS } from "./core/integrations/ics-export";
+import { importEventsToCalendar } from "./core/integrations/ics-import";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 
 export default class CustomCalendarPlugin extends Plugin {
@@ -303,82 +293,8 @@ export default class CustomCalendarPlugin extends Plugin {
 		}
 
 		new CalendarSelectModal(this.app, this.calendarBundles, (options) => {
-			void this.exportCalendarAsICS(options);
+			void exportCalendarAsICS(this.app, options);
 		}).open();
-	}
-
-	private async exportCalendarAsICS(options: ExportOptions): Promise<void> {
-		const { bundle, timezone, excludeSkipped } = options;
-		const settings = bundle.settingsStore.currentSettings;
-		const calendarName = settings.name;
-		const vaultName = this.app.vault.getName();
-
-		try {
-			let events = bundle.eventStore.getAllEvents();
-
-			if (excludeSkipped) {
-				events = events.filter((e) => !e.skipped);
-			}
-
-			if (events.length === 0) {
-				new Notice("No events to export");
-				return;
-			}
-
-			const noteContents = new Map<string, string>();
-			for (const event of events) {
-				const file = this.app.vault.getAbstractFileByPath(event.ref.filePath);
-				if (file instanceof TFile) {
-					const fullContent = await this.app.vault.cachedRead(file);
-					const content = extractContentAfterFrontmatter(fullContent);
-					if (content) {
-						noteContents.set(event.ref.filePath, content);
-					}
-				}
-			}
-
-			const result = createICSFromEvents(events, {
-				calendarName,
-				vaultName,
-				timezone,
-				noteContents,
-				categoryProp: settings.categoryProp,
-				notifications: {
-					minutesBeforeProp: settings.minutesBeforeProp,
-					defaultMinutesBefore: settings.defaultMinutesBefore,
-					daysBeforeProp: settings.daysBeforeProp,
-					defaultDaysBefore: settings.defaultDaysBefore,
-				},
-				excludeProps: {
-					startProp: settings.startProp,
-					endProp: settings.endProp,
-					dateProp: settings.dateProp,
-					allDayProp: settings.allDayProp,
-					titleProp: settings.titleProp,
-				},
-			});
-
-			if (!result.success || !result.content) {
-				new Notice(`Failed to generate ICS: ${result.error?.message || "Unknown error"}`);
-				console.error("ICS export error:", result.error);
-				return;
-			}
-
-			const exportFolder = settings.exportFolder;
-			const folderExists = this.app.vault.getAbstractFileByPath(exportFolder);
-			if (!folderExists) {
-				await this.app.vault.createFolder(exportFolder);
-			}
-
-			const filename = generateICSFilename(calendarName);
-			const filePath = `${exportFolder}/${filename}`;
-
-			await this.app.vault.create(filePath, result.content);
-			new Notice(`Exported ${events.length} events to ${filePath}`);
-		} catch (error) {
-			console.error("ICS export failed:", error);
-			new Notice("Failed to export calendar. See console for details.");
-		}
 	}
 
 	private showCalendarImportModal(): void {
@@ -388,62 +304,8 @@ export default class CustomCalendarPlugin extends Plugin {
 		}
 
 		new ICSImportModal(this.app, this.calendarBundles, async (bundle, events, timezone) => {
-			await this.importEventsToCalendar(bundle, events, timezone);
+			await importEventsToCalendar(bundle, events, timezone);
 		}).open();
-	}
-
-	private async importEventsToCalendar(
-		bundle: CalendarBundle,
-		events: ImportedEvent[],
-		timezone: string
-	): Promise<void> {
-		const settings = bundle.settingsStore.currentSettings;
-
-		const existingEventIds = new Set(bundle.eventStore.getAllEvents().map((e) => e.id));
-		const newEvents = events.filter((e) => !existingEventIds.has(e.uid));
-		const skippedCount = events.length - newEvents.length;
-
-		if (skippedCount > 0) {
-			new Notice(`Skipping ${skippedCount} events that already exist`);
-		}
-
-		if (newEvents.length === 0) {
-			new Notice("No new events to import");
-			return;
-		}
-
-		let successCount = 0;
-		let errorCount = 0;
-
-		for (const event of newEvents) {
-			try {
-				const frontmatter = buildFrontmatterFromImportedEvent(event, settings, timezone);
-				const content = event.description ? `\n${event.description}\n` : "";
-
-				const baseName =
-					extractBasenameFromOriginalPath(event.originalFilePath) ||
-					sanitizeForFilename(event.title, { style: "preserve" }) ||
-					"Imported Event";
-
-				await bundle.templateService.createFile({
-					title: event.title,
-					targetDirectory: settings.directory,
-					filename: baseName,
-					content: content || undefined,
-					frontmatter,
-				});
-				successCount++;
-			} catch (error) {
-				console.error(`Failed to import event "${event.title}":`, error);
-				errorCount++;
-			}
-		}
-
-		if (errorCount === 0) {
-			new Notice(`Successfully imported ${successCount} events`);
-		} else {
-			new Notice(`Imported ${successCount} events, ${errorCount} failed`);
-		}
 	}
 
 	private restoreMinimizedModal(): void {
