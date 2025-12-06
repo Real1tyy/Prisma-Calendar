@@ -73,6 +73,10 @@ export class CalendarBundle {
 		});
 	}
 
+	getCalDAVSettings() {
+		return this.mainSettingsStore.currentSettings.caldav;
+	}
+
 	async initialize(): Promise<void> {
 		return await onceAsync(async () => {
 			this.plugin.registerViewTypeSafe(this.viewType, (leaf: WorkspaceLeaf) => new CalendarView(leaf, this));
@@ -300,7 +304,6 @@ export class CalendarBundle {
 
 		if (!account.enabled) {
 			console.warn(`[CalDAV][${this.calendarId}] Account ${account.name} is disabled`);
-			new Notice(`Account ${account.name} is disabled`);
 			return;
 		}
 
@@ -314,12 +317,8 @@ export class CalendarBundle {
 
 		if (account.selectedCalendars.length === 0) {
 			console.warn(`[CalDAV][${this.calendarId}] No calendars selected for account: ${account.name}`);
-			new Notice("No calendars selected for this account");
 			return;
 		}
-
-		let totalCreated = 0;
-		let totalErrors: string[] = [];
 
 		// Sync each selected calendar
 		for (const calendarUrl of account.selectedCalendars) {
@@ -342,19 +341,7 @@ export class CalendarBundle {
 				this.caldavSyncServices.set(syncServiceKey, syncService);
 			}
 
-			const result = await syncService.sync();
-
-			totalCreated += result.created;
-			totalErrors = totalErrors.concat(result.errors);
-		}
-
-		if (totalErrors.length > 0) {
-			console.error(`[CalDAV] Sync errors:`, totalErrors);
-			new Notice(`Sync completed with ${totalErrors.length} error(s)`);
-		} else if (totalCreated === 0) {
-			new Notice("Sync complete - no new events");
-		} else {
-			new Notice(`Synced ${totalCreated} event(s)`);
+			await syncService.sync();
 		}
 	}
 

@@ -17,7 +17,7 @@ export class CalendarSettingsStore {
 	public readonly validationSchema = SingleCalendarConfigSchema;
 
 	constructor(
-		private mainSettingsStore: SettingsStore,
+		public readonly mainSettingsStore: SettingsStore,
 		public readonly calendarId: string
 	) {
 		const initialSettings = getCalendarById(mainSettingsStore.currentSettings, calendarId);

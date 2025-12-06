@@ -1254,6 +1254,17 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	private getEventColor(event: Pick<ParsedEvent, "meta">): string {
 		const frontmatter = event.meta ?? {};
+
+		// Check if this is a CalDAV-synced event - integration color takes priority
+		const caldavSettings = this.bundle.getCalDAVSettings();
+		const caldavProp = this.bundle.settingsStore.currentSettings.caldavProp;
+
+		if (frontmatter[caldavProp]) {
+			// Event has CalDAV metadata - apply integration color with priority
+			return caldavSettings.integrationEventColor;
+		}
+
+		// Otherwise, use normal color rules
 		return this.colorEvaluator.evaluateColor(frontmatter);
 	}
 
@@ -1665,6 +1676,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			this.updateCalendarSettings(settings);
 		});
 		this.register(() => settingsSubscription.unsubscribe());
+
+		// Subscribe to CalDAV settings changes (for integration event color)
+		const caldavSettingsSubscription = this.bundle.settingsStore.mainSettingsStore.settings$.subscribe(() => {
+			this.refreshEvents();
+		});
+		this.register(() => caldavSettingsSubscription.unsubscribe());
 
 		// Subscribe to indexing complete state
 		const indexingCompleteSubscription = this.bundle.indexer.indexingComplete$.subscribe((isComplete) => {

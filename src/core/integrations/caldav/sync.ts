@@ -1,5 +1,5 @@
 import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
-import { type App, normalizePath, TFile, TFolder } from "obsidian";
+import { type App, Notice, normalizePath, TFile, TFolder } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../../utils/calendar-events";
@@ -111,11 +111,26 @@ export class CalDAVSyncService {
 					`[CalDAV] ${this.calendar.displayName} sync: ${result.created} created, ${result.updated} updated, ${result.errors.length} errors`
 				);
 			}
+
+			const mainSettings = this.mainSettingsStore.currentSettings;
+			if (mainSettings.caldav.notifyOnSync && (result.created > 0 || result.updated > 0 || result.errors.length > 0)) {
+				const parts: string[] = [];
+				if (result.created > 0) parts.push(`${result.created} created`);
+				if (result.updated > 0) parts.push(`${result.updated} updated`);
+				if (result.errors.length > 0) parts.push(`${result.errors.length} errors`);
+
+				new Notice(`${this.calendar.displayName}: ${parts.join(", ")}`);
+			}
 		} catch (error) {
 			result.success = false;
 			const errorMsg = error instanceof Error ? error.message : String(error);
 			console.error(`[CalDAV] Sync failed:`, errorMsg);
 			result.errors.push(errorMsg);
+
+			const mainSettings = this.mainSettingsStore.currentSettings;
+			if (mainSettings.caldav.notifyOnSync) {
+				new Notice(`${this.calendar.displayName} sync failed: ${errorMsg}`);
+			}
 		}
 
 		return result;
