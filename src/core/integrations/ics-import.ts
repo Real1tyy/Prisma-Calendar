@@ -1,4 +1,9 @@
-import { generateZettelId, getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
+import {
+	generateZettelId,
+	getFilenameFromPath,
+	parseFrontmatterValue,
+	sanitizeForFilename,
+} from "@real1ty-obsidian-plugins/utils";
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
 import { Notice } from "obsidian";

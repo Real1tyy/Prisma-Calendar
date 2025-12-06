@@ -1,5 +1,5 @@
 import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
-import { type App, normalizePath, TFolder } from "obsidian";
+import { type App, normalizePath, TFile, TFolder } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import type { CalendarBundle } from "../../calendar-bundle";
@@ -11,12 +11,14 @@ import {
 	parseICSContent,
 } from "../ics-import";
 import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
+import type { CalDAVSyncStateManager } from "./sync-state-manager";
 import type { CalDAVAccount, CalDAVCalendarInfo, CalDAVSyncMetadata, CalDAVSyncResult } from "./types";
 
 export interface CalDAVSyncServiceOptions {
 	app: App;
 	bundle: CalendarBundle;
 	mainSettingsStore: SettingsStore;
+	syncStateManager: CalDAVSyncStateManager;
 	account: CalDAVAccount;
 	calendar: CalDAVCalendarInfo;
 }
@@ -25,6 +27,7 @@ export class CalDAVSyncService {
 	private app: App;
 	private bundle: CalendarBundle;
 	private mainSettingsStore: SettingsStore;
+	private syncStateManager: CalDAVSyncStateManager;
 	private account: CalDAVAccount;
 	private calendar: CalDAVCalendarInfo;
 	private client: CalDAVClientService;
@@ -34,6 +37,7 @@ export class CalDAVSyncService {
 		this.app = options.app;
 		this.bundle = options.bundle;
 		this.mainSettingsStore = options.mainSettingsStore;
+		this.syncStateManager = options.syncStateManager;
 		this.account = options.account;
 		this.calendar = options.calendar;
 		this.client = new CalDAVClientService(this.account);
@@ -80,20 +84,38 @@ export class CalDAVSyncService {
 
 		try {
 			const events = await this.client.fetchCalendarEvents({ calendar: this.calendar });
-			console.debug(`[CalDAV] Fetched ${events.length} event(s)`);
+			console.debug(`[CalDAV Sync] Fetched ${events.length} event(s) from server`);
+			console.debug(`[CalDAV Sync] Checking sync state for existing events...`);
 
 			for (const event of events) {
 				try {
-					await this.createNoteFromEvent(event);
-					result.created++;
+					const uid = event.uid ?? "";
+					const existingEvent = this.syncStateManager.findByUid(this.account.id, this.calendar.url, uid);
+
+					if (existingEvent) {
+						console.debug(`[CalDAV Sync] Event ${uid} exists locally at ${existingEvent.filePath}`);
+						if (existingEvent.metadata.etag === event.etag) {
+							console.debug(`[CalDAV Sync] Event ${uid} unchanged (etag match), skipping`);
+							continue;
+						}
+						console.debug(`[CalDAV Sync] Event ${uid} changed (etag mismatch), updating...`);
+						await this.updateNoteFromEvent(existingEvent.filePath, event);
+						result.updated++;
+					} else {
+						console.debug(`[CalDAV Sync] Event ${uid} is new, creating note...`);
+						await this.createNoteFromEvent(event);
+						result.created++;
+					}
 				} catch (error) {
 					const errorMsg = `Failed to sync event ${event.url}: ${error}`;
-					console.error(`[CalDAV] ${errorMsg}`);
+					console.error(`[CalDAV Sync] ${errorMsg}`);
 					result.errors.push(errorMsg);
 				}
 			}
 
-			console.debug(`[CalDAV] Sync complete - created: ${result.created}, errors: ${result.errors.length}`);
+			console.debug(
+				`[CalDAV] Sync complete - created: ${result.created}, updated: ${result.updated}, errors: ${result.errors.length}`
+			);
 		} catch (error) {
 			result.success = false;
 			const errorMsg = error instanceof Error ? error.message : String(error);
@@ -105,8 +127,6 @@ export class CalDAVSyncService {
 	}
 
 	private async createNoteFromEvent(event: CalDAVFetchedEvent): Promise<void> {
-		console.debug(`[CalDAV] Full ICS data for ${event.url}:\n`, event.data);
-
 		const parsed = parseICSContent(event.data);
 
 		if (!parsed.success || parsed.events.length === 0) {
@@ -114,27 +134,23 @@ export class CalDAVSyncService {
 		}
 
 		const importedEvent = parsed.events[0];
-		console.debug(`[CalDAV] Parsed event:`, {
-			title: importedEvent.title,
-			start: importedEvent.start,
-			end: importedEvent.end,
-			allDay: importedEvent.allDay,
-		});
+		console.debug(`[CalDAV Sync] Creating note for: ${importedEvent.title}`);
 
 		const folderPath = this.getSyncFolderPath();
 		await this.ensureFolderExists(folderPath);
 
 		const settings = this.getImportFrontmatterSettings();
-		const frontmatter = buildFrontmatterFromImportedEvent(importedEvent, settings);
+		const frontmatter = buildFrontmatterFromImportedEvent(importedEvent, settings, this.account.timezone);
 
 		const caldavProp = this.bundle.settingsStore.currentSettings.caldavProp;
 		const syncMeta: CalDAVSyncMetadata = {
-			href: event.url,
-			etag: event.etag,
 			accountId: this.account.id,
-			calendarUrl: this.calendar.url,
+			calendarHref: this.calendar.url,
+			objectHref: event.url,
+			etag: event.etag,
 			uid: event.uid ?? importedEvent.uid,
 			lastModified: importedEvent.lastModified,
+			lastSyncedAt: Date.now(),
 		};
 		frontmatter[caldavProp] = syncMeta;
 
@@ -150,6 +166,35 @@ export class CalDAVSyncService {
 			filename: baseName,
 			content,
 			frontmatter,
+		});
+	}
+
+	private async updateNoteFromEvent(filePath: string, event: CalDAVFetchedEvent): Promise<void> {
+		const file = this.app.vault.getAbstractFileByPath(filePath);
+		if (!(file instanceof TFile)) {
+			throw new Error(`File not found: ${filePath}`);
+		}
+
+		const parsed = parseICSContent(event.data);
+		if (!parsed.success || parsed.events.length === 0) {
+			throw new Error("Failed to parse ICS data");
+		}
+
+		const importedEvent = parsed.events[0];
+		const settings = this.getImportFrontmatterSettings();
+
+		await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+			const eventFm = buildFrontmatterFromImportedEvent(importedEvent, settings, this.account.timezone);
+			Object.assign(fm, eventFm);
+
+			const caldavProp = this.bundle.settingsStore.currentSettings.caldavProp;
+			const existingMeta = (fm[caldavProp] as Record<string, unknown>) || {};
+
+			existingMeta.etag = event.etag;
+			existingMeta.lastModified = importedEvent.lastModified;
+			existingMeta.lastSyncedAt = Date.now();
+
+			fm[caldavProp] = existingMeta;
 		});
 	}
 

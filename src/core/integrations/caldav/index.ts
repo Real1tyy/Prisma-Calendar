@@ -31,6 +31,4 @@ export {
 	type CalDAVSyncMetadata,
 	CalDAVSyncMetadataSchema,
 	type CalDAVSyncResult,
-	type CalDAVSyncStateData,
-	CalDAVSyncStateDataSchema,
 } from "./types";
