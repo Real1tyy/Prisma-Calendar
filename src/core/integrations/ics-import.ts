@@ -1,4 +1,4 @@
-import { getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
+import { generateZettelId, getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
 import { Notice } from "obsidian";
@@ -196,6 +196,7 @@ export interface ImportFrontmatterSettings {
 	minutesBeforeProp: string;
 	daysBeforeProp: string;
 	categoryProp: string;
+	zettelIdProp?: string;
 }
 
 export function extractBasenameFromOriginalPath(originalPath: string | undefined): string | null {
@@ -264,6 +265,10 @@ export function buildFrontmatterFromImportedEvent(
 
 	if (event.categories && event.categories.length > 0) {
 		fm[settings.categoryProp] = event.categories;
+	}
+
+	if (settings.zettelIdProp) {
+		fm[settings.zettelIdProp] = generateZettelId();
 	}
 
 	return fm;
