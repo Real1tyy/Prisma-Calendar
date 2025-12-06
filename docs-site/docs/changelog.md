@@ -44,6 +44,20 @@ Anyone with access to your vault can read your credentials. Use with caution.
   - Maintain single source of truth for events across multiple calendar applications
   - Automatically create notes for external events for journaling and note-taking
 
+#### Fill Time from Adjacent Events
+- **Context Menu Options**: Two new options in the event context menu for timed events:
+  - **Fill end time from next event**: Sets the current event's end time to match the start time of the next chronological event
+  - **Fill start time from previous event**: Sets the current event's start time to match the end time of the previous chronological event
+- **Event Modal Buttons**: Fill buttons added next to "Now" buttons in the event modal:
+  - **"Fill prev"** button for start time input
+  - **"Fill next"** button for end time input
+- **Undo/Redo Support**: Fill operations in the context menu are fully integrated with the undo/redo system (Ctrl+Z / Ctrl+Shift+Z)
+- **Use Cases**:
+  - Quickly schedule back-to-back meetings without gaps
+  - Fill calendar gaps by connecting event times
+  - Plan consecutive tasks efficiently
+  - Ensure accurate time tracking by eliminating overlaps
+
 ---
 
 ## 1.9.0

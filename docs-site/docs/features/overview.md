@@ -214,6 +214,12 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Full history** - Undo/redo across all calendar operations
 - **Safety net** - Experiment confidently knowing you can always revert
 
+### **[Fill Time from Adjacent Events](./fill-time)**
+- **Context menu options** - Right-click timed events to fill start/end times from neighboring events
+- **Modal fill buttons** - "Fill prev"/"Fill next" buttons in event create/edit modal
+- **Undo support** - Full integration with undo/redo system
+- **Use cases** - Schedule back-to-back meetings, eliminate calendar gaps, accurate time tracking
+
 ### **Performance**
 - **Debounced scanning** - Efficient file watching for large vaults
 - **Smart indexing** - Optimized parser for thousands of events
