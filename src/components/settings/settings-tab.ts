@@ -1,6 +1,6 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, PluginSettingTab, Setting } from "obsidian";
-import { COMMAND_IDS, SETTINGS_DEFAULTS } from "../../constants";
+import { SETTINGS_DEFAULTS } from "../../constants";
 import { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import {
@@ -8,7 +8,6 @@ import {
 	duplicateCalendarConfig,
 	generateUniqueCalendarId,
 } from "../../utils/calendar-settings";
-import { CalDAVSettings } from "./caldav";
 import { SingleCalendarSettings } from "./single-calendar-settings";
 
 export class CustomCalendarSettingsTab extends PluginSettingTab {
@@ -52,7 +51,6 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		this.createCalendarManagementHeader();
 		this.renderSelectedCalendarSettings();
-		this.createIntegrationsSection();
 
 		const footerEl = containerEl.createDiv({ cls: `setting-item ${cls("settings-footer")}` });
 
@@ -137,69 +135,6 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		countInfo.textContent = `${settings.calendars.length}/${SETTINGS_DEFAULTS.MAX_CALENDARS} calendars`;
 	}
 
-	private createIntegrationsSection(): void {
-		const { containerEl } = this;
-		const calendarStore = this.getOrCreateCalendarStore(this.selectedCalendarId);
-
-		new Setting(containerEl).setName("Integrations").setHeading();
-
-		const descContainer = containerEl.createDiv(cls("settings-integrations-desc"));
-
-		descContainer
-			.createEl("p")
-			.setText("Export and import events using the .ics format, compatible with most calendar apps.");
-
-		descContainer
-			.createEl("a", {
-				href: "https://real1tyy.github.io/Prisma-Calendar/docs/features/integrations",
-				cls: cls("settings-docs-link"),
-				attr: { target: "_blank" },
-			})
-			.setText("Documentation");
-
-		if (calendarStore) {
-			new Setting(containerEl)
-				.setName("Export folder")
-				.setDesc("Folder where exported .ics files are saved")
-				.addText((text) => {
-					text
-						.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER)
-						.setValue(calendarStore.currentSettings.exportFolder || SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER)
-						.onChange(async (value) => {
-							await calendarStore.updateSettings((s) => ({
-								...s,
-								exportFolder: value.trim() || SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER,
-							}));
-						});
-				});
-		}
-
-		const buttonsContainer = containerEl.createDiv(cls("settings-integrations-buttons"));
-
-		const exportButton = buttonsContainer.createEl("button", {
-			cls: cls("settings-integration-button"),
-		});
-		exportButton.setText("Export calendar");
-		exportButton.addEventListener("click", () => {
-			(this.app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
-				`prisma-calendar:${COMMAND_IDS.EXPORT_CALENDAR_ICS}`
-			);
-		});
-
-		const importButton = buttonsContainer.createEl("button", {
-			cls: cls("settings-integration-button"),
-		});
-		importButton.setText("Import .ics");
-		importButton.addEventListener("click", () => {
-			(this.app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
-				`prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`
-			);
-		});
-
-		const caldavSettings = new CalDAVSettings(this.app, this.plugin.settingsStore, this.plugin);
-		caldavSettings.display(containerEl);
-	}
-
 	private renderSelectedCalendarSettings(): void {
 		const { containerEl } = this;
 
@@ -235,7 +170,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 	private getOrCreateSingleCalendarSettings(calendarStore: CalendarSettingsStore): SingleCalendarSettings {
 		const calendarId = calendarStore.calendarId;
 		if (!this.calendarSettings.has(calendarId)) {
-			const settings = new SingleCalendarSettings(calendarStore);
+			const settings = new SingleCalendarSettings(calendarStore, this.app, this.plugin, this.plugin.settingsStore);
 			this.calendarSettings.set(calendarId, settings);
 			return settings;
 		}

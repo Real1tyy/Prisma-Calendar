@@ -1,13 +1,21 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
-import { Setting } from "obsidian";
-import type { CalendarSettingsStore } from "../../core/settings-store";
+import { type App, Setting } from "obsidian";
+import { COMMAND_IDS, SETTINGS_DEFAULTS } from "../../constants";
+import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
+import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
 import { calculateDurationMinutes } from "../../utils/format";
+import { CalDAVSettings } from "./caldav";
 
 export class GeneralSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 
-	constructor(private settingsStore: CalendarSettingsStore) {
+	constructor(
+		private settingsStore: CalendarSettingsStore,
+		private app: App,
+		private plugin: CustomCalendarPlugin,
+		private mainSettingsStore: SettingsStore
+	) {
 		this.ui = new SettingsUIBuilder(this.settingsStore as never);
 	}
 
@@ -15,6 +23,8 @@ export class GeneralSettings {
 		this.addDirectorySettings(containerEl);
 		this.addParsingSettings(containerEl);
 		this.addEventPresetSettings(containerEl);
+		this.addIntegrationsSettings(containerEl);
+		this.addCalDAVSettings(containerEl);
 	}
 
 	private addDirectorySettings(containerEl: HTMLElement): void {
@@ -209,5 +219,65 @@ export class GeneralSettings {
 			text,
 			cls: cls("event-preset-tag"),
 		});
+	}
+
+	private addIntegrationsSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("Integrations").setHeading();
+
+		const descContainer = containerEl.createDiv(cls("settings-integrations-desc"));
+
+		descContainer
+			.createEl("p")
+			.setText("Export and import events using the .ics format, compatible with most calendar apps.");
+
+		descContainer
+			.createEl("a", {
+				href: "https://real1tyy.github.io/Prisma-Calendar/docs/features/integrations",
+				cls: cls("settings-docs-link"),
+				attr: { target: "_blank" },
+			})
+			.setText("Documentation");
+
+		new Setting(containerEl)
+			.setName("Export folder")
+			.setDesc("Folder where exported .ics files are saved")
+			.addText((text) => {
+				text
+					.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER)
+					.setValue(this.settingsStore.currentSettings.exportFolder || SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER)
+					.onChange(async (value) => {
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							exportFolder: value.trim() || SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER,
+						}));
+					});
+			});
+
+		const buttonsContainer = containerEl.createDiv(cls("settings-integrations-buttons"));
+
+		const exportButton = buttonsContainer.createEl("button", {
+			cls: cls("settings-integration-button"),
+		});
+		exportButton.setText("Export calendar");
+		exportButton.addEventListener("click", () => {
+			(this.app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
+				`prisma-calendar:${COMMAND_IDS.EXPORT_CALENDAR_ICS}`
+			);
+		});
+
+		const importButton = buttonsContainer.createEl("button", {
+			cls: cls("settings-integration-button"),
+		});
+		importButton.setText("Import .ics");
+		importButton.addEventListener("click", () => {
+			(this.app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
+				`prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`
+			);
+		});
+	}
+
+	private addCalDAVSettings(containerEl: HTMLElement): void {
+		const caldavSettings = new CalDAVSettings(this.app, this.mainSettingsStore, this.plugin);
+		caldavSettings.display(containerEl);
 	}
 }
