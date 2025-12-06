@@ -1,6 +1,10 @@
+import type { App } from "obsidian";
+import { Notice } from "obsidian";
+import { EventCreateModal, EventEditModal } from "../components/modals";
 import type { StopwatchSnapshot } from "../components/stopwatch";
 import type { EventPreset } from "../types/settings";
 import { formatMsToHHMMSS, formatMsToMMSS } from "../utils/time-formatter";
+import type { CalendarBundle } from "./calendar-bundle";
 
 /**
  * Form data extracted from modals - uses EventPreset fields.
@@ -131,6 +135,50 @@ class MinimizedModalManagerClass {
 
 	formatBreak(): string {
 		return formatMsToMMSS(this.getBreakMs());
+	}
+
+	/**
+	 * Restore a minimized modal by reopening it with the saved state.
+	 * Requires the app instance and calendar bundles to find the correct calendar.
+	 */
+	restoreModal(app: App, calendarBundles: CalendarBundle[]): void {
+		const state = this.getState();
+		if (!state) {
+			new Notice("No minimized modal to restore");
+			return;
+		}
+
+		const bundle = calendarBundles.find((b) => b.calendarId === state.calendarId);
+		if (!bundle) {
+			new Notice("Calendar not found for minimized modal");
+			this.clear();
+			return;
+		}
+
+		const eventData = {
+			title: state.title ?? "",
+			start: state.startDate ?? null,
+			end: state.endDate ?? null,
+			allDay: state.allDay ?? false,
+			extendedProps: {
+				filePath: state.filePath,
+			},
+		};
+
+		let modal: EventCreateModal | EventEditModal;
+		if (state.modalType === "edit" && state.filePath) {
+			modal = new EventEditModal(app, bundle, eventData, (saveData) => {
+				void bundle.updateEvent(saveData);
+			});
+		} else {
+			modal = new EventCreateModal(app, bundle, eventData, (saveData) => {
+				void bundle.createEvent(saveData);
+			});
+		}
+
+		modal.setRestoreState(state);
+		this.clear();
+		modal.open();
 	}
 }
 
