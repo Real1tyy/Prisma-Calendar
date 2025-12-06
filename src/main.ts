@@ -36,21 +36,6 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.initializeCalendarBundles();
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
 
-		this.addCommand({
-			id: COMMAND_IDS.TOGGLE_BATCH_SELECTION,
-			name: "Toggle batch selection",
-			checkCallback: (checking: boolean) => {
-				const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
-				if (calendarView) {
-					if (!checking) {
-						calendarView.toggleBatchSelection();
-					}
-					return true;
-				}
-				return false;
-			},
-		});
-
 		type CalendarViewAction = (view: CalendarView) => void;
 
 		const addCalendarViewCommand = (id: string, name: string, action: CalendarViewAction): void => {
@@ -129,6 +114,10 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		addUndoRedoCommand(COMMAND_IDS.UNDO, "Undo", (view) => view.undo());
 		addUndoRedoCommand(COMMAND_IDS.REDO, "Redo", (view) => view.redo());
+
+		addCalendarViewCommand(COMMAND_IDS.TOGGLE_BATCH_SELECTION, "Toggle batch selection", (view) => {
+			view.toggleBatchSelection();
+		});
 
 		addCalendarViewCommand(COMMAND_IDS.SHOW_SKIPPED_EVENTS, "Show skipped events", (view) => {
 			void view.showSkippedEventsModal();

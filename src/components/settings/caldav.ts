@@ -295,14 +295,18 @@ class AddCalDAVAccountModal extends Modal {
 		new Setting(formContainer)
 			.setName("Sync interval (minutes)")
 			.setDesc("How often to automatically sync this account (1-1440 minutes)")
-			.addSlider((slider) => {
-				slider
-					.setLimits(1, 1440, 1)
-					.setValue(this.syncIntervalMinutes)
-					.setDynamicTooltip()
-					.onChange((value) => {
-						this.syncIntervalMinutes = value;
-					});
+			.addText((text) => {
+				text.inputEl.type = "number";
+				text.inputEl.min = "1";
+				text.inputEl.max = "1440";
+				text.inputEl.step = "1";
+				text.setValue(this.syncIntervalMinutes.toString());
+				text.onChange((value) => {
+					const numValue = parseInt(value, 10);
+					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
+						this.syncIntervalMinutes = numValue;
+					}
+				});
 			});
 
 		new Setting(formContainer)
@@ -573,14 +577,18 @@ class EditCalDAVAccountModal extends Modal {
 		new Setting(contentEl)
 			.setName("Sync interval (minutes)")
 			.setDesc("How often to automatically sync this account (1-1440 minutes)")
-			.addSlider((slider) => {
-				slider
-					.setLimits(1, 1440, 1)
-					.setValue(this.syncIntervalMinutes)
-					.setDynamicTooltip()
-					.onChange((value) => {
-						this.syncIntervalMinutes = value;
-					});
+			.addText((text) => {
+				text.inputEl.type = "number";
+				text.inputEl.min = "1";
+				text.inputEl.max = "1440";
+				text.inputEl.step = "1";
+				text.setValue(this.syncIntervalMinutes.toString());
+				text.onChange((value) => {
+					const numValue = parseInt(value, 10);
+					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
+						this.syncIntervalMinutes = numValue;
+					}
+				});
 			});
 
 		const refreshButton = contentEl.createEl("button", {
