@@ -33,8 +33,6 @@ export class CalDAVSyncStateManager {
 		private indexer: Indexer,
 		settings$: BehaviorSubject<SingleCalendarConfig>
 	) {
-		console.debug("[CalDAV Sync State] Initializing sync state manager");
-
 		// Get initial caldavProp from settings
 		this.caldavProp = settings$.value.caldavProp;
 
@@ -50,11 +48,9 @@ export class CalDAVSyncStateManager {
 				this.handleIndexerEvent(event);
 			});
 
-		// Track when initial indexing completes
-		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
-			if (isComplete) {
-				this.logStateSnapshot();
-			}
+		// Track when initial indexing completes (for cleanup)
+		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe(() => {
+			// State is tracked reactively via indexer events
 		});
 	}
 
@@ -168,28 +164,5 @@ export class CalDAVSyncStateManager {
 	private parseCaldavMetadata(caldav: Record<string, unknown>): CalDAVSyncMetadata | null {
 		const result = CalDAVSyncMetadataSchema.safeParse(caldav);
 		return result.success ? result.data : null;
-	}
-
-	/**
-	 * Logs a snapshot of the current sync state
-	 */
-	private logStateSnapshot(): void {
-		let totalEvents = 0;
-		for (const accountState of this.syncState.values()) {
-			for (const calendarState of accountState.values()) {
-				totalEvents += calendarState.size;
-			}
-		}
-
-		console.debug(`[CalDAV Sync State] ✅ Indexing complete. Tracking ${totalEvents} CalDAV events`);
-
-		if (totalEvents > 0) {
-			console.debug("[CalDAV Sync State] CalDAV events by account:");
-			for (const [accountId, accountState] of this.syncState.entries()) {
-				for (const [calendarUrl, calendarState] of accountState.entries()) {
-					console.debug(`  - Account ${accountId}, Calendar ${calendarUrl}: ${calendarState.size} events`);
-				}
-			}
-		}
 	}
 }

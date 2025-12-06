@@ -106,12 +106,6 @@ export class CalDAVSyncService {
 				}
 			}
 
-			if (result.created > 0 || result.updated > 0 || result.errors.length > 0) {
-				console.debug(
-					`[CalDAV] ${this.calendar.displayName} sync: ${result.created} created, ${result.updated} updated, ${result.errors.length} errors`
-				);
-			}
-
 			const mainSettings = this.mainSettingsStore.currentSettings;
 			if (mainSettings.caldav.notifyOnSync && (result.created > 0 || result.updated > 0 || result.errors.length > 0)) {
 				const parts: string[] = [];

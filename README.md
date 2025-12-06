@@ -201,6 +201,15 @@ Select multiple events and perform bulk actions: **clone, move, skip, delete, or
 - **Compact/comfortable** display density options
 - **Fast indexing** - Optimized for large vaults with many events
 
+### 🔄 **CalDAV Integration**
+- **Read-only sync** - Automatically import events from external CalDAV servers (Fastmail, Nextcloud, iCloud, etc.)
+- **Auto-sync** - Configurable sync intervals with manual trigger option
+- **Smart updates** - Incremental sync using ETags for efficiency
+- **Multiple accounts** - Connect multiple CalDAV calendars to different Prisma calendars
+- **Note creation** - Synced events become Obsidian notes with full frontmatter
+
+> **⚠️ Security Warning**: CalDAV credentials are stored in **plaintext** in your vault's `data.json` file. Always use **app-specific passwords**, never your main account password. See [documentation](https://real1tyy.github.io/Prisma-Calendar/features/integrations#security-considerations) for detailed security considerations.
+
 ## Support & Sponsorship
 
 If you find Prisma Calendar useful and want to support its ongoing development, please consider becoming a sponsor. Your contribution helps ensure continuous maintenance, bug fixes, and the introduction of new features.
