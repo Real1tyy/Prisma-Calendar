@@ -300,7 +300,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		}
 
 		new ICSImportModal(this.app, this.calendarBundles, async (bundle, events, timezone) => {
-			await importEventsToCalendar(bundle, events, timezone);
+			await importEventsToCalendar(this.app, bundle, events, timezone);
 		}).open();
 	}
 

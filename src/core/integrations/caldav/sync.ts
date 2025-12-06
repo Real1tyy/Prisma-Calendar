@@ -2,11 +2,10 @@ import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
 import { type App, Notice, normalizePath, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CustomCalendarSettings } from "../../../types/settings";
-import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../../utils/calendar-events";
-import { ensureFolderExists } from "../../../utils/obsidian";
+import { extractZettelId, removeZettelId } from "../../../utils/calendar-events";
 import type { CalendarBundle } from "../../calendar-bundle";
 import type { SettingsStore } from "../../settings-store";
-import { buildFrontmatterFromImportedEvent, extractBasenameFromOriginalPath, parseICSContent } from "../ics-import";
+import { buildFrontmatterFromImportedEvent, createEventNoteFromImportedEvent, parseICSContent } from "../ics-import";
 import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
 import type { CalDAVSyncStateManager } from "./sync-state-manager";
 import type { CalDAVAccount, CalDAVCalendarInfo, CalDAVSyncMetadata, CalDAVSyncResult } from "./types";
@@ -133,22 +132,8 @@ export class CalDAVSyncService {
 
 		const importedEvent = parsed.events[0];
 		const folderPath = this.getSyncFolderPath();
-		await ensureFolderExists(this.app, folderPath);
+		const caldavProp = this.bundle.settingsStore.currentSettings.caldavProp;
 
-		const baseName =
-			extractBasenameFromOriginalPath(importedEvent.originalFilePath) ||
-			sanitizeForFilename(importedEvent.title, { style: "preserve" });
-
-		const { filename, zettelId } = generateUniqueEventPath(this.app, folderPath, baseName);
-
-		const calendarSettings = this.bundle.settingsStore.currentSettings;
-		const frontmatter = buildFrontmatterFromImportedEvent(importedEvent, calendarSettings, this.account.timezone);
-
-		if (calendarSettings.zettelIdProp) {
-			frontmatter[calendarSettings.zettelIdProp] = zettelId;
-		}
-
-		const caldavProp = calendarSettings.caldavProp;
 		const syncMeta: CalDAVSyncMetadata = {
 			accountId: this.account.id,
 			calendarHref: this.calendar.url,
@@ -158,16 +143,13 @@ export class CalDAVSyncService {
 			lastModified: importedEvent.lastModified,
 			lastSyncedAt: Date.now(),
 		};
-		frontmatter[caldavProp] = syncMeta;
 
-		const content = importedEvent.description ? `\n${importedEvent.description}\n` : undefined;
-
-		await this.bundle.templateService.createFile({
-			title: importedEvent.title,
+		await createEventNoteFromImportedEvent(this.app, this.bundle, importedEvent, {
 			targetDirectory: folderPath,
-			filename,
-			content,
-			frontmatter,
+			timezone: this.account.timezone,
+			additionalFrontmatter: {
+				[caldavProp]: syncMeta,
+			},
 		});
 	}
 
