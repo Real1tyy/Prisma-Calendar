@@ -1,11 +1,12 @@
-import { type App, normalizePath, type TFile, TFolder } from "obsidian";
+import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
+import { type App, normalizePath, TFolder } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import type { CalendarBundle } from "../../calendar-bundle";
 import type { SettingsStore } from "../../settings-store";
 import {
 	buildFrontmatterFromImportedEvent,
-	type ImportedEvent,
+	extractBasenameFromOriginalPath,
 	type ImportFrontmatterSettings,
 	parseICSContent,
 } from "../ics-import";
@@ -53,6 +54,8 @@ export class CalDAVSyncService {
 	}
 
 	async sync(): Promise<CalDAVSyncResult> {
+		console.debug(`[CalDAV] Syncing ${this.calendar.displayName}`);
+
 		if (!this.account.enabled) {
 			return {
 				success: false,
@@ -77,56 +80,76 @@ export class CalDAVSyncService {
 
 		try {
 			const events = await this.client.fetchCalendarEvents({ calendar: this.calendar });
+			console.debug(`[CalDAV] Fetched ${events.length} event(s)`);
 
 			for (const event of events) {
 				try {
 					await this.createNoteFromEvent(event);
 					result.created++;
 				} catch (error) {
-					result.errors.push(`Failed to sync event ${event.url}: ${error}`);
+					const errorMsg = `Failed to sync event ${event.url}: ${error}`;
+					console.error(`[CalDAV] ${errorMsg}`);
+					result.errors.push(errorMsg);
 				}
 			}
+
+			console.debug(`[CalDAV] Sync complete - created: ${result.created}, errors: ${result.errors.length}`);
 		} catch (error) {
 			result.success = false;
-			result.errors.push(error instanceof Error ? error.message : String(error));
+			const errorMsg = error instanceof Error ? error.message : String(error);
+			console.error(`[CalDAV] Sync failed:`, errorMsg);
+			result.errors.push(errorMsg);
 		}
 
 		return result;
 	}
 
 	private async createNoteFromEvent(event: CalDAVFetchedEvent): Promise<void> {
+		console.debug(`[CalDAV] Full ICS data for ${event.url}:\n`, event.data);
+
 		const parsed = parseICSContent(event.data);
+
 		if (!parsed.success || parsed.events.length === 0) {
-			return;
+			throw new Error("Failed to parse ICS data");
 		}
 
 		const importedEvent = parsed.events[0];
+		console.debug(`[CalDAV] Parsed event:`, {
+			title: importedEvent.title,
+			start: importedEvent.start,
+			end: importedEvent.end,
+			allDay: importedEvent.allDay,
+		});
+
 		const folderPath = this.getSyncFolderPath();
 		await this.ensureFolderExists(folderPath);
 
-		const fileName = this.generateFileName(importedEvent);
-		const filePath = normalizePath(`${folderPath}/${fileName}.md`);
+		const settings = this.getImportFrontmatterSettings();
+		const frontmatter = buildFrontmatterFromImportedEvent(importedEvent, settings);
 
-		const bodyContent = importedEvent.description || "";
-		const file: TFile = await this.app.vault.create(filePath, bodyContent);
+		const caldavProp = this.bundle.settingsStore.currentSettings.caldavProp;
+		const syncMeta: CalDAVSyncMetadata = {
+			href: event.url,
+			etag: event.etag,
+			accountId: this.account.id,
+			calendarUrl: this.calendar.url,
+			uid: event.uid ?? importedEvent.uid,
+			lastModified: importedEvent.lastModified,
+		};
+		frontmatter[caldavProp] = syncMeta;
 
-		await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
-			const settings = this.getImportFrontmatterSettings();
-			const eventFm = buildFrontmatterFromImportedEvent(importedEvent, settings);
+		const content = importedEvent.description ? `\n${importedEvent.description}\n` : undefined;
+		const baseName =
+			extractBasenameFromOriginalPath(importedEvent.originalFilePath) ||
+			sanitizeForFilename(importedEvent.title, { style: "preserve" }) ||
+			"CalDAV Event";
 
-			for (const [key, value] of Object.entries(eventFm)) {
-				fm[key] = value;
-			}
-
-			const caldavProp = this.bundle.settingsStore.currentSettings.caldavProp;
-			const syncMeta: CalDAVSyncMetadata = {
-				href: event.url,
-				etag: event.etag,
-				accountId: this.account.id,
-				calendarUrl: this.calendar.url,
-				uid: event.uid ?? importedEvent.uid,
-			};
-			fm[caldavProp] = syncMeta;
+		await this.bundle.templateService.createFile({
+			title: importedEvent.title,
+			targetDirectory: folderPath,
+			filename: baseName,
+			content,
+			frontmatter,
 		});
 	}
 
@@ -147,12 +170,6 @@ export class CalDAVSyncService {
 				throw new Error(`Path ${currentPath} exists but is not a folder`);
 			}
 		}
-	}
-
-	private generateFileName(event: ImportedEvent): string {
-		const title = event.title.replace(/[/\\?%*:|"<>]/g, "-").slice(0, 100);
-		const dateStr = event.start.toISOString().slice(0, 10);
-		return `${dateStr} ${title}`;
 	}
 
 	private getImportFrontmatterSettings(): ImportFrontmatterSettings {

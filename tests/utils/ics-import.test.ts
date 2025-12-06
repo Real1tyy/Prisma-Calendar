@@ -623,4 +623,191 @@ END:VCALENDAR`;
 			expect(fm.Date).toBe("2025-01-15");
 		});
 	});
+
+	describe("DURATION parsing (CalDAV/Fastmail format)", () => {
+		const CALDAV_ICS_WITH_DURATION_3H = `BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+PRODID:-//CyrusIMAP.org/Cyrus 3.13.0-alpha0-1552-gef299144e3-fm-20251125.001-gef299144//EN
+BEGIN:VTIMEZONE
+TZID:Europe/Prague
+LAST-MODIFIED:20251020T165510Z
+X-LIC-LOCATION:Europe/Prague
+TZUNTIL:20251205T144500Z
+BEGIN:DAYLIGHT
+TZNAME:CEST
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+DTSTART:19810329T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZNAME:CET
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+DTSTART:19961027T030000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:8df4c1d4-ae98-4265-8547-15480ef42e7c
+SEQUENCE:5
+DTSTAMP:20251206T100035Z
+CREATED:20251205T195752Z
+DTSTART;TZID=Europe/Prague:20251205T124500
+DURATION:PT3H
+PRIORITY:0
+SUMMARY:Test
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+X-JMAP-USEDEFAULTALERTS;VALUE=BOOLEAN:TRUE
+END:VEVENT
+END:VCALENDAR`;
+
+		const CALDAV_ICS_WITH_DURATION_3H30M = `BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+PRODID:-//CyrusIMAP.org/Cyrus 3.13.0-alpha0-1552-gef299144e3-fm-20251125.001-gef299144//EN
+BEGIN:VTIMEZONE
+TZID:Europe/Prague
+LAST-MODIFIED:20251020T165510Z
+X-LIC-LOCATION:Europe/Prague
+TZUNTIL:20251206T163000Z
+BEGIN:DAYLIGHT
+TZNAME:CEST
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+DTSTART:19810329T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZNAME:CET
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+DTSTART:19961027T030000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:2a8dcabf-a887-4cee-831f-92b8f24404f8
+SEQUENCE:2
+DTSTAMP:20251206T162858Z
+CREATED:20251206T162854Z
+DTSTART;TZID=Europe/Prague:20251206T140000
+DURATION:PT3H30M
+PRIORITY:0
+SUMMARY:Hello\\n
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+X-JMAP-USEDEFAULTALERTS;VALUE=BOOLEAN:TRUE
+END:VEVENT
+END:VCALENDAR`;
+
+		it("should parse event with DURATION:PT3H (3 hours)", () => {
+			const result = parseICSContent(CALDAV_ICS_WITH_DURATION_3H);
+
+			expect(result.success).toBe(true);
+			expect(result.events).toHaveLength(1);
+
+			const event = result.events[0];
+			expect(event.title).toBe("Test");
+			expect(event.uid).toBe("8df4c1d4-ae98-4265-8547-15480ef42e7c");
+			expect(event.allDay).toBe(false);
+
+			expect(event.start).toBeInstanceOf(Date);
+			expect(event.end).toBeInstanceOf(Date);
+
+			// Calculate duration: end - start should be 3 hours (10800000 ms)
+			const durationMs = event.end!.getTime() - event.start.getTime();
+			expect(durationMs).toBe(3 * 60 * 60 * 1000); // 3 hours in milliseconds
+		});
+
+		it("should parse event with DURATION:PT3H30M (3 hours 30 minutes)", () => {
+			const result = parseICSContent(CALDAV_ICS_WITH_DURATION_3H30M);
+
+			expect(result.success).toBe(true);
+			expect(result.events).toHaveLength(1);
+
+			const event = result.events[0];
+			// ICS has escaped newline which becomes actual newline when parsed
+			expect(event.title).toBe("Hello\n");
+			expect(event.uid).toBe("2a8dcabf-a887-4cee-831f-92b8f24404f8");
+			expect(event.allDay).toBe(false);
+
+			expect(event.start).toBeInstanceOf(Date);
+			expect(event.end).toBeInstanceOf(Date);
+
+			// Calculate duration: end - start should be 3.5 hours (12600000 ms)
+			const durationMs = event.end!.getTime() - event.start.getTime();
+			expect(durationMs).toBe(3.5 * 60 * 60 * 1000); // 3.5 hours in milliseconds
+		});
+
+		it("should extract lastModified timestamp from DTSTAMP", () => {
+			const result = parseICSContent(CALDAV_ICS_WITH_DURATION_3H);
+
+			expect(result.success).toBe(true);
+			const event = result.events[0];
+
+			// DTSTAMP:20251206T100035Z
+			expect(event.lastModified).toBeDefined();
+			expect(event.lastModified).toBeGreaterThan(0);
+
+			// Verify it's approximately the correct timestamp
+			const dtstamp = new Date("2025-12-06T10:00:35Z");
+			expect(event.lastModified).toBe(dtstamp.getTime());
+		});
+
+		it("should prefer DTEND over DURATION if both are present", () => {
+			const icsWithBoth = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Test//Test//EN
+BEGIN:VEVENT
+UID:test-both@example.com
+DTSTART:20250315T100000Z
+DTEND:20250315T120000Z
+DURATION:PT1H
+SUMMARY:Test Both
+END:VEVENT
+END:VCALENDAR`;
+
+			const result = parseICSContent(icsWithBoth);
+
+			expect(result.success).toBe(true);
+			const event = result.events[0];
+
+			// Should use DTEND (2 hours) not DURATION (1 hour)
+			const durationMs = event.end!.getTime() - event.start.getTime();
+			expect(durationMs).toBe(2 * 60 * 60 * 1000); // 2 hours
+		});
+
+		it("should handle various DURATION formats", () => {
+			const testCases = [
+				{ duration: "PT30M", expectedMs: 30 * 60 * 1000 },
+				{ duration: "PT1H", expectedMs: 60 * 60 * 1000 },
+				{ duration: "PT2H15M", expectedMs: (2 * 60 + 15) * 60 * 1000 },
+				{ duration: "PT45M", expectedMs: 45 * 60 * 1000 },
+				{ duration: "PT90M", expectedMs: 90 * 60 * 1000 },
+				{ duration: "PT1H30M", expectedMs: 90 * 60 * 1000 },
+			];
+
+			for (const { duration, expectedMs } of testCases) {
+				const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Test//Test//EN
+BEGIN:VEVENT
+UID:test-duration@example.com
+DTSTART:20250315T100000Z
+DURATION:${duration}
+SUMMARY:Test Duration
+END:VEVENT
+END:VCALENDAR`;
+
+				const result = parseICSContent(ics);
+				expect(result.success).toBe(true);
+				const event = result.events[0];
+				const durationMs = event.end!.getTime() - event.start.getTime();
+				expect(durationMs).toBe(expectedMs);
+			}
+		});
+	});
 });

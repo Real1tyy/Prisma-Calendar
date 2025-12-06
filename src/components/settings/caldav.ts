@@ -57,6 +57,7 @@ export class CalDAVSettings {
 
 	private renderGlobalSettings(containerEl: HTMLElement): void {
 		const caldavSettings = this.settingsStore.currentSettings.caldav;
+
 		new Setting(containerEl)
 			.setName("Sync on startup")
 			.setDesc("Automatically sync calendars when the app starts")
@@ -67,6 +68,21 @@ export class CalDAVSettings {
 						caldav: {
 							...s.caldav,
 							syncOnStartup: value,
+						},
+					}));
+				});
+			});
+
+		new Setting(containerEl)
+			.setName("Allow auto-sync")
+			.setDesc("Enable automatic periodic syncing based on each account's sync interval")
+			.addToggle((toggle) => {
+				toggle.setValue(caldavSettings.enableAutoSync).onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						caldav: {
+							...s.caldav,
+							enableAutoSync: value,
 						},
 					}));
 				});
