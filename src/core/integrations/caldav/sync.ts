@@ -124,18 +124,8 @@ export class CalDAVSyncService {
 		calendar: CalDAVCalendarInfo,
 		result: CalDAVSyncResult
 	): Promise<void> {
-		const now = new Date();
-		const threeMonthsAgo = new Date(now);
-		threeMonthsAgo.setMonth(now.getMonth() - 3);
-		const oneYearFromNow = new Date(now);
-		oneYearFromNow.setFullYear(now.getFullYear() + 1);
-
 		const events = await this.client.fetchCalendarEvents(account, {
 			calendar,
-			timeRange: {
-				start: threeMonthsAgo.toISOString(),
-				end: oneYearFromNow.toISOString(),
-			},
 		});
 
 		const storedObjects: CalDAVStoredObject[] = [];

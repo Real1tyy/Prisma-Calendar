@@ -19,10 +19,6 @@ export interface CalDAVConnectionResult {
 
 export interface CalDAVFetchEventsOptions {
 	calendar: CalDAVCalendarInfo;
-	timeRange?: {
-		start: string;
-		end: string;
-	};
 }
 
 export interface CalDAVFetchedEvent {
@@ -62,10 +58,7 @@ async function getTsdav() {
 export class CalDAVClientService {
 	private clients: Map<string, InstanceType<typeof import("tsdav").DAVClient>> = new Map();
 
-	private async getOrCreateClient(account: CalDAVAccount): Promise<InstanceType<typeof import("tsdav").DAVClient>> {
-		const existing = this.clients.get(account.id);
-		if (existing) return existing;
-
+	private async createClient(account: CalDAVAccount): Promise<InstanceType<typeof import("tsdav").DAVClient>> {
 		const { DAVClient } = await getTsdav();
 
 		const client = new DAVClient({
@@ -76,22 +69,21 @@ export class CalDAVClientService {
 		});
 
 		await client.login();
+		return client;
+	}
+
+	private async getOrCreateClient(account: CalDAVAccount): Promise<InstanceType<typeof import("tsdav").DAVClient>> {
+		const existing = this.clients.get(account.id);
+		if (existing) return existing;
+
+		const client = await this.createClient(account);
 		this.clients.set(account.id, client);
 		return client;
 	}
 
 	async testConnection(account: CalDAVAccount): Promise<CalDAVConnectionResult> {
 		try {
-			const { DAVClient } = await getTsdav();
-
-			const client = new DAVClient({
-				serverUrl: account.serverUrl,
-				credentials: buildCredentials(account),
-				authMethod: account.authMethod,
-				defaultAccountType: "caldav",
-			});
-
-			await client.login();
+			const client = await this.createClient(account);
 			const calendars = await client.fetchCalendars();
 
 			return {
@@ -115,7 +107,7 @@ export class CalDAVClientService {
 	async fetchCalendarEvents(account: CalDAVAccount, options: CalDAVFetchEventsOptions): Promise<CalDAVFetchedEvent[]> {
 		const client = await this.getOrCreateClient(account);
 
-		const davCalendar = {
+		const calendar = {
 			url: options.calendar.url,
 			displayName: options.calendar.displayName,
 			ctag: options.calendar.ctag,
@@ -123,11 +115,9 @@ export class CalDAVClientService {
 		};
 
 		const objects = await client.fetchCalendarObjects({
-			calendar: davCalendar,
-			timeRange: options.timeRange,
+			calendar,
 		});
-
-		return objects.map((obj) => this.mapCalendarObject(obj));
+		return objects.map(this.mapCalendarObject);
 	}
 
 	async syncCalendar(
@@ -142,7 +132,7 @@ export class CalDAVClientService {
 	}> {
 		const client = await this.getOrCreateClient(account);
 
-		const davCalendar = {
+		const collection = {
 			url: storedCalendar.url,
 			displayName: storedCalendar.displayName,
 			ctag: storedCalendar.ctag,
@@ -155,7 +145,7 @@ export class CalDAVClientService {
 		};
 
 		const syncResult = await client.smartCollectionSync({
-			collection: davCalendar,
+			collection,
 			detailedResult: true,
 		});
 

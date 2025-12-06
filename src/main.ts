@@ -1,5 +1,6 @@
 import { onceAsync } from "@real1ty-obsidian-plugins/utils";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
+import type { Subscription } from "rxjs";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { CalendarSelectModal, ICSImportModal } from "./components/modals";
 import { COMMAND_IDS } from "./constants";
@@ -15,6 +16,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	caldavSyncService: CalDAVSyncService | null = null;
 	private registeredViewTypes: Set<string> = new Set();
 	private autoSyncIntervalId: number | null = null;
+	private caldavSettingsSubscription: Subscription | null = null;
 
 	async onload() {
 		this.settingsStore = new SettingsStore(this);
@@ -42,6 +44,8 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.registeredViewTypes.clear();
 
 		this.stopAutoSync();
+		this.caldavSettingsSubscription?.unsubscribe();
+		this.caldavSettingsSubscription = null;
 		this.caldavSyncService?.destroy();
 		this.caldavSyncService = null;
 
@@ -311,13 +315,9 @@ export default class CustomCalendarPlugin extends Plugin {
 	private initializeCalDAVSync(): void {
 		const settings = this.settingsStore.currentSettings;
 		const caldavSettings = settings.caldav;
-
-		if (caldavSettings.accounts.length === 0) {
-			return;
-		}
-
 		const calendarConfig = settings.calendars[0];
-		if (!calendarConfig) {
+
+		if (caldavSettings.accounts.length === 0 || !calendarConfig) {
 			return;
 		}
 
@@ -327,11 +327,6 @@ export default class CustomCalendarPlugin extends Plugin {
 			calendarConfig,
 		});
 
-		// Restore previous sync state for incremental syncing
-		if (caldavSettings.syncState && Object.keys(caldavSettings.syncState).length > 0) {
-			this.caldavSyncService.loadSyncState(caldavSettings.syncState);
-		}
-
 		// Sync on startup if enabled
 		if (caldavSettings.syncOnStartup) {
 			void this.syncCalDAVAccounts(true);
@@ -339,6 +334,36 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		// Set up auto-sync if any account has it enabled
 		this.startAutoSync();
+
+		// Subscribe to settings changes to reactively update the service
+		this.caldavSettingsSubscription = this.settingsStore.settings$.subscribe((newSettings) => {
+			const newCalDAVSettings = newSettings.caldav;
+			const newCalendarConfig = newSettings.calendars[0];
+
+			if (!newCalendarConfig) {
+				return;
+			}
+
+			// Update service if it exists
+			if (this.caldavSyncService) {
+				this.caldavSyncService.updateSettings(newCalDAVSettings, newCalendarConfig);
+			} else if (newCalDAVSettings.accounts.length > 0) {
+				// Create service if it doesn't exist but accounts are configured
+				this.caldavSyncService = new CalDAVSyncService({
+					app: this.app,
+					caldavSettings: newCalDAVSettings,
+					calendarConfig: newCalendarConfig,
+				});
+
+				// Restore sync state if available
+				if (newCalDAVSettings.syncState && Object.keys(newCalDAVSettings.syncState).length > 0) {
+					this.caldavSyncService.loadSyncState(newCalDAVSettings.syncState);
+				}
+			}
+
+			// Restart auto-sync with potentially new intervals
+			this.startAutoSync();
+		});
 	}
 
 	async syncCalDAVAccounts(silent = false): Promise<void> {
@@ -465,21 +490,6 @@ export default class CustomCalendarPlugin extends Plugin {
 			this.autoSyncIntervalId = null;
 			console.debug("CalDAV auto-sync stopped");
 		}
-	}
-
-	updateCalDAVSyncService(): void {
-		const settings = this.settingsStore.currentSettings;
-		const caldavSettings = settings.caldav;
-
-		if (this.caldavSyncService) {
-			const calendarConfig = settings.calendars[0];
-			if (calendarConfig) {
-				this.caldavSyncService.updateSettings(caldavSettings, calendarConfig);
-			}
-		}
-
-		// Restart auto-sync with potentially new intervals
-		this.startAutoSync();
 	}
 
 	private async persistSyncState(): Promise<void> {
