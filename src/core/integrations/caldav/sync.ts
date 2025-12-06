@@ -5,7 +5,7 @@ import {
 	type ImportedEvent,
 	type ImportFrontmatterSettings,
 	parseICSContent,
-} from "../../../utils/ics-import";
+} from "../ics-import";
 import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
 import type {
 	CalDAVAccount,

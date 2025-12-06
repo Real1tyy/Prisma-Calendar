@@ -53,7 +53,6 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		this.createCalendarManagementHeader();
 		this.renderSelectedCalendarSettings();
 		this.createIntegrationsSection();
-		this.createCalDAVSection();
 
 		const footerEl = containerEl.createDiv({ cls: `setting-item ${cls("settings-footer")}` });
 
@@ -196,10 +195,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 				`prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`
 			);
 		});
-	}
 
-	private createCalDAVSection(): void {
-		const { containerEl } = this;
 		const caldavSettings = new CalDAVSettings(this.app, this.plugin.settingsStore, this.plugin);
 		caldavSettings.display(containerEl);
 	}

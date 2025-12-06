@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { createICSFromEvents, type ICSExportOptions } from "../../src/core/integrations/ics-export";
+import {
+	buildFrontmatterFromImportedEvent,
+	type ImportedEvent,
+	parseICSContent,
+} from "../../src/core/integrations/ics-import";
 import type { ParsedEvent } from "../../src/core/parser";
-import { createICSFromEvents, type ICSExportOptions } from "../../src/utils/ics-export";
-import { buildFrontmatterFromImportedEvent, type ImportedEvent, parseICSContent } from "../../src/utils/ics-import";
 
 const SAMPLE_ICS_SINGLE_EVENT = `BEGIN:VCALENDAR
 VERSION:2.0
