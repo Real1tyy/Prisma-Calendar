@@ -1,11 +1,15 @@
-import { type DAVCalendar, type DAVCalendarObject, DAVClient } from "tsdav";
+import { patchGlobalFetch } from "./obsidian-fetch";
+
+// Patch fetch before we use tsdav
+patchGlobalFetch();
+
 import type {
 	CalDAVAccount,
 	CalDAVBasicCredentials,
 	CalDAVCalendarInfo,
 	CalDAVOAuthCredentials,
 	CalDAVStoredCalendar,
-} from "../types/caldav";
+} from "./types";
 
 export interface CalDAVConnectionResult {
 	success: boolean;
@@ -50,12 +54,19 @@ function buildCredentials(account: CalDAVAccount): Record<string, string> {
 	};
 }
 
-export class CalDAVClientService {
-	private clients: Map<string, DAVClient> = new Map();
+// Use dynamic import to ensure fetch is patched before tsdav loads
+async function getTsdav() {
+	return await import("tsdav");
+}
 
-	private async getOrCreateClient(account: CalDAVAccount): Promise<DAVClient> {
+export class CalDAVClientService {
+	private clients: Map<string, InstanceType<typeof import("tsdav").DAVClient>> = new Map();
+
+	private async getOrCreateClient(account: CalDAVAccount): Promise<InstanceType<typeof import("tsdav").DAVClient>> {
 		const existing = this.clients.get(account.id);
 		if (existing) return existing;
+
+		const { DAVClient } = await getTsdav();
 
 		const client = new DAVClient({
 			serverUrl: account.serverUrl,
@@ -71,6 +82,8 @@ export class CalDAVClientService {
 
 	async testConnection(account: CalDAVAccount): Promise<CalDAVConnectionResult> {
 		try {
+			const { DAVClient } = await getTsdav();
+
 			const client = new DAVClient({
 				serverUrl: account.serverUrl,
 				credentials: buildCredentials(account),
@@ -102,7 +115,7 @@ export class CalDAVClientService {
 	async fetchCalendarEvents(account: CalDAVAccount, options: CalDAVFetchEventsOptions): Promise<CalDAVFetchedEvent[]> {
 		const client = await this.getOrCreateClient(account);
 
-		const davCalendar: DAVCalendar = {
+		const davCalendar = {
 			url: options.calendar.url,
 			displayName: options.calendar.displayName,
 			ctag: options.calendar.ctag,
@@ -129,7 +142,7 @@ export class CalDAVClientService {
 	}> {
 		const client = await this.getOrCreateClient(account);
 
-		const davCalendar: DAVCalendar = {
+		const davCalendar = {
 			url: storedCalendar.url,
 			displayName: storedCalendar.displayName,
 			ctag: storedCalendar.ctag,
@@ -152,9 +165,9 @@ export class CalDAVClientService {
 
 		if (syncResult.objects && typeof syncResult.objects === "object") {
 			const syncObjects = syncResult.objects as {
-				created?: DAVCalendarObject[];
-				updated?: DAVCalendarObject[];
-				deleted?: DAVCalendarObject[];
+				created?: Array<{ url: string; etag?: string; data?: string }>;
+				updated?: Array<{ url: string; etag?: string; data?: string }>;
+				deleted?: Array<{ url: string }>;
 			};
 
 			if (syncObjects.created) {
@@ -186,7 +199,7 @@ export class CalDAVClientService {
 	async isCalendarDirty(account: CalDAVAccount, calendar: CalDAVCalendarInfo): Promise<boolean> {
 		const client = await this.getOrCreateClient(account);
 
-		const davCalendar: DAVCalendar = {
+		const davCalendar = {
 			url: calendar.url,
 			displayName: calendar.displayName,
 			ctag: calendar.ctag,
@@ -208,7 +221,15 @@ export class CalDAVClientService {
 		this.clients.clear();
 	}
 
-	private mapCalendarInfo(cal: DAVCalendar): CalDAVCalendarInfo {
+	private mapCalendarInfo(cal: {
+		url: string;
+		displayName?: unknown;
+		description?: unknown;
+		calendarColor?: unknown;
+		ctag?: unknown;
+		syncToken?: unknown;
+		components?: string[];
+	}): CalDAVCalendarInfo {
 		const getStringValue = (val: unknown): string | undefined => {
 			if (typeof val === "string") return val;
 			return undefined;
@@ -225,7 +246,7 @@ export class CalDAVClientService {
 		};
 	}
 
-	private mapCalendarObject(obj: DAVCalendarObject): CalDAVFetchedEvent {
+	private mapCalendarObject(obj: { url: string; etag?: string; data?: string }): CalDAVFetchedEvent {
 		let uid: string | undefined;
 		const data = typeof obj.data === "string" ? obj.data : "";
 

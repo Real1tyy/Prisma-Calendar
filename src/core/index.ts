@@ -1,5 +1,3 @@
-export { CalDAVClientService } from "./caldav-client";
-export { CalDAVSyncService } from "./caldav-sync";
 export { CalendarBundle } from "./calendar-bundle";
 export { type CalendarViewState, CalendarViewStateManager } from "./calendar-view-state-manager";
 export { CategoryTracker } from "./category-tracker";
