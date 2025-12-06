@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented here.
 
+## 1.10.0
+
+### New Features
+
+#### CalDAV Integration
+
+:::danger SECURITY WARNING
+**CalDAV credentials are stored in PLAINTEXT in your vault's `data.json` file.**
+
+- ⚠️ **NEVER use your main account password**
+- ✅ **ALWAYS use app-specific passwords** (iCloud, Google, Fastmail all support them)
+- 🔒 See [Security Considerations](https://real1tyy.github.io/Prisma-Calendar/features/integrations#security-considerations) for detailed information
+
+Anyone with access to your vault can read your credentials. Use with caution.
+:::
+
+- **Read-Only Calendar Sync**: Connect to external CalDAV servers (Fastmail, Nextcloud, iCloud, etc.) to automatically import events into your Obsidian calendar
+- **Account Management**: Add multiple CalDAV accounts with separate configurations. Each account can sync multiple calendars to different Prisma calendars
+- **Calendar Selection**: Browse and select which calendars to sync from each account. Support for syncing multiple remote calendars to a single Prisma calendar
+- **Intelligent Sync System**:
+  - **Auto-sync**: Configurable sync intervals (1-1440 minutes, default: 15 minutes)
+  - **Sync on startup**: Automatically sync when Obsidian starts
+  - **Manual sync**: "Sync now" button in settings for on-demand synchronization
+  - **Incremental sync**: Uses ETags for efficient updates - only changed events are processed
+  - **Conflict detection**: Tracks event modifications using lastModified timestamps
+- **Event Management**:
+  - **Create notes automatically**: Synced events are created as Obsidian notes in the calendar's folder
+  - **Update detection**: Changed events are automatically updated in your vault
+  - **Title change handling**: File is automatically renamed when event title changes on the server while preserving Zettel ID
+  - **Zettel ID integration**: CalDAV events get Zettel IDs (format: `Event Name - YYYYMMDDHHmmss`) for conflict-free filenames
+  - **Metadata tracking**: Sync state stored in frontmatter (accountId, calendarHref, objectHref, etag, uid, lastModified, lastSyncedAt)
+- **Timezone Handling**: Configure timezone per CalDAV account to ensure correct time conversion between server events and your local calendar
+- **Visual Integration**:
+  - **Integration event color**: Set a custom color for all CalDAV-synced events (default: purple `#8b5cf6`)
+- **Notification Control**: "Show sync notifications" toggle to display/hide sync status messages (enabled by default)
+- **Use Cases**:
+  - Sync work calendar from corporate CalDAV server to track alongside personal Obsidian tasks
+  - Import external meeting schedules without manual ICS import/export
+  - Keep Obsidian calendar in sync with family/shared calendars
+  - Maintain single source of truth for events across multiple calendar applications
+  - Automatically create notes for external events for journaling and note-taking
+
+---
+
 ## 1.9.0
 
 ### New Features

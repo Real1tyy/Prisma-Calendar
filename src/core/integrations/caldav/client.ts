@@ -64,10 +64,6 @@ export class CalDAVClientService {
 	}
 
 	async initialize(): Promise<void> {
-		console.debug(`[CalDAV Client] Initializing client for account: ${this.account.name}`);
-		console.debug(`[CalDAV Client] Server URL: ${this.account.serverUrl}`);
-		console.debug(`[CalDAV Client] Auth method: ${this.account.authMethod}`);
-
 		const { DAVClient } = await getTsdav();
 
 		this.client = new DAVClient({
@@ -77,9 +73,7 @@ export class CalDAVClientService {
 			defaultAccountType: "caldav",
 		});
 
-		console.debug(`[CalDAV Client] Attempting login...`);
 		await this.client.login();
-		console.debug(`[CalDAV Client] Login successful`);
 	}
 
 	static async testConnection(account: CalDAVAccount): Promise<CalDAVConnectionResult> {
@@ -116,9 +110,6 @@ export class CalDAVClientService {
 	}
 
 	async fetchCalendarEvents(options: CalDAVFetchEventsOptions): Promise<CalDAVFetchedEvent[]> {
-		console.debug(`[CalDAV Client] fetchCalendarEvents called for calendar: ${options.calendar.displayName}`);
-		console.debug(`[CalDAV Client] Calendar URL: ${options.calendar.url}`);
-
 		if (!this.client) {
 			throw new Error("Client not initialized");
 		}
@@ -130,14 +121,11 @@ export class CalDAVClientService {
 			syncToken: options.calendar.syncToken,
 		};
 
-		console.debug(`[CalDAV Client] Fetching calendar objects...`);
 		const objects = await this.client.fetchCalendarObjects({
 			calendar,
 		});
-		console.debug(`[CalDAV Client] Received ${objects.length} calendar objects from server`);
 
 		const events = objects.map((obj) => this.mapCalendarObject(obj));
-		console.debug(`[CalDAV Client] Mapped to ${events.length} CalDAV events`);
 
 		return events;
 	}
