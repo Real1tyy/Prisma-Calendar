@@ -1,0 +1,128 @@
+---
+alwaysApply: true
+description: Always use SettingsUIBuilder for settings UI instead of manual Setting creation when possible
+---
+
+# SettingsUIBuilder Usage Rule
+
+**CRITICAL: Always use SettingsUIBuilder from `@real1ty-obsidian-plugins/utils` for creating settings UI instead of manually creating Setting instances when the field exists in the schema.**
+
+## ✅ **DO: Use SettingsUIBuilder**
+
+```typescript
+import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
+import type { SingleCalendarConfigSchema } from "../../types/settings";
+
+export class GeneralSettings {
+	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
+
+	constructor(private settingsStore: CalendarSettingsStore) {
+		this.ui = new SettingsUIBuilder(this.settingsStore as never);
+	}
+
+	display(containerEl: HTMLElement): void {
+		// ✅ Use UI builder for text inputs
+		this.ui.addText(containerEl, {
+			key: "exportFolder",
+			name: "Export folder",
+			desc: "Folder where exported .ics files are saved",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER,
+		});
+
+		// ✅ Use UI builder for sliders
+		this.ui.addSlider(containerEl, {
+			key: "defaultDurationMinutes",
+			name: "Default duration (minutes)",
+			desc: "Default event duration when only start time is provided",
+			min: 1,
+			max: 240,
+			step: 1,
+		});
+
+		// ✅ Use UI builder for toggles
+		this.ui.addToggle(containerEl, {
+			key: "showDurationField",
+			name: "Show duration field in event modal",
+			desc: "Display a duration in minutes field in the event creation/edit modal",
+		});
+	}
+}
+```
+
+## ❌ **DON'T: Manually Create Settings**
+
+```typescript
+// ❌ WRONG: Manual Setting creation for schema fields
+new Setting(containerEl)
+	.setName("Export folder")
+	.setDesc("Folder where exported .ics files are saved")
+	.addText((text) => {
+		text
+			.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER)
+			.setValue(this.settingsStore.currentSettings.exportFolder || SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER)
+			.onChange(async (value) => {
+				await this.settingsStore.updateSettings((s) => ({
+					...s,
+					exportFolder: value.trim() || SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER,
+				}));
+			});
+	});
+```
+
+## **When to Use SettingsUIBuilder**
+
+Use SettingsUIBuilder for any setting field that:
+- **Exists in the schema** (SingleCalendarConfigSchema or CustomCalendarSettingsSchema)
+- **Is a simple field** (text, number, boolean, enum)
+- **Doesn't require custom validation logic** beyond what the schema provides
+- **Doesn't need dynamic options** that change based on runtime state
+
+### Supported Methods
+
+- `addText()` - Text inputs
+- `addSlider()` - Slider inputs (min/max/step)
+- `addToggle()` - Toggle switches
+- `addTextArray()` - Array of strings
+- `addTextArea()` - Multi-line text (if supported)
+
+## **When Manual Setting is Acceptable**
+
+Manual `Setting` creation is acceptable when:
+- **Dynamic dropdowns** - Options change based on runtime state (e.g., preset selector with dynamic list)
+- **Custom validation** - Complex validation logic beyond schema validation
+- **Custom UI** - Buttons, custom controls, or complex interactions
+- **Non-schema fields** - Settings not in the schema (e.g., CalDAV account modals)
+- **Conditional rendering** - Settings that appear/disappear based on other settings
+
+### Example: Acceptable Manual Setting
+
+```typescript
+// ✅ ACCEPTABLE: Dynamic dropdown with runtime-generated options
+new Setting(containerEl)
+	.setName("Default preset")
+	.setDesc("Preset to auto-fill when opening the create event modal")
+	.addDropdown((dropdown) => {
+		dropdown.addOption("", "None");
+		const presets = settings.eventPresets || [];
+		for (const preset of presets) {
+			dropdown.addOption(preset.id, preset.name);
+		}
+		dropdown.setValue(settings.defaultPresetId || "");
+		dropdown.onChange(async (value) => {
+			await this.settingsStore.updateSettings((s) => ({
+				...s,
+				defaultPresetId: value || undefined,
+			}));
+		});
+	});
+```
+
+## **Benefits of SettingsUIBuilder**
+
+- **Less boilerplate** - No manual onChange handlers or value management
+- **Type safety** - Automatically typed based on schema
+- **Consistency** - Uniform behavior across all settings
+- **Maintainability** - Changes to schema automatically reflected
+- **Cleaner code** - Less repetitive code
+
+**Remember**: SettingsUIBuilder is cleaner, simpler, and more maintainable. Use it whenever possible.
