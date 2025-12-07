@@ -39,6 +39,7 @@ export class CalendarBundle {
 	private caldavSyncServices: Map<string, CalDAVSyncService> = new Map();
 	private autoSyncIntervals: Map<string, number> = new Map();
 	private syncPromises: Map<string, Promise<void>> = new Map();
+	private ribbonIconEl: HTMLElement | null = null;
 
 	constructor(
 		private plugin: CustomCalendarPlugin,
@@ -71,6 +72,10 @@ export class CalendarBundle {
 
 		this.mainSettingsStore.settings$.subscribe(() => {
 			this.startAutoSync();
+		});
+
+		this.settingsStore.settings$.subscribe((settings) => {
+			this.updateRibbonIcon(settings.showRibbonIcon);
 		});
 	}
 
@@ -115,7 +120,20 @@ export class CalendarBundle {
 			}
 
 			this.startAutoSync();
+
+			this.updateRibbonIcon(this.settingsStore.currentSettings.showRibbonIcon);
 		})();
+	}
+
+	private updateRibbonIcon(show: boolean): void {
+		if (show && !this.ribbonIconEl) {
+			this.ribbonIconEl = this.plugin.addRibbonIcon("calendar-days", this.settingsStore.currentSettings.name, () => {
+				void this.activateCalendarView();
+			});
+		} else if (!show && this.ribbonIconEl) {
+			this.ribbonIconEl.remove();
+			this.ribbonIconEl = null;
+		}
 	}
 
 	async activateCalendarView(): Promise<void> {
@@ -206,6 +224,11 @@ export class CalendarBundle {
 		// Don't detach leaves here - Obsidian handles that automatically during plugin updates
 		// Detaching in onunload causes leaves to reset to their original positions
 		// See: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60
+
+		if (this.ribbonIconEl) {
+			this.ribbonIconEl.remove();
+			this.ribbonIconEl = null;
+		}
 
 		this.stopAutoSync();
 		for (const syncService of this.caldavSyncServices.values()) {

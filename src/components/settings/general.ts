@@ -43,6 +43,12 @@ export class GeneralSettings {
 			desc: "Path to Templater template file for new events (optional, requires Templater plugin)",
 			placeholder: "e.g., Templates/event-template.md",
 		});
+
+		this.ui.addToggle(containerEl, {
+			key: "showRibbonIcon",
+			name: "Show ribbon icon",
+			desc: "Display a calendar icon in the left sidebar to quickly open this calendar",
+		});
 	}
 
 	private addParsingSettings(containerEl: HTMLElement): void {
