@@ -171,3 +171,6 @@ To fix this and see the times exactly as they are written in your files, you nee
 3. Set the **Timezone** option to `UTC`.
 
 Now, the calendar will interpret and display all times in UTC, matching what's in your notes.
+
+**Can I use Prisma Calendar with Templater?**
+Yes. Configure your template path in both Templater (folder template) AND Prisma Calendar settings (General → Template path) to ensure templates apply consistently whether you create events through the calendar or manually. See [Troubleshooting - Templater Integration](troubleshooting.md#templater-integration).

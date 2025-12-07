@@ -135,3 +135,28 @@ Calendar "Schedule":       Directory: schedule/
 ```
 
 **Alternative**: If events truly belong in the same directory, standardize on one set of property names and use that across all calendars viewing that directory.
+
+## Templater integration
+
+### Templates not applying to Prisma-created events
+
+**Problem**: Templater folder templates work for manually created notes, but not for events created through Prisma Calendar.
+
+**Root Cause**: Prisma creates files programmatically, which can bypass Templater's folder trigger or cause race conditions.
+
+**Solution**: Configure templates in BOTH places:
+
+1. **Templater Settings**: Set up your folder template as usual
+2. **Prisma Calendar Settings**: Go to `General` → `Template path` and set the same template file
+
+This ensures the template is applied atomically when Prisma creates the event file.
+
+### Inconsistent date properties for sorting
+
+**Problem**: Events have different property names (`Start Date` for timed events, `Date` for all-day events) and formats (`2025-02-10T14:00:00.000Z` vs `2025-02-10T14:00:00`), making it impossible to sort chronologically in other tools like Bases or Dataview.
+
+**Root Cause**: Prisma uses different properties based on event type, and ISO format includes `.000Z` suffix depending on timezone settings.
+
+**Solution**: Create a "watcher" script that normalizes dates into a dedicated sort property.
+
+**Result**: Consistent `sort_date` property across all events for reliable chronological sorting in Bases, Dataview, or other tools.
