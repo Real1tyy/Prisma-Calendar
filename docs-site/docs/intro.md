@@ -73,6 +73,28 @@ Built for power users and workflow optimization enthusiasts, Prisma Calendar del
 
 ---
 
+## **Getting Started: Opening Your Calendar**
+
+After installing Prisma Calendar, you can open your calendar in two ways:
+
+### Ribbon Icon (Default)
+
+By default, each calendar adds a calendar icon to the left sidebar. Simply click it to open the calendar.
+
+### Command Palette
+
+1. Press `Ctrl/Cmd + P` to open Obsidian's command palette
+2. Type: `Prisma Calendar: Open [Calendar Name]`
+3. Press Enter
+
+- **Hide ribbon icons** - Go to Settings → Prisma Calendar → select calendar → General → disable "Show ribbon icon"
+- **Set a hotkey** - Go to Settings → Hotkeys → search "Prisma Calendar: Open" → assign your preferred shortcut (e.g., `Ctrl + Shift + C`)
+- **Multiple calendars** - Each calendar has its own ribbon icon and command
+
+All Prisma Calendar commands start with `Prisma Calendar:` to make them easy to find in the command palette.
+
+---
+
 ## 📸 **Screenshots**
 
 ### Full Calendar View

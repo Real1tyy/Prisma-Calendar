@@ -15,6 +15,28 @@ Community contributions help us continuously improve the documentation and keep 
 
 ---
 
+## Getting Started
+
+**How do I open the calendar view?**
+
+By default, each calendar adds a **calendar icon to the left sidebar** (ribbon). Click it to open.
+
+**Alternative methods:**
+1. Press `Ctrl/Cmd + P` to open the command palette
+2. Type: `Prisma Calendar: Open [Calendar Name]`
+3. Press Enter
+
+**Pro tips:**
+- **Hide ribbon icons** - Go to `Settings` → `Prisma Calendar` → select calendar → `General` → disable "Show ribbon icon"
+- **Set a hotkey** - Go to `Settings` → `Hotkeys` → search `Prisma Calendar: Open` → assign your preferred shortcut (e.g., `Ctrl/Cmd + Shift + C`)
+- **Multiple calendars** - Each calendar has its own ribbon icon and command
+
+All Prisma Calendar commands start with `Prisma Calendar:` to make them easy to find in the command palette.
+
+---
+
+## General Questions
+
 **Can I use multiple calendars at once?**
 Yes. Calendars can use separate directories for full isolation, or share the same directory for different visual perspectives of the same events.
 

@@ -2,6 +2,25 @@
 
 Use this checklist to diagnose common issues.
 
+## Can't find the calendar ribbon icon
+
+**Problem**: After installing and enabling Prisma Calendar, there's no calendar icon in the left sidebar.
+
+**Solution**: Check if the ribbon icon setting is enabled:
+
+1. Go to `Settings` → `Prisma Calendar`
+2. Select your calendar from the dropdown
+3. Go to `General` tab
+4. Enable `Show ribbon icon`
+
+**Alternative**: Open the calendar using Obsidian's command palette:
+
+1. Press `Ctrl/Cmd + P` to open the command palette
+2. Type: `Prisma Calendar: Open [Calendar Name]`
+3. Press Enter
+
+**Tip**: Set a custom hotkey for quick access (Settings → Hotkeys → search "Prisma Calendar: Open").
+
 ## Events not appearing
 
 - Plugin enabled and vault reloaded

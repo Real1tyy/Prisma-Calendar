@@ -81,6 +81,27 @@ We'll update this page as soon as the plugin is available in the store!
 - Obsidian 1.5+
 - For templating features, install the Templater plugin
 
+## Opening Your Calendar
+
+After installation, you can open your calendar in two ways:
+
+### Ribbon Icon (Default)
+
+By default, each calendar adds a **calendar icon to the left sidebar**. Simply click it to open the calendar.
+
+### Command Palette
+
+1. **Open command palette**
+   - Press `Ctrl/Cmd + P` (or `Ctrl + E` on some systems)
+   - This opens Obsidian's command search
+
+2. **Find the calendar command**
+   - Type: `Prisma Calendar: Open`
+   - Select `Prisma Calendar: Open [Calendar Name]`
+   - Press Enter to open the calendar view
+
+**Note for Obsidian beginners:** Obsidian plugins can add ribbon icons (left sidebar), commands (command palette), or both. Prisma Calendar provides both options for maximum flexibility.
+
 ## First-time setup checklist
 
 - Create or pick a folder for your calendar notes (e.g., `Calendar/`)
@@ -88,6 +109,7 @@ We'll update this page as soon as the plugin is available in the store!
 - Open Settings → Prisma Calendar and choose your Active Calendar
 - Set Directory to your chosen folder
 - Review frontmatter property names (Start/End/AllDay/Title) and adjust if you already use different keys
+- **Open the calendar** using the command palette (`Ctrl/Cmd + P` → `Prisma Calendar: Open [Calendar Name]`)
 
 ### Optional: Minimal Templater template
 

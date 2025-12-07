@@ -17,11 +17,15 @@ AllDay: false
 Remember insurance card.
 ```
 
-6. Open the Prisma Calendar view:
-- Hover to preview notes (if enabled)
-- Click to open the underlying file
-- Drag to move/resize; snap respects your Snap duration (Settings → UI Settings)
-- Batch-select to duplicate/delete or move/clone to next week
+6. **Open your calendar:**
+   - Click the calendar icon in the left sidebar (default), or
+   - Press `Ctrl/Cmd + P` → type `Prisma Calendar: Open [Calendar Name]` → Enter
+
+7. Interact with events:
+   - Hover to preview notes (if enabled)
+   - Click to open the underlying file
+   - Drag to move/resize; snap respects your Snap duration (Settings → UI Settings)
+   - Batch-select to duplicate/delete or move/clone to next week
 
 ### Recurring example
 

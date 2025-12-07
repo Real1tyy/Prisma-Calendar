@@ -1,6 +1,21 @@
 # Hotkeys
 
-Prisma Calendar provides a comprehensive set of hotkeys to streamline your workflow. You can assign custom key combinations to these actions in Obsidian’s settings under `Settings` → `Hotkeys`.
+Prisma Calendar provides a comprehensive set of hotkeys to streamline your workflow. You can assign custom key combinations to these actions in Obsidian's settings under `Settings` → `Hotkeys`.
+
+## Opening Your Calendar
+
+Before using any hotkeys, you need to access your calendar. **Prisma Calendar is accessed through Obsidian commands, not visible buttons:**
+
+1. Press `Ctrl/Cmd + P` to open the command palette
+2. Type: `Prisma Calendar: Open [Calendar Name]`
+3. Press Enter
+
+**Highly Recommended:** Assign a custom hotkey to this command (e.g., `Ctrl/Cmd + Shift + C`) for instant calendar access:
+- Go to `Settings` → `Hotkeys`
+- Search for `Prisma Calendar: Open`
+- Click the + icon and press your desired key combination
+
+Each calendar has its own open command, so you can assign different hotkeys to different calendars.
 
 ## Hotkey System Overview
 
