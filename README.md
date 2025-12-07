@@ -214,8 +214,7 @@ Select multiple events and perform bulk actions: **clone, move, skip, delete, or
 
 If you find Prisma Calendar useful and want to support its ongoing development, please consider becoming a sponsor. Your contribution helps ensure continuous maintenance, bug fixes, and the introduction of new features.
 
--   [Sponsor on GitHub](https://github.com/sponsors/Real1tyy)
--   [Buy Me a Coffee](https://www.buymeacoffee.com/real1ty)
+-   [Support My Work](https://github.com/Real1tyy#-support-my-work)
 
 Every contribution, no matter the size, is greatly appreciated!
 

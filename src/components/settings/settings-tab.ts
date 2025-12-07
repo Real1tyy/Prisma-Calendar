@@ -56,7 +56,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		footerEl.createEl("a", {
 			text: "Support prisma calendar development",
-			href: "https://github.com/sponsors/Real1tyy",
+			href: "https://github.com/Real1tyy#-support-my-work",
 			cls: cls("settings-support-link"),
 		});
 	}
