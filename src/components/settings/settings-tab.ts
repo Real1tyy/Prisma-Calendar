@@ -54,7 +54,21 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		const footerEl = containerEl.createDiv({ cls: `setting-item ${cls("settings-footer")}` });
 
-		footerEl.createEl("a", {
+		const linksContainer = footerEl.createDiv(cls("settings-footer-links"));
+
+		linksContainer.createEl("a", {
+			text: "Documentation",
+			href: "https://real1tyy.github.io/Prisma-Calendar/",
+			cls: cls("settings-support-link"),
+		});
+
+		linksContainer.createEl("a", {
+			text: "Changelog",
+			href: "https://real1tyy.github.io/Prisma-Calendar/changelog",
+			cls: cls("settings-support-link"),
+		});
+
+		linksContainer.createEl("a", {
 			text: "Support prisma calendar development",
 			href: "https://github.com/Real1tyy#-support-my-work",
 			cls: cls("settings-support-link"),

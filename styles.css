@@ -1974,6 +1974,13 @@
 	color: var(--text-faint);
 }
 
+.prisma-settings-footer-links {
+	display: flex;
+	justify-content: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
 .prisma-settings-support-link {
 	text-decoration: none;
 	color: var(--text-accent);
