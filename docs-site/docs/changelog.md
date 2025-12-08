@@ -14,6 +14,7 @@ All notable changes to this project will be documented here.
 
 - Color indicator dots now appear inline with the day number on the same row, preventing layout shifts and ensuring the day number always remains visible.
 - **Fixed Undo/Redo for Renamed Events**: File renames that occur when moving physical recurring events are now properly tracked in the undo/redo system. Undoing a move operation now correctly restores both the event date and the original filename.
+- **Fixed Past Event Contrast for All-Day Events**: All-day events on the current day are no longer dimmed by the past event contrast setting. Only all-day events from previous days are affected by the contrast setting, while timed events continue to use time-based comparison.
 
 ---
 

@@ -858,7 +858,19 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				const eventEnd = arg.event.end || arg.event.start;
 				if (!eventEnd) return [];
 
-				const isPast = eventEnd < now;
+				const isAllDay = arg.event.allDay;
+				let isPast: boolean;
+
+				if (isAllDay) {
+					// For all-day events, compare dates only (not times)
+					// An all-day event is past only if its date is before today
+					const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+					const eventDate = new Date(eventEnd.getFullYear(), eventEnd.getMonth(), eventEnd.getDate());
+					isPast = eventDate < today;
+				} else {
+					// For timed events, check if end time is before now
+					isPast = eventEnd < now;
+				}
 
 				const classes = [];
 				if (isPast) {
@@ -1450,8 +1462,22 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		// Set opacity CSS variable for past events
 		const now = new Date();
-		const eventEnd = event.end || event.start;
-		const isPast = eventEnd !== null && eventEnd < now;
+		const eventStart = event.start;
+		const eventEnd = event.end || eventStart;
+		let isPast: boolean;
+
+		if (eventEnd === null) {
+			isPast = false;
+		} else if (event.allDay) {
+			// For all-day events, compare dates only (not times)
+			// An all-day event is past only if its date is before today
+			const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+			const eventDate = new Date(eventEnd.getFullYear(), eventEnd.getMonth(), eventEnd.getDate());
+			isPast = eventDate < today;
+		} else {
+			// For timed events, check if end time is before now
+			isPast = eventEnd < now;
+		}
 
 		if (isPast) {
 			const contrast = this.bundle.settingsStore.currentSettings.pastEventContrast;
