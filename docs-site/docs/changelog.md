@@ -12,6 +12,7 @@ All notable changes to this project will be documented here.
 
 ### Improvements
 
+- **Improved Overlapping Event Appearance**: Overlapping events now look much better—the date/time and title are both clearly readable even when events are stacked or space is tight. The event header layout has been redesigned so the date always appears first, followed by the title, both wrapping inline as needed to fully utilize available space and prevent important details from being cut off.
 - Color indicator dots now appear inline with the day number on the same row, preventing layout shifts and ensuring the day number always remains visible.
 - **Fixed Undo/Redo for Renamed Events**: File renames that occur when moving physical recurring events are now properly tracked in the undo/redo system. Undoing a move operation now correctly restores both the event date and the original filename.
 - **Fixed Past Event Contrast for All-Day Events**: All-day events on the current day are no longer dimmed by the past event contrast setting. Only all-day events from previous days are affected by the contrast setting, while timed events continue to use time-based comparison.

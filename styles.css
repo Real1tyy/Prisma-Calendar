@@ -211,24 +211,26 @@
 
 /* --- Header: time + title --- */
 .prisma-fc-event-header {
-	display: flex;
-	align-items: center;
-	gap: 6px;
+	display: block;
 	line-height: 1.2;
-	min-width: 0; /* enable truncation */
+	word-break: break-word;
+	overflow-wrap: break-word;
+	width: 100%;
 }
 
 /* Time as a pill — same weight as title but visually distinct */
 .prisma-fc-event-time {
-	margin: 0; /* remove margins/divider remnants */
+	margin: 0 6px 0 0;
 	padding: 2px 6px;
 	border: 0;
 	border-radius: 6px;
 	font-weight: 600;
 	color: white;
-	background: rgba(255, 255, 255, 0.16); /* translucent pill on colored event bg */
-	white-space: nowrap;
-	flex: 0 0 auto;
+	background: rgba(255, 255, 255, 0.16);
+	display: inline-block;
+	word-break: break-word;
+	overflow-wrap: break-word;
+	white-space: normal;
 }
 
 /* Title, bold, wraps to multiple lines */
@@ -238,9 +240,8 @@
 	border: 0;
 	font-weight: 600;
 	color: white;
-	flex: 1 1 auto;
-	min-width: 0;
-	word-wrap: break-word;
+	display: inline;
+	word-break: break-word;
 	overflow-wrap: break-word;
 	line-height: 1.3;
 }
@@ -347,17 +348,20 @@
 }
 
 .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-header {
-	gap: 4px;
 	overflow: visible;
 	white-space: normal;
-	display: flex;
-	align-items: flex-start;
-	flex-wrap: wrap;
+	display: block;
+	word-break: break-word;
+	overflow-wrap: break-word;
+	width: 100%;
 }
 
 .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-time {
 	font-size: var(--font-ui-smaller);
-	flex-shrink: 0;
+	display: inline-block;
+	white-space: normal;
+	word-break: break-word;
+	overflow-wrap: break-word;
 }
 
 .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-title-custom {
@@ -367,8 +371,7 @@
 	white-space: normal;
 	word-wrap: break-word;
 	word-break: break-word;
-	flex: 1;
-	min-width: 0;
+	display: inline;
 }
 
 /* Hide properties in month view to save space */
