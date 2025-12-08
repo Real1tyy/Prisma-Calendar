@@ -408,10 +408,10 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				// For daily all-day events, should preserve all-day status
 				expect(frontmatter["All Day"]).toBe(true);
-				// All-day events should use Date property, not Start Date
+				// All-day events should use Date property, Start Date and End Date should be empty strings
 				expect(frontmatter.Date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-				expect(frontmatter["Start Date"]).toBeUndefined();
-				expect(frontmatter["End Date"]).toBeUndefined();
+				expect(frontmatter["Start Date"]).toBe("");
+				expect(frontmatter["End Date"]).toBe("");
 			});
 
 			it("should create timed daily instances with correct time extraction", async () => {
@@ -600,10 +600,10 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				// For monthly all-day events, should inherit the day (15th) and be all-day
 				expect(frontmatter["All Day"]).toBe(true);
-				// All-day events should use Date property, not Start Date
+				// All-day events should use Date property, Start Date and End Date should be empty strings
 				expect(frontmatter.Date).toMatch(/^\d{4}-\d{2}-15$/); // Should be 15th day of the month
-				expect(frontmatter["Start Date"]).toBeUndefined();
-				expect(frontmatter["End Date"]).toBeUndefined();
+				expect(frontmatter["Start Date"]).toBe("");
+				expect(frontmatter["End Date"]).toBe("");
 			});
 
 			it("should create monthly timed instances inheriting day and time", async () => {
@@ -696,10 +696,10 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				// For yearly all-day events, should inherit month (06) and day (20)
 				expect(frontmatter["All Day"]).toBe(true);
-				// All-day events should use Date property, not Start Date
+				// All-day events should use Date property, Start Date and End Date should be empty strings
 				expect(frontmatter.Date).toMatch(/-06-20$/); // Should be June 20th
-				expect(frontmatter["Start Date"]).toBeUndefined();
-				expect(frontmatter["End Date"]).toBeUndefined();
+				expect(frontmatter["Start Date"]).toBe("");
+				expect(frontmatter["End Date"]).toBe("");
 			});
 
 			it("should create yearly timed instances inheriting day, month and time", async () => {

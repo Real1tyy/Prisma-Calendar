@@ -6,6 +6,8 @@ import {
 	parseICSContent,
 } from "../../src/core/integrations/ics-import";
 import type { ParsedEvent } from "../../src/core/parser";
+import type { SingleCalendarConfig } from "../../src/types/settings";
+import { createMockSingleCalendarSettings } from "../setup";
 
 const SAMPLE_ICS_SINGLE_EVENT = `BEGIN:VCALENDAR
 VERSION:2.0
@@ -524,7 +526,8 @@ END:VCALENDAR`;
 	});
 
 	describe("timezone conversion on import", () => {
-		const defaultSettings = {
+		const defaultSettings: SingleCalendarConfig = {
+			...createMockSingleCalendarSettings(),
 			startProp: "Start Date",
 			endProp: "End Date",
 			dateProp: "Date",

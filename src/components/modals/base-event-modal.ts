@@ -4,7 +4,7 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import { type FormData, MinimizedModalManager, type MinimizedModalState } from "../../core/minimized-modal-manager";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
-import { findAdjacentEvent } from "../../utils/calendar-events";
+import { findAdjacentEvent, setEventBasics } from "../../utils/calendar-events";
 import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
 import {
 	calculateDurationMinutes,
@@ -994,31 +994,23 @@ export abstract class BaseEventModal extends Modal {
 			preservedFrontmatter[settings.titleProp] = this.titleInput.value;
 		}
 
-		preservedFrontmatter[settings.allDayProp] = this.allDayCheckbox.checked;
-
 		let start: string | null;
 		let end: string | null;
 
 		if (this.allDayCheckbox.checked) {
-			// ALL-DAY EVENT: Use dateProp, clear startProp/endProp
-			preservedFrontmatter[settings.dateProp] = this.dateInput.value;
-			delete preservedFrontmatter[settings.startProp];
-			delete preservedFrontmatter[settings.endProp];
-
 			// For FullCalendar compatibility, we still return ISO strings
 			start = `${this.dateInput.value}T00:00:00`;
 			end = `${this.dateInput.value}T23:59:59`;
 		} else {
-			// TIMED EVENT: Use startProp/endProp, clear dateProp
 			start = inputValueToISOString(this.startInput.value);
 			end = this.endInput.value ? inputValueToISOString(this.endInput.value) : null;
-
-			preservedFrontmatter[settings.startProp] = start;
-			if (end) {
-				preservedFrontmatter[settings.endProp] = end;
-			}
-			delete preservedFrontmatter[settings.dateProp];
 		}
+		setEventBasics(preservedFrontmatter, settings, {
+			title: this.titleInput.value,
+			start: start!,
+			end: end ?? undefined,
+			allDay: this.allDayCheckbox.checked,
+		});
 
 		// Handle category property (supports multiple comma-separated categories)
 		if (settings.categoryProp && this.categoryInput) {

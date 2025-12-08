@@ -12,7 +12,7 @@ import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import type { NodeRecurringEvent } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
-import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/calendar-events";
+import { hashRRuleIdToZettelFormat, removeZettelId, setEventBasics } from "../utils/calendar-events";
 import { getNextOccurrence } from "../utils/date-recurrence";
 import { applySourceTimeToInstanceDate } from "../utils/format";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
@@ -422,14 +422,14 @@ export class RecurringEventManager extends DebouncedNotifier {
 				instanceFrontmatter[this.settings.allDayProp] = recurringEvent.rrules.allDay;
 			}
 
-			// Use appropriate date properties based on all-day status
-			if (recurringEvent.rrules.allDay) {
-				instanceFrontmatter[this.settings.dateProp] = instanceStart.toISODate();
-			} else {
-				instanceFrontmatter[this.settings.startProp] = instanceStart.toUTC().toISO();
-				if (instanceEnd) {
-					instanceFrontmatter[this.settings.endProp] = instanceEnd.toUTC().toISO();
-				}
+			const instanceStartISO = instanceStart.toUTC().toISO();
+			const instanceEndISO = instanceEnd ? (instanceEnd.toUTC().toISO() ?? undefined) : undefined;
+			if (instanceStartISO) {
+				setEventBasics(instanceFrontmatter, this.settings, {
+					start: instanceStartISO,
+					end: instanceEndISO,
+					allDay: recurringEvent.rrules.allDay,
+				});
 			}
 
 			await this.templateService.createFile({

@@ -45,17 +45,17 @@ export const setEventBasics = (
 
 	if (data.allDay !== undefined) fm[allDayProp] = data.allDay;
 
+	const dateOnly = data.start.split("T")[0];
+
 	if (data.allDay) {
-		// ALL-DAY EVENT: Use dateProp, clear startProp/endProp
-		const dateOnly = data.start.split("T")[0];
 		fm[dateProp] = dateOnly;
-		delete fm[startProp];
-		delete fm[endProp];
+		fm[startProp] = "";
+		fm[endProp] = "";
 	} else {
-		// TIMED EVENT: Use startProp/endProp, clear dateProp
+		// TIMED EVENT: Set startProp/endProp, keep dateProp as empty string
 		fm[startProp] = data.start;
 		if (data.end) fm[endProp] = data.end;
-		delete fm[dateProp];
+		fm[dateProp] = "";
 	}
 
 	if (zettelIdProp && data.zettelId) fm[zettelIdProp] = data.zettelId;

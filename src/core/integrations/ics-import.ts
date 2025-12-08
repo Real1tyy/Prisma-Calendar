@@ -2,7 +2,8 @@ import { getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from 
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
 import { type App, Notice, type TFile } from "obsidian";
-import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/calendar-events";
+import type { SingleCalendarConfig } from "../../types";
+import { extractZettelId, generateUniqueEventPath, removeZettelId, setEventBasics } from "../../utils/calendar-events";
 import { parseIntoList } from "../../utils/list-utils";
 import { ensureFolderExists } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -231,21 +232,24 @@ function dateToTimezoneDate(date: Date, timezone: string): string {
 
 export function buildFrontmatterFromImportedEvent(
 	event: ImportedEvent,
-	settings: ImportFrontmatterSettings,
+	settings: SingleCalendarConfig,
 	timezone: string = "UTC"
 ): Record<string, unknown> {
 	const fm: Record<string, unknown> = { ...event.frontmatter };
 
-	if (settings.titleProp) {
-		fm[settings.titleProp] = event.title;
-	}
+	const startISO = event.allDay
+		? `${dateToTimezoneDate(event.start, timezone)}T00:00:00`
+		: dateToTimezoneISO(event.start, timezone);
+	const endISO = event.end ? dateToTimezoneISO(event.end, timezone) : undefined;
+
+	setEventBasics(fm, settings, {
+		title: event.title,
+		start: startISO,
+		end: endISO,
+		allDay: event.allDay,
+	});
 
 	if (event.allDay) {
-		fm[settings.allDayProp] = true;
-		fm[settings.dateProp] = dateToTimezoneDate(event.start, timezone);
-		delete fm[settings.startProp];
-		delete fm[settings.endProp];
-
 		if (event.reminderMinutes !== undefined) {
 			const days = Math.round(event.reminderMinutes / (24 * 60));
 			if (days > 0) {
@@ -253,13 +257,6 @@ export function buildFrontmatterFromImportedEvent(
 			}
 		}
 	} else {
-		fm[settings.startProp] = dateToTimezoneISO(event.start, timezone);
-		if (event.end) {
-			fm[settings.endProp] = dateToTimezoneISO(event.end, timezone);
-		}
-		delete fm[settings.dateProp];
-		delete fm[settings.allDayProp];
-
 		if (event.reminderMinutes !== undefined) {
 			fm[settings.minutesBeforeProp] = event.reminderMinutes;
 		}
