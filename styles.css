@@ -125,6 +125,18 @@
 	background-color: var(--background-modifier-hover);
 }
 
+.prisma-calendar-container .fc-daygrid-day-top {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	min-width: 0;
+}
+
+/* Day number - fixed, never shrinks */
+.prisma-calendar-container .fc-daygrid-day-number {
+	flex-shrink: 0;
+}
+
 .prisma-calendar-container .fc-day-today {
 	background-color: var(--background-modifier-form-field);
 }
@@ -936,11 +948,14 @@
 /* Color Indicator Dots - Shows event colors at the top of each day cell (monthly view) */
 .prisma-day-color-dots {
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	gap: 4px;
-	padding: 3px 6px;
-	justify-content: center;
-	max-width: 100%;
+	padding: 0;
+	padding-left: 4px;
+	flex: 1;
+	min-width: 0;
+	align-items: center;
+	overflow: hidden;
 }
 
 .prisma-day-color-dot {

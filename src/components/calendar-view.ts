@@ -1328,10 +1328,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				dotsContainer.appendChild(dot);
 			}
 
-			// Insert at top of day cell
-			const dayFrame = dayCell.querySelector(".fc-daygrid-day-frame");
-			if (dayFrame) {
-				dayFrame.insertBefore(dotsContainer, dayFrame.firstChild);
+			const dayTop = dayCell.querySelector(".fc-daygrid-day-top");
+			if (dayTop) {
+				dayTop.appendChild(dotsContainer);
 			}
 		}
 	}
