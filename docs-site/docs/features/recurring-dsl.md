@@ -357,6 +357,21 @@ This distinction ensures that normal recurring instances maintain their original
 
 **Note**: The `Recurring Instance Date` property name can be customized in Settings → Properties → "Instance date property".
 
+### Disabling and Deleting Recurring Events
+
+When you disable a recurring event or delete a source recurring event that has physical instances, a confirmation modal appears asking whether to delete all associated physical events.
+
+**When the modal appears:**
+- **Disabling a recurring event**: Right-click any recurring event (source, physical, or virtual) and select "Disable recurring event"
+- **Deleting a source recurring event**: Right-click the source event and select "Delete event"
+
+**Use cases:**
+- **Clean up history**: Remove all past and future physical instances when disabling or deleting a recurring event
+- **Preserve instances**: Choose "No" to keep existing physical instances while stopping future generation
+- **Complete removal**: Choose "Yes" to remove both the source event and all its physical instances
+
+**Note**: This helps maintain a clean vault by removing orphaned physical instances when you no longer need a recurring event series.
+
 ## Best Practices
 
 ### 1. Start Simple

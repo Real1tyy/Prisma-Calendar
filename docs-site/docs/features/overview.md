@@ -60,6 +60,7 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Search in list modals** - Find events in disabled/skipped event lists
 - **Complex logic** - Combine conditions with `&&`, `||`, and comparison operators
 - **Dynamic visibility** - Filter events by any frontmatter property
+- **Highlight events without categories** - Command to temporarily highlight all events missing category assignments for 10 seconds
 - **Example**: `Status !== 'Done'` to hide completed tasks
 
 ### **Statistics & Time Tracking**
@@ -117,6 +118,7 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Instance dropdown** - View all physical instances of a recurring series
 - **Past filter** - Toggle past event visibility to reduce clutter
 - **Linked navigation** - Jump between related recurring events seamlessly
+- **Confirmation modal** - When disabling or deleting recurring events with physical instances, choose whether to delete all associated physical events
 
 ### **Recurring Events Modal**
 - **View all recurring events** - Centralized modal to manage all recurring events
@@ -159,6 +161,7 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 - **Clear button** - Reset all form fields instantly with one click
 - **Drag & drop** - Move events by dragging to new time slots
 - **Resize support** - Adjust event duration by dragging edges
+- **Edge scrolling** - When dragging events, moving the cursor to the left or right edge of the calendar automatically navigates to the previous or next week, allowing easy cross-week event movement (works in week and day views with 500ms throttle)
 - **Click to open** - Open event files directly from calendar
 
 ### **Event Presets**

@@ -71,6 +71,27 @@ Project === 'Work' && Priority === 'High' && Status !== 'Done'
 4. Enter the expression (e.g., `Priority === 'High' && Status !== 'Done'`)
 5. Access from the ▼ dropdown in the calendar toolbar
 
+## Highlight Events Without Categories
+
+The **"Highlight events without categories"** command temporarily highlights all events missing category assignments, making it easy to identify which events need category assignment.
+
+**How to use:**
+- **Command**: Open command palette (Ctrl/Cmd+P) and search for "Highlight events without categories"
+- **Duration**: Events are highlighted for 10 seconds
+- **Visual feedback**: Events without categories are visually highlighted in the calendar view
+
+**Use cases:**
+- **Quick audit**: Identify events that need categorization for better statistics tracking
+- **Bulk categorization**: Find uncategorized events to assign categories in batch
+- **Data quality**: Ensure all events have categories for accurate time tracking by category
+
+**What counts as "without categories":**
+- Events with no `Category` property in frontmatter
+- Events with an empty `Category` property
+- Events where `Category` is `null` or `undefined`
+
+**Note**: The category property name is configurable in Settings → Properties → "Category property" (default: `Category`).
+
 ## How Filters Work Together
 
 All active filters are **combined with AND logic**. An event must pass all active filters to be displayed:

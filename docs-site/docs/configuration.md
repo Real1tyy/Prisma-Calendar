@@ -45,6 +45,7 @@ Tell Prisma Calendar which frontmatter keys you use.
 - Start property (required): default `Start`
 - End property (optional): default `End`
 - All-day property (optional): default `AllDay`
+- Date property (optional): default `Date`
 - Title property (optional): default to file name when missing
 - Timezone property (optional): default `Timezone`
 - ZettelID property (optional): when set, a timestamp-based ID is generated on creation/cloning (see [ZettelID Naming System](./features/zettelid-naming) for details)
@@ -93,6 +94,45 @@ Ignore Recurring: true
 ⚠️ **WARNING: Do Not Manually Modify This Property**
 
 The `Ignore Recurring` property is automatically managed by the system when you use the "Duplicate recurring instance" feature. Never manually add, change, or remove this property—doing so may break the recurring event generation logic.
+
+### Always Include Date and Time Properties
+
+Prisma Calendar automatically ensures that both date and time properties are always present in event frontmatter, regardless of whether the event is all-day or timed. This makes it easy to convert between all-day and timed events by manually editing the frontmatter.
+
+**For all-day events:**
+- The `Date` property contains the date (e.g., `2025-02-15`)
+- The `Start` and `End` properties are empty strings
+
+**For timed events:**
+- The `Start` and `End` properties contain the full datetime (e.g., `2025-02-15T09:00:00`)
+- The `Date` property is an empty string
+
+**Benefits:**
+- **Easy conversion**: Change an all-day event to timed by adding values to `Start`/`End` and clearing `Date`
+- **Consistent structure**: All events have the same property structure, making templates and scripts easier to write
+- **No missing properties**: You can always reference `Date`, `Start`, or `End` without checking if they exist
+
+**Example - All-day event:**
+```yaml
+---
+Title: Holiday
+Date: 2025-12-25
+Start:
+End:
+AllDay: true
+---
+```
+
+**Example - Timed event:**
+```yaml
+---
+Title: Meeting
+Date:
+Start: 2025-02-15T09:00:00
+End: 2025-02-15T10:30:00
+AllDay: false
+---
+```
 
 ### Auto-mark Past Events
 

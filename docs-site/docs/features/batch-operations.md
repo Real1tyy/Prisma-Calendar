@@ -56,7 +56,6 @@ Quickly make changes to many events at once.
 3. Click "Skip"
 4. Series continues after
 
-
 ## Tips
 
 - Use "Select All Visible" to quickly grab everything on screen
