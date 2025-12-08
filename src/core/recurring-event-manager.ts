@@ -616,4 +616,27 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 		return disabledEvents;
 	}
+
+	async deleteAllPhysicalInstances(rruleId: string): Promise<void> {
+		const data = this.recurringEventsMap.get(rruleId);
+		if (!data) return;
+
+		const physicalInstances = Array.from(data.physicalInstances.values());
+
+		await Promise.all(
+			physicalInstances.map(async (instance) => {
+				try {
+					const file = this.app.vault.getAbstractFileByPath(instance.filePath);
+					if (file instanceof TFile) {
+						await this.app.fileManager.trashFile(file);
+					}
+				} catch (error) {
+					console.error(`Error deleting physical instance ${instance.filePath}:`, error);
+				}
+			})
+		);
+
+		data.physicalInstances.clear();
+		this.scheduleRefresh();
+	}
 }

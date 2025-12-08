@@ -4816,6 +4816,32 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	margin-top: 0.5rem;
 }
 
+.prisma-delete-physical-events-modal {
+	min-width: 400px;
+}
+
+.prisma-delete-physical-events-modal h2 {
+	margin-bottom: 1rem;
+	font-size: 1.2rem;
+	font-weight: 600;
+}
+
+.prisma-modal-message {
+	margin-bottom: 1.5rem;
+}
+
+.prisma-modal-message p {
+	margin: 0;
+	color: var(--text-normal);
+	line-height: 1.5;
+}
+
+.prisma-modal-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+
 /* ICS Import Modal */
 .prisma-ics-import-modal h2 {
 	margin-bottom: 1rem;

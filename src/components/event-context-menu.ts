@@ -18,7 +18,7 @@ import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-o
 import type { CalendarView } from "./calendar-view";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { RecurringEventsListModal } from "./list-modals/recurring-events-list-modal";
-import { EventEditModal } from "./modals";
+import { DeletePhysicalEventsModal, EventEditModal } from "./modals";
 import { MoveByModal } from "./move-by-modal";
 
 interface CalendarEventInfo {
@@ -449,20 +449,58 @@ export class EventContextMenu {
 		});
 	}
 
+	private async handlePhysicalInstancesIfNeeded(
+		rruleId: string | null,
+		onComplete: () => void | Promise<void>
+	): Promise<void> {
+		if (!rruleId) {
+			await onComplete();
+			return;
+		}
+
+		const physicalInstances = this.bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
+		if (physicalInstances.length > 0) {
+			new DeletePhysicalEventsModal(
+				this.app,
+				async () => {
+					await this.bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
+					await onComplete();
+				},
+				async () => {
+					await onComplete();
+				}
+			).open();
+		} else {
+			await onComplete();
+		}
+	}
+
 	async deleteEvent(event: CalendarEventInfo): Promise<void> {
 		await this.withFilePath(event, "delete event", async (filePath) => {
-			await this.runCommand(() => new DeleteEventCommand(this.app, this.bundle, filePath), {
-				success: "Event deleted successfully",
-				error: "Failed to delete event",
+			const kind = this.getEventKind(event);
+			const isSourceRecurring = kind === "source";
+			const rruleId = isSourceRecurring ? this.getRRuleId(event) : null;
+
+			await this.handlePhysicalInstancesIfNeeded(rruleId, async () => {
+				await this.runCommand(() => new DeleteEventCommand(this.app, this.bundle, filePath), {
+					success: "Event deleted successfully",
+					error: "Failed to delete event",
+				});
 			});
 		});
 	}
 
 	async toggleRecurringEvent(event: CalendarEventInfo): Promise<void> {
 		await this.withSourceFilePath(event, "toggle recurring event", async (sourceFilePath) => {
-			await this.runCommand(() => new ToggleSkipCommand(this.app, this.bundle, sourceFilePath), {
-				success: "Recurring event toggled",
-				error: "Failed to toggle recurring event",
+			const isCurrentlyDisabled = this.isSourceEventDisabled(event);
+			const willBeDisabled = !isCurrentlyDisabled;
+			const rruleId = willBeDisabled ? this.getRRuleId(event) : null;
+
+			await this.handlePhysicalInstancesIfNeeded(rruleId, async () => {
+				await this.runCommand(() => new ToggleSkipCommand(this.app, this.bundle, sourceFilePath), {
+					success: "Recurring event toggled",
+					error: "Failed to toggle recurring event",
+				});
 			});
 		});
 	}
