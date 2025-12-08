@@ -1679,6 +1679,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			// Only handle arrow keys without any modifiers
 			if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
 
+			// Check if keyboard navigation is enabled
+			const settings = this.bundle.settingsStore.currentSettings;
+			if (!settings.enableKeyboardNavigation) return;
+
+			// Don't navigate if any filter input is focused
+			if (this.searchFilter.isFocused() || this.expressionFilter.isFocused()) return;
+
 			if (e.key === "ArrowLeft") {
 				e.preventDefault();
 				this.calendar.prev();

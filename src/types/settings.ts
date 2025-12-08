@@ -34,6 +34,7 @@ export const GeneralSettingsSchema = z.object({
 	eventPresets: z.array(EventPresetSchema).default([]), // Event creation presets with pre-filled values
 	defaultPresetId: z.string().optional(), // ID of default preset to auto-fill on create modal open
 	exportFolder: z.string().default(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER), // folder for ICS exports
+	enableKeyboardNavigation: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_ENABLE_KEYBOARD_NAVIGATION), // enable arrow key navigation for calendar intervals
 });
 
 export const PropsSettingsSchema = z.object({

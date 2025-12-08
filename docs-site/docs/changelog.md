@@ -7,6 +7,7 @@ All notable changes to this project will be documented here.
 ### New Features
 
 - **Highlight Events Without Categories**: New command "Highlight events without categories" temporarily highlights all events missing category assignments for 10 seconds, making it easy to identify which events need category assignment.
+- **Keyboard Navigation**: Use left/right arrow keys to navigate calendar intervals, with automatic disabling when filter inputs are focused and a configurable toggle in Settings → General.
 
 ### Improvements
 

@@ -49,6 +49,12 @@ export class GeneralSettings {
 			name: "Show ribbon icon",
 			desc: "Display a calendar icon in the left sidebar to quickly open this calendar",
 		});
+
+		this.ui.addToggle(containerEl, {
+			key: "enableKeyboardNavigation",
+			name: "Enable keyboard navigation",
+			desc: "Use left/right arrow keys to navigate between calendar intervals. Automatically disabled when search or expression filter inputs are focused.",
+		});
 	}
 
 	private addParsingSettings(containerEl: HTMLElement): void {

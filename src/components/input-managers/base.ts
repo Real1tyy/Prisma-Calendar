@@ -41,6 +41,10 @@ export abstract class InputFilterManager {
 		this.input?.focus();
 	}
 
+	isFocused(): boolean {
+		return this.input === document.activeElement;
+	}
+
 	abstract shouldInclude(data: { meta?: Record<string, unknown> }): boolean;
 
 	private injectInput(container: HTMLElement): void {
