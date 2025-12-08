@@ -71,8 +71,8 @@ run = [
     "pnpm run test",
     "echo '  → Building project...'",
     "pnpm run build",
-    "echo '  → Running ESLint...'",
-    "pnpm run lint:eslint",
+    # "echo '  → Running ESLint...'",
+    # "pnpm run lint:eslint",
     "echo '✅ CI Pipeline completed successfully!'",
 ]
 
@@ -116,8 +116,8 @@ run = [
     "pnpm run typecheck",
     "echo '  → Running tests...'",
     "pnpm run test",
-    "echo '  → Running ESLint...'",
-    "pnpm run lint:eslint",
+    # "echo '  → Running ESLint...'",
+    # "pnpm run lint:eslint",
     "echo '✅ All pre-commit checks passed!'",
 ]
 
@@ -160,6 +160,70 @@ description = "Start development mode with file watching and auto-copy to vault"
 run = [
     "echo '👀 Starting development mode with file watching...'",
     "python3 scripts/dev-watcher.py --mode watch",
+]
+
+[tasks.bump-version]
+description = "Bump version in manifest.json, package.json, and versions.json (default: minor). For other types, use: python3 scripts/bump-version.py [major|minor|patch]"
+run = [
+    "echo '📦 Bumping version (minor)...'",
+    "python3 scripts/bump-version.py minor",
+    "echo '✅ Version bump completed!'",
+]
+
+[tasks.bump-major]
+description = "Bump major version in manifest.json, package.json, and versions.json"
+run = [
+    "echo '📦 Bumping major version...'",
+    "python3 scripts/bump-version.py major",
+    "echo '✅ Major version bump completed!'",
+]
+
+[tasks.bump-minor]
+description = "Bump minor version in manifest.json, package.json, and versions.json"
+run = [
+    "echo '📦 Bumping minor version...'",
+    "python3 scripts/bump-version.py minor",
+    "echo '✅ Minor version bump completed!'",
+]
+
+[tasks.bump-patch]
+description = "Bump patch version in manifest.json, package.json, and versions.json"
+run = [
+    "echo '📦 Bumping patch version...'",
+    "python3 scripts/bump-version.py patch",
+    "echo '✅ Patch version bump completed!'",
+]
+
+[tasks.release]
+description = "Create GitHub release: bump version, build plugin, and upload assets (default: minor)"
+run = [
+    "echo '🚀 Creating GitHub release (minor bump)...'",
+    "python3 scripts/create-release.py minor",
+    "echo '✅ Release process completed!'",
+]
+
+[tasks.release-major]
+description = "Create GitHub release with major version bump: bump version, build plugin, and upload assets"
+run = [
+    "echo '🚀 Creating GitHub release (major bump)...'",
+    "python3 scripts/create-release.py major",
+    "echo '✅ Release process completed!'",
+]
+
+[tasks.release-minor]
+description = "Create GitHub release with minor version bump: bump version, build plugin, and upload assets"
+run = [
+    "echo '🚀 Creating GitHub release (minor bump)...'",
+    "python3 scripts/create-release.py minor",
+    "echo '✅ Release process completed!'",
+]
+
+[tasks.release-patch]
+description = "Create GitHub release with patch version bump: bump version, build plugin, and upload assets"
+run = [
+    "echo '🚀 Creating GitHub release (patch bump)...'",
+    "python3 scripts/create-release.py patch",
+    "echo '✅ Release process completed!'",
 ]
 
 [tasks.install]

@@ -1869,7 +1869,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const leftEdge = rect.left;
 			const rightEdge = rect.right;
 
-			const now = Date.now()
+			const now = Date.now();
 			if (now - this.lastEdgeScrollTime < SCROLL_DELAY) {
 				return;
 			}
