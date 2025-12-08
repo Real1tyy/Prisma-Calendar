@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented here.
 
+## 1.11.0
+
+### New Features
+
+- **Highlight Events Without Categories**: New command "Highlight events without categories" temporarily highlights all events missing category assignments for 10 seconds, making it easy to identify which events need category assignment.
+
+### Improvements
+
+- Color indicator dots now appear inline with the day number on the same row, preventing layout shifts and ensuring the day number always remains visible.
+
+---
+
 ## 1.10.0
 
 ### New Features

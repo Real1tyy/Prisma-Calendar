@@ -159,6 +159,13 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh calendar", (view) => {
 			void view.refreshCalendar();
 		});
+		addCalendarViewCommand(
+			COMMAND_IDS.HIGHLIGHT_EVENTS_WITHOUT_CATEGORIES,
+			"Highlight events without categories",
+			(view) => {
+				view.highlightEventsWithoutCategories();
+			}
+		);
 
 		this.addCommand({
 			id: COMMAND_IDS.EXPORT_CALENDAR_ICS,

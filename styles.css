@@ -1779,6 +1779,60 @@
 	filter: brightness(1.13) saturate(1.1);
 }
 
+/* ========================================
+   EVENTS WITHOUT CATEGORIES HIGHLIGHT
+   ======================================== */
+
+.prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-without-category {
+	box-shadow:
+		0 0 16px 6px color-mix(in srgb, hsl(45, 85%, 55%) 50%, transparent),
+		0 0 30px 12px color-mix(in srgb, hsl(45, 85%, 55%) 30%, transparent),
+		0 2px 6px rgba(0, 0, 0, 0.12);
+	z-index: 9;
+	transition:
+		box-shadow 0.3s ease,
+		border-color 0.3s ease;
+	border: 2px dashed color-mix(in srgb, hsl(45, 85%, 55%) 80%, var(--background-modifier-border));
+}
+
+.prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-without-category .fc-event-main {
+	border: 2px dashed color-mix(in srgb, hsl(45, 85%, 55%) 70%, var(--background-modifier-border));
+	border-radius: var(--radius-s);
+}
+
+.prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-without-category:hover {
+	box-shadow:
+		0 0 20px 8px color-mix(in srgb, hsl(45, 85%, 55%) 55%, transparent),
+		0 0 36px 14px color-mix(in srgb, hsl(45, 85%, 55%) 35%, transparent),
+		0 4px 10px rgba(0, 0, 0, 0.15);
+	border-color: color-mix(in srgb, hsl(45, 85%, 55%) 90%, var(--background-modifier-border));
+}
+
+.prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-without-category {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, hsl(45, 85%, 55%) 15%, var(--background-primary)) 0%,
+		color-mix(in srgb, hsl(45, 85%, 55%) 8%, var(--background-primary)) 100%
+	);
+	border-left: 4px dashed color-mix(in srgb, hsl(45, 85%, 55%) 75%, var(--background-modifier-border));
+	box-shadow:
+		0 0 12px 5px color-mix(in srgb, hsl(45, 85%, 55%) 30%, transparent),
+		0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease;
+}
+
+.prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-without-category:hover {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, hsl(45, 85%, 55%) 18%, var(--background-primary)) 0%,
+		color-mix(in srgb, hsl(45, 85%, 55%) 10%, var(--background-primary)) 100%
+	);
+	border-left: 4px dashed color-mix(in srgb, hsl(45, 85%, 55%) 85%, var(--background-modifier-border));
+	box-shadow:
+		0 0 16px 7px color-mix(in srgb, hsl(45, 85%, 55%) 35%, transparent),
+		0 3px 6px rgba(0, 0, 0, 0.12);
+}
+
 @keyframes prisma-event-highlight-pulse-list {
 	0% {
 		background: var(--background-primary);
