@@ -12,20 +12,13 @@ import {
 	isNotEmpty,
 	type PropertyRendererConfig,
 	renderPropertyValue,
-	withFrontmatter,
 } from "@real1ty-obsidian-plugins/utils";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
 import type { ParsedEvent } from "../core/parser";
 import type { SingleCalendarConfig } from "../types/index";
-import {
-	isPhysicalRecurringEvent,
-	rebuildPhysicalInstanceWithNewDate,
-	removeInstanceDate,
-	removeZettelId,
-	shouldUpdateInstanceDateOnMove,
-} from "../utils/calendar-events";
+import { removeInstanceDate, removeZettelId } from "../utils/calendar-events";
 import { toggleEventHighlight } from "../utils/dom-utils";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
 import { parseIntoList } from "../utils/list-utils";
@@ -1581,52 +1574,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			);
 
 			await this.bundle.commandManager.executeCommand(command);
-			await this.handlePhysicalRecurringEventRename(filePath, info.event.start, info.oldEvent.start);
 		} catch (error) {
 			console.error(errorMessage, error);
 			info.revert();
 		}
-	}
-
-	/**
-	 * Renames physical recurring event files when dropped to a new date.
-	 *
-	 * Behavior:
-	 * - Normal physical recurring events: Only rename file, keep instance date unchanged
-	 * - Ignored/duplicated events (ignoreRecurring=true): Rename file AND update instance date
-	 */
-	private async handlePhysicalRecurringEventRename(filePath: string, newStart: Date, oldStart: Date): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(filePath);
-		if (!(file instanceof TFile)) return;
-
-		const settings = this.bundle.settingsStore.currentSettings;
-		const metadata = this.app.metadataCache.getFileCache(file);
-		const frontmatter = metadata?.frontmatter as Record<string, unknown> | undefined;
-
-		// Check if this is a physical recurring event
-		if (!isPhysicalRecurringEvent(frontmatter, settings.rruleIdProp, settings.rruleProp, settings.instanceDateProp)) {
-			return;
-		}
-
-		// Check if date actually changed (not just time)
-		const oldDateStr = oldStart.toISOString().split("T")[0];
-		const newDateStr = newStart.toISOString().split("T")[0];
-		if (oldDateStr === newDateStr) return;
-
-		// Only update instance date if this is an ignored/duplicated event
-		if (shouldUpdateInstanceDateOnMove(frontmatter, settings.ignoreRecurringProp)) {
-			await withFrontmatter(this.app, file, (fm) => {
-				fm[settings.instanceDateProp] = newDateStr;
-			});
-		}
-
-		// Always rename file to reflect new date for physical recurring events
-		const newBasename = rebuildPhysicalInstanceWithNewDate(file.basename, newDateStr);
-		if (!newBasename) return;
-
-		const folderPath = file.parent?.path ? `${file.parent.path}/` : "";
-		const newPath = `${folderPath}${newBasename}.md`;
-		await this.app.fileManager.renameFile(file, newPath);
 	}
 
 	/**

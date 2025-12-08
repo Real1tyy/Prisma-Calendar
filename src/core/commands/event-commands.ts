@@ -7,12 +7,16 @@ import {
 } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
+import type { SingleCalendarConfig } from "../../types";
 import {
 	applyStartEndOffsets,
 	ensureFileHasZettelId,
 	generateUniqueEventPath,
+	isPhysicalRecurringEvent,
+	rebuildPhysicalInstanceWithNewDate,
 	removeZettelId,
 	setEventBasics,
+	shouldUpdateInstanceDateOnMove,
 } from "../../utils/calendar-events";
 import { getInternalProperties } from "../../utils/format";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -340,21 +344,25 @@ export class DuplicateRecurringEventCommand implements Command {
 
 export class UpdateEventCommand implements Command {
 	private originalFrontmatter?: Record<string, unknown>;
+	private originalFilePath: string;
+	private renamedFilePath: string | null = null;
 
 	constructor(
 		private app: App,
 		private bundle: CalendarBundle,
-		private filePath: string,
+		filePath: string,
 		private newStart: string,
 		private newEnd: string | undefined,
 		private newAllDay: boolean,
 		private oldStart: string,
 		private oldEnd: string | undefined,
 		private oldAllDay: boolean
-	) {}
+	) {
+		this.originalFilePath = filePath;
+	}
 
 	async execute(): Promise<void> {
-		const file = getTFileOrThrow(this.app, this.filePath);
+		const file = getTFileOrThrow(this.app, this.originalFilePath);
 		if (!this.originalFrontmatter) {
 			this.originalFrontmatter = await backupFrontmatter(this.app, file);
 		}
@@ -376,12 +384,48 @@ export class UpdateEventCommand implements Command {
 				allDay: this.newAllDay,
 			});
 		});
+
+		// Handle file rename for physical recurring events if date changed
+		await this.handleFileRenameIfNeeded(file, settings);
+	}
+
+	private async handleFileRenameIfNeeded(file: TFile, settings: SingleCalendarConfig): Promise<void> {
+		const metadata = this.app.metadataCache.getFileCache(file);
+		const frontmatter = metadata?.frontmatter as Record<string, unknown> | undefined;
+
+		// Check if this is a physical recurring event
+		if (!isPhysicalRecurringEvent(frontmatter, settings.rruleIdProp, settings.rruleProp, settings.instanceDateProp)) {
+			return;
+		}
+
+		// Check if date actually changed (not just time)
+		const oldDateStr = this.oldStart.split("T")[0];
+		const newDateStr = this.newStart.split("T")[0];
+		if (oldDateStr === newDateStr) return;
+
+		// Only update instance date if this is an ignored/duplicated event
+		if (shouldUpdateInstanceDateOnMove(frontmatter, settings.ignoreRecurringProp)) {
+			await withFrontmatter(this.app, file, (fm) => {
+				fm[settings.instanceDateProp] = newDateStr;
+			});
+		}
+
+		// Always rename file to reflect new date for physical recurring events
+		const newBasename = rebuildPhysicalInstanceWithNewDate(file.basename, newDateStr);
+		if (!newBasename) return;
+
+		const folderPath = file.parent?.path ? `${file.parent.path}/` : "";
+		const newPath = `${folderPath}${newBasename}.md`;
+		await this.app.fileManager.renameFile(file, newPath);
+		this.renamedFilePath = newPath;
 	}
 
 	async undo(): Promise<void> {
 		if (!this.originalFrontmatter) return;
 
-		const file = getTFileOrThrow(this.app, this.filePath);
+		// Use renamed path if file was renamed, otherwise use original path
+		const currentFilePath = this.renamedFilePath || this.originalFilePath;
+		const file = getTFileOrThrow(this.app, currentFilePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) => {
@@ -391,6 +435,12 @@ export class UpdateEventCommand implements Command {
 				allDay: this.oldAllDay,
 			});
 		});
+
+		// Revert file rename if it was renamed
+		if (this.renamedFilePath) {
+			await this.app.fileManager.renameFile(file, this.originalFilePath);
+			this.renamedFilePath = null;
+		}
 	}
 
 	getType(): string {
