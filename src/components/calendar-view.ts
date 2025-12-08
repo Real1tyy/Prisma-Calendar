@@ -133,6 +133,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private selectedEventsCount = 0;
 	private isRefreshingEvents = false;
 	private pendingRefreshRequest = false;
+	private dragEdgeScrollListener: ((e: MouseEvent) => void) | null = null;
+	private dragEdgeScrollTimeout: number | null = null;
+	private lastEdgeScrollTime = 0;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -951,7 +954,16 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				}
 			},
 
+			eventDragStart: () => {
+				this.setupDragEdgeScrolling();
+			},
+
+			eventDragStop: () => {
+				this.cleanupDragEdgeScrolling();
+			},
+
 			eventDrop: (info) => {
+				this.cleanupDragEdgeScrolling();
 				void this.handleEventDrop(info);
 			},
 
@@ -1838,11 +1850,62 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.bundle.viewStateManager.saveState(this.calendar, currentZoomLevel);
 	}
 
+	private setupDragEdgeScrolling(): void {
+		if (!this.calendar || !this.container) return;
+
+		const viewType = this.calendar.view.type;
+		if (viewType === "dayGridMonth" || viewType === "listWeek") {
+			return;
+		}
+
+		const EDGE_THRESHOLD = 50;
+		const SCROLL_DELAY = 500;
+
+		this.dragEdgeScrollListener = (e: MouseEvent) => {
+			if (!this.calendar || !this.container) return;
+
+			const rect = this.container.getBoundingClientRect();
+			const mouseX = e.clientX;
+			const leftEdge = rect.left;
+			const rightEdge = rect.right;
+
+			const now = Date.now()
+			if (now - this.lastEdgeScrollTime < SCROLL_DELAY) {
+				return;
+			}
+
+			if (mouseX < leftEdge + EDGE_THRESHOLD) {
+				this.lastEdgeScrollTime = now;
+				this.calendar.prev();
+			} else if (mouseX > rightEdge - EDGE_THRESHOLD) {
+				this.lastEdgeScrollTime = now;
+				this.calendar.next();
+			}
+		};
+
+		document.addEventListener("mousemove", this.dragEdgeScrollListener);
+	}
+
+	private cleanupDragEdgeScrolling(): void {
+		if (this.dragEdgeScrollListener) {
+			document.removeEventListener("mousemove", this.dragEdgeScrollListener);
+			this.dragEdgeScrollListener = null;
+		}
+		if (this.dragEdgeScrollTimeout) {
+			clearTimeout(this.dragEdgeScrollTimeout);
+			this.dragEdgeScrollTimeout = null;
+		}
+		this.lastEdgeScrollTime = 0;
+	}
+
 	unmount(): Promise<void> {
 		this.saveCurrentState();
 
 		// Stop upcoming event check interval
 		this.stopUpcomingEventCheck();
+
+		// Cleanup drag edge scrolling
+		this.cleanupDragEdgeScrolling();
 
 		this.zoomManager.destroy();
 		this.searchFilter.destroy();

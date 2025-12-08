@@ -6,6 +6,7 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Edge Scrolling During Drag**: When dragging events, moving the cursor to the left or right edge of the calendar automatically navigates to the previous or next week, allowing easy cross-week event movement. Works in week and day views with a 500ms throttle to prevent excessive scrolling.
 - **Highlight Events Without Categories**: New command "Highlight events without categories" temporarily highlights all events missing category assignments for 10 seconds, making it easy to identify which events need category assignment.
 - **Keyboard Navigation**: Use left/right arrow keys to navigate calendar intervals, with automatic disabling when filter inputs are focused and a configurable toggle in Settings → General.
 
