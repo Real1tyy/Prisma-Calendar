@@ -51,12 +51,14 @@ export class DeletePhysicalEventsModal extends Modal {
 			cls: "mod-cta",
 		});
 		confirmButton.addEventListener("click", () => {
-			void Promise.resolve(this.options.onConfirm()).then(() => {
-				this.close();
-			}).catch((error) => {
-				console.error("Error in onConfirm callback:", error);
-				this.close();
-			});
+			void Promise.resolve(this.options.onConfirm())
+				.then(() => {
+					this.close();
+				})
+				.catch((error) => {
+					console.error("Error in onConfirm callback:", error);
+					this.close();
+				});
 		});
 	}
 
