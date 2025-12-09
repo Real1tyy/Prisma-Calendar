@@ -173,6 +173,11 @@ export class GeneralSettings {
 			this.defaultPresetDropdown.remove(0);
 		}
 
+		const noneOption = document.createElement("option");
+		noneOption.value = "";
+		noneOption.textContent = "None";
+		this.defaultPresetDropdown.appendChild(noneOption);
+
 		const presets = settings.eventPresets || [];
 		for (const preset of presets) {
 			const option = document.createElement("option");
