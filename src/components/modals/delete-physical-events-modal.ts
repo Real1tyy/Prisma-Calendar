@@ -36,9 +36,10 @@ export class DeletePhysicalEventsModal extends Modal {
 			text: "Yes, delete all",
 			cls: "mod-cta",
 		});
-		confirmButton.addEventListener("click", async () => {
-			await this.onConfirm();
-			this.close();
+		confirmButton.addEventListener("click", () => {
+			Promise.resolve(this.onConfirm()).then(() => {
+				this.close();
+			});
 		});
 	}
 

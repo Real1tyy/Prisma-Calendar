@@ -466,8 +466,8 @@ export class EventContextMenu {
 					await this.bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
 					await onComplete();
 				},
-				async () => {
-					await onComplete();
+				() => {
+					void onComplete();
 				}
 			).open();
 		} else {

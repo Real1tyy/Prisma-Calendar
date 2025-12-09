@@ -997,7 +997,7 @@ export abstract class BaseEventModal extends Modal {
 			preservedFrontmatter[settings.titleProp] = this.titleInput.value;
 		}
 
-		let start: string | null;
+		let start: string;
 		let end: string | null;
 
 		if (this.allDayCheckbox.checked) {
@@ -1010,7 +1010,7 @@ export abstract class BaseEventModal extends Modal {
 		}
 		setEventBasics(preservedFrontmatter, settings, {
 			title: this.titleInput.value,
-			start: start!,
+			start: start,
 			end: end ?? undefined,
 			allDay: this.allDayCheckbox.checked,
 		});
