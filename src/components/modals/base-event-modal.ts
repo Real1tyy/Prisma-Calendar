@@ -1,5 +1,6 @@
 import { addCls, cls, parseFrontmatterRecord, serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, Notice, TFile } from "obsidian";
+import type { Subscription } from "rxjs";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { type FormData, MinimizedModalManager, type MinimizedModalState } from "../../core/minimized-modal-manager";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
@@ -88,6 +89,8 @@ export abstract class BaseEventModal extends Modal {
 	// Flag to prevent double-saving when minimize() is called explicitly
 	private isMinimizing = false;
 
+	private settingsSubscription: Subscription | null = null;
+
 	constructor(app: App, bundle: CalendarBundle, event: EventModalData, onSave: (eventData: EventSaveData) => void) {
 		super(app);
 		this.event = event;
@@ -160,6 +163,12 @@ export abstract class BaseEventModal extends Modal {
 
 		// Preset selector (only for create mode, but rendered for all - hidden via CSS if needed)
 		this.createPresetSelector(controlsContainer);
+
+		this.settingsSubscription = this.bundle.settingsStore.settings$.subscribe((settings) => {
+			if (this.presetSelector) {
+				this.refreshPresetSelector(settings.eventPresets || []);
+			}
+		});
 	}
 
 	private createPresetSelector(container: HTMLElement): void {
@@ -177,27 +186,13 @@ export abstract class BaseEventModal extends Modal {
 			cls: cls("event-preset-select"),
 		});
 
-		// Add default "None" option
-		const noneOption = this.presetSelector.createEl("option", {
-			value: "",
-			text: "None",
-		});
-		noneOption.value = "";
+		this.refreshPresetSelector(presets);
 
-		// Add preset options
-		for (const preset of presets) {
-			const option = this.presetSelector.createEl("option", {
-				value: preset.id,
-				text: preset.name,
-			});
-			option.value = preset.id;
-		}
-
-		// Handle preset selection
 		this.presetSelector.addEventListener("change", () => {
 			const selectedId = this.presetSelector.value;
 			if (selectedId) {
-				const preset = presets.find((p) => p.id === selectedId);
+				const settings = this.bundle.settingsStore.currentSettings;
+				const preset = (settings.eventPresets || []).find((p) => p.id === selectedId);
 				if (preset) {
 					this.applyPreset(preset);
 				}
@@ -968,9 +963,11 @@ export abstract class BaseEventModal extends Modal {
 	private refreshPresetSelector(presets: EventPreset[]): void {
 		if (!this.presetSelector) return;
 
+		const currentValue = this.presetSelector.value;
+
 		// Clear existing options except "None"
-		while (this.presetSelector.options.length > 1) {
-			this.presetSelector.remove(1);
+		while (this.presetSelector.options.length > 0) {
+			this.presetSelector.remove(0);
 		}
 
 		// Add all preset options
@@ -980,6 +977,12 @@ export abstract class BaseEventModal extends Modal {
 				text: preset.name,
 			});
 			option.value = preset.id;
+		}
+
+		if (currentValue && presets.some((p) => p.id === currentValue)) {
+			this.presetSelector.value = currentValue;
+		} else {
+			this.presetSelector.value = "";
 		}
 	}
 
@@ -1155,6 +1158,9 @@ export abstract class BaseEventModal extends Modal {
 
 		// Clean up stopwatch to stop any running intervals
 		this.stopwatch?.destroy();
+
+		this.settingsSubscription?.unsubscribe();
+		this.settingsSubscription = null;
 
 		const { contentEl } = this;
 		contentEl.empty();

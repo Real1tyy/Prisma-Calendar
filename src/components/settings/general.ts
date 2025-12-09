@@ -1,5 +1,6 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
 import { type App, Setting } from "obsidian";
+import type { Subscription } from "rxjs";
 import { COMMAND_IDS, SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
@@ -9,6 +10,9 @@ import { CalDAVSettings } from "./caldav";
 
 export class GeneralSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
+	private settingsSubscription: Subscription | null = null;
+	private defaultPresetDropdown: HTMLSelectElement | null = null;
+	private presetsListContainer: HTMLElement | null = null;
 
 	constructor(
 		private settingsStore: CalendarSettingsStore,
@@ -20,6 +24,11 @@ export class GeneralSettings {
 	}
 
 	display(containerEl: HTMLElement): void {
+		this.settingsSubscription?.unsubscribe();
+		this.settingsSubscription = null;
+		this.defaultPresetDropdown = null;
+		this.presetsListContainer = null;
+
 		this.addDirectorySettings(containerEl);
 		this.addParsingSettings(containerEl);
 		this.addEventPresetSettings(containerEl);
@@ -95,8 +104,6 @@ export class GeneralSettings {
 	}
 
 	private addEventPresetSettings(containerEl: HTMLElement): void {
-		const settings = this.settingsStore.currentSettings;
-
 		new Setting(containerEl).setName("Event presets").setHeading();
 
 		const desc = containerEl.createDiv();
@@ -133,17 +140,8 @@ export class GeneralSettings {
 			.setName("Default preset")
 			.setDesc("Preset to auto-fill when opening the create event modal")
 			.addDropdown((dropdown) => {
-				// Add "None" option
-				dropdown.addOption("", "None");
-
-				// Add preset options
-				const presets = settings.eventPresets || [];
-				for (const preset of presets) {
-					dropdown.addOption(preset.id, preset.name);
-				}
-
-				// Set current value
-				dropdown.setValue(settings.defaultPresetId || "");
+				this.defaultPresetDropdown = dropdown.selectEl;
+				this.refreshDefaultPresetDropdown();
 
 				dropdown.onChange(async (value) => {
 					await this.settingsStore.updateSettings((s) => ({
@@ -154,8 +152,40 @@ export class GeneralSettings {
 			});
 
 		// Presets list
-		const presetsListContainer = containerEl.createDiv();
-		this.renderEventPresetsList(presetsListContainer);
+		this.presetsListContainer = containerEl.createDiv();
+		this.renderEventPresetsList(this.presetsListContainer);
+
+		this.settingsSubscription = this.settingsStore.settings$.subscribe(() => {
+			if (this.presetsListContainer) {
+				this.renderEventPresetsList(this.presetsListContainer);
+			}
+			this.refreshDefaultPresetDropdown();
+		});
+	}
+
+	private refreshDefaultPresetDropdown(): void {
+		if (!this.defaultPresetDropdown) return;
+
+		const settings = this.settingsStore.currentSettings;
+		const currentValue = this.defaultPresetDropdown.value;
+
+		while (this.defaultPresetDropdown.options.length > 0) {
+			this.defaultPresetDropdown.remove(0);
+		}
+
+		const presets = settings.eventPresets || [];
+		for (const preset of presets) {
+			const option = document.createElement("option");
+			option.value = preset.id;
+			option.textContent = preset.name;
+			this.defaultPresetDropdown.appendChild(option);
+		}
+
+		if (currentValue && presets.some((p) => p.id === currentValue)) {
+			this.defaultPresetDropdown.value = currentValue;
+		} else {
+			this.defaultPresetDropdown.value = settings.defaultPresetId || "";
+		}
 	}
 
 	private renderEventPresetsList(container: HTMLElement): void {
@@ -221,7 +251,6 @@ export class GeneralSettings {
 					// Clear default preset if it was deleted
 					defaultPresetId: s.defaultPresetId === preset.id ? undefined : s.defaultPresetId,
 				}));
-				this.renderEventPresetsList(container);
 			};
 		}
 	}

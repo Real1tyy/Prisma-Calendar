@@ -19,6 +19,10 @@ All notable changes to this project will be documented here.
 - **Fixed Past Event Contrast for All-Day Events**: All-day events on the current day are no longer dimmed by the past event contrast setting. Only all-day events from previous days are affected by the contrast setting, while timed events continue to use time-based comparison.
 - **Always Include Date and Time Properties**: Both date and time properties are now always present in event frontmatter, regardless of whether the event is all-day or timed. This makes it easy to convert between all-day and timed events by manually editing the frontmatter. For all-day events, the date property contains the date while start/end properties are empty strings. For timed events, start/end properties contain the full datetime while the date property is an empty string.
 
+### Bug Fixes
+
+- **Fixed Preset Synchronization**: Event presets are now properly synchronized between the event modal and settings. Presets created or deleted in the modal immediately appear in settings, and presets deleted in settings are automatically removed from the modal dropdown.
+
 ---
 
 ## 1.10.0
