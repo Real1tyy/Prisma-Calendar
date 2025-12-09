@@ -90,6 +90,17 @@ export class CalDAVSyncStateManager {
 		return Array.from(calendarState.values());
 	}
 
+	getAllForAccount(accountId: string): TrackedCalDAVEvent[] {
+		const accountState = this.syncState.get(accountId);
+		if (!accountState) return [];
+
+		const events: TrackedCalDAVEvent[] = [];
+		for (const calendarState of accountState.values()) {
+			events.push(...Array.from(calendarState.values()));
+		}
+		return events;
+	}
+
 	/**
 	 * Tracks a new or updated CalDAV event
 	 */

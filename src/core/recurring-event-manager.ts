@@ -15,6 +15,7 @@ import type { SingleCalendarConfig } from "../types/settings";
 import { hashRRuleIdToZettelFormat, removeZettelId, setEventBasics } from "../utils/calendar-events";
 import { getNextOccurrence } from "../utils/date-recurrence";
 import { applySourceTimeToInstanceDate } from "../utils/format";
+import { deleteFilesByPaths } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
@@ -622,19 +623,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 		if (!data) return;
 
 		const physicalInstances = Array.from(data.physicalInstances.values());
-
-		await Promise.all(
-			physicalInstances.map(async (instance) => {
-				try {
-					const file = this.app.vault.getAbstractFileByPath(instance.filePath);
-					if (file instanceof TFile) {
-						await this.app.fileManager.trashFile(file);
-					}
-				} catch (error) {
-					console.error(`Error deleting physical instance ${instance.filePath}:`, error);
-				}
-			})
-		);
+		const filePaths = physicalInstances.map((instance) => instance.filePath);
+		await deleteFilesByPaths(this.app, filePaths);
 
 		data.physicalInstances.clear();
 		this.scheduleRefresh();

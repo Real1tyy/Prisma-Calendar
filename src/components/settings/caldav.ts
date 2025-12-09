@@ -2,6 +2,7 @@ import { cls } from "@real1ty-obsidian-plugins/utils";
 import { nanoid } from "nanoid";
 import { type App, Modal, Notice, Setting } from "obsidian";
 import { CALDAV_DEFAULTS } from "../../constants";
+import type { CalendarBundle } from "../../core/calendar-bundle";
 import {
 	CALDAV_PRESETS,
 	type CalDAVAccount,
@@ -12,6 +13,8 @@ import {
 import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
 import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import { deleteFilesByPaths } from "../../utils/obsidian";
+import { CalendarIntegrationDeleteEventsModal } from "../modals";
 
 export class CalDAVSettings {
 	constructor(
@@ -156,7 +159,7 @@ export class CalDAVSettings {
 			cls: cls("caldav-account-btn"),
 		});
 		editButton.addEventListener("click", () => {
-			new EditCalDAVAccountModal(this.app, this.settingsStore, account, () => {
+			new EditCalDAVAccountModal(this.app, this.settingsStore, this.plugin, this.calendarId, account, () => {
 				this.refreshAccountsList(container.parentElement!);
 			}).open();
 		});
@@ -166,9 +169,7 @@ export class CalDAVSettings {
 			cls: `${cls("caldav-account-btn")} ${cls("caldav-account-btn-delete")}`,
 		});
 		deleteButton.addEventListener("click", () => {
-			new ConfirmDeleteAccountModal(this.app, account.name, () => {
-				void this.deleteAccount(account.id, container);
-			}).open();
+			void this.handleDeleteAccount(account, container);
 		});
 	}
 
@@ -184,6 +185,42 @@ export class CalDAVSettings {
 				button.setText("Sync now");
 			}
 		})();
+	}
+
+	private async handleDeleteAccount(account: CalDAVAccount, container: HTMLElement): Promise<void> {
+		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === account.calendarId);
+		if (!bundle) {
+			new ConfirmDeleteAccountModal(this.app, account.name, () => {
+				void this.deleteAccount(account.id, container);
+			}).open();
+			return;
+		}
+
+		const events = bundle.caldavSyncStateManager.getAllForAccount(account.id);
+		if (events.length === 0) {
+			new ConfirmDeleteAccountModal(this.app, account.name, () => {
+				void this.deleteAccount(account.id, container);
+			}).open();
+			return;
+		}
+
+		new CalendarIntegrationDeleteEventsModal(this.app, {
+			accountName: account.name,
+			eventCount: events.length,
+			onConfirm: async () => {
+				await this.deleteEventsForAccount(bundle, account.id);
+				await this.deleteAccount(account.id, container);
+			},
+			onCancel: async () => {
+				await this.deleteAccount(account.id, container);
+			},
+		}).open();
+	}
+
+	private async deleteEventsForAccount(bundle: CalendarBundle, accountId: string): Promise<void> {
+		const events = bundle.caldavSyncStateManager.getAllForAccount(accountId);
+		const filePaths = events.map((event) => event.filePath);
+		await deleteFilesByPaths(this.app, filePaths);
 	}
 
 	private async deleteAccount(accountId: string, container: HTMLElement): Promise<void> {
@@ -565,10 +602,13 @@ class EditCalDAVAccountModal extends Modal {
 	private timezone: string;
 	private selectedCalendars: string[];
 	private discoveredCalendars: CalDAVCalendarInfo[] = [];
+	private originalSelectedCalendars: string[];
 
 	constructor(
 		app: App,
 		private settingsStore: SettingsStore,
+		private plugin: CustomCalendarPlugin,
+		private calendarId: string,
 		private account: CalDAVAccount,
 		private onSave: () => void
 	) {
@@ -578,6 +618,7 @@ class EditCalDAVAccountModal extends Modal {
 		this.syncIntervalMinutes = account.syncIntervalMinutes ?? CALDAV_DEFAULTS.SYNC_INTERVAL_MINUTES;
 		this.timezone = account.timezone ?? "UTC";
 		this.selectedCalendars = [...account.selectedCalendars];
+		this.originalSelectedCalendars = [...account.selectedCalendars];
 	}
 
 	onOpen(): void {
@@ -729,6 +770,34 @@ class EditCalDAVAccountModal extends Modal {
 	}
 
 	private async saveAccount(): Promise<void> {
+		const removedCalendars = this.originalSelectedCalendars.filter((url) => !this.selectedCalendars.includes(url));
+
+		if (removedCalendars.length > 0) {
+			const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === this.calendarId);
+			if (bundle) {
+				for (const calendarUrl of removedCalendars) {
+					const events = bundle.caldavSyncStateManager.getAllForCalendar(this.account.id, calendarUrl);
+					if (events.length > 0) {
+						const calendarIdentifier = calendarUrl.split("/").pop() || calendarUrl;
+
+						await new Promise<void>((resolve) => {
+							new CalendarIntegrationDeleteEventsModal(this.app, {
+								calendarIdentifier,
+								eventCount: events.length,
+								onConfirm: async () => {
+									await this.deleteEventsForCalendar(bundle, this.account.id, calendarUrl);
+									resolve();
+								},
+								onCancel: () => {
+									resolve();
+								},
+							}).open();
+						});
+					}
+				}
+			}
+		}
+
 		await this.settingsStore.updateSettings((s) => ({
 			...s,
 			caldav: {
@@ -751,6 +820,12 @@ class EditCalDAVAccountModal extends Modal {
 		new Notice(`Updated account: ${this.name}`);
 		this.onSave();
 		this.close();
+	}
+
+	private async deleteEventsForCalendar(bundle: CalendarBundle, accountId: string, calendarUrl: string): Promise<void> {
+		const events = bundle.caldavSyncStateManager.getAllForCalendar(accountId, calendarUrl);
+		const filePaths = events.map((event) => event.filePath);
+		await deleteFilesByPaths(this.app, filePaths);
 	}
 
 	onClose(): void {

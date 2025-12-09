@@ -18,7 +18,7 @@ import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-o
 import type { CalendarView } from "./calendar-view";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { RecurringEventsListModal } from "./list-modals/recurring-events-list-modal";
-import { DeletePhysicalEventsModal, EventEditModal } from "./modals";
+import { DeleteRecurringEventsModal, EventEditModal } from "./modals";
 import { MoveByModal } from "./move-by-modal";
 
 interface CalendarEventInfo {
@@ -460,7 +460,7 @@ export class EventContextMenu {
 
 		const physicalInstances = this.bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
 		if (physicalInstances.length > 0) {
-			new DeletePhysicalEventsModal(
+			new DeleteRecurringEventsModal(
 				this.app,
 				async () => {
 					await this.bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);

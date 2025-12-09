@@ -212,7 +212,7 @@ export class CalDAVSyncService {
 			Object.assign(fm, eventFm);
 
 			const caldavProp = this.bundle.settingsStore.currentSettings.caldavProp;
-			const existingMeta = (fm[caldavProp] as Record<string, unknown>) || {};
+			const existingMeta: Record<string, unknown> = (fm[caldavProp] as Record<string, unknown>) || {};
 
 			existingMeta.etag = event.etag;
 			existingMeta.lastModified = importedEvent.lastModified;
