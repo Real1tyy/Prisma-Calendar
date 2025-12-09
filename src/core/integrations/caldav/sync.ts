@@ -1,6 +1,7 @@
 import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
 import { type App, Notice, normalizePath, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
+import type { Frontmatter } from "../../../types";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { extractZettelId, removeZettelId } from "../../../utils/calendar-events";
 import type { CalendarBundle } from "../../calendar-bundle";
@@ -207,12 +208,12 @@ export class CalDAVSyncService {
 			}
 		}
 
-		await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+		await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 			const eventFm = buildFrontmatterFromImportedEvent(importedEvent, settings, this.account.timezone);
 			Object.assign(fm, eventFm);
 
 			const caldavProp = this.bundle.settingsStore.currentSettings.caldavProp;
-			const existingMeta: Record<string, unknown> = (fm[caldavProp] as Record<string, unknown>) || {};
+			const existingMeta: Frontmatter = (fm[caldavProp] as Frontmatter) || {};
 
 			existingMeta.etag = event.etag;
 			existingMeta.lastModified = importedEvent.lastModified;

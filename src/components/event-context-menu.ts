@@ -11,6 +11,7 @@ import {
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
+import type { Frontmatter } from "../types";
 import { type AdjacentEvent, findAdjacentEvent } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
@@ -29,7 +30,7 @@ interface CalendarEventInfo {
 	extendedProps?: {
 		filePath?: string;
 		isVirtual?: boolean;
-		frontmatterDisplayData?: Record<string, unknown>;
+		frontmatterDisplayData?: Frontmatter;
 	};
 }
 
@@ -39,7 +40,7 @@ interface EventSaveData {
 	start: string;
 	end: string | null;
 	allDay: boolean;
-	preservedFrontmatter: Record<string, unknown>;
+	preservedFrontmatter: Frontmatter;
 }
 
 interface CommandMessages {

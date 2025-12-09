@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { RecurrenceType, Weekday } from "../utils/date-recurrence";
 import { WEEKDAY_TO_NUMBER } from "../utils/date-recurrence";
 import { booleanTransform, optionalDateTransform, optionalTimeTransform } from "../utils/validation";
+import type { Frontmatter } from "./index";
 import type { SingleCalendarConfig } from "./settings";
 
 export const RECURRENCE_TYPE_OPTIONS = {
@@ -73,12 +74,12 @@ export interface NodeRecurringEvent {
 	title: string;
 	rRuleId: string; // unique ID for this recurring event
 	rrules: RRuleFrontmatter;
-	frontmatter: Record<string, unknown>;
+	frontmatter: Frontmatter;
 	content?: string;
 }
 
 export function parseRRuleFromFrontmatter(
-	frontmatter: Record<string, unknown>,
+	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig
 ): RRuleFrontmatter | null {
 	const { rruleProp, rruleSpecProp, dateProp, startProp, endProp, allDayProp } = settings;

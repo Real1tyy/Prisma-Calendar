@@ -17,7 +17,7 @@ import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
 import type { ParsedEvent } from "../core/parser";
-import type { SingleCalendarConfig } from "../types/index";
+import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { removeInstanceDate, removeZettelId } from "../utils/calendar-events";
 import { toggleEventHighlight } from "../utils/dom-utils";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
@@ -47,7 +47,7 @@ interface PrismaExtendedProps {
 	filePath: string;
 	folder: string;
 	originalTitle: string;
-	frontmatterDisplayData: Record<string, unknown>;
+	frontmatterDisplayData: Frontmatter;
 	isVirtual: boolean;
 }
 
@@ -60,7 +60,7 @@ interface FlexibleExtendedProps {
 	filePath?: string;
 	folder?: string;
 	originalTitle?: string;
-	frontmatterDisplayData?: Record<string, unknown>;
+	frontmatterDisplayData?: Frontmatter;
 	isVirtual?: boolean;
 	[key: string]: unknown; // Allow any other props from FullCalendar
 }
@@ -782,7 +782,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		for (const event of events) {
 			if (event.extendedProps.isVirtual) continue;
 
-			const frontmatter = event.extendedProps.frontmatterDisplayData as Record<string, unknown> | undefined;
+			const frontmatter = event.extendedProps.frontmatterDisplayData as Frontmatter | undefined;
 			if (!frontmatter) continue;
 
 			const categoryValue = frontmatter[settings.categoryProp];
@@ -1550,7 +1550,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			start: string | null;
 			end: string | null;
 			allDay: boolean;
-			preservedFrontmatter: Record<string, unknown>;
+			preservedFrontmatter: Frontmatter;
 		},
 		clickedDate: Date
 	): Promise<void> {

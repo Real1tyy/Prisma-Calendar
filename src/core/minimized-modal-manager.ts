@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import { Notice } from "obsidian";
 import { EventCreateModal, EventEditModal } from "../components/modals";
 import type { StopwatchSnapshot } from "../components/stopwatch";
+import type { Frontmatter } from "../types";
 import type { EventPreset } from "../types/settings";
 import { formatMsToHHMMSS, formatMsToMMSS } from "../utils/time-formatter";
 import type { CalendarBundle } from "./calendar-bundle";
@@ -23,7 +24,7 @@ export interface MinimizedModalState extends FormData {
 	// Modal metadata
 	modalType: "create" | "edit";
 	filePath: string | null;
-	originalFrontmatter: Record<string, unknown>;
+	originalFrontmatter: Frontmatter;
 
 	// References needed to reopen
 	calendarId: string;

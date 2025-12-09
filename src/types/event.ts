@@ -7,7 +7,7 @@ import {
 	requiredDateTransform,
 	titleTransform,
 } from "../utils/validation";
-import type { ISO, SingleCalendarConfig } from "./index";
+import type { Frontmatter, ISO, SingleCalendarConfig } from "./index";
 
 const BaseEventFrontmatterSchema = z.object({
 	title: titleTransform,
@@ -37,7 +37,7 @@ export type TimedEventFrontmatter = z.infer<typeof TimedEventFrontmatterSchema>;
 export type AllDayEventFrontmatter = z.infer<typeof AllDayEventFrontmatterSchema>;
 
 export function parseEventFrontmatter(
-	frontmatter: Record<string, unknown>,
+	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig
 ): ParsedEventFrontmatter | null {
 	const { startProp, endProp, dateProp, allDayProp, titleProp } = settings;

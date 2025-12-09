@@ -7,7 +7,7 @@ import {
 } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
-import type { SingleCalendarConfig } from "../../types";
+import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import {
 	applyStartEndOffsets,
 	ensureFileHasZettelId,
@@ -28,7 +28,7 @@ export interface EventData {
 	start: string;
 	end?: string;
 	allDay?: boolean;
-	preservedFrontmatter: Record<string, unknown>;
+	preservedFrontmatter: Frontmatter;
 }
 
 export type EditEventData = EventData;
@@ -114,7 +114,7 @@ export class DeleteEventCommand implements Command {
 }
 
 export class EditEventCommand implements Command {
-	private originalFrontmatter?: Record<string, unknown>;
+	private originalFrontmatter?: Frontmatter;
 
 	constructor(
 		private app: App,
@@ -126,7 +126,7 @@ export class EditEventCommand implements Command {
 	async execute(): Promise<void> {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
-		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) => {
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
 			const settings = this.bundle.settingsStore.currentSettings;
 			const internalProps = getInternalProperties(settings);
 			const handledKeys = new Set<string>();
@@ -172,7 +172,7 @@ export class EditEventCommand implements Command {
 }
 
 export class MoveEventCommand implements Command {
-	private originalFrontmatter?: Record<string, unknown>;
+	private originalFrontmatter?: Frontmatter;
 
 	constructor(
 		private app: App,
@@ -187,7 +187,7 @@ export class MoveEventCommand implements Command {
 		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) =>
+		await withFrontmatter(this.app, file, (fm: Frontmatter) =>
 			applyStartEndOffsets(fm, settings, this.startOffset, this.endOffset)
 		);
 	}
@@ -343,7 +343,7 @@ export class DuplicateRecurringEventCommand implements Command {
 }
 
 export class UpdateEventCommand implements Command {
-	private originalFrontmatter?: Record<string, unknown>;
+	private originalFrontmatter?: Frontmatter;
 	private originalFilePath: string;
 	private renamedFilePath: string | null = null;
 
@@ -377,7 +377,7 @@ export class UpdateEventCommand implements Command {
 			endTime = startDate.toISOString();
 		}
 
-		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) => {
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
 			setEventBasics(fm, settings, {
 				start: this.newStart,
 				end: endTime,
@@ -391,7 +391,7 @@ export class UpdateEventCommand implements Command {
 
 	private async handleFileRenameIfNeeded(file: TFile, settings: SingleCalendarConfig): Promise<void> {
 		const metadata = this.app.metadataCache.getFileCache(file);
-		const frontmatter = metadata?.frontmatter as Record<string, unknown> | undefined;
+		const frontmatter = metadata?.frontmatter as Frontmatter | undefined;
 
 		// Check if this is a physical recurring event
 		if (!isPhysicalRecurringEvent(frontmatter, settings.rruleIdProp, settings.rruleProp, settings.instanceDateProp)) {
@@ -428,7 +428,7 @@ export class UpdateEventCommand implements Command {
 		const file = getTFileOrThrow(this.app, currentFilePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) => {
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
 			setEventBasics(fm, settings, {
 				start: this.oldStart,
 				end: this.oldEnd,
@@ -473,7 +473,7 @@ export class FillTimeCommand implements Command {
 			this.originalValue = fm?.[this.propertyName] as string | undefined;
 		}
 
-		await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+		await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 			fm[this.propertyName] = this.newTimeValue;
 		});
 	}
@@ -481,7 +481,7 @@ export class FillTimeCommand implements Command {
 	async undo(): Promise<void> {
 		const file = getTFileOrThrow(this.app, this.filePath);
 
-		await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+		await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 			if (this.originalValue === undefined) {
 				delete fm[this.propertyName];
 			} else {
@@ -512,7 +512,7 @@ export class ToggleSkipCommand implements Command {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) => {
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
 			// Store original value on first execution
 			if (this.originalSkipValue === undefined) {
 				this.originalSkipValue = fm[settings.skipProp] === true;
@@ -534,7 +534,7 @@ export class ToggleSkipCommand implements Command {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) => {
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
 			if (this.originalSkipValue) {
 				fm[settings.skipProp] = true;
 			} else {
@@ -553,7 +553,7 @@ export class ToggleSkipCommand implements Command {
 }
 
 export class MoveByCommand implements Command {
-	private originalFrontmatter?: Record<string, unknown>;
+	private originalFrontmatter?: Frontmatter;
 
 	constructor(
 		private app: App,
@@ -567,7 +567,7 @@ export class MoveByCommand implements Command {
 		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		await withFrontmatter(this.app, file, (fm: Record<string, unknown>) =>
+		await withFrontmatter(this.app, file, (fm: Frontmatter) =>
 			applyStartEndOffsets(fm, settings, this.offsetMs, this.offsetMs)
 		);
 	}

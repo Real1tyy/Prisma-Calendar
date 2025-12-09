@@ -2,6 +2,7 @@ import { createFromTemplate, generateUniqueFilePath, isTemplaterAvailable } from
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
+import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 import type { Indexer, IndexerEvent } from "./indexer";
 
@@ -11,7 +12,7 @@ export interface FileCreationOptions {
 	filename?: string;
 	content?: string;
 	/** Frontmatter to apply when indexer picks up the file */
-	frontmatter?: Record<string, unknown>;
+	frontmatter?: Frontmatter;
 }
 
 export class TemplateService {
@@ -23,7 +24,7 @@ export class TemplateService {
 	 * Files awaiting frontmatter application when indexer picks them up.
 	 * Maps file path -> frontmatter to apply
 	 */
-	private pendingFrontmatter: Map<string, Record<string, unknown>> = new Map();
+	private pendingFrontmatter: Map<string, Frontmatter> = new Map();
 
 	constructor(
 		private app: App,
@@ -127,7 +128,7 @@ export class TemplateService {
 		targetDirectory: string,
 		filename: string,
 		customContent?: string,
-		frontmatter?: Record<string, unknown>
+		frontmatter?: Frontmatter
 	): Promise<TFile> {
 		// Generate unique file path to avoid conflicts
 		const filePath = generateUniqueFilePath(this.app, targetDirectory, filename);

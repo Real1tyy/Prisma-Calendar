@@ -2,6 +2,7 @@ import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import type { Frontmatter } from "../../types";
 import type { CalendarView } from "../calendar-view";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
@@ -138,12 +139,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		}
 	}
 
-	private formatEventSubtitle(event: {
-		allDay: boolean;
-		start: string;
-		end?: string;
-		meta?: Record<string, unknown>;
-	}): string {
+	private formatEventSubtitle(event: { allDay: boolean; start: string; end?: string; meta?: Frontmatter }): string {
 		const parts: string[] = [];
 		const settings = this.bundle.settingsStore.currentSettings;
 

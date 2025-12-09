@@ -3,6 +3,7 @@ import { type App, Modal, Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { type FormData, MinimizedModalManager, type MinimizedModalState } from "../../core/minimized-modal-manager";
+import type { Frontmatter } from "../../types";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
 import { findAdjacentEvent, setEventBasics } from "../../utils/calendar-events";
@@ -34,7 +35,7 @@ export interface EventSaveData {
 	start: string;
 	end: string | null;
 	allDay: boolean;
-	preservedFrontmatter: Record<string, unknown>;
+	preservedFrontmatter: Frontmatter;
 }
 
 interface CustomProperty {
@@ -53,7 +54,7 @@ export abstract class BaseEventModal extends Modal {
 	protected durationContainer!: HTMLElement;
 	protected dateInput!: HTMLInputElement;
 	public allDayCheckbox!: HTMLInputElement;
-	public originalFrontmatter: Record<string, unknown> = {};
+	public originalFrontmatter: Frontmatter = {};
 	protected timedContainer!: HTMLElement;
 	protected allDayContainer!: HTMLElement;
 
@@ -708,7 +709,7 @@ export abstract class BaseEventModal extends Modal {
 		this.customProperties.push({ key, value });
 	}
 
-	public getCustomProperties(): Record<string, unknown> {
+	public getCustomProperties(): Frontmatter {
 		const properties: Record<string, string> = {};
 
 		// Collect from both display and other properties containers

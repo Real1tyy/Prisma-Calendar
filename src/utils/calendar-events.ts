@@ -2,14 +2,14 @@ import { generateZettelId, withFrontmatter } from "@real1ty-obsidian-plugins/uti
 import { nanoid } from "nanoid";
 import type { App, TFile } from "obsidian";
 import type { EventStore } from "../core/event-store";
-import type { SingleCalendarConfig } from "../types";
+import type { Frontmatter, SingleCalendarConfig } from "../types";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
 	return allDayValue === true || (typeof allDayValue === "string" && allDayValue.toLowerCase() === "true");
 };
 
 export const applyStartEndOffsets = (
-	fm: Record<string, unknown>,
+	fm: Frontmatter,
 	settings: SingleCalendarConfig,
 	startOffset?: number,
 	endOffset?: number
@@ -29,7 +29,7 @@ export const applyStartEndOffsets = (
 };
 
 export const setEventBasics = (
-	fm: Record<string, unknown>,
+	fm: Frontmatter,
 	settings: SingleCalendarConfig,
 	data: {
 		title?: string;
@@ -140,7 +140,7 @@ export const rebuildPhysicalInstanceWithNewDate = (basename: string, newDate: st
  * Only events with ignoreRecurring = true should have their instance date updated.
  */
 export const shouldUpdateInstanceDateOnMove = (
-	frontmatter: Record<string, unknown> | undefined,
+	frontmatter: Frontmatter | undefined,
 	ignoreRecurringProp: string
 ): boolean => {
 	if (!frontmatter) return false;
@@ -151,7 +151,7 @@ export const shouldUpdateInstanceDateOnMove = (
  * Checks if an event is a physical recurring event (has rruleId and instanceDate, but no rrule).
  */
 export const isPhysicalRecurringEvent = (
-	frontmatter: Record<string, unknown> | undefined,
+	frontmatter: Frontmatter | undefined,
 	rruleIdProp: string,
 	rruleProp: string,
 	instanceDateProp: string

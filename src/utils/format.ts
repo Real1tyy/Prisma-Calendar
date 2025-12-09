@@ -1,6 +1,7 @@
 import { isNotEmpty } from "@real1ty-obsidian-plugins/utils";
 import type { DateTime } from "luxon";
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
+import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 
 /**
@@ -201,7 +202,7 @@ export function getInternalProperties(settings: SingleCalendarConfig): Set<strin
  * Filters out internal properties and optionally underscore-prefixed properties.
  */
 export function categorizeProperties(
-	frontmatter: Record<string, unknown>,
+	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig
 ): {
 	displayProperties: [string, unknown][];

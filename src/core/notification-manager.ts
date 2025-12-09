@@ -1,6 +1,7 @@
 import { type App, TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { NotificationModal } from "../components/notification-modal";
+import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 import { toSafeString } from "../utils/format";
 import { parseAsLocalDate } from "../utils/time-formatter";
@@ -13,7 +14,7 @@ interface NotificationEntry {
 	notifyAt: Date;
 	startDate: Date;
 	isAllDay: boolean;
-	frontmatter: Record<string, unknown>;
+	frontmatter: Frontmatter;
 }
 
 /**
@@ -100,7 +101,7 @@ export class NotificationManager {
 		}
 	}
 
-	private processEventSource(filePath: string, frontmatter: Record<string, unknown>, isAllDay: boolean): void {
+	private processEventSource(filePath: string, frontmatter: Frontmatter, isAllDay: boolean): void {
 		if (frontmatter[this.settings.skipProp] === true) {
 			this.removeNotification(filePath);
 			return;
@@ -332,7 +333,7 @@ export class NotificationManager {
 		}
 
 		try {
-			await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 				fm[this.settings.alreadyNotifiedProp] = true;
 			});
 		} catch (error) {
@@ -378,7 +379,7 @@ export class NotificationManager {
 		}
 
 		try {
-			await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 				fm[this.settings.alreadyNotifiedProp] = false;
 
 				// Calculate minutesBefore so notification triggers exactly snoozeMinutes from NOW

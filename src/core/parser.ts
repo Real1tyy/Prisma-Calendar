@@ -3,7 +3,7 @@ import type { DateTime } from "luxon";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { v5 as uuidv5 } from "uuid";
 import { convertToISO, parseEventFrontmatter } from "../types/event";
-import type { ISO, SingleCalendarConfig } from "../types/index";
+import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
 import type { VaultEventId } from "./event-store";
 import type { RawEventSource } from "./indexer";
 
@@ -17,7 +17,7 @@ export interface ParsedEvent {
 	isVirtual: boolean;
 	skipped: boolean;
 	color?: string;
-	meta?: Record<string, unknown>;
+	meta?: Frontmatter;
 }
 
 // Custom namespace UUID for Prisma Calendar events
@@ -80,7 +80,7 @@ export class Parser {
 			}
 		}
 
-		const meta: Record<string, unknown> = {
+		const meta: Frontmatter = {
 			folder,
 			isAllDay: source.isAllDay,
 			originalStart: frontmatter[this.settings.startProp],

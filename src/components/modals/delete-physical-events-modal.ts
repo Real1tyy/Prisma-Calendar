@@ -81,9 +81,7 @@ export interface CalendarIntegrationDeleteEventsModalOptions {
 
 export class CalendarIntegrationDeleteEventsModal extends DeletePhysicalEventsModal {
 	constructor(app: App, options: CalendarIntegrationDeleteEventsModalOptions) {
-		const title = options.accountName
-			? "Delete account?"
-			: "Remove calendar?";
+		const title = options.accountName ? "Delete account?" : "Remove calendar?";
 
 		const message = options.accountName
 			? `The account "${options.accountName}" has ${options.eventCount} event(s). Do you want to delete the account and all associated events, or just the account (keeping events)?`

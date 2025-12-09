@@ -10,6 +10,7 @@ import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
+import type { Frontmatter } from "../types";
 import type { NodeRecurringEvent } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { hashRRuleIdToZettelFormat, removeZettelId, setEventBasics } from "../utils/calendar-events";
@@ -210,7 +211,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.notifyChange();
 	}
 
-	private handleFileChanged(filePath: string, frontmatter: Record<string, unknown>): void {
+	private handleFileChanged(filePath: string, frontmatter: Frontmatter): void {
 		const rruleId = frontmatter[this.settings.rruleIdProp] as string;
 		const instanceDate = frontmatter[this.settings.instanceDateProp] as string;
 		const isIgnored = frontmatter[this.settings.ignoreRecurringProp] === true;
@@ -398,7 +399,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 				"_Archived", // Don't copy _Archived property from source to instances
 			]);
 
-			const instanceFrontmatter: Record<string, unknown> = {};
+			const instanceFrontmatter: Frontmatter = {};
 
 			// Copy non-excluded properties from source
 			for (const [key, value] of Object.entries(recurringEvent.frontmatter)) {

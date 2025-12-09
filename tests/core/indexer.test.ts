@@ -2,6 +2,7 @@ import type { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, type MockedFunction, vi } from "vitest";
 import { Indexer, type IndexerEvent } from "../../src/core/indexer";
+import type { Frontmatter } from "../../src/types";
 import { createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
 
 describe("Indexer", () => {
@@ -181,9 +182,9 @@ describe("Indexer", () => {
 		let processFrontMatterSpy: MockedFunction<any>;
 
 		beforeEach(() => {
-			processFrontMatterSpy = vi.fn((_file: TFile, callback: (fm: Record<string, any>) => void) => {
+			processFrontMatterSpy = vi.fn((_file: TFile, callback: (fm: Frontmatter) => void) => {
 				// Simulate calling the callback with a mutable frontmatter object
-				const fm: Record<string, any> = {};
+				const fm: Frontmatter = {};
 				callback(fm);
 				return Promise.resolve();
 			});
@@ -277,8 +278,8 @@ describe("Indexer", () => {
 			expect(processFrontMatterSpy).toHaveBeenCalledWith(pastEventFile, expect.any(Function));
 
 			// Verify the callback sets the status to done
-			const callback = processFrontMatterSpy.mock.calls[0][1] as (fm: Record<string, any>) => void;
-			const testFm: Record<string, any> = {};
+			const callback = processFrontMatterSpy.mock.calls[0][1] as (fm: Frontmatter) => void;
+			const testFm: Frontmatter = {};
 			callback(testFm);
 			expect(testFm.Status).toBe("Done");
 

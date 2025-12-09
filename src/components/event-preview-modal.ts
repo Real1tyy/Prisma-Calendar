@@ -7,6 +7,7 @@ import {
 } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
+import type { Frontmatter } from "../types";
 import { removeZettelId } from "../utils/calendar-events";
 import { createTextDiv } from "../utils/dom-utils";
 import { calculateDuration, categorizeProperties, intoDate } from "../utils/format";
@@ -25,7 +26,7 @@ export interface PreviewEventData {
 export class EventPreviewModal extends Modal {
 	private event: PreviewEventData;
 	private bundle: CalendarBundle;
-	private allFrontmatter: Record<string, unknown> = {};
+	private allFrontmatter: Frontmatter = {};
 
 	constructor(app: App, bundle: CalendarBundle, event: PreviewEventData) {
 		super(app);

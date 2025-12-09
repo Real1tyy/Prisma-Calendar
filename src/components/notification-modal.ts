@@ -6,6 +6,7 @@ import {
 	renderPropertyValue,
 } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal } from "obsidian";
+import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 import { removeZettelId } from "../utils/calendar-events";
 import { createTextDiv } from "../utils/dom-utils";
@@ -16,7 +17,7 @@ interface NotificationEventData {
 	filePath: string;
 	startDate: Date;
 	isAllDay: boolean;
-	frontmatter: Record<string, unknown>;
+	frontmatter: Frontmatter;
 }
 
 export class NotificationModal extends Modal {

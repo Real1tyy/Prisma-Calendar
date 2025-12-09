@@ -1,5 +1,6 @@
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
+import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/index";
 import { parseIntoList } from "../utils/list-utils";
 import type { Indexer, IndexerEvent } from "./indexer";
@@ -57,7 +58,7 @@ export class CategoryTracker {
 		}
 	}
 
-	private extractCategory(frontmatter: Record<string, unknown>): void {
+	private extractCategory(frontmatter: Frontmatter): void {
 		const categoryProp = this._settings.categoryProp;
 		if (!categoryProp) return;
 

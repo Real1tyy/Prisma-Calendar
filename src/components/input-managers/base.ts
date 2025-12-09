@@ -1,5 +1,6 @@
 import type { Calendar } from "@fullcalendar/core";
 import { cls } from "@real1ty-obsidian-plugins/utils";
+import type { Frontmatter } from "../../types";
 
 export type FilterChangeCallback = () => void;
 
@@ -45,7 +46,7 @@ export abstract class InputFilterManager {
 		return this.input === document.activeElement;
 	}
 
-	abstract shouldInclude(data: { meta?: Record<string, unknown> }): boolean;
+	abstract shouldInclude(data: { meta?: Frontmatter }): boolean;
 
 	private injectInput(container: HTMLElement): void {
 		const toolbarLeft = container.querySelector(".fc-toolbar-chunk:first-child");

@@ -1,4 +1,5 @@
 import { cls } from "@real1ty-obsidian-plugins/utils";
+import type { Frontmatter } from "../../types";
 import { buildPropertyMapping, sanitizeExpression } from "../../utils/expression-utils";
 import { InputFilterManager } from "./base";
 
@@ -18,7 +19,7 @@ export class ExpressionFilterInputManager extends InputFilterManager {
 		this.lastWarnedExpression = null; // Clear warning tracker on filter change
 	}
 
-	shouldInclude(event: { meta?: Record<string, unknown> }): boolean {
+	shouldInclude(event: { meta?: Frontmatter }): boolean {
 		if (!this.currentFilterValue) return true;
 
 		const frontmatter = event.meta || {};

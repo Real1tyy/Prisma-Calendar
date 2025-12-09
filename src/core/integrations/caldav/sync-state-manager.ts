@@ -1,5 +1,6 @@
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
+import type { Frontmatter } from "../../../types";
 import type { SingleCalendarConfig } from "../../../types/settings";
 import type { Indexer, IndexerEvent } from "../../indexer";
 import { type CalDAVSyncMetadata, CalDAVSyncMetadataSchema } from "./types";
@@ -151,9 +152,9 @@ export class CalDAVSyncStateManager {
 		}
 	}
 
-	private processFileChange(filePath: string, frontmatter: Record<string, unknown>): void {
+	private processFileChange(filePath: string, frontmatter: Frontmatter): void {
 		// Look for CalDAV metadata in the configured caldavProp
-		const caldavData = frontmatter[this.caldavProp] as Record<string, unknown> | undefined;
+		const caldavData = frontmatter[this.caldavProp] as Frontmatter | undefined;
 
 		if (caldavData && typeof caldavData === "object") {
 			const metadata = this.parseCaldavMetadata(caldavData);
@@ -172,7 +173,7 @@ export class CalDAVSyncStateManager {
 		this.untrackByPath(filePath);
 	}
 
-	private parseCaldavMetadata(caldav: Record<string, unknown>): CalDAVSyncMetadata | null {
+	private parseCaldavMetadata(caldav: Frontmatter): CalDAVSyncMetadata | null {
 		const result = CalDAVSyncMetadataSchema.safeParse(caldav);
 		return result.success ? result.data : null;
 	}

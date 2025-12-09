@@ -14,7 +14,7 @@ import {
 } from "rxjs";
 import { debounceTime, filter, groupBy, map, mergeMap, switchMap, toArray } from "rxjs/operators";
 import { SCAN_CONCURRENCY } from "../constants";
-import type { SingleCalendarConfig } from "../types/index";
+import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import { generateUniqueRruleId } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
@@ -22,7 +22,7 @@ import { intoDate } from "../utils/format";
 export interface RawEventSource {
 	filePath: string;
 	mtime: number;
-	frontmatter: Record<string, unknown>;
+	frontmatter: Frontmatter;
 	folder: string;
 	isAllDay: boolean;
 }
@@ -276,10 +276,7 @@ export class Indexer {
 		return isFileInConfiguredDirectory(file.path, this._settings.directory);
 	}
 
-	private async tryParseRecurring(
-		file: TFile,
-		frontmatter: Record<string, unknown>
-	): Promise<NodeRecurringEvent | null> {
+	private async tryParseRecurring(file: TFile, frontmatter: Frontmatter): Promise<NodeRecurringEvent | null> {
 		const rrules = parseRRuleFromFrontmatter(frontmatter, this._settings);
 		if (!rrules) return null;
 
@@ -288,7 +285,7 @@ export class Indexer {
 
 		if (!rRuleId) {
 			rRuleId = generateUniqueRruleId();
-			await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 				fm[this._settings.rruleIdProp] = rRuleId;
 			});
 		}
@@ -306,7 +303,7 @@ export class Indexer {
 		};
 	}
 
-	private async markPastEventAsDone(file: TFile, frontmatter: Record<string, unknown>): Promise<void> {
+	private async markPastEventAsDone(file: TFile, frontmatter: Frontmatter): Promise<void> {
 		// CRITICAL PROTECTION: Don't mark source recurring events as done
 		// Source recurring events (identified by the presence of rruleProp) are templates
 		// that generate virtual and physical instances. Marking them as done would:
@@ -351,7 +348,7 @@ export class Indexer {
 			// Only update if status is not already the done value
 			if (currentStatus !== doneValue) {
 				try {
-					await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+					await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 						fm[this._settings.statusProperty] = doneValue;
 					});
 				} catch (error) {

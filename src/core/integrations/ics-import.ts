@@ -2,7 +2,7 @@ import { getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from 
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
 import { type App, Notice, type TFile } from "obsidian";
-import type { SingleCalendarConfig } from "../../types";
+import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { extractZettelId, generateUniqueEventPath, removeZettelId, setEventBasics } from "../../utils/calendar-events";
 import { parseIntoList } from "../../utils/list-utils";
 import { ensureFolderExists } from "../../utils/obsidian";
@@ -17,7 +17,7 @@ export interface ImportedEvent {
 	categories?: string[];
 	reminderMinutes?: number;
 	/** Frontmatter properties parsed from X-PRISMA-FM-* ICS properties */
-	frontmatter?: Record<string, unknown>;
+	frontmatter?: Frontmatter;
 	/** Original file path from X-PRISMA-FILE if present */
 	originalFilePath?: string;
 	/** Event UID from ICS - used for duplicate detection */
@@ -73,8 +73,8 @@ function extractOriginalKey(param: unknown, fallback: string): string {
 	return fallback;
 }
 
-function parsePrismaFrontmatter(vevent: ICAL.Component): Record<string, unknown> | undefined {
-	const frontmatter: Record<string, unknown> = {};
+function parsePrismaFrontmatter(vevent: ICAL.Component): Frontmatter | undefined {
+	const frontmatter: Frontmatter = {};
 
 	// Get all properties from the VEVENT
 	const properties = vevent.getAllProperties();
@@ -234,8 +234,8 @@ export function buildFrontmatterFromImportedEvent(
 	event: ImportedEvent,
 	settings: SingleCalendarConfig,
 	timezone: string = "UTC"
-): Record<string, unknown> {
-	const fm: Record<string, unknown> = { ...event.frontmatter };
+): Frontmatter {
+	const fm: Frontmatter = { ...event.frontmatter };
 
 	const startISO = event.allDay
 		? `${dateToTimezoneDate(event.start, timezone)}T00:00:00`
@@ -276,7 +276,7 @@ export async function createEventNoteFromImportedEvent(
 	options: {
 		targetDirectory: string;
 		timezone: string;
-		additionalFrontmatter?: Record<string, unknown>;
+		additionalFrontmatter?: Frontmatter;
 	}
 ): Promise<TFile> {
 	const { targetDirectory, timezone, additionalFrontmatter } = options;
