@@ -8,7 +8,7 @@ export interface DeleteConfirmationModalOptions {
 	confirmText?: string;
 	cancelText?: string;
 	onConfirm: () => void | Promise<void>;
-	onCancel?: () => void;
+	onCancel?: () => void | Promise<void>;
 }
 
 export class DeletePhysicalEventsModal extends Modal {
@@ -37,7 +37,12 @@ export class DeletePhysicalEventsModal extends Modal {
 			text: this.options.cancelText || "No",
 		});
 		cancelButton.addEventListener("click", () => {
-			this.options.onCancel?.();
+			const result = this.options.onCancel?.();
+			if (result instanceof Promise) {
+				void result.catch((error) => {
+					console.error("Error in onCancel callback:", error);
+				});
+			}
 			this.close();
 		});
 
@@ -46,7 +51,10 @@ export class DeletePhysicalEventsModal extends Modal {
 			cls: "mod-cta",
 		});
 		confirmButton.addEventListener("click", () => {
-			Promise.resolve(this.options.onConfirm()).then(() => {
+			void Promise.resolve(this.options.onConfirm()).then(() => {
+				this.close();
+			}).catch((error) => {
+				console.error("Error in onConfirm callback:", error);
 				this.close();
 			});
 		});
@@ -76,7 +84,7 @@ export interface CalendarIntegrationDeleteEventsModalOptions {
 	calendarIdentifier?: string;
 	eventCount: number;
 	onConfirm: () => void | Promise<void>;
-	onCancel?: () => void;
+	onCancel?: () => void | Promise<void>;
 }
 
 export class CalendarIntegrationDeleteEventsModal extends DeletePhysicalEventsModal {

@@ -169,7 +169,7 @@ export class CalDAVSettings {
 			cls: `${cls("caldav-account-btn")} ${cls("caldav-account-btn-delete")}`,
 		});
 		deleteButton.addEventListener("click", () => {
-			void this.handleDeleteAccount(account, container);
+			this.handleDeleteAccount(account, container);
 		});
 	}
 
@@ -187,7 +187,7 @@ export class CalDAVSettings {
 		})();
 	}
 
-	private async handleDeleteAccount(account: CalDAVAccount, container: HTMLElement): Promise<void> {
+	private handleDeleteAccount(account: CalDAVAccount, container: HTMLElement): void {
 		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === account.calendarId);
 		if (!bundle) {
 			new ConfirmDeleteAccountModal(this.app, account.name, () => {
