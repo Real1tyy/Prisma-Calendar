@@ -170,12 +170,8 @@ const config: Config = {
               to: '/support',
             },
             {
-              label: 'Sponsor on GitHub',
-              href: 'https://github.com/sponsors/Real1tyy',
-            },
-            {
-              label: 'Buy Me a Coffee',
-              href: 'https://www.buymeacoffee.com/real1ty',
+              label: 'Sponsorship options',
+              href: 'https://github.com/Real1tyy#-support-my-work',
             },
           ],
         },

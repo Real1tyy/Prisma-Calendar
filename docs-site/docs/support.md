@@ -2,6 +2,7 @@
 
 If you find Prisma Calendar valuable and want to support its continued development, there are several ways you can help!
 
+
 ## 📺 YouTube Channel
 
 I create **video content** about productivity, Obsidian, and digital setups, including **tutorials on my Obsidian plugins** like Prisma Calendar. Your support here is incredibly meaningful:
@@ -32,8 +33,6 @@ If you'd like to support the development financially, any contribution is **high
 - **Create new plugins** for the Obsidian community
 - **Keep evolving** the ecosystem with quality tools
 
-**Ways to donate:**
-- [💚 Sponsor on GitHub](https://github.com/sponsors/Real1tyy)
-- [☕ Buy Me a Coffee](https://www.buymeacoffee.com/real1ty)
+👉 **[Support My Work](https://github.com/Real1tyy#-support-my-work)** — All donation methods and details
 
 **Every amount, no matter how small, makes a real difference.** Thank you for your support!
