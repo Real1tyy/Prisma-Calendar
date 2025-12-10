@@ -67,6 +67,22 @@ def get_repo_url() -> str:
 
     return "https://github.com/Real1tyy/PeriodicNotesPlanner"
 
+def check_git_clean() -> bool:
+    """Check if git repository is clean (no uncommitted changes)."""
+    try:
+        status_result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if status_result.returncode != 0:
+            return False
+
+        return len(status_result.stdout.strip()) == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return False
+
 def main():
     project_root = Path.cwd()
 
@@ -82,6 +98,13 @@ def main():
         print("   Install: sudo apt install gh")
         print("   Authenticate: gh auth login")
         sys.exit(1)
+
+    print("🔍 Checking git repository status...")
+    if not check_git_clean():
+        print("❌ Git repository is not clean (uncommitted changes detected)")
+        print("   Please commit or stash your changes before creating a release")
+        sys.exit(1)
+    print("✅ Repository is clean\n")
 
     print("🚀 Starting release process...")
     print(f"   Bump type: {bump_type}\n")
@@ -169,6 +192,49 @@ def main():
                 print(upload_result.stderr)
             else:
                 print(f"   ✅ Uploaded {filename}")
+
+        print(f"\n💾 Step 5: Committing release changes...")
+
+        commit_message = f"chore: release {new_version}"
+
+        add_result = subprocess.run(
+            ["git", "add", "manifest.json", "package.json", "versions.json"],
+            cwd=project_root,
+            capture_output=True,
+            text=True
+        )
+
+        if add_result.returncode != 0:
+            print(f"⚠️  Failed to stage files for commit:")
+            print(add_result.stderr)
+        else:
+            commit_result = subprocess.run(
+                ["git", "commit", "-m", commit_message],
+                cwd=project_root,
+                capture_output=True,
+                text=True
+            )
+
+            if commit_result.returncode != 0:
+                print(f"⚠️  Failed to commit changes:")
+                print(commit_result.stderr)
+            else:
+                print(f"✅ Committed changes: {commit_message}")
+
+        print(f"\n📤 Step 6: Pushing to remote repository...")
+
+        push_result = subprocess.run(
+            ["git", "push"],
+            cwd=project_root,
+            capture_output=True,
+            text=True
+        )
+
+        if push_result.returncode != 0:
+            print(f"⚠️  Failed to push changes:")
+            print(push_result.stderr)
+        else:
+            print(f"✅ Pushed commit to remote")
 
         repo_url = get_repo_url()
         print(f"\n✅ Release {tag} created successfully!")
