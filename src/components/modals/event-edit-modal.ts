@@ -77,7 +77,9 @@ export class EventEditModal extends BaseEventModal {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		// Categorize properties using shared utility
-		const { displayProperties, otherProperties } = categorizeProperties(this.originalFrontmatter, settings);
+		// Use event.allDay if available, otherwise check the checkbox state
+		const isAllDay = this.event.allDay ?? this.allDayCheckbox?.checked ?? false;
+		const { displayProperties, otherProperties } = categorizeProperties(this.originalFrontmatter, settings, isAllDay);
 
 		// Load display properties
 		for (const [key, value] of displayProperties) {

@@ -344,8 +344,11 @@ export abstract class BaseEventModal extends Modal {
 			this.displayPropertiesContainer.empty();
 			this.otherPropertiesContainer.empty();
 
-			// Get display properties list to categorize
-			const displayPropsSet = new Set(settings.frontmatterDisplayProperties || []);
+			// Get display properties list to categorize based on preset's allDay setting
+			// Check both lists to handle presets that might be used for either event type
+			const timedDisplayProps = new Set(settings.frontmatterDisplayProperties || []);
+			const allDayDisplayProps = new Set(settings.frontmatterDisplayPropertiesAllDay || []);
+			const displayPropsSet = new Set([...timedDisplayProps, ...allDayDisplayProps]);
 
 			for (const [key, value] of Object.entries(preset.customProperties)) {
 				const stringValue = serializeFrontmatterValue(value);

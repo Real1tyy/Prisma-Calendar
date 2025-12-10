@@ -83,7 +83,11 @@ export class EventPreviewModal extends Modal {
 
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		const { displayProperties, otherProperties } = categorizeProperties(this.allFrontmatter, settings);
+		const { displayProperties, otherProperties } = categorizeProperties(
+			this.allFrontmatter,
+			settings,
+			this.event.allDay
+		);
 
 		this.renderPropertiesSection(contentEl, "Display Properties", displayProperties);
 		this.renderPropertiesSection(contentEl, "Other Properties", otherProperties);

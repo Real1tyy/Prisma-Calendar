@@ -224,8 +224,16 @@ ${settings.futureInstancesCountProp}: 5
 
 		this.ui.addTextArray(containerEl, {
 			key: "frontmatterDisplayProperties",
-			name: "Display properties",
-			desc: "Comma-separated list of frontmatter property names to display in events",
+			name: "Display properties (timed events)",
+			desc: "Comma-separated list of frontmatter property names to display in timed events (events with start and end times). Properties are shown in weekly and daily views, but hidden in monthly view to save space.",
+			placeholder: "status, priority, project, tags, category",
+			arrayDelimiter: ", ",
+		});
+
+		this.ui.addTextArray(containerEl, {
+			key: "frontmatterDisplayPropertiesAllDay",
+			name: "Display properties (all-day events)",
+			desc: "Comma-separated list of frontmatter property names to display in all-day events. Properties are shown in weekly and daily views, but hidden in monthly view to save space.",
 			placeholder: "status, priority, project, tags, category",
 			arrayDelimiter: ", ",
 		});

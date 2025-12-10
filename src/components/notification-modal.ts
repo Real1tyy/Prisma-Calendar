@@ -68,7 +68,11 @@ export class NotificationModal extends Modal {
 		this.renderEventDetails(detailsSection);
 
 		// Properties section
-		const { displayProperties, otherProperties } = categorizeProperties(this.eventData.frontmatter, this.settings);
+		const { displayProperties, otherProperties } = categorizeProperties(
+			this.eventData.frontmatter,
+			this.settings,
+			this.eventData.isAllDay
+		);
 
 		this.renderPropertiesSection(contentEl, "Event Properties", displayProperties);
 		if (otherProperties.length > 0) {

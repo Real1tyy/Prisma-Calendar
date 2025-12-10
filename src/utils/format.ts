@@ -200,16 +200,21 @@ export function getInternalProperties(settings: SingleCalendarConfig): Set<strin
 /**
  * Categorizes frontmatter properties into display and other properties based on settings.
  * Filters out internal properties and optionally underscore-prefixed properties.
+ * @param allDay - Whether this is an all-day event (determines which display properties list to use)
  */
 export function categorizeProperties(
 	frontmatter: Frontmatter,
-	settings: SingleCalendarConfig
+	settings: SingleCalendarConfig,
+	allDay?: boolean
 ): {
 	displayProperties: [string, unknown][];
 	otherProperties: [string, unknown][];
 } {
 	const internalProperties = getInternalProperties(settings);
-	const displayPropertyKeys = new Set(settings.frontmatterDisplayProperties);
+	const displayPropertiesList = allDay
+		? settings.frontmatterDisplayPropertiesAllDay
+		: settings.frontmatterDisplayProperties;
+	const displayPropertyKeys = new Set(displayPropertiesList);
 
 	const displayProperties: [string, unknown][] = [];
 	const otherProperties: [string, unknown][] = [];

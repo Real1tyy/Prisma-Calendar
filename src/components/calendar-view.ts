@@ -1284,13 +1284,17 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return { domNodes: [container] };
 	}
 
-	private getDisplayProperties(event: Pick<CalendarEventData, "extendedProps">): [string, unknown][] {
+	private getDisplayProperties(event: Pick<CalendarEventData, "extendedProps" | "allDay">): [string, unknown][] {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const properties: [string, unknown][] = [];
 		const displayData = event.extendedProps.frontmatterDisplayData;
 
-		if (settings.frontmatterDisplayProperties.length > 0 && displayData) {
-			for (const prop of settings.frontmatterDisplayProperties) {
+		const displayPropertiesList = event.allDay
+			? settings.frontmatterDisplayPropertiesAllDay
+			: settings.frontmatterDisplayProperties;
+
+		if (displayPropertiesList.length > 0 && displayData) {
+			for (const prop of displayPropertiesList) {
 				const value = displayData[prop];
 				if (isNotEmpty(value)) {
 					properties.push([prop, value]);
