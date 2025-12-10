@@ -915,6 +915,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			eventDurationEditable: true,
 			eventResizableFromStart: true,
 
+			// Fix drag mirror positioning for all-day events
+			// Positions the drag mirror relative to document.body instead of calendar container
+			// This ensures the event box follows the cursor correctly for both all-day and timed events
+			fixedMirrorParent: document.body,
+
 			eventAllow: (_dropInfo, draggedEvent) => {
 				return !draggedEvent?.extendedProps.isVirtual;
 			},

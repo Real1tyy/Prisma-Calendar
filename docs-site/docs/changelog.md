@@ -24,6 +24,7 @@ All notable changes to this project will be documented here.
 
 ### Bug Fixes
 
+- **Fixed All-Day Event Drag Offset**: Fixed an issue where all-day events appeared offset from the cursor (approximately 10 pixels below) when dragging, making the drag operation feel misaligned. The event box now follows the cursor correctly for both all-day and timed events.
 - **Fixed Preset Synchronization**: Event presets are now properly synchronized between the event modal and settings. Presets created or deleted in the modal immediately appear in settings, and presets deleted in settings are automatically removed from the modal dropdown.
 
 ---
