@@ -657,33 +657,37 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// Get all events from the calendar
 		const events = this.calendar.getEvents();
 
-		// First, find all events that are currently active (now is between start and end)
-		const activeEvents = events.filter((event) => {
+		// Filter to only timed events (exclude all-day events and virtual events)
+		const timedEvents = events.filter((event) => {
 			const eventStart = event.start;
 			if (!eventStart) return false;
 			// Exclude virtual events from being highlighted
 			if (event.extendedProps?.isVirtual) return false;
+			// Always ignore all-day events - only highlight timed events
+			if (event.allDay) return false;
+			return true;
+		});
 
+		// First, find the first timed event that is currently active (now is between start and end)
+		const activeTimedEvents = timedEvents.filter((event) => {
+			const eventStart = event.start!;
 			const eventEnd = event.end || eventStart;
 			// Check if now is between start and end
 			return eventStart <= now && now <= eventEnd;
 		});
 
 		// If there are active events, highlight all of them
-		if (activeEvents.length > 0) {
-			for (const event of activeEvents) {
+		if (activeTimedEvents.length > 0) {
+			for (const event of activeTimedEvents) {
 				result.add(event.id);
 			}
 			return result;
 		}
 
-		// If no active events, find the next upcoming event (closest future start time)
-		const upcomingEvents = events
+		// If no active timed events, find the next upcoming timed event (closest future start time)
+		const upcomingTimedEvents = timedEvents
 			.filter((event) => {
-				const eventStart = event.start;
-				if (!eventStart) return false;
-				// Exclude virtual events from being highlighted
-				if (event.extendedProps?.isVirtual) return false;
+				const eventStart = event.start!;
 				return eventStart > now;
 			})
 			.sort((a, b) => {
@@ -692,9 +696,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				return aStart - bStart;
 			});
 
-		// Return the ID of the first upcoming event
-		if (upcomingEvents.length > 0) {
-			result.add(upcomingEvents[0].id);
+		// Return the ID of the first upcoming timed event
+		if (upcomingTimedEvents.length > 0) {
+			result.add(upcomingTimedEvents[0].id);
 		}
 
 		return result;

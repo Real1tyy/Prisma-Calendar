@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented here.
 
+## 1.12.0
+
+### Improvements
+
+- **Separate Display Properties for All-Day Events**: Added a new setting "Display properties (all-day events)" in Settings → Properties → Frontmatter display, allowing you to configure different frontmatter properties to display for all-day events versus timed events. The existing "Display properties (timed events)" setting now explicitly applies only to timed events. Both settings work independently, giving you full control over which properties appear in each event type.
+
+### Bug Fixes
+
+- **Fixed All-Day Event Drag Offset**: Fixed an issue where all-day events appeared offset from the cursor (approximately 10 pixels below) when dragging, making the drag operation feel misaligned. The event box now follows the cursor correctly for both all-day and timed events.
+- **Fixed Highlight Upcoming Event**: The upcoming event highlight now correctly ignores all-day events and only highlights all currently active timed events. Previously, it would highlight all events including all-day events, but now it prioritizes timed events and ignores all-day events completely.
+
+---
+
 ## 1.11.0
 
 ### New Features
@@ -20,11 +33,9 @@ All notable changes to this project will be documented here.
 - **Fixed Past Event Contrast for All-Day Events**: All-day events on the current day are no longer dimmed by the past event contrast setting. Only all-day events from previous days are affected by the contrast setting, while timed events continue to use time-based comparison.
 - **Always Include Date and Time Properties**: Both date and time properties are now always present in event frontmatter, regardless of whether the event is all-day or timed. This makes it easy to convert between all-day and timed events by manually editing the frontmatter. For all-day events, the date property contains the date while start/end properties are empty strings. For timed events, start/end properties contain the full datetime while the date property is an empty string.
 - **Consistent Frontmatter Display**: Frontmatter properties are now displayed for all-day events in weekly and daily views, matching the behavior of timed events. Properties remain hidden in the monthly view to save space.
-- **Separate Display Properties for All-Day Events**: Added a new setting "Display properties (all-day events)" in Settings → Properties → Frontmatter display, allowing you to configure different frontmatter properties to display for all-day events versus timed events. The existing "Display properties (timed events)" setting now explicitly applies only to timed events. Both settings work independently, giving you full control over which properties appear in each event type.
 
 ### Bug Fixes
 
-- **Fixed All-Day Event Drag Offset**: Fixed an issue where all-day events appeared offset from the cursor (approximately 10 pixels below) when dragging, making the drag operation feel misaligned. The event box now follows the cursor correctly for both all-day and timed events.
 - **Fixed Preset Synchronization**: Event presets are now properly synchronized between the event modal and settings. Presets created or deleted in the modal immediately appear in settings, and presets deleted in settings are automatically removed from the modal dropdown.
 
 ---
