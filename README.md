@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/github/license/Real1tyy/Prisma-Calendar?style=for-the-badge)
 ![Obsidian](https://img.shields.io/badge/obsidian-plugin-purple.svg?style=for-the-badge)
 
-**The most powerful and flexible calendar plugin for Obsidian — fully configurable, reactive, and built for power users.**
+**The most powerful and flexible calendar plugin ever built for Obsidian — fully configurable, reactive, and built for power users who want real control over their time-linked notes.**
 
 ---
 
@@ -26,14 +26,21 @@
   <img src="https://img.youtube.com/vi/aULuB6petbU/maxresdefault.jpg" alt="Prisma Calendar - Feature Showcase (Part 1)" style="width:100%;">
 </a>
 
-**Core Features Walkthrough**: This video covers many of the fundamental features of Prisma Calendar including event creation, editing, batch operations, undo/redo system, recurring events, color rules, and more. A comprehensive introduction to the essential tools that make Prisma Calendar powerful.
+**Core Features Walkthrough**: This video covers many of the fundamental features of Prisma Calendar including event creation, editing, batch operations, undo/redo system, recurring events, color rules, and more.
 
 ### Part 2: Deep Dive — Intelligence & Automation
 <a href="https://www.youtube.com/watch?v=JCYGWltxQQ0" target="_blank">
   <img src="https://img.youtube.com/vi/JCYGWltxQQ0/maxresdefault.jpg" alt="Prisma Calendar - Deep Dive (Part 2)" style="width:100%;">
 </a>
 
-**Advanced Features Deep Dive**: This Part 2 explores additional features that didn't make it into the first video: intelligent notifications, global event search, navigation tools, statistics and time-tracking insights, and filtering presets. Discover the advanced systems that bring even more power to your workflow.
+**Advanced Features Deep Dive**: This Part 2 explores additional features that didn't make it into the first video: intelligent notifications, global event search, navigation tools, statistics and time-tracking insights, and filtering presets.
+
+### Part 3: Advanced Workflow Tools — Automation & Refinement
+<a href="https://www.youtube.com/watch?v=QuTyruv7uhU" target="_blank">
+  <img src="https://img.youtube.com/vi/QuTyruv7uhU/maxresdefault.jpg" alt="Prisma Calendar - Advanced Workflow Tools (Part 3)" style="width:100%;">
+</a>
+
+**Workflow Refinement & Automation**: This Part 3 explores additional advanced features that further expand the plugin's workflow capabilities: improvements to recurring event duplication, preview behavior, stopwatch time-tracking, break property inside statistics, category management, the recurring event modal, calendar presets, and full ICS import/export workflows.
 
 </div>
 

@@ -9,16 +9,7 @@ const sidebars: SidebarsConfig = {
     },
     "installation",
     "quickstart",
-    {
-      type: 'link',
-      label: 'Full Tutorial',
-      href: 'https://www.youtube.com/watch?v=aARXf9ehgaw',
-    },
-    {
-      type: 'link',
-      label: 'Demo Video',
-      href: 'https://www.youtube.com/watch?v=aULuB6petbU',
-    },
+    "videos",
     {
       type: "category",
       label: "Features",

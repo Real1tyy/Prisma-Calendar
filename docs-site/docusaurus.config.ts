@@ -92,9 +92,9 @@ const config: Config = {
           position: 'left',
         },
         {
-          href: 'https://www.youtube.com/watch?v=aULuB6petbU',
-          label: 'Demo',
-          position: 'right',
+          to: '/videos',
+          label: 'Videos',
+          position: 'left',
         },
         {
           href: 'https://www.youtube.com/watch?v=aARXf9ehgaw',
@@ -126,6 +126,10 @@ const config: Config = {
               label: 'Quick Start',
               to: '/quickstart',
             },
+            {
+              label: 'Video Tutorials',
+              to: '/videos',
+            },
           ],
         },
         {
@@ -145,12 +149,8 @@ const config: Config = {
           title: 'More',
           items: [
             {
-              label: 'Full Tutorial',
-              href: 'https://www.youtube.com/watch?v=aARXf9ehgaw',
-            },
-            {
-              label: 'Demo Video',
-              href: 'https://www.youtube.com/watch?v=aULuB6petbU',
+              label: 'Video Tutorials',
+              to: '/videos',
             },
             {
               label: 'Repository',

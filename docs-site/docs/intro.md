@@ -19,11 +19,15 @@ title: Prisma Calendar
   <img src="https://img.shields.io/badge/obsidian-plugin-purple.svg?style=for-the-badge" alt="Obsidian" />
 </p>
 
-**The most powerful and flexible calendar plugin for Obsidian — fully configurable, reactive, and built for power users.**
+**The most powerful and flexible calendar plugin ever built for Obsidian — fully configurable, reactive, and engineered for power users who want real control over their time-linked notes.**
 
 ---
 
 ## 🎬 Video Tutorials
+
+:::tip Watch All Videos
+Check out the [complete video tutorial collection](/videos) with all four videos, detailed chapters, and timestamps!
+:::
 
 ### Full Tutorial — Zero to Mastery
 
@@ -65,6 +69,20 @@ title: Prisma Calendar
     allowFullScreen>
   </iframe>
   <p><strong>Advanced systems and workflows:</strong> Intelligent notification system with desktop alerts and snooze, global event search across all calendars, quick navigation tools, weekly statistics and time-tracking insights, filtering presets for complex workflows, and automation patterns. Discover the tools that bring clarity, structure, and total control to your scheduling and time analysis.</p>
+</div>
+
+### Part 3: Advanced Workflow Tools — Automation & Refinement
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <iframe
+    style={{"width":"100%", "aspectRatio": "16/9"}}
+    src="https://www.youtube.com/embed/QuTyruv7uhU"
+    title="Prisma Calendar - Advanced Workflow Tools (Part 3)"
+    frameBorder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen>
+  </iframe>
+  <p><strong>Workflow refinement and automation:</strong> Event renaming logic, improvements to recurring event duplication, preview behavior, stopwatch time-tracking, break property inside statistics, category management, the recurring event modal, calendar presets, and full ICS import/export workflows. Perfect for building a structured, fully automated second-brain calendar system inside Obsidian.</p>
 </div>
 
 </div>
