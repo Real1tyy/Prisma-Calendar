@@ -66,7 +66,7 @@ When you duplicate an event:
 2. Clone: `Project Review-20250106152045.md` (new timestamp)
 3. Both display as: `Project Review`
 
-The calendar automatically generates a new unique ZLID for the clone.
+The calendar automatically generates a new unique ZettelID for the clone.
 
 ---
 
@@ -77,12 +77,12 @@ The calendar automatically generates a new unique ZLID for the clone.
 To have ZettelIDs automatically added to new events:
 
 1. **Open Settings** → Prisma Calendar → **Properties Settings**
-2. Set the **ZettelID property** field (e.g., `ZettelID` or `ZLID`)
+2. Set the **ZettelID property** field (e.g., `ZettelID`)
 3. Create new events via the calendar interface
 
 The calendar will:
-- Append the ZLID to the filename: `Event Title-20250106143022.md`
-- Add the ZLID to frontmatter: `ZettelID: 20250106143022`
+- Append the ZettelID to the filename: `Event Title-20250106143022.md`
+- Add the ZettelID to frontmatter: `ZettelID: 20250106143022`
 
 ### Example Frontmatter
 
@@ -100,9 +100,9 @@ Meeting notes go here...
 ### Manual Events (Without ZettelID Property)
 
 Even if you don't configure a ZettelID property:
-- Events created via the calendar will still use ZLID-based filenames
-- The ZLID just won't be stored in frontmatter
-- The calendar will still strip the ZLID from display
+- Events created via the calendar will still use ZettelID-based filenames
+- The ZettelID just won't be stored in frontmatter
+- The calendar will still strip the ZettelID from display
 
 ---
 
@@ -141,7 +141,7 @@ Works seamlessly with:
 - Undo/redo system
 
 ### ✅ **Optional Frontmatter Storage**
-Store the ZLID in frontmatter for additional tracking if needed.
+Store the ZettelID in frontmatter for additional tracking if needed.
 
 ---
 
@@ -149,33 +149,50 @@ Store the ZLID in frontmatter for additional tracking if needed.
 
 ### Do I need to configure ZettelID to use this feature?
 
-**No.** The hidden naming system works automatically for all events created via the calendar, whether or not you configure a ZettelID frontmatter property. Configuring the property just stores the ZLID in frontmatter as well.
+**No.** The hidden naming system works automatically for all events created via the calendar, whether or not you configure a ZettelID frontmatter property. Configuring the property just stores the ZettelID in frontmatter as well.
 
-### Can I see the ZLID somewhere?
+### Can I see the ZettelID somewhere?
 
-**Yes.** The ZLID is always visible in:
+**Yes.** The ZettelID is always visible in:
 - The file browser in Obsidian's sidebar
 - The file system (if you browse your vault externally)
 - The frontmatter (if you configured a ZettelID property)
 
 It's just hidden from the *calendar interface* to keep the UI clean.
 
-### What if I manually rename a file to remove the ZLID?
+### What if I manually rename a file to remove the ZettelID?
 
-The calendar will still display the file correctly. The ZLID removal is purely cosmetic for display purposes. However, removing the ZLID manually:
+The calendar will still display the file correctly. However, removing the ZettelID manually:
 - Increases risk of filename collisions
 - May cause issues if you later create an event with the same name
 - Is not recommended
 
 ### Does this work with events I create manually (outside the calendar)?
 
-If you manually create a note without a ZLID suffix:
-- The calendar will display it normally
-- No ZLID stripping occurs (there's nothing to strip)
-- Creating another event with the same name via the calendar will add a ZLID to the new one
+**Partially.** Prisma Calendar only recognizes its own ZettelID format:
 
-For consistency, it's recommended to create events via the calendar interface when possible.
+If you manually create a note **with Prisma's ZettelID format** (e.g., `Meeting-20250106120000.md`):
+- The calendar will display it as `Meeting` (ZettelID stripped)
+- When cloning/moving the event, Prisma **preserves** the existing ZettelID and does NOT add a new one
+- This prevents double-timestamping issues
 
-### Can I customize the ZLID format?
+**Recognized format:**
+- Prisma native only: `-YYYYMMDDHHmmss` (exactly 14 digits)
+
+**Example:**
+```
+Manual file with Prisma format: Meeting-20250106120000.md
+Display: Meeting
+Clone: Meeting-20250106120000.md (same ZettelID preserved)
+```
+
+If you manually create a note **with other timestamp formats** (e.g., `Meeting-20250106-1430.md`):
+- The calendar will display the full filename including the timestamp
+- When cloning/moving, Prisma will ADD its own ZettelID: `Meeting-20250106-1430-20250112153045.md`
+- This may result in double timestamps
+
+**Recommendation:** For best results, create events via the calendar interface, or use Prisma's exact ZettelID format (`-YYYYMMDDHHmmss`) when creating files manually.
+
+### Can I customize the ZettelID format?
 
 Currently, the format (`-YYYYMMDDHHmmss`) is fixed. This ensures consistency across all calendars and prevents parsing ambiguities.

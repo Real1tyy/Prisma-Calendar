@@ -266,7 +266,18 @@ export const generateUniqueZettelId = (app: App, basePath: string, baseNameWitho
 };
 
 /**
+ * Checks if a basename already has a Prisma ZettelID timestamp.
+ * Only recognizes Prisma's native format: -YYYYMMDDHHmmss (14 digits)
+ * Returns true if the basename ends with this pattern.
+ */
+export const hasTimestamp = (baseName: string): boolean => {
+	// Only check for Prisma's native 14-digit ZettelID format
+	return /-\d{14}$/.test(baseName);
+};
+
+/**
  * Generates a unique file path with ZettelID for event files.
+ * If the basename already contains a Prisma ZettelID, uses it as-is without adding a new one.
  * Returns both the filename and full path with a guaranteed unique ZettelID.
  */
 export const generateUniqueEventPath = (
@@ -275,6 +286,18 @@ export const generateUniqueEventPath = (
 	baseName: string
 ): { filename: string; fullPath: string; zettelId: string } => {
 	const basePath = directory ? `${directory.replace(/\/+$/, "")}/` : "";
+
+	if (hasTimestamp(baseName)) {
+		const existingZettelId = extractZettelId(baseName);
+		const filename = baseName;
+		const fullPath = `${basePath}${filename}.md`;
+		if (!existingZettelId) {
+			throw new Error("Prisma ZettelID not found in basename, but hasTimestamp returned true, this should never happen. Please create an issue.");
+		}
+		const zettelId = existingZettelId;
+		return { filename, fullPath, zettelId };
+	}
+
 	const zettelId = generateUniqueZettelId(app, basePath, baseName);
 	const filename = `${baseName}-${zettelId}`;
 	const fullPath = `${basePath}${filename}.md`;

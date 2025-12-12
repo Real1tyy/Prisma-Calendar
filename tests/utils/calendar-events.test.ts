@@ -7,6 +7,7 @@ import {
 	generateUniqueEventPath,
 	generateUniqueZettelId,
 	hashRRuleIdToZettelFormat,
+	hasTimestamp,
 	isPhysicalRecurringEvent,
 	rebuildPhysicalInstanceWithNewDate,
 	removeZettelId,
@@ -212,6 +213,51 @@ describe("ZettelID Utilities", () => {
 			expect(removeZettelId("Event 2025-10-29")).toBe("Event 2025-10-29");
 			expect(removeZettelId("mid-sprint-sync-2025-10-28")).toBe("mid-sprint-sync-2025-10-28");
 		});
+
+		it("should NOT remove non-Prisma timestamp formats", () => {
+			// Only removes Prisma's 14-digit format
+			expect(removeZettelId("Meeting-20250106-1430")).toBe("Meeting-20250106-1430");
+			expect(removeZettelId("Event-202501061200")).toBe("Event-202501061200");
+			expect(removeZettelId("Task-1704542400")).toBe("Task-1704542400");
+		});
+	});
+
+	describe("hasTimestamp", () => {
+		it("should detect Prisma native ZettelID (14 digits)", () => {
+			expect(hasTimestamp("Meeting-20250106120000")).toBe(true);
+		});
+
+		it("should detect ZettelID at end of complex filename", () => {
+			expect(hasTimestamp("My-Important-Meeting-20250106120000")).toBe(true);
+		});
+
+		it("should return false for filenames without Prisma ZettelID", () => {
+			expect(hasTimestamp("Meeting Notes")).toBe(false);
+			expect(hasTimestamp("Event")).toBe(false);
+		});
+
+		it("should NOT detect non-Prisma timestamp formats", () => {
+			// Only Prisma's 14-digit format is recognized
+			expect(hasTimestamp("Event-202501061200")).toBe(false); // 12 digits
+			expect(hasTimestamp("Meeting-20250106-120000")).toBe(false); // dash separator
+			expect(hasTimestamp("Task-20250106_120000")).toBe(false); // underscore separator
+			expect(hasTimestamp("Event-2025-01-06-12-00-00")).toBe(false); // ISO-like
+			expect(hasTimestamp("Task-1704542400")).toBe(false); // Unix timestamp
+		});
+
+		it("should NOT detect short date formats", () => {
+			expect(hasTimestamp("Event 2025-10-29")).toBe(false);
+		});
+
+		it("should only detect ZettelID at the END of basename", () => {
+			expect(hasTimestamp("20250106120000-Meeting")).toBe(false);
+			expect(hasTimestamp("Event-20250106120000-Notes")).toBe(false);
+		});
+
+		it("should NOT detect 13 or 15 digit numbers", () => {
+			expect(hasTimestamp("Event-2025010612000")).toBe(false); // 13 digits
+			expect(hasTimestamp("Event-202501061200000")).toBe(false); // 15 digits
+		});
 	});
 
 	describe("generateUniqueZettelId", () => {
@@ -285,7 +331,7 @@ describe("ZettelID Utilities", () => {
 	});
 
 	describe("generateUniqueEventPath", () => {
-		it("should generate complete event path with unique ZettelID", () => {
+		it("should generate complete event path with unique ZettelID for basename without timestamp", () => {
 			const app = createMockApp() as unknown as App;
 			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);
 
@@ -294,6 +340,44 @@ describe("ZettelID Utilities", () => {
 			expect(result.zettelId).toMatch(/^\d{14}$/);
 			expect(result.filename).toBe(`Team Meeting-${result.zettelId}`);
 			expect(result.fullPath).toBe(`events/${result.filename}.md`);
+		});
+
+		it("should NOT add new ZettelID if basename already has Prisma timestamp", () => {
+			const app = createMockApp() as unknown as App;
+
+			const result = generateUniqueEventPath(app, "events", "Meeting-20250106120000");
+
+			expect(result.zettelId).toBe("20250106120000");
+			expect(result.filename).toBe("Meeting-20250106120000");
+			expect(result.fullPath).toBe("events/Meeting-20250106120000.md");
+			// Should NOT call getAbstractFileByPath since we're not generating a new ID
+			expect(app.vault.getAbstractFileByPath).not.toHaveBeenCalled();
+		});
+
+		it("SHOULD add new ZettelID if basename has non-Prisma timestamp format", () => {
+			const app = createMockApp() as unknown as App;
+			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);
+
+			// 12-digit timestamp - not Prisma format, so add new ZettelID
+			const result1 = generateUniqueEventPath(app, "events", "Event-202501061200");
+			expect(result1.zettelId).toMatch(/^\d{14}$/);
+			expect(result1.filename).toBe(`Event-202501061200-${result1.zettelId}`);
+
+			vi.clearAllMocks();
+			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);
+
+			// Dash-separated timestamp - not Prisma format, so add new ZettelID
+			const result2 = generateUniqueEventPath(app, "events", "Meeting-20250106-120000");
+			expect(result2.zettelId).toMatch(/^\d{14}$/);
+			expect(result2.filename).toBe(`Meeting-20250106-120000-${result2.zettelId}`);
+
+			vi.clearAllMocks();
+			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);
+
+			// Unix timestamp - not Prisma format, so add new ZettelID
+			const result3 = generateUniqueEventPath(app, "events", "Task-1704542400");
+			expect(result3.zettelId).toMatch(/^\d{14}$/);
+			expect(result3.filename).toBe(`Task-1704542400-${result3.zettelId}`);
 		});
 
 		it("should handle empty directory", () => {
@@ -307,7 +391,7 @@ describe("ZettelID Utilities", () => {
 			expect(result.fullPath).toBe(`${result.filename}.md`);
 		});
 
-		it("should generate unique path when collision occurs", () => {
+		it("should generate unique path when collision occurs (no existing timestamp)", () => {
 			const app = createMockApp() as unknown as App;
 			const mockFile = createMockFile("events/Meeting-20250106120000.md");
 
