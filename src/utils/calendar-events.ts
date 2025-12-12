@@ -292,7 +292,9 @@ export const generateUniqueEventPath = (
 		const filename = baseName;
 		const fullPath = `${basePath}${filename}.md`;
 		if (!existingZettelId) {
-			throw new Error("Prisma ZettelID not found in basename, but hasTimestamp returned true, this should never happen. Please create an issue.");
+			throw new Error(
+				"Prisma ZettelID not found in basename, but hasTimestamp returned true, this should never happen. Please create an issue."
+			);
 		}
 		const zettelId = existingZettelId;
 		return { filename, fullPath, zettelId };

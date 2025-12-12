@@ -347,6 +347,15 @@ export class EventContextMenu {
 							void this.app.workspace.openLinkText(filePath, "", false);
 						});
 				});
+
+				menu.addItem((item) => {
+					item
+						.setTitle("Open file in new window")
+						.setIcon("external-link")
+						.onClick(() => {
+							void this.openFileInNewWindow(filePath);
+						});
+				});
 			}
 		}
 
@@ -710,5 +719,22 @@ export class EventContextMenu {
 				}
 			);
 		});
+	}
+
+	private async openFileInNewWindow(filePath: string): Promise<void> {
+		try {
+			const file = this.app.vault.getAbstractFileByPath(filePath);
+			if (!(file instanceof TFile)) {
+				new Notice(`File not found: ${filePath}`);
+				return;
+			}
+
+			// Open file in a new window (popout/hover editor)
+			const leaf = this.app.workspace.getLeaf("window");
+			await leaf.openFile(file);
+		} catch (error) {
+			console.error("Error opening file in new window:", error);
+			new Notice(`Failed to open file in new window: ${filePath}`);
+		}
 	}
 }

@@ -4,6 +4,10 @@ All notable changes to this project will be documented here.
 
 ## 1.13.0
 
+### New Features
+
+- **Open File in New Window**: Added "Open file in new window" option to the event context menu (right-click). This opens the event file in a detached popout window, making it easier to edit complex properties like checkboxes and list properties directly in the markdown editor without leaving the calendar view.
+
 ### Bug Fixes
 
 - **Fixed Double Timestamps on Manual Events**: Events created manually with Prisma's ZettelID format (`-YYYYMMDDHHmmss`) no longer get double-timestamped when cloned or moved. The calendar now detects existing Prisma ZettelIDs and preserves them instead of adding a new one, preventing filenames like `Meeting-20250106120000-20250112153045.md`.
