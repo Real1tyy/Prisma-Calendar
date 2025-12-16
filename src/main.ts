@@ -2,6 +2,7 @@ import { onceAsync } from "@real1ty-obsidian-plugins/utils";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { CalendarSelectModal, ICSImportModal } from "./components/modals";
+import { ICSImportProgressModal } from "./components/modals/ics-import-progress-modal";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
@@ -307,7 +308,18 @@ export default class CustomCalendarPlugin extends Plugin {
 		}
 
 		new ICSImportModal(this.app, this.calendarBundles, async (bundle, events, timezone) => {
-			await importEventsToCalendar(this.app, bundle, events, timezone);
+			const progressModal = new ICSImportProgressModal(this.app, events.length);
+			progressModal.open();
+
+			try {
+				const result = await importEventsToCalendar(this.app, bundle, events, timezone, (current, _total, title) => {
+					progressModal.updateProgress(current, title);
+				});
+
+				progressModal.showComplete(result.successCount, result.errorCount, result.skippedCount);
+			} catch (error) {
+				progressModal.showError(error instanceof Error ? error.message : "Import failed");
+			}
 		}).open();
 	}
 

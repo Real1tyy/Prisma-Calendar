@@ -1,7 +1,7 @@
 import { getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
-import { type App, Notice, type TFile } from "obsidian";
+import type { App, TFile } from "obsidian";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { extractZettelId, generateUniqueEventPath, removeZettelId, setEventBasics } from "../../utils/calendar-events";
 import { parseIntoList } from "../../utils/list-utils";
@@ -321,46 +321,43 @@ export async function createEventNoteFromImportedEvent(
 	});
 }
 
+export type ImportProgressCallback = (current: number, total: number, eventTitle?: string) => void;
+
 export async function importEventsToCalendar(
 	app: App,
 	bundle: CalendarBundle,
 	events: ImportedEvent[],
-	timezone: string
-): Promise<void> {
+	timezone: string,
+	onProgress?: ImportProgressCallback
+): Promise<{ successCount: number; errorCount: number; skippedCount: number }> {
 	const settings = bundle.settingsStore.currentSettings;
 
 	const existingEventIds = new Set(bundle.eventStore.getAllEvents().map((e) => e.id));
 	const newEvents = events.filter((e) => !existingEventIds.has(e.uid));
 	const skippedCount = events.length - newEvents.length;
 
-	if (skippedCount > 0) {
-		new Notice(`Skipping ${skippedCount} events that already exist`);
-	}
-
 	if (newEvents.length === 0) {
-		new Notice("No new events to import");
-		return;
+		return { successCount: 0, errorCount: 0, skippedCount };
 	}
 
 	let successCount = 0;
 	let errorCount = 0;
 
-	for (const event of newEvents) {
+	for (let i = 0; i < newEvents.length; i++) {
+		const event = newEvents[i];
 		try {
 			await createEventNoteFromImportedEvent(app, bundle, event, {
 				targetDirectory: settings.directory,
 				timezone,
 			});
 			successCount++;
+			onProgress?.(i + 1, newEvents.length, event.title);
 		} catch (error) {
 			console.error(`Failed to import event "${event.title}":`, error);
 			errorCount++;
+			onProgress?.(i + 1, newEvents.length, event.title);
 		}
 	}
 
-	if (errorCount === 0) {
-		new Notice(`Successfully imported ${successCount} events`);
-	} else {
-		new Notice(`Imported ${successCount} events, ${errorCount} failed`);
-	}
+	return { successCount, errorCount, skippedCount };
 }

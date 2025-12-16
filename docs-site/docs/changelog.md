@@ -7,6 +7,7 @@ All notable changes to this project will be documented here.
 ### New Features
 
 - **Thicker Hour Lines**: Added a new setting "Thicker hour lines" in Settings → Calendar → User Interface to make full-hour lines (12:00, 13:00, 14:00, etc.) thicker in day and week views for better visual contrast and easier time identification. This setting is enabled by default and helps distinguish major time divisions from minor slot intervals.
+- **ICS Import Progress Modal**: When importing ICS files, a progress modal now displays the import status in real-time, showing the number of events being processed and the current event being imported. This prevents users from accidentally triggering multiple imports and provides clear feedback on the import progress. The modal automatically closes when the import completes and shows a summary of imported, skipped, and failed events.
 
 ### Improvements
 
