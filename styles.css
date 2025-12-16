@@ -3306,6 +3306,22 @@
 	transform: translateY(-1px);
 }
 
+.prisma-recurring-events-info {
+	background-color: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 0.5rem 1rem;
+	margin-bottom: 0.75rem;
+	text-align: center;
+}
+
+.prisma-recurring-events-info-text {
+	margin: 0;
+	font-size: 0.9em;
+	color: var(--text-muted);
+	font-weight: 500;
+}
+
 .prisma-recurring-events-filters {
 	display: flex;
 	gap: 1rem;

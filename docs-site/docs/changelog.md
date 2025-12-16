@@ -8,6 +8,10 @@ All notable changes to this project will be documented here.
 
 - **Thicker Hour Lines**: Added a new setting "Thicker hour lines" in Settings → Calendar → User Interface to make full-hour lines (12:00, 13:00, 14:00, etc.) thicker in day and week views for better visual contrast and easier time identification. This setting is enabled by default and helps distinguish major time divisions from minor slot intervals.
 
+### Improvements
+
+- **Recurring Event Type Display**: The "View Recurring Events" modal now displays the recurrence pattern (Daily, Weekly, Bi-weekly, Monthly, Bi-monthly, Yearly) at the top of the modal. For weekly and bi-weekly events, it also shows which days of the week the event occurs on (e.g., "Recurrence: Weekly • Days: Monday, Wednesday, Friday"), making it easier to understand the recurring event pattern at a glance.
+
 ---
 
 ## 1.13.0

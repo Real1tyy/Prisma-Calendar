@@ -1,6 +1,6 @@
 import { capitalize } from "@real1ty-obsidian-plugins/utils";
 import { z } from "zod";
-import type { RecurrenceType, Weekday } from "../utils/date-recurrence";
+import type { Weekday } from "../utils/date-recurrence";
 import { WEEKDAY_TO_NUMBER } from "../utils/date-recurrence";
 import { booleanTransform, optionalDateTransform, optionalTimeTransform } from "../utils/validation";
 import type { Frontmatter } from "./index";
@@ -14,6 +14,8 @@ export const RECURRENCE_TYPE_OPTIONS = {
 	"bi-monthly": "Bi-monthly (every 2 months)",
 	yearly: "Yearly",
 } as const;
+
+export type RecurrenceType = keyof typeof RECURRENCE_TYPE_OPTIONS;
 
 export const WEEKDAY_SUPPORTED_TYPES = ["weekly", "bi-weekly"] as const;
 export type WeekdaySupportedType = (typeof WEEKDAY_SUPPORTED_TYPES)[number];

@@ -1,6 +1,7 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import { DateTime } from "luxon";
 import { type App, Modal, Setting } from "obsidian";
+import { RECURRENCE_TYPE_OPTIONS, type RecurrenceType } from "../../types/recurring-event";
 import { removeZettelId } from "../../utils/calendar-events";
 
 interface RecurringEventInstance {
@@ -8,6 +9,11 @@ interface RecurringEventInstance {
 	instanceDate: DateTime;
 	title: string;
 	skipped: boolean;
+}
+
+interface RecurringEventInfo {
+	rruleType: string;
+	rruleSpec?: string;
 }
 
 export class RecurringEventsListModal extends Modal {
@@ -20,12 +26,20 @@ export class RecurringEventsListModal extends Modal {
 	private statsContainer: HTMLElement | null = null;
 	private sourceTitle: string;
 	private sourceFilePath: string;
+	private recurringInfo?: RecurringEventInfo;
 
-	constructor(app: App, instances: RecurringEventInstance[], sourceTitle: string, sourceFilePath: string) {
+	constructor(
+		app: App,
+		instances: RecurringEventInstance[],
+		sourceTitle: string,
+		sourceFilePath: string,
+		recurringInfo?: RecurringEventInfo
+	) {
 		super(app);
 		this.instances = instances;
 		this.sourceTitle = sourceTitle;
 		this.sourceFilePath = sourceFilePath;
+		this.recurringInfo = recurringInfo;
 	}
 
 	onOpen(): void {
@@ -41,6 +55,30 @@ export class RecurringEventsListModal extends Modal {
 			void this.app.workspace.openLinkText(this.sourceFilePath, "", false);
 			this.close();
 		};
+
+		if (this.recurringInfo) {
+			const infoContainer = contentEl.createDiv(cls("recurring-events-info"));
+			const typeLabel =
+				RECURRENCE_TYPE_OPTIONS[this.recurringInfo.rruleType as RecurrenceType] || this.recurringInfo.rruleType;
+			let infoText = `Recurrence: ${typeLabel}`;
+
+			if (
+				this.recurringInfo.rruleSpec &&
+				(this.recurringInfo.rruleType === "weekly" || this.recurringInfo.rruleType === "bi-weekly")
+			) {
+				const days = this.recurringInfo.rruleSpec
+					.split(",")
+					.map((day) => day.trim())
+					.map((day) => day.charAt(0).toUpperCase() + day.slice(1))
+					.join(", ");
+				infoText += ` • Days: ${days}`;
+			}
+
+			infoContainer.createEl("p", {
+				text: infoText,
+				cls: cls("recurring-events-info-text"),
+			});
+		}
 
 		// Statistics container
 		this.statsContainer = contentEl.createDiv(cls("recurring-events-stats"));

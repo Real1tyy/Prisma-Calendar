@@ -1,6 +1,7 @@
 import type { DateTime } from "luxon";
+import type { RecurrenceType } from "../types/recurring-event";
 
-export type RecurrenceType = "daily" | "weekly" | "bi-weekly" | "monthly" | "bi-monthly" | "yearly";
+export type { RecurrenceType };
 
 export type Weekday = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday";
 

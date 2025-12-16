@@ -603,6 +603,9 @@ export class EventContextMenu {
 
 		const sourceEventPath = this.bundle.recurringEventManager.getSourceEventPath(rruleId);
 		let sourceTitle = "Unknown Event";
+		let rruleType: string | undefined;
+		let rruleSpec: string | undefined;
+
 		if (!sourceEventPath) {
 			new Notice("Source event not found");
 			return;
@@ -611,6 +614,15 @@ export class EventContextMenu {
 		const sourceFile = this.app.vault.getAbstractFileByPath(sourceEventPath);
 		if (sourceFile instanceof TFile) {
 			sourceTitle = sourceFile.basename;
+
+			// Get rrule information from source file frontmatter
+			const metadata = this.app.metadataCache.getFileCache(sourceFile);
+			const frontmatter = metadata?.frontmatter;
+			if (frontmatter) {
+				const settings = this.bundle.settingsStore.currentSettings;
+				rruleType = frontmatter[settings.rruleProp];
+				rruleSpec = frontmatter[settings.rruleSpecProp];
+			}
 		}
 
 		// Get all physical instances for this recurring event
@@ -645,7 +657,8 @@ export class EventContextMenu {
 		});
 
 		// Open the modal
-		new RecurringEventsListModal(this.app, instancesWithTitles, sourceTitle, sourceEventPath).open();
+		const recurringInfo = rruleType ? { rruleType, rruleSpec } : undefined;
+		new RecurringEventsListModal(this.app, instancesWithTitles, sourceTitle, sourceEventPath, recurringInfo).open();
 	}
 
 	async fillEndTimeFromNext(event: CalendarEventInfo): Promise<void> {
