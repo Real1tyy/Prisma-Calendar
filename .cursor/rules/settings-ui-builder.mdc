@@ -1,8 +1,6 @@
 ---
-alwaysApply: true
-description: Always use SettingsUIBuilder for settings UI instead of manual Setting creation when possible
+alwaysApply: false
 ---
-
 # SettingsUIBuilder Usage Rule
 
 **CRITICAL: Always use SettingsUIBuilder from `@real1ty-obsidian-plugins/utils` for creating settings UI instead of manually creating Setting instances when the field exists in the schema.**
