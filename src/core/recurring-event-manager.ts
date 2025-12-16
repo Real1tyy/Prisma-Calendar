@@ -282,10 +282,14 @@ export class RecurringEventManager extends DebouncedNotifier {
 			}
 
 			const now = DateTime.now().toUTC();
+			const generatePastEvents = recurringEvent.frontmatter[this.settings.generatePastEventsProp] === true;
 
-			// Filter future instances, excluding those marked as ignored (duplicated recurring events)
-			const futureInstances = Array.from(physicalInstances.values()).filter(
-				(instance) => instance.instanceDate >= now.startOf("day") && !instance.ignored
+			const startDate = generatePastEvents
+				? getStartDateTime(recurringEvent.rrules).startOf("day")
+				: now.startOf("day");
+
+			const relevantInstances = Array.from(physicalInstances.values()).filter(
+				(instance) => instance.instanceDate >= startDate && !instance.ignored
 			);
 
 			const targetInstanceCount = calculateTargetInstanceCount(
@@ -293,14 +297,15 @@ export class RecurringEventManager extends DebouncedNotifier {
 				recurringEvent.frontmatter[this.settings.futureInstancesCountProp],
 				this.settings.futureInstancesCount
 			);
-			const currentCount = futureInstances.length;
+			const currentCount = relevantInstances.length;
 
 			if (currentCount >= targetInstanceCount) {
 				return;
 			}
 
 			const instancesToCreate = targetInstanceCount - currentCount;
-			let nextDate = this.getNextOccurrenceFromNow(recurringEvent, futureInstances);
+			const fromDate = generatePastEvents ? getStartDateTime(recurringEvent.rrules).startOf("day") : now.startOf("day");
+			let nextDate = this.getNextOccurrenceFromTime(recurringEvent, relevantInstances, fromDate);
 
 			for (let i = 0; i < instancesToCreate; i++) {
 				const dateKey = nextDate.toISODate();
@@ -325,12 +330,12 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 	}
 
-	private getNextOccurrenceFromNow(
+	private getNextOccurrenceFromTime(
 		recurringEvent: NodeRecurringEvent,
-		existingFutureInstances: Array<PhysicalInstance>
+		existingInstances: Array<PhysicalInstance>,
+		fromDate: DateTime
 	): DateTime {
-		// Filter out ignored instances when determining next occurrence
-		const nonIgnoredInstances = existingFutureInstances.filter((instance) => !instance.ignored);
+		const nonIgnoredInstances = existingInstances.filter((instance) => !instance.ignored);
 
 		if (nonIgnoredInstances.length > 0) {
 			const sortedInstances = [...nonIgnoredInstances].sort(
@@ -340,7 +345,6 @@ export class RecurringEventManager extends DebouncedNotifier {
 			return getNextOccurrence(latestInstanceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
 
-		const now = DateTime.now().toUTC();
 		const sourceDateTime = getStartDateTime(recurringEvent.rrules);
 		const firstValidDate = findFirstValidStartDate(recurringEvent.rrules);
 
@@ -349,9 +353,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 			currentDate = getNextOccurrence(firstValidDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
 
-		while (currentDate <= now.startOf("day")) {
+		while (currentDate <= fromDate) {
 			currentDate = getNextOccurrence(currentDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
+
 		return currentDate;
 	}
 

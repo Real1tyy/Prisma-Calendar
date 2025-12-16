@@ -65,6 +65,7 @@ export abstract class BaseEventModal extends Modal {
 	protected weekdayContainer!: HTMLElement;
 	protected weekdayCheckboxes: Map<Weekday, HTMLInputElement> = new Map();
 	protected futureInstancesCountInput!: HTMLInputElement;
+	protected generatePastEventsCheckbox!: HTMLInputElement;
 
 	protected categoryInput?: CategoryInput;
 	protected breakInput!: HTMLInputElement;
@@ -654,6 +655,20 @@ export abstract class BaseEventModal extends Modal {
 				placeholder: "Default",
 			},
 		});
+
+		const generatePastContainer = this.recurringContainer.createDiv("setting-item");
+		generatePastContainer.createEl("div", {
+			text: "Generate past events",
+			cls: "setting-item-name",
+		});
+		const generatePastDesc = generatePastContainer.createEl("div", {
+			cls: "setting-item-description",
+		});
+		generatePastDesc.setText("Generate instances from the source event start date instead of from today.");
+		this.generatePastEventsCheckbox = generatePastContainer.createEl("input", {
+			type: "checkbox",
+			cls: "setting-item-control",
+		});
 	}
 
 	private createCustomPropertiesFields(contentEl: HTMLElement): void {
@@ -1102,11 +1117,17 @@ export abstract class BaseEventModal extends Modal {
 			} else {
 				delete preservedFrontmatter[settings.futureInstancesCountProp];
 			}
+
+			if (this.generatePastEventsCheckbox?.checked) {
+				preservedFrontmatter[settings.generatePastEventsProp] = true;
+			} else {
+				delete preservedFrontmatter[settings.generatePastEventsProp];
+			}
 		} else {
-			// Clear recurring event properties if not checked
 			delete preservedFrontmatter[settings.rruleProp];
 			delete preservedFrontmatter[settings.rruleSpecProp];
 			delete preservedFrontmatter[settings.futureInstancesCountProp];
+			delete preservedFrontmatter[settings.generatePastEventsProp];
 		}
 
 		const customProps = this.getCustomProperties();

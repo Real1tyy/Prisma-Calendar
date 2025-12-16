@@ -70,6 +70,11 @@ export class EventEditModal extends BaseEventModal {
 			if (parsed > 0) {
 				this.futureInstancesCountInput.value = String(parsed);
 			}
+
+			const generatePast = this.originalFrontmatter[settings.generatePastEventsProp];
+			if (generatePast === true) {
+				this.generatePastEventsCheckbox.checked = true;
+			}
 		}
 	}
 

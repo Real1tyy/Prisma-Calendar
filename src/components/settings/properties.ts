@@ -113,6 +113,13 @@ export class PropertiesSettings {
 		});
 
 		this.ui.addText(containerEl, {
+			key: "generatePastEventsProp",
+			name: "Generate past events property",
+			desc: "Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_GENERATE_PAST_EVENTS_PROP,
+		});
+
+		this.ui.addText(containerEl, {
 			key: "statusProperty",
 			name: "Status property",
 			desc: "Frontmatter property name for event status (used when automatically marking past events as done)",
