@@ -121,6 +121,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		addUndoRedoCommand(COMMAND_IDS.UNDO, "Undo", (view) => view.undo());
 		addUndoRedoCommand(COMMAND_IDS.REDO, "Redo", (view) => view.redo());
 
+		addCalendarViewCommand(COMMAND_IDS.CREATE_EVENT, "Create new event", (view) => {
+			view.openCreateEventModal();
+		});
 		addCalendarViewCommand(COMMAND_IDS.TOGGLE_BATCH_SELECTION, "Toggle batch selection", (view) => {
 			view.toggleBatchSelection();
 		});

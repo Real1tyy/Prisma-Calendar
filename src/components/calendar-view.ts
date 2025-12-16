@@ -253,7 +253,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return {
 			createEvent: {
 				text: "Create Event",
-				click: () => this.createEventAtCurrentTime(),
+				click: () => this.openCreateEventModal(),
 			},
 			zoomLevel: this.zoomManager.createZoomLevelButton(),
 			batchSelect: {
@@ -1537,16 +1537,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}).open();
 	}
 
-	private createEventAtCurrentTime(): void {
+	openCreateEventModal(): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const now = new Date();
 		const roundedStart = roundToNearestHour(now);
 
-		// Calculate end time using default duration from settings
 		const endDate = new Date(roundedStart);
 		endDate.setMinutes(endDate.getMinutes() + settings.defaultDurationMinutes);
 
-		// Create event object for the modal
 		const newEvent = {
 			title: "",
 			start: toLocalISOString(roundedStart),
