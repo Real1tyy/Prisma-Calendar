@@ -79,6 +79,12 @@ export class CalendarSettings {
 			desc: "Subtly highlight events that are currently active (if any), or the next upcoming event. Only visible when the current time is within the visible date range.",
 		});
 
+		this.ui.addToggle(containerEl, {
+			key: "thickerHourLines",
+			name: "Thicker hour lines",
+			desc: "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",
+		});
+
 		this.ui.addSlider(containerEl, {
 			key: "pastEventContrast",
 			name: "Past event contrast",

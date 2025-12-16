@@ -12,6 +12,7 @@ import {
 	isNotEmpty,
 	type PropertyRendererConfig,
 	renderPropertyValue,
+	toggleCls,
 } from "@real1ty-obsidian-plugins/utils";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
@@ -1054,6 +1055,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// Ensure initial events are loaded after calendar is fully rendered
 		this.refreshEvents();
 
+		toggleCls(container, "thicker-hour-lines", settings.thickerHourLines);
+
 		// Start the upcoming event check interval
 		this.startUpcomingEventCheck();
 	}
@@ -1080,6 +1083,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.calendar.setOption("eventMaxStack", settings.eventMaxStack);
 
 		this.filterPresetSelector.updatePresets(settings.filterPresets);
+
+		toggleCls(this.container, "thicker-hour-lines", settings.thickerHourLines);
 
 		// Restart or stop upcoming event check based on setting
 		if (settings.highlightUpcomingEvent) {

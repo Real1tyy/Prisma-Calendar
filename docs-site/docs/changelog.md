@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented here.
 
+## 1.14.0
+
+### New Features
+
+- **Thicker Hour Lines**: Added a new setting "Thicker hour lines" in Settings → Calendar → User Interface to make full-hour lines (12:00, 13:00, 14:00, etc.) thicker in day and week views for better visual contrast and easier time identification. This setting is enabled by default and helps distinguish major time divisions from minor slot intervals.
+
+---
+
 ## 1.13.0
 
 ### New Features

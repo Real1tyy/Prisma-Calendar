@@ -731,6 +731,12 @@
 	border-color: var(--background-modifier-border);
 }
 
+/* Make full-hour lines thicker for better visual contrast (when enabled) */
+.prisma-calendar-container.prisma-thicker-hour-lines .fc-timegrid-slot[data-time$=":00:00"] {
+	border-top-width: 1.5px;
+	border-top-color: var(--background-modifier-border-hover);
+}
+
 .prisma-calendar-container .fc-timegrid-slot-label {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);

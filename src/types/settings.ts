@@ -92,6 +92,7 @@ export const CalendarSettingsSchema = z.object({
 	enableEventPreview: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_ENABLE_EVENT_PREVIEW), // Enable hover preview for events
 	nowIndicator: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_NOW_INDICATOR), // Show current time indicator line
 	highlightUpcomingEvent: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_HIGHLIGHT_UPCOMING_EVENT), // Highlight the next upcoming event
+	thickerHourLines: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_THICKER_HOUR_LINES), // Make full-hour lines thicker in day/week views
 	pastEventContrast: z.number().int().min(0).max(100).default(SETTINGS_DEFAULTS.DEFAULT_PAST_EVENT_CONTRAST), // Contrast of past events in %
 	eventOverlap: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_EVENT_OVERLAP), // Allow events to visually overlap (all views)
 	slotEventOverlap: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SLOT_EVENT_OVERLAP), // Allow events to overlap within the same time slot (timeGrid views only)
