@@ -284,12 +284,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 			const now = DateTime.now().toUTC();
 			const generatePastEvents = recurringEvent.frontmatter[this.settings.generatePastEventsProp] === true;
 
-			const startDate = generatePastEvents
-				? getStartDateTime(recurringEvent.rrules).startOf("day")
-				: now.startOf("day");
-
-			const relevantInstances = Array.from(physicalInstances.values()).filter(
-				(instance) => instance.instanceDate >= startDate && !instance.ignored
+			const futureInstances = Array.from(physicalInstances.values()).filter(
+				(instance) => instance.instanceDate >= now.startOf("day") && !instance.ignored
 			);
 
 			const targetInstanceCount = calculateTargetInstanceCount(
@@ -297,36 +293,67 @@ export class RecurringEventManager extends DebouncedNotifier {
 				recurringEvent.frontmatter[this.settings.futureInstancesCountProp],
 				this.settings.futureInstancesCount
 			);
-			const currentCount = relevantInstances.length;
+			const currentCount = futureInstances.length;
 
 			if (currentCount >= targetInstanceCount) {
+				if (generatePastEvents) {
+					await this.ensurePastInstances(recurringEvent, physicalInstances, now);
+				}
 				return;
 			}
 
 			const instancesToCreate = targetInstanceCount - currentCount;
-			const fromDate = generatePastEvents ? getStartDateTime(recurringEvent.rrules).startOf("day") : now.startOf("day");
-			let nextDate = this.getNextOccurrenceFromTime(recurringEvent, relevantInstances, fromDate);
+			let nextDate = this.getNextOccurrenceFromTime(recurringEvent, futureInstances, now.startOf("day"));
 
 			for (let i = 0; i < instancesToCreate; i++) {
-				const dateKey = nextDate.toISODate();
-
-				// CRITICAL: Check if instance for this date already exists before creating
-				if (dateKey && !physicalInstances.has(dateKey)) {
-					const filePath = await this.createPhysicalInstance(recurringEvent, nextDate);
-
-					if (filePath) {
-						physicalInstances.set(dateKey, {
-							filePath,
-							instanceDate: nextDate,
-						});
-					}
-				}
-
+				await this.createInstanceIfMissing(recurringEvent, physicalInstances, nextDate);
 				nextDate = getNextOccurrence(nextDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 			}
+
+			if (generatePastEvents) {
+				await this.ensurePastInstances(recurringEvent, physicalInstances, now);
+			}
+
 			this.scheduleRefresh();
 		} catch (error) {
 			console.error(`❌ Failed to ensure physical instances for ${data.recurringEvent.title}:`, error);
+		}
+	}
+
+	private async createInstanceIfMissing(
+		recurringEvent: NodeRecurringEvent,
+		physicalInstances: Map<string, PhysicalInstance>,
+		instanceDate: DateTime
+	): Promise<void> {
+		const dateKey = instanceDate.toISODate();
+
+		if (dateKey && !physicalInstances.has(dateKey)) {
+			const filePath = await this.createPhysicalInstance(recurringEvent, instanceDate);
+
+			if (filePath) {
+				physicalInstances.set(dateKey, {
+					filePath,
+					instanceDate,
+				});
+			}
+		}
+	}
+
+	private async ensurePastInstances(
+		recurringEvent: NodeRecurringEvent,
+		physicalInstances: Map<string, PhysicalInstance>,
+		now: DateTime
+	): Promise<void> {
+		const firstValidDate = findFirstValidStartDate(recurringEvent.rrules);
+
+		let currentDate = firstValidDate;
+		if (firstValidDate.hasSame(getStartDateTime(recurringEvent.rrules), "day")) {
+			currentDate = getNextOccurrence(firstValidDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
+		}
+
+		while (currentDate < now.startOf("day")) {
+			await this.createInstanceIfMissing(recurringEvent, physicalInstances, currentDate);
+			currentDate = getNextOccurrence(currentDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
 	}
 

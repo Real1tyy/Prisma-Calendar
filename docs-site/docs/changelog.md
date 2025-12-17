@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented here.
 
+## 1.14.1
+
+### Bug Fixes
+
+- **Fixed Generate Past Events Logic**: Corrected the "Generate Past Events" feature to work as intended. The system now properly generates future instances from today (as normal) and additionally backfills all missing past instances from the source event date when the feature is enabled. Previously, it incorrectly shifted all generation to start from the past, which didn't match the expected behavior of maintaining both historical records and future planning.
+
+---
+
 ## 1.14.0
 
 ### New Features
