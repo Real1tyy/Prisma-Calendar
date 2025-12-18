@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented here.
 
+## 1.14.2
+
+### Bug Fixes
+
+- **Fixed Stopwatch Break Time Accumulation**: The stopwatch in the event modal now correctly adds break time to any existing break value instead of overriding it. Previously, if an event had 10 minutes of break time and you took a 5-minute break using the stopwatch, it would override the value to 5 minutes instead of accumulating to 15 minutes.
+
+---
+
 ## 1.14.1
 
 ### Bug Fixes
