@@ -76,6 +76,7 @@ export abstract class BaseEventModal extends Modal {
 	// Stopwatch for time tracking
 	protected stopwatch?: Stopwatch;
 	protected stopwatchContainer?: HTMLElement;
+	private initialBreakMinutes = 0;
 
 	// Custom properties
 	protected customProperties: CustomProperty[] = [];
@@ -514,20 +515,20 @@ export abstract class BaseEventModal extends Modal {
 
 		this.stopwatch = new Stopwatch({
 			onStart: (startTime: Date) => {
+				this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
 				this.startInput.value = formatDateTimeForInput(startTime);
-				// Trigger change event to update duration field
 				const event = new Event("change", { bubbles: true });
 				this.startInput.dispatchEvent(event);
 			},
 			onStop: (endTime: Date) => {
 				this.endInput.value = formatDateTimeForInput(endTime);
-				// Trigger change event to update duration field
 				const event = new Event("change", { bubbles: true });
 				this.endInput.dispatchEvent(event);
 			},
 			onBreakUpdate: (breakMinutes: number) => {
 				if (this.breakInput) {
-					this.breakInput.value = breakMinutes.toString();
+					const totalBreak = this.initialBreakMinutes + breakMinutes;
+					this.breakInput.value = totalBreak.toString();
 				}
 			},
 		});
