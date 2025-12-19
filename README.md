@@ -14,12 +14,7 @@
 
 ## 🎬 Video Tutorials
 
-### Full Tutorial — Zero to Mastery
-<a href="https://www.youtube.com/watch?v=aARXf9ehgaw" target="_blank">
-  <img src="https://img.youtube.com/vi/aARXf9ehgaw/maxresdefault.jpg" alt="Prisma Calendar - Full Tutorial" style="width:100%;">
-</a>
-
-**Complete Workflow Guide**: In this full tutorial, I walk you through exactly how to use Prisma Calendar in practice — from installation and creating your first events, to categories, color rules, recurring event systems, presets, notifications, timers, and more.
+**[View All Video Tutorials →](https://real1tyy.github.io/Prisma-Calendar/videos)**
 
 ### Part 1: Feature Showcase — Core Capabilities
 <a href="https://www.youtube.com/watch?v=aULuB6petbU" target="_blank">
@@ -28,19 +23,7 @@
 
 **Core Features Walkthrough**: This video covers many of the fundamental features of Prisma Calendar including event creation, editing, batch operations, undo/redo system, recurring events, color rules, and more.
 
-### Part 2: Deep Dive — Intelligence & Automation
-<a href="https://www.youtube.com/watch?v=JCYGWltxQQ0" target="_blank">
-  <img src="https://img.youtube.com/vi/JCYGWltxQQ0/maxresdefault.jpg" alt="Prisma Calendar - Deep Dive (Part 2)" style="width:100%;">
-</a>
-
-**Advanced Features Deep Dive**: This Part 2 explores additional features that didn't make it into the first video: intelligent notifications, global event search, navigation tools, statistics and time-tracking insights, and filtering presets.
-
-### Part 3: Advanced Workflow Tools — Automation & Refinement
-<a href="https://www.youtube.com/watch?v=QuTyruv7uhU" target="_blank">
-  <img src="https://img.youtube.com/vi/QuTyruv7uhU/maxresdefault.jpg" alt="Prisma Calendar - Advanced Workflow Tools (Part 3)" style="width:100%;">
-</a>
-
-**Workflow Refinement & Automation**: This Part 3 explores additional advanced features that further expand the plugin's workflow capabilities: improvements to recurring event duplication, preview behavior, stopwatch time-tracking, break property inside statistics, category management, the recurring event modal, calendar presets, and full ICS import/export workflows.
+For the **Full Tutorial** (Zero to Mastery), **Part 2** (Intelligence & Automation), and **Part 3** (Advanced Workflow Tools), visit the [complete video tutorial collection](https://real1tyy.github.io/Prisma-Calendar/videos).
 
 </div>
 

@@ -26,22 +26,8 @@ title: Prisma Calendar
 ## 🎬 Video Tutorials
 
 :::tip Watch All Videos
-Check out the [complete video tutorial collection](/videos) with all four videos, detailed chapters, and timestamps!
+Check out the [complete video tutorial collection](/videos) with all videos, detailed chapters, and timestamps!
 :::
-
-### Full Tutorial — Zero to Mastery
-
-<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <iframe
-    style={{"width":"100%", "aspectRatio": "16/9"}}
-    src="https://www.youtube.com/embed/aARXf9ehgaw"
-    title="Prisma Calendar - Full Tutorial"
-    frameBorder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowFullScreen>
-  </iframe>
-  <p><strong>Complete Workflow Guide:</strong> In this full tutorial, I walk you through exactly how to use Prisma Calendar in practice — from installation and creating your first events, to categories, color rules, recurring event systems, presets, notifications, timers, and more.</p>
-</div>
 
 ### Part 1: Feature Showcase — Core Capabilities
 
@@ -57,33 +43,7 @@ Check out the [complete video tutorial collection](/videos) with all four videos
   <p><strong>Full walkthrough of core features:</strong> Event creation, editing, drag-and-drop, batch operations, undo/redo system, recurring events with source nodes, dynamic color rules, filtering, and calendar customization. See how Prisma Calendar gives you real control over your time-linked notes inside Obsidian.</p>
 </div>
 
-### Part 2: Deep Dive — Intelligence & Automation
-
-<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <iframe
-    style={{"width":"100%", "aspectRatio": "16/9"}}
-    src="https://www.youtube.com/embed/JCYGWltxQQ0"
-    title="Prisma Calendar - Deep Dive (Part 2)"
-    frameBorder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowFullScreen>
-  </iframe>
-  <p><strong>Advanced systems and workflows:</strong> Intelligent notification system with desktop alerts and snooze, global event search across all calendars, quick navigation tools, weekly statistics and time-tracking insights, filtering presets for complex workflows, and automation patterns. Discover the tools that bring clarity, structure, and total control to your scheduling and time analysis.</p>
-</div>
-
-### Part 3: Advanced Workflow Tools — Automation & Refinement
-
-<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <iframe
-    style={{"width":"100%", "aspectRatio": "16/9"}}
-    src="https://www.youtube.com/embed/QuTyruv7uhU"
-    title="Prisma Calendar - Advanced Workflow Tools (Part 3)"
-    frameBorder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowFullScreen>
-  </iframe>
-  <p><strong>Workflow refinement and automation:</strong> Event renaming logic, improvements to recurring event duplication, preview behavior, stopwatch time-tracking, break property inside statistics, category management, the recurring event modal, calendar presets, and full ICS import/export workflows. Perfect for building a structured, fully automated second-brain calendar system inside Obsidian.</p>
-</div>
+For the **Full Tutorial** (Zero to Mastery), **Part 2** (Intelligence & Automation), and **Part 3** (Advanced Workflow Tools), visit the [complete video tutorial collection](/videos).
 
 </div>
 

@@ -52,13 +52,20 @@ export class CreateEventCommand implements Command {
 
 		const title = this.eventData.title || `Event ${this.clickedDate?.toISOString().split("T")[0]}`;
 		const sanitizedTitle = sanitizeForFilename(title, { style: "preserve" });
-		const { filename } = generateUniqueEventPath(this.app, this.targetDirectory, sanitizedTitle);
+		const { filename, zettelId } = generateUniqueEventPath(this.app, this.targetDirectory, sanitizedTitle);
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const frontmatter = { ...this.eventData.preservedFrontmatter };
+
+		if (settings.zettelIdProp) {
+			frontmatter[settings.zettelIdProp] = zettelId;
+		}
 
 		const file = await this.bundle.templateService.createFile({
 			title,
 			targetDirectory: this.targetDirectory,
 			filename,
-			frontmatter: this.eventData.preservedFrontmatter,
+			frontmatter,
 		});
 
 		this.createdFilePath = file.path;
