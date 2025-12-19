@@ -2,9 +2,9 @@
 
 ## About This Documentation
 
-**Is the documentation complete and accurate?**
+### Is the documentation completely up to date and accurate?
 
-We strive for accuracy, but Prisma Calendar is a **large, feature-rich project** with extensive documentation. It's quite complex for one person to manage everything perfectly, so there may be occasional inaccuracies or outdated information.
+We strive for perfection, but Prisma Calendar is a **large, feature-rich project** with extensive documentation. It's quite complex for one person to manage everything perfectly, so there may be occasional inaccuracies or outdated information.
 
 **If you spot something wrong, please help us!**
 - Create a [Pull Request](https://github.com/Real1tyy/Prisma-Calendar/pulls) to fix it
@@ -17,30 +17,19 @@ Community contributions help us continuously improve the documentation and keep 
 
 ## Getting Started
 
-**How do I open the calendar view?**
+### How do I open the calendar view?
 
-By default, each calendar adds a **calendar icon to the left sidebar** (ribbon). Click it to open.
-
-**Alternative methods:**
-1. Press `Ctrl/Cmd + P` to open the command palette
-2. Type: `Prisma Calendar: Open [Calendar Name]`
-3. Press Enter
-
-**Pro tips:**
-- **Hide ribbon icons** - Go to `Settings` → `Prisma Calendar` → select calendar → `General` → disable "Show ribbon icon"
-- **Set a hotkey** - Go to `Settings` → `Hotkeys` → search `Prisma Calendar: Open` → assign your preferred shortcut (e.g., `Ctrl/Cmd + Shift + C`)
-- **Multiple calendars** - Each calendar has its own ribbon icon and command
-
-All Prisma Calendar commands start with `Prisma Calendar:` to make them easy to find in the command palette.
+See the [Quick Start guide](/quickstart) for detailed instructions on opening your calendar, including ribbon icons, command palette, hotkeys, and more.
 
 ---
 
 ## General Questions
 
-**Can I use multiple calendars at once?**
+### Can I use multiple calendars at once?
+
 Yes. Calendars can use separate directories for full isolation, or share the same directory for different visual perspectives of the same events.
 
-**What happens if multiple calendars use the same directory?**
+### What happens if multiple calendars use the same directory?
 
 Multiple calendars **can** share the same directory! This is great for creating different views and color schemes of the same events.
 
@@ -78,10 +67,11 @@ Calendar "Work - Daily Focus" Directory: work/ (same!)
 
 **Additional Note**: Never use overlapping directories (e.g., `tasks` and `tasks/homework`). Use either the exact same path or completely separate directory trees to avoid conflicts.
 
-**Are recurring events real notes?**
+### Are recurring events real notes?
+
 Yes. Prisma Calendar generates real notes up to your configured "Future instances count." Farther-out instances show as read-only virtual events to keep your vault lean.
 
-**Why do my event files have timestamps in their names, but the calendar shows clean titles?**
+### Why do my event files have timestamps in their names, but the calendar shows clean titles?
 
 This is one of Prisma Calendar's core UX features: **hidden ZettelID naming**.
 
@@ -116,61 +106,55 @@ Files in vault:
 - Standup-20250105090000.md
 
 What you see in calendar:
-- Standup (Jan 3)
-- Standup (Jan 4)
-- Standup (Jan 5)
+- Standup
+- Standup
+- Standup
 ```
 
 All have the same clean "Standup" title in the UI, but unique filenames on disk.
 
-**⚙️ Configuration:**
+### How do I change which frontmatter keys the calendar uses?
 
-To enable automatic ZettelID generation:
-1. Go to **Properties Settings**
-2. Set the **ZettelID property** field (e.g., `ZettelID`)
-3. New events created via the calendar will automatically include the ZLID in both filename and frontmatter
+Go to Properties Settings and set your Start/End/AllDay/Title keys.
 
-**📌 Key Benefits:**
+### My event isn't showing up — what should I check?
 
-- **No naming conflicts** - Create as many same-named events as you want
-- **Better UX** - Clean calendar display without timestamp clutter
-- **Automatic management** - The calendar handles naming complexity behind the scenes
-- **Full compatibility** - Works with recurring events, batch operations, and cloning
-
-**How do I change which frontmatter keys the calendar uses?**
-Go to Properties Settings and set your Start/End/AllDay/Title keys. You can also specify a per-note Timezone property and a ZettelID property if you want automatic IDs.
-
-**My event isn't showing up — what should I check?**
 - Confirm the note is inside the calendar's Directory (subfolders included)
 - Ensure the Start property exists and is a valid ISO datetime (or your parser defaults)
 - Verify filters aren't excluding it (Rules → Event Filtering)
 - Check color rules or filters for typos (expressions use property names directly)
 
-**Why did my weekly recurring event start on a different day than its `Start` date?**
+### Why did my weekly recurring event start on a different day than its `Start` date?
+
 The `Start` date is a **calculation starting point**, not always the first event's date. For weekly/bi-weekly rules, the system finds the first day **on or after** the `Start` date that matches your `RRuleSpec` (e.g., the first "sunday"). If your start date is a Friday but the rule is for every Sunday, the first event will be created on the following Sunday.
 
-**How do color rules work?**
+### How do color rules work?
+
 Color rules are evaluated top-to-bottom. The first expression that evaluates to true sets the color. Example: `Priority === 'High' → red`.
 
-**Can I preview notes on hover?**
-Yes. Enable “Enable event preview” in Calendar Settings (UI).
+### Can I preview notes on hover?
 
-**Is Google Calendar integration supported?**
-Planned for a future Pro tier.
+Yes. Enable "Enable event preview" in Calendar Settings (UI).
 
-**Why are my event times shifted by a few hours? (Timezone Configuration)**
-This usually happens when your event files have UTC timestamps, but the calendar is set to display in your local timezone.
+### Is external calendar integration supported?
 
-Many Obsidian plugins (like Metadata Menu) save date-time values in UTC format, which ends with a `Z`. For example: `2025-09-19T15:30:00.000Z`.
+Yes! Prisma Calendar supports integration with external calendars through two methods:
 
-By default, Prisma Calendar will convert this UTC time to your system's local timezone. If your local timezone is UTC+2, `15:30Z` will be displayed on the calendar as `17:30`. This is the correct behavior, but it might not be what you want if you prefer to work directly with UTC.
+1. **CalDAV Sync (Read-Only)** - Automatically sync events from CalDAV servers (Fastmail, Nextcloud, iCloud, and other CalDAV-compatible services) into Obsidian. Events are imported as markdown notes with full frontmatter support.
 
-To fix this and see the times exactly as they are written in your files, you need to tell the calendar to operate in UTC as well:
-1. Go to the settings for the specific calendar.
-2. Find the **General Settings** section.
-3. Set the **Timezone** option to `UTC`.
+2. **ICS Import/Export** - Manually exchange calendar files with any calendar application (Apple Calendar, Outlook, Thunderbird, etc.) using the standard ICS/iCalendar format.
 
-Now, the calendar will interpret and display all times in UTC, matching what's in your notes.
+**Current Status:**
+- ✅ **CalDAV**: Read-only sync (server → Obsidian)
+- ✅ **ICS**: Full import/export support
+- 🔄 **Planned Improvements**: Two-way sync, write support for CalDAV, and enhanced sync capabilities
 
-**Can I use Prisma Calendar with Templater?**
+For detailed setup instructions and configuration, see the [Integrations documentation](/features/integrations).
+
+### Is Google Calendar integration supported?
+
+Google Calendar integration is planned for the future. Currently, you can use **ICS import/export** to exchange events with Google Calendar. Export your Prisma Calendar events as ICS files and import them into Google Calendar, or import Google Calendar exports into Prisma Calendar. See the [Integrations documentation](/features/integrations) for detailed instructions.
+
+### Can I use Prisma Calendar with Templater?
+
 Yes. Configure your template path in both Templater (folder template) AND Prisma Calendar settings (General → Template path) to ensure templates apply consistently whether you create events through the calendar or manually. See [Troubleshooting - Templater Integration](troubleshooting.md#templater-integration).
