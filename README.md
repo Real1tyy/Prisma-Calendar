@@ -170,31 +170,17 @@ Select multiple events and perform bulk actions: **clone, move, skip, delete, or
 
 ## ✨ **Additional Powerful Features**
 
-### 📋 **Enhanced Event Interaction**
-- **Clickable frontmatter** - All frontmatter properties are interactive and linkable
-- **Enlarged previews** - Expanded view showing complete frontmatter and content
-- **Quick create button** - Create events instantly from the calendar interface
-- **Event skipping** - Skip recurring event instances without breaking the series
-- **Hover previews** - See note content without opening files
-
 ### 🔗 **Recurring Event Management**
 - **Source button** - Navigate to source node from any recurring instance
 - **Instance dropdown** - View all physical instances of a recurring series
 - **Past filter** - Toggle past event visibility to reduce clutter
 - **Virtual event source preview** - Click virtual events to see their source configuration
-- **Atomic creation** - Recurring events created via calendar are instantly indexed
 
 ### 🗓️ **Multiple Isolated Calendars**
 - **Up to 10 separate calendars** with independent configuration
 - **Dedicated folders** - Each calendar scans its own directory tree
 - **Custom hotkeys** - Instant switching between calendars
 - **Clone & duplicate** - Copy calendars with all settings intact
-
-### 📁 **Smart Event Management**
-- **Folder-based scanning** - Any note with frontmatter becomes an event
-- **Templater integration** - Scaffold consistent event metadata automatically
-- **Deep linking** - Click events to open notes, follow wikilinks
-- **Batch file operations** - Open multiple event files simultaneously
 
 ### 🎨 **Dynamic Visual Customization**
 - **JavaScript-powered color rules** - `fm.Priority === 'High' → #ef4444`
@@ -203,17 +189,13 @@ Select multiple events and perform bulk actions: **clone, move, skip, delete, or
 - **Multiple view modes** - Month, week, day, list with customizable time ranges
 - **Zoom controls** - CTRL+scroll with configurable zoom levels (1-60 minutes)
 
-### ⚡ **Performance & UX**
-- **Debounced scanning** - Efficient file watching and processing
-- **Compact/comfortable** display density options
-- **Fast indexing** - Optimized for large vaults with many events
-
-### 🔄 **CalDAV Integration**
-- **Read-only sync** - Automatically import events from external CalDAV servers (Fastmail, Nextcloud, iCloud, etc.)
+### 🔄 **CalDAV & ICS Integration**
+- **Read-only CalDAV sync** - Automatically import events from external CalDAV servers (Fastmail, Nextcloud, iCloud, etc.)
+- **ICS import & export** - Import `.ics` calendar files into Prisma, or export your calendar/events to standard ICS format for use in other apps and services
 - **Auto-sync** - Configurable sync intervals with manual trigger option
-- **Smart updates** - Incremental sync using ETags for efficiency
-- **Multiple accounts** - Connect multiple CalDAV calendars to different Prisma calendars
-- **Note creation** - Synced events become Obsidian notes with full frontmatter
+- **Smart updates** - Incremental CalDAV sync using ETags for efficiency
+- **Multiple accounts** - Connect multiple CalDAV or ICS sources to different Prisma calendars
+- **Note creation** - Synced or imported events become Obsidian notes with full frontmatter
 
 > **⚠️ Security Warning**: CalDAV credentials are stored in **plaintext** in your vault's `data.json` file. Always use **app-specific passwords**, never your main account password. See [documentation](https://real1tyy.github.io/Prisma-Calendar/features/integrations#security-considerations) for detailed security considerations.
 
