@@ -1852,7 +1852,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		const EDGE_THRESHOLD = 50;
-		const SCROLL_DELAY = 600;
+		const scrollDelay = this.bundle.settingsStore.currentSettings.dragEdgeScrollDelayMs;
 
 		this.dragEdgeScrollListener = (e: MouseEvent) => {
 			if (!this.calendar || !this.container) return;
@@ -1863,7 +1863,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const rightEdge = rect.right;
 
 			const now = Date.now();
-			if (now - this.lastEdgeScrollTime < SCROLL_DELAY) {
+			if (now - this.lastEdgeScrollTime < scrollDelay) {
 				return;
 			}
 

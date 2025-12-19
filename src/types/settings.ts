@@ -102,6 +102,12 @@ export const CalendarSettingsSchema = z.object({
 	showColorDots: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SHOW_COLOR_DOTS), // Show color indicator dots in monthly view
 	skipUnderscoreProperties: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SKIP_UNDERSCORE_PROPERTIES), // Skip displaying properties that start with underscore
 	filterPresets: z.array(FilterPresetSchema).default([]), // Named filter expressions for quick access
+	dragEdgeScrollDelayMs: z
+		.number()
+		.int()
+		.min(50)
+		.max(2000)
+		.default(SETTINGS_DEFAULTS.DEFAULT_DRAG_EDGE_SCROLL_DELAY_MS), // Delay in milliseconds before scrolling when dragging events near edge
 });
 
 export const RulesSettingsSchema = z.object({

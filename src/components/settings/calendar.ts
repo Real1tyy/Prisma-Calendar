@@ -152,6 +152,15 @@ export class CalendarSettings {
 			step: 1,
 		});
 
+		this.ui.addSlider(containerEl, {
+			key: "dragEdgeScrollDelayMs",
+			name: "Drag edge scroll delay (ms)",
+			desc: "Delay in milliseconds before scrolling when dragging events near the edge (50-2000ms)",
+			min: 50,
+			max: 2000,
+			step: 50,
+		});
+
 		new Setting(containerEl)
 			.setName("Zoom levels (minutes)")
 			.setDesc("Available zoom levels for Ctrl+scroll zooming. Enter comma-separated values (1-60 minutes each)")
