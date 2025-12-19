@@ -45,15 +45,44 @@ Check out the [complete video tutorial collection](/videos) with all videos, det
 
 ---
 
-## **Getting Started**
+## 📸 **Screenshots**
 
-New to Prisma Calendar? Check out the [Quick Start guide](/quickstart) to learn how to open your calendar, create your first event, and start using all the features.
+### Full Calendar View
+
+![Full Calendar View](/img/full_calendar.png)
+
+*Weekly calendar view with color-coded events, time grid, search, filtering, and batch operations*
+
+### Batch Operations
+
+![Batch Selection Mode](/img/batch_select.png)
+
+*Select multiple events for bulk operations like delete, duplicate, move, or skip*
+
+### Event Creation & Editing
+
+<p align="center">
+  <img src="/img/create_event_modal.png" alt="Create Event Modal" width="45%" />
+  <img src="/img/edit_event_modal.png" alt="Edit Event Modal" width="45%" />
+</p>
+
+*Create and edit events with full frontmatter support, recurring event options, and built-in time tracker*
+
+### Weekly Statistics
+
+![Weekly Statistics](/img/weekly_stats_pie.png)
+
+*Visual time tracking with pie charts and detailed breakdown tables*
+
+Check out the [complete screenshots gallery](/screenshots) to see all the plugin's visuals, including calendar views, event modals, batch operations, statistics, settings, notifications, and more.
 
 ---
 
-## 📸 **Screenshots**
+## 📚 **Documentation**
 
-Check out the [complete screenshots gallery](/screenshots) to see all the plugin's visuals, including calendar views, event modals, batch operations, statistics, settings, notifications, and more.
+Quick Links:
+- [Installation](/installation) • [Quickstart](/quickstart) • [Configuration](/configuration)
+- [Features Overview](/features/overview) • [FAQ](/faq) • [Troubleshooting](/troubleshooting)
 
 ---
 
@@ -114,62 +143,34 @@ Select multiple events and perform bulk actions: **clone, move, skip, delete, or
 
 ## ✨ **Additional Powerful Features**
 
-### 🔔 **Smart Notification System**
-Never miss a deadline with Prisma Calendar's comprehensive notification system — fully configurable, intelligent, and built for reliability.
-
-- **Desktop notifications** - System alerts appear before events start with event details and quick actions
-- **Rich notification modal** - Complete event preview showing all properties and action buttons
-- **Flexible timing** - Separate defaults for timed events (minutes before) and all-day events (days before)
-- **Per-event overrides** - Each event can specify its own notification timing via frontmatter
-- **Smart snooze** - Postpone notifications with intelligent recalculation (timed events only)
-- **Automatic tracking** - "Already Notified" property prevents duplicate alerts
-- **Configurable snooze duration** - Set custom snooze intervals (default: 15 minutes)
-- **Sound alerts** - Optional notification sound when alerts appear
-- **Never miss deadlines** - Reliable notification queue with precise timing down to the second
-
-### 📋 **Enhanced Event Interaction**
-- **Hidden ZettelID naming** - Events display with clean names in the calendar, but files include unique timestamp suffixes for collision-free storage
-- **Clickable frontmatter** - All frontmatter properties are interactive, wikilinks are clickable
-- **Enlarged previews** - Expanded modal view showing complete frontmatter and full content
-- **Quick create button** - Create events instantly from the calendar interface
-- **Event skipping** - Skip individual recurring event instances without breaking the series
-- **Hover previews** - See note content without opening files
-- **Direct file access** - Click events to open the underlying note immediately
-
 ### 🔗 **Recurring Event Management**
 - **Source button** - Navigate to source node from any recurring instance
-- **Instance dropdown** - View all physical instances of a recurring series in one list
-- **Past filter** - Toggle past event visibility to reduce visual clutter
+- **Instance dropdown** - View all physical instances of a recurring series
+- **Past filter** - Toggle past event visibility to reduce clutter
 - **Virtual event source preview** - Click virtual events to see their source configuration
-- **Atomic creation** - Recurring events created via calendar are instantly indexed and processed
-- **Frontmatter inheritance** - Set all frontmatter properties in the source, they copy to every instance
 
 ### 🗓️ **Multiple Isolated Calendars**
-- **Up to 10 separate calendars** with completely independent configuration
-- **Dedicated folders** - Each calendar scans its own directory tree (subfolders included)
-- **Custom hotkeys** - Instant switching between calendars with keyboard shortcuts
-- **Clone & duplicate** - Copy entire calendars with all settings, rules, and configurations intact
-- **Independent rules** - Each calendar has its own color rules, filters, and display settings
-
-### 📁 **Smart Event Management**
-- **Folder-based scanning** - Any note with frontmatter becomes an event automatically
-- **Templater integration** - Scaffold consistent event metadata using your templates
-- **Deep linking** - Click events to open notes, follow wikilinks, navigate references
-- **Batch file operations** - Open multiple event files simultaneously in tabs
-- **Automatic indexing** - File changes are detected and processed instantly
+- **Up to 10 separate calendars** with independent configuration
+- **Dedicated folders** - Each calendar scans its own directory tree
+- **Custom hotkeys** - Instant switching between calendars
+- **Clone & duplicate** - Copy calendars with all settings intact
 
 ### 🎨 **Dynamic Visual Customization**
 - **JavaScript-powered color rules** - `fm.Priority === 'High' → #ef4444`
-- **Property-based filtering** - Complex expressions to show/hide events (`fm.Status !== 'Done'`)
+- **Property-based filtering** - Show/hide events with complex expressions
 - **Frontmatter display** - Show extra frontmatter properties inside event chips
-- **Multiple view modes** - Month, week, day, list with fully customizable time ranges
-- **Zoom controls** - CTRL+scroll with configurable zoom levels (1-60 minute increments)
-- **Display density** - Compact or comfortable modes for different screen sizes
+- **Multiple view modes** - Month, week, day, list with customizable time ranges
+- **Zoom controls** - CTRL+scroll with configurable zoom levels (1-60 minutes)
 
-### ⚡ **Performance & UX**
-- **Debounced scanning** - Efficient file watching and processing for large vaults
-- **Fast indexing** - Optimized parser for vaults with hundreds or thousands of events
-- **Lightweight** - Events are plain Markdown — you own your data, no proprietary formats
+### 🔄 **CalDAV & ICS Integration**
+- **Read-only CalDAV sync** - Automatically import events from external CalDAV servers (Fastmail, Nextcloud, iCloud, etc.)
+- **ICS import & export** - Import `.ics` calendar files into Prisma, or export your calendar/events to standard ICS format for use in other apps and services
+- **Auto-sync** - Configurable sync intervals with manual trigger option
+- **Smart updates** - Incremental CalDAV sync using ETags for efficiency
+- **Multiple accounts** - Connect multiple CalDAV or ICS sources to different Prisma calendars
+- **Note creation** - Synced or imported events become Obsidian notes with full frontmatter
+
+> **⚠️ Security Warning**: CalDAV credentials are stored in **plaintext** in your vault's `data.json` file. Always use **app-specific passwords**, never your main account password. See [documentation](/features/integrations#security-considerations) for detailed security considerations.
 
 ### What does an event look like?
 
