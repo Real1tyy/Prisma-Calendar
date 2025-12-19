@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented here.
 
+## 1.15.0
+
+### Improvements
+
+- **Sticky Calendar Header**: The calendar header (navigation buttons, filters, and view controls) now stays visible when scrolling down the calendar, making it easier to navigate and filter events without scrolling back to the top.
+
+---
+
 ## 1.14.2
 
 ### Bug Fixes
