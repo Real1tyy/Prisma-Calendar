@@ -21,6 +21,8 @@ title: Prisma Calendar
 
 **The most powerful and flexible calendar plugin ever built for Obsidian — fully configurable, reactive, and engineered for power users who want real control over their time-linked notes.**
 
+</div>
+
 ---
 
 ## 🎬 Video Tutorials
