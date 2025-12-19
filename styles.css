@@ -1,5 +1,10 @@
 /* Custom Calendar Plugin Styles */
 
+/* Remove default Obsidian padding from view-content for calendar views */
+.workspace-leaf .view-content[class*="custom-calendar-view-"] {
+	padding-top: 0;
+}
+
 /* Utility classes */
 .prisma-hidden {
 	display: none;
@@ -78,6 +83,12 @@
 /* Header styling */
 .prisma-calendar-container .fc-toolbar {
 	margin-bottom: 1em;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	background-color: var(--background-primary);
+	padding: 8px 0;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .prisma-calendar-container .fc-toolbar-title {
