@@ -6,144 +6,53 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 
 ## 🎯 **Core Capabilities**
 
-### **Multiple Isolated Calendars**
-- **Up to 10 separate calendars** with completely independent configuration
-- **Dedicated folders** - Each calendar scans its own directory tree (subfolders included)
-- **Custom hotkeys** - Instant switching between calendars
-- **Clone & duplicate** - Copy entire calendars with all settings intact
-- **Independent rules** - Each calendar has its own color rules, filters, and display settings
+### **[Multiple Isolated Calendars](./multiple-calendars)**
+Up to 10 separate calendars with independent configurations, dedicated folders, custom hotkeys, and clone/duplicate support.
 
-### **Folder-Based Event Scanning**
-- **Automatic indexing** - Point a calendar at any folder and notes with frontmatter become events
-- **Subfolder support** - Recursively scans all subfolders in the configured path
-- **Real-time updates** - File changes are detected and processed instantly
-- **Smart parsing** - Efficiently handles large vaults with hundreds or thousands of events
+### **[Folder-Based Event Scanning](./folder-scanning)**
+Automatic indexing of notes with frontmatter, recursive subfolder scanning, and real-time updates for large vaults.
 
-### **Templater Integration**
-- **Template scaffolding** - Use Templater templates to create consistent event metadata
-- **Custom frontmatter** - Define your own property structure that works with your workflow
-- **Automatic application** - New events created via calendar use your configured template
+### **[Templater Integration](./templater)**
+Use Templater templates to scaffold consistent event metadata and custom frontmatter structures.
 
 ---
 
-## 🔔 **Notifications & Alerts**
+## 🔔 **[Notifications & Alerts](./notifications)**
 
-### **Smart Notification System**
-- **Desktop notifications** - System alerts before events start
-- **Rich modal interface** - Complete event details with interactive properties
-- **Flexible timing** - Separate defaults for timed events (minutes) and all-day events (days)
-- **Per-event overrides** - Each event can specify custom notification timing
-- **Snooze functionality** - Postpone notifications with smart recalculation (timed events only)
-- **Automatic tracking** - Prevents duplicate notifications with "Already Notified" property
-- **Example**: `Minutes Before: 15` notifies 15 minutes before event starts
-
-### **Visual Enhancements**
-- **Highlight upcoming events** - Automatically highlights current or next upcoming event
-- **Higher contrast** - Makes active and upcoming events stand out
-- **Smart detection** - Highlights all currently active events, or if none, the closest upcoming one
-- **Configurable** - Enable/disable in settings (enabled by default)
+Desktop notifications with rich modal interface, flexible timing (minutes for timed events, days for all-day), per-event overrides, snooze functionality, and automatic duplicate prevention. Includes visual highlighting of upcoming events with configurable contrast.
 
 ## 🎨 **Customization & Visual Control**
 
-### **Dynamic Color Rules**
-- **JavaScript expressions** - `Priority === 'High' → #ef4444`
-- **First match wins** - Rules evaluated in order, first matching rule applies
-- **Default fallback** - Set a default color for events that don't match any rule
-- **Live updates** - Color changes reflect immediately as you edit rules
+### **[Dynamic Color Rules](./color-rules)**
+JavaScript expressions map frontmatter to colors (`Priority === 'High' → #ef4444`). First match wins, with default fallback and live updates.
 
-### **Advanced Filtering & Search**
-- **Global event search** - Search across all events in calendar with cycle filters for recurring, all-day, and skipped events
-- **Search bar** - Quick text-based filtering by event title in calendar view
-- **Expression filter** - Use property names directly to show/hide events
-- **Filter presets** - Save and reuse common filter expressions
-- **Filtered events modal** - See what's being hidden by active filters
-- **Search in list modals** - Find events in disabled/skipped event lists
-- **Complex logic** - Combine conditions with `&&`, `||`, and comparison operators
-- **Dynamic visibility** - Filter events by any frontmatter property
-- **Highlight events without categories** - Command to temporarily highlight all events missing category assignments for 10 seconds
-- **Example**: `Status !== 'Done'` to hide completed tasks
+### **[Advanced Filtering & Search](./filtering)**
+[Global event search](./global-search) with cycle filters, search bar for quick text filtering, expression filter for property-based logic, filter presets, and filtered events modal. Includes command to highlight events without categories.
 
-### **Statistics & Time Tracking**
-- **Multiple time periods** - Weekly, monthly, and all-time statistics views
-- **Visual time tracking** - Pie chart and breakdown table showing how you spend your time
-- **Dual aggregation modes** - Toggle between "Event Name" and "Category" grouping:
-  - **Event Name mode**: Groups by cleaned event title (strips Zettel IDs and timestamps)
-  - **Category mode**: Groups by frontmatter category property (configurable in settings)
-- **Break time support** - Subtract break time from duration using the `Break` property (e.g., exclude lunch breaks from work sessions)
-- **Smart event grouping** - Automatically groups events by name or category with fallback to "No Category"
-- **Period navigation** - Browse through weeks, months, or view lifetime totals
-- **Paginated tables** - 20 entries per page for optimal performance with large datasets
-- **Timed events focus** - Only includes timed events for meaningful duration tracking
-- **Detailed metrics** - See event count, total duration, and percentage for each category
-- **Example**: See that "Work" took 18h (52%), "Personal" 10h (29%), "Health" 6h (17%)
+### **[Statistics & Time Tracking](./weekly-stats)**
+Weekly, monthly, and all-time views with pie charts and breakdown tables. Dual aggregation modes (Event Name vs Category), break time support, smart grouping, period navigation, and paginated tables (20 entries per page).
 
 ### **Frontmatter Display**
-- **Show custom properties** - Display additional frontmatter fields inside event chips
-- **Configurable** - Choose which properties to show in calendar view
-- **Clickable links** - All wikilinks and references are interactive
-- **Contextual information** - See important metadata without opening the file
+Display custom properties inside event chips with clickable wikilinks and configurable property selection.
 
 ### **View Modes & Display**
-- **Multiple views** - Month, week, day, list with fully customizable time ranges
-- **Zoom controls** - CTRL+scroll with configurable zoom levels (1-60 minute increments)
-- **Display density** - Compact or comfortable modes for different screen sizes
-- **Event overlap control** - Configure how overlapping events display (stacked vs columns)
-- **Customizable time range** - Set visible hours for week/day views
+Month, week, day, and list views with CTRL+scroll zoom (1-60 minute increments), display density options, event overlap control, and customizable time ranges.
 
 ---
 
-## 🔄 **Recurring Events System**
+## 🔄 **[Recurring Events System](./recurring-dsl)**
 
-### **Node-Based Recurrence**
-- **Source node architecture** - One configuration file controls the entire recurring series
-- **Real note generation** - Creates actual Obsidian notes, not just calendar entries
-- **Complete inheritance** - All frontmatter properties and content copy to each instance
-- **DSL patterns** - Use `RRule`/`RRuleSpec` for flexible recurrence patterns
-- **Stable tracking** - `RRuleID` maintains series integrity across edits
-
-### **Virtual Events**
-- **Future previews** - See far-future instances without cluttering your vault
-- **Read-only display** - Virtual events appear in calendar but don't create files
-- **Source access** - Click virtual events to view their source configuration
-- **Performance** - Keeps vault lean while showing complete recurring patterns
-
-### **Calendar-Based Creation**
-- **Direct creation** - Create recurring events directly from the calendar interface
-- **Full frontmatter support** - Set all properties during creation
-- **Atomic indexing** - Events are instantly picked up and processed
-- **Immediate generation** - Instances create immediately when RRule property is set
-
-### **Source Navigation**
-- **Source button** - Navigate to source node from any recurring instance
-- **Instance dropdown** - View all physical instances of a recurring series
-- **Past filter** - Toggle past event visibility to reduce clutter
-- **Linked navigation** - Jump between related recurring events seamlessly
-- **Confirmation modal** - When disabling or deleting recurring events with physical instances, choose whether to delete all associated physical events
-
-### **Recurring Events Modal**
-- **View all recurring events** - Centralized modal to manage all recurring events
-- **Type filter dropdown** - Filter by recurrence type (Daily, Weekly, Bi-weekly, Monthly, Bi-monthly, Yearly)
-- **Color-coded type badges** - Instantly identify recurrence frequency with vibrant colored badges
-- **Quick actions** - Enable/disable recurring events or navigate to source with one click
+Node-based architecture where one source file controls the entire series. Creates real Obsidian notes with complete frontmatter and content inheritance. [Virtual events](./virtual-events) show far-future instances without creating files. Includes calendar-based creation, source navigation, instance dropdown, and centralized management modal with type filters and quick actions.
 
 ---
 
 ## ⚡ **Event Interaction & Management**
 
-### **Hidden ZettelID Naming System**
-- **Clean display names** - Events shown without timestamp clutter in the calendar
-- **Unique filenames** - Every event file includes a hidden timestamp suffix (ZettelID)
-- **Multiple same-named events** - Create unlimited events with identical user-facing names
-- **Automatic uniqueness** - No manual numbering or naming conflicts
-- **Transparent UX** - ZLID stripped from display when editing, previewing, or viewing events
-- **Example**: File stored as `Meeting-20250106143022.md` but displayed as `Meeting`
+### **[Hidden ZettelID Naming System](./zettelid-naming)**
+Create unlimited events with identical display names. Files stored with unique timestamp suffixes (e.g., `Meeting-20250106143022.md`) but displayed as `Meeting` throughout the UI.
 
-### **Enhanced Event Previews**
-- **Hover previews** - See note content without opening files
-- **Enlarged modal** - Expanded view showing complete frontmatter and full content
-- **Clickable frontmatter** - All frontmatter properties are interactive
-- **Wikilink navigation** - Follow links directly from preview modal
-- **Complete context** - See all event details in one comprehensive view
+### **[Enhanced Event Previews](./event-previews)**
+Hover previews and enlarged modals with clickable frontmatter, wikilink navigation, and complete event context.
 
 ### **Event Creation & Editing**
 
@@ -154,88 +63,39 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 
 *Create and edit events with full frontmatter support, recurring options, categories, break time, and built-in time tracker*
 
-- **Quick create button** - Create events instantly from calendar interface
-- **Enhanced edit modal** - Full frontmatter editing with all configured properties
-- **"Now" button** - Quickly set Start or End date to current time with minute precision
-- **[Time tracker](./time-tracker.md)** - Built-in stopwatch for precise time tracking with break time support
-- **Clear button** - Reset all form fields instantly with one click
-- **Drag & drop** - Move events by dragging to new time slots
-- **Resize support** - Adjust event duration by dragging edges
-- **Edge scrolling** - When dragging events, moving the cursor to the left or right edge of the calendar automatically navigates to the previous or next week, allowing easy cross-week event movement (works in week and day views with 500ms throttle)
-- **Click to open** - Open event files directly from calendar
+Quick create button, enhanced edit modal with full frontmatter editing, "Now" button for current time, [built-in time tracker](./time-tracker) with break time support, drag & drop, resize support, edge scrolling for cross-week movement, and direct file opening.
 
 ### **Event Presets**
-- **Save event templates** - Create reusable presets with pre-filled values
-- **Title in presets** - Store event title for consistent naming (e.g., "Weekly Standup")
-- **Full configuration** - Save all-day settings, dates, categories, recurring patterns, and custom properties
-- **Default preset** - Configure a preset that auto-applies when creating new events
-- **Quick apply** - Select from dropdown in modal header to populate all fields instantly
-- **Override existing** - Update presets with current form values or create new ones
+Save reusable templates with pre-filled values including title, dates, categories, recurring patterns, and custom properties. Configure a default preset that auto-applies to new events.
 
-### **Event Skipping**
-- **Skip individual instances** - Mark events as skipped without deletion
-- **Preserve series** - Skipping doesn't break recurring event chains
-- **Skip management dialog** - View and manage all skipped events
-- **Undo support** - Skipped events can be restored via undo
+### **[Event Skipping](./event-skipping)**
+Mark events as skipped without deletion. Preserves recurring series integrity with management dialog and undo support.
 
 ---
 
-## 🚀 **Batch Operations**
+## 🚀 **[Batch Operations](./batch-operations)**
 
-### **Multi-Select Mode**
-- **Click to select** - Select multiple events across your calendar
-- **Visual indication** - Selected events are clearly highlighted
-- **Selection persistence** - Maintain selection across view changes
-- **Select all visible** - Quickly grab all events on screen
-
-### **Bulk Actions**
-- **Batch delete** - Remove multiple events with one confirmation
-- **Batch duplicate** - Create copies of selected events instantly
-- **Week shifting** - Move or clone entire sets of events forward/backward
-- **Batch skip** - Skip multiple events at once
-- **Batch open** - Open all selected event files in editor tabs simultaneously
+Multi-select mode with visual indication and selection persistence. Bulk actions include delete, duplicate, week shifting (move/clone), batch skip, and batch open in tabs.
 
 ---
 
 ## 🔧 **System Features**
 
 ### **Manual Calendar Refresh**
-- **Refresh command** - Manually trigger a full resync of the indexer and refresh all calendar events
-- **Force update** - Use when events appear out of sync or after bulk file operations
-- **Command palette access** - Search for "Refresh calendar" in the command palette (Ctrl/Cmd+P)
-- **Automatic refresh** - Calendar automatically refreshes once indexing completes with loading indicator
+Manually trigger full resync via command palette when events appear out of sync or after bulk file operations. Automatic refresh with loading indicator.
 
 ### **Reactive Settings**
-- **Instant updates** - All settings changes apply immediately without restart
-- **Live recalculation** - Color rules, filters, and views update automatically
-- **Zero downtime** - Never interrupt your workflow with restarts
-- **Real-time feedback** - See changes as you make them
+All settings changes apply instantly without restart. Live recalculation of color rules, filters, and views with real-time feedback.
 
-### **Undo/Redo System**
-- **Command pattern** - Every action is undoable
-- **Semantic labels** - See exactly what you're undoing ("Undo Create Event", "Undo Batch Delete")
-- **Full history** - Undo/redo across all calendar operations
-- **Safety net** - Experiment confidently knowing you can always revert
+### **[Undo/Redo System](./undo-redo)**
+Every action is undoable with semantic labels ("Undo Create Event", "Undo Batch Delete"). Full history across all calendar operations.
 
 ### **[Fill Time from Adjacent Events](./fill-time)**
-- **Context menu options** - Right-click timed events to fill start/end times from neighboring events
-- **Modal fill buttons** - "Fill prev"/"Fill next" buttons in event create/edit modal
-- **Undo support** - Full integration with undo/redo system
-- **Use cases** - Schedule back-to-back meetings, eliminate calendar gaps, accurate time tracking
+Right-click timed events or use modal buttons to fill start/end times from neighboring events. Schedule back-to-back meetings and eliminate calendar gaps.
 
-### **Performance**
-- **Debounced scanning** - Efficient file watching for large vaults
-- **Smart indexing** - Optimized parser for thousands of events
-- **Timezone support** - Automatic system timezone detection with custom override
-- **Lightweight** - Events are plain Markdown — you own your data
 
 ### **[ICS Integrations](./integrations)**
-- **Export to ICS** - Export your calendar to standard `.ics` files
-- **Import from ICS** - Import events from external calendar applications
-- **Timezone selection** - Choose export timezone (internal storage uses UTC)
-- **Skip filtering** - Option to exclude skipped events from exports
-- **Wide compatibility** - Works with Google Calendar, Apple Calendar, Outlook, Nextcloud, and more
-- **Reminders included** - VALARM notifications exported for supported apps
+Export/import ICS files with timezone selection, skip filtering, and wide compatibility (Google Calendar, Apple Calendar, Outlook, Nextcloud). Includes VALARM reminders and CalDAV sync.
 
 ---
 
