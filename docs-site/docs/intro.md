@@ -43,49 +43,17 @@ Check out the [complete video tutorial collection](/videos) with all videos, det
   <p><strong>Full walkthrough of core features:</strong> Event creation, editing, drag-and-drop, batch operations, undo/redo system, recurring events with source nodes, dynamic color rules, filtering, and calendar customization. See how Prisma Calendar gives you real control over your time-linked notes inside Obsidian.</p>
 </div>
 
-For the **Full Tutorial** (Zero to Mastery), **Part 2** (Intelligence & Automation), and **Part 3** (Advanced Workflow Tools), visit the [complete video tutorial collection](/videos).
-
-</div>
-
-Built for power users and workflow optimization enthusiasts, Prisma Calendar delivers multiple isolated calendars, fine-grained filtering and color rules, fast folder-based indexing, and a sophisticated recurring event system — all backed by plain Markdown notes.
-
 ---
 
-## **Getting Started: Opening Your Calendar**
+## **Getting Started**
 
-After installing Prisma Calendar, you can open your calendar in two ways:
-
-### Ribbon Icon (Default)
-
-By default, each calendar adds a calendar icon to the left sidebar. Simply click it to open the calendar.
-
-### Command Palette
-
-1. Press `Ctrl/Cmd + P` to open Obsidian's command palette
-2. Type: `Prisma Calendar: Open [Calendar Name]`
-3. Press Enter
-
-- **Hide ribbon icons** - Go to Settings → Prisma Calendar → select calendar → General → disable "Show ribbon icon"
-- **Set a hotkey** - Go to Settings → Hotkeys → search "Prisma Calendar: Open" → assign your preferred shortcut (e.g., `Ctrl + Shift + C`)
-- **Multiple calendars** - Each calendar has its own ribbon icon and command
-
-All Prisma Calendar commands start with `Prisma Calendar:` to make them easy to find in the command palette.
+New to Prisma Calendar? Check out the [Quick Start guide](/quickstart) to learn how to open your calendar, create your first event, and start using all the features.
 
 ---
 
 ## 📸 **Screenshots**
 
-### Full Calendar View
-
-![Full Calendar View](/img/full_calendar.png)
-
-*Weekly calendar view with color-coded events, time grid, search, filtering, and batch operations*
-
-### Settings Panel
-
-![Settings Panel](/img/settings.png)
-
-*Fully configurable settings with tabs for General, Properties, Calendar UI, Notifications, and Rules*
+Check out the [complete screenshots gallery](/screenshots) to see all the plugin's visuals, including calendar views, event modals, batch operations, statistics, settings, notifications, and more.
 
 ---
 

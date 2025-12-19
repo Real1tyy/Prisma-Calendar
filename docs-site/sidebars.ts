@@ -10,6 +10,7 @@ const sidebars: SidebarsConfig = {
     "installation",
     "quickstart",
     "videos",
+    "screenshots",
     {
       type: "category",
       label: "Features",

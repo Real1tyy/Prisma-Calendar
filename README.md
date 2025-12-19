@@ -51,9 +51,7 @@ For the **Full Tutorial** (Zero to Mastery), **Part 2** (Intelligence & Automati
 ![Weekly Statistics](docs-site/static/img/weekly_stats_pie.png)
 *Visual time tracking with pie charts and detailed breakdown tables*
 
-### Settings
-![Settings Panel](docs-site/static/img/settings.png)
-*Fully configurable settings for each calendar with tabs for General, Properties, Calendar UI, Notifications, and Rules*
+Check out the [complete screenshots gallery](https://real1tyy.github.io/Prisma-Calendar/screenshots) in the documentation to see all the plugin's visuals, including calendar views, event modals, batch operations, statistics, settings, and more.
 
 ---
 
