@@ -1,130 +1,105 @@
 ---
 title: Screenshots
 description: Visual overview of Prisma Calendar's interface and features
+sidebar_position: 3
 ---
 
-# 📸 Screenshots
+# Screenshots
 
-Visual overview of Prisma Calendar's interface and features.
+Visual overview of Prisma Calendar's features and interface.
 
 ## Main Calendar View
 
-<p align="center">
-  <img src="/img/full_calendar.png" alt="Full Calendar View" width="100%" />
-</p>
+![Full Calendar View](/img/full_calendar.png)
 
-*Weekly calendar view with color-coded events, time grid, search, filtering, and batch operations*
+Weekly calendar view with color-coded events, time grid, search, filtering, and batch operations. [Learn more →](/features/overview)
 
 ## Event Creation & Editing
 
-<p align="center">
-  <img src="/img/create_event_modal.png" alt="Create Event Modal" width="49%" />
-  <img src="/img/edit_event_modal.png" alt="Edit Event Modal" width="49%" />
-</p>
+![Create Event Modal](/img/create_event_modal.png)
 
-*Create and edit events with full frontmatter support, recurring event options, and built-in time tracker*
+![Edit Event Modal](/img/edit_event_modal.png)
+
+Create and edit events with full frontmatter support, recurring event options, and built-in time tracker. [Learn more →](/features/overview#event-creation--editing)
 
 ## Batch Operations
 
-<p align="center">
-  <img src="/img/batch_select.png" alt="Batch Selection Mode" width="100%" />
-</p>
+![Batch Selection Mode](/img/batch_select.png)
 
-*Select multiple events for bulk operations like delete, duplicate, move, or skip*
+Select multiple events for bulk operations like delete, duplicate, move, or skip. [Learn more →](/features/batch-operations)
 
 ## Weekly Statistics & Time Tracking
 
-<p align="center">
-  <img src="/img/weekly_stats_pie.png" alt="Weekly Statistics Pie Chart" width="49%" />
-  <img src="/img/weekly_stats_pie_category.png" alt="Weekly Statistics by Category" width="49%" />
-</p>
+![Weekly Statistics Pie Chart](/img/weekly_stats_pie.png)
 
-<p align="center">
-  <img src="/img/weekly_stats_table.png" alt="Weekly Statistics Table" width="100%" />
-</p>
+![Weekly Statistics by Category](/img/weekly_stats_pie_category.png)
 
-*Visual time tracking with pie charts and detailed breakdown tables*
+![Weekly Statistics Table](/img/weekly_stats_table.png)
+
+Visual time tracking with pie charts and detailed breakdown tables showing how you spend your time. [Learn more →](/features/weekly-stats)
 
 ## Settings & Configuration
 
-<p align="center">
-  <img src="/img/settings.png" alt="Settings Panel" width="100%" />
-</p>
+![Settings Panel](/img/settings.png)
 
-*Fully configurable settings for each calendar with tabs for General, Properties, Calendar UI, Notifications, and Rules*
+Fully configurable settings for each calendar with tabs for General, Properties, Calendar UI, Notifications, and Rules. [Learn more →](/configuration)
 
 ## Notifications
 
-<p align="center">
-  <img src="/img/notification_modal.png" alt="Notification Modal" width="100%" />
-</p>
+![Notification Modal](/img/notification_modal.png)
 
-*Rich notification modal with complete event preview and action buttons*
+Rich notification modal with complete event preview and action buttons for snoozing or opening events. [Learn more →](/features/notifications)
 
 ## Time Tracker & Stopwatch
 
-<p align="center">
-  <img src="/img/stopwatch.png" alt="Stopwatch Time Tracker" width="100%" />
-</p>
+![Stopwatch Time Tracker](/img/stopwatch.png)
 
-*Built-in stopwatch for tracking event duration with break time support*
+Built-in stopwatch for tracking event duration with break time support and lap tracking. [Learn more →](/features/time-tracker)
 
 ## Recurring Events
 
-<p align="center">
-  <img src="/img/recurring_events_list_modal.png" alt="Recurring Events List" width="49%" />
-  <img src="/img/view_recurring_events_modal.png" alt="View Recurring Events" width="49%" />
-</p>
+![Recurring Events List](/img/recurring_events_list_modal.png)
 
-<p align="center">
-  <img src="/img/virtual_events.png" alt="Virtual Events Preview" width="100%" />
-</p>
+![View Recurring Events](/img/view_recurring_events_modal.png)
 
-*Recurring event management with source navigation, instance lists, and virtual event previews*
+![Virtual Events Preview](/img/virtual_events.png)
+
+Recurring event management with source navigation, instance lists, and virtual event previews. [Learn more →](/features/recurring-dsl)
 
 ## Event Previews & Interactions
 
-<p align="center">
-  <img src="/img/hover_event.png" alt="Hover Event Preview" width="49%" />
-  <img src="/img/enlarge.png" alt="Enlarged Event Preview" width="49%" />
-</p>
+![Hover Event Preview](/img/hover_event.png)
 
-*Hover previews and enlarged modal views showing complete frontmatter and content*
+![Enlarged Event Preview](/img/enlarge.png)
+
+Hover previews and enlarged modal views showing complete frontmatter and content. [Learn more →](/features/event-previews)
 
 ## Filtering & Search
 
-<p align="center">
-  <img src="/img/filtered_events_modal.png" alt="Filtered Events" width="49%" />
-  <img src="/img/global_event_search.png" alt="Global Event Search" width="49%" />
-</p>
+![Filtered Events](/img/filtered_events_modal.png)
 
-*Advanced filtering system and global event search across all calendars*
+![Global Event Search](/img/global_event_search.png)
+
+Advanced filtering system and global event search across all calendars with cycle filters. [Learn more →](/features/filtering)
 
 ## Event Skipping
 
-<p align="center">
-  <img src="/img/skipped_events_modal.png" alt="Skipped Events" width="100%" />
-</p>
+![Skipped Events](/img/skipped_events_modal.png)
 
-*Skip individual recurring event instances without breaking the series*
+Skip individual recurring event instances without breaking the series. [Learn more →](/features/event-skipping)
 
 ## Undo/Redo System
 
-<p align="center">
-  <img src="/img/undo_redo.png" alt="Undo Redo System" width="100%" />
-</p>
+![Undo Redo System](/img/undo_redo.png)
 
-*Complete command history with semantic undo/redo for all calendar operations*
+Complete command history with semantic undo/redo for all calendar operations. [Learn more →](/features/undo-redo)
 
 ## CalDAV & ICS Integration
 
-<p align="center">
-  <img src="/img/caldav_setup.png" alt="CalDAV Setup" width="49%" />
-  <img src="/img/integrations_import.png" alt="ICS Import" width="49%" />
-</p>
+![CalDAV Setup](/img/caldav_setup.png)
 
-<p align="center">
-  <img src="/img/integrations_export.png" alt="ICS Export" width="100%" />
-</p>
+![ICS Import](/img/integrations_import.png)
 
-*CalDAV synchronization setup and ICS import/export workflows*
+![ICS Export](/img/integrations_export.png)
+
+CalDAV synchronization setup and ICS import/export workflows for external calendar integration. [Learn more →](/features/integrations)
