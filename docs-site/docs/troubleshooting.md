@@ -131,7 +131,7 @@ This ensures the template is applied atomically when Prisma creates the event fi
 
 **Problem**: Events have different property names (`Start Date` for timed events, `Date` for all-day events) and formats (`2025-02-10T14:00:00.000Z` vs `2025-02-10T14:00:00`), making it impossible to sort chronologically in other tools like Bases or Dataview.
 
-**Root Cause**: Prisma uses different properties based on event type, and ISO format includes `.000Z` suffix depending on timezone settings.
+**Root Cause**: Prisma uses different properties based on event type, and ISO format includes `.000Z` suffix.
 
 **Solution**: Create a "watcher" script that normalizes dates into a dedicated sort property.
 
