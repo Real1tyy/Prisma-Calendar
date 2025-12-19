@@ -1,0 +1,85 @@
+name: Auto-label Issues
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Add severity and priority labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+
+            // Define label groups
+            const severityLabels = ['severity: low', 'severity: medium', 'severity: high', 'severity: critical'];
+            const priorityLabels = ['priority: low', 'priority: medium', 'priority: high'];
+            const categoryLabels = ['category: ui', 'category: performance', 'category: integration', 'category: settings', 'category: documentation', 'category: new-feature'];
+            const allAutoLabels = [...severityLabels, ...priorityLabels, ...categoryLabels];
+
+            // Remove existing auto-applied labels
+            const currentLabels = issue.labels.map(label => label.name);
+            const labelsToRemove = currentLabels.filter(label => allAutoLabels.includes(label));
+
+            for (const label of labelsToRemove) {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                name: label
+              });
+            }
+
+            // Determine new labels to add
+            const newLabels = [];
+
+            // Check for severity (bug reports)
+            if (body.includes('Low - Minor inconvenience')) {
+              newLabels.push('severity: low');
+            } else if (body.includes('Medium - Affects functionality')) {
+              newLabels.push('severity: medium');
+            } else if (body.includes('High - Breaks important features')) {
+              newLabels.push('severity: high');
+            } else if (body.includes('Critical - Plugin unusable')) {
+              newLabels.push('severity: critical');
+            }
+
+            // Check for priority (feature requests)
+            if (body.includes('Nice to have - Would be useful occasionally')) {
+              newLabels.push('priority: low');
+            } else if (body.includes('Important - Would improve daily workflow')) {
+              newLabels.push('priority: medium');
+            } else if (body.includes('Critical - Essential for my use case')) {
+              newLabels.push('priority: high');
+            }
+
+            // Check for category (feature requests)
+            if (body.includes('### Feature Category\n\nUser Interface')) {
+              newLabels.push('category: ui');
+            } else if (body.includes('### Feature Category\n\nPerformance')) {
+              newLabels.push('category: performance');
+            } else if (body.includes('### Feature Category\n\nIntegration')) {
+              newLabels.push('category: integration');
+            } else if (body.includes('### Feature Category\n\nSettings/Configuration')) {
+              newLabels.push('category: settings');
+            } else if (body.includes('### Feature Category\n\nDocumentation')) {
+              newLabels.push('category: documentation');
+            } else if (body.includes('### Feature Category\n\nNew Feature')) {
+              newLabels.push('category: new-feature');
+            }
+
+            // Add new labels
+            if (newLabels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: newLabels
+              });
+            }

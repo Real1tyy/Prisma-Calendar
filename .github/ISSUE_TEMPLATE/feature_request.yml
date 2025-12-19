@@ -1,0 +1,125 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Before You Submit
+
+        **Please take a moment to:**
+
+        1. **Search for duplicates** - Check if your feature already exists in [open](https://github.com/yourusername/plugin-name/issues) and [closed](https://github.com/yourusername/plugin-name/issues?q=is%3Aissue+is%3Aclosed) issues
+           - If found, upvote it with 👍 and add your specific use case as a comment
+           - Don't create duplicates - upvoting helps us prioritize popular features!
+
+        2. **Check the documentation** - Your feature might already exist:
+           - [Features Overview](https://yourusername.github.io/plugin-name/features/overview) - All available features
+           - [Configuration](https://yourusername.github.io/plugin-name/configuration) - Settings and customization options
+           - [Documentation](https://yourusername.github.io/plugin-name/) - Full feature documentation
+
+        Thank you for helping make the plugin better!
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What pain point does it address?
+      placeholder: |
+        Describe the problem or limitation you're experiencing.
+
+        Example:
+        Currently, users must click through 3 menus to access feature X,
+        which is used frequently during daily workflow.
+    validations:
+      required: false
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should this feature work? Be as detailed as possible.
+      placeholder: |
+        Describe your proposed solution in detail.
+
+        Example:
+        Add a configurable keyboard shortcut (default: Ctrl+Shift+X) that
+        directly opens feature X. The shortcut should be customizable in
+        Settings → Hotkeys.
+    validations:
+      required: false
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe a real-world scenario where you would use this feature
+      placeholder: |
+        Share your specific workflow and how this feature would help.
+
+        Example:
+        As a daily user, I access feature X 20+ times per day while organizing
+        my notes. A keyboard shortcut would save 2-3 seconds each time,
+        totaling 40-60 seconds saved daily and improving workflow efficiency.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other solutions have you tried or considered?
+      placeholder: |
+        List alternative approaches you've explored.
+
+        Example:
+        - Using command palette (requires too many keystrokes)
+        - Creating a custom hotkey via another plugin (not ideal, adds complexity)
+        - Using a template (doesn't solve the access speed issue)
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples/Mockups
+      description: Provide visual examples, mockups, or references to similar features in other plugins
+      placeholder: |
+        Add screenshots, diagrams, or links to similar implementations.
+
+        You can drag and drop images here or paste links.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to your workflow? (This will automatically apply a label)
+      options:
+        - Nice to have - Would be useful occasionally
+        - Important - Would improve daily workflow
+        - Critical - Essential for my use case
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: What type of feature is this?
+      options:
+        - User Interface
+        - Performance
+        - Integration
+        - Settings/Configuration
+        - Documentation
+        - New Feature
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, technical details, or considerations
+      placeholder: |
+        - Are there any technical constraints to consider?
+        - Would this conflict with existing features?
+        - Any other relevant information?

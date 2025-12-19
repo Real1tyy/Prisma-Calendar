@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://yourusername.github.io/plugin-name/
+    about: Check the documentation for guides and troubleshooting
+  - name: FAQ
+    url: https://yourusername.github.io/plugin-name/faq
+    about: Common questions and answers
+  - name: Troubleshooting Guide
+    url: https://yourusername.github.io/plugin-name/troubleshooting
+    about: Solutions to common issues

@@ -1,0 +1,129 @@
+name: Bug Report
+description: Report a bug or issue with the plugin
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Before You Submit
+
+        **Please take a moment to:**
+
+        1. **Search for duplicates** - Check if your issue already exists in [open](https://github.com/yourusername/plugin-name/issues) and [closed](https://github.com/yourusername/plugin-name/issues?q=is%3Aissue+is%3Aclosed) issues
+           - If found, upvote it with 👍 and add your specific context as a comment
+           - Don't create duplicates - upvoting helps us prioritize!
+
+        2. **Check the documentation** - Your issue might already be addressed:
+           - [FAQ](https://yourusername.github.io/plugin-name/faq) - Common questions and solutions
+           - [Troubleshooting Guide](https://yourusername.github.io/plugin-name/troubleshooting) - Known issues and fixes
+           - [Documentation](https://yourusername.github.io/plugin-name/) - Full feature documentation
+
+        3. **Update to the latest version** - Go to Settings → Community plugins and check for updates
+           - Your issue may already be fixed in the latest release!
+
+        Thank you for helping improve the plugin!
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin Version
+      description: Found in Settings → Community plugins
+      placeholder: "e.g., v1.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: obsidian-version
+    attributes:
+      label: Obsidian Version
+      description: Found in Settings → About
+      placeholder: "e.g., v1.5.3"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: Include version/build number
+      placeholder: "e.g., Windows 11 Pro (Build 22621), macOS 14.2, Ubuntu 22.04"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe the issue you're experiencing
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: If possible, provide clear steps that trigger the bug
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Enter value '...'
+        4. See error
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+      placeholder: Describe what you expected to happen
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happens?
+      placeholder: Describe what actually happened
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console Errors/Logs
+      description: Open Developer Console (Ctrl/Cmd + Shift + I) and paste any relevant errors
+      placeholder: |
+        Paste console errors here, including full stack traces if available
+
+        Example:
+        TypeError: Cannot read property 'x' of undefined
+          at PluginName.saveSettings (main.js:245)
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots/Videos
+      description: If applicable, add screenshots or videos to help explain your problem
+      placeholder: Drag and drop images or paste links here
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: |
+        - Does this happen with other plugins disabled?
+        - Does this happen in a fresh vault?
+        - Any other relevant information?
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this issue? (This will automatically apply a label)
+      options:
+        - Low - Minor inconvenience
+        - Medium - Affects functionality but has workaround
+        - High - Breaks important features
+        - Critical - Plugin unusable
+    validations:
+      required: true
