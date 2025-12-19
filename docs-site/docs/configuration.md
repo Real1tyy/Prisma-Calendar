@@ -24,35 +24,53 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 
 ### Calendar Directory
 
-- Directory: folder to scan for events and create new notes in (supports nested folders)
-- Template path: optional Templater template used when creating events
+- **Directory**: folder to scan for events and create new notes in (supports nested folders)
+- **Template path**: optional Templater template used when creating events
+- **Export folder**: folder where ICS export files are saved (default: `Prisma-Exports`)
 
 ### Parsing
 
-- Default duration (minutes): used when only `Start` is present
-- Show duration field in event modal: display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa (enabled by default)
-- Mark past events as done: automatically mark past events as done during startup by updating their status property (configure the status property and done value in the Properties section)
+- **Default duration (minutes)**: used when only `Start` is present (default: 60 minutes)
+- **Show duration field in event modal**: display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa (enabled by default)
+- **Show stopwatch**: enable stopwatch in event modal for precise time tracking (enabled by default)
+- **Mark past events as done**: automatically mark past events as done during startup by updating their status property (configure the status property and done value in the Properties section)
 
-### Timezone
+### Display & Navigation
 
-- Default timezone: `system` or a specific IANA name (e.g., `America/New_York`)
-- Timezone property: per-note override via frontmatter
+- **Show ribbon icon**: display calendar icon in the left sidebar to open calendar (enabled by default)
+- **Enable keyboard navigation**: enable arrow key navigation for calendar intervals (enabled by default)
+
+### Event Presets
+
+- **Default preset**: select a preset to auto-fill when creating new events (optional)
 
 ## Properties Settings
 
 Tell Prisma Calendar which frontmatter keys you use.
 
-- Start property (required): default `Start`
-- End property (optional): default `End`
-- All-day property (optional): default `AllDay`
-- Date property (optional): default `Date`
-- Title property (optional): default to file name when missing
-- Timezone property (optional): default `Timezone`
-- ZettelID property (optional): when set, a timestamp-based ID is generated on creation/cloning (see [ZettelID Naming System](./features/zettelid-naming) for details)
-- Status property: frontmatter property name for event status (default: `STATUS`), used when automatically marking past events as done
-- Done value: value to set in the status property when marking an event as done (default: `Done`)
-- Category property: frontmatter property name for event categories (default: `Category`), used for grouping in statistics views. Supports **multiple comma-separated categories** (e.g., `Category: Work, Learning`) — events are counted under each category separately in statistics.
-- Break property: frontmatter property name for break time in minutes (default: `Break`), subtracted from duration in statistics
+### Core Event Properties
+
+- **Start property** (required): default `Start Date`
+- **End property** (optional): default `End Date`
+- **All-day property** (optional): default `All Day`
+- **Date property** (optional): default `Date` (for all-day events)
+- **Title property** (optional): default `Title` (falls back to file name when missing)
+- **Timezone property** (optional): default `Timezone` (per-note timezone override)
+- **Skip property**: property name to skip/hide event from calendar (default: `Skip`)
+
+### Identification & Tracking
+
+- **ZettelID property** (optional): when set, a timestamp-based ID is generated on creation/cloning (see [ZettelID Naming System](./features/zettelid-naming) for details). Default: `ZettelID`
+- **Status property**: frontmatter property name for event status (default: `Status`), used when automatically marking past events as done
+- **Done value**: value to set in the status property when marking an event as done (default: `Done`)
+- **Category property**: frontmatter property name for event categories (default: `Category`), used for grouping in statistics views. Supports **multiple comma-separated categories** (e.g., `Category: Work, Learning`) — events are counted under each category separately in statistics.
+- **Break property**: frontmatter property name for break time in minutes (default: `Break`), subtracted from duration in statistics
+- **CalDAV property**: property name for CalDAV sync metadata (default: `CalDAV`)
+
+### Recurring Event Properties
+
+- **Future instances count property**: property name for per-event override of future instances count (default: `Future Instances Count`)
+- **Generate past events property**: property name for generating past recurring instances from source event start date (default: `Generate Past Events`)
 
 ### Recurring (node-based)
 
@@ -165,23 +183,83 @@ STATUS: Done
 
 ## Calendar Settings (UI)
 
-- Default view: set initial calendar view
-- Hide weekends: toggle Saturday/Sunday visibility
-- Enable event preview: hover previews inside the calendar
-- Show current time indicator: time line in day/week views
-- First day of week: choose locale preference
-- Day start / end hour: visible time range in grids
-- Slot duration (minutes): grid slot height
-- Snap duration (minutes): drag/resize snapping interval
-- Zoom levels (minutes): comma-separated list for CTRL+scroll zoom (e.g., `1, 5, 10, 15, 30`)
-- Display density: `comfortable` or `compact`
-- Past event contrast: visual contrast of past events (0% = invisible, 100% = normal)
+### View Configuration
+
+- **Default view**: set initial calendar view (dayGridMonth, timeGridWeek, timeGridDay, listWeek)
+- **Hide weekends**: toggle Saturday/Sunday visibility
+- **First day of week**: choose locale preference (0 = Sunday, 1 = Monday, etc.)
+- **Show decimal hours**: show durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m)
+
+### Time Display
+
+- **Day start / end hour**: visible time range in grids (default: 7-22)
+- **Slot duration (minutes)**: grid slot height (default: 10 minutes, range: 1-60)
+- **Snap duration (minutes)**: drag/resize snapping interval (default: 10 minutes, range: 1-60)
+- **Zoom levels (minutes)**: comma-separated list for CTRL+scroll zoom (default: `1, 2, 3, 5, 10, 15, 20, 30, 45, 60`)
+
+### Visual Appearance
+
+- **Display density**: `comfortable` or `compact` (default: `comfortable`)
+- **Past event contrast**: visual contrast of past events (0% = invisible, 100% = normal, default: 70%)
+- **Show color dots**: show color indicator dots in monthly view (enabled by default)
+- **Thicker hour lines**: make full-hour lines thicker in day/week views (enabled by default)
+
+### Event Interaction
+
+- **Enable event preview**: hover previews inside the calendar (enabled by default)
+- **Show current time indicator**: time line in day/week views (enabled by default)
+- **Highlight upcoming event**: highlight the next upcoming event (enabled by default)
+- **Skip underscore properties**: skip displaying properties that start with underscore in event chips (enabled by default)
 
 ### Event Overlap
 
-- Allow event overlap: whether events can visually overlap in all views (default: enabled)
-- Allow slot event overlap: whether events can overlap within the same time slot in time grid views (default: enabled)
-- Event stack limit: maximum events to stack before showing "+ more" link (1-10, default: 3)
+- **Allow event overlap**: whether events can visually overlap in all views (default: enabled)
+- **Allow slot event overlap**: whether events can overlap within the same time slot in time grid views (default: enabled)
+- **Event stack limit**: maximum events to stack before showing "+ more" link (1-10, default: 1)
+- **Mobile max events per day**: maximum events to show per day on mobile before showing "+more" (0-10, default: 4)
+
+## Notifications Settings
+
+Configure desktop notifications and alerts for upcoming events.
+
+### General
+
+- **Enable notifications**: turn on desktop notifications for events (enabled by default)
+- **Notification sound**: play sound when notifications appear (disabled by default)
+
+### Timing
+
+- **Default minutes before** (timed events): minutes before timed events to notify (optional, undefined = no default notification)
+- **Default days before** (all-day events): days before all-day events to notify (optional, undefined = no default notification)
+- **Snooze minutes**: how many minutes to snooze notifications (default: 15 minutes)
+
+### Property Names
+
+- **Minutes before property**: frontmatter property to read per-event notification times (default: `Minutes Before`)
+- **Days before property**: frontmatter property to read per-event notification days for all-day events (default: `Days Before`)
+- **Already notified property**: frontmatter property to mark events as already notified (default: `Already Notified`)
+
+### Per-Event Overrides
+
+Each event can specify its own notification timing via frontmatter:
+
+```yaml
+---
+Title: Important Meeting
+Start Date: 2025-01-15T14:00
+Minutes Before: 30  # Notify 30 minutes before this event
+---
+```
+
+For all-day events:
+
+```yaml
+---
+Title: Birthday
+Date: 2025-01-15
+Days Before: 1  # Notify 1 day before this all-day event
+---
+```
 
 ## Rules Settings
 
@@ -238,7 +316,8 @@ Create named filter expressions for quick access via the calendar toolbar dropdo
 
 Show extra frontmatter properties inside event chips (scrollable when space is tight).
 
-- Display properties: comma-separated list (e.g., `status, priority, project, tags`)
+- **Display properties (timed events)**: comma-separated list of properties to show in timed event chips (e.g., `status, priority, project, tags`)
+- **Display properties (all-day events)**: comma-separated list of properties to show in all-day event chips (can differ from timed events)
 
 Rendered example inside a chip:
 
@@ -321,5 +400,6 @@ Break: 60  # 1 hour lunch break
 
 ## Recurring Instances (Generation Horizon)
 
-- Future instances count: how many future notes to pre-generate (1–52)
+- **Future instances count**: how many future notes to pre-generate (1–52, default: 2)
 - Beyond that, events appear as read-only virtual items to keep your vault light
+- **Per-event override**: Set `Future Instances Count` property in a recurring event's frontmatter to override the global setting for that specific recurring series
