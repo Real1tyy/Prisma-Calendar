@@ -1,6 +1,8 @@
 ---
-alwaysApply: false
+alwaysApply: true
+description: Enforce use of Obsidian's processFrontMatter API instead of manual YAML manipulation
 ---
+
 # Obsidian Frontmatter API Usage Rule
 
 **CRITICAL: Always use Obsidian's `app.fileManager.processFrontMatter()` API for all frontmatter modifications. Never manipulate YAML manually.**

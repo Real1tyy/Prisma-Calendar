@@ -1,6 +1,8 @@
 ---
-alwaysApply: false
+alwaysApply: true
+description: Never maintain backwards compatibility unless explicitly requested
 ---
+
 # No Backwards Compatibility Rule
 
 **CRITICAL: Never maintain backwards compatibility unless explicitly requested by the user.**
