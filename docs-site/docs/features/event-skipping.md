@@ -13,15 +13,12 @@ Skipping preserves files and history while hiding events from calendar view. Use
 - **Holiday week**: Skip all recurring meetings for that week, series continues after
 - **Vacation period**: Skip two weeks of events, they resume when you return
 - **Cancelled meetings**: Skip specific instances without breaking the recurring pattern
-- **Trial tracking**: Skip events you're testing whether you need, restore if you miss them
 
 ## How to Skip
 
 **Individual:** Right-click event → "Skip Event"
 
 **Batch:** Enter selection mode → Select events → Click "Skip" button
-
-**Common use:** Skip a week of recurring meetings for holidays without breaking the series.
 
 ## Viewing and Restoring
 

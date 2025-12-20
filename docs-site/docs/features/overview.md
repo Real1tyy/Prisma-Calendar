@@ -87,8 +87,8 @@ All settings changes apply instantly without restart. Live recalculation of colo
 ### **[Undo/Redo System](./undo-redo)**
 Every action is undoable with semantic labels ("Undo Create Event", "Undo Batch Delete"). Full history across all calendar operations.
 
-### **[Fill Time from Adjacent Events](./fill-time)**
-Right-click timed events or use modal buttons to fill start/end times from neighboring events. Schedule back-to-back meetings and eliminate calendar gaps.
+### **Fill Time from Adjacent Events**
+Right-click timed events or use modal buttons to fill start/end times from neighboring events. Schedule back-to-back meetings and eliminate calendar gaps. Supports undo/redo.
 
 
 ### **[ICS Integrations](./integrations)**

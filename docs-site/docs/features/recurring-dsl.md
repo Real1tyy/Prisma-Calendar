@@ -43,42 +43,6 @@ Deterministic file paths based on (RRuleID, Instance Date) prevent duplicates. F
 
 *Centralized modal to view, filter, enable/disable, and navigate to all recurring events*
 
-## Examples
-
-```yaml
-# Weekly Standup (Mon-Fri)
----
-Title: Daily Standup
-Start: 2025-02-03T09:30
-RRule: weekly
-RRuleSpec: monday, tuesday, wednesday, thursday, friday
----
-## Meeting Notes
-- Review yesterday's progress
-- Plan today's work
-
-# Monthly Rent (1st of month)
----
-Title: Pay Rent
-Start: 2025-02-01T09:00
-RRule: monthly
-tags: [finance, recurring]
----
-## Payment Details
-- Amount: $1,200
-
-# Gym (Mon/Wed/Fri)
----
-Title: Gym Session
-Start: 2025-02-03T18:00
-End: 2025-02-03T19:30
-RRule: weekly
-RRuleSpec: monday, wednesday, friday
----
-## Workout Plan
-- Warm up: 10 minutes
-```
-
 ## Recurrence Patterns
 
 ### Available RRule Values
@@ -135,4 +99,3 @@ Confirmation modal appears when disabling or deleting source with physical insta
 1. **Start Simple**: Begin with basic patterns, expand as needed
 2. **Use Meaningful Templates**: Configuration node is complete template - include all structure, frontmatter, and content
 3. **Don't Touch System Properties**: Never modify `RRuleID`, don't manually create/delete instance files
-4. **Adjust Generation Horizon**: Match count to planning needs (1-2 most users, 3-4 active planners, 12+ intensive prep). Remember weekly patterns multiply.

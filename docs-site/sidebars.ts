@@ -31,7 +31,6 @@ const sidebars: SidebarsConfig = {
         "features/batch-operations",
         "features/event-skipping",
         "features/undo-redo",
-        "features/fill-time",
         "features/recurring-dsl",
         "features/virtual-events",
         "features/integrations",
