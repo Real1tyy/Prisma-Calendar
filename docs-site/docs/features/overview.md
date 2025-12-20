@@ -56,14 +56,11 @@ Hover previews and enlarged modals with clickable frontmatter, wikilink navigati
 
 ### **Event Creation & Editing**
 
-<div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem'}}>
-  <img src="/img/create_event_modal.png" alt="Create Event Modal" style={{maxWidth: '48%', minWidth: '300px'}} />
-  <img src="/img/edit_event_modal.png" alt="Edit Event Modal" style={{maxWidth: '48%', minWidth: '300px'}} />
-</div>
-
 *Create and edit events with full frontmatter support, recurring options, categories, break time, and built-in time tracker*
 
 Quick create button, enhanced edit modal with full frontmatter editing, "Now" button for current time, [built-in time tracker](./time-tracker) with break time support, drag & drop, resize support, edge scrolling for cross-week movement, and direct file opening.
+
+See [Screenshots](../screenshots.md) for modal examples.
 
 ### **Event Presets**
 Save reusable templates with pre-filled values including title, dates, categories, recurring patterns, and custom properties. Configure a default preset that auto-applies to new events.
@@ -73,7 +70,7 @@ Mark events as skipped without deletion. Preserves recurring series integrity wi
 
 ---
 
-## 🚀 **[Batch Operations](./batch-operations)**
+## **[Batch Operations](./batch-operations)**
 
 Multi-select mode with visual indication and selection persistence. Bulk actions include delete, duplicate, week shifting (move/clone), batch skip, and batch open in tabs.
 
@@ -145,17 +142,3 @@ fm.Project === 'Work' || fm.Tags?.includes('work')
 ```
 
 ---
-
-## 🎯 **Getting Started**
-
-1. **[Installation](../installation)** - Get Prisma Calendar installed
-2. **[Quickstart](../quickstart)** - Basic setup and first calendar
-3. **[Configuration](../configuration)** - Deep dive into customization
-4. **[Notifications](./notifications)** - Set up event alerts and reminders
-5. **[Global Search](./global-search)** - Search and navigate all events
-6. **[Filtering](./filtering)** - Master search and filter expressions
-7. **[Statistics](./statistics)** - Track time with daily, weekly, monthly, and all-time insights
-8. **[Time Tracker](./time-tracker)** - Precision stopwatch for tracking work sessions
-9. **[Recurring Events](./recurring-dsl)** - Master recurring event patterns
-10. **[Batch Operations](./batch-operations)** - Learn efficiency workflows
-11. **[Integrations](./integrations)** - Export and import with external calendars

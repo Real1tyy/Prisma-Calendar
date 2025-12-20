@@ -60,6 +60,7 @@ Command: `Show all-time statistics`. No navigation, pagination for large dataset
 ### Aggregation Modes
 
 **Event Name Mode** (default): Groups by cleaned titles
+
 **Category Mode**: Groups by frontmatter category. Toggle via mode button.
 
 ### Recurring Events (Name Mode)

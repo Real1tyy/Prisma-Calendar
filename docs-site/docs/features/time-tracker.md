@@ -37,17 +37,21 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 ## Displays
 
 **Elapsed Time** (HH:MM:SS): Total time since start, including breaks
+
 **Break Time** (MM:SS): Accumulated break time, saved to Break field in minutes when stopped
 
 ## Integration
 
 **[Statistics](./statistics)**: Break time subtracted from duration for accurate tracking
+
 **Duration Field**: Updates automatically on start/stop
+
 **[Event Presets](./overview#event-presets)**: Works alongside presets for template + precision timing
 
 ## Configuration
 
 **Enable/Disable**: Settings → [Calendar] → General → "Show time tracker in event modal"
+
 **Break Property**: Settings → [Calendar] → Properties → "Break property" (default: `Break`)
 
 **Timed Events Only**: Only visible when "All day" is unchecked
