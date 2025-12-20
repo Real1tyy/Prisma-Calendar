@@ -28,7 +28,7 @@ Create and edit events with full frontmatter support, recurring event options, a
 
 Select multiple events for bulk operations like delete, duplicate, move, or skip. [Learn more →](/features/batch-operations)
 
-## Weekly Statistics & Time Tracking
+## Statistics & Time Tracking
 
 ![Weekly Statistics Pie Chart](/img/weekly_stats_pie.png)
 
@@ -36,7 +36,7 @@ Select multiple events for bulk operations like delete, duplicate, move, or skip
 
 ![Weekly Statistics Table](/img/weekly_stats_table.png)
 
-Visual time tracking with pie charts and detailed breakdown tables showing how you spend your time. [Learn more →](/features/weekly-stats)
+Visual time tracking with pie charts and detailed breakdown tables showing how you spend your time across daily, weekly, monthly, and all-time views. [Learn more →](/features/statistics)
 
 ## Settings & Configuration
 

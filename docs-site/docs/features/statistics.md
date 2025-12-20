@@ -24,8 +24,9 @@ Track how you spend your time with visual insights and detailed breakdowns of yo
 
 ## Overview
 
-The Statistics feature provides comprehensive time tracking visualizations that show how your time is distributed across different event categories. Choose from three different views:
+The Statistics feature provides comprehensive time tracking visualizations that show how your time is distributed across different event categories. Choose from four different views:
 
+- **📊 Daily Statistics**: Analyze a single day's time allocation
 - **📅 Weekly Statistics**: Analyze a specific week (Monday-Sunday)
 - **📆 Monthly Statistics**: Review an entire month's time allocation
 - **🌍 All-Time Statistics**: See lifetime totals across all your events
@@ -38,9 +39,13 @@ Color-coded pie chart, paginated breakdown table (20 entries/page), period navig
 
 ## Statistics Types
 
+### Daily Statistics
+
+Command: `Show daily statistics`. Navigate: ← Previous day, Next → day, Today
+
 ### Weekly Statistics
 
-Command: `Show weekly statistics`. Navigate: ← Previous (7 days), Next → (7 days), Today
+Command: `Show weekly statistics`. Navigate: ← Previous week (7 days), Next → week (7 days), Today
 
 ### Monthly Statistics
 
@@ -93,17 +98,26 @@ Add `Break` property (in minutes) to exclude break time from statistics. Support
 
 ## Use Cases
 
+**Daily Time Tracking**: Quick daily reviews, productivity audits, day-to-day planning
+
 **Weekly Time Tracking**: Monitor activity distribution for weekly reviews, sprint retrospectives
+
 **Monthly Analysis**: Review patterns for monthly reports, billing summaries
+
 **Lifetime Patterns**: Analyze long-term allocation for annual reviews, career reflection
-**Work-Life Balance**: Track work vs personal vs recurring activities
-**Category Comparison**: Compare periods to spot trends
+
+**Work-Life Balance**: Track work vs personal vs recurring activities across any time period
+
+**Period Comparison**: Compare different days, weeks, or months to spot trends
 
 ## Best Practices
 
 **Consistent Naming**: Use same base names for similar events to leverage automatic grouping
+
 **Always Set End Times**: Events without end times excluded (duration = 0)
+
 **Category Strategy**: Choose grouping approach (by activity type, project, or client)
+
 **Regular Review**: Make weekly statistics review part of your routine
 
 ## Related Features

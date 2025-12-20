@@ -41,7 +41,7 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 
 ## Integration
 
-**[Statistics](./weekly-stats)**: Break time subtracted from duration for accurate tracking
+**[Statistics](./statistics)**: Break time subtracted from duration for accurate tracking
 **Duration Field**: Updates automatically on start/stop
 **[Event Presets](./overview#event-presets)**: Works alongside presets for template + precision timing
 
@@ -54,6 +54,6 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 
 ## Related Features
 
-- [Statistics](./weekly-stats) - Break time subtracted from duration
+- [Statistics](./statistics) - Break time subtracted from duration
 - [Event Creation](./overview#event-creation--editing) - Other creation features
 - [Event Presets](./overview#event-presets) - Pre-fill templates

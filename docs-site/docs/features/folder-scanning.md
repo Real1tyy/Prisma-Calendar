@@ -16,9 +16,9 @@ Each calendar watches a folder for event notes.
 
 ```yaml
 ---
-Start: 2025-03-10T09:00
-End: 2025-03-10T10:00
-Title: Project Kickoff
+Start Date: 2025-12-18T08:45:00.000Z
+End Date: 2025-12-18T11:30:00.000Z
+All Day: false
 ---
 ```
 

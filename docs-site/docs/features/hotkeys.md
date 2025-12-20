@@ -49,6 +49,35 @@ Here is a complete list of the batch operations you can assign hotkeys to:
 -   `Batch: Move By`: Opens a dialog to move selected events by a custom number of days. Supports positive values (move forward) and negative values (move backward). For example, enter `7` to move events one week forward, or `-3` to move them 3 days back.
 -   `Batch: Skip Selection`: Marks all selected events as skipped (hidden from calendar).
 
+## Filtering Commands
+
+### Focus Search
+
+-   **Function**: Jumps focus to the search bar in the calendar toolbar
+-   **Use Case**: Quick keyboard access to title-based event filtering
+-   **See Also**: [Filtering documentation](./filtering.md) for details on search functionality
+
+### Focus Expression Filter
+
+-   **Function**: Jumps focus to the expression filter input in the calendar toolbar
+-   **Use Case**: Quick keyboard access to advanced property-based filtering
+-   **See Also**: [Filtering documentation](./filtering.md) for expression syntax and examples
+
+### Open Filter Preset Selector
+
+-   **Function**: Opens the filter preset dropdown menu
+-   **Use Case**: Quick access to saved filter expressions
+-   **See Also**: [Filtering documentation](./filtering.md) for creating and managing presets
+
+### Show Filtered Events
+
+-   **Function**: Opens a modal displaying all events currently hidden by active filters
+-   **Features**:
+    -   Search within filtered events by name
+    -   Click any event to open its file
+    -   Helps identify which events are excluded by current search and expression filters
+-   **See Also**: [Filtering documentation](./filtering.md) for filter behavior
+
 ## Navigation Commands
 
 ### Open Current Note in Calendar
@@ -125,8 +154,9 @@ Here are suggested keybindings organized by workflow:
 ### Advanced Filtering
 | Command | Suggested Binding | Why |
 |---------|------------------|-----|
-| Focus expression filter | `Ctrl/Cmd+Shift+F` | Advanced search variant |
+| Focus expression filter | `Ctrl/Cmd+Shift+F` | Advanced property-based filtering |
 | Open filter preset selector | `Ctrl/Cmd+Shift+P` | Quick preset access |
+| Show filtered events | `Ctrl/Cmd+Shift+H` | View events hidden by active filters |
 
 ### Batch Operations
 | Command | Suggested Binding | Why |

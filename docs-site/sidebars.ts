@@ -22,7 +22,7 @@ const sidebars: SidebarsConfig = {
         "features/templater",
         "features/color-rules",
         "features/filtering",
-        "features/weekly-stats",
+        "features/statistics",
         "features/time-tracker",
         "features/global-search",
         "features/notifications",

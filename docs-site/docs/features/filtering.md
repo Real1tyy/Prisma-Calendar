@@ -12,7 +12,6 @@ The **Search Bar** in the calendar toolbar lets you quickly filter events by tit
 - **Usage**: Type any text to show only events whose titles contain that text
 - **Features**:
   - Case-insensitive search
-  - Real-time filtering with debouncing (150ms)
   - Press Enter or blur the input to apply immediately
 - **Hotkey**: Use the `Focus search` command to jump directly to the search input
 
@@ -80,16 +79,6 @@ The **"Highlight events without categories"** command temporarily highlights all
 - **Duration**: Events are highlighted for 10 seconds
 - **Visual feedback**: Events without categories are visually highlighted in the calendar view
 
-**Use cases:**
-- **Quick audit**: Identify events that need categorization for better statistics tracking
-- **Bulk categorization**: Find uncategorized events to assign categories in batch
-- **Data quality**: Ensure all events have categories for accurate time tracking by category
-
-**What counts as "without categories":**
-- Events with no `Category` property in frontmatter
-- Events with an empty `Category` property
-- Events where `Category` is `null` or `undefined`
-
 **Note**: The category property name is configurable in Settings → Properties → "Category property" (default: `Category`).
 
 ## How Filters Work Together
@@ -147,43 +136,6 @@ Status === 'Active' && (Priority === 'High' || (DueDate && new Date(DueDate) < n
 
 The filter expression is **fully flexible** - you can combine as many conditions as needed using JavaScript's logical operators.
 
-## Using Multiple Calendars with Different Filters
-
-Multiple calendars provide flexibility for viewing different event sources. **Each calendar must use its own separate directory** to have independent filter settings.
-
-**✅ CORRECT: Separate Directories for Different Filters**
-```
-Calendar "Work Tasks":
-  Directory: work/
-  Filter: Status !== 'Done'
-
-Calendar "Personal Events":
-  Directory: personal/
-  Filter: Priority === 'High'
-
-Calendar "Project Deadlines":
-  Directory: projects/
-  Filter: Type === 'deadline'
-```
-
-**❌ INCORRECT: Same Directory with Different Filters**
-```
-Calendar "Active Tasks":
-  Directory: tasks/
-  Filter: fm.Status !== 'Done'
-
-Calendar "All Tasks":
-  Directory: tasks/        ← Will NOT work!
-  Filter: (no filter)      ← Will use first calendar's filter!
-```
-
-**Why?** Calendars sharing a directory share the same indexer and parser, which means they **must use the FIRST calendar's filter settings**. You cannot create different "filtered views" of the same directory.
-
-**Workaround:** If you need different views of the same event set:
-- Use a single comprehensive filter expression with AND/OR logic
-- Use color rules to differentiate event types visually
-- Or organize events into separate directories by type/status
-
 ## Viewing Filtered Events
 
 ### Filtered Event List Modal
@@ -199,64 +151,17 @@ When you have active search or expression filters, you might wonder what events 
 - **Features**:
   - Search within filtered events by name
   - Click any event to open its file
-  - See why events are hidden (they don't match your active filters)
-  - Useful for debugging complex filter expressions
-
-**Use Case:**
-```
-Active Filter: Status !== 'Done'
-Filtered Events Modal: Shows all events where Status === 'Done'
-```
-
-This helps you:
-- Verify your filter is working correctly
-- Find events you thought should be visible
-- Understand the impact of your filter expressions
-
-### Search in List Modals
-
-Several list modals now include search functionality to help you find specific events quickly:
-
-#### Disabled Recurring Events Modal
-- **Access**: Click the disabled recurring events counter in calendar header
-- **Search**: Type event name to filter the list
-- **Actions**: Enable or open any disabled recurring event
-
-#### Skipped Events Modal
-- **Access**: Command palette → "Show skipped events"
-- **Search**: Type event name to filter the list
-- **Actions**: View and manage all events marked as skipped
-
-**Benefits:**
-- Quickly locate specific events in large lists
-- No need to scroll through hundreds of entries
-- Real-time search as you type
 
 ## Keyboard Shortcuts
 
-Prisma Calendar provides commands that you can bind to hotkeys for quick filter access:
+Several filtering commands can be assigned hotkeys for quick access:
 
-| Command | Description |
-|---------|-------------|
-| `Focus search` | Jump to the search bar input |
-| `Focus expression filter` | Jump to the expression filter input |
-| `Open filter preset selector` | Open the filter presets dropdown |
-| `Show filtered events` | Open modal showing events hidden by active filters |
-| `Show skipped events` | Open modal listing all skipped events (with search) |
-| `Show disabled recurring events` | Open modal listing disabled recurring events (with search) |
+- `Focus search` - Jump to the search bar input
+- `Focus expression filter` - Jump to the expression filter input
+- `Open filter preset selector` - Open the filter presets dropdown
+- `Show filtered events` - Open modal showing events hidden by active filters
 
-**Setting Up Hotkeys:**
-1. Go to Settings → Hotkeys
-2. Search for "Prisma Calendar"
-3. Find the filter commands and assign your preferred key combinations
-
-## Best Practices
-
-### Filter Strategy
-1. **Start with Search**: Use the search bar for quick title-based filtering during daily use
-2. **Add Expression Filter**: Layer on property-based filters for more specific views
-3. **Save as Preset**: Convert frequently-used expressions into presets for one-click access
-4. **Settings for Permanent**: Use settings filters for views you want every time (e.g., hiding archived events)
+For a complete list of available commands and how to set up hotkeys, see the [Hotkeys documentation](./hotkeys.md).
 
 
 ## Troubleshooting
@@ -273,8 +178,3 @@ Prisma Calendar provides commands that you can bind to hotkeys for quick filter 
     - Missing closing parenthesis: `(Status === 'Done'` ❌ → `(Status === 'Done')` ✅
     - Single equals: `Status = 'Done'` ❌ → `Status === 'Done'` ✅
     - Undefined properties: `Tags.includes('urgent')` ❌ → `Tags && Tags.includes('urgent')` ✅
-
-### Filter Not Updating
-- **Search/Expression**: Debounce delay (press Enter to apply immediately)
-- **Settings Filter**: Requires calendar reload or settings save
-- **Preset Filter**: Should apply immediately on selection

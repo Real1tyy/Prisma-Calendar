@@ -29,8 +29,8 @@ JavaScript expressions map frontmatter to colors (`Priority === 'High' → #ef44
 ### **[Advanced Filtering & Search](./filtering)**
 [Global event search](./global-search) with cycle filters, search bar for quick text filtering, expression filter for property-based logic, filter presets, and filtered events modal. Includes command to highlight events without categories.
 
-### **[Statistics & Time Tracking](./weekly-stats)**
-Weekly, monthly, and all-time views with pie charts and breakdown tables. Dual aggregation modes (Event Name vs Category), break time support, smart grouping, period navigation, and paginated tables (20 entries per page).
+### **[Statistics & Time Tracking](./statistics)**
+Daily, weekly, monthly, and all-time views with pie charts and breakdown tables. Dual aggregation modes (Event Name vs Category), break time support, smart grouping, period navigation, and paginated tables (20 entries per page).
 
 ### **Frontmatter Display**
 Display custom properties inside event chips with clickable wikilinks and configurable property selection.
@@ -154,7 +154,7 @@ fm.Project === 'Work' || fm.Tags?.includes('work')
 4. **[Notifications](./notifications)** - Set up event alerts and reminders
 5. **[Global Search](./global-search)** - Search and navigate all events
 6. **[Filtering](./filtering)** - Master search and filter expressions
-7. **[Statistics](./weekly-stats)** - Track time with weekly, monthly, and all-time insights
+7. **[Statistics](./statistics)** - Track time with daily, weekly, monthly, and all-time insights
 8. **[Time Tracker](./time-tracker)** - Precision stopwatch for tracking work sessions
 9. **[Recurring Events](./recurring-dsl)** - Master recurring event patterns
 10. **[Batch Operations](./batch-operations)** - Learn efficiency workflows
