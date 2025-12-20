@@ -81,8 +81,8 @@
 }
 
 /* Header styling */
-.prisma-calendar-container .fc-toolbar {
-	margin-bottom: 1em;
+.prisma-calendar-container .fc-header-toolbar.fc-toolbar {
+	margin-bottom: 0.75rem;
 	position: sticky;
 	top: 0;
 	z-index: 10;
