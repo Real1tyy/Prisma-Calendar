@@ -234,6 +234,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				},
 				className: `${clsBase} ${cls("skip-btn")}`,
 			},
+			batchMarkAsDone: {
+				text: "Done",
+				click: () => {
+					void bsm.executeMarkAsDone();
+				},
+				className: `${clsBase} ${cls("mark-done-btn")}`,
+			},
 			batchDelete: {
 				text: "Delete",
 				click: () => {
@@ -298,6 +305,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				"batchClear",
 				"batchDuplicate",
 				"batchMoveBy",
+				"batchMarkAsDone",
 				"batchCloneNext",
 				"batchClonePrev",
 				"batchMoveNext",
@@ -1796,6 +1804,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	skipSelection(): void {
 		void this.batchSelectionManager?.executeSkip();
+	}
+
+	markAsDoneSelection(): void {
+		void this.batchSelectionManager?.executeMarkAsDone();
 	}
 
 	duplicateSelection(): void {

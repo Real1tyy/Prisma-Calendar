@@ -4,6 +4,15 @@ All notable changes to this project will be documented here.
 
 ## 1.15.0
 
+### New Features
+
+- **Mark Events as Done**: Added support for manually marking events as done using the status property configured in settings. This feature is available in multiple places:
+  - **Event Edit Modal**: A "Mark as done" checkbox allows you to mark events as done when editing them
+  - **Event Context Menu**: Right-click on any event and select "Mark as done" to quickly mark it as complete
+  - **Batch Operations**: Select multiple events in batch selection mode and use the "Mark Done" button to mark them all as done at once
+  - **Undoable Command**: All mark as done operations are undoable through the standard undo/redo system
+  - This complements the existing "Mark past events as done" setting which automatically marks past events as done on startup
+
 ### Improvements
 
 - **Sticky Calendar Header**: The calendar header (navigation buttons, filters, and view controls) now stays visible when scrolling down the calendar, making it easier to navigate and filter events without scrolling back to the top.

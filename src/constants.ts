@@ -26,6 +26,7 @@ export const COMMAND_IDS = {
 	BATCH_CLONE_PREV_WEEK: "batch-clone-prev-week",
 	BATCH_MOVE_NEXT_WEEK: "batch-move-next-week",
 	BATCH_MOVE_PREV_WEEK: "batch-move-prev-week",
+	BATCH_MARK_AS_DONE: "batch-mark-as-done",
 	OPEN_CURRENT_NOTE_IN_CALENDAR: "open-current-note-in-calendar",
 	SHOW_DAILY_STATS: "show-daily-stats",
 	SHOW_WEEKLY_STATS: "show-weekly-stats",

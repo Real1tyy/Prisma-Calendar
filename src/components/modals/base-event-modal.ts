@@ -69,6 +69,7 @@ export abstract class BaseEventModal extends Modal {
 
 	protected categoryInput?: CategoryInput;
 	protected breakInput!: HTMLInputElement;
+	protected markAsDoneCheckbox!: HTMLInputElement;
 	protected notificationInput!: HTMLInputElement;
 	protected notificationContainer!: HTMLElement;
 	protected notificationLabel!: HTMLElement;
@@ -442,6 +443,7 @@ export abstract class BaseEventModal extends Modal {
 		this.createRecurringEventFields(contentEl);
 		this.createCategoryField(contentEl);
 		this.createBreakField(contentEl);
+		this.createMarkAsDoneField(contentEl);
 		this.createNotificationField(contentEl);
 		this.createCustomPropertiesFields(contentEl);
 	}
@@ -472,6 +474,18 @@ export abstract class BaseEventModal extends Modal {
 				step: "any",
 				placeholder: "0",
 			},
+		});
+	}
+
+	private createMarkAsDoneField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.statusProperty) return;
+
+		const markAsDoneContainer = contentEl.createDiv("setting-item");
+		markAsDoneContainer.createEl("div", { text: "Mark as done", cls: "setting-item-name" });
+		this.markAsDoneCheckbox = markAsDoneContainer.createEl("input", {
+			type: "checkbox",
+			cls: "setting-item-control",
 		});
 	}
 
@@ -1066,6 +1080,14 @@ export abstract class BaseEventModal extends Modal {
 				preservedFrontmatter[settings.breakProp] = breakValue;
 			} else {
 				delete preservedFrontmatter[settings.breakProp];
+			}
+		}
+
+		if (settings.statusProperty && this.markAsDoneCheckbox) {
+			if (this.markAsDoneCheckbox.checked) {
+				preservedFrontmatter[settings.statusProperty] = settings.doneValue;
+			} else {
+				delete preservedFrontmatter[settings.statusProperty];
 			}
 		}
 

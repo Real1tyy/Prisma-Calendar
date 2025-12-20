@@ -593,3 +593,49 @@ export class MoveByCommand implements Command {
 		return true;
 	}
 }
+
+export class MarkAsDoneCommand implements Command {
+	private originalStatusValue?: string | undefined;
+
+	constructor(
+		private app: App,
+		private bundle: CalendarBundle,
+		private filePath: string
+	) {}
+
+	async execute(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+			if (this.originalStatusValue === undefined) {
+				this.originalStatusValue = fm[settings.statusProperty] as string | undefined;
+			}
+
+			fm[settings.statusProperty] = settings.doneValue;
+		});
+	}
+
+	async undo(): Promise<void> {
+		if (this.originalStatusValue === undefined && this.originalStatusValue !== "") return;
+
+		const file = getTFileOrThrow(this.app, this.filePath);
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+			if (this.originalStatusValue === undefined) {
+				delete fm[settings.statusProperty];
+			} else {
+				fm[settings.statusProperty] = this.originalStatusValue;
+			}
+		});
+	}
+
+	getType(): string {
+		return "mark-as-done";
+	}
+
+	canUndo(): boolean {
+		return this.originalStatusValue !== undefined || this.originalStatusValue === "";
+	}
+}

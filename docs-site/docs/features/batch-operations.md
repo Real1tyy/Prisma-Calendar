@@ -38,6 +38,12 @@ Quickly make changes to many events at once.
 - Preserves recurring series
 - View/restore via Calendar menu → "View Skipped Events"
 
+### Mark Done
+- Marks all selected events as done by setting the status property
+- Uses the status property and done value configured in Settings → Properties
+- Undoable operation
+- Useful for quickly marking completed tasks or past events
+
 ### Open All in Tabs
 - Opens all selected event files in editor tabs
 - Quick access for batch reviewing/editing

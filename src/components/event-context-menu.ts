@@ -6,6 +6,7 @@ import {
 	DeleteEventCommand,
 	DuplicateRecurringEventCommand,
 	FillTimeCommand,
+	MarkAsDoneCommand,
 	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,
@@ -266,6 +267,15 @@ export class EventContextMenu {
 
 			menu.addItem((item) => {
 				item
+					.setTitle("Mark as done")
+					.setIcon("check")
+					.onClick(() => {
+						void this.markEventAsDone(event);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
 					.setTitle("Move to next week")
 					.setIcon("arrow-right")
 					.onClick(() => {
@@ -455,6 +465,15 @@ export class EventContextMenu {
 			await this.runCommand(() => new DuplicateRecurringEventCommand(this.app, this.bundle, filePath), {
 				success: "Recurring instance duplicated",
 				error: "Failed to duplicate recurring event",
+			});
+		});
+	}
+
+	async markEventAsDone(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "mark event as done", async (filePath) => {
+			await this.runCommand(() => new MarkAsDoneCommand(this.app, this.bundle, filePath), {
+				success: "Event marked as done",
+				error: "Failed to mark event as done",
 			});
 		});
 	}

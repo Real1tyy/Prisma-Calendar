@@ -48,6 +48,7 @@ Here is a complete list of the batch operations you can assign hotkeys to:
 -   `Batch: Move to Previous Week`: Moves each selected event to the same day of the previous week.
 -   `Batch: Move By`: Opens a dialog to move selected events by a custom number of days. Supports positive values (move forward) and negative values (move backward). For example, enter `7` to move events one week forward, or `-3` to move them 3 days back.
 -   `Batch: Skip Selection`: Marks all selected events as skipped (hidden from calendar).
+-   `Batch: Mark Selection as Done`: Marks all selected events as done by setting the status property to the done value configured in settings.
 
 ## Filtering Commands
 

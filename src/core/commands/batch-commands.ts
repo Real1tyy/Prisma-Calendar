@@ -4,6 +4,7 @@ import { MacroCommand } from "./command";
 import {
 	CloneEventCommand,
 	DeleteEventCommand,
+	MarkAsDoneCommand,
 	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,
@@ -64,6 +65,12 @@ export function createBatchMoveByCommand(
 	return new MacroCommand(moveByCommands);
 }
 
+export function createBatchMarkAsDoneCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
+	const markAsDoneCommands = filePaths.map((filePath) => new MarkAsDoneCommand(app, bundle, filePath));
+
+	return new MacroCommand(markAsDoneCommands);
+}
+
 export function calculateWeekOffsets(weeks: number): [number, number] {
 	const weekInMs = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 	const offset = weeks * weekInMs;
@@ -100,5 +107,9 @@ export class BatchCommandFactory {
 
 	createMoveBy(filePaths: string[], offsetMs: number): MacroCommand {
 		return createBatchMoveByCommand(this.app, this.bundle, filePaths, offsetMs);
+	}
+
+	createMarkAsDone(filePaths: string[]): MacroCommand {
+		return createBatchMarkAsDoneCommand(this.app, this.bundle, filePaths);
 	}
 }
