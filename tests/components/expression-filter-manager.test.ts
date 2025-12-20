@@ -182,9 +182,18 @@ describe("ExpressionFilterManager", () => {
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
 
+			// undefined === "Done" should naturally evaluate to false without errors
+			expect(expressionFilter.shouldInclude({ meta: {} })).toBe(false);
+			expect(expressionFilter.shouldInclude({ meta: { OtherProp: "value" } })).toBe(false);
+			expect(consoleWarnSpy).not.toHaveBeenCalled();
+
+			// Test inequality - undefined !== "Done" should evaluate to true
+			input.value = 'Status !== "Done"';
+			input.dispatchEvent(new Event("input"));
+			vi.advanceTimersByTime(50);
 			expect(expressionFilter.shouldInclude({ meta: {} })).toBe(true);
-			expect(expressionFilter.shouldInclude({ meta: { OtherProp: "value" } })).toBe(true);
-			expect(consoleWarnSpy).toHaveBeenCalled();
+			expect(expressionFilter.shouldInclude({ meta: { Status: "Pending" } })).toBe(true);
+			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
 
 			consoleWarnSpy.mockRestore();
 		});
@@ -201,15 +210,16 @@ describe("ExpressionFilterManager", () => {
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
 
-			expect(expressionFilter.shouldInclude({})).toBe(true);
-			expect(consoleWarnSpy).toHaveBeenCalled();
+			// Events with no meta should have undefined properties, which evaluates naturally
+			expect(expressionFilter.shouldInclude({})).toBe(false);
+			expect(consoleWarnSpy).not.toHaveBeenCalled();
 
 			consoleWarnSpy.mockRestore();
 		});
 	});
 
 	describe("error handling", () => {
-		it("should return true for invalid expressions", () => {
+		it("should return false for invalid expressions", () => {
 			const mockCalendar = {} as any;
 			expressionFilter.initialize(mockCalendar, container);
 			vi.advanceTimersByTime(100);
@@ -221,7 +231,7 @@ describe("ExpressionFilterManager", () => {
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
 
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(true);
+			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
 			expect(consoleWarnSpy).toHaveBeenCalled();
 
 			consoleWarnSpy.mockRestore();
@@ -239,7 +249,7 @@ describe("ExpressionFilterManager", () => {
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
 
-			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(true);
+			expect(expressionFilter.shouldInclude({ meta: { Status: "Done" } })).toBe(false);
 			expect(consoleWarnSpy).toHaveBeenCalled();
 
 			consoleWarnSpy.mockRestore();
@@ -253,11 +263,16 @@ describe("ExpressionFilterManager", () => {
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 			const input = container.querySelector(".prisma-fc-expression-input") as HTMLInputElement;
+			// Set expression that will cause TypeError (calling method on undefined)
 			input.value = "NonExistentProperty.toString()";
 			input.dispatchEvent(new Event("input"));
 			vi.advanceTimersByTime(50);
 
-			expect(expressionFilter.shouldInclude({ meta: {} })).toBe(true);
+			// First call establishes NonExistentProperty in mapping
+			expressionFilter.shouldInclude({ meta: { NonExistentProperty: null } });
+
+			// Second call with empty meta will have undefined, causing TypeError on .toString()
+			expect(expressionFilter.shouldInclude({ meta: {} })).toBe(false);
 			expect(consoleWarnSpy).toHaveBeenCalled();
 
 			consoleWarnSpy.mockRestore();

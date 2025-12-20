@@ -16,7 +16,7 @@ export class ExpressionFilterInputManager extends InputFilterManager {
 		super.updateFilterValue(filterValue);
 		this.compiledFunc = null;
 		this.propertyMapping.clear();
-		this.lastWarnedExpression = null; // Clear warning tracker on filter change
+		this.lastWarnedExpression = null;
 	}
 
 	shouldInclude(event: { meta?: Frontmatter }): boolean {
@@ -25,8 +25,14 @@ export class ExpressionFilterInputManager extends InputFilterManager {
 		const frontmatter = event.meta || {};
 
 		try {
-			if (this.propertyMapping.size === 0) {
-				this.propertyMapping = buildPropertyMapping(Object.keys(frontmatter));
+			const currentKeys = new Set(Object.keys(frontmatter));
+			const existingKeys = new Set(this.propertyMapping.keys());
+			const newKeys = [...currentKeys].filter((key) => !existingKeys.has(key));
+
+			if (newKeys.length > 0) {
+				const allKeys = new Set([...existingKeys, ...currentKeys]);
+				this.propertyMapping = buildPropertyMapping(Array.from(allKeys));
+				this.compiledFunc = null;
 			}
 
 			if (!this.compiledFunc) {
@@ -38,15 +44,21 @@ export class ExpressionFilterInputManager extends InputFilterManager {
 				) => boolean;
 			}
 
-			const values = Array.from(this.propertyMapping.keys()).map((key) => frontmatter[key]);
-			return this.compiledFunc(...values);
+			const values = Array.from(this.propertyMapping.keys()).map((key) => frontmatter[key] ?? undefined);
+			const result = this.compiledFunc(...values);
+
+			return result;
 		} catch (error) {
-			// Only warn once per unique expression to avoid console spam
+			if (error instanceof ReferenceError) {
+				const hasInequality = this.currentFilterValue.includes("!==") || this.currentFilterValue.includes("!=");
+				return hasInequality;
+			}
+
 			if (this.lastWarnedExpression !== this.currentFilterValue) {
 				console.warn("Invalid filter expression:", this.currentFilterValue, error);
 				this.lastWarnedExpression = this.currentFilterValue;
 			}
-			return true;
+			return false;
 		}
 	}
 }

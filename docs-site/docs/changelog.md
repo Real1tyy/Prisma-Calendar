@@ -10,6 +10,10 @@ All notable changes to this project will be documented here.
 
 - **Skip Notifications for Newly Created Events**: Added a new setting "Skip newly created events" (enabled by default) that automatically marks events as notified if they were created within the last minute. This prevents unwanted notifications when creating events via Create Event modal, Stopwatch, or other creation methods. The feature uses the ZettelID timestamp embedded in the filename to detect newly created events. Can be toggled in Settings → Notifications → General.
 
+### Bug Fixes
+
+- **Fixed Expression Filter with Missing Properties**: Fixed expression filters failing when events don't have properties referenced in the filter. Now handles missing properties intelligently: equality checks (`===`) return `false` when the property is missing, while inequality checks (`!==`) return `true`. For example, `Category === 'Reading'` now correctly filters out events without a `Category` property, and `Category !== 'Work'` correctly includes them.
+
 ---
 
 ## 1.15.1
