@@ -203,3 +203,9 @@ Have an idea or a feature request?
 2.  **Upvote Existing Ideas**: If you see a feature request you'd like, give it a 👍 reaction.
 
 We prioritize development based on community demand, so your voice helps us build a better calendar for everyone.
+
+---
+
+## Credits & Acknowledgments
+
+Prisma Calendar is built using [FullCalendar](https://fullcalendar.io/), a powerful and flexible JavaScript calendar library. FullCalendar provides the robust calendar rendering engine that powers Prisma Calendar's views and interactions. We're grateful to the FullCalendar team for creating such an excellent foundation.

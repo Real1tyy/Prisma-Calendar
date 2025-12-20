@@ -102,6 +102,12 @@ Once approved for the Community Plugin store, you'll be able to install Prisma C
 
 ---
 
+## 📱 **Mobile Support**
+
+**Core features work on mobile without any problems**. We have users who rely on mobile, and thanks to their feedback, we continually improve and tighten up the mobile experience to make it rock solid. Our design is responsive, so most things work, and we're committed to making it even better over time. If you encounter any problems or have suggestions for improvement, please create a [GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues) and we'll address it.
+
+---
+
 ## **Top 5 Killer Features**
 
 ### **1️⃣ Flexibility — Fully Configurable Everything**
@@ -191,3 +197,9 @@ Every contribution, no matter the size, is greatly appreciated!
 ## Contributing
 
 MIT-licensed. PRs welcome!
+
+---
+
+## Credits & Acknowledgments
+
+Prisma Calendar is built using [FullCalendar](https://fullcalendar.io/), a powerful and flexible JavaScript calendar library. FullCalendar provides the robust calendar rendering engine that powers Prisma Calendar's views and interactions. We're grateful to the FullCalendar team for creating such an excellent foundation.

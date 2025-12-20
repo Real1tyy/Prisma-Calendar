@@ -1,5 +1,21 @@
 # FAQ
 
+## Getting Started
+
+### Does it work on mobile?
+
+**Core features work on mobile without any problems**. We have users who rely on mobile, and thanks to their feedback, we continually improve and tighten up the mobile experience to make it rock solid. Our design is responsive, so most things work, and we're committed to making it even better over time. If you encounter any problems or have suggestions for improvement, please create a [GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues) and we'll address it.
+
+### Is it free?
+
+Yes! Prisma Calendar is completely free and open source under the MIT license.
+
+### How do I open the calendar view?
+
+See the [Quick Start guide](/quickstart) for detailed instructions on opening your calendar, including ribbon icons, command palette, hotkeys, and more.
+
+---
+
 ## About This Documentation
 
 ### Is the documentation completely up to date and accurate?
@@ -12,14 +28,6 @@ We strive for perfection, but Prisma Calendar is a **large, feature-rich project
 - Suggest improvements or clarifications
 
 Community contributions help us continuously improve the documentation and keep it accurate. Every correction, no matter how small, makes the docs better for everyone. Thank you for helping us improve! 🙏
-
----
-
-## Getting Started
-
-### How do I open the calendar view?
-
-See the [Quick Start guide](/quickstart) for detailed instructions on opening your calendar, including ribbon icons, command palette, hotkeys, and more.
 
 ---
 
@@ -158,3 +166,7 @@ Google Calendar integration is planned for the future. Currently, you can use **
 ### Can I use Prisma Calendar with Templater?
 
 Yes. Configure your template path in both Templater (folder template) AND Prisma Calendar settings (General → Template path) to ensure templates apply consistently whether you create events through the calendar or manually. See [Troubleshooting - Templater Integration](troubleshooting.md#templater-integration).
+
+### Does this plugin use any calendar library?
+
+Yes! Prisma Calendar is built using [FullCalendar](https://fullcalendar.io/), a powerful and flexible JavaScript calendar library. FullCalendar provides the robust calendar rendering engine that powers Prisma Calendar's views and interactions.
