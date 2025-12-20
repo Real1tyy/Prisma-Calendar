@@ -39,91 +39,19 @@ Virtual events are **read-only calendar entries** that extend your recurring ser
 
 ## Configuration
 
-### Setting Generation Horizon
-Control the physical/virtual boundary with the **"Future instances count"** setting (1-52):
+The physical/virtual boundary is controlled by the **"Future instances count"** setting. See [Recurring Events - Generation Control](./recurring-dsl.md#generation-control) for details on counting logic, ranges, and per-event overrides.
 
-**Recommended: 1-2 instances** for most use cases to avoid vault clutter.
+**Converting Virtual to Physical**: Increase "Future instances count" in settings to generate physical files for previously virtual events.
 
-**How counting works:**
-- **Daily/Monthly/Yearly**: Count = number of individual events
-- **Weekly with multiple days**: Count = number of weeks, not individual days
+## Example
 
-**Examples:**
-- `RRule: weekly` + `RRuleSpec: monday, wednesday, friday` + Count = 2
-  → Creates **6 physical files** (2 weeks × 3 days per week)
-- `RRule: monthly` + Count = 2
-  → Creates **2 physical files** (2 monthly events)
+Weekly team meetings with "Future instances count" = 2 creates 6 physical files (2 weeks × 3 days). Beyond that, virtual events display the pattern indefinitely without creating files.
 
-**Practical ranges:**
-- **1-2 instances**: Recommended for most recurring events (keeps vault lean)
-- **3-8 instances**: For intensive planning periods or project phases
-- **12+ instances**: Only if you need extensive advance preparation
+## Navigation
 
-### Converting Virtual to Physical
-Need to edit a virtual event? Increase your "Future instances count" to make it physical:
+Right-click any virtual event → "Go to source" to navigate to the source event in the calendar (switches to week view and highlights for 5 seconds).
 
-1. Go to plugin settings
-2. Increase "Future instances count"
-3. The system automatically generates physical files for the new range
-4. Previously virtual events become editable files
+## Related
 
-## Example Scenario
-
-**Configuration**: Weekly team meetings with "Future instances count" = 2
-
-```yaml
-RRule: weekly
-RRuleSpec: monday, wednesday, friday
-```
-
-**Physical Events** (2 weeks ahead):
-- **6 actual `.md` files created** (2 weeks × 3 meetings per week)
-- Each inherits complete meeting template (frontmatter + agenda + notes sections)
-- Editable, searchable, available for batch operations
-- Covers your immediate planning horizon
-
-**Virtual Events** (week 3 onwards):
-- Calendar entries showing meeting pattern continuing indefinitely
-- Display the recurring schedule visually in calendar
-- Read-only display only
-- No files created in vault
-- Full visibility without vault clutter
-
-## Best Practices
-
-### 1. Start with Low Counts
-- **Most users**: Count = 1-2 is sufficient for regular recurring events
-- **Active planners**: Count = 3-4 for events requiring advance preparation
-- **Special cases**: Higher counts only for intensive project phases
-
-### 2. Consider Multi-Day Weekly Patterns
-Remember that weekly counts multiply:
-- `monday, wednesday, friday` + Count = 2 → **6 files**
-- `tuesday, thursday` + Count = 3 → **6 files**
-- Single day + Count = 6 → **6 files**
-
-### 3. Storage vs Accessibility Balance
-Find the sweet spot between:
-- Having enough physical events for immediate work (usually 1-2 intervals ahead)
-- Not overwhelming your vault with dozens of future files
-
-### 4. Dynamic Adjustment
-Adjust the count as your needs change:
-- Increase temporarily before intensive planning sessions
-- Decrease during vault cleanup to reduce file count
-- Most users find 2 instances covers their active planning horizon
-
-### 5. Visual Distinction
-Virtual events appear with:
-- Different visual styling in the calendar
-- Indicators showing they're read-only
-- Display basic scheduling information (title, time) from the recurring pattern
-
-### 6. Navigation to Source
-You can navigate from virtual events to their source:
-- Right-click any virtual event → "Go to source"
-- Navigates to the source event in the calendar (switches to week view and highlights the source event for 5 seconds)
-- Useful for quickly reviewing or editing the recurring event configuration
-- Stay in calendar context instead of switching to note editing mode
-
-Virtual events give you the best of both worlds: complete visibility of your recurring patterns while keeping your vault focused on actionable, current events.
+- [Recurring Events](./recurring-dsl.md) - Complete recurring event documentation
+- [Configuration](../configuration.md#recurring-instances-generation-horizon) - Future instances count settings

@@ -88,15 +88,6 @@ CalDAV integration enables read-only synchronization from external CalDAV server
 
 **Important**: CalDAV sync is currently **read-only**. Events created or modified in Obsidian are not synced back to the CalDAV server.
 
-### Supported Providers
-
-| Provider | Server URL Example | Auth Method |
-|----------|-------------------|-------------|
-| **Fastmail** | `https://caldav.fastmail.com/dav/` | Basic |
-| **Nextcloud** | `https://cloud.example.com/remote.php/dav/` | Basic |
-| **iCloud** | `https://caldav.icloud.com/` | Basic (app-specific password) |
-| **SOGo** | `https://sogo.example.com/SOGo/dav/` | Basic |
-
 ### Setting Up CalDAV
 
 :::danger Security Warning
