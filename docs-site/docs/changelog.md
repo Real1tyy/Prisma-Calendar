@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented here.
 
+## 1.15.1
+
+### Bug Fixes
+
+- **Fixed Events Disappearing on Last Day of Week**: Fixed a timezone conversion bug where events after a certain time (e.g., 3 PM) on the last day of the week would disappear from weekly, daily, and list views. Events now display correctly on the last day of the week regardless of timezone.
+
+---
+
 ## 1.15.0
 
 ### New Features

@@ -488,8 +488,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				const view = this.calendar.view;
 				if (!view) throw new Error("Calendar view not available");
 
-				const start = view.activeStart.toISOString();
-				const end = view.activeEnd.toISOString();
+				const start = toLocalISOString(view.activeStart);
+				const end = toLocalISOString(view.activeEnd);
 				const skippedEvents = this.bundle.eventStore.getSkippedEvents({ start, end });
 
 				return new SkippedEventsModal(this.app, this.bundle, skippedEvents);
@@ -1124,8 +1124,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const innerScrollTop = innerScroller?.scrollTop ?? 0;
 
 		try {
-			const start = view.activeStart.toISOString();
-			const end = view.activeEnd.toISOString();
+			// Use toLocalISOString to prevent timezone conversion issues
+			// FullCalendar's activeStart/activeEnd are local Date objects, but toISOString() converts to UTC
+			// This caused events after 3 PM on the last day of the week to disappear in certain timezones
+			const start = toLocalISOString(view.activeStart);
+			const end = toLocalISOString(view.activeEnd);
 
 			const allEvents = this.bundle.eventStore.getNonSkippedEvents({ start, end });
 
