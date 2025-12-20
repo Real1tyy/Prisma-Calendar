@@ -421,3 +421,4 @@ Break: 60  # 1 hour lunch break
 - **Future instances count**: how many future notes to pre-generate (1–52, default: 2)
 - Beyond that, events appear as read-only virtual items to keep your vault light
 - **Per-event override**: Set `Future Instances Count` property in a recurring event's frontmatter to override the global setting for that specific recurring series
+- **Propagate frontmatter to instances**: when enabled (default: true), changes to custom frontmatter properties in the source recurring event automatically propagate to all existing physical instances. Time-related and system-managed properties (Start, End, RRule, RRuleID, etc.) are never propagated to preserve instance-specific timing

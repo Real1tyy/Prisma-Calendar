@@ -4,6 +4,7 @@ import {
 	extractContentAfterFrontmatter,
 	rebuildPhysicalInstanceFilename,
 	sanitizeForFilename,
+	withFrontmatter,
 	withLock,
 } from "@real1ty-obsidian-plugins/utils";
 import { DateTime } from "luxon";
@@ -13,7 +14,13 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import type { Frontmatter } from "../types";
 import type { NodeRecurringEvent } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
-import { hashRRuleIdToZettelFormat, removeZettelId, setEventBasics } from "../utils/calendar-events";
+import {
+	getPrismaManagedProperties,
+	getRecurringInstanceExcludedProps,
+	hashRRuleIdToZettelFormat,
+	removeZettelId,
+	setEventBasics,
+} from "../utils/calendar-events";
 import { getNextOccurrence } from "../utils/date-recurrence";
 import { applySourceTimeToInstanceDate } from "../utils/format";
 import { deleteFilesByPaths } from "../utils/obsidian";
@@ -81,9 +88,11 @@ export class RecurringEventManager extends DebouncedNotifier {
 					this.addRecurringEvent(event.recurringEvent);
 					if (this.indexingComplete) {
 						await this.ensurePhysicalInstancesWithLock(event.recurringEvent.rRuleId);
-						// Check if this is a rename (oldPath exists)
 						if (event.oldPath) {
 							await this.handleRecurringEventRenamedWithLock(event.recurringEvent);
+						}
+						if (this.settings.propagateFrontmatterToInstances) {
+							await this.propagateFrontmatterToInstances(event.recurringEvent);
 						}
 					}
 				}
@@ -138,6 +147,57 @@ export class RecurringEventManager extends DebouncedNotifier {
 			instance.filePath = newPath;
 		} catch (error) {
 			console.error(`Error renaming physical instance ${instance.filePath}:`, error);
+		}
+	}
+
+	private async propagateFrontmatterToInstances(recurringEvent: NodeRecurringEvent): Promise<void> {
+		const data = this.recurringEventsMap.get(recurringEvent.rRuleId);
+		if (!data || data.physicalInstances.size === 0) {
+			return;
+		}
+
+		const prismaManagedProps = getPrismaManagedProperties(this.settings);
+		const sourceFrontmatter = recurringEvent.frontmatter;
+
+		const propagatableProps: Frontmatter = {};
+		for (const [key, value] of Object.entries(sourceFrontmatter)) {
+			if (!prismaManagedProps.has(key)) {
+				propagatableProps[key] = value;
+			}
+		}
+
+		if (Object.keys(propagatableProps).length === 0) {
+			return;
+		}
+
+		await Promise.all(
+			Array.from(data.physicalInstances.values()).map((instance) =>
+				this.updateInstanceFrontmatter(instance, propagatableProps, prismaManagedProps)
+			)
+		);
+	}
+
+	private async updateInstanceFrontmatter(
+		instance: PhysicalInstance,
+		propagatableProps: Frontmatter,
+		prismaManagedProps: Set<string>
+	): Promise<void> {
+		try {
+			const file = this.app.vault.getAbstractFileByPath(instance.filePath);
+			if (!(file instanceof TFile)) {
+				console.warn(`Physical instance file not found: ${instance.filePath}`);
+				return;
+			}
+
+			await withFrontmatter(this.app, file, (fm) => {
+				for (const [key, value] of Object.entries(propagatableProps)) {
+					if (!prismaManagedProps.has(key)) {
+						fm[key] = value;
+					}
+				}
+			});
+		} catch (error) {
+			console.error(`Error updating frontmatter for instance ${instance.filePath}:`, error);
 		}
 	}
 
@@ -420,16 +480,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			}
 
 			// Build frontmatter for the instance
-			const excludeProps = new Set([
-				this.settings.rruleProp,
-				this.settings.rruleSpecProp,
-				this.settings.startProp,
-				this.settings.endProp,
-				this.settings.dateProp,
-				this.settings.allDayProp,
-				this.settings.alreadyNotifiedProp, // Don't copy notification status - each instance needs its own notification
-				"_Archived", // Don't copy _Archived property from source to instances
-			]);
+			const excludeProps = getRecurringInstanceExcludedProps(this.settings);
 
 			const instanceFrontmatter: Frontmatter = {};
 

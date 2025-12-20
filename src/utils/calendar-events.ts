@@ -161,6 +161,60 @@ export const isPhysicalRecurringEvent = (
 };
 
 /**
+ * Checks if an event is a source recurring event (has rrule property with a value).
+ * A source recurring event is identified by having the RRule property set in frontmatter.
+ */
+export const isSourceRecurringEvent = (frontmatter: Frontmatter | undefined, rruleProp: string): boolean => {
+	if (!frontmatter) return false;
+	const rruleValue = frontmatter[rruleProp];
+	return rruleValue !== undefined && rruleValue !== null && rruleValue !== "";
+};
+
+/**
+ * Returns a Set of Prisma-managed property keys that should not be propagated
+ * from source events to physical instances.
+ * These are time-related and system-managed properties.
+ */
+export const getPrismaManagedProperties = (settings: SingleCalendarConfig): Set<string> => {
+	return new Set(
+		[
+			settings.startProp,
+			settings.endProp,
+			settings.dateProp,
+			settings.allDayProp,
+			settings.rruleProp,
+			settings.rruleSpecProp,
+			settings.rruleIdProp,
+			settings.sourceProp,
+			settings.instanceDateProp,
+			settings.zettelIdProp || "",
+			settings.futureInstancesCountProp,
+			settings.generatePastEventsProp,
+			settings.ignoreRecurringProp,
+		].filter((prop) => prop !== "")
+	);
+};
+
+/**
+ * Returns a Set of frontmatter properties that should be excluded when creating
+ * physical recurring event instances from a source event.
+ * This includes Prisma-managed properties plus additional properties that shouldn't
+ * be copied to instances (like notification status and archived state).
+ */
+export const getRecurringInstanceExcludedProps = (settings: SingleCalendarConfig): Set<string> => {
+	return new Set([
+		settings.rruleProp,
+		settings.rruleSpecProp,
+		settings.startProp,
+		settings.endProp,
+		settings.dateProp,
+		settings.allDayProp,
+		settings.alreadyNotifiedProp,
+		"_Archived",
+	]);
+};
+
+/**
  * Extracts the core name from a note title by removing timestamps, dates, and day suffixes.
  * This groups related events together by their base name for aggregation and display.
  *

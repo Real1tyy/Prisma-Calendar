@@ -13,6 +13,8 @@ One **configuration node** serves as the master template. Defines recurrence pat
 
 **Inheritance**: All frontmatter properties, complete file content, exact formatting. Only `Start`/`End` dates and `RRuleID` are adjusted automatically.
 
+**Frontmatter Propagation**: Changes to custom frontmatter properties (Category, Priority, Status, etc.) in the source event automatically propagate to all existing physical instances. Time-related and system-managed properties are never propagated. This feature is enabled by default and can be toggled in Settings → Calendar → Recurring Events.
+
 ### Start Date as Calculation Point
 
 For `weekly`/`biweekly`, system finds first day matching `RRuleSpec` on or after `Start` date. For `daily`/`monthly`/`yearly`, `Start` is typically the first instance.

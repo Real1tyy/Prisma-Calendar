@@ -13,6 +13,8 @@ All notable changes to this project will be documented here.
   - **Undoable Command**: All mark as done operations are undoable through the standard undo/redo system
   - This complements the existing "Mark past events as done" setting which automatically marks past events as done on startup
 
+- **Frontmatter Propagation for Recurring Events**: Changes to non-Prisma frontmatter properties in source recurring events now automatically propagate to all physical instances. When you update custom properties (like Category, Priority, Status, or any user-defined fields) in a recurring event source, all existing physical instances are updated immediately. Time-related and system-managed properties (Start, End, RRule, etc.) are never propagated to preserve instance-specific timing. This feature is enabled by default and can be toggled in Settings → Calendar → Recurring Events → "Propagate frontmatter to instances".
+
 ### Improvements
 
 - **Customizable Batch Action Buttons**: Added a new setting in Settings → Calendar → Batch Selection to customize which action buttons appear in the batch selection mode toolbar. You can now enable or disable individual buttons (Select All, Clear, Duplicate, Move By, Mark as Done, Clone Next, Clone Prev, Move Next, Move Prev, Open All, Skip, Delete) to streamline your batch operations workflow. The Counter and Exit buttons are always shown. All buttons are enabled by default.
