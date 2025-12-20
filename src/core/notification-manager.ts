@@ -3,6 +3,7 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import { NotificationModal } from "../components/notification-modal";
 import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
+import { extractZettelId, isEventNewlyCreated } from "../utils/calendar-events";
 import { toSafeString } from "../utils/format";
 import { parseAsLocalDate } from "../utils/time-formatter";
 import type { Indexer, IndexerEvent } from "./indexer";
@@ -112,6 +113,18 @@ export class NotificationManager {
 		if (alreadyNotified === true || alreadyNotified === "true") {
 			this.removeNotification(filePath);
 			return;
+		}
+
+		if (this.settings.skipNewlyCreatedNotifications) {
+			const file = this.app.vault.getAbstractFileByPath(filePath);
+			if (file instanceof TFile) {
+				const zettelId = extractZettelId(file.basename);
+				if (isEventNewlyCreated(zettelId)) {
+					void this.markAsNotified(filePath);
+					this.removeNotification(filePath);
+					return;
+				}
+			}
 		}
 
 		// Get start date based on event type

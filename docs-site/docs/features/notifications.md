@@ -45,6 +45,18 @@ Postpones notification for configurable duration (default: 15 min, range: 1-120)
 
 **Configure**: Settings → Prisma Calendar → [Calendar] → Notifications → Snooze duration
 
+---
+
+## Skip Newly Created Events
+
+**Default**: Enabled
+
+Automatically marks events as notified if they were created within the last minute, preventing notifications for events you just created via Create Event modal, Stopwatch, or other creation methods. The system detects newly created events by parsing the ZettelID timestamp embedded in the filename.
+
+**Toggle**: Settings → Prisma Calendar → [Calendar] → Notifications → Skip newly created events
+
+**Use Case**: Prevents unwanted notification spam when batch-creating events or using the Stopwatch to track work sessions.
+
 For complete notification settings reference, see [Configuration](../configuration.md#notifications-settings).
 
 ## Frontmatter Properties

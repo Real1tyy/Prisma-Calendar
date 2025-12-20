@@ -65,6 +65,12 @@ export class NotificationsSettings {
 			desc: "Whether to play a system sound when notifications are shown. When disabled, notifications will be silent.",
 		});
 
+		this.ui.addToggle(containerEl, {
+			key: "skipNewlyCreatedNotifications",
+			name: "Skip newly created events",
+			desc: "Automatically mark events as notified if they were created within the last minute. Prevents notifications for events created via Create Event, Stopwatch, or other creation methods.",
+		});
+
 		this.ui.addSlider(containerEl, {
 			key: "snoozeMinutes",
 			name: "Snooze duration (minutes)",

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented here.
 
+## 1.16.0
+
+### New Features
+
+- **Skip Notifications for Newly Created Events**: Added a new setting "Skip newly created events" (enabled by default) that automatically marks events as notified if they were created within the last minute. This prevents unwanted notifications when creating events via Create Event modal, Stopwatch, or other creation methods. The feature uses the ZettelID timestamp embedded in the filename to detect newly created events. Can be toggled in Settings → Notifications → General.
+
+---
+
 ## 1.15.1
 
 ### Bug Fixes

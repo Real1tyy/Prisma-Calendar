@@ -93,6 +93,43 @@ export const extractZettelId = (text: string): string | null => {
 	return match ? match[1] : null;
 };
 
+export const parseZettelIdToDate = (zettelId: string): Date | null => {
+	if (!/^\d{14}$/.test(zettelId)) {
+		return null;
+	}
+
+	const year = Number.parseInt(zettelId.substring(0, 4), 10);
+	const month = Number.parseInt(zettelId.substring(4, 6), 10) - 1;
+	const day = Number.parseInt(zettelId.substring(6, 8), 10);
+	const hour = Number.parseInt(zettelId.substring(8, 10), 10);
+	const minute = Number.parseInt(zettelId.substring(10, 12), 10);
+	const second = Number.parseInt(zettelId.substring(12, 14), 10);
+
+	const date = new Date(year, month, day, hour, minute, second);
+
+	if (Number.isNaN(date.getTime())) {
+		return null;
+	}
+
+	return date;
+};
+
+export const isEventNewlyCreated = (zettelId: string | null | undefined): boolean => {
+	if (!zettelId) {
+		return false;
+	}
+
+	const creationDate = parseZettelIdToDate(zettelId);
+	if (!creationDate) {
+		return false;
+	}
+
+	const now = new Date();
+	const oneMinuteAgo = new Date(now.getTime() - 60000);
+
+	return creationDate > oneMinuteAgo;
+};
+
 export const removeZettelId = (text: string): string => {
 	return (
 		text
