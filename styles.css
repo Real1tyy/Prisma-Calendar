@@ -91,6 +91,12 @@
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.prisma-calendar-container .fc-toolbar-chunk {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
 .prisma-calendar-container .fc-toolbar-title {
 	color: var(--text-normal);
 	font-size: var(--font-ui-medium);
