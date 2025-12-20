@@ -54,6 +54,7 @@ export const PropsSettingsSchema = z.object({
 	frontmatterDisplayPropertiesAllDay: z.array(z.string()).default([]), // frontmatter properties to display inside all-day event chips
 	statusProperty: z.string().default(SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY), // property name to manage event status
 	doneValue: z.string().default(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE), // value to set when marking event as done
+	notDoneValue: z.string().default(SETTINGS_DEFAULTS.DEFAULT_NOT_DONE_VALUE), // value to set when marking event as not done
 	categoryProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_CATEGORY_PROP), // property name for event categories used in statistics
 	breakProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_BREAK_PROP), // property name for break time in minutes (subtracted from duration in statistics)
 	futureInstancesCountProp: z.string().default(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT_PROP), // property name for per-event override of future instances count

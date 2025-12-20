@@ -594,14 +594,17 @@ export class MoveByCommand implements Command {
 	}
 }
 
-export class MarkAsDoneCommand implements Command {
+abstract class SetStatusCommand implements Command {
 	private originalStatusValue?: string | undefined;
 
 	constructor(
-		private app: App,
-		private bundle: CalendarBundle,
-		private filePath: string
+		protected app: App,
+		protected bundle: CalendarBundle,
+		protected filePath: string
 	) {}
+
+	protected abstract getNewStatusValue(settings: SingleCalendarConfig): string;
+	abstract getType(): string;
 
 	async execute(): Promise<void> {
 		const file = getTFileOrThrow(this.app, this.filePath);
@@ -612,7 +615,7 @@ export class MarkAsDoneCommand implements Command {
 				this.originalStatusValue = fm[settings.statusProperty] as string | undefined;
 			}
 
-			fm[settings.statusProperty] = settings.doneValue;
+			fm[settings.statusProperty] = this.getNewStatusValue(settings);
 		});
 	}
 
@@ -631,11 +634,27 @@ export class MarkAsDoneCommand implements Command {
 		});
 	}
 
+	canUndo(): boolean {
+		return this.originalStatusValue !== undefined || this.originalStatusValue === "";
+	}
+}
+
+export class MarkAsDoneCommand extends SetStatusCommand {
+	protected getNewStatusValue(settings: SingleCalendarConfig): string {
+		return settings.doneValue;
+	}
+
 	getType(): string {
 		return "mark-as-done";
 	}
+}
 
-	canUndo(): boolean {
-		return this.originalStatusValue !== undefined || this.originalStatusValue === "";
+export class MarkAsUndoneCommand extends SetStatusCommand {
+	protected getNewStatusValue(settings: SingleCalendarConfig): string {
+		return settings.notDoneValue;
+	}
+
+	getType(): string {
+		return "mark-as-undone";
 	}
 }

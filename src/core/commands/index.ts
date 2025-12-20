@@ -21,6 +21,7 @@ export {
 	type EventData,
 	FillTimeCommand,
 	MarkAsDoneCommand,
+	MarkAsUndoneCommand,
 	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,

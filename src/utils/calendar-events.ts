@@ -1,6 +1,6 @@
 import { generateZettelId, withFrontmatter } from "@real1ty-obsidian-plugins/utils";
 import { nanoid } from "nanoid";
-import type { App, TFile } from "obsidian";
+import { type App, TFile } from "obsidian";
 import type { EventStore } from "../core/event-store";
 import type { Frontmatter, SingleCalendarConfig } from "../types";
 
@@ -205,6 +205,17 @@ export const isSourceRecurringEvent = (frontmatter: Frontmatter | undefined, rru
 	if (!frontmatter) return false;
 	const rruleValue = frontmatter[rruleProp];
 	return rruleValue !== undefined && rruleValue !== null && rruleValue !== "";
+};
+
+export const isEventDone = (app: App, filePath: string, statusProperty: string, doneValue: string): boolean => {
+	const file = app.vault.getAbstractFileByPath(filePath);
+	if (!(file instanceof TFile)) {
+		return false;
+	}
+
+	const metadata = app.metadataCache.getFileCache(file);
+	const statusValue = metadata?.frontmatter?.[statusProperty];
+	return statusValue === doneValue;
 };
 
 /**

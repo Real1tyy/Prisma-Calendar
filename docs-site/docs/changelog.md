@@ -6,6 +6,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Mark as Undone**: Added the ability to mark completed events as "not done" through the context menu. When you right-click on an event that has already been marked as done, you'll now see a "Mark as undone" option instead of "Mark as done". The value used for marking events as undone can be customized in Settings → Properties → "Not done value" (defaults to "Not Done"). This feature works alongside the existing "Mark as done" functionality and is fully undoable.
+
 - **Skip Notifications for Newly Created Events**: Added a new setting "Skip newly created events" (enabled by default) that automatically marks events as notified if they were created within the last minute. This prevents unwanted notifications when creating events via Create Event modal, Stopwatch, or other creation methods. The feature uses the ZettelID timestamp embedded in the filename to detect newly created events. Can be toggled in Settings → Notifications → General.
 
 ---

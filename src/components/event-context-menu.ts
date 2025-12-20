@@ -7,13 +7,14 @@ import {
 	DuplicateRecurringEventCommand,
 	FillTimeCommand,
 	MarkAsDoneCommand,
+	MarkAsUndoneCommand,
 	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import type { Frontmatter } from "../types";
-import { type AdjacentEvent, findAdjacentEvent } from "../utils/calendar-events";
+import { type AdjacentEvent, findAdjacentEvent, isEventDone } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
@@ -265,12 +266,18 @@ export class EventContextMenu {
 					});
 			});
 
+			const isDone = this.isEventDone(event);
+
 			menu.addItem((item) => {
 				item
-					.setTitle("Mark as done")
-					.setIcon("check")
+					.setTitle(isDone ? "Mark as undone" : "Mark as done")
+					.setIcon(isDone ? "x" : "check")
 					.onClick(() => {
-						void this.markEventAsDone(event);
+						if (isDone) {
+							void this.markEventAsUndone(event);
+						} else {
+							void this.markEventAsDone(event);
+						}
 					});
 			});
 
@@ -401,6 +408,14 @@ export class EventContextMenu {
 		return metadata?.frontmatter?.[settings.skipProp] === true;
 	}
 
+	private isEventDone(event: CalendarEventInfo): boolean {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const filePath = event.extendedProps?.filePath;
+		if (!filePath) return false;
+
+		return isEventDone(this.app, filePath, settings.statusProperty, settings.doneValue);
+	}
+
 	moveEventBy(event: CalendarEventInfo): void {
 		const isAllDay = event.allDay || false;
 
@@ -474,6 +489,15 @@ export class EventContextMenu {
 			await this.runCommand(() => new MarkAsDoneCommand(this.app, this.bundle, filePath), {
 				success: "Event marked as done",
 				error: "Failed to mark event as done",
+			});
+		});
+	}
+
+	async markEventAsUndone(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "mark event as undone", async (filePath) => {
+			await this.runCommand(() => new MarkAsUndoneCommand(this.app, this.bundle, filePath), {
+				success: "Event marked as undone",
+				error: "Failed to mark event as undone",
 			});
 		});
 	}

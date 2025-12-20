@@ -134,6 +134,13 @@ export class PropertiesSettings {
 		});
 
 		this.ui.addText(containerEl, {
+			key: "notDoneValue",
+			name: "Not done value",
+			desc: "Value to set in the status property when marking an event as not done",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_NOT_DONE_VALUE,
+		});
+
+		this.ui.addText(containerEl, {
 			key: "categoryProp",
 			name: "Category property",
 			desc: "Frontmatter property name for event categories (used for grouping in statistics)",

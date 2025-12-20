@@ -61,8 +61,9 @@ Tell Prisma Calendar which frontmatter keys you use.
 ### Identification & Tracking
 
 - **ZettelID property** (optional): when set, a timestamp-based ID is generated on creation/cloning (see [ZettelID Naming System](./features/zettelid-naming) for details). Default: `ZettelID`
-- **Status property**: frontmatter property name for event status (default: `Status`), used when automatically marking past events as done
+- **Status property**: frontmatter property name for event status (default: `Status`), used when marking events as done or undone
 - **Done value**: value to set in the status property when marking an event as done (default: `Done`)
+- **Not done value**: value to set in the status property when marking an event as undone (default: `Not Done`)
 - **Category property**: frontmatter property name for event categories (default: `Category`), used for grouping in statistics views. Supports **multiple comma-separated categories** (e.g., `Category: Work, Learning`) — events are counted under each category separately in statistics.
 - **Break property**: frontmatter property name for break time in minutes (default: `Break`), subtracted from duration in statistics
 - **CalDAV property**: property name for CalDAV sync metadata (default: `CalDAV`)

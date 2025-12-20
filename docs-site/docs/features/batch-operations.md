@@ -43,6 +43,7 @@ Quickly make changes to many events at once.
 - Uses the status property and done value configured in Settings → Properties
 - Undoable operation
 - Useful for quickly marking completed tasks or past events
+- **Tip:** You can also mark individual events as done/undone by right-clicking them in the calendar
 
 ### Open All in Tabs
 - Opens all selected event files in editor tabs

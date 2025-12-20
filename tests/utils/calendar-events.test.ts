@@ -8,6 +8,7 @@ import {
 	generateUniqueZettelId,
 	hashRRuleIdToZettelFormat,
 	hasTimestamp,
+	isEventDone,
 	isPhysicalRecurringEvent,
 	rebuildPhysicalInstanceWithNewDate,
 	removeZettelId,
@@ -802,6 +803,34 @@ describe("Physical Recurring Event Utilities", () => {
 				[customProp]: true,
 			};
 			expect(shouldUpdateInstanceDateOnMove(frontmatter, customProp)).toBe(true);
+		});
+	});
+
+	describe("isEventDone", () => {
+		it("should return true when event status matches done value", () => {
+			const mockApp = createMockApp();
+			const mockFile = createMockFile("test-event.md");
+
+			vi.spyOn(mockApp.vault, "getAbstractFileByPath").mockReturnValue(mockFile);
+			vi.spyOn(mockApp.metadataCache, "getFileCache").mockReturnValue({
+				frontmatter: { Status: "Done" },
+			} as never);
+
+			const result = isEventDone(mockApp as unknown as App, "Events/test-event.md", "Status", "Done");
+			expect(result).toBe(true);
+		});
+
+		it("should return false when event status does not match done value", () => {
+			const mockApp = createMockApp();
+			const mockFile = createMockFile("test-event.md");
+
+			vi.spyOn(mockApp.vault, "getAbstractFileByPath").mockReturnValue(mockFile);
+			vi.spyOn(mockApp.metadataCache, "getFileCache").mockReturnValue({
+				frontmatter: { Status: "In Progress" },
+			} as never);
+
+			const result = isEventDone(mockApp as unknown as App, "Events/test-event.md", "Status", "Done");
+			expect(result).toBe(false);
 		});
 	});
 });
