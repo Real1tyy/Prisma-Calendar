@@ -45,18 +45,7 @@ Postpones notification for configurable duration (default: 15 min, range: 1-120)
 
 **Configure**: Settings → Prisma Calendar → [Calendar] → Notifications → Snooze duration
 
-## Settings Reference
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Enable notifications | `true` | Master switch |
-| Default minutes before | `(empty)` | Timed events default |
-| Minutes before property | `Minutes Before` | Per-event override property |
-| Default days before | `(empty)` | All-day events default |
-| Days before property | `Days Before` | Per-event override property |
-| Play notification sound | `false` | System sound toggle |
-| Snooze duration | `15` | Minutes (1-120) |
-| Already notified property | `Already Notified` | Tracking property |
+For complete notification settings reference, see [Configuration](../configuration.md#notifications-settings).
 
 ## Frontmatter Properties
 
