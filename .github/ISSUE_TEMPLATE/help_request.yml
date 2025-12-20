@@ -1,0 +1,66 @@
+name: Help Request
+description: Ask a question or request help with the plugin
+title: "[Help]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Before You Ask
+
+        **Please take a moment to:**
+
+        1. **Search the documentation** - Your question might already be answered:
+           - [Documentation](https://yourusername.github.io/plugin-name/) - Full feature documentation
+           - [FAQ](https://yourusername.github.io/plugin-name/faq) - Common questions and answers
+           - [Troubleshooting Guide](https://yourusername.github.io/plugin-name/troubleshooting) - Solutions to common issues
+           - [Configuration](https://yourusername.github.io/plugin-name/configuration) - Settings and options
+
+        2. **Search existing issues** - Check if someone already asked this question:
+           - [Open issues](https://github.com/yourusername/plugin-name/issues)
+           - [Closed issues](https://github.com/yourusername/plugin-name/issues?q=is%3Aissue+is%3Aclosed)
+           - If found, you can add a comment or upvote with 👍
+
+        Thank you for using the plugin!
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: Ask your question in as much detail as possible
+      placeholder: |
+        Describe what you're trying to do and what you need help with.
+
+        Include any relevant context:
+        - What are you trying to achieve?
+        - What have you tried so far?
+        - What specific part are you stuck on?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What area does your question relate to? (This will automatically apply a label)
+      options:
+        - User Interface
+        - Performance
+        - Integration
+        - Settings/Configuration
+        - Documentation
+        - New Feature
+        - Other
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or information that might help
+      placeholder: |
+        - Screenshots or videos
+        - Your Obsidian version
+        - Your plugin version
+        - Any error messages

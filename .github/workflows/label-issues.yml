@@ -59,18 +59,18 @@ jobs:
               newLabels.push('priority: high');
             }
 
-            // Check for category (feature requests)
-            if (body.includes('### Feature Category\n\nUser Interface')) {
+            // Check for category (feature requests and help requests)
+            if (body.includes('### Feature Category\n\nUser Interface') || body.includes('### Question Category\n\nUser Interface')) {
               newLabels.push('category: ui');
-            } else if (body.includes('### Feature Category\n\nPerformance')) {
+            } else if (body.includes('### Feature Category\n\nPerformance') || body.includes('### Question Category\n\nPerformance')) {
               newLabels.push('category: performance');
-            } else if (body.includes('### Feature Category\n\nIntegration')) {
+            } else if (body.includes('### Feature Category\n\nIntegration') || body.includes('### Question Category\n\nIntegration')) {
               newLabels.push('category: integration');
-            } else if (body.includes('### Feature Category\n\nSettings/Configuration')) {
+            } else if (body.includes('### Feature Category\n\nSettings/Configuration') || body.includes('### Question Category\n\nSettings/Configuration')) {
               newLabels.push('category: settings');
-            } else if (body.includes('### Feature Category\n\nDocumentation')) {
+            } else if (body.includes('### Feature Category\n\nDocumentation') || body.includes('### Question Category\n\nDocumentation')) {
               newLabels.push('category: documentation');
-            } else if (body.includes('### Feature Category\n\nNew Feature')) {
+            } else if (body.includes('### Feature Category\n\nNew Feature') || body.includes('### Question Category\n\nNew Feature')) {
               newLabels.push('category: new-feature');
             }
 
