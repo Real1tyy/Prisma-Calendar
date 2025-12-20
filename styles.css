@@ -1162,15 +1162,74 @@
 	overflow: visible;
 }
 
-/* Adjust checkbox position for compact month view events */
-.fc-daygrid-event.prisma-batch-selectable .fc-event-main::before {
+/* Checkbox for dot events (timed events in month view) - no .fc-event-main */
+.fc-daygrid-dot-event.prisma-batch-selectable {
+	position: relative;
+}
+
+/* Shared checkbox styling for both block events (.fc-event-main::before) and dot events (::before) */
+.fc-event.prisma-batch-selectable .fc-event-main::before,
+.fc-daygrid-dot-event.prisma-batch-selectable::before {
+	content: "";
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	width: 16px;
+	height: 16px;
+	border: 2px solid rgba(255, 255, 255, 0.8);
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.2);
+	backdrop-filter: blur(2px);
+	z-index: 10;
+	opacity: 0.8;
+	transition: all 0.2s ease;
+}
+
+/* Adjust checkbox position for compact month view block events (all-day events only, not dots) */
+.fc-daygrid-block-event.prisma-batch-selectable .fc-event-main::before:not(.fc-daygrid-dot-event) {
 	top: 1px;
 	right: 1px;
 	width: 14px;
 	height: 14px;
 }
-.fc-daygrid-event.prisma-batch-selected .fc-event-main::before {
+
+/* Ensure dot events always use full size (override any compact sizing) */
+.fc-daygrid-dot-event.prisma-batch-selectable::before {
+	top: 4px;
+	right: 4px;
+	width: 16px;
+	height: 16px;
+}
+
+.fc-event.prisma-batch-selectable:hover .fc-event-main::before,
+.fc-daygrid-dot-event.prisma-batch-selectable:hover::before {
+	opacity: 1;
+	transform: scale(1.1);
+	border-color: var(--interactive-accent);
+}
+
+.fc-event.prisma-batch-selected .fc-event-main::before,
+.fc-daygrid-dot-event.prisma-batch-selected::before {
+	background: var(--interactive-accent);
+	border-color: white;
+	content: "✓";
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	font-weight: bold;
+	color: white;
+	opacity: 1;
+}
+
+/* Smaller checkmark for compact month view block events (all-day events only, not dots) */
+.fc-daygrid-block-event.prisma-batch-selected .fc-event-main::before:not(.fc-daygrid-dot-event) {
 	font-size: 9px;
+}
+
+/* Ensure dot events always use full size checkmark */
+.fc-daygrid-dot-event.prisma-batch-selected::before {
+	font-size: 10px;
 }
 
 /* Event Selection States - Updated for FullCalendar DOM structure */
@@ -1188,47 +1247,13 @@
 	width: 100%;
 }
 
-.fc-event.prisma-batch-selectable .fc-event-main::before {
-	content: "";
-	position: absolute;
-	top: 4px;
-	right: 4px;
-	width: 16px;
-	height: 16px;
-	border: 2px solid rgba(255, 255, 255, 0.8);
-	border-radius: 50%;
-	background: rgba(0, 0, 0, 0.2);
-	backdrop-filter: blur(2px);
-	z-index: 10;
-	opacity: 0.8;
-	transition: all 0.2s ease;
-}
-
-.fc-event.prisma-batch-selectable:hover .fc-event-main::before {
-	opacity: 1;
-	transform: scale(1.1);
-	border-color: var(--interactive-accent);
-}
-
-.fc-event.prisma-batch-selected {
+.fc-event.prisma-batch-selected,
+.fc-daygrid-dot-event.prisma-batch-selected {
 	box-shadow:
 		0 0 0 2px var(--interactive-accent),
 		0 4px 12px rgba(var(--interactive-accent-rgb), 0.3),
 		0 2px 4px rgba(0, 0, 0, 0.1);
 	z-index: 5;
-}
-
-.fc-event.prisma-batch-selected .fc-event-main::before {
-	background: var(--interactive-accent);
-	border-color: white;
-	content: "✓";
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 10px;
-	font-weight: bold;
-	color: white;
-	opacity: 1;
 }
 
 .fc-event.prisma-batch-selected:hover {

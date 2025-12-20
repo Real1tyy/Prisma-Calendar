@@ -9,6 +9,10 @@ All notable changes to this project will be documented here.
 - **Sticky Calendar Header**: The calendar header (navigation buttons, filters, and view controls) now stays visible when scrolling down the calendar, making it easier to navigate and filter events without scrolling back to the top.
 - **Configurable Drag Edge Scroll Delay**: Added a new setting "Drag edge scroll delay" in Settings → Calendar → User Interface to control the delay (in milliseconds) before the calendar scrolls when dragging events near the edge. The default is 600ms, and it can be adjusted from 50ms to 2000ms in 50ms increments. Lower values make the calendar scroll more quickly when dragging events to the edge, while higher values require holding the event at the edge longer before scrolling occurs.
 
+### Bug Fixes
+
+- **Fixed Batch Selection for Timed Events in Monthly View**: Timed events (dot events) in monthly view can now be properly selected in batch selection mode. The selection checkbox is now visible.
+
 ---
 
 ## 1.14.2
