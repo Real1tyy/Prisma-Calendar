@@ -1,6 +1,6 @@
 import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
 import { Setting } from "obsidian";
-import { SETTINGS_DEFAULTS } from "../../constants";
+import { BATCH_BUTTON_IDS, BATCH_BUTTON_LABELS, SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { CALENDAR_VIEW_OPTIONS, type CalendarViewType, DENSITY_OPTIONS, FIRST_DAY_OPTIONS } from "../../types/index";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
@@ -236,5 +236,41 @@ export class CalendarSettings {
 			name: "Show color dots",
 			desc: "Show color indicator dots at the top of each day in monthly view",
 		});
+
+		// Batch selection settings section
+		new Setting(containerEl).setName("Batch selection").setHeading();
+
+		new Setting(containerEl)
+			.setName("Batch action buttons")
+			.setDesc(
+				"Choose which action buttons to display in batch selection mode toolbar. The Counter and Exit buttons are always shown."
+			);
+
+		const batchButtonsContainer = containerEl.createDiv({
+			cls: "prisma-batch-buttons-container",
+		});
+
+		const currentButtons = new Set(this.settingsStore.currentSettings.batchActionButtons);
+
+		for (const buttonId of BATCH_BUTTON_IDS) {
+			const buttonSetting = new Setting(batchButtonsContainer)
+				.setName(BATCH_BUTTON_LABELS[buttonId] || buttonId)
+				.addToggle((toggle) => {
+					toggle.setValue(currentButtons.has(buttonId)).onChange(async (value) => {
+						const current = this.settingsStore.currentSettings.batchActionButtons;
+
+						const updated = value
+							? BATCH_BUTTON_IDS.filter((id) => current.includes(id) || id === buttonId)
+							: current.filter((id) => id !== buttonId);
+
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							batchActionButtons: updated,
+						}));
+					});
+				});
+
+			buttonSetting.settingEl.addClass("prisma-batch-button-setting");
+		}
 	}
 }

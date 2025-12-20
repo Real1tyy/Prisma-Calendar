@@ -120,3 +120,24 @@ export const CALDAV_DEFAULTS = {
 	SYNC_INTERVAL_MINUTES: 15,
 	MAX_ACCOUNTS: 10,
 } as const;
+
+export const BATCH_BUTTONS = {
+	"Select All": "batchSelectAll",
+	Clear: "batchClear",
+	Duplicate: "batchDuplicate",
+	"Move By": "batchMoveBy",
+	"Mark as Done": "batchMarkAsDone",
+	"Clone Next": "batchCloneNext",
+	"Clone Prev": "batchClonePrev",
+	"Move Next": "batchMoveNext",
+	"Move Prev": "batchMovePrev",
+	"Open All": "batchOpenAll",
+	Skip: "batchSkip",
+	Delete: "batchDelete",
+} as const;
+
+export const BATCH_BUTTON_IDS = Object.values(BATCH_BUTTONS);
+
+export const BATCH_BUTTON_LABELS = Object.fromEntries(
+	Object.entries(BATCH_BUTTONS).map(([label, id]) => [id, label])
+) as Record<string, string>;

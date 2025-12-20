@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SETTINGS_DEFAULTS } from "../constants";
+import { BATCH_BUTTON_IDS, SETTINGS_DEFAULTS } from "../constants";
 import { CalDAVSettingsSchema } from "../core/integrations/caldav";
 import { ColorSchema } from "../utils/validation";
 import { CalendarViewTypeSchema } from "./view";
@@ -78,6 +78,8 @@ export const FilterPresetSchema = z.object({
 	expression: z.string(),
 });
 
+export const BatchActionButtonSchema = z.enum(BATCH_BUTTON_IDS as [string, ...string[]]);
+
 export const CalendarSettingsSchema = z.object({
 	futureInstancesCount: z.number().int().min(1).max(52).default(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT), // how many future instances to generate for recurring events
 	defaultView: CalendarViewTypeSchema.default(SETTINGS_DEFAULTS.DEFAULT_DEFAULT_VIEW),
@@ -108,6 +110,7 @@ export const CalendarSettingsSchema = z.object({
 		.min(50)
 		.max(2000)
 		.default(SETTINGS_DEFAULTS.DEFAULT_DRAG_EDGE_SCROLL_DELAY_MS), // Delay in milliseconds before scrolling when dragging events near edge
+	batchActionButtons: z.array(BatchActionButtonSchema).default([...BATCH_BUTTON_IDS]), // Which batch action buttons to show in batch selection mode toolbar
 });
 
 export const RulesSettingsSchema = z.object({
@@ -158,5 +161,6 @@ export const CustomCalendarSettingsSchema = z.object({
 
 export type FilterPreset = z.infer<typeof FilterPresetSchema>;
 export type EventPreset = z.infer<typeof EventPresetSchema>;
+export type BatchActionButton = z.infer<typeof BatchActionButtonSchema>;
 export type SingleCalendarConfig = z.infer<typeof SingleCalendarConfigSchema>;
 export type CustomCalendarSettings = z.infer<typeof CustomCalendarSettingsSchema>;

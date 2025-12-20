@@ -15,6 +15,7 @@ All notable changes to this project will be documented here.
 
 ### Improvements
 
+- **Customizable Batch Action Buttons**: Added a new setting in Settings → Calendar → Batch Selection to customize which action buttons appear in the batch selection mode toolbar. You can now enable or disable individual buttons (Select All, Clear, Duplicate, Move By, Mark as Done, Clone Next, Clone Prev, Move Next, Move Prev, Open All, Skip, Delete) to streamline your batch operations workflow. The Counter and Exit buttons are always shown. All buttons are enabled by default.
 - **Sticky Calendar Header**: The calendar header (navigation buttons, filters, and view controls) now stays visible when scrolling down the calendar, making it easier to navigate and filter events without scrolling back to the top.
 - **Configurable Drag Edge Scroll Delay**: Added a new setting "Drag edge scroll delay" in Settings → Calendar → User Interface to control the delay (in milliseconds) before the calendar scrolls when dragging events near the edge. The default is 600ms, and it can be adjusted from 50ms to 2000ms in 50ms increments. Lower values make the calendar scroll more quickly when dragging events to the edge, while higher values require holding the event at the edge longer before scrolling occurs.
 

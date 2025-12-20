@@ -218,6 +218,24 @@ STATUS: Done
 - **Event stack limit**: maximum events to stack before showing "+ more" link (1-10, default: 1)
 - **Mobile max events per day**: maximum events to show per day on mobile before showing "+more" (0-10, default: 4)
 
+### Batch Selection
+
+- **Batch action buttons**: customize which action buttons appear in the batch selection mode toolbar. You can enable or disable individual buttons to streamline your workflow:
+  - **Select All**: Select all visible events on the current calendar view
+  - **Clear**: Deselect all currently selected events
+  - **Duplicate**: Create duplicate copies of selected events
+  - **Move By**: Move selected events by a specified number of days/weeks
+  - **Mark as Done**: Mark selected events as done using the configured status property
+  - **Clone Next**: Clone selected events to the next week
+  - **Clone Prev**: Clone selected events to the previous week
+  - **Move Next**: Move selected events to the next week
+  - **Move Prev**: Move selected events to the previous week
+  - **Open All**: Open all selected event notes in separate tabs
+  - **Skip**: Mark selected events as skipped (hidden from calendar)
+  - **Delete**: Delete selected event notes
+
+  All buttons are enabled by default. The Counter (showing selection count) and Exit buttons are always shown and cannot be disabled.
+
 ## Notifications Settings
 
 Configure desktop notifications and alerts for upcoming events.

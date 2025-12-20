@@ -2046,6 +2046,17 @@
 	color: var(--text-accent);
 }
 
+/* Batch Action Buttons Settings */
+.prisma-batch-buttons-container {
+	margin-top: 10px;
+}
+
+.prisma-batch-button-setting {
+	border-top: none;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
 /* Settings Integrations Section */
 .prisma-settings-integrations-desc {
 	margin-bottom: 1rem;

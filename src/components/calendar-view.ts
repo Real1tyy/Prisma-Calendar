@@ -299,22 +299,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		if (inSelectionMode) {
 			const left = "prev,next today";
-			const right = [
-				"batchCounter",
-				"batchSelectAll",
-				"batchClear",
-				"batchDuplicate",
-				"batchMoveBy",
-				"batchMarkAsDone",
-				"batchCloneNext",
-				"batchClonePrev",
-				"batchMoveNext",
-				"batchMovePrev",
-				"batchOpenAll",
-				"batchSkip",
-				"batchDelete",
-				"batchExit",
-			].join(" ");
+			const settings = this.bundle.settingsStore.currentSettings;
+
+			const rightButtons = ["batchCounter", ...settings.batchActionButtons, "batchExit"];
+			const right = rightButtons.join(" ");
 
 			return {
 				headerToolbar: { left, center: "title", right },
