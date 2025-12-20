@@ -639,8 +639,8 @@ export class EventContextMenu {
 			const frontmatter = metadata?.frontmatter;
 			if (frontmatter) {
 				const settings = this.bundle.settingsStore.currentSettings;
-				rruleType = frontmatter[settings.rruleProp];
-				rruleSpec = frontmatter[settings.rruleSpecProp];
+				rruleType = frontmatter[settings.rruleProp] as string | undefined;
+				rruleSpec = frontmatter[settings.rruleSpecProp] as string | undefined;
 			}
 		}
 

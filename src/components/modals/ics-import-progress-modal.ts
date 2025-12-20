@@ -17,14 +17,14 @@ export class ICSImportProgressModal extends Modal {
 		const { contentEl } = this;
 		addCls(contentEl, "ics-import-progress-modal");
 
-		contentEl.createEl("h2", { text: "Importing Events" });
+		contentEl.createEl("h2", { text: "Importing events" });
 
 		this.statusText = contentEl.createDiv(cls("ics-import-status"));
 		this.statusText.setText(`Importing 0 of ${this.totalCount} events...`);
 
 		const progressContainer = contentEl.createDiv(cls("ics-import-progress-container"));
 		this.progressBar = progressContainer.createDiv(cls("ics-import-progress-bar"));
-		this.progressBar.style.width = "0%";
+		addCls(this.progressBar, "progress-0");
 
 		this.detailsText = contentEl.createDiv(cls("ics-import-details"));
 		this.detailsText.setText("Starting import...");
@@ -40,7 +40,7 @@ export class ICSImportProgressModal extends Modal {
 		const percentage = Math.round((current / this.totalCount) * 100);
 
 		if (this.progressBar) {
-			this.progressBar.style.width = `${percentage}%`;
+			this.progressBar.setCssProps({ width: `${percentage}%` });
 		}
 
 		if (this.statusText) {
@@ -56,12 +56,12 @@ export class ICSImportProgressModal extends Modal {
 		this.isComplete = true;
 
 		if (this.progressBar) {
-			this.progressBar.style.width = "100%";
+			this.progressBar.setCssProps({ width: "100%" });
 			addCls(this.progressBar, "complete");
 		}
 
 		if (this.statusText) {
-			this.statusText.setText("Import Complete!");
+			this.statusText.setText("Import complete");
 		}
 
 		if (this.detailsText) {
@@ -85,7 +85,7 @@ export class ICSImportProgressModal extends Modal {
 		}
 
 		if (this.statusText) {
-			this.statusText.setText("Import Failed");
+			this.statusText.setText("Import failed");
 		}
 
 		if (this.detailsText) {

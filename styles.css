@@ -5035,6 +5035,7 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	transition: width 0.3s ease;
 	border-radius: 20px;
 	box-shadow: 0 2px 8px rgba(var(--interactive-accent-rgb), 0.3);
+	width: 0%;
 }
 
 .prisma-ics-import-progress-bar.complete {
