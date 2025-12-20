@@ -22,17 +22,17 @@ Each calendar has its own open command, so you can assign different hotkeys to d
 Prisma Calendar's hotkeys are designed to be both powerful and intuitive. They are divided into two main categories:
 
 1.  **Calendar-Specific Hotkeys**: Each calendar you create gets its own dedicated "Open" command. This allows you to assign a unique hotkey to quickly open each of your calendars.
-2.  **Global Batch Hotkeys**: All batch operations (like duplicating, deleting, or moving events) are managed by a single set of global hotkeys. These hotkeys automatically target the calendar view that is currently active or in focus.
+2.  **Global Hotkeys**: Most commands (batch operations, filtering, navigation) are managed by a single set of global hotkeys. These hotkeys automatically target the calendar view that is currently active or in focus.
 
-## Global Batch Operations
+## Global Hotkeys
 
-The batch operation hotkeys are a core feature for managing multiple events efficiently. Here’s how they work:
+Global hotkeys work across all calendars and automatically target the currently active calendar view.
 
--   **Shared Across Calendars**: There is only one set of hotkeys for all batch actions, regardless of how many calendars you have. For example, the `Batch: Delete Selection` hotkey will work on any calendar that is currently active.
--   **Requires Batch Selection Mode**: **Crucially**, for any of the batch operation hotkeys to work, you must first activate **Batch Selection Mode**. You can do this by clicking the "Batch Select" button in the calendar's header or by using the `Toggle Batch Selection` hotkey.
--   **Context-Aware**: If you try to use a batch hotkey when Batch Selection Mode is not active, the command will not trigger, and you will see a notice informing you that the mode must be enabled.
+### Batch Operations
 
-### Available Batch Hotkey Commands
+Batch operation hotkeys require **Batch Selection Mode** to be active first. Activate by clicking "Batch Select" button or using the `Toggle Batch Selection` hotkey.
+
+**Available batch commands:**
 
 Here is a complete list of the batch operations you can assign hotkeys to:
 
@@ -115,6 +115,17 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 
 ## Event Management Commands
 
+### Create New Event
+
+-   **Function**: Opens the create event modal for the active calendar
+-   **Use Case**: Quickly create events without clicking the calendar
+
+### Show Recurring Events
+
+-   **Function**: Opens a modal listing all recurring event sources
+-   **Features**: View, filter, enable/disable, and navigate to recurring events
+-   **See Also**: [Recurring Events documentation](./recurring-dsl.md)
+
 ### Show Skipped Events
 
 -   **Function**: Opens a modal listing all events marked as skipped
@@ -125,6 +136,18 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Function**: Opens a modal listing all disabled recurring events
 -   **Features**: Quickly enable, navigate to, or open disabled recurring event sources
 
+### Global Event Search
+
+-   **Function**: Opens the global event search modal
+-   **Features**: Search across all events with cycle filters for recurring, all-day, and skipped events
+-   **See Also**: [Global Search documentation](./global-search.md)
+
+### Highlight Events Without Categories
+
+-   **Function**: Temporarily highlights all events missing category assignments
+-   **Duration**: Events are highlighted for 10 seconds
+-   **Use Case**: Quickly identify which events need category assignment
+
 ### Refresh Calendar
 
 -   **Function**: Manually triggers a full resync of the indexer and refreshes all calendar events
@@ -133,10 +156,69 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
     -   Update calendar after bulk file operations outside Obsidian
     -   Refresh after modifying event files through external scripts or sync tools
 
+## Statistics Commands
+
+### Show Daily Statistics
+
+-   **Function**: Opens daily statistics modal for the current day
+-   **Features**: Pie chart and breakdown table showing time distribution for a single day
+-   **See Also**: [Statistics documentation](./statistics.md)
+
+### Show Weekly Statistics
+
+-   **Function**: Opens weekly statistics modal for the current week
+-   **Features**: Pie chart and breakdown table showing time distribution for the week
+-   **See Also**: [Statistics documentation](./statistics.md)
+
+### Show Monthly Statistics
+
+-   **Function**: Opens monthly statistics modal for the current month
+-   **Features**: Pie chart and breakdown table showing time distribution for the month
+-   **See Also**: [Statistics documentation](./statistics.md)
+
+### Show All-Time Statistics
+
+-   **Function**: Opens all-time statistics modal
+-   **Features**: Pie chart and breakdown table showing lifetime time distribution
+-   **See Also**: [Statistics documentation](./statistics.md)
+
 ## Undo/Redo Commands
 
 -   **Undo**: Reverses the last calendar operation
 -   **Redo**: Reapplies a previously undone operation
+
+## Integration Commands
+
+### Import .ics File
+
+-   **Function**: Opens the ICS import modal to import events from external calendars
+-   **Use Case**: Import events from Google Calendar, Apple Calendar, Outlook, etc.
+-   **See Also**: [Integrations documentation](./integrations.md)
+
+### Export Calendar as .ics
+
+-   **Function**: Opens the ICS export modal to export calendar events
+-   **Features**: Select timezone, exclude skipped events, export to file
+-   **See Also**: [Integrations documentation](./integrations.md)
+
+### Sync Calendar Accounts
+
+-   **Function**: Manually triggers CalDAV synchronization
+-   **Use Case**: Force sync with external CalDAV servers (Fastmail, Nextcloud, iCloud)
+-   **See Also**: [CalDAV Integration documentation](./integrations.md#caldav-integration)
+
+## Utility Commands
+
+### Open Prisma Main
+
+-   **Function**: Opens the main Prisma Calendar view/interface
+-   **Use Case**: Quick access to calendar overview
+
+### Restore Minimized Event Modal
+
+-   **Function**: Restores a previously minimized event creation/edit modal
+-   **Use Case**: Resume event creation after minimizing the modal
+-   **See Also**: [Time Tracker documentation](./time-tracker.md) for minimize functionality
 
 ## Recommended Keybindings
 
@@ -146,14 +228,16 @@ Here are suggested keybindings organized by workflow:
 | Command | Suggested Binding | Why |
 |---------|------------------|-----|
 | Open current note in calendar | `Ctrl/Cmd+Shift+C` | Quick calendar navigation from any note |
+| Create new event | `Ctrl/Cmd+N` | Quick event creation |
 | Focus search | `Ctrl/Cmd+F` | Standard search shortcut |
 | Toggle batch selection | `Ctrl/Cmd+B` | Quick access to batch operations |
 | Undo | `Ctrl/Cmd+Z` | Standard undo binding |
 | Redo | `Ctrl/Cmd+Y` | Standard redo binding |
 
-### Advanced Filtering
+### Search & Filtering
 | Command | Suggested Binding | Why |
 |---------|------------------|-----|
+| Global event search | `Ctrl/Cmd+Shift+G` | Search across all events |
 | Focus expression filter | `Ctrl/Cmd+Shift+F` | Advanced property-based filtering |
 | Open filter preset selector | `Ctrl/Cmd+Shift+P` | Quick preset access |
 | Show filtered events | `Ctrl/Cmd+Shift+H` | View events hidden by active filters |
