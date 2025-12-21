@@ -7,14 +7,23 @@ import type { SingleCalendarConfigSchema } from "../../types/settings";
 
 export class CalendarSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
+	private currentContainer: HTMLElement | null = null;
 
 	constructor(private settingsStore: CalendarSettingsStore) {
 		this.ui = new SettingsUIBuilder(settingsStore as never);
 	}
 
 	display(containerEl: HTMLElement): void {
+		this.currentContainer = containerEl;
 		this.addRecurringEventSettings(containerEl);
 		this.addUISettings(containerEl);
+	}
+
+	private rerender(): void {
+		if (this.currentContainer) {
+			this.currentContainer.empty();
+			this.display(this.currentContainer);
+		}
 	}
 
 	private addRecurringEventSettings(containerEl: HTMLElement): void {
@@ -29,7 +38,6 @@ export class CalendarSettings {
 			step: 1,
 		});
 
-		// Mutually exclusive toggles for frontmatter propagation
 		new Setting(containerEl)
 			.setName("Propagate frontmatter to instances")
 			.setDesc(
@@ -40,9 +48,9 @@ export class CalendarSettings {
 					await this.settingsStore.updateSettings((s) => ({
 						...s,
 						propagateFrontmatterToInstances: value,
-						// When enabling auto-propagate, disable ask-before
 						askBeforePropagatingFrontmatter: value ? false : s.askBeforePropagatingFrontmatter,
 					}));
+					this.rerender();
 				});
 			});
 
@@ -56,9 +64,9 @@ export class CalendarSettings {
 					await this.settingsStore.updateSettings((s) => ({
 						...s,
 						askBeforePropagatingFrontmatter: value,
-						// When enabling ask-before, disable auto-propagate
 						propagateFrontmatterToInstances: value ? false : s.propagateFrontmatterToInstances,
 					}));
+					this.rerender();
 				});
 			});
 	}
