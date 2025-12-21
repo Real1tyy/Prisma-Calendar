@@ -190,7 +190,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 					onConfirm: () => this.propagateFrontmatterToInstances(recurringEvent, mergedDiff),
 				}).open();
 			}
-		}, 3000);
+		}, this.settings.propagationDebounceMs);
 
 		this.propagationDebounceTimers.set(recurringEvent.rRuleId, timer);
 	}

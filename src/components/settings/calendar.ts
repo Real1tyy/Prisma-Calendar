@@ -76,6 +76,15 @@ export class CalendarSettings {
 			desc: "Comma-separated list of frontmatter property names to exclude from propagation to recurring event instances. These properties will not be copied from source events to physical instances.",
 			placeholder: "Property1, Property2, Property3",
 		});
+
+		this.ui.addSlider(containerEl, {
+			key: "propagationDebounceMs",
+			name: "Propagation debounce delay",
+			desc: "Delay in milliseconds before propagating frontmatter changes to instances. Multiple rapid changes within this window will be accumulated and applied together.",
+			min: 100,
+			max: 10000,
+			step: 100,
+		});
 	}
 
 	private addUISettings(containerEl: HTMLElement): void {
