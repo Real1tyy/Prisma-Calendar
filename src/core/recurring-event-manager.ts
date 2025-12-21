@@ -11,11 +11,11 @@ import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
+import { FrontmatterPropagationModal } from "../components/modals/frontmatter-propagation-modal";
 import type { Frontmatter } from "../types";
 import type { NodeRecurringEvent } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import {
-	getPrismaManagedProperties,
 	getRecurringInstanceExcludedProps,
 	hashRRuleIdToZettelFormat,
 	removeZettelId,
@@ -23,6 +23,7 @@ import {
 } from "../utils/calendar-events";
 import { getNextOccurrence } from "../utils/date-recurrence";
 import { applySourceTimeToInstanceDate } from "../utils/format";
+import type { FrontmatterDiff } from "../utils/frontmatter-diff";
 import { deleteFilesByPaths } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { Indexer, IndexerEvent } from "./indexer";
@@ -91,9 +92,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 						if (event.oldPath) {
 							await this.handleRecurringEventRenamedWithLock(event.recurringEvent);
 						}
-						if (this.settings.propagateFrontmatterToInstances) {
-							await this.propagateFrontmatterToInstances(event.recurringEvent);
-						}
+						await this.handleFrontmatterPropagation(event.recurringEvent, event.frontmatterDiff);
 					}
 				}
 				break;
@@ -150,37 +149,58 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 	}
 
-	private async propagateFrontmatterToInstances(recurringEvent: NodeRecurringEvent): Promise<void> {
+	private async handleFrontmatterPropagation(
+		recurringEvent: NodeRecurringEvent,
+		frontmatterDiff?: FrontmatterDiff
+	): Promise<void> {
+		if (!this.settings.propagateFrontmatterToInstances && !this.settings.askBeforePropagatingFrontmatter) {
+			return;
+		}
+
+		const data = this.recurringEventsMap.get(recurringEvent.rRuleId);
+		if (!data || data.physicalInstances.size === 0 || !frontmatterDiff?.hasChanges) {
+			return;
+		}
+
+		if (this.settings.propagateFrontmatterToInstances) {
+			await this.propagateFrontmatterToInstances(recurringEvent, frontmatterDiff);
+			return;
+		}
+		if (this.settings.askBeforePropagatingFrontmatter) {
+			new FrontmatterPropagationModal(this.app, {
+				eventTitle: recurringEvent.title,
+				diff: frontmatterDiff,
+				instanceCount: data.physicalInstances.size,
+				onConfirm: () => this.propagateFrontmatterToInstances(recurringEvent, frontmatterDiff),
+			}).open();
+		}
+	}
+
+	private async propagateFrontmatterToInstances(
+		recurringEvent: NodeRecurringEvent,
+		frontmatterDiff: FrontmatterDiff
+	): Promise<void> {
 		const data = this.recurringEventsMap.get(recurringEvent.rRuleId);
 		if (!data || data.physicalInstances.size === 0) {
 			return;
 		}
 
-		const prismaManagedProps = getPrismaManagedProperties(this.settings);
-		const sourceFrontmatter = recurringEvent.frontmatter;
-
-		const propagatableProps: Frontmatter = {};
-		for (const [key, value] of Object.entries(sourceFrontmatter)) {
-			if (!prismaManagedProps.has(key)) {
-				propagatableProps[key] = value;
-			}
-		}
-
-		if (Object.keys(propagatableProps).length === 0) {
+		const allChanges = [...frontmatterDiff.added, ...frontmatterDiff.modified, ...frontmatterDiff.deleted];
+		if (allChanges.length === 0) {
 			return;
 		}
 
 		await Promise.all(
 			Array.from(data.physicalInstances.values()).map((instance) =>
-				this.updateInstanceFrontmatter(instance, propagatableProps, prismaManagedProps)
+				this.applyFrontmatterChanges(instance, recurringEvent.frontmatter, frontmatterDiff)
 			)
 		);
 	}
 
-	private async updateInstanceFrontmatter(
+	private async applyFrontmatterChanges(
 		instance: PhysicalInstance,
-		propagatableProps: Frontmatter,
-		prismaManagedProps: Set<string>
+		sourceFrontmatter: Frontmatter,
+		diff: FrontmatterDiff
 	): Promise<void> {
 		try {
 			const file = this.app.vault.getAbstractFileByPath(instance.filePath);
@@ -190,14 +210,20 @@ export class RecurringEventManager extends DebouncedNotifier {
 			}
 
 			await withFrontmatter(this.app, file, (fm) => {
-				for (const [key, value] of Object.entries(propagatableProps)) {
-					if (!prismaManagedProps.has(key)) {
-						fm[key] = value;
-					}
+				for (const change of diff.added) {
+					fm[change.key] = sourceFrontmatter[change.key];
+				}
+
+				for (const change of diff.modified) {
+					fm[change.key] = sourceFrontmatter[change.key];
+				}
+
+				for (const change of diff.deleted) {
+					delete fm[change.key];
 				}
 			});
 		} catch (error) {
-			console.error(`Error updating frontmatter for instance ${instance.filePath}:`, error);
+			console.error(`Error applying frontmatter changes to instance ${instance.filePath}:`, error);
 		}
 	}
 

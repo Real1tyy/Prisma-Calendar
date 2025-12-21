@@ -16,10 +16,7 @@ import { debounceTime, filter, groupBy, map, mergeMap, switchMap, toArray } from
 import { SCAN_CONCURRENCY } from "../constants";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
-import {
-	generateUniqueRruleId,
-	getRecurringInstanceExcludedProps,
-} from "../utils/calendar-events";
+import { generateUniqueRruleId, getRecurringInstanceExcludedProps } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
 import { compareFrontmatter, type FrontmatterDiff } from "../utils/frontmatter-diff";
 

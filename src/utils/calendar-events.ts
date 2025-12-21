@@ -225,11 +225,9 @@ export const isEventDone = (app: App, filePath: string, statusProperty: string, 
  */
 export const getPrismaManagedProperties = (settings: SingleCalendarConfig): Set<string> => {
 	return new Set(
-		[
-			...Array.from(getRecurringInstanceExcludedProps(settings)),
-			settings.statusProperty,
-			settings.categoryProp,
-		].filter((prop) => prop !== "")
+		[...Array.from(getRecurringInstanceExcludedProps(settings)), settings.statusProperty, settings.categoryProp].filter(
+			(prop) => prop !== ""
+		)
 	);
 };
 
