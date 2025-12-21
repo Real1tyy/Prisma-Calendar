@@ -7,5 +7,6 @@ export {
 } from "./delete-physical-events-modal";
 export { EventCreateModal } from "./event-create-modal";
 export { EventEditModal } from "./event-edit-modal";
+export { FrontmatterPropagationModal } from "./frontmatter-propagation-modal";
 export { ICSImportModal } from "./ics-import-modal";
 export { SavePresetModal } from "./save-preset-modal";

@@ -5239,3 +5239,58 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	flex: 1;
 	cursor: pointer;
 }
+
+/* Frontmatter Propagation Modal */
+.prisma-frontmatter-changes {
+	margin: 1.5rem 0;
+	padding: 1rem;
+	background: var(--background-secondary);
+	border-radius: var(--radius-s);
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+.prisma-changes-section {
+	margin-bottom: 1rem;
+}
+
+.prisma-changes-section:last-child {
+	margin-bottom: 0;
+}
+
+.prisma-changes-section h4 {
+	margin: 0 0 0.5rem 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+
+.prisma-changes-section ul {
+	margin: 0;
+	padding-left: 1.5rem;
+	list-style: none;
+}
+
+.prisma-changes-section li {
+	padding: 0.25rem 0;
+	font-family: var(--font-monospace);
+	font-size: 0.85rem;
+}
+
+.prisma-change-added {
+	color: var(--text-success);
+}
+
+.prisma-change-modified {
+	color: var(--text-warning);
+}
+
+.prisma-change-deleted {
+	color: var(--text-error);
+}
+
+.prisma-modal-buttons {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	margin-top: 1rem;
+}
