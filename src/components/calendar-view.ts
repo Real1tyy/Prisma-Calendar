@@ -130,6 +130,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private dragEdgeScrollListener: ((e: MouseEvent) => void) | null = null;
 	private dragEdgeScrollTimeout: number | null = null;
 	private lastEdgeScrollTime = 0;
+	private refreshRafId: number | null = null;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -1089,7 +1090,18 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			this.stopUpcomingEventCheck();
 		}
 
-		this.refreshEvents();
+		// Schedule refresh with coalescing to batch with paint and avoid refresh storms
+		this.scheduleRefreshEvents();
+	}
+
+	private scheduleRefreshEvents(): void {
+		// Coalesce rapid settings changes (sliders, typing, toggles) into a single refresh per frame
+		if (this.refreshRafId !== null) return;
+
+		this.refreshRafId = requestAnimationFrame(() => {
+			this.refreshRafId = null;
+			this.refreshEvents();
+		});
 	}
 
 	refreshCalendar(): void {
@@ -1906,6 +1918,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.zoomManager.destroy();
 		this.searchFilter.destroy();
 		this.expressionFilter.destroy();
+
+		// Cancel any pending refresh
+		if (this.refreshRafId !== null) {
+			cancelAnimationFrame(this.refreshRafId);
+			this.refreshRafId = null;
+		}
 
 		this.calendar?.destroy();
 		this.calendar = null;
