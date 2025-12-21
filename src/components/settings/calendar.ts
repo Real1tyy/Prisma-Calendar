@@ -40,9 +40,8 @@ export class CalendarSettings {
 
 		new Setting(containerEl)
 			.setName("Propagate frontmatter to instances")
-			.setDesc(
-				"Automatically propagate non-Prisma frontmatter changes from recurring event sources to all physical instances. When you update custom properties (like Category, Priority, Status) in a source event, all existing instances are updated immediately."
-			)
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setDesc("Automatically propagate non-Prisma frontmatter changes from recurring event sources to all physical instances. When you update custom properties (like Category, Priority, Status) in a source event, all existing instances are updated immediately.")
 			.addToggle((toggle) => {
 				toggle.setValue(this.settingsStore.currentSettings.propagateFrontmatterToInstances).onChange(async (value) => {
 					await this.settingsStore.updateSettings((s) => ({
@@ -299,9 +298,8 @@ export class CalendarSettings {
 
 		new Setting(containerEl)
 			.setName("Batch action buttons")
-			.setDesc(
-				"Choose which action buttons to display in batch selection mode toolbar. The Counter and Exit buttons are always shown."
-			);
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setDesc("Choose which action buttons to display in batch selection mode toolbar. The Counter and Exit buttons are always shown.");
 
 		const batchButtonsContainer = containerEl.createDiv({
 			cls: "prisma-batch-buttons-container",

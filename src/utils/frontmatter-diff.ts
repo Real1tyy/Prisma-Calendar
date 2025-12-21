@@ -178,7 +178,8 @@ export function formatChangeForDisplay(change: FrontmatterChange): string {
 		if (value === null) return "null";
 		if (typeof value === "string") return `"${value}"`;
 		if (typeof value === "object") return JSON.stringify(value);
-		return String(value);
+		if (typeof value === "number" || typeof value === "boolean") return String(value);
+		return JSON.stringify(value);
 	};
 
 	switch (change.changeType) {

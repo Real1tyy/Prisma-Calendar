@@ -214,7 +214,7 @@ export const isEventDone = (app: App, filePath: string, statusProperty: string, 
 	}
 
 	const metadata = app.metadataCache.getFileCache(file);
-	const statusValue = metadata?.frontmatter?.[statusProperty];
+	const statusValue = metadata?.frontmatter?.[statusProperty] as string | undefined;
 	return statusValue === doneValue;
 };
 

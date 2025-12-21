@@ -22,7 +22,7 @@ export class FrontmatterPropagationModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		contentEl.createEl("h2", { text: "Propagate Frontmatter Changes?" });
+		contentEl.createEl("h2", { text: "Propagate frontmatter changes?" });
 
 		contentEl.createEl("p", {
 			text: `The recurring event "${this.options.eventTitle}" has frontmatter changes. Do you want to apply these changes to all ${this.options.instanceCount} physical instances?`,
@@ -32,7 +32,7 @@ export class FrontmatterPropagationModal extends Modal {
 
 		if (this.options.diff.added.length > 0) {
 			const addedSection = changesContainer.createDiv({ cls: "prisma-changes-section" });
-			addedSection.createEl("h4", { text: "Added Properties:" });
+			addedSection.createEl("h4", { text: "Added properties:" });
 			const addedList = addedSection.createEl("ul");
 			for (const change of this.options.diff.added) {
 				addedList.createEl("li", { text: formatChangeForDisplay(change), cls: "prisma-change-added" });
@@ -41,7 +41,7 @@ export class FrontmatterPropagationModal extends Modal {
 
 		if (this.options.diff.modified.length > 0) {
 			const modifiedSection = changesContainer.createDiv({ cls: "prisma-changes-section" });
-			modifiedSection.createEl("h4", { text: "Modified Properties:" });
+			modifiedSection.createEl("h4", { text: "Modified properties:" });
 			const modifiedList = modifiedSection.createEl("ul");
 			for (const change of this.options.diff.modified) {
 				modifiedList.createEl("li", { text: formatChangeForDisplay(change), cls: "prisma-change-modified" });
@@ -50,7 +50,7 @@ export class FrontmatterPropagationModal extends Modal {
 
 		if (this.options.diff.deleted.length > 0) {
 			const deletedSection = changesContainer.createDiv({ cls: "prisma-changes-section" });
-			deletedSection.createEl("h4", { text: "Deleted Properties:" });
+			deletedSection.createEl("h4", { text: "Deleted properties:" });
 			const deletedList = deletedSection.createEl("ul");
 			for (const change of this.options.diff.deleted) {
 				deletedList.createEl("li", { text: formatChangeForDisplay(change), cls: "prisma-change-deleted" });
@@ -59,7 +59,7 @@ export class FrontmatterPropagationModal extends Modal {
 
 		const buttonContainer = contentEl.createDiv({ cls: "prisma-modal-buttons" });
 
-		const yesButton = buttonContainer.createEl("button", { text: "Yes, Propagate", cls: "mod-cta" });
+		const yesButton = buttonContainer.createEl("button", { text: "Yes, propagate", cls: "mod-cta" });
 		yesButton.addEventListener("click", () => {
 			void Promise.resolve(this.options.onConfirm())
 				.then(() => {
@@ -71,7 +71,7 @@ export class FrontmatterPropagationModal extends Modal {
 				});
 		});
 
-		const noButton = buttonContainer.createEl("button", { text: "No, Skip" });
+		const noButton = buttonContainer.createEl("button", { text: "No, skip" });
 		noButton.addEventListener("click", () => {
 			const result = this.options.onCancel?.();
 			if (result instanceof Promise) {
