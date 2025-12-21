@@ -226,19 +226,9 @@ export const isEventDone = (app: App, filePath: string, statusProperty: string, 
 export const getPrismaManagedProperties = (settings: SingleCalendarConfig): Set<string> => {
 	return new Set(
 		[
-			settings.startProp,
-			settings.endProp,
-			settings.dateProp,
-			settings.allDayProp,
-			settings.rruleProp,
-			settings.rruleSpecProp,
-			settings.rruleIdProp,
-			settings.sourceProp,
-			settings.instanceDateProp,
-			settings.zettelIdProp || "",
-			settings.futureInstancesCountProp,
-			settings.generatePastEventsProp,
-			settings.ignoreRecurringProp,
+			...Array.from(getRecurringInstanceExcludedProps(settings)),
+			settings.statusProperty,
+			settings.categoryProp,
 		].filter((prop) => prop !== "")
 	);
 };
@@ -251,13 +241,23 @@ export const getPrismaManagedProperties = (settings: SingleCalendarConfig): Set<
  */
 export const getRecurringInstanceExcludedProps = (settings: SingleCalendarConfig): Set<string> => {
 	return new Set([
-		settings.rruleProp,
-		settings.rruleSpecProp,
 		settings.startProp,
 		settings.endProp,
 		settings.dateProp,
+		settings.breakProp,
+		settings.titleProp || "",
 		settings.allDayProp,
+		settings.rruleProp,
+		settings.rruleSpecProp,
+		settings.rruleIdProp,
+		settings.sourceProp,
+		settings.instanceDateProp,
+		settings.zettelIdProp || "",
+		settings.futureInstancesCountProp,
 		settings.alreadyNotifiedProp,
+		settings.caldavProp,
+		settings.generatePastEventsProp,
+		settings.ignoreRecurringProp,
 		"_Archived",
 	]);
 };
