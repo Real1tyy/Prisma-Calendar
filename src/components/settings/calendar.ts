@@ -69,6 +69,13 @@ export class CalendarSettings {
 					this.rerender();
 				});
 			});
+
+		this.ui.addText(containerEl, {
+			key: "excludedRecurringPropagatedProps",
+			name: "Excluded properties",
+			desc: "Comma-separated list of frontmatter property names to exclude from propagation to recurring event instances. These properties will not be copied from source events to physical instances.",
+			placeholder: "Property1, Property2, Property3",
+		});
 	}
 
 	private addUISettings(containerEl: HTMLElement): void {

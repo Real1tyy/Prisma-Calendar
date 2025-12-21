@@ -86,6 +86,7 @@ export const CalendarSettingsSchema = z.object({
 	futureInstancesCount: z.number().int().min(1).max(52).default(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT), // how many future instances to generate for recurring events
 	propagateFrontmatterToInstances: z.boolean().default(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_INSTANCES), // automatically propagate non-Prisma frontmatter changes from source to physical instances
 	askBeforePropagatingFrontmatter: z.boolean().default(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_FRONTMATTER), // show confirmation modal before propagating frontmatter changes
+	excludedRecurringPropagatedProps: z.string().default(SETTINGS_DEFAULTS.DEFAULT_EXCLUDED_RECURRING_PROPAGATED_PROPS), // comma-separated list of frontmatter properties to exclude from propagation to recurring instances
 	defaultView: CalendarViewTypeSchema.default(SETTINGS_DEFAULTS.DEFAULT_DEFAULT_VIEW),
 	hideWeekends: z.boolean().default(false),
 	showDecimalHours: z.boolean().default(false), // Show durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m)

@@ -238,7 +238,7 @@ export const getPrismaManagedProperties = (settings: SingleCalendarConfig): Set<
  * be copied to instances (like notification status and archived state).
  */
 export const getRecurringInstanceExcludedProps = (settings: SingleCalendarConfig): Set<string> => {
-	return new Set([
+	const excludedProps = new Set([
 		settings.startProp,
 		settings.endProp,
 		settings.dateProp,
@@ -256,8 +256,16 @@ export const getRecurringInstanceExcludedProps = (settings: SingleCalendarConfig
 		settings.caldavProp,
 		settings.generatePastEventsProp,
 		settings.ignoreRecurringProp,
-		"_Archived",
 	]);
+
+	if (settings.excludedRecurringPropagatedProps) {
+		const userExcludedProps = settings.excludedRecurringPropagatedProps
+			.split(",")
+			.map((prop) => prop.trim())
+			.filter((prop) => prop !== "");
+		return new Set([...excludedProps, ...userExcludedProps]);
+	}
+	return excludedProps;
 };
 
 /**
