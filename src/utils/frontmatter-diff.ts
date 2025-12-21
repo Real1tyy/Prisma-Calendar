@@ -114,6 +114,61 @@ function deepEqual(a: unknown, b: unknown): boolean {
 }
 
 /**
+ * Merges multiple frontmatter diffs into a single accumulated diff.
+ * Later diffs override earlier ones for the same key.
+ *
+ * @param diffs - Array of diffs to merge (in chronological order)
+ * @returns A single merged diff containing all accumulated changes
+ */
+export function mergeFrontmatterDiffs(diffs: FrontmatterDiff[]): FrontmatterDiff {
+	if (diffs.length === 0) {
+		return {
+			hasChanges: false,
+			changes: [],
+			added: [],
+			modified: [],
+			deleted: [],
+		};
+	}
+
+	if (diffs.length === 1) {
+		return diffs[0];
+	}
+
+	const changesByKey = new Map<string, FrontmatterChange>();
+
+	for (const diff of diffs) {
+		for (const change of diff.changes) {
+			const existing = changesByKey.get(change.key);
+
+			if (!existing) {
+				changesByKey.set(change.key, { ...change });
+			} else {
+				existing.newValue = change.newValue;
+				existing.changeType = change.changeType;
+
+				if (existing.oldValue === change.newValue) {
+					changesByKey.delete(change.key);
+				}
+			}
+		}
+	}
+
+	const allChanges = Array.from(changesByKey.values());
+	const added = allChanges.filter((c) => c.changeType === "added");
+	const modified = allChanges.filter((c) => c.changeType === "modified");
+	const deleted = allChanges.filter((c) => c.changeType === "deleted");
+
+	return {
+		hasChanges: allChanges.length > 0,
+		changes: allChanges,
+		added,
+		modified,
+		deleted,
+	};
+}
+
+/**
  * Formats a frontmatter change for display in a modal.
  * Returns a human-readable string describing the change.
  */

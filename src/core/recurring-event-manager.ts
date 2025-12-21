@@ -23,7 +23,7 @@ import {
 } from "../utils/calendar-events";
 import { getNextOccurrence } from "../utils/date-recurrence";
 import { applySourceTimeToInstanceDate } from "../utils/format";
-import type { FrontmatterDiff } from "../utils/frontmatter-diff";
+import { type FrontmatterDiff, mergeFrontmatterDiffs } from "../utils/frontmatter-diff";
 import { deleteFilesByPaths } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { Indexer, IndexerEvent } from "./indexer";
@@ -58,6 +58,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private creationLocks: Map<string, Promise<string | null>> = new Map();
 	private sourceFileToRRuleId: Map<string, string> = new Map();
 	private ensureInstancesLocks: Map<string, Promise<void>> = new Map();
+	private propagationDebounceTimers: Map<string, NodeJS.Timeout> = new Map();
+	private accumulatedDiffs: Map<string, FrontmatterDiff[]> = new Map();
 
 	constructor(
 		private app: App,
@@ -162,18 +164,35 @@ export class RecurringEventManager extends DebouncedNotifier {
 			return;
 		}
 
-		if (this.settings.propagateFrontmatterToInstances) {
-			await this.propagateFrontmatterToInstances(recurringEvent, frontmatterDiff);
-			return;
+		const existingTimer = this.propagationDebounceTimers.get(recurringEvent.rRuleId);
+		if (existingTimer) {
+			clearTimeout(existingTimer);
 		}
-		if (this.settings.askBeforePropagatingFrontmatter) {
-			new FrontmatterPropagationModal(this.app, {
-				eventTitle: recurringEvent.title,
-				diff: frontmatterDiff,
-				instanceCount: data.physicalInstances.size,
-				onConfirm: () => this.propagateFrontmatterToInstances(recurringEvent, frontmatterDiff),
-			}).open();
-		}
+
+		const existingDiffs = this.accumulatedDiffs.get(recurringEvent.rRuleId) || [];
+		existingDiffs.push(frontmatterDiff);
+		this.accumulatedDiffs.set(recurringEvent.rRuleId, existingDiffs);
+
+		const timer = setTimeout(() => {
+			this.propagationDebounceTimers.delete(recurringEvent.rRuleId);
+			const diffs = this.accumulatedDiffs.get(recurringEvent.rRuleId) || [];
+			this.accumulatedDiffs.delete(recurringEvent.rRuleId);
+
+			const mergedDiff = mergeFrontmatterDiffs(diffs);
+
+			if (this.settings.propagateFrontmatterToInstances) {
+				void this.propagateFrontmatterToInstances(recurringEvent, mergedDiff);
+			} else if (this.settings.askBeforePropagatingFrontmatter) {
+				new FrontmatterPropagationModal(this.app, {
+					eventTitle: recurringEvent.title,
+					diff: mergedDiff,
+					instanceCount: data.physicalInstances.size,
+					onConfirm: () => this.propagateFrontmatterToInstances(recurringEvent, mergedDiff),
+				}).open();
+			}
+		}, 3000);
+
+		this.propagationDebounceTimers.set(recurringEvent.rRuleId, timer);
 	}
 
 	private async propagateFrontmatterToInstances(
@@ -256,6 +275,11 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.creationLocks.clear();
 		this.sourceFileToRRuleId.clear();
 		this.ensureInstancesLocks.clear();
+		for (const timer of this.propagationDebounceTimers.values()) {
+			clearTimeout(timer);
+		}
+		this.propagationDebounceTimers.clear();
+		this.accumulatedDiffs.clear();
 	}
 
 	/**
