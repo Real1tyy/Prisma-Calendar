@@ -54,7 +54,7 @@ Rich notification modal with complete event preview and action buttons for snooz
 
 ![Stopwatch Time Tracker](/img/stopwatch.png)
 
-Built-in stopwatch for tracking event duration with break time support and lap tracking. [Learn more →](/features/time-tracker)
+Built-in stopwatch for tracking event duration with break time support, session tracking, and real-time timers. Features total time, total break time, and mid timers (session/current break) for complete visibility into your work sessions. [Learn more →](/features/time-tracker)
 
 ## Recurring Events
 

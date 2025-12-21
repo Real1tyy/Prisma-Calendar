@@ -3063,6 +3063,7 @@
 	align-items: center;
 	gap: 32px;
 	margin-bottom: 16px;
+	flex-wrap: wrap;
 }
 
 .prisma-stopwatch-main-display {
@@ -3073,6 +3074,13 @@
 }
 
 .prisma-stopwatch-break-display {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.prisma-stopwatch-mid-display {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -3109,6 +3117,28 @@
 	border-radius: var(--radius-s);
 	border: 1px solid var(--interactive-accent);
 	letter-spacing: 1px;
+}
+
+.prisma-stopwatch-mid-display-section {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-top: 16px;
+	padding-top: 16px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.prisma-stopwatch-mid-time {
+	font-size: 1.5rem;
+	font-weight: var(--font-weight-semibold);
+	font-family: var(--font-monospace);
+	color: var(--text-normal);
+	background: var(--background-primary);
+	padding: 6px 12px;
+	border-radius: var(--radius-s);
+	border: 1px solid var(--background-modifier-border);
+	letter-spacing: 1px;
+	opacity: 0.85;
 }
 
 .prisma-stopwatch-controls {

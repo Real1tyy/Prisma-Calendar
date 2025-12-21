@@ -1,5 +1,5 @@
 import { cls } from "@real1ty-obsidian-plugins/utils";
-import { formatMsToHHMMSS, formatMsToMMSS } from "../utils/time-formatter";
+import { formatMsToHHMMSS } from "../utils/time-formatter";
 
 export type StopwatchState = "idle" | "running" | "paused" | "stopped";
 
@@ -13,6 +13,7 @@ export interface StopwatchSnapshot {
 	state: StopwatchState;
 	startTime: number | null;
 	breakStartTime: number | null;
+	sessionStartTime: number | null;
 	totalBreakMs: number;
 }
 
@@ -20,6 +21,7 @@ export class Stopwatch {
 	private state: StopwatchState = "idle";
 	private startTime: Date | null = null;
 	private breakStartTime: Date | null = null;
+	private sessionStartTime: Date | null = null;
 	private totalBreakMs = 0;
 	private intervalId: number | null = null;
 	private isExpanded = false;
@@ -29,6 +31,9 @@ export class Stopwatch {
 	private toggleIcon: HTMLElement | null = null;
 	private displayEl: HTMLElement | null = null;
 	private breakDisplayEl: HTMLElement | null = null;
+	private midContainer: HTMLElement | null = null;
+	private midLabelEl: HTMLElement | null = null;
+	private midDisplayEl: HTMLElement | null = null;
 	private startBtn: HTMLButtonElement | null = null;
 	private pauseBtn: HTMLButtonElement | null = null;
 	private stopBtn: HTMLButtonElement | null = null;
@@ -63,7 +68,7 @@ export class Stopwatch {
 
 		// Main elapsed time display
 		const mainDisplay = displaySection.createDiv(cls("stopwatch-main-display"));
-		mainDisplay.createSpan({ text: "Elapsed:", cls: cls("stopwatch-label") });
+		mainDisplay.createSpan({ text: "Total:", cls: cls("stopwatch-label") });
 		this.displayEl = mainDisplay.createSpan({
 			text: "00:00:00",
 			cls: cls("stopwatch-time"),
@@ -71,9 +76,9 @@ export class Stopwatch {
 
 		// Break time display
 		const breakDisplay = displaySection.createDiv(cls("stopwatch-break-display"));
-		breakDisplay.createSpan({ text: "Break:", cls: cls("stopwatch-label") });
+		breakDisplay.createSpan({ text: "Total Break:", cls: cls("stopwatch-label") });
 		this.breakDisplayEl = breakDisplay.createSpan({
-			text: "00:00",
+			text: "00:00:00",
 			cls: cls("stopwatch-break-time"),
 		});
 
@@ -112,6 +117,19 @@ export class Stopwatch {
 			this.stop();
 		});
 
+		// Mid display (shows Session when running, Current Break when paused) - at bottom
+		const midDisplaySection = this.contentEl.createDiv(cls("stopwatch-mid-display-section"));
+		this.midContainer = midDisplaySection.createDiv(cls("stopwatch-mid-display"));
+		this.midLabelEl = this.midContainer.createSpan({
+			text: "Session:",
+			cls: cls("stopwatch-label"),
+		});
+		this.midDisplayEl = this.midContainer.createSpan({
+			text: "00:00:00",
+			cls: cls("stopwatch-mid-time"),
+		});
+		this.midContainer.classList.add("prisma-hidden");
+
 		return this.container;
 	}
 
@@ -127,31 +145,35 @@ export class Stopwatch {
 		if (this.state === "running") return;
 
 		this.state = "running";
-		this.startTime = new Date();
+		const now = new Date();
+		this.startTime = now;
+		this.sessionStartTime = now;
 		this.totalBreakMs = 0;
 		this.breakStartTime = null;
 
 		this.callbacks.onStart(this.startTime);
 
 		this.updateButtonStates();
+		this.updateDisplay();
 		this.startInterval();
 	}
 
 	private togglePause(): void {
 		if (this.state === "running") {
-			// Start break
 			this.state = "paused";
 			this.breakStartTime = new Date();
 			this.updateButtonStates();
+			this.updateDisplay();
 		} else if (this.state === "paused") {
-			// End break
 			this.state = "running";
 			if (this.breakStartTime) {
 				this.totalBreakMs += Date.now() - this.breakStartTime.getTime();
 				this.breakStartTime = null;
 				this.callbacks.onBreakUpdate(this.getBreakMinutes());
 			}
+			this.sessionStartTime = new Date();
 			this.updateButtonStates();
+			this.updateDisplay();
 		}
 	}
 
@@ -178,6 +200,7 @@ export class Stopwatch {
 		this.state = "idle";
 		this.startTime = null;
 		this.breakStartTime = null;
+		this.sessionStartTime = null;
 		this.totalBreakMs = 0;
 
 		this.stopInterval();
@@ -202,7 +225,7 @@ export class Stopwatch {
 	private updateDisplay(): void {
 		if (!this.displayEl || !this.breakDisplayEl) return;
 
-		// Elapsed time (total time since start, including breaks)
+		// Total elapsed time (total time since start, including breaks)
 		if (this.startTime) {
 			const elapsedMs = Date.now() - this.startTime.getTime();
 			this.displayEl.textContent = formatMsToHHMMSS(elapsedMs);
@@ -210,12 +233,29 @@ export class Stopwatch {
 			this.displayEl.textContent = "00:00:00";
 		}
 
-		// Break time
+		// Total break time
 		let currentBreakMs = this.totalBreakMs;
 		if (this.state === "paused" && this.breakStartTime) {
 			currentBreakMs += Date.now() - this.breakStartTime.getTime();
 		}
-		this.breakDisplayEl.textContent = formatMsToMMSS(currentBreakMs);
+		this.breakDisplayEl.textContent = formatMsToHHMMSS(currentBreakMs);
+
+		// Mid timer (shows Session when running, Current Break when paused)
+		if (this.midContainer && this.midLabelEl && this.midDisplayEl) {
+			if (this.state === "running" && this.sessionStartTime) {
+				const sessionMs = Date.now() - this.sessionStartTime.getTime();
+				this.midLabelEl.textContent = "Session:";
+				this.midDisplayEl.textContent = formatMsToHHMMSS(sessionMs);
+				this.midContainer.classList.remove("prisma-hidden");
+			} else if (this.state === "paused" && this.breakStartTime) {
+				const breakMs = Date.now() - this.breakStartTime.getTime();
+				this.midLabelEl.textContent = "Current break:";
+				this.midDisplayEl.textContent = formatMsToHHMMSS(breakMs);
+				this.midContainer.classList.remove("prisma-hidden");
+			} else {
+				this.midContainer.classList.add("prisma-hidden");
+			}
+		}
 	}
 
 	private updateButtonStates(): void {
@@ -278,6 +318,7 @@ export class Stopwatch {
 			state: this.state,
 			startTime: this.startTime?.getTime() ?? null,
 			breakStartTime: this.breakStartTime?.getTime() ?? null,
+			sessionStartTime: this.sessionStartTime?.getTime() ?? null,
 			totalBreakMs: this.totalBreakMs,
 		};
 	}
@@ -286,7 +327,12 @@ export class Stopwatch {
 		this.state = snapshot.state;
 		this.startTime = snapshot.startTime ? new Date(snapshot.startTime) : null;
 		this.breakStartTime = snapshot.breakStartTime ? new Date(snapshot.breakStartTime) : null;
+		this.sessionStartTime = snapshot.sessionStartTime ? new Date(snapshot.sessionStartTime) : null;
 		this.totalBreakMs = snapshot.totalBreakMs;
+
+		if (this.state === "running" && !this.sessionStartTime && this.startTime) {
+			this.sessionStartTime = this.startTime;
+		}
 
 		this.updateDisplay();
 		this.updateButtonStates();

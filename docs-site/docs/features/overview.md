@@ -56,9 +56,9 @@ Hover previews and enlarged modals with clickable frontmatter, wikilink navigati
 
 ### **Event Creation & Editing**
 
-*Create and edit events with full frontmatter support, recurring options, categories, break time, and built-in time tracker*
+*Create and edit events with full frontmatter support, recurring options, categories, break time, and built-in time tracker with session and break timers*
 
-Quick create button, enhanced edit modal with full frontmatter editing, "Now" button for current time, [built-in time tracker](./time-tracker) with break time support, drag & drop, resize support, edge scrolling for cross-week movement, and direct file opening.
+Quick create button, enhanced edit modal with full frontmatter editing, "Now" button for current time, [built-in time tracker](./time-tracker) with break time support, session tracking, and real-time timers (total, total break, session, current break), drag & drop, resize support, edge scrolling for cross-week movement, and direct file opening.
 
 See [Screenshots](../screenshots.md) for modal examples.
 

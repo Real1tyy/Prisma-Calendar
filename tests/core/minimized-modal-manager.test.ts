@@ -16,6 +16,7 @@ describe("MinimizedModalManager", () => {
 		state: "idle",
 		startTime: null,
 		breakStartTime: null,
+		sessionStartTime: null,
 		totalBreakMs: 0,
 		...overrides,
 	});

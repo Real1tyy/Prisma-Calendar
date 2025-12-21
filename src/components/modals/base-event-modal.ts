@@ -1308,6 +1308,7 @@ export abstract class BaseEventModal extends Modal {
 			state: "idle" as const,
 			startTime: null,
 			breakStartTime: null,
+			sessionStartTime: null,
 			totalBreakMs: 0,
 		};
 

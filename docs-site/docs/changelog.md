@@ -6,6 +6,12 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Enhanced Stopwatch with Mid Timers**: Improved time tracking with additional timer displays:
+  - **Mid Session Timer**: Shows the current session time (time since last start/resume) when the stopwatch is running. Displays in `HH:MM:SS` format at the bottom of the stopwatch component.
+  - **Mid Break Timer**: Shows the current break duration (time since break started) when the stopwatch is paused. Displays in `HH:MM:SS` format at the bottom of the stopwatch component.
+  - **Unified Break Time Format**: Both "Total Break" and "Current Break" timers now display in `HH:MM:SS` format (previously "Total Break" used `MM:SS` format) for consistency.
+  - **Improved Layout**: Mid timers are now displayed at the bottom of the stopwatch component, below the control buttons, with a visual separator for better organization.
+
 - **Enhanced Frontmatter Propagation for Recurring Events**: Completely redesigned frontmatter propagation system with advanced diff detection, debouncing, and user control:
   - **Automatic Propagation Mode**: Automatically propagate frontmatter changes from source recurring events to all physical instances without confirmation. Enabled via Settings → Calendar → Recurring Events → "Propagate frontmatter to instances".
   - **Ask Before Propagating Mode**: Show a confirmation modal before propagating changes, allowing you to review all accumulated changes before applying them. Enabled via Settings → Calendar → Recurring Events → "Ask before propagating".
