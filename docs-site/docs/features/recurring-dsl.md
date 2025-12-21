@@ -13,7 +13,35 @@ One **configuration node** serves as the master template. Defines recurrence pat
 
 **Inheritance**: All frontmatter properties, complete file content, exact formatting. Only `Start`/`End` dates and `RRuleID` are adjusted automatically.
 
-**Frontmatter Propagation**: Changes to custom frontmatter properties (Category, Priority, Status, etc.) in the source event automatically propagate to all existing physical instances. Time-related and system-managed properties are never propagated. This feature is enabled by default and can be toggled in Settings → Calendar → Recurring Events.
+**Frontmatter Propagation**: Changes to custom frontmatter properties (Category, Priority, Status, etc.) in the source event automatically propagate to all existing physical instances. The system intelligently detects three types of changes (added, modified, deleted) and can accumulate multiple rapid changes within a configurable debounce window. Time-related and system-managed properties (Start, End, Date, RRule, RRuleID, Source, etc.) are never propagated to preserve instance-specific timing and system integrity.
+
+### Propagation Modes
+
+You can control how frontmatter changes are propagated in Settings → Calendar → Recurring Events:
+
+1. **Automatic Propagation**: Changes are automatically applied to all physical instances without confirmation. Multiple rapid changes within the debounce window are accumulated and merged together.
+
+2. **Ask Before Propagating**: A confirmation modal appears showing all accumulated changes (added, modified, deleted properties) with their old and new values. You can review the changes before confirming or canceling the propagation.
+
+3. **Both Disabled**: Frontmatter changes are not propagated to instances. Each instance maintains its own independent frontmatter.
+
+### How Propagation Works
+
+1. When you modify frontmatter in a source recurring event, the system detects the changes by comparing the current frontmatter with the previous state.
+
+2. If multiple changes occur within the debounce window, they are accumulated and merged together. For example:
+   - Change 1: `Category: "Work"` → `Category: "Personal"`
+   - Change 2: `Priority: 1` → `Priority: 2`
+   - Change 3: Add `Status: "In Progress"`
+   - Result: All three changes are merged and propagated together
+
+3. If a property is changed and then reverted to its original value within the debounce window, that change is automatically removed from the propagation (no unnecessary update).
+
+4. The system only propagates the specific changes detected, preserving any instance-specific properties that weren't changed in the source.
+
+5. If "Ask before propagating" is enabled, a modal shows all accumulated changes before applying them. If "Propagate frontmatter to instances" is enabled, changes are applied automatically after the debounce delay.
+
+📖 See [Frontmatter Propagation Settings](../configuration#frontmatter-propagation) for detailed configuration options including debounce delay and excluded properties.
 
 ### Start Date as Calculation Point
 

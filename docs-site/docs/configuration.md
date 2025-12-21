@@ -422,4 +422,19 @@ Break: 60  # 1 hour lunch break
 - **Future instances count**: how many future notes to pre-generate (1–52, default: 2)
 - Beyond that, events appear as read-only virtual items to keep your vault light
 - **Per-event override**: Set `Future Instances Count` property in a recurring event's frontmatter to override the global setting for that specific recurring series
-- **Propagate frontmatter to instances**: when enabled (default: true), changes to custom frontmatter properties in the source recurring event automatically propagate to all existing physical instances. Time-related and system-managed properties (Start, End, RRule, RRuleID, etc.) are never propagated to preserve instance-specific timing
+
+### Frontmatter Propagation
+
+Control how frontmatter changes in source recurring events propagate to physical instances:
+
+- **Propagate frontmatter to instances**: When enabled, changes to custom frontmatter properties automatically propagate to all existing physical instances without confirmation. Multiple rapid changes are accumulated and merged together within the debounce window.
+- **Ask before propagating**: When enabled, a confirmation modal appears showing all accumulated changes (added, modified, deleted properties) before applying them. Allows you to review changes before confirming.
+- **Excluded properties**: Comma-separated list of additional frontmatter property names to exclude from propagation. These properties, along with all Prisma-managed properties (Start, End, Date, RRule, RRuleID, Source, etc.), are never propagated to preserve instance-specific timing and system integrity.
+- **Propagation debounce delay**: Delay in milliseconds before propagating changes (100ms - 10,000ms, default: 3000ms). Multiple rapid changes within this window are accumulated and merged together. Lower values propagate faster; higher values accumulate more changes before propagating.
+
+The system intelligently detects three types of changes:
+- **Added**: New properties added to the source event
+- **Modified**: Existing properties changed in the source event
+- **Deleted**: Properties removed from the source event
+
+Only the specific changes detected are propagated, preserving any instance-specific properties that weren't changed in the source.

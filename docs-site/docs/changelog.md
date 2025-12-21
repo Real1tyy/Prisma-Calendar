@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented here.
 
+## 1.17.0
+
+### New Features
+
+- **Enhanced Frontmatter Propagation for Recurring Events**: Completely redesigned frontmatter propagation system with advanced diff detection, debouncing, and user control:
+  - **Automatic Propagation Mode**: Automatically propagate frontmatter changes from source recurring events to all physical instances without confirmation. Enabled via Settings → Calendar → Recurring Events → "Propagate frontmatter to instances".
+  - **Ask Before Propagating Mode**: Show a confirmation modal before propagating changes, allowing you to review all accumulated changes before applying them. Enabled via Settings → Calendar → Recurring Events → "Ask before propagating".
+  - **Intelligent Diff Detection**: The system now detects three types of changes:
+    - **Added**: New properties added to the source event
+    - **Modified**: Existing properties changed in the source event
+    - **Deleted**: Properties removed from the source event
+  - **Accumulated Changes**: Multiple rapid changes within the debounce window are automatically accumulated and merged together, so you see all changes in a single propagation operation.
+  - **Configurable Debounce Delay**: Control how long the system waits before propagating changes (Settings → Calendar → Recurring Events → "Propagation debounce delay"). Range: 100ms to 10,000ms (default: 3000ms). Lower values propagate faster but may trigger more operations; higher values accumulate more changes before propagating.
+  - **Excluded Properties**: Specify additional frontmatter properties to exclude from propagation (Settings → Calendar → Recurring Events → "Excluded properties"). Enter a comma-separated list of property names. These properties, along with all Prisma-managed properties (time, date, RRule, etc.), will never be propagated to instances.
+  - **Change Preview Modal**: When using "Ask before propagating" mode, a modal shows all accumulated changes (added, modified, deleted properties) with their old and new values, allowing you to review before confirming.
+
+  📖 See [Recurring Events Documentation](../features/recurring-dsl#propagation-modes) and [Configuration Settings](../configuration#frontmatter-propagation) for detailed information.
+
 ## 1.16.0
 
 ### New Features
