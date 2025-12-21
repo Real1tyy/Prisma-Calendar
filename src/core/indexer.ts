@@ -35,6 +35,7 @@ export interface IndexerEvent {
 	oldPath?: string;
 	source?: RawEventSource;
 	recurringEvent?: NodeRecurringEvent;
+	oldFrontmatter?: Frontmatter;
 }
 
 type VaultEvent = "create" | "modify" | "delete" | "rename";
@@ -48,6 +49,7 @@ export class Indexer {
 	private metadataCache: MetadataCache;
 	private scanEventsSubject = new Subject<IndexerEvent>();
 	private indexingCompleteSubject = new RxBehaviorSubject<boolean>(false);
+	private frontmatterCache: Map<string, Frontmatter> = new Map();
 
 	public readonly events$: Observable<IndexerEvent>;
 	public readonly indexingComplete$: Observable<boolean>;
@@ -95,6 +97,7 @@ export class Indexer {
 	}
 
 	resync(): void {
+		this.frontmatterCache.clear();
 		this.indexingCompleteSubject.next(false);
 		void this.scanAllFiles();
 	}
@@ -205,6 +208,7 @@ export class Indexer {
 		return intents$.pipe(
 			switchMap((intent) => {
 				if (intent.kind === "deleted") {
+					this.frontmatterCache.delete(intent.path);
 					return of<IndexerEvent>({ type: "file-deleted", filePath: intent.path });
 				}
 				// buildEvents returns an array of events, convert to observable and flatten
@@ -219,6 +223,7 @@ export class Indexer {
 		if (!cache || !cache.frontmatter) return [];
 		let { frontmatter } = cache;
 
+		const oldFrontmatter = this.frontmatterCache.get(file.path);
 		const events: IndexerEvent[] = [];
 
 		const recurring = await this.tryParseRecurring(file, frontmatter);
@@ -231,6 +236,7 @@ export class Indexer {
 				filePath: file.path,
 				oldPath,
 				recurringEvent: recurring,
+				oldFrontmatter,
 			});
 
 			// CRITICAL: Update frontmatter object with rRuleId from the recurring event
@@ -266,8 +272,10 @@ export class Indexer {
 				isAllDay,
 			};
 
-			events.push({ type: "file-changed", filePath: file.path, oldPath, source });
+			events.push({ type: "file-changed", filePath: file.path, oldPath, source, oldFrontmatter });
 		}
+
+		this.frontmatterCache.set(file.path, { ...frontmatter });
 
 		return events;
 	}
