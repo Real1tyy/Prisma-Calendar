@@ -24,7 +24,7 @@ All notable changes to this project will be documented here.
   - **Excluded Properties**: Specify additional frontmatter properties to exclude from propagation (Settings → Calendar → Recurring Events → "Excluded properties"). Enter a comma-separated list of property names. These properties, along with all Prisma-managed properties (time, date, RRule, etc.), will never be propagated to instances.
   - **Change Preview Modal**: When using "Ask before propagating" mode, a modal shows all accumulated changes (added, modified, deleted properties) with their old and new values, allowing you to review before confirming.
 
-  📖 See [Recurring Events Documentation](../features/recurring-dsl#propagation-modes) and [Configuration Settings](../configuration#frontmatter-propagation) for detailed information.
+  📖 See [Recurring Events Documentation](/features/recurring-dsl#propagation-modes) and [Configuration Settings](/configuration#frontmatter-propagation) for detailed information.
 
 ## 1.16.0
 
