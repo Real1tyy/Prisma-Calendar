@@ -16,8 +16,12 @@ import { debounceTime, filter, groupBy, map, mergeMap, switchMap, toArray } from
 import { SCAN_CONCURRENCY } from "../constants";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
-import { generateUniqueRruleId } from "../utils/calendar-events";
+import {
+	generateUniqueRruleId,
+	getRecurringInstanceExcludedProps,
+} from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
+import { compareFrontmatter, type FrontmatterDiff } from "../utils/frontmatter-diff";
 
 export interface RawEventSource {
 	filePath: string;
@@ -36,6 +40,7 @@ export interface IndexerEvent {
 	source?: RawEventSource;
 	recurringEvent?: NodeRecurringEvent;
 	oldFrontmatter?: Frontmatter;
+	frontmatterDiff?: FrontmatterDiff;
 }
 
 type VaultEvent = "create" | "modify" | "delete" | "rename";
@@ -226,17 +231,24 @@ export class Indexer {
 		const oldFrontmatter = this.frontmatterCache.get(file.path);
 		const events: IndexerEvent[] = [];
 
+		const eventBase = {
+			filePath: file.path,
+			oldPath,
+			oldFrontmatter,
+			frontmatterDiff: oldFrontmatter
+				? compareFrontmatter(oldFrontmatter, frontmatter, getRecurringInstanceExcludedProps(this._settings))
+				: undefined,
+		};
+
 		const recurring = await this.tryParseRecurring(file, frontmatter);
 		if (recurring) {
 			// Always add recurring events even if skipped - this allows navigation
 			// to source from physical instances and viewing recurring event lists.
 			// The RecurringEventManager will check skip property and not generate new instances.
 			events.push({
+				...eventBase,
 				type: "recurring-event-found",
-				filePath: file.path,
-				oldPath,
 				recurringEvent: recurring,
-				oldFrontmatter,
 			});
 
 			// CRITICAL: Update frontmatter object with rRuleId from the recurring event
@@ -272,11 +284,14 @@ export class Indexer {
 				isAllDay,
 			};
 
-			events.push({ type: "file-changed", filePath: file.path, oldPath, source, oldFrontmatter });
+			events.push({
+				...eventBase,
+				type: "file-changed",
+				source,
+			});
 		}
 
 		this.frontmatterCache.set(file.path, { ...frontmatter });
-
 		return events;
 	}
 
