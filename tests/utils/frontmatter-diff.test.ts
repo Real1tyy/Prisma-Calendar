@@ -253,5 +253,3 @@ describe("formatChangeForDisplay", () => {
 		expect(formatted).toBe('~ tags: ["old"] → ["new"]');
 	});
 });
-
-

@@ -28,6 +28,39 @@ export class CalendarSettings {
 			max: 52,
 			step: 1,
 		});
+
+		// Mutually exclusive toggles for frontmatter propagation
+		new Setting(containerEl)
+			.setName("Propagate frontmatter to instances")
+			.setDesc(
+				"Automatically propagate non-Prisma frontmatter changes from recurring event sources to all physical instances. When you update custom properties (like Category, Priority, Status) in a source event, all existing instances are updated immediately."
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.settingsStore.currentSettings.propagateFrontmatterToInstances).onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						propagateFrontmatterToInstances: value,
+						// When enabling auto-propagate, disable ask-before
+						askBeforePropagatingFrontmatter: value ? false : s.askBeforePropagatingFrontmatter,
+					}));
+				});
+			});
+
+		new Setting(containerEl)
+			.setName("Ask before propagating")
+			.setDesc(
+				"Show a confirmation modal before propagating frontmatter changes to instances. Allows you to review changes before applying them."
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.settingsStore.currentSettings.askBeforePropagatingFrontmatter).onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						askBeforePropagatingFrontmatter: value,
+						// When enabling ask-before, disable auto-propagate
+						propagateFrontmatterToInstances: value ? false : s.propagateFrontmatterToInstances,
+					}));
+				});
+			});
 	}
 
 	private addUISettings(containerEl: HTMLElement): void {
