@@ -6,8 +6,14 @@ import type { CategoryTracker } from "../../core/category-tracker";
 export class CategorySelectModal extends Modal {
 	private onSelect: (category: string) => void;
 	private categoryTracker: CategoryTracker;
-	private categorySelect: HTMLSelectElement | null = null;
+	private dropdownButton!: HTMLButtonElement;
+	private dropdownPanel!: HTMLElement;
+	private searchInput!: HTMLInputElement;
+	private listContainer!: HTMLElement;
+	private highlightButton: HTMLButtonElement | null = null;
 	private selectedCategory: string | null = null;
+	private allCategories: string[] = [];
+	private dropdownContainer!: HTMLElement;
 
 	constructor(app: App, categoryTracker: CategoryTracker, onSelect: (category: string) => void) {
 		super(app);
@@ -26,37 +32,35 @@ export class CategorySelectModal extends Modal {
 
 		const categorySection = formEl.createDiv({ cls: cls("category-select-section") });
 		categorySection.createEl("label", { text: "Select category" });
-		this.categorySelect = categorySection.createEl("select", { cls: cls("category-select") });
 
-		const categories = this.categoryTracker.getCategories();
-		if (categories.length === 0) {
-			const emptyOption = this.categorySelect.createEl("option", {
-				value: "",
-				text: "No categories available",
-			});
-			emptyOption.disabled = true;
-		} else {
-			const placeholderOption = this.categorySelect.createEl("option", {
-				value: "",
-				text: "Choose a category...",
-			});
-			placeholderOption.selected = true;
+		const inputWrapper = categorySection.createDiv(cls("category-input-wrapper"));
 
-			for (const category of categories) {
-				this.categorySelect.createEl("option", {
-					value: category,
-					text: category,
-				});
-			}
-		}
+		this.dropdownContainer = inputWrapper.createDiv(cls("category-dropdown-container"));
 
-		this.categorySelect.addEventListener("change", () => {
-			this.selectedCategory = this.categorySelect?.value || null;
+		this.dropdownButton = this.dropdownContainer.createEl("button", {
+			text: "Choose a category...",
+			cls: cls("category-select-button"),
+			type: "button",
+		}) as HTMLButtonElement;
+
+		this.dropdownPanel = this.dropdownContainer.createDiv(cls("category-dropdown-panel"));
+		this.dropdownPanel.classList.add("prisma-hidden");
+
+		this.searchInput = this.dropdownPanel.createEl("input", {
+			type: "text",
+			placeholder: "Search categories...",
+			cls: cls("category-search-input"),
 		});
+
+		this.listContainer = this.dropdownPanel.createDiv(cls("category-list"));
+
+		this.allCategories = this.categoryTracker.getCategories();
+
+		this.setupEventHandlers();
 
 		const infoEl = formEl.createDiv({ cls: cls("category-select-info") });
 		infoEl.createEl("p", {
-			text: "Events with the selected category will be highlighted for 10 seconds.",
+			text: "Select a category to temporarily highlight all events associated with it for 10 seconds.",
 		});
 
 		const buttonRow = formEl.createDiv({ cls: cls("category-select-buttons") });
@@ -64,22 +68,116 @@ export class CategorySelectModal extends Modal {
 		const cancelButton = buttonRow.createEl("button", { text: "Cancel" });
 		cancelButton.addEventListener("click", () => this.close());
 
-		const highlightButton = buttonRow.createEl("button", {
+		this.highlightButton = buttonRow.createEl("button", {
 			text: "Highlight",
 			cls: "mod-cta",
 		});
-		highlightButton.addEventListener("click", () => this.handleHighlight());
-		highlightButton.disabled = categories.length === 0;
+		this.highlightButton.disabled = true;
 
-		this.categorySelect.addEventListener("keydown", (e) => {
+		this.highlightButton.addEventListener("click", () => this.handleHighlight());
+
+		if (this.allCategories.length === 0) {
+			this.dropdownButton.textContent = "No categories available";
+			this.dropdownButton.disabled = true;
+		}
+
+		this.renderCategoryList("");
+	}
+
+	private setupEventHandlers(): void {
+		this.dropdownButton.addEventListener("click", (e) => {
+			e.stopPropagation();
+			if (this.dropdownPanel.classList.contains("prisma-hidden")) {
+				this.openDropdown();
+			} else {
+				this.closeDropdown();
+			}
+		});
+
+		this.searchInput.addEventListener("input", () => {
+			this.renderCategoryList(this.searchInput.value);
+		});
+
+		this.searchInput.addEventListener("keydown", (e) => {
+			if (e.key === "Escape") {
+				this.closeDropdown();
+			} else if (e.key === "Enter") {
+				e.preventDefault();
+				const firstItem = this.listContainer.querySelector(`.${cls("category-list-item")}`) as HTMLElement;
+				if (firstItem) {
+					firstItem.click();
+				}
+			}
+		});
+
+		this.dropdownButton.addEventListener("keydown", (e) => {
 			if (e.key === "Enter" && this.selectedCategory) {
+				e.preventDefault();
 				this.handleHighlight();
 			}
 		});
+
+		document.addEventListener("click", (e) => {
+			if (!this.dropdownContainer.contains(e.target as Node)) {
+				this.closeDropdown();
+			}
+		});
+
+		this.dropdownPanel.addEventListener("click", (e) => {
+			e.stopPropagation();
+		});
+	}
+
+	private openDropdown(): void {
+		this.dropdownPanel.classList.remove("prisma-hidden");
+		this.renderCategoryList("");
+		this.searchInput.focus();
+	}
+
+	private closeDropdown(): void {
+		this.dropdownPanel.classList.add("prisma-hidden");
+		this.searchInput.value = "";
+	}
+
+	private renderCategoryList(filter: string): void {
+		this.listContainer.empty();
+		const lowerFilter = filter.toLowerCase();
+		const filteredCategories = this.allCategories.filter((cat) => cat.toLowerCase().includes(lowerFilter));
+
+		if (filteredCategories.length === 0) {
+			this.listContainer.createDiv({
+				text: filter
+					? "No matching categories"
+					: this.allCategories.length === 0
+						? "No categories yet"
+						: "No categories yet",
+				cls: cls("category-empty-message"),
+			});
+			return;
+		}
+
+		for (const category of filteredCategories) {
+			const item = this.listContainer.createDiv({
+				text: category,
+				cls: cls("category-list-item"),
+			});
+			item.addEventListener("click", () => {
+				this.selectCategory(category);
+				this.closeDropdown();
+			});
+		}
+	}
+
+	private selectCategory(category: string): void {
+		this.selectedCategory = category;
+		this.dropdownButton.textContent = category;
+		if (this.highlightButton) {
+			this.highlightButton.disabled = false;
+		}
 	}
 
 	private handleHighlight(): void {
-		if (!this.selectedCategory || !this.categorySelect) return;
+		if (!this.selectedCategory) return;
 
 		this.onSelect(this.selectedCategory);
 		this.close();

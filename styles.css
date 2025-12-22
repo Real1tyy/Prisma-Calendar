@@ -4939,12 +4939,30 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 /* Category Select Modal */
 .prisma-category-select-modal {
 	min-width: 400px;
+	max-width: 500px;
 }
 
 .prisma-category-select-modal h2 {
 	margin-bottom: 1rem;
 	font-size: 1.2rem;
 	font-weight: 600;
+	text-align: center;
+}
+
+.prisma-category-select-modal .prisma-category-dropdown-panel {
+	position: relative;
+	top: auto;
+	left: 0;
+	right: auto;
+	margin-top: 0.5rem;
+	min-width: 100%;
+	max-width: 100%;
+	z-index: 10;
+}
+
+.prisma-category-select-modal .prisma-category-dropdown-container {
+	position: relative;
+	width: 100%;
 }
 
 .prisma-category-select-form {
@@ -4962,30 +4980,27 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 .prisma-category-select-section label {
 	font-weight: 500;
 	color: var(--text-normal);
+	text-align: center;
 }
 
-.prisma-category-select {
+.prisma-category-select-button {
 	width: 100%;
-	padding: 0.2rem;
+	padding: 0.5rem;
 	border-radius: var(--radius-s);
 	border: 1px solid var(--background-modifier-border);
 	background: var(--background-primary);
 	color: var(--text-normal);
 	font-size: 0.9rem;
 	cursor: pointer;
+	text-align: left;
+	transition: border-color 0.15s ease;
 }
 
-.prisma-category-select:hover {
+.prisma-category-select-button:hover {
 	border-color: var(--interactive-accent);
 }
 
-.prisma-category-select:focus {
-	outline: none;
-	border-color: var(--interactive-accent);
-	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
-}
-
-.prisma-category-select:disabled {
+.prisma-category-select-button:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
