@@ -100,6 +100,16 @@ export class GeneralSettings {
 			name: "Show decimal hours in statistics",
 			desc: "Display durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m) in statistics modals. Can be temporarily toggled by clicking the duration in the statistics header.",
 		});
+
+		this.ui.addDropdown(containerEl, {
+			key: "defaultAggregationMode",
+			name: "Default statistics grouping",
+			desc: "Default grouping mode for statistics modals: group by event name or by category",
+			options: {
+				name: "Event Name",
+				category: "Category",
+			},
+		});
 	}
 
 	private addEventPresetSettings(containerEl: HTMLElement): void {

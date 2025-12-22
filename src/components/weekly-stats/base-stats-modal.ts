@@ -33,6 +33,7 @@ export abstract class StatsModal extends Modal {
 		addCls(contentEl, "weekly-stats-modal");
 
 		this.showDecimalHours = this.bundle.settingsStore.currentSettings.showDecimalHours;
+		this.aggregationMode = this.bundle.settingsStore.currentSettings.defaultAggregationMode;
 
 		this.setupKeyboardShortcuts();
 		void this.renderContent();

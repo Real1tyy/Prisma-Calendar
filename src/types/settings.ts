@@ -93,6 +93,7 @@ export const CalendarSettingsSchema = z.object({
 	defaultView: CalendarViewTypeSchema.default(SETTINGS_DEFAULTS.DEFAULT_DEFAULT_VIEW),
 	hideWeekends: z.boolean().default(false),
 	showDecimalHours: z.boolean().default(false), // Show durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m)
+	defaultAggregationMode: z.enum(["name", "category"]).default(SETTINGS_DEFAULTS.DEFAULT_AGGREGATION_MODE), // Default aggregation mode for statistics (name or category)
 	hourStart: z.number().int().min(0).max(23).default(SETTINGS_DEFAULTS.DEFAULT_HOUR_START),
 	hourEnd: z.number().int().min(1).max(24).default(SETTINGS_DEFAULTS.DEFAULT_HOUR_END),
 	firstDayOfWeek: z.number().int().min(0).max(6).default(SETTINGS_DEFAULTS.DEFAULT_FIRST_DAY_OF_WEEK), // 0 = Sunday, 1 = Monday, etc.
