@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildPropertyMapping, sanitizeExpression, sanitizePropertyName } from "../../src/utils/expression-utils";
+import {
+	buildPropertyMapping,
+	normalizeFrontmatterForColorEvaluation,
+	sanitizeExpression,
+	sanitizePropertyName,
+} from "../../src/utils/expression-utils";
 
 describe("sanitizePropertyName", () => {
 	it("should leave valid identifiers unchanged", () => {
@@ -220,5 +225,280 @@ describe("sanitizeExpression", () => {
 		const mapping = new Map([["Status", "Status_"]]);
 
 		expect(sanitizeExpression('Status === "Done" ? true : false', mapping)).toBe('Status_ === "Done" ? true : false');
+	});
+});
+
+describe("normalizeFrontmatterForColorEvaluation", () => {
+	it("should return frontmatter unchanged when no color rules", () => {
+		const frontmatter = { Status: "Done", Priority: "High" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toBe(frontmatter);
+		expect(result).toEqual({ Status: "Done", Priority: "High" });
+	});
+
+	it("should return frontmatter unchanged when all rules are disabled", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work')", enabled: false },
+			{ expression: "Priority === 'High'", enabled: false },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toBe(frontmatter);
+		expect(result).toEqual({ Status: "Done" });
+	});
+
+	it("should return frontmatter unchanged when no .includes() expressions", () => {
+		const frontmatter = { Status: "Done", Priority: "High" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Status === 'Done'", enabled: true },
+			{ expression: "Priority === 'High'", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toBe(frontmatter);
+		expect(result).toEqual({ Status: "Done", Priority: "High" });
+	});
+
+	it("should add empty array for missing property used with .includes()", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).not.toBe(frontmatter);
+		expect(result).toEqual({ Status: "Done", Category: [] });
+	});
+
+	it("should not override existing property values", () => {
+		const frontmatter = { Status: "Done", Category: ["Work", "Personal"] };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: ["Work", "Personal"] });
+	});
+
+	it("should handle multiple properties with .includes()", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work')", enabled: true },
+			{ expression: "Tags.includes('urgent')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: [], Tags: [] });
+	});
+
+	it("should handle optional chaining with .includes()", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category?.includes('Work')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: [] });
+	});
+
+	it("should handle mixed expressions with and without .includes()", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Status === 'Done'", enabled: true },
+			{ expression: "Category.includes('Work')", enabled: true },
+			{ expression: "Priority === 'High'", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: [] });
+	});
+
+	it("should handle complex expressions with .includes()", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work') && Status === 'Done'", enabled: true },
+			{ expression: "Tags.includes('urgent') || Priority === 'High'", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: [], Tags: [] });
+	});
+
+	it("should handle property names with underscores", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "backlink_tags.includes('work')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", backlink_tags: [] });
+	});
+
+	it("should handle property names starting with underscore", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "_tags.includes('work')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", _tags: [] });
+	});
+
+	it("should skip JavaScript built-in methods", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Array.includes(1)", enabled: true },
+			{ expression: "String.includes('test')", enabled: true },
+			{ expression: "Category.includes('Work')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: [] });
+	});
+
+	it("should handle multiple occurrences of same property", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work')", enabled: true },
+			{ expression: "Category.includes('Personal')", enabled: true },
+			{ expression: "Category.includes('Health')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: [] });
+	});
+
+	it("should handle expressions with nested .includes() calls", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work') && Tags.includes('urgent')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: [], Tags: [] });
+	});
+
+	it("should preserve all existing frontmatter properties", () => {
+		const frontmatter = {
+			Status: "Done",
+			Priority: "High",
+			Project: "Work",
+			Tags: ["urgent", "important"],
+			Category: ["Work"],
+		};
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "NewCategory.includes('Test')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({
+			Status: "Done",
+			Priority: "High",
+			Project: "Work",
+			Tags: ["urgent", "important"],
+			Category: ["Work"],
+			NewCategory: [],
+		});
+	});
+
+	it("should handle empty frontmatter object", () => {
+		const frontmatter: Record<string, unknown> = {};
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Category: [] });
+	});
+
+	it("should handle case-sensitive property names", () => {
+		const frontmatter = { status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work')", enabled: true },
+			{ expression: "category.includes('work')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ status: "Done", Category: [], category: [] });
+	});
+
+	it("should handle property names with numbers", () => {
+		const frontmatter = { Status: "Done" };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category123.includes('Work')", enabled: true },
+			{ expression: "Tag_456.includes('urgent')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category123: [], Tag_456: [] });
+	});
+
+	it("should convert null values to empty array for .includes() properties", () => {
+		const frontmatter = { Status: "Done", Category: null };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: [] });
+	});
+
+	it("should convert undefined values to empty array for .includes() properties", () => {
+		const frontmatter = { Status: "Done", Category: undefined };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: [] });
+	});
+
+	it("should preserve valid array values even if null/undefined also exist", () => {
+		const frontmatter = { Status: "Done", Category: ["Work"], Tags: null, Labels: undefined };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work')", enabled: true },
+			{ expression: "Tags.includes('urgent')", enabled: true },
+			{ expression: "Labels.includes('important')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: ["Work"], Tags: [], Labels: [] });
+	});
+
+	it("should handle mixed null, undefined, and missing properties", () => {
+		const frontmatter = { Status: "Done", Category: null, Tags: undefined };
+		const colorRules: Array<{ expression: string; enabled: boolean }> = [
+			{ expression: "Category.includes('Work')", enabled: true },
+			{ expression: "Tags.includes('urgent')", enabled: true },
+			{ expression: "Labels.includes('important')", enabled: true },
+		];
+
+		const result = normalizeFrontmatterForColorEvaluation(frontmatter, colorRules);
+
+		expect(result).toEqual({ Status: "Done", Category: [], Tags: [], Labels: [] });
 	});
 });

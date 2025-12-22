@@ -21,6 +21,7 @@ import type { ParsedEvent } from "../core/parser";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { removeInstanceDate, removeZettelId } from "../utils/calendar-events";
 import { toggleEventHighlight } from "../utils/dom-utils";
+import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
 import { BatchSelectionManager } from "./batch-selection-manager";
@@ -1383,18 +1384,21 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	private getEventColor(event: Pick<ParsedEvent, "meta">): string {
 		const frontmatter = event.meta ?? {};
+		const settings = this.bundle.settingsStore.currentSettings;
 
 		// Check if this is a CalDAV-synced event - integration color takes priority
 		const caldavSettings = this.bundle.getCalDAVSettings();
-		const caldavProp = this.bundle.settingsStore.currentSettings.caldavProp;
+		const caldavProp = settings.caldavProp;
 
 		if (frontmatter[caldavProp]) {
 			// Event has CalDAV metadata - apply integration color with priority
 			return caldavSettings.integrationEventColor;
 		}
 
-		// Otherwise, use normal color rules
-		return this.colorEvaluator.evaluateColor(frontmatter);
+		// Normalize frontmatter to ensure all properties referenced in color rules exist
+		// This prevents errors when properties are undefined (e.g., Category.includes())
+		const normalizedFrontmatter = normalizeFrontmatterForColorEvaluation(frontmatter, settings.colorRules);
+		return this.colorEvaluator.evaluateColor(normalizedFrontmatter);
 	}
 
 	private updateColorDots(): void {

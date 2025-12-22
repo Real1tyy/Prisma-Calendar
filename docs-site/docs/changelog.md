@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented here.
 
+## 1.18.2
+
+### Bug Fixes
+
+- **Fixed Color Rule Evaluation Errors**: Fixed an issue where color rules using `.includes()` (like `Category.includes('Work')`) would fail with "Cannot read properties of undefined" errors when the referenced property was missing from event frontmatter. The system now automatically normalizes frontmatter before color evaluation, ensuring properties used with `.includes()` default to empty arrays when missing, preventing evaluation errors and eliminating console warnings.
+
+---
 ## 1.18.1
 
 ### Bug Fixes
