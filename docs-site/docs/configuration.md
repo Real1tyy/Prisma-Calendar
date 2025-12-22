@@ -335,6 +335,10 @@ Create named filter expressions for quick access via the calendar toolbar dropdo
 
 Manage category colors visually with the Categories Settings section:
 
+![Categories Settings](/img/categories_settings.png)
+
+![Categories Settings Pie Chart](/img/categories_settings_pie_chart.png)
+
 1. Go to Settings → Categories
 2. View all categories automatically detected from your events
 3. See event counts for each category (e.g., "Work (15 events)")

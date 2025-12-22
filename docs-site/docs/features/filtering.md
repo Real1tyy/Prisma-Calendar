@@ -85,6 +85,8 @@ The **"Highlight events without categories"** command temporarily highlights all
 
 The **"Highlight events with category"** command opens a modal that lets you select a specific category and temporarily highlights all events assigned to that category. This makes it easy to visually identify events belonging to a particular category across your calendar.
 
+![Category Select Modal](/img/category_select_modal.png)
+
 **How to use:**
 - **Command**: Open command palette (Ctrl/Cmd+P) and search for "Highlight events with category"
 - **Modal**: A dropdown modal appears with all available categories from your events

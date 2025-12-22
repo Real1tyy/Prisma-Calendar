@@ -23,6 +23,8 @@ You can control how frontmatter changes are propagated in Settings → Calendar 
 
 2. **Ask Before Propagating**: A confirmation modal appears showing all accumulated changes (added, modified, deleted properties) with their old and new values. You can review the changes before confirming or canceling the propagation.
 
+![Frontmatter Propagation Modal](/img/frontmatter_propagation_modal.png)
+
 3. **Both Disabled**: Frontmatter changes are not propagated to instances. Each instance maintains its own independent frontmatter.
 
 ### How Propagation Works

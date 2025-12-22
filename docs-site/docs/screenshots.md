@@ -42,7 +42,11 @@ Visual time tracking with pie charts and detailed breakdown tables showing how y
 
 ![Settings Panel](/img/settings.png)
 
-Fully configurable settings for each calendar with tabs for General, Properties, Calendar UI, Notifications, and Rules. [Learn more →](/configuration)
+![Categories Settings](/img/categories_settings.png)
+
+![Categories Settings Pie Chart](/img/categories_settings_pie_chart.png)
+
+Fully configurable settings for each calendar with tabs for General, Properties, Calendar UI, Notifications, and Rules. Categories Settings provides visual category color management with pie chart visualization. [Learn more →](/configuration)
 
 ## Notifications
 
@@ -64,7 +68,9 @@ Built-in stopwatch for tracking event duration with break time support, session 
 
 ![Virtual Events Preview](/img/virtual_events.png)
 
-Recurring event management with source navigation, instance lists, and virtual event previews. [Learn more →](/features/recurring-dsl)
+![Frontmatter Propagation Modal](/img/frontmatter_propagation_modal.png)
+
+Recurring event management with source navigation, instance lists, virtual event previews, and frontmatter propagation with change preview. [Learn more →](/features/recurring-dsl)
 
 ## Event Previews & Interactions
 
@@ -80,7 +86,9 @@ Hover previews and enlarged modal views showing complete frontmatter and content
 
 ![Global Event Search](/img/global_event_search.png)
 
-Advanced filtering system and global event search across all calendars with cycle filters. [Learn more →](/features/filtering)
+![Category Select Modal](/img/category_select_modal.png)
+
+Advanced filtering system and global event search across all calendars with cycle filters. Highlight events by category with the category select modal. [Learn more →](/features/filtering)
 
 ## Event Skipping
 
