@@ -63,6 +63,8 @@ Command: `Show all-time statistics`. No navigation, pagination for large dataset
 
 **Category Mode**: Groups by frontmatter category. Toggle via mode button.
 
+The default aggregation mode can be configured in Settings → Parsing → "Default statistics grouping".
+
 ### Recurring Events (Name Mode)
 
 All [recurring](./recurring-dsl) events grouped together under "Recurring Events" category.
