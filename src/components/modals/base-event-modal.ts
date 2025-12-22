@@ -2,7 +2,12 @@ import { addCls, cls, parseFrontmatterRecord, serializeFrontmatterValue } from "
 import { type App, Modal, Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { type FormData, MinimizedModalManager, type MinimizedModalState } from "../../core/minimized-modal-manager";
+import {
+	type FormData,
+	MinimizedModalManager,
+	type MinimizedModalState,
+	type PresetFormData,
+} from "../../core/minimized-modal-manager";
 import type { Frontmatter } from "../../types";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
@@ -266,6 +271,14 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	protected applyPreset(preset: FormData | EventPreset): void {
+		if ("date" in preset || "startDate" in preset || "endDate" in preset) {
+			this.applyFormData(preset as FormData);
+		} else {
+			this.applyPresetData(preset as PresetFormData);
+		}
+	}
+
+	private applyPresetData(preset: PresetFormData): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		// Apply title
@@ -273,30 +286,11 @@ export abstract class BaseEventModal extends Modal {
 			this.titleInput.value = preset.title;
 		}
 
-		// Apply all-day setting
-		if (preset.allDay !== undefined) {
+		// Apply all-day setting only if it's different from current state
+		if (preset.allDay !== undefined && this.allDayCheckbox.checked !== preset.allDay) {
 			this.allDayCheckbox.checked = preset.allDay;
 			const changeEvent = new Event("change", { bubbles: true });
 			this.allDayCheckbox.dispatchEvent(changeEvent);
-		}
-
-		// Apply date for all-day events
-		if (preset.date) {
-			this.dateInput.value = preset.date;
-		}
-
-		// Apply start/end dates for timed events
-		if (preset.startDate) {
-			this.startInput.value = formatDateTimeForInput(preset.startDate);
-		}
-		if (preset.endDate) {
-			this.endInput.value = formatDateTimeForInput(preset.endDate);
-		}
-
-		// Update duration field if both dates are set
-		if (preset.startDate && preset.endDate && this.durationInput) {
-			const durationMinutes = calculateDurationMinutes(preset.startDate, preset.endDate);
-			this.durationInput.value = durationMinutes.toString();
 		}
 
 		// Apply categories
@@ -358,6 +352,26 @@ export abstract class BaseEventModal extends Modal {
 				const section = displayPropsSet.has(key) ? "display" : "other";
 				this.addCustomProperty(key, stringValue, section);
 			}
+		}
+	}
+
+	private applyFormData(formData: FormData): void {
+		this.applyPresetData(formData);
+
+		// Then apply date/time values specific to FormData
+		if (formData.date) {
+			this.dateInput.value = formData.date;
+		}
+		if (formData.startDate) {
+			this.startInput.value = formatDateTimeForInput(formData.startDate);
+		}
+		if (formData.endDate) {
+			this.endInput.value = formatDateTimeForInput(formData.endDate);
+		}
+
+		if (formData.startDate && formData.endDate && this.durationInput) {
+			const durationMinutes = calculateDurationMinutes(formData.startDate, formData.endDate);
+			this.durationInput.value = durationMinutes.toString();
 		}
 	}
 
@@ -954,7 +968,7 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const now = Date.now();
 
-		const formData = this.extractFormData();
+		const formData = this.extractPresetData();
 
 		const preset: EventPreset = {
 			...formData,
@@ -1229,14 +1243,70 @@ export abstract class BaseEventModal extends Modal {
 		this.close();
 	}
 
-	protected extractFormData(): FormData {
-		const formData: FormData = {};
+	private extractPresetData(): PresetFormData {
+		const presetData: PresetFormData = {};
 
 		if (this.titleInput.value) {
-			formData.title = this.titleInput.value;
+			presetData.title = this.titleInput.value;
 		}
 
-		formData.allDay = this.allDayCheckbox.checked;
+		presetData.allDay = this.allDayCheckbox.checked;
+
+		if (this.categoryInput) {
+			const categoryValue = this.categoryInput.getValue();
+			if (categoryValue) {
+				presetData.categories = categoryValue;
+			}
+		}
+
+		if (this.breakInput?.value) {
+			const breakValue = Number.parseFloat(this.breakInput.value);
+			if (!Number.isNaN(breakValue) && breakValue > 0) {
+				presetData.breakMinutes = breakValue;
+			}
+		}
+
+		if (this.notificationInput?.value) {
+			const notifyValue = Number.parseInt(this.notificationInput.value, 10);
+			if (!Number.isNaN(notifyValue) && notifyValue >= 0) {
+				presetData.notifyBefore = notifyValue;
+			}
+		}
+
+		if (this.recurringCheckbox.checked) {
+			presetData.rruleType = this.rruleSelect.value;
+
+			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(this.rruleSelect.value)) {
+				const selectedWeekdays: Weekday[] = [];
+				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
+					if (checkbox.checked) {
+						selectedWeekdays.push(weekday);
+					}
+				}
+				if (selectedWeekdays.length > 0) {
+					presetData.rruleSpec = selectedWeekdays.join(", ");
+				}
+			}
+
+			if (this.futureInstancesCountInput?.value) {
+				const futureCount = Number.parseInt(this.futureInstancesCountInput.value, 10);
+				if (!Number.isNaN(futureCount) && futureCount > 0) {
+					presetData.futureInstancesCount = futureCount;
+				}
+			}
+		}
+
+		const customProps = this.getCustomProperties();
+		if (Object.keys(customProps).length > 0) {
+			presetData.customProperties = customProps;
+		}
+
+		return presetData;
+	}
+
+	protected extractFormData(): FormData {
+		const formData: FormData = { ...this.extractPresetData() };
+
 		if (this.allDayCheckbox.checked) {
 			if (this.dateInput.value) {
 				formData.date = this.dateInput.value;
@@ -1248,55 +1318,6 @@ export abstract class BaseEventModal extends Modal {
 			if (this.endInput.value) {
 				formData.endDate = inputValueToISOString(this.endInput.value);
 			}
-		}
-
-		if (this.categoryInput) {
-			const categoryValue = this.categoryInput.getValue();
-			if (categoryValue) {
-				formData.categories = categoryValue;
-			}
-		}
-
-		if (this.breakInput?.value) {
-			const breakValue = Number.parseFloat(this.breakInput.value);
-			if (!Number.isNaN(breakValue) && breakValue > 0) {
-				formData.breakMinutes = breakValue;
-			}
-		}
-
-		if (this.notificationInput?.value) {
-			const notifyValue = Number.parseInt(this.notificationInput.value, 10);
-			if (!Number.isNaN(notifyValue) && notifyValue >= 0) {
-				formData.notifyBefore = notifyValue;
-			}
-		}
-
-		if (this.recurringCheckbox.checked) {
-			formData.rruleType = this.rruleSelect.value;
-
-			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(this.rruleSelect.value)) {
-				const selectedWeekdays: Weekday[] = [];
-				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
-					if (checkbox.checked) {
-						selectedWeekdays.push(weekday);
-					}
-				}
-				if (selectedWeekdays.length > 0) {
-					formData.rruleSpec = selectedWeekdays.join(", ");
-				}
-			}
-
-			if (this.futureInstancesCountInput?.value) {
-				const futureCount = Number.parseInt(this.futureInstancesCountInput.value, 10);
-				if (!Number.isNaN(futureCount) && futureCount > 0) {
-					formData.futureInstancesCount = futureCount;
-				}
-			}
-		}
-
-		const customProps = this.getCustomProperties();
-		if (Object.keys(customProps).length > 0) {
-			formData.customProperties = customProps;
 		}
 
 		return formData;

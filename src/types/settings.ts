@@ -9,9 +9,6 @@ export const EventPresetSchema = z.object({
 	name: z.string(),
 	title: z.string().optional(), // Event title to pre-fill
 	allDay: z.boolean().optional(), // Whether this is an all-day event
-	date: z.string().optional(), // Date for all-day events (YYYY-MM-DD format)
-	startDate: z.string().optional(), // Start datetime for timed events (ISO string)
-	endDate: z.string().optional(), // End datetime for timed events (ISO string)
 	categories: z.string().optional(), // Event categories (comma-separated string)
 	breakMinutes: z.number().nonnegative().optional(), // Break time in minutes to subtract from duration
 	notifyBefore: z.number().int().nonnegative().optional(), // Override notification timing (minutes for timed, days for all-day)

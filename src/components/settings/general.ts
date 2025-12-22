@@ -5,7 +5,6 @@ import { COMMAND_IDS, SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
-import { calculateDurationMinutes } from "../../utils/format";
 import { CalDAVSettings } from "./caldav";
 
 export class GeneralSettings {
@@ -213,16 +212,8 @@ export class GeneralSettings {
 			// Details (tags showing what's configured)
 			const detailsEl = presetContainer.createDiv(cls("event-preset-details"));
 
-			if (preset.allDay) {
-				this.createPresetTag(detailsEl, "All-day");
-				if (preset.date) {
-					this.createPresetTag(detailsEl, preset.date);
-				}
-			} else if (preset.startDate && preset.endDate) {
-				const durationMinutes = calculateDurationMinutes(preset.startDate, preset.endDate);
-				if (durationMinutes > 0) {
-					this.createPresetTag(detailsEl, `${durationMinutes} min`);
-				}
+			if (preset.allDay !== undefined) {
+				this.createPresetTag(detailsEl, preset.allDay ? "All-day" : "Timed");
 			}
 
 			if (preset.categories) {

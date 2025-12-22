@@ -8,10 +8,20 @@ import { formatMsToHHMMSS, formatMsToMMSS } from "../utils/time-formatter";
 import type { CalendarBundle } from "./calendar-bundle";
 
 /**
- * Form data extracted from modals - uses EventPreset fields.
- * Omits id, name, createdAt, updatedAt since those are preset-specific.
+ * Base form data shared between presets and modal state.
+ * Excludes date/time values which are only needed for modal restoration.
  */
-export type FormData = Omit<EventPreset, "id" | "name" | "createdAt" | "updatedAt">;
+export type PresetFormData = Omit<EventPreset, "id" | "name" | "createdAt" | "updatedAt">;
+
+/**
+ * Full form data extracted from modals for restoration.
+ * Extends PresetFormData with date/time values for restoring modal state.
+ */
+export interface FormData extends PresetFormData {
+	date?: string; // Date for all-day events (YYYY-MM-DD format)
+	startDate?: string; // Start datetime for timed events (ISO string)
+	endDate?: string; // End datetime for timed events (ISO string)
+}
 
 /**
  * State captured from a minimized event modal.

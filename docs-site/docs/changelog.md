@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented here.
 
+## 1.18.0
+
+### Bug Fixes
+
+- **Fixed Event Presets Not Preserving Date/Time Values**: Fixed an issue where applying an event preset would incorrectly override the start and end date/time values in the form. Event presets now correctly preserve your existing date/time values and only apply template settings (title, categories, recurring settings, etc.). This ensures that presets work as intended - as reusable templates that don't lock you into specific dates or times.
+
+---
+
 ## 1.17.0
 
 ### New Features
