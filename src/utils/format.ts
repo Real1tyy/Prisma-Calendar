@@ -1,8 +1,8 @@
 import { isNotEmpty } from "@real1ty-obsidian-plugins/utils";
 import type { DateTime } from "luxon";
-import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
+import { getInternalProperties } from "./calendar-events";
 
 /**
  * Safely converts a value to a string if it's a primitive type.
@@ -164,37 +164,6 @@ export function applySourceTimeToInstanceDate(instanceDate: DateTime, sourceDate
 		second: sourceDateTime.second,
 		millisecond: sourceDateTime.millisecond,
 	});
-}
-
-/**
- * Returns a Set of internal properties that should not be displayed in UI.
- * Includes calendar-specific property names and global internal properties.
- */
-export function getInternalProperties(settings: SingleCalendarConfig): Set<string> {
-	const properties = [
-		settings.startProp,
-		settings.endProp,
-		settings.dateProp,
-		settings.allDayProp,
-		settings.skipProp,
-		settings.rruleProp,
-		settings.rruleSpecProp,
-		settings.rruleIdProp,
-		settings.titleProp,
-		settings.zettelIdProp,
-		settings.categoryProp,
-		settings.ignoreRecurringProp,
-		settings.breakProp,
-		settings.futureInstancesCountProp,
-		settings.minutesBeforeProp,
-		settings.daysBeforeProp,
-		settings.alreadyNotifiedProp,
-		settings.sourceProp,
-		settings.instanceDateProp,
-		...INTERNAL_FRONTMATTER_PROPERTIES,
-	].filter((prop): prop is string => prop !== undefined);
-
-	return new Set(properties);
 }
 
 /**

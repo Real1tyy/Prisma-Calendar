@@ -18,7 +18,7 @@ import {
 	setEventBasics,
 	shouldUpdateInstanceDateOnMove,
 } from "../../utils/calendar-events";
-import { getInternalProperties } from "../../utils/format";
+import { compareFrontmatter } from "../../utils/frontmatter-diff";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { Command } from "./command";
 
@@ -125,7 +125,6 @@ export class EditEventCommand implements Command {
 
 	constructor(
 		private app: App,
-		private bundle: CalendarBundle,
 		private filePath: string,
 		private newEventData: EditEventData
 	) {}
@@ -133,32 +132,19 @@ export class EditEventCommand implements Command {
 	async execute(): Promise<void> {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
+		const diff = compareFrontmatter(this.originalFrontmatter, this.newEventData.preservedFrontmatter);
+
 		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
-			const settings = this.bundle.settingsStore.currentSettings;
-			const internalProps = getInternalProperties(settings);
-			const handledKeys = new Set<string>();
-
-			// First pass: update or delete existing properties (preserves order)
-			for (const key of Object.keys(fm)) {
-				if (internalProps.has(key)) {
-					continue;
-				}
-
-				if (key in this.newEventData.preservedFrontmatter) {
-					// Update existing property
-					fm[key] = this.newEventData.preservedFrontmatter[key];
-					handledKeys.add(key);
-				} else {
-					// Delete properties not in preservedFrontmatter
-					delete fm[key];
-				}
+			for (const change of diff.deleted) {
+				delete fm[change.key];
 			}
 
-			// Second pass: add new properties that weren't in original
-			for (const [key, value] of Object.entries(this.newEventData.preservedFrontmatter)) {
-				if (!handledKeys.has(key)) {
-					fm[key] = value;
-				}
+			for (const change of diff.modified) {
+				fm[change.key] = change.newValue;
+			}
+
+			for (const change of diff.added) {
+				fm[change.key] = change.newValue;
 			}
 		});
 	}

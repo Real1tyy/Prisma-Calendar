@@ -297,7 +297,7 @@ export class CalendarBundle {
 				...eventData,
 				end: eventData.end ?? undefined,
 			};
-			const command = new EditEventCommand(this.app, this, finalFilePath, eventDataForCommand);
+			const command = new EditEventCommand(this.app, finalFilePath, eventDataForCommand);
 			await this.commandManager.executeCommand(command);
 
 			new Notice("Event updated successfully");

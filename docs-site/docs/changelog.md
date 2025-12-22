@@ -8,6 +8,12 @@ All notable changes to this project will be documented here.
 
 - **Skip Event Checkbox in Event Modal**: Added a "Skip event" checkbox to the Create/Edit Event modal that allows you to mark events as skipped directly from the form. When checked, the event is hidden from the calendar using the configured skip property. The skip state is preserved in event presets, allowing you to create presets that include skipped events. The checkbox appears when the skip property is configured in Settings → Properties.
 
+### Bug Fixes
+
+- **Fixed Property Removal in Event Editing**: Fixed certain scenarios where removing properties from events didn't apply correctly. The `EditEventCommand` now properly detects and applies property deletions, ensuring that when you remove custom properties or other frontmatter fields from an event, they are correctly deleted from the file's frontmatter.
+
+- **Prevented Prisma Internal Properties in Custom Properties**: Ensured that display properties and other frontmatter properties don't include any Prisma internal properties. Custom properties can no longer overwrite Prisma-managed properties (like status, category, break, skip, recurring event properties, etc.), preventing conflicts and ensuring data integrity. Prisma internal properties are automatically excluded from custom property management in the event modal.
+
 ---
 
 ## 1.18.2

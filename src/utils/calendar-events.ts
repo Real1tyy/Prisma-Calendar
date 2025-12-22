@@ -1,6 +1,7 @@
 import { generateZettelId, withFrontmatter } from "@real1ty-obsidian-plugins/utils";
 import { nanoid } from "nanoid";
 import { type App, TFile } from "obsidian";
+import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { EventStore } from "../core/event-store";
 import type { Frontmatter, SingleCalendarConfig } from "../types";
 
@@ -219,17 +220,51 @@ export const isEventDone = (app: App, filePath: string, statusProperty: string, 
 };
 
 /**
- * Returns a Set of Prisma-managed property keys that should not be propagated
- * from source events to physical instances.
- * These are time-related and system-managed properties.
+ * Returns a Set of core Prisma-managed internal properties.
+ * These are the base properties that Prisma uses for calendar functionality.
  */
-export const getPrismaManagedProperties = (settings: SingleCalendarConfig): Set<string> => {
+export const getPrismaInternalProps = (settings: SingleCalendarConfig): Set<string> => {
 	return new Set(
-		[...Array.from(getRecurringInstanceExcludedProps(settings)), settings.statusProperty, settings.categoryProp].filter(
-			(prop) => prop !== ""
-		)
+		[
+			settings.startProp,
+			settings.endProp,
+			settings.dateProp,
+			settings.breakProp,
+			settings.titleProp || "",
+			settings.allDayProp,
+			settings.rruleProp,
+			settings.rruleSpecProp,
+			settings.rruleIdProp,
+			settings.sourceProp,
+			settings.skipProp,
+			settings.instanceDateProp,
+			settings.zettelIdProp || "",
+			settings.futureInstancesCountProp,
+			settings.alreadyNotifiedProp,
+			settings.caldavProp,
+			settings.generatePastEventsProp,
+			settings.ignoreRecurringProp,
+		].filter((prop) => prop !== "")
 	);
 };
+
+/**
+ * Returns a Set of internal properties that should not be displayed in UI.
+ * Includes calendar-specific property names and global internal properties.
+ * Uses getPrismaInternalProps as the base and adds additional internal-only properties.
+ */
+export function getInternalProperties(settings: SingleCalendarConfig): Set<string> {
+	const prismaInternalProps = getPrismaInternalProps(settings);
+	const additionalInternalProps = [
+		settings.statusProperty,
+		settings.categoryProp,
+		settings.minutesBeforeProp,
+		settings.daysBeforeProp,
+		...INTERNAL_FRONTMATTER_PROPERTIES,
+	].filter((prop): prop is string => prop !== undefined && prop !== "");
+
+	return new Set([...prismaInternalProps, ...additionalInternalProps]);
+}
 
 /**
  * Returns a Set of frontmatter properties that should be excluded when creating
@@ -238,34 +273,16 @@ export const getPrismaManagedProperties = (settings: SingleCalendarConfig): Set<
  * be copied to instances (like notification status and archived state).
  */
 export const getRecurringInstanceExcludedProps = (settings: SingleCalendarConfig): Set<string> => {
-	const excludedProps = new Set([
-		settings.startProp,
-		settings.endProp,
-		settings.dateProp,
-		settings.breakProp,
-		settings.titleProp || "",
-		settings.allDayProp,
-		settings.rruleProp,
-		settings.rruleSpecProp,
-		settings.rruleIdProp,
-		settings.sourceProp,
-		settings.instanceDateProp,
-		settings.zettelIdProp || "",
-		settings.futureInstancesCountProp,
-		settings.alreadyNotifiedProp,
-		settings.caldavProp,
-		settings.generatePastEventsProp,
-		settings.ignoreRecurringProp,
-	]);
+	const prismaInternalProps = getPrismaInternalProps(settings);
 
 	if (settings.excludedRecurringPropagatedProps) {
 		const userExcludedProps = settings.excludedRecurringPropagatedProps
 			.split(",")
 			.map((prop) => prop.trim())
 			.filter((prop) => prop !== "");
-		return new Set([...excludedProps, ...userExcludedProps]);
+		return new Set([...prismaInternalProps, ...userExcludedProps]);
 	}
-	return excludedProps;
+	return prismaInternalProps;
 };
 
 /**
