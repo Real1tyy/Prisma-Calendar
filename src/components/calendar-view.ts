@@ -22,7 +22,6 @@ import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { removeInstanceDate, removeZettelId } from "../utils/calendar-events";
 import { toggleEventHighlight } from "../utils/dom-utils";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
-import { parseIntoList } from "../utils/list-utils";
 import { emitHover } from "../utils/obsidian";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
@@ -38,6 +37,7 @@ import {
 	SkippedEventsModal,
 } from "./list-modals";
 import { EventCreateModal } from "./modals";
+import { CategorySelectModal } from "./modals/category-select-modal";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 
@@ -119,8 +119,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
 	private upcomingEventCheckInterval: number | null = null;
-	private eventsWithoutCategoriesTimeout: number | null = null;
-	private highlightedEventsWithoutCategories: Set<string> = new Set();
+	private categoryHighlightTimeout: number | null = null;
+	private highlightedCategoryEvents: Set<string> = new Set();
+	private currentCategoryHighlightClass: string | null = null;
 	private filteredEventsCount = 0;
 	private skippedEventsCount = 0;
 	private enabledRecurringEventsCount = 0;
@@ -772,57 +773,76 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.currentUpcomingEventIds.clear();
 	}
 
-	private findEventsWithoutCategories(): Set<string> {
+	private clearCategoryHighlight(): void {
+		if (this.categoryHighlightTimeout !== null) {
+			window.clearTimeout(this.categoryHighlightTimeout);
+			this.categoryHighlightTimeout = null;
+		}
+
+		if (this.currentCategoryHighlightClass !== null) {
+			for (const eventId of this.highlightedCategoryEvents) {
+				toggleEventHighlight(eventId, this.currentCategoryHighlightClass, false);
+			}
+			this.highlightedCategoryEvents.clear();
+			this.currentCategoryHighlightClass = null;
+		}
+	}
+
+	private findEventIdsByPredicate(predicate: (filePath: string) => boolean): Set<string> {
 		const result = new Set<string>();
-
 		if (!this.calendar) return result;
-
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.categoryProp) return result;
 
 		const events = this.calendar.getEvents();
 		for (const event of events) {
 			if (event.extendedProps.isVirtual) continue;
 
-			const frontmatter = event.extendedProps.frontmatterDisplayData as Frontmatter | undefined;
-			if (!frontmatter) continue;
-
-			const categoryValue = frontmatter[settings.categoryProp];
-			const categories = parseIntoList(categoryValue);
-			if (categories.length === 0) {
+			const filePath = event.extendedProps.filePath;
+			if (filePath && predicate(filePath)) {
 				result.add(event.id);
 			}
 		}
 		return result;
 	}
 
-	public highlightEventsWithoutCategories(): void {
+	private highlightCategoryEvents(getEventIds: () => Set<string>): void {
 		if (!this.calendar) return;
 
-		if (this.eventsWithoutCategoriesTimeout !== null) {
-			window.clearTimeout(this.eventsWithoutCategoriesTimeout);
-			for (const eventId of this.highlightedEventsWithoutCategories) {
-				toggleEventHighlight(eventId, cls("event-without-category"), false);
-			}
-			this.highlightedEventsWithoutCategories.clear();
-			this.eventsWithoutCategoriesTimeout = null;
-		}
+		const highlightClass = cls("event-category-highlight");
+		this.clearCategoryHighlight();
 
-		const eventIds = this.findEventsWithoutCategories();
+		const eventIds = getEventIds();
 
 		for (const eventId of eventIds) {
-			toggleEventHighlight(eventId, cls("event-without-category"), true);
+			toggleEventHighlight(eventId, highlightClass, true);
 		}
 
-		this.highlightedEventsWithoutCategories = eventIds;
+		this.highlightedCategoryEvents = eventIds;
+		this.currentCategoryHighlightClass = highlightClass;
 
-		this.eventsWithoutCategoriesTimeout = window.setTimeout(() => {
-			for (const eventId of this.highlightedEventsWithoutCategories) {
-				toggleEventHighlight(eventId, cls("event-without-category"), false);
-			}
-			this.highlightedEventsWithoutCategories.clear();
-			this.eventsWithoutCategoriesTimeout = null;
+		this.categoryHighlightTimeout = window.setTimeout(() => {
+			this.clearCategoryHighlight();
 		}, 10000);
+	}
+
+	public highlightEventsWithoutCategories(): void {
+		this.highlightCategoryEvents(() => {
+			const filesWithCategories = this.bundle.categoryTracker.getAllFilesWithCategories();
+			return this.findEventIdsByPredicate((filePath) => !filesWithCategories.has(filePath));
+		});
+	}
+
+	public showCategorySelectModal(): void {
+		const modal = new CategorySelectModal(this.app, this.bundle.categoryTracker, (category: string) => {
+			this.highlightEventsWithCategory(category);
+		});
+		modal.open();
+	}
+
+	public highlightEventsWithCategory(category: string): void {
+		this.highlightCategoryEvents(() => {
+			const filePaths = this.bundle.categoryTracker.getEventsWithCategory(category);
+			return this.findEventIdsByPredicate((filePath) => filePaths.has(filePath));
+		});
 	}
 
 	private initializeCalendar(container: HTMLElement): void {

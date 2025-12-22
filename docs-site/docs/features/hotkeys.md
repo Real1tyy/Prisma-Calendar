@@ -149,6 +149,13 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Duration**: Events are highlighted for 10 seconds
 -   **Use Case**: Quickly identify which events need category assignment
 
+### Highlight Events With Category
+
+-   **Function**: Opens a modal to select a category and highlights all events with that category
+-   **Duration**: Events are highlighted for 10 seconds
+-   **Use Case**: Quickly identify all events belonging to a specific category
+-   **Modal**: Dropdown selector with all available categories from your events
+
 ### Refresh Calendar
 
 -   **Function**: Manually triggers a full resync of the indexer and refreshes all calendar events

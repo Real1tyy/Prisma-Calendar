@@ -4,6 +4,10 @@ All notable changes to this project will be documented here.
 
 ## 1.18.0
 
+### New Features
+
+- **Highlight Events With Category**: Added a new command that opens a modal to select a category and temporarily highlights all events assigned to that category. The modal displays all available categories from your events in a dropdown, and events are highlighted for 10 seconds. This complements the existing "Highlight events without categories" command, making it easy to visually identify events by category across your calendar.
+
 ### Bug Fixes
 
 - **Fixed Event Presets Not Preserving Date/Time Values**: Fixed an issue where applying an event preset would incorrectly override the start and end date/time values in the form. Event presets now correctly preserve your existing date/time values and only apply template settings (title, categories, recurring settings, etc.). This ensures that presets work as intended - as reusable templates that don't lock you into specific dates or times.

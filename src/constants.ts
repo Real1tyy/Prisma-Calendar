@@ -34,6 +34,7 @@ export const COMMAND_IDS = {
 	SHOW_ALLTIME_STATS: "show-alltime-stats",
 	REFRESH_CALENDAR: "refresh-calendar",
 	HIGHLIGHT_EVENTS_WITHOUT_CATEGORIES: "highlight-events-without-categories",
+	HIGHLIGHT_EVENTS_WITH_CATEGORY: "highlight-events-with-category",
 	RESTORE_MINIMIZED_MODAL: "restore-minimized-modal",
 	EXPORT_CALENDAR_ICS: "export-calendar-ics",
 	IMPORT_CALENDAR_ICS: "import-calendar-ics",

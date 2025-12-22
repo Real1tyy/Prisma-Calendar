@@ -81,6 +81,25 @@ The **"Highlight events without categories"** command temporarily highlights all
 
 **Note**: The category property name is configurable in Settings → Properties → "Category property" (default: `Category`).
 
+## Highlight Events With Category
+
+The **"Highlight events with category"** command opens a modal that lets you select a specific category and temporarily highlights all events assigned to that category. This makes it easy to visually identify events belonging to a particular category across your calendar.
+
+**How to use:**
+- **Command**: Open command palette (Ctrl/Cmd+P) and search for "Highlight events with category"
+- **Modal**: A dropdown modal appears with all available categories from your events
+- **Selection**: Choose a category from the dropdown and click "Highlight" (or press Enter)
+- **Duration**: Events with the selected category are highlighted for 10 seconds
+- **Visual feedback**: Events with the selected category are visually highlighted in the calendar view
+- **Auto-close**: The modal automatically closes after highlighting
+
+**Features:**
+- Shows all unique categories found in your events
+- Displays "No categories found" if no events have categories assigned
+- Only one highlight can be active at a time (triggering a new highlight replaces the previous one)
+
+**Note**: The category property name is configurable in Settings → Properties → "Category property" (default: `Category`).
+
 ## How Filters Work Together
 
 All active filters are **combined with AND logic**. An event must pass all active filters to be displayed:
@@ -160,6 +179,8 @@ Several filtering commands can be assigned hotkeys for quick access:
 - `Focus expression filter` - Jump to the expression filter input
 - `Open filter preset selector` - Open the filter presets dropdown
 - `Show filtered events` - Open modal showing events hidden by active filters
+- `Highlight events without categories` - Highlight events missing category assignments
+- `Highlight events with category` - Open modal to select and highlight events by category
 
 For a complete list of available commands and how to set up hotkeys, see the [Hotkeys documentation](./hotkeys.md).
 

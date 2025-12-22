@@ -171,6 +171,9 @@ export default class CustomCalendarPlugin extends Plugin {
 				view.highlightEventsWithoutCategories();
 			}
 		);
+		addCalendarViewCommand(COMMAND_IDS.HIGHLIGHT_EVENTS_WITH_CATEGORY, "Highlight events with category", (view) => {
+			view.showCategorySelectModal();
+		});
 
 		this.addCommand({
 			id: COMMAND_IDS.EXPORT_CALENDAR_ICS,

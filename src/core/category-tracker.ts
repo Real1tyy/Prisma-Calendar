@@ -7,11 +7,13 @@ import type { Indexer, IndexerEvent } from "./indexer";
 
 /**
  * Tracks all unique categories across events in the calendar.
+ * Maintains a map of category -> Set of file paths that have that category.
  * Categories are extracted from frontmatter during indexing and maintained
- * as a reactive set that updates as events are added, modified, or deleted.
+ * as a reactive map that updates as events are added, modified, or deleted.
  */
 export class CategoryTracker {
-	private categories = new Set<string>();
+	private categoryToFiles = new Map<string, Set<string>>();
+	private fileToCategories = new Map<string, Set<string>>();
 	private categoriesSubject = new BehaviorSubject<Set<string>>(new Set());
 	private subscription: Subscription | null = null;
 	private indexingCompleteSubscription: Subscription | null = null;
@@ -48,36 +50,88 @@ export class CategoryTracker {
 		switch (event.type) {
 			case "file-changed":
 				if (event.source) {
-					this.extractCategory(event.source.frontmatter);
+					this.updateFileCategories(event.filePath, event.source.frontmatter);
 				}
 				break;
 			case "file-deleted":
-				// We don't remove categories on deletion as they may be used by other events
-				// A full rescan would be needed to accurately remove orphaned categories
+				this.removeFile(event.filePath);
 				break;
 		}
 	}
 
-	private extractCategory(frontmatter: Frontmatter): void {
-		const categoryProp = this._settings.categoryProp;
-		if (!categoryProp) return;
-
-		const categories = parseIntoList(frontmatter[categoryProp]);
-		for (const cat of categories) {
-			this.categories.add(cat);
+	private removeCategoriesFromFile(filePath: string, categoriesToRemove: Set<string>): void {
+		for (const category of categoriesToRemove) {
+			const fileSet = this.categoryToFiles.get(category);
+			if (fileSet) {
+				fileSet.delete(filePath);
+				if (fileSet.size === 0) {
+					this.categoryToFiles.delete(category);
+				}
+			} else {
+				console.error(
+					`Category ${category} not found for file ${filePath}, this should not happen, please report this as a bug.`
+				);
+			}
 		}
 	}
 
+	private updateFileCategories(filePath: string, frontmatter: Frontmatter): void {
+		const categoryProp = this._settings.categoryProp;
+		if (!categoryProp) return;
+
+		const oldCategories = this.fileToCategories.get(filePath) || new Set<string>();
+		const newCategories = new Set(parseIntoList(frontmatter[categoryProp]));
+		const categoriesToRemove = new Set([...oldCategories].filter((cat) => !newCategories.has(cat)));
+
+		if (categoriesToRemove.size > 0) {
+			this.removeCategoriesFromFile(filePath, categoriesToRemove);
+		}
+
+		for (const newCat of newCategories) {
+			if (!this.categoryToFiles.has(newCat)) {
+				this.categoryToFiles.set(newCat, new Set());
+			}
+			this.categoryToFiles.get(newCat)!.add(filePath);
+		}
+
+		if (newCategories.size > 0) {
+			this.fileToCategories.set(filePath, newCategories);
+		} else {
+			this.fileToCategories.delete(filePath);
+		}
+
+		this.notifyChange();
+	}
+
+	private removeFile(filePath: string): void {
+		const categories = this.fileToCategories.get(filePath);
+		if (!categories) return;
+
+		this.removeCategoriesFromFile(filePath, categories);
+
+		this.fileToCategories.delete(filePath);
+		this.notifyChange();
+	}
+
 	private notifyChange(): void {
-		this.categoriesSubject.next(new Set(this.categories));
+		this.categoriesSubject.next(new Set(this.categoryToFiles.keys()));
 	}
 
 	getCategories(): string[] {
-		return Array.from(this.categories).sort((a, b) => a.localeCompare(b));
+		return Array.from(this.categoryToFiles.keys()).sort((a, b) => a.localeCompare(b));
+	}
+
+	getEventsWithCategory(category: string): Set<string> {
+		return new Set(this.categoryToFiles.get(category) || []);
+	}
+
+	getAllFilesWithCategories(): Set<string> {
+		return new Set(this.fileToCategories.keys());
 	}
 
 	clear(): void {
-		this.categories.clear();
+		this.categoryToFiles.clear();
+		this.fileToCategories.clear();
 		this.notifyChange();
 	}
 
