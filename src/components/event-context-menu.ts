@@ -13,8 +13,9 @@ import {
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
+import type { ParsedEvent } from "../core/parser";
 import type { Frontmatter } from "../types";
-import { type AdjacentEvent, findAdjacentEvent, isEventDone } from "../utils/calendar-events";
+import { findAdjacentEvent, isEventDone } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
@@ -731,25 +732,20 @@ export class EventContextMenu {
 		config: {
 			direction: "next" | "previous";
 			propertyName: string;
-			getTimeValue: (adj: AdjacentEvent) => string | undefined;
+			getTimeValue: (adj: ParsedEvent) => string | undefined;
 			successMessage: string;
 			errorMessage: string;
 		}
 	): Promise<void> {
 		await this.withFilePath(event, "fill time", async (filePath) => {
-			const file = this.app.vault.getAbstractFileByPath(filePath);
-			let currentValue: string | undefined;
-			if (file instanceof TFile) {
-				const cache = this.app.metadataCache.getFileCache(file);
-				currentValue = cache?.frontmatter?.[config.propertyName] as string | undefined;
-			}
+			const originalEvent = this.bundle.eventStore.getEventByPath(filePath);
+			const currentStartISO = originalEvent?.start ?? null;
 
 			const adjacentEvent = findAdjacentEvent(
 				this.bundle.eventStore,
-				event.start,
+				currentStartISO,
 				event.extendedProps?.filePath,
-				config.direction,
-				currentValue || ""
+				config.direction
 			);
 
 			if (!adjacentEvent) {

@@ -2,6 +2,7 @@ import { DebouncedNotifier } from "@real1ty-obsidian-plugins/utils";
 import { DateTime } from "luxon";
 import type { Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
+import BTree from "sorted-btree";
 import type { ISO } from "../types/index";
 import type { Indexer, IndexerEvent, RawEventSource } from "./indexer";
 import type { ParsedEvent, Parser } from "./parser";
@@ -22,9 +23,14 @@ export interface CachedEvent {
 }
 
 export class EventStore extends DebouncedNotifier {
+	private static readonly SEP = "\0";
+	private static readonly MAX = "\uffff";
+
 	private cache = new Map<string, CachedEvent>();
 	private subscription: Subscription | null = null;
 	private indexingCompleteSubscription: Subscription | null = null;
+	private eventsByStartTime = new BTree<string, ParsedEvent>();
+	private eventsByEndTime = new BTree<string, ParsedEvent>();
 
 	constructor(
 		private indexer: Indexer,
@@ -83,13 +89,53 @@ export class EventStore extends DebouncedNotifier {
 	}
 
 	updateEvent(filePath: string, template: ParsedEvent, mtime: number): void {
+		const oldCached = this.cache.get(filePath);
+		if (oldCached) {
+			this.removeFromSortedSets(oldCached.template);
+		}
+
 		this.cache.set(filePath, { template, mtime });
+		this.addToSortedSets(template);
 		this.scheduleRefresh();
 	}
 
 	invalidate(filePath: string): void {
-		if (this.cache.delete(filePath)) {
+		const cached = this.cache.get(filePath);
+		if (cached && this.cache.delete(filePath)) {
+			this.removeFromSortedSets(cached.template);
 			this.notifyChange();
+		}
+	}
+
+	private normIso(iso: string): string {
+		return new Date(iso).toISOString();
+	}
+
+	private makeTreeKey(time: string, filePath: string): string {
+		return `${time}${EventStore.SEP}${filePath}`;
+	}
+
+	private addToSortedSets(event: ParsedEvent): void {
+		if (event.skipped || event.allDay) return;
+
+		const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
+		this.eventsByStartTime.set(startKey, event);
+
+		if (event.end) {
+			const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
+			this.eventsByEndTime.set(endKey, event);
+		}
+	}
+
+	private removeFromSortedSets(event: ParsedEvent): void {
+		if (event.skipped || event.allDay) return;
+
+		const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
+		this.eventsByStartTime.delete(startKey);
+
+		if (event.end) {
+			const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
+			this.eventsByEndTime.delete(endKey);
 		}
 	}
 
@@ -149,7 +195,8 @@ export class EventStore extends DebouncedNotifier {
 
 	clear(): void {
 		this.cache.clear();
-		// Clear is immediate - no debouncing
+		this.eventsByStartTime.clear();
+		this.eventsByEndTime.clear();
 		this.notifyChange();
 	}
 
@@ -159,6 +206,8 @@ export class EventStore extends DebouncedNotifier {
 	 */
 	clearWithoutNotify(): void {
 		this.cache.clear();
+		this.eventsByStartTime.clear();
+		this.eventsByEndTime.clear();
 	}
 
 	private eventIntersectsRange(event: ParsedEvent, rangeStart: DateTime, rangeEnd: DateTime): boolean {
@@ -166,5 +215,46 @@ export class EventStore extends DebouncedNotifier {
 		const eventEnd = event.end ? DateTime.fromISO(event.end, { zone: "utc" }) : eventStart.endOf("day");
 
 		return eventStart < rangeEnd && eventEnd > rangeStart;
+	}
+
+	private findAdjacentEventInTree(
+		currentTimeISO: string,
+		excludeFilePath: string | undefined,
+		tree: BTree<string, ParsedEvent>,
+		getNextPair: (tree: BTree<string, ParsedEvent>, key: string) => [string, ParsedEvent] | undefined,
+		makeSearchKey: (currentTime: string) => string
+	): ParsedEvent | null {
+		const currentTime = new Date(currentTimeISO).toISOString();
+		let pair = getNextPair(tree, makeSearchKey(currentTime));
+
+		while (pair) {
+			const [key, event] = pair;
+			if (!excludeFilePath || event.ref.filePath !== excludeFilePath) {
+				return event;
+			}
+			pair = getNextPair(tree, key);
+		}
+
+		return null;
+	}
+
+	findNextEventByStartTime(currentStartISO: string, excludeFilePath?: string): ParsedEvent | null {
+		return this.findAdjacentEventInTree(
+			currentStartISO,
+			excludeFilePath,
+			this.eventsByStartTime,
+			(tree, key) => tree.nextHigherPair(key),
+			(t) => `${t}${EventStore.SEP}`
+		);
+	}
+
+	findPreviousEventByEndTime(currentEndISO: string, excludeFilePath?: string): ParsedEvent | null {
+		return this.findAdjacentEventInTree(
+			currentEndISO,
+			excludeFilePath,
+			this.eventsByEndTime,
+			(tree, key) => tree.nextLowerPair(key),
+			(t) => `${t}${EventStore.SEP}${EventStore.MAX}`
+		);
 	}
 }

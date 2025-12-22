@@ -836,14 +836,14 @@ export abstract class BaseEventModal extends Modal {
 		timeField: "start" | "end",
 		successMessage: string
 	): void {
-		const currentValue = inputValueToISOString(input.value);
+		// Get the current time from the input field (already in ISO format) instead of this.event.start (Date object in local timezone)
+		const currentTimeISO = this.allDayCheckbox.checked ? null : inputValueToISOString(this.startInput.value);
 
 		const adjacentEvent = findAdjacentEvent(
 			this.bundle.eventStore,
-			this.event.start,
+			currentTimeISO,
 			this.event.extendedProps?.filePath,
-			direction,
-			currentValue
+			direction
 		);
 
 		if (!adjacentEvent) {
