@@ -41,7 +41,7 @@ export class CategorySelectModal extends Modal {
 			text: "Choose a category...",
 			cls: cls("category-select-button"),
 			type: "button",
-		}) as HTMLButtonElement;
+		});
 
 		this.dropdownPanel = this.dropdownContainer.createDiv(cls("category-dropdown-panel"));
 		this.dropdownPanel.classList.add("prisma-hidden");

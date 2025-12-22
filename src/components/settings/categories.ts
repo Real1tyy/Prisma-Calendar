@@ -62,7 +62,7 @@ export class CategoriesSettings {
 		});
 
 		const chartSection = containerEl.createDiv(cls("categories-chart-section"));
-		chartSection.createEl("h3", { text: "Category Distribution" });
+		chartSection.createEl("h3", { text: "Category distribution" });
 		this.chartContainer = chartSection.createDiv(cls("categories-chart-container"));
 		const canvas = this.chartContainer.createEl("canvas");
 		canvas.setAttribute("id", cls("categories-chart"));
@@ -167,8 +167,8 @@ export class CategoriesSettings {
 
 		if (this.categoriesListContainer && this.categoryTracker) {
 			this.renderCategoriesList(this.categoriesListContainer, this.categoryTracker, this.categoryProp);
+			this.updateChart(this.categoryTracker, this.categoryProp);
 		}
-		this.updateChart(this.categoryTracker!, this.categoryProp);
 	}
 
 	private updateChart(categoryTracker: CategoryTracker, categoryProp: string): void {

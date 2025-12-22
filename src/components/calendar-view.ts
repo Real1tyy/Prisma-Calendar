@@ -796,7 +796,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		for (const event of events) {
 			if (event.extendedProps.isVirtual) continue;
 
-			const filePath = event.extendedProps.filePath;
+			const filePath = event.extendedProps.filePath as string | undefined;
 			if (filePath && predicate(filePath)) {
 				result.add(event.id);
 			}

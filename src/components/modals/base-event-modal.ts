@@ -272,7 +272,7 @@ export abstract class BaseEventModal extends Modal {
 
 	protected applyPreset(preset: FormData | EventPreset): void {
 		if ("date" in preset || "startDate" in preset || "endDate" in preset) {
-			this.applyFormData(preset as FormData);
+			this.applyFormData(preset);
 		} else {
 			this.applyPresetData(preset as PresetFormData);
 		}
