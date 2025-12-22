@@ -114,6 +114,7 @@ export class EventEditModal extends BaseEventModal {
 		this.loadCategoryData();
 		this.loadBreakData();
 		this.loadMarkAsDoneData();
+		this.loadSkipData();
 		this.loadNotificationData();
 		this.loadCustomPropertiesData();
 	}
@@ -141,8 +142,18 @@ export class EventEditModal extends BaseEventModal {
 		if (!settings.statusProperty || !this.markAsDoneCheckbox) return;
 
 		const statusValue = this.originalFrontmatter[settings.statusProperty];
-		if (statusValue === settings.doneValue) {
-			this.markAsDoneCheckbox.checked = true;
+		const isDone = statusValue === settings.doneValue;
+		this.markAsDoneCheckbox.checked = isDone;
+		this.initialMarkAsDoneState = isDone;
+	}
+
+	private loadSkipData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.skipProp || !this.skipCheckbox) return;
+
+		const skipValue = this.originalFrontmatter[settings.skipProp];
+		if (skipValue === true) {
+			this.skipCheckbox.checked = true;
 		}
 	}
 

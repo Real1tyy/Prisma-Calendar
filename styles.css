@@ -3512,6 +3512,10 @@
 	font-size: 0.9em;
 }
 
+.setting-item-description {
+	margin-right: 1rem;
+}
+
 .prisma-recurring-events-filters .setting-item-description {
 	display: none;
 }

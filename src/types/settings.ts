@@ -12,6 +12,8 @@ export const EventPresetSchema = z.object({
 	categories: z.string().optional(), // Event categories (comma-separated string)
 	breakMinutes: z.number().nonnegative().optional(), // Break time in minutes to subtract from duration
 	notifyBefore: z.number().int().nonnegative().optional(), // Override notification timing (minutes for timed, days for all-day)
+	markAsDone: z.boolean().optional(), // Mark event as done
+	skip: z.boolean().optional(), // Skip/hide event from calendar
 	rruleType: z.string().optional(), // Recurrence type
 	rruleSpec: z.string().optional(), // Weekdays for recurring events
 	futureInstancesCount: z.number().int().positive().optional(), // Per-preset override of future instances count

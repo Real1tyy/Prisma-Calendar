@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented here.
 
+## 1.19.0
+
+### New Features
+
+- **Skip Event Checkbox in Event Modal**: Added a "Skip event" checkbox to the Create/Edit Event modal that allows you to mark events as skipped directly from the form. When checked, the event is hidden from the calendar using the configured skip property. The skip state is preserved in event presets, allowing you to create presets that include skipped events. The checkbox appears when the skip property is configured in Settings → Properties.
+
+---
+
 ## 1.18.2
 
 ### Bug Fixes

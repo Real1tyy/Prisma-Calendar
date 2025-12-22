@@ -75,6 +75,8 @@ export abstract class BaseEventModal extends Modal {
 	protected categoryInput?: CategoryInput;
 	protected breakInput!: HTMLInputElement;
 	protected markAsDoneCheckbox!: HTMLInputElement;
+	protected initialMarkAsDoneState: boolean = false;
+	protected skipCheckbox!: HTMLInputElement;
 	protected notificationInput!: HTMLInputElement;
 	protected notificationContainer!: HTMLElement;
 	protected notificationLabel!: HTMLElement;
@@ -214,15 +216,12 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	protected clearAllFields(): void {
-		// Clear title
 		this.titleInput.value = "";
 
-		// Reset all-day checkbox
 		this.allDayCheckbox.checked = false;
 		this.timedContainer.classList.remove("prisma-hidden");
 		this.allDayContainer.classList.add("prisma-hidden");
 
-		// Clear date/time fields
 		this.startInput.value = "";
 		this.endInput.value = "";
 		this.dateInput.value = "";
@@ -230,7 +229,6 @@ export abstract class BaseEventModal extends Modal {
 			this.durationInput.value = "";
 		}
 
-		// Clear recurring event fields
 		this.recurringCheckbox.checked = false;
 		this.recurringContainer.classList.add("prisma-hidden");
 		this.rruleSelect.value = Object.keys(RECURRENCE_TYPE_OPTIONS)[0];
@@ -240,33 +238,29 @@ export abstract class BaseEventModal extends Modal {
 		}
 		this.futureInstancesCountInput.value = "";
 
-		// Clear category
 		if (this.categoryInput) {
 			this.categoryInput.setValue("");
 		}
 
-		// Clear break
 		if (this.breakInput) {
 			this.breakInput.value = "";
 		}
 
-		// Clear notification
+		if (this.skipCheckbox) {
+			this.skipCheckbox.checked = false;
+		}
+
 		if (this.notificationInput) {
 			this.notificationInput.value = "";
 		}
 
-		// Reset stopwatch
 		this.stopwatch?.reset();
 
-		// Clear custom properties
 		this.displayPropertiesContainer.empty();
 		this.otherPropertiesContainer.empty();
 		this.customProperties = [];
 
-		// Reset preset selector
 		this.presetSelector.value = "";
-
-		// Focus on title input
 		this.titleInput.focus();
 	}
 
@@ -281,7 +275,6 @@ export abstract class BaseEventModal extends Modal {
 	private applyPresetData(preset: PresetFormData): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		// Apply title
 		if (preset.title !== undefined) {
 			this.titleInput.value = preset.title;
 		}
@@ -293,22 +286,27 @@ export abstract class BaseEventModal extends Modal {
 			this.allDayCheckbox.dispatchEvent(changeEvent);
 		}
 
-		// Apply categories
 		if (preset.categories !== undefined && this.categoryInput) {
 			this.categoryInput.setValue(preset.categories);
 		}
 
-		// Apply break time
 		if (preset.breakMinutes !== undefined && this.breakInput) {
 			this.breakInput.value = preset.breakMinutes.toString();
 		}
 
-		// Apply notification timing
+		if (preset.skip !== undefined && this.skipCheckbox) {
+			this.skipCheckbox.checked = preset.skip;
+		}
+
+		if (preset.markAsDone !== undefined && this.markAsDoneCheckbox) {
+			this.markAsDoneCheckbox.checked = preset.markAsDone;
+			this.initialMarkAsDoneState = preset.markAsDone;
+		}
+
 		if (preset.notifyBefore !== undefined && this.notificationInput) {
 			this.notificationInput.value = preset.notifyBefore.toString();
 		}
 
-		// Apply recurring settings
 		if (preset.rruleType) {
 			this.recurringCheckbox.checked = true;
 			this.recurringContainer.classList.remove("prisma-hidden");
@@ -329,15 +327,12 @@ export abstract class BaseEventModal extends Modal {
 				}
 			}
 
-			// Apply future instances count override
 			if (preset.futureInstancesCount !== undefined && this.futureInstancesCountInput) {
 				this.futureInstancesCountInput.value = preset.futureInstancesCount.toString();
 			}
 		}
 
-		// Apply custom properties
 		if (preset.customProperties) {
-			// Clear existing custom properties
 			this.displayPropertiesContainer.empty();
 			this.otherPropertiesContainer.empty();
 
@@ -358,7 +353,6 @@ export abstract class BaseEventModal extends Modal {
 	private applyFormData(formData: FormData): void {
 		this.applyPresetData(formData);
 
-		// Then apply date/time values specific to FormData
 		if (formData.date) {
 			this.dateInput.value = formData.date;
 		}
@@ -458,6 +452,7 @@ export abstract class BaseEventModal extends Modal {
 		this.createCategoryField(contentEl);
 		this.createBreakField(contentEl);
 		this.createMarkAsDoneField(contentEl);
+		this.createSkipField(contentEl);
 		this.createNotificationField(contentEl);
 		this.createCustomPropertiesFields(contentEl);
 	}
@@ -498,6 +493,22 @@ export abstract class BaseEventModal extends Modal {
 		const markAsDoneContainer = contentEl.createDiv("setting-item");
 		markAsDoneContainer.createEl("div", { text: "Mark as done", cls: "setting-item-name" });
 		this.markAsDoneCheckbox = markAsDoneContainer.createEl("input", {
+			type: "checkbox",
+			cls: "setting-item-control",
+		});
+	}
+
+	private createSkipField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.skipProp) return;
+
+		const skipContainer = contentEl.createDiv("setting-item");
+		skipContainer.createEl("div", { text: "Skip event", cls: "setting-item-name" });
+		const skipDesc = skipContainer.createEl("div", {
+			cls: "setting-item-description",
+		});
+		skipDesc.setText("Hide event from calendar");
+		this.skipCheckbox = skipContainer.createEl("input", {
 			type: "checkbox",
 			cls: "setting-item-control",
 		});
@@ -1098,10 +1109,27 @@ export abstract class BaseEventModal extends Modal {
 		}
 
 		if (settings.statusProperty && this.markAsDoneCheckbox) {
-			if (this.markAsDoneCheckbox.checked) {
-				preservedFrontmatter[settings.statusProperty] = settings.doneValue;
+			const wasInitiallyChecked = this.initialMarkAsDoneState;
+			const isNowChecked = this.markAsDoneCheckbox.checked;
+
+			// Only update if state changed
+			if (wasInitiallyChecked !== isNowChecked) {
+				if (isNowChecked) {
+					// Changed from unchecked to checked: set to doneValue
+					preservedFrontmatter[settings.statusProperty] = settings.doneValue;
+				} else {
+					// Changed from checked to unchecked: set to notDoneValue
+					preservedFrontmatter[settings.statusProperty] = settings.notDoneValue;
+				}
+			}
+			// If state didn't change, do nothing (don't modify statusProperty)
+		}
+
+		if (settings.skipProp && this.skipCheckbox) {
+			if (this.skipCheckbox.checked) {
+				preservedFrontmatter[settings.skipProp] = true;
 			} else {
-				delete preservedFrontmatter[settings.statusProperty];
+				delete preservedFrontmatter[settings.skipProp];
 			}
 		}
 
@@ -1264,6 +1292,14 @@ export abstract class BaseEventModal extends Modal {
 			if (!Number.isNaN(breakValue) && breakValue > 0) {
 				presetData.breakMinutes = breakValue;
 			}
+		}
+
+		if (this.skipCheckbox) {
+			presetData.skip = this.skipCheckbox.checked;
+		}
+
+		if (this.markAsDoneCheckbox) {
+			presetData.markAsDone = this.markAsDoneCheckbox.checked;
 		}
 
 		if (this.notificationInput?.value) {
