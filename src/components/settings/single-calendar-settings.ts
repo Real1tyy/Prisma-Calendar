@@ -2,16 +2,24 @@ import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
-import { CalendarSettings, GeneralSettings, NotificationsSettings, PropertiesSettings, RulesSettings } from ".";
+import {
+	CalendarSettings,
+	CategoriesSettings,
+	GeneralSettings,
+	NotificationsSettings,
+	PropertiesSettings,
+	RulesSettings,
+} from ".";
 
 export class SingleCalendarSettings {
-	private activeSection: "general" | "properties" | "calendar" | "notifications" | "rules" = "general";
+	private activeSection: "general" | "properties" | "calendar" | "notifications" | "rules" | "categories" = "general";
 
 	private generalSettings: GeneralSettings;
 	private propertiesSettings: PropertiesSettings;
 	private calendarSettings: CalendarSettings;
 	private notificationsSettings: NotificationsSettings;
 	private rulesSettings: RulesSettings;
+	private categoriesSettings: CategoriesSettings;
 
 	constructor(
 		settingsStore: CalendarSettingsStore,
@@ -24,6 +32,7 @@ export class SingleCalendarSettings {
 		this.calendarSettings = new CalendarSettings(settingsStore);
 		this.notificationsSettings = new NotificationsSettings(settingsStore);
 		this.rulesSettings = new RulesSettings(settingsStore);
+		this.categoriesSettings = new CategoriesSettings(settingsStore, plugin);
 	}
 
 	display(containerEl: HTMLElement): void {
@@ -43,6 +52,7 @@ export class SingleCalendarSettings {
 			{ id: "calendar" as const, label: "Calendar" },
 			{ id: "notifications" as const, label: "Notifications" },
 			{ id: "rules" as const, label: "Rules" },
+			{ id: "categories" as const, label: "Categories" },
 		];
 
 		sections.forEach((section) => {
@@ -77,6 +87,9 @@ export class SingleCalendarSettings {
 				break;
 			case "rules":
 				this.rulesSettings.display(contentContainer);
+				break;
+			case "categories":
+				this.categoriesSettings.display(contentContainer);
 				break;
 		}
 	}

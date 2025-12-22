@@ -39,6 +39,12 @@ Difficulty >= 8                                   → #f59e0b
 Status === 'Active' && (Priority === 'High' || DueDate < new Date())  → #3b82f6
 ```
 
+## Category Color Management
+
+For a convenient way to manage category colors without writing expressions manually, use the **Categories Settings** section (Settings → Categories). This interface automatically detects all categories from your events, displays event counts, and provides color pickers for each category. Behind the scenes, category colors are stored as color rules using expressions like `Category.includes('Work')`. The section also includes a pie chart showing category distribution.
+
+📖 See [Categories Settings](/configuration#categories-settings) in the Configuration documentation for detailed setup instructions and examples.
+
 ## Troubleshooting
 
 - Rule order matters: put specific rules above general ones

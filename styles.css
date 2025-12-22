@@ -1665,6 +1665,83 @@
 	border-color: var(--text-error);
 }
 
+/* Categories settings */
+.prisma-categories-empty-state {
+	padding: 16px;
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.prisma-category-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 12px;
+	margin-bottom: 8px;
+	background-color: var(--background-secondary);
+	gap: 12px;
+}
+
+.prisma-category-item-left {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex: 1;
+	min-width: 0;
+}
+
+.prisma-category-color-dot {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	border-radius: 4px;
+	background-color: var(--category-color);
+	border: 1px solid var(--background-modifier-border);
+	flex-shrink: 0;
+}
+
+.prisma-category-name-container {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1;
+	min-width: 0;
+}
+
+.prisma-category-name {
+	font-weight: 500;
+	color: var(--text-normal);
+}
+
+.prisma-category-count {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.prisma-category-item-right {
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+.prisma-categories-chart-section {
+	margin-top: 32px;
+}
+
+.prisma-categories-chart-section h3 {
+	margin-top: 0;
+	margin-bottom: 16px;
+}
+
+.prisma-categories-chart-container {
+	position: relative;
+	height: 400px;
+	width: 100%;
+}
+
 /* Virtual Event Styles */
 .prisma-virtual-event-opacity {
 	opacity: 0.6;

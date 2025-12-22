@@ -331,6 +331,37 @@ Create named filter expressions for quick access via the calendar toolbar dropdo
 - Presets are per-calendar configuration
 - Active preset filters are temporary and reset when the calendar is reloaded
 
+### Categories Settings
+
+Manage category colors visually with the Categories Settings section:
+
+1. Go to Settings → Categories
+2. View all categories automatically detected from your events
+3. See event counts for each category (e.g., "Work (15 events)")
+4. Configure colors using the color picker for each category
+5. View a pie chart showing category distribution with percentages
+
+**Features:**
+- **Automatic Detection**: Categories are automatically collected from all events using the category property configured in Settings → Properties
+- **Read-Only Categories**: Categories cannot be edited directly - they're detected from event usage
+- **Color Management**: Each category color is stored as a color rule (e.g., `Category.includes('Work')`) and updates in real-time
+- **Visual Distribution**: Pie chart shows percentage breakdown of events across categories
+- **Sorted by Usage**: Categories are sorted by event count (most used first)
+
+**How Category Colors Work:**
+- When you set a color for a category, it creates or updates a color rule behind the scenes
+- The expression format is: `{CategoryProperty}.includes('{CategoryName}')`
+- Colors apply immediately to all events with that category
+- If no color is set for a category, it uses the default event color
+
+**Example:**
+If your category property is `Category` and you set a color for "Work", it creates a color rule:
+```
+Category.includes('Work') → #3b82f6
+```
+
+All events with `Category: Work` will now use that color.
+
 ## Frontmatter Display
 
 Show extra frontmatter properties inside event chips (scrollable when space is tight).
