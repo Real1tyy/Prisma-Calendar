@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented here.
 
+## 1.18.1
+
+### Bug Fixes
+
+- **Fixed Color Rules Not Applying Correctly**: Fixed an issue where color rules would sometimes fail to apply to events, causing them to display with incorrect or default colors. Color evaluation now works consistently across all calendar views.
+
+---
+
 ## 1.18.0
 
 ### New Features
