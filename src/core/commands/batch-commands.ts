@@ -5,6 +5,7 @@ import {
 	CloneEventCommand,
 	DeleteEventCommand,
 	MarkAsDoneCommand,
+	MarkAsUndoneCommand,
 	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,
@@ -12,7 +13,6 @@ import {
 
 export function createBatchDeleteCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
 	const deleteCommands = filePaths.map((filePath) => new DeleteEventCommand(app, bundle, filePath));
-
 	return new MacroCommand(deleteCommands);
 }
 
@@ -24,7 +24,6 @@ export function createBatchMoveCommand(
 	endOffset: number
 ): MacroCommand {
 	const moveCommands = filePaths.map((filePath) => new MoveEventCommand(app, bundle, filePath, startOffset, endOffset));
-
 	return new MacroCommand(moveCommands);
 }
 
@@ -38,19 +37,16 @@ export function createBatchCloneCommand(
 	const cloneCommands = filePaths.map(
 		(filePath) => new CloneEventCommand(app, bundle, filePath, startOffset, endOffset)
 	);
-
 	return new MacroCommand(cloneCommands);
 }
 
 export function createBatchDuplicateCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
 	const duplicateCommands = filePaths.map((filePath) => new CloneEventCommand(app, bundle, filePath));
-
 	return new MacroCommand(duplicateCommands);
 }
 
 export function createBatchSkipCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
 	const skipCommands = filePaths.map((filePath) => new ToggleSkipCommand(app, bundle, filePath));
-
 	return new MacroCommand(skipCommands);
 }
 
@@ -61,14 +57,17 @@ export function createBatchMoveByCommand(
 	offsetMs: number
 ): MacroCommand {
 	const moveByCommands = filePaths.map((filePath) => new MoveByCommand(app, bundle, filePath, offsetMs));
-
 	return new MacroCommand(moveByCommands);
 }
 
 export function createBatchMarkAsDoneCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
 	const markAsDoneCommands = filePaths.map((filePath) => new MarkAsDoneCommand(app, bundle, filePath));
-
 	return new MacroCommand(markAsDoneCommands);
+}
+
+export function createBatchMarkAsNotDoneCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
+	const markAsNotDoneCommands = filePaths.map((filePath) => new MarkAsUndoneCommand(app, bundle, filePath));
+	return new MacroCommand(markAsNotDoneCommands);
 }
 
 export function calculateWeekOffsets(weeks: number): [number, number] {
@@ -111,5 +110,9 @@ export class BatchCommandFactory {
 
 	createMarkAsDone(filePaths: string[]): MacroCommand {
 		return createBatchMarkAsDoneCommand(this.app, this.bundle, filePaths);
+	}
+
+	createMarkAsNotDone(filePaths: string[]): MacroCommand {
+		return createBatchMarkAsNotDoneCommand(this.app, this.bundle, filePaths);
 	}
 }

@@ -364,6 +364,14 @@ export class BatchSelectionManager {
 		);
 	}
 
+	public async executeMarkAsNotDone(): Promise<void> {
+		await this.executeWithSelection(
+			(filePaths) => this.batchCommandFactory.createMarkAsNotDone(filePaths),
+			(count) => `Marked ${count} event${pluralize(count)} as not done`,
+			"Failed to mark events as not done"
+		);
+	}
+
 	public executeMoveBy(): void {
 		if (this.returnIfEmpty()) return;
 

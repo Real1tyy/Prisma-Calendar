@@ -243,6 +243,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				},
 				className: `${clsBase} ${cls("mark-done-btn")}`,
 			},
+			batchMarkAsNotDone: {
+				text: "Not Done",
+				click: () => {
+					void bsm.executeMarkAsNotDone();
+				},
+				className: `${clsBase} ${cls("mark-not-done-btn")}`,
+			},
 			batchDelete: {
 				text: "Delete",
 				click: () => {
@@ -1831,6 +1838,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	markAsDoneSelection(): void {
 		void this.batchSelectionManager?.executeMarkAsDone();
+	}
+
+	markAsNotDoneSelection(): void {
+		void this.batchSelectionManager?.executeMarkAsNotDone();
 	}
 
 	duplicateSelection(): void {

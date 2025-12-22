@@ -38,16 +38,35 @@ Quickly make changes to many events at once.
 - Preserves recurring series
 - View/restore via Calendar menu → "View Skipped Events"
 
-### Mark Done
-- Marks all selected events as done by setting the status property
-- Uses the status property and done value configured in Settings → Properties
-- Undoable operation
+### Mark Done / Mark as Not Done
+- **Mark Done**: Marks all selected events as done by setting the status property
+- **Mark as Not Done**: Marks all selected events as not done by setting the status property
+- Uses the status property and done/not done values configured in Settings → Properties
+- Undoable operations
 - Useful for quickly marking completed tasks or past events
 - **Tip:** You can also mark individual events as done/undone by right-clicking them in the calendar
+
+### Move By
+- Opens a dialog to move selected events by a custom number of days
+- Supports positive values (move forward) and negative values (move backward)
+- Example: Enter `7` to move events one week forward, or `-3` to move them 3 days back
 
 ### Open All in Tabs
 - Opens all selected event files in editor tabs
 - Quick access for batch reviewing/editing
+
+## Customizing Batch Action Buttons
+
+By default, not all batch action buttons are shown in the toolbar to keep the interface compact and prevent the toolbar from spanning multiple rows. The following buttons are **disabled by default**:
+
+- **Move By**: Custom time offset movement
+- **Open All**: Open all selected events in tabs
+- **Move Prev**: Move to previous week
+- **Clone Prev**: Clone to previous week
+
+You can customize which buttons appear in the batch selection toolbar by going to **Settings → Calendar → Batch Selection → Batch action buttons**. Enable or disable any combination of buttons to match your workflow. The counter and exit buttons are always shown and cannot be disabled.
+
+**Note:** Enabling all available buttons will cause the toolbar to span two rows. The default selection is optimized to show the most commonly used actions while keeping the interface on a single row.
 
 ## Typical Workflows
 
@@ -69,3 +88,4 @@ Quickly make changes to many events at once.
 - Filter before selecting to narrow down to intended events
 - Batch selection not available in List view
 - Snap duration and slot duration affect drag/resize behavior after cloning
+- **Keyboard Access**: All batch operations can be performed using Obsidian commands, which can be assigned custom hotkeys for faster access. See the [Hotkeys documentation](/features/hotkeys) for a complete list of available commands and how to assign hotkeys.

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BATCH_BUTTON_IDS, SETTINGS_DEFAULTS } from "../constants";
+import { BATCH_BUTTON_IDS, DEFAULT_BATCH_ACTION_BUTTONS, SETTINGS_DEFAULTS } from "../constants";
 import { CalDAVSettingsSchema } from "../core/integrations/caldav";
 import { ColorSchema } from "../utils/validation";
 import { CalendarViewTypeSchema } from "./view";
@@ -119,7 +119,7 @@ export const CalendarSettingsSchema = z.object({
 		.min(50)
 		.max(2000)
 		.default(SETTINGS_DEFAULTS.DEFAULT_DRAG_EDGE_SCROLL_DELAY_MS), // Delay in milliseconds before scrolling when dragging events near edge
-	batchActionButtons: z.array(BatchActionButtonSchema).default([...BATCH_BUTTON_IDS]), // Which batch action buttons to show in batch selection mode toolbar
+	batchActionButtons: z.array(BatchActionButtonSchema).default([...DEFAULT_BATCH_ACTION_BUTTONS]), // Which batch action buttons to show in batch selection mode toolbar
 });
 
 export const RulesSettingsSchema = z.object({

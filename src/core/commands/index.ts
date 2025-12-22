@@ -5,6 +5,7 @@ export {
 	createBatchDeleteCommand,
 	createBatchDuplicateCommand,
 	createBatchMarkAsDoneCommand,
+	createBatchMarkAsNotDoneCommand,
 	createBatchMoveByCommand,
 	createBatchMoveCommand,
 } from "./batch-commands";

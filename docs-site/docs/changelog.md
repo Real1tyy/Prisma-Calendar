@@ -6,6 +6,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Mark as Not Done in Batch Selection**: Added a new "Mark as Not Done" button in batch selection mode that allows you to mark multiple selected events as not done at once. This complements the existing "Mark as Done" functionality and uses the status property and not done value configured in Settings → Properties. The operation is fully undoable.
+
 - **Highlight Events With Category**: Added a new command that opens a modal to select a category and temporarily highlights all events assigned to that category. The modal displays all available categories from your events in a dropdown, and events are highlighted for 10 seconds. This complements the existing "Highlight events without categories" command, making it easy to visually identify events by category across your calendar.
 
 - **Configurable Default Statistics Grouping**: Added a new setting "Default statistics grouping" in Settings → Parsing that allows you to configure whether statistics modals start grouped by event name or by category. The default is "Event Name", but you can change it to "Category" if you prefer to see category-based statistics by default. You can still toggle between modes within each statistics modal using the "Group by" button.
@@ -13,6 +15,10 @@ All notable changes to this project will be documented here.
 - **Categories Settings**: Added a new "Categories" section in Settings that provides a convenient interface for managing category colors. The section displays all categories automatically detected from your events, shows the event count for each category, and allows you to configure colors for each category with a color picker. Behind the scenes, category colors are managed as color rules using expressions like `Category.includes('Work')`. The section also includes a pie chart visualization showing the distribution of events across categories with percentages. Categories are read-only (automatically detected from event usage) and sorted by event count. This makes it easy to visually organize and understand your category usage at a glance.
 
   📖 See [Color Rules Documentation](/features/color-rules#category-color-management) and [Configuration Settings](/configuration#categories-settings) for detailed information.
+
+### Improvements
+
+- **Optimized Default Batch Action Buttons**: To reduce toolbar clutter and keep the batch selection toolbar on a single row, the following buttons are now disabled by default: "Move By", "Open All", "Move Prev", and "Clone Prev". All batch action buttons remain fully configurable in Settings → Calendar → Batch Selection, so you can enable any combination of buttons to match your workflow. Enabling all buttons would cause the toolbar to span two rows, so we've optimized the defaults to show the most commonly used actions while keeping the interface compact. **Note:** All batch operations available via buttons can also be performed using Obsidian commands, which can be assigned custom hotkeys for even faster access. See the [Hotkeys documentation](/features/hotkeys) for details.
 
 ### Bug Fixes
 
