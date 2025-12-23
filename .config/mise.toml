@@ -1,6 +1,6 @@
 [env]
 # Dynamic plugin directory based on manifest.json id
-OBSIDIAN_VAULT_PATH = "/home/real1ty/Documents/SecondBrain/SecondBrain"
+OBSIDIAN_VAULT_PATH = "/home/real1ty/Documents/SecondBrain"
 # Make CI non-interactive for CI/headless environments
 CI = "1"
 
