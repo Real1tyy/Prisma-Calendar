@@ -6,12 +6,14 @@ import {
 	sanitizeForFilename,
 	withFrontmatter,
 	withLock,
+	type FrontmatterDiff,
+	mergeFrontmatterDiffs,
+	FrontmatterPropagationModal,
 } from "@real1ty-obsidian-plugins/utils";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
-import { FrontmatterPropagationModal } from "../components/modals/frontmatter-propagation-modal";
 import type { Frontmatter } from "../types";
 import type { NodeRecurringEvent } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
@@ -23,7 +25,6 @@ import {
 } from "../utils/calendar-events";
 import { getNextOccurrence } from "../utils/date-recurrence";
 import { applySourceTimeToInstanceDate } from "../utils/format";
-import { type FrontmatterDiff, mergeFrontmatterDiffs } from "../utils/frontmatter-diff";
 import { deleteFilesByPaths } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { Indexer, IndexerEvent } from "./indexer";

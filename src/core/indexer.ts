@@ -1,4 +1,4 @@
-import { isFileInConfiguredDirectory } from "@real1ty-obsidian-plugins/utils";
+import { compareFrontmatter, type FrontmatterDiff, isFileInConfiguredDirectory } from "@real1ty-obsidian-plugins/utils";
 import { type App, type MetadataCache, type TAbstractFile, TFile, type Vault } from "obsidian";
 import {
 	type BehaviorSubject,
@@ -18,7 +18,6 @@ import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import { generateUniqueRruleId, getRecurringInstanceExcludedProps } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
-import { compareFrontmatter, type FrontmatterDiff } from "../utils/frontmatter-diff";
 
 export interface RawEventSource {
 	filePath: string;

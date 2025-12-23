@@ -1,5 +1,6 @@
 import {
 	backupFrontmatter,
+	compareFrontmatter,
 	getTFileOrThrow,
 	restoreFrontmatter,
 	sanitizeForFilename,
@@ -18,7 +19,6 @@ import {
 	setEventBasics,
 	shouldUpdateInstanceDateOnMove,
 } from "../../utils/calendar-events";
-import { compareFrontmatter } from "../../utils/frontmatter-diff";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { Command } from "./command";
 
