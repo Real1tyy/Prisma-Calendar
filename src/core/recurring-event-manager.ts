@@ -94,7 +94,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 						if (event.oldPath) {
 							await this.handleRecurringEventRenamedWithLock(event.recurringEvent);
 						}
-						await this.handleFrontmatterPropagation(event.recurringEvent, event.frontmatterDiff);
+						this.handleFrontmatterPropagation(event.recurringEvent, event.frontmatterDiff);
 					}
 				}
 				break;
@@ -151,10 +151,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 	}
 
-	private async handleFrontmatterPropagation(
-		recurringEvent: NodeRecurringEvent,
-		frontmatterDiff?: FrontmatterDiff
-	): Promise<void> {
+	private handleFrontmatterPropagation(recurringEvent: NodeRecurringEvent, frontmatterDiff?: FrontmatterDiff): void {
 		if (!this.settings.propagateFrontmatterToInstances && !this.settings.askBeforePropagatingFrontmatter) {
 			return;
 		}
