@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented here.
 
+## 1.20.0
+
+### Improvements
+
+- **Mobile Event Interaction**: Improved mobile event interaction with intuitive tap gestures. Single tap on any event now opens the context menu, making it easier to access event actions on mobile devices. Double tap opens the event note.
+
 ## 1.19.0
 
 ### New Features

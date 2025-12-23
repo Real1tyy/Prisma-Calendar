@@ -57,6 +57,7 @@ export class EventContextMenu {
 	private app: App;
 	private bundle: CalendarBundle;
 	private calendarView: CalendarView;
+	private currentMenu: Menu | null = null;
 
 	constructor(app: App, bundle: CalendarBundle, calendarView: CalendarView) {
 		this.app = app;
@@ -169,8 +170,19 @@ export class EventContextMenu {
 		return null;
 	}
 
-	show(e: MouseEvent, info: { event: CalendarEventInfo }, targetEl?: HTMLElement, containerEl?: HTMLElement): void {
+	show(
+		eOrPosition: MouseEvent | { x: number; y: number },
+		info: { event: CalendarEventInfo },
+		targetEl?: HTMLElement,
+		containerEl?: HTMLElement
+	): void {
+		if (this.currentMenu) {
+			this.currentMenu.close();
+			this.currentMenu = null;
+		}
+
 		const menu = new Menu();
+		this.currentMenu = menu;
 		const event = info.event;
 		const filePath = event.extendedProps?.filePath;
 
@@ -394,7 +406,17 @@ export class EventContextMenu {
 			});
 		}
 
-		menu.showAtMouseEvent(e);
+		menu.onHide(() => {
+			if (this.currentMenu === menu) {
+				this.currentMenu = null;
+			}
+		});
+
+		if (eOrPosition instanceof MouseEvent) {
+			menu.showAtMouseEvent(eOrPosition);
+		} else {
+			menu.showAtPosition(eOrPosition);
+		}
 	}
 
 	private isSourceEventDisabled(event: CalendarEventInfo): boolean {

@@ -133,6 +133,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private dragEdgeScrollTimeout: number | null = null;
 	private lastEdgeScrollTime = 0;
 	private refreshRafId: number | null = null;
+	private lastMobileTapTime = 0;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -960,7 +961,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 						this.batchSelectionManager.handleEventClick(info.event.id);
 					}
 				} else {
-					this.handleEventClick(info);
+					this.handleEventClick(info, info.el);
 				}
 			},
 
@@ -1468,7 +1469,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
-	private handleEventClick(info: { event: Pick<CalendarEventData, "title" | "extendedProps"> }): void {
+	private handleEventClick(
+		info: { event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay"> },
+		eventEl: HTMLElement
+	): void {
 		const event = info.event;
 		const filePath = event.extendedProps.filePath;
 		const isVirtual = event.extendedProps.isVirtual;
@@ -1498,6 +1502,40 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					return;
 				}
 			}
+		}
+
+		// On mobile: single tap = context menu, double tap = open note
+		if (this.isMobileView()) {
+			const currentTime = Date.now();
+			const timeSinceLastTap = currentTime - this.lastMobileTapTime;
+			const DOUBLE_TAP_DELAY = 300;
+
+			if (timeSinceLastTap < DOUBLE_TAP_DELAY && timeSinceLastTap > 0) {
+				// Double tap - open the note
+				this.lastMobileTapTime = 0;
+				if (filePath && typeof filePath === "string") {
+					void this.app.workspace.openLinkText(filePath, "", false);
+				}
+				return;
+			}
+
+			// Single tap - show context menu
+			this.lastMobileTapTime = currentTime;
+			const rect = eventEl.getBoundingClientRect();
+			const menuEvent = {
+				title: event.title,
+				start: event.start,
+				end: event.end,
+				allDay: event.allDay,
+				extendedProps: event.extendedProps,
+			};
+			this.eventContextMenu.show(
+				{ x: rect.left + rect.width / 2, y: rect.top },
+				{ event: menuEvent },
+				eventEl,
+				this.container
+			);
+			return;
 		}
 
 		// For regular and physical events, open the file
