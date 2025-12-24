@@ -13,6 +13,7 @@ export type { Command } from "./command";
 export { MacroCommand } from "./command";
 export { CommandManager } from "./command-manager";
 export {
+	AssignCategoriesCommand,
 	CloneEventCommand,
 	CreateEventCommand,
 	DeleteEventCommand,

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented here.
 
+## 1.20.1
+
+### Improvements
+
+- **Undoable Category Assignment**: Category assignment from the event context menu now uses the command system, making it fully undoable. Previously, category assignments were applied directly to frontmatter without undo support. Now all category assignments (both individual and batch) support undo/redo operations.
+
+- **Hotkey-Configurable Batch Category Assignment**: Added a new command "Batch: Assign categories to selection" that allows you to assign categories to multiple selected events via keyboard shortcut. The command can be assigned a custom hotkey in Obsidian's settings for quick access during batch operations.
+
 ## 1.20.0
 
 ### New Features

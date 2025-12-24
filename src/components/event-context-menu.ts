@@ -2,6 +2,7 @@ import { getObsidianLinkPath } from "@real1ty-obsidian-plugins/utils";
 import { type App, Menu, Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
+	AssignCategoriesCommand,
 	CloneEventCommand,
 	DeleteEventCommand,
 	DuplicateRecurringEventCommand,
@@ -15,7 +16,7 @@ import {
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import type { ParsedEvent } from "../core/parser";
 import type { Frontmatter } from "../types";
-import { assignCategoriesToFrontmatter, findAdjacentEvent, isEventDone } from "../utils/calendar-events";
+import { findAdjacentEvent, isEventDone } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
 import { parseIntoList } from "../utils/list-utils";
 import { emitHover } from "../utils/obsidian";
@@ -839,11 +840,13 @@ export class EventContextMenu {
 				defaultColor,
 				currentCategories,
 				async (selectedCategories: string[]) => {
-					await this.app.fileManager.processFrontMatter(file, (fm) => {
-						assignCategoriesToFrontmatter(fm, categoryProp, selectedCategories);
-					});
-
-					new Notice("Categories updated");
+					await this.runCommand(
+						() => new AssignCategoriesCommand(this.app, this.bundle, filePath, selectedCategories),
+						{
+							success: "Categories updated",
+							error: "Failed to assign categories",
+						}
+					);
 				}
 			);
 			modal.open();
