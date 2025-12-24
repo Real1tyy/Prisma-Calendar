@@ -139,6 +139,7 @@ export const BATCH_BUTTONS = {
 	"Move By": "batchMoveBy",
 	"Mark as Done": "batchMarkAsDone",
 	"Mark as Not Done": "batchMarkAsNotDone",
+	Categories: "batchCategories",
 	"Clone Next": "batchCloneNext",
 	"Clone Prev": "batchClonePrev",
 	"Move Next": "batchMoveNext",
@@ -155,5 +156,5 @@ export const BATCH_BUTTON_LABELS = Object.fromEntries(
 ) as Record<string, string>;
 
 export const DEFAULT_BATCH_ACTION_BUTTONS = BATCH_BUTTON_IDS.filter(
-	(id) => !["batchMoveBy", "batchOpenAll", "batchMovePrev", "batchClonePrev"].includes(id)
+	(id) => !["batchMoveBy", "batchOpenAll", "batchMovePrev", "batchClonePrev", "batchCategories"].includes(id)
 );

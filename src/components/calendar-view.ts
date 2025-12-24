@@ -19,7 +19,7 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import { UpdateEventCommand } from "../core/commands";
 import type { ParsedEvent } from "../core/parser";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
-import { removeInstanceDate, removeZettelId } from "../utils/calendar-events";
+import { getCommonCategories, removeInstanceDate, removeZettelId } from "../utils/calendar-events";
 import { toggleEventHighlight } from "../utils/dom-utils";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
@@ -38,6 +38,7 @@ import {
 	SkippedEventsModal,
 } from "./list-modals";
 import { EventCreateModal } from "./modals";
+import { CategoryAssignModal } from "./modals/category-assign-modal";
 import { CategorySelectModal } from "./modals/category-select-modal";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
@@ -251,6 +252,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					void bsm.executeMarkAsNotDone();
 				},
 				className: `${clsBase} ${cls("mark-not-done-btn")}`,
+			},
+			batchCategories: {
+				text: "Categories",
+				click: () => {
+					void this.openCategoryAssignModal();
+				},
+				className: `${clsBase} ${cls("categories-btn")}`,
 			},
 			batchDelete: {
 				text: "Delete",
@@ -1639,6 +1647,30 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			modal.setAutoStartStopwatch(true);
 		}
 
+		modal.open();
+	}
+
+	async openCategoryAssignModal(): Promise<void> {
+		if (!this.batchSelectionManager) return;
+
+		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
+		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
+		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		const commonCategories = await getCommonCategories(this.app, selectedEvents, settings.categoryProp);
+
+		const modal = new CategoryAssignModal(
+			this.app,
+			categories,
+			defaultColor,
+			commonCategories,
+			(selectedCategories: string[]) => {
+				if (this.batchSelectionManager) {
+					this.batchSelectionManager.executeAssignCategories(selectedCategories);
+				}
+			}
+		);
 		modal.open();
 	}
 
