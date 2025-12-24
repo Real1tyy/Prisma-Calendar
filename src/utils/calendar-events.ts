@@ -4,6 +4,7 @@ import { type App, TFile } from "obsidian";
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { EventStore } from "../core/event-store";
 import type { Frontmatter, SingleCalendarConfig } from "../types";
+import { parseIntoList } from "./list-utils";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
 	return allDayValue === true || (typeof allDayValue === "string" && allDayValue.toLowerCase() === "true");
@@ -453,4 +454,36 @@ export const findAdjacentEvent = (
 	return direction === "next"
 		? eventStore.findNextEventByStartTime(searchTime, excludeFilePath)
 		: eventStore.findPreviousEventByEndTime(searchTime, excludeFilePath);
+};
+
+/**
+ * Gets categories that are common across all selected events.
+ * Returns an array of category names that exist in ALL events.
+ */
+export const getCommonCategories = async (
+	app: App,
+	selectedEvents: { filePath: string }[],
+	categoryProp: string
+): Promise<string[]> => {
+	if (selectedEvents.length === 0 || !categoryProp) return [];
+
+	const eventCategories: Set<string>[] = [];
+
+	for (const event of selectedEvents) {
+		const file = app.vault.getAbstractFileByPath(event.filePath);
+		if (!file || !(file instanceof TFile)) continue;
+
+		const cache = app.metadataCache.getFileCache(file);
+		const categoryValue = cache?.frontmatter?.[categoryProp];
+
+		const categories = new Set(parseIntoList(categoryValue));
+		eventCategories.push(categories);
+	}
+
+	const firstEventCategories = eventCategories[0];
+	const commonCategories = Array.from(firstEventCategories).filter((category) =>
+		eventCategories.every((eventCats) => eventCats.has(category))
+	);
+
+	return commonCategories;
 };

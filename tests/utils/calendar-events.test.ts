@@ -6,6 +6,7 @@ import {
 	extractZettelId,
 	generateUniqueEventPath,
 	generateUniqueZettelId,
+	getCommonCategories,
 	hashRRuleIdToZettelFormat,
 	hasTimestamp,
 	isEventDone,
@@ -831,6 +832,155 @@ describe("Physical Recurring Event Utilities", () => {
 
 			const result = isEventDone(mockApp as unknown as App, "Events/test-event.md", "Status", "Done");
 			expect(result).toBe(false);
+		});
+	});
+
+	describe("getCommonCategories", () => {
+		it("should return categories common to all events (YAML array format)", async () => {
+			const mockApp = createMockApp();
+			const mockFile1 = createMockFile("event1.md");
+			const mockFile2 = createMockFile("event2.md");
+			const mockFile3 = createMockFile("event3.md");
+
+			vi.spyOn(mockApp.vault, "getAbstractFileByPath")
+				.mockReturnValueOnce(mockFile1)
+				.mockReturnValueOnce(mockFile2)
+				.mockReturnValueOnce(mockFile3);
+
+			vi.spyOn(mockApp.metadataCache, "getFileCache")
+				.mockReturnValueOnce({
+					frontmatter: { Category: ["Work", "Meeting", "Important"] },
+				} as never)
+				.mockReturnValueOnce({
+					frontmatter: { Category: ["Work", "Meeting", "Urgent"] },
+				} as never)
+				.mockReturnValueOnce({
+					frontmatter: { Category: ["Work", "Meeting", "Planning"] },
+				} as never);
+
+			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }, { filePath: "event3.md" }];
+
+			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+
+			expect(result).toEqual(["Work", "Meeting"]);
+		});
+
+		it("should return categories common to all events (single string format)", async () => {
+			const mockApp = createMockApp();
+			const mockFile1 = createMockFile("event1.md");
+			const mockFile2 = createMockFile("event2.md");
+
+			vi.spyOn(mockApp.vault, "getAbstractFileByPath").mockReturnValueOnce(mockFile1).mockReturnValueOnce(mockFile2);
+
+			vi.spyOn(mockApp.metadataCache, "getFileCache")
+				.mockReturnValueOnce({
+					frontmatter: { Category: "Netflix" },
+				} as never)
+				.mockReturnValueOnce({
+					frontmatter: { Category: "Netflix" },
+				} as never);
+
+			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
+
+			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+
+			expect(result).toEqual(["Netflix"]);
+		});
+
+		it("should return empty array when no categories are common", async () => {
+			const mockApp = createMockApp();
+			const mockFile1 = createMockFile("event1.md");
+			const mockFile2 = createMockFile("event2.md");
+
+			vi.spyOn(mockApp.vault, "getAbstractFileByPath").mockReturnValueOnce(mockFile1).mockReturnValueOnce(mockFile2);
+
+			vi.spyOn(mockApp.metadataCache, "getFileCache")
+				.mockReturnValueOnce({
+					frontmatter: { Category: ["Work", "Meeting"] },
+				} as never)
+				.mockReturnValueOnce({
+					frontmatter: { Category: ["Personal", "Fitness"] },
+				} as never);
+
+			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
+
+			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+
+			expect(result).toEqual([]);
+		});
+
+		it("should return empty array when no events are selected", async () => {
+			const mockApp = createMockApp();
+			const result = await getCommonCategories(mockApp as unknown as App, [], "Category");
+			expect(result).toEqual([]);
+		});
+
+		it("should return empty array when categoryProp is empty", async () => {
+			const mockApp = createMockApp();
+			const selectedEvents = [{ filePath: "event1.md" }];
+			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "");
+			expect(result).toEqual([]);
+		});
+
+		it("should handle mixed format categories (comma-separated and array)", async () => {
+			const mockApp = createMockApp();
+			const mockFile1 = createMockFile("event1.md");
+			const mockFile2 = createMockFile("event2.md");
+
+			vi.spyOn(mockApp.vault, "getAbstractFileByPath").mockReturnValueOnce(mockFile1).mockReturnValueOnce(mockFile2);
+
+			vi.spyOn(mockApp.metadataCache, "getFileCache")
+				.mockReturnValueOnce({
+					frontmatter: { Category: "Work, Meeting, Important" },
+				} as never)
+				.mockReturnValueOnce({
+					frontmatter: { Category: ["Work", "Meeting", "Urgent"] },
+				} as never);
+
+			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
+
+			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+
+			expect(result).toEqual(["Work", "Meeting"]);
+		});
+
+		it("should skip files that don't exist", async () => {
+			const mockApp = createMockApp();
+			const mockFile1 = createMockFile("event1.md");
+
+			vi.spyOn(mockApp.vault, "getAbstractFileByPath").mockReturnValueOnce(mockFile1).mockReturnValueOnce(null);
+
+			vi.spyOn(mockApp.metadataCache, "getFileCache").mockReturnValueOnce({
+				frontmatter: { Category: ["Work", "Meeting"] },
+			} as never);
+
+			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "nonexistent.md" }];
+
+			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+
+			expect(result).toEqual(["Work", "Meeting"]);
+		});
+
+		it("should handle events with no categories", async () => {
+			const mockApp = createMockApp();
+			const mockFile1 = createMockFile("event1.md");
+			const mockFile2 = createMockFile("event2.md");
+
+			vi.spyOn(mockApp.vault, "getAbstractFileByPath").mockReturnValueOnce(mockFile1).mockReturnValueOnce(mockFile2);
+
+			vi.spyOn(mockApp.metadataCache, "getFileCache")
+				.mockReturnValueOnce({
+					frontmatter: { Category: ["Work"] },
+				} as never)
+				.mockReturnValueOnce({
+					frontmatter: {},
+				} as never);
+
+			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
+
+			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+
+			expect(result).toEqual([]);
 		});
 	});
 });
