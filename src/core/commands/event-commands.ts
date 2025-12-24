@@ -648,3 +648,54 @@ export class MarkAsUndoneCommand extends SetStatusCommand {
 		return "mark-as-undone";
 	}
 }
+
+export class AssignCategoriesCommand implements Command {
+	private originalCategoryValue?: string | string[] | undefined;
+
+	constructor(
+		private app: App,
+		private bundle: CalendarBundle,
+		private filePath: string,
+		private categoriesToAdd: string[]
+	) {}
+
+	async execute(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+			if (this.originalCategoryValue === undefined) {
+				this.originalCategoryValue = fm[settings.categoryProp] as string | string[] | undefined;
+			}
+
+			if (this.categoriesToAdd.length === 0) {
+				delete fm[settings.categoryProp];
+			} else if (this.categoriesToAdd.length === 1) {
+				fm[settings.categoryProp] = this.categoriesToAdd[0];
+			} else {
+				fm[settings.categoryProp] = this.categoriesToAdd;
+			}
+		});
+	}
+
+	async undo(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+			if (this.originalCategoryValue === undefined) {
+				delete fm[settings.categoryProp];
+			} else {
+				fm[settings.categoryProp] = this.originalCategoryValue;
+			}
+		});
+	}
+
+	canUndo(): boolean {
+		return true;
+	}
+
+	getType(): string {
+		return "assign-categories";
+	}
+}

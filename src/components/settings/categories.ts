@@ -6,7 +6,7 @@ import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker"
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 
-interface CategoryInfoWithCount extends CategoryInfo{
+interface CategoryInfoWithCount extends CategoryInfo {
 	count: number;
 }
 

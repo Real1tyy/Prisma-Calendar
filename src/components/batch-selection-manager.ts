@@ -402,6 +402,14 @@ export class BatchSelectionManager {
 		}).open();
 	}
 
+	public executeAssignCategories(categories: string[]): void {
+		void this.executeWithSelection(
+			(filePaths) => this.batchCommandFactory.createAssignCategories(filePaths, categories),
+			(count) => `Assigned categories to ${count} event${pluralize(count)}`,
+			"Failed to assign categories"
+		);
+	}
+
 	refreshSelectionStyling(): void {
 		if (this.isSelectionMode) {
 			this.removeSelectionStylingFromEvents();

@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 import { MacroCommand } from "./command";
 import {
+	AssignCategoriesCommand,
 	CloneEventCommand,
 	DeleteEventCommand,
 	MarkAsDoneCommand,
@@ -70,6 +71,18 @@ export function createBatchMarkAsNotDoneCommand(app: App, bundle: CalendarBundle
 	return new MacroCommand(markAsNotDoneCommands);
 }
 
+export function createBatchAssignCategoriesCommand(
+	app: App,
+	bundle: CalendarBundle,
+	filePaths: string[],
+	categories: string[]
+): MacroCommand {
+	const assignCategoriesCommands = filePaths.map(
+		(filePath) => new AssignCategoriesCommand(app, bundle, filePath, categories)
+	);
+	return new MacroCommand(assignCategoriesCommands);
+}
+
 export function calculateWeekOffsets(weeks: number): [number, number] {
 	const weekInMs = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 	const offset = weeks * weekInMs;
@@ -114,5 +127,9 @@ export class BatchCommandFactory {
 
 	createMarkAsNotDone(filePaths: string[]): MacroCommand {
 		return createBatchMarkAsNotDoneCommand(this.app, this.bundle, filePaths);
+	}
+
+	createAssignCategories(filePaths: string[], categories: string[]): MacroCommand {
+		return createBatchAssignCategoriesCommand(this.app, this.bundle, filePaths, categories);
 	}
 }
