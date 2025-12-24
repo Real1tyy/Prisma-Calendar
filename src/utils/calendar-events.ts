@@ -474,7 +474,7 @@ export const getCommonCategories = async (
 		if (!file || !(file instanceof TFile)) continue;
 
 		const cache = app.metadataCache.getFileCache(file);
-		const categoryValue = cache?.frontmatter?.[categoryProp];
+		const categoryValue = cache?.frontmatter?.[categoryProp] as unknown;
 
 		const categories = new Set(parseIntoList(categoryValue));
 		eventCategories.push(categories);

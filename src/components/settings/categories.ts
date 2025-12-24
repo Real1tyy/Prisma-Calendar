@@ -115,9 +115,9 @@ export class CategoriesSettings {
 				type: "color",
 				value: categoryInfo.color,
 			});
-			colorInput.addEventListener("change", async (event) => {
+			colorInput.addEventListener("change", (event) => {
 				const target = event.target as HTMLInputElement;
-				await this.updateCategoryColor(categoryInfo.name, target.value);
+				void this.updateCategoryColor(categoryInfo.name, target.value);
 			});
 		});
 	}

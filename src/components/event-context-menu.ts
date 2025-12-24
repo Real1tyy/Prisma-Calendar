@@ -827,7 +827,7 @@ export class EventContextMenu {
 			}
 
 			// Get current categories from frontmatter
-			const categoryValue = cache?.frontmatter?.[categoryProp];
+			const categoryValue = cache?.frontmatter?.[categoryProp] as unknown;
 			const currentCategories = parseIntoList(categoryValue);
 
 			// Get all available categories with colors
@@ -839,8 +839,8 @@ export class EventContextMenu {
 				categories,
 				defaultColor,
 				currentCategories,
-				async (selectedCategories: string[]) => {
-					await this.runCommand(
+				(selectedCategories: string[]) => {
+					void this.runCommand(
 						() => new AssignCategoriesCommand(this.app, this.bundle, filePath, selectedCategories),
 						{
 							success: "Categories updated",

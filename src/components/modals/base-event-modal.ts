@@ -473,7 +473,7 @@ export abstract class BaseEventModal extends Modal {
 
 		// Assign Categories button
 		const assignButton = categoryContent.createEl("button", {
-			text: "Assign Categories",
+			text: "Assign categories",
 			cls: cls("assign-categories-button"),
 		});
 		assignButton.addEventListener("click", () => {
@@ -1298,7 +1298,7 @@ export abstract class BaseEventModal extends Modal {
 
 				const settings = this.bundle.settingsStore.currentSettings;
 				if (settings.categoryProp) {
-					const categoryValue = cache.frontmatter[settings.categoryProp];
+					const categoryValue = cache.frontmatter[settings.categoryProp] as unknown;
 					this.selectedCategories = parseIntoList(categoryValue);
 				}
 			}

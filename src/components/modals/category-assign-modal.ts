@@ -38,7 +38,7 @@ export class CategoryAssignModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		contentEl.createEl("h2", { text: "Assign Categories" });
+		contentEl.createEl("h2", { text: "Assign categories" });
 
 		const description = contentEl.createEl("p", {
 			text: "Select categories to assign to all selected events. This will replace any existing categories.",
@@ -160,9 +160,9 @@ export class CategoryAssignModal extends Modal {
 		const selectedCount = this.categoryStates.filter((state) => state.checked).length;
 
 		if (selectedCount === 0) {
-			this.assignButton.textContent = "Remove Categories";
+			this.assignButton.textContent = "Remove categories";
 		} else {
-			this.assignButton.textContent = "Assign Categories";
+			this.assignButton.textContent = "Assign categories";
 		}
 	}
 
@@ -253,7 +253,7 @@ export class CategoryAssignModal extends Modal {
 		cancelBtn.onclick = () => this.close();
 
 		this.assignButton = buttonContainer.createEl("button", {
-			text: "Remove Categories",
+			text: "Remove categories",
 			cls: "mod-cta",
 		});
 		this.assignButton.onclick = () => {
