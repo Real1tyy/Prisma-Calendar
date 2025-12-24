@@ -1658,7 +1658,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		const commonCategories = await getCommonCategories(this.app, selectedEvents, settings.categoryProp);
+		const commonCategories = getCommonCategories(this.app, selectedEvents, settings.categoryProp);
 
 		const modal = new CategoryAssignModal(
 			this.app,

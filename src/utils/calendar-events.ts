@@ -460,11 +460,11 @@ export const findAdjacentEvent = (
  * Gets categories that are common across all selected events.
  * Returns an array of category names that exist in ALL events.
  */
-export const getCommonCategories = async (
+export const getCommonCategories = (
 	app: App,
 	selectedEvents: { filePath: string }[],
 	categoryProp: string
-): Promise<string[]> => {
+): string[] => {
 	if (selectedEvents.length === 0 || !categoryProp) return [];
 
 	const eventCategories: Set<string>[] = [];

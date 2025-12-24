@@ -860,7 +860,7 @@ describe("Physical Recurring Event Utilities", () => {
 
 			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }, { filePath: "event3.md" }];
 
-			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 
 			expect(result).toEqual(["Work", "Meeting"]);
 		});
@@ -882,7 +882,7 @@ describe("Physical Recurring Event Utilities", () => {
 
 			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
 
-			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 
 			expect(result).toEqual(["Netflix"]);
 		});
@@ -904,21 +904,21 @@ describe("Physical Recurring Event Utilities", () => {
 
 			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
 
-			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 
 			expect(result).toEqual([]);
 		});
 
 		it("should return empty array when no events are selected", async () => {
 			const mockApp = createMockApp();
-			const result = await getCommonCategories(mockApp as unknown as App, [], "Category");
+			const result = getCommonCategories(mockApp as unknown as App, [], "Category");
 			expect(result).toEqual([]);
 		});
 
 		it("should return empty array when categoryProp is empty", async () => {
 			const mockApp = createMockApp();
 			const selectedEvents = [{ filePath: "event1.md" }];
-			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "");
+			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "");
 			expect(result).toEqual([]);
 		});
 
@@ -939,7 +939,7 @@ describe("Physical Recurring Event Utilities", () => {
 
 			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
 
-			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 
 			expect(result).toEqual(["Work", "Meeting"]);
 		});
@@ -956,7 +956,7 @@ describe("Physical Recurring Event Utilities", () => {
 
 			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "nonexistent.md" }];
 
-			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 
 			expect(result).toEqual(["Work", "Meeting"]);
 		});
@@ -978,7 +978,7 @@ describe("Physical Recurring Event Utilities", () => {
 
 			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
 
-			const result = await getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 
 			expect(result).toEqual([]);
 		});
