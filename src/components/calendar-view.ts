@@ -16,7 +16,7 @@ import {
 } from "@real1ty-obsidian-plugins/utils";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
-import { CreateEventCommand, type EventData, UpdateEventCommand } from "../core/commands";
+import { UpdateEventCommand } from "../core/commands";
 import type { ParsedEvent } from "../core/parser";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { removeInstanceDate, removeZettelId } from "../utils/calendar-events";
@@ -1612,9 +1612,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 		};
 
-		new EventCreateModal(this.app, this.bundle, newEvent, (eventData) => {
-			void this.createNewEvent(eventData, clickedDate);
-		}).open();
+		new EventCreateModal(this.app, this.bundle, newEvent).open();
 	}
 
 	openCreateEventModal(autoStartStopwatch = false): void {
@@ -1635,44 +1633,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 		};
 
-		const modal = new EventCreateModal(this.app, this.bundle, newEvent, (eventData) => {
-			void this.createNewEvent(eventData, roundedStart);
-		});
+		const modal = new EventCreateModal(this.app, this.bundle, newEvent);
 
 		if (autoStartStopwatch) {
 			modal.setAutoStartStopwatch(true);
 		}
 
 		modal.open();
-	}
-
-	private async createNewEvent(
-		eventData: {
-			title: string;
-			start: string | null;
-			end: string | null;
-			allDay: boolean;
-			preservedFrontmatter: Frontmatter;
-		},
-		clickedDate: Date
-	): Promise<void> {
-		const settings = this.bundle.settingsStore.currentSettings;
-		try {
-			const commandEventData: EventData = {
-				filePath: null,
-				title: eventData.title || `Event ${toLocalISOString(clickedDate).split("T")[0]}`,
-				start: eventData.start || toLocalISOString(clickedDate),
-				end: eventData.end ?? undefined,
-				allDay: eventData.allDay,
-				preservedFrontmatter: eventData.preservedFrontmatter,
-			};
-
-			const command = new CreateEventCommand(this.app, this.bundle, commandEventData, settings.directory, clickedDate);
-
-			await this.bundle.commandManager.executeCommand(command);
-		} catch (error) {
-			console.error("Error creating new event:", error);
-		}
 	}
 
 	private async handleEventUpdate(info: EventUpdateInfo, errorMessage: string): Promise<void> {

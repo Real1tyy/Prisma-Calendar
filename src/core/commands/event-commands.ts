@@ -85,6 +85,10 @@ export class CreateEventCommand implements Command {
 		if (!this.createdFilePath) return false;
 		return this.app.vault.getAbstractFileByPath(this.createdFilePath) instanceof TFile;
 	}
+
+	getCreatedFilePath(): string | null {
+		return this.createdFilePath;
+	}
 }
 
 export class DeleteEventCommand implements Command {

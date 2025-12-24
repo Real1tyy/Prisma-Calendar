@@ -178,13 +178,9 @@ class MinimizedModalManagerClass {
 
 		let modal: EventCreateModal | EventEditModal;
 		if (state.modalType === "edit" && state.filePath) {
-			modal = new EventEditModal(app, bundle, eventData, (saveData) => {
-				void bundle.updateEvent(saveData);
-			});
+			modal = new EventEditModal(app, bundle, eventData);
 		} else {
-			modal = new EventCreateModal(app, bundle, eventData, (saveData) => {
-				void bundle.createEvent(saveData);
-			});
+			modal = new EventCreateModal(app, bundle, eventData);
 		}
 
 		modal.setRestoreState(state);

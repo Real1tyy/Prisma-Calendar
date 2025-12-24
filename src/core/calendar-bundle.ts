@@ -245,7 +245,7 @@ export class CalendarBundle {
 		this.settingsStore?.destroy?.();
 	}
 
-	async createEvent(eventData: EventSaveData): Promise<void> {
+	async createEvent(eventData: EventSaveData): Promise<string | null> {
 		const settings = this.settingsStore.currentSettings;
 		try {
 			const commandEventData: EventData = {
@@ -260,24 +260,26 @@ export class CalendarBundle {
 			const command = new CreateEventCommand(this.app, this, commandEventData, settings.directory, new Date());
 			await this.commandManager.executeCommand(command);
 			new Notice("Event created successfully");
+			return command.getCreatedFilePath();
 		} catch (error) {
 			console.error("Error creating new event:", error);
 			new Notice("Failed to create event");
+			return null;
 		}
 	}
 
-	async updateEvent(eventData: EventSaveData): Promise<void> {
+	async updateEvent(eventData: EventSaveData): Promise<string | null> {
 		const { filePath } = eventData;
 		if (!filePath) {
 			new Notice("Failed to update event: no file path found");
-			return;
+			return null;
 		}
 
 		try {
 			const file = this.app.vault.getAbstractFileByPath(filePath);
 			if (!(file instanceof TFile)) {
 				new Notice(`File not found: ${filePath}`);
-				return;
+				return null;
 			}
 
 			// Handle file renaming when titleProp is undefined/empty
@@ -301,9 +303,11 @@ export class CalendarBundle {
 			await this.commandManager.executeCommand(command);
 
 			new Notice("Event updated successfully");
+			return finalFilePath;
 		} catch (error) {
 			console.error("Failed to update event:", error);
 			new Notice("Failed to update event");
+			return null;
 		}
 	}
 

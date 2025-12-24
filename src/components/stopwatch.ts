@@ -184,7 +184,7 @@ export class Stopwatch {
 		if (withoutFill) {
 			this.callbacks.onStartWithoutFill(this.startTime);
 		} else {
-			this.callbacks.onStart(this.startTime);
+		this.callbacks.onStart(this.startTime);
 		}
 
 		this.updateButtonStates();

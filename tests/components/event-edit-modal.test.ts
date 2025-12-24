@@ -6,7 +6,7 @@ import type { CalendarBundle } from "../../src/core/calendar-bundle";
 describe("EventEditModal - Custom Properties", () => {
 	let mockApp: App;
 	let mockBundle: CalendarBundle;
-	let onSaveMock: ReturnType<typeof vi.fn>;
+	let updateEventMock: ReturnType<typeof vi.fn>;
 
 	beforeEach(() => {
 		// Mock App
@@ -18,6 +18,8 @@ describe("EventEditModal - Custom Properties", () => {
 				getFileCache: vi.fn(),
 			},
 		} as unknown as App;
+
+		updateEventMock = vi.fn().mockResolvedValue(null);
 
 		// Mock CalendarBundle with settings
 		mockBundle = {
@@ -40,9 +42,8 @@ describe("EventEditModal - Custom Properties", () => {
 			categoryTracker: {
 				getCategories: vi.fn().mockReturnValue(["Work", "Personal", "Meeting"]),
 			},
+			updateEvent: updateEventMock,
 		} as unknown as CalendarBundle;
-
-		onSaveMock = vi.fn();
 	});
 
 	describe("loadCustomPropertiesData", () => {
@@ -53,7 +54,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: "test-event.md" },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 
 			// Set up the original frontmatter with custom properties
 			modal.originalFrontmatter = {
@@ -84,7 +85,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: null },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 			modal.originalFrontmatter = {
 				Tags: ["tag1", "tag2", "tag3"],
 				"Empty Array": [],
@@ -104,7 +105,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: null },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 			modal.originalFrontmatter = {
 				Enabled: true,
 				Disabled: false,
@@ -121,7 +122,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: null },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 			modal.originalFrontmatter = {
 				Count: 42,
 				Rating: 4.5,
@@ -142,7 +143,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: "test.md" },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 
 			// Set up original custom properties
 			modal.originalCustomPropertyKeys.add("Property1");
@@ -173,9 +174,9 @@ describe("EventEditModal - Custom Properties", () => {
 			modal.saveEvent();
 
 			// Verify onSave was called
-			expect(onSaveMock).toHaveBeenCalled();
+			expect(updateEventMock).toHaveBeenCalled();
 
-			const savedData = onSaveMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0];
 			const frontmatter = savedData.preservedFrontmatter;
 
 			// Property1 should still exist
@@ -195,7 +196,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: "test.md" },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 
 			// Set up original custom properties
 			modal.originalCustomPropertyKeys.add("Prop1");
@@ -218,7 +219,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = onSaveMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0];
 			const frontmatter = savedData.preservedFrontmatter;
 
 			// Both properties should be deleted
@@ -233,7 +234,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: "test.md" },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 
 			// Set up original custom properties
 			modal.originalCustomPropertyKeys.add("ExistingProp");
@@ -257,7 +258,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = onSaveMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0];
 			const frontmatter = savedData.preservedFrontmatter;
 
 			// Existing property should be updated
@@ -276,7 +277,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: "test.md" },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 
 			modal.originalFrontmatter = {
 				"Start Date": "2025-10-07T10:15:00.000Z",
@@ -292,7 +293,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			expect(onSaveMock).toHaveBeenCalled();
+			expect(updateEventMock).toHaveBeenCalled();
 		});
 
 		it("should not delete system properties when processing custom properties", () => {
@@ -302,7 +303,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: "test.md" },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 
 			modal.originalFrontmatter = {
 				"Start Date": "2025-10-07T10:15:00.000Z",
@@ -324,7 +325,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = onSaveMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0];
 			const frontmatter = savedData.preservedFrontmatter;
 
 			// System properties should remain
@@ -348,7 +349,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: "test.md" },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 			modal.originalFrontmatter = {
 				"Start Date": "2025-10-07T10:15:00.000Z",
 			};
@@ -368,7 +369,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = onSaveMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0];
 			const frontmatter = savedData.preservedFrontmatter;
 
 			expect(frontmatter.Category).toBe("Work");
@@ -381,7 +382,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: "test.md" },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 			modal.originalFrontmatter = {
 				"Start Date": "2025-10-07T10:15:00.000Z",
 			};
@@ -400,7 +401,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = onSaveMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0];
 			const frontmatter = savedData.preservedFrontmatter;
 
 			expect(frontmatter.Category).toEqual(["Work", "Meeting", "Important"]);
@@ -413,7 +414,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: "test.md" },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 			modal.originalFrontmatter = {
 				"Start Date": "2025-10-07T10:15:00.000Z",
 				Category: "OldCategory",
@@ -433,7 +434,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = onSaveMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0];
 			const frontmatter = savedData.preservedFrontmatter;
 
 			expect(frontmatter.Category).toBeUndefined();
@@ -446,7 +447,7 @@ describe("EventEditModal - Custom Properties", () => {
 				extendedProps: { filePath: "test.md" },
 			};
 
-			const modal = new EventEditModal(mockApp, mockBundle, event, onSaveMock);
+			const modal = new EventEditModal(mockApp, mockBundle, event);
 			modal.originalFrontmatter = {
 				"Start Date": "2025-10-07T10:15:00.000Z",
 				Category: "OldCategory",
@@ -466,7 +467,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = onSaveMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0];
 			const frontmatter = savedData.preservedFrontmatter;
 
 			expect(frontmatter.Category).toBe("NewCategory");

@@ -1,3 +1,4 @@
+import { MinimizedModalManager } from "../../core/minimized-modal-manager";
 import { BaseEventModal } from "./base-event-modal";
 
 export class EventCreateModal extends BaseEventModal {
@@ -49,5 +50,27 @@ export class EventCreateModal extends BaseEventModal {
 				}
 			}
 		}
+	}
+
+	public saveEvent(): void {
+		const eventData = this.buildEventData();
+
+		this.bundle
+			.createEvent(eventData)
+			.then((filePath) => {
+				if (filePath && this.isStopwatchActive()) {
+					const state = MinimizedModalManager.getState();
+					if (state && state.modalType === "create") {
+						state.modalType = "edit";
+						state.filePath = filePath;
+						MinimizedModalManager.saveState(state);
+					}
+				}
+			})
+			.catch((error) => {
+				console.error("Error creating event:", error);
+			});
+
+		this.close();
 	}
 }

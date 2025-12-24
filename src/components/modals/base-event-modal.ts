@@ -51,7 +51,6 @@ interface CustomProperty {
 export abstract class BaseEventModal extends Modal {
 	protected event: EventModalData;
 	protected bundle: CalendarBundle;
-	protected onSave: (eventData: EventSaveData) => void;
 	public titleInput!: HTMLInputElement;
 	public startInput!: HTMLInputElement;
 	public endInput!: HTMLInputElement;
@@ -102,11 +101,10 @@ export abstract class BaseEventModal extends Modal {
 
 	private settingsSubscription: Subscription | null = null;
 
-	constructor(app: App, bundle: CalendarBundle, event: EventModalData, onSave: (eventData: EventSaveData) => void) {
+	constructor(app: App, bundle: CalendarBundle, event: EventModalData) {
 		super(app);
 		this.event = event;
 		this.bundle = bundle;
-		this.onSave = onSave;
 	}
 
 	setRestoreState(state: MinimizedModalState): void {
@@ -1051,7 +1049,7 @@ export abstract class BaseEventModal extends Modal {
 		}
 	}
 
-	public saveEvent(): void {
+	protected buildEventData(): EventSaveData {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		// Start with original frontmatter to preserve all existing properties
@@ -1214,7 +1212,7 @@ export abstract class BaseEventModal extends Modal {
 			}
 		}
 
-		const eventData: EventSaveData = {
+		return {
 			filePath: this.event.extendedProps?.filePath || null,
 			title: this.titleInput.value,
 			start,
@@ -1222,10 +1220,9 @@ export abstract class BaseEventModal extends Modal {
 			allDay: this.allDayCheckbox.checked,
 			preservedFrontmatter,
 		};
-
-		this.onSave(eventData);
-		this.close();
 	}
+
+	public abstract saveEvent(): void;
 
 	protected loadExistingFrontmatter(): void {
 		try {
@@ -1404,9 +1401,5 @@ export abstract class BaseEventModal extends Modal {
 
 	getBundle(): CalendarBundle {
 		return this.bundle;
-	}
-
-	getOnSave(): (eventData: EventSaveData) => void {
-		return this.onSave;
 	}
 }

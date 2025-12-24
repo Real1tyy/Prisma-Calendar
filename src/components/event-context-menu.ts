@@ -37,15 +37,6 @@ interface CalendarEventInfo {
 	};
 }
 
-interface EventSaveData {
-	filePath: string | null;
-	title: string;
-	start: string;
-	end: string | null;
-	allDay: boolean;
-	preservedFrontmatter: Frontmatter;
-}
-
 interface CommandMessages {
 	success: string;
 	error: string;
@@ -626,13 +617,7 @@ export class EventContextMenu {
 	}
 
 	private openEventEditModal(event: CalendarEventInfo): void {
-		new EventEditModal(this.app, this.bundle, event, (updatedEvent) => {
-			void this.updateEventFile(updatedEvent);
-		}).open();
-	}
-
-	private async updateEventFile(eventData: EventSaveData): Promise<void> {
-		await this.bundle.updateEvent(eventData);
+		new EventEditModal(this.app, this.bundle, event).open();
 	}
 
 	private goToSourceEvent(event: CalendarEventInfo): void {

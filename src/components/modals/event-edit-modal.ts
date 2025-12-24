@@ -180,14 +180,24 @@ export class EventEditModal extends BaseEventModal {
 			finalTitle = `${userTitle}${this.originalZettelId}`;
 		}
 
-		// Temporarily update the input value with the full title for the parent save logic
+		// Temporarily update the input value with the full title for building event data
 		const originalInputValue = this.titleInput.value;
 		this.titleInput.value = finalTitle;
 
-		// Call parent save logic
-		super.saveEvent();
+		const eventData = this.buildEventData();
 
-		// Restore the input value (though the modal will close anyway)
+		// Restore the input value
 		this.titleInput.value = originalInputValue;
+
+		this.bundle
+			.updateEvent(eventData)
+			.then(() => {
+				// Event updated successfully
+			})
+			.catch((error) => {
+				console.error("Error updating event:", error);
+			});
+
+		this.close();
 	}
 }
