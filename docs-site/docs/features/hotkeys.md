@@ -49,6 +49,7 @@ Here is a complete list of the batch operations you can assign hotkeys to:
 -   `Batch: Move By`: Opens a dialog to move selected events by a custom number of days. Supports positive values (move forward) and negative values (move backward). For example, enter `7` to move events one week forward, or `-3` to move them 3 days back.
 -   `Batch: Skip Selection`: Marks all selected events as skipped (hidden from calendar).
 -   `Batch: Mark Selection as Done`: Marks all selected events as done by setting the status property to the done value configured in settings.
+-   `Batch: Assign categories to selection`: Opens the category assignment modal to assign categories to all selected events at once. The modal shows all available categories with their configured colors and allows multi-select. The operation is fully undoable.
 
 ## Filtering Commands
 
@@ -256,6 +257,7 @@ Here are suggested keybindings organized by workflow:
 | Batch: Delete Selection | `Ctrl/Cmd+Shift+Delete` | Clear batch delete |
 | Batch: Duplicate Selection | `Ctrl/Cmd+D` | Quick duplication |
 | Batch: Move By | `Ctrl/Cmd+M` | Precise date adjustments |
+| Batch: Assign categories to selection | `Ctrl/Cmd+Shift+T` | Quick category assignment (T for Tag/Category) |
 
 ## Tips
 
