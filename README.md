@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/github/license/Real1tyy/Prisma-Calendar?style=for-the-badge)
 ![Obsidian](https://img.shields.io/badge/obsidian-plugin-purple.svg?style=for-the-badge)
 
-**The most powerful and flexible calendar plugin ever built for Obsidian — fully configurable, reactive, and built for power users who want real control over their time-linked notes.**
+**The most powerful and flexible calendar plugin ever built for Obsidian — fully configurable, reactive, and built for power users who want real control over their schedule.**
 
 ---
 

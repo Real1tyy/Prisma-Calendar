@@ -840,13 +840,10 @@ export class EventContextMenu {
 				defaultColor,
 				currentCategories,
 				(selectedCategories: string[]) => {
-					void this.runCommand(
-						() => new AssignCategoriesCommand(this.app, this.bundle, filePath, selectedCategories),
-						{
-							success: "Categories updated",
-							error: "Failed to assign categories",
-						}
-					);
+					void this.runCommand(() => new AssignCategoriesCommand(this.app, this.bundle, filePath, selectedCategories), {
+						success: "Categories updated",
+						error: "Failed to assign categories",
+					});
 				}
 			);
 			modal.open();
