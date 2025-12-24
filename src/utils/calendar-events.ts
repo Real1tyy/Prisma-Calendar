@@ -487,3 +487,12 @@ export const getCommonCategories = async (
 
 	return commonCategories;
 };
+export const assignCategoriesToFrontmatter = (fm: Frontmatter, categoryProp: string, categories: string[]): void => {
+	if (categories.length === 0) {
+		fm[categoryProp] = "";
+	} else if (categories.length === 1) {
+		fm[categoryProp] = categories[0];
+	} else {
+		fm[categoryProp] = categories;
+	}
+};

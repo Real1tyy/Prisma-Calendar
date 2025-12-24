@@ -11,7 +11,7 @@ import {
 import type { Frontmatter } from "../../types";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
-import { findAdjacentEvent, setEventBasics } from "../../utils/calendar-events";
+import { assignCategoriesToFrontmatter, findAdjacentEvent, setEventBasics } from "../../utils/calendar-events";
 import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
 import {
 	calculateDurationMinutes,
@@ -19,8 +19,9 @@ import {
 	formatDateTimeForInput,
 	inputValueToISOString,
 } from "../../utils/format";
-import { CategoryInput } from "../category-input";
+import { parseIntoList } from "../../utils/list-utils";
 import { Stopwatch } from "../stopwatch";
+import { CategoryAssignModal } from "./category-assign-modal";
 import { SavePresetModal } from "./save-preset-modal";
 
 export interface EventModalData {
@@ -71,7 +72,8 @@ export abstract class BaseEventModal extends Modal {
 	protected futureInstancesCountInput!: HTMLInputElement;
 	protected generatePastEventsCheckbox!: HTMLInputElement;
 
-	protected categoryInput?: CategoryInput;
+	protected categoriesContainer?: HTMLElement;
+	protected selectedCategories: string[] = [];
 	protected breakInput!: HTMLInputElement;
 	protected markAsDoneCheckbox!: HTMLInputElement;
 	protected initialMarkAsDoneState: boolean = false;
@@ -236,9 +238,8 @@ export abstract class BaseEventModal extends Modal {
 		}
 		this.futureInstancesCountInput.value = "";
 
-		if (this.categoryInput) {
-			this.categoryInput.setValue("");
-		}
+		this.selectedCategories = [];
+		this.renderCategories();
 
 		if (this.breakInput) {
 			this.breakInput.value = "";
@@ -284,8 +285,10 @@ export abstract class BaseEventModal extends Modal {
 			this.allDayCheckbox.dispatchEvent(changeEvent);
 		}
 
-		if (preset.categories !== undefined && this.categoryInput) {
-			this.categoryInput.setValue(preset.categories);
+		if (preset.categories !== undefined) {
+			// Parse categories from preset (could be comma-separated string)
+			this.selectedCategories = parseIntoList(preset.categories);
+			this.renderCategories();
 		}
 
 		if (preset.breakMinutes !== undefined && this.breakInput) {
@@ -459,8 +462,25 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (!settings.categoryProp) return;
 
-		this.categoryInput = new CategoryInput(this.bundle.categoryTracker);
-		this.categoryInput.render(contentEl);
+		const categoryContainer = contentEl.createDiv("setting-item");
+		categoryContainer.createEl("div", { text: "Categories", cls: "setting-item-name" });
+
+		const categoryContent = categoryContainer.createDiv(cls("category-display-content"));
+
+		// Container for displaying selected categories
+		this.categoriesContainer = categoryContent.createDiv(cls("categories-list"));
+
+		// Assign Categories button
+		const assignButton = categoryContent.createEl("button", {
+			text: "Assign Categories",
+			cls: cls("assign-categories-button"),
+		});
+		assignButton.addEventListener("click", () => {
+			this.openAssignCategoriesModal();
+		});
+
+		// Render initial categories
+		this.renderCategories();
 	}
 
 	private createBreakField(contentEl: HTMLElement): void {
@@ -1049,6 +1069,55 @@ export abstract class BaseEventModal extends Modal {
 		}
 	}
 
+	private renderCategories(): void {
+		if (!this.categoriesContainer) return;
+
+		this.categoriesContainer.empty();
+
+		if (this.selectedCategories.length === 0) {
+			this.categoriesContainer.createEl("span", {
+				text: "No categories",
+				cls: cls("no-categories-text"),
+			});
+			return;
+		}
+
+		const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
+		const categoryColorMap = new Map(categoriesWithColors.map((c) => [c.name, c.color]));
+
+		for (const categoryName of this.selectedCategories) {
+			const categoryItem = this.categoriesContainer.createDiv(cls("category-item"));
+
+			const colorDot = categoryItem.createEl("span", {
+				cls: cls("category-color-dot"),
+			});
+			const color = categoryColorMap.get(categoryName) || this.bundle.settingsStore.currentSettings.defaultNodeColor;
+			colorDot.style.setProperty("--category-color", color);
+
+			categoryItem.createEl("span", {
+				text: categoryName,
+				cls: cls("category-name"),
+			});
+		}
+	}
+
+	private openAssignCategoriesModal(): void {
+		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
+		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
+
+		const modal = new CategoryAssignModal(
+			this.app,
+			categories,
+			defaultColor,
+			this.selectedCategories,
+			(selectedCategories: string[]) => {
+				this.selectedCategories = selectedCategories;
+				this.renderCategories();
+			}
+		);
+		modal.open();
+	}
+
 	protected buildEventData(): EventSaveData {
 		const settings = this.bundle.settingsStore.currentSettings;
 
@@ -1078,28 +1147,8 @@ export abstract class BaseEventModal extends Modal {
 			allDay: this.allDayCheckbox.checked,
 		});
 
-		// Handle category property (supports multiple comma-separated categories)
-		if (settings.categoryProp && this.categoryInput) {
-			const rawValue = this.categoryInput.getValue();
-			if (rawValue) {
-				// Parse comma-separated categories and trim whitespace
-				const categories = rawValue
-					.split(",")
-					.map((c) => c.trim())
-					.filter((c) => c.length > 0);
-
-				if (categories.length === 0) {
-					delete preservedFrontmatter[settings.categoryProp];
-				} else if (categories.length === 1) {
-					// Single category: store as string
-					preservedFrontmatter[settings.categoryProp] = categories[0];
-				} else {
-					// Multiple categories: store as array
-					preservedFrontmatter[settings.categoryProp] = categories;
-				}
-			} else {
-				delete preservedFrontmatter[settings.categoryProp];
-			}
+		if (settings.categoryProp) {
+			assignCategoriesToFrontmatter(preservedFrontmatter, settings.categoryProp, this.selectedCategories);
 		}
 
 		// Handle break property
@@ -1235,6 +1284,12 @@ export abstract class BaseEventModal extends Modal {
 			const cache = this.app.metadataCache.getFileCache(file);
 			if (cache?.frontmatter) {
 				this.originalFrontmatter = { ...cache.frontmatter };
+
+				const settings = this.bundle.settingsStore.currentSettings;
+				if (settings.categoryProp) {
+					const categoryValue = cache.frontmatter[settings.categoryProp];
+					this.selectedCategories = parseIntoList(categoryValue);
+				}
 			}
 		} catch (error) {
 			console.error("Error loading existing frontmatter:", error);
@@ -1283,11 +1338,8 @@ export abstract class BaseEventModal extends Modal {
 
 		presetData.allDay = this.allDayCheckbox.checked;
 
-		if (this.categoryInput) {
-			const categoryValue = this.categoryInput.getValue();
-			if (categoryValue) {
-				presetData.categories = categoryValue;
-			}
+		if (this.selectedCategories.length > 0) {
+			presetData.categories = this.selectedCategories.join(", ");
 		}
 
 		if (this.breakInput?.value) {

@@ -15,14 +15,16 @@ import {
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import type { ParsedEvent } from "../core/parser";
 import type { Frontmatter } from "../types";
-import { findAdjacentEvent, isEventDone } from "../utils/calendar-events";
+import { assignCategoriesToFrontmatter, findAdjacentEvent, isEventDone } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
+import { parseIntoList } from "../utils/list-utils";
 import { emitHover } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import type { CalendarView } from "./calendar-view";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { RecurringEventsListModal } from "./list-modals/recurring-events-list-modal";
 import { DeleteRecurringEventsModal, EventEditModal } from "./modals";
+import { CategoryAssignModal } from "./modals/category-assign-modal";
 import { MoveByModal } from "./move-by-modal";
 
 interface CalendarEventInfo {
@@ -247,6 +249,15 @@ export class EventContextMenu {
 					.setIcon("edit")
 					.onClick(() => {
 						this.openEventEditModal(event);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle("Assign categories")
+					.setIcon("tag")
+					.onClick(() => {
+						void this.openAssignCategoriesModal(event);
 					});
 			});
 
@@ -795,5 +806,47 @@ export class EventContextMenu {
 			console.error("Error opening file in new window:", error);
 			new Notice(`Failed to open file in new window: ${filePath}`);
 		}
+	}
+
+	private async openAssignCategoriesModal(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "assign categories", async (filePath) => {
+			const file = this.app.vault.getAbstractFileByPath(filePath);
+			if (!(file instanceof TFile)) {
+				new Notice(`File not found: ${filePath}`);
+				return;
+			}
+
+			const cache = this.app.metadataCache.getFileCache(file);
+			const settings = this.bundle.settingsStore.currentSettings;
+			const categoryProp = settings.categoryProp;
+
+			if (!categoryProp) {
+				new Notice("Category property not configured in settings");
+				return;
+			}
+
+			// Get current categories from frontmatter
+			const categoryValue = cache?.frontmatter?.[categoryProp];
+			const currentCategories = parseIntoList(categoryValue);
+
+			// Get all available categories with colors
+			const categories = this.bundle.categoryTracker.getCategoriesWithColors();
+			const defaultColor = settings.defaultNodeColor;
+
+			const modal = new CategoryAssignModal(
+				this.app,
+				categories,
+				defaultColor,
+				currentCategories,
+				async (selectedCategories: string[]) => {
+					await this.app.fileManager.processFrontMatter(file, (fm) => {
+						assignCategoriesToFrontmatter(fm, categoryProp, selectedCategories);
+					});
+
+					new Notice("Categories updated");
+				}
+			);
+			modal.open();
+		});
 	}
 }

@@ -354,14 +354,14 @@ describe("EventEditModal - Custom Properties", () => {
 				"Start Date": "2025-10-07T10:15:00.000Z",
 			};
 
-			// Mock the category input with a single category
+			// Set up the modal with a single category
 			modal.titleInput = { value: "Test Event" } as HTMLInputElement;
 			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
 			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
 			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
 			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
 			// @ts-expect-error - accessing protected property for testing
-			modal.categoryInput = { getValue: () => "Work" };
+			modal.selectedCategories = ["Work"];
 			// @ts-expect-error - accessing protected property for testing
 			modal.displayPropertiesContainer = mockEmptyContainer;
 			// @ts-expect-error - accessing protected property for testing
@@ -393,7 +393,7 @@ describe("EventEditModal - Custom Properties", () => {
 			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
 			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
 			// @ts-expect-error - accessing protected property for testing
-			modal.categoryInput = { getValue: () => "Work, Meeting, Important" };
+			modal.selectedCategories = ["Work", "Meeting", "Important"];
 			// @ts-expect-error - accessing protected property for testing
 			modal.displayPropertiesContainer = mockEmptyContainer;
 			// @ts-expect-error - accessing protected property for testing
@@ -426,7 +426,7 @@ describe("EventEditModal - Custom Properties", () => {
 			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
 			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
 			// @ts-expect-error - accessing protected property for testing
-			modal.categoryInput = { getValue: () => "" };
+			modal.selectedCategories = [];
 			// @ts-expect-error - accessing protected property for testing
 			modal.displayPropertiesContainer = mockEmptyContainer;
 			// @ts-expect-error - accessing protected property for testing
@@ -459,7 +459,7 @@ describe("EventEditModal - Custom Properties", () => {
 			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
 			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
 			// @ts-expect-error - accessing protected property for testing
-			modal.categoryInput = { getValue: () => "NewCategory" };
+			modal.selectedCategories = ["NewCategory"];
 			// @ts-expect-error - accessing protected property for testing
 			modal.displayPropertiesContainer = mockEmptyContainer;
 			// @ts-expect-error - accessing protected property for testing

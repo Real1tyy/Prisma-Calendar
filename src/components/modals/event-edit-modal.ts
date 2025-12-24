@@ -111,20 +111,11 @@ export class EventEditModal extends BaseEventModal {
 		}
 
 		this.loadRecurringEventData();
-		this.loadCategoryData();
 		this.loadBreakData();
 		this.loadMarkAsDoneData();
 		this.loadSkipData();
 		this.loadNotificationData();
 		this.loadCustomPropertiesData();
-	}
-
-	private loadCategoryData(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.categoryProp || !this.categoryInput) return;
-
-		const categoryValue = this.originalFrontmatter[settings.categoryProp];
-		this.categoryInput.setValue(categoryValue);
 	}
 
 	private loadBreakData(): void {
