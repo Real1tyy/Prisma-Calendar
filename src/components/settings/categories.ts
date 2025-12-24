@@ -89,23 +89,23 @@ export class CategoriesSettings {
 		categoriesInfo.sort((a, b) => b.count - a.count);
 
 		categoriesInfo.forEach((categoryInfo) => {
-			const categoryItem = container.createDiv(cls("category-item"));
+			const categoryItem = container.createDiv(cls("category-settings-item"));
 
-			const leftSection = categoryItem.createDiv(cls("category-item-left"));
-			const colorDot = leftSection.createEl("span", { cls: cls("category-color-dot") });
+			const leftSection = categoryItem.createDiv(cls("category-settings-item-left"));
+			const colorDot = leftSection.createEl("span", { cls: cls("category-settings-color-dot") });
 			colorDot.style.setProperty("--category-color", categoryInfo.color);
 
-			const nameContainer = leftSection.createDiv(cls("category-name-container"));
+			const nameContainer = leftSection.createDiv(cls("category-settings-name-container"));
 			nameContainer.createEl("span", {
 				text: categoryInfo.name,
-				cls: cls("category-name"),
+				cls: cls("category-settings-name"),
 			});
 			nameContainer.createEl("span", {
 				text: `(${categoryInfo.count} ${categoryInfo.count === 1 ? "event" : "events"})`,
-				cls: cls("category-count"),
+				cls: cls("category-settings-count"),
 			});
 
-			const rightSection = categoryItem.createDiv(cls("category-item-right"));
+			const rightSection = categoryItem.createDiv(cls("category-settings-item-right"));
 			new Setting(rightSection).addColorPicker((colorPicker) => {
 				colorPicker.setValue(categoryInfo.color);
 				colorPicker.onChange(async (value) => {
