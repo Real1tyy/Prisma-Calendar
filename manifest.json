@@ -1,7 +1,7 @@
 {
 	"id": "prisma-calendar",
 	"name": "Prisma Calendar",
-	"version": "1.20.1",
+	"version": "1.20.2",
 	"minAppVersion": "1.4.16",
 	"description": "A feature-rich, fully configurable calendar. Manage events across multiple calendars with support for recurring events, templates, and folder-based scanning.",
 	"author": "Real1tyy",
