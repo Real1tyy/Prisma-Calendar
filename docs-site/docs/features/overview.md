@@ -60,6 +60,8 @@ Hover previews and enlarged modals with clickable frontmatter, wikilink navigati
 
 Quick create button, enhanced edit modal with full frontmatter editing, "Now" button for current time, [built-in time tracker](./time-tracker) with break time support, session tracking, and real-time timers (total, total break, session, current break), drag & drop, resize support, edge scrolling for cross-week movement, and direct file opening.
 
+**Category Management**: Assign categories directly from the event modal or context menu using the "Assign Categories" button. Multi-select interface with search, color indicators, and the ability to create new categories on the fly. See [Color Rules](./color-rules#working-with-categories) for details.
+
 See [Screenshots](../screenshots.md) for modal examples.
 
 ### **Event Presets**
@@ -72,7 +74,7 @@ Mark events as skipped without deletion. Preserves recurring series integrity wi
 
 ## **[Batch Operations](./batch-operations)**
 
-Multi-select mode with visual indication and selection persistence. Bulk actions include delete, duplicate, week shifting (move/clone), batch skip, and batch open in tabs.
+Multi-select mode with visual indication and selection persistence. Bulk actions include delete, duplicate, week shifting (move/clone), batch skip, batch category assignment, and batch open in tabs.
 
 ---
 

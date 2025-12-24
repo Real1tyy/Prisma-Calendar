@@ -45,6 +45,32 @@ For a convenient way to manage category colors without writing expressions manua
 
 📖 See [Categories Settings](/configuration#categories-settings) in the Configuration documentation for detailed setup instructions.
 
+### Working with Categories
+
+You can assign categories to events in multiple ways:
+
+1. **Individual Events** - Edit the event note directly and add the category property (e.g., `Category: Work`)
+2. **Event Context Menu** - Click on any event and select "Assign Categories" from the context menu
+3. **Event Modal** - When creating or editing an event, use the "Assign Categories" button to manage categories
+4. **Batch Assignment** - Select multiple events in batch mode and use the "Categories" button to assign categories to all selected events at once
+
+#### Category Format
+
+Categories can be specified in your event frontmatter in two formats:
+
+```yaml
+# Single category
+Category: Work
+
+# Multiple categories (YAML array)
+Category:
+  - Work
+  - Meeting
+  - Important
+```
+
+📖 See [Batch Operations](/features/batch-operations#assign-categories) for more details on batch category assignment.
+
 ## Troubleshooting
 
 - Rule order matters: put specific rules above general ones
