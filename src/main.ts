@@ -128,6 +128,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.CREATE_EVENT, "Create new event", (view) => {
 			view.openCreateEventModal();
 		});
+		addCalendarViewCommand(COMMAND_IDS.CREATE_EVENT_WITH_STOPWATCH, "Create new event with stopwatch", (view) => {
+			view.openCreateEventModal(true);
+		});
 		addCalendarViewCommand(COMMAND_IDS.TOGGLE_BATCH_SELECTION, "Toggle batch selection", (view) => {
 			view.toggleBatchSelection();
 		});

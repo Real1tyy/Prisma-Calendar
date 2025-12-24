@@ -157,6 +157,12 @@ export class Stopwatch {
 		}
 	}
 
+	expand(): void {
+		if (!this.isExpanded) {
+			this.toggleExpanded();
+		}
+	}
+
 	start(): void {
 		this.startTracking(false);
 	}

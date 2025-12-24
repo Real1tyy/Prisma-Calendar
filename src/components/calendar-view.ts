@@ -1617,7 +1617,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}).open();
 	}
 
-	openCreateEventModal(): void {
+	openCreateEventModal(autoStartStopwatch = false): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const now = new Date();
 		const roundedStart = roundToNearestHour(now);
@@ -1635,9 +1635,15 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 		};
 
-		new EventCreateModal(this.app, this.bundle, newEvent, (eventData) => {
+		const modal = new EventCreateModal(this.app, this.bundle, newEvent, (eventData) => {
 			void this.createNewEvent(eventData, roundedStart);
-		}).open();
+		});
+
+		if (autoStartStopwatch) {
+			modal.setAutoStartStopwatch(true);
+		}
+
+		modal.open();
 	}
 
 	private async createNewEvent(

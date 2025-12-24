@@ -1,6 +1,12 @@
 import { BaseEventModal } from "./base-event-modal";
 
 export class EventCreateModal extends BaseEventModal {
+	private autoStartStopwatch = false;
+
+	setAutoStartStopwatch(autoStart: boolean): void {
+		this.autoStartStopwatch = autoStart;
+	}
+
 	protected getModalTitle(): string {
 		return "Create Event";
 	}
@@ -12,6 +18,19 @@ export class EventCreateModal extends BaseEventModal {
 	protected initialize(): Promise<void> {
 		// No initialization needed for create mode
 		return Promise.resolve();
+	}
+
+	onOpen(): void {
+		super.onOpen();
+
+		if (this.autoStartStopwatch && this.stopwatch) {
+			this.stopwatch.expand();
+			requestAnimationFrame(() => {
+				setTimeout(() => {
+					this.stopwatch?.start();
+				}, 100);
+			});
+		}
 	}
 
 	protected applyDefaultPreset(): void {

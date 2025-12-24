@@ -7,6 +7,7 @@ All notable changes to this project will be documented here.
 ### New Features
 
 - **Time Tracker "Start Without Fill" Button**: Added an optional "Start without fill" button to the time tracker that allows you to begin time tracking without updating the event's start date field.
+- **Create Event With Stopwatch Command**: Added a new command "Create new event with stopwatch" that opens the event creation modal with the time tracker automatically started, allowing you to immediately begin tracking time for a new event.
 
 ### Improvements
 
