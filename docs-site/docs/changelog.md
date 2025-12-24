@@ -21,10 +21,19 @@ All notable changes to this project will be documented here.
   - **Full undo support**: Restores previous category state (batch operations only)
   - **Format support**: Works with both YAML array format (`Category: - Work - Meeting`) and single string format (`Category: Work`)
 
-  See [Color Rules Documentation](/features/color-rules#working-with-categories) and [Batch Operations Documentation](/features/batch-operations#assign-categories) for detailed usage instructions.
+  See [Categories Documentation](/features/categories) for complete usage instructions, including assignment, color management, and viewing events by category.
 
 - **Time Tracker "Start Without Fill" Button**: Added an optional "Start without fill" button to the time tracker that allows you to begin time tracking without updating the event's start date field.
 - **Create Event With Stopwatch Command**: Added a new command "Create new event with stopwatch" that opens the event creation modal with the time tracker automatically started, allowing you to immediately begin tracking time for a new event.
+- **Clickable Categories with Bases View**: Categories are now clickable throughout the plugin, opening a Bases table view that shows all events with that category:
+  - **Event Modal**: Click any category badge in the event creation/edit modal to view all events with that category
+  - **Settings → Categories**: Click any category name in the categories settings page to view all events with that category
+  - **Bases Integration**: The category view uses Obsidian Bases to display a sortable, filterable table with all events in that category
+  - **Smart Column Layout**: Automatically displays relevant columns (file name, start/end dates, date, status) with optimized sizing
+  - **Recent First**: Events are sorted by modification time (most recent first) for easy access to recently updated events
+  - **Full Bases Features**: Complete access to Bases functionality including sorting, filtering, and direct note opening
+
+  See [Categories Documentation](/features/categories#viewing-events-by-category) for detailed usage instructions and screenshots.
 
 ### Improvements
 

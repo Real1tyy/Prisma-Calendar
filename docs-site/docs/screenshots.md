@@ -90,6 +90,16 @@ Hover previews and enlarged modal views showing complete frontmatter and content
 
 Advanced filtering system and global event search across all calendars with cycle filters. Highlight events by category with the category select modal. [Learn more →](/features/filtering)
 
+## Categories
+
+![Assign Categories Modal](/img/assign_categories_modal.png)
+
+Multi-select category assignment modal with search, color indicators, and the ability to create new categories on the fly. Used throughout the plugin for assigning categories to events. [Learn more →](/features/categories#category-assignment-modal)
+
+![Category Bases View](/img/category_bases_view.png)
+
+Click any category in the event modal or settings to open a Bases table view showing all events with that category. Events are sorted by modification time with relevant columns displayed. [Learn more →](/features/categories#viewing-events-by-category)
+
 ## Event Skipping
 
 ![Skipped Events](/img/skipped_events_modal.png)
