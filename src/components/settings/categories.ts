@@ -106,11 +106,13 @@ export class CategoriesSettings {
 			});
 
 			const rightSection = categoryItem.createDiv(cls("category-settings-item-right"));
-			new Setting(rightSection).addColorPicker((colorPicker) => {
-				colorPicker.setValue(categoryInfo.color);
-				colorPicker.onChange(async (value) => {
-					await this.updateCategoryColor(categoryInfo.name, value);
-				});
+			const colorInput = rightSection.createEl("input", {
+				type: "color",
+				value: categoryInfo.color,
+			});
+			colorInput.addEventListener("change", async (event) => {
+				const target = event.target as HTMLInputElement;
+				await this.updateCategoryColor(categoryInfo.name, target.value);
 			});
 		});
 	}

@@ -407,7 +407,7 @@ describe("EventEditModal - Custom Properties", () => {
 			expect(frontmatter.Category).toEqual(["Work", "Meeting", "Important"]);
 		});
 
-		it("should delete category when input is empty", () => {
+		it("should set category to empty string when input is empty", () => {
 			const event = {
 				title: "Test Event",
 				start: "2025-10-07T10:15:00.000Z",
@@ -437,7 +437,7 @@ describe("EventEditModal - Custom Properties", () => {
 			const savedData = updateEventMock.mock.calls[0][0];
 			const frontmatter = savedData.preservedFrontmatter;
 
-			expect(frontmatter.Category).toBeUndefined();
+			expect(frontmatter.Category).toBe("");
 		});
 
 		it("should update existing category", () => {

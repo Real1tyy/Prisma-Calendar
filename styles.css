@@ -1734,6 +1734,7 @@
 .prisma-category-settings-item-right {
 	display: flex;
 	align-items: center;
+	justify-content: center;
 	flex-shrink: 0;
 }
 
