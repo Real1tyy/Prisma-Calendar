@@ -1,7 +1,7 @@
 import { cls } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import { Modal } from "obsidian";
-import type { CategoryTracker } from "../../core/category-tracker";
+import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
 
 export class CategorySelectModal extends Modal {
 	private onSelect: (category: string) => void;
@@ -12,8 +12,9 @@ export class CategorySelectModal extends Modal {
 	private listContainer!: HTMLElement;
 	private highlightButton: HTMLButtonElement | null = null;
 	private selectedCategory: string | null = null;
-	private allCategories: string[] = [];
+	private allCategories: CategoryInfo[] = [];
 	private dropdownContainer!: HTMLElement;
+	private selectedCategoryDisplay!: HTMLElement;
 
 	constructor(app: App, categoryTracker: CategoryTracker, onSelect: (category: string) => void) {
 		super(app);
@@ -54,7 +55,10 @@ export class CategorySelectModal extends Modal {
 
 		this.listContainer = this.dropdownPanel.createDiv(cls("category-list"));
 
-		this.allCategories = this.categoryTracker.getCategories();
+		this.selectedCategoryDisplay = categorySection.createDiv(cls("category-selected-display"));
+		this.selectedCategoryDisplay.classList.add("prisma-hidden");
+
+		this.allCategories = this.categoryTracker.getCategoriesWithColors();
 
 		this.setupEventHandlers();
 
@@ -142,7 +146,7 @@ export class CategorySelectModal extends Modal {
 	private renderCategoryList(filter: string): void {
 		this.listContainer.empty();
 		const lowerFilter = filter.toLowerCase();
-		const filteredCategories = this.allCategories.filter((cat) => cat.toLowerCase().includes(lowerFilter));
+		const filteredCategories = this.allCategories.filter((cat) => cat.name.toLowerCase().includes(lowerFilter));
 
 		if (filteredCategories.length === 0) {
 			this.listContainer.createDiv({
@@ -156,21 +160,48 @@ export class CategorySelectModal extends Modal {
 			return;
 		}
 
-		for (const category of filteredCategories) {
+		for (const categoryInfo of filteredCategories) {
 			const item = this.listContainer.createDiv({
-				text: category,
 				cls: cls("category-list-item"),
 			});
+
+			const colorDot = item.createEl("span", {
+				cls: cls("category-color-dot"),
+			});
+			colorDot.style.setProperty("--category-color", categoryInfo.color);
+
+			item.createSpan({ text: categoryInfo.name });
+
 			item.addEventListener("click", () => {
-				this.selectCategory(category);
+				this.selectCategory(categoryInfo.name, categoryInfo.color);
 				this.closeDropdown();
 			});
 		}
 	}
 
-	private selectCategory(category: string): void {
+	private selectCategory(category: string, color: string): void {
 		this.selectedCategory = category;
-		this.dropdownButton.textContent = category;
+
+		this.selectedCategoryDisplay.empty();
+		this.selectedCategoryDisplay.classList.remove("prisma-hidden");
+
+		this.selectedCategoryDisplay.createEl("span", {
+			text: "Selected:",
+			cls: cls("category-selected-label"),
+		});
+
+		const categoryItem = this.selectedCategoryDisplay.createDiv(cls("category-selected-item"));
+
+		const colorDot = categoryItem.createEl("span", {
+			cls: cls("category-color-dot"),
+		});
+		colorDot.style.setProperty("--category-color", color);
+
+		categoryItem.createSpan({
+			text: category,
+			cls: cls("category-selected-name"),
+		});
+
 		if (this.highlightButton) {
 			this.highlightButton.disabled = false;
 		}
