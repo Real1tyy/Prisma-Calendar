@@ -22,6 +22,7 @@ import {
 import { parseIntoList } from "../../utils/list-utils";
 import { Stopwatch } from "../stopwatch";
 import { CategoryAssignModal } from "./category-assign-modal";
+import { CategoryEventsModal } from "./category-events-modal";
 import { SavePresetModal } from "./save-preset-modal";
 
 export interface EventModalData {
@@ -1098,6 +1099,10 @@ export abstract class BaseEventModal extends Modal {
 				text: categoryName,
 				cls: cls("category-name"),
 			});
+
+			categoryItem.addEventListener("click", () => {
+				this.openCategoryEventsModal(categoryName);
+			});
 		}
 	}
 
@@ -1115,6 +1120,12 @@ export abstract class BaseEventModal extends Modal {
 				this.renderCategories();
 			}
 		);
+		modal.open();
+	}
+
+	private openCategoryEventsModal(categoryName: string): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const modal = new CategoryEventsModal(this.app, categoryName, settings);
 		modal.open();
 	}
 

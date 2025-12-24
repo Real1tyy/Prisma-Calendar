@@ -5,6 +5,7 @@ import type { Subscription } from "rxjs";
 import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import { CategoryEventsModal } from "../modals/category-events-modal";
 
 interface CategoryInfoWithCount extends CategoryInfo {
 	count: number;
@@ -103,6 +104,10 @@ export class CategoriesSettings {
 			nameContainer.createEl("span", {
 				text: `(${categoryInfo.count} ${categoryInfo.count === 1 ? "event" : "events"})`,
 				cls: cls("category-settings-count"),
+			});
+
+			nameContainer.addEventListener("click", () => {
+				this.openCategoryEventsModal(categoryInfo.name);
 			});
 
 			const rightSection = categoryItem.createDiv(cls("category-settings-item-right"));
@@ -267,6 +272,12 @@ export class CategoriesSettings {
 				},
 			},
 		});
+	}
+
+	private openCategoryEventsModal(categoryName: string): void {
+		const settings = this.settingsStore.currentSettings;
+		const modal = new CategoryEventsModal(this.plugin.app, categoryName, settings);
+		modal.open();
 	}
 
 	destroy(): void {

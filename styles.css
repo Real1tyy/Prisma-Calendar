@@ -1717,6 +1717,12 @@
 	gap: 10px;
 	flex: 1;
 	min-width: 0;
+	cursor: pointer;
+	transition: opacity 0.15s ease;
+}
+
+.prisma-category-settings-name-container:hover {
+	opacity: 0.8;
 }
 
 .prisma-category-settings-name {
@@ -5714,6 +5720,15 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	border-radius: 4px;
 	font-size: var(--font-ui-small);
 	margin: 0px;
+	cursor: pointer;
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.prisma-category-item:hover {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
 }
 
 .prisma-assign-categories-button {
@@ -5731,4 +5746,9 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 
 .prisma-assign-categories-button:hover {
 	background-color: var(--interactive-hover);
+}
+
+.prisma-category-modal {
+	width: 70vw;
+	max-width: 1100px;
 }
