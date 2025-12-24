@@ -6,6 +6,18 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Batch Category Assignment**: Added a new "Categories" button in batch selection mode that allows you to assign categories to multiple events at once. The modal features:
+  - **Multi-select with search**: Filter and select multiple categories simultaneously
+  - **Pre-selected common categories**: Categories shared across all selected events are automatically checked
+  - **Create new categories**: Type a non-existent category name and click "Create New" to add it on the fly with the default event color
+  - **Color indicators**: Each category displays its configured color from Settings → Categories
+  - **Override behavior**: Assigned categories completely replace existing categories (doesn't merge)
+  - **Remove all categories**: Uncheck all categories and click "Remove Categories" to clear categories from selected events
+  - **Full undo support**: Restores previous category state for all events
+  - **Format support**: Works with both YAML array format (`Category: - Work - Meeting`) and single string format (`Category: Work`)
+
+  See [Batch Operations Documentation](/features/batch-operations#assign-categories) for detailed usage instructions.
+
 - **Time Tracker "Start Without Fill" Button**: Added an optional "Start without fill" button to the time tracker that allows you to begin time tracking without updating the event's start date field.
 - **Create Event With Stopwatch Command**: Added a new command "Create new event with stopwatch" that opens the event creation modal with the time tracker automatically started, allowing you to immediately begin tracking time for a new event.
 

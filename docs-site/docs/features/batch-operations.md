@@ -51,6 +51,18 @@ Quickly make changes to many events at once.
 - Supports positive values (move forward) and negative values (move backward)
 - Example: Enter `7` to move events one week forward, or `-3` to move them 3 days back
 
+### Assign Categories
+- Opens a multi-select modal to assign categories to all selected events
+- **Search**: Type to filter categories by name
+- **Select Multiple**: Check multiple categories to assign them all at once
+- **Pre-selected**: Categories common to all selected events are pre-checked
+- **Create New**: Type a non-existent category name and click "Create New" to add it on the fly
+- **Color Indicators**: Each category shows its configured color from Settings → Categories
+- **Override Behavior**: Assigned categories completely replace existing categories (doesn't merge)
+- **Remove All**: Uncheck all categories and click "Remove Categories" to clear categories from all selected events
+- **Undo Support**: Fully undoable - restores previous category state for all events
+- **Format Support**: Works with both YAML array format (`Category: - Work - Meeting`) and single string format (`Category: Work`)
+
 ### Open All in Tabs
 - Opens all selected event files in editor tabs
 - Quick access for batch reviewing/editing
@@ -81,6 +93,14 @@ You can customize which buttons appear in the batch selection toolbar by going t
 2. Select all recurring instances
 3. Click "Skip"
 4. Series continues after
+
+**Assign categories to multiple events:**
+1. Enter batch selection mode
+2. Select events you want to categorize
+3. Click "Categories" button
+4. Check desired categories (or create new ones)
+5. Click "Assign Categories"
+6. Events are updated and calendar refreshes
 
 ## Tips
 
