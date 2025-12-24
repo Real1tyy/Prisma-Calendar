@@ -17,6 +17,10 @@ All notable changes to this project will be documented here.
   - Notification property names moved to Properties tab for single source of truth
   - Notifications tab simplified to focus only on notification behavior and default times
 
+### Bug Fixes
+
+- **Minimized Modal State Synchronization**: Fixed an issue where creating a new event with active time tracking would save the minimized modal state as "create" mode instead of "edit" mode. When restoring the minimized modal, it would attempt to create a duplicate event instead of editing the existing one. The minimized modal manager now correctly updates to "edit" mode with the newly created file path after event creation, ensuring proper synchronization between the modal state and the actual event file.
+
 ## 1.19.0
 
 ### New Features
