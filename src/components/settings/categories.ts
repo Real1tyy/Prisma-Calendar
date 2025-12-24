@@ -2,14 +2,12 @@ import { cls } from "@real1ty-obsidian-plugins/utils";
 import Chart from "chart.js/auto";
 import { Setting } from "obsidian";
 import type { Subscription } from "rxjs";
-import type { CategoryTracker } from "../../core/category-tracker";
+import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 
-interface CategoryInfo {
-	name: string;
+interface CategoryInfoWithCount extends CategoryInfo{
 	count: number;
-	color: string;
 }
 
 export class CategoriesSettings {
@@ -81,7 +79,7 @@ export class CategoriesSettings {
 			return;
 		}
 
-		const categoriesInfo: CategoryInfo[] = categories.map((category) => {
+		const categoriesInfo: CategoryInfoWithCount[] = categories.map((category) => {
 			const files = categoryTracker.getEventsWithCategory(category);
 			const count = files.size;
 			const color = this.getCategoryColor(category, settings.colorRules, categoryProp);
@@ -187,7 +185,7 @@ export class CategoriesSettings {
 		}
 
 		const settings = this.settingsStore.currentSettings;
-		const categoriesInfo: CategoryInfo[] = categories.map((category) => {
+		const categoriesInfo: CategoryInfoWithCount[] = categories.map((category) => {
 			const files = categoryTracker.getEventsWithCategory(category);
 			const count = files.size;
 			const color = this.getCategoryColor(category, settings.colorRules, categoryProp);

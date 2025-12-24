@@ -5,22 +5,28 @@ import type { SingleCalendarConfig } from "../types/index";
 import { parseIntoList } from "../utils/list-utils";
 import type { Indexer, IndexerEvent } from "./indexer";
 
+export interface CategoryInfo {
+	name: string;
+	color: string;
+}
+
 /**
  * Tracks all unique categories across events in the calendar.
  * Maintains a map of category -> Set of file paths that have that category.
  * Categories are extracted from frontmatter during indexing and maintained
  * as a reactive map that updates as events are added, modified, or deleted.
+ * Also resolves category colors from color rules in settings.
  */
 export class CategoryTracker {
 	private categoryToFiles = new Map<string, Set<string>>();
 	private fileToCategories = new Map<string, Set<string>>();
-	private categoriesSubject = new BehaviorSubject<Set<string>>(new Set());
+	private categoriesSubject = new BehaviorSubject<CategoryInfo[]>([]);
 	private subscription: Subscription | null = null;
 	private indexingCompleteSubscription: Subscription | null = null;
 	private settingsSubscription: Subscription | null = null;
 	private _settings: SingleCalendarConfig;
 
-	public readonly categories$: Observable<Set<string>>;
+	public readonly categories$: Observable<CategoryInfo[]>;
 
 	constructor(
 		private indexer: Indexer,
@@ -114,11 +120,40 @@ export class CategoryTracker {
 	}
 
 	private notifyChange(): void {
-		this.categoriesSubject.next(new Set(this.categoryToFiles.keys()));
+		const categories = this.buildCategoryInfoList();
+		this.categoriesSubject.next(categories);
+	}
+
+	private buildCategoryInfoList(): CategoryInfo[] {
+		const categoryNames = Array.from(this.categoryToFiles.keys()).sort((a, b) => a.localeCompare(b));
+		return categoryNames.map((name) => ({
+			name,
+			color: this.resolveCategoryColor(name),
+		}));
+	}
+
+	private resolveCategoryColor(category: string): string {
+		const categoryProp = this._settings.categoryProp;
+		if (!categoryProp) return this._settings.defaultNodeColor;
+
+		const escapedCategory = category.replace(/'/g, "\\'");
+		const expectedExpression = `${categoryProp}.includes('${escapedCategory}')`;
+
+		for (const rule of this._settings.colorRules) {
+			if (rule.enabled && rule.expression === expectedExpression) {
+				return rule.color;
+			}
+		}
+
+		return this._settings.defaultNodeColor;
 	}
 
 	getCategories(): string[] {
 		return Array.from(this.categoryToFiles.keys()).sort((a, b) => a.localeCompare(b));
+	}
+
+	getCategoriesWithColors(): CategoryInfo[] {
+		return this.buildCategoryInfoList();
 	}
 
 	getEventsWithCategory(category: string): Set<string> {
