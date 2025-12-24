@@ -11,7 +11,10 @@ All notable changes to this project will be documented here.
 ### Improvements
 
 - **Mobile Event Interaction**: Improved mobile event interaction with intuitive tap gestures. Single tap on any event now opens the context menu, making it easier to access event actions on mobile devices. Double tap opens the event note.
-- **Settings Organization**: Reorganized General settings with dedicated sections for Time tracker and Statistics, making it easier to find related settings.
+- **Settings Organization**: Reorganized settings for better clarity and usability:
+  - General settings now have dedicated sections for Time tracker and Statistics
+  - Notification property names moved to Properties tab for single source of truth
+  - Notifications tab simplified to focus only on notification behavior and default times
 
 ## 1.19.0
 

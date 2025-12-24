@@ -154,6 +154,27 @@ export class PropertiesSettings {
 			placeholder: SETTINGS_DEFAULTS.DEFAULT_BREAK_PROP,
 		});
 
+		this.ui.addText(containerEl, {
+			key: "minutesBeforeProp",
+			name: "Minutes before property",
+			desc: "Frontmatter property name for per-event notification times (timed events)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_MINUTES_BEFORE_PROP,
+		});
+
+		this.ui.addText(containerEl, {
+			key: "daysBeforeProp",
+			name: "Days before property",
+			desc: "Frontmatter property name for per-event notification days (all-day events)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_DAYS_BEFORE_PROP,
+		});
+
+		this.ui.addText(containerEl, {
+			key: "alreadyNotifiedProp",
+			name: "Already notified property",
+			desc: "Frontmatter property name to mark events as already notified",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_ALREADY_NOTIFIED_PROP,
+		});
+
 		// Add description for event types
 		const eventTypesDesc = containerEl.createDiv(cls("settings-info-box"));
 

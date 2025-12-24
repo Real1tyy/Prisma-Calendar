@@ -23,46 +23,10 @@ export class NotificationsSettings {
 			desc: "Enable event notifications. When disabled, all notification settings below are ignored.",
 		});
 
-		new Setting(containerEl).setName("Timed events").setHeading();
-
-		this.addOptionalNumberInput(
-			containerEl,
-			"defaultMinutesBefore",
-			"Default minutes before",
-			"Default notification time for timed events (with start and end dates). Leave empty for no default notification. 0 = notify when event starts, 15 = notify 15 minutes before.",
-			"e.g., 15 (leave empty for no default)"
-		);
-
-		this.ui.addText(containerEl, {
-			key: "minutesBeforeProp",
-			name: "Minutes before property",
-			desc: "Frontmatter property name to read per-event notification times. This allows individual events to override the default notification time.",
-			placeholder: "Minutes Before",
-		});
-
-		new Setting(containerEl).setName("All-day events").setHeading();
-
-		this.addOptionalNumberInput(
-			containerEl,
-			"defaultDaysBefore",
-			"Default days before",
-			"Default notification time for all-day events. Leave empty for no default notification. 0 = notify on the day of the event, 1 = notify 1 day before.",
-			"e.g., 1 (leave empty for no default)"
-		);
-
-		this.ui.addText(containerEl, {
-			key: "daysBeforeProp",
-			name: "Days before property",
-			desc: "Frontmatter property name to read per-event notification days for all-day events. This allows individual events to override the default notification days.",
-			placeholder: "Days Before",
-		});
-
-		new Setting(containerEl).setName("General").setHeading();
-
 		this.ui.addToggle(containerEl, {
 			key: "notificationSound",
 			name: "Play notification sound",
-			desc: "Whether to play a system sound when notifications are shown. When disabled, notifications will be silent.",
+			desc: "Play a system sound when notifications are shown",
 		});
 
 		this.ui.addToggle(containerEl, {
@@ -80,12 +44,23 @@ export class NotificationsSettings {
 			step: 1,
 		});
 
-		this.ui.addText(containerEl, {
-			key: "alreadyNotifiedProp",
-			name: "Already notified property",
-			desc: "Frontmatter property used to mark events as already notified. When a notification is shown, this property is set to true. Unmark it manually to get notified again.",
-			placeholder: "Already Notified",
-		});
+		new Setting(containerEl).setName("Default notification times").setHeading();
+
+		this.addOptionalNumberInput(
+			containerEl,
+			"defaultMinutesBefore",
+			"Timed events (minutes before)",
+			"Default notification time for timed events. Leave empty for no default. 0 = notify when event starts, 15 = notify 15 minutes before",
+			"e.g., 15 (leave empty for no default)"
+		);
+
+		this.addOptionalNumberInput(
+			containerEl,
+			"defaultDaysBefore",
+			"All-day events (days before)",
+			"Default notification time for all-day events. Leave empty for no default. 0 = notify on the day of the event, 1 = notify 1 day before",
+			"e.g., 1 (leave empty for no default)"
+		);
 	}
 
 	private addOptionalNumberInput(
