@@ -1,8 +1,9 @@
-import { generateUniqueFilePath, onceAsync, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
+import { onceAsync, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
 import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type { EventSaveData } from "../components/modals/base-event-modal";
 import type CustomCalendarPlugin from "../main";
+import { generateUniqueEventPath } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import type { CategoryTracker } from "./category-tracker";
@@ -289,9 +290,9 @@ export class CalendarBundle {
 				const sanitizedTitle = sanitizeForFilename(eventData.title, { style: "preserve" });
 				if (sanitizedTitle && sanitizedTitle !== file.basename) {
 					const parentPath = file.parent?.path || "";
-					const newFilePath = generateUniqueFilePath(this.app, parentPath, sanitizedTitle);
-					await this.app.fileManager.renameFile(file, newFilePath);
-					finalFilePath = newFilePath;
+					const { fullPath } = generateUniqueEventPath(this.app, parentPath, sanitizedTitle);
+					await this.app.fileManager.renameFile(file, fullPath);
+					finalFilePath = fullPath;
 				}
 			}
 

@@ -1,4 +1,5 @@
 import { parsePositiveInt, serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
+import { MinimizedModalManager } from "../../core/minimized-modal-manager";
 import { WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
 import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
 import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
@@ -182,8 +183,24 @@ export class EventEditModal extends BaseEventModal {
 
 		this.bundle
 			.updateEvent(eventData)
-			.then(() => {
-				// Event updated successfully
+			.then((newFilePath) => {
+				// If the user changed the title, the file may have been renamed.
+				// We must update the file path to prevent "invalid path" errors when
+				// minimizing or restoring the modal, especially when the time tracker is active.
+				if (newFilePath && newFilePath !== eventData.filePath) {
+					this.event.extendedProps = this.event.extendedProps || {};
+					this.event.extendedProps.filePath = newFilePath;
+
+					// Also update the minimized modal state if time tracker is active,
+					// so restoring the modal uses the correct (renamed) file path.
+					if (this.isStopwatchActive()) {
+						const state = MinimizedModalManager.getState();
+						if (state && state.modalType === "edit") {
+							state.filePath = newFilePath;
+							MinimizedModalManager.saveState(state);
+						}
+					}
+				}
 			})
 			.catch((error) => {
 				console.error("Error updating event:", error);

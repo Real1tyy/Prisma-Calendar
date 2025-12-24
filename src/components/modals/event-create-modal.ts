@@ -58,12 +58,17 @@ export class EventCreateModal extends BaseEventModal {
 		this.bundle
 			.createEvent(eventData)
 			.then((filePath) => {
-				if (filePath && this.isStopwatchActive()) {
-					const state = MinimizedModalManager.getState();
-					if (state && state.modalType === "create") {
-						state.modalType = "edit";
-						state.filePath = filePath;
-						MinimizedModalManager.saveState(state);
+				if (filePath) {
+					this.event.extendedProps = this.event.extendedProps || {};
+					this.event.extendedProps.filePath = filePath;
+
+					if (this.isStopwatchActive()) {
+						const state = MinimizedModalManager.getState();
+						if (state && state.modalType === "create") {
+							state.modalType = "edit";
+							state.filePath = filePath;
+							MinimizedModalManager.saveState(state);
+						}
 					}
 				}
 			})

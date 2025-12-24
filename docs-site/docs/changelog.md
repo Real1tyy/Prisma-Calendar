@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented here.
 
+## 1.20.2
+
+### Bug Fixes
+
+- **Fixed ZettelID Preservation with Time Tracker**: Fixed a bug where ZettelIDs were lost when using the time tracker with minimized modals. When creating or editing events with the time tracker running, the system now correctly preserves ZettelIDs and synchronizes file paths. This prevents duplicate files and ensures the minimized modal can be restored with the correct file path, even after renaming events.
+
 ## 1.20.1
 
 ### Improvements
