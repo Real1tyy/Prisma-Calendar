@@ -30,6 +30,8 @@ export class GeneralSettings {
 
 		this.addDirectorySettings(containerEl);
 		this.addParsingSettings(containerEl);
+		this.addStopwatchSettings(containerEl);
+		this.addStatisticsSettings(containerEl);
 		this.addEventPresetSettings(containerEl);
 		this.addIntegrationsSettings(containerEl);
 		this.addCalDAVSettings(containerEl);
@@ -84,26 +86,40 @@ export class GeneralSettings {
 		});
 
 		this.ui.addToggle(containerEl, {
+			key: "markPastInstancesAsDone",
+			name: "Mark past events as done",
+			desc: "Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section.",
+		});
+	}
+
+	private addStopwatchSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("Time tracker").setHeading();
+
+		this.ui.addToggle(containerEl, {
 			key: "showStopwatch",
 			name: "Show time tracker in event modal",
 			desc: "Display a stopwatch in the event creation/edit modal for precise time tracking. Start fills the start date, stop fills the end date, and break time is tracked automatically.",
 		});
 
 		this.ui.addToggle(containerEl, {
-			key: "markPastInstancesAsDone",
-			name: "Mark past events as done",
-			desc: "Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section.",
+			key: "showStopwatchStartWithoutFill",
+			name: "Show 'start without fill' button",
+			desc: "Display an additional start button that begins time tracking without updating the start date field. Useful when you want to track time separately from the event's scheduled start time.",
 		});
+	}
+
+	private addStatisticsSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("Statistics").setHeading();
 
 		this.ui.addToggle(containerEl, {
 			key: "showDecimalHours",
-			name: "Show decimal hours in statistics",
+			name: "Show decimal hours",
 			desc: "Display durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m) in statistics modals. Can be temporarily toggled by clicking the duration in the statistics header.",
 		});
 
 		this.ui.addDropdown(containerEl, {
 			key: "defaultAggregationMode",
-			name: "Default statistics grouping",
+			name: "Default grouping mode",
 			desc: "Default grouping mode for statistics modals: group by event name or by category",
 			options: {
 				name: "Event Name",

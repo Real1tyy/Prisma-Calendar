@@ -27,6 +27,7 @@ export const GeneralSettingsSchema = z.object({
 	defaultDurationMinutes: z.number().int().positive().default(SETTINGS_DEFAULTS.DEFAULT_DURATION_MINUTES),
 	showDurationField: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SHOW_DURATION_FIELD), // show duration in minutes field in event modal for quick editing
 	showStopwatch: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SHOW_STOPWATCH), // show stopwatch in event modal for precise time tracking
+	showStopwatchStartWithoutFill: z.boolean().default(SETTINGS_DEFAULTS.DEFAULT_SHOW_STOPWATCH_START_WITHOUT_FILL), // show "start without fill" button that starts tracking without updating start date
 	showRibbonIcon: z.boolean().default(SETTINGS_DEFAULTS.SHOW_RIBBON_ICON), // show ribbon icon in left sidebar to open calendar
 	templatePath: z.string().optional(), // path to Templater template for new events
 	markPastInstancesAsDone: z.boolean().default(false), // automatically mark past events as done on startup

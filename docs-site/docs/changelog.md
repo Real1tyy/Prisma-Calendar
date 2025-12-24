@@ -4,9 +4,14 @@ All notable changes to this project will be documented here.
 
 ## 1.20.0
 
+### New Features
+
+- **Time Tracker "Start Without Fill" Button**: Added an optional "Start without fill" button to the time tracker that allows you to begin time tracking without updating the event's start date field.
+
 ### Improvements
 
 - **Mobile Event Interaction**: Improved mobile event interaction with intuitive tap gestures. Single tap on any event now opens the context menu, making it easier to access event actions on mobile devices. Double tap opens the event note.
+- **Settings Organization**: Reorganized General settings with dedicated sections for Time tracker and Statistics, making it easier to find related settings.
 
 ## 1.19.0
 

@@ -552,25 +552,31 @@ export abstract class BaseEventModal extends Modal {
 			this.stopwatchContainer.classList.add("prisma-hidden");
 		}
 
-		this.stopwatch = new Stopwatch({
-			onStart: (startTime: Date) => {
-				this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
-				this.startInput.value = formatDateTimeForInput(startTime);
-				const event = new Event("change", { bubbles: true });
-				this.startInput.dispatchEvent(event);
+		this.stopwatch = new Stopwatch(
+			{
+				onStart: (startTime: Date) => {
+					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
+					this.startInput.value = formatDateTimeForInput(startTime);
+					const event = new Event("change", { bubbles: true });
+					this.startInput.dispatchEvent(event);
+				},
+				onStartWithoutFill: (_startTime: Date) => {
+					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
+				},
+				onStop: (endTime: Date) => {
+					this.endInput.value = formatDateTimeForInput(endTime);
+					const event = new Event("change", { bubbles: true });
+					this.endInput.dispatchEvent(event);
+				},
+				onBreakUpdate: (breakMinutes: number) => {
+					if (this.breakInput) {
+						const totalBreak = this.initialBreakMinutes + breakMinutes;
+						this.breakInput.value = totalBreak.toString();
+					}
+				},
 			},
-			onStop: (endTime: Date) => {
-				this.endInput.value = formatDateTimeForInput(endTime);
-				const event = new Event("change", { bubbles: true });
-				this.endInput.dispatchEvent(event);
-			},
-			onBreakUpdate: (breakMinutes: number) => {
-				if (this.breakInput) {
-					const totalBreak = this.initialBreakMinutes + breakMinutes;
-					this.breakInput.value = totalBreak.toString();
-				}
-			},
-		});
+			settings.showStopwatchStartWithoutFill
+		);
 
 		this.stopwatch.render(this.stopwatchContainer);
 	}

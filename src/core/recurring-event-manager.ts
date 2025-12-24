@@ -2,13 +2,13 @@ import {
 	createFileLink,
 	DebouncedNotifier,
 	extractContentAfterFrontmatter,
+	type FrontmatterDiff,
+	FrontmatterPropagationModal,
+	mergeFrontmatterDiffs,
 	rebuildPhysicalInstanceFilename,
 	sanitizeForFilename,
 	withFrontmatter,
 	withLock,
-	type FrontmatterDiff,
-	mergeFrontmatterDiffs,
-	FrontmatterPropagationModal,
 } from "@real1ty-obsidian-plugins/utils";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
