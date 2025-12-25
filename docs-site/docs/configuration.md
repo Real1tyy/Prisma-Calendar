@@ -187,6 +187,7 @@ STATUS: Done
 ### View Configuration
 
 - **Default view**: set initial calendar view (dayGridMonth, timeGridWeek, timeGridDay, listWeek)
+- **Default mobile view**: set initial calendar view for mobile devices (screen width ≤ 768px). Independent from desktop default view, allowing you to configure a different view optimized for mobile screens (dayGridMonth, timeGridWeek, timeGridDay, listWeek)
 - **Hide weekends**: toggle Saturday/Sunday visibility
 - **First day of week**: choose locale preference (0 = Sunday, 1 = Monday, etc.)
 - **Show decimal hours**: show durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m)
