@@ -49,78 +49,92 @@ describe("Calendar Schemas", () => {
 			expect(CustomCalendarSettingsSchema.safeParse(minimal).success).toBe(true);
 		});
 
-		it("should reject invalid settings", () => {
-			// Invalid version
-			expect(
-				CustomCalendarSettingsSchema.safeParse({
-					...defaultSettings,
-					version: -1,
-				}).success
-			).toBe(false);
+		it("should accept invalid settings and replace with defaults", () => {
+			// Invalid version - should be caught and replaced with default (1)
+			const result1 = CustomCalendarSettingsSchema.safeParse({
+				...defaultSettings,
+				version: -1,
+			});
+			expect(result1.success).toBe(true);
+			if (result1.success) {
+				expect(result1.data.version).toBe(1);
+			}
 
-			// Invalid defaultView
-			expect(
-				CustomCalendarSettingsSchema.safeParse({
-					...defaultSettings,
-					calendars: [
-						{
-							...defaultSettings.calendars[0],
-							defaultView: "invalidView",
-						},
-					],
-				}).success
-			).toBe(false);
+			// Invalid defaultView - should be caught and replaced with default
+			const result2 = CustomCalendarSettingsSchema.safeParse({
+				...defaultSettings,
+				calendars: [
+					{
+						...defaultSettings.calendars[0],
+						defaultView: "invalidView",
+					},
+				],
+			});
+			expect(result2.success).toBe(true);
+			if (result2.success) {
+				expect(result2.data.calendars[0].defaultView).toBe(defaultSettings.calendars[0].defaultView);
+			}
 
-			// Invalid density
-			expect(
-				CustomCalendarSettingsSchema.safeParse({
-					...defaultSettings,
-					calendars: [
-						{
-							...defaultSettings.calendars[0],
-							density: "invalid",
-						},
-					],
-				}).success
-			).toBe(false);
+			// Invalid density - should be caught and replaced with default
+			const result3 = CustomCalendarSettingsSchema.safeParse({
+				...defaultSettings,
+				calendars: [
+					{
+						...defaultSettings.calendars[0],
+						density: "invalid",
+					},
+				],
+			});
+			expect(result3.success).toBe(true);
+			if (result3.success) {
+				expect(result3.data.calendars[0].density).toBe(defaultSettings.calendars[0].density);
+			}
 
-			// Invalid hour range
-			expect(
-				CustomCalendarSettingsSchema.safeParse({
-					...defaultSettings,
-					calendars: [
-						{
-							...defaultSettings.calendars[0],
-							hourStart: 25,
-						},
-					],
-				}).success
-			).toBe(false);
+			// Invalid hour range - should be caught and replaced with default
+			const result4 = CustomCalendarSettingsSchema.safeParse({
+				...defaultSettings,
+				calendars: [
+					{
+						...defaultSettings.calendars[0],
+						hourStart: 25,
+					},
+				],
+			});
+			expect(result4.success).toBe(true);
+			if (result4.success) {
+				expect(result4.data.calendars[0].hourStart).toBe(defaultSettings.calendars[0].hourStart);
+			}
 
-			expect(
-				CustomCalendarSettingsSchema.safeParse({
-					...defaultSettings,
-					calendars: [
-						{
-							...defaultSettings.calendars[0],
-							hourEnd: 0,
-						},
-					],
-				}).success
-			).toBe(false);
+			const result5 = CustomCalendarSettingsSchema.safeParse({
+				...defaultSettings,
+				calendars: [
+					{
+						...defaultSettings.calendars[0],
+						hourEnd: 0,
+					},
+				],
+			});
+			expect(result5.success).toBe(true);
+			if (result5.success) {
+				expect(result5.data.calendars[0].hourEnd).toBe(defaultSettings.calendars[0].hourEnd);
+			}
 
-			// Invalid defaultDurationMinutes
-			expect(
-				CustomCalendarSettingsSchema.safeParse({
-					...defaultSettings,
-					calendars: [
-						{
-							...defaultSettings.calendars[0],
-							defaultDurationMinutes: -1,
-						},
-					],
-				}).success
-			).toBe(false);
+			// Invalid defaultDurationMinutes - should be caught and replaced with default
+			const result6 = CustomCalendarSettingsSchema.safeParse({
+				...defaultSettings,
+				calendars: [
+					{
+						...defaultSettings.calendars[0],
+						defaultDurationMinutes: -1,
+					},
+				],
+			});
+			expect(result6.success).toBe(true);
+			if (result6.success) {
+				expect(result6.data.calendars[0].defaultDurationMinutes).toBe(
+					defaultSettings.calendars[0].defaultDurationMinutes
+				);
+			}
 		});
 
 		it("should handle optional fields", () => {
@@ -163,14 +177,14 @@ describe("Calendar Schemas", () => {
 			expect(() => CustomCalendarSettingsSchema.parse(defaultSettings)).not.toThrow();
 		});
 
-		it("should throw on invalid settings", () => {
+		it("should catch invalid settings and replace with defaults", () => {
 			const defaultSettings = CustomCalendarSettingsSchema.parse({});
-			expect(() =>
-				CustomCalendarSettingsSchema.parse({
-					...defaultSettings,
-					version: "invalid",
-				})
-			).toThrow();
+			const result = CustomCalendarSettingsSchema.parse({
+				...defaultSettings,
+				version: "invalid",
+			});
+			// Should not throw, but replace invalid version with default (1)
+			expect(result.version).toBe(1);
 		});
 	});
 });

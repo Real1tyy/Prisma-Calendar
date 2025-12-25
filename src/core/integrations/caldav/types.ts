@@ -3,33 +3,39 @@ import { z } from "zod";
 export const CalDAVAuthMethodSchema = z.enum(["Basic", "Oauth"]);
 export type CalDAVAuthMethod = z.infer<typeof CalDAVAuthMethodSchema>;
 
-export const CalDAVBasicCredentialsSchema = z.object({
-	username: z.string().min(1),
-	password: z.string().min(1),
-});
+export const CalDAVBasicCredentialsSchema = z
+	.object({
+		username: z.string().min(1),
+		password: z.string().min(1),
+	})
+	.loose();
 
-export const CalDAVOAuthCredentialsSchema = z.object({
-	tokenUrl: z.url(),
-	username: z.string().min(1),
-	refreshToken: z.string().min(1),
-	clientId: z.string().min(1),
-	clientSecret: z.string().min(1),
-});
+export const CalDAVOAuthCredentialsSchema = z
+	.object({
+		tokenUrl: z.url(),
+		username: z.string().min(1),
+		refreshToken: z.string().min(1),
+		clientId: z.string().min(1),
+		clientSecret: z.string().min(1),
+	})
+	.loose();
 
-export const CalDAVAccountSchema = z.object({
-	id: z.string(),
-	name: z.string().min(1),
-	serverUrl: z.url(),
-	authMethod: CalDAVAuthMethodSchema,
-	credentials: z.union([CalDAVBasicCredentialsSchema, CalDAVOAuthCredentialsSchema]),
-	enabled: z.boolean().default(true),
-	calendarId: z.string().min(1),
-	selectedCalendars: z.array(z.string()).default([]),
-	syncIntervalMinutes: z.number().int().min(1).max(1440).default(15),
-	timezone: z.string().default("UTC"),
-	lastSyncTime: z.number().int().optional(),
-	createdAt: z.number().int().positive(),
-});
+export const CalDAVAccountSchema = z
+	.object({
+		id: z.string(),
+		name: z.string().min(1),
+		serverUrl: z.url(),
+		authMethod: CalDAVAuthMethodSchema,
+		credentials: z.union([CalDAVBasicCredentialsSchema, CalDAVOAuthCredentialsSchema]),
+		enabled: z.boolean().catch(true),
+		calendarId: z.string().min(1),
+		selectedCalendars: z.array(z.string()).catch([]),
+		syncIntervalMinutes: z.number().int().min(1).max(1440).catch(15),
+		timezone: z.string().catch("UTC"),
+		lastSyncTime: z.number().int().optional(),
+		createdAt: z.number().int().positive(),
+	})
+	.loose();
 
 export type CalDAVAccount = z.infer<typeof CalDAVAccountSchema>;
 export type CalDAVBasicCredentials = z.infer<typeof CalDAVBasicCredentialsSchema>;
@@ -87,13 +93,15 @@ export interface CalDAVSyncResult {
 	errors: string[];
 }
 
-export const CalDAVSettingsSchema = z.object({
-	accounts: z.array(CalDAVAccountSchema).default([]),
-	enableAutoSync: z.boolean().default(true),
-	syncOnStartup: z.boolean().default(true),
-	notifyOnSync: z.boolean().default(true),
-	integrationEventColor: z.string().default("#8b5cf6"), // Default purple for CalDAV events
-});
+export const CalDAVSettingsSchema = z
+	.object({
+		accounts: z.array(CalDAVAccountSchema).catch([]),
+		enableAutoSync: z.boolean().catch(true),
+		syncOnStartup: z.boolean().catch(true),
+		notifyOnSync: z.boolean().catch(true),
+		integrationEventColor: z.string().catch("#8b5cf6"),
+	})
+	.loose();
 
 export type CalDAVSettings = z.infer<typeof CalDAVSettingsSchema>;
 
