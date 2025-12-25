@@ -22,7 +22,7 @@ export const EventPresetSchema = z
 		createdAt: z.number().int().positive(), // Timestamp when preset was created
 		updatedAt: z.number().int().positive().optional(), // Timestamp when preset was last modified
 	})
-	.loose();
+	.strip();
 
 export const GeneralSettingsSchema = z
 	.object({
@@ -39,7 +39,7 @@ export const GeneralSettingsSchema = z
 		exportFolder: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER), // folder for ICS exports
 		enableKeyboardNavigation: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_ENABLE_KEYBOARD_NAVIGATION), // enable arrow key navigation for calendar intervals
 	})
-	.loose();
+	.strip();
 
 export const PropsSettingsSchema = z
 	.object({
@@ -67,7 +67,7 @@ export const PropsSettingsSchema = z
 		ignoreRecurringProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_IGNORE_RECURRING_PROP), // property name for ignoring duplicated recurring events from future instance generation
 		caldavProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CALDAV_PROP), // property name for CalDAV sync metadata
 	})
-	.loose();
+	.strip();
 
 export const NotificationsSettingsSchema = z
 	.object({
@@ -81,14 +81,14 @@ export const NotificationsSettingsSchema = z
 		daysBeforeProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_DAYS_BEFORE_PROP), // frontmatter property to read per-event notification days for all-day events
 		alreadyNotifiedProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_ALREADY_NOTIFIED_PROP), // frontmatter property to mark events as already notified
 	})
-	.loose();
+	.strip();
 
 export const FilterPresetSchema = z
 	.object({
 		name: z.string(),
 		expression: z.string(),
 	})
-	.loose();
+	.strip();
 
 export const BatchActionButtonSchema = z.enum(BATCH_BUTTON_IDS as [string, ...string[]]);
 
@@ -135,7 +135,7 @@ export const CalendarSettingsSchema = z
 			.catch(SETTINGS_DEFAULTS.DEFAULT_DRAG_EDGE_SCROLL_DELAY_MS), // Delay in milliseconds before scrolling when dragging events near edge
 		batchActionButtons: z.array(BatchActionButtonSchema).catch([...DEFAULT_BATCH_ACTION_BUTTONS]), // Which batch action buttons to show in batch selection mode toolbar
 	})
-	.loose();
+	.strip();
 
 export const RulesSettingsSchema = z
 	.object({
@@ -150,11 +150,11 @@ export const RulesSettingsSchema = z
 						color: ColorSchema, // Color to apply if expression evaluates to true
 						enabled: z.boolean().catch(true),
 					})
-					.loose()
+					.strip()
 			)
 			.catch([]),
 	})
-	.loose();
+	.strip();
 
 export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSettingsSchema.shape)
 	.extend(CalendarSettingsSchema.shape)
@@ -165,7 +165,7 @@ export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSett
 		name: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CALENDAR_NAME),
 		enabled: z.boolean().catch(true),
 	})
-	.loose();
+	.strip();
 
 export const CustomCalendarSettingsSchema = z
 	.object({
@@ -188,7 +188,7 @@ export const CustomCalendarSettingsSchema = z
 			]),
 		caldav: CalDAVSettingsSchema.catch(CalDAVSettingsSchema.parse({})),
 	})
-	.loose();
+	.strip();
 
 export type FilterPreset = z.infer<typeof FilterPresetSchema>;
 export type EventPreset = z.infer<typeof EventPresetSchema>;
