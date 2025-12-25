@@ -90,21 +90,30 @@ export class CalendarSettings {
 	private addUISettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("User interface").setHeading();
 
-		new Setting(containerEl)
-			.setName("Default view")
-			.setDesc("The calendar view to show when opening")
-			.addDropdown((dropdown) => {
-				Object.entries(CALENDAR_VIEW_OPTIONS).forEach(([value, label]) => {
-					dropdown.addOption(value, label);
-				});
+		const addViewDropdown = (name: string, desc: string, key: "defaultView" | "defaultMobileView"): void => {
+			new Setting(containerEl)
+				.setName(name)
+				.setDesc(desc)
+				.addDropdown((dropdown) => {
+					Object.entries(CALENDAR_VIEW_OPTIONS).forEach(([value, label]) => {
+						dropdown.addOption(value, label);
+					});
 
-				dropdown.setValue(this.settingsStore.currentSettings.defaultView).onChange(async (value: string) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						defaultView: value as CalendarViewType,
-					}));
+					dropdown.setValue(this.settingsStore.currentSettings[key]).onChange(async (value: string) => {
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							[key]: value as CalendarViewType,
+						}));
+					});
 				});
-			});
+		};
+
+		addViewDropdown("Default view", "The calendar view to show when opening", "defaultView");
+		addViewDropdown(
+			"Default mobile view",
+			"The calendar view to show when opening on mobile devices (screen width ≤ 768px)",
+			"defaultMobileView"
+		);
 
 		this.ui.addToggle(containerEl, {
 			key: "hideWeekends",

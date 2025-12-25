@@ -105,6 +105,7 @@ export const CalendarSettingsSchema = z
 			.max(10000)
 			.catch(SETTINGS_DEFAULTS.DEFAULT_PROPAGATION_DEBOUNCE_MS), // debounce delay in milliseconds before propagating frontmatter changes to instances
 		defaultView: CalendarViewTypeSchema.catch(SETTINGS_DEFAULTS.DEFAULT_DEFAULT_VIEW),
+		defaultMobileView: CalendarViewTypeSchema.catch(SETTINGS_DEFAULTS.DEFAULT_DEFAULT_VIEW),
 		hideWeekends: z.boolean().catch(false),
 		showDecimalHours: z.boolean().catch(false), // Show durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m)
 		defaultAggregationMode: z.enum(["name", "category"]).catch(SETTINGS_DEFAULTS.DEFAULT_AGGREGATION_MODE), // Default aggregation mode for statistics (name or category)

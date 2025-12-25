@@ -864,13 +864,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	private initializeCalendar(container: HTMLElement): void {
 		const settings = this.bundle.settingsStore.currentSettings;
+		const initialView = this.isMobileView() ? settings.defaultMobileView : settings.defaultView;
 
 		this.calendar = new Calendar(container, {
 			plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
 
 			timeZone: "local",
 
-			initialView: settings.defaultView,
+			initialView,
 
 			nowIndicator: settings.nowIndicator,
 

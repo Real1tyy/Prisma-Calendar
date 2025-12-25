@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented here.
 
+## 1.21.0
+
+### New Features
+
+- **Mobile Default View Configuration**: Added a separate "Default mobile view" setting that allows you to configure which calendar view to use when opening the calendar on mobile devices (screen width ≤ 768px). The mobile default view is independent from the desktop default view, giving you full control over the mobile calendar experience. Configure it in Settings → Calendar → User Interface → "Default mobile view".
+
+### Improvements
+
+- **Robust Settings Migration**: Settings validation is now more forgiving and robust. When loading settings with extra fields or incorrect values, the system no longer fails or resets all settings. Instead, it gracefully handles invalid or outdated settings by replacing only the problematic fields with their default values while preserving all other valid settings. This makes the plugin more resilient to:
+  - Settings from older plugin versions
+  - Manually edited settings files with typos or invalid values
+  - Settings corrupted by external tools or sync conflicts
+  - Missing or partially migrated settings
+
 ## 1.20.2
 
 ### Bug Fixes
