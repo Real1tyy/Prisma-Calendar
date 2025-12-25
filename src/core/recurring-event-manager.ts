@@ -7,7 +7,6 @@ import {
 	mergeFrontmatterDiffs,
 	rebuildPhysicalInstanceFilename,
 	sanitizeForFilename,
-	withFrontmatter,
 	withLock,
 } from "@real1ty-obsidian-plugins/utils";
 import { DateTime } from "luxon";
@@ -18,6 +17,7 @@ import type { Frontmatter } from "../types";
 import type { NodeRecurringEvent } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import {
+	applyFrontmatterChangesToInstance,
 	getRecurringInstanceExcludedProps,
 	hashRRuleIdToZettelFormat,
 	removeZettelId,
@@ -209,39 +209,15 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 		await Promise.all(
 			Array.from(data.physicalInstances.values()).map((instance) =>
-				this.applyFrontmatterChanges(instance, recurringEvent.frontmatter, frontmatterDiff)
+				applyFrontmatterChangesToInstance(
+					this.app,
+					instance.filePath,
+					recurringEvent.frontmatter,
+					frontmatterDiff,
+					this.settings
+				)
 			)
 		);
-	}
-
-	private async applyFrontmatterChanges(
-		instance: PhysicalInstance,
-		sourceFrontmatter: Frontmatter,
-		diff: FrontmatterDiff
-	): Promise<void> {
-		try {
-			const file = this.app.vault.getAbstractFileByPath(instance.filePath);
-			if (!(file instanceof TFile)) {
-				console.warn(`Physical instance file not found: ${instance.filePath}`);
-				return;
-			}
-
-			await withFrontmatter(this.app, file, (fm) => {
-				for (const change of diff.added) {
-					fm[change.key] = sourceFrontmatter[change.key];
-				}
-
-				for (const change of diff.modified) {
-					fm[change.key] = sourceFrontmatter[change.key];
-				}
-
-				for (const change of diff.deleted) {
-					delete fm[change.key];
-				}
-			});
-		} catch (error) {
-			console.error(`Error applying frontmatter changes to instance ${instance.filePath}:`, error);
-		}
 	}
 
 	private async processAllRecurringEvents(): Promise<void> {

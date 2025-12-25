@@ -1,4 +1,4 @@
-import { generateZettelId, withFrontmatter } from "@real1ty-obsidian-plugins/utils";
+import { type FrontmatterDiff, generateZettelId, withFrontmatter } from "@real1ty-obsidian-plugins/utils";
 import { nanoid } from "nanoid";
 import { type App, TFile } from "obsidian";
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
@@ -284,6 +284,50 @@ export const getRecurringInstanceExcludedProps = (settings: SingleCalendarConfig
 		return new Set([...prismaInternalProps, ...userExcludedProps]);
 	}
 	return prismaInternalProps;
+};
+
+/**
+ * Applies frontmatter changes from a diff to a physical recurring event instance file,
+ * filtering out excluded properties based on settings.
+ */
+export const applyFrontmatterChangesToInstance = async (
+	app: App,
+	filePath: string,
+	sourceFrontmatter: Frontmatter,
+	diff: FrontmatterDiff,
+	settings: SingleCalendarConfig
+): Promise<void> => {
+	try {
+		const file = app.vault.getAbstractFileByPath(filePath);
+		if (!(file instanceof TFile)) {
+			console.warn(`Physical instance file not found: ${filePath}`);
+			return;
+		}
+
+		const excludedProps = getRecurringInstanceExcludedProps(settings);
+
+		await withFrontmatter(app, file, (fm) => {
+			for (const change of diff.added) {
+				if (!excludedProps.has(change.key)) {
+					fm[change.key] = sourceFrontmatter[change.key];
+				}
+			}
+
+			for (const change of diff.modified) {
+				if (!excludedProps.has(change.key)) {
+					fm[change.key] = sourceFrontmatter[change.key];
+				}
+			}
+
+			for (const change of diff.deleted) {
+				if (!excludedProps.has(change.key)) {
+					delete fm[change.key];
+				}
+			}
+		});
+	} catch (error) {
+		console.error(`Error applying frontmatter changes to instance ${filePath}:`, error);
+	}
 };
 
 /**
