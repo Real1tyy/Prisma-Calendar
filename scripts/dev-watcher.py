@@ -135,7 +135,17 @@ class PluginDevWatcher(FileSystemEventHandler):
                     return False
             else:
                 print("❌ Build failed")
-                print(f"Error: {result.stderr}")
+                print(f"   Return code: {result.returncode}")
+                if result.stdout:
+                    print("   STDOUT:")
+                    for line in result.stdout.strip().split('\n'):
+                        print(f"   {line}")
+                if result.stderr:
+                    print("   STDERR:")
+                    for line in result.stderr.strip().split('\n'):
+                        print(f"   {line}")
+                if not result.stdout and not result.stderr:
+                    print("   (No output captured)")
                 return False
         except subprocess.TimeoutExpired:
             print("⏰ Build timeout - build took longer than 1 minute")
@@ -233,7 +243,17 @@ class PluginDevWatcher(FileSystemEventHandler):
                 self._copy_plugin_files()
             else:
                 print("❌ Build failed")
-                print(f"Error: {result.stderr}")
+                print(f"   Return code: {result.returncode}")
+                if result.stdout:
+                    print("   STDOUT:")
+                    for line in result.stdout.strip().split('\n'):
+                        print(f"   {line}")
+                if result.stderr:
+                    print("   STDERR:")
+                    for line in result.stderr.strip().split('\n'):
+                        print(f"   {line}")
+                if not result.stdout and not result.stderr:
+                    print("   (No output captured)")
         except subprocess.TimeoutExpired:
             print("⏰ Build timeout")
         except Exception as e:
