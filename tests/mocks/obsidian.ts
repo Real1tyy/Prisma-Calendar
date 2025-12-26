@@ -309,17 +309,3 @@ export function createMockFile(
 	}
 	return file;
 }
-
-// Helper to create mock file cache
-export function createMockFileCache(frontmatter?: Frontmatter) {
-	return {
-		frontmatter: frontmatter || {},
-		frontmatterPosition: frontmatter ? { start: { line: 0 }, end: { line: 3 } } : null,
-		sections: [],
-		headings: [],
-		links: [],
-		embeds: [],
-		tags: [],
-		listItems: [],
-	};
-}
