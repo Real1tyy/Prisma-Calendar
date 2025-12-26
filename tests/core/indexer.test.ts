@@ -3,6 +3,7 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, type MockedFunction, vi } from "vitest";
 import { Indexer, type IndexerEvent } from "../../src/core/indexer";
 import type { Frontmatter } from "../../src/types";
+import { createMockFile as createMockTFile } from "../mocks/obsidian";
 import { createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
 
 describe("Indexer", () => {
@@ -15,10 +16,18 @@ describe("Indexer", () => {
 	let subscription: Subscription;
 
 	beforeEach(async () => {
+		const filesStore: any[] = [];
 		mockVault = {
 			on: vi.fn(),
 			off: vi.fn(),
-			getMarkdownFiles: vi.fn().mockReturnValue([]),
+			getMarkdownFiles: vi.fn(() => filesStore),
+			getAbstractFileByPath: vi.fn((path: string) => {
+				return filesStore.find((f: any) => f.path === path) || null;
+			}),
+			_setFiles: (files: any[]) => {
+				filesStore.length = 0;
+				filesStore.push(...files);
+			},
 		};
 
 		mockMetadataCache = {
@@ -224,7 +233,7 @@ describe("Indexer", () => {
 				},
 			});
 
-			mockVault.getMarkdownFiles.mockReturnValue([pastRecurringFile]);
+			mockVault._setFiles([pastRecurringFile]);
 
 			// Act: Start indexing which triggers markPastEventAsDone
 			await indexerWithMarkDone.start();
@@ -245,6 +254,8 @@ describe("Indexer", () => {
 				markPastInstancesAsDone: true,
 				startProp: "start",
 				endProp: "end",
+				dateProp: "Date",
+				allDayProp: "All Day",
 				statusProperty: "Status",
 				doneValue: "Done",
 				rruleProp: "RRule",
@@ -266,7 +277,7 @@ describe("Indexer", () => {
 				},
 			});
 
-			mockVault.getMarkdownFiles.mockReturnValue([pastEventFile]);
+			mockVault._setFiles([pastEventFile]);
 
 			// Act: Start indexing
 			await indexerWithMarkDone.start();
@@ -312,7 +323,7 @@ describe("Indexer", () => {
 				},
 			});
 
-			mockVault.getMarkdownFiles.mockReturnValue([futureEventFile]);
+			mockVault._setFiles([futureEventFile]);
 
 			// Act: Start indexing
 			await indexerWithMarkDone.start();
@@ -350,7 +361,7 @@ describe("Indexer", () => {
 				},
 			});
 
-			mockVault.getMarkdownFiles.mockReturnValue([pastEventFile]);
+			mockVault._setFiles([pastEventFile]);
 
 			// Act: Start indexing
 			await indexerWithoutMarkDone.start();
@@ -393,7 +404,7 @@ describe("Indexer", () => {
 				},
 			});
 
-			mockVault.getMarkdownFiles.mockReturnValue([pastAllDayRecurringFile]);
+			mockVault._setFiles([pastAllDayRecurringFile]);
 
 			// Act: Start indexing
 			await indexerWithMarkDone.start();
@@ -433,7 +444,7 @@ describe("Indexer", () => {
 				},
 			});
 
-			mockVault.getMarkdownFiles.mockReturnValue([pastEventFile]);
+			mockVault._setFiles([pastEventFile]);
 
 			// Act: Start indexing
 			await indexerWithMarkDone.start();
@@ -449,11 +460,7 @@ describe("Indexer", () => {
 	});
 
 	function createMockFile(path: string): TFile {
-		return {
-			path,
-			extension: "md",
-			parent: { path: path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "" },
-			stat: { mtime: Date.now() },
-		} as any;
+		const parentPath = path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "";
+		return createMockTFile(path, { parentPath });
 	}
 });
