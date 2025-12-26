@@ -2,7 +2,7 @@ import type { Calendar } from "@fullcalendar/core";
 import { cls } from "@real1ty-obsidian-plugins/utils";
 import type { Frontmatter } from "../../types";
 
-export type FilterChangeCallback = () => void;
+type FilterChangeCallback = () => void;
 
 const DEFAULT_DEBOUNCE_MS = 150;
 

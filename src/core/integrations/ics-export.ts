@@ -7,7 +7,7 @@ import { parseIntoList } from "../../utils/list-utils";
 import { ensureFolderExists } from "../../utils/obsidian";
 import type { ParsedEvent } from "../parser";
 
-export interface NotificationSettings {
+interface NotificationSettings {
 	minutesBeforeProp?: string;
 	defaultMinutesBefore?: number;
 	daysBeforeProp?: string;
@@ -31,7 +31,7 @@ export interface ICSExportOptions {
 	};
 }
 
-export interface ICSExportResult {
+interface ICSExportResult {
 	success: boolean;
 	content?: string;
 	error?: Error;
@@ -257,7 +257,7 @@ export function generateICSFilename(calendarName: string): string {
 	return `${sanitizedName}-export-${timestamp}.ics`;
 }
 
-export interface TimezoneInfo {
+interface TimezoneInfo {
 	id: string;
 	label: string;
 }
@@ -285,8 +285,6 @@ export const COMMON_TIMEZONES: TimezoneInfo[] = [
 	{ id: "Australia/Sydney", label: "Australia/Sydney (UTC+10)" },
 	{ id: "Pacific/Auckland", label: "Pacific/Auckland (UTC+12)" },
 ];
-
-export type CommonTimezone = string;
 
 export async function exportCalendarAsICS(app: App, options: ExportOptions): Promise<void> {
 	const { bundle, timezone, excludeSkipped } = options;

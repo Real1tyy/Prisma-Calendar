@@ -1,6 +1,6 @@
 import type { Calendar } from "@fullcalendar/core";
 
-export interface CalendarViewState {
+interface CalendarViewState {
 	/** Current view type (e.g., 'dayGridMonth', 'timeGridWeek', 'timeGridDay', 'listWeek') */
 	viewType: string;
 	/** Current date being viewed as ISO string */

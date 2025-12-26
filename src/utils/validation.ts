@@ -78,7 +78,6 @@ export const requiredDateTimeTransform = requiredParsed<DateTime>("datetime", pa
 export const optionalDateTimeTransform = optionalParsed<DateTime>("datetime", parseDT);
 
 // Time
-export const requiredTimeTransform = requiredParsed<DateTime>("time", parseTime);
 export const optionalTimeTransform = optionalParsed<DateTime>("time", parseTime);
 
 // Date

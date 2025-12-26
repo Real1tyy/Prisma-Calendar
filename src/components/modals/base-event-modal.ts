@@ -25,7 +25,7 @@ import { CategoryAssignModal } from "./category-assign-modal";
 import { CategoryEventsModal } from "./category-events-modal";
 import { SavePresetModal } from "./save-preset-modal";
 
-export interface EventModalData {
+interface EventModalData {
 	title: string;
 	start: string | Date | null;
 	end?: string | Date | null;

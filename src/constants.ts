@@ -1,4 +1,4 @@
-export const PLUGIN_ID = "prisma-calendar";
+const PLUGIN_ID = "prisma-calendar";
 // Concurrency control for parallel file processing
 // Higher values = faster initial scan but more memory/CPU usage
 export const SCAN_CONCURRENCY = 10;
@@ -133,7 +133,7 @@ export const CALDAV_DEFAULTS = {
 	MAX_ACCOUNTS: 10,
 } as const;
 
-export const BATCH_BUTTONS = {
+const BATCH_BUTTONS = {
 	"Select All": "batchSelectAll",
 	Clear: "batchClear",
 	Duplicate: "batchDuplicate",

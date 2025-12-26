@@ -18,7 +18,6 @@ export const RECURRENCE_TYPE_OPTIONS = {
 export type RecurrenceType = keyof typeof RECURRENCE_TYPE_OPTIONS;
 
 export const WEEKDAY_SUPPORTED_TYPES = ["weekly", "bi-weekly"] as const;
-export type WeekdaySupportedType = (typeof WEEKDAY_SUPPORTED_TYPES)[number];
 
 export const WEEKDAY_OPTIONS = Object.keys(WEEKDAY_TO_NUMBER).reduce(
 	(acc, weekday) => {
@@ -28,11 +27,9 @@ export const WEEKDAY_OPTIONS = Object.keys(WEEKDAY_TO_NUMBER).reduce(
 	{} as Record<keyof typeof WEEKDAY_TO_NUMBER, string>
 );
 
-export const RecurrenceTypeSchema = z.enum(
-	Object.keys(RECURRENCE_TYPE_OPTIONS) as [RecurrenceType, ...RecurrenceType[]]
-);
+const RecurrenceTypeSchema = z.enum(Object.keys(RECURRENCE_TYPE_OPTIONS) as [RecurrenceType, ...RecurrenceType[]]);
 
-export const WeekdaySchema = z.enum(Object.keys(WEEKDAY_TO_NUMBER) as [Weekday, ...Weekday[]]);
+const WeekdaySchema = z.enum(Object.keys(WEEKDAY_TO_NUMBER) as [Weekday, ...Weekday[]]);
 
 const weekdaysTransform = z
 	.union([z.string(), z.null()])

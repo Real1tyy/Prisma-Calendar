@@ -11,13 +11,13 @@ import type {
 	CalDAVStoredCalendar,
 } from "./types";
 
-export interface CalDAVConnectionResult {
+interface CalDAVConnectionResult {
 	success: boolean;
 	error?: string;
 	calendars?: CalDAVCalendarInfo[];
 }
 
-export interface CalDAVFetchEventsOptions {
+interface CalDAVFetchEventsOptions {
 	calendar: CalDAVCalendarInfo;
 }
 

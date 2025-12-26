@@ -4,7 +4,7 @@ import { CalDAVSettingsSchema } from "../core/integrations/caldav";
 import { ColorSchema } from "../utils/validation";
 import { CalendarViewTypeSchema } from "./view";
 
-export const EventPresetSchema = z
+const EventPresetSchema = z
 	.object({
 		id: z.string(),
 		name: z.string(),
@@ -24,7 +24,7 @@ export const EventPresetSchema = z
 	})
 	.strip();
 
-export const GeneralSettingsSchema = z
+const GeneralSettingsSchema = z
 	.object({
 		directory: z.string().catch(""),
 		defaultDurationMinutes: z.number().int().positive().catch(SETTINGS_DEFAULTS.DEFAULT_DURATION_MINUTES),
@@ -41,7 +41,7 @@ export const GeneralSettingsSchema = z
 	})
 	.strip();
 
-export const PropsSettingsSchema = z
+const PropsSettingsSchema = z
 	.object({
 		startProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_START_PROP),
 		endProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_END_PROP),
@@ -69,7 +69,7 @@ export const PropsSettingsSchema = z
 	})
 	.strip();
 
-export const NotificationsSettingsSchema = z
+const NotificationsSettingsSchema = z
 	.object({
 		enableNotifications: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_ENABLE_NOTIFICATIONS),
 		notificationSound: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_NOTIFICATION_SOUND), // whether to play sound with notifications
@@ -83,16 +83,16 @@ export const NotificationsSettingsSchema = z
 	})
 	.strip();
 
-export const FilterPresetSchema = z
+const FilterPresetSchema = z
 	.object({
 		name: z.string(),
 		expression: z.string(),
 	})
 	.strip();
 
-export const BatchActionButtonSchema = z.enum(BATCH_BUTTON_IDS as [string, ...string[]]);
+const BatchActionButtonSchema = z.enum(BATCH_BUTTON_IDS as [string, ...string[]]);
 
-export const CalendarSettingsSchema = z
+const CalendarSettingsSchema = z
 	.object({
 		futureInstancesCount: z.number().int().min(1).max(52).catch(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT), // how many future instances to generate for recurring events
 		propagateFrontmatterToInstances: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_INSTANCES), // automatically propagate non-Prisma frontmatter changes from source to physical instances
@@ -138,7 +138,7 @@ export const CalendarSettingsSchema = z
 	})
 	.strip();
 
-export const RulesSettingsSchema = z
+const RulesSettingsSchema = z
 	.object({
 		filterExpressions: z.array(z.string()).catch([]), // JavaScript expressions to filter events based on frontmatter
 		defaultNodeColor: ColorSchema.catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR), // Default purple color
@@ -193,6 +193,5 @@ export const CustomCalendarSettingsSchema = z
 
 export type FilterPreset = z.infer<typeof FilterPresetSchema>;
 export type EventPreset = z.infer<typeof EventPresetSchema>;
-export type BatchActionButton = z.infer<typeof BatchActionButtonSchema>;
 export type SingleCalendarConfig = z.infer<typeof SingleCalendarConfigSchema>;
 export type CustomCalendarSettings = z.infer<typeof CustomCalendarSettingsSchema>;

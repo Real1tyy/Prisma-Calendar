@@ -1,16 +1,15 @@
 import { z } from "zod";
 
-export const CalDAVAuthMethodSchema = z.enum(["Basic", "Oauth"]);
-export type CalDAVAuthMethod = z.infer<typeof CalDAVAuthMethodSchema>;
+const CalDAVAuthMethodSchema = z.enum(["Basic", "Oauth"]);
 
-export const CalDAVBasicCredentialsSchema = z
+const CalDAVBasicCredentialsSchema = z
 	.object({
 		username: z.string().min(1),
 		password: z.string().min(1),
 	})
 	.loose();
 
-export const CalDAVOAuthCredentialsSchema = z
+const CalDAVOAuthCredentialsSchema = z
 	.object({
 		tokenUrl: z.url(),
 		username: z.string().min(1),
@@ -20,7 +19,7 @@ export const CalDAVOAuthCredentialsSchema = z
 	})
 	.loose();
 
-export const CalDAVAccountSchema = z
+const CalDAVAccountSchema = z
 	.object({
 		id: z.string(),
 		name: z.string().min(1),
@@ -76,7 +75,7 @@ export interface CalDAVStoredCalendar {
 	objects: CalDAVStoredObject[];
 }
 
-export interface CalDAVStoredObject {
+interface CalDAVStoredObject {
 	url: string;
 	etag: string;
 	uid: string;
@@ -102,8 +101,6 @@ export const CalDAVSettingsSchema = z
 		integrationEventColor: z.string().catch("#8b5cf6"),
 	})
 	.loose();
-
-export type CalDAVSettings = z.infer<typeof CalDAVSettingsSchema>;
 
 export const CALDAV_PRESETS = {
 	nextcloud: {

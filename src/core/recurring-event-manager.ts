@@ -31,20 +31,20 @@ import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
 import { TemplateService } from "./templates";
 
-export interface NodeRecurringEventInstance {
+interface NodeRecurringEventInstance {
 	recurringEvent: NodeRecurringEvent;
 	instanceDate: DateTime;
 	filePath: string;
 	created: boolean;
 }
 
-export interface PhysicalInstance {
+interface PhysicalInstance {
 	filePath: string;
 	instanceDate: DateTime;
 	ignored?: boolean;
 }
 
-export interface RecurringEventData {
+interface RecurringEventData {
 	recurringEvent: NodeRecurringEvent | null;
 	physicalInstances: Map<string, PhysicalInstance>;
 }

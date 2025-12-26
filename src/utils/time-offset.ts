@@ -5,7 +5,7 @@ const MS_PER_HOUR = 60 * MS_PER_MINUTE;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
 const MS_PER_WEEK = 7 * MS_PER_DAY;
 
-export interface TimeOffset {
+interface TimeOffset {
 	offsetMs: number;
 	unit: TimeUnit;
 }

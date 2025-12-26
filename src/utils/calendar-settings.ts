@@ -1,10 +1,5 @@
 import { SETTINGS_DEFAULTS } from "../constants";
-import {
-	type CustomCalendarSettings,
-	CustomCalendarSettingsSchema,
-	type SingleCalendarConfig,
-	SingleCalendarConfigSchema,
-} from "../types";
+import { type CustomCalendarSettings, type SingleCalendarConfig, SingleCalendarConfigSchema } from "../types";
 
 export function createDefaultCalendarConfig(id: string, name: string): SingleCalendarConfig {
 	return SingleCalendarConfigSchema.parse({
@@ -27,23 +22,8 @@ export function duplicateCalendarConfig(
 	});
 }
 
-export function validatePartialSettings(settings: unknown): Partial<CustomCalendarSettings> {
-	return CustomCalendarSettingsSchema.partial().parse(settings);
-}
-
 export function getCalendarById(settings: CustomCalendarSettings, id: string): SingleCalendarConfig | undefined {
 	return settings.calendars.find((calendar) => calendar.id === id);
-}
-
-export function updateCalendarById(
-	settings: CustomCalendarSettings,
-	id: string,
-	updates: Partial<SingleCalendarConfig>
-): CustomCalendarSettings {
-	return {
-		...settings,
-		calendars: settings.calendars.map((calendar) => (calendar.id === id ? { ...calendar, ...updates } : calendar)),
-	};
 }
 
 export function generateUniqueCalendarId(settings: CustomCalendarSettings): string {

@@ -68,7 +68,7 @@ class ObsidianResponse {
  * This bypasses CORS restrictions because requestUrl makes requests from
  * the Node.js/main process side rather than the browser renderer.
  */
-export async function obsidianFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+async function obsidianFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
 	const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
 
 	// Convert Headers to plain object if needed
@@ -122,14 +122,4 @@ export function patchGlobalFetch(): void {
 	if (originalFetch) return;
 	originalFetch = globalThis.fetch;
 	globalThis.fetch = obsidianFetch as typeof globalThis.fetch;
-}
-
-/**
- * Restores the original fetch implementation.
- */
-export function restoreGlobalFetch(): void {
-	if (originalFetch) {
-		globalThis.fetch = originalFetch;
-		originalFetch = undefined;
-	}
 }

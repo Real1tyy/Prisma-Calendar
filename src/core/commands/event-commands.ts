@@ -32,7 +32,7 @@ export interface EventData {
 	preservedFrontmatter: Frontmatter;
 }
 
-export type EditEventData = EventData;
+type EditEventData = EventData;
 
 export class CreateEventCommand implements Command {
 	private createdFilePath: string | null = null;

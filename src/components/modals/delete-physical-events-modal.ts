@@ -2,7 +2,7 @@ import { cls } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import { Modal } from "obsidian";
 
-export interface DeleteConfirmationModalOptions {
+interface DeleteConfirmationModalOptions {
 	title: string;
 	message: string;
 	confirmText?: string;
@@ -11,7 +11,7 @@ export interface DeleteConfirmationModalOptions {
 	onCancel?: () => void | Promise<void>;
 }
 
-export class DeletePhysicalEventsModal extends Modal {
+class DeletePhysicalEventsModal extends Modal {
 	private options: DeleteConfirmationModalOptions;
 
 	constructor(app: App, options: DeleteConfirmationModalOptions) {
@@ -81,7 +81,7 @@ export class DeleteRecurringEventsModal extends DeletePhysicalEventsModal {
 	}
 }
 
-export interface CalendarIntegrationDeleteEventsModalOptions {
+interface CalendarIntegrationDeleteEventsModalOptions {
 	accountName?: string;
 	calendarIdentifier?: string;
 	eventCount: number;

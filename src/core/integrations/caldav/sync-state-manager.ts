@@ -8,7 +8,7 @@ import { type CalDAVSyncMetadata, CalDAVSyncMetadataSchema } from "./types";
 /**
  * Represents a CalDAV-synced event tracked in the local vault
  */
-export interface TrackedCalDAVEvent {
+interface TrackedCalDAVEvent {
 	filePath: string;
 	metadata: CalDAVSyncMetadata;
 }

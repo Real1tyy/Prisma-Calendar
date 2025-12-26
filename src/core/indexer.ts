@@ -20,7 +20,7 @@ export interface RawEventSource {
 	isAllDay: boolean;
 }
 
-export type IndexerEventType = "file-changed" | "file-deleted" | "recurring-event-found";
+type IndexerEventType = "file-changed" | "file-deleted" | "recurring-event-found";
 
 export interface IndexerEvent {
 	type: IndexerEventType;

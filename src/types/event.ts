@@ -14,27 +14,25 @@ const BaseEventFrontmatterSchema = z.object({
 });
 
 // Schema for TIMED events (has startTime, optional endTime, allDay = false)
-export const TimedEventFrontmatterSchema = BaseEventFrontmatterSchema.extend({
+const TimedEventFrontmatterSchema = BaseEventFrontmatterSchema.extend({
 	startTime: requiredDateTimeTransform,
 	endTime: optionalDateTimeTransform,
 	allDay: z.literal(false).optional().nullable(),
 }).strict();
 
 // Schema for ALL-DAY events (has date, allDay = true, no startTime/endTime)
-export const AllDayEventFrontmatterSchema = BaseEventFrontmatterSchema.extend({
+const AllDayEventFrontmatterSchema = BaseEventFrontmatterSchema.extend({
 	date: requiredDateTransform,
 	allDay: z.literal(true),
 }).strict();
 
 // Union of both event types
-export const EventFrontmatterSchema = z.discriminatedUnion("allDay", [
+const EventFrontmatterSchema = z.discriminatedUnion("allDay", [
 	TimedEventFrontmatterSchema,
 	AllDayEventFrontmatterSchema,
 ]);
 
-export type ParsedEventFrontmatter = z.infer<typeof EventFrontmatterSchema>;
-export type TimedEventFrontmatter = z.infer<typeof TimedEventFrontmatterSchema>;
-export type AllDayEventFrontmatter = z.infer<typeof AllDayEventFrontmatterSchema>;
+type ParsedEventFrontmatter = z.infer<typeof EventFrontmatterSchema>;
 
 export function parseEventFrontmatter(
 	frontmatter: Frontmatter,

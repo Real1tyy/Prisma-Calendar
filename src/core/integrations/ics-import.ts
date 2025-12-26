@@ -190,19 +190,7 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 	}
 }
 
-export interface ImportFrontmatterSettings {
-	startProp: string;
-	endProp: string;
-	dateProp: string;
-	allDayProp: string;
-	titleProp?: string;
-	minutesBeforeProp: string;
-	daysBeforeProp: string;
-	categoryProp: string;
-	zettelIdProp?: string;
-}
-
-export function extractBasenameFromOriginalPath(originalPath: string | undefined): string | null {
+function extractBasenameFromOriginalPath(originalPath: string | undefined): string | null {
 	if (!originalPath) return null;
 	return getFilenameFromPath(originalPath).replace(/\.md$/, "");
 }
@@ -321,7 +309,7 @@ export async function createEventNoteFromImportedEvent(
 	});
 }
 
-export type ImportProgressCallback = (current: number, total: number, eventTitle?: string) => void;
+type ImportProgressCallback = (current: number, total: number, eventTitle?: string) => void;
 
 export async function importEventsToCalendar(
 	app: App,

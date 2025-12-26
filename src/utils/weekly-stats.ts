@@ -19,7 +19,6 @@ export interface Stats {
 }
 
 export type WeeklyStatEntry = StatEntry;
-export type WeeklyStats = Stats;
 
 /**
  * Calculates the duration of an event in milliseconds.
@@ -211,7 +210,7 @@ export function aggregateWeeklyStats(
 	mode: AggregationMode = "name",
 	categoryProp = "Category",
 	breakProp?: string
-): WeeklyStats {
+): Stats {
 	const { start, end } = getWeekBounds(weekDate);
 	return aggregateStats(events, start, end, mode, categoryProp, breakProp);
 }

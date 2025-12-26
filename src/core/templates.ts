@@ -6,7 +6,7 @@ import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 import type { Indexer, IndexerEvent } from "./indexer";
 
-export interface FileCreationOptions {
+interface FileCreationOptions {
 	title: string;
 	targetDirectory: string;
 	filename?: string;

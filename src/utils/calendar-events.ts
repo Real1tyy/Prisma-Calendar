@@ -95,7 +95,7 @@ export const extractZettelId = (text: string): string | null => {
 	return match ? match[1] : null;
 };
 
-export const parseZettelIdToDate = (zettelId: string): Date | null => {
+const parseZettelIdToDate = (zettelId: string): Date | null => {
 	if (!/^\d{14}$/.test(zettelId)) {
 		return null;
 	}
@@ -199,16 +199,6 @@ export const isPhysicalRecurringEvent = (
 	return Boolean(frontmatter[rruleIdProp] && frontmatter[instanceDateProp] && !frontmatter[rruleProp]);
 };
 
-/**
- * Checks if an event is a source recurring event (has rrule property with a value).
- * A source recurring event is identified by having the RRule property set in frontmatter.
- */
-export const isSourceRecurringEvent = (frontmatter: Frontmatter | undefined, rruleProp: string): boolean => {
-	if (!frontmatter) return false;
-	const rruleValue = frontmatter[rruleProp];
-	return rruleValue !== undefined && rruleValue !== null && rruleValue !== "";
-};
-
 export const isEventDone = (app: App, filePath: string, statusProperty: string, doneValue: string): boolean => {
 	const file = app.vault.getAbstractFileByPath(filePath);
 	if (!(file instanceof TFile)) {
@@ -224,7 +214,7 @@ export const isEventDone = (app: App, filePath: string, statusProperty: string, 
  * Returns a Set of core Prisma-managed internal properties.
  * These are the base properties that Prisma uses for calendar functionality.
  */
-export const getPrismaInternalProps = (settings: SingleCalendarConfig): Set<string> => {
+const getPrismaInternalProps = (settings: SingleCalendarConfig): Set<string> => {
 	return new Set(
 		[
 			settings.startProp,
@@ -478,7 +468,7 @@ export const generateUniqueEventPath = (
 };
 
 // Safe ISO shift (stays ISO even if undefined)
-export const shiftISO = (iso: unknown, offsetMs?: number) => {
+const shiftISO = (iso: unknown, offsetMs?: number) => {
 	if (!iso || typeof iso !== "string" || !offsetMs) return iso;
 	const d = new Date(iso);
 	if (Number.isNaN(d.getTime())) return iso;

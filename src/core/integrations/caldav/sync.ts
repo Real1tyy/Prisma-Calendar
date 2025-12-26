@@ -22,7 +22,7 @@ async function yieldToMainThread(): Promise<void> {
 	await new Promise((resolve) => window.setTimeout(resolve, 0));
 }
 
-export interface CalDAVSyncServiceOptions {
+interface CalDAVSyncServiceOptions {
 	app: App;
 	bundle: CalendarBundle;
 	mainSettingsStore: SettingsStore;

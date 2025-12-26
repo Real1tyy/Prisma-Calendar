@@ -1,9 +1,9 @@
 import { cls } from "@real1ty-obsidian-plugins/utils";
 import { formatMsToHHMMSS } from "../utils/time-formatter";
 
-export type StopwatchState = "idle" | "running" | "paused" | "stopped";
+type StopwatchState = "idle" | "running" | "paused" | "stopped";
 
-export interface StopwatchCallbacks {
+interface StopwatchCallbacks {
 	onStart: (startTime: Date) => void;
 	onStartWithoutFill: (startTime: Date) => void;
 	onStop: (endTime: Date) => void;

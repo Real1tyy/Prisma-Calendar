@@ -17,7 +17,7 @@ export interface VaultEventId {
 	filePath: string;
 }
 
-export interface CachedEvent {
+interface CachedEvent {
 	template: ParsedEvent;
 	mtime: number;
 }

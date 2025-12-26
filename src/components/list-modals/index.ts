@@ -1,4 +1,3 @@
-export { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 export { FilteredEventsModal } from "./filtered-events-modal";
 export { GlobalSearchModal } from "./global-search-modal";
 export { RecurringEventsModal } from "./recurring-events-modal";
