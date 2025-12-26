@@ -1,4 +1,4 @@
-import type { MoveByResult, TimeUnit } from "../components/move-by-modal";
+import type { MoveByResult, TimeUnit } from "../components/modals/move-by-modal";
 
 const MS_PER_MINUTE = 60 * 1000;
 const MS_PER_HOUR = 60 * MS_PER_MINUTE;

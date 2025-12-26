@@ -5,7 +5,7 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
 import type { Command } from "../core/commands/command";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
-import { MoveByModal } from "./move-by-modal";
+import { MoveByModal } from "./modals/move-by-modal";
 
 export interface SelectedEvent {
 	id: string;

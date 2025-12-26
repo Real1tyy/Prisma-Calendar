@@ -26,7 +26,7 @@ import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal"
 import { RecurringEventsListModal } from "./list-modals/recurring-events-list-modal";
 import { DeleteRecurringEventsModal, EventEditModal } from "./modals";
 import { CategoryAssignModal } from "./modals/category-assign-modal";
-import { MoveByModal } from "./move-by-modal";
+import { MoveByModal } from "./modals/move-by-modal";
 
 interface CalendarEventInfo {
 	title: string;

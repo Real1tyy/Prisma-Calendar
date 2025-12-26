@@ -12,7 +12,7 @@ export {
 	SkippedEventsModal,
 } from "./list-modals";
 export { EventCreateModal, EventEditModal } from "./modals";
-export { MoveByModal } from "./move-by-modal";
+export { MoveByModal } from "./modals/move-by-modal";
 export { NotificationModal } from "./notification-modal";
 export { CustomCalendarSettingsTab } from "./settings/settings-tab";
 export { SingleCalendarSettings } from "./settings/single-calendar-settings";
