@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented here.
 
+## 1.22.0
+
+### New Features
+
+- **Time Tracker Resume Button**: Added a "Resume" button to the time tracker (stopwatch) that appears after stopping the timer. This allows you to continue tracking time without resetting the start time or creating a new event. Perfect for resuming work after breaks or interruptions.
+  - **How it works**: When you press "Stop", the timer stops and fills the end time. The "Resume" button appears alongside "Start new" and "Start new (no fill)" buttons.
+  - **Resume behavior**: Pressing "Resume" continues the timer from where it left off without modifying the start time or end time fields. The total elapsed time and break time continue to accumulate accurately.
+  - **Use case**: Ideal for tracking work sessions with interruptions - stop the timer when interrupted, then resume when you're ready to continue without losing your timing data.
+
 ## 1.21.0
 
 ### New Features

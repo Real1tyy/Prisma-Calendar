@@ -39,6 +39,7 @@ export class Stopwatch {
 	private startWithoutFillBtn: HTMLButtonElement | null = null;
 	private pauseBtn: HTMLButtonElement | null = null;
 	private stopBtn: HTMLButtonElement | null = null;
+	private resumeBtn: HTMLButtonElement | null = null;
 
 	private callbacks: StopwatchCallbacks;
 	private showStartWithoutFill: boolean;
@@ -131,6 +132,17 @@ export class Stopwatch {
 		this.stopBtn.classList.add("prisma-hidden");
 		this.stopBtn.addEventListener("click", () => {
 			this.stop();
+		});
+
+		// Resume button (shown after stop)
+		this.resumeBtn = controlsSection.createEl("button", {
+			text: "▶ resume",
+			cls: cls("stopwatch-btn stopwatch-resume-btn"),
+			type: "button",
+		});
+		this.resumeBtn.classList.add("prisma-hidden");
+		this.resumeBtn.addEventListener("click", () => {
+			this.resume();
 		});
 
 		// Mid display (shows Session when running, Current Break when paused) - at bottom
@@ -230,6 +242,17 @@ export class Stopwatch {
 		this.updateButtonStates();
 	}
 
+	resume(): void {
+		if (this.state !== "stopped") return;
+
+		this.state = "running";
+		this.sessionStartTime = new Date();
+
+		this.startInterval();
+		this.updateButtonStates();
+		this.updateDisplay();
+	}
+
 	reset(): void {
 		this.state = "idle";
 		this.startTime = null;
@@ -293,7 +316,7 @@ export class Stopwatch {
 	}
 
 	private updateButtonStates(): void {
-		if (!this.startBtn || !this.pauseBtn || !this.stopBtn) return;
+		if (!this.startBtn || !this.pauseBtn || !this.stopBtn || !this.resumeBtn) return;
 
 		switch (this.state) {
 			case "idle":
@@ -304,6 +327,7 @@ export class Stopwatch {
 				}
 				this.pauseBtn.classList.add("prisma-hidden");
 				this.stopBtn.classList.add("prisma-hidden");
+				this.resumeBtn.classList.add("prisma-hidden");
 				break;
 
 			case "running":
@@ -316,6 +340,7 @@ export class Stopwatch {
 				this.pauseBtn.classList.remove(cls("stopwatch-resume-btn"));
 				this.pauseBtn.classList.add(cls("stopwatch-pause-btn"));
 				this.stopBtn.classList.remove("prisma-hidden");
+				this.resumeBtn.classList.add("prisma-hidden");
 				break;
 
 			case "paused":
@@ -328,6 +353,7 @@ export class Stopwatch {
 				this.pauseBtn.classList.remove(cls("stopwatch-pause-btn"));
 				this.pauseBtn.classList.add(cls("stopwatch-resume-btn"));
 				this.stopBtn.classList.remove("prisma-hidden");
+				this.resumeBtn.classList.add("prisma-hidden");
 				break;
 
 			case "stopped":
@@ -335,9 +361,11 @@ export class Stopwatch {
 				this.startBtn.textContent = "▶ start new";
 				if (this.startWithoutFillBtn) {
 					this.startWithoutFillBtn.classList.remove("prisma-hidden");
+					this.startWithoutFillBtn.textContent = "▶ start new (no fill)";
 				}
 				this.pauseBtn.classList.add("prisma-hidden");
 				this.stopBtn.classList.add("prisma-hidden");
+				this.resumeBtn.classList.remove("prisma-hidden");
 				break;
 		}
 	}
