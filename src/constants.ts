@@ -42,6 +42,7 @@ export const COMMAND_IDS = {
 	EXPORT_CALENDAR_ICS: "export-calendar-ics",
 	IMPORT_CALENDAR_ICS: "import-calendar-ics",
 	SYNC_CALDAV: "sync-caldav",
+	NAVIGATE_BACK: "navigate-back",
 } as const;
 
 export const FULL_COMMAND_IDS = Object.fromEntries(

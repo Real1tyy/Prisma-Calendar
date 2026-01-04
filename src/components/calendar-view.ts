@@ -135,6 +135,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private lastEdgeScrollTime = 0;
 	private refreshRafId: number | null = null;
 	private lastMobileTapTime = 0;
+	private previousViewState: { date: Date; viewType: string } | null = null;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -623,6 +624,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	navigateToDate(date: Date, viewType?: string): void {
 		if (!this.calendar) return;
 
+		this.storePreviousViewState();
+
 		if (viewType) {
 			this.calendar.changeView(viewType);
 		}
@@ -648,6 +651,39 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				}
 			}
 		}
+	}
+
+	private storePreviousViewState(): void {
+		if (!this.calendar) return;
+
+		const currentDate = this.calendar.getDate();
+		const currentViewType = this.calendar.view.type;
+
+		this.previousViewState = {
+			date: new Date(currentDate),
+			viewType: currentViewType,
+		};
+	}
+
+	navigateBack(): boolean {
+		if (!this.calendar || !this.previousViewState) {
+			return false;
+		}
+
+		const { date, viewType } = this.previousViewState;
+
+		// Don't store the current state as previous when going back
+		// (to avoid creating a navigation loop)
+		const tempPrevious = this.previousViewState;
+		this.previousViewState = null;
+
+		this.calendar.changeView(viewType);
+		this.calendar.gotoDate(date);
+
+		// Restore the previous state reference
+		this.previousViewState = tempPrevious;
+
+		return true;
 	}
 
 	private findUpcomingEventIds(): Set<string> {

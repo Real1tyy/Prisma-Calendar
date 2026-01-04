@@ -6,6 +6,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Navigate Back Command**: Added "Navigate back" command that allows you to quickly return to the previous calendar view. When you navigate to an event's date (e.g., from global search, clicking a date link, or opening an event from a modal), the calendar stores the previous view state. Use the command (or assign a hotkey) to jump back to where you were before. Perfect for quickly navigating between your current view and specific events without losing your place.
+
 - **Quarterly and Semi-Annual Recurring Events**: Added `quarterly` (every 3 months) and `semi-annual` (every 6 months) options to recurring events. Perfect for quarterly reviews, semi-annual checkups, and other regular intervals. Configure with `RRule: quarterly` or `RRule: semi-annual` in frontmatter, or select from the recurring event modal dropdown.
 
 - **Time Tracker Resume Button**: Added a "Resume" button to the time tracker (stopwatch) that appears after stopping the timer. This allows you to continue tracking time without resetting the start time or creating a new event. Perfect for resuming work after breaks or interruptions.
