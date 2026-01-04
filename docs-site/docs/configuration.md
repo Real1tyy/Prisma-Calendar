@@ -75,7 +75,7 @@ Tell Prisma Calendar which frontmatter keys you use.
 
 ### Recurring (node-based)
 
-- RRule property: e.g., `daily`, `weekly`, `bi-weekly`, `monthly`, `bi-monthly`, `yearly`
+- RRule property: e.g., `daily`, `weekly`, `bi-weekly`, `monthly`, `bi-monthly`, `quarterly`, `yearly`
 - RRule specification property: weekdays for weekly/bi-weekly (e.g., `monday, wednesday, friday`)
 - RRule ID property: unique identifier for recurrence
 - Source property: link to the source recurring event

@@ -1,5 +1,4 @@
 import { vi } from "vitest";
-import type { Frontmatter } from "../../src/types";
 
 // Base Plugin class mock
 export class Plugin {

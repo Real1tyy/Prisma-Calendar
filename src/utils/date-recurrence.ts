@@ -97,6 +97,8 @@ export function getNextOccurrence(
 			return currentDate.plus({ months: 1 });
 		case "bi-monthly":
 			return currentDate.plus({ months: 2 });
+		case "quarterly":
+			return currentDate.plus({ months: 3 });
 		case "yearly":
 			return currentDate.plus({ years: 1 });
 		default:
@@ -197,7 +199,8 @@ export function calculateRecurringInstanceDateTime(
 		}
 
 		case "monthly":
-		case "bi-monthly": {
+		case "bi-monthly":
+		case "quarterly": {
 			if (allDay) {
 				return nextInstanceDateTime.set({ day: originalInTargetZone.day }).startOf("day");
 			}

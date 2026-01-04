@@ -234,7 +234,7 @@ ${settings.futureInstancesCountProp}: 5
 		const typesContainer = recurringDesc.createDiv();
 		typesContainer.createEl("strong", { text: "Supported rrule types" });
 		const typesList = typesContainer.createEl("ul");
-		["daily", "weekly", "bi-weekly", "monthly", "bi-monthly", "yearly"].forEach((type) => {
+		["daily", "weekly", "bi-weekly", "monthly", "bi-monthly", "quarterly", "yearly"].forEach((type) => {
 			typesList.createEl("li", { text: type });
 		});
 
