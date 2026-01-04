@@ -99,6 +99,8 @@ export function getNextOccurrence(
 			return currentDate.plus({ months: 2 });
 		case "quarterly":
 			return currentDate.plus({ months: 3 });
+		case "semi-annual":
+			return currentDate.plus({ months: 6 });
 		case "yearly":
 			return currentDate.plus({ years: 1 });
 		default:
@@ -144,6 +146,52 @@ export function* iterateOccurrencesInRange(
 			}
 
 			currentDate = currentDate.plus({ weeks: weekInterval });
+		}
+	} else if (
+		rrules.type === "monthly" ||
+		rrules.type === "bi-monthly" ||
+		rrules.type === "quarterly" ||
+		rrules.type === "semi-annual"
+	) {
+		// For month-based intervals, align to the cycle from the source date
+		let monthInterval: number;
+		switch (rrules.type) {
+			case "monthly":
+				monthInterval = 1;
+				break;
+			case "bi-monthly":
+				monthInterval = 2;
+				break;
+			case "quarterly":
+				monthInterval = 3;
+				break;
+			case "semi-annual":
+				monthInterval = 6;
+				break;
+			default:
+				monthInterval = 1;
+		}
+
+		// If currentDate is past the source, align it to the next occurrence in the cycle
+		if (currentDate > normalizedStart) {
+			const monthsFromStart = Math.floor(currentDate.diff(normalizedStart, "months").months);
+			const cycleOffset = monthsFromStart % monthInterval;
+
+			if (cycleOffset !== 0) {
+				// Align to next cycle boundary
+				currentDate = normalizedStart.plus({ months: monthsFromStart + (monthInterval - cycleOffset) });
+			} else {
+				// Already aligned, use the current cycle position
+				currentDate = normalizedStart.plus({ months: monthsFromStart });
+			}
+		}
+
+		while (currentDate <= normalizedRangeEnd) {
+			if (currentDate >= normalizedRangeStart) {
+				yield currentDate;
+			}
+
+			currentDate = currentDate.plus({ months: monthInterval });
 		}
 	} else {
 		while (currentDate <= normalizedRangeEnd) {
@@ -200,7 +248,8 @@ export function calculateRecurringInstanceDateTime(
 
 		case "monthly":
 		case "bi-monthly":
-		case "quarterly": {
+		case "quarterly":
+		case "semi-annual": {
 			if (allDay) {
 				return nextInstanceDateTime.set({ day: originalInTargetZone.day }).startOf("day");
 			}

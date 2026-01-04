@@ -397,6 +397,37 @@ describe("date-recurrence", () => {
 		});
 	});
 
+	describe("Semi-Annual Recurrence - Time Context", () => {
+		it("should generate future events when source is now", () => {
+			const now = date("2025-10-15");
+			expectDates(now, "semi-annual", undefined, 4, ["2025-10-15", "2026-04-15", "2026-10-15", "2027-04-15"]);
+		});
+
+		it("should only generate future events when source is in the past", () => {
+			const pastSource = date("2025-01-15");
+			const rangeStart = date("2025-10-15"); // Now (aligned with source day)
+			const rangeEnd = date("2027-08-01");
+
+			const dates = iterateDates(pastSource, "semi-annual", undefined, rangeStart, rangeEnd);
+
+			// Should generate every 6 months from rangeStart onwards (respecting semi-annual cycle)
+			expect(dates).toEqual(["2026-01-15", "2026-07-15", "2027-01-15", "2027-07-15"]);
+			expect(dates).not.toContain("2025-01-15"); // Source not in range
+		});
+
+		it("should start from source when source is in the future", () => {
+			const futureSource = date("2026-04-15");
+			const rangeStart = date("2025-10-20"); // Now
+			const rangeEnd = date("2027-10-30");
+
+			const dates = iterateDates(futureSource, "semi-annual", undefined, rangeStart, rangeEnd);
+
+			// Should start from Apr, then every 6 months
+			expect(dates).toEqual(["2026-04-15", "2026-10-15", "2027-04-15", "2027-10-15"]);
+			expect(dates[0]).toBe("2026-04-15");
+		});
+	});
+
 	describe("Yearly Recurrence - Time Context", () => {
 		it("should generate future events when source is now", () => {
 			const now = date("2025-10-20");
@@ -681,6 +712,10 @@ describe("date-recurrence", () => {
 
 		it("should handle quarterly recurrence", () => {
 			expect(getNextOccurrence(date("2025-10-20"), "quarterly").toISODate()).toBe("2026-01-20");
+		});
+
+		it("should handle semi-annual recurrence", () => {
+			expect(getNextOccurrence(date("2025-10-20"), "semi-annual").toISODate()).toBe("2026-04-20");
 		});
 
 		it("should handle yearly recurrence", () => {

@@ -47,7 +47,7 @@ You can control how frontmatter changes are propagated in Settings → Calendar 
 
 ### Start Date as Calculation Point
 
-For `weekly`/`biweekly`, system finds first day matching `RRuleSpec` on or after `Start` date. For `daily`/`monthly`/`quarterly`/`yearly`, `Start` is typically the first instance.
+For `weekly`/`biweekly`, system finds first day matching `RRuleSpec` on or after `Start` date. For `daily`/`monthly`/`quarterly`/`semiannual`/`yearly`, `Start` is typically the first instance.
 
 ### RRuleID Management
 
@@ -84,6 +84,7 @@ Deterministic file paths based on (RRuleID, Instance Date) prevent duplicates. F
 - `monthly` - Every month
 - `bimonthly` - Every 2 months
 - `quarterly` - Every 3 months
+- `semiannual` - Every 6 months
 - `yearly` - Every year
 
 ### RRuleSpec for Weekly Patterns

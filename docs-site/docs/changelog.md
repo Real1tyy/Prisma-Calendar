@@ -6,7 +6,7 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
-- **Quarterly Recurring Events**: Added `quarterly` option to recurring events, allowing you to create events that repeat every 3 months. Configure with `RRule: quarterly` in frontmatter or select "Quarterly (every 3 months)" in the recurring event modal.
+- **Quarterly and Semi-Annual Recurring Events**: Added `quarterly` (every 3 months) and `semi-annual` (every 6 months) options to recurring events. Perfect for quarterly reviews, semi-annual checkups, and other regular intervals. Configure with `RRule: quarterly` or `RRule: semi-annual` in frontmatter, or select from the recurring event modal dropdown.
 
 - **Time Tracker Resume Button**: Added a "Resume" button to the time tracker (stopwatch) that appears after stopping the timer. This allows you to continue tracking time without resetting the start time or creating a new event. Perfect for resuming work after breaks or interruptions.
   - **How it works**: When you press "Stop", the timer stops and fills the end time. The "Resume" button appears alongside "Start new" and "Start new (no fill)" buttons.

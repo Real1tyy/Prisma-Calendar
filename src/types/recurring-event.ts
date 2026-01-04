@@ -13,6 +13,7 @@ export const RECURRENCE_TYPE_OPTIONS = {
 	monthly: "Monthly",
 	"bi-monthly": "Bi-monthly (every 2 months)",
 	quarterly: "Quarterly (every 3 months)",
+	"semi-annual": "Semi-annual (every 6 months)",
 	yearly: "Yearly",
 } as const;
 
