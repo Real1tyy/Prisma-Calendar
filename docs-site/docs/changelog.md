@@ -11,6 +11,10 @@ All notable changes to this project will be documented here.
   - **Resume behavior**: Pressing "Resume" continues the timer from where it left off without modifying the start time or end time fields. The total elapsed time and break time continue to accumulate accurately.
   - **Use case**: Ideal for tracking work sessions with interruptions - stop the timer when interrupted, then resume when you're ready to continue without losing your timing data.
 
+### Bug Fixes
+
+- **Fixed Calendar Indexer Race Condition**: Fixed an issue where newly created events wouldn't appear in the calendar until manual refresh. The calendar now immediately shows new events, even when Obsidian's metadata cache is still processing the file.
+
 ## 1.21.0
 
 ### New Features

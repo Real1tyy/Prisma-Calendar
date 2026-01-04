@@ -29,14 +29,14 @@ export class TemplateService {
 	constructor(
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
-		indexer: Indexer
+		private indexer: Indexer
 	) {
 		this.settings = settingsStore.value;
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			this.settings = newSettings;
 		});
 
-		this.indexerSubscription = indexer.events$.subscribe((event: IndexerEvent) => {
+		this.indexerSubscription = this.indexer.events$.subscribe((event: IndexerEvent) => {
 			void this.handleIndexerEvent(event);
 		});
 	}
@@ -89,6 +89,8 @@ export class TemplateService {
 					await this.app.fileManager.processFrontMatter(templateFile, (fm) => {
 						Object.assign(fm, frontmatter);
 					});
+
+					void this.indexer.forceIndexFile(templateFile.path);
 				}
 
 				return templateFile;
@@ -137,12 +139,14 @@ export class TemplateService {
 		const content = customContent || `# ${title}\n\n`;
 
 		const file = await this.app.vault.create(filePath, content);
+		const createdPath = file.path;
 
 		// Apply frontmatter if provided
 		if (frontmatter && Object.keys(frontmatter).length > 0) {
 			await this.app.fileManager.processFrontMatter(file, (fm) => {
 				Object.assign(fm, frontmatter);
 			});
+			void this.indexer.forceIndexFile(createdPath);
 		}
 
 		return file;
