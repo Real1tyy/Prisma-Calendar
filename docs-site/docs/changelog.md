@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented here.
 
+## 1.22.3
+
+### Performance Improvements
+
+- **Optimized Category Color Changes**: Changing category colors (and also other settings changes) are now significantly more responsive and no longer causes UI lag. This prevents unnecessary vault-wide rescans when tweaking visual settings.
+
 ## 1.22.2
 
 ### Bug Fixes

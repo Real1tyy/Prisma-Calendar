@@ -57,3 +57,12 @@ export function parseIntoList(
 
 	return defaultValue;
 }
+
+export function areSetsEqual<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean {
+	if (a === b) return true;
+	if (a.size !== b.size) return false;
+	for (const value of a) {
+		if (!b.has(value)) return false;
+	}
+	return true;
+}

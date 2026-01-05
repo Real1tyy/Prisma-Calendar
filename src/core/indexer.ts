@@ -11,6 +11,7 @@ import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import { generateUniqueRruleId, getRecurringInstanceExcludedProps } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
+import { areSetsEqual } from "../utils/list-utils";
 import { getFrontmatterWithRetry } from "../utils/obsidian";
 
 export interface RawEventSource {
@@ -42,6 +43,13 @@ export class Indexer {
 	private genericIndexer: GenericIndexer;
 	private settingsSubscription: Subscription | null = null;
 	private scanEventsSubject = new Subject<IndexerEvent>();
+	private lastDirectory: string;
+	private lastExcludedDiffProps: Set<string>;
+	private readonly includeFile = (filePath: string): boolean => {
+		const directory = this.settings.directory;
+		if (!directory) return true;
+		return filePath === directory || filePath.startsWith(`${directory}/`);
+	};
 
 	public readonly events$: Observable<IndexerEvent>;
 	public readonly indexingComplete$: Observable<boolean>;
@@ -51,6 +59,8 @@ export class Indexer {
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
 		this.settings = settingsStore.value;
+		this.lastDirectory = this.settings.directory;
+		this.lastExcludedDiffProps = getRecurringInstanceExcludedProps(this.settings);
 
 		const configStore = new BehaviorSubject<IndexerConfig>(this.buildIndexerConfig());
 		this.genericIndexer = new GenericIndexer(app, configStore);
@@ -62,12 +72,23 @@ export class Indexer {
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			const filtersChanged =
 				JSON.stringify(this.settings.filterExpressions) !== JSON.stringify(newSettings.filterExpressions);
+			const directoryChanged = this.lastDirectory !== newSettings.directory;
+			const nextExcludedDiffProps = getRecurringInstanceExcludedProps(newSettings);
+			const excludedDiffPropsChanged = !areSetsEqual(this.lastExcludedDiffProps, nextExcludedDiffProps);
 			this.settings = newSettings;
 
-			if (filtersChanged) {
-				void this.genericIndexer.resync();
-			} else {
+			const shouldResync = filtersChanged || directoryChanged;
+			if (shouldResync || excludedDiffPropsChanged) {
+				// Keep the generic indexer's config up to date.
+				// IMPORTANT: includeFile is a stable function reference; changing only excludedDiffProps
+				// must not trigger an expensive full scan.
 				configStore.next(this.buildIndexerConfig());
+				this.lastDirectory = newSettings.directory;
+				this.lastExcludedDiffProps = nextExcludedDiffProps;
+			}
+
+			if (shouldResync) {
+				void this.genericIndexer.resync();
 			}
 		});
 
@@ -77,11 +98,7 @@ export class Indexer {
 
 	private buildIndexerConfig(): IndexerConfig {
 		return {
-			includeFile: (filePath: string) => {
-				const directory = this.settings.directory;
-				if (!directory) return true;
-				return filePath === directory || filePath.startsWith(`${directory}/`);
-			},
+			includeFile: this.includeFile,
 			excludedDiffProps: getRecurringInstanceExcludedProps(this.settings),
 			scanConcurrency: SCAN_CONCURRENCY,
 			debounceMs: 100,
