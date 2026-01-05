@@ -73,6 +73,12 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			href: "https://github.com/Real1tyy#-support-my-work",
 			cls: cls("settings-support-link"),
 		});
+
+		linksContainer.createEl("a", {
+			text: "Playlist",
+			href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4",
+			cls: cls("settings-support-link"),
+		});
 	}
 
 	private createCalendarManagementHeader(): void {
