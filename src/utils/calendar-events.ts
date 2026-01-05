@@ -277,6 +277,28 @@ export const getRecurringInstanceExcludedProps = (settings: SingleCalendarConfig
 };
 
 /**
+ * Filters a frontmatter diff to remove excluded properties based on settings.
+ * Returns a new diff with only non-excluded properties.
+ */
+export const filterExcludedPropsFromDiff = (diff: FrontmatterDiff, settings: SingleCalendarConfig): FrontmatterDiff => {
+	const excludedProps = getRecurringInstanceExcludedProps(settings);
+
+	const filteredAdded = diff.added.filter((change) => !excludedProps.has(change.key));
+	const filteredModified = diff.modified.filter((change) => !excludedProps.has(change.key));
+	const filteredDeleted = diff.deleted.filter((change) => !excludedProps.has(change.key));
+
+	const hasChanges = filteredAdded.length > 0 || filteredModified.length > 0 || filteredDeleted.length > 0;
+
+	return {
+		...diff,
+		added: filteredAdded,
+		modified: filteredModified,
+		deleted: filteredDeleted,
+		hasChanges,
+	};
+};
+
+/**
  * Applies frontmatter changes from a diff to a physical recurring event instance file,
  * filtering out excluded properties based on settings.
  */

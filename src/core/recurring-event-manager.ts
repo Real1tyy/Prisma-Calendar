@@ -18,6 +18,7 @@ import type { NodeRecurringEvent } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import {
 	applyFrontmatterChangesToInstance,
+	filterExcludedPropsFromDiff,
 	getRecurringInstanceExcludedProps,
 	hashRRuleIdToZettelFormat,
 	removeZettelId,
@@ -177,15 +178,20 @@ export class RecurringEventManager extends DebouncedNotifier {
 			this.accumulatedDiffs.delete(recurringEvent.rRuleId);
 
 			const mergedDiff = mergeFrontmatterDiffs(diffs);
+			const filteredDiff = filterExcludedPropsFromDiff(mergedDiff, this.settings);
+
+			if (!filteredDiff.hasChanges) {
+				return;
+			}
 
 			if (this.settings.propagateFrontmatterToInstances) {
-				void this.propagateFrontmatterToInstances(recurringEvent, mergedDiff);
+				void this.propagateFrontmatterToInstances(recurringEvent, filteredDiff);
 			} else if (this.settings.askBeforePropagatingFrontmatter) {
 				new FrontmatterPropagationModal(this.app, {
 					eventTitle: recurringEvent.title,
-					diff: mergedDiff,
+					diff: filteredDiff,
 					instanceCount: data.physicalInstances.size,
-					onConfirm: () => this.propagateFrontmatterToInstances(recurringEvent, mergedDiff),
+					onConfirm: () => this.propagateFrontmatterToInstances(recurringEvent, filteredDiff),
 				}).open();
 			}
 		}, this.settings.propagationDebounceMs);
@@ -202,8 +208,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			return;
 		}
 
-		const allChanges = [...frontmatterDiff.added, ...frontmatterDiff.modified, ...frontmatterDiff.deleted];
-		if (allChanges.length === 0) {
+		if (!frontmatterDiff.hasChanges) {
 			return;
 		}
 

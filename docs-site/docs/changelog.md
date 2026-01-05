@@ -8,6 +8,10 @@ All notable changes to this project will be documented here.
 
 - **Optimized Category Color Changes**: Changing category colors (and also other settings changes) are now significantly more responsive and no longer causes UI lag. This prevents unnecessary vault-wide rescans when tweaking visual settings.
 
+### Bug Fixes
+
+- **Fixed Excluded Properties in Frontmatter Propagation**: Excluded properties from settings (`excludedRecurringPropagatedProps`) are now properly filtered out during frontmatter propagation to recurring event instances. Excluded props no longer appear in the propagation confirmation modal and are filtered before propagation, preventing unnecessary processing.
+
 ## 1.22.2
 
 ### Bug Fixes
