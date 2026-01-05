@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented here.
 
+## 1.22.1
+
+### Bug Fixes
+
+- **Fixed Event Synchronization Issues**: Resolved the event synchronization problem mentioned in 1.22.0. Events now consistently appear in the calendar immediately after creation, editing, or duplication. Creating events, duplicating events, and editing events now feels instant and responsive.
+
 ## 1.22.0
 
 ### New Features

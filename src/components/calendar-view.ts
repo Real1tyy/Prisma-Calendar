@@ -45,7 +45,6 @@ import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";
 
-// Prisma-specific extended props stored on FullCalendar events
 interface PrismaExtendedProps {
 	filePath: string;
 	folder: string;
@@ -54,7 +53,6 @@ interface PrismaExtendedProps {
 	isVirtual: boolean;
 }
 
-// Event input type for creating FullCalendar events
 interface PrismaEventInput extends EventInput {
 	extendedProps: PrismaExtendedProps;
 }
@@ -65,10 +63,8 @@ interface FlexibleExtendedProps {
 	originalTitle?: string;
 	frontmatterDisplayData?: Frontmatter;
 	isVirtual?: boolean;
-	[key: string]: unknown; // Allow any other props from FullCalendar
 }
 
-// Common event shape for internal handlers (accepts FullCalendar's loose typing)
 interface CalendarEventData {
 	title: string;
 	start: Date | null;

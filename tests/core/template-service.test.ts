@@ -37,7 +37,6 @@ describe("TemplateService", () => {
 			events$: {
 				subscribe: vi.fn().mockReturnValue({ unsubscribe: vi.fn() }),
 			},
-			forceIndexFile: vi.fn().mockResolvedValue(undefined),
 		};
 	});
 
@@ -80,10 +79,6 @@ describe("TemplateService", () => {
 			expect(fm["End Date"]).toBe("2025-11-20T20:20:00.000Z");
 			expect(fm.RRuleID).toBe("test-123");
 			expect(fm["Recurring Instance Date"]).toBe("2025-11-20");
-
-			// Verify we force-index the created file so it shows up immediately in the calendar
-			expect(mockIndexer.forceIndexFile).toHaveBeenCalledTimes(1);
-			expect(mockIndexer.forceIndexFile).toHaveBeenCalledWith("test.md");
 		});
 
 		it("should preserve UTC Z suffix in timestamps", async () => {
@@ -114,9 +109,6 @@ describe("TemplateService", () => {
 			expect(fm2["Start Date"]).toContain("Z");
 			expect(fm2["Start Date"]).not.toContain("+01:00");
 			expect(fm2["Start Date"]).not.toContain("+00:00");
-
-			expect(mockIndexer.forceIndexFile).toHaveBeenCalledTimes(1);
-			expect(mockIndexer.forceIndexFile).toHaveBeenCalledWith("test.md");
 		});
 
 		it("should not apply frontmatter if not provided", async () => {
@@ -133,9 +125,6 @@ describe("TemplateService", () => {
 
 			// Verify frontmatter was NOT applied (no frontmatter provided)
 			expect(mockApp.fileManager.processFrontMatter).not.toHaveBeenCalled();
-
-			// No frontmatter means no need to force-index
-			expect(mockIndexer.forceIndexFile).not.toHaveBeenCalled();
 		});
 
 		it("should not apply frontmatter if empty object", async () => {
@@ -153,8 +142,6 @@ describe("TemplateService", () => {
 
 			// Verify frontmatter was NOT applied (empty frontmatter)
 			expect(mockApp.fileManager.processFrontMatter).not.toHaveBeenCalled();
-
-			expect(mockIndexer.forceIndexFile).not.toHaveBeenCalled();
 		});
 
 		it("should apply all frontmatter properties correctly", async () => {
@@ -203,9 +190,6 @@ describe("TemplateService", () => {
 				"[[Tags/Remarkable|Remarkable]]",
 				"[[Tags/Productivity|Productivity]]",
 			]);
-
-			expect(mockIndexer.forceIndexFile).toHaveBeenCalledTimes(1);
-			expect(mockIndexer.forceIndexFile).toHaveBeenCalledWith("test.md");
 		});
 	});
 

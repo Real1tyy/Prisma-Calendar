@@ -11,6 +11,7 @@ import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import { generateUniqueRruleId, getRecurringInstanceExcludedProps } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
+import { getFrontmatterWithRetry } from "../utils/obsidian";
 
 export interface RawEventSource {
 	filePath: string;
@@ -74,42 +75,6 @@ export class Indexer {
 		this.indexingComplete$ = this.genericIndexer.indexingComplete$;
 	}
 
-	/**
-	 * Force-emits calendar indexer events for a single file, even if the underlying
-	 * generic indexer missed the original vault event because `metadataCache` had
-	 * not produced frontmatter yet.
-	 *
-	 * This is primarily used right after creating files (e.g., "Create Event"),
-	 * where Obsidian can emit vault create/modify events before frontmatter is ready,
-	 * causing the generic indexer to drop the event permanently.
-	 */
-	async forceIndexFile(filePath: string): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(filePath);
-		if (!(file instanceof TFile)) return;
-
-		const maxAttempts = 10;
-		let frontmatter: Frontmatter | null = null;
-
-		for (let attempt = 0; attempt < maxAttempts; attempt++) {
-			const cache = this.app.metadataCache.getFileCache(file);
-			if (cache?.frontmatter) {
-				frontmatter = cache.frontmatter as Frontmatter;
-				break;
-			}
-			await new Promise<void>((resolve) => window.setTimeout(resolve, 50));
-		}
-
-		if (!frontmatter) {
-			console.warn(`[Indexer] forceIndexFile: frontmatter not ready after ${maxAttempts} attempts for ${filePath}`);
-			return;
-		}
-
-		const events = await this.buildCalendarEvents(file, frontmatter);
-		for (const event of events) {
-			this.scanEventsSubject.next(event);
-		}
-	}
-
 	private buildIndexerConfig(): IndexerConfig {
 		return {
 			includeFile: (filePath: string) => {
@@ -151,8 +116,8 @@ export class Indexer {
 			const { filePath, source, oldPath, oldFrontmatter, frontmatterDiff } = genericEvent;
 			const file = this.app.vault.getAbstractFileByPath(filePath);
 			if (!(file instanceof TFile)) return;
-
-			const events = await this.buildCalendarEvents(file, source.frontmatter, oldPath, oldFrontmatter, frontmatterDiff);
+			const frontmatter = await getFrontmatterWithRetry(this.app, file, source.frontmatter);
+			const events = await this.buildCalendarEvents(file, frontmatter, oldPath, oldFrontmatter, frontmatterDiff);
 			for (const event of events) {
 				this.scanEventsSubject.next(event);
 			}

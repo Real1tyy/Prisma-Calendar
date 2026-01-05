@@ -1,6 +1,7 @@
 import type { App } from "obsidian";
 import { TFile, TFolder } from "obsidian";
 import { getCalendarViewType } from "../components/calendar-view";
+import type { Frontmatter } from "../types";
 
 export const emitHover = (
 	app: App,
@@ -52,4 +53,40 @@ export async function deleteFilesByPaths(app: App, filePaths: string[]): Promise
 			}
 		})
 	);
+}
+
+/**
+ * Retrieves frontmatter from a file with retry logic to handle metadata cache race conditions.
+ * This is useful when file events fire before the metadata cache has been updated.
+ *
+ * @param app The Obsidian app instance
+ * @param file The file to retrieve frontmatter from
+ * @param fallbackFrontmatter Initial frontmatter to use if available
+ * @param options Retry configuration options
+ * @returns The retrieved frontmatter, or the fallback if retries are exhausted
+ */
+export async function getFrontmatterWithRetry(
+	app: App,
+	file: TFile,
+	fallbackFrontmatter: Frontmatter | undefined,
+	options: { maxRetries?: number; delayMs?: number } = {}
+): Promise<Frontmatter> {
+	const { maxRetries = 5, delayMs = 100 } = options;
+
+	// If fallback frontmatter exists and is not empty, use it immediately
+	if (fallbackFrontmatter && Object.keys(fallbackFrontmatter).length > 0) {
+		return fallbackFrontmatter;
+	}
+
+	// Otherwise, retry fetching from metadata cache
+	for (let i = 0; i < maxRetries; i++) {
+		const cache = app.metadataCache.getFileCache(file);
+		if (cache?.frontmatter && Object.keys(cache.frontmatter).length > 0) {
+			return cache.frontmatter as Frontmatter;
+		}
+		await new Promise((resolve) => window.setTimeout(resolve, delayMs));
+	}
+
+	// Return fallback (even if empty) if all retries exhausted
+	return fallbackFrontmatter || {};
 }
