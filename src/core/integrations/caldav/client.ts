@@ -1,8 +1,5 @@
 import { patchGlobalFetch } from "./obsidian-fetch";
 
-// Patch fetch before we use tsdav
-patchGlobalFetch();
-
 import type {
 	CalDAVAccount,
 	CalDAVBasicCredentials,
@@ -50,9 +47,17 @@ function buildCredentials(account: CalDAVAccount): Record<string, string> {
 	};
 }
 
-// Use dynamic import to ensure fetch is patched before tsdav loads
+// Patch global fetch only while tsdav (and its cross-fetch dependency) is being loaded.
+// cross-fetch captures the global fetch reference at import time, so we can restore immediately after.
+let tsdavImportPromise: Promise<typeof import("tsdav")> | null = null;
 async function getTsdav() {
-	return await import("tsdav");
+	if (!tsdavImportPromise) {
+		const restoreFetch = patchGlobalFetch();
+		tsdavImportPromise = import("tsdav").finally(() => {
+			restoreFetch();
+		});
+	}
+	return await tsdavImportPromise;
 }
 
 export class CalDAVClientService {

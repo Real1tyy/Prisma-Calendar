@@ -1,5 +1,7 @@
 import { type RequestUrlResponse, requestUrl } from "obsidian";
 
+const initialFetch = globalThis.fetch;
+
 /**
  * Response wrapper that makes Obsidian's RequestUrlResponse compatible with the Fetch API Response interface.
  * This allows libraries like tsdav that expect standard fetch to work with Obsidian's requestUrl.
@@ -71,6 +73,20 @@ class ObsidianResponse {
 async function obsidianFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
 	const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
 
+	const parsed = (() => {
+		try {
+			return new URL(url);
+		} catch {
+			return null;
+		}
+	})();
+
+	const protocol = parsed?.protocol ?? "";
+	if (protocol && protocol !== "http:" && protocol !== "https:") {
+		const fallbackFetch = originalFetch ?? initialFetch;
+		return fallbackFetch(input as never, init as never);
+	}
+
 	// Convert Headers to plain object if needed
 	let headers: Record<string, string> | undefined;
 	if (init?.headers) {
@@ -118,8 +134,15 @@ let originalFetch: typeof globalThis.fetch | undefined;
  * Patches globalThis.fetch with Obsidian's fetch implementation.
  * Call this before importing/using libraries that use fetch (like tsdav).
  */
-export function patchGlobalFetch(): void {
-	if (originalFetch) return;
-	originalFetch = globalThis.fetch;
+export function patchGlobalFetch(): () => void {
+	const prev = globalThis.fetch;
+	if (!originalFetch) {
+		originalFetch = prev;
+	}
+
 	globalThis.fetch = obsidianFetch as typeof globalThis.fetch;
+
+	return () => {
+		globalThis.fetch = prev;
+	};
 }

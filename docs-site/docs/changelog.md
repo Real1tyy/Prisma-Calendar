@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented here.
 
+## 1.22.2
+
+### Bug Fixes
+
+- **Fixed Obsidian Share Import Failure**: Fixed "Request failed. Unsupported URL" when importing shared files into Obsidian.
+
 ## 1.22.1
 
 ### Bug Fixes
