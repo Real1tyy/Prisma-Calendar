@@ -34,10 +34,10 @@ export class BatchFrontmatterModal extends Modal {
 
 		addCls(contentEl, "batch-frontmatter-modal");
 
-		contentEl.createEl("h2", { text: "Batch Frontmatter Management" });
+		contentEl.createEl("h2", { text: "Batch frontmatter management" });
 
 		const description = contentEl.createEl("p", {
-			text: "Add, update, or delete frontmatter properties across all selected events. Leave value empty and check Delete to remove a property.",
+			text: "Add, update, or delete frontmatter properties across all selected events. Leave value empty and check delete to remove a property.",
 		});
 		addCls(description, "setting-item-description");
 

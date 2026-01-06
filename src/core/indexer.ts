@@ -180,8 +180,8 @@ export class Indexer {
 		// Let EventStore/Parser handle filtering - this ensures cached events
 		// get invalidated when properties change and no longer pass filters
 		// This allows recurring source files to ALSO appear as regular events on the calendar
-		const hasTimedEvent = frontmatter[this.settings.startProp] as unknown;
-		const hasAllDayEvent = frontmatter[this.settings.dateProp] as unknown;
+		const hasTimedEvent = frontmatter[this.settings.startProp];
+		const hasAllDayEvent = frontmatter[this.settings.dateProp];
 
 		if (hasTimedEvent || hasAllDayEvent) {
 			if (this.settings.markPastInstancesAsDone) {
@@ -190,7 +190,7 @@ export class Indexer {
 				});
 			}
 
-			const allDayProp = frontmatter[this.settings.allDayProp] as unknown;
+			const allDayProp = frontmatter[this.settings.allDayProp];
 			const isAllDay = allDayProp === true || allDayProp === "true" || !!hasAllDayEvent;
 
 			const source: RawEventSource = {

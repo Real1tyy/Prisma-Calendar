@@ -27,6 +27,7 @@ const AllDayEventFrontmatterSchema = BaseEventFrontmatterSchema.extend({
 }).strict();
 
 // Union of both event types
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const EventFrontmatterSchema = z.discriminatedUnion("allDay", [
 	TimedEventFrontmatterSchema,
 	AllDayEventFrontmatterSchema,
