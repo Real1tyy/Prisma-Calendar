@@ -10,6 +10,88 @@ export const isAllDayEvent = (allDayValue: unknown): boolean => {
 	return allDayValue === true || (typeof allDayValue === "string" && allDayValue.toLowerCase() === "true");
 };
 
+/**
+ * Strips the milliseconds and Z suffix from an ISO datetime string.
+ * Converts "2024-01-15T09:00:00.000Z" to "2024-01-15T09:00:00"
+ * This creates cleaner, more sortable datetime values for external tools.
+ */
+const stripISOSuffix = (iso: string): string => {
+	return iso.replace(/\.000Z$/, "").replace(/Z$/, "");
+};
+
+/**
+ * Applies date property normalization for timed events based on settings.
+ * When normalizeDateProperty is enabled, copies start or end datetime to the date property
+ * to enable sorting by a single date field in external tools.
+ * Strips milliseconds and Z suffix for cleaner values.
+ *
+ * @param fm - Frontmatter object to modify
+ * @param settings - Calendar settings with normalizeDateProperty configuration
+ * @param start - ISO start date/time string
+ * @param end - ISO end date/time string (optional)
+ */
+export const applyDateNormalization = (
+	fm: Frontmatter,
+	settings: SingleCalendarConfig,
+	start: string,
+	end?: string
+): void => {
+	if (settings.normalizeDateProperty === "none") {
+		return;
+	}
+
+	if (settings.normalizeDateProperty === "startDate") {
+		fm[settings.dateProp] = stripISOSuffix(start);
+	} else if (settings.normalizeDateProperty === "endDate") {
+		fm[settings.dateProp] = stripISOSuffix(end || start);
+	}
+};
+
+/**
+ * Applies date normalization to a file's frontmatter if needed.
+ * Checks if normalization is enabled and if the current date value differs from expected.
+ * Returns early if normalization is not needed.
+ * Copies full datetime (not just date) and strips .000Z suffix for cleaner, sortable values.
+ *
+ * @param app - Obsidian App instance
+ * @param filePath - Path to the file to update
+ * @param frontmatter - Current frontmatter of the file
+ * @param settings - Calendar settings with normalizeDateProperty configuration
+ * @param start - ISO start date/time string
+ * @param end - ISO end date/time string (optional)
+ */
+export const applyDateNormalizationToFile = async (
+	app: App,
+	filePath: string,
+	frontmatter: Frontmatter,
+	settings: SingleCalendarConfig,
+	start: string,
+	end?: string
+): Promise<void> => {
+	const currentDateValue = frontmatter[settings.dateProp] as string | undefined;
+	const expectedDateValue =
+		settings.normalizeDateProperty === "startDate"
+			? stripISOSuffix(start)
+			: settings.normalizeDateProperty === "endDate"
+				? stripISOSuffix(end || start)
+				: undefined;
+
+	if (!expectedDateValue || currentDateValue === expectedDateValue) {
+		return;
+	}
+
+	const file = app.vault.getAbstractFileByPath(filePath);
+	if (!(file instanceof TFile)) return;
+
+	try {
+		await app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+			fm[settings.dateProp] = expectedDateValue;
+		});
+	} catch (error) {
+		console.error(`Error writing date normalization to file ${filePath}:`, error);
+	}
+};
+
 export const applyStartEndOffsets = (
 	fm: Frontmatter,
 	settings: SingleCalendarConfig,
@@ -41,7 +123,7 @@ export const setEventBasics = (
 		zettelId?: number;
 	}
 ) => {
-	const { titleProp, startProp, endProp, dateProp, allDayProp, zettelIdProp } = settings;
+	const { titleProp, startProp, endProp, dateProp, allDayProp, zettelIdProp, normalizeDateProperty } = settings;
 
 	if (titleProp && data.title) fm[titleProp] = data.title;
 
@@ -54,10 +136,15 @@ export const setEventBasics = (
 		fm[startProp] = "";
 		fm[endProp] = "";
 	} else {
-		// TIMED EVENT: Set startProp/endProp, keep dateProp as empty string
+		// TIMED EVENT: Set startProp/endProp
 		fm[startProp] = data.start;
 		if (data.end) fm[endProp] = data.end;
-		fm[dateProp] = "";
+
+		if (normalizeDateProperty === "none") {
+			fm[dateProp] = "";
+		} else {
+			applyDateNormalization(fm, settings, data.start, data.end);
+		}
 	}
 
 	if (zettelIdProp && data.zettelId) fm[zettelIdProp] = data.zettelId;

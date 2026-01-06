@@ -49,6 +49,24 @@ export class PropertiesSettings {
 			placeholder: SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_PROP,
 		});
 
+		new Setting(containerEl)
+			.setName("Normalize date property for sorting")
+			.setDesc(
+				"Copy start or end datetime to the date property for timed events to enable sorting by a single property. When enabled, timed events will have both start/end dates AND the date property populated with the full datetime (without .000Z suffix). This allows external tools to sort by a single date field."
+			)
+			.addDropdown((dropdown) => {
+				dropdown.addOption("none", "None (default behavior)");
+				dropdown.addOption("startDate", "Copy start datetime to date property");
+				dropdown.addOption("endDate", "Copy end datetime to date property");
+
+				dropdown.setValue(this.settingsStore.currentSettings.normalizeDateProperty).onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						normalizeDateProperty: value as "none" | "startDate" | "endDate",
+					}));
+				});
+			});
+
 		this.ui.addText(containerEl, {
 			key: "titleProp",
 			name: "Title property",

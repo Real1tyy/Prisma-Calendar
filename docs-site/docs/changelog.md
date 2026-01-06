@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented here.
 
+## 1.23.0
+
+### New Features
+
+- **Date Property Normalization for Sorting**: Added setting to copy start or end datetime into the `Date` property for timed events, enabling external tools (Dataview, Bases, etc.) to sort all events chronologically by a single field. Solves the problem where mixed timed and all-day events can't be sorted together. Configure in Properties Settings.
+
 ## 1.22.3
 
 ### Performance Improvements

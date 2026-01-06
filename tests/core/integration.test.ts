@@ -1,4 +1,4 @@
-import type { TFile } from "obsidian";
+import type { App, TFile } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EventStore } from "../../src/core/event-store";
@@ -45,7 +45,7 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 			fileManager: { processFrontMatter: vi.fn() },
 		} as any;
 		indexer = new Indexer(mockApp, settingsStore);
-		parser = new Parser(settingsStore);
+		parser = new Parser(mockApp as App, settingsStore);
 		recurringEventManager = new RecurringEventManager(
 			{} as any,
 			settingsStore,

@@ -52,7 +52,6 @@ export function parseEventFrontmatter(
 		return result.success ? result.data : null;
 	}
 
-	// TIMED EVENT: Use startProp and endProp, ignore dateProp
 	const candidateData = {
 		startTime: frontmatter[startProp],
 		endTime: frontmatter[endProp],

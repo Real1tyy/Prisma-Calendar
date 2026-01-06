@@ -1,9 +1,19 @@
 import { DateTime } from "luxon";
+import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { RawEventSource } from "../../src/core/indexer";
 import { Parser } from "../../src/core/parser";
 import { createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
+
+const mockApp = {
+	vault: {
+		getAbstractFileByPath: vi.fn(),
+	},
+	fileManager: {
+		processFrontMatter: vi.fn(),
+	},
+} as any;
 
 describe("Parser", () => {
 	let parser: Parser;
@@ -21,7 +31,7 @@ describe("Parser", () => {
 			defaultDurationMinutes: 60,
 		};
 		settingsStore = createMockSingleCalendarSettingsStore(settings);
-		parser = new Parser(settingsStore);
+		parser = new Parser(mockApp as App, settingsStore);
 	});
 
 	describe("basic event parsing", () => {
@@ -131,7 +141,7 @@ describe("Parser", () => {
 				titleProp: "eventTitle",
 			};
 			settingsStore.next(testSettings);
-			parser = new Parser(settingsStore);
+			parser = new Parser(mockApp as App, settingsStore);
 
 			const source: RawEventSource = {
 				filePath: "Events/meeting.md",
@@ -445,7 +455,7 @@ describe("Parser", () => {
 				startProp: "Start Date", // Use capital S to match the frontmatter
 			};
 			const testSettingsStore = createMockSingleCalendarSettingsStore(testSettings);
-			const parser = new Parser(testSettingsStore);
+			const parser = new Parser(mockApp as App, testSettingsStore);
 
 			const source: RawEventSource = {
 				filePath: "Tasks/enforce All Templates, Make it a one off script to enforce all frontmatter and templates..md",
@@ -513,7 +523,7 @@ describe("Parser", () => {
 			// Use the default settings from the schema
 			const defaultSettings = createMockSingleCalendarSettings();
 			const defaultSettingsStore = createMockSingleCalendarSettingsStore(defaultSettings);
-			const parser = new Parser(defaultSettingsStore);
+			const parser = new Parser(mockApp as App, defaultSettingsStore);
 
 			const source: RawEventSource = {
 				filePath: "Tasks/test-task.md",

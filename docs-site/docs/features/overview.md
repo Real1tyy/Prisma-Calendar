@@ -10,7 +10,7 @@ Prisma Calendar is packed with powerful features designed for flexibility, effic
 Up to 10 separate calendars with independent configurations, dedicated folders, custom hotkeys, and clone/duplicate support.
 
 ### **[Folder-Based Event Scanning](./folder-scanning)**
-Automatic indexing of notes with frontmatter, recursive subfolder scanning, and real-time updates for large vaults.
+Automatic indexing of notes with frontmatter, recursive subfolder scanning, real-time updates, and date property normalization for external tool compatibility (enables Dataview, Bases, etc. to sort all events chronologically).
 
 ### **[Templater Integration](./templater)**
 Use Templater templates to scaffold consistent event metadata and custom frontmatter structures.

@@ -1,9 +1,11 @@
 import { FilterEvaluator, getFilenameFromPath } from "@real1ty-obsidian-plugins/utils";
 import type { DateTime } from "luxon";
+import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { v5 as uuidv5 } from "uuid";
 import { convertToISO, parseEventFrontmatter } from "../types/event";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
+import { applyDateNormalization, applyDateNormalizationToFile } from "../utils/calendar-events";
 import type { VaultEventId } from "./event-store";
 import type { RawEventSource } from "./indexer";
 
@@ -29,7 +31,11 @@ export class Parser {
 	private subscription: Subscription | null = null;
 	private filterEvaluator: FilterEvaluator<SingleCalendarConfig>;
 
-	constructor(settingsStore: BehaviorSubject<SingleCalendarConfig>) {
+	constructor(
+		private app: App,
+		settingsStore: BehaviorSubject<SingleCalendarConfig>
+	) {
+		this.app = app;
 		this.settings = settingsStore.value;
 		this.filterEvaluator = new FilterEvaluator<SingleCalendarConfig>(settingsStore);
 		this.subscription = settingsStore.subscribe((newSettings) => {
@@ -88,6 +94,11 @@ export class Parser {
 			originalDate: frontmatter[this.settings.dateProp],
 			...frontmatter,
 		};
+
+		if (!parsed.allDay) {
+			applyDateNormalization(meta, this.settings, start, end);
+			void applyDateNormalizationToFile(this.app, source.filePath, frontmatter, this.settings, start, end);
+		}
 
 		return {
 			id,

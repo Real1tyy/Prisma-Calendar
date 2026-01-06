@@ -47,6 +47,9 @@ const PropsSettingsSchema = z
 		endProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_END_PROP),
 		dateProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_DATE_PROP), // property name for all-day events (date only, no time)
 		allDayProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_PROP),
+		normalizeDateProperty: z
+			.enum(["none", "startDate", "endDate"])
+			.catch(SETTINGS_DEFAULTS.DEFAULT_NORMALIZE_DATE_PROPERTY), // copy start/end date to date property for sorting
 		titleProp: z.string().optional(), // optional; fallback to file name
 		zettelIdProp: z.string().optional(), // optional; property name for ZettelID generation
 		skipProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SKIP_PROP), // property name to skip/hide event from calendar

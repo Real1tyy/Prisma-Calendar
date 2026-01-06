@@ -35,8 +35,8 @@ vi.mock("@real1ty-obsidian-plugins/utils/async-utils", () => ({
 
 // Import local mocks
 import {
-	createMockApp,
-	createMockFile,
+	createMockApp as createMockAppImpl,
+	createMockFile as createMockFileImpl,
 	debounce,
 	ItemView,
 	Modal,
@@ -63,7 +63,11 @@ export class Menu {
 }
 
 // Re-export centralized mocks for use in tests
-export { Plugin, PluginSettingTab, ItemView, TFile, Notice, Modal, debounce, createMockApp, createMockFile };
+export { Plugin, PluginSettingTab, ItemView, TFile, Notice, Modal, debounce };
+
+// Export mock helpers directly
+export const createMockApp = createMockAppImpl;
+export const createMockFile = createMockFileImpl;
 
 export function createMockSettingsStore(
 	initialSettings?: Partial<CustomCalendarSettings>
