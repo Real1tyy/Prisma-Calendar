@@ -144,7 +144,7 @@ const BATCH_BUTTONS = {
 	"Mark as Done": "batchMarkAsDone",
 	"Mark as Not Done": "batchMarkAsNotDone",
 	Categories: "batchCategories",
-	FrontMatter: "batchFrontmatter",
+	Frontmatter: "batchFrontmatter",
 	"Clone Next": "batchCloneNext",
 	"Clone Prev": "batchClonePrev",
 	"Move Next": "batchMoveNext",

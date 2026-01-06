@@ -259,7 +259,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				className: `${clsBase} ${cls("categories-btn")}`,
 			},
 			batchFrontmatter: {
-				text: "FrontMatter",
+				text: "Frontmatter",
 				click: () => {
 					void this.openBatchFrontmatterModal();
 				},
@@ -1719,12 +1719,18 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		if (!this.batchSelectionManager) return;
 
 		const settings = this.bundle.settingsStore.currentSettings;
+		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
 
-		const modal = new BatchFrontmatterModal(this.app, settings, (propertyUpdates: Map<string, string | null>) => {
-			if (this.batchSelectionManager) {
-				this.batchSelectionManager.executeUpdateFrontmatter(propertyUpdates);
+		const modal = new BatchFrontmatterModal(
+			this.app,
+			settings,
+			selectedEvents,
+			(propertyUpdates: Map<string, string | null>) => {
+				if (this.batchSelectionManager) {
+					this.batchSelectionManager.executeUpdateFrontmatter(propertyUpdates);
+				}
 			}
-		});
+		);
 		modal.open();
 	}
 

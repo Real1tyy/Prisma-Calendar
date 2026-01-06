@@ -2934,7 +2934,32 @@
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
-	margin-top: 12px;
+	margin-top: 4px;
+}
+
+.prisma-batch-frontmatter-header-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	padding: 8px 8px 4px 8px;
+	margin-top: 8px;
+}
+
+.prisma-batch-frontmatter-header-label {
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-muted);
+	text-align: right;
+}
+
+.prisma-batch-frontmatter-header-label:first-child {
+	flex: 0 0 20%;
+	max-width: 150px;
+}
+
+.prisma-batch-frontmatter-header-label:nth-child(2) {
+	flex: 0 0 20%;
+	max-width: 150px;
 }
 
 .prisma-batch-frontmatter-row {
@@ -2948,11 +2973,13 @@
 }
 
 .prisma-batch-frontmatter-key {
-	flex: 0 0 200px;
+	flex: 0 0 25%;
+	max-width: 175px;
 }
 
 .prisma-batch-frontmatter-value {
-	flex: 1;
+	flex: 0 0 25%;
+	max-width: 175px;
 }
 
 .prisma-batch-frontmatter-delete-container {

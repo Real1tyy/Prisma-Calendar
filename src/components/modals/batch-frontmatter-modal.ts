@@ -1,6 +1,7 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal } from "obsidian";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { getCommonFrontmatterProperties } from "../../utils/calendar-events";
 
 interface FrontmatterProperty {
 	key: string;
@@ -12,15 +13,26 @@ export class BatchFrontmatterModal extends Modal {
 	private properties: FrontmatterProperty[] = [];
 	private propertiesContainer!: HTMLElement;
 	private onSubmit: (properties: Map<string, string | null>) => void;
+	private selectedEvents: { filePath: string }[];
+	private settings: SingleCalendarConfig;
 
-	constructor(app: App, _settings: SingleCalendarConfig, onSubmit: (properties: Map<string, string | null>) => void) {
+	constructor(
+		app: App,
+		settings: SingleCalendarConfig,
+		selectedEvents: { filePath: string }[],
+		onSubmit: (properties: Map<string, string | null>) => void
+	) {
 		super(app);
+		this.settings = settings;
+		this.selectedEvents = selectedEvents;
 		this.onSubmit = onSubmit;
 	}
 
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
+
+		addCls(contentEl, "batch-frontmatter-modal");
 
 		contentEl.createEl("h2", { text: "Batch Frontmatter Management" });
 
@@ -32,7 +44,9 @@ export class BatchFrontmatterModal extends Modal {
 		this.createPropertiesSection(contentEl);
 		this.createButtons(contentEl);
 
-		this.addProperty("", "", false);
+		this.prefillCommonProperties();
+
+		this.setupKeyboardHandlers();
 	}
 
 	private createPropertiesSection(container: HTMLElement): void {
@@ -46,6 +60,19 @@ export class BatchFrontmatterModal extends Modal {
 		});
 		addButton.addEventListener("click", () => {
 			this.addProperty("", "", false);
+		});
+
+		// Column headers
+		const columnHeaderRow = container.createDiv(cls("batch-frontmatter-header-row"));
+
+		columnHeaderRow.createEl("div", {
+			text: "Property name",
+			cls: cls("batch-frontmatter-header-label"),
+		});
+
+		columnHeaderRow.createEl("div", {
+			text: "Value",
+			cls: cls("batch-frontmatter-header-label"),
 		});
 
 		this.propertiesContainer = container.createDiv(cls("batch-frontmatter-container"));
@@ -64,7 +91,7 @@ export class BatchFrontmatterModal extends Modal {
 
 		const valueInput = propertyRow.createEl("input", {
 			type: "text",
-			placeholder: "Value (leave empty to delete if Delete is checked)",
+			placeholder: "Value",
 			value: value,
 			cls: "setting-item-control",
 		});
@@ -141,11 +168,39 @@ export class BatchFrontmatterModal extends Modal {
 			text: "Apply changes",
 			cls: "mod-cta",
 		});
-		applyButton.onclick = () => {
-			const propertyMap = this.buildPropertyMap();
-			this.onSubmit(propertyMap);
-			this.close();
+		applyButton.onclick = () => this.applyChanges();
+	}
+
+	private applyChanges(): void {
+		const propertyMap = this.buildPropertyMap();
+		this.onSubmit(propertyMap);
+		this.close();
+	}
+
+	private setupKeyboardHandlers(): void {
+		const keyHandler = (e: KeyboardEvent) => {
+			if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+				e.preventDefault();
+				this.applyChanges();
+			}
 		};
+
+		this.contentEl.addEventListener("keydown", keyHandler);
+	}
+
+	private prefillCommonProperties(): void {
+		const commonProperties = getCommonFrontmatterProperties(this.app, this.selectedEvents, this.settings);
+
+		if (commonProperties.size === 0) {
+			this.addProperty("", "", false);
+			return;
+		}
+
+		for (const [key, value] of commonProperties.entries()) {
+			this.addProperty(key, value, false);
+		}
+
+		this.addProperty("", "", false);
 	}
 
 	private buildPropertyMap(): Map<string, string | null> {

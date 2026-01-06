@@ -63,6 +63,18 @@ Quickly make changes to many events at once.
 - **Undo Support**: Fully undoable - restores previous category state for all events
 - **Format Support**: Works with both YAML array format (`Category: - Work - Meeting`) and single string format (`Category: Work`)
 
+### Batch Frontmatter Management
+- Opens a modal to add, update, or delete frontmatter properties across all selected events
+- **Smart Prefilling**: Properties that are common to ALL selected events (with the same value) are automatically prefilled for easy editing
+- **Add Properties**: Type property name and value to add new properties to all selected events
+- **Update Properties**: Modify the prefilled values to update common properties across all events
+- **Delete Properties**: Check the "Delete" checkbox next to a property name to remove it from all selected events
+- **Multiple Properties**: Add as many properties as needed using the "Add property" button
+- **Flexible Input**: Leave value empty and check "Delete" to remove a property, or provide a value to set/update it
+- **Undo Support**: Fully undoable - restores previous frontmatter state for all events
+- **Smart Filtering**: Automatically excludes internal Prisma properties (Start, End, Date, Category, Status, etc.)
+- **Keyboard Shortcut**: Press Enter to apply changes
+
 ### Open All in Tabs
 - Opens all selected event files in editor tabs
 - Quick access for batch reviewing/editing
@@ -72,6 +84,7 @@ Quickly make changes to many events at once.
 By default, not all batch action buttons are shown in the toolbar to keep the interface compact and prevent the toolbar from spanning multiple rows. The following buttons are **disabled by default**:
 
 - **Move By**: Custom time offset movement
+- **Frontmatter**: Batch frontmatter management
 - **Open All**: Open all selected events in tabs
 - **Move Prev**: Move to previous week
 - **Clone Prev**: Clone to previous week
@@ -101,6 +114,15 @@ You can customize which buttons appear in the batch selection toolbar by going t
 4. Check desired categories (or create new ones)
 5. Click "Assign Categories"
 6. Events are updated and calendar refreshes
+
+**Batch update frontmatter properties:**
+1. Enter batch selection mode
+2. Select events you want to update
+3. Click "Frontmatter" button (enable in settings if not visible)
+4. Review prefilled common properties
+5. Modify values, add new properties, or mark properties for deletion
+6. Press Enter or click "Apply changes"
+7. All selected events are updated with your changes
 
 ## Tips
 
