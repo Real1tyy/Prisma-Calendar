@@ -189,6 +189,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.SHOW_INTERVAL_BASES, "Show current interval in Bases", (view) => {
 			void view.showIntervalEventsModal();
 		});
+		addCalendarViewCommand(COMMAND_IDS.SCROLL_TO_NOW, "Scroll to current time", (view) => {
+			view.scrollToNow();
+		});
 
 		this.addCommand({
 			id: COMMAND_IDS.EXPORT_CALENDAR_ICS,

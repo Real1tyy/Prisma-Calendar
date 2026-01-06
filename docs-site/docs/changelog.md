@@ -6,6 +6,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **"Now" Button for Timeline Navigation**: Added a "Now" button to the calendar toolbar that scrolls to the current time or day. In week and day views, it navigates to today and centers the view on the current time marker. In month view, it navigates to today and centers the current day in the viewport. Especially useful after scrolling or zooming to quickly return to the present moment. Also available as an Obsidian command "Scroll to current time". The now indicator line has also been made thicker (2.5px) for better visibility.
+
 - **Date Property Normalization for Sorting**: Added setting to copy start or end datetime into the `Date` property for timed events, enabling external tools (Dataview, Bases, etc.) to sort all events chronologically by a single field. Solves the problem where mixed timed and all-day events can't be sorted together. Configure in Properties Settings.
 
 - **Category Percentages**: Categories list now displays percentages alongside event counts (e.g., "91 events - 45.5%") to quickly see the distribution of events across categories.

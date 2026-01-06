@@ -82,6 +82,19 @@ Here is a complete list of the batch operations you can assign hotkeys to:
 
 ## Navigation Commands
 
+### Scroll to Current Time
+
+-   **Function**: Scrolls to the current time or centers the current day
+-   **Behavior**:
+    -   In week/day views: Navigates to today and centers the timeline on the current time
+    -   In month view: Navigates to today and centers the current day in the viewport
+    -   In list view: Navigates to today
+-   **Use Cases**:
+    -   Quickly return to the present time after scrolling through different time periods
+    -   Re-orient yourself during the day, especially when deeply zoomed or scrolled
+    -   Navigate back to "now" with a single command or button click
+-   **Available As**: Toolbar button ("Now") and Obsidian command
+
 ### Open Current Note in Calendar
 
 The **Open Current Note in Calendar** command provides quick navigation from any note to its corresponding event in the calendar:

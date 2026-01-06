@@ -44,6 +44,7 @@ export const COMMAND_IDS = {
 	SYNC_CALDAV: "sync-caldav",
 	NAVIGATE_BACK: "navigate-back",
 	SHOW_INTERVAL_BASES: "show-interval-bases",
+	SCROLL_TO_NOW: "scroll-to-now",
 } as const;
 
 export const FULL_COMMAND_IDS = Object.fromEntries(

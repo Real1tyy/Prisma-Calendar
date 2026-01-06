@@ -280,6 +280,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				text: "Create Event",
 				click: () => this.openCreateEventModal(),
 			},
+			now: {
+				text: "Now",
+				click: () => this.scrollToNow(),
+			},
 			zoomLevel: this.zoomManager.createZoomLevelButton(),
 			batchSelect: {
 				text: "Batch Select",
@@ -328,7 +332,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			};
 		}
 
-		const left = "prev,next today createEvent zoomLevel";
+		const left = "prev,next today now createEvent zoomLevel";
 		const right = `filteredEvents recurringEvents skippedEvents batchSelect ${viewSwitchers}`;
 
 		return {
@@ -686,6 +690,44 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		this.calendar.gotoDate(date);
+	}
+
+	scrollToNow(): void {
+		if (!this.calendar) return;
+
+		const currentView = this.calendar.view.type;
+		let targetElement: Element | null = null;
+
+		if (currentView === "timeGridWeek" || currentView === "timeGridDay") {
+			// For time grid views, find the now indicator line
+			targetElement = this.container.querySelector(".fc-timegrid-now-indicator-line");
+		} else if (currentView === "dayGridMonth") {
+			// For month view, find today's cell
+			targetElement = this.container.querySelector(".fc-day-today");
+		}
+
+		// Center the target element if found
+		if (targetElement) {
+			this.scrollElementToCenter(targetElement);
+		}
+	}
+
+	private scrollElementToCenter(element: Element): void {
+		const viewContent = this.containerEl.querySelector(".view-content");
+		if (!viewContent) return;
+
+		const elementRect = element.getBoundingClientRect();
+		const viewContentRect = viewContent.getBoundingClientRect();
+
+		// Calculate scroll position to center the element
+		const scrollTop =
+			viewContent.scrollTop +
+			elementRect.top -
+			viewContentRect.top -
+			viewContent.clientHeight / 2 +
+			elementRect.height / 2;
+
+		viewContent.scrollTop = scrollTop;
 	}
 
 	highlightEventByPath(filePath: string, durationMs = 5000): void {

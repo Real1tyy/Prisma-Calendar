@@ -67,6 +67,10 @@
 	font-size: var(--font-ui-small);
 }
 
+.prisma-calendar-container .fc-timegrid-now-indicator-line {
+	border-top-width: 2.5px;
+}
+
 .prisma-calendar-container .fc-theme-standard .fc-scrollgrid {
 	border-color: var(--background-modifier-border);
 }
