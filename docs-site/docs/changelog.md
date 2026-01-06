@@ -6,6 +6,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Sticky Headers for Better Scrolling**: Added configurable sticky headers for weekly and daily views. Enable "Sticky day headers" to keep day/date headers visible at the top when scrolling through time slots. Enable "Sticky all-day events" to keep the all-day event section pinned below the headers. Both options work independently or together, making it easier to navigate long calendars without losing context of which day you're viewing.
+
 - **"Now" Button for Timeline Navigation**: Added a "Now" button to the calendar toolbar that scrolls to the current time or day. In week and day views, it navigates to today and centers the view on the current time marker. In month view, it navigates to today and centers the current day in the viewport. Especially useful after scrolling or zooming to quickly return to the present moment. Also available as an Obsidian command "Scroll to current time". The now indicator line has also been made thicker (2.5px) for better visibility.
 
 - **Date Property Normalization for Sorting**: Added setting to copy start or end datetime into the `Date` property for timed events, enabling external tools (Dataview, Bases, etc.) to sort all events chronologically by a single field. Solves the problem where mixed timed and all-day events can't be sorted together. Configure in Properties Settings.

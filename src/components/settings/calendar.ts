@@ -151,6 +151,18 @@ export class CalendarSettings {
 			desc: "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",
 		});
 
+		this.ui.addToggle(containerEl, {
+			key: "stickyDayHeaders",
+			name: "Sticky day headers",
+			desc: "Keep day/date headers visible at the top when scrolling down in weekly and daily views",
+		});
+
+		this.ui.addToggle(containerEl, {
+			key: "stickyAllDayEvents",
+			name: "Sticky all-day events",
+			desc: "Keep all-day event section visible at the top when scrolling down in weekly and daily views",
+		});
+
 		this.ui.addSlider(containerEl, {
 			key: "pastEventContrast",
 			name: "Past event contrast",

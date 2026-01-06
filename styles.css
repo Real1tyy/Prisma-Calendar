@@ -758,6 +758,28 @@
 	border-top-color: var(--background-modifier-border-hover);
 }
 
+/* Sticky all-day events section (when enabled)
+   FullCalendar's built-in stickyHeaderDates handles day/date headers.
+   This CSS handles making the all-day event section sticky as well. */
+.prisma-calendar-container.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type {
+	position: sticky;
+	z-index: 4;
+	background-color: var(--background-primary);
+}
+
+/* Position all-day section below sticky day headers when both are enabled
+   FullCalendar's sticky headers are at a higher z-index, so we position below them */
+.prisma-calendar-container.prisma-sticky-day-headers.prisma-sticky-all-day-events
+.fc-scrollgrid-section-body:first-of-type {
+	top: 20px;
+}
+
+/* Position all-day section at top when only sticky all-day is enabled */
+.prisma-calendar-container.prisma-sticky-all-day-events:not(.prisma-sticky-day-headers)
+.fc-scrollgrid-section-body:first-of-type {
+	top: 0;
+}
+
 .prisma-calendar-container .fc-timegrid-slot-label {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);

@@ -205,6 +205,20 @@ STATUS: Done
 - **Past event contrast**: visual contrast of past events (0% = invisible, 100% = normal, default: 70%)
 - **Show color dots**: show color indicator dots in monthly view (enabled by default)
 - **Thicker hour lines**: make full-hour lines thicker in day/week views (enabled by default)
+- **Sticky day headers**: keep day/date headers visible at the top when scrolling down in weekly and daily views
+- **Sticky all-day events**: keep all-day event section visible at the top when scrolling down in weekly and daily views (disabled by default)
+
+### Sticky Headers
+
+The sticky header options improve navigation in long calendars by keeping context visible while scrolling:
+
+**Sticky day headers** uses FullCalendar's built-in sticky header functionality to pin the day/date column headers at the top of the viewport. This ensures you always know which day you're viewing, even when scrolling through many hours of events.
+
+**Sticky all-day events** pins the all-day event section below the day headers (or at the top if day headers aren't sticky). This keeps important all-day events visible throughout your scrolling session.
+
+**Using both together**: When both options are enabled, the all-day section sticks directly below the day headers with no gap, creating a seamless sticky header experience.
+
+**Note**: These options only affect weekly and daily time grid views where vertical scrolling occurs. Month and list views don't benefit from sticky headers.
 
 ### Event Interaction
 

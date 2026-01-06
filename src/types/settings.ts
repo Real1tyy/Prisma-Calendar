@@ -139,6 +139,8 @@ const CalendarSettingsSchema = z
 			.max(2000)
 			.catch(SETTINGS_DEFAULTS.DEFAULT_DRAG_EDGE_SCROLL_DELAY_MS), // Delay in milliseconds before scrolling when dragging events near edge
 		batchActionButtons: z.array(BatchActionButtonSchema).catch([...DEFAULT_BATCH_ACTION_BUTTONS]), // Which batch action buttons to show in batch selection mode toolbar
+		stickyDayHeaders: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_STICKY_DAY_HEADERS), // Make day headers sticky during vertical scroll (timegrid views)
+		stickyAllDayEvents: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_STICKY_ALL_DAY_EVENTS), // Make all-day event section sticky during vertical scroll (timegrid views)
 	})
 	.strip();
 

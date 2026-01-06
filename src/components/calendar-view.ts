@@ -1016,6 +1016,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			nowIndicator: settings.nowIndicator,
 
+			stickyHeaderDates: settings.stickyDayHeaders,
+
 			eventTimeFormat: {
 				hour: "2-digit",
 				minute: "2-digit",
@@ -1232,6 +1234,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.refreshEvents();
 
 		toggleCls(container, "thicker-hour-lines", settings.thickerHourLines);
+		toggleCls(container, "sticky-all-day-events", settings.stickyAllDayEvents);
+		// Note: sticky-day-headers class is still applied for CSS that depends on both settings
+		toggleCls(container, "sticky-day-headers", settings.stickyDayHeaders);
 
 		// Start the upcoming event check interval
 		this.startUpcomingEventCheck();
@@ -1252,6 +1257,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.calendar.setOption("weekends", !settings.hideWeekends);
 		this.calendar.setOption("firstDay", settings.firstDayOfWeek);
 		this.calendar.setOption("nowIndicator", settings.nowIndicator);
+		this.calendar.setOption("stickyHeaderDates", settings.stickyDayHeaders);
 
 		// Update event overlap settings
 		this.calendar.setOption("eventOverlap", settings.eventOverlap);
@@ -1261,6 +1267,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.filterPresetSelector.updatePresets(settings.filterPresets);
 
 		toggleCls(this.container, "thicker-hour-lines", settings.thickerHourLines);
+		toggleCls(this.container, "sticky-all-day-events", settings.stickyAllDayEvents);
+		// Note: sticky-day-headers class is still applied for CSS that depends on both settings
+		toggleCls(this.container, "sticky-day-headers", settings.stickyDayHeaders);
 
 		// Restart or stop upcoming event check based on setting
 		if (settings.highlightUpcomingEvent) {
