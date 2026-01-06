@@ -89,6 +89,8 @@ export class CategoriesSettings {
 
 		categoriesInfo.sort((a, b) => b.count - a.count);
 
+		const totalCount = categoriesInfo.reduce((sum, info) => sum + info.count, 0);
+
 		categoriesInfo.forEach((categoryInfo) => {
 			const categoryItem = container.createDiv(cls("category-settings-item"));
 
@@ -101,8 +103,9 @@ export class CategoriesSettings {
 				text: categoryInfo.name,
 				cls: cls("category-settings-name"),
 			});
+			const percentage = totalCount > 0 ? ((categoryInfo.count / totalCount) * 100).toFixed(1) : "0.0";
 			nameContainer.createEl("span", {
-				text: `(${categoryInfo.count} ${categoryInfo.count === 1 ? "event" : "events"})`,
+				text: `(${categoryInfo.count} ${categoryInfo.count === 1 ? "event" : "events"} - ${percentage}%)`,
 				cls: cls("category-settings-count"),
 			});
 

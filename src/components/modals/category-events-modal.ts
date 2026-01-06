@@ -55,6 +55,11 @@ export class CategoryEventsModal extends Modal {
 		const endProp = this.settings.endProp;
 		const dateProp = this.settings.dateProp;
 		const statusProp = this.settings.statusProperty;
+		const basesViewProperties = this.settings.basesViewProperties || [];
+
+		const orderProperties = ["file.name", dateProp, statusProp, ...basesViewProperties].filter(
+			Boolean
+		);
 
 		return `\`\`\`base
 views:
@@ -65,17 +70,13 @@ views:
         - file.inFolder("${eventsFolder}")
         - ${categoryProp}.contains("${escapedCategory}")
     order:
-      - file.name
-      - ${startProp}
-      - ${endProp}
-      - ${dateProp}
-      - ${statusProp}
+${orderProperties.map((prop) => `      - ${prop}`).join("\n")}
 	columnSize:
 		note.${dateProp}: 170
 		note.${startProp}: 170
 		note.${endProp}: 170
     sort:
-      - property: file.mtime
+      - property: ${dateProp}
         direction: DESC
 \`\`\``;
 	}

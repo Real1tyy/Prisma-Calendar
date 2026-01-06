@@ -124,8 +124,9 @@ Click any category name in the categories settings page to view all events with 
 The category view displays:
 
 - **Filtered Events** - All events in that category from your events folder
-- **Smart Columns** - File name, start/end dates, date (for all-day events), and status
-- **Recent First** - Events sorted by modification time (most recent first)
+- **Smart Columns** - File name, date property, status, and any additional properties configured in Bases view properties setting
+- **Newest First** - Events sorted by the configured date property from newest to oldest
+- **Customizable Columns** - Add additional frontmatter properties as columns via Settings → Properties → Bases view properties
 - **Full Bases Integration** - Complete Bases functionality for filtering, sorting, and viewing event details
 ![Category Bases View](/img/category_bases_view.png)
 
@@ -135,6 +136,15 @@ This provides a quick way to see all events in a specific category without manua
 - Sort by any column
 - Use Bases features to further filter or analyze the events
 - See all event properties in a structured table format
+
+**Configuring Additional Columns:**
+
+To add more properties as columns in the category events view:
+
+1. Go to **Settings → Properties**
+2. Find **Bases view properties**
+3. Enter comma-separated property names (e.g., `priority, project, tags`)
+4. These properties will appear as additional columns when viewing events by category
 
 ## Category Statistics
 

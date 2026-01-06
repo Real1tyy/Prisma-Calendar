@@ -342,7 +342,7 @@ Manage category colors visually with the Categories Settings section:
 
 1. Go to Settings → Categories
 2. View all categories automatically detected from your events
-3. See event counts for each category (e.g., "Work (15 events)")
+3. See event counts and percentages for each category (e.g., "Work (15 events - 45.5%)")
 4. Configure colors using the color picker for each category
 5. View a pie chart showing category distribution with percentages
 
@@ -382,6 +382,12 @@ status: In Progress
 priority: High
 project: Q4 Planning
 ```
+
+## Bases View Properties
+
+Configure additional frontmatter properties to display as columns in the category events bases view.
+
+- **Bases view properties**: comma-separated list of property names to include as columns when viewing events by category (e.g., `priority, project, tags`). These properties appear alongside the default columns (file name, date property, status) in the bases table view when clicking on a category.
 
 ## Event Presets
 
