@@ -410,6 +410,14 @@ export class BatchSelectionManager {
 		);
 	}
 
+	public executeUpdateFrontmatter(propertyUpdates: Map<string, string | null>): void {
+		void this.executeWithSelection(
+			(filePaths) => this.batchCommandFactory.createUpdateFrontmatter(filePaths, propertyUpdates),
+			(count) => `Updated frontmatter for ${count} event${pluralize(count)}`,
+			"Failed to update frontmatter"
+		);
+	}
+
 	refreshSelectionStyling(): void {
 		if (this.isSelectionMode) {
 			this.removeSelectionStylingFromEvents();

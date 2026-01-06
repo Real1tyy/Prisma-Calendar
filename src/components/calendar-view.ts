@@ -38,6 +38,7 @@ import {
 	SkippedEventsModal,
 } from "./list-modals";
 import { EventCreateModal } from "./modals";
+import { BatchFrontmatterModal } from "./modals/batch-frontmatter-modal";
 import { CategoryAssignModal } from "./modals/category-assign-modal";
 import { CategorySelectModal } from "./modals/category-select-modal";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
@@ -256,6 +257,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					void this.openCategoryAssignModal();
 				},
 				className: `${clsBase} ${cls("categories-btn")}`,
+			},
+			batchFrontmatter: {
+				text: "FrontMatter",
+				click: () => {
+					void this.openBatchFrontmatterModal();
+				},
+				className: `${clsBase} ${cls("frontmatter-btn")}`,
 			},
 			batchDelete: {
 				text: "Delete",
@@ -1704,6 +1712,19 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				}
 			}
 		);
+		modal.open();
+	}
+
+	async openBatchFrontmatterModal(): Promise<void> {
+		if (!this.batchSelectionManager) return;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		const modal = new BatchFrontmatterModal(this.app, settings, (propertyUpdates: Map<string, string | null>) => {
+			if (this.batchSelectionManager) {
+				this.batchSelectionManager.executeUpdateFrontmatter(propertyUpdates);
+			}
+		});
 		modal.open();
 	}
 
