@@ -284,21 +284,21 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				click: () => this.toggleBatchSelection(),
 			},
 			filteredEvents: {
-				text: this.getFilteredEventsButtonText(),
+				text: "", // Don't set text here - it will be set by applyFilteredEventsButtonState
 				click: () => {
 					void this.showFilteredEventsModal();
 				},
 				className: this.filteredEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
 			skippedEvents: {
-				text: this.getSkippedEventsButtonText(),
+				text: "", // Don't set text here - it will be set by applySkippedEventsButtonState
 				click: () => {
 					void this.showSkippedEventsModal();
 				},
 				className: this.skippedEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
 			recurringEvents: {
-				text: this.getEnabledRecurringEventsButtonText(),
+				text: "", // Don't set text here - it will be set by applyEnabledRecurringEventsButtonState
 				click: () => {
 					void this.showRecurringEventsModal();
 				},
@@ -435,8 +435,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		if (!(btn instanceof HTMLElement)) {
 			return;
 		}
-		btn.textContent = text;
-		if (tooltip !== undefined) {
+
+		// Only update if text has changed to prevent unnecessary DOM manipulation and duplication
+		if (btn.textContent !== text) {
+			btn.textContent = text;
+		}
+
+		if (tooltip !== undefined && btn.title !== tooltip) {
 			btn.title = tooltip;
 		}
 

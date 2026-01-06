@@ -8,6 +8,10 @@ All notable changes to this project will be documented here.
 
 - **Date Property Normalization for Sorting**: Added setting to copy start or end datetime into the `Date` property for timed events, enabling external tools (Dataview, Bases, etc.) to sort all events chronologically by a single field. Solves the problem where mixed timed and all-day events can't be sorted together. Configure in Properties Settings.
 
+### Bug Fixes
+
+- **Fixed Button Text Rendering**: Fixed an issue where event count buttons (filtered, skipped, recurring) would sometimes render their text twice on rerenders. Button text now updates correctly without duplication.
+
 ## 1.22.3
 
 ### Performance Improvements
