@@ -191,6 +191,14 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Features**: Pie chart and breakdown table showing lifetime time distribution
 -   **See Also**: [Statistics documentation](./statistics.md)
 
+### Show Current Interval in Bases
+
+-   **Function**: Opens a Bases table view showing all events in the current calendar interval
+-   **Behavior**: Displays events from the visible calendar range (day/week/month) in a structured table
+-   **Features**: Full Bases filtering, sorting, and column customization
+-   **Use Case**: Analyze and manage events within the current view using Bases' powerful table interface
+-   **See Also**: [Configuration](../configuration.md#bases-view-properties) for customizing displayed columns
+
 ## Undo/Redo Commands
 
 -   **Undo**: Reverses the last calendar operation

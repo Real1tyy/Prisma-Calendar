@@ -14,6 +14,8 @@ All notable changes to this project will be documented here.
 
 - **Bases View Properties**: Added setting to configure additional frontmatter properties to display as columns in the category events bases view. Configure comma-separated properties in Properties Settings → Bases view properties.
 
+- **Current Interval Bases View**: Added command to view events from the current calendar interval (day/week/month) in a Bases table format. Use "Show current interval in Bases" command to open a modal showing all events within the visible calendar range, with full Bases filtering and sorting capabilities.
+
 - **Keyboard Navigation for Category Modals**: Category assignment and selection modals now support full keyboard navigation. Press Enter to select the first filtered category when searching, or press Enter again to submit the form with selected categories.
 
 ### Bug Fixes

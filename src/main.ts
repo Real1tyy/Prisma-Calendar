@@ -186,6 +186,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.NAVIGATE_BACK, "Navigate back", (view) => {
 			view.navigateBack();
 		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_INTERVAL_BASES, "Show current interval in Bases", (view) => {
+			void view.showIntervalEventsModal();
+		});
 
 		this.addCommand({
 			id: COMMAND_IDS.EXPORT_CALENDAR_ICS,

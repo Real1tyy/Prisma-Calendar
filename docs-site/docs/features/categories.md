@@ -141,6 +141,7 @@ The category view displays:
 - **Newest First** - Events sorted by the configured date property from newest to oldest
 - **Customizable Columns** - Add additional frontmatter properties as columns via Settings → Properties → Bases view properties
 - **Full Bases Integration** - Complete Bases functionality for filtering, sorting, and viewing event details
+
 ![Category Bases View](/img/category_bases_view.png)
 
 This provides a quick way to see all events in a specific category without manually filtering the calendar view. You can:

@@ -287,9 +287,7 @@ export class CategoryAssignModal extends Modal {
 	}
 
 	private submitCategories(): void {
-		const selectedCategories = this.categoryStates
-			.filter((state) => state.checked)
-			.map((state) => state.category.name);
+		const selectedCategories = this.categoryStates.filter((state) => state.checked).map((state) => state.category.name);
 
 		this.onSubmit(selectedCategories);
 		this.close();

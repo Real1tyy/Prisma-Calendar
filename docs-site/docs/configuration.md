@@ -385,9 +385,39 @@ project: Q4 Planning
 
 ## Bases View Properties
 
-Configure additional frontmatter properties to display as columns in the category events bases view.
+Configure additional frontmatter properties to display as columns in Bases table views throughout Prisma Calendar.
 
-- **Bases view properties**: comma-separated list of property names to include as columns when viewing events by category (e.g., `priority, project, tags`). These properties appear alongside the default columns (file name, date property, status) in the bases table view when clicking on a category.
+- **Bases view properties**: Comma-separated list of property names to include as additional columns in Bases views (e.g., `priority, project, tags`)
+
+### Where Bases Views Are Used
+
+These configured properties appear in all Bases table views:
+
+1. **Category Events View**: When clicking on a category in Settings → Categories
+2. **Current Interval View**: When using the "Show current interval in Bases" command (daily, weekly, or monthly views)
+3. **Future Features**: Any new Bases-based views will automatically respect these settings
+
+### Default Columns
+
+All Bases views include these columns by default:
+- **File name**: Link to the event note
+- **Date property**: The configured date/time property (sorted by this column)
+- **Status**: Current event status
+
+### Custom Columns
+
+Properties you add to "Bases view properties" appear after the default columns. Common examples:
+
+- **priority**: Show event importance (e.g., High, Medium, Low)
+- **project**: Group events by project
+- **tags**: Display event tags or categories
+- **duration**: Show event length
+- **location**: Display event location
+- **attendees**: List event participants
+
+**See Also**:
+- [Hotkeys documentation](./features/hotkeys.md#show-current-interval-in-bases) for using the "Show current interval in Bases" command
+- [Categories documentation](./features/categories.md) for category-based Bases views
 
 ## Event Presets
 

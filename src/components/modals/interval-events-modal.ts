@@ -2,26 +2,27 @@ import type { App } from "obsidian";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { BaseBasesViewModal } from "./base-bases-view-modal";
 
-export class CategoryEventsModal extends BaseBasesViewModal {
+export class IntervalEventsModal extends BaseBasesViewModal {
 	constructor(
 		app: App,
-		private categoryName: string,
+		private intervalLabel: string,
+		private startDate: string,
+		private endDate: string,
 		settings: SingleCalendarConfig
 	) {
 		super(app, settings);
 	}
 
 	protected getTitle(): string {
-		return `Category: ${this.categoryName}`;
+		return `Events: ${this.intervalLabel}`;
 	}
 
 	protected getViewName(): string {
-		return this.categoryName;
+		return this.intervalLabel;
 	}
 
 	protected getFilterLines(): string[] {
-		const categoryProp = this.settings.categoryProp;
-		const escapedCategory = this.categoryName.replace(/"/g, '\\"');
-		return [`${categoryProp}.contains("${escapedCategory}")`];
+		const dateProp = this.settings.dateProp;
+		return [`${dateProp} > "${this.startDate}"`, `${dateProp} < "${this.endDate}"`];
 	}
 }

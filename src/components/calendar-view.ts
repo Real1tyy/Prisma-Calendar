@@ -19,7 +19,7 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import { UpdateEventCommand } from "../core/commands";
 import type { ParsedEvent } from "../core/parser";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
-import { getCommonCategories, removeInstanceDate, removeZettelId } from "../utils/calendar-events";
+import { getCommonCategories, removeInstanceDate, removeZettelId, stripISOSuffix } from "../utils/calendar-events";
 import { toggleEventHighlight } from "../utils/dom-utils";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
@@ -40,6 +40,7 @@ import {
 import { EventCreateModal } from "./modals";
 import { CategoryAssignModal } from "./modals/category-assign-modal";
 import { CategorySelectModal } from "./modals/category-select-modal";
+import { IntervalEventsModal } from "./modals/interval-events-modal";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 
@@ -113,6 +114,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private weeklyStatsModal: WeeklyStatsModal | null = null;
 	private monthlyStatsModal: MonthlyStatsModal | null = null;
 	private alltimeStatsModal: AllTimeStatsModal | null = null;
+	private intervalEventsModal: IntervalEventsModal | null = null;
 	private filteredEvents: ParsedEvent[] = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
@@ -618,6 +620,58 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 			() => {
 				return new AllTimeStatsModal(this.app, this.bundle);
+			}
+		);
+	}
+
+	async showIntervalEventsModal(): Promise<void> {
+		if (!this.calendar?.view) return;
+
+		const view = this.calendar.view;
+		const viewType = view.type;
+
+		const adjustedStart = new Date(view.currentStart);
+		adjustedStart.setMinutes(adjustedStart.getMinutes() - 1);
+		const startDate = stripISOSuffix(toLocalISOString(adjustedStart));
+
+		const adjustedEnd = new Date(view.currentEnd);
+		adjustedEnd.setMinutes(adjustedEnd.getMinutes() - 1);
+		const endDate = stripISOSuffix(toLocalISOString(adjustedEnd));
+
+		let intervalLabel = "";
+		if (viewType.includes("Day")) {
+			const date = new Date(view.currentStart);
+			intervalLabel = date.toLocaleDateString("en-US", {
+				weekday: "long",
+				month: "short",
+				day: "numeric",
+				year: "numeric",
+			});
+		} else if (viewType.includes("Week")) {
+			const start = new Date(view.currentStart);
+			const end = new Date(view.currentEnd);
+			end.setDate(end.getDate() - 1);
+			intervalLabel = `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+		} else if (viewType.includes("Month")) {
+			const date = new Date(view.currentStart);
+			intervalLabel = date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+		} else {
+			intervalLabel = "Current View";
+		}
+
+		await this.toggleModal(
+			() => this.intervalEventsModal,
+			(modal) => {
+				this.intervalEventsModal = modal;
+			},
+			() => {
+				return new IntervalEventsModal(
+					this.app,
+					intervalLabel,
+					startDate,
+					endDate,
+					this.bundle.settingsStore.currentSettings
+				);
 			}
 		);
 	}
