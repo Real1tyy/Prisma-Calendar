@@ -57,9 +57,7 @@ export class CategoryEventsModal extends Modal {
 		const statusProp = this.settings.statusProperty;
 		const basesViewProperties = this.settings.basesViewProperties || [];
 
-		const orderProperties = ["file.name", dateProp, statusProp, ...basesViewProperties].filter(
-			Boolean
-		);
+		const orderProperties = ["file.name", dateProp, statusProp, ...basesViewProperties].filter(Boolean);
 
 		return `\`\`\`base
 views:

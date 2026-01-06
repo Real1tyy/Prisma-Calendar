@@ -14,6 +14,8 @@ All notable changes to this project will be documented here.
 
 - **Bases View Properties**: Added setting to configure additional frontmatter properties to display as columns in the category events bases view. Configure comma-separated properties in Properties Settings → Bases view properties.
 
+- **Keyboard Navigation for Category Modals**: Category assignment and selection modals now support full keyboard navigation. Press Enter to select the first filtered category when searching, or press Enter again to submit the form with selected categories.
+
 ### Bug Fixes
 
 - **Fixed Button Text Rendering**: Fixed an issue where event count buttons (filtered, skipped, recurring) would sometimes render their text twice on rerenders. Button text now updates correctly without duplication.
