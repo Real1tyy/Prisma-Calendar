@@ -10,6 +10,7 @@ import {
 	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,
+	UpdateFrontmatterCommand,
 } from "./event-commands";
 
 function createBatchDeleteCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
@@ -83,6 +84,18 @@ function createBatchAssignCategoriesCommand(
 	return new MacroCommand(assignCategoriesCommands);
 }
 
+function createBatchUpdateFrontmatterCommand(
+	app: App,
+	bundle: CalendarBundle,
+	filePaths: string[],
+	propertyUpdates: Map<string, string | null>
+): MacroCommand {
+	const updateCommands = filePaths.map(
+		(filePath) => new UpdateFrontmatterCommand(app, bundle, filePath, propertyUpdates)
+	);
+	return new MacroCommand(updateCommands);
+}
+
 export function calculateWeekOffsets(weeks: number): [number, number] {
 	const weekInMs = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 	const offset = weeks * weekInMs;
@@ -131,5 +144,9 @@ export class BatchCommandFactory {
 
 	createAssignCategories(filePaths: string[], categories: string[]): MacroCommand {
 		return createBatchAssignCategoriesCommand(this.app, this.bundle, filePaths, categories);
+	}
+
+	createUpdateFrontmatter(filePaths: string[], propertyUpdates: Map<string, string | null>): MacroCommand {
+		return createBatchUpdateFrontmatterCommand(this.app, this.bundle, filePaths, propertyUpdates);
 	}
 }

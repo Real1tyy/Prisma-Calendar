@@ -30,6 +30,7 @@ export const COMMAND_IDS = {
 	BATCH_MARK_AS_DONE: "batch-mark-as-done",
 	BATCH_MARK_AS_NOT_DONE: "batch-mark-as-not-done",
 	BATCH_ASSIGN_CATEGORIES: "batch-assign-categories",
+	BATCH_UPDATE_FRONTMATTER: "batch-update-frontmatter",
 	OPEN_CURRENT_NOTE_IN_CALENDAR: "open-current-note-in-calendar",
 	SHOW_DAILY_STATS: "show-daily-stats",
 	SHOW_WEEKLY_STATS: "show-weekly-stats",
@@ -145,6 +146,7 @@ const BATCH_BUTTONS = {
 	"Mark as Done": "batchMarkAsDone",
 	"Mark as Not Done": "batchMarkAsNotDone",
 	Categories: "batchCategories",
+	Frontmatter: "batchFrontmatter",
 	"Clone Next": "batchCloneNext",
 	"Clone Prev": "batchClonePrev",
 	"Move Next": "batchMoveNext",
@@ -161,5 +163,5 @@ export const BATCH_BUTTON_LABELS = Object.fromEntries(
 ) as Record<string, string>;
 
 export const DEFAULT_BATCH_ACTION_BUTTONS = BATCH_BUTTON_IDS.filter(
-	(id) => !["batchMoveBy", "batchOpenAll", "batchMovePrev", "batchClonePrev"].includes(id)
+	(id) => !["batchMoveBy", "batchOpenAll", "batchMovePrev", "batchClonePrev", "batchFrontmatter"].includes(id)
 );

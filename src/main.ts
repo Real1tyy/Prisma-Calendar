@@ -119,6 +119,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		addBatchCommand(COMMAND_IDS.BATCH_ASSIGN_CATEGORIES, "Assign categories to selection", (view) => {
 			void view.openCategoryAssignModal();
 		});
+		addBatchCommand(COMMAND_IDS.BATCH_UPDATE_FRONTMATTER, "Update frontmatter for selection", (view) => {
+			void view.openBatchFrontmatterModal();
+		});
 		addBatchCommand(COMMAND_IDS.BATCH_OPEN_SELECTION, "Open selection", (view) => view.openSelection());
 		addBatchCommand(COMMAND_IDS.BATCH_CLONE_NEXT_WEEK, "Clone to next week", (view) => view.cloneSelection(1));
 		addBatchCommand(COMMAND_IDS.BATCH_CLONE_PREV_WEEK, "Clone to previous week", (view) => view.cloneSelection(-1));

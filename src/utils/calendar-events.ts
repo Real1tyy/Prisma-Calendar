@@ -1,4 +1,9 @@
-import { type FrontmatterDiff, generateZettelId, withFrontmatter } from "@real1ty-obsidian-plugins/utils";
+import {
+	type FrontmatterDiff,
+	generateZettelId,
+	serializeFrontmatterValue,
+	withFrontmatter,
+} from "@real1ty-obsidian-plugins/utils";
 import { nanoid } from "nanoid";
 import { type App, TFile } from "obsidian";
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
@@ -630,6 +635,57 @@ export const getCommonCategories = (
 
 	return commonCategories;
 };
+
+/**
+ * Gets frontmatter properties that are common across all selected events with the same value.
+ * Excludes internal Prisma properties.
+ * Returns a Map of property key to value for properties that have the same value in ALL events.
+ */
+export const getCommonFrontmatterProperties = (
+	app: App,
+	selectedEvents: { filePath: string }[],
+	settings: SingleCalendarConfig
+): Map<string, string> => {
+	if (selectedEvents.length === 0) return new Map();
+
+	const internalProperties = getInternalProperties(settings);
+
+	const allEventProperties = selectedEvents
+		.map((event) => {
+			const file = app.vault.getAbstractFileByPath(event.filePath);
+			if (!(file instanceof TFile)) return null;
+
+			const cache = app.metadataCache.getFileCache(file);
+			return cache?.frontmatter;
+		})
+		.filter((fm): fm is Frontmatter => fm !== null && fm !== undefined);
+
+	if (allEventProperties.length === 0) return new Map();
+
+	const firstEventProperties = allEventProperties[0];
+
+	return Object.entries(firstEventProperties).reduce((commonProps, [key, value]) => {
+		if (internalProperties.has(key)) return commonProps;
+
+		if (settings.skipUnderscoreProperties && key.startsWith("_")) {
+			return commonProps;
+		}
+
+		const stringValue = serializeFrontmatterValue(value);
+
+		const allMatch = allEventProperties.every((eventFm) => {
+			const eventValue = serializeFrontmatterValue(eventFm[key]);
+			return eventValue === stringValue;
+		});
+
+		if (allMatch && stringValue.trim() !== "") {
+			commonProps.set(key, stringValue);
+		}
+
+		return commonProps;
+	}, new Map<string, string>());
+};
+
 export const assignCategoriesToFrontmatter = (fm: Frontmatter, categoryProp: string, categories: string[]): void => {
 	if (categories.length === 0) {
 		fm[categoryProp] = "";

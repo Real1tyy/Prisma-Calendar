@@ -2,6 +2,7 @@ import {
 	backupFrontmatter,
 	compareFrontmatter,
 	getTFileOrThrow,
+	parseFrontmatterRecord,
 	restoreFrontmatter,
 	sanitizeForFilename,
 	withFrontmatter,
@@ -692,5 +693,57 @@ export class AssignCategoriesCommand implements Command {
 
 	getType(): string {
 		return "assign-categories";
+	}
+}
+
+export class UpdateFrontmatterCommand implements Command {
+	private originalValues: Map<string, unknown> = new Map();
+
+	constructor(
+		private app: App,
+		_bundle: CalendarBundle,
+		private filePath: string,
+		private propertyUpdates: Map<string, string | null>
+	) {}
+
+	async execute(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+			for (const [key, value] of this.propertyUpdates.entries()) {
+				if (!this.originalValues.has(key)) {
+					this.originalValues.set(key, fm[key]);
+				}
+
+				if (value === null) {
+					delete fm[key];
+				} else {
+					const parsed = parseFrontmatterRecord({ [key]: value });
+					fm[key] = parsed[key];
+				}
+			}
+		});
+	}
+
+	async undo(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+			for (const [key, originalValue] of this.originalValues.entries()) {
+				if (originalValue === undefined) {
+					delete fm[key];
+				} else {
+					fm[key] = originalValue;
+				}
+			}
+		});
+	}
+
+	canUndo(): boolean {
+		return this.originalValues.size > 0;
+	}
+
+	getType(): string {
+		return "update-frontmatter";
 	}
 }

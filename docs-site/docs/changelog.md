@@ -10,6 +10,8 @@ All notable changes to this project will be documented here.
 
 - **Date Property Normalization for Sorting**: Added setting to copy start or end datetime into the `Date` property for timed events, enabling external tools (Dataview, Bases, etc.) to sort all events chronologically by a single field. Solves the problem where mixed timed and all-day events can't be sorted together. Configure in Properties Settings.
 
+- **Batch Frontmatter Management with Smart Prefilling**: Added comprehensive frontmatter editing in batch selection mode. The "Frontmatter" button opens a modal that automatically prefills properties common to all selected events, making bulk editing efficient and intuitive. Add new properties, update existing ones, or mark properties for deletion across multiple events at once. All operations are fully undoable.
+
 - **Category Percentages**: Categories list now displays percentages alongside event counts (e.g., "91 events - 45.5%") to quickly see the distribution of events across categories.
 
 - **Category Events Sorting**: Category events modal now sorts events by the configured date property from newest to oldest, making it easier to see recent events first.
