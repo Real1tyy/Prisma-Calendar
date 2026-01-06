@@ -50,6 +50,8 @@ export class CategoryAssignModal extends Modal {
 		this.createButtons(contentEl);
 		this.updateAssignButtonText();
 
+		this.setupKeyboardHandlers();
+
 		this.searchInput.focus();
 	}
 
@@ -66,6 +68,29 @@ export class CategoryAssignModal extends Modal {
 		this.searchInput.addEventListener("input", () => {
 			this.filterCategories();
 			this.updateCreateNewButton();
+		});
+	}
+
+	private setupKeyboardHandlers(): void {
+		this.scope.register([], "Enter", (e) => {
+			e.preventDefault();
+
+			const searchValue = this.searchInput.value.trim();
+
+			if (searchValue) {
+				const firstVisibleItem = Array.from(this.categoryListContainer.children).find(
+					(child) => !child.classList.contains("prisma-hidden")
+				) as HTMLElement;
+
+				if (firstVisibleItem) {
+					firstVisibleItem.click();
+					this.searchInput.value = "";
+					this.filterCategories();
+					this.updateCreateNewButton();
+				}
+			} else {
+				this.submitCategories();
+			}
 		});
 	}
 
@@ -257,13 +282,15 @@ export class CategoryAssignModal extends Modal {
 			cls: "mod-cta",
 		});
 		this.assignButton.onclick = () => {
-			const selectedCategories = this.categoryStates
-				.filter((state) => state.checked)
-				.map((state) => state.category.name);
-
-			this.onSubmit(selectedCategories);
-			this.close();
+			this.submitCategories();
 		};
+	}
+
+	private submitCategories(): void {
+		const selectedCategories = this.categoryStates.filter((state) => state.checked).map((state) => state.category.name);
+
+		this.onSubmit(selectedCategories);
+		this.close();
 	}
 
 	onClose(): void {

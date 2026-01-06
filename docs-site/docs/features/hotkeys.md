@@ -82,6 +82,19 @@ Here is a complete list of the batch operations you can assign hotkeys to:
 
 ## Navigation Commands
 
+### Scroll to Current Time
+
+-   **Function**: Scrolls to the current time or centers the current day
+-   **Behavior**:
+    -   In week/day views: Navigates to today and centers the timeline on the current time
+    -   In month view: Navigates to today and centers the current day in the viewport
+    -   In list view: Navigates to today
+-   **Use Cases**:
+    -   Quickly return to the present time after scrolling through different time periods
+    -   Re-orient yourself during the day, especially when deeply zoomed or scrolled
+    -   Navigate back to "now" with a single command or button click
+-   **Available As**: Toolbar button ("Now") and Obsidian command
+
 ### Open Current Note in Calendar
 
 The **Open Current Note in Calendar** command provides quick navigation from any note to its corresponding event in the calendar:
@@ -190,6 +203,14 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Function**: Opens all-time statistics modal
 -   **Features**: Pie chart and breakdown table showing lifetime time distribution
 -   **See Also**: [Statistics documentation](./statistics.md)
+
+### Show Current Interval in Bases
+
+-   **Function**: Opens a Bases table view showing all events in the current calendar interval
+-   **Behavior**: Displays events from the visible calendar range (day/week/month) in a structured table
+-   **Features**: Full Bases filtering, sorting, and column customization
+-   **Use Case**: Analyze and manage events within the current view using Bases' powerful table interface
+-   **See Also**: [Configuration](../configuration.md#bases-view-properties) for customizing displayed columns
 
 ## Undo/Redo Commands
 

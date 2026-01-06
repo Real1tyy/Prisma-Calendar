@@ -20,7 +20,7 @@ export const isAllDayEvent = (allDayValue: unknown): boolean => {
  * Converts "2024-01-15T09:00:00.000Z" to "2024-01-15T09:00:00"
  * This creates cleaner, more sortable datetime values for external tools.
  */
-const stripISOSuffix = (iso: string): string => {
+export const stripISOSuffix = (iso: string): string => {
 	return iso.replace(/\.000Z$/, "").replace(/Z$/, "");
 };
 

@@ -193,6 +193,14 @@ export class PropertiesSettings {
 			placeholder: SETTINGS_DEFAULTS.DEFAULT_ALREADY_NOTIFIED_PROP,
 		});
 
+		this.ui.addTextArray(containerEl, {
+			key: "basesViewProperties",
+			name: "Bases view properties",
+			desc: "Comma-separated list of frontmatter properties to include in the bases view when viewing events by category. These properties will appear as columns in the category events table.",
+			placeholder: "priority, project, tags",
+			arrayDelimiter: ", ",
+		});
+
 		// Add description for event types
 		const eventTypesDesc = containerEl.createDiv(cls("settings-info-box"));
 

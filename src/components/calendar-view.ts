@@ -19,7 +19,7 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import { UpdateEventCommand } from "../core/commands";
 import type { ParsedEvent } from "../core/parser";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
-import { getCommonCategories, removeInstanceDate, removeZettelId } from "../utils/calendar-events";
+import { getCommonCategories, removeInstanceDate, removeZettelId, stripISOSuffix } from "../utils/calendar-events";
 import { toggleEventHighlight } from "../utils/dom-utils";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
@@ -41,6 +41,7 @@ import { EventCreateModal } from "./modals";
 import { BatchFrontmatterModal } from "./modals/batch-frontmatter-modal";
 import { CategoryAssignModal } from "./modals/category-assign-modal";
 import { CategorySelectModal } from "./modals/category-select-modal";
+import { IntervalEventsModal } from "./modals/interval-events-modal";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 
@@ -114,6 +115,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private weeklyStatsModal: WeeklyStatsModal | null = null;
 	private monthlyStatsModal: MonthlyStatsModal | null = null;
 	private alltimeStatsModal: AllTimeStatsModal | null = null;
+	private intervalEventsModal: IntervalEventsModal | null = null;
 	private filteredEvents: ParsedEvent[] = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
@@ -286,27 +288,31 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				text: "Create Event",
 				click: () => this.openCreateEventModal(),
 			},
+			now: {
+				text: "Now",
+				click: () => this.scrollToNow(),
+			},
 			zoomLevel: this.zoomManager.createZoomLevelButton(),
 			batchSelect: {
 				text: "Batch Select",
 				click: () => this.toggleBatchSelection(),
 			},
 			filteredEvents: {
-				text: this.getFilteredEventsButtonText(),
+				text: "", // Don't set text here - it will be set by applyFilteredEventsButtonState
 				click: () => {
 					void this.showFilteredEventsModal();
 				},
 				className: this.filteredEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
 			skippedEvents: {
-				text: this.getSkippedEventsButtonText(),
+				text: "", // Don't set text here - it will be set by applySkippedEventsButtonState
 				click: () => {
 					void this.showSkippedEventsModal();
 				},
 				className: this.skippedEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
 			recurringEvents: {
-				text: this.getEnabledRecurringEventsButtonText(),
+				text: "", // Don't set text here - it will be set by applyEnabledRecurringEventsButtonState
 				click: () => {
 					void this.showRecurringEventsModal();
 				},
@@ -334,7 +340,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			};
 		}
 
-		const left = "prev,next today createEvent zoomLevel";
+		const left = "prev,next today now createEvent zoomLevel";
 		const right = `filteredEvents recurringEvents skippedEvents batchSelect ${viewSwitchers}`;
 
 		return {
@@ -443,8 +449,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		if (!(btn instanceof HTMLElement)) {
 			return;
 		}
-		btn.textContent = text;
-		if (tooltip !== undefined) {
+
+		// Only update if text has changed to prevent unnecessary DOM manipulation and duplication
+		if (btn.textContent !== text) {
+			btn.textContent = text;
+		}
+
+		if (tooltip !== undefined && btn.title !== tooltip) {
 			btn.title = tooltip;
 		}
 
@@ -625,6 +636,58 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		);
 	}
 
+	async showIntervalEventsModal(): Promise<void> {
+		if (!this.calendar?.view) return;
+
+		const view = this.calendar.view;
+		const viewType = view.type;
+
+		const adjustedStart = new Date(view.currentStart);
+		adjustedStart.setMinutes(adjustedStart.getMinutes() - 1);
+		const startDate = stripISOSuffix(toLocalISOString(adjustedStart));
+
+		const adjustedEnd = new Date(view.currentEnd);
+		adjustedEnd.setMinutes(adjustedEnd.getMinutes() - 1);
+		const endDate = stripISOSuffix(toLocalISOString(adjustedEnd));
+
+		let intervalLabel = "";
+		if (viewType.includes("Day")) {
+			const date = new Date(view.currentStart);
+			intervalLabel = date.toLocaleDateString("en-US", {
+				weekday: "long",
+				month: "short",
+				day: "numeric",
+				year: "numeric",
+			});
+		} else if (viewType.includes("Week")) {
+			const start = new Date(view.currentStart);
+			const end = new Date(view.currentEnd);
+			end.setDate(end.getDate() - 1);
+			intervalLabel = `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+		} else if (viewType.includes("Month")) {
+			const date = new Date(view.currentStart);
+			intervalLabel = date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+		} else {
+			intervalLabel = "Current View";
+		}
+
+		await this.toggleModal(
+			() => this.intervalEventsModal,
+			(modal) => {
+				this.intervalEventsModal = modal;
+			},
+			() => {
+				return new IntervalEventsModal(
+					this.app,
+					intervalLabel,
+					startDate,
+					endDate,
+					this.bundle.settingsStore.currentSettings
+				);
+			}
+		);
+	}
+
 	navigateToDate(date: Date, viewType?: string): void {
 		if (!this.calendar) return;
 
@@ -635,6 +698,44 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		this.calendar.gotoDate(date);
+	}
+
+	scrollToNow(): void {
+		if (!this.calendar) return;
+
+		const currentView = this.calendar.view.type;
+		let targetElement: Element | null = null;
+
+		if (currentView === "timeGridWeek" || currentView === "timeGridDay") {
+			// For time grid views, find the now indicator line
+			targetElement = this.container.querySelector(".fc-timegrid-now-indicator-line");
+		} else if (currentView === "dayGridMonth") {
+			// For month view, find today's cell
+			targetElement = this.container.querySelector(".fc-day-today");
+		}
+
+		// Center the target element if found
+		if (targetElement) {
+			this.scrollElementToCenter(targetElement);
+		}
+	}
+
+	private scrollElementToCenter(element: Element): void {
+		const viewContent = this.containerEl.querySelector(".view-content");
+		if (!viewContent) return;
+
+		const elementRect = element.getBoundingClientRect();
+		const viewContentRect = viewContent.getBoundingClientRect();
+
+		// Calculate scroll position to center the element
+		const scrollTop =
+			viewContent.scrollTop +
+			elementRect.top -
+			viewContentRect.top -
+			viewContent.clientHeight / 2 +
+			elementRect.height / 2;
+
+		viewContent.scrollTop = scrollTop;
 	}
 
 	highlightEventByPath(filePath: string, durationMs = 5000): void {

@@ -6,9 +6,25 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **"Now" Button for Timeline Navigation**: Added a "Now" button to the calendar toolbar that scrolls to the current time or day. In week and day views, it navigates to today and centers the view on the current time marker. In month view, it navigates to today and centers the current day in the viewport. Especially useful after scrolling or zooming to quickly return to the present moment. Also available as an Obsidian command "Scroll to current time". The now indicator line has also been made thicker (2.5px) for better visibility.
+
 - **Date Property Normalization for Sorting**: Added setting to copy start or end datetime into the `Date` property for timed events, enabling external tools (Dataview, Bases, etc.) to sort all events chronologically by a single field. Solves the problem where mixed timed and all-day events can't be sorted together. Configure in Properties Settings.
 
 - **Batch Frontmatter Management with Smart Prefilling**: Added comprehensive frontmatter editing in batch selection mode. The "Frontmatter" button opens a modal that automatically prefills properties common to all selected events, making bulk editing efficient and intuitive. Add new properties, update existing ones, or mark properties for deletion across multiple events at once. All operations are fully undoable.
+
+- **Category Percentages**: Categories list now displays percentages alongside event counts (e.g., "91 events - 45.5%") to quickly see the distribution of events across categories.
+
+- **Category Events Sorting**: Category events modal now sorts events by the configured date property from newest to oldest, making it easier to see recent events first.
+
+- **Bases View Properties**: Added setting to configure additional frontmatter properties to display as columns in the category events bases view. Configure comma-separated properties in Properties Settings → Bases view properties.
+
+- **Current Interval Bases View**: Added command to view events from the current calendar interval (day/week/month) in a Bases table format. Use "Show current interval in Bases" command to open a modal showing all events within the visible calendar range, with full Bases filtering and sorting capabilities.
+
+- **Keyboard Navigation for Category Modals**: Category assignment and selection modals now support full keyboard navigation. Press Enter to select the first filtered category when searching, or press Enter again to submit the form with selected categories.
+
+### Bug Fixes
+
+- **Fixed Button Text Rendering**: Fixed an issue where event count buttons (filtered, skipped, recurring) would sometimes render their text twice on rerenders. Button text now updates correctly without duplication.
 
 ## 1.22.3
 
