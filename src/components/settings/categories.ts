@@ -1,10 +1,12 @@
-import { cls } from "@real1ty-obsidian-plugins/utils";
+import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
 import Chart from "chart.js/auto";
+import { nanoid } from "nanoid";
 import { Setting } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import type { CategoryAssignmentPreset, SingleCalendarConfigSchema } from "../../types/settings";
 import { CategoryEventsModal } from "../modals/category-events-modal";
 
 interface CategoryInfoWithCount extends CategoryInfo {
@@ -18,11 +20,15 @@ export class CategoriesSettings {
 	private categoriesListContainer: HTMLElement | null = null;
 	private categoryTracker: CategoryTracker | null = null;
 	private categoryProp: string;
+	private categoryAssignmentPresetsContainer: HTMLElement | null = null;
+	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 
 	constructor(
 		private settingsStore: CalendarSettingsStore,
 		private plugin: CustomCalendarPlugin
-	) {}
+	) {
+		this.ui = new SettingsUIBuilder(this.settingsStore as never);
+	}
 
 	display(containerEl: HTMLElement): void {
 		containerEl.empty();
@@ -66,6 +72,198 @@ export class CategoriesSettings {
 		const canvas = this.chartContainer.createEl("canvas");
 		canvas.setAttribute("id", cls("categories-chart"));
 		this.updateChart(this.categoryTracker, this.categoryProp);
+
+		this.addAutoAssignmentSettings(containerEl);
+	}
+
+	private addAutoAssignmentSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("Auto-assign categories").setHeading();
+
+		const descContainer = containerEl.createDiv();
+		descContainer.createEl("p", {
+			text: "Automatically assign categories to events during creation based on the event name.",
+		});
+
+		// Auto-assign when name matches category
+		this.ui.addToggle(containerEl, {
+			key: "autoAssignCategoryByName",
+			name: "Auto-assign when name matches category",
+			desc: "Automatically assign a category when the event name (without ZettelID) matches a category name (case-insensitive). Example: creating an event named 'Health' will auto-assign the 'health' category.",
+		});
+
+		// Custom assignment presets
+		new Setting(containerEl)
+			.setName("Custom category assignment presets")
+			.setDesc(
+				"Define custom rules to auto-assign categories based on event names. Each preset can assign multiple categories to events with a specific name."
+			);
+
+		const examplesContainer = containerEl.createDiv(cls("settings-info-box"));
+		examplesContainer.createEl("strong", { text: "Example:" });
+		const examplesList = examplesContainer.createEl("ul");
+		examplesList.createEl("li", {
+			text: "Event name: 'Coding' → Auto-assign categories: Software, Business",
+		});
+
+		this.categoryAssignmentPresetsContainer = containerEl.createDiv();
+		this.renderCategoryAssignmentPresets(this.categoryAssignmentPresetsContainer);
+
+		// Add preset button
+		const addButton = containerEl.createEl("button", {
+			text: "Add preset",
+			cls: cls("settings-button"),
+		});
+		addButton.addEventListener("click", () => {
+			void this.addCategoryAssignmentPreset();
+		});
+	}
+
+	private renderCategoryAssignmentPresets(container: HTMLElement): void {
+		container.empty();
+
+		const settings = this.settingsStore.currentSettings;
+		const presets = settings.categoryAssignmentPresets || [];
+
+		if (presets.length === 0) {
+			const emptyState = container.createDiv(cls("category-assignment-empty"));
+			emptyState.textContent = "No custom category assignment presets defined.";
+			return;
+		}
+
+		const availableCategories = this.categoryTracker?.getCategories() || [];
+
+		for (const preset of presets) {
+			const presetContainer = container.createDiv(cls("category-assignment-preset"));
+
+			// Event name input
+			const nameInput = presetContainer.createEl("input", {
+				type: "text",
+				value: preset.eventName,
+				placeholder: "Event name (e.g., Coding)",
+				cls: cls("category-assignment-name-input"),
+			});
+			nameInput.addEventListener("change", async () => {
+				await this.updateCategoryAssignmentPreset(preset.id, {
+					...preset,
+					eventName: nameInput.value.trim(),
+				});
+			});
+
+			// Categories dropdown (multi-select)
+			const categoriesContainer = presetContainer.createDiv(cls("category-assignment-categories"));
+
+			const categoriesSelectContainer = categoriesContainer.createDiv(cls("category-assignment-select-container"));
+
+			// Display selected categories as tags
+			const selectedContainer = categoriesSelectContainer.createDiv(cls("category-assignment-selected"));
+			this.renderSelectedCategories(selectedContainer, preset);
+
+			// Add category dropdown
+			const addCategoryDropdown = categoriesSelectContainer.createEl("select", {
+				cls: cls("category-assignment-add-dropdown"),
+			});
+			const defaultOption = addCategoryDropdown.createEl("option", {
+				text: "Add category...",
+				value: "",
+			});
+			addCategoryDropdown.appendChild(defaultOption);
+
+			for (const category of availableCategories) {
+				if (!preset.categories.includes(category)) {
+					const option = addCategoryDropdown.createEl("option", {
+						text: category,
+						value: category,
+					});
+					addCategoryDropdown.appendChild(option);
+				}
+			}
+
+			addCategoryDropdown.addEventListener("change", async () => {
+				const selectedCategory = addCategoryDropdown.value;
+				if (selectedCategory && !preset.categories.includes(selectedCategory)) {
+					await this.updateCategoryAssignmentPreset(preset.id, {
+						...preset,
+						categories: [...preset.categories, selectedCategory],
+					});
+					this.renderCategoryAssignmentPresets(this.categoryAssignmentPresetsContainer!);
+				}
+			});
+
+			// Delete preset button
+			const deleteButton = presetContainer.createEl("button", {
+				text: "Delete",
+				cls: `${cls("settings-button")} ${cls("settings-button-danger")}`,
+			});
+			deleteButton.addEventListener("click", async () => {
+				await this.deleteCategoryAssignmentPreset(preset.id);
+			});
+		}
+	}
+
+	private renderSelectedCategories(container: HTMLElement, preset: CategoryAssignmentPreset): void {
+		container.empty();
+
+		if (preset.categories.length === 0) {
+			container.createEl("span", {
+				text: "No categories selected",
+				cls: cls("category-assignment-empty-selection"),
+			});
+			return;
+		}
+
+		for (const category of preset.categories) {
+			const tag = container.createDiv(cls("category-assignment-tag"));
+			tag.createEl("span", { text: category });
+
+			const removeButton = tag.createEl("button", {
+				text: "×",
+				cls: cls("category-assignment-tag-remove"),
+			});
+			removeButton.addEventListener("click", async () => {
+				await this.updateCategoryAssignmentPreset(preset.id, {
+					...preset,
+					categories: preset.categories.filter((c) => c !== category),
+				});
+				this.renderCategoryAssignmentPresets(this.categoryAssignmentPresetsContainer!);
+			});
+		}
+	}
+
+	private async addCategoryAssignmentPreset(): Promise<void> {
+		const newPreset: CategoryAssignmentPreset = {
+			id: nanoid(),
+			eventName: "",
+			categories: [],
+		};
+
+		await this.settingsStore.updateSettings((s) => ({
+			...s,
+			categoryAssignmentPresets: [...(s.categoryAssignmentPresets || []), newPreset],
+		}));
+
+		if (this.categoryAssignmentPresetsContainer) {
+			this.renderCategoryAssignmentPresets(this.categoryAssignmentPresetsContainer);
+		}
+	}
+
+	private async updateCategoryAssignmentPreset(id: string, updatedPreset: CategoryAssignmentPreset): Promise<void> {
+		await this.settingsStore.updateSettings((s) => ({
+			...s,
+			categoryAssignmentPresets: (s.categoryAssignmentPresets || []).map((preset) =>
+				preset.id === id ? updatedPreset : preset
+			),
+		}));
+	}
+
+	private async deleteCategoryAssignmentPreset(id: string): Promise<void> {
+		await this.settingsStore.updateSettings((s) => ({
+			...s,
+			categoryAssignmentPresets: (s.categoryAssignmentPresets || []).filter((preset) => preset.id !== id),
+		}));
+
+		if (this.categoryAssignmentPresetsContainer) {
+			this.renderCategoryAssignmentPresets(this.categoryAssignmentPresetsContainer);
+		}
 	}
 
 	private renderCategoriesList(container: HTMLElement, categoryTracker: CategoryTracker, categoryProp: string): void {

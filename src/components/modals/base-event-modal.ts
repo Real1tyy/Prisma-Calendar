@@ -1070,7 +1070,7 @@ export abstract class BaseEventModal extends Modal {
 		}
 	}
 
-	private renderCategories(): void {
+	protected renderCategories(): void {
 		if (!this.categoriesContainer) return;
 
 		this.categoriesContainer.empty();

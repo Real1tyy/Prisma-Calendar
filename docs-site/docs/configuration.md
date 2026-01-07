@@ -381,6 +381,20 @@ Category.includes('Work') → #3b82f6
 
 All events with `Category: Work` will now use that color.
 
+### Auto-Assign Categories
+
+Configure automatic category assignment for new events based on event names. When you finish typing the event title, the system checks for matches and replaces categories accordingly.
+
+#### Auto-assign when name matches category
+
+Automatically assigns a category when the event name matches a category name (case-insensitive, ignoring ZettelID and instance dates).
+
+#### Custom category assignment presets
+
+Define custom rules to map specific event names to multiple categories (e.g., "Coding" → Software, Business).
+
+📖 See [Categories - Auto-Assignment](/features/categories#1-auto-assignment-new-event-creation) for detailed usage and examples.
+
 ## Frontmatter Display
 
 Show extra frontmatter properties inside event chips (scrollable when space is tight).

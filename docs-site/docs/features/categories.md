@@ -41,7 +41,34 @@ Both formats are supported throughout the plugin. When you assign categories usi
 
 You can assign categories to events in multiple ways:
 
-### 1. Individual Events (Manual)
+### 1. Auto-Assignment (New Event Creation)
+
+Categories can be automatically assigned when creating new events based on the event name. When you finish typing the event title and move to another field, the system checks if the title matches any auto-assignment rules and replaces the categories accordingly.
+
+Configure in **Settings → Categories → Auto-assign categories**:
+
+#### Auto-assign when name matches category
+When enabled, if the event name matches a category name (case-insensitive, ignoring ZettelID and instance dates), that category will be automatically assigned when you finish typing the title.
+
+**Example:**
+- Type "Health" and click away → Categories replaced with "health"
+
+#### Custom category assignment presets
+Define custom rules to automatically assign specific categories based on event names. Each preset can assign multiple categories. When the event name matches a preset, those categories replace any previously selected categories.
+
+**Example:**
+- Event name: "Coding" → Replaces with: Software, Business
+- Event name: "Team Meeting" → Replaces with: Work, Collaboration
+
+**How it works:**
+- When you finish typing the event title (lose focus from the title field), the system checks for matches
+- If a match is found, categories are replaced with the auto-assigned ones
+- If no match is found, your manually selected categories remain unchanged
+- This makes the behavior intentional and predictable - you see exactly what gets assigned
+- Only applies during event creation, not when editing existing events
+- Perfect for quick event creation workflows with consistent naming patterns
+
+### 2. Individual Events (Manual)
 
 Edit the event note directly and add the category property:
 
@@ -53,15 +80,15 @@ End: 2025-01-15T10:00:00
 ---
 ```
 
-### 2. Event Context Menu
+### 3. Event Context Menu
 
 Click on any event in the calendar and select **"Assign Categories"** from the context menu. This opens the category assignment modal with the event's current categories pre-selected.
 
-### 3. Event Modal (Create/Edit)
+### 4. Event Modal (Create/Edit)
 
 When creating or editing an event, use the **"Assign Categories"** button in the modal. Categories are displayed with their configured colors, and you can modify them before saving the event.
 
-### 4. Batch Assignment
+### 5. Batch Assignment
 
 Select multiple events in batch mode and use the **"Categories"** button to assign categories to all selected events at once.
 

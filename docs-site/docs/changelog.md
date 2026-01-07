@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented here.
 
+## 1.24.0
+
+### New Features
+
+- **Auto-Category Assignment**: Categories can now be automatically assigned to new events based on the event name. When you finish typing the event title, the system checks for matches and replaces categories accordingly. Enable "Auto-assign when name matches category" to automatically assign categories when the event name matches a category name (case-insensitive, ignoring ZettelID and instance dates). Configure custom assignment presets to map specific event names to multiple categories (e.g., "Coding" → Software, Business). The behavior is intentional and predictable - you see exactly what gets assigned before saving the event.
+
 ## 1.23.0
 
 ### New Features

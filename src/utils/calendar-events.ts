@@ -695,3 +695,68 @@ export const assignCategoriesToFrontmatter = (fm: Frontmatter, categoryProp: str
 		fm[categoryProp] = categories;
 	}
 };
+
+/**
+ * Normalizes an event name for comparison by removing ZettelID, instance dates, and converting to lowercase.
+ * Used for category auto-assignment matching.
+ *
+ * Strips:
+ * - Instance date with ZettelID: "Event 2025-01-15-20250103123456" → "Event"
+ * - ZettelID with hyphen format: "Event-20250103123456" → "Event"
+ * - ZettelID with space format: "Event 20250103123456" → "Event"
+ */
+export const normalizeEventNameForComparison = (eventName: string): string => {
+	return (
+		eventName
+			// Strip instance date format (YYYY-MM-DD-ZettelID) - must be done BEFORE removeZettelId
+			.replace(/\s+\d{4}-\d{2}-\d{2}-\d{14}$/, "")
+			.replace(/-\d{14}$/, "")
+			.replace(/\s+\d{14}$/, "")
+			.toLowerCase()
+			.trim()
+	);
+};
+
+/**
+ * Auto-assigns categories to an event based on its name.
+ * Applies both name-matching rules (when event name matches category name)
+ * and custom category assignment presets.
+ *
+ * Called once when the event creation modal opens, before any user interaction.
+ *
+ * @param eventName - The event name (may contain ZettelID)
+ * @param settings - Calendar settings with auto-assignment configuration
+ * @param availableCategories - List of all available categories
+ * @returns List of auto-assigned categories (deduplicated)
+ */
+export const autoAssignCategories = (
+	eventName: string,
+	settings: SingleCalendarConfig,
+	availableCategories: string[]
+): string[] => {
+	const normalizedEventName = normalizeEventNameForComparison(eventName);
+	const categoriesToAssign = new Set<string>();
+	const normalizeForComparison = (name: string): string => name.toLowerCase().trim();
+
+	// Rule 1: Auto-assign when event name matches category name (case-insensitive)
+	if (settings.autoAssignCategoryByName) {
+		for (const category of availableCategories) {
+			if (normalizedEventName === normalizeForComparison(category)) {
+				categoriesToAssign.add(category);
+			}
+		}
+	}
+
+	// Rule 2: Apply custom category assignment presets
+	if (settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0) {
+		for (const preset of settings.categoryAssignmentPresets) {
+			if (normalizedEventName === normalizeForComparison(preset.eventName)) {
+				for (const category of preset.categories) {
+					categoriesToAssign.add(category);
+				}
+			}
+		}
+	}
+
+	return Array.from(categoriesToAssign);
+};

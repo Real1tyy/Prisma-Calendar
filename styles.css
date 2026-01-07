@@ -1779,6 +1779,118 @@
 	margin-bottom: 16px;
 }
 
+/* Category Assignment Presets */
+.prisma-category-assignment-empty {
+	padding: 16px;
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
+	margin-bottom: 12px;
+}
+
+.prisma-category-assignment-preset {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 16px;
+	margin-bottom: 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	background-color: var(--background-secondary);
+}
+
+.prisma-category-assignment-name-input {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-medium);
+}
+
+.prisma-category-assignment-name-input:focus {
+	border-color: var(--interactive-accent);
+	outline: none;
+}
+
+.prisma-category-assignment-categories {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.prisma-category-assignment-label {
+	font-size: var(--font-ui-small);
+	font-weight: 500;
+	color: var(--text-muted);
+}
+
+.prisma-category-assignment-select-container {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.prisma-category-assignment-selected {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	min-height: 32px;
+	padding: 4px;
+}
+
+.prisma-category-assignment-empty-selection {
+	color: var(--text-muted);
+	font-style: italic;
+	font-size: var(--font-ui-small);
+}
+
+.prisma-category-assignment-tag {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 8px;
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-radius: 4px;
+	font-size: var(--font-ui-small);
+	font-weight: 500;
+}
+
+.prisma-category-assignment-tag-remove {
+	background: transparent;
+	border: none;
+	color: var(--text-on-accent);
+	cursor: pointer;
+	padding: 0;
+	margin: 0;
+	font-size: 18px;
+	line-height: 1;
+	font-weight: 700;
+	opacity: 0.8;
+	transition: opacity 0.2s ease;
+}
+
+.prisma-category-assignment-tag-remove:hover {
+	opacity: 1;
+}
+
+.prisma-category-assignment-add-dropdown {
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	cursor: pointer;
+}
+
+.prisma-category-assignment-add-dropdown:focus {
+	border-color: var(--interactive-accent);
+	outline: none;
+}
+
 .prisma-categories-chart-container {
 	position: relative;
 	height: 400px;

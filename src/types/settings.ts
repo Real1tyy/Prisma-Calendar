@@ -94,6 +94,14 @@ const FilterPresetSchema = z
 	})
 	.strip();
 
+const CategoryAssignmentPresetSchema = z
+	.object({
+		id: z.string(),
+		eventName: z.string(), // Event name to match (case-insensitive, without ZettelID)
+		categories: z.array(z.string()), // Categories to assign
+	})
+	.strip();
+
 const BatchActionButtonSchema = z.enum(BATCH_BUTTON_IDS as [string, ...string[]]);
 
 const CalendarSettingsSchema = z
@@ -141,6 +149,8 @@ const CalendarSettingsSchema = z
 		batchActionButtons: z.array(BatchActionButtonSchema).catch([...DEFAULT_BATCH_ACTION_BUTTONS]), // Which batch action buttons to show in batch selection mode toolbar
 		stickyDayHeaders: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_STICKY_DAY_HEADERS), // Make day headers sticky during vertical scroll (timegrid views)
 		stickyAllDayEvents: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_STICKY_ALL_DAY_EVENTS), // Make all-day event section sticky during vertical scroll (timegrid views)
+		autoAssignCategoryByName: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_CATEGORY_BY_NAME), // Automatically assign category when event name matches category name (case-insensitive)
+		categoryAssignmentPresets: z.array(CategoryAssignmentPresetSchema).catch([]), // Custom category assignment rules based on event name
 	})
 	.strip();
 
@@ -198,6 +208,7 @@ export const CustomCalendarSettingsSchema = z
 	.strip();
 
 export type FilterPreset = z.infer<typeof FilterPresetSchema>;
+export type CategoryAssignmentPreset = z.infer<typeof CategoryAssignmentPresetSchema>;
 export type EventPreset = z.infer<typeof EventPresetSchema>;
 export type SingleCalendarConfig = z.infer<typeof SingleCalendarConfigSchema>;
 export type CustomCalendarSettings = z.infer<typeof CustomCalendarSettingsSchema>;
