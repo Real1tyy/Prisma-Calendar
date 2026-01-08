@@ -213,6 +213,7 @@ describe("Indexer", () => {
 				startProp: "start",
 				endProp: "end",
 				rruleProp: "RRule",
+				rruleIdProp: "RRuleID",
 				statusProperty: "Status",
 				doneValue: "Done",
 			};
@@ -229,6 +230,7 @@ describe("Indexer", () => {
 					start: pastDate.toISOString(),
 					end: new Date(pastDate.getTime() + 3600000).toISOString(), // 1 hour later
 					RRule: "weekly", // This makes it a SOURCE recurring event
+					RRuleID: "1730000000000-abc12", // Existing ID prevents regeneration
 					Status: "active",
 				},
 			});
@@ -400,6 +402,7 @@ describe("Indexer", () => {
 					Date: dateString,
 					"All Day": true,
 					RRule: "daily", // SOURCE recurring event
+					RRuleID: "1730000000000-abc12",
 					Status: "active",
 				},
 			});

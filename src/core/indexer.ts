@@ -10,7 +10,7 @@ import { SCAN_CONCURRENCY } from "../constants";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import { generateUniqueRruleId, getRecurringInstanceExcludedProps } from "../utils/calendar-events";
-import { intoDate } from "../utils/format";
+import { intoDate, toSafeString } from "../utils/format";
 import { areSetsEqual } from "../utils/list-utils";
 import { getFrontmatterWithRetry } from "../utils/obsidian";
 
@@ -191,7 +191,7 @@ export class Indexer {
 			}
 
 			const allDayProp = frontmatter[this.settings.allDayProp];
-			const isAllDay = allDayProp === true || allDayProp === "true" || !!hasAllDayEvent;
+			const isAllDay = allDayProp === true || allDayProp === "true";
 
 			const source: RawEventSource = {
 				filePath: file.path,
@@ -215,15 +215,25 @@ export class Indexer {
 		const rrules = parseRRuleFromFrontmatter(frontmatter, this.settings);
 		if (!rrules) return null;
 
-		let rRuleId: string = frontmatter[this.settings.rruleIdProp] as string;
+		let rRuleId = toSafeString(frontmatter[this.settings.rruleIdProp]);
 		const frontmatterCopy = { ...frontmatter };
 
 		if (!rRuleId) {
-			rRuleId = generateUniqueRruleId();
-			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
-				fm[this.settings.rruleIdProp] = rRuleId;
-			});
+			// Wait to ensure that the rruleId is not already present, just that the metadata cache has not yet caught up.
+			await new Promise((resolve) => window.setTimeout(resolve, 100));
+			const cached = this.app.metadataCache.getFileCache(file);
+			const cachedId = toSafeString(cached?.frontmatter?.[this.settings.rruleIdProp]);
+
+			if (cachedId) {
+				rRuleId = cachedId;
+			} else {
+				rRuleId = generateUniqueRruleId();
+				await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+					fm[this.settings.rruleIdProp] = rRuleId;
+				});
+			}
 		}
+
 		frontmatterCopy[this.settings.rruleIdProp] = rRuleId;
 
 		// Defer content reading - we'll read it lazily when needed
@@ -253,21 +263,17 @@ export class Indexer {
 		const now = new Date();
 		let isPastEvent = false;
 
-		// Check if event is in the past
 		const allDayValue = frontmatter[this.settings.allDayProp];
 		const isAllDay = allDayValue === true || allDayValue === "true";
 
 		if (isAllDay) {
-			// For all-day events, check the date property
 			const rawDate = frontmatter[this.settings.dateProp];
 			const date = intoDate(rawDate);
 			if (date) {
-				// Set to end of day for comparison
 				date.setHours(23, 59, 59, 999);
 				isPastEvent = date < now;
 			}
 		} else {
-			// For timed events, check the end date
 			const endValue = frontmatter[this.settings.endProp];
 			const endDate = intoDate(endValue);
 			if (endDate) {
@@ -275,12 +281,10 @@ export class Indexer {
 			}
 		}
 
-		// If event is in the past, mark it as done
 		if (isPastEvent) {
 			const currentStatus = frontmatter[this.settings.statusProperty];
 			const doneValue = this.settings.doneValue;
 
-			// Only update if status is not already the done value
 			if (currentStatus !== doneValue) {
 				try {
 					await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
