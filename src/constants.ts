@@ -7,6 +7,11 @@ export const SCAN_CONCURRENCY = 10;
 export const COMMAND_IDS = {
 	CREATE_EVENT: "create-event",
 	CREATE_EVENT_WITH_STOPWATCH: "create-event-with-stopwatch",
+	EDIT_LAST_FOCUSED_EVENT: "edit-last-focused-event",
+	SET_FOCUSED_EVENT_START_TO_NOW: "set-last-focused-event-start-to-now",
+	SET_FOCUSED_EVENT_END_TO_NOW: "set-last-focused-event-end-to-now",
+	FILL_FOCUSED_EVENT_START_FROM_PREVIOUS: "fill-last-focused-event-start-from-previous",
+	FILL_FOCUSED_EVENT_END_FROM_NEXT: "fill-last-focused-event-end-from-next",
 	SHOW_SKIPPED_EVENTS: "show-skipped-events",
 	SHOW_RECURRING_EVENTS: "show-recurring-events",
 	SHOW_FILTERED_EVENTS: "show-filtered-events",

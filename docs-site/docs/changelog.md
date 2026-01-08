@@ -8,6 +8,17 @@ All notable changes to this project will be documented here.
 
 - **Drag-to-Create Events**: You can now drag on the timeline to create events by defining the start and end time in one gesture. Click and drag on any empty time slot in week or day views, and the event creation modal opens with the selected time range pre-filled. Single clicks use your configured default duration, while dragging uses the exact range you selected. This matches the behavior of Google Calendar and Notion Calendar, making time-blocking workflows faster and more intuitive.
 
+- **Fast Event Editing Commands**: Added five keyboard-friendly commands for rapid event time management. Hover over any event to focus it, then trigger commands via hotkeys:
+  - **Edit last focused event**: Opens the edit modal for the last hovered event (for virtual events, opens the source event)
+  - **Set start time to now**: Updates the focused event's start time to the current moment
+  - **Set end time to now**: Updates the focused event's end time to the current moment
+  - **Fill start time from previous event**: Sets start time to match the end time of the previous event (perfect for chaining tasks)
+  - **Fill end time from next event**: Sets end time to match the start time of the next event
+
+  These commands are ideal for logging actual execution times after completing tasks, eliminating the need to right-click and navigate menus. Assign hotkeys in Settings → Hotkeys.
+
+  Additionally, the right-click context menu now includes "Fill start/end time from current time" options for quick time logging without leaving the calendar view.
+
 ### Bug Fixes
 
 - **Fixed Default Duration for Timeline Click-to-Create**: Fixed an issue where clicking on the timeline to create events always used a fixed 60-minute duration instead of respecting the configured default duration setting. Timeline-created events now correctly use your configured default duration (found in Settings → Event Defaults), matching the behavior of the "Create Event" button for consistent event creation across all methods.

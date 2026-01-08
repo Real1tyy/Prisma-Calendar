@@ -135,6 +135,35 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Function**: Opens the create event modal for the active calendar
 -   **Use Case**: Quickly create events without clicking the calendar
 
+### Edit Last Focused Event
+
+-   **Function**: Opens the edit modal for the last event you hovered over
+-   **Use Case**: Rapid editing workflow - hover an event, press hotkey to edit
+
+### Set Start Time to Now (Focused Event)
+
+-   **Function**: Updates the start time of the last hovered event to the current moment
+-   **Use Case**: Log actual start times after beginning a task
+-   **Workflow**: Hover event → Press hotkey → Start time updated instantly
+
+### Set End Time to Now (Focused Event)
+
+-   **Function**: Updates the end time of the last hovered event to the current moment
+-   **Use Case**: Log actual end times immediately after completing a task
+-   **Workflow**: Hover event → Press hotkey → End time updated instantly
+
+### Fill Start Time from Previous Event (Focused Event)
+
+-   **Function**: Sets the start time to match the end time of the previous event
+-   **Use Case**: Chain tasks together seamlessly with no gaps
+-   **Workflow**: Hover event → Press hotkey → Start time fills from previous event's end
+
+### Fill End Time from Next Event (Focused Event)
+
+-   **Function**: Sets the end time to match the start time of the next event
+-   **Use Case**: Fill gaps between events or adjust boundaries
+-   **Workflow**: Hover event → Press hotkey → End time fills from next event's start
+
 ### Show Recurring Events
 
 -   **Function**: Opens a modal listing all recurring event sources
@@ -249,36 +278,6 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Function**: Restores a previously minimized event creation/edit modal
 -   **Use Case**: Resume event creation after minimizing the modal
 -   **See Also**: [Time Tracker documentation](./time-tracker.md) for minimize functionality
-
-## Recommended Keybindings
-
-Here are suggested keybindings organized by workflow:
-
-### Essential Bindings
-| Command | Suggested Binding | Why |
-|---------|------------------|-----|
-| Open current note in calendar | `Ctrl/Cmd+Shift+C` | Quick calendar navigation from any note |
-| Create new event | `Ctrl/Cmd+N` | Quick event creation |
-| Focus search | `Ctrl/Cmd+F` | Standard search shortcut |
-| Toggle batch selection | `Ctrl/Cmd+B` | Quick access to batch operations |
-| Undo | `Ctrl/Cmd+Z` | Standard undo binding |
-| Redo | `Ctrl/Cmd+Y` | Standard redo binding |
-
-### Search & Filtering
-| Command | Suggested Binding | Why |
-|---------|------------------|-----|
-| Global event search | `Ctrl/Cmd+Shift+G` | Search across all events |
-| Focus expression filter | `Ctrl/Cmd+Shift+F` | Advanced property-based filtering |
-| Open filter preset selector | `Ctrl/Cmd+Shift+P` | Quick preset access |
-| Show filtered events | `Ctrl/Cmd+Shift+H` | View events hidden by active filters |
-
-### Batch Operations
-| Command | Suggested Binding | Why |
-|---------|------------------|-----|
-| Batch: Delete Selection | `Ctrl/Cmd+Shift+Delete` | Clear batch delete |
-| Batch: Duplicate Selection | `Ctrl/Cmd+D` | Quick duplication |
-| Batch: Move By | `Ctrl/Cmd+M` | Precise date adjustments |
-| Batch: Assign categories to selection | `Ctrl/Cmd+Shift+T` | Quick category assignment (T for Tag/Category) |
 
 ## Tips
 

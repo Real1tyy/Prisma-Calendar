@@ -17,7 +17,7 @@ import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import type { ParsedEvent } from "../core/parser";
 import type { Frontmatter } from "../types";
 import { findAdjacentEvent, isEventDone } from "../utils/calendar-events";
-import { intoDate } from "../utils/format";
+import { intoDate, toLocalISOString } from "../utils/format";
 import { parseIntoList } from "../utils/list-utils";
 import { emitHover } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
@@ -249,7 +249,7 @@ export class EventContextMenu {
 					.setTitle("Edit event")
 					.setIcon("edit")
 					.onClick(() => {
-						this.openEventEditModal(event);
+						this.openEditModal(event);
 					});
 			});
 
@@ -335,6 +335,22 @@ export class EventContextMenu {
 
 			// Fill time options - only for timed events
 			if (!event.allDay) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Fill start time from current time")
+						.setIcon("clock")
+						.onClick(() => {
+							void this.fillStartTimeFromNow(event);
+						});
+				});
+				menu.addItem((item) => {
+					item
+						.setTitle("Fill end time from current time")
+						.setIcon("clock")
+						.onClick(() => {
+							void this.fillEndTimeFromNow(event);
+						});
+				});
 				menu.addItem((item) => {
 					item
 						.setTitle("Fill start time from previous event")
@@ -628,7 +644,7 @@ export class EventContextMenu {
 		emitHover(this.app, containerEl, targetEl, syntheticEvent, filePath, this.bundle.calendarId);
 	}
 
-	private openEventEditModal(event: CalendarEventInfo): void {
+	openEditModal(event: CalendarEventInfo): void {
 		new EventEditModal(this.app, this.bundle, event).open();
 	}
 
@@ -743,6 +759,28 @@ export class EventContextMenu {
 			getTimeValue: (adj) => adj.end,
 			successMessage: "Start time filled from previous event",
 			errorMessage: "Failed to fill start time",
+		});
+	}
+
+	async fillStartTimeFromNow(event: CalendarEventInfo): Promise<void> {
+		const settings = this.bundle.settingsStore.currentSettings;
+		await this.withFilePath(event, "fill start time", async (filePath) => {
+			const now = toLocalISOString(new Date());
+			await this.runCommand(() => new FillTimeCommand(this.app, this.bundle, filePath, settings.startProp, now), {
+				success: "Start time filled from current time",
+				error: "Failed to fill start time",
+			});
+		});
+	}
+
+	async fillEndTimeFromNow(event: CalendarEventInfo): Promise<void> {
+		const settings = this.bundle.settingsStore.currentSettings;
+		await this.withFilePath(event, "fill end time", async (filePath) => {
+			const now = toLocalISOString(new Date());
+			await this.runCommand(() => new FillTimeCommand(this.app, this.bundle, filePath, settings.endProp, now), {
+				success: "End time filled from current time",
+				error: "Failed to fill end time",
+			});
 		});
 	}
 

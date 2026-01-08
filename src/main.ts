@@ -137,6 +137,33 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.CREATE_EVENT_WITH_STOPWATCH, "Create new event with stopwatch", (view) => {
 			view.openCreateEventModal(true);
 		});
+		addCalendarViewCommand(COMMAND_IDS.EDIT_LAST_FOCUSED_EVENT, "Edit last focused event", (view) => {
+			view.openEditModalForFocusedEvent();
+		});
+		addCalendarViewCommand(
+			COMMAND_IDS.SET_FOCUSED_EVENT_START_TO_NOW,
+			"Set start time to now (focused event)",
+			(view) => {
+				view.setFocusedEventStartToNow();
+			}
+		);
+		addCalendarViewCommand(COMMAND_IDS.SET_FOCUSED_EVENT_END_TO_NOW, "Set end time to now (focused event)", (view) => {
+			view.setFocusedEventEndToNow();
+		});
+		addCalendarViewCommand(
+			COMMAND_IDS.FILL_FOCUSED_EVENT_START_FROM_PREVIOUS,
+			"Fill start time from previous event (focused event)",
+			(view) => {
+				view.fillFocusedEventStartFromPrevious();
+			}
+		);
+		addCalendarViewCommand(
+			COMMAND_IDS.FILL_FOCUSED_EVENT_END_FROM_NEXT,
+			"Fill end time from next event (focused event)",
+			(view) => {
+				view.fillFocusedEventEndFromNext();
+			}
+		);
 		addCalendarViewCommand(COMMAND_IDS.TOGGLE_BATCH_SELECTION, "Toggle batch selection", (view) => {
 			view.toggleBatchSelection();
 		});

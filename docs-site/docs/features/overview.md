@@ -60,6 +60,13 @@ Hover previews and enlarged modals with clickable frontmatter, wikilink navigati
 
 Quick create button, enhanced edit modal with full frontmatter editing, "Now" button for current time, [built-in time tracker](./time-tracker) with break time support, session tracking, and real-time timers (total, total break, session, current break), drag & drop, resize support, edge scrolling for cross-week movement, and direct file opening.
 
+**Fast Editing Commands**: Hover any event to focus it, then use hotkeys for rapid time updates:
+- Edit last focused event (opens edit modal)
+- Set start/end time to now (instant time logging)
+- Fill start from previous event / Fill end from next event (chain tasks seamlessly)
+
+See [Hotkeys](./hotkeys) for recommended keybindings.
+
 **Category Management**: Assign categories directly from the event modal or context menu using the "Assign Categories" button. Multi-select interface with search, color indicators, and the ability to create new categories on the fly. See [Color Rules](./color-rules#working-with-categories) for details.
 
 See [Screenshots](../screenshots.md) for modal examples.
@@ -90,7 +97,11 @@ All settings changes apply instantly without restart. Live recalculation of colo
 Every action is undoable with semantic labels ("Undo Create Event", "Undo Batch Delete"). Full history across all calendar operations.
 
 ### **Fill Time from Adjacent Events**
-Right-click timed events or use modal buttons to fill start/end times from neighboring events. Schedule back-to-back meetings and eliminate calendar gaps. Supports undo/redo.
+Right-click timed events to fill start/end times from neighboring events or current time. Options include:
+- Fill start/end time from previous/next event (eliminate calendar gaps)
+- Fill start/end time from current time (instant time logging)
+
+All operations support undo/redo.
 
 
 ### **[ICS Integrations](./integrations)**

@@ -16,7 +16,7 @@ import {
 } from "@real1ty-obsidian-plugins/utils";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
-import { UpdateEventCommand } from "../core/commands";
+import { FillTimeCommand, UpdateEventCommand } from "../core/commands";
 import type { ParsedEvent } from "../core/parser";
 import type {
 	CalendarEventData,
@@ -26,7 +26,14 @@ import type {
 	PrismaEventInput,
 } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
-import { getCommonCategories, removeInstanceDate, removeZettelId, stripISOSuffix } from "../utils/calendar-events";
+import {
+	findAdjacentEvent,
+	getCommonCategories,
+	getSourceEventInfoFromVirtual,
+	removeInstanceDate,
+	removeZettelId,
+	stripISOSuffix,
+} from "../utils/calendar-events";
 import { toggleEventHighlight } from "../utils/dom-utils";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
 import { roundToNearestHour, toLocalISOString } from "../utils/format";
@@ -98,6 +105,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private refreshRafId: number | null = null;
 	private lastMobileTapTime = 0;
 	private previousViewState: { date: Date; viewType: string } | null = null;
+	private lastFocusedEventInfo: CalendarEventData | null = null;
 	private mouseDownTime = 0;
 	private isHandlingSelection = false;
 
@@ -1099,6 +1107,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 
 			eventMouseEnter: (info) => {
+				this.lastFocusedEventInfo = info.event;
+
 				// Always add context menu for all events (including virtual)
 				info.el.addEventListener("contextmenu", (e) => {
 					e.preventDefault();
@@ -1823,6 +1833,96 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		modal.open();
+	}
+
+	openEditModalForFocusedEvent(): void {
+		if (!this.lastFocusedEventInfo) {
+			return;
+		}
+
+		const event = this.lastFocusedEventInfo;
+
+		const eventInfo = event.extendedProps?.isVirtual
+			? getSourceEventInfoFromVirtual(event, this.bundle.eventStore)
+			: {
+					title: event.title,
+					start: event.start,
+					end: event.end,
+					allDay: event.allDay,
+					extendedProps: event.extendedProps,
+				};
+
+		if (!eventInfo) {
+			return;
+		}
+
+		this.eventContextMenu.openEditModal(eventInfo);
+	}
+
+	private fillFocusedEventTime(
+		propertyGetter: (settings: SingleCalendarConfig) => string,
+		timeValueGetter: (event: CalendarEventData, filePath: string) => string | undefined
+	): void {
+		if (!this.lastFocusedEventInfo) {
+			return;
+		}
+
+		const event = this.lastFocusedEventInfo;
+
+		if (event.extendedProps?.isVirtual) {
+			return;
+		}
+
+		const filePath = event.extendedProps?.filePath;
+		if (!filePath || typeof filePath !== "string") {
+			return;
+		}
+
+		const timeValue = timeValueGetter(event, filePath);
+		if (!timeValue) {
+			return;
+		}
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const propertyName = propertyGetter(settings);
+
+		void this.bundle.commandManager.executeCommand(
+			new FillTimeCommand(this.app, this.bundle, filePath, propertyName, timeValue)
+		);
+	}
+
+	setFocusedEventStartToNow(): void {
+		this.fillFocusedEventTime(
+			(settings) => settings.startProp,
+			() => toLocalISOString(new Date())
+		);
+	}
+
+	setFocusedEventEndToNow(): void {
+		this.fillFocusedEventTime(
+			(settings) => settings.endProp,
+			() => toLocalISOString(new Date())
+		);
+	}
+
+	fillFocusedEventStartFromPrevious(): void {
+		this.fillFocusedEventTime(
+			(settings) => settings.startProp,
+			(event, filePath) => {
+				const previousEvent = findAdjacentEvent(this.bundle.eventStore, event.start, filePath, "previous");
+				return previousEvent?.end;
+			}
+		);
+	}
+
+	fillFocusedEventEndFromNext(): void {
+		this.fillFocusedEventTime(
+			(settings) => settings.endProp,
+			(event, filePath) => {
+				const nextEvent = findAdjacentEvent(this.bundle.eventStore, event.start, filePath, "next");
+				return nextEvent?.start;
+			}
+		);
 	}
 
 	async openCategoryAssignModal(): Promise<void> {

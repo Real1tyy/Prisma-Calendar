@@ -16,6 +16,45 @@ export const isAllDayEvent = (allDayValue: unknown): boolean => {
 };
 
 /**
+ * Extracts source event information from a virtual event.
+ * Returns null if the event is not virtual, has no source file path, or the source event is not found.
+ */
+export function getSourceEventInfoFromVirtual(
+	event: { extendedProps?: { isVirtual?: boolean; filePath?: string } },
+	eventStore: EventStore
+): {
+	title: string;
+	start: string;
+	end?: string;
+	allDay: boolean;
+	extendedProps: {
+		filePath: string;
+		frontmatterDisplayData?: Record<string, unknown>;
+	};
+} | null {
+	const sourceFilePath = event.extendedProps?.filePath;
+	if (!sourceFilePath || typeof sourceFilePath !== "string") {
+		return null;
+	}
+
+	const sourceEvent = eventStore.getEventByPath(sourceFilePath);
+	if (!sourceEvent) {
+		return null;
+	}
+
+	return {
+		title: sourceEvent.title,
+		start: sourceEvent.start,
+		end: sourceEvent.end,
+		allDay: sourceEvent.allDay,
+		extendedProps: {
+			filePath: sourceEvent.ref.filePath,
+			frontmatterDisplayData: sourceEvent.meta,
+		},
+	};
+}
+
+/**
  * Strips the milliseconds and Z suffix from an ISO datetime string.
  * Converts "2024-01-15T09:00:00.000Z" to "2024-01-15T09:00:00"
  * This creates cleaner, more sortable datetime values for external tools.

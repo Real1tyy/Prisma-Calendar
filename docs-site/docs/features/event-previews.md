@@ -36,6 +36,17 @@ Right-click on any event to access file operations:
 - **Open file**: Opens the event file in the current workspace tab
 - **Open file in new window**: Opens the event file in a detached popout window, making it easier to edit complex properties like checkboxes and list properties directly in the markdown editor while keeping the calendar view visible
 
+## Quick Time Logging
+
+Right-click on timed events to quickly update start/end times:
+
+- **Fill start time from current time**: Sets start time to now (instant logging of actual start)
+- **Fill end time from current time**: Sets end time to now (instant logging of actual completion)
+- **Fill start time from previous event**: Chains events by matching previous event's end time
+- **Fill end time from next event**: Adjusts boundaries by matching next event's start time
+
+Perfect for logging real execution times without opening the edit modal. All operations are fully undoable.
+
 ## Clickable Frontmatter
 
 All frontmatter properties in enlarged preview are interactive:
