@@ -136,3 +136,9 @@ This ensures the template is applied atomically when Prisma creates the event fi
 **Solution**: Create a "watcher" script that normalizes dates into a dedicated sort property.
 
 **Result**: Consistent `sort_date` property across all events for reliable chronological sorting in Bases, Dataview, or other tools.
+
+## Events appearing as all-day when they should be timed (or vice versa)
+
+**Problem**: You duplicate a timed event, but the duplicate appears as an all-day event. Or you have events that show start/end times in frontmatter but display as all-day on the calendar.
+
+**Root Cause**: The `All Day` property is the **source of truth** for determining event type. Prisma ignores `Start`/`End` properties when `All Day: true` is set, and ignores the `Date` property when `All Day: false` (or unset).

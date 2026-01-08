@@ -121,13 +121,15 @@ Prisma Calendar automatically ensures that both date and time properties are alw
 **For all-day events:**
 - The `Date` property contains the date (e.g., `2025-02-15`)
 - The `Start` and `End` properties are empty strings
+- The `All Day` property is `true`
 
 **For timed events:**
 - The `Start` and `End` properties contain the full datetime (e.g., `2025-02-15T09:00:00`)
-- The `Date` property is an empty string
+- The `Date` property is an empty string by default
+- The `All Day` property is `false` (or unset)
 
 **Benefits:**
-- **Easy conversion**: Change an all-day event to timed by adding values to `Start`/`End` and clearing `Date`
+- **Easy conversion**: Change an all-day event to timed by adding values to `Start`/`End` and setting `All Day: false`
 - **Consistent structure**: All events have the same property structure, making templates and scripts easier to write
 - **No missing properties**: You can always reference `Date`, `Start`, or `End` without checking if they exist
 
@@ -138,7 +140,7 @@ Title: Holiday
 Date: 2025-12-25
 Start:
 End:
-AllDay: true
+All Day: true
 ---
 ```
 
@@ -149,7 +151,29 @@ Title: Meeting
 Date:
 Start: 2025-02-15T09:00:00
 End: 2025-02-15T10:30:00
-AllDay: false
+All Day: false
+---
+```
+
+### Date Normalization for External Sorting
+
+**⚠️ Important**: The `All Day` property is the **source of truth** for event type. Prisma uses this property to determine how to parse the event:
+- `All Day: true` → Uses `Date` property, ignores `Start`/`End`
+- `All Day: false` (or unset) → Uses `Start`/`End` properties
+
+**Date Normalization Feature:**
+
+When "Normalize date property for sorting" is enabled in Properties Settings, timed events will have **both**:
+- `Start`/`End` properties with datetime
+- `Date` property with datetime (copied from start or end)
+
+This allows external tools (like Bases, Dataview, or Obsidian's native search) to sort chronologically using a single `Date` field instead of handling separate `Start`/`End` properties.
+
+**Options:**
+- **None** (default): `Date` property is empty for timed events
+- **Copy start datetime**: `Date` gets the value from `Start` (without `.000Z` suffix)
+- **Copy end datetime**: `Date` gets the value from `End` (without `.000Z` suffix)
+
 ---
 ```
 
