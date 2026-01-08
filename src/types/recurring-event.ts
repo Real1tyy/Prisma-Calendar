@@ -34,9 +34,9 @@ const RecurrenceTypeSchema = z.enum(Object.keys(RECURRENCE_TYPE_OPTIONS) as [Rec
 const WeekdaySchema = z.enum(Object.keys(WEEKDAY_TO_NUMBER) as [Weekday, ...Weekday[]]);
 
 const weekdaysTransform = z
-	.union([z.string(), z.null()])
+	.union([z.string(), z.null(), z.undefined()])
 	.transform((value) => {
-		if (value === null) return [];
+		if (value == null) return [];
 		return value
 			.split(",")
 			.map((day) => day.trim().toLowerCase())

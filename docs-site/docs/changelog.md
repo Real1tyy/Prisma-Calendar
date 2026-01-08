@@ -6,6 +6,8 @@ All notable changes to this project will be documented here.
 
 ### Bug Fixes
 
+- **Fixed Recurring Events Not Being Detected After Editing**: Fixed an issue where recurring events (especially non-weekly events like daily, monthly, or yearly) sometimes weren't being picked up by after editing. The system now properly detects and processes recurring events immediately after changes, ensuring all recurrence patterns are correctly identified and physical instances are generated as expected.
+
 - **Fixed Newly Created Future Events Notifications**: Fixed an issue where newly created events with future start/end times were being marked as already notified. The system now checks the event start date when creating or editing events. If the start date is in the past or within 1 minute of now, the event is automatically marked as already notified at submission time, preventing notification spam for actual or past events.
 
 ## 1.24.0
