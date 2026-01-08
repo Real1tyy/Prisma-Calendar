@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented here.
 
+## 1.25.0
+
+### Bug Fixes
+
+- **Fixed Newly Created Future Events Notifications**: Fixed an issue where newly created events with future start/end times were not being marked as already notified. Now all newly created events (both past and future) are properly marked to prevent notification spam.
+
 ## 1.24.0
 
 ### New Features

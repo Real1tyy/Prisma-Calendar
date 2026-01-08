@@ -115,18 +115,6 @@ export class NotificationManager {
 			return;
 		}
 
-		if (this.settings.skipNewlyCreatedNotifications) {
-			const file = this.app.vault.getAbstractFileByPath(filePath);
-			if (file instanceof TFile) {
-				const zettelId = extractZettelId(file.basename);
-				if (isEventNewlyCreated(zettelId)) {
-					void this.markAsNotified(filePath);
-					this.removeNotification(filePath);
-					return;
-				}
-			}
-		}
-
 		// Get start date based on event type
 		// Parse as local time, ignoring timezone information
 		const startPropValue = frontmatter[this.settings.startProp];
@@ -144,6 +132,18 @@ export class NotificationManager {
 		const endDate = endPropValue != null ? parseAsLocalDate(toSafeString(endPropValue) ?? "") : null;
 		const eventEndTime = endDate || startDate; // Use end date if available, otherwise start date
 		const now = new Date();
+
+		if (this.settings.skipNewlyCreatedNotifications) {
+			const file = this.app.vault.getAbstractFileByPath(filePath);
+			if (file instanceof TFile) {
+				const zettelId = extractZettelId(file.basename);
+				if (isEventNewlyCreated(zettelId)) {
+					void this.markAsNotified(filePath);
+					this.removeNotification(filePath);
+					return;
+				}
+			}
+		}
 
 		if (eventEndTime <= now) {
 			return;
