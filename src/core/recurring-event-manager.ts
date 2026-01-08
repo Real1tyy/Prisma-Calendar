@@ -1,6 +1,6 @@
 import {
+	createFileAtPath,
 	createFileLink,
-	createFileManually,
 	DebouncedNotifier,
 	extractContentAfterFrontmatter,
 	type FrontmatterDiff,
@@ -542,10 +542,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			}
 
 			const uniquePath = getUniqueFilePathFromFull(this.app, filePath);
-			const directory = this.settings.directory || "";
-			const finalFilename = uniquePath.replace(`${directory}/`, "").replace(/\.md$/, "");
-
-			const file = await createFileManually(this.app, directory, finalFilename, content, instanceFrontmatter);
+			const file = await createFileAtPath(this.app, uniquePath, content, instanceFrontmatter);
 
 			// Don't notify here - let the batch operation handle notification
 			// Individual file creations will be picked up by the indexer

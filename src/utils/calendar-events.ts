@@ -718,6 +718,18 @@ export const normalizeEventNameForComparison = (eventName: string): string => {
 };
 
 /**
+ * Removes properties from frontmatter that should not be cloned/duplicated.
+ * These include recurring event metadata and notification status that are specific
+ * to the original event and should not carry over to clones.
+ */
+export const removeNonCloneableProperties = (frontmatter: Frontmatter, settings: SingleCalendarConfig): void => {
+	delete frontmatter[settings.rruleIdProp];
+	delete frontmatter[settings.instanceDateProp];
+	delete frontmatter[settings.sourceProp];
+	delete frontmatter[settings.alreadyNotifiedProp];
+};
+
+/**
  * Auto-assigns categories to an event based on its name.
  * Applies both name-matching rules (when event name matches category name)
  * and custom category assignment presets.

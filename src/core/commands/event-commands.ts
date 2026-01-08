@@ -1,7 +1,7 @@
 import {
 	backupFrontmatter,
 	compareFrontmatter,
-	createFileManually,
+	createFileAtPath,
 	extractContentAfterFrontmatter,
 	getTFileOrThrow,
 	getUniqueFilePathFromFull,
@@ -20,6 +20,7 @@ import {
 	generateUniqueEventPath,
 	isPhysicalRecurringEvent,
 	rebuildPhysicalInstanceWithNewDate,
+	removeNonCloneableProperties,
 	removeZettelId,
 	setEventBasics,
 	shouldUpdateInstanceDateOnMove,
@@ -249,17 +250,9 @@ export class CloneEventCommand implements Command {
 			existingFrontmatter[settings.zettelIdProp] = zettelId;
 		}
 
-		delete existingFrontmatter[settings.rruleIdProp];
-		delete existingFrontmatter[settings.instanceDateProp];
-		delete existingFrontmatter[settings.sourceProp];
-
-		// Remove notification status so duplicated events can trigger notifications
-		delete existingFrontmatter[settings.alreadyNotifiedProp];
-
-		// Ensure path is unique before creating
+		removeNonCloneableProperties(existingFrontmatter, settings);
 		const uniquePath = getUniqueFilePathFromFull(this.app, fullPath);
-		const finalFilename = uniquePath.replace(`${directory}/`, "").replace(/\.md$/, "");
-		const file = await createFileManually(this.app, directory, finalFilename, body, existingFrontmatter);
+		const file = await createFileAtPath(this.app, uniquePath, body, existingFrontmatter);
 		this.clonedFilePath = file.path;
 	}
 
@@ -314,23 +307,19 @@ export class DuplicateRecurringEventCommand implements Command {
 		const existingFrontmatter: Frontmatter = cache?.frontmatter ? { ...cache.frontmatter } : {};
 		const body = extractContentAfterFrontmatter(content);
 
-		// Mark as ignored so it doesn't count towards future instance generation
-		existingFrontmatter[settings.ignoreRecurringProp] = true;
-
 		// Update zettelId to the new unique value
 		if (settings.zettelIdProp) {
 			existingFrontmatter[settings.zettelIdProp] = zettelId;
 		}
 
+		// Mark as ignored so it doesn't count towards future instance generation
+		existingFrontmatter[settings.ignoreRecurringProp] = true;
+
 		// Remove notification status so duplicated events can trigger notifications
 		delete existingFrontmatter[settings.alreadyNotifiedProp];
 
-		// Ensure path is unique before creating
 		const uniquePath = getUniqueFilePathFromFull(this.app, fullPath);
-		const finalFilename = uniquePath.replace(`${directory}/`, "").replace(/\.md$/, "");
-
-		// Create file with frontmatter atomically using utils createFileManually
-		const file = await createFileManually(this.app, directory, finalFilename, body, existingFrontmatter);
+		const file = await createFileAtPath(this.app, uniquePath, body, existingFrontmatter);
 		this.createdFilePath = file.path;
 	}
 
