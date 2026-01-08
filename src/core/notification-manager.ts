@@ -1,6 +1,7 @@
 import { type App, TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { NotificationModal } from "../components/notification-modal";
+import { MAX_PAST_NOTIFICATION_THRESHOLD } from "../constants";
 import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 import { toSafeString } from "../utils/format";
@@ -161,7 +162,19 @@ export class NotificationManager {
 			frontmatter,
 		};
 
-		if (notifyAt <= new Date()) {
+		// Check if notification is due
+		const now = new Date();
+		if (notifyAt <= now) {
+			// Don't notify for events that are too far in the past
+			const timeSinceEvent = now.getTime() - startDate.getTime();
+			const maxPastThreshold = isAllDay
+				? MAX_PAST_NOTIFICATION_THRESHOLD.ALL_DAY_EVENTS_MS
+				: MAX_PAST_NOTIFICATION_THRESHOLD.TIMED_EVENTS_MS;
+
+			if (timeSinceEvent > maxPastThreshold) {
+				return;
+			}
+
 			void this.triggerNotification(entry);
 		} else {
 			this.addOrUpdateNotification(entry);

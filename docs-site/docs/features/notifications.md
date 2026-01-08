@@ -35,6 +35,15 @@ System notification appears with event title and time. Modal opens showing timin
 
 *Rich notification modal with event details, snooze functionality, and quick actions*
 
+### Smart Past Event Filtering
+
+Notifications are only shown for recently past events to prevent spam when opening Obsidian after being away:
+
+- **Timed events**: Only notified if started within the last **5 hours**
+- **All-day events**: Only notified if within the last **1 day**
+
+Events older than these thresholds are automatically ignored without showing a modal. This ensures you only see relevant, recent notifications rather than being overwhelmed with alerts for events from days ago.
+
 ---
 
 ## Snooze Functionality

@@ -173,3 +173,15 @@ export const BATCH_BUTTON_LABELS = Object.fromEntries(
 export const DEFAULT_BATCH_ACTION_BUTTONS = BATCH_BUTTON_IDS.filter(
 	(id) => !["batchMoveBy", "batchOpenAll", "batchMovePrev", "batchClonePrev", "batchFrontmatter"].includes(id)
 );
+
+/**
+ * Maximum time after an event starts before notifications are suppressed.
+ * Prevents notification spam when opening Obsidian after being away.
+ *
+ * - Timed events: 5 hours (covers a typical work session)
+ * - All-day events: 1 day (gives grace period for same-day events)
+ */
+export const MAX_PAST_NOTIFICATION_THRESHOLD = {
+	TIMED_EVENTS_MS: 5 * 60 * 60 * 1000, // 5 hours in milliseconds
+	ALL_DAY_EVENTS_MS: 24 * 60 * 60 * 1000, // 1 day in milliseconds
+} as const;
