@@ -6,7 +6,7 @@ All notable changes to this project will be documented here.
 
 ### Bug Fixes
 
-- **Fixed Newly Created Future Events Notifications**: Fixed an issue where newly created events with future start/end times were not being marked as already notified. Now all newly created events (both past and future) are properly marked to prevent notification spam.
+- **Fixed Newly Created Future Events Notifications**: Fixed an issue where newly created events with future start/end times were not being marked as already notified. The system now checks the event start date (instead of file creation time) to determine if an event should be marked as already notified, ensuring events starting within the last minute are properly marked to prevent notification spam as well as past events.
 
 ## 1.24.0
 

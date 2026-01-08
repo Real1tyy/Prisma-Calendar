@@ -3,7 +3,6 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import { NotificationModal } from "../components/notification-modal";
 import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
-import { extractZettelId, isEventNewlyCreated } from "../utils/calendar-events";
 import { toSafeString } from "../utils/format";
 import { parseAsLocalDate } from "../utils/time-formatter";
 import type { Indexer, IndexerEvent } from "./indexer";
@@ -134,14 +133,11 @@ export class NotificationManager {
 		const now = new Date();
 
 		if (this.settings.skipNewlyCreatedNotifications) {
-			const file = this.app.vault.getAbstractFileByPath(filePath);
-			if (file instanceof TFile) {
-				const zettelId = extractZettelId(file.basename);
-				if (isEventNewlyCreated(zettelId)) {
-					void this.markAsNotified(filePath);
-					this.removeNotification(filePath);
-					return;
-				}
+			const oneMinuteFromNow = new Date(now.getTime() + 60000);
+			if (startDate < oneMinuteFromNow) {
+				void this.markAsNotified(filePath);
+				this.removeNotification(filePath);
+				return;
 			}
 		}
 
