@@ -1,5 +1,6 @@
 export * from "../core/integrations/caldav";
 export * from "../utils/validation";
+export * from "./calendar";
 export * from "./event";
 export * from "./recurring-event";
 export * from "./settings";

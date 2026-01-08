@@ -1,4 +1,4 @@
-import { Calendar, type CustomButtonInput, type EventContentArg, type EventInput } from "@fullcalendar/core";
+import { Calendar, type CustomButtonInput, type EventContentArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
@@ -18,7 +18,14 @@ import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { UpdateEventCommand } from "../core/commands";
 import type { ParsedEvent } from "../core/parser";
-import type { Frontmatter, SingleCalendarConfig } from "../types/index";
+import type {
+	CalendarEventData,
+	EventMountInfo,
+	EventUpdateInfo,
+	ExtendedButtonInput,
+	PrismaEventInput,
+} from "../types/calendar";
+import type { SingleCalendarConfig } from "../types/index";
 import { getCommonCategories, removeInstanceDate, removeZettelId, stripISOSuffix } from "../utils/calendar-events";
 import { toggleEventHighlight } from "../utils/dom-utils";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
@@ -46,50 +53,6 @@ import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal
 import { ZoomManager } from "./zoom-manager";
 
 const CALENDAR_VIEW_TYPE = "custom-calendar-view";
-
-interface PrismaExtendedProps {
-	filePath: string;
-	folder: string;
-	originalTitle: string;
-	frontmatterDisplayData: Frontmatter;
-	isVirtual: boolean;
-}
-
-interface PrismaEventInput extends EventInput {
-	extendedProps: PrismaExtendedProps;
-}
-
-interface FlexibleExtendedProps {
-	filePath?: string;
-	folder?: string;
-	originalTitle?: string;
-	frontmatterDisplayData?: Frontmatter;
-	isVirtual?: boolean;
-}
-
-interface CalendarEventData {
-	title: string;
-	start: Date | null;
-	end: Date | null;
-	allDay: boolean;
-	extendedProps: FlexibleExtendedProps;
-}
-
-interface EventMountInfo {
-	el: HTMLElement;
-	event: CalendarEventData;
-}
-
-interface EventUpdateInfo {
-	event: CalendarEventData & { start: Date };
-	oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay"> & { start: Date };
-	revert: () => void;
-}
-
-// Extended button input with className support (FullCalendar accepts it at runtime but doesn't type it)
-interface ExtendedButtonInput extends CustomButtonInput {
-	className?: string;
-}
 
 export function getCalendarViewType(calendarId: string): string {
 	return `${CALENDAR_VIEW_TYPE}-${calendarId}`;
