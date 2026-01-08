@@ -4,7 +4,13 @@ All notable changes to this project will be documented here.
 
 ## 1.25.0
 
+### New Features
+
+- **Drag-to-Create Events**: You can now drag on the timeline to create events by defining the start and end time in one gesture. Click and drag on any empty time slot in week or day views, and the event creation modal opens with the selected time range pre-filled. Single clicks use your configured default duration, while dragging uses the exact range you selected. This matches the behavior of Google Calendar and Notion Calendar, making time-blocking workflows faster and more intuitive.
+
 ### Bug Fixes
+
+- **Fixed Default Duration for Timeline Click-to-Create**: Fixed an issue where clicking on the timeline to create events always used a fixed 60-minute duration instead of respecting the configured default duration setting. Timeline-created events now correctly use your configured default duration (found in Settings → Event Defaults), matching the behavior of the "Create Event" button for consistent event creation across all methods.
 
 - **Fixed Recurring Events Not Being Detected After Editing**: Fixed an issue where recurring events (especially non-weekly events like daily, monthly, or yearly) sometimes weren't being picked up by after editing. The system now properly detects and processes recurring events immediately after changes, ensuring all recurrence patterns are correctly identified and physical instances are generated as expected.
 

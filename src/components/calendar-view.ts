@@ -98,6 +98,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private refreshRafId: number | null = null;
 	private lastMobileTapTime = 0;
 	private previousViewState: { date: Date; viewType: string } | null = null;
+	private mouseDownTime = 0;
+	private isHandlingSelection = false;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -1061,6 +1063,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			eventDurationEditable: true,
 			eventResizableFromStart: true,
 
+			selectable: true,
+			selectMirror: true,
+			unselectAuto: true,
+			unselectCancel: ".modal",
+
 			// Fix drag mirror positioning for all-day events
 			// Positions the drag mirror relative to document.body instead of calendar container
 			// This ensures the event box follows the cursor correctly for both all-day and timed events
@@ -1128,7 +1135,32 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 
 			dateClick: (info) => {
-				this.handleDateClick(info);
+				// Only handle if not already handling a selection
+				if (!this.isHandlingSelection) {
+					this.handleDateClick(info);
+				}
+				// Reset flag after a short delay
+				setTimeout(() => {
+					this.isHandlingSelection = false;
+				}, 50);
+			},
+
+			select: (info) => {
+				// Check if this was a quick click or an actual drag
+				const now = Date.now();
+				const timeSinceMouseDown = now - this.mouseDownTime;
+				const CLICK_THRESHOLD_MS = 150; // 150ms or less = click, more = drag
+
+				const isQuickClick = timeSinceMouseDown < CLICK_THRESHOLD_MS;
+
+				if (isQuickClick) {
+					// Quick click - ignore select, let dateClick handle it
+					this.calendar?.unselect();
+				} else {
+					// Actual drag - handle the selection and prevent dateClick
+					this.isHandlingSelection = true;
+					this.handleDateSelection(info);
+				}
 			},
 
 			datesSet: () => {
@@ -1200,6 +1232,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		toggleCls(container, "sticky-all-day-events", settings.stickyAllDayEvents);
 		// Note: sticky-day-headers class is still applied for CSS that depends on both settings
 		toggleCls(container, "sticky-day-headers", settings.stickyDayHeaders);
+
+		// Track mouse down/up for click vs drag detection
+		this.setupMouseTracking(container);
 
 		// Start the upcoming event check interval
 		this.startUpcomingEventCheck();
@@ -1720,14 +1755,24 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		element.addClass(cls("calendar-event"));
 	}
 
+	private setupMouseTracking(container: HTMLElement): void {
+		container.addEventListener("mousedown", () => {
+			this.mouseDownTime = Date.now();
+		});
+	}
+
 	private handleDateClick(info: { date: Date; allDay: boolean }): void {
 		const clickedDate = info.date;
 		const isAllDay = info.allDay;
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		const endDate = new Date(clickedDate);
+		endDate.setMinutes(endDate.getMinutes() + settings.defaultDurationMinutes);
 
 		const newEvent = {
 			title: "",
 			start: toLocalISOString(clickedDate),
-			end: isAllDay ? undefined : toLocalISOString(new Date(clickedDate.getTime() + 60 * 60 * 1000)),
+			end: isAllDay ? undefined : toLocalISOString(endDate),
 			allDay: isAllDay,
 			extendedProps: {
 				filePath: null as string | null,
@@ -1735,6 +1780,22 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		};
 
 		new EventCreateModal(this.app, this.bundle, newEvent).open();
+		this.calendar?.unselect();
+	}
+
+	private handleDateSelection(info: { start: Date; end: Date; allDay: boolean }): void {
+		const newEvent = {
+			title: "",
+			start: toLocalISOString(info.start),
+			end: toLocalISOString(info.end),
+			allDay: info.allDay,
+			extendedProps: {
+				filePath: null as string | null,
+			},
+		};
+
+		new EventCreateModal(this.app, this.bundle, newEvent).open();
+		this.calendar?.unselect();
 	}
 
 	openCreateEventModal(autoStartStopwatch = false): void {
