@@ -107,69 +107,42 @@ export class NotificationManager {
 			return;
 		}
 
-		// Check if already notified
 		const alreadyNotified = frontmatter[this.settings.alreadyNotifiedProp];
 		if (alreadyNotified === true || alreadyNotified === "true") {
 			this.removeNotification(filePath);
 			return;
 		}
 
-		// Get start date based on event type
-		// Parse as local time, ignoring timezone information
-		const startPropValue = frontmatter[this.settings.startProp];
-		const datePropValue = frontmatter[this.settings.dateProp];
+		const dateProp = isAllDay ? this.settings.dateProp : this.settings.startProp;
+		const dateValue = frontmatter[dateProp];
+		const dateString = toSafeString(dateValue);
 
-		const dateString = isAllDay && datePropValue != null ? toSafeString(datePropValue) : toSafeString(startPropValue);
-		const startDate = dateString ? parseAsLocalDate(dateString) : null;
+		if (!dateString) {
+			this.removeNotification(filePath);
+			return;
+		}
 
+		const startDate = parseAsLocalDate(dateString);
 		if (!startDate) {
 			this.removeNotification(filePath);
 			return;
 		}
 
-		const endPropValue = frontmatter[this.settings.endProp];
-		const endDate = endPropValue != null ? parseAsLocalDate(toSafeString(endPropValue) ?? "") : null;
-		const eventEndTime = endDate || startDate; // Use end date if available, otherwise start date
-		const now = new Date();
+		const notificationProp = isAllDay ? this.settings.daysBeforeProp : this.settings.minutesBeforeProp;
+		const defaultValue = isAllDay ? this.settings.defaultDaysBefore : this.settings.defaultMinutesBefore;
+		const notificationValue = frontmatter[notificationProp];
+		const notificationAmount =
+			notificationValue !== undefined && notificationValue !== null ? Number(notificationValue) : defaultValue;
 
-		if (eventEndTime <= now) {
-			return;
-		}
-
-		// Determine notification time based on event type
-		let notificationMinutes: number | undefined;
-
-		if (isAllDay) {
-			// All-day event: check for per-event override, then default days
-			const daysBeforePropValue = frontmatter[this.settings.daysBeforeProp];
-			const daysBefore =
-				daysBeforePropValue !== undefined && daysBeforePropValue !== null
-					? Number(daysBeforePropValue)
-					: this.settings.defaultDaysBefore;
-
-			if (daysBefore !== undefined) {
-				notificationMinutes = daysBefore * 24 * 60; // Convert days to minutes
-			}
-		} else {
-			// Timed event: check for per-event override, then default minutes
-			const minutesBeforePropValue = frontmatter[this.settings.minutesBeforeProp];
-			notificationMinutes =
-				minutesBeforePropValue !== undefined && minutesBeforePropValue !== null
-					? Number(minutesBeforePropValue)
-					: this.settings.defaultMinutesBefore;
-		}
-
-		// If no notification time configured, remove from queue
-		if (notificationMinutes === undefined) {
+		if (notificationAmount === undefined) {
 			this.removeNotification(filePath);
 			return;
 		}
 
-		// Calculate notification time
+		const notificationMinutes = isAllDay ? notificationAmount * 24 * 60 : notificationAmount;
 		const notifyAt = new Date(startDate);
 		notifyAt.setMinutes(notifyAt.getMinutes() - notificationMinutes);
 
-		// For all-day events, set to midnight (00:00) on the notification day
 		if (isAllDay) {
 			notifyAt.setHours(0, 0, 0, 0);
 		}
@@ -188,12 +161,9 @@ export class NotificationManager {
 			frontmatter,
 		};
 
-		// If notification time is in the past, trigger immediately (for all-day events on the notification day)
 		if (notifyAt <= new Date()) {
-			// Trigger notification immediately
 			void this.triggerNotification(entry);
 		} else {
-			// Add to queue for future notification
 			this.addOrUpdateNotification(entry);
 		}
 	}
@@ -265,16 +235,9 @@ export class NotificationManager {
 
 	private async triggerNotification(entry: NotificationEntry): Promise<void> {
 		try {
-			// Remove from queue immediately
 			this.removeNotification(entry.filePath);
-
-			// Mark as notified in frontmatter
 			await this.markAsNotified(entry.filePath);
-
-			// Show system notification with sound
 			await this.showSystemNotification(entry);
-
-			// Show notification modal for detailed preview
 			this.showNotificationModal(entry);
 		} catch (error) {
 			console.error(`[NotificationManager] ❌ Error triggering notification for ${entry.filePath}:`, error);
@@ -342,7 +305,6 @@ export class NotificationManager {
 	}
 
 	private showNotificationModal(entry: NotificationEntry): void {
-		// Create event data for NotificationModal using frontmatter from the entry
 		const eventData = {
 			title: entry.title,
 			filePath: entry.filePath,
@@ -355,7 +317,6 @@ export class NotificationManager {
 			void this.snoozeNotification(entry);
 		};
 
-		// Show the notification modal
 		new NotificationModal(this.app, eventData, this.settings, onSnooze).open();
 	}
 
