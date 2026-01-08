@@ -1,10 +1,15 @@
 import { DateTime } from "luxon";
 import { BehaviorSubject, Subject } from "rxjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { parse } from "yaml";
 import { RecurringEventManager } from "../../src/core/recurring-event-manager";
 
-// Mock the dependencies early
-vi.mock("../../src/core/template-service");
+// Helper to extract frontmatter from file content
+function extractFrontmatter(fileContent: string): any {
+	const frontmatterMatch = fileContent.match(/^---\n([\s\S]*?)\n---/);
+	if (!frontmatterMatch) return {};
+	return parse(frontmatterMatch[1]);
+}
 
 const mockGetNextOccurrence = vi.fn();
 const mockIsDateOnWeekdays = vi.fn();
@@ -78,7 +83,11 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		mockApp = {
 			vault: {
 				getMarkdownFiles: vi.fn(() => []),
-				create: vi.fn(),
+				create: vi
+					.fn()
+					.mockImplementation((path) =>
+						Promise.resolve({ path, basename: path.split("/").pop()?.replace(".md", "") || "test" })
+					),
 				getAbstractFileByPath: vi.fn(() => null), // Return null = file doesn't exist
 				cachedRead: vi.fn().mockResolvedValue(""),
 			},
@@ -363,12 +372,9 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 	describe("Recurrence Type Specific Logic", () => {
 		describe("Daily Recurrence", () => {
 			it("should create all-day daily instances correctly", async () => {
-				const { TemplateService } = await import("../../src/core/templates");
-
-				// Mock template service to capture frontmatter operations
+				// Mock vault.create to capture file content
 				const mockFile = { path: "test.md" };
-				const mockCreate = vi.fn().mockResolvedValue(mockFile);
-				(TemplateService as any).prototype.createFile = mockCreate;
+				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
 				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
@@ -401,10 +407,11 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				// Trigger physical instance creation
 				await (manager as any).ensurePhysicalInstances("daily-all-day-123");
 
-				// Verify createFile was called with correct frontmatter
-				expect(mockCreate).toHaveBeenCalled();
-				const createCall = mockCreate.mock.calls[0][0];
-				const frontmatter = createCall.frontmatter;
+				// Verify vault.create was called
+				expect(mockApp.vault.create).toHaveBeenCalled();
+				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const fileContent = createCall[1]; // Second argument is content
+				const frontmatter = extractFrontmatter(fileContent);
 
 				// For daily all-day events, should preserve all-day status
 				expect(frontmatter["All Day"]).toBe(true);
@@ -415,12 +422,9 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			});
 
 			it("should create timed daily instances with correct time extraction", async () => {
-				const { TemplateService } = await import("../../src/core/templates");
-
-				// Mock template service
+				// Mock vault.create to capture file content
 				const mockFile = { path: "test.md" };
-				const mockCreate = vi.fn().mockResolvedValue(mockFile);
-				(TemplateService as any).prototype.createFile = mockCreate;
+				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
 				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
@@ -451,10 +455,11 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("daily-timed-123");
 
-				// Verify createFile was called with correct frontmatter
-				expect(mockCreate).toHaveBeenCalled();
-				const createCall = mockCreate.mock.calls[0][0];
-				const frontmatter = createCall.frontmatter;
+				// Verify vault.create was called
+				expect(mockApp.vault.create).toHaveBeenCalled();
+				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const fileContent = createCall[1]; // Second argument is content
+				const frontmatter = extractFrontmatter(fileContent);
 
 				// For daily timed events, should use extracted time (09:30-10:15) not original time (14:00-15:30)
 				expect(frontmatter["All Day"]).toBe(false);
@@ -465,11 +470,9 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		describe("Weekly/Bi-Weekly Recurrence", () => {
 			it("should create weekly instances with time extraction", async () => {
-				const { TemplateService } = await import("../../src/core/templates");
-
+				// Mock vault.create to capture file content
 				const mockFile = { path: "test.md" };
-				const mockCreate = vi.fn().mockResolvedValue(mockFile);
-				(TemplateService as any).prototype.createFile = mockCreate;
+				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
 				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
@@ -500,9 +503,11 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("weekly-123");
 
-				expect(mockCreate).toHaveBeenCalled();
-				const createCall = mockCreate.mock.calls[0][0];
-				const frontmatter = createCall.frontmatter;
+				// Verify vault.create was called
+				expect(mockApp.vault.create).toHaveBeenCalled();
+				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const fileContent = createCall[1];
+				const frontmatter = extractFrontmatter(fileContent);
 
 				// For weekly events, should use extracted time (10:00-11:30) not original (16:45-18:00)
 				expect(frontmatter["All Day"]).toBe(false);
@@ -511,11 +516,9 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			});
 
 			it("should create bi-weekly instances with time extraction", async () => {
-				const { TemplateService } = await import("../../src/core/templates");
-
+				// Mock vault.create to capture file content
 				const mockFile = { path: "test.md" };
-				const mockCreate = vi.fn().mockResolvedValue(mockFile);
-				(TemplateService as any).prototype.createFile = mockCreate;
+				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
 				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
@@ -546,9 +549,11 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("bi-weekly-123");
 
-				expect(mockCreate).toHaveBeenCalled();
-				const createCall = mockCreate.mock.calls[0][0];
-				const frontmatter = createCall.frontmatter;
+				// Verify vault.create was called
+				expect(mockApp.vault.create).toHaveBeenCalled();
+				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const fileContent = createCall[1];
+				const frontmatter = extractFrontmatter(fileContent);
 
 				// For bi-weekly events, should use extracted time (09:15-10:00) not original (13:20-14:45)
 				expect(frontmatter["All Day"]).toBe(false);
@@ -559,11 +564,9 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		describe("Monthly Recurrence", () => {
 			it("should create monthly all-day instances inheriting day of month", async () => {
-				const { TemplateService } = await import("../../src/core/templates");
-
+				// Mock vault.create to capture file content
 				const mockFile = { path: "test.md" };
-				const mockCreate = vi.fn().mockResolvedValue(mockFile);
-				(TemplateService as any).prototype.createFile = mockCreate;
+				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
 				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
@@ -594,9 +597,11 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("monthly-all-day-123");
 
-				expect(mockCreate).toHaveBeenCalled();
-				const createCall = mockCreate.mock.calls[0][0];
-				const frontmatter = createCall.frontmatter;
+				// Verify vault.create was called
+				expect(mockApp.vault.create).toHaveBeenCalled();
+				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const fileContent = createCall[1];
+				const frontmatter = extractFrontmatter(fileContent);
 
 				// For monthly all-day events, should inherit the day (15th) and be all-day
 				expect(frontmatter["All Day"]).toBe(true);
@@ -607,11 +612,9 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			});
 
 			it("should create monthly timed instances inheriting day and time", async () => {
-				const { TemplateService } = await import("../../src/core/templates");
-
+				// Mock vault.create to capture file content
 				const mockFile = { path: "test.md" };
-				const mockCreate = vi.fn().mockResolvedValue(mockFile);
-				(TemplateService as any).prototype.createFile = mockCreate;
+				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
 				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
@@ -642,9 +645,11 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("monthly-timed-123");
 
-				expect(mockCreate).toHaveBeenCalled();
-				const createCall = mockCreate.mock.calls[0][0];
-				const frontmatter = createCall.frontmatter;
+				// Verify vault.create was called
+				expect(mockApp.vault.create).toHaveBeenCalled();
+				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const fileContent = createCall[1];
+				const frontmatter = extractFrontmatter(fileContent);
 
 				// For monthly timed events, should inherit day (25th) and time (14:30-16:00)
 				expect(frontmatter["All Day"]).toBe(false);
@@ -655,12 +660,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		describe("Yearly Recurrence", () => {
 			it("should create yearly all-day instances inheriting day and month", async () => {
-				const { TemplateService } = await import("../../src/core/templates");
-
-				const mockFile = { path: "test.md" };
-				const mockCreate = vi.fn().mockResolvedValue(mockFile);
-				(TemplateService as any).prototype.createFile = mockCreate;
-
 				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
 				const mockRecurringEvent = {
@@ -690,9 +689,10 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("yearly-all-day-123");
 
-				expect(mockCreate).toHaveBeenCalled();
-				const createCall = mockCreate.mock.calls[0][0];
-				const frontmatter = createCall.frontmatter;
+				expect(mockApp.vault.create).toHaveBeenCalled();
+				const createCall = mockApp.vault.create.mock.calls[0];
+				const fileContent = createCall[1];
+				const frontmatter = extractFrontmatter(fileContent);
 
 				// For yearly all-day events, should inherit month (06) and day (20)
 				expect(frontmatter["All Day"]).toBe(true);
@@ -703,12 +703,6 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			});
 
 			it("should create yearly timed instances inheriting day, month and time", async () => {
-				const { TemplateService } = await import("../../src/core/templates");
-
-				const mockFile = { path: "test.md" };
-				const mockCreate = vi.fn().mockResolvedValue(mockFile);
-				(TemplateService as any).prototype.createFile = mockCreate;
-
 				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
 
 				const mockRecurringEvent = {
@@ -738,9 +732,10 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				await (manager as any).ensurePhysicalInstances("yearly-timed-123");
 
-				expect(mockCreate).toHaveBeenCalled();
-				const createCall = mockCreate.mock.calls[0][0];
-				const frontmatter = createCall.frontmatter;
+				expect(mockApp.vault.create).toHaveBeenCalled();
+				const createCall = mockApp.vault.create.mock.calls[0];
+				const fileContent = createCall[1];
+				const frontmatter = extractFrontmatter(fileContent);
 
 				// For yearly timed events, should inherit month (03), day (12) and time (18:00-22:30)
 				expect(frontmatter["All Day"]).toBe(false);

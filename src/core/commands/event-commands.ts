@@ -1,7 +1,10 @@
 import {
 	backupFrontmatter,
 	compareFrontmatter,
+	createFileManually,
+	extractContentAfterFrontmatter,
 	getTFileOrThrow,
+	getUniqueFilePathFromFull,
 	parseFrontmatterRecord,
 	restoreFrontmatter,
 	sanitizeForFilename,
@@ -68,6 +71,8 @@ export class CreateEventCommand implements Command {
 			targetDirectory: this.targetDirectory,
 			filename,
 			frontmatter,
+			templatePath: settings.templatePath,
+			useTemplater: !!settings.templatePath,
 		});
 
 		this.createdFilePath = file.path;
@@ -226,7 +231,6 @@ export class CloneEventCommand implements Command {
 		let src = getTFileOrThrow(this.app, this.sourceFilePath);
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		// Ensure source file has ZettelID (embed if missing)
 		const sourceResult = await ensureFileHasZettelId(this.app, src, settings.zettelIdProp);
 		src = sourceResult.file;
 
@@ -235,26 +239,28 @@ export class CloneEventCommand implements Command {
 		const directory = src.parent?.path || "";
 		const { fullPath, zettelId } = generateUniqueEventPath(this.app, directory, baseNameWithoutZettel);
 
-		await this.app.vault.create(fullPath, content);
-		this.clonedFilePath = fullPath;
+		const cache = this.app.metadataCache.getFileCache(src);
+		const existingFrontmatter: Frontmatter = cache?.frontmatter ? { ...cache.frontmatter } : {};
+		const body = extractContentAfterFrontmatter(content);
 
-		const cloned = this.app.vault.getAbstractFileByPath(fullPath);
-		if (!(cloned instanceof TFile)) return;
+		applyStartEndOffsets(existingFrontmatter, settings, this.startOffset, this.endOffset);
 
-		await withFrontmatter(this.app, cloned, (fm) => {
-			applyStartEndOffsets(fm, settings, this.startOffset, this.endOffset);
-			if (settings.zettelIdProp) {
-				fm[settings.zettelIdProp] = zettelId;
-			}
+		if (settings.zettelIdProp) {
+			existingFrontmatter[settings.zettelIdProp] = zettelId;
+		}
 
-			// Remove recurring event metadata to prevent duplicate from being treated as recurring instance
-			delete fm[settings.rruleIdProp];
-			delete fm[settings.instanceDateProp];
-			delete fm[settings.sourceProp];
+		delete existingFrontmatter[settings.rruleIdProp];
+		delete existingFrontmatter[settings.instanceDateProp];
+		delete existingFrontmatter[settings.sourceProp];
 
-			// Remove notification status so duplicated events can trigger notifications
-			delete fm[settings.alreadyNotifiedProp];
-		});
+		// Remove notification status so duplicated events can trigger notifications
+		delete existingFrontmatter[settings.alreadyNotifiedProp];
+
+		// Ensure path is unique before creating
+		const uniquePath = getUniqueFilePathFromFull(this.app, fullPath);
+		const finalFilename = uniquePath.replace(`${directory}/`, "").replace(/\.md$/, "");
+		const file = await createFileManually(this.app, directory, finalFilename, body, existingFrontmatter);
+		this.clonedFilePath = file.path;
 	}
 
 	async undo(): Promise<void> {
@@ -303,26 +309,29 @@ export class DuplicateRecurringEventCommand implements Command {
 		const directory = physicalFile.parent?.path || "";
 		const { fullPath, zettelId } = generateUniqueEventPath(this.app, directory, baseNameWithoutZettel);
 
-		// Create the duplicate file with same content
-		await this.app.vault.create(fullPath, content);
-		this.createdFilePath = fullPath;
+		// Parse frontmatter and extract body content
+		const cache = this.app.metadataCache.getFileCache(physicalFile);
+		const existingFrontmatter: Frontmatter = cache?.frontmatter ? { ...cache.frontmatter } : {};
+		const body = extractContentAfterFrontmatter(content);
 
-		const createdFile = this.app.vault.getAbstractFileByPath(fullPath);
-		if (!(createdFile instanceof TFile)) return;
+		// Mark as ignored so it doesn't count towards future instance generation
+		existingFrontmatter[settings.ignoreRecurringProp] = true;
 
-		// Update frontmatter: set ignoreRecurring flag and new zettelId
-		await withFrontmatter(this.app, createdFile, (fm) => {
-			// Mark as ignored so it doesn't count towards future instance generation
-			fm[settings.ignoreRecurringProp] = true;
+		// Update zettelId to the new unique value
+		if (settings.zettelIdProp) {
+			existingFrontmatter[settings.zettelIdProp] = zettelId;
+		}
 
-			// Update zettelId to the new unique value
-			if (settings.zettelIdProp) {
-				fm[settings.zettelIdProp] = zettelId;
-			}
+		// Remove notification status so duplicated events can trigger notifications
+		delete existingFrontmatter[settings.alreadyNotifiedProp];
 
-			// Remove notification status so duplicated events can trigger notifications
-			delete fm[settings.alreadyNotifiedProp];
-		});
+		// Ensure path is unique before creating
+		const uniquePath = getUniqueFilePathFromFull(this.app, fullPath);
+		const finalFilename = uniquePath.replace(`${directory}/`, "").replace(/\.md$/, "");
+
+		// Create file with frontmatter atomically using utils createFileManually
+		const file = await createFileManually(this.app, directory, finalFilename, body, existingFrontmatter);
+		this.createdFilePath = file.path;
 	}
 
 	async undo(): Promise<void> {

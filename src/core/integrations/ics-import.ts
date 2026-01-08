@@ -306,6 +306,8 @@ export async function createEventNoteFromImportedEvent(
 		filename,
 		content,
 		frontmatter,
+		templatePath: calendarSettings.templatePath,
+		useTemplater: !!calendarSettings.templatePath,
 	});
 }
 

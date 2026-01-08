@@ -1,4 +1,4 @@
-import { onceAsync, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
+import { onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsidian-plugins/utils";
 import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type { EventSaveData } from "../components/modals/base-event-modal";
@@ -17,7 +17,6 @@ import type { NotificationManager } from "./notification-manager";
 import type { Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore, type SettingsStore } from "./settings-store";
-import { TemplateService } from "./templates";
 
 export class CalendarBundle {
 	public readonly settingsStore: CalendarSettingsStore;
@@ -27,7 +26,7 @@ export class CalendarBundle {
 	public readonly recurringEventManager: RecurringEventManager;
 	public readonly notificationManager: NotificationManager;
 	public readonly categoryTracker: CategoryTracker;
-	public readonly templateService: TemplateService;
+	public readonly templateService: TemplaterService;
 	public readonly viewStateManager: CalendarViewStateManager;
 	public readonly commandManager: CommandManager;
 	public readonly batchCommandFactory: BatchCommandFactory;
@@ -65,7 +64,7 @@ export class CalendarBundle {
 		this.notificationManager = notificationManager;
 		this.categoryTracker = categoryTracker;
 
-		this.templateService = new TemplateService(this.app, this.settingsStore.settings$, this.indexer);
+		this.templateService = new TemplaterService(this.app);
 		this.caldavSyncStateManager = new CalDAVSyncStateManager(this.indexer, this.settingsStore.settings$);
 		this.viewStateManager = new CalendarViewStateManager();
 		this.commandManager = new CommandManager();
@@ -242,7 +241,6 @@ export class CalendarBundle {
 		// Release shared infrastructure through registry (will only destroy if no other calendars are using it)
 		this.indexerRegistry.releaseIndexer(this.calendarId, this.directory);
 		// Don't destroy indexer/parser/eventStore/recurringEventManager directly - the registry handles that
-		this.templateService?.destroy?.();
 		this.settingsStore?.destroy?.();
 	}
 

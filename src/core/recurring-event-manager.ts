@@ -1,9 +1,11 @@
 import {
 	createFileLink,
+	createFileManually,
 	DebouncedNotifier,
 	extractContentAfterFrontmatter,
 	type FrontmatterDiff,
 	FrontmatterPropagationModal,
+	getUniqueFilePathFromFull,
 	mergeFrontmatterDiffs,
 	rebuildPhysicalInstanceFilename,
 	sanitizeForFilename,
@@ -30,7 +32,6 @@ import { deleteFilesByPaths } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { Indexer, IndexerEvent } from "./indexer";
 import type { ParsedEvent } from "./parser";
-import { TemplateService } from "./templates";
 
 interface NodeRecurringEventInstance {
 	recurringEvent: NodeRecurringEvent;
@@ -55,7 +56,6 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private subscription: Subscription | null = null;
 	private settingsSubscription: Subscription | null = null;
 	private indexingCompleteSubscription: Subscription | null = null;
-	private templateService: TemplateService;
 	private indexingComplete = false;
 	private creationLocks: Map<string, Promise<string | null>> = new Map();
 	private sourceFileToRRuleId: Map<string, string> = new Map();
@@ -70,7 +70,6 @@ export class RecurringEventManager extends DebouncedNotifier {
 	) {
 		super();
 		this.settings = settingsStore.value;
-		this.templateService = new TemplateService(app, settingsStore, indexer);
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			this.settings = newSettings;
@@ -249,7 +248,6 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.indexingCompleteSubscription?.unsubscribe();
 		this.indexingCompleteSubscription = null;
 		super.destroy();
-		this.templateService.destroy();
 		this.recurringEventsMap.clear();
 		this.creationLocks.clear();
 		this.sourceFileToRRuleId.clear();
@@ -489,9 +487,6 @@ export class RecurringEventManager extends DebouncedNotifier {
 				return null;
 			}
 
-			// Extract the instance title from the filename (already has ZettelID from generateNodeInstanceFilePath)
-			const filename = filePath.split("/").pop()?.replace(".md", "") || "";
-
 			// Lazy load content if not already loaded (deferred from initial scan)
 			// Note: content can be empty string ("") which is valid, so check for undefined/null specifically
 			let content = recurringEvent.content;
@@ -546,17 +541,15 @@ export class RecurringEventManager extends DebouncedNotifier {
 				});
 			}
 
-			await this.templateService.createFile({
-				title: filename,
-				targetDirectory: this.settings.directory,
-				filename: filename,
-				content,
-				frontmatter: instanceFrontmatter,
-			});
+			const uniquePath = getUniqueFilePathFromFull(this.app, filePath);
+			const directory = this.settings.directory || "";
+			const finalFilename = uniquePath.replace(`${directory}/`, "").replace(/\.md$/, "");
+
+			const file = await createFileManually(this.app, directory, finalFilename, content, instanceFrontmatter);
 
 			// Don't notify here - let the batch operation handle notification
 			// Individual file creations will be picked up by the indexer
-			return filePath;
+			return file.path;
 		});
 	}
 
