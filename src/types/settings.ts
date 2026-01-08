@@ -1,8 +1,13 @@
 import { z } from "zod";
-import { BATCH_BUTTON_IDS, DEFAULT_BATCH_ACTION_BUTTONS, SETTINGS_DEFAULTS } from "../constants";
+import {
+	BATCH_BUTTON_IDS,
+	DEFAULT_BATCH_ACTION_BUTTONS,
+	DEFAULT_CONTEXT_MENU_ITEMS,
+	SETTINGS_DEFAULTS,
+} from "../constants";
 import { CalDAVSettingsSchema } from "../core/integrations/caldav";
 import { ColorSchema } from "../utils/validation";
-import { CalendarViewTypeSchema } from "./view";
+import { CalendarViewTypeSchema, ContextMenuItemSchema } from "./view";
 
 const EventPresetSchema = z
 	.object({
@@ -151,6 +156,7 @@ const CalendarSettingsSchema = z
 		stickyAllDayEvents: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_STICKY_ALL_DAY_EVENTS), // Make all-day event section sticky during vertical scroll (timegrid views)
 		autoAssignCategoryByName: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_CATEGORY_BY_NAME), // Automatically assign category when event name matches category name (case-insensitive)
 		categoryAssignmentPresets: z.array(CategoryAssignmentPresetSchema).catch([]), // Custom category assignment rules based on event name
+		contextMenuItems: z.array(ContextMenuItemSchema).catch([...DEFAULT_CONTEXT_MENU_ITEMS]), // Context menu items to show when right-clicking events
 	})
 	.strip();
 

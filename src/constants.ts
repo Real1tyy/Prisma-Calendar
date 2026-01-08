@@ -174,6 +174,38 @@ export const DEFAULT_BATCH_ACTION_BUTTONS = BATCH_BUTTON_IDS.filter(
 	(id) => !["batchMoveBy", "batchOpenAll", "batchMovePrev", "batchClonePrev", "batchFrontmatter"].includes(id)
 );
 
+export const CONTEXT_MENU_BUTTON_LABELS = {
+	enlarge: "Enlarge",
+	preview: "Preview",
+	goToSource: "Go to source",
+	duplicateRecurringInstance: "Duplicate recurring instance",
+	viewRecurringEvents: "View recurring events",
+	editEvent: "Edit event",
+	assignCategories: "Assign categories",
+	duplicateEvent: "Duplicate event",
+	moveBy: "Move by...",
+	markDone: "Mark as done/undone",
+	moveToNextWeek: "Move to next week",
+	cloneToNextWeek: "Clone to next week",
+	moveToPreviousWeek: "Move to previous week",
+	cloneToPreviousWeek: "Clone to previous week",
+	fillStartTimeNow: "Fill start time from current time",
+	fillEndTimeNow: "Fill end time from current time",
+	fillStartTimePrevious: "Fill start time from previous event",
+	fillEndTimeNext: "Fill end time from next event",
+	deleteEvent: "Delete event",
+	skipEvent: "Skip event",
+	openFile: "Open file",
+	openFileNewWindow: "Open file in new window",
+	toggleRecurring: "Enable/Disable recurring event",
+} as const;
+
+export const CONTEXT_MENU_ITEM_IDS = Object.keys(
+	CONTEXT_MENU_BUTTON_LABELS
+) as (keyof typeof CONTEXT_MENU_BUTTON_LABELS)[];
+
+export const DEFAULT_CONTEXT_MENU_ITEMS = CONTEXT_MENU_ITEM_IDS;
+
 /**
  * Maximum time after an event starts before notifications are suppressed.
  * Prevents notification spam when opening Obsidian after being away.

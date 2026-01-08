@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { CONTEXT_MENU_BUTTON_LABELS } from "../constants";
+import { CONTEXT_MENU_ITEM_IDS } from "../constants";
 import type { Weekday } from "../utils/date-recurrence";
 import { WEEKDAY_TO_NUMBER } from "../utils/date-recurrence";
 import { WEEKDAY_OPTIONS } from "./recurring-event";
@@ -28,3 +30,7 @@ export const FIRST_DAY_OPTIONS: Record<number, string> = Object.entries(WEEKDAY_
 	},
 	{} as Record<number, string>
 );
+
+export type ContextMenuItem = keyof typeof CONTEXT_MENU_BUTTON_LABELS;
+
+export const ContextMenuItemSchema = z.enum(CONTEXT_MENU_ITEM_IDS as [ContextMenuItem, ...ContextMenuItem[]]);

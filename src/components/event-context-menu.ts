@@ -15,7 +15,7 @@ import {
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import type { ParsedEvent } from "../core/parser";
-import type { Frontmatter } from "../types";
+import type { ContextMenuItem, Frontmatter } from "../types";
 import { findAdjacentEvent, isEventDone } from "../utils/calendar-events";
 import { intoDate, toLocalISOString } from "../utils/format";
 import { parseIntoList } from "../utils/list-utils";
@@ -185,17 +185,24 @@ export class EventContextMenu {
 		const isVirtual = kind === "virtual";
 		const isPhysical = kind === "physical";
 
-		menu.addItem((item) => {
-			item
-				.setTitle("Enlarge")
-				.setIcon("maximize-2")
-				.onClick(() => {
-					this.openEventPreview(event);
-				});
-		});
+		const settings = this.bundle.settingsStore.currentSettings;
+		const enabledItems = new Set(settings.contextMenuItems || []);
+
+		const shouldShow = (item: ContextMenuItem): boolean => enabledItems.has(item);
+
+		if (shouldShow("enlarge")) {
+			menu.addItem((item) => {
+				item
+					.setTitle("Enlarge")
+					.setIcon("maximize-2")
+					.onClick(() => {
+						this.openEventPreview(event);
+					});
+			});
+		}
 
 		// Show preview button for non-virtual events with a file path
-		if (filePath && targetEl && containerEl) {
+		if (shouldShow("preview") && filePath && targetEl && containerEl) {
 			menu.addItem((item) => {
 				item
 					.setTitle("Preview")
@@ -206,7 +213,7 @@ export class EventContextMenu {
 			});
 		}
 
-		if (isPhysical || isVirtual) {
+		if (shouldShow("goToSource") && (isPhysical || isVirtual)) {
 			menu.addItem((item) => {
 				item
 					.setTitle("Go to source")
@@ -218,7 +225,7 @@ export class EventContextMenu {
 		}
 
 		// Duplicate recurring instance - only available for physical events (not virtual)
-		if (isPhysical) {
+		if (shouldShow("duplicateRecurringInstance") && isPhysical) {
 			menu.addItem((item) => {
 				item
 					.setTitle("Duplicate recurring instance")
@@ -229,7 +236,7 @@ export class EventContextMenu {
 			});
 		}
 
-		if (isRecurring) {
+		if (shouldShow("viewRecurringEvents") && isRecurring) {
 			menu.addItem((item) => {
 				item
 					.setTitle("View recurring events")
@@ -244,150 +251,180 @@ export class EventContextMenu {
 		if (!isVirtual) {
 			menu.addSeparator();
 
-			menu.addItem((item) => {
-				item
-					.setTitle("Edit event")
-					.setIcon("edit")
-					.onClick(() => {
-						this.openEditModal(event);
-					});
-			});
-
-			menu.addItem((item) => {
-				item
-					.setTitle("Assign categories")
-					.setIcon("tag")
-					.onClick(() => {
-						void this.openAssignCategoriesModal(event);
-					});
-			});
-
-			menu.addItem((item) => {
-				item
-					.setTitle("Duplicate event")
-					.setIcon("copy")
-					.onClick(() => {
-						void this.duplicateEvent(event);
-					});
-			});
-
-			menu.addSeparator();
-
-			menu.addItem((item) => {
-				item
-					.setTitle("Move by...")
-					.setIcon("move")
-					.onClick(() => {
-						this.moveEventBy(event);
-					});
-			});
-
-			const isDone = this.isEventDone(event);
-
-			menu.addItem((item) => {
-				item
-					.setTitle(isDone ? "Mark as undone" : "Mark as done")
-					.setIcon(isDone ? "x" : "check")
-					.onClick(() => {
-						if (isDone) {
-							void this.markEventAsUndone(event);
-						} else {
-							void this.markEventAsDone(event);
-						}
-					});
-			});
-
-			menu.addItem((item) => {
-				item
-					.setTitle("Move to next week")
-					.setIcon("arrow-right")
-					.onClick(() => {
-						void this.moveEventByWeeks(event, 1);
-					});
-			});
-
-			menu.addItem((item) => {
-				item
-					.setTitle("Clone to next week")
-					.setIcon("copy-plus")
-					.onClick(() => {
-						void this.cloneEventByWeeks(event, 1);
-					});
-			});
-
-			menu.addItem((item) => {
-				item
-					.setTitle("Move to previous week")
-					.setIcon("arrow-left")
-					.onClick(() => {
-						void this.moveEventByWeeks(event, -1);
-					});
-			});
-
-			menu.addItem((item) => {
-				item
-					.setTitle("Clone to previous week")
-					.setIcon("copy-minus")
-					.onClick(() => {
-						void this.cloneEventByWeeks(event, -1);
-					});
-			});
-
-			// Fill time options - only for timed events
-			if (!event.allDay) {
+			if (shouldShow("editEvent")) {
 				menu.addItem((item) => {
 					item
-						.setTitle("Fill start time from current time")
-						.setIcon("clock")
+						.setTitle("Edit event")
+						.setIcon("edit")
 						.onClick(() => {
-							void this.fillStartTimeFromNow(event);
+							this.openEditModal(event);
 						});
 				});
+			}
+
+			if (shouldShow("assignCategories")) {
 				menu.addItem((item) => {
 					item
-						.setTitle("Fill end time from current time")
-						.setIcon("clock")
+						.setTitle("Assign categories")
+						.setIcon("tag")
 						.onClick(() => {
-							void this.fillEndTimeFromNow(event);
+							void this.openAssignCategoriesModal(event);
 						});
 				});
+			}
+
+			if (shouldShow("duplicateEvent")) {
 				menu.addItem((item) => {
 					item
-						.setTitle("Fill start time from previous event")
-						.setIcon("arrow-left")
+						.setTitle("Duplicate event")
+						.setIcon("copy")
 						.onClick(() => {
-							void this.fillStartTimeFromPrevious(event);
-						});
-				});
-				menu.addItem((item) => {
-					item
-						.setTitle("Fill end time from next event")
-						.setIcon("arrow-right")
-						.onClick(() => {
-							void this.fillEndTimeFromNext(event);
+							void this.duplicateEvent(event);
 						});
 				});
 			}
 
 			menu.addSeparator();
 
-			menu.addItem((item) => {
-				item
-					.setTitle("Delete event")
-					.setIcon("trash")
-					.onClick(() => {
-						void this.deleteEvent(event);
+			if (shouldShow("moveBy")) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Move by...")
+						.setIcon("move")
+						.onClick(() => {
+							this.moveEventBy(event);
+						});
+				});
+			}
+
+			const isDone = this.isEventDone(event);
+
+			if (shouldShow("markDone")) {
+				menu.addItem((item) => {
+					item
+						.setTitle(isDone ? "Mark as undone" : "Mark as done")
+						.setIcon(isDone ? "x" : "check")
+						.onClick(() => {
+							if (isDone) {
+								void this.markEventAsUndone(event);
+							} else {
+								void this.markEventAsDone(event);
+							}
+						});
+				});
+			}
+
+			if (shouldShow("moveToNextWeek")) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Move to next week")
+						.setIcon("arrow-right")
+						.onClick(() => {
+							void this.moveEventByWeeks(event, 1);
+						});
+				});
+			}
+
+			if (shouldShow("cloneToNextWeek")) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Clone to next week")
+						.setIcon("copy-plus")
+						.onClick(() => {
+							void this.cloneEventByWeeks(event, 1);
+						});
+				});
+			}
+
+			if (shouldShow("moveToPreviousWeek")) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Move to previous week")
+						.setIcon("arrow-left")
+						.onClick(() => {
+							void this.moveEventByWeeks(event, -1);
+						});
+				});
+			}
+
+			if (shouldShow("cloneToPreviousWeek")) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Clone to previous week")
+						.setIcon("copy-minus")
+						.onClick(() => {
+							void this.cloneEventByWeeks(event, -1);
+						});
+				});
+			}
+
+			// Fill time options - only for timed events
+			if (!event.allDay) {
+				if (shouldShow("fillStartTimeNow")) {
+					menu.addItem((item) => {
+						item
+							.setTitle("Fill start time from current time")
+							.setIcon("clock")
+							.onClick(() => {
+								void this.fillStartTimeFromNow(event);
+							});
 					});
-			});
-			menu.addItem((item) => {
-				item
-					.setTitle("Skip event")
-					.setIcon("eye-off")
-					.onClick(() => {
-						void this.toggleSkipEvent(event);
+				}
+				if (shouldShow("fillEndTimeNow")) {
+					menu.addItem((item) => {
+						item
+							.setTitle("Fill end time from current time")
+							.setIcon("clock")
+							.onClick(() => {
+								void this.fillEndTimeFromNow(event);
+							});
 					});
-			});
-			if (filePath) {
+				}
+				if (shouldShow("fillStartTimePrevious")) {
+					menu.addItem((item) => {
+						item
+							.setTitle("Fill start time from previous event")
+							.setIcon("arrow-left")
+							.onClick(() => {
+								void this.fillStartTimeFromPrevious(event);
+							});
+					});
+				}
+				if (shouldShow("fillEndTimeNext")) {
+					menu.addItem((item) => {
+						item
+							.setTitle("Fill end time from next event")
+							.setIcon("arrow-right")
+							.onClick(() => {
+								void this.fillEndTimeFromNext(event);
+							});
+					});
+				}
+			}
+
+			menu.addSeparator();
+
+			if (shouldShow("deleteEvent")) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Delete event")
+						.setIcon("trash")
+						.onClick(() => {
+							void this.deleteEvent(event);
+						});
+				});
+			}
+			if (shouldShow("skipEvent")) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Skip event")
+						.setIcon("eye-off")
+						.onClick(() => {
+							void this.toggleSkipEvent(event);
+						});
+				});
+			}
+			if (shouldShow("openFile") && filePath) {
 				menu.addItem((item) => {
 					item
 						.setTitle("Open file")
@@ -396,7 +433,9 @@ export class EventContextMenu {
 							void this.app.workspace.openLinkText(filePath, "", false);
 						});
 				});
+			}
 
+			if (shouldShow("openFileNewWindow") && filePath) {
 				menu.addItem((item) => {
 					item
 						.setTitle("Open file in new window")
@@ -411,7 +450,7 @@ export class EventContextMenu {
 		menu.addSeparator();
 
 		// Show "Disable"/"Enable" button for recurring events (source, physical, virtual)
-		if (isRecurring) {
+		if (shouldShow("toggleRecurring") && isRecurring) {
 			// Determine if the source is currently disabled (skipped)
 			const isDisabled = this.isSourceEventDisabled(event);
 

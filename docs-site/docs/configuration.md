@@ -276,6 +276,35 @@ The sticky header options improve navigation in long calendars by keeping contex
 
   All buttons are enabled by default. The Counter (showing selection count) and Exit buttons are always shown and cannot be disabled.
 
+### Context Menu
+
+- **Context menu items**: customize which actions appear when right-clicking events. You can enable or disable individual context menu items to declutter the menu and keep only relevant actions:
+  - **Enlarge**: Open event preview in a modal
+  - **Preview**: Show hover preview for the event
+  - **Go to source**: Navigate to the source recurring event
+  - **Duplicate recurring instance**: Create a duplicate of a physical recurring instance
+  - **View recurring events**: Open modal showing all instances of a recurring event
+  - **Edit event**: Open event edit modal
+  - **Assign categories**: Open category assignment modal
+  - **Duplicate event**: Create a duplicate of the event
+  - **Move by...**: Move event by a custom time offset
+  - **Mark as done/undone**: Toggle event completion status
+  - **Move to next week**: Move event forward one week
+  - **Clone to next week**: Duplicate event to next week
+  - **Move to previous week**: Move event back one week
+  - **Clone to previous week**: Duplicate event to previous week
+  - **Fill start time from current time**: Set event start to now
+  - **Fill end time from current time**: Set event end to now
+  - **Fill start time from previous event**: Set start to previous event's end time
+  - **Fill end time from next event**: Set end to next event's start time
+  - **Delete event**: Delete the event note
+  - **Skip event**: Hide event from calendar
+  - **Open file**: Open event note in editor
+  - **Open file in new window**: Open event note in a new window
+  - **Enable/Disable recurring event**: Toggle recurring event visibility
+
+  All items are enabled by default. Menu items that don't apply to a specific event (e.g., recurring-specific actions on non-recurring events) are automatically hidden.
+
 ## Notifications Settings
 
 Configure desktop notifications and alerts for upcoming events.

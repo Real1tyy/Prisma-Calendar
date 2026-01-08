@@ -19,6 +19,8 @@ All notable changes to this project will be documented here.
 
   Additionally, the right-click context menu now includes "Fill start/end time from current time" options for quick time logging without leaving the calendar view.
 
+- **Configurable Context Menu**: You can now customize which actions appear when right-clicking events. All 23 context menu items (enlarge, edit, duplicate, move, fill time, etc.) are enabled by default, but you can disable any items you don't use in Settings → Calendar → Context Menu. This declutters the right-click menu and keeps only the actions relevant to your workflow.
+
 ### Bug Fixes
 
 - **Fixed Default Duration for Timeline Click-to-Create**: Fixed an issue where clicking on the timeline to create events always used a fixed 60-minute duration instead of respecting the configured default duration setting. Timeline-created events now correctly use your configured default duration (found in Settings → Event Defaults), matching the behavior of the "Create Event" button for consistent event creation across all methods.

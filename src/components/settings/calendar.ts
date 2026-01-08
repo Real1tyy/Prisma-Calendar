@@ -1,6 +1,12 @@
 import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
 import { Setting } from "obsidian";
-import { BATCH_BUTTON_IDS, BATCH_BUTTON_LABELS, SETTINGS_DEFAULTS } from "../../constants";
+import {
+	BATCH_BUTTON_IDS,
+	BATCH_BUTTON_LABELS,
+	CONTEXT_MENU_BUTTON_LABELS,
+	CONTEXT_MENU_ITEM_IDS,
+	SETTINGS_DEFAULTS,
+} from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { CALENDAR_VIEW_OPTIONS, type CalendarViewType, DENSITY_OPTIONS, FIRST_DAY_OPTIONS } from "../../types/index";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
@@ -349,6 +355,40 @@ export class CalendarSettings {
 				});
 
 			buttonSetting.settingEl.addClass("prisma-batch-button-setting");
+		}
+
+		// Context menu settings section
+		new Setting(containerEl).setName("Context menu").setHeading();
+
+		new Setting(containerEl)
+			.setName("Context menu items")
+			.setDesc("Choose which items to display when right-clicking events. All items are shown by default.");
+
+		const contextMenuContainer = containerEl.createDiv({
+			cls: "prisma-batch-buttons-container",
+		});
+
+		const currentContextItems = new Set(this.settingsStore.currentSettings.contextMenuItems);
+
+		for (const itemId of CONTEXT_MENU_ITEM_IDS) {
+			const itemSetting = new Setting(contextMenuContainer)
+				.setName(CONTEXT_MENU_BUTTON_LABELS[itemId])
+				.addToggle((toggle) => {
+					toggle.setValue(currentContextItems.has(itemId)).onChange(async (value) => {
+						const current = this.settingsStore.currentSettings.contextMenuItems;
+
+						const updated = value
+							? CONTEXT_MENU_ITEM_IDS.filter((id) => current.includes(id) || id === itemId)
+							: current.filter((id) => id !== itemId);
+
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							contextMenuItems: updated,
+						}));
+					});
+				});
+
+			itemSetting.settingEl.addClass("prisma-batch-button-setting");
 		}
 	}
 }
