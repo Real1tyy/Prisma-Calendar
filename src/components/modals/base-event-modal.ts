@@ -20,6 +20,7 @@ import {
 	inputValueToISOString,
 } from "../../utils/format";
 import { parseIntoList } from "../../utils/list-utils";
+import { parseAsLocalDate } from "../../utils/time-formatter";
 import { Stopwatch } from "../stopwatch";
 import { CategoryAssignModal } from "./category-assign-modal";
 import { CategoryEventsModal } from "./category-events-modal";
@@ -1211,6 +1212,16 @@ export abstract class BaseEventModal extends Modal {
 			} else {
 				delete preservedFrontmatter[settings.minutesBeforeProp];
 				delete preservedFrontmatter[settings.daysBeforeProp];
+			}
+		}
+
+		if (settings.skipNewlyCreatedNotifications && settings.alreadyNotifiedProp) {
+			const startDate = parseAsLocalDate(start);
+			if (startDate) {
+				const oneMinuteFromNow = new Date(Date.now() + 60000);
+				if (startDate < oneMinuteFromNow) {
+					preservedFrontmatter[settings.alreadyNotifiedProp] = true;
+				}
 			}
 		}
 

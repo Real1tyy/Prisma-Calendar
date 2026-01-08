@@ -132,15 +132,6 @@ export class NotificationManager {
 		const eventEndTime = endDate || startDate; // Use end date if available, otherwise start date
 		const now = new Date();
 
-		if (this.settings.skipNewlyCreatedNotifications) {
-			const oneMinuteFromNow = new Date(now.getTime() + 60000);
-			if (startDate < oneMinuteFromNow) {
-				void this.markAsNotified(filePath);
-				this.removeNotification(filePath);
-				return;
-			}
-		}
-
 		if (eventEndTime <= now) {
 			return;
 		}
