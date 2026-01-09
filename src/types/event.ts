@@ -33,12 +33,12 @@ const EventFrontmatterSchema = z.discriminatedUnion("allDay", [
 	AllDayEventFrontmatterSchema,
 ]);
 
-type ParsedEventFrontmatter = z.infer<typeof EventFrontmatterSchema>;
+type CalendarEventFrontmatter = z.infer<typeof EventFrontmatterSchema>;
 
 export function parseEventFrontmatter(
 	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig
-): ParsedEventFrontmatter | null {
+): CalendarEventFrontmatter | null {
 	const { startProp, endProp, dateProp, allDayProp, titleProp } = settings;
 
 	if (isAllDayEvent(frontmatter[allDayProp])) {

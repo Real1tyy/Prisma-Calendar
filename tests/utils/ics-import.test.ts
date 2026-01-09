@@ -5,8 +5,9 @@ import {
 	type ImportedEvent,
 	parseICSContent,
 } from "../../src/core/integrations/ics-import";
-import type { ParsedEvent } from "../../src/core/parser";
+import type { CalendarEvent } from "../../src/types/calendar";
 import type { SingleCalendarConfig } from "../../src/types/settings";
+import { createMockTimedEvent } from "../fixtures/event-fixtures";
 import { createMockSingleCalendarSettings } from "../setup";
 
 const SAMPLE_ICS_SINGLE_EVENT = `BEGIN:VCALENDAR
@@ -371,18 +372,16 @@ END:VCALENDAR`;
 	});
 
 	describe("round-trip idempotency", () => {
-		function createMockEvent(overrides: Partial<ParsedEvent> = {}): ParsedEvent {
-			return {
+		function createMockEvent(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
+			const event = createMockTimedEvent({
 				id: "test-event-id",
 				ref: { filePath: "calendar/test-event-20250115143000.md" },
 				title: "Test Event",
 				start: "2025-01-15T10:00:00Z",
 				end: "2025-01-15T11:00:00Z",
-				allDay: false,
-				isVirtual: false,
-				skipped: false,
 				...overrides,
-			};
+			});
+			return event;
 		}
 
 		function createOptions(overrides: Partial<ICSExportOptions> = {}): ICSExportOptions {

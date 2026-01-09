@@ -15,7 +15,7 @@ import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
-import type { Frontmatter } from "../types";
+import type { CalendarEvent, Frontmatter, ISO } from "../types";
 import type { NodeRecurringEvent } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import {
@@ -31,7 +31,6 @@ import { applySourceTimeToInstanceDate } from "../utils/format";
 import { deleteFilesByPaths } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { Indexer, IndexerEvent } from "./indexer";
-import type { ParsedEvent } from "./parser";
 
 interface NodeRecurringEventInstance {
 	recurringEvent: NodeRecurringEvent;
@@ -550,7 +549,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		});
 	}
 
-	generateAllVirtualInstances(rangeStart: DateTime, rangeEnd: DateTime): ParsedEvent[] {
+	generateAllVirtualInstances(rangeStart: DateTime, rangeEnd: DateTime): CalendarEvent[] {
 		const virtualEvents = Array.from(this.recurringEventsMap.values()).flatMap(
 			({ recurringEvent, physicalInstances }) =>
 				this.calculateVirtualOccurrencesInRange(recurringEvent, rangeStart, rangeEnd, physicalInstances).map(
@@ -649,17 +648,17 @@ export class RecurringEventManager extends DebouncedNotifier {
 		return { instanceStart, instanceEnd };
 	}
 
-	private createVirtualEvent(occurrence: NodeRecurringEventInstance): ParsedEvent {
+	private createVirtualEvent(occurrence: NodeRecurringEventInstance): CalendarEvent {
 		const { recurringEvent, instanceDate } = occurrence;
 		const { instanceStart, instanceEnd } = this.calculateInstanceTimes(recurringEvent, instanceDate);
+		const isAllDay = recurringEvent.rrules.allDay;
+		const start = instanceStart.toISO({ suppressMilliseconds: true }) || "";
 
-		return {
+		const baseEvent = {
 			id: `${recurringEvent.rRuleId}-${instanceDate.toISODate()}`,
 			ref: { filePath: recurringEvent.sourceFilePath },
 			title: recurringEvent.title,
-			start: instanceStart.toISO({ suppressMilliseconds: true }) || "",
-			end: instanceEnd ? instanceEnd.toISO({ suppressMilliseconds: true }) || "" : undefined,
-			allDay: recurringEvent.rrules.allDay,
+			start: start as ISO,
 			isVirtual: true,
 			skipped: false,
 			meta: {
@@ -667,6 +666,19 @@ export class RecurringEventManager extends DebouncedNotifier {
 				rruleId: recurringEvent.rRuleId,
 			},
 		};
+
+		return isAllDay
+			? {
+					...baseEvent,
+					type: "allDay" as const,
+					allDay: true,
+				}
+			: {
+					...baseEvent,
+					type: "timed" as const,
+					end: (instanceEnd ? instanceEnd.toISO({ suppressMilliseconds: true }) || "" : "") as ISO,
+					allDay: false,
+				};
 	}
 
 	private generateNodeInstanceFilePath(recurringEvent: NodeRecurringEvent, instanceDate: DateTime): string {

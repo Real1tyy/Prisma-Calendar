@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ParsedEvent } from "../../src/core/parser";
+import type { CalendarEvent } from "../../src/types/calendar";
 import {
 	aggregateDailyStats,
 	aggregateMonthlyStats,
@@ -14,97 +14,80 @@ import {
 	getWeekBounds,
 	parseCategories,
 } from "../../src/utils/weekly-stats";
+import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 
 describe("getEventDuration", () => {
 	it("should calculate duration for timed events with end time", () => {
-		const event: ParsedEvent = {
+		const event = createMockTimedEvent({
 			id: "1",
 			ref: { filePath: "test.md" },
 			title: "Meeting",
 			start: "2025-02-03T10:00:00Z",
 			end: "2025-02-03T11:30:00Z",
-			allDay: false,
-			isVirtual: false,
-			skipped: false,
-		};
+		});
 
 		const duration = getEventDuration(event);
 		expect(duration).toBe(90 * 60 * 1000); // 90 minutes in milliseconds
 	});
 
-	it("should return 0 for timed events without end time", () => {
-		const event: ParsedEvent = {
+	it("should return 0 for timed events with same start and end time", () => {
+		const event = createMockTimedEvent({
 			id: "1",
 			ref: { filePath: "test.md" },
 			title: "Meeting",
 			start: "2025-02-03T10:00:00Z",
-			allDay: false,
-			isVirtual: false,
-			skipped: false,
-		};
+			end: "2025-02-03T10:00:00Z",
+		});
 
 		const duration = getEventDuration(event);
 		expect(duration).toBe(0);
 	});
 
 	it("should assume 1 day duration for all-day events without end time", () => {
-		const event: ParsedEvent = {
+		const event = createMockAllDayEvent({
 			id: "1",
 			ref: { filePath: "test.md" },
 			title: "All Day Event",
 			start: "2025-02-03T00:00:00Z",
-			allDay: true,
-			isVirtual: false,
-			skipped: false,
-		};
+		});
 
 		const duration = getEventDuration(event);
 		expect(duration).toBe(24 * 60 * 60 * 1000); // 24 hours in milliseconds
 	});
 
-	it("should calculate duration for all-day events with end time", () => {
-		const event: ParsedEvent = {
+	it("should assume 1 day duration for all-day events (end time not supported)", () => {
+		const event = createMockAllDayEvent({
 			id: "1",
 			ref: { filePath: "test.md" },
-			title: "Multi-day Event",
+			title: "All Day Event",
 			start: "2025-02-03T00:00:00Z",
-			end: "2025-02-05T00:00:00Z",
-			allDay: true,
-			isVirtual: false,
-			skipped: false,
-		};
+		});
 
 		const duration = getEventDuration(event);
-		expect(duration).toBe(2 * 24 * 60 * 60 * 1000); // 2 days in milliseconds
+		expect(duration).toBe(24 * 60 * 60 * 1000); // 1 day in milliseconds (all-day events always assume 1 day)
 	});
 
 	it("should handle very short durations (15 minutes)", () => {
-		const event: ParsedEvent = {
+		const event = createMockTimedEvent({
 			id: "1",
 			ref: { filePath: "test.md" },
 			title: "Quick Standup",
 			start: "2025-02-03T09:00:00Z",
 			end: "2025-02-03T09:15:00Z",
-			allDay: false,
-			isVirtual: false,
-			skipped: false,
-		};
+		});
 
 		const duration = getEventDuration(event);
 		expect(duration).toBe(15 * 60 * 1000);
 	});
 
 	it("should handle events spanning multiple days", () => {
-		const event: ParsedEvent = {
+		const event = createMockTimedEvent({
 			id: "1",
 			ref: { filePath: "test.md" },
 			title: "Conference",
 			start: "2025-02-03T09:00:00Z",
 			end: "2025-02-05T17:00:00Z",
-			allDay: false,
-			isVirtual: false,
-			skipped: false,
-		};
+		});
 
 		const duration = getEventDuration(event);
 		// 2 days (48h) + 8 hours = 56 hours
@@ -112,59 +95,50 @@ describe("getEventDuration", () => {
 	});
 
 	it("should handle events crossing midnight", () => {
-		const event: ParsedEvent = {
+		const event = createMockTimedEvent({
 			id: "1",
 			ref: { filePath: "test.md" },
 			title: "Night Shift",
 			start: "2025-02-03T22:00:00Z",
 			end: "2025-02-04T06:00:00Z",
-			allDay: false,
-			isVirtual: false,
-			skipped: false,
-		};
+		});
 
 		const duration = getEventDuration(event);
 		expect(duration).toBe(8 * 60 * 60 * 1000); // 8 hours
 	});
 
 	it("should handle events with same start and end time", () => {
-		const event: ParsedEvent = {
+		const event = createMockTimedEvent({
 			id: "1",
 			ref: { filePath: "test.md" },
 			title: "Instant Event",
 			start: "2025-02-03T10:00:00Z",
 			end: "2025-02-03T10:00:00Z",
-			allDay: false,
-			isVirtual: false,
-			skipped: false,
-		};
+		});
 
 		const duration = getEventDuration(event);
 		expect(duration).toBe(0);
 	});
 
-	it("should handle all-day events spanning a week", () => {
-		const event: ParsedEvent = {
+	it("should assume 1 day duration for all-day events regardless of intended span", () => {
+		const event = createMockAllDayEvent({
 			id: "1",
 			ref: { filePath: "test.md" },
 			title: "Vacation",
 			start: "2025-02-03T00:00:00Z",
-			end: "2025-02-10T00:00:00Z",
-			allDay: true,
-			isVirtual: false,
-			skipped: false,
-		};
+		});
 
 		const duration = getEventDuration(event);
-		expect(duration).toBe(7 * 24 * 60 * 60 * 1000); // 7 days
+		expect(duration).toBe(24 * 60 * 60 * 1000); // 1 day (all-day events always assume 1 day)
 	});
 
 	describe("break time subtraction", () => {
 		it("should subtract break time from duration when breakProp is provided", () => {
-			const event: ParsedEvent = {
+			const event: CalendarEvent = {
 				id: "1",
 				ref: { filePath: "test.md" },
 				title: "Meeting",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T12:30:00Z", // 150 minutes
 				allDay: false,
@@ -180,48 +154,43 @@ describe("getEventDuration", () => {
 		});
 
 		it("should handle decimal break values", () => {
-			const event: ParsedEvent = {
+			const event = createMockTimedEvent({
 				id: "1",
 				ref: { filePath: "test.md" },
 				title: "Meeting",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:30:00Z", // 90 minutes
-				allDay: false,
-				isVirtual: false,
-				skipped: false,
 				meta: {
 					Break: 15.5, // 15.5 minute break
 				},
-			};
+			});
 
 			const duration = getEventDuration(event, "Break");
 			expect(duration).toBe(74.5 * 60 * 1000); // 90 - 15.5 = 74.5 minutes
 		});
 
 		it("should not subtract break when breakProp is not provided", () => {
-			const event: ParsedEvent = {
+			const event = createMockTimedEvent({
 				id: "1",
 				ref: { filePath: "test.md" },
 				title: "Meeting",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T12:30:00Z", // 150 minutes
-				allDay: false,
-				isVirtual: false,
-				skipped: false,
 				meta: {
 					Break: 30,
 				},
-			};
+			});
 
 			const duration = getEventDuration(event);
 			expect(duration).toBe(150 * 60 * 1000); // Full duration without break subtraction
 		});
 
 		it("should not subtract break when event has no break value", () => {
-			const event: ParsedEvent = {
+			const event: CalendarEvent = {
 				id: "1",
 				ref: { filePath: "test.md" },
 				title: "Meeting",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:30:00Z",
 				allDay: false,
@@ -235,10 +204,11 @@ describe("getEventDuration", () => {
 		});
 
 		it("should not go below zero duration", () => {
-			const event: ParsedEvent = {
+			const event: CalendarEvent = {
 				id: "1",
 				ref: { filePath: "test.md" },
 				title: "Meeting",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T10:30:00Z", // 30 minutes
 				allDay: false,
@@ -254,10 +224,11 @@ describe("getEventDuration", () => {
 		});
 
 		it("should ignore invalid break values", () => {
-			const event: ParsedEvent = {
+			const event: CalendarEvent = {
 				id: "1",
 				ref: { filePath: "test.md" },
 				title: "Meeting",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:30:00Z",
 				allDay: false,
@@ -273,10 +244,11 @@ describe("getEventDuration", () => {
 		});
 
 		it("should ignore negative break values", () => {
-			const event: ParsedEvent = {
+			const event: CalendarEvent = {
 				id: "1",
 				ref: { filePath: "test.md" },
 				title: "Meeting",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:30:00Z",
 				allDay: false,
@@ -292,10 +264,11 @@ describe("getEventDuration", () => {
 		});
 
 		it("should ignore zero break values", () => {
-			const event: ParsedEvent = {
+			const event: CalendarEvent = {
 				id: "1",
 				ref: { filePath: "test.md" },
 				title: "Meeting",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:30:00Z",
 				allDay: false,
@@ -311,10 +284,11 @@ describe("getEventDuration", () => {
 		});
 
 		it("should work with custom break property name", () => {
-			const event: ParsedEvent = {
+			const event: CalendarEvent = {
 				id: "1",
 				ref: { filePath: "test.md" },
 				title: "Meeting",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T12:00:00Z", // 120 minutes
 				allDay: false,
@@ -447,16 +421,18 @@ describe("getEventsInRange", () => {
 	const weekEnd = new Date("2025-02-10T00:00:00Z"); // Next Monday
 
 	it("should include events that start within the week", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Event 1",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
 				end: "2025-02-05T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -465,16 +441,18 @@ describe("getEventsInRange", () => {
 	});
 
 	it("should include events that span across the week", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Event 1",
+				type: "timed",
 				start: "2025-02-01T10:00:00Z", // Before week starts
 				end: "2025-02-05T11:00:00Z", // Ends in week
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -483,16 +461,18 @@ describe("getEventsInRange", () => {
 	});
 
 	it("should exclude events outside the week", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Event 1",
+				type: "timed",
 				start: "2025-02-01T10:00:00Z",
 				end: "2025-02-02T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -501,15 +481,18 @@ describe("getEventsInRange", () => {
 	});
 
 	it("should handle events without end time", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Event 1",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
+				end: "2025-02-05T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -518,16 +501,18 @@ describe("getEventsInRange", () => {
 	});
 
 	it("should include events starting exactly at week start", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Event 1",
+				type: "timed",
 				start: "2025-02-03T00:00:00Z",
 				end: "2025-02-03T01:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -536,16 +521,18 @@ describe("getEventsInRange", () => {
 	});
 
 	it("should exclude events starting exactly at week end", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Event 1",
+				type: "timed",
 				start: "2025-02-10T00:00:00Z",
 				end: "2025-02-10T01:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -554,16 +541,18 @@ describe("getEventsInRange", () => {
 	});
 
 	it("should include events ending just before week end", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Event 1",
+				type: "timed",
 				start: "2025-02-09T23:00:00Z",
 				end: "2025-02-09T23:59:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -572,16 +561,18 @@ describe("getEventsInRange", () => {
 	});
 
 	it("should include events that span the entire week", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Event 1",
+				type: "timed",
 				start: "2025-02-01T00:00:00Z",
 				end: "2025-02-15T00:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -590,36 +581,42 @@ describe("getEventsInRange", () => {
 	});
 
 	it("should handle multiple events at different positions in the week", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Monday Event",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "event2.md" },
 				title: "Wednesday Event",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
 				end: "2025-02-05T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "3",
 				ref: { filePath: "event3.md" },
 				title: "Sunday Event",
+				type: "timed",
 				start: "2025-02-09T10:00:00Z",
 				end: "2025-02-09T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -627,18 +624,14 @@ describe("getEventsInRange", () => {
 		expect(result).toHaveLength(3);
 	});
 
-	it("should handle all-day events spanning multiple days within the week", () => {
-		const events: ParsedEvent[] = [
-			{
+	it("should include all-day events that start within the week", () => {
+		const events: CalendarEvent[] = [
+			createMockAllDayEvent({
 				id: "1",
 				ref: { filePath: "event1.md" },
-				title: "Multi-day Event",
-				start: "2025-02-03T00:00:00Z",
-				end: "2025-02-05T00:00:00Z",
-				allDay: true,
-				isVirtual: false,
-				skipped: false,
-			},
+				title: "All Day Event",
+				start: "2025-02-05T00:00:00Z", // Wednesday, clearly within the week (Feb 3-10)
+			}),
 		];
 
 		const result = getEventsInRange(events, weekStart, weekEnd);
@@ -646,36 +639,42 @@ describe("getEventsInRange", () => {
 	});
 
 	it("should filter out events both before and after the week", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "before.md" },
 				title: "Before Week",
+				type: "timed",
 				start: "2025-01-15T10:00:00Z",
 				end: "2025-01-15T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "during.md" },
 				title: "During Week",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
 				end: "2025-02-05T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "3",
 				ref: { filePath: "after.md" },
 				title: "After Week",
+				type: "timed",
 				start: "2025-03-15T10:00:00Z",
 				end: "2025-03-15T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -685,7 +684,7 @@ describe("getEventsInRange", () => {
 	});
 
 	it("should handle empty events array", () => {
-		const events: ParsedEvent[] = [];
+		const events: CalendarEvent[] = [];
 		const result = getEventsInRange(events, weekStart, weekEnd);
 		expect(result).toHaveLength(0);
 	});
@@ -693,26 +692,30 @@ describe("getEventsInRange", () => {
 
 describe("aggregateWeeklyStats", () => {
 	it("should aggregate timed events by name", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "gym1.md" },
 				title: "Gym 20250203140530",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "gym2.md" },
 				title: "Gym 20250205140530",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
 				end: "2025-02-05T11:30:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -726,25 +729,29 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should skip all-day events", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "All Day Event",
+				type: "allDay",
 				start: "2025-02-03T00:00:00Z",
 				allDay: true,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "event2.md" },
 				title: "Timed Event",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -756,36 +763,42 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should group recurring events by their actual title", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "recurring1.md" },
 				title: "Daily Standup",
+				type: "timed",
 				start: "2025-02-03T09:00:00Z",
 				end: "2025-02-03T09:15:00Z",
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "recurring2.md" },
 				title: "Daily Standup",
+				type: "timed",
 				start: "2025-02-04T09:00:00Z",
 				end: "2025-02-04T09:15:00Z",
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "3",
 				ref: { filePath: "normal.md" },
 				title: "Meeting",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
 				end: "2025-02-05T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -806,26 +819,30 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should sort entries by duration descending", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "short.md" },
 				title: "Short Meeting",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T10:30:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "long.md" },
 				title: "Long Meeting",
+				type: "timed",
 				start: "2025-02-04T10:00:00Z",
 				end: "2025-02-04T12:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -837,26 +854,30 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should calculate total duration correctly", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Event 1",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "event2.md" },
 				title: "Event 2",
+				type: "timed",
 				start: "2025-02-04T10:00:00Z",
 				end: "2025-02-04T11:30:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -867,7 +888,7 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should handle empty event list", () => {
-		const events: ParsedEvent[] = [];
+		const events: CalendarEvent[] = [];
 		const date = new Date("2025-02-05");
 		const stats = aggregateWeeklyStats(events, date);
 
@@ -876,16 +897,18 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should handle single event", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Gym",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -899,26 +922,30 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should group all events by their cleaned title regardless of virtual status", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "normal.md" },
 				title: "Daily Standup",
+				type: "timed",
 				start: "2025-02-03T09:00:00Z",
 				end: "2025-02-03T09:15:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "recurring.md" },
 				title: "Daily Standup",
+				type: "timed",
 				start: "2025-02-04T09:00:00Z",
 				end: "2025-02-04T09:15:00Z",
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -933,15 +960,18 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should handle events with zero duration", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Meeting",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
+				end: "2025-02-03T10:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -954,36 +984,42 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should handle mixed recurring and non-recurring with different names", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "gym.md" },
 				title: "Gym",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "standup1.md" },
 				title: "Standup",
+				type: "timed",
 				start: "2025-02-04T09:00:00Z",
 				end: "2025-02-04T09:15:00Z",
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "3",
 				ref: { filePath: "standup2.md" },
 				title: "Standup",
+				type: "timed",
 				start: "2025-02-05T09:00:00Z",
 				end: "2025-02-05T09:15:00Z",
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1003,26 +1039,30 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should handle events spanning across week boundaries", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "before.md" },
 				title: "Before Week",
+				type: "timed",
 				start: "2025-02-01T10:00:00Z",
 				end: "2025-02-04T10:00:00Z", // Ends in week
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "after.md" },
 				title: "After Week",
+				type: "timed",
 				start: "2025-02-08T10:00:00Z", // Starts in week
 				end: "2025-02-12T10:00:00Z", // Ends after week
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1033,36 +1073,42 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should group events with various ID formats correctly", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "gym1.md" },
 				title: "Gym 20250203140530",
+				type: "timed",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "gym2.md" },
 				title: "Gym-20250205140530",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
 				end: "2025-02-05T11:30:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "3",
 				ref: { filePath: "gym3.md" },
 				title: "Gym - 2025-02-07",
+				type: "timed",
 				start: "2025-02-07T10:00:00Z",
 				end: "2025-02-07T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1075,7 +1121,7 @@ describe("aggregateWeeklyStats", () => {
 	});
 
 	it("should correctly set week bounds in result", () => {
-		const events: ParsedEvent[] = [];
+		const events: CalendarEvent[] = [];
 		const date = new Date("2025-02-05T15:30:00"); // Wednesday afternoon
 
 		const stats = aggregateWeeklyStats(events, date);
@@ -1344,26 +1390,30 @@ describe("getDayBounds", () => {
 
 describe("aggregateDailyStats", () => {
 	it("should aggregate events for a single day", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "meeting1.md" },
 				title: "Morning Meeting",
+				type: "timed",
 				start: "2025-02-15T09:00:00Z",
 				end: "2025-02-15T10:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "meeting2.md" },
 				title: "Afternoon Meeting",
+				type: "timed",
 				start: "2025-02-15T14:00:00Z",
 				end: "2025-02-15T15:30:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1375,36 +1425,42 @@ describe("aggregateDailyStats", () => {
 	});
 
 	it("should exclude events from other days", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "yesterday.md" },
 				title: "Yesterday Event",
+				type: "timed",
 				start: "2025-02-14T10:00:00Z",
 				end: "2025-02-14T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "today.md" },
 				title: "Today Event",
+				type: "timed",
 				start: "2025-02-15T10:00:00Z",
 				end: "2025-02-15T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "3",
 				ref: { filePath: "tomorrow.md" },
 				title: "Tomorrow Event",
+				type: "timed",
 				start: "2025-02-16T10:00:00Z",
 				end: "2025-02-16T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1416,25 +1472,29 @@ describe("aggregateDailyStats", () => {
 	});
 
 	it("should skip all-day events", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "allday.md" },
 				title: "All Day Event",
+				type: "allDay",
 				start: "2025-02-15T00:00:00Z",
 				allDay: true,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "timed.md" },
 				title: "Timed Event",
+				type: "timed",
 				start: "2025-02-15T10:00:00Z",
 				end: "2025-02-15T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1446,26 +1506,30 @@ describe("aggregateDailyStats", () => {
 	});
 
 	it("should group events by cleaned name", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "standup1.md" },
 				title: "Standup 20250215090000",
+				type: "timed",
 				start: "2025-02-15T09:00:00Z",
 				end: "2025-02-15T09:15:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "standup2.md" },
 				title: "Standup 20250215140000",
+				type: "timed",
 				start: "2025-02-15T14:00:00Z",
 				end: "2025-02-15T14:15:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1479,11 +1543,12 @@ describe("aggregateDailyStats", () => {
 	});
 
 	it("should support category aggregation mode", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "Meeting 1",
+				type: "timed",
 				start: "2025-02-15T09:00:00Z",
 				end: "2025-02-15T10:00:00Z",
 				allDay: false,
@@ -1497,6 +1562,7 @@ describe("aggregateDailyStats", () => {
 				id: "2",
 				ref: { filePath: "event2.md" },
 				title: "Meeting 2",
+				type: "timed",
 				start: "2025-02-15T14:00:00Z",
 				end: "2025-02-15T15:00:00Z",
 				allDay: false,
@@ -1510,6 +1576,7 @@ describe("aggregateDailyStats", () => {
 				id: "3",
 				ref: { filePath: "event3.md" },
 				title: "Gym",
+				type: "timed",
 				start: "2025-02-15T18:00:00Z",
 				end: "2025-02-15T19:00:00Z",
 				allDay: false,
@@ -1536,11 +1603,12 @@ describe("aggregateDailyStats", () => {
 	});
 
 	it("should handle break time subtraction", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "work.md" },
 				title: "Work Session",
+				type: "timed",
 				start: "2025-02-15T09:00:00Z",
 				end: "2025-02-15T12:00:00Z", // 3 hours
 				allDay: false,
@@ -1560,16 +1628,18 @@ describe("aggregateDailyStats", () => {
 	});
 
 	it("should return empty results for days with no events", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event.md" },
 				title: "Event",
+				type: "timed",
 				start: "2025-02-14T10:00:00Z",
 				end: "2025-02-14T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1581,7 +1651,7 @@ describe("aggregateDailyStats", () => {
 	});
 
 	it("should correctly set day bounds in result", () => {
-		const events: ParsedEvent[] = [];
+		const events: CalendarEvent[] = [];
 		const date = new Date("2025-02-15T15:30:00");
 
 		const stats = aggregateDailyStats(events, date);
@@ -1594,16 +1664,18 @@ describe("aggregateDailyStats", () => {
 	});
 
 	it("should handle events spanning across day boundary", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "spanning.md" },
 				title: "Spanning Event",
+				type: "timed",
 				start: "2025-02-14T20:00:00", // Starts yesterday at 8pm local
 				end: "2025-02-15T04:00:00", // Ends today at 4am local
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1618,36 +1690,42 @@ describe("aggregateDailyStats", () => {
 
 describe("aggregateMonthlyStats", () => {
 	it("should aggregate events within a month", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "gym1.md" },
 				title: "Gym Session 2025-02-05",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
 				end: "2025-02-05T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "gym2.md" },
 				title: "Gym Session 2025-02-12",
+				type: "timed",
 				start: "2025-02-12T10:00:00Z",
 				end: "2025-02-12T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "3",
 				ref: { filePath: "gym3.md" },
 				title: "Gym Session 2025-02-19",
+				type: "timed",
 				start: "2025-02-19T10:00:00Z",
 				end: "2025-02-19T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1662,36 +1740,42 @@ describe("aggregateMonthlyStats", () => {
 	});
 
 	it("should exclude events outside the month", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event1.md" },
 				title: "January Event",
+				type: "timed",
 				start: "2025-01-28T10:00:00Z",
 				end: "2025-01-28T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "event2.md" },
 				title: "February Event",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
 				end: "2025-02-05T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "3",
 				ref: { filePath: "event3.md" },
 				title: "March Event",
+				type: "timed",
 				start: "2025-03-05T10:00:00Z",
 				end: "2025-03-05T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1703,25 +1787,29 @@ describe("aggregateMonthlyStats", () => {
 	});
 
 	it("should skip all-day events", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "allday.md" },
 				title: "All Day Event",
+				type: "allDay",
 				start: "2025-02-05T00:00:00Z",
 				allDay: true,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "timed.md" },
 				title: "Timed Event",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
 				end: "2025-02-05T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1733,26 +1821,30 @@ describe("aggregateMonthlyStats", () => {
 	});
 
 	it("should group events by cleaned name", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "meeting1.md" },
 				title: "Team Meeting 2025-02-05",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
 				end: "2025-02-05T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "meeting2.md" },
 				title: "Team Meeting 2025-02-12",
+				type: "timed",
 				start: "2025-02-12T14:00:00Z",
 				end: "2025-02-12T15:30:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1766,26 +1858,30 @@ describe("aggregateMonthlyStats", () => {
 	});
 
 	it("should handle virtual (recurring) events", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "recurring.md" },
 				title: "Daily Standup",
+				type: "timed",
 				start: "2025-02-05T09:00:00Z",
 				end: "2025-02-05T09:15:00Z",
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "recurring.md" },
 				title: "Daily Standup",
+				type: "timed",
 				start: "2025-02-06T09:00:00Z",
 				end: "2025-02-06T09:15:00Z",
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1807,26 +1903,30 @@ describe("aggregateMonthlyStats", () => {
 	});
 
 	it("should sort entries by duration descending", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "short.md" },
 				title: "Short Meeting",
+				type: "timed",
 				start: "2025-02-05T10:00:00Z",
 				end: "2025-02-05T10:30:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "long.md" },
 				title: "Long Workshop",
+				type: "timed",
 				start: "2025-02-05T14:00:00Z",
 				end: "2025-02-05T17:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1841,7 +1941,7 @@ describe("aggregateMonthlyStats", () => {
 	});
 
 	it("should correctly set month bounds in result", () => {
-		const events: ParsedEvent[] = [];
+		const events: CalendarEvent[] = [];
 		const date = new Date("2025-02-15T15:30:00");
 
 		const stats = aggregateMonthlyStats(events, date);
@@ -1855,26 +1955,30 @@ describe("aggregateMonthlyStats", () => {
 	});
 
 	it("should handle month with 31 days", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event.md" },
 				title: "Event",
+				type: "timed",
 				start: "2025-01-01T10:00:00Z",
 				end: "2025-01-01T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 			{
 				id: "2",
 				ref: { filePath: "event2.md" },
 				title: "Event",
+				type: "timed",
 				start: "2025-01-31T10:00:00Z",
 				end: "2025-01-31T11:00:00Z",
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1885,16 +1989,18 @@ describe("aggregateMonthlyStats", () => {
 	});
 
 	it("should handle events spanning across month boundary", () => {
-		const events: ParsedEvent[] = [
+		const events: CalendarEvent[] = [
 			{
 				id: "1",
 				ref: { filePath: "event.md" },
 				title: "Event",
+				type: "timed",
 				start: "2025-01-31T23:00:00Z", // Last day of January
 				end: "2025-02-01T01:00:00Z", // First day of February
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				meta: {},
 			},
 		];
 
@@ -1909,11 +2015,12 @@ describe("aggregateMonthlyStats", () => {
 describe("Break time in aggregation", () => {
 	describe("aggregateWeeklyStats with break", () => {
 		it("should subtract break time from total duration", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "gym1.md" },
 					title: "Gym Session",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T12:30:00Z", // 150 minutes
 					allDay: false,
@@ -1934,11 +2041,12 @@ describe("Break time in aggregation", () => {
 		});
 
 		it("should aggregate multiple events with breaks correctly", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "work1.md" },
 					title: "Work Session",
+					type: "timed",
 					start: "2025-02-03T09:00:00Z",
 					end: "2025-02-03T12:00:00Z", // 180 minutes
 					allDay: false,
@@ -1952,6 +2060,7 @@ describe("Break time in aggregation", () => {
 					id: "2",
 					ref: { filePath: "work2.md" },
 					title: "Work Session",
+					type: "timed",
 					start: "2025-02-04T09:00:00Z",
 					end: "2025-02-04T12:30:00Z", // 210 minutes
 					allDay: false,
@@ -1974,11 +2083,12 @@ describe("Break time in aggregation", () => {
 		});
 
 		it("should handle mixed events with and without breaks", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Event 1",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T12:00:00Z", // 120 minutes
 					allDay: false,
@@ -1992,11 +2102,13 @@ describe("Break time in aggregation", () => {
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Event 2",
+					type: "timed",
 					start: "2025-02-04T10:00:00Z",
 					end: "2025-02-04T11:00:00Z", // 60 minutes, no break
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					meta: {},
 				},
 			];
 
@@ -2010,11 +2122,12 @@ describe("Break time in aggregation", () => {
 		});
 
 		it("should work with category aggregation mode", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "work.md" },
 					title: "Work",
+					type: "timed",
 					start: "2025-02-03T09:00:00Z",
 					end: "2025-02-03T12:00:00Z", // 180 minutes
 					allDay: false,
@@ -2029,6 +2142,7 @@ describe("Break time in aggregation", () => {
 					id: "2",
 					ref: { filePath: "gym.md" },
 					title: "Gym",
+					type: "timed",
 					start: "2025-02-04T18:00:00Z",
 					end: "2025-02-04T20:00:00Z", // 120 minutes
 					allDay: false,
@@ -2054,11 +2168,12 @@ describe("Break time in aggregation", () => {
 		});
 
 		it("should not subtract break when breakProp is not provided", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "gym.md" },
 					title: "Gym",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T12:30:00Z", // 150 minutes
 					allDay: false,
@@ -2080,11 +2195,12 @@ describe("Break time in aggregation", () => {
 
 	describe("aggregateMonthlyStats with break", () => {
 		it("should subtract break time from monthly stats", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event.md" },
 					title: "Event",
+					type: "timed",
 					start: "2025-02-05T10:00:00Z",
 					end: "2025-02-05T13:00:00Z", // 180 minutes
 					allDay: false,
@@ -2108,11 +2224,12 @@ describe("Break time in aggregation", () => {
 describe("Category-based aggregation", () => {
 	describe("aggregateWeeklyStats with category mode", () => {
 		it("should aggregate events by category property", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Team Meeting",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T11:00:00Z",
 					allDay: false,
@@ -2126,6 +2243,7 @@ describe("Category-based aggregation", () => {
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Client Call",
+					type: "timed",
 					start: "2025-02-04T14:00:00Z",
 					end: "2025-02-04T15:30:00Z",
 					allDay: false,
@@ -2139,6 +2257,7 @@ describe("Category-based aggregation", () => {
 					id: "3",
 					ref: { filePath: "event3.md" },
 					title: "Gym Session",
+					type: "timed",
 					start: "2025-02-05T18:00:00Z",
 					end: "2025-02-05T19:00:00Z",
 					allDay: false,
@@ -2167,11 +2286,12 @@ describe("Category-based aggregation", () => {
 		});
 
 		it("should use 'No Category' for events without category property", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Team Meeting",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T11:00:00Z",
 					allDay: false,
@@ -2185,17 +2305,20 @@ describe("Category-based aggregation", () => {
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Random Event",
+					type: "timed",
 					start: "2025-02-04T14:00:00Z",
 					end: "2025-02-04T15:00:00Z",
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					meta: {},
 					// No meta at all
 				},
 				{
 					id: "3",
 					ref: { filePath: "event3.md" },
 					title: "Another Event",
+					type: "timed",
 					start: "2025-02-05T10:00:00Z",
 					end: "2025-02-05T11:00:00Z",
 					allDay: false,
@@ -2223,11 +2346,12 @@ describe("Category-based aggregation", () => {
 		});
 
 		it("should handle custom category property name", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Event 1",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T11:00:00Z",
 					allDay: false,
@@ -2241,6 +2365,7 @@ describe("Category-based aggregation", () => {
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Event 2",
+					type: "timed",
 					start: "2025-02-04T10:00:00Z",
 					end: "2025-02-04T11:00:00Z",
 					allDay: false,
@@ -2261,23 +2386,21 @@ describe("Category-based aggregation", () => {
 		});
 
 		it("should still skip all-day events in category mode", () => {
-			const events: ParsedEvent[] = [
-				{
+			const events: CalendarEvent[] = [
+				createMockAllDayEvent({
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "All Day Event",
 					start: "2025-02-03T00:00:00Z",
-					allDay: true,
-					isVirtual: false,
-					skipped: false,
 					meta: {
 						Category: "Work",
 					},
-				},
+				}),
 				{
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Timed Event",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T11:00:00Z",
 					allDay: false,
@@ -2298,11 +2421,12 @@ describe("Category-based aggregation", () => {
 		});
 
 		it("should preserve isRecurring flag for virtual events in category mode", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "recurring.md" },
 					title: "Standup",
+					type: "timed",
 					start: "2025-02-03T09:00:00Z",
 					end: "2025-02-03T09:15:00Z",
 					allDay: false,
@@ -2316,6 +2440,7 @@ describe("Category-based aggregation", () => {
 					id: "2",
 					ref: { filePath: "recurring.md" },
 					title: "Standup",
+					type: "timed",
 					start: "2025-02-04T09:00:00Z",
 					end: "2025-02-04T09:15:00Z",
 					allDay: false,
@@ -2336,11 +2461,12 @@ describe("Category-based aggregation", () => {
 		});
 
 		it("should handle empty category values as 'No Category'", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Event 1",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T11:00:00Z",
 					allDay: false,
@@ -2360,11 +2486,12 @@ describe("Category-based aggregation", () => {
 		});
 
 		it("should sort categories by duration descending", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Short Work",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T10:30:00Z",
 					allDay: false,
@@ -2378,6 +2505,7 @@ describe("Category-based aggregation", () => {
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Long Personal",
+					type: "timed",
 					start: "2025-02-04T10:00:00Z",
 					end: "2025-02-04T13:00:00Z",
 					allDay: false,
@@ -2397,11 +2525,12 @@ describe("Category-based aggregation", () => {
 		});
 
 		it("should default to name mode when mode parameter is 'name'", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Meeting 20250203",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T11:00:00Z",
 					allDay: false,
@@ -2415,6 +2544,7 @@ describe("Category-based aggregation", () => {
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Meeting 20250204",
+					type: "timed",
 					start: "2025-02-04T10:00:00Z",
 					end: "2025-02-04T11:00:00Z",
 					allDay: false,
@@ -2438,11 +2568,12 @@ describe("Category-based aggregation", () => {
 
 	describe("aggregateMonthlyStats with category mode", () => {
 		it("should aggregate monthly events by category", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Meeting 1",
+					type: "timed",
 					start: "2025-02-05T10:00:00Z",
 					end: "2025-02-05T11:00:00Z",
 					allDay: false,
@@ -2456,6 +2587,7 @@ describe("Category-based aggregation", () => {
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Meeting 2",
+					type: "timed",
 					start: "2025-02-12T10:00:00Z",
 					end: "2025-02-12T11:00:00Z",
 					allDay: false,
@@ -2469,6 +2601,7 @@ describe("Category-based aggregation", () => {
 					id: "3",
 					ref: { filePath: "event3.md" },
 					title: "Gym",
+					type: "timed",
 					start: "2025-02-15T18:00:00Z",
 					end: "2025-02-15T19:00:00Z",
 					allDay: false,
@@ -2495,21 +2628,24 @@ describe("Category-based aggregation", () => {
 		});
 
 		it("should handle 'No Category' for monthly stats", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Event 1",
+					type: "timed",
 					start: "2025-02-05T10:00:00Z",
 					end: "2025-02-05T11:00:00Z",
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					meta: {},
 				},
 				{
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Event 2",
+					type: "timed",
 					start: "2025-02-12T10:00:00Z",
 					end: "2025-02-12T11:00:00Z",
 					allDay: false,
@@ -2588,11 +2724,12 @@ describe("parseCategories", () => {
 describe("Multi-category aggregation", () => {
 	describe("aggregateWeeklyStats with multiple categories", () => {
 		it("should count event under each category when comma-separated", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Team Building",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T12:00:00Z", // 2 hours
 					allDay: false,
@@ -2621,11 +2758,12 @@ describe("Multi-category aggregation", () => {
 		});
 
 		it("should aggregate duration correctly across multiple events with overlapping categories", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Gym with Coworkers",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T11:00:00Z", // 1 hour
 					allDay: false,
@@ -2639,6 +2777,7 @@ describe("Multi-category aggregation", () => {
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Solo Gym",
+					type: "timed",
 					start: "2025-02-04T10:00:00Z",
 					end: "2025-02-04T11:30:00Z", // 1.5 hours
 					allDay: false,
@@ -2652,6 +2791,7 @@ describe("Multi-category aggregation", () => {
 					id: "3",
 					ref: { filePath: "event3.md" },
 					title: "Meeting",
+					type: "timed",
 					start: "2025-02-05T14:00:00Z",
 					end: "2025-02-05T15:00:00Z", // 1 hour
 					allDay: false,
@@ -2682,11 +2822,12 @@ describe("Multi-category aggregation", () => {
 		});
 
 		it("should handle three or more categories", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Conference",
+					type: "timed",
 					start: "2025-02-03T09:00:00Z",
 					end: "2025-02-03T17:00:00Z", // 8 hours
 					allDay: false,
@@ -2712,11 +2853,12 @@ describe("Multi-category aggregation", () => {
 		});
 
 		it("should handle break time correctly with multiple categories", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Workshop",
+					type: "timed",
 					start: "2025-02-03T09:00:00Z",
 					end: "2025-02-03T12:00:00Z", // 3 hours
 					allDay: false,
@@ -2743,11 +2885,12 @@ describe("Multi-category aggregation", () => {
 		});
 
 		it("should not double count duration in totalDuration for multi-category events", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Event",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T11:00:00Z", // 1 hour
 					allDay: false,
@@ -2768,11 +2911,12 @@ describe("Multi-category aggregation", () => {
 		});
 
 		it("should preserve isRecurring flag with multiple categories", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "recurring.md" },
 					title: "Daily Standup",
+					type: "timed",
 					start: "2025-02-03T09:00:00Z",
 					end: "2025-02-03T09:15:00Z",
 					allDay: false,
@@ -2794,11 +2938,12 @@ describe("Multi-category aggregation", () => {
 
 	describe("aggregateMonthlyStats with multiple categories", () => {
 		it("should count monthly events under each category when comma-separated", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Event",
+					type: "timed",
 					start: "2025-02-05T10:00:00Z",
 					end: "2025-02-05T12:00:00Z", // 2 hours
 					allDay: false,
@@ -2812,6 +2957,7 @@ describe("Multi-category aggregation", () => {
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Another Event",
+					type: "timed",
 					start: "2025-02-12T10:00:00Z",
 					end: "2025-02-12T11:00:00Z", // 1 hour
 					allDay: false,
@@ -2844,11 +2990,12 @@ describe("Multi-category aggregation", () => {
 
 	describe("edge cases for multi-category", () => {
 		it("should handle event with single category in comma format", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Event",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T11:00:00Z",
 					allDay: false,
@@ -2868,11 +3015,12 @@ describe("Multi-category aggregation", () => {
 		});
 
 		it("should handle event with duplicate categories", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Event",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T11:00:00Z", // 1 hour
 					allDay: false,
@@ -2895,11 +3043,12 @@ describe("Multi-category aggregation", () => {
 		});
 
 		it("should mix multi-category and single-category events correctly", () => {
-			const events: ParsedEvent[] = [
+			const events: CalendarEvent[] = [
 				{
 					id: "1",
 					ref: { filePath: "event1.md" },
 					title: "Multi-category Event",
+					type: "timed",
 					start: "2025-02-03T10:00:00Z",
 					end: "2025-02-03T11:00:00Z", // 1 hour
 					allDay: false,
@@ -2913,6 +3062,7 @@ describe("Multi-category aggregation", () => {
 					id: "2",
 					ref: { filePath: "event2.md" },
 					title: "Single A",
+					type: "timed",
 					start: "2025-02-04T10:00:00Z",
 					end: "2025-02-04T11:00:00Z", // 1 hour
 					allDay: false,
@@ -2926,11 +3076,13 @@ describe("Multi-category aggregation", () => {
 					id: "3",
 					ref: { filePath: "event3.md" },
 					title: "No Category",
+					type: "timed",
 					start: "2025-02-05T10:00:00Z",
 					end: "2025-02-05T11:00:00Z", // 1 hour
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					meta: {},
 				},
 			];
 

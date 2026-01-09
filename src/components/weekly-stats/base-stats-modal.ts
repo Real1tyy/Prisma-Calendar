@@ -2,7 +2,7 @@ import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import { Modal } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import type { ParsedEvent } from "../../core/parser";
+import type { CalendarEvent } from "../../types/calendar";
 import type { AggregationMode } from "../../utils/weekly-stats";
 import type { ChartComponent } from "./chart-component";
 import type { TableComponent } from "./table-component";
@@ -82,7 +82,7 @@ export abstract class StatsModal extends Modal {
 		});
 	}
 
-	protected filterSkippedEvents(events: ParsedEvent[]): ParsedEvent[] {
+	protected filterSkippedEvents(events: CalendarEvent[]): CalendarEvent[] {
 		if (this.includeSkippedEvents) {
 			return events;
 		}

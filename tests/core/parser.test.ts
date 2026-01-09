@@ -4,6 +4,7 @@ import type { BehaviorSubject } from "rxjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { RawEventSource } from "../../src/core/indexer";
 import { Parser } from "../../src/core/parser";
+import { isAllDayEvent, isTimedEvent } from "../../src/types/calendar";
 import { createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
 
 const mockApp = {
@@ -45,6 +46,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: true,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -53,8 +55,8 @@ describe("Parser", () => {
 			const event = events!;
 
 			expect(event.title).toBe("meeting"); // From filename
+			expect(isAllDayEvent(event)).toBe(true);
 			expect(event.start).toBeTruthy();
-			expect(event.allDay).toBe(true);
 			expect(event.ref.filePath).toBe("Events/meeting.md");
 		});
 
@@ -70,6 +72,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -78,9 +81,11 @@ describe("Parser", () => {
 			const event = events!;
 
 			expect(event.title).toBe("Team Meeting");
-			expect(event.allDay).toBe(false);
+			expect(isTimedEvent(event)).toBe(true);
 			expect(event.start).toBeTruthy();
-			expect(event.end).toBeTruthy();
+			if (isTimedEvent(event)) {
+				expect(event.end).toBeTruthy();
+			}
 
 			// Verify it's a timed event (should have specific time)
 			const startTime = DateTime.fromISO(event.start);
@@ -98,18 +103,22 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
 
 			expect(events).toBeDefined();
 			const event = events!;
+			expect(isTimedEvent(event)).toBe(true);
 
-			const startTime = DateTime.fromISO(event.start);
-			const endTime = DateTime.fromISO(event.end!);
-			const durationMinutes = endTime.diff(startTime, "minutes").minutes;
+			if (isTimedEvent(event)) {
+				const startTime = DateTime.fromISO(event.start);
+				const endTime = DateTime.fromISO(event.end);
+				const durationMinutes = endTime.diff(startTime, "minutes").minutes;
 
-			expect(durationMinutes).toBe(60); // Default duration
+				expect(durationMinutes).toBe(60); // Default duration
+			}
 		});
 
 		it("should handle explicit all-day flag", () => {
@@ -122,13 +131,14 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: true,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
 
 			expect(events).toBeDefined();
 			const event = events!;
-			expect(event.allDay).toBe(true);
+			expect(isAllDayEvent(event)).toBe(true);
 		});
 	});
 
@@ -153,6 +163,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -171,6 +182,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -192,6 +204,7 @@ describe("Parser", () => {
 					frontmatter: { start: dateStr },
 					folder: "Events",
 					isAllDay: false,
+					isUntracked: false,
 				};
 
 				const events = parser.parseEventSource(source);
@@ -214,6 +227,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -232,6 +246,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -248,6 +263,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -266,6 +282,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -287,6 +304,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -304,6 +322,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -322,6 +341,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: true,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -343,6 +363,7 @@ describe("Parser", () => {
 				},
 				folder: "Projects",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -371,6 +392,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events1 = parser.parseEventSource(source);
@@ -399,6 +421,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -406,11 +429,13 @@ describe("Parser", () => {
 			expect(events).toBeDefined();
 
 			// Should use new default duration (90 minutes)
-			const startTime = DateTime.fromISO(events!.start);
-			const endTime = DateTime.fromISO(events!.end!);
-			const durationMinutes = endTime.diff(startTime, "minutes").minutes;
+			if (isTimedEvent(events!)) {
+				const startTime = DateTime.fromISO(events.start);
+				const endTime = DateTime.fromISO(events.end);
+				const durationMinutes = endTime.diff(startTime, "minutes").minutes;
 
-			expect(durationMinutes).toBe(90);
+				expect(durationMinutes).toBe(90);
+			}
 		});
 	});
 
@@ -422,6 +447,7 @@ describe("Parser", () => {
 				frontmatter: {},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -440,6 +466,7 @@ describe("Parser", () => {
 				},
 				folder: "Events",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const events = parser.parseEventSource(source);
@@ -460,6 +487,7 @@ describe("Parser", () => {
 			const source: RawEventSource = {
 				filePath: "Tasks/enforce All Templates, Make it a one off script to enforce all frontmatter and templates..md",
 				mtime: Date.now(),
+				isUntracked: false,
 				frontmatter: {
 					title: "",
 					startTime: "",
@@ -533,6 +561,7 @@ describe("Parser", () => {
 				},
 				folder: "Tasks",
 				isAllDay: false,
+				isUntracked: false,
 			};
 
 			const event = parser.parseEventSource(source);

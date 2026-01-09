@@ -1,6 +1,6 @@
 import { BehaviorSubject, Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { IndexerEvent } from "../../src/core/indexer";
+import type { IndexerEvent, RawEventSource } from "../../src/core/indexer";
 import { NotificationManager } from "../../src/core/notification-manager";
 import type { SingleCalendarConfig } from "../../src/types/settings";
 import { parseAsLocalDate } from "../../src/utils/time-formatter";
@@ -37,6 +37,75 @@ describe("NotificationManager", () => {
 			allDayProp: "All Day",
 			titleProp: "Title",
 		}) as SingleCalendarConfig;
+
+	const createFutureDate = (hoursOffset: number = 2): Date => {
+		const date = new Date();
+		date.setHours(date.getHours() + hoursOffset);
+		return date;
+	};
+
+	const createFutureDateDays = (daysOffset: number = 5): Date => {
+		const date = new Date();
+		date.setDate(date.getDate() + daysOffset);
+		return date;
+	};
+
+	const createMockFile = (filePath: string = "event.md", basename: string = "Test Event"): TFile => {
+		const file = new TFile(filePath);
+		file.basename = basename;
+		return file;
+	};
+
+	const createRawEventSource = (overrides: Partial<RawEventSource> = {}): RawEventSource => ({
+		filePath: "event.md",
+		mtime: Date.now(),
+		frontmatter: {},
+		folder: "",
+		isAllDay: false,
+		isUntracked: false,
+		...overrides,
+	});
+
+	const createTimedEventSource = (overrides: Partial<RawEventSource> = {}): RawEventSource => {
+		const futureDate = createFutureDate(2);
+		return createRawEventSource({
+			frontmatter: {
+				"Start Date": futureDate.toISOString(),
+				"Minutes Before": 15,
+				...overrides.frontmatter,
+			},
+			isAllDay: false,
+			...overrides,
+		});
+	};
+
+	const createAllDayEventSource = (overrides: Partial<RawEventSource> = {}): RawEventSource => {
+		const futureDate = createFutureDateDays(5);
+		return createRawEventSource({
+			frontmatter: {
+				Date: futureDate.toISOString().split("T")[0],
+				"Days Before": 1,
+				...overrides.frontmatter,
+			},
+			isAllDay: true,
+			...overrides,
+		});
+	};
+
+	const createIndexerEvent = (overrides: Partial<IndexerEvent> = {}): IndexerEvent => ({
+		type: "file-changed",
+		filePath: "event.md",
+		source: createTimedEventSource(),
+		...overrides,
+	});
+
+	const createFileChangedEvent = (overrides: Partial<IndexerEvent> = {}): IndexerEvent =>
+		createIndexerEvent({ type: "file-changed", ...overrides });
+
+	const createFileDeletedEvent = (filePath: string = "event.md"): IndexerEvent => ({
+		type: "file-deleted",
+		filePath,
+	});
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -147,23 +216,7 @@ describe("NotificationManager", () => {
 
 			await notificationManager.start();
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
-
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						"Minutes Before": 15,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(createFileChangedEvent());
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(0);
 		});
@@ -178,33 +231,24 @@ describe("NotificationManager", () => {
 
 			await notificationManager.start();
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
+			const futureDate = createFutureDate(2);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile());
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "Test Event";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
-
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						"Minutes Before": 15, // Override default 30
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+							"Minutes Before": 15,
+						},
+					}),
+				})
+			);
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
 			expect(queue[0].filePath).toBe("event.md");
 
-			// Since we parse ISO string as local time, calculate expected time accordingly
 			const parsedStartDate = parseAsLocalDate(futureDate.toISOString())!;
 			const expectedNotifyTime = new Date(parsedStartDate);
 			expectedNotifyTime.setMinutes(expectedNotifyTime.getMinutes() - 15);
@@ -219,31 +263,22 @@ describe("NotificationManager", () => {
 
 			await notificationManager.start();
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
+			const futureDate = createFutureDate(2);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile());
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "Test Event";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
-
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+						},
+					}),
+				})
+			);
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
 
-			// Since we parse ISO string as local time, calculate expected time accordingly
 			const parsedStartDate = parseAsLocalDate(futureDate.toISOString())!;
 			const expectedNotifyTime = new Date(parsedStartDate);
 			expectedNotifyTime.setMinutes(expectedNotifyTime.getMinutes() - 30);
@@ -253,23 +288,17 @@ describe("NotificationManager", () => {
 		it("should not add notification for timed event without notification time", async () => {
 			await notificationManager.start();
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
+			const futureDate = createFutureDate(2);
 
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						// No Minutes Before and no default
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+						},
+					}),
+				})
+			);
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(0);
 		});
@@ -277,31 +306,22 @@ describe("NotificationManager", () => {
 		it("should handle 0 minutes before (notify at event start)", async () => {
 			await notificationManager.start();
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
+			const futureDate = createFutureDate(2);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile());
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "Test Event";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
-
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						"Minutes Before": 0,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+							"Minutes Before": 0,
+						},
+					}),
+				})
+			);
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
-			// Since we parse ISO string as local time, use parsed date
 			const parsedStartDate = parseAsLocalDate(futureDate.toISOString())!;
 			expect(queue[0].notifyAt.getTime()).toBe(parsedStartDate.getTime());
 		});
@@ -316,34 +336,26 @@ describe("NotificationManager", () => {
 
 			await notificationManager.start();
 
-			const futureDate = new Date();
-			futureDate.setDate(futureDate.getDate() + 5);
+			const futureDate = createFutureDateDays(5);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile());
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "Test Event";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
-
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						Date: futureDate.toISOString().split("T")[0],
-						"Days Before": 1, // Override default 2
-					},
-					folder: "",
-					isAllDay: true,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createAllDayEventSource({
+						frontmatter: {
+							Date: futureDate.toISOString().split("T")[0],
+							"Days Before": 1,
+						},
+					}),
+				})
+			);
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
 
 			const expectedNotifyTime = new Date(futureDate);
 			expectedNotifyTime.setDate(expectedNotifyTime.getDate() - 1);
-			expectedNotifyTime.setHours(0, 0, 0, 0); // Midnight notification time
+			expectedNotifyTime.setHours(0, 0, 0, 0);
 			expect(queue[0].notifyAt.getTime()).toBe(expectedNotifyTime.getTime());
 			expect(queue[0].isAllDay).toBe(true);
 		});
@@ -356,67 +368,51 @@ describe("NotificationManager", () => {
 
 			await notificationManager.start();
 
-			const futureDate = new Date();
-			futureDate.setDate(futureDate.getDate() + 5);
+			const futureDate = createFutureDateDays(5);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile());
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "Test Event";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
-
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						Date: futureDate.toISOString().split("T")[0],
-						"All Day": true,
-					},
-					folder: "",
-					isAllDay: true,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createAllDayEventSource({
+						frontmatter: {
+							Date: futureDate.toISOString().split("T")[0],
+							"All Day": true,
+						},
+					}),
+				})
+			);
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
 
 			const expectedNotifyTime = new Date(futureDate);
 			expectedNotifyTime.setDate(expectedNotifyTime.getDate() - 1);
-			expectedNotifyTime.setHours(0, 0, 0, 0); // Midnight notification time
+			expectedNotifyTime.setHours(0, 0, 0, 0);
 			expect(queue[0].notifyAt.getTime()).toBe(expectedNotifyTime.getTime());
 		});
 
 		it("should handle 0 days before (notify on event day)", async () => {
 			await notificationManager.start();
 
-			const futureDate = new Date();
-			futureDate.setDate(futureDate.getDate() + 5);
+			const futureDate = createFutureDateDays(5);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile());
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "Test Event";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
-
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						Date: futureDate.toISOString().split("T")[0],
-						"Days Before": 0,
-					},
-					folder: "",
-					isAllDay: true,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createAllDayEventSource({
+						frontmatter: {
+							Date: futureDate.toISOString().split("T")[0],
+							"Days Before": 0,
+						},
+					}),
+				})
+			);
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
 
 			const expectedNotifyTime = new Date(futureDate);
-			expectedNotifyTime.setHours(0, 0, 0, 0); // Midnight notification time
+			expectedNotifyTime.setHours(0, 0, 0, 0);
 			expect(queue[0].notifyAt.getTime()).toBe(expectedNotifyTime.getTime());
 		});
 	});
@@ -425,24 +421,19 @@ describe("NotificationManager", () => {
 		it("should not add notification for events already marked as notified", async () => {
 			await notificationManager.start();
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
+			const futureDate = createFutureDate(2);
 
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						"Minutes Before": 15,
-						"Already Notified": true,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+							"Minutes Before": 15,
+							"Already Notified": true,
+						},
+					}),
+				})
+			);
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(0);
 		});
@@ -450,24 +441,19 @@ describe("NotificationManager", () => {
 		it('should not add notification when alreadyNotified is "true" string', async () => {
 			await notificationManager.start();
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
+			const futureDate = createFutureDate(2);
 
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						"Minutes Before": 15,
-						"Already Notified": "true",
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+							"Minutes Before": 15,
+							"Already Notified": "true",
+						},
+					}),
+				})
+			);
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(0);
 		});
@@ -475,47 +461,33 @@ describe("NotificationManager", () => {
 		it("should remove notification for previously added event that gets marked as notified", async () => {
 			await notificationManager.start();
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
+			const futureDate = createFutureDate(2);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile());
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "Test Event";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
-
-			// First add the notification
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						"Minutes Before": 15,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+							"Minutes Before": 15,
+						},
+					}),
+				})
+			);
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(1);
 
-			// Now mark as notified
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						"Minutes Before": 15,
-						"Already Notified": true,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+							"Minutes Before": 15,
+							"Already Notified": true,
+						},
+					}),
+				})
+			);
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(0);
 		});
@@ -525,76 +497,55 @@ describe("NotificationManager", () => {
 		it("should maintain sorted queue by notification time", async () => {
 			await notificationManager.start();
 
-			const mockFile1 = new TFile("event1.md");
-			mockFile1.basename = "Event 1";
-
-			const mockFile2 = new TFile("event2.md");
-			mockFile2.basename = "Event 2";
-
-			const mockFile3 = new TFile("event3.md");
-			mockFile3.basename = "Event 3";
-
 			mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
-				if (path === "event1.md") return mockFile1;
-				if (path === "event2.md") return mockFile2;
-				if (path === "event3.md") return mockFile3;
+				if (path === "event1.md") return createMockFile("event1.md", "Event 1");
+				if (path === "event2.md") return createMockFile("event2.md", "Event 2");
+				if (path === "event3.md") return createMockFile("event3.md", "Event 3");
 				return null;
 			});
 
-			// Add events in non-chronological order
-			const date1 = new Date();
-			date1.setHours(date1.getHours() + 5); // Event at +5h, notify at +4h45m
+			const date1 = createFutureDate(5);
+			const date2 = createFutureDate(3);
+			const date3 = createFutureDate(4);
 
-			const date2 = new Date();
-			date2.setHours(date2.getHours() + 3); // Event at +3h, notify at +2h45m
-
-			const date3 = new Date();
-			date3.setHours(date3.getHours() + 4); // Event at +4h, notify at +3h45m
-
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event1.md",
-				source: {
+			indexerEventsSubject.next(
+				createFileChangedEvent({
 					filePath: "event1.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": date1.toISOString(),
-						"Minutes Before": 15,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+					source: createTimedEventSource({
+						filePath: "event1.md",
+						frontmatter: {
+							"Start Date": date1.toISOString(),
+							"Minutes Before": 15,
+						},
+					}),
+				})
+			);
 
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event2.md",
-				source: {
+			indexerEventsSubject.next(
+				createFileChangedEvent({
 					filePath: "event2.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": date2.toISOString(),
-						"Minutes Before": 15,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+					source: createTimedEventSource({
+						filePath: "event2.md",
+						frontmatter: {
+							"Start Date": date2.toISOString(),
+							"Minutes Before": 15,
+						},
+					}),
+				})
+			);
 
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event3.md",
-				source: {
+			indexerEventsSubject.next(
+				createFileChangedEvent({
 					filePath: "event3.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": date3.toISOString(),
-						"Minutes Before": 15,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+					source: createTimedEventSource({
+						filePath: "event3.md",
+						frontmatter: {
+							"Start Date": date3.toISOString(),
+							"Minutes Before": 15,
+						},
+					}),
+				})
+			);
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(3);
@@ -606,50 +557,36 @@ describe("NotificationManager", () => {
 		it("should update notification when event is modified", async () => {
 			await notificationManager.start();
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "Test Event";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile());
 
-			const futureDate1 = new Date();
-			futureDate1.setHours(futureDate1.getHours() + 2);
+			const futureDate1 = createFutureDate(2);
 
-			// Add initial notification
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate1.toISOString(),
-						"Minutes Before": 15,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate1.toISOString(),
+							"Minutes Before": 15,
+						},
+					}),
+				})
+			);
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(1);
 			const firstNotifyTime = (notificationManager as any).notificationQueue[0].notifyAt.getTime();
 
-			// Update with new time
-			const futureDate2 = new Date();
-			futureDate2.setHours(futureDate2.getHours() + 3);
+			const futureDate2 = createFutureDate(3);
 
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate2.toISOString(),
-						"Minutes Before": 15,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate2.toISOString(),
+							"Minutes Before": 15,
+						},
+					}),
+				})
+			);
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
@@ -659,36 +596,24 @@ describe("NotificationManager", () => {
 		it("should remove notification when event is deleted", async () => {
 			await notificationManager.start();
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "Test Event";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile());
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
+			const futureDate = createFutureDate(2);
 
-			// Add notification
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						"Minutes Before": 15,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+							"Minutes Before": 15,
+						},
+					}),
+				})
+			);
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(1);
 
-			// Delete event
-			indexerEventsSubject.next({
-				type: "file-deleted",
-				filePath: "event.md",
-			});
+			indexerEventsSubject.next(createFileDeletedEvent("event.md"));
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(0);
 		});
@@ -696,23 +621,18 @@ describe("NotificationManager", () => {
 		it("should not add past notifications to queue", async () => {
 			await notificationManager.start();
 
-			const pastDate = new Date();
-			pastDate.setHours(pastDate.getHours() - 2);
+			const pastDate = createFutureDate(-2);
 
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": pastDate.toISOString(),
-						"Minutes Before": 15,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": pastDate.toISOString(),
+							"Minutes Before": 15,
+						},
+					}),
+				})
+			);
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(0);
 		});
@@ -738,14 +658,9 @@ describe("NotificationManager", () => {
 		it("should trigger notification and mark as notified", async () => {
 			await notificationManager.start();
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "Test Event";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile());
 
-			// Create a date string that will be 1 hour in the future when parsed as local time
-			const futureLocalTime = new Date();
-			futureLocalTime.setHours(futureLocalTime.getHours() + 1);
-			// Format as ISO string without timezone (YYYY-MM-DDTHH:mm:ss)
+			const futureLocalTime = createFutureDate(1);
 			const futureIsoString = `${futureLocalTime.getFullYear()}-${String(futureLocalTime.getMonth() + 1).padStart(2, "0")}-${String(futureLocalTime.getDate()).padStart(2, "0")}T${String(futureLocalTime.getHours()).padStart(2, "0")}:${String(futureLocalTime.getMinutes()).padStart(2, "0")}:${String(futureLocalTime.getSeconds()).padStart(2, "0")}`;
 
 			mockMetadataCache.getFileCache.mockReturnValue({
@@ -755,32 +670,23 @@ describe("NotificationManager", () => {
 				},
 			});
 
-			// Add notification that should trigger soon
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureIsoString,
-						"Minutes Before": 0, // Notify at start time
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureIsoString,
+							"Minutes Before": 0,
+						},
+					}),
+				})
+			);
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(1);
 
-			// Advance time past notification time (more than 1 hour)
-			vi.advanceTimersByTime(3600000 + 60000); // 1 hour + 1 minute
+			vi.advanceTimersByTime(3600000 + 60000);
 
-			// Notification should be removed from queue
 			expect((notificationManager as any).notificationQueue).toHaveLength(0);
-
-			// processFrontMatter should be called to mark as notified
-			expect(mockFileManager.processFrontMatter).toHaveBeenCalledWith(mockFile, expect.any(Function));
+			expect(mockFileManager.processFrontMatter).toHaveBeenCalledWith(createMockFile(), expect.any(Function));
 		});
 
 		it("should not trigger notifications when disabled", async () => {
@@ -803,15 +709,9 @@ describe("NotificationManager", () => {
 		it("should trigger multiple notifications at once if times have passed", async () => {
 			await notificationManager.start();
 
-			const mockFile1 = new TFile("event1.md");
-			mockFile1.basename = "Event 1";
-
-			const mockFile2 = new TFile("event2.md");
-			mockFile2.basename = "Event 2";
-
 			mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
-				if (path === "event1.md") return mockFile1;
-				if (path === "event2.md") return mockFile2;
+				if (path === "event1.md") return createMockFile("event1.md", "Event 1");
+				if (path === "event2.md") return createMockFile("event2.md", "Event 2");
 				return null;
 			});
 
@@ -819,54 +719,43 @@ describe("NotificationManager", () => {
 				frontmatter: {},
 			});
 
-			const nearFutureDate1 = new Date();
-			nearFutureDate1.setHours(nearFutureDate1.getHours() + 1); // 1 hour in future
+			const nearFutureDate1 = createFutureDate(1);
 			const futureIsoString1 = `${nearFutureDate1.getFullYear()}-${String(nearFutureDate1.getMonth() + 1).padStart(2, "0")}-${String(nearFutureDate1.getDate()).padStart(2, "0")}T${String(nearFutureDate1.getHours()).padStart(2, "0")}:${String(nearFutureDate1.getMinutes()).padStart(2, "0")}:${String(nearFutureDate1.getSeconds()).padStart(2, "0")}`;
 
-			const nearFutureDate2 = new Date();
-			nearFutureDate2.setHours(nearFutureDate2.getHours() + 1); // 1 hour in future
+			const nearFutureDate2 = createFutureDate(1);
 			const futureIsoString2 = `${nearFutureDate2.getFullYear()}-${String(nearFutureDate2.getMonth() + 1).padStart(2, "0")}-${String(nearFutureDate2.getDate()).padStart(2, "0")}T${String(nearFutureDate2.getHours()).padStart(2, "0")}:${String(nearFutureDate2.getMinutes()).padStart(2, "0")}:${String(nearFutureDate2.getSeconds()).padStart(2, "0")}`;
 
-			// Add two notifications that should both trigger
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event1.md",
-				source: {
+			indexerEventsSubject.next(
+				createFileChangedEvent({
 					filePath: "event1.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureIsoString1,
-						"Minutes Before": 0,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+					source: createTimedEventSource({
+						filePath: "event1.md",
+						frontmatter: {
+							"Start Date": futureIsoString1,
+							"Minutes Before": 0,
+						},
+					}),
+				})
+			);
 
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event2.md",
-				source: {
+			indexerEventsSubject.next(
+				createFileChangedEvent({
 					filePath: "event2.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureIsoString2,
-						"Minutes Before": 0,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+					source: createTimedEventSource({
+						filePath: "event2.md",
+						frontmatter: {
+							"Start Date": futureIsoString2,
+							"Minutes Before": 0,
+						},
+					}),
+				})
+			);
 
 			expect((notificationManager as any).notificationQueue).toHaveLength(2);
 
-			// Advance time past both notification times (more than 1 hour)
-			vi.advanceTimersByTime(3600000 + 60000); // 1 hour + 1 minute
+			vi.advanceTimersByTime(3600000 + 60000);
 
-			// Both should be removed
 			expect((notificationManager as any).notificationQueue).toHaveLength(0);
-
-			// Both should be marked as notified
 			expect(mockFileManager.processFrontMatter).toHaveBeenCalledTimes(2);
 		});
 	});
@@ -875,28 +764,21 @@ describe("NotificationManager", () => {
 		it("should use titleProp from frontmatter if available", async () => {
 			await notificationManager.start();
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "File Name";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile("event.md", "File Name"));
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
+			const futureDate = createFutureDate(2);
 
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						"Minutes Before": 15,
-						Title: "Custom Title",
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+							"Minutes Before": 15,
+							Title: "Custom Title",
+						},
+					}),
+				})
+			);
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
@@ -906,27 +788,20 @@ describe("NotificationManager", () => {
 		it("should fallback to file basename when no title property", async () => {
 			await notificationManager.start();
 
-			const mockFile = new TFile("event.md");
-			mockFile.basename = "Event File Name";
-			mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
+			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile("event.md", "Event File Name"));
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
+			const futureDate = createFutureDate(2);
 
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						"Minutes Before": 15,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+							"Minutes Before": 15,
+						},
+					}),
+				})
+			);
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
@@ -938,23 +813,18 @@ describe("NotificationManager", () => {
 
 			mockVault.getAbstractFileByPath.mockReturnValue(null);
 
-			const futureDate = new Date();
-			futureDate.setHours(futureDate.getHours() + 2);
+			const futureDate = createFutureDate(2);
 
-			indexerEventsSubject.next({
-				type: "file-changed",
-				filePath: "event.md",
-				source: {
-					filePath: "event.md",
-					mtime: Date.now(),
-					frontmatter: {
-						"Start Date": futureDate.toISOString(),
-						"Minutes Before": 15,
-					},
-					folder: "",
-					isAllDay: false,
-				},
-			});
+			indexerEventsSubject.next(
+				createFileChangedEvent({
+					source: createTimedEventSource({
+						frontmatter: {
+							"Start Date": futureDate.toISOString(),
+							"Minutes Before": 15,
+						},
+					}),
+				})
+			);
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);

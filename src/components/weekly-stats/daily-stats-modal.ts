@@ -1,6 +1,6 @@
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import type { ParsedEvent } from "../../core/parser";
+import type { CalendarEvent } from "../../types/calendar";
 import type { AggregationMode, Stats } from "../../utils/weekly-stats";
 import { aggregateDailyStats, getDayBounds, getMonthBounds, getWeekBounds } from "../../utils/weekly-stats";
 import type { IntervalConfig } from "./interval-stats-modal";
@@ -27,7 +27,7 @@ export class DailyStatsModal extends IntervalStatsModal {
 		},
 
 		aggregateStats: (
-			events: ParsedEvent[],
+			events: CalendarEvent[],
 			date: Date,
 			mode: AggregationMode,
 			categoryProp: string,

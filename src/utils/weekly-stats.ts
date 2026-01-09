@@ -1,4 +1,5 @@
-import type { ParsedEvent } from "../core/parser";
+import type { CalendarEvent } from "../types/calendar";
+import { isAllDayEvent, isTimedEvent } from "../types/calendar";
 import { extractNotesCoreName } from "./calendar-events";
 import { parseIntoList } from "./list-utils";
 
@@ -25,13 +26,13 @@ export type WeeklyStatEntry = StatEntry;
  * For all-day events without explicit end time, assumes 1 day duration.
  * If breakProp is provided and the event has a break value, it's subtracted from the duration.
  */
-export function getEventDuration(event: ParsedEvent, breakProp?: string): number {
+export function getEventDuration(event: CalendarEvent, breakProp?: string): number {
 	const start = new Date(event.start);
 	let end: Date;
 
-	if (event.end) {
+	if (isTimedEvent(event)) {
 		end = new Date(event.end);
-	} else if (event.allDay) {
+	} else if (isAllDayEvent(event)) {
 		// All-day event without explicit end: assume 1 day
 		end = new Date(start);
 		end.setDate(end.getDate() + 1);
@@ -58,10 +59,10 @@ export function getEventDuration(event: ParsedEvent, breakProp?: string): number
  * Filters events that fall within a given date range.
  * An event is included if it starts OR ends within the range.
  */
-export function getEventsInRange(events: ParsedEvent[], rangeStart: Date, rangeEnd: Date): ParsedEvent[] {
+export function getEventsInRange(events: CalendarEvent[], rangeStart: Date, rangeEnd: Date): CalendarEvent[] {
 	return events.filter((event) => {
 		const start = new Date(event.start);
-		const end = event.end ? new Date(event.end) : start;
+		const end = isTimedEvent(event) ? new Date(event.end) : start;
 
 		// Event overlaps with range if it starts before range ends AND ends after range starts
 		return start < rangeEnd && end > rangeStart;
@@ -133,7 +134,7 @@ export function parseCategories(categoryValue: unknown): string[] {
  * 7. Events with multiple comma-separated categories are counted under EACH category
  */
 export function aggregateStats(
-	events: ParsedEvent[],
+	events: CalendarEvent[],
 	periodStart?: Date,
 	periodEnd?: Date,
 	mode: AggregationMode = "name",
@@ -148,7 +149,7 @@ export function aggregateStats(
 	}
 
 	// Filter to only timed events (skip all-day events)
-	const timedEvents = filteredEvents.filter((event) => !event.allDay);
+	const timedEvents = filteredEvents.filter((event) => isTimedEvent(event));
 
 	// Group events
 	const groups = new Map<string, { duration: number; count: number; isRecurring: boolean }>();
@@ -205,7 +206,7 @@ export function aggregateStats(
  * Aggregates events for a given week, grouping by name or category.
  */
 export function aggregateWeeklyStats(
-	events: ParsedEvent[],
+	events: CalendarEvent[],
 	weekDate: Date,
 	mode: AggregationMode = "name",
 	categoryProp = "Category",
@@ -219,7 +220,7 @@ export function aggregateWeeklyStats(
  * Aggregates events for a given month, grouping by name or category.
  */
 export function aggregateMonthlyStats(
-	events: ParsedEvent[],
+	events: CalendarEvent[],
 	monthDate: Date,
 	mode: AggregationMode = "name",
 	categoryProp = "Category",
@@ -233,7 +234,7 @@ export function aggregateMonthlyStats(
  * Aggregates events for a given day, grouping by name or category.
  */
 export function aggregateDailyStats(
-	events: ParsedEvent[],
+	events: CalendarEvent[],
 	dayDate: Date,
 	mode: AggregationMode = "name",
 	categoryProp = "Category",

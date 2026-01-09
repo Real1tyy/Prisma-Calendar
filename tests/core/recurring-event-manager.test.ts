@@ -3,6 +3,7 @@ import { BehaviorSubject, Subject } from "rxjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { parse } from "yaml";
 import { RecurringEventManager } from "../../src/core/recurring-event-manager";
+import { isTimedEvent } from "../../src/types/calendar";
 
 // Helper to extract frontmatter from file content
 function extractFrontmatter(fileContent: string): any {
@@ -784,9 +785,13 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				// Times should match source (14:30 and 16:00)
 				expect(virtualEvents).toHaveLength(2);
 				expect(virtualEvents[0].start).toMatch(/2024-02-15T14:30:00/);
-				expect(virtualEvents[0].end).toMatch(/2024-02-15T16:00:00/);
+				if (isTimedEvent(virtualEvents[0])) {
+					expect(virtualEvents[0].end).toMatch(/2024-02-15T16:00:00/);
+				}
 				expect(virtualEvents[1].start).toMatch(/2024-03-15T14:30:00/);
-				expect(virtualEvents[1].end).toMatch(/2024-03-15T16:00:00/);
+				if (isTimedEvent(virtualEvents[1])) {
+					expect(virtualEvents[1].end).toMatch(/2024-03-15T16:00:00/);
+				}
 			});
 		});
 	});

@@ -1,7 +1,7 @@
 import { cls } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import type { ParsedEvent } from "../../core/parser";
+import type { CalendarEvent } from "../../types/calendar";
 import type { AggregationMode, Stats } from "../../utils/weekly-stats";
 import { formatDuration, formatDurationAsDecimalHours } from "../../utils/weekly-stats";
 import { StatsModal } from "./base-stats-modal";
@@ -15,7 +15,7 @@ export interface IntervalConfig {
 	navigateFastNext(date: Date): void;
 	navigateFastPrevious(date: Date): void;
 	aggregateStats(
-		events: ParsedEvent[],
+		events: CalendarEvent[],
 		date: Date,
 		mode: AggregationMode,
 		categoryProp: string,

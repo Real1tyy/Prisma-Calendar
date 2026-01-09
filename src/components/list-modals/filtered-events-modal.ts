@@ -1,12 +1,12 @@
 import type { App } from "obsidian";
-import type { ParsedEvent } from "../../core/parser";
+import type { CalendarEvent } from "../../types/calendar";
 import { formatEventTimeInfo } from "../../utils/time-formatter";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 export class FilteredEventsModal extends BaseEventListModal {
 	constructor(
 		app: App,
-		private filteredEvents: ParsedEvent[]
+		private filteredEvents: CalendarEvent[]
 	) {
 		super(app);
 	}

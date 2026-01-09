@@ -1,30 +1,14 @@
-import { FilterEvaluator, getFilenameFromPath } from "@real1ty-obsidian-plugins/utils";
+import { FilterEvaluator, getFilenameFromPath, removeMarkdownExtension } from "@real1ty-obsidian-plugins/utils";
 import type { DateTime } from "luxon";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { v5 as uuidv5 } from "uuid";
+import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
+import type { AllDayEvent, CalendarEvent, TimedEvent } from "../types/calendar";
 import { convertToISO, parseEventFrontmatter } from "../types/event";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
 import { applyDateNormalization, applyDateNormalizationToFile } from "../utils/calendar-events";
-import type { VaultEventId } from "./event-store";
 import type { RawEventSource } from "./indexer";
-
-export interface ParsedEvent {
-	id: string;
-	ref: VaultEventId;
-	title: string;
-	start: ISO;
-	end?: ISO;
-	allDay: boolean;
-	isVirtual: boolean;
-	skipped: boolean;
-	color?: string;
-	meta?: Frontmatter;
-}
-
-// Custom namespace UUID for Prisma Calendar events
-// This ensures our event IDs are unique to this application
-const PRISMA_CALENDAR_NAMESPACE = "a8f9e6d4-7c2b-4e1a-9f3d-5b8c1a2e4d6f";
 
 export class Parser {
 	private settings: SingleCalendarConfig;
@@ -47,12 +31,14 @@ export class Parser {
 		this.subscription?.unsubscribe();
 	}
 
-	parseEventSource(source: RawEventSource): ParsedEvent | null {
-		const { filePath, frontmatter, folder } = source;
+	parseEventSource(source: RawEventSource): CalendarEvent | null {
+		const { filePath, frontmatter } = source;
 
 		if (!this.filterEvaluator.evaluateFilters(frontmatter)) {
 			return null;
 		}
+
+		const id = uuidv5(filePath, PRISMA_CALENDAR_NAMESPACE);
 
 		const parsed = parseEventFrontmatter(frontmatter, this.settings);
 		if (!parsed) {
@@ -60,62 +46,78 @@ export class Parser {
 		}
 
 		const isSkipped = frontmatter[this.settings.skipProp] === true;
+		const title = parsed.title || removeMarkdownExtension(getFilenameFromPath(filePath));
 
-		const id = uuidv5(filePath, PRISMA_CALENDAR_NAMESPACE);
-		const title = parsed.title || this.getFallbackTitle(filePath);
+		return parsed.allDay
+			? this.parseAllDayEvent(source, id, title, parsed.date, isSkipped)
+			: this.parseTimedEvent(source, id, title, parsed.startTime, parsed.endTime, isSkipped);
+	}
 
-		let start: ISO;
-		let end: ISO | undefined;
-		let allDay: boolean;
-
-		if (parsed.allDay) {
-			// ALL-DAY EVENT: Use the date field, set to full day in UTC
-			allDay = true;
-			start = parsed.date.startOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
-			end = parsed.date.endOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
-		} else {
-			// TIMED EVENT: Use startTime and optional endTime, convert to UTC
-			allDay = false;
-			start = convertToISO(parsed.startTime);
-
-			if (parsed.endTime) {
-				end = convertToISO(parsed.endTime);
-			} else {
-				const defaultEnd = this.calculateDefaultEnd(parsed.startTime, false);
-				end = defaultEnd.toUTC().toISO({ suppressMilliseconds: true }) || undefined;
-			}
-		}
-
-		const meta: Frontmatter = {
-			folder,
-			isAllDay: source.isAllDay,
-			originalStart: frontmatter[this.settings.startProp],
-			originalEnd: frontmatter[this.settings.endProp],
-			originalDate: frontmatter[this.settings.dateProp],
-			...frontmatter,
-		};
-
-		if (!parsed.allDay) {
-			applyDateNormalization(meta, this.settings, start, end);
-			void applyDateNormalizationToFile(this.app, source.filePath, frontmatter, this.settings, start, end);
-		}
+	private parseAllDayEvent(
+		source: RawEventSource,
+		id: string,
+		title: string,
+		date: DateTime,
+		isSkipped: boolean
+	): AllDayEvent {
+		const { filePath } = source;
+		const start = date.startOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
 
 		return {
 			id,
 			ref: { filePath },
 			title,
+			type: "allDay",
+			start: start as ISO,
+			allDay: true,
+			isVirtual: false,
+			skipped: isSkipped,
+			meta: this.createEventMeta(source),
+		};
+	}
+
+	private parseTimedEvent(
+		source: RawEventSource,
+		id: string,
+		title: string,
+		startTime: DateTime,
+		endTime: DateTime | null | undefined,
+		isSkipped: boolean
+	): TimedEvent {
+		const { filePath, frontmatter } = source;
+		const start = convertToISO(startTime);
+		const end: ISO = endTime
+			? convertToISO(endTime)
+			: this.calculateDefaultEnd(startTime, false).toUTC().toISO({ suppressMilliseconds: true }) || "";
+
+		const meta = this.createEventMeta(source);
+		applyDateNormalization(meta, this.settings, start, end);
+		void applyDateNormalizationToFile(this.app, source.filePath, frontmatter, this.settings, start, end);
+
+		return {
+			id,
+			ref: { filePath },
+			title,
+			type: "timed",
 			start,
 			end,
-			allDay,
+			allDay: false,
 			isVirtual: false,
 			skipped: isSkipped,
 			meta,
 		};
 	}
 
-	private getFallbackTitle(filePath: string): string {
-		const fileName = getFilenameFromPath(filePath);
-		return fileName.replace(/\.md$/, "");
+	private createEventMeta(source: RawEventSource): Frontmatter {
+		const { folder, frontmatter, isAllDay } = source;
+		return {
+			folder,
+			isAllDay,
+			originalStart: frontmatter[this.settings.startProp],
+			originalEnd: frontmatter[this.settings.endProp],
+			originalDate: frontmatter[this.settings.dateProp],
+			...frontmatter,
+		};
 	}
 
 	private calculateDefaultEnd(start: DateTime, allDay: boolean): DateTime {

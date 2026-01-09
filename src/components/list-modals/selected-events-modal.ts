@@ -1,12 +1,12 @@
 import type { App } from "obsidian";
+import type { CalendarEvent } from "../../types/calendar";
 import { formatEventTimeInfo } from "../../utils/time-formatter";
-import type { SelectedEvent } from "../batch-selection-manager";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 export class SelectedEventsModal extends BaseEventListModal {
 	constructor(
 		app: App,
-		private selected: SelectedEvent[],
+		private selected: CalendarEvent[],
 		private onUnselectEvent: (eventId: string) => void
 	) {
 		super(app);
@@ -27,13 +27,9 @@ export class SelectedEventsModal extends BaseEventListModal {
 	protected getItems(): EventListItem[] {
 		return this.selected.map((event) => ({
 			id: event.id,
-			filePath: event.filePath,
+			filePath: event.ref.filePath,
 			title: event.title,
-			subtitle: formatEventTimeInfo({
-				start: event.start,
-				end: event.end,
-				allDay: event.allDay,
-			}),
+			subtitle: formatEventTimeInfo(event),
 		}));
 	}
 

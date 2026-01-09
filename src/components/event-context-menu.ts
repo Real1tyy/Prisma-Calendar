@@ -14,8 +14,8 @@ import {
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
-import type { ParsedEvent } from "../core/parser";
-import type { ContextMenuItem, Frontmatter } from "../types";
+import { type ContextMenuItem, type Frontmatter, isTimedEvent } from "../types";
+import type { CalendarEvent } from "../types/calendar";
 import { findAdjacentEvent, isEventDone } from "../utils/calendar-events";
 import { intoDate, toLocalISOString } from "../utils/format";
 import { parseIntoList } from "../utils/list-utils";
@@ -795,7 +795,7 @@ export class EventContextMenu {
 		await this.fillTimeFromAdjacent(event, {
 			direction: "previous",
 			propertyName: settings.startProp,
-			getTimeValue: (adj) => adj.end,
+			getTimeValue: (adj) => (isTimedEvent(adj) ? adj.end : undefined),
 			successMessage: "Start time filled from previous event",
 			errorMessage: "Failed to fill start time",
 		});
@@ -828,7 +828,7 @@ export class EventContextMenu {
 		config: {
 			direction: "next" | "previous";
 			propertyName: string;
-			getTimeValue: (adj: ParsedEvent) => string | undefined;
+			getTimeValue: (adj: CalendarEvent) => string | undefined;
 			successMessage: string;
 			errorMessage: string;
 		}

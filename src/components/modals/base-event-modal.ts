@@ -9,6 +9,7 @@ import {
 	type PresetFormData,
 } from "../../core/minimized-modal-manager";
 import type { Frontmatter } from "../../types";
+import { isTimedEvent } from "../../types/calendar";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
 import { assignCategoriesToFrontmatter, findAdjacentEvent, setEventBasics } from "../../utils/calendar-events";
@@ -877,7 +878,8 @@ export abstract class BaseEventModal extends Modal {
 			return;
 		}
 
-		const timeValue = timeField === "start" ? adjacentEvent.start : adjacentEvent.end;
+		const timeValue =
+			timeField === "start" ? adjacentEvent.start : isTimedEvent(adjacentEvent) ? adjacentEvent.end : undefined;
 
 		if (!timeValue) {
 			new Notice(`${direction === "previous" ? "Previous" : "Next"} event has no ${timeField} time`);

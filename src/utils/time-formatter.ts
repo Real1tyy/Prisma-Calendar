@@ -1,4 +1,6 @@
 import { DateTime } from "luxon";
+import type { CalendarEvent } from "../types/calendar";
+import { isAllDayEvent, isTimedEvent } from "../types/calendar";
 import { formatDurationHumanReadable } from "./format";
 
 /**
@@ -24,13 +26,13 @@ export function formatMsToMMSS(ms: number): string {
 	return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }
 
-export function formatEventTimeInfo(event: { start: string; end?: string; allDay: boolean }): string {
+export function formatEventTimeInfo(event: CalendarEvent): string {
 	const startTime = DateTime.fromISO(event.start, { zone: "utc" });
-	if (event.allDay) {
+	if (isAllDayEvent(event)) {
 		return `All Day - ${startTime.toFormat("MMM d, yyyy")}`;
 	}
-	const endTime = event.end ? DateTime.fromISO(event.end, { zone: "utc" }) : null;
-	if (endTime) {
+	const endTime = isTimedEvent(event) ? DateTime.fromISO(event.end, { zone: "utc" }) : null;
+	if (endTime && endTime > startTime) {
 		const durationText = formatDurationHumanReadable(startTime, endTime);
 		return `${startTime.toFormat("MMM d, yyyy - h:mm a")} (${durationText})`;
 	}

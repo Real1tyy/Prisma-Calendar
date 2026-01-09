@@ -1,6 +1,6 @@
 import { Calendar, type CustomButtonInput, type EventContentArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin, { type DropArg } from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
@@ -17,14 +17,17 @@ import {
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { FillTimeCommand, UpdateEventCommand } from "../core/commands";
-import type { ParsedEvent } from "../core/parser";
 import type {
+	AllDayEvent,
+	CalendarEvent,
 	CalendarEventData,
 	EventMountInfo,
 	EventUpdateInfo,
 	ExtendedButtonInput,
 	PrismaEventInput,
+	TimedEvent,
 } from "../types/calendar";
+import { isTimedEvent, isUntrackedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import {
 	findAdjacentEvent,
@@ -56,6 +59,7 @@ import { BatchFrontmatterModal } from "./modals/batch-frontmatter-modal";
 import { CategoryAssignModal } from "./modals/category-assign-modal";
 import { CategorySelectModal } from "./modals/category-select-modal";
 import { IntervalEventsModal } from "./modals/interval-events-modal";
+import { UntrackedEventsPanel } from "./untracked-events-panel";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 
@@ -79,6 +83,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private skippedEventsModal: SkippedEventsModal | null = null;
 	private recurringEventsModal: RecurringEventsModal | null = null;
 	private filteredEventsModal: FilteredEventsModal | null = null;
+	private untrackedEventsPanel: UntrackedEventsPanel | null = null;
 	private selectedEventsModal: SelectedEventsModal | null = null;
 	private globalSearchModal: GlobalSearchModal | null = null;
 	private dailyStatsModal: DailyStatsModal | null = null;
@@ -86,7 +91,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private monthlyStatsModal: MonthlyStatsModal | null = null;
 	private alltimeStatsModal: AllTimeStatsModal | null = null;
 	private intervalEventsModal: IntervalEventsModal | null = null;
-	private filteredEvents: ParsedEvent[] = [];
+	private filteredEvents: CalendarEvent[] = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
 	private upcomingEventCheckInterval: number | null = null;
@@ -96,6 +101,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private filteredEventsCount = 0;
 	private skippedEventsCount = 0;
 	private enabledRecurringEventsCount = 0;
+	private untrackedEventsCount = 0;
 	private selectedEventsCount = 0;
 	private isRefreshingEvents = false;
 	private pendingRefreshRequest = false;
@@ -291,6 +297,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				},
 				className: this.enabledRecurringEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
+			untrackedEvents: {
+				text: "", // Don't set text here - it will be set by applyUntrackedEventsButtonState
+				click: () => {
+					this.toggleUntrackedPanel();
+				},
+				className: this.untrackedEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
+			},
 		};
 	}
 
@@ -314,7 +327,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		const left = "prev,next today now createEvent zoomLevel";
-		const right = `filteredEvents recurringEvents skippedEvents batchSelect ${viewSwitchers}`;
+		const right = `filteredEvents recurringEvents skippedEvents untrackedEvents batchSelect ${viewSwitchers}`;
 
 		return {
 			headerToolbar: { left, center: "title", right },
@@ -400,6 +413,26 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.updateButtonElement(".fc-recurringEvents-button", text, this.enabledRecurringEventsCount > 0, tooltip);
 	}
 
+	private updateUntrackedEventsButton(): void {
+		const untrackedEvents = this.bundle.eventStore.getUntrackedEvents();
+		this.untrackedEventsCount = untrackedEvents.length;
+		this.applyUntrackedEventsButtonState();
+		if (this.untrackedEventsPanel) {
+			this.untrackedEventsPanel.refreshEvents();
+		}
+	}
+
+	private applyUntrackedEventsButtonState(): void {
+		if (!this.calendar) return;
+		const text = this.getUntrackedEventsButtonText();
+		const tooltip = `${this.untrackedEventsCount} untracked event${this.untrackedEventsCount === 1 ? "" : "s"} (without dates)`;
+		this.updateButtonElement(".fc-untrackedEvents-button", text, this.untrackedEventsCount > 0, tooltip);
+	}
+
+	private getUntrackedEventsButtonText(): string {
+		return `${this.untrackedEventsCount} untracked`;
+	}
+
 	private getFilteredEventsButtonText(): string {
 		return `${this.filteredEventsCount} filtered`;
 	}
@@ -457,6 +490,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		cleanupButton(".fc-filteredEvents-button");
 		cleanupButton(".fc-skippedEvents-button");
 		cleanupButton(".fc-recurringEvents-button");
+		cleanupButton(".fc-untrackedEvents-button");
 	}
 
 	private async toggleModal<T extends Modal>(
@@ -519,6 +553,15 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				return new RecurringEventsModal(this.app, this.bundle, this);
 			}
 		);
+	}
+
+	toggleUntrackedPanel(): void {
+		if (!this.untrackedEventsPanel) {
+			const root = this.containerEl.children[1] as HTMLElement;
+			this.untrackedEventsPanel = new UntrackedEventsPanel(this.app, this.bundle, root);
+			this.untrackedEventsPanel.render();
+		}
+		this.untrackedEventsPanel.toggle();
 	}
 
 	async showFilteredEventsModal(): Promise<void> {
@@ -1076,6 +1119,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			unselectAuto: true,
 			unselectCancel: ".modal",
 
+			droppable: true,
+
 			// Fix drag mirror positioning for all-day events
 			// Positions the drag mirror relative to document.body instead of calendar container
 			// This ensures the event box follows the cursor correctly for both all-day and timed events
@@ -1142,6 +1187,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			eventResize: (info) => {
 				void this.handleEventResize(info);
+			},
+
+			drop: (info) => {
+				void this.handleExternalDrop(info);
 			},
 
 			dateClick: (info) => {
@@ -1340,8 +1389,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			const allEvents = this.bundle.eventStore.getNonSkippedEvents({ start, end });
 
-			const filteredEvents: ParsedEvent[] = [];
-			const visibleEvents: ParsedEvent[] = [];
+			const filteredEvents: CalendarEvent[] = [];
+			const visibleEvents: CalendarEvent[] = [];
 
 			for (const event of allEvents) {
 				const passesSearch = this.searchFilter.shouldInclude({ meta: event.meta, title: event.title });
@@ -1363,39 +1412,53 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			// Update enabled recurring events button
 			this.updateEnabledRecurringEventsButton();
 
+			// Update untracked events button
+			this.updateUntrackedEventsButton();
+
 			// Convert to FullCalendar event format
-			const calendarEvents: PrismaEventInput[] = visibleEvents.map((event) => {
+			const calendarEvents: PrismaEventInput[] = [];
+
+			for (const event of visibleEvents) {
+				// Skip untracked events - they don't have dates
+				if (isUntrackedEvent(event)) {
+					continue;
+				}
+
+				// At this point, TypeScript knows event is TimedEvent | AllDayEvent
+				// Both have start, allDay properties
+				const trackedEvent: TimedEvent | AllDayEvent = event;
+
 				const classNames = ["regular-event"];
-				if (event.isVirtual) {
+				if (trackedEvent.isVirtual) {
 					classNames.push(cls("virtual-event"));
 				}
-				const eventColor = this.getEventColor(event);
+				const eventColor = this.getEventColor(trackedEvent);
 
 				// Strip Z suffix to treat times as naive local times (no timezone conversion)
-				const start = event.start.replace(/Z$/, "");
-				const end = event.end ? event.end.replace(/Z$/, "") : undefined;
+				const start = trackedEvent.start.replace(/Z$/, "");
+				const end = isTimedEvent(trackedEvent) ? trackedEvent.end.replace(/Z$/, "") : undefined;
 
-				const folder = event.meta?.folder;
+				const folder = trackedEvent.meta?.folder;
 				const folderStr = typeof folder === "string" ? folder : "";
 
-				return {
-					id: event.id,
-					title: event.title, // Keep original title for search/filtering
+				calendarEvents.push({
+					id: trackedEvent.id,
+					title: trackedEvent.title, // Keep original title for search/filtering
 					start,
 					end,
-					allDay: event.allDay,
+					allDay: trackedEvent.allDay,
 					extendedProps: {
-						filePath: event.ref.filePath,
+						filePath: trackedEvent.ref.filePath,
 						folder: folderStr,
-						originalTitle: event.title,
-						frontmatterDisplayData: event.meta ?? {},
-						isVirtual: event.isVirtual,
+						originalTitle: trackedEvent.title,
+						frontmatterDisplayData: trackedEvent.meta ?? {},
+						isVirtual: trackedEvent.isVirtual,
 					},
 					backgroundColor: eventColor,
 					borderColor: eventColor,
 					className: classNames.join(" "),
-				};
-			});
+				});
+			}
 
 			// CRITICAL: Remove ALL events and event sources to prevent accumulation
 			this.calendar.removeAllEvents();
@@ -1550,7 +1613,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		renderPropertyValue(container, value, config);
 	}
 
-	private getEventColor(event: Pick<ParsedEvent, "meta">): string {
+	private getEventColor(event: Pick<CalendarEvent, "meta">): string {
 		const frontmatter = event.meta ?? {};
 		const settings = this.bundle.settingsStore.currentSettings;
 
@@ -1720,7 +1783,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const event = info.event;
 
 		// Apply event color
-		const eventColor = this.getEventColor({ meta: event.extendedProps.frontmatterDisplayData });
+		const eventColor = this.getEventColor({ meta: event.extendedProps.frontmatterDisplayData ?? {} });
 
 		element.style.setProperty("--event-color", eventColor);
 		element.classList.add(cls("calendar-event"));
@@ -1910,7 +1973,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			(settings) => settings.startProp,
 			(event, filePath) => {
 				const previousEvent = findAdjacentEvent(this.bundle.eventStore, event.start, filePath, "previous");
-				return previousEvent?.end;
+				return previousEvent && isTimedEvent(previousEvent) ? previousEvent.end : undefined;
 			}
 		);
 	}
@@ -2054,6 +2117,54 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
+	private async handleExternalDrop(info: DropArg): Promise<void> {
+		// Check if this is a drop from untracked events panel
+		const dragEvent = info.jsEvent as DragEvent;
+		const untrackedData = dragEvent.dataTransfer?.getData("application/prisma-untracked-event");
+		if (untrackedData) {
+			try {
+				const { filePath } = JSON.parse(untrackedData);
+				const file = this.app.vault.getAbstractFileByPath(filePath);
+				if (file instanceof TFile) {
+					const settings = this.bundle.settingsStore.currentSettings;
+					const dateStr = info.date.toISOString().split("T")[0];
+					const timeStr = info.date.toISOString().split("T")[1]?.split(".")[0] || "09:00:00";
+
+					if (info.allDay) {
+						// Add as all-day event
+						await this.app.fileManager.processFrontMatter(file, (fm) => {
+							fm[settings.dateProp] = dateStr;
+							fm[settings.allDayProp] = true;
+							delete fm[settings.startProp];
+							delete fm[settings.endProp];
+						});
+					} else {
+						// Add as timed event
+						const startDateTime = `${dateStr}T${timeStr}`;
+						const endDateTime = `${dateStr}T${this.calculateEndTime(timeStr)}`;
+						await this.app.fileManager.processFrontMatter(file, (fm) => {
+							fm[settings.startProp] = startDateTime;
+							fm[settings.endProp] = endDateTime;
+							fm[settings.allDayProp] = false;
+							delete fm[settings.dateProp];
+						});
+					}
+				}
+			} catch (error) {
+				console.error("Error handling untracked event drop:", error);
+			}
+		}
+	}
+
+	private calculateEndTime(startTime: string): string {
+		const [hours, minutes] = startTime.split(":").map(Number);
+		const settings = this.bundle.settingsStore.currentSettings;
+		const endMinutes = minutes + settings.defaultDurationMinutes;
+		const endHours = hours + Math.floor(endMinutes / 60);
+		const finalMinutes = endMinutes % 60;
+		return `${String(endHours).padStart(2, "0")}:${String(finalMinutes).padStart(2, "0")}:00`;
+	}
+
 	private setupKeyboardShortcuts(): void {
 		this.containerEl.setAttribute("tabindex", "-1");
 
@@ -2109,6 +2220,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// Wait for layout before rendering FullCalendar
 		await this.waitForLayout(this.container);
 		this.initializeCalendar(this.container);
+
+		this.untrackedEventsPanel = new UntrackedEventsPanel(this.app, this.bundle, root);
+		this.untrackedEventsPanel.render();
 
 		this.setupKeyboardShortcuts();
 

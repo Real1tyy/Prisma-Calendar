@@ -2,7 +2,7 @@ import { type App, Notice } from "obsidian";
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { ToggleSkipCommand } from "../../core/commands";
-import type { ParsedEvent } from "../../core/parser";
+import type { CalendarEvent } from "../../types/calendar";
 import { formatEventTimeInfo } from "../../utils/time-formatter";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
@@ -10,7 +10,7 @@ export class SkippedEventsModal extends BaseEventListModal {
 	constructor(
 		app: App,
 		private bundle: CalendarBundle,
-		private skippedEvents: ParsedEvent[]
+		private skippedEvents: CalendarEvent[]
 	) {
 		super(app);
 	}

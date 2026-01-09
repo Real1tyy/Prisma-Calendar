@@ -3,9 +3,11 @@ import { DateTime } from "luxon";
 import type { Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import BTree from "sorted-btree";
+import type { CalendarEvent, TimedEvent, UntrackedEvent } from "../types/calendar";
+import { isTimedEvent } from "../types/calendar";
 import type { ISO } from "../types/index";
 import type { Indexer, IndexerEvent, RawEventSource } from "./indexer";
-import type { ParsedEvent, Parser } from "./parser";
+import type { Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
 
 export interface EventQuery {
@@ -17,8 +19,8 @@ export interface VaultEventId {
 	filePath: string;
 }
 
-interface CachedEvent {
-	template: ParsedEvent;
+interface CachedCalendarEvent {
+	template: CalendarEvent;
 	mtime: number;
 }
 
@@ -26,11 +28,11 @@ export class EventStore extends DebouncedNotifier {
 	private static readonly SEP = "\0";
 	private static readonly MAX = "\uffff";
 
-	private cache = new Map<string, CachedEvent>();
+	private cache = new Map<string, CachedCalendarEvent>();
 	private subscription: Subscription | null = null;
 	private indexingCompleteSubscription: Subscription | null = null;
-	private eventsByStartTime = new BTree<string, ParsedEvent>();
-	private eventsByEndTime = new BTree<string, ParsedEvent>();
+	private eventsByStartTime = new BTree<string, TimedEvent>();
+	private eventsByEndTime = new BTree<string, TimedEvent>();
 
 	constructor(
 		private indexer: Indexer,
@@ -44,7 +46,6 @@ export class EventStore extends DebouncedNotifier {
 				this.handleIndexerEvent(event);
 			});
 
-		// Subscribe to indexing complete to flush any pending refreshes
 		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
 			if (isComplete) {
 				this.flushPendingRefresh();
@@ -88,7 +89,7 @@ export class EventStore extends DebouncedNotifier {
 		this.clear();
 	}
 
-	updateEvent(filePath: string, template: ParsedEvent, mtime: number): void {
+	updateEvent(filePath: string, template: CalendarEvent, mtime: number): void {
 		const oldCached = this.cache.get(filePath);
 		if (oldCached) {
 			this.removeFromSortedSets(oldCached.template);
@@ -101,6 +102,7 @@ export class EventStore extends DebouncedNotifier {
 
 	invalidate(filePath: string): void {
 		const cached = this.cache.get(filePath);
+
 		if (cached && this.cache.delete(filePath)) {
 			this.removeFromSortedSets(cached.template);
 			this.notifyChange();
@@ -115,28 +117,24 @@ export class EventStore extends DebouncedNotifier {
 		return `${time}${EventStore.SEP}${filePath}`;
 	}
 
-	private addToSortedSets(event: ParsedEvent): void {
-		if (event.skipped || event.allDay) return;
+	private addToSortedSets(event: CalendarEvent): void {
+		if (!isTimedEvent(event) || event.skipped) return;
 
 		const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
 		this.eventsByStartTime.set(startKey, event);
 
-		if (event.end) {
-			const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
-			this.eventsByEndTime.set(endKey, event);
-		}
+		const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
+		this.eventsByEndTime.set(endKey, event);
 	}
 
-	private removeFromSortedSets(event: ParsedEvent): void {
-		if (event.skipped || event.allDay) return;
+	private removeFromSortedSets(event: CalendarEvent): void {
+		if (!isTimedEvent(event) || event.skipped) return;
 
 		const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
 		this.eventsByStartTime.delete(startKey);
 
-		if (event.end) {
-			const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
-			this.eventsByEndTime.delete(endKey);
-		}
+		const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
+		this.eventsByEndTime.delete(endKey);
 	}
 
 	isUpToDate(filePath: string, mtime: number): boolean {
@@ -144,8 +142,8 @@ export class EventStore extends DebouncedNotifier {
 		return cached ? cached.mtime === mtime : false;
 	}
 
-	getEvents(query: EventQuery): ParsedEvent[] {
-		const results: ParsedEvent[] = this.getPhysicalEvents(query);
+	getEvents(query: EventQuery): CalendarEvent[] {
+		const results: CalendarEvent[] = this.getPhysicalEvents(query);
 		const queryStart = DateTime.fromISO(query.start, { zone: "utc" });
 		const queryEnd = DateTime.fromISO(query.end, { zone: "utc" });
 		const virtualEvents = this.recurringEventManager.generateAllVirtualInstances(queryStart, queryEnd);
@@ -154,18 +152,18 @@ export class EventStore extends DebouncedNotifier {
 		return results.sort((a, b) => a.start.localeCompare(b.start));
 	}
 
-	getSkippedEvents(query: EventQuery): ParsedEvent[] {
+	getSkippedEvents(query: EventQuery): CalendarEvent[] {
 		const allEvents = this.getEvents(query);
 		return allEvents.filter((event) => event.skipped && !event.isVirtual);
 	}
 
-	getNonSkippedEvents(query: EventQuery): ParsedEvent[] {
+	getNonSkippedEvents(query: EventQuery): CalendarEvent[] {
 		const allEvents = this.getEvents(query);
 		return allEvents.filter((event) => !event.skipped);
 	}
 
-	getPhysicalEvents(query: EventQuery): ParsedEvent[] {
-		const results: ParsedEvent[] = [];
+	getPhysicalEvents(query: EventQuery): CalendarEvent[] {
+		const results: CalendarEvent[] = [];
 		const queryStart = DateTime.fromISO(query.start, { zone: "utc" });
 		const queryEnd = DateTime.fromISO(query.end, { zone: "utc" });
 
@@ -179,8 +177,8 @@ export class EventStore extends DebouncedNotifier {
 		return results.sort((a, b) => a.start.localeCompare(b.start));
 	}
 
-	getAllEvents(): ParsedEvent[] {
-		const results: ParsedEvent[] = [];
+	getAllEvents(): CalendarEvent[] {
+		const results: CalendarEvent[] = [];
 
 		for (const cached of this.cache.values()) {
 			results.push(cached.template);
@@ -189,7 +187,12 @@ export class EventStore extends DebouncedNotifier {
 		return results.sort((a, b) => a.start.localeCompare(b.start));
 	}
 
-	getEventByPath(filePath: string): ParsedEvent | null {
+	getUntrackedEvents(): UntrackedEvent[] {
+		// This method is deprecated - use UntrackedEventStore instead
+		return [];
+	}
+
+	getEventByPath(filePath: string): CalendarEvent | null {
 		return this.cache.get(filePath)?.template ?? null;
 	}
 
@@ -210,9 +213,9 @@ export class EventStore extends DebouncedNotifier {
 		this.eventsByEndTime.clear();
 	}
 
-	private eventIntersectsRange(event: ParsedEvent, rangeStart: DateTime, rangeEnd: DateTime): boolean {
+	private eventIntersectsRange(event: CalendarEvent, rangeStart: DateTime, rangeEnd: DateTime): boolean {
 		const eventStart = DateTime.fromISO(event.start, { zone: "utc" });
-		const eventEnd = event.end ? DateTime.fromISO(event.end, { zone: "utc" }) : eventStart.endOf("day");
+		const eventEnd = isTimedEvent(event) ? DateTime.fromISO(event.end, { zone: "utc" }) : eventStart.endOf("day");
 
 		return eventStart < rangeEnd && eventEnd > rangeStart;
 	}
@@ -220,10 +223,10 @@ export class EventStore extends DebouncedNotifier {
 	private findAdjacentEventInTree(
 		currentTimeISO: string,
 		excludeFilePath: string | undefined,
-		tree: BTree<string, ParsedEvent>,
-		getNextPair: (tree: BTree<string, ParsedEvent>, key: string) => [string, ParsedEvent] | undefined,
+		tree: BTree<string, TimedEvent>,
+		getNextPair: (tree: BTree<string, TimedEvent>, key: string) => [string, TimedEvent] | undefined,
 		makeSearchKey: (currentTime: string) => string
-	): ParsedEvent | null {
+	): TimedEvent | null {
 		const currentTime = new Date(currentTimeISO).toISOString();
 		let pair = getNextPair(tree, makeSearchKey(currentTime));
 
@@ -238,7 +241,7 @@ export class EventStore extends DebouncedNotifier {
 		return null;
 	}
 
-	findNextEventByStartTime(currentStartISO: string, excludeFilePath?: string): ParsedEvent | null {
+	findNextEventByStartTime(currentStartISO: string, excludeFilePath?: string): CalendarEvent | null {
 		return this.findAdjacentEventInTree(
 			currentStartISO,
 			excludeFilePath,
@@ -248,7 +251,7 @@ export class EventStore extends DebouncedNotifier {
 		);
 	}
 
-	findPreviousEventByEndTime(currentEndISO: string, excludeFilePath?: string): ParsedEvent | null {
+	findPreviousEventByEndTime(currentEndISO: string, excludeFilePath?: string): CalendarEvent | null {
 		return this.findAdjacentEventInTree(
 			currentEndISO,
 			excludeFilePath,

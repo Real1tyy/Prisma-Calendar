@@ -3,6 +3,10 @@ const PLUGIN_ID = "prisma-calendar";
 // Higher values = faster initial scan but more memory/CPU usage
 export const SCAN_CONCURRENCY = 10;
 
+// Custom namespace UUID for Prisma Calendar events
+// This ensures our event IDs are unique to this application
+export const PRISMA_CALENDAR_NAMESPACE = "a8f9e6d4-7c2b-4e1a-9f3d-5b8c1a2e4d6f";
+
 // Command IDs (without plugin prefix)
 export const COMMAND_IDS = {
 	CREATE_EVENT: "create-event",
@@ -15,6 +19,7 @@ export const COMMAND_IDS = {
 	SHOW_SKIPPED_EVENTS: "show-skipped-events",
 	SHOW_RECURRING_EVENTS: "show-recurring-events",
 	SHOW_FILTERED_EVENTS: "show-filtered-events",
+	SHOW_UNTRACKED_EVENTS: "show-untracked-events",
 	GLOBAL_SEARCH: "global-search",
 	FOCUS_SEARCH: "focus-search",
 	FOCUS_EXPRESSION_FILTER: "focus-expression-filter",

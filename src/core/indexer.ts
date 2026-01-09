@@ -20,9 +20,10 @@ export interface RawEventSource {
 	frontmatter: Frontmatter;
 	folder: string;
 	isAllDay: boolean;
+	isUntracked: boolean;
 }
 
-type IndexerEventType = "file-changed" | "file-deleted" | "recurring-event-found";
+type IndexerEventType = "file-changed" | "file-deleted" | "recurring-event-found" | "untracked-file-changed";
 
 export interface IndexerEvent {
 	type: IndexerEventType;
@@ -176,15 +177,17 @@ export class Indexer {
 			}
 		}
 
-		// Always emit file-changed events for files with start property OR date property
+		// Always emit file-changed events for files with start property OR date property OR neither (untracked)
 		// Let EventStore/Parser handle filtering - this ensures cached events
 		// get invalidated when properties change and no longer pass filters
 		// This allows recurring source files to ALSO appear as regular events on the calendar
 		const hasTimedEvent = frontmatter[this.settings.startProp];
 		const hasAllDayEvent = frontmatter[this.settings.dateProp];
+		const hasDateOrTime = hasTimedEvent || hasAllDayEvent;
+		const isUntracked = !hasDateOrTime;
 
-		if (hasTimedEvent || hasAllDayEvent) {
-			if (this.settings.markPastInstancesAsDone) {
+		if (hasDateOrTime || isUntracked) {
+			if (this.settings.markPastInstancesAsDone && hasDateOrTime) {
 				void this.markPastEventAsDone(file, frontmatter).catch((error) => {
 					console.error(`Error in background marking of past event ${file.path}:`, error);
 				});
@@ -199,11 +202,13 @@ export class Indexer {
 				frontmatter,
 				folder: file.parent?.path || "",
 				isAllDay,
+				isUntracked,
 			};
 
+			// Emit separate event types for tracked vs untracked
 			events.push({
 				...eventBase,
-				type: "file-changed",
+				type: isUntracked ? "untracked-file-changed" : "file-changed",
 				source,
 			});
 		}

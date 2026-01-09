@@ -1,5 +1,6 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal } from "obsidian";
+import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { getCommonFrontmatterProperties } from "../../utils/calendar-events";
 
@@ -13,13 +14,13 @@ export class BatchFrontmatterModal extends Modal {
 	private properties: FrontmatterProperty[] = [];
 	private propertiesContainer!: HTMLElement;
 	private onSubmit: (properties: Map<string, string | null>) => void;
-	private selectedEvents: { filePath: string }[];
+	private selectedEvents: CalendarEvent[];
 	private settings: SingleCalendarConfig;
 
 	constructor(
 		app: App,
 		settings: SingleCalendarConfig,
-		selectedEvents: { filePath: string }[],
+		selectedEvents: CalendarEvent[],
 		onSubmit: (properties: Map<string, string | null>) => void
 	) {
 		super(app);

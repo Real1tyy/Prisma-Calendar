@@ -5,21 +5,8 @@ import {
 	generateICSFilename,
 	type ICSExportOptions,
 } from "../../src/core/integrations/ics-export";
-import type { ParsedEvent } from "../../src/core/parser";
-
-function createMockEvent(overrides: Partial<ParsedEvent> = {}): ParsedEvent {
-	return {
-		id: "test-event-id",
-		ref: { filePath: "calendar/test-event.md" },
-		title: "Test Event",
-		start: "2025-01-15T10:00:00Z",
-		end: "2025-01-15T11:00:00Z",
-		allDay: false,
-		isVirtual: false,
-		skipped: false,
-		...overrides,
-	};
-}
+import type { CalendarEvent } from "../../src/types/calendar";
+import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 
 function createOptions(overrides: Partial<ICSExportOptions> = {}): ICSExportOptions {
 	return {
@@ -54,7 +41,7 @@ describe("ICS Export", () => {
 		});
 
 		it("should successfully export a single timed event", () => {
-			const event = createMockEvent();
+			const event = createMockTimedEvent();
 			const result = createICSFromEvents([event], createOptions());
 
 			expect(result.success).toBe(true);
@@ -67,7 +54,7 @@ describe("ICS Export", () => {
 		});
 
 		it("should include product ID with calendar name", () => {
-			const event = createMockEvent();
+			const event = createMockTimedEvent();
 			const result = createICSFromEvents([event], createOptions({ calendarName: "My Custom Calendar" }));
 
 			expect(result.success).toBe(true);
@@ -75,7 +62,7 @@ describe("ICS Export", () => {
 		});
 
 		it("should include calendar name header", () => {
-			const event = createMockEvent();
+			const event = createMockTimedEvent();
 			const result = createICSFromEvents([event], createOptions({ calendarName: "Work Calendar" }));
 
 			expect(result.success).toBe(true);
@@ -84,9 +71,9 @@ describe("ICS Export", () => {
 
 		it("should export multiple events", () => {
 			const events = [
-				createMockEvent({ id: "event-1", title: "First Event" }),
-				createMockEvent({ id: "event-2", title: "Second Event" }),
-				createMockEvent({ id: "event-3", title: "Third Event" }),
+				createMockTimedEvent({ id: "event-1", title: "First Event" }),
+				createMockTimedEvent({ id: "event-2", title: "Second Event" }),
+				createMockTimedEvent({ id: "event-3", title: "Third Event" }),
 			];
 			const result = createICSFromEvents(events, createOptions());
 
@@ -97,7 +84,7 @@ describe("ICS Export", () => {
 		});
 
 		it("should include note content as description", () => {
-			const event = createMockEvent({ ref: { filePath: "calendar/meeting.md" } });
+			const event = createMockTimedEvent({ ref: { filePath: "calendar/meeting.md" } });
 			const noteContents = new Map([
 				["calendar/meeting.md", "This is the meeting notes content.\nWith multiple lines."],
 			]);
@@ -109,7 +96,7 @@ describe("ICS Export", () => {
 		});
 
 		it("should not include description when note content is not available", () => {
-			const event = createMockEvent();
+			const event = createMockTimedEvent();
 			const result = createICSFromEvents([event], createOptions());
 
 			expect(result.success).toBe(true);
@@ -117,7 +104,7 @@ describe("ICS Export", () => {
 		});
 
 		it("should include categories when present in frontmatter", () => {
-			const event = createMockEvent({
+			const event = createMockTimedEvent({
 				meta: { Category: ["work", "meeting", "important"] },
 			});
 			const result = createICSFromEvents([event], createOptions());
@@ -127,7 +114,7 @@ describe("ICS Export", () => {
 		});
 
 		it("should not include categories when frontmatter value is empty", () => {
-			const event = createMockEvent({ meta: {} });
+			const event = createMockTimedEvent({ meta: {} });
 			const result = createICSFromEvents([event], createOptions());
 
 			expect(result.success).toBe(true);
@@ -135,7 +122,7 @@ describe("ICS Export", () => {
 		});
 
 		it("should handle single category value as string", () => {
-			const event = createMockEvent({
+			const event = createMockTimedEvent({
 				meta: { Category: "work" },
 			});
 			const result = createICSFromEvents([event], createOptions());
@@ -146,7 +133,7 @@ describe("ICS Export", () => {
 
 		describe("idempotency - UID from event ID", () => {
 			it("should use event ID directly as UID for idempotency", () => {
-				const event = createMockEvent({ id: "a5439f25-b706-5f03-90ea-75530c0d30b5" });
+				const event = createMockTimedEvent({ id: "a5439f25-b706-5f03-90ea-75530c0d30b5" });
 				const result = createICSFromEvents([event], createOptions());
 
 				expect(result.success).toBe(true);
@@ -154,8 +141,8 @@ describe("ICS Export", () => {
 			});
 
 			it("should use unique event ID for each event", () => {
-				const event1 = createMockEvent({ id: "event-uuid-1" });
-				const event2 = createMockEvent({ id: "event-uuid-2" });
+				const event1 = createMockTimedEvent({ id: "event-uuid-1" });
+				const event2 = createMockTimedEvent({ id: "event-uuid-2" });
 				const result = createICSFromEvents([event1, event2], createOptions());
 
 				expect(result.success).toBe(true);
@@ -166,7 +153,7 @@ describe("ICS Export", () => {
 
 		describe("CREATED timestamp from Zettel ID", () => {
 			it("should strip Zettel ID from title in SUMMARY", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					title: "My Event-20250203140530",
 				});
 				const result = createICSFromEvents([event], createOptions());
@@ -177,7 +164,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should use current time when no Zettel ID is present", () => {
-				const event = createMockEvent({ title: "Event Without Zettel" });
+				const event = createMockTimedEvent({ title: "Event Without Zettel" });
 				const result = createICSFromEvents([event], createOptions());
 
 				expect(result.success).toBe(true);
@@ -188,7 +175,7 @@ describe("ICS Export", () => {
 
 		describe("X-properties for Prisma metadata", () => {
 			it("should include X-PRISMA-FILE with file path", () => {
-				const event = createMockEvent({ ref: { filePath: "calendar/my-event.md" } });
+				const event = createMockTimedEvent({ ref: { filePath: "calendar/my-event.md" } });
 				const result = createICSFromEvents([event], createOptions());
 
 				expect(result.success).toBe(true);
@@ -196,7 +183,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should include X-PRISMA-VAULT with vault name", () => {
-				const event = createMockEvent();
+				const event = createMockTimedEvent();
 				const result = createICSFromEvents([event], createOptions({ vaultName: "MyVault" }));
 
 				expect(result.success).toBe(true);
@@ -204,7 +191,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should include Obsidian URI in URL field", () => {
-				const event = createMockEvent({ ref: { filePath: "calendar/my event.md" } });
+				const event = createMockTimedEvent({ ref: { filePath: "calendar/my event.md" } });
 				const result = createICSFromEvents([event], createOptions({ vaultName: "Test Vault" }));
 
 				expect(result.success).toBe(true);
@@ -214,7 +201,7 @@ describe("ICS Export", () => {
 
 		describe("frontmatter export as X-PRISMA-FM-* properties", () => {
 			it("should export string frontmatter properties", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					meta: { description: "Test description", location: "Office" },
 				});
 				const result = createICSFromEvents([event], createOptions());
@@ -225,7 +212,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should export array frontmatter properties as JSON", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					meta: { tags: ["work", "meeting", "important"] },
 				});
 				const result = createICSFromEvents([event], createOptions());
@@ -236,7 +223,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should export boolean frontmatter properties", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					meta: { completed: false, recurring: true },
 				});
 				const result = createICSFromEvents([event], createOptions());
@@ -247,7 +234,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should export numeric frontmatter properties", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					meta: { priority: 1, duration: 60 },
 				});
 				const result = createICSFromEvents([event], createOptions());
@@ -258,7 +245,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should include ORIGINAL parameter with original property name", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					meta: { "Custom Property": "custom value" },
 				});
 				const result = createICSFromEvents([event], createOptions());
@@ -268,7 +255,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should skip null and undefined frontmatter values", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					meta: { validProp: "value", nullProp: null, undefinedProp: undefined },
 				});
 				const result = createICSFromEvents([event], createOptions());
@@ -280,7 +267,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should exclude standard event properties from X-PRISMA-FM-* export", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					meta: {
 						"Start Date": "2025-01-15T10:00:00Z",
 						"End Date": "2025-01-15T11:00:00Z",
@@ -306,7 +293,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should skip empty arrays from X-PRISMA-FM-* export", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					meta: {
 						Parent: [],
 						Child: [],
@@ -332,7 +319,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should exclude internal parser metadata (hardcoded)", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					meta: {
 						folder: "Tasks",
 						isAllDay: false,
@@ -356,7 +343,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should correctly export real-world event structure", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					id: "a5439f25-b706-5f03-90ea-75530c0d30b5",
 					ref: { filePath: "Tasks/Delete Does not Work 100%.md" },
 					title: "Delete Does not Work 100%",
@@ -444,7 +431,7 @@ describe("ICS Export", () => {
 
 		describe("timed events", () => {
 			it("should format timed event with UTC timestamps", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					start: "2025-03-20T14:30:00Z",
 					end: "2025-03-20T16:00:00Z",
 					allDay: false,
@@ -456,39 +443,34 @@ describe("ICS Export", () => {
 				expect(result.content).toContain("DTEND:20250320T160000Z");
 			});
 
-			it("should omit DTEND when end is not provided", () => {
-				const event = createMockEvent({
+			it("should include DTEND even when end equals start", () => {
+				const event = createMockTimedEvent({
 					start: "2025-03-20T14:30:00Z",
-					end: undefined,
-					allDay: false,
+					end: "2025-03-20T14:30:00Z",
 				});
 				const result = createICSFromEvents([event], createOptions());
 
 				expect(result.success).toBe(true);
 				expect(result.content).toContain("DTSTART:20250320T143000Z");
-				expect(result.content).not.toContain("DTEND:");
+				expect(result.content).toContain("DTEND:20250320T143000Z");
 			});
 		});
 
 		describe("all-day events", () => {
-			it("should format all-day event with date-only values", () => {
-				const event = createMockEvent({
+			it("should format all-day event with date-only values (end not supported for all-day events)", () => {
+				const event = createMockAllDayEvent({
 					start: "2025-03-20T00:00:00Z",
-					end: "2025-03-21T00:00:00Z",
-					allDay: true,
 				});
 				const result = createICSFromEvents([event], createOptions());
 
 				expect(result.success).toBe(true);
 				expect(result.content).toContain("DTSTART;VALUE=DATE:20250320");
-				expect(result.content).toContain("DTEND;VALUE=DATE:20250321");
+				expect(result.content).not.toContain("DTEND:");
 			});
 
 			it("should omit DTEND when end is not provided for all-day event", () => {
-				const event = createMockEvent({
+				const event = createMockAllDayEvent({
 					start: "2025-03-20T00:00:00Z",
-					end: undefined,
-					allDay: true,
 				});
 				const result = createICSFromEvents([event], createOptions());
 
@@ -500,20 +482,19 @@ describe("ICS Export", () => {
 
 		describe("mixed event types", () => {
 			it("should handle mix of timed and all-day events", () => {
-				const timedEvent = createMockEvent({
+				const timedEvent = createMockTimedEvent({
 					id: "timed-1",
 					title: "Timed Meeting",
 					start: "2025-03-20T10:00:00Z",
 					end: "2025-03-20T11:00:00Z",
 					allDay: false,
 				});
-				const allDayEvent = createMockEvent({
+				const allDayEvent = createMockAllDayEvent({
 					id: "allday-1",
 					title: "All Day Event",
 					start: "2025-03-21T00:00:00Z",
 					end: "2025-03-22T00:00:00Z",
-					allDay: true,
-				});
+				} as CalendarEvent);
 
 				const result = createICSFromEvents([timedEvent, allDayEvent], createOptions());
 
@@ -527,7 +508,7 @@ describe("ICS Export", () => {
 
 		describe("timezone support", () => {
 			it("should include timezone header when non-UTC timezone is specified", () => {
-				const event = createMockEvent();
+				const event = createMockTimedEvent();
 				const result = createICSFromEvents([event], createOptions({ timezone: "Europe/Prague" }));
 
 				expect(result.success).toBe(true);
@@ -535,7 +516,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should not include timezone header for UTC", () => {
-				const event = createMockEvent();
+				const event = createMockTimedEvent();
 				const result = createICSFromEvents([event], createOptions({ timezone: "UTC" }));
 
 				expect(result.success).toBe(true);
@@ -545,7 +526,7 @@ describe("ICS Export", () => {
 
 		describe("VALARM notifications", () => {
 			it("should include VALARM when minutesBefore is in frontmatter", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					meta: { "Minutes Before": 15 },
 				});
 				const result = createICSFromEvents(
@@ -565,7 +546,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should include VALARM with default minutes when frontmatter is not set", () => {
-				const event = createMockEvent();
+				const event = createMockTimedEvent();
 				const result = createICSFromEvents(
 					[event],
 					createOptions({
@@ -582,7 +563,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should not include VALARM when no notification configured", () => {
-				const event = createMockEvent();
+				const event = createMockTimedEvent();
 				const result = createICSFromEvents([event], createOptions());
 
 				expect(result.success).toBe(true);
@@ -590,8 +571,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should use daysBeforeProp for all-day events", () => {
-				const event = createMockEvent({
-					allDay: true,
+				const event = createMockAllDayEvent({
 					start: "2025-03-20T00:00:00Z",
 					meta: { "Days Before": 1 },
 				});
@@ -610,8 +590,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should use defaultDaysBefore for all-day events without frontmatter", () => {
-				const event = createMockEvent({
-					allDay: true,
+				const event = createMockAllDayEvent({
 					start: "2025-03-20T00:00:00Z",
 				});
 				const result = createICSFromEvents(
@@ -630,7 +609,7 @@ describe("ICS Export", () => {
 			});
 
 			it("should prefer frontmatter over default", () => {
-				const event = createMockEvent({
+				const event = createMockTimedEvent({
 					meta: { "Minutes Before": 5 },
 				});
 				const result = createICSFromEvents(
@@ -650,7 +629,7 @@ describe("ICS Export", () => {
 
 			describe("decimal rounding", () => {
 				it("should round decimal minutes from frontmatter", () => {
-					const event = createMockEvent({
+					const event = createMockTimedEvent({
 						meta: { "Minutes Before": 15.5 },
 					});
 					const result = createICSFromEvents(
@@ -670,7 +649,7 @@ describe("ICS Export", () => {
 				});
 
 				it("should round decimal default minutes", () => {
-					const event = createMockEvent();
+					const event = createMockTimedEvent();
 					const result = createICSFromEvents(
 						[event],
 						createOptions({
@@ -688,7 +667,7 @@ describe("ICS Export", () => {
 				});
 
 				it("should round 0.25 hours (15 min) correctly", () => {
-					const event = createMockEvent({
+					const event = createMockTimedEvent({
 						meta: { "Minutes Before": 0.25 * 60 },
 					});
 					const result = createICSFromEvents(
@@ -706,8 +685,7 @@ describe("ICS Export", () => {
 				});
 
 				it("should round decimal days for all-day events", () => {
-					const event = createMockEvent({
-						allDay: true,
+					const event = createMockAllDayEvent({
 						start: "2025-03-20T00:00:00Z",
 						meta: { "Days Before": 1.5 },
 					});

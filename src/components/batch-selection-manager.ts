@@ -4,20 +4,12 @@ import { type App, Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
 import type { Command } from "../core/commands/command";
+import type { CalendarEvent } from "../types/calendar";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import { MoveByModal } from "./modals/move-by-modal";
 
-export interface SelectedEvent {
-	id: string;
-	filePath: string;
-	title: string;
-	start: string;
-	end?: string;
-	allDay: boolean;
-}
-
 export class BatchSelectionManager {
-	private selectedEvents = new Map<string, SelectedEvent>();
+	private selectedEvents = new Map<string, CalendarEvent>();
 	private isSelectionMode = false;
 	private onSelectionChangeCallback: () => void = () => {};
 	private batchCommandFactory: BatchCommandFactory;
@@ -48,7 +40,7 @@ export class BatchSelectionManager {
 		if (this.returnIfEmpty()) return;
 
 		try {
-			const filePaths = Array.from(this.selectedEvents.values()).map((event) => event.filePath);
+			const filePaths = Array.from(this.selectedEvents.values()).map((event) => event.ref.filePath);
 			const command = commandFactory(filePaths);
 
 			await this.bundle.commandManager.executeCommand(command);
@@ -104,7 +96,7 @@ export class BatchSelectionManager {
 			if (this.returnIfEmpty()) return;
 
 			try {
-				const filePaths = Array.from(this.selectedEvents.values()).map((event) => event.filePath);
+				const filePaths = Array.from(this.selectedEvents.values()).map((event) => event.ref.filePath);
 				const command = commandFactory(filePaths);
 
 				await this.bundle.commandManager.executeCommand(command);
@@ -202,22 +194,43 @@ export class BatchSelectionManager {
 		});
 	}
 
-	private getEventData(eventId: string): SelectedEvent | null {
+	private getEventData(eventId: string): CalendarEvent | null {
 		const fcEvent = this.calendar.getEventById(eventId);
 		if (!fcEvent) return null;
 
-		return this.mapFCEventToSelectedEvent(fcEvent);
+		return this.mapFCEventToCalendarEvent(fcEvent);
 	}
 
-	private mapFCEventToSelectedEvent(fcEvent: EventApi): SelectedEvent {
-		return {
+	private mapFCEventToCalendarEvent(fcEvent: EventApi): CalendarEvent {
+		const filePath = fcEvent.extendedProps.filePath as string;
+		const title = (fcEvent.extendedProps.originalTitle || fcEvent.title) as string;
+		const start = fcEvent.start?.toISOString() || "";
+		const isVirtual = (fcEvent.extendedProps.isVirtual as boolean) ?? false;
+		const skipped = (fcEvent.extendedProps.skipped as boolean) ?? false;
+		const meta = (fcEvent.extendedProps.frontmatterDisplayData as Record<string, unknown>) ?? {};
+
+		const baseEvent = {
 			id: fcEvent.id,
-			filePath: fcEvent.extendedProps.filePath as string,
-			title: (fcEvent.extendedProps.originalTitle || fcEvent.title) as string,
-			start: fcEvent.start?.toISOString() || "",
-			end: fcEvent.end?.toISOString(),
-			allDay: fcEvent.allDay,
+			ref: { filePath },
+			title,
+			start,
+			isVirtual,
+			skipped,
+			meta,
 		};
+
+		return fcEvent.allDay
+			? {
+					...baseEvent,
+					type: "allDay" as const,
+					allDay: true,
+				}
+			: {
+					...baseEvent,
+					type: "timed" as const,
+					end: fcEvent.end?.toISOString() || start,
+					allDay: false,
+				};
 	}
 
 	private toggleEventSelection(eventId: string, isSelected: boolean): void {
@@ -254,7 +267,7 @@ export class BatchSelectionManager {
 		events
 			.filter((fcEvent) => !fcEvent.extendedProps.isVirtual)
 			.forEach((fcEvent) => {
-				const eventData = this.mapFCEventToSelectedEvent(fcEvent);
+				const eventData = this.mapFCEventToCalendarEvent(fcEvent);
 				this.selectedEvents.set(fcEvent.id, eventData);
 				this.updateEventSelectionUI(fcEvent.id, true);
 			});
@@ -287,7 +300,7 @@ export class BatchSelectionManager {
 		return this.selectedEvents.size;
 	}
 
-	public getSelectedEvents(): SelectedEvent[] {
+	public getSelectedEvents(): CalendarEvent[] {
 		return Array.from(this.selectedEvents.values());
 	}
 
@@ -338,8 +351,8 @@ export class BatchSelectionManager {
 
 		try {
 			const selectedEventsArray = Array.from(this.selectedEvents.values());
-			await runBatchOperation(selectedEventsArray, "Open files", async (sel) => {
-				await this.app.workspace.openLinkText(sel.filePath, "", true);
+			await runBatchOperation(selectedEventsArray, "Open files", async (event) => {
+				await this.app.workspace.openLinkText(event.ref.filePath, "", true);
 			});
 			this.clearSelection();
 		} catch (error) {

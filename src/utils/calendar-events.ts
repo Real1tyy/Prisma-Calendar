@@ -8,7 +8,8 @@ import { nanoid } from "nanoid";
 import { type App, TFile } from "obsidian";
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { EventStore } from "../core/event-store";
-import type { Frontmatter, SingleCalendarConfig } from "../types";
+import type { CalendarEvent, Frontmatter, SingleCalendarConfig } from "../types";
+import { isTimedEvent } from "../types/calendar";
 import { parseIntoList } from "./list-utils";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
@@ -45,7 +46,7 @@ export function getSourceEventInfoFromVirtual(
 	return {
 		title: sourceEvent.title,
 		start: sourceEvent.start,
-		end: sourceEvent.end,
+		end: isTimedEvent(sourceEvent) ? sourceEvent.end : undefined,
 		allDay: sourceEvent.allDay,
 		extendedProps: {
 			filePath: sourceEvent.ref.filePath,
@@ -647,17 +648,13 @@ export const findAdjacentEvent = (
  * Gets categories that are common across all selected events.
  * Returns an array of category names that exist in ALL events.
  */
-export const getCommonCategories = (
-	app: App,
-	selectedEvents: { filePath: string }[],
-	categoryProp: string
-): string[] => {
+export const getCommonCategories = (app: App, selectedEvents: CalendarEvent[], categoryProp: string): string[] => {
 	if (selectedEvents.length === 0 || !categoryProp) return [];
 
 	const eventCategories: Set<string>[] = [];
 
 	for (const event of selectedEvents) {
-		const file = app.vault.getAbstractFileByPath(event.filePath);
+		const file = app.vault.getAbstractFileByPath(event.ref.filePath);
 		if (!file || !(file instanceof TFile)) continue;
 
 		const cache = app.metadataCache.getFileCache(file);
@@ -682,7 +679,7 @@ export const getCommonCategories = (
  */
 export const getCommonFrontmatterProperties = (
 	app: App,
-	selectedEvents: { filePath: string }[],
+	selectedEvents: CalendarEvent[],
 	settings: SingleCalendarConfig
 ): Map<string, string> => {
 	if (selectedEvents.length === 0) return new Map();
@@ -691,7 +688,7 @@ export const getCommonFrontmatterProperties = (
 
 	const allEventProperties = selectedEvents
 		.map((event) => {
-			const file = app.vault.getAbstractFileByPath(event.filePath);
+			const file = app.vault.getAbstractFileByPath(event.ref.filePath);
 			if (!(file instanceof TFile)) return null;
 
 			const cache = app.metadataCache.getFileCache(file);

@@ -17,6 +17,7 @@ import {
 	removeZettelId,
 	shouldUpdateInstanceDateOnMove,
 } from "../../src/utils/calendar-events";
+import { createMockTimedEvent } from "../fixtures/event-fixtures";
 import { createMockApp, createMockFile, createMockSingleCalendarSettings } from "../setup";
 
 describe("ZettelID Utilities", () => {
@@ -860,7 +861,11 @@ describe("Physical Recurring Event Utilities", () => {
 					frontmatter: { Category: ["Work", "Meeting", "Planning"] },
 				} as never);
 
-			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }, { filePath: "event3.md" }];
+			const selectedEvents = [
+				createMockTimedEvent({ ref: { filePath: "event1.md" } }),
+				createMockTimedEvent({ ref: { filePath: "event2.md" } }),
+				createMockTimedEvent({ ref: { filePath: "event3.md" } }),
+			];
 
 			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 
@@ -882,7 +887,10 @@ describe("Physical Recurring Event Utilities", () => {
 					frontmatter: { Category: "Netflix" },
 				} as never);
 
-			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
+			const selectedEvents = [
+				createMockTimedEvent({ ref: { filePath: "event1.md" } }),
+				createMockTimedEvent({ ref: { filePath: "event2.md" } }),
+			];
 
 			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 
@@ -904,7 +912,10 @@ describe("Physical Recurring Event Utilities", () => {
 					frontmatter: { Category: ["Personal", "Fitness"] },
 				} as never);
 
-			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
+			const selectedEvents = [
+				createMockTimedEvent({ ref: { filePath: "event1.md" } }),
+				createMockTimedEvent({ ref: { filePath: "event2.md" } }),
+			];
 
 			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 
@@ -919,7 +930,7 @@ describe("Physical Recurring Event Utilities", () => {
 
 		it("should return empty array when categoryProp is empty", async () => {
 			const mockApp = createMockApp();
-			const selectedEvents = [{ filePath: "event1.md" }];
+			const selectedEvents = [createMockTimedEvent({ ref: { filePath: "event1.md" } })];
 			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "");
 			expect(result).toEqual([]);
 		});
@@ -939,7 +950,10 @@ describe("Physical Recurring Event Utilities", () => {
 					frontmatter: { Category: ["Work", "Meeting", "Urgent"] },
 				} as never);
 
-			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
+			const selectedEvents = [
+				createMockTimedEvent({ ref: { filePath: "event1.md" } }),
+				createMockTimedEvent({ ref: { filePath: "event2.md" } }),
+			];
 
 			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 
@@ -956,7 +970,10 @@ describe("Physical Recurring Event Utilities", () => {
 				frontmatter: { Category: ["Work", "Meeting"] },
 			} as never);
 
-			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "nonexistent.md" }];
+			const selectedEvents = [
+				createMockTimedEvent({ ref: { filePath: "event1.md" } }),
+				createMockTimedEvent({ ref: { filePath: "nonexistent.md" } }),
+			];
 
 			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 
@@ -978,7 +995,10 @@ describe("Physical Recurring Event Utilities", () => {
 					frontmatter: {},
 				} as never);
 
-			const selectedEvents = [{ filePath: "event1.md" }, { filePath: "event2.md" }];
+			const selectedEvents = [
+				createMockTimedEvent({ ref: { filePath: "event1.md" } }),
+				createMockTimedEvent({ ref: { filePath: "event2.md" } }),
+			];
 
 			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
 

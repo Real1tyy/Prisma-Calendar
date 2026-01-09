@@ -2,7 +2,8 @@ import { BehaviorSubject, Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type EventQuery, EventStore } from "../../src/core/event-store";
 import type { IndexerEvent } from "../../src/core/indexer";
-import type { ParsedEvent } from "../../src/core/parser";
+import type { CalendarEvent } from "../../src/types/calendar";
+import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 
 describe("EventStore", () => {
 	let eventStore: EventStore;
@@ -28,23 +29,30 @@ describe("EventStore", () => {
 		eventStore = new EventStore(mockIndexer, mockParser, mockRecurringEventManager);
 	});
 
-	const createMockEvent = (overrides: Partial<ParsedEvent> = {}): ParsedEvent => ({
-		id: "test-event-1",
-		ref: { filePath: "Events/meeting.md" },
-		title: "Test Meeting",
-		start: "2024-01-15T10:00:00.000Z",
-		end: "2024-01-15T11:00:00.000Z",
-		allDay: false,
-		isVirtual: false,
-		skipped: false,
-		color: undefined,
-		meta: {
-			folder: "Events",
-			originalStart: "2024-01-15 10:00",
-			originalEnd: "2024-01-15 11:00",
-		},
-		...overrides,
-	});
+	const createMockEvent = (overrides: Partial<CalendarEvent> = {}): CalendarEvent => {
+		const allDay = overrides?.allDay ?? false;
+		const baseOverrides = {
+			id: "test-event-1",
+			ref: { filePath: "Events/meeting.md" },
+			title: "Test Meeting",
+			start: "2024-01-15T10:00:00.000Z",
+			meta: {
+				folder: "Events",
+				originalStart: "2024-01-15 10:00",
+				originalEnd: "2024-01-15 11:00",
+			},
+			...overrides,
+		};
+
+		if (allDay) {
+			return createMockAllDayEvent(baseOverrides);
+		}
+
+		return createMockTimedEvent({
+			...baseOverrides,
+			end: ((overrides as any).end as string) ?? "2024-01-15T11:00:00.000Z",
+		});
+	};
 
 	describe("event caching", () => {
 		it("should update existing cached events", async () => {
@@ -102,7 +110,6 @@ describe("EventStore", () => {
 				id: "event-4",
 				title: "Holiday",
 				start: "2024-01-17T00:00:00.000Z",
-				end: "2024-01-17T23:59:59.999Z",
 				allDay: true,
 			});
 
@@ -321,7 +328,9 @@ describe("EventStore", () => {
 			expect(event.id).toBe("test-1");
 			expect(event.title).toBe("Test Event");
 			expect(event.start).toBe("2024-01-15T10:00:00.000Z");
-			expect(event.end).toBe("2024-01-15T11:00:00.000Z");
+			if (event.type === "timed") {
+				expect(event.end).toBe("2024-01-15T11:00:00.000Z");
+			}
 			expect(event.allDay).toBe(false);
 			expect(event.color).toBe("#ff0000");
 			expect(event.meta).toEqual({ folder: "Events" });

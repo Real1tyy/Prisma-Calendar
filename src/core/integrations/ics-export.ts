@@ -2,10 +2,11 @@ import { extractContentAfterFrontmatter, serializeFrontmatterValue } from "@real
 import ICAL from "ical.js";
 import { type App, Notice, TFile } from "obsidian";
 import type { ExportOptions } from "../../components/modals/calendar-select-modal";
+import type { CalendarEvent } from "../../types/calendar";
+import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
 import { parseIntoList } from "../../utils/list-utils";
 import { ensureFolderExists } from "../../utils/obsidian";
-import type { ParsedEvent } from "../parser";
 
 interface NotificationSettings {
 	minutesBeforeProp?: string;
@@ -94,10 +95,10 @@ function createVAlarm(triggerMinutes: number): ICAL.Component {
 	return valarm;
 }
 
-function getNotificationMinutes(event: ParsedEvent, notifications?: NotificationSettings): number | null {
+function getNotificationMinutes(event: CalendarEvent, notifications?: NotificationSettings): number | null {
 	if (!notifications) return null;
 
-	if (event.allDay) {
+	if (isAllDayEvent(event)) {
 		if (notifications.daysBeforeProp) {
 			const daysBeforeValue = event.meta?.[notifications.daysBeforeProp];
 			if (daysBeforeValue !== undefined && daysBeforeValue !== null) {
@@ -128,7 +129,11 @@ function getNotificationMinutes(event: ParsedEvent, notifications?: Notification
 	return null;
 }
 
-function parsedEventToVEvent(event: ParsedEvent, options: ICSExportOptions, timezone?: ICAL.Timezone): ICAL.Component {
+function parsedEventToVEvent(
+	event: CalendarEvent,
+	options: ICSExportOptions,
+	timezone?: ICAL.Timezone
+): ICAL.Component {
 	const vevent = new ICAL.Component("vevent");
 
 	const zettelId = extractZettelId(event.ref.filePath);
@@ -145,7 +150,7 @@ function parsedEventToVEvent(event: ParsedEvent, options: ICSExportOptions, time
 	const dtstart = dateToICALTime(startDate, event.allDay, timezone);
 	vevent.addPropertyWithValue("dtstart", dtstart);
 
-	if (event.end) {
+	if (isTimedEvent(event)) {
 		const endDate = new Date(event.end);
 		const dtend = dateToICALTime(endDate, event.allDay, timezone);
 		vevent.addPropertyWithValue("dtend", dtend);
@@ -212,7 +217,7 @@ function parsedEventToVEvent(event: ParsedEvent, options: ICSExportOptions, time
 	return vevent;
 }
 
-export function createICSFromEvents(events: ParsedEvent[], options: ICSExportOptions): ICSExportResult {
+export function createICSFromEvents(events: CalendarEvent[], options: ICSExportOptions): ICSExportResult {
 	if (events.length === 0) {
 		return {
 			success: false,
