@@ -1,8 +1,9 @@
 import { DebouncedNotifier } from "@real1ty-obsidian-plugins/utils";
-import type { Subscription } from "rxjs";
+import type { BehaviorSubject, Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { UntrackedEvent } from "../types/calendar";
-import type { Frontmatter } from "../types/index";
+import type { Frontmatter, SingleCalendarConfig } from "../types/index";
+import { UntrackedFilterEvaluator } from "../utils/untracked-filter-evaluator";
 import type { Indexer, IndexerEvent, RawEventSource } from "./indexer";
 
 interface CachedUntrackedEvent {
@@ -13,9 +14,18 @@ interface CachedUntrackedEvent {
 export class UntrackedEventStore extends DebouncedNotifier {
 	private cache = new Map<string, CachedUntrackedEvent>();
 	private subscription: Subscription | null = null;
+	private settingsSubscription: Subscription | null = null;
+	private filterEvaluator: UntrackedFilterEvaluator;
+	private lastFilterExpressions: string[] = [];
 
-	constructor(private indexer: Indexer) {
+	constructor(
+		private indexer: Indexer,
+		settingsStore: BehaviorSubject<SingleCalendarConfig>
+	) {
 		super();
+		this.filterEvaluator = new UntrackedFilterEvaluator(settingsStore);
+		this.lastFilterExpressions = settingsStore.value.untrackedFilterExpressions;
+
 		this.subscription = this.indexer.events$
 			.pipe(
 				filter(
@@ -26,6 +36,17 @@ export class UntrackedEventStore extends DebouncedNotifier {
 			.subscribe((event: IndexerEvent) => {
 				this.handleIndexerEvent(event);
 			});
+
+		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
+			const filtersChanged =
+				JSON.stringify(this.lastFilterExpressions) !== JSON.stringify(newSettings.untrackedFilterExpressions);
+
+			if (filtersChanged) {
+				this.lastFilterExpressions = newSettings.untrackedFilterExpressions;
+				this.cache.clear();
+				this.indexer.resync();
+			}
+		});
 	}
 
 	private handleIndexerEvent(event: IndexerEvent): void {
@@ -49,6 +70,13 @@ export class UntrackedEventStore extends DebouncedNotifier {
 
 	private processFileChange(source: RawEventSource): void {
 		if (this.isUpToDate(source.filePath, source.mtime)) {
+			return;
+		}
+
+		if (!this.filterEvaluator.evaluateFilters(source.frontmatter)) {
+			if (this.cache.has(source.filePath)) {
+				this.invalidate(source.filePath);
+			}
 			return;
 		}
 
@@ -122,6 +150,9 @@ export class UntrackedEventStore extends DebouncedNotifier {
 	destroy(): void {
 		this.subscription?.unsubscribe();
 		this.subscription = null;
+		this.settingsSubscription?.unsubscribe();
+		this.settingsSubscription = null;
+		this.filterEvaluator.destroy();
 		super.destroy();
 		this.clear();
 	}

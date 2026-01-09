@@ -6,6 +6,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Untracked Event Filtering**: Filter untracked events based on frontmatter properties using JavaScript expressions. Configure global filters in Settings → Rules & Filters → Untracked Event Filtering to control which untracked events appear in the dropdown. Works identically to regular event filtering but applies only to events without dates.
+
 - **Untracked Events Dropdown**: New reactive dropdown showing events without date properties
   - Displays in calendar toolbar as "Untracked" button
   - Shows all events that don't have Start Date, End Date, or Date properties

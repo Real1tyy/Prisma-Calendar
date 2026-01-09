@@ -2,6 +2,14 @@
 
 Prisma Calendar provides multiple powerful ways to filter events, from simple text search to advanced property-based expressions. These filtering options work together to help you focus on exactly what matters.
 
+## Overview
+
+Prisma Calendar supports filtering for two types of events:
+- **Calendar Events**: Events with dates that appear on the calendar
+- **Untracked Events**: Events without dates that appear in the untracked events dropdown
+
+Both use the same JavaScript expression syntax but are configured separately.
+
 ## Three Ways to Filter
 
 ### 1. Search Bar (Simple Text Filter)
@@ -123,6 +131,30 @@ Each calendar also has **persistent filter expressions** in its settings:
 -   **An event is displayed only if the expression evaluates to `true`**
 -   **Use `&&` (AND) and `||` (OR)** to combine multiple conditions as needed
 -   These filters are **permanent** and apply every time the calendar loads
+
+### Calendar Event Filtering
+
+Configure permanent filters for calendar events in **Settings → Rules & Filters → Event Filtering**:
+
+```javascript
+Status !== 'Inbox'
+Priority === 'High'
+```
+
+When filters change, the calendar automatically re-indexes all events to apply the new rules. Expect a brief delay when updating filters.
+
+### Untracked Event Filtering
+
+Configure filters for untracked events separately in **Settings → Rules & Filters → Untracked Event Filtering**:
+
+```javascript
+Status !== 'Inbox'
+Type === 'Task'
+!_Archived
+```
+
+**Key differences from calendar event filtering:**
+- Only affects events in the untracked events dropdown
 
 ## Building Complex Filters with JavaScript Logic
 

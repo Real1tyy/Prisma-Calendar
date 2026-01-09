@@ -15,6 +15,7 @@ export class RulesSettings {
 	display(containerEl: HTMLElement): void {
 		this.addColorSettings(containerEl);
 		this.addFilterSettings(containerEl);
+		this.addUntrackedFilterSettings(containerEl);
 		this.addFilterPresetSettings(containerEl);
 	}
 
@@ -302,6 +303,50 @@ export class RulesSettings {
 			name: "Filter expressions",
 			desc: "JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing.",
 			placeholder: "Status !== 'Inbox'\nPriority === 'High'",
+			multiline: true,
+		});
+	}
+
+	private addUntrackedFilterSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("Untracked event filtering").setHeading();
+
+		const desc = containerEl.createDiv();
+		desc.createEl("p", {
+			text: "Filter untracked events (events without dates) based on their frontmatter properties. This works the same as event filtering but only applies to untracked events in the dropdown.",
+		});
+
+		const examplesContainer = desc.createDiv(cls("settings-info-box"));
+
+		examplesContainer.createEl("strong", { text: "Example filter expressions" });
+		const examplesList = examplesContainer.createEl("ul");
+
+		const examples = [
+			{ expression: "Status !== 'Inbox'", description: "Exclude inbox items" },
+			{ expression: "Type === 'Task'", description: "Only show tasks" },
+			{ expression: "!_Archived", description: "Exclude archived events" },
+		];
+
+		for (const example of examples) {
+			const li = examplesList.createEl("li", { cls: cls("color-example-item") });
+
+			li.createEl("code", { text: example.expression, cls: cls("settings-info-box-example") });
+
+			li.createSpan({ text: "→", cls: cls("color-arrow") });
+
+			li.createSpan({ text: example.description, cls: cls("color-example-description") });
+		}
+
+		const warningContainer = desc.createDiv(cls("settings-warning-box"));
+		warningContainer.createEl("strong", { text: "⚠️ important:" });
+		warningContainer.createEl("p", {
+			text: "Use property names directly. Invalid expressions will be ignored and logged to console.",
+		});
+
+		this.ui.addTextArray(containerEl, {
+			key: "untrackedFilterExpressions",
+			name: "Untracked filter expressions",
+			desc: "JavaScript expressions to filter untracked events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter.",
+			placeholder: "Status !== 'Inbox'\nType === 'Task'",
 			multiline: true,
 		});
 	}

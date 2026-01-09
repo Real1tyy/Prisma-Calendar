@@ -11,6 +11,20 @@ Events are considered **untracked** when they have **none** of the following pro
 
 These events won't appear on the calendar but are stored in the dropdown for easy access and scheduling.
 
+### Filtering Untracked Events
+
+You can globally filter which untracked events appear in the dropdown using JavaScript expressions:
+
+**Settings → Rules & Filters → Untracked Event Filtering**
+
+**How it works:**
+- Filters are applied when files are indexed
+- Events must pass all filter expressions to appear in the dropdown
+- Works identically to calendar event filtering but only affects untracked events
+- Changes apply immediately without triggering full re-indexing
+
+See the [Filtering documentation](./filtering.md) for more details on expression syntax and examples.
+
 ## Features
 
 ### 📋 View Untracked Events

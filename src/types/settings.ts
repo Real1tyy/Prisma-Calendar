@@ -165,6 +165,7 @@ const CalendarSettingsSchema = z
 const RulesSettingsSchema = z
 	.object({
 		filterExpressions: z.array(z.string()).catch([]), // JavaScript expressions to filter events based on frontmatter
+		untrackedFilterExpressions: z.array(z.string()).catch([]), // JavaScript expressions to filter untracked events based on frontmatter
 		defaultNodeColor: ColorSchema.catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR), // Default purple color
 		colorRules: z
 			.array(
