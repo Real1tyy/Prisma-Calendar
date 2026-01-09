@@ -39,6 +39,8 @@ All notable changes to this project will be documented here.
 
 - **Immediate Command Availability**: Commands now work immediately after switching to a calendar view. Previously, you had to click on the calendar before commands would respond. Now when you switch tabs or use ribbon icons or the specific command to open a calendar, all the other commands are instantly available without extra interaction.
 
+- **Smart Minimized Modal Updates**: When tracking time with the stopwatch in a minimized modal, the modal now automatically updates if the underlying event file is modified from another window or source. This prevents data inconsistencies and ensures you're always working with the latest event information. If the event file is deleted while tracking, the minimized modal is automatically cleared with a notification.
+
 ---
 
 ## 1.25.0

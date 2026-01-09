@@ -1,11 +1,41 @@
+import type { Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StopwatchSnapshot } from "../../src/components/stopwatch";
+import type { CalendarBundle } from "../../src/core/calendar-bundle";
+import type { IndexerEvent } from "../../src/core/indexer";
 import { MinimizedModalManager, type MinimizedModalState } from "../../src/core/minimized-modal-manager";
 
 describe("MinimizedModalManager", () => {
+	let mockBundle: Partial<CalendarBundle>;
+	let mockIndexerEventsSubject: Subject<IndexerEvent>;
+
 	beforeEach(() => {
 		MinimizedModalManager.clear();
 		vi.useFakeTimers();
+
+		// Create a mock indexer events subject
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const { Subject: RxSubject } = require("rxjs") as any;
+		mockIndexerEventsSubject = new RxSubject();
+
+		// Create a mock bundle with minimal required properties
+		mockBundle = {
+			indexer: {
+				events$: mockIndexerEventsSubject.asObservable(),
+			} as any,
+			settingsStore: {
+				currentSettings: {
+					titleProp: "Title",
+					categoryProp: "Category",
+					statusProperty: "Status",
+					notesProp: "Notes",
+					dateProp: "Date",
+					startProp: "Start Date",
+					endProp: "End Date",
+					allDayProp: "All Day",
+				},
+			} as any,
+		};
 	});
 
 	afterEach(() => {
@@ -33,7 +63,7 @@ describe("MinimizedModalManager", () => {
 	describe("saveState and getState", () => {
 		it("should save and retrieve state", () => {
 			const state = createMockState({ title: "Test Event" });
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			const retrieved = MinimizedModalManager.getState();
 			expect(retrieved).toEqual(state);
@@ -47,8 +77,8 @@ describe("MinimizedModalManager", () => {
 			const state1 = createMockState({ title: "First Event" });
 			const state2 = createMockState({ title: "Second Event" });
 
-			MinimizedModalManager.saveState(state1);
-			MinimizedModalManager.saveState(state2);
+			MinimizedModalManager.saveState(state1, mockBundle as CalendarBundle);
+			MinimizedModalManager.saveState(state2, mockBundle as CalendarBundle);
 
 			const retrieved = MinimizedModalManager.getState();
 			expect(retrieved?.title).toBe("Second Event");
@@ -68,7 +98,7 @@ describe("MinimizedModalManager", () => {
 				customProperties: { priority: "high" },
 			});
 
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 			const retrieved = MinimizedModalManager.getState();
 
 			expect(retrieved?.title).toBe("Meeting");
@@ -91,7 +121,7 @@ describe("MinimizedModalManager", () => {
 				calendarId: "my-calendar",
 			});
 
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 			const retrieved = MinimizedModalManager.getState();
 
 			expect(retrieved?.modalType).toBe("edit");
@@ -107,12 +137,12 @@ describe("MinimizedModalManager", () => {
 		});
 
 		it("should return true when state is saved", () => {
-			MinimizedModalManager.saveState(createMockState());
+			MinimizedModalManager.saveState(createMockState(), mockBundle as CalendarBundle);
 			expect(MinimizedModalManager.hasMinimizedModal()).toBe(true);
 		});
 
 		it("should return false after clearing state", () => {
-			MinimizedModalManager.saveState(createMockState());
+			MinimizedModalManager.saveState(createMockState(), mockBundle as CalendarBundle);
 			MinimizedModalManager.clear();
 			expect(MinimizedModalManager.hasMinimizedModal()).toBe(false);
 		});
@@ -120,7 +150,7 @@ describe("MinimizedModalManager", () => {
 
 	describe("clear", () => {
 		it("should clear saved state", () => {
-			MinimizedModalManager.saveState(createMockState());
+			MinimizedModalManager.saveState(createMockState(), mockBundle as CalendarBundle);
 			MinimizedModalManager.clear();
 
 			expect(MinimizedModalManager.getState()).toBeNull();
@@ -141,7 +171,7 @@ describe("MinimizedModalManager", () => {
 			const state = createMockState({
 				stopwatch: createMockStopwatchSnapshot({ startTime: null }),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.getElapsedMs()).toBe(0);
 		});
@@ -157,7 +187,7 @@ describe("MinimizedModalManager", () => {
 					startTime,
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.getElapsedMs()).toBe(60000);
 		});
@@ -173,7 +203,7 @@ describe("MinimizedModalManager", () => {
 					startTime,
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.getElapsedMs()).toBe(0);
 
@@ -200,7 +230,7 @@ describe("MinimizedModalManager", () => {
 					breakStartTime: null,
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.getBreakMs()).toBe(120000);
 		});
@@ -217,7 +247,7 @@ describe("MinimizedModalManager", () => {
 					breakStartTime,
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			// Should be 60000 + 30000 = 90000
 			expect(MinimizedModalManager.getBreakMs()).toBe(90000);
@@ -235,7 +265,7 @@ describe("MinimizedModalManager", () => {
 					breakStartTime: now - 30000, // This should be ignored
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.getBreakMs()).toBe(60000);
 		});
@@ -251,7 +281,7 @@ describe("MinimizedModalManager", () => {
 					breakStartTime: now,
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.getBreakMs()).toBe(0);
 
@@ -275,7 +305,7 @@ describe("MinimizedModalManager", () => {
 					totalBreakMs: 90000, // 1.5 minutes
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.getBreakMinutes()).toBe(1.5);
 		});
@@ -287,7 +317,7 @@ describe("MinimizedModalManager", () => {
 					totalBreakMs: 100000, // 1.666... minutes
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.getBreakMinutes()).toBe(1.67);
 		});
@@ -308,7 +338,7 @@ describe("MinimizedModalManager", () => {
 					startTime: now - 45000, // 45 seconds
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.formatElapsed()).toBe("00:00:45");
 		});
@@ -323,7 +353,7 @@ describe("MinimizedModalManager", () => {
 					startTime: now - 185000, // 3 minutes 5 seconds
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.formatElapsed()).toBe("00:03:05");
 		});
@@ -338,7 +368,7 @@ describe("MinimizedModalManager", () => {
 					startTime: now - 3723000, // 1 hour 2 minutes 3 seconds
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.formatElapsed()).toBe("01:02:03");
 		});
@@ -353,7 +383,7 @@ describe("MinimizedModalManager", () => {
 					startTime: now - 36000000, // 10 hours
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.formatElapsed()).toBe("10:00:00");
 		});
@@ -371,7 +401,7 @@ describe("MinimizedModalManager", () => {
 					totalBreakMs: 30000, // 30 seconds
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.formatBreak()).toBe("00:30");
 		});
@@ -383,7 +413,7 @@ describe("MinimizedModalManager", () => {
 					totalBreakMs: 125000, // 2 minutes 5 seconds
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.formatBreak()).toBe("02:05");
 		});
@@ -395,7 +425,7 @@ describe("MinimizedModalManager", () => {
 					totalBreakMs: 3600000, // 60 minutes
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			expect(MinimizedModalManager.formatBreak()).toBe("60:00");
 		});
@@ -406,7 +436,7 @@ describe("MinimizedModalManager", () => {
 			const state = createMockState({
 				stopwatch: createMockStopwatchSnapshot({ state: "idle" }),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			const retrieved = MinimizedModalManager.getState();
 			expect(retrieved?.stopwatch.state).toBe("idle");
@@ -420,7 +450,7 @@ describe("MinimizedModalManager", () => {
 					startTime: now - 60000,
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			const retrieved = MinimizedModalManager.getState();
 			expect(retrieved?.stopwatch.state).toBe("running");
@@ -436,7 +466,7 @@ describe("MinimizedModalManager", () => {
 					totalBreakMs: 15000,
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			const retrieved = MinimizedModalManager.getState();
 			expect(retrieved?.stopwatch.state).toBe("paused");
@@ -452,7 +482,7 @@ describe("MinimizedModalManager", () => {
 					totalBreakMs: 60000,
 				}),
 			});
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			const retrieved = MinimizedModalManager.getState();
 			expect(retrieved?.stopwatch.state).toBe("stopped");
@@ -476,7 +506,7 @@ describe("MinimizedModalManager", () => {
 				}),
 			});
 
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			// Time passes while modal is minimized
 			vi.advanceTimersByTime(300000); // 5 minutes
@@ -510,7 +540,7 @@ describe("MinimizedModalManager", () => {
 				}),
 			});
 
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 
 			// Time passes
 			vi.advanceTimersByTime(300000); // 5 more minutes
@@ -532,11 +562,11 @@ describe("MinimizedModalManager", () => {
 			const state1 = createMockState({ title: "First" });
 			const state2 = createMockState({ title: "Second" });
 
-			MinimizedModalManager.saveState(state1);
+			MinimizedModalManager.saveState(state1, mockBundle as CalendarBundle);
 			expect(MinimizedModalManager.getState()?.title).toBe("First");
 
 			// Saving new state should replace old state
-			MinimizedModalManager.saveState(state2);
+			MinimizedModalManager.saveState(state2, mockBundle as CalendarBundle);
 			expect(MinimizedModalManager.getState()?.title).toBe("Second");
 
 			// Only one state should exist
@@ -544,7 +574,7 @@ describe("MinimizedModalManager", () => {
 		});
 
 		it("should clear state after restore", () => {
-			MinimizedModalManager.saveState(createMockState());
+			MinimizedModalManager.saveState(createMockState(), mockBundle as CalendarBundle);
 			expect(MinimizedModalManager.hasMinimizedModal()).toBe(true);
 
 			// Simulate restore by getting state and clearing
@@ -566,7 +596,7 @@ describe("MinimizedModalManager", () => {
 				endDate: undefined,
 			});
 
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 			const retrieved = MinimizedModalManager.getState();
 
 			expect(retrieved?.allDay).toBe(true);
@@ -582,7 +612,7 @@ describe("MinimizedModalManager", () => {
 				futureInstancesCount: 10,
 			});
 
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 			const retrieved = MinimizedModalManager.getState();
 
 			expect(retrieved?.rruleType).toBe("bi-weekly");
@@ -595,7 +625,7 @@ describe("MinimizedModalManager", () => {
 				customProperties: {},
 			});
 
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 			const retrieved = MinimizedModalManager.getState();
 
 			expect(retrieved?.customProperties).toEqual({});
@@ -611,7 +641,7 @@ describe("MinimizedModalManager", () => {
 				},
 			});
 
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);
 			const retrieved = MinimizedModalManager.getState();
 
 			expect(retrieved?.customProperties).toEqual({

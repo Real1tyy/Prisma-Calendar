@@ -1,11 +1,14 @@
 import type { App } from "obsidian";
 import { Notice } from "obsidian";
+import type { Subscription } from "rxjs";
 import { EventCreateModal, EventEditModal } from "../components/modals";
 import type { StopwatchSnapshot } from "../components/stopwatch";
 import type { Frontmatter } from "../types";
 import type { EventPreset } from "../types/settings";
+import { getEventName } from "../utils/calendar-events";
 import { formatMsToHHMMSS, formatMsToMMSS } from "../utils/time-formatter";
 import type { CalendarBundle } from "./calendar-bundle";
+import type { IndexerEvent } from "./indexer";
 
 /**
  * Base form data shared between presets and modal state.
@@ -44,15 +47,20 @@ export interface MinimizedModalState extends FormData {
  * Singleton manager for tracking minimized event modals.
  * Stores the form state and continues tracking stopwatch time
  * while the modal is closed.
+ *
+ * Automatically updates the saved state when the underlying event file
+ * is modified, but only if the stopwatch is actively running.
  */
 class MinimizedModalManagerClass {
 	private savedState: MinimizedModalState | null = null;
 	private intervalId: number | null = null;
+	private indexerSubscription: Subscription | null = null;
 
 	/**
 	 * Save modal state and start internal time tracking if stopwatch was active.
+	 * Also subscribes to indexer events to auto-update when the file changes.
 	 */
-	saveState(state: MinimizedModalState): void {
+	saveState(state: MinimizedModalState, bundle: CalendarBundle): void {
 		// Clear any existing state
 		this.clear();
 
@@ -62,6 +70,12 @@ class MinimizedModalManagerClass {
 		// No interval needed since we calculate elapsed time on demand
 		if (state.stopwatch.state === "running" || state.stopwatch.state === "paused") {
 			this.startInternalTracking();
+		}
+
+		// Subscribe to indexer events to update the minimized modal when the file changes
+		// Only update if stopwatch is running (not idle/stopped)
+		if (state.stopwatch.state === "running" || state.stopwatch.state === "paused") {
+			this.subscribeToFileChanges(bundle);
 		}
 	}
 
@@ -84,6 +98,7 @@ class MinimizedModalManagerClass {
 	 */
 	clear(): void {
 		this.stopInternalTracking();
+		this.unsubscribeFromFileChanges();
 		this.savedState = null;
 	}
 
@@ -116,9 +131,6 @@ class MinimizedModalManagerClass {
 		return breakMs;
 	}
 
-	/**
-	 * Get break time in minutes (decimal).
-	 */
 	getBreakMinutes(): number {
 		return Math.round((this.getBreakMs() / 60000) * 100) / 100;
 	}
@@ -137,6 +149,62 @@ class MinimizedModalManagerClass {
 		if (this.intervalId !== null) {
 			window.clearInterval(this.intervalId);
 			this.intervalId = null;
+		}
+	}
+
+	private subscribeToFileChanges(bundle: CalendarBundle): void {
+		this.unsubscribeFromFileChanges();
+
+		this.indexerSubscription = bundle.indexer.events$.subscribe((event: IndexerEvent) => {
+			if (!this.savedState || !this.savedState.filePath) {
+				return;
+			}
+
+			// Only update if the event matches our minimized modal's file
+			const isOurFile = event.filePath === this.savedState.filePath || event.oldPath === this.savedState.filePath;
+			if (!isOurFile) {
+				return;
+			}
+
+			// Only update if stopwatch is running/paused (not idle/stopped)
+			// This ensures we don't override preset saves
+			const isStopwatchActive =
+				this.savedState.stopwatch.state === "running" || this.savedState.stopwatch.state === "paused";
+			if (!isStopwatchActive) {
+				return;
+			}
+
+			if (event.type === "file-deleted" && !event.isRename) {
+				this.clear();
+				new Notice("Minimized event was deleted");
+				return;
+			}
+
+			if (event.type === "file-changed" && event.source) {
+				const settings = bundle.settingsStore.currentSettings;
+				const frontmatter = event.source.frontmatter;
+
+				// Update the saved state with new frontmatter values
+				// Keep stopwatch state intact - only update form data
+				this.savedState = {
+					...this.savedState,
+					filePath: event.filePath,
+					originalFrontmatter: frontmatter,
+					title: getEventName(settings.titleProp, frontmatter, event.filePath),
+					categories: settings.categoryProp ? (frontmatter[settings.categoryProp] as string | undefined) : undefined,
+					date: frontmatter[settings.dateProp] as string | undefined,
+					startDate: frontmatter[settings.startProp] as string | undefined,
+					endDate: frontmatter[settings.endProp] as string | undefined,
+					allDay: event.source.isAllDay,
+				};
+			}
+		});
+	}
+
+	private unsubscribeFromFileChanges(): void {
+		if (this.indexerSubscription) {
+			this.indexerSubscription.unsubscribe();
+			this.indexerSubscription = null;
 		}
 	}
 

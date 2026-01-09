@@ -33,6 +33,11 @@ export interface IndexerEvent {
 	recurringEvent?: NodeRecurringEvent;
 	oldFrontmatter?: Frontmatter;
 	frontmatterDiff?: FrontmatterDiff;
+	/**
+	 * True if this deletion event is part of a rename operation.
+	 * Only present on "file-deleted" events.
+	 */
+	isRename?: boolean;
 }
 
 /**
@@ -126,6 +131,7 @@ export class Indexer {
 				type: "file-deleted",
 				filePath: genericEvent.filePath,
 				oldFrontmatter: genericEvent.oldFrontmatter,
+				isRename: genericEvent.isRename,
 			});
 			return;
 		}

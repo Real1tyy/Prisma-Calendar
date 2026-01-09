@@ -197,7 +197,7 @@ export class EventEditModal extends BaseEventModal {
 						const state = MinimizedModalManager.getState();
 						if (state && state.modalType === "edit") {
 							state.filePath = newFilePath;
-							MinimizedModalManager.saveState(state);
+							MinimizedModalManager.saveState(state, this.bundle);
 						}
 					}
 				}

@@ -1325,7 +1325,7 @@ export abstract class BaseEventModal extends Modal {
 		// auto-save state before closing (handles ESC key, clicking outside, etc.)
 		if (this.isStopwatchActive() && !this.isMinimizing) {
 			const state = this.extractMinimizedState();
-			MinimizedModalManager.saveState(state);
+			MinimizedModalManager.saveState(state, this.bundle);
 		}
 
 		// Clean up stopwatch to stop any running intervals
@@ -1348,7 +1348,7 @@ export abstract class BaseEventModal extends Modal {
 		this.isMinimizing = true;
 
 		const state = this.extractMinimizedState();
-		MinimizedModalManager.saveState(state);
+		MinimizedModalManager.saveState(state, this.bundle);
 		new Notice("Modal minimized. Run command: restore minimized event modal");
 		this.close();
 	}

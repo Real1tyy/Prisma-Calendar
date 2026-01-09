@@ -290,6 +290,33 @@ export const removeInstanceDate = (text: string): string => {
 };
 
 /**
+ * Gets the event name from either the title property or the filename.
+ * If titleProp is configured and exists in frontmatter, returns that value.
+ * Otherwise, extracts the filename (without extension) and strips ZettelID.
+ *
+ * @param titleProp - Optional title property name from settings
+ * @param frontmatter - Event frontmatter object
+ * @param filePath - Path to the event file
+ * @returns Event name or undefined if neither source provides a valid name
+ */
+export const getEventName = (
+	titleProp: string | undefined,
+	frontmatter: Record<string, unknown>,
+	filePath: string | null | undefined
+): string | undefined => {
+	if (titleProp && frontmatter[titleProp]) {
+		return frontmatter[titleProp] as string;
+	}
+
+	if (filePath) {
+		const filename = filePath.split("/").pop()?.replace(/\.md$/, "") || "";
+		return removeZettelId(filename);
+	}
+
+	return undefined;
+};
+
+/**
  * Rebuilds a physical recurring instance filename with a new date.
  * Format: "Title YYYY-MM-DD-ZETTELID" -> "Title NEW-DATE-ZETTELID"
  *

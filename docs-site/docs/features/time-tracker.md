@@ -51,6 +51,11 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 
 **Restore**: `Ctrl/Cmd+P` → "Restore minimized event modal"
 
+**Auto-Updates**: While tracking time with a minimized modal, the modal automatically stays in sync with the event file:
+- **File Changes**: If you edit the event from another window (e.g., rename the file, change properties), the minimized modal updates automatically with the new information
+- **File Deletion**: If the event file is deleted, the minimized modal is cleared automatically with a notification
+- **Smart Tracking**: Updates only occur when the stopwatch is actively running or paused, ensuring preset saves aren't overwritten
+
 **Notes**: Only one modal at a time. State lost if Obsidian closed.
 
 ## Displays
