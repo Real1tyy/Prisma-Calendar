@@ -17,3 +17,17 @@ export function toggleEventHighlight(eventId: string, className: string, add: bo
 		}
 	}
 }
+
+/**
+ * Checks if a point (x, y) is inside an element's bounding box.
+ *
+ * @param x - The x coordinate (clientX)
+ * @param y - The y coordinate (clientY)
+ * @param el - The element to check against
+ * @returns True if the point is inside the element's bounding box, false otherwise
+ */
+export function isPointInsideElement(x: number, y: number, el: Element | null | undefined): boolean {
+	if (!el) return false;
+	const rect = el.getBoundingClientRect();
+	return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}

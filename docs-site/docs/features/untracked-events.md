@@ -17,7 +17,7 @@ These events won't appear on the calendar but are stored in the dropdown for eas
 
 The dropdown appears in the calendar toolbar as an **"Untracked"** button. Click it to see all your untracked events.
 
-![Untracked Events Dropdown](../assets/untracked-dropdown.png)
+![Untracked Events Dropdown](/img/untracked-dropdown.png)
 
 **What you'll see:**
 - Event title (with Zettel ID removed for cleaner display)
@@ -30,7 +30,7 @@ The dropdown appears in the calendar toolbar as an **"Untracked"** button. Click
 Drag any untracked event from the dropdown onto the calendar to assign it a date:
 
 **For timed events:**
-1. Drag event from dropdown
+ over. Drag event from dropdown
 2. Drop on a time slot in week/day view
 3. Start time is set to drop time
 4. End time is calculated based on default duration (configurable in settings)
@@ -67,7 +67,7 @@ Remove dates from calendar events to make them untracked again:
 ### 🔄 Smart Behavior
 
 **Auto-hide while dragging:**
-- If you hover over the dropdown while dragging an event for **1.5 seconds**, it temporarily hides
+- If you hover over the dropdown while dragging an event for over **1 second**, it temporarily hides
 - This prevents the dropdown from blocking your calendar view
 - Reappears automatically when you finish dragging
 

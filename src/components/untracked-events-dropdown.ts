@@ -2,9 +2,7 @@ import type { Calendar } from "@fullcalendar/core";
 import { Draggable } from "@fullcalendar/interaction";
 import { addCls, ColorEvaluator, cls, removeCls } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
-import { TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
-import { UpdateFrontmatterCommand } from "../core/commands/event-commands";
 import type { ParsedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
 import { removeZettelId } from "../utils/calendar-events";
@@ -38,11 +36,10 @@ export class UntrackedEventsDropdown {
 			this.injectButton(container);
 			this.refreshEvents();
 
-			// Keep the dropdown reactive without requiring CalendarView to manually refresh it.
 			if (!this.storeSubscription) {
 				this.storeSubscription = this.bundle.untrackedEventStore.subscribe(() => {
 					// A drop often triggers a trailing click outside; don't let it close the dropdown.
-					this.ignoreOutsideClicksUntil = Date.now() + 250;
+					this.ignoreOutsideClicksUntil = Date.now() + 500;
 					this.refreshEvents();
 				});
 			}
@@ -75,7 +72,7 @@ export class UntrackedEventsDropdown {
 
 		this.buttonEl = document.createElement("button");
 		this.buttonEl.className = `${cls("untracked-dropdown-button")} fc-button fc-button-primary`;
-		this.buttonEl.textContent = "Untracked";
+		this.buttonEl.textContent = "⋮";
 		this.buttonEl.title = "Untracked events";
 
 		this.buttonEl.addEventListener("click", (e) => {
@@ -83,15 +80,13 @@ export class UntrackedEventsDropdown {
 			this.toggle();
 		});
 
-		this.setupButtonDropZone(this.buttonEl);
-
 		wrapper.appendChild(this.buttonEl);
 		this.createDropdown(wrapper);
 
 		toolbarLeft.appendChild(wrapper);
 
-		// Close dropdown when clicking outside
 		document.addEventListener("click", this.handleOutsideClick);
+		document.addEventListener("keydown", this.handleKeyDown, true);
 	}
 
 	private createDropdown(wrapper: HTMLElement): void {
@@ -99,7 +94,6 @@ export class UntrackedEventsDropdown {
 		this.dropdownEl.className = cls("untracked-dropdown");
 		addCls(this.dropdownEl, "hidden");
 
-		// Search bar
 		const searchContainer = this.dropdownEl.createDiv(cls("untracked-dropdown-search"));
 		this.searchInput = searchContainer.createEl("input", {
 			type: "text",
@@ -116,116 +110,13 @@ export class UntrackedEventsDropdown {
 			e.stopPropagation();
 		});
 
-		// Events list
 		this.eventsListEl = this.dropdownEl.createDiv(cls("untracked-dropdown-list"));
-
-		// Setup drop zone for calendar events
-		this.setupDropZone();
 
 		wrapper.appendChild(this.dropdownEl);
 
 		// FullCalendar external dragging does not reliably trigger native drag events on the source list.
 		// Use pointer-based tracking once to support "hover to hide" and prevent outside-click close after drop.
 		this.setupDragTrackingOnce();
-	}
-
-	private setupButtonDropZone(button: HTMLButtonElement): void {
-		button.addEventListener("dragover", (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			if (e.dataTransfer) {
-				e.dataTransfer.dropEffect = "move";
-			}
-			addCls(button, "drag-over");
-		});
-
-		button.addEventListener("dragleave", (e) => {
-			e.preventDefault();
-			removeCls(button, "drag-over");
-		});
-
-		button.addEventListener("drop", async (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			removeCls(button, "drag-over");
-
-			const eventId = e.dataTransfer?.getData("text/plain");
-			console.log("[UntrackedDropdown] Drop on button - eventId:", eventId);
-
-			if (eventId) {
-				const allEvents = this.bundle.eventStore.getAllEvents();
-				const foundEvent = allEvents.find((ev) => ev.id === eventId);
-
-				if (foundEvent) {
-					console.log("[UntrackedDropdown] ✓ Clearing dates for:", foundEvent.title);
-					await this.clearEventDatesWithCommand(foundEvent.ref.filePath);
-				}
-			}
-		});
-	}
-
-	private setupDropZone(): void {
-		if (!this.dropdownEl) return;
-
-		this.dropdownEl.addEventListener("dragover", (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			if (e.dataTransfer) {
-				e.dataTransfer.dropEffect = "move";
-			}
-			addCls(this.dropdownEl!, "drag-over");
-		});
-
-		this.dropdownEl.addEventListener("dragleave", (e) => {
-			if (!this.dropdownEl?.contains(e.relatedTarget as Node)) {
-				removeCls(this.dropdownEl!, "drag-over");
-			}
-		});
-
-		this.dropdownEl.addEventListener("drop", async (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			removeCls(this.dropdownEl!, "drag-over");
-
-			const eventId = e.dataTransfer?.getData("text/plain");
-			console.log("[UntrackedDropdown] Drop on dropdown - eventId:", eventId);
-
-			if (eventId) {
-				const allEvents = this.bundle.eventStore.getAllEvents();
-				const foundEvent = allEvents.find((ev) => ev.id === eventId);
-
-				if (foundEvent) {
-					console.log("[UntrackedDropdown] ✓ Clearing dates for:", foundEvent.title);
-					await this.clearEventDatesWithCommand(foundEvent.ref.filePath);
-				}
-			}
-		});
-	}
-
-	private async clearEventDatesWithCommand(filePath: string): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(filePath);
-		if (!file || !(file instanceof TFile)) {
-			console.error("[UntrackedDropdown] File not found:", filePath);
-			return;
-		}
-
-		const settings = this.bundle.settingsStore.currentSettings;
-
-		// Use command for undo/redo support
-		const propertyUpdates = new Map<string, string | null>();
-		propertyUpdates.set(settings.startProp, null);
-		propertyUpdates.set(settings.endProp, null);
-		propertyUpdates.set(settings.dateProp, null);
-		propertyUpdates.set(settings.allDayProp, null);
-
-		const command = new UpdateFrontmatterCommand(this.app, this.bundle, filePath, propertyUpdates);
-
-		try {
-			await this.bundle.commandManager.executeCommand(command);
-			console.log("[UntrackedDropdown] ✓ Cleared dates");
-		} catch (error) {
-			console.error("[UntrackedDropdown] Error clearing dates:", error);
-		}
 	}
 
 	private handleOutsideClick = (e: MouseEvent): void => {
@@ -235,6 +126,25 @@ export class UntrackedEventsDropdown {
 
 		const target = e.target as Node;
 		if (!this.dropdownEl.contains(target) && !this.buttonEl.contains(target)) {
+			this.close();
+		}
+	};
+
+	private handleKeyDown = (e: KeyboardEvent): void => {
+		if (!this.isOpen) return;
+
+		if (e.key === "Escape") {
+			e.preventDefault();
+			e.stopPropagation();
+
+			// Don't close if search input is focused and has content - clear it first
+			if (this.searchInput && document.activeElement === this.searchInput) {
+				if (this.searchInput.value) {
+					this.searchInput.value = "";
+					this.filterEvents("");
+					return;
+				}
+			}
 			this.close();
 		}
 	};
@@ -284,6 +194,15 @@ export class UntrackedEventsDropdown {
 
 		this.isTemporarilyHidden = false;
 		removeCls(this.dropdownEl, "hidden");
+	}
+
+	restoreIfTemporarilyHidden(): void {
+		this.restoreFromTemporaryHide();
+	}
+
+	ignoreOutsideClicksFor(ms: number): void {
+		const until = Date.now() + Math.max(0, ms);
+		this.ignoreOutsideClicksUntil = Math.max(this.ignoreOutsideClicksUntil, until);
 	}
 
 	refreshEvents(): void {
@@ -436,7 +355,7 @@ export class UntrackedEventsDropdown {
 		this.dragHoverTimeout = window.setTimeout(() => {
 			this.temporarilyHide();
 			this.dragHoverTimeout = null;
-		}, 1500);
+		}, 1000);
 	};
 
 	private handleGlobalPointerUp = (): void => {
@@ -455,6 +374,7 @@ export class UntrackedEventsDropdown {
 
 	destroy(): void {
 		document.removeEventListener("click", this.handleOutsideClick);
+		document.removeEventListener("keydown", this.handleKeyDown, true);
 		document.removeEventListener("pointermove", this.handleGlobalPointerMove, true);
 		document.removeEventListener("pointerup", this.handleGlobalPointerUp, true);
 		document.removeEventListener("pointercancel", this.handleGlobalPointerUp, true);

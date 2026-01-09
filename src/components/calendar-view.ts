@@ -28,7 +28,7 @@ import {
 	removeZettelId,
 	stripISOSuffix,
 } from "../utils/calendar-events";
-import { toggleEventHighlight } from "../utils/dom-utils";
+import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
 import { calculateEndTime, roundToNearestHour, toLocalISOString } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
@@ -105,6 +105,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private lastFocusedEventInfo: CalendarEventData | null = null;
 	private mouseDownTime = 0;
 	private isHandlingSelection = false;
+	private isDraggingCalendarEvent = false;
+	private draggingCalendarEventFilePath: string | null = null;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -1131,12 +1133,19 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				}
 			},
 
-			eventDragStart: () => {
+			eventDragStart: (info) => {
 				this.setupDragEdgeScrolling();
+				const filePath = info.event.extendedProps?.filePath;
+				const isVirtual = info.event.extendedProps?.isVirtual ?? false;
+				this.isDraggingCalendarEvent = !isVirtual && typeof filePath === "string" && filePath.length > 0;
+				this.draggingCalendarEventFilePath = this.isDraggingCalendarEvent ? filePath : null;
 			},
 
-			eventDragStop: () => {
+			eventDragStop: (info) => {
 				this.cleanupDragEdgeScrolling();
+				void this.handleCalendarEventDragStop(info);
+				this.isDraggingCalendarEvent = false;
+				this.draggingCalendarEventFilePath = null;
 			},
 
 			eventDrop: (info) => {
@@ -2040,10 +2049,63 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
+	private async handleCalendarEventDragStop(info: { event: CalendarEventData; jsEvent: MouseEvent }): Promise<void> {
+		const filePath = info.event.extendedProps?.filePath;
+		const isVirtual = info.event.extendedProps?.isVirtual ?? false;
+		if (!filePath || isVirtual) return;
+
+		const { clientX, clientY } = info.jsEvent;
+
+		const buttonEl = this.container?.querySelector(`.${cls("untracked-dropdown-button")}`);
+		const dropdownEl = this.container?.querySelector(`.${cls("untracked-dropdown")}`);
+
+		const hitByRect =
+			isPointInsideElement(clientX, clientY, buttonEl) || isPointInsideElement(clientX, clientY, dropdownEl);
+
+		if (!hitByRect) {
+			return;
+		}
+
+		await this.moveCalendarEventToUntracked(filePath);
+	}
+
+	private handleGlobalPointerUpForUntrackedDrop = (e: PointerEvent): void => {
+		if (!this.isDraggingCalendarEvent || !this.draggingCalendarEventFilePath) return;
+
+		// If dropdown was temporarily hidden during drag, restore it before hit-testing.
+		this.untrackedEventsDropdown?.restoreIfTemporarilyHidden();
+
+		const x = e.clientX;
+		const y = e.clientY;
+
+		const buttonEl = this.container?.querySelector(`.${cls("untracked-dropdown-button")}`);
+		const dropdownEl = this.container?.querySelector(`.${cls("untracked-dropdown")}`);
+
+		const hitByRect = isPointInsideElement(x, y, buttonEl) || isPointInsideElement(x, y, dropdownEl);
+
+		if (!hitByRect) return;
+
+		// Prevent the trailing click after pointerup from being treated as an outside click and closing the dropdown.
+		this.untrackedEventsDropdown?.ignoreOutsideClicksFor(1500);
+
+		void this.moveCalendarEventToUntracked(this.draggingCalendarEventFilePath);
+	};
+
+	private async moveCalendarEventToUntracked(filePath: string): Promise<void> {
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		const propertyUpdates = new Map<string, string | null>();
+		propertyUpdates.set(settings.startProp, null);
+		propertyUpdates.set(settings.endProp, null);
+		propertyUpdates.set(settings.dateProp, null);
+		propertyUpdates.set(settings.allDayProp, null);
+
+		const command = new UpdateFrontmatterCommand(this.app, this.bundle, filePath, propertyUpdates);
+		await this.bundle.commandManager.executeCommand(command);
+	}
+
 	private async handleExternalDrop(info: DropArg): Promise<void> {
 		const filePath = info.draggedEl.getAttribute("data-file-path");
-
-		console.log("[CalendarView] Drop - filePath:", filePath, "allDay:", info.allDay);
 
 		if (filePath) {
 			try {
@@ -2051,8 +2113,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 				if (file instanceof TFile) {
 					const settings = this.bundle.settingsStore.currentSettings;
-
-					// Use toLocalISOString directly - it returns format like "2026-01-10T12:30:00.000Z"
 					const localISO = toLocalISOString(info.date);
 					const dateStr = localISO.split("T")[0];
 					const timeStr = localISO.split("T")[1];
@@ -2060,13 +2120,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					const propertyUpdates = new Map<string, string | null>();
 
 					if (info.allDay) {
-						// All-day event: set date property only
 						propertyUpdates.set(settings.dateProp, dateStr);
 						propertyUpdates.set(settings.allDayProp, "true");
 						propertyUpdates.set(settings.startProp, null);
 						propertyUpdates.set(settings.endProp, null);
 					} else {
-						// Timed event: set start/end properties with .000Z suffix
 						const startDateTime = `${dateStr}T${timeStr}`;
 						const endTime = calculateEndTime(timeStr, settings.defaultDurationMinutes);
 						const endDateTime = `${dateStr}T${endTime}`;
@@ -2077,11 +2135,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 						propertyUpdates.set(settings.dateProp, null);
 					}
 
-					// Use command for undo/redo support
 					const command = new UpdateFrontmatterCommand(this.app, this.bundle, filePath, propertyUpdates);
 					await this.bundle.commandManager.executeCommand(command);
-
-					console.log("[CalendarView] ✓ Assigned date to untracked event");
 				}
 			} catch (error) {
 				console.error("[CalendarView] Error handling drop:", error);
@@ -2146,6 +2201,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.initializeCalendar(this.container);
 
 		this.setupKeyboardShortcuts();
+
+		// Detect calendar-event drag release point reliably (FullCalendar's jsEvent in eventDragStop can be stale
+		// when releasing outside the calendar grid, e.g. over toolbar/dropdowns).
+		document.addEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
+		this.register(() => {
+			document.removeEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
+		});
 
 		setTimeout(() => this.containerEl.focus(), 100);
 
@@ -2258,16 +2320,16 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.filterPresetSelector.open();
 	}
 
+	toggleUntrackedEventsDropdown(): void {
+		this.untrackedEventsDropdown?.toggle();
+	}
+
 	focusSearch(): void {
 		this.searchFilter.focus();
 	}
 
 	focusExpressionFilter(): void {
 		this.expressionFilter.focus();
-	}
-
-	toggleUntrackedEventsDropdown(): void {
-		this.untrackedEventsDropdown?.toggle();
 	}
 
 	private isRestoring = false;
