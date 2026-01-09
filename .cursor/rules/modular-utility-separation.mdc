@@ -1,8 +1,6 @@
 ---
-alwaysApply: true
-description: Enforce strict modular separation of utility functions from business logic
+alwaysApply: false
 ---
-
 # Modular Utility Separation Rule
 
 **CRITICAL: Any function that is NOT directly related to business logic MUST be extracted to [libs/utils](mdc:libs/utils) for maximum code reuse and DRY principles.**
