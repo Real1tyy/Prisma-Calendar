@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import type { Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import BTree from "sorted-btree";
-import type { CalendarEvent, TimedEvent, UntrackedEvent } from "../types/calendar";
+import type { CalendarEvent, TimedEvent } from "../types/calendar";
 import { isTimedEvent } from "../types/calendar";
 import type { ISO } from "../types/index";
 import type { Indexer, IndexerEvent, RawEventSource } from "./indexer";
@@ -185,11 +185,6 @@ export class EventStore extends DebouncedNotifier {
 		}
 
 		return results.sort((a, b) => a.start.localeCompare(b.start));
-	}
-
-	getUntrackedEvents(): UntrackedEvent[] {
-		// This method is deprecated - use UntrackedEventStore instead
-		return [];
 	}
 
 	getEventByPath(filePath: string): CalendarEvent | null {

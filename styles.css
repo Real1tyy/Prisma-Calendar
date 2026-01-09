@@ -5984,3 +5984,209 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	width: 70vw;
 	max-width: 1100px;
 }
+
+/* Untracked Events Dropdown */
+.prisma-untracked-dropdown-wrapper {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	margin-left: 8px;
+}
+
+.prisma-untracked-dropdown-button {
+	padding: 4px 10px;
+	border: none;
+	border-radius: var(--radius-s);
+	background-color: var(--interactive-normal);
+	color: white;
+	font-size: 14px;
+	font-weight: bold;
+	font-family: var(--font-interface);
+	cursor: pointer;
+	min-width: 32px;
+	text-align: center;
+	transition: all 0.2s ease;
+}
+
+.prisma-untracked-dropdown-button:hover {
+	background-color: var(--interactive-hover);
+	color: white;
+}
+
+.prisma-untracked-dropdown-button.prisma-active {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.prisma-untracked-dropdown-button.prisma-has-events {
+	color: white;
+}
+
+.prisma-untracked-dropdown-button.prisma-drag-over {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.prisma-untracked-dropdown {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	width: 450px;
+	max-height: 600px;
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	box-shadow: var(--shadow-l);
+	z-index: 1000;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.prisma-untracked-dropdown.prisma-hidden {
+	display: none;
+}
+
+.prisma-untracked-dropdown.prisma-drag-over {
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.prisma-untracked-dropdown-search {
+	padding: 12px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	background-color: var(--background-primary-alt);
+}
+
+.prisma-untracked-dropdown-search-input {
+	width: 100%;
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	font-family: var(--font-interface);
+}
+
+.prisma-untracked-dropdown-search-input:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+.prisma-untracked-dropdown-list {
+	flex: 1;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 4px;
+}
+
+.prisma-untracked-dropdown-empty {
+	padding: 32px 16px;
+	text-align: center;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.prisma-untracked-dropdown-item {
+	position: relative;
+	padding: 10px 12px;
+	margin-bottom: 4px;
+	border-left: 3px solid var(--event-color, var(--background-modifier-border));
+	border-radius: var(--radius-s);
+	background-color: var(--background-secondary);
+	cursor: pointer;
+	transition: all 0.15s ease;
+	overflow: hidden;
+}
+
+.prisma-untracked-dropdown-item:hover {
+	background-color: var(--background-modifier-hover);
+	transform: translateX(2px);
+}
+
+.prisma-untracked-dropdown-item.prisma-dragging {
+	opacity: 0.5;
+}
+
+.prisma-untracked-dropdown-item-title {
+	font-size: var(--font-ui-small);
+	font-weight: 500;
+	color: var(--text-normal);
+	margin-bottom: 4px;
+	white-space: nowrap;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scrollbar-width: thin;
+}
+
+.prisma-untracked-dropdown-item-title::-webkit-scrollbar {
+	height: 4px;
+}
+
+.prisma-untracked-dropdown-item-title::-webkit-scrollbar-thumb {
+	background-color: var(--background-modifier-border);
+	border-radius: 2px;
+}
+
+.prisma-untracked-dropdown-item-props {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 6px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	white-space: nowrap;
+	scrollbar-width: thin;
+}
+
+.prisma-untracked-dropdown-item-props::-webkit-scrollbar {
+	height: 4px;
+}
+
+.prisma-untracked-dropdown-item-props::-webkit-scrollbar-thumb {
+	background-color: var(--background-modifier-border);
+	border-radius: 2px;
+}
+
+.prisma-untracked-dropdown-item-prop {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.prisma-untracked-dropdown-item-prop .prisma-prop-key {
+	font-weight: 500;
+	color: var(--text-faint);
+}
+
+.prisma-untracked-dropdown-item-prop .prisma-prop-value {
+	color: var(--text-muted);
+}
+
+.prisma-untracked-dropdown-item-prop .prisma-prop-link {
+	color: var(--link-color);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.prisma-untracked-dropdown-item-prop .prisma-prop-link:hover {
+	text-decoration: underline;
+	color: var(--link-color-hover);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+	.prisma-untracked-dropdown {
+		width: calc(100vw - 32px);
+		max-height: 400px;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.prisma-untracked-dropdown-button {
+		padding: 4px 8px;
+		font-size: 12px;
+	}
+}

@@ -8,11 +8,13 @@ import { Indexer } from "./indexer";
 import { NotificationManager } from "./notification-manager";
 import { Parser } from "./parser";
 import { RecurringEventManager } from "./recurring-event-manager";
+import { UntrackedEventStore } from "./untracked-event-store";
 
 interface IndexerEntry {
 	indexer: Indexer;
 	parser: Parser;
 	eventStore: EventStore;
+	untrackedEventStore: UntrackedEventStore;
 	recurringEventManager: RecurringEventManager;
 	notificationManager: NotificationManager;
 	categoryTracker: CategoryTracker;
@@ -22,7 +24,13 @@ interface IndexerEntry {
 
 type SharedInfrastructure = Pick<
 	IndexerEntry,
-	"indexer" | "parser" | "eventStore" | "recurringEventManager" | "notificationManager" | "categoryTracker"
+	| "indexer"
+	| "parser"
+	| "eventStore"
+	| "untrackedEventStore"
+	| "recurringEventManager"
+	| "notificationManager"
+	| "categoryTracker"
 >;
 
 /**
@@ -69,11 +77,13 @@ export class IndexerRegistry {
 			const categoryTracker = new CategoryTracker(indexer, settingsStore);
 			const parser = new Parser(this.app, settingsStore);
 			const eventStore = new EventStore(indexer, parser, recurringEventManager);
+			const untrackedEventStore = new UntrackedEventStore(indexer);
 
 			entry = {
 				indexer,
 				parser,
 				eventStore,
+				untrackedEventStore,
 				recurringEventManager,
 				notificationManager,
 				categoryTracker,
@@ -88,6 +98,7 @@ export class IndexerRegistry {
 			indexer: entry.indexer,
 			parser: entry.parser,
 			eventStore: entry.eventStore,
+			untrackedEventStore: entry.untrackedEventStore,
 			recurringEventManager: entry.recurringEventManager,
 			notificationManager: entry.notificationManager,
 			categoryTracker: entry.categoryTracker,
@@ -112,6 +123,7 @@ export class IndexerRegistry {
 		if (entry.refCount <= 0) {
 			entry.indexer.stop();
 			entry.eventStore.destroy();
+			entry.untrackedEventStore.destroy();
 			entry.parser.destroy();
 			entry.recurringEventManager.destroy();
 			entry.notificationManager.stop();
@@ -124,6 +136,7 @@ export class IndexerRegistry {
 		for (const entry of this.registry.values()) {
 			entry.indexer.stop();
 			entry.eventStore.destroy();
+			entry.untrackedEventStore.destroy();
 			entry.parser.destroy();
 			entry.recurringEventManager.destroy();
 			entry.notificationManager.stop();

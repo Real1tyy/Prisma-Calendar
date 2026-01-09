@@ -17,12 +17,14 @@ import type { NotificationManager } from "./notification-manager";
 import type { Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore, type SettingsStore } from "./settings-store";
+import type { UntrackedEventStore } from "./untracked-event-store";
 
 export class CalendarBundle {
 	public readonly settingsStore: CalendarSettingsStore;
 	public readonly indexer: Indexer;
 	public readonly parser: Parser;
 	public readonly eventStore: EventStore;
+	public readonly untrackedEventStore: UntrackedEventStore;
 	public readonly recurringEventManager: RecurringEventManager;
 	public readonly notificationManager: NotificationManager;
 	public readonly categoryTracker: CategoryTracker;
@@ -54,12 +56,20 @@ export class CalendarBundle {
 
 		this.indexerRegistry = IndexerRegistry.getInstance(this.app);
 
-		const { indexer, parser, eventStore, recurringEventManager, notificationManager, categoryTracker } =
-			this.indexerRegistry.getOrCreateIndexer(this.calendarId, this.settingsStore.settings$);
+		const {
+			indexer,
+			parser,
+			eventStore,
+			untrackedEventStore,
+			recurringEventManager,
+			notificationManager,
+			categoryTracker,
+		} = this.indexerRegistry.getOrCreateIndexer(this.calendarId, this.settingsStore.settings$);
 
 		this.indexer = indexer;
 		this.parser = parser;
 		this.eventStore = eventStore;
+		this.untrackedEventStore = untrackedEventStore;
 		this.recurringEventManager = recurringEventManager;
 		this.notificationManager = notificationManager;
 		this.categoryTracker = categoryTracker;

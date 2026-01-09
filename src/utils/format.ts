@@ -154,6 +154,22 @@ export function roundToNearestHour(date: Date): Date {
 }
 
 /**
+ * Calculates end time by adding duration minutes to a start time.
+ * Expects and returns time in format "HH:MM:SS.000Z"
+ * @param startTime - Time string in format "HH:MM:SS.000Z"
+ * @param durationMinutes - Duration to add in minutes
+ * @returns End time string in format "HH:MM:SS.000Z"
+ */
+export function calculateEndTime(startTime: string, durationMinutes: number): string {
+	const timePart = startTime.split(".")[0];
+	const [hours, minutes] = timePart.split(":").map(Number);
+	const endMinutes = minutes + durationMinutes;
+	const endHours = hours + Math.floor(endMinutes / 60);
+	const finalMinutes = endMinutes % 60;
+	return `${String(endHours).padStart(2, "0")}:${String(finalMinutes).padStart(2, "0")}:00.000Z`;
+}
+
+/**
  * Copies time components from sourceDateTime to instanceDate WITHOUT any timezone conversion.
  * This directly copies the hour/minute/second values regardless of timezone.
  */

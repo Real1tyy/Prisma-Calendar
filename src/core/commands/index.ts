@@ -16,4 +16,5 @@ export {
 	MoveEventCommand,
 	ToggleSkipCommand,
 	UpdateEventCommand,
+	UpdateFrontmatterCommand,
 } from "./event-commands";
