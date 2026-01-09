@@ -299,6 +299,14 @@ ${settings.futureInstancesCountProp}: 5
 			arrayDelimiter: ", ",
 		});
 
+		this.ui.addTextArray(containerEl, {
+			key: "frontmatterDisplayPropertiesUntracked",
+			name: "Display properties (untracked events)",
+			desc: "Comma-separated list of frontmatter property names to display in untracked events (events without dates). These appear in the untracked events sidebar.",
+			placeholder: "status, priority, project, tags, category",
+			arrayDelimiter: ", ",
+		});
+
 		// Add example display
 		const exampleContainer = containerEl.createDiv(cls("frontmatter-display-example"));
 		exampleContainer.createEl("p", {

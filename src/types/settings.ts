@@ -65,6 +65,7 @@ const PropsSettingsSchema = z
 		instanceDateProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_INSTANCE_DATE_PROP), // property name for recurring event instance date
 		frontmatterDisplayProperties: z.array(z.string()).catch([]), // frontmatter properties to display inside timed event chips
 		frontmatterDisplayPropertiesAllDay: z.array(z.string()).catch([]), // frontmatter properties to display inside all-day event chips
+		frontmatterDisplayPropertiesUntracked: z.array(z.string()).catch([]), // frontmatter properties to display inside untracked event chips
 		statusProperty: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY), // property name to manage event status
 		doneValue: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE), // value to set when marking event as done
 		notDoneValue: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_NOT_DONE_VALUE), // value to set when marking event as not done
