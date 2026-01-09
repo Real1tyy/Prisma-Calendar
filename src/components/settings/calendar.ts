@@ -152,6 +152,12 @@ export class CalendarSettings {
 		});
 
 		this.ui.addToggle(containerEl, {
+			key: "showUntrackedEventsDropdown",
+			name: "Show untracked events dropdown",
+			desc: "Display a dropdown in the toolbar to access events without dates. Allows dragging events to/from the calendar.",
+		});
+
+		this.ui.addToggle(containerEl, {
 			key: "thickerHourLines",
 			name: "Thicker hour lines",
 			desc: "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",

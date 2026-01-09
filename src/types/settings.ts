@@ -137,6 +137,7 @@ const CalendarSettingsSchema = z
 		enableEventPreview: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_ENABLE_EVENT_PREVIEW), // Enable hover preview for events
 		nowIndicator: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_NOW_INDICATOR), // Show current time indicator line
 		highlightUpcomingEvent: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_HIGHLIGHT_UPCOMING_EVENT), // Highlight the next upcoming event
+		showUntrackedEventsDropdown: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_UNTRACKED_EVENTS_DROPDOWN), // Show dropdown for untracked events (events without dates)
 		thickerHourLines: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_THICKER_HOUR_LINES), // Make full-hour lines thicker in day/week views
 		pastEventContrast: z.number().int().min(0).max(100).catch(SETTINGS_DEFAULTS.DEFAULT_PAST_EVENT_CONTRAST), // Contrast of past events in %
 		eventOverlap: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_OVERLAP), // Allow events to visually overlap (all views)
