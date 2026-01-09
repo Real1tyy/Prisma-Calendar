@@ -155,6 +155,7 @@ export class CalendarBundle {
 		const existingLeaf = existingLeaves[0];
 		if (existingLeaf) {
 			await workspace.revealLeaf(existingLeaf);
+			await this.plugin.ensureCalendarViewFocus(existingLeaf);
 			return;
 		}
 
@@ -162,6 +163,7 @@ export class CalendarBundle {
 		const newLeaf = workspace.getLeaf("tab");
 		await newLeaf.setViewState({ type: this.viewType, active: true });
 		await workspace.revealLeaf(newLeaf);
+		await this.plugin.ensureCalendarViewFocus(newLeaf);
 	}
 
 	async openFileInCalendar(file: TFile): Promise<boolean> {

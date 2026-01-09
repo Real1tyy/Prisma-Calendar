@@ -35,6 +35,10 @@ All notable changes to this project will be documented here.
   - Dropdown automatically updates when files change
   - Instant refresh when events become tracked/untracked
 
+### Improvements
+
+- **Immediate Command Availability**: Commands now work immediately after switching to a calendar view. Previously, you had to click on the calendar before commands would respond. Now when you switch tabs or use ribbon icons or the specific command to open a calendar, all the other commands are instantly available without extra interaction.
+
 ---
 
 ## 1.25.0

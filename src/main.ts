@@ -41,6 +41,24 @@ export default class CustomCalendarPlugin extends Plugin {
 		registry.destroy();
 	}
 
+	async ensureCalendarViewFocus(leaf: WorkspaceLeaf): Promise<void> {
+		// Ensure view is loaded if deferred (Obsidian 1.7.2+)
+		if (typeof leaf.loadIfDeferred === "function") {
+			await leaf.loadIfDeferred();
+		}
+
+		// Ensure this is the active leaf
+		if (this.app.workspace.activeLeaf !== leaf) {
+			this.app.workspace.setActiveLeaf(leaf, { focus: true });
+		}
+
+		// Focus the view's container to make commands available
+		const view = leaf.view;
+		if (view instanceof CalendarView) {
+			setTimeout(() => view.containerEl.focus(), 10);
+		}
+	}
+
 	private registerCommands(): void {
 		type CalendarViewAction = (view: CalendarView) => void;
 
