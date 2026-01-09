@@ -175,6 +175,15 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Function**: Opens a modal listing all events marked as skipped
 -   **Features**: Quickly enable, navigate to, or open skipped events
 
+### Toggle Untracked Events Dropdown
+
+-   **Function**: Toggles the visibility of the untracked events dropdown in the calendar toolbar
+-   **Features**:
+    -   Opens/closes the dropdown showing events without date properties
+    -   Quick keyboard access without using the mouse
+    -   Works whether the dropdown is currently open or closed
+-   **See Also**: [Untracked Events documentation](./untracked-events.md)
+
 ### Show Disabled Recurring Events
 
 -   **Function**: Opens a modal listing all disabled recurring events

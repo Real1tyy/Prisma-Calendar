@@ -34,6 +34,7 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 - **Show duration field in event modal**: display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa (enabled by default)
 - **Show stopwatch**: enable stopwatch in event modal for precise time tracking (enabled by default)
 - **Mark past events as done**: automatically mark past events as done during startup by updating their status property (configure the status property and done value in the Properties section)
+- **Show untracked events dropdown**: display the untracked events dropdown in the calendar toolbar, showing events without date properties (enabled by default)
 
 ### Display & Navigation
 
@@ -454,6 +455,7 @@ Show extra frontmatter properties inside event chips (scrollable when space is t
 
 - **Display properties (timed events)**: comma-separated list of properties to show in timed event chips (e.g., `status, priority, project, tags`)
 - **Display properties (all-day events)**: comma-separated list of properties to show in all-day event chips (can differ from timed events)
+- **Display properties (untracked events)**: comma-separated list of properties to show in the untracked events dropdown (e.g., `status, priority, category`)
 
 Rendered example inside a chip:
 
@@ -463,6 +465,8 @@ status: In Progress
 priority: High
 project: Q4 Planning
 ```
+
+**See Also**: [Untracked Events documentation](./features/untracked-events.md) for details on the untracked events dropdown
 
 ## Bases View Properties
 

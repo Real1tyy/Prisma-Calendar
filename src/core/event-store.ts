@@ -41,7 +41,12 @@ export class EventStore extends DebouncedNotifier {
 	) {
 		super();
 		this.subscription = this.indexer.events$
-			.pipe(filter((event: IndexerEvent) => event.type === "file-changed" || event.type === "file-deleted"))
+			.pipe(
+				filter(
+					(event: IndexerEvent) =>
+						event.type === "file-changed" || event.type === "untracked-file-changed" || event.type === "file-deleted"
+				)
+			)
 			.subscribe((event: IndexerEvent) => {
 				this.handleIndexerEvent(event);
 			});
@@ -59,6 +64,11 @@ export class EventStore extends DebouncedNotifier {
 				if (event.source) {
 					this.processFileChange(event.source);
 				}
+				break;
+			case "untracked-file-changed":
+				// A file transitioned from tracked -> untracked (e.g. undo/remove date props).
+				// Ensure any previously cached tracked event is removed so the calendar doesn't go stale.
+				this.invalidate(event.filePath);
 				break;
 			case "file-deleted":
 				this.invalidate(event.filePath);

@@ -1,6 +1,6 @@
 import type { Calendar } from "@fullcalendar/core";
 import { Draggable } from "@fullcalendar/interaction";
-import { addCls, ColorEvaluator, cls, removeCls, toggleCls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, ColorEvaluator, cls, removeCls } from "@real1ty-obsidian-plugins/utils";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
@@ -17,10 +17,14 @@ export class UntrackedEventsDropdown {
 	private searchInput: HTMLInputElement | null = null;
 	private eventsListEl: HTMLElement | null = null;
 	private isOpen = false;
-	private untrackedEvents: ParsedEvent[] = [];
-	private filteredEvents: ParsedEvent[] = [];
 	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 	private draggable: Draggable | null = null;
+	private dragHoverTimeout: number | null = null;
+	private isDragging = false;
+	private isTemporarilyHidden = false;
+	private ignoreOutsideClicksUntil = 0;
+	private dragTrackingInitialized = false;
+	private storeSubscription: { unsubscribe: () => void } | null = null;
 
 	constructor(
 		private app: App,
@@ -33,6 +37,15 @@ export class UntrackedEventsDropdown {
 		setTimeout(() => {
 			this.injectButton(container);
 			this.refreshEvents();
+
+			// Keep the dropdown reactive without requiring CalendarView to manually refresh it.
+			if (!this.storeSubscription) {
+				this.storeSubscription = this.bundle.untrackedEventStore.subscribe(() => {
+					// A drop often triggers a trailing click outside; don't let it close the dropdown.
+					this.ignoreOutsideClicksUntil = Date.now() + 250;
+					this.refreshEvents();
+				});
+			}
 		}, 100);
 	}
 
@@ -41,9 +54,9 @@ export class UntrackedEventsDropdown {
 		if (!this.buttonEl) return;
 
 		if (settings.showUntrackedEventsDropdown) {
-			this.buttonEl.style.display = "";
+			removeCls(this.buttonEl, "hidden");
 		} else {
-			this.buttonEl.style.display = "none";
+			addCls(this.buttonEl, "hidden");
 			this.close();
 		}
 	}
@@ -62,7 +75,7 @@ export class UntrackedEventsDropdown {
 
 		this.buttonEl = document.createElement("button");
 		this.buttonEl.className = `${cls("untracked-dropdown-button")} fc-button fc-button-primary`;
-		this.buttonEl.textContent = "⋮";
+		this.buttonEl.textContent = "Untracked";
 		this.buttonEl.title = "Untracked events";
 
 		this.buttonEl.addEventListener("click", (e) => {
@@ -79,9 +92,6 @@ export class UntrackedEventsDropdown {
 
 		// Close dropdown when clicking outside
 		document.addEventListener("click", this.handleOutsideClick);
-
-		// Close dropdown on ESC key
-		document.addEventListener("keydown", this.handleKeyDown);
 	}
 
 	private createDropdown(wrapper: HTMLElement): void {
@@ -106,13 +116,6 @@ export class UntrackedEventsDropdown {
 			e.stopPropagation();
 		});
 
-		this.searchInput.addEventListener("keydown", (e) => {
-			if (e.key === "Escape") {
-				e.preventDefault();
-				this.close();
-			}
-		});
-
 		// Events list
 		this.eventsListEl = this.dropdownEl.createDiv(cls("untracked-dropdown-list"));
 
@@ -120,6 +123,10 @@ export class UntrackedEventsDropdown {
 		this.setupDropZone();
 
 		wrapper.appendChild(this.dropdownEl);
+
+		// FullCalendar external dragging does not reliably trigger native drag events on the source list.
+		// Use pointer-based tracking once to support "hover to hide" and prevent outside-click close after drop.
+		this.setupDragTrackingOnce();
 	}
 
 	private setupButtonDropZone(button: HTMLButtonElement): void {
@@ -223,25 +230,11 @@ export class UntrackedEventsDropdown {
 
 	private handleOutsideClick = (e: MouseEvent): void => {
 		if (!this.isOpen || !this.dropdownEl || !this.buttonEl) return;
+		if (this.isDragging) return;
+		if (Date.now() < this.ignoreOutsideClicksUntil) return;
 
 		const target = e.target as Node;
 		if (!this.dropdownEl.contains(target) && !this.buttonEl.contains(target)) {
-			this.close();
-		}
-	};
-
-	private handleKeyDown = (e: KeyboardEvent): void => {
-		if (!this.isOpen) return;
-
-		if (e.key === "Escape") {
-			// Don't close if search input is focused and has content - clear it first
-			if (this.searchInput && document.activeElement === this.searchInput) {
-				if (this.searchInput.value) {
-					this.searchInput.value = "";
-					this.filterEvents("");
-					return;
-				}
-			}
 			this.close();
 		}
 	};
@@ -258,6 +251,7 @@ export class UntrackedEventsDropdown {
 		if (!this.dropdownEl || !this.buttonEl) return;
 
 		this.isOpen = true;
+		this.isTemporarilyHidden = false;
 		removeCls(this.dropdownEl, "hidden");
 		addCls(this.buttonEl, "active");
 
@@ -268,6 +262,7 @@ export class UntrackedEventsDropdown {
 		if (!this.dropdownEl || !this.buttonEl) return;
 
 		this.isOpen = false;
+		this.isTemporarilyHidden = false;
 		addCls(this.dropdownEl, "hidden");
 		removeCls(this.buttonEl, "active");
 
@@ -277,35 +272,39 @@ export class UntrackedEventsDropdown {
 		this.filterEvents("");
 	}
 
-	refreshEvents(): void {
-		this.untrackedEvents = this.bundle.untrackedEventStore.getUntrackedEvents();
-		this.filterEvents(this.searchInput?.value || "");
-		this.updateButtonState();
+	private temporarilyHide(): void {
+		if (!this.dropdownEl || !this.isOpen) return;
+
+		this.isTemporarilyHidden = true;
+		addCls(this.dropdownEl, "hidden");
 	}
 
-	private updateButtonState(): void {
-		if (!this.buttonEl) return;
+	private restoreFromTemporaryHide(): void {
+		if (!this.dropdownEl || !this.isOpen || !this.isTemporarilyHidden) return;
 
-		const count = this.untrackedEvents.length;
-		this.buttonEl.title = `${count} untracked event${count === 1 ? "" : "s"}`;
+		this.isTemporarilyHidden = false;
+		removeCls(this.dropdownEl, "hidden");
+	}
 
-		// Update button appearance based on whether there are events
-		toggleCls(this.buttonEl, "has-events", count > 0);
+	refreshEvents(): void {
+		this.filterEvents(this.searchInput?.value || "");
 	}
 
 	private filterEvents(query: string): void {
 		if (!this.eventsListEl) return;
 
+		const untrackedEvents = this.bundle.untrackedEventStore.getUntrackedEvents();
+
 		const lowerQuery = query.toLowerCase();
-		this.filteredEvents = this.untrackedEvents.filter((event) => {
+		const filteredEvents = untrackedEvents.filter((event) => {
 			const title = removeZettelId(event.title).toLowerCase();
 			return title.includes(lowerQuery);
 		});
 
-		this.renderEvents();
+		this.renderEvents(filteredEvents, untrackedEvents.length);
 	}
 
-	private renderEvents(): void {
+	private renderEvents(filteredEvents: ParsedEvent[], totalCount: number): void {
 		if (!this.eventsListEl) return;
 
 		this.eventsListEl.empty();
@@ -316,15 +315,15 @@ export class UntrackedEventsDropdown {
 			this.draggable = null;
 		}
 
-		if (this.filteredEvents.length === 0) {
+		if (filteredEvents.length === 0) {
 			const emptyMsg = this.eventsListEl.createDiv(cls("untracked-dropdown-empty"));
-			emptyMsg.textContent = this.untrackedEvents.length === 0 ? "No untracked events" : "No events match your search";
+			emptyMsg.textContent = totalCount === 0 ? "No untracked events" : "No events match your search";
 			return;
 		}
 
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		for (const event of this.filteredEvents) {
+		for (const event of filteredEvents) {
 			const eventRow = this.eventsListEl.createDiv(cls("untracked-dropdown-item"));
 			eventRow.classList.add("fc-event"); // FullCalendar draggable class
 			eventRow.setAttribute("data-file-path", event.ref.filePath);
@@ -364,10 +363,10 @@ export class UntrackedEventsDropdown {
 				}
 			}
 
-			// Click to open file
-			eventRow.addEventListener("click", () => {
+			// Double-click to open file (single click starts drag)
+			eventRow.addEventListener("dblclick", (e) => {
+				e.stopPropagation();
 				void this.app.workspace.openLinkText(event.ref.filePath, "", false);
-				this.close();
 			});
 		}
 
@@ -390,10 +389,84 @@ export class UntrackedEventsDropdown {
 		});
 	}
 
+	private setupDragTrackingOnce(): void {
+		if (this.dragTrackingInitialized) return;
+		if (!this.eventsListEl || !this.dropdownEl) return;
+
+		this.dragTrackingInitialized = true;
+
+		// Start "dragging" on pointerdown of an item (matches FullCalendar external drag UX).
+		this.eventsListEl.addEventListener("pointerdown", (e) => {
+			const target = e.target as HTMLElement | null;
+			if (!target) return;
+			const item = target.closest(`.${cls("untracked-dropdown-item")}`);
+			if (!item) return;
+
+			this.isDragging = true;
+			this.isTemporarilyHidden = false;
+
+			// Prevent the common "click after drop" from closing the dropdown.
+			this.ignoreOutsideClicksUntil = Date.now() + 1500;
+		});
+
+		// Track pointer movement globally to detect hover over dropdown and hide after 1.5s.
+		document.addEventListener("pointermove", this.handleGlobalPointerMove, true);
+		document.addEventListener("pointerup", this.handleGlobalPointerUp, true);
+		document.addEventListener("pointercancel", this.handleGlobalPointerUp, true);
+	}
+
+	private handleGlobalPointerMove = (e: PointerEvent): void => {
+		if (!this.isDragging || !this.isOpen || !this.dropdownEl) return;
+		if (this.isTemporarilyHidden) return;
+
+		const rect = this.dropdownEl.getBoundingClientRect();
+		const isOverDropdown =
+			e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+
+		if (!isOverDropdown) {
+			if (this.dragHoverTimeout) {
+				window.clearTimeout(this.dragHoverTimeout);
+				this.dragHoverTimeout = null;
+			}
+			return;
+		}
+
+		if (this.dragHoverTimeout) return;
+
+		this.dragHoverTimeout = window.setTimeout(() => {
+			this.temporarilyHide();
+			this.dragHoverTimeout = null;
+		}, 1500);
+	};
+
+	private handleGlobalPointerUp = (): void => {
+		if (!this.isDragging) return;
+
+		this.isDragging = false;
+		this.ignoreOutsideClicksUntil = Date.now() + 250;
+
+		if (this.dragHoverTimeout) {
+			window.clearTimeout(this.dragHoverTimeout);
+			this.dragHoverTimeout = null;
+		}
+
+		this.restoreFromTemporaryHide();
+	};
+
 	destroy(): void {
 		document.removeEventListener("click", this.handleOutsideClick);
-		document.removeEventListener("keydown", this.handleKeyDown);
+		document.removeEventListener("pointermove", this.handleGlobalPointerMove, true);
+		document.removeEventListener("pointerup", this.handleGlobalPointerUp, true);
+		document.removeEventListener("pointercancel", this.handleGlobalPointerUp, true);
+		this.storeSubscription?.unsubscribe();
+		this.storeSubscription = null;
 		this.colorEvaluator.destroy();
+
+		// Clear any pending timeouts
+		if (this.dragHoverTimeout) {
+			window.clearTimeout(this.dragHoverTimeout);
+			this.dragHoverTimeout = null;
+		}
 
 		// Destroy FullCalendar Draggable instance
 		if (this.draggable) {

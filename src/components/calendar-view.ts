@@ -1251,10 +1251,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// Note: sticky-day-headers class is still applied for CSS that depends on both settings
 		toggleCls(container, "sticky-day-headers", settings.stickyDayHeaders);
 
-		// Track mouse down/up for click vs drag detection
 		this.setupMouseTracking(container);
-
-		// Start the upcoming event check interval
 		this.startUpcomingEventCheck();
 	}
 
@@ -1342,7 +1339,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		try {
 			// Use toLocalISOString to prevent timezone conversion issues
 			// FullCalendar's activeStart/activeEnd are local Date objects, but toISOString() converts to UTC
-			// This caused events after 3 PM on the last day of the week to disappear in certain timezones
 			const start = toLocalISOString(view.activeStart);
 			const end = toLocalISOString(view.activeEnd);
 
@@ -2194,11 +2190,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			this.untrackedEventsDropdown.initialize(this.calendar, this.container);
 		}
 
-		const untrackedEventStoreSubscription = this.bundle.untrackedEventStore.subscribe(() => {
-			this.untrackedEventsDropdown?.refreshEvents();
-		});
-		this.register(() => untrackedEventStoreSubscription.unsubscribe());
-
 		const dropdownSettingsSubscription = this.bundle.settingsStore.settings$.subscribe(() => {
 			this.untrackedEventsDropdown?.updateVisibility();
 		});
@@ -2273,6 +2264,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	focusExpressionFilter(): void {
 		this.expressionFilter.focus();
+	}
+
+	toggleUntrackedEventsDropdown(): void {
+		this.untrackedEventsDropdown?.toggle();
 	}
 
 	private isRestoring = false;

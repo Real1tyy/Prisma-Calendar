@@ -176,6 +176,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.SHOW_FILTERED_EVENTS, "Show filtered events", (view) => {
 			void view.showFilteredEventsModal();
 		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_UNTRACKED_EVENTS, "Toggle untracked events dropdown", (view) => {
+			view.toggleUntrackedEventsDropdown();
+		});
 		addCalendarViewCommand(COMMAND_IDS.GLOBAL_SEARCH, "Global event search", (view) => {
 			void view.showGlobalSearchModal();
 		});

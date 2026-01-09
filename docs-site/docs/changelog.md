@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented here.
 
+## 1.26.0
+
+### New Features
+
+- **Untracked Events Dropdown**: New reactive dropdown showing events without date properties
+  - Displays in calendar toolbar as "Untracked" button
+  - Shows all events that don't have Start Date, End Date, or Date properties
+  - Search functionality to filter untracked events
+  - Display properties support (configurable in settings)
+  - Color rules apply automatically
+  - Double-click to open event file
+
+- **Bidirectional Drag & Drop for Untracked Events**
+  - **Dropdown → Calendar**: Drag untracked events from dropdown to calendar to assign dates
+    - Drop on time slot = timed event with start/end times
+    - Drop on all-day area = all-day event with date
+  - **Calendar → Dropdown**: Drag calendar events to dropdown to remove dates and make them untracked
+    - Drop on "Untracked" button (closed dropdown)
+    - Drop anywhere in open dropdown area
+    - Clears Start Date, End Date, Date, and All Day properties
+  - Full undo/redo support for all drag operations
+  - Smart dropdown behavior: temporarily hides after 1.5s of hovering while dragging to prevent blocking calendar
+  - Stays open after dropping events for easier bulk operations
+
+- **New Command**: "Toggle untracked events dropdown" (`show-untracked-events`)
+  - Toggle dropdown visibility via command palette or hotkey
+  - Configurable in Settings → Hotkeys
+  - Quick access to untracked events without using mouse
+
+- **Reactive Untracked Events System**
+  - Dropdown automatically updates when files change
+  - Instant refresh when events become tracked/untracked
+
+---
+
 ## 1.25.0
 
 ### New Features

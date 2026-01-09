@@ -31,6 +31,7 @@ const sidebars: SidebarsConfig = {
         "features/zettelid-naming",
         "features/batch-operations",
         "features/event-skipping",
+        "features/untracked-events",
         "features/undo-redo",
         "features/recurring-dsl",
         "features/virtual-events",

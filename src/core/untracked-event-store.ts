@@ -17,7 +17,12 @@ export class UntrackedEventStore extends DebouncedNotifier {
 	constructor(private indexer: Indexer) {
 		super();
 		this.subscription = this.indexer.events$
-			.pipe(filter((event: IndexerEvent) => event.type === "untracked-file-changed" || event.type === "file-deleted"))
+			.pipe(
+				filter(
+					(event: IndexerEvent) =>
+						event.type === "untracked-file-changed" || event.type === "file-changed" || event.type === "file-deleted"
+				)
+			)
 			.subscribe((event: IndexerEvent) => {
 				this.handleIndexerEvent(event);
 			});
@@ -28,6 +33,12 @@ export class UntrackedEventStore extends DebouncedNotifier {
 			case "untracked-file-changed":
 				if (event.source) {
 					this.processFileChange(event.source);
+				}
+				break;
+			case "file-changed":
+				// When a file becomes tracked (has start/end/date props), remove it from untracked cache
+				if (this.cache.has(event.filePath)) {
+					this.invalidate(event.filePath);
 				}
 				break;
 			case "file-deleted":
