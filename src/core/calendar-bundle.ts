@@ -261,14 +261,14 @@ export class CalendarBundle {
 		try {
 			const commandEventData: EventData = {
 				filePath: null,
-				title: eventData.title || `Event ${new Date().toISOString().split("T")[0]}`,
+				title: eventData.title,
 				start: eventData.start,
 				end: eventData.end ?? undefined,
 				allDay: eventData.allDay,
 				preservedFrontmatter: eventData.preservedFrontmatter,
 			};
 
-			const command = new CreateEventCommand(this.app, this, commandEventData, settings.directory, new Date());
+			const command = new CreateEventCommand(this.app, this, commandEventData, settings.directory);
 			await this.commandManager.executeCommand(command);
 			new Notice("Event created successfully");
 			return command.getCreatedFilePath();

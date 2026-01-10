@@ -47,7 +47,6 @@ export class CreateEventCommand implements Command {
 		private bundle: CalendarBundle,
 		private eventData: EventData,
 		private targetDirectory: string,
-		private clickedDate?: Date
 	) {}
 
 	async execute(): Promise<void> {
@@ -56,7 +55,7 @@ export class CreateEventCommand implements Command {
 			if (existing instanceof TFile) return;
 		}
 
-		const title = this.eventData.title || `Event ${this.clickedDate?.toISOString().split("T")[0]}`;
+		const title = this.eventData.title;
 		const sanitizedTitle = sanitizeForFilename(title, { style: "preserve" });
 		const { filename, zettelId } = generateUniqueEventPath(this.app, this.targetDirectory, sanitizedTitle);
 
