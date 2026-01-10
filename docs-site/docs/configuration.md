@@ -259,6 +259,25 @@ The sticky header options improve navigation in long calendars by keeping contex
 - **Event stack limit**: maximum events to stack before showing "+ more" link (1-10, default: 1)
 - **Mobile max events per day**: maximum events to show per day on mobile before showing "+more" (0-10, default: 4)
 
+### Toolbar Buttons
+
+Customize which buttons appear in the calendar's top toolbar to save space in narrow sidebars:
+
+- **Left**: Navigate to previous period
+- **Today**: Jump to current date
+- **Now**: Jump to current time (day/week views)
+- **Create Event**: Open event creation modal
+- **Right**: Navigate to next period
+- **Zoom Level**: Adjust time slot granularity (CTRL+scroll)
+- **Filter Presets**: Quick-access filter dropdown
+- **Search Input**: Search events by title
+- **Expression Filter**: Filter events using expressions
+- **Untracked Events**: Show events without date properties
+
+All buttons are enabled by default. Uncheck items to hide them from the toolbar.
+
+⚠️ **Note**: Reopen the calendar view for toolbar changes to take effect.
+
 ### Batch Selection
 
 - **Batch action buttons**: customize which action buttons appear in the batch selection mode toolbar. You can enable or disable individual buttons to streamline your workflow:

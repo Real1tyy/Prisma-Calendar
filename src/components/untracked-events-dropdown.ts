@@ -46,24 +46,7 @@ export class UntrackedEventsDropdown {
 		}, 100);
 	}
 
-	updateVisibility(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!this.buttonEl) return;
-
-		if (settings.showUntrackedEventsDropdown) {
-			removeCls(this.buttonEl, "hidden");
-		} else {
-			addCls(this.buttonEl, "hidden");
-			this.close();
-		}
-	}
-
 	private injectButton(container: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.showUntrackedEventsDropdown) {
-			return;
-		}
-
 		const toolbarLeft = container.querySelector(".fc-toolbar-chunk:first-child");
 		if (!toolbarLeft) return;
 

@@ -6,6 +6,8 @@ import {
 	CONTEXT_MENU_BUTTON_LABELS,
 	CONTEXT_MENU_ITEM_IDS,
 	SETTINGS_DEFAULTS,
+	TOOLBAR_BUTTON_IDS,
+	TOOLBAR_BUTTON_LABELS,
 } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import { CALENDAR_VIEW_OPTIONS, type CalendarViewType, DENSITY_OPTIONS, FIRST_DAY_OPTIONS } from "../../types/index";
@@ -149,12 +151,6 @@ export class CalendarSettings {
 			key: "highlightUpcomingEvent",
 			name: "Highlight upcoming event",
 			desc: "Subtly highlight events that are currently active (if any), or the next upcoming event. Only visible when the current time is within the visible date range.",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "showUntrackedEventsDropdown",
-			name: "Show untracked events dropdown",
-			desc: "Display a dropdown in the toolbar to access events without dates. Allows dragging events to/from the calendar.",
 		});
 
 		this.ui.addToggle(containerEl, {
@@ -326,6 +322,42 @@ export class CalendarSettings {
 			name: "Show color dots",
 			desc: "Show color indicator dots at the top of each day in monthly view",
 		});
+
+		// Toolbar buttons settings section
+		new Setting(containerEl).setName("Toolbar buttons").setHeading();
+
+		new Setting(containerEl)
+			.setName("Calendar toolbar buttons")
+			.setDesc(
+				"Choose which buttons to display in the calendar toolbar. Uncheck items to hide them and save space in narrow sidebars. ⚠️ Reopen the calendar view for changes to take effect."
+			);
+
+		const toolbarButtonsContainer = containerEl.createDiv({
+			cls: "prisma-batch-buttons-container",
+		});
+
+		const currentToolbarButtons = new Set(this.settingsStore.currentSettings.toolbarButtons);
+
+		for (const buttonId of TOOLBAR_BUTTON_IDS) {
+			const buttonSetting = new Setting(toolbarButtonsContainer)
+				.setName(TOOLBAR_BUTTON_LABELS[buttonId] || buttonId)
+				.addToggle((toggle) => {
+					toggle.setValue(currentToolbarButtons.has(buttonId)).onChange(async (value) => {
+						const current = this.settingsStore.currentSettings.toolbarButtons;
+
+						const updated = value
+							? TOOLBAR_BUTTON_IDS.filter((id) => current.includes(id) || id === buttonId)
+							: current.filter((id) => id !== buttonId);
+
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							toolbarButtons: updated,
+						}));
+					});
+				});
+
+			buttonSetting.settingEl.addClass("prisma-batch-button-setting");
+		}
 
 		// Batch selection settings section
 		new Setting(containerEl).setName("Batch selection").setHeading();

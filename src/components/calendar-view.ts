@@ -108,6 +108,30 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private isDraggingCalendarEvent = false;
 	private draggingCalendarEventFilePath: string | null = null;
 
+	private getToolbarComponentDefinitions() {
+		return [
+			{
+				id: "searchInput",
+				init: () => this.searchFilter.initialize(this.calendar!, this.container),
+			},
+			{
+				id: "expressionFilter",
+				init: () => this.expressionFilter.initialize(this.calendar!, this.container),
+			},
+			{
+				id: "filterPresets",
+				init: () => this.filterPresetSelector.initialize(this.calendar!, this.container),
+			},
+			{
+				id: "untrackedEvents",
+				init: () => {
+					this.untrackedEventsDropdown = new UntrackedEventsDropdown(this.app, this.bundle);
+					this.untrackedEventsDropdown.initialize(this.calendar!, this.container);
+				},
+			},
+		];
+	}
+
 	constructor(
 		leaf: WorkspaceLeaf,
 		private bundle: CalendarBundle
@@ -312,7 +336,27 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			};
 		}
 
-		const left = "prev,next today now createEvent zoomLevel";
+		const settings = this.bundle.settingsStore.currentSettings;
+		const toolbarButtons = new Set(settings.toolbarButtons);
+
+		const leftItems: string[] = [];
+		if (toolbarButtons.has("prevNext")) {
+			leftItems.push("prev", "next");
+		}
+		if (toolbarButtons.has("today")) {
+			leftItems.push("today");
+		}
+		if (toolbarButtons.has("now")) {
+			leftItems.push("now");
+		}
+		if (toolbarButtons.has("createEvent")) {
+			leftItems.push("createEvent");
+		}
+		if (toolbarButtons.has("zoomLevel")) {
+			leftItems.push("zoomLevel");
+		}
+
+		const left = leftItems.length > 0 ? leftItems.join(" ") : "";
 		const right = `filteredEvents recurringEvents skippedEvents batchSelect ${viewSwitchers}`;
 
 		return {
@@ -1224,11 +1268,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.zoomManager.initialize(this.calendar, this.container);
 		this.zoomManager.setOnZoomChangeCallback(() => this.saveCurrentState());
 
-		// Initialize filters in reverse order since they all insert after zoom button
-		// Order will be: Zoom → FilterPresetSelector → ExpressionFilter → SearchFilter
-		this.searchFilter.initialize(this.calendar, this.container);
-		this.expressionFilter.initialize(this.calendar, this.container);
-		this.filterPresetSelector.initialize(this.calendar, this.container);
+		this.initializeToolbarComponents(settings.toolbarButtons);
 
 		if (this.bundle.viewStateManager.hasState()) {
 			this.isRestoring = true;
@@ -1302,6 +1342,21 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		// Schedule refresh with coalescing to batch with paint and avoid refresh storms
 		this.scheduleRefreshEvents();
+	}
+
+	private initializeToolbarComponents(toolbarButtons: string[]): void {
+		if (!this.calendar) return;
+
+		const buttons = new Set(toolbarButtons);
+		const components = this.getToolbarComponentDefinitions();
+
+		// Initialize components in reverse order since they insert after zoom button
+		// Order will be: Zoom → FilterPresetSelector → ExpressionFilter → SearchInput → Untracked
+		for (const component of components) {
+			if (buttons.has(component.id)) {
+				component.init();
+			}
+		}
 	}
 
 	private scheduleRefreshEvents(): void {
@@ -2246,16 +2301,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		const recurringEventManagerSubscription = this.bundle.recurringEventManager.subscribe(() => this.refreshEvents());
 		this.register(() => recurringEventManagerSubscription.unsubscribe());
-
-		this.untrackedEventsDropdown = new UntrackedEventsDropdown(this.app, this.bundle);
-		if (this.calendar) {
-			this.untrackedEventsDropdown.initialize(this.calendar, this.container);
-		}
-
-		const dropdownSettingsSubscription = this.bundle.settingsStore.settings$.subscribe(() => {
-			this.untrackedEventsDropdown?.updateVisibility();
-		});
-		this.register(() => dropdownSettingsSubscription.unsubscribe());
 	}
 
 	toggleBatchSelection(): void {

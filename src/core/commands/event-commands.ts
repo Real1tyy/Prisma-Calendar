@@ -46,7 +46,7 @@ export class CreateEventCommand implements Command {
 		private app: App,
 		private bundle: CalendarBundle,
 		private eventData: EventData,
-		private targetDirectory: string,
+		private targetDirectory: string
 	) {}
 
 	async execute(): Promise<void> {

@@ -3,11 +3,12 @@ import {
 	BATCH_BUTTON_IDS,
 	DEFAULT_BATCH_ACTION_BUTTONS,
 	DEFAULT_CONTEXT_MENU_ITEMS,
+	DEFAULT_TOOLBAR_BUTTONS,
 	SETTINGS_DEFAULTS,
 } from "../constants";
 import { CalDAVSettingsSchema } from "../core/integrations/caldav";
 import { ColorSchema } from "../utils/validation";
-import { CalendarViewTypeSchema, ContextMenuItemSchema } from "./view";
+import { CalendarViewTypeSchema, ContextMenuItemSchema, ToolbarButtonSchema } from "./view";
 
 const EventPresetSchema = z
 	.object({
@@ -137,7 +138,6 @@ const CalendarSettingsSchema = z
 		enableEventPreview: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_ENABLE_EVENT_PREVIEW), // Enable hover preview for events
 		nowIndicator: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_NOW_INDICATOR), // Show current time indicator line
 		highlightUpcomingEvent: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_HIGHLIGHT_UPCOMING_EVENT), // Highlight the next upcoming event
-		showUntrackedEventsDropdown: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_UNTRACKED_EVENTS_DROPDOWN), // Show dropdown for untracked events (events without dates)
 		thickerHourLines: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_THICKER_HOUR_LINES), // Make full-hour lines thicker in day/week views
 		pastEventContrast: z.number().int().min(0).max(100).catch(SETTINGS_DEFAULTS.DEFAULT_PAST_EVENT_CONTRAST), // Contrast of past events in %
 		eventOverlap: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_OVERLAP), // Allow events to visually overlap (all views)
@@ -154,6 +154,7 @@ const CalendarSettingsSchema = z
 			.max(2000)
 			.catch(SETTINGS_DEFAULTS.DEFAULT_DRAG_EDGE_SCROLL_DELAY_MS), // Delay in milliseconds before scrolling when dragging events near edge
 		batchActionButtons: z.array(BatchActionButtonSchema).catch([...DEFAULT_BATCH_ACTION_BUTTONS]), // Which batch action buttons to show in batch selection mode toolbar
+		toolbarButtons: z.array(ToolbarButtonSchema).catch([...DEFAULT_TOOLBAR_BUTTONS]), // Which buttons to show in the calendar toolbar
 		stickyDayHeaders: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_STICKY_DAY_HEADERS), // Make day headers sticky during vertical scroll (timegrid views)
 		stickyAllDayEvents: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_STICKY_ALL_DAY_EVENTS), // Make all-day event section sticky during vertical scroll (timegrid views)
 		autoAssignCategoryByName: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_CATEGORY_BY_NAME), // Automatically assign category when event name matches category name (case-insensitive)

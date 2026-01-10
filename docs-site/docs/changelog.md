@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented here.
 
+## 1.27.0
+
+### New Features
+
+- **Customizable Calendar Toolbar**: Configure which buttons appear in the calendar toolbar to optimize space usage in narrow sidebars. Choose from Previous/Next navigation, Today, Now, Create Event, Zoom Level, Filter Presets, Search Input, Expression Filter, and Untracked Events dropdown. All buttons are enabled by default. Access via Settings → Calendar → Toolbar buttons. **Note**: Reopen the calendar view for changes to take effect.
+
+### Breaking Changes
+
+- **Deprecated Setting Removed**: The "Show untracked events dropdown" toggle has been removed in favor of the unified toolbar buttons configuration. If you previously disabled the untracked events dropdown, you'll need to uncheck "Untracked Events" in the new toolbar buttons section.
+
+---
+
 ## 1.26.0
 
 ### New Features

@@ -129,7 +129,6 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_ENABLE_EVENT_PREVIEW: true,
 	DEFAULT_NOW_INDICATOR: true,
 	DEFAULT_HIGHLIGHT_UPCOMING_EVENT: true,
-	DEFAULT_SHOW_UNTRACKED_EVENTS_DROPDOWN: true,
 	DEFAULT_THICKER_HOUR_LINES: true,
 	DEFAULT_DRAG_EDGE_SCROLL_DELAY_MS: 600,
 	DEFAULT_DENSITY: "comfortable",
@@ -179,6 +178,26 @@ export const BATCH_BUTTON_LABELS = Object.fromEntries(
 export const DEFAULT_BATCH_ACTION_BUTTONS = BATCH_BUTTON_IDS.filter(
 	(id) => !["batchMoveBy", "batchOpenAll", "batchMovePrev", "batchClonePrev", "batchFrontmatter"].includes(id)
 );
+
+const TOOLBAR_BUTTONS = {
+	"Previous/Next": "prevNext",
+	Today: "today",
+	Now: "now",
+	"Create Event": "createEvent",
+	"Zoom Level": "zoomLevel",
+	"Filter Presets": "filterPresets",
+	"Search Input": "searchInput",
+	"Expression Filter": "expressionFilter",
+	"Untracked Events": "untrackedEvents",
+} as const;
+
+export const TOOLBAR_BUTTON_IDS = Object.values(TOOLBAR_BUTTONS);
+
+export const TOOLBAR_BUTTON_LABELS = Object.fromEntries(
+	Object.entries(TOOLBAR_BUTTONS).map(([label, id]) => [id, label])
+) as Record<string, string>;
+
+export const DEFAULT_TOOLBAR_BUTTONS = TOOLBAR_BUTTON_IDS;
 
 export const CONTEXT_MENU_BUTTON_LABELS = {
 	enlarge: "Enlarge",

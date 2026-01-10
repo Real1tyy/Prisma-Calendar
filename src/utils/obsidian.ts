@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import { TFile, TFolder } from "obsidian";
+import { TFile } from "obsidian";
 import { getCalendarViewType } from "../components/calendar-view";
 import type { Frontmatter } from "../types";
 
