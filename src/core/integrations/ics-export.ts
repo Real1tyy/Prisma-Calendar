@@ -6,7 +6,6 @@ import type { CalendarEvent } from "../../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
 import { parseIntoList } from "../../utils/list-utils";
-import { ensureFolderExists } from "../../utils/obsidian";
 
 interface NotificationSettings {
 	minutesBeforeProp?: string;
@@ -349,8 +348,6 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 		}
 
 		const exportFolder = settings.exportFolder;
-		await ensureFolderExists(app, exportFolder);
-
 		const filename = generateICSFilename(calendarName);
 		const filePath = `${exportFolder}/${filename}`;
 

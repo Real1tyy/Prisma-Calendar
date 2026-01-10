@@ -21,21 +21,6 @@ export const emitHover = (
 		sourcePath: sourcePath ?? app.workspace.getActiveFile()?.path ?? "",
 	});
 
-export async function ensureFolderExists(app: App, folderPath: string): Promise<void> {
-	const parts = folderPath.split("/");
-	let currentPath = "";
-
-	for (const part of parts) {
-		currentPath = currentPath ? `${currentPath}/${part}` : part;
-		const existing = app.vault.getAbstractFileByPath(currentPath);
-		if (!existing) {
-			await app.vault.createFolder(currentPath);
-		} else if (!(existing instanceof TFolder)) {
-			throw new Error(`Path ${currentPath} exists but is not a folder`);
-		}
-	}
-}
-
 /**
  * Deletes multiple files by their paths using Promise.all.
  * Handles errors gracefully and continues deleting other files even if some fail.

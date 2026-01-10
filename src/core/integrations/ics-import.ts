@@ -5,7 +5,6 @@ import type { App, TFile } from "obsidian";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { extractZettelId, generateUniqueEventPath, removeZettelId, setEventBasics } from "../../utils/calendar-events";
 import { parseIntoList } from "../../utils/list-utils";
-import { ensureFolderExists } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 
 export interface ImportedEvent {
@@ -268,7 +267,6 @@ export async function createEventNoteFromImportedEvent(
 	}
 ): Promise<TFile> {
 	const { targetDirectory, timezone, additionalFrontmatter } = options;
-	await ensureFolderExists(app, targetDirectory);
 
 	let filename: string;
 	let zettelId: string;

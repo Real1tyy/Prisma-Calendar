@@ -502,12 +502,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 				recurringEvent.content = content;
 			}
 
-			// Build frontmatter for the instance
 			const excludeProps = getRecurringInstanceExcludedProps(this.settings);
-
 			const instanceFrontmatter: Frontmatter = {};
 
-			// Copy non-excluded properties from source
 			for (const [key, value] of Object.entries(recurringEvent.frontmatter)) {
 				if (!excludeProps.has(key)) {
 					instanceFrontmatter[key] = value;
