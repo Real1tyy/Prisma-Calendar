@@ -196,7 +196,7 @@ export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSett
 
 export const CustomCalendarSettingsSchema = z
 	.object({
-		version: z.number().int().positive().catch(1),
+		version: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_VERSION),
 		calendars: z
 			.array(SingleCalendarConfigSchema)
 			.min(1)

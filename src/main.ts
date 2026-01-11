@@ -1,5 +1,6 @@
-import { onceAsync } from "@real1ty-obsidian-plugins/utils";
+import { onceAsync, WhatsNewModal, type WhatsNewModalConfig } from "@real1ty-obsidian-plugins/utils";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
+import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { CalendarSelectModal, ICSImportModal } from "./components/modals";
 import { ICSImportProgressModal } from "./components/modals/ics-import-progress-modal";
@@ -27,6 +28,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(() => {
 			void this.ensureCalendarBundlesReady();
+			void this.checkForUpdates();
 		});
 	}
 
@@ -413,5 +415,29 @@ export default class CustomCalendarPlugin extends Plugin {
 		}
 
 		await bundle.syncAccount(accountId);
+	}
+
+	private async checkForUpdates(): Promise<void> {
+		const currentVersion = this.manifest.version;
+		const lastSeenVersion = this.settingsStore.currentSettings.version;
+
+		if (lastSeenVersion !== currentVersion) {
+			const config: WhatsNewModalConfig = {
+				cssPrefix: "prisma",
+				pluginName: "Prisma Calendar",
+				changelogContent: CHANGELOG_CONTENT,
+				links: {
+					support: "https://matejvavroproductivity.com/support/",
+					changelog: "https://real1tyy.github.io/Prisma-Calendar/changelog",
+					documentation: (this.manifest as any).helpUrl || "https://real1tyy.github.io/Prisma-Calendar/",
+				},
+			};
+
+			new WhatsNewModal(this.app, this, config, lastSeenVersion, currentVersion).open();
+			await this.settingsStore.updateSettings((settings) => ({
+				...settings,
+				version: currentVersion,
+			}));
+		}
 	}
 }

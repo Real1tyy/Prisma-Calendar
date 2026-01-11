@@ -27,7 +27,7 @@ describe("Calendar Schemas", () => {
 
 		it("should validate minimal valid settings", () => {
 			const minimal = {
-				version: 1,
+				version: "1.1.0",
 				calendars: [
 					{
 						id: "default",
@@ -50,14 +50,14 @@ describe("Calendar Schemas", () => {
 		});
 
 		it("should accept invalid settings and replace with defaults", () => {
-			// Invalid version - should be caught and replaced with default (1)
+			// Invalid version - should be caught and replaced with default ("1.1.0")
 			const result1 = CustomCalendarSettingsSchema.safeParse({
 				...defaultSettings,
 				version: -1,
 			});
 			expect(result1.success).toBe(true);
 			if (result1.success) {
-				expect(result1.data.version).toBe(1);
+				expect(result1.data.version).toBe("1.1.0");
 			}
 
 			// Invalid defaultView - should be caught and replaced with default
@@ -167,7 +167,7 @@ describe("Calendar Schemas", () => {
 			};
 			const result = CustomCalendarSettingsSchema.parse(partialSettings);
 			expect(result.calendars[0].startProp).toBe("Start Date"); // default
-			expect(result.version).toBe(1); // default
+			expect(result.version).toBe("1.1.0"); // default
 		});
 	});
 
@@ -181,10 +181,10 @@ describe("Calendar Schemas", () => {
 			const defaultSettings = CustomCalendarSettingsSchema.parse({});
 			const result = CustomCalendarSettingsSchema.parse({
 				...defaultSettings,
-				version: "invalid",
+				version: null,
 			});
-			// Should not throw, but replace invalid version with default (1)
-			expect(result.version).toBe(1);
+			// Should not throw, but replace null version with default ("1.1.0")
+			expect(result.version).toBe("1.1.0");
 		});
 	});
 });

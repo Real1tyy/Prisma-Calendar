@@ -64,6 +64,7 @@ export const FULL_COMMAND_IDS = Object.fromEntries(
 
 export const SETTINGS_DEFAULTS = {
 	// General Settings
+	DEFAULT_VERSION: "1.1.0",
 	DEFAULT_DURATION_MINUTES: 60,
 	DEFAULT_SHOW_DURATION_FIELD: true,
 	DEFAULT_SHOW_STOPWATCH: true,

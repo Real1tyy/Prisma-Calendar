@@ -8,6 +8,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **What's New Modal**: When you update Prisma Calendar, a modal automatically appears showing all changes since your last version. The modal displays the changelog entries for versions between your previous and current version, making it easy to see what's new. The modal includes links to the full changelog, documentation, and support options.
+
 - **Customizable Calendar Toolbar**: Configure which buttons appear in the calendar toolbar to optimize space usage in narrow sidebars. Choose from Previous/Next navigation, Today, Now, Create Event, Zoom Level, Filter Presets, Search Input, Expression Filter, and Untracked Events dropdown. All buttons are enabled by default. Access via Settings → Calendar → Toolbar buttons. **Note**: Reopen the calendar view for changes to take effect.
 
 ### Breaking Changes

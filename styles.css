@@ -6190,3 +6190,104 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 		font-size: 12px;
 	}
 }
+
+/* What's New Modal */
+.prisma-whats-new-modal .modal {
+	max-width: 800px;
+	width: 90%;
+}
+
+.prisma-whats-new-header {
+	margin-bottom: 1.5rem;
+}
+
+.prisma-whats-new-header h2 {
+	margin-bottom: 0.5rem;
+	color: var(--text-normal);
+}
+
+.prisma-whats-new-subtitle {
+	color: var(--text-muted);
+	font-size: 0.9rem;
+	margin: 0;
+}
+
+.prisma-whats-new-content {
+	max-height: 500px;
+	overflow-y: auto;
+	margin-bottom: 1.5rem;
+	padding-right: 0.5rem;
+	border-radius: 8px;
+}
+
+.prisma-whats-new-content h2 {
+	font-size: 1.3rem;
+	margin-top: 1.5rem;
+	margin-bottom: 0.5rem;
+	color: var(--text-accent);
+}
+
+.prisma-whats-new-content h3 {
+	font-size: 1.1rem;
+	margin-top: 1rem;
+	margin-bottom: 0.5rem;
+}
+
+.prisma-whats-new-content ul {
+	padding-left: 1.5rem;
+}
+
+.prisma-whats-new-content li {
+	margin-bottom: 0.5rem;
+}
+
+.prisma-whats-new-empty {
+	text-align: center;
+	color: var(--text-muted);
+	padding: 2rem;
+}
+
+.prisma-whats-new-support {
+	margin: 1.5rem 0;
+	padding: 1rem;
+	background-color: var(--background-secondary);
+	border-radius: 8px;
+}
+
+.prisma-whats-new-support h3 {
+	margin-top: 0;
+	margin-bottom: 0.5rem;
+	font-size: 1rem;
+}
+
+.prisma-whats-new-support p {
+	margin: 0;
+	color: var(--text-normal);
+}
+
+.prisma-whats-new-support a {
+	color: var(--link-color);
+	text-decoration: none;
+}
+
+.prisma-whats-new-support a:hover {
+	text-decoration: underline;
+}
+
+.prisma-whats-new-modal hr {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.prisma-whats-new-buttons {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	margin-top: 1rem;
+}
+
+.prisma-whats-new-buttons button {
+	padding: 0.5rem 1rem;
+	border-radius: 4px;
+	cursor: pointer;
+}
