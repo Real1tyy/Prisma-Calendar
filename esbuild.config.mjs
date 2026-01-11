@@ -51,7 +51,7 @@ const context = await esbuild.context({
 		{
 			name: "resolve-changelog",
 			setup(build) {
-				build.onResolve({ filter: /.*docs-site\/docs\/changelog\.md$/ }, (args) => {
+				build.onResolve({ filter: /.*docs-site\/docs\/changelog\.md$/ }, (_args) => {
 					return {
 						path: path.resolve(__dirname, "docs-site/docs/changelog.md"),
 					};
