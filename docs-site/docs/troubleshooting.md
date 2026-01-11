@@ -127,6 +127,22 @@ Calendar "Schedule":       Directory: schedule/
 
 This ensures the template is applied atomically when Prisma creates the event file.
 
+### Events created are saved to root folder instead of configured directory
+
+**Problem**: When creating events, files are saved to the vault root instead of the configured directory (e.g., "Tasks" folder). This only happens when Templater is enabled and `templatePath` is set.
+
+**Root Cause**: Older versions of Templater (pre-2.15) use an outdated API that doesn't properly handle the folder parameter when creating notes from templates programmatically.
+
+**Solution**: Update Templater to version 2.15 or higher:
+
+1. Go to Settings → Community Plugins
+2. Find "Templater" in your installed plugins
+3. Check the version number
+4. If below 2.15, click "Update" or reinstall the plugin
+5. Restart Obsidian
+
+**Verified Working**: Templater version 2.15+ correctly respects the `templatePath` setting and creates files in the configured directory.
+
 ### Inconsistent date properties for sorting
 
 **Problem**: Events have different property names (`Start Date` for timed events, `Date` for all-day events) and formats (`2025-02-10T14:00:00.000Z` vs `2025-02-10T14:00:00`), making it impossible to sort chronologically in other tools like Bases or Dataview.
