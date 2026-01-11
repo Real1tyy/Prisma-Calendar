@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Prisma Calendar',
   tagline: 'A feature-rich, fully configurable calendar for Obsidian.',
-  favicon: 'img/prisma_logo.jpeg',
+  favicon: 'img/prisma_logo.png',
 
   // Set the production url of your site here
   url: 'https://Real1tyy.github.io',
@@ -73,7 +73,7 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/prisma_logo.jpeg',
+    image: 'img/prisma_logo.png',
     colorMode: {
       defaultMode: 'dark',
       respectPrefersColorScheme: true,
@@ -82,7 +82,7 @@ const config: Config = {
       title: 'Prisma Calendar',
       logo: {
         alt: 'Prisma Calendar Logo',
-        src: 'img/prisma_logo.jpeg',
+        src: 'img/prisma_logo.png',
         href: '/', // Fix: Make logo/title link to root
       },
       items: [
