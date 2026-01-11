@@ -44,7 +44,7 @@ If you'd like to support the development financially, any contribution is **high
 
 - **Keep evolving** the ecosystem with quality tools
 
-**👉 [View all donation methods on my GitHub profile](https://github.com/Real1tyy#-support-my-work)**
+**👉 [View all donation methods and support options](https://matejvavroproductivity.com/support/)**
 
 **Every amount, no matter how small, makes a real difference.** Thank you for your support!
 

@@ -70,7 +70,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		linksContainer.createEl("a", {
 			text: "Support",
-			href: "https://github.com/Real1tyy#-support-my-work",
+			href: "https://matejvavroproductivity.com/support/",
 			cls: cls("settings-support-link"),
 		});
 

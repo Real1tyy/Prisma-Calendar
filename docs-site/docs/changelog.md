@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented here.
 
+---
+
 ## 1.27.0
 
 ### New Features
@@ -86,11 +88,15 @@ All notable changes to this project will be documented here.
 
 - **Fixed Newly Created Future Events Notifications**: Fixed an issue where newly created events with future start/end times were being marked as already notified. The system now checks the event start date when creating or editing events. If the start date is in the past or within 1 minute of now, the event is automatically marked as already notified at submission time, preventing notification spam for actual or past events.
 
+---
+
 ## 1.24.0
 
 ### New Features
 
 - **Auto-Category Assignment**: Categories can now be automatically assigned to new events based on the event name. When you finish typing the event title, the system checks for matches and replaces categories accordingly. Enable "Auto-assign when name matches category" to automatically assign categories when the event name matches a category name (case-insensitive, ignoring ZettelID and instance dates). Configure custom assignment presets to map specific event names to multiple categories (e.g., "Coding" → Software, Business). The behavior is intentional and predictable - you see exactly what gets assigned before saving the event.
+
+---
 
 ## 1.23.0
 
@@ -118,6 +124,8 @@ All notable changes to this project will be documented here.
 
 - **Fixed Button Text Rendering**: Fixed an issue where event count buttons (filtered, skipped, recurring) would sometimes render their text twice on rerenders. Button text now updates correctly without duplication.
 
+---
+
 ## 1.22.3
 
 ### Performance Improvements
@@ -128,17 +136,23 @@ All notable changes to this project will be documented here.
 
 - **Fixed Excluded Properties in Frontmatter Propagation**: Excluded properties from settings (`excludedRecurringPropagatedProps`) are now properly filtered out during frontmatter propagation to recurring event instances. Excluded props no longer appear in the propagation confirmation modal and are filtered before propagation, preventing unnecessary processing.
 
+---
+
 ## 1.22.2
 
 ### Bug Fixes
 
 - **Fixed Obsidian Share Import Failure**: Fixed "Request failed. Unsupported URL" when importing shared files into Obsidian.
 
+---
+
 ## 1.22.1
 
 ### Bug Fixes
 
 - **Fixed Event Synchronization Issues**: Resolved the event synchronization problem mentioned in 1.22.0. Events now consistently appear in the calendar immediately after creation, editing, or duplication. Creating events, duplicating events, and editing events now feels instant and responsive.
+
+---
 
 ## 1.22.0
 
@@ -157,6 +171,8 @@ All notable changes to this project will be documented here.
 
 - **Fixed Calendar Indexer Race Condition**: Fixed an issue where newly created events wouldn't appear in the calendar until manual refresh. The calendar now immediately shows new events, even when Obsidian's metadata cache is still processing the file.
 
+---
+
 ## 1.21.0
 
 ### New Features
@@ -171,11 +187,15 @@ All notable changes to this project will be documented here.
   - Settings corrupted by external tools or sync conflicts
   - Missing or partially migrated settings
 
+---
+
 ## 1.20.2
 
 ### Bug Fixes
 
 - **Fixed ZettelID Preservation with Time Tracker**: Fixed a bug where ZettelIDs were lost when using the time tracker with minimized modals. When creating or editing events with the time tracker running, the system now correctly preserves ZettelIDs and synchronizes file paths. This prevents duplicate files and ensures the minimized modal can be restored with the correct file path, even after renaming events.
+
+---
 
 ## 1.20.1
 
@@ -184,6 +204,8 @@ All notable changes to this project will be documented here.
 - **Undoable Category Assignment**: Category assignment from the event context menu now uses the command system, making it fully undoable. Previously, category assignments were applied directly to frontmatter without undo support. Now all category assignments (both individual and batch) support undo/redo operations.
 
 - **Hotkey-Configurable Batch Category Assignment**: Added a new command "Batch: Assign categories to selection" that allows you to assign categories to multiple selected events via keyboard shortcut. The command can be assigned a custom hotkey in Obsidian's settings for quick access during batch operations.
+
+---
 
 ## 1.20.0
 
@@ -229,6 +251,8 @@ All notable changes to this project will be documented here.
 ### Bug Fixes
 
 - **Minimized Modal State Synchronization**: Fixed an issue where creating a new event with active time tracking would save the minimized modal state as "create" mode instead of "edit" mode. When restoring the minimized modal, it would attempt to create a duplicate event instead of editing the existing one. The minimized modal manager now correctly updates to "edit" mode with the newly created file path after event creation, ensuring proper synchronization between the modal state and the actual event file.
+
+---
 
 ## 1.19.0
 
@@ -310,6 +334,8 @@ All notable changes to this project will be documented here.
   - **Change Preview Modal**: When using "Ask before propagating" mode, a modal shows all accumulated changes (added, modified, deleted properties) with their old and new values, allowing you to review before confirming.
 
   📖 See [Recurring Events Documentation](/features/recurring-dsl#propagation-modes) and [Configuration Settings](/configuration#frontmatter-propagation) for detailed information.
+
+---
 
 ## 1.16.0
 
@@ -760,6 +786,8 @@ Anyone with access to your vault can read your credentials. Use with caution.
 ### Improvements
 - **Calendar Integration**: Context menu actions now provide better integration with calendar navigation, allowing you to stay in calendar view when working with recurring events.
 
+---
+
 ## 1.6.0
 
 ### Bug Fixes
@@ -825,6 +853,8 @@ Anyone with access to your vault can read your credentials. Use with caution.
 - **`Show monthly statistics`**: Open monthly statistics modal for the current month
 - **`Show all-time statistics`**: Open all-time statistics modal showing lifetime totals
 
+---
+
 ## 1.5.0
 
 ### New Features
@@ -848,6 +878,8 @@ Anyone with access to your vault can read your credentials. Use with caution.
 - **Quick Filtering**: Three cycle-filter buttons for recurring, all-day, and skipped events. Each button cycles through: show all → only this type → skip this type.
 - **Event Details**: See event type (timed/all-day/recurring), date/time ranges, and recurring indicators at a glance.
 - **Quick Actions**: Open event files or navigate the calendar to the event's week directly from search results.
+
+---
 
 ## 1.4.0
 
@@ -893,11 +925,15 @@ Anyone with access to your vault can read your credentials. Use with caution.
 - **Duplicate Instance Prevention**: Fixed edge cases where recurring event instances could be created multiple times for the same date.
 - **RRule ID Synchronization**: Improved synchronization of recurring event IDs between source files and generated instances.
 
+---
+
 ## 1.3.0
 
 ### New Features
 - **Move By Command**: New hotkey command to move selected events by a custom number of days. Allows precise event repositioning with positive or negative day offsets.
 - **Auto-mark Past Events**: Automatically mark past events as done during startup. Configure the status property and done value in settings. Runs asynchronously without blocking the main thread.
+
+---
 
 ## 1.2.0
 
@@ -905,6 +941,8 @@ Anyone with access to your vault can read your credentials. Use with caution.
 - **Interlinked Recurring Events**: Recurring event instances are now properly interlinked, allowing seamless navigation between occurrences.
 - **Source Navigation**: Right-click on any recurring event instance to quickly navigate to the source note that defines the recurrence rule.
 - **View All Recurring Events**: New context menu option to view all instances of a recurring event series in a dedicated modal.
+
+---
 
 ## 1.1.0
 - Initial release of Prisma Calendar

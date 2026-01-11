@@ -171,7 +171,7 @@ const config: Config = {
             },
             {
               label: 'Sponsorship options',
-              href: 'https://github.com/Real1tyy#-support-my-work',
+              href: 'https://matejvavroproductivity.com/support/',
             },
           ],
         },
