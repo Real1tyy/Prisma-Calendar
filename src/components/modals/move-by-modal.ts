@@ -66,7 +66,7 @@ export class MoveByModal extends Modal {
 		}
 
 		// Action buttons
-		const buttonContainer = contentEl.createDiv("modal-button-container");
+		const buttonContainer = contentEl.createDiv(cls("modal-button-container"));
 
 		const submitButton = buttonContainer.createEl("button", {
 			text: "Move",

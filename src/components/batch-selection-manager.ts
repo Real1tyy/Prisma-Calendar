@@ -1,5 +1,12 @@
 import type { Calendar, EventApi } from "@fullcalendar/core";
-import { addCls, getWeekDirection, pluralize, removeCls, runBatchOperation } from "@real1ty-obsidian-plugins/utils";
+import {
+	addCls,
+	cls,
+	getWeekDirection,
+	pluralize,
+	removeCls,
+	runBatchOperation,
+} from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
@@ -82,7 +89,7 @@ export class BatchSelectionManager {
 		contentEl.createEl("h2", { text: confirmationTitle });
 		contentEl.createEl("p", { text: confirmationMessage(this.selectedEvents.size) });
 
-		const buttonContainer = contentEl.createDiv("modal-button-container");
+		const buttonContainer = contentEl.createDiv(cls("modal-button-container"));
 		buttonContainer.createEl("button", { text: "Cancel" }).onclick = () => confirmModal.close();
 
 		const confirmBtn = buttonContainer.createEl("button", {

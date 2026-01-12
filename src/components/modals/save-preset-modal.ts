@@ -1,4 +1,4 @@
-import { addCls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, Notice } from "obsidian";
 import type { EventPreset } from "../../types/settings";
 
@@ -27,10 +27,10 @@ export class SavePresetModal extends Modal {
 		contentEl.createEl("h3", { text: "Save as preset" });
 
 		// Override existing preset selector
-		const overrideContainer = contentEl.createDiv("setting-item");
+		const overrideContainer = contentEl.createDiv(cls("setting-item"));
 		overrideContainer.createEl("div", { text: "Save to", cls: "setting-item-name" });
 		this.overrideSelect = overrideContainer.createEl("select", {
-			cls: "setting-item-control",
+			cls: cls("setting-item-dropdown"),
 		});
 
 		// Add "Create new" option
@@ -61,15 +61,15 @@ export class SavePresetModal extends Modal {
 		});
 
 		// Preset name input
-		const inputContainer = contentEl.createDiv("setting-item");
+		const inputContainer = contentEl.createDiv(cls("setting-item"));
 		inputContainer.createEl("div", { text: "Preset name", cls: "setting-item-name" });
 		this.nameInput = inputContainer.createEl("input", {
 			type: "text",
 			placeholder: "e.g., 30 min meeting, All-day event",
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 
-		const buttonContainer = contentEl.createDiv("modal-button-container");
+		const buttonContainer = contentEl.createDiv(cls("modal-button-container"));
 
 		const cancelButton = buttonContainer.createEl("button", {
 			text: "Cancel",
@@ -80,7 +80,7 @@ export class SavePresetModal extends Modal {
 
 		const saveButton = buttonContainer.createEl("button", {
 			text: "Save",
-			cls: "mod-cta",
+			cls: cls("mod-cta"),
 		});
 		saveButton.addEventListener("click", () => {
 			this.handleSave();

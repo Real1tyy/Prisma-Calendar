@@ -1,4 +1,4 @@
-import { addCls, removeCls, toggleCls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls, removeCls, toggleCls } from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal } from "obsidian";
 import type { CategoryInfo } from "../../core/category-tracker";
 
@@ -272,14 +272,14 @@ export class CategoryAssignModal extends Modal {
 	}
 
 	private createButtons(container: HTMLElement): void {
-		const buttonContainer = container.createDiv("modal-button-container");
+		const buttonContainer = container.createDiv(cls("modal-button-container"));
 
 		const cancelBtn = buttonContainer.createEl("button", { text: "Cancel" });
 		cancelBtn.onclick = () => this.close();
 
 		this.assignButton = buttonContainer.createEl("button", {
 			text: "Remove categories",
-			cls: "mod-cta",
+			cls: cls("mod-cta"),
 		});
 		this.assignButton.onclick = () => {
 			this.submitCategories();

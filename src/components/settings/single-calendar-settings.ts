@@ -70,7 +70,7 @@ export class SingleCalendarSettings {
 
 	private renderActiveSection(containerEl: HTMLElement): void {
 		// Create container for active section content
-		const contentContainer = containerEl.createDiv("settings-content");
+		const contentContainer = containerEl.createDiv(cls("settings-content"));
 
 		switch (this.activeSection) {
 			case "general":

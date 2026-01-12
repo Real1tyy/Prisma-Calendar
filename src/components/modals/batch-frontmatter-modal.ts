@@ -51,13 +51,13 @@ export class BatchFrontmatterModal extends Modal {
 	}
 
 	private createPropertiesSection(container: HTMLElement): void {
-		const headerContainer = container.createDiv("setting-item");
-		const headerDiv = headerContainer.createDiv("setting-item-name");
-		headerDiv.createEl("div", { text: "Properties", cls: "setting-item-heading" });
+		const headerContainer = container.createDiv(cls("setting-item"));
+		const headerDiv = headerContainer.createDiv(cls("setting-item-name"));
+		headerDiv.createEl("div", { text: "Properties", cls: cls("setting-item-heading") });
 
 		const addButton = headerContainer.createEl("button", {
 			text: "Add property",
-			cls: "mod-cta",
+			cls: cls("mod-cta"),
 		});
 		addButton.addEventListener("click", () => {
 			this.addProperty("", "", false);
@@ -86,7 +86,7 @@ export class BatchFrontmatterModal extends Modal {
 			type: "text",
 			placeholder: "Property name",
 			value: key,
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 		addCls(keyInput, "batch-frontmatter-key");
 
@@ -94,7 +94,7 @@ export class BatchFrontmatterModal extends Modal {
 			type: "text",
 			placeholder: "Value",
 			value: value,
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 		addCls(valueInput, "batch-frontmatter-value");
 
@@ -160,14 +160,14 @@ export class BatchFrontmatterModal extends Modal {
 	}
 
 	private createButtons(container: HTMLElement): void {
-		const buttonContainer = container.createDiv("modal-button-container");
+		const buttonContainer = container.createDiv(cls("modal-button-container"));
 
 		const cancelBtn = buttonContainer.createEl("button", { text: "Cancel" });
 		cancelBtn.onclick = () => this.close();
 
 		const applyButton = buttonContainer.createEl("button", {
 			text: "Apply changes",
-			cls: "mod-cta",
+			cls: cls("mod-cta"),
 		});
 		applyButton.onclick = () => this.applyChanges();
 	}

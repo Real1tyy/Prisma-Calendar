@@ -158,7 +158,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 	private renderSelectedCalendarSettings(): void {
 		const { containerEl } = this;
 
-		const settingsContainer = containerEl.createDiv("calendar-settings-container");
+		const settingsContainer = containerEl.createDiv(cls("calendar-settings-container"));
 
 		const calendarStore = this.getOrCreateCalendarStore(this.selectedCalendarId);
 		if (!calendarStore) {

@@ -2795,7 +2795,7 @@
 	border-color: var(--interactive-accent-hover);
 }
 
-/* Modal action buttons container (used to be .modal-button-container) */
+/* Modal action buttons container */
 .prisma-event-modal .prisma-modal-button-container {
 	display: flex;
 	gap: 8px;
@@ -3186,6 +3186,46 @@
 }
 
 /* Batch Frontmatter Modal Styles */
+.prisma-batch-frontmatter-modal {
+	min-width: 500px;
+	max-width: 700px;
+}
+
+.prisma-batch-frontmatter-modal .prisma-setting-item-description {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	line-height: 1.4;
+	margin-bottom: 1rem;
+}
+
+.prisma-batch-frontmatter-modal .prisma-setting-item-control {
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	transition: border-color 0.15s ease;
+}
+
+.prisma-batch-frontmatter-modal .prisma-setting-item-control:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.prisma-batch-frontmatter-modal .prisma-setting-item-control:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.prisma-batch-frontmatter-modal .prisma-modal-button-container {
+	display: flex;
+	gap: 1rem;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+}
+
 .prisma-batch-frontmatter-container {
 	display: flex;
 	flex-direction: column;
@@ -5385,6 +5425,133 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	justify-content: flex-end;
 	gap: 0.5rem;
 	margin-top: 0.5rem;
+}
+
+/* Save Preset Modal */
+.prisma-save-preset-modal {
+	min-width: 400px;
+	max-width: 500px;
+}
+
+.prisma-save-preset-modal .modal-content {
+	padding: 1.5rem;
+}
+
+.prisma-save-preset-modal h3 {
+	margin-top: 0;
+	margin-bottom: 1.5rem;
+	font-size: 1.2rem;
+	font-weight: 600;
+	color: var(--text-normal);
+}
+
+.prisma-save-preset-modal .prisma-setting-item {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-bottom: 1.25rem;
+}
+
+.prisma-save-preset-modal .prisma-setting-item:last-of-type {
+	margin-bottom: 1.5rem;
+}
+
+.prisma-save-preset-modal .setting-item-name {
+	font-weight: 500;
+	font-size: 0.9rem;
+	color: var(--text-normal);
+	margin-bottom: 0.25rem;
+}
+
+.prisma-save-preset-modal .prisma-setting-item-dropdown {
+	width: 100%;
+	padding: 0;
+	border-radius: var(--radius-s);
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9rem;
+	transition: border-color 0.2s ease;
+	cursor: pointer;
+	text-align: center;
+	text-align-last: center;
+}
+
+.prisma-save-preset-modal .prisma-setting-item-dropdown:hover {
+	border-color: var(--interactive-accent);
+}
+
+.prisma-save-preset-modal .prisma-setting-item-dropdown:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.prisma-save-preset-modal .setting-item-control,
+.prisma-save-preset-modal .prisma-setting-item-control,
+.prisma-save-preset-modal input[type="text"] {
+	width: 100%;
+	padding: 0.5rem 0.75rem;
+	border-radius: var(--radius-s);
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9rem;
+	transition: border-color 0.2s ease;
+}
+
+.prisma-save-preset-modal input[type="text"]:hover,
+.prisma-save-preset-modal select:hover {
+	border-color: var(--interactive-accent);
+}
+
+.prisma-save-preset-modal input[type="text"]:focus,
+.prisma-save-preset-modal select:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.prisma-save-preset-modal input[type="text"]::placeholder {
+	color: var(--text-faint);
+	opacity: 0.6;
+}
+
+.prisma-save-preset-modal .prisma-modal-button-container {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.75rem;
+	margin-top: 1.5rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.prisma-save-preset-modal .prisma-modal-button-container button {
+	padding: 0.5rem 1.25rem;
+	border-radius: var(--radius-s);
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9rem;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-weight: 500;
+}
+
+.prisma-save-preset-modal .prisma-modal-button-container button:hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+.prisma-save-preset-modal .prisma-modal-button-container button.prisma-mod-cta {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.prisma-save-preset-modal .prisma-modal-button-container button.prisma-mod-cta:hover {
+	background: var(--interactive-accent-hover);
+	border-color: var(--interactive-accent-hover);
 }
 
 /* Category Select Modal */
