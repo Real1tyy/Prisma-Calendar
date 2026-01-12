@@ -1,4 +1,11 @@
-import { addCls, cls, parseFrontmatterRecord, serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
+import {
+	addCls,
+	cls,
+	parseFrontmatterRecord,
+	removeCls,
+	serializeFrontmatterValue,
+	toggleCls,
+} from "@real1ty-obsidian-plugins/utils";
 import { type App, Modal, Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -246,8 +253,8 @@ export abstract class BaseEventModal extends Modal {
 		this.titleInput.value = "";
 
 		this.allDayCheckbox.checked = false;
-		this.timedContainer.classList.remove("prisma-hidden");
-		this.allDayContainer.classList.add("prisma-hidden");
+		removeCls(this.timedContainer, "hidden");
+		addCls(this.allDayContainer, "hidden");
 
 		this.startInput.value = "";
 		this.endInput.value = "";
@@ -257,9 +264,9 @@ export abstract class BaseEventModal extends Modal {
 		}
 
 		this.recurringCheckbox.checked = false;
-		this.recurringContainer.classList.add("prisma-hidden");
+		removeCls(this.recurringContainer, "hidden");
 		this.rruleSelect.value = Object.keys(RECURRENCE_TYPE_OPTIONS)[0];
-		this.weekdayContainer.classList.add("prisma-hidden");
+		addCls(this.weekdayContainer, "hidden");
 		for (const checkbox of this.weekdayCheckboxes.values()) {
 			checkbox.checked = false;
 		}
@@ -337,7 +344,7 @@ export abstract class BaseEventModal extends Modal {
 
 		if (preset.rruleType) {
 			this.recurringCheckbox.checked = true;
-			this.recurringContainer.classList.remove("prisma-hidden");
+			removeCls(this.recurringContainer, "hidden");
 			this.rruleSelect.value = preset.rruleType;
 
 			// Trigger change to show/hide weekday selector
@@ -402,26 +409,26 @@ export abstract class BaseEventModal extends Modal {
 	protected abstract initialize(): Promise<void>;
 
 	private createFormFields(contentEl: HTMLElement): void {
-		const titleContainer = contentEl.createDiv("setting-item");
-		titleContainer.createEl("div", { text: "Title", cls: "setting-item-name" });
+		const titleContainer = contentEl.createDiv(cls("setting-item"));
+		titleContainer.createEl("div", { text: "Title", cls: cls("setting-item-name") });
 		this.titleInput = titleContainer.createEl("input", {
 			type: "text",
 			value: this.event.title || "",
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 
-		const allDayContainer = contentEl.createDiv("setting-item");
-		allDayContainer.createEl("div", { text: "All day", cls: "setting-item-name" });
+		const allDayContainer = contentEl.createDiv(cls("setting-item"));
+		allDayContainer.createEl("div", { text: "All day", cls: cls("setting-item-name") });
 		this.allDayCheckbox = allDayContainer.createEl("input", {
 			type: "checkbox",
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 		this.allDayCheckbox.checked = this.event.allDay || false;
 
 		// Container for TIMED event fields (Start Date/Time + End Date/Time)
-		this.timedContainer = contentEl.createDiv("timed-event-fields");
+		this.timedContainer = contentEl.createDiv(cls("timed-event-fields"));
 		if (this.event.allDay) {
-			this.timedContainer.classList.add("prisma-hidden");
+			addCls(this.timedContainer, "hidden");
 		}
 
 		// Start date/time field (for timed events)
@@ -441,11 +448,11 @@ export abstract class BaseEventModal extends Modal {
 		// Duration field (for timed events) - conditionally shown based on settings
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (settings.showDurationField) {
-			this.durationContainer = this.timedContainer.createDiv("setting-item");
-			this.durationContainer.createEl("div", { text: "Duration (minutes)", cls: "setting-item-name" });
+			this.durationContainer = this.timedContainer.createDiv(cls("setting-item"));
+			this.durationContainer.createEl("div", { text: "Duration (min)", cls: cls("setting-item-name") });
 			this.durationInput = this.durationContainer.createEl("input", {
 				type: "number",
-				cls: "setting-item-control",
+				cls: cls("setting-item-control"),
 				attr: {
 					min: "0",
 					step: "1",
@@ -459,18 +466,18 @@ export abstract class BaseEventModal extends Modal {
 		}
 
 		// Container for ALL-DAY event fields (Date only)
-		this.allDayContainer = contentEl.createDiv("allday-event-fields");
+		this.allDayContainer = contentEl.createDiv(cls("allday-event-fields"));
 		if (!this.event.allDay) {
-			this.allDayContainer.classList.add("prisma-hidden");
+			addCls(this.allDayContainer, "hidden");
 		}
 
 		// Date field (for all-day events)
-		const dateContainer = this.allDayContainer.createDiv("setting-item");
-		dateContainer.createEl("div", { text: "Date", cls: "setting-item-name" });
+		const dateContainer = this.allDayContainer.createDiv(cls("setting-item"));
+		dateContainer.createEl("div", { text: "Date", cls: cls("setting-item-name") });
 		this.dateInput = dateContainer.createEl("input", {
 			type: "date",
 			value: this.event.start ? formatDateOnly(this.event.start) : "",
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 
 		// Stopwatch for time tracking (only for timed events)
@@ -489,8 +496,8 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (!settings.categoryProp) return;
 
-		const categoryContainer = contentEl.createDiv("setting-item");
-		categoryContainer.createEl("div", { text: "Categories", cls: "setting-item-name" });
+		const categoryContainer = contentEl.createDiv(cls("setting-item"));
+		categoryContainer.createEl("div", { text: "Categories", cls: cls("setting-item-name") });
 
 		const categoryContent = categoryContainer.createDiv(cls("category-display-content"));
 
@@ -514,15 +521,15 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (!settings.breakProp) return;
 
-		const breakContainer = contentEl.createDiv("setting-item");
-		breakContainer.createEl("div", { text: "Break (minutes)", cls: "setting-item-name" });
+		const breakContainer = contentEl.createDiv(cls("setting-item"));
+		breakContainer.createEl("div", { text: "Break (min)", cls: cls("setting-item-name") });
 		const breakDesc = breakContainer.createEl("div", {
-			cls: "setting-item-description",
+			cls: cls("setting-item-description"),
 		});
 		breakDesc.setText("Time to subtract from duration in statistics (decimals supported)");
 		this.breakInput = breakContainer.createEl("input", {
 			type: "number",
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 			attr: {
 				min: "0",
 				step: "any",
@@ -535,11 +542,11 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (!settings.statusProperty) return;
 
-		const markAsDoneContainer = contentEl.createDiv("setting-item");
-		markAsDoneContainer.createEl("div", { text: "Mark as done", cls: "setting-item-name" });
+		const markAsDoneContainer = contentEl.createDiv(cls("setting-item"));
+		markAsDoneContainer.createEl("div", { text: "Mark as done", cls: cls("setting-item-name") });
 		this.markAsDoneCheckbox = markAsDoneContainer.createEl("input", {
 			type: "checkbox",
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 	}
 
@@ -547,15 +554,15 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (!settings.skipProp) return;
 
-		const skipContainer = contentEl.createDiv("setting-item");
-		skipContainer.createEl("div", { text: "Skip event", cls: "setting-item-name" });
+		const skipContainer = contentEl.createDiv(cls("setting-item"));
+		skipContainer.createEl("div", { text: "Skip event", cls: cls("setting-item-name") });
 		const skipDesc = skipContainer.createEl("div", {
-			cls: "setting-item-description",
+			cls: cls("setting-item-description"),
 		});
 		skipDesc.setText("Hide event from calendar");
 		this.skipCheckbox = skipContainer.createEl("input", {
 			type: "checkbox",
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 	}
 
@@ -563,21 +570,21 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (!settings.enableNotifications) return;
 
-		this.notificationContainer = contentEl.createDiv("setting-item");
+		this.notificationContainer = contentEl.createDiv(cls("setting-item"));
 		const isAllDay = this.event.allDay ?? false;
 		const labelText = isAllDay ? "Notify days before" : "Notify minutes before";
 
 		this.notificationLabel = this.notificationContainer.createEl("div", {
 			text: labelText,
-			cls: "setting-item-name",
+			cls: cls("setting-item-name"),
 		});
 		const notificationDesc = this.notificationContainer.createEl("div", {
-			cls: "setting-item-description",
+			cls: cls("setting-item-description"),
 		});
 		notificationDesc.setText("Override default notification timing for this event");
 		this.notificationInput = this.notificationContainer.createEl("input", {
 			type: "number",
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 			attr: {
 				min: "0",
 				step: "1",
@@ -594,7 +601,7 @@ export abstract class BaseEventModal extends Modal {
 
 		// Initially hidden when all-day is selected
 		if (this.event.allDay) {
-			this.stopwatchContainer.classList.add("prisma-hidden");
+			addCls(this.stopwatchContainer, "hidden");
 		}
 
 		this.stopwatch = new Stopwatch(
@@ -627,20 +634,20 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	private createDateTimeInputWithNowButton(parent: HTMLElement, label: string, initialValue: string): HTMLInputElement {
-		const container = parent.createDiv("setting-item");
-		container.createEl("div", { text: label, cls: "setting-item-name" });
-		const inputWrapper = container.createDiv("prisma-datetime-input-wrapper");
+		const container = parent.createDiv(cls("setting-item"));
+		container.createEl("div", { text: label, cls: cls("setting-item-name") });
+		const inputWrapper = container.createDiv(cls("datetime-input-wrapper"));
 
 		const nowButton = inputWrapper.createEl("button", {
 			text: "Now",
-			cls: "prisma-now-button",
+			cls: cls("now-button"),
 			type: "button",
 		});
 
 		const isStartInput = label.toLowerCase().includes("start");
 		const fillButton = inputWrapper.createEl("button", {
 			text: isStartInput ? "Fill prev" : "Fill next",
-			cls: "prisma-fill-button",
+			cls: cls("fill-button"),
 			type: "button",
 			attr: {
 				title: isStartInput ? "Fill from previous event's end time" : "Fill from next event's start time",
@@ -650,7 +657,7 @@ export abstract class BaseEventModal extends Modal {
 		const input = inputWrapper.createEl("input", {
 			type: "datetime-local",
 			value: initialValue,
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 
 		nowButton.addEventListener("click", () => {
@@ -670,21 +677,21 @@ export abstract class BaseEventModal extends Modal {
 
 	private createRecurringEventFields(contentEl: HTMLElement): void {
 		// Recurring event checkbox
-		const recurringCheckboxContainer = contentEl.createDiv("setting-item");
-		recurringCheckboxContainer.createEl("div", { text: "Recurring event", cls: "setting-item-name" });
+		const recurringCheckboxContainer = contentEl.createDiv(cls("setting-item"));
+		recurringCheckboxContainer.createEl("div", { text: "Recurring event", cls: cls("setting-item-name") });
 		this.recurringCheckbox = recurringCheckboxContainer.createEl("input", {
 			type: "checkbox",
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 
 		// Container for recurring event options (initially hidden)
 		this.recurringContainer = contentEl.createDiv(cls("recurring-event-fields"));
-		this.recurringContainer.classList.add("prisma-hidden");
+		addCls(this.recurringContainer, "hidden");
 
 		// RRule type dropdown
-		const rruleContainer = this.recurringContainer.createDiv("setting-item");
-		rruleContainer.createEl("div", { text: "Recurrence pattern", cls: "setting-item-name" });
-		this.rruleSelect = rruleContainer.createEl("select", { cls: "setting-item-control" });
+		const rruleContainer = this.recurringContainer.createDiv(cls("setting-item"));
+		rruleContainer.createEl("div", { text: "Recurrence pattern", cls: cls("setting-item-name") });
+		this.rruleSelect = rruleContainer.createEl("select", { cls: cls("setting-item-control") });
 
 		// Add options to the select
 		for (const [value, label] of Object.entries(RECURRENCE_TYPE_OPTIONS)) {
@@ -693,9 +700,9 @@ export abstract class BaseEventModal extends Modal {
 		}
 
 		// Weekday selection (initially hidden, shown when weekly/bi-weekly selected)
-		this.weekdayContainer = this.recurringContainer.createDiv(`setting-item ${cls("weekday-selection")}`);
-		this.weekdayContainer.classList.add("prisma-hidden");
-		this.weekdayContainer.createEl("div", { text: "Days of week", cls: "setting-item-name" });
+		this.weekdayContainer = this.recurringContainer.createDiv(cls("setting-item", "weekday-selection"));
+		addCls(this.weekdayContainer, "hidden");
+		this.weekdayContainer.createEl("div", { text: "Days of week", cls: cls("setting-item-name") });
 
 		const weekdayGrid = this.weekdayContainer.createDiv(cls("weekday-grid"));
 
@@ -728,18 +735,18 @@ export abstract class BaseEventModal extends Modal {
 			});
 		}
 
-		const futureInstancesContainer = this.recurringContainer.createDiv("setting-item");
+		const futureInstancesContainer = this.recurringContainer.createDiv(cls("setting-item"));
 		futureInstancesContainer.createEl("div", {
 			text: "Future instances count",
-			cls: "setting-item-name",
+			cls: cls("setting-item-name"),
 		});
 		const futureInstancesDesc = futureInstancesContainer.createEl("div", {
-			cls: "setting-item-description",
+			cls: cls("setting-item-description"),
 		});
 		futureInstancesDesc.setText("Override the global setting for this event. Leave empty to use the default.");
 		this.futureInstancesCountInput = futureInstancesContainer.createEl("input", {
 			type: "number",
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 			attr: {
 				min: "1",
 				step: "1",
@@ -747,18 +754,18 @@ export abstract class BaseEventModal extends Modal {
 			},
 		});
 
-		const generatePastContainer = this.recurringContainer.createDiv("setting-item");
+		const generatePastContainer = this.recurringContainer.createDiv(cls("setting-item"));
 		generatePastContainer.createEl("div", {
 			text: "Generate past events",
-			cls: "setting-item-name",
+			cls: cls("setting-item-name"),
 		});
 		const generatePastDesc = generatePastContainer.createEl("div", {
-			cls: "setting-item-description",
+			cls: cls("setting-item-description"),
 		});
 		generatePastDesc.setText("Generate instances from the source event start date instead of from today.");
 		this.generatePastEventsCheckbox = generatePastContainer.createEl("input", {
 			type: "checkbox",
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 	}
 
@@ -774,13 +781,13 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	private createPropertySection(parent: HTMLElement, title: string, onAddClick: () => void): HTMLElement {
-		const headerContainer = parent.createDiv("setting-item");
-		const headerDiv = headerContainer.createDiv("setting-item-name");
-		headerDiv.createEl("div", { text: title, cls: "setting-item-heading" });
+		const headerContainer = parent.createDiv(cls("setting-item"));
+		const headerDiv = headerContainer.createDiv(cls("setting-item-name"));
+		headerDiv.createEl("div", { text: title, cls: cls("setting-item-heading") });
 
 		const addButton = headerContainer.createEl("button", {
 			text: "Add property",
-			cls: "mod-cta",
+			cls: cls("mod-cta"),
 		});
 		addButton.addEventListener("click", onAddClick);
 
@@ -797,14 +804,14 @@ export abstract class BaseEventModal extends Modal {
 			type: "text",
 			placeholder: "Property name",
 			value: key,
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 
 		propertyRow.createEl("input", {
 			type: "text",
 			placeholder: "Value",
 			value: value,
-			cls: "setting-item-control",
+			cls: cls("setting-item-control"),
 		});
 
 		const removeButton = propertyRow.createEl("button", {
@@ -925,10 +932,12 @@ export abstract class BaseEventModal extends Modal {
 		this.allDayCheckbox.addEventListener("change", () => {
 			if (this.allDayCheckbox.checked) {
 				// Switching TO all-day
-				this.timedContainer.classList.add("prisma-hidden");
-				this.allDayContainer.classList.remove("prisma-hidden");
+				addCls(this.timedContainer, "hidden");
+				removeCls(this.allDayContainer, "hidden");
 				// Hide stopwatch for all-day events
-				this.stopwatchContainer?.classList.add("prisma-hidden");
+				if (this.stopwatchContainer) {
+					addCls(this.stopwatchContainer, "hidden");
+				}
 				// Copy start date to date field if available
 				if (this.startInput.value) {
 					this.dateInput.value = formatDateOnly(this.startInput.value);
@@ -939,10 +948,12 @@ export abstract class BaseEventModal extends Modal {
 				}
 			} else {
 				// Switching TO timed
-				this.timedContainer.classList.remove("prisma-hidden");
-				this.allDayContainer.classList.add("prisma-hidden");
+				removeCls(this.timedContainer, "hidden");
+				addCls(this.allDayContainer, "hidden");
 				// Show stopwatch for timed events
-				this.stopwatchContainer?.classList.remove("prisma-hidden");
+				if (this.stopwatchContainer) {
+					removeCls(this.stopwatchContainer, "hidden");
+				}
 				// Copy date to start field if available
 				if (this.dateInput.value) {
 					this.startInput.value = `${this.dateInput.value}T09:00`;
@@ -970,7 +981,7 @@ export abstract class BaseEventModal extends Modal {
 
 		// Handle recurring event checkbox toggle
 		this.recurringCheckbox.addEventListener("change", () => {
-			this.recurringContainer.classList.toggle("prisma-hidden", !this.recurringCheckbox.checked);
+			toggleCls(this.recurringContainer, "hidden", !this.recurringCheckbox.checked);
 		});
 
 		// Handle RRule type selection
@@ -978,7 +989,7 @@ export abstract class BaseEventModal extends Modal {
 			const selectedType = this.rruleSelect.value as RecurrenceType;
 			// Show weekday selection only for weekly and bi-weekly
 			const showWeekdays = (WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(selectedType);
-			this.weekdayContainer.classList.toggle("prisma-hidden", !showWeekdays);
+			toggleCls(this.weekdayContainer, "hidden", !showWeekdays);
 		});
 
 		// Add Enter key handler for the modal
@@ -991,7 +1002,7 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	private createActionButtons(contentEl: HTMLElement): void {
-		const buttonContainer = contentEl.createDiv("modal-button-container");
+		const buttonContainer = contentEl.createDiv(cls("modal-button-container"));
 
 		const cancelButton = buttonContainer.createEl("button", {
 			text: "Cancel",
@@ -1010,7 +1021,7 @@ export abstract class BaseEventModal extends Modal {
 
 		const saveButton = buttonContainer.createEl("button", {
 			text: this.getSaveButtonText(),
-			cls: "mod-cta",
+			cls: cls("mod-cta"),
 		});
 		saveButton.addEventListener("click", () => {
 			this.saveEvent();

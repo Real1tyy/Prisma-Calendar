@@ -1586,14 +1586,14 @@
 	align-items: center;
 }
 
-.prisma-color-rule-picker-wrapper .setting-item {
+.prisma-color-rule-picker-wrapper .prisma-setting-item {
 	border: none;
 	padding: 0;
 	margin: 0;
 	background: transparent;
 }
 
-.prisma-color-rule-picker-wrapper .setting-item-control {
+.prisma-color-rule-picker-wrapper .prisma-setting-item-control {
 	display: flex;
 	align-items: center;
 }
@@ -2694,6 +2694,118 @@
 	margin-top: 1rem;
 }
 
+/* Event Modal - Modal content container with vertical spacing */
+.prisma-event-modal .modal-content {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+/* Event Modal - Obsidian-like setting layout (prefixed classes) */
+.prisma-event-modal .prisma-setting-item {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	border-bottom: 1px solid var(--background-modifier-border);
+	padding-bottom: 0.75rem;
+	padding-top: 0.5rem;
+}
+
+.prisma-event-modal .prisma-setting-item:last-child {
+	border-bottom: none;
+}
+
+.prisma-event-modal .prisma-setting-item-name {
+	color: var(--text-normal);
+	font-weight: var(--font-weight-medium);
+	line-height: 1.4;
+	font-size: var(--font-ui-medium);
+	max-width: 7rem;
+	overflow-wrap: break-word;
+}
+
+.prisma-event-modal .prisma-setting-item-description {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	line-height: 1.3;
+	max-width: 11rem;
+	overflow-wrap: break-word;
+}
+
+/* Control takes up remaining width */
+.prisma-event-modal .prisma-setting-item-control {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Inputs/selects styling */
+.prisma-event-modal .prisma-setting-item-control:is(input:not([type="checkbox"]), select),
+.prisma-event-modal input.prisma-setting-item-control:not([type="checkbox"]),
+.prisma-event-modal select.prisma-setting-item-control {
+	width: 100%;
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--background-modifier-form-field);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	transition: border-color 0.15s ease;
+	text-align: right;
+	direction: ltr;
+}
+
+.prisma-event-modal .prisma-setting-item-control:is(input:not([type="checkbox"]), select):focus,
+.prisma-event-modal input.prisma-setting-item-control:not([type="checkbox"]):focus,
+.prisma-event-modal select.prisma-setting-item-control:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+/* Checkbox rows - checkbox on the right */
+.prisma-event-modal .prisma-setting-item-control[type="checkbox"] {
+	margin-left: auto;
+	width: 18px;
+	height: 18px;
+	cursor: pointer;
+}
+
+.prisma-event-modal .prisma-setting-item-heading {
+	color: var(--text-normal);
+	font-weight: var(--font-weight-semibold);
+	font-size: var(--font-ui-small);
+}
+
+.prisma-event-modal .prisma-mod-cta {
+	background-color: var(--interactive-accent);
+	border: 1px solid var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-radius: var(--radius-s);
+	padding: 6px 12px;
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-weight-medium);
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.prisma-event-modal .prisma-mod-cta:hover {
+	background-color: var(--interactive-accent-hover);
+	border-color: var(--interactive-accent-hover);
+}
+
+/* Modal action buttons container (used to be .modal-button-container) */
+.prisma-event-modal .prisma-modal-button-container {
+	display: flex;
+	gap: 8px;
+	justify-content: flex-end;
+	align-items: center;
+	margin-top: 16px;
+	padding-top: 12px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
 .prisma-event-modal-header h2 {
 	margin: 0;
 	flex: 1;
@@ -2939,25 +3051,31 @@
 		justify-content: flex-end;
 	}
 
-	/* Mobile: Compact form inputs */
-	.modal .setting-item {
+	/* Mobile: Stack setting item label above control */
+	.prisma-event-modal .prisma-setting-item {
 		flex-direction: column;
 		align-items: stretch;
 	}
 
-	.modal .setting-item-info {
-		padding-bottom: 4px;
+	.prisma-event-modal .prisma-setting-item-name {
+		padding-right: 0;
+		padding-bottom: 6px;
 	}
 
-	.modal .setting-item-control {
+	.prisma-event-modal .prisma-setting-item-control:is(input:not([type="checkbox"]), select) {
 		width: 100%;
 	}
 
-	.modal .setting-item-control input[type="text"],
-	.modal .setting-item-control input[type="number"],
-	.modal .setting-item-control input[type="datetime-local"],
-	.modal .setting-item-control select {
+	.prisma-event-modal .prisma-setting-item-control input[type="text"],
+	.prisma-event-modal .prisma-setting-item-control input[type="number"],
+	.prisma-event-modal .prisma-setting-item-control input[type="datetime-local"],
+	.prisma-event-modal .prisma-setting-item-control select {
 		width: 100%;
+	}
+
+	.prisma-event-modal .prisma-setting-item-control[type="checkbox"] {
+		margin-left: 0;
+		align-self: flex-start;
 	}
 }
 
@@ -3020,8 +3138,8 @@
 }
 
 /* Button positioning in setting-item for property sections - scoped to plugin modals only */
-.modal.prisma-generic-event-list-modal .setting-item button.mod-cta,
-.modal-container:has(.prisma-custom-properties-container) .setting-item button.mod-cta {
+.modal.prisma-generic-event-list-modal .prisma-setting-item button.prisma-mod-cta,
+.modal-container:has(.prisma-custom-properties-container) .prisma-setting-item button.prisma-mod-cta {
 	margin-left: auto;
 }
 
@@ -3347,7 +3465,6 @@
    =================================== */
 
 .prisma-stopwatch-field {
-	margin-top: 16px;
 	margin-bottom: 8px;
 }
 
@@ -3355,7 +3472,6 @@
 	background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-secondary-alt) 100%);
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-m);
-	margin-top: 12px;
 	overflow: hidden;
 }
 
@@ -3749,7 +3865,7 @@
 	flex-wrap: wrap;
 }
 
-.prisma-recurring-events-filters .setting-item {
+.prisma-recurring-events-filters .prisma-setting-item {
 	border: none;
 	padding: 0;
 	margin: 0;
@@ -3759,26 +3875,22 @@
 	gap: 0.5rem;
 }
 
-.prisma-recurring-events-filters .setting-item-info {
+.prisma-recurring-events-filters .prisma-setting-item-info {
 	flex: 0 0 auto;
 	padding: 0;
 }
 
-.prisma-recurring-events-filters .setting-item-name {
+.prisma-recurring-events-filters .prisma-setting-item-name {
 	font-weight: 400;
 	margin: 0;
 	font-size: 0.9em;
 }
 
-.setting-item-description {
-	margin-right: 1rem;
-}
-
-.prisma-recurring-events-filters .setting-item-description {
+.prisma-recurring-events-filters .prisma-setting-item-description {
 	display: none;
 }
 
-.prisma-recurring-events-filters .setting-item-control {
+.prisma-recurring-events-filters .prisma-setting-item-control {
 	flex-shrink: 0;
 }
 

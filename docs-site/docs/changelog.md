@@ -14,6 +14,8 @@ All notable changes to this project will be documented here.
 
 - **Event Modal Updates**: Fixed crash when updating events after save operations. The modals now properly update internal event properties when files are renamed, preventing "Cannot set property extendedProps" errors during create/edit workflows.
 
+- **Event Modal Rendering**: Fixed event modal inputs not rendering correctly on certain devices due to CSS conflicts with other plugins and themes. All form elements now use the `prisma-` prefix to prevent naming collisions. The modal has been restyled with improved layout, proper spacing.
+
 ---
 
 ## 1.27.0
