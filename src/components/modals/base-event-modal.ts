@@ -32,6 +32,9 @@ interface EventModalData {
 	start: string | Date | null;
 	end?: string | Date | null;
 	allDay?: boolean;
+	// When the modal is opened from FullCalendar, this is often an EventApi instance.
+	// EventApi exposes a setter for extended props while `extendedProps` itself is read-only (getter-only).
+	setExtendedProp?: (name: string, value: unknown) => void;
 	extendedProps?: {
 		filePath?: string | null;
 		[key: string]: unknown;
@@ -110,6 +113,27 @@ export abstract class BaseEventModal extends Modal {
 		super(app);
 		this.event = event;
 		this.bundle = bundle;
+	}
+
+	protected setEventExtendedProp(name: string, value: unknown): void {
+		if (typeof this.event.setExtendedProp === "function") {
+			this.event.setExtendedProp(name, value);
+			return;
+		}
+
+		// Avoid assigning to `extendedProps` directly because it can be a getter-only property
+		// (FullCalendar EventApi). Mutating the returned object is safe for plain objects and
+		// also works if the getter returns a mutable object.
+		const existing = this.event.extendedProps;
+		if (existing && typeof existing === "object") {
+			existing[name] = value;
+			return;
+		}
+
+		// Fallback for plain object events that don't have any extended props yet.
+		// (If `extendedProps` is getter-only, this assignment would throw, but that case should
+		// be handled by `setExtendedProp` above.)
+		this.event.extendedProps = { [name]: value };
 	}
 
 	setRestoreState(state: MinimizedModalState): void {

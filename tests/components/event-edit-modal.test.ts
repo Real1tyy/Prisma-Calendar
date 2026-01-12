@@ -136,6 +136,51 @@ describe("EventEditModal - Custom Properties", () => {
 	});
 
 	describe("Custom property deletion", () => {
+		it("should update filePath via setExtendedProp when extendedProps is getter-only (FullCalendar EventApi)", async () => {
+			const consoleErrorMock = vi.spyOn(console, "error").mockImplementation(() => {});
+
+			updateEventMock = vi.fn().mockResolvedValue("renamed.md");
+			mockBundle = {
+				...mockBundle,
+				updateEvent: updateEventMock,
+			} as unknown as CalendarBundle;
+
+			let filePath = "original.md";
+			const setExtendedPropMock = vi.fn((name: string, value: unknown) => {
+				if (name === "filePath") {
+					filePath = String(value);
+				}
+			});
+
+			const event = {
+				title: "Test Event",
+				start: "2025-10-07T10:15:00.000Z",
+				setExtendedProp: setExtendedPropMock,
+				get extendedProps() {
+					return { filePath };
+				},
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event);
+
+			// Prevent DOM-dependent parsing in saveEvent for this unit test.
+			modal.getCustomProperties = vi.fn().mockReturnValue({});
+
+			modal.titleInput = { value: "Test Event" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+
+			modal.saveEvent();
+			await Promise.resolve();
+
+			expect(setExtendedPropMock).toHaveBeenCalledWith("filePath", "renamed.md");
+			expect(consoleErrorMock).not.toHaveBeenCalled();
+
+			consoleErrorMock.mockRestore();
+		});
+
 		it("should mark properties for deletion when removed from form", () => {
 			const event = {
 				title: "Test Event",

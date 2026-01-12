@@ -99,8 +99,7 @@ export class EventCreateModal extends BaseEventModal {
 			.createEvent(eventData)
 			.then((filePath) => {
 				if (filePath) {
-					this.event.extendedProps = this.event.extendedProps || {};
-					this.event.extendedProps.filePath = filePath;
+					this.setEventExtendedProp("filePath", filePath);
 
 					if (this.isStopwatchActive()) {
 						const state = MinimizedModalManager.getState();

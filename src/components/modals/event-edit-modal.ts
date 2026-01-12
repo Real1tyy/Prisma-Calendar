@@ -188,8 +188,7 @@ export class EventEditModal extends BaseEventModal {
 				// We must update the file path to prevent "invalid path" errors when
 				// minimizing or restoring the modal, especially when the time tracker is active.
 				if (newFilePath && newFilePath !== eventData.filePath) {
-					this.event.extendedProps = this.event.extendedProps || {};
-					this.event.extendedProps.filePath = newFilePath;
+					this.setEventExtendedProp("filePath", newFilePath);
 
 					// Also update the minimized modal state if time tracker is active,
 					// so restoring the modal uses the correct (renamed) file path.

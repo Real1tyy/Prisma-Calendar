@@ -10,6 +10,10 @@ All notable changes to this project will be documented here.
 
 - **Desktop Event Limit**: Added setting to control how many events show per day on desktop before displaying a "+more" link. Configure "Desktop events per day" in Settings → Calendar → Visual Appearance (0 = unlimited, range: 0-10). Previously, only mobile had configurable event limits.
 
+### Bug Fixes
+
+- **Event Modal Updates**: Fixed crash when updating events after save operations. The modals now properly update internal event properties when files are renamed, preventing "Cannot set property extendedProps" errors during create/edit workflows.
+
 ---
 
 ## 1.27.0
