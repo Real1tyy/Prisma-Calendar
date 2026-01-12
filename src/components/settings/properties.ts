@@ -306,19 +306,5 @@ ${settings.futureInstancesCountProp}: 5
 			placeholder: "status, priority, project, tags, category",
 			arrayDelimiter: ", ",
 		});
-
-		// Add example display
-		const exampleContainer = containerEl.createDiv(cls("frontmatter-display-example"));
-		exampleContainer.createEl("p", {
-			text: "Example display in calendar:",
-			cls: "setting-item-description",
-		});
-
-		const exampleBox = exampleContainer.createDiv(cls("example-event-box"));
-		exampleBox.createEl("div", { text: "Meeting with team", cls: cls("title") });
-		const propertiesContainer = exampleBox.createDiv(cls("properties"));
-		propertiesContainer.createEl("div", { text: "Status: in progress" });
-		propertiesContainer.createEl("div", { text: "Priority: high" });
-		propertiesContainer.createEl("div", { text: "Project: q4 planning" });
 	}
 }

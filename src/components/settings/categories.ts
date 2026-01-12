@@ -1,5 +1,4 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
-import Chart from "chart.js/auto";
 import { nanoid } from "nanoid";
 import { Setting } from "obsidian";
 import type { Subscription } from "rxjs";
@@ -7,6 +6,7 @@ import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker"
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import type { CategoryAssignmentPreset, SingleCalendarConfigSchema } from "../../types/settings";
+import { type ChartDataItem, createChartCanvas, PieChartBuilder } from "../../utils/chart-utils";
 import { CategoryEventsModal } from "../modals/category-events-modal";
 
 interface CategoryInfoWithCount extends CategoryInfo {
@@ -14,7 +14,7 @@ interface CategoryInfoWithCount extends CategoryInfo {
 }
 
 export class CategoriesSettings {
-	private chart: Chart | null = null;
+	private chartBuilder: PieChartBuilder | null = null;
 	private categoriesSubscription: Subscription | null = null;
 	private chartContainer: HTMLElement | null = null;
 	private categoriesListContainer: HTMLElement | null = null;
@@ -33,8 +33,8 @@ export class CategoriesSettings {
 	display(containerEl: HTMLElement): void {
 		containerEl.empty();
 		this.categoriesSubscription?.unsubscribe();
-		this.chart?.destroy();
-		this.chart = null;
+		this.chartBuilder?.destroy();
+		this.chartBuilder = null;
 		this.chartContainer = null;
 		this.categoriesListContainer = null;
 
@@ -63,15 +63,17 @@ export class CategoriesSettings {
 
 		this.categoriesSubscription = this.categoryTracker.categories$.subscribe(() => {
 			this.renderCategoriesList(this.categoriesListContainer!, this.categoryTracker!, this.categoryProp);
-			this.updateChart(this.categoryTracker!, this.categoryProp);
+			const canvas = this.chartContainer?.querySelector("canvas");
+			if (canvas) {
+				this.updateChart(this.categoryTracker!, this.categoryProp, canvas as HTMLCanvasElement);
+			}
 		});
 
 		const chartSection = containerEl.createDiv(cls("categories-chart-section"));
 		chartSection.createEl("h3", { text: "Category distribution" });
 		this.chartContainer = chartSection.createDiv(cls("categories-chart-container"));
-		const canvas = this.chartContainer.createEl("canvas");
-		canvas.setAttribute("id", cls("categories-chart"));
-		this.updateChart(this.categoryTracker, this.categoryProp);
+		const canvas = createChartCanvas(this.chartContainer, "categories-chart");
+		this.updateChart(this.categoryTracker, this.categoryProp, canvas);
 
 		this.addAutoAssignmentSettings(containerEl);
 	}
@@ -373,106 +375,38 @@ export class CategoriesSettings {
 
 		if (this.categoriesListContainer && this.categoryTracker) {
 			this.renderCategoriesList(this.categoriesListContainer, this.categoryTracker, this.categoryProp);
-			this.updateChart(this.categoryTracker, this.categoryProp);
+			const canvas = this.chartContainer?.querySelector("canvas");
+			if (canvas) {
+				this.updateChart(this.categoryTracker, this.categoryProp, canvas as HTMLCanvasElement);
+			}
 		}
 	}
 
-	private updateChart(categoryTracker: CategoryTracker, categoryProp: string): void {
-		if (!this.chartContainer) return;
-
-		const canvas = this.chartContainer.querySelector("canvas");
-		if (!canvas) return;
-
+	private updateChart(categoryTracker: CategoryTracker, categoryProp: string, canvas: HTMLCanvasElement): void {
 		const categories = categoryTracker.getCategories();
 		if (categories.length === 0) {
-			if (this.chart) {
-				this.chart.destroy();
-				this.chart = null;
-			}
+			this.chartBuilder?.destroy();
+			this.chartBuilder = null;
 			return;
 		}
 
 		const settings = this.settingsStore.currentSettings;
-		const categoriesInfo: CategoryInfoWithCount[] = categories.map((category) => {
+		const chartData: ChartDataItem[] = categories.map((category) => {
 			const files = categoryTracker.getEventsWithCategory(category);
 			const count = files.size;
 			const color = this.getCategoryColor(category, settings.colorRules, categoryProp);
-			return { name: category, count, color };
+			return { label: category, value: count, color };
 		});
 
-		categoriesInfo.sort((a, b) => b.count - a.count);
+		chartData.sort((a, b) => b.value - a.value);
 
-		const totalCount = categoriesInfo.reduce((sum, info) => sum + info.count, 0);
-		const labels = categoriesInfo.map((info) => info.name);
-		const data = categoriesInfo.map((info) => info.count);
-		const colors = categoriesInfo.map((info) => info.color);
-
-		if (this.chart) {
-			this.chart.destroy();
-		}
-
-		this.chart = new Chart(canvas, {
-			type: "pie",
-			data: {
-				labels,
-				datasets: [
-					{
-						data,
-						backgroundColor: colors,
-						borderWidth: 2,
-						borderColor: "#ffffff",
-					},
-				],
-			},
-			options: {
-				responsive: true,
-				maintainAspectRatio: false,
-				layout: {
-					padding: { left: 20, right: 20 },
-				},
-				plugins: {
-					legend: {
-						position: "right",
-						align: "start",
-						maxWidth: 350,
-						labels: {
-							font: {
-								size: 14,
-							},
-							padding: 8,
-							color: "#ffffff",
-							boxWidth: 12,
-							boxHeight: 12,
-							generateLabels: (chart) => {
-								return (
-									chart.data.labels?.map((label, i) => {
-										const value = chart.data.datasets[0].data[i] as number;
-										const percentage = totalCount > 0 ? ((value / totalCount) * 100).toFixed(1) : "0.0";
-										const labelText = `${String(label)} (${percentage}%)`;
-										return {
-											text: labelText.length > 35 ? `${labelText.substring(0, 32)}...` : labelText,
-											fillStyle: (chart.data.datasets[0].backgroundColor as string[])[i],
-											fontColor: "#ffffff",
-											hidden: false,
-											index: i,
-										};
-									}) || []
-								);
-							},
-						},
-					},
-					tooltip: {
-						callbacks: {
-							label: (context) => {
-								const value = context.parsed;
-								const percentage = totalCount > 0 ? ((value / totalCount) * 100).toFixed(1) : "0.0";
-								return `${context.label}: ${value} ${value === 1 ? "event" : "events"} (${percentage}%)`;
-							},
-						},
-					},
-				},
+		this.chartBuilder = new PieChartBuilder(canvas, chartData, {
+			tooltipFormatter: (label, value, percentage) => {
+				return `${label}: ${value} ${value === 1 ? "event" : "events"} (${percentage}%)`;
 			},
 		});
+
+		this.chartBuilder.render();
 	}
 
 	private openCategoryEventsModal(categoryName: string): void {
@@ -484,7 +418,7 @@ export class CategoriesSettings {
 	destroy(): void {
 		this.categoriesSubscription?.unsubscribe();
 		this.categoriesSubscription = null;
-		this.chart?.destroy();
-		this.chart = null;
+		this.chartBuilder?.destroy();
+		this.chartBuilder = null;
 	}
 }

@@ -1,17 +1,17 @@
 import { cls, generateColors } from "@real1ty-obsidian-plugins/utils";
-import Chart from "chart.js/auto";
+import { type ChartDataItem, createChartCanvas, PieChartBuilder } from "../../utils/chart-utils";
 import { formatDuration, type WeeklyStatEntry } from "../../utils/weekly-stats";
 
 const MAX_LABELS = 25; // to prevent label overflow
 
 export class ChartComponent {
-	private chart: Chart | null = null;
+	private chartBuilder: PieChartBuilder | null = null;
 	private container: HTMLElement;
 	private chartVisible = true;
 
-	constructor(parentEl: HTMLElement, entries: WeeklyStatEntry[], totalDuration: number) {
+	constructor(parentEl: HTMLElement, entries: WeeklyStatEntry[]) {
 		this.container = this.createChartSection(parentEl);
-		this.renderChart(entries, totalDuration);
+		this.renderChart(entries);
 	}
 
 	private isMobileView(): boolean {
@@ -30,8 +30,7 @@ export class ChartComponent {
 		});
 
 		const chartContainer = chartSection.createDiv(cls("stats-chart-container"));
-		const canvas = chartContainer.createEl("canvas");
-		canvas.setAttribute("id", cls("stats-chart"));
+		createChartCanvas(chartContainer, "stats-chart");
 
 		toggleButton.addEventListener("click", () => {
 			this.chartVisible = !this.chartVisible;
@@ -47,86 +46,34 @@ export class ChartComponent {
 		return chartSection;
 	}
 
-	private renderChart(entries: WeeklyStatEntry[], totalDuration: number): void {
+	private renderChart(entries: WeeklyStatEntry[]): void {
 		const canvas = this.container.querySelector("canvas");
 		if (!canvas) return;
 
 		const limitedEntries = entries.slice(0, MAX_LABELS);
-		const labels = limitedEntries.map((e) => e.name);
-		const data = limitedEntries.map((e) => e.duration);
 		const isMobile = this.isMobileView();
+		const colors = generateColors(limitedEntries.length);
 
-		this.chart = new Chart(canvas, {
-			type: "pie",
-			data: {
-				labels,
-				datasets: [
-					{
-						data,
-						backgroundColor: generateColors(limitedEntries.length),
-						borderWidth: 2,
-						borderColor: "#ffffff",
-					},
-				],
-			},
-			options: {
-				responsive: true,
-				maintainAspectRatio: false,
-				layout: {
-					padding: isMobile ? { left: 4, right: 4, top: 10, bottom: 10 } : { left: 20, right: 20 },
-				},
-				plugins: {
-					legend: {
-						position: isMobile ? "bottom" : "right",
-						align: isMobile ? "center" : "start",
-						maxWidth: isMobile ? undefined : 350,
-						labels: {
-							font: {
-								size: isMobile ? 10 : 14,
-							},
-							padding: isMobile ? 6 : 8,
-							color: "#ffffff",
-							boxWidth: isMobile ? 10 : 12,
-							boxHeight: isMobile ? 10 : 12,
-							generateLabels: (chart) => {
-								const datasets = chart.data.datasets;
-								const maxLen = isMobile ? 20 : 35;
-								const truncateLen = isMobile ? 17 : 32;
-								return (
-									chart.data.labels?.map((label, i) => {
-										const value = datasets[0].data[i] as number;
-										const percentage = ((value / totalDuration) * 100).toFixed(1);
-										const labelText = `${String(label)} (${percentage}%)`;
-										return {
-											text: labelText.length > maxLen ? `${labelText.substring(0, truncateLen)}...` : labelText,
-											fillStyle: (datasets[0].backgroundColor as string[])[i],
-											fontColor: "#ffffff",
-											hidden: false,
-											index: i,
-										};
-									}) || []
-								);
-							},
-						},
-					},
-					tooltip: {
-						callbacks: {
-							label: (context) => {
-								const value = context.parsed;
-								const percentage = ((value / totalDuration) * 100).toFixed(1);
-								return `${context.label}: ${formatDuration(value)} (${percentage}%)`;
-							},
-						},
-					},
-				},
+		const chartData: ChartDataItem[] = limitedEntries.map((entry, index) => ({
+			label: entry.name,
+			value: entry.duration,
+			color: colors[index],
+		}));
+
+		this.chartBuilder = new PieChartBuilder(canvas as HTMLCanvasElement, chartData, {
+			isMobile,
+			tooltipFormatter: (label, value, percentage) => {
+				return `${label}: ${formatDuration(value)} (${percentage}%)`;
 			},
 		});
+
+		this.chartBuilder.render();
 	}
 
 	destroy(): void {
-		if (this.chart) {
-			this.chart.destroy();
-			this.chart = null;
+		if (this.chartBuilder) {
+			this.chartBuilder.destroy();
+			this.chartBuilder = null;
 		}
 	}
 }

@@ -124,7 +124,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 			return Promise.resolve();
 		}
 
-		this.chartComponent = new ChartComponent(this.contentContainer, stats.entries, stats.totalDuration);
+		this.chartComponent = new ChartComponent(this.contentContainer, stats.entries);
 		this.tableComponent = new TableComponent(
 			this.contentContainer,
 			stats.entries,
