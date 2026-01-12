@@ -143,6 +143,7 @@ const CalendarSettingsSchema = z
 		eventOverlap: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_OVERLAP), // Allow events to visually overlap (all views)
 		slotEventOverlap: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SLOT_EVENT_OVERLAP), // Allow events to overlap within the same time slot (timeGrid views only)
 		eventMaxStack: z.number().int().min(1).max(10).catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_MAX_STACK), // Maximum number of events to stack before showing "+ more" link
+		desktopMaxEventsPerDay: z.number().int().min(0).max(10).catch(SETTINGS_DEFAULTS.DEFAULT_DESKTOP_MAX_EVENTS_PER_DAY), // Maximum events to show per day on desktop before showing "+more" (0 = unlimited)
 		mobileMaxEventsPerDay: z.number().int().min(0).max(10).catch(SETTINGS_DEFAULTS.DEFAULT_MOBILE_MAX_EVENTS_PER_DAY), // Maximum events to show per day on mobile before showing "+more"
 		showColorDots: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_COLOR_DOTS), // Show color indicator dots in monthly view
 		skipUnderscoreProperties: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SKIP_UNDERSCORE_PROPERTIES), // Skip displaying properties that start with underscore

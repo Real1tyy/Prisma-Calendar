@@ -1098,14 +1098,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			slotEventOverlap: settings.slotEventOverlap,
 			eventMaxStack: settings.eventMaxStack,
 
-			// Mobile: Show limited events then "+more" link for cleaner display
-			dayMaxEventRows: this.isMobileView() ? settings.mobileMaxEventsPerDay : false,
+			dayMaxEventRows: this.isMobileView() ? settings.mobileMaxEventsPerDay : settings.desktopMaxEventsPerDay || false,
 
 			windowResize: () => {
 				const currentSettings = this.bundle.settingsStore.currentSettings;
 				this.calendar?.setOption(
 					"dayMaxEventRows",
-					this.isMobileView() ? currentSettings.mobileMaxEventsPerDay : false
+					this.isMobileView() ? currentSettings.mobileMaxEventsPerDay : currentSettings.desktopMaxEventsPerDay || false
 				);
 			},
 

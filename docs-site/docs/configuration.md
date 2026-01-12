@@ -257,6 +257,7 @@ The sticky header options improve navigation in long calendars by keeping contex
 - **Allow event overlap**: whether events can visually overlap in all views (default: enabled)
 - **Allow slot event overlap**: whether events can overlap within the same time slot in time grid views (default: enabled)
 - **Event stack limit**: maximum events to stack before showing "+ more" link (1-10, default: 1)
+- **Desktop max events per day**: maximum events to show per day on desktop before showing "+more" (0-10, 0 = unlimited, default: 0)
 - **Mobile max events per day**: maximum events to show per day on mobile before showing "+more" (0-10, default: 4)
 
 ### Toolbar Buttons

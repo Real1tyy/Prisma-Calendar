@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 1.28.0
+
+### New Features
+
+- **Desktop Event Limit**: Added setting to control how many events show per day on desktop before displaying a "+more" link. Configure "Desktop events per day" in Settings → Calendar → Visual Appearance (0 = unlimited, range: 0-10). Previously, only mobile had configurable event limits.
+
+---
+
 ## 1.27.0
 
 ### New Features

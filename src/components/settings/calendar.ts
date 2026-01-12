@@ -309,10 +309,19 @@ export class CalendarSettings {
 		});
 
 		this.ui.addSlider(containerEl, {
+			key: "desktopMaxEventsPerDay",
+			name: "Desktop events per day",
+			desc: "Maximum events to show per day on desktop before showing '+more' link (0-10, 0 = unlimited)",
+			min: 0,
+			max: 10,
+			step: 1,
+		});
+
+		this.ui.addSlider(containerEl, {
 			key: "mobileMaxEventsPerDay",
 			name: "Mobile events per day",
-			desc: "Maximum events to show per day on mobile before showing '+more' link (1-10)",
-			min: 1,
+			desc: "Maximum events to show per day on mobile before showing '+more' link (0-10, 0 = unlimited)",
+			min: 0,
 			max: 10,
 			step: 1,
 		});
