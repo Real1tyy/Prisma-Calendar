@@ -201,6 +201,20 @@
 }
 .prisma-calendar-event:hover {
 	transform: translateY(-1px);
+	filter: brightness(1.15) saturate(1.1);
+}
+
+/* Prevent FullCalendar's default dark hover overlay */
+.prisma-calendar-container .fc-event:hover,
+.prisma-calendar-container .fc-daygrid-event:hover,
+.prisma-calendar-container .fc-daygrid-dot-event:hover {
+	filter: brightness(1.15) saturate(1.1);
+}
+
+/* Keep background color from being overridden on hover */
+.prisma-calendar-container .fc-event:hover {
+	background-color: var(--event-color);
+	border-color: var(--event-color);
 }
 
 /* unified padding; remove inner borders */
@@ -351,12 +365,10 @@
 	height: auto;
 	display: flex;
 	flex-direction: column;
-	overflow: visible;
 }
 
 .prisma-calendar-container .fc-daygrid-event-harness {
 	min-height: auto;
-	overflow: visible;
 }
 
 /* Month view specific styling - desktop defaults */
@@ -780,11 +792,24 @@
 	top: 0;
 }
 
-/* Limit all-day events section height and enable overflow */
-.prisma-calendar-container .fc-scrollgrid-section-body:first-of-type {
+/* Limit individual all-day event height and enable overflow
+   Target the event harness and the event itself */
+.prisma-calendar-container .fc-daygrid-event-harness {
+	max-height: var(--all-day-event-height, 75px);
+	overflow: visible; /* Allow the event inside to handle overflow */
+}
+
+.prisma-calendar-container .fc-daygrid-block-event {
 	max-height: var(--all-day-event-height, 75px);
 	overflow-y: auto;
 	overflow-x: hidden;
+}
+
+/* Ensure the event main content can scroll */
+.prisma-calendar-container .fc-daygrid-block-event .fc-event-main {
+	overflow-y: auto;
+	overflow-x: hidden;
+	max-height: inherit;
 }
 
 .prisma-calendar-container .fc-timegrid-slot-label {
