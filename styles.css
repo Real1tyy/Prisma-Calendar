@@ -3814,6 +3814,18 @@
 	align-items: center;
 	gap: 1rem;
 	transition: opacity 0.2s;
+	position: relative;
+}
+
+.prisma-generic-event-list-item .prisma-recurring-event-category-indicator {
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 4px;
+	border-radius: 4px 0 0 4px;
+	background-color: var(--category-color);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--category-color) 50%, transparent);
 }
 
 .prisma-generic-event-list-item:hover {
@@ -3905,7 +3917,7 @@
 	flex-wrap: wrap;
 }
 
-.prisma-recurring-events-filters .prisma-setting-item {
+.modal .prisma-recurring-events-list-modal .prisma-recurring-events-filter-toggle.setting-item.setting-item {
 	border: none;
 	padding: 0;
 	margin: 0;
@@ -3915,23 +3927,27 @@
 	gap: 0.5rem;
 }
 
-.prisma-recurring-events-filters .prisma-setting-item-info {
+.modal .prisma-recurring-events-list-modal .prisma-recurring-events-filter-toggle.setting-item .setting-item-info {
 	flex: 0 0 auto;
 	padding: 0;
 }
 
-.prisma-recurring-events-filters .prisma-setting-item-name {
+.modal .prisma-recurring-events-list-modal .prisma-recurring-events-filter-toggle.setting-item .setting-item-name {
 	font-weight: 400;
 	margin: 0;
 	font-size: 0.9em;
 }
 
-.prisma-recurring-events-filters .prisma-setting-item-description {
+.modal
+	.prisma-recurring-events-list-modal
+	.prisma-recurring-events-filter-toggle.setting-item
+	.setting-item-description {
 	display: none;
 }
 
-.prisma-recurring-events-filters .prisma-setting-item-control {
+.modal .prisma-recurring-events-list-modal .prisma-recurring-events-filter-toggle.setting-item .setting-item-control {
 	flex-shrink: 0;
+	padding: 0;
 }
 
 .prisma-recurring-events-list-container {
@@ -3969,6 +3985,24 @@
 .prisma-recurring-event-title {
 	flex: 1;
 	color: var(--text-normal);
+}
+
+/* Category-colored modal background */
+.prisma-recurring-events-list-modal-categorized {
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--source-category-color) 8%, var(--background-primary)) 0%,
+		color-mix(in srgb, var(--source-category-color) 3%, var(--background-primary)) 100%
+	);
+}
+
+.prisma-recurring-events-list-modal-categorized .prisma-recurring-events-list-header {
+	border-bottom: 2px solid color-mix(in srgb, var(--source-category-color) 30%, var(--background-modifier-border));
+}
+
+.prisma-recurring-events-list-modal-categorized .prisma-recurring-events-source-title {
+	color: color-mix(in srgb, var(--source-category-color) 90%, var(--text-normal));
+	text-shadow: 0 0 10px color-mix(in srgb, var(--source-category-color) 20%, transparent);
 }
 
 .prisma-recurring-events-list-empty {

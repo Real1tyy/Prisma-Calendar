@@ -723,6 +723,7 @@ export class EventContextMenu {
 		let sourceTitle = "Unknown Event";
 		let rruleType: string | undefined;
 		let rruleSpec: string | undefined;
+		let sourceCategory: string | undefined;
 
 		if (!sourceEventPath) {
 			new Notice("Source event not found");
@@ -733,17 +734,28 @@ export class EventContextMenu {
 		if (sourceFile instanceof TFile) {
 			sourceTitle = sourceFile.basename;
 
-			// Get rrule information from source file frontmatter
 			const metadata = this.app.metadataCache.getFileCache(sourceFile);
 			const frontmatter = metadata?.frontmatter;
 			if (frontmatter) {
 				const settings = this.bundle.settingsStore.currentSettings;
 				rruleType = frontmatter[settings.rruleProp] as string | undefined;
 				rruleSpec = frontmatter[settings.rruleSpecProp] as string | undefined;
+
+				if (settings.categoryProp) {
+					const categoryValue = frontmatter[settings.categoryProp];
+					if (categoryValue) {
+						const categories = parseIntoList(categoryValue);
+						if (categories.length > 0) {
+							const categoryColor = this.bundle.categoryTracker
+								.getCategoriesWithColors()
+								.find((c) => c.name === categories[0])?.color;
+							sourceCategory = categoryColor || settings.defaultNodeColor;
+						}
+					}
+				}
 			}
 		}
 
-		// Get all physical instances for this recurring event
 		const physicalInstances = this.bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
 
 		if (physicalInstances.length === 0) {
@@ -751,18 +763,20 @@ export class EventContextMenu {
 			return;
 		}
 
+		const settings = this.bundle.settingsStore.currentSettings;
+
 		// Get file titles and skipped status for each instance
 		const instancesWithTitles = physicalInstances.map((instance) => {
 			const file = this.app.vault.getAbstractFileByPath(instance.filePath);
 			const title = file instanceof TFile ? file.basename : instance.filePath;
 
-			// Get skipped status from frontmatter
 			let skipped = false;
+
 			if (file instanceof TFile) {
 				const metadata = this.app.metadataCache.getFileCache(file);
 				const frontmatter = metadata?.frontmatter;
 				if (frontmatter) {
-					skipped = frontmatter[this.bundle.settingsStore.currentSettings.skipProp] === true;
+					skipped = frontmatter[settings.skipProp] === true;
 				}
 			}
 
@@ -774,8 +788,7 @@ export class EventContextMenu {
 			};
 		});
 
-		// Open the modal
-		const recurringInfo = rruleType ? { rruleType, rruleSpec } : undefined;
+		const recurringInfo = rruleType ? { rruleType, rruleSpec, sourceCategory } : undefined;
 		new RecurringEventsListModal(this.app, instancesWithTitles, sourceTitle, sourceEventPath, recurringInfo).open();
 	}
 

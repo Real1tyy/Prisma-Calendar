@@ -14,6 +14,7 @@ interface RecurringEventInstance {
 interface RecurringEventInfo {
 	rruleType: string;
 	rruleSpec?: string;
+	sourceCategory?: string;
 }
 
 export class RecurringEventsListModal extends Modal {
@@ -45,6 +46,12 @@ export class RecurringEventsListModal extends Modal {
 	onOpen(): void {
 		const { contentEl } = this;
 		addCls(contentEl, "recurring-events-list-modal");
+
+		// Apply category color to modal background if available
+		if (this.recurringInfo?.sourceCategory) {
+			contentEl.style.setProperty("--source-category-color", this.recurringInfo.sourceCategory);
+			addCls(contentEl, "recurring-events-list-modal-categorized");
+		}
 
 		// Header with source title as clickable link
 		const header = contentEl.createDiv(cls("recurring-events-list-header"));
@@ -86,19 +93,21 @@ export class RecurringEventsListModal extends Modal {
 		// Filter toggles container
 		const filtersContainer = contentEl.createDiv(cls("recurring-events-filters"));
 
-		new Setting(filtersContainer).setName("Hide past events").addToggle((toggle) =>
+		const hidePastSetting = new Setting(filtersContainer).setName("Hide past events").addToggle((toggle) =>
 			toggle.setValue(this.hidePastEvents).onChange((value) => {
 				this.hidePastEvents = value;
 				this.renderEventsList();
 			})
 		);
+		addCls(hidePastSetting.settingEl, "recurring-events-filter-toggle");
 
-		new Setting(filtersContainer).setName("Hide skipped events").addToggle((toggle) =>
+		const hideSkippedSetting = new Setting(filtersContainer).setName("Hide skipped events").addToggle((toggle) =>
 			toggle.setValue(this.hideSkippedEvents).onChange((value) => {
 				this.hideSkippedEvents = value;
 				this.renderEventsList();
 			})
 		);
+		addCls(hideSkippedSetting.settingEl, "recurring-events-filter-toggle");
 
 		// Search input
 		const searchContainer = contentEl.createDiv(cls("generic-event-list-search"));
