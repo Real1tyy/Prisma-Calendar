@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 1.29.1
+
+### Bug Fixes
+
+- **Event Creation Race Condition**: Fixed events occasionally failing to appear on the calendar immediately after creation. The indexer now properly validates that required properties (start/date) have actual values before processing events, preventing race conditions where the metadata cache updates before property values are fully populated.
+
+---
+
 ## 1.29.0
 
 ### New Features

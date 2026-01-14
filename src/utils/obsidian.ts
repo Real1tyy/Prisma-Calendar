@@ -49,31 +49,58 @@ export async function deleteFilesByPaths(app: App, filePaths: string[]): Promise
  * @param file The file to retrieve frontmatter from
  * @param fallbackFrontmatter Initial frontmatter to use if available
  * @param options Retry configuration options
+ * @param options.maxRetries Maximum number of retry attempts (default: 5)
+ * @param options.delayMs Delay between retries in milliseconds (default: 100)
+ * @param options.requiredProps Array of property names that must have valid (non-null, non-empty) values
  * @returns The retrieved frontmatter, or the fallback if retries are exhausted
  */
 export async function getFrontmatterWithRetry(
 	app: App,
 	file: TFile,
 	fallbackFrontmatter: Frontmatter | undefined,
-	options: { maxRetries?: number; delayMs?: number } = {}
+	options: { maxRetries?: number; delayMs?: number; requiredProps?: string[] } = {}
 ): Promise<Frontmatter> {
-	const { maxRetries = 5, delayMs = 100 } = options;
+	const { maxRetries = 3, delayMs = 100, requiredProps = [] } = options;
 
-	// If fallback frontmatter exists and is not empty, use it immediately
-	if (fallbackFrontmatter && Object.keys(fallbackFrontmatter).length > 0) {
+	/**
+	 * Checks if frontmatter has valid values for all required properties.
+	 * A value is considered valid if it's not null, undefined, or empty string.
+	 */
+	const hasValidRequiredProps = (fm: Frontmatter | undefined): boolean => {
+		if (!fm || Object.keys(fm).length === 0) {
+			return false;
+		}
+
+		// If no required props specified, just check that frontmatter exists and is not empty
+		if (requiredProps.length === 0) {
+			return true;
+		}
+
+		// Check that at least one required property has a valid value
+		return requiredProps.some((prop) => {
+			const value = fm[prop];
+			return value !== null;
+		});
+	};
+
+	// If fallback frontmatter has valid required properties, use it immediately
+	if (fallbackFrontmatter && hasValidRequiredProps(fallbackFrontmatter)) {
 		return fallbackFrontmatter;
 	}
 
 	// Otherwise, retry fetching from metadata cache
 	for (let i = 0; i < maxRetries; i++) {
 		const cache = app.metadataCache.getFileCache(file);
-		if (cache?.frontmatter && Object.keys(cache.frontmatter).length > 0) {
-			return cache.frontmatter as Frontmatter;
+		const cachedFrontmatter = cache?.frontmatter as Frontmatter | undefined;
+
+		if (cachedFrontmatter && hasValidRequiredProps(cachedFrontmatter)) {
+			return cachedFrontmatter;
 		}
+
 		await new Promise((resolve) => window.setTimeout(resolve, delayMs));
 	}
 
-	// Return fallback (even if empty) if all retries exhausted
+	// Return fallback (even if incomplete) if all retries exhausted
 	return fallbackFrontmatter || {};
 }
 

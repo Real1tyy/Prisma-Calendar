@@ -140,7 +140,16 @@ export class Indexer {
 			const { filePath, source, oldPath, oldFrontmatter, frontmatterDiff } = genericEvent;
 			const file = this.app.vault.getAbstractFileByPath(filePath);
 			if (!(file instanceof TFile)) return;
-			const frontmatter = await getFrontmatterWithRetry(this.app, file, source.frontmatter);
+
+			// Use enhanced retry logic that checks if start/date properties have valid values
+			// The generic indexer may provide a frontmatter object with keys but null values
+			// The retry function will automatically retry until these properties have valid values
+			// this happens on race condition when the file is created and the metadata cache is not yet updated,
+			// when the plugin is overwhelemd or the vault is too large to index.
+			const frontmatter = await getFrontmatterWithRetry(this.app, file, source.frontmatter, {
+				requiredProps: [this.settings.startProp, this.settings.dateProp],
+			});
+
 			const events = await this.buildCalendarEvents(file, frontmatter, oldPath, oldFrontmatter, frontmatterDiff);
 			for (const event of events) {
 				this.scanEventsSubject.next(event);
