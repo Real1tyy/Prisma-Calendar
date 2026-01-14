@@ -11,6 +11,7 @@ import type { EventStore } from "../core/event-store";
 import type { CalendarEvent, Frontmatter, SingleCalendarConfig } from "../types";
 import { isTimedEvent } from "../types/calendar";
 import { parseIntoList } from "./list-utils";
+import { getFileAndFrontmatter, getFileByPathOrThrow } from "./obsidian";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
 	return allDayValue === true || (typeof allDayValue === "string" && allDayValue.toLowerCase() === "true");
@@ -125,10 +126,8 @@ export const applyDateNormalizationToFile = async (
 		return;
 	}
 
-	const file = app.vault.getAbstractFileByPath(filePath);
-	if (!(file instanceof TFile)) return;
-
 	try {
+		const file = getFileByPathOrThrow(app, filePath);
 		await app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 			fm[settings.dateProp] = expectedDateValue;
 		});
@@ -359,14 +358,13 @@ export const isPhysicalRecurringEvent = (
 };
 
 export const isEventDone = (app: App, filePath: string, statusProperty: string, doneValue: string): boolean => {
-	const file = app.vault.getAbstractFileByPath(filePath);
-	if (!(file instanceof TFile)) {
+	try {
+		const { frontmatter } = getFileAndFrontmatter(app, filePath);
+		const statusValue = frontmatter[statusProperty] as string | undefined;
+		return statusValue === doneValue;
+	} catch {
 		return false;
 	}
-
-	const metadata = app.metadataCache.getFileCache(file);
-	const statusValue = metadata?.frontmatter?.[statusProperty] as string | undefined;
-	return statusValue === doneValue;
 };
 
 /**
@@ -469,11 +467,7 @@ export const applyFrontmatterChangesToInstance = async (
 	settings: SingleCalendarConfig
 ): Promise<void> => {
 	try {
-		const file = app.vault.getAbstractFileByPath(filePath);
-		if (!(file instanceof TFile)) {
-			console.warn(`Physical instance file not found: ${filePath}`);
-			return;
-		}
+		const file = getFileByPathOrThrow(app, filePath);
 
 		const excludedProps = getRecurringInstanceExcludedProps(settings);
 
@@ -715,11 +709,12 @@ export const getCommonFrontmatterProperties = (
 
 	const allEventProperties = selectedEvents
 		.map((event) => {
-			const file = app.vault.getAbstractFileByPath(event.ref.filePath);
-			if (!(file instanceof TFile)) return null;
-
-			const cache = app.metadataCache.getFileCache(file);
-			return cache?.frontmatter;
+			try {
+				const { frontmatter } = getFileAndFrontmatter(app, event.ref.filePath);
+				return frontmatter;
+			} catch {
+				return null;
+			}
 		})
 		.filter((fm): fm is Frontmatter => fm !== null && fm !== undefined);
 

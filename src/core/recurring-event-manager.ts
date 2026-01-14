@@ -28,7 +28,7 @@ import {
 } from "../utils/calendar-events";
 import { getNextOccurrence } from "../utils/date-recurrence";
 import { applySourceTimeToInstanceDate } from "../utils/format";
-import { deleteFilesByPaths } from "../utils/obsidian";
+import { deleteFilesByPaths, getFileByPathOrThrow } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { Indexer, IndexerEvent } from "./indexer";
 
@@ -490,13 +490,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			// Note: content can be empty string ("") which is valid, so check for undefined/null specifically
 			let content = recurringEvent.content;
 			if (content === undefined || content === null) {
-				const sourceFile = this.app.vault.getAbstractFileByPath(recurringEvent.sourceFilePath);
-				if (!(sourceFile instanceof TFile)) {
-					console.error(
-						`Source file not found: ${recurringEvent.sourceFilePath}, this shouldn't happen, please report this as an issue.`
-					);
-					return null;
-				}
+				const sourceFile = getFileByPathOrThrow(this.app, recurringEvent.sourceFilePath);
 				const fullContent = await this.app.vault.cachedRead(sourceFile);
 				content = extractContentAfterFrontmatter(fullContent);
 				recurringEvent.content = content;

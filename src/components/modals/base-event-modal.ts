@@ -6,7 +6,7 @@ import {
 	serializeFrontmatterValue,
 	toggleCls,
 } from "@real1ty-obsidian-plugins/utils";
-import { type App, Modal, Notice, TFile } from "obsidian";
+import { type App, Modal, Notice } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import {
@@ -28,7 +28,7 @@ import {
 	inputValueToISOString,
 } from "../../utils/format";
 import { parseIntoList } from "../../utils/list-utils";
-import { getCategoriesFromFilePath } from "../../utils/obsidian";
+import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../utils/obsidian";
 import { parseAsLocalDate } from "../../utils/time-formatter";
 import { Stopwatch } from "../stopwatch";
 import { CategoryAssignModal } from "./category-assign-modal";
@@ -1338,16 +1338,11 @@ export abstract class BaseEventModal extends Modal {
 			const filePath = this.event.extendedProps?.filePath;
 			if (!filePath) return;
 
-			const file = this.app.vault.getAbstractFileByPath(filePath);
-			if (!(file instanceof TFile)) return;
+			const { frontmatter } = getFileAndFrontmatter(this.app, filePath);
+			this.originalFrontmatter = { ...frontmatter };
 
-			const cache = this.app.metadataCache.getFileCache(file);
-			if (cache?.frontmatter) {
-				this.originalFrontmatter = { ...cache.frontmatter };
-
-				const settings = this.bundle.settingsStore.currentSettings;
-				this.selectedCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
-			}
+			const settings = this.bundle.settingsStore.currentSettings;
+			this.selectedCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
 		} catch (error) {
 			console.error("Error loading existing frontmatter:", error);
 		}

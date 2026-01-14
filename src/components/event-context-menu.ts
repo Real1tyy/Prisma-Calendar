@@ -1,5 +1,5 @@
 import { getObsidianLinkPath } from "@real1ty-obsidian-plugins/utils";
-import { type App, Menu, Notice, TFile } from "obsidian";
+import { type App, Menu, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
 	AssignCategoriesCommand,
@@ -18,7 +18,13 @@ import { type ContextMenuItem, type Frontmatter, isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
 import { findAdjacentEvent, isEventDone } from "../utils/calendar-events";
 import { intoDate, toLocalISOString } from "../utils/format";
-import { emitHover, getCategoriesFromFilePath, openFileInNewWindow } from "../utils/obsidian";
+import {
+	emitHover,
+	getCategoriesFromFilePath,
+	getFileAndFrontmatter,
+	getFileByPathOrThrow,
+	openFileInNewWindow,
+} from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import type { CalendarView } from "./calendar-view";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
@@ -481,11 +487,8 @@ export class EventContextMenu {
 		const sourceFilePath = this.getSourceFilePath(event);
 		if (!sourceFilePath) return false;
 
-		const sourceFile = this.app.vault.getAbstractFileByPath(sourceFilePath);
-		if (!(sourceFile instanceof TFile)) return false;
-
-		const metadata = this.app.metadataCache.getFileCache(sourceFile);
-		return metadata?.frontmatter?.[settings.skipProp] === true;
+		const { frontmatter } = getFileAndFrontmatter(this.app, sourceFilePath);
+		return frontmatter[settings.skipProp] === true;
 	}
 
 	private isEventDone(event: CalendarEventInfo): boolean {
@@ -729,25 +732,23 @@ export class EventContextMenu {
 			return;
 		}
 
-		const sourceFile = this.app.vault.getAbstractFileByPath(sourceEventPath);
-		if (sourceFile instanceof TFile) {
-			sourceTitle = sourceFile.basename;
+		try {
+			const { file, frontmatter } = getFileAndFrontmatter(this.app, sourceEventPath);
+			sourceTitle = file.basename;
 
-			const metadata = this.app.metadataCache.getFileCache(sourceFile);
-			const frontmatter = metadata?.frontmatter;
-			if (frontmatter) {
-				const settings = this.bundle.settingsStore.currentSettings;
-				rruleType = frontmatter[settings.rruleProp] as string | undefined;
-				rruleSpec = frontmatter[settings.rruleSpecProp] as string | undefined;
+			const settings = this.bundle.settingsStore.currentSettings;
+			rruleType = frontmatter[settings.rruleProp] as string | undefined;
+			rruleSpec = frontmatter[settings.rruleSpecProp] as string | undefined;
 
-				const categories = getCategoriesFromFilePath(this.app, sourceEventPath, settings.categoryProp);
-				if (categories.length > 0) {
-					const categoryColor = this.bundle.categoryTracker
-						.getCategoriesWithColors()
-						.find((c) => c.name === categories[0])?.color;
-					sourceCategory = categoryColor || settings.defaultNodeColor;
-				}
+			const categories = getCategoriesFromFilePath(this.app, sourceEventPath, settings.categoryProp);
+			if (categories.length > 0) {
+				const categoryColor = this.bundle.categoryTracker
+					.getCategoriesWithColors()
+					.find((c) => c.name === categories[0])?.color;
+				sourceCategory = categoryColor || settings.defaultNodeColor;
 			}
+		} catch {
+			// File doesn't exist or has no frontmatter - continue without source info
 		}
 
 		const physicalInstances = this.bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
@@ -761,17 +762,15 @@ export class EventContextMenu {
 
 		// Get file titles and skipped status for each instance
 		const instancesWithTitles = physicalInstances.map((instance) => {
-			const file = this.app.vault.getAbstractFileByPath(instance.filePath);
-			const title = file instanceof TFile ? file.basename : instance.filePath;
-
+			let title = instance.filePath;
 			let skipped = false;
 
-			if (file instanceof TFile) {
-				const metadata = this.app.metadataCache.getFileCache(file);
-				const frontmatter = metadata?.frontmatter;
-				if (frontmatter) {
-					skipped = frontmatter[settings.skipProp] === true;
-				}
+			try {
+				const { file, frontmatter } = getFileAndFrontmatter(this.app, instance.filePath);
+				title = file.basename;
+				skipped = frontmatter[settings.skipProp] === true;
+			} catch {
+				// File doesn't exist or has no frontmatter - use defaults
 			}
 
 			return {
@@ -878,11 +877,7 @@ export class EventContextMenu {
 
 	private async openAssignCategoriesModal(event: CalendarEventInfo): Promise<void> {
 		await this.withFilePath(event, "assign categories", async (filePath) => {
-			const file = this.app.vault.getAbstractFileByPath(filePath);
-			if (!(file instanceof TFile)) {
-				new Notice(`File not found: ${filePath}`);
-				return;
-			}
+			getFileByPathOrThrow(this.app, filePath);
 
 			const settings = this.bundle.settingsStore.currentSettings;
 			const currentCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);

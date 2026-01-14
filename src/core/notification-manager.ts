@@ -5,7 +5,7 @@ import { MAX_PAST_NOTIFICATION_THRESHOLD } from "../constants";
 import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 import { toSafeString } from "../utils/format";
-import { openFileInNewTab } from "../utils/obsidian";
+import { getFileByPathOrThrow, openFileInNewTab } from "../utils/obsidian";
 import { parseAsLocalDate } from "../utils/time-formatter";
 import type { Indexer, IndexerEvent } from "./indexer";
 
@@ -300,12 +300,8 @@ export class NotificationManager {
 	}
 
 	private async markAsNotified(filePath: string): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(filePath);
-		if (!(file instanceof TFile)) {
-			return;
-		}
-
 		try {
+			const file = getFileByPathOrThrow(this.app, filePath);
 			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 				fm[this.settings.alreadyNotifiedProp] = true;
 			});
@@ -339,17 +335,14 @@ export class NotificationManager {
 	}
 
 	private async snoozeNotification(entry: NotificationEntry): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(entry.filePath);
-		if (!(file instanceof TFile)) {
-			return;
-		}
-
-		if (entry.isAllDay) {
-			console.warn(`[NotificationManager] ⚠️ Cannot snooze all-day event: ${entry.filePath}`);
-			return;
-		}
-
 		try {
+			const file = getFileByPathOrThrow(this.app, entry.filePath);
+
+			if (entry.isAllDay) {
+				console.warn(`[NotificationManager] ⚠️ Cannot snooze all-day event: ${entry.filePath}`);
+				return;
+			}
+
 			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 				fm[this.settings.alreadyNotifiedProp] = false;
 
