@@ -23,6 +23,10 @@ All notable changes to this project will be documented here.
 
 - **Recurring Events List Modal Enhancement**: When viewing instances of a recurring event, the modal background displays a subtle gradient using the source event's category color
 
+### Bug Fixes
+
+- **Untracked Events Drag & Drop**: Fixed duplicate command execution when dragging calendar events to the untracked dropdown. Previously required 2 undo actions to revert, now correctly requires only 1 undo.
+
 ---
 
 ## 1.28.0

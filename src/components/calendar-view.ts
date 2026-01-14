@@ -1183,9 +1183,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				this.draggingCalendarEventFilePath = this.isDraggingCalendarEvent ? filePath : null;
 			},
 
-			eventDragStop: (info) => {
+			eventDragStop: (_info) => {
 				this.cleanupDragEdgeScrolling();
-				void this.handleCalendarEventDragStop(info);
 				this.isDraggingCalendarEvent = false;
 				this.draggingCalendarEventFilePath = null;
 			},
@@ -2127,26 +2126,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		if (updateInfo) {
 			await this.handleEventUpdate(updateInfo, "Error updating event duration:");
 		}
-	}
-
-	private async handleCalendarEventDragStop(info: { event: CalendarEventData; jsEvent: MouseEvent }): Promise<void> {
-		const filePath = info.event.extendedProps?.filePath;
-		const isVirtual = info.event.extendedProps?.isVirtual ?? false;
-		if (!filePath || isVirtual) return;
-
-		const { clientX, clientY } = info.jsEvent;
-
-		const buttonEl = this.container?.querySelector(`.${cls("untracked-dropdown-button")}`);
-		const dropdownEl = this.container?.querySelector(`.${cls("untracked-dropdown")}`);
-
-		const hitByRect =
-			isPointInsideElement(clientX, clientY, buttonEl) || isPointInsideElement(clientX, clientY, dropdownEl);
-
-		if (!hitByRect) {
-			return;
-		}
-
-		await this.moveCalendarEventToUntracked(filePath);
 	}
 
 	private handleGlobalPointerUpForUntrackedDrop = (e: PointerEvent): void => {
