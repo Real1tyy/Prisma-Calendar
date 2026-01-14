@@ -172,6 +172,15 @@ export class CalendarSettings {
 		});
 
 		this.ui.addSlider(containerEl, {
+			key: "allDayEventHeight",
+			name: "All-day event height",
+			desc: "Maximum height in pixels for all-day events section before overflow (30-500px)",
+			min: 30,
+			max: 500,
+			step: 5,
+		});
+
+		this.ui.addSlider(containerEl, {
 			key: "pastEventContrast",
 			name: "Past event contrast",
 			desc: "Visual contrast of past events (0% = invisible, 100% = normal)",

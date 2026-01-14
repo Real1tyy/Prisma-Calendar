@@ -46,6 +46,9 @@ export const COMMAND_IDS = {
 	SHOW_WEEKLY_STATS: "show-weekly-stats",
 	SHOW_MONTHLY_STATS: "show-monthly-stats",
 	SHOW_ALLTIME_STATS: "show-alltime-stats",
+	SHOW_DAILY_STATS_FOR_NOW: "show-daily-stats-for-now",
+	SHOW_WEEKLY_STATS_FOR_NOW: "show-weekly-stats-for-now",
+	SHOW_MONTHLY_STATS_FOR_NOW: "show-monthly-stats-for-now",
 	REFRESH_CALENDAR: "refresh-calendar",
 	HIGHLIGHT_EVENTS_WITHOUT_CATEGORIES: "highlight-events-without-categories",
 	HIGHLIGHT_EVENTS_WITH_CATEGORY: "highlight-events-with-category",
@@ -140,6 +143,7 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_AGGREGATION_MODE: "name",
 	DEFAULT_STICKY_DAY_HEADERS: true,
 	DEFAULT_STICKY_ALL_DAY_EVENTS: false,
+	DEFAULT_ALL_DAY_EVENT_HEIGHT: 75,
 	DEFAULT_AUTO_ASSIGN_CATEGORY_BY_NAME: true,
 } as const;
 

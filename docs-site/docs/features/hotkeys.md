@@ -242,6 +242,27 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Features**: Pie chart and breakdown table showing lifetime time distribution
 -   **See Also**: [Statistics documentation](./statistics.md)
 
+### Show Daily Statistics for Now
+
+-   **Function**: Opens daily statistics modal for today (current date)
+-   **Features**: Shows statistics for today, regardless of which day is currently visible in the calendar
+-   **Use Case**: Quickly view today's statistics while viewing a different date in the calendar
+-   **See Also**: [Statistics documentation](./statistics.md)
+
+### Show Weekly Statistics for Now
+
+-   **Function**: Opens weekly statistics modal for the current week
+-   **Features**: Shows statistics for this week, regardless of which week is currently visible in the calendar
+-   **Use Case**: Quickly view this week's statistics while viewing a different week in the calendar
+-   **See Also**: [Statistics documentation](./statistics.md)
+
+### Show Monthly Statistics for Now
+
+-   **Function**: Opens monthly statistics modal for the current month
+-   **Features**: Shows statistics for this month, regardless of which month is currently visible in the calendar
+-   **Use Case**: Quickly view this month's statistics while viewing a different month in the calendar
+-   **See Also**: [Statistics documentation](./statistics.md)
+
 ### Show Current Interval in Bases
 
 -   **Function**: Opens a Bases table view showing all events in the current calendar interval

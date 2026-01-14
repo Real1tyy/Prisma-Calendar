@@ -780,6 +780,13 @@
 	top: 0;
 }
 
+/* Limit all-day events section height and enable overflow */
+.prisma-calendar-container .fc-scrollgrid-section-body:first-of-type {
+	max-height: var(--all-day-event-height, 75px);
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
 .prisma-calendar-container .fc-timegrid-slot-label {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);

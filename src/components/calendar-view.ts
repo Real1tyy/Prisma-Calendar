@@ -601,40 +601,40 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		);
 	}
 
-	async showDailyStatsModal(): Promise<void> {
+	async showDailyStatsModal(date?: Date): Promise<void> {
 		await this.toggleModal(
 			() => this.dailyStatsModal,
 			(modal) => {
 				this.dailyStatsModal = modal;
 			},
 			() => {
-				const currentDate = this.calendar?.getDate() || new Date();
+				const currentDate = date || this.calendar?.getDate() || new Date();
 				return new DailyStatsModal(this.app, this.bundle, currentDate);
 			}
 		);
 	}
 
-	async showWeeklyStatsModal(): Promise<void> {
+	async showWeeklyStatsModal(date?: Date): Promise<void> {
 		await this.toggleModal(
 			() => this.weeklyStatsModal,
 			(modal) => {
 				this.weeklyStatsModal = modal;
 			},
 			() => {
-				const currentDate = this.calendar?.getDate() || new Date();
+				const currentDate = date || this.calendar?.getDate() || new Date();
 				return new WeeklyStatsModal(this.app, this.bundle, currentDate);
 			}
 		);
 	}
 
-	async showMonthlyStatsModal(): Promise<void> {
+	async showMonthlyStatsModal(date?: Date): Promise<void> {
 		await this.toggleModal(
 			() => this.monthlyStatsModal,
 			(modal) => {
 				this.monthlyStatsModal = modal;
 			},
 			() => {
-				const currentDate = this.calendar?.getDate() || new Date();
+				const currentDate = date || this.calendar?.getDate() || new Date();
 				return new MonthlyStatsModal(this.app, this.bundle, currentDate);
 			}
 		);
@@ -1299,6 +1299,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// Note: sticky-day-headers class is still applied for CSS that depends on both settings
 		toggleCls(container, "sticky-day-headers", settings.stickyDayHeaders);
 
+		container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
+
 		this.setupMouseTracking(container);
 		this.startUpcomingEventCheck();
 	}
@@ -1331,6 +1333,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		toggleCls(this.container, "sticky-all-day-events", settings.stickyAllDayEvents);
 		// Note: sticky-day-headers class is still applied for CSS that depends on both settings
 		toggleCls(this.container, "sticky-day-headers", settings.stickyDayHeaders);
+
+		this.container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
 
 		// Restart or stop upcoming event check based on setting
 		if (settings.highlightUpcomingEvent) {

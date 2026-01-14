@@ -223,6 +223,15 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.SHOW_ALLTIME_STATS, "Show all-time statistics", (view) => {
 			void view.showAllTimeStatsModal();
 		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_DAILY_STATS_FOR_NOW, "Show daily statistics for now", (view) => {
+			void view.showDailyStatsModal(new Date());
+		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_WEEKLY_STATS_FOR_NOW, "Show weekly statistics for now", (view) => {
+			void view.showWeeklyStatsModal(new Date());
+		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_MONTHLY_STATS_FOR_NOW, "Show monthly statistics for now", (view) => {
+			void view.showMonthlyStatsModal(new Date());
+		});
 		addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh calendar", (view) => {
 			void view.refreshCalendar();
 		});

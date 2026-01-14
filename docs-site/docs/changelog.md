@@ -8,6 +8,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Statistics for Now**: Added new statistics commands that use the current date/time instead of the calendar's visible interval. When viewing a past or future date in the calendar, these commands show statistics for today/this week/this month. Available commands: "Show daily statistics for now", "Show weekly statistics for now", and "Show monthly statistics for now". The original statistics commands use the currently visible calendar interval.
+
 - **Recurring Events Modal Improvements**: Enhanced recurring events management with category support and visual improvements.
   - **Category Color Backgrounds**: Recurring events display their category color as a semi-transparent background across the entire row with a left border accent
   - **Category Assignment Command**: "Category" button uses the unified category assignment command for consistent behavior
