@@ -8,6 +8,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Category Statistics Display**: The categories settings page now displays comprehensive event statistics at the top showing total events, timed events count and percentage, and all-day events count and percentage. Each individual category also shows its detailed breakdown of total events, timed events, and all-day events with percentages. This provides instant insight into your event distribution patterns.
+
 - **Event Markers for Recurring Events**: Visual indicators now appear in the top-right corner of recurring events to distinguish between source events and physical instances. Source recurring events (the original recurring event template) display a configurable marker (default: ⦿), while physical recurring instances (actual generated events) show a different marker (default: 🔄). Both markers and their visibility can be customized in Settings → Calendar → Recurring events → Event markers. This makes it instantly clear which events are source templates versus generated instances when viewing your calendar.
 
 - **Enhanced Event Tooltips**: Event hover tooltips now display start/end times and duration for timed events, and date for all-day events. Wikilink properties are displayed cleanly showing only the alias or filename. Provides quick time and property information without opening the event.

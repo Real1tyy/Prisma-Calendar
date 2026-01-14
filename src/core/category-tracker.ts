@@ -1,8 +1,10 @@
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { Frontmatter } from "../types";
+import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import { parseIntoList } from "../utils/list-utils";
+import type { EventStore } from "./event-store";
 import type { Indexer, IndexerEvent } from "./indexer";
 
 export interface CategoryInfo {
@@ -10,15 +12,21 @@ export interface CategoryInfo {
 	color: string;
 }
 
+export interface CategoryStats {
+	total: number;
+	timed: number;
+	allDay: number;
+}
+
 /**
  * Tracks all unique categories across events in the calendar.
- * Maintains a map of category -> Set of file paths that have that category.
+ * Maintains a map of category -> CalendarEvent[] for efficient access.
  * Categories are extracted from frontmatter during indexing and maintained
  * as a reactive map that updates as events are added, modified, or deleted.
  * Also resolves category colors from color rules in settings.
  */
 export class CategoryTracker {
-	private categoryToFiles = new Map<string, Set<string>>();
+	private categoryToEvents = new Map<string, CalendarEvent[]>();
 	private fileToCategories = new Map<string, Set<string>>();
 	private categoriesSubject = new BehaviorSubject<CategoryInfo[]>([]);
 	private subscription: Subscription | null = null;
@@ -30,6 +38,7 @@ export class CategoryTracker {
 
 	constructor(
 		private indexer: Indexer,
+		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
 		this._settings = settingsStore.value;
@@ -47,7 +56,7 @@ export class CategoryTracker {
 
 		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
 			if (isComplete) {
-				this.notifyChange();
+				this.rebuildCategoryMaps();
 			}
 		});
 	}
@@ -65,13 +74,45 @@ export class CategoryTracker {
 		}
 	}
 
+	private addEventToCategories(event: CalendarEvent): void {
+		const categoryProp = this._settings.categoryProp;
+		if (!categoryProp) return;
+
+		const categories = parseIntoList(event.meta[categoryProp]);
+		for (const category of categories) {
+			if (!this.categoryToEvents.has(category)) {
+				this.categoryToEvents.set(category, []);
+			}
+			const events = this.categoryToEvents.get(category)!;
+			const existingIndex = events.findIndex((e) => e.ref.filePath === event.ref.filePath);
+			if (existingIndex >= 0) {
+				events[existingIndex] = event;
+			} else {
+				events.push(event);
+			}
+		}
+	}
+
+	private rebuildCategoryMaps(): void {
+		this.categoryToEvents.clear();
+
+		const allEvents = this.eventStore.getAllEvents();
+		for (const event of allEvents) {
+			this.addEventToCategories(event);
+		}
+
+		this.notifyChange();
+	}
+
 	private removeCategoriesFromFile(filePath: string, categoriesToRemove: Set<string>): void {
 		for (const category of categoriesToRemove) {
-			const fileSet = this.categoryToFiles.get(category);
-			if (fileSet) {
-				fileSet.delete(filePath);
-				if (fileSet.size === 0) {
-					this.categoryToFiles.delete(category);
+			const events = this.categoryToEvents.get(category);
+			if (events) {
+				const filtered = events.filter((e) => e.ref.filePath !== filePath);
+				if (filtered.length === 0) {
+					this.categoryToEvents.delete(category);
+				} else {
+					this.categoryToEvents.set(category, filtered);
 				}
 			} else {
 				console.error(
@@ -93,17 +134,15 @@ export class CategoryTracker {
 			this.removeCategoriesFromFile(filePath, categoriesToRemove);
 		}
 
-		for (const newCat of newCategories) {
-			if (!this.categoryToFiles.has(newCat)) {
-				this.categoryToFiles.set(newCat, new Set());
-			}
-			this.categoryToFiles.get(newCat)!.add(filePath);
-		}
-
 		if (newCategories.size > 0) {
 			this.fileToCategories.set(filePath, newCategories);
 		} else {
 			this.fileToCategories.delete(filePath);
+		}
+
+		const event = this.eventStore.getEventByPath(filePath);
+		if (event) {
+			this.addEventToCategories(event);
 		}
 
 		this.notifyChange();
@@ -125,7 +164,7 @@ export class CategoryTracker {
 	}
 
 	private buildCategoryInfoList(): CategoryInfo[] {
-		const categoryNames = Array.from(this.categoryToFiles.keys()).sort((a, b) => a.localeCompare(b));
+		const categoryNames = Array.from(this.categoryToEvents.keys()).sort((a, b) => a.localeCompare(b));
 		return categoryNames.map((name) => ({
 			name,
 			color: this.resolveCategoryColor(name),
@@ -149,15 +188,24 @@ export class CategoryTracker {
 	}
 
 	getCategories(): string[] {
-		return Array.from(this.categoryToFiles.keys()).sort((a, b) => a.localeCompare(b));
+		return Array.from(this.categoryToEvents.keys()).sort((a, b) => a.localeCompare(b));
 	}
 
 	getCategoriesWithColors(): CategoryInfo[] {
 		return this.buildCategoryInfoList();
 	}
 
-	getEventsWithCategory(category: string): Set<string> {
-		return new Set(this.categoryToFiles.get(category) || []);
+	getEventsWithCategory(category: string): CalendarEvent[] {
+		return this.categoryToEvents.get(category) || [];
+	}
+
+	getCategoryStats(category: string): CategoryStats {
+		const events = this.getEventsWithCategory(category);
+		return {
+			total: events.length,
+			timed: events.filter((e) => e.type === "timed").length,
+			allDay: events.filter((e) => e.type === "allDay").length,
+		};
 	}
 
 	getAllFilesWithCategories(): Set<string> {
@@ -165,7 +213,7 @@ export class CategoryTracker {
 	}
 
 	clear(): void {
-		this.categoryToFiles.clear();
+		this.categoryToEvents.clear();
 		this.fileToCategories.clear();
 		this.notifyChange();
 	}

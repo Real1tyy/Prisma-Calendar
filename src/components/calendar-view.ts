@@ -1013,7 +1013,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	public highlightEventsWithCategory(category: string): void {
 		this.highlightCategoryEvents(() => {
-			const filePaths = this.bundle.categoryTracker.getEventsWithCategory(category);
+			const events = this.bundle.categoryTracker.getEventsWithCategory(category);
+			const filePaths = new Set(events.map((e) => e.ref.filePath));
 			return this.findEventIdsByPredicate((filePath) => filePaths.has(filePath));
 		});
 	}

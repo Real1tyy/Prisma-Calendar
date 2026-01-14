@@ -2,15 +2,19 @@ import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
 import { nanoid } from "nanoid";
 import { Setting } from "obsidian";
 import type { Subscription } from "rxjs";
+import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import type { CategoryAssignmentPreset, SingleCalendarConfigSchema } from "../../types/settings";
 import { type ChartDataItem, createChartCanvas, PieChartBuilder } from "../../utils/chart-utils";
 import { CategoryEventsModal } from "../modals/category-events-modal";
 
 interface CategoryInfoWithCount extends CategoryInfo {
 	count: number;
+	timedCount: number;
+	allDayCount: number;
 }
 
 export class CategoriesSettings {
@@ -18,7 +22,9 @@ export class CategoriesSettings {
 	private categoriesSubscription: Subscription | null = null;
 	private chartContainer: HTMLElement | null = null;
 	private categoriesListContainer: HTMLElement | null = null;
+	private statsContainer: HTMLElement | null = null;
 	private categoryTracker: CategoryTracker | null = null;
+	private currentBundle: CalendarBundle | null = null;
 	private categoryProp: string;
 	private categoryAssignmentPresetsContainer: HTMLElement | null = null;
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -37,6 +43,7 @@ export class CategoriesSettings {
 		this.chartBuilder = null;
 		this.chartContainer = null;
 		this.categoriesListContainer = null;
+		this.statsContainer = null;
 
 		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === this.settingsStore.calendarId);
 		if (!bundle) {
@@ -48,6 +55,7 @@ export class CategoriesSettings {
 		}
 
 		this.categoryTracker = bundle.categoryTracker;
+		this.currentBundle = bundle;
 		const settings = this.settingsStore.currentSettings;
 		this.categoryProp = settings.categoryProp;
 
@@ -58,6 +66,9 @@ export class CategoriesSettings {
 			text: `Categories are automatically detected from the "${this.categoryProp}" property in your events. Configure colors for each category below.`,
 		});
 
+		this.statsContainer = containerEl.createDiv(cls("categories-stats-container"));
+		this.renderEventStats(this.statsContainer, bundle);
+
 		this.categoriesListContainer = containerEl.createDiv();
 		this.renderCategoriesList(this.categoriesListContainer, this.categoryTracker, this.categoryProp);
 
@@ -67,15 +78,54 @@ export class CategoriesSettings {
 			if (canvas) {
 				this.updateChart(this.categoryTracker!, this.categoryProp, canvas as HTMLCanvasElement);
 			}
+			if (this.statsContainer && this.currentBundle) {
+				this.renderEventStats(this.statsContainer, this.currentBundle);
+			}
 		});
 
 		const chartSection = containerEl.createDiv(cls("categories-chart-section"));
 		chartSection.createEl("h3", { text: "Category distribution" });
+
 		this.chartContainer = chartSection.createDiv(cls("categories-chart-container"));
 		const canvas = createChartCanvas(this.chartContainer, "categories-chart");
 		this.updateChart(this.categoryTracker, this.categoryProp, canvas);
 
 		this.addAutoAssignmentSettings(containerEl);
+	}
+
+	private renderEventStats(container: HTMLElement, bundle: CalendarBundle): void {
+		container.empty();
+
+		const allEvents = bundle.eventStore.getAllEvents();
+		const totalEvents = allEvents.length;
+		const timedEvents = allEvents.filter((event) => isTimedEvent(event));
+		const allDayEvents = allEvents.filter((event) => isAllDayEvent(event));
+
+		const timedCount = timedEvents.length;
+		const allDayCount = allDayEvents.length;
+
+		const timedPercentage = totalEvents > 0 ? ((timedCount / totalEvents) * 100).toFixed(1) : "0.0";
+		const allDayPercentage = totalEvents > 0 ? ((allDayCount / totalEvents) * 100).toFixed(1) : "0.0";
+
+		const statsGrid = container.createDiv(cls("categories-stats-grid"));
+
+		const totalStat = statsGrid.createDiv(cls("category-stat-item"));
+		totalStat.createEl("div", { text: "Total Events", cls: cls("category-stat-label") });
+		totalStat.createEl("div", { text: `${totalEvents}`, cls: cls("category-stat-value") });
+
+		const timedStat = statsGrid.createDiv(cls("category-stat-item"));
+		timedStat.createEl("div", { text: "Timed", cls: cls("category-stat-label") });
+		timedStat.createEl("div", {
+			text: `${timedCount} (${timedPercentage}%)`,
+			cls: cls("category-stat-value"),
+		});
+
+		const allDayStat = statsGrid.createDiv(cls("category-stat-item"));
+		allDayStat.createEl("div", { text: "All-day", cls: cls("category-stat-label") });
+		allDayStat.createEl("div", {
+			text: `${allDayCount} (${allDayPercentage}%)`,
+			cls: cls("category-stat-value"),
+		});
 	}
 
 	private addAutoAssignmentSettings(containerEl: HTMLElement): void {
@@ -281,10 +331,15 @@ export class CategoriesSettings {
 		}
 
 		const categoriesInfo: CategoryInfoWithCount[] = categories.map((category) => {
-			const files = categoryTracker.getEventsWithCategory(category);
-			const count = files.size;
+			const stats = categoryTracker.getCategoryStats(category);
 			const color = this.getCategoryColor(category, settings.colorRules, categoryProp);
-			return { name: category, count, color };
+			return {
+				name: category,
+				count: stats.total,
+				timedCount: stats.timed,
+				allDayCount: stats.allDay,
+				color,
+			};
 		});
 
 		categoriesInfo.sort((a, b) => b.count - a.count);
@@ -304,8 +359,15 @@ export class CategoriesSettings {
 				cls: cls("category-settings-name"),
 			});
 			const percentage = totalCount > 0 ? ((categoryInfo.count / totalCount) * 100).toFixed(1) : "0.0";
+			const timedPercentage =
+				categoryInfo.count > 0 ? ((categoryInfo.timedCount / categoryInfo.count) * 100).toFixed(0) : "0";
+			const allDayPercentage =
+				categoryInfo.count > 0 ? ((categoryInfo.allDayCount / categoryInfo.count) * 100).toFixed(0) : "0";
+
+			const statsText = `${categoryInfo.count} total (${percentage}%) • ${categoryInfo.timedCount} timed (${timedPercentage}%) • ${categoryInfo.allDayCount} all-day (${allDayPercentage}%)`;
+
 			nameContainer.createEl("span", {
-				text: `(${categoryInfo.count} ${categoryInfo.count === 1 ? "event" : "events"} - ${percentage}%)`,
+				text: statsText,
 				cls: cls("category-settings-count"),
 			});
 
@@ -392,8 +454,8 @@ export class CategoriesSettings {
 
 		const settings = this.settingsStore.currentSettings;
 		const chartData: ChartDataItem[] = categories.map((category) => {
-			const files = categoryTracker.getEventsWithCategory(category);
-			const count = files.size;
+			const events = categoryTracker.getEventsWithCategory(category);
+			const count = events.length;
 			const color = this.getCategoryColor(category, settings.colorRules, categoryProp);
 			return { label: category, value: count, color };
 		});

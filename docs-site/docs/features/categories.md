@@ -136,13 +136,36 @@ The category modal supports full keyboard navigation for faster workflows:
 
 ### Visual Category Management
 
-The **Categories Settings** page (Settings → Categories) provides a convenient interface for managing category colors:
+The **Categories Settings** page (Settings → Categories) provides a comprehensive interface for managing categories and viewing statistics:
 
+#### Event Statistics Overview
+
+At the top of the page, you'll see overall event statistics showing:
+- **Total Events** - Total count of all events in your calendar
+- **Timed Events** - Number and percentage of events with specific start/end times
+- **All-Day Events** - Number and percentage of all-day events
+
+This provides an instant overview of your event distribution patterns.
+
+#### Category List with Detailed Statistics
+
+Each category displays:
 1. **Automatic Detection** - All categories from your events are automatically detected and listed
-2. **Event Counts** - See how many events use each category
+2. **Comprehensive Event Counts** - Each category shows:
+   - Total number of events
+   - Percentage of all events
+   - Timed events count and percentage within that category
+   - All-day events count and percentage within that category
 3. **Color Pickers** - Click the color swatch next to any category to change its color
-4. **Pie Chart Visualization** - View category distribution with an interactive pie chart
-5. **Real-time Updates** - Changes are reflected immediately on the calendar
+4. **Real-time Updates** - Changes are reflected immediately on the calendar
+
+**Example**: `Work: 45 total (30%) • 40 timed (89%) • 5 all-day (11%)`
+
+This detailed breakdown helps you understand not just how many events are in each category, but also the nature of those events (timed vs all-day).
+
+#### Pie Chart Visualization
+
+Below the category list, an interactive pie chart shows the overall category distribution with click-to-filter functionality.
 
 ![Categories Settings](/img/categories_settings.png)
 

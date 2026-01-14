@@ -1830,6 +1830,50 @@
 	margin-bottom: 16px;
 }
 
+/* Event Statistics */
+.prisma-categories-stats-container {
+	margin-bottom: 24px;
+	margin-top: 16px;
+}
+
+.prisma-categories-stats-grid {
+	display: flex;
+	gap: 16px;
+	padding: 16px;
+	background-color: var(--background-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-border);
+	flex-wrap: wrap;
+}
+
+.prisma-category-stat-item {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 12px 16px;
+	background-color: var(--background-primary);
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+	flex: 1;
+	min-width: 140px;
+	text-align: center;
+}
+
+.prisma-category-stat-label {
+	font-size: 0.8em;
+	color: var(--text-muted);
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.prisma-category-stat-value {
+	font-size: 1.4em;
+	font-weight: 600;
+	color: var(--text-normal);
+	line-height: 1.2;
+}
+
 /* Category Assignment Presets */
 .prisma-category-assignment-empty {
 	padding: 16px;
