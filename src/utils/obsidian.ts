@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import { TFile } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import { getCalendarViewType } from "../components/calendar-view";
 import type { Frontmatter } from "../types";
 
@@ -74,4 +74,66 @@ export async function getFrontmatterWithRetry(
 
 	// Return fallback (even if empty) if all retries exhausted
 	return fallbackFrontmatter || {};
+}
+
+type LeafCreationStrategy = true | false | "window";
+
+interface OpenFileOptions {
+	errorContext: string;
+	errorMessage: string;
+}
+
+/**
+ * Template function for opening files with different leaf creation strategies.
+ * @param app The Obsidian app instance
+ * @param filePath The path of the file to open
+ * @param leafStrategy The strategy for creating the leaf (true = new tab, false = current, "window" = new window)
+ * @param options Error messages for different contexts
+ * @returns Promise that resolves when the file is opened
+ */
+async function openFileWithStrategy(
+	app: App,
+	filePath: string,
+	leafStrategy: LeafCreationStrategy,
+	options: OpenFileOptions
+): Promise<void> {
+	try {
+		const file = app.vault.getAbstractFileByPath(filePath);
+		if (!(file instanceof TFile)) {
+			new Notice(`File not found: ${filePath}`);
+			return;
+		}
+
+		const leaf = app.workspace.getLeaf(leafStrategy);
+		await leaf.openFile(file);
+	} catch (error) {
+		console.error(`Error ${options.errorContext}:`, error);
+		new Notice(`${options.errorMessage}: ${filePath}`);
+	}
+}
+
+/**
+ * Opens a file in a new tab.
+ * @param app The Obsidian app instance
+ * @param filePath The path of the file to open
+ * @returns Promise that resolves when the file is opened
+ */
+export async function openFileInNewTab(app: App, filePath: string): Promise<void> {
+	return openFileWithStrategy(app, filePath, true, {
+		errorContext: "opening file in new tab",
+		errorMessage: "Failed to open file in new tab",
+	});
+}
+
+/**
+ * Opens a file in a new window.
+ * @param app The Obsidian app instance
+ * @param filePath The path of the file to open
+ * @returns Promise that resolves when the file is opened
+ */
+export async function openFileInNewWindow(app: App, filePath: string): Promise<void> {
+	return openFileWithStrategy(app, filePath, "window", {
+		errorContext: "opening file in new window",
+		errorMessage: "Failed to open file in new window",
+	});
 }

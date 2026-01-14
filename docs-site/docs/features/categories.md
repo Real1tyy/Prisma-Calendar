@@ -94,6 +94,17 @@ Select multiple events in batch mode and use the **"Categories"** button to assi
 
 📖 See [Batch Operations](/features/batch-operations#assign-categories) for detailed batch assignment instructions.
 
+### 6. Recurring Events
+
+Assign categories to recurring events through the **Recurring Events Modal** (accessible via command palette: "Show recurring events"):
+
+- Click the **"Category"** button next to any recurring event to assign categories using the unified category assignment command
+- Categories automatically propagate to all physical instances based on your frontmatter propagation settings
+- Each recurring event displays a **category-colored background** across the entire row with a left border accent for easy visual identification
+- The instances list modal displays a **category-colored background gradient** when viewing a recurring event's instances
+
+📖 See [Recurring Events (DSL)](/features/recurring-dsl#managing-recurring-events) for more details on recurring event management.
+
 ## Category Assignment Modal
 
 All category assignment interfaces share the same powerful modal:

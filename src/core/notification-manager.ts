@@ -5,6 +5,7 @@ import { MAX_PAST_NOTIFICATION_THRESHOLD } from "../constants";
 import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 import { toSafeString } from "../utils/format";
+import { openFileInNewTab } from "../utils/obsidian";
 import { parseAsLocalDate } from "../utils/time-formatter";
 import type { Indexer, IndexerEvent } from "./indexer";
 
@@ -290,11 +291,7 @@ export class NotificationManager {
 				notification.onclick = () => {
 					window.focus();
 					notification.close();
-					// The modal will already be open or can be opened
-					const file = this.app.vault.getAbstractFileByPath(entry.filePath);
-					if (file instanceof TFile) {
-						void this.app.workspace.getLeaf(false).openFile(file);
-					}
+					void openFileInNewTab(this.app, entry.filePath);
 				};
 			}
 		} catch (error) {

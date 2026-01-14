@@ -3817,19 +3817,21 @@
 	position: relative;
 }
 
-.prisma-generic-event-list-item .prisma-recurring-event-category-indicator {
-	position: absolute;
-	left: 0;
-	top: 0;
-	bottom: 0;
-	width: 4px;
-	border-radius: 4px 0 0 4px;
-	background-color: var(--category-color);
-	box-shadow: 0 0 8px color-mix(in srgb, var(--category-color) 50%, transparent);
+.prisma-generic-event-list-item.prisma-recurring-event-categorized {
+	background-color: color-mix(in srgb, var(--category-color) 15%, transparent);
+	border-left: 3px solid var(--category-color);
+}
+
+.prisma-generic-event-list-item {
+	cursor: pointer;
 }
 
 .prisma-generic-event-list-item:hover {
 	background-color: var(--background-modifier-hover);
+}
+
+.prisma-generic-event-list-item.prisma-recurring-event-categorized:hover {
+	background-color: color-mix(in srgb, var(--category-color) 25%, var(--background-modifier-hover));
 }
 
 .prisma-generic-event-list-item .prisma-generic-event-info {

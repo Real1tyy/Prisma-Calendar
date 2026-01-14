@@ -71,9 +71,27 @@ Deterministic file paths based on (RRuleID, Instance Date) prevent duplicates. F
 **Instance Dropdown**: View all physical instances with "Show Past" filter
 **[Virtual Events](./virtual-events)**: Click to show source event
 
+The instance list modal includes:
+- **Category-Colored Background**: When the source event has a category assigned, the modal displays a subtle gradient background using the category's color
+- **Search & Filtering**: Search instances and toggle visibility of past/skipped events
+- **Statistics**: View completion rate with counts of past, skipped, and completed instances
+- **Click to Open**: Click any instance to open its file directly
+
 ![Recurring Events Modal](/img/recurring_events_list_modal.png)
 
 *Centralized modal to view, filter, enable/disable, and navigate to all recurring events*
+
+### Managing Recurring Events
+
+The recurring events modal (accessible via command palette: "Show recurring events") provides powerful management tools:
+
+- **Category Color Backgrounds**: Recurring events with assigned categories display a semi-transparent background across the entire row in the category's color with a left border accent, making it easy to visually identify event types at a glance
+- **Category Button**: Assign or change categories using the unified category assignment command. Categories automatically propagate to all physical instances based on your propagation settings
+- **Navigate Button**: Jumps to the source event in the calendar view and highlights it for 5 seconds, useful for locating events in crowded calendars
+- **Enable/Disable**: Toggle recurring event generation without deleting files
+- **Type Filtering**: Filter by recurrence pattern (daily, weekly, monthly, etc.)
+- **Disabled Events View**: Toggle to show only disabled recurring events for quick re-activation
+- **Clean Display**: Event titles automatically strip Zettelkasten IDs for improved readability (handles both prefix and suffix formats like `20250930193327-Title` and `Title-20250930193327`)
 
 ## Recurrence Patterns
 

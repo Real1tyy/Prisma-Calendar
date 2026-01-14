@@ -4,6 +4,21 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 1.29.0
+
+### New Features
+
+- **Recurring Events Modal Improvements**: Enhanced recurring events management with category support and visual improvements.
+  - **Category Color Backgrounds**: Recurring events display their category color as a semi-transparent background across the entire row with a left border accent
+  - **Category Assignment Command**: "Category" button uses the unified category assignment command for consistent behavior
+  - **Clean Display**: Zettelkasten IDs are automatically stripped from event titles for better readability (handles both prefix and suffix formats)
+  - **Removed File Paths**: Subtitle file paths removed as they're redundant with the title
+  - Access via command palette: "Show recurring events"
+
+- **Recurring Events List Modal Enhancement**: When viewing instances of a recurring event, the modal background displays a subtle gradient using the source event's category color
+
+---
+
 ## 1.28.0
 
 ### New Features

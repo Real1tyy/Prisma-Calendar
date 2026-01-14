@@ -1,16 +1,21 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
-import { type App, Notice } from "obsidian";
+import { type App, Notice, TFile } from "obsidian";
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { ToggleSkipCommand } from "../../core/commands";
+import { AssignCategoriesCommand, ToggleSkipCommand } from "../../core/commands";
 import { type NodeRecurringEvent, RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
+import { removeZettelId } from "../../utils/calendar-events";
 import type { RecurrenceType } from "../../utils/date-recurrence";
+import { parseIntoList } from "../../utils/list-utils";
+import { openFileInNewTab } from "../../utils/obsidian";
 import { getStartDateTime } from "../../utils/recurring-utils";
 import type { CalendarView } from "../calendar-view";
+import { CategoryAssignModal } from "../modals/category-assign-modal";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 interface RecurringEventListItem extends EventListItem {
 	recurrenceType: RecurrenceType;
+	categories: string[];
 }
 
 const RECURRENCE_TYPE_FILTER_OPTIONS = {
@@ -98,12 +103,31 @@ export class RecurringEventsModal extends BaseEventListModal {
 			events = events.filter((event) => event.rrules.type === this.selectedTypeFilter);
 		}
 
-		return events.map((event) => ({
-			filePath: event.sourceFilePath,
-			title: event.title,
-			subtitle: event.sourceFilePath,
-			recurrenceType: event.rrules.type,
-		}));
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		return events.map((event) => {
+			const displayTitle = removeZettelId(event.title);
+
+			const categories: string[] = [];
+			if (settings.categoryProp) {
+				const file = this.app.vault.getAbstractFileByPath(event.sourceFilePath);
+				if (file instanceof TFile) {
+					const metadata = this.app.metadataCache.getFileCache(file);
+					const categoryValue = metadata?.frontmatter?.[settings.categoryProp];
+					if (categoryValue) {
+						categories.push(...parseIntoList(categoryValue));
+					}
+				}
+			}
+
+			return {
+				filePath: event.sourceFilePath,
+				title: displayTitle,
+				subtitle: undefined,
+				recurrenceType: event.rrules.type,
+				categories,
+			};
+		});
 	}
 
 	protected getActions(): EventListAction[] {
@@ -158,14 +182,61 @@ export class RecurringEventsModal extends BaseEventListModal {
 				};
 
 		return [
-			primaryAction,
 			{
-				label: "Navigate",
+				label: "Category",
+				handler: async (item) => {
+					await this.handleCategoryAssign(item);
+				},
+			},
+			{
+				label: "Nav",
 				handler: (item) => {
 					this.handleNavigate(item);
 				},
 			},
+			primaryAction,
 		];
+	}
+
+	private async handleCategoryAssign(item: EventListItem): Promise<void> {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.categoryProp) {
+			new Notice("Category property not configured");
+			return;
+		}
+
+		const file = this.app.vault.getAbstractFileByPath(item.filePath);
+		if (!(file instanceof TFile)) {
+			new Notice("File not found");
+			return;
+		}
+
+		const metadata = this.app.metadataCache.getFileCache(file);
+		const categoryValue = metadata?.frontmatter?.[settings.categoryProp];
+		const currentCategories = parseIntoList(categoryValue);
+
+		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
+		const modal = new CategoryAssignModal(
+			this.app,
+			categories,
+			settings.defaultNodeColor,
+			currentCategories,
+			async (selectedCategories) => {
+				try {
+					const command = new AssignCategoriesCommand(this.app, this.bundle, item.filePath, selectedCategories);
+					await this.bundle.commandManager.executeCommand(command);
+					new Notice("Categories updated");
+
+					this.items = this.getItems();
+					const searchValue = this.searchInput?.value || "";
+					this.filterItems(searchValue);
+				} catch (error) {
+					console.error("Failed to assign categories:", error);
+					new Notice("Failed to assign categories");
+				}
+			}
+		);
+		modal.open();
 	}
 
 	private handleNavigate(item: EventListItem): void {
@@ -203,15 +274,28 @@ export class RecurringEventsModal extends BaseEventListModal {
 		const recurringItem = item as RecurringEventListItem;
 		const itemEl = container.createEl("div", { cls: cls("generic-event-list-item") });
 
+		const categoryColor = this.getEventCategoryColor(recurringItem);
+		if (categoryColor) {
+			addCls(itemEl, "recurring-event-categorized");
+			itemEl.style.setProperty("--category-color", categoryColor);
+		}
+
+		// Make row clickable with Ctrl+click to open in new tab
+		itemEl.addEventListener("click", async (e) => {
+			if ((e.ctrlKey || e.metaKey) && !(e.target instanceof HTMLButtonElement)) {
+				e.preventDefault();
+				e.stopPropagation();
+				await openFileInNewTab(this.app, item.filePath);
+			}
+		});
+
 		// Event info section
 		const infoEl = itemEl.createEl("div", { cls: cls("generic-event-info") });
 
-		// Title row with type badge
 		const titleRow = infoEl.createDiv(cls("recurring-event-title-row"));
 		const titleEl = titleRow.createEl("div", { cls: cls("generic-event-title") });
-		titleEl.textContent = item.title.replace(/^\d{14}-/, ""); // Remove zettelid prefix
+		titleEl.textContent = item.title;
 
-		// Type badge (always visible, not just when filter is "all")
 		const typeBadge = titleRow.createEl("span", {
 			cls: `${cls("recurring-type-badge")} ${cls(`recurring-type-${recurringItem.recurrenceType}`)}`,
 			text: RECURRENCE_TYPE_OPTIONS[recurringItem.recurrenceType],
@@ -239,6 +323,16 @@ export class RecurringEventsModal extends BaseEventListModal {
 				});
 			}
 		}
+	}
+
+	private getEventCategoryColor(item: RecurringEventListItem): string | null {
+		if (item.categories.length === 0) return null;
+
+		const categoryInfo = this.bundle.categoryTracker
+			.getCategoriesWithColors()
+			.find((c) => c.name === item.categories[0]);
+
+		return categoryInfo?.color || null;
 	}
 
 	protected getHotkeyCommandId(): string | undefined {

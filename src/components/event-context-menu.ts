@@ -19,7 +19,7 @@ import type { CalendarEvent } from "../types/calendar";
 import { findAdjacentEvent, isEventDone } from "../utils/calendar-events";
 import { intoDate, toLocalISOString } from "../utils/format";
 import { parseIntoList } from "../utils/list-utils";
-import { emitHover } from "../utils/obsidian";
+import { emitHover, openFileInNewWindow } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import type { CalendarView } from "./calendar-view";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
@@ -441,7 +441,7 @@ export class EventContextMenu {
 						.setTitle("Open file in new window")
 						.setIcon("external-link")
 						.onClick(() => {
-							void this.openFileInNewWindow(filePath);
+							void openFileInNewWindow(this.app, filePath);
 						});
 				});
 			}
@@ -880,23 +880,6 @@ export class EventContextMenu {
 				}
 			);
 		});
-	}
-
-	private async openFileInNewWindow(filePath: string): Promise<void> {
-		try {
-			const file = this.app.vault.getAbstractFileByPath(filePath);
-			if (!(file instanceof TFile)) {
-				new Notice(`File not found: ${filePath}`);
-				return;
-			}
-
-			// Open file in a new window (popout/hover editor)
-			const leaf = this.app.workspace.getLeaf("window");
-			await leaf.openFile(file);
-		} catch (error) {
-			console.error("Error opening file in new window:", error);
-			new Notice(`Failed to open file in new window: ${filePath}`);
-		}
 	}
 
 	private async openAssignCategoriesModal(event: CalendarEventInfo): Promise<void> {
