@@ -43,8 +43,13 @@ export class PieChartBuilder {
 		const colors = limitedData.map((item) => item.color);
 		const totalValue = values.reduce((sum, val) => sum + val, 0);
 
-		if (this.chart) {
-			this.chart.destroy();
+		// Chart.js tracks chart instances per canvas. If this builder is recreated
+		// (common in reactive UIs), we must destroy any existing chart bound to this
+		// canvas before reusing it, otherwise Chart.js will throw:
+		// "Canvas is already in use..."
+		const existingChart = Chart.getChart(this.canvas);
+		if (existingChart) {
+			existingChart.destroy();
 		}
 
 		this.chart = new Chart(this.canvas, {
@@ -120,10 +125,11 @@ export class PieChartBuilder {
 	}
 
 	destroy(): void {
-		if (this.chart) {
-			this.chart.destroy();
-			this.chart = null;
+		const existingChart = this.chart ?? Chart.getChart(this.canvas);
+		if (existingChart) {
+			existingChart.destroy();
 		}
+		this.chart = null;
 	}
 
 	getChart(): Chart | null {

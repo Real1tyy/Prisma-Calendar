@@ -400,6 +400,10 @@ export class CategoriesSettings {
 
 		chartData.sort((a, b) => b.value - a.value);
 
+		// `updateChart` can be called frequently (rxjs subscription). Ensure the
+		// previous chart instance is destroyed before reusing the same canvas.
+		this.chartBuilder?.destroy();
+
 		this.chartBuilder = new PieChartBuilder(canvas, chartData, {
 			tooltipFormatter: (label, value, percentage) => {
 				return `${label}: ${value} ${value === 1 ? "event" : "events"} (${percentage}%)`;

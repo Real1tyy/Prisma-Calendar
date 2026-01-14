@@ -50,6 +50,10 @@ export class ChartComponent {
 		const canvas = this.container.querySelector("canvas");
 		if (!canvas) return;
 
+		// `renderChart` may be called more than once if the stats view refreshes.
+		// Ensure we don't leak a Chart.js instance bound to the same canvas.
+		this.chartBuilder?.destroy();
+
 		const limitedEntries = entries.slice(0, MAX_LABELS);
 		const isMobile = this.isMobileView();
 		const colors = generateColors(limitedEntries.length);
