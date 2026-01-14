@@ -289,6 +289,14 @@ export const removeInstanceDate = (text: string): string => {
 };
 
 /**
+ * Cleans up event title by removing both ZettelID and recurring instance date.
+ * Useful for displaying clean titles in tooltips and UI.
+ */
+export const cleanupTitle = (text: string): string => {
+	return removeInstanceDate(removeZettelId(text));
+};
+
+/**
  * Gets the event name from either the title property or the filename.
  * If titleProp is configured and exists in frontmatter, returns that value.
  * Otherwise, extracts the filename (without extension) and strips ZettelID.

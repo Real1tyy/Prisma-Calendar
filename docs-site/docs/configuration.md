@@ -227,6 +227,7 @@ STATUS: Done
 ### Visual Appearance
 
 - **Display density**: `comfortable` or `compact` (default: `comfortable`)
+- **All-day event height**: maximum height in pixels for individual all-day events before they become scrollable (30-500px, default: 75px). When an all-day event has many frontmatter properties displayed, it will scroll internally instead of expanding indefinitely.
 - **Past event contrast**: visual contrast of past events (0% = invisible, 100% = normal, default: 70%)
 - **Show color dots**: show color indicator dots in monthly view (enabled by default)
 - **Thicker hour lines**: make full-hour lines thicker in day/week views (enabled by default)
@@ -248,6 +249,12 @@ The sticky header options improve navigation in long calendars by keeping contex
 ### Event Interaction
 
 - **Enable event preview**: hover previews inside the calendar (enabled by default)
+- **Event hover tooltips**: when hovering over events, a tooltip displays:
+  - **First line**: Event name with time/duration
+    - Timed events: `Event Name - 09:00 AM - 10:30 AM (1h 30m)`
+    - All-day events: `Event Name - Thu, Jan 16, 2025`
+  - **File path**: location of the event note
+  - **Frontmatter properties**: configured display properties with clean wikilink text (aliases or basenames only)
 - **Show current time indicator**: time line in day/week views (enabled by default)
 - **Highlight upcoming event**: highlight the next upcoming event (enabled by default)
 - **Skip underscore properties**: skip displaying properties that start with underscore in event chips (enabled by default)

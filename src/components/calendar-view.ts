@@ -21,18 +21,17 @@ import type {
 import { isTimedEvent, isUntrackedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import {
+	cleanupTitle,
 	findAdjacentEvent,
 	getCommonCategories,
 	getSourceEventInfoFromVirtual,
-	removeInstanceDate,
-	removeZettelId,
 	stripISOSuffix,
 } from "../utils/calendar-events";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
-import { calculateEndTime, roundToNearestHour, toLocalISOString } from "../utils/format";
+import { calculateDuration, calculateEndTime, roundToNearestHour, toLocalISOString } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
-import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
+import { extractPropertyText, getDisplayProperties, renderPropertyValue } from "../utils/property-display";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
@@ -1546,11 +1545,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// Add title
 		const titleEl = document.createElement("div");
 		titleEl.className = cls("fc-event-title-custom");
-		let title = event.title;
-		if (title) {
-			title = removeZettelId(title);
-			title = removeInstanceDate(title);
-		}
+		const title = cleanupTitle(event.title);
 		titleEl.textContent = title;
 		headerEl.appendChild(titleEl);
 
@@ -1797,21 +1792,48 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			element.style.setProperty("--past-event-opacity", opacity.toString());
 		}
 
-		// Add tooltip with file path and frontmatter display data
-		const tooltipParts = [`File: ${event.extendedProps.filePath}`];
+		const settings = this.bundle.settingsStore.currentSettings;
+		const tooltipParts = [];
+
+		let firstLine = cleanupTitle(event.title);
+
+		if (event.start) {
+			if (event.allDay) {
+				// For all-day events: NAME - DATE
+				const dateStr = event.start.toLocaleDateString("en-US", {
+					weekday: "short",
+					month: "short",
+					day: "numeric",
+					year: "numeric",
+				});
+				firstLine += ` - ${dateStr}`;
+			} else {
+				// For timed events: NAME - START - END (DURATION)
+				const startStr = event.start.toLocaleTimeString("en-US", {
+					hour: "2-digit",
+					minute: "2-digit",
+				});
+
+				const endStr = event.end!.toLocaleTimeString("en-US", {
+					hour: "2-digit",
+					minute: "2-digit",
+				});
+				const duration = calculateDuration(event.start, event.end!);
+				firstLine += ` - ${startStr} - ${endStr} (${duration})`;
+			}
+		}
+
+		tooltipParts.push(firstLine);
 
 		const displayData = event.extendedProps.frontmatterDisplayData;
-		const settings = this.bundle.settingsStore.currentSettings;
 		const displayPropertiesList = event.allDay
 			? settings.frontmatterDisplayPropertiesAllDay
 			: settings.frontmatterDisplayProperties;
 
 		const displayProperties = displayData ? getDisplayProperties(displayData, displayPropertiesList) : [];
 		for (const [prop, value] of displayProperties) {
-			// Note: The value might be an array or object, so we need to stringify it for the tooltip.
-			// Simple string interpolation `${value}` works for arrays but shows `[object Object]` for objects.
-			// The existing behavior is maintained here.
-			tooltipParts.push(`${prop}: ${String(value)}`);
+			const displayValue = extractPropertyText(value);
+			tooltipParts.push(`${prop}: ${displayValue}`);
 		}
 
 		element.setAttribute("title", tooltipParts.join("\n"));

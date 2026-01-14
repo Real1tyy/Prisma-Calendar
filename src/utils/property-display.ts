@@ -53,3 +53,36 @@ export function renderPropertyValue(container: HTMLElement, value: unknown, opti
 
 	renderPropertyValueUtil(container, value, config);
 }
+
+/**
+ * Extract plain text representation of a property value for tooltips.
+ * Uses the same rendering logic as renderPropertyValue but returns text only.
+ */
+export function extractPropertyText(value: unknown): string {
+	if (value == null) return "";
+
+	const tempContainer = document.createElement("div");
+	const config: PropertyRendererConfig = {
+		createLink: (text: string, _path: string, _isObsidianLink: boolean) => {
+			const textNode = document.createTextNode(text);
+			const span = document.createElement("span");
+			span.appendChild(textNode);
+			return span;
+		},
+		createText: (text: string) => {
+			const textNode = document.createTextNode(text);
+			const span = document.createElement("span");
+			span.appendChild(textNode);
+			return span;
+		},
+		createSeparator: () => {
+			const textNode = document.createTextNode(", ");
+			const span = document.createElement("span");
+			span.appendChild(textNode);
+			return span;
+		},
+	};
+
+	renderPropertyValueUtil(tempContainer, value, config);
+	return tempContainer.textContent || "";
+}
