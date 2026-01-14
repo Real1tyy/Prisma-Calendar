@@ -8,6 +8,12 @@ import json
 import sys
 import subprocess
 from pathlib import Path
+from datetime import datetime
+
+def log_with_timestamp(message: str):
+    """Print message with timestamp."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] {message}")
 
 def get_version_from_manifest() -> str:
     """Get current version from manifest.json."""
@@ -84,6 +90,9 @@ def check_git_clean() -> bool:
         return False
 
 def main():
+    start_time = datetime.now()
+    log_with_timestamp("🚀 Starting release creation script")
+
     project_root = Path.cwd()
 
     bump_type = sys.argv[1] if len(sys.argv) > 1 else "minor"
@@ -239,6 +248,10 @@ def main():
         repo_url = get_repo_url()
         print(f"\n✅ Release {tag} created successfully!")
         print(f"   View at: {repo_url}/releases/tag/{tag}")
+
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        log_with_timestamp(f"✅ Release creation completed in {duration:.2f} seconds")
 
     except KeyboardInterrupt:
         print("\n🛑 Release process cancelled by user")

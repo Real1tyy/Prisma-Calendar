@@ -9,6 +9,12 @@ import sys
 import re
 from pathlib import Path
 from typing import Tuple
+from datetime import datetime
+
+def log_with_timestamp(message: str):
+    """Print message with timestamp."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] {message}")
 
 def parse_version(version: str) -> Tuple[int, int, int]:
     """Parse semantic version string into (major, minor, patch)."""
@@ -31,6 +37,9 @@ def bump_version(version: str, bump_type: str) -> str:
         raise ValueError(f"Invalid bump type: {bump_type}. Must be 'major', 'minor', or 'patch'")
 
 def main():
+    start_time = datetime.now()
+    log_with_timestamp("🚀 Starting version bump script")
+
     project_root = Path.cwd()
     manifest_path = project_root / "manifest.json"
     package_path = project_root / "package.json"
@@ -99,6 +108,10 @@ def main():
         print(f"✅ Updated package.json: version = {new_version}")
         print(f"✅ Updated versions.json: {new_version} → {min_app_version}")
         print(f"\n🎯 New version: {new_version}")
+
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        log_with_timestamp(f"✅ Version bump completed in {duration:.2f} seconds")
 
     except json.JSONDecodeError as e:
         print(f"❌ Error parsing JSON: {e}")
