@@ -28,6 +28,7 @@ import {
 	inputValueToISOString,
 } from "../../utils/format";
 import { parseIntoList } from "../../utils/list-utils";
+import { getCategoriesFromFilePath } from "../../utils/obsidian";
 import { parseAsLocalDate } from "../../utils/time-formatter";
 import { Stopwatch } from "../stopwatch";
 import { CategoryAssignModal } from "./category-assign-modal";
@@ -1345,10 +1346,7 @@ export abstract class BaseEventModal extends Modal {
 				this.originalFrontmatter = { ...cache.frontmatter };
 
 				const settings = this.bundle.settingsStore.currentSettings;
-				if (settings.categoryProp) {
-					const categoryValue = cache.frontmatter[settings.categoryProp] as unknown;
-					this.selectedCategories = parseIntoList(categoryValue);
-				}
+				this.selectedCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
 			}
 		} catch (error) {
 			console.error("Error loading existing frontmatter:", error);

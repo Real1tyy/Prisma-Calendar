@@ -1,13 +1,12 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
-import { type App, Notice, TFile } from "obsidian";
+import { type App, Notice } from "obsidian";
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { AssignCategoriesCommand, ToggleSkipCommand } from "../../core/commands";
 import { type NodeRecurringEvent, RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
 import { removeZettelId } from "../../utils/calendar-events";
 import type { RecurrenceType } from "../../utils/date-recurrence";
-import { parseIntoList } from "../../utils/list-utils";
-import { openFileInNewTab } from "../../utils/obsidian";
+import { getCategoriesFromFilePath, openFileInNewTab } from "../../utils/obsidian";
 import { getStartDateTime } from "../../utils/recurring-utils";
 import type { CalendarView } from "../calendar-view";
 import { CategoryAssignModal } from "../modals/category-assign-modal";
@@ -108,17 +107,7 @@ export class RecurringEventsModal extends BaseEventListModal {
 		return events.map((event) => {
 			const displayTitle = removeZettelId(event.title);
 
-			const categories: string[] = [];
-			if (settings.categoryProp) {
-				const file = this.app.vault.getAbstractFileByPath(event.sourceFilePath);
-				if (file instanceof TFile) {
-					const metadata = this.app.metadataCache.getFileCache(file);
-					const categoryValue = metadata?.frontmatter?.[settings.categoryProp];
-					if (categoryValue) {
-						categories.push(...parseIntoList(categoryValue));
-					}
-				}
-			}
+			const categories = getCategoriesFromFilePath(this.app, event.sourceFilePath, settings.categoryProp);
 
 			return {
 				filePath: event.sourceFilePath,
@@ -205,15 +194,7 @@ export class RecurringEventsModal extends BaseEventListModal {
 			return;
 		}
 
-		const file = this.app.vault.getAbstractFileByPath(item.filePath);
-		if (!(file instanceof TFile)) {
-			new Notice("File not found");
-			return;
-		}
-
-		const metadata = this.app.metadataCache.getFileCache(file);
-		const categoryValue = metadata?.frontmatter?.[settings.categoryProp];
-		const currentCategories = parseIntoList(categoryValue);
+		const currentCategories = getCategoriesFromFilePath(this.app, item.filePath, settings.categoryProp);
 
 		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
 		const modal = new CategoryAssignModal(

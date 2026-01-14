@@ -18,8 +18,7 @@ import { type ContextMenuItem, type Frontmatter, isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
 import { findAdjacentEvent, isEventDone } from "../utils/calendar-events";
 import { intoDate, toLocalISOString } from "../utils/format";
-import { parseIntoList } from "../utils/list-utils";
-import { emitHover, openFileInNewWindow } from "../utils/obsidian";
+import { emitHover, getCategoriesFromFilePath, openFileInNewWindow } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import type { CalendarView } from "./calendar-view";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
@@ -741,17 +740,12 @@ export class EventContextMenu {
 				rruleType = frontmatter[settings.rruleProp] as string | undefined;
 				rruleSpec = frontmatter[settings.rruleSpecProp] as string | undefined;
 
-				if (settings.categoryProp) {
-					const categoryValue = frontmatter[settings.categoryProp];
-					if (categoryValue) {
-						const categories = parseIntoList(categoryValue);
-						if (categories.length > 0) {
-							const categoryColor = this.bundle.categoryTracker
-								.getCategoriesWithColors()
-								.find((c) => c.name === categories[0])?.color;
-							sourceCategory = categoryColor || settings.defaultNodeColor;
-						}
-					}
+				const categories = getCategoriesFromFilePath(this.app, sourceEventPath, settings.categoryProp);
+				if (categories.length > 0) {
+					const categoryColor = this.bundle.categoryTracker
+						.getCategoriesWithColors()
+						.find((c) => c.name === categories[0])?.color;
+					sourceCategory = categoryColor || settings.defaultNodeColor;
 				}
 			}
 		}
@@ -890,18 +884,8 @@ export class EventContextMenu {
 				return;
 			}
 
-			const cache = this.app.metadataCache.getFileCache(file);
 			const settings = this.bundle.settingsStore.currentSettings;
-			const categoryProp = settings.categoryProp;
-
-			if (!categoryProp) {
-				new Notice("Category property not configured in settings");
-				return;
-			}
-
-			// Get current categories from frontmatter
-			const categoryValue = cache?.frontmatter?.[categoryProp] as unknown;
-			const currentCategories = parseIntoList(categoryValue);
+			const currentCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
 
 			// Get all available categories with colors
 			const categories = this.bundle.categoryTracker.getCategoriesWithColors();

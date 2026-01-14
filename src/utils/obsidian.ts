@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import { getCalendarViewType } from "../components/calendar-view";
 import type { Frontmatter } from "../types";
+import { parseIntoList } from "./list-utils";
 
 export const emitHover = (
 	app: App,
@@ -74,6 +75,77 @@ export async function getFrontmatterWithRetry(
 
 	// Return fallback (even if empty) if all retries exhausted
 	return fallbackFrontmatter || {};
+}
+
+/**
+ * Gets a TFile by path or throws an error if not found.
+ * Assumes the file exists - use this when you're certain the file should be there.
+ * @param app The Obsidian app instance
+ * @param filePath The path of the file
+ * @returns The TFile instance
+ * @throws Error if file is not found or is not a TFile
+ */
+export function getFileByPathOrThrow(app: App, filePath: string): TFile {
+	const file = app.vault.getAbstractFileByPath(filePath);
+	if (!(file instanceof TFile)) {
+		const error = new Error(`File not found or is not a TFile: ${filePath}`);
+		console.error(error);
+		throw error;
+	}
+	return file;
+}
+
+/**
+ * Gets a TFile and its frontmatter by path or throws an error if not found.
+ * Assumes the file exists and has frontmatter - use this when you're certain both should be there.
+ * @param app The Obsidian app instance
+ * @param filePath The path of the file
+ * @returns Object containing the TFile and its frontmatter
+ * @throws Error if file is not found, is not a TFile, or has no frontmatter
+ */
+export function getFileAndFrontmatter(app: App, filePath: string): { file: TFile; frontmatter: Frontmatter } {
+	const file = getFileByPathOrThrow(app, filePath);
+	const metadata = app.metadataCache.getFileCache(file);
+	const frontmatter = metadata?.frontmatter;
+
+	if (!frontmatter) {
+		const error = new Error(`File has no frontmatter: ${filePath}`);
+		console.error(error);
+		throw error;
+	}
+
+	return { file, frontmatter };
+}
+
+/**
+ * Gets categories from a file path, parsing them and returning a list.
+ * Returns empty array if no categories are found, categoryProp is undefined, or file doesn't exist.
+ * This is a safe utility that handles missing files gracefully.
+ * @param app The Obsidian app instance
+ * @param filePath The path of the file
+ * @param categoryProp The frontmatter property name for categories (can be undefined)
+ * @returns Array of category names, or empty array if none found, categoryProp is undefined, or file doesn't exist
+ */
+export function getCategoriesFromFilePath(app: App, filePath: string, categoryProp: string | undefined): string[] {
+	if (!categoryProp) {
+		return [];
+	}
+
+	try {
+		const file = app.vault.getAbstractFileByPath(filePath);
+		if (!(file instanceof TFile)) {
+			return [];
+		}
+
+		const cache = app.metadataCache.getFileCache(file);
+		const categoryValue = cache?.frontmatter?.[categoryProp];
+		if (!categoryValue) {
+			return [];
+		}
+		return parseIntoList(categoryValue);
+	} catch {
+		return [];
+	}
 }
 
 type LeafCreationStrategy = true | false | "window";
