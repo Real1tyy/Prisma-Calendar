@@ -1529,6 +1529,21 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const container = document.createElement("div");
 		container.className = cls("fc-event-content-wrapper");
 
+		const settings = this.bundle.settingsStore.currentSettings;
+		const displayData = event.extendedProps.frontmatterDisplayData;
+		const isSourceRecurring = displayData?.[settings.rruleProp];
+		const isPhysicalRecurring = displayData?.[settings.sourceProp];
+
+		if (
+			(isSourceRecurring && settings.showSourceRecurringMarker) ||
+			(isPhysicalRecurring && settings.showPhysicalRecurringMarker)
+		) {
+			const markerEl = document.createElement("div");
+			markerEl.className = cls("event-marker");
+			markerEl.textContent = isSourceRecurring ? settings.sourceRecurringMarker : settings.physicalRecurringMarker;
+			container.appendChild(markerEl);
+		}
+
 		const headerEl = document.createElement("div");
 		headerEl.className = cls("fc-event-header");
 
@@ -1553,8 +1568,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// On mobile only: hide display properties to save space (monthly)
 		const hideProperties = isMobile && isMonthView;
 		if (!hideProperties) {
-			const displayData = event.extendedProps.frontmatterDisplayData;
-			const settings = this.bundle.settingsStore.currentSettings;
 			const displayPropertiesList = event.allDay
 				? settings.frontmatterDisplayPropertiesAllDay
 				: settings.frontmatterDisplayProperties;
@@ -1806,19 +1819,26 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					year: "numeric",
 				});
 				firstLine += ` - ${dateStr}`;
-			} else {
+			} else if (event.end) {
 				// For timed events: NAME - START - END (DURATION)
 				const startStr = event.start.toLocaleTimeString("en-US", {
 					hour: "2-digit",
 					minute: "2-digit",
 				});
 
-				const endStr = event.end!.toLocaleTimeString("en-US", {
+				const endStr = event.end.toLocaleTimeString("en-US", {
 					hour: "2-digit",
 					minute: "2-digit",
 				});
-				const duration = calculateDuration(event.start, event.end!);
+				const duration = calculateDuration(event.start, event.end);
 				firstLine += ` - ${startStr} - ${endStr} (${duration})`;
+			} else {
+				// For timed events without end time: NAME - START
+				const startStr = event.start.toLocaleTimeString("en-US", {
+					hour: "2-digit",
+					minute: "2-digit",
+				});
+				firstLine += ` - ${startStr}`;
 			}
 		}
 

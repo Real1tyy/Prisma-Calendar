@@ -162,6 +162,10 @@ const CalendarSettingsSchema = z
 		autoAssignCategoryByName: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_CATEGORY_BY_NAME), // Automatically assign category when event name matches category name (case-insensitive)
 		categoryAssignmentPresets: z.array(CategoryAssignmentPresetSchema).catch([]), // Custom category assignment rules based on event name
 		contextMenuItems: z.array(ContextMenuItemSchema).catch([...DEFAULT_CONTEXT_MENU_ITEMS]), // Context menu items to show when right-clicking events
+		showSourceRecurringMarker: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_SOURCE_RECURRING_MARKER), // Show marker indicator on source recurring events
+		showPhysicalRecurringMarker: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_PHYSICAL_RECURRING_MARKER), // Show marker indicator on physical recurring instance events
+		sourceRecurringMarker: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SOURCE_RECURRING_MARKER), // Symbol/emoji to display on source recurring events
+		physicalRecurringMarker: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_PHYSICAL_RECURRING_MARKER), // Symbol/emoji to display on physical recurring instance events
 	})
 	.strip();
 

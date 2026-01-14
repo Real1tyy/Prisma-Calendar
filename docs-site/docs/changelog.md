@@ -8,6 +8,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Event Markers for Recurring Events**: Visual indicators now appear in the top-right corner of recurring events to distinguish between source events and physical instances. Source recurring events (the original recurring event template) display a configurable marker (default: ⦿), while physical recurring instances (actual generated events) show a different marker (default: 🔄). Both markers and their visibility can be customized in Settings → Calendar → Recurring events → Event markers. This makes it instantly clear which events are source templates versus generated instances when viewing your calendar.
+
 - **Enhanced Event Tooltips**: Event hover tooltips now display start/end times and duration for timed events, and date for all-day events. Wikilink properties are displayed cleanly showing only the alias or filename. Provides quick time and property information without opening the event.
 
 - **Configurable All-Day Event Height**: Individual all-day events now have a configurable maximum height (default 75px, range 30-500px). Events that exceed this height become scrollable, allowing you to see all frontmatter properties while keeping the calendar compact. Configure via Settings → Calendar → User interface → "All-day event height".

@@ -93,6 +93,34 @@ export class CalendarSettings {
 			max: 10000,
 			step: 100,
 		});
+
+		new Setting(containerEl).setName("Event markers").setHeading();
+
+		this.ui.addToggle(containerEl, {
+			key: "showSourceRecurringMarker",
+			name: "Show source recurring marker",
+			desc: "Display a marker indicator on source recurring events (the original event that generates instances).",
+		});
+
+		this.ui.addText(containerEl, {
+			key: "sourceRecurringMarker",
+			name: "Source recurring marker",
+			desc: "Symbol/emoji to display on source recurring events in the top-right corner.",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_SOURCE_RECURRING_MARKER,
+		});
+
+		this.ui.addToggle(containerEl, {
+			key: "showPhysicalRecurringMarker",
+			name: "Show physical recurring marker",
+			desc: "Display a marker indicator on physical recurring instance events (actual instances created from source).",
+		});
+
+		this.ui.addText(containerEl, {
+			key: "physicalRecurringMarker",
+			name: "Physical recurring marker",
+			desc: "Symbol/emoji to display on physical recurring instance events in the top-right corner.",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_PHYSICAL_RECURRING_MARKER,
+		});
 	}
 
 	private addUISettings(containerEl: HTMLElement): void {

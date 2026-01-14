@@ -607,6 +607,17 @@ Break: 60  # 1 hour lunch break
 - Beyond that, events appear as read-only virtual items to keep your vault light
 - **Per-event override**: Set `Future Instances Count` property in a recurring event's frontmatter to override the global setting for that specific recurring series
 
+### Event Markers
+
+Visual indicators appear in the top-right corner of recurring events to distinguish between source events and physical instances (shown by default):
+
+- **Show source recurring marker**: Toggle visibility of markers on source recurring events (default: enabled)
+- **Source recurring marker**: Symbol/emoji displayed on source recurring events (default: ⦿). Use any Unicode character or emoji.
+- **Show physical recurring marker**: Toggle visibility of markers on physical recurring instances (default: enabled)
+- **Physical recurring marker**: Symbol/emoji displayed on physical recurring instance events (default: 🔄). Use any Unicode character or emoji.
+
+Customize markers in Settings → Calendar → Recurring events → Event markers to use your preferred symbols (e.g., ⚙️, 🔁, 📍, ⭐, 📌) or disable them if you prefer a cleaner look.
+
 ### Frontmatter Propagation
 
 Control how frontmatter changes in source recurring events propagate to physical instances:

@@ -6,6 +6,20 @@ Create repeating events using `RRule` and `RRuleSpec` in frontmatter.
 
 One **configuration node** serves as the master template. Defines recurrence pattern, all frontmatter properties, and complete content (headings, text, checkboxes). System copies entire file structure to create each instance.
 
+### Visual Markers
+
+Recurring events display visual indicators in the top-right corner to distinguish between source events and physical instances (shown by default):
+
+- **Source Events** (⦿): The original recurring event template that defines the recurrence pattern
+- **Physical Instances** (🔄): Actual generated note files created from the source event
+
+Both markers and their visibility can be customized in Settings → Calendar → Recurring events → Event markers. You can:
+- Toggle markers on/off for source events and physical instances independently
+- Customize the marker symbol/emoji for each type
+- Use any Unicode character or emoji (e.g., ⚙️, 🔁, 📍, ⭐, 📌)
+
+This makes it instantly clear which events are source templates versus generated instances when viewing your calendar.
+
 ### Generated Instances
 
 **Physical Events**: Actual note files (controlled by "Future instances count")
