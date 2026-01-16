@@ -436,6 +436,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				pluginName: "Prisma Calendar",
 				changelogContent: CHANGELOG_CONTENT,
 				links: {
+					github: "https://github.com/Real1tyy/Prisma-Calendar",
 					support: "https://matejvavroproductivity.com/support/",
 					changelog: "https://real1tyy.github.io/Prisma-Calendar/changelog",
 					documentation: (this.manifest as any).helpUrl || "https://real1tyy.github.io/Prisma-Calendar/",

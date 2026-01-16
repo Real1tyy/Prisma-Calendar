@@ -6607,25 +6607,89 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 	width: 90%;
 }
 
-.prisma-whats-new-header {
-	margin-bottom: 1.5rem;
+.prisma-whats-new-plugin-name {
+	color: var(--link-color);
+	text-decoration: none;
+	transition: all 0.2s ease;
+	position: relative;
+	font-weight: 600;
 }
 
-.prisma-whats-new-header h2 {
-	margin-bottom: 0.5rem;
-	color: var(--text-normal);
+.prisma-whats-new-plugin-name:hover {
+	color: var(--link-color-hover);
+	text-decoration: none;
+}
+
+.prisma-whats-new-plugin-name::after {
+	content: "";
+	position: absolute;
+	bottom: -2px;
+	left: 0;
+	width: 0;
+	height: 2px;
+	background-color: var(--interactive-accent);
+	transition: width 0.3s ease;
+}
+
+.prisma-whats-new-plugin-name:hover::after {
+	width: 100%;
 }
 
 .prisma-whats-new-subtitle {
 	color: var(--text-muted);
 	font-size: 0.9rem;
-	margin: 0;
+	margin: 0 0 1rem 0;
+}
+
+.prisma-whats-new-support {
+	margin: 0 0 1rem 0;
+	padding: 1rem;
+	background-color: var(--background-secondary);
+	border-radius: 8px;
+}
+
+.prisma-whats-new-support h3 {
+	margin-top: 0;
+	margin-bottom: 0.5rem;
+	font-size: 1rem;
+}
+
+.prisma-whats-new-support p {
+	margin: 0.5rem 0;
+	color: var(--text-normal);
+}
+
+.prisma-whats-new-support a {
+	color: var(--link-color);
+	text-decoration: none;
+	transition: all 0.2s ease;
+	position: relative;
+}
+
+.prisma-whats-new-support a:hover {
+	color: var(--link-color-hover);
+	text-decoration: none;
+}
+
+.prisma-whats-new-support a::after {
+	content: "";
+	position: absolute;
+	bottom: -2px;
+	left: 0;
+	width: 0;
+	height: 2px;
+	background-color: var(--interactive-accent);
+	transition: width 0.3s ease;
+}
+
+.prisma-whats-new-support a:hover::after {
+	width: 100%;
 }
 
 .prisma-whats-new-content {
-	max-height: 500px;
+	max-height: 400px;
 	overflow-y: auto;
-	margin-bottom: 1.5rem;
+	margin-bottom: 1rem;
 	padding-right: 0.5rem;
 	border-radius: 8px;
 }
@@ -6649,55 +6713,80 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 
 .prisma-whats-new-content li {
 	margin-bottom: 0.5rem;
+	line-height: 1.6;
+}
+
+.prisma-whats-new-content code {
+	background: var(--code-background);
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 0.9em;
+}
+
+.prisma-whats-new-content pre {
+	background: var(--code-background);
+	padding: 1rem;
+	border-radius: 6px;
+	overflow-x: auto;
+}
+
+.prisma-whats-new-content a.external-link {
+	color: var(--link-external-color);
+}
+
+.prisma-whats-new-content a.external-link::after {
+	content: "↗";
+	margin-left: 0.2em;
+	font-size: 0.8em;
 }
 
 .prisma-whats-new-empty {
 	text-align: center;
 	color: var(--text-muted);
 	padding: 2rem;
+	font-style: italic;
 }
 
-.prisma-whats-new-support {
-	margin: 1.5rem 0;
-	padding: 1rem;
-	background-color: var(--background-secondary);
-	border-radius: 8px;
-}
-
-.prisma-whats-new-support h3 {
+.prisma-whats-new-sticky-footer {
+	position: sticky;
+	bottom: 0;
+	background: var(--background-primary);
+	padding-top: 0.75rem;
 	margin-top: 0;
-	margin-bottom: 0.5rem;
-	font-size: 1rem;
-}
-
-.prisma-whats-new-support p {
-	margin: 0;
-	color: var(--text-normal);
-}
-
-.prisma-whats-new-support a {
-	color: var(--link-color);
-	text-decoration: none;
-}
-
-.prisma-whats-new-support a:hover {
-	text-decoration: underline;
-}
-
-.prisma-whats-new-modal hr {
-	margin-top: 0;
-	margin-bottom: 0;
+	z-index: 10;
+	border-top: 1px solid var(--background-modifier-border);
 }
 
 .prisma-whats-new-buttons {
 	display: flex;
 	gap: 0.5rem;
-	justify-content: flex-end;
-	margin-top: 1rem;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	padding-bottom: 0.5rem;
+	width: 100%;
 }
 
 .prisma-whats-new-buttons button {
+	flex: 1;
+	min-width: 0;
 	padding: 0.5rem 1rem;
 	border-radius: 4px;
 	cursor: pointer;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	transition: all 0.2s ease;
+	text-align: center;
+}
+
+.prisma-whats-new-buttons button:hover {
+	background: var(--interactive-hover);
+	border-color: var(--interactive-accent);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.prisma-whats-new-buttons button:active {
+	transform: translateY(0);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
