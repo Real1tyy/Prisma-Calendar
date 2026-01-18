@@ -4,7 +4,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.29.1
+## 1.29.1 - 1/14/2026
 
 ### Bug Fixes
 
@@ -12,7 +12,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.29.0
+## 1.29.0 - 1/12/2026
 
 ### New Features
 
@@ -41,7 +41,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.28.0
+## 1.28.0 - 1/11/2026
 
 ### New Features
 
@@ -55,7 +55,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.27.0
+## 1.27.0 - 1/11/2026
 
 ### New Features
 
@@ -69,7 +69,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.26.0
+## 1.26.0 - 1/9/2026
 
 ### New Features
 
@@ -112,7 +112,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.25.0
+## 1.25.0 - 1/8/2026
 
 ### New Features
 
@@ -143,7 +143,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.24.0
+## 1.24.0 - 1/7/2026
 
 ### New Features
 
@@ -151,7 +151,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.23.0
+## 1.23.0 - 1/6/2026
 
 ### New Features
 
@@ -179,7 +179,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.22.3
+## 1.22.3 - 1/5/2026
 
 ### Performance Improvements
 
@@ -191,7 +191,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.22.2
+## 1.22.2 - 1/5/2026
 
 ### Bug Fixes
 
@@ -199,7 +199,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.22.1
+## 1.22.1 - 1/4/2026
 
 ### Bug Fixes
 
@@ -207,7 +207,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.22.0
+## 1.22.0 - 12/27/2025
 
 ### New Features
 
@@ -226,7 +226,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.21.0
+## 1.21.0 - 12/25/2025
 
 ### New Features
 
@@ -242,7 +242,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.20.2
+## 1.20.2 - 12/24/2025
 
 ### Bug Fixes
 
@@ -250,7 +250,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.20.1
+## 1.20.1 - 12/24/2025
 
 ### Improvements
 
@@ -260,7 +260,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.20.0
+## 1.20.0 - 12/24/2025
 
 ### New Features
 
@@ -307,7 +307,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.19.0
+## 1.19.0 - 12/22/2025
 
 ### New Features
 
@@ -325,14 +325,14 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.18.2
+## 1.18.2 - 12/22/2025
 
 ### Bug Fixes
 
 - **Fixed Color Rule Evaluation Errors**: Fixed an issue where color rules using `.includes()` (like `Category.includes('Work')`) would fail with "Cannot read properties of undefined" errors when the referenced property was missing from event frontmatter. The system now automatically normalizes frontmatter before color evaluation, ensuring properties used with `.includes()` default to empty arrays when missing, preventing evaluation errors and eliminating console warnings.
 
 ---
-## 1.18.1
+## 1.18.1 - 12/22/2025
 
 ### Bug Fixes
 
@@ -340,7 +340,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.18.0
+## 1.18.0 - 12/22/2025
 
 ### New Features
 
@@ -364,7 +364,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.17.0
+## 1.17.0 - 12/21/2025
 
 ### New Features
 
@@ -390,7 +390,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.16.0
+## 1.16.0 - 12/20/2025
 
 ### New Features
 
@@ -404,7 +404,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.15.1
+## 1.15.1 - 12/20/2025
 
 ### Bug Fixes
 
@@ -412,7 +412,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.15.0
+## 1.15.0 - 12/20/2025
 
 ### New Features
 
@@ -437,7 +437,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.14.2
+## 1.14.2 - 12/18/2025
 
 ### Bug Fixes
 
@@ -445,7 +445,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.14.1
+## 1.14.1 - 12/16/2025
 
 ### Bug Fixes
 
@@ -453,7 +453,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.14.0
+## 1.14.0 - 12/16/2025
 
 ### New Features
 
@@ -468,7 +468,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.13.0
+## 1.13.0 - 12/12/2025
 
 ### New Features
 
@@ -480,7 +480,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.12.0
+## 1.12.0 - 12/10/2025
 
 ### Improvements
 
@@ -493,7 +493,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.11.0
+## 1.11.0 - 12/9/2025
 
 ### New Features
 
@@ -518,7 +518,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.10.0
+## 1.10.0 - 12/6/2025
 
 ### New Features
 
@@ -576,7 +576,7 @@ Anyone with access to your vault can read your credentials. Use with caution.
 
 ---
 
-## 1.9.0
+## 1.9.0 - 12/5/2025
 
 ### New Features
 
@@ -627,7 +627,7 @@ Anyone with access to your vault can read your credentials. Use with caution.
 
 ---
 
-## 1.8.0
+## 1.8.0 - 11/30/2025
 
 ### New Features
 
@@ -663,7 +663,7 @@ Anyone with access to your vault can read your credentials. Use with caution.
 
 ---
 
-## 1.7.0
+## 1.7.0 - 11/29/2025
 
 ### New Features
 
@@ -841,7 +841,7 @@ Anyone with access to your vault can read your credentials. Use with caution.
 
 ---
 
-## 1.6.0
+## 1.6.0 - 11/20/2025
 
 ### Bug Fixes
 - **Fixed scroll jumping during event edits**: Prevented race conditions in event refresh logic that caused the calendar to jump to highlighted events when editing/moving events in different parts of the view.
@@ -908,7 +908,7 @@ Anyone with access to your vault can read your credentials. Use with caution.
 
 ---
 
-## 1.5.0
+## 1.5.0 - 10/30/2025
 
 ### New Features
 
@@ -934,7 +934,7 @@ Anyone with access to your vault can read your credentials. Use with caution.
 
 ---
 
-## 1.4.0
+## 1.4.0 - 10/28/2025
 
 ### New Features
 
@@ -980,7 +980,7 @@ Anyone with access to your vault can read your credentials. Use with caution.
 
 ---
 
-## 1.3.0
+## 1.3.0 - 10/10/2025
 
 ### New Features
 - **Move By Command**: New hotkey command to move selected events by a custom number of days. Allows precise event repositioning with positive or negative day offsets.
@@ -988,7 +988,7 @@ Anyone with access to your vault can read your credentials. Use with caution.
 
 ---
 
-## 1.2.0
+## 1.2.0 - 10/6/2025
 
 ### Recurring Events Enhancements
 - **Interlinked Recurring Events**: Recurring event instances are now properly interlinked, allowing seamless navigation between occurrences.
@@ -997,5 +997,5 @@ Anyone with access to your vault can read your credentials. Use with caution.
 
 ---
 
-## 1.1.0
+## 1.1.0 - 9/21/2025
 - Initial release of Prisma Calendar
