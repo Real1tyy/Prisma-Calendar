@@ -470,6 +470,10 @@ All notable changes to this project will be documented here.
 
 ## 1.13.0 - 12/12/2025
 
+### New Video
+
+- [The Most Advanced Calendar Plugin for Obsidian — Prisma Calendar Feature Showcase (Part 3)](https://www.youtube.com/watch?v=QuTyruv7uhU)
+
 ### New Features
 
 - **Open File in New Window**: Added "Open file in new window" option to the event context menu (right-click). This opens the event file in a detached popout window, making it easier to edit complex properties like checkboxes and list properties directly in the markdown editor without leaving the calendar view.
@@ -494,6 +498,10 @@ All notable changes to this project will be documented here.
 ---
 
 ## 1.11.0 - 12/9/2025
+
+### New Video
+
+- [Prisma Calendar Tutorial: Build a Real Calendar Workflow in Obsidian (Start to Finish)](https://www.youtube.com/watch?v=aARXf9ehgaw)
 
 ### New Features
 
@@ -842,6 +850,11 @@ Anyone with access to your vault can read your credentials. Use with caution.
 ---
 
 ## 1.6.0 - 11/20/2025
+
+### New Video
+
+1- [The Most Advanced Calendar Plugin for Obsidian — Prisma Calendar Feature Showcase (Part 1)](https://www.youtube.com/watch?v=aULuB6petbU)
+- [The Most Advanced Calendar Plugin for Obsidian — Prisma Calendar Feature Showcase (Part 2)](https://www.youtube.com/watch?v=JCYGWltxQQ0)
 
 ### Bug Fixes
 - **Fixed scroll jumping during event edits**: Prevented race conditions in event refresh logic that caused the calendar to jump to highlighted events when editing/moving events in different parts of the view.
