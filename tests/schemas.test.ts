@@ -169,6 +169,20 @@ describe("Calendar Schemas", () => {
 			expect(result.calendars[0].startProp).toBe("Start Date"); // default
 			expect(result.version).toBe("1.1.0"); // default
 		});
+
+		it("should normalize calendar directory paths", () => {
+			const result = CustomCalendarSettingsSchema.parse({
+				...defaultSettings,
+				calendars: [
+					{
+						...defaultSettings.calendars[0],
+						directory: "/4. Calendar/",
+					},
+				],
+			});
+
+			expect(result.calendars[0].directory).toBe("4. Calendar");
+		});
 	});
 
 	describe("CustomCalendarSettingsSchema validation", () => {

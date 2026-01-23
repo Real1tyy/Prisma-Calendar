@@ -1,3 +1,4 @@
+import { normalizeDirectoryPath } from "@real1ty-obsidian-plugins/utils";
 import { z } from "zod";
 import {
 	BATCH_BUTTON_IDS,
@@ -32,7 +33,7 @@ const EventPresetSchema = z
 
 const GeneralSettingsSchema = z
 	.object({
-		directory: z.string().catch(""),
+		directory: z.string().catch("").transform(normalizeDirectoryPath),
 		defaultDurationMinutes: z.number().int().positive().catch(SETTINGS_DEFAULTS.DEFAULT_DURATION_MINUTES),
 		showDurationField: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_DURATION_FIELD), // show duration in minutes field in event modal for quick editing
 		showStopwatch: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_STOPWATCH), // show stopwatch in event modal for precise time tracking
