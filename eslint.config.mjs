@@ -1,43 +1,118 @@
-// eslint.config.mjs
-import tsparser from "@typescript-eslint/parser";
-import { defineConfig } from "eslint/config";
-import obsidianmd from "eslint-plugin-obsidianmd";
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import eslintConfigPrettier from "eslint-config-prettier";
+import globals from "globals";
 
-export default defineConfig([
-	...obsidianmd.configs.recommended,
+export default [
+	// Base recommended configs
+	js.configs.recommended,
+	...tseslint.configs.recommended,
+	eslintConfigPrettier,
+
+	// Global ignores
 	{
 		ignores: [
-			"node_modules/**",
 			"**/node_modules/**",
-			"docs-site/**",
 			"**/dist/**",
+			"**/main.js",
+			"**/styles.css",
+			"**/*.d.ts",
+			"**/docs-site/**",
+			"**/.obsidian/**",
 			"**/build/**",
-			"main.js",
-			"*.config.js",
-			"*.config.mjs",
-			"esbuild.config.mjs",
-			"version-bump.mjs",
+			"**/coverage/**",
+			"**/.cache/**",
+			".eslintcache",
+			"**/htmlcov/**",
 		],
 	},
+
+	// Config files - no type checking
 	{
-		files: ["**/*.ts"],
+		files: [
+			"**/*.config.{js,mjs,ts}",
+			"**/esbuild.config.mjs",
+			"**/vitest.config.ts",
+			"**/version-bump.mjs",
+			".prettierrc.mjs",
+		],
 		languageOptions: {
-			parser: tsparser,
-			parserOptions: {
-				project: "./tsconfig.json",
-			},
+			ecmaVersion: 2022,
+			sourceType: "module",
 			globals: {
-				console: "readonly",
-				document: "readonly",
-				window: "readonly",
-				setTimeout: "readonly",
-				clearTimeout: "readonly",
-				setInterval: "readonly",
-				clearInterval: "readonly",
-				requestAnimationFrame: "readonly",
-				cancelAnimationFrame: "readonly",
-				NodeJS: "readonly",
+				...globals.node,
 			},
 		},
+		rules: {
+			"@typescript-eslint/no-unused-vars": [
+				"warn",
+				{
+					argsIgnorePattern: "^_",
+					varsIgnorePattern: "^_",
+				},
+			],
+			"@typescript-eslint/no-explicit-any": "off",
+			"no-console": "off",
+			"prefer-const": "error",
+		},
 	},
-]);
+
+	// TypeScript/JavaScript files configuration with type checking
+	{
+		files: ["**/*.ts", "**/*.tsx"],
+		ignores: ["**/*.config.ts", "**/vitest.config.ts"],
+		languageOptions: {
+			ecmaVersion: 2022,
+			sourceType: "module",
+			globals: {
+				...globals.browser,
+				...globals.node,
+			},
+			parserOptions: {
+				projectService: true,
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
+		rules: {
+			"@typescript-eslint/no-unused-vars": [
+				"warn",
+				{
+					argsIgnorePattern: "^_",
+					varsIgnorePattern: "^_",
+				},
+			],
+			"@typescript-eslint/no-explicit-any": "off",
+			"@typescript-eslint/explicit-function-return-type": "off",
+			"@typescript-eslint/explicit-module-boundary-types": "off",
+			"@typescript-eslint/no-non-null-assertion": "off",
+			"no-console": "off",
+			"prefer-const": "error",
+		},
+	},
+
+	// Regular JavaScript files
+	{
+		files: ["**/*.js", "**/*.mjs"],
+		ignores: ["**/*.config.{js,mjs}"],
+		languageOptions: {
+			ecmaVersion: 2022,
+			sourceType: "module",
+			globals: {
+				...globals.browser,
+				...globals.node,
+			},
+		},
+		rules: {
+			"no-console": "off",
+			"prefer-const": "error",
+		},
+	},
+
+	// TypeScript declaration files
+	{
+		files: ["**/*.d.ts"],
+		rules: {
+			"@typescript-eslint/triple-slash-reference": "off",
+		},
+	},
+];

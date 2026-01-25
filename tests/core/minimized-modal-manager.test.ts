@@ -1,4 +1,4 @@
-import type { Subject } from "rxjs";
+import { Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StopwatchSnapshot } from "../../src/components/stopwatch";
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
@@ -14,9 +14,7 @@ describe("MinimizedModalManager", () => {
 		vi.useFakeTimers();
 
 		// Create a mock indexer events subject
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const { Subject: RxSubject } = require("rxjs") as any;
-		mockIndexerEventsSubject = new RxSubject();
+		mockIndexerEventsSubject = new Subject();
 
 		// Create a mock bundle with minimal required properties
 		mockBundle = {

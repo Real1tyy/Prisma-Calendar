@@ -9,7 +9,6 @@ export {
 	// Types
 	type CalDAVAccount,
 	// Schemas
-
 	type CalDAVCalendarInfo,
 	type CalDAVPresetKey,
 	CalDAVSettingsSchema,

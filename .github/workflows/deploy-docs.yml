@@ -2,7 +2,7 @@ name: Deploy Docusaurus to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: "pnpm"
           cache-dependency-path: |
             pnpm-lock.yaml
             docs-site/pnpm-lock.yaml

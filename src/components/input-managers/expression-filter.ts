@@ -38,7 +38,7 @@ export class ExpressionFilterInputManager extends InputFilterManager {
 			if (!this.compiledFunc) {
 				const sanitized = sanitizeExpression(this.currentFilterValue, this.propertyMapping);
 				const params = Array.from(this.propertyMapping.values());
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval -- Dynamic function creation for expression evaluation with sanitized input
+
 				this.compiledFunc = new Function(...params, `"use strict"; return ${sanitized};`) as (
 					...args: unknown[]
 				) => boolean;

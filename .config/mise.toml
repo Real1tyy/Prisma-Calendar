@@ -5,35 +5,36 @@ OBSIDIAN_VAULT_PATH = "/home/real1ty/Documents/Example Vault"
 CI = "1"
 
 [tools]
-node = { version = "22" }       # LTS 2025-08
-"npm:pnpm" = "latest"           # workspace package-manager
-"npm:typescript" = "latest"     # ts-node uses this too
-"npm:@biomejs/biome" = "latest" # formatter + linter in one
-"npm:vitest" = "latest"         # unit-test runner
+node = { version = "22" }   # LTS 2025-08
+"npm:pnpm" = "latest"       # workspace package-manager
+"npm:typescript" = "latest" # ts-node uses this too
+"npm:prettier" = "latest"   # code formatter
+"npm:eslint" = "latest"     # linter
+"npm:vitest" = "latest"     # unit-test runner
 
 jq = "latest" # JSON parsing in shell scripts
 
-# Code Quality Tasks (using Biome directly)
+# Code Quality Tasks (using ESLint and Prettier)
 [tasks.check]
-description = "Check code quality (format + lint) using Biome"
+description = "Check code quality (format + lint) using Prettier and ESLint"
 run = [
-    "echo '🔍 Running Biome check (format + lint)...'",
+    "echo '🔍 Running code quality checks (Prettier + ESLint)...'",
     "pnpm run check",
-    "echo '✅ Biome check completed successfully!'",
+    "echo '✅ Code quality checks completed successfully!'",
 ]
 
 [tasks.format]
-description = "Format code using Biome"
+description = "Format code using Prettier"
 run = [
-    "echo '🎨 Formatting code with Biome...'",
+    "echo '🎨 Formatting code with Prettier...'",
     "pnpm run format:fix",
     "echo '✅ Code formatting completed!'",
 ]
 
 [tasks.lint]
-description = "Lint code using Biome"
+description = "Lint code using ESLint"
 run = [
-    "echo '🔍 Linting code with Biome...'",
+    "echo '🔍 Linting code with ESLint...'",
     "pnpm run lint:fix",
     "echo '✅ Linting completed!'",
 ]
@@ -63,16 +64,16 @@ run = ["echo '🧪 Running tests in watch mode...'", "pnpm run test:watch"]
 description = "CI pipeline for standalone project"
 run = [
     "echo '🚀 Starting CI Pipeline...'",
-    "echo '  → Running Biome check...'",
-    "pnpm run check:fix",
+    "echo '  → Running Prettier check...'",
+    "pnpm run format:fix",
+    "echo '  → Running ESLint check...'",
+    "pnpm run lint:fix",
     "echo '  → Running TypeScript check...'",
     "pnpm run typecheck",
     "echo '  → Running tests...'",
     "pnpm run test",
     "echo '  → Building project...'",
     "pnpm run build",
-    # "echo '  → Running ESLint...'",
-    # "pnpm run lint:eslint",
     "echo '✅ CI Pipeline completed successfully!'",
 ]
 
@@ -110,14 +111,14 @@ run = [
 description = "Pre-commit validation for standalone project"
 run = [
     "echo '🔍 Running pre-commit checks...'",
-    "echo '  → Running Biome check...'",
-    "pnpm run check:fix",
+    "echo '  → Running Prettier check...'",
+    "pnpm run format:fix",
+    "echo '  → Running ESLint check...'",
+    "pnpm run lint:fix",
     "echo '  → Running TypeScript check...'",
     "pnpm run typecheck",
     "echo '  → Running tests...'",
     "pnpm run test",
-    # "echo '  → Running ESLint...'",
-    # "pnpm run lint:eslint",
     "echo '✅ All pre-commit checks passed!'",
 ]
 
@@ -242,5 +243,6 @@ run = [
     "echo '  → Node version:' $(node --version)",
     "echo '  → pnpm version:' $(pnpm --version)",
     "echo '  → TypeScript version:' $(npx tsc --version)",
-    "echo '  → Biome version:' $(npx biome --version)",
+    "echo '  → Prettier version:' $(npx prettier --version)",
+    "echo '  → ESLint version:' $(npx eslint --version)",
 ]
