@@ -73,9 +73,7 @@ export class DailyStatsModal extends IntervalStatsModal {
 	private getTodayOrIntervalStart(): Date {
 		const today = new Date();
 		const bounds =
-			this.calendarViewType === "dayGridMonth"
-				? getMonthBounds(this.currentDate)
-				: getWeekBounds(this.currentDate);
+			this.calendarViewType === "dayGridMonth" ? getMonthBounds(this.currentDate) : getWeekBounds(this.currentDate);
 
 		const result = today >= bounds.start && today < bounds.end ? new Date(today) : new Date(bounds.start);
 		result.setHours(0, 0, 0, 0);

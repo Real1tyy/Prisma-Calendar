@@ -2,7 +2,7 @@ import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import { getCalendarViewType } from "../components/calendar-view";
 import type { Frontmatter } from "../types";
-import { parseIntoList } from "./list-utils";
+import { parseIntoList } from "@real1ty-obsidian-plugins";
 
 export const emitHover = (
 	app: App,

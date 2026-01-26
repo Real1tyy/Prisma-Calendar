@@ -11,7 +11,7 @@ import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import { generateUniqueRruleId, getRecurringInstanceExcludedProps } from "../utils/calendar-events";
 import { intoDate, toSafeString } from "../utils/format";
-import { areSetsEqual } from "../utils/list-utils";
+import { areSetsEqual } from "@real1ty-obsidian-plugins";
 import { getFrontmatterWithRetry } from "../utils/obsidian";
 
 export interface RawEventSource {

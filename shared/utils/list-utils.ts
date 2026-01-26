@@ -58,6 +58,50 @@ export function parseIntoList(
 	return defaultValue;
 }
 
+/**
+ * Converts an array back to the original format (array or comma-separated string).
+ * Returns undefined for empty arrays when original was a string.
+ *
+ * @param categories - Array of category strings
+ * @param originalValue - The original value to determine output format
+ * @returns Array, string, or undefined based on original format
+ */
+export function formatListLikeOriginal(categories: string[], originalValue: unknown): unknown {
+	// If empty array
+	if (categories.length === 0) {
+		// If original was a string, return undefined (to delete the property)
+		if (typeof originalValue === "string") {
+			return undefined;
+		}
+		// If original was an array, return empty array
+		if (Array.isArray(originalValue)) {
+			return [];
+		}
+		return undefined;
+	}
+
+	// If original was an array, return array
+	if (Array.isArray(originalValue)) {
+		return categories;
+	}
+
+	// If original was a string, return comma-separated string
+	if (typeof originalValue === "string") {
+		return categories.join(", ");
+	}
+
+	// Default to array for unknown types
+	return categories;
+}
+
+/**
+ * Parses category values into an array of strings.
+ * Returns ["No Category"] for empty/undefined values.
+ */
+export function parseCategories(categoryValue: unknown): string[] {
+	return parseIntoList(categoryValue, { defaultValue: ["No Category"] });
+}
+
 export function areSetsEqual<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean {
 	if (a === b) return true;
 	if (a.size !== b.size) return false;

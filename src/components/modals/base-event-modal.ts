@@ -27,7 +27,7 @@ import {
 	formatDateTimeForInput,
 	inputValueToISOString,
 } from "../../utils/format";
-import { parseIntoList } from "../../utils/list-utils";
+import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../utils/obsidian";
 import { parseAsLocalDate } from "../../utils/time-formatter";
 import { Stopwatch } from "../stopwatch";

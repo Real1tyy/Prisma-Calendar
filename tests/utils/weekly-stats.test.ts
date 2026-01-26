@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parseCategories } from "@real1ty-obsidian-plugins";
 import type { CalendarEvent } from "../../src/types/calendar";
 import {
 	aggregateDailyStats,
@@ -12,7 +13,6 @@ import {
 	getEventsInRange,
 	getMonthBounds,
 	getWeekBounds,
-	parseCategories,
 } from "../../src/utils/weekly-stats";
 import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 

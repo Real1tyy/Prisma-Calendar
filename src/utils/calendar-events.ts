@@ -10,7 +10,7 @@ import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { EventStore } from "../core/event-store";
 import type { CalendarEvent, Frontmatter, SingleCalendarConfig } from "../types";
 import { isTimedEvent } from "../types/calendar";
-import { parseIntoList } from "./list-utils";
+import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { getFileAndFrontmatter, getFileByPathOrThrow } from "./obsidian";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {

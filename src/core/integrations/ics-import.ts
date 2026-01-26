@@ -4,7 +4,7 @@ import { DateTime } from "luxon";
 import type { App, TFile } from "obsidian";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { extractZettelId, generateUniqueEventPath, removeZettelId, setEventBasics } from "../../utils/calendar-events";
-import { parseIntoList } from "../../utils/list-utils";
+import { parseIntoList } from "@real1ty-obsidian-plugins";
 import type { CalendarBundle } from "../calendar-bundle";
 
 export interface ImportedEvent {

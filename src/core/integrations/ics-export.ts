@@ -5,7 +5,7 @@ import type { ExportOptions } from "../../components/modals/calendar-select-moda
 import type { CalendarEvent } from "../../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
-import { parseIntoList } from "../../utils/list-utils";
+import { parseIntoList } from "@real1ty-obsidian-plugins";
 
 interface NotificationSettings {
 	minutesBeforeProp?: string;

@@ -3,7 +3,7 @@ import { filter } from "rxjs/operators";
 import type { Frontmatter } from "../types";
 import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
-import { parseIntoList } from "../utils/list-utils";
+import { parseIntoList } from "@real1ty-obsidian-plugins";
 import type { EventStore } from "./event-store";
 import type { Indexer, IndexerEvent } from "./indexer";
 

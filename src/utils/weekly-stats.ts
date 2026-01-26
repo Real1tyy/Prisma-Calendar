@@ -1,7 +1,7 @@
+import { parseCategories } from "@real1ty-obsidian-plugins";
 import type { CalendarEvent } from "../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../types/calendar";
 import { extractNotesCoreName } from "./calendar-events";
-import { parseIntoList } from "./list-utils";
 
 export type AggregationMode = "name" | "category";
 
@@ -117,10 +117,6 @@ export function getDayBounds(date: Date): { start: Date; end: Date } {
  * Parses a category value that may contain multiple comma-separated categories.
  * Returns an array of trimmed category names, or ["No Category"] if empty/undefined.
  */
-export function parseCategories(categoryValue: unknown): string[] {
-	return parseIntoList(categoryValue, { defaultValue: ["No Category"] });
-}
-
 /**
  * Aggregates events for a given date range, grouping by name or category.
  *
