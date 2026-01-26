@@ -4,6 +4,34 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 1.30.0 - 1/26/2026
+
+### New Video
+
+- [Prisma Calendar — Modern Calendar UX (Part 4)](https://www.youtube.com/watch?v=p4yGAGTyoyI)
+
+**What's Covered**:
+- Untracked events dropdown showing all events without dates
+- Bidirectional drag & drop to track and untrack events visually
+- Untracked event filtering using JavaScript expressions
+- Customizable calendar toolbar with per-button control
+- Drag-to-create events by clicking or dragging on the timeline
+- Keyboard-first commands for fast event time editing
+- Stopwatch improvements including resume and mid-session timers
+- Visual markers distinguishing recurring event sources and instances
+- Improved recurring events modal and frontmatter propagation
+- Category assignment everywhere with full undo support
+- Auto-category assignment based on event name
+- Category statistics with totals, breakdowns, and percentages
+- Statistics commands for today, this week, and this month
+- Configurable desktop event limits with "+more" overflow
+- Configurable all-day event height with scrollable content
+- Sticky headers and all-day sections for easier scrolling
+- Navigate-back command for fast context switching
+- Clickable categories opening Bases views
+
+---
+
 ## 1.29.1 - 1/14/2026
 
 ### Bug Fixes

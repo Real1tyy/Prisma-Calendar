@@ -74,3 +74,20 @@ description: Complete video guide collection for Prisma Calendar
 **Workflow Refinement & Automation**: This Part 3 explores additional advanced features that further expand the plugin's workflow capabilities: improvements to recurring event duplication, preview behavior, stopwatch time-tracking, break property inside statistics, category management, the recurring event modal, calendar presets, and full ICS import/export workflows.
 
 ---
+
+## Part 4: Modern Calendar UX — Untracked Events, Toolbar Customization & Visual Polish
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <iframe
+    style={{"width":"100%", "aspectRatio": "16/9"}}
+    src="https://www.youtube.com/embed/p4yGAGTyoyI"
+    title="Prisma Calendar - Modern Calendar UX (Part 4)"
+    frameBorder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen>
+  </iframe>
+</div>
+
+**Modern Calendar Experience**: This Part 4 showcases the latest UX improvements and workflow enhancements: untracked events dropdown with bidirectional drag & drop, customizable calendar toolbar, drag-to-create events, keyboard-first commands, stopwatch improvements, recurring event visual markers, category features everywhere, statistics commands, configurable event limits, sticky headers, navigate-back command, and clickable categories opening Bases views.
+
+---
