@@ -41,9 +41,9 @@ Both formats are supported throughout the plugin. When you assign categories usi
 
 You can assign categories to events in multiple ways:
 
-### 1. Auto-Assignment (New Event Creation)
+### 1. Auto-Assignment (Event Creation and Editing)
 
-Categories can be automatically assigned when creating new events based on the event name. When you finish typing the event title and move to another field, the system checks if the title matches any auto-assignment rules and replaces the categories accordingly.
+Categories can be automatically assigned when creating or editing events based on the event name. When you finish typing the event title and move to another field, the system checks if the title matches any auto-assignment rules and replaces the categories accordingly.
 
 Configure in **Settings → Categories → Auto-assign categories**:
 
@@ -65,7 +65,7 @@ Define custom rules to automatically assign specific categories based on event n
 - If a match is found, categories are replaced with the auto-assigned ones
 - If no match is found, your manually selected categories remain unchanged
 - This makes the behavior intentional and predictable - you see exactly what gets assigned
-- Only applies during event creation, not when editing existing events
+- **Works in both create and edit modals** - change an event's title and categories will auto-update based on the new name
 - Perfect for quick event creation workflows with consistent naming patterns
 
 ### 2. Individual Events (Manual)

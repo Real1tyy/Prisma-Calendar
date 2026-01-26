@@ -19,7 +19,12 @@ import type { Frontmatter } from "../../types";
 import { isTimedEvent } from "../../types/calendar";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
-import { assignCategoriesToFrontmatter, findAdjacentEvent, setEventBasics } from "../../utils/calendar-events";
+import {
+	assignCategoriesToFrontmatter,
+	autoAssignCategories,
+	findAdjacentEvent,
+	setEventBasics,
+} from "../../utils/calendar-events";
 import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
 import {
 	calculateDurationMinutes,
@@ -161,6 +166,7 @@ export abstract class BaseEventModal extends Modal {
 		this.createModalHeader(contentEl);
 		this.createFormFields(contentEl);
 		this.setupEventHandlers(contentEl);
+		this.setupTitleBlurListener();
 		this.createActionButtons(contentEl);
 
 		// Check if we're restoring from minimized state
@@ -1053,6 +1059,34 @@ export abstract class BaseEventModal extends Modal {
 				this.saveEvent();
 			}
 		});
+	}
+
+	protected setupTitleBlurListener(): void {
+		this.titleInput.addEventListener("blur", () => {
+			this.applyAutoCategories();
+		});
+	}
+
+	protected applyAutoCategories(): void {
+		const eventName = this.titleInput.value.trim();
+		if (!eventName) return;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		if (
+			!settings.autoAssignCategoryByName &&
+			(!settings.categoryAssignmentPresets || settings.categoryAssignmentPresets.length === 0)
+		) {
+			return;
+		}
+
+		const availableCategories = this.bundle.categoryTracker.getCategories();
+		const autoAssignedCategories = autoAssignCategories(eventName, settings, availableCategories);
+
+		if (autoAssignedCategories.length > 0) {
+			this.selectedCategories = autoAssignedCategories;
+			this.renderCategories();
+		}
 	}
 
 	private createActionButtons(contentEl: HTMLElement): void {

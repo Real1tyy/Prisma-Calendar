@@ -174,6 +174,8 @@ export class EventEditModal extends BaseEventModal {
 	}
 
 	public saveEvent(): void {
+		this.applyAutoCategories();
+
 		// Reconstruct the title with ZettelID before saving
 		const userTitle = this.titleInput.value;
 		let finalTitle = userTitle;

@@ -1,5 +1,4 @@
 import { MinimizedModalManager } from "../../core/minimized-modal-manager";
-import { autoAssignCategories } from "../../utils/calendar-events";
 import { BaseEventModal } from "./base-event-modal";
 
 export class EventCreateModal extends BaseEventModal {
@@ -29,8 +28,6 @@ export class EventCreateModal extends BaseEventModal {
 	onOpen(): void {
 		super.onOpen();
 
-		this.setupTitleBlurListener();
-
 		if (this.autoStartStopwatch && this.stopwatch) {
 			this.stopwatch.expand();
 			requestAnimationFrame(() => {
@@ -38,35 +35,6 @@ export class EventCreateModal extends BaseEventModal {
 					this.stopwatch?.start();
 				}, 100);
 			});
-		}
-	}
-
-	private setupTitleBlurListener(): void {
-		this.titleInput.addEventListener("blur", () => {
-			this.applyAutoCategories();
-		});
-	}
-
-	private applyAutoCategories(): void {
-		const eventName = this.titleInput.value.trim();
-		if (!eventName) return;
-
-		const settings = this.bundle.settingsStore.currentSettings;
-
-		// Only auto-assign if at least one feature is enabled
-		if (
-			!settings.autoAssignCategoryByName &&
-			(!settings.categoryAssignmentPresets || settings.categoryAssignmentPresets.length === 0)
-		) {
-			return;
-		}
-
-		const availableCategories = this.bundle.categoryTracker.getCategories();
-		const autoAssignedCategories = autoAssignCategories(eventName, settings, availableCategories);
-
-		if (autoAssignedCategories.length > 0) {
-			this.selectedCategories = autoAssignedCategories;
-			this.renderCategories();
 		}
 	}
 
@@ -89,8 +57,6 @@ export class EventCreateModal extends BaseEventModal {
 	}
 
 	public saveEvent(): void {
-		// Apply auto-categories before building event data
-		// This ensures categories are assigned even if user submits without blur
 		this.applyAutoCategories();
 
 		const eventData = this.buildEventData();

@@ -469,11 +469,16 @@ All events with `Category: Work` will now use that color.
 
 ### Auto-Assign Categories
 
-Configure automatic category assignment for new events based on event names. When you finish typing the event title, the system checks for matches and replaces categories accordingly.
+Configure automatic category assignment for events based on event names. When you finish typing the event title in either the create or edit modal, the system checks for matches and assigns categories accordingly.
 
 #### Auto-assign when name matches category
 
 Automatically assigns a category when the event name matches a category name (case-insensitive, ignoring ZettelID and instance dates).
+
+**Behavior:**
+- **Create modal**: Categories are auto-assigned when you blur the title field (click away or tab out)
+- **Edit modal**: Categories are auto-assigned when you change the title and blur the title field
+- **Applies to both**: Name matching and custom presets work consistently in both create and edit workflows
 
 #### Custom category assignment presets
 
