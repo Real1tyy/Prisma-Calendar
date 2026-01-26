@@ -634,8 +634,13 @@ export abstract class BaseEventModal extends Modal {
 				onStart: (startTime: Date) => {
 					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
 					this.startInput.value = formatDateTimeForInput(startTime);
+
+					const endTime = new Date(startTime.getTime() + settings.defaultDurationMinutes * 60 * 1000);
+					this.endInput.value = formatDateTimeForInput(endTime);
+
 					const event = new Event("change", { bubbles: true });
 					this.startInput.dispatchEvent(event);
+					this.endInput.dispatchEvent(event);
 				},
 				onContinueRequested: () => {
 					// Continue uses the existing start time from the input field

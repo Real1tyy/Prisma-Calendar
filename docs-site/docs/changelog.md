@@ -34,6 +34,12 @@ All notable changes to this project will be documented here.
 
 - **Stopwatch Continue Button**: The stopwatch "start (no fill)" button has been renamed to "continue" and now continues from the existing start time in the event rather than creating a new start time. When you click "continue", the timer calculates the elapsed time based on the event's start date and continues tracking from that point, making it perfect for resuming work on existing events. This provides accurate time tracking when you return to an event after a break.
 
+- **Stopwatch Auto-Fill End Time**: When you click "start" on the stopwatch, it now automatically fills both the start time (current time) and the end time (start time + default duration from settings). This provides a complete time block immediately, which you can adjust as needed. The default duration is configured in Settings → General → "Default duration (minutes)".
+
+### Bug Fixes
+
+- **Daily Statistics in Day View**: Fixed daily statistics modal showing today's date instead of the selected day when opened from day view. Previously, opening daily statistics while viewing a specific day would incorrectly display statistics for today. Now it correctly shows statistics for the day being viewed. Weekly and monthly views retain the original behavior of showing today if within the visible interval.
+
 ---
 
 ## 1.29.1 - 1/14/2026
