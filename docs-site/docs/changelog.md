@@ -48,6 +48,8 @@ All notable changes to this project will be documented here.
 
 - **Daily Statistics in Day View**: Fixed daily statistics modal showing today's date instead of the selected day when opened from day view. Previously, opening daily statistics while viewing a specific day would incorrectly display statistics for today. Now it correctly shows statistics for the day being viewed. Weekly and monthly views retain the original behavior of showing today if within the visible interval.
 
+- **Event Edit Modal ZettelID Preservation**: Fixed saving from a restored minimized event modal incorrectly renaming the event file with a new ZettelID. Previously, when you created an event with stopwatch tracking, saved it, then reopened the minimized modal and saved again, the file would be renamed with a new ZettelID. The edit modal now correctly preserves the ZettelID.
+
 ---
 
 ## 1.29.1 - 1/14/2026

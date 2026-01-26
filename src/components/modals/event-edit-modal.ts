@@ -36,6 +36,17 @@ export class EventEditModal extends BaseEventModal {
 			}
 		}
 
+		// If no ZettelID found in title, try to extract from filePath.
+		// This handles edge cases where the title doesn't include the ZettelID.
+		if (!this.originalZettelId && this.event.extendedProps?.filePath) {
+			const filePath = this.event.extendedProps.filePath as string;
+			const basename = filePath.split("/").pop()?.replace(/\.md$/, "") || "";
+			const zettelIdFromPath = extractZettelId(basename);
+			if (zettelIdFromPath) {
+				this.originalZettelId = `-${zettelIdFromPath}`;
+			}
+		}
+
 		return Promise.resolve();
 	}
 
