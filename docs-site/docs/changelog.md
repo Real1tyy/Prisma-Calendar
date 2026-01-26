@@ -30,6 +30,12 @@ All notable changes to this project will be documented here.
 - Navigate-back command for fast context switching
 - Clickable categories opening Bases views
 
+### New Features
+
+- **Category Rename and Delete**: Users can now rename and delete categories directly from Settings → Categories using the new edit (pencil) and delete (trash) buttons next to each category. When you click rename, a modal prompts you to enter the new category name and shows how many events will be affected. When you click delete, a confirmation modal appears showing the number of events that will be modified. Both operations work automatically in the background, updating the category property in all affected event files and adjusting the associated color rules. This makes category management effortless - no need to manually edit individual event files or color rules.
+
+  **Note:** After renaming or deleting categories, restart Obsidian for changes to fully propagate across all calendar views and settings.
+
 ### Changed
 
 - **Stopwatch Continue Button**: The stopwatch "start (no fill)" button has been renamed to "continue" and now continues from the existing start time in the event rather than creating a new start time. When you click "continue", the timer calculates the elapsed time based on the event's start date and continues tracking from that point, making it perfect for resuming work on existing events. This provides accurate time tracking when you return to an event after a break.

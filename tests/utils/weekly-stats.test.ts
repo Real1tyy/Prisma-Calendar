@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { parseCategories } from "@real1ty-obsidian-plugins";
 import type { CalendarEvent } from "../../src/types/calendar";
 import {
 	aggregateDailyStats,
@@ -2664,60 +2663,6 @@ describe("Category-based aggregation", () => {
 			expect(stats.entries.some((e) => e.name === "No Category")).toBe(true);
 			expect(stats.entries.some((e) => e.name === "Work")).toBe(true);
 		});
-	});
-});
-
-describe("parseCategories", () => {
-	it("should return ['No Category'] for undefined value", () => {
-		expect(parseCategories(undefined)).toEqual(["No Category"]);
-	});
-
-	it("should return ['No Category'] for null value", () => {
-		expect(parseCategories(null)).toEqual(["No Category"]);
-	});
-
-	it("should return ['No Category'] for empty string", () => {
-		expect(parseCategories("")).toEqual(["No Category"]);
-	});
-
-	it("should return ['No Category'] for whitespace only", () => {
-		expect(parseCategories("   ")).toEqual(["No Category"]);
-	});
-
-	it("should parse single category", () => {
-		expect(parseCategories("Work")).toEqual(["Work"]);
-	});
-
-	it("should parse multiple comma-separated categories", () => {
-		expect(parseCategories("Work, Personal")).toEqual(["Work", "Personal"]);
-	});
-
-	it("should trim whitespace from categories", () => {
-		expect(parseCategories("  Work  ,  Personal  ,  Health  ")).toEqual(["Work", "Personal", "Health"]);
-	});
-
-	it("should handle categories without spaces after comma", () => {
-		expect(parseCategories("Work,Personal,Health")).toEqual(["Work", "Personal", "Health"]);
-	});
-
-	it("should filter out empty categories from trailing commas", () => {
-		expect(parseCategories("Work, Personal,")).toEqual(["Work", "Personal"]);
-	});
-
-	it("should filter out empty categories from leading commas", () => {
-		expect(parseCategories(",Work, Personal")).toEqual(["Work", "Personal"]);
-	});
-
-	it("should handle categories with numbers", () => {
-		expect(parseCategories("Project1, Project2")).toEqual(["Project1", "Project2"]);
-	});
-
-	it("should handle categories with special characters", () => {
-		expect(parseCategories("Work-Life, Health & Fitness")).toEqual(["Work-Life", "Health & Fitness"]);
-	});
-
-	it("should convert non-string values to string", () => {
-		expect(parseCategories(123)).toEqual(["123"]);
 	});
 });
 

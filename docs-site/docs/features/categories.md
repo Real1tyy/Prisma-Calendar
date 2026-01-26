@@ -132,7 +132,7 @@ The category modal supports full keyboard navigation for faster workflows:
 1. Type "Uni" in the search → Press Enter → "University" category is selected and search clears
 2. Press Enter again → Form submits with "University" selected
 
-## Managing Category Colors
+## Managing Categories
 
 ### Visual Category Management
 
@@ -157,11 +157,55 @@ Each category displays:
    - Timed events count and percentage within that category
    - All-day events count and percentage within that category
 3. **Color Pickers** - Click the color swatch next to any category to change its color
-4. **Real-time Updates** - Changes are reflected immediately on the calendar
+4. **Edit Button (Pencil Icon)** - Rename the category across all events
+5. **Delete Button (Trash Icon)** - Remove the category from all events
+6. **Real-time Updates** - Changes are reflected immediately on the calendar
 
 **Example**: `Work: 45 total (30%) • 40 timed (89%) • 5 all-day (11%)`
 
 This detailed breakdown helps you understand not just how many events are in each category, but also the nature of those events (timed vs all-day).
+
+#### Renaming Categories
+
+To rename a category across all your events:
+
+1. Go to **Settings → Categories**
+2. Click the **pencil icon** next to the category you want to rename
+3. A modal appears showing:
+   - The current category name
+   - An input field for the new name
+   - The number of events that will be affected
+4. Enter the new category name and click **"Rename"**
+5. The plugin automatically:
+   - Updates the category property in all affected event files
+   - Adjusts the associated color rule to use the new category name
+   - Shows a progress indicator during the operation
+6. **Restart Obsidian** after renaming for changes to fully propagate across all calendar views and settings
+
+**Example**: Renaming "Work" to "Business" will update all events with `Category: Work` to `Category: Business` and update the color rule from `Category.includes('Work')` to `Category.includes('Business')`.
+
+#### Deleting Categories
+
+To remove a category from all your events:
+
+1. Go to **Settings → Categories**
+2. Click the **trash icon** next to the category you want to delete
+3. A confirmation modal appears showing:
+   - The category name being deleted
+   - The number of events that will be affected
+   - A warning message if events will be modified
+4. Click **"Delete"** to confirm
+5. The plugin automatically:
+   - Removes the category from all affected event files
+   - Deletes the associated color rule
+   - Shows a progress indicator during the operation
+6. **Restart Obsidian** after deleting for changes to fully propagate across all calendar views and settings
+
+**Example**: Deleting the "Work" category will remove it from all events that have `Category: Work` or `Category: [Work, Meeting]`, and delete the `Category.includes('Work')` color rule.
+
+:::note Important
+After renaming or deleting categories, restart Obsidian for changes to fully propagate across all calendar views and settings. This ensures the category tracker, color rules, and all UI components are properly synchronized.
+:::
 
 #### Pie Chart Visualization
 

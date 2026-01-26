@@ -127,7 +127,7 @@ export class CategoryTracker {
 		if (!categoryProp) return;
 
 		const oldCategories = this.fileToCategories.get(filePath) || new Set<string>();
-		const newCategories = new Set(parseIntoList(frontmatter[categoryProp]));
+		const newCategories = new Set<string>(parseIntoList(frontmatter[categoryProp]));
 		const categoriesToRemove = new Set([...oldCategories].filter((cat) => !newCategories.has(cat)));
 
 		if (categoriesToRemove.size > 0) {

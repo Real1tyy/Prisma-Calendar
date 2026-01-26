@@ -689,7 +689,7 @@ export const getCommonCategories = (app: App, selectedEvents: CalendarEvent[], c
 		const cache = app.metadataCache.getFileCache(file);
 		const categoryValue = cache?.frontmatter?.[categoryProp] as unknown;
 
-		const categories = new Set(parseIntoList(categoryValue));
+		const categories = new Set<string>(parseIntoList(categoryValue));
 		eventCategories.push(categories);
 	}
 

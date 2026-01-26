@@ -1,6 +1,6 @@
-import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
+import { cls, hexToRgb, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
-import { Setting } from "obsidian";
+import { setIcon, Setting } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
@@ -9,7 +9,9 @@ import type CustomCalendarPlugin from "../../main";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import type { CategoryAssignmentPreset, SingleCalendarConfigSchema } from "../../types/settings";
 import { type ChartDataItem, createChartCanvas, PieChartBuilder } from "../../utils/chart-utils";
+import { CategoryDeleteModal } from "../modals/category-delete-modal";
 import { CategoryEventsModal } from "../modals/category-events-modal";
+import { CategoryRenameModal } from "../modals/category-rename-modal";
 
 interface CategoryInfoWithCount extends CategoryInfo {
 	count: number;
@@ -66,6 +68,12 @@ export class CategoriesSettings {
 			text: `Categories are automatically detected from the "${this.categoryProp}" property in your events. Configure colors for each category below.`,
 		});
 
+		const noticeEl = containerEl.createDiv({
+			cls: cls("category-restart-notice"),
+		});
+		noticeEl.createEl("strong", { text: "Note: " });
+		noticeEl.appendText("Restart Obsidian after renaming or deleting categories for changes to fully propagate.");
+
 		this.statsContainer = containerEl.createDiv(cls("categories-stats-container"));
 		this.renderEventStats(this.statsContainer, bundle);
 
@@ -73,14 +81,7 @@ export class CategoriesSettings {
 		this.renderCategoriesList(this.categoriesListContainer, this.categoryTracker, this.categoryProp);
 
 		this.categoriesSubscription = this.categoryTracker.categories$.subscribe(() => {
-			this.renderCategoriesList(this.categoriesListContainer!, this.categoryTracker!, this.categoryProp);
-			const canvas = this.chartContainer?.querySelector("canvas");
-			if (canvas) {
-				this.updateChart(this.categoryTracker!, this.categoryProp, canvas as HTMLCanvasElement);
-			}
-			if (this.statsContainer && this.currentBundle) {
-				this.renderEventStats(this.statsContainer, this.currentBundle);
-			}
+			this.rerender();
 		});
 
 		const chartSection = containerEl.createDiv(cls("categories-chart-section"));
@@ -91,6 +92,21 @@ export class CategoriesSettings {
 		this.updateChart(this.categoryTracker, this.categoryProp, canvas);
 
 		this.addAutoAssignmentSettings(containerEl);
+	}
+
+	private rerender(): void {
+		if (!this.categoriesListContainer || !this.categoryTracker) return;
+
+		this.renderCategoriesList(this.categoriesListContainer, this.categoryTracker, this.categoryProp);
+
+		const canvas = this.chartContainer?.querySelector("canvas");
+		if (canvas) {
+			this.updateChart(this.categoryTracker, this.categoryProp, canvas as HTMLCanvasElement);
+		}
+
+		if (this.statsContainer && this.currentBundle) {
+			this.renderEventStats(this.statsContainer, this.currentBundle);
+		}
 	}
 
 	private renderEventStats(container: HTMLElement, bundle: CalendarBundle): void {
@@ -361,11 +377,13 @@ export class CategoriesSettings {
 		categoriesInfo.forEach((categoryInfo) => {
 			const categoryItem = container.createDiv(cls("category-settings-item"));
 
+			// Apply background color to entire card
+			const rgb = hexToRgb(categoryInfo.color);
+			if (rgb) {
+				categoryItem.style.setProperty("--category-color-rgb", `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+			}
+
 			const leftSection = categoryItem.createDiv(cls("category-settings-item-left"));
-			const colorDot = leftSection.createEl("span", {
-				cls: cls("category-settings-color-dot"),
-			});
-			colorDot.style.setProperty("--category-color", categoryInfo.color);
 
 			const nameContainer = leftSection.createDiv(cls("category-settings-name-container"));
 			nameContainer.createEl("span", {
@@ -390,6 +408,28 @@ export class CategoriesSettings {
 			});
 
 			const rightSection = categoryItem.createDiv(cls("category-settings-item-right"));
+
+			// Edit button
+			const editButton = rightSection.createEl("button", {
+				cls: cls("category-settings-edit-button"),
+			});
+			setIcon(editButton, "pencil");
+			editButton.setAttribute("aria-label", "Rename category");
+			editButton.addEventListener("click", () => {
+				void this.handleRenameCategory(categoryInfo.name);
+			});
+
+			// Delete button
+			const deleteButton = rightSection.createEl("button", {
+				cls: cls("category-settings-delete-button"),
+			});
+			setIcon(deleteButton, "trash");
+			deleteButton.setAttribute("aria-label", "Delete category");
+			deleteButton.addEventListener("click", () => {
+				void this.handleDeleteCategory(categoryInfo.name);
+			});
+
+			// Color picker
 			const colorInput = rightSection.createEl("input", {
 				type: "color",
 				value: categoryInfo.color,
@@ -454,13 +494,7 @@ export class CategoriesSettings {
 			}));
 		}
 
-		if (this.categoriesListContainer && this.categoryTracker) {
-			this.renderCategoriesList(this.categoriesListContainer, this.categoryTracker, this.categoryProp);
-			const canvas = this.chartContainer?.querySelector("canvas");
-			if (canvas) {
-				this.updateChart(this.categoryTracker, this.categoryProp, canvas as HTMLCanvasElement);
-			}
-		}
+		this.rerender();
 	}
 
 	private updateChart(categoryTracker: CategoryTracker, categoryProp: string, canvas: HTMLCanvasElement): void {
@@ -497,6 +531,24 @@ export class CategoriesSettings {
 	private openCategoryEventsModal(categoryName: string): void {
 		const settings = this.settingsStore.currentSettings;
 		const modal = new CategoryEventsModal(this.plugin.app, categoryName, settings);
+		modal.open();
+	}
+
+	private async handleRenameCategory(categoryName: string): Promise<void> {
+		if (!this.categoryTracker) return;
+
+		const modal = new CategoryRenameModal(this.plugin.app, this.categoryTracker, this.settingsStore, categoryName, () =>
+			this.rerender()
+		);
+		modal.open();
+	}
+
+	private async handleDeleteCategory(categoryName: string): Promise<void> {
+		if (!this.categoryTracker) return;
+
+		const modal = new CategoryDeleteModal(this.plugin.app, this.categoryTracker, this.settingsStore, categoryName, () =>
+			this.rerender()
+		);
 		modal.open();
 	}
 

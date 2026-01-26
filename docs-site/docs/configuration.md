@@ -449,6 +449,10 @@ Manage category colors visually with the Categories Settings section:
 - **Visual Distribution**: Pie chart shows percentage breakdown of events across categories
 - **Sorted by Usage**: Categories are sorted by event count (most used first)
 
+:::note Important
+After renaming or deleting categories, restart Obsidian for changes to fully propagate across all calendar views and settings.
+:::
+
 **How Category Colors Work:**
 - When you set a color for a category, it creates or updates a color rule behind the scenes
 - The expression format is: `{CategoryProperty}.includes('{CategoryName}')`
