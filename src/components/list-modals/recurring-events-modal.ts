@@ -1,4 +1,4 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Notice } from "obsidian";
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -48,11 +48,19 @@ export class RecurringEventsModal extends BaseEventListModal {
 
 		// Type filter dropdown
 		const typeFilterContainer = filtersContainer.createDiv(cls("recurring-events-type-filter"));
-		typeFilterContainer.createEl("label", { text: "Type:", cls: cls("recurring-events-filter-label") });
-		this.typeFilterSelect = typeFilterContainer.createEl("select", { cls: cls("recurring-events-type-select") });
+		typeFilterContainer.createEl("label", {
+			text: "Type:",
+			cls: cls("recurring-events-filter-label"),
+		});
+		this.typeFilterSelect = typeFilterContainer.createEl("select", {
+			cls: cls("recurring-events-type-select"),
+		});
 
 		for (const [value, label] of Object.entries(RECURRENCE_TYPE_FILTER_OPTIONS)) {
-			const option = this.typeFilterSelect.createEl("option", { text: label, value });
+			const option = this.typeFilterSelect.createEl("option", {
+				text: label,
+				value,
+			});
 			option.value = value;
 		}
 
@@ -66,7 +74,9 @@ export class RecurringEventsModal extends BaseEventListModal {
 		// Only show toggle if there are disabled events
 		if (this.disabledEvents.length > 0) {
 			const toggleContainer = filtersContainer.createDiv(cls("recurring-events-toggle"));
-			const label = toggleContainer.createEl("label", { cls: cls("recurring-events-checkbox-label") });
+			const label = toggleContainer.createEl("label", {
+				cls: cls("recurring-events-checkbox-label"),
+			});
 			this.toggleCheckbox = label.createEl("input", { type: "checkbox" });
 			label.createEl("span", { text: "Show disabled only" });
 
@@ -253,7 +263,9 @@ export class RecurringEventsModal extends BaseEventListModal {
 
 	protected override createEventItem(container: HTMLElement, item: EventListItem): void {
 		const recurringItem = item as RecurringEventListItem;
-		const itemEl = container.createEl("div", { cls: cls("generic-event-list-item") });
+		const itemEl = container.createEl("div", {
+			cls: cls("generic-event-list-item"),
+		});
 
 		const categoryColor = this.getEventCategoryColor(recurringItem);
 		if (categoryColor) {
@@ -274,7 +286,9 @@ export class RecurringEventsModal extends BaseEventListModal {
 		const infoEl = itemEl.createEl("div", { cls: cls("generic-event-info") });
 
 		const titleRow = infoEl.createDiv(cls("recurring-event-title-row"));
-		const titleEl = titleRow.createEl("div", { cls: cls("generic-event-title") });
+		const titleEl = titleRow.createEl("div", {
+			cls: cls("generic-event-title"),
+		});
 		titleEl.textContent = item.title;
 
 		const typeBadge = titleRow.createEl("span", {
@@ -285,14 +299,18 @@ export class RecurringEventsModal extends BaseEventListModal {
 
 		// Subtitle
 		if (item.subtitle) {
-			const subtitleEl = infoEl.createEl("div", { cls: cls("generic-event-subtitle") });
+			const subtitleEl = infoEl.createEl("div", {
+				cls: cls("generic-event-subtitle"),
+			});
 			subtitleEl.textContent = item.subtitle;
 		}
 
 		// Action buttons
 		const actions = this.getActions();
 		if (actions.length > 0) {
-			const actionsEl = itemEl.createEl("div", { cls: cls("generic-event-actions") });
+			const actionsEl = itemEl.createEl("div", {
+				cls: cls("generic-event-actions"),
+			});
 			for (const action of actions) {
 				const btn = actionsEl.createEl("button", { text: action.label });
 				if (action.isPrimary) {

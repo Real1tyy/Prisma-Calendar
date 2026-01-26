@@ -1,4 +1,4 @@
-import { onceAsync, WhatsNewModal, type WhatsNewModalConfig } from "@real1ty-obsidian-plugins/utils";
+import { onceAsync, WhatsNewModal, type WhatsNewModalConfig } from "@real1ty-obsidian-plugins";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";

@@ -1,4 +1,4 @@
-import { getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
+import { getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from "@real1ty-obsidian-plugins";
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
 import type { App, TFile } from "obsidian";

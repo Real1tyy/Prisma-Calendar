@@ -1,4 +1,4 @@
-import { normalizeDirectoryPath } from "@real1ty-obsidian-plugins/utils";
+import { normalizeDirectoryPath } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 import {
 	BATCH_BUTTON_IDS,

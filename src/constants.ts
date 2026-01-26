@@ -63,7 +63,9 @@ export const COMMAND_IDS = {
 
 export const FULL_COMMAND_IDS = Object.fromEntries(
 	Object.entries(COMMAND_IDS).map(([key, value]) => [key, `${PLUGIN_ID}:${value}`])
-) as { [K in keyof typeof COMMAND_IDS]: `${typeof PLUGIN_ID}:${(typeof COMMAND_IDS)[K]}` };
+) as {
+	[K in keyof typeof COMMAND_IDS]: `${typeof PLUGIN_ID}:${(typeof COMMAND_IDS)[K]}`;
+};
 
 export const SETTINGS_DEFAULTS = {
 	// General Settings

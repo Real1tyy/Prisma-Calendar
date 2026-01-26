@@ -1,4 +1,4 @@
-import { isNotEmpty } from "@real1ty-obsidian-plugins/utils";
+import { isNotEmpty } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
 import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";

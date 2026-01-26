@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins/utils";
+import { cls } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
 import { type App, Modal, Notice, Setting } from "obsidian";
 import { CALDAV_DEFAULTS } from "../../constants";
@@ -140,7 +140,9 @@ export class CalDAVSettings {
 		statusEl.setText(account.enabled ? "Enabled" : "Disabled");
 
 		if (account.selectedCalendars.length > 0) {
-			const calendarsEl = infoEl.createEl("div", { cls: cls("caldav-account-calendars") });
+			const calendarsEl = infoEl.createEl("div", {
+				cls: cls("caldav-account-calendars"),
+			});
 			calendarsEl.setText(`${account.selectedCalendars.length} calendar(s) selected`);
 		}
 
@@ -261,7 +263,9 @@ class ConfirmDeleteAccountModal extends Modal {
 		contentEl.empty();
 
 		contentEl.createEl("h2", { text: "Delete account" });
-		contentEl.createEl("p", { text: `Are you sure you want to delete the account "${this.accountName}"?` });
+		contentEl.createEl("p", {
+			text: `Are you sure you want to delete the account "${this.accountName}"?`,
+		});
 
 		new Setting(contentEl)
 			.addButton((button) => {
@@ -462,7 +466,10 @@ class AddCalDAVAccountModal extends Modal {
 			const label = calendarItem.createEl("label");
 			label.createEl("strong", { text: calendar.displayName });
 			if (calendar.description) {
-				label.createEl("span", { text: ` — ${calendar.description}`, cls: cls("settings-muted") });
+				label.createEl("span", {
+					text: ` — ${calendar.description}`,
+					cls: cls("settings-muted"),
+				});
 			}
 		}
 	}

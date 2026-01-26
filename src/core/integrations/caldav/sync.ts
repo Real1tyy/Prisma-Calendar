@@ -1,4 +1,4 @@
-import { sanitizeForFilename } from "@real1ty-obsidian-plugins/utils";
+import { sanitizeForFilename } from "@real1ty-obsidian-plugins";
 import { type App, Notice, normalizePath, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { Frontmatter } from "../../../types";
@@ -87,7 +87,9 @@ export class CalDAVSyncService {
 		const result: CalDAVSyncResult = { ...defaultResult };
 
 		try {
-			const events = await this.client.fetchCalendarEvents({ calendar: this.calendar });
+			const events = await this.client.fetchCalendarEvents({
+				calendar: this.calendar,
+			});
 
 			let processedCount = 0;
 			for (const event of events) {
@@ -187,7 +189,9 @@ export class CalDAVSyncService {
 
 		// Check if title changed by comparing with the file's basename
 		const currentBasenameWithoutZettel = removeZettelId(file.basename);
-		const newTitle = sanitizeForFilename(importedEvent.title, { style: "preserve" });
+		const newTitle = sanitizeForFilename(importedEvent.title, {
+			style: "preserve",
+		});
 
 		const titleChanged = currentBasenameWithoutZettel !== newTitle;
 

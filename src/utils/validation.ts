@@ -1,4 +1,4 @@
-import { parseDateTimeString, parseTimeString } from "@real1ty-obsidian-plugins/utils";
+import { parseDateTimeString, parseTimeString } from "@real1ty-obsidian-plugins/date";
 import { DateTime } from "luxon";
 import { z } from "zod";
 
@@ -18,7 +18,10 @@ function requiredParsed<T>(what: string, parse: (s: string) => T | undefined) {
 	return z.string().transform((val, ctx) => {
 		const result = parse(val);
 		if (result === undefined) {
-			ctx.addIssue({ code: "custom", message: `Invalid ${what} format: ${val}` });
+			ctx.addIssue({
+				code: "custom",
+				message: `Invalid ${what} format: ${val}`,
+			});
 			return z.NEVER;
 		}
 		return result;

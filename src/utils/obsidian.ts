@@ -58,7 +58,11 @@ export async function getFrontmatterWithRetry(
 	app: App,
 	file: TFile,
 	fallbackFrontmatter: Frontmatter | undefined,
-	options: { maxRetries?: number; delayMs?: number; requiredProps?: string[] } = {}
+	options: {
+		maxRetries?: number;
+		delayMs?: number;
+		requiredProps?: string[];
+	} = {}
 ): Promise<Frontmatter> {
 	const { maxRetries = 3, delayMs = 100, requiredProps = [] } = options;
 

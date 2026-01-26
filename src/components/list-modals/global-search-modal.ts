@@ -1,4 +1,4 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -196,9 +196,13 @@ export class GlobalSearchModal extends BaseEventListModal {
 	}
 
 	private renderFilterToggles(contentEl: HTMLElement): void {
-		const filtersContainer = contentEl.createEl("div", { cls: cls("global-search-filters") });
+		const filtersContainer = contentEl.createEl("div", {
+			cls: cls("global-search-filters"),
+		});
 
-		const togglesContainer = filtersContainer.createEl("div", { cls: cls("global-search-toggles") });
+		const togglesContainer = filtersContainer.createEl("div", {
+			cls: cls("global-search-toggles"),
+		});
 
 		this.createFilterButton(togglesContainer, "Recurring", "recurring");
 
@@ -208,7 +212,9 @@ export class GlobalSearchModal extends BaseEventListModal {
 	}
 
 	private createFilterButton(container: HTMLElement, label: string, filterKey: keyof GlobalSearchFilters): void {
-		const button = container.createEl("button", { cls: cls("filter-cycle-button") });
+		const button = container.createEl("button", {
+			cls: cls("filter-cycle-button"),
+		});
 		button.setAttribute("data-filter-key", filterKey);
 
 		this.updateButtonText(button, label, this.filters[filterKey]);

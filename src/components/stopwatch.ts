@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins/utils";
+import { cls } from "@real1ty-obsidian-plugins";
 import { formatMsToHHMMSS } from "../utils/time-formatter";
 
 type StopwatchState = "idle" | "running" | "paused" | "stopped";
@@ -62,7 +62,10 @@ export class Stopwatch {
 			text: "▶",
 			cls: cls("stopwatch-toggle-icon"),
 		});
-		header.createSpan({ text: "Time tracker", cls: cls("stopwatch-header-text") });
+		header.createSpan({
+			text: "Time tracker",
+			cls: cls("stopwatch-header-text"),
+		});
 
 		// Collapsible content (hidden by default)
 		this.contentEl = this.container.createDiv(cls("stopwatch-content"));
@@ -81,7 +84,10 @@ export class Stopwatch {
 
 		// Break time display
 		const breakDisplay = displaySection.createDiv(cls("stopwatch-break-display"));
-		breakDisplay.createSpan({ text: "Total Break:", cls: cls("stopwatch-label") });
+		breakDisplay.createSpan({
+			text: "Total Break:",
+			cls: cls("stopwatch-label"),
+		});
 		this.breakDisplayEl = breakDisplay.createSpan({
 			text: "00:00:00",
 			cls: cls("stopwatch-break-time"),

@@ -3,7 +3,7 @@ import {
 	Indexer as GenericIndexer,
 	type IndexerEvent as GenericIndexerEvent,
 	type IndexerConfig,
-} from "@real1ty-obsidian-plugins/utils";
+} from "@real1ty-obsidian-plugins";
 import { type App, TFile } from "obsidian";
 import { BehaviorSubject, type Observable, Subject, type Subscription } from "rxjs";
 import { SCAN_CONCURRENCY } from "../constants";
@@ -188,7 +188,10 @@ export class Indexer {
 			// tryParseRecurring returns a NodeRecurringEvent with the rRuleId (either existing or newly generated)
 			// We update the frontmatter object directly to ensure file-changed events have the correct data
 			if (!frontmatter[this.settings.rruleIdProp]) {
-				frontmatter = { ...frontmatter, [this.settings.rruleIdProp]: recurring.rRuleId };
+				frontmatter = {
+					...frontmatter,
+					[this.settings.rruleIdProp]: recurring.rRuleId,
+				};
 			}
 		}
 

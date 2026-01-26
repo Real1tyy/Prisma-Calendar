@@ -4,7 +4,7 @@ import {
 	createDefaultSeparator,
 	type PropertyRendererConfig,
 	renderPropertyValue,
-} from "@real1ty-obsidian-plugins/utils";
+} from "@real1ty-obsidian-plugins";
 import { type App, Modal, TFile } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type { Frontmatter } from "../types";
@@ -140,7 +140,9 @@ export class EventPreviewModal extends Modal {
 	private renderProperty(container: HTMLElement, key: string, value: unknown): void {
 		const propItem = container.createDiv(cls("event-preview-prop-item"));
 		createTextDiv(propItem, key, cls("event-preview-prop-key"));
-		const valueEl = propItem.createEl("div", { cls: cls("event-preview-prop-value") });
+		const valueEl = propItem.createEl("div", {
+			cls: cls("event-preview-prop-value"),
+		});
 
 		const config: PropertyRendererConfig = {
 			createLink: (text: string, path: string) => {

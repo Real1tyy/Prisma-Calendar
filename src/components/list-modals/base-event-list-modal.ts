@@ -1,4 +1,4 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { Modal, type Modifier, Notice } from "obsidian";
 import { removeZettelId } from "../../utils/calendar-events";
 
@@ -67,7 +67,9 @@ export abstract class BaseEventListModal extends Modal {
 		}
 
 		// Search input
-		const searchContainer = contentEl.createEl("div", { cls: cls("generic-event-list-search") });
+		const searchContainer = contentEl.createEl("div", {
+			cls: cls("generic-event-list-search"),
+		});
 		this.searchInput = searchContainer.createEl("input", {
 			type: "text",
 			placeholder: "Search events... (Ctrl/Cmd+F)",
@@ -95,7 +97,9 @@ export abstract class BaseEventListModal extends Modal {
 		});
 
 		// Event list
-		this.listContainer = contentEl.createEl("div", { cls: cls("generic-event-list") });
+		this.listContainer = contentEl.createEl("div", {
+			cls: cls("generic-event-list"),
+		});
 
 		this.renderItems();
 	}
@@ -205,7 +209,9 @@ export abstract class BaseEventListModal extends Modal {
 	}
 
 	protected createEventItem(container: HTMLElement, item: EventListItem): void {
-		const itemEl = container.createEl("div", { cls: cls("generic-event-list-item") });
+		const itemEl = container.createEl("div", {
+			cls: cls("generic-event-list-item"),
+		});
 
 		// Event info
 		const infoEl = itemEl.createEl("div", { cls: cls("generic-event-info") });
@@ -217,14 +223,18 @@ export abstract class BaseEventListModal extends Modal {
 
 		// Subtitle (time/path info)
 		if (item.subtitle) {
-			const subtitleEl = infoEl.createEl("div", { cls: cls("generic-event-subtitle") });
+			const subtitleEl = infoEl.createEl("div", {
+				cls: cls("generic-event-subtitle"),
+			});
 			subtitleEl.textContent = item.subtitle;
 		}
 
 		// Action buttons
 		const actions = this.getActions();
 		if (actions.length > 0) {
-			const actionsEl = itemEl.createEl("div", { cls: cls("generic-event-actions") });
+			const actionsEl = itemEl.createEl("div", {
+				cls: cls("generic-event-actions"),
+			});
 
 			for (const action of actions) {
 				const btn = actionsEl.createEl("button", { text: action.label });

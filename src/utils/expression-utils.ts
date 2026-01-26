@@ -40,7 +40,9 @@ export function sanitizeExpression(expression: string, propertyMapping: Map<stri
  * Extracts property names from color rule expressions.
  * Identifies properties that are used with .includes() and need array defaults.
  */
-function extractPropertiesFromExpressions(expressions: string[]): { arrayProperties: Set<string> } {
+function extractPropertiesFromExpressions(expressions: string[]): {
+	arrayProperties: Set<string>;
+} {
 	const arrayProperties = new Set<string>();
 
 	for (const expression of expressions) {

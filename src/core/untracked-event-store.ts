@@ -1,4 +1,4 @@
-import { DebouncedNotifier } from "@real1ty-obsidian-plugins/utils";
+import { DebouncedNotifier } from "@real1ty-obsidian-plugins";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { UntrackedEvent } from "../types/calendar";

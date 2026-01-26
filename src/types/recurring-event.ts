@@ -1,4 +1,4 @@
-import { capitalize } from "@real1ty-obsidian-plugins/utils";
+import { capitalize } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 import type { Weekday } from "../utils/date-recurrence";
 import { WEEKDAY_TO_NUMBER } from "../utils/date-recurrence";

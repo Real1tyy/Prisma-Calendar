@@ -1,4 +1,4 @@
-import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
 
 const TIME_UNITS = ["minutes", "hours", "days", "weeks", "months", "years"] as const;
@@ -33,10 +33,16 @@ export class MoveByModal extends Modal {
 
 		// Amount input with increment/decrement/toggle buttons
 		const amountContainer = formContainer.createDiv(cls("move-by-row"));
-		amountContainer.createEl("div", { text: "Amount", cls: cls("move-by-label") });
+		amountContainer.createEl("div", {
+			text: "Amount",
+			cls: cls("move-by-label"),
+		});
 		const amountInputGroup = amountContainer.createDiv(cls("move-by-amount-group"));
 
-		const decrementBtn = amountInputGroup.createEl("button", { text: "−", cls: cls("move-by-increment-btn") });
+		const decrementBtn = amountInputGroup.createEl("button", {
+			text: "−",
+			cls: cls("move-by-increment-btn"),
+		});
 		this.valueInput = amountInputGroup.createEl("input", {
 			type: "number",
 			value: "15",
@@ -45,8 +51,14 @@ export class MoveByModal extends Modal {
 				step: "1",
 			},
 		});
-		const incrementBtn = amountInputGroup.createEl("button", { text: "+", cls: cls("move-by-increment-btn") });
-		const toggleBtn = amountInputGroup.createEl("button", { text: "+/−", cls: cls("move-by-toggle-btn") });
+		const incrementBtn = amountInputGroup.createEl("button", {
+			text: "+",
+			cls: cls("move-by-increment-btn"),
+		});
+		const toggleBtn = amountInputGroup.createEl("button", {
+			text: "+/−",
+			cls: cls("move-by-toggle-btn"),
+		});
 		toggleBtn.setAttribute("aria-label", "Toggle sign");
 
 		decrementBtn.addEventListener("click", () => this.adjustValue(-1));
@@ -55,12 +67,18 @@ export class MoveByModal extends Modal {
 
 		// Time unit buttons
 		const unitContainer = formContainer.createDiv(cls("move-by-row"));
-		unitContainer.createEl("div", { text: "Time unit", cls: cls("move-by-label") });
+		unitContainer.createEl("div", {
+			text: "Time unit",
+			cls: cls("move-by-label"),
+		});
 		const unitButtons = unitContainer.createDiv(cls("move-by-unit-group"));
 
 		for (const unit of TIME_UNITS) {
 			const label = unit.charAt(0).toUpperCase() + unit.slice(1);
-			const btn = unitButtons.createEl("button", { text: label, cls: cls("move-by-unit-btn") });
+			const btn = unitButtons.createEl("button", {
+				text: label,
+				cls: cls("move-by-unit-btn"),
+			});
 			this.unitButtons.set(unit, btn);
 			btn.addEventListener("click", () => this.selectUnit(unit));
 		}

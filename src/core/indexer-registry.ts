@@ -1,4 +1,4 @@
-import { normalizeDirectoryPath } from "@real1ty-obsidian-plugins/utils";
+import { normalizeDirectoryPath } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 import type { SingleCalendarConfig } from "../types/settings";

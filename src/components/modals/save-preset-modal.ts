@@ -1,4 +1,4 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
 import type { EventPreset } from "../../types/settings";
 
@@ -28,7 +28,10 @@ export class SavePresetModal extends Modal {
 
 		// Override existing preset selector
 		const overrideContainer = contentEl.createDiv(cls("setting-item"));
-		overrideContainer.createEl("div", { text: "Save to", cls: "setting-item-name" });
+		overrideContainer.createEl("div", {
+			text: "Save to",
+			cls: "setting-item-name",
+		});
 		this.overrideSelect = overrideContainer.createEl("select", {
 			cls: cls("setting-item-dropdown"),
 		});
@@ -62,7 +65,10 @@ export class SavePresetModal extends Modal {
 
 		// Preset name input
 		const inputContainer = contentEl.createDiv(cls("setting-item"));
-		inputContainer.createEl("div", { text: "Preset name", cls: "setting-item-name" });
+		inputContainer.createEl("div", {
+			text: "Preset name",
+			cls: "setting-item-name",
+		});
 		this.nameInput = inputContainer.createEl("input", {
 			type: "text",
 			placeholder: "e.g., 30 min meeting, All-day event",

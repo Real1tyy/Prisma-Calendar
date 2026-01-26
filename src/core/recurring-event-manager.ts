@@ -10,7 +10,7 @@ import {
 	rebuildPhysicalInstanceFilename,
 	sanitizeForFilename,
 	withLock,
-} from "@real1ty-obsidian-plugins/utils";
+} from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
@@ -303,7 +303,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const isIgnored = frontmatter[this.settings.ignoreRecurringProp] === true;
 
 		if (rruleId && instanceDate) {
-			const parsedInstanceDate = DateTime.fromISO(instanceDate, { zone: "utc" });
+			const parsedInstanceDate = DateTime.fromISO(instanceDate, {
+				zone: "utc",
+			});
 			if (parsedInstanceDate.isValid) {
 				let recurringData = this.recurringEventsMap.get(rruleId);
 
@@ -676,7 +678,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
 		const titleNoZettel = removeZettelId(recurringEvent.title);
 		const zettelHash = hashRRuleIdToZettelFormat(recurringEvent.rRuleId);
-		const base = sanitizeForFilename(`${titleNoZettel} ${dateStr}`, { style: "preserve" });
+		const base = sanitizeForFilename(`${titleNoZettel} ${dateStr}`, {
+			style: "preserve",
+		});
 		const folder = this.settings.directory ? `${this.settings.directory}/` : "";
 		return `${folder}${base}-${zettelHash}.md`;
 	}

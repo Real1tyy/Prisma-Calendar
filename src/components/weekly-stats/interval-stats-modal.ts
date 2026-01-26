@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins/utils";
+import { cls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";

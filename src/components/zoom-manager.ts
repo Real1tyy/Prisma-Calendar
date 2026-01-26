@@ -1,5 +1,5 @@
 import type { Calendar } from "@fullcalendar/core";
-import { addCls, formatDuration, removeCls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, formatDuration, removeCls } from "@real1ty-obsidian-plugins";
 import { Menu } from "obsidian";
 import type { CalendarSettingsStore } from "../core/settings-store";
 
@@ -116,7 +116,9 @@ export class ZoomManager {
 		};
 
 		// Add listener to the calendar container
-		this.container.addEventListener("wheel", this.wheelListener, { passive: false });
+		this.container.addEventListener("wheel", this.wheelListener, {
+			passive: false,
+		});
 	}
 
 	private removeZoomListener(): void {

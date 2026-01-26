@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins/utils";
+import { cls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Modal } from "obsidian";
 import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
@@ -31,7 +31,9 @@ export class CategorySelectModal extends Modal {
 
 		const formEl = contentEl.createDiv({ cls: cls("category-select-form") });
 
-		const categorySection = formEl.createDiv({ cls: cls("category-select-section") });
+		const categorySection = formEl.createDiv({
+			cls: cls("category-select-section"),
+		});
 		categorySection.createEl("label", { text: "Select category" });
 
 		const inputWrapper = categorySection.createDiv(cls("category-input-wrapper"));

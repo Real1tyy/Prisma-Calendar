@@ -9,7 +9,7 @@ import {
 	restoreFrontmatter,
 	sanitizeForFilename,
 	withFrontmatter,
-} from "@real1ty-obsidian-plugins/utils";
+} from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";

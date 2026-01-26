@@ -1,4 +1,4 @@
-import { cls, generateColors } from "@real1ty-obsidian-plugins/utils";
+import { cls, generateColors } from "@real1ty-obsidian-plugins";
 import { type ChartDataItem, createChartCanvas, PieChartBuilder } from "../../utils/chart-utils";
 import { formatDuration, type WeeklyStatEntry } from "../../utils/weekly-stats";
 

@@ -1,4 +1,4 @@
-import { extractContentAfterFrontmatter, serializeFrontmatterValue } from "@real1ty-obsidian-plugins/utils";
+import { extractContentAfterFrontmatter, serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
 import ICAL from "ical.js";
 import { type App, Notice, TFile } from "obsidian";
 import type { ExportOptions } from "../../components/modals/calendar-select-modal";

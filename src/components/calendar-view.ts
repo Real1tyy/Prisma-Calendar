@@ -3,8 +3,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DropArg } from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { MountableView } from "@real1ty-obsidian-plugins/common-plugin";
-import { ColorEvaluator, cls, formatDuration, toggleCls } from "@real1ty-obsidian-plugins/utils";
+import { ColorEvaluator, cls, formatDuration, MountableView, toggleCls } from "@real1ty-obsidian-plugins";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { FillTimeCommand, UpdateEventCommand, UpdateFrontmatterCommand } from "../core/commands";
@@ -540,7 +539,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 				const start = toLocalISOString(view.activeStart);
 				const end = toLocalISOString(view.activeEnd);
-				const skippedEvents = this.bundle.eventStore.getSkippedEvents({ start, end });
+				const skippedEvents = this.bundle.eventStore.getSkippedEvents({
+					start,
+					end,
+				});
 
 				return new SkippedEventsModal(this.app, this.bundle, skippedEvents);
 			}
@@ -681,7 +683,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			intervalLabel = `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
 		} else if (viewType.includes("Month")) {
 			const date = new Date(view.currentStart);
-			intervalLabel = date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+			intervalLabel = date.toLocaleDateString("en-US", {
+				month: "long",
+				year: "numeric",
+			});
 		} else {
 			intervalLabel = "Current View";
 		}
@@ -1408,13 +1413,19 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const start = toLocalISOString(view.activeStart);
 			const end = toLocalISOString(view.activeEnd);
 
-			const allEvents = this.bundle.eventStore.getNonSkippedEvents({ start, end });
+			const allEvents = this.bundle.eventStore.getNonSkippedEvents({
+				start,
+				end,
+			});
 
 			const filteredEvents: CalendarEvent[] = [];
 			const visibleEvents: CalendarEvent[] = [];
 
 			for (const event of allEvents) {
-				const passesSearch = this.searchFilter.shouldInclude({ meta: event.meta, title: event.title });
+				const passesSearch = this.searchFilter.shouldInclude({
+					meta: event.meta,
+					title: event.title,
+				});
 				const passesExpression = this.expressionFilter.shouldInclude(event);
 
 				if (passesSearch && passesExpression) {
@@ -1427,7 +1438,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			this.filteredEvents = filteredEvents;
 			this.updateFilteredEventsButton(filteredEvents.length);
 
-			const skippedEvents = this.bundle.eventStore.getSkippedEvents({ start, end });
+			const skippedEvents = this.bundle.eventStore.getSkippedEvents({
+				start,
+				end,
+			});
 			this.updateSkippedEventsButton(skippedEvents.length);
 
 			// Update enabled recurring events button
@@ -1521,7 +1535,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
-	private renderEventContent(arg: EventContentArg): { domNodes: HTMLElement[] } {
+	private renderEventContent(arg: EventContentArg): {
+		domNodes: HTMLElement[];
+	} {
 		const event = arg.event;
 		const isMobile = this.isMobileView();
 		const isMonthView = arg.view.type === "dayGridMonth";
@@ -1692,7 +1708,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	private handleEventClick(
-		info: { event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay"> },
+		info: {
+			event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay">;
+		},
 		eventEl: HTMLElement
 	): void {
 		const event = info.event;
@@ -1775,7 +1793,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const event = info.event;
 
 		// Apply event color
-		const eventColor = this.getEventColor({ meta: event.extendedProps.frontmatterDisplayData ?? {} });
+		const eventColor = this.getEventColor({
+			meta: event.extendedProps.frontmatterDisplayData ?? {},
+		});
 
 		element.style.setProperty("--event-color", eventColor);
 		element.classList.add(cls("calendar-event"));

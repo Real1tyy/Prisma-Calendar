@@ -3,7 +3,7 @@ import {
 	generateZettelId,
 	serializeFrontmatterValue,
 	withFrontmatter,
-} from "@real1ty-obsidian-plugins/utils";
+} from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
 import { type App, TFile } from "obsidian";
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";

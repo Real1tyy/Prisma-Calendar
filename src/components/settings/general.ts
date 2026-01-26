@@ -1,4 +1,4 @@
-import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
+import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { type App, Setting } from "obsidian";
 import type { Subscription } from "rxjs";
 import { COMMAND_IDS, SETTINGS_DEFAULTS } from "../../constants";
@@ -144,13 +144,21 @@ export class GeneralSettings {
 
 		const examples = [
 			{ name: "30 min meeting", description: "Duration: 30 minutes" },
-			{ name: "1 hour focus block", description: "Duration: 60 minutes, Category: Focus" },
-			{ name: "Daily standup", description: "Duration: 15 min, Recurring: daily" },
+			{
+				name: "1 hour focus block",
+				description: "Duration: 60 minutes, Category: Focus",
+			},
+			{
+				name: "Daily standup",
+				description: "Duration: 15 min, Recurring: daily",
+			},
 			{ name: "All-day event", description: "All-day: enabled" },
 		];
 
 		for (const example of examples) {
-			const li = examplesList.createEl("li", { cls: cls("color-example-item") });
+			const li = examplesList.createEl("li", {
+				cls: cls("color-example-item"),
+			});
 			li.createEl("strong", { text: example.name });
 			li.createSpan({ text: ` — ${example.description}` });
 		}
@@ -315,9 +323,11 @@ export class GeneralSettings {
 		});
 		exportButton.setText("Export calendar");
 		exportButton.addEventListener("click", () => {
-			(this.app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
-				`prisma-calendar:${COMMAND_IDS.EXPORT_CALENDAR_ICS}`
-			);
+			(
+				this.app as unknown as {
+					commands: { executeCommandById: (id: string) => void };
+				}
+			).commands.executeCommandById(`prisma-calendar:${COMMAND_IDS.EXPORT_CALENDAR_ICS}`);
 		});
 
 		const importButton = buttonsContainer.createEl("button", {
@@ -325,9 +335,11 @@ export class GeneralSettings {
 		});
 		importButton.setText("Import .ics");
 		importButton.addEventListener("click", () => {
-			(this.app as unknown as { commands: { executeCommandById: (id: string) => void } }).commands.executeCommandById(
-				`prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`
-			);
+			(
+				this.app as unknown as {
+					commands: { executeCommandById: (id: string) => void };
+				}
+			).commands.executeCommandById(`prisma-calendar:${COMMAND_IDS.IMPORT_CALENDAR_ICS}`);
 		});
 	}
 

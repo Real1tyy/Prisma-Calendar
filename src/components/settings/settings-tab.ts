@@ -1,4 +1,4 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Modal, PluginSettingTab, Setting } from "obsidian";
 import { SETTINGS_DEFAULTS } from "../../constants";
 import { CalendarSettingsStore } from "../../core/settings-store";
@@ -52,7 +52,9 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		this.createCalendarManagementHeader();
 		this.renderSelectedCalendarSettings();
 
-		const footerEl = containerEl.createDiv({ cls: `setting-item ${cls("settings-footer")}` });
+		const footerEl = containerEl.createDiv({
+			cls: `setting-item ${cls("settings-footer")}`,
+		});
 
 		const linksContainer = footerEl.createDiv(cls("settings-footer-links"));
 

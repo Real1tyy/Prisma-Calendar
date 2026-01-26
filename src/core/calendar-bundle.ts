@@ -1,4 +1,4 @@
-import { onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsidian-plugins/utils";
+import { onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsidian-plugins";
 import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type { EventSaveData } from "../components/modals/base-event-modal";
@@ -297,7 +297,9 @@ export class CalendarBundle {
 			const settings = this.settingsStore.currentSettings;
 			let finalFilePath = filePath;
 			if (eventData.title && !settings.titleProp) {
-				const sanitizedTitle = sanitizeForFilename(eventData.title, { style: "preserve" });
+				const sanitizedTitle = sanitizeForFilename(eventData.title, {
+					style: "preserve",
+				});
 				if (sanitizedTitle && sanitizedTitle !== file.basename) {
 					const parentPath = file.parent?.path || "";
 					const { fullPath } = generateUniqueEventPath(this.app, parentPath, sanitizedTitle);

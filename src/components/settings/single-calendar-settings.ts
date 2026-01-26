@@ -1,4 +1,4 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
@@ -56,7 +56,9 @@ export class SingleCalendarSettings {
 		];
 
 		sections.forEach((section) => {
-			const button = buttonContainer.createEl("button", { text: section.label });
+			const button = buttonContainer.createEl("button", {
+				text: section.label,
+			});
 			if (this.activeSection === section.id) {
 				addCls(button, "active");
 			}

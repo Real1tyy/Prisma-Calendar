@@ -1,6 +1,6 @@
 import type { Calendar } from "@fullcalendar/core";
 import { Draggable } from "@fullcalendar/interaction";
-import { addCls, ColorEvaluator, cls, removeCls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, ColorEvaluator, cls, removeCls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type { ParsedEvent } from "../types/calendar";
@@ -233,7 +233,10 @@ export class UntrackedEventsDropdown {
 			// Apply color
 			const normalizedFrontmatter = normalizeFrontmatterForColorEvaluation(
 				event.meta || {},
-				settings.colorRules.map((rule) => ({ expression: rule.expression, enabled: rule.enabled }))
+				settings.colorRules.map((rule) => ({
+					expression: rule.expression,
+					enabled: rule.enabled,
+				}))
 			);
 			const color = this.colorEvaluator.evaluateColor(normalizedFrontmatter);
 

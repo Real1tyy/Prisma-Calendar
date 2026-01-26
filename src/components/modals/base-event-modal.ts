@@ -5,7 +5,7 @@ import {
 	removeCls,
 	serializeFrontmatterValue,
 	toggleCls,
-} from "@real1ty-obsidian-plugins/utils";
+} from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -411,7 +411,10 @@ export abstract class BaseEventModal extends Modal {
 
 	private createFormFields(contentEl: HTMLElement): void {
 		const titleContainer = contentEl.createDiv(cls("setting-item"));
-		titleContainer.createEl("div", { text: "Title", cls: cls("setting-item-name") });
+		titleContainer.createEl("div", {
+			text: "Title",
+			cls: cls("setting-item-name"),
+		});
 		this.titleInput = titleContainer.createEl("input", {
 			type: "text",
 			value: this.event.title || "",
@@ -419,7 +422,10 @@ export abstract class BaseEventModal extends Modal {
 		});
 
 		const allDayContainer = contentEl.createDiv(cls("setting-item"));
-		allDayContainer.createEl("div", { text: "All day", cls: cls("setting-item-name") });
+		allDayContainer.createEl("div", {
+			text: "All day",
+			cls: cls("setting-item-name"),
+		});
 		this.allDayCheckbox = allDayContainer.createEl("input", {
 			type: "checkbox",
 			cls: cls("setting-item-control"),
@@ -450,7 +456,10 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (settings.showDurationField) {
 			this.durationContainer = this.timedContainer.createDiv(cls("setting-item"));
-			this.durationContainer.createEl("div", { text: "Duration (min)", cls: cls("setting-item-name") });
+			this.durationContainer.createEl("div", {
+				text: "Duration (min)",
+				cls: cls("setting-item-name"),
+			});
 			this.durationInput = this.durationContainer.createEl("input", {
 				type: "number",
 				cls: cls("setting-item-control"),
@@ -474,7 +483,10 @@ export abstract class BaseEventModal extends Modal {
 
 		// Date field (for all-day events)
 		const dateContainer = this.allDayContainer.createDiv(cls("setting-item"));
-		dateContainer.createEl("div", { text: "Date", cls: cls("setting-item-name") });
+		dateContainer.createEl("div", {
+			text: "Date",
+			cls: cls("setting-item-name"),
+		});
 		this.dateInput = dateContainer.createEl("input", {
 			type: "date",
 			value: this.event.start ? formatDateOnly(this.event.start) : "",
@@ -498,7 +510,10 @@ export abstract class BaseEventModal extends Modal {
 		if (!settings.categoryProp) return;
 
 		const categoryContainer = contentEl.createDiv(cls("setting-item"));
-		categoryContainer.createEl("div", { text: "Categories", cls: cls("setting-item-name") });
+		categoryContainer.createEl("div", {
+			text: "Categories",
+			cls: cls("setting-item-name"),
+		});
 
 		const categoryContent = categoryContainer.createDiv(cls("category-display-content"));
 
@@ -523,7 +538,10 @@ export abstract class BaseEventModal extends Modal {
 		if (!settings.breakProp) return;
 
 		const breakContainer = contentEl.createDiv(cls("setting-item"));
-		breakContainer.createEl("div", { text: "Break (min)", cls: cls("setting-item-name") });
+		breakContainer.createEl("div", {
+			text: "Break (min)",
+			cls: cls("setting-item-name"),
+		});
 		const breakDesc = breakContainer.createEl("div", {
 			cls: cls("setting-item-description"),
 		});
@@ -544,7 +562,10 @@ export abstract class BaseEventModal extends Modal {
 		if (!settings.statusProperty) return;
 
 		const markAsDoneContainer = contentEl.createDiv(cls("setting-item"));
-		markAsDoneContainer.createEl("div", { text: "Mark as done", cls: cls("setting-item-name") });
+		markAsDoneContainer.createEl("div", {
+			text: "Mark as done",
+			cls: cls("setting-item-name"),
+		});
 		this.markAsDoneCheckbox = markAsDoneContainer.createEl("input", {
 			type: "checkbox",
 			cls: cls("setting-item-control"),
@@ -556,7 +577,10 @@ export abstract class BaseEventModal extends Modal {
 		if (!settings.skipProp) return;
 
 		const skipContainer = contentEl.createDiv(cls("setting-item"));
-		skipContainer.createEl("div", { text: "Skip event", cls: cls("setting-item-name") });
+		skipContainer.createEl("div", {
+			text: "Skip event",
+			cls: cls("setting-item-name"),
+		});
 		const skipDesc = skipContainer.createEl("div", {
 			cls: cls("setting-item-description"),
 		});
@@ -679,7 +703,10 @@ export abstract class BaseEventModal extends Modal {
 	private createRecurringEventFields(contentEl: HTMLElement): void {
 		// Recurring event checkbox
 		const recurringCheckboxContainer = contentEl.createDiv(cls("setting-item"));
-		recurringCheckboxContainer.createEl("div", { text: "Recurring event", cls: cls("setting-item-name") });
+		recurringCheckboxContainer.createEl("div", {
+			text: "Recurring event",
+			cls: cls("setting-item-name"),
+		});
 		this.recurringCheckbox = recurringCheckboxContainer.createEl("input", {
 			type: "checkbox",
 			cls: cls("setting-item-control"),
@@ -691,19 +718,30 @@ export abstract class BaseEventModal extends Modal {
 
 		// RRule type dropdown
 		const rruleContainer = this.recurringContainer.createDiv(cls("setting-item"));
-		rruleContainer.createEl("div", { text: "Recurrence pattern", cls: cls("setting-item-name") });
-		this.rruleSelect = rruleContainer.createEl("select", { cls: cls("setting-item-control") });
+		rruleContainer.createEl("div", {
+			text: "Recurrence pattern",
+			cls: cls("setting-item-name"),
+		});
+		this.rruleSelect = rruleContainer.createEl("select", {
+			cls: cls("setting-item-control"),
+		});
 
 		// Add options to the select
 		for (const [value, label] of Object.entries(RECURRENCE_TYPE_OPTIONS)) {
-			const option = this.rruleSelect.createEl("option", { value, text: label });
+			const option = this.rruleSelect.createEl("option", {
+				value,
+				text: label,
+			});
 			option.value = value;
 		}
 
 		// Weekday selection (initially hidden, shown when weekly/bi-weekly selected)
 		this.weekdayContainer = this.recurringContainer.createDiv(cls("setting-item", "weekday-selection"));
 		addCls(this.weekdayContainer, "hidden");
-		this.weekdayContainer.createEl("div", { text: "Days of week", cls: cls("setting-item-name") });
+		this.weekdayContainer.createEl("div", {
+			text: "Days of week",
+			cls: cls("setting-item-name"),
+		});
 
 		const weekdayGrid = this.weekdayContainer.createDiv(cls("weekday-grid"));
 
@@ -784,7 +822,10 @@ export abstract class BaseEventModal extends Modal {
 	private createPropertySection(parent: HTMLElement, title: string, onAddClick: () => void): HTMLElement {
 		const headerContainer = parent.createDiv(cls("setting-item"));
 		const headerDiv = headerContainer.createDiv(cls("setting-item-name"));
-		headerDiv.createEl("div", { text: title, cls: cls("setting-item-heading") });
+		headerDiv.createEl("div", {
+			text: title,
+			cls: cls("setting-item-heading"),
+		});
 
 		const addButton = headerContainer.createEl("button", {
 			text: "Add property",

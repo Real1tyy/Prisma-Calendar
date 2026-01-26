@@ -1,4 +1,4 @@
-import { addCls, cls, removeCls, toggleCls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls, removeCls, toggleCls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
 import type { CategoryInfo } from "../../core/category-tracker";
 

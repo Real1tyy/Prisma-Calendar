@@ -1,4 +1,4 @@
-import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
+import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
 import { Setting } from "obsidian";
 import type { Subscription } from "rxjs";
@@ -110,18 +110,30 @@ export class CategoriesSettings {
 		const statsGrid = container.createDiv(cls("categories-stats-grid"));
 
 		const totalStat = statsGrid.createDiv(cls("category-stat-item"));
-		totalStat.createEl("div", { text: "Total Events", cls: cls("category-stat-label") });
-		totalStat.createEl("div", { text: `${totalEvents}`, cls: cls("category-stat-value") });
+		totalStat.createEl("div", {
+			text: "Total Events",
+			cls: cls("category-stat-label"),
+		});
+		totalStat.createEl("div", {
+			text: `${totalEvents}`,
+			cls: cls("category-stat-value"),
+		});
 
 		const timedStat = statsGrid.createDiv(cls("category-stat-item"));
-		timedStat.createEl("div", { text: "Timed", cls: cls("category-stat-label") });
+		timedStat.createEl("div", {
+			text: "Timed",
+			cls: cls("category-stat-label"),
+		});
 		timedStat.createEl("div", {
 			text: `${timedCount} (${timedPercentage}%)`,
 			cls: cls("category-stat-value"),
 		});
 
 		const allDayStat = statsGrid.createDiv(cls("category-stat-item"));
-		allDayStat.createEl("div", { text: "All-day", cls: cls("category-stat-label") });
+		allDayStat.createEl("div", {
+			text: "All-day",
+			cls: cls("category-stat-label"),
+		});
 		allDayStat.createEl("div", {
 			text: `${allDayCount} (${allDayPercentage}%)`,
 			cls: cls("category-stat-value"),
@@ -350,7 +362,9 @@ export class CategoriesSettings {
 			const categoryItem = container.createDiv(cls("category-settings-item"));
 
 			const leftSection = categoryItem.createDiv(cls("category-settings-item-left"));
-			const colorDot = leftSection.createEl("span", { cls: cls("category-settings-color-dot") });
+			const colorDot = leftSection.createEl("span", {
+				cls: cls("category-settings-color-dot"),
+			});
 			colorDot.style.setProperty("--category-color", categoryInfo.color);
 
 			const nameContainer = leftSection.createDiv(cls("category-settings-name-container"));
@@ -389,7 +403,12 @@ export class CategoriesSettings {
 
 	private getCategoryColor(
 		category: string,
-		colorRules: Array<{ id: string; expression: string; color: string; enabled: boolean }>,
+		colorRules: Array<{
+			id: string;
+			expression: string;
+			color: string;
+			enabled: boolean;
+		}>,
 		categoryProp: string
 	): string {
 		const settings = this.settingsStore.currentSettings;

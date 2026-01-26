@@ -108,7 +108,9 @@ export interface EventMountInfo {
 
 export interface EventUpdateInfo {
 	event: CalendarEventData & { start: Date };
-	oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay"> & { start: Date };
+	oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay"> & {
+		start: Date;
+	};
 	revert: () => void;
 }
 

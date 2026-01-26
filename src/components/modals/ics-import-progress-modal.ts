@@ -1,4 +1,4 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
 
 export class ICSImportProgressModal extends Modal {

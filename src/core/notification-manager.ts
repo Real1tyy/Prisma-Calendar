@@ -277,7 +277,10 @@ export class NotificationManager {
 			if (Notification.permission === "granted") {
 				const eventTime = entry.isAllDay
 					? "All-day event"
-					: entry.startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+					: entry.startDate.toLocaleTimeString([], {
+							hour: "2-digit",
+							minute: "2-digit",
+						});
 
 				const notification = new Notification("🔔 Prisma Calendar", {
 					body: `${entry.title}\n${eventTime}`,

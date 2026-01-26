@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins/utils";
+import { cls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Modal } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -35,7 +35,9 @@ export class CalendarSelectModal extends Modal {
 
 		const calendarSection = formEl.createDiv({ cls: cls("export-section") });
 		calendarSection.createEl("label", { text: "Calendar" });
-		const calendarSelect = calendarSection.createEl("select", { cls: cls("export-select") });
+		const calendarSelect = calendarSection.createEl("select", {
+			cls: cls("export-select"),
+		});
 
 		for (const bundle of this.calendars) {
 			const calendarName = bundle.settingsStore.currentSettings.name;
@@ -55,7 +57,9 @@ export class CalendarSelectModal extends Modal {
 
 		const timezoneSection = formEl.createDiv({ cls: cls("export-section") });
 		timezoneSection.createEl("label", { text: "Timezone" });
-		const timezoneSelect = timezoneSection.createEl("select", { cls: cls("export-select") });
+		const timezoneSelect = timezoneSection.createEl("select", {
+			cls: cls("export-select"),
+		});
 
 		for (const tz of COMMON_TIMEZONES) {
 			const option = timezoneSelect.createEl("option", {
@@ -71,8 +75,12 @@ export class CalendarSelectModal extends Modal {
 			this.selectedTimezone = timezoneSelect.value;
 		});
 
-		const checkboxSection = formEl.createDiv({ cls: cls("export-checkbox-section") });
-		const checkboxLabel = checkboxSection.createEl("label", { cls: cls("export-checkbox-label") });
+		const checkboxSection = formEl.createDiv({
+			cls: cls("export-checkbox-section"),
+		});
+		const checkboxLabel = checkboxSection.createEl("label", {
+			cls: cls("export-checkbox-label"),
+		});
 		const checkbox = checkboxLabel.createEl("input", { type: "checkbox" });
 		checkbox.checked = this.excludeSkipped;
 		checkboxLabel.createSpan({ text: "Exclude skipped events" });

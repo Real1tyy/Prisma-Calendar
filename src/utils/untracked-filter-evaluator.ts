@@ -1,8 +1,7 @@
-import { BaseEvaluator, type BaseRule } from "@real1ty-obsidian-plugins/utils";
+import { BaseEvaluator, type BaseRule } from "@real1ty-obsidian-plugins";
 import type { SingleCalendarConfig } from "../types/settings";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface UntrackedFilterRule extends BaseRule {}
+type UntrackedFilterRule = BaseRule;
 
 /**
  * Filter evaluator specifically for untracked events.

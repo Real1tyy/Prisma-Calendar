@@ -1,4 +1,4 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins/utils";
+import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -53,7 +53,10 @@ export class BatchFrontmatterModal extends Modal {
 	private createPropertiesSection(container: HTMLElement): void {
 		const headerContainer = container.createDiv(cls("setting-item"));
 		const headerDiv = headerContainer.createDiv(cls("setting-item-name"));
-		headerDiv.createEl("div", { text: "Properties", cls: cls("setting-item-heading") });
+		headerDiv.createEl("div", {
+			text: "Properties",
+			cls: cls("setting-item-heading"),
+		});
 
 		const addButton = headerContainer.createEl("button", {
 			text: "Add property",

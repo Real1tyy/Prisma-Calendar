@@ -49,6 +49,17 @@ const context = await esbuild.context({
 	},
 	plugins: [
 		{
+			name: "resolve-path-aliases",
+			setup(build) {
+				build.onResolve({ filter: /^@real1ty-obsidian-plugins\// }, (args) => {
+					const subpath = args.path.replace(/^@real1ty-obsidian-plugins\//, "");
+					return {
+						path: path.resolve(__dirname, "shared", subpath),
+					};
+				});
+			},
+		},
+		{
 			name: "resolve-changelog",
 			setup(build) {
 				build.onResolve({ filter: /.*docs-site\/docs\/changelog\.md$/ }, (_args) => {

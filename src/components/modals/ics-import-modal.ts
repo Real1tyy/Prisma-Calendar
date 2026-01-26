@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins/utils";
+import { cls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -47,7 +47,9 @@ export class ICSImportModal extends Modal {
 			void this.handleFileSelect();
 		});
 
-		const calendarSection = formEl.createDiv({ cls: cls("ics-import-section") });
+		const calendarSection = formEl.createDiv({
+			cls: cls("ics-import-section"),
+		});
 		calendarSection.createEl("label", { text: "Import to calendar" });
 		this.calendarSelectEl = calendarSection.createEl("select", {
 			cls: cls("ics-import-calendar-select"),
@@ -68,7 +70,9 @@ export class ICSImportModal extends Modal {
 			this.selectedBundle = this.calendars.find((b) => b.calendarId === selectedId) || null;
 		});
 
-		const timezoneSection = formEl.createDiv({ cls: cls("ics-import-section") });
+		const timezoneSection = formEl.createDiv({
+			cls: cls("ics-import-section"),
+		});
 		timezoneSection.createEl("label", { text: "Timezone" });
 		this.timezoneSelectEl = timezoneSection.createEl("select", {
 			cls: cls("ics-import-timezone-select"),
@@ -140,9 +144,13 @@ export class ICSImportModal extends Modal {
 			return;
 		}
 
-		this.previewEl.createEl("h4", { text: `Found ${this.parsedEvents.length} events:` });
+		this.previewEl.createEl("h4", {
+			text: `Found ${this.parsedEvents.length} events:`,
+		});
 
-		const listEl = this.previewEl.createEl("ul", { cls: cls("ics-import-event-list") });
+		const listEl = this.previewEl.createEl("ul", {
+			cls: cls("ics-import-event-list"),
+		});
 
 		const maxPreview = Math.min(this.parsedEvents.length, 10);
 		for (let i = 0; i < maxPreview; i++) {

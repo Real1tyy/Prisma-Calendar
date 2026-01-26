@@ -1,4 +1,4 @@
-import { getObsidianLinkPath } from "@real1ty-obsidian-plugins/utils";
+import { getObsidianLinkPath } from "@real1ty-obsidian-plugins";
 import { type App, Menu, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {

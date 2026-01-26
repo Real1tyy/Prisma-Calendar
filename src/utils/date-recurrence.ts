@@ -41,7 +41,9 @@ export function getNextWeekdayOccurrence(currentDate: DateTime, weekdays: Weekda
 	const futureWeekdays = luxonWeekdays.filter((day) => day > currentWeekday);
 	if (futureWeekdays.length > 0) {
 		const nextWeekday = Math.min(...futureWeekdays);
-		return currentDate.set({ weekday: nextWeekday as 1 | 2 | 3 | 4 | 5 | 6 | 7 });
+		return currentDate.set({
+			weekday: nextWeekday as 1 | 2 | 3 | 4 | 5 | 6 | 7,
+		});
 	}
 
 	const firstWeekday = Math.min(...luxonWeekdays);
@@ -64,7 +66,9 @@ export function getNextBiWeeklyOccurrence(currentDate: DateTime, weekdays: Weekd
 	if (futureWeekdays.length > 0) {
 		// Stay in same bi-weekly cycle - return next matching weekday this week
 		const nextWeekday = Math.min(...futureWeekdays);
-		return currentDate.set({ weekday: nextWeekday as 1 | 2 | 3 | 4 | 5 | 6 | 7 });
+		return currentDate.set({
+			weekday: nextWeekday as 1 | 2 | 3 | 4 | 5 | 6 | 7,
+		});
 	}
 
 	// No more matching weekdays this week, jump to next bi-weekly cycle (2 weeks later)
@@ -179,7 +183,9 @@ export function* iterateOccurrencesInRange(
 
 			if (cycleOffset !== 0) {
 				// Align to next cycle boundary
-				currentDate = normalizedStart.plus({ months: monthsFromStart + (monthInterval - cycleOffset) });
+				currentDate = normalizedStart.plus({
+					months: monthsFromStart + (monthInterval - cycleOffset),
+				});
 			} else {
 				// Already aligned, use the current cycle position
 				currentDate = normalizedStart.plus({ months: monthsFromStart });
@@ -219,7 +225,12 @@ export function calculateInstanceDateTime(instanceDate: DateTime, timeString?: s
 	}
 
 	const [hours, minutes] = timeString.split(":").map(Number);
-	return instanceDate.set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
+	return instanceDate.set({
+		hour: hours,
+		minute: minutes,
+		second: 0,
+		millisecond: 0,
+	});
 }
 
 export function calculateRecurringInstanceDateTime(

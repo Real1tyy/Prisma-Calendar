@@ -1,5 +1,5 @@
-import type { ColorRule } from "@real1ty-obsidian-plugins/utils";
-import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
+import type { ColorRule } from "@real1ty-obsidian-plugins";
+import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 import { SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
@@ -76,16 +76,24 @@ export class RulesSettings {
 		];
 
 		for (const example of examples) {
-			const li = examplesList.createEl("li", { cls: cls("color-example-item") });
+			const li = examplesList.createEl("li", {
+				cls: cls("color-example-item"),
+			});
 
-			li.createEl("code", { text: example.expression, cls: cls("settings-info-box-example") });
+			li.createEl("code", {
+				text: example.expression,
+				cls: cls("settings-info-box-example"),
+			});
 
 			li.createSpan({ text: "→", cls: cls("color-arrow") });
 
 			const colorSpan = li.createEl("span", { cls: cls("color-example-dot") });
 			colorSpan.style.setProperty("--example-color", example.color);
 
-			li.createSpan({ text: example.description, cls: cls("color-example-description") });
+			li.createSpan({
+				text: example.description,
+				cls: cls("color-example-description"),
+			});
 		}
 
 		// Warning section
@@ -270,25 +278,44 @@ export class RulesSettings {
 		// Examples section
 		const examplesContainer = desc.createDiv(cls("settings-info-box"));
 
-		examplesContainer.createEl("strong", { text: "Example filter expressions" });
+		examplesContainer.createEl("strong", {
+			text: "Example filter expressions",
+		});
 		const examplesList = examplesContainer.createEl("ul");
 
 		const examples = [
 			{ expression: "Status !== 'Inbox'", description: "Exclude inbox items" },
-			{ expression: "Priority === 'High'", description: "Only high priority events" },
-			{ expression: "Status === 'Done' || Status === 'In Progress'", description: "Active or completed events" },
+			{
+				expression: "Priority === 'High'",
+				description: "Only high priority events",
+			},
+			{
+				expression: "Status === 'Done' || Status === 'In Progress'",
+				description: "Active or completed events",
+			},
 			{ expression: "!_Archived", description: "Exclude archived events" },
-			{ expression: "Array.isArray(Project) && Project.length > 0", description: "Events with projects assigned" },
+			{
+				expression: "Array.isArray(Project) && Project.length > 0",
+				description: "Events with projects assigned",
+			},
 		];
 
 		for (const example of examples) {
-			const li = examplesList.createEl("li", { cls: cls("color-example-item") });
+			const li = examplesList.createEl("li", {
+				cls: cls("color-example-item"),
+			});
 
-			li.createEl("code", { text: example.expression, cls: cls("settings-info-box-example") });
+			li.createEl("code", {
+				text: example.expression,
+				cls: cls("settings-info-box-example"),
+			});
 
 			li.createSpan({ text: "→", cls: cls("color-arrow") });
 
-			li.createSpan({ text: example.description, cls: cls("color-example-description") });
+			li.createSpan({
+				text: example.description,
+				cls: cls("color-example-description"),
+			});
 		}
 
 		// Warning section
@@ -317,7 +344,9 @@ export class RulesSettings {
 
 		const examplesContainer = desc.createDiv(cls("settings-info-box"));
 
-		examplesContainer.createEl("strong", { text: "Example filter expressions" });
+		examplesContainer.createEl("strong", {
+			text: "Example filter expressions",
+		});
 		const examplesList = examplesContainer.createEl("ul");
 
 		const examples = [
@@ -327,13 +356,21 @@ export class RulesSettings {
 		];
 
 		for (const example of examples) {
-			const li = examplesList.createEl("li", { cls: cls("color-example-item") });
+			const li = examplesList.createEl("li", {
+				cls: cls("color-example-item"),
+			});
 
-			li.createEl("code", { text: example.expression, cls: cls("settings-info-box-example") });
+			li.createEl("code", {
+				text: example.expression,
+				cls: cls("settings-info-box-example"),
+			});
 
 			li.createSpan({ text: "→", cls: cls("color-arrow") });
 
-			li.createSpan({ text: example.description, cls: cls("color-example-description") });
+			li.createSpan({
+				text: example.description,
+				cls: cls("color-example-description"),
+			});
 		}
 
 		const warningContainer = desc.createDiv(cls("settings-warning-box"));
@@ -367,19 +404,30 @@ export class RulesSettings {
 
 		const examples = [
 			{ expression: "Status === 'Done'", description: "Done tasks preset" },
-			{ expression: "Priority === 'High'", description: "High priority preset" },
+			{
+				expression: "Priority === 'High'",
+				description: "High priority preset",
+			},
 			{ expression: "Project === 'Work'", description: "Work projects preset" },
 			{ expression: "!_Archived", description: "Not archived preset" },
 		];
 
 		for (const example of examples) {
-			const li = examplesList.createEl("li", { cls: cls("color-example-item") });
+			const li = examplesList.createEl("li", {
+				cls: cls("color-example-item"),
+			});
 
-			li.createEl("code", { text: example.expression, cls: cls("settings-info-box-example") });
+			li.createEl("code", {
+				text: example.expression,
+				cls: cls("settings-info-box-example"),
+			});
 
 			li.createSpan({ text: "→", cls: cls("color-arrow") });
 
-			li.createSpan({ text: example.description, cls: cls("color-example-description") });
+			li.createSpan({
+				text: example.description,
+				cls: cls("color-example-description"),
+			});
 		}
 
 		// Warning section

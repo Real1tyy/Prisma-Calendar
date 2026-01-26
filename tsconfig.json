@@ -1,6 +1,9 @@
 {
 	"compilerOptions": {
 		"baseUrl": ".",
+		"paths": {
+			"@real1ty-obsidian-plugins/*": ["shared/*"]
+		},
 		"inlineSourceMap": true,
 		"inlineSources": true,
 		"module": "ESNext",
@@ -15,6 +18,6 @@
 		"esModuleInterop": true,
 		"lib": ["DOM", "ES5", "ES6", "ES7"]
 	},
-	"include": ["src/**/*.ts", "tests/**/*.ts"],
+	"include": ["src/**/*.ts", "tests/**/*.ts", "shared/**/*.ts"],
 	"exclude": ["node_modules"]
 }

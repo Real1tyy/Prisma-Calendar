@@ -1,4 +1,4 @@
-import { SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
+import { SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 import {
 	BATCH_BUTTON_IDS,
@@ -298,7 +298,10 @@ export class CalendarSettings {
 						.sort((a, b) => a - b);
 
 					if (levels.length > 0) {
-						await this.settingsStore.updateSettings((s) => ({ ...s, zoomLevels: levels }));
+						await this.settingsStore.updateSettings((s) => ({
+							...s,
+							zoomLevels: levels,
+						}));
 					}
 				});
 				text.inputEl.rows = 2;

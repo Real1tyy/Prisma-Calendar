@@ -4,7 +4,7 @@ import {
 	createDefaultSeparator,
 	type PropertyRendererConfig,
 	renderPropertyValue,
-} from "@real1ty-obsidian-plugins/utils";
+} from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
 import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
@@ -160,7 +160,9 @@ export class NotificationModal extends Modal {
 	private renderProperty(container: HTMLElement, key: string, value: unknown): void {
 		const propItem = container.createDiv(cls("event-notification-prop-item"));
 		createTextDiv(propItem, key, cls("event-notification-prop-key"));
-		const valueEl = propItem.createEl("div", { cls: cls("event-notification-prop-value") });
+		const valueEl = propItem.createEl("div", {
+			cls: cls("event-notification-prop-value"),
+		});
 
 		const config: PropertyRendererConfig = {
 			createLink: (text: string, path: string) => {

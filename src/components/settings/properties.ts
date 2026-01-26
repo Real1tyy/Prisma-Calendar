@@ -1,4 +1,4 @@
-import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins/utils";
+import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 import { SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
@@ -265,7 +265,9 @@ ${settings.futureInstancesCountProp}: 5
 		});
 
 		const specContainer = recurringDesc.createDiv();
-		specContainer.createEl("strong", { text: "Rrule spec (for weekly and bi-weekly)" });
+		specContainer.createEl("strong", {
+			text: "Rrule spec (for weekly and bi-weekly)",
+		});
 		specContainer.createEl("p", {
 			text: "Comma-separated weekdays: sunday, monday, tuesday, wednesday, thursday, friday, saturday",
 		});
