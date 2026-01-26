@@ -108,10 +108,30 @@ export class CategoryAssignModal extends Modal {
 			return;
 		}
 
-		for (const category of this.allCategories) {
+		const sortedCategories = this.sortCategoriesWithSelectedFirst();
+
+		for (const category of sortedCategories) {
 			const categoryItem = this.createCategoryItem(category);
 			this.categoryListContainer.appendChild(categoryItem);
 		}
+	}
+
+	private sortCategoriesWithSelectedFirst(): CategoryInfo[] {
+		const selected: CategoryInfo[] = [];
+		const unselected: CategoryInfo[] = [];
+
+		for (const category of this.allCategories) {
+			if (this.preSelectedCategories.includes(category.name)) {
+				selected.push(category);
+			} else {
+				unselected.push(category);
+			}
+		}
+
+		selected.sort((a, b) => a.name.localeCompare(b.name));
+		unselected.sort((a, b) => a.name.localeCompare(b.name));
+
+		return [...selected, ...unselected];
 	}
 
 	private createCategoryItem(category: CategoryInfo, isNew = false): HTMLElement {
