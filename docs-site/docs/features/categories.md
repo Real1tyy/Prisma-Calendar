@@ -149,21 +149,25 @@ This provides an instant overview of your event distribution patterns.
 
 #### Category List with Detailed Statistics
 
-Each category displays:
+Each category is displayed in a visually distinct card with a subtle background tint matching the category's configured color. This makes it easy to identify categories at a glance and provides a cohesive visual experience.
+
+Each category card displays:
 1. **Automatic Detection** - All categories from your events are automatically detected and listed
-2. **Comprehensive Event Counts** - Each category shows:
+2. **Visual Color Coding** - Each card has a subtle background tint in the category's color, making it easy to visually identify categories
+3. **Comprehensive Event Counts** - Each category shows:
    - Total number of events
    - Percentage of all events
    - Timed events count and percentage within that category
    - All-day events count and percentage within that category
-3. **Color Pickers** - Click the color swatch next to any category to change its color
-4. **Edit Button (Pencil Icon)** - Rename the category across all events
-5. **Delete Button (Trash Icon)** - Remove the category from all events
-6. **Real-time Updates** - Changes are reflected immediately on the calendar
+4. **Interactive Controls** - Properly spaced buttons for easy access:
+   - **Edit Button (Pencil Icon)** - Rename the category across all events
+   - **Delete Button (Trash Icon)** - Remove the category from all events
+   - **Color Picker** - Click to change the category's color
+5. **Real-time Updates** - Changes are reflected immediately on the calendar
 
 **Example**: `Work: 45 total (30%) • 40 timed (89%) • 5 all-day (11%)`
 
-This detailed breakdown helps you understand not just how many events are in each category, but also the nature of those events (timed vs all-day).
+This detailed breakdown helps you understand not just how many events are in each category, but also the nature of those events (timed vs all-day). The visual design makes it easy to scan through categories and quickly identify the ones you're looking for.
 
 #### Renaming Categories
 

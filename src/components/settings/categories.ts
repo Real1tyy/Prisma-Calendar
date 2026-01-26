@@ -377,7 +377,6 @@ export class CategoriesSettings {
 		categoriesInfo.forEach((categoryInfo) => {
 			const categoryItem = container.createDiv(cls("category-settings-item"));
 
-			// Apply background color to entire card
 			const rgb = hexToRgb(categoryInfo.color);
 			if (rgb) {
 				categoryItem.style.setProperty("--category-color-rgb", `${rgb.r}, ${rgb.g}, ${rgb.b}`);
@@ -409,7 +408,6 @@ export class CategoriesSettings {
 
 			const rightSection = categoryItem.createDiv(cls("category-settings-item-right"));
 
-			// Edit button
 			const editButton = rightSection.createEl("button", {
 				cls: cls("category-settings-edit-button"),
 			});
@@ -419,7 +417,6 @@ export class CategoriesSettings {
 				void this.handleRenameCategory(categoryInfo.name);
 			});
 
-			// Delete button
 			const deleteButton = rightSection.createEl("button", {
 				cls: cls("category-settings-delete-button"),
 			});
@@ -429,7 +426,6 @@ export class CategoriesSettings {
 				void this.handleDeleteCategory(categoryInfo.name);
 			});
 
-			// Color picker
 			const colorInput = rightSection.createEl("input", {
 				type: "color",
 				value: categoryInfo.color,

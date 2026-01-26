@@ -38,6 +38,8 @@ All notable changes to this project will be documented here.
 
 ### Changed
 
+- **Improved Category Settings UI**: Enhanced the visual design of category cards in Settings → Categories. Each category card now displays with a subtle background tint matching the category's configured color, making it easier to visually identify categories at a glance.
+
 - **Stopwatch Continue Button**: The stopwatch "start (no fill)" button has been renamed to "continue" and now continues from the existing start time in the event rather than creating a new start time. When you click "continue", the timer calculates the elapsed time based on the event's start date and continues tracking from that point, making it perfect for resuming work on existing events. This provides accurate time tracking when you return to an event after a break.
 
 - **Stopwatch Auto-Fill End Time**: When you click "start" on the stopwatch, it now automatically fills both the start time (current time) and the end time (start time + default duration from settings). This provides a complete time block immediately, which you can adjust as needed. The default duration is configured in Settings → General → "Default duration (minutes)".
