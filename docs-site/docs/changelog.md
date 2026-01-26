@@ -56,6 +56,8 @@ All notable changes to this project will be documented here.
 
 - **Event Edit Modal ZettelID Preservation**: Fixed saving from a restored minimized event modal incorrectly renaming the event file with a new ZettelID. Previously, when you created an event with stopwatch tracking, saved it, then reopened the minimized modal and saved again, the file would be renamed with a new ZettelID. The edit modal now correctly preserves the ZettelID.
 
+- **Duplicated Recurring Instances Visibility**: Fixed duplicated recurring event instances disappearing from the calendar. Previously, when duplicating a recurring instance, the original event would become invisible because the system only tracked one physical instance per date. Now the system correctly supports multiple physical instances sharing the same instance date, ensuring both the original and duplicated events remain visible on the calendar. This fix enables proper tracking of duplicated instances while maintaining correct virtual event generation (virtual events still start after the latest non-ignored physical instance).
+
 ---
 
 ## 1.29.1 - 1/14/2026

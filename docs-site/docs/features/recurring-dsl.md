@@ -152,6 +152,11 @@ Right-click physical instance → "Duplicate recurring instance"
 
 Duplicate preserves frontmatter (RRuleID, Source, Instance Date), gets new [ZettelID](./zettelid-naming), and receives `Ignore Recurring: true` property. Tracked in instance list but not counted toward "Future instances count" limit.
 
+**Multiple Instances Per Date**: The system supports multiple physical instances sharing the same instance date. When you duplicate an event, both the original and the duplicate appear on the calendar for the same day. This allows you to:
+- Create variations of a recurring event for the same day (e.g., multiple meetings based on the same template)
+- Duplicate an instance and later move it to a different day
+- Track both events independently in the instance list
+
 ### Moving Physical Recurring Events
 
 Drag and drop updates date properties and renames filename. Normal instances preserve original `Recurring Instance Date`. Duplicated/ignored instances update `Recurring Instance Date` to match new date.

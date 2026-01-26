@@ -47,7 +47,7 @@ interface PhysicalInstance {
 
 interface RecurringEventData {
 	recurringEvent: NodeRecurringEvent | null;
-	physicalInstances: Map<string, PhysicalInstance>;
+	physicalInstances: Map<string, PhysicalInstance[]>;
 }
 export class RecurringEventManager extends DebouncedNotifier {
 	private settings: SingleCalendarConfig;
@@ -115,6 +115,14 @@ export class RecurringEventManager extends DebouncedNotifier {
 		);
 	}
 
+	private flattenPhysicalInstances(
+		physicalInstances: Map<string, PhysicalInstance[]>,
+		removeIgnored = false
+	): PhysicalInstance[] {
+		const instances = Array.from(physicalInstances.values()).flat();
+		return removeIgnored ? instances.filter((instance) => !instance.ignored) : instances;
+	}
+
 	private async handleRecurringEventRenamed(recurringEvent: NodeRecurringEvent): Promise<void> {
 		const data = this.recurringEventsMap.get(recurringEvent.rRuleId);
 		if (!data || data.physicalInstances.size === 0) {
@@ -122,7 +130,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 
 		await Promise.all(
-			Array.from(data.physicalInstances.values()).map((instance) =>
+			this.flattenPhysicalInstances(data.physicalInstances).map((instance) =>
 				this.renamePhysicalInstance(instance, recurringEvent.title)
 			)
 		);
@@ -211,7 +219,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 
 		await Promise.all(
-			Array.from(data.physicalInstances.values()).map((instance) =>
+			this.flattenPhysicalInstances(data.physicalInstances).map((instance) =>
 				applyFrontmatterChangesToInstance(
 					this.app,
 					instance.filePath,
@@ -319,11 +327,16 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 				const dateKey = parsedInstanceDate.toISODate();
 				if (dateKey) {
-					recurringData.physicalInstances.set(dateKey, {
-						filePath,
-						instanceDate: parsedInstanceDate,
-						ignored: isIgnored,
-					});
+					const instances = recurringData.physicalInstances.get(dateKey) || [];
+					const existingIndex = instances.findIndex((i) => i.filePath === filePath);
+					const newInstance = { filePath, instanceDate: parsedInstanceDate, ignored: isIgnored };
+
+					if (existingIndex >= 0) {
+						instances[existingIndex] = newInstance; // Update existing
+					} else {
+						instances.push(newInstance); // Add new
+					}
+					recurringData.physicalInstances.set(dateKey, instances);
 					this.scheduleRefresh();
 				}
 			}
@@ -342,10 +355,13 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 		// Check if this is an instance file - search through all physical instances
 		for (const data of this.recurringEventsMap.values()) {
-			// Find and delete the instance by filePath
-			for (const [dateKey, instance] of data.physicalInstances.entries()) {
-				if (instance.filePath === event.filePath) {
-					data.physicalInstances.delete(dateKey);
+			for (const [dateKey, instances] of data.physicalInstances.entries()) {
+				const index = instances.findIndex((i) => i.filePath === event.filePath);
+				if (index >= 0) {
+					instances.splice(index, 1);
+					if (instances.length === 0) {
+						data.physicalInstances.delete(dateKey);
+					}
 					this.scheduleRefresh();
 					return;
 				}
@@ -372,8 +388,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 			const now = DateTime.now().toUTC();
 			const generatePastEvents = recurringEvent.frontmatter[this.settings.generatePastEventsProp] === true;
 
-			const futureInstances = Array.from(physicalInstances.values()).filter(
-				(instance) => instance.instanceDate >= now.startOf("day") && !instance.ignored
+			const futureInstances = this.flattenPhysicalInstances(physicalInstances, true).filter(
+				(instance) => instance.instanceDate >= now.startOf("day")
 			);
 
 			const targetInstanceCount = calculateTargetInstanceCount(
@@ -410,26 +426,26 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 	private async createInstanceIfMissing(
 		recurringEvent: NodeRecurringEvent,
-		physicalInstances: Map<string, PhysicalInstance>,
+		physicalInstances: Map<string, PhysicalInstance[]>,
 		instanceDate: DateTime
 	): Promise<void> {
 		const dateKey = instanceDate.toISODate();
+		const existingInstances = dateKey ? physicalInstances.get(dateKey) || [] : [];
+		const hasNonIgnoredInstance = existingInstances.some((i) => !i.ignored);
 
-		if (dateKey && !physicalInstances.has(dateKey)) {
+		if (dateKey && !hasNonIgnoredInstance) {
 			const filePath = await this.createPhysicalInstance(recurringEvent, instanceDate);
 
 			if (filePath) {
-				physicalInstances.set(dateKey, {
-					filePath,
-					instanceDate,
-				});
+				existingInstances.push({ filePath, instanceDate });
+				physicalInstances.set(dateKey, existingInstances);
 			}
 		}
 	}
 
 	private async ensurePastInstances(
 		recurringEvent: NodeRecurringEvent,
-		physicalInstances: Map<string, PhysicalInstance>,
+		physicalInstances: Map<string, PhysicalInstance[]>,
 		now: DateTime
 	): Promise<void> {
 		const firstValidDate = findFirstValidStartDate(recurringEvent.rrules);
@@ -556,7 +572,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		recurringEvent: NodeRecurringEvent | null,
 		rangeStart: DateTime,
 		rangeEnd: DateTime,
-		physicalInstances: Map<string, PhysicalInstance>
+		physicalInstances: Map<string, PhysicalInstance[]>
 	): NodeRecurringEventInstance[] {
 		if (!recurringEvent) return [];
 
@@ -569,8 +585,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		// Start virtual events AFTER the latest non-ignored physical instance
 		let virtualStartDate: DateTime;
 
-		// Filter out ignored instances (duplicated recurring events) when determining virtual event start
-		const nonIgnoredInstances = Array.from(physicalInstances.values()).filter((instance) => !instance.ignored);
+		const nonIgnoredInstances = this.flattenPhysicalInstances(physicalInstances, true);
 
 		if (nonIgnoredInstances.length > 0) {
 			// Sort physical instances and get the latest one
@@ -687,7 +702,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 	getPhysicalInstancesByRRuleId(rruleId: string): PhysicalInstance[] {
 		const data = this.recurringEventsMap.get(rruleId);
-		return data ? Array.from(data.physicalInstances.values()) : [];
+		return data ? this.flattenPhysicalInstances(data.physicalInstances) : [];
 	}
 
 	getSourceEventPath(rruleId: string): string | null {
@@ -732,7 +747,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const data = this.recurringEventsMap.get(rruleId);
 		if (!data) return;
 
-		const physicalInstances = Array.from(data.physicalInstances.values());
+		const physicalInstances = this.flattenPhysicalInstances(data.physicalInstances);
 		const filePaths = physicalInstances.map((instance) => instance.filePath);
 		await deleteFilesByPaths(this.app, filePaths);
 
