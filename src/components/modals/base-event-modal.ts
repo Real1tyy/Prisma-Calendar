@@ -1368,7 +1368,7 @@ export abstract class BaseEventModal extends Modal {
 			}
 		}
 
-		if (settings.skipNewlyCreatedNotifications && settings.alreadyNotifiedProp) {
+		if (settings.skipNewlyCreatedNotifications && settings.alreadyNotifiedProp && !settings.readOnly) {
 			const startDate = parseAsLocalDate(start);
 			if (startDate) {
 				const oneMinuteFromNow = new Date(Date.now() + 60000);

@@ -32,6 +32,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Read-only Mode**: New setting to prevent automatic file modifications. When enabled in Settings → General → "Read-only mode", the plugin will not automatically write to files, including marking events as notified, generating recurring event instances, or marking past events as done. Manual actions triggered by the user (like propagating frontmatter from context menu) will still work. This is useful for preventing sync conflicts or when you want full control over when files are modified.
+
 - **Edit Source Event Context Menu Option**: New context menu option "Edit source event" for physical and virtual recurring event instances. When you right-click on a recurring event instance (either a physical file or virtual occurrence), you can now select "Edit source event" to open the edit modal with the source recurring event's data. This allows you to quickly modify the recurring event template without navigating to the source event first. Enabled by default, can be toggled in Settings → Calendar → Context menu items.
 
 ### Fixed

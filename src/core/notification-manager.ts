@@ -303,6 +303,10 @@ export class NotificationManager {
 	}
 
 	private async markAsNotified(filePath: string): Promise<void> {
+		if (this.settings.readOnly) {
+			return;
+		}
+
 		try {
 			const file = getFileByPathOrThrow(this.app, filePath);
 			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {

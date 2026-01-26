@@ -377,6 +377,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const data = this.recurringEventsMap.get(rruleId);
 		if (!data || !data.recurringEvent) return;
 
+		if (this.settings.readOnly) {
+			return;
+		}
+
 		try {
 			const { recurringEvent, physicalInstances } = data;
 

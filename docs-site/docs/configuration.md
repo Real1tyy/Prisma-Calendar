@@ -35,12 +35,40 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 - **Show stopwatch**: enable stopwatch in event modal for precise time tracking (enabled by default)
 - **Show 'continue' button**: display a continue button in the stopwatch that resumes time tracking from the existing start date. The timer calculates elapsed time based on the event's start time and continues from there, perfect for resuming work on existing events (disabled by default)
 - **Mark past events as done**: automatically mark past events as done during startup by updating their status property (configure the status property and done value in the Properties section)
+- **Read-only mode**: prevent automatic file modifications (disabled by default)
 - **Show untracked events dropdown**: display the untracked events dropdown in the calendar toolbar, showing events without date properties (enabled by default)
 
 ### Display & Navigation
 
 - **Show ribbon icon**: display calendar icon in the left sidebar to open calendar (enabled by default)
 - **Enable keyboard navigation**: enable arrow key navigation for calendar intervals (enabled by default)
+
+### Read-only Mode
+
+**Read-only mode** prevents the plugin from automatically writing to files without user interaction.
+
+**When enabled:**
+- Notifications will still appear, but the "Already Notified" property will NOT be written to files
+- Recurring event instances will NOT be automatically generated
+- Past events will NOT be automatically marked as done on startup
+- Events created in the past will NOT have "Already Notified" automatically set
+
+**When disabled (default):**
+- All automatic file modifications work normally
+- Notifications mark events as notified
+- Recurring events generate physical instances automatically
+- Past events are marked as done if the setting is enabled
+
+**Manual actions still work:**
+- Propagating frontmatter from the context menu (user-triggered)
+- Creating, editing, or deleting events through the UI
+- Any other user-initiated file operations
+
+**Use cases:**
+- Preventing sync conflicts when using multiple devices
+- Full control over when files are modified
+- Avoiding automatic writes during vault migrations or backups
+- Testing or debugging without file modifications
 
 ### Event Presets
 

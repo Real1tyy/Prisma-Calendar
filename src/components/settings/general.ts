@@ -65,6 +65,12 @@ export class GeneralSettings {
 			name: "Enable keyboard navigation",
 			desc: "Use left/right arrow keys to navigate between calendar intervals. Automatically disabled when search or expression filter inputs are focused.",
 		});
+
+		this.ui.addToggle(containerEl, {
+			key: "readOnly",
+			name: "Read-only mode",
+			desc: "Prevent automatic file modifications. When enabled, the plugin will not automatically write to files (notifications, recurring event generation). Manual actions like propagation will still work.",
+		});
 	}
 
 	private addParsingSettings(containerEl: HTMLElement): void {
