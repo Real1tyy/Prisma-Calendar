@@ -30,6 +30,10 @@ All notable changes to this project will be documented here.
 - Navigate-back command for fast context switching
 - Clickable categories opening Bases views
 
+### Changed
+
+- **Stopwatch Continue Button**: The stopwatch "start (no fill)" button has been renamed to "continue" and now continues from the existing start time in the event rather than creating a new start time. When you click "continue", the timer calculates the elapsed time based on the event's start date and continues tracking from that point, making it perfect for resuming work on existing events. This provides accurate time tracking when you return to an event after a break.
+
 ---
 
 ## 1.29.1 - 1/14/2026

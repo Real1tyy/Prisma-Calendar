@@ -5,7 +5,7 @@ type StopwatchState = "idle" | "running" | "paused" | "stopped";
 
 interface StopwatchCallbacks {
 	onStart: (startTime: Date) => void;
-	onStartWithoutFill: (startTime: Date) => void;
+	onContinueRequested: () => Date | null;
 	onStop: (endTime: Date) => void;
 	onBreakUpdate: (breakMinutes: number) => void;
 }
@@ -36,17 +36,17 @@ export class Stopwatch {
 	private midLabelEl: HTMLElement | null = null;
 	private midDisplayEl: HTMLElement | null = null;
 	private startBtn: HTMLButtonElement | null = null;
-	private startWithoutFillBtn: HTMLButtonElement | null = null;
+	private continueBtn: HTMLButtonElement | null = null;
 	private pauseBtn: HTMLButtonElement | null = null;
 	private stopBtn: HTMLButtonElement | null = null;
 	private resumeBtn: HTMLButtonElement | null = null;
 
 	private callbacks: StopwatchCallbacks;
-	private showStartWithoutFill: boolean;
+	private showContinueButton: boolean;
 
-	constructor(callbacks: StopwatchCallbacks, showStartWithoutFill: boolean) {
+	constructor(callbacks: StopwatchCallbacks, showContinueButton: boolean) {
 		this.callbacks = callbacks;
-		this.showStartWithoutFill = showStartWithoutFill;
+		this.showContinueButton = showContinueButton;
 	}
 
 	render(parent: HTMLElement): HTMLElement {
@@ -106,15 +106,18 @@ export class Stopwatch {
 			this.start();
 		});
 
-		// Start without fill button (conditional)
-		if (this.showStartWithoutFill) {
-			this.startWithoutFillBtn = controlsSection.createEl("button", {
-				text: "▶ start (no fill)",
-				cls: cls("stopwatch-btn stopwatch-start-without-fill-btn"),
+		// Continue button (conditional) - continues from existing start time
+		if (this.showContinueButton) {
+			this.continueBtn = controlsSection.createEl("button", {
+				text: "▶ continue",
+				cls: cls("stopwatch-btn stopwatch-continue-btn"),
 				type: "button",
 			});
-			this.startWithoutFillBtn.addEventListener("click", () => {
-				this.startWithoutFill();
+			this.continueBtn.addEventListener("click", () => {
+				const existingStartTime = this.callbacks.onContinueRequested();
+				if (existingStartTime) {
+					this.continueFromExisting(existingStartTime);
+				}
 			});
 		}
 
@@ -182,28 +185,34 @@ export class Stopwatch {
 	}
 
 	start(): void {
-		this.startTracking(false);
-	}
-
-	startWithoutFill(): void {
-		this.startTracking(true);
-	}
-
-	private startTracking(withoutFill: boolean): void {
 		if (this.state === "running") return;
 
-		this.state = "running";
 		const now = new Date();
 		this.startTime = now;
-		this.sessionStartTime = now;
+		this.callbacks.onStart(this.startTime);
+
+		this.beginTracking();
+	}
+
+	continueFromExisting(existingStartTime?: Date): void {
+		if (this.state === "running") return;
+
+		// If an existing start time is provided, use it (continue from that point)
+		// Otherwise, keep the current startTime if it exists, or fallback to now
+		if (existingStartTime) {
+			this.startTime = existingStartTime;
+		} else if (!this.startTime) {
+			this.startTime = new Date();
+		}
+
+		this.beginTracking();
+	}
+
+	private beginTracking(): void {
+		this.state = "running";
+		this.sessionStartTime = new Date();
 		this.totalBreakMs = 0;
 		this.breakStartTime = null;
-
-		if (withoutFill) {
-			this.callbacks.onStartWithoutFill(this.startTime);
-		} else {
-			this.callbacks.onStart(this.startTime);
-		}
 
 		this.updateButtonStates();
 		this.updateDisplay();
@@ -328,8 +337,9 @@ export class Stopwatch {
 			case "idle":
 				this.startBtn.classList.remove("prisma-hidden");
 				this.startBtn.textContent = "▶ start";
-				if (this.startWithoutFillBtn) {
-					this.startWithoutFillBtn.classList.remove("prisma-hidden");
+				if (this.continueBtn) {
+					this.continueBtn.classList.remove("prisma-hidden");
+					this.continueBtn.textContent = "▶ continue";
 				}
 				this.pauseBtn.classList.add("prisma-hidden");
 				this.stopBtn.classList.add("prisma-hidden");
@@ -338,8 +348,8 @@ export class Stopwatch {
 
 			case "running":
 				this.startBtn.classList.add("prisma-hidden");
-				if (this.startWithoutFillBtn) {
-					this.startWithoutFillBtn.classList.add("prisma-hidden");
+				if (this.continueBtn) {
+					this.continueBtn.classList.add("prisma-hidden");
 				}
 				this.pauseBtn.classList.remove("prisma-hidden");
 				this.pauseBtn.textContent = "⏸ break";
@@ -351,8 +361,8 @@ export class Stopwatch {
 
 			case "paused":
 				this.startBtn.classList.add("prisma-hidden");
-				if (this.startWithoutFillBtn) {
-					this.startWithoutFillBtn.classList.add("prisma-hidden");
+				if (this.continueBtn) {
+					this.continueBtn.classList.add("prisma-hidden");
 				}
 				this.pauseBtn.classList.remove("prisma-hidden");
 				this.pauseBtn.textContent = "▶ resume";
@@ -365,9 +375,9 @@ export class Stopwatch {
 			case "stopped":
 				this.startBtn.classList.remove("prisma-hidden");
 				this.startBtn.textContent = "▶ start new";
-				if (this.startWithoutFillBtn) {
-					this.startWithoutFillBtn.classList.remove("prisma-hidden");
-					this.startWithoutFillBtn.textContent = "▶ start new (no fill)";
+				if (this.continueBtn) {
+					this.continueBtn.classList.remove("prisma-hidden");
+					this.continueBtn.textContent = "▶ continue";
 				}
 				this.pauseBtn.classList.add("prisma-hidden");
 				this.stopBtn.classList.add("prisma-hidden");

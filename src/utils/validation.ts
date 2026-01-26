@@ -1,4 +1,4 @@
-import { parseDateTimeString, parseTimeString } from "@real1ty-obsidian-plugins/date";
+import { parseDateTimeString, parseTimeString } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import { z } from "zod";
 

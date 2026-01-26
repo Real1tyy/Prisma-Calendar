@@ -103,8 +103,8 @@ export class GeneralSettings {
 
 		this.ui.addToggle(containerEl, {
 			key: "showStopwatchStartWithoutFill",
-			name: "Show 'start without fill' button",
-			desc: "Display an additional start button that begins time tracking without updating the start date field. Useful when you want to track time separately from the event's scheduled start time.",
+			name: "Show 'continue' button",
+			desc: "Display a continue button that resumes time tracking from the existing start date. The timer calculates elapsed time based on the event's start time and continues from there, perfect for resuming work on existing events.",
 		});
 	}
 

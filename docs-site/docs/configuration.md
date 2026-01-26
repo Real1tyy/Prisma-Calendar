@@ -33,6 +33,7 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 - **Default duration (minutes)**: used when only `Start` is present (default: 60 minutes)
 - **Show duration field in event modal**: display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa (enabled by default)
 - **Show stopwatch**: enable stopwatch in event modal for precise time tracking (enabled by default)
+- **Show 'continue' button**: display a continue button in the stopwatch that resumes time tracking from the existing start date. The timer calculates elapsed time based on the event's start time and continues from there, perfect for resuming work on existing events (disabled by default)
 - **Mark past events as done**: automatically mark past events as done during startup by updating their status property (configure the status property and done value in the Properties section)
 - **Show untracked events dropdown**: display the untracked events dropdown in the calendar toolbar, showing events without date properties (enabled by default)
 

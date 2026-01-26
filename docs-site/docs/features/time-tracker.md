@@ -25,11 +25,28 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 **Controls**:
 - **▶ start**: Begin tracking, fills Start Date. Starts both the total timer and session timer.
 - **▶ start new**: (After stopping) Start a completely new tracking session with a fresh start time.
+- **▶ continue**: (Optional, when enabled in settings) Continue tracking from the existing start date in the event. Calculates elapsed time based on the event's start time and resumes tracking from that point. Perfect for resuming work on existing events.
 - **⏸ break**: Pause productive time and start tracking break time. The total timer continues, but the session timer pauses and the current break timer starts.
 - **▶ resume** (during break): End break and resume productive time. The current break time is added to total break time, and the session timer restarts from zero.
 - **▶ resume** (after stop): Continue tracking from where you left off without resetting the start time. Perfect for resuming work after interruptions while maintaining accurate time tracking.
 - **⏹ stop**: End session, fills End Date and Break field. Stops all timers and saves the accumulated break time.
 - **− minimize**: Save modal state, continue tracking internally. Restore via "Restore minimized event modal" command
+
+## Start vs Continue
+
+**▶ start**: Creates a new start time (now) and begins tracking. Use this when:
+- Creating a brand new event
+- Starting work exactly when you click the button
+- You want the start time to be filled with the current time
+
+**▶ continue**: Uses the existing start time from the event and continues from there. Use this when:
+- Resuming work on an existing event
+- The event already has a start time you want to preserve
+- You want the timer to show elapsed time since the original start
+
+**Example**: An event has `Start: 10:00 AM` and it's now `10:30 AM`.
+- Click **▶ start**: Start time changes to 10:30 AM, timer starts from 00:00:00
+- Click **▶ continue**: Start time stays 10:00 AM, timer shows 00:30:00 and continues
 
 ## Resume After Stopping
 
@@ -87,6 +104,8 @@ The stopwatch displays multiple timers to give you complete visibility into your
 ## Configuration
 
 **Enable/Disable**: Settings → [Calendar] → General → "Show time tracker in event modal"
+
+**Continue Button**: Settings → [Calendar] → General → "Show 'continue' button" (disabled by default). Enable this to show the continue button alongside the start button.
 
 **Break Property**: Settings → [Calendar] → Properties → "Break property" (default: `Break`)
 

@@ -55,7 +55,7 @@ describe("Stopwatch", () => {
 	let stopwatch: Stopwatch;
 	let mockCallbacks: {
 		onStart: ReturnType<typeof vi.fn>;
-		onStartWithoutFill: ReturnType<typeof vi.fn>;
+		onContinueRequested: ReturnType<typeof vi.fn>;
 		onStop: ReturnType<typeof vi.fn>;
 		onBreakUpdate: ReturnType<typeof vi.fn>;
 	};
@@ -64,7 +64,7 @@ describe("Stopwatch", () => {
 	beforeEach(() => {
 		mockCallbacks = {
 			onStart: vi.fn(),
-			onStartWithoutFill: vi.fn(),
+			onContinueRequested: vi.fn(() => new Date()),
 			onStop: vi.fn(),
 			onBreakUpdate: vi.fn(),
 		};
@@ -88,10 +88,16 @@ describe("Stopwatch", () => {
 			expect(mockCallbacks.onStart).toHaveBeenCalledWith(expect.any(Date));
 		});
 
-		it("should call onStartWithoutFill when starting without fill", () => {
-			stopwatch.startWithoutFill();
+		it("should continue from existing start time", () => {
+			const existingStartTime = new Date(Date.now() - 3600000); // 1 hour ago
+			mockCallbacks.onContinueRequested.mockReturnValue(existingStartTime);
+
+			stopwatch.continueFromExisting(existingStartTime);
 			expect(stopwatch.getState()).toBe("running");
-			expect(mockCallbacks.onStartWithoutFill).toHaveBeenCalledWith(expect.any(Date));
+			expect(stopwatch.isActive()).toBe(true);
+
+			// Verify onContinueRequested was not called since we provided the start time directly
+			expect(mockCallbacks.onContinueRequested).not.toHaveBeenCalled();
 		});
 
 		it("should transition to stopped state when stopped", () => {
