@@ -86,6 +86,8 @@ Click on any event in the calendar and select **"Assign Categories"** from the c
 
 When creating or editing an event, use the **"Assign Categories"** button in the modal. Categories are displayed with their configured colors, and you can modify them before saving the event.
 
+**Quick Category Removal:** Each category displayed in the modal has a small "×" button on the right side. Click this button to instantly remove that category without opening the category assignment modal. This provides a faster workflow for removing individual categories.
+
 ### 5. Batch Assignment
 
 Select multiple events in batch mode and use the **"Categories"** button to assign categories to all selected events at once.

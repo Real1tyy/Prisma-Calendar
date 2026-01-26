@@ -117,6 +117,9 @@ export abstract class BaseEventModal extends Modal {
 	// State to restore from minimized modal (set before opening)
 	private pendingRestoreState: MinimizedModalState | null = null;
 
+	// Suppress auto-category assignment once user interacts with category UI
+	private suppressAutoCategories = false;
+
 	// Flag to prevent double-saving when minimize() is called explicitly
 	private isMinimizing = false;
 
@@ -280,6 +283,7 @@ export abstract class BaseEventModal extends Modal {
 		this.futureInstancesCountInput.value = "";
 
 		this.selectedCategories = [];
+		this.suppressAutoCategories = false;
 		this.renderCategories();
 
 		if (this.breakInput) {
@@ -329,6 +333,7 @@ export abstract class BaseEventModal extends Modal {
 		if (preset.categories !== undefined) {
 			// Parse categories from preset (could be comma-separated string)
 			this.selectedCategories = parseIntoList(preset.categories);
+			this.suppressAutoCategories = true;
 			this.renderCategories();
 		}
 
@@ -522,6 +527,11 @@ export abstract class BaseEventModal extends Modal {
 		});
 
 		const categoryContent = categoryContainer.createDiv(cls("category-display-content"));
+
+		// Suppress auto-assign permanently once user interacts with categories.
+		categoryContent.addEventListener("pointerdown", () => {
+			this.suppressAutoCategories = true;
+		});
 
 		// Container for displaying selected categories
 		this.categoriesContainer = categoryContent.createDiv(cls("categories-list"));
@@ -1068,6 +1078,10 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	protected applyAutoCategories(): void {
+		if (this.suppressAutoCategories) {
+			return;
+		}
+
 		const eventName = this.titleInput.value.trim();
 		if (!eventName) return;
 
@@ -1221,18 +1235,32 @@ export abstract class BaseEventModal extends Modal {
 			const color = categoryColorMap.get(categoryName) || this.bundle.settingsStore.currentSettings.defaultNodeColor;
 			colorDot.style.setProperty("--category-color", color);
 
-			categoryItem.createEl("span", {
+			const nameSpan = categoryItem.createEl("span", {
 				text: categoryName,
 				cls: cls("category-name"),
 			});
 
-			categoryItem.addEventListener("click", () => {
+			nameSpan.addEventListener("click", () => {
 				this.openCategoryEventsModal(categoryName);
+			});
+
+			const removeButton = categoryItem.createEl("span", {
+				text: "\u00D7",
+				cls: cls("category-remove-button"),
+				attr: { title: "Remove category" },
+			});
+			removeButton.addEventListener("click", (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				this.selectedCategories = this.selectedCategories.filter((c) => c !== categoryName);
+				this.renderCategories();
 			});
 		}
 	}
 
 	private openAssignCategoriesModal(): void {
+		this.suppressAutoCategories = true;
+
 		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
 		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
 
