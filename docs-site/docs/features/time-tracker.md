@@ -68,6 +68,8 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 
 **Restore**: `Ctrl/Cmd+P` → "Restore minimized event modal"
 
+**Quick Category Assignment**: `Ctrl/Cmd+P` → "Assign categories to minimized event" - Update categories without restoring the full modal
+
 **Auto-Updates**: While tracking time with a minimized modal, the modal automatically stays in sync with the event file:
 - **File Changes**: If you edit the event from another window (e.g., rename the file, change properties), the minimized modal updates automatically with the new information
 - **File Deletion**: If the event file is deleted, the minimized modal is cleared automatically with a notification

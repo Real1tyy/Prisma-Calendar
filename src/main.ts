@@ -305,6 +305,20 @@ export default class CustomCalendarPlugin extends Plugin {
 				return false;
 			},
 		});
+
+		this.addCommand({
+			id: COMMAND_IDS.ASSIGN_CATEGORIES_MINIMIZED_MODAL,
+			name: "Assign categories to minimized event",
+			checkCallback: (checking: boolean) => {
+				if (MinimizedModalManager.hasMinimizedModal()) {
+					if (!checking) {
+						MinimizedModalManager.assignCategories(this.app, this.calendarBundles);
+					}
+					return true;
+				}
+				return false;
+			},
+		});
 	}
 
 	private initializeCalendarBundles(): void {

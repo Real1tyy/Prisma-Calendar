@@ -32,6 +32,8 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Assign Categories to Minimized Event**: New command "Assign categories to minimized event" allows you to quickly assign categories to a minimized event modal without restoring the full modal. When you have a minimized event, you can run this command to open the category assignment modal directly, make your changes, and continue working - perfect for fast category updates while keeping your event minimized. Access via command palette when a minimized modal is present.
+
 - **Category Rename and Delete**: Users can now rename and delete categories directly from Settings → Categories using the new edit (pencil) and delete (trash) buttons next to each category. When you click rename, a modal prompts you to enter the new category name and shows how many events will be affected. When you click delete, a confirmation modal appears showing the number of events that will be modified. Both operations work automatically in the background, updating the category property in all affected event files and adjusting the associated color rules. This makes category management effortless - no need to manually edit individual event files or color rules.
 
   **Note:** After renaming or deleting categories, restart Obsidian for changes to fully propagate across all calendar views and settings.

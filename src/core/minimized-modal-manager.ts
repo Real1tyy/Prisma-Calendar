@@ -1,13 +1,16 @@
 import type { App } from "obsidian";
 import { Notice } from "obsidian";
 import type { Subscription } from "rxjs";
+import { CategoryAssignModal } from "../components/modals/category-assign-modal";
 import { EventCreateModal, EventEditModal } from "../components/modals";
 import type { StopwatchSnapshot } from "../components/stopwatch";
 import type { Frontmatter } from "../types";
 import type { EventPreset } from "../types/settings";
 import { getEventName } from "../utils/calendar-events";
+import { getCategoriesFromFilePath } from "../utils/obsidian";
 import { formatMsToHHMMSS, formatMsToMMSS } from "../utils/time-formatter";
 import type { CalendarBundle } from "./calendar-bundle";
+import { AssignCategoriesCommand } from "./commands/event-commands";
 import type { IndexerEvent } from "./indexer";
 
 /**
@@ -253,6 +256,50 @@ class MinimizedModalManagerClass {
 
 		modal.setRestoreState(state);
 		this.clear();
+		modal.open();
+	}
+
+	/**
+	 * Opens category assignment modal for the minimized event.
+	 * Persists category changes to the file and updates the saved state.
+	 */
+	assignCategories(app: App, calendarBundles: CalendarBundle[]): void {
+		const state = this.getState();
+		if (!state || !state.filePath) {
+			new Notice("No minimized modal to assign categories to");
+			return;
+		}
+
+		const bundle = calendarBundles.find((b) => b.calendarId === state.calendarId);
+		if (!bundle) {
+			new Notice("Calendar not found for minimized modal. This should not happen, please report this as a bug.");
+			this.clear();
+			return;
+		}
+
+		const settings = bundle.settingsStore.currentSettings;
+		const currentCategories = getCategoriesFromFilePath(app, state.filePath, settings.categoryProp);
+		const categories = bundle.categoryTracker.getCategoriesWithColors();
+		const defaultColor = settings.defaultNodeColor;
+
+		const modal = new CategoryAssignModal(
+			app,
+			categories,
+			defaultColor,
+			currentCategories,
+			async (selectedCategories: string[]) => {
+				try {
+					const command = new AssignCategoriesCommand(app, bundle, state.filePath!, selectedCategories);
+					await bundle.commandManager.executeCommand(command);
+					// the indexer will detect the file change and automatically update the minimized modal state
+					new Notice("Categories updated for minimized event");
+				} catch (error) {
+					console.error("Failed to assign categories:", error);
+					new Notice("Failed to assign categories");
+				}
+			}
+		);
+
 		modal.open();
 	}
 }

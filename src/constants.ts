@@ -53,6 +53,7 @@ export const COMMAND_IDS = {
 	HIGHLIGHT_EVENTS_WITHOUT_CATEGORIES: "highlight-events-without-categories",
 	HIGHLIGHT_EVENTS_WITH_CATEGORY: "highlight-events-with-category",
 	RESTORE_MINIMIZED_MODAL: "restore-minimized-modal",
+	ASSIGN_CATEGORIES_MINIMIZED_MODAL: "assign-categories-minimized-modal",
 	EXPORT_CALENDAR_ICS: "export-calendar-ics",
 	IMPORT_CALENDAR_ICS: "import-calendar-ics",
 	SYNC_CALDAV: "sync-caldav",

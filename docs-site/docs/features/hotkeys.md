@@ -309,6 +309,13 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Use Case**: Resume event creation after minimizing the modal
 -   **See Also**: [Time Tracker documentation](./time-tracker.md) for minimize functionality
 
+### Assign Categories to Minimized Event
+
+-   **Function**: Opens the category assignment modal for a minimized event without restoring the full modal
+-   **Use Case**: Quickly assign or update categories while keeping the event modal minimized
+-   **Workflow**: When you have a minimized event, run this command to assign categories and continue working
+-   **See Also**: [Time Tracker documentation](./time-tracker.md) for minimize functionality
+
 ## Tips
 
 -   **Batch operations** require batch selection mode to be active first
