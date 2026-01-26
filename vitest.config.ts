@@ -9,11 +9,6 @@ export default defineConfig({
 		globals: true,
 		environment: "jsdom",
 		setupFiles: ["./tests/setup.ts"],
-		server: {
-			deps: {
-				inline: ["@real1ty-obsidian-plugins/utils", "@real1ty-obsidian-plugins/common-plugin"],
-			},
-		},
 	},
 	resolve: {
 		alias: {
