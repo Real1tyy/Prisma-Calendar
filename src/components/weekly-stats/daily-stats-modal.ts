@@ -7,6 +7,8 @@ import type { IntervalConfig } from "./interval-stats-modal";
 import { IntervalStatsModal } from "./interval-stats-modal";
 
 export class DailyStatsModal extends IntervalStatsModal {
+	private calendarViewType?: string;
+
 	protected intervalConfig: IntervalConfig = {
 		getBounds: (date: Date) => getDayBounds(date),
 
@@ -46,34 +48,38 @@ export class DailyStatsModal extends IntervalStatsModal {
 		},
 	};
 
-	constructor(app: App, bundle: CalendarBundle, initialDate?: Date) {
+	constructor(app: App, bundle: CalendarBundle, initialDate?: Date, calendarViewType?: string) {
 		super(app, bundle, initialDate);
+		this.calendarViewType = calendarViewType;
 		this.initializeDateForCurrentView();
 	}
 
 	/**
-	 * If today is within the current calendar view interval (week/month),
-	 * show today. Otherwise show the first day of that interval.
+	 * If in day view, use the exact date passed in.
+	 * If in week/month view and today is within that interval, show today.
+	 * Otherwise show the first day of the interval.
 	 */
 	private initializeDateForCurrentView(): void {
+		// Day view: use the exact date passed in
+		if (this.calendarViewType === "timeGridDay") {
+			this.currentDate = new Date(this.currentDate);
+			this.currentDate.setHours(0, 0, 0, 0);
+			return;
+		}
+
+		this.currentDate = this.getTodayOrIntervalStart();
+	}
+
+	private getTodayOrIntervalStart(): Date {
 		const today = new Date();
-		const calendarDate = this.currentDate;
+		const bounds =
+			this.calendarViewType === "dayGridMonth"
+				? getMonthBounds(this.currentDate)
+				: getWeekBounds(this.currentDate);
 
-		const weekBounds = getWeekBounds(calendarDate);
-		if (today >= weekBounds.start && today < weekBounds.end) {
-			this.currentDate = new Date(today);
-			this.currentDate.setHours(0, 0, 0, 0);
-			return;
-		}
-
-		const monthBounds = getMonthBounds(calendarDate);
-		if (today >= monthBounds.start && today < monthBounds.end) {
-			this.currentDate = new Date(today);
-			this.currentDate.setHours(0, 0, 0, 0);
-			return;
-		}
-
-		this.currentDate = new Date(weekBounds.start);
+		const result = today >= bounds.start && today < bounds.end ? new Date(today) : new Date(bounds.start);
+		result.setHours(0, 0, 0, 0);
+		return result;
 	}
 
 	protected getModalTitle(): string {

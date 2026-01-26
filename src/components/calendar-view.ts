@@ -610,7 +610,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 			() => {
 				const currentDate = date || this.calendar?.getDate() || new Date();
-				return new DailyStatsModal(this.app, this.bundle, currentDate);
+				const viewType = this.calendar?.view?.type;
+				return new DailyStatsModal(this.app, this.bundle, currentDate, viewType);
 			}
 		);
 	}
