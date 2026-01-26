@@ -193,16 +193,18 @@ export class RulesSettings {
 			// Right section: color picker + controls
 			const rightSection = mainRow.createDiv(cls("color-rule-right"));
 
-			// Integrated color picker using Setting
-			const colorPickerWrapper = rightSection.createDiv(cls("color-rule-picker-wrapper"));
-			new Setting(colorPickerWrapper).addColorPicker((colorPicker) => {
-				colorPicker.setValue(rule.color);
-				colorPicker.onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, color: value } : r)),
-					}));
-				});
+			// Direct color picker without Setting wrapper
+			const colorInput = rightSection.createEl("input", {
+				type: "color",
+				value: rule.color,
+				cls: cls("color-rule-picker"),
+			});
+			colorInput.addEventListener("input", async (e) => {
+				const target = e.target as HTMLInputElement;
+				await this.settingsStore.updateSettings((s) => ({
+					...s,
+					colorRules: s.colorRules.map((r) => (r.id === rule.id ? { ...r, color: target.value } : r)),
+				}));
 			});
 
 			// Control buttons

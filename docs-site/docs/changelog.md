@@ -42,15 +42,27 @@ All notable changes to this project will be documented here.
 
 - **Stopwatch Auto-Fill End Time**: When you click "start" on the stopwatch, it now automatically fills both the start time (current time) and the end time (start time + default duration from settings). This provides a complete time block immediately, which you can adjust as needed. The default duration is configured in Settings → General → "Default duration (minutes)".
 
+- **Multiple Event Names in Category Assignment Presets**: Category assignment presets now support comma-separated event names in a single preset. Instead of creating separate presets for similar events, you can now define multiple event names that should receive the same categories. For example, a preset with event names "Coding, Work, Dev" will automatically assign the configured categories to events named "Coding", "Work", or "Dev". This makes category auto-assignment more flexible and reduces the number of presets needed. Configure in Settings → Categories → Auto-assign categories → Custom category assignment presets.
+
 ### Changed
 
 - **Category Assignment Modal**: Selected categories now appear at the top of the list, followed by unselected categories sorted alphabetically. This makes it easier to see which categories are already assigned when working with multiple events.
 
 - **Improved Category Settings UI**: Enhanced the visual design of category cards in Settings → Categories. Each category card now displays with a subtle background tint matching the category's configured color, making it easier to visually identify categories at a glance.
 
+- **Improved Category Assignment Preset UI**: Completely redesigned the category assignment preset interface in Settings → Categories for better usability and visual appeal. Each preset now displays in a compact single-row layout with colorful category tags showing their configured colors, larger spacing for easier interaction, and improved buttons ("+" for adding categories, "×" for removing). The event name input supports word-break for long comma-separated names, and a visual arrow (→) shows the relationship between event names and categories. The layout naturally wraps to multiple rows when needed.
+
+- **Improved Color Rules Settings UI**: Enhanced the color rule interface in Settings → Rules for a cleaner, more professional appearance. Color pickers now appear as standalone elements without bulky setting wrappers, using native HTML color inputs that blend seamlessly into the rule layout.
+
+- **Improved Modal Button Styling**: Enhanced the visual design of modal action buttons across the plugin. Modal buttons (Cancel, Delete, etc.) are now centered horizontally for better visual balance, with consistent 8px spacing using flexbox. Delete confirmation modals for batch operations now have cleaner, more centered button layouts.
+
 - **Stopwatch Continue Button**: The stopwatch "start (no fill)" button has been renamed to "continue" and now continues from the existing start time in the event rather than creating a new start time. When you click "continue", the timer calculates the elapsed time based on the event's start date and continues tracking from that point, making it perfect for resuming work on existing events. This provides accurate time tracking when you return to an event after a break.
 
-### Bug Fixes
+### Fixed
+
+- **Category Assignment Preset Input State Preservation**: Fixed a bug where typing an event name in a category assignment preset would reset when adding or removing categories. The input field now preserves its value, focus state, and cursor position during category operations. This allows you to type event names and manage categories simultaneously without losing your input.
+
+- **Event Name Reset Bug in Category Assignment**: Fixed a bug where the event name would be reset to an empty string when adding or removing categories from a preset. The current input value is now properly preserved when updating preset categories, ensuring that unsaved event names are not lost during category operations.
 
 - **Daily Statistics in Day View**: Fixed daily statistics modal showing today's date instead of the selected day when opened from day view. Previously, opening daily statistics while viewing a specific day would incorrectly display statistics for today. Now it correctly shows statistics for the day being viewed. Weekly and monthly views retain the original behavior of showing today if within the visible interval.
 

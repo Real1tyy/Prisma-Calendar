@@ -381,8 +381,23 @@ Days Before: 1  # Notify 1 day before this all-day event
 
 ### Event Colors
 
-- Default event color: fallback color when no rule matches
-- Color rules: evaluated top-to-bottom; first match wins
+Configure event colors based on frontmatter properties with a clean, modern interface:
+
+- **Default event color**: Fallback color when no rule matches (uses standalone color picker)
+- **Color rules**: Evaluated top-to-bottom; first match wins
+- **Clean design**: Color pickers appear as standalone elements without bulky setting wrappers
+- **Inline layout**: Expression input, color picker, and controls all in a single compact row
+- **Easy reordering**: Move rules up/down with arrow buttons
+- **Toggle rules**: Enable/disable rules with checkbox without deleting them
+
+**UI Features:**
+- Compact single-row layout for each rule
+- Native color input for cleaner appearance
+- Order indicator (#1, #2, etc.) shows evaluation priority
+- Enable/disable checkbox for quick rule toggling
+- Expression input with inline editing
+- Move up/down arrows for reordering
+- Delete button (×) for removing rules
 
 Examples:
 
@@ -396,6 +411,8 @@ Type === 'Meeting'          → #f59e0b
 Tips:
 - Use property names directly (no prefix needed)
 - Colors support CSS names, hex, or HSL
+- Rules are evaluated in order - put more specific rules first
+- Disabled rules are skipped during evaluation
 
 ### Event Filtering
 
@@ -441,6 +458,7 @@ Manage category colors visually with the Categories Settings section:
 3. See event counts and percentages for each category (e.g., "Work (15 events - 45.5%)")
 4. Configure colors using the color picker for each category
 5. View a pie chart showing category distribution with percentages
+6. Rename or delete categories using the edit (pencil) and delete (trash) buttons
 
 **Features:**
 - **Automatic Detection**: Categories are automatically collected from all events using the category property configured in Settings → Properties
@@ -448,6 +466,7 @@ Manage category colors visually with the Categories Settings section:
 - **Color Management**: Each category color is stored as a color rule (e.g., `Category.includes('Work')`) and updates in real-time
 - **Visual Distribution**: Pie chart shows percentage breakdown of events across categories
 - **Sorted by Usage**: Categories are sorted by event count (most used first)
+- **Category Management**: Rename and delete categories with confirmation modals showing affected event counts
 
 :::note Important
 After renaming or deleting categories, restart Obsidian for changes to fully propagate across all calendar views and settings.
@@ -482,7 +501,19 @@ Automatically assigns a category when the event name matches a category name (ca
 
 #### Custom category assignment presets
 
-Define custom rules to map specific event names to multiple categories (e.g., "Coding" → Software, Business).
+Define custom rules to map specific event names to multiple categories. Each preset can now include **multiple comma-separated event names** that will all receive the same category assignments.
+
+**Features:**
+- **Multiple event names per preset**: Use commas to define multiple event names in a single preset (e.g., "Coding, Work, Dev" → Software, Business)
+- **Flexible matching**: Any of the comma-separated names will trigger the category assignment
+- **Colorful visual design**: Selected categories display in their configured colors for easy identification
+- **Compact layout**: Single-row design with inline elements for better space efficiency
+- **Easy management**: Add categories with "+" button, remove with "×" button on each tag
+
+**Example Presets:**
+- Event names: `Coding, Work, Dev` → Categories: Software, Business
+- Event names: `Gym, Exercise, Workout` → Categories: Health, Fitness
+- Event names: `Reading, Study` → Categories: Learning, Personal Development
 
 📖 See [Categories - Auto-Assignment](/features/categories#1-auto-assignment-new-event-creation) for detailed usage and examples.
 

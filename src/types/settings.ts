@@ -105,7 +105,7 @@ const FilterPresetSchema = z
 const CategoryAssignmentPresetSchema = z
 	.object({
 		id: z.string(),
-		eventName: z.string(), // Event name to match (case-insensitive, without ZettelID)
+		eventName: z.string(), // Event name(s) to match (comma-separated, case-insensitive, without ZettelID)
 		categories: z.array(z.string()), // Categories to assign
 	})
 	.strip();

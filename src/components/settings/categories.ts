@@ -179,10 +179,13 @@ export class CategoriesSettings {
 			);
 
 		const examplesContainer = containerEl.createDiv(cls("settings-info-box"));
-		examplesContainer.createEl("strong", { text: "Example:" });
+		examplesContainer.createEl("strong", { text: "Examples:" });
 		const examplesList = examplesContainer.createEl("ul");
 		examplesList.createEl("li", {
-			text: "Event name: 'Coding' → Auto-assign categories: Software, Business",
+			text: "Event names: 'Coding, Work, Dev' → Auto-assign categories: Software, Business",
+		});
+		examplesList.createEl("li", {
+			text: "Event names: 'Gym, Exercise' → Auto-assign categories: Health, Fitness",
 		});
 
 		this.categoryAssignmentPresetsContainer = containerEl.createDiv();
@@ -199,6 +202,22 @@ export class CategoriesSettings {
 	}
 
 	private renderCategoryAssignmentPresets(container: HTMLElement): void {
+		const inputStates = new Map<string, string>();
+		let focusedPresetId: string | null = null;
+		let focusedCursorPosition: number | null = null;
+
+		const existingInputs = container.querySelectorAll<HTMLInputElement>(`.${cls("category-assignment-name-input")}`);
+		existingInputs.forEach((input) => {
+			const presetId = input.getAttribute("data-preset-id");
+			if (presetId) {
+				inputStates.set(presetId, input.value);
+				if (document.activeElement === input) {
+					focusedPresetId = presetId;
+					focusedCursorPosition = input.selectionStart;
+				}
+			}
+		});
+
 		container.empty();
 
 		const settings = this.settingsStore.currentSettings;
@@ -215,37 +234,63 @@ export class CategoriesSettings {
 		for (const preset of presets) {
 			const presetContainer = container.createDiv(cls("category-assignment-preset"));
 
-			// Event name input
+			const savedValue = inputStates.get(preset.id);
+			const inputValue = savedValue !== undefined ? savedValue : preset.eventName;
+
 			const nameInput = presetContainer.createEl("input", {
 				type: "text",
-				value: preset.eventName,
-				placeholder: "Event name (e.g., Coding)",
+				value: inputValue,
+				placeholder: "Event name(s) - comma separated (e.g., Coding, Work, Dev)",
 				cls: cls("category-assignment-name-input"),
+				attr: { "data-preset-id": preset.id },
 			});
-			nameInput.addEventListener("change", async () => {
+
+			const updatePresetName = async () => {
 				await this.updateCategoryAssignmentPreset(preset.id, {
 					...preset,
 					eventName: nameInput.value.trim(),
 				});
+			};
+
+			nameInput.addEventListener("blur", () => {
+				void updatePresetName();
+			});
+			nameInput.addEventListener("keydown", (e: KeyboardEvent) => {
+				if (e.key === "Enter") {
+					e.preventDefault();
+					void updatePresetName();
+				}
 			});
 
-			// Categories dropdown (multi-select)
+			// Arrow separator
+			presetContainer.createEl("span", {
+				text: "→",
+				cls: cls("category-assignment-arrow"),
+			});
+
+			// Categories container
 			const categoriesContainer = presetContainer.createDiv(cls("category-assignment-categories"));
 
 			const categoriesSelectContainer = categoriesContainer.createDiv(cls("category-assignment-select-container"));
 
 			// Display selected categories as tags
 			const selectedContainer = categoriesSelectContainer.createDiv(cls("category-assignment-selected"));
-			this.renderSelectedCategories(selectedContainer, preset);
+			this.renderSelectedCategories(selectedContainer, preset, nameInput);
 
-			// Add category dropdown
-			const addCategoryDropdown = categoriesSelectContainer.createEl("select", {
-				cls: cls("category-assignment-add-dropdown"),
+			// Add category button with dropdown
+			const addButtonContainer = categoriesSelectContainer.createDiv(cls("category-assignment-add-container"));
+
+			const addCategoryDropdown = addButtonContainer.createEl("select", {
+				cls: cls("category-assignment-add-dropdown-hidden"),
 			});
+
 			const defaultOption = addCategoryDropdown.createEl("option", {
-				text: "Add category...",
+				text: "",
 				value: "",
 			});
+			defaultOption.disabled = true;
+			defaultOption.selected = true;
+			defaultOption.hidden = true;
 			addCategoryDropdown.appendChild(defaultOption);
 
 			for (const category of availableCategories) {
@@ -258,41 +303,75 @@ export class CategoriesSettings {
 				}
 			}
 
+			const addButton = addButtonContainer.createEl("button", {
+				text: "+",
+				cls: cls("category-assignment-add-button"),
+				attr: { title: "Add category" },
+			});
+
+			addButton.addEventListener("click", (e) => {
+				e.preventDefault();
+				addCategoryDropdown.focus();
+				addCategoryDropdown.click();
+			});
+
 			addCategoryDropdown.addEventListener("change", async () => {
 				const selectedCategory = addCategoryDropdown.value;
 				if (selectedCategory && !preset.categories.includes(selectedCategory)) {
 					await this.updateCategoryAssignmentPreset(preset.id, {
 						...preset,
+						eventName: nameInput.value.trim(),
 						categories: [...preset.categories, selectedCategory],
 					});
 					this.renderCategoryAssignmentPresets(this.categoryAssignmentPresetsContainer!);
 				}
+				addCategoryDropdown.selectedIndex = 0;
 			});
 
 			// Delete preset button
 			const deleteButton = presetContainer.createEl("button", {
-				text: "Delete",
-				cls: `${cls("settings-button")} ${cls("settings-button-danger")}`,
+				text: "×",
+				cls: cls("category-assignment-delete-button"),
+				attr: { title: "Delete preset" },
 			});
 			deleteButton.addEventListener("click", async () => {
 				await this.deleteCategoryAssignmentPreset(preset.id);
 			});
+
+			if (focusedPresetId === preset.id) {
+				setTimeout(() => {
+					nameInput.focus();
+					if (focusedCursorPosition !== null) {
+						nameInput.setSelectionRange(focusedCursorPosition, focusedCursorPosition);
+					}
+				}, 0);
+			}
 		}
 	}
 
-	private renderSelectedCategories(container: HTMLElement, preset: CategoryAssignmentPreset): void {
+	private renderSelectedCategories(
+		container: HTMLElement,
+		preset: CategoryAssignmentPreset,
+		nameInput: HTMLInputElement
+	): void {
 		container.empty();
 
 		if (preset.categories.length === 0) {
 			container.createEl("span", {
-				text: "No categories selected",
+				text: "No categories",
 				cls: cls("category-assignment-empty-selection"),
 			});
 			return;
 		}
 
+		const settings = this.settingsStore.currentSettings;
+
 		for (const category of preset.categories) {
 			const tag = container.createDiv(cls("category-assignment-tag"));
+
+			const categoryColor = this.getCategoryColor(category, settings.colorRules, this.categoryProp);
+			tag.style.setProperty("--category-color", categoryColor);
+
 			tag.createEl("span", { text: category });
 
 			const removeButton = tag.createEl("button", {
@@ -302,6 +381,7 @@ export class CategoriesSettings {
 			removeButton.addEventListener("click", async () => {
 				await this.updateCategoryAssignmentPreset(preset.id, {
 					...preset,
+					eventName: nameInput.value.trim(),
 					categories: preset.categories.filter((c) => c !== category),
 				});
 				this.renderCategoryAssignmentPresets(this.categoryAssignmentPresetsContainer!);

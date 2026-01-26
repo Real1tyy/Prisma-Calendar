@@ -1906,23 +1906,28 @@
 
 .prisma-category-assignment-preset {
 	display: flex;
-	flex-direction: column;
-	gap: 12px;
-	padding: 16px;
-	margin-bottom: 12px;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	margin-bottom: 8px;
 	border: 1px solid var(--background-modifier-border);
-	border-radius: 8px;
+	border-radius: 6px;
 	background-color: var(--background-secondary);
+	flex-wrap: wrap;
 }
 
 .prisma-category-assignment-name-input {
-	width: 100%;
-	padding: 8px 12px;
+	flex: 0 1 auto;
+	min-width: 180px;
+	max-width: 300px;
+	padding: 4px 8px;
 	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
+	border-radius: 4px;
 	background-color: var(--background-primary);
 	color: var(--text-normal);
-	font-size: var(--font-ui-medium);
+	font-size: var(--font-ui-small);
+	word-break: break-word;
+	overflow-wrap: break-word;
 }
 
 .prisma-category-assignment-name-input:focus {
@@ -1932,8 +1937,10 @@
 
 .prisma-category-assignment-categories {
 	display: flex;
-	flex-direction: column;
-	gap: 8px;
+	align-items: center;
+	gap: 6px;
+	flex: 1;
+	min-width: 0;
 }
 
 .prisma-category-assignment-label {
@@ -1944,67 +1951,131 @@
 
 .prisma-category-assignment-select-container {
 	display: flex;
-	flex-direction: column;
-	gap: 8px;
+	align-items: center;
+	gap: 6px;
+	flex: 1;
+	min-width: 0;
+	flex-wrap: wrap;
 }
 
 .prisma-category-assignment-selected {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 6px;
-	min-height: 32px;
-	padding: 4px;
+	gap: 10px;
+	align-items: center;
 }
 
 .prisma-category-assignment-empty-selection {
 	color: var(--text-muted);
 	font-style: italic;
-	font-size: var(--font-ui-small);
+	font-size: var(--font-ui-smaller);
 }
 
 .prisma-category-assignment-tag {
 	display: flex;
 	align-items: center;
-	gap: 6px;
-	padding: 4px 8px;
-	background-color: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border-radius: 4px;
+	gap: 8px;
+	padding: 6px 10px;
+	background-color: var(--category-color, var(--interactive-accent));
+	color: white;
+	border-radius: 6px;
 	font-size: var(--font-ui-small);
 	font-weight: 500;
+	white-space: nowrap;
 }
 
 .prisma-category-assignment-tag-remove {
-	background: transparent;
+	background: rgba(0, 0, 0, 0.2);
 	border: none;
-	color: var(--text-on-accent);
+	color: white;
 	cursor: pointer;
 	padding: 0;
 	margin: 0;
-	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
 	line-height: 1;
 	font-weight: 700;
-	opacity: 0.8;
-	transition: opacity 0.2s ease;
+	border-radius: 3px;
+	transition: all 0.2s ease;
 }
 
 .prisma-category-assignment-tag-remove:hover {
-	opacity: 1;
+	background: rgba(0, 0, 0, 0.4);
+	transform: scale(1.1);
 }
 
-.prisma-category-assignment-add-dropdown {
-	padding: 6px 10px;
+.prisma-category-assignment-add-container {
+	position: relative;
+	display: inline-block;
+	flex-shrink: 0;
+}
+
+.prisma-category-assignment-add-button {
+	width: 24px;
+	height: 24px;
+	padding: 0;
 	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
+	border-radius: 4px;
 	background-color: var(--background-primary);
 	color: var(--text-normal);
-	font-size: var(--font-ui-small);
+	font-size: 16px;
+	font-weight: 600;
 	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
 }
 
-.prisma-category-assignment-add-dropdown:focus {
+.prisma-category-assignment-add-button:hover {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
 	border-color: var(--interactive-accent);
-	outline: none;
+}
+
+.prisma-category-assignment-add-dropdown-hidden {
+	position: absolute;
+	left: 0;
+	top: 0;
+	opacity: 0;
+	width: 24px;
+	height: 24px;
+	cursor: pointer;
+	border: none;
+	background: transparent;
+}
+
+.prisma-category-assignment-arrow {
+	color: var(--text-muted);
+	font-size: var(--font-ui-medium);
+	flex-shrink: 0;
+}
+
+.prisma-category-assignment-delete-button {
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-error);
+	font-size: 18px;
+	font-weight: 600;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	flex-shrink: 0;
+}
+
+.prisma-category-assignment-delete-button:hover {
+	background-color: var(--background-modifier-error);
+	border-color: var(--text-error);
 }
 
 .prisma-categories-chart-container {
@@ -5850,6 +5921,15 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	display: flex;
 	justify-content: flex-end;
 	gap: 0.5rem;
+}
+
+/* General modal button container - used across all modals */
+.prisma-modal-button-container {
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+	align-items: center;
+	margin-top: 16px;
 }
 
 /* ICS Import Modal */

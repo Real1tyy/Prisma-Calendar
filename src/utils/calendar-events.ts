@@ -825,10 +825,15 @@ export const autoAssignCategories = (
 		}
 	}
 
-	// Rule 2: Apply custom category assignment presets
+	// Rule 2: Apply custom category assignment presets (supports comma-separated event names)
 	if (settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0) {
 		for (const preset of settings.categoryAssignmentPresets) {
-			if (normalizedEventName === normalizeForComparison(preset.eventName)) {
+			const presetEventNames = preset.eventName
+				.split(",")
+				.map((name) => normalizeForComparison(name.trim()))
+				.filter((name) => name.length > 0);
+
+			if (presetEventNames.includes(normalizedEventName)) {
 				for (const category of preset.categories) {
 					categoriesToAssign.add(category);
 				}

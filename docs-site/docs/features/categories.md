@@ -54,14 +54,12 @@ When enabled, if the event name matches a category name (case-insensitive, ignor
 - Type "Health" and click away → Categories replaced with "health"
 
 #### Custom category assignment presets
-Define custom rules to automatically assign specific categories based on event names. Each preset can assign multiple categories. When the event name matches a preset, those categories replace any previously selected categories.
 
-**Example:**
-- Event name: "Coding" → Replaces with: Software, Business
-- Event name: "Team Meeting" → Replaces with: Work, Collaboration
+Define custom rules to automatically assign specific categories based on event names. Each preset can assign multiple categories, and now supports **multiple comma-separated event names** in a single preset for maximum flexibility.
 
 **How it works:**
 - When you finish typing the event title (lose focus from the title field), the system checks for matches
+- If the event name matches **any** of the comma-separated names in a preset, those categories are assigned
 - If a match is found, categories are replaced with the auto-assigned ones
 - If no match is found, your manually selected categories remain unchanged
 - This makes the behavior intentional and predictable - you see exactly what gets assigned
