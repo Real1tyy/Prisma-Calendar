@@ -1577,7 +1577,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// Add title
 		const titleEl = document.createElement("div");
 		titleEl.className = cls("fc-event-title-custom");
-		const title = cleanupTitle(event.title);
+		let title = cleanupTitle(event.title);
+
+		if (settings.showDurationInTitle && !event.allDay && event.start && event.end) {
+			const duration = calculateDuration(event.start, event.end);
+			title = `${title} (${duration})`;
+		}
+
 		titleEl.textContent = title;
 		headerEl.appendChild(titleEl);
 

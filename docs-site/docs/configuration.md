@@ -232,6 +232,7 @@ STATUS: Done
 - **Past event contrast**: visual contrast of past events (0% = invisible, 100% = normal, default: 70%)
 - **Show color dots**: show color indicator dots in monthly view (enabled by default)
 - **Thicker hour lines**: make full-hour lines thicker in day/week views (enabled by default)
+- **Show duration in event title**: display event duration in parentheses after the event title for timed events (e.g., "Meeting (2h 30m)"). Only applies to events with both start and end times. Enabled by default.
 - **Sticky day headers**: keep day/date headers visible at the top when scrolling down in weekly and daily views
 - **Sticky all-day events**: keep all-day event section visible at the top when scrolling down in weekly and daily views (disabled by default)
 

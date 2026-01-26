@@ -188,6 +188,12 @@ export class CalendarSettings {
 		});
 
 		this.ui.addToggle(containerEl, {
+			key: "showDurationInTitle",
+			name: "Show duration in event title",
+			desc: "Display event duration (e.g., 2h 30m) in parentheses after the event title for timed events",
+		});
+
+		this.ui.addToggle(containerEl, {
 			key: "stickyDayHeaders",
 			name: "Sticky day headers",
 			desc: "Keep day/date headers visible at the top when scrolling down in weekly and daily views",

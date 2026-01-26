@@ -167,6 +167,7 @@ const CalendarSettingsSchema = z
 		showPhysicalRecurringMarker: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_PHYSICAL_RECURRING_MARKER), // Show marker indicator on physical recurring instance events
 		sourceRecurringMarker: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SOURCE_RECURRING_MARKER), // Symbol/emoji to display on source recurring events
 		physicalRecurringMarker: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_PHYSICAL_RECURRING_MARKER), // Symbol/emoji to display on physical recurring instance events
+		showDurationInTitle: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_DURATION_IN_TITLE), // Show event duration in the event title
 	})
 	.strip();
 

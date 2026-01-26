@@ -6462,6 +6462,33 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	border-color: var(--interactive-accent);
 }
 
+.prisma-category-name {
+	cursor: pointer;
+}
+
+.prisma-category-remove-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1rem;
+	height: 1rem;
+	margin-left: 0.1rem;
+	padding: 0;
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--text-muted);
+	background: none;
+	border: none;
+	cursor: pointer;
+	border-radius: 2px;
+	transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.prisma-category-remove-button:hover {
+	color: var(--text-error);
+	background-color: var(--background-modifier-error);
+}
+
 .prisma-assign-categories-button {
 	flex-shrink: 0;
 	padding: 0.4rem 0.8rem;
