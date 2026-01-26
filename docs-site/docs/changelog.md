@@ -8,7 +8,7 @@ All notable changes to this project will be documented here.
 
 ### New Video
 
-- [Prisma Calendar — Modern Calendar UX (Part 4)](https://www.youtube.com/watch?v=p4yGAGTyoyI)
+- [Prisma Calendar — Major Productivity Improvements Breakdown](https://www.youtube.com/watch?v=p4yGAGTyoyI)
 
 **What's Covered**:
 - Untracked events dropdown showing all events without dates
