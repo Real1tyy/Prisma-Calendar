@@ -217,6 +217,7 @@ export const CONTEXT_MENU_BUTTON_LABELS = {
 	enlarge: "Enlarge",
 	preview: "Preview",
 	goToSource: "Go to source",
+	editSourceEvent: "Edit source event",
 	duplicateRecurringInstance: "Duplicate recurring instance",
 	viewRecurringEvents: "View recurring events",
 	editEvent: "Edit event",

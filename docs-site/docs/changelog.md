@@ -32,6 +32,12 @@ All notable changes to this project will be documented here.
 
 ### New Features
 
+- **Edit Source Event Context Menu Option**: New context menu option "Edit source event" for physical and virtual recurring event instances. When you right-click on a recurring event instance (either a physical file or virtual occurrence), you can now select "Edit source event" to open the edit modal with the source recurring event's data. This allows you to quickly modify the recurring event template without navigating to the source event first. Enabled by default, can be toggled in Settings → Calendar → Context menu items.
+
+### Fixed
+
+- **Virtual Event Context Menu**: Fixed virtual recurring events showing incorrect context menu options. Virtual events now properly display only relevant actions (Enlarge, Go to source, Edit source event, View recurring events, Enable/Disable recurring event) and hide file-based operations that don't apply to read-only virtual instances. This ensures a cleaner, more appropriate context menu for virtual events.
+
 - **Show Duration in Event Title**: New setting to display event duration directly in the event title. When enabled in Settings → Calendar → "Show duration in event title", timed events will show their duration in parentheses after the event name (e.g., "Meeting (2h 30m)"). This makes it easy to see event durations at a glance without hovering over events. The duration is displayed in a compact format (e.g., 1h, 30m, 2h 15m) and only appears for timed events with both start and end times. Enabled by default.
 
 - **Quick Category Removal in Event Modal**: Categories displayed in the event create/edit modal now include a small "×" button on the right side of each category tag. Click this button to instantly remove that category from the event without opening the category assignment modal. This provides a faster workflow for removing individual categories while still allowing full category management through the "Assign categories" button.

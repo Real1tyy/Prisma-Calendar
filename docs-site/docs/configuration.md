@@ -312,6 +312,7 @@ All buttons are enabled by default. Uncheck items to hide them from the toolbar.
   - **Enlarge**: Open event preview in a modal
   - **Preview**: Show hover preview for the event
   - **Go to source**: Navigate to the source recurring event
+  - **Edit source event**: Open edit modal with source recurring event data (only appears on physical/virtual recurring instances)
   - **Duplicate recurring instance**: Create a duplicate of a physical recurring instance
   - **View recurring events**: Open modal showing all instances of a recurring event
   - **Edit event**: Open event edit modal

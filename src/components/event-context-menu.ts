@@ -107,9 +107,10 @@ export class EventContextMenu {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const frontmatter = event.extendedProps?.frontmatterDisplayData;
 
+		// Check isVirtual FIRST - virtual events have rruleProp in their meta but are not source events
+		if (event.extendedProps?.isVirtual) return "virtual";
 		if (frontmatter?.[settings.rruleProp]) return "source";
 		if (frontmatter?.[settings.rruleIdProp] && !frontmatter?.[settings.rruleProp]) return "physical";
-		if (event.extendedProps?.isVirtual) return "virtual";
 		return "normal";
 	}
 
@@ -225,6 +226,17 @@ export class EventContextMenu {
 					.setIcon("corner-up-left")
 					.onClick(() => {
 						this.goToSourceEvent(event);
+					});
+			});
+		}
+
+		if (shouldShow("editSourceEvent") && (isPhysical || isVirtual)) {
+			menu.addItem((item) => {
+				item
+					.setTitle("Edit source event")
+					.setIcon("pencil")
+					.onClick(() => {
+						this.editSourceEvent(event);
 					});
 			});
 		}
@@ -689,7 +701,10 @@ export class EventContextMenu {
 		new EventEditModal(this.app, this.bundle, event).open();
 	}
 
-	private goToSourceEvent(event: CalendarEventInfo): void {
+	private withSourceEvent(
+		event: CalendarEventInfo,
+		action: (sourceEvent: CalendarEvent, sourceFilePath: string) => void
+	): void {
 		const sourceFilePath = this.getSourceFilePath(event);
 
 		if (!sourceFilePath) {
@@ -703,14 +718,37 @@ export class EventContextMenu {
 			return;
 		}
 
-		const eventDate = new Date(sourceEvent.start);
-		this.calendarView.navigateToDate(eventDate, "timeGridWeek");
+		action(sourceEvent, sourceFilePath);
+	}
 
-		setTimeout(() => {
-			this.calendarView.highlightEventByPath(sourceFilePath, 5000);
-		}, 300);
+	private goToSourceEvent(event: CalendarEventInfo): void {
+		this.withSourceEvent(event, (sourceEvent, sourceFilePath) => {
+			const eventDate = new Date(sourceEvent.start);
+			this.calendarView.navigateToDate(eventDate, "timeGridWeek");
 
-		new Notice("Navigated to source event");
+			setTimeout(() => {
+				this.calendarView.highlightEventByPath(sourceFilePath, 5000);
+			}, 300);
+
+			new Notice("Navigated to source event");
+		});
+	}
+
+	private editSourceEvent(event: CalendarEventInfo): void {
+		this.withSourceEvent(event, (sourceEvent) => {
+			const sourceEventInfo = {
+				title: sourceEvent.title,
+				start: sourceEvent.start,
+				end: isTimedEvent(sourceEvent) ? sourceEvent.end : undefined,
+				allDay: sourceEvent.allDay,
+				extendedProps: {
+					filePath: sourceEvent.ref.filePath,
+					frontmatterDisplayData: sourceEvent.meta,
+				},
+			};
+
+			this.openEditModal(sourceEventInfo);
+		});
 	}
 
 	private showRecurringEventsList(event: CalendarEventInfo): void {
