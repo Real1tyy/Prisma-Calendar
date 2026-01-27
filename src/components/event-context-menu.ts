@@ -1,4 +1,4 @@
-import { getObsidianLinkPath } from "@real1ty-obsidian-plugins";
+import { Frontmatter, getObsidianLinkPath } from "@real1ty-obsidian-plugins";
 import { type App, Menu, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
@@ -14,7 +14,7 @@ import {
 	ToggleSkipCommand,
 } from "../core/commands";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
-import { type ContextMenuItem, type Frontmatter, isTimedEvent } from "../types";
+import { type ContextMenuItem, isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
 import { findAdjacentEvent, isEventDone } from "../utils/calendar-events";
 import { intoDate, toLocalISOString } from "../utils/format";
@@ -759,68 +759,14 @@ export class EventContextMenu {
 			return;
 		}
 
-		const sourceEventPath = this.bundle.recurringEventManager.getSourceEventPath(rruleId);
-		let sourceTitle = "Unknown Event";
-		let rruleType: string | undefined;
-		let rruleSpec: string | undefined;
-		let sourceCategory: string | undefined;
+		const series = this.bundle.recurringEventManager.getRecurringEventSeries(rruleId);
 
-		if (!sourceEventPath) {
-			new Notice("Source event not found");
+		if (!series) {
+			new Notice("Recurring event series not found");
 			return;
 		}
 
-		try {
-			const { file, frontmatter } = getFileAndFrontmatter(this.app, sourceEventPath);
-			sourceTitle = file.basename;
-
-			const settings = this.bundle.settingsStore.currentSettings;
-			rruleType = frontmatter[settings.rruleProp] as string | undefined;
-			rruleSpec = frontmatter[settings.rruleSpecProp] as string | undefined;
-
-			const categories = getCategoriesFromFilePath(this.app, sourceEventPath, settings.categoryProp);
-			if (categories.length > 0) {
-				const categoryColor = this.bundle.categoryTracker
-					.getCategoriesWithColors()
-					.find((c) => c.name === categories[0])?.color;
-				sourceCategory = categoryColor || settings.defaultNodeColor;
-			}
-		} catch {
-			// File doesn't exist or has no frontmatter - continue without source info
-		}
-
-		const physicalInstances = this.bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
-
-		if (physicalInstances.length === 0) {
-			new Notice("No physical instances found");
-			return;
-		}
-
-		const settings = this.bundle.settingsStore.currentSettings;
-
-		// Get file titles and skipped status for each instance
-		const instancesWithTitles = physicalInstances.map((instance) => {
-			let title = instance.filePath;
-			let skipped = false;
-
-			try {
-				const { file, frontmatter } = getFileAndFrontmatter(this.app, instance.filePath);
-				title = file.basename;
-				skipped = frontmatter[settings.skipProp] === true;
-			} catch {
-				// File doesn't exist or has no frontmatter - use defaults
-			}
-
-			return {
-				filePath: instance.filePath,
-				instanceDate: instance.instanceDate,
-				title,
-				skipped,
-			};
-		});
-
-		const recurringInfo = rruleType ? { rruleType, rruleSpec, sourceCategory } : undefined;
-		new RecurringEventsListModal(this.app, instancesWithTitles, sourceTitle, sourceEventPath, recurringInfo).open();
+		new RecurringEventsListModal(this.app, series).open();
 	}
 
 	async fillEndTimeFromNext(event: CalendarEventInfo): Promise<void> {

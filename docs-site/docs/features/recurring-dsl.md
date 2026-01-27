@@ -89,6 +89,7 @@ The instance list modal includes:
 - **Category-Colored Background**: When the source event has a category assigned, the modal displays a subtle gradient background using the category's color
 - **Search & Filtering**: Search instances and toggle visibility of past/skipped events
 - **Statistics**: View completion rate with counts of past, skipped, and completed instances
+- **Smart Sorting**: When showing past events, instances are sorted from newest to oldest (most recent first). When showing only future events, instances are sorted from oldest to newest (next occurrence first)
 - **Click to Open**: Click any instance to open its file directly
 
 ![Recurring Events Modal](/img/recurring_events_list_modal.png)
@@ -99,6 +100,7 @@ The instance list modal includes:
 
 The recurring events modal (accessible via command palette: "Show recurring events") provides powerful management tools:
 
+- **Clickable Recurring Events**: Click on any recurring event in the list to open a detailed view of all physical instances for that specific event. This makes it easy to navigate to individual occurrences. Hold Ctrl/Cmd while clicking to open the source event file in a new tab instead
 - **Category Color Backgrounds**: Recurring events with assigned categories display a semi-transparent background across the entire row in the category's color with a left border accent, making it easy to visually identify event types at a glance
 - **Category Button**: Assign or change categories using the unified category assignment command. Categories automatically propagate to all physical instances based on your propagation settings
 - **Navigate Button**: Jumps to the source event in the calendar view and highlights it for 5 seconds, useful for locating events in crowded calendars

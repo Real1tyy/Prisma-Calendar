@@ -1,21 +1,13 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import { type App, Modal, Setting } from "obsidian";
-import { RECURRENCE_TYPE_OPTIONS, type RecurrenceType } from "../../types/recurring-event";
+import {
+	RECURRENCE_TYPE_OPTIONS,
+	type RecurringEventInstance,
+	type RecurringEventSeries,
+	type RecurrenceType,
+} from "../../types/recurring-event";
 import { removeZettelId } from "../../utils/calendar-events";
-
-interface RecurringEventInstance {
-	filePath: string;
-	instanceDate: DateTime;
-	title: string;
-	skipped: boolean;
-}
-
-interface RecurringEventInfo {
-	rruleType: string;
-	rruleSpec?: string;
-	sourceCategory?: string;
-}
 
 export class RecurringEventsListModal extends Modal {
 	private instances: RecurringEventInstance[];
@@ -27,20 +19,18 @@ export class RecurringEventsListModal extends Modal {
 	private statsContainer: HTMLElement | null = null;
 	private sourceTitle: string;
 	private sourceFilePath: string;
-	private recurringInfo?: RecurringEventInfo;
+	private rruleType?: RecurrenceType;
+	private rruleSpec?: string;
+	private sourceCategory?: string;
 
-	constructor(
-		app: App,
-		instances: RecurringEventInstance[],
-		sourceTitle: string,
-		sourceFilePath: string,
-		recurringInfo?: RecurringEventInfo
-	) {
+	constructor(app: App, series: RecurringEventSeries) {
 		super(app);
-		this.instances = instances;
-		this.sourceTitle = sourceTitle;
-		this.sourceFilePath = sourceFilePath;
-		this.recurringInfo = recurringInfo;
+		this.instances = series.instances;
+		this.sourceTitle = series.sourceTitle;
+		this.sourceFilePath = series.sourceFilePath;
+		this.rruleType = series.rruleType;
+		this.rruleSpec = series.rruleSpec;
+		this.sourceCategory = series.sourceCategory;
 	}
 
 	onOpen(): void {
@@ -48,8 +38,8 @@ export class RecurringEventsListModal extends Modal {
 		addCls(contentEl, "recurring-events-list-modal");
 
 		// Apply category color to modal background if available
-		if (this.recurringInfo?.sourceCategory) {
-			contentEl.style.setProperty("--source-category-color", this.recurringInfo.sourceCategory);
+		if (this.sourceCategory) {
+			contentEl.style.setProperty("--source-category-color", this.sourceCategory);
 			addCls(contentEl, "recurring-events-list-modal-categorized");
 		}
 
@@ -63,17 +53,13 @@ export class RecurringEventsListModal extends Modal {
 			this.close();
 		};
 
-		if (this.recurringInfo) {
+		if (this.rruleType) {
 			const infoContainer = contentEl.createDiv(cls("recurring-events-info"));
-			const typeLabel =
-				RECURRENCE_TYPE_OPTIONS[this.recurringInfo.rruleType as RecurrenceType] || this.recurringInfo.rruleType;
+			const typeLabel = RECURRENCE_TYPE_OPTIONS[this.rruleType] || this.rruleType;
 			let infoText = `Recurrence: ${typeLabel}`;
 
-			if (
-				this.recurringInfo.rruleSpec &&
-				(this.recurringInfo.rruleType === "weekly" || this.recurringInfo.rruleType === "bi-weekly")
-			) {
-				const days = this.recurringInfo.rruleSpec
+			if (this.rruleSpec && (this.rruleType === "weekly" || this.rruleType === "bi-weekly")) {
+				const days = this.rruleSpec
 					.split(",")
 					.map((day) => day.trim())
 					.map((day) => day.charAt(0).toUpperCase() + day.slice(1))
@@ -168,13 +154,13 @@ export class RecurringEventsListModal extends Modal {
 
 		// Filter out source file from instances
 		const allInstancesExcludingSource = [...this.instances].filter(
-			(instance) => instance.filePath !== this.sourceFilePath
+			(instance) => instance.event.ref.filePath !== this.sourceFilePath
 		);
 
 		// Calculate statistics on PAST instances only
 		const pastInstances = allInstancesExcludingSource.filter((instance) => instance.instanceDate < now.startOf("day"));
 		const totalPastInstances = pastInstances.length;
-		const skippedPastInstances = pastInstances.filter((instance) => instance.skipped).length;
+		const skippedPastInstances = pastInstances.filter((instance) => instance.event.skipped).length;
 		const completedPastInstances = totalPastInstances - skippedPastInstances;
 		const completedPercentage =
 			totalPastInstances > 0 ? ((completedPastInstances / totalPastInstances) * 100).toFixed(1) : "0.0";
@@ -193,20 +179,24 @@ export class RecurringEventsListModal extends Modal {
 		}
 
 		if (this.hideSkippedEvents) {
-			filteredInstances = filteredInstances.filter((instance) => !instance.skipped);
+			filteredInstances = filteredInstances.filter((instance) => !instance.event.skipped);
 		}
 
 		// Apply search filter
 		if (this.searchQuery.trim()) {
 			const normalizedSearch = this.searchQuery.toLowerCase().trim();
 			filteredInstances = filteredInstances.filter((instance) => {
-				const cleanTitle = removeZettelId(instance.title).toLowerCase();
+				const cleanTitle = removeZettelId(instance.event.title).toLowerCase();
 				return cleanTitle.includes(normalizedSearch);
 			});
 		}
 
-		// Sort by date (ascending)
-		filteredInstances.sort((a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis());
+		// Sort by date: ascending (oldest first) when showing future events, descending (newest first) when showing past events
+		if (this.hidePastEvents) {
+			filteredInstances.sort((a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis());
+		} else {
+			filteredInstances.sort((a, b) => b.instanceDate.toMillis() - a.instanceDate.toMillis());
+		}
 
 		if (filteredInstances.length === 0) {
 			let emptyMessage = "No instances found";
@@ -241,16 +231,16 @@ export class RecurringEventsListModal extends Modal {
 			dateEl.textContent = instance.instanceDate.toFormat("yyyy-MM-dd (EEE)");
 
 			const titleEl = row.createDiv(cls("recurring-event-title"));
-			const cleanTitle = removeZettelId(instance.title);
+			const cleanTitle = removeZettelId(instance.event.title);
 			titleEl.textContent = cleanTitle;
 
 			// Add skipped indicator if event is skipped (and we're showing skipped events)
-			if (instance.skipped && !this.hideSkippedEvents) {
+			if (instance.event.skipped && !this.hideSkippedEvents) {
 				addCls(titleEl, "recurring-event-skipped");
 			}
 
 			row.onclick = () => {
-				void this.app.workspace.openLinkText(instance.filePath, "", false);
+				void this.app.workspace.openLinkText(instance.event.ref.filePath, "", false);
 				this.close();
 			};
 		}

@@ -10,6 +10,7 @@ import { getCategoriesFromFilePath, openFileInNewTab } from "../../utils/obsidia
 import { getStartDateTime } from "../../utils/recurring-utils";
 import type { CalendarView } from "../calendar-view";
 import { CategoryAssignModal } from "../modals/category-assign-modal";
+import { RecurringEventsListModal } from "./recurring-events-list-modal";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 interface RecurringEventListItem extends EventListItem {
@@ -273,12 +274,18 @@ export class RecurringEventsModal extends BaseEventListModal {
 			itemEl.style.setProperty("--category-color", categoryColor);
 		}
 
-		// Make row clickable with Ctrl+click to open in new tab
+		// Make row clickable: regular click opens list modal, Ctrl+click opens file in new tab
 		itemEl.addEventListener("click", async (e) => {
-			if ((e.ctrlKey || e.metaKey) && !(e.target instanceof HTMLButtonElement)) {
-				e.preventDefault();
-				e.stopPropagation();
+			if (e.target instanceof HTMLButtonElement) {
+				return;
+			}
+			e.preventDefault();
+			e.stopPropagation();
+
+			if (e.ctrlKey || e.metaKey) {
 				await openFileInNewTab(this.app, item.filePath);
+			} else {
+				await this.showRecurringEventsList(item);
 			}
 		});
 
@@ -297,7 +304,6 @@ export class RecurringEventsModal extends BaseEventListModal {
 		});
 		addCls(typeBadge, `prisma-recurring-type-${recurringItem.recurrenceType}`);
 
-		// Subtitle
 		if (item.subtitle) {
 			const subtitleEl = infoEl.createEl("div", {
 				cls: cls("generic-event-subtitle"),
@@ -305,7 +311,6 @@ export class RecurringEventsModal extends BaseEventListModal {
 			subtitleEl.textContent = item.subtitle;
 		}
 
-		// Action buttons
 		const actions = this.getActions();
 		if (actions.length > 0) {
 			const actionsEl = itemEl.createEl("div", {
@@ -317,7 +322,6 @@ export class RecurringEventsModal extends BaseEventListModal {
 					btn.addClass("mod-cta");
 				}
 				btn.addEventListener("click", (e) => {
-					e.stopPropagation();
 					void action.handler(item, itemEl);
 				});
 			}
@@ -332,6 +336,22 @@ export class RecurringEventsModal extends BaseEventListModal {
 			.find((c) => c.name === item.categories[0]);
 
 		return categoryInfo?.color || null;
+	}
+
+	private async showRecurringEventsList(item: EventListItem): Promise<void> {
+		const events = this.showDisabledOnly ? this.disabledEvents : this.enabledEvents;
+		const event = events.find((e) => e.sourceFilePath === item.filePath);
+		if (!event) {
+			new Notice(`Recurring event not found: ${item.title}`);
+			return;
+		}
+
+		const series = this.bundle.recurringEventManager.getRecurringEventSeries(event.rRuleId);
+		if (!series) {
+			new Notice("Recurring event series not found");
+			return;
+		}
+		new RecurringEventsListModal(this.app, series).open();
 	}
 
 	protected getHotkeyCommandId(): string | undefined {

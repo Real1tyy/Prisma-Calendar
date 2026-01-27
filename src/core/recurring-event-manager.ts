@@ -14,9 +14,10 @@ import {
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
+import { SyncStore } from "@real1ty-obsidian-plugins";
 import type { BehaviorSubject, Subscription } from "rxjs";
-import type { CalendarEvent, Frontmatter, ISO } from "../types";
-import type { NodeRecurringEvent } from "../types/recurring-event";
+import type { CalendarEvent, Frontmatter, ISO, PrismaSyncDataSchema } from "../types";
+import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import {
 	applyFrontmatterChangesToInstance,
@@ -30,6 +31,9 @@ import { getNextOccurrence } from "../utils/date-recurrence";
 import { applySourceTimeToInstanceDate } from "../utils/format";
 import { deleteFilesByPaths, getFileByPathOrThrow } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
+import { parseIntoList } from "@real1ty-obsidian-plugins";
+import type { CategoryTracker } from "./category-tracker";
+import type { EventStore } from "./event-store";
 import type { Indexer, IndexerEvent } from "./indexer";
 
 interface NodeRecurringEventInstance {
@@ -61,11 +65,14 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private ensureInstancesLocks: Map<string, Promise<void>> = new Map();
 	private propagationDebounceTimers: Map<string, NodeJS.Timeout> = new Map();
 	private accumulatedDiffs: Map<string, FrontmatterDiff[]> = new Map();
+	private eventStore: EventStore | null = null;
+	private categoryTracker: CategoryTracker | null = null;
 
 	constructor(
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
-		private indexer: Indexer
+		private indexer: Indexer,
+		private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
 	) {
 		super();
 		this.settings = settingsStore.value;
@@ -377,7 +384,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const data = this.recurringEventsMap.get(rruleId);
 		if (!data || !data.recurringEvent) return;
 
-		if (this.settings.readOnly) {
+		if (this.syncStore?.data.readOnly) {
 			return;
 		}
 
@@ -709,9 +716,55 @@ export class RecurringEventManager extends DebouncedNotifier {
 		return data ? this.flattenPhysicalInstances(data.physicalInstances) : [];
 	}
 
-	getSourceEventPath(rruleId: string): string | null {
+	getPhysicalInstancesAsEvents(rruleId: string): Array<{
+		event: CalendarEvent;
+		instanceDate: DateTime;
+	}> {
+		const physicalInstances = this.getPhysicalInstancesByRRuleId(rruleId);
+
+		return physicalInstances
+			.map((instance) => {
+				const event = this.eventStore?.getEventByPath(instance.filePath);
+				return event ? { event, instanceDate: instance.instanceDate } : null;
+			})
+			.filter((result): result is { event: CalendarEvent; instanceDate: DateTime } => result !== null);
+	}
+
+	setEventStore(eventStore: EventStore): void {
+		this.eventStore = eventStore;
+	}
+
+	setCategoryTracker(categoryTracker: CategoryTracker): void {
+		this.categoryTracker = categoryTracker;
+	}
+
+	getRecurringEventSeries(rruleId: string): RecurringEventSeries | null {
 		const data = this.recurringEventsMap.get(rruleId);
-		return data?.recurringEvent?.sourceFilePath || null;
+		if (!data?.recurringEvent) {
+			return null;
+		}
+		const { title: sourceTitle, sourceFilePath, rrules, frontmatter } = data.recurringEvent;
+		const rruleType = rrules.type;
+		const rruleSpec = rrules.weekdays?.join(", ");
+		const sourceCategory = this.getCategoryColor(frontmatter[this.settings.categoryProp]);
+
+		const instances = this.getPhysicalInstancesAsEvents(rruleId);
+		return { sourceTitle, sourceFilePath, instances, rruleType, rruleSpec, sourceCategory };
+	}
+
+	private getCategoryColor(categoryValue: unknown): string {
+		if (!categoryValue || !this.categoryTracker) {
+			return this.settings.defaultNodeColor;
+		}
+
+		const categories = parseIntoList(categoryValue);
+		if (categories.length === 0) {
+			return this.settings.defaultNodeColor;
+		}
+
+		const categoryColor = this.categoryTracker.getCategoriesWithColors().find((c) => c.name === categories[0])?.color;
+
+		return categoryColor || this.settings.defaultNodeColor;
 	}
 
 	getAllRRuleIds(): string[] {
