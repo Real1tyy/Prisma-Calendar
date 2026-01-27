@@ -1,5 +1,7 @@
 import { capitalize } from "@real1ty-obsidian-plugins";
+import type { DateTime } from "luxon";
 import { z } from "zod";
+import type { CalendarEvent } from "./calendar";
 import type { Weekday } from "../utils/date-recurrence";
 import { WEEKDAY_TO_NUMBER } from "../utils/date-recurrence";
 import { booleanTransform, optionalDateTransform, optionalTimeTransform } from "../utils/validation";
@@ -77,6 +79,20 @@ export interface NodeRecurringEvent {
 	rrules: RRuleFrontmatter;
 	frontmatter: Frontmatter;
 	content?: string;
+}
+
+export interface RecurringEventInstance {
+	event: CalendarEvent;
+	instanceDate: DateTime;
+}
+
+export interface RecurringEventSeries {
+	sourceTitle: string;
+	sourceFilePath: string;
+	instances: RecurringEventInstance[];
+	rruleType?: RecurrenceType;
+	rruleSpec?: string;
+	sourceCategory?: string;
 }
 
 export function parseRRuleFromFrontmatter(

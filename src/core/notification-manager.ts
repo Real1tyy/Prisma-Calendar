@@ -1,8 +1,9 @@
+import { SyncStore } from "@real1ty-obsidian-plugins";
 import { type App, TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { NotificationModal } from "../components/notification-modal";
 import { MAX_PAST_NOTIFICATION_THRESHOLD } from "../constants";
-import type { Frontmatter } from "../types";
+import type { Frontmatter, PrismaSyncDataSchema } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 import { toSafeString } from "../utils/format";
 import { getFileByPathOrThrow, openFileInNewTab } from "../utils/obsidian";
@@ -39,7 +40,8 @@ export class NotificationManager {
 	constructor(
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
-		private indexer: Indexer
+		private indexer: Indexer,
+		private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
 	) {
 		this.settings = settingsStore.value;
 
@@ -303,7 +305,7 @@ export class NotificationManager {
 	}
 
 	private async markAsNotified(filePath: string): Promise<void> {
-		if (this.settings.readOnly) {
+		if (this.syncStore?.data.readOnly) {
 			return;
 		}
 

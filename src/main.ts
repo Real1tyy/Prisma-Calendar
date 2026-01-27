@@ -1,4 +1,4 @@
-import { onceAsync, WhatsNewModal, type WhatsNewModalConfig } from "@real1ty-obsidian-plugins";
+import { onceAsync, SyncStore, WhatsNewModal, type WhatsNewModalConfig } from "@real1ty-obsidian-plugins";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
@@ -8,16 +8,24 @@ import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
+import { PrismaSyncDataSchema } from "./types";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;
+	syncStore!: SyncStore<typeof PrismaSyncDataSchema>;
 	calendarBundles: CalendarBundle[] = [];
 	private registeredViewTypes: Set<string> = new Set();
 
 	async onload() {
 		this.settingsStore = new SettingsStore(this);
 		await this.settingsStore.loadSettings();
+
+		this.syncStore = new SyncStore(this.app, this, PrismaSyncDataSchema);
+		await this.syncStore.loadData();
+
+		const registry = IndexerRegistry.getInstance(this.app);
+		registry.setSyncStore(this.syncStore);
 
 		await this.ensureMinimumCalendars();
 

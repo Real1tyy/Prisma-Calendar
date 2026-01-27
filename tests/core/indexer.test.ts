@@ -47,7 +47,7 @@ describe("Indexer", () => {
 			metadataCache: mockMetadataCache,
 			fileManager: { processFrontMatter: vi.fn() },
 		} as any;
-		indexer = new Indexer(mockApp, settingsStore);
+		indexer = new Indexer(mockApp, settingsStore, null);
 		eventListener = vi.fn();
 		subscription = indexer.events$.subscribe(eventListener);
 
@@ -144,7 +144,7 @@ describe("Indexer", () => {
 				metadataCache: mockMetadataCache,
 				fileManager: { processFrontMatter: vi.fn() },
 			} as any;
-			const emptyIndexer = new Indexer(mockApp, emptySettingsStore);
+			const emptyIndexer = new Indexer(mockApp, emptySettingsStore, null);
 			const emptyListener = vi.fn();
 			const emptySubscription = emptyIndexer.events$.subscribe(emptyListener);
 
@@ -218,7 +218,7 @@ describe("Indexer", () => {
 				doneValue: "Done",
 			};
 			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
-			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone);
+			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone, null);
 
 			// Create a source recurring event that is in the past
 			const pastRecurringFile = createMockFile("Events/weekly-meeting.md");
@@ -263,7 +263,7 @@ describe("Indexer", () => {
 				rruleProp: "RRule",
 			};
 			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
-			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone);
+			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone, null);
 
 			// Create a regular event (NOT a recurring source) that is in the past
 			const pastEventFile = createMockFile("Events/past-meeting.md");
@@ -310,7 +310,7 @@ describe("Indexer", () => {
 				doneValue: "Done",
 			};
 			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
-			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone);
+			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone, null);
 
 			// Create a future event
 			const futureEventFile = createMockFile("Events/future-meeting.md");
@@ -348,7 +348,7 @@ describe("Indexer", () => {
 				endProp: "end",
 			};
 			const settingsStoreWithoutMarkDone = createMockSingleCalendarSettingsStore(settingsWithoutMarkDone);
-			const indexerWithoutMarkDone = new Indexer(mockApp, settingsStoreWithoutMarkDone);
+			const indexerWithoutMarkDone = new Indexer(mockApp, settingsStoreWithoutMarkDone, null);
 
 			// Create a past event
 			const pastEventFile = createMockFile("Events/past-meeting.md");
@@ -389,7 +389,7 @@ describe("Indexer", () => {
 				rruleProp: "RRule",
 			};
 			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
-			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone);
+			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone, null);
 
 			// Create an all-day recurring source event in the past
 			const pastAllDayRecurringFile = createMockFile("Events/daily-task.md");
@@ -432,7 +432,7 @@ describe("Indexer", () => {
 				doneValue: "Done",
 			};
 			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
-			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone);
+			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone, null);
 
 			// Create a past event that is already marked as done
 			const pastEventFile = createMockFile("Events/completed-meeting.md");

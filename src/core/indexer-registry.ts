@@ -1,6 +1,7 @@
-import { normalizeDirectoryPath } from "@real1ty-obsidian-plugins";
+import { normalizeDirectoryPath, SyncStore } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
+import type { PrismaSyncDataSchema } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 import { CategoryTracker } from "./category-tracker";
 import { EventStore } from "./event-store";
@@ -48,6 +49,7 @@ type SharedInfrastructure = Pick<
 export class IndexerRegistry {
 	private static instance: IndexerRegistry | null = null;
 	private registry: Map<string, IndexerEntry> = new Map();
+	private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null = null;
 
 	private constructor(private app: App) {}
 
@@ -56,6 +58,10 @@ export class IndexerRegistry {
 			IndexerRegistry.instance = new IndexerRegistry(app);
 		}
 		return IndexerRegistry.instance;
+	}
+
+	setSyncStore(syncStore: SyncStore<typeof PrismaSyncDataSchema>): void {
+		this.syncStore = syncStore;
 	}
 
 	/**
@@ -71,12 +77,14 @@ export class IndexerRegistry {
 			entry.refCount++;
 			entry.calendarIds.add(calendarId);
 		} else {
-			const indexer = new Indexer(this.app, settingsStore);
-			const recurringEventManager = new RecurringEventManager(this.app, settingsStore, indexer);
-			const notificationManager = new NotificationManager(this.app, settingsStore, indexer);
+			const indexer = new Indexer(this.app, settingsStore, this.syncStore);
+			const recurringEventManager = new RecurringEventManager(this.app, settingsStore, indexer, this.syncStore);
+			const notificationManager = new NotificationManager(this.app, settingsStore, indexer, this.syncStore);
 			const parser = new Parser(this.app, settingsStore);
 			const eventStore = new EventStore(indexer, parser, recurringEventManager);
 			const categoryTracker = new CategoryTracker(indexer, eventStore, settingsStore);
+			recurringEventManager.setEventStore(eventStore);
+			recurringEventManager.setCategoryTracker(categoryTracker);
 			const untrackedEventStore = new UntrackedEventStore(indexer, settingsStore);
 
 			entry = {

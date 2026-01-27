@@ -3,15 +3,16 @@ import {
 	Indexer as GenericIndexer,
 	type IndexerEvent as GenericIndexerEvent,
 	type IndexerConfig,
+	areSetsEqual,
+	SyncStore,
 } from "@real1ty-obsidian-plugins";
 import { type App, TFile } from "obsidian";
 import { BehaviorSubject, type Observable, Subject, type Subscription } from "rxjs";
 import { SCAN_CONCURRENCY } from "../constants";
-import type { Frontmatter, SingleCalendarConfig } from "../types/index";
+import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import { generateUniqueRruleId, getRecurringInstanceExcludedProps } from "../utils/calendar-events";
 import { intoDate, toSafeString } from "../utils/format";
-import { areSetsEqual } from "@real1ty-obsidian-plugins";
 import { getFrontmatterWithRetry } from "../utils/obsidian";
 
 export interface RawEventSource {
@@ -62,7 +63,8 @@ export class Indexer {
 
 	constructor(
 		private app: App,
-		settingsStore: BehaviorSubject<SingleCalendarConfig>
+		settingsStore: BehaviorSubject<SingleCalendarConfig>,
+		private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
 	) {
 		this.settings = settingsStore.value;
 		this.lastDirectory = this.settings.directory;
@@ -272,7 +274,7 @@ export class Indexer {
 	}
 
 	private async markPastEventAsDone(file: TFile, frontmatter: Frontmatter): Promise<void> {
-		if (this.settings.readOnly) {
+		if (this.syncStore?.data.readOnly) {
 			return;
 		}
 

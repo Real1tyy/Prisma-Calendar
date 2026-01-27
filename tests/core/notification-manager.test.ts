@@ -163,7 +163,7 @@ describe("NotificationManager", () => {
 		};
 
 		settingsStore = new BehaviorSubject<SingleCalendarConfig>(createDefaultSettings());
-		notificationManager = new NotificationManager(mockApp as any, settingsStore, mockIndexer);
+		notificationManager = new NotificationManager(mockApp as any, settingsStore, mockIndexer, null);
 	});
 
 	afterEach(() => {

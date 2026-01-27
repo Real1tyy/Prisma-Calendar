@@ -131,7 +131,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 	describe("Basic Physical Instance Creation", () => {
 		it("should be able to instantiate RecurringEventManager", async () => {
 			expect(() => {
-				new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+				new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 			}).not.toThrow();
 		});
 
@@ -140,7 +140,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 			// Using default calculateRecurringInstanceDateTime mock
 
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const mockRecurringEvent = {
 				sourceFilePath: "test-recurring.md",
@@ -216,7 +216,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				return null;
 			});
 
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const mockRecurringEvent = {
 				rRuleId: "test-rrule-123",
@@ -282,7 +282,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				},
 			});
 
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const mockRecurringEvent = {
 				rRuleId: "test-rrule-123",
@@ -338,7 +338,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 	describe("Settings Integration", () => {
 		it("should use futureInstancesCount from recurring event", async () => {
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const mockRecurringEvent = {
 				rRuleId: "test-rrule-123",
@@ -377,7 +377,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				const mockFile = { path: "test.md" };
 				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
-				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 				const mockRecurringEvent = {
 					rRuleId: "daily-all-day-123",
@@ -427,7 +427,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				const mockFile = { path: "test.md" };
 				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
-				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 				const mockRecurringEvent = {
 					rRuleId: "daily-timed-123",
@@ -475,7 +475,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				const mockFile = { path: "test.md" };
 				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
-				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 				const mockRecurringEvent = {
 					rRuleId: "weekly-123",
@@ -521,7 +521,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				const mockFile = { path: "test.md" };
 				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
-				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 				const mockRecurringEvent = {
 					rRuleId: "bi-weekly-123",
@@ -569,7 +569,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				const mockFile = { path: "test.md" };
 				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
-				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 				const mockRecurringEvent = {
 					rRuleId: "monthly-all-day-123",
@@ -617,7 +617,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				const mockFile = { path: "test.md" };
 				mockApp.vault.create = vi.fn().mockResolvedValue(mockFile);
 
-				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 				const mockRecurringEvent = {
 					rRuleId: "monthly-timed-123",
@@ -661,7 +661,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		describe("Yearly Recurrence", () => {
 			it("should create yearly all-day instances inheriting day and month", async () => {
-				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 				const mockRecurringEvent = {
 					rRuleId: "yearly-all-day-123",
@@ -704,7 +704,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			});
 
 			it("should create yearly timed instances inheriting day, month and time", async () => {
-				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 				const mockRecurringEvent = {
 					rRuleId: "yearly-timed-123",
@@ -747,7 +747,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 		describe("Virtual Instance Generation", () => {
 			it.skip("should generate virtual instances with correct date/time logic for different recurrence types", async () => {
-				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+				const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 				const monthlyRecurringEvent = {
 					rRuleId: "monthly-virtual-123",
@@ -798,7 +798,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 	describe("Calendar Notification After Rapid Recurring Event Generation", () => {
 		it("should notify subscribers after bulk recurring event processing completes", async () => {
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			// Mock the subscribe method to track notifications
 			const notificationCallback = vi.fn();
@@ -882,7 +882,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should flush pending debounced refreshes when processing completes", async () => {
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const notificationCallback = vi.fn();
 			manager.subscribe(notificationCallback);
@@ -933,7 +933,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should notify after individual recurring event is added when indexing is already complete", async () => {
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			// Set indexing as complete first
 			mockIndexer.indexingComplete$.next(true);
@@ -976,7 +976,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 	describe("Deterministic File Path Generation", () => {
 		it("should generate deterministic file paths based on (rRuleId, date)", async () => {
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const recurringEvent = {
 				rRuleId: "1730000000000-abc12",
@@ -1008,7 +1008,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should generate different paths for different dates", async () => {
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const recurringEvent = {
 				rRuleId: "1730000000000-abc12",
@@ -1046,7 +1046,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should generate different paths for different rRuleIds", async () => {
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const event1 = {
 				rRuleId: "1730000000000-abc12",
@@ -1089,7 +1089,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should not create duplicate instances if file already exists", async () => {
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const recurringEvent = {
 				rRuleId: "1730000000000-abc12",
@@ -1127,7 +1127,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should create instance if file does not exist", async () => {
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const recurringEvent = {
 				rRuleId: "1730000000000-abc12",
@@ -1161,7 +1161,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should prevent race condition with deterministic paths", async () => {
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const recurringEvent = {
 				rRuleId: "1730000000000-abc12",
@@ -1205,7 +1205,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		});
 
 		it("should use consistent zettel hash for same rRuleId across title changes", async () => {
-			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer);
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
 			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
 

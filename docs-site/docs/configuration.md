@@ -35,7 +35,6 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 - **Show stopwatch**: enable stopwatch in event modal for precise time tracking (enabled by default)
 - **Show 'continue' button**: display a continue button in the stopwatch that resumes time tracking from the existing start date. The timer calculates elapsed time based on the event's start time and continues from there, perfect for resuming work on existing events (disabled by default)
 - **Mark past events as done**: automatically mark past events as done during startup by updating their status property (configure the status property and done value in the Properties section)
-- **Read-only mode**: prevent automatic file modifications (disabled by default)
 - **Show untracked events dropdown**: display the untracked events dropdown in the calendar toolbar, showing events without date properties (enabled by default)
 
 ### Display & Navigation
@@ -46,6 +45,14 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 ### Read-only Mode
 
 **Read-only mode** prevents the plugin from automatically writing to files without user interaction.
+
+**Storage Location:**
+- Read-only mode state is stored in `.obsidian/plugins/prisma-calendar/sync.json` (separate from main settings)
+- This allows you to prevent the read-only state from syncing across devices
+- **For Git users:** Add `.obsidian/plugins/prisma-calendar/sync.json` to your `.gitignore` to keep read-only mode device-specific
+
+**Access:**
+- Toggle in Settings → General → "Read-only mode"
 
 **When enabled:**
 - Notifications will still appear, but the "Already Notified" property will NOT be written to files
@@ -65,10 +72,11 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 - Any other user-initiated file operations
 
 **Use cases:**
-- Preventing sync conflicts when using multiple devices
+- Preventing sync conflicts when using multiple devices with Git
 - Full control over when files are modified
 - Avoiding automatic writes during vault migrations or backups
 - Testing or debugging without file modifications
+- Device-specific read-only mode (e.g., read-only on mobile, writable on desktop)
 
 ### Event Presets
 

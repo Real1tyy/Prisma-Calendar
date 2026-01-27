@@ -66,11 +66,16 @@ export class GeneralSettings {
 			desc: "Use left/right arrow keys to navigate between calendar intervals. Automatically disabled when search or expression filter inputs are focused.",
 		});
 
-		this.ui.addToggle(containerEl, {
-			key: "readOnly",
-			name: "Read-only mode",
-			desc: "Prevent automatic file modifications. When enabled, the plugin will not automatically write to files (notifications, recurring event generation). Manual actions like propagation will still work.",
-		});
+		new Setting(containerEl)
+			.setName("Read-only mode")
+			.setDesc(
+				"Prevent automatic file modifications. When enabled, the plugin will not automatically write to files (notifications, recurring event generation). Manual actions like propagation will still work. Stored in sync.json to prevent syncing across devices."
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.syncStore.data.readOnly).onChange(async (value) => {
+					await this.plugin.syncStore.updateData({ readOnly: value });
+				});
+			});
 	}
 
 	private addParsingSettings(containerEl: HTMLElement): void {

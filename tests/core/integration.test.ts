@@ -44,12 +44,13 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 			metadataCache: mockMetadataCache,
 			fileManager: { processFrontMatter: vi.fn() },
 		} as any;
-		indexer = new Indexer(mockApp, settingsStore);
+		indexer = new Indexer(mockApp, settingsStore, null);
 		parser = new Parser(mockApp as App, settingsStore);
 		recurringEventManager = new RecurringEventManager(
 			{} as any,
 			settingsStore,
-			indexer
+			indexer,
+			null
 		) as unknown as RecurringEventManager;
 		eventStore = new EventStore(indexer, parser, recurringEventManager);
 

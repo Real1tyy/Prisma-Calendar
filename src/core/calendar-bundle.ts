@@ -44,7 +44,7 @@ export class CalendarBundle {
 	private ribbonIconEl: HTMLElement | null = null;
 
 	constructor(
-		private plugin: CustomCalendarPlugin,
+		public readonly plugin: CustomCalendarPlugin,
 		public readonly calendarId: string,
 		mainSettingsStore: SettingsStore
 	) {

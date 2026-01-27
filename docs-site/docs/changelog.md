@@ -4,6 +4,20 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 1.31.0 - 1/27/2026
+
+### Added
+
+- **Clickable Recurring Events in List Modal**: Clicking on a recurring event in the "Show recurring events" modal now opens a detailed list of all physical instances for that specific recurring event. This allows you to quickly view and navigate to individual occurrences. Hold Ctrl/Cmd while clicking to open the source event file in a new tab instead.
+
+- **Smart Instance Sorting**: The recurring event instances list now sorts intelligently based on the view mode. When showing past events, instances are sorted from newest to oldest (most recent first). When showing only future events, instances are sorted from oldest to newest (next occurrence first). This makes it easier to find the most relevant instances regardless of which time period you're viewing.
+
+### Changed
+
+- **Read-only Mode Storage**: Read-only mode is now stored in a separate `sync.json` file instead of the main settings. This allows you to prevent the read-only state from syncing across devices when using Git or other sync solutions. The setting remains accessible in Settings → General → "Read-only mode". To prevent syncing read-only mode state, add `.obsidian/plugins/prisma-calendar/sync.json` to your `.gitignore` file.
+
+---
+
 ## 1.30.0 - 1/26/2026
 
 ### New Video

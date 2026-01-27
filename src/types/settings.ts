@@ -41,7 +41,6 @@ const GeneralSettingsSchema = z
 		showRibbonIcon: z.boolean().catch(SETTINGS_DEFAULTS.SHOW_RIBBON_ICON), // show ribbon icon in left sidebar to open calendar
 		templatePath: z.string().optional(), // path to Templater template for new events
 		markPastInstancesAsDone: z.boolean().catch(false), // automatically mark past events as done on startup
-		readOnly: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_READ_ONLY), // prevent automatic file modifications (notifications, recurring event generation)
 		eventPresets: z.array(EventPresetSchema).catch([]), // Event creation presets with pre-filled values
 		defaultPresetId: z.string().optional(), // ID of default preset to auto-fill on create modal open
 		exportFolder: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER), // folder for ICS exports

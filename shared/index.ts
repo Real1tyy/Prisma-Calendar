@@ -19,3 +19,4 @@ export * from "./settings";
 export * from "./string";
 // List utilities
 export * from "./utils/list-utils";
+export * from "./settings/sync-store";
