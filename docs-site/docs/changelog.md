@@ -4,6 +4,16 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 1.32.0 - 2/1/2026
+
+### Added
+
+- **Bases Settings Tab**: New dedicated settings tab for configuring Bases views. Access via Settings → Bases.
+
+- **Bases View Type Setting**: Choose between cards, table, or list view for all Bases views throughout Prisma Calendar. Cards view (default) displays events as visual cards, table view as a sortable table with columns, and list view as a simple list. This setting applies to category events views and interval-based Bases views.
+
+---
+
 ## 1.31.0 - 1/27/2026
 
 ### Added

@@ -50,15 +50,13 @@ export abstract class BaseBasesViewModal extends Modal {
 		const eventsFolder = this.settings.directory;
 		const dateProp = this.settings.dateProp;
 		const statusProp = this.settings.statusProperty;
-		const basesViewProperties = this.settings.basesViewProperties || [];
-
+		const basesViewProperties = this.settings.basesViewProperties;
 		const orderProperties = ["file.name", dateProp, statusProp, ...basesViewProperties].filter(Boolean);
-
 		const filterLines = this.getFilterLines();
 
 		return `\`\`\`base
 views:
-  - type: table
+  - type: ${this.settings.basesViewType}
     name: ${this.getViewName()}
     filters:
       and:

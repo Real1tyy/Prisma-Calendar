@@ -78,6 +78,7 @@ const PropsSettingsSchema = z
 		ignoreRecurringProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_IGNORE_RECURRING_PROP), // property name for ignoring duplicated recurring events from future instance generation
 		caldavProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CALDAV_PROP), // property name for CalDAV sync metadata
 		basesViewProperties: z.array(z.string()).catch([]), // comma-separated list of properties to include in bases view for category events
+		basesViewType: z.enum(["table", "cards", "list"]).catch(SETTINGS_DEFAULTS.DEFAULT_BASES_VIEW_TYPE), // view type for bases views (table, cards, or list)
 	})
 	.strip();
 

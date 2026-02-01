@@ -3,6 +3,7 @@ import type { App } from "obsidian";
 import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import {
+	BasesSettings,
 	CalendarSettings,
 	CategoriesSettings,
 	GeneralSettings,
@@ -12,7 +13,8 @@ import {
 } from ".";
 
 export class SingleCalendarSettings {
-	private activeSection: "general" | "properties" | "calendar" | "notifications" | "rules" | "categories" = "general";
+	private activeSection: "general" | "properties" | "calendar" | "notifications" | "rules" | "categories" | "bases" =
+		"general";
 
 	private generalSettings: GeneralSettings;
 	private propertiesSettings: PropertiesSettings;
@@ -20,6 +22,7 @@ export class SingleCalendarSettings {
 	private notificationsSettings: NotificationsSettings;
 	private rulesSettings: RulesSettings;
 	private categoriesSettings: CategoriesSettings;
+	private basesSettings: BasesSettings;
 
 	constructor(
 		settingsStore: CalendarSettingsStore,
@@ -33,6 +36,7 @@ export class SingleCalendarSettings {
 		this.notificationsSettings = new NotificationsSettings(settingsStore);
 		this.rulesSettings = new RulesSettings(settingsStore);
 		this.categoriesSettings = new CategoriesSettings(settingsStore, plugin);
+		this.basesSettings = new BasesSettings(settingsStore);
 	}
 
 	display(containerEl: HTMLElement): void {
@@ -53,6 +57,7 @@ export class SingleCalendarSettings {
 			{ id: "notifications" as const, label: "Notifications" },
 			{ id: "rules" as const, label: "Rules" },
 			{ id: "categories" as const, label: "Categories" },
+			{ id: "bases" as const, label: "Bases" },
 		];
 
 		sections.forEach((section) => {
@@ -92,6 +97,9 @@ export class SingleCalendarSettings {
 				break;
 			case "categories":
 				this.categoriesSettings.display(contentContainer);
+				break;
+			case "bases":
+				this.basesSettings.display(contentContainer);
 				break;
 		}
 	}

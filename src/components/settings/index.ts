@@ -1,3 +1,4 @@
+export { BasesSettings } from "./bases";
 export { CalendarSettings } from "./calendar";
 export { CategoriesSettings } from "./categories";
 export { GeneralSettings } from "./general";

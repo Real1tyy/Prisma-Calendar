@@ -2,7 +2,7 @@
 
 ![Settings Panel](/img/settings.png)
 
-*Prisma Calendar settings with tabs for General, Properties, Calendar UI, Notifications, and Rules*
+*Prisma Calendar settings with tabs for General, Properties, Calendar, Notifications, Rules, Categories, and Bases*
 
 ## Calendar Management
 
@@ -574,15 +574,20 @@ project: Q4 Planning
 
 **See Also**: [Untracked Events documentation](./features/untracked-events.md) for details on the untracked events dropdown
 
-## Bases View Properties
+## Bases
 
-Configure additional frontmatter properties to display as columns in Bases table views throughout Prisma Calendar.
+Configure the appearance and content of Bases views throughout Prisma Calendar.
 
-- **Bases view properties**: Comma-separated list of property names to include as additional columns in Bases views (e.g., `priority, project, tags`)
+- **View type**: Choose the default view layout for all Bases views. Options:
+  - **Cards** (Recommended): Displays events as visual cards in a grid layout
+  - **Table**: Displays events in a sortable table with columns
+  - **List**: Displays events in a simple list format
+
+- **Additional properties**: Comma-separated list of property names to include as additional columns in Bases views (e.g., `priority, project, tags`)
 
 ### Where Bases Views Are Used
 
-These configured properties appear in all Bases table views:
+These configured settings apply to all Bases views:
 
 1. **Category Events View**: When clicking on a category in Settings → Categories
 2. **Current Interval View**: When using the "Show current interval in Bases" command (daily, weekly, or monthly views)
@@ -597,7 +602,7 @@ All Bases views include these columns by default:
 
 ### Custom Columns
 
-Properties you add to "Bases view properties" appear after the default columns. Common examples:
+Properties you add to "Additional properties" appear after the default columns. Common examples:
 
 - **priority**: Show event importance (e.g., High, Medium, Low)
 - **project**: Group events by project
