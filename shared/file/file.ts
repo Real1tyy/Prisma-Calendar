@@ -179,24 +179,66 @@ export interface FileContext {
 	cache: CachedMetadata | null;
 }
 
+export interface FileContextOptions {
+	/**
+	 * The source file path for link resolution context.
+	 * When provided, uses Obsidian's getFirstLinkpathDest to resolve wikilinks
+	 * that may be in subfolders or use relative paths.
+	 *
+	 * @example
+	 * // Without sourcePath: looks for "parent-note.md" directly
+	 * getFileContext(app, "parent-note")
+	 *
+	 * // With sourcePath: resolves "parent-note" relative to "folder/child.md"
+	 * // This can find "folder/parent-note.md" or "parent-note.md" depending on vault structure
+	 * getFileContext(app, "parent-note", { sourcePath: "folder/child.md" })
+	 */
+	sourcePath?: string;
+}
+
 /**
  * Creates a comprehensive file context object containing all relevant file information.
  * Handles path normalization, file lookup, and metadata caching.
+ *
+ * @param app - The Obsidian App instance
+ * @param path - Path to the file or wikilink target (e.g., "parent-note" from [[parent-note]])
+ * @param options - Optional configuration for link resolution
+ * @returns FileContext with file information, or with file: null if not found
+ *
+ * @example
+ * // Direct path lookup
+ * const ctx = getFileContext(app, "folder/note.md");
+ *
+ * // Wikilink resolution with source context
+ * const ctx = getFileContext(app, "parent-note", { sourcePath: "folder/child.md" });
  */
-export function getFileContext(app: App, path: string): FileContext {
+export function getFileContext(app: App, path: string, options?: FileContextOptions): FileContext {
 	const pathWithExt = ensureMarkdownExtension(path);
+	const baseName = extractDisplayName(path);
 
-	const baseName = removeMarkdownExtension(path);
+	let file: TFile | null = null;
 
-	const file = getFileByPath(app, pathWithExt);
+	// If sourcePath is provided, use Obsidian's link resolution
+	// This handles wikilinks that may reference files in different folders
+	if (options?.sourcePath) {
+		file = app.metadataCache.getFirstLinkpathDest(path, options.sourcePath);
+	}
+
+	// Fall back to direct path lookup if link resolution didn't find the file
+	// or if no sourcePath was provided
+	if (!file) {
+		file = getFileByPath(app, pathWithExt);
+	}
 
 	const cache = file ? app.metadataCache.getFileCache(file) : null;
-
 	const frontmatter = cache?.frontmatter;
+
+	// Use the resolved file's path if available, otherwise use the computed path
+	const resolvedPathWithExt = file?.path ?? pathWithExt;
 
 	return {
 		path,
-		pathWithExt,
+		pathWithExt: resolvedPathWithExt,
 		baseName,
 		file,
 		frontmatter,
@@ -207,16 +249,23 @@ export function getFileContext(app: App, path: string): FileContext {
 /**
  * Helper function to work with file context that automatically handles file not found cases.
  * Returns null if the file doesn't exist, otherwise executes the callback with the context.
+ *
+ * @param app - The Obsidian App instance
+ * @param path - Path to the file or wikilink target
+ * @param callback - Function to execute with the file context
+ * @param options - Optional configuration for link resolution
+ * @returns Result of callback, or null if file not found
  */
 export async function withFileContext<T>(
 	app: App,
 	path: string,
-	callback: (context: FileContext) => Promise<T> | T
+	callback: (context: FileContext) => Promise<T> | T,
+	options?: FileContextOptions
 ): Promise<T | null> {
-	const context = getFileContext(app, path);
+	const context = getFileContext(app, path, options);
 
 	if (!context.file) {
-		console.warn(`File not found: ${context.pathWithExt}`);
+		// Silent return for missing files - caller can check context.file if needed
 		return null;
 	}
 

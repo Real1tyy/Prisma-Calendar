@@ -1,3 +1,25 @@
+import type { App, CachedMetadata, TFile } from "obsidian";
+import type { Frontmatter } from "./frontmatter-diff";
+
+/**
+ * Extracts user frontmatter from a file's metadata cache, removing Obsidian's internal position property.
+ */
+export function getUserFrontmatter(app: App, file: TFile): Frontmatter {
+	const cache = app.metadataCache.getFileCache(file);
+	return extractUserFrontmatter(cache);
+}
+
+/**
+ * Extracts user frontmatter from cached metadata, removing Obsidian's internal position property.
+ */
+export function extractUserFrontmatter(cache: CachedMetadata | null): Frontmatter {
+	if (!cache?.frontmatter) {
+		return {};
+	}
+	const { position: _position, ...userFrontmatter } = cache.frontmatter;
+	return userFrontmatter;
+}
+
 /**
  * Serializes a frontmatter value to a string representation for display in input fields.
  * Converts arrays, objects, booleans, and numbers to their string representations.
