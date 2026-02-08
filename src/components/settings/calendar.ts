@@ -9,7 +9,7 @@ import {
 	TOOLBAR_BUTTON_IDS,
 	TOOLBAR_BUTTON_LABELS,
 } from "../../constants";
-import type { CalendarSettingsStore } from "../../core/settings-store";
+import type { CalendarSettingsStore, ToolbarButtonsKey } from "../../core/settings-store";
 import { CALENDAR_VIEW_OPTIONS, type CalendarViewType, DENSITY_OPTIONS, FIRST_DAY_OPTIONS } from "../../types/index";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
 
@@ -378,41 +378,27 @@ export class CalendarSettings {
 			desc: "Show color indicator dots at the top of each day in monthly view",
 		});
 
-		// Toolbar buttons settings section
-		new Setting(containerEl).setName("Toolbar buttons").setHeading();
+		// Desktop toolbar buttons settings section
+		new Setting(containerEl).setName("Desktop toolbar buttons").setHeading();
 
 		new Setting(containerEl)
-			.setName("Calendar toolbar buttons")
+			.setName("Desktop toolbar buttons")
 			.setDesc(
-				"Choose which buttons to display in the calendar toolbar. Uncheck items to hide them and save space in narrow sidebars. ⚠️ Reopen the calendar view for changes to take effect."
+				"Choose which buttons to display in the calendar toolbar on desktop. Uncheck items to hide them and save space in narrow sidebars. ⚠️ Reopen the calendar view for changes to take effect."
 			);
 
-		const toolbarButtonsContainer = containerEl.createDiv({
-			cls: "prisma-batch-buttons-container",
-		});
+		this.renderToolbarButtonToggles(containerEl, "toolbarButtons");
 
-		const currentToolbarButtons = new Set(this.settingsStore.currentSettings.toolbarButtons);
+		// Mobile toolbar buttons settings section
+		new Setting(containerEl).setName("Mobile toolbar buttons").setHeading();
 
-		for (const buttonId of TOOLBAR_BUTTON_IDS) {
-			const buttonSetting = new Setting(toolbarButtonsContainer)
-				.setName(TOOLBAR_BUTTON_LABELS[buttonId] || buttonId)
-				.addToggle((toggle) => {
-					toggle.setValue(currentToolbarButtons.has(buttonId)).onChange(async (value) => {
-						const current = this.settingsStore.currentSettings.toolbarButtons;
+		new Setting(containerEl)
+			.setName("Mobile toolbar buttons")
+			.setDesc(
+				"Choose which buttons to display in the calendar toolbar on mobile. Uncheck items to hide them and save space on smaller screens. ⚠️ Reopen the calendar view for changes to take effect."
+			);
 
-						const updated = value
-							? TOOLBAR_BUTTON_IDS.filter((id) => current.includes(id) || id === buttonId)
-							: current.filter((id) => id !== buttonId);
-
-						await this.settingsStore.updateSettings((s) => ({
-							...s,
-							toolbarButtons: updated,
-						}));
-					});
-				});
-
-			buttonSetting.settingEl.addClass("prisma-batch-button-setting");
-		}
+		this.renderToolbarButtonToggles(containerEl, "mobileToolbarButtons");
 
 		// Batch selection settings section
 		new Setting(containerEl).setName("Batch selection").setHeading();
@@ -482,6 +468,23 @@ export class CalendarSettings {
 				});
 
 			itemSetting.settingEl.addClass("prisma-batch-button-setting");
+		}
+	}
+
+	private renderToolbarButtonToggles(containerEl: HTMLElement, key: ToolbarButtonsKey): void {
+		const container = containerEl.createDiv({ cls: "prisma-batch-buttons-container" });
+		const currentButtons = new Set(this.settingsStore.currentSettings[key]);
+
+		for (const buttonId of TOOLBAR_BUTTON_IDS) {
+			const buttonSetting = new Setting(container)
+				.setName(TOOLBAR_BUTTON_LABELS[buttonId] || buttonId)
+				.addToggle((toggle) => {
+					toggle.setValue(currentButtons.has(buttonId)).onChange(async (value) => {
+						await this.settingsStore.toggleToolbarButton(key, buttonId, value);
+					});
+				});
+
+			buttonSetting.settingEl.addClass("prisma-batch-button-setting");
 		}
 	}
 }

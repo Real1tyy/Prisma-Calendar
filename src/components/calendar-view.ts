@@ -384,8 +384,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		const toolbarButtons = new Set(settings.toolbarButtons);
 		const isMobile = this.isMobileView();
+		const toolbarButtons = new Set(isMobile ? settings.mobileToolbarButtons : settings.toolbarButtons);
 
 		const leftItems: string[] = [];
 		if (toolbarButtons.has("prevNext")) {
@@ -1342,7 +1342,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.zoomManager.initialize(this.calendar, this.container);
 		this.zoomManager.setOnZoomChangeCallback(() => this.saveCurrentState());
 
-		this.initializeToolbarComponents(settings.toolbarButtons);
+		this.initializeToolbarComponents(this.isMobileLayout ? settings.mobileToolbarButtons : settings.toolbarButtons);
 
 		if (this.bundle.viewStateManager.hasState()) {
 			this.isRestoring = true;

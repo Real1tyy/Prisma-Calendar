@@ -1,8 +1,11 @@
 import { SettingsStore as GenericSettingsStore } from "@real1ty-obsidian-plugins";
 import type { Plugin } from "obsidian";
 import { BehaviorSubject, type Subscription } from "rxjs";
+import { TOOLBAR_BUTTON_IDS } from "../constants";
 import { CustomCalendarSettingsSchema, type SingleCalendarConfig, SingleCalendarConfigSchema } from "../types/index";
 import { getCalendarById } from "../utils/calendar-settings";
+
+export type ToolbarButtonsKey = "toolbarButtons" | "mobileToolbarButtons";
 
 export class SettingsStore extends GenericSettingsStore<typeof CustomCalendarSettingsSchema> {
 	constructor(plugin: Plugin) {
@@ -38,6 +41,14 @@ export class CalendarSettingsStore {
 				// The Calendar was deleted
 			}
 		});
+	}
+
+	async toggleToolbarButton(key: ToolbarButtonsKey, buttonId: string, enabled: boolean): Promise<void> {
+		const current = this.currentSettings[key];
+		const updated = enabled
+			? TOOLBAR_BUTTON_IDS.filter((id) => current.includes(id) || id === buttonId)
+			: current.filter((id) => id !== buttonId);
+		await this.updateSettings((s) => ({ ...s, [key]: updated }));
 	}
 
 	async updateSettings(updater: (settings: SingleCalendarConfig) => SingleCalendarConfig): Promise<void> {

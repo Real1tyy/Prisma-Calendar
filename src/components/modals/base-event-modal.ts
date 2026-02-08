@@ -341,6 +341,8 @@ export abstract class BaseEventModal extends Modal {
 
 		this.displayPropertiesContainer.empty();
 		this.otherPropertiesContainer.empty();
+		addCls(this.displayPropertiesContainer, "hidden");
+		addCls(this.otherPropertiesContainer, "hidden");
 		this.customProperties = [];
 
 		this.presetSelector.value = "";
@@ -905,8 +907,8 @@ export abstract class BaseEventModal extends Modal {
 		});
 		addButton.addEventListener("click", () => {
 			// Auto-expand when adding a property
-			if (container.classList.contains("prisma-hidden")) {
-				container.classList.remove("prisma-hidden");
+			if (container.classList.contains(cls("hidden"))) {
+				removeCls(container, "hidden");
 				toggleIcon.textContent = "▼";
 			}
 			onAddClick();
@@ -914,12 +916,11 @@ export abstract class BaseEventModal extends Modal {
 
 		const container = parent.createDiv(cls("property-container"));
 		// Collapsed by default
-		container.classList.add("prisma-hidden");
+		addCls(container, "hidden");
 
 		// Toggle collapse on header click
-		headerDiv.style.cursor = "pointer";
 		headerDiv.addEventListener("click", () => {
-			const isHidden = container.classList.toggle("prisma-hidden");
+			const isHidden = container.classList.toggle(cls("hidden"));
 			toggleIcon.textContent = isHidden ? "▶" : "▼";
 		});
 
@@ -928,15 +929,6 @@ export abstract class BaseEventModal extends Modal {
 
 	protected addCustomProperty(key = "", value = "", section: "display" | "other" = "other"): void {
 		const container = section === "display" ? this.displayPropertiesContainer : this.otherPropertiesContainer;
-
-		// Auto-expand section when loading existing properties
-		if (key && container.classList.contains("prisma-hidden")) {
-			container.classList.remove("prisma-hidden");
-			const toggleIcon = container.parentElement?.querySelector(`.${cls("property-toggle-icon")}`);
-			if (toggleIcon) {
-				toggleIcon.textContent = "▼";
-			}
-		}
 		const propertyRow = container.createDiv(cls("custom-property-row"));
 
 		propertyRow.createEl("input", {

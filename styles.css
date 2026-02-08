@@ -3352,6 +3352,8 @@
 
 .prisma-property-section-header .prisma-setting-item-name {
 	cursor: pointer;
+	white-space: nowrap;
+	min-width: fit-content;
 }
 
 .prisma-other-section-spacing {
