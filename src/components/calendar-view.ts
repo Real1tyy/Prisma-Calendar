@@ -1344,7 +1344,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		});
 		this.updateToolbar();
 
-		this.zoomManager.initialize(this.calendar, this.container);
+		this.zoomManager.initialize(this.calendar, this.container, this.containerEl);
 		this.zoomManager.setOnZoomChangeCallback(() => this.saveCurrentState());
 
 		this.initializeToolbarComponents(this.isMobileLayout ? settings.mobileToolbarButtons : settings.toolbarButtons);

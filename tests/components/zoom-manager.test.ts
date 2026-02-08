@@ -8,6 +8,7 @@ describe("ZoomManager", () => {
 	let mockSettingsStore: CalendarSettingsStore;
 	let mockCalendar: Calendar;
 	let mockContainer: HTMLElement;
+	let mockViewContainerEl: HTMLElement;
 	let mockButton: HTMLElement;
 
 	beforeEach(() => {
@@ -23,6 +24,10 @@ describe("ZoomManager", () => {
 		mockContainer = document.createElement("div");
 		mockContainer.className = "calendar-container";
 		document.body.appendChild(mockContainer);
+
+		// Create mock view container element
+		mockViewContainerEl = document.createElement("div");
+		document.body.appendChild(mockViewContainerEl);
 
 		// Create mock settings store
 		mockSettingsStore = {
@@ -52,7 +57,7 @@ describe("ZoomManager", () => {
 		it("should set up zoom listener on initialize", () => {
 			const addEventListenerSpy = vi.spyOn(mockContainer, "addEventListener");
 
-			zoomManager.initialize(mockCalendar, mockContainer);
+			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 
 			expect(addEventListenerSpy).toHaveBeenCalledWith("wheel", expect.any(Function), {
 				passive: false,
@@ -60,7 +65,7 @@ describe("ZoomManager", () => {
 		});
 
 		it("should update zoom level button on initialize", () => {
-			zoomManager.initialize(mockCalendar, mockContainer);
+			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 
 			expect(mockButton.textContent).toBe("Zoom: 30min");
 		});
@@ -70,14 +75,14 @@ describe("ZoomManager", () => {
 		it("should remove zoom listener on destroy", () => {
 			const removeEventListenerSpy = vi.spyOn(mockContainer, "removeEventListener");
 
-			zoomManager.initialize(mockCalendar, mockContainer);
+			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 			zoomManager.destroy();
 
 			expect(removeEventListenerSpy).toHaveBeenCalledWith("wheel", expect.any(Function));
 		});
 
 		it("should clear calendar and container references", () => {
-			zoomManager.initialize(mockCalendar, mockContainer);
+			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 			zoomManager.destroy();
 
 			// Button should not be updated after destroy
@@ -89,7 +94,7 @@ describe("ZoomManager", () => {
 
 	describe("updateZoomLevelButton", () => {
 		beforeEach(() => {
-			zoomManager.initialize(mockCalendar, mockContainer);
+			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 		});
 
 		it("should update button text correctly", () => {
@@ -136,7 +141,7 @@ describe("ZoomManager", () => {
 			} as unknown as Calendar;
 
 			const manager = new ZoomManager(mockSettingsStore);
-			manager.initialize(timeGridCalendar, mockContainer);
+			manager.initialize(timeGridCalendar, mockContainer, mockViewContainerEl);
 			manager.updateZoomLevelButton();
 
 			expect(mockButton.classList.contains("prisma-zoom-button-visible")).toBe(true);
@@ -152,7 +157,7 @@ describe("ZoomManager", () => {
 			} as unknown as Calendar;
 
 			const manager = new ZoomManager(mockSettingsStore);
-			manager.initialize(monthViewCalendar, mockContainer);
+			manager.initialize(monthViewCalendar, mockContainer, mockViewContainerEl);
 			manager.updateZoomLevelButton();
 
 			expect(mockButton.classList.contains("prisma-zoom-button-hidden")).toBe(true);
@@ -193,7 +198,7 @@ describe("ZoomManager", () => {
 
 	describe("zoom level management", () => {
 		beforeEach(() => {
-			zoomManager.initialize(mockCalendar, mockContainer);
+			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 		});
 
 		it("should get current zoom level", () => {
@@ -234,7 +239,7 @@ describe("ZoomManager", () => {
 
 	describe("wheel zoom", () => {
 		beforeEach(() => {
-			zoomManager.initialize(mockCalendar, mockContainer);
+			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 		});
 
 		it("should zoom in on Ctrl+WheelUp", () => {
@@ -287,7 +292,7 @@ describe("ZoomManager", () => {
 			} as unknown as Calendar;
 
 			const manager = new ZoomManager(mockSettingsStore);
-			manager.initialize(monthViewCalendar, mockContainer);
+			manager.initialize(monthViewCalendar, mockContainer, mockViewContainerEl);
 
 			const wheelEvent = new WheelEvent("wheel", {
 				deltaY: 100,
@@ -386,7 +391,7 @@ describe("ZoomManager", () => {
 
 	describe("stress test - rapid updates", () => {
 		beforeEach(() => {
-			zoomManager.initialize(mockCalendar, mockContainer);
+			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 		});
 
 		it("should handle 100 rapid button updates without text duplication", () => {
@@ -462,7 +467,7 @@ describe("ZoomManager", () => {
 
 	describe("edge cases", () => {
 		it("should never duplicate text like 'Zoom: 30 min 30min 15 min'", () => {
-			zoomManager.initialize(mockCalendar, mockContainer);
+			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 
 			// Simulate the exact scenario where text gets duplicated
 			// Initial update
@@ -500,7 +505,7 @@ describe("ZoomManager", () => {
 			} as unknown as Calendar;
 
 			const managerWithoutView = new ZoomManager(mockSettingsStore);
-			managerWithoutView.initialize(calendarWithoutView, mockContainer);
+			managerWithoutView.initialize(calendarWithoutView, mockContainer, mockViewContainerEl);
 
 			expect(() => managerWithoutView.updateZoomLevelButton()).not.toThrow();
 		});
@@ -513,7 +518,7 @@ describe("ZoomManager", () => {
 				<span class="badge">5</span>
 			`;
 
-			zoomManager.initialize(mockCalendar, mockContainer);
+			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 			zoomManager.updateZoomLevelButton();
 
 			// Should completely replace all content
@@ -525,7 +530,7 @@ describe("ZoomManager", () => {
 			mockSettingsStore.currentSettings.zoomLevels = [];
 
 			zoomManager = new ZoomManager(mockSettingsStore);
-			zoomManager.initialize(mockCalendar, mockContainer);
+			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 
 			expect(() => {
 				const wheelEvent = new WheelEvent("wheel", {

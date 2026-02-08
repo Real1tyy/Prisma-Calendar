@@ -17,6 +17,8 @@ All notable changes to this project will be documented here.
 
 ### Changed
 
+- **Scroll-Preserving Zoom**: Changing zoom levels (via `Ctrl+Scroll` or the zoom menu) now keeps the same time centered in the viewport. Previously, zooming would reset the scroll position and lose your place in the day.
+
 - **Collapsible Property Sections**: The "Display Properties" and "Other Properties" sections in the event modal are now collapsed by default to reduce visual clutter. Click the section header to expand/collapse. Clicking "Add property" auto-expands the section.
 
 - **Even Time Split for Multi-Category Statistics**: Events with multiple categories now split their duration evenly across all assigned categories in statistics views. Previously, the full duration was counted for each category, inflating totals. For example, a 2-hour event with categories "Work, Learning" now contributes 1 hour to each category instead of 2 hours to each.

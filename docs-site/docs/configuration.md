@@ -259,7 +259,7 @@ STATUS: Done
 - **Day start / end hour**: visible time range in grids (default: 7-22)
 - **Slot duration (minutes)**: grid slot height (default: 10 minutes, range: 1-60)
 - **Snap duration (minutes)**: drag/resize snapping interval (default: 10 minutes, range: 1-60)
-- **Zoom levels (minutes)**: comma-separated list for CTRL+scroll zoom (default: `1, 2, 3, 5, 10, 15, 20, 30, 45, 60`)
+- **Zoom levels (minutes)**: comma-separated list for CTRL+scroll zoom (default: `1, 2, 3, 5, 10, 15, 20, 30, 45, 60`). The viewport stays centered on the same time when changing zoom levels.
 
 ### Visual Appearance
 

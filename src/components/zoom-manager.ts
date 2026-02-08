@@ -7,6 +7,7 @@ export class ZoomManager {
 	private calendar: Calendar | null = null;
 	private settingsStore: CalendarSettingsStore;
 	private container: HTMLElement | null = null;
+	private viewContainerEl: HTMLElement | null = null;
 	private wheelListener?: (e: WheelEvent) => void;
 	private currentZoomLevel: number;
 	private onZoomChangeCallback?: () => void;
@@ -16,9 +17,10 @@ export class ZoomManager {
 		this.currentZoomLevel = settingsStore.currentSettings.slotDurationMinutes;
 	}
 
-	initialize(calendar: Calendar, container: HTMLElement): void {
+	initialize(calendar: Calendar, container: HTMLElement, viewContainerEl: HTMLElement): void {
 		this.calendar = calendar;
 		this.container = container;
+		this.viewContainerEl = viewContainerEl;
 		this.setupZoomListener();
 		this.updateZoomLevelButton();
 	}
@@ -27,6 +29,7 @@ export class ZoomManager {
 		this.removeZoomListener();
 		this.calendar = null;
 		this.container = null;
+		this.viewContainerEl = null;
 	}
 
 	private get zoomLevels(): number[] {
@@ -75,7 +78,7 @@ export class ZoomManager {
 		const newSlotDuration = this.zoomLevels[clampedIndex];
 
 		this.currentZoomLevel = newSlotDuration;
-		this.applyZoomToCalendar();
+		this.scrollPreservingZoom(() => this.applyZoomToCalendar());
 		this.updateZoomLevelButton();
 		this.onZoomChangeCallback?.();
 	}
@@ -85,6 +88,41 @@ export class ZoomManager {
 
 		this.calendar.setOption("slotDuration", formatDuration(this.currentZoomLevel));
 		this.calendar.setOption("snapDuration", formatDuration(this.currentZoomLevel));
+	}
+
+	private scrollPreservingZoom(applyZoom: () => void): void {
+		const scrollable = this.viewContainerEl?.querySelector(".view-content") as HTMLElement | null;
+		const slotsTable = this.viewContainerEl?.querySelector(".fc-timegrid-slots") as HTMLElement | null;
+
+		if (!scrollable || !slotsTable) {
+			applyZoom();
+			return;
+		}
+
+		const slotsRect = slotsTable.getBoundingClientRect();
+		const scrollableRect = scrollable.getBoundingClientRect();
+
+		// The center of the visible viewport in the slots coordinate space
+		const viewportCenterY = scrollableRect.top + scrollableRect.height / 2;
+		// Ratio: how far through the day the center point is (0 = top, 1 = bottom)
+		const centerRatio = (viewportCenterY - slotsRect.top) / slotsRect.height;
+
+		applyZoom();
+
+		requestAnimationFrame(() => {
+			const newSlotsTable = this.viewContainerEl?.querySelector(".fc-timegrid-slots") as HTMLElement | null;
+			if (!newSlotsTable) return;
+
+			const newSlotsRect = newSlotsTable.getBoundingClientRect();
+			const newScrollableRect = scrollable.getBoundingClientRect();
+
+			// Where the same ratio falls in the new layout (relative to scrollable top)
+			const targetSlotsY = centerRatio * newSlotsRect.height;
+			// Offset of slots top from scrollable top in the new layout
+			const slotsOffsetFromScrollable = newSlotsRect.top - newScrollableRect.top + scrollable.scrollTop;
+			// Scroll so that target point is at viewport center
+			scrollable.scrollTop = slotsOffsetFromScrollable + targetSlotsY - newScrollableRect.height / 2;
+		});
 	}
 
 	private setupZoomListener(): void {
@@ -134,7 +172,7 @@ export class ZoomManager {
 
 	setCurrentZoomLevel(zoomLevel: number): void {
 		this.currentZoomLevel = zoomLevel;
-		this.applyZoomToCalendar();
+		this.scrollPreservingZoom(() => this.applyZoomToCalendar());
 		this.updateZoomLevelButton();
 		this.onZoomChangeCallback?.();
 	}
