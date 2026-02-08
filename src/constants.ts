@@ -60,6 +60,7 @@ export const COMMAND_IDS = {
 	NAVIGATE_BACK: "navigate-back",
 	SHOW_INTERVAL_BASES: "show-interval-bases",
 	SCROLL_TO_NOW: "scroll-to-now",
+	GO_TO_TODAY: "go-to-today",
 } as const;
 
 export const FULL_COMMAND_IDS = Object.fromEntries(
