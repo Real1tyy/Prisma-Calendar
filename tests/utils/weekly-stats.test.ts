@@ -2668,7 +2668,7 @@ describe("Category-based aggregation", () => {
 
 describe("Multi-category aggregation", () => {
 	describe("aggregateWeeklyStats with multiple categories", () => {
-		it("should count event under each category when comma-separated", () => {
+		it("should split duration evenly across categories when comma-separated", () => {
 			const events: CalendarEvent[] = [
 				{
 					id: "1",
@@ -2694,15 +2694,15 @@ describe("Multi-category aggregation", () => {
 			const workEntry = stats.entries.find((e) => e.name === "Work");
 			expect(workEntry).toBeDefined();
 			expect(workEntry?.count).toBe(1);
-			expect(workEntry?.duration).toBe(2 * 60 * 60 * 1000); // 2 hours
+			expect(workEntry?.duration).toBe(1 * 60 * 60 * 1000); // 1 hour (2h / 2 categories)
 
 			const personalEntry = stats.entries.find((e) => e.name === "Personal");
 			expect(personalEntry).toBeDefined();
 			expect(personalEntry?.count).toBe(1);
-			expect(personalEntry?.duration).toBe(2 * 60 * 60 * 1000); // 2 hours
+			expect(personalEntry?.duration).toBe(1 * 60 * 60 * 1000); // 1 hour (2h / 2 categories)
 		});
 
-		it("should aggregate duration correctly across multiple events with overlapping categories", () => {
+		it("should aggregate split duration correctly across multiple events with overlapping categories", () => {
 			const events: CalendarEvent[] = [
 				{
 					id: "1",
@@ -2715,7 +2715,7 @@ describe("Multi-category aggregation", () => {
 					isVirtual: false,
 					skipped: false,
 					meta: {
-						Category: "Health, Work", // Both categories
+						Category: "Health, Work", // Both categories - 0.5h each
 					},
 				},
 				{
@@ -2729,7 +2729,7 @@ describe("Multi-category aggregation", () => {
 					isVirtual: false,
 					skipped: false,
 					meta: {
-						Category: "Health", // Only Health
+						Category: "Health", // Only Health - full 1.5h
 					},
 				},
 				{
@@ -2743,7 +2743,7 @@ describe("Multi-category aggregation", () => {
 					isVirtual: false,
 					skipped: false,
 					meta: {
-						Category: "Work", // Only Work
+						Category: "Work", // Only Work - full 1h
 					},
 				},
 			];
@@ -2753,20 +2753,20 @@ describe("Multi-category aggregation", () => {
 
 			expect(stats.entries).toHaveLength(2);
 
-			// Health: 1h (event 1) + 1.5h (event 2) = 2.5h
+			// Health: 0.5h (event 1 split) + 1.5h (event 2) = 2h
 			const healthEntry = stats.entries.find((e) => e.name === "Health");
 			expect(healthEntry).toBeDefined();
 			expect(healthEntry?.count).toBe(2);
-			expect(healthEntry?.duration).toBe(150 * 60 * 1000); // 2.5 hours
+			expect(healthEntry?.duration).toBe(2 * 60 * 60 * 1000); // 2 hours
 
-			// Work: 1h (event 1) + 1h (event 3) = 2h
+			// Work: 0.5h (event 1 split) + 1h (event 3) = 1.5h
 			const workEntry = stats.entries.find((e) => e.name === "Work");
 			expect(workEntry).toBeDefined();
 			expect(workEntry?.count).toBe(2);
-			expect(workEntry?.duration).toBe(2 * 60 * 60 * 1000); // 2 hours
+			expect(workEntry?.duration).toBe(90 * 60 * 1000); // 1.5 hours
 		});
 
-		it("should handle three or more categories", () => {
+		it("should split duration evenly across three or more categories", () => {
 			const events: CalendarEvent[] = [
 				{
 					id: "1",
@@ -2789,11 +2789,12 @@ describe("Multi-category aggregation", () => {
 
 			expect(stats.entries).toHaveLength(3);
 
+			const expectedDuration = (8 * 60 * 60 * 1000) / 3; // 8h / 3 categories
 			for (const category of ["Work", "Learning", "Networking"]) {
 				const entry = stats.entries.find((e) => e.name === category);
 				expect(entry).toBeDefined();
 				expect(entry?.count).toBe(1);
-				expect(entry?.duration).toBe(8 * 60 * 60 * 1000);
+				expect(entry?.duration).toBeCloseTo(expectedDuration, -1);
 			}
 		});
 
@@ -2821,11 +2822,11 @@ describe("Multi-category aggregation", () => {
 
 			expect(stats.entries).toHaveLength(2);
 
-			// Both categories should have 2.5 hours (3h - 30m break)
+			// Duration after break: 3h - 30m = 2.5h, split across 2 categories = 1.25h each
 			for (const category of ["Work", "Learning"]) {
 				const entry = stats.entries.find((e) => e.name === category);
 				expect(entry).toBeDefined();
-				expect(entry?.duration).toBe(150 * 60 * 1000); // 2.5 hours
+				expect(entry?.duration).toBe(75 * 60 * 1000); // 1.25 hours
 			}
 		});
 
@@ -2850,9 +2851,8 @@ describe("Multi-category aggregation", () => {
 			const date = new Date("2025-02-05");
 			const stats = aggregateWeeklyStats(events, date, "category", "Category");
 
-			// Total duration sums all entries, so multi-category events are counted multiple times
-			// This is expected behavior - each category gets the full duration
-			expect(stats.totalDuration).toBe(2 * 60 * 60 * 1000); // 2 hours (1h per category)
+			// With even splitting, 1h event with 2 categories = 0.5h each, total = 1h
+			expect(stats.totalDuration).toBe(1 * 60 * 60 * 1000); // 1 hour (0.5h per category)
 		});
 
 		it("should preserve isRecurring flag with multiple categories", () => {
@@ -2919,17 +2919,17 @@ describe("Multi-category aggregation", () => {
 
 			expect(stats.entries).toHaveLength(2);
 
-			// Business: 2h (event 1) + 1h (event 2) = 3h
+			// Business: 1h (event 1 split: 2h/2) + 1h (event 2 full) = 2h
 			const businessEntry = stats.entries.find((e) => e.name === "Business");
 			expect(businessEntry).toBeDefined();
 			expect(businessEntry?.count).toBe(2);
-			expect(businessEntry?.duration).toBe(3 * 60 * 60 * 1000);
+			expect(businessEntry?.duration).toBe(2 * 60 * 60 * 1000);
 
-			// Exercise: 2h (event 1 only)
+			// Exercise: 1h (event 1 split: 2h/2)
 			const exerciseEntry = stats.entries.find((e) => e.name === "Exercise");
 			expect(exerciseEntry).toBeDefined();
 			expect(exerciseEntry?.count).toBe(1);
-			expect(exerciseEntry?.duration).toBe(2 * 60 * 60 * 1000);
+			expect(exerciseEntry?.duration).toBe(1 * 60 * 60 * 1000);
 		});
 	});
 
@@ -2959,7 +2959,7 @@ describe("Multi-category aggregation", () => {
 			expect(stats.entries[0].name).toBe("Work");
 		});
 
-		it("should handle event with duplicate categories", () => {
+		it("should handle event with duplicate categories (split across duplicates)", () => {
 			const events: CalendarEvent[] = [
 				{
 					id: "1",
@@ -2980,11 +2980,11 @@ describe("Multi-category aggregation", () => {
 			const date = new Date("2025-02-05");
 			const stats = aggregateWeeklyStats(events, date, "category", "Category");
 
-			// Each "Work" is counted separately (3 times)
+			// Each "Work" duplicate gets 1/3 of the duration, but they merge into one group
 			expect(stats.entries).toHaveLength(1);
 			expect(stats.entries[0].name).toBe("Work");
 			expect(stats.entries[0].count).toBe(3);
-			expect(stats.entries[0].duration).toBe(3 * 60 * 60 * 1000); // 3 hours
+			expect(stats.entries[0].duration).toBe(1 * 60 * 60 * 1000); // 1h (1/3 + 1/3 + 1/3)
 		});
 
 		it("should mix multi-category and single-category events correctly", () => {
@@ -3038,16 +3038,20 @@ describe("Multi-category aggregation", () => {
 
 			const aEntry = stats.entries.find((e) => e.name === "A");
 			expect(aEntry?.count).toBe(2); // event 1 + event 2
-			expect(aEntry?.duration).toBe(2 * 60 * 60 * 1000);
+			// A gets: 1h/3 (from event 1 split across A,B,C) + 1h (from event 2 single) = ~1.333h
+			expect(aEntry?.duration).toBeCloseTo((1 / 3 + 1) * 60 * 60 * 1000, -1);
 
 			const bEntry = stats.entries.find((e) => e.name === "B");
 			expect(bEntry?.count).toBe(1);
+			expect(bEntry?.duration).toBeCloseTo((1 / 3) * 60 * 60 * 1000, -1); // 1h/3
 
 			const cEntry = stats.entries.find((e) => e.name === "C");
 			expect(cEntry?.count).toBe(1);
+			expect(cEntry?.duration).toBeCloseTo((1 / 3) * 60 * 60 * 1000, -1); // 1h/3
 
 			const noCatEntry = stats.entries.find((e) => e.name === "No Category");
 			expect(noCatEntry?.count).toBe(1);
+			expect(noCatEntry?.duration).toBe(1 * 60 * 60 * 1000); // full 1h
 		});
 	});
 });

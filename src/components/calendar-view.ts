@@ -7,6 +7,7 @@ import { ColorEvaluator, cls, formatDuration, MountableView, toggleCls } from "@
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { FillTimeCommand, UpdateEventCommand, UpdateFrontmatterCommand } from "../core/commands";
+import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import type {
 	AllDayEvent,
 	CalendarEvent,
@@ -1931,6 +1932,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	openCreateEventModal(autoStartStopwatch = false): void {
+		// If starting a new stopwatch, first stop and save any currently running stopwatch event
+		if (autoStartStopwatch && MinimizedModalManager.hasMinimizedModal()) {
+			MinimizedModalManager.stopAndSaveCurrentEvent(this.app, this.bundle.plugin.calendarBundles);
+		}
+
 		const settings = this.bundle.settingsStore.currentSettings;
 		const now = new Date();
 		const roundedStart = roundToNearestHour(now);

@@ -4,6 +4,18 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 1.33.0 - 2/8/2026
+
+### Added
+
+- **Auto-stop Stopwatch on New Event**: When using "Create new event with stopwatch" (`Ctrl+Shift+O`), any currently running stopwatch event is automatically stopped and saved before the new event is created. This allows you to chain event tracking without manually closing the previous event — just press the shortcut and a new tracking session begins instantly.
+
+### Changed
+
+- **Even Time Split for Multi-Category Statistics**: Events with multiple categories now split their duration evenly across all assigned categories in statistics views. Previously, the full duration was counted for each category, inflating totals. For example, a 2-hour event with categories "Work, Learning" now contributes 1 hour to each category instead of 2 hours to each.
+
+---
+
 ## 1.32.0 - 2/1/2026
 
 ### Added

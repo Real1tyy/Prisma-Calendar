@@ -127,7 +127,7 @@ export function getDayBounds(date: Date): { start: Date; end: Date } {
  * 4. Calculates total duration and count for each group
  * 5. Events without a category are grouped under "No Category" when mode is "category"
  * 6. Break time is subtracted from duration if breakProp is configured
- * 7. Events with multiple comma-separated categories are counted under EACH category
+ * 7. Events with multiple categories have their time split evenly across categories
  */
 export function aggregateStats(
 	events: CalendarEvent[],
@@ -165,15 +165,18 @@ export function aggregateStats(
 			groupKeys = [extractNotesCoreName(event.title)];
 		}
 
-		// Add this event's duration and count to each group
+		// Split duration evenly across categories when event has multiple categories
+		const splitDuration = mode === "category" && groupKeys.length > 1 ? duration / groupKeys.length : duration;
+
+		// Add this event's (split) duration and count to each group
 		for (const groupKey of groupKeys) {
 			const existing = groups.get(groupKey);
 
 			if (existing) {
-				existing.duration += duration;
+				existing.duration += splitDuration;
 				existing.count += 1;
 			} else {
-				groups.set(groupKey, { duration, count: 1, isRecurring });
+				groups.set(groupKey, { duration: splitDuration, count: 1, isRecurring });
 			}
 		}
 	}

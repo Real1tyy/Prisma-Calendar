@@ -220,6 +220,21 @@ class MinimizedModalManagerClass {
 	}
 
 	/**
+	 * Build event data object from minimized modal state.
+	 */
+	private buildEventDataFromState(state: MinimizedModalState) {
+		return {
+			title: state.title ?? "",
+			start: state.startDate ?? null,
+			end: state.endDate ?? null,
+			allDay: state.allDay ?? false,
+			extendedProps: {
+				filePath: state.filePath,
+			},
+		};
+	}
+
+	/**
 	 * Restore a minimized modal by reopening it with the saved state.
 	 * Requires the app instance and calendar bundles to find the correct calendar.
 	 */
@@ -237,15 +252,7 @@ class MinimizedModalManagerClass {
 			return;
 		}
 
-		const eventData = {
-			title: state.title ?? "",
-			start: state.startDate ?? null,
-			end: state.endDate ?? null,
-			allDay: state.allDay ?? false,
-			extendedProps: {
-				filePath: state.filePath,
-			},
-		};
+		const eventData = this.buildEventDataFromState(state);
 
 		let modal: EventCreateModal | EventEditModal;
 		if (state.modalType === "edit" && state.filePath) {
@@ -300,6 +307,43 @@ class MinimizedModalManagerClass {
 			}
 		);
 
+		modal.open();
+	}
+
+	/**
+	 * Stop the running stopwatch and save the current minimized event.
+	 * Restores the modal hidden, stops the stopwatch (which updates end time
+	 * and break via callbacks), then triggers the normal save path.
+	 * This reuses the full modal save logic without duplicating event building.
+	 */
+	stopAndSaveCurrentEvent(app: App, calendarBundles: CalendarBundle[]): void {
+		const state = this.getState();
+		if (!state) return;
+
+		const isStopwatchActive = state.stopwatch.state === "running" || state.stopwatch.state === "paused";
+		if (!isStopwatchActive) {
+			this.clear();
+			return;
+		}
+
+		const bundle = calendarBundles.find((b) => b.calendarId === state.calendarId);
+		if (!bundle) {
+			this.clear();
+			return;
+		}
+
+		const eventData = this.buildEventDataFromState(state);
+
+		let modal: EventCreateModal | EventEditModal;
+		if (state.modalType === "edit" && state.filePath) {
+			modal = new EventEditModal(app, bundle, eventData);
+		} else {
+			modal = new EventCreateModal(app, bundle, eventData);
+		}
+
+		modal.setRestoreState(state);
+		modal.setSilentStopAndSave();
+		this.clear();
 		modal.open();
 	}
 }

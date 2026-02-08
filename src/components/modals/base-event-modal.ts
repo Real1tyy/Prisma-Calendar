@@ -123,6 +123,9 @@ export abstract class BaseEventModal extends Modal {
 	// Flag to prevent double-saving when minimize() is called explicitly
 	private isMinimizing = false;
 
+	// Flag for silent stop-and-save (used when auto-stopping previous stopwatch)
+	private silentStopAndSave = false;
+
 	private settingsSubscription: Subscription | null = null;
 
 	constructor(app: App, bundle: CalendarBundle, event: EventModalData) {
@@ -156,9 +159,22 @@ export abstract class BaseEventModal extends Modal {
 		this.pendingRestoreState = state;
 	}
 
+	/**
+	 * When set, the modal will open hidden, stop the stopwatch, save the event,
+	 * and close — reusing the full modal save path without showing any UI.
+	 */
+	setSilentStopAndSave(): void {
+		this.silentStopAndSave = true;
+	}
+
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
+
+		// Hide modal immediately if doing a silent stop-and-save
+		if (this.silentStopAndSave) {
+			this.containerEl.style.display = "none";
+		}
 
 		addCls(this.modalEl, "event-modal");
 
@@ -179,6 +195,14 @@ export abstract class BaseEventModal extends Modal {
 		} else {
 			// Apply default preset for create mode (only when not restoring)
 			this.applyDefaultPreset();
+		}
+
+		// Silent stop-and-save: stop the stopwatch (updates end time + break via callbacks),
+		// then trigger the normal save path and close. No UI shown to the user.
+		if (this.silentStopAndSave) {
+			this.stopwatch?.stop();
+			this.saveEvent();
+			return;
 		}
 
 		requestAnimationFrame(() => {

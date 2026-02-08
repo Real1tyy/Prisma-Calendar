@@ -75,7 +75,7 @@ Grouped by name after stripping [Zettel IDs](./zettelid-naming) (14-digit timest
 
 ### Multi-Category Support (Category Mode)
 
-Events with multiple comma-separated categories (`Category: Work, Learning`) count toward each category separately. Full duration added to each. Total duration shows sum of all category entries (multi-category events counted multiple times). Events without categories grouped under "No Category".
+Events with multiple comma-separated categories (`Category: Work, Learning`) have their duration split evenly across all categories. For example, a 2-hour event with `Category: Work, Learning` contributes 1 hour to Work and 1 hour to Learning. Events with a single category get the full duration. Events without categories are grouped under "No Category".
 
 ## Break Time Property
 
