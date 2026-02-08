@@ -240,6 +240,7 @@ export const CONTEXT_MENU_BUTTON_LABELS = {
 	openFile: "Open file",
 	openFileNewWindow: "Open file in new window",
 	toggleRecurring: "Enable/Disable recurring event",
+	triggerStopwatch: "Trigger stopwatch",
 } as const;
 
 export const CONTEXT_MENU_ITEM_IDS = Object.keys(

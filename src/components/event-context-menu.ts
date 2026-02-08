@@ -1,6 +1,7 @@
 import { Frontmatter, getObsidianLinkPath } from "@real1ty-obsidian-plugins";
 import { type App, Menu, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
+import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import {
 	AssignCategoriesCommand,
 	CloneEventCommand,
@@ -275,6 +276,17 @@ export class EventContextMenu {
 						.setIcon("edit")
 						.onClick(() => {
 							this.openEditModal(event);
+						});
+				});
+			}
+
+			if (shouldShow("triggerStopwatch")) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Trigger stopwatch")
+						.setIcon("timer")
+						.onClick(() => {
+							void this.triggerStopwatch(event);
 						});
 				});
 			}
@@ -856,6 +868,23 @@ export class EventContextMenu {
 					error: config.errorMessage,
 				}
 			);
+		});
+	}
+
+	private async triggerStopwatch(event: CalendarEventInfo): Promise<void> {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.showStopwatch) {
+			new Notice("Enable time tracker in settings to use this action");
+			return;
+		}
+		await this.withFilePath(event, "trigger stopwatch", async () => {
+			// Stop any running minimized stopwatch first
+			if (MinimizedModalManager.hasMinimizedModal()) {
+				MinimizedModalManager.stopAndSaveCurrentEvent(this.app, this.bundle.plugin.calendarBundles);
+			}
+			const modal = new EventEditModal(this.app, this.bundle, event);
+			modal.setStartStopwatchAndMinimize();
+			modal.open();
 		});
 	}
 

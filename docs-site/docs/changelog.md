@@ -9,8 +9,11 @@ All notable changes to this project will be documented here.
 ### Added
 
 - **Auto-stop Stopwatch on New Event**: When using "Create new event with stopwatch" (`Ctrl+Shift+O`), any currently running stopwatch event is automatically stopped and saved before the new event is created. This allows you to chain event tracking without manually closing the previous event — just press the shortcut and a new tracking session begins instantly.
+- **Trigger Stopwatch Context Menu Action**: Right-click any event and select "Trigger stopwatch" to instantly start time tracking on it. This one-click action sets the start time to now, starts the stopwatch, saves the event, and minimizes — all without opening the edit modal. If another stopwatch is already running, it is automatically stopped and saved first. All-day events are automatically converted to timed events. Shown by default in the context menu, but can be hidden via Settings → Context menu items.
 
 ### Changed
+
+- **Collapsible Property Sections**: The "Display Properties" and "Other Properties" sections in the Create/Edit Event modal are now collapsed by default to reduce visual clutter. Click the section header to expand/collapse. Sections auto-expand when they contain existing properties or when you click "Add property".
 
 - **Even Time Split for Multi-Category Statistics**: Events with multiple categories now split their duration evenly across all assigned categories in statistics views. Previously, the full duration was counted for each category, inflating totals. For example, a 2-hour event with categories "Work, Learning" now contributes 1 hour to each category instead of 2 hours to each.
 - **Mobile calendar toolbar**: The search and expression inputs (plus zoom and filter presets) are now collapsed by default on mobile to save space. Tap **Filters** to expand/collapse them.

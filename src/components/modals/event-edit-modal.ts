@@ -128,6 +128,17 @@ export class EventEditModal extends BaseEventModal {
 		this.loadSkipData();
 		this.loadNotificationData();
 		this.loadCustomPropertiesData();
+
+		// Trigger stopwatch: convert all-day → timed if needed, start stopwatch, save & auto-minimize
+		if (this.shouldStartStopwatchAndMinimize()) {
+			if (this.allDayCheckbox.checked) {
+				this.allDayCheckbox.checked = false;
+				this.allDayCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
+			}
+			this.stopwatch?.start();
+			this.saveEvent();
+			return;
+		}
 	}
 
 	private loadBreakData(): void {

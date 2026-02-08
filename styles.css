@@ -3340,6 +3340,20 @@
 	margin-top: 8px;
 }
 
+.prisma-property-container.prisma-hidden {
+	display: none;
+}
+
+.prisma-property-toggle-icon {
+	margin-right: 4px;
+	font-size: 0.75em;
+	user-select: none;
+}
+
+.prisma-property-section-header .prisma-setting-item-name {
+	cursor: pointer;
+}
+
 .prisma-other-section-spacing {
 	margin-top: 16px;
 }

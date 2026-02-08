@@ -126,6 +126,9 @@ export abstract class BaseEventModal extends Modal {
 	// Flag for silent stop-and-save (used when auto-stopping previous stopwatch)
 	private silentStopAndSave = false;
 
+	// Flag to start stopwatch and auto-minimize (used by context menu "Trigger stopwatch")
+	private startStopwatchAndMinimize = false;
+
 	private settingsSubscription: Subscription | null = null;
 
 	constructor(app: App, bundle: CalendarBundle, event: EventModalData) {
@@ -167,12 +170,24 @@ export abstract class BaseEventModal extends Modal {
 		this.silentStopAndSave = true;
 	}
 
+	/**
+	 * When set, the modal will open hidden, start the stopwatch, save the event,
+	 * and close — which auto-minimizes via onClose (same as pressing ESC with a running stopwatch).
+	 */
+	setStartStopwatchAndMinimize(): void {
+		this.startStopwatchAndMinimize = true;
+	}
+
+	shouldStartStopwatchAndMinimize(): boolean {
+		return this.startStopwatchAndMinimize;
+	}
+
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		// Hide modal immediately if doing a silent stop-and-save
-		if (this.silentStopAndSave) {
+		// Hide modal immediately if doing a silent stop-and-save or trigger-stopwatch
+		if (this.silentStopAndSave || this.startStopwatchAndMinimize) {
 			this.containerEl.style.display = "none";
 		}
 
@@ -872,9 +887,14 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	private createPropertySection(parent: HTMLElement, title: string, onAddClick: () => void): HTMLElement {
-		const headerContainer = parent.createDiv(cls("setting-item"));
+		const headerContainer = parent.createDiv(cls("setting-item", "property-section-header"));
+
 		const headerDiv = headerContainer.createDiv(cls("setting-item-name"));
-		headerDiv.createEl("div", {
+		const toggleIcon = headerDiv.createEl("span", {
+			text: "▶",
+			cls: cls("property-toggle-icon"),
+		});
+		headerDiv.createEl("span", {
 			text: title,
 			cls: cls("setting-item-heading"),
 		});
@@ -883,15 +903,40 @@ export abstract class BaseEventModal extends Modal {
 			text: "Add property",
 			cls: cls("mod-cta"),
 		});
-		addButton.addEventListener("click", onAddClick);
+		addButton.addEventListener("click", () => {
+			// Auto-expand when adding a property
+			if (container.classList.contains("prisma-hidden")) {
+				container.classList.remove("prisma-hidden");
+				toggleIcon.textContent = "▼";
+			}
+			onAddClick();
+		});
 
 		const container = parent.createDiv(cls("property-container"));
+		// Collapsed by default
+		container.classList.add("prisma-hidden");
+
+		// Toggle collapse on header click
+		headerDiv.style.cursor = "pointer";
+		headerDiv.addEventListener("click", () => {
+			const isHidden = container.classList.toggle("prisma-hidden");
+			toggleIcon.textContent = isHidden ? "▶" : "▼";
+		});
 
 		return container;
 	}
 
 	protected addCustomProperty(key = "", value = "", section: "display" | "other" = "other"): void {
 		const container = section === "display" ? this.displayPropertiesContainer : this.otherPropertiesContainer;
+
+		// Auto-expand section when loading existing properties
+		if (key && container.classList.contains("prisma-hidden")) {
+			container.classList.remove("prisma-hidden");
+			const toggleIcon = container.parentElement?.querySelector(`.${cls("property-toggle-icon")}`);
+			if (toggleIcon) {
+				toggleIcon.textContent = "▼";
+			}
+		}
 		const propertyRow = container.createDiv(cls("custom-property-row"));
 
 		propertyRow.createEl("input", {

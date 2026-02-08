@@ -77,6 +77,12 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 
 **Auto-Stop on New Event**: When you use "Create new event with stopwatch" while a previous stopwatch event is minimized and running, the previous event is automatically stopped and saved before the new one is created. This lets you chain event tracking sessions seamlessly — just press the shortcut to start tracking a new activity.
 
+**Trigger Stopwatch (Context Menu)**: Right-click any event → "Trigger stopwatch" to instantly start time tracking. This one-click action:
+- Sets start time to now, starts the stopwatch, saves the event, and auto-minimizes
+- Automatically stops any currently running stopwatch first
+- Converts all-day events to timed events automatically
+- Shown by default in the context menu — can be hidden via Settings → Context menu items
+
 **Notes**: Only one modal at a time. State lost if Obsidian closed.
 
 ## Displays
