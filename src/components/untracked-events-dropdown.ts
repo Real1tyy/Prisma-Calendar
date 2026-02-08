@@ -47,8 +47,8 @@ export class UntrackedEventsDropdown {
 	}
 
 	private injectButton(container: HTMLElement): void {
-		const toolbarLeft = container.querySelector(".fc-toolbar-chunk:first-child");
-		if (!toolbarLeft) return;
+		const toolbarRight = container.querySelector(".fc-toolbar-chunk:last-child");
+		if (!toolbarRight) return;
 
 		const wrapper = document.createElement("div");
 		wrapper.className = cls("untracked-dropdown-wrapper");
@@ -66,7 +66,7 @@ export class UntrackedEventsDropdown {
 		wrapper.appendChild(this.buttonEl);
 		this.createDropdown(wrapper);
 
-		toolbarLeft.appendChild(wrapper);
+		toolbarRight.prepend(wrapper);
 
 		document.addEventListener("click", this.handleOutsideClick);
 		document.addEventListener("keydown", this.handleKeyDown, true);

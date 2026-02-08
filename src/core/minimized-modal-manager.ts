@@ -301,6 +301,7 @@ class MinimizedModalManagerClass {
 					// the indexer will detect the file change and automatically update the minimized modal state
 					new Notice("Categories updated for minimized event");
 				} catch (error) {
+					// eslint-disable-next-line no-console
 					console.error("Failed to assign categories:", error);
 					new Notice("Failed to assign categories");
 				}

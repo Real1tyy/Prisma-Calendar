@@ -898,6 +898,32 @@
 		padding: 4px 6px;
 	}
 
+	/* Mobile: Collapse filter controls (zoom + preset + search + expression) by default, toggleable via "Filters" button */
+	.prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .fc-zoomLevel-button,
+	.prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-preset-wrapper,
+	.prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-wrapper {
+		display: none;
+	}
+
+	/* Mobile: "Filters" toggle button affordance */
+	.prisma-calendar-container .fc-mobileControls-button.prisma-mobile-controls-toggle {
+		position: relative;
+		padding-right: 18px;
+	}
+
+	.prisma-calendar-container .fc-mobileControls-button.prisma-mobile-controls-toggle::after {
+		content: "▸";
+		position: absolute;
+		right: 6px;
+		top: 50%;
+		transform: translateY(-50%);
+		opacity: 0.8;
+	}
+
+	.prisma-calendar-container .fc-mobileControls-button.prisma-mobile-controls-toggle.prisma-mobile-controls-toggle-expanded::after {
+		content: "▾";
+	}
+
 	/* Mobile Monthly View: Compact event display - minimize gaps */
 	.prisma-calendar-container .fc-daygrid-event-harness {
 		min-height: auto;

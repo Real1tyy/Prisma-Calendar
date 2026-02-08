@@ -106,6 +106,47 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private isHandlingSelection = false;
 	private isDraggingCalendarEvent = false;
 	private draggingCalendarEventFilePath: string | null = null;
+	private isMobileLayout = false;
+	private mobileControlsCollapsed = false;
+
+	private updateMobileControlsToggleButtonElement(): void {
+		if (!this.container) return;
+		const btn = this.container.querySelector(".fc-mobileControls-button");
+		if (!(btn instanceof HTMLElement)) return;
+
+		btn.classList.add(cls("mobile-controls-toggle"));
+		btn.classList.toggle(cls("mobile-controls-toggle-expanded"), !this.mobileControlsCollapsed);
+		btn.classList.toggle(cls("mobile-controls-toggle-collapsed"), this.mobileControlsCollapsed);
+	}
+
+	private applyMobileControlsCollapsedState(): void {
+		if (!this.container) return;
+
+		const shouldCollapse = this.isMobileView() && this.mobileControlsCollapsed;
+		this.container.classList.toggle(cls("mobile-controls-collapsed"), shouldCollapse);
+		this.updateMobileControlsToggleButtonElement();
+	}
+
+	private setMobileControlsCollapsed(collapsed: boolean): void {
+		this.mobileControlsCollapsed = collapsed;
+		this.applyMobileControlsCollapsedState();
+	}
+
+	private shouldShowMobileControlsToggle(toolbarButtons: Set<string>): boolean {
+		return (
+			toolbarButtons.has("zoomLevel") ||
+			toolbarButtons.has("filterPresets") ||
+			toolbarButtons.has("searchInput") ||
+			toolbarButtons.has("expressionFilter")
+		);
+	}
+
+	private ensureMobileControlsExpanded(): void {
+		if (!this.isMobileView()) return;
+		if (!this.mobileControlsCollapsed) return;
+		this.mobileControlsCollapsed = false;
+		this.applyMobileControlsCollapsedState();
+	}
 
 	private getToolbarComponentDefinitions() {
 		return [
@@ -288,6 +329,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				click: () => this.scrollToNow(),
 			},
 			zoomLevel: this.zoomManager.createZoomLevelButton(),
+			mobileControls: {
+				text: "Filters",
+				click: () => {
+					this.setMobileControlsCollapsed(!this.mobileControlsCollapsed);
+				},
+				className: cls("mobile-controls-toggle"),
+			},
 			batchSelect: {
 				text: "Batch Select",
 				click: () => this.toggleBatchSelection(),
@@ -337,6 +385,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		const settings = this.bundle.settingsStore.currentSettings;
 		const toolbarButtons = new Set(settings.toolbarButtons);
+		const isMobile = this.isMobileView();
 
 		const leftItems: string[] = [];
 		if (toolbarButtons.has("prevNext")) {
@@ -353,6 +402,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 		if (toolbarButtons.has("zoomLevel")) {
 			leftItems.push("zoomLevel");
+		}
+		if (isMobile && this.shouldShowMobileControlsToggle(toolbarButtons)) {
+			leftItems.push("mobileControls");
 		}
 
 		const left = leftItems.length > 0 ? leftItems.join(" ") : "";
@@ -378,6 +430,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.calendar.setOption("headerToolbar", headerToolbar);
 		// Cast to CustomButtonInput - className is accepted at runtime but not in FullCalendar's types
 		this.calendar.setOption("customButtons", customButtons as Record<string, CustomButtonInput>);
+		this.applyMobileControlsCollapsedState();
 
 		setTimeout(() => {
 			if (!inSelectionMode) {
@@ -1030,6 +1083,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const initialView = this.isMobileView() ? settings.defaultMobileView : settings.defaultView;
 
+		this.isMobileLayout = this.isMobileView();
+		this.mobileControlsCollapsed = this.isMobileLayout;
+		this.applyMobileControlsCollapsedState();
+
 		this.calendar = new Calendar(container, {
 			plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
 
@@ -1109,6 +1166,18 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			windowResize: () => {
 				const currentSettings = this.bundle.settingsStore.currentSettings;
+				const isMobile = this.isMobileView();
+				const didMobileBreakpointChange = isMobile !== this.isMobileLayout;
+				if (isMobile !== this.isMobileLayout) {
+					this.isMobileLayout = isMobile;
+					if (isMobile) {
+						this.mobileControlsCollapsed = true;
+					}
+				}
+				this.applyMobileControlsCollapsedState();
+				if (didMobileBreakpointChange) {
+					this.updateToolbar();
+				}
 				this.calendar?.setOption(
 					"dayMaxEventRows",
 					this.isMobileView() ? currentSettings.mobileMaxEventsPerDay : currentSettings.desktopMaxEventsPerDay || false
@@ -1506,6 +1575,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			this.updateColorDots();
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error("Error refreshing calendar events:", error);
 		} finally {
 			// Restore scroll after FC finishes layout
@@ -2104,6 +2174,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		const filePath = info.event.extendedProps.filePath;
 		if (!filePath || typeof filePath !== "string") {
+			// eslint-disable-next-line no-console
 			console.error("No file path found for event");
 			info.revert();
 			return;
@@ -2124,6 +2195,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error(errorMessage, error);
 			info.revert();
 		}
@@ -2252,6 +2324,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					await this.bundle.commandManager.executeCommand(command);
 				}
 			} catch (error) {
+				// eslint-disable-next-line no-console
 				console.error("[CalendarView] Error handling drop:", error);
 			}
 		}
@@ -2420,6 +2493,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	openFilterPresetSelector(): void {
+		this.ensureMobileControlsExpanded();
 		this.filterPresetSelector.open();
 	}
 
@@ -2428,10 +2502,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	focusSearch(): void {
+		this.ensureMobileControlsExpanded();
 		this.searchFilter.focus();
 	}
 
 	focusExpressionFilter(): void {
+		this.ensureMobileControlsExpanded();
 		this.expressionFilter.focus();
 	}
 

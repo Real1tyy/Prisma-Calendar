@@ -13,6 +13,7 @@ All notable changes to this project will be documented here.
 ### Changed
 
 - **Even Time Split for Multi-Category Statistics**: Events with multiple categories now split their duration evenly across all assigned categories in statistics views. Previously, the full duration was counted for each category, inflating totals. For example, a 2-hour event with categories "Work, Learning" now contributes 1 hour to each category instead of 2 hours to each.
+- **Mobile calendar toolbar**: The search and expression inputs (plus zoom and filter presets) are now collapsed by default on mobile to save space. Tap **Filters** to expand/collapse them.
 
 ---
 
