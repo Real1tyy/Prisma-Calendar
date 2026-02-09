@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 1.33.0 - 2/8/2026
+
+### Added
+
+- **ICS URL Subscriptions**: Subscribe to external calendars (Outlook, Google, etc.) via public ICS URLs for automatic, periodic syncing. Events are synced one-way into your calendar — new events are created, changed events are updated, and removed events are deleted locally. Configure sync interval, timezone, and auto-sync in Settings → Integrations → ICS URL Subscriptions. Use the "Sync ICS subscriptions" command for manual sync.
+
+---
+
 ## 1.32.0 - 2/8/2026
 
 ### Added

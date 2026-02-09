@@ -4,10 +4,11 @@ Sync with external calendars or exchange events using standard calendar formats.
 
 ## Overview
 
-Prisma Calendar offers two integration methods:
+Prisma Calendar offers three integration methods:
 
 1. **CalDAV Sync** - Automatic read-only synchronization from CalDAV servers (Fastmail, Nextcloud, iCloud) to Obsidian
-2. **ICS Import/Export** - Manual exchange of event files with any calendar application
+2. **ICS URL Subscriptions** - Automatic read-only synchronization from public ICS URLs (Outlook, Google public links) to Obsidian
+3. **ICS Import/Export** - Manual exchange of event files with any calendar application
 
 **ICS Format**: Prisma Calendar stores all event times internally in **UTC**. When exporting or importing, you select a timezone for conversion. This ensures events display correctly in any calendar application.
 
@@ -187,6 +188,71 @@ When an event title changes on the CalDAV server:
 - Updates frontmatter automatically
 
 **Example**: `Team Meeting - 20250115140000.md` → `Weekly Standup - 20250115140000.md`
+
+## ICS URL Subscriptions
+
+### Overview
+
+ICS URL subscriptions enable read-only synchronization from public ICS URLs to Prisma Calendar. Subscribe to Outlook, Google Calendar, or any service that provides a public `.ics` URL to automatically import events into Obsidian.
+
+**Key Benefits**:
+- Automatic one-way sync (URL → Obsidian)
+- Create Obsidian notes for external events
+- Full sync with deletions — events removed from the source are deleted locally
+- No authentication needed — works with public sharing links
+
+### Setting Up ICS Subscriptions
+
+#### Adding a Subscription
+
+1. Open **Prisma Calendar Settings → Integrations → ICS URL Subscriptions**
+2. Click **"Add subscription"**
+3. Configure subscription details:
+   - **Subscription name**: Display name (e.g., "Work Calendar")
+   - **ICS URL**: Public URL to the `.ics` file
+   - **Sync interval**: How often to sync (1-1440 minutes, default: 60)
+   - **Timezone**: Timezone for event conversion
+4. Click **"Test URL"** to verify the URL and preview event count
+5. Click **"Add subscription"** to save
+
+### Sync Configuration
+
+Configure automatic synchronization behavior:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Allow auto-sync** | `true` | Enable periodic background syncing |
+| **Sync on startup** | `true` | Sync when Obsidian starts |
+| **Sync interval** | 60 minutes | How often to sync (per subscription) |
+| **Show sync notifications** | `true` | Display sync status messages |
+
+**Manual Sync**: Use **"Sync now"** button in subscription settings or run the **"Prisma Calendar: Sync ICS subscriptions"** command.
+
+### How ICS URL Sync Works
+
+#### Sync Process
+
+1. Fetches the ICS file from the URL
+2. Parses events from the ICS content
+3. For each event (identified by UID):
+   - **New event**: Creates markdown note with event data and sync metadata
+   - **Changed event** (lastModified differs): Updates frontmatter, renames file if title changed
+   - **Unchanged event**: Skipped for efficiency
+4. **Deleted events**: Events present locally but missing from the remote ICS are deleted
+
+#### Event Metadata
+
+Synced events include ICS subscription tracking in frontmatter:
+- `subscriptionId`: Which subscription manages this event
+- `uid`: iCalendar unique identifier
+- `lastModified`: When event was last changed on the source
+- `lastSyncedAt`: When Prisma last synced this event
+
+### Deleting a Subscription
+
+When deleting a subscription that has synced events, you'll be prompted to choose:
+- **Delete subscription and events**: Removes the subscription and all locally synced event notes
+- **Delete subscription only**: Removes the subscription but keeps the synced notes in your vault
 
 ## Related Features
 

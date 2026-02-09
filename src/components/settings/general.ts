@@ -6,6 +6,7 @@ import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-s
 import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
 import { CalDAVSettings } from "./caldav";
+import { ICSSubscriptionSettings } from "./ics-subscriptions";
 
 export class GeneralSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -35,6 +36,7 @@ export class GeneralSettings {
 		this.addEventPresetSettings(containerEl);
 		this.addIntegrationsSettings(containerEl);
 		this.addCalDAVSettings(containerEl);
+		this.addICSSubscriptionSettings(containerEl);
 	}
 
 	private addDirectorySettings(containerEl: HTMLElement): void {
@@ -358,5 +360,11 @@ export class GeneralSettings {
 		const calendarId = this.settingsStore.calendarId;
 		const caldavSettings = new CalDAVSettings(this.app, this.mainSettingsStore, this.plugin, calendarId);
 		caldavSettings.display(containerEl);
+	}
+
+	private addICSSubscriptionSettings(containerEl: HTMLElement): void {
+		const calendarId = this.settingsStore.calendarId;
+		const icsSubSettings = new ICSSubscriptionSettings(this.app, this.mainSettingsStore, this.plugin, calendarId);
+		icsSubSettings.display(containerEl);
 	}
 }

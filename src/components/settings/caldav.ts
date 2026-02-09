@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
 import { type App, Modal, Notice, Setting } from "obsidian";
 import { CALDAV_DEFAULTS } from "../../constants";
@@ -10,19 +10,32 @@ import {
 	CalDAVClientService,
 	type CalDAVPresetKey,
 } from "../../core/integrations/caldav";
-import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
 import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import type { CustomCalendarSettingsSchema } from "../../types/settings";
 import { deleteFilesByPaths } from "../../utils/obsidian";
 import { CalendarIntegrationDeleteEventsModal } from "../modals";
+import {
+	ConfirmDeleteModal,
+	renderActionButtons,
+	renderEnabledToggle,
+	renderNameField,
+	renderSyncIntervalField,
+	renderTimezoneField,
+	renderUrlField,
+} from "./generic";
 
 export class CalDAVSettings {
+	private ui: SettingsUIBuilder<typeof CustomCalendarSettingsSchema>;
+
 	constructor(
 		private app: App,
 		private settingsStore: SettingsStore,
 		private plugin: CustomCalendarPlugin,
 		private calendarId: string
-	) {}
+	) {
+		this.ui = new SettingsUIBuilder(this.settingsStore as never);
+	}
 
 	display(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Calendar sync (read-only)").setHeading();
@@ -60,52 +73,25 @@ export class CalDAVSettings {
 	}
 
 	private renderGlobalSettings(containerEl: HTMLElement): void {
+		this.ui.addToggle(containerEl, {
+			key: "caldav.syncOnStartup",
+			name: "Sync on startup",
+			desc: "Automatically sync calendars when the app starts",
+		});
+
+		this.ui.addToggle(containerEl, {
+			key: "caldav.enableAutoSync",
+			name: "Allow auto-sync",
+			desc: "Enable automatic periodic syncing based on each account's sync interval",
+		});
+
+		this.ui.addToggle(containerEl, {
+			key: "caldav.notifyOnSync",
+			name: "Show sync notifications",
+			desc: "Show notifications when calendar sync completes",
+		});
+
 		const caldavSettings = this.settingsStore.currentSettings.caldav;
-
-		new Setting(containerEl)
-			.setName("Sync on startup")
-			.setDesc("Automatically sync calendars when the app starts")
-			.addToggle((toggle) => {
-				toggle.setValue(caldavSettings.syncOnStartup).onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						caldav: {
-							...s.caldav,
-							syncOnStartup: value,
-						},
-					}));
-				});
-			});
-
-		new Setting(containerEl)
-			.setName("Allow auto-sync")
-			.setDesc("Enable automatic periodic syncing based on each account's sync interval")
-			.addToggle((toggle) => {
-				toggle.setValue(caldavSettings.enableAutoSync).onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						caldav: {
-							...s.caldav,
-							enableAutoSync: value,
-						},
-					}));
-				});
-			});
-
-		new Setting(containerEl)
-			.setName("Show sync notifications")
-			.setDesc("Show notifications when calendar sync completes")
-			.addToggle((toggle) => {
-				toggle.setValue(caldavSettings.notifyOnSync).onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						caldav: {
-							...s.caldav,
-							notifyOnSync: value,
-						},
-					}));
-				});
-			});
 
 		new Setting(containerEl)
 			.setName("Integration event color")
@@ -181,7 +167,7 @@ export class CalDAVSettings {
 
 		void (async () => {
 			try {
-				await this.plugin.syncSingleAccount(account.id);
+				await this.plugin.syncSingleAccount(account);
 			} finally {
 				button.disabled = false;
 				button.setText("Sync now");
@@ -192,7 +178,7 @@ export class CalDAVSettings {
 	private handleDeleteAccount(account: CalDAVAccount, container: HTMLElement): void {
 		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === account.calendarId);
 		if (!bundle) {
-			new ConfirmDeleteAccountModal(this.app, account.name, () => {
+			new ConfirmDeleteModal(this.app, account.name, "account", () => {
 				void this.deleteAccount(account.id, container);
 			}).open();
 			return;
@@ -200,7 +186,7 @@ export class CalDAVSettings {
 
 		const events = bundle.caldavSyncStateManager.getAllForAccount(account.id);
 		if (events.length === 0) {
-			new ConfirmDeleteAccountModal(this.app, account.name, () => {
+			new ConfirmDeleteModal(this.app, account.name, "account", () => {
 				void this.deleteAccount(account.id, container);
 			}).open();
 			return;
@@ -249,47 +235,6 @@ export class CalDAVSettings {
 	}
 }
 
-class ConfirmDeleteAccountModal extends Modal {
-	constructor(
-		app: App,
-		private accountName: string,
-		private onConfirm: () => void
-	) {
-		super(app);
-	}
-
-	onOpen(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-
-		contentEl.createEl("h2", { text: "Delete account" });
-		contentEl.createEl("p", {
-			text: `Are you sure you want to delete the account "${this.accountName}"?`,
-		});
-
-		new Setting(contentEl)
-			.addButton((button) => {
-				button.setButtonText("Cancel").onClick(() => {
-					this.close();
-				});
-			})
-			.addButton((button) => {
-				button
-					.setButtonText("Delete")
-					.setWarning()
-					.onClick(() => {
-						this.onConfirm();
-						this.close();
-					});
-			});
-	}
-
-	onClose(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}
-
 class AddCalDAVAccountModal extends Modal {
 	private name = "";
 	private serverUrl = "";
@@ -321,7 +266,12 @@ class AddCalDAVAccountModal extends Modal {
 		this.renderPresetSelector(contentEl);
 		this.renderForm(contentEl);
 		this.renderCalendarSelector(contentEl);
-		this.renderActions(contentEl);
+
+		renderActionButtons(contentEl, {
+			cancelFn: () => this.close(),
+			saveFn: () => void this.saveAccount(),
+			saveText: "Add account",
+		});
 	}
 
 	private renderPresetSelector(container: HTMLElement): void {
@@ -348,61 +298,40 @@ class AddCalDAVAccountModal extends Modal {
 	private renderForm(container: HTMLElement): void {
 		const formContainer = container.createDiv(cls("caldav-form"));
 
-		new Setting(formContainer)
-			.setName("Account name")
-			.setDesc("Display name for this account")
-			.addText((text) => {
-				text
-					.setPlaceholder("My calendar")
-					.setValue(this.name)
-					.onChange((value) => {
-						this.name = value;
-					});
-			});
+		renderNameField(formContainer, {
+			label: "Account name",
+			desc: "Display name for this account",
+			placeholder: "My calendar",
+			value: this.name,
+			onChange: (value) => {
+				this.name = value;
+			},
+		});
 
-		new Setting(formContainer)
-			.setName("Sync interval (minutes)")
-			.setDesc("How often to automatically sync this account (1-1440 minutes)")
-			.addText((text) => {
-				text.inputEl.type = "number";
-				text.inputEl.min = "1";
-				text.inputEl.max = "1440";
-				text.inputEl.step = "1";
-				text.setValue(this.syncIntervalMinutes.toString());
-				text.onChange((value) => {
-					const numValue = parseInt(value, 10);
-					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
-						this.syncIntervalMinutes = numValue;
-					}
-				});
-			});
+		renderSyncIntervalField(formContainer, {
+			value: this.syncIntervalMinutes,
+			onChange: (value) => {
+				this.syncIntervalMinutes = value;
+			},
+		});
 
-		new Setting(formContainer)
-			.setName("Timezone")
-			.setDesc("Timezone for event times. If it matches your calendar events, times are preserved as-is.")
-			.addDropdown((dropdown) => {
-				for (const tz of COMMON_TIMEZONES) {
-					dropdown.addOption(tz.id, tz.label);
-				}
+		renderTimezoneField(formContainer, {
+			value: this.timezone,
+			onChange: (value) => {
+				this.timezone = value;
+			},
+		});
 
-				dropdown.setValue(this.timezone);
-				dropdown.onChange((value) => {
-					this.timezone = value;
-				});
-			});
-
-		new Setting(formContainer)
-			.setName("Server address")
-			.setDesc("The calendar server address")
-			.addText((text) => {
-				text
-					.setPlaceholder("https://caldav.example.com/dav/")
-					.setValue(this.serverUrl)
-					.onChange((value) => {
-						this.serverUrl = value;
-						this.testPassed = false;
-					});
-			});
+		renderUrlField(formContainer, {
+			label: "Server address",
+			desc: "The calendar server address",
+			placeholder: "https://caldav.example.com/dav/",
+			value: this.serverUrl,
+			onChange: (value) => {
+				this.serverUrl = value;
+				this.testPassed = false;
+			},
+		});
 
 		new Setting(formContainer).setName("Username").addText((text) => {
 			text
@@ -472,23 +401,6 @@ class AddCalDAVAccountModal extends Modal {
 				});
 			}
 		}
-	}
-
-	private renderActions(container: HTMLElement): void {
-		new Setting(container)
-			.addButton((button) => {
-				button.setButtonText("Cancel").onClick(() => {
-					this.close();
-				});
-			})
-			.addButton((button) => {
-				button
-					.setButtonText("Add account")
-					.setCta()
-					.onClick(() => {
-						void this.saveAccount();
-					});
-			});
 	}
 
 	private async testConnection(button: HTMLButtonElement): Promise<void> {
@@ -635,51 +547,35 @@ class EditCalDAVAccountModal extends Modal {
 
 		contentEl.createEl("h2", { text: `Edit: ${this.account.name}` });
 
-		new Setting(contentEl).setName("Account name").addText((text) => {
-			text.setValue(this.name).onChange((value) => {
+		renderNameField(contentEl, {
+			label: "Account name",
+			value: this.name,
+			onChange: (value) => {
 				this.name = value;
-			});
+			},
 		});
 
-		new Setting(contentEl)
-			.setName("Enabled")
-			.setDesc("Enable or disable syncing for this account")
-			.addToggle((toggle) => {
-				toggle.setValue(this.enabled).onChange((value) => {
-					this.enabled = value;
-				});
-			});
+		renderEnabledToggle(contentEl, {
+			desc: "Enable or disable syncing for this account",
+			value: this.enabled,
+			onChange: (value) => {
+				this.enabled = value;
+			},
+		});
 
-		new Setting(contentEl)
-			.setName("Sync interval (minutes)")
-			.setDesc("How often to automatically sync this account (1-1440 minutes)")
-			.addText((text) => {
-				text.inputEl.type = "number";
-				text.inputEl.min = "1";
-				text.inputEl.max = "1440";
-				text.inputEl.step = "1";
-				text.setValue(this.syncIntervalMinutes.toString());
-				text.onChange((value) => {
-					const numValue = parseInt(value, 10);
-					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
-						this.syncIntervalMinutes = numValue;
-					}
-				});
-			});
+		renderSyncIntervalField(contentEl, {
+			value: this.syncIntervalMinutes,
+			onChange: (value) => {
+				this.syncIntervalMinutes = value;
+			},
+		});
 
-		new Setting(contentEl)
-			.setName("Timezone")
-			.setDesc("Timezone for event times. If it matches your calendar events, times are preserved as-is.")
-			.addDropdown((dropdown) => {
-				for (const tz of COMMON_TIMEZONES) {
-					dropdown.addOption(tz.id, tz.label);
-				}
-
-				dropdown.setValue(this.timezone);
-				dropdown.onChange((value) => {
-					this.timezone = value;
-				});
-			});
+		renderTimezoneField(contentEl, {
+			value: this.timezone,
+			onChange: (value) => {
+				this.timezone = value;
+			},
+		});
 
 		const refreshButton = contentEl.createEl("button", {
 			text: "Refresh calendars",
@@ -691,20 +587,11 @@ class EditCalDAVAccountModal extends Modal {
 
 		this.renderCalendarSelector(contentEl);
 
-		new Setting(contentEl)
-			.addButton((button) => {
-				button.setButtonText("Cancel").onClick(() => {
-					this.close();
-				});
-			})
-			.addButton((button) => {
-				button
-					.setButtonText("Save")
-					.setCta()
-					.onClick(() => {
-						void this.saveAccount();
-					});
-			});
+		renderActionButtons(contentEl, {
+			cancelFn: () => this.close(),
+			saveFn: () => void this.saveAccount(),
+			saveText: "Save",
+		});
 	}
 
 	private renderCalendarSelector(container: HTMLElement): void {

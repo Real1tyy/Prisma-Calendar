@@ -303,6 +303,12 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Use Case**: Force sync with external CalDAV servers (Fastmail, Nextcloud, iCloud)
 -   **See Also**: [CalDAV Integration documentation](./integrations.md#caldav-integration)
 
+### Sync ICS Subscriptions
+
+-   **Function**: Manually triggers ICS URL subscription synchronization
+-   **Use Case**: Force sync with external ICS URL subscriptions (Outlook, Google public links)
+-   **See Also**: [ICS URL Subscriptions documentation](./integrations.md#ics-url-subscriptions)
+
 ## Utility Commands
 
 ### Open Prisma Main

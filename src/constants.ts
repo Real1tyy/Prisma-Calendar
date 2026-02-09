@@ -57,6 +57,7 @@ export const COMMAND_IDS = {
 	EXPORT_CALENDAR_ICS: "export-calendar-ics",
 	IMPORT_CALENDAR_ICS: "import-calendar-ics",
 	SYNC_CALDAV: "sync-caldav",
+	SYNC_ICS_SUBSCRIPTIONS: "sync-ics-subscriptions",
 	NAVIGATE_BACK: "navigate-back",
 	SHOW_INTERVAL_BASES: "show-interval-bases",
 	SCROLL_TO_NOW: "scroll-to-now",
@@ -111,6 +112,7 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_BREAK_PROP: "Break",
 	DEFAULT_IGNORE_RECURRING_PROP: "Ignore Recurring",
 	DEFAULT_CALDAV_PROP: "CalDAV",
+	DEFAULT_ICS_SUBSCRIPTION_PROP: "ICSSubscription",
 	DEFAULT_BASES_VIEW_TYPE: "cards",
 
 	// Notification Settings
@@ -166,6 +168,11 @@ export const CALDAV_DEFAULTS = {
 	SYNC_FOLDER: "CalDAV",
 	SYNC_INTERVAL_MINUTES: 15,
 	MAX_ACCOUNTS: 10,
+} as const;
+
+export const ICS_SUBSCRIPTION_DEFAULTS = {
+	SYNC_INTERVAL_MINUTES: 60,
+	MAX_SUBSCRIPTIONS: 20,
 } as const;
 
 const BATCH_BUTTONS = {

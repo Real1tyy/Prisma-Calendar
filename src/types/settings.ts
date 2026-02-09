@@ -8,6 +8,7 @@ import {
 	SETTINGS_DEFAULTS,
 } from "../constants";
 import { CalDAVSettingsSchema } from "../core/integrations/caldav";
+import { ICSSubscriptionSettingsSchema } from "../core/integrations/ics-subscription";
 import { ColorSchema } from "../utils/validation";
 import { CalendarViewTypeSchema, ContextMenuItemSchema, ToolbarButtonSchema } from "./view";
 
@@ -77,6 +78,7 @@ const PropsSettingsSchema = z
 		generatePastEventsProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_GENERATE_PAST_EVENTS_PROP), // property name for generating past recurring instances from source event start date
 		ignoreRecurringProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_IGNORE_RECURRING_PROP), // property name for ignoring duplicated recurring events from future instance generation
 		caldavProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CALDAV_PROP), // property name for CalDAV sync metadata
+		icsSubscriptionProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_ICS_SUBSCRIPTION_PROP), // property name for ICS subscription sync metadata
 		basesViewProperties: z.array(z.string()).catch([]), // comma-separated list of properties to include in bases view for category events
 		basesViewType: z.enum(["table", "cards", "list"]).catch(SETTINGS_DEFAULTS.DEFAULT_BASES_VIEW_TYPE), // view type for bases views (table, cards, or list)
 	})
@@ -224,6 +226,7 @@ export const CustomCalendarSettingsSchema = z
 				},
 			]),
 		caldav: CalDAVSettingsSchema.catch(CalDAVSettingsSchema.parse({})),
+		icsSubscriptions: ICSSubscriptionSettingsSchema.catch(ICSSubscriptionSettingsSchema.parse({})),
 	})
 	.strip();
 

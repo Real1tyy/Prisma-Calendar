@@ -6,8 +6,10 @@ import { CalendarSelectModal, ICSImportModal } from "./components/modals";
 import { ICSImportProgressModal } from "./components/modals/ics-import-progress-modal";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
+import { type CalDAVAccount } from "./core/integrations/caldav";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
+import { type ICSSubscription } from "./core/integrations/ics-subscription";
 import { PrismaSyncDataSchema } from "./types";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 
@@ -289,7 +291,20 @@ export default class CustomCalendarPlugin extends Plugin {
 				const caldavAccounts = this.settingsStore.currentSettings.caldav.accounts;
 				for (const account of caldavAccounts) {
 					if (account.enabled) {
-						await this.syncSingleAccount(account.id);
+						await this.syncSingleAccount(account);
+					}
+				}
+			},
+		});
+
+		this.addCommand({
+			id: COMMAND_IDS.SYNC_ICS_SUBSCRIPTIONS,
+			name: "Sync ICS subscriptions",
+			callback: async () => {
+				const subscriptions = this.settingsStore.currentSettings.icsSubscriptions.subscriptions;
+				for (const sub of subscriptions) {
+					if (sub.enabled) {
+						await this.syncSingleICSSubscription(sub);
 					}
 				}
 			},
@@ -435,20 +450,24 @@ export default class CustomCalendarPlugin extends Plugin {
 		}).open();
 	}
 
-	async syncSingleAccount(accountId: string): Promise<void> {
-		const account = this.settingsStore.currentSettings.caldav.accounts.find((a) => a.id === accountId);
-		if (!account) {
-			new Notice("Account not found");
-			return;
-		}
-
+	async syncSingleAccount(account: CalDAVAccount): Promise<void> {
 		const bundle = this.calendarBundles.find((b) => b.calendarId === account.calendarId);
 		if (!bundle) {
 			new Notice("Calendar not found for this account");
 			return;
 		}
 
-		await bundle.syncAccount(accountId);
+		await bundle.syncAccount(account.id);
+	}
+
+	async syncSingleICSSubscription(subscription: ICSSubscription): Promise<void> {
+		const bundle = this.calendarBundles.find((b) => b.calendarId === subscription.calendarId);
+		if (!bundle) {
+			new Notice("Calendar not found for this subscription");
+			return;
+		}
+
+		await bundle.syncICSSubscription(subscription.id);
 	}
 
 	private async checkForUpdates(): Promise<void> {

@@ -13,6 +13,9 @@ import type { Indexer } from "./indexer";
 import { IndexerRegistry } from "./indexer-registry";
 import { CalDAVSyncService } from "./integrations/caldav/sync";
 import { CalDAVSyncStateManager } from "./integrations/caldav/sync-state-manager";
+import { ICSSubscriptionSyncService } from "./integrations/ics-subscription/sync";
+import { ICSSubscriptionSyncStateManager } from "./integrations/ics-subscription/sync-state-manager";
+import { SyncState } from "./integrations/sync-state";
 import type { NotificationManager } from "./notification-manager";
 import type { Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
@@ -33,14 +36,14 @@ export class CalendarBundle {
 	public readonly commandManager: CommandManager;
 	public readonly batchCommandFactory: BatchCommandFactory;
 	public readonly caldavSyncStateManager: CalDAVSyncStateManager;
+	public readonly icsSubscriptionSyncStateManager: ICSSubscriptionSyncStateManager;
 	public readonly viewType: string;
 	private app: App;
 	private directory: string;
 	private indexerRegistry: IndexerRegistry;
 	private mainSettingsStore: SettingsStore;
-	private caldavSyncServices: Map<string, CalDAVSyncService> = new Map();
-	private autoSyncIntervals: Map<string, number> = new Map();
-	private syncPromises: Map<string, Promise<void>> = new Map();
+	private caldavSync = new SyncState<CalDAVSyncService>("CalDAV");
+	private icsSubscriptionSync = new SyncState<ICSSubscriptionSyncService>("ICS Subscription");
 	private ribbonIconEl: HTMLElement | null = null;
 
 	constructor(
@@ -76,12 +79,17 @@ export class CalendarBundle {
 
 		this.templateService = new TemplaterService(this.app);
 		this.caldavSyncStateManager = new CalDAVSyncStateManager(this.indexer, this.settingsStore.settings$);
+		this.icsSubscriptionSyncStateManager = new ICSSubscriptionSyncStateManager(
+			this.indexer,
+			this.settingsStore.settings$
+		);
 		this.viewStateManager = new CalendarViewStateManager();
 		this.commandManager = new CommandManager();
 		this.batchCommandFactory = new BatchCommandFactory(this.app, this);
 
 		this.mainSettingsStore.settings$.subscribe(() => {
-			this.startAutoSync();
+			this.startCalDAVAutoSync();
+			this.startICSAutoSync();
 		});
 
 		this.settingsStore.settings$.subscribe((settings) => {
@@ -91,6 +99,10 @@ export class CalendarBundle {
 
 	getCalDAVSettings() {
 		return this.mainSettingsStore.currentSettings.caldav;
+	}
+
+	getICSSubscriptionSettings() {
+		return this.mainSettingsStore.currentSettings.icsSubscriptions;
 	}
 
 	async initialize(): Promise<void> {
@@ -129,7 +141,20 @@ export class CalendarBundle {
 				}
 			}
 
-			this.startAutoSync();
+			const icsSubSettings = this.mainSettingsStore.currentSettings.icsSubscriptions;
+
+			if (icsSubSettings.syncOnStartup) {
+				const subscriptionsForThisCalendar = icsSubSettings.subscriptions.filter(
+					(s) => s.enabled && s.calendarId === this.calendarId
+				);
+
+				for (const subscription of subscriptionsForThisCalendar) {
+					void this.syncICSSubscription(subscription.id);
+				}
+			}
+
+			this.startCalDAVAutoSync();
+			this.startICSAutoSync();
 
 			this.updateRibbonIcon(this.settingsStore.currentSettings.showRibbonIcon);
 		})();
@@ -242,11 +267,10 @@ export class CalendarBundle {
 			this.ribbonIconEl = null;
 		}
 
-		this.stopAutoSync();
-		for (const syncService of this.caldavSyncServices.values()) {
-			syncService.destroy();
-		}
-		this.caldavSyncServices.clear();
+		this.caldavSync.destroy();
+		this.icsSubscriptionSync.destroy();
+		this.caldavSyncStateManager.destroy();
+		this.icsSubscriptionSyncStateManager.destroy();
 
 		this.commandManager.clearHistory();
 
@@ -325,23 +349,10 @@ export class CalendarBundle {
 	}
 
 	async syncAccount(accountId: string): Promise<void> {
-		const existingSync = this.syncPromises.get(accountId);
-		if (existingSync) {
-			console.debug(`[CalDAV][${this.calendarId}] Sync already in progress for account ${accountId}, reusing promise`);
-			return existingSync;
-		}
-
-		const syncPromise = this.performSync(accountId);
-		this.syncPromises.set(accountId, syncPromise);
-
-		try {
-			await syncPromise;
-		} finally {
-			this.syncPromises.delete(accountId);
-		}
+		return this.caldavSync.sync(accountId, () => this.performCalDAVSync(accountId));
 	}
 
-	private async performSync(accountId: string): Promise<void> {
+	private async performCalDAVSync(accountId: string): Promise<void> {
 		const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
 		const account = caldavSettings.accounts.find((a) => a.id === accountId && a.calendarId === this.calendarId);
 
@@ -363,7 +374,7 @@ export class CalendarBundle {
 
 		for (const calendarUrl of account.selectedCalendars) {
 			const syncServiceKey = `${accountId}-${calendarUrl}`;
-			let syncService = this.caldavSyncServices.get(syncServiceKey);
+			let syncService = this.caldavSync.getService(syncServiceKey);
 
 			if (!syncService) {
 				syncService = new CalDAVSyncService({
@@ -378,51 +389,87 @@ export class CalendarBundle {
 					},
 				});
 				await syncService.initialize();
-				this.caldavSyncServices.set(syncServiceKey, syncService);
+				this.caldavSync.setService(syncServiceKey, syncService);
 			}
 
 			await syncService.sync();
 		}
 	}
 
-	startAutoSync(): void {
-		this.stopAutoSync();
+	private startCalDAVAutoSync(): void {
+		this.startAutoSync({
+			syncState: this.caldavSync,
+			getSettings: () => this.mainSettingsStore.currentSettings.caldav,
+			getItems: (settings) => settings.accounts.filter((a) => a.enabled && a.calendarId === this.calendarId),
+			syncFn: (id) => this.syncAccount(id),
+		});
+	}
 
-		const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
+	async syncICSSubscription(subscriptionId: string): Promise<void> {
+		return this.icsSubscriptionSync.sync(subscriptionId, () => this.performICSSubscriptionSync(subscriptionId));
+	}
 
-		if (!caldavSettings.enableAutoSync) {
+	private async performICSSubscriptionSync(subscriptionId: string): Promise<void> {
+		const icsSubSettings = this.mainSettingsStore.currentSettings.icsSubscriptions;
+		const subscription = icsSubSettings.subscriptions.find(
+			(s) => s.id === subscriptionId && s.calendarId === this.calendarId
+		);
+
+		if (!subscription) {
+			console.error(
+				`[ICS Subscription][${this.calendarId}] Subscription not found for id: ${subscriptionId}, calendarId: ${this.calendarId}`
+			);
+			new Notice("Subscription not found for this calendar");
 			return;
 		}
 
-		const accountsForThisCalendar = caldavSettings.accounts.filter(
-			(a) => a.enabled && a.calendarId === this.calendarId
-		);
-
-		for (const account of accountsForThisCalendar) {
-			const intervalMs = account.syncIntervalMinutes * 60 * 1000;
-
-			const intervalId = window.setInterval(() => {
-				if ("scheduler" in window && window.scheduler) {
-					const scheduler = window.scheduler as {
-						postTask: (callback: () => Promise<void>, options?: { priority?: string }) => Promise<void>;
-					};
-					void scheduler.postTask(() => this.syncAccount(account.id), {
-						priority: "background",
-					});
-				} else {
-					void this.syncAccount(account.id);
-				}
-			}, intervalMs);
-
-			this.autoSyncIntervals.set(account.id, intervalId);
+		if (!subscription.enabled) {
+			return;
 		}
+
+		let syncService = this.icsSubscriptionSync.getService(subscriptionId);
+
+		if (!syncService) {
+			syncService = new ICSSubscriptionSyncService({
+				app: this.app,
+				bundle: this,
+				mainSettingsStore: this.mainSettingsStore,
+				syncStateManager: this.icsSubscriptionSyncStateManager,
+				subscription,
+			});
+			this.icsSubscriptionSync.setService(subscriptionId, syncService);
+		}
+
+		await syncService.sync();
 	}
 
-	stopAutoSync(): void {
-		for (const intervalId of this.autoSyncIntervals.values()) {
-			window.clearInterval(intervalId);
+	private startICSAutoSync(): void {
+		this.startAutoSync({
+			syncState: this.icsSubscriptionSync,
+			getSettings: () => this.mainSettingsStore.currentSettings.icsSubscriptions,
+			getItems: (settings) => settings.subscriptions.filter((s) => s.enabled && s.calendarId === this.calendarId),
+			syncFn: (id) => this.syncICSSubscription(id),
+		});
+	}
+
+	private startAutoSync<
+		TService extends { destroy(): void },
+		TSettings,
+		TItem extends { id: string; syncIntervalMinutes: number },
+	>(config: {
+		syncState: SyncState<TService>;
+		getSettings: () => TSettings & { enableAutoSync: boolean };
+		getItems: (settings: TSettings) => TItem[];
+		syncFn: (id: string) => Promise<void>;
+	}): void {
+		const settings = config.getSettings();
+
+		if (!settings.enableAutoSync) {
+			config.syncState.stopAutoSync();
+			return;
 		}
-		this.autoSyncIntervals.clear();
-		this.syncPromises.clear();
+
+		const items = config.getItems(settings);
+		config.syncState.startAutoSync(items, config.syncFn);
 	}
 }
