@@ -1526,7 +1526,6 @@ export abstract class BaseEventModal extends Modal {
 			const settings = this.bundle.settingsStore.currentSettings;
 			this.selectedCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
 		} catch (error) {
-			// eslint-disable-next-line no-console
 			console.error("Error loading existing frontmatter:", error);
 		}
 	}
