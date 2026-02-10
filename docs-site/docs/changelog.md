@@ -12,6 +12,10 @@ All notable changes to this project will be documented here.
 
 - **Category Modal Arrow Key Navigation**: Navigate through category items in the assignment modal using Arrow Up/Down keys. Press Enter to toggle the highlighted category, or press Enter with no highlight to submit the form. The highlight wraps around and auto-scrolls into view.
 
+### Fixed
+
+- **Keyboard Navigation Focus on Leaf Switch**: Arrow key interval navigation (left/right) now works immediately when switching back to the calendar tab. Previously, you had to click the calendar to restore focus before keyboard navigation would respond.
+
 ---
 
 ## 1.32.0 - 2/8/2026
