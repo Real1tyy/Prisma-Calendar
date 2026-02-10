@@ -3,6 +3,7 @@ export { BatchCommandFactory } from "./batch-commands";
 export { CommandManager } from "./command-manager";
 export {
 	AssignCategoriesCommand,
+	AssignSeriesCommand,
 	CloneEventCommand,
 	CreateEventCommand,
 	DeleteEventCommand,

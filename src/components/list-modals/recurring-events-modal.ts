@@ -4,13 +4,13 @@ import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { AssignCategoriesCommand, ToggleSkipCommand } from "../../core/commands";
 import { type NodeRecurringEvent, RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
-import { removeZettelId } from "../../utils/calendar-events";
+import { getEventName, removeZettelId } from "../../utils/calendar-events";
 import type { RecurrenceType } from "../../utils/date-recurrence";
 import { getCategoriesFromFilePath, openFileInNewTab } from "../../utils/obsidian";
 import { getStartDateTime } from "../../utils/recurring-utils";
 import type { CalendarView } from "../calendar-view";
-import { CategoryAssignModal } from "../modals/category-assign-modal";
-import { RecurringEventsListModal } from "./recurring-events-list-modal";
+import { openCategoryAssignModal } from "../modals/assignment-modal";
+import { EventSeriesModal } from "./event-series-modal";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 interface RecurringEventListItem extends EventListItem {
@@ -206,9 +206,9 @@ export class RecurringEventsModal extends BaseEventListModal {
 		}
 
 		const currentCategories = getCategoriesFromFilePath(this.app, item.filePath, settings.categoryProp);
-
 		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
-		const modal = new CategoryAssignModal(
+
+		openCategoryAssignModal(
 			this.app,
 			categories,
 			settings.defaultNodeColor,
@@ -228,7 +228,6 @@ export class RecurringEventsModal extends BaseEventListModal {
 				}
 			}
 		);
-		modal.open();
 	}
 
 	private handleNavigate(item: EventListItem): void {
@@ -346,12 +345,12 @@ export class RecurringEventsModal extends BaseEventListModal {
 			return;
 		}
 
-		const series = this.bundle.recurringEventManager.getRecurringEventSeries(event.rRuleId);
-		if (!series) {
-			new Notice("Recurring event series not found");
-			return;
-		}
-		new RecurringEventsListModal(this.app, series).open();
+		const settings = this.bundle.settingsStore.currentSettings;
+		const nameKey = getEventName(settings.titleProp, event.frontmatter, event.sourceFilePath)?.toLowerCase() ?? null;
+		const rawPropValue = event.frontmatter[settings.seriesProp];
+		const propValue = typeof rawPropValue === "string" && rawPropValue.trim() ? rawPropValue.trim() : null;
+
+		new EventSeriesModal(this.app, this.bundle, nameKey, propValue, event.rRuleId).open();
 	}
 
 	protected getHotkeyCommandId(): string | undefined {

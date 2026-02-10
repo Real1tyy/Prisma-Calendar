@@ -36,7 +36,7 @@ import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../utils/obsidian";
 import { parseAsLocalDate } from "../../utils/time-formatter";
 import { Stopwatch } from "../stopwatch";
-import { CategoryAssignModal } from "./category-assign-modal";
+import { openCategoryAssignModal } from "./assignment-modal";
 import { CategoryEventsModal } from "./category-events-modal";
 import { SavePresetModal } from "./save-preset-modal";
 
@@ -1334,17 +1334,10 @@ export abstract class BaseEventModal extends Modal {
 		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
 		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
 
-		const modal = new CategoryAssignModal(
-			this.app,
-			categories,
-			defaultColor,
-			this.selectedCategories,
-			(selectedCategories: string[]) => {
-				this.selectedCategories = selectedCategories;
-				this.renderCategories();
-			}
-		);
-		modal.open();
+		openCategoryAssignModal(this.app, categories, defaultColor, this.selectedCategories, (selectedCategories) => {
+			this.selectedCategories = selectedCategories;
+			this.renderCategories();
+		});
 	}
 
 	private openCategoryEventsModal(categoryName: string): void {
@@ -1533,6 +1526,7 @@ export abstract class BaseEventModal extends Modal {
 			const settings = this.bundle.settingsStore.currentSettings;
 			this.selectedCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error("Error loading existing frontmatter:", error);
 		}
 	}

@@ -49,7 +49,7 @@ import {
 } from "./list-modals";
 import { EventCreateModal } from "./modals";
 import { BatchFrontmatterModal } from "./modals/batch-frontmatter-modal";
-import { CategoryAssignModal } from "./modals/category-assign-modal";
+import { openCategoryAssignModal } from "./modals/assignment-modal";
 import { CategorySelectModal } from "./modals/category-select-modal";
 import { IntervalEventsModal } from "./modals/interval-events-modal";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
@@ -112,6 +112,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private hasPerformedInitialLoad = false;
 	private previousEventRenderingKey: string | null = null;
 	private previousIntegrationColorKey: string | null = null;
+	private isRefreshingEvents = false;
+	private pendingRefreshRequest = false;
 
 	private updateMobileControlsToggleButtonElement(): void {
 		if (!this.container) return;
@@ -185,8 +187,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.eventContextMenu = new EventContextMenu(this.app, bundle, this);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 		this.zoomManager = new ZoomManager(bundle.settingsStore);
-		this.searchFilter = new SearchFilterInputManager(() => this.refreshEvents());
-		this.expressionFilter = new ExpressionFilterInputManager(() => this.refreshEvents());
+		this.searchFilter = new SearchFilterInputManager(() => this.scheduleRefreshEvents());
+		this.expressionFilter = new ExpressionFilterInputManager(() => this.scheduleRefreshEvents());
 		this.filterPresetSelector = new FilterPresetSelector(
 			bundle.settingsStore.currentSettings.filterPresets,
 			(expression: string) => {
@@ -1318,7 +1320,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 
 			datesSet: () => {
-				this.refreshEvents();
+				this.scheduleRefreshEvents();
 				// Update zoom button visibility when view changes
 				setTimeout(() => this.zoomManager.updateZoomLevelButton(), 100);
 				// Save current state when view or date changes
@@ -1376,7 +1378,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}, 100);
 
 		// Ensure initial events are loaded after calendar is fully rendered
-		this.refreshEvents();
+		this.scheduleRefreshEvents();
 
 		toggleCls(container, "thicker-hour-lines", settings.thickerHourLines);
 		toggleCls(container, "sticky-all-day-events", settings.stickyAllDayEvents);
@@ -1452,14 +1454,32 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
+	/**
+	 * Debounced entry point for all event refreshes.
+	 * Coalesces rapid calls into a single RAF and prevents re-entrance
+	 * while a refresh is in progress (queues one pending refresh instead).
+	 */
 	private scheduleRefreshEvents(): void {
-		// Coalesce rapid settings changes (sliders, typing, toggles) into a single refresh per frame
+		if (this.isRefreshingEvents) {
+			this.pendingRefreshRequest = true;
+			return;
+		}
 		if (this.refreshRafId !== null) return;
 
 		this.refreshRafId = requestAnimationFrame(() => {
 			this.refreshRafId = null;
+			this.isRefreshingEvents = true;
+			this.pendingRefreshRequest = false;
 			this.refreshEvents();
 		});
+	}
+
+	private releaseRefreshLock(): void {
+		this.isRefreshingEvents = false;
+		if (this.pendingRefreshRequest) {
+			this.pendingRefreshRequest = false;
+			this.scheduleRefreshEvents();
+		}
 	}
 
 	refreshCalendar(): void {
@@ -1468,6 +1488,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	private refreshEvents(): void {
 		if (!this.calendar || !this.isIndexingComplete || !this.calendar.view) {
+			this.releaseRefreshLock();
 			return;
 		}
 
@@ -1491,6 +1512,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				hasStructuralChanges = this.performIncrementalUpdate(calendarEvents);
 			}
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error("Error refreshing calendar events:", error);
 		}
 
@@ -1506,7 +1528,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				if (inner) {
 					inner.scrollTop = innerScrollTop;
 				}
+
+				this.releaseRefreshLock();
 			});
+		} else {
+			this.releaseRefreshLock();
 		}
 	}
 
@@ -1593,18 +1619,20 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			return false;
 		}
 
-		this.calendar!.batchRendering(() => {
-			for (const id of diff.removed) {
-				this.removeAllFCEventsById(id);
-			}
+		for (const id of diff.removed) {
+			this.removeAllFCEventsById(id);
+		}
+		for (const ev of diff.changed) {
+			this.removeAllFCEventsById(ev.id as string);
+		}
 
+		// Add events inside batchRendering to consolidate into one render pass
+		this.calendar!.batchRendering(() => {
 			for (const ev of diff.changed) {
-				this.removeAllFCEventsById(ev.id as string);
 				this.calendar!.addEvent(ev);
 			}
 
 			for (const ev of diff.added) {
-				this.removeAllFCEventsById(ev.id as string);
 				this.calendar!.addEvent(ev);
 			}
 		});
@@ -2165,24 +2193,15 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		if (!this.batchSelectionManager) return;
 
 		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
-		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
-		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
 		const settings = this.bundle.settingsStore.currentSettings;
-
+		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
 		const commonCategories = getCommonCategories(this.app, selectedEvents, settings.categoryProp);
 
-		const modal = new CategoryAssignModal(
-			this.app,
-			categories,
-			defaultColor,
-			commonCategories,
-			(selectedCategories: string[]) => {
-				if (this.batchSelectionManager) {
-					this.batchSelectionManager.executeAssignCategories(selectedCategories);
-				}
+		openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, commonCategories, (selectedCategories) => {
+			if (this.batchSelectionManager) {
+				this.batchSelectionManager.executeAssignCategories(selectedCategories);
 			}
-		);
-		modal.open();
+		});
 	}
 
 	async openBatchFrontmatterModal(): Promise<void> {
@@ -2212,6 +2231,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		const filePath = info.event.extendedProps.filePath;
 		if (!filePath || typeof filePath !== "string") {
+			// eslint-disable-next-line no-console
 			console.error("No file path found for event");
 			info.revert();
 			return;
@@ -2232,6 +2252,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error(errorMessage, error);
 			info.revert();
 		}
@@ -2360,6 +2381,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					await this.bundle.commandManager.executeCommand(command);
 				}
 			} catch (error) {
+				// eslint-disable-next-line no-console
 				console.error("[CalendarView] Error handling drop:", error);
 			}
 		}
@@ -2457,7 +2479,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				const integrationColorKey = fullSettings.caldav.integrationEventColor;
 				if (integrationColorKey !== this.previousIntegrationColorKey) {
 					this.previousIntegrationColorKey = integrationColorKey;
-					this.refreshEvents();
+					this.scheduleRefreshEvents();
 				}
 			}
 		);
@@ -2468,7 +2490,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			this.isIndexingComplete = isComplete;
 			if (isComplete) {
 				this.hideLoading();
-				this.refreshEvents();
+				this.scheduleRefreshEvents();
 			} else {
 				// Indexing started (e.g., filter expressions changed)
 				const root = this.containerEl.children[1] as HTMLElement;
@@ -2478,10 +2500,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.register(() => indexingCompleteSubscription.unsubscribe());
 
 		// Event store updates (only refreshes if indexing is complete)
-		const eventStoreSubscription = this.bundle.eventStore.subscribe(() => this.refreshEvents());
+		const eventStoreSubscription = this.bundle.eventStore.subscribe(() => this.scheduleRefreshEvents());
 		this.register(() => eventStoreSubscription.unsubscribe());
 
-		const recurringEventManagerSubscription = this.bundle.recurringEventManager.subscribe(() => this.refreshEvents());
+		const recurringEventManagerSubscription = this.bundle.recurringEventManager.subscribe(() =>
+			this.scheduleRefreshEvents()
+		);
 		this.register(() => recurringEventManagerSubscription.unsubscribe());
 	}
 
@@ -2491,7 +2515,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		// Refresh events when exiting batch mode to restore skipped events button
 		if (wasInSelectionMode) {
-			this.refreshEvents();
+			this.scheduleRefreshEvents();
 		}
 	}
 

@@ -693,6 +693,51 @@ export class AssignCategoriesCommand implements Command {
 	}
 }
 
+export class AssignSeriesCommand implements Command {
+	private originalSeriesValue?: string | string[] | undefined;
+
+	constructor(
+		private app: App,
+		private bundle: CalendarBundle,
+		private filePath: string,
+		private seriesToAssign: string[]
+	) {}
+
+	async execute(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+			if (this.originalSeriesValue === undefined) {
+				this.originalSeriesValue = fm[settings.seriesProp] as string | string[] | undefined;
+			}
+
+			assignCategoriesToFrontmatter(fm, settings.seriesProp, this.seriesToAssign);
+		});
+	}
+
+	async undo(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.filePath);
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+			if (this.originalSeriesValue === undefined) {
+				delete fm[settings.seriesProp];
+			} else {
+				fm[settings.seriesProp] = this.originalSeriesValue;
+			}
+		});
+	}
+
+	canUndo(): boolean {
+		return true;
+	}
+
+	getType(): string {
+		return "assign-series";
+	}
+}
+
 export class UpdateFrontmatterCommand implements Command {
 	private originalValues: Map<string, unknown> = new Map();
 

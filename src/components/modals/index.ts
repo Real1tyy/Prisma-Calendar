@@ -1,3 +1,4 @@
+export { AssignmentModal, openCategoryAssignModal, openSeriesAssignModal } from "./assignment-modal";
 export { BaseCategoryOperationModal } from "./base-category-operation-modal";
 export { CalendarSelectModal } from "./calendar-select-modal";
 export { CategoryDeleteModal } from "./category-delete-modal";

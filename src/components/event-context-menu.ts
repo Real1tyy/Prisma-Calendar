@@ -1,9 +1,10 @@
-import { Frontmatter, getObsidianLinkPath } from "@real1ty-obsidian-plugins";
+import { Frontmatter, getObsidianLinkPath, parseIntoList } from "@real1ty-obsidian-plugins";
 import { type App, Menu, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import {
 	AssignCategoriesCommand,
+	AssignSeriesCommand,
 	CloneEventCommand,
 	DeleteEventCommand,
 	DuplicateRecurringEventCommand,
@@ -17,7 +18,7 @@ import {
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import { type ContextMenuItem, isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
-import { findAdjacentEvent, isEventDone } from "../utils/calendar-events";
+import { findAdjacentEvent, getEventName, isEventDone } from "../utils/calendar-events";
 import { intoDate, toLocalISOString } from "../utils/format";
 import {
 	emitHover,
@@ -29,9 +30,9 @@ import {
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import type { CalendarView } from "./calendar-view";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
-import { RecurringEventsListModal } from "./list-modals/recurring-events-list-modal";
+import { EventSeriesModal } from "./list-modals/event-series-modal";
 import { DeleteRecurringEventsModal, EventEditModal } from "./modals";
-import { CategoryAssignModal } from "./modals/category-assign-modal";
+import { openCategoryAssignModal, openSeriesAssignModal } from "./modals/assignment-modal";
 import { MoveByModal } from "./modals/move-by-modal";
 
 interface CalendarEventInfo {
@@ -254,13 +255,13 @@ export class EventContextMenu {
 			});
 		}
 
-		if (shouldShow("viewRecurringEvents") && isRecurring) {
+		if (shouldShow("viewSeries")) {
 			menu.addItem((item) => {
 				item
-					.setTitle("View recurring events")
-					.setIcon("calendar-range")
+					.setTitle("View series")
+					.setIcon("list")
 					.onClick(() => {
-						this.showRecurringEventsList(event);
+						this.showEventSeries(event);
 					});
 			});
 		}
@@ -298,6 +299,17 @@ export class EventContextMenu {
 						.setIcon("tag")
 						.onClick(() => {
 							void this.openAssignCategoriesModal(event);
+						});
+				});
+			}
+
+			if (shouldShow("assignSeries")) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Assign series")
+						.setIcon("layers")
+						.onClick(() => {
+							void this.openAssignSeriesModal(event);
 						});
 				});
 			}
@@ -763,22 +775,17 @@ export class EventContextMenu {
 		});
 	}
 
-	private showRecurringEventsList(event: CalendarEventInfo): void {
-		const rruleId = this.getRRuleId(event);
+	private showEventSeries(event: CalendarEventInfo): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const frontmatter = event.extendedProps?.frontmatterDisplayData;
+		const filePath = event.extendedProps?.filePath ?? null;
 
-		if (!rruleId) {
-			new Notice("No recurring event ID found");
-			return;
-		}
+		const nameKey = getEventName(settings.titleProp, frontmatter ?? {}, filePath)?.toLowerCase() ?? null;
+		const rawPropValue = frontmatter?.[settings.seriesProp];
+		const propValue = typeof rawPropValue === "string" && rawPropValue.trim() ? rawPropValue.trim() : null;
+		const rruleId = this.isRecurringEvent(event) ? this.getRRuleId(event) : null;
 
-		const series = this.bundle.recurringEventManager.getRecurringEventSeries(rruleId);
-
-		if (!series) {
-			new Notice("Recurring event series not found");
-			return;
-		}
-
-		new RecurringEventsListModal(this.app, series).open();
+		new EventSeriesModal(this.app, this.bundle, nameKey, propValue, rruleId).open();
 	}
 
 	async fillEndTimeFromNext(event: CalendarEventInfo): Promise<void> {
@@ -894,24 +901,32 @@ export class EventContextMenu {
 
 			const settings = this.bundle.settingsStore.currentSettings;
 			const currentCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
-
-			// Get all available categories with colors
 			const categories = this.bundle.categoryTracker.getCategoriesWithColors();
-			const defaultColor = settings.defaultNodeColor;
 
-			const modal = new CategoryAssignModal(
-				this.app,
-				categories,
-				defaultColor,
-				currentCategories,
-				(selectedCategories: string[]) => {
-					void this.runCommand(() => new AssignCategoriesCommand(this.app, this.bundle, filePath, selectedCategories), {
-						success: "Categories updated",
-						error: "Failed to assign categories",
-					});
-				}
-			);
-			modal.open();
+			openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, currentCategories, (selected) => {
+				void this.runCommand(() => new AssignCategoriesCommand(this.app, this.bundle, filePath, selected), {
+					success: "Categories updated",
+					error: "Failed to assign categories",
+				});
+			});
+		});
+	}
+
+	private async openAssignSeriesModal(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "assign series", async (filePath) => {
+			getFileByPathOrThrow(this.app, filePath);
+
+			const settings = this.bundle.settingsStore.currentSettings;
+			const { frontmatter } = getFileAndFrontmatter(this.app, filePath);
+			const currentSeries = parseIntoList(frontmatter[settings.seriesProp]);
+			const allSeries = this.bundle.seriesManager.getPropSeriesWithCounts();
+
+			openSeriesAssignModal(this.app, allSeries, settings.defaultNodeColor, currentSeries, (selected) => {
+				void this.runCommand(() => new AssignSeriesCommand(this.app, this.bundle, filePath, selected), {
+					success: "Series updated",
+					error: "Failed to assign series",
+				});
+			});
 		});
 	}
 }

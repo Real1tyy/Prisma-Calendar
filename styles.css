@@ -4259,6 +4259,36 @@
 	opacity: 0.7;
 }
 
+/* Event Series Tab Buttons */
+.prisma-event-series-tabs {
+	display: flex;
+	flex-direction: row;
+	gap: 0.5rem;
+	margin-bottom: 1rem;
+}
+
+.prisma-event-series-tab-btn {
+	padding: 0.4rem 0.8rem;
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: 0.9em;
+	transition: background-color 0.15s, color 0.15s;
+}
+
+.prisma-event-series-tab-btn:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.prisma-event-series-tab-btn.prisma-is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
 /* Move By Modal - Compact Button-Based UI */
 .prisma-move-by-modal h3 {
 	margin: 0 0 16px 0;
@@ -6460,6 +6490,12 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	font-size: 0.7em;
 	font-weight: 600;
 	letter-spacing: 0.5px;
+}
+
+.prisma-category-item-subtitle {
+	font-size: 0.8em;
+	color: var(--text-muted);
+	margin-left: 0.4rem;
 }
 
 /* Category display in event modal */

@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
-import { CategoryAssignModal } from "../components/modals/category-assign-modal";
+import { openCategoryAssignModal } from "../components/modals/assignment-modal";
 import { EventCreateModal, EventEditModal } from "../components/modals";
 import type { StopwatchSnapshot } from "../components/stopwatch";
 import type { Frontmatter } from "../types";
@@ -315,25 +315,18 @@ class MinimizedModalManagerClass {
 		const categories = bundle.categoryTracker.getCategoriesWithColors();
 		const defaultColor = settings.defaultNodeColor;
 
-		const modal = new CategoryAssignModal(
-			app,
-			categories,
-			defaultColor,
-			currentCategories,
-			async (selectedCategories: string[]) => {
-				try {
-					const command = new AssignCategoriesCommand(app, bundle, state.filePath!, selectedCategories);
-					await bundle.commandManager.executeCommand(command);
-					// the indexer will detect the file change and automatically update the minimized modal state
-					new Notice("Categories updated for minimized event");
-				} catch (error) {
-					console.error("Failed to assign categories:", error);
-					new Notice("Failed to assign categories");
-				}
+		openCategoryAssignModal(app, categories, defaultColor, currentCategories, async (selectedCategories) => {
+			try {
+				const command = new AssignCategoriesCommand(app, bundle, state.filePath!, selectedCategories);
+				await bundle.commandManager.executeCommand(command);
+				// the indexer will detect the file change and automatically update the minimized modal state
+				new Notice("Categories updated for minimized event");
+			} catch (error) {
+				// eslint-disable-next-line no-console
+				console.error("Failed to assign categories:", error);
+				new Notice("Failed to assign categories");
 			}
-		);
-
-		modal.open();
+		});
 	}
 
 	/**

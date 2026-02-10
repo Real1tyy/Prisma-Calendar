@@ -1,3 +1,4 @@
+import { parseIntoList } from "@real1ty-obsidian-plugins";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { CalendarEvent } from "../types/calendar";
@@ -20,8 +21,8 @@ export class SeriesManager {
 	private seriesByProp = new Map<string, Set<string>>();
 	/** Reverse lookup: file path -> name key */
 	private fileToNameKey = new Map<string, string>();
-	/** Reverse lookup: file path -> series prop value */
-	private fileToSeriesProp = new Map<string, string>();
+	/** Reverse lookup: file path -> series prop values */
+	private fileToSeriesProp = new Map<string, Set<string>>();
 
 	private subscription: Subscription | null = null;
 	private indexingCompleteSubscription: Subscription | null = null;
@@ -74,13 +75,34 @@ export class SeriesManager {
 		set.add(filePath);
 	}
 
-	private removeFromGroup(groupMap: Map<string, Set<string>>, reverseMap: Map<string, string>, filePath: string): void {
+	private removeFromGroupSingle(
+		groupMap: Map<string, Set<string>>,
+		reverseMap: Map<string, string>,
+		filePath: string
+	): void {
 		const key = reverseMap.get(filePath);
 		if (!key) return;
 		const set = groupMap.get(key);
 		if (set) {
 			set.delete(filePath);
 			if (set.size === 0) groupMap.delete(key);
+		}
+		reverseMap.delete(filePath);
+	}
+
+	private removeFromGroupMulti(
+		groupMap: Map<string, Set<string>>,
+		reverseMap: Map<string, Set<string>>,
+		filePath: string
+	): void {
+		const keys = reverseMap.get(filePath);
+		if (!keys) return;
+		for (const key of keys) {
+			const set = groupMap.get(key);
+			if (set) {
+				set.delete(filePath);
+				if (set.size === 0) groupMap.delete(key);
+			}
 		}
 		reverseMap.delete(filePath);
 	}
@@ -99,18 +121,19 @@ export class SeriesManager {
 
 		const seriesProp = this._settings.seriesProp;
 		if (seriesProp) {
-			const propValue = frontmatter[seriesProp];
-			if (propValue && typeof propValue === "string" && propValue.trim()) {
-				const trimmedValue = propValue.trim();
-				this.fileToSeriesProp.set(filePath, trimmedValue);
-				this.addToGroup(this.seriesByProp, trimmedValue, filePath);
+			const seriesValues = parseIntoList(frontmatter[seriesProp]);
+			if (seriesValues.length > 0) {
+				this.fileToSeriesProp.set(filePath, new Set(seriesValues));
+				for (const value of seriesValues) {
+					this.addToGroup(this.seriesByProp, value, filePath);
+				}
 			}
 		}
 	}
 
 	private removeFile(filePath: string): void {
-		this.removeFromGroup(this.seriesByName, this.fileToNameKey, filePath);
-		this.removeFromGroup(this.seriesByProp, this.fileToSeriesProp, filePath);
+		this.removeFromGroupSingle(this.seriesByName, this.fileToNameKey, filePath);
+		this.removeFromGroupMulti(this.seriesByProp, this.fileToSeriesProp, filePath);
 	}
 
 	private rebuild(): void {
@@ -170,6 +193,13 @@ export class SeriesManager {
 			}
 		}
 		return events;
+	}
+
+	/** Returns all prop-based series with their event counts, sorted alphabetically */
+	getPropSeriesWithCounts(): { name: string; count: number }[] {
+		return Array.from(this.seriesByProp.entries())
+			.map(([name, files]) => ({ name, count: files.size }))
+			.sort((a, b) => a.name.localeCompare(b.name));
 	}
 
 	destroy(): void {
