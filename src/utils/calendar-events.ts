@@ -414,6 +414,7 @@ export function getInternalProperties(settings: SingleCalendarConfig): Set<strin
 	const additionalInternalProps = [
 		settings.statusProperty,
 		settings.categoryProp,
+		settings.seriesProp,
 		settings.minutesBeforeProp,
 		settings.daysBeforeProp,
 		...INTERNAL_FRONTMATTER_PROPERTIES,

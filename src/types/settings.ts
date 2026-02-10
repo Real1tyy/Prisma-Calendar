@@ -74,6 +74,7 @@ const PropsSettingsSchema = z
 		notDoneValue: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_NOT_DONE_VALUE), // value to set when marking event as not done
 		categoryProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CATEGORY_PROP), // property name for event categories used in statistics
 		breakProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_BREAK_PROP), // property name for break time in minutes (subtracted from duration in statistics)
+		seriesProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SERIES_PROP), // property name for grouping events into a named series
 		futureInstancesCountProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT_PROP), // property name for per-event override of future instances count
 		generatePastEventsProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_GENERATE_PAST_EVENTS_PROP), // property name for generating past recurring instances from source event start date
 		ignoreRecurringProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_IGNORE_RECURRING_PROP), // property name for ignoring duplicated recurring events from future instance generation

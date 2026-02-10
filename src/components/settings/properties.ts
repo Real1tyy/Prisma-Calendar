@@ -166,6 +166,13 @@ export class PropertiesSettings {
 		});
 
 		this.ui.addText(containerEl, {
+			key: "seriesProp",
+			name: "Series property",
+			desc: "Frontmatter property name for grouping events into a named series",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_SERIES_PROP,
+		});
+
+		this.ui.addText(containerEl, {
 			key: "minutesBeforeProp",
 			name: "Minutes before property",
 			desc: "Frontmatter property name for per-event notification times (timed events)",
