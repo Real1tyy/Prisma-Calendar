@@ -317,7 +317,7 @@ export const getEventName = (
 
 	if (filePath) {
 		const filename = filePath.split("/").pop()?.replace(/\.md$/, "") || "";
-		return removeZettelId(filename);
+		return cleanupTitle(filename);
 	}
 
 	return undefined;
