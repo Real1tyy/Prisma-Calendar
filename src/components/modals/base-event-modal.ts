@@ -705,6 +705,15 @@ export abstract class BaseEventModal extends Modal {
 					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
 					const startValue = this.startInput.value;
 					if (startValue) {
+						// If end date is in the past, update it to now
+						const endValue = this.endInput.value;
+						if (endValue) {
+							const endDate = parseAsLocalDate(endValue);
+							if (endDate && endDate.getTime() < Date.now()) {
+								this.endInput.value = formatDateTimeForInput(new Date());
+								this.endInput.dispatchEvent(new Event("change", { bubbles: true }));
+							}
+						}
 						return parseAsLocalDate(startValue);
 					}
 					return null;
@@ -1524,6 +1533,7 @@ export abstract class BaseEventModal extends Modal {
 			const settings = this.bundle.settingsStore.currentSettings;
 			this.selectedCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error("Error loading existing frontmatter:", error);
 		}
 	}

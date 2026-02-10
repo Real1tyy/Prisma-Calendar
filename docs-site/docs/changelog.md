@@ -16,6 +16,8 @@ All notable changes to this project will be documented here.
 
 - **Keyboard Navigation Focus on Leaf Switch**: Arrow key interval navigation (left/right) now works immediately when switching back to the calendar tab. Previously, you had to click the calendar to restore focus before keyboard navigation would respond.
 
+- **Stopwatch Continue with Past End Date**: When using "continue" on the stopwatch, if the end date is in the past it is now automatically updated to the current time. Previously, the stale end date would remain unchanged.
+
 ---
 
 ## 1.32.0 - 2/8/2026
