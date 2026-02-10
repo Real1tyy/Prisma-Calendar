@@ -28,6 +28,7 @@ import {
 	stripISOSuffix,
 } from "../utils/calendar-events";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
+import { getEventRenderingKey } from "../utils/calendar-settings";
 import { diffEvents, eventFingerprint } from "../utils/event-diff";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
 import { calculateDuration, calculateEndTime, roundToNearestHour, toLocalISOString } from "../utils/format";
@@ -1428,23 +1429,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		// Only schedule a full event refresh if event-rendering settings changed.
 		// Non-rendering settings (hour range, weekends, etc.) are handled by setOption() above.
-		const eventRenderingKey = JSON.stringify([
-			settings.colorRules,
-			settings.defaultNodeColor,
-			settings.caldavProp,
-			settings.icsSubscriptionProp,
-			settings.frontmatterDisplayProperties,
-			settings.frontmatterDisplayPropertiesAllDay,
-			settings.showDurationInTitle,
-			settings.showSourceRecurringMarker,
-			settings.showPhysicalRecurringMarker,
-			settings.sourceRecurringMarker,
-			settings.physicalRecurringMarker,
-			settings.showColorDots,
-			settings.pastEventContrast,
-			settings.skipProp,
-			settings.titleProp,
-		]);
+		const eventRenderingKey = getEventRenderingKey(settings);
 
 		if (eventRenderingKey !== this.previousEventRenderingKey) {
 			this.previousEventRenderingKey = eventRenderingKey;
@@ -1506,6 +1491,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				hasStructuralChanges = this.performIncrementalUpdate(calendarEvents);
 			}
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error("Error refreshing calendar events:", error);
 		}
 
@@ -1585,6 +1571,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	private performInitialLoad(calendarEvents: PrismaEventInput[]): void {
+		this.calendar!.removeAllEvents();
+
 		this.calendar!.batchRendering(() => {
 			for (const ev of calendarEvents) {
 				this.calendar!.addEvent(ev);
@@ -1608,17 +1596,16 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		this.calendar!.batchRendering(() => {
 			for (const id of diff.removed) {
-				const fcEvent = this.calendar!.getEventById(id);
-				if (fcEvent) fcEvent.remove();
+				this.removeAllFCEventsById(id);
 			}
 
 			for (const ev of diff.changed) {
-				const fcEvent = this.calendar!.getEventById(ev.id as string);
-				if (fcEvent) fcEvent.remove();
+				this.removeAllFCEventsById(ev.id as string);
 				this.calendar!.addEvent(ev);
 			}
 
 			for (const ev of diff.added) {
+				this.removeAllFCEventsById(ev.id as string);
 				this.calendar!.addEvent(ev);
 			}
 		});
@@ -1632,6 +1619,19 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		this.updateColorDots();
 		return diff.added.length > 0 || diff.removed.length > 0;
+	}
+
+	/**
+	 * Remove ALL FullCalendar events with the given ID.
+	 * FC allows duplicates — getEventById only returns the first,
+	 * so we loop until none remain.
+	 */
+	private removeAllFCEventsById(id: string): void {
+		let fcEvent = this.calendar!.getEventById(id);
+		while (fcEvent) {
+			fcEvent.remove();
+			fcEvent = this.calendar!.getEventById(id);
+		}
 	}
 
 	private populateRenderedEventsCache(events: PrismaEventInput[]): void {
@@ -2213,6 +2213,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		const filePath = info.event.extendedProps.filePath;
 		if (!filePath || typeof filePath !== "string") {
+			// eslint-disable-next-line no-console
 			console.error("No file path found for event");
 			info.revert();
 			return;
@@ -2233,6 +2234,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error(errorMessage, error);
 			info.revert();
 		}
@@ -2361,6 +2363,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					await this.bundle.commandManager.executeCommand(command);
 				}
 			} catch (error) {
+				// eslint-disable-next-line no-console
 				console.error("[CalendarView] Error handling drop:", error);
 			}
 		}

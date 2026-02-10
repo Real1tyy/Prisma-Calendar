@@ -14,6 +14,10 @@ All notable changes to this project will be documented here.
 
 - **Periodic End Time Sync for Minimized Stopwatch**: While a stopwatch is running in a minimized modal, the event's end time is now automatically persisted to the file every 5 minutes. This keeps the end time in sync with reality and protects against data loss if the app crashes.
 
+### Changed
+
+- **Incremental Calendar Rendering**: The calendar no longer destroys and recreates every DOM element on each update. Changes are now diffed against the previous state — only added, removed, or modified events touch the DOM. Editing a single event in a view with hundreds of events now updates just that one element instead of rebuilding all of them. Settings changes that don't affect event rendering (hour range, weekends, slot duration) no longer trigger any event refresh at all.
+
 ### Fixed
 
 - **Keyboard Navigation Focus on Leaf Switch**: Arrow key interval navigation (left/right) now works immediately when switching back to the calendar tab. Previously, you had to click the calendar to restore focus before keyboard navigation would respond.

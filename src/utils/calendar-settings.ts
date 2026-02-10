@@ -26,6 +26,30 @@ export function getCalendarById(settings: CustomCalendarSettings, id: string): S
 	return settings.calendars.find((calendar) => calendar.id === id);
 }
 
+/**
+ * Builds a stable key from the subset of settings that affect how events are rendered.
+ * When this key changes, a full event refresh is needed.
+ */
+export function getEventRenderingKey(settings: SingleCalendarConfig): string {
+	return JSON.stringify([
+		settings.colorRules,
+		settings.defaultNodeColor,
+		settings.caldavProp,
+		settings.icsSubscriptionProp,
+		settings.frontmatterDisplayProperties,
+		settings.frontmatterDisplayPropertiesAllDay,
+		settings.showDurationInTitle,
+		settings.showSourceRecurringMarker,
+		settings.showPhysicalRecurringMarker,
+		settings.sourceRecurringMarker,
+		settings.physicalRecurringMarker,
+		settings.showColorDots,
+		settings.pastEventContrast,
+		settings.skipProp,
+		settings.titleProp,
+	]);
+}
+
 export function generateUniqueCalendarId(settings: CustomCalendarSettings): string {
 	const existingIds = new Set(settings.calendars.map((calendar) => calendar.id));
 
