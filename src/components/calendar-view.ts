@@ -28,6 +28,7 @@ import {
 	stripISOSuffix,
 } from "../utils/calendar-events";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
+import { diffEvents, eventFingerprint } from "../utils/event-diff";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
 import { calculateDuration, calculateEndTime, roundToNearestHour, toLocalISOString } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
@@ -93,8 +94,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private skippedEventsCount = 0;
 	private enabledRecurringEventsCount = 0;
 	private selectedEventsCount = 0;
-	private isRefreshingEvents = false;
-	private pendingRefreshRequest = false;
 	private dragEdgeScrollListener: ((e: MouseEvent) => void) | null = null;
 	private dragEdgeScrollTimeout: number | null = null;
 	private lastEdgeScrollTime = 0;
@@ -108,6 +107,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private draggingCalendarEventFilePath: string | null = null;
 	private isMobileLayout = false;
 	private mobileControlsCollapsed = false;
+	private renderedEvents = new Map<string, string>();
+	private hasPerformedInitialLoad = false;
+	private previousEventRenderingKey: string | null = null;
+	private previousIntegrationColorKey: string | null = null;
 
 	private updateMobileControlsToggleButtonElement(): void {
 		if (!this.container) return;
@@ -1423,8 +1426,30 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			this.stopUpcomingEventCheck();
 		}
 
-		// Schedule refresh with coalescing to batch with paint and avoid refresh storms
-		this.scheduleRefreshEvents();
+		// Only schedule a full event refresh if event-rendering settings changed.
+		// Non-rendering settings (hour range, weekends, etc.) are handled by setOption() above.
+		const eventRenderingKey = JSON.stringify([
+			settings.colorRules,
+			settings.defaultNodeColor,
+			settings.caldavProp,
+			settings.icsSubscriptionProp,
+			settings.frontmatterDisplayProperties,
+			settings.frontmatterDisplayPropertiesAllDay,
+			settings.showDurationInTitle,
+			settings.showSourceRecurringMarker,
+			settings.showPhysicalRecurringMarker,
+			settings.sourceRecurringMarker,
+			settings.physicalRecurringMarker,
+			settings.showColorDots,
+			settings.pastEventContrast,
+			settings.skipProp,
+			settings.titleProp,
+		]);
+
+		if (eventRenderingKey !== this.previousEventRenderingKey) {
+			this.previousEventRenderingKey = eventRenderingKey;
+			this.scheduleRefreshEvents();
+		}
 	}
 
 	private initializeToolbarComponents(toolbarButtons: string[]): void {
@@ -1457,134 +1482,35 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	private refreshEvents(): void {
-		// Don't refresh events until indexing is complete
 		if (!this.calendar || !this.isIndexingComplete || !this.calendar.view) {
 			return;
 		}
 
-		if (this.isRefreshingEvents) {
-			// Mark that a refresh was requested while we're busy
-			// This ensures we refresh again after the current one completes
-			this.pendingRefreshRequest = true;
-			return;
-		}
-
-		this.isRefreshingEvents = true;
-		this.pendingRefreshRequest = false;
 		const { view } = this.calendar;
 
-		// Capture scroll position before touching events
-		// The REAL scroller is the Obsidian view-content wrapper
+		// Capture scroll position before touching events (needed for structural changes)
 		const viewContent = this.containerEl.querySelector(".view-content");
-
-		// FullCalendar internal scroller (for some views like list)
 		const innerScroller = this.container.querySelector(".fc-scroller");
-
 		const viewContentScrollTop = viewContent?.scrollTop ?? 0;
 		const innerScrollTop = innerScroller?.scrollTop ?? 0;
 
+		let hasStructuralChanges = false;
+
 		try {
-			// Use toLocalISOString to prevent timezone conversion issues
-			// FullCalendar's activeStart/activeEnd are local Date objects, but toISOString() converts to UTC
-			const start = toLocalISOString(view.activeStart);
-			const end = toLocalISOString(view.activeEnd);
+			const calendarEvents = this.buildCalendarEvents(view);
 
-			const allEvents = this.bundle.eventStore.getNonSkippedEvents({
-				start,
-				end,
-			});
-
-			const filteredEvents: CalendarEvent[] = [];
-			const visibleEvents: CalendarEvent[] = [];
-
-			for (const event of allEvents) {
-				const passesSearch = this.searchFilter.shouldInclude({
-					meta: event.meta,
-					title: event.title,
-				});
-				const passesExpression = this.expressionFilter.shouldInclude(event);
-
-				if (passesSearch && passesExpression) {
-					visibleEvents.push(event);
-				} else {
-					filteredEvents.push(event);
-				}
+			if (!this.hasPerformedInitialLoad) {
+				this.performInitialLoad(calendarEvents);
+				hasStructuralChanges = true;
+			} else {
+				hasStructuralChanges = this.performIncrementalUpdate(calendarEvents);
 			}
-
-			this.filteredEvents = filteredEvents;
-			this.updateFilteredEventsButton(filteredEvents.length);
-
-			const skippedEvents = this.bundle.eventStore.getSkippedEvents({
-				start,
-				end,
-			});
-			this.updateSkippedEventsButton(skippedEvents.length);
-
-			// Update enabled recurring events button
-			this.updateEnabledRecurringEventsButton();
-
-			// Convert to FullCalendar event format
-			const calendarEvents: PrismaEventInput[] = [];
-
-			for (const event of visibleEvents) {
-				// Skip untracked events - they don't have dates
-				if (isUntrackedEvent(event)) {
-					continue;
-				}
-
-				// At this point, TypeScript knows event is TimedEvent | AllDayEvent
-				// Both have start, allDay properties
-				const trackedEvent: TimedEvent | AllDayEvent = event;
-
-				const classNames = ["regular-event"];
-				if (trackedEvent.isVirtual) {
-					classNames.push(cls("virtual-event"));
-				}
-				const eventColor = this.getEventColor(trackedEvent);
-
-				// Strip Z suffix to treat times as naive local times (no timezone conversion)
-				const start = trackedEvent.start.replace(/Z$/, "");
-				const end = isTimedEvent(trackedEvent) ? trackedEvent.end.replace(/Z$/, "") : undefined;
-
-				const folder = trackedEvent.meta?.folder;
-				const folderStr = typeof folder === "string" ? folder : "";
-
-				calendarEvents.push({
-					id: trackedEvent.id,
-					title: trackedEvent.title, // Keep original title for search/filtering
-					start,
-					end,
-					allDay: trackedEvent.allDay,
-					extendedProps: {
-						filePath: trackedEvent.ref.filePath,
-						folder: folderStr,
-						originalTitle: trackedEvent.title,
-						frontmatterDisplayData: trackedEvent.meta ?? {},
-						isVirtual: trackedEvent.isVirtual,
-					},
-					backgroundColor: eventColor,
-					borderColor: eventColor,
-					className: classNames.join(" "),
-				});
-			}
-
-			// CRITICAL: Remove ALL events and event sources to prevent accumulation
-			this.calendar.removeAllEvents();
-			this.calendar.removeAllEventSources();
-
-			// Add fresh event source with new events
-			this.calendar.addEventSource({
-				id: "main-events",
-				events: calendarEvents,
-			});
-
-			this.updateColorDots();
 		} catch (error) {
 			console.error("Error refreshing calendar events:", error);
-		} finally {
-			// Restore scroll after FC finishes layout
+		}
+
+		if (hasStructuralChanges) {
 			requestAnimationFrame(() => {
-				// Re-query in case DOM changed
 				const viewContentRestored = this.containerEl.querySelector(".view-content");
 				const inner = this.container.querySelector(".fc-scroller");
 
@@ -1595,20 +1521,129 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				if (inner) {
 					inner.scrollTop = innerScrollTop;
 				}
-
-				// Release the lock after scroll restoration completes
-				setTimeout(() => {
-					this.isRefreshingEvents = false;
-
-					// If a refresh was requested while we were busy, trigger it now
-					// This handles rapid navigation where multiple datesSet events fire
-					if (this.pendingRefreshRequest) {
-						this.pendingRefreshRequest = false;
-						this.refreshEvents();
-					}
-				}, 50);
 			});
 		}
+	}
+
+	private buildCalendarEvents(view: { activeStart: Date; activeEnd: Date }): PrismaEventInput[] {
+		const start = toLocalISOString(view.activeStart);
+		const end = toLocalISOString(view.activeEnd);
+
+		const allEvents = this.bundle.eventStore.getNonSkippedEvents({ start, end });
+
+		const shouldIncludeEvent = (event: CalendarEvent) => {
+			const passesSearch = this.searchFilter.shouldInclude({
+				meta: event.meta,
+				title: event.title,
+			});
+			const passesExpression = this.expressionFilter.shouldInclude(event);
+			return passesSearch && passesExpression;
+		};
+
+		const trackedEvents = allEvents.filter((event) => !isUntrackedEvent(event));
+		const visibleEvents = trackedEvents.filter(shouldIncludeEvent);
+		const filteredEvents = trackedEvents.filter((event) => !shouldIncludeEvent(event));
+
+		this.filteredEvents = filteredEvents;
+		this.updateFilteredEventsButton(filteredEvents.length);
+
+		const skippedEvents = this.bundle.eventStore.getSkippedEvents({ start, end });
+		this.updateSkippedEventsButton(skippedEvents.length);
+		this.updateEnabledRecurringEventsButton();
+
+		return visibleEvents.map((event) => {
+			const classNames = ["regular-event"];
+			if (event.isVirtual) {
+				classNames.push(cls("virtual-event"));
+			}
+			const eventColor = this.getEventColor(event);
+
+			const start = event.start.replace(/Z$/, "");
+			const end = isTimedEvent(event) ? event.end.replace(/Z$/, "") : undefined;
+
+			const folder = event.meta?.folder;
+			const folderStr = typeof folder === "string" ? folder : "";
+
+			return {
+				id: event.id,
+				title: event.title,
+				start,
+				end,
+				allDay: event.allDay,
+				extendedProps: {
+					filePath: event.ref.filePath,
+					folder: folderStr,
+					originalTitle: event.title,
+					frontmatterDisplayData: event.meta ?? {},
+					isVirtual: event.isVirtual,
+				},
+				backgroundColor: eventColor,
+				borderColor: eventColor,
+				className: classNames.join(" "),
+			};
+		});
+	}
+
+	private performInitialLoad(calendarEvents: PrismaEventInput[]): void {
+		this.calendar!.batchRendering(() => {
+			for (const ev of calendarEvents) {
+				this.calendar!.addEvent(ev);
+			}
+		});
+		this.populateRenderedEventsCache(calendarEvents);
+		this.hasPerformedInitialLoad = true;
+		this.updateColorDots();
+	}
+
+	/**
+	 * Diff against currently rendered events and apply only the changes.
+	 * Returns true if structural changes (adds/removes) occurred.
+	 */
+	private performIncrementalUpdate(calendarEvents: PrismaEventInput[]): boolean {
+		const diff = diffEvents(this.renderedEvents, calendarEvents);
+
+		if (diff.added.length === 0 && diff.removed.length === 0 && diff.changed.length === 0) {
+			return false;
+		}
+
+		this.calendar!.batchRendering(() => {
+			for (const id of diff.removed) {
+				const fcEvent = this.calendar!.getEventById(id);
+				if (fcEvent) fcEvent.remove();
+			}
+
+			for (const ev of diff.changed) {
+				const fcEvent = this.calendar!.getEventById(ev.id as string);
+				if (fcEvent) fcEvent.remove();
+				this.calendar!.addEvent(ev);
+			}
+
+			for (const ev of diff.added) {
+				this.calendar!.addEvent(ev);
+			}
+		});
+
+		for (const id of diff.removed) {
+			this.renderedEvents.delete(id);
+		}
+		for (const ev of [...diff.added, ...diff.changed]) {
+			this.renderedEvents.set(ev.id as string, eventFingerprint(ev));
+		}
+
+		this.updateColorDots();
+		return diff.added.length > 0 || diff.removed.length > 0;
+	}
+
+	private populateRenderedEventsCache(events: PrismaEventInput[]): void {
+		this.renderedEvents.clear();
+		for (const ev of events) {
+			this.renderedEvents.set(ev.id as string, eventFingerprint(ev));
+		}
+	}
+
+	private clearRenderedEventsCache(): void {
+		this.renderedEvents.clear();
+		this.hasPerformedInitialLoad = false;
 	}
 
 	private renderEventContent(arg: EventContentArg): {
@@ -2417,10 +2452,16 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		});
 		this.register(() => settingsSubscription.unsubscribe());
 
-		// Subscribe to CalDAV settings changes (for integration event color)
-		const caldavSettingsSubscription = this.bundle.settingsStore.mainSettingsStore.settings$.subscribe(() => {
-			this.refreshEvents();
-		});
+		// Subscribe to CalDAV/ICS settings changes — only refresh when integration colors change
+		const caldavSettingsSubscription = this.bundle.settingsStore.mainSettingsStore.settings$.subscribe(
+			(fullSettings) => {
+				const integrationColorKey = fullSettings.caldav.integrationEventColor;
+				if (integrationColorKey !== this.previousIntegrationColorKey) {
+					this.previousIntegrationColorKey = integrationColorKey;
+					this.refreshEvents();
+				}
+			}
+		);
 		this.register(() => caldavSettingsSubscription.unsubscribe());
 
 		// Subscribe to indexing complete state
@@ -2598,6 +2639,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			cancelAnimationFrame(this.refreshRafId);
 			this.refreshRafId = null;
 		}
+
+		this.clearRenderedEventsCache();
 
 		this.calendar?.destroy();
 		this.calendar = null;

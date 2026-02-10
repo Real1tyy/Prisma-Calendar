@@ -18,6 +18,9 @@ describe("MinimizedModalManager", () => {
 
 		// Create a mock bundle with minimal required properties
 		mockBundle = {
+			plugin: {
+				app: {},
+			} as any,
 			indexer: {
 				events$: mockIndexerEventsSubject.asObservable(),
 			} as any,

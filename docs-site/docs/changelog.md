@@ -12,6 +12,8 @@ All notable changes to this project will be documented here.
 
 - **Category Modal Arrow Key Navigation**: Navigate through category items in the assignment modal using Arrow Up/Down keys. Press Enter to toggle the highlighted category, or press Enter with no highlight to submit the form. The highlight wraps around and auto-scrolls into view.
 
+- **Periodic End Time Sync for Minimized Stopwatch**: While a stopwatch is running in a minimized modal, the event's end time is now automatically persisted to the file every 5 minutes. This keeps the end time in sync with reality and protects against data loss if the app crashes.
+
 ### Fixed
 
 - **Keyboard Navigation Focus on Leaf Switch**: Arrow key interval navigation (left/right) now works immediately when switching back to the calendar tab. Previously, you had to click the calendar to restore focus before keyboard navigation would respond.

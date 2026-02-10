@@ -39,7 +39,7 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 - Starting work exactly when you click the button
 - You want both start and end times to be auto-filled based on the current time
 
-**▶ continue**: Uses the existing start time from the event and continues from there. Use this when:
+**▶ continue**: Uses the existing start time from the event and continues from there. If the end date is in the past, it is automatically updated to the current time. Use this when:
 - Resuming work on an existing event
 - The event already has a start time you want to preserve
 - You want the timer to show elapsed time since the original start
@@ -82,6 +82,8 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 - Automatically stops any currently running stopwatch first
 - Converts all-day events to timed events automatically
 - Shown by default in the context menu — can be hidden via Settings → Context menu items
+
+**Periodic End Time Sync**: While a stopwatch is running in a minimized modal, the event's end time is automatically updated in the file every 5 minutes. This keeps the end time in sync with reality and protects against data loss if Obsidian crashes or is force-closed.
 
 **Notes**: Only one modal at a time. State lost if Obsidian closed.
 

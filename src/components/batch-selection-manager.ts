@@ -47,7 +47,6 @@ export class BatchSelectionManager {
 
 			new Notice(successMessage(filePaths.length));
 			this.clearSelection();
-			this.calendar.refetchEvents();
 
 			if (postHook) postHook();
 		} catch (error) {
@@ -59,7 +58,6 @@ export class BatchSelectionManager {
 				// Partial success - show the detailed message
 				new Notice(errorMsg, 6000);
 				this.clearSelection();
-				this.calendar.refetchEvents();
 			} else {
 				// Complete failure
 				new Notice(errorMsg);
@@ -105,7 +103,6 @@ export class BatchSelectionManager {
 
 				new Notice(successMessage(filePaths.length));
 				this.clearSelection();
-				this.calendar.refetchEvents();
 			} catch (error) {
 				console.error(`Failed operation: ${errorMessage}`, error);
 
@@ -115,7 +112,6 @@ export class BatchSelectionManager {
 					// Partial success - show the detailed message
 					new Notice(errorMsg, 6000);
 					this.clearSelection();
-					this.calendar.refetchEvents();
 				} else {
 					// Complete failure
 					new Notice(errorMsg);

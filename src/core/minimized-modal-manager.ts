@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import { Notice } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 import { CategoryAssignModal } from "../components/modals/category-assign-modal";
 import { EventCreateModal, EventEditModal } from "../components/modals";
@@ -7,6 +7,7 @@ import type { StopwatchSnapshot } from "../components/stopwatch";
 import type { Frontmatter } from "../types";
 import type { EventPreset } from "../types/settings";
 import { getEventName } from "../utils/calendar-events";
+import { formatDateTimeForInput } from "../utils/format";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import { formatMsToHHMMSS, formatMsToMMSS } from "../utils/time-formatter";
 import type { CalendarBundle } from "./calendar-bundle";
@@ -54,10 +55,14 @@ export interface MinimizedModalState extends FormData {
  * Automatically updates the saved state when the underlying event file
  * is modified, but only if the stopwatch is actively running.
  */
+const END_TIME_SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
 class MinimizedModalManagerClass {
 	private savedState: MinimizedModalState | null = null;
 	private intervalId: number | null = null;
 	private indexerSubscription: Subscription | null = null;
+	private app: App | null = null;
+	private bundle: CalendarBundle | null = null;
 
 	/**
 	 * Save modal state and start internal time tracking if stopwatch was active.
@@ -68,9 +73,10 @@ class MinimizedModalManagerClass {
 		this.clear();
 
 		this.savedState = state;
+		this.app = bundle.plugin.app;
+		this.bundle = bundle;
 
-		// If stopwatch was running or paused, we track time based on timestamps
-		// No interval needed since we calculate elapsed time on demand
+		// If stopwatch was running or paused, periodically persist end time to file
 		if (state.stopwatch.state === "running" || state.stopwatch.state === "paused") {
 			this.startInternalTracking();
 		}
@@ -103,6 +109,8 @@ class MinimizedModalManagerClass {
 		this.stopInternalTracking();
 		this.unsubscribeFromFileChanges();
 		this.savedState = null;
+		this.app = null;
+		this.bundle = null;
 	}
 
 	/**
@@ -139,13 +147,31 @@ class MinimizedModalManagerClass {
 	}
 
 	/**
-	 * Start internal time tracking interval.
-	 * This keeps time running even though modal is closed.
+	 * Start internal tracking interval that periodically persists the
+	 * current end time to the event file while the stopwatch is running.
 	 */
 	private startInternalTracking(): void {
-		// We don't actually need an interval since we track based on timestamps
-		// But we could use this to periodically update UI indicators if needed
 		this.stopInternalTracking();
+		this.intervalId = window.setInterval(() => {
+			void this.persistEndTime();
+		}, END_TIME_SYNC_INTERVAL_MS);
+	}
+
+	/**
+	 * Write the current time as the event's end time to the file frontmatter.
+	 */
+	private async persistEndTime(): Promise<void> {
+		if (!this.savedState?.filePath || !this.app || !this.bundle) return;
+		if (this.savedState.stopwatch.state !== "running") return;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const file = this.app.vault.getAbstractFileByPath(this.savedState.filePath);
+		if (!(file instanceof TFile)) return;
+
+		const now = formatDateTimeForInput(new Date());
+		await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+			fm[settings.endProp] = now;
+		});
 	}
 
 	private stopInternalTracking(): void {
@@ -301,6 +327,7 @@ class MinimizedModalManagerClass {
 					// the indexer will detect the file change and automatically update the minimized modal state
 					new Notice("Categories updated for minimized event");
 				} catch (error) {
+					// eslint-disable-next-line no-console
 					console.error("Failed to assign categories:", error);
 					new Notice("Failed to assign categories");
 				}
