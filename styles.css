@@ -6375,7 +6375,8 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	transition: background-color 0.15s ease;
 }
 
-.prisma-category-checkbox-item:hover {
+.prisma-category-checkbox-item:hover,
+.prisma-category-checkbox-item.prisma-highlighted {
 	background-color: var(--background-modifier-hover);
 }
 

@@ -15,6 +15,7 @@ export class CategoryAssignModal extends Modal {
 	private createNewContainer: HTMLElement;
 	private assignButton: HTMLButtonElement;
 	private categoryStates: CategoryCheckboxState[] = [];
+	private highlightedIndex = -1;
 	private onSubmit: (selectedCategories: string[]) => void;
 	private allCategories: CategoryInfo[];
 	private defaultColor: string;
@@ -66,21 +67,38 @@ export class CategoryAssignModal extends Modal {
 		addCls(this.searchInput, "category-search-input");
 
 		this.searchInput.addEventListener("input", () => {
+			this.clearHighlight();
 			this.filterCategories();
 			this.updateCreateNewButton();
 		});
 	}
 
 	private setupKeyboardHandlers(): void {
+		this.scope.register([], "ArrowDown", (e) => {
+			e.preventDefault();
+			this.moveHighlight(1);
+		});
+
+		this.scope.register([], "ArrowUp", (e) => {
+			e.preventDefault();
+			this.moveHighlight(-1);
+		});
+
 		this.scope.register([], "Enter", (e) => {
 			e.preventDefault();
+
+			if (this.highlightedIndex >= 0) {
+				const visibleItems = this.getVisibleItems();
+				if (this.highlightedIndex < visibleItems.length) {
+					visibleItems[this.highlightedIndex].click();
+				}
+				return;
+			}
 
 			const searchValue = this.searchInput.value.trim();
 
 			if (searchValue) {
-				const firstVisibleItem = Array.from(this.categoryListContainer.children).find(
-					(child) => !child.classList.contains("prisma-hidden")
-				) as HTMLElement;
+				const firstVisibleItem = this.getVisibleItems()[0];
 
 				if (firstVisibleItem) {
 					firstVisibleItem.click();
@@ -92,6 +110,40 @@ export class CategoryAssignModal extends Modal {
 				this.submitCategories();
 			}
 		});
+	}
+
+	private getVisibleItems(): HTMLElement[] {
+		return this.categoryStates.filter((s) => !s.element.classList.contains("prisma-hidden")).map((s) => s.element);
+	}
+
+	private moveHighlight(direction: number): void {
+		const visibleItems = this.getVisibleItems();
+		if (visibleItems.length === 0) return;
+
+		if (this.highlightedIndex >= 0 && this.highlightedIndex < visibleItems.length) {
+			removeCls(visibleItems[this.highlightedIndex], "highlighted");
+		}
+
+		if (this.highlightedIndex === -1) {
+			this.highlightedIndex = direction === 1 ? 0 : visibleItems.length - 1;
+		} else {
+			this.highlightedIndex += direction;
+			if (this.highlightedIndex < 0) this.highlightedIndex = visibleItems.length - 1;
+			if (this.highlightedIndex >= visibleItems.length) this.highlightedIndex = 0;
+		}
+
+		addCls(visibleItems[this.highlightedIndex], "highlighted");
+		visibleItems[this.highlightedIndex].scrollIntoView({ block: "nearest" });
+	}
+
+	private clearHighlight(): void {
+		if (this.highlightedIndex >= 0) {
+			const visibleItems = this.getVisibleItems();
+			if (this.highlightedIndex < visibleItems.length) {
+				removeCls(visibleItems[this.highlightedIndex], "highlighted");
+			}
+		}
+		this.highlightedIndex = -1;
 	}
 
 	private createCategoryList(container: HTMLElement): void {

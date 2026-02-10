@@ -10,6 +10,8 @@ All notable changes to this project will be documented here.
 
 - **ICS URL Subscriptions**: Subscribe to external calendars (Outlook, Google, etc.) via public ICS URLs for automatic, periodic syncing. Events are synced one-way into your calendar — new events are created, changed events are updated, and removed events are deleted locally. Configure sync interval, timezone, and auto-sync in Settings → Integrations → ICS URL Subscriptions. Use the "Sync ICS subscriptions" command for manual sync.
 
+- **Category Modal Arrow Key Navigation**: Navigate through category items in the assignment modal using Arrow Up/Down keys. Press Enter to toggle the highlighted category, or press Enter with no highlight to submit the form. The highlight wraps around and auto-scrolls into view.
+
 ---
 
 ## 1.32.0 - 2/8/2026

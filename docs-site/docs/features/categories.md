@@ -116,7 +116,7 @@ All category assignment interfaces share the same powerful modal:
 - **Override behavior** - Assigned categories completely replace existing categories (doesn't merge)
 - **Remove all categories** - Uncheck all categories and click "Remove Categories" to clear categories
 - **Full undo support** - Restores previous category state (batch operations only)
-- **Keyboard navigation** - Press Enter to select the first filtered category when searching, or press Enter again to submit the form
+- **Keyboard navigation** - Navigate categories with arrow keys and Enter to select, or press Enter to submit the form
 
 ![Assign Categories Modal](/img/assign_categories_modal.png)
 
@@ -124,13 +124,18 @@ All category assignment interfaces share the same powerful modal:
 
 The category modal supports full keyboard navigation for faster workflows:
 
-- **Enter (with search text)**: Selects the first filtered category and clears the search
-- **Enter (empty search)**: Submits the form with currently selected categories
+- **Arrow Down / Arrow Up**: Move the highlight through visible category items (wraps around)
+- **Enter (with highlight)**: Toggles the highlighted category's checkbox (select/deselect)
+- **Enter (with search text, no highlight)**: Selects the first filtered category and clears the search
+- **Enter (empty search, no highlight)**: Submits the form with currently selected categories
 - **Escape**: Closes the modal
 
+The highlight resets when the search input changes, and the highlighted item automatically scrolls into view.
+
 **Example workflow:**
-1. Type "Uni" in the search → Press Enter → "University" category is selected and search clears
-2. Press Enter again → Form submits with "University" selected
+1. Press Arrow Down twice to highlight the third category → Press Enter → That category is toggled
+2. Type "Uni" in the search → Press Arrow Down → Press Enter → "University" category is toggled
+3. Press Enter again (no highlight, empty search) → Form submits
 
 ## Managing Categories
 
