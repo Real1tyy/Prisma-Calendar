@@ -781,11 +781,10 @@ export class EventContextMenu {
 		const filePath = event.extendedProps?.filePath ?? null;
 
 		const nameKey = getEventName(settings.titleProp, frontmatter ?? {}, filePath)?.toLowerCase() ?? null;
-		const rawPropValue = frontmatter?.[settings.seriesProp];
-		const propValue = typeof rawPropValue === "string" && rawPropValue.trim() ? rawPropValue.trim() : null;
+		const propValues = parseIntoList(frontmatter?.[settings.seriesProp]);
 		const rruleId = this.isRecurringEvent(event) ? this.getRRuleId(event) : null;
 
-		new EventSeriesModal(this.app, this.bundle, nameKey, propValue, rruleId).open();
+		new EventSeriesModal(this.app, this.bundle, nameKey, propValues.length > 0 ? propValues : null, rruleId).open();
 	}
 
 	async fillEndTimeFromNext(event: CalendarEventInfo): Promise<void> {

@@ -4197,6 +4197,15 @@
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+.prisma-recurring-event-row.prisma-recurring-event-colorized {
+	background-color: color-mix(in srgb, var(--event-color) 12%, var(--background-primary));
+	border-left: 3px solid var(--event-color);
+}
+
+.prisma-recurring-event-row.prisma-recurring-event-colorized:hover {
+	background-color: color-mix(in srgb, var(--event-color) 22%, var(--background-modifier-hover));
+}
+
 .prisma-recurring-event-date {
 	font-weight: 500;
 	color: var(--text-accent);
@@ -4287,6 +4296,23 @@
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border-color: var(--interactive-accent);
+}
+
+.prisma-event-series-back-btn {
+	padding: 0.3rem 0.7rem;
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: 0.85em;
+	margin-left: auto;
+	transition: background-color 0.15s, color 0.15s;
+}
+
+.prisma-event-series-back-btn:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
 }
 
 /* Move By Modal - Compact Button-Based UI */

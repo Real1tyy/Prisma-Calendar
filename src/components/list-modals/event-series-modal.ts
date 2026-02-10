@@ -1,16 +1,12 @@
-import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins";
+import { addCls, ColorEvaluator, cls, removeCls } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import { type App, Modal, Setting } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
-import {
-	RECURRENCE_TYPE_OPTIONS,
-	type RecurringEventInstance,
-	type RecurringEventSeries,
-	type RecurrenceType,
-} from "../../types/recurring-event";
+import type { SingleCalendarConfig } from "../../types/settings";
+import { RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
 import { removeZettelId } from "../../utils/calendar-events";
-import { formatEventTimeInfo } from "../../utils/time-formatter";
+import { normalizeFrontmatterForColorEvaluation } from "../../utils/expression-utils";
 
 type SourceTab = "name" | "prop" | "recurring";
 
@@ -24,19 +20,36 @@ export class EventSeriesModal extends Modal {
 	private searchQuery = "";
 	private searchInput: HTMLInputElement | null = null;
 	private contentArea: HTMLElement | null = null;
+	private restoreFocusToSearch = false;
+	private searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+	private tabsContainer: HTMLElement | null = null;
+	private backBtn: HTMLElement | null = null;
 
 	// Recurring tab state
 	private hidePastEvents = true;
 	private hideSkippedEvents = true;
 
+	// Name/Prop tab state
+	private hidePastEventsNameProp = false;
+	private hideSkippedEventsNameProp = false;
+
+	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
+
+	private selectedPropValue: string | null = null;
+
 	constructor(
 		app: App,
 		private bundle: CalendarBundle,
 		private nameKey: string | null,
-		private propValue: string | null,
+		private propValues: string[] | null,
 		private rruleId: string | null
 	) {
 		super(app);
+		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
+		// Auto-select when there's exactly one series value
+		if (this.propValues && this.propValues.length === 1) {
+			this.selectedPropValue = this.propValues[0];
+		}
 	}
 
 	onOpen(): void {
@@ -50,7 +63,8 @@ export class EventSeriesModal extends Modal {
 
 		// Render tab buttons only when 2+ sources
 		if (tabs.length >= 2) {
-			const tabsContainer = contentEl.createDiv(cls("event-series-tabs"));
+			this.tabsContainer = contentEl.createDiv(cls("event-series-tabs"));
+			const tabsContainer = this.tabsContainer;
 			for (const tab of tabs) {
 				const btn = tabsContainer.createEl("button", {
 					text: tab.label,
@@ -79,9 +93,9 @@ export class EventSeriesModal extends Modal {
 
 	private getAvailableTabs(): TabConfig[] {
 		const tabs: TabConfig[] = [];
-		if (this.nameKey != null) tabs.push({ id: "name", label: "By Name" });
-		if (this.propValue != null) tabs.push({ id: "prop", label: "By Series" });
 		if (this.rruleId != null) tabs.push({ id: "recurring", label: "Recurring" });
+		if (this.propValues != null && this.propValues.length > 0) tabs.push({ id: "prop", label: "By Series" });
+		if (this.nameKey != null) tabs.push({ id: "name", label: "By Name" });
 		return tabs;
 	}
 
@@ -98,6 +112,7 @@ export class EventSeriesModal extends Modal {
 				if (this.searchInput.value) {
 					this.searchInput.value = "";
 					this.searchQuery = "";
+					this.restoreFocusToSearch = true;
 					this.renderContent();
 					return false;
 				}
@@ -109,6 +124,33 @@ export class EventSeriesModal extends Modal {
 		});
 	}
 
+	private updateBackButton(): void {
+		// Remove existing back button
+		if (this.backBtn) {
+			this.backBtn.remove();
+			this.backBtn = null;
+		}
+
+		// Show back button in tabs row when viewing a specific series from multiple
+		if (
+			this.tabsContainer &&
+			this.activeTab === "prop" &&
+			this.propValues &&
+			this.propValues.length > 1 &&
+			this.selectedPropValue
+		) {
+			this.backBtn = this.tabsContainer.createEl("button", {
+				text: "\u2190 All series",
+				cls: cls("event-series-back-btn"),
+			});
+			this.backBtn.addEventListener("click", () => {
+				this.selectedPropValue = null;
+				this.searchQuery = "";
+				this.renderContent();
+			});
+		}
+	}
+
 	private renderContent(): void {
 		if (!this.contentArea) return;
 		this.contentArea.empty();
@@ -116,12 +158,16 @@ export class EventSeriesModal extends Modal {
 		// Remove previous categorized styling
 		removeCls(this.contentEl, "recurring-events-list-modal-categorized");
 
+		this.updateBackButton();
+
 		if (this.activeTab === "recurring") {
 			this.renderRecurringTab();
 		} else if (this.activeTab === "name") {
-			this.renderEventListTab(this.bundle.seriesManager.getEventsInNameSeries(this.nameKey!));
+			const nameEvents = this.bundle.seriesManager.getEventsInNameSeries(this.nameKey!);
+			const displayName = nameEvents.length > 0 ? removeZettelId(nameEvents[0].title) : this.nameKey!;
+			this.renderEventListTab(nameEvents, displayName);
 		} else if (this.activeTab === "prop") {
-			this.renderEventListTab(this.bundle.seriesManager.getEventsInPropSeries(this.propValue!));
+			this.renderPropTab();
 		}
 	}
 
@@ -136,43 +182,133 @@ export class EventSeriesModal extends Modal {
 		});
 		this.searchInput.value = this.searchQuery;
 
+		// Track input value and debounce search
 		this.searchInput.addEventListener("input", (e) => {
-			const target = e.target as HTMLInputElement;
-			this.searchQuery = target.value;
-			this.renderContent();
+			this.searchQuery = (e.target as HTMLInputElement).value;
+			if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
+			this.searchDebounceTimer = setTimeout(() => {
+				this.restoreFocusToSearch = true;
+				this.renderContent();
+			}, 350);
 		});
+
+		// Trigger search immediately on Enter
+		this.searchInput.addEventListener("keydown", (e) => {
+			if (e.key === "Enter") {
+				e.preventDefault();
+				if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
+				this.restoreFocusToSearch = true;
+				this.renderContent();
+			}
+		});
+
+		// Trigger search on blur (clicking away)
+		this.searchInput.addEventListener("blur", () => {
+			// Only re-render if the displayed results don't match current query
+			const displayedQuery = this.searchInput?.dataset.appliedQuery ?? "";
+			if (displayedQuery !== this.searchQuery) {
+				this.renderContent();
+			}
+		});
+
+		// Restore focus after re-render if needed
+		if (this.restoreFocusToSearch) {
+			this.restoreFocusToSearch = false;
+			this.searchInput.focus();
+			this.searchInput.setSelectionRange(this.searchQuery.length, this.searchQuery.length);
+		}
+
+		// Track which query the current render reflects
+		this.searchInput.dataset.appliedQuery = this.searchQuery;
 	}
 
 	// --- Name / Prop tab ---
 
-	private renderEventListTab(events: CalendarEvent[]): void {
+	private getEventColor(event: CalendarEvent): string {
+		const frontmatter = event.meta ?? {};
+		const settings = this.bundle.settingsStore.currentSettings;
+		const normalized = normalizeFrontmatterForColorEvaluation(frontmatter, settings.colorRules);
+		return this.colorEvaluator.evaluateColor(normalized);
+	}
+
+	private renderEventListTab(events: CalendarEvent[], title?: string): void {
 		if (!this.contentArea) return;
 
-		// Search input
+		// Header (same style as Recurring tab)
+		if (title) {
+			const header = this.contentArea.createDiv(cls("recurring-events-list-header"));
+			const titleEl = header.createEl("h2", { text: title });
+			addCls(titleEl, "recurring-events-source-title");
+		}
+
+		const now = DateTime.now().toUTC();
+
+		// 1. Statistics (computed from full unfiltered list)
+		const pastEvents = events.filter((e) => DateTime.fromISO(e.start, { zone: "utc" }) < now.startOf("day"));
+		const totalPast = pastEvents.length;
+		const skippedPast = pastEvents.filter((e) => e.skipped).length;
+		const completedPast = totalPast - skippedPast;
+		const completedPct = totalPast > 0 ? ((completedPast / totalPast) * 100).toFixed(1) : "0.0";
+
+		const statsContainer = this.contentArea.createDiv(cls("recurring-events-stats"));
+		statsContainer.createEl("p", {
+			text: `Past events: ${totalPast}  \u2022  Skipped: ${skippedPast}  \u2022  Completed: ${completedPct}%`,
+			cls: cls("recurring-events-stats-text"),
+		});
+
+		// 2. Filter toggles
+		const filtersContainer = this.contentArea.createDiv(cls("recurring-events-filters"));
+
+		const hidePastSetting = new Setting(filtersContainer).setName("Hide past events").addToggle((toggle) =>
+			toggle.setValue(this.hidePastEventsNameProp).onChange((value) => {
+				this.hidePastEventsNameProp = value;
+				this.renderContent();
+			})
+		);
+		addCls(hidePastSetting.settingEl, "recurring-events-filter-toggle");
+
+		const hideSkippedSetting = new Setting(filtersContainer).setName("Hide skipped events").addToggle((toggle) =>
+			toggle.setValue(this.hideSkippedEventsNameProp).onChange((value) => {
+				this.hideSkippedEventsNameProp = value;
+				this.renderContent();
+			})
+		);
+		addCls(hideSkippedSetting.settingEl, "recurring-events-filter-toggle");
+
+		// 3. Search input
 		this.createSearchInput(this.contentArea);
 
-		// Apply search filter
-		let filtered = events;
+		// 4. Apply filters
+		let filtered = [...events];
+
+		if (this.hidePastEventsNameProp) {
+			filtered = filtered.filter((e) => DateTime.fromISO(e.start, { zone: "utc" }) >= now.startOf("day"));
+		}
+
+		if (this.hideSkippedEventsNameProp) {
+			filtered = filtered.filter((e) => !e.skipped);
+		}
+
 		if (this.searchQuery.trim()) {
 			const q = this.searchQuery.toLowerCase().trim();
 			filtered = filtered.filter((e) => removeZettelId(e.title).toLowerCase().includes(q));
 		}
 
-		// Sort by start date, newest first
-		filtered = [...filtered].sort((a, b) => new Date(b.start).getTime() - new Date(a.start).getTime());
+		// Sort: ascending when hiding past (future first), descending otherwise (newest first)
+		if (this.hidePastEventsNameProp) {
+			filtered.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+		} else {
+			filtered.sort((a, b) => new Date(b.start).getTime() - new Date(a.start).getTime());
+		}
 
-		// List container
+		// 5. List container
 		const listContainer = this.contentArea.createDiv(cls("recurring-events-list-container"));
 
 		if (filtered.length === 0) {
-			listContainer.createEl("p", {
-				text: this.searchQuery.trim() ? "No events match your search" : "No events found",
-				cls: cls("recurring-events-list-empty"),
-			});
+			const message = "No events found";
+			listContainer.createEl("p", { text: message, cls: cls("recurring-events-list-empty") });
 			return;
 		}
-
-		const now = DateTime.now().toUTC();
 
 		for (const event of filtered) {
 			const row = listContainer.createDiv(cls("recurring-event-row"));
@@ -182,8 +318,15 @@ export class EventSeriesModal extends Modal {
 				addCls(row, "recurring-event-past");
 			}
 
+			// Apply resolved color from color rules
+			const color = this.getEventColor(event);
+			if (color) {
+				row.style.setProperty("--event-color", color);
+				addCls(row, "recurring-event-colorized");
+			}
+
 			const dateEl = row.createDiv(cls("recurring-event-date"));
-			dateEl.textContent = formatEventTimeInfo(event);
+			dateEl.textContent = eventDate.toFormat("yyyy-MM-dd (EEE)");
 
 			const titleEl = row.createDiv(cls("recurring-event-title"));
 			titleEl.textContent = removeZettelId(event.title);
@@ -195,6 +338,50 @@ export class EventSeriesModal extends Modal {
 			row.onclick = () => {
 				void this.app.workspace.openLinkText(event.ref.filePath, "", false);
 				this.close();
+			};
+		}
+	}
+
+	// --- Prop tab ---
+
+	private renderPropTab(): void {
+		if (!this.contentArea || !this.propValues || this.propValues.length === 0) return;
+
+		// If multiple series and none selected yet, show chooser
+		if (this.propValues.length > 1 && !this.selectedPropValue) {
+			this.renderSeriesChooser();
+			return;
+		}
+
+		const selectedValue = this.selectedPropValue!;
+
+		this.renderEventListTab(this.bundle.seriesManager.getEventsInPropSeries(selectedValue), selectedValue);
+	}
+
+	private renderSeriesChooser(): void {
+		if (!this.contentArea || !this.propValues) return;
+
+		const header = this.contentArea.createDiv(cls("recurring-events-list-header"));
+		header.createEl("h2", {
+			text: "Choose a series",
+			cls: cls("recurring-events-source-title"),
+		});
+
+		const listContainer = this.contentArea.createDiv(cls("recurring-events-list-container"));
+
+		for (const value of this.propValues) {
+			const events = this.bundle.seriesManager.getEventsInPropSeries(value);
+			const row = listContainer.createDiv(cls("recurring-event-row"));
+
+			const titleEl = row.createDiv(cls("recurring-event-title"));
+			titleEl.textContent = value;
+
+			const countEl = row.createDiv(cls("recurring-event-date"));
+			countEl.textContent = `${events.length} event${events.length !== 1 ? "s" : ""}`;
+
+			row.onclick = () => {
+				this.selectedPropValue = value;
+				this.renderContent();
 			};
 		}
 	}
@@ -326,16 +513,7 @@ export class EventSeriesModal extends Modal {
 		const listContainer = this.contentArea.createDiv(cls("recurring-events-list-container"));
 
 		if (filteredInstances.length === 0) {
-			let message = "No instances found";
-			if (this.searchQuery.trim()) {
-				message = "No events match your search";
-			} else if (this.hidePastEvents && this.hideSkippedEvents) {
-				message = "No future non-skipped instances found";
-			} else if (this.hidePastEvents) {
-				message = "No future instances found";
-			} else if (this.hideSkippedEvents) {
-				message = "No non-skipped instances found";
-			}
+			const message = "No instances found";
 
 			listContainer.createEl("p", {
 				text: message,
@@ -370,6 +548,8 @@ export class EventSeriesModal extends Modal {
 	}
 
 	onClose(): void {
+		if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
+		this.colorEvaluator.destroy();
 		this.contentEl.empty();
 	}
 }

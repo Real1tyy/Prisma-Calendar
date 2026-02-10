@@ -1,4 +1,4 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins";
+import { addCls, cls, parseIntoList } from "@real1ty-obsidian-plugins";
 import { type App, Notice } from "obsidian";
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -347,10 +347,15 @@ export class RecurringEventsModal extends BaseEventListModal {
 
 		const settings = this.bundle.settingsStore.currentSettings;
 		const nameKey = getEventName(settings.titleProp, event.frontmatter, event.sourceFilePath)?.toLowerCase() ?? null;
-		const rawPropValue = event.frontmatter[settings.seriesProp];
-		const propValue = typeof rawPropValue === "string" && rawPropValue.trim() ? rawPropValue.trim() : null;
+		const propValues = parseIntoList(event.frontmatter[settings.seriesProp]);
 
-		new EventSeriesModal(this.app, this.bundle, nameKey, propValue, event.rRuleId).open();
+		new EventSeriesModal(
+			this.app,
+			this.bundle,
+			nameKey,
+			propValues.length > 0 ? propValues : null,
+			event.rRuleId
+		).open();
 	}
 
 	protected getHotkeyCommandId(): string | undefined {
