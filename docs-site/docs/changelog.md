@@ -4,13 +4,23 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.33.0 - 2/8/2026
+## 1.33.0 - 2/10/2026
 
 ### Added
 
-- **ICS URL Subscriptions**: Subscribe to external calendars (Outlook, Google, etc.) via public ICS URLs for automatic, periodic syncing. Events are synced one-way into your calendar — new events are created, changed events are updated, and removed events are deleted locally. Configure sync interval, timezone, and auto-sync in Settings → Integrations → ICS URL Subscriptions. Use the "Sync ICS subscriptions" command for manual sync.
+- **Event Series**: A new system for tracking and managing groups of related events. Events are automatically grouped in three ways — by recurring event rules, by a frontmatter series property, and by shared name (with ZettelID stripped). Right-click any event and select **"View series"** to open the Event Series Modal, which shows all related events across up to three tabs: **Recurring**, **By Series**, and **By Name**. Each tab provides completion statistics (past events, skipped count, completion percentage), filter toggles to hide past or skipped events, debounced search, smart sorting (ascending for future events, descending when showing all), and color-coded rows matching your calendar color rules. See the new [Event Series](./features/event-series) documentation for full details.
+
+- **Series Property**: New frontmatter property (default: `Series`) for explicitly grouping events into named series. Configure the property name in **Settings → Properties → Series property**. Supports single values (`Series: ProjectX`) and YAML arrays (`Series: [ProjectX, Q1-Goals]`). Events sharing the same series value appear together in the "By Series" tab of the Event Series Modal.
+
+- **Assign Series**: New context menu action (right-click → **"Assign series"**) to tag events with series values. The assignment modal mirrors the category assignment UI — search existing series, create new ones on the fly, and multi-select with checkboxes. Each series shows its event count. Assignments are undoable via Ctrl+Z.
+
+- **Multi-Series Support**: Events belonging to multiple series (e.g., `Series: [ProjectX, Q1-Goals]`) are fully supported. The "By Series" tab shows a series chooser listing all series the event belongs to with event counts. Select one to drill in, and use the **"All series"** button in the tab bar to navigate back.
+
+- **Series Manager**: A new core component that tracks event series in real-time. It maintains two grouping strategies — name-based (automatic, groups events by cleaned/lowercased title) and property-based (explicit, groups events by the `Series` frontmatter value). Updates reactively as files are indexed, changed, or deleted.
 
 - **Category Modal Arrow Key Navigation**: Navigate through category items in the assignment modal using Arrow Up/Down keys. Press Enter to toggle the highlighted category, or press Enter with no highlight to submit the form. The highlight wraps around and auto-scrolls into view.
+
+- **ICS URL Subscriptions**: Subscribe to external calendars (Outlook, Google, etc.) via public ICS URLs for automatic, periodic syncing. Events are synced one-way into your calendar — new events are created, changed events are updated, and removed events are deleted locally. Configure sync interval, timezone, and auto-sync in Settings → Integrations → ICS URL Subscriptions. Use the "Sync ICS subscriptions" command for manual sync.
 
 - **Periodic End Time Sync for Minimized Stopwatch**: While a stopwatch is running in a minimized modal, the event's end time is now automatically persisted to the file every 5 minutes. This keeps the end time in sync with reality and protects against data loss if the app crashes.
 

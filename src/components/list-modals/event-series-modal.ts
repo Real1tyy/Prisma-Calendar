@@ -15,6 +15,24 @@ interface TabConfig {
 	label: string;
 }
 
+interface EventListItem {
+	date: DateTime;
+	title: string;
+	filePath: string;
+	skipped: boolean;
+	color?: string;
+}
+
+interface EventListOptions {
+	title?: string;
+	onTitleClick?: () => void;
+	hidePast: boolean;
+	hideSkipped: boolean;
+	onHidePastChange: (value: boolean) => void;
+	onHideSkippedChange: (value: boolean) => void;
+	beforeStats?: (container: HTMLElement) => void;
+}
+
 export class EventSeriesModal extends Modal {
 	private activeTab: SourceTab | null = null;
 	private searchQuery = "";
@@ -222,7 +240,7 @@ export class EventSeriesModal extends Modal {
 		this.searchInput.dataset.appliedQuery = this.searchQuery;
 	}
 
-	// --- Name / Prop tab ---
+	// --- Shared rendering ---
 
 	private getEventColor(event: CalendarEvent): string {
 		const frontmatter = event.meta ?? {};
@@ -231,22 +249,28 @@ export class EventSeriesModal extends Modal {
 		return this.colorEvaluator.evaluateColor(normalized);
 	}
 
-	private renderEventListTab(events: CalendarEvent[], title?: string): void {
+	private renderEventList(items: EventListItem[], options: EventListOptions): void {
 		if (!this.contentArea) return;
 
-		// Header (same style as Recurring tab)
-		if (title) {
+		// Header
+		if (options.title) {
 			const header = this.contentArea.createDiv(cls("recurring-events-list-header"));
-			const titleEl = header.createEl("h2", { text: title });
+			const titleEl = header.createEl("h2", { text: options.title });
 			addCls(titleEl, "recurring-events-source-title");
+			if (options.onTitleClick) {
+				titleEl.onclick = options.onTitleClick;
+			}
 		}
+
+		// Extra content before stats (e.g., recurrence info)
+		options.beforeStats?.(this.contentArea);
 
 		const now = DateTime.now().toUTC();
 
-		// 1. Statistics (computed from full unfiltered list)
-		const pastEvents = events.filter((e) => DateTime.fromISO(e.start, { zone: "utc" }) < now.startOf("day"));
-		const totalPast = pastEvents.length;
-		const skippedPast = pastEvents.filter((e) => e.skipped).length;
+		// Statistics (computed from full unfiltered list)
+		const pastItems = items.filter((item) => item.date < now.startOf("day"));
+		const totalPast = pastItems.length;
+		const skippedPast = pastItems.filter((item) => item.skipped).length;
 		const completedPast = totalPast - skippedPast;
 		const completedPct = totalPast > 0 ? ((completedPast / totalPast) * 100).toFixed(1) : "0.0";
 
@@ -256,90 +280,112 @@ export class EventSeriesModal extends Modal {
 			cls: cls("recurring-events-stats-text"),
 		});
 
-		// 2. Filter toggles
+		// Filter toggles
 		const filtersContainer = this.contentArea.createDiv(cls("recurring-events-filters"));
 
 		const hidePastSetting = new Setting(filtersContainer).setName("Hide past events").addToggle((toggle) =>
-			toggle.setValue(this.hidePastEventsNameProp).onChange((value) => {
-				this.hidePastEventsNameProp = value;
+			toggle.setValue(options.hidePast).onChange((value) => {
+				options.onHidePastChange(value);
 				this.renderContent();
 			})
 		);
 		addCls(hidePastSetting.settingEl, "recurring-events-filter-toggle");
 
 		const hideSkippedSetting = new Setting(filtersContainer).setName("Hide skipped events").addToggle((toggle) =>
-			toggle.setValue(this.hideSkippedEventsNameProp).onChange((value) => {
-				this.hideSkippedEventsNameProp = value;
+			toggle.setValue(options.hideSkipped).onChange((value) => {
+				options.onHideSkippedChange(value);
 				this.renderContent();
 			})
 		);
 		addCls(hideSkippedSetting.settingEl, "recurring-events-filter-toggle");
 
-		// 3. Search input
+		// Search input
 		this.createSearchInput(this.contentArea);
 
-		// 4. Apply filters
-		let filtered = [...events];
+		// Apply filters
+		let filtered = [...items];
 
-		if (this.hidePastEventsNameProp) {
-			filtered = filtered.filter((e) => DateTime.fromISO(e.start, { zone: "utc" }) >= now.startOf("day"));
+		if (options.hidePast) {
+			filtered = filtered.filter((item) => item.date >= now.startOf("day"));
 		}
 
-		if (this.hideSkippedEventsNameProp) {
-			filtered = filtered.filter((e) => !e.skipped);
+		if (options.hideSkipped) {
+			filtered = filtered.filter((item) => !item.skipped);
 		}
 
 		if (this.searchQuery.trim()) {
 			const q = this.searchQuery.toLowerCase().trim();
-			filtered = filtered.filter((e) => removeZettelId(e.title).toLowerCase().includes(q));
+			filtered = filtered.filter((item) => item.title.toLowerCase().includes(q));
 		}
 
-		// Sort: ascending when hiding past (future first), descending otherwise (newest first)
-		if (this.hidePastEventsNameProp) {
-			filtered.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+		// Sort: ascending when hiding past (future first), descending otherwise
+		if (options.hidePast) {
+			filtered.sort((a, b) => a.date.toMillis() - b.date.toMillis());
 		} else {
-			filtered.sort((a, b) => new Date(b.start).getTime() - new Date(a.start).getTime());
+			filtered.sort((a, b) => b.date.toMillis() - a.date.toMillis());
 		}
 
-		// 5. List container
+		// List container
 		const listContainer = this.contentArea.createDiv(cls("recurring-events-list-container"));
 
 		if (filtered.length === 0) {
-			const message = "No events found";
-			listContainer.createEl("p", { text: message, cls: cls("recurring-events-list-empty") });
+			listContainer.createEl("p", { text: "No events found", cls: cls("recurring-events-list-empty") });
 			return;
 		}
 
-		for (const event of filtered) {
+		for (const item of filtered) {
 			const row = listContainer.createDiv(cls("recurring-event-row"));
 
-			const eventDate = DateTime.fromISO(event.start, { zone: "utc" });
-			if (eventDate < now.startOf("day")) {
+			if (item.date < now.startOf("day")) {
 				addCls(row, "recurring-event-past");
 			}
 
-			// Apply resolved color from color rules
-			const color = this.getEventColor(event);
-			if (color) {
-				row.style.setProperty("--event-color", color);
+			if (item.color) {
+				row.style.setProperty("--event-color", item.color);
 				addCls(row, "recurring-event-colorized");
 			}
 
 			const dateEl = row.createDiv(cls("recurring-event-date"));
-			dateEl.textContent = eventDate.toFormat("yyyy-MM-dd (EEE)");
+			dateEl.textContent = item.date.toFormat("yyyy-MM-dd (EEE)");
 
 			const titleEl = row.createDiv(cls("recurring-event-title"));
-			titleEl.textContent = removeZettelId(event.title);
+			titleEl.textContent = item.title;
 
-			if (event.skipped) {
+			if (item.skipped) {
 				addCls(titleEl, "recurring-event-skipped");
 			}
 
 			row.onclick = () => {
-				void this.app.workspace.openLinkText(event.ref.filePath, "", false);
+				void this.app.workspace.openLinkText(item.filePath, "", false);
 				this.close();
 			};
 		}
+	}
+
+	// --- Name / Prop tab ---
+
+	private renderEventListTab(events: CalendarEvent[], title?: string): void {
+		if (!this.contentArea) return;
+
+		const items: EventListItem[] = events.map((event) => ({
+			date: DateTime.fromISO(event.start, { zone: "utc" }),
+			title: removeZettelId(event.title),
+			filePath: event.ref.filePath,
+			skipped: !!event.skipped,
+			color: this.getEventColor(event),
+		}));
+
+		this.renderEventList(items, {
+			title,
+			hidePast: this.hidePastEventsNameProp,
+			hideSkipped: this.hideSkippedEventsNameProp,
+			onHidePastChange: (v) => {
+				this.hidePastEventsNameProp = v;
+			},
+			onHideSkippedChange: (v) => {
+				this.hideSkippedEventsNameProp = v;
+			},
+		});
 	}
 
 	// --- Prop tab ---
@@ -386,8 +432,7 @@ export class EventSeriesModal extends Modal {
 		}
 	}
 
-	// --- Recurring tab (matches RecurringEventsListModal layout exactly) ---
-	// Order: title → recurrence info → stats → filters → search → list
+	// --- Recurring tab ---
 
 	private renderRecurringTab(): void {
 		if (!this.contentArea || !this.rruleId) return;
@@ -407,144 +452,51 @@ export class EventSeriesModal extends Modal {
 			addCls(this.contentEl, "recurring-events-list-modal-categorized");
 		}
 
-		// 1. Header with source title as clickable link
-		const header = this.contentArea.createDiv(cls("recurring-events-list-header"));
-		const cleanTitle = removeZettelId(series.sourceTitle);
-		const titleEl = header.createEl("h2", { text: cleanTitle });
-		addCls(titleEl, "recurring-events-source-title");
-		titleEl.onclick = () => {
-			void this.app.workspace.openLinkText(series.sourceFilePath, "", false);
-			this.close();
-		};
+		// Normalize instances to EventListItems (excluding source file)
+		const items: EventListItem[] = [...series.instances]
+			.filter((instance) => instance.event.ref.filePath !== series.sourceFilePath)
+			.map((instance) => ({
+				date: instance.instanceDate,
+				title: removeZettelId(instance.event.title),
+				filePath: instance.event.ref.filePath,
+				skipped: !!instance.event.skipped,
+			}));
 
-		// 2. Recurrence info
-		if (series.rruleType) {
-			const infoContainer = this.contentArea.createDiv(cls("recurring-events-info"));
-			const typeLabel = RECURRENCE_TYPE_OPTIONS[series.rruleType] || series.rruleType;
-			let infoText = `Recurrence: ${typeLabel}`;
-
-			if (series.rruleSpec && (series.rruleType === "weekly" || series.rruleType === "bi-weekly")) {
-				const days = series.rruleSpec
-					.split(",")
-					.map((day) => day.trim())
-					.map((day) => day.charAt(0).toUpperCase() + day.slice(1))
-					.join(", ");
-				infoText += ` \u2022 Days: ${days}`;
-			}
-
-			infoContainer.createEl("p", {
-				text: infoText,
-				cls: cls("recurring-events-info-text"),
-			});
-		}
-
-		const now = DateTime.now().toUTC();
-
-		// Filter out source file from instances
-		const allInstancesExcludingSource = [...series.instances].filter(
-			(instance) => instance.event.ref.filePath !== series.sourceFilePath
-		);
-
-		// Calculate statistics on PAST instances only
-		const pastInstances = allInstancesExcludingSource.filter((instance) => instance.instanceDate < now.startOf("day"));
-		const totalPastInstances = pastInstances.length;
-		const skippedPastInstances = pastInstances.filter((instance) => instance.event.skipped).length;
-		const completedPastInstances = totalPastInstances - skippedPastInstances;
-		const completedPercentage =
-			totalPastInstances > 0 ? ((completedPastInstances / totalPastInstances) * 100).toFixed(1) : "0.0";
-
-		// 3. Statistics
-		const statsContainer = this.contentArea.createDiv(cls("recurring-events-stats"));
-		statsContainer.createEl("p", {
-			text: `Past events: ${totalPastInstances}  \u2022  Skipped: ${skippedPastInstances}  \u2022  Completed: ${completedPercentage}%`,
-			cls: cls("recurring-events-stats-text"),
-		});
-
-		// 4. Filter toggles
-		const filtersContainer = this.contentArea.createDiv(cls("recurring-events-filters"));
-
-		const hidePastSetting = new Setting(filtersContainer).setName("Hide past events").addToggle((toggle) =>
-			toggle.setValue(this.hidePastEvents).onChange((value) => {
-				this.hidePastEvents = value;
-				this.renderContent();
-			})
-		);
-		addCls(hidePastSetting.settingEl, "recurring-events-filter-toggle");
-
-		const hideSkippedSetting = new Setting(filtersContainer).setName("Hide skipped events").addToggle((toggle) =>
-			toggle.setValue(this.hideSkippedEvents).onChange((value) => {
-				this.hideSkippedEvents = value;
-				this.renderContent();
-			})
-		);
-		addCls(hideSkippedSetting.settingEl, "recurring-events-filter-toggle");
-
-		// 5. Search input
-		this.createSearchInput(this.contentArea);
-
-		// 6. Apply filters and render list
-		let filteredInstances = allInstancesExcludingSource;
-
-		if (this.hidePastEvents) {
-			filteredInstances = filteredInstances.filter((instance) => instance.instanceDate >= now.startOf("day"));
-		}
-
-		if (this.hideSkippedEvents) {
-			filteredInstances = filteredInstances.filter((instance) => !instance.event.skipped);
-		}
-
-		// Apply search filter
-		if (this.searchQuery.trim()) {
-			const normalizedSearch = this.searchQuery.toLowerCase().trim();
-			filteredInstances = filteredInstances.filter((instance) => {
-				const title = removeZettelId(instance.event.title).toLowerCase();
-				return title.includes(normalizedSearch);
-			});
-		}
-
-		// Sort by date: ascending when showing future events, descending when showing past events
-		if (this.hidePastEvents) {
-			filteredInstances.sort((a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis());
-		} else {
-			filteredInstances.sort((a, b) => b.instanceDate.toMillis() - a.instanceDate.toMillis());
-		}
-
-		// List container
-		const listContainer = this.contentArea.createDiv(cls("recurring-events-list-container"));
-
-		if (filteredInstances.length === 0) {
-			const message = "No instances found";
-
-			listContainer.createEl("p", {
-				text: message,
-				cls: cls("recurring-events-list-empty"),
-			});
-			return;
-		}
-
-		for (const instance of filteredInstances) {
-			const row = listContainer.createDiv(cls("recurring-event-row"));
-
-			const isPast = instance.instanceDate < now.startOf("day");
-			if (isPast) {
-				addCls(row, "recurring-event-past");
-			}
-
-			const dateEl = row.createDiv(cls("recurring-event-date"));
-			dateEl.textContent = instance.instanceDate.toFormat("yyyy-MM-dd (EEE)");
-
-			const titleEl = row.createDiv(cls("recurring-event-title"));
-			titleEl.textContent = removeZettelId(instance.event.title);
-
-			if (instance.event.skipped && !this.hideSkippedEvents) {
-				addCls(titleEl, "recurring-event-skipped");
-			}
-
-			row.onclick = () => {
-				void this.app.workspace.openLinkText(instance.event.ref.filePath, "", false);
+		this.renderEventList(items, {
+			title: removeZettelId(series.sourceTitle),
+			onTitleClick: () => {
+				void this.app.workspace.openLinkText(series.sourceFilePath, "", false);
 				this.close();
-			};
-		}
+			},
+			hidePast: this.hidePastEvents,
+			hideSkipped: this.hideSkippedEvents,
+			onHidePastChange: (v) => {
+				this.hidePastEvents = v;
+			},
+			onHideSkippedChange: (v) => {
+				this.hideSkippedEvents = v;
+			},
+			beforeStats: (container) => {
+				if (!series.rruleType) return;
+				const infoContainer = container.createDiv(cls("recurring-events-info"));
+				const typeLabel = RECURRENCE_TYPE_OPTIONS[series.rruleType] || series.rruleType;
+				let infoText = `Recurrence: ${typeLabel}`;
+
+				if (series.rruleSpec && (series.rruleType === "weekly" || series.rruleType === "bi-weekly")) {
+					const days = series.rruleSpec
+						.split(",")
+						.map((day) => day.trim())
+						.map((day) => day.charAt(0).toUpperCase() + day.slice(1))
+						.join(", ");
+					infoText += ` \u2022 Days: ${days}`;
+				}
+
+				infoContainer.createEl("p", {
+					text: infoText,
+					cls: cls("recurring-events-info-text"),
+				});
+			},
+		});
 	}
 
 	onClose(): void {

@@ -103,6 +103,7 @@ Tell Prisma Calendar which frontmatter keys you use.
 - **Done value**: value to set in the status property when marking an event as done (default: `Done`)
 - **Not done value**: value to set in the status property when marking an event as undone (default: `Not Done`)
 - **Category property**: frontmatter property name for event categories (default: `Category`), used for grouping in statistics views. Supports **multiple comma-separated categories** (e.g., `Category: Work, Learning`) — events are counted under each category separately in statistics.
+- **Series property**: frontmatter property name for grouping events into named series (default: `Series`). Supports single values and YAML arrays for multi-series membership. See [Event Series](./features/event-series) for details
 - **Break property**: frontmatter property name for break time in minutes (default: `Break`), subtracted from duration in statistics
 - **CalDAV property**: property name for CalDAV sync metadata (default: `CalDAV`)
 
