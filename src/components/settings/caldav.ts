@@ -10,20 +10,13 @@ import {
 	CalDAVClientService,
 	type CalDAVPresetKey,
 } from "../../core/integrations/caldav";
+import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
 import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import type { CustomCalendarSettingsSchema } from "../../types/settings";
 import { deleteFilesByPaths } from "../../utils/obsidian";
 import { CalendarIntegrationDeleteEventsModal } from "../modals";
-import {
-	ConfirmDeleteModal,
-	renderActionButtons,
-	renderEnabledToggle,
-	renderNameField,
-	renderSyncIntervalField,
-	renderTimezoneField,
-	renderUrlField,
-} from "./generic";
+import { ConfirmDeleteModal } from "./generic";
 
 export class CalDAVSettings {
 	private ui: SettingsUIBuilder<typeof CustomCalendarSettingsSchema>;
@@ -267,11 +260,16 @@ class AddCalDAVAccountModal extends Modal {
 		this.renderForm(contentEl);
 		this.renderCalendarSelector(contentEl);
 
-		renderActionButtons(contentEl, {
-			cancelFn: () => this.close(),
-			saveFn: () => void this.saveAccount(),
-			saveText: "Add account",
-		});
+		new Setting(contentEl)
+			.addButton((button) => {
+				button.setButtonText("Cancel").onClick(() => this.close());
+			})
+			.addButton((button) => {
+				button
+					.setButtonText("Add account")
+					.setCta()
+					.onClick(() => void this.saveAccount());
+			});
 	}
 
 	private renderPresetSelector(container: HTMLElement): void {
@@ -298,40 +296,60 @@ class AddCalDAVAccountModal extends Modal {
 	private renderForm(container: HTMLElement): void {
 		const formContainer = container.createDiv(cls("caldav-form"));
 
-		renderNameField(formContainer, {
-			label: "Account name",
-			desc: "Display name for this account",
-			placeholder: "My calendar",
-			value: this.name,
-			onChange: (value) => {
-				this.name = value;
-			},
-		});
+		new Setting(formContainer)
+			.setName("Account name")
+			.setDesc("Display name for this account")
+			.addText((text) => {
+				text
+					.setPlaceholder("My calendar")
+					.setValue(this.name)
+					.onChange((value) => {
+						this.name = value;
+					});
+			});
 
-		renderSyncIntervalField(formContainer, {
-			value: this.syncIntervalMinutes,
-			onChange: (value) => {
-				this.syncIntervalMinutes = value;
-			},
-		});
+		new Setting(formContainer)
+			.setName("Sync interval (minutes)")
+			.setDesc("How often to automatically sync (1-1440 minutes)")
+			.addText((text) => {
+				text.inputEl.type = "number";
+				text.inputEl.min = "1";
+				text.inputEl.max = "1440";
+				text.inputEl.step = "1";
+				text.setValue(this.syncIntervalMinutes.toString());
+				text.onChange((value) => {
+					const numValue = parseInt(value, 10);
+					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
+						this.syncIntervalMinutes = numValue;
+					}
+				});
+			});
 
-		renderTimezoneField(formContainer, {
-			value: this.timezone,
-			onChange: (value) => {
-				this.timezone = value;
-			},
-		});
+		new Setting(formContainer)
+			.setName("Timezone")
+			.setDesc("Timezone for event times. If it matches your calendar events, times are preserved as-is.")
+			.addDropdown((dropdown) => {
+				for (const tz of COMMON_TIMEZONES) {
+					dropdown.addOption(tz.id, tz.label);
+				}
+				dropdown.setValue(this.timezone);
+				dropdown.onChange((value) => {
+					this.timezone = value;
+				});
+			});
 
-		renderUrlField(formContainer, {
-			label: "Server address",
-			desc: "The calendar server address",
-			placeholder: "https://caldav.example.com/dav/",
-			value: this.serverUrl,
-			onChange: (value) => {
-				this.serverUrl = value;
-				this.testPassed = false;
-			},
-		});
+		new Setting(formContainer)
+			.setName("Server address")
+			.setDesc("The calendar server address")
+			.addText((text) => {
+				text
+					.setPlaceholder("https://caldav.example.com/dav/")
+					.setValue(this.serverUrl)
+					.onChange((value) => {
+						this.serverUrl = value;
+						this.testPassed = false;
+					});
+			});
 
 		new Setting(formContainer).setName("Username").addText((text) => {
 			text
@@ -547,35 +565,50 @@ class EditCalDAVAccountModal extends Modal {
 
 		contentEl.createEl("h2", { text: `Edit: ${this.account.name}` });
 
-		renderNameField(contentEl, {
-			label: "Account name",
-			value: this.name,
-			onChange: (value) => {
+		new Setting(contentEl).setName("Account name").addText((text) => {
+			text.setValue(this.name).onChange((value) => {
 				this.name = value;
-			},
+			});
 		});
 
-		renderEnabledToggle(contentEl, {
-			desc: "Enable or disable syncing for this account",
-			value: this.enabled,
-			onChange: (value) => {
-				this.enabled = value;
-			},
-		});
+		new Setting(contentEl)
+			.setName("Enabled")
+			.setDesc("Enable or disable syncing for this account")
+			.addToggle((toggle) => {
+				toggle.setValue(this.enabled).onChange((value) => {
+					this.enabled = value;
+				});
+			});
 
-		renderSyncIntervalField(contentEl, {
-			value: this.syncIntervalMinutes,
-			onChange: (value) => {
-				this.syncIntervalMinutes = value;
-			},
-		});
+		new Setting(contentEl)
+			.setName("Sync interval (minutes)")
+			.setDesc("How often to automatically sync (1-1440 minutes)")
+			.addText((text) => {
+				text.inputEl.type = "number";
+				text.inputEl.min = "1";
+				text.inputEl.max = "1440";
+				text.inputEl.step = "1";
+				text.setValue(this.syncIntervalMinutes.toString());
+				text.onChange((value) => {
+					const numValue = parseInt(value, 10);
+					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
+						this.syncIntervalMinutes = numValue;
+					}
+				});
+			});
 
-		renderTimezoneField(contentEl, {
-			value: this.timezone,
-			onChange: (value) => {
-				this.timezone = value;
-			},
-		});
+		new Setting(contentEl)
+			.setName("Timezone")
+			.setDesc("Timezone for event times. If it matches your calendar events, times are preserved as-is.")
+			.addDropdown((dropdown) => {
+				for (const tz of COMMON_TIMEZONES) {
+					dropdown.addOption(tz.id, tz.label);
+				}
+				dropdown.setValue(this.timezone);
+				dropdown.onChange((value) => {
+					this.timezone = value;
+				});
+			});
 
 		const refreshButton = contentEl.createEl("button", {
 			text: "Refresh calendars",
@@ -587,11 +620,16 @@ class EditCalDAVAccountModal extends Modal {
 
 		this.renderCalendarSelector(contentEl);
 
-		renderActionButtons(contentEl, {
-			cancelFn: () => this.close(),
-			saveFn: () => void this.saveAccount(),
-			saveText: "Save",
-		});
+		new Setting(contentEl)
+			.addButton((button) => {
+				button.setButtonText("Cancel").onClick(() => this.close());
+			})
+			.addButton((button) => {
+				button
+					.setButtonText("Save")
+					.setCta()
+					.onClick(() => void this.saveAccount());
+			});
 	}
 
 	private renderCalendarSelector(container: HTMLElement): void {

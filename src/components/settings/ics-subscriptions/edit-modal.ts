@@ -1,16 +1,9 @@
 import { cls } from "@real1ty-obsidian-plugins";
-import { type App, Modal, Notice } from "obsidian";
+import { type App, Modal, Notice, Setting } from "obsidian";
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
 import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
+import { COMMON_TIMEZONES } from "../../../core/integrations/ics-export";
 import type { SettingsStore } from "../../../core/settings-store";
-import {
-	renderActionButtons,
-	renderEnabledToggle,
-	renderNameField,
-	renderSyncIntervalField,
-	renderTimezoneField,
-	renderUrlField,
-} from "../generic";
 
 export class EditICSSubscriptionModal extends Modal {
 	private name: string;
@@ -40,50 +33,70 @@ export class EditICSSubscriptionModal extends Modal {
 
 		contentEl.createEl("h2", { text: `Edit: ${this.subscription.name}` });
 
-		renderNameField(contentEl, {
-			label: "Subscription name",
-			value: this.name,
-			onChange: (value) => {
+		new Setting(contentEl).setName("Subscription name").addText((text) => {
+			text.setValue(this.name).onChange((value) => {
 				this.name = value;
-			},
+			});
 		});
 
-		renderEnabledToggle(contentEl, {
-			desc: "Enable or disable syncing for this subscription",
-			value: this.enabled,
-			onChange: (value) => {
-				this.enabled = value;
-			},
-		});
+		new Setting(contentEl)
+			.setName("Enabled")
+			.setDesc("Enable or disable syncing for this subscription")
+			.addToggle((toggle) => {
+				toggle.setValue(this.enabled).onChange((value) => {
+					this.enabled = value;
+				});
+			});
 
-		renderUrlField(contentEl, {
-			label: "ICS URL",
-			desc: "Public URL to an .ics calendar file",
-			value: this.url,
-			onChange: (value) => {
-				this.url = value;
-			},
-		});
+		new Setting(contentEl)
+			.setName("ICS URL")
+			.setDesc("Public URL to an .ics calendar file")
+			.addText((text) => {
+				text.setValue(this.url).onChange((value) => {
+					this.url = value;
+				});
+			});
 
-		renderSyncIntervalField(contentEl, {
-			value: this.syncIntervalMinutes,
-			onChange: (value) => {
-				this.syncIntervalMinutes = value;
-			},
-		});
+		new Setting(contentEl)
+			.setName("Sync interval (minutes)")
+			.setDesc("How often to automatically sync (1-1440 minutes)")
+			.addText((text) => {
+				text.inputEl.type = "number";
+				text.inputEl.min = "1";
+				text.inputEl.max = "1440";
+				text.inputEl.step = "1";
+				text.setValue(this.syncIntervalMinutes.toString());
+				text.onChange((value) => {
+					const numValue = parseInt(value, 10);
+					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
+						this.syncIntervalMinutes = numValue;
+					}
+				});
+			});
 
-		renderTimezoneField(contentEl, {
-			value: this.timezone,
-			onChange: (value) => {
-				this.timezone = value;
-			},
-		});
+		new Setting(contentEl)
+			.setName("Timezone")
+			.setDesc("Timezone for event times. If it matches your calendar events, times are preserved as-is.")
+			.addDropdown((dropdown) => {
+				for (const tz of COMMON_TIMEZONES) {
+					dropdown.addOption(tz.id, tz.label);
+				}
+				dropdown.setValue(this.timezone);
+				dropdown.onChange((value) => {
+					this.timezone = value;
+				});
+			});
 
-		renderActionButtons(contentEl, {
-			cancelFn: () => this.close(),
-			saveFn: () => void this.saveSubscription(),
-			saveText: "Save",
-		});
+		new Setting(contentEl)
+			.addButton((button) => {
+				button.setButtonText("Cancel").onClick(() => this.close());
+			})
+			.addButton((button) => {
+				button
+					.setButtonText("Save")
+					.setCta()
+					.onClick(() => void this.saveSubscription());
+			});
 	}
 
 	private async saveSubscription(): Promise<void> {

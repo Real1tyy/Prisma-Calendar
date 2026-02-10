@@ -1,17 +1,11 @@
 import { cls } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
-import { type App, Modal, Notice, requestUrl } from "obsidian";
+import { type App, Modal, Notice, Setting, requestUrl } from "obsidian";
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
 import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
 import { parseICSContent } from "../../../core/integrations/ics-import";
+import { COMMON_TIMEZONES } from "../../../core/integrations/ics-export";
 import type { SettingsStore } from "../../../core/settings-store";
-import {
-	renderActionButtons,
-	renderNameField,
-	renderSyncIntervalField,
-	renderTimezoneField,
-	renderUrlField,
-} from "../generic";
 
 export class AddICSSubscriptionModal extends Modal {
 	private name = "";
@@ -38,40 +32,60 @@ export class AddICSSubscriptionModal extends Modal {
 
 		const formContainer = contentEl.createDiv(cls("caldav-form"));
 
-		renderNameField(formContainer, {
-			label: "Subscription name",
-			desc: "Display name for this subscription",
-			placeholder: "My calendar",
-			value: this.name,
-			onChange: (value) => {
-				this.name = value;
-			},
-		});
+		new Setting(formContainer)
+			.setName("Subscription name")
+			.setDesc("Display name for this subscription")
+			.addText((text) => {
+				text
+					.setPlaceholder("My calendar")
+					.setValue(this.name)
+					.onChange((value) => {
+						this.name = value;
+					});
+			});
 
-		renderUrlField(formContainer, {
-			label: "ICS URL",
-			desc: "Public URL to an .ics calendar file",
-			placeholder: "https://example.com/calendar.ics",
-			value: this.url,
-			onChange: (value) => {
-				this.url = value;
-				this.testPassed = false;
-			},
-		});
+		new Setting(formContainer)
+			.setName("ICS URL")
+			.setDesc("Public URL to an .ics calendar file")
+			.addText((text) => {
+				text
+					.setPlaceholder("https://example.com/calendar.ics")
+					.setValue(this.url)
+					.onChange((value) => {
+						this.url = value;
+						this.testPassed = false;
+					});
+			});
 
-		renderSyncIntervalField(formContainer, {
-			value: this.syncIntervalMinutes,
-			onChange: (value) => {
-				this.syncIntervalMinutes = value;
-			},
-		});
+		new Setting(formContainer)
+			.setName("Sync interval (minutes)")
+			.setDesc("How often to automatically sync (1-1440 minutes)")
+			.addText((text) => {
+				text.inputEl.type = "number";
+				text.inputEl.min = "1";
+				text.inputEl.max = "1440";
+				text.inputEl.step = "1";
+				text.setValue(this.syncIntervalMinutes.toString());
+				text.onChange((value) => {
+					const numValue = parseInt(value, 10);
+					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
+						this.syncIntervalMinutes = numValue;
+					}
+				});
+			});
 
-		renderTimezoneField(formContainer, {
-			value: this.timezone,
-			onChange: (value) => {
-				this.timezone = value;
-			},
-		});
+		new Setting(formContainer)
+			.setName("Timezone")
+			.setDesc("Timezone for event times. If it matches your calendar events, times are preserved as-is.")
+			.addDropdown((dropdown) => {
+				for (const tz of COMMON_TIMEZONES) {
+					dropdown.addOption(tz.id, tz.label);
+				}
+				dropdown.setValue(this.timezone);
+				dropdown.onChange((value) => {
+					this.timezone = value;
+				});
+			});
 
 		const testButton = formContainer.createEl("button", {
 			text: "Test URL",
@@ -81,11 +95,16 @@ export class AddICSSubscriptionModal extends Modal {
 			void this.testUrl(testButton);
 		});
 
-		renderActionButtons(contentEl, {
-			cancelFn: () => this.close(),
-			saveFn: () => void this.saveSubscription(),
-			saveText: "Add subscription",
-		});
+		new Setting(contentEl)
+			.addButton((button) => {
+				button.setButtonText("Cancel").onClick(() => this.close());
+			})
+			.addButton((button) => {
+				button
+					.setButtonText("Add subscription")
+					.setCta()
+					.onClick(() => void this.saveSubscription());
+			});
 	}
 
 	private async testUrl(button: HTMLButtonElement): Promise<void> {
