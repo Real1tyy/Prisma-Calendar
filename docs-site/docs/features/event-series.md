@@ -163,6 +163,26 @@ In the By Name and By Series tabs, each event row is color-coded based on the ev
 
 Click any event row to open the corresponding note file and close the modal.
 
+## Frontmatter Propagation
+
+You can automatically keep custom frontmatter properties in sync across series members. When you change a property on one event, the change propagates to all other events in the same series.
+
+Two independent propagation scopes are available for series:
+
+- **Name series propagation** — propagates changes across events with the same cleaned title
+- **Property series propagation** — propagates changes across events sharing the same series property value
+
+Each scope has two mutually exclusive modes:
+
+- **Auto-propagate** — changes are applied immediately without confirmation
+- **Ask before propagating** — a confirmation modal shows the changes before applying
+
+Configure these in **Settings → [Your Calendar] → Name series propagation** and **Property series propagation**. The **Excluded properties** and **Propagation debounce delay** settings (under "Shared propagation settings") apply to all propagation types including series.
+
+Loop prevention ensures that when a change propagates from event A to events B and C, the updates to B and C do not trigger further propagation back to A.
+
+See [Frontmatter Propagation](../configuration#frontmatter-propagation) for full configuration details.
+
 ## Context Menu Items
 
 Two context menu actions relate to series:

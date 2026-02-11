@@ -4,9 +4,11 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.33.0 - 2/10/2026
+## 1.33.0 - 2/11/2026
 
 ### Added
+
+- **Series Frontmatter Propagation**: Frontmatter propagation now works for name-based series and property-based series, not just recurring events. When you change a custom property on one event, the change can automatically propagate to all other events sharing the same name or series property value. Four new toggles are available in Settings: "Propagate frontmatter to name series", "Ask before propagating to name series", "Propagate frontmatter to property series", and "Ask before propagating to property series". The existing excluded properties and debounce delay settings now apply to all propagation types. Loop prevention ensures propagated changes don't cascade infinitely. See the [Event Series](./features/event-series#frontmatter-propagation) and [Frontmatter Propagation](./configuration#frontmatter-propagation) docs for details.
 
 - **Event Series**: A new system for tracking and managing groups of related events. Events are automatically grouped in three ways — by recurring event rules, by a frontmatter series property, and by shared name (with ZettelID stripped). Right-click any event and select **"View series"** to open the Event Series Modal, which shows all related events across up to three tabs: **Recurring**, **By Series**, and **By Name**. Each tab provides completion statistics (past events, skipped count, completion percentage), filter toggles to hide past or skipped events, debounced search, smart sorting (ascending for future events, descending when showing all), and color-coded rows matching your calendar color rules. See the new [Event Series](./features/event-series) documentation for full details.
 
