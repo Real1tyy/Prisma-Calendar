@@ -1,7 +1,7 @@
 import {
 	type FrontmatterDiff,
 	FrontmatterPropagationModal,
-	mergeFrontmatterDiffs,
+	FrontmatterPropagationDebouncer,
 	parseIntoList,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
@@ -41,12 +41,15 @@ export class SeriesManager {
 	private settingsSubscription: Subscription | null = null;
 	private _settings: SingleCalendarConfig;
 
-	/** Debounce timers keyed by series type:seriesKey */
-	private propagationDebounceTimers = new Map<string, NodeJS.Timeout>();
-	/** Accumulated diffs per series type:seriesKey */
-	private accumulatedDiffs = new Map<string, FrontmatterDiff[]>();
 	/** File paths currently being propagated to — prevents infinite loops */
 	private propagatingFilePaths = new Set<string>();
+
+	private propagationDebouncer: FrontmatterPropagationDebouncer<{
+		sourceFrontmatter: Frontmatter;
+		filePath: string;
+		type: "name" | "prop";
+		seriesKey: string;
+	}>;
 
 	constructor(
 		private app: App,
@@ -55,6 +58,10 @@ export class SeriesManager {
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
 		this._settings = settingsStore.value;
+		this.propagationDebouncer = new FrontmatterPropagationDebouncer({
+			debounceMs: this._settings.propagationDebounceMs,
+			filterDiff: (diff) => filterExcludedPropsFromDiff(diff, this._settings, this.getSeriesExcludedProps()),
+		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			this._settings = newSettings;
@@ -132,56 +139,32 @@ export class SeriesManager {
 		diff: FrontmatterDiff
 	): void {
 		const debounceKey = `${type}:${seriesKey}`;
+		const context = { sourceFrontmatter, filePath, type, seriesKey };
 
-		const existingTimer = this.propagationDebounceTimers.get(debounceKey);
-		if (existingTimer) {
-			clearTimeout(existingTimer);
-		}
-
-		const existingDiffs = this.accumulatedDiffs.get(debounceKey) || [];
-		existingDiffs.push(diff);
-		this.accumulatedDiffs.set(debounceKey, existingDiffs);
-
-		const timer = setTimeout(() => {
-			this.propagationDebounceTimers.delete(debounceKey);
-			const diffs = this.accumulatedDiffs.get(debounceKey) || [];
-			this.accumulatedDiffs.delete(debounceKey);
-
-			const mergedDiff = mergeFrontmatterDiffs(diffs);
-			const excludedProps = this.getSeriesExcludedProps();
-			const filteredDiff = filterExcludedPropsFromDiff(mergedDiff, this._settings, excludedProps);
-
-			if (!filteredDiff.hasChanges) {
-				return;
-			}
-
-			const targetFilePaths = this.getSeriesMemberFilePaths(type, seriesKey, filePath);
-			if (targetFilePaths.length === 0) {
-				return;
-			}
+		this.propagationDebouncer.schedule(debounceKey, diff, context, (filteredDiff, ctx) => {
+			const targetFilePaths = this.getSeriesMemberFilePaths(ctx.type, ctx.seriesKey, ctx.filePath);
+			if (targetFilePaths.length === 0) return;
 
 			const autoPropagate =
-				type === "name"
+				ctx.type === "name"
 					? this._settings.propagateFrontmatterToNameSeries
 					: this._settings.propagateFrontmatterToPropSeries;
 			const askBefore =
-				type === "name"
+				ctx.type === "name"
 					? this._settings.askBeforePropagatingToNameSeries
 					: this._settings.askBeforePropagatingToPropSeries;
 
 			if (autoPropagate) {
-				void this.propagateToSeriesMembers(sourceFrontmatter, filteredDiff, targetFilePaths);
+				void this.propagateToSeriesMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths);
 			} else if (askBefore) {
 				new FrontmatterPropagationModal(this.app, {
-					eventTitle: `${type === "name" ? "Name" : "Property"} series: ${seriesKey}`,
+					eventTitle: `${ctx.type === "name" ? "Name" : "Property"} series: ${ctx.seriesKey}`,
 					diff: filteredDiff,
 					instanceCount: targetFilePaths.length,
-					onConfirm: () => this.propagateToSeriesMembers(sourceFrontmatter, filteredDiff, targetFilePaths),
+					onConfirm: () => this.propagateToSeriesMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths),
 				}).open();
 			}
-		}, this._settings.propagationDebounceMs);
-
-		this.propagationDebounceTimers.set(debounceKey, timer);
+		});
 	}
 
 	private getSeriesMemberFilePaths(type: "name" | "prop", seriesKey: string, excludeFilePath: string): string[] {
@@ -367,11 +350,7 @@ export class SeriesManager {
 		this.indexingCompleteSubscription = null;
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
-		for (const timer of this.propagationDebounceTimers.values()) {
-			clearTimeout(timer);
-		}
-		this.propagationDebounceTimers.clear();
-		this.accumulatedDiffs.clear();
+		this.propagationDebouncer.destroy();
 		this.propagatingFilePaths.clear();
 	}
 }

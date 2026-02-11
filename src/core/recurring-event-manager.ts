@@ -5,8 +5,8 @@ import {
 	extractContentAfterFrontmatter,
 	type FrontmatterDiff,
 	FrontmatterPropagationModal,
+	FrontmatterPropagationDebouncer,
 	getUniqueFilePathFromFull,
-	mergeFrontmatterDiffs,
 	rebuildPhysicalInstanceFilename,
 	sanitizeForFilename,
 	withLock,
@@ -63,8 +63,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private creationLocks: Map<string, Promise<string | null>> = new Map();
 	private sourceFileToRRuleId: Map<string, string> = new Map();
 	private ensureInstancesLocks: Map<string, Promise<void>> = new Map();
-	private propagationDebounceTimers: Map<string, NodeJS.Timeout> = new Map();
-	private accumulatedDiffs: Map<string, FrontmatterDiff[]> = new Map();
+	private propagationDebouncer: FrontmatterPropagationDebouncer<string>;
 	private eventStore: EventStore | null = null;
 	private categoryTracker: CategoryTracker | null = null;
 
@@ -76,6 +75,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 	) {
 		super();
 		this.settings = settingsStore.value;
+		this.propagationDebouncer = new FrontmatterPropagationDebouncer({
+			debounceMs: this.settings.propagationDebounceMs,
+			filterDiff: (diff) => filterExcludedPropsFromDiff(diff, this.settings),
+		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			this.settings = newSettings;
@@ -176,40 +179,28 @@ export class RecurringEventManager extends DebouncedNotifier {
 			return;
 		}
 
-		const existingTimer = this.propagationDebounceTimers.get(recurringEvent.rRuleId);
-		if (existingTimer) {
-			clearTimeout(existingTimer);
-		}
+		this.propagationDebouncer.schedule(
+			recurringEvent.rRuleId,
+			frontmatterDiff,
+			recurringEvent.rRuleId,
+			(filteredDiff, rruleId) => {
+				const currentData = this.recurringEventsMap.get(rruleId);
+				const currentEvent = currentData?.recurringEvent;
+				if (!currentData || !currentEvent || currentData.physicalInstances.size === 0) return;
 
-		const existingDiffs = this.accumulatedDiffs.get(recurringEvent.rRuleId) || [];
-		existingDiffs.push(frontmatterDiff);
-		this.accumulatedDiffs.set(recurringEvent.rRuleId, existingDiffs);
-
-		const timer = setTimeout(() => {
-			this.propagationDebounceTimers.delete(recurringEvent.rRuleId);
-			const diffs = this.accumulatedDiffs.get(recurringEvent.rRuleId) || [];
-			this.accumulatedDiffs.delete(recurringEvent.rRuleId);
-
-			const mergedDiff = mergeFrontmatterDiffs(diffs);
-			const filteredDiff = filterExcludedPropsFromDiff(mergedDiff, this.settings);
-
-			if (!filteredDiff.hasChanges) {
-				return;
+				if (this.settings.propagateFrontmatterToInstances) {
+					void this.propagateFrontmatterToInstances(currentEvent, filteredDiff);
+				} else if (this.settings.askBeforePropagatingFrontmatter) {
+					const instanceCount = this.flattenPhysicalInstances(currentData.physicalInstances).length;
+					new FrontmatterPropagationModal(this.app, {
+						eventTitle: currentEvent.title,
+						diff: filteredDiff,
+						instanceCount,
+						onConfirm: () => this.propagateFrontmatterToInstances(currentEvent, filteredDiff),
+					}).open();
+				}
 			}
-
-			if (this.settings.propagateFrontmatterToInstances) {
-				void this.propagateFrontmatterToInstances(recurringEvent, filteredDiff);
-			} else if (this.settings.askBeforePropagatingFrontmatter) {
-				new FrontmatterPropagationModal(this.app, {
-					eventTitle: recurringEvent.title,
-					diff: filteredDiff,
-					instanceCount: data.physicalInstances.size,
-					onConfirm: () => this.propagateFrontmatterToInstances(recurringEvent, filteredDiff),
-				}).open();
-			}
-		}, this.settings.propagationDebounceMs);
-
-		this.propagationDebounceTimers.set(recurringEvent.rRuleId, timer);
+		);
 	}
 
 	private async propagateFrontmatterToInstances(
@@ -263,16 +254,12 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.settingsSubscription = null;
 		this.indexingCompleteSubscription?.unsubscribe();
 		this.indexingCompleteSubscription = null;
+		this.propagationDebouncer.destroy();
 		super.destroy();
 		this.recurringEventsMap.clear();
 		this.creationLocks.clear();
 		this.sourceFileToRRuleId.clear();
 		this.ensureInstancesLocks.clear();
-		for (const timer of this.propagationDebounceTimers.values()) {
-			clearTimeout(timer);
-		}
-		this.propagationDebounceTimers.clear();
-		this.accumulatedDiffs.clear();
 	}
 
 	/**
