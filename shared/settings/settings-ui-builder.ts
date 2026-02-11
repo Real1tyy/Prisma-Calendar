@@ -272,6 +272,56 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			);
 	}
 
+	/**
+	 * Renders a pair of mutually exclusive toggles.
+	 * Enabling one automatically disables the other.
+	 * Requires a rerender callback to refresh UI state after toggling.
+	 */
+	addMutuallyExclusiveToggles(
+		containerEl: HTMLElement,
+		config: {
+			toggleA: BaseSettingConfig;
+			toggleB: BaseSettingConfig;
+		},
+		rerender: () => void
+	): void {
+		const { toggleA, toggleB } = config;
+
+		new Setting(containerEl)
+			.setName(toggleA.name)
+			.setDesc(toggleA.desc)
+			.addToggle((toggle) =>
+				toggle.setValue(Boolean(this.getNestedValue(toggleA.key))).onChange(async (value) => {
+					const newSettings = this.setNestedValue(toggleA.key, value);
+					if (value) {
+						const keys = toggleB.key.split(".");
+						let current: Record<string, any> = newSettings as Record<string, any>;
+						for (let i = 0; i < keys.length - 1; i++) current = current[keys[i]];
+						current[keys[keys.length - 1]] = false;
+					}
+					await this.settingsStore.updateSettings(() => newSettings);
+					rerender();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName(toggleB.name)
+			.setDesc(toggleB.desc)
+			.addToggle((toggle) =>
+				toggle.setValue(Boolean(this.getNestedValue(toggleB.key))).onChange(async (value) => {
+					const newSettings = this.setNestedValue(toggleB.key, value);
+					if (value) {
+						const keys = toggleA.key.split(".");
+						let current: Record<string, any> = newSettings as Record<string, any>;
+						for (let i = 0; i < keys.length - 1; i++) current = current[keys[i]];
+						current[keys[keys.length - 1]] = false;
+					}
+					await this.settingsStore.updateSettings(() => newSettings);
+					rerender();
+				})
+			);
+	}
+
 	addSlider(containerEl: HTMLElement, config: SliderSettingConfig): void {
 		const { key, name, desc, step = 1, commitOnChange = false } = config;
 		const value = this.getNestedValue(key);

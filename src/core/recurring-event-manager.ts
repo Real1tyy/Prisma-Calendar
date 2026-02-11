@@ -225,6 +225,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 			return;
 		}
 
+		const excludedProps = getRecurringInstanceExcludedProps(this.settings);
+
 		await Promise.all(
 			this.flattenPhysicalInstances(data.physicalInstances).map((instance) =>
 				applyFrontmatterChangesToInstance(
@@ -232,7 +234,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 					instance.filePath,
 					recurringEvent.frontmatter,
 					frontmatterDiff,
-					this.settings
+					excludedProps
 				)
 			)
 		);
@@ -558,6 +560,21 @@ export class RecurringEventManager extends DebouncedNotifier {
 					end: instanceEndISO,
 					allDay: recurringEvent.rrules.allDay,
 				});
+			}
+
+			// Mark past instances as Done at creation time when setting is enabled.
+			// Physical instances created by ensurePastInstances are always in the past;
+			// setting Status here ensures they're correct immediately without relying on
+			// the indexer (which may miss newly created files due to metadata cache delays).
+			const now = DateTime.now().toUTC();
+			const isPast = instanceEnd && instanceEnd < now ? true : instanceStart < now;
+			if (
+				this.settings.markPastInstancesAsDone &&
+				isPast &&
+				this.settings.statusProperty &&
+				instanceFrontmatter[this.settings.statusProperty] !== this.settings.doneValue
+			) {
+				instanceFrontmatter[this.settings.statusProperty] = this.settings.doneValue;
 			}
 
 			const uniquePath = getUniqueFilePathFromFull(this.app, filePath);

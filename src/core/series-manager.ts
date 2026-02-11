@@ -1,9 +1,20 @@
-import { parseIntoList } from "@real1ty-obsidian-plugins";
+import {
+	type FrontmatterDiff,
+	FrontmatterPropagationModal,
+	mergeFrontmatterDiffs,
+	parseIntoList,
+} from "@real1ty-obsidian-plugins";
+import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { CalendarEvent } from "../types/calendar";
-import type { SingleCalendarConfig } from "../types/index";
-import { getEventName } from "../utils/calendar-events";
+import type { Frontmatter, SingleCalendarConfig } from "../types/index";
+import {
+	applyFrontmatterChangesToInstance,
+	filterExcludedPropsFromDiff,
+	getEventName,
+	getRecurringInstanceExcludedProps,
+} from "../utils/calendar-events";
 import type { EventStore } from "./event-store";
 import type { Indexer, IndexerEvent } from "./indexer";
 
@@ -13,6 +24,7 @@ import type { Indexer, IndexerEvent } from "./indexer";
  * 2. Property-based: Events sharing the same frontmatter series property value
  *
  * Follows the CategoryTracker pattern for subscription/rebuild lifecycle.
+ * Also handles frontmatter propagation across series members.
  */
 export class SeriesManager {
 	/** Cleaned lowercase title -> file paths */
@@ -29,7 +41,15 @@ export class SeriesManager {
 	private settingsSubscription: Subscription | null = null;
 	private _settings: SingleCalendarConfig;
 
+	/** Debounce timers keyed by series type:seriesKey */
+	private propagationDebounceTimers = new Map<string, NodeJS.Timeout>();
+	/** Accumulated diffs per series type:seriesKey */
+	private accumulatedDiffs = new Map<string, FrontmatterDiff[]>();
+	/** File paths currently being propagated to — prevents infinite loops */
+	private propagatingFilePaths = new Set<string>();
+
 	constructor(
+		private app: App,
 		private indexer: Indexer,
 		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
@@ -58,11 +78,149 @@ export class SeriesManager {
 			case "file-changed":
 				if (event.source) {
 					this.updateFile(event.filePath, event.source.frontmatter);
+
+					// Handle series propagation if there's a frontmatter diff
+					if (event.frontmatterDiff?.hasChanges && !this.propagatingFilePaths.has(event.filePath)) {
+						this.handleSeriesPropagationForFile(event.filePath, event.source.frontmatter, event.frontmatterDiff);
+					}
 				}
 				break;
 			case "file-deleted":
 				this.removeFile(event.filePath);
 				break;
+		}
+	}
+
+	private handleSeriesPropagationForFile(
+		filePath: string,
+		sourceFrontmatter: Frontmatter,
+		diff: FrontmatterDiff
+	): void {
+		const nameEnabled =
+			this._settings.propagateFrontmatterToNameSeries || this._settings.askBeforePropagatingToNameSeries;
+		const propEnabled =
+			this._settings.propagateFrontmatterToPropSeries || this._settings.askBeforePropagatingToPropSeries;
+
+		if (nameEnabled) {
+			const nameKey = this.fileToNameKey.get(filePath);
+			if (nameKey) {
+				const nameFiles = this.seriesByName.get(nameKey);
+				if (nameFiles && nameFiles.size >= 2) {
+					this.handleSeriesPropagation("name", nameKey, filePath, sourceFrontmatter, diff);
+				}
+			}
+		}
+
+		if (propEnabled) {
+			const propValues = this.fileToSeriesProp.get(filePath);
+			if (propValues) {
+				for (const propValue of propValues) {
+					const propFiles = this.seriesByProp.get(propValue);
+					if (propFiles && propFiles.size >= 2) {
+						this.handleSeriesPropagation("prop", propValue, filePath, sourceFrontmatter, diff);
+					}
+				}
+			}
+		}
+	}
+
+	private handleSeriesPropagation(
+		type: "name" | "prop",
+		seriesKey: string,
+		filePath: string,
+		sourceFrontmatter: Frontmatter,
+		diff: FrontmatterDiff
+	): void {
+		const debounceKey = `${type}:${seriesKey}`;
+
+		const existingTimer = this.propagationDebounceTimers.get(debounceKey);
+		if (existingTimer) {
+			clearTimeout(existingTimer);
+		}
+
+		const existingDiffs = this.accumulatedDiffs.get(debounceKey) || [];
+		existingDiffs.push(diff);
+		this.accumulatedDiffs.set(debounceKey, existingDiffs);
+
+		const timer = setTimeout(() => {
+			this.propagationDebounceTimers.delete(debounceKey);
+			const diffs = this.accumulatedDiffs.get(debounceKey) || [];
+			this.accumulatedDiffs.delete(debounceKey);
+
+			const mergedDiff = mergeFrontmatterDiffs(diffs);
+			const excludedProps = this.getSeriesExcludedProps();
+			const filteredDiff = filterExcludedPropsFromDiff(mergedDiff, this._settings, excludedProps);
+
+			if (!filteredDiff.hasChanges) {
+				return;
+			}
+
+			const targetFilePaths = this.getSeriesMemberFilePaths(type, seriesKey, filePath);
+			if (targetFilePaths.length === 0) {
+				return;
+			}
+
+			const autoPropagate =
+				type === "name"
+					? this._settings.propagateFrontmatterToNameSeries
+					: this._settings.propagateFrontmatterToPropSeries;
+			const askBefore =
+				type === "name"
+					? this._settings.askBeforePropagatingToNameSeries
+					: this._settings.askBeforePropagatingToPropSeries;
+
+			if (autoPropagate) {
+				void this.propagateToSeriesMembers(sourceFrontmatter, filteredDiff, targetFilePaths);
+			} else if (askBefore) {
+				new FrontmatterPropagationModal(this.app, {
+					eventTitle: `${type === "name" ? "Name" : "Property"} series: ${seriesKey}`,
+					diff: filteredDiff,
+					instanceCount: targetFilePaths.length,
+					onConfirm: () => this.propagateToSeriesMembers(sourceFrontmatter, filteredDiff, targetFilePaths),
+				}).open();
+			}
+		}, this._settings.propagationDebounceMs);
+
+		this.propagationDebounceTimers.set(debounceKey, timer);
+	}
+
+	private getSeriesMemberFilePaths(type: "name" | "prop", seriesKey: string, excludeFilePath: string): string[] {
+		const groupMap = type === "name" ? this.seriesByName : this.seriesByProp;
+		const filePaths = groupMap.get(seriesKey);
+		if (!filePaths) return [];
+		return Array.from(filePaths).filter((fp) => fp !== excludeFilePath);
+	}
+
+	/** Returns excluded props for series propagation: Prisma internals + user exclusions */
+	private getSeriesExcludedProps(): Set<string> {
+		return getRecurringInstanceExcludedProps(this._settings);
+	}
+
+	private async propagateToSeriesMembers(
+		sourceFrontmatter: Frontmatter,
+		diff: FrontmatterDiff,
+		targetFilePaths: string[]
+	): Promise<void> {
+		// Add all targets to loop prevention set
+		for (const fp of targetFilePaths) {
+			this.propagatingFilePaths.add(fp);
+		}
+
+		const excludedProps = this.getSeriesExcludedProps();
+
+		try {
+			await Promise.all(
+				targetFilePaths.map((fp) =>
+					applyFrontmatterChangesToInstance(this.app, fp, sourceFrontmatter, diff, excludedProps)
+				)
+			);
+		} finally {
+			// Remove targets from loop prevention after a delay to account for indexer processing
+			setTimeout(() => {
+				for (const fp of targetFilePaths) {
+					this.propagatingFilePaths.delete(fp);
+				}
+			}, 2000);
 		}
 	}
 
@@ -209,5 +367,11 @@ export class SeriesManager {
 		this.indexingCompleteSubscription = null;
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
+		for (const timer of this.propagationDebounceTimers.values()) {
+			clearTimeout(timer);
+		}
+		this.propagationDebounceTimers.clear();
+		this.accumulatedDiffs.clear();
+		this.propagatingFilePaths.clear();
 	}
 }

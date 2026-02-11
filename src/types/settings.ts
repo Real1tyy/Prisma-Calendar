@@ -121,7 +121,11 @@ const CalendarSettingsSchema = z
 		futureInstancesCount: z.number().int().min(1).max(52).catch(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT), // how many future instances to generate for recurring events
 		propagateFrontmatterToInstances: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_INSTANCES), // automatically propagate non-Prisma frontmatter changes from source to physical instances
 		askBeforePropagatingFrontmatter: z.boolean().catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_FRONTMATTER), // show confirmation modal before propagating frontmatter changes
-		excludedRecurringPropagatedProps: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_EXCLUDED_RECURRING_PROPAGATED_PROPS), // comma-separated list of frontmatter properties to exclude from propagation to recurring instances
+		propagateFrontmatterToNameSeries: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_NAME_SERIES), // automatically propagate frontmatter changes across name-based series (events sharing the same title)
+		askBeforePropagatingToNameSeries: z.boolean().catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_TO_NAME_SERIES), // show confirmation modal before propagating frontmatter changes to name series
+		propagateFrontmatterToPropSeries: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_PROP_SERIES), // automatically propagate frontmatter changes across property-based series (events sharing the same series prop value)
+		askBeforePropagatingToPropSeries: z.boolean().catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_TO_PROP_SERIES), // show confirmation modal before propagating frontmatter changes to prop series
+		excludedRecurringPropagatedProps: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_EXCLUDED_RECURRING_PROPAGATED_PROPS), // comma-separated list of frontmatter properties to exclude from propagation
 		propagationDebounceMs: z
 			.number()
 			.int()
