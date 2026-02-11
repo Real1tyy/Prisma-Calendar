@@ -276,7 +276,7 @@ export class EventSeriesModal extends Modal {
 
 		const statsContainer = this.contentArea.createDiv(cls("recurring-events-stats"));
 		statsContainer.createEl("p", {
-			text: `Past events: ${totalPast}  \u2022  Skipped: ${skippedPast}  \u2022  Completed: ${completedPct}%`,
+			text: `Total: ${items.length}  \u2022  Past: ${totalPast}  \u2022  Skipped: ${skippedPast}  \u2022  Completed: ${completedPct}%`,
 			cls: cls("recurring-events-stats-text"),
 		});
 
