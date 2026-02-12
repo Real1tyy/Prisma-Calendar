@@ -44,6 +44,16 @@ export interface IndexerConfig {
 	 * Debounce time in milliseconds for file change events
 	 */
 	debounceMs?: number;
+
+	/**
+	 * Delay in ms between retry attempts for files with missing metadata cache (default: 200)
+	 */
+	retryDelayMs?: number;
+
+	/**
+	 * Max retry attempts for files that failed during initial scan (default: 3)
+	 */
+	maxRetryAttempts?: number;
 }
 
 /**
@@ -129,6 +139,8 @@ export class Indexer {
 			excludedDiffProps: config.excludedDiffProps || new Set(),
 			scanConcurrency: config.scanConcurrency || 10,
 			debounceMs: config.debounceMs || 100,
+			retryDelayMs: config.retryDelayMs ?? 1000,
+			maxRetryAttempts: config.maxRetryAttempts ?? 3,
 		};
 	}
 
@@ -159,37 +171,66 @@ export class Indexer {
 	}
 
 	/**
-	 * Scan all markdown files in the configured directory
+	 * Scan all markdown files in the configured directory, retrying files
+	 * whose metadata cache isn't ready yet.
 	 */
 	private async scanAllFiles(): Promise<void> {
-		const allFiles = this.vault.getMarkdownFiles();
-		const relevantFiles = allFiles.filter((file) => this.config.includeFile(file.path));
+		try {
+			const allFiles = this.vault.getMarkdownFiles();
+			let pendingFiles = allFiles.filter((file) => this.config.includeFile(file.path));
 
-		const events$ = from(relevantFiles).pipe(
+			for (let attempt = 0; attempt <= this.config.maxRetryAttempts; attempt++) {
+				if (pendingFiles.length === 0) break;
+				if (attempt > 0) {
+					await new Promise((resolve) => setTimeout(resolve, this.config.retryDelayMs));
+				}
+
+				const { events, failedFiles } = await this.scanFiles(pendingFiles);
+
+				for (const event of events) {
+					this.scanEventsSubject.next(event);
+				}
+
+				pendingFiles = failedFiles;
+			}
+		} catch (error) {
+			console.error("❌ Error during file scanning:", error);
+		}
+
+		this.indexingCompleteSubject.next(true);
+	}
+
+	/**
+	 * Scan a batch of files, returning succeeded events and failed files separately.
+	 */
+	private async scanFiles(files: TFile[]): Promise<{ events: IndexerEvent[]; failedFiles: TFile[] }> {
+		const results$ = from(files).pipe(
 			mergeMap(async (file) => {
 				try {
-					return await this.buildEvent(file);
+					const event = await this.buildEvent(file);
+					return { event, file };
 				} catch (error) {
 					console.error(`Error processing file ${file.path}:`, error);
-					return null;
+					return { event: null as IndexerEvent | null, file };
 				}
 			}, this.config.scanConcurrency),
-			filter((event): event is IndexerEvent => event !== null),
 			toArray()
 		);
 
-		try {
-			const allEvents = await lastValueFrom(events$);
+		const allResults = await lastValueFrom(results$);
 
-			for (const event of allEvents) {
-				this.scanEventsSubject.next(event);
+		const events: IndexerEvent[] = [];
+		const failedFiles: TFile[] = [];
+
+		for (const { event, file } of allResults) {
+			if (event) {
+				events.push(event);
+			} else {
+				failedFiles.push(file);
 			}
-
-			this.indexingCompleteSubject.next(true);
-		} catch (error) {
-			console.error("❌ Error during file scanning:", error);
-			this.indexingCompleteSubject.next(true);
 		}
+
+		return { events, failedFiles };
 	}
 
 	/**
