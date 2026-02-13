@@ -11,7 +11,7 @@ import {
 	Subject,
 	type Subscription,
 } from "rxjs";
-import { debounceTime, filter, groupBy, map, mergeMap, switchMap, toArray } from "rxjs/operators";
+import { debounceTime, filter, groupBy, map, mergeMap, toArray } from "rxjs/operators";
 import { compareFrontmatter, type FrontmatterDiff } from "../file/frontmatter-diff";
 
 /**
@@ -322,8 +322,11 @@ export class Indexer {
 
 		const intents$ = merge(changedIntents$, deletedIntents$, renamedIntents$);
 
+		// CRITICAL: Use mergeMap instead of switchMap to prevent cancellation
+		// switchMap would cancel in-flight buildEvent() when new intents arrive,
+		// causing events to be lost. mergeMap processes all intents concurrently.
 		return intents$.pipe(
-			switchMap((intent) => {
+			mergeMap((intent) => {
 				if (intent.kind === "deleted") {
 					this.frontmatterCache.delete(intent.path);
 					return of<IndexerEvent>({
@@ -334,7 +337,7 @@ export class Indexer {
 				}
 
 				return from(this.buildEvent(intent.file, intent.oldPath)).pipe(filter((e): e is IndexerEvent => e !== null));
-			})
+			}, this.config.scanConcurrency)
 		);
 	}
 

@@ -53,6 +53,7 @@ export class Indexer {
 	private scanEventsSubject = new Subject<IndexerEvent>();
 	private lastDirectory: string;
 	private lastExcludedDiffProps: Set<string>;
+	private initialScanHandlers: Promise<void>[] | null = [];
 	private readonly includeFile = (filePath: string): boolean => {
 		const directory = this.settings.directory;
 		if (!directory) return true;
@@ -74,8 +75,13 @@ export class Indexer {
 		const configStore = new BehaviorSubject<IndexerConfig>(this.buildIndexerConfig());
 		this.genericIndexer = new GenericIndexer(app, configStore);
 
+		// CRITICAL: Catch async handler errors to prevent unhandled promise rejections
+		// during live events (after initial scan completes)
 		this.genericIndexer.events$.subscribe((genericEvent) => {
-			void this.handleGenericEvent(genericEvent);
+			const handler = this.handleGenericEvent(genericEvent).catch((error) => {
+				console.error("Indexer handleGenericEvent error:", error);
+			});
+			this.initialScanHandlers?.push(handler);
 		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
@@ -117,6 +123,17 @@ export class Indexer {
 
 	async start(): Promise<void> {
 		await this.genericIndexer.start();
+
+		// CRITICAL: Freeze the handler list before awaiting to prevent race conditions
+		// Events arriving during Promise.all would otherwise be pushed but not awaited
+		const handlers = this.initialScanHandlers;
+		this.initialScanHandlers = null;
+
+		// Wait for all async event handlers from initial scan to complete
+		// The generic indexer has emitted all scan events synchronously during start()
+		if (handlers && handlers.length > 0) {
+			await Promise.all(handlers);
+		}
 	}
 
 	stop(): void {
