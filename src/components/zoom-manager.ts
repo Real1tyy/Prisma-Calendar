@@ -9,6 +9,7 @@ export class ZoomManager {
 	private container: HTMLElement | null = null;
 	private viewContainerEl: HTMLElement | null = null;
 	private wheelListener?: (e: WheelEvent) => void;
+	private updateTimeout?: ReturnType<typeof setTimeout>;
 	private currentZoomLevel: number;
 	private onZoomChangeCallback?: () => void;
 

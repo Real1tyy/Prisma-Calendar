@@ -1,11 +1,10 @@
-import { DebouncedNotifier } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import type { Subscription } from "rxjs";
-import { filter } from "rxjs/operators";
 import BTree from "sorted-btree";
 import type { CalendarEvent, TimedEvent } from "../types/calendar";
 import { isTimedEvent } from "../types/calendar";
 import type { ISO } from "../types/index";
+import { IndexedCacheStore } from "./indexed-cache-store";
 import type { Indexer, IndexerEvent, RawEventSource } from "./indexer";
 import type { Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
@@ -19,37 +18,20 @@ export interface VaultEventId {
 	filePath: string;
 }
 
-interface CachedCalendarEvent {
-	template: CalendarEvent;
-	mtime: number;
-}
-
-export class EventStore extends DebouncedNotifier {
+export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private static readonly SEP = "\0";
 	private static readonly MAX = "\uffff";
 
-	private cache = new Map<string, CachedCalendarEvent>();
-	private subscription: Subscription | null = null;
 	private indexingCompleteSubscription: Subscription | null = null;
 	private eventsByStartTime = new BTree<string, TimedEvent>();
 	private eventsByEndTime = new BTree<string, TimedEvent>();
 
 	constructor(
-		private indexer: Indexer,
+		indexer: Indexer,
 		private parser: Parser,
 		private recurringEventManager: RecurringEventManager
 	) {
-		super();
-		this.subscription = this.indexer.events$
-			.pipe(
-				filter(
-					(event: IndexerEvent) =>
-						event.type === "file-changed" || event.type === "untracked-file-changed" || event.type === "file-deleted"
-				)
-			)
-			.subscribe((event: IndexerEvent) => {
-				this.handleIndexerEvent(event);
-			});
+		super(indexer, new Set(["file-changed", "untracked-file-changed", "file-deleted"]));
 
 		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
 			if (isComplete) {
@@ -63,7 +45,11 @@ export class EventStore extends DebouncedNotifier {
 		});
 	}
 
-	private handleIndexerEvent(event: IndexerEvent): void {
+	protected buildTemplate(source: RawEventSource): CalendarEvent | null {
+		return this.parser.parseEventSource(source);
+	}
+
+	protected override handleIndexerEvent(event: IndexerEvent): void {
 		switch (event.type) {
 			case "file-changed":
 				if (event.source) {
@@ -71,8 +57,6 @@ export class EventStore extends DebouncedNotifier {
 				}
 				break;
 			case "untracked-file-changed":
-				// A file transitioned from tracked -> untracked (e.g. undo/remove date props).
-				// Ensure any previously cached tracked event is removed so the calendar doesn't go stale.
 				this.invalidate(event.filePath);
 				break;
 			case "file-deleted":
@@ -81,80 +65,41 @@ export class EventStore extends DebouncedNotifier {
 		}
 	}
 
-	private processFileChange(source: RawEventSource): void {
-		if (this.isUpToDate(source.filePath, source.mtime)) {
-			return;
-		}
-
-		const event = this.parser.parseEventSource(source);
-
-		if (event) {
-			this.updateEvent(source.filePath, event, source.mtime);
-		} else {
-			this.invalidate(source.filePath);
-		}
+	protected override onAfterUpsert(event: CalendarEvent): void {
+		this.addToSortedSets(event);
 	}
 
-	destroy(): void {
-		this.subscription?.unsubscribe();
-		this.subscription = null;
+	protected override onBeforeRemove(event: CalendarEvent): void {
+		this.removeFromSortedSets(event);
+	}
+
+	override clear(): void {
+		super.clear();
+		this.eventsByStartTime.clear();
+		this.eventsByEndTime.clear();
+	}
+
+	override destroy(): void {
 		this.indexingCompleteSubscription?.unsubscribe();
 		this.indexingCompleteSubscription = null;
 		super.destroy();
-		this.clear();
+	}
+
+	/**
+	 * Clears the cache without notifying subscribers.
+	 * Used during resync to avoid triggering a refresh before new data is loaded.
+	 */
+	clearWithoutNotify(): void {
+		for (const cached of this.cache.values()) {
+			this.onBeforeRemove(cached.template);
+		}
+		this.cache.clear();
+		this.eventsByStartTime.clear();
+		this.eventsByEndTime.clear();
 	}
 
 	updateEvent(filePath: string, template: CalendarEvent, mtime: number): void {
-		const oldCached = this.cache.get(filePath);
-		if (oldCached) {
-			this.removeFromSortedSets(oldCached.template);
-		}
-
-		this.cache.set(filePath, { template, mtime });
-		this.addToSortedSets(template);
-		this.scheduleRefresh();
-	}
-
-	invalidate(filePath: string): void {
-		const cached = this.cache.get(filePath);
-
-		if (cached && this.cache.delete(filePath)) {
-			this.removeFromSortedSets(cached.template);
-			this.notifyChange();
-		}
-	}
-
-	private normIso(iso: string): string {
-		return new Date(iso).toISOString();
-	}
-
-	private makeTreeKey(time: string, filePath: string): string {
-		return `${time}${EventStore.SEP}${filePath}`;
-	}
-
-	private addToSortedSets(event: CalendarEvent): void {
-		if (!isTimedEvent(event) || event.skipped) return;
-
-		const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
-		this.eventsByStartTime.set(startKey, event);
-
-		const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
-		this.eventsByEndTime.set(endKey, event);
-	}
-
-	private removeFromSortedSets(event: CalendarEvent): void {
-		if (!isTimedEvent(event) || event.skipped) return;
-
-		const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
-		this.eventsByStartTime.delete(startKey);
-
-		const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
-		this.eventsByEndTime.delete(endKey);
-	}
-
-	isUpToDate(filePath: string, mtime: number): boolean {
-		const cached = this.cache.get(filePath);
-		return cached ? cached.mtime === mtime : false;
+		this.upsert(filePath, template, mtime);
 	}
 
 	getEvents(query: EventQuery): CalendarEvent[] {
@@ -193,34 +138,59 @@ export class EventStore extends DebouncedNotifier {
 	}
 
 	getAllEvents(): CalendarEvent[] {
-		const results: CalendarEvent[] = [];
-
-		for (const cached of this.cache.values()) {
-			results.push(cached.template);
-		}
-
-		return results.sort((a, b) => a.start.localeCompare(b.start));
+		return this.getAll().sort((a, b) => a.start.localeCompare(b.start));
 	}
 
 	getEventByPath(filePath: string): CalendarEvent | null {
-		return this.cache.get(filePath)?.template ?? null;
+		return this.getByPath(filePath);
 	}
 
-	clear(): void {
-		this.cache.clear();
-		this.eventsByStartTime.clear();
-		this.eventsByEndTime.clear();
-		this.notifyChange();
+	findNextEventByStartTime(currentStartISO: string, excludeFilePath?: string): CalendarEvent | null {
+		return this.findAdjacentEventInTree(
+			currentStartISO,
+			excludeFilePath,
+			this.eventsByStartTime,
+			(tree, key) => tree.nextHigherPair(key),
+			(t) => `${t}${EventStore.SEP}`
+		);
 	}
 
-	/**
-	 * Clears the cache without notifying subscribers.
-	 * Used during resync to avoid triggering a refresh before new data is loaded.
-	 */
-	clearWithoutNotify(): void {
-		this.cache.clear();
-		this.eventsByStartTime.clear();
-		this.eventsByEndTime.clear();
+	findPreviousEventByEndTime(currentEndISO: string, excludeFilePath?: string): CalendarEvent | null {
+		return this.findAdjacentEventInTree(
+			currentEndISO,
+			excludeFilePath,
+			this.eventsByEndTime,
+			(tree, key) => tree.nextLowerPair(key),
+			(t) => `${t}${EventStore.SEP}${EventStore.MAX}`
+		);
+	}
+
+	private normIso(iso: string): string {
+		return new Date(iso).toISOString();
+	}
+
+	private makeTreeKey(time: string, filePath: string): string {
+		return `${time}${EventStore.SEP}${filePath}`;
+	}
+
+	private addToSortedSets(event: CalendarEvent): void {
+		if (!isTimedEvent(event) || event.skipped) return;
+
+		const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
+		this.eventsByStartTime.set(startKey, event);
+
+		const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
+		this.eventsByEndTime.set(endKey, event);
+	}
+
+	private removeFromSortedSets(event: CalendarEvent): void {
+		if (!isTimedEvent(event) || event.skipped) return;
+
+		const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
+		this.eventsByStartTime.delete(startKey);
+
+		const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
+		this.eventsByEndTime.delete(endKey);
 	}
 
 	private eventIntersectsRange(event: CalendarEvent, rangeStart: DateTime, rangeEnd: DateTime): boolean {
@@ -249,25 +219,5 @@ export class EventStore extends DebouncedNotifier {
 		}
 
 		return null;
-	}
-
-	findNextEventByStartTime(currentStartISO: string, excludeFilePath?: string): CalendarEvent | null {
-		return this.findAdjacentEventInTree(
-			currentStartISO,
-			excludeFilePath,
-			this.eventsByStartTime,
-			(tree, key) => tree.nextHigherPair(key),
-			(t) => `${t}${EventStore.SEP}`
-		);
-	}
-
-	findPreviousEventByEndTime(currentEndISO: string, excludeFilePath?: string): CalendarEvent | null {
-		return this.findAdjacentEventInTree(
-			currentEndISO,
-			excludeFilePath,
-			this.eventsByEndTime,
-			(tree, key) => tree.nextLowerPair(key),
-			(t) => `${t}${EventStore.SEP}${EventStore.MAX}`
-		);
 	}
 }
