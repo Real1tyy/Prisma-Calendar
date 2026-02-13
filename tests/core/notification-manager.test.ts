@@ -785,16 +785,15 @@ describe("NotificationManager", () => {
 			expect(queue[0].title).toBe("Custom Title");
 		});
 
-		it("should fallback to file basename when no title property", async () => {
+		it("should fallback to filename (derived from filePath) when no title property", async () => {
 			await notificationManager.start();
-
-			mockVault.getAbstractFileByPath.mockReturnValue(createMockFile("event.md", "Event File Name"));
 
 			const futureDate = createFutureDate(2);
 
 			indexerEventsSubject.next(
 				createFileChangedEvent({
 					source: createTimedEventSource({
+						filePath: "Event File Name.md",
 						frontmatter: {
 							"Start Date": futureDate.toISOString(),
 							"Minutes Before": 15,
@@ -808,7 +807,7 @@ describe("NotificationManager", () => {
 			expect(queue[0].title).toBe("Event File Name");
 		});
 
-		it("should fallback to file path when file not found", async () => {
+		it("should derive title from filePath when file not found in vault", async () => {
 			await notificationManager.start();
 
 			mockVault.getAbstractFileByPath.mockReturnValue(null);
@@ -828,7 +827,7 @@ describe("NotificationManager", () => {
 
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
-			expect(queue[0].title).toBe("event.md");
+			expect(queue[0].title).toBe("event");
 		});
 	});
 

@@ -299,13 +299,7 @@ export const cleanupTitle = (text: string): string => {
 
 /**
  * Gets the event name from the calendar title property, title property, or the filename.
- * Priority: calendarTitleProp (auto-computed wiki link) > titleProp (manual) > filename cleanup.
- *
- * @param titleProp - Optional title property name from settings
- * @param frontmatter - Event frontmatter object
- * @param filePath - Path to the event file
- * @param calendarTitleProp - Optional auto-computed calendar title property name
- * @returns Event name or undefined if no source provides a valid name
+ * Priority: calendarTitleProp (auto-computed wiki link) > titleProp (manual) > filename derived from filePath.
  */
 export const getEventName = (
 	titleProp: string | undefined,
@@ -322,8 +316,8 @@ export const getEventName = (
 	}
 
 	if (filePath) {
-		const filename = filePath.split("/").pop()?.replace(/\.md$/, "") || "";
-		return cleanupTitle(filename);
+		const basename = filePath.split("/").pop()?.replace(/\.md$/, "") ?? "";
+		return basename ? cleanupTitle(basename) : undefined;
 	}
 
 	return undefined;

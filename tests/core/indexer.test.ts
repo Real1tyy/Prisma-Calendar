@@ -216,6 +216,7 @@ describe("Indexer", () => {
 				rruleIdProp: "RRuleID",
 				statusProperty: "Status",
 				doneValue: "Done",
+				calendarTitleProp: "",
 			};
 			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
 			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone, null);
@@ -308,6 +309,7 @@ describe("Indexer", () => {
 				endProp: "end",
 				statusProperty: "Status",
 				doneValue: "Done",
+				calendarTitleProp: "",
 			};
 			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
 			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone, null);
@@ -346,6 +348,7 @@ describe("Indexer", () => {
 				markPastInstancesAsDone: false,
 				startProp: "start",
 				endProp: "end",
+				calendarTitleProp: "",
 			};
 			const settingsStoreWithoutMarkDone = createMockSingleCalendarSettingsStore(settingsWithoutMarkDone);
 			const indexerWithoutMarkDone = new Indexer(mockApp, settingsStoreWithoutMarkDone, null);
@@ -387,6 +390,7 @@ describe("Indexer", () => {
 				statusProperty: "Status",
 				doneValue: "Done",
 				rruleProp: "RRule",
+				calendarTitleProp: "",
 			};
 			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
 			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone, null);
@@ -430,6 +434,7 @@ describe("Indexer", () => {
 				endProp: "end",
 				statusProperty: "Status",
 				doneValue: "Done",
+				calendarTitleProp: "",
 			};
 			const settingsStoreWithMarkDone = createMockSingleCalendarSettingsStore(settingsWithMarkDone);
 			const indexerWithMarkDone = new Indexer(mockApp, settingsStoreWithMarkDone, null);
