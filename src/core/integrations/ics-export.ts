@@ -354,6 +354,10 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 		const filename = generateICSFilename(calendarName);
 		const filePath = `${exportFolder}/${filename}`;
 
+		if (!app.vault.getAbstractFileByPath(exportFolder)) {
+			await app.vault.createFolder(exportFolder);
+		}
+
 		await app.vault.create(filePath, result.content);
 		new Notice(`Exported ${events.length} events to ${filePath}`);
 	} catch (error) {

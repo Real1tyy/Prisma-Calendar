@@ -2943,6 +2943,10 @@
 	padding-top: 0.5rem;
 }
 
+.prisma-event-modal .prisma-setting-item.prisma-hidden {
+	display: none;
+}
+
 .prisma-event-modal .prisma-setting-item:last-child {
 	border-bottom: none;
 }
