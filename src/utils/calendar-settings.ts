@@ -34,6 +34,8 @@ export function getEventRenderingKey(settings: SingleCalendarConfig): string {
 	return JSON.stringify([
 		settings.colorRules,
 		settings.defaultNodeColor,
+		settings.filterExpressions,
+		settings.untrackedFilterExpressions,
 		settings.caldavProp,
 		settings.icsSubscriptionProp,
 		settings.frontmatterDisplayProperties,
@@ -47,6 +49,7 @@ export function getEventRenderingKey(settings: SingleCalendarConfig): string {
 		settings.pastEventContrast,
 		settings.skipProp,
 		settings.titleProp,
+		settings.calendarTitleProp,
 	]);
 }
 

@@ -98,12 +98,14 @@ Tell Prisma Calendar which frontmatter keys you use.
 
 ### Identification & Tracking
 
+- **Calendar title property**: auto-computed display title stored as a wiki link with ZettelID stripped (default: `Calendar Title`). Used for clean rendering in the calendar and Bases views. Always kept in sync automatically. See [Calendar Title](./features/calendar-title) for details
 - **ZettelID property** (optional): when set, a timestamp-based ID is generated on creation/cloning (see [ZettelID Naming System](./features/zettelid-naming) for details). Default: `ZettelID`
 - **Status property**: frontmatter property name for event status (default: `Status`), used when marking events as done or undone
 - **Done value**: value to set in the status property when marking an event as done (default: `Done`)
 - **Not done value**: value to set in the status property when marking an event as undone (default: `Not Done`)
+- **Custom done property**: overrides the default status property for manual mark-as-done actions. Uses the format `propertyName value` (e.g., `archived true`, `priority 0`). When configured, this is used instead of the status property for context menu, modal checkbox, and batch operations. It is also used to evaluate whether an event is done — the context menu shows "Mark as undone" when the property matches. Auto-mark past events is not affected and continues to use the standard status property. Values are auto-parsed: `true`/`false` become booleans, numeric strings become numbers, everything else stays as a string. Leave empty to use the default status property behavior (default: empty)
+- **Custom undone property**: overrides what happens when marking an event as undone. Same `propertyName value` format (e.g., `archived false`). Requires "Custom done property" to be configured first. If left empty, the custom done property key is removed from frontmatter on undone instead. Default: empty
 - **Category property**: frontmatter property name for event categories (default: `Category`), used for grouping in statistics views. Supports **multiple comma-separated categories** (e.g., `Category: Work, Learning`) — events are counted under each category separately in statistics.
-- **Series property**: frontmatter property name for grouping events into named series (default: `Series`). Supports single values and YAML arrays for multi-series membership. See [Event Series](./features/event-series) for details
 - **Break property**: frontmatter property name for break time in minutes (default: `Break`), subtracted from duration in statistics
 - **CalDAV property**: property name for CalDAV sync metadata (default: `CalDAV`)
 
@@ -705,7 +707,7 @@ Customize markers in Settings → Calendar → Recurring events → Event marker
 
 ### Frontmatter Propagation
 
-Frontmatter propagation keeps custom properties in sync across related events. When you change a property on one event, the change can automatically apply to all related events. Three propagation scopes are available — recurring instances, name series, and property series — each with independent toggles.
+Frontmatter propagation keeps custom properties in sync across related events. When you change a property on one event, the change can automatically apply to all related events. Three propagation scopes are available — recurring instances, name series, and category series — each with independent toggles.
 
 #### Recurring Instance Propagation
 
@@ -723,18 +725,18 @@ Propagate frontmatter changes across events that share the same title (with Zett
 
 Name series require at least 2 events with the same cleaned title to trigger propagation.
 
-#### Property Series Propagation
+#### Category Series Propagation
 
-Propagate frontmatter changes across events that share the same series property value (default: `Series`). When you update a custom property on one event, all other events in the same series are updated.
+Propagate frontmatter changes across events that share the same category value. When you update a custom property on one event, all other events with the same category are updated.
 
-- **Propagate frontmatter to property series**: Auto-propagate changes across property-based series members without confirmation.
-- **Ask before propagating to property series**: Show a confirmation modal before propagating to property series members.
+- **Propagate frontmatter to category series**: Auto-propagate changes across category-based series members without confirmation.
+- **Ask before propagating to category series**: Show a confirmation modal before propagating to category series members.
 
-Property series require at least 2 events with the same series value to trigger propagation.
+Category series require at least 2 events with the same category value to trigger propagation.
 
 #### Shared Propagation Settings
 
-These settings apply to all three propagation types (recurring, name series, property series):
+These settings apply to all three propagation types (recurring, name series, category series):
 
 - **Excluded properties**: Comma-separated list of additional frontmatter property names to exclude from propagation. These properties, along with all Prisma-managed properties (Start, End, Date, RRule, RRuleID, Source, etc.), are never propagated to preserve instance-specific timing and system integrity.
 - **Propagation debounce delay**: Delay in milliseconds before propagating changes (100ms - 10,000ms, default: 3000ms). Multiple rapid changes within this window are accumulated and merged together. Lower values propagate faster; higher values accumulate more changes before propagating.

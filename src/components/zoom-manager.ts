@@ -11,6 +11,8 @@ export class ZoomManager {
 	private wheelListener?: (e: WheelEvent) => void;
 	private currentZoomLevel: number;
 	private onZoomChangeCallback?: () => void;
+	private updateTimeout?: number;
+	private isUpdating = false;
 
 	constructor(settingsStore: CalendarSettingsStore) {
 		this.settingsStore = settingsStore;
@@ -27,6 +29,10 @@ export class ZoomManager {
 
 	destroy(): void {
 		this.removeZoomListener();
+		if (this.updateTimeout) {
+			window.clearTimeout(this.updateTimeout);
+			this.updateTimeout = undefined;
+		}
 		this.calendar = null;
 		this.container = null;
 		this.viewContainerEl = null;
@@ -41,25 +47,54 @@ export class ZoomManager {
 	}
 
 	updateZoomLevelButton(): void {
-		const button = this.calendar?.el?.querySelector(".fc-zoomLevel-button");
-		if (!button) return;
+		if (this.updateTimeout) {
+			window.clearTimeout(this.updateTimeout);
+			this.updateTimeout = undefined;
+		}
 
-		const currentView = this.calendar?.view?.type;
-		const isTimeGridView = currentView?.includes("timeGrid");
+		// Debounce to prevent race conditions during rapid updates
+		this.updateTimeout = window.setTimeout(() => {
+			this.performZoomButtonUpdate();
+			this.updateTimeout = undefined;
+		}, 50);
+	}
 
-		if (isTimeGridView) {
-			const newText = this.getZoomLevelText();
+	private performZoomButtonUpdate(): void {
+		// Guard against concurrent updates
+		if (this.isUpdating) {
+			return;
+		}
 
-			// Only update if text has changed to prevent unnecessary DOM manipulation
-			if (button.textContent !== newText) {
-				button.textContent = newText;
+		this.isUpdating = true;
+
+		try {
+			const button = this.calendar?.el?.querySelector(".fc-zoomLevel-button");
+			if (!button) return;
+
+			const currentView = this.calendar?.view?.type;
+			const isTimeGridView = currentView?.includes("timeGrid");
+
+			if (isTimeGridView) {
+				const newText = this.getZoomLevelText();
+
+				// Ensure we're replacing, not appending - clear first then set
+				if (button.textContent !== newText) {
+					// Clear the text content completely before setting new value
+					button.textContent = "";
+					// Set the new text in the next microtask to ensure clean state
+					queueMicrotask(() => {
+						button.textContent = newText;
+					});
+				}
+
+				removeCls(button as HTMLElement, "zoom-button-hidden");
+				addCls(button as HTMLElement, "zoom-button-visible");
+			} else {
+				removeCls(button as HTMLElement, "zoom-button-visible");
+				addCls(button as HTMLElement, "zoom-button-hidden");
 			}
-
-			removeCls(button as HTMLElement, "zoom-button-hidden");
-			addCls(button as HTMLElement, "zoom-button-visible");
-		} else {
-			removeCls(button as HTMLElement, "zoom-button-visible");
-			addCls(button as HTMLElement, "zoom-button-hidden");
+		} finally {
+			this.isUpdating = false;
 		}
 	}
 

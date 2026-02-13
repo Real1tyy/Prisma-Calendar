@@ -59,6 +59,7 @@ const PropsSettingsSchema = z
 			.enum(["none", "startDate", "endDate"])
 			.catch(SETTINGS_DEFAULTS.DEFAULT_NORMALIZE_DATE_PROPERTY), // copy start/end date to date property for sorting
 		titleProp: z.string().optional(), // optional; fallback to file name
+		calendarTitleProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CALENDAR_TITLE_PROP), // auto-computed display title (wiki link with zettel ID stripped) for clean rendering in calendar and Bases views
 		zettelIdProp: z.string().optional(), // optional; property name for ZettelID generation
 		skipProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SKIP_PROP), // property name to skip/hide event from calendar
 		rruleProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_RRULE_PROP), // property name for RRule type (daily, weekly, etc.)
@@ -72,9 +73,10 @@ const PropsSettingsSchema = z
 		statusProperty: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY), // property name to manage event status
 		doneValue: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE), // value to set when marking event as done
 		notDoneValue: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_NOT_DONE_VALUE), // value to set when marking event as not done
+		customDoneProperty: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CUSTOM_DONE_PROPERTY), // DSL expression for additional property to set when marking as done (format: "propertyName value")
+		customUndoneProperty: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CUSTOM_UNDONE_PROPERTY), // DSL expression for additional property to set when marking as undone (format: "propertyName value"), requires customDoneProperty
 		categoryProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CATEGORY_PROP), // property name for event categories used in statistics
 		breakProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_BREAK_PROP), // property name for break time in minutes (subtracted from duration in statistics)
-		seriesProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SERIES_PROP), // property name for grouping events into a named series
 		futureInstancesCountProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT_PROP), // property name for per-event override of future instances count
 		generatePastEventsProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_GENERATE_PAST_EVENTS_PROP), // property name for generating past recurring instances from source event start date
 		ignoreRecurringProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_IGNORE_RECURRING_PROP), // property name for ignoring duplicated recurring events from future instance generation
@@ -123,8 +125,10 @@ const CalendarSettingsSchema = z
 		askBeforePropagatingFrontmatter: z.boolean().catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_FRONTMATTER), // show confirmation modal before propagating frontmatter changes
 		propagateFrontmatterToNameSeries: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_NAME_SERIES), // automatically propagate frontmatter changes across name-based series (events sharing the same title)
 		askBeforePropagatingToNameSeries: z.boolean().catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_TO_NAME_SERIES), // show confirmation modal before propagating frontmatter changes to name series
-		propagateFrontmatterToPropSeries: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_PROP_SERIES), // automatically propagate frontmatter changes across property-based series (events sharing the same series prop value)
-		askBeforePropagatingToPropSeries: z.boolean().catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_TO_PROP_SERIES), // show confirmation modal before propagating frontmatter changes to prop series
+		propagateFrontmatterToCategorySeries: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_CATEGORY_SERIES), // automatically propagate frontmatter changes across category-based series (events sharing the same category)
+		askBeforePropagatingToCategorySeries: z
+			.boolean()
+			.catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_TO_CATEGORY_SERIES), // show confirmation modal before propagating frontmatter changes to category series
 		excludedRecurringPropagatedProps: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_EXCLUDED_RECURRING_PROPAGATED_PROPS), // comma-separated list of frontmatter properties to exclude from propagation
 		propagationDebounceMs: z
 			.number()

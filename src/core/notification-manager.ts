@@ -1,10 +1,11 @@
 import { SyncStore } from "@real1ty-obsidian-plugins";
-import { type App, TFile } from "obsidian";
+import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { NotificationModal } from "../components/notification-modal";
 import { MAX_PAST_NOTIFICATION_THRESHOLD } from "../constants";
 import type { Frontmatter, PrismaSyncDataSchema } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
+import { getEventName } from "../utils/calendar-events";
 import { toSafeString } from "../utils/format";
 import { getFileByPathOrThrow, openFileInNewTab } from "../utils/obsidian";
 import { parseAsLocalDate } from "../utils/time-formatter";
@@ -151,9 +152,8 @@ export class NotificationManager {
 			notifyAt.setHours(0, 0, 0, 0);
 		}
 
-		const file = this.app.vault.getAbstractFileByPath(filePath);
 		const title =
-			(frontmatter[this.settings.titleProp || ""] as string) || (file instanceof TFile ? file.basename : filePath);
+			getEventName(this.settings.titleProp, frontmatter, filePath, this.settings.calendarTitleProp) || filePath;
 
 		const entry: NotificationEntry = {
 			eventId: filePath,

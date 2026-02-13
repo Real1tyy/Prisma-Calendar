@@ -82,20 +82,20 @@ export class CalendarSettings {
 			() => this.rerender()
 		);
 
-		new Setting(containerEl).setName("Property series propagation").setHeading();
+		new Setting(containerEl).setName("Category series propagation").setHeading();
 
 		this.ui.addMutuallyExclusiveToggles(
 			containerEl,
 			{
 				toggleA: {
-					key: "propagateFrontmatterToPropSeries",
-					name: "Propagate frontmatter to property series",
-					desc: "Automatically propagate frontmatter changes across events that share the same series property value. When you update custom properties on one event, all other events in the same series are updated immediately.",
+					key: "propagateFrontmatterToCategorySeries",
+					name: "Propagate frontmatter to category series",
+					desc: "Automatically propagate frontmatter changes across events that share the same category. When you update custom properties on one event, all other events with the same category are updated immediately.",
 				},
 				toggleB: {
-					key: "askBeforePropagatingToPropSeries",
-					name: "Ask before propagating to property series",
-					desc: "Show a confirmation modal before propagating frontmatter changes to property series members. Allows you to review changes before applying them.",
+					key: "askBeforePropagatingToCategorySeries",
+					name: "Ask before propagating to category series",
+					desc: "Show a confirmation modal before propagating frontmatter changes to category series members. Allows you to review changes before applying them.",
 				},
 			},
 			() => this.rerender()
@@ -106,7 +106,7 @@ export class CalendarSettings {
 		this.ui.addText(containerEl, {
 			key: "excludedRecurringPropagatedProps",
 			name: "Excluded properties",
-			desc: "Comma-separated list of frontmatter property names to exclude from propagation. Applies to all propagation types: recurring instances, name series, and property series.",
+			desc: "Comma-separated list of frontmatter property names to exclude from propagation. Applies to all propagation types: recurring instances, name series, and category series.",
 			placeholder: "Property1, Property2, Property3",
 		});
 

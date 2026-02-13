@@ -8,7 +8,7 @@ import { RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
 import { removeZettelId } from "../../utils/calendar-events";
 import { normalizeFrontmatterForColorEvaluation } from "../../utils/expression-utils";
 
-type SourceTab = "name" | "prop" | "recurring";
+type SourceTab = "name" | "category" | "recurring";
 
 interface TabConfig {
 	id: SourceTab;
@@ -41,33 +41,31 @@ export class EventSeriesModal extends Modal {
 	private restoreFocusToSearch = false;
 	private searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 	private tabsContainer: HTMLElement | null = null;
-	private backBtn: HTMLElement | null = null;
 
 	// Recurring tab state
 	private hidePastEvents = true;
 	private hideSkippedEvents = true;
 
-	// Name/Prop tab state
+	// Name tab state
 	private hidePastEventsNameProp = false;
 	private hideSkippedEventsNameProp = false;
 
-	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
+	// Category tab state
+	private hidePastEventsCategory = false;
+	private hideSkippedEventsCategory = false;
+	private selectedCategoryValue: string | null = null;
 
-	private selectedPropValue: string | null = null;
+	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 
 	constructor(
 		app: App,
 		private bundle: CalendarBundle,
 		private nameKey: string | null,
-		private propValues: string[] | null,
-		private rruleId: string | null
+		private rruleId: string | null,
+		private categoryValues: string[] | null = null
 	) {
 		super(app);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
-		// Auto-select when there's exactly one series value
-		if (this.propValues && this.propValues.length === 1) {
-			this.selectedPropValue = this.propValues[0];
-		}
 	}
 
 	onOpen(): void {
@@ -78,6 +76,11 @@ export class EventSeriesModal extends Modal {
 		if (tabs.length === 0) return;
 
 		this.activeTab = tabs[0].id;
+
+		// If only one category, auto-select it
+		if (this.categoryValues && this.categoryValues.length === 1) {
+			this.selectedCategoryValue = this.categoryValues[0];
+		}
 
 		// Render tab buttons only when 2+ sources
 		if (tabs.length >= 2) {
@@ -93,6 +96,7 @@ export class EventSeriesModal extends Modal {
 				}
 				btn.addEventListener("click", () => {
 					this.activeTab = tab.id;
+					this.selectedCategoryValue = null;
 					tabsContainer.querySelectorAll(`.${cls("event-series-tab-btn")}`).forEach((b) => {
 						removeCls(b as HTMLElement, "is-active");
 					});
@@ -112,7 +116,8 @@ export class EventSeriesModal extends Modal {
 	private getAvailableTabs(): TabConfig[] {
 		const tabs: TabConfig[] = [];
 		if (this.rruleId != null) tabs.push({ id: "recurring", label: "Recurring" });
-		if (this.propValues != null && this.propValues.length > 0) tabs.push({ id: "prop", label: "By Series" });
+		if (this.categoryValues != null && this.categoryValues.length > 0)
+			tabs.push({ id: "category", label: "By Category" });
 		if (this.nameKey != null) tabs.push({ id: "name", label: "By Name" });
 		return tabs;
 	}
@@ -142,33 +147,6 @@ export class EventSeriesModal extends Modal {
 		});
 	}
 
-	private updateBackButton(): void {
-		// Remove existing back button
-		if (this.backBtn) {
-			this.backBtn.remove();
-			this.backBtn = null;
-		}
-
-		// Show back button in tabs row when viewing a specific series from multiple
-		if (
-			this.tabsContainer &&
-			this.activeTab === "prop" &&
-			this.propValues &&
-			this.propValues.length > 1 &&
-			this.selectedPropValue
-		) {
-			this.backBtn = this.tabsContainer.createEl("button", {
-				text: "\u2190 All series",
-				cls: cls("event-series-back-btn"),
-			});
-			this.backBtn.addEventListener("click", () => {
-				this.selectedPropValue = null;
-				this.searchQuery = "";
-				this.renderContent();
-			});
-		}
-	}
-
 	private renderContent(): void {
 		if (!this.contentArea) return;
 		this.contentArea.empty();
@@ -176,16 +154,68 @@ export class EventSeriesModal extends Modal {
 		// Remove previous categorized styling
 		removeCls(this.contentEl, "recurring-events-list-modal-categorized");
 
-		this.updateBackButton();
-
 		if (this.activeTab === "recurring") {
 			this.renderRecurringTab();
+		} else if (this.activeTab === "category") {
+			this.renderCategoryTab();
 		} else if (this.activeTab === "name") {
-			const nameEvents = this.bundle.seriesManager.getEventsInNameSeries(this.nameKey!);
+			const nameEvents = this.bundle.nameSeriesTracker.getEventsInNameSeries(this.nameKey!);
 			const displayName = nameEvents.length > 0 ? removeZettelId(nameEvents[0].title) : this.nameKey!;
 			this.renderEventListTab(nameEvents, displayName);
-		} else if (this.activeTab === "prop") {
-			this.renderPropTab();
+		}
+	}
+
+	private renderCategoryTab(): void {
+		if (!this.contentArea || !this.categoryValues) return;
+
+		if (this.categoryValues.length === 1 || this.selectedCategoryValue != null) {
+			const categoryValue = this.selectedCategoryValue ?? this.categoryValues[0];
+			const events = this.bundle.categoryTracker.getEventsWithCategory(categoryValue);
+
+			// Apply category color to modal background
+			const categoryColor = this.bundle.categoryTracker.getCategoryColor(categoryValue);
+			if (categoryColor) {
+				this.contentEl.style.setProperty("--source-category-color", categoryColor);
+				addCls(this.contentEl, "recurring-events-list-modal-categorized");
+			}
+
+			// Show back button when multiple categories available
+			if (this.categoryValues.length > 1) {
+				const backBtn = this.contentArea.createEl("button", {
+					text: "\u2190 Back to categories",
+					cls: cls("event-series-back-btn"),
+				});
+				backBtn.addEventListener("click", () => {
+					this.selectedCategoryValue = null;
+					this.renderContent();
+				});
+			}
+
+			this.renderEventListTab(events, categoryValue);
+		} else {
+			this.renderCategoryChooser();
+		}
+	}
+
+	private renderCategoryChooser(): void {
+		if (!this.contentArea || !this.categoryValues) return;
+
+		this.contentArea.createEl("h3", { text: "Select a category" });
+
+		const listContainer = this.contentArea.createDiv(cls("generic-event-list"));
+		for (const categoryValue of this.categoryValues) {
+			const events = this.bundle.categoryTracker.getEventsWithCategory(categoryValue);
+			const itemEl = listContainer.createDiv(cls("generic-event-list-item"));
+
+			const infoEl = itemEl.createDiv(cls("generic-event-info"));
+			infoEl.createEl("div", { cls: cls("generic-event-title") }).textContent = categoryValue;
+			infoEl.createEl("div", { cls: cls("generic-event-subtitle") }).textContent =
+				`${events.length} event${events.length === 1 ? "" : "s"}`;
+
+			itemEl.addEventListener("click", () => {
+				this.selectedCategoryValue = categoryValue;
+				this.renderContent();
+			});
 		}
 	}
 
@@ -362,74 +392,40 @@ export class EventSeriesModal extends Modal {
 		}
 	}
 
-	// --- Name / Prop tab ---
+	// --- Name / Category tab ---
 
 	private renderEventListTab(events: CalendarEvent[], title?: string): void {
 		if (!this.contentArea) return;
+
+		const isCategory = this.activeTab === "category";
 
 		const items: EventListItem[] = events.map((event) => ({
 			date: DateTime.fromISO(event.start, { zone: "utc" }),
 			title: removeZettelId(event.title),
 			filePath: event.ref.filePath,
 			skipped: !!event.skipped,
-			color: this.getEventColor(event),
+			color: isCategory ? undefined : this.getEventColor(event),
 		}));
 
 		this.renderEventList(items, {
 			title,
-			hidePast: this.hidePastEventsNameProp,
-			hideSkipped: this.hideSkippedEventsNameProp,
+			hidePast: isCategory ? this.hidePastEventsCategory : this.hidePastEventsNameProp,
+			hideSkipped: isCategory ? this.hideSkippedEventsCategory : this.hideSkippedEventsNameProp,
 			onHidePastChange: (v) => {
-				this.hidePastEventsNameProp = v;
+				if (isCategory) {
+					this.hidePastEventsCategory = v;
+				} else {
+					this.hidePastEventsNameProp = v;
+				}
 			},
 			onHideSkippedChange: (v) => {
-				this.hideSkippedEventsNameProp = v;
+				if (isCategory) {
+					this.hideSkippedEventsCategory = v;
+				} else {
+					this.hideSkippedEventsNameProp = v;
+				}
 			},
 		});
-	}
-
-	// --- Prop tab ---
-
-	private renderPropTab(): void {
-		if (!this.contentArea || !this.propValues || this.propValues.length === 0) return;
-
-		// If multiple series and none selected yet, show chooser
-		if (this.propValues.length > 1 && !this.selectedPropValue) {
-			this.renderSeriesChooser();
-			return;
-		}
-
-		const selectedValue = this.selectedPropValue!;
-
-		this.renderEventListTab(this.bundle.seriesManager.getEventsInPropSeries(selectedValue), selectedValue);
-	}
-
-	private renderSeriesChooser(): void {
-		if (!this.contentArea || !this.propValues) return;
-
-		const header = this.contentArea.createDiv(cls("recurring-events-list-header"));
-		header.createEl("h2", {
-			text: "Choose a series",
-			cls: cls("recurring-events-source-title"),
-		});
-
-		const listContainer = this.contentArea.createDiv(cls("recurring-events-list-container"));
-
-		for (const value of this.propValues) {
-			const events = this.bundle.seriesManager.getEventsInPropSeries(value);
-			const row = listContainer.createDiv(cls("recurring-event-row"));
-
-			const titleEl = row.createDiv(cls("recurring-event-title"));
-			titleEl.textContent = value;
-
-			const countEl = row.createDiv(cls("recurring-event-date"));
-			countEl.textContent = `${events.length} event${events.length !== 1 ? "s" : ""}`;
-
-			row.onclick = () => {
-				this.selectedPropValue = value;
-				this.renderContent();
-			};
-		}
 	}
 
 	// --- Recurring tab ---

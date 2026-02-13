@@ -720,6 +720,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 		return data ? this.flattenPhysicalInstances(data.physicalInstances) : [];
 	}
 
+	getInstanceCountByRRuleId(rruleId: string): number {
+		return this.getPhysicalInstancesByRRuleId(rruleId).length;
+	}
+
 	getPhysicalInstancesAsEvents(rruleId: string): Array<{
 		event: CalendarEvent;
 		instanceDate: DateTime;

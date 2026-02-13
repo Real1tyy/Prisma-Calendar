@@ -92,12 +92,11 @@ export class SavePresetModal extends Modal {
 			this.handleSave();
 		});
 
-		// Handle Enter key
-		contentEl.addEventListener("keydown", (e) => {
-			if (e.key === "Enter" && !e.shiftKey) {
-				e.preventDefault();
-				this.handleSave();
-			}
+		// Handle Enter key (scope.register works modal-wide regardless of focus)
+		this.scope.register([], "Enter", (e) => {
+			e.preventDefault();
+			this.handleSave();
+			return false;
 		});
 
 		this.nameInput.focus();

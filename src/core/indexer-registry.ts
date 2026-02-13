@@ -9,7 +9,7 @@ import { Indexer } from "./indexer";
 import { NotificationManager } from "./notification-manager";
 import { Parser } from "./parser";
 import { RecurringEventManager } from "./recurring-event-manager";
-import { SeriesManager } from "./series-manager";
+import { NameSeriesTracker } from "./name-series-tracker";
 import { UntrackedEventStore } from "./untracked-event-store";
 
 interface IndexerEntry {
@@ -20,7 +20,7 @@ interface IndexerEntry {
 	recurringEventManager: RecurringEventManager;
 	notificationManager: NotificationManager;
 	categoryTracker: CategoryTracker;
-	seriesManager: SeriesManager;
+	nameSeriesTracker: NameSeriesTracker;
 	refCount: number;
 	calendarIds: Set<string>;
 }
@@ -34,7 +34,7 @@ type SharedInfrastructure = Pick<
 	| "recurringEventManager"
 	| "notificationManager"
 	| "categoryTracker"
-	| "seriesManager"
+	| "nameSeriesTracker"
 >;
 
 /**
@@ -85,8 +85,8 @@ export class IndexerRegistry {
 			const notificationManager = new NotificationManager(this.app, settingsStore, indexer, this.syncStore);
 			const parser = new Parser(this.app, settingsStore);
 			const eventStore = new EventStore(indexer, parser, recurringEventManager);
-			const categoryTracker = new CategoryTracker(indexer, eventStore, settingsStore);
-			const seriesManager = new SeriesManager(this.app, indexer, eventStore, settingsStore);
+			const categoryTracker = new CategoryTracker(this.app, indexer, eventStore, settingsStore);
+			const nameSeriesTracker = new NameSeriesTracker(this.app, indexer, eventStore, settingsStore);
 			recurringEventManager.setEventStore(eventStore);
 			recurringEventManager.setCategoryTracker(categoryTracker);
 			const untrackedEventStore = new UntrackedEventStore(indexer, settingsStore);
@@ -99,7 +99,7 @@ export class IndexerRegistry {
 				recurringEventManager,
 				notificationManager,
 				categoryTracker,
-				seriesManager,
+				nameSeriesTracker,
 				refCount: 1,
 				calendarIds: new Set([calendarId]),
 			} satisfies IndexerEntry;
@@ -115,7 +115,7 @@ export class IndexerRegistry {
 			recurringEventManager: entry.recurringEventManager,
 			notificationManager: entry.notificationManager,
 			categoryTracker: entry.categoryTracker,
-			seriesManager: entry.seriesManager,
+			nameSeriesTracker: entry.nameSeriesTracker,
 		};
 	}
 
@@ -142,7 +142,7 @@ export class IndexerRegistry {
 			entry.recurringEventManager.destroy();
 			entry.notificationManager.stop();
 			entry.categoryTracker.destroy();
-			entry.seriesManager.destroy();
+			entry.nameSeriesTracker.destroy();
 			this.registry.delete(normalizedDir);
 		}
 	}
@@ -156,7 +156,7 @@ export class IndexerRegistry {
 			entry.recurringEventManager.destroy();
 			entry.notificationManager.stop();
 			entry.categoryTracker.destroy();
-			entry.seriesManager.destroy();
+			entry.nameSeriesTracker.destroy();
 		}
 
 		this.registry.clear();

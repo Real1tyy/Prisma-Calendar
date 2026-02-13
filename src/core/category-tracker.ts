@@ -1,9 +1,20 @@
+import {
+	type FrontmatterDiff,
+	FrontmatterPropagationModal,
+	FrontmatterPropagationDebouncer,
+	parseIntoList,
+} from "@real1ty-obsidian-plugins";
+import type { App } from "obsidian";
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { Frontmatter } from "../types";
 import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
-import { parseIntoList } from "@real1ty-obsidian-plugins";
+import {
+	applyFrontmatterChangesToInstance,
+	filterExcludedPropsFromDiff,
+	getRecurringInstanceExcludedProps,
+} from "../utils/calendar-events";
 import type { EventStore } from "./event-store";
 import type { Indexer, IndexerEvent } from "./indexer";
 
@@ -34,15 +45,29 @@ export class CategoryTracker {
 	private settingsSubscription: Subscription | null = null;
 	private _settings: SingleCalendarConfig;
 
+	/** File paths currently being propagated to — prevents infinite loops */
+	private propagatingFilePaths = new Set<string>();
+	private propagationDebouncer: FrontmatterPropagationDebouncer<{
+		sourceFrontmatter: Frontmatter;
+		filePath: string;
+		categoryValue: string;
+	}>;
+
 	public readonly categories$: Observable<CategoryInfo[]>;
 
 	constructor(
+		private app: App,
 		private indexer: Indexer,
 		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
 		this._settings = settingsStore.value;
 		this.categories$ = this.categoriesSubject.asObservable();
+		this.propagationDebouncer = new FrontmatterPropagationDebouncer({
+			debounceMs: this._settings.propagationDebounceMs,
+			filterDiff: (diff) =>
+				filterExcludedPropsFromDiff(diff, this._settings, getRecurringInstanceExcludedProps(this._settings)),
+		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			this._settings = newSettings;
@@ -66,6 +91,11 @@ export class CategoryTracker {
 			case "file-changed":
 				if (event.source) {
 					this.updateFileCategories(event.filePath, event.source.frontmatter);
+
+					// Handle category propagation if there's a frontmatter diff
+					if (event.frontmatterDiff?.hasChanges && !this.propagatingFilePaths.has(event.filePath)) {
+						this.handleCategoryPropagation(event.filePath, event.source.frontmatter, event.frontmatterDiff);
+					}
 				}
 				break;
 			case "file-deleted":
@@ -212,10 +242,78 @@ export class CategoryTracker {
 		return new Set(this.fileToCategories.keys());
 	}
 
+	getCategoryColor(category: string): string {
+		return this.resolveCategoryColor(category);
+	}
+
 	clear(): void {
 		this.categoryToEvents.clear();
 		this.fileToCategories.clear();
 		this.notifyChange();
+	}
+
+	// --- Category propagation ---
+
+	private handleCategoryPropagation(filePath: string, sourceFrontmatter: Frontmatter, diff: FrontmatterDiff): void {
+		const enabled =
+			this._settings.propagateFrontmatterToCategorySeries || this._settings.askBeforePropagatingToCategorySeries;
+		if (!enabled) return;
+
+		const categoryProp = this._settings.categoryProp;
+		if (!categoryProp) return;
+
+		const categoryValues = parseIntoList(sourceFrontmatter[categoryProp]);
+		for (const categoryValue of categoryValues) {
+			const categoryEvents = this.getEventsWithCategory(categoryValue);
+			if (categoryEvents.length >= 2) {
+				const debounceKey = `category:${categoryValue}`;
+				const context = { sourceFrontmatter, filePath, categoryValue };
+
+				this.propagationDebouncer.schedule(debounceKey, diff, context, (filteredDiff, ctx) => {
+					const targetFilePaths = this.getEventsWithCategory(ctx.categoryValue)
+						.map((e) => e.ref.filePath)
+						.filter((fp) => fp !== ctx.filePath);
+					if (targetFilePaths.length === 0) return;
+
+					if (this._settings.propagateFrontmatterToCategorySeries) {
+						void this.propagateToMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths);
+					} else if (this._settings.askBeforePropagatingToCategorySeries) {
+						new FrontmatterPropagationModal(this.app, {
+							eventTitle: `Category series: ${ctx.categoryValue}`,
+							diff: filteredDiff,
+							instanceCount: targetFilePaths.length,
+							onConfirm: () => this.propagateToMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths),
+						}).open();
+					}
+				});
+			}
+		}
+	}
+
+	private async propagateToMembers(
+		sourceFrontmatter: Frontmatter,
+		diff: FrontmatterDiff,
+		targetFilePaths: string[]
+	): Promise<void> {
+		for (const fp of targetFilePaths) {
+			this.propagatingFilePaths.add(fp);
+		}
+
+		const excludedProps = getRecurringInstanceExcludedProps(this._settings);
+
+		try {
+			await Promise.all(
+				targetFilePaths.map((fp) =>
+					applyFrontmatterChangesToInstance(this.app, fp, sourceFrontmatter, diff, excludedProps)
+				)
+			);
+		} finally {
+			setTimeout(() => {
+				for (const fp of targetFilePaths) {
+					this.propagatingFilePaths.delete(fp);
+				}
+			}, 2000);
+		}
 	}
 
 	destroy(): void {
@@ -225,6 +323,8 @@ export class CategoryTracker {
 		this.indexingCompleteSubscription = null;
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
+		this.propagationDebouncer.destroy();
+		this.propagatingFilePaths.clear();
 		this.categoriesSubject.complete();
 	}
 }

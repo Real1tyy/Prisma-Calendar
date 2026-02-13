@@ -13,6 +13,7 @@ import {
 	hasTimestamp,
 	isEventDone,
 	isPhysicalRecurringEvent,
+	parseCustomDoneProperty,
 	rebuildPhysicalInstanceWithNewDate,
 	removeZettelId,
 	shouldUpdateInstanceDateOnMove,
@@ -835,6 +836,79 @@ describe("Physical Recurring Event Utilities", () => {
 
 			const result = isEventDone(mockApp as unknown as App, "Events/test-event.md", "Status", "Done");
 			expect(result).toBe(false);
+		});
+	});
+
+	describe("parseCustomDoneProperty", () => {
+		it("should return null for empty string", () => {
+			expect(parseCustomDoneProperty("")).toBeNull();
+		});
+
+		it("should return null for whitespace-only string", () => {
+			expect(parseCustomDoneProperty("   ")).toBeNull();
+		});
+
+		it("should return null for single word without value", () => {
+			expect(parseCustomDoneProperty("archived")).toBeNull();
+		});
+
+		it("should parse boolean true value", () => {
+			const result = parseCustomDoneProperty("archived true");
+			expect(result).toEqual({ key: "archived", value: true });
+		});
+
+		it("should parse boolean false value", () => {
+			const result = parseCustomDoneProperty("archived false");
+			expect(result).toEqual({ key: "archived", value: false });
+		});
+
+		it("should parse numeric integer value", () => {
+			const result = parseCustomDoneProperty("priority 1");
+			expect(result).toEqual({ key: "priority", value: 1 });
+		});
+
+		it("should parse numeric decimal value", () => {
+			const result = parseCustomDoneProperty("score 9.5");
+			expect(result).toEqual({ key: "score", value: 9.5 });
+		});
+
+		it("should parse negative number value", () => {
+			const result = parseCustomDoneProperty("offset -3");
+			expect(result).toEqual({ key: "offset", value: -3 });
+		});
+
+		it("should parse zero as number", () => {
+			const result = parseCustomDoneProperty("count 0");
+			expect(result).toEqual({ key: "count", value: 0 });
+		});
+
+		it("should parse string value", () => {
+			const result = parseCustomDoneProperty("status completed");
+			expect(result).toEqual({ key: "status", value: "completed" });
+		});
+
+		it("should parse multi-word string value", () => {
+			const result = parseCustomDoneProperty("status in progress");
+			expect(result).toEqual({ key: "status", value: "in progress" });
+		});
+
+		it("should trim leading and trailing whitespace", () => {
+			const result = parseCustomDoneProperty("  archived true  ");
+			expect(result).toEqual({ key: "archived", value: true });
+		});
+
+		it("should return null when key is empty after trimming", () => {
+			expect(parseCustomDoneProperty(" ")).toBeNull();
+		});
+
+		it("should return null when value is empty after trimming", () => {
+			// "key " has a space but value after space is empty
+			expect(parseCustomDoneProperty("key ")).toBeNull();
+		});
+
+		it("should handle property names with special characters", () => {
+			const result = parseCustomDoneProperty("my-prop yes");
+			expect(result).toEqual({ key: "my-prop", value: "yes" });
 		});
 	});
 

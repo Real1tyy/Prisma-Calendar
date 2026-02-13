@@ -101,12 +101,11 @@ export class MoveByModal extends Modal {
 			this.close();
 		});
 
-		// Handle Enter key
-		contentEl.addEventListener("keydown", (e) => {
-			if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.altKey) {
-				e.preventDefault();
-				this.submit();
-			}
+		// Handle Enter key (scope.register works modal-wide regardless of focus)
+		this.scope.register([], "Enter", (e) => {
+			e.preventDefault();
+			this.submit();
+			return false;
 		});
 
 		// Initialize selection states

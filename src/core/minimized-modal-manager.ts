@@ -219,7 +219,7 @@ class MinimizedModalManagerClass {
 					...this.savedState,
 					filePath: event.filePath,
 					originalFrontmatter: frontmatter,
-					title: getEventName(settings.titleProp, frontmatter, event.filePath),
+					title: getEventName(settings.titleProp, frontmatter, event.filePath, settings.calendarTitleProp),
 					categories: settings.categoryProp ? (frontmatter[settings.categoryProp] as string | undefined) : undefined,
 					date: frontmatter[settings.dateProp] as string | undefined,
 					startDate: frontmatter[settings.startProp] as string | undefined,

@@ -1,5 +1,6 @@
 import {
 	type FrontmatterDiff,
+	extractDisplayName,
 	generateZettelId,
 	serializeFrontmatterValue,
 	withFrontmatter,
@@ -297,20 +298,25 @@ export const cleanupTitle = (text: string): string => {
 };
 
 /**
- * Gets the event name from either the title property or the filename.
- * If titleProp is configured and exists in frontmatter, returns that value.
- * Otherwise, extracts the filename (without extension) and strips ZettelID.
+ * Gets the event name from the calendar title property, title property, or the filename.
+ * Priority: calendarTitleProp (auto-computed wiki link) > titleProp (manual) > filename cleanup.
  *
  * @param titleProp - Optional title property name from settings
  * @param frontmatter - Event frontmatter object
  * @param filePath - Path to the event file
- * @returns Event name or undefined if neither source provides a valid name
+ * @param calendarTitleProp - Optional auto-computed calendar title property name
+ * @returns Event name or undefined if no source provides a valid name
  */
 export const getEventName = (
 	titleProp: string | undefined,
 	frontmatter: Record<string, unknown>,
-	filePath: string | null | undefined
+	filePath: string | null | undefined,
+	calendarTitleProp?: string | undefined
 ): string | undefined => {
+	if (calendarTitleProp && frontmatter[calendarTitleProp]) {
+		return extractDisplayName(String(frontmatter[calendarTitleProp]));
+	}
+
 	if (titleProp && frontmatter[titleProp]) {
 		return frontmatter[titleProp] as string;
 	}
@@ -376,6 +382,32 @@ export const isEventDone = (app: App, filePath: string, statusProperty: string, 
 };
 
 /**
+ * Parses a custom done property DSL expression.
+ * Format: "propertyName value" (e.g., "archived true", "status completed", "priority 1")
+ * Values are auto-parsed: "true"/"false" → boolean, numeric strings → number, rest → string.
+ */
+export const parseCustomDoneProperty = (expression: string): { key: string; value: unknown } | null => {
+	const trimmed = expression.trim();
+	if (!trimmed) return null;
+
+	const spaceIndex = trimmed.indexOf(" ");
+	if (spaceIndex === -1) return null;
+
+	const key = trimmed.substring(0, spaceIndex).trim();
+	const rawValue = trimmed.substring(spaceIndex + 1).trim();
+
+	if (!key || !rawValue) return null;
+
+	if (rawValue === "true") return { key, value: true };
+	if (rawValue === "false") return { key, value: false };
+
+	const num = Number(rawValue);
+	if (!Number.isNaN(num)) return { key, value: num };
+
+	return { key, value: rawValue };
+};
+
+/**
  * Returns a Set of core Prisma-managed internal properties.
  * These are the base properties that Prisma uses for calendar functionality.
  */
@@ -387,6 +419,7 @@ const getPrismaInternalProps = (settings: SingleCalendarConfig): Set<string> => 
 			settings.dateProp,
 			settings.breakProp,
 			settings.titleProp || "",
+			settings.calendarTitleProp,
 			settings.allDayProp,
 			settings.rruleProp,
 			settings.rruleSpecProp,
@@ -414,7 +447,6 @@ export function getInternalProperties(settings: SingleCalendarConfig): Set<strin
 	const additionalInternalProps = [
 		settings.statusProperty,
 		settings.categoryProp,
-		settings.seriesProp,
 		settings.minutesBeforeProp,
 		settings.daysBeforeProp,
 		...INTERNAL_FRONTMATTER_PROPERTIES,

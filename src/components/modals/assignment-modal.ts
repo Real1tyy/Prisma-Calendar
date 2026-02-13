@@ -409,28 +409,3 @@ export function openCategoryAssignModal(
 	};
 	new AssignmentModal(app, items, config, preSelected, onSubmit).open();
 }
-
-/** Opens a series assignment modal. Encapsulates config so callers don't repeat it. */
-export function openSeriesAssignModal(
-	app: App,
-	seriesWithCounts: { name: string; count: number }[],
-	defaultColor: string,
-	preSelected: string[],
-	onSubmit: (selected: string[]) => void
-): void {
-	const items: AssignmentItem[] = seriesWithCounts.map((s) => ({
-		name: s.name,
-		color: defaultColor,
-		subtitle: `${s.count} event${s.count !== 1 ? "s" : ""}`,
-	}));
-	const config: AssignmentModalConfig = {
-		title: "Assign series",
-		description: "Select series to assign to this event. This will replace any existing series.",
-		searchPlaceholder: "Search or create new series...",
-		createNewLabel: (n) => `Create new series: "${n}"`,
-		assignLabel: "Assign series",
-		removeLabel: "Remove series",
-		defaultColor,
-	};
-	new AssignmentModal(app, items, config, preSelected, onSubmit).open();
-}

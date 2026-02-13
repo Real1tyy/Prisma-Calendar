@@ -4,7 +4,6 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import {
 	AssignCategoriesCommand,
-	AssignSeriesCommand,
 	CloneEventCommand,
 	DeleteEventCommand,
 	DuplicateRecurringEventCommand,
@@ -18,7 +17,7 @@ import {
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import { type ContextMenuItem, isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
-import { findAdjacentEvent, getEventName, isEventDone } from "../utils/calendar-events";
+import { findAdjacentEvent, getEventName, isEventDone, parseCustomDoneProperty } from "../utils/calendar-events";
 import { intoDate, toLocalISOString } from "../utils/format";
 import {
 	emitHover,
@@ -32,7 +31,7 @@ import type { CalendarView } from "./calendar-view";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { EventSeriesModal } from "./list-modals/event-series-modal";
 import { DeleteRecurringEventsModal, EventEditModal } from "./modals";
-import { openCategoryAssignModal, openSeriesAssignModal } from "./modals/assignment-modal";
+import { openCategoryAssignModal } from "./modals/assignment-modal";
 import { MoveByModal } from "./modals/move-by-modal";
 
 interface CalendarEventInfo {
@@ -255,10 +254,10 @@ export class EventContextMenu {
 			});
 		}
 
-		if (shouldShow("viewSeries")) {
+		if (shouldShow("viewEventGroups")) {
 			menu.addItem((item) => {
 				item
-					.setTitle("View series")
+					.setTitle("View event groups")
 					.setIcon("list")
 					.onClick(() => {
 						this.showEventSeries(event);
@@ -299,17 +298,6 @@ export class EventContextMenu {
 						.setIcon("tag")
 						.onClick(() => {
 							void this.openAssignCategoriesModal(event);
-						});
-				});
-			}
-
-			if (shouldShow("assignSeries")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Assign series")
-						.setIcon("layers")
-						.onClick(() => {
-							void this.openAssignSeriesModal(event);
 						});
 				});
 			}
@@ -531,6 +519,17 @@ export class EventContextMenu {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const filePath = event.extendedProps?.filePath;
 		if (!filePath) return false;
+
+		// If custom done property is configured, check it first
+		const customProp = parseCustomDoneProperty(settings.customDoneProperty);
+		if (customProp) {
+			try {
+				const { frontmatter } = getFileAndFrontmatter(this.app, filePath);
+				return frontmatter[customProp.key] === customProp.value;
+			} catch {
+				return false;
+			}
+		}
 
 		return isEventDone(this.app, filePath, settings.statusProperty, settings.doneValue);
 	}
@@ -780,11 +779,19 @@ export class EventContextMenu {
 		const frontmatter = event.extendedProps?.frontmatterDisplayData;
 		const filePath = event.extendedProps?.filePath ?? null;
 
-		const nameKey = getEventName(settings.titleProp, frontmatter ?? {}, filePath)?.toLowerCase() ?? null;
-		const propValues = parseIntoList(frontmatter?.[settings.seriesProp]);
+		const nameKey =
+			getEventName(settings.titleProp, frontmatter ?? {}, filePath, settings.calendarTitleProp)?.toLowerCase() ?? null;
 		const rruleId = this.isRecurringEvent(event) ? this.getRRuleId(event) : null;
+		const categoryValues =
+			settings.categoryProp && frontmatter ? parseIntoList(frontmatter[settings.categoryProp]) : [];
 
-		new EventSeriesModal(this.app, this.bundle, nameKey, propValues.length > 0 ? propValues : null, rruleId).open();
+		new EventSeriesModal(
+			this.app,
+			this.bundle,
+			nameKey,
+			rruleId,
+			categoryValues.length > 0 ? categoryValues : null
+		).open();
 	}
 
 	async fillEndTimeFromNext(event: CalendarEventInfo): Promise<void> {
@@ -906,24 +913,6 @@ export class EventContextMenu {
 				void this.runCommand(() => new AssignCategoriesCommand(this.app, this.bundle, filePath, selected), {
 					success: "Categories updated",
 					error: "Failed to assign categories",
-				});
-			});
-		});
-	}
-
-	private async openAssignSeriesModal(event: CalendarEventInfo): Promise<void> {
-		await this.withFilePath(event, "assign series", async (filePath) => {
-			getFileByPathOrThrow(this.app, filePath);
-
-			const settings = this.bundle.settingsStore.currentSettings;
-			const { frontmatter } = getFileAndFrontmatter(this.app, filePath);
-			const currentSeries = parseIntoList(frontmatter[settings.seriesProp]);
-			const allSeries = this.bundle.seriesManager.getPropSeriesWithCounts();
-
-			openSeriesAssignModal(this.app, allSeries, settings.defaultNodeColor, currentSeries, (selected) => {
-				void this.runCommand(() => new AssignSeriesCommand(this.app, this.bundle, filePath, selected), {
-					success: "Series updated",
-					error: "Failed to assign series",
 				});
 			});
 		});

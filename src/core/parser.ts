@@ -7,7 +7,7 @@ import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../types/calendar";
 import { convertToISO, parseEventFrontmatter } from "../types/event";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
-import { applyDateNormalization, applyDateNormalizationToFile } from "../utils/calendar-events";
+import { applyDateNormalization, applyDateNormalizationToFile, getEventName } from "../utils/calendar-events";
 import type { RawEventSource } from "./indexer";
 
 export class Parser {
@@ -46,7 +46,9 @@ export class Parser {
 		}
 
 		const isSkipped = frontmatter[this.settings.skipProp] === true;
-		const title = parsed.title || removeMarkdownExtension(getFilenameFromPath(filePath));
+		const title =
+			getEventName(this.settings.titleProp, frontmatter, filePath, this.settings.calendarTitleProp) ||
+			removeMarkdownExtension(getFilenameFromPath(filePath));
 
 		return parsed.allDay
 			? this.parseAllDayEvent(source, id, title, parsed.date, isSkipped)

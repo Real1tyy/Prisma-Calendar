@@ -54,6 +54,11 @@ export class EventStore extends DebouncedNotifier {
 		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
 			if (isComplete) {
 				this.flushPendingRefresh();
+			} else {
+				// Indexing restarted (e.g., filter expressions changed or directory changed).
+				// Clear the cache so events are re-parsed with updated settings.
+				// Without this, isUpToDate() would skip files whose mtime hasn't changed.
+				this.clearWithoutNotify();
 			}
 		});
 	}

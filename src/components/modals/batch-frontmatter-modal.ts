@@ -182,14 +182,12 @@ export class BatchFrontmatterModal extends Modal {
 	}
 
 	private setupKeyboardHandlers(): void {
-		const keyHandler = (e: KeyboardEvent) => {
-			if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
-				e.preventDefault();
-				this.applyChanges();
-			}
-		};
-
-		this.contentEl.addEventListener("keydown", keyHandler);
+		// scope.register works modal-wide regardless of focus
+		this.scope.register([], "Enter", (e) => {
+			e.preventDefault();
+			this.applyChanges();
+			return false;
+		});
 	}
 
 	private prefillCommonProperties(): void {

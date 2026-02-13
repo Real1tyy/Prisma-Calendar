@@ -28,6 +28,7 @@ export interface ICSExportOptions {
 		dateProp: string;
 		allDayProp: string;
 		titleProp?: string;
+		calendarTitleProp?: string;
 	};
 }
 
@@ -194,6 +195,7 @@ function parsedEventToVEvent(
 		]);
 
 		if (options.excludeProps.titleProp) excludedProps.add(options.excludeProps.titleProp);
+		if (options.excludeProps.calendarTitleProp) excludedProps.add(options.excludeProps.calendarTitleProp);
 		if (options.notifications.minutesBeforeProp) excludedProps.add(options.notifications.minutesBeforeProp);
 		if (options.notifications.daysBeforeProp) excludedProps.add(options.notifications.daysBeforeProp);
 
@@ -338,6 +340,7 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 				dateProp: settings.dateProp,
 				allDayProp: settings.allDayProp,
 				titleProp: settings.titleProp,
+				calendarTitleProp: settings.calendarTitleProp,
 			},
 		});
 

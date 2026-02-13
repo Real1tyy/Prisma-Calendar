@@ -68,6 +68,13 @@ export class PropertiesSettings {
 		});
 
 		this.ui.addText(containerEl, {
+			key: "calendarTitleProp",
+			name: "Calendar title property",
+			desc: "Auto-computed display title property (wiki link with ZettelID stripped from filename). Used for clean rendering in calendar and Bases views. The value is always kept up to date automatically.",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_CALENDAR_TITLE_PROP,
+		});
+
+		this.ui.addText(containerEl, {
 			key: "zettelIdProp",
 			name: "ZettelID property",
 			desc: "Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)",
@@ -152,6 +159,20 @@ export class PropertiesSettings {
 		});
 
 		this.ui.addText(containerEl, {
+			key: "customDoneProperty",
+			name: "Custom done property",
+			desc: 'Overrides the status property for manual mark-as-done actions. Format: "propertyName value" (e.g., "archived true"). When set, this is used instead of the status property. Leave empty to use the default behavior.',
+			placeholder: "archived true",
+		});
+
+		this.ui.addText(containerEl, {
+			key: "customUndoneProperty",
+			name: "Custom undone property",
+			desc: 'Overrides what happens when marking as undone. Format: "propertyName value" (e.g., "archived false"). Requires "Custom done property" to be configured. If empty, the custom done property key is removed on undone instead.',
+			placeholder: "archived false",
+		});
+
+		this.ui.addText(containerEl, {
 			key: "categoryProp",
 			name: "Category property",
 			desc: "Frontmatter property name for event categories (used for grouping in statistics)",
@@ -163,13 +184,6 @@ export class PropertiesSettings {
 			name: "Break property",
 			desc: "Frontmatter property name for break time in minutes (subtracted from event duration in statistics, supports decimals)",
 			placeholder: SETTINGS_DEFAULTS.DEFAULT_BREAK_PROP,
-		});
-
-		this.ui.addText(containerEl, {
-			key: "seriesProp",
-			name: "Series property",
-			desc: "Frontmatter property name for grouping events into a named series",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_SERIES_PROP,
 		});
 
 		this.ui.addText(containerEl, {

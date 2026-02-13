@@ -23,6 +23,7 @@ import {
 	assignCategoriesToFrontmatter,
 	autoAssignCategories,
 	findAdjacentEvent,
+	parseCustomDoneProperty,
 	setEventBasics,
 } from "../../utils/calendar-events";
 import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
@@ -1132,12 +1133,13 @@ export abstract class BaseEventModal extends Modal {
 			toggleCls(this.weekdayContainer, "hidden", !showWeekdays);
 		});
 
-		// Add Enter key handler for the modal
-		contentEl.addEventListener("keydown", (e) => {
-			if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.altKey) {
-				e.preventDefault();
-				this.saveEvent();
-			}
+		// Use Obsidian's Scope system for Enter key so it works regardless of focus position.
+		// A contentEl keydown handler breaks when focus leaves contentEl descendants
+		// (e.g., clicking the non-focusable stopwatch header moves focus to modalEl/body).
+		this.scope.register([], "Enter", (e) => {
+			e.preventDefault();
+			this.saveEvent();
+			return false;
 		});
 	}
 
@@ -1395,12 +1397,27 @@ export abstract class BaseEventModal extends Modal {
 
 			// Only update if state changed
 			if (wasInitiallyChecked !== isNowChecked) {
-				if (isNowChecked) {
-					// Changed from unchecked to checked: set to doneValue
-					preservedFrontmatter[settings.statusProperty] = settings.doneValue;
+				const customDoneProp = parseCustomDoneProperty(settings.customDoneProperty);
+
+				if (customDoneProp) {
+					// Custom done property configured: use it instead of status property
+					if (isNowChecked) {
+						preservedFrontmatter[customDoneProp.key] = customDoneProp.value;
+					} else {
+						const customUndoneProp = parseCustomDoneProperty(settings.customUndoneProperty);
+						if (customUndoneProp) {
+							preservedFrontmatter[customUndoneProp.key] = customUndoneProp.value;
+						} else {
+							delete preservedFrontmatter[customDoneProp.key];
+						}
+					}
 				} else {
-					// Changed from checked to unchecked: set to notDoneValue
-					preservedFrontmatter[settings.statusProperty] = settings.notDoneValue;
+					// No custom property: fall back to status property
+					if (isNowChecked) {
+						preservedFrontmatter[settings.statusProperty] = settings.doneValue;
+					} else {
+						preservedFrontmatter[settings.statusProperty] = settings.notDoneValue;
+					}
 				}
 			}
 			// If state didn't change, do nothing (don't modify statusProperty)

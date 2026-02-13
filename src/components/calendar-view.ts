@@ -41,9 +41,9 @@ import { FilterPresetSelector } from "./filter-preset-selector";
 import { ExpressionFilterInputManager } from "./input-managers/expression-filter";
 import { SearchFilterInputManager } from "./input-managers/search-filter";
 import {
+	EventsModal,
 	FilteredEventsModal,
 	GlobalSearchModal,
-	RecurringEventsModal,
 	SelectedEventsModal,
 	SkippedEventsModal,
 } from "./list-modals";
@@ -74,7 +74,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private container!: HTMLElement;
 	private viewType: string;
 	private skippedEventsModal: SkippedEventsModal | null = null;
-	private recurringEventsModal: RecurringEventsModal | null = null;
+	private eventsModal: EventsModal | null = null;
 	private filteredEventsModal: FilteredEventsModal | null = null;
 	private untrackedEventsDropdown: UntrackedEventsDropdown | null = null;
 	private selectedEventsModal: SelectedEventsModal | null = null;
@@ -93,7 +93,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private currentCategoryHighlightClass: string | null = null;
 	private filteredEventsCount = 0;
 	private skippedEventsCount = 0;
-	private enabledRecurringEventsCount = 0;
 	private selectedEventsCount = 0;
 	private dragEdgeScrollListener: ((e: MouseEvent) => void) | null = null;
 	private dragEdgeScrollTimeout: number | null = null;
@@ -360,12 +359,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				},
 				className: this.skippedEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
-			recurringEvents: {
-				text: "", // Don't set text here - it will be set by applyEnabledRecurringEventsButtonState
+			eventsButton: {
+				text: "Events",
 				click: () => {
-					void this.showRecurringEventsModal();
+					void this.showEventsModal();
 				},
-				className: this.enabledRecurringEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
 			},
 		};
 	}
@@ -414,7 +412,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		const left = leftItems.length > 0 ? leftItems.join(" ") : "";
-		const right = `filteredEvents recurringEvents skippedEvents batchSelect ${viewSwitchers}`;
+		const right = `filteredEvents eventsButton skippedEvents batchSelect ${viewSwitchers}`;
 
 		return {
 			headerToolbar: { left, center: "title", right },
@@ -442,7 +440,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			if (!inSelectionMode) {
 				this.applyFilteredEventsButtonState();
 				this.applySkippedEventsButtonState();
-				this.applyEnabledRecurringEventsButtonState();
 				this.zoomManager.updateZoomLevelButton();
 			}
 		}, 0);
@@ -465,16 +462,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.applySkippedEventsButtonState();
 	}
 
-	private updateEnabledRecurringEventsButton(): void {
-		if (!this.calendar) return; // Keep existing guard for recurring manager access
-
-		const enabledEvents = this.bundle.recurringEventManager.getEnabledRecurringEvents();
-		const count = enabledEvents.length;
-
-		this.enabledRecurringEventsCount = count;
-		this.applyEnabledRecurringEventsButtonState();
-	}
-
 	private updateFilteredEventsButton(count: number): void {
 		this.filteredEventsCount = count;
 		this.applyFilteredEventsButtonState();
@@ -494,23 +481,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.updateButtonElement(".fc-skippedEvents-button", text, this.skippedEventsCount > 0, tooltip);
 	}
 
-	private applyEnabledRecurringEventsButtonState(): void {
-		if (!this.calendar) return;
-		const text = this.getEnabledRecurringEventsButtonText();
-		const tooltip = `${this.enabledRecurringEventsCount} recurring event${this.enabledRecurringEventsCount === 1 ? "" : "s"}`;
-		this.updateButtonElement(".fc-recurringEvents-button", text, this.enabledRecurringEventsCount > 0, tooltip);
-	}
-
 	private getFilteredEventsButtonText(): string {
 		return `${this.filteredEventsCount} filtered`;
 	}
 
 	private getSkippedEventsButtonText(): string {
 		return `${this.skippedEventsCount} skipped`;
-	}
-
-	private getEnabledRecurringEventsButtonText(): string {
-		return `${this.enabledRecurringEventsCount} recurring`;
 	}
 
 	private getSelectedEventsButtonText(): string {
@@ -557,7 +533,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		cleanupButton(".fc-filteredEvents-button");
 		cleanupButton(".fc-skippedEvents-button");
-		cleanupButton(".fc-recurringEvents-button");
 	}
 
 	private async toggleModal<T extends Modal>(
@@ -609,18 +584,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		);
 	}
 
-	async showRecurringEventsModal(): Promise<void> {
+	async showEventsModal(): Promise<void> {
 		await this.toggleModal(
-			() => this.recurringEventsModal,
+			() => this.eventsModal,
 			(modal) => {
-				this.recurringEventsModal = modal;
-				// Refresh the button count when modal closes
-				if (!modal) {
-					this.updateEnabledRecurringEventsButton();
-				}
+				this.eventsModal = modal;
 			},
 			() => {
-				return new RecurringEventsModal(this.app, this.bundle, this);
+				return new EventsModal(this.app, this.bundle, this);
 			}
 		);
 	}
@@ -1559,7 +1530,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		const skippedEvents = this.bundle.eventStore.getSkippedEvents({ start, end });
 		this.updateSkippedEventsButton(skippedEvents.length);
-		this.updateEnabledRecurringEventsButton();
 
 		return visibleEvents.map((event) => {
 			const classNames = ["regular-event"];

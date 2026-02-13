@@ -4,6 +4,7 @@ import {
 	type IndexerEvent as GenericIndexerEvent,
 	type IndexerConfig,
 	areSetsEqual,
+	removeMarkdownExtension,
 	SyncStore,
 } from "@real1ty-obsidian-plugins";
 import { type App, TFile } from "obsidian";
@@ -11,7 +12,7 @@ import { BehaviorSubject, type Observable, Subject, type Subscription } from "rx
 import { SCAN_CONCURRENCY } from "../constants";
 import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
-import { generateUniqueRruleId, getRecurringInstanceExcludedProps } from "../utils/calendar-events";
+import { cleanupTitle, generateUniqueRruleId, getRecurringInstanceExcludedProps } from "../utils/calendar-events";
 import { intoDate, toSafeString } from "../utils/format";
 import { getFrontmatterWithRetry } from "../utils/obsidian";
 
@@ -110,6 +111,7 @@ export class Indexer {
 			excludedDiffProps: getRecurringInstanceExcludedProps(this.settings),
 			scanConcurrency: SCAN_CONCURRENCY,
 			debounceMs: 100,
+			retryDelayMs: 200,
 		};
 	}
 
@@ -213,6 +215,10 @@ export class Indexer {
 				});
 			}
 
+			void this.updateCalendarTitleProperty(file, frontmatter).catch((error) => {
+				console.error(`Error updating calendar title for ${file.path}:`, error);
+			});
+
 			const allDayProp = frontmatter[this.settings.allDayProp];
 			const isAllDay = allDayProp === true || allDayProp === "true";
 
@@ -271,6 +277,24 @@ export class Indexer {
 			frontmatter: frontmatterCopy,
 			content: undefined, // Empty initially - will be loaded on-demand by RecurringEventManager
 		};
+	}
+
+	private async updateCalendarTitleProperty(file: TFile, frontmatter: Frontmatter): Promise<void> {
+		if (this.syncStore?.data.readOnly) return;
+
+		const { calendarTitleProp } = this.settings;
+		if (!calendarTitleProp) return;
+
+		const pathWithoutExt = removeMarkdownExtension(file.path);
+		const displayName = cleanupTitle(file.basename);
+		const titleLink = `[[${pathWithoutExt}|${displayName}]]`;
+
+		const currentTitle = frontmatter[calendarTitleProp];
+		if (currentTitle === titleLink) return;
+
+		await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+			fm[calendarTitleProp] = titleLink;
+		});
 	}
 
 	private async markPastEventAsDone(file: TFile, frontmatter: Frontmatter): Promise<void> {

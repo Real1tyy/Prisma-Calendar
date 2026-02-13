@@ -4,21 +4,17 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.33.0 - 2/11/2026
+## 1.33.0 - 2/12/2026
 
 ### Added
 
-- **Series Frontmatter Propagation**: Frontmatter propagation now works for name-based series and property-based series, not just recurring events. When you change a custom property on one event, the change can automatically propagate to all other events sharing the same name or series property value. Four new toggles are available in Settings: "Propagate frontmatter to name series", "Ask before propagating to name series", "Propagate frontmatter to property series", and "Ask before propagating to property series". The existing excluded properties and debounce delay settings now apply to all propagation types. Loop prevention ensures propagated changes don't cascade infinitely. See the [Event Series](./features/event-series#frontmatter-propagation) and [Frontmatter Propagation](./configuration#frontmatter-propagation) docs for details.
+- **Calendar Title Property**: Prisma Calendar now automatically assigns a **Calendar Title** property (default: `Calendar Title`) to event files. The property stores a wiki link with the ZettelID and recurring instance dates stripped from the filename (e.g., `[[Events/Meeting-20250106143022|Meeting]]`). This pre-computed clean title is used everywhere — calendar view, Bases views, modals, notifications, and context menus — eliminating the need for runtime stripping. The property is always kept in sync automatically. See the [Calendar Title](./features/calendar-title) docs for details.
 
-- **Event Series**: A new system for tracking and managing groups of related events. Events are automatically grouped in three ways — by recurring event rules, by a frontmatter series property, and by shared name (with ZettelID stripped). Right-click any event and select **"View series"** to open the Event Series Modal, which shows all related events across up to three tabs: **Recurring**, **By Series**, and **By Name**. Each tab provides completion statistics (past events, skipped count, completion percentage), filter toggles to hide past or skipped events, debounced search, smart sorting (ascending for future events, descending when showing all), and color-coded rows matching your calendar color rules. See the new [Event Series](./features/event-series) documentation for full details.
+- **Events Browser**: The toolbar now features a permanent **"Events"** button that opens a unified modal with three tabs — **Recurring**, **By Category**, and **By Name** — each showing a count in its label. Browse all recurring event sources (with instance counts, type badges, and category/navigate/disable actions), all category-based groups, and all name-based groups from a single modal. Clicking any item opens the Event Series Modal for drill-down. The Recurring tab retains its type filter dropdown and disabled-events toggle. A shared search input filters items across all tabs, and a sort dropdown lets you order by count (descending by default) or name (ascending/descending). See the [Events Browser](./features/event-series#events-browser) docs for details.
 
-- **Series Property**: New frontmatter property (default: `Series`) for explicitly grouping events into named series. Configure the property name in **Settings → Properties → Series property**. Supports single values (`Series: ProjectX`) and YAML arrays (`Series: [ProjectX, Q1-Goals]`). Events sharing the same series value appear together in the "By Series" tab of the Event Series Modal.
+- **Series Frontmatter Propagation**: Frontmatter propagation now works for name-based series and category-based series, not just recurring events. When you change a custom property on one event, the change can automatically propagate to all other events sharing the same name or category value. Four new toggles are available in Settings: "Propagate frontmatter to name series", "Ask before propagating to name series", "Propagate frontmatter to category series", and "Ask before propagating to category series". The existing excluded properties and debounce delay settings now apply to all propagation types. Loop prevention ensures propagated changes don't cascade infinitely. See the [Event Series](./features/event-series#frontmatter-propagation) and [Frontmatter Propagation](./configuration#frontmatter-propagation) docs for details.
 
-- **Assign Series**: New context menu action (right-click → **"Assign series"**) to tag events with series values. The assignment modal mirrors the category assignment UI — search existing series, create new ones on the fly, and multi-select with checkboxes. Each series shows its event count. Assignments are undoable via Ctrl+Z.
-
-- **Multi-Series Support**: Events belonging to multiple series (e.g., `Series: [ProjectX, Q1-Goals]`) are fully supported. The "By Series" tab shows a series chooser listing all series the event belongs to with event counts. Select one to drill in, and use the **"All series"** button in the tab bar to navigate back.
-
-- **Series Manager**: A new core component that tracks event series in real-time. It maintains two grouping strategies — name-based (automatic, groups events by cleaned/lowercased title) and property-based (explicit, groups events by the `Series` frontmatter value). Updates reactively as files are indexed, changed, or deleted.
+- **Event Groups**: A new system for tracking and managing groups of related events. Events are automatically grouped in three ways — by recurring event rules, by shared category, and by shared name (with ZettelID stripped). Right-click any event and select **"View event groups"** to open the Event Series Modal, which shows all related events across up to three tabs: **Recurring**, **By Category**, and **By Name**. Each tab provides completion statistics (past events, skipped count, completion percentage), filter toggles to hide past or skipped events, debounced search, smart sorting (ascending for future events, descending when showing all), and color-coded rows matching your calendar color rules. Events with multiple categories show a category chooser before drilling into a specific category's event list. See the new [Event Groups](./features/event-series) documentation for full details.
 
 - **Category Modal Arrow Key Navigation**: Navigate through category items in the assignment modal using Arrow Up/Down keys. Press Enter to toggle the highlighted category, or press Enter with no highlight to submit the form. The highlight wraps around and auto-scrolls into view.
 
@@ -26,15 +22,27 @@ All notable changes to this project will be documented here.
 
 - **Periodic End Time Sync for Minimized Stopwatch**: While a stopwatch is running in a minimized modal, the event's end time is now automatically persisted to the file every 5 minutes. This keeps the end time in sync with reality and protects against data loss if the app crashes.
 
+- **Custom Done/Undone Properties**: Two new settings in **Settings → Properties** that let you override what "mark as done" does for manual actions. Both use a simple `propertyName value` format (e.g., `archived true` / `archived false`). When **Custom done property** is configured, it replaces the default status property behavior for manual mark-as-done actions (context menu, event modal checkbox, batch operations). **Custom undone property** is applied when marking as undone — it requires the done property to be configured first. If the undone property is left empty, the done property key is removed instead. The custom done property is also used to evaluate whether an event is currently done (the context menu shows "Mark as undone" when the custom property matches). Auto-mark past events continues to use the standard status property. Values are auto-parsed (`true`/`false` → boolean, numbers → number, rest → string). Fully supports undo/redo. Both default to empty (disabled — standard status property is used).
+
 ### Changed
+
+- **Toolbar button renamed**: The old "X recurring" toolbar button has been replaced with an always-visible **"Events"** button that opens the new unified Events Browser instead of the old recurring-only modal.
 
 - **Incremental Calendar Rendering**: The calendar no longer destroys and recreates every DOM element on each update. Changes are now diffed against the previous state — only added, removed, or modified events touch the DOM. Editing a single event in a view with hundreds of events now updates just that one element instead of rebuilding all of them. Settings changes that don't affect event rendering (hour range, weekends, slot duration) no longer trigger any event refresh at all.
 
 ### Fixed
 
+- **Zoom Level Text Duplication**: Fixed a race condition that caused the zoom level button text to duplicate (e.g., "Zoom: 30 minutes, 30 minutes") when changing viewports, intervals, or navigating the calendar.
+
 - **Keyboard Navigation Focus on Leaf Switch**: Arrow key interval navigation (left/right) now works immediately when switching back to the calendar tab. Previously, you had to click the calendar to restore focus before keyboard navigation would respond.
 
 - **Stopwatch Continue with Past End Date**: When using "continue" on the stopwatch, if the end date is in the past it is now automatically updated to the current time. Previously, the stale end date would remain unchanged.
+
+- **Filter Expressions Not Applied Immediately**: Adding or changing JavaScript filter expressions in Settings → Rules now takes effect immediately without requiring a plugin restart. Previously, the event store cache retained stale entries because file modification times hadn't changed during the resync, causing the filter to be silently skipped until the next cold start.
+
+- **Enter Key Not Working in Modals**: Pressing Enter to submit now works reliably in all modals (event modal, move-by modal, save preset modal, batch frontmatter modal) regardless of which element has focus. Previously, keyboard handlers were attached to the modal's content area, so clicking buttons or expanding sections like the stopwatch could move focus outside the handler's reach, causing Enter to stop responding. All modals now use Obsidian's modal-wide scope system instead.
+
+- **ICS/CalDAV Sync Creating Duplicate Events on Startup**: External calendar sync (ICS subscriptions and CalDAV) no longer creates duplicate notes for the same remote event. Previously, a race condition allowed sync to start before the vault had been fully indexed — the sync state manager didn't yet know about existing events, so `findByUid()` returned null and created a new file instead of updating the existing one. Sync now waits for all async indexer event handlers to complete before proceeding.
 
 ---
 
