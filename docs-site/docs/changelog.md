@@ -28,6 +28,8 @@ All notable changes to this project will be documented here.
 
 ### Changed
 
+- **Event modal sticky footer**: Cancel, Save as preset, and Save buttons now stay visible at the bottom of the Create/Edit Event modal even when the form overflows and requires scrolling.
+
 - **Toolbar button renamed**: The old "X recurring" toolbar button has been replaced with an always-visible **"Events"** button that opens the new unified Events Browser instead of the old recurring-only modal.
 
 - **Incremental Calendar Rendering**: The calendar no longer destroys and recreates every DOM element on each update. Changes are now diffed against the previous state — only added, removed, or modified events touch the DOM. Editing a single event in a view with hundreds of events now updates just that one element instead of rebuilding all of them. Settings changes that don't affect event rendering (hour range, weekends, slot duration) no longer trigger any event refresh at all.

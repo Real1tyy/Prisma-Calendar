@@ -2901,12 +2901,37 @@
 	margin-top: 1rem;
 }
 
-/* Event Modal - Modal content container with vertical spacing */
-.prisma-event-modal .modal-content {
+/* Event Modal - Content container: flex column with scrollable body and sticky footer
+   Note: Obsidian's actual scroll container is usually `.modal-content`, so we style both. */
+.prisma-event-modal .modal-content,
+.prisma-event-modal .prisma-event-modal-content {
+	display: flex;
+	flex-direction: column;
+	max-height: min(100vh, 740px);
+	overflow: hidden;
+	gap: 0;
+}
+
+/* Event Modal - Scrollable body (header + form fields) */
+.prisma-event-modal .prisma-event-modal-body {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
 }
+
+/* Event Modal - Sticky footer (always visible) */
+.prisma-event-modal .prisma-event-modal-footer {
+	flex-shrink: 0;
+	position: sticky;
+	bottom: 0;
+	z-index: 20;
+	background: var(--background-primary);
+}
+
+/* Body provides the vertical spacing now */
 
 /* Event Modal - Obsidian-like setting layout (prefixed classes) */
 .prisma-event-modal .prisma-setting-item {
@@ -3008,9 +3033,13 @@
 	gap: 8px;
 	justify-content: flex-end;
 	align-items: center;
-	margin-top: 16px;
+	position: sticky;
+	bottom: 0;
+	z-index: 20;
+	margin-top: 0;
 	padding-top: 12px;
-	border-top: 1px solid var(--background-modifier-border);
+	padding-bottom: 12px;
+	background: var(--background-primary);
 }
 
 .prisma-event-modal-header h2 {

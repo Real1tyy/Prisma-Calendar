@@ -195,16 +195,20 @@ export abstract class BaseEventModal extends Modal {
 		}
 
 		addCls(this.modalEl, "event-modal");
+		addCls(contentEl, cls("event-modal-content"));
 
 		// Allow subclasses to perform initialization
 		void this.initialize();
 
-		// Header with title and preset selector
-		this.createModalHeader(contentEl);
-		this.createFormFields(contentEl);
-		this.setupEventHandlers(contentEl);
+		// Scrollable body (header + form) and sticky footer (buttons)
+		const bodyEl = contentEl.createDiv(cls("event-modal-body"));
+		const footerEl = contentEl.createDiv(cls("event-modal-footer"));
+
+		this.createModalHeader(bodyEl);
+		this.createFormFields(bodyEl);
+		this.setupEventHandlers(bodyEl);
 		this.setupTitleBlurListener();
-		this.createActionButtons(contentEl);
+		this.createActionButtons(footerEl);
 
 		// Check if we're restoring from minimized state
 		if (this.pendingRestoreState) {
