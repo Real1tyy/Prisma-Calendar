@@ -9,6 +9,7 @@ import { removeZettelId } from "../../utils/calendar-events";
 import { calculateEventStatistics } from "../../utils/event-statistics";
 import { normalizeFrontmatterForColorEvaluation } from "../../utils/expression-utils";
 import { EventSeriesBasesViewModal, type EventSeriesBasesViewConfig } from "../modals/event-series-bases-view-modal";
+import { EventSeriesTimelineModal } from "../modals/event-series-timeline-modal";
 
 type SourceTab = "name" | "category" | "recurring";
 
@@ -524,20 +525,50 @@ export class EventSeriesModal extends Modal {
 
 	private renderBasesFooter(container: HTMLElement): void {
 		const footer = container.createDiv(cls("event-series-bases-footer"));
-		footer.createEl("span", {
-			text: "Bases",
-			cls: cls("event-series-bases-footer-label"),
-		});
 
 		const buttonsContainer = footer.createDiv(cls("event-series-bases-footer-buttons"));
-		const viewTypes = ["table", "list", "cards"] as const;
+		const viewTypes = ["table", "list", "cards", "timeline"] as const;
 
 		for (const viewType of viewTypes) {
 			const btn = buttonsContainer.createEl("button", {
 				text: viewType.charAt(0).toUpperCase() + viewType.slice(1),
 				cls: cls("event-series-bases-btn"),
 			});
-			btn.addEventListener("click", () => this.openBasesView(viewType));
+
+			if (viewType === "timeline") {
+				btn.addEventListener("click", () => this.openTimelineView());
+			} else {
+				btn.addEventListener("click", () => this.openBasesView(viewType));
+			}
+		}
+	}
+
+	private openTimelineView(): void {
+		let events: CalendarEvent[] = [];
+		let title = "";
+
+		if (this.activeTab === "recurring" && this.rruleId) {
+			const series = this.bundle.recurringEventManager.getRecurringEventSeries(this.rruleId);
+			if (series) {
+				events = series.instances.map((instance) => instance.event);
+				const displayName = removeZettelId(series.sourceTitle);
+				title = `Timeline for Recurring - ${displayName}`;
+			}
+		} else if (this.activeTab === "name" && this.nameKey) {
+			events = this.bundle.nameSeriesTracker.getEventsInNameSeries(this.nameKey);
+			const displayName = events.length > 0 ? removeZettelId(events[0].title) : this.nameKey;
+			title = `Timeline for Name - ${displayName}`;
+		} else if (this.activeTab === "category") {
+			const categoryValue =
+				this.selectedCategoryValue ?? (this.categoryValues?.length === 1 ? this.categoryValues[0] : null);
+			if (categoryValue) {
+				events = this.bundle.categoryTracker.getEventsWithCategory(categoryValue);
+				title = `Timeline for Category - ${categoryValue}`;
+			}
+		}
+
+		if (events.length > 0) {
+			new EventSeriesTimelineModal(this.app, this.bundle, { events, title }).open();
 		}
 	}
 

@@ -30,6 +30,8 @@ All notable changes to this project will be documented here.
 
 - **Enhanced Event Series Statistics**: The Event Series Modal now displays comprehensive statistics with two rows. The first row shows total events, past events, skipped count, and completion percentage. The second row shows time-based breakdowns (this year, this month, this week) and automatic frequency calculation. Frequency is calculated from past event history and displayed in the most appropriate unit (e.g., "3.2x/week" for multiple times per week, "1.5x/month" for roughly monthly events). Requires at least 2 past events to calculate frequency. All statistics are computed from the full unfiltered list regardless of filter settings.
 
+- **Timeline View for Event Series**: Added a **Timeline** button to the Event Series Modal footer alongside Table, List, and Cards. Click Timeline to open an interactive timeline visualization powered by vis-timeline showing all events in the series plotted on a time axis. The title clearly shows the context (e.g., "Timeline for Recurring - Gym", "Timeline for Category - Health"). Features include: zoomable and pannable timeline (zoom with mouse wheel, pan by dragging), adaptive event display (when zoomed out beyond 30 days, all events show as points for better visibility; when zoomed in, timed events show accurate time ranges), events displayed with their names, click any event to open the preview modal. Perfect for visualizing event patterns and distributions over time.
+
 ### Changed
 
 - **Event modal sticky footer**: Cancel, Save as preset, and Save buttons now stay visible at the bottom of the Create/Edit Event modal even when the form overflows and requires scrolling.

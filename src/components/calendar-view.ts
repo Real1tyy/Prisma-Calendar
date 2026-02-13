@@ -9,14 +9,12 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import { FillTimeCommand, UpdateEventCommand, UpdateFrontmatterCommand } from "../core/commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import type {
-	AllDayEvent,
 	CalendarEvent,
 	CalendarEventData,
 	EventMountInfo,
 	EventUpdateInfo,
 	ExtendedButtonInput,
 	PrismaEventInput,
-	TimedEvent,
 } from "../types/calendar";
 import { isTimedEvent, isUntrackedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";

@@ -222,17 +222,21 @@ A sort dropdown next to the search input lets you control the list order. Availa
 
 The selected sort applies to all tabs.
 
-## Bases View Integration
+## Visualization Options
 
-The Event Series Modal includes a **Bases** footer that lets you view the current event series in Obsidian's Bases plugin with powerful table, list, or card views.
+The Event Series Modal includes a footer with multiple visualization options for viewing the current event series.
 
-### Opening Bases Views
+### Available Views
 
-At the bottom of the Event Series Modal, you'll see a footer with:
-- **"Bases"** label on the left
-- Three view type buttons on the right: **Table**, **List**, **Cards**
+At the bottom of the Event Series Modal, you'll see four buttons:
+- **Table** — Open in Bases table view
+- **List** — Open in Bases list view
+- **Cards** — Open in Bases card view
+- **Timeline** — Open interactive timeline visualization
 
-Click any button to open a Bases view filtered to show only events from the current series:
+### Bases Views
+
+Click Table, List, or Cards to open a Bases view filtered to show only events from the current series:
 - **Recurring tab** — filters by `RRuleID` property (shows all instances of the recurring event)
 - **By Name tab** — filters by `Calendar Title` property using `.contains()` (shows all events with matching names)
 - **By Category tab** — filters by your category property using `.contains()` (shows all events in that category)
@@ -245,8 +249,35 @@ The generated Bases view includes:
 - **Configured columns** — shows your calendar's date property, status property, and any additional properties configured in Bases view settings
 - **Editable** — full Bases editing capabilities (inline editing, bulk operations, etc.)
 
+### Timeline View
+
+Click **Timeline** to open an interactive timeline visualization showing all events in the series plotted on a time axis. The modal title clearly indicates the context, such as:
+- "Timeline for Recurring - Gym"
+- "Timeline for Name - Team Meeting"
+- "Timeline for Category - Health"
+
+**Features:**
+- **Interactive navigation** — Zoom in/out with mouse wheel, pan by dragging to navigate through time
+- **Adaptive event display** — Events intelligently switch between display modes based on zoom level:
+  - **Zoomed out (>30 days visible)**: All events show as **points** for maximum visibility and clarity
+  - **Zoomed in (<30 days visible)**: Timed events show as accurate **ranges** (bars spanning start to end time), all-day events remain as points
+- **Event names** — Each event displays its title (with ZettelID stripped)
+- **Current time indicator** — Red line shows the current moment
+- **Click to preview** — Click any event to open the event preview modal with full details
+
+The timeline automatically shows all events in the series. Use the mouse wheel to zoom in for detailed views or zoom out for an overview. Drag the timeline to pan through different time periods. The adaptive display ensures events are always visible and appropriately detailed for your current zoom level.
+
+The timeline is perfect for:
+- Visualizing event patterns and frequency
+- Seeing gaps in recurring event series
+- Understanding event distribution over time
+- Identifying clusters of activity
+- Getting an overview when zoomed out, details when zoomed in
+
 ### Requirements
 
 The Bases view feature requires:
 - Obsidian Bases plugin installed and enabled
 - At least one calendar configured in Prisma Calendar settings
+
+The Timeline view is built-in and requires no additional plugins.
