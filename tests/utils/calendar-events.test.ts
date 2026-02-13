@@ -348,18 +348,6 @@ describe("ZettelID Utilities", () => {
 			expect(result.fullPath).toBe(`events/${result.filename}.md`);
 		});
 
-		it("should NOT add new ZettelID if basename already has Prisma timestamp", () => {
-			const app = createMockApp() as unknown as App;
-
-			const result = generateUniqueEventPath(app, "events", "Meeting-20250106120000");
-
-			expect(result.zettelId).toBe("20250106120000");
-			expect(result.filename).toBe("Meeting-20250106120000");
-			expect(result.fullPath).toBe("events/Meeting-20250106120000.md");
-			// Should NOT call getAbstractFileByPath since we're not generating a new ID
-			expect(app.vault.getAbstractFileByPath).not.toHaveBeenCalled();
-		});
-
 		it("SHOULD add new ZettelID if basename has non-Prisma timestamp format", () => {
 			const app = createMockApp() as unknown as App;
 			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);

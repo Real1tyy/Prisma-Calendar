@@ -661,15 +661,21 @@ export const generateUniqueEventPath = (
 
 	if (hasTimestamp(baseName)) {
 		const existingZettelId = extractZettelId(baseName);
-		const filename = baseName;
-		const fullPath = `${basePath}${filename}.md`;
 		if (!existingZettelId) {
 			throw new Error(
 				"Prisma ZettelID not found in basename, but hasTimestamp returned true, this should never happen. Please create an issue."
 			);
 		}
-		const zettelId = existingZettelId;
-		return { filename, fullPath, zettelId };
+		const fullPath = `${basePath}${baseName}.md`;
+		// If no file exists at this path, use it as-is
+		if (!app.vault.getAbstractFileByPath(fullPath)) {
+			return { filename: baseName, fullPath, zettelId: existingZettelId };
+		}
+		// Collision: strip the existing timestamp and generate a new unique one
+		const strippedName = removeZettelId(baseName);
+		const zettelId = generateUniqueZettelId(app, basePath, strippedName);
+		const filename = `${strippedName}-${zettelId}`;
+		return { filename, fullPath: `${basePath}${filename}.md`, zettelId };
 	}
 
 	const zettelId = generateUniqueZettelId(app, basePath, baseName);
