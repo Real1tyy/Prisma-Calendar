@@ -1,12 +1,28 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins";
+import { addCls, cls, parseIntoList } from "@real1ty-obsidian-plugins";
 import { Modal, type Modifier, Notice } from "obsidian";
 import { removeZettelId } from "../../utils/calendar-events";
+
+/**
+ * Resolves the category color for an event based on its frontmatter metadata.
+ * Returns the color of the first matching category, or undefined if none found.
+ */
+export function resolveEventCategoryColor(
+	meta: Record<string, unknown>,
+	categoryProp: string | undefined,
+	categoriesWithColors: Array<{ name: string; color: string }>
+): string | undefined {
+	if (!categoryProp) return undefined;
+	const categories = parseIntoList(meta[categoryProp]);
+	if (categories.length === 0) return undefined;
+	return categoriesWithColors.find((c) => c.name === categories[0])?.color;
+}
 
 export interface EventListItem {
 	id?: string; // Optional unique identifier (used for skipped events)
 	filePath: string;
 	title: string;
 	subtitle?: string; // Optional secondary info (e.g., date, path)
+	categoryColor?: string; // Optional category color for row background tinting
 }
 
 export interface EventListAction {
@@ -212,6 +228,11 @@ export abstract class BaseEventListModal extends Modal {
 		const itemEl = container.createEl("div", {
 			cls: cls("generic-event-list-item"),
 		});
+
+		if (item.categoryColor) {
+			addCls(itemEl, "recurring-event-categorized");
+			itemEl.style.setProperty("--category-color", item.categoryColor);
+		}
 
 		// Event info
 		const infoEl = itemEl.createEl("div", { cls: cls("generic-event-info") });

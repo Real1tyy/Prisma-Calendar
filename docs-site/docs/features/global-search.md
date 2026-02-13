@@ -40,6 +40,7 @@ Filters combine with AND logic. Example: "Only Recurring + Skip All-day" shows o
 - Shows only physical event files, not [virtual recurring previews](./virtual-events.md)
 - Respects calendar-level [filter rules](./filtering.md) from settings
 - Events display with your configured [color rules](./color-rules.md)
+- Each row is tinted with the event's category color and a colored left border for quick visual identification
 
 ## Related Features
 

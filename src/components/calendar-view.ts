@@ -600,7 +600,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			(modal) => {
 				this.filteredEventsModal = modal;
 			},
-			() => new FilteredEventsModal(this.app, this.filteredEvents)
+			() => new FilteredEventsModal(this.app, this.bundle, this.filteredEvents)
 		);
 	}
 
@@ -614,7 +614,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				if (!this.batchSelectionManager) throw new Error("Batch selection manager not initialized");
 
 				const selected = this.batchSelectionManager.getSelectedEvents();
-				return new SelectedEventsModal(this.app, selected, (eventId: string) => {
+				return new SelectedEventsModal(this.app, this.bundle, selected, (eventId: string) => {
 					this.batchSelectionManager?.unselectEvent(eventId);
 				});
 			}

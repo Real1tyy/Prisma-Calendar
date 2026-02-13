@@ -28,7 +28,7 @@ Skipping preserves files and history while hiding events from calendar view. Use
 
 *View all skipped events with search functionality and quick un-skip/open actions*
 
-The dialog shows all skipped events with options to restore them.
+The dialog shows all skipped events with options to restore them. Each row is tinted with the event's category color and a colored left border for quick visual identification.
 
 **Restore:** Open dialog → Click "Restore" next to event(s)
 

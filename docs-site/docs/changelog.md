@@ -32,6 +32,8 @@ All notable changes to this project will be documented here.
 
 - **Timeline View for Event Series**: Added a **Timeline** button to the Event Series Modal footer alongside Table, List, and Cards. Click Timeline to open an interactive timeline visualization powered by vis-timeline showing all events in the series plotted on a time axis. The title clearly shows the context (e.g., "Timeline for Recurring - Gym", "Timeline for Category - Health"). Features include: zoomable and pannable timeline (zoom with mouse wheel, pan by dragging), adaptive event display (when zoomed out beyond 30 days, all events show as points for better visibility; when zoomed in, timed events show accurate time ranges), events displayed with their names, click any event to open the preview modal. Perfect for visualizing event patterns and distributions over time.
 
+- **Category-Colored Rows in All Event List Modals**: The Filtered Events, Skipped Events, Global Event Search, and Selected Events modals now color each row with a tinted background and left border based on the event's category, matching the category coloring used in the Events Browser.
+
 ### Changed
 
 - **Event modal sticky footer**: Cancel, Save as preset, and Save buttons now stay visible at the bottom of the Create/Edit Event modal even when the form overflows and requires scrolling.
@@ -53,6 +55,8 @@ All notable changes to this project will be documented here.
 - **Enter Key Not Working in Modals**: Pressing Enter to submit now works reliably in all modals (event modal, move-by modal, save preset modal, batch frontmatter modal) regardless of which element has focus. Previously, keyboard handlers were attached to the modal's content area, so clicking buttons or expanding sections like the stopwatch could move focus outside the handler's reach, causing Enter to stop responding. All modals now use Obsidian's modal-wide scope system instead.
 
 - **ICS/CalDAV Sync Creating Duplicate Events on Startup**: External calendar sync (ICS subscriptions and CalDAV) no longer creates duplicate notes for the same remote event. Previously, a race condition allowed sync to start before the vault had been fully indexed — the sync state manager didn't yet know about existing events, so `findByUid()` returned null and created a new file instead of updating the existing one. Sync now waits for all async indexer event handlers to complete before proceeding.
+
+- **Renaming Recurring Source Event Creates Duplicate Instances**: Renaming a recurring source event file no longer generates a duplicate set of instances. Previously, the rename was processed as a delete + create — the delete wiped all physical instance tracking, then the create saw zero instances and generated new ones from scratch, resulting in two complete series sharing the same RRule ID. The rename now preserves physical instance tracking and renames existing instance files instead.
 
 ---
 

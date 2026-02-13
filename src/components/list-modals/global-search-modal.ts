@@ -4,7 +4,12 @@ import { Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { Frontmatter } from "../../types";
 import type { CalendarView } from "../calendar-view";
-import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
+import {
+	BaseEventListModal,
+	type EventListAction,
+	type EventListItem,
+	resolveEventCategoryColor,
+} from "./base-event-list-modal";
 
 type FilterState = "none" | "skip" | "only";
 
@@ -127,11 +132,14 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 			const filteredEvents = events.filter((event) => !event.isVirtual);
 
+			const categoryProp = this.bundle.settingsStore.currentSettings.categoryProp;
+			const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
 			this.allEvents = filteredEvents.map((event) => ({
 				filePath: event.ref.filePath,
 				title: event.title,
 				subtitle: this.formatEventSubtitle(event),
 				id: event.id,
+				categoryColor: resolveEventCategoryColor(event.meta, categoryProp, categoriesWithColors),
 			}));
 		} catch (error) {
 			console.error("Error loading events for global search:", error);
@@ -303,11 +311,14 @@ export class GlobalSearchModal extends BaseEventListModal {
 				filteredEvents = filteredEvents.filter((event) => event.skipped);
 			}
 
+			const categoryProp = settings.categoryProp;
+			const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
 			this.allEvents = filteredEvents.map((event) => ({
 				filePath: event.ref.filePath,
 				title: event.title,
 				subtitle: this.formatEventSubtitle(event),
 				id: event.id,
+				categoryColor: resolveEventCategoryColor(event.meta, categoryProp, categoriesWithColors),
 			}));
 		} catch (error) {
 			console.error("Error applying filters:", error);

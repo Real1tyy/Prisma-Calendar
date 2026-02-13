@@ -203,6 +203,7 @@ When you have active search or expression filters, you might wonder what events 
 - **Shows**: All events that don't pass current search and expression filters
 - **Features**:
   - Search within filtered events by name
+  - Category-colored rows — each row is tinted with the event's category color and a colored left border for quick visual identification
   - Click any event to open its file
 
 ## Keyboard Shortcuts
