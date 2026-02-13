@@ -100,10 +100,13 @@ export class RecurringEventManager extends DebouncedNotifier {
 				if (event.recurringEvent) {
 					this.addRecurringEvent(event.recurringEvent);
 					if (this.indexingComplete) {
-						await this.ensurePhysicalInstancesWithLock(event.recurringEvent.rRuleId);
 						if (event.oldPath) {
+							// Rename: rename physical instances BEFORE ensuring count,
+							// so ensurePhysicalInstances sees the correct (renamed) files
+							// and doesn't create duplicates.
 							await this.handleRecurringEventRenamedWithLock(event.recurringEvent);
 						}
+						await this.ensurePhysicalInstancesWithLock(event.recurringEvent.rRuleId);
 						this.handleFrontmatterPropagation(event.recurringEvent, event.frontmatterDiff);
 					}
 				}
@@ -343,8 +346,15 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const rruleId = this.sourceFileToRRuleId.get(event.filePath);
 
 		if (rruleId) {
-			this.recurringEventsMap.delete(rruleId);
-			this.sourceFileToRRuleId.delete(event.filePath);
+			if (event.isRename) {
+				// Rename: only remove the old path mapping, keep recurring event data
+				// and physical instances intact. The subsequent "recurring-event-found"
+				// event for the new path will re-associate the data and rename instances.
+				this.sourceFileToRRuleId.delete(event.filePath);
+			} else {
+				this.recurringEventsMap.delete(rruleId);
+				this.sourceFileToRRuleId.delete(event.filePath);
+			}
 			this.scheduleRefresh();
 			return;
 		}
