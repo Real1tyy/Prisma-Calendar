@@ -19,6 +19,8 @@ const EventPresetSchema = z
 		title: z.string().optional(), // Event title to pre-fill
 		allDay: z.boolean().optional(), // Whether this is an all-day event
 		categories: z.string().optional(), // Event categories (comma-separated string)
+		location: z.string().optional(), // Event location (single string)
+		participants: z.string().optional(), // Event participants (comma-separated string)
 		breakMinutes: z.number().nonnegative().optional(), // Break time in minutes to subtract from duration
 		notifyBefore: z.number().int().nonnegative().optional(), // Override notification timing (minutes for timed, days for all-day)
 		markAsDone: z.boolean().optional(), // Mark event as done
@@ -76,6 +78,8 @@ const PropsSettingsSchema = z
 		customDoneProperty: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CUSTOM_DONE_PROPERTY), // DSL expression for additional property to set when marking as done (format: "propertyName value")
 		customUndoneProperty: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CUSTOM_UNDONE_PROPERTY), // DSL expression for additional property to set when marking as undone (format: "propertyName value"), requires customDoneProperty
 		categoryProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CATEGORY_PROP), // property name for event categories used in statistics
+		locationProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_LOCATION_PROP), // property name for event location (single string)
+		participantsProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_PARTICIPANTS_PROP), // property name for event participants (array of strings)
 		breakProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_BREAK_PROP), // property name for break time in minutes (subtracted from duration in statistics)
 		futureInstancesCountProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT_PROP), // property name for per-event override of future instances count
 		generatePastEventsProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_GENERATE_PAST_EVENTS_PROP), // property name for generating past recurring instances from source event start date

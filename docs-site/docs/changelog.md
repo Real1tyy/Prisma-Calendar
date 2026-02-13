@@ -24,6 +24,8 @@ All notable changes to this project will be documented here.
 
 - **Custom Done/Undone Properties**: Two new settings in **Settings → Properties** that let you override what "mark as done" does for manual actions. Both use a simple `propertyName value` format (e.g., `archived true` / `archived false`). When **Custom done property** is configured, it replaces the default status property behavior for manual mark-as-done actions (context menu, event modal checkbox, batch operations). **Custom undone property** is applied when marking as undone — it requires the done property to be configured first. If the undone property is left empty, the done property key is removed instead. The custom done property is also used to evaluate whether an event is currently done (the context menu shows "Mark as undone" when the custom property matches). Auto-mark past events continues to use the standard status property. Values are auto-parsed (`true`/`false` → boolean, numbers → number, rest → string). Fully supports undo/redo. Both default to empty (disabled — standard status property is used).
 
+- **Location and Participants properties**: New configurable frontmatter properties for event location (single string) and participants (array of strings). Default property names are `Location` and `Participants`. Configure in Settings → Properties. The Create/Edit Event modal now includes dedicated Location and Participants fields. Presets can save location and participants for quick event creation.
+
 ### Changed
 
 - **Toolbar button renamed**: The old "X recurring" toolbar button has been replaced with an always-visible **"Events"** button that opens the new unified Events Browser instead of the old recurring-only modal.

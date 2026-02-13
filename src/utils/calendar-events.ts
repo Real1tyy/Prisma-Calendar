@@ -781,13 +781,13 @@ export const getCommonFrontmatterProperties = (
 	}, new Map<string, string>());
 };
 
-export const assignCategoriesToFrontmatter = (fm: Frontmatter, categoryProp: string, categories: string[]): void => {
-	if (categories.length === 0) {
-		fm[categoryProp] = "";
-	} else if (categories.length === 1) {
-		fm[categoryProp] = categories[0];
+export const assignListToFrontmatter = (fm: Frontmatter, prop: string, items: string[]): void => {
+	if (items.length === 0) {
+		fm[prop] = "";
+	} else if (items.length === 1) {
+		fm[prop] = items[0];
 	} else {
-		fm[categoryProp] = categories;
+		fm[prop] = items;
 	}
 };
 

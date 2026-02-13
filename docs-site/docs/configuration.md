@@ -106,6 +106,8 @@ Tell Prisma Calendar which frontmatter keys you use.
 - **Custom done property**: overrides the default status property for manual mark-as-done actions. Uses the format `propertyName value` (e.g., `archived true`, `priority 0`). When configured, this is used instead of the status property for context menu, modal checkbox, and batch operations. It is also used to evaluate whether an event is done — the context menu shows "Mark as undone" when the property matches. Auto-mark past events is not affected and continues to use the standard status property. Values are auto-parsed: `true`/`false` become booleans, numeric strings become numbers, everything else stays as a string. Leave empty to use the default status property behavior (default: empty)
 - **Custom undone property**: overrides what happens when marking an event as undone. Same `propertyName value` format (e.g., `archived false`). Requires "Custom done property" to be configured first. If left empty, the custom done property key is removed from frontmatter on undone instead. Default: empty
 - **Category property**: frontmatter property name for event categories (default: `Category`), used for grouping in statistics views. Supports **multiple comma-separated categories** (e.g., `Category: Work, Learning`) — events are counted under each category separately in statistics.
+- **Location property**: frontmatter property name for event location (default: `Location`), a single string (e.g., "Conference Room A", "Zoom"). Shown in the Create/Edit Event modal when configured.
+- **Participants property**: frontmatter property name for event participants (default: `Participants`), an array of strings. In the modal, enter comma-separated names (e.g., "Alice, Bob, Charlie"). Stored as a YAML list in frontmatter.
 - **Break property**: frontmatter property name for break time in minutes (default: `Break`), subtracted from duration in statistics
 - **CalDAV property**: property name for CalDAV sync metadata (default: `CalDAV`)
 
@@ -625,7 +627,7 @@ Save reusable event templates with pre-filled values for quick event creation.
 ### Creating Presets
 
 1. Open the Create or Edit Event modal
-2. Fill in the fields you want to save (title, dates, categories, recurring settings, custom properties)
+2. Fill in the fields you want to save (title, dates, categories, location, participants, recurring settings, custom properties)
 3. Click "Save as preset" button
 4. Enter a name for the preset (e.g., "Weekly Team Meeting")
 5. Choose to create a new preset or override an existing one
@@ -644,6 +646,8 @@ Save reusable event templates with pre-filled values for quick event creation.
 | All-day | ✅ | Timed vs all-day mode |
 | Date/Start/End | ✅ | Date and time values |
 | Categories | ✅ | Category assignment |
+| Location | ✅ | Event location (single string) |
+| Participants | ✅ | Event participants (comma-separated) |
 | Recurring settings | ✅ | RRule type, weekdays, future count |
 | Custom properties | ✅ | Any additional frontmatter |
 

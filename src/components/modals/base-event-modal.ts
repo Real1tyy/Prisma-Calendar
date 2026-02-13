@@ -20,7 +20,7 @@ import { isTimedEvent } from "../../types/calendar";
 import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
 import {
-	assignCategoriesToFrontmatter,
+	assignListToFrontmatter,
 	autoAssignCategories,
 	findAdjacentEvent,
 	parseCustomDoneProperty,
@@ -94,6 +94,8 @@ export abstract class BaseEventModal extends Modal {
 
 	protected categoriesContainer?: HTMLElement;
 	protected selectedCategories: string[] = [];
+	protected locationInput!: HTMLInputElement;
+	protected participantsInput!: HTMLInputElement;
 	protected breakInput!: HTMLInputElement;
 	protected markAsDoneCheckbox!: HTMLInputElement;
 	protected initialMarkAsDoneState: boolean = false;
@@ -326,6 +328,14 @@ export abstract class BaseEventModal extends Modal {
 		this.suppressAutoCategories = false;
 		this.renderCategories();
 
+		if (this.locationInput) {
+			this.locationInput.value = "";
+		}
+
+		if (this.participantsInput) {
+			this.participantsInput.value = "";
+		}
+
 		if (this.breakInput) {
 			this.breakInput.value = "";
 		}
@@ -377,6 +387,14 @@ export abstract class BaseEventModal extends Modal {
 			this.selectedCategories = parseIntoList(preset.categories);
 			this.suppressAutoCategories = true;
 			this.renderCategories();
+		}
+
+		if (preset.location !== undefined && this.locationInput) {
+			this.locationInput.value = preset.location;
+		}
+
+		if (preset.participants !== undefined && this.participantsInput) {
+			this.participantsInput.value = preset.participants;
 		}
 
 		if (preset.breakMinutes !== undefined && this.breakInput) {
@@ -551,6 +569,8 @@ export abstract class BaseEventModal extends Modal {
 
 		this.createRecurringEventFields(contentEl);
 		this.createCategoryField(contentEl);
+		this.createLocationField(contentEl);
+		this.createParticipantsField(contentEl);
 		this.createBreakField(contentEl);
 		this.createMarkAsDoneField(contentEl);
 		this.createSkipField(contentEl);
@@ -589,6 +609,46 @@ export abstract class BaseEventModal extends Modal {
 
 		// Render initial categories
 		this.renderCategories();
+	}
+
+	private createLocationField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.locationProp) return;
+
+		const locationContainer = contentEl.createDiv(cls("setting-item"));
+		locationContainer.createEl("div", {
+			text: "Location",
+			cls: cls("setting-item-name"),
+		});
+		this.locationInput = locationContainer.createEl("input", {
+			type: "text",
+			cls: cls("setting-item-control"),
+			attr: {
+				placeholder: "Event location",
+			},
+		});
+	}
+
+	private createParticipantsField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.participantsProp) return;
+
+		const participantsContainer = contentEl.createDiv(cls("setting-item"));
+		participantsContainer.createEl("div", {
+			text: "Participants",
+			cls: cls("setting-item-name"),
+		});
+		const participantsDesc = participantsContainer.createEl("div", {
+			cls: cls("setting-item-description"),
+		});
+		participantsDesc.setText("Comma-separated list of participants");
+		this.participantsInput = participantsContainer.createEl("input", {
+			type: "text",
+			cls: cls("setting-item-control"),
+			attr: {
+				placeholder: "Alice, Bob, Charlie",
+			},
+		});
 	}
 
 	private createBreakField(contentEl: HTMLElement): void {
@@ -1066,7 +1126,7 @@ export abstract class BaseEventModal extends Modal {
 		new Notice(successMessage);
 	}
 
-	private setupEventHandlers(contentEl: HTMLElement): void {
+	private setupEventHandlers(_contentEl: HTMLElement): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		// Handle all-day toggle
@@ -1378,7 +1438,21 @@ export abstract class BaseEventModal extends Modal {
 		});
 
 		if (settings.categoryProp) {
-			assignCategoriesToFrontmatter(preservedFrontmatter, settings.categoryProp, this.selectedCategories);
+			assignListToFrontmatter(preservedFrontmatter, settings.categoryProp, this.selectedCategories);
+		}
+
+		if (settings.locationProp && this.locationInput) {
+			const locationValue = this.locationInput.value.trim();
+			if (locationValue) {
+				preservedFrontmatter[settings.locationProp] = locationValue;
+			} else {
+				delete preservedFrontmatter[settings.locationProp];
+			}
+		}
+
+		if (settings.participantsProp && this.participantsInput) {
+			const participantsList = parseIntoList(this.participantsInput.value).filter((p) => p.trim());
+			assignListToFrontmatter(preservedFrontmatter, settings.participantsProp, participantsList);
 		}
 
 		// Handle break property
@@ -1543,6 +1617,7 @@ export abstract class BaseEventModal extends Modal {
 			const settings = this.bundle.settingsStore.currentSettings;
 			this.selectedCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error("Error loading existing frontmatter:", error);
 		}
 	}
@@ -1591,6 +1666,14 @@ export abstract class BaseEventModal extends Modal {
 
 		if (this.selectedCategories.length > 0) {
 			presetData.categories = this.selectedCategories.join(", ");
+		}
+
+		if (this.locationInput?.value.trim()) {
+			presetData.location = this.locationInput.value.trim();
+		}
+
+		if (this.participantsInput?.value.trim()) {
+			presetData.participants = this.participantsInput.value.trim();
 		}
 
 		if (this.breakInput?.value) {

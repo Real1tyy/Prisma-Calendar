@@ -15,7 +15,7 @@ import { TFile } from "obsidian";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import {
 	applyStartEndOffsets,
-	assignCategoriesToFrontmatter,
+	assignListToFrontmatter,
 	ensureFileHasZettelId,
 	generateUniqueEventPath,
 	isPhysicalRecurringEvent,
@@ -716,7 +716,7 @@ export class AssignCategoriesCommand implements Command {
 				this.originalCategoryValue = fm[settings.categoryProp] as string | string[] | undefined;
 			}
 
-			assignCategoriesToFrontmatter(fm, settings.categoryProp, this.categoriesToAdd);
+			assignListToFrontmatter(fm, settings.categoryProp, this.categoriesToAdd);
 		});
 	}
 

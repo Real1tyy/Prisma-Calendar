@@ -180,6 +180,20 @@ export class PropertiesSettings {
 		});
 
 		this.ui.addText(containerEl, {
+			key: "locationProp",
+			name: "Location property",
+			desc: "Frontmatter property name for event location (single string)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_LOCATION_PROP,
+		});
+
+		this.ui.addText(containerEl, {
+			key: "participantsProp",
+			name: "Participants property",
+			desc: "Frontmatter property name for event participants (array of strings, supports comma-separated in YAML)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_PARTICIPANTS_PROP,
+		});
+
+		this.ui.addText(containerEl, {
 			key: "breakProp",
 			name: "Break property",
 			desc: "Frontmatter property name for break time in minutes (subtracted from event duration in statistics, supports decimals)",

@@ -1,3 +1,4 @@
+import { parseIntoList } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
@@ -215,12 +216,17 @@ class MinimizedModalManagerClass {
 
 				// Update the saved state with new frontmatter values
 				// Keep stopwatch state intact - only update form data
+				// Both categories and participants use parseIntoList for consistent handling of string/array in frontmatter
 				this.savedState = {
 					...this.savedState,
 					filePath: event.filePath,
 					originalFrontmatter: frontmatter,
 					title: getEventName(settings.titleProp, frontmatter, event.filePath, settings.calendarTitleProp),
-					categories: settings.categoryProp ? (frontmatter[settings.categoryProp] as string | undefined) : undefined,
+					categories: settings.categoryProp ? parseIntoList(frontmatter[settings.categoryProp]).join(", ") : undefined,
+					location: frontmatter[settings.locationProp] as string | undefined,
+					participants: settings.participantsProp
+						? parseIntoList(frontmatter[settings.participantsProp]).join(", ")
+						: undefined,
 					date: frontmatter[settings.dateProp] as string | undefined,
 					startDate: frontmatter[settings.startProp] as string | undefined,
 					endDate: frontmatter[settings.endProp] as string | undefined,
@@ -322,6 +328,7 @@ class MinimizedModalManagerClass {
 				// the indexer will detect the file change and automatically update the minimized modal state
 				new Notice("Categories updated for minimized event");
 			} catch (error) {
+				// eslint-disable-next-line no-console
 				console.error("Failed to assign categories:", error);
 				new Notice("Failed to assign categories");
 			}

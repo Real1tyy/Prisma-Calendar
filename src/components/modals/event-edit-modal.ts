@@ -1,4 +1,4 @@
-import { parsePositiveInt, serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
+import { parseIntoList, parsePositiveInt, serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
 import { MinimizedModalManager } from "../../core/minimized-modal-manager";
 import { WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
 import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
@@ -127,6 +127,8 @@ export class EventEditModal extends BaseEventModal {
 		this.loadMarkAsDoneData();
 		this.loadSkipData();
 		this.loadNotificationData();
+		this.loadLocationData();
+		this.loadParticipantsData();
 		this.loadCustomPropertiesData();
 
 		// Trigger stopwatch: convert all-day → timed if needed, start stopwatch, save & auto-minimize
@@ -182,6 +184,22 @@ export class EventEditModal extends BaseEventModal {
 		if (typeof notifyValue === "number" && notifyValue >= 0) {
 			this.notificationInput.value = notifyValue.toString();
 		}
+	}
+
+	private loadLocationData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.locationProp || !this.locationInput) return;
+
+		const locationValue = this.originalFrontmatter[settings.locationProp];
+		this.locationInput.value = typeof locationValue === "string" ? locationValue : "";
+	}
+
+	private loadParticipantsData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.participantsProp || !this.participantsInput) return;
+
+		const participantsList = parseIntoList(this.originalFrontmatter[settings.participantsProp]);
+		this.participantsInput.value = participantsList.join(", ");
 	}
 
 	public saveEvent(): void {
