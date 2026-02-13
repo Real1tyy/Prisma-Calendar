@@ -11,8 +11,6 @@ export class ZoomManager {
 	private wheelListener?: (e: WheelEvent) => void;
 	private currentZoomLevel: number;
 	private onZoomChangeCallback?: () => void;
-	private updateTimeout?: number;
-	private isUpdating = false;
 
 	constructor(settingsStore: CalendarSettingsStore) {
 		this.settingsStore = settingsStore;
@@ -47,54 +45,23 @@ export class ZoomManager {
 	}
 
 	updateZoomLevelButton(): void {
-		if (this.updateTimeout) {
-			window.clearTimeout(this.updateTimeout);
-			this.updateTimeout = undefined;
-		}
+		const button = this.calendar?.el?.querySelector(".fc-zoomLevel-button");
+		if (!button) return;
 
-		// Debounce to prevent race conditions during rapid updates
-		this.updateTimeout = window.setTimeout(() => {
-			this.performZoomButtonUpdate();
-			this.updateTimeout = undefined;
-		}, 50);
-	}
+		const currentView = this.calendar?.view?.type;
+		const isTimeGridView = currentView?.includes("timeGrid");
 
-	private performZoomButtonUpdate(): void {
-		// Guard against concurrent updates
-		if (this.isUpdating) {
-			return;
-		}
+		if (isTimeGridView) {
+			const newText = this.getZoomLevelText();
 
-		this.isUpdating = true;
+			// Always set textContent directly to prevent duplication
+			button.textContent = newText;
 
-		try {
-			const button = this.calendar?.el?.querySelector(".fc-zoomLevel-button");
-			if (!button) return;
-
-			const currentView = this.calendar?.view?.type;
-			const isTimeGridView = currentView?.includes("timeGrid");
-
-			if (isTimeGridView) {
-				const newText = this.getZoomLevelText();
-
-				// Ensure we're replacing, not appending - clear first then set
-				if (button.textContent !== newText) {
-					// Clear the text content completely before setting new value
-					button.textContent = "";
-					// Set the new text in the next microtask to ensure clean state
-					queueMicrotask(() => {
-						button.textContent = newText;
-					});
-				}
-
-				removeCls(button as HTMLElement, "zoom-button-hidden");
-				addCls(button as HTMLElement, "zoom-button-visible");
-			} else {
-				removeCls(button as HTMLElement, "zoom-button-visible");
-				addCls(button as HTMLElement, "zoom-button-hidden");
-			}
-		} finally {
-			this.isUpdating = false;
+			removeCls(button as HTMLElement, "zoom-button-hidden");
+			addCls(button as HTMLElement, "zoom-button-visible");
+		} else {
+			removeCls(button as HTMLElement, "zoom-button-visible");
+			addCls(button as HTMLElement, "zoom-button-hidden");
 		}
 	}
 
