@@ -78,15 +78,33 @@ Shows all events whose cleaned title matches.
 
 ### Statistics Bar
 
-All tabs display a statistics bar computed from the **full unfiltered event list** (filters don't affect the counts):
+All tabs display comprehensive statistics computed from the **full unfiltered event list** (filters don't affect the counts).
 
+**First row (main statistics):**
 ```
-Past events: 24  •  Skipped: 3  •  Completed: 87.5%
+Total: 45  •  Past: 32  •  Skipped: 3  •  Completed: 90.6%
 ```
 
-- **Past events** — events with a start date before today
+- **Total** — total number of events in the series
+- **Past** — events with a start date before today
 - **Skipped** — past events with the Skip property set to true
-- **Completed** — percentage of past events that were not skipped: `(past - skipped) / past`
+- **Completed** — percentage of past events that were not skipped: `(past - skipped) / past × 100`
+
+**Second row (time breakdown & frequency):**
+```
+This year: 28  •  This month: 8  •  This week: 2  •  Frequency: 3.2x/week
+```
+
+- **This year** — past events that occurred in the current calendar year
+- **This month** — past events that occurred in the current calendar month
+- **This week** — past events that occurred in the current calendar week (starting Monday)
+- **Frequency** — automatic calculation of how often events occur, displayed in the most appropriate unit:
+  - **Daily**: "2.3x/day" (multiple times per day)
+  - **Weekly**: "3.5x/week" (several times per week)
+  - **Monthly**: "1.2x/month" (roughly monthly)
+  - Requires at least 2 past events to calculate
+
+The frequency is calculated by analyzing the time span between the first and last past event and computing the average occurrence rate.
 
 ### Filter Toggles
 

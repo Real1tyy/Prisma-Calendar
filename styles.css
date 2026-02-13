@@ -4298,6 +4298,14 @@
 	font-weight: 500;
 	color: var(--text-normal);
 	letter-spacing: 0.3px;
+}
+
+.prisma-recurring-events-stats-text-secondary {
+	margin: 0.4rem 0 0 0;
+	font-size: 0.85em;
+	font-weight: 400;
+	color: var(--text-muted);
+	letter-spacing: 0.3px;
 	word-spacing: 2px;
 }
 

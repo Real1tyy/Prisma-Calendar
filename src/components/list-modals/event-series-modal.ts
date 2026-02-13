@@ -6,6 +6,7 @@ import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
 import { removeZettelId } from "../../utils/calendar-events";
+import { calculateEventStatistics } from "../../utils/event-statistics";
 import { normalizeFrontmatterForColorEvaluation } from "../../utils/expression-utils";
 import { EventSeriesBasesViewModal, type EventSeriesBasesViewConfig } from "../modals/event-series-bases-view-modal";
 
@@ -310,17 +311,28 @@ export class EventSeriesModal extends Modal {
 
 		const now = DateTime.now().toUTC();
 
-		// Statistics (computed from full unfiltered list)
-		const pastItems = items.filter((item) => item.date < now.startOf("day"));
-		const totalPast = pastItems.length;
-		const skippedPast = pastItems.filter((item) => item.skipped).length;
-		const completedPast = totalPast - skippedPast;
-		const completedPct = totalPast > 0 ? ((completedPast / totalPast) * 100).toFixed(1) : "0.0";
+		const stats = calculateEventStatistics(items, now);
 
 		const statsContainer = this.contentArea.createDiv(cls("recurring-events-stats"));
+
+		// Main statistics row
 		statsContainer.createEl("p", {
-			text: `Total: ${items.length}  \u2022  Past: ${totalPast}  \u2022  Skipped: ${skippedPast}  \u2022  Completed: ${completedPct}%`,
+			text: `Total: ${stats.total}  \u2022  Past: ${stats.past}  \u2022  Skipped: ${stats.skipped}  \u2022  Completed: ${stats.completedPercentage}%`,
 			cls: cls("recurring-events-stats-text"),
+		});
+
+		const timeBreakdownParts = [
+			`This year: ${stats.thisYear}`,
+			`This month: ${stats.thisMonth}`,
+			`This week: ${stats.thisWeek}`,
+		];
+		if (stats.frequency) {
+			timeBreakdownParts.push(`Frequency: ${stats.frequency}`);
+		}
+
+		statsContainer.createEl("p", {
+			text: timeBreakdownParts.join("  \u2022  "),
+			cls: cls("recurring-events-stats-text-secondary"),
 		});
 
 		// Filter toggles
@@ -517,7 +529,6 @@ export class EventSeriesModal extends Modal {
 			cls: cls("event-series-bases-footer-label"),
 		});
 
-		const settings = this.bundle.settingsStore.currentSettings;
 		const buttonsContainer = footer.createDiv(cls("event-series-bases-footer-buttons"));
 		const viewTypes = ["table", "list", "cards"] as const;
 

@@ -28,6 +28,8 @@ All notable changes to this project will be documented here.
 
 - **Bases View for Event Series**: The Event Series Modal now includes a "Bases" footer with three view type buttons — **Table**, **List**, and **Cards**. Click any button to open a Bases view filtered to show only events from the current series (recurring events by RRule ID, name-based series by Calendar Title, or category-based series by category value). The Bases footer is hidden in the category tab until you select a specific category. This provides a seamless way to view and edit event series in Bases' powerful table/card interfaces.
 
+- **Enhanced Event Series Statistics**: The Event Series Modal now displays comprehensive statistics with two rows. The first row shows total events, past events, skipped count, and completion percentage. The second row shows time-based breakdowns (this year, this month, this week) and automatic frequency calculation. Frequency is calculated from past event history and displayed in the most appropriate unit (e.g., "3.2x/week" for multiple times per week, "1.5x/month" for roughly monthly events). Requires at least 2 past events to calculate frequency. All statistics are computed from the full unfiltered list regardless of filter settings.
+
 ### Changed
 
 - **Event modal sticky footer**: Cancel, Save as preset, and Save buttons now stay visible at the bottom of the Create/Edit Event modal even when the form overflows and requires scrolling.
