@@ -748,16 +748,27 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 	getRecurringEventSeries(rruleId: string): RecurringEventSeries | null {
 		const data = this.recurringEventsMap.get(rruleId);
-		if (!data?.recurringEvent) {
-			return null;
-		}
-		const { title: sourceTitle, sourceFilePath, rrules, frontmatter } = data.recurringEvent;
-		const rruleType = rrules.type;
-		const rruleSpec = rrules.weekdays?.join(", ");
-		const sourceCategory = this.getCategoryColor(frontmatter[this.settings.categoryProp]);
+		if (!data) return null;
 
 		const instances = this.getPhysicalInstancesAsEvents(rruleId);
-		return { sourceTitle, sourceFilePath, instances, rruleType, rruleSpec, sourceCategory };
+
+		if (data.recurringEvent) {
+			const { title: sourceTitle, sourceFilePath, rrules, frontmatter } = data.recurringEvent;
+			const rruleType = rrules.type;
+			const rruleSpec = rrules.weekdays?.join(", ");
+			const sourceCategory = this.getCategoryColor(frontmatter[this.settings.categoryProp]);
+			return { sourceTitle, sourceFilePath, instances, rruleType, rruleSpec, sourceCategory };
+		}
+
+		// Source event not yet associated — fall back to physical instance metadata
+		if (instances.length === 0) return null;
+
+		const firstInstance = instances[0];
+		return {
+			sourceTitle: firstInstance.event.title,
+			sourceFilePath: firstInstance.event.ref.filePath,
+			instances,
+		};
 	}
 
 	private getCategoryColor(categoryValue: unknown): string {

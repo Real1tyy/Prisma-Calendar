@@ -23,6 +23,6 @@ export class IntervalEventsModal extends BaseBasesViewModal {
 
 	protected getFilterLines(): string[] {
 		const dateProp = this.settings.dateProp;
-		return [`${dateProp} > "${this.startDate}"`, `${dateProp} < "${this.endDate}"`];
+		return [`'note["${dateProp}"] > "${this.startDate}"'`, `'note["${dateProp}"] < "${this.endDate}"'`];
 	}
 }

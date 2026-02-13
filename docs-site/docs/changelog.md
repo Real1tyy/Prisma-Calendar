@@ -26,6 +26,8 @@ All notable changes to this project will be documented here.
 
 - **Location and Participants properties**: New configurable frontmatter properties for event location (single string) and participants (array of strings). Default property names are `Location` and `Participants`. Configure in Settings → Properties. The Create/Edit Event modal now includes dedicated Location and Participants fields. Presets can save location and participants for quick event creation.
 
+- **Bases View for Event Series**: The Event Series Modal now includes a "Bases" footer with three view type buttons — **Table**, **List**, and **Cards**. Click any button to open a Bases view filtered to show only events from the current series (recurring events by RRule ID, name-based series by Calendar Title, or category-based series by category value). The Bases footer is hidden in the category tab until you select a specific category. This provides a seamless way to view and edit event series in Bases' powerful table/card interfaces.
+
 ### Changed
 
 - **Event modal sticky footer**: Cancel, Save as preset, and Save buttons now stay visible at the bottom of the Create/Edit Event modal even when the form overflows and requires scrolling.

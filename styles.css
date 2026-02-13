@@ -4358,6 +4358,63 @@
 	color: var(--text-normal);
 }
 
+/* Event Series Bases Footer */
+.prisma-event-series-bases-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 16px 20px;
+	border-top: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	position: sticky;
+	bottom: 0;
+}
+
+.prisma-recurring-events-list-modal-categorized .prisma-event-series-bases-footer {
+	background: color-mix(in srgb, var(--source-category-color) 6%, var(--background-primary));
+}
+
+.prisma-event-series-bases-footer-label {
+	color: var(--text-normal);
+	font-size: 0.9em;
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.prisma-event-series-bases-footer-buttons {
+	display: flex;
+	gap: 12px;
+	flex: 1;
+	justify-content: flex-end;
+}
+
+.prisma-event-series-bases-btn {
+	padding: 0.5rem 1.2rem;
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: 0.9em;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	min-width: 70px;
+}
+
+.prisma-event-series-bases-btn:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+	border-color: var(--interactive-accent);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.prisma-event-series-bases-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
 /* Move By Modal - Compact Button-Based UI */
 .prisma-move-by-modal h3 {
 	margin: 0 0 16px 0;

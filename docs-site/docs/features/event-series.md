@@ -203,3 +203,32 @@ A sort dropdown next to the search input lets you control the list order. Availa
 | **Name Z→A** | Alphabetical descending |
 
 The selected sort applies to all tabs.
+
+## Bases View Integration
+
+The Event Series Modal includes a **Bases** footer that lets you view the current event series in Obsidian's Bases plugin with powerful table, list, or card views.
+
+### Opening Bases Views
+
+At the bottom of the Event Series Modal, you'll see a footer with:
+- **"Bases"** label on the left
+- Three view type buttons on the right: **Table**, **List**, **Cards**
+
+Click any button to open a Bases view filtered to show only events from the current series:
+- **Recurring tab** — filters by `RRuleID` property (shows all instances of the recurring event)
+- **By Name tab** — filters by `Calendar Title` property using `.contains()` (shows all events with matching names)
+- **By Category tab** — filters by your category property using `.contains()` (shows all events in that category)
+
+### What You Get in Bases
+
+The generated Bases view includes:
+- **Filtered dataset** — only events from the current series
+- **Sorted by date** — descending order (most recent first)
+- **Configured columns** — shows your calendar's date property, status property, and any additional properties configured in Bases view settings
+- **Editable** — full Bases editing capabilities (inline editing, bulk operations, etc.)
+
+### Requirements
+
+The Bases view feature requires:
+- Obsidian Bases plugin installed and enabled
+- At least one calendar configured in Prisma Calendar settings

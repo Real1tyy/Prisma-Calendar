@@ -22,6 +22,6 @@ export class CategoryEventsModal extends BaseBasesViewModal {
 	protected getFilterLines(): string[] {
 		const categoryProp = this.settings.categoryProp;
 		const escapedCategory = this.categoryName.replace(/"/g, '\\"');
-		return [`${categoryProp}.contains("${escapedCategory}")`];
+		return [`'note["${categoryProp}"].contains("${escapedCategory}")'`];
 	}
 }

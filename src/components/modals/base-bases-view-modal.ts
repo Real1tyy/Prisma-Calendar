@@ -46,6 +46,10 @@ export abstract class BaseBasesViewModal extends Modal {
 		await MarkdownRenderer.render(this.app, basesMarkdown, this.markdownContainerEl, "", this.component);
 	}
 
+	protected getViewType(): string {
+		return this.settings.basesViewType;
+	}
+
 	private buildBasesMarkdown(): string {
 		const eventsFolder = this.settings.directory;
 		const dateProp = this.settings.dateProp;
@@ -57,7 +61,7 @@ export abstract class BaseBasesViewModal extends Modal {
 
 		return `\`\`\`base
 views:
-  - type: ${this.settings.basesViewType}
+  - type: ${this.getViewType()}
     name: ${this.getViewName()}
     filters:
       and:
@@ -65,8 +69,8 @@ views:
 ${filterLines.map((line) => `        - ${line}`).join("\n")}
     order:
 ${orderProperties.map((prop) => `      - ${prop}`).join("\n")}
-	columnSize:
-		note.${dateProp}: 170
+    columnSize:
+      note.${dateProp}: 170
     sort:
       - property: ${dateProp}
         direction: DESC

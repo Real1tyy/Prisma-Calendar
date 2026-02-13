@@ -594,9 +594,9 @@ Configure the appearance and content of Bases views throughout Prisma Calendar.
 
 These configured settings apply to all Bases views:
 
-1. **Category Events View**: When clicking on a category in Settings → Categories
-2. **Current Interval View**: When using the "Show current interval in Bases" command (daily, weekly, or monthly views)
-3. **Future Features**: Any new Bases-based views will automatically respect these settings
+1. **Event Series Modal**: When clicking Table/List/Cards buttons in the Bases footer of the Event Series Modal (filters by recurring event, name series, or category)
+2. **Category Events View**: When clicking on a category in Settings → Categories
+3. **Current Interval View**: When using the "Show current interval in Bases" command (daily, weekly, or monthly views)
 
 ### Default Columns
 
@@ -617,6 +617,7 @@ Properties you add to "Additional properties" appear after the default columns. 
 - **attendees**: List event participants
 
 **See Also**:
+- [Event Series Bases Integration](./features/event-series.md#bases-view-integration) for viewing event series in Bases
 - [Hotkeys documentation](./features/hotkeys.md#show-current-interval-in-bases) for using the "Show current interval in Bases" command
 - [Categories documentation](./features/categories.md) for category-based Bases views
 

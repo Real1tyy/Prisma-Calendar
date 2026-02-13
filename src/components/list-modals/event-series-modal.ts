@@ -7,6 +7,7 @@ import type { SingleCalendarConfig } from "../../types/settings";
 import { RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
 import { removeZettelId } from "../../utils/calendar-events";
 import { normalizeFrontmatterForColorEvaluation } from "../../utils/expression-utils";
+import { EventSeriesBasesViewModal, type EventSeriesBasesViewConfig } from "../modals/event-series-bases-view-modal";
 
 type SourceTab = "name" | "category" | "recurring";
 
@@ -154,14 +155,26 @@ export class EventSeriesModal extends Modal {
 		// Remove previous categorized styling
 		removeCls(this.contentEl, "recurring-events-list-modal-categorized");
 
+		// Remove existing bases footer if present
+		const existingFooter = this.contentEl.querySelector(`.${cls("event-series-bases-footer")}`);
+		if (existingFooter) {
+			existingFooter.remove();
+		}
+
 		if (this.activeTab === "recurring") {
 			this.renderRecurringTab();
+			this.renderBasesFooter(this.contentEl);
 		} else if (this.activeTab === "category") {
 			this.renderCategoryTab();
+			// Only render bases footer if a category is selected
+			if (this.selectedCategoryValue != null || (this.categoryValues && this.categoryValues.length === 1)) {
+				this.renderBasesFooter(this.contentEl);
+			}
 		} else if (this.activeTab === "name") {
 			const nameEvents = this.bundle.nameSeriesTracker.getEventsInNameSeries(this.nameKey!);
 			const displayName = nameEvents.length > 0 ? removeZettelId(nameEvents[0].title) : this.nameKey!;
 			this.renderEventListTab(nameEvents, displayName);
+			this.renderBasesFooter(this.contentEl);
 		}
 	}
 
@@ -493,6 +506,68 @@ export class EventSeriesModal extends Modal {
 				});
 			},
 		});
+	}
+
+	// --- Bases footer ---
+
+	private renderBasesFooter(container: HTMLElement): void {
+		const footer = container.createDiv(cls("event-series-bases-footer"));
+		footer.createEl("span", {
+			text: "Bases",
+			cls: cls("event-series-bases-footer-label"),
+		});
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const buttonsContainer = footer.createDiv(cls("event-series-bases-footer-buttons"));
+		const viewTypes = ["table", "list", "cards"] as const;
+
+		for (const viewType of viewTypes) {
+			const btn = buttonsContainer.createEl("button", {
+				text: viewType.charAt(0).toUpperCase() + viewType.slice(1),
+				cls: cls("event-series-bases-btn"),
+			});
+			btn.addEventListener("click", () => this.openBasesView(viewType));
+		}
+	}
+
+	private openBasesView(viewType: "table" | "cards" | "list"): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		let config: EventSeriesBasesViewConfig;
+
+		if (this.activeTab === "recurring") {
+			if (!this.rruleId) return;
+			const series = this.bundle.recurringEventManager.getRecurringEventSeries(this.rruleId);
+			const displayTitle = series ? removeZettelId(series.sourceTitle) : this.rruleId;
+			config = {
+				mode: "recurring",
+				filterValue: this.rruleId,
+				displayTitle,
+				viewType,
+			};
+		} else if (this.activeTab === "name") {
+			if (!this.nameKey) return;
+			const nameEvents = this.bundle.nameSeriesTracker.getEventsInNameSeries(this.nameKey);
+			const displayTitle = nameEvents.length > 0 ? removeZettelId(nameEvents[0].title) : this.nameKey;
+			config = {
+				mode: "name",
+				filterValue: displayTitle,
+				displayTitle,
+				viewType,
+			};
+		} else if (this.activeTab === "category") {
+			const categoryValue =
+				this.selectedCategoryValue ?? (this.categoryValues?.length === 1 ? this.categoryValues[0] : null);
+			if (!categoryValue) return;
+			config = {
+				mode: "category",
+				filterValue: categoryValue,
+				viewType,
+			};
+		} else {
+			return;
+		}
+
+		new EventSeriesBasesViewModal(this.app, settings, config).open();
 	}
 
 	onClose(): void {
