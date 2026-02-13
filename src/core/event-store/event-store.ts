@@ -1,13 +1,13 @@
 import { DateTime } from "luxon";
 import type { Subscription } from "rxjs";
 import BTree from "sorted-btree";
-import type { CalendarEvent, TimedEvent } from "../types/calendar";
-import { isTimedEvent } from "../types/calendar";
-import type { ISO } from "../types/index";
+import type { CalendarEvent, TimedEvent } from "../../types/calendar";
+import { isTimedEvent } from "../../types/calendar";
+import type { ISO } from "../../types/index";
 import { IndexedCacheStore } from "./indexed-cache-store";
-import type { Indexer, IndexerEvent, RawEventSource } from "./indexer";
-import type { Parser } from "./parser";
-import type { RecurringEventManager } from "./recurring-event-manager";
+import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
+import type { Parser } from "../parser";
+import type { RecurringEventManager } from "../recurring-event-manager";
 
 export interface EventQuery {
 	start: ISO;

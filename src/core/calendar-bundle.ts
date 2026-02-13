@@ -21,7 +21,7 @@ import type { Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
 import type { NameSeriesTracker } from "./name-series-tracker";
 import { CalendarSettingsStore, type SettingsStore } from "./settings-store";
-import type { UntrackedEventStore } from "./untracked-event-store";
+import type { UntrackedEventStore } from "./event-store";
 
 export class CalendarBundle {
 	public readonly settingsStore: CalendarSettingsStore;

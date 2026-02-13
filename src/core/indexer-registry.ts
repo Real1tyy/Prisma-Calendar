@@ -10,7 +10,7 @@ import { NotificationManager } from "./notification-manager";
 import { Parser } from "./parser";
 import { RecurringEventManager } from "./recurring-event-manager";
 import { NameSeriesTracker } from "./name-series-tracker";
-import { UntrackedEventStore } from "./untracked-event-store";
+import { UntrackedEventStore } from "./event-store";
 
 interface IndexerEntry {
 	indexer: Indexer;

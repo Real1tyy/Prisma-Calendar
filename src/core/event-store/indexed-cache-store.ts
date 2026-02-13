@@ -1,7 +1,7 @@
 import { DebouncedNotifier } from "@real1ty-obsidian-plugins";
 import type { Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
-import type { Indexer, IndexerEvent, RawEventSource } from "./indexer";
+import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
 
 export interface CacheEntry<T> {
 	template: T;
