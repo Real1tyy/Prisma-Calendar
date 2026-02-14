@@ -1,4 +1,5 @@
 import { Notice, TFile } from "obsidian";
+import { CalendarView } from "../components/calendar-view";
 import { EventCreateModal, EventEditModal, UntrackedEventCreateModal } from "../components/modals";
 import type CustomCalendarPlugin from "../main";
 import type { Frontmatter } from "../types";
@@ -88,12 +89,17 @@ export class PrismaCalendarApiManager {
 		delete (window as unknown as Record<string, unknown>)[this.apiGlobalKey];
 	}
 
+	private isCalendarViewFocused(): boolean {
+		const activeView = this.plugin.app.workspace.getActiveViewOfType(CalendarView);
+		return activeView !== null;
+	}
+
 	openCreateUntrackedEventModal(): void {
 		const bundle = this.resolveBundleOrNotice();
 		if (!bundle) return;
 		new UntrackedEventCreateModal(this.plugin.app, async (title) => {
 			const filePath = await this.createUntrackedEvent(title, bundle.calendarId);
-			if (filePath) {
+			if (filePath && !this.isCalendarViewFocused()) {
 				await openFileInNewTab(this.plugin.app, filePath);
 			}
 		}).open();
@@ -131,7 +137,7 @@ export class PrismaCalendarApiManager {
 		if (autoStartStopwatch) {
 			modal.setAutoStartStopwatch(true);
 		}
-		if (openCreatedInNewTab) {
+		if (openCreatedInNewTab && !this.isCalendarViewFocused()) {
 			modal.setOpenCreatedInNewTab(true);
 		}
 		modal.open();
