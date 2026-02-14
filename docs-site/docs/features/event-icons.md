@@ -27,9 +27,10 @@ When multiple icon sources exist for an event:
 | Priority | Source |
 |----------|--------|
 | **1 (highest)** | User-set `Icon` property |
-| 2 | CalDAV account icon |
-| 3 | ICS subscription icon |
-| 4 | Recurring event marker |
+| 2 | Recurring event marker |
+| 3 | CalDAV account icon |
+| 4 | ICS subscription icon |
+| 5 | Holiday marker (🏳️) |
 
 Clear the `Icon` property to fall back to integration or recurring icons.
 

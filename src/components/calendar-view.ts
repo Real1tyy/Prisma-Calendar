@@ -1729,30 +1729,30 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.hasPerformedInitialLoad = false;
 	}
 
-	private getEventIcon(event: CalendarEventData): string | undefined {
+	private getEventIcon(event: CalendarEventData): { userIcon?: string; integrationIcon?: string } {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const displayData = event.extendedProps.frontmatterDisplayData;
+		const result: { userIcon?: string; integrationIcon?: string } = {};
 
-		// User-set icon takes highest precedence
-		const userIcon = displayData?.[settings.iconProp];
-		if (typeof userIcon === "string" && userIcon.trim()) {
-			return userIcon.trim();
+		// User-set icon (highest precedence, overrides everything)
+		const iconValue = displayData?.[settings.iconProp];
+		if (typeof iconValue === "string" && iconValue.trim()) {
+			result.userIcon = iconValue.trim();
 		}
 
+		// Integration icons (CalDAV / ICS subscription)
 		const caldavMetadata = displayData?.[settings.caldavProp] as { accountId?: string } | undefined;
 		const icsSubscriptionMetadata = displayData?.[settings.icsSubscriptionProp] as
 			| { subscriptionId?: string }
 			| undefined;
 
 		if (caldavMetadata?.accountId) {
-			return this.calendarIconCache.get(`caldav:${caldavMetadata.accountId}`);
+			result.integrationIcon = this.calendarIconCache.get(`caldav:${caldavMetadata.accountId}`);
+		} else if (icsSubscriptionMetadata?.subscriptionId) {
+			result.integrationIcon = this.calendarIconCache.get(`ics:${icsSubscriptionMetadata.subscriptionId}`);
 		}
 
-		if (icsSubscriptionMetadata?.subscriptionId) {
-			return this.calendarIconCache.get(`ics:${icsSubscriptionMetadata.subscriptionId}`);
-		}
-
-		return undefined;
+		return result;
 	}
 
 	private renderEventContent(arg: EventContentArg): {
@@ -1772,23 +1772,27 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const isPhysicalRecurring = displayData?.[settings.sourceProp];
 		const isHoliday = event.extendedProps.filePath?.startsWith("holiday:");
 
-		const calendarIcon = this.getEventIcon(event);
+		const { userIcon, integrationIcon } = this.getEventIcon(event);
 
-		if (
+		// Precedence: user icon > recurring markers > integration icons > holiday
+		const hasRecurringMarker =
 			(isSourceRecurring && settings.showSourceRecurringMarker) ||
-			(isPhysicalRecurring && settings.showPhysicalRecurringMarker) ||
-			isHoliday ||
-			calendarIcon
-		) {
+			(isPhysicalRecurring && settings.showPhysicalRecurringMarker);
+
+		if (userIcon || hasRecurringMarker || integrationIcon || isHoliday) {
 			const markerEl = document.createElement("div");
 			markerEl.className = cls("event-marker");
 
-			if (calendarIcon) {
-				markerEl.textContent = calendarIcon;
+			if (userIcon) {
+				markerEl.textContent = userIcon;
+			} else if (isSourceRecurring && settings.showSourceRecurringMarker) {
+				markerEl.textContent = settings.sourceRecurringMarker;
+			} else if (isPhysicalRecurring && settings.showPhysicalRecurringMarker) {
+				markerEl.textContent = settings.physicalRecurringMarker;
+			} else if (integrationIcon) {
+				markerEl.textContent = integrationIcon;
 			} else if (isHoliday) {
-				markerEl.textContent = "H";
-			} else {
-				markerEl.textContent = isSourceRecurring ? settings.sourceRecurringMarker : settings.physicalRecurringMarker;
+				markerEl.textContent = "🏳️";
 			}
 
 			container.appendChild(markerEl);
