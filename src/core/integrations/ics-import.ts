@@ -3,6 +3,8 @@ import ICAL from "ical.js";
 import { DateTime } from "luxon";
 import type { App, TFile } from "obsidian";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
+import type { RecurrenceType } from "../../types/recurring-event";
+import type { Weekday } from "../../utils/date-recurrence";
 import { extractZettelId, generateUniqueEventPath, removeZettelId, setEventBasics } from "../../utils/calendar-events";
 import { parseIntoList } from "@real1ty-obsidian-plugins";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -25,6 +27,11 @@ export interface ImportedEvent {
 	uid: string;
 	/** Last modified timestamp (DTSTAMP or LAST-MODIFIED) in milliseconds */
 	lastModified?: number;
+	/** Parsed RRULE data mapped to internal recurrence types */
+	rrule?: {
+		type: RecurrenceType;
+		weekdays?: Weekday[];
+	};
 }
 
 export interface ICSImportResult {
@@ -104,6 +111,65 @@ function getPrismaProperty(vevent: ICAL.Component, propName: string): string | u
 	return value ? String(value) : undefined;
 }
 
+const ICS_BYDAY_TO_WEEKDAY: Record<string, Weekday> = {
+	SU: "sunday",
+	MO: "monday",
+	TU: "tuesday",
+	WE: "wednesday",
+	TH: "thursday",
+	FR: "friday",
+	SA: "saturday",
+};
+
+export function parseICSRRule(vevent: ICAL.Component): { type: RecurrenceType; weekdays?: Weekday[] } | undefined {
+	const rruleProp = vevent.getFirstPropertyValue("rrule");
+	if (!rruleProp) return undefined;
+
+	const recur = rruleProp instanceof ICAL.Recur ? rruleProp : new ICAL.Recur(rruleProp as unknown as Frontmatter);
+	const freq: string = recur.freq;
+	const interval: number = recur.interval || 1;
+
+	let type: RecurrenceType | undefined;
+
+	if (freq === "DAILY" && interval === 1) {
+		type = "daily";
+	} else if (freq === "DAILY" && interval === 2) {
+		type = "bi-daily";
+	} else if (freq === "WEEKLY" && interval === 1) {
+		type = "weekly";
+	} else if (freq === "WEEKLY" && interval === 2) {
+		type = "bi-weekly";
+	} else if (freq === "MONTHLY" && interval === 1) {
+		type = "monthly";
+	} else if (freq === "MONTHLY" && interval === 2) {
+		type = "bi-monthly";
+	} else if (freq === "MONTHLY" && interval === 3) {
+		type = "quarterly";
+	} else if (freq === "MONTHLY" && interval === 6) {
+		type = "semi-annual";
+	} else if (freq === "YEARLY" && interval === 1) {
+		type = "yearly";
+	}
+
+	if (!type) return undefined;
+
+	// Parse BYDAY for weekly/bi-weekly
+	let weekdays: Weekday[] | undefined;
+	if (type === "weekly" || type === "bi-weekly") {
+		const byDay = recur.getComponent("BYDAY");
+		if (byDay && byDay.length > 0) {
+			const mapped = byDay
+				.map((day: string) => ICS_BYDAY_TO_WEEKDAY[day.toUpperCase()])
+				.filter((w: Weekday | undefined): w is Weekday => w !== undefined);
+			if (mapped.length > 0) {
+				weekdays = mapped;
+			}
+		}
+	}
+
+	return weekdays ? { type, weekdays } : { type };
+}
+
 export function parseICSContent(icsContent: string): ICSImportResult {
 	try {
 		const jcalData = ICAL.parse(icsContent) as string | unknown[];
@@ -169,6 +235,7 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 			const frontmatter = parsePrismaFrontmatter(vevent);
 			const originalFilePath = getPrismaProperty(vevent, "x-prisma-file");
 			const uid = event.uid;
+			const rrule = parseICSRRule(vevent);
 
 			// Extract last modified timestamp (prefer LAST-MODIFIED, fall back to DTSTAMP)
 			let lastModified: number | undefined;
@@ -196,6 +263,7 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 				originalFilePath,
 				uid,
 				lastModified,
+				rrule,
 			});
 		}
 
@@ -282,6 +350,13 @@ export function buildFrontmatterFromImportedEvent(
 
 	if (event.participants && event.participants.length > 0 && settings.participantsProp) {
 		fm[settings.participantsProp] = event.participants;
+	}
+
+	if (event.rrule) {
+		fm[settings.rruleProp] = event.rrule.type;
+		if (event.rrule.weekdays && event.rrule.weekdays.length > 0) {
+			fm[settings.rruleSpecProp] = event.rrule.weekdays.join(", ");
+		}
 	}
 
 	return fm;

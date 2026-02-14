@@ -77,6 +77,28 @@ For each imported event, Prisma Calendar:
    - Notification settings (from `VALARM` if present)
 4. Adds event description as note content
 
+### Recurring Event Support
+
+Recurring events defined with ICS `RRULE` properties are automatically converted to Prisma's internal recurring event system. The following recurrence patterns are supported:
+
+| ICS RRULE | Prisma Recurrence Type |
+|-----------|----------------------|
+| `FREQ=DAILY` | Daily |
+| `FREQ=DAILY;INTERVAL=2` | Bi-daily (every 2 days) |
+| `FREQ=WEEKLY` | Weekly |
+| `FREQ=WEEKLY;INTERVAL=2` | Bi-weekly |
+| `FREQ=MONTHLY` | Monthly |
+| `FREQ=MONTHLY;INTERVAL=2` | Bi-monthly |
+| `FREQ=MONTHLY;INTERVAL=3` | Quarterly |
+| `FREQ=MONTHLY;INTERVAL=6` | Semi-annual |
+| `FREQ=YEARLY` | Yearly |
+
+For weekly and bi-weekly events, `BYDAY` values (e.g., `BYDAY=MO,WE,FR`) are mapped to weekday selections. Once imported, recurring events generate instances automatically via the existing [recurring event system](./recurring-dsl).
+
+Unsupported RRULE patterns (e.g., `INTERVAL=3` on weekly) are imported as single non-recurring events.
+
+This applies to all import paths: manual ICS import, ICS URL subscriptions, and CalDAV sync.
+
 **Compatibility**: Import automatically handles ICS files from Google Calendar, Outlook, Apple Calendar, Fastmail, Nextcloud, and any RFC 5545-compliant calendar application. Location and participant data is preserved during round-trip export/import.
 
 ## Timezone Handling

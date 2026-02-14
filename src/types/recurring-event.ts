@@ -10,6 +10,7 @@ import type { SingleCalendarConfig } from "./settings";
 
 export const RECURRENCE_TYPE_OPTIONS = {
 	daily: "Daily",
+	"bi-daily": "Bi-daily (every 2 days)",
 	weekly: "Weekly",
 	"bi-weekly": "Bi-weekly (every 2 weeks)",
 	monthly: "Monthly",

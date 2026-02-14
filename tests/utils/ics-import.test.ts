@@ -4,6 +4,7 @@ import {
 	buildFrontmatterFromImportedEvent,
 	type ImportedEvent,
 	parseICSContent,
+	parseICSRRule,
 } from "../../src/core/integrations/ics-import";
 import type { CalendarEvent } from "../../src/types/calendar";
 import type { SingleCalendarConfig } from "../../src/types/settings";
@@ -995,6 +996,170 @@ END:VCALENDAR`;
 				const durationMs = event.end!.getTime() - event.start.getTime();
 				expect(durationMs).toBe(expectedMs);
 			}
+		});
+	});
+
+	describe("RRULE parsing", () => {
+		function makeICSWithRRule(rrule: string): string {
+			return `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Test//Test//EN
+BEGIN:VEVENT
+UID:rrule-test@example.com
+DTSTART:20250315T100000Z
+DTEND:20250315T110000Z
+SUMMARY:Recurring Event
+RRULE:${rrule}
+END:VEVENT
+END:VCALENDAR`;
+		}
+
+		it("should parse FREQ=DAILY as daily", () => {
+			const result = parseICSContent(makeICSWithRRule("FREQ=DAILY"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toEqual({ type: "daily" });
+		});
+
+		it("should parse FREQ=DAILY;INTERVAL=2 as bi-daily", () => {
+			const result = parseICSContent(makeICSWithRRule("FREQ=DAILY;INTERVAL=2"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toEqual({ type: "bi-daily" });
+		});
+
+		it("should parse FREQ=WEEKLY as weekly", () => {
+			const result = parseICSContent(makeICSWithRRule("FREQ=WEEKLY"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toEqual({ type: "weekly" });
+		});
+
+		it("should parse FREQ=WEEKLY;BYDAY=MO,WE,FR as weekly with weekdays", () => {
+			const result = parseICSContent(makeICSWithRRule("FREQ=WEEKLY;BYDAY=MO,WE,FR"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toEqual({
+				type: "weekly",
+				weekdays: ["monday", "wednesday", "friday"],
+			});
+		});
+
+		it("should parse FREQ=WEEKLY;INTERVAL=2;BYDAY=TU as bi-weekly with weekdays", () => {
+			const result = parseICSContent(makeICSWithRRule("FREQ=WEEKLY;INTERVAL=2;BYDAY=TU"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toEqual({
+				type: "bi-weekly",
+				weekdays: ["tuesday"],
+			});
+		});
+
+		it("should parse FREQ=MONTHLY as monthly", () => {
+			const result = parseICSContent(makeICSWithRRule("FREQ=MONTHLY"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toEqual({ type: "monthly" });
+		});
+
+		it("should parse FREQ=MONTHLY;INTERVAL=2 as bi-monthly", () => {
+			const result = parseICSContent(makeICSWithRRule("FREQ=MONTHLY;INTERVAL=2"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toEqual({ type: "bi-monthly" });
+		});
+
+		it("should parse FREQ=MONTHLY;INTERVAL=3 as quarterly", () => {
+			const result = parseICSContent(makeICSWithRRule("FREQ=MONTHLY;INTERVAL=3"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toEqual({ type: "quarterly" });
+		});
+
+		it("should parse FREQ=MONTHLY;INTERVAL=6 as semi-annual", () => {
+			const result = parseICSContent(makeICSWithRRule("FREQ=MONTHLY;INTERVAL=6"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toEqual({ type: "semi-annual" });
+		});
+
+		it("should parse FREQ=YEARLY as yearly", () => {
+			const result = parseICSContent(makeICSWithRRule("FREQ=YEARLY"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toEqual({ type: "yearly" });
+		});
+
+		it("should return undefined rrule for unsupported patterns", () => {
+			// FREQ=WEEKLY with INTERVAL=3 is not supported
+			const result = parseICSContent(makeICSWithRRule("FREQ=WEEKLY;INTERVAL=3"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toBeUndefined();
+		});
+
+		it("should return undefined rrule for unsupported daily interval", () => {
+			const result = parseICSContent(makeICSWithRRule("FREQ=DAILY;INTERVAL=3"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toBeUndefined();
+		});
+
+		it("should return undefined rrule when no RRULE is present", () => {
+			const result = parseICSContent(SAMPLE_ICS_SINGLE_EVENT);
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toBeUndefined();
+		});
+
+		it("should not parse BYDAY for non-weekly types", () => {
+			// BYDAY on monthly should be ignored (we only support weekdays for weekly/bi-weekly)
+			const result = parseICSContent(makeICSWithRRule("FREQ=MONTHLY;BYDAY=MO,FR"));
+			expect(result.success).toBe(true);
+			expect(result.events[0].rrule).toEqual({ type: "monthly" });
+		});
+	});
+
+	describe("buildFrontmatterFromImportedEvent with RRULE", () => {
+		const defaultSettings: SingleCalendarConfig = {
+			...createMockSingleCalendarSettings(),
+			startProp: "Start Date",
+			endProp: "End Date",
+			dateProp: "Date",
+			allDayProp: "All Day",
+			titleProp: "Title",
+			minutesBeforeProp: "Minutes Before",
+			daysBeforeProp: "Days Before",
+			categoryProp: "Category",
+		};
+
+		function createImportedEvent(overrides: Partial<ImportedEvent> = {}): ImportedEvent {
+			return {
+				title: "Recurring Event",
+				start: new Date("2025-01-15T13:00:00.000Z"),
+				end: new Date("2025-01-15T14:00:00.000Z"),
+				allDay: false,
+				uid: "test-uid",
+				...overrides,
+			};
+		}
+
+		it("should set rruleProp when rrule is present", () => {
+			const event = createImportedEvent({
+				rrule: { type: "daily" },
+			});
+
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "UTC");
+
+			expect(fm[defaultSettings.rruleProp]).toBe("daily");
+			expect(fm[defaultSettings.rruleSpecProp]).toBeUndefined();
+		});
+
+		it("should set rruleSpecProp when weekdays are present", () => {
+			const event = createImportedEvent({
+				rrule: { type: "weekly", weekdays: ["monday", "wednesday", "friday"] },
+			});
+
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "UTC");
+
+			expect(fm[defaultSettings.rruleProp]).toBe("weekly");
+			expect(fm[defaultSettings.rruleSpecProp]).toBe("monday, wednesday, friday");
+		});
+
+		it("should not set rrule properties when rrule is absent", () => {
+			const event = createImportedEvent();
+
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "UTC");
+
+			expect(fm[defaultSettings.rruleProp]).toBeUndefined();
+			expect(fm[defaultSettings.rruleSpecProp]).toBeUndefined();
 		});
 	});
 });

@@ -8,6 +8,10 @@ All notable changes to this project will be documented here.
 
 ### Added
 
+- **ICS RRULE Recurring Event Import**: Importing ICS files (manual import, ICS subscription sync, or CalDAV sync) now preserves recurring event rules. RRULE properties are parsed and mapped to Prisma's internal recurrence types — daily, bi-daily, weekly, bi-weekly, monthly, bi-monthly, quarterly, semi-annual, and yearly — with BYDAY weekday support for weekly/bi-weekly patterns. Imported recurring events automatically generate instances via the existing recurring event system. Unsupported RRULE patterns fall back to single-event import.
+
+- **Bi-daily recurrence type**: A new "Bi-daily (every 2 days)" recurrence option is available when creating or editing recurring events. It also maps from `FREQ=DAILY;INTERVAL=2` during ICS import.
+
 - **Event Icon Property**: Events can now have a custom icon (emoji or text) displayed on the calendar via a configurable frontmatter property (default: `Icon`). The icon takes highest precedence — it overrides CalDAV account icons, ICS subscription icons, and recurring event markers. Set it directly in frontmatter (e.g., `Icon: 🎉`) or use the new **Icon** field in the Create/Edit Event modal. Icons are also saved in event presets and restored from minimized modals. Configure the property name in Settings → Properties → "Icon property". See the [Event Icons](./features/event-icons) documentation for full details.
 
 - **Global event creation commands**: `Create new event` and `Create new event with stopwatch` now work from anywhere in Obsidian (not only when a calendar view is focused). They use the last opened Prisma calendar, with fallback to the first enabled calendar.

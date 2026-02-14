@@ -87,6 +87,8 @@ export function getNextOccurrence(
 	switch (recurrenceType) {
 		case "daily":
 			return currentDate.plus({ days: 1 });
+		case "bi-daily":
+			return currentDate.plus({ days: 2 });
 		case "weekly":
 			if (weekdays && weekdays.length > 0) {
 				return getNextWeekdayOccurrence(currentDate, weekdays);
@@ -243,6 +245,7 @@ export function calculateRecurringInstanceDateTime(
 
 	switch (recurrenceType) {
 		case "daily":
+		case "bi-daily":
 		case "weekly":
 		case "bi-weekly": {
 			if (allDay) {
