@@ -1,11 +1,17 @@
 import { MinimizedModalManager } from "../../core/minimized-modal-manager";
+import { openFileInNewTab } from "../../utils/obsidian";
 import { BaseEventModal } from "./base-event-modal";
 
 export class EventCreateModal extends BaseEventModal {
 	private autoStartStopwatch = false;
+	private openCreatedInNewTab = false;
 
 	setAutoStartStopwatch(autoStart: boolean): void {
 		this.autoStartStopwatch = autoStart;
+	}
+
+	setOpenCreatedInNewTab(openInNewTab: boolean): void {
+		this.openCreatedInNewTab = openInNewTab;
 	}
 
 	protected getModalTitle(): string {
@@ -63,7 +69,7 @@ export class EventCreateModal extends BaseEventModal {
 
 		this.bundle
 			.createEvent(eventData)
-			.then((filePath) => {
+			.then(async (filePath) => {
 				if (filePath) {
 					this.setEventExtendedProp("filePath", filePath);
 
@@ -74,6 +80,10 @@ export class EventCreateModal extends BaseEventModal {
 							state.filePath = filePath;
 							MinimizedModalManager.saveState(state, this.bundle);
 						}
+					}
+
+					if (this.openCreatedInNewTab) {
+						await openFileInNewTab(this.app, filePath);
 					}
 				}
 			})

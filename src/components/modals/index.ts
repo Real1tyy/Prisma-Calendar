@@ -7,3 +7,4 @@ export { CalendarIntegrationDeleteEventsModal, DeleteRecurringEventsModal } from
 export { EventCreateModal } from "./event-create-modal";
 export { EventEditModal } from "./event-edit-modal";
 export { ICSImportModal } from "./ics-import-modal";
+export { UntrackedEventCreateModal } from "./untracked-event-create-modal";

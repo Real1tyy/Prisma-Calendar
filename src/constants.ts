@@ -11,6 +11,9 @@ export const PRISMA_CALENDAR_NAMESPACE = "a8f9e6d4-7c2b-4e1a-9f3d-5b8c1a2e4d6f";
 export const COMMAND_IDS = {
 	CREATE_EVENT: "create-event",
 	CREATE_EVENT_WITH_STOPWATCH: "create-event-with-stopwatch",
+	CREATE_UNTRACKED_EVENT: "create-untracked-event",
+	EDIT_CURRENT_NOTE_AS_EVENT: "edit-current-note-as-event",
+	ADD_ZETTEL_ID_TO_CURRENT_NOTE: "add-zettel-id-to-current-note",
 	EDIT_LAST_FOCUSED_EVENT: "edit-last-focused-event",
 	SET_FOCUSED_EVENT_START_TO_NOW: "set-last-focused-event-start-to-now",
 	SET_FOCUSED_EVENT_END_TO_NOW: "set-last-focused-event-end-to-now",

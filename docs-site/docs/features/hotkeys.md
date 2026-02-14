@@ -26,7 +26,7 @@ Prisma Calendar's hotkeys are designed to be both powerful and intuitive. They a
 
 ## Global Hotkeys
 
-Global hotkeys work across all calendars and automatically target the currently active calendar view.
+Global hotkeys work across all calendars. Most commands target the currently active calendar view, while creation/conversion commands can now run from anywhere in Obsidian and use your last opened Prisma calendar.
 
 ### Batch Operations
 
@@ -139,8 +139,38 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 
 ### Create New Event
 
--   **Function**: Opens the create event modal for the active calendar
--   **Use Case**: Quickly create events without clicking the calendar
+-   **Function**: Opens the create event modal from anywhere in Obsidian
+-   **Behavior**:
+    -   Uses the last opened Prisma calendar (falls back to the first enabled calendar)
+    -   Works even when no calendar tab is currently open
+    -   After creating the event via command, opens the created note in a new tab and focuses it
+-   **Use Case**: Quickly create timed or all-day events without opening the calendar first
+
+### Create New Untracked Event
+
+-   **Function**: Opens a lightweight modal that asks only for event name
+-   **Behavior**:
+    -   Creates a Prisma note with ZettelID
+    -   Leaves `Start Date`, `End Date`, `Date`, and `All Day` empty
+    -   The note appears in Untracked Events until you add date/time values
+-   **Use Case**: Capture events quickly and schedule them later
+
+### Edit Current Note as Event
+
+-   **Function**: Opens the Prisma event edit modal for the currently active note
+-   **Behavior**:
+    -   Works from normal note view (outside calendar view)
+    -   Ensures the note has a ZettelID first
+    -   Uses the last opened Prisma calendar configuration
+-   **Requirements**: The active note must be in the selected calendar's directory
+
+### Add ZettelID to Current Note
+
+-   **Function**: Adds Prisma ZettelID to the currently active note
+-   **Behavior**:
+    -   Renames the file to include Prisma timestamp suffix if missing
+    -   Writes ZettelID to the configured frontmatter property
+-   **Use Case**: Convert an existing note into a Prisma-compatible event skeleton
 
 ### Edit Last Focused Event
 
@@ -328,6 +358,20 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 -   **Use Case**: Quickly assign or update categories while keeping the event modal minimized
 -   **Workflow**: When you have a minimized event, run this command to assign categories and continue working
 -   **See Also**: [Time Tracker documentation](./time-tracker.md) for minimize functionality
+
+## Programmatic API
+
+Prisma Calendar exposes a **scripting API** on `window.PrismaCalendar` that lets you control event creation and conversion from code—without using hotkeys or the command palette. Call these methods from the Obsidian dev console, from other plugins, or from scripts (e.g., Templater) for automation, bulk operations, or custom workflows.
+
+**What you can do:**
+
+- **Create events** — `createEvent()` and `createUntrackedEvent()` create Prisma notes programmatically with full frontmatter support
+- **Open modals** — `openCreateEventModal()` and `openEditActiveNoteModal()` open the same create/edit UI as the hotkey commands
+- **Convert notes** — `convertFileToEvent()` and `addZettelIdToActiveNote()` turn existing notes into Prisma-compatible events
+
+The API mirrors the functionality of the commands described above and uses the same calendar selection (last opened or first enabled). Ideal for Templater templates, QuickAdd, Dataview automation, or custom plugin integrations.
+
+-   **See Also**: [Programmatic API documentation](./programmatic-api.md) for full method signatures, options, and code examples.
 
 ## Tips
 

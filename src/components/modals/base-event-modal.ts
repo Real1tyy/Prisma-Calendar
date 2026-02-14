@@ -25,6 +25,7 @@ import {
 	findAdjacentEvent,
 	parseCustomDoneProperty,
 	setEventBasics,
+	setUntrackedEventBasics,
 } from "../../utils/calendar-events";
 import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
 import {
@@ -1423,23 +1424,35 @@ export abstract class BaseEventModal extends Modal {
 			preservedFrontmatter[settings.titleProp] = this.titleInput.value;
 		}
 
-		let start: string;
-		let end: string | null;
+		let start = "";
+		let end: string | null = null;
+		let isUntracked = false;
 
 		if (this.allDayCheckbox.checked) {
-			// For FullCalendar compatibility, we still return ISO strings
-			start = `${this.dateInput.value}T00:00:00`;
-			end = `${this.dateInput.value}T23:59:59`;
-		} else {
+			if (this.dateInput.value) {
+				// For FullCalendar compatibility, we still return ISO strings
+				start = `${this.dateInput.value}T00:00:00`;
+				end = `${this.dateInput.value}T23:59:59`;
+			} else {
+				isUntracked = true;
+			}
+		} else if (this.startInput.value) {
 			start = inputValueToISOString(this.startInput.value);
 			end = this.endInput.value ? inputValueToISOString(this.endInput.value) : null;
+		} else {
+			isUntracked = true;
 		}
-		setEventBasics(preservedFrontmatter, settings, {
-			title: this.titleInput.value,
-			start: start,
-			end: end ?? undefined,
-			allDay: this.allDayCheckbox.checked,
-		});
+
+		if (isUntracked) {
+			setUntrackedEventBasics(preservedFrontmatter, settings);
+		} else {
+			setEventBasics(preservedFrontmatter, settings, {
+				title: this.titleInput.value,
+				start: start,
+				end: end ?? undefined,
+				allDay: this.allDayCheckbox.checked,
+			});
+		}
 
 		if (settings.categoryProp) {
 			assignListToFrontmatter(preservedFrontmatter, settings.categoryProp, this.selectedCategories);
@@ -1527,6 +1540,7 @@ export abstract class BaseEventModal extends Modal {
 		}
 
 		if (
+			!isUntracked &&
 			settings.skipNewlyCreatedNotifications &&
 			settings.alreadyNotifiedProp &&
 			!this.bundle.plugin.syncStore.data.readOnly
@@ -1541,7 +1555,7 @@ export abstract class BaseEventModal extends Modal {
 		}
 
 		// Handle recurring event properties
-		if (this.recurringCheckbox.checked) {
+		if (!isUntracked && this.recurringCheckbox.checked) {
 			const rruleType = this.rruleSelect.value as RecurrenceType;
 			preservedFrontmatter[settings.rruleProp] = rruleType;
 
@@ -1603,7 +1617,7 @@ export abstract class BaseEventModal extends Modal {
 			title: this.titleInput.value,
 			start,
 			end,
-			allDay: this.allDayCheckbox.checked,
+			allDay: isUntracked ? false : this.allDayCheckbox.checked,
 			preservedFrontmatter,
 		};
 	}

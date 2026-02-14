@@ -4,9 +4,19 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 1.33.0 - 2/12/2026
+## 1.33.0 - 2/14/2026
 
 ### Added
+
+- **Global event creation commands**: `Create new event` and `Create new event with stopwatch` now work from anywhere in Obsidian (not only when a calendar view is focused). They use the last opened Prisma calendar, with fallback to the first enabled calendar.
+
+- **Untracked event creation command**: New `Create new untracked event` command opens a minimal modal (name only) and creates a Prisma note with ZettelID while keeping `Start Date`, `End Date`, `Date`, and `All Day` empty.
+
+- **Current note event tooling**: Two new commands for manual conversion workflows:
+  - `Edit current note as event` opens Prisma's full edit modal for the active note (outside calendar view), ensuring ZettelID first.
+  - `Add ZettelID to current note` quickly converts the active note into a Prisma-compatible event skeleton.
+
+- **Programmatic API on `window.PrismaCalendar`**: Added scripting API for creating events, creating untracked events, converting existing files to Prisma format, opening creation/edit modals, and enforcing ZettelID from external scripts/plugins. See the [Programmatic API documentation](./features/programmatic-api.md) for full details.
 
 - **Event text colors**: Two new settings in Calendar → Event text colors let you configure text colors for calendar events:
   - **Default event text color**: Used for events with dark backgrounds (default: white). This is the standard text color you see on most events.
@@ -56,6 +66,8 @@ All notable changes to this project will be documented here.
 - **ICS Subscription Integration Color**: ICS URL subscriptions now have their own "Integration event color" setting (matching CalDAV's existing setting). This color is applied to all events synced from ICS subscriptions and overrides color rules, just like CalDAV integration colors. Configure in Settings → Integrations → ICS URL Subscriptions.
 
 ### Changed
+
+- **Untracked save behavior in event modal**: Saving with empty date/time inputs now explicitly keeps the event untracked by clearing Prisma date fields instead of forcing a timed event payload.
 
 - **Event modal sticky footer**: Cancel, Save as preset, and Save buttons now stay visible at the bottom of the Create/Edit Event modal even when the form overflows and requires scrolling.
 

@@ -5,7 +5,13 @@ import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { CalendarSelectModal, ICSImportModal } from "./components/modals";
 import { ICSImportProgressModal } from "./components/modals/ics-import-progress-modal";
 import { COMMAND_IDS } from "./constants";
-import { CalendarBundle, IndexerRegistry, MinimizedModalManager, SettingsStore } from "./core";
+import {
+	CalendarBundle,
+	IndexerRegistry,
+	MinimizedModalManager,
+	PrismaCalendarApiManager,
+	SettingsStore,
+} from "./core";
 import { type CalDAVAccount } from "./core/integrations/caldav";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
@@ -17,6 +23,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;
 	syncStore!: SyncStore<typeof PrismaSyncDataSchema>;
 	calendarBundles: CalendarBundle[] = [];
+	apiManager!: PrismaCalendarApiManager;
 	private registeredViewTypes: Set<string> = new Set();
 
 	async onload() {
@@ -32,9 +39,11 @@ export default class CustomCalendarPlugin extends Plugin {
 		await this.ensureMinimumCalendars();
 
 		this.initializeCalendarBundles();
+		this.apiManager = new PrismaCalendarApiManager(this);
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
 
 		this.registerCommands();
+		this.apiManager.exposeProgrammaticApi();
 
 		this.app.workspace.onLayoutReady(() => {
 			void this.ensureCalendarBundlesReady();
@@ -51,6 +60,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		const registry = IndexerRegistry.getInstance(this.app);
 		registry.destroy();
+		this.apiManager.unexposeProgrammaticApi();
 	}
 
 	async ensureCalendarViewFocus(leaf: WorkspaceLeaf): Promise<void> {
@@ -69,6 +79,16 @@ export default class CustomCalendarPlugin extends Plugin {
 		if (view instanceof CalendarView) {
 			setTimeout(() => view.containerEl.focus(), 10);
 		}
+	}
+
+	async rememberLastUsedCalendar(calendarId: string): Promise<void> {
+		if (this.syncStore.data.lastUsedCalendarId === calendarId) {
+			return;
+		}
+
+		await this.syncStore.updateData({
+			lastUsedCalendarId: calendarId,
+		});
 	}
 
 	private registerCommands(): void {
@@ -137,6 +157,14 @@ export default class CustomCalendarPlugin extends Plugin {
 			});
 		};
 
+		const addApiCommand = (id: string, name: string, action: () => void): void => {
+			this.addCommand({
+				id,
+				name,
+				callback: action,
+			});
+		};
+
 		addBatchCommand(COMMAND_IDS.BATCH_SELECT_ALL, "Select all", (view) => view.selectAll());
 		addBatchCommand(COMMAND_IDS.BATCH_CLEAR_SELECTION, "Clear selection", (view) => view.clearSelection());
 		addBatchCommand(COMMAND_IDS.BATCH_DUPLICATE_SELECTION, "Duplicate selection", (view) => view.duplicateSelection());
@@ -161,11 +189,20 @@ export default class CustomCalendarPlugin extends Plugin {
 		addUndoRedoCommand(COMMAND_IDS.UNDO, "Undo", (view) => view.undo());
 		addUndoRedoCommand(COMMAND_IDS.REDO, "Redo", (view) => view.redo());
 
-		addCalendarViewCommand(COMMAND_IDS.CREATE_EVENT, "Create new event", (view) => {
-			view.openCreateEventModal();
+		addApiCommand(COMMAND_IDS.CREATE_EVENT, "Create new event", () => {
+			void this.apiManager.openCreateEventModal(undefined, false, true);
 		});
-		addCalendarViewCommand(COMMAND_IDS.CREATE_EVENT_WITH_STOPWATCH, "Create new event with stopwatch", (view) => {
-			view.openCreateEventModal(true);
+		addApiCommand(COMMAND_IDS.CREATE_EVENT_WITH_STOPWATCH, "Create new event with stopwatch", () => {
+			void this.apiManager.openCreateEventModal(undefined, true, true);
+		});
+		addApiCommand(COMMAND_IDS.CREATE_UNTRACKED_EVENT, "Create new untracked event", () => {
+			this.apiManager.openCreateUntrackedEventModal();
+		});
+		addApiCommand(COMMAND_IDS.EDIT_CURRENT_NOTE_AS_EVENT, "Edit current note as event", () => {
+			void this.apiManager.openEditActiveNoteModal();
+		});
+		addApiCommand(COMMAND_IDS.ADD_ZETTEL_ID_TO_CURRENT_NOTE, "Add ZettelID to current note", () => {
+			void this.apiManager.addZettelIdToActiveNote();
 		});
 		addCalendarViewCommand(COMMAND_IDS.EDIT_LAST_FOCUSED_EVENT, "Edit last focused event", (view) => {
 			view.openEditModalForFocusedEvent();
@@ -412,6 +449,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		for (const bundle of this.calendarBundles) {
 			const opened = await bundle.openFileInCalendar(activeFile);
 			if (opened) {
+				void this.rememberLastUsedCalendar(bundle.calendarId);
 				return;
 			}
 		}

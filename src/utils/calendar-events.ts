@@ -195,6 +195,13 @@ export const setEventBasics = (
 	if (zettelIdProp && data.zettelId) fm[zettelIdProp] = data.zettelId;
 };
 
+export const setUntrackedEventBasics = (fm: Frontmatter, settings: SingleCalendarConfig): void => {
+	fm[settings.startProp] = "";
+	fm[settings.endProp] = "";
+	fm[settings.dateProp] = "";
+	fm[settings.allDayProp] = "";
+};
+
 export const generateUniqueRruleId = (): string => {
 	return `${Date.now()}-${nanoid(5)}`;
 };

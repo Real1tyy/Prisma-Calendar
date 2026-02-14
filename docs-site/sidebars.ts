@@ -38,6 +38,7 @@ const sidebars: SidebarsConfig = {
 				"features/virtual-events",
 				"features/integrations",
 				"features/hotkeys",
+				"features/programmatic-api",
 			],
 		},
 		"configuration",

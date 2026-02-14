@@ -4,6 +4,7 @@ import { SETTINGS_DEFAULTS } from "../constants";
 export const PrismaSyncDataSchema = z
 	.object({
 		readOnly: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_READ_ONLY),
+		lastUsedCalendarId: z.string().optional(),
 	})
 	.strip();
 

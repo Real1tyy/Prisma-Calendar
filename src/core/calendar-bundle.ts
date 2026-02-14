@@ -195,6 +195,7 @@ export class CalendarBundle {
 		if (existingLeaf) {
 			await workspace.revealLeaf(existingLeaf);
 			await this.plugin.ensureCalendarViewFocus(existingLeaf);
+			void this.plugin.rememberLastUsedCalendar(this.calendarId);
 			return;
 		}
 
@@ -203,6 +204,7 @@ export class CalendarBundle {
 		await newLeaf.setViewState({ type: this.viewType, active: true });
 		await workspace.revealLeaf(newLeaf);
 		await this.plugin.ensureCalendarViewFocus(newLeaf);
+		void this.plugin.rememberLastUsedCalendar(this.calendarId);
 	}
 
 	async openFileInCalendar(file: TFile): Promise<boolean> {
