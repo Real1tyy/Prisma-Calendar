@@ -29,7 +29,13 @@ import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { getEventRenderingKey } from "../utils/calendar-settings";
 import { diffEvents, eventFingerprint } from "../utils/event-diff";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
-import { calculateDuration, calculateEndTime, roundToNearestHour, toLocalISOString } from "../utils/format";
+import {
+	buildEventTooltip,
+	calculateDuration,
+	calculateEndTime,
+	roundToNearestHour,
+	toLocalISOString,
+} from "../utils/format";
 import { emitHover } from "../utils/obsidian";
 import { extractPropertyText, getDisplayProperties, renderPropertyValue } from "../utils/property-display";
 import { BatchSelectionManager } from "./batch-selection-manager";
@@ -1938,57 +1944,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		const tooltipParts = [];
+		const tooltip = buildEventTooltip(event, settings);
 
-		let firstLine = cleanupTitle(event.title);
-
-		if (event.start) {
-			if (event.allDay) {
-				// For all-day events: NAME - DATE
-				const dateStr = event.start.toLocaleDateString("en-US", {
-					weekday: "short",
-					month: "short",
-					day: "numeric",
-					year: "numeric",
-				});
-				firstLine += ` - ${dateStr}`;
-			} else if (event.end) {
-				// For timed events: NAME - START - END (DURATION)
-				const startStr = event.start.toLocaleTimeString("en-US", {
-					hour: "2-digit",
-					minute: "2-digit",
-				});
-
-				const endStr = event.end.toLocaleTimeString("en-US", {
-					hour: "2-digit",
-					minute: "2-digit",
-				});
-				const duration = calculateDuration(event.start, event.end);
-				firstLine += ` - ${startStr} - ${endStr} (${duration})`;
-			} else {
-				// For timed events without end time: NAME - START
-				const startStr = event.start.toLocaleTimeString("en-US", {
-					hour: "2-digit",
-					minute: "2-digit",
-				});
-				firstLine += ` - ${startStr}`;
-			}
-		}
-
-		tooltipParts.push(firstLine);
-
-		const displayData = event.extendedProps.frontmatterDisplayData;
-		const displayPropertiesList = event.allDay
-			? settings.frontmatterDisplayPropertiesAllDay
-			: settings.frontmatterDisplayProperties;
-
-		const displayProperties = displayData ? getDisplayProperties(displayData, displayPropertiesList) : [];
-		for (const [prop, value] of displayProperties) {
-			const displayValue = extractPropertyText(value);
-			tooltipParts.push(`${prop}: ${displayValue}`);
-		}
-
-		element.setAttribute("title", tooltipParts.join("\n"));
+		element.setAttribute("title", tooltip);
 		element.addClass(cls("calendar-event"));
 	}
 

@@ -258,21 +258,21 @@ Click **Timeline** to open an interactive timeline visualization showing all eve
 
 **Features:**
 - **Interactive navigation** — Zoom in/out with mouse wheel, pan by dragging to navigate through time
-- **Adaptive event display** — Events intelligently switch between display modes based on zoom level:
-  - **Zoomed out (>30 days visible)**: All events show as **points** for maximum visibility and clarity
-  - **Zoomed in (<30 days visible)**: Timed events show as accurate **ranges** (bars spanning start to end time), all-day events remain as points
-- **Event names** — Each event displays its title (with ZettelID stripped)
+- **Event type distinction** — Timed events have a square dot, while all-day events have a hollow circle dot with a dashed border, making the two types instantly recognizable at a glance
+- **Event names** — Each event displays its clean title (with ZettelID and instance dates stripped)
+- **Category coloring** — Events are colored based on their category, matching the color rules configured in your calendar settings. This provides instant visual grouping on the timeline
+- **Hover tooltips** — Hover over any event to see detailed information in a tooltip, using the same format as the calendar view. For timed events the tooltip shows the time range and duration (e.g., "02:30 PM - 03:45 PM (1h 15m)"), for all-day events it shows the date. The tooltip also displays your configured display properties — using the timed event display properties for timed events and the all-day display properties for all-day events
+- **Skipped event indicators** — Skipped events appear faded with a strikethrough title, making gaps in a series immediately visible
 - **Current time indicator** — Red line shows the current moment
 - **Click to preview** — Click any event to open the event preview modal with full details
 
-The timeline automatically shows all events in the series. Use the mouse wheel to zoom in for detailed views or zoom out for an overview. Drag the timeline to pan through different time periods. The adaptive display ensures events are always visible and appropriately detailed for your current zoom level.
+The timeline automatically shows all events in the series as labeled points on a time axis. Use the mouse wheel to zoom in for detailed views or zoom out for an overview. Drag the timeline to pan through different time periods.
 
 The timeline is perfect for:
 - Visualizing event patterns and frequency
 - Seeing gaps in recurring event series
 - Understanding event distribution over time
 - Identifying clusters of activity
-- Getting an overview when zoomed out, details when zoomed in
 
 ### Requirements
 

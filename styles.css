@@ -4464,7 +4464,7 @@
 	font-size: 1.1rem;
 }
 
-/* vis-timeline overrides for dark theme compatibility */
+/* vis-timeline overrides for theme compatibility */
 
 .prisma-timeline-modal .vis-timeline {
 	border: 1px solid var(--background-modifier-border);
@@ -4483,11 +4483,6 @@
 .prisma-timeline-modal .vis-item.vis-selected {
 	background-color: var(--interactive-accent-hover);
 	border-color: var(--interactive-accent-hover);
-}
-
-.prisma-timeline-modal .vis-item.vis-point {
-	background-color: var(--interactive-accent);
-	border-color: var(--interactive-accent);
 }
 
 .prisma-timeline-modal .vis-time-axis .vis-text {
@@ -4512,6 +4507,43 @@
 
 .prisma-timeline-modal .vis-current-time {
 	background-color: var(--text-error);
+}
+
+.prisma-timeline-modal .vis-item.prisma-timeline-item-skipped {
+	opacity: 0.5;
+}
+
+.prisma-timeline-modal .vis-item.prisma-timeline-item-skipped .vis-item-content {
+	text-decoration: line-through;
+}
+
+/* All-day events: hollow circle dot and dashed border */
+.prisma-timeline-modal .vis-item.prisma-timeline-item-allday {
+	border-style: dashed;
+}
+
+.prisma-timeline-modal .vis-item.prisma-timeline-item-allday .vis-dot {
+	background-color: transparent;
+	border-width: 3px;
+}
+
+/* Timed events: square dot */
+.prisma-timeline-modal .vis-item.prisma-timeline-item-timed .vis-dot {
+	border-radius: 2px;
+}
+
+.prisma-timeline-modal .vis-tooltip {
+	max-width: 350px;
+	white-space: pre-wrap;
+	word-break: break-word;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 8px 12px;
+	font-size: 1.05em;
+	line-height: 1.5;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Move By Modal - Compact Button-Based UI */

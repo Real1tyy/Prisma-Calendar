@@ -1,8 +1,11 @@
 import { isNotEmpty } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
 import type { Frontmatter } from "../types";
+import type { CalendarEvent, CalendarEventData } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
+import { cleanupTitle } from "./calendar-events";
 import { getInternalProperties } from "./calendar-events";
+import { extractPropertyText, getDisplayProperties } from "./property-display";
 
 /**
  * Safely converts a value to a string if it's a primitive type.
@@ -119,6 +122,64 @@ export function calculateDurationMinutes(start: string | Date, end: string | Dat
 	}
 	const durationMs = endDate.getTime() - startDate.getTime();
 	return Math.round(durationMs / (1000 * 60));
+}
+
+/**
+ * Formats an event's date/time info as a display string appended to the title.
+ * All-day: "Title - Wed, Feb 25, 2026"
+ * Timed with end: "Title - 02:30 PM - 03:45 PM (1h 15m)"
+ * Timed without end: "Title - 02:30 PM"
+ */
+export function formatEventDateSuffix(start: Date, end: Date | null, allDay: boolean): string {
+	if (allDay) {
+		const dateStr = start.toLocaleDateString("en-US", {
+			weekday: "short",
+			month: "short",
+			day: "numeric",
+			year: "numeric",
+		});
+		return ` - ${dateStr}`;
+	}
+
+	const startStr = start.toLocaleTimeString("en-US", {
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+
+	if (end) {
+		const endStr = end.toLocaleTimeString("en-US", {
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+		const duration = calculateDuration(start, end);
+		return ` - ${startStr} - ${endStr} (${duration})`;
+	}
+
+	return ` - ${startStr}`;
+}
+
+/**
+ * Builds a tooltip string for an event, matching the calendar view hover format.
+ * Accepts CalendarEvent or CalendarEventData.
+ */
+export function buildEventTooltip(
+	event: CalendarEvent | CalendarEventData,
+	settings: Pick<SingleCalendarConfig, "frontmatterDisplayProperties" | "frontmatterDisplayPropertiesAllDay">
+): string {
+	const title = event.title;
+	const meta = "meta" in event ? (event.meta ?? {}) : (event.extendedProps?.frontmatterDisplayData ?? {});
+	const start = "ref" in event ? new Date(event.start) : event.start;
+	const end = "ref" in event ? (event.type === "timed" && event.end ? new Date(event.end) : null) : event.end;
+	const allDay = "ref" in event ? event.type === "allDay" : event.allDay;
+
+	if (!start) return cleanupTitle(title);
+
+	const tooltipParts: string[] = [cleanupTitle(title) + formatEventDateSuffix(start, end, allDay)];
+	const displayProps = allDay ? settings.frontmatterDisplayPropertiesAllDay : settings.frontmatterDisplayProperties;
+	for (const [prop, value] of getDisplayProperties(meta, displayProps)) {
+		tooltipParts.push(`${prop}: ${extractPropertyText(value)}`);
+	}
+	return tooltipParts.join("\n");
 }
 
 export function toLocalISOString(date: Date): string {

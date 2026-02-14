@@ -4,7 +4,9 @@ import { DataSet } from "vis-data";
 import { Timeline, type TimelineOptions } from "vis-timeline";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
-import { removeZettelId } from "../../utils/calendar-events";
+import { cleanupTitle } from "../../utils/calendar-events";
+import { buildEventTooltip } from "../../utils/format";
+import { resolveEventCategoryColor } from "../list-modals/base-event-list-modal";
 import { EventPreviewModal, type PreviewEventData } from "../event-preview-modal";
 
 export interface EventSeriesTimelineConfig {
@@ -15,7 +17,6 @@ export interface EventSeriesTimelineConfig {
 export class EventSeriesTimelineModal extends Modal {
 	private timeline: Timeline | null = null;
 	private timelineContainer: HTMLElement | null = null;
-	private items: DataSet<any> | null = null;
 	private eventMap: Map<string, CalendarEvent> = new Map();
 
 	constructor(
@@ -77,10 +78,7 @@ export class EventSeriesTimelineModal extends Modal {
 		}
 
 		// Sort events to find date range
-		const sortedEvents = [...events].sort((a, b) => {
-			return new Date(a.start).getTime() - new Date(b.start).getTime();
-		});
-
+		const sortedEvents = [...events].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 		const firstEvent = new Date(sortedEvents[0].start);
 		const lastEvent = new Date(sortedEvents[sortedEvents.length - 1].start);
 
@@ -90,22 +88,36 @@ export class EventSeriesTimelineModal extends Modal {
 		const rangeStart = new Date(firstEvent.getTime() - padding);
 		const rangeEnd = new Date(lastEvent.getTime() + padding);
 
-		// Convert events to timeline items - initially show all as points for better visibility
+		const settings = this.bundle.settingsStore.currentSettings;
+		const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
+
 		const timelineItems = events.map((event) => {
 			const startDate = new Date(event.start);
+			const categoryColor = resolveEventCategoryColor(event.meta, settings.categoryProp, categoriesWithColors);
+
+			const content = cleanupTitle(event.title);
+			const tooltip = buildEventTooltip(event, settings);
+
+			// Build className list
+			const classes: string[] = [];
+			if (event.skipped) classes.push(cls("timeline-item-skipped"));
+			classes.push(event.type === "allDay" ? cls("timeline-item-allday") : cls("timeline-item-timed"));
+
+			// Per-item category color via vis-timeline's style API
+			const style = categoryColor ? `background-color: ${categoryColor}; border-color: ${categoryColor};` : undefined;
 
 			return {
 				id: event.ref.filePath,
-				content: removeZettelId(event.title),
+				content,
+				title: tooltip,
 				start: startDate,
 				type: "point" as const,
-				// Store original event data for zoom handling
-				_eventType: event.type,
-				_eventEnd: event.type === "timed" && event.end ? new Date(event.end) : undefined,
+				className: classes.join(" "),
+				style,
 			};
 		});
 
-		this.items = new DataSet(timelineItems);
+		const items = new DataSet(timelineItems);
 
 		// Timeline options with proper date range
 		const options: TimelineOptions = {
@@ -132,12 +144,7 @@ export class EventSeriesTimelineModal extends Modal {
 		this.timelineContainer.empty();
 
 		// Create timeline
-		this.timeline = new Timeline(this.timelineContainer, this.items, options);
-
-		// Handle zoom changes to switch between points and ranges
-		this.timeline.on("rangechanged", () => {
-			this.updateItemTypes();
-		});
+		this.timeline = new Timeline(this.timelineContainer, items, options);
 
 		this.setupInteractions();
 	}
@@ -148,9 +155,7 @@ export class EventSeriesTimelineModal extends Modal {
 			start: new Date(event.start),
 			end: event.type === "timed" && event.end ? new Date(event.end) : null,
 			allDay: event.type === "allDay",
-			extendedProps: {
-				filePath: event.ref.filePath,
-			},
+			extendedProps: { filePath: event.ref.filePath },
 		};
 		new EventPreviewModal(this.app, this.bundle, previewEvent).open();
 	}
@@ -175,34 +180,5 @@ export class EventSeriesTimelineModal extends Modal {
 				this.openPreviewModal(event);
 			}
 		});
-	}
-
-	private updateItemTypes(): void {
-		if (!this.timeline || !this.items) return;
-
-		const window = this.timeline.getWindow();
-		const visibleTimeSpan = window.end.getTime() - window.start.getTime();
-
-		// If viewing more than 30 days, show as points for better visibility
-		// If viewing less than 30 days, show timed events as ranges for accuracy
-		const showAsPoints = visibleTimeSpan > 30 * 86400000;
-
-		const allItems = this.items.get();
-		const updates = allItems
-			.map((item: any) => {
-				if (item._eventType === "timed" && item._eventEnd) {
-					return {
-						id: item.id,
-						type: showAsPoints ? "point" : "range",
-						end: showAsPoints ? undefined : item._eventEnd,
-					};
-				}
-				return null;
-			})
-			.filter((update): update is any => update !== null);
-
-		if (updates.length > 0) {
-			this.items.update(updates);
-		}
 	}
 }
