@@ -128,6 +128,7 @@ CalDAV integration enables read-only synchronization from external CalDAV server
    - **Username**: Your account username
    - **Password**: ⚠️ **STORED IN PLAINTEXT** - Use app-specific password
    - **Timezone**: Timezone for event conversion
+   - **Calendar icon** (optional): Icon/emoji to display on synced events (e.g., 📅, 🔄, ☁️)
 4. Click **"Test connection"** to verify credentials
 5. Click **"Save"**
 
@@ -151,8 +152,12 @@ Configure automatic synchronization behavior:
 | **Sync on startup** | `true` | Sync when Obsidian starts |
 | **Sync interval** | 15 minutes | How often to sync (1-1440 minutes) |
 | **Show sync notifications** | `true` | Display sync status messages |
+| **Integration event color** | Purple | Color applied to CalDAV-synced events (overrides color rules) |
+| **Calendar icon** | None | Optional icon/emoji displayed on synced events to identify the source calendar |
 
 **Manual Sync**: Use **"Sync now"** button in CalDAV settings to trigger immediate synchronization.
+
+**Calendar Icons**: When you set an icon for a CalDAV account, it appears in the top-right corner of all events synced from that calendar. This makes it easy to visually identify which external calendar each event came from. Icons use the same marker system as recurring events and holidays.
 
 ### How CalDAV Sync Works
 
@@ -224,6 +229,7 @@ ICS URL subscriptions enable read-only synchronization from public ICS URLs to P
    - **ICS URL**: Public URL to the `.ics` file
    - **Sync interval**: How often to sync (1-1440 minutes, default: 60)
    - **Timezone**: Timezone for event conversion
+   - **Calendar icon** (optional): Icon/emoji to display on synced events (e.g., 📅, 🔄, ☁️)
 4. Click **"Test URL"** to verify the URL and preview event count
 5. Click **"Add subscription"** to save
 
@@ -237,8 +243,12 @@ Configure automatic synchronization behavior:
 | **Sync on startup** | `true` | Sync when Obsidian starts |
 | **Sync interval** | 60 minutes | How often to sync (per subscription) |
 | **Show sync notifications** | `true` | Display sync status messages |
+| **Integration event color** | Purple | Color applied to ICS subscription-synced events (overrides color rules) |
+| **Calendar icon** | None | Optional icon/emoji displayed on synced events to identify the source calendar |
 
 **Manual Sync**: Use **"Sync now"** button in subscription settings or run the **"Prisma Calendar: Sync ICS subscriptions"** command.
+
+**Calendar Icons**: When you set an icon for an ICS subscription, it appears in the top-right corner of all events synced from that subscription. This makes it easy to visually identify which external calendar each event came from. Icons use the same marker system as recurring events and holidays.
 
 ### How ICS URL Sync Works
 

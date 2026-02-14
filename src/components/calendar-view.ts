@@ -116,6 +116,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private previousEventRenderingKey: string | null = null;
 	private previousIntegrationColorKey: string | null = null;
 	private isRefreshingEvents = false;
+	private calendarIconCache: Map<string, string | undefined> = new Map();
 	private pendingRefreshRequest = false;
 
 	private updateMobileControlsToggleButtonElement(): void {
@@ -1073,6 +1074,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.mobileControlsCollapsed = this.isMobileLayout;
 		this.applyMobileControlsCollapsedState();
 
+		this.rebuildCalendarIconCache();
+
 		this.calendar = new Calendar(container, {
 			plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
 
@@ -1433,6 +1436,24 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
+	private rebuildCalendarIconCache(): void {
+		this.calendarIconCache.clear();
+
+		const caldavSettings = this.bundle.getCalDAVSettings();
+		for (const account of caldavSettings.accounts) {
+			if (account.icon) {
+				this.calendarIconCache.set(`caldav:${account.id}`, account.icon);
+			}
+		}
+
+		const icsSubscriptionSettings = this.bundle.getICSSubscriptionSettings();
+		for (const subscription of icsSubscriptionSettings.subscriptions) {
+			if (subscription.icon) {
+				this.calendarIconCache.set(`ics:${subscription.id}`, subscription.icon);
+			}
+		}
+	}
+
 	/**
 	 * Debounced entry point for all event refreshes.
 	 * Coalesces rapid calls into a single RAF and prevents re-entrance
@@ -1651,6 +1672,26 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.hasPerformedInitialLoad = false;
 	}
 
+	private getEventIcon(event: CalendarEventData): string | undefined {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const displayData = event.extendedProps.frontmatterDisplayData;
+
+		const caldavMetadata = displayData?.[settings.caldavProp] as { accountId?: string } | undefined;
+		const icsSubscriptionMetadata = displayData?.[settings.icsSubscriptionProp] as
+			| { subscriptionId?: string }
+			| undefined;
+
+		if (caldavMetadata?.accountId) {
+			return this.calendarIconCache.get(`caldav:${caldavMetadata.accountId}`);
+		}
+
+		if (icsSubscriptionMetadata?.subscriptionId) {
+			return this.calendarIconCache.get(`ics:${icsSubscriptionMetadata.subscriptionId}`);
+		}
+
+		return undefined;
+	}
+
 	private renderEventContent(arg: EventContentArg): {
 		domNodes: HTMLElement[];
 	} {
@@ -1668,16 +1709,20 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const isPhysicalRecurring = displayData?.[settings.sourceProp];
 		const isHoliday = event.extendedProps.filePath?.startsWith("holiday:");
 
-		// Add marker for recurring events or holidays
+		const calendarIcon = this.getEventIcon(event);
+
 		if (
 			(isSourceRecurring && settings.showSourceRecurringMarker) ||
 			(isPhysicalRecurring && settings.showPhysicalRecurringMarker) ||
-			isHoliday
+			isHoliday ||
+			calendarIcon
 		) {
 			const markerEl = document.createElement("div");
 			markerEl.className = cls("event-marker");
 
-			if (isHoliday) {
+			if (calendarIcon) {
+				markerEl.textContent = calendarIcon;
+			} else if (isHoliday) {
 				markerEl.textContent = "H";
 			} else {
 				markerEl.textContent = isSourceRecurring ? settings.sourceRecurringMarker : settings.physicalRecurringMarker;
@@ -1763,6 +1808,15 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		if (frontmatter[caldavProp]) {
 			// Event has CalDAV metadata - apply integration color with priority
 			return caldavSettings.integrationEventColor;
+		}
+
+		// Check if this is an ICS subscription-synced event - integration color takes priority
+		const icsSubscriptionSettings = this.bundle.getICSSubscriptionSettings();
+		const icsSubscriptionProp = settings.icsSubscriptionProp;
+
+		if (frontmatter[icsSubscriptionProp]) {
+			// Event has ICS subscription metadata - apply integration color with priority
+			return icsSubscriptionSettings.integrationEventColor;
 		}
 
 		// Normalize frontmatter to ensure all properties referenced in color rules exist
@@ -2417,14 +2471,16 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		});
 		this.register(() => settingsSubscription.unsubscribe());
 
-		// Subscribe to CalDAV/ICS settings changes — only refresh when integration colors change
 		const caldavSettingsSubscription = this.bundle.settingsStore.mainSettingsStore.settings$.subscribe(
 			(fullSettings) => {
-				const integrationColorKey = fullSettings.caldav.integrationEventColor;
-				if (integrationColorKey !== this.previousIntegrationColorKey) {
-					this.previousIntegrationColorKey = integrationColorKey;
+				const caldavColorKey = fullSettings.caldav.integrationEventColor;
+				const icsColorKey = fullSettings.icsSubscriptions.integrationEventColor;
+				const combinedKey = `${caldavColorKey}|${icsColorKey}`;
+				if (combinedKey !== this.previousIntegrationColorKey) {
+					this.previousIntegrationColorKey = combinedKey;
 					this.scheduleRefreshEvents();
 				}
+				this.rebuildCalendarIconCache();
 			}
 		);
 		this.register(() => caldavSettingsSubscription.unsubscribe());

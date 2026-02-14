@@ -239,6 +239,7 @@ class AddCalDAVAccountModal extends Modal {
 	private discoveredCalendars: CalDAVCalendarInfo[] = [];
 	private selectedCalendars: string[] = [];
 	private testPassed = false;
+	private icon = "";
 
 	constructor(
 		app: App,
@@ -336,6 +337,18 @@ class AddCalDAVAccountModal extends Modal {
 				dropdown.onChange((value) => {
 					this.timezone = value;
 				});
+			});
+
+		new Setting(formContainer)
+			.setName("Calendar icon")
+			.setDesc("Optional icon/emoji to display on synced events (e.g., 📅, 🔄, ☁️)")
+			.addText((text) => {
+				text
+					.setPlaceholder("📅")
+					.setValue(this.icon)
+					.onChange((value) => {
+						this.icon = value;
+					});
 			});
 
 		new Setting(formContainer)
@@ -493,6 +506,7 @@ class AddCalDAVAccountModal extends Modal {
 			syncIntervalMinutes: this.syncIntervalMinutes,
 			timezone: this.timezone,
 			createdAt: Date.now(),
+			icon: this.icon || undefined,
 		};
 
 		await this.settingsStore.updateSettings((s) => ({
@@ -540,6 +554,7 @@ class EditCalDAVAccountModal extends Modal {
 	private selectedCalendars: string[];
 	private discoveredCalendars: CalDAVCalendarInfo[] = [];
 	private originalSelectedCalendars: string[];
+	private icon: string;
 
 	constructor(
 		app: App,
@@ -556,6 +571,7 @@ class EditCalDAVAccountModal extends Modal {
 		this.timezone = account.timezone ?? "UTC";
 		this.selectedCalendars = [...account.selectedCalendars];
 		this.originalSelectedCalendars = [...account.selectedCalendars];
+		this.icon = account.icon ?? "";
 	}
 
 	onOpen(): void {
@@ -608,6 +624,18 @@ class EditCalDAVAccountModal extends Modal {
 				dropdown.onChange((value) => {
 					this.timezone = value;
 				});
+			});
+
+		new Setting(contentEl)
+			.setName("Calendar icon")
+			.setDesc("Optional icon/emoji to display on synced events (e.g., 📅, 🔄, ☁️)")
+			.addText((text) => {
+				text
+					.setPlaceholder("📅")
+					.setValue(this.icon)
+					.onChange((value) => {
+						this.icon = value;
+					});
 			});
 
 		const refreshButton = contentEl.createEl("button", {
@@ -743,6 +771,7 @@ class EditCalDAVAccountModal extends Modal {
 								syncIntervalMinutes: this.syncIntervalMinutes,
 								timezone: this.timezone,
 								selectedCalendars: this.selectedCalendars,
+								icon: this.icon || undefined,
 							}
 						: a
 				),

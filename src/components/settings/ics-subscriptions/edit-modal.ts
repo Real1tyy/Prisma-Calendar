@@ -11,6 +11,7 @@ export class EditICSSubscriptionModal extends Modal {
 	private url: string;
 	private syncIntervalMinutes: number;
 	private timezone: string;
+	private icon: string;
 
 	constructor(
 		app: App,
@@ -24,6 +25,7 @@ export class EditICSSubscriptionModal extends Modal {
 		this.url = subscription.url;
 		this.syncIntervalMinutes = subscription.syncIntervalMinutes ?? ICS_SUBSCRIPTION_DEFAULTS.SYNC_INTERVAL_MINUTES;
 		this.timezone = subscription.timezone ?? "UTC";
+		this.icon = subscription.icon ?? "";
 	}
 
 	onOpen(): void {
@@ -88,6 +90,18 @@ export class EditICSSubscriptionModal extends Modal {
 			});
 
 		new Setting(contentEl)
+			.setName("Calendar icon")
+			.setDesc("Optional icon/emoji to display on synced events (e.g., 📅, 🔄, ☁️)")
+			.addText((text) => {
+				text
+					.setPlaceholder("📅")
+					.setValue(this.icon)
+					.onChange((value) => {
+						this.icon = value;
+					});
+			});
+
+		new Setting(contentEl)
 			.addButton((button) => {
 				button.setButtonText("Cancel").onClick(() => this.close());
 			})
@@ -113,6 +127,7 @@ export class EditICSSubscriptionModal extends Modal {
 								url: this.url,
 								syncIntervalMinutes: this.syncIntervalMinutes,
 								timezone: this.timezone,
+								icon: this.icon || undefined,
 							}
 						: sub
 				),

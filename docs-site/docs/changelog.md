@@ -36,6 +36,10 @@ All notable changes to this project will be documented here.
 
 - **Category-Colored Rows in All Event List Modals**: The Filtered Events, Skipped Events, Global Event Search, and Selected Events modals now color each row with a tinted background and left border based on the event's category, matching the category coloring used in the Events Browser.
 
+- **Calendar Sync Icons**: Both CalDAV and ICS URL subscriptions now support optional calendar icons. Set an icon (emoji or Unicode character) for each account/subscription in the configuration modal, and it will appear in the top-right corner of all synced events from that calendar. This makes it easy to visually identify which external calendar each event came from. Icons use the same marker system as recurring events and holidays.
+
+- **ICS Subscription Integration Color**: ICS URL subscriptions now have their own "Integration event color" setting (matching CalDAV's existing setting). This color is applied to all events synced from ICS subscriptions and overrides color rules, just like CalDAV integration colors. Configure in Settings → Integrations → ICS URL Subscriptions.
+
 ### Changed
 
 - **Event modal sticky footer**: Cancel, Save as preset, and Save buttons now stay visible at the bottom of the Create/Edit Event modal even when the form overflows and requires scrolling.

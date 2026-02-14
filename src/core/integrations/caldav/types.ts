@@ -33,6 +33,7 @@ const CalDAVAccountSchema = z
 		timezone: z.string().catch("UTC"),
 		lastSyncTime: z.number().int().optional(),
 		createdAt: z.number().int().positive(),
+		icon: z.string().optional(),
 	})
 	.loose();
 

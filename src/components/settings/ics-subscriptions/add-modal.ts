@@ -13,6 +13,7 @@ export class AddICSSubscriptionModal extends Modal {
 	private syncIntervalMinutes: number = ICS_SUBSCRIPTION_DEFAULTS.SYNC_INTERVAL_MINUTES;
 	private timezone: string = "UTC";
 	private testPassed = false;
+	private icon = "";
 
 	constructor(
 		app: App,
@@ -85,6 +86,18 @@ export class AddICSSubscriptionModal extends Modal {
 				dropdown.onChange((value) => {
 					this.timezone = value;
 				});
+			});
+
+		new Setting(formContainer)
+			.setName("Calendar icon")
+			.setDesc("Optional icon/emoji to display on synced events (e.g., 📅, 🔄, ☁️)")
+			.addText((text) => {
+				text
+					.setPlaceholder("📅")
+					.setValue(this.icon)
+					.onChange((value) => {
+						this.icon = value;
+					});
 			});
 
 		const testButton = formContainer.createEl("button", {
@@ -160,6 +173,7 @@ export class AddICSSubscriptionModal extends Modal {
 			syncIntervalMinutes: this.syncIntervalMinutes,
 			timezone: this.timezone,
 			createdAt: Date.now(),
+			icon: this.icon || undefined,
 		};
 
 		await this.settingsStore.updateSettings((s) => ({
