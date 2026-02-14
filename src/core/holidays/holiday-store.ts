@@ -35,7 +35,6 @@ export class HolidayStore {
 
 		if (configChanged) {
 			this.cache.clear();
-			this.clearStoredCache();
 		}
 
 		return configChanged;
@@ -131,23 +130,6 @@ export class HolidayStore {
 			await this.app.saveLocalStorage(key, JSON.stringify(data));
 		} catch (error) {
 			console.error("Error saving holiday cache:", error);
-		}
-	}
-
-	private clearStoredCache(): void {
-		// Clear all stored caches when config changes
-		// Note: This is a best-effort cleanup
-		for (let year = 2020; year <= 2030; year++) {
-			const key = this.getCacheKey(year);
-			this.app
-				.loadLocalStorage(key)
-				.then(() => {
-					// If it exists, delete it
-					// Note: Obsidian doesn't have a delete method, so we just won't use it
-				})
-				.catch(() => {
-					// Ignore errors
-				});
 		}
 	}
 
