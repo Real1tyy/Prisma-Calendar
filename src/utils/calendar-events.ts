@@ -427,6 +427,8 @@ const getPrismaInternalProps = (settings: SingleCalendarConfig): Set<string> => 
 			settings.caldavProp,
 			settings.generatePastEventsProp,
 			settings.ignoreRecurringProp,
+			settings.locationProp,
+			settings.participantsProp,
 		].filter((prop) => prop !== "")
 	);
 };
