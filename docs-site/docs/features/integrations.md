@@ -37,11 +37,15 @@ Each event includes:
 | **SUMMARY** | Event title without Zettel ID |
 | **DTSTART/DTEND** | Event timing |
 | **DESCRIPTION** | Full markdown content |
+| **LOCATION** | Event location (if set) |
+| **ATTENDEE** | Event participants (if set) with `mailto:` URIs and common name (CN) |
 | **CATEGORIES** | Event categories |
 | **VALARM** | Notification reminders |
 | **URL** | Obsidian URI link back to note |
 
 **Custom Properties**: Prisma-specific metadata (X-PRISMA-FILE, X-PRISMA-VAULT, X-PRISMA-EVENT-ID) enables linking back to original notes and maintaining idempotency on re-import.
+
+**Location and Participants**: Location is exported as the standard ICS `LOCATION` field. Participants are exported as multiple `ATTENDEE` fields with proper RFC 5545 formatting (e.g., `ATTENDEE;CN=Alice;ROLE=REQ-PARTICIPANT:mailto:Alice`). This ensures full compatibility with Google Calendar, Outlook, Apple Calendar, and other standards-compliant calendar applications.
 
 **Output Location**: Exported files saved to `Prisma-Exports/` folder in your vault.
 
@@ -64,8 +68,16 @@ For each imported event, Prisma Calendar:
 
 1. Creates a new markdown note in the calendar's folder
 2. Generates a [Zettel ID](./zettelid-naming) timestamp for the filename
-3. Populates frontmatter: Start/End dates, All-day flag, Categories, Notification settings (if VALARM present)
+3. Populates frontmatter:
+   - Start/End dates
+   - All-day flag
+   - Location (from `LOCATION` field)
+   - Participants (from `ATTENDEE` fields, extracting common names or email addresses)
+   - Categories (from `CATEGORIES` field)
+   - Notification settings (from `VALARM` if present)
 4. Adds event description as note content
+
+**Compatibility**: Import automatically handles ICS files from Google Calendar, Outlook, Apple Calendar, Fastmail, Nextcloud, and any RFC 5545-compliant calendar application. Location and participant data is preserved during round-trip export/import.
 
 ## Timezone Handling
 

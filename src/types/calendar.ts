@@ -9,6 +9,8 @@ const BaseEventSchema = z.object({
 		filePath: z.string(),
 	}),
 	title: z.string(),
+	location: z.string().optional(),
+	participants: z.array(z.string()).optional(),
 });
 
 // Timed Event: has start and end, can be skipped, can be virtual

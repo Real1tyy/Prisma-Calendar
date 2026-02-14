@@ -1,4 +1,9 @@
-import { FilterEvaluator, getFilenameFromPath, removeMarkdownExtension } from "@real1ty-obsidian-plugins";
+import {
+	FilterEvaluator,
+	getFilenameFromPath,
+	parseIntoList,
+	removeMarkdownExtension,
+} from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
@@ -50,9 +55,12 @@ export class Parser {
 			getEventName(this.settings.titleProp, frontmatter, filePath, this.settings.calendarTitleProp) ||
 			removeMarkdownExtension(getFilenameFromPath(filePath));
 
+		const location = this.extractLocation(frontmatter);
+		const participants = this.extractParticipants(frontmatter);
+
 		return parsed.allDay
-			? this.parseAllDayEvent(source, id, title, parsed.date, isSkipped)
-			: this.parseTimedEvent(source, id, title, parsed.startTime, parsed.endTime, isSkipped);
+			? this.parseAllDayEvent(source, id, title, parsed.date, isSkipped, location, participants)
+			: this.parseTimedEvent(source, id, title, parsed.startTime, parsed.endTime, isSkipped, location, participants);
 	}
 
 	private parseAllDayEvent(
@@ -60,7 +68,9 @@ export class Parser {
 		id: string,
 		title: string,
 		date: DateTime,
-		isSkipped: boolean
+		isSkipped: boolean,
+		location?: string,
+		participants?: string[]
 	): AllDayEvent {
 		const { filePath } = source;
 		const start = date.startOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
@@ -74,6 +84,8 @@ export class Parser {
 			allDay: true,
 			isVirtual: false,
 			skipped: isSkipped,
+			location,
+			participants,
 			meta: this.createEventMeta(source),
 		};
 	}
@@ -84,7 +96,9 @@ export class Parser {
 		title: string,
 		startTime: DateTime,
 		endTime: DateTime | null | undefined,
-		isSkipped: boolean
+		isSkipped: boolean,
+		location?: string,
+		participants?: string[]
 	): TimedEvent {
 		const { filePath, frontmatter } = source;
 		const start = convertToISO(startTime);
@@ -106,6 +120,8 @@ export class Parser {
 			allDay: false,
 			isVirtual: false,
 			skipped: isSkipped,
+			location,
+			participants,
 			meta,
 		};
 	}
@@ -120,6 +136,22 @@ export class Parser {
 			originalDate: frontmatter[this.settings.dateProp],
 			...frontmatter,
 		};
+	}
+
+	private extractLocation(frontmatter: Frontmatter): string | undefined {
+		const locationValue = frontmatter[this.settings.locationProp];
+		if (locationValue && typeof locationValue === "string" && locationValue.trim()) {
+			return locationValue;
+		}
+		return undefined;
+	}
+
+	private extractParticipants(frontmatter: Frontmatter): string[] | undefined {
+		const participantsValue = frontmatter[this.settings.participantsProp];
+		if (!participantsValue) return undefined;
+
+		const participants = parseIntoList(participantsValue);
+		return participants.length > 0 ? participants : undefined;
 	}
 
 	private calculateDefaultEnd(start: DateTime, allDay: boolean): DateTime {

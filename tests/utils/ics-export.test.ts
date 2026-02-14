@@ -15,6 +15,8 @@ function createOptions(overrides: Partial<ICSExportOptions> = {}): ICSExportOpti
 		timezone: "UTC",
 		noteContents: new Map(),
 		categoryProp: "Category",
+		locationProp: "Location",
+		participantsProp: "Participants",
 		notifications: {
 			minutesBeforeProp: "Minutes Before",
 			daysBeforeProp: "Days Before",
@@ -701,6 +703,124 @@ describe("ICS Export", () => {
 
 					expect(result.success).toBe(true);
 					expect(result.content).toContain("BEGIN:VALARM");
+				});
+			});
+
+			describe("Location field", () => {
+				it("should export location field when present", () => {
+					const event = createMockTimedEvent({
+						location: "Conference Room A",
+					});
+
+					const result = createICSFromEvents([event], createOptions());
+
+					expect(result.success).toBe(true);
+					expect(result.content).toContain("LOCATION:Conference Room A");
+				});
+
+				it("should not export location when field is empty", () => {
+					const event = createMockTimedEvent({
+						location: "",
+					});
+
+					const result = createICSFromEvents([event], createOptions());
+
+					expect(result.success).toBe(true);
+					expect(result.content).not.toContain("LOCATION:");
+				});
+
+				it("should not export location when field is not present", () => {
+					const event = createMockTimedEvent({
+						location: undefined,
+					});
+
+					const result = createICSFromEvents([event], createOptions());
+
+					expect(result.success).toBe(true);
+					expect(result.content).not.toContain("LOCATION:");
+				});
+
+				it("should handle location with special characters", () => {
+					const event = createMockTimedEvent({
+						location: "Room 42 - Building A, Floor 3",
+					});
+
+					const result = createICSFromEvents([event], createOptions());
+
+					expect(result.success).toBe(true);
+					// ICS escapes commas in LOCATION field
+					expect(result.content).toContain("LOCATION:Room 42 - Building A\\, Floor 3");
+				});
+			});
+
+			describe("Attendees/Participants field", () => {
+				it("should export participants as ATTENDEE fields", () => {
+					const event = createMockTimedEvent({
+						participants: ["Alice", "Bob", "Charlie"],
+					});
+
+					const result = createICSFromEvents([event], createOptions());
+
+					expect(result.success).toBe(true);
+					expect(result.content).toContain("ATTENDEE");
+					expect(result.content).toContain("CN=Alice");
+					expect(result.content).toContain("CN=Bob");
+					expect(result.content).toContain("CN=Charlie");
+					expect(result.content).toContain("ROLE=REQ-PARTICIPANT");
+				});
+
+				it("should handle single participant as string", () => {
+					const event = createMockTimedEvent({
+						participants: ["Alice"],
+					});
+
+					const result = createICSFromEvents([event], createOptions());
+
+					expect(result.success).toBe(true);
+					expect(result.content).toContain("ATTENDEE");
+					expect(result.content).toContain("CN=Alice");
+				});
+
+				it("should not export attendees when participants list is empty", () => {
+					const event = createMockTimedEvent({
+						participants: [],
+					});
+
+					const result = createICSFromEvents([event], createOptions());
+
+					expect(result.success).toBe(true);
+					expect(result.content).not.toContain("ATTENDEE");
+				});
+
+				it("should format attendees with mailto URIs", () => {
+					const event = createMockTimedEvent({
+						participants: ["john.doe@example.com"],
+					});
+
+					const result = createICSFromEvents([event], createOptions());
+
+					expect(result.success).toBe(true);
+					// ICS may line-wrap long ATTENDEE lines, so check parts separately
+					expect(result.content).toContain("ATTENDEE");
+					expect(result.content).toContain("CN=john.doe@example.com");
+					expect(result.content).toContain("mailto:john.doe@examp");
+				});
+
+				it("should exclude Location and Participants from X-PRISMA-FM properties", () => {
+					const event = createMockTimedEvent({
+						location: "Office",
+						participants: ["Alice", "Bob"],
+						meta: {
+							customProp: "custom value",
+						},
+					});
+
+					const result = createICSFromEvents([event], createOptions());
+
+					expect(result.success).toBe(true);
+					expect(result.content).not.toContain("X-PRISMA-FM-LOCATION");
+					expect(result.content).not.toContain("X-PRISMA-FM-PARTICIPANTS");
+					expect(result.content).toContain("X-PRISMA-FM-CUSTOMPROP");
 				});
 			});
 		});

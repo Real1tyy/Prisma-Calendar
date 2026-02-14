@@ -304,6 +304,114 @@ END:VCALENDAR`;
 			});
 		});
 
+		describe("Location parsing", () => {
+			it("should parse LOCATION field from ICS", () => {
+				const icsWithLocation = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:location-event@example.com
+DTSTART:20250315T100000Z
+DTEND:20250315T110000Z
+SUMMARY:Meeting with Location
+LOCATION:Conference Room A
+END:VEVENT
+END:VCALENDAR`;
+
+				const result = parseICSContent(icsWithLocation);
+
+				expect(result.success).toBe(true);
+				expect(result.events[0].location).toBe("Conference Room A");
+			});
+
+			it("should handle events without LOCATION field", () => {
+				const result = parseICSContent(SAMPLE_ICS_SINGLE_EVENT);
+
+				expect(result.success).toBe(true);
+				expect(result.events[0].location).toBeUndefined();
+			});
+
+			it("should handle LOCATION with special characters", () => {
+				const icsWithComplexLocation = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:complex-location@example.com
+DTSTART:20250315T100000Z
+SUMMARY:Event with complex location
+LOCATION:Building A\\, Floor 3 - Room 42
+END:VEVENT
+END:VCALENDAR`;
+
+				const result = parseICSContent(icsWithComplexLocation);
+
+				expect(result.success).toBe(true);
+				expect(result.events[0].location).toBeDefined();
+			});
+		});
+
+		describe("Attendee/Participants parsing", () => {
+			it("should parse ATTENDEE fields as participants list", () => {
+				const icsWithAttendees = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:attendees-event@example.com
+DTSTART:20250315T100000Z
+SUMMARY:Meeting with Attendees
+ATTENDEE;CN=Alice Smith;ROLE=REQ-PARTICIPANT:mailto:alice@example.com
+ATTENDEE;CN=Bob Jones;ROLE=REQ-PARTICIPANT:mailto:bob@example.com
+ATTENDEE;CN=Charlie Brown;ROLE=OPT-PARTICIPANT:mailto:charlie@example.com
+END:VEVENT
+END:VCALENDAR`;
+
+				const result = parseICSContent(icsWithAttendees);
+
+				expect(result.success).toBe(true);
+				expect(result.events[0].participants).toBeDefined();
+				expect(result.events[0].participants).toEqual(["Alice Smith", "Bob Jones", "Charlie Brown"]);
+			});
+
+			it("should parse ATTENDEE without CN parameter using email", () => {
+				const icsWithEmailOnlyAttendees = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:email-attendees@example.com
+DTSTART:20250315T100000Z
+SUMMARY:Meeting
+ATTENDEE;ROLE=REQ-PARTICIPANT:mailto:alice@example.com
+ATTENDEE;ROLE=REQ-PARTICIPANT:mailto:bob@example.com
+END:VEVENT
+END:VCALENDAR`;
+
+				const result = parseICSContent(icsWithEmailOnlyAttendees);
+
+				expect(result.success).toBe(true);
+				expect(result.events[0].participants).toEqual(["alice@example.com", "bob@example.com"]);
+			});
+
+			it("should handle events without ATTENDEE fields", () => {
+				const result = parseICSContent(SAMPLE_ICS_SINGLE_EVENT);
+
+				expect(result.success).toBe(true);
+				expect(result.events[0].participants).toBeUndefined();
+			});
+
+			it("should handle single ATTENDEE", () => {
+				const icsWithSingleAttendee = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:single-attendee@example.com
+DTSTART:20250315T100000Z
+SUMMARY:One-on-One
+ATTENDEE;CN=Alice:mailto:alice@example.com
+END:VEVENT
+END:VCALENDAR`;
+
+				const result = parseICSContent(icsWithSingleAttendee);
+
+				expect(result.success).toBe(true);
+				expect(result.events[0].participants).toEqual(["Alice"]);
+			});
+		});
+
 		describe("X-PRISMA-* property parsing", () => {
 			it("should parse X-PRISMA-FILE property and UID", () => {
 				const icsWithPrismaProps = `BEGIN:VCALENDAR
@@ -391,6 +499,8 @@ END:VCALENDAR`;
 				timezone: "UTC",
 				noteContents: new Map(),
 				categoryProp: "Category",
+				locationProp: "Location",
+				participantsProp: "Participants",
 				notifications: {
 					minutesBeforeProp: "Minutes Before",
 					daysBeforeProp: "Days Before",
@@ -623,6 +733,81 @@ END:VCALENDAR`;
 			expect(fm["All Day"]).toBe(true);
 			// Should be the 15th in Berlin timezone
 			expect(fm.Date).toBe("2025-01-15");
+		});
+
+		it("should include location in frontmatter when present", () => {
+			const event = createImportedEvent({
+				location: "Conference Room A",
+			});
+
+			const settings = {
+				...defaultSettings,
+				locationProp: "Location",
+			};
+
+			const fm = buildFrontmatterFromImportedEvent(event, settings, "UTC");
+
+			expect(fm.Location).toBe("Conference Room A");
+		});
+
+		it("should not include location in frontmatter when not present", () => {
+			const event = createImportedEvent({
+				location: undefined,
+			});
+
+			const settings = {
+				...defaultSettings,
+				locationProp: "Location",
+			};
+
+			const fm = buildFrontmatterFromImportedEvent(event, settings, "UTC");
+
+			expect(fm.Location).toBeUndefined();
+		});
+
+		it("should include participants in frontmatter when present", () => {
+			const event = createImportedEvent({
+				participants: ["Alice", "Bob", "Charlie"],
+			});
+
+			const settings = {
+				...defaultSettings,
+				participantsProp: "Participants",
+			};
+
+			const fm = buildFrontmatterFromImportedEvent(event, settings, "UTC");
+
+			expect(fm.Participants).toEqual(["Alice", "Bob", "Charlie"]);
+		});
+
+		it("should handle single participant", () => {
+			const event = createImportedEvent({
+				participants: ["Alice"],
+			});
+
+			const settings = {
+				...defaultSettings,
+				participantsProp: "Participants",
+			};
+
+			const fm = buildFrontmatterFromImportedEvent(event, settings, "UTC");
+
+			expect(fm.Participants).toEqual(["Alice"]);
+		});
+
+		it("should not include participants when not present", () => {
+			const event = createImportedEvent({
+				participants: undefined,
+			});
+
+			const settings = {
+				...defaultSettings,
+				participantsProp: "Participants",
+			};
+
+			const fm = buildFrontmatterFromImportedEvent(event, settings, "UTC");
+
+			expect(fm.Participants).toBeUndefined();
 		});
 	});
 

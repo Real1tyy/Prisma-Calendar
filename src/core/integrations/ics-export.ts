@@ -20,6 +20,8 @@ export interface ICSExportOptions {
 	timezone: string;
 	noteContents: Map<string, string>;
 	categoryProp: string;
+	locationProp: string;
+	participantsProp: string;
 	notifications: NotificationSettings;
 	/** Property names that are already exported via standard ICS fields and should be excluded from X-PRISMA-FM-* */
 	excludeProps: {
@@ -166,6 +168,20 @@ function parsedEventToVEvent(
 		vevent.addPropertyWithValue("categories", categories.join(","));
 	}
 
+	if (event.location && event.location.trim()) {
+		vevent.addPropertyWithValue("location", event.location);
+	}
+
+	if (event.participants && event.participants.length > 0) {
+		for (const participant of event.participants) {
+			const attendeeProp = new ICAL.Property("attendee");
+			attendeeProp.setValue(`mailto:${participant}`);
+			attendeeProp.setParameter("cn", participant);
+			attendeeProp.setParameter("role", "REQ-PARTICIPANT");
+			vevent.addProperty(attendeeProp);
+		}
+	}
+
 	const notificationMinutes = getNotificationMinutes(event, options.notifications);
 	if (notificationMinutes !== null) {
 		const valarm = createVAlarm(notificationMinutes);
@@ -186,6 +202,8 @@ function parsedEventToVEvent(
 			options.excludeProps.dateProp,
 			options.excludeProps.allDayProp,
 			options.categoryProp,
+			options.locationProp,
+			options.participantsProp,
 			// Internal parser metadata (added by parser.ts, not user frontmatter)
 			"folder",
 			"isAllDay",
@@ -328,6 +346,8 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 			timezone,
 			noteContents,
 			categoryProp: settings.categoryProp,
+			locationProp: settings.locationProp,
+			participantsProp: settings.participantsProp,
 			notifications: {
 				minutesBeforeProp: settings.minutesBeforeProp,
 				defaultMinutesBefore: settings.defaultMinutesBefore,

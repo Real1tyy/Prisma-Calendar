@@ -14,6 +14,8 @@ export interface ImportedEvent {
 	end?: Date;
 	allDay: boolean;
 	categories?: string[];
+	location?: string;
+	participants?: string[];
 	reminderMinutes?: number;
 	/** Frontmatter properties parsed from X-PRISMA-FM-* ICS properties */
 	frontmatter?: Frontmatter;
@@ -144,6 +146,25 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 			const categories = parseIntoList(categoriesProp);
 			const parsedCategories = categories.length > 0 ? categories : undefined;
 
+			const locationValue = vevent.getFirstPropertyValue("location");
+			const location = locationValue ? String(locationValue) : undefined;
+
+			const attendeeProps = vevent.getAllProperties("attendee");
+			const participants: string[] = [];
+			for (const attendee of attendeeProps) {
+				const value = attendee.getFirstValue();
+				if (value) {
+					const email = String(value).replace(/^mailto:/i, "");
+					const cn = attendee.getParameter("cn");
+					if (cn) {
+						participants.push(String(cn));
+					} else if (email) {
+						participants.push(email);
+					}
+				}
+			}
+			const parsedParticipants = participants.length > 0 ? participants : undefined;
+
 			const reminderMinutes = parseVAlarmTrigger(vevent);
 			const frontmatter = parsePrismaFrontmatter(vevent);
 			const originalFilePath = getPrismaProperty(vevent, "x-prisma-file");
@@ -168,6 +189,8 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 				end: endDate,
 				allDay,
 				categories: parsedCategories,
+				location,
+				participants: parsedParticipants,
 				reminderMinutes,
 				frontmatter,
 				originalFilePath,
@@ -251,6 +274,14 @@ export function buildFrontmatterFromImportedEvent(
 
 	if (event.categories && event.categories.length > 0) {
 		fm[settings.categoryProp] = event.categories;
+	}
+
+	if (event.location && settings.locationProp) {
+		fm[settings.locationProp] = event.location;
+	}
+
+	if (event.participants && event.participants.length > 0 && settings.participantsProp) {
+		fm[settings.participantsProp] = event.participants;
 	}
 
 	return fm;
