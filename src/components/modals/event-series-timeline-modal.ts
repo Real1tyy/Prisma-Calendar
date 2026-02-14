@@ -1,12 +1,13 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { ColorEvaluator, cls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
 import { DataSet } from "vis-data";
 import { Timeline, type TimelineOptions } from "vis-timeline";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
+import type { SingleCalendarConfig } from "../../types/settings";
 import { cleanupTitle } from "../../utils/calendar-events";
+import { resolveEventColor } from "../../utils/event-color";
 import { buildEventTooltip } from "../../utils/format";
-import { resolveEventCategoryColor } from "../list-modals/base-event-list-modal";
 import { EventPreviewModal, type PreviewEventData } from "../event-preview-modal";
 
 export interface EventSeriesTimelineConfig {
@@ -18,6 +19,7 @@ export class EventSeriesTimelineModal extends Modal {
 	private timeline: Timeline | null = null;
 	private timelineContainer: HTMLElement | null = null;
 	private eventMap: Map<string, CalendarEvent> = new Map();
+	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 
 	constructor(
 		app: App,
@@ -25,6 +27,7 @@ export class EventSeriesTimelineModal extends Modal {
 		private config: EventSeriesTimelineConfig
 	) {
 		super(app);
+		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 	}
 
 	onOpen(): void {
@@ -49,6 +52,7 @@ export class EventSeriesTimelineModal extends Modal {
 			this.timeline.destroy();
 			this.timeline = null;
 		}
+		this.colorEvaluator.destroy();
 		this.contentEl.empty();
 	}
 
@@ -89,11 +93,10 @@ export class EventSeriesTimelineModal extends Modal {
 		const rangeEnd = new Date(lastEvent.getTime() + padding);
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
 
 		const timelineItems = events.map((event) => {
 			const startDate = new Date(event.start);
-			const categoryColor = resolveEventCategoryColor(event.meta, settings.categoryProp, categoriesWithColors);
+			const eventColor = resolveEventColor(event.meta, this.bundle, this.colorEvaluator);
 
 			const content = cleanupTitle(event.title);
 			const tooltip = buildEventTooltip(event, settings);
@@ -103,8 +106,8 @@ export class EventSeriesTimelineModal extends Modal {
 			if (event.skipped) classes.push(cls("timeline-item-skipped"));
 			classes.push(event.type === "allDay" ? cls("timeline-item-allday") : cls("timeline-item-timed"));
 
-			// Per-item category color via vis-timeline's style API
-			const style = categoryColor ? `background-color: ${categoryColor}; border-color: ${categoryColor};` : undefined;
+			// Per-item color via vis-timeline's style API
+			const style = eventColor ? `background-color: ${eventColor}; border-color: ${eventColor};` : undefined;
 
 			return {
 				id: event.ref.filePath,

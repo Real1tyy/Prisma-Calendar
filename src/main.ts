@@ -267,6 +267,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.SCROLL_TO_NOW, "Scroll to current time", (view) => {
 			view.scrollToNow();
 		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_ALL_EVENTS_TIMELINE, "Show all events timeline", (view) => {
+			view.showAllEventsTimeline();
+		});
 
 		this.addCommand({
 			id: COMMAND_IDS.EXPORT_CALENDAR_ICS,

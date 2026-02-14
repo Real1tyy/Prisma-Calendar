@@ -1,15 +1,12 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins";
+import { addCls, ColorEvaluator, cls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { Frontmatter } from "../../types";
+import type { SingleCalendarConfig } from "../../types/settings";
+import { resolveEventColor } from "../../utils/event-color";
 import type { CalendarView } from "../calendar-view";
-import {
-	BaseEventListModal,
-	type EventListAction,
-	type EventListItem,
-	resolveEventCategoryColor,
-} from "./base-event-list-modal";
+import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 type FilterState = "none" | "skip" | "only";
 
@@ -26,6 +23,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		allDay: "none",
 		skipped: "none",
 	};
+	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 
 	constructor(
 		app: App,
@@ -33,6 +31,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		private calendarView: CalendarView
 	) {
 		super(app);
+		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 	}
 
 	protected getTitle(): string {
@@ -79,7 +78,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 	}
 
 	protected onModalClose(): void {
-		// No special cleanup needed
+		this.colorEvaluator.destroy();
 	}
 
 	protected onBeforeRender(): void {
@@ -132,14 +131,12 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 			const filteredEvents = events.filter((event) => !event.isVirtual);
 
-			const categoryProp = this.bundle.settingsStore.currentSettings.categoryProp;
-			const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
 			this.allEvents = filteredEvents.map((event) => ({
 				filePath: event.ref.filePath,
 				title: event.title,
 				subtitle: this.formatEventSubtitle(event),
 				id: event.id,
-				categoryColor: resolveEventCategoryColor(event.meta, categoryProp, categoriesWithColors),
+				categoryColor: resolveEventColor(event.meta, this.bundle, this.colorEvaluator),
 			}));
 		} catch (error) {
 			console.error("Error loading events for global search:", error);
@@ -311,14 +308,12 @@ export class GlobalSearchModal extends BaseEventListModal {
 				filteredEvents = filteredEvents.filter((event) => event.skipped);
 			}
 
-			const categoryProp = settings.categoryProp;
-			const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
 			this.allEvents = filteredEvents.map((event) => ({
 				filePath: event.ref.filePath,
 				title: event.title,
 				subtitle: this.formatEventSubtitle(event),
 				id: event.id,
-				categoryColor: resolveEventCategoryColor(event.meta, categoryProp, categoriesWithColors),
+				categoryColor: resolveEventColor(event.meta, this.bundle, this.colorEvaluator),
 			}));
 		} catch (error) {
 			console.error("Error applying filters:", error);

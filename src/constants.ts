@@ -62,6 +62,7 @@ export const COMMAND_IDS = {
 	SHOW_INTERVAL_BASES: "show-interval-bases",
 	SCROLL_TO_NOW: "scroll-to-now",
 	GO_TO_TODAY: "go-to-today",
+	SHOW_ALL_EVENTS_TIMELINE: "show-all-events-timeline",
 } as const;
 
 export const FULL_COMMAND_IDS = Object.fromEntries(
@@ -91,7 +92,7 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_END_PROP: "End Date",
 	DEFAULT_DATE_PROP: "Date",
 	DEFAULT_ALL_DAY_PROP: "All Day",
-	DEFAULT_NORMALIZE_DATE_PROPERTY: "none",
+	DEFAULT_NORMALIZE_DATE_PROPERTY: "startDate",
 	DEFAULT_TITLE_PROP: "Title",
 	DEFAULT_CALENDAR_TITLE_PROP: "Calendar Title",
 	DEFAULT_ZETTEL_ID_PROP: "ZettelID",
@@ -222,6 +223,7 @@ const TOOLBAR_BUTTONS = {
 	"Search Input": "searchInput",
 	"Expression Filter": "expressionFilter",
 	"Untracked Events": "untrackedEvents",
+	Timeline: "timeline",
 } as const;
 
 export const TOOLBAR_BUTTON_IDS = Object.values(TOOLBAR_BUTTONS);

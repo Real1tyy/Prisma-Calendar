@@ -28,7 +28,7 @@ import {
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { getEventRenderingKey } from "../utils/calendar-settings";
 import { diffEvents, eventFingerprint } from "../utils/event-diff";
-import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
+import { resolveEventColor } from "../utils/event-color";
 import {
 	buildEventTooltip,
 	calculateDuration,
@@ -52,6 +52,7 @@ import {
 	SkippedEventsModal,
 } from "./list-modals";
 import { EventCreateModal } from "./modals";
+import { EventSeriesTimelineModal } from "./modals/event-series-timeline-modal";
 import { BatchFrontmatterModal } from "./modals/batch-frontmatter-modal";
 import { openCategoryAssignModal } from "./modals/assignment-modal";
 import { CategorySelectModal } from "./modals/category-select-modal";
@@ -118,6 +119,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private isRefreshingEvents = false;
 	private calendarIconCache: Map<string, string | undefined> = new Map();
 	private pendingRefreshRequest = false;
+	private stickyOffsetsRafId: number | null = null;
 
 	private updateMobileControlsToggleButtonElement(): void {
 		if (!this.container) return;
@@ -135,6 +137,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const shouldCollapse = this.isMobileView() && this.mobileControlsCollapsed;
 		this.container.classList.toggle(cls("mobile-controls-collapsed"), shouldCollapse);
 		this.updateMobileControlsToggleButtonElement();
+		this.scheduleStickyOffsetsUpdate();
 	}
 
 	private setMobileControlsCollapsed(collapsed: boolean): void {
@@ -370,6 +373,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					void this.showEventsModal();
 				},
 			},
+			timeline: {
+				text: "Timeline",
+				click: () => {
+					this.showAllEventsTimeline();
+				},
+			},
 		};
 	}
 
@@ -417,7 +426,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		const left = leftItems.length > 0 ? leftItems.join(" ") : "";
-		const right = `filteredEvents eventsButton skippedEvents batchSelect ${viewSwitchers}`;
+		const right = `filteredEvents eventsButton timeline skippedEvents batchSelect ${viewSwitchers}`;
 
 		return {
 			headerToolbar: { left, center: "title", right },
@@ -440,6 +449,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// Cast to CustomButtonInput - className is accepted at runtime but not in FullCalendar's types
 		this.calendar.setOption("customButtons", customButtons as Record<string, CustomButtonInput>);
 		this.applyMobileControlsCollapsedState();
+		this.scheduleStickyOffsetsUpdate();
 
 		setTimeout(() => {
 			if (!inSelectionMode) {
@@ -447,7 +457,34 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				this.applySkippedEventsButtonState();
 				this.zoomManager.updateZoomLevelButton();
 			}
+			this.scheduleStickyOffsetsUpdate();
 		}, 0);
+	}
+
+	private scheduleStickyOffsetsUpdate(): void {
+		if (this.stickyOffsetsRafId !== null) return;
+		this.stickyOffsetsRafId = requestAnimationFrame(() => {
+			this.stickyOffsetsRafId = null;
+			this.updateStickyOffsets();
+		});
+	}
+
+	private updateStickyOffsets(): void {
+		if (!this.container) return;
+
+		const toolbar = this.container.querySelector(".fc-header-toolbar.fc-toolbar");
+		const toolbarEl = toolbar instanceof HTMLElement ? toolbar : null;
+		const toolbarRect = toolbarEl?.getBoundingClientRect();
+		const toolbarHeight = toolbarRect ? Math.round(toolbarRect.height) : 0;
+		const toolbarMarginBottom = toolbarEl ? Number.parseFloat(window.getComputedStyle(toolbarEl).marginBottom) || 0 : 0;
+		const stickyToolbarOffset = Math.round(toolbarHeight + toolbarMarginBottom);
+
+		const dayHeaderCell = this.container.querySelector(".fc-col-header-cell");
+		const dayHeaderEl = dayHeaderCell instanceof HTMLElement ? dayHeaderCell : null;
+		const dayHeaderHeight = dayHeaderEl ? Math.round(dayHeaderEl.getBoundingClientRect().height) : 0;
+
+		this.container.style.setProperty("--prisma-sticky-toolbar-offset", `${stickyToolbarOffset}px`);
+		this.container.style.setProperty("--prisma-sticky-day-header-height", `${dayHeaderHeight}px`);
 	}
 
 	getViewType(): string {
@@ -599,6 +636,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				return new EventsModal(this.app, this.bundle, this);
 			}
 		);
+	}
+
+	showAllEventsTimeline(): void {
+		const allEvents = this.bundle.eventStore.getAllEvents();
+		new EventSeriesTimelineModal(this.app, this.bundle, {
+			events: allEvents,
+			title: "All Events Timeline",
+		}).open();
 	}
 
 	async showFilteredEventsModal(): Promise<void> {
@@ -1171,6 +1216,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					"dayMaxEventRows",
 					this.isMobileView() ? currentSettings.mobileMaxEventsPerDay : currentSettings.desktopMaxEventsPerDay || false
 				);
+				this.scheduleStickyOffsetsUpdate();
 			},
 
 			editable: true,
@@ -1336,6 +1382,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.zoomManager.setOnZoomChangeCallback(() => this.saveCurrentState());
 
 		this.initializeToolbarComponents(this.isMobileLayout ? settings.mobileToolbarButtons : settings.toolbarButtons);
+		this.scheduleStickyOffsetsUpdate();
 
 		if (this.bundle.viewStateManager.hasState()) {
 			this.isRestoring = true;
@@ -1357,6 +1404,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			if (this.calendar) {
 				this.calendar.updateSize();
 			}
+			this.scheduleStickyOffsetsUpdate();
 		}, 100);
 
 		// Ensure initial events are loaded after calendar is fully rendered
@@ -1403,6 +1451,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		toggleCls(this.container, "sticky-day-headers", settings.stickyDayHeaders);
 
 		this.container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
+		this.scheduleStickyOffsetsUpdate();
 
 		// Restart or stop upcoming event check based on setting
 		if (settings.highlightUpcomingEvent) {
@@ -1798,31 +1847,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	private getEventColor(event: Pick<CalendarEvent, "meta">): string {
-		const frontmatter = event.meta ?? {};
-		const settings = this.bundle.settingsStore.currentSettings;
-
-		// Check if this is a CalDAV-synced event - integration color takes priority
-		const caldavSettings = this.bundle.getCalDAVSettings();
-		const caldavProp = settings.caldavProp;
-
-		if (frontmatter[caldavProp]) {
-			// Event has CalDAV metadata - apply integration color with priority
-			return caldavSettings.integrationEventColor;
-		}
-
-		// Check if this is an ICS subscription-synced event - integration color takes priority
-		const icsSubscriptionSettings = this.bundle.getICSSubscriptionSettings();
-		const icsSubscriptionProp = settings.icsSubscriptionProp;
-
-		if (frontmatter[icsSubscriptionProp]) {
-			// Event has ICS subscription metadata - apply integration color with priority
-			return icsSubscriptionSettings.integrationEventColor;
-		}
-
-		// Normalize frontmatter to ensure all properties referenced in color rules exist
-		// This prevents errors when properties are undefined (e.g., Category.includes())
-		const normalizedFrontmatter = normalizeFrontmatterForColorEvaluation(frontmatter, settings.colorRules);
-		return this.colorEvaluator.evaluateColor(normalizedFrontmatter);
+		return resolveEventColor(event.meta ?? {}, this.bundle, this.colorEvaluator);
 	}
 
 	private updateColorDots(): void {
@@ -2661,6 +2686,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		if (this.refreshRafId !== null) {
 			cancelAnimationFrame(this.refreshRafId);
 			this.refreshRafId = null;
+		}
+		if (this.stickyOffsetsRafId !== null) {
+			cancelAnimationFrame(this.stickyOffsetsRafId);
+			this.stickyOffsetsRafId = null;
 		}
 
 		this.clearRenderedEventsCache();

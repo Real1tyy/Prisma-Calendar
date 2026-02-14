@@ -6,8 +6,8 @@ import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
 import { removeZettelId } from "../../utils/calendar-events";
+import { resolveEventColor } from "../../utils/event-color";
 import { calculateEventStatistics } from "../../utils/event-statistics";
-import { normalizeFrontmatterForColorEvaluation } from "../../utils/expression-utils";
 import { EventSeriesBasesViewModal, type EventSeriesBasesViewConfig } from "../modals/event-series-bases-view-modal";
 import { EventSeriesTimelineModal } from "../modals/event-series-timeline-modal";
 
@@ -288,10 +288,7 @@ export class EventSeriesModal extends Modal {
 	// --- Shared rendering ---
 
 	private getEventColor(event: CalendarEvent): string {
-		const frontmatter = event.meta ?? {};
-		const settings = this.bundle.settingsStore.currentSettings;
-		const normalized = normalizeFrontmatterForColorEvaluation(frontmatter, settings.colorRules);
-		return this.colorEvaluator.evaluateColor(normalized);
+		return resolveEventColor(event.meta ?? {}, this.bundle, this.colorEvaluator);
 	}
 
 	private renderEventList(items: EventListItem[], options: EventListOptions): void {

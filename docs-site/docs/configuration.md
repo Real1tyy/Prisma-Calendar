@@ -333,6 +333,7 @@ Customize which buttons appear in the calendar's top toolbar to save space in na
 - **Search Input**: Search events by title
 - **Expression Filter**: Filter events using expressions
 - **Untracked Events**: Show events without date properties
+- **Timeline**: Open all events timeline visualization
 
 All buttons are enabled by default. Uncheck items to hide them from the toolbar.
 

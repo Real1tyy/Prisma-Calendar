@@ -1,23 +1,24 @@
+import { ColorEvaluator } from "@real1ty-obsidian-plugins";
 import { type App, Notice } from "obsidian";
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { ToggleSkipCommand } from "../../core/commands";
 import type { CalendarEvent } from "../../types/calendar";
+import type { SingleCalendarConfig } from "../../types/settings";
 import { formatEventTimeInfo } from "../../utils/time-formatter";
-import {
-	BaseEventListModal,
-	type EventListAction,
-	type EventListItem,
-	resolveEventCategoryColor,
-} from "./base-event-list-modal";
+import { resolveEventColor } from "../../utils/event-color";
+import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 export class SkippedEventsModal extends BaseEventListModal {
+	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
+
 	constructor(
 		app: App,
 		private bundle: CalendarBundle,
 		private skippedEvents: CalendarEvent[]
 	) {
 		super(app);
+		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 	}
 
 	protected getTitle(): string {
@@ -33,16 +34,12 @@ export class SkippedEventsModal extends BaseEventListModal {
 	}
 
 	protected getItems(): EventListItem[] {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const categoryProp = settings.categoryProp;
-		const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
-
 		return this.skippedEvents.map((event) => ({
 			id: event.id,
 			filePath: event.ref.filePath,
 			title: event.title,
 			subtitle: formatEventTimeInfo(event),
-			categoryColor: resolveEventCategoryColor(event.meta, categoryProp, categoriesWithColors),
+			categoryColor: resolveEventColor(event.meta, this.bundle, this.colorEvaluator),
 		}));
 	}
 
@@ -83,6 +80,6 @@ export class SkippedEventsModal extends BaseEventListModal {
 	}
 
 	protected onModalClose(): void {
-		// Can be used by subclasses for cleanup
+		this.colorEvaluator.destroy();
 	}
 }

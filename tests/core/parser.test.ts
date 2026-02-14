@@ -353,6 +353,9 @@ describe("Parser", () => {
 
 	describe("metadata handling", () => {
 		it("should include file metadata in event", () => {
+			settings.normalizeDateProperty = "none";
+			settingsStore.next(settings);
+
 			const source: RawEventSource = {
 				filePath: "Projects/project-meeting.md",
 				mtime: Date.now(),
@@ -376,6 +379,7 @@ describe("Parser", () => {
 				isAllDay: false,
 				originalStart: "2024-01-15 10:00",
 				originalEnd: undefined,
+				originalDate: undefined,
 				// All frontmatter properties should be included for Frontmatter Display
 				start: "2024-01-15 10:00",
 				priority: "high",

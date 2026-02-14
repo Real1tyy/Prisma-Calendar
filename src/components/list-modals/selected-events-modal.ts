@@ -1,15 +1,15 @@
+import { ColorEvaluator } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
+import type { SingleCalendarConfig } from "../../types/settings";
 import { formatEventTimeInfo } from "../../utils/time-formatter";
-import {
-	BaseEventListModal,
-	type EventListAction,
-	type EventListItem,
-	resolveEventCategoryColor,
-} from "./base-event-list-modal";
+import { resolveEventColor } from "../../utils/event-color";
+import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 export class SelectedEventsModal extends BaseEventListModal {
+	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
+
 	constructor(
 		app: App,
 		private bundle: CalendarBundle,
@@ -17,6 +17,7 @@ export class SelectedEventsModal extends BaseEventListModal {
 		private onUnselectEvent: (eventId: string) => void
 	) {
 		super(app);
+		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 	}
 
 	protected getTitle(): string {
@@ -32,16 +33,12 @@ export class SelectedEventsModal extends BaseEventListModal {
 	}
 
 	protected getItems(): EventListItem[] {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const categoryProp = settings.categoryProp;
-		const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
-
 		return this.selected.map((event) => ({
 			id: event.id,
 			filePath: event.ref.filePath,
 			title: event.title,
 			subtitle: formatEventTimeInfo(event),
-			categoryColor: resolveEventCategoryColor(event.meta, categoryProp, categoriesWithColors),
+			categoryColor: resolveEventColor(event.meta, this.bundle, this.colorEvaluator),
 		}));
 	}
 
@@ -75,6 +72,6 @@ export class SelectedEventsModal extends BaseEventListModal {
 	}
 
 	protected onModalClose(): void {
-		// Cleanup handled by parent
+		this.colorEvaluator.destroy();
 	}
 }
