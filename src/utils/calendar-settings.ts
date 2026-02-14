@@ -47,6 +47,8 @@ export function getEventRenderingKey(settings: SingleCalendarConfig): string {
 		settings.physicalRecurringMarker,
 		settings.showColorDots,
 		settings.pastEventContrast,
+		settings.eventTextColor,
+		settings.eventTextColorAlt,
 		settings.skipProp,
 		settings.titleProp,
 		settings.calendarTitleProp,

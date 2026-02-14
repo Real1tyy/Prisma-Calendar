@@ -8,6 +8,10 @@ All notable changes to this project will be documented here.
 
 ### Added
 
+- **Event text colors**: Two new settings in Calendar → Event text colors let you configure text colors for calendar events:
+  - **Default event text color**: Used for events with dark backgrounds (default: white). This is the standard text color you see on most events.
+  - **Alternative event text color**: Used automatically when an event's background is light or white (e.g., pastel colors, shades of white). Default: black. The calendar detects light backgrounds and switches to this color for better readability.
+
 - **Settings Reorganization**: The settings panel now has 10 tabs (up from 7) for better organization. Three new tabs have been added:
   - **Event Groups**: Recurring event settings, propagation toggles (recurring, name series, category series), shared propagation settings, and event markers — all extracted from the Calendar tab.
   - **Configuration**: Desktop/mobile toolbar button toggles, batch selection button toggles, and context menu item toggles — extracted from the Calendar tab.

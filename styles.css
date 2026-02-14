@@ -286,7 +286,7 @@
 	border: 0;
 	border-radius: 6px;
 	font-weight: 600;
-	color: white;
+	color: var(--event-text-color, white);
 	background: rgba(255, 255, 255, 0.16);
 	display: inline-block;
 	word-break: break-word;
@@ -300,7 +300,7 @@
 	padding: 0;
 	border: 0;
 	font-weight: 600;
-	color: white;
+	color: var(--event-text-color, white);
 	display: inline;
 	word-break: break-word;
 	overflow-wrap: break-word;
@@ -335,7 +335,7 @@
 	/* pill feel */
 	background: rgba(255, 255, 255, 0.1);
 	/* translucent */
-	color: white;
+	color: var(--event-text-color, white);
 	max-width: 100%;
 }
 
@@ -356,7 +356,7 @@
 }
 
 .prisma-fc-event-prop-link {
-	color: white;
+	color: var(--event-text-color, white);
 	text-decoration: underline;
 	text-decoration-style: dotted;
 	text-decoration-thickness: 1.5px;
@@ -371,7 +371,7 @@
 }
 
 .prisma-fc-event-prop-link:hover {
-	color: white;
+	color: var(--event-text-color, white);
 	text-decoration-style: solid;
 	text-decoration-thickness: 2px;
 	background: rgba(255, 255, 255, 0.2);

@@ -270,5 +270,34 @@ export class CalendarSettings {
 			name: "Show color dots",
 			desc: "Show color indicator dots at the top of each day in monthly view",
 		});
+
+		// Event text colors
+		new Setting(containerEl).setName("Event text colors").setHeading();
+
+		new Setting(containerEl)
+			.setName("Default event text color")
+			.setDesc("Text color for events with dark backgrounds (default: white)")
+			.addColorPicker((colorPicker) => {
+				colorPicker.setValue(this.settingsStore.currentSettings.eventTextColor);
+				colorPicker.onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						eventTextColor: value || SETTINGS_DEFAULTS.DEFAULT_EVENT_TEXT_COLOR,
+					}));
+				});
+			});
+
+		new Setting(containerEl)
+			.setName("Alternative event text color")
+			.setDesc("Text color used when event background is light or white (e.g., pastel colors) for better contrast")
+			.addColorPicker((colorPicker) => {
+				colorPicker.setValue(this.settingsStore.currentSettings.eventTextColorAlt);
+				colorPicker.onChange(async (value) => {
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						eventTextColorAlt: value || SETTINGS_DEFAULTS.DEFAULT_EVENT_TEXT_COLOR_ALT,
+					}));
+				});
+			});
 	}
 }

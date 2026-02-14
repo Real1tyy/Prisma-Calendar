@@ -281,6 +281,8 @@ STATUS: Done
 - **Show color dots**: show color indicator dots in monthly view (enabled by default)
 - **Thicker hour lines**: make full-hour lines thicker in day/week views (enabled by default)
 - **Show duration in event title**: display event duration in parentheses after the event title for timed events (e.g., "Meeting (2h 30m)"). Only applies to events with both start and end times. Enabled by default.
+- **Default event text color**: text color for events with dark backgrounds (default: white). Used when the event background provides sufficient contrast.
+- **Alternative event text color**: text color used when the event background is light or white (e.g., pastel colors). The calendar automatically detects light backgrounds and applies this color for better readability. Default: black.
 - **Sticky day headers**: keep day/date headers visible at the top when scrolling down in weekly and daily views
 - **Sticky all-day events**: keep all-day event section visible at the top when scrolling down in weekly and daily views (disabled by default)
 

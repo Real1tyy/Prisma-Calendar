@@ -1,5 +1,26 @@
 import { colord } from "colord";
 
+const VERY_CLOSE_SHADE_DISTANCE = 48;
+
+/**
+ * True when two colors are very close in shade (RGB distance).
+ * Used to switch to alternative text color only when default text color
+ * is nearly the same color as the event background.
+ */
+export function hasVeryCloseShade(foregroundColor: string, backgroundColor: string): boolean {
+	const foreground = colord(foregroundColor);
+	const background = colord(backgroundColor);
+	if (!foreground.isValid() || !background.isValid()) return false;
+
+	const fg = foreground.toRgb();
+	const bg = background.toRgb();
+	const distance = Math.sqrt(
+		(fg.r - bg.r) * (fg.r - bg.r) + (fg.g - bg.g) * (fg.g - bg.g) + (fg.b - bg.b) * (fg.b - bg.b)
+	);
+
+	return distance <= VERY_CLOSE_SHADE_DISTANCE;
+}
+
 export function parseColor(color: string): { h: number; s: number; l: number } | null {
 	const parsed = colord(color);
 	if (!parsed.isValid()) {

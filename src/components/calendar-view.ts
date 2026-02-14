@@ -3,7 +3,14 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DropArg } from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { ColorEvaluator, cls, formatDuration, MountableView, toggleCls } from "@real1ty-obsidian-plugins";
+import {
+	ColorEvaluator,
+	cls,
+	formatDuration,
+	hasVeryCloseShade,
+	MountableView,
+	toggleCls,
+} from "@real1ty-obsidian-plugins";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { FillTimeCommand, UpdateEventCommand, UpdateFrontmatterCommand } from "../core/commands";
@@ -1465,6 +1472,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		if (eventRenderingKey !== this.previousEventRenderingKey) {
 			this.previousEventRenderingKey = eventRenderingKey;
+			// Force remount so event-level CSS variables (like text color) are re-applied.
+			this.clearRenderedEventsCache();
 			this.scheduleRefreshEvents();
 		}
 	}
@@ -2012,6 +2021,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		});
 
 		element.style.setProperty("--event-color", eventColor);
+		const settings = this.bundle.settingsStore.currentSettings;
+		const textColor = hasVeryCloseShade(settings.eventTextColor, eventColor)
+			? settings.eventTextColorAlt
+			: settings.eventTextColor;
+		element.style.setProperty("--event-text-color", textColor);
 		element.classList.add(cls("calendar-event"));
 
 		// Set opacity CSS variable for past events
@@ -2034,12 +2048,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		if (isPast) {
-			const contrast = this.bundle.settingsStore.currentSettings.pastEventContrast;
+			const contrast = settings.pastEventContrast;
 			const opacity = contrast / 100;
 			element.style.setProperty("--past-event-opacity", opacity.toString());
 		}
 
-		const settings = this.bundle.settingsStore.currentSettings;
 		const tooltip = buildEventTooltip(event, settings);
 
 		element.setAttribute("title", tooltip);

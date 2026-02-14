@@ -199,6 +199,8 @@ const CalendarSettingsSchema = z
 		sourceRecurringMarker: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SOURCE_RECURRING_MARKER), // Symbol/emoji to display on source recurring events
 		physicalRecurringMarker: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_PHYSICAL_RECURRING_MARKER), // Symbol/emoji to display on physical recurring instance events
 		showDurationInTitle: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_DURATION_IN_TITLE), // Show event duration in the event title
+		eventTextColor: ColorSchema.catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_TEXT_COLOR), // Default text color for events (used when it has sufficient contrast on background)
+		eventTextColorAlt: ColorSchema.catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_TEXT_COLOR_ALT), // Alternative text color (used when default has poor contrast)
 	})
 	.strip();
 
