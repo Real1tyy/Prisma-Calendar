@@ -25,18 +25,12 @@ export class RulesSettings {
 		new Setting(containerEl).setName("Event colors").setHeading();
 
 		// Default color setting with color picker
-		new Setting(containerEl)
-			.setName("Default event color")
-			.setDesc("Default color for events when no color rules match")
-			.addColorPicker((colorPicker) => {
-				colorPicker.setValue(settings.defaultNodeColor);
-				colorPicker.onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						defaultNodeColor: value || SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR,
-					}));
-				});
-			});
+		this.ui.addColorPicker(containerEl, {
+			key: "defaultNodeColor",
+			name: "Default event color",
+			desc: "Default color for events when no color rules match",
+			fallback: SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR,
+		});
 
 		// Color rules section
 		const colorRulesContainer = containerEl.createDiv();

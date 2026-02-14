@@ -34,6 +34,10 @@ interface ArraySettingConfig<T = string> extends BaseSettingConfig {
 	validator?: (item: T) => boolean;
 }
 
+interface ColorPickerSettingConfig extends BaseSettingConfig {
+	fallback?: string;
+}
+
 interface ArrayManagerConfig extends BaseSettingConfig {
 	placeholder?: string;
 	addButtonText?: string;
@@ -424,6 +428,20 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 					.onChange(async (newValue) => {
 						await this.updateSetting(key, newValue);
 					})
+			);
+	}
+
+	addColorPicker(containerEl: HTMLElement, config: ColorPickerSettingConfig): void {
+		const { key, name, desc, fallback } = config;
+		const value = this.getNestedValue(key);
+
+		new Setting(containerEl)
+			.setName(name)
+			.setDesc(desc)
+			.addColorPicker((colorPicker) =>
+				colorPicker.setValue(String(value ?? fallback ?? "#000000")).onChange(async (newValue) => {
+					await this.updateSetting(key, newValue || fallback || "#000000");
+				})
 			);
 	}
 

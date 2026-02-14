@@ -84,23 +84,12 @@ export class CalDAVSettings {
 			desc: "Show notifications when calendar sync completes",
 		});
 
-		const caldavSettings = this.settingsStore.currentSettings.caldav;
-
-		new Setting(containerEl)
-			.setName("Integration event color")
-			.setDesc("Color to apply to calendar-synced events (overrides color rules)")
-			.addColorPicker((colorPicker) => {
-				colorPicker.setValue(caldavSettings.integrationEventColor);
-				colorPicker.onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						caldav: {
-							...s.caldav,
-							integrationEventColor: value || "#8b5cf6",
-						},
-					}));
-				});
-			});
+		this.ui.addColorPicker(containerEl, {
+			key: "caldav.integrationEventColor",
+			name: "Integration event color",
+			desc: "Color to apply to calendar-synced events (overrides color rules)",
+			fallback: "#8b5cf6",
+		});
 	}
 
 	private renderAccountItem(container: HTMLElement, account: CalDAVAccount): void {

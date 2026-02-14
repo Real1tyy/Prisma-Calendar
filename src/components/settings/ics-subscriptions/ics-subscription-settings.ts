@@ -79,23 +79,12 @@ export class ICSSubscriptionSettings {
 			desc: "Show notifications when ICS subscription sync completes",
 		});
 
-		const icsSubSettings = this.settingsStore.currentSettings.icsSubscriptions;
-
-		new Setting(containerEl)
-			.setName("Integration event color")
-			.setDesc("Color to apply to ICS subscription-synced events (overrides color rules)")
-			.addColorPicker((colorPicker) => {
-				colorPicker.setValue(icsSubSettings.integrationEventColor);
-				colorPicker.onChange(async (value) => {
-					await this.settingsStore.updateSettings((s) => ({
-						...s,
-						icsSubscriptions: {
-							...s.icsSubscriptions,
-							integrationEventColor: value || "#8b5cf6",
-						},
-					}));
-				});
-			});
+		this.ui.addColorPicker(containerEl, {
+			key: "icsSubscriptions.integrationEventColor",
+			name: "Integration event color",
+			desc: "Color to apply to ICS subscription-synced events (overrides color rules)",
+			fallback: "#8b5cf6",
+		});
 	}
 
 	private renderSubscriptionItem(container: HTMLElement, subscription: ICSSubscription): void {
