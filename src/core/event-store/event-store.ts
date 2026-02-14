@@ -8,6 +8,7 @@ import { IndexedCacheStore } from "./indexed-cache-store";
 import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
 import type { Parser } from "../parser";
 import type { RecurringEventManager } from "../recurring-event-manager";
+import type { HolidayStore } from "../holidays";
 
 export interface EventQuery {
 	start: ISO;
@@ -25,6 +26,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private indexingCompleteSubscription: Subscription | null = null;
 	private eventsByStartTime = new BTree<string, TimedEvent>();
 	private eventsByEndTime = new BTree<string, TimedEvent>();
+	private holidayStore: HolidayStore | null = null;
 
 	constructor(
 		indexer: Indexer,
@@ -43,6 +45,18 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 				this.clearWithoutNotify();
 			}
 		});
+	}
+
+	setHolidayStore(holidayStore: HolidayStore): void {
+		this.holidayStore = holidayStore;
+	}
+
+	/**
+	 * Triggers a refresh notification without modifying the cache.
+	 * Used when virtual events (like holidays) need to be refreshed.
+	 */
+	refreshVirtualEvents(): void {
+		this.notifyChange();
 	}
 
 	protected buildTemplate(source: RawEventSource): CalendarEvent | null {
@@ -102,23 +116,28 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		this.upsert(filePath, template, mtime);
 	}
 
-	getEvents(query: EventQuery): CalendarEvent[] {
+	async getEvents(query: EventQuery): Promise<CalendarEvent[]> {
 		const results: CalendarEvent[] = this.getPhysicalEvents(query);
 		const queryStart = DateTime.fromISO(query.start, { zone: "utc" });
 		const queryEnd = DateTime.fromISO(query.end, { zone: "utc" });
 		const virtualEvents = this.recurringEventManager.generateAllVirtualInstances(queryStart, queryEnd);
 		results.push(...virtualEvents);
 
+		if (this.holidayStore) {
+			const holidays = await this.holidayStore.getHolidaysForRange(queryStart, queryEnd);
+			results.push(...holidays);
+		}
+
 		return results.sort((a, b) => a.start.localeCompare(b.start));
 	}
 
-	getSkippedEvents(query: EventQuery): CalendarEvent[] {
-		const allEvents = this.getEvents(query);
+	async getSkippedEvents(query: EventQuery): Promise<CalendarEvent[]> {
+		const allEvents = await this.getEvents(query);
 		return allEvents.filter((event) => event.skipped && !event.isVirtual);
 	}
 
-	getNonSkippedEvents(query: EventQuery): CalendarEvent[] {
-		const allEvents = this.getEvents(query);
+	async getNonSkippedEvents(query: EventQuery): Promise<CalendarEvent[]> {
+		const allEvents = await this.getEvents(query);
 		return allEvents.filter((event) => !event.skipped);
 	}
 

@@ -570,7 +570,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			(modal) => {
 				this.skippedEventsModal = modal;
 			},
-			() => {
+			async () => {
 				if (!this.calendar) throw new Error("Calendar not initialized");
 
 				const view = this.calendar.view;
@@ -578,7 +578,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 				const start = toLocalISOString(view.activeStart);
 				const end = toLocalISOString(view.activeEnd);
-				const skippedEvents = this.bundle.eventStore.getSkippedEvents({
+				const skippedEvents = await this.bundle.eventStore.getSkippedEvents({
 					start,
 					end,
 				});
@@ -1209,7 +1209,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			eventDidMount: (info) => {
 				if (info.event.extendedProps.isVirtual) {
 					info.el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
-					info.el.title = "Virtual recurring event (read-only)";
+					const isHoliday = info.event.extendedProps.filePath?.startsWith("holiday:");
+					info.el.title = isHoliday ? "Holiday (read-only)" : "Virtual recurring event (read-only)";
+					if (isHoliday) {
+						info.el.classList.add(cls("holiday-event"));
+					}
 				} else {
 					// Only register non-virtual events for batch selection
 					this.batchSelectionManager?.handleEventMount(info.event.id, info.el);
@@ -1441,11 +1445,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 		if (this.refreshRafId !== null) return;
 
-		this.refreshRafId = requestAnimationFrame(() => {
+		this.refreshRafId = requestAnimationFrame(async () => {
 			this.refreshRafId = null;
 			this.isRefreshingEvents = true;
 			this.pendingRefreshRequest = false;
-			this.refreshEvents();
+			await this.refreshEvents();
 		});
 	}
 
@@ -1461,7 +1465,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.bundle.refreshCalendar();
 	}
 
-	private refreshEvents(): void {
+	private async refreshEvents(): Promise<void> {
 		if (!this.calendar || !this.isIndexingComplete || !this.calendar.view) {
 			this.releaseRefreshLock();
 			return;
@@ -1478,7 +1482,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		let hasStructuralChanges = false;
 
 		try {
-			const calendarEvents = this.buildCalendarEvents(view);
+			const calendarEvents = await this.buildCalendarEvents(view);
 
 			if (!this.hasPerformedInitialLoad) {
 				this.performInitialLoad(calendarEvents);
@@ -1511,11 +1515,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
-	private buildCalendarEvents(view: { activeStart: Date; activeEnd: Date }): PrismaEventInput[] {
+	private async buildCalendarEvents(view: { activeStart: Date; activeEnd: Date }): Promise<PrismaEventInput[]> {
 		const start = toLocalISOString(view.activeStart);
 		const end = toLocalISOString(view.activeEnd);
 
-		const allEvents = this.bundle.eventStore.getNonSkippedEvents({ start, end });
+		const allEvents = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
 
 		const shouldIncludeEvent = (event: CalendarEvent) => {
 			const passesSearch = this.searchFilter.shouldInclude({
@@ -1533,7 +1537,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.filteredEvents = filteredEvents;
 		this.updateFilteredEventsButton(filteredEvents.length);
 
-		const skippedEvents = this.bundle.eventStore.getSkippedEvents({ start, end });
+		const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
 		this.updateSkippedEventsButton(skippedEvents.length);
 
 		return visibleEvents.map((event) => {
@@ -1662,14 +1666,23 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const displayData = event.extendedProps.frontmatterDisplayData;
 		const isSourceRecurring = displayData?.[settings.rruleProp];
 		const isPhysicalRecurring = displayData?.[settings.sourceProp];
+		const isHoliday = event.extendedProps.filePath?.startsWith("holiday:");
 
+		// Add marker for recurring events or holidays
 		if (
 			(isSourceRecurring && settings.showSourceRecurringMarker) ||
-			(isPhysicalRecurring && settings.showPhysicalRecurringMarker)
+			(isPhysicalRecurring && settings.showPhysicalRecurringMarker) ||
+			isHoliday
 		) {
 			const markerEl = document.createElement("div");
 			markerEl.className = cls("event-marker");
-			markerEl.textContent = isSourceRecurring ? settings.sourceRecurringMarker : settings.physicalRecurringMarker;
+
+			if (isHoliday) {
+				markerEl.textContent = "H";
+			} else {
+				markerEl.textContent = isSourceRecurring ? settings.sourceRecurringMarker : settings.physicalRecurringMarker;
+			}
+
 			container.appendChild(markerEl);
 		}
 
@@ -1834,6 +1847,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const event = info.event;
 		const filePath = event.extendedProps.filePath;
 		const isVirtual = event.extendedProps.isVirtual;
+		const isHoliday = typeof filePath === "string" && filePath.startsWith("holiday:");
+
+		if (isHoliday) {
+			return;
+		}
 
 		// For virtual events, show preview of the source event
 		if (isVirtual && filePath && typeof filePath === "string") {

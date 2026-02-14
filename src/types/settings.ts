@@ -12,6 +12,20 @@ import { ICSSubscriptionSettingsSchema } from "../core/integrations/ics-subscrip
 import { ColorSchema } from "../utils/validation";
 import { CalendarViewTypeSchema, ContextMenuItemSchema, ToolbarButtonSchema } from "./view";
 
+// Use library's HolidayType definition
+const HolidayTypeSchema = z.enum(["public", "bank", "school", "observance", "optional"]);
+
+const HolidaySettingsSchema = z
+	.object({
+		enabled: z.boolean().catch(false),
+		country: z.string().catch("US"), // ISO country code (HolidaysTypes.Country)
+		state: z.string().optional(), // State/province code - ISO 3166-2 (HolidaysTypes.Country)
+		region: z.string().optional(), // Region code (HolidaysTypes.Country)
+		types: z.array(HolidayTypeSchema).catch(["public"]), // Holiday types (HolidaysTypes.Options)
+		timezone: z.string().optional(), // Timezone, e.g. America/New_York (HolidaysTypes.Options)
+	})
+	.strip();
+
 const EventPresetSchema = z
 	.object({
 		id: z.string(),
@@ -216,6 +230,7 @@ export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSett
 		id: z.string(),
 		name: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CALENDAR_NAME),
 		enabled: z.boolean().catch(true),
+		holidays: HolidaySettingsSchema.catch(HolidaySettingsSchema.parse({})),
 	})
 	.strip();
 
@@ -236,6 +251,7 @@ export const CustomCalendarSettingsSchema = z
 					...CalendarSettingsSchema.parse({}),
 					...RulesSettingsSchema.parse({}),
 					...NotificationsSettingsSchema.parse({}),
+					holidays: HolidaySettingsSchema.parse({}),
 				},
 			]),
 		caldav: CalDAVSettingsSchema.catch(CalDAVSettingsSchema.parse({})),
@@ -246,5 +262,7 @@ export const CustomCalendarSettingsSchema = z
 export type FilterPreset = z.infer<typeof FilterPresetSchema>;
 export type CategoryAssignmentPreset = z.infer<typeof CategoryAssignmentPresetSchema>;
 export type EventPreset = z.infer<typeof EventPresetSchema>;
+export type HolidaySettings = z.infer<typeof HolidaySettingsSchema>;
+export type HolidayType = z.infer<typeof HolidayTypeSchema>;
 export type SingleCalendarConfig = z.infer<typeof SingleCalendarConfigSchema>;
 export type CustomCalendarSettings = z.infer<typeof CustomCalendarSettingsSchema>;

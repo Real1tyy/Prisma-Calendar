@@ -2124,6 +2124,12 @@
 	font-style: italic;
 }
 
+/* Holiday Event Styles - special styling to distinguish from regular virtual events */
+.prisma-calendar__holiday-event {
+	border-left: 3px solid var(--interactive-accent);
+	font-weight: 500;
+}
+
 /* Hidden Element */
 .prisma-element-hidden {
 	display: none;

@@ -22,6 +22,7 @@ import type { RecurringEventManager } from "./recurring-event-manager";
 import type { NameSeriesTracker } from "./name-series-tracker";
 import { CalendarSettingsStore, type SettingsStore } from "./settings-store";
 import type { UntrackedEventStore } from "./event-store";
+import { HolidayStore } from "./holidays";
 
 export class CalendarBundle {
 	public readonly settingsStore: CalendarSettingsStore;
@@ -39,6 +40,7 @@ export class CalendarBundle {
 	public readonly batchCommandFactory: BatchCommandFactory;
 	public readonly caldavSyncStateManager: CalDAVSyncStateManager;
 	public readonly icsSubscriptionSyncStateManager: ICSSubscriptionSyncStateManager;
+	public readonly holidayStore: HolidayStore;
 	public readonly viewType: string;
 	private app: App;
 	private directory: string;
@@ -90,6 +92,8 @@ export class CalendarBundle {
 		this.viewStateManager = new CalendarViewStateManager();
 		this.commandManager = new CommandManager();
 		this.batchCommandFactory = new BatchCommandFactory(this.app, this);
+		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays);
+		this.eventStore.setHolidayStore(this.holidayStore);
 
 		this.mainSettingsStore.settings$.subscribe(() => {
 			this.startCalDAVAutoSync();
@@ -98,6 +102,12 @@ export class CalendarBundle {
 
 		this.settingsStore.settings$.subscribe((settings) => {
 			this.updateRibbonIcon(settings.showRibbonIcon);
+
+			const holidaySettingsChanged = this.holidayStore.updateConfig(settings.holidays);
+
+			if (holidaySettingsChanged) {
+				this.eventStore.refreshVirtualEvents();
+			}
 		});
 	}
 
@@ -275,6 +285,7 @@ export class CalendarBundle {
 		this.icsSubscriptionSync.destroy();
 		this.caldavSyncStateManager.destroy();
 		this.icsSubscriptionSyncStateManager.destroy();
+		this.holidayStore.clear();
 
 		this.commandManager.clearHistory();
 

@@ -1,0 +1,157 @@
+import type { App } from "obsidian";
+import { DateTime } from "luxon";
+import type { HolidayProvider, HolidayEvent, HolidayConfig } from "./types";
+import { DateHolidaysProvider } from "./date-holidays-provider";
+import type { CalendarEvent } from "../../types/calendar";
+
+interface CachedHolidays {
+	year: number;
+	events: HolidayEvent[];
+	timestamp: number;
+}
+
+export class HolidayStore {
+	private provider: HolidayProvider;
+	private cache = new Map<number, CachedHolidays>();
+	private readonly CACHE_KEY_PREFIX = "holiday-cache";
+
+	constructor(
+		private app: App,
+		public config: HolidayConfig
+	) {
+		this.provider = new DateHolidaysProvider(config);
+	}
+
+	updateConfig(config: HolidayConfig): boolean {
+		const configChanged =
+			this.config.enabled !== config.enabled ||
+			this.config.country !== config.country ||
+			this.config.state !== config.state ||
+			this.config.region !== config.region ||
+			JSON.stringify(this.config.types) !== JSON.stringify(config.types);
+
+		this.config = config;
+		this.provider = new DateHolidaysProvider(config);
+
+		if (configChanged) {
+			this.cache.clear();
+			this.clearStoredCache();
+		}
+
+		return configChanged;
+	}
+
+	async getHolidays(year: number): Promise<HolidayEvent[]> {
+		if (!this.config.enabled) {
+			return [];
+		}
+
+		const cached = this.cache.get(year);
+		if (cached) {
+			return cached.events;
+		}
+
+		const storedCache = await this.loadFromStorage(year);
+		if (storedCache) {
+			this.cache.set(year, storedCache);
+			return storedCache.events;
+		}
+
+		const events = await this.provider.list(year);
+		const entry: CachedHolidays = {
+			year,
+			events,
+			timestamp: Date.now(),
+		};
+
+		this.cache.set(year, entry);
+		await this.saveToStorage(year, entry);
+		return events;
+	}
+
+	async getHolidaysForRange(start: DateTime, end: DateTime): Promise<CalendarEvent[]> {
+		if (!this.config.enabled) {
+			return [];
+		}
+
+		const years = Array.from({ length: end.year - start.year + 1 }, (_, i) => start.year + i);
+		const allHolidays = (await Promise.all(years.map((year) => this.getHolidays(year)))).flat();
+
+		return allHolidays
+			.filter((h) => {
+				const holidayDate = DateTime.fromISO(h.date, { zone: "utc" });
+				return holidayDate >= start && holidayDate < end;
+			})
+			.map((h) => this.holidayToCalendarEvent(h));
+	}
+
+	private holidayToCalendarEvent(holiday: HolidayEvent): CalendarEvent {
+		return {
+			id: holiday.id,
+			title: holiday.name,
+			type: "allDay",
+			start: holiday.date,
+			allDay: true,
+			ref: {
+				filePath: `holiday:${holiday.id}`,
+			},
+			isVirtual: true,
+			skipped: false,
+			meta: {
+				holidayType: holiday.type,
+				holidaySource: "date-holidays",
+			},
+		};
+	}
+
+	private getCacheKey(year: number): string {
+		return `${this.CACHE_KEY_PREFIX}:${this.config.country}:${this.config.state ?? ""}:${this.config.region ?? ""}:${year}`;
+	}
+
+	private async loadFromStorage(year: number): Promise<CachedHolidays | null> {
+		try {
+			const key = this.getCacheKey(year);
+			const data = await this.app.loadLocalStorage(key);
+			if (data) {
+				const parsed = JSON.parse(data) as CachedHolidays;
+				// Cache for 30 days
+				if (Date.now() - parsed.timestamp < 30 * 24 * 60 * 60 * 1000) {
+					return parsed;
+				}
+			}
+		} catch (error) {
+			console.error("Error loading holiday cache:", error);
+		}
+		return null;
+	}
+
+	private async saveToStorage(year: number, data: CachedHolidays): Promise<void> {
+		try {
+			const key = this.getCacheKey(year);
+			await this.app.saveLocalStorage(key, JSON.stringify(data));
+		} catch (error) {
+			console.error("Error saving holiday cache:", error);
+		}
+	}
+
+	private clearStoredCache(): void {
+		// Clear all stored caches when config changes
+		// Note: This is a best-effort cleanup
+		for (let year = 2020; year <= 2030; year++) {
+			const key = this.getCacheKey(year);
+			this.app
+				.loadLocalStorage(key)
+				.then(() => {
+					// If it exists, delete it
+					// Note: Obsidian doesn't have a delete method, so we just won't use it
+				})
+				.catch(() => {
+					// Ignore errors
+				});
+		}
+	}
+
+	clear(): void {
+		this.cache.clear();
+	}
+}

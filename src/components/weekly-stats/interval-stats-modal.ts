@@ -85,7 +85,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		await this.renderContent();
 	}
 
-	protected renderContent(): Promise<void> {
+	protected async renderContent(): Promise<void> {
 		const { contentEl } = this;
 
 		if (this.contentContainer) {
@@ -96,7 +96,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 		const { start, end } = this.intervalConfig.getBounds(this.currentDate);
 
-		const events = this.bundle.eventStore.getEvents({
+		const events = await this.bundle.eventStore.getEvents({
 			start: start.toISOString(),
 			end: end.toISOString(),
 		});
