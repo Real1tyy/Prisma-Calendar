@@ -8,6 +8,13 @@ All notable changes to this project will be documented here.
 
 ### Added
 
+- **Settings Reorganization**: The settings panel now has 10 tabs (up from 7) for better organization. Three new tabs have been added:
+  - **Event Groups**: Recurring event settings, propagation toggles (recurring, name series, category series), shared propagation settings, and event markers — all extracted from the Calendar tab.
+  - **Configuration**: Desktop/mobile toolbar button toggles, batch selection button toggles, and context menu item toggles — extracted from the Calendar tab.
+  - **Integrations**: ICS export/import, CalDAV settings, ICS URL subscriptions, and holiday settings — extracted from the General tab.
+
+  The **General** tab now focuses on directory, parsing, stopwatch, statistics, and event presets. The **Calendar** tab now focuses purely on display options (views, density, overlap, time grid, etc.). Tab order: General, Properties, Calendar, Event Groups, Configuration, Notifications, Rules, Categories, Bases, Integrations.
+
 - **Settings Search**: A search input to the right of the section tabs (General, Properties, Calendar, etc.) lets you instantly filter settings across all sections. Matching settings are shown with their section headings, while non-matching items are hidden. Supports debounced input (300ms), immediate filtering on Enter or blur, and preserves focus while filtering. Clear the search or click any tab to return to normal tabbed navigation.
 
 - **Holiday calendar integration**: Display public holidays on your calendar with automatic detection based on country, state, and region. Support for multiple holiday types (public, bank, school, observance, optional), intelligent caching per year, customizable timezone, and works completely offline. Configure in Settings → Calendar Name → General (scroll to bottom). See the [Holidays](./features/holidays) documentation for full details.
@@ -51,6 +58,8 @@ All notable changes to this project will be documented here.
 - **Incremental Calendar Rendering**: The calendar no longer destroys and recreates every DOM element on each update. Changes are now diffed against the previous state — only added, removed, or modified events touch the DOM. Editing a single event in a view with hundreds of events now updates just that one element instead of rebuilding all of them. Settings changes that don't affect event rendering (hour range, weekends, slot duration) no longer trigger any event refresh at all.
 
 ### Fixed
+
+- **Sticky Toolbar + Sticky Headers Conflict**: When both "Sticky day headers" and "Sticky all-day events" are enabled, the top toolbar (including the Untracked Events dropdown) now stays visible while scrolling. Sticky day headers and the all-day section are now offset dynamically to sit below the toolbar instead of overlapping/pushing it away.
 
 - **Zoom Level Text Duplication**: Fixed a race condition that caused the zoom level button text to duplicate (e.g., "Zoom: 30 minutes, 30 minutes") when changing viewports, intervals, or navigating the calendar.
 

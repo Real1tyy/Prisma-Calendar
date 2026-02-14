@@ -1,7 +1,10 @@
 export { BasesSettings } from "./bases";
 export { CalendarSettings } from "./calendar";
 export { CategoriesSettings } from "./categories";
+export { ConfigurationSettings } from "./toolbar-config";
+export { EventGroupsSettings } from "./event-groups";
 export { GeneralSettings } from "./general";
+export { IntegrationsSettings } from "./integrations";
 export { NotificationsSettings } from "./notifications";
 export { PropertiesSettings } from "./properties";
 export { RulesSettings } from "./rules";

@@ -2,7 +2,7 @@
 
 ![Settings Panel](/img/settings.png)
 
-*Prisma Calendar settings with tabs for General, Properties, Calendar, Notifications, Rules, Categories, and Bases*
+*Prisma Calendar settings with tabs for General, Properties, Calendar, Event Groups, Configuration, Notifications, Rules, Categories, Bases, and Integrations*
 
 ## Settings Search
 
@@ -34,7 +34,6 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 
 - **Directory**: folder to scan for events and create new notes in (supports nested folders)
 - **Template path**: optional Templater template used when creating events
-- **Export folder**: folder where ICS export files are saved (default: `Prisma-Exports`)
 
 ### Parsing
 
@@ -317,6 +316,8 @@ The sticky header options improve navigation in long calendars by keeping contex
 - **Event stack limit**: maximum events to stack before showing "+ more" link (1-10, default: 1)
 - **Desktop max events per day**: maximum events to show per day on desktop before showing "+more" (0-10, 0 = unlimited, default: 0)
 - **Mobile max events per day**: maximum events to show per day on mobile before showing "+more" (0-10, default: 4)
+
+## Configuration Settings
 
 ### Toolbar Buttons
 
@@ -701,7 +702,9 @@ Break: 60  # 1 hour lunch break
 - Track actual meeting time excluding breaks
 - Accurate time tracking for billing purposes
 
-## Recurring Instances (Generation Horizon)
+## Event Groups Settings
+
+### Recurring Instances (Generation Horizon)
 
 - **Future instances count**: how many future notes to pre-generate (1–52, default: 2)
 - Beyond that, events appear as read-only virtual items to keep your vault light
@@ -716,7 +719,7 @@ Visual indicators appear in the top-right corner of recurring events to distingu
 - **Show physical recurring marker**: Toggle visibility of markers on physical recurring instances (default: enabled)
 - **Physical recurring marker**: Symbol/emoji displayed on physical recurring instance events (default: 🔄). Use any Unicode character or emoji.
 
-Customize markers in Settings → Calendar → Recurring events → Event markers to use your preferred symbols (e.g., ⚙️, 🔁, 📍, ⭐, 📌) or disable them if you prefer a cleaner look.
+Customize markers in Settings → Event Groups → Event markers to use your preferred symbols (e.g., ⚙️, 🔁, 📍, ⭐, 📌) or disable them if you prefer a cleaner look.
 
 ### Frontmatter Propagation
 
@@ -765,3 +768,34 @@ The system intelligently detects three types of changes:
 - **Deleted**: Properties removed from the source event
 
 Only the specific changes detected are propagated, preserving any instance-specific properties that weren't changed in the source. Loop prevention ensures that propagated changes don't trigger further cascading propagation.
+
+## Integrations Settings
+
+Integration settings for connecting with external calendar services and importing/exporting events. Access via Settings → Integrations.
+
+### ICS Export/Import
+
+- **Export folder**: folder where exported .ics files are saved (default: `Prisma-Exports`)
+- **Export calendar**: export all events to an .ics file
+- **Import .ics**: import events from an .ics file
+
+See the [Integrations](./features/integrations) documentation for full details.
+
+### CalDAV
+
+Configure CalDAV accounts for two-way sync with external calendar servers. See the [CalDAV](./features/integrations#caldav) documentation.
+
+### ICS URL Subscriptions
+
+Subscribe to external calendars via public ICS URLs for automatic periodic syncing. See the [ICS Subscriptions](./features/integrations#ics-url-subscriptions) documentation.
+
+### Holidays
+
+- **Enable holidays**: display public holidays on the calendar as virtual read-only events
+- **Country**: ISO country code (e.g., US, GB, DE, CA)
+- **State/Province**: optional state or province code
+- **Region**: optional region code for more specific holidays
+- **Holiday types**: select which types of holidays to display (public, bank, school, observance, optional)
+- **Timezone**: optional timezone for holiday calculations
+
+See the [Holidays](./features/holidays) documentation for full details.

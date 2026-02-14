@@ -6,7 +6,10 @@ import {
 	BasesSettings,
 	CalendarSettings,
 	CategoriesSettings,
+	ConfigurationSettings,
+	EventGroupsSettings,
 	GeneralSettings,
+	IntegrationsSettings,
 	NotificationsSettings,
 	PropertiesSettings,
 	RulesSettings,
@@ -35,13 +38,20 @@ export class SingleCalendarSettings {
 		mainSettingsStore: SettingsStore
 	) {
 		this.sections = [
-			{ id: "general", label: "General", settings: new GeneralSettings(settingsStore, app, plugin, mainSettingsStore) },
+			{ id: "general", label: "General", settings: new GeneralSettings(settingsStore, app, plugin) },
 			{ id: "properties", label: "Properties", settings: new PropertiesSettings(settingsStore) },
 			{ id: "calendar", label: "Calendar", settings: new CalendarSettings(settingsStore) },
+			{ id: "event-groups", label: "Event Groups", settings: new EventGroupsSettings(settingsStore) },
+			{ id: "configuration", label: "Configuration", settings: new ConfigurationSettings(settingsStore) },
 			{ id: "notifications", label: "Notifications", settings: new NotificationsSettings(settingsStore) },
 			{ id: "rules", label: "Rules", settings: new RulesSettings(settingsStore) },
 			{ id: "categories", label: "Categories", settings: new CategoriesSettings(settingsStore, plugin) },
 			{ id: "bases", label: "Bases", settings: new BasesSettings(settingsStore) },
+			{
+				id: "integrations",
+				label: "Integrations",
+				settings: new IntegrationsSettings(settingsStore, app, plugin, mainSettingsStore),
+			},
 		];
 	}
 
