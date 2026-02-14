@@ -4,6 +4,14 @@
 
 *Prisma Calendar settings with tabs for General, Properties, Calendar, Notifications, Rules, Categories, and Bases*
 
+## Settings Search
+
+A search input sits to the right of the section tabs (General, Properties, Calendar, etc.). Type a keyword to filter settings across **all sections** at once — only matching settings and their headings are shown. This is useful when you know the name of a setting but not which tab it's under.
+
+- **Debounced**: filters automatically after a short delay (300ms) while typing
+- **Enter**: applies the filter immediately
+- **Clear**: remove the search text or click any tab to return to normal tabbed navigation
+
 ## Calendar Management
 
 - Add, clone, or delete calendars from Settings → Prisma Calendar

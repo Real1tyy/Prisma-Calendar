@@ -1478,8 +1478,45 @@
 	flex-shrink: 0;
 }
 
+/* Settings Search */
+.prisma-settings-search {
+	margin-left: auto;
+	flex-shrink: 0;
+}
+
+.prisma-settings-search-input {
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	width: 150px;
+	transition: width 0.2s ease;
+}
+
+.prisma-settings-search-input:focus {
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+	width: 200px;
+}
+
+.prisma-settings-search-section {
+	margin-bottom: 8px;
+}
+
+.prisma-settings-search-no-results {
+	padding: 24px;
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
+}
+
 /* Settings Tabs */
 .prisma-settings-nav {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	margin-bottom: 24px;
 	border-bottom: 1px solid var(--background-modifier-border);
 	padding-bottom: 16px;

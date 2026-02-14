@@ -8,6 +8,8 @@ All notable changes to this project will be documented here.
 
 ### Added
 
+- **Settings Search**: A search input to the right of the section tabs (General, Properties, Calendar, etc.) lets you instantly filter settings across all sections. Matching settings are shown with their section headings, while non-matching items are hidden. Supports debounced input (300ms), immediate filtering on Enter or blur, and preserves focus while filtering. Clear the search or click any tab to return to normal tabbed navigation.
+
 - **Holiday calendar integration**: Display public holidays on your calendar with automatic detection based on country, state, and region. Support for multiple holiday types (public, bank, school, observance, optional), intelligent caching per year, customizable timezone, and works completely offline. Configure in Settings → Calendar Name → General (scroll to bottom). See the [Holidays](./features/holidays) documentation for full details.
 
 - **Calendar Title Property**: Prisma Calendar now automatically assigns a **Calendar Title** property (default: `Calendar Title`) to event files. The property stores a wiki link with the ZettelID and recurring instance dates stripped from the filename (e.g., `[[Events/Meeting-20250106143022|Meeting]]`). This pre-computed clean title is used everywhere — calendar view, Bases views, modals, notifications, and context menus — eliminating the need for runtime stripping. The property is always kept in sync automatically. See the [Calendar Title](./features/calendar-title) docs for details.
