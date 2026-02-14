@@ -90,7 +90,7 @@
 
 /* Header styling */
 .prisma-calendar-container .fc-header-toolbar.fc-toolbar {
-	margin-bottom: 0.75rem;
+	margin-bottom: 0;
 	position: sticky;
 	top: 0;
 	z-index: 20;
@@ -801,8 +801,9 @@
    FullCalendar's built-in stickyHeaderDates handles day/date headers.
    This CSS handles making the all-day event section sticky as well. */
 .prisma-calendar-container.prisma-sticky-day-headers .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
-	top: var(--prisma-sticky-toolbar-offset);
+	top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
 	z-index: 12;
+	border-top: 1px solid var(--background-modifier-border);
 }
 
 .prisma-calendar-container.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type {
@@ -814,12 +815,20 @@
 /* Position all-day section below sticky day headers when both are enabled
    FullCalendar's sticky headers are at a higher z-index, so we position below them */
 .prisma-calendar-container.prisma-sticky-day-headers.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type {
-	top: calc(var(--prisma-sticky-toolbar-offset) + var(--prisma-sticky-day-header-height));
+	top: calc(var(--prisma-sticky-toolbar-offset) + var(--prisma-sticky-day-header-height) + 1px);
 }
 
 /* Position all-day section at top when only sticky all-day is enabled */
 .prisma-calendar-container.prisma-sticky-all-day-events:not(.prisma-sticky-day-headers) .fc-scrollgrid-section-body:first-of-type {
-	top: var(--prisma-sticky-toolbar-offset);
+	top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
+}
+
+/* Remove FullCalendar's extra divider row border between all-day and timed grid.
+   The sticky stack already provides the intended single separator line. */
+.prisma-calendar-container .fc-timegrid-divider.fc-cell-shaded {
+	background: transparent;
+	border-width: 0;
+	padding: 0;
 }
 
 /* Limit individual all-day event height and enable overflow

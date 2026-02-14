@@ -476,8 +476,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const toolbarEl = toolbar instanceof HTMLElement ? toolbar : null;
 		const toolbarRect = toolbarEl?.getBoundingClientRect();
 		const toolbarHeight = toolbarRect ? Math.round(toolbarRect.height) : 0;
-		const toolbarMarginBottom = toolbarEl ? Number.parseFloat(window.getComputedStyle(toolbarEl).marginBottom) || 0 : 0;
-		const stickyToolbarOffset = Math.round(toolbarHeight + toolbarMarginBottom);
+		const stickyToolbarOffset = Math.round(toolbarHeight);
 
 		const dayHeaderCell = this.container.querySelector(".fc-col-header-cell");
 		const dayHeaderEl = dayHeaderCell instanceof HTMLElement ? dayHeaderCell : null;
