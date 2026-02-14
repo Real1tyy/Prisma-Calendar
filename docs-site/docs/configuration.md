@@ -116,6 +116,7 @@ Tell Prisma Calendar which frontmatter keys you use.
 - **Location property**: frontmatter property name for event location (default: `Location`), a single string (e.g., "Conference Room A", "Zoom"). Shown in the Create/Edit Event modal when configured. **ICS Integration**: Location is mapped to the standard `LOCATION` field when exporting to ICS format and automatically imported from `LOCATION` fields in ICS files from external calendars (Google Calendar, Outlook, Apple Calendar, etc.).
 - **Participants property**: frontmatter property name for event participants (default: `Participants`), an array of strings. In the modal, enter comma-separated names (e.g., "Alice, Bob, Charlie"). Stored as a YAML list in frontmatter. **ICS Integration**: Participants are exported as multiple `ATTENDEE` fields with RFC 5545-compliant formatting (including `mailto:` URIs and CN parameters) and imported from `ATTENDEE` fields in ICS files. Full round-trip compatibility with external calendar applications.
 - **Break property**: frontmatter property name for break time in minutes (default: `Break`), subtracted from duration in statistics
+- **Icon property**: frontmatter property name for event icon override (default: `Icon`). Accepts any emoji or text string (e.g., `🎉`, `📅`, `★`). The icon appears in the top-right corner of the event chip on the calendar, taking highest precedence over CalDAV account icons, ICS subscription icons, and recurring event markers. Shown as an input field in the Create/Edit Event modal when configured. See [Event Icons](./features/event-icons) for details.
 - **CalDAV property**: property name for CalDAV sync metadata (default: `CalDAV`)
 
 ### Recurring Event Properties
@@ -660,6 +661,7 @@ Save reusable event templates with pre-filled values for quick event creation.
 | Date/Start/End | ✅ | Date and time values |
 | Categories | ✅ | Category assignment |
 | Location | ✅ | Event location (single string) |
+| Icon | ✅ | Event icon override (emoji or text) |
 | Participants | ✅ | Event participants (comma-separated) |
 | Recurring settings | ✅ | RRule type, weekdays, future count |
 | Custom properties | ✅ | Any additional frontmatter |

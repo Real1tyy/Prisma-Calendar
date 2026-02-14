@@ -8,6 +8,8 @@ All notable changes to this project will be documented here.
 
 ### Added
 
+- **Event Icon Property**: Events can now have a custom icon (emoji or text) displayed on the calendar via a configurable frontmatter property (default: `Icon`). The icon takes highest precedence — it overrides CalDAV account icons, ICS subscription icons, and recurring event markers. Set it directly in frontmatter (e.g., `Icon: 🎉`) or use the new **Icon** field in the Create/Edit Event modal. Icons are also saved in event presets and restored from minimized modals. Configure the property name in Settings → Properties → "Icon property". See the [Event Icons](./features/event-icons) documentation for full details.
+
 - **Global event creation commands**: `Create new event` and `Create new event with stopwatch` now work from anywhere in Obsidian (not only when a calendar view is focused). They use the last opened Prisma calendar, with fallback to the first enabled calendar.
 
 - **Untracked event creation command**: New `Create new untracked event` command opens a minimal modal (name only) and creates a Prisma note with ZettelID while keeping `Start Date`, `End Date`, `Date`, and `All Day` empty.

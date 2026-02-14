@@ -128,6 +128,7 @@ export class EventEditModal extends BaseEventModal {
 		this.loadSkipData();
 		this.loadNotificationData();
 		this.loadLocationData();
+		this.loadIconData();
 		this.loadParticipantsData();
 		this.loadCustomPropertiesData();
 
@@ -192,6 +193,14 @@ export class EventEditModal extends BaseEventModal {
 
 		const locationValue = this.originalFrontmatter[settings.locationProp];
 		this.locationInput.value = typeof locationValue === "string" ? locationValue : "";
+	}
+
+	private loadIconData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.iconProp || !this.iconInput) return;
+
+		const iconValue = this.originalFrontmatter[settings.iconProp];
+		this.iconInput.value = typeof iconValue === "string" ? iconValue : "";
 	}
 
 	private loadParticipantsData(): void {

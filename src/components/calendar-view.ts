@@ -1733,6 +1733,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const displayData = event.extendedProps.frontmatterDisplayData;
 
+		// User-set icon takes highest precedence
+		const userIcon = displayData?.[settings.iconProp];
+		if (typeof userIcon === "string" && userIcon.trim()) {
+			return userIcon.trim();
+		}
+
 		const caldavMetadata = displayData?.[settings.caldavProp] as { accountId?: string } | undefined;
 		const icsSubscriptionMetadata = displayData?.[settings.icsSubscriptionProp] as
 			| { subscriptionId?: string }

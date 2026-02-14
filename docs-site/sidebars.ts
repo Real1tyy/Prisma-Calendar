@@ -28,6 +28,7 @@ const sidebars: SidebarsConfig = {
 				"features/global-search",
 				"features/notifications",
 				"features/event-previews",
+				"features/event-icons",
 				"features/zettelid-naming",
 				"features/batch-operations",
 				"features/event-skipping",

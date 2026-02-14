@@ -436,6 +436,7 @@ const getPrismaInternalProps = (settings: SingleCalendarConfig): Set<string> => 
 			settings.ignoreRecurringProp,
 			settings.locationProp,
 			settings.participantsProp,
+			settings.iconProp,
 		].filter((prop) => prop !== "")
 	);
 };

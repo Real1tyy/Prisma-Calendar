@@ -122,6 +122,7 @@ export const SETTINGS_DEFAULTS = {
 	DEFAULT_IGNORE_RECURRING_PROP: "Ignore Recurring",
 	DEFAULT_CALDAV_PROP: "CalDAV",
 	DEFAULT_ICS_SUBSCRIPTION_PROP: "ICSSubscription",
+	DEFAULT_ICON_PROP: "Icon",
 	DEFAULT_BASES_VIEW_TYPE: "cards",
 
 	// Notification Settings

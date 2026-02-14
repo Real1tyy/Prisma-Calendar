@@ -201,6 +201,13 @@ export class PropertiesSettings {
 		});
 
 		this.ui.addText(containerEl, {
+			key: "iconProp",
+			name: "Icon property",
+			desc: "Frontmatter property name for event icon override (emoji or text, takes precedence over integration and recurring icons)",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_ICON_PROP,
+		});
+
+		this.ui.addText(containerEl, {
 			key: "minutesBeforeProp",
 			name: "Minutes before property",
 			desc: "Frontmatter property name for per-event notification times (timed events)",

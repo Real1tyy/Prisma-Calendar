@@ -96,6 +96,7 @@ export abstract class BaseEventModal extends Modal {
 	protected categoriesContainer?: HTMLElement;
 	protected selectedCategories: string[] = [];
 	protected locationInput!: HTMLInputElement;
+	protected iconInput!: HTMLInputElement;
 	protected participantsInput!: HTMLInputElement;
 	protected breakInput!: HTMLInputElement;
 	protected markAsDoneCheckbox!: HTMLInputElement;
@@ -337,6 +338,10 @@ export abstract class BaseEventModal extends Modal {
 			this.locationInput.value = "";
 		}
 
+		if (this.iconInput) {
+			this.iconInput.value = "";
+		}
+
 		if (this.participantsInput) {
 			this.participantsInput.value = "";
 		}
@@ -396,6 +401,10 @@ export abstract class BaseEventModal extends Modal {
 
 		if (preset.location !== undefined && this.locationInput) {
 			this.locationInput.value = preset.location;
+		}
+
+		if (preset.icon !== undefined && this.iconInput) {
+			this.iconInput.value = preset.icon;
 		}
 
 		if (preset.participants !== undefined && this.participantsInput) {
@@ -575,6 +584,7 @@ export abstract class BaseEventModal extends Modal {
 		this.createRecurringEventFields(contentEl);
 		this.createCategoryField(contentEl);
 		this.createLocationField(contentEl);
+		this.createIconField(contentEl);
 		this.createParticipantsField(contentEl);
 		this.createBreakField(contentEl);
 		this.createMarkAsDoneField(contentEl);
@@ -630,6 +640,24 @@ export abstract class BaseEventModal extends Modal {
 			cls: cls("setting-item-control"),
 			attr: {
 				placeholder: "Event location",
+			},
+		});
+	}
+
+	private createIconField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.iconProp) return;
+
+		const iconContainer = contentEl.createDiv(cls("setting-item"));
+		iconContainer.createEl("div", {
+			text: "Icon",
+			cls: cls("setting-item-name"),
+		});
+		this.iconInput = iconContainer.createEl("input", {
+			type: "text",
+			cls: cls("setting-item-control"),
+			attr: {
+				placeholder: "Event icon (emoji or text)",
 			},
 		});
 	}
@@ -1467,6 +1495,15 @@ export abstract class BaseEventModal extends Modal {
 			}
 		}
 
+		if (settings.iconProp && this.iconInput) {
+			const iconValue = this.iconInput.value.trim();
+			if (iconValue) {
+				preservedFrontmatter[settings.iconProp] = iconValue;
+			} else {
+				delete preservedFrontmatter[settings.iconProp];
+			}
+		}
+
 		if (settings.participantsProp && this.participantsInput) {
 			const participantsList = parseIntoList(this.participantsInput.value).filter((p) => p.trim());
 			assignListToFrontmatter(preservedFrontmatter, settings.participantsProp, participantsList);
@@ -1688,6 +1725,10 @@ export abstract class BaseEventModal extends Modal {
 
 		if (this.locationInput?.value.trim()) {
 			presetData.location = this.locationInput.value.trim();
+		}
+
+		if (this.iconInput?.value.trim()) {
+			presetData.icon = this.iconInput.value.trim();
 		}
 
 		if (this.participantsInput?.value.trim()) {

@@ -39,6 +39,7 @@ const EventPresetSchema = z
 		notifyBefore: z.number().int().nonnegative().optional(), // Override notification timing (minutes for timed, days for all-day)
 		markAsDone: z.boolean().optional(), // Mark event as done
 		skip: z.boolean().optional(), // Skip/hide event from calendar
+		icon: z.string().optional(), // Event icon override (emoji or text)
 		rruleType: z.string().optional(), // Recurrence type
 		rruleSpec: z.string().optional(), // Weekdays for recurring events
 		futureInstancesCount: z.number().int().positive().optional(), // Per-preset override of future instances count
@@ -100,6 +101,7 @@ const PropsSettingsSchema = z
 		ignoreRecurringProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_IGNORE_RECURRING_PROP), // property name for ignoring duplicated recurring events from future instance generation
 		caldavProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CALDAV_PROP), // property name for CalDAV sync metadata
 		icsSubscriptionProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_ICS_SUBSCRIPTION_PROP), // property name for ICS subscription sync metadata
+		iconProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_ICON_PROP), // property name for event icon override (emoji or text, takes precedence over integration icons)
 		basesViewProperties: z.array(z.string()).catch([]), // comma-separated list of properties to include in bases view for category events
 		basesViewType: z.enum(["table", "cards", "list"]).catch(SETTINGS_DEFAULTS.DEFAULT_BASES_VIEW_TYPE), // view type for bases views (table, cards, or list)
 	})
