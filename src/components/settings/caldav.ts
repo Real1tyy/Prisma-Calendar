@@ -42,8 +42,15 @@ export class CalDAVSettings {
 	}
 
 	private renderAccountsList(containerEl: HTMLElement): void {
+		const wrapper = containerEl.createDiv(cls("caldav-accounts-wrapper"));
+		this.renderAccountsListContent(wrapper);
+	}
+
+	private renderAccountsListContent(wrapper: HTMLElement): void {
+		wrapper.empty();
+
 		const caldavSettings = this.settingsStore.currentSettings.caldav;
-		const accountsContainer = containerEl.createDiv(cls("caldav-accounts-container"));
+		const accountsContainer = wrapper.createDiv(cls("caldav-accounts-container"));
 
 		if (caldavSettings.accounts.length === 0) {
 			const emptyState = accountsContainer.createDiv(cls("caldav-accounts-empty"));
@@ -54,13 +61,13 @@ export class CalDAVSettings {
 			}
 		}
 
-		const addButton = containerEl.createEl("button", {
+		const addButton = wrapper.createEl("button", {
 			text: "Add account",
 			cls: cls("caldav-add-account-button"),
 		});
 		addButton.addEventListener("click", () => {
 			new AddCalDAVAccountModal(this.app, this.settingsStore, this.calendarId, () => {
-				this.refreshAccountsList(containerEl);
+				this.refreshAccountsList(wrapper);
 			}).open();
 		});
 	}
@@ -204,16 +211,8 @@ export class CalDAVSettings {
 		this.refreshAccountsList(container.parentElement!);
 	}
 
-	private refreshAccountsList(parentContainer: HTMLElement): void {
-		const accountsContainer = parentContainer.querySelector(`.${cls("caldav-accounts-container")}`);
-		if (accountsContainer) {
-			accountsContainer.remove();
-		}
-		const addButton = parentContainer.querySelector(`.${cls("caldav-add-account-button")}`);
-		if (addButton) {
-			addButton.remove();
-		}
-		this.renderAccountsList(parentContainer);
+	private refreshAccountsList(wrapper: HTMLElement): void {
+		this.renderAccountsListContent(wrapper);
 	}
 }
 

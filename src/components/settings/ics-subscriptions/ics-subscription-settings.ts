@@ -37,8 +37,15 @@ export class ICSSubscriptionSettings {
 	}
 
 	private renderSubscriptionsList(containerEl: HTMLElement): void {
+		const wrapper = containerEl.createDiv(cls("caldav-accounts-wrapper"));
+		this.renderSubscriptionsListContent(wrapper);
+	}
+
+	private renderSubscriptionsListContent(wrapper: HTMLElement): void {
+		wrapper.empty();
+
 		const icsSubSettings = this.settingsStore.currentSettings.icsSubscriptions;
-		const subsContainer = containerEl.createDiv(cls("caldav-accounts-container"));
+		const subsContainer = wrapper.createDiv(cls("caldav-accounts-container"));
 
 		if (icsSubSettings.subscriptions.length === 0) {
 			const emptyState = subsContainer.createDiv(cls("caldav-accounts-empty"));
@@ -49,13 +56,13 @@ export class ICSSubscriptionSettings {
 			}
 		}
 
-		const addButton = containerEl.createEl("button", {
+		const addButton = wrapper.createEl("button", {
 			text: "Add subscription",
 			cls: cls("caldav-add-account-button"),
 		});
 		addButton.addEventListener("click", () => {
 			new AddICSSubscriptionModal(this.app, this.settingsStore, this.calendarId, () => {
-				this.refreshSubscriptionsList(containerEl);
+				this.refreshSubscriptionsList(wrapper);
 			}).open();
 		});
 	}
@@ -192,15 +199,7 @@ export class ICSSubscriptionSettings {
 		this.refreshSubscriptionsList(container.parentElement!);
 	}
 
-	private refreshSubscriptionsList(parentContainer: HTMLElement): void {
-		const subsContainer = parentContainer.querySelector(`.${cls("caldav-accounts-container")}`);
-		if (subsContainer) {
-			subsContainer.remove();
-		}
-		const addButton = parentContainer.querySelector(`.${cls("caldav-add-account-button")}`);
-		if (addButton) {
-			addButton.remove();
-		}
-		this.renderSubscriptionsList(parentContainer);
+	private refreshSubscriptionsList(wrapper: HTMLElement): void {
+		this.renderSubscriptionsListContent(wrapper);
 	}
 }
