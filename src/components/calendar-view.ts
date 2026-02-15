@@ -1257,27 +1257,29 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					this.batchSelectionManager?.handleEventMount(info.event.id, info.el);
 				}
 				this.handleEventMount(info);
-			},
 
-			eventMouseEnter: (info) => {
-				this.lastFocusedEventInfo = info.event;
-
-				// Always add context menu for all events (including virtual)
+				// Context menu — registered once per element (eventDidMount), not on every hover
 				info.el.addEventListener("contextmenu", (e) => {
 					e.preventDefault();
 					this.eventContextMenu.show(e, info, info.el, this.container);
 				});
 
-				// Only add hover preview for non-virtual events
+				// Hover preview — registered once per element for non-virtual events
 				if (!info.event.extendedProps.isVirtual) {
-					const settings = this.bundle.settingsStore.currentSettings;
 					const filePath = info.event.extendedProps.filePath as string | undefined;
-					if (settings.enableEventPreview && filePath) {
+					if (filePath) {
 						info.el.addEventListener("mouseenter", (e) => {
-							emitHover(this.app, this.container, info.el, e, filePath, this.bundle.calendarId);
+							const settings = this.bundle.settingsStore.currentSettings;
+							if (settings.enableEventPreview) {
+								emitHover(this.app, this.container, info.el, e, filePath, this.bundle.calendarId);
+							}
 						});
 					}
 				}
+			},
+
+			eventMouseEnter: (info) => {
+				this.lastFocusedEventInfo = info.event;
 			},
 
 			eventDragStart: (info) => {
