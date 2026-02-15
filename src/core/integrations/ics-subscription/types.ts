@@ -4,7 +4,7 @@ export const ICSSubscriptionSchema = z
 	.object({
 		id: z.string(),
 		name: z.string().min(1),
-		url: z.url(),
+		urlSecretName: z.string().catch(""),
 		enabled: z.boolean().catch(true),
 		calendarId: z.string().min(1),
 		syncIntervalMinutes: z.number().int().min(1).max(1440).catch(60),

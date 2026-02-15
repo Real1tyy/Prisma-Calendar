@@ -1,6 +1,6 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
-import { type App, Modal, Notice, Setting } from "obsidian";
+import { type App, Modal, Notice, SecretComponent, Setting } from "obsidian";
 import { CALDAV_DEFAULTS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import {
@@ -221,7 +221,7 @@ class AddCalDAVAccountModal extends Modal {
 	private name = "";
 	private serverUrl = "";
 	private username = "";
-	private password = "";
+	private passwordSecretName = "";
 	private syncIntervalMinutes: number = CALDAV_DEFAULTS.SYNC_INTERVAL_MINUTES;
 	private timezone: string = "UTC";
 	private authMethod: "Basic" | "Oauth" = "Basic";
@@ -365,17 +365,13 @@ class AddCalDAVAccountModal extends Modal {
 
 		new Setting(formContainer)
 			.setName("Password / app password")
-			.setDesc("Use an app-specific password for cloud providers")
-			.addText((text) => {
-				text.inputEl.type = "password";
-				text
-					.setPlaceholder("••••••••")
-					.setValue(this.password)
-					.onChange((value) => {
-						this.password = value;
-						this.testPassed = false;
-					});
-			});
+			.setDesc("Select a secret from SecretStorage. Use an app-specific password for cloud providers.")
+			.addComponent((el) =>
+				new SecretComponent(this.app, el).setValue(this.passwordSecretName).onChange((value) => {
+					this.passwordSecretName = value;
+					this.testPassed = false;
+				})
+			);
 
 		const testButton = formContainer.createEl("button", {
 			text: "Test connection & discover calendars",
@@ -424,8 +420,8 @@ class AddCalDAVAccountModal extends Modal {
 	}
 
 	private async testConnection(button: HTMLButtonElement): Promise<void> {
-		if (!this.serverUrl || !this.username || !this.password) {
-			new Notice("Please fill in server address, username, and password");
+		if (!this.serverUrl || !this.username || !this.passwordSecretName) {
+			new Notice("Please fill in server address, username, and select a password secret");
 			return;
 		}
 
@@ -433,14 +429,14 @@ class AddCalDAVAccountModal extends Modal {
 		button.setText("Testing...");
 
 		try {
-			const result = await CalDAVClientService.testConnection({
+			const result = await CalDAVClientService.testConnection(this.app, {
 				id: "test",
 				name: this.name || "Test",
 				serverUrl: this.serverUrl,
 				authMethod: this.authMethod,
 				credentials: {
 					username: this.username,
-					password: this.password,
+					passwordSecretName: this.passwordSecretName,
 				},
 				enabled: true,
 				calendarId: this.calendarId,
@@ -470,7 +466,7 @@ class AddCalDAVAccountModal extends Modal {
 	}
 
 	private async saveAccount(): Promise<void> {
-		if (!this.name || !this.serverUrl || !this.username || !this.password) {
+		if (!this.name || !this.serverUrl || !this.username || !this.passwordSecretName) {
 			new Notice("Please fill in all required fields");
 			return;
 		}
@@ -487,7 +483,7 @@ class AddCalDAVAccountModal extends Modal {
 			authMethod: this.authMethod,
 			credentials: {
 				username: this.username,
-				password: this.password,
+				passwordSecretName: this.passwordSecretName,
 			},
 			enabled: true,
 			calendarId: this.calendarId,
@@ -693,7 +689,7 @@ class EditCalDAVAccountModal extends Modal {
 		button.setText("Refreshing...");
 
 		try {
-			const client = new CalDAVClientService(this.account);
+			const client = new CalDAVClientService(this.app, this.account);
 			await client.initialize();
 			const calendars = await client.fetchCalendars();
 			client.destroy();

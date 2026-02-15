@@ -1,3 +1,4 @@
+import type { App } from "obsidian";
 import { patchGlobalFetch } from "./obsidian-fetch";
 
 import type {
@@ -28,22 +29,22 @@ export interface CalDAVFetchedEvent {
 function isOAuthCredentials(
 	credentials: CalDAVBasicCredentials | CalDAVOAuthCredentials
 ): credentials is CalDAVOAuthCredentials {
-	return "refreshToken" in credentials;
+	return "refreshTokenSecretName" in credentials;
 }
 
-function buildCredentials(account: CalDAVAccount): Record<string, string> {
+function buildCredentials(app: App, account: CalDAVAccount): Record<string, string> {
 	if (isOAuthCredentials(account.credentials)) {
 		return {
 			tokenUrl: account.credentials.tokenUrl,
 			username: account.credentials.username,
-			refreshToken: account.credentials.refreshToken,
+			refreshToken: app.secretStorage.getSecret(account.credentials.refreshTokenSecretName) ?? "",
 			clientId: account.credentials.clientId,
-			clientSecret: account.credentials.clientSecret,
+			clientSecret: app.secretStorage.getSecret(account.credentials.clientSecretSecretName) ?? "",
 		};
 	}
 	return {
 		username: account.credentials.username,
-		password: account.credentials.password,
+		password: app.secretStorage.getSecret(account.credentials.passwordSecretName) ?? "",
 	};
 }
 
@@ -63,8 +64,10 @@ async function getTsdav() {
 export class CalDAVClientService {
 	private client: InstanceType<typeof import("tsdav").DAVClient> | null = null;
 	private account: CalDAVAccount;
+	private app: App;
 
-	constructor(account: CalDAVAccount) {
+	constructor(app: App, account: CalDAVAccount) {
+		this.app = app;
 		this.account = account;
 	}
 
@@ -73,7 +76,7 @@ export class CalDAVClientService {
 
 		this.client = new DAVClient({
 			serverUrl: this.account.serverUrl,
-			credentials: buildCredentials(this.account),
+			credentials: buildCredentials(this.app, this.account),
 			authMethod: this.account.authMethod,
 			defaultAccountType: "caldav",
 		});
@@ -81,12 +84,12 @@ export class CalDAVClientService {
 		await this.client.login();
 	}
 
-	static async testConnection(account: CalDAVAccount): Promise<CalDAVConnectionResult> {
+	static async testConnection(app: App, account: CalDAVAccount): Promise<CalDAVConnectionResult> {
 		try {
 			const { DAVClient } = await getTsdav();
 			const client = new DAVClient({
 				serverUrl: account.serverUrl,
-				credentials: buildCredentials(account),
+				credentials: buildCredentials(app, account),
 				authMethod: account.authMethod,
 				defaultAccountType: "caldav",
 			});

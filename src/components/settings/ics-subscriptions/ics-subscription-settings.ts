@@ -95,7 +95,7 @@ export class ICSSubscriptionSettings {
 		nameEl.setText(subscription.name);
 
 		const urlEl = infoEl.createEl("div", { cls: cls("caldav-account-url") });
-		urlEl.setText(subscription.url);
+		urlEl.setText(subscription.urlSecretName ? `Secret: ${subscription.urlSecretName}` : "No URL configured");
 
 		const statusEl = infoEl.createEl("div", {
 			cls: `${cls("caldav-account-status")} ${subscription.enabled ? cls("caldav-status-enabled") : cls("caldav-status-disabled")}`,

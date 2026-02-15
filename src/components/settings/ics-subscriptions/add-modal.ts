@@ -1,6 +1,6 @@
 import { cls } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
-import { type App, Modal, Notice, Setting, requestUrl } from "obsidian";
+import { type App, Modal, Notice, SecretComponent, Setting, requestUrl } from "obsidian";
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
 import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
 import { parseICSContent } from "../../../core/integrations/ics-import";
@@ -9,7 +9,7 @@ import type { SettingsStore } from "../../../core/settings-store";
 
 export class AddICSSubscriptionModal extends Modal {
 	private name = "";
-	private url = "";
+	private urlSecretName = "";
 	private syncIntervalMinutes: number = ICS_SUBSCRIPTION_DEFAULTS.SYNC_INTERVAL_MINUTES;
 	private timezone: string = "UTC";
 	private testPassed = false;
@@ -47,16 +47,13 @@ export class AddICSSubscriptionModal extends Modal {
 
 		new Setting(formContainer)
 			.setName("ICS URL")
-			.setDesc("Public URL to an .ics calendar file")
-			.addText((text) => {
-				text
-					.setPlaceholder("https://example.com/calendar.ics")
-					.setValue(this.url)
-					.onChange((value) => {
-						this.url = value;
-						this.testPassed = false;
-					});
-			});
+			.setDesc("Select a secret from SecretStorage containing the ICS calendar URL")
+			.addComponent((el) =>
+				new SecretComponent(this.app, el).setValue(this.urlSecretName).onChange((value) => {
+					this.urlSecretName = value;
+					this.testPassed = false;
+				})
+			);
 
 		new Setting(formContainer)
 			.setName("Sync interval (minutes)")
@@ -121,8 +118,14 @@ export class AddICSSubscriptionModal extends Modal {
 	}
 
 	private async testUrl(button: HTMLButtonElement): Promise<void> {
-		if (!this.url) {
-			new Notice("Please enter an ICS URL");
+		if (!this.urlSecretName) {
+			new Notice("Please select an ICS URL secret");
+			return;
+		}
+
+		const url = this.app.secretStorage.getSecret(this.urlSecretName) ?? "";
+		if (!url) {
+			new Notice("Selected secret is empty");
 			return;
 		}
 
@@ -131,7 +134,7 @@ export class AddICSSubscriptionModal extends Modal {
 
 		try {
 			const response = await requestUrl({
-				url: this.url,
+				url,
 				method: "GET",
 			});
 
@@ -154,8 +157,8 @@ export class AddICSSubscriptionModal extends Modal {
 	}
 
 	private async saveSubscription(): Promise<void> {
-		if (!this.name || !this.url) {
-			new Notice("Please fill in name and URL");
+		if (!this.name || !this.urlSecretName) {
+			new Notice("Please fill in name and select a URL secret");
 			return;
 		}
 
@@ -167,7 +170,7 @@ export class AddICSSubscriptionModal extends Modal {
 		const subscription: ICSSubscription = {
 			id: nanoid(),
 			name: this.name,
-			url: this.url,
+			urlSecretName: this.urlSecretName,
 			enabled: true,
 			calendarId: this.calendarId,
 			syncIntervalMinutes: this.syncIntervalMinutes,

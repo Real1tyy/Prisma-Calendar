@@ -5,7 +5,7 @@ const CalDAVAuthMethodSchema = z.enum(["Basic", "Oauth"]);
 const CalDAVBasicCredentialsSchema = z
 	.object({
 		username: z.string().min(1),
-		password: z.string().min(1),
+		passwordSecretName: z.string().min(1),
 	})
 	.loose();
 
@@ -13,9 +13,9 @@ const CalDAVOAuthCredentialsSchema = z
 	.object({
 		tokenUrl: z.url(),
 		username: z.string().min(1),
-		refreshToken: z.string().min(1),
+		refreshTokenSecretName: z.string().min(1),
 		clientId: z.string().min(1),
-		clientSecret: z.string().min(1),
+		clientSecretSecretName: z.string().min(1),
 	})
 	.loose();
 

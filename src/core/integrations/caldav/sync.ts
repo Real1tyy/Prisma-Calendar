@@ -22,7 +22,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 		this.syncStateManager = options.syncStateManager;
 		this.account = options.account;
 		this.calendar = options.calendar;
-		this.client = new CalDAVClientService(this.account);
+		this.client = new CalDAVClientService(this.app, this.account);
 	}
 
 	async initialize(): Promise<void> {

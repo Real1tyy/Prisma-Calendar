@@ -1,5 +1,5 @@
 import { cls } from "@real1ty-obsidian-plugins";
-import { type App, Modal, Notice, Setting } from "obsidian";
+import { type App, Modal, Notice, SecretComponent, Setting } from "obsidian";
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
 import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
 import { COMMON_TIMEZONES } from "../../../core/integrations/ics-export";
@@ -8,7 +8,7 @@ import type { SettingsStore } from "../../../core/settings-store";
 export class EditICSSubscriptionModal extends Modal {
 	private name: string;
 	private enabled: boolean;
-	private url: string;
+	private urlSecretName: string;
 	private syncIntervalMinutes: number;
 	private timezone: string;
 	private icon: string;
@@ -22,7 +22,7 @@ export class EditICSSubscriptionModal extends Modal {
 		super(app);
 		this.name = subscription.name;
 		this.enabled = subscription.enabled;
-		this.url = subscription.url;
+		this.urlSecretName = subscription.urlSecretName;
 		this.syncIntervalMinutes = subscription.syncIntervalMinutes ?? ICS_SUBSCRIPTION_DEFAULTS.SYNC_INTERVAL_MINUTES;
 		this.timezone = subscription.timezone ?? "UTC";
 		this.icon = subscription.icon ?? "";
@@ -52,12 +52,12 @@ export class EditICSSubscriptionModal extends Modal {
 
 		new Setting(contentEl)
 			.setName("ICS URL")
-			.setDesc("Public URL to an .ics calendar file")
-			.addText((text) => {
-				text.setValue(this.url).onChange((value) => {
-					this.url = value;
-				});
-			});
+			.setDesc("Select a secret from SecretStorage containing the ICS calendar URL")
+			.addComponent((el) =>
+				new SecretComponent(this.app, el).setValue(this.urlSecretName).onChange((value) => {
+					this.urlSecretName = value;
+				})
+			);
 
 		new Setting(contentEl)
 			.setName("Sync interval (minutes)")
@@ -124,7 +124,7 @@ export class EditICSSubscriptionModal extends Modal {
 								...sub,
 								name: this.name,
 								enabled: this.enabled,
-								url: this.url,
+								urlSecretName: this.urlSecretName,
 								syncIntervalMinutes: this.syncIntervalMinutes,
 								timezone: this.timezone,
 								icon: this.icon || undefined,

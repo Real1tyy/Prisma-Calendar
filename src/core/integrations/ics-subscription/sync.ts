@@ -62,8 +62,13 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 		const result: ICSSubscriptionSyncResult = { ...defaultResult };
 
 		try {
+			const url = this.app.secretStorage.getSecret(this.subscription.urlSecretName) ?? "";
+			if (!url) {
+				throw new Error("ICS URL secret is not set or empty");
+			}
+
 			const response = await requestUrl({
-				url: this.subscription.url,
+				url,
 				method: "GET",
 			});
 

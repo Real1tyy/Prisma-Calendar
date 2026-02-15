@@ -125,34 +125,27 @@ CalDAV integration enables read-only synchronization from external CalDAV server
 
 ### Setting Up CalDAV
 
-:::danger Security Warning
-**CalDAV credentials are stored in PLAINTEXT in `.obsidian/plugins/prisma-calendar/data.json`**
+:::info Secure Credential Storage
+CalDAV passwords are stored in Obsidian's **SecretStorage**, not in `data.json`. Secrets are managed centrally by Obsidian and can be shared across plugins. Create secrets in **Settings → General → Manage secrets** before adding a CalDAV account.
 
-- ⚠️ **Passwords are NOT encrypted**
-- ⚠️ **Anyone with access to your vault can read credentials**
-- ⚠️ **Synced vaults (iCloud, Dropbox, Git) expose credentials**
-
-**Mandatory Security Practices**:
-- ✅ **ALWAYS use app-specific passwords** - never your main account password
-- ✅ Use a dedicated CalDAV account with limited permissions
-- ✅ Enable filesystem encryption (BitLocker, FileVault, LUKS)
-- ✅ Be cautious when syncing vault to cloud services
+**Recommended**: Use app-specific passwords instead of your main account password.
 :::
 
 #### Adding an Account
 
-1. Open **Prisma Calendar Settings → Integrations → CalDAV**
-2. Click **"Add CalDAV account"**
-3. Configure account details:
+1. Create a secret in **Obsidian Settings → General → Manage secrets** containing your CalDAV password
+2. Open **Prisma Calendar Settings → Integrations → CalDAV**
+3. Click **"Add CalDAV account"**
+4. Configure account details:
    - **Account name**: Display name (e.g., "Work Calendar")
    - **Server URL**: CalDAV server endpoint
    - **Auth method**: Basic or OAuth 2.0
    - **Username**: Your account username
-   - **Password**: ⚠️ **STORED IN PLAINTEXT** - Use app-specific password
+   - **Password**: Select a secret from SecretStorage (use the dropdown picker)
    - **Timezone**: Timezone for event conversion
    - **Calendar icon** (optional): Icon/emoji to display on synced events (e.g., 📅, 🔄, ☁️)
-4. Click **"Test connection"** to verify credentials
-5. Click **"Save"**
+5. Click **"Test connection"** to verify credentials
+6. Click **"Save"**
 
 ![CalDAV Account Setup](/img/caldav_setup.png)
 
@@ -242,18 +235,23 @@ ICS URL subscriptions enable read-only synchronization from public ICS URLs to P
 
 ### Setting Up ICS Subscriptions
 
+:::info Secure URL Storage
+ICS subscription URLs (which often contain embedded auth tokens) are stored in Obsidian's **SecretStorage**, not in `data.json`. Create a secret containing the full ICS URL in **Settings → General → Manage secrets** before adding a subscription.
+:::
+
 #### Adding a Subscription
 
-1. Open **Prisma Calendar Settings → Integrations → ICS URL Subscriptions**
-2. Click **"Add subscription"**
-3. Configure subscription details:
+1. Create a secret in **Obsidian Settings → General → Manage secrets** containing the full ICS URL
+2. Open **Prisma Calendar Settings → Integrations → ICS URL Subscriptions**
+3. Click **"Add subscription"**
+4. Configure subscription details:
    - **Subscription name**: Display name (e.g., "Work Calendar")
-   - **ICS URL**: Public URL to the `.ics` file
+   - **ICS URL**: Select a secret from SecretStorage containing the `.ics` URL (use the dropdown picker)
    - **Sync interval**: How often to sync (1-1440 minutes, default: 60)
    - **Timezone**: Timezone for event conversion
    - **Calendar icon** (optional): Icon/emoji to display on synced events (e.g., 📅, 🔄, ☁️)
-4. Click **"Test URL"** to verify the URL and preview event count
-5. Click **"Add subscription"** to save
+5. Click **"Test URL"** to verify the URL and preview event count
+6. Click **"Add subscription"** to save
 
 ### Sync Configuration
 
