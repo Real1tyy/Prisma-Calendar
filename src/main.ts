@@ -46,7 +46,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.apiManager.exposeProgrammaticApi();
 
 		this.app.workspace.onLayoutReady(() => {
-			void this.ensureCalendarBundlesReady();
+			void this.waitForMetadataResolve().then(() => {
+				void this.ensureCalendarBundlesReady();
+			});
 			void this.checkForUpdates();
 		});
 	}
@@ -401,6 +403,15 @@ export default class CustomCalendarPlugin extends Plugin {
 				await bundle.initialize();
 			}
 		})();
+	}
+
+	private waitForMetadataResolve(): Promise<void> {
+		return new Promise((resolve) => {
+			const ref = this.app.metadataCache.on("resolved", () => {
+				this.app.metadataCache.offref(ref);
+				resolve();
+			});
+		});
 	}
 
 	private async ensureMinimumCalendars(): Promise<void> {
