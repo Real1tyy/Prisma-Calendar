@@ -1,3 +1,4 @@
+import type { Frontmatter } from "../types/index";
 import type { PrismaEventInput } from "../types/calendar";
 
 export interface EventDiff {
@@ -7,10 +8,36 @@ export interface EventDiff {
 }
 
 /**
+ * Computes a fast numeric hash (FNV-1a) from a string.
+ */
+function fnv1aHash(str: string): number {
+	let hash = 0x811c9dc5; // FNV offset basis
+	for (let i = 0; i < str.length; i++) {
+		hash ^= str.charCodeAt(i);
+		hash = (hash * 0x01000193) | 0; // FNV prime, keep 32-bit
+	}
+	return hash >>> 0; // unsigned
+}
+
+/**
+ * Computes a numeric hash of frontmatter data for fast diff comparison.
+ * Avoids repeated JSON.stringify in eventFingerprint by pre-computing once.
+ */
+export function hashFrontmatter(data: Frontmatter): number {
+	return fnv1aHash(JSON.stringify(data));
+}
+
+/**
  * Creates a stable fingerprint string from all rendering-relevant fields of an event.
  * Used to detect whether a FullCalendar event needs DOM updates.
+ * When frontmatterHash is pre-computed, avoids expensive JSON.stringify per diff cycle.
  */
 export function eventFingerprint(ev: PrismaEventInput): string {
+	const fmPart =
+		ev.extendedProps.frontmatterHash !== undefined
+			? String(ev.extendedProps.frontmatterHash)
+			: JSON.stringify(ev.extendedProps.frontmatterDisplayData);
+
 	return [
 		ev.title ?? "",
 		ev.start ?? "",
@@ -19,7 +46,7 @@ export function eventFingerprint(ev: PrismaEventInput): string {
 		ev.backgroundColor ?? "",
 		ev.borderColor ?? "",
 		ev.className ?? "",
-		JSON.stringify(ev.extendedProps.frontmatterDisplayData),
+		fmPart,
 		ev.extendedProps.filePath,
 		ev.extendedProps.folder,
 		ev.extendedProps.originalTitle,

@@ -82,6 +82,7 @@ export interface PrismaExtendedProps {
 	frontmatterDisplayData: Frontmatter;
 	isVirtual: boolean;
 	computedColor?: string;
+	frontmatterHash?: number;
 }
 
 export interface PrismaEventInput extends EventInput {

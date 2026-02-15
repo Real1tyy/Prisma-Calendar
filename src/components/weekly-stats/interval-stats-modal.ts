@@ -96,12 +96,16 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 		const { start, end } = this.intervalConfig.getBounds(this.currentDate);
 
-		const events = await this.bundle.eventStore.getEvents({
-			start: start.toISOString(),
-			end: end.toISOString(),
-		});
+		const query = { start: start.toISOString(), end: end.toISOString() };
+		const events = await this.bundle.eventStore.getEvents(query);
 
-		const filteredEvents = this.filterSkippedEvents(events);
+		let filteredEvents: CalendarEvent[];
+		if (this.includeSkippedEvents) {
+			const skipped = this.bundle.eventStore.getSkippedEvents(query);
+			filteredEvents = [...events, ...skipped];
+		} else {
+			filteredEvents = events;
+		}
 
 		const settings = this.bundle.settingsStore.currentSettings;
 		const categoryProp = settings.categoryProp || "Category";

@@ -110,3 +110,33 @@ export function areSetsEqual<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean {
 	}
 	return true;
 }
+
+/**
+ * Merges two pre-sorted arrays into a single sorted array in O(a.length + b.length).
+ * Both inputs must already be sorted according to the provided comparator.
+ *
+ * @param a - First sorted array
+ * @param b - Second sorted array
+ * @param compare - Comparator function: returns negative if a < b, 0 if equal, positive if a > b
+ */
+export function mergeSorted<T>(a: T[], b: T[], compare: (a: T, b: T) => number): T[] {
+	if (b.length === 0) return a;
+	if (a.length === 0) return b;
+
+	const result: T[] = new Array(a.length + b.length);
+	let i = 0;
+	let j = 0;
+	let k = 0;
+
+	while (i < a.length && j < b.length) {
+		if (compare(a[i], b[j]) <= 0) {
+			result[k++] = a[i++];
+		} else {
+			result[k++] = b[j++];
+		}
+	}
+	while (i < a.length) result[k++] = a[i++];
+	while (j < b.length) result[k++] = b[j++];
+
+	return result;
+}

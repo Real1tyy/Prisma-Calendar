@@ -1,7 +1,8 @@
+import { mergeSorted } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import type { Subscription } from "rxjs";
 import BTree from "sorted-btree";
-import type { CalendarEvent, TimedEvent } from "../../types/calendar";
+import type { AllDayEvent, CalendarEvent, TimedEvent } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
 import type { ISO } from "../../types/index";
 import { IndexedCacheStore } from "./indexed-cache-store";
@@ -24,8 +25,14 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private static readonly MAX = "\uffff";
 
 	private indexingCompleteSubscription: Subscription | null = null;
+	// Navigation BTrees — non-skipped timed events only (for fill-from-previous/next)
 	private eventsByStartTime = new BTree<string, TimedEvent>();
-	private eventsByEndTime = new BTree<string, TimedEvent>();
+	// Query BTrees — non-skipped events for range queries
+	private timedByEndTime = new BTree<string, TimedEvent>();
+	private allDayByDate = new BTree<string, AllDayEvent>();
+	// Query BTrees — skipped events (separate so callers get exactly what they need)
+	private skippedTimedByEndTime = new BTree<string, TimedEvent>();
+	private skippedAllDayByDate = new BTree<string, AllDayEvent>();
 	private holidayStore: HolidayStore | null = null;
 
 	constructor(
@@ -89,8 +96,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 	override clear(): void {
 		super.clear();
-		this.eventsByStartTime.clear();
-		this.eventsByEndTime.clear();
+		this.clearAllTrees();
 	}
 
 	override destroy(): void {
@@ -108,56 +114,106 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 			this.onBeforeRemove(cached.template);
 		}
 		this.cache.clear();
-		this.eventsByStartTime.clear();
-		this.eventsByEndTime.clear();
+		this.clearAllTrees();
 	}
 
 	updateEvent(filePath: string, template: CalendarEvent, mtime: number): void {
 		this.upsert(filePath, template, mtime);
 	}
 
+	/**
+	 * Returns non-skipped events in the given range: physical + virtual + holidays.
+	 */
 	async getEvents(query: EventQuery): Promise<CalendarEvent[]> {
-		const results: CalendarEvent[] = this.getPhysicalEvents(query);
+		const physical = this.queryNonSkippedPhysical(query);
 		const queryStart = DateTime.fromISO(query.start, { zone: "utc" });
 		const queryEnd = DateTime.fromISO(query.end, { zone: "utc" });
 		const virtualEvents = this.recurringEventManager.generateAllVirtualInstances(queryStart, queryEnd);
-		results.push(...virtualEvents);
 
+		let holidays: CalendarEvent[] = [];
 		if (this.holidayStore) {
-			const holidays = await this.holidayStore.getHolidaysForRange(queryStart, queryEnd);
-			results.push(...holidays);
+			holidays = await this.holidayStore.getHolidaysForRange(queryStart, queryEnd);
 		}
 
-		return results.sort((a, b) => a.start.localeCompare(b.start));
+		// Physical events are pre-sorted. Sort only the supplementary arrays
+		// (typically small) and merge, avoiding a full O(N log N) re-sort.
+		const supplementary = [...virtualEvents, ...holidays];
+		if (supplementary.length === 0) return physical;
+
+		supplementary.sort(EventStore.compareByStart);
+		return mergeSorted(physical, supplementary, EventStore.compareByStart);
 	}
 
-	async getSkippedEvents(query: EventQuery): Promise<CalendarEvent[]> {
-		const allEvents = await this.getEvents(query);
-		return allEvents.filter((event) => event.skipped && !event.isVirtual);
+	private static compareByStart(a: CalendarEvent, b: CalendarEvent): number {
+		return a.start.localeCompare(b.start);
 	}
 
-	async getNonSkippedEvents(query: EventQuery): Promise<CalendarEvent[]> {
-		const allEvents = await this.getEvents(query);
-		return allEvents.filter((event) => !event.skipped);
+	/**
+	 * Returns only skipped physical events in the given range.
+	 * Uses dedicated skipped BTrees — O(log n + k), no filtering needed.
+	 */
+	getSkippedEvents(query: EventQuery): CalendarEvent[] {
+		return this.querySkippedPhysical(query);
 	}
 
+	/**
+	 * Returns ALL physical events (both skipped and non-skipped) in the given range.
+	 * Used by callers that need the full set (e.g., global search with filter toggles).
+	 */
 	getPhysicalEvents(query: EventQuery): CalendarEvent[] {
-		const results: CalendarEvent[] = [];
-		const queryStart = DateTime.fromISO(query.start, { zone: "utc" });
-		const queryEnd = DateTime.fromISO(query.end, { zone: "utc" });
+		const nonSkipped = this.queryNonSkippedPhysical(query);
+		const skipped = this.querySkippedPhysical(query);
+		return mergeSorted(nonSkipped, skipped, EventStore.compareByStart);
+	}
 
-		for (const cached of this.cache.values()) {
-			const { template: event } = cached;
-			if (this.eventIntersectsRange(event, queryStart, queryEnd)) {
-				results.push(event);
-			}
+	private queryNonSkippedPhysical(query: EventQuery): CalendarEvent[] {
+		return this.queryPhysicalFromTrees(query, this.timedByEndTime, this.allDayByDate);
+	}
+
+	private querySkippedPhysical(query: EventQuery): CalendarEvent[] {
+		return this.queryPhysicalFromTrees(query, this.skippedTimedByEndTime, this.skippedAllDayByDate);
+	}
+
+	/**
+	 * Queries physical events from the given BTree pair using range scans.
+	 * Timed: events whose [start, end) intersects [queryStart, queryEnd).
+	 * All-day: events whose start falls within [queryStart, queryEnd).
+	 */
+	private queryPhysicalFromTrees(
+		query: EventQuery,
+		timedTree: BTree<string, TimedEvent>,
+		allDayTree: BTree<string, AllDayEvent>
+	): CalendarEvent[] {
+		let queryStartNorm: string;
+		let queryEndNorm: string;
+		try {
+			queryStartNorm = this.normIso(query.start);
+			queryEndNorm = this.normIso(query.end);
+		} catch {
+			return [];
 		}
 
-		return results.sort((a, b) => a.start.localeCompare(b.start));
+		const timedResults: CalendarEvent[] = [];
+		const timedLowKey = `${queryStartNorm}${EventStore.SEP}`;
+		timedTree.forRange(timedLowKey, `${EventStore.MAX}`, true, (_key, event) => {
+			if (this.normIso(event.start) < queryEndNorm) {
+				timedResults.push(event);
+			}
+		});
+
+		const allDayResults: CalendarEvent[] = [];
+		const allDayLowKey = `${queryStartNorm}${EventStore.SEP}`;
+		const allDayHighKey = `${queryEndNorm}${EventStore.SEP}`;
+		allDayTree.forRange(allDayLowKey, allDayHighKey, false, (_key, event) => {
+			allDayResults.push(event);
+		});
+
+		timedResults.sort(EventStore.compareByStart);
+		return mergeSorted(timedResults, allDayResults, EventStore.compareByStart);
 	}
 
 	getAllEvents(): CalendarEvent[] {
-		return this.getAll().sort((a, b) => a.start.localeCompare(b.start));
+		return this.getAll().sort(EventStore.compareByStart);
 	}
 
 	getEventByPath(filePath: string): CalendarEvent | null {
@@ -178,12 +234,16 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		return this.findAdjacentEventInTree(
 			currentEndISO,
 			excludeFilePath,
-			this.eventsByEndTime,
+			this.timedByEndTime,
 			(tree, key) => tree.nextLowerPair(key),
 			(t) => `${t}${EventStore.SEP}${EventStore.MAX}`
 		);
 	}
 
+	/**
+	 * Normalizes an ISO string to a consistent UTC format for BTree key comparison.
+	 * Both keys and query bounds pass through this, ensuring consistent comparison.
+	 */
 	private normIso(iso: string): string {
 		return new Date(iso).toISOString();
 	}
@@ -193,30 +253,52 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	}
 
 	private addToSortedSets(event: CalendarEvent): void {
-		if (!isTimedEvent(event) || event.skipped) return;
-
-		const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
-		this.eventsByStartTime.set(startKey, event);
-
-		const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
-		this.eventsByEndTime.set(endKey, event);
+		if (isTimedEvent(event)) {
+			const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
+			if (event.skipped) {
+				this.skippedTimedByEndTime.set(endKey, event);
+			} else {
+				this.timedByEndTime.set(endKey, event);
+				// Navigation index — non-skipped only
+				const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
+				this.eventsByStartTime.set(startKey, event);
+			}
+		} else {
+			const dateKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
+			if (event.skipped) {
+				this.skippedAllDayByDate.set(dateKey, event);
+			} else {
+				this.allDayByDate.set(dateKey, event);
+			}
+		}
 	}
 
 	private removeFromSortedSets(event: CalendarEvent): void {
-		if (!isTimedEvent(event) || event.skipped) return;
-
-		const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
-		this.eventsByStartTime.delete(startKey);
-
-		const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
-		this.eventsByEndTime.delete(endKey);
+		if (isTimedEvent(event)) {
+			const endKey = this.makeTreeKey(this.normIso(event.end), event.ref.filePath);
+			if (event.skipped) {
+				this.skippedTimedByEndTime.delete(endKey);
+			} else {
+				this.timedByEndTime.delete(endKey);
+				const startKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
+				this.eventsByStartTime.delete(startKey);
+			}
+		} else {
+			const dateKey = this.makeTreeKey(this.normIso(event.start), event.ref.filePath);
+			if (event.skipped) {
+				this.skippedAllDayByDate.delete(dateKey);
+			} else {
+				this.allDayByDate.delete(dateKey);
+			}
+		}
 	}
 
-	private eventIntersectsRange(event: CalendarEvent, rangeStart: DateTime, rangeEnd: DateTime): boolean {
-		const eventStart = DateTime.fromISO(event.start, { zone: "utc" });
-		const eventEnd = isTimedEvent(event) ? DateTime.fromISO(event.end, { zone: "utc" }) : eventStart.endOf("day");
-
-		return eventStart < rangeEnd && eventEnd > rangeStart;
+	private clearAllTrees(): void {
+		this.eventsByStartTime.clear();
+		this.timedByEndTime.clear();
+		this.allDayByDate.clear();
+		this.skippedTimedByEndTime.clear();
+		this.skippedAllDayByDate.clear();
 	}
 
 	private findAdjacentEventInTree(
@@ -226,7 +308,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		getNextPair: (tree: BTree<string, TimedEvent>, key: string) => [string, TimedEvent] | undefined,
 		makeSearchKey: (currentTime: string) => string
 	): TimedEvent | null {
-		const currentTime = new Date(currentTimeISO).toISOString();
+		const currentTime = this.normIso(currentTimeISO);
 		let pair = getNextPair(tree, makeSearchKey(currentTime));
 
 		while (pair) {

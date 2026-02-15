@@ -36,7 +36,7 @@ import {
 } from "../utils/calendar-events";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { getEventRenderingKey } from "../utils/calendar-settings";
-import { diffEvents, eventFingerprint } from "../utils/event-diff";
+import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/event-diff";
 import { resolveEventColor } from "../utils/event-color";
 import { invalidatePropertyExtractionCache } from "../utils/expression-utils";
 import {
@@ -627,7 +627,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 				const start = toLocalISOString(view.activeStart);
 				const end = toLocalISOString(view.activeEnd);
-				const skippedEvents = await this.bundle.eventStore.getSkippedEvents({
+				const skippedEvents = this.bundle.eventStore.getSkippedEvents({
 					start,
 					end,
 				});
@@ -1604,9 +1604,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const start = toLocalISOString(view.activeStart);
 		const end = toLocalISOString(view.activeEnd);
 
-		const allEvents = await this.bundle.eventStore.getEvents({ start, end });
-		const nonSkipped = allEvents.filter((event) => !event.skipped);
-		const skippedCount = allEvents.length - nonSkipped.length;
+		const nonSkipped = await this.bundle.eventStore.getEvents({ start, end });
+		const skippedCount = this.bundle.eventStore.getSkippedEvents({ start, end }).length;
 		this.updateSkippedEventsButton(skippedCount);
 
 		const visibleEvents: CalendarEvent[] = [];
@@ -1635,6 +1634,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			const folder = event.meta?.folder;
 			const folderStr = typeof folder === "string" ? folder : "";
+			const meta = event.meta ?? {};
 
 			return {
 				id: event.id,
@@ -1646,9 +1646,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					filePath: event.ref.filePath,
 					folder: folderStr,
 					originalTitle: event.title,
-					frontmatterDisplayData: event.meta ?? {},
+					frontmatterDisplayData: meta,
 					isVirtual: event.isVirtual,
 					computedColor: eventColor,
+					frontmatterHash: hashFrontmatter(meta),
 				},
 				backgroundColor: eventColor,
 				borderColor: eventColor,
