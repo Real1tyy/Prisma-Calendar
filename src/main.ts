@@ -406,6 +406,13 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	private waitForMetadataResolve(): Promise<void> {
+		// On hot reload the cache is already fully populated — no pending batch
+		// means 'resolved' will never fire. Check if files already have metadata.
+		const files = this.app.vault.getMarkdownFiles();
+		if (files.length === 0 || this.app.metadataCache.getFileCache(files[0]) !== null) {
+			return Promise.resolve();
+		}
+
 		return new Promise((resolve) => {
 			const ref = this.app.metadataCache.on("resolved", () => {
 				this.app.metadataCache.offref(ref);

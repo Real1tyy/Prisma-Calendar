@@ -56,8 +56,6 @@ export class Indexer {
 	private lastExcludedDiffProps: Set<string>;
 	private initialScanHandlers: Promise<void>[] | null = [];
 	private handlerCollector: Promise<void>[] | null = null;
-	/** Paths currently being written to by processFrontMatter — suppress re-indexing */
-	private inFlightWrites = new Set<string>();
 	/** Per-file queue to serialize processFrontMatter calls */
 	private fmLocks = new Map<string, Promise<void>>();
 	private readonly includeFile = (filePath: string): boolean => {
@@ -134,14 +132,7 @@ export class Indexer {
 		const path = file.path;
 		const prev = this.fmLocks.get(path) ?? Promise.resolve();
 		const next = prev
-			.then(async () => {
-				this.inFlightWrites.add(path);
-				try {
-					await this.app.fileManager.processFrontMatter(file, fn);
-				} finally {
-					this.inFlightWrites.delete(path);
-				}
-			})
+			.then(() => this.app.fileManager.processFrontMatter(file, fn))
 			.finally(() => {
 				if (this.fmLocks.get(path) === next) this.fmLocks.delete(path);
 			});
@@ -188,8 +179,9 @@ export class Indexer {
 		this.handlerCollector = [];
 
 		// Subscribe to generic indexer's completion to know when scan finishes,
-		// then await collected handlers before emitting our own completion
-		const sub = this.genericIndexer.indexingComplete$
+		// then await collected handlers before emitting our own completion.
+		// take(1) auto-unsubscribes after the first emission.
+		this.genericIndexer.indexingComplete$
 			.pipe(
 				filter((complete) => complete),
 				take(1)
@@ -206,42 +198,9 @@ export class Indexer {
 				};
 
 				void finalize();
-				sub.unsubscribe();
 			});
 
 		this.genericIndexer.resync();
-	}
-
-	/**
-	 * Wait for the metadata cache to emit a 'changed' event for this specific file,
-	 * then return the fresh frontmatter. Used when vault events arrive before the
-	 * metadata cache has finished async re-parsing.
-	 *
-	 * Times out after `timeoutMs` and returns the stale frontmatter as fallback.
-	 */
-	private awaitFreshFrontmatter(file: TFile, stale: Frontmatter, timeoutMs = 500): Promise<Frontmatter> {
-		return new Promise((resolve) => {
-			const ref = this.app.metadataCache.on("changed", (changedFile) => {
-				if (changedFile.path !== file.path) return;
-				this.app.metadataCache.offref(ref);
-				clearTimeout(timer);
-				const cache = this.app.metadataCache.getFileCache(file);
-				resolve(cache?.frontmatter ? { ...cache.frontmatter } : stale);
-			});
-			const timer = setTimeout(() => {
-				this.app.metadataCache.offref(ref);
-				resolve(stale);
-			}, timeoutMs);
-		});
-	}
-
-	/**
-	 * Check whether the frontmatter has at least one of the required calendar properties
-	 * (startProp or dateProp) with a non-null value. Frontmatter that's missing both is
-	 * likely stale — the metadata cache hasn't caught up to the file on disk yet.
-	 */
-	private hasCoreProps(fm: Frontmatter): boolean {
-		return fm[this.settings.startProp] != null || fm[this.settings.dateProp] != null;
 	}
 
 	private async handleGenericEvent(genericEvent: GenericIndexerEvent): Promise<void> {
@@ -258,23 +217,13 @@ export class Indexer {
 		if (genericEvent.type === "file-changed" && genericEvent.source) {
 			const { filePath, source, oldPath, oldFrontmatter, frontmatterDiff } = genericEvent;
 
-			// Suppress events caused by our own processFrontMatter writebacks
-			if (this.inFlightWrites.has(filePath)) return;
-
 			const file = this.app.vault.getAbstractFileByPath(filePath);
 			if (!(file instanceof TFile)) return;
 
-			// Clone immediately — source.frontmatter may be a reference owned by the generic indexer
-			let frontmatter = { ...(source.frontmatter as Frontmatter) };
-
-			// The generic indexer listens to vault events, which fire BEFORE the metadata
-			// cache finishes async re-parsing. If the frontmatter looks incomplete (missing
-			// both startProp and dateProp), wait for the metadataCache 'changed' event
-			// to get fresh data. This handles external modifications (git sync, other plugins)
-			// where the debounce alone isn't enough.
-			if (!this.hasCoreProps(frontmatter)) {
-				frontmatter = await this.awaitFreshFrontmatter(file, frontmatter);
-			}
+			// Clone immediately — source.frontmatter may be a reference owned by the generic indexer.
+			// The generic indexer now listens to metadataCache.on("changed") instead of vault events,
+			// so frontmatter is guaranteed to be up-to-date when we receive it.
+			const frontmatter = { ...(source.frontmatter as Frontmatter) };
 
 			const events = await this.buildCalendarEvents(file, frontmatter, oldPath, oldFrontmatter, frontmatterDiff);
 			for (const event of events) {
@@ -372,13 +321,11 @@ export class Indexer {
 		const frontmatterCopy = { ...frontmatter };
 
 		if (!rRuleId) {
-			// The rruleId might already exist on disk but the metadata cache could be stale.
-			// Wait for a fresh cache read before deciding to generate a new ID.
-			const freshFm = await this.awaitFreshFrontmatter(file, frontmatter, 200);
-			const cachedId = toSafeString(freshFm[this.settings.rruleIdProp]);
-
-			if (cachedId) {
-				rRuleId = cachedId;
+			// Frontmatter is up-to-date (generic indexer uses metadataCache.on("changed")),
+			// so if rruleId is missing it genuinely doesn't exist yet.
+			if (this.syncStore?.data.readOnly) {
+				// In readOnly mode we can't write to the file, so generate an ephemeral ID
+				rRuleId = generateUniqueRruleId();
 			} else {
 				rRuleId = generateUniqueRruleId();
 				await this.enqueueFrontmatterWrite(file, (fm: Frontmatter) => {
