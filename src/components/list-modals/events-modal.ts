@@ -77,7 +77,8 @@ export class EventsModal extends Modal {
 		// Determine initial tab based on available data
 		const recurringCount = this.enabledEvents.length + this.disabledEvents.length;
 		const categoryCount = this.bundle.categoryTracker.getCategories().length;
-		const nameCount = this.bundle.nameSeriesTracker.getNameBasedSeries().size;
+		const nameSeriesEnabled = this.bundle.settingsStore.currentSettings.enableNameSeriesTracking;
+		const nameCount = nameSeriesEnabled ? this.bundle.nameSeriesTracker.getNameBasedSeries().size : 0;
 
 		if (recurringCount > 0) {
 			this.activeTab = "recurring";
@@ -94,7 +95,9 @@ export class EventsModal extends Modal {
 		const tabBar = contentEl.createDiv(cls("event-series-tabs"));
 		this.createTabButton(tabBar, "recurring", `Recurring (${recurringCount})`);
 		this.createTabButton(tabBar, "byCategory", `By Category (${categoryCount})`);
-		this.createTabButton(tabBar, "byName", `By Name (${nameCount})`);
+		if (nameSeriesEnabled) {
+			this.createTabButton(tabBar, "byName", `By Name (${nameCount})`);
+		}
 
 		// Search + sort row
 		const searchContainer = contentEl.createDiv(cls("generic-event-list-search"));

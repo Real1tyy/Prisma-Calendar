@@ -1,3 +1,4 @@
+import { SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 import {
 	BATCH_BUTTON_IDS,
@@ -8,15 +9,21 @@ import {
 	TOOLBAR_BUTTON_LABELS,
 } from "../../constants";
 import type { CalendarSettingsStore, ToolbarButtonsKey } from "../../core/settings-store";
+import type { SingleCalendarConfigSchema } from "../../types/settings";
 
 export class ConfigurationSettings {
-	constructor(private settingsStore: CalendarSettingsStore) {}
+	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
+
+	constructor(private settingsStore: CalendarSettingsStore) {
+		this.ui = new SettingsUIBuilder(settingsStore as never);
+	}
 
 	display(containerEl: HTMLElement): void {
 		this.addDesktopToolbarSettings(containerEl);
 		this.addMobileToolbarSettings(containerEl);
 		this.addBatchSelectionSettings(containerEl);
 		this.addContextMenuSettings(containerEl);
+		this.addPerformanceSettings(containerEl);
 	}
 
 	private addDesktopToolbarSettings(containerEl: HTMLElement): void {
@@ -113,6 +120,16 @@ export class ConfigurationSettings {
 
 			itemSetting.settingEl.addClass("prisma-batch-button-setting");
 		}
+	}
+
+	private addPerformanceSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("Performance").setHeading();
+
+		this.ui.addToggle(containerEl, {
+			key: "enableNameSeriesTracking",
+			name: "Enable name series tracking",
+			desc: "Track name-based event series (groups events sharing the same title). Used for name series propagation and series views. Disable to reduce memory usage in large vaults.",
+		});
 	}
 
 	private renderToolbarButtonToggles(containerEl: HTMLElement, key: ToolbarButtonsKey): void {

@@ -33,6 +33,10 @@ Community contributions help us continuously improve the documentation and keep 
 
 ## General Questions
 
+### How can I improve performance in a large vault?
+
+See [Troubleshooting — Performance / lag](troubleshooting.md#performance--lag).
+
 ### Can I use multiple calendars at once?
 
 Yes. Calendars can use separate directories for full isolation, or share the same directory for different visual perspectives of the same events.

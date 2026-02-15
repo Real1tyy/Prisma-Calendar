@@ -6,6 +6,10 @@ All notable changes to this project will be documented here.
 
 ## 2.0.0 - 2/15/2026
 
+### Added
+
+- **Name series tracking toggle**: New "Enable name series tracking" setting under Configuration → Performance. Disabling it stops the name series tracker from indexing events by title, reducing memory usage in large vaults. The "By Name" tab in the Events modal is hidden when disabled.
+
 ### Changed
 
 - **License changed from MIT to AGPL-3.0**: Starting with v2.0.0, Prisma Calendar is licensed under the [GNU Affero General Public License v3.0](https://www.gnu.org/licenses/agpl-3.0.html). Prisma Calendar remains fully open source. The AGPL-3.0 ensures all derivative works also remain open source, preventing closed-source commercial forks. Versions prior to v2.0.0 remain available under the MIT License.

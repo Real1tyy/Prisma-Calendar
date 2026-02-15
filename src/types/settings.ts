@@ -143,6 +143,7 @@ const CalendarSettingsSchema = z
 		futureInstancesCount: z.number().int().min(1).max(52).catch(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT), // how many future instances to generate for recurring events
 		propagateFrontmatterToInstances: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_INSTANCES), // automatically propagate non-Prisma frontmatter changes from source to physical instances
 		askBeforePropagatingFrontmatter: z.boolean().catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_FRONTMATTER), // show confirmation modal before propagating frontmatter changes
+		enableNameSeriesTracking: z.boolean().catch(SETTINGS_DEFAULTS.ENABLE_NAME_SERIES_TRACKING), // enable name-based series tracking (groups events by title for propagation and series views)
 		propagateFrontmatterToNameSeries: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_NAME_SERIES), // automatically propagate frontmatter changes across name-based series (events sharing the same title)
 		askBeforePropagatingToNameSeries: z.boolean().catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_TO_NAME_SERIES), // show confirmation modal before propagating frontmatter changes to name series
 		propagateFrontmatterToCategorySeries: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_CATEGORY_SERIES), // automatically propagate frontmatter changes across category-based series (events sharing the same category)

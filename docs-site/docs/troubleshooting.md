@@ -2,6 +2,17 @@
 
 Use this checklist to diagnose common issues.
 
+## Performance / lag
+
+If the calendar feels slow in a large vault:
+
+- Disable **Enable name series tracking** (Settings → Configuration → Performance) to stop indexing events by title
+- Disable **Show color dots** (Settings → Calendar) to skip per-day event scanning in monthly view
+- Disable **Highlight upcoming event** (Settings → Calendar) to remove the 1-minute interval timer
+- Disable **Enable event preview** (Settings → Calendar) to skip loading note content on hover
+- Disable **Enable notifications** (Settings → Notifications) to remove the 1-minute interval check
+- Disable **Enable holidays** (Settings → Integrations) to skip external library loading
+
 ## Events not appearing
 
 - Plugin enabled and vault reloaded

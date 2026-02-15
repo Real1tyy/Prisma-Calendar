@@ -57,7 +57,15 @@ export class NameSeriesTracker {
 		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
+			const wasEnabled = this._settings.enableNameSeriesTracking;
 			this._settings = newSettings;
+
+			if (wasEnabled && !newSettings.enableNameSeriesTracking) {
+				this.seriesByName.clear();
+				this.fileToNameKey.clear();
+			} else if (!wasEnabled && newSettings.enableNameSeriesTracking) {
+				this.rebuild();
+			}
 		});
 
 		this.subscription = this.indexer.events$
@@ -74,6 +82,8 @@ export class NameSeriesTracker {
 	}
 
 	private handleIndexerEvent(event: IndexerEvent): void {
+		if (!this._settings.enableNameSeriesTracking) return;
+
 		switch (event.type) {
 			case "file-changed":
 				if (event.source) {
@@ -184,6 +194,8 @@ export class NameSeriesTracker {
 	private rebuild(): void {
 		this.seriesByName.clear();
 		this.fileToNameKey.clear();
+
+		if (!this._settings.enableNameSeriesTracking) return;
 
 		const allEvents = this.eventStore.getAllEvents();
 		for (const event of allEvents) {
