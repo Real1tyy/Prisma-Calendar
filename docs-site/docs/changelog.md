@@ -9,6 +9,8 @@ All notable changes to this project will be documented here.
 ### Fixed
 
 - **Recurring events and ICS import**: Internal and integration metadata (CalDAV sync metadata, ICS subscription metadata) are no longer copied when creating recurring event instances from a source event or when importing events from ICS files. Previously, these properties could be propagated to generated instances, causing incorrect sync behavior and unnecessary duplication of integration metadata.
+- **Recurring source ID replacement no longer duplicates series**: Changing a source event's `RRuleID` now migrates existing physical instances to the new ID instead of treating it as a separate series. This prevents duplicate recurring instance generation caused by old/new ID split state during live updates and startup indexing.
+- **Recurring modal instance counts now match series statistics**: The main Events browser now counts recurring instances using the same resolved series events as the recurring details modal. This fixes inflated instance numbers and mismatched totals between the list card and the series statistics panel.
 
 ---
 

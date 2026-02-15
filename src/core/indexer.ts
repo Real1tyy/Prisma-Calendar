@@ -246,7 +246,7 @@ export class Indexer {
 			frontmatterDiff,
 		};
 
-		const recurring = await this.tryParseRecurring(file, frontmatter);
+		const recurring = await this.tryParseRecurring(file, frontmatter, oldFrontmatter);
 		if (recurring) {
 			// Always add recurring events even if skipped - this allows navigation
 			// to source from physical instances and viewing recurring event lists.
@@ -311,12 +311,28 @@ export class Indexer {
 		return events;
 	}
 
-	private async tryParseRecurring(file: TFile, frontmatter: Frontmatter): Promise<NodeRecurringEvent | null> {
+	private async tryParseRecurring(
+		file: TFile,
+		frontmatter: Frontmatter,
+		oldFrontmatter?: Frontmatter
+	): Promise<NodeRecurringEvent | null> {
 		const rrules = parseRRuleFromFrontmatter(frontmatter, this.settings);
 		if (!rrules) return null;
 
 		let rRuleId = toSafeString(frontmatter[this.settings.rruleIdProp]);
 		const frontmatterCopy = { ...frontmatter };
+		const previousRRuleId = toSafeString(oldFrontmatter?.[this.settings.rruleIdProp]);
+
+		// Guard against accidental ID churn: recurring source rRuleId is immutable once set.
+		// If a file suddenly reports a different id, keep the previous one and revert the file.
+		if (rRuleId && previousRRuleId && rRuleId !== previousRRuleId) {
+			rRuleId = previousRRuleId;
+			if (!this.syncStore?.data.readOnly) {
+				await this.enqueueFrontmatterWrite(file, (fm: Frontmatter) => {
+					fm[this.settings.rruleIdProp] = rRuleId;
+				});
+			}
+		}
 
 		if (!rRuleId) {
 			// vault.on("modify") fires BEFORE the metadata cache updates, so the rRuleId

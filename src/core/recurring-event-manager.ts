@@ -6,6 +6,7 @@ import {
 	type FrontmatterDiff,
 	FrontmatterPropagationModal,
 	FrontmatterPropagationDebouncer,
+	getObsidianLinkPath,
 	getUniqueFilePathFromFull,
 	rebuildPhysicalInstanceFilename,
 	sanitizeForFilename,
@@ -62,6 +63,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private indexingComplete = false;
 	private creationLocks: Map<string, Promise<string | null>> = new Map();
 	private sourceFileToRRuleId: Map<string, string> = new Map();
+	private physicalSourceToRRuleIds: Map<string, Set<string>> = new Map();
 	private ensureInstancesLocks: Map<string, Promise<void>> = new Map();
 	private propagationDebouncer: FrontmatterPropagationDebouncer<string>;
 	private eventStore: EventStore | null = null;
@@ -98,7 +100,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		switch (event.type) {
 			case "recurring-event-found":
 				if (event.recurringEvent) {
-					this.addRecurringEvent(event.recurringEvent);
+					this.addRecurringEvent(event.recurringEvent, event.oldFrontmatter);
 					if (this.indexingComplete) {
 						if (event.oldPath) {
 							// Rename: rename physical instances BEFORE ensuring count,
@@ -262,6 +264,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.recurringEventsMap.clear();
 		this.creationLocks.clear();
 		this.sourceFileToRRuleId.clear();
+		this.physicalSourceToRRuleIds.clear();
 		this.ensureInstancesLocks.clear();
 	}
 
@@ -272,23 +275,33 @@ export class RecurringEventManager extends DebouncedNotifier {
 	clearWithoutNotify(): void {
 		this.recurringEventsMap.clear();
 		this.sourceFileToRRuleId.clear();
+		this.physicalSourceToRRuleIds.clear();
 		// Keep locks intact to prevent race conditions during resync
 	}
 
-	private addRecurringEvent(recurringEvent: NodeRecurringEvent): void {
-		// CRITICAL: Check if this source file already has an RRuleID
-		const existingRRuleId = this.sourceFileToRRuleId.get(recurringEvent.sourceFilePath);
+	private addRecurringEvent(recurringEvent: NodeRecurringEvent, oldFrontmatter?: Frontmatter): void {
+		const previousRRuleId = oldFrontmatter?.[this.settings.rruleIdProp];
+		const previousRRuleIdStr = typeof previousRRuleId === "string" ? previousRRuleId : null;
 
-		if (existingRRuleId && existingRRuleId !== recurringEvent.rRuleId) {
-			// RACE CONDITION DETECTED: Same source file with different RRuleID
-			// Merge into existing entry using the first RRuleID
-			const existingData = this.recurringEventsMap.get(existingRRuleId);
-			if (existingData) {
-				existingData.recurringEvent = recurringEvent;
-			}
-
-			// Don't create a new entry for the duplicate RRuleID
+		if (previousRRuleIdStr && previousRRuleIdStr !== recurringEvent.rRuleId) {
+			this.migrateRecurringSeriesId(previousRRuleIdStr, recurringEvent.rRuleId, recurringEvent);
 			return;
+		}
+
+		const existingRRuleId = this.sourceFileToRRuleId.get(recurringEvent.sourceFilePath);
+		if (existingRRuleId && existingRRuleId !== recurringEvent.rRuleId) {
+			this.migrateRecurringSeriesId(existingRRuleId, recurringEvent.rRuleId, recurringEvent);
+			return;
+		}
+
+		const physicalLinkedIds = this.physicalSourceToRRuleIds.get(recurringEvent.sourceFilePath);
+		if (physicalLinkedIds && physicalLinkedIds.size > 0) {
+			for (const linkedRRuleId of Array.from(physicalLinkedIds)) {
+				if (linkedRRuleId !== recurringEvent.rRuleId && this.recurringEventsMap.has(linkedRRuleId)) {
+					this.migrateRecurringSeriesId(linkedRRuleId, recurringEvent.rRuleId, recurringEvent);
+					return;
+				}
+			}
 		}
 
 		const existingData = this.recurringEventsMap.get(recurringEvent.rRuleId);
@@ -302,6 +315,97 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 		this.sourceFileToRRuleId.set(recurringEvent.sourceFilePath, recurringEvent.rRuleId);
 		this.notifyChange();
+	}
+
+	private migrateRecurringSeriesId(fromRRuleId: string, toRRuleId: string, recurringEvent: NodeRecurringEvent): void {
+		const fromData = this.recurringEventsMap.get(fromRRuleId);
+		const toData = this.recurringEventsMap.get(toRRuleId);
+		const mergedPhysicalInstances = this.mergePhysicalInstances(fromData?.physicalInstances, toData?.physicalInstances);
+
+		this.recurringEventsMap.set(toRRuleId, {
+			recurringEvent,
+			physicalInstances: mergedPhysicalInstances,
+		});
+		if (fromRRuleId !== toRRuleId) {
+			this.recurringEventsMap.delete(fromRRuleId);
+		}
+
+		this.sourceFileToRRuleId.set(recurringEvent.sourceFilePath, toRRuleId);
+		this.rebindPhysicalSourceMapping(recurringEvent.sourceFilePath, fromRRuleId, toRRuleId);
+		this.notifyChange();
+
+		if (fromRRuleId !== toRRuleId && mergedPhysicalInstances.size > 0) {
+			void this.rewritePhysicalInstancesRRuleId(mergedPhysicalInstances, toRRuleId);
+		}
+	}
+
+	private mergePhysicalInstances(
+		first?: Map<string, PhysicalInstance[]>,
+		second?: Map<string, PhysicalInstance[]>
+	): Map<string, PhysicalInstance[]> {
+		const merged = new Map<string, PhysicalInstance[]>();
+
+		const addInstances = (instancesMap?: Map<string, PhysicalInstance[]>) => {
+			if (!instancesMap) return;
+			for (const [dateKey, instances] of instancesMap.entries()) {
+				const existing = merged.get(dateKey) || [];
+				const byPath = new Map(existing.map((instance) => [instance.filePath, instance]));
+				for (const instance of instances) {
+					byPath.set(instance.filePath, instance);
+				}
+				merged.set(dateKey, Array.from(byPath.values()));
+			}
+		};
+
+		addInstances(first);
+		addInstances(second);
+		return merged;
+	}
+
+	private rebindPhysicalSourceMapping(sourcePath: string, oldRRuleId: string, newRRuleId: string): void {
+		const existing = this.physicalSourceToRRuleIds.get(sourcePath);
+		const next = new Set(existing ?? []);
+		next.delete(oldRRuleId);
+		next.add(newRRuleId);
+		this.physicalSourceToRRuleIds.set(sourcePath, next);
+	}
+
+	private async rewritePhysicalInstancesRRuleId(
+		physicalInstances: Map<string, PhysicalInstance[]>,
+		newRRuleId: string
+	): Promise<void> {
+		await Promise.all(
+			this.flattenPhysicalInstances(physicalInstances).map(async (instance) => {
+				const file = this.app.vault.getAbstractFileByPath(instance.filePath);
+				if (!(file instanceof TFile)) {
+					return;
+				}
+				await this.app.fileManager.processFrontMatter(file, (fm) => {
+					if (fm[this.settings.rruleIdProp] !== newRRuleId) {
+						fm[this.settings.rruleIdProp] = newRRuleId;
+					}
+				});
+			})
+		);
+	}
+
+	private resolvePhysicalSourcePath(sourceLink: string, instancePath: string): string | null {
+		const linkPath = getObsidianLinkPath(sourceLink);
+		const sourceFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, instancePath);
+		return sourceFile?.path || null;
+	}
+
+	private trackPhysicalSourceMapping(rruleId: string, sourceLinkValue: unknown, instancePath: string): void {
+		if (typeof sourceLinkValue !== "string" || !sourceLinkValue.trim()) {
+			return;
+		}
+		const sourcePath = this.resolvePhysicalSourcePath(sourceLinkValue, instancePath);
+		if (!sourcePath) {
+			return;
+		}
+		const existing = this.physicalSourceToRRuleIds.get(sourcePath) ?? new Set<string>();
+		existing.add(rruleId);
+		this.physicalSourceToRRuleIds.set(sourcePath, existing);
 	}
 
 	private handleFileChanged(filePath: string, frontmatter: Frontmatter): void {
@@ -336,6 +440,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 						instances.push(newInstance); // Add new
 					}
 					recurringData.physicalInstances.set(dateKey, instances);
+					this.trackPhysicalSourceMapping(rruleId, frontmatter[this.settings.sourceProp], filePath);
 					this.scheduleRefresh();
 				}
 			}
@@ -731,7 +836,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	getInstanceCountByRRuleId(rruleId: string): number {
-		return this.getPhysicalInstancesByRRuleId(rruleId).length;
+		return this.getPhysicalInstancesAsEvents(rruleId).length;
 	}
 
 	getPhysicalInstancesAsEvents(rruleId: string): Array<{
