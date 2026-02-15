@@ -1556,7 +1556,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				hasStructuralChanges = this.performIncrementalUpdate(calendarEvents);
 			}
 		} catch (error) {
-			// eslint-disable-next-line no-console
+			 
 			console.error("Error refreshing calendar events:", error);
 		}
 
@@ -2261,7 +2261,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		const filePath = info.event.extendedProps.filePath;
 		if (!filePath || typeof filePath !== "string") {
-			// eslint-disable-next-line no-console
+			 
 			console.error("No file path found for event");
 			info.revert();
 			return;
@@ -2282,7 +2282,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {
-			// eslint-disable-next-line no-console
+			 
 			console.error(errorMessage, error);
 			info.revert();
 		}
@@ -2411,7 +2411,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					await this.bundle.commandManager.executeCommand(command);
 				}
 			} catch (error) {
-				// eslint-disable-next-line no-console
+				 
 				console.error("[CalendarView] Error handling drop:", error);
 			}
 		}
