@@ -81,6 +81,7 @@ export interface PrismaExtendedProps {
 	originalTitle: string;
 	frontmatterDisplayData: Frontmatter;
 	isVirtual: boolean;
+	computedColor?: string;
 }
 
 export interface PrismaEventInput extends EventInput {
@@ -93,6 +94,7 @@ export interface FlexibleExtendedProps {
 	originalTitle?: string;
 	frontmatterDisplayData?: Frontmatter;
 	isVirtual?: boolean;
+	computedColor?: string;
 }
 
 export interface CalendarEventData {

@@ -7,8 +7,10 @@ import {
 	ColorEvaluator,
 	cls,
 	formatDuration,
-	hasVeryCloseShade,
+	hasVeryCloseShadeFromRgb,
 	MountableView,
+	parseColorToRgb,
+	type RgbColor,
 	toggleCls,
 } from "@real1ty-obsidian-plugins";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
@@ -23,7 +25,7 @@ import type {
 	ExtendedButtonInput,
 	PrismaEventInput,
 } from "../types/calendar";
-import { isTimedEvent, isUntrackedEvent } from "../types/calendar";
+import { isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import {
 	cleanupTitle,
@@ -36,6 +38,7 @@ import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { getEventRenderingKey } from "../utils/calendar-settings";
 import { diffEvents, eventFingerprint } from "../utils/event-diff";
 import { resolveEventColor } from "../utils/event-color";
+import { invalidatePropertyExtractionCache } from "../utils/expression-utils";
 import {
 	buildEventTooltip,
 	calculateDuration,
@@ -44,7 +47,7 @@ import {
 	toLocalISOString,
 } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
-import { extractPropertyText, getDisplayProperties, renderPropertyValue } from "../utils/property-display";
+import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
@@ -127,6 +130,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private calendarIconCache: Map<string, string | undefined> = new Map();
 	private pendingRefreshRequest = false;
 	private stickyOffsetsRafId: number | null = null;
+	private cachedTextColorRgb: RgbColor | null = null;
+	private cachedTextColorSource: string | null = null;
 
 	private updateMobileControlsToggleButtonElement(): void {
 		if (!this.container) return;
@@ -1472,6 +1477,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		if (eventRenderingKey !== this.previousEventRenderingKey) {
 			this.previousEventRenderingKey = eventRenderingKey;
+			// Invalidate cached color rule property extraction since rules may have changed
+			invalidatePropertyExtractionCache();
 			// Force remount so event-level CSS variables (like text color) are re-applied.
 			this.clearRenderedEventsCache();
 			this.scheduleRefreshEvents();
@@ -1569,6 +1576,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				hasStructuralChanges = this.performIncrementalUpdate(calendarEvents);
 			}
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error("Error refreshing calendar events:", error);
 		}
 
@@ -1596,26 +1604,24 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const start = toLocalISOString(view.activeStart);
 		const end = toLocalISOString(view.activeEnd);
 
-		const allEvents = await this.bundle.eventStore.getNonSkippedEvents({ start, end });
+		const allEvents = await this.bundle.eventStore.getEvents({ start, end });
+		const nonSkipped = allEvents.filter((event) => !event.skipped);
+		const skippedCount = allEvents.length - nonSkipped.length;
+		this.updateSkippedEventsButton(skippedCount);
 
-		const shouldIncludeEvent = (event: CalendarEvent) => {
-			const passesSearch = this.searchFilter.shouldInclude({
-				meta: event.meta,
-				title: event.title,
-			});
-			const passesExpression = this.expressionFilter.shouldInclude(event);
-			return passesSearch && passesExpression;
-		};
+		const visibleEvents: CalendarEvent[] = [];
+		const filteredEvents: CalendarEvent[] = [];
 
-		const trackedEvents = allEvents.filter((event) => !isUntrackedEvent(event));
-		const visibleEvents = trackedEvents.filter(shouldIncludeEvent);
-		const filteredEvents = trackedEvents.filter((event) => !shouldIncludeEvent(event));
+		for (const event of nonSkipped) {
+			const passesFilters =
+				this.searchFilter.shouldInclude({ meta: event.meta, title: event.title }) &&
+				this.expressionFilter.shouldInclude(event);
+
+			(passesFilters ? visibleEvents : filteredEvents).push(event);
+		}
 
 		this.filteredEvents = filteredEvents;
 		this.updateFilteredEventsButton(filteredEvents.length);
-
-		const skippedEvents = await this.bundle.eventStore.getSkippedEvents({ start, end });
-		this.updateSkippedEventsButton(skippedEvents.length);
 
 		return visibleEvents.map((event) => {
 			const classNames = ["regular-event"];
@@ -1642,6 +1648,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					originalTitle: event.title,
 					frontmatterDisplayData: event.meta ?? {},
 					isVirtual: event.isVirtual,
+					computedColor: eventColor,
 				},
 				backgroundColor: eventColor,
 				borderColor: eventColor,
@@ -2024,14 +2031,20 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const element = info.el;
 		const event = info.event;
 
-		// Apply event color
-		const eventColor = this.getEventColor({
-			meta: event.extendedProps.frontmatterDisplayData ?? {},
-		});
+		const eventColor =
+			event.extendedProps.computedColor ||
+			this.getEventColor({ meta: event.extendedProps.frontmatterDisplayData ?? {} });
 
 		element.style.setProperty("--event-color", eventColor);
 		const settings = this.bundle.settingsStore.currentSettings;
-		const textColor = hasVeryCloseShade(settings.eventTextColor, eventColor)
+
+		// Cache parsed foreground RGB to avoid re-parsing the same setting for every event
+		if (this.cachedTextColorSource !== settings.eventTextColor) {
+			this.cachedTextColorRgb = parseColorToRgb(settings.eventTextColor);
+			this.cachedTextColorSource = settings.eventTextColor;
+		}
+
+		const textColor = hasVeryCloseShadeFromRgb(this.cachedTextColorRgb!, eventColor)
 			? settings.eventTextColorAlt
 			: settings.eventTextColor;
 		element.style.setProperty("--event-text-color", textColor);
@@ -2275,6 +2288,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		const filePath = info.event.extendedProps.filePath;
 		if (!filePath || typeof filePath !== "string") {
+			// eslint-disable-next-line no-console
 			console.error("No file path found for event");
 			info.revert();
 			return;
@@ -2295,6 +2309,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error(errorMessage, error);
 			info.revert();
 		}
@@ -2423,6 +2438,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					await this.bundle.commandManager.executeCommand(command);
 				}
 			} catch (error) {
+				// eslint-disable-next-line no-console
 				console.error("[CalendarView] Error handling drop:", error);
 			}
 		}

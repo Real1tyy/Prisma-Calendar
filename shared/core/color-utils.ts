@@ -2,22 +2,56 @@ import { colord } from "colord";
 
 const VERY_CLOSE_SHADE_DISTANCE = 48;
 
+export interface RgbColor {
+	r: number;
+	g: number;
+	b: number;
+}
+
+/**
+ * Parses a color string into RGB components.
+ * Returns null if the color is invalid.
+ */
+export function parseColorToRgb(color: string): RgbColor | null {
+	const parsed = colord(color);
+	if (!parsed.isValid()) return null;
+	return parsed.toRgb();
+}
+
+/**
+ * Calculates the Euclidean distance between two RGB colors.
+ */
+function calculateRgbDistance(rgb1: RgbColor, rgb2: RgbColor): number {
+	return Math.sqrt(
+		(rgb1.r - rgb2.r) * (rgb1.r - rgb2.r) +
+			(rgb1.g - rgb2.g) * (rgb1.g - rgb2.g) +
+			(rgb1.b - rgb2.b) * (rgb1.b - rgb2.b)
+	);
+}
+
 /**
  * True when two colors are very close in shade (RGB distance).
  * Used to switch to alternative text color only when default text color
  * is nearly the same color as the event background.
  */
 export function hasVeryCloseShade(foregroundColor: string, backgroundColor: string): boolean {
-	const foreground = colord(foregroundColor);
-	const background = colord(backgroundColor);
-	if (!foreground.isValid() || !background.isValid()) return false;
+	const foregroundRgb = parseColorToRgb(foregroundColor);
+	const backgroundRgb = parseColorToRgb(backgroundColor);
+	if (!foregroundRgb || !backgroundRgb) return false;
 
-	const fg = foreground.toRgb();
-	const bg = background.toRgb();
-	const distance = Math.sqrt(
-		(fg.r - bg.r) * (fg.r - bg.r) + (fg.g - bg.g) * (fg.g - bg.g) + (fg.b - bg.b) * (fg.b - bg.b)
-	);
+	const distance = calculateRgbDistance(foregroundRgb, backgroundRgb);
+	return distance <= VERY_CLOSE_SHADE_DISTANCE;
+}
 
+/**
+ * Like hasVeryCloseShade but accepts a pre-parsed foreground RGB value.
+ * Avoids re-parsing the same foreground color for every event.
+ */
+export function hasVeryCloseShadeFromRgb(foregroundRgb: RgbColor, backgroundColor: string): boolean {
+	const backgroundRgb = parseColorToRgb(backgroundColor);
+	if (!backgroundRgb) return false;
+
+	const distance = calculateRgbDistance(foregroundRgb, backgroundRgb);
 	return distance <= VERY_CLOSE_SHADE_DISTANCE;
 }
 

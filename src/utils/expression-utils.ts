@@ -36,13 +36,29 @@ export function sanitizeExpression(expression: string, propertyMapping: Map<stri
 	return sanitized;
 }
 
+// Cache for extractPropertiesFromExpressions results, keyed by joined expression strings.
+// Color rules don't change between events, so we avoid re-running regex on every call.
+const propertyExtractionCache = new Map<string, { arrayProperties: Set<string> }>();
+
+/**
+ * Clears the property extraction cache.
+ * Call when color rules change (e.g., settings update).
+ */
+export function invalidatePropertyExtractionCache(): void {
+	propertyExtractionCache.clear();
+}
+
 /**
  * Extracts property names from color rule expressions.
  * Identifies properties that are used with .includes() and need array defaults.
+ * Results are cached by the set of expressions to avoid redundant regex work.
  */
 function extractPropertiesFromExpressions(expressions: string[]): {
 	arrayProperties: Set<string>;
 } {
+	const cacheKey = expressions.join("\0");
+	const cached = propertyExtractionCache.get(cacheKey);
+	if (cached) return cached;
 	const arrayProperties = new Set<string>();
 
 	for (const expression of expressions) {
@@ -60,7 +76,9 @@ function extractPropertiesFromExpressions(expressions: string[]): {
 		}
 	}
 
-	return { arrayProperties };
+	const result = { arrayProperties };
+	propertyExtractionCache.set(cacheKey, result);
+	return result;
 }
 
 /**
