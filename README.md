@@ -209,9 +209,13 @@ If you find Prisma Calendar useful and want to support its ongoing development, 
 
 Every contribution, no matter the size, is greatly appreciated!
 
+## License
+
+[AGPL-3.0](./LICENSE). Versions before v2.0.0 were MIT.
+
 ## Contributing
 
-MIT-licensed. PRs welcome!
+PRs welcome! Contributions are licensed under AGPL-3.0.
 
 ---
 

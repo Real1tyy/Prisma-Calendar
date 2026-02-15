@@ -168,4 +168,10 @@ Every contribution, no matter how small, makes Prisma Calendar better for everyo
 
 ---
 
+## License
+
+Prisma Calendar is licensed under [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html). By submitting a pull request, you agree that your contribution is licensed under the same terms.
+
+---
+
 **Ready to contribute?** [Fork the repository](https://github.com/Real1tyy/Prisma-Calendar) and start making improvements!
