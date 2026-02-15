@@ -1,5 +1,6 @@
 import { onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsidian-plugins";
 import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
+import type { Subscription } from "rxjs";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type { EventSaveData } from "../components/modals/base-event-modal";
 import type CustomCalendarPlugin from "../main";
@@ -49,6 +50,7 @@ export class CalendarBundle {
 	private caldavSync = new SyncState<CalDAVSyncService>("CalDAV");
 	private icsSubscriptionSync = new SyncState<ICSSubscriptionSyncService>("ICS Subscription");
 	private ribbonIconEl: HTMLElement | null = null;
+	private readonly subscriptions: Subscription[] = [];
 
 	constructor(
 		public readonly plugin: CustomCalendarPlugin,
@@ -95,20 +97,21 @@ export class CalendarBundle {
 		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays);
 		this.eventStore.setHolidayStore(this.holidayStore);
 
-		this.mainSettingsStore.settings$.subscribe(() => {
-			this.startCalDAVAutoSync();
-			this.startICSAutoSync();
-		});
+		this.subscriptions.push(
+			this.mainSettingsStore.settings$.subscribe(() => {
+				this.startCalDAVAutoSync();
+				this.startICSAutoSync();
+			}),
+			this.settingsStore.settings$.subscribe((settings) => {
+				this.updateRibbonIcon(settings.showRibbonIcon);
 
-		this.settingsStore.settings$.subscribe((settings) => {
-			this.updateRibbonIcon(settings.showRibbonIcon);
+				const holidaySettingsChanged = this.holidayStore.updateConfig(settings.holidays);
 
-			const holidaySettingsChanged = this.holidayStore.updateConfig(settings.holidays);
-
-			if (holidaySettingsChanged) {
-				this.eventStore.refreshVirtualEvents();
-			}
-		});
+				if (holidaySettingsChanged) {
+					this.eventStore.refreshVirtualEvents();
+				}
+			})
+		);
 	}
 
 	getCalDAVSettings() {
@@ -277,6 +280,8 @@ export class CalendarBundle {
 		// Don't detach leaves here - Obsidian handles that automatically during plugin updates
 		// Detaching in onunload causes leaves to reset to their original positions
 		// See: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60
+
+		for (const sub of this.subscriptions) sub.unsubscribe();
 
 		if (this.ribbonIconEl) {
 			this.ribbonIconEl.remove();

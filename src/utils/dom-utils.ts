@@ -8,13 +8,17 @@ export function createTextDiv(parent: HTMLElement, text: string, cls: string): H
  * @param eventId - The event ID to match against the data-event-id attribute
  * @param className - The CSS class name to toggle (without prefix)
  * @param add - Whether to add (true) or remove (false) the class
+ * @param scope - Optional parent element to scope the query (defaults to document)
  */
-export function toggleEventHighlight(eventId: string, className: string, add: boolean): void {
-	const elements = Array.from(document.querySelectorAll(`[data-event-id="${eventId}"]`));
-	for (const element of elements) {
-		if (element instanceof HTMLElement) {
-			element.classList.toggle(className, add);
-		}
+export function toggleEventHighlight(
+	eventId: string,
+	className: string,
+	add: boolean,
+	scope: ParentNode = document
+): void {
+	const elements = scope.querySelectorAll<HTMLElement>(`[data-event-id="${eventId}"]`);
+	for (let i = 0; i < elements.length; i++) {
+		elements[i].classList.toggle(className, add);
 	}
 }
 

@@ -132,6 +132,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private stickyOffsetsRafId: number | null = null;
 	private cachedTextColorRgb: RgbColor | null = null;
 	private cachedTextColorSource: string | null = null;
+	/** Pre-indexed map of date string → unique event colors, built during buildCalendarEvents(). */
+	private colorDotIndex = new Map<string, Set<string>>();
 
 	private updateMobileControlsToggleButtonElement(): void {
 		if (!this.container) return;
@@ -864,14 +866,13 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const matchingEvents = events.filter((event) => event.extendedProps?.filePath === filePath);
 
 		for (const event of matchingEvents) {
-			const eventElements = Array.from(document.querySelectorAll(`[data-event-id="${event.id}"]`));
-			for (const element of eventElements) {
-				if (element instanceof HTMLElement) {
-					element.classList.add(cls("event-highlighted"));
-					setTimeout(() => {
-						element.classList.remove(cls("event-highlighted"));
-					}, durationMs);
-				}
+			const eventElements = this.container.querySelectorAll<HTMLElement>(`[data-event-id="${event.id}"]`);
+			for (let i = 0; i < eventElements.length; i++) {
+				const element = eventElements[i];
+				element.classList.add(cls("event-highlighted"));
+				setTimeout(() => {
+					element.classList.remove(cls("event-highlighted"));
+				}, durationMs);
 			}
 		}
 	}
@@ -929,51 +930,33 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			return result;
 		}
 
-		// Get all events from the calendar
+		// Single pass through rendered events: find active events AND track nearest upcoming.
+		// Replaces the original triple-filter-then-sort with one loop.
+		let nearestUpcomingId: string | null = null;
+		let nearestUpcomingStart = Infinity;
+
 		const events = this.calendar.getEvents();
+		for (const event of events) {
+			if (!event.start || event.allDay || event.extendedProps?.isVirtual) continue;
 
-		// Filter to only timed events (exclude all-day events and virtual events)
-		const timedEvents = events.filter((event) => {
-			const eventStart = event.start;
-			if (!eventStart) return false;
-			// Exclude virtual events from being highlighted
-			if (event.extendedProps?.isVirtual) return false;
-			// Always ignore all-day events - only highlight timed events
-			if (event.allDay) return false;
-			return true;
-		});
+			const eventEnd = event.end || event.start;
 
-		// First, find the first timed event that is currently active (now is between start and end)
-		const activeTimedEvents = timedEvents.filter((event) => {
-			const eventStart = event.start!;
-			const eventEnd = event.end || eventStart;
-			// Check if now is between start and end
-			return eventStart <= now && now <= eventEnd;
-		});
-
-		// If there are active events, highlight all of them
-		if (activeTimedEvents.length > 0) {
-			for (const event of activeTimedEvents) {
+			if (event.start <= now && now <= eventEnd) {
+				// Active event — currently happening
 				result.add(event.id);
+			} else if (result.size === 0 && event.start > now) {
+				// Track nearest future event (only matters if no active events found)
+				const startTime = event.start.getTime();
+				if (startTime < nearestUpcomingStart) {
+					nearestUpcomingStart = startTime;
+					nearestUpcomingId = event.id;
+				}
 			}
-			return result;
 		}
 
-		// If no active timed events, find the next upcoming timed event (closest future start time)
-		const upcomingTimedEvents = timedEvents
-			.filter((event) => {
-				const eventStart = event.start!;
-				return eventStart > now;
-			})
-			.sort((a, b) => {
-				const aStart = a.start?.getTime() || 0;
-				const bStart = b.start?.getTime() || 0;
-				return aStart - bStart;
-			});
-
-		// Return the ID of the first upcoming timed event
-		if (upcomingTimedEvents.length > 0) {
-			result.add(upcomingTimedEvents[0].id);
+		// If no active events, highlight the nearest upcoming one
+		if (result.size === 0 && nearestUpcomingId) {
+			result.add(nearestUpcomingId);
 		}
 
 		return result;
@@ -996,14 +979,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		// Remove highlight from previous upcoming events that are no longer active
 		for (const oldId of this.currentUpcomingEventIds) {
 			if (!newUpcomingEventIds.has(oldId)) {
-				toggleEventHighlight(oldId, cls("event-upcoming"), false);
+				toggleEventHighlight(oldId, cls("event-upcoming"), false, this.container);
 			}
 		}
 
 		// Add highlight to new upcoming events
 		for (const newId of newUpcomingEventIds) {
 			if (!this.currentUpcomingEventIds.has(newId)) {
-				toggleEventHighlight(newId, cls("event-upcoming"), true);
+				toggleEventHighlight(newId, cls("event-upcoming"), true, this.container);
 			}
 		}
 
@@ -1039,12 +1022,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		// Clear all highlighted upcoming events
 		for (const eventId of this.currentUpcomingEventIds) {
-			const eventElements = Array.from(document.querySelectorAll(`[data-event-id="${eventId}"]`));
-			for (const element of eventElements) {
-				if (element instanceof HTMLElement) {
-					element.classList.remove(cls("event-upcoming"));
-				}
-			}
+			toggleEventHighlight(eventId, cls("event-upcoming"), false, this.container);
 		}
 		this.currentUpcomingEventIds.clear();
 	}
@@ -1057,7 +1035,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		if (this.currentCategoryHighlightClass !== null) {
 			for (const eventId of this.highlightedCategoryEvents) {
-				toggleEventHighlight(eventId, this.currentCategoryHighlightClass, false);
+				toggleEventHighlight(eventId, this.currentCategoryHighlightClass, false, this.container);
 			}
 			this.highlightedCategoryEvents.clear();
 			this.currentCategoryHighlightClass = null;
@@ -1089,7 +1067,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const eventIds = getEventIds();
 
 		for (const eventId of eventIds) {
-			toggleEventHighlight(eventId, highlightClass, true);
+			toggleEventHighlight(eventId, highlightClass, true, this.container);
 		}
 
 		this.highlightedCategoryEvents = eventIds;
@@ -1622,6 +1600,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.filteredEvents = filteredEvents;
 		this.updateFilteredEventsButton(filteredEvents.length);
 
+		// Build color-dot index while mapping events (avoids a second O(n) pass)
+		this.colorDotIndex.clear();
+
 		return visibleEvents.map((event) => {
 			const classNames = ["regular-event"];
 			if (event.isVirtual) {
@@ -1631,6 +1612,15 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			const start = event.start.replace(/Z$/, "");
 			const end = isTimedEvent(event) ? event.end.replace(/Z$/, "") : undefined;
+
+			// Index color by date for O(1) color-dot lookup
+			const dateKey = start.slice(0, 10);
+			let colorSet = this.colorDotIndex.get(dateKey);
+			if (!colorSet) {
+				colorSet = new Set();
+				this.colorDotIndex.set(dateKey, colorSet);
+			}
+			colorSet.add(eventColor);
 
 			const folder = event.meta?.folder;
 			const folderStr = typeof folder === "string" ? folder : "";
@@ -1890,49 +1880,29 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const viewType = this.calendar.view?.type;
 		if (!settings.showColorDots || viewType !== "dayGridMonth") return;
 
-		// Get all day cells
 		const dayCells = Array.from(this.container.querySelectorAll(".fc-daygrid-day"));
-		const events = this.calendar.getEvents();
 		const maxDots = this.isMobileView() ? 6 : 8;
 
 		for (const dayCell of dayCells) {
 			const dateAttr = dayCell.getAttribute("data-date");
 			if (!dateAttr) continue;
 
-			// Parse the date
-			const dayDate = new Date(dateAttr);
-			const dayStart = new Date(dayDate);
-			dayStart.setHours(0, 0, 0, 0);
-			const dayEnd = new Date(dayDate);
-			dayEnd.setHours(23, 59, 59, 999);
-
-			// Get events for this day
-			const dayEvents = events.filter((event) => {
-				const eventStart = event.start;
-				if (!eventStart) return false;
-				const eventStartTime = eventStart.getTime();
-				return eventStartTime >= dayStart.getTime() && eventStartTime <= dayEnd.getTime();
-			});
-
-			if (dayEvents.length === 0) continue;
-
-			// Collect unique colors
-			const colors = new Set<string>();
-			for (const event of dayEvents) {
-				if (colors.size >= maxDots) break;
-				const color = event.backgroundColor || event.borderColor || "#3788d8";
-				colors.add(color);
-			}
+			// O(1) lookup from pre-built index instead of filtering all events
+			const colors = this.colorDotIndex.get(dateAttr);
+			if (!colors || colors.size === 0) continue;
 
 			// Create dots container
 			const dotsContainer = document.createElement("div");
 			dotsContainer.className = cls("day-color-dots");
 
+			let count = 0;
 			for (const color of colors) {
+				if (count >= maxDots) break;
 				const dot = document.createElement("div");
 				dot.className = cls("day-color-dot");
 				dot.style.setProperty("--dot-color", color);
 				dotsContainer.appendChild(dot);
+				count++;
 			}
 
 			const dayTop = dayCell.querySelector(".fc-daygrid-day-top");
