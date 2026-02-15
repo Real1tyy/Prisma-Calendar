@@ -432,6 +432,7 @@ const getPrismaInternalProps = (settings: SingleCalendarConfig): Set<string> => 
 			settings.futureInstancesCountProp,
 			settings.alreadyNotifiedProp,
 			settings.caldavProp,
+			settings.icsSubscriptionProp,
 			settings.generatePastEventsProp,
 			settings.ignoreRecurringProp,
 			settings.locationProp,

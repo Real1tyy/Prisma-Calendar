@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.0.1 - 2/15/2026
+
+### Fixed
+
+- **Recurring events and ICS import**: Internal and integration metadata (CalDAV sync metadata, ICS subscription metadata) are no longer copied when creating recurring event instances from a source event or when importing events from ICS files. Previously, these properties could be propagated to generated instances, causing incorrect sync behavior and unnecessary duplication of integration metadata.
+
+---
+
 ## 2.0.0 - 2/15/2026
 
 ### Added
