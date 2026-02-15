@@ -10,6 +10,8 @@ All notable changes to this project will be documented here.
 
 - **License changed from MIT to AGPL-3.0**: Starting with v2.0.0, Prisma Calendar is licensed under the [GNU Affero General Public License v3.0](https://www.gnu.org/licenses/agpl-3.0.html). Prisma Calendar remains fully open source. The AGPL-3.0 ensures all derivative works also remain open source, preventing closed-source commercial forks. Versions prior to v2.0.0 remain available under the MIT License.
 
+- **Performance improvements**: Live event processing is now significantly faster. Event color computation is cached and reused instead of recalculated on every render. Frontmatter property extraction results are cached to avoid repeated parsing. Skipped events are tracked in a dedicated index, eliminating full-list scans. Frontmatter change detection uses hashing to short-circuit unchanged files during resyncs. Frontmatter writes are serialized per file to prevent interleaving and redundant reprocessing. Startup may be slightly slower in large vaults — the plugin now waits for Obsidian's metadata cache to fully resolve before indexing, which provides stronger guarantees against duplicate events and stale data during sync. If startup feels unusually slow, please [report an issue](https://github.com/real1tyy/obsidian-prisma-calendar/issues).
+
 ---
 
 ## 1.33.0 - 2/14/2026
