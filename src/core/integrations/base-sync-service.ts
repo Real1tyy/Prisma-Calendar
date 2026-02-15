@@ -68,7 +68,7 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 		event: ImportedEvent,
 		timezone: string,
 		additionalFrontmatter: Record<string, unknown>
-	): Promise<void> {
+	): Promise<boolean> {
 		let file = this.app.vault.getAbstractFileByPath(filePath);
 		if (!(file instanceof TFile)) {
 			throw new Error(`File not found: ${filePath}`);
@@ -99,11 +99,31 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 			}
 		}
 
+		const eventFm = buildFrontmatterFromImportedEvent(event, settings, timezone);
+
+		if (!titleChanged) {
+			const existingFm = this.app.metadataCache.getFileCache(file)?.frontmatter;
+			if (existingFm && !this.hasFrontmatterChanges(eventFm, existingFm)) {
+				return false;
+			}
+		}
+
 		await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
-			const eventFm = buildFrontmatterFromImportedEvent(event, settings, timezone);
 			Object.assign(fm, eventFm);
 			Object.assign(fm, additionalFrontmatter);
 		});
+
+		return true;
+	}
+
+	private hasFrontmatterChanges(eventFm: Frontmatter, existingFm: Record<string, unknown>): boolean {
+		for (const [key, value] of Object.entries(eventFm)) {
+			if (JSON.stringify(existingFm[key]) !== JSON.stringify(value)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	protected getSyncFolderPath(): string {

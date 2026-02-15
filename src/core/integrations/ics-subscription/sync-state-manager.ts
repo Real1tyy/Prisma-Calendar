@@ -12,12 +12,21 @@ export class ICSSubscriptionSyncStateManager extends BaseSyncStateManager<ICSSub
 	 */
 	private syncState: Map<string, Map<string, TrackedICSSubscriptionEvent>> = new Map();
 
+	/**
+	 * Global uid index for cross-subscription dedup: uid -> TrackedICSSubscriptionEvent
+	 */
+	private globalUidIndex: Map<string, TrackedICSSubscriptionEvent> = new Map();
+
 	constructor(indexer: Indexer, settings$: BehaviorSubject<SingleCalendarConfig>) {
 		super(indexer, settings$, (s) => s.icsSubscriptionProp, ICSSubscriptionSyncMetadataSchema);
 	}
 
 	findByUid(subscriptionId: string, uid: string): TrackedICSSubscriptionEvent | null {
 		return this.syncState.get(subscriptionId)?.get(uid) || null;
+	}
+
+	findByUidGlobal(uid: string): TrackedICSSubscriptionEvent | null {
+		return this.globalUidIndex.get(uid) || null;
 	}
 
 	getAllForSubscription(subscriptionId: string): TrackedICSSubscriptionEvent[] {
@@ -32,7 +41,9 @@ export class ICSSubscriptionSyncStateManager extends BaseSyncStateManager<ICSSub
 			this.syncState.set(metadata.subscriptionId, subscriptionState);
 		}
 
-		subscriptionState.set(metadata.uid, { filePath, metadata });
+		const tracked = { filePath, metadata };
+		subscriptionState.set(metadata.uid, tracked);
+		this.globalUidIndex.set(metadata.uid, tracked);
 	}
 
 	protected untrackByPath(filePath: string): boolean {
@@ -40,6 +51,7 @@ export class ICSSubscriptionSyncStateManager extends BaseSyncStateManager<ICSSub
 			for (const [uid, tracked] of subscriptionState.entries()) {
 				if (tracked.filePath === filePath) {
 					subscriptionState.delete(uid);
+					this.globalUidIndex.delete(uid);
 					return true;
 				}
 			}
@@ -49,5 +61,6 @@ export class ICSSubscriptionSyncStateManager extends BaseSyncStateManager<ICSSub
 
 	protected clearState(): void {
 		this.syncState.clear();
+		this.globalUidIndex.clear();
 	}
 }

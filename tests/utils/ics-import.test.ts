@@ -930,19 +930,15 @@ END:VCALENDAR`;
 			expect(durationMs).toBe(3.5 * 60 * 60 * 1000); // 3.5 hours in milliseconds
 		});
 
-		it("should extract lastModified timestamp from DTSTAMP", () => {
+		it("should not use DTSTAMP as lastModified fallback", () => {
 			const result = parseICSContent(CALDAV_ICS_WITH_DURATION_3H);
 
 			expect(result.success).toBe(true);
 			const event = result.events[0];
 
-			// DTSTAMP:20251206T100035Z
-			expect(event.lastModified).toBeDefined();
-			expect(event.lastModified).toBeGreaterThan(0);
-
-			// Verify it's approximately the correct timestamp
-			const dtstamp = new Date("2025-12-06T10:00:35Z");
-			expect(event.lastModified).toBe(dtstamp.getTime());
+			// DTSTAMP changes on every ICS export and is not a reliable change indicator (RFC 5545)
+			// Only LAST-MODIFIED should be used, so lastModified should be undefined here
+			expect(event.lastModified).toBeUndefined();
 		});
 
 		it("should prefer DTEND over DURATION if both are present", () => {

@@ -83,9 +83,15 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 						if (existingEvent.metadata.etag === event.etag) {
 							continue;
 						}
-						await this.updateNoteFromEvent(existingEvent.filePath, event);
-						result.updated++;
+						const wasUpdated = await this.updateNoteFromEvent(existingEvent.filePath, event);
+						if (wasUpdated) {
+							result.updated++;
+						}
 					} else {
+						// Skip if another account/calendar already tracks this event (same uid)
+						if (this.syncStateManager.findByUidGlobal(uid)) {
+							continue;
+						}
 						await this.createNoteFromEvent(event);
 						result.created++;
 					}
@@ -138,7 +144,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 		});
 	}
 
-	private async updateNoteFromEvent(filePath: string, event: CalDAVFetchedEvent): Promise<void> {
+	private async updateNoteFromEvent(filePath: string, event: CalDAVFetchedEvent): Promise<boolean> {
 		const parsed = parseICSContent(event.data);
 		if (!parsed.success || parsed.events.length === 0) {
 			throw new Error("Failed to parse ICS data");
@@ -157,7 +163,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 			lastSyncedAt: Date.now(),
 		};
 
-		await this.updateNoteFromImportedEvent(filePath, importedEvent, this.account.timezone, {
+		return await this.updateNoteFromImportedEvent(filePath, importedEvent, this.account.timezone, {
 			[caldavProp]: syncMeta,
 		});
 	}

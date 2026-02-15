@@ -237,16 +237,11 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 			const uid = event.uid;
 			const rrule = parseICSRRule(vevent);
 
-			// Extract last modified timestamp (prefer LAST-MODIFIED, fall back to DTSTAMP)
+			// Extract last modified timestamp (LAST-MODIFIED only, not DTSTAMP which changes on every ICS export)
 			let lastModified: number | undefined;
 			const lastModifiedTime = vevent.getFirstPropertyValue("last-modified") as ICAL.Time | null;
 			if (lastModifiedTime) {
 				lastModified = icalTimeToDate(lastModifiedTime).getTime();
-			} else {
-				const dtstamp = vevent.getFirstPropertyValue("dtstamp") as ICAL.Time | null;
-				if (dtstamp) {
-					lastModified = icalTimeToDate(dtstamp).getTime();
-				}
 			}
 
 			events.push({

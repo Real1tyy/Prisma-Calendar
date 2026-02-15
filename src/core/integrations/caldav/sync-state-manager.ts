@@ -13,12 +13,21 @@ export class CalDAVSyncStateManager extends BaseSyncStateManager<CalDAVSyncMetad
 	 */
 	private syncState: Map<string, Map<string, Map<string, TrackedCalDAVEvent>>> = new Map();
 
+	/**
+	 * Global uid index for cross-account/calendar dedup: uid -> TrackedCalDAVEvent
+	 */
+	private globalUidIndex: Map<string, TrackedCalDAVEvent> = new Map();
+
 	constructor(indexer: Indexer, settings$: BehaviorSubject<SingleCalendarConfig>) {
 		super(indexer, settings$, (s) => s.caldavProp, CalDAVSyncMetadataSchema);
 	}
 
 	findByUid(accountId: string, calendarHref: string, uid: string): TrackedCalDAVEvent | null {
 		return this.syncState.get(accountId)?.get(calendarHref)?.get(uid) || null;
+	}
+
+	findByUidGlobal(uid: string): TrackedCalDAVEvent | null {
+		return this.globalUidIndex.get(uid) || null;
 	}
 
 	getAllForCalendar(accountId: string, calendarHref: string): TrackedCalDAVEvent[] {
@@ -50,7 +59,9 @@ export class CalDAVSyncStateManager extends BaseSyncStateManager<CalDAVSyncMetad
 			accountState.set(metadata.calendarHref, calendarState);
 		}
 
-		calendarState.set(metadata.uid, { filePath, metadata });
+		const tracked = { filePath, metadata };
+		calendarState.set(metadata.uid, tracked);
+		this.globalUidIndex.set(metadata.uid, tracked);
 	}
 
 	protected untrackByPath(filePath: string): boolean {
@@ -59,6 +70,7 @@ export class CalDAVSyncStateManager extends BaseSyncStateManager<CalDAVSyncMetad
 				for (const [uid, tracked] of calendarState.entries()) {
 					if (tracked.filePath === filePath) {
 						calendarState.delete(uid);
+						this.globalUidIndex.delete(uid);
 						return true;
 					}
 				}
@@ -69,5 +81,6 @@ export class CalDAVSyncStateManager extends BaseSyncStateManager<CalDAVSyncMetad
 
 	protected clearState(): void {
 		this.syncState.clear();
+		this.globalUidIndex.clear();
 	}
 }

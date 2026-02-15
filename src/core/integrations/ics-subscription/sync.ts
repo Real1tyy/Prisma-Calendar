@@ -92,16 +92,18 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 					const existingEvent = this.syncStateManager.findByUid(this.subscription.id, uid);
 
 					if (existingEvent) {
-						if (
-							existingEvent.metadata.lastModified !== undefined &&
-							event.lastModified !== undefined &&
-							existingEvent.metadata.lastModified === event.lastModified
-						) {
+						if (existingEvent.metadata.lastModified === event.lastModified) {
 							continue;
 						}
-						await this.updateNoteFromEvent(existingEvent.filePath, event, uid);
-						result.updated++;
+						const wasUpdated = await this.updateNoteFromEvent(existingEvent.filePath, event, uid);
+						if (wasUpdated) {
+							result.updated++;
+						}
 					} else {
+						// Skip if another subscription already tracks this event (same uid)
+						if (this.syncStateManager.findByUidGlobal(uid)) {
+							continue;
+						}
 						await this.createNoteFromEvent(event, uid);
 						result.created++;
 					}
@@ -161,7 +163,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 		});
 	}
 
-	private async updateNoteFromEvent(filePath: string, event: ImportedEvent, uid: string): Promise<void> {
+	private async updateNoteFromEvent(filePath: string, event: ImportedEvent, uid: string): Promise<boolean> {
 		const icsSubscriptionProp = this.bundle.settingsStore.currentSettings.icsSubscriptionProp;
 
 		const syncMeta: ICSSubscriptionSyncMetadata = {
@@ -171,7 +173,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			lastSyncedAt: Date.now(),
 		};
 
-		await this.updateNoteFromImportedEvent(filePath, event, this.subscription.timezone, {
+		return await this.updateNoteFromImportedEvent(filePath, event, this.subscription.timezone, {
 			[icsSubscriptionProp]: syncMeta,
 		});
 	}
