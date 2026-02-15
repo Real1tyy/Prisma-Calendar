@@ -220,9 +220,7 @@ export class Indexer {
 			const file = this.app.vault.getAbstractFileByPath(filePath);
 			if (!(file instanceof TFile)) return;
 
-			// Clone immediately — source.frontmatter may be a reference owned by the generic indexer.
-			// The generic indexer now listens to metadataCache.on("changed") instead of vault events,
-			// so frontmatter is guaranteed to be up-to-date when we receive it.
+			// Clone immediately — source.frontmatter may be a reference owned by the generic indexer
 			const frontmatter = { ...(source.frontmatter as Frontmatter) };
 
 			const events = await this.buildCalendarEvents(file, frontmatter, oldPath, oldFrontmatter, frontmatterDiff);
@@ -321,11 +319,19 @@ export class Indexer {
 		const frontmatterCopy = { ...frontmatter };
 
 		if (!rRuleId) {
-			// Frontmatter is up-to-date (generic indexer uses metadataCache.on("changed")),
-			// so if rruleId is missing it genuinely doesn't exist yet.
-			if (this.syncStore?.data.readOnly) {
-				// In readOnly mode we can't write to the file, so generate an ephemeral ID
-				rRuleId = generateUniqueRruleId();
+			// vault.on("modify") fires BEFORE the metadata cache updates, so the rRuleId
+			// might already exist on disk but not be in the cache yet. Wait for the
+			// cache to catch up before deciding to generate a new ID — prevents duplicates.
+			await new Promise((resolve) => setTimeout(resolve, 200));
+			const freshCache = this.app.metadataCache.getFileCache(file);
+			const cachedId = toSafeString(freshCache?.frontmatter?.[this.settings.rruleIdProp]);
+
+			if (cachedId) {
+				rRuleId = cachedId;
+			} else if (this.syncStore?.data.readOnly) {
+				// In readOnly mode we can't write an rRuleId — skip this recurring event entirely.
+				// Without a stable ID, instances can't be deduplicated across reloads.
+				return null;
 			} else {
 				rRuleId = generateUniqueRruleId();
 				await this.enqueueFrontmatterWrite(file, (fm: Frontmatter) => {
