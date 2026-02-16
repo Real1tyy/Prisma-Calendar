@@ -619,6 +619,16 @@ export class RecurringEventManager extends DebouncedNotifier {
 				return null;
 			}
 
+			// Re-check in-memory map (may have been populated since createInstanceIfMissing checked)
+			const dateKey = instanceDate.toISODate();
+			if (dateKey) {
+				const data = this.recurringEventsMap.get(recurringEvent.rRuleId);
+				const existingInstances = data?.physicalInstances.get(dateKey);
+				if (existingInstances?.some((i) => !i.ignored)) {
+					return null;
+				}
+			}
+
 			// Lazy load content if not already loaded (deferred from initial scan)
 			// Note: content can be empty string ("") which is valid, so check for undefined/null specifically
 			let content = recurringEvent.content;
