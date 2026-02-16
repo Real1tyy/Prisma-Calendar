@@ -75,6 +75,9 @@ importers:
       '@eslint/js':
         specifier: ^9.17.0
         version: 9.39.2
+      '@types/fuzzyset.js':
+        specifier: ^0.0.5
+        version: 0.0.5
       '@types/luxon':
         specifier: ^3.7.1
         version: 3.7.1
@@ -847,6 +850,9 @@ packages:
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
+
+  '@types/fuzzyset.js@0.0.5':
+    resolution: {integrity: sha512-AY1ONjlROTgY4YZ+JTupYxNxfXLy10/rmP5Mbb1wCFNGZogEsUe+3anBYE++sEDINTxuw/MduMLW+l3c+igj4A==}
 
   '@types/hammerjs@2.0.46':
     resolution: {integrity: sha512-ynRvcq6wvqexJ9brDMS4BnBLzmr0e14d6ZJTEShTBWKymQiHwlAyGu0ZPEFI2Fh1U53F7tN9ufClWM5KvqkKOw==}
@@ -2396,6 +2402,8 @@ snapshots:
   '@types/deep-eql@4.0.2': {}
 
   '@types/estree@1.0.8': {}
+
+  '@types/fuzzyset.js@0.0.5': {}
 
   '@types/hammerjs@2.0.46': {}
 
