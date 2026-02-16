@@ -126,6 +126,7 @@ export abstract class BaseEventModal extends Modal {
 
 	// Suppress auto-category assignment once user interacts with category UI
 	private suppressAutoCategories = false;
+	private typoModalOpen = false;
 
 	// Flag to prevent double-saving when minimize() is called explicitly
 	private isMinimizing = false;
@@ -1274,10 +1275,8 @@ export abstract class BaseEventModal extends Modal {
 	 * On dismiss (Escape): save with original name.
 	 */
 	protected saveWithTypoCheck(): void {
-		if (this.suppressAutoCategories) {
-			this.saveEvent();
-			return;
-		}
+		// Guard against re-entrant calls (Enter key propagation from SuggestModal)
+		if (this.typoModalOpen) return;
 
 		const eventName = this.titleInput.value.trim();
 		if (!eventName) {
@@ -1288,35 +1287,42 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const availableCategories = this.bundle.categoryTracker.getCategories();
 
-		// First try exact auto-assign (in case blur didn't fire)
-		if (
-			settings.autoAssignCategoryByName ||
-			(settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0)
-		) {
-			const autoAssigned = autoAssignCategories(eventName, settings, availableCategories);
-			if (autoAssigned.length > 0) {
-				this.selectedCategories = autoAssigned;
-				this.renderCategories();
-				this.saveEvent();
-				return;
+		// First try exact auto-assign (in case blur didn't fire) — skip if user manually set categories
+		if (!this.suppressAutoCategories) {
+			if (
+				settings.autoAssignCategoryByName ||
+				(settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0)
+			) {
+				const autoAssigned = autoAssignCategories(eventName, settings, availableCategories);
+				if (autoAssigned.length > 0) {
+					this.selectedCategories = autoAssigned;
+					this.renderCategories();
+					this.saveEvent();
+					return;
+				}
 			}
 		}
 
-		// No exact match — try fuzzy matching
+		// No exact match — try fuzzy matching (always runs, even if categories were manually set)
+		// This corrects the event NAME regardless of category assignment
 		if (settings.detectEventNameTypos) {
 			const existingNameKeys = this.bundle.nameSeriesTracker.getAllNameKeys();
 			const fuzzyResults = findFuzzyNameMatch(eventName, settings, availableCategories, existingNameKeys);
 
 			if (fuzzyResults) {
+				this.typoModalOpen = true;
 				let accepted = false;
 				const modal = new TypoSuggestionModal(this.app, fuzzyResults, (suggestion) => {
 					accepted = true;
 					this.titleInput.value = suggestion;
 
-					const autoAssigned = autoAssignCategories(suggestion, settings, availableCategories);
-					if (autoAssigned.length > 0) {
-						this.selectedCategories = autoAssigned;
-						this.renderCategories();
+					// Only auto-assign categories if user hasn't manually set them
+					if (!this.suppressAutoCategories) {
+						const autoAssigned = autoAssignCategories(suggestion, settings, availableCategories);
+						if (autoAssigned.length > 0) {
+							this.selectedCategories = autoAssigned;
+							this.renderCategories();
+						}
 					}
 
 					this.saveEvent();
@@ -1324,10 +1330,15 @@ export abstract class BaseEventModal extends Modal {
 				const origOnClose = modal.onClose.bind(modal);
 				modal.onClose = () => {
 					origOnClose();
-					// Dismissed without accepting — save with original name
-					if (!accepted) {
-						this.saveEvent();
-					}
+					this.typoModalOpen = false;
+					// Defer dismiss check: Obsidian's SuggestModal calls close() before
+					// onChooseSuggestion, so `accepted` is still false when onClose fires.
+					// A zero-delay timeout lets onChooseSuggestion set `accepted = true` first.
+					setTimeout(() => {
+						if (!accepted) {
+							this.saveEvent();
+						}
+					}, 0);
 				};
 				modal.open();
 				return;
