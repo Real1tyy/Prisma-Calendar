@@ -13,7 +13,13 @@ import { filter, take } from "rxjs/operators";
 import { SCAN_CONCURRENCY } from "../constants";
 import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
-import { cleanupTitle, generateUniqueRruleId, getRecurringInstanceExcludedProps } from "../utils/calendar-events";
+import {
+	cleanupTitle,
+	ensureFileHasZettelId,
+	generateUniqueRruleId,
+	getRecurringInstanceExcludedProps,
+	hasTimestamp,
+} from "../utils/calendar-events";
 import { intoDate, toSafeString } from "../utils/format";
 
 export interface RawEventSource {
@@ -58,6 +64,8 @@ export class Indexer {
 	private handlerCollector: Promise<void>[] | null = null;
 	/** Per-file queue to serialize processFrontMatter calls */
 	private fmLocks = new Map<string, Promise<void>>();
+	/** Tracks files currently being renamed for ZettelID to prevent re-entrant triggers */
+	private zettelIdRenamesInFlight = new Set<string>();
 	private readonly includeFile = (filePath: string): boolean => {
 		const directory = this.settings.directory;
 		if (!directory) return true;
@@ -278,6 +286,12 @@ export class Indexer {
 		const isUntracked = !hasDateOrTime;
 
 		if (hasDateOrTime || isUntracked) {
+			// Auto-assign ZettelID: fire-and-forget. The rename triggers a new indexer
+			// event cycle with the updated path, so we don't need to await or update state here.
+			void this.autoAssignZettelId(file, isUntracked).catch((error) => {
+				console.error(`Error auto-assigning ZettelID for ${file.path}:`, error);
+			});
+
 			if (this.settings.markPastInstancesAsDone && hasDateOrTime) {
 				void this.markPastEventAsDone(file, frontmatter).catch((error) => {
 					console.error(`Error in background marking of past event ${file.path}:`, error);
@@ -386,6 +400,32 @@ export class Indexer {
 		await this.enqueueFrontmatterWrite(file, (fm: Frontmatter) => {
 			fm[calendarTitleProp] = titleLink;
 		});
+	}
+
+	/**
+	 * Auto-assigns a ZettelID to a file if the setting is enabled and the file doesn't have one.
+	 * Uses a Set to track in-flight renames and prevent re-entrant triggers from the rename event.
+	 * @param isUntracked - true if the file has no date/time properties (untracked event)
+	 */
+	private async autoAssignZettelId(file: TFile, isUntracked: boolean): Promise<void> {
+		const mode = this.settings.autoAssignZettelId;
+		if (mode === "disabled") return;
+		if (mode === "calendarEvents" && isUntracked) return;
+		if (this.syncStore?.data.readOnly) return;
+		if (hasTimestamp(file.basename)) return;
+
+		// Prevent re-entrant renames: if we're already renaming this file (by original path),
+		// skip. Also check the current path in case the event arrives after rename started.
+		if (this.zettelIdRenamesInFlight.has(file.path)) return;
+
+		this.zettelIdRenamesInFlight.add(file.path);
+		try {
+			await ensureFileHasZettelId(this.app, file, this.settings.zettelIdProp);
+		} catch (error) {
+			console.error(`Error auto-assigning ZettelID to ${file.path}:`, error);
+		} finally {
+			this.zettelIdRenamesInFlight.delete(file.path);
+		}
 	}
 
 	private async markPastEventAsDone(file: TFile, frontmatter: Frontmatter): Promise<void> {

@@ -216,10 +216,16 @@ export const hashRRuleIdToZettelFormat = (rRuleId: string): string => {
 
 /**
  * Extracts ZettelID from a filename or title.
+ * Handles plugin-generated filename patterns:
+ * - Regular:            "Title-ZETTELID"              (e.g., Meeting-20250203140530)
+ * - Recurring instance: "Title YYYY-MM-DD-ZETTELID"   (e.g., Meeting 2025-02-03-00001125853328)
+ * Also supports legacy formats for backwards compatibility:
+ * - Space-dash-space:   "Title - ZETTELID"            (e.g., Updated Meeting - 20250203140530)
+ * - Space-separated:    "Title ZETTELID"              (e.g., Workout 20250203140530)
  * Returns the ZettelID string if found, null otherwise.
  */
 export const extractZettelId = (text: string): string | null => {
-	const match = text.match(/-(\d{14})$/);
+	const match = text.match(/[-\s](\d{14})$/);
 	return match ? match[1] : null;
 };
 
@@ -639,12 +645,13 @@ export const generateUniqueZettelId = (app: App, basePath: string, baseNameWitho
 
 /**
  * Checks if a basename already has a Prisma ZettelID timestamp.
- * Only recognizes Prisma's native format: -YYYYMMDDHHmmss (14 digits)
- * Returns true if the basename ends with this pattern.
+ * Handles plugin-generated patterns:
+ * - Regular:            "Title-ZETTELID"              (e.g., Meeting-20250203140530)
+ * - Recurring instance: "Title YYYY-MM-DD-ZETTELID"   (e.g., Meeting 2025-02-03-00001125853328)
+ * Also supports legacy formats (CalDAV ` - ` separator, space-separated) for backwards compatibility.
  */
 export const hasTimestamp = (baseName: string): boolean => {
-	// Only check for Prisma's native 14-digit ZettelID format
-	return /-\d{14}$/.test(baseName);
+	return /[-\s]\d{14}$/.test(baseName);
 };
 
 /**

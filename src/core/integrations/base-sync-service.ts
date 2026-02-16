@@ -87,7 +87,7 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 			const existingZettelId = extractZettelId(file.basename);
 			if (existingZettelId) {
 				const directory = file.parent?.path || "";
-				const newFilename = `${newTitle} - ${existingZettelId}`;
+				const newFilename = `${newTitle}-${existingZettelId}`;
 				const newPath = directory ? `${directory}/${newFilename}.md` : `${newFilename}.md`;
 
 				await this.app.fileManager.renameFile(file, newPath);

@@ -63,6 +63,9 @@ const GeneralSettingsSchema = z
 		defaultPresetId: z.string().optional(), // ID of default preset to auto-fill on create modal open
 		exportFolder: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER), // folder for ICS exports
 		enableKeyboardNavigation: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_ENABLE_KEYBOARD_NAVIGATION), // enable arrow key navigation for calendar intervals
+		autoAssignZettelId: z
+			.enum(["disabled", "calendarEvents", "allEvents"])
+			.catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_ZETTEL_ID), // automatically assign ZettelID to files in calendar directory: disabled, calendar events only (timed + all-day), or all events (including untracked)
 	})
 	.strip();
 

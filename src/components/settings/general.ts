@@ -61,6 +61,17 @@ export class GeneralSettings {
 			desc: "Use left/right arrow keys to navigate between calendar intervals. Automatically disabled when search or expression filter inputs are focused.",
 		});
 
+		this.ui.addDropdown(containerEl, {
+			key: "autoAssignZettelId",
+			name: "Auto-assign Zettel ID",
+			desc: "Automatically add a Zettel ID timestamp to filenames of events in the calendar directory that don't have one. Files are renamed from 'My Event.md' to 'My Event-20260216120000.md'.",
+			options: {
+				disabled: "Disabled",
+				calendarEvents: "Calendar events only",
+				allEvents: "All events",
+			},
+		});
+
 		new Setting(containerEl)
 			.setName("Read-only mode")
 			.setDesc(

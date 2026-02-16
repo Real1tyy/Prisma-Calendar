@@ -48,6 +48,7 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 
 - **Show ribbon icon**: display calendar icon in the left sidebar to open calendar (enabled by default)
 - **Enable keyboard navigation**: enable arrow key navigation for calendar intervals (enabled by default)
+- **Auto-assign Zettel ID**: automatically add a Zettel ID timestamp (`-YYYYMMDDHHmmss`) to filenames of events in the calendar directory that don't have one. Three modes: **Disabled** (default), **Calendar events only** (timed and all-day events), or **All events** (including untracked). When active, files are renamed as they are indexed — for example, `My Event.md` becomes `My Event-20260216120000.md`.
 
 ### Read-only Mode
 
