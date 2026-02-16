@@ -64,6 +64,7 @@
 		"ical.js": "^2.2.1",
 		"luxon": "^3.7.2",
 		"nanoid": "^5.1.6",
+		"fuzzyset.js": "^1.0.7",
 		"rxjs": "^7.8.2",
 		"sorted-btree": "^2.1.0",
 		"tsdav": "^2.1.6",
