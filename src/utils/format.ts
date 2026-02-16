@@ -248,6 +248,20 @@ export function applySourceTimeToInstanceDate(instanceDate: DateTime, sourceDate
  * Filters out internal properties and optionally underscore-prefixed properties.
  * @param allDay - Whether this is an all-day event (determines which display properties list to use)
  */
+/**
+ * Extracts the first N non-empty, non-whitespace-only lines from note body content.
+ * Returns them joined by newlines, or empty string if no lines found.
+ */
+export function getNotePreviewLines(content: string, lineCount: number): string {
+	const lines: string[] = [];
+	for (const line of content.split("\n")) {
+		if (lines.length >= lineCount) break;
+		const trimmed = line.trim();
+		if (trimmed) lines.push(trimmed);
+	}
+	return lines.join("\n");
+}
+
 export function categorizeProperties(
 	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig,

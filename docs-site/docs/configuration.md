@@ -325,6 +325,7 @@ The sticky header options improve navigation in long calendars by keeping contex
     - All-day events: `Event Name - Thu, Jan 16, 2025`
   - **File path**: location of the event note
   - **Frontmatter properties**: configured display properties with clean wikilink text (aliases or basenames only)
+  - **Note preview**: the first three lines of the note's body content, loaded lazily on first hover
 - **Show current time indicator**: time line in day/week views (enabled by default)
 - **Highlight upcoming event**: highlight the next upcoming event (enabled by default)
 - **Skip underscore properties**: skip displaying properties that start with underscore in event chips (enabled by default)

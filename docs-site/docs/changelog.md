@@ -10,11 +10,12 @@ All notable changes to this project will be documented here.
 
 - **Sorting normalization strategy**: A new sorting normalization system writes a consistent datetime to a dedicated `Sort Date` property, enabling external tools (Bases, Dataview) to sort all event types by a single field. Six modes are available: none (default), timed-only (start or end), all-day only, and all events (start or end). All-day events get `T00:00:00` appended for consistent cross-type sorting. See the [Configuration](./configuration.md#sorting-normalization-for-external-tools) documentation.
 - **Auto-assign Zettel ID**: New setting to automatically add a Zettel ID timestamp to filenames of events in the calendar directory that don't have one. Three modes: disabled (default), calendar events only (timed and all-day), or all events (including untracked). When active, files like `My Event.md` are renamed to `My Event-20260216120000.md` as they are indexed. See the [Configuration](./configuration.md#general-settings) documentation.
-- **Note preview in event tooltips**: Hovering over an event now shows the first two lines of the note's body content appended to the tooltip. The content is loaded lazily on first hover to avoid unnecessary file reads.
+- **Note preview in event tooltips**: Hovering over an event now shows the first three lines of the note's body content appended to the tooltip. The content is loaded lazily on first hover to avoid unnecessary file reads.
 
 ### Fixed
 
 - **CalDAV sync rename format**: Fixed CalDAV sync to use the standard `Title-ZETTELID` filename format when renaming events, instead of the inconsistent `Title - ZETTELID` (space-dash-space) format. Existing files using the legacy format are still recognized and parsed correctly.
+- **Recurring event duplicate detection**: Fixed a race condition where duplicate recurring event instances could be created when the in-memory map was updated between the initial check and file creation. The creation lock now re-checks the in-memory instance map before writing a new file.
 
 ### Changed
 

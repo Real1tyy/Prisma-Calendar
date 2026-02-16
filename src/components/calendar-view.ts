@@ -6,6 +6,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import {
 	ColorEvaluator,
 	cls,
+	extractContentAfterFrontmatter,
 	formatDuration,
 	hasVeryCloseShadeFromRgb,
 	MountableView,
@@ -43,6 +44,7 @@ import {
 	buildEventTooltip,
 	calculateDuration,
 	calculateEndTime,
+	getNotePreviewLines,
 	roundToNearestHour,
 	toLocalISOString,
 } from "../utils/format";
@@ -1556,6 +1558,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				hasStructuralChanges = this.performIncrementalUpdate(calendarEvents);
 			}
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error("Error refreshing calendar events:", error);
 		}
 
@@ -2051,6 +2054,31 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		element.setAttribute("title", tooltip);
 		element.addClass(cls("calendar-event"));
+
+		const filePath = event.extendedProps?.filePath as string | undefined;
+		if (filePath && !event.extendedProps?.isVirtual) {
+			element.addEventListener("mouseenter", async () => {
+				if (element.dataset.notesLoaded) return;
+				element.dataset.notesLoaded = "true";
+				// Remove title immediately so the browser doesn't show a stale tooltip
+				// while the async read is in progress
+				const currentTitle = element.getAttribute("title") ?? "";
+				element.removeAttribute("title");
+				try {
+					const file = this.app.vault.getAbstractFileByPath(filePath);
+					if (!(file instanceof TFile)) {
+						element.setAttribute("title", currentTitle);
+						return;
+					}
+					const fullContent = await this.app.vault.cachedRead(file);
+					const body = extractContentAfterFrontmatter(fullContent);
+					const preview = getNotePreviewLines(body, 3);
+					element.setAttribute("title", preview ? currentTitle + "\n---\n" + preview : currentTitle);
+				} catch {
+					element.setAttribute("title", currentTitle);
+				}
+			});
+		}
 	}
 
 	private setupMouseTracking(container: HTMLElement): void {
@@ -2260,6 +2288,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		const filePath = info.event.extendedProps.filePath;
 		if (!filePath || typeof filePath !== "string") {
+			// eslint-disable-next-line no-console
 			console.error("No file path found for event");
 			info.revert();
 			return;
@@ -2280,6 +2309,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error(errorMessage, error);
 			info.revert();
 		}
@@ -2408,6 +2438,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					await this.bundle.commandManager.executeCommand(command);
 				}
 			} catch (error) {
+				// eslint-disable-next-line no-console
 				console.error("[CalendarView] Error handling drop:", error);
 			}
 		}

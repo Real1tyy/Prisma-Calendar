@@ -12,6 +12,10 @@ See note content and navigate links without opening files.
 - Hover over any event to see a quick preview
 - Shows note title and first few lines of content
 
+### Tooltip Note Preview
+
+Event hover tooltips include a preview of the note's body content. The first three non-empty lines of the note (after frontmatter) are appended to the tooltip, separated by a horizontal rule. The content is loaded lazily on the first hover over each event to keep the calendar responsive.
+
 ## Enlarged Modal Preview
 
 ![Enlarged Event Preview](/img/enlarge.png)

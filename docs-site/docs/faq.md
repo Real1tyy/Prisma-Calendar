@@ -170,7 +170,7 @@ Color rules are evaluated top-to-bottom. The first expression that evaluates to 
 
 ### Can I preview notes on hover?
 
-Yes. Enable "Enable event preview" in Calendar Settings (UI).
+Yes. Enable "Enable event preview" in Calendar Settings (UI). Event tooltips also show the first three lines of the note's body content, loaded on first hover. See [Event Previews](./features/event-previews) for details.
 
 ### Is external calendar integration supported?
 
