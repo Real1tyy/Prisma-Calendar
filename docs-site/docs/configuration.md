@@ -206,24 +206,40 @@ All Day: false
 ---
 ```
 
-### Date Normalization for External Sorting
+### Sorting Normalization for External Tools
 
 **⚠️ Important**: The `All Day` property is the **source of truth** for event type. Prisma uses this property to determine how to parse the event:
 - `All Day: true` → Uses `Date` property, ignores `Start`/`End`
 - `All Day: false` (or unset) → Uses `Start`/`End` properties
 
-**Date Normalization Feature:**
+**Sorting normalization strategy:**
 
-When "Normalize date property for sorting" is enabled in Properties Settings, timed events will have **both**:
-- `Start`/`End` properties with datetime
-- `Date` property with datetime (copied from start or end)
+When a sorting normalization strategy is enabled in Properties Settings, Prisma writes a normalized datetime to a dedicated `Sort Date` property. This allows external tools (Bases, Dataview, Obsidian search) to sort all event types — both timed and all-day — by a single field.
 
-This allows external tools (like Bases, Dataview, or Obsidian's native search) to sort chronologically using a single `Date` field instead of handling separate `Start`/`End` properties.
+The `Sort Date` property is separate from the `Date` property used by all-day events. This avoids conflicts between the all-day event date and the normalized sorting value.
 
-**Options:**
-- **None** (default): `Date` property is empty for timed events
-- **Copy start datetime**: `Date` gets the value from `Start` (without `.000Z` suffix)
-- **Copy end datetime**: `Date` gets the value from `End` (without `.000Z` suffix)
+**Normalization modes:**
+
+| Mode | Timed events | All-day events |
+|------|-------------|----------------|
+| **None** (default) | — | — |
+| **Timed only — start** | Start datetime → Sort Date | — |
+| **Timed only — end** | End datetime → Sort Date | — |
+| **All-day only** | — | Date + `T00:00:00` → Sort Date |
+| **All events — start** (recommended) | Start datetime → Sort Date | Date + `T00:00:00` → Sort Date |
+| **All events — end** | End datetime → Sort Date | Date + `T00:00:00` → Sort Date |
+
+All datetime values are written without the `.000Z` suffix. All-day events get `T00:00:00` appended so they sort consistently alongside timed events.
+
+**Sort date property:**
+
+The property name defaults to `Sort Date`. Change it in the "Sort date property" setting if you prefer a different name.
+
+**Important**: For Bases views to sort events correctly by this property, the `Sort Date` property must be configured as a **Date & time** property type in Obsidian's property settings. If it is set to "Text" or another type, Bases will sort alphabetically instead of chronologically. To fix this, open Obsidian Settings → Properties and change the type of `Sort Date` to "Date & time", or add `"Sort Date": "datetime"` to your `.obsidian/types.json` file.
+
+**Migration from previous versions:**
+
+In earlier versions, date normalization wrote directly to the `Date` property, which conflicted with the all-day event date. If you previously used the `Date` property for sorting timed events in Bases or Dataview queries, enable the sorting normalization strategy (recommended: "All events — start datetime") and update your queries to sort by `Sort Date` instead of `Date`.
 
 ---
 ```

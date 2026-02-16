@@ -50,14 +50,24 @@ export class PropertiesSettings {
 		});
 
 		this.ui.addDropdown(containerEl, {
-			key: "normalizeDateProperty",
-			name: "Normalize date property for sorting",
-			desc: "Copy start or end datetime to the date property for timed events to enable sorting by a single property. When enabled, timed events will have both start/end dates AND the date property populated with the full datetime (without .000Z suffix). This allows external tools to sort by a single date field.",
+			key: "sortingStrategy",
+			name: "Sorting normalization strategy",
+			desc: "Write a normalized datetime to a dedicated sort property so external tools (Bases, Dataview) can sort all event types by a single field. Timed events use the full datetime. All-day events get T00:00:00 appended for consistent cross-type sorting. The value is written to the sort date property configured below.",
 			options: {
-				none: "None (default behavior)",
-				startDate: "Copy start datetime to date property",
-				endDate: "Copy end datetime to date property",
+				none: "None",
+				startDate: "Timed events only — start datetime",
+				endDate: "Timed events only — end datetime",
+				allDayOnly: "All-day events only",
+				allStartDate: "All events — start datetime (Recommended)",
+				allEndDate: "All events — end datetime",
 			},
+		});
+
+		this.ui.addText(containerEl, {
+			key: "sortDateProp",
+			name: "Sort date property",
+			desc: "Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Date property used by all-day events.",
+			placeholder: SETTINGS_DEFAULTS.DEFAULT_SORT_DATE_PROP,
 		});
 
 		this.ui.addText(containerEl, {

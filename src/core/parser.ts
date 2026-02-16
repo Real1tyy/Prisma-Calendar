@@ -12,7 +12,7 @@ import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../types/calendar";
 import { convertToISO, parseEventFrontmatter } from "../types/event";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
-import { applyDateNormalization, applyDateNormalizationToFile, getEventName } from "../utils/calendar-events";
+import { applyDateNormalizationToFile, getEventName } from "../utils/calendar-events";
 import type { RawEventSource } from "./indexer";
 
 export class Parser {
@@ -72,8 +72,12 @@ export class Parser {
 		location?: string,
 		participants?: string[]
 	): AllDayEvent {
-		const { filePath } = source;
+		const { filePath, frontmatter } = source;
 		const start = date.startOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
+
+		const meta = this.createEventMeta(source);
+
+		void applyDateNormalizationToFile(this.app, filePath, frontmatter, this.settings, start, undefined, true);
 
 		return {
 			id,
@@ -86,7 +90,7 @@ export class Parser {
 			skipped: isSkipped,
 			location,
 			participants,
-			meta: this.createEventMeta(source),
+			meta,
 		};
 	}
 
@@ -107,7 +111,6 @@ export class Parser {
 			: this.calculateDefaultEnd(startTime, false).toUTC().toISO({ suppressMilliseconds: true }) || "";
 
 		const meta = this.createEventMeta(source);
-		applyDateNormalization(meta, this.settings, start, end);
 		void applyDateNormalizationToFile(this.app, source.filePath, frontmatter, this.settings, start, end);
 
 		return {

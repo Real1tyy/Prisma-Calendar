@@ -4,6 +4,18 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.10.0 - 2/16/2026
+
+### Added
+
+- **Sorting normalization strategy**: A new sorting normalization system writes a consistent datetime to a dedicated `Sort Date` property, enabling external tools (Bases, Dataview) to sort all event types by a single field. Six modes are available: none (default), timed-only (start or end), all-day only, and all events (start or end). All-day events get `T00:00:00` appended for consistent cross-type sorting. See the [Configuration](./configuration.md#sorting-normalization-for-external-tools) documentation.
+
+### Changed
+
+- **Date normalization now uses a dedicated Sort Date property**: Previously, date normalization wrote to the `Date` property, which conflicted with the all-day event date. Normalization now writes to a separate `Sort Date` property by default, and the default strategy is "None". We acknowledge this is a breaking change for users who relied on the old `Date`-based sorting — we apologize for the inconvenience. However, the old approach was fundamentally flawed (overwriting the all-day date property) and this dedicated sort property is the correct long-term solution for the plugin. If you previously relied on the `Date` property for sorting timed events in Bases or Dataview, enable the sorting normalization strategy (recommended: "All events — start datetime") and update your queries to sort by `Sort Date` instead. If events are not sorting correctly in Bases, make sure the `Sort Date` property is configured as a **Date & time** property type in Obsidian's property settings. See the [Configuration](./configuration.md#sorting-normalization-for-external-tools) documentation and the [FAQ](./faq.md#events-are-not-sorting-correctly-by-sort-date-in-bases) for troubleshooting.
+
+---
+
 ## 2.0.1 - 2/15/2026
 
 ### Fixed

@@ -66,46 +66,42 @@ export const stripISOSuffix = (iso: string): string => {
 	return iso.replace(/\.000Z$/, "").replace(/Z$/, "");
 };
 
+const normalizesTimedEvents = (mode: string): boolean =>
+	["startDate", "endDate", "allStartDate", "allEndDate"].includes(mode);
+
+const normalizesAllDayEvents = (mode: string): boolean => ["allDayOnly", "allStartDate", "allEndDate"].includes(mode);
+
 /**
- * Applies date property normalization for timed events based on settings.
- * When normalizeDateProperty is enabled, copies start or end datetime to the date property
- * to enable sorting by a single date field in external tools.
- * Strips milliseconds and Z suffix for cleaner values.
- *
- * @param fm - Frontmatter object to modify
- * @param settings - Calendar settings with normalizeDateProperty configuration
- * @param start - ISO start date/time string
- * @param end - ISO end date/time string (optional)
+ * Computes the normalized sort date value for an event.
+ * Returns the target property name and the expected value, or undefined if sorting doesn't apply.
  */
-export const applyDateNormalization = (
-	fm: Frontmatter,
+export const computeSortDateValue = (
 	settings: SingleCalendarConfig,
 	start: string,
-	end?: string
-): void => {
-	if (settings.normalizeDateProperty === "none") {
-		return;
+	end?: string,
+	allDay?: boolean
+): { targetProp: string; value: string } | undefined => {
+	const mode = settings.sortingStrategy;
+	if (mode === "none") return undefined;
+
+	const targetProp = settings.sortDateProp;
+	if (!targetProp) return undefined;
+
+	if (allDay) {
+		if (!normalizesAllDayEvents(mode)) return undefined;
+		const dateOnly = start.split("T")[0];
+		return { targetProp, value: `${dateOnly}T00:00:00` };
 	}
 
-	if (settings.normalizeDateProperty === "startDate") {
-		fm[settings.dateProp] = stripISOSuffix(start);
-	} else if (settings.normalizeDateProperty === "endDate") {
-		fm[settings.dateProp] = stripISOSuffix(end || start);
-	}
+	if (!normalizesTimedEvents(mode)) return undefined;
+
+	const value = mode === "startDate" || mode === "allStartDate" ? stripISOSuffix(start) : stripISOSuffix(end || start);
+	return { targetProp, value };
 };
 
 /**
- * Applies date normalization to a file's frontmatter if needed.
- * Checks if normalization is enabled and if the current date value differs from expected.
- * Returns early if normalization is not needed.
- * Copies full datetime (not just date) and strips .000Z suffix for cleaner, sortable values.
- *
- * @param app - Obsidian App instance
- * @param filePath - Path to the file to update
- * @param frontmatter - Current frontmatter of the file
- * @param settings - Calendar settings with normalizeDateProperty configuration
- * @param start - ISO start date/time string
- * @param end - ISO end date/time string (optional)
+ * Applies sort date normalization to a file on disk if the value differs from expected.
+ * Skips the write when the file already has the correct value.
  */
 export const applyDateNormalizationToFile = async (
 	app: App,
@@ -113,27 +109,22 @@ export const applyDateNormalizationToFile = async (
 	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig,
 	start: string,
-	end?: string
+	end?: string,
+	allDay?: boolean
 ): Promise<void> => {
-	const currentDateValue = frontmatter[settings.dateProp] as string | undefined;
-	const expectedDateValue =
-		settings.normalizeDateProperty === "startDate"
-			? stripISOSuffix(start)
-			: settings.normalizeDateProperty === "endDate"
-				? stripISOSuffix(end || start)
-				: undefined;
+	const result = computeSortDateValue(settings, start, end, allDay);
+	if (!result) return;
 
-	if (!expectedDateValue || currentDateValue === expectedDateValue) {
-		return;
-	}
+	const { targetProp, value } = result;
+	if ((frontmatter[targetProp] as string | undefined) === value) return;
 
 	try {
 		const file = getFileByPathOrThrow(app, filePath);
 		await app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
-			fm[settings.dateProp] = expectedDateValue;
+			fm[targetProp] = value;
 		});
 	} catch (error) {
-		console.error(`Error writing date normalization to file ${filePath}:`, error);
+		console.error(`Error writing sort date to file ${filePath}:`, error);
 	}
 };
 
@@ -168,7 +159,7 @@ export const setEventBasics = (
 		zettelId?: number;
 	}
 ) => {
-	const { titleProp, startProp, endProp, dateProp, allDayProp, zettelIdProp, normalizeDateProperty } = settings;
+	const { titleProp, startProp, endProp, dateProp, allDayProp, zettelIdProp } = settings;
 
 	if (titleProp && data.title) fm[titleProp] = data.title;
 
@@ -184,13 +175,11 @@ export const setEventBasics = (
 		// TIMED EVENT: Set startProp/endProp
 		fm[startProp] = data.start;
 		if (data.end) fm[endProp] = data.end;
-
-		if (normalizeDateProperty === "none") {
-			fm[dateProp] = "";
-		} else {
-			applyDateNormalization(fm, settings, data.start, data.end);
-		}
+		fm[dateProp] = "";
 	}
+
+	const sortResult = computeSortDateValue(settings, data.start, data.end, data.allDay);
+	if (sortResult) fm[sortResult.targetProp] = sortResult.value;
 
 	if (zettelIdProp && data.zettelId) fm[zettelIdProp] = data.zettelId;
 };

@@ -22,7 +22,7 @@ export class IntervalEventsModal extends BaseBasesViewModal {
 	}
 
 	protected getFilterLines(): string[] {
-		const dateProp = this.settings.dateProp;
-		return [`'note["${dateProp}"] > "${this.startDate}"'`, `'note["${dateProp}"] < "${this.endDate}"'`];
+		const sortProp = this.settings.sortDateProp;
+		return [`'note["${sortProp}"] > "${this.startDate}"'`, `'note["${sortProp}"] < "${this.endDate}"'`];
 	}
 }

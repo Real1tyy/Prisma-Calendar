@@ -72,9 +72,10 @@ const PropsSettingsSchema = z
 		endProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_END_PROP),
 		dateProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_DATE_PROP), // property name for all-day events (date only, no time)
 		allDayProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_PROP),
-		normalizeDateProperty: z
-			.enum(["none", "startDate", "endDate"])
-			.catch(SETTINGS_DEFAULTS.DEFAULT_NORMALIZE_DATE_PROPERTY), // copy start/end date to date property for sorting
+		sortingStrategy: z
+			.enum(["none", "startDate", "endDate", "allDayOnly", "allStartDate", "allEndDate"])
+			.catch(SETTINGS_DEFAULTS.DEFAULT_SORTING_STRATEGY), // sorting normalization strategy: write normalized datetime to sort date property
+		sortDateProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SORT_DATE_PROP), // dedicated sort date property for normalized datetime values
 		titleProp: z.string().optional(), // optional; fallback to file name
 		calendarTitleProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CALENDAR_TITLE_PROP), // auto-computed display title (wiki link with zettel ID stripped) for clean rendering in calendar and Bases views
 		zettelIdProp: z.string().optional(), // optional; property name for ZettelID generation

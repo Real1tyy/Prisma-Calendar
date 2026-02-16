@@ -52,11 +52,11 @@ export abstract class BaseBasesViewModal extends Modal {
 
 	private buildBasesMarkdown(): string {
 		const eventsFolder = this.settings.directory;
-		const dateProp = this.settings.dateProp;
+		const sortProp = this.settings.sortDateProp;
 		const statusProp = this.settings.statusProperty;
 		const basesViewProperties = this.settings.basesViewProperties;
 		const nameColumn = this.settings.calendarTitleProp || "file.name";
-		const orderProperties = [nameColumn, dateProp, statusProp, ...basesViewProperties].filter(Boolean);
+		const orderProperties = [nameColumn, sortProp, statusProp, ...basesViewProperties].filter(Boolean);
 		const filterLines = this.getFilterLines();
 
 		return `\`\`\`base
@@ -70,9 +70,9 @@ ${filterLines.map((line) => `        - ${line}`).join("\n")}
     order:
 ${orderProperties.map((prop) => `      - ${prop}`).join("\n")}
     columnSize:
-      note.${dateProp}: 170
+      note.${sortProp}: 170
     sort:
-      - property: ${dateProp}
+      - property: ${sortProp}
         direction: DESC
 \`\`\``;
 	}

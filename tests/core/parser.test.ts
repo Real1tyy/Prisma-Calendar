@@ -353,7 +353,7 @@ describe("Parser", () => {
 
 	describe("metadata handling", () => {
 		it("should include file metadata in event", () => {
-			settings.normalizeDateProperty = "none";
+			settings.sortingStrategy = "none";
 			settingsStore.next(settings);
 
 			const source: RawEventSource = {

@@ -2,7 +2,6 @@ import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 import type { Frontmatter } from "../../src/types";
 import {
-	applyDateNormalization,
 	ensureFileHasZettelId,
 	extractNotesCoreName,
 	extractZettelId,
@@ -1066,99 +1065,5 @@ describe("Physical Recurring Event Utilities", () => {
 
 			expect(result).toEqual([]);
 		});
-	});
-});
-
-describe("applyDateNormalization", () => {
-	it("should do nothing when normalizeDateProperty is none", () => {
-		const fm: Frontmatter = {};
-		const settings = {
-			...createMockSingleCalendarSettings(),
-			normalizeDateProperty: "none" as const,
-			dateProp: "Date",
-		};
-
-		applyDateNormalization(fm, settings, "2024-01-15T09:00:00.000Z", "2024-01-15T10:30:00.000Z");
-
-		expect(fm.Date).toBeUndefined();
-	});
-
-	it("should copy start datetime and strip .000Z suffix when normalizeDateProperty is startDate", () => {
-		const fm: Frontmatter = {};
-		const settings = {
-			...createMockSingleCalendarSettings(),
-			normalizeDateProperty: "startDate" as const,
-			dateProp: "Date",
-		};
-
-		applyDateNormalization(fm, settings, "2024-01-15T09:00:00.000Z", "2024-01-15T10:30:00.000Z");
-
-		expect(fm.Date).toBe("2024-01-15T09:00:00");
-	});
-
-	it("should copy end datetime and strip .000Z suffix when normalizeDateProperty is endDate", () => {
-		const fm: Frontmatter = {};
-		const settings = {
-			...createMockSingleCalendarSettings(),
-			normalizeDateProperty: "endDate" as const,
-			dateProp: "Date",
-		};
-
-		applyDateNormalization(fm, settings, "2024-01-15T09:00:00.000Z", "2024-01-15T10:30:00.000Z");
-
-		expect(fm.Date).toBe("2024-01-15T10:30:00");
-	});
-
-	it("should fallback to start datetime when end is not provided and normalizeDateProperty is endDate", () => {
-		const fm: Frontmatter = {};
-		const settings = {
-			...createMockSingleCalendarSettings(),
-			normalizeDateProperty: "endDate" as const,
-			dateProp: "Date",
-		};
-
-		applyDateNormalization(fm, settings, "2024-01-15T09:00:00.000Z");
-
-		expect(fm.Date).toBe("2024-01-15T09:00:00");
-	});
-
-	it("should strip Z suffix without milliseconds", () => {
-		const fm: Frontmatter = {};
-		const settings = {
-			...createMockSingleCalendarSettings(),
-			normalizeDateProperty: "startDate" as const,
-			dateProp: "Date",
-		};
-
-		applyDateNormalization(fm, settings, "2024-01-15T09:00:00Z");
-
-		expect(fm.Date).toBe("2024-01-15T09:00:00");
-	});
-
-	it("should handle datetime without any suffix", () => {
-		const fm: Frontmatter = {};
-		const settings = {
-			...createMockSingleCalendarSettings(),
-			normalizeDateProperty: "startDate" as const,
-			dateProp: "Date",
-		};
-
-		applyDateNormalization(fm, settings, "2024-01-15T09:00:00");
-
-		expect(fm.Date).toBe("2024-01-15T09:00:00");
-	});
-
-	it("should use custom dateProp name", () => {
-		const fm: Frontmatter = {};
-		const settings = {
-			...createMockSingleCalendarSettings(),
-			normalizeDateProperty: "startDate" as const,
-			dateProp: "CustomDate",
-		};
-
-		applyDateNormalization(fm, settings, "2024-01-15T09:00:00.000Z");
-
-		expect(fm.CustomDate).toBe("2024-01-15T09:00:00");
-		expect(fm.Date).toBeUndefined();
 	});
 });

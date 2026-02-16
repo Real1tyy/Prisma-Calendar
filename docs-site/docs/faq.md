@@ -125,6 +125,30 @@ What you see in calendar:
 
 All have the same clean "Standup" title in the UI, but unique filenames on disk.
 
+### Events are not sorting correctly by Sort Date in Bases
+
+If events appear out of order when sorting by `Sort Date` in Bases views, the property type is likely set to "Text" instead of "Date & time". Obsidian's Bases sorts text properties alphabetically, which produces incorrect results for datetime values.
+
+**To fix this:**
+
+1. Open **Obsidian Settings → Properties**
+2. Find the `Sort Date` property (or whatever name you configured in Prisma Calendar's "Sort date property" setting)
+3. Change its type to **Date & time**
+
+Alternatively, you can edit `.obsidian/types.json` directly and add the property with the `datetime` type:
+
+```json
+{
+  "types": {
+    "Sort Date": "datetime"
+  }
+}
+```
+
+After changing the property type, Bases will sort events chronologically. See the [Configuration — Sorting Normalization](./configuration.md#sorting-normalization-for-external-tools) documentation for full details on how sort date normalization works.
+
+---
+
 ### How do I change which frontmatter keys the calendar uses?
 
 Go to Properties Settings and set your Start/End/AllDay/Title keys.
