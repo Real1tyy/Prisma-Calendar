@@ -270,13 +270,14 @@ export const CONTEXT_MENU_BUTTON_LABELS = {
 	openFileNewWindow: "Open file in new window",
 	toggleRecurring: "Enable/Disable recurring event",
 	triggerStopwatch: "Trigger stopwatch",
+	duplicateRemainingWeekDays: "Duplicate remaining week days",
 } as const;
 
 export const CONTEXT_MENU_ITEM_IDS = Object.keys(
 	CONTEXT_MENU_BUTTON_LABELS
 ) as (keyof typeof CONTEXT_MENU_BUTTON_LABELS)[];
 
-export const DEFAULT_CONTEXT_MENU_ITEMS = CONTEXT_MENU_ITEM_IDS;
+export const DEFAULT_CONTEXT_MENU_ITEMS = CONTEXT_MENU_ITEM_IDS.filter((id) => id !== "duplicateRemainingWeekDays");
 
 /**
  * Maximum time after an event starts before notifications are suppressed.

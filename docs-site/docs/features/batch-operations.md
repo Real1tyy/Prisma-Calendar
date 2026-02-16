@@ -79,6 +79,13 @@ Quickly make changes to many events at once.
 - Opens all selected event files in editor tabs
 - Quick access for batch reviewing/editing
 
+### Duplicate Remaining Week Days
+- Right-click an event → "Duplicate remaining week days" to copy it to every remaining day of the current week (through Sunday)
+- The week runs Monday–Sunday. For example, duplicating a Wednesday event creates copies for Thursday, Friday, Saturday, and Sunday
+- Sunday events have no remaining days, so nothing happens
+- All copies are grouped as a single undoable operation
+- Hidden by default — enable in Settings → Configuration → Context Menu Items
+
 ## Customizing Batch Action Buttons
 
 By default, not all batch action buttons are shown in the toolbar to keep the interface compact and prevent the toolbar from spanning multiple rows. The following buttons are **disabled by default**:

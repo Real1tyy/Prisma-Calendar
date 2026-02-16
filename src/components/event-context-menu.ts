@@ -14,6 +14,7 @@ import {
 	MoveEventCommand,
 	ToggleSkipCommand,
 } from "../core/commands";
+import { MacroCommand } from "../core/commands/command";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import { type ContextMenuItem, isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
@@ -313,6 +314,17 @@ export class EventContextMenu {
 				});
 			}
 
+			if (shouldShow("duplicateRemainingWeekDays")) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Duplicate remaining week days")
+						.setIcon("calendar-plus")
+						.onClick(() => {
+							void this.duplicateRemainingWeekDays(event);
+						});
+				});
+			}
+
 			menu.addSeparator();
 
 			if (shouldShow("moveBy")) {
@@ -589,6 +601,40 @@ export class EventContextMenu {
 			await this.runCommand(() => new CloneEventCommand(this.app, this.bundle, filePath), {
 				success: "Event duplicated",
 				error: "Failed to duplicate event",
+			});
+		});
+	}
+
+	async duplicateRemainingWeekDays(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "duplicate remaining week days", async (filePath) => {
+			const startDate = event.start ? new Date(event.start) : null;
+			if (!startDate) {
+				new Notice("Cannot duplicate: event has no start date");
+				return;
+			}
+
+			// JS getDay(): 0=Sun, 1=Mon, ..., 6=Sat
+			// Week runs Monday–Sunday, so Sunday (0) has 0 remaining days
+			const dayOfWeek = startDate.getDay();
+			const remainingDays = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+
+			if (remainingDays === 0) {
+				new Notice("No remaining days in the week to duplicate to");
+				return;
+			}
+
+			const MS_PER_DAY = 24 * 60 * 60 * 1000;
+			const cloneCommands = [];
+
+			for (let i = 1; i <= remainingDays; i++) {
+				const offsetMs = i * MS_PER_DAY;
+				cloneCommands.push(new CloneEventCommand(this.app, this.bundle, filePath, offsetMs, offsetMs));
+			}
+
+			const macro = new MacroCommand(cloneCommands);
+			await this.runCommand(() => macro, {
+				success: `Event duplicated to ${remainingDays} remaining day${remainingDays > 1 ? "s" : ""} of the week`,
+				error: "Failed to duplicate event to remaining week days",
 			});
 		});
 	}

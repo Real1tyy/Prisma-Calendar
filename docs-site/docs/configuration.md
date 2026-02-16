@@ -405,8 +405,9 @@ All buttons are enabled by default. Uncheck items to hide them from the toolbar.
   - **Open file**: Open event note in editor
   - **Open file in new window**: Open event note in a new window
   - **Enable/Disable recurring event**: Toggle recurring event visibility
+  - **Duplicate remaining week days**: Duplicate event to all remaining days of the current week (disabled by default)
 
-  All items are enabled by default. Menu items that don't apply to a specific event (e.g., recurring-specific actions on non-recurring events) are automatically hidden.
+  All items are enabled by default unless noted otherwise. Menu items that don't apply to a specific event (e.g., recurring-specific actions on non-recurring events) are automatically hidden.
 
 ## Notifications Settings
 
