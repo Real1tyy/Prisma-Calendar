@@ -203,6 +203,11 @@ export class NameSeriesTracker {
 		}
 	}
 
+	/** Returns all known name keys (lowercase event titles) tracked by the name series */
+	getAllNameKeys(): string[] {
+		return Array.from(this.seriesByName.keys());
+	}
+
 	/** Returns name-based series that contain 2+ events (single events aren't a "series") */
 	getNameBasedSeries(): Map<string, Set<string>> {
 		return new Map(Array.from(this.seriesByName).filter(([_name, files]) => files.size >= 2));

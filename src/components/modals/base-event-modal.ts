@@ -23,6 +23,7 @@ import {
 	assignListToFrontmatter,
 	autoAssignCategories,
 	findAdjacentEvent,
+	findFuzzyNameMatch,
 	parseCustomDoneProperty,
 	setEventBasics,
 	setUntrackedEventBasics,
@@ -41,6 +42,7 @@ import { Stopwatch } from "../stopwatch";
 import { openCategoryAssignModal } from "./assignment-modal";
 import { CategoryEventsModal } from "./category-events-modal";
 import { SavePresetModal } from "./save-preset-modal";
+import { TypoSuggestionModal } from "./typo-suggestion-modal";
 
 interface EventModalData {
 	title: string;
@@ -1231,7 +1233,7 @@ export abstract class BaseEventModal extends Modal {
 		// (e.g., clicking the non-focusable stopwatch header moves focus to modalEl/body).
 		this.scope.register([], "Enter", (e) => {
 			e.preventDefault();
-			this.saveEvent();
+			this.saveWithTypoCheck();
 			return false;
 		});
 	}
@@ -1242,22 +1244,20 @@ export abstract class BaseEventModal extends Modal {
 		});
 	}
 
+	/** Exact-match auto-category assignment on blur. No modal — just assigns categories. */
 	protected applyAutoCategories(): void {
-		if (this.suppressAutoCategories) {
-			return;
-		}
+		if (this.suppressAutoCategories) return;
 
 		const eventName = this.titleInput.value.trim();
 		if (!eventName) return;
 
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		if (
-			!settings.autoAssignCategoryByName &&
-			(!settings.categoryAssignmentPresets || settings.categoryAssignmentPresets.length === 0)
-		) {
-			return;
-		}
+		const hasAutoAssign =
+			settings.autoAssignCategoryByName ||
+			(settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0);
+
+		if (!hasAutoAssign) return;
 
 		const availableCategories = this.bundle.categoryTracker.getCategories();
 		const autoAssignedCategories = autoAssignCategories(eventName, settings, availableCategories);
@@ -1266,6 +1266,75 @@ export abstract class BaseEventModal extends Modal {
 			this.selectedCategories = autoAssignedCategories;
 			this.renderCategories();
 		}
+	}
+
+	/**
+	 * Check for typo in event name before saving. If a fuzzy match is found,
+	 * show the typo suggestion modal. On accept: correct title + assign categories, then save.
+	 * On dismiss (Escape): save with original name.
+	 */
+	protected saveWithTypoCheck(): void {
+		if (this.suppressAutoCategories) {
+			this.saveEvent();
+			return;
+		}
+
+		const eventName = this.titleInput.value.trim();
+		if (!eventName) {
+			this.saveEvent();
+			return;
+		}
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const availableCategories = this.bundle.categoryTracker.getCategories();
+
+		// First try exact auto-assign (in case blur didn't fire)
+		if (
+			settings.autoAssignCategoryByName ||
+			(settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0)
+		) {
+			const autoAssigned = autoAssignCategories(eventName, settings, availableCategories);
+			if (autoAssigned.length > 0) {
+				this.selectedCategories = autoAssigned;
+				this.renderCategories();
+				this.saveEvent();
+				return;
+			}
+		}
+
+		// No exact match — try fuzzy matching
+		if (settings.detectEventNameTypos) {
+			const existingNameKeys = this.bundle.nameSeriesTracker.getAllNameKeys();
+			const fuzzyResults = findFuzzyNameMatch(eventName, settings, availableCategories, existingNameKeys);
+
+			if (fuzzyResults) {
+				let accepted = false;
+				const modal = new TypoSuggestionModal(this.app, fuzzyResults, (suggestion) => {
+					accepted = true;
+					this.titleInput.value = suggestion;
+
+					const autoAssigned = autoAssignCategories(suggestion, settings, availableCategories);
+					if (autoAssigned.length > 0) {
+						this.selectedCategories = autoAssigned;
+						this.renderCategories();
+					}
+
+					this.saveEvent();
+				});
+				const origOnClose = modal.onClose.bind(modal);
+				modal.onClose = () => {
+					origOnClose();
+					// Dismissed without accepting — save with original name
+					if (!accepted) {
+						this.saveEvent();
+					}
+				};
+				modal.open();
+				return;
+			}
+		}
+
+		this.saveEvent();
 	}
 
 	private createActionButtons(contentEl: HTMLElement): void {
@@ -1291,7 +1360,7 @@ export abstract class BaseEventModal extends Modal {
 			cls: cls("mod-cta"),
 		});
 		saveButton.addEventListener("click", () => {
-			this.saveEvent();
+			this.saveWithTypoCheck();
 		});
 	}
 
@@ -1673,6 +1742,7 @@ export abstract class BaseEventModal extends Modal {
 			const settings = this.bundle.settingsStore.currentSettings;
 			this.selectedCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error("Error loading existing frontmatter:", error);
 		}
 	}

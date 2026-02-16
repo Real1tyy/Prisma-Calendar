@@ -43,6 +43,7 @@ import {
 	Notice,
 	Plugin,
 	PluginSettingTab,
+	SuggestModal,
 	TFile,
 } from "./mocks/obsidian";
 
@@ -63,7 +64,7 @@ export class Menu {
 }
 
 // Re-export centralized mocks for use in tests
-export { Plugin, PluginSettingTab, ItemView, TFile, Notice, Modal, debounce };
+export { Plugin, PluginSettingTab, ItemView, TFile, Notice, Modal, SuggestModal, debounce };
 
 // Export mock helpers directly
 export const createMockApp = createMockAppImpl;

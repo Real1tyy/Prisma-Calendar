@@ -6930,6 +6930,16 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	background-color: var(--interactive-hover);
 }
 
+/* Typo suggestion modal (SuggestModal) */
+.prisma-typo-suggestion-item-name {
+	font-weight: 600;
+}
+
+.prisma-typo-suggestion-item-score {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
 .prisma-category-modal {
 	width: 70vw;
 	max-width: 1100px;

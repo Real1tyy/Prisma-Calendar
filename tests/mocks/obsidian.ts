@@ -195,6 +195,17 @@ export class Modal {
 	onClose = vi.fn();
 }
 
+// SuggestModal mock
+export class SuggestModal<T> extends Modal {
+	setPlaceholder = vi.fn();
+	setInstructions = vi.fn();
+	getSuggestions(_query: string): T[] {
+		return [];
+	}
+	renderSuggestion(_item: T, _el: HTMLElement): void {}
+	onChooseSuggestion(_item: T, _evt: MouseEvent | KeyboardEvent): void {}
+}
+
 // Notice mock
 export class Notice {
 	constructor(message: string) {

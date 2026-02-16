@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { SingleCalendarConfig } from "../../src/types/settings";
-import { autoAssignCategories, normalizeEventNameForComparison } from "../../src/utils/calendar-events";
+import {
+	autoAssignCategories,
+	findFuzzyNameMatch,
+	normalizeEventNameForComparison,
+} from "../../src/utils/calendar-events";
 
 describe("Auto-Category Assignment", () => {
 	describe("normalizeEventNameForComparison", () => {
@@ -268,6 +272,163 @@ describe("Auto-Category Assignment", () => {
 
 				expect(result).toEqual([]);
 			});
+		});
+	});
+
+	describe("findFuzzyNameMatch", () => {
+		const mockSettings: Partial<SingleCalendarConfig> = {
+			autoAssignCategoryByName: true,
+			categoryAssignmentPresets: [],
+		};
+
+		it("should detect a typo in a category name (missing letter)", () => {
+			const result = findFuzzyNameMatch("Obsidiae", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+
+			expect(result).not.toBeNull();
+			expect(result![0].suggestion).toBe("Obsidian");
+			expect(result![0].score).toBeGreaterThanOrEqual(0.7);
+		});
+
+		it("should detect a typo with extra letters", () => {
+			const result = findFuzzyNameMatch("Obsidianee", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+
+			expect(result).not.toBeNull();
+			expect(result![0].suggestion).toBe("Obsidian");
+			expect(result![0].score).toBeGreaterThanOrEqual(0.7);
+		});
+
+		it("should detect a transposition typo", () => {
+			const result = findFuzzyNameMatch("Busienss", mockSettings as SingleCalendarConfig, ["Business"], []);
+
+			expect(result).not.toBeNull();
+			expect(result![0].suggestion).toBe("Business");
+			expect(result![0].score).toBeGreaterThanOrEqual(0.7);
+		});
+
+		it("should detect a typo with a missing letter at end", () => {
+			const result = findFuzzyNameMatch("Busines", mockSettings as SingleCalendarConfig, ["Business"], []);
+
+			expect(result).not.toBeNull();
+			expect(result![0].suggestion).toBe("Business");
+			expect(result![0].score).toBeGreaterThanOrEqual(0.7);
+		});
+
+		it("should return null for exact matches (handled by autoAssignCategories)", () => {
+			const result = findFuzzyNameMatch("Obsidian", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+
+			expect(result).toBeNull();
+		});
+
+		it("should return null for completely different names", () => {
+			const result = findFuzzyNameMatch("Cooking", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+
+			expect(result).toBeNull();
+		});
+
+		it("should return null for empty input", () => {
+			const result = findFuzzyNameMatch("", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+
+			expect(result).toBeNull();
+		});
+
+		it("should return null when no known names exist", () => {
+			const result = findFuzzyNameMatch("Obsidian", mockSettings as SingleCalendarConfig, [], []);
+
+			expect(result).toBeNull();
+		});
+
+		it("should match against preset event names", () => {
+			const settings = {
+				...mockSettings,
+				categoryAssignmentPresets: [
+					{
+						id: "1",
+						eventName: "Exercise, Workout",
+						categories: ["Fitness"],
+					},
+				],
+			} as SingleCalendarConfig;
+
+			const result = findFuzzyNameMatch("Exercis", settings, [], []);
+
+			expect(result).not.toBeNull();
+			expect(result![0].suggestion).toBe("Exercise");
+		});
+
+		it("should match against existing name-series keys", () => {
+			const result = findFuzzyNameMatch("team meetin", mockSettings as SingleCalendarConfig, [], ["team meeting"]);
+
+			expect(result).not.toBeNull();
+			expect(result![0].suggestion).toBe("team meeting");
+		});
+
+		it("should preserve original casing of category names in suggestions", () => {
+			const result = findFuzzyNameMatch("obsidiae", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+
+			expect(result).not.toBeNull();
+			expect(result![0].suggestion).toBe("Obsidian");
+		});
+
+		it("should handle event name with ZettelID", () => {
+			const result = findFuzzyNameMatch(
+				"Obsidiae-20250203140530",
+				mockSettings as SingleCalendarConfig,
+				["Obsidian"],
+				[]
+			);
+
+			expect(result).not.toBeNull();
+			expect(result![0].suggestion).toBe("Obsidian");
+		});
+
+		it("should find the best match among multiple candidates", () => {
+			const result = findFuzzyNameMatch(
+				"Persona",
+				mockSettings as SingleCalendarConfig,
+				["Personal", "Business", "Health"],
+				[]
+			);
+
+			expect(result).not.toBeNull();
+			expect(result![0].suggestion).toBe("Personal");
+		});
+
+		it("should match typo in a longer category name", () => {
+			const result = findFuzzyNameMatch(
+				"Softwre Development",
+				mockSettings as SingleCalendarConfig,
+				["Software Development", "Hardware", "Design"],
+				[]
+			);
+
+			expect(result).not.toBeNull();
+			expect(result![0].suggestion).toBe("Software Development");
+		});
+
+		it("should return multiple suggestions when available", () => {
+			const result = findFuzzyNameMatch(
+				"Persona",
+				mockSettings as SingleCalendarConfig,
+				["Personal", "Personnel", "Health"],
+				[]
+			);
+
+			expect(result).not.toBeNull();
+			expect(result!.length).toBeGreaterThanOrEqual(1);
+			expect(result![0].suggestion).toBe("Personal");
+		});
+
+		it("should return at most maxResults suggestions", () => {
+			const result = findFuzzyNameMatch(
+				"Persona",
+				mockSettings as SingleCalendarConfig,
+				["Personal", "Personnel", "Health"],
+				[],
+				1
+			);
+
+			expect(result).not.toBeNull();
+			expect(result!.length).toBe(1);
 		});
 	});
 });

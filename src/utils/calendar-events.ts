@@ -5,6 +5,7 @@ import {
 	serializeFrontmatterValue,
 	withFrontmatter,
 } from "@real1ty-obsidian-plugins";
+import FuzzySet from "fuzzyset.js";
 import { nanoid } from "nanoid";
 import { type App, TFile } from "obsidian";
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
@@ -884,4 +885,79 @@ export const autoAssignCategories = (
 	}
 
 	return Array.from(categoriesToAssign);
+};
+
+export interface FuzzyNameMatch {
+	suggestion: string;
+	score: number;
+}
+
+/**
+ * Finds fuzzy matches for an event name against known category names, preset event names,
+ * and existing name-series keys. Used for typo detection in event titles.
+ *
+ * Returns up to `maxResults` suggestions where:
+ * - The match score is >= 0.7 (close enough to be a likely typo)
+ * - The match score is < 1.0 (not an exact match, which is already handled)
+ *
+ * @param eventName - The event name to check for typos
+ * @param settings - Calendar settings with category assignment presets
+ * @param availableCategories - List of all available categories
+ * @param existingNameKeys - Known name keys from the name-series tracker (lowercase)
+ * @param maxResults - Maximum number of suggestions to return (default: 3)
+ * @returns An array of suggestions sorted by score (best first), or null if no matches
+ */
+export const findFuzzyNameMatch = (
+	eventName: string,
+	settings: SingleCalendarConfig,
+	availableCategories: string[],
+	existingNameKeys: string[],
+	maxResults = 3
+): FuzzyNameMatch[] | null => {
+	const normalizedInput = normalizeEventNameForComparison(eventName);
+	if (!normalizedInput) return null;
+
+	// Build a combined set of known names (using original casing where possible)
+	const knownNames = new Map<string, string>(); // lowercase -> original casing
+
+	for (const category of availableCategories) {
+		knownNames.set(category.toLowerCase().trim(), category);
+	}
+
+	if (settings.categoryAssignmentPresets) {
+		for (const preset of settings.categoryAssignmentPresets) {
+			const names = preset.eventName
+				.split(",")
+				.map((n) => n.trim())
+				.filter((n) => n.length > 0);
+			for (const name of names) {
+				knownNames.set(name.toLowerCase(), name);
+			}
+		}
+	}
+
+	for (const nameKey of existingNameKeys) {
+		if (!knownNames.has(nameKey)) {
+			knownNames.set(nameKey, nameKey);
+		}
+	}
+
+	const allKeys = Array.from(knownNames.keys());
+	if (allKeys.length === 0) return null;
+
+	const fuzzySet = FuzzySet(allKeys);
+	const results = fuzzySet.get(normalizedInput);
+
+	if (!results || results.length === 0) return null;
+
+	const matches: FuzzyNameMatch[] = [];
+	for (const [score, match] of results) {
+		if (score >= 0.7 && score < 1.0) {
+			const originalCasing = knownNames.get(match) ?? match;
+			matches.push({ suggestion: originalCasing, score });
+		}
+		if (matches.length >= maxResults) break;
+	}
+
+	return matches.length > 0 ? matches : null;
 };

@@ -66,6 +66,22 @@ Define custom rules to automatically assign specific categories based on event n
 - **Works in both create and edit modals** - change an event's title and categories will auto-update based on the new name
 - Perfect for quick event creation workflows with consistent naming patterns
 
+#### Event name typo detection
+
+When no exact match is found for the event name, the plugin uses fuzzy matching to detect likely typos. If the entered name is close to a known category name, preset event name, or existing event series name, a modal appears with up to 3 suggestions ranked by similarity.
+
+**How it works:**
+- After you blur the title field, the plugin first tries exact matching (auto-assign and presets above)
+- If no exact match is found, it compares the entered name against all known names using approximate string matching
+- If close matches are found (similar but not identical), a "Did you mean?" modal appears with up to 3 suggestions
+- Use arrow keys to navigate between suggestions, Enter to accept the highlighted one, or Escape to dismiss
+- Click any suggestion to accept it — the title is corrected and categories are auto-assigned based on the corrected name
+- If you dismiss the modal, the original name is preserved as-is
+
+The known names checked against include category names, event names from custom presets, and existing event series names tracked by the plugin.
+
+Configure in **Settings → General → Parsing → Detect event name typos** (enabled by default).
+
 ### 2. Individual Events (Manual)
 
 Edit the event note directly and add the category property:

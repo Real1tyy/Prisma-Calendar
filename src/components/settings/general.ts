@@ -107,6 +107,12 @@ export class GeneralSettings {
 			name: "Mark past events as done",
 			desc: "Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section.",
 		});
+
+		this.ui.addToggle(containerEl, {
+			key: "detectEventNameTypos",
+			name: "Detect event name typos",
+			desc: 'Show a "Did you mean?" modal when an event name is close to a known category, preset name, or existing event series. Uses fuzzy matching to detect likely typos.',
+		});
 	}
 
 	private addStopwatchSettings(containerEl: HTMLElement): void {

@@ -199,6 +199,7 @@ const CalendarSettingsSchema = z
 		stickyAllDayEvents: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_STICKY_ALL_DAY_EVENTS), // Make all-day event section sticky during vertical scroll (timegrid views)
 		allDayEventHeight: z.number().int().min(30).max(500).catch(SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_EVENT_HEIGHT), // Maximum height in pixels for all-day events section before overflow
 		autoAssignCategoryByName: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_CATEGORY_BY_NAME), // Automatically assign category when event name matches category name (case-insensitive)
+		detectEventNameTypos: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_DETECT_EVENT_NAME_TYPOS), // Show fuzzy match suggestion when event name is close to a known category, preset, or name series
 		categoryAssignmentPresets: z.array(CategoryAssignmentPresetSchema).catch([]), // Custom category assignment rules based on event name
 		contextMenuItems: z.array(ContextMenuItemSchema).catch([...DEFAULT_CONTEXT_MENU_ITEMS]), // Context menu items to show when right-clicking events
 		showSourceRecurringMarker: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_SOURCE_RECURRING_MARKER), // Show marker indicator on source recurring events
