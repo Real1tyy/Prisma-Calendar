@@ -9,7 +9,8 @@ import { intoDate } from "../utils/format";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import type { CategoryTracker } from "./category-tracker";
 import { BatchCommandFactory, CommandManager, CreateEventCommand, EditEventCommand, type EventData } from "./commands";
-import type { EventStore } from "./event-store";
+import type { EventStore, UntrackedEventStore } from "./event-store";
+import { HolidayStore } from "./holidays";
 import type { Indexer } from "./indexer";
 import { IndexerRegistry } from "./indexer-registry";
 import { CalDAVSyncService } from "./integrations/caldav/sync";
@@ -17,13 +18,11 @@ import { CalDAVSyncStateManager } from "./integrations/caldav/sync-state-manager
 import { ICSSubscriptionSyncService } from "./integrations/ics-subscription/sync";
 import { ICSSubscriptionSyncStateManager } from "./integrations/ics-subscription/sync-state-manager";
 import { SyncState } from "./integrations/sync-state";
+import type { NameSeriesTracker } from "./name-series-tracker";
 import type { NotificationManager } from "./notification-manager";
 import type { Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
-import type { NameSeriesTracker } from "./name-series-tracker";
 import { CalendarSettingsStore, type SettingsStore } from "./settings-store";
-import type { UntrackedEventStore } from "./event-store";
-import { HolidayStore } from "./holidays";
 
 export class CalendarBundle {
 	public readonly settingsStore: CalendarSettingsStore;
@@ -86,8 +85,9 @@ export class CalendarBundle {
 		this.nameSeriesTracker = nameSeriesTracker;
 
 		this.templateService = new TemplaterService(this.app);
-		this.caldavSyncStateManager = new CalDAVSyncStateManager(this.indexer, this.settingsStore.settings$);
+		this.caldavSyncStateManager = new CalDAVSyncStateManager(this.app, this.indexer, this.settingsStore.settings$);
 		this.icsSubscriptionSyncStateManager = new ICSSubscriptionSyncStateManager(
+			this.app,
 			this.indexer,
 			this.settingsStore.settings$
 		);

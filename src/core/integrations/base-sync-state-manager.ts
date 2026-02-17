@@ -1,3 +1,4 @@
+import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { z } from "zod";
@@ -16,6 +17,7 @@ export abstract class BaseSyncStateManager<TMetadata> {
 	protected frontmatterProp: string;
 
 	constructor(
+		protected app: App,
 		indexer: Indexer,
 		settings$: BehaviorSubject<SingleCalendarConfig>,
 		getPropFromSettings: (settings: SingleCalendarConfig) => string,

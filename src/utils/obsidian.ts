@@ -1,8 +1,8 @@
+import { parseIntoList } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import { getCalendarViewType } from "../components/calendar-view";
 import type { Frontmatter } from "../types";
-import { parseIntoList } from "@real1ty-obsidian-plugins";
 
 export const emitHover = (
 	app: App,
@@ -21,6 +21,17 @@ export const emitHover = (
 		linktext,
 		sourcePath: sourcePath ?? app.workspace.getActiveFile()?.path ?? "",
 	});
+
+/**
+ * Trashes a file by path if it exists. Fire-and-forget — logs a warning and does not throw.
+ */
+export function trashDuplicateFile(app: App, filePath: string, context: string): void {
+	const file = app.vault.getAbstractFileByPath(filePath);
+	if (file instanceof TFile) {
+		console.warn(`[Prisma] Self-healing: trashing duplicate ${context}: ${filePath}`);
+		void app.fileManager.trashFile(file);
+	}
+}
 
 /**
  * Deletes multiple files by their paths using Promise.all.

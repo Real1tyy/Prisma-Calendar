@@ -1,5 +1,7 @@
+import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 import type { SingleCalendarConfig } from "../../../types/settings";
+import { trashDuplicateFile } from "../../../utils/obsidian";
 import type { Indexer } from "../../indexer";
 import { BaseSyncStateManager, type TrackedSyncEvent } from "../base-sync-state-manager";
 import { type CalDAVSyncMetadata, CalDAVSyncMetadataSchema } from "./types";
@@ -18,8 +20,8 @@ export class CalDAVSyncStateManager extends BaseSyncStateManager<CalDAVSyncMetad
 	 */
 	private globalUidIndex: Map<string, TrackedCalDAVEvent> = new Map();
 
-	constructor(indexer: Indexer, settings$: BehaviorSubject<SingleCalendarConfig>) {
-		super(indexer, settings$, (s) => s.caldavProp, CalDAVSyncMetadataSchema);
+	constructor(app: App, indexer: Indexer, settings$: BehaviorSubject<SingleCalendarConfig>) {
+		super(app, indexer, settings$, (s) => s.caldavProp, CalDAVSyncMetadataSchema);
 	}
 
 	findByUid(accountId: string, calendarHref: string, uid: string): TrackedCalDAVEvent | null {
@@ -47,6 +49,12 @@ export class CalDAVSyncStateManager extends BaseSyncStateManager<CalDAVSyncMetad
 	}
 
 	protected trackEvent(filePath: string, metadata: CalDAVSyncMetadata): void {
+		const existing = this.globalUidIndex.get(metadata.uid);
+		if (existing && existing.filePath !== filePath) {
+			trashDuplicateFile(this.app, filePath, `CalDAV event (UID: ${metadata.uid})`);
+			return;
+		}
+
 		let accountState = this.syncState.get(metadata.accountId);
 		if (!accountState) {
 			accountState = new Map();

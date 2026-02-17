@@ -4,6 +4,16 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.2.0 - 2/17/2026
+
+### Fixed
+
+- **Self-healing for duplicate events**: The indexer now automatically detects and trashes duplicate recurring event instances and duplicate integration events (ICS/CalDAV) caused by race conditions during concurrent syncs. Duplicates are moved to trash as they are indexed, keeping the first-seen file.
+
+- **Date format corruption on drag-drop**: Fixed `shiftISO()` corrupting date-only values (e.g. `2026-01-25`) into full timestamps (e.g. `2026-01-25T00:00:00.000Z`) when all-day events were drag-dropped or shifted. The function now preserves the original date-only format.
+
+---
+
 ## 2.1.0 - 2/16/2026
 
 ### Added

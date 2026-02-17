@@ -140,9 +140,7 @@ export default class CustomCalendarPlugin extends Plugin {
 			});
 		};
 
-		type UndoRedoAction = (view: CalendarView) => Promise<boolean>;
-
-		const addUndoRedoCommand = (id: string, name: string, action: UndoRedoAction): void => {
+		const addUndoRedoCommand = (id: string, name: string, action: (view: CalendarView) => Promise<boolean>): void => {
 			this.addCommand({
 				id,
 				name,

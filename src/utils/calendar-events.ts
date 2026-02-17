@@ -699,6 +699,9 @@ const shiftISO = (iso: unknown, offsetMs?: number) => {
 	const d = new Date(iso);
 	if (Number.isNaN(d.getTime())) return iso;
 	d.setTime(d.getTime() + offsetMs);
+	if (!iso.includes("T")) {
+		return d.toISOString().split("T")[0];
+	}
 	return d.toISOString();
 };
 
