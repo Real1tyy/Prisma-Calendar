@@ -2,9 +2,9 @@ import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
 
 export class ICSImportProgressModal extends Modal {
-	private progressBar: HTMLElement | null = null;
-	private statusText: HTMLElement | null = null;
-	private detailsText: HTMLElement | null = null;
+	private progressBar!: HTMLElement;
+	private statusText!: HTMLElement;
+	private detailsText!: HTMLElement;
 	private totalCount = 0;
 	private isComplete = false;
 
@@ -39,15 +39,10 @@ export class ICSImportProgressModal extends Modal {
 	updateProgress(current: number, eventTitle?: string): void {
 		const percentage = Math.round((current / this.totalCount) * 100);
 
-		if (this.progressBar) {
-			this.progressBar.setCssProps({ width: `${percentage}%` });
-		}
+		this.progressBar.setCssProps({ width: `${percentage}%` });
+		this.statusText.setText(`Importing ${current} of ${this.totalCount} events...`);
 
-		if (this.statusText) {
-			this.statusText.setText(`Importing ${current} of ${this.totalCount} events...`);
-		}
-
-		if (this.detailsText && eventTitle) {
+		if (eventTitle) {
 			this.detailsText.setText(`Processing: ${eventTitle}`);
 		}
 	}
@@ -55,22 +50,16 @@ export class ICSImportProgressModal extends Modal {
 	showComplete(successCount: number, errorCount: number, skippedCount: number): void {
 		this.isComplete = true;
 
-		if (this.progressBar) {
-			this.progressBar.setCssProps({ width: "100%" });
-			addCls(this.progressBar, "complete");
-		}
+		this.progressBar.setCssProps({ width: "100%" });
+		addCls(this.progressBar, "complete");
 
-		if (this.statusText) {
-			this.statusText.setText("Import complete");
-		}
+		this.statusText.setText("Import complete");
 
-		if (this.detailsText) {
-			const parts: string[] = [];
-			if (successCount > 0) parts.push(`✓ ${successCount} imported`);
-			if (skippedCount > 0) parts.push(`⊘ ${skippedCount} skipped (already exist)`);
-			if (errorCount > 0) parts.push(`✗ ${errorCount} failed`);
-			this.detailsText.setText(parts.join("  •  "));
-		}
+		const parts: string[] = [];
+		if (successCount > 0) parts.push(`✓ ${successCount} imported`);
+		if (skippedCount > 0) parts.push(`⊘ ${skippedCount} skipped (already exist)`);
+		if (errorCount > 0) parts.push(`✗ ${errorCount} failed`);
+		this.detailsText.setText(parts.join("  •  "));
 
 		setTimeout(() => {
 			this.close();
@@ -80,17 +69,9 @@ export class ICSImportProgressModal extends Modal {
 	showError(message: string): void {
 		this.isComplete = true;
 
-		if (this.progressBar) {
-			addCls(this.progressBar, "error");
-		}
-
-		if (this.statusText) {
-			this.statusText.setText("Import failed");
-		}
-
-		if (this.detailsText) {
-			this.detailsText.setText(message);
-		}
+		addCls(this.progressBar, "error");
+		this.statusText.setText("Import failed");
+		this.detailsText.setText(message);
 
 		setTimeout(() => {
 			this.close();

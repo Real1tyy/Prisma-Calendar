@@ -10,7 +10,7 @@ export class TableComponent {
 	private showDecimalHours: boolean;
 	private currentPage = 0;
 	private totalPages: number;
-	private tableBody: HTMLElement | null = null;
+	private tableBody!: HTMLElement;
 	private paginationContainer: HTMLElement | null = null;
 
 	constructor(parentEl: HTMLElement, entries: WeeklyStatEntry[], totalDuration: number, showDecimalHours = false) {
@@ -48,8 +48,6 @@ export class TableComponent {
 	}
 
 	private render(): void {
-		if (!this.tableBody) return;
-
 		// Clear existing rows
 		this.tableBody.empty();
 

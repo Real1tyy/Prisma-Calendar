@@ -9,13 +9,13 @@ export class ICSImportModal extends Modal {
 	private calendars: CalendarBundle[];
 	private onImport: (bundle: CalendarBundle, events: ImportedEvent[], timezone: string) => Promise<void>;
 	private selectedBundle: CalendarBundle | null = null;
-	private selectedTimezone: string = "UTC";
+	private selectedTimezone = "UTC";
 	private parsedEvents: ImportedEvent[] = [];
-	private fileInput: HTMLInputElement | null = null;
-	private calendarSelectEl: HTMLSelectElement | null = null;
-	private timezoneSelectEl: HTMLSelectElement | null = null;
-	private previewEl: HTMLElement | null = null;
-	private importButton: HTMLButtonElement | null = null;
+	private fileInput!: HTMLInputElement;
+	private calendarSelectEl!: HTMLSelectElement;
+	private timezoneSelectEl!: HTMLSelectElement;
+	private previewEl!: HTMLElement;
+	private importButton!: HTMLButtonElement;
 
 	constructor(
 		app: App,
@@ -66,7 +66,7 @@ export class ICSImportModal extends Modal {
 		}
 
 		this.calendarSelectEl.addEventListener("change", () => {
-			const selectedId = this.calendarSelectEl?.value;
+			const selectedId = this.calendarSelectEl.value;
 			this.selectedBundle = this.calendars.find((b) => b.calendarId === selectedId) || null;
 		});
 
@@ -89,7 +89,7 @@ export class ICSImportModal extends Modal {
 		}
 
 		this.timezoneSelectEl.addEventListener("change", () => {
-			this.selectedTimezone = this.timezoneSelectEl?.value || "UTC";
+			this.selectedTimezone = this.timezoneSelectEl.value;
 			this.showPreview();
 		});
 
@@ -115,7 +115,7 @@ export class ICSImportModal extends Modal {
 	}
 
 	private async handleFileSelect(): Promise<void> {
-		const file = this.fileInput?.files?.[0];
+		const file = this.fileInput.files?.[0];
 		if (!file) return;
 
 		try {
@@ -135,12 +135,11 @@ export class ICSImportModal extends Modal {
 	}
 
 	private showPreview(): void {
-		if (!this.previewEl) return;
 		this.previewEl.empty();
 
 		if (this.parsedEvents.length === 0) {
 			this.previewEl.createEl("p", { text: "No events found in file" });
-			if (this.importButton) this.importButton.disabled = true;
+			this.importButton.disabled = true;
 			return;
 		}
 
@@ -171,18 +170,17 @@ export class ICSImportModal extends Modal {
 			});
 		}
 
-		if (this.importButton) this.importButton.disabled = false;
+		this.importButton.disabled = false;
 	}
 
 	private showPreviewError(message: string): void {
-		if (!this.previewEl) return;
 		this.previewEl.empty();
 		this.previewEl.createEl("p", {
 			text: `Error: ${message}`,
 			cls: cls("ics-import-error"),
 		});
 		this.parsedEvents = [];
-		if (this.importButton) this.importButton.disabled = true;
+		this.importButton.disabled = true;
 	}
 
 	private async handleImport(): Promise<void> {

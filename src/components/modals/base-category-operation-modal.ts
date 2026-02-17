@@ -5,7 +5,7 @@ import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { CalendarEvent } from "../../types/calendar";
 
 export abstract class BaseCategoryOperationModal extends Modal {
-	protected actionButton: HTMLButtonElement | null = null;
+	protected actionButton!: HTMLButtonElement;
 
 	constructor(
 		app: App,
@@ -57,8 +57,6 @@ export abstract class BaseCategoryOperationModal extends Modal {
 	}
 
 	protected async handleOperation(): Promise<void> {
-		if (!this.actionButton) return;
-
 		this.actionButton.disabled = true;
 		this.actionButton.setText(this.getProgressText());
 
@@ -87,10 +85,8 @@ export abstract class BaseCategoryOperationModal extends Modal {
 		} catch (error) {
 			new Notice(this.getErrorMessage(error));
 			console.error("Error in category operation:", error);
-			if (this.actionButton) {
-				this.actionButton.disabled = false;
-				this.actionButton.setText(this.getActionButtonText());
-			}
+			this.actionButton.disabled = false;
+			this.actionButton.setText(this.getActionButtonText());
 		}
 	}
 
