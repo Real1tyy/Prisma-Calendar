@@ -129,6 +129,12 @@ export const strictBooleanTransform = z
 	.transform((v) => v === true || v === "true")
 	.pipe(z.boolean());
 
+/** Optional unknown → boolean | undefined; missing/undefined stays undefined so the key can be omitted */
+export const strictBooleanOptional = z
+	.unknown()
+	.optional()
+	.transform((v) => (v === true || v === "true" ? true : v === undefined ? undefined : false));
+
 export const requiredDateTimeTransform = requiredParsed<DateTime>("datetime", parseDT);
 export const optionalDateTimeTransform = optionalParsed<DateTime>("datetime", parseDT);
 

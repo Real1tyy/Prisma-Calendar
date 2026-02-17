@@ -5,9 +5,10 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import { v5 as uuidv5 } from "uuid";
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../types/calendar";
-import { convertToISO, parseEventFrontmatter } from "../types/event";
 import type { EventMetadata } from "../types/event";
+import { convertToISO, parseEventFrontmatter } from "../types/event";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
+
 import { applyDateNormalizationToFile, getEventName } from "../utils/calendar-events";
 import type { RawEventSource } from "./indexer";
 
@@ -33,7 +34,7 @@ export class Parser {
 	}
 
 	parseEventSource(source: RawEventSource): CalendarEvent | null {
-		const { filePath, frontmatter } = source;
+		const { filePath, frontmatter, metadata } = source;
 
 		if (!this.filterEvaluator.evaluateFilters(frontmatter)) {
 			return null;
@@ -46,7 +47,7 @@ export class Parser {
 			return null;
 		}
 
-		const { datetime: parsed, metadata } = result;
+		const { datetime: parsed } = result;
 
 		const title =
 			getEventName(this.settings.titleProp, frontmatter, filePath, this.settings.calendarTitleProp) ||
@@ -79,26 +80,8 @@ export class Parser {
 			start: start as ISO,
 			allDay: true,
 			isVirtual: false,
-			skipped: metadata.skip,
-			location: metadata.location,
-			participants: metadata.participants,
-			categories: metadata.categories,
-			breakMinutes: metadata.breakMinutes,
-			icon: metadata.icon,
-			status: metadata.status,
-			minutesBefore: metadata.minutesBefore,
-			daysBefore: metadata.daysBefore,
-			alreadyNotified: metadata.alreadyNotified,
-			rruleType: metadata.rruleType,
-			rruleSpec: metadata.rruleSpec,
-			rruleId: metadata.rruleId,
-			instanceDate: metadata.instanceDate,
-			source: metadata.source,
-			ignoreRecurring: metadata.ignoreRecurring,
-			futureInstancesCount: metadata.futureInstancesCount,
-			generatePastEvents: metadata.generatePastEvents,
-			caldav: metadata.caldav,
-			icsSubscription: metadata.icsSubscription,
+			skipped: metadata.skip ?? false,
+			metadata,
 			meta,
 		};
 	}
@@ -129,26 +112,8 @@ export class Parser {
 			end,
 			allDay: false,
 			isVirtual: false,
-			skipped: metadata.skip,
-			location: metadata.location,
-			participants: metadata.participants,
-			categories: metadata.categories,
-			breakMinutes: metadata.breakMinutes,
-			icon: metadata.icon,
-			status: metadata.status,
-			minutesBefore: metadata.minutesBefore,
-			daysBefore: metadata.daysBefore,
-			alreadyNotified: metadata.alreadyNotified,
-			rruleType: metadata.rruleType,
-			rruleSpec: metadata.rruleSpec,
-			rruleId: metadata.rruleId,
-			instanceDate: metadata.instanceDate,
-			source: metadata.source,
-			ignoreRecurring: metadata.ignoreRecurring,
-			futureInstancesCount: metadata.futureInstancesCount,
-			generatePastEvents: metadata.generatePastEvents,
-			caldav: metadata.caldav,
-			icsSubscription: metadata.icsSubscription,
+			skipped: metadata.skip ?? false,
+			metadata,
 			meta,
 		};
 	}

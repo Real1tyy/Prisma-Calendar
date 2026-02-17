@@ -143,7 +143,12 @@ export class GlobalSearchModal extends BaseEventListModal {
 		}
 	}
 
-	private formatEventSubtitle(event: { allDay: boolean; start: string; end?: string; rruleType?: string }): string {
+	private formatEventSubtitle(event: {
+		allDay: boolean;
+		start: string;
+		end?: string;
+		metadata: { rruleType?: string };
+	}): string {
 		const parts: string[] = [];
 
 		// Event type indicator
@@ -190,7 +195,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		}
 
 		// Add recurring indicator
-		if (event.rruleType) {
+		if (event.metadata.rruleType) {
 			parts.push("🔄 Recurring");
 		}
 
@@ -281,9 +286,9 @@ export class GlobalSearchModal extends BaseEventListModal {
 			let filteredEvents = events.filter((event) => !event.isVirtual);
 
 			if (this.filters.recurring === "skip") {
-				filteredEvents = filteredEvents.filter((event) => !event.rruleType);
+				filteredEvents = filteredEvents.filter((event) => !event.metadata.rruleType);
 			} else if (this.filters.recurring === "only") {
-				filteredEvents = filteredEvents.filter((event) => !!event.rruleType);
+				filteredEvents = filteredEvents.filter((event) => !!event.metadata.rruleType);
 			}
 
 			if (this.filters.allDay === "skip") {

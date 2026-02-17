@@ -9,7 +9,7 @@ import {
 	optionalTrimmedString,
 	requiredDateTimeTransform,
 	requiredDateTransform,
-	strictBooleanTransform,
+	strictBooleanOptional,
 	titleTransform,
 } from "../utils/validation";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "./index";
@@ -44,8 +44,8 @@ type CalendarEventFrontmatter = z.infer<typeof EventFrontmatterSchema>;
 // Structured fields extracted from frontmatter via settings-based property names.
 // Parsed through Zod at the boundary so consumers get clean, validated data.
 
-const EventMetadataSchema = z.object({
-	skip: strictBooleanTransform,
+export const EventMetadataSchema = z.object({
+	skip: strictBooleanOptional.optional(),
 	location: optionalTrimmedString,
 	participants: optionalListTransform,
 	categories: optionalListTransform,
@@ -54,15 +54,15 @@ const EventMetadataSchema = z.object({
 	status: optionalTrimmedString,
 	minutesBefore: optionalNumber,
 	daysBefore: optionalNumber,
-	alreadyNotified: strictBooleanTransform,
+	alreadyNotified: strictBooleanOptional.optional(),
 	rruleType: optionalTrimmedString,
 	rruleSpec: optionalTrimmedString,
 	rruleId: optionalTrimmedString,
 	instanceDate: optionalTrimmedString,
 	source: optionalTrimmedString,
-	ignoreRecurring: strictBooleanTransform,
+	ignoreRecurring: strictBooleanOptional.optional(),
 	futureInstancesCount: optionalPositiveNumber,
-	generatePastEvents: strictBooleanTransform,
+	generatePastEvents: strictBooleanOptional.optional(),
 	caldav: z.unknown().optional(),
 	icsSubscription: z.unknown().optional(),
 });

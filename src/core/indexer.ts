@@ -11,7 +11,7 @@ import { type App, TFile } from "obsidian";
 import { BehaviorSubject, type Observable, Subject, Subscription } from "rxjs";
 import { filter, take } from "rxjs/operators";
 import { SCAN_CONCURRENCY } from "../constants";
-import { parseEventMetadata } from "../types/event";
+import { type EventMetadata, parseEventMetadata } from "../types/event";
 import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import {
@@ -30,6 +30,7 @@ export interface RawEventSource {
 	folder: string;
 	isAllDay: boolean;
 	isUntracked: boolean;
+	metadata: EventMetadata;
 }
 
 type IndexerEventType = "file-changed" | "file-deleted" | "recurring-event-found" | "untracked-file-changed";
@@ -305,6 +306,7 @@ export class Indexer {
 
 			const allDayProp = frontmatter[this.settings.allDayProp];
 			const isAllDay = allDayProp === true || allDayProp === "true";
+			const metadata = parseEventMetadata(frontmatter, this.settings);
 
 			const source: RawEventSource = {
 				filePath: file.path,
@@ -313,6 +315,7 @@ export class Indexer {
 				folder: file.parent?.path || "",
 				isAllDay,
 				isUntracked,
+				metadata,
 			};
 
 			// Emit separate event types for tracked vs untracked
@@ -384,7 +387,6 @@ export class Indexer {
 			rrules,
 			frontmatter: frontmatterCopy,
 			metadata,
-			skipped: metadata.skip,
 			content: undefined, // Empty initially - will be loaded on-demand by RecurringEventManager
 		};
 	}

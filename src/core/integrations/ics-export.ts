@@ -100,15 +100,15 @@ function getNotificationMinutes(event: CalendarEvent, notifications?: Notificati
 	if (!notifications) return null;
 
 	if (isAllDayEvent(event)) {
-		if (event.daysBefore !== undefined) {
-			return Math.round(event.daysBefore * 24 * 60);
+		if (event.metadata.daysBefore !== undefined) {
+			return Math.round(event.metadata.daysBefore * 24 * 60);
 		}
 		if (notifications.defaultDaysBefore !== undefined) {
 			return Math.round(notifications.defaultDaysBefore * 24 * 60);
 		}
 	} else {
-		if (event.minutesBefore !== undefined) {
-			return Math.round(event.minutesBefore);
+		if (event.metadata.minutesBefore !== undefined) {
+			return Math.round(event.metadata.minutesBefore);
 		}
 		if (notifications.defaultMinutesBefore !== undefined) {
 			return Math.round(notifications.defaultMinutesBefore);
@@ -150,17 +150,17 @@ function parsedEventToVEvent(
 		vevent.addPropertyWithValue("description", noteContent);
 	}
 
-	const categories = event.categories ?? [];
+	const categories = event.metadata.categories ?? [];
 	if (categories.length > 0) {
 		vevent.addPropertyWithValue("categories", categories.join(","));
 	}
 
-	if (event.location && event.location.trim()) {
-		vevent.addPropertyWithValue("location", event.location);
+	if (event.metadata.location && event.metadata.location.trim()) {
+		vevent.addPropertyWithValue("location", event.metadata.location);
 	}
 
-	if (event.participants && event.participants.length > 0) {
-		for (const participant of event.participants) {
+	if (event.metadata.participants && event.metadata.participants.length > 0) {
+		for (const participant of event.metadata.participants) {
 			const attendeeProp = new ICAL.Property("attendee");
 			attendeeProp.setValue(`mailto:${participant}`);
 			attendeeProp.setParameter("cn", participant);

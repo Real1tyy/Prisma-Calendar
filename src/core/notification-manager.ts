@@ -4,7 +4,7 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import { NotificationModal } from "../components/notification-modal";
 import { MAX_PAST_NOTIFICATION_THRESHOLD } from "../constants";
 import type { Frontmatter, PrismaSyncDataSchema } from "../types";
-import { parseEventMetadata } from "../types/event";
+import type { EventMetadata } from "../types/event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/calendar-events";
 import { toSafeString } from "../utils/format";
@@ -98,7 +98,12 @@ export class NotificationManager {
 		switch (event.type) {
 			case "file-changed":
 				if (event.source) {
-					this.processEventSource(event.source.filePath, event.source.frontmatter, event.source.isAllDay);
+					this.processEventSource(
+						event.source.filePath,
+						event.source.frontmatter,
+						event.source.isAllDay,
+						event.source.metadata
+					);
 				}
 				break;
 			case "file-deleted":
@@ -107,9 +112,12 @@ export class NotificationManager {
 		}
 	}
 
-	private processEventSource(filePath: string, frontmatter: Frontmatter, isAllDay: boolean): void {
-		const metadata = parseEventMetadata(frontmatter, this.settings);
-
+	private processEventSource(
+		filePath: string,
+		frontmatter: Frontmatter,
+		isAllDay: boolean,
+		metadata: EventMetadata
+	): void {
 		if (metadata.skip) {
 			this.removeNotification(filePath);
 			return;

@@ -43,8 +43,9 @@ export function getEventDuration(event: CalendarEvent): number {
 
 	let duration = end.getTime() - start.getTime();
 
-	if (event.breakMinutes && event.breakMinutes > 0) {
-		const breakMs = event.breakMinutes * 60 * 1000;
+	const breakMinutes = event.metadata?.breakMinutes;
+	if (typeof breakMinutes === "number" && breakMinutes > 0) {
+		const breakMs = breakMinutes * 60 * 1000;
 		duration = Math.max(0, duration - breakMs);
 	}
 
@@ -154,7 +155,7 @@ export function aggregateStats(
 
 		if (mode === "category") {
 			// Use typed categories field, falling back to parsing from meta for backward compatibility
-			const categories = event.categories ?? parseCategories(event.meta?.[categoryProp]);
+			const categories = event.metadata?.categories ?? parseCategories(event.meta?.[categoryProp]);
 			groupKeys = categories;
 		} else {
 			// Group by cleaned event name (default behavior)

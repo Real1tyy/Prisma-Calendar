@@ -5,7 +5,7 @@ import {
 	formatMsToMMSS,
 	parseAsLocalDate,
 } from "../../src/utils/time-formatter";
-import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
+import { createDefaultMetadata, createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 
 describe("formatMsToHHMMSS", () => {
 	it("should format 0 as 00:00:00", () => {
@@ -90,6 +90,7 @@ describe("formatEventTimeInfo", () => {
 				allDay: true as const,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			};
 			expect(formatEventTimeInfo(event)).toBe("All Day - Mar 15, 2024");
@@ -105,6 +106,7 @@ describe("formatEventTimeInfo", () => {
 				allDay: true as const,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			};
 			// All-day events only show start date

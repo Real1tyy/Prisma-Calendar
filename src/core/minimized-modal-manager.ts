@@ -1,6 +1,5 @@
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
-import { parseEventMetadata } from "../types/event";
 import type { Subscription } from "rxjs";
 import { openCategoryAssignModal } from "../components/modals/assignment-modal";
 import { EventCreateModal, EventEditModal } from "../components/modals";
@@ -213,7 +212,7 @@ class MinimizedModalManagerClass {
 			if (event.type === "file-changed" && event.source) {
 				const settings = bundle.settingsStore.currentSettings;
 				const frontmatter = event.source.frontmatter;
-				const metadata = parseEventMetadata(frontmatter, settings);
+				const metadata = event.source.metadata;
 
 				// Update the saved state with new frontmatter values
 				// Keep stopwatch state intact - only update form data

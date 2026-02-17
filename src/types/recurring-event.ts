@@ -80,8 +80,7 @@ export interface NodeRecurringEvent {
 	rRuleId: string; // unique ID for this recurring event
 	rrules: RRuleFrontmatter;
 	frontmatter: Frontmatter;
-	metadata: EventMetadata; // validated typed data from frontmatter
-	skipped: boolean; // pre-computed from frontmatter skip property at parse time
+	metadata: EventMetadata;
 	content?: string;
 }
 

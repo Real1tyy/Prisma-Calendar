@@ -18,7 +18,7 @@ import { TFile } from "obsidian";
 import { SyncStore } from "@real1ty-obsidian-plugins";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import type { CalendarEvent, Frontmatter, ISO, PrismaSyncDataSchema } from "../types";
-import { parseEventMetadata } from "../types/event";
+import type { EventMetadata } from "../types/event";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import {
@@ -116,7 +116,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 				break;
 			case "file-changed":
 				if (event.source) {
-					this.handleFileChanged(event.filePath, event.source.frontmatter);
+					this.handleFileChanged(event.filePath, event.source.metadata);
 				}
 				break;
 			case "file-deleted":
@@ -414,8 +414,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.physicalSourceToRRuleIds.set(sourcePath, existing);
 	}
 
-	private handleFileChanged(filePath: string, frontmatter: Frontmatter): void {
-		const metadata = parseEventMetadata(frontmatter, this.settings);
+	private handleFileChanged(filePath: string, metadata: EventMetadata): void {
 		const { rruleId, instanceDate, ignoreRecurring, source } = metadata;
 
 		if (rruleId && instanceDate) {
@@ -507,7 +506,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		try {
 			const { recurringEvent, physicalInstances } = data;
 
-			if (recurringEvent.skipped) {
+			if (recurringEvent.metadata.skip) {
 				return;
 			}
 
@@ -727,7 +726,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		if (!recurringEvent) return [];
 
 		// Don't generate virtual events if recurring event is disabled (skipped)
-		if (recurringEvent.skipped) {
+		if (recurringEvent.metadata.skip) {
 			return [];
 		}
 
@@ -819,26 +818,12 @@ export class RecurringEventManager extends DebouncedNotifier {
 			start: start as ISO,
 			isVirtual: true,
 			skipped: false,
-			// Typed metadata fields from source
-			location: metadata.location,
-			participants: metadata.participants,
-			categories: metadata.categories,
-			breakMinutes: metadata.breakMinutes,
-			icon: metadata.icon,
-			status: metadata.status,
-			minutesBefore: metadata.minutesBefore,
-			daysBefore: metadata.daysBefore,
-			alreadyNotified: metadata.alreadyNotified,
-			rruleType: metadata.rruleType,
-			rruleSpec: metadata.rruleSpec,
-			rruleId: recurringEvent.rRuleId,
-			instanceDate: instanceDate.toISODate() ?? undefined,
-			source: metadata.source,
-			ignoreRecurring: metadata.ignoreRecurring,
-			futureInstancesCount: metadata.futureInstancesCount,
-			generatePastEvents: metadata.generatePastEvents,
-			caldav: metadata.caldav,
-			icsSubscription: metadata.icsSubscription,
+			metadata: {
+				...metadata,
+				// Override instance-specific fields
+				rruleId: recurringEvent.rRuleId,
+				instanceDate: instanceDate.toISODate() ?? undefined,
+			},
 			meta: {
 				...recurringEvent.frontmatter,
 				rruleId: recurringEvent.rRuleId,
@@ -948,7 +933,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 	getEnabledRecurringEvents(): NodeRecurringEvent[] {
 		return Array.from(this.recurringEventsMap.values())
-			.filter((data) => data.recurringEvent && !data.recurringEvent.skipped)
+			.filter((data) => data.recurringEvent && !data.recurringEvent.metadata.skip)
 			.map((data) => data.recurringEvent as NodeRecurringEvent);
 	}
 
@@ -959,7 +944,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		for (const data of this.recurringEventsMap.values()) {
 			if (!data.recurringEvent) continue;
 
-			if (data.recurringEvent.skipped) {
+			if (data.recurringEvent.metadata.skip) {
 				disabledEvents.push(data.recurringEvent);
 			}
 		}

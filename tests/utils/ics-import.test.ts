@@ -8,7 +8,7 @@ import {
 } from "../../src/core/integrations/ics-import";
 import type { CalendarEvent } from "../../src/types/calendar";
 import type { SingleCalendarConfig } from "../../src/types/settings";
-import { createMockTimedEvent } from "../fixtures/event-fixtures";
+import { createDefaultMetadata, createMockTimedEvent } from "../fixtures/event-fixtures";
 import { createMockSingleCalendarSettings } from "../setup";
 
 const SAMPLE_ICS_SINGLE_EVENT = `BEGIN:VCALENDAR
@@ -601,7 +601,7 @@ END:VCALENDAR`;
 				start: "2025-09-07T13:41:26Z",
 				end: "2025-09-07T14:41:26Z",
 				allDay: false,
-				minutesBefore: 1,
+				metadata: createDefaultMetadata({ minutesBefore: 1 }),
 				meta: {
 					"Start Date": "2025-09-07T13:41:26.000Z",
 					"End Date": "2025-09-07T14:41:26.000Z",

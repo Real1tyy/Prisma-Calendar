@@ -253,14 +253,14 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				recurringEvent: mockRecurringEvent,
 			});
 
-			// Simulate file-changed events for physical instances
+			// Simulate file-changed events for physical instances (metadata uses camelCase)
 			await (manager as any).handleFileChanged("Calendar/Meeting 2024-01-02.md", {
-				RRuleID: "test-rrule-123",
-				"Recurring Instance Date": "2024-01-02",
+				rruleId: "test-rrule-123",
+				instanceDate: "2024-01-02",
 			});
 			await (manager as any).handleFileChanged("Calendar/Meeting 2024-01-04.md", {
-				RRuleID: "test-rrule-123",
-				"Recurring Instance Date": "2024-01-04",
+				rruleId: "test-rrule-123",
+				instanceDate: "2024-01-04",
 			});
 
 			// Check that physical instances are tracked in the map

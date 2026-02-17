@@ -4,6 +4,7 @@ import type { IndexerEvent, RawEventSource } from "../../src/core/indexer";
 import { NotificationManager } from "../../src/core/notification-manager";
 import type { SingleCalendarConfig } from "../../src/types/settings";
 import { parseAsLocalDate } from "../../src/utils/time-formatter";
+import { createDefaultMetadata } from "../fixtures/event-fixtures";
 import type { MockApp } from "../mocks/obsidian";
 import { TFile } from "../mocks/obsidian";
 
@@ -63,17 +64,26 @@ describe("NotificationManager", () => {
 		folder: "",
 		isAllDay: false,
 		isUntracked: false,
+		metadata: createDefaultMetadata(overrides.metadata),
 		...overrides,
 	});
 
 	const createTimedEventSource = (overrides: Partial<RawEventSource> = {}): RawEventSource => {
 		const futureDate = createFutureDate(2);
+		const frontmatter: Record<string, unknown> = {
+			"Start Date": futureDate.toISOString(),
+			...overrides.frontmatter,
+		};
+		const minutesBefore = frontmatter["Minutes Before"] as number | undefined;
+		const alreadyNotified = frontmatter["Already Notified"];
+		const alreadyNotifiedBool = alreadyNotified === true || alreadyNotified === "true" || alreadyNotified === "yes";
 		return createRawEventSource({
-			frontmatter: {
-				"Start Date": futureDate.toISOString(),
-				"Minutes Before": 15,
-				...overrides.frontmatter,
-			},
+			frontmatter,
+			metadata: createDefaultMetadata({
+				...overrides.metadata,
+				...(minutesBefore !== undefined && { minutesBefore }),
+				...(alreadyNotified !== undefined && { alreadyNotified: alreadyNotifiedBool }),
+			}),
 			isAllDay: false,
 			...overrides,
 		});
@@ -81,12 +91,17 @@ describe("NotificationManager", () => {
 
 	const createAllDayEventSource = (overrides: Partial<RawEventSource> = {}): RawEventSource => {
 		const futureDate = createFutureDateDays(5);
+		const frontmatter: Record<string, unknown> = {
+			Date: futureDate.toISOString().split("T")[0],
+			...overrides.frontmatter,
+		};
+		const daysBefore = frontmatter["Days Before"] as number | undefined;
 		return createRawEventSource({
-			frontmatter: {
-				Date: futureDate.toISOString().split("T")[0],
-				"Days Before": 1,
-				...overrides.frontmatter,
-			},
+			frontmatter,
+			metadata: createDefaultMetadata({
+				...overrides.metadata,
+				...(daysBefore !== undefined && { daysBefore }),
+			}),
 			isAllDay: true,
 			...overrides,
 		});
@@ -110,6 +125,7 @@ describe("NotificationManager", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		vi.useFakeTimers();
+		vi.setSystemTime(new Date("2025-02-17T12:00:00.000Z"));
 
 		// Mock Web Notifications API
 		const mockNotification = vi.fn().mockImplementation((_title: string, _options?: NotificationOptions) => {
@@ -353,7 +369,10 @@ describe("NotificationManager", () => {
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
 
-			const expectedNotifyTime = new Date(futureDate);
+			// Match manager logic: parse event date as local, subtract 1 day, set to midnight
+			const eventDateStr = futureDate.toISOString().split("T")[0];
+			const startDate = parseAsLocalDate(eventDateStr)!;
+			const expectedNotifyTime = new Date(startDate);
 			expectedNotifyTime.setDate(expectedNotifyTime.getDate() - 1);
 			expectedNotifyTime.setHours(0, 0, 0, 0);
 			expect(queue[0].notifyAt.getTime()).toBe(expectedNotifyTime.getTime());
@@ -385,7 +404,9 @@ describe("NotificationManager", () => {
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
 
-			const expectedNotifyTime = new Date(futureDate);
+			const eventDateStr = futureDate.toISOString().split("T")[0];
+			const startDate = parseAsLocalDate(eventDateStr)!;
+			const expectedNotifyTime = new Date(startDate);
 			expectedNotifyTime.setDate(expectedNotifyTime.getDate() - 1);
 			expectedNotifyTime.setHours(0, 0, 0, 0);
 			expect(queue[0].notifyAt.getTime()).toBe(expectedNotifyTime.getTime());
@@ -411,7 +432,8 @@ describe("NotificationManager", () => {
 			const queue = (notificationManager as any).notificationQueue;
 			expect(queue).toHaveLength(1);
 
-			const expectedNotifyTime = new Date(futureDate);
+			const eventDateStr = futureDate.toISOString().split("T")[0];
+			const expectedNotifyTime = parseAsLocalDate(eventDateStr)!;
 			expectedNotifyTime.setHours(0, 0, 0, 0);
 			expect(queue[0].notifyAt.getTime()).toBe(expectedNotifyTime.getTime());
 		});

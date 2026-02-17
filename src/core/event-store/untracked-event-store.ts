@@ -41,6 +41,7 @@ export class UntrackedEventStore extends IndexedCacheStore<UntrackedEvent> {
 			type: "untracked",
 			isVirtual: false,
 			skipped: false,
+			metadata: {},
 			meta: source.frontmatter,
 		};
 	}

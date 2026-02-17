@@ -6,7 +6,7 @@ import {
 	type ICSExportOptions,
 } from "../../src/core/integrations/ics-export";
 import type { CalendarEvent } from "../../src/types/calendar";
-import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
+import { createDefaultMetadata, createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 
 function createOptions(overrides: Partial<ICSExportOptions> = {}): ICSExportOptions {
 	return {
@@ -107,7 +107,7 @@ describe("ICS Export", () => {
 
 		it("should include categories when present in frontmatter", () => {
 			const event = createMockTimedEvent({
-				categories: ["work", "meeting", "important"],
+				metadata: createDefaultMetadata({ categories: ["work", "meeting", "important"] }),
 				meta: { Category: ["work", "meeting", "important"] },
 			});
 			const result = createICSFromEvents([event], createOptions());
@@ -126,7 +126,7 @@ describe("ICS Export", () => {
 
 		it("should handle single category value as string", () => {
 			const event = createMockTimedEvent({
-				categories: ["work"],
+				metadata: createDefaultMetadata({ categories: ["work"] }),
 				meta: { Category: "work" },
 			});
 			const result = createICSFromEvents([event], createOptions());
@@ -531,7 +531,7 @@ describe("ICS Export", () => {
 		describe("VALARM notifications", () => {
 			it("should include VALARM when minutesBefore is in frontmatter", () => {
 				const event = createMockTimedEvent({
-					minutesBefore: 15,
+					metadata: createDefaultMetadata({ minutesBefore: 15 }),
 					meta: { "Minutes Before": 15 },
 				});
 				const result = createICSFromEvents(
@@ -578,7 +578,7 @@ describe("ICS Export", () => {
 			it("should use daysBeforeProp for all-day events", () => {
 				const event = createMockAllDayEvent({
 					start: "2025-03-20T00:00:00Z",
-					daysBefore: 1,
+					metadata: createDefaultMetadata({ daysBefore: 1 }),
 					meta: { "Days Before": 1 },
 				});
 				const result = createICSFromEvents(
@@ -616,7 +616,7 @@ describe("ICS Export", () => {
 
 			it("should prefer frontmatter over default", () => {
 				const event = createMockTimedEvent({
-					minutesBefore: 5,
+					metadata: createDefaultMetadata({ minutesBefore: 5 }),
 					meta: { "Minutes Before": 5 },
 				});
 				const result = createICSFromEvents(
@@ -637,7 +637,7 @@ describe("ICS Export", () => {
 			describe("decimal rounding", () => {
 				it("should round decimal minutes from frontmatter", () => {
 					const event = createMockTimedEvent({
-						minutesBefore: 15.5,
+						metadata: createDefaultMetadata({ minutesBefore: 15.5 }),
 						meta: { "Minutes Before": 15.5 },
 					});
 					const result = createICSFromEvents(
@@ -676,7 +676,7 @@ describe("ICS Export", () => {
 
 				it("should round 0.25 hours (15 min) correctly", () => {
 					const event = createMockTimedEvent({
-						minutesBefore: 15,
+						metadata: createDefaultMetadata({ minutesBefore: 15 }),
 						meta: { "Minutes Before": 0.25 * 60 },
 					});
 					const result = createICSFromEvents(
@@ -696,7 +696,7 @@ describe("ICS Export", () => {
 				it("should round decimal days for all-day events", () => {
 					const event = createMockAllDayEvent({
 						start: "2025-03-20T00:00:00Z",
-						daysBefore: 1.5,
+						metadata: createDefaultMetadata({ daysBefore: 1.5 }),
 						meta: { "Days Before": 1.5 },
 					});
 					const result = createICSFromEvents(
@@ -717,7 +717,7 @@ describe("ICS Export", () => {
 			describe("Location field", () => {
 				it("should export location field when present", () => {
 					const event = createMockTimedEvent({
-						location: "Conference Room A",
+						metadata: createDefaultMetadata({ location: "Conference Room A" }),
 					});
 
 					const result = createICSFromEvents([event], createOptions());
@@ -728,7 +728,7 @@ describe("ICS Export", () => {
 
 				it("should not export location when field is empty", () => {
 					const event = createMockTimedEvent({
-						location: "",
+						metadata: createDefaultMetadata({ location: "" }),
 					});
 
 					const result = createICSFromEvents([event], createOptions());
@@ -739,7 +739,7 @@ describe("ICS Export", () => {
 
 				it("should not export location when field is not present", () => {
 					const event = createMockTimedEvent({
-						location: undefined,
+						metadata: createDefaultMetadata({ location: undefined }),
 					});
 
 					const result = createICSFromEvents([event], createOptions());
@@ -750,7 +750,7 @@ describe("ICS Export", () => {
 
 				it("should handle location with special characters", () => {
 					const event = createMockTimedEvent({
-						location: "Room 42 - Building A, Floor 3",
+						metadata: createDefaultMetadata({ location: "Room 42 - Building A, Floor 3" }),
 					});
 
 					const result = createICSFromEvents([event], createOptions());
@@ -764,7 +764,7 @@ describe("ICS Export", () => {
 			describe("Attendees/Participants field", () => {
 				it("should export participants as ATTENDEE fields", () => {
 					const event = createMockTimedEvent({
-						participants: ["Alice", "Bob", "Charlie"],
+						metadata: createDefaultMetadata({ participants: ["Alice", "Bob", "Charlie"] }),
 					});
 
 					const result = createICSFromEvents([event], createOptions());
@@ -779,7 +779,7 @@ describe("ICS Export", () => {
 
 				it("should handle single participant as string", () => {
 					const event = createMockTimedEvent({
-						participants: ["Alice"],
+						metadata: createDefaultMetadata({ participants: ["Alice"] }),
 					});
 
 					const result = createICSFromEvents([event], createOptions());
@@ -791,7 +791,7 @@ describe("ICS Export", () => {
 
 				it("should not export attendees when participants list is empty", () => {
 					const event = createMockTimedEvent({
-						participants: [],
+						metadata: createDefaultMetadata({ participants: [] }),
 					});
 
 					const result = createICSFromEvents([event], createOptions());
@@ -802,7 +802,7 @@ describe("ICS Export", () => {
 
 				it("should format attendees with mailto URIs", () => {
 					const event = createMockTimedEvent({
-						participants: ["john.doe@example.com"],
+						metadata: createDefaultMetadata({ participants: ["john.doe@example.com"] }),
 					});
 
 					const result = createICSFromEvents([event], createOptions());
@@ -816,8 +816,7 @@ describe("ICS Export", () => {
 
 				it("should exclude Location and Participants from X-PRISMA-FM properties", () => {
 					const event = createMockTimedEvent({
-						location: "Office",
-						participants: ["Alice", "Bob"],
+						metadata: createDefaultMetadata({ location: "Office", participants: ["Alice", "Bob"] }),
 						meta: {
 							customProp: "custom value",
 						},

@@ -214,6 +214,7 @@ export class BatchSelectionManager {
 			start,
 			isVirtual,
 			skipped,
+			metadata: {},
 			meta,
 		};
 

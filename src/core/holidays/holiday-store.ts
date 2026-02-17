@@ -96,6 +96,7 @@ export class HolidayStore {
 			},
 			isVirtual: true,
 			skipped: false,
+			metadata: {},
 			meta: {
 				holidayType: holiday.type,
 				holidaySource: "date-holidays",

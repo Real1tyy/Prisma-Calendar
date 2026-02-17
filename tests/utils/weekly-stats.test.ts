@@ -13,7 +13,7 @@ import {
 	getMonthBounds,
 	getWeekBounds,
 } from "../../src/utils/weekly-stats";
-import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
+import { createDefaultMetadata, createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
 
 describe("getEventDuration", () => {
 	it("should calculate duration for timed events with end time", () => {
@@ -143,7 +143,7 @@ describe("getEventDuration", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
-				breakMinutes: 30,
+				metadata: createDefaultMetadata({ breakMinutes: 30 }),
 				meta: {
 					Break: 30, // 30 minute break
 				},
@@ -160,7 +160,7 @@ describe("getEventDuration", () => {
 				title: "Meeting",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:30:00Z", // 90 minutes
-				breakMinutes: 15.5,
+				metadata: createDefaultMetadata({ breakMinutes: 15.5 }),
 				meta: {
 					Break: 15.5, // 15.5 minute break
 				},
@@ -197,6 +197,7 @@ describe("getEventDuration", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			};
 
@@ -215,7 +216,7 @@ describe("getEventDuration", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
-				breakMinutes: 60,
+				metadata: createDefaultMetadata({ breakMinutes: 60 }),
 				meta: {
 					Break: 60, // 60 minute break (more than duration)
 				},
@@ -236,6 +237,7 @@ describe("getEventDuration", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {
 					Break: "invalid",
 				},
@@ -256,6 +258,7 @@ describe("getEventDuration", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {
 					Break: -30,
 				},
@@ -276,6 +279,7 @@ describe("getEventDuration", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {
 					Break: 0,
 				},
@@ -296,7 +300,7 @@ describe("getEventDuration", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
-				breakMinutes: 45,
+				metadata: createDefaultMetadata({ breakMinutes: 45 }),
 				meta: {
 					Pause: 45,
 				},
@@ -435,6 +439,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -455,6 +460,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -475,6 +481,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -495,6 +502,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -515,6 +523,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -535,6 +544,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -555,6 +565,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -575,6 +586,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -595,6 +607,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -607,6 +620,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -619,6 +633,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -653,6 +668,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -665,6 +681,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -677,6 +694,7 @@ describe("getEventsInRange", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -706,6 +724,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -718,6 +737,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -742,6 +762,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: true,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -754,6 +775,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -777,6 +799,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -789,6 +812,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -801,6 +825,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -833,6 +858,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -845,6 +871,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -868,6 +895,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -880,6 +908,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -911,6 +940,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -936,6 +966,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -948,6 +979,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -974,6 +1006,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -998,6 +1031,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1010,6 +1044,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1022,6 +1057,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1053,6 +1089,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1065,6 +1102,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1087,6 +1125,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1099,6 +1138,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1111,6 +1151,7 @@ describe("aggregateWeeklyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1404,6 +1445,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1416,6 +1458,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1439,6 +1482,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1451,6 +1495,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1463,6 +1508,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1485,6 +1531,7 @@ describe("aggregateDailyStats", () => {
 				allDay: true,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1497,6 +1544,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1520,6 +1568,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1532,6 +1581,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1557,6 +1607,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {
 					Category: "Work",
 				},
@@ -1571,6 +1622,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {
 					Category: "Work",
 				},
@@ -1585,6 +1637,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {
 					Category: "Personal",
 				},
@@ -1617,7 +1670,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
-				breakMinutes: 30,
+				metadata: createDefaultMetadata({ breakMinutes: 30 }),
 				meta: {
 					Break: 30, // 30 minute break
 				},
@@ -1643,6 +1696,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1679,6 +1733,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1705,6 +1760,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1717,6 +1773,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1729,6 +1786,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1755,6 +1813,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1767,6 +1826,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1779,6 +1839,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1801,6 +1862,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: true,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1813,6 +1875,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1836,6 +1899,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1848,6 +1912,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1873,6 +1938,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1885,6 +1951,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: true,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1918,6 +1985,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1930,6 +1998,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -1970,6 +2039,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 			{
@@ -1982,6 +2052,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -2004,6 +2075,7 @@ describe("aggregateMonthlyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				metadata: createDefaultMetadata(),
 				meta: {},
 			},
 		];
@@ -2030,7 +2102,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
-					breakMinutes: 30,
+					metadata: createDefaultMetadata({ breakMinutes: 30 }),
 					meta: {
 						Break: 30, // 30 minute break
 					},
@@ -2057,7 +2129,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
-					breakMinutes: 30,
+					metadata: createDefaultMetadata({ breakMinutes: 30 }),
 					meta: {
 						Break: 30, // 30 minute break
 					},
@@ -2072,7 +2144,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
-					breakMinutes: 45,
+					metadata: createDefaultMetadata({ breakMinutes: 45 }),
 					meta: {
 						Break: 45, // 45 minute break
 					},
@@ -2101,7 +2173,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
-					breakMinutes: 30,
+					metadata: createDefaultMetadata({ breakMinutes: 30 }),
 					meta: {
 						Break: 30, // Has break
 					},
@@ -2116,6 +2188,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {},
 				},
 			];
@@ -2141,8 +2214,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
-					breakMinutes: 45,
-					categories: ["Work"],
+					metadata: createDefaultMetadata({ breakMinutes: 45, categories: ["Work"] }),
 					meta: {
 						Category: "Work",
 						Break: 45,
@@ -2158,8 +2230,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
-					breakMinutes: 15,
-					categories: ["Health"],
+					metadata: createDefaultMetadata({ breakMinutes: 15, categories: ["Health"] }),
 					meta: {
 						Category: "Health",
 						Break: 15,
@@ -2191,6 +2262,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Break: 30,
 					},
@@ -2218,7 +2290,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
-					breakMinutes: 30,
+					metadata: createDefaultMetadata({ breakMinutes: 30 }),
 					meta: {
 						Break: 30,
 					},
@@ -2248,6 +2320,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2262,6 +2335,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2276,6 +2350,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Personal",
 					},
@@ -2310,6 +2385,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2324,6 +2400,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {},
 					// No meta at all
 				},
@@ -2337,6 +2414,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						// Has meta but no Category property
 						Status: "Active",
@@ -2370,6 +2448,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Type: "Meeting",
 					},
@@ -2384,6 +2463,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Type: "Task",
 					},
@@ -2419,6 +2499,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2445,6 +2526,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: true,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2459,6 +2541,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: true,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2485,6 +2568,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "",
 					},
@@ -2510,6 +2594,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2524,6 +2609,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Personal",
 					},
@@ -2549,6 +2635,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2563,6 +2650,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2592,6 +2680,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2606,6 +2695,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2620,6 +2710,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Health",
 					},
@@ -2652,6 +2743,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {},
 				},
 				{
@@ -2664,6 +2756,7 @@ describe("Category-based aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work",
 					},
@@ -2694,6 +2787,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work, Personal", // Event belongs to both categories
 					},
@@ -2728,6 +2822,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Health, Work", // Both categories - 0.5h each
 					},
@@ -2742,6 +2837,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Health", // Only Health - full 1.5h
 					},
@@ -2756,6 +2852,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work", // Only Work - full 1h
 					},
@@ -2792,6 +2889,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work, Learning, Networking",
 					},
@@ -2824,8 +2922,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
-					breakMinutes: 30,
-					categories: ["Work", "Learning"],
+					metadata: createDefaultMetadata({ breakMinutes: 30, categories: ["Work", "Learning"] }),
 					meta: {
 						Category: "Work, Learning",
 						Break: 30, // 30 minute break
@@ -2858,6 +2955,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work, Personal",
 					},
@@ -2883,6 +2981,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: true,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work, Team",
 					},
@@ -2910,6 +3009,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Business, Exercise",
 					},
@@ -2924,6 +3024,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Business",
 					},
@@ -2962,6 +3063,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work,", // Trailing comma
 					},
@@ -2987,6 +3089,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "Work, Work, Work", // Duplicate categories
 					},
@@ -3015,6 +3118,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "A, B, C",
 					},
@@ -3029,6 +3133,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {
 						Category: "A",
 					},
@@ -3043,6 +3148,7 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					metadata: createDefaultMetadata(),
 					meta: {},
 				},
 			];

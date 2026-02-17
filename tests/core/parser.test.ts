@@ -6,6 +6,7 @@ import type { RawEventSource } from "../../src/core/indexer";
 import { Parser } from "../../src/core/parser";
 import { isAllDayEvent, isTimedEvent } from "../../src/types/calendar";
 import { createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
+import { createDefaultMetadata } from "../fixtures/event-fixtures";
 
 const mockApp = {
 	vault: {
@@ -35,9 +36,17 @@ describe("Parser", () => {
 		parser = new Parser(mockApp as App, settingsStore);
 	});
 
+	/** Helper to create a RawEventSource with default metadata */
+	const createSource = (
+		partial: Omit<RawEventSource, "metadata"> & { metadata?: RawEventSource["metadata"] }
+	): RawEventSource => ({
+		...partial,
+		metadata: partial.metadata ?? createDefaultMetadata(),
+	});
+
 	describe("basic event parsing", () => {
 		it("should parse a simple event with start date", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -47,7 +56,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: true,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -61,7 +70,7 @@ describe("Parser", () => {
 		});
 
 		it("should parse event with start and end times", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -73,7 +82,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -94,7 +103,7 @@ describe("Parser", () => {
 		});
 
 		it("should use default duration when end time is missing", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -104,7 +113,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -122,7 +131,7 @@ describe("Parser", () => {
 		});
 
 		it("should handle explicit all-day flag", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -132,7 +141,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: true,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -153,7 +162,7 @@ describe("Parser", () => {
 			settingsStore.next(testSettings);
 			parser = new Parser(mockApp as App, settingsStore);
 
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -164,7 +173,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -174,7 +183,7 @@ describe("Parser", () => {
 		});
 
 		it("should fallback to filename when title property is missing", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/important-meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -183,7 +192,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -198,14 +207,14 @@ describe("Parser", () => {
 			const formats = ["2024-01-15", "2024-01-15 14:30"];
 
 			formats.forEach((dateStr) => {
-				const source: RawEventSource = {
+				const source = createSource({
 					filePath: "Events/test.md",
 					mtime: Date.now(),
 					frontmatter: { start: dateStr },
 					folder: "Events",
 					isAllDay: false,
 					isUntracked: false,
-				};
+				});
 
 				const events = parser.parseEventSource(source);
 				expect(events).toBeDefined();
@@ -219,7 +228,7 @@ describe("Parser", () => {
 		});
 
 		it("should handle ISO date format", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -228,7 +237,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -238,7 +247,7 @@ describe("Parser", () => {
 		});
 
 		it("should reject invalid date formats", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -247,7 +256,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -255,7 +264,7 @@ describe("Parser", () => {
 		});
 
 		it("should handle missing start property", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -264,7 +273,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -274,7 +283,7 @@ describe("Parser", () => {
 
 	describe("UTC handling", () => {
 		it("should store dates in UTC format", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -283,7 +292,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -296,7 +305,7 @@ describe("Parser", () => {
 
 	describe("all-day event detection", () => {
 		it("should detect all-day events from date-only format", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/holiday.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -305,7 +314,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -314,7 +323,7 @@ describe("Parser", () => {
 		});
 
 		it("should detect timed events from datetime format", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -323,7 +332,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -332,7 +341,7 @@ describe("Parser", () => {
 		});
 
 		it("should respect explicit all-day flag over time format", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/all-day-event.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -342,7 +351,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: true,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -356,7 +365,7 @@ describe("Parser", () => {
 			settings.sortingStrategy = "none";
 			settingsStore.next(settings);
 
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Projects/project-meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -367,7 +376,7 @@ describe("Parser", () => {
 				folder: "Projects",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -388,7 +397,7 @@ describe("Parser", () => {
 		});
 
 		it("should generate stable event IDs", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -397,7 +406,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events1 = parser.parseEventSource(source);
 			const events2 = parser.parseEventSource(source);
@@ -417,7 +426,7 @@ describe("Parser", () => {
 
 			settingsStore.next(newSettings);
 
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -426,7 +435,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -445,14 +454,14 @@ describe("Parser", () => {
 
 	describe("error handling", () => {
 		it("should handle empty frontmatter gracefully", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/empty.md",
 				mtime: Date.now(),
 				frontmatter: {},
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -460,7 +469,7 @@ describe("Parser", () => {
 		});
 
 		it("should handle null/undefined values in frontmatter", () => {
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Events/null-values.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -471,7 +480,7 @@ describe("Parser", () => {
 				folder: "Events",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const events = parser.parseEventSource(source);
 
@@ -488,7 +497,7 @@ describe("Parser", () => {
 			const testSettingsStore = createMockSingleCalendarSettingsStore(testSettings);
 			const parser = new Parser(mockApp as App, testSettingsStore);
 
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Tasks/enforce All Templates, Make it a one off script to enforce all frontmatter and templates..md",
 				mtime: Date.now(),
 				isUntracked: false,
@@ -516,7 +525,7 @@ describe("Parser", () => {
 				},
 				folder: "Tasks",
 				isAllDay: false,
-			};
+			});
 
 			const returnedEvent = parser.parseEventSource(source);
 
@@ -557,7 +566,7 @@ describe("Parser", () => {
 			const defaultSettingsStore = createMockSingleCalendarSettingsStore(defaultSettings);
 			const parser = new Parser(mockApp as App, defaultSettingsStore);
 
-			const source: RawEventSource = {
+			const source = createSource({
 				filePath: "Tasks/test-task.md",
 				mtime: Date.now(),
 				frontmatter: {
@@ -566,7 +575,7 @@ describe("Parser", () => {
 				folder: "Tasks",
 				isAllDay: false,
 				isUntracked: false,
-			};
+			});
 
 			const event = parser.parseEventSource(source);
 
