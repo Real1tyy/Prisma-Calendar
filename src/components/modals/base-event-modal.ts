@@ -139,55 +139,12 @@ export abstract class BaseEventModal extends Modal {
 
 	private settingsSubscription: Subscription | null = null;
 
+	// ─── Lifecycle ───────────────────────────────────────────────
+
 	constructor(app: App, bundle: CalendarBundle, event: EventModalData) {
 		super(app);
 		this.event = event;
 		this.bundle = bundle;
-	}
-
-	protected setEventExtendedProp(name: string, value: unknown): void {
-		if (typeof this.event.setExtendedProp === "function") {
-			this.event.setExtendedProp(name, value);
-			return;
-		}
-
-		// Avoid assigning to `extendedProps` directly because it can be a getter-only property
-		// (FullCalendar EventApi). Mutating the returned object is safe for plain objects and
-		// also works if the getter returns a mutable object.
-		const existing = this.event.extendedProps;
-		if (existing && typeof existing === "object") {
-			existing[name] = value;
-			return;
-		}
-
-		// Fallback for plain object events that don't have any extended props yet.
-		// (If `extendedProps` is getter-only, this assignment would throw, but that case should
-		// be handled by `setExtendedProp` above.)
-		this.event.extendedProps = { [name]: value };
-	}
-
-	setRestoreState(state: MinimizedModalState): void {
-		this.pendingRestoreState = state;
-	}
-
-	/**
-	 * When set, the modal will open hidden, stop the stopwatch, save the event,
-	 * and close — reusing the full modal save path without showing any UI.
-	 */
-	setSilentStopAndSave(): void {
-		this.silentStopAndSave = true;
-	}
-
-	/**
-	 * When set, the modal will open hidden, start the stopwatch, save the event,
-	 * and close — which auto-minimizes via onClose (same as pressing ESC with a running stopwatch).
-	 */
-	setStartStopwatchAndMinimize(): void {
-		this.startStopwatchAndMinimize = true;
-	}
-
-	shouldStartStopwatchAndMinimize(): boolean {
-		return this.startStopwatchAndMinimize;
 	}
 
 	onOpen(): void {
@@ -238,6 +195,55 @@ export abstract class BaseEventModal extends Modal {
 			}, 50);
 		});
 	}
+
+	onClose(): void {
+		// If stopwatch is active and we're NOT already in the minimize flow,
+		// auto-save state before closing (handles ESC key, clicking outside, etc.)
+		if (this.isStopwatchActive() && !this.isMinimizing) {
+			const state = this.extractMinimizedState();
+			MinimizedModalManager.saveState(state, this.bundle);
+		}
+
+		// Clean up stopwatch to stop any running intervals
+		this.stopwatch?.destroy();
+
+		this.settingsSubscription?.unsubscribe();
+		this.settingsSubscription = null;
+
+		const { contentEl } = this;
+		contentEl.empty();
+	}
+
+	// ─── Configuration ───────────────────────────────────────────
+
+	setRestoreState(state: MinimizedModalState): void {
+		this.pendingRestoreState = state;
+	}
+
+	/**
+	 * When set, the modal will open hidden, stop the stopwatch, save the event,
+	 * and close — reusing the full modal save path without showing any UI.
+	 */
+	setSilentStopAndSave(): void {
+		this.silentStopAndSave = true;
+	}
+
+	/**
+	 * When set, the modal will open hidden, start the stopwatch, save the event,
+	 * and close — which auto-minimizes via onClose (same as pressing ESC with a running stopwatch).
+	 */
+	setStartStopwatchAndMinimize(): void {
+		this.startStopwatchAndMinimize = true;
+	}
+
+	// ─── Abstract Interface ───────────────────────────────────────
+
+	protected abstract getModalTitle(): string;
+	protected abstract getSaveButtonText(): string;
+	protected abstract initialize(): Promise<void>;
+	public abstract saveEvent(): void;
+
+	// ─── UI — Header & Layout ────────────────────────────────────
 
 	private createModalHeader(contentEl: HTMLElement): void {
 		const headerContainer = contentEl.createDiv(cls("event-modal-header"));
@@ -305,6 +311,858 @@ export abstract class BaseEventModal extends Modal {
 			}
 		});
 	}
+
+	private createActionButtons(contentEl: HTMLElement): void {
+		const buttonContainer = contentEl.createDiv(cls("modal-button-container"));
+
+		const cancelButton = buttonContainer.createEl("button", {
+			text: "Cancel",
+		});
+		cancelButton.addEventListener("click", () => {
+			this.close();
+		});
+
+		// Save as Preset button - available in both Create and Edit modals
+		const savePresetButton = buttonContainer.createEl("button", {
+			text: "Save as preset",
+		});
+		savePresetButton.addEventListener("click", () => {
+			this.openSavePresetModal();
+		});
+
+		const saveButton = buttonContainer.createEl("button", {
+			text: this.getSaveButtonText(),
+			cls: cls("mod-cta"),
+		});
+		saveButton.addEventListener("click", () => {
+			this.saveWithTypoCheck();
+		});
+	}
+
+	// ─── UI — Form Fields ─────────────────────────────────────────
+
+	private createFormFields(contentEl: HTMLElement): void {
+		const titleContainer = contentEl.createDiv(cls("setting-item"));
+		titleContainer.createEl("div", {
+			text: "Title",
+			cls: cls("setting-item-name"),
+		});
+		this.titleInput = titleContainer.createEl("input", {
+			type: "text",
+			value: this.event.title || "",
+			cls: cls("setting-item-control"),
+		});
+
+		const allDayContainer = contentEl.createDiv(cls("setting-item"));
+		allDayContainer.createEl("div", {
+			text: "All day",
+			cls: cls("setting-item-name"),
+		});
+		this.allDayCheckbox = allDayContainer.createEl("input", {
+			type: "checkbox",
+			cls: cls("setting-item-control"),
+		});
+		this.allDayCheckbox.checked = this.event.allDay || false;
+
+		// Container for TIMED event fields (Start Date/Time + End Date/Time)
+		this.timedContainer = contentEl.createDiv(cls("timed-event-fields"));
+		if (this.event.allDay) {
+			addCls(this.timedContainer, "hidden");
+		}
+
+		// Start date/time field (for timed events)
+		this.startInput = this.createDateTimeInputWithNowButton(
+			this.timedContainer,
+			"Start Date",
+			this.event.start ? formatDateTimeForInput(this.event.start) : ""
+		);
+
+		// End date/time field (for timed events)
+		this.endInput = this.createDateTimeInputWithNowButton(
+			this.timedContainer,
+			"End Date",
+			this.event.end ? formatDateTimeForInput(this.event.end) : ""
+		);
+
+		// Duration field (for timed events) - conditionally shown based on settings
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (settings.showDurationField) {
+			this.durationContainer = this.timedContainer.createDiv(cls("setting-item"));
+			this.durationContainer.createEl("div", {
+				text: "Duration (min)",
+				cls: cls("setting-item-name"),
+			});
+			this.durationInput = this.durationContainer.createEl("input", {
+				type: "number",
+				cls: cls("setting-item-control"),
+				attr: {
+					min: "0",
+					step: "1",
+				},
+			});
+
+			if (this.event.start && this.event.end) {
+				const durationMinutes = calculateDurationMinutes(this.event.start, this.event.end);
+				this.durationInput.value = durationMinutes.toString();
+			}
+		}
+
+		// Container for ALL-DAY event fields (Date only)
+		this.allDayContainer = contentEl.createDiv(cls("allday-event-fields"));
+		if (!this.event.allDay) {
+			addCls(this.allDayContainer, "hidden");
+		}
+
+		// Date field (for all-day events)
+		const dateContainer = this.allDayContainer.createDiv(cls("setting-item"));
+		dateContainer.createEl("div", {
+			text: "Date",
+			cls: cls("setting-item-name"),
+		});
+		this.dateInput = dateContainer.createEl("input", {
+			type: "date",
+			value: this.event.start ? formatDateOnly(this.event.start) : "",
+			cls: cls("setting-item-control"),
+		});
+
+		// Stopwatch for time tracking (only for timed events)
+		this.createStopwatchField(contentEl);
+
+		this.createRecurringEventFields(contentEl);
+		this.createCategoryField(contentEl);
+		this.createLocationField(contentEl);
+		this.createIconField(contentEl);
+		this.createParticipantsField(contentEl);
+		this.createBreakField(contentEl);
+		this.createMarkAsDoneField(contentEl);
+		this.createSkipField(contentEl);
+		this.createNotificationField(contentEl);
+		this.createCustomPropertiesFields(contentEl);
+	}
+
+	private createStopwatchField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.showStopwatch) return;
+
+		this.stopwatchContainer = contentEl.createDiv(cls("stopwatch-field"));
+
+		// Initially hidden when all-day is selected
+		if (this.event.allDay) {
+			addCls(this.stopwatchContainer, "hidden");
+		}
+
+		this.stopwatch = new Stopwatch(
+			{
+				onStart: (startTime: Date) => {
+					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
+					this.startInput.value = formatDateTimeForInput(startTime);
+
+					const endTime = new Date(startTime.getTime() + settings.defaultDurationMinutes * 60 * 1000);
+					this.endInput.value = formatDateTimeForInput(endTime);
+
+					const event = new Event("change", { bubbles: true });
+					this.startInput.dispatchEvent(event);
+					this.endInput.dispatchEvent(event);
+				},
+				onContinueRequested: () => {
+					// Continue uses the existing start time from the input field
+					// Reset the break counter and return the current start time
+					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
+					const startValue = this.startInput.value;
+					if (startValue) {
+						// If end date is in the past, update it to now
+						const endValue = this.endInput.value;
+						if (endValue) {
+							const endDate = parseAsLocalDate(endValue);
+							if (endDate && endDate.getTime() < Date.now()) {
+								this.endInput.value = formatDateTimeForInput(new Date());
+								this.endInput.dispatchEvent(new Event("change", { bubbles: true }));
+							}
+						}
+						return parseAsLocalDate(startValue);
+					}
+					return null;
+				},
+				onStop: (endTime: Date) => {
+					this.endInput.value = formatDateTimeForInput(endTime);
+					const event = new Event("change", { bubbles: true });
+					this.endInput.dispatchEvent(event);
+				},
+				onBreakUpdate: (breakMinutes: number) => {
+					if (this.breakInput) {
+						const totalBreak = this.initialBreakMinutes + breakMinutes;
+						this.breakInput.value = totalBreak.toString();
+					}
+				},
+			},
+			settings.showStopwatchStartWithoutFill
+		);
+
+		this.stopwatch.render(this.stopwatchContainer);
+	}
+
+	private createRecurringEventFields(contentEl: HTMLElement): void {
+		// Recurring event checkbox
+		const recurringCheckboxContainer = contentEl.createDiv(cls("setting-item"));
+		recurringCheckboxContainer.createEl("div", {
+			text: "Recurring event",
+			cls: cls("setting-item-name"),
+		});
+		this.recurringCheckbox = recurringCheckboxContainer.createEl("input", {
+			type: "checkbox",
+			cls: cls("setting-item-control"),
+		});
+
+		// Container for recurring event options (initially hidden)
+		this.recurringContainer = contentEl.createDiv(cls("recurring-event-fields"));
+		addCls(this.recurringContainer, "hidden");
+
+		// RRule type dropdown
+		const rruleContainer = this.recurringContainer.createDiv(cls("setting-item"));
+		rruleContainer.createEl("div", {
+			text: "Recurrence pattern",
+			cls: cls("setting-item-name"),
+		});
+		this.rruleSelect = rruleContainer.createEl("select", {
+			cls: cls("setting-item-control"),
+		});
+
+		// Add options to the select
+		for (const [value, label] of Object.entries(RECURRENCE_TYPE_OPTIONS)) {
+			const option = this.rruleSelect.createEl("option", {
+				value,
+				text: label,
+			});
+			option.value = value;
+		}
+
+		// Weekday selection (initially hidden, shown when weekly/bi-weekly selected)
+		this.weekdayContainer = this.recurringContainer.createDiv(cls("setting-item", "weekday-selection"));
+		addCls(this.weekdayContainer, "hidden");
+		this.weekdayContainer.createEl("div", {
+			text: "Days of week",
+			cls: cls("setting-item-name"),
+		});
+
+		const weekdayGrid = this.weekdayContainer.createDiv(cls("weekday-grid"));
+
+		// Create checkboxes for each weekday
+		for (const [value, label] of Object.entries(WEEKDAY_OPTIONS)) {
+			const weekdayItem = weekdayGrid.createDiv(cls("weekday-item"));
+
+			const checkboxId = `weekday-${value}`;
+			const checkbox = weekdayItem.createEl("input", {
+				type: "checkbox",
+				attr: {
+					"data-weekday": value,
+					id: checkboxId,
+				},
+			});
+			weekdayItem.createEl("label", {
+				text: label,
+				attr: { for: checkboxId },
+			});
+
+			this.weekdayCheckboxes.set(value as Weekday, checkbox);
+
+			// Make the entire weekday item clickable
+			weekdayItem.addEventListener("click", (e) => {
+				// Prevent double-toggle when clicking directly on checkbox or label
+				if (e.target === checkbox || (e.target as HTMLElement).tagName === "LABEL") {
+					return;
+				}
+				checkbox.checked = !checkbox.checked;
+			});
+		}
+
+		const futureInstancesContainer = this.recurringContainer.createDiv(cls("setting-item"));
+		futureInstancesContainer.createEl("div", {
+			text: "Future instances count",
+			cls: cls("setting-item-name"),
+		});
+		const futureInstancesDesc = futureInstancesContainer.createEl("div", {
+			cls: cls("setting-item-description"),
+		});
+		futureInstancesDesc.setText("Override the global setting for this event. Leave empty to use the default.");
+		this.futureInstancesCountInput = futureInstancesContainer.createEl("input", {
+			type: "number",
+			cls: cls("setting-item-control"),
+			attr: {
+				min: "1",
+				step: "1",
+				placeholder: "Default",
+			},
+		});
+
+		const generatePastContainer = this.recurringContainer.createDiv(cls("setting-item"));
+		generatePastContainer.createEl("div", {
+			text: "Generate past events",
+			cls: cls("setting-item-name"),
+		});
+		const generatePastDesc = generatePastContainer.createEl("div", {
+			cls: cls("setting-item-description"),
+		});
+		generatePastDesc.setText("Generate instances from the source event start date instead of from today.");
+		this.generatePastEventsCheckbox = generatePastContainer.createEl("input", {
+			type: "checkbox",
+			cls: cls("setting-item-control"),
+		});
+	}
+
+	private createCategoryField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.categoryProp) return;
+
+		const categoryContainer = contentEl.createDiv(cls("setting-item"));
+		categoryContainer.createEl("div", {
+			text: "Categories",
+			cls: cls("setting-item-name"),
+		});
+
+		const categoryContent = categoryContainer.createDiv(cls("category-display-content"));
+
+		// Suppress auto-assign permanently once user interacts with categories.
+		categoryContent.addEventListener("pointerdown", () => {
+			this.suppressAutoCategories = true;
+		});
+
+		// Container for displaying selected categories
+		this.categoriesContainer = categoryContent.createDiv(cls("categories-list"));
+
+		// Assign Categories button
+		const assignButton = categoryContent.createEl("button", {
+			text: "Assign categories",
+			cls: cls("assign-categories-button"),
+		});
+		assignButton.addEventListener("click", () => {
+			this.openAssignCategoriesModal();
+		});
+
+		// Render initial categories
+		this.renderCategories();
+	}
+
+	private createLocationField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.locationProp) return;
+
+		const locationContainer = contentEl.createDiv(cls("setting-item"));
+		locationContainer.createEl("div", {
+			text: "Location",
+			cls: cls("setting-item-name"),
+		});
+		this.locationInput = locationContainer.createEl("input", {
+			type: "text",
+			cls: cls("setting-item-control"),
+			attr: {
+				placeholder: "Event location",
+			},
+		});
+	}
+
+	private createIconField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.iconProp) return;
+
+		const iconContainer = contentEl.createDiv(cls("setting-item"));
+		iconContainer.createEl("div", {
+			text: "Icon",
+			cls: cls("setting-item-name"),
+		});
+		this.iconInput = iconContainer.createEl("input", {
+			type: "text",
+			cls: cls("setting-item-control"),
+			attr: {
+				placeholder: "Event icon (emoji or text)",
+			},
+		});
+	}
+
+	private createParticipantsField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.participantsProp) return;
+
+		const participantsContainer = contentEl.createDiv(cls("setting-item"));
+		participantsContainer.createEl("div", {
+			text: "Participants",
+			cls: cls("setting-item-name"),
+		});
+		const participantsDesc = participantsContainer.createEl("div", {
+			cls: cls("setting-item-description"),
+		});
+		participantsDesc.setText("Comma-separated list of participants");
+		this.participantsInput = participantsContainer.createEl("input", {
+			type: "text",
+			cls: cls("setting-item-control"),
+			attr: {
+				placeholder: "Alice, Bob, Charlie",
+			},
+		});
+	}
+
+	private createBreakField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.breakProp) return;
+
+		const breakContainer = contentEl.createDiv(cls("setting-item"));
+		breakContainer.createEl("div", {
+			text: "Break (min)",
+			cls: cls("setting-item-name"),
+		});
+		const breakDesc = breakContainer.createEl("div", {
+			cls: cls("setting-item-description"),
+		});
+		breakDesc.setText("Time to subtract from duration in statistics (decimals supported)");
+		this.breakInput = breakContainer.createEl("input", {
+			type: "number",
+			cls: cls("setting-item-control"),
+			attr: {
+				min: "0",
+				step: "any",
+				placeholder: "0",
+			},
+		});
+	}
+
+	private createMarkAsDoneField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.statusProperty) return;
+
+		const markAsDoneContainer = contentEl.createDiv(cls("setting-item"));
+		markAsDoneContainer.createEl("div", {
+			text: "Mark as done",
+			cls: cls("setting-item-name"),
+		});
+		this.markAsDoneCheckbox = markAsDoneContainer.createEl("input", {
+			type: "checkbox",
+			cls: cls("setting-item-control"),
+		});
+	}
+
+	private createSkipField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.skipProp) return;
+
+		const skipContainer = contentEl.createDiv(cls("setting-item"));
+		skipContainer.createEl("div", {
+			text: "Skip event",
+			cls: cls("setting-item-name"),
+		});
+		const skipDesc = skipContainer.createEl("div", {
+			cls: cls("setting-item-description"),
+		});
+		skipDesc.setText("Hide event from calendar");
+		this.skipCheckbox = skipContainer.createEl("input", {
+			type: "checkbox",
+			cls: cls("setting-item-control"),
+		});
+	}
+
+	private createNotificationField(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.enableNotifications) return;
+
+		this.notificationContainer = contentEl.createDiv(cls("setting-item"));
+		const isAllDay = this.event.allDay ?? false;
+		const labelText = isAllDay ? "Notify days before" : "Notify minutes before";
+
+		this.notificationLabel = this.notificationContainer.createEl("div", {
+			text: labelText,
+			cls: cls("setting-item-name"),
+		});
+		const notificationDesc = this.notificationContainer.createEl("div", {
+			cls: cls("setting-item-description"),
+		});
+		notificationDesc.setText("Override default notification timing for this event");
+		this.notificationInput = this.notificationContainer.createEl("input", {
+			type: "number",
+			cls: cls("setting-item-control"),
+			attr: {
+				min: "0",
+				step: "1",
+				placeholder: "Default",
+			},
+		});
+	}
+
+	private createCustomPropertiesFields(contentEl: HTMLElement): void {
+		this.displayPropertiesContainer = this.createPropertySection(contentEl, "Display Properties", () =>
+			this.addCustomProperty("", "", "display")
+		);
+
+		const otherSectionParent = contentEl.createDiv(cls("other-section-spacing"));
+		this.otherPropertiesContainer = this.createPropertySection(otherSectionParent, "Other Properties", () =>
+			this.addCustomProperty("", "", "other")
+		);
+	}
+
+	private createPropertySection(parent: HTMLElement, title: string, onAddClick: () => void): HTMLElement {
+		const headerContainer = parent.createDiv(cls("setting-item", "property-section-header"));
+
+		const headerDiv = headerContainer.createDiv(cls("setting-item-name"));
+		const toggleIcon = headerDiv.createEl("span", {
+			text: "▶",
+			cls: cls("property-toggle-icon"),
+		});
+		headerDiv.createEl("span", {
+			text: title,
+			cls: cls("setting-item-heading"),
+		});
+
+		const addButton = headerContainer.createEl("button", {
+			text: "Add property",
+			cls: cls("mod-cta"),
+		});
+		addButton.addEventListener("click", () => {
+			// Auto-expand when adding a property
+			if (container.classList.contains(cls("hidden"))) {
+				removeCls(container, "hidden");
+				toggleIcon.textContent = "▼";
+			}
+			onAddClick();
+		});
+
+		const container = parent.createDiv(cls("property-container"));
+		// Collapsed by default
+		addCls(container, "hidden");
+
+		// Toggle collapse on header click
+		headerDiv.addEventListener("click", () => {
+			const isHidden = container.classList.toggle(cls("hidden"));
+			toggleIcon.textContent = isHidden ? "▶" : "▼";
+		});
+
+		return container;
+	}
+
+	protected addCustomProperty(key = "", value = "", section: "display" | "other" = "other"): void {
+		const container = section === "display" ? this.displayPropertiesContainer : this.otherPropertiesContainer;
+		const propertyRow = container.createDiv(cls("custom-property-row"));
+
+		propertyRow.createEl("input", {
+			type: "text",
+			placeholder: "Property name",
+			value: key,
+			cls: cls("setting-item-control"),
+		});
+
+		propertyRow.createEl("input", {
+			type: "text",
+			placeholder: "Value",
+			value: value,
+			cls: cls("setting-item-control"),
+		});
+
+		const removeButton = propertyRow.createEl("button", {
+			text: "Remove",
+		});
+		removeButton.addEventListener("click", () => {
+			propertyRow.remove();
+		});
+
+		// Track the property
+		this.customProperties.push({ key, value });
+	}
+
+	private createDateTimeInputWithNowButton(parent: HTMLElement, label: string, initialValue: string): HTMLInputElement {
+		const container = parent.createDiv(cls("setting-item"));
+		container.createEl("div", { text: label, cls: cls("setting-item-name") });
+		const inputWrapper = container.createDiv(cls("datetime-input-wrapper"));
+
+		const nowButton = inputWrapper.createEl("button", {
+			text: "Now",
+			cls: cls("now-button"),
+			type: "button",
+		});
+
+		const isStartInput = label.toLowerCase().includes("start");
+		const fillButton = inputWrapper.createEl("button", {
+			text: isStartInput ? "Fill prev" : "Fill next",
+			cls: cls("fill-button"),
+			type: "button",
+			attr: {
+				title: isStartInput ? "Fill from previous event's end time" : "Fill from next event's start time",
+			},
+		});
+
+		const input = inputWrapper.createEl("input", {
+			type: "datetime-local",
+			value: initialValue,
+			cls: cls("setting-item-control"),
+		});
+
+		nowButton.addEventListener("click", () => {
+			this.setToCurrentTime(input);
+		});
+
+		fillButton.addEventListener("click", () => {
+			if (isStartInput) {
+				this.fillStartTimeFromPrevious(input);
+			} else {
+				this.fillEndTimeFromNext(input);
+			}
+		});
+
+		return input;
+	}
+
+	// ─── Event Handlers ───────────────────────────────────────────
+
+	private setupEventHandlers(_contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		// Handle all-day toggle
+		this.allDayCheckbox.addEventListener("change", () => {
+			if (this.allDayCheckbox.checked) {
+				// Switching TO all-day
+				addCls(this.timedContainer, "hidden");
+				removeCls(this.allDayContainer, "hidden");
+				// Hide stopwatch for all-day events
+				if (this.stopwatchContainer) {
+					addCls(this.stopwatchContainer, "hidden");
+				}
+				// Copy start date to date field if available
+				if (this.startInput.value) {
+					this.dateInput.value = formatDateOnly(this.startInput.value);
+				}
+				// Update notification label
+				if (this.notificationLabel) {
+					this.notificationLabel.setText("Notify days before");
+				}
+			} else {
+				// Switching TO timed
+				removeCls(this.timedContainer, "hidden");
+				addCls(this.allDayContainer, "hidden");
+				// Show stopwatch for timed events
+				if (this.stopwatchContainer) {
+					removeCls(this.stopwatchContainer, "hidden");
+				}
+				// Copy date to start field if available
+				if (this.dateInput.value) {
+					this.startInput.value = `${this.dateInput.value}T09:00`;
+					this.endInput.value = `${this.dateInput.value}T10:00`;
+					this.updateDurationFromDates();
+				}
+				// Update notification label
+				if (this.notificationLabel) {
+					this.notificationLabel.setText("Notify minutes before");
+				}
+			}
+		});
+
+		if (settings.showDurationField && this.durationInput) {
+			this.startInput.addEventListener("change", () => {
+				this.updateDurationFromDates();
+			});
+			this.endInput.addEventListener("change", () => {
+				this.updateDurationFromDates();
+			});
+			this.durationInput.addEventListener("input", () => {
+				this.updateEndFromDuration();
+			});
+		}
+
+		// Handle recurring event checkbox toggle
+		this.recurringCheckbox.addEventListener("change", () => {
+			toggleCls(this.recurringContainer, "hidden", !this.recurringCheckbox.checked);
+		});
+
+		// Handle RRule type selection
+		this.rruleSelect.addEventListener("change", () => {
+			const selectedType = this.rruleSelect.value as RecurrenceType;
+			// Show weekday selection only for weekly and bi-weekly
+			const showWeekdays = (WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(selectedType);
+			toggleCls(this.weekdayContainer, "hidden", !showWeekdays);
+		});
+
+		// Use Obsidian's Scope system for Enter key so it works regardless of focus position.
+		// A contentEl keydown handler breaks when focus leaves contentEl descendants
+		// (e.g., clicking the non-focusable stopwatch header moves focus to modalEl/body).
+		this.scope.register([], "Enter", (e) => {
+			e.preventDefault();
+			this.saveWithTypoCheck();
+			return false;
+		});
+	}
+
+	protected setupTitleBlurListener(): void {
+		this.titleInput.addEventListener("blur", () => {
+			this.applyAutoCategories();
+		});
+	}
+
+	private updateDurationFromDates(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.showDurationField || !this.durationInput) return;
+
+		if (this.startInput.value && this.endInput.value) {
+			const durationMinutes = calculateDurationMinutes(this.startInput.value, this.endInput.value);
+			this.durationInput.value = durationMinutes.toString();
+		}
+	}
+
+	private updateEndFromDuration(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.showDurationField || !this.durationInput) return;
+
+		if (this.startInput.value && this.durationInput.value) {
+			const startDate = new Date(this.startInput.value);
+			const durationMinutes = Number.parseInt(this.durationInput.value, 10);
+
+			if (!Number.isNaN(durationMinutes) && durationMinutes >= 0) {
+				const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
+				this.endInput.value = formatDateTimeForInput(endDate);
+			}
+		}
+	}
+
+	private setToCurrentTime(input: HTMLInputElement): void {
+		const now = new Date();
+		input.value = formatDateTimeForInput(now);
+
+		// Trigger change event to update duration field if present
+		const event = new Event("change", { bubbles: true });
+		input.dispatchEvent(event);
+	}
+
+	private fillStartTimeFromPrevious(input: HTMLInputElement): void {
+		this.fillTimeFromAdjacent(input, "previous", "end", "Start time filled from previous event");
+	}
+
+	private fillEndTimeFromNext(input: HTMLInputElement): void {
+		this.fillTimeFromAdjacent(input, "next", "start", "End time filled from next event");
+	}
+
+	private fillTimeFromAdjacent(
+		input: HTMLInputElement,
+		direction: "next" | "previous",
+		timeField: "start" | "end",
+		successMessage: string
+	): void {
+		// Get the current time from the input field (already in ISO format) instead of this.event.start (Date object in local timezone)
+		const currentTimeISO = this.allDayCheckbox.checked ? null : inputValueToISOString(this.startInput.value);
+
+		const adjacentEvent = findAdjacentEvent(
+			this.bundle.eventStore,
+			currentTimeISO,
+			this.event.extendedProps?.filePath,
+			direction
+		);
+
+		if (!adjacentEvent) {
+			new Notice(`No ${direction} event found`);
+			return;
+		}
+
+		const timeValue =
+			timeField === "start" ? adjacentEvent.start : isTimedEvent(adjacentEvent) ? adjacentEvent.end : undefined;
+
+		if (!timeValue) {
+			new Notice(`${direction === "previous" ? "Previous" : "Next"} event has no ${timeField} time`);
+			return;
+		}
+
+		input.value = formatDateTimeForInput(timeValue);
+
+		const event = new Event("change", { bubbles: true });
+		input.dispatchEvent(event);
+
+		new Notice(successMessage);
+	}
+
+	// ─── Categories ───────────────────────────────────────────────
+
+	/** Exact-match auto-category assignment on blur. No modal — just assigns categories. */
+	protected applyAutoCategories(): void {
+		if (this.suppressAutoCategories) return;
+
+		const eventName = this.titleInput.value.trim();
+		if (!eventName) return;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		const hasAutoAssign =
+			settings.autoAssignCategoryByName ||
+			(settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0);
+
+		if (!hasAutoAssign) return;
+
+		const availableCategories = this.bundle.categoryTracker.getCategories();
+		const autoAssignedCategories = autoAssignCategories(eventName, settings, availableCategories);
+
+		if (autoAssignedCategories.length > 0) {
+			this.selectedCategories = autoAssignedCategories;
+			this.renderCategories();
+		}
+	}
+
+	protected renderCategories(): void {
+		if (!this.categoriesContainer) return;
+
+		this.categoriesContainer.empty();
+
+		if (this.selectedCategories.length === 0) {
+			this.categoriesContainer.createEl("span", {
+				text: "No categories",
+				cls: cls("no-categories-text"),
+			});
+			return;
+		}
+
+		const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
+		const categoryColorMap = new Map(categoriesWithColors.map((c) => [c.name, c.color]));
+
+		for (const categoryName of this.selectedCategories) {
+			const categoryItem = this.categoriesContainer.createDiv(cls("category-item"));
+
+			const colorDot = categoryItem.createEl("span", {
+				cls: cls("category-color-dot"),
+			});
+			const color = categoryColorMap.get(categoryName) || this.bundle.settingsStore.currentSettings.defaultNodeColor;
+			colorDot.style.setProperty("--category-color", color);
+
+			const nameSpan = categoryItem.createEl("span", {
+				text: categoryName,
+				cls: cls("category-name"),
+			});
+
+			nameSpan.addEventListener("click", () => {
+				this.openCategoryEventsModal(categoryName);
+			});
+
+			const removeButton = categoryItem.createEl("span", {
+				text: "\u00D7",
+				cls: cls("category-remove-button"),
+				attr: { title: "Remove category" },
+			});
+			removeButton.addEventListener("click", (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				this.selectedCategories = this.selectedCategories.filter((c) => c !== categoryName);
+				this.renderCategories();
+			});
+		}
+	}
+
+	private openAssignCategoriesModal(): void {
+		this.suppressAutoCategories = true;
+
+		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
+		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
+
+		openCategoryAssignModal(this.app, categories, defaultColor, this.selectedCategories, (selectedCategories) => {
+			this.selectedCategories = selectedCategories;
+			this.renderCategories();
+		});
+	}
+
+	private openCategoryEventsModal(categoryName: string): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const modal = new CategoryEventsModal(this.app, categoryName, settings);
+		modal.open();
+	}
+
+	// ─── Presets ──────────────────────────────────────────────────
 
 	protected applyDefaultPreset(): void {
 		// Override in subclasses if needed
@@ -493,781 +1351,230 @@ export abstract class BaseEventModal extends Modal {
 		}
 	}
 
-	protected abstract getModalTitle(): string;
-	protected abstract getSaveButtonText(): string;
-	protected abstract initialize(): Promise<void>;
+	private refreshPresetSelector(presets: EventPreset[]): void {
+		if (!this.presetSelector) return;
 
-	private createFormFields(contentEl: HTMLElement): void {
-		const titleContainer = contentEl.createDiv(cls("setting-item"));
-		titleContainer.createEl("div", {
-			text: "Title",
-			cls: cls("setting-item-name"),
-		});
-		this.titleInput = titleContainer.createEl("input", {
-			type: "text",
-			value: this.event.title || "",
-			cls: cls("setting-item-control"),
-		});
+		const currentValue = this.presetSelector.value;
 
-		const allDayContainer = contentEl.createDiv(cls("setting-item"));
-		allDayContainer.createEl("div", {
-			text: "All day",
-			cls: cls("setting-item-name"),
-		});
-		this.allDayCheckbox = allDayContainer.createEl("input", {
-			type: "checkbox",
-			cls: cls("setting-item-control"),
-		});
-		this.allDayCheckbox.checked = this.event.allDay || false;
-
-		// Container for TIMED event fields (Start Date/Time + End Date/Time)
-		this.timedContainer = contentEl.createDiv(cls("timed-event-fields"));
-		if (this.event.allDay) {
-			addCls(this.timedContainer, "hidden");
+		// Clear existing options except "None"
+		while (this.presetSelector.options.length > 0) {
+			this.presetSelector.remove(0);
 		}
 
-		// Start date/time field (for timed events)
-		this.startInput = this.createDateTimeInputWithNowButton(
-			this.timedContainer,
-			"Start Date",
-			this.event.start ? formatDateTimeForInput(this.event.start) : ""
-		);
+		// Add all preset options
+		for (const preset of presets) {
+			const option = this.presetSelector.createEl("option", {
+				value: preset.id,
+				text: preset.name,
+			});
+			option.value = preset.id;
+		}
 
-		// End date/time field (for timed events)
-		this.endInput = this.createDateTimeInputWithNowButton(
-			this.timedContainer,
-			"End Date",
-			this.event.end ? formatDateTimeForInput(this.event.end) : ""
-		);
+		if (currentValue && presets.some((p) => p.id === currentValue)) {
+			this.presetSelector.value = currentValue;
+		} else {
+			this.presetSelector.value = "";
+		}
+	}
 
-		// Duration field (for timed events) - conditionally shown based on settings
+	private openSavePresetModal(): void {
 		const settings = this.bundle.settingsStore.currentSettings;
-		if (settings.showDurationField) {
-			this.durationContainer = this.timedContainer.createDiv(cls("setting-item"));
-			this.durationContainer.createEl("div", {
-				text: "Duration (min)",
-				cls: cls("setting-item-name"),
-			});
-			this.durationInput = this.durationContainer.createEl("input", {
-				type: "number",
-				cls: cls("setting-item-control"),
-				attr: {
-					min: "0",
-					step: "1",
-				},
-			});
+		const existingPresets = settings.eventPresets || [];
 
-			if (this.event.start && this.event.end) {
-				const durationMinutes = calculateDurationMinutes(this.event.start, this.event.end);
-				this.durationInput.value = durationMinutes.toString();
+		const modal = new SavePresetModal(this.app, existingPresets, (presetName, overridePresetId) => {
+			this.saveCurrentAsPreset(presetName, overridePresetId);
+		});
+		modal.open();
+	}
+
+	private saveCurrentAsPreset(presetName: string, overridePresetId: string | null): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const now = Date.now();
+
+		const formData = this.extractPresetData();
+
+		const preset: EventPreset = {
+			...formData,
+			id: overridePresetId || `preset-${now}`,
+			name: presetName,
+			createdAt: now,
+		};
+
+		// If overriding, preserve the original createdAt
+		if (overridePresetId) {
+			const existingPreset = (settings.eventPresets || []).find((p) => p.id === overridePresetId);
+			if (existingPreset) {
+				preset.createdAt = existingPreset.createdAt;
+				preset.updatedAt = now;
 			}
 		}
 
-		// Container for ALL-DAY event fields (Date only)
-		this.allDayContainer = contentEl.createDiv(cls("allday-event-fields"));
-		if (!this.event.allDay) {
-			addCls(this.allDayContainer, "hidden");
+		const currentPresets = settings.eventPresets || [];
+		let updatedPresets: EventPreset[];
+
+		if (overridePresetId) {
+			// Replace existing preset
+			updatedPresets = currentPresets.map((p) => (p.id === overridePresetId ? preset : p));
+			new Notice(`Preset "${presetName}" updated!`);
+		} else {
+			// Add new preset
+			updatedPresets = [...currentPresets, preset];
+			new Notice(`Preset "${presetName}" saved!`);
 		}
 
-		// Date field (for all-day events)
-		const dateContainer = this.allDayContainer.createDiv(cls("setting-item"));
-		dateContainer.createEl("div", {
-			text: "Date",
-			cls: cls("setting-item-name"),
-		});
-		this.dateInput = dateContainer.createEl("input", {
-			type: "date",
-			value: this.event.start ? formatDateOnly(this.event.start) : "",
-			cls: cls("setting-item-control"),
-		});
+		void this.bundle.settingsStore.updateSettings((s) => ({
+			...s,
+			eventPresets: updatedPresets,
+		}));
 
-		// Stopwatch for time tracking (only for timed events)
-		this.createStopwatchField(contentEl);
-
-		this.createRecurringEventFields(contentEl);
-		this.createCategoryField(contentEl);
-		this.createLocationField(contentEl);
-		this.createIconField(contentEl);
-		this.createParticipantsField(contentEl);
-		this.createBreakField(contentEl);
-		this.createMarkAsDoneField(contentEl);
-		this.createSkipField(contentEl);
-		this.createNotificationField(contentEl);
-		this.createCustomPropertiesFields(contentEl);
+		// Update the preset selector
+		this.refreshPresetSelector(updatedPresets);
 	}
 
-	private createCategoryField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.categoryProp) return;
+	// ─── Minimize & State ─────────────────────────────────────────
 
-		const categoryContainer = contentEl.createDiv(cls("setting-item"));
-		categoryContainer.createEl("div", {
-			text: "Categories",
-			cls: cls("setting-item-name"),
-		});
+	/**
+	 * Minimize the modal - saves state and closes the modal.
+	 * Time tracking continues via MinimizedModalManager.
+	 * The modal can be restored later using the "Restore minimized modal" command.
+	 */
+	minimize(): void {
+		// Set flag to prevent double-saving in onClose
+		this.isMinimizing = true;
 
-		const categoryContent = categoryContainer.createDiv(cls("category-display-content"));
-
-		// Suppress auto-assign permanently once user interacts with categories.
-		categoryContent.addEventListener("pointerdown", () => {
-			this.suppressAutoCategories = true;
-		});
-
-		// Container for displaying selected categories
-		this.categoriesContainer = categoryContent.createDiv(cls("categories-list"));
-
-		// Assign Categories button
-		const assignButton = categoryContent.createEl("button", {
-			text: "Assign categories",
-			cls: cls("assign-categories-button"),
-		});
-		assignButton.addEventListener("click", () => {
-			this.openAssignCategoriesModal();
-		});
-
-		// Render initial categories
-		this.renderCategories();
+		const state = this.extractMinimizedState();
+		MinimizedModalManager.saveState(state, this.bundle);
+		new Notice("Modal minimized. Run command: restore minimized event modal");
+		this.close();
 	}
 
-	private createLocationField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.locationProp) return;
+	private extractMinimizedState(): MinimizedModalState {
+		const formData = this.extractFormData();
+		const stopwatchState = this.stopwatch?.exportState() ?? {
+			state: "idle" as const,
+			startTime: null,
+			breakStartTime: null,
+			sessionStartTime: null,
+			totalBreakMs: 0,
+		};
 
-		const locationContainer = contentEl.createDiv(cls("setting-item"));
-		locationContainer.createEl("div", {
-			text: "Location",
-			cls: cls("setting-item-name"),
-		});
-		this.locationInput = locationContainer.createEl("input", {
-			type: "text",
-			cls: cls("setting-item-control"),
-			attr: {
-				placeholder: "Event location",
-			},
-		});
+		return {
+			...formData,
+			stopwatch: stopwatchState,
+			modalType: this.getModalType(),
+			filePath: this.event.extendedProps?.filePath ?? null,
+			originalFrontmatter: this.originalFrontmatter,
+			calendarId: this.bundle.calendarId,
+		};
 	}
 
-	private createIconField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.iconProp) return;
+	protected extractFormData(): FormData {
+		const formData: FormData = { ...this.extractPresetData() };
 
-		const iconContainer = contentEl.createDiv(cls("setting-item"));
-		iconContainer.createEl("div", {
-			text: "Icon",
-			cls: cls("setting-item-name"),
-		});
-		this.iconInput = iconContainer.createEl("input", {
-			type: "text",
-			cls: cls("setting-item-control"),
-			attr: {
-				placeholder: "Event icon (emoji or text)",
-			},
-		});
-	}
-
-	private createParticipantsField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.participantsProp) return;
-
-		const participantsContainer = contentEl.createDiv(cls("setting-item"));
-		participantsContainer.createEl("div", {
-			text: "Participants",
-			cls: cls("setting-item-name"),
-		});
-		const participantsDesc = participantsContainer.createEl("div", {
-			cls: cls("setting-item-description"),
-		});
-		participantsDesc.setText("Comma-separated list of participants");
-		this.participantsInput = participantsContainer.createEl("input", {
-			type: "text",
-			cls: cls("setting-item-control"),
-			attr: {
-				placeholder: "Alice, Bob, Charlie",
-			},
-		});
-	}
-
-	private createBreakField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.breakProp) return;
-
-		const breakContainer = contentEl.createDiv(cls("setting-item"));
-		breakContainer.createEl("div", {
-			text: "Break (min)",
-			cls: cls("setting-item-name"),
-		});
-		const breakDesc = breakContainer.createEl("div", {
-			cls: cls("setting-item-description"),
-		});
-		breakDesc.setText("Time to subtract from duration in statistics (decimals supported)");
-		this.breakInput = breakContainer.createEl("input", {
-			type: "number",
-			cls: cls("setting-item-control"),
-			attr: {
-				min: "0",
-				step: "any",
-				placeholder: "0",
-			},
-		});
-	}
-
-	private createMarkAsDoneField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.statusProperty) return;
-
-		const markAsDoneContainer = contentEl.createDiv(cls("setting-item"));
-		markAsDoneContainer.createEl("div", {
-			text: "Mark as done",
-			cls: cls("setting-item-name"),
-		});
-		this.markAsDoneCheckbox = markAsDoneContainer.createEl("input", {
-			type: "checkbox",
-			cls: cls("setting-item-control"),
-		});
-	}
-
-	private createSkipField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.skipProp) return;
-
-		const skipContainer = contentEl.createDiv(cls("setting-item"));
-		skipContainer.createEl("div", {
-			text: "Skip event",
-			cls: cls("setting-item-name"),
-		});
-		const skipDesc = skipContainer.createEl("div", {
-			cls: cls("setting-item-description"),
-		});
-		skipDesc.setText("Hide event from calendar");
-		this.skipCheckbox = skipContainer.createEl("input", {
-			type: "checkbox",
-			cls: cls("setting-item-control"),
-		});
-	}
-
-	private createNotificationField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.enableNotifications) return;
-
-		this.notificationContainer = contentEl.createDiv(cls("setting-item"));
-		const isAllDay = this.event.allDay ?? false;
-		const labelText = isAllDay ? "Notify days before" : "Notify minutes before";
-
-		this.notificationLabel = this.notificationContainer.createEl("div", {
-			text: labelText,
-			cls: cls("setting-item-name"),
-		});
-		const notificationDesc = this.notificationContainer.createEl("div", {
-			cls: cls("setting-item-description"),
-		});
-		notificationDesc.setText("Override default notification timing for this event");
-		this.notificationInput = this.notificationContainer.createEl("input", {
-			type: "number",
-			cls: cls("setting-item-control"),
-			attr: {
-				min: "0",
-				step: "1",
-				placeholder: "Default",
-			},
-		});
-	}
-
-	private createStopwatchField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.showStopwatch) return;
-
-		this.stopwatchContainer = contentEl.createDiv(cls("stopwatch-field"));
-
-		// Initially hidden when all-day is selected
-		if (this.event.allDay) {
-			addCls(this.stopwatchContainer, "hidden");
+		if (this.allDayCheckbox.checked) {
+			if (this.dateInput.value) {
+				formData.date = this.dateInput.value;
+			}
+		} else {
+			if (this.startInput.value) {
+				formData.startDate = inputValueToISOString(this.startInput.value);
+			}
+			if (this.endInput.value) {
+				formData.endDate = inputValueToISOString(this.endInput.value);
+			}
 		}
 
-		this.stopwatch = new Stopwatch(
-			{
-				onStart: (startTime: Date) => {
-					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
-					this.startInput.value = formatDateTimeForInput(startTime);
+		return formData;
+	}
 
-					const endTime = new Date(startTime.getTime() + settings.defaultDurationMinutes * 60 * 1000);
-					this.endInput.value = formatDateTimeForInput(endTime);
+	private extractPresetData(): PresetFormData {
+		const presetData: PresetFormData = {};
 
-					const event = new Event("change", { bubbles: true });
-					this.startInput.dispatchEvent(event);
-					this.endInput.dispatchEvent(event);
-				},
-				onContinueRequested: () => {
-					// Continue uses the existing start time from the input field
-					// Reset the break counter and return the current start time
-					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
-					const startValue = this.startInput.value;
-					if (startValue) {
-						// If end date is in the past, update it to now
-						const endValue = this.endInput.value;
-						if (endValue) {
-							const endDate = parseAsLocalDate(endValue);
-							if (endDate && endDate.getTime() < Date.now()) {
-								this.endInput.value = formatDateTimeForInput(new Date());
-								this.endInput.dispatchEvent(new Event("change", { bubbles: true }));
-							}
-						}
-						return parseAsLocalDate(startValue);
+		if (this.titleInput.value) {
+			presetData.title = this.titleInput.value;
+		}
+
+		presetData.allDay = this.allDayCheckbox.checked;
+
+		if (this.selectedCategories.length > 0) {
+			presetData.categories = this.selectedCategories.join(", ");
+		}
+
+		if (this.locationInput?.value.trim()) {
+			presetData.location = this.locationInput.value.trim();
+		}
+
+		if (this.iconInput?.value.trim()) {
+			presetData.icon = this.iconInput.value.trim();
+		}
+
+		if (this.participantsInput?.value.trim()) {
+			presetData.participants = this.participantsInput.value.trim();
+		}
+
+		if (this.breakInput?.value) {
+			const breakValue = Number.parseFloat(this.breakInput.value);
+			if (!Number.isNaN(breakValue) && breakValue > 0) {
+				presetData.breakMinutes = breakValue;
+			}
+		}
+
+		if (this.skipCheckbox) {
+			presetData.skip = this.skipCheckbox.checked;
+		}
+
+		if (this.markAsDoneCheckbox) {
+			presetData.markAsDone = this.markAsDoneCheckbox.checked;
+		}
+
+		if (this.notificationInput?.value) {
+			const notifyValue = Number.parseInt(this.notificationInput.value, 10);
+			if (!Number.isNaN(notifyValue) && notifyValue >= 0) {
+				presetData.notifyBefore = notifyValue;
+			}
+		}
+
+		if (this.recurringCheckbox.checked) {
+			presetData.rruleType = this.rruleSelect.value;
+
+			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(this.rruleSelect.value)) {
+				const selectedWeekdays: Weekday[] = [];
+				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
+					if (checkbox.checked) {
+						selectedWeekdays.push(weekday);
 					}
-					return null;
-				},
-				onStop: (endTime: Date) => {
-					this.endInput.value = formatDateTimeForInput(endTime);
-					const event = new Event("change", { bubbles: true });
-					this.endInput.dispatchEvent(event);
-				},
-				onBreakUpdate: (breakMinutes: number) => {
-					if (this.breakInput) {
-						const totalBreak = this.initialBreakMinutes + breakMinutes;
-						this.breakInput.value = totalBreak.toString();
-					}
-				},
-			},
-			settings.showStopwatchStartWithoutFill
-		);
-
-		this.stopwatch.render(this.stopwatchContainer);
-	}
-
-	private createDateTimeInputWithNowButton(parent: HTMLElement, label: string, initialValue: string): HTMLInputElement {
-		const container = parent.createDiv(cls("setting-item"));
-		container.createEl("div", { text: label, cls: cls("setting-item-name") });
-		const inputWrapper = container.createDiv(cls("datetime-input-wrapper"));
-
-		const nowButton = inputWrapper.createEl("button", {
-			text: "Now",
-			cls: cls("now-button"),
-			type: "button",
-		});
-
-		const isStartInput = label.toLowerCase().includes("start");
-		const fillButton = inputWrapper.createEl("button", {
-			text: isStartInput ? "Fill prev" : "Fill next",
-			cls: cls("fill-button"),
-			type: "button",
-			attr: {
-				title: isStartInput ? "Fill from previous event's end time" : "Fill from next event's start time",
-			},
-		});
-
-		const input = inputWrapper.createEl("input", {
-			type: "datetime-local",
-			value: initialValue,
-			cls: cls("setting-item-control"),
-		});
-
-		nowButton.addEventListener("click", () => {
-			this.setToCurrentTime(input);
-		});
-
-		fillButton.addEventListener("click", () => {
-			if (isStartInput) {
-				this.fillStartTimeFromPrevious(input);
-			} else {
-				this.fillEndTimeFromNext(input);
-			}
-		});
-
-		return input;
-	}
-
-	private createRecurringEventFields(contentEl: HTMLElement): void {
-		// Recurring event checkbox
-		const recurringCheckboxContainer = contentEl.createDiv(cls("setting-item"));
-		recurringCheckboxContainer.createEl("div", {
-			text: "Recurring event",
-			cls: cls("setting-item-name"),
-		});
-		this.recurringCheckbox = recurringCheckboxContainer.createEl("input", {
-			type: "checkbox",
-			cls: cls("setting-item-control"),
-		});
-
-		// Container for recurring event options (initially hidden)
-		this.recurringContainer = contentEl.createDiv(cls("recurring-event-fields"));
-		addCls(this.recurringContainer, "hidden");
-
-		// RRule type dropdown
-		const rruleContainer = this.recurringContainer.createDiv(cls("setting-item"));
-		rruleContainer.createEl("div", {
-			text: "Recurrence pattern",
-			cls: cls("setting-item-name"),
-		});
-		this.rruleSelect = rruleContainer.createEl("select", {
-			cls: cls("setting-item-control"),
-		});
-
-		// Add options to the select
-		for (const [value, label] of Object.entries(RECURRENCE_TYPE_OPTIONS)) {
-			const option = this.rruleSelect.createEl("option", {
-				value,
-				text: label,
-			});
-			option.value = value;
-		}
-
-		// Weekday selection (initially hidden, shown when weekly/bi-weekly selected)
-		this.weekdayContainer = this.recurringContainer.createDiv(cls("setting-item", "weekday-selection"));
-		addCls(this.weekdayContainer, "hidden");
-		this.weekdayContainer.createEl("div", {
-			text: "Days of week",
-			cls: cls("setting-item-name"),
-		});
-
-		const weekdayGrid = this.weekdayContainer.createDiv(cls("weekday-grid"));
-
-		// Create checkboxes for each weekday
-		for (const [value, label] of Object.entries(WEEKDAY_OPTIONS)) {
-			const weekdayItem = weekdayGrid.createDiv(cls("weekday-item"));
-
-			const checkboxId = `weekday-${value}`;
-			const checkbox = weekdayItem.createEl("input", {
-				type: "checkbox",
-				attr: {
-					"data-weekday": value,
-					id: checkboxId,
-				},
-			});
-			weekdayItem.createEl("label", {
-				text: label,
-				attr: { for: checkboxId },
-			});
-
-			this.weekdayCheckboxes.set(value as Weekday, checkbox);
-
-			// Make the entire weekday item clickable
-			weekdayItem.addEventListener("click", (e) => {
-				// Prevent double-toggle when clicking directly on checkbox or label
-				if (e.target === checkbox || (e.target as HTMLElement).tagName === "LABEL") {
-					return;
 				}
-				checkbox.checked = !checkbox.checked;
-			});
-		}
-
-		const futureInstancesContainer = this.recurringContainer.createDiv(cls("setting-item"));
-		futureInstancesContainer.createEl("div", {
-			text: "Future instances count",
-			cls: cls("setting-item-name"),
-		});
-		const futureInstancesDesc = futureInstancesContainer.createEl("div", {
-			cls: cls("setting-item-description"),
-		});
-		futureInstancesDesc.setText("Override the global setting for this event. Leave empty to use the default.");
-		this.futureInstancesCountInput = futureInstancesContainer.createEl("input", {
-			type: "number",
-			cls: cls("setting-item-control"),
-			attr: {
-				min: "1",
-				step: "1",
-				placeholder: "Default",
-			},
-		});
-
-		const generatePastContainer = this.recurringContainer.createDiv(cls("setting-item"));
-		generatePastContainer.createEl("div", {
-			text: "Generate past events",
-			cls: cls("setting-item-name"),
-		});
-		const generatePastDesc = generatePastContainer.createEl("div", {
-			cls: cls("setting-item-description"),
-		});
-		generatePastDesc.setText("Generate instances from the source event start date instead of from today.");
-		this.generatePastEventsCheckbox = generatePastContainer.createEl("input", {
-			type: "checkbox",
-			cls: cls("setting-item-control"),
-		});
-	}
-
-	private createCustomPropertiesFields(contentEl: HTMLElement): void {
-		this.displayPropertiesContainer = this.createPropertySection(contentEl, "Display Properties", () =>
-			this.addCustomProperty("", "", "display")
-		);
-
-		const otherSectionParent = contentEl.createDiv(cls("other-section-spacing"));
-		this.otherPropertiesContainer = this.createPropertySection(otherSectionParent, "Other Properties", () =>
-			this.addCustomProperty("", "", "other")
-		);
-	}
-
-	private createPropertySection(parent: HTMLElement, title: string, onAddClick: () => void): HTMLElement {
-		const headerContainer = parent.createDiv(cls("setting-item", "property-section-header"));
-
-		const headerDiv = headerContainer.createDiv(cls("setting-item-name"));
-		const toggleIcon = headerDiv.createEl("span", {
-			text: "▶",
-			cls: cls("property-toggle-icon"),
-		});
-		headerDiv.createEl("span", {
-			text: title,
-			cls: cls("setting-item-heading"),
-		});
-
-		const addButton = headerContainer.createEl("button", {
-			text: "Add property",
-			cls: cls("mod-cta"),
-		});
-		addButton.addEventListener("click", () => {
-			// Auto-expand when adding a property
-			if (container.classList.contains(cls("hidden"))) {
-				removeCls(container, "hidden");
-				toggleIcon.textContent = "▼";
+				if (selectedWeekdays.length > 0) {
+					presetData.rruleSpec = selectedWeekdays.join(", ");
+				}
 			}
-			onAddClick();
-		});
 
-		const container = parent.createDiv(cls("property-container"));
-		// Collapsed by default
-		addCls(container, "hidden");
-
-		// Toggle collapse on header click
-		headerDiv.addEventListener("click", () => {
-			const isHidden = container.classList.toggle(cls("hidden"));
-			toggleIcon.textContent = isHidden ? "▶" : "▼";
-		});
-
-		return container;
-	}
-
-	protected addCustomProperty(key = "", value = "", section: "display" | "other" = "other"): void {
-		const container = section === "display" ? this.displayPropertiesContainer : this.otherPropertiesContainer;
-		const propertyRow = container.createDiv(cls("custom-property-row"));
-
-		propertyRow.createEl("input", {
-			type: "text",
-			placeholder: "Property name",
-			value: key,
-			cls: cls("setting-item-control"),
-		});
-
-		propertyRow.createEl("input", {
-			type: "text",
-			placeholder: "Value",
-			value: value,
-			cls: cls("setting-item-control"),
-		});
-
-		const removeButton = propertyRow.createEl("button", {
-			text: "Remove",
-		});
-		removeButton.addEventListener("click", () => {
-			propertyRow.remove();
-		});
-
-		// Track the property
-		this.customProperties.push({ key, value });
-	}
-
-	public getCustomProperties(): Frontmatter {
-		const properties: Record<string, string> = {};
-
-		// Collect from both display and other properties containers
-		const displayRows = this.displayPropertiesContainer.querySelectorAll(`.${cls("custom-property-row")}`);
-		const otherRows = this.otherPropertiesContainer.querySelectorAll(`.${cls("custom-property-row")}`);
-		const allRows = [...Array.from(displayRows), ...Array.from(otherRows)];
-
-		for (const row of allRows) {
-			const keyInput = row.querySelector("input[placeholder='Property name']") as HTMLInputElement;
-			const valueInput = row.querySelector("input[placeholder='Value']") as HTMLInputElement;
-
-			if (keyInput?.value && valueInput?.value) {
-				properties[keyInput.value] = valueInput.value;
+			if (this.futureInstancesCountInput?.value) {
+				const futureCount = Number.parseInt(this.futureInstancesCountInput.value, 10);
+				if (!Number.isNaN(futureCount) && futureCount > 0) {
+					presetData.futureInstancesCount = futureCount;
+				}
 			}
 		}
 
-		// Parse string values back to their original types (arrays, numbers, booleans, etc.)
-		return parseFrontmatterRecord(properties);
+		const customProps = this.getCustomProperties();
+		if (Object.keys(customProps).length > 0) {
+			presetData.customProperties = customProps;
+		}
+
+		return presetData;
 	}
 
-	private updateDurationFromDates(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.showDurationField || !this.durationInput) return;
+	private restoreFromState(state: MinimizedModalState): void {
+		this.applyPreset(state);
+		this.originalFrontmatter = state.originalFrontmatter;
 
-		if (this.startInput.value && this.endInput.value) {
-			const durationMinutes = calculateDurationMinutes(this.startInput.value, this.endInput.value);
-			this.durationInput.value = durationMinutes.toString();
+		if (this.stopwatch) {
+			this.stopwatch.importState(state.stopwatch);
 		}
 	}
 
-	private updateEndFromDuration(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.showDurationField || !this.durationInput) return;
-
-		if (this.startInput.value && this.durationInput.value) {
-			const startDate = new Date(this.startInput.value);
-			const durationMinutes = Number.parseInt(this.durationInput.value, 10);
-
-			if (!Number.isNaN(durationMinutes) && durationMinutes >= 0) {
-				const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
-				this.endInput.value = formatDateTimeForInput(endDate);
-			}
-		}
-	}
-
-	private setToCurrentTime(input: HTMLInputElement): void {
-		const now = new Date();
-		input.value = formatDateTimeForInput(now);
-
-		// Trigger change event to update duration field if present
-		const event = new Event("change", { bubbles: true });
-		input.dispatchEvent(event);
-	}
-
-	private fillStartTimeFromPrevious(input: HTMLInputElement): void {
-		this.fillTimeFromAdjacent(input, "previous", "end", "Start time filled from previous event");
-	}
-
-	private fillEndTimeFromNext(input: HTMLInputElement): void {
-		this.fillTimeFromAdjacent(input, "next", "start", "End time filled from next event");
-	}
-
-	private fillTimeFromAdjacent(
-		input: HTMLInputElement,
-		direction: "next" | "previous",
-		timeField: "start" | "end",
-		successMessage: string
-	): void {
-		// Get the current time from the input field (already in ISO format) instead of this.event.start (Date object in local timezone)
-		const currentTimeISO = this.allDayCheckbox.checked ? null : inputValueToISOString(this.startInput.value);
-
-		const adjacentEvent = findAdjacentEvent(
-			this.bundle.eventStore,
-			currentTimeISO,
-			this.event.extendedProps?.filePath,
-			direction
-		);
-
-		if (!adjacentEvent) {
-			new Notice(`No ${direction} event found`);
-			return;
-		}
-
-		const timeValue =
-			timeField === "start" ? adjacentEvent.start : isTimedEvent(adjacentEvent) ? adjacentEvent.end : undefined;
-
-		if (!timeValue) {
-			new Notice(`${direction === "previous" ? "Previous" : "Next"} event has no ${timeField} time`);
-			return;
-		}
-
-		input.value = formatDateTimeForInput(timeValue);
-
-		const event = new Event("change", { bubbles: true });
-		input.dispatchEvent(event);
-
-		new Notice(successMessage);
-	}
-
-	private setupEventHandlers(_contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-
-		// Handle all-day toggle
-		this.allDayCheckbox.addEventListener("change", () => {
-			if (this.allDayCheckbox.checked) {
-				// Switching TO all-day
-				addCls(this.timedContainer, "hidden");
-				removeCls(this.allDayContainer, "hidden");
-				// Hide stopwatch for all-day events
-				if (this.stopwatchContainer) {
-					addCls(this.stopwatchContainer, "hidden");
-				}
-				// Copy start date to date field if available
-				if (this.startInput.value) {
-					this.dateInput.value = formatDateOnly(this.startInput.value);
-				}
-				// Update notification label
-				if (this.notificationLabel) {
-					this.notificationLabel.setText("Notify days before");
-				}
-			} else {
-				// Switching TO timed
-				removeCls(this.timedContainer, "hidden");
-				addCls(this.allDayContainer, "hidden");
-				// Show stopwatch for timed events
-				if (this.stopwatchContainer) {
-					removeCls(this.stopwatchContainer, "hidden");
-				}
-				// Copy date to start field if available
-				if (this.dateInput.value) {
-					this.startInput.value = `${this.dateInput.value}T09:00`;
-					this.endInput.value = `${this.dateInput.value}T10:00`;
-					this.updateDurationFromDates();
-				}
-				// Update notification label
-				if (this.notificationLabel) {
-					this.notificationLabel.setText("Notify minutes before");
-				}
-			}
-		});
-
-		if (settings.showDurationField && this.durationInput) {
-			this.startInput.addEventListener("change", () => {
-				this.updateDurationFromDates();
-			});
-			this.endInput.addEventListener("change", () => {
-				this.updateDurationFromDates();
-			});
-			this.durationInput.addEventListener("input", () => {
-				this.updateEndFromDuration();
-			});
-		}
-
-		// Handle recurring event checkbox toggle
-		this.recurringCheckbox.addEventListener("change", () => {
-			toggleCls(this.recurringContainer, "hidden", !this.recurringCheckbox.checked);
-		});
-
-		// Handle RRule type selection
-		this.rruleSelect.addEventListener("change", () => {
-			const selectedType = this.rruleSelect.value as RecurrenceType;
-			// Show weekday selection only for weekly and bi-weekly
-			const showWeekdays = (WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(selectedType);
-			toggleCls(this.weekdayContainer, "hidden", !showWeekdays);
-		});
-
-		// Use Obsidian's Scope system for Enter key so it works regardless of focus position.
-		// A contentEl keydown handler breaks when focus leaves contentEl descendants
-		// (e.g., clicking the non-focusable stopwatch header moves focus to modalEl/body).
-		this.scope.register([], "Enter", (e) => {
-			e.preventDefault();
-			this.saveWithTypoCheck();
-			return false;
-		});
-	}
-
-	protected setupTitleBlurListener(): void {
-		this.titleInput.addEventListener("blur", () => {
-			this.applyAutoCategories();
-		});
-	}
-
-	/** Exact-match auto-category assignment on blur. No modal — just assigns categories. */
-	protected applyAutoCategories(): void {
-		if (this.suppressAutoCategories) return;
-
-		const eventName = this.titleInput.value.trim();
-		if (!eventName) return;
-
-		const settings = this.bundle.settingsStore.currentSettings;
-
-		const hasAutoAssign =
-			settings.autoAssignCategoryByName ||
-			(settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0);
-
-		if (!hasAutoAssign) return;
-
-		const availableCategories = this.bundle.categoryTracker.getCategories();
-		const autoAssignedCategories = autoAssignCategories(eventName, settings, availableCategories);
-
-		if (autoAssignedCategories.length > 0) {
-			this.selectedCategories = autoAssignedCategories;
-			this.renderCategories();
-		}
-	}
+	// ─── Save ─────────────────────────────────────────────────────
 
 	/**
 	 * Check for typo in event name before saving. If a fuzzy match is found,
@@ -1346,179 +1653,6 @@ export abstract class BaseEventModal extends Modal {
 		}
 
 		this.saveEvent();
-	}
-
-	private createActionButtons(contentEl: HTMLElement): void {
-		const buttonContainer = contentEl.createDiv(cls("modal-button-container"));
-
-		const cancelButton = buttonContainer.createEl("button", {
-			text: "Cancel",
-		});
-		cancelButton.addEventListener("click", () => {
-			this.close();
-		});
-
-		// Save as Preset button - available in both Create and Edit modals
-		const savePresetButton = buttonContainer.createEl("button", {
-			text: "Save as preset",
-		});
-		savePresetButton.addEventListener("click", () => {
-			this.openSavePresetModal();
-		});
-
-		const saveButton = buttonContainer.createEl("button", {
-			text: this.getSaveButtonText(),
-			cls: cls("mod-cta"),
-		});
-		saveButton.addEventListener("click", () => {
-			this.saveWithTypoCheck();
-		});
-	}
-
-	private openSavePresetModal(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const existingPresets = settings.eventPresets || [];
-
-		const modal = new SavePresetModal(this.app, existingPresets, (presetName, overridePresetId) => {
-			this.saveCurrentAsPreset(presetName, overridePresetId);
-		});
-		modal.open();
-	}
-
-	private saveCurrentAsPreset(presetName: string, overridePresetId: string | null): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const now = Date.now();
-
-		const formData = this.extractPresetData();
-
-		const preset: EventPreset = {
-			...formData,
-			id: overridePresetId || `preset-${now}`,
-			name: presetName,
-			createdAt: now,
-		};
-
-		// If overriding, preserve the original createdAt
-		if (overridePresetId) {
-			const existingPreset = (settings.eventPresets || []).find((p) => p.id === overridePresetId);
-			if (existingPreset) {
-				preset.createdAt = existingPreset.createdAt;
-				preset.updatedAt = now;
-			}
-		}
-
-		const currentPresets = settings.eventPresets || [];
-		let updatedPresets: EventPreset[];
-
-		if (overridePresetId) {
-			// Replace existing preset
-			updatedPresets = currentPresets.map((p) => (p.id === overridePresetId ? preset : p));
-			new Notice(`Preset "${presetName}" updated!`);
-		} else {
-			// Add new preset
-			updatedPresets = [...currentPresets, preset];
-			new Notice(`Preset "${presetName}" saved!`);
-		}
-
-		void this.bundle.settingsStore.updateSettings((s) => ({
-			...s,
-			eventPresets: updatedPresets,
-		}));
-
-		// Update the preset selector
-		this.refreshPresetSelector(updatedPresets);
-	}
-
-	private refreshPresetSelector(presets: EventPreset[]): void {
-		if (!this.presetSelector) return;
-
-		const currentValue = this.presetSelector.value;
-
-		// Clear existing options except "None"
-		while (this.presetSelector.options.length > 0) {
-			this.presetSelector.remove(0);
-		}
-
-		// Add all preset options
-		for (const preset of presets) {
-			const option = this.presetSelector.createEl("option", {
-				value: preset.id,
-				text: preset.name,
-			});
-			option.value = preset.id;
-		}
-
-		if (currentValue && presets.some((p) => p.id === currentValue)) {
-			this.presetSelector.value = currentValue;
-		} else {
-			this.presetSelector.value = "";
-		}
-	}
-
-	protected renderCategories(): void {
-		if (!this.categoriesContainer) return;
-
-		this.categoriesContainer.empty();
-
-		if (this.selectedCategories.length === 0) {
-			this.categoriesContainer.createEl("span", {
-				text: "No categories",
-				cls: cls("no-categories-text"),
-			});
-			return;
-		}
-
-		const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
-		const categoryColorMap = new Map(categoriesWithColors.map((c) => [c.name, c.color]));
-
-		for (const categoryName of this.selectedCategories) {
-			const categoryItem = this.categoriesContainer.createDiv(cls("category-item"));
-
-			const colorDot = categoryItem.createEl("span", {
-				cls: cls("category-color-dot"),
-			});
-			const color = categoryColorMap.get(categoryName) || this.bundle.settingsStore.currentSettings.defaultNodeColor;
-			colorDot.style.setProperty("--category-color", color);
-
-			const nameSpan = categoryItem.createEl("span", {
-				text: categoryName,
-				cls: cls("category-name"),
-			});
-
-			nameSpan.addEventListener("click", () => {
-				this.openCategoryEventsModal(categoryName);
-			});
-
-			const removeButton = categoryItem.createEl("span", {
-				text: "\u00D7",
-				cls: cls("category-remove-button"),
-				attr: { title: "Remove category" },
-			});
-			removeButton.addEventListener("click", (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				this.selectedCategories = this.selectedCategories.filter((c) => c !== categoryName);
-				this.renderCategories();
-			});
-		}
-	}
-
-	private openAssignCategoriesModal(): void {
-		this.suppressAutoCategories = true;
-
-		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
-		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
-
-		openCategoryAssignModal(this.app, categories, defaultColor, this.selectedCategories, (selectedCategories) => {
-			this.selectedCategories = selectedCategories;
-			this.renderCategories();
-		});
-	}
-
-	private openCategoryEventsModal(categoryName: string): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const modal = new CategoryEventsModal(this.app, categoryName, settings);
-		modal.open();
 	}
 
 	protected buildEventData(): EventSaveData {
@@ -1740,8 +1874,6 @@ export abstract class BaseEventModal extends Modal {
 		};
 	}
 
-	public abstract saveEvent(): void;
-
 	protected loadExistingFrontmatter(): void {
 		try {
 			const filePath = this.event.extendedProps?.filePath;
@@ -1758,163 +1890,10 @@ export abstract class BaseEventModal extends Modal {
 		}
 	}
 
-	onClose(): void {
-		// If stopwatch is active and we're NOT already in the minimize flow,
-		// auto-save state before closing (handles ESC key, clicking outside, etc.)
-		if (this.isStopwatchActive() && !this.isMinimizing) {
-			const state = this.extractMinimizedState();
-			MinimizedModalManager.saveState(state, this.bundle);
-		}
+	// ─── Utilities & Query API ────────────────────────────────────
 
-		// Clean up stopwatch to stop any running intervals
-		this.stopwatch?.destroy();
-
-		this.settingsSubscription?.unsubscribe();
-		this.settingsSubscription = null;
-
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-
-	/**
-	 * Minimize the modal - saves state and closes the modal.
-	 * Time tracking continues via MinimizedModalManager.
-	 * The modal can be restored later using the "Restore minimized modal" command.
-	 */
-	minimize(): void {
-		// Set flag to prevent double-saving in onClose
-		this.isMinimizing = true;
-
-		const state = this.extractMinimizedState();
-		MinimizedModalManager.saveState(state, this.bundle);
-		new Notice("Modal minimized. Run command: restore minimized event modal");
-		this.close();
-	}
-
-	private extractPresetData(): PresetFormData {
-		const presetData: PresetFormData = {};
-
-		if (this.titleInput.value) {
-			presetData.title = this.titleInput.value;
-		}
-
-		presetData.allDay = this.allDayCheckbox.checked;
-
-		if (this.selectedCategories.length > 0) {
-			presetData.categories = this.selectedCategories.join(", ");
-		}
-
-		if (this.locationInput?.value.trim()) {
-			presetData.location = this.locationInput.value.trim();
-		}
-
-		if (this.iconInput?.value.trim()) {
-			presetData.icon = this.iconInput.value.trim();
-		}
-
-		if (this.participantsInput?.value.trim()) {
-			presetData.participants = this.participantsInput.value.trim();
-		}
-
-		if (this.breakInput?.value) {
-			const breakValue = Number.parseFloat(this.breakInput.value);
-			if (!Number.isNaN(breakValue) && breakValue > 0) {
-				presetData.breakMinutes = breakValue;
-			}
-		}
-
-		if (this.skipCheckbox) {
-			presetData.skip = this.skipCheckbox.checked;
-		}
-
-		if (this.markAsDoneCheckbox) {
-			presetData.markAsDone = this.markAsDoneCheckbox.checked;
-		}
-
-		if (this.notificationInput?.value) {
-			const notifyValue = Number.parseInt(this.notificationInput.value, 10);
-			if (!Number.isNaN(notifyValue) && notifyValue >= 0) {
-				presetData.notifyBefore = notifyValue;
-			}
-		}
-
-		if (this.recurringCheckbox.checked) {
-			presetData.rruleType = this.rruleSelect.value;
-
-			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(this.rruleSelect.value)) {
-				const selectedWeekdays: Weekday[] = [];
-				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
-					if (checkbox.checked) {
-						selectedWeekdays.push(weekday);
-					}
-				}
-				if (selectedWeekdays.length > 0) {
-					presetData.rruleSpec = selectedWeekdays.join(", ");
-				}
-			}
-
-			if (this.futureInstancesCountInput?.value) {
-				const futureCount = Number.parseInt(this.futureInstancesCountInput.value, 10);
-				if (!Number.isNaN(futureCount) && futureCount > 0) {
-					presetData.futureInstancesCount = futureCount;
-				}
-			}
-		}
-
-		const customProps = this.getCustomProperties();
-		if (Object.keys(customProps).length > 0) {
-			presetData.customProperties = customProps;
-		}
-
-		return presetData;
-	}
-
-	protected extractFormData(): FormData {
-		const formData: FormData = { ...this.extractPresetData() };
-
-		if (this.allDayCheckbox.checked) {
-			if (this.dateInput.value) {
-				formData.date = this.dateInput.value;
-			}
-		} else {
-			if (this.startInput.value) {
-				formData.startDate = inputValueToISOString(this.startInput.value);
-			}
-			if (this.endInput.value) {
-				formData.endDate = inputValueToISOString(this.endInput.value);
-			}
-		}
-
-		return formData;
-	}
-
-	private extractMinimizedState(): MinimizedModalState {
-		const formData = this.extractFormData();
-		const stopwatchState = this.stopwatch?.exportState() ?? {
-			state: "idle" as const,
-			startTime: null,
-			breakStartTime: null,
-			sessionStartTime: null,
-			totalBreakMs: 0,
-		};
-
-		return {
-			...formData,
-			stopwatch: stopwatchState,
-			modalType: this.getModalType(),
-			filePath: this.event.extendedProps?.filePath ?? null,
-			originalFrontmatter: this.originalFrontmatter,
-			calendarId: this.bundle.calendarId,
-		};
-	}
-
-	private restoreFromState(state: MinimizedModalState): void {
-		this.applyPreset(state);
-		this.originalFrontmatter = state.originalFrontmatter;
-
-		if (this.stopwatch) {
-			this.stopwatch.importState(state.stopwatch);
-		}
+	shouldStartStopwatchAndMinimize(): boolean {
+		return this.startStopwatchAndMinimize;
 	}
 
 	protected getModalType(): "create" | "edit" {
@@ -1927,5 +1906,47 @@ export abstract class BaseEventModal extends Modal {
 
 	getBundle(): CalendarBundle {
 		return this.bundle;
+	}
+
+	public getCustomProperties(): Frontmatter {
+		const properties: Record<string, string> = {};
+
+		// Collect from both display and other properties containers
+		const displayRows = this.displayPropertiesContainer.querySelectorAll(`.${cls("custom-property-row")}`);
+		const otherRows = this.otherPropertiesContainer.querySelectorAll(`.${cls("custom-property-row")}`);
+		const allRows = [...Array.from(displayRows), ...Array.from(otherRows)];
+
+		for (const row of allRows) {
+			const keyInput = row.querySelector("input[placeholder='Property name']") as HTMLInputElement;
+			const valueInput = row.querySelector("input[placeholder='Value']") as HTMLInputElement;
+
+			if (keyInput?.value && valueInput?.value) {
+				properties[keyInput.value] = valueInput.value;
+			}
+		}
+
+		// Parse string values back to their original types (arrays, numbers, booleans, etc.)
+		return parseFrontmatterRecord(properties);
+	}
+
+	protected setEventExtendedProp(name: string, value: unknown): void {
+		if (typeof this.event.setExtendedProp === "function") {
+			this.event.setExtendedProp(name, value);
+			return;
+		}
+
+		// Avoid assigning to `extendedProps` directly because it can be a getter-only property
+		// (FullCalendar EventApi). Mutating the returned object is safe for plain objects and
+		// also works if the getter returns a mutable object.
+		const existing = this.event.extendedProps;
+		if (existing && typeof existing === "object") {
+			existing[name] = value;
+			return;
+		}
+
+		// Fallback for plain object events that don't have any extended props yet.
+		// (If `extendedProps` is getter-only, this assignment would throw, but that case should
+		// be handled by `setExtendedProp` above.)
+		this.event.extendedProps = { [name]: value };
 	}
 }

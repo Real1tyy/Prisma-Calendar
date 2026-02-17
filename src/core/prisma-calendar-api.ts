@@ -56,6 +56,8 @@ export class PrismaCalendarApiManager {
 
 	constructor(private readonly plugin: CustomCalendarPlugin) {}
 
+	// ─── API Registration ─────────────────────────────────────────
+
 	exposeProgrammaticApi(): void {
 		const api: PrismaCalendarApi = {
 			openCreateEventModal: (options) => {
@@ -89,10 +91,7 @@ export class PrismaCalendarApiManager {
 		delete (window as unknown as Record<string, unknown>)[this.apiGlobalKey];
 	}
 
-	private isCalendarViewFocused(): boolean {
-		const activeView = this.plugin.app.workspace.getActiveViewOfType(CalendarView);
-		return activeView !== null;
-	}
+	// ─── Modal Actions ────────────────────────────────────────────
 
 	openCreateUntrackedEventModal(): void {
 		const bundle = this.resolveBundleOrNotice();
@@ -217,6 +216,8 @@ export class PrismaCalendarApiManager {
 		return true;
 	}
 
+	// ─── Event Creation ───────────────────────────────────────────
+
 	async createUntrackedEvent(title: string, calendarId?: string): Promise<string | null> {
 		const bundle = this.resolveBundleOrNotice(calendarId);
 		if (!bundle) return null;
@@ -279,6 +280,8 @@ export class PrismaCalendarApiManager {
 		void this.plugin.rememberLastUsedCalendar(bundle.calendarId);
 		return true;
 	}
+
+	// ─── Utilities ───────────────────────────────────────────────
 
 	private buildFrontmatterFromInput(bundle: CalendarBundle, input: PrismaEventInput): Frontmatter {
 		const settings = bundle.settingsStore.currentSettings;
@@ -344,6 +347,15 @@ export class PrismaCalendarApiManager {
 		return frontmatter;
 	}
 
+	private resolveBundleOrNotice(calendarId?: string): CalendarBundle | null {
+		const bundle = this.resolveBundle(calendarId);
+		if (!bundle) {
+			new Notice("No calendars available");
+			return null;
+		}
+		return bundle;
+	}
+
 	private resolveBundle(calendarId?: string): CalendarBundle | null {
 		if (this.plugin.calendarBundles.length === 0) {
 			return null;
@@ -364,12 +376,8 @@ export class PrismaCalendarApiManager {
 		return this.plugin.calendarBundles[0] ?? null;
 	}
 
-	private resolveBundleOrNotice(calendarId?: string): CalendarBundle | null {
-		const bundle = this.resolveBundle(calendarId);
-		if (!bundle) {
-			new Notice("No calendars available");
-			return null;
-		}
-		return bundle;
+	private isCalendarViewFocused(): boolean {
+		const activeView = this.plugin.app.workspace.getActiveViewOfType(CalendarView);
+		return activeView !== null;
 	}
 }

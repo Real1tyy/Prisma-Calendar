@@ -136,70 +136,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private cachedTextColorSource: string | null = null;
 	/** Pre-indexed map of date string → unique event colors, built during buildCalendarEvents(). */
 	private colorDotIndex = new Map<string, Set<string>>();
+	private isRestoring = false;
 
-	private updateMobileControlsToggleButtonElement(): void {
-		if (!this.container) return;
-		const btn = this.container.querySelector(".fc-mobileControls-button");
-		if (!(btn instanceof HTMLElement)) return;
-
-		btn.classList.add(cls("mobile-controls-toggle"));
-		btn.classList.toggle(cls("mobile-controls-toggle-expanded"), !this.mobileControlsCollapsed);
-		btn.classList.toggle(cls("mobile-controls-toggle-collapsed"), this.mobileControlsCollapsed);
-	}
-
-	private applyMobileControlsCollapsedState(): void {
-		if (!this.container) return;
-
-		const shouldCollapse = this.isMobileView() && this.mobileControlsCollapsed;
-		this.container.classList.toggle(cls("mobile-controls-collapsed"), shouldCollapse);
-		this.updateMobileControlsToggleButtonElement();
-		this.scheduleStickyOffsetsUpdate();
-	}
-
-	private setMobileControlsCollapsed(collapsed: boolean): void {
-		this.mobileControlsCollapsed = collapsed;
-		this.applyMobileControlsCollapsedState();
-	}
-
-	private shouldShowMobileControlsToggle(toolbarButtons: Set<string>): boolean {
-		return (
-			toolbarButtons.has("zoomLevel") ||
-			toolbarButtons.has("filterPresets") ||
-			toolbarButtons.has("searchInput") ||
-			toolbarButtons.has("expressionFilter")
-		);
-	}
-
-	private ensureMobileControlsExpanded(): void {
-		if (!this.isMobileView()) return;
-		if (!this.mobileControlsCollapsed) return;
-		this.mobileControlsCollapsed = false;
-		this.applyMobileControlsCollapsedState();
-	}
-
-	private getToolbarComponentDefinitions() {
-		return [
-			{
-				id: "searchInput",
-				init: () => this.searchFilter.initialize(this.calendar!, this.container),
-			},
-			{
-				id: "expressionFilter",
-				init: () => this.expressionFilter.initialize(this.calendar!, this.container),
-			},
-			{
-				id: "filterPresets",
-				init: () => this.filterPresetSelector.initialize(this.calendar!, this.container),
-			},
-			{
-				id: "untrackedEvents",
-				init: () => {
-					this.untrackedEventsDropdown = new UntrackedEventsDropdown(this.app, this.bundle);
-					this.untrackedEventsDropdown.initialize(this.calendar!, this.container);
-				},
-			},
-		];
-	}
+	// ─── Lifecycle ───────────────────────────────────────────────
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -220,887 +159,124 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		);
 	}
 
-	async undo(): Promise<boolean> {
-		return await this.bundle.undo();
-	}
+	async mount(): Promise<void> {
+		const root = this.containerEl.children[1] as HTMLElement;
+		root.empty();
+		root.addClass(getCalendarViewType(this.bundle.calendarId));
 
-	async redo(): Promise<boolean> {
-		return await this.bundle.redo();
-	}
+		this.showLoading(root, "Indexing calendar events…");
 
-	private buildBatchButtons(): Record<string, ExtendedButtonInput> {
-		const bsm = this.batchSelectionManager!;
-		const clsBase = cls("batch-action-btn");
+		// Create calendar host
+		this.container = root.createDiv(cls("calendar-container"));
 
-		return {
-			batchCounter: {
-				text: this.getSelectedEventsButtonText(),
-				click: () => {
-					void this.showSelectedEventsModal();
-				},
-				className: `${clsBase} ${cls("batch-counter")}`,
-			},
-			batchSelectAll: {
-				text: "All",
-				click: () => bsm.selectAllVisibleEvents(),
-				className: `${clsBase} ${cls("select-all-btn")}`,
-			},
-			batchClear: {
-				text: "Clear",
-				click: () => bsm.clearSelection(),
-				className: `${clsBase} ${cls("clear-btn")}`,
-			},
-			batchDuplicate: {
-				text: "Duplicate",
-				click: () => {
-					void bsm.executeDuplicate();
-				},
-				className: `${clsBase} ${cls("duplicate-btn")}`,
-			},
-			batchMoveBy: {
-				text: "Move By",
-				click: () => bsm.executeMoveBy(),
-				className: `${clsBase} ${cls("move-by-btn")}`,
-			},
-			batchCloneNext: {
-				text: "Clone Next",
-				click: () => {
-					void bsm.executeClone(1);
-				},
-				className: `${clsBase} ${cls("clone-next-btn")}`,
-			},
-			batchClonePrev: {
-				text: "Clone Prev",
-				click: () => {
-					void bsm.executeClone(-1);
-				},
-				className: `${clsBase} ${cls("clone-prev-btn")}`,
-			},
-			batchMoveNext: {
-				text: "Move Next",
-				click: () => {
-					void bsm.executeMove(1);
-				},
-				className: `${clsBase} ${cls("move-next-btn")}`,
-			},
-			batchMovePrev: {
-				text: "Move Prev",
-				click: () => {
-					void bsm.executeMove(-1);
-				},
-				className: `${clsBase} ${cls("move-prev-btn")}`,
-			},
-			batchOpenAll: {
-				text: "Open",
-				click: () => {
-					void bsm.executeOpenAll();
-				},
-				className: `${clsBase} ${cls("open-all-btn")}`,
-			},
-			batchSkip: {
-				text: "Skip",
-				click: () => {
-					void bsm.executeSkip();
-				},
-				className: `${clsBase} ${cls("skip-btn")}`,
-			},
-			batchMarkAsDone: {
-				text: "Done",
-				click: () => {
-					void bsm.executeMarkAsDone();
-				},
-				className: `${clsBase} ${cls("mark-done-btn")}`,
-			},
-			batchMarkAsNotDone: {
-				text: "Not Done",
-				click: () => {
-					void bsm.executeMarkAsNotDone();
-				},
-				className: `${clsBase} ${cls("mark-not-done-btn")}`,
-			},
-			batchCategories: {
-				text: "Categories",
-				click: () => {
-					void this.openCategoryAssignModal();
-				},
-				className: `${clsBase} ${cls("categories-btn")}`,
-			},
-			batchFrontmatter: {
-				text: "Frontmatter",
-				click: () => {
-					void this.openBatchFrontmatterModal();
-				},
-				className: `${clsBase} ${cls("frontmatter-btn")}`,
-			},
-			batchDelete: {
-				text: "Delete",
-				click: () => {
-					void bsm.executeDelete();
-				},
-				className: `${clsBase} ${cls("delete-btn")}`,
-			},
-			batchExit: {
-				text: "Exit",
-				click: () => this.toggleBatchSelection(),
-				className: `${clsBase} ${cls("exit-btn")}`,
-			},
-		};
-	}
+		// Wait for layout before rendering FullCalendar
+		await this.waitForLayout(this.container);
+		this.initializeCalendar(this.container);
 
-	private buildRegularButtons(): Record<string, ExtendedButtonInput> {
-		return {
-			createEvent: {
-				text: "Create Event",
-				click: () => this.openCreateEventModal(),
-			},
-			now: {
-				text: "Now",
-				click: () => this.scrollToNow(),
-			},
-			zoomLevel: this.zoomManager.createZoomLevelButton(),
-			mobileControls: {
-				text: "Filters",
-				click: () => {
-					this.setMobileControlsCollapsed(!this.mobileControlsCollapsed);
-				},
-				className: cls("mobile-controls-toggle"),
-			},
-			batchSelect: {
-				text: "Batch Select",
-				click: () => this.toggleBatchSelection(),
-			},
-			filteredEvents: {
-				text: "", // Don't set text here - it will be set by applyFilteredEventsButtonState
-				click: () => {
-					void this.showFilteredEventsModal();
-				},
-				className: this.filteredEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
-			},
-			skippedEvents: {
-				text: "", // Don't set text here - it will be set by applySkippedEventsButtonState
-				click: () => {
-					void this.showSkippedEventsModal();
-				},
-				className: this.skippedEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
-			},
-			eventsButton: {
-				text: "Events",
-				click: () => {
-					void this.showEventsModal();
-				},
-			},
-			timeline: {
-				text: "Timeline",
-				click: () => {
-					this.showAllEventsTimeline();
-				},
-			},
-		};
-	}
+		this.setupKeyboardShortcuts();
 
-	private buildToolbarConfig(inSelectionMode: boolean): {
-		headerToolbar: { left: string; center: string; right: string };
-		customButtons: Record<string, ExtendedButtonInput>;
-	} {
-		const viewSwitchers = "dayGridMonth,timeGridWeek,timeGridDay,listWeek";
-
-		if (inSelectionMode) {
-			const left = "prev,next today";
-			const settings = this.bundle.settingsStore.currentSettings;
-
-			const rightButtons = ["batchCounter", ...settings.batchActionButtons, "batchExit"];
-			const right = rightButtons.join(" ");
-
-			return {
-				headerToolbar: { left, center: "title", right },
-				customButtons: this.buildBatchButtons(),
-			};
-		}
-
-		const settings = this.bundle.settingsStore.currentSettings;
-		const isMobile = this.isMobileView();
-		const toolbarButtons = new Set(isMobile ? settings.mobileToolbarButtons : settings.toolbarButtons);
-
-		const leftItems: string[] = [];
-		if (toolbarButtons.has("prevNext")) {
-			leftItems.push("prev", "next");
-		}
-		if (toolbarButtons.has("today")) {
-			leftItems.push("today");
-		}
-		if (toolbarButtons.has("now")) {
-			leftItems.push("now");
-		}
-		if (toolbarButtons.has("createEvent")) {
-			leftItems.push("createEvent");
-		}
-		if (toolbarButtons.has("zoomLevel")) {
-			leftItems.push("zoomLevel");
-		}
-		if (isMobile && this.shouldShowMobileControlsToggle(toolbarButtons)) {
-			leftItems.push("mobileControls");
-		}
-
-		const left = leftItems.length > 0 ? leftItems.join(" ") : "";
-		const right = `filteredEvents eventsButton timeline skippedEvents batchSelect ${viewSwitchers}`;
-
-		return {
-			headerToolbar: { left, center: "title", right },
-			customButtons: this.buildRegularButtons(),
-		};
-	}
-
-	private updateToolbar(): void {
-		if (!this.calendar || !this.batchSelectionManager) return;
-
-		const inSelectionMode = this.batchSelectionManager.isInSelectionMode();
-
-		if (inSelectionMode) {
-			this.cleanupEventCountButtons();
-		}
-
-		const { headerToolbar, customButtons } = this.buildToolbarConfig(inSelectionMode);
-
-		this.calendar.setOption("headerToolbar", headerToolbar);
-		// Cast to CustomButtonInput - className is accepted at runtime but not in FullCalendar's types
-		this.calendar.setOption("customButtons", customButtons as Record<string, CustomButtonInput>);
-		this.applyMobileControlsCollapsedState();
-		this.scheduleStickyOffsetsUpdate();
-
-		setTimeout(() => {
-			if (!inSelectionMode) {
-				this.applyFilteredEventsButtonState();
-				this.applySkippedEventsButtonState();
-				this.zoomManager.updateZoomLevelButton();
-			}
-			this.scheduleStickyOffsetsUpdate();
-		}, 0);
-	}
-
-	private scheduleStickyOffsetsUpdate(): void {
-		if (this.stickyOffsetsRafId !== null) return;
-		this.stickyOffsetsRafId = requestAnimationFrame(() => {
-			this.stickyOffsetsRafId = null;
-			this.updateStickyOffsets();
+		// Detect calendar-event drag release point reliably (FullCalendar's jsEvent in eventDragStop can be stale
+		// when releasing outside the calendar grid, e.g. over toolbar/dropdowns).
+		document.addEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
+		this.register(() => {
+			document.removeEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
 		});
-	}
 
-	private updateStickyOffsets(): void {
-		if (!this.container) return;
-
-		const toolbar = this.container.querySelector(".fc-header-toolbar.fc-toolbar");
-		const toolbarEl = toolbar instanceof HTMLElement ? toolbar : null;
-		const toolbarRect = toolbarEl?.getBoundingClientRect();
-		const toolbarHeight = toolbarRect ? Math.round(toolbarRect.height) : 0;
-		const stickyToolbarOffset = Math.round(toolbarHeight);
-
-		const dayHeaderCell = this.container.querySelector(".fc-col-header-cell");
-		const dayHeaderEl = dayHeaderCell instanceof HTMLElement ? dayHeaderCell : null;
-		const dayHeaderHeight = dayHeaderEl ? Math.round(dayHeaderEl.getBoundingClientRect().height) : 0;
-
-		this.container.style.setProperty("--prisma-sticky-toolbar-offset", `${stickyToolbarOffset}px`);
-		this.container.style.setProperty("--prisma-sticky-day-header-height", `${dayHeaderHeight}px`);
-	}
-
-	getViewType(): string {
-		return this.viewType;
-	}
-
-	getDisplayText(): string {
-		return this.bundle.settingsStore.currentSettings.name;
-	}
-
-	getIcon(): string {
-		return "calendar";
-	}
-
-	private updateSkippedEventsButton(count: number): void {
-		this.skippedEventsCount = count;
-		this.applySkippedEventsButtonState();
-	}
-
-	private updateFilteredEventsButton(count: number): void {
-		this.filteredEventsCount = count;
-		this.applyFilteredEventsButtonState();
-	}
-
-	private applyFilteredEventsButtonState(): void {
-		if (!this.calendar) return;
-		const text = this.getFilteredEventsButtonText();
-		const tooltip = `${this.filteredEventsCount} event${this.filteredEventsCount === 1 ? "" : "s"} filtered out by search or expression filters`;
-		this.updateButtonElement(".fc-filteredEvents-button", text, this.filteredEventsCount > 0, tooltip);
-	}
-
-	private applySkippedEventsButtonState(): void {
-		if (!this.calendar) return;
-		const text = this.getSkippedEventsButtonText();
-		const tooltip = `${this.skippedEventsCount} event${this.skippedEventsCount === 1 ? "" : "s"} hidden from calendar`;
-		this.updateButtonElement(".fc-skippedEvents-button", text, this.skippedEventsCount > 0, tooltip);
-	}
-
-	private getFilteredEventsButtonText(): string {
-		return `${this.filteredEventsCount} filtered`;
-	}
-
-	private getSkippedEventsButtonText(): string {
-		return `${this.skippedEventsCount} skipped`;
-	}
-
-	private getSelectedEventsButtonText(): string {
-		return `${this.selectedEventsCount} selected`;
-	}
-
-	private updateButtonElement(selector: string, text: string, isVisible: boolean, tooltip?: string): void {
-		if (!this.container) return;
-		const btn = this.container.querySelector(selector);
-		if (!(btn instanceof HTMLElement)) {
-			return;
-		}
-
-		// Only update if text has changed to prevent unnecessary DOM manipulation and duplication
-		if (btn.textContent !== text) {
-			btn.textContent = text;
-		}
-
-		if (tooltip !== undefined && btn.title !== tooltip) {
-			btn.title = tooltip;
-		}
-
-		if (isVisible) {
-			btn.classList.remove(cls("fc-button-hidden"));
-			btn.classList.add(cls("fc-button-visible"));
-		} else {
-			btn.classList.remove(cls("fc-button-visible"));
-			btn.classList.add(cls("fc-button-hidden"));
-		}
-	}
-
-	private cleanupEventCountButtons(): void {
-		if (!this.container) return;
-
-		const cleanupButton = (selector: string) => {
-			const btn = this.container?.querySelector(selector);
-			if (btn instanceof HTMLElement) {
-				btn.textContent = "";
-				btn.title = "";
-				btn.classList.remove(cls("fc-button-visible"));
-				btn.classList.add(cls("fc-button-hidden"));
-			}
-		};
-
-		cleanupButton(".fc-filteredEvents-button");
-		cleanupButton(".fc-skippedEvents-button");
-	}
-
-	private async toggleModal<T extends Modal>(
-		getCurrentModal: () => T | null,
-		setModal: (modal: T | null) => void,
-		modalFactory: () => Promise<T> | T
-	): Promise<void> {
-		const currentModal = getCurrentModal();
-
-		if (currentModal) {
-			setModal(null);
-			currentModal.close();
-			return;
-		}
-
-		const modal = await modalFactory();
-		setModal(modal);
-
-		const originalOnClose = modal.onClose.bind(modal) as () => void;
-		modal.onClose = () => {
-			originalOnClose();
-			setModal(null);
-		};
-
-		modal.open();
-	}
-
-	async showSkippedEventsModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.skippedEventsModal,
-			(modal) => {
-				this.skippedEventsModal = modal;
-			},
-			async () => {
-				if (!this.calendar) throw new Error("Calendar not initialized");
-
-				const view = this.calendar.view;
-				if (!view) throw new Error("Calendar view not available");
-
-				const start = toLocalISOString(view.activeStart);
-				const end = toLocalISOString(view.activeEnd);
-				const skippedEvents = this.bundle.eventStore.getSkippedEvents({
-					start,
-					end,
-				});
-
-				return new SkippedEventsModal(this.app, this.bundle, skippedEvents);
-			}
-		);
-	}
-
-	async showEventsModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.eventsModal,
-			(modal) => {
-				this.eventsModal = modal;
-			},
-			() => {
-				return new EventsModal(this.app, this.bundle, this);
-			}
-		);
-	}
-
-	showAllEventsTimeline(): void {
-		const allEvents = this.bundle.eventStore.getAllEvents();
-		new EventSeriesTimelineModal(this.app, this.bundle, {
-			events: allEvents,
-			title: "All Events Timeline",
-		}).open();
-	}
-
-	async showFilteredEventsModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.filteredEventsModal,
-			(modal) => {
-				this.filteredEventsModal = modal;
-			},
-			() => new FilteredEventsModal(this.app, this.bundle, this.filteredEvents)
-		);
-	}
-
-	async showSelectedEventsModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.selectedEventsModal,
-			(modal) => {
-				this.selectedEventsModal = modal;
-			},
-			() => {
-				if (!this.batchSelectionManager) throw new Error("Batch selection manager not initialized");
-
-				const selected = this.batchSelectionManager.getSelectedEvents();
-				return new SelectedEventsModal(this.app, this.bundle, selected, (eventId: string) => {
-					this.batchSelectionManager?.unselectEvent(eventId);
-				});
-			}
-		);
-	}
-
-	async showGlobalSearchModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.globalSearchModal,
-			(modal) => {
-				this.globalSearchModal = modal;
-			},
-			() => new GlobalSearchModal(this.app, this.bundle, this)
-		);
-	}
-
-	async showDailyStatsModal(date?: Date): Promise<void> {
-		await this.toggleModal(
-			() => this.dailyStatsModal,
-			(modal) => {
-				this.dailyStatsModal = modal;
-			},
-			() => {
-				const currentDate = date || this.calendar?.getDate() || new Date();
-				const viewType = this.calendar?.view?.type;
-				return new DailyStatsModal(this.app, this.bundle, currentDate, viewType);
-			}
-		);
-	}
-
-	async showWeeklyStatsModal(date?: Date): Promise<void> {
-		await this.toggleModal(
-			() => this.weeklyStatsModal,
-			(modal) => {
-				this.weeklyStatsModal = modal;
-			},
-			() => {
-				const currentDate = date || this.calendar?.getDate() || new Date();
-				return new WeeklyStatsModal(this.app, this.bundle, currentDate);
-			}
-		);
-	}
-
-	async showMonthlyStatsModal(date?: Date): Promise<void> {
-		await this.toggleModal(
-			() => this.monthlyStatsModal,
-			(modal) => {
-				this.monthlyStatsModal = modal;
-			},
-			() => {
-				const currentDate = date || this.calendar?.getDate() || new Date();
-				return new MonthlyStatsModal(this.app, this.bundle, currentDate);
-			}
-		);
-	}
-
-	async showAllTimeStatsModal(): Promise<void> {
-		await this.toggleModal(
-			() => this.alltimeStatsModal,
-			(modal) => {
-				this.alltimeStatsModal = modal;
-			},
-			() => {
-				return new AllTimeStatsModal(this.app, this.bundle);
-			}
-		);
-	}
-
-	async showIntervalEventsModal(): Promise<void> {
-		if (!this.calendar?.view) return;
-
-		const view = this.calendar.view;
-		const viewType = view.type;
-
-		const adjustedStart = new Date(view.currentStart);
-		adjustedStart.setMinutes(adjustedStart.getMinutes() - 1);
-		const startDate = stripISOSuffix(toLocalISOString(adjustedStart));
-
-		const adjustedEnd = new Date(view.currentEnd);
-		adjustedEnd.setMinutes(adjustedEnd.getMinutes() - 1);
-		const endDate = stripISOSuffix(toLocalISOString(adjustedEnd));
-
-		let intervalLabel = "";
-		if (viewType.includes("Day")) {
-			const date = new Date(view.currentStart);
-			intervalLabel = date.toLocaleDateString("en-US", {
-				weekday: "long",
-				month: "short",
-				day: "numeric",
-				year: "numeric",
-			});
-		} else if (viewType.includes("Week")) {
-			const start = new Date(view.currentStart);
-			const end = new Date(view.currentEnd);
-			end.setDate(end.getDate() - 1);
-			intervalLabel = `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
-		} else if (viewType.includes("Month")) {
-			const date = new Date(view.currentStart);
-			intervalLabel = date.toLocaleDateString("en-US", {
-				month: "long",
-				year: "numeric",
-			});
-		} else {
-			intervalLabel = "Current View";
-		}
-
-		await this.toggleModal(
-			() => this.intervalEventsModal,
-			(modal) => {
-				this.intervalEventsModal = modal;
-			},
-			() => {
-				return new IntervalEventsModal(
-					this.app,
-					intervalLabel,
-					startDate,
-					endDate,
-					this.bundle.settingsStore.currentSettings
-				);
-			}
-		);
-	}
-
-	navigateToDate(date: Date, viewType?: string): void {
-		if (!this.calendar) return;
-
-		this.storePreviousViewState();
-
-		if (viewType) {
-			this.calendar.changeView(viewType);
-		}
-
-		this.calendar.gotoDate(date);
-	}
-
-	goToToday(): void {
-		if (!this.calendar) return;
-		this.calendar.today();
-	}
-
-	scrollToNow(): void {
-		if (!this.calendar) return;
-
-		const currentView = this.calendar.view.type;
-		let targetElement: Element | null = null;
-
-		if (currentView === "timeGridWeek" || currentView === "timeGridDay") {
-			// For time grid views, find the now indicator line
-			targetElement = this.container.querySelector(".fc-timegrid-now-indicator-line");
-		} else if (currentView === "dayGridMonth") {
-			// For month view, find today's cell
-			targetElement = this.container.querySelector(".fc-day-today");
-		}
-
-		// Center the target element if found
-		if (targetElement) {
-			this.scrollElementToCenter(targetElement);
-		}
-	}
-
-	private scrollElementToCenter(element: Element): void {
-		const viewContent = this.containerEl.querySelector(".view-content");
-		if (!viewContent) return;
-
-		const elementRect = element.getBoundingClientRect();
-		const viewContentRect = viewContent.getBoundingClientRect();
-
-		// Calculate scroll position to center the element
-		const scrollTop =
-			viewContent.scrollTop +
-			elementRect.top -
-			viewContentRect.top -
-			viewContent.clientHeight / 2 +
-			elementRect.height / 2;
-
-		viewContent.scrollTop = scrollTop;
-	}
-
-	highlightEventByPath(filePath: string, durationMs = 5000): void {
-		if (!this.calendar) return;
-
-		// Find all events with matching file path
-		const events = this.calendar.getEvents();
-		const matchingEvents = events.filter((event) => event.extendedProps?.filePath === filePath);
-
-		for (const event of matchingEvents) {
-			const eventElements = this.container.querySelectorAll<HTMLElement>(`[data-event-id="${event.id}"]`);
-			for (let i = 0; i < eventElements.length; i++) {
-				const element = eventElements[i];
-				element.classList.add(cls("event-highlighted"));
-				setTimeout(() => {
-					element.classList.remove(cls("event-highlighted"));
-				}, durationMs);
-			}
-		}
-	}
-
-	private storePreviousViewState(): void {
-		if (!this.calendar) return;
-
-		const currentDate = this.calendar.getDate();
-		const currentViewType = this.calendar.view.type;
-
-		this.previousViewState = {
-			date: new Date(currentDate),
-			viewType: currentViewType,
-		};
-	}
-
-	navigateBack(): boolean {
-		if (!this.calendar || !this.previousViewState) {
-			return false;
-		}
-
-		const { date, viewType } = this.previousViewState;
-
-		// Don't store the current state as previous when going back
-		// (to avoid creating a navigation loop)
-		const tempPrevious = this.previousViewState;
-		this.previousViewState = null;
-
-		this.calendar.changeView(viewType);
-		this.calendar.gotoDate(date);
-
-		// Restore the previous state reference
-		this.previousViewState = tempPrevious;
-
-		return true;
-	}
-
-	private findUpcomingEventIds(): Set<string> {
-		const result = new Set<string>();
-
-		if (!this.calendar) return result;
-
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.highlightUpcomingEvent) return result;
-
-		const view = this.calendar.view;
-		if (!view) return result;
-
-		const now = new Date();
-		const viewStart = view.activeStart;
-		const viewEnd = view.activeEnd;
-
-		// Only highlight if "now" is within the current view's date range
-		if (now < viewStart || now > viewEnd) {
-			return result;
-		}
-
-		// Single pass through rendered events: find active events AND track nearest upcoming.
-		// Replaces the original triple-filter-then-sort with one loop.
-		let nearestUpcomingId: string | null = null;
-		let nearestUpcomingStart = Infinity;
-
-		const events = this.calendar.getEvents();
-		for (const event of events) {
-			if (!event.start || event.allDay || event.extendedProps?.isVirtual) continue;
-
-			const eventEnd = event.end || event.start;
-
-			if (event.start <= now && now <= eventEnd) {
-				// Active event — currently happening
-				result.add(event.id);
-			} else if (result.size === 0 && event.start > now) {
-				// Track nearest future event (only matters if no active events found)
-				const startTime = event.start.getTime();
-				if (startTime < nearestUpcomingStart) {
-					nearestUpcomingStart = startTime;
-					nearestUpcomingId = event.id;
+		setTimeout(() => this.containerEl.focus(), 100);
+
+		// Re-focus container when this leaf becomes active (e.g. switching back from another tab)
+		// so keyboard navigation (arrow keys for intervals) works immediately without clicking
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", (leaf) => {
+				if (leaf === this.leaf) {
+					this.containerEl.focus();
 				}
+			})
+		);
+
+		// Resize updates
+		this.observeResize(this.container, () => this.calendar?.updateSize());
+
+		// Settings subscription
+		const settingsSubscription = this.bundle.settingsStore.settings$.subscribe((settings: SingleCalendarConfig) => {
+			this.updateCalendarSettings(settings);
+		});
+		this.register(() => settingsSubscription.unsubscribe());
+
+		const caldavSettingsSubscription = this.bundle.settingsStore.mainSettingsStore.settings$.subscribe(
+			(fullSettings) => {
+				const caldavColorKey = fullSettings.caldav.integrationEventColor;
+				const icsColorKey = fullSettings.icsSubscriptions.integrationEventColor;
+				const combinedKey = `${caldavColorKey}|${icsColorKey}`;
+				if (combinedKey !== this.previousIntegrationColorKey) {
+					this.previousIntegrationColorKey = combinedKey;
+					this.scheduleRefreshEvents();
+				}
+				this.rebuildCalendarIconCache();
 			}
-		}
+		);
+		this.register(() => caldavSettingsSubscription.unsubscribe());
 
-		// If no active events, highlight the nearest upcoming one
-		if (result.size === 0 && nearestUpcomingId) {
-			result.add(nearestUpcomingId);
-		}
+		// Subscribe to indexing complete state
+		const indexingCompleteSubscription = this.bundle.indexer.indexingComplete$.subscribe((isComplete) => {
+			this.isIndexingComplete = isComplete;
+			if (isComplete) {
+				this.hideLoading();
+				this.scheduleRefreshEvents();
+			} else {
+				// Indexing started (e.g., filter expressions changed)
+				const root = this.containerEl.children[1] as HTMLElement;
+				this.showLoading(root, "Re-indexing calendar events…");
+			}
+		});
+		this.register(() => indexingCompleteSubscription.unsubscribe());
 
-		return result;
+		// Event store updates (only refreshes if indexing is complete)
+		const eventStoreSubscription = this.bundle.eventStore.subscribe(() => this.scheduleRefreshEvents());
+		this.register(() => eventStoreSubscription.unsubscribe());
+
+		const recurringEventManagerSubscription = this.bundle.recurringEventManager.subscribe(() =>
+			this.scheduleRefreshEvents()
+		);
+		this.register(() => recurringEventManagerSubscription.unsubscribe());
 	}
 
-	private updateUpcomingEventHighlight(): void {
-		if (!this.calendar) return;
+	unmount(): Promise<void> {
+		this.saveCurrentState();
 
-		const newUpcomingEventIds = this.findUpcomingEventIds();
-
-		// Check if the set of highlighted events has changed
-		const hasChanged =
-			newUpcomingEventIds.size !== this.currentUpcomingEventIds.size ||
-			Array.from(newUpcomingEventIds).some((id) => !this.currentUpcomingEventIds.has(id));
-
-		if (!hasChanged) {
-			return;
-		}
-
-		// Remove highlight from previous upcoming events that are no longer active
-		for (const oldId of this.currentUpcomingEventIds) {
-			if (!newUpcomingEventIds.has(oldId)) {
-				toggleEventHighlight(oldId, cls("event-upcoming"), false, this.container);
-			}
-		}
-
-		// Add highlight to new upcoming events
-		for (const newId of newUpcomingEventIds) {
-			if (!this.currentUpcomingEventIds.has(newId)) {
-				toggleEventHighlight(newId, cls("event-upcoming"), true, this.container);
-			}
-		}
-
-		// Update tracked IDs
-		this.currentUpcomingEventIds = newUpcomingEventIds;
-	}
-
-	private startUpcomingEventCheck(): void {
-		// Clear any existing interval
+		// Stop upcoming event check interval
 		this.stopUpcomingEventCheck();
 
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.highlightUpcomingEvent) return;
+		// Cleanup drag edge scrolling
+		this.cleanupDragEdgeScrolling();
 
-		// Initial check
-		this.updateUpcomingEventHighlight();
+		this.zoomManager.destroy();
+		this.searchFilter.destroy();
+		this.expressionFilter.destroy();
+		this.untrackedEventsDropdown?.destroy();
 
-		// Set up interval to check once per minute (60000ms)
-		this.upcomingEventCheckInterval = window.setInterval(() => {
-			this.updateUpcomingEventHighlight();
-		}, 60000);
-	}
-
-	private isMobileView(): boolean {
-		return window.innerWidth <= 768;
-	}
-
-	private stopUpcomingEventCheck(): void {
-		if (this.upcomingEventCheckInterval !== null) {
-			window.clearInterval(this.upcomingEventCheckInterval);
-			this.upcomingEventCheckInterval = null;
+		// Cancel any pending refresh
+		if (this.refreshRafId !== null) {
+			cancelAnimationFrame(this.refreshRafId);
+			this.refreshRafId = null;
+		}
+		if (this.stickyOffsetsRafId !== null) {
+			cancelAnimationFrame(this.stickyOffsetsRafId);
+			this.stickyOffsetsRafId = null;
 		}
 
-		// Clear all highlighted upcoming events
-		for (const eventId of this.currentUpcomingEventIds) {
-			toggleEventHighlight(eventId, cls("event-upcoming"), false, this.container);
-		}
-		this.currentUpcomingEventIds.clear();
+		this.clearRenderedEventsCache();
+
+		this.calendar?.destroy();
+		this.calendar = null;
+
+		this.colorEvaluator.destroy();
+		this.batchSelectionManager = null;
+
+		return Promise.resolve();
 	}
 
-	private clearCategoryHighlight(): void {
-		if (this.categoryHighlightTimeout !== null) {
-			window.clearTimeout(this.categoryHighlightTimeout);
-			this.categoryHighlightTimeout = null;
-		}
-
-		if (this.currentCategoryHighlightClass !== null) {
-			for (const eventId of this.highlightedCategoryEvents) {
-				toggleEventHighlight(eventId, this.currentCategoryHighlightClass, false, this.container);
-			}
-			this.highlightedCategoryEvents.clear();
-			this.currentCategoryHighlightClass = null;
-		}
-	}
-
-	private findEventIdsByPredicate(predicate: (filePath: string) => boolean): Set<string> {
-		const result = new Set<string>();
-		if (!this.calendar) return result;
-
-		const events = this.calendar.getEvents();
-		for (const event of events) {
-			if (event.extendedProps.isVirtual) continue;
-
-			const filePath = event.extendedProps.filePath as string | undefined;
-			if (filePath && predicate(filePath)) {
-				result.add(event.id);
-			}
-		}
-		return result;
-	}
-
-	private highlightCategoryEvents(getEventIds: () => Set<string>): void {
-		if (!this.calendar) return;
-
-		const highlightClass = cls("event-category-highlight");
-		this.clearCategoryHighlight();
-
-		const eventIds = getEventIds();
-
-		for (const eventId of eventIds) {
-			toggleEventHighlight(eventId, highlightClass, true, this.container);
-		}
-
-		this.highlightedCategoryEvents = eventIds;
-		this.currentCategoryHighlightClass = highlightClass;
-
-		this.categoryHighlightTimeout = window.setTimeout(() => {
-			this.clearCategoryHighlight();
-		}, 10000);
-	}
-
-	public highlightEventsWithoutCategories(): void {
-		this.highlightCategoryEvents(() => {
-			const filesWithCategories = this.bundle.categoryTracker.getAllFilesWithCategories();
-			return this.findEventIdsByPredicate((filePath) => !filesWithCategories.has(filePath));
-		});
-	}
-
-	public showCategorySelectModal(): void {
-		const modal = new CategorySelectModal(this.app, this.bundle.categoryTracker, (category: string) => {
-			this.highlightEventsWithCategory(category);
-		});
-		modal.open();
-	}
-
-	public highlightEventsWithCategory(category: string): void {
-		this.highlightCategoryEvents(() => {
-			const events = this.bundle.categoryTracker.getEventsWithCategory(category);
-			const filePaths = new Set(events.map((e) => e.ref.filePath));
-			return this.findEventIdsByPredicate((filePath) => filePaths.has(filePath));
-		});
-	}
+	// ─── Calendar Setup ──────────────────────────────────────────
 
 	private initializeCalendar(container: HTMLElement): void {
 		const settings = this.bundle.settingsStore.currentSettings;
@@ -1500,6 +676,428 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
+	// ─── Toolbar ─────────────────────────────────────────────────
+
+	private buildToolbarConfig(inSelectionMode: boolean): {
+		headerToolbar: { left: string; center: string; right: string };
+		customButtons: Record<string, ExtendedButtonInput>;
+	} {
+		const viewSwitchers = "dayGridMonth,timeGridWeek,timeGridDay,listWeek";
+
+		if (inSelectionMode) {
+			const left = "prev,next today";
+			const settings = this.bundle.settingsStore.currentSettings;
+
+			const rightButtons = ["batchCounter", ...settings.batchActionButtons, "batchExit"];
+			const right = rightButtons.join(" ");
+
+			return {
+				headerToolbar: { left, center: "title", right },
+				customButtons: this.buildBatchButtons(),
+			};
+		}
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const isMobile = this.isMobileView();
+		const toolbarButtons = new Set(isMobile ? settings.mobileToolbarButtons : settings.toolbarButtons);
+
+		const leftItems: string[] = [];
+		if (toolbarButtons.has("prevNext")) {
+			leftItems.push("prev", "next");
+		}
+		if (toolbarButtons.has("today")) {
+			leftItems.push("today");
+		}
+		if (toolbarButtons.has("now")) {
+			leftItems.push("now");
+		}
+		if (toolbarButtons.has("createEvent")) {
+			leftItems.push("createEvent");
+		}
+		if (toolbarButtons.has("zoomLevel")) {
+			leftItems.push("zoomLevel");
+		}
+		if (isMobile && this.shouldShowMobileControlsToggle(toolbarButtons)) {
+			leftItems.push("mobileControls");
+		}
+
+		const left = leftItems.length > 0 ? leftItems.join(" ") : "";
+		const right = `filteredEvents eventsButton timeline skippedEvents batchSelect ${viewSwitchers}`;
+
+		return {
+			headerToolbar: { left, center: "title", right },
+			customButtons: this.buildRegularButtons(),
+		};
+	}
+
+	private buildRegularButtons(): Record<string, ExtendedButtonInput> {
+		return {
+			createEvent: {
+				text: "Create Event",
+				click: () => this.openCreateEventModal(),
+			},
+			now: {
+				text: "Now",
+				click: () => this.scrollToNow(),
+			},
+			zoomLevel: this.zoomManager.createZoomLevelButton(),
+			mobileControls: {
+				text: "Filters",
+				click: () => {
+					this.setMobileControlsCollapsed(!this.mobileControlsCollapsed);
+				},
+				className: cls("mobile-controls-toggle"),
+			},
+			batchSelect: {
+				text: "Batch Select",
+				click: () => this.toggleBatchSelection(),
+			},
+			filteredEvents: {
+				text: "", // Don't set text here - it will be set by applyFilteredEventsButtonState
+				click: () => {
+					void this.showFilteredEventsModal();
+				},
+				className: this.filteredEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
+			},
+			skippedEvents: {
+				text: "", // Don't set text here - it will be set by applySkippedEventsButtonState
+				click: () => {
+					void this.showSkippedEventsModal();
+				},
+				className: this.skippedEventsCount > 0 ? cls("fc-button-visible") : cls("fc-button-hidden"),
+			},
+			eventsButton: {
+				text: "Events",
+				click: () => {
+					void this.showEventsModal();
+				},
+			},
+			timeline: {
+				text: "Timeline",
+				click: () => {
+					this.showAllEventsTimeline();
+				},
+			},
+		};
+	}
+
+	private buildBatchButtons(): Record<string, ExtendedButtonInput> {
+		const bsm = this.batchSelectionManager!;
+		const clsBase = cls("batch-action-btn");
+
+		return {
+			batchCounter: {
+				text: this.getSelectedEventsButtonText(),
+				click: () => {
+					void this.showSelectedEventsModal();
+				},
+				className: `${clsBase} ${cls("batch-counter")}`,
+			},
+			batchSelectAll: {
+				text: "All",
+				click: () => bsm.selectAllVisibleEvents(),
+				className: `${clsBase} ${cls("select-all-btn")}`,
+			},
+			batchClear: {
+				text: "Clear",
+				click: () => bsm.clearSelection(),
+				className: `${clsBase} ${cls("clear-btn")}`,
+			},
+			batchDuplicate: {
+				text: "Duplicate",
+				click: () => {
+					void bsm.executeDuplicate();
+				},
+				className: `${clsBase} ${cls("duplicate-btn")}`,
+			},
+			batchMoveBy: {
+				text: "Move By",
+				click: () => bsm.executeMoveBy(),
+				className: `${clsBase} ${cls("move-by-btn")}`,
+			},
+			batchCloneNext: {
+				text: "Clone Next",
+				click: () => {
+					void bsm.executeClone(1);
+				},
+				className: `${clsBase} ${cls("clone-next-btn")}`,
+			},
+			batchClonePrev: {
+				text: "Clone Prev",
+				click: () => {
+					void bsm.executeClone(-1);
+				},
+				className: `${clsBase} ${cls("clone-prev-btn")}`,
+			},
+			batchMoveNext: {
+				text: "Move Next",
+				click: () => {
+					void bsm.executeMove(1);
+				},
+				className: `${clsBase} ${cls("move-next-btn")}`,
+			},
+			batchMovePrev: {
+				text: "Move Prev",
+				click: () => {
+					void bsm.executeMove(-1);
+				},
+				className: `${clsBase} ${cls("move-prev-btn")}`,
+			},
+			batchOpenAll: {
+				text: "Open",
+				click: () => {
+					void bsm.executeOpenAll();
+				},
+				className: `${clsBase} ${cls("open-all-btn")}`,
+			},
+			batchSkip: {
+				text: "Skip",
+				click: () => {
+					void bsm.executeSkip();
+				},
+				className: `${clsBase} ${cls("skip-btn")}`,
+			},
+			batchMarkAsDone: {
+				text: "Done",
+				click: () => {
+					void bsm.executeMarkAsDone();
+				},
+				className: `${clsBase} ${cls("mark-done-btn")}`,
+			},
+			batchMarkAsNotDone: {
+				text: "Not Done",
+				click: () => {
+					void bsm.executeMarkAsNotDone();
+				},
+				className: `${clsBase} ${cls("mark-not-done-btn")}`,
+			},
+			batchCategories: {
+				text: "Categories",
+				click: () => {
+					void this.openCategoryAssignModal();
+				},
+				className: `${clsBase} ${cls("categories-btn")}`,
+			},
+			batchFrontmatter: {
+				text: "Frontmatter",
+				click: () => {
+					void this.openBatchFrontmatterModal();
+				},
+				className: `${clsBase} ${cls("frontmatter-btn")}`,
+			},
+			batchDelete: {
+				text: "Delete",
+				click: () => {
+					void bsm.executeDelete();
+				},
+				className: `${clsBase} ${cls("delete-btn")}`,
+			},
+			batchExit: {
+				text: "Exit",
+				click: () => this.toggleBatchSelection(),
+				className: `${clsBase} ${cls("exit-btn")}`,
+			},
+		};
+	}
+
+	private updateToolbar(): void {
+		if (!this.calendar || !this.batchSelectionManager) return;
+
+		const inSelectionMode = this.batchSelectionManager.isInSelectionMode();
+
+		if (inSelectionMode) {
+			this.cleanupEventCountButtons();
+		}
+
+		const { headerToolbar, customButtons } = this.buildToolbarConfig(inSelectionMode);
+
+		this.calendar.setOption("headerToolbar", headerToolbar);
+		// Cast to CustomButtonInput - className is accepted at runtime but not in FullCalendar's types
+		this.calendar.setOption("customButtons", customButtons as Record<string, CustomButtonInput>);
+		this.applyMobileControlsCollapsedState();
+		this.scheduleStickyOffsetsUpdate();
+
+		setTimeout(() => {
+			if (!inSelectionMode) {
+				this.applyFilteredEventsButtonState();
+				this.applySkippedEventsButtonState();
+				this.zoomManager.updateZoomLevelButton();
+			}
+			this.scheduleStickyOffsetsUpdate();
+		}, 0);
+	}
+
+	private getToolbarComponentDefinitions() {
+		return [
+			{
+				id: "searchInput",
+				init: () => this.searchFilter.initialize(this.calendar!, this.container),
+			},
+			{
+				id: "expressionFilter",
+				init: () => this.expressionFilter.initialize(this.calendar!, this.container),
+			},
+			{
+				id: "filterPresets",
+				init: () => this.filterPresetSelector.initialize(this.calendar!, this.container),
+			},
+			{
+				id: "untrackedEvents",
+				init: () => {
+					this.untrackedEventsDropdown = new UntrackedEventsDropdown(this.app, this.bundle);
+					this.untrackedEventsDropdown.initialize(this.calendar!, this.container);
+				},
+			},
+		];
+	}
+
+	private setMobileControlsCollapsed(collapsed: boolean): void {
+		this.mobileControlsCollapsed = collapsed;
+		this.applyMobileControlsCollapsedState();
+	}
+
+	private applyMobileControlsCollapsedState(): void {
+		if (!this.container) return;
+
+		const shouldCollapse = this.isMobileView() && this.mobileControlsCollapsed;
+		this.container.classList.toggle(cls("mobile-controls-collapsed"), shouldCollapse);
+		this.updateMobileControlsToggleButtonElement();
+		this.scheduleStickyOffsetsUpdate();
+	}
+
+	private updateMobileControlsToggleButtonElement(): void {
+		if (!this.container) return;
+		const btn = this.container.querySelector(".fc-mobileControls-button");
+		if (!(btn instanceof HTMLElement)) return;
+
+		btn.classList.add(cls("mobile-controls-toggle"));
+		btn.classList.toggle(cls("mobile-controls-toggle-expanded"), !this.mobileControlsCollapsed);
+		btn.classList.toggle(cls("mobile-controls-toggle-collapsed"), this.mobileControlsCollapsed);
+	}
+
+	private shouldShowMobileControlsToggle(toolbarButtons: Set<string>): boolean {
+		return (
+			toolbarButtons.has("zoomLevel") ||
+			toolbarButtons.has("filterPresets") ||
+			toolbarButtons.has("searchInput") ||
+			toolbarButtons.has("expressionFilter")
+		);
+	}
+
+	private ensureMobileControlsExpanded(): void {
+		if (!this.isMobileView()) return;
+		if (!this.mobileControlsCollapsed) return;
+		this.mobileControlsCollapsed = false;
+		this.applyMobileControlsCollapsedState();
+	}
+
+	private scheduleStickyOffsetsUpdate(): void {
+		if (this.stickyOffsetsRafId !== null) return;
+		this.stickyOffsetsRafId = requestAnimationFrame(() => {
+			this.stickyOffsetsRafId = null;
+			this.updateStickyOffsets();
+		});
+	}
+
+	private updateStickyOffsets(): void {
+		if (!this.container) return;
+
+		const toolbar = this.container.querySelector(".fc-header-toolbar.fc-toolbar");
+		const toolbarEl = toolbar instanceof HTMLElement ? toolbar : null;
+		const toolbarRect = toolbarEl?.getBoundingClientRect();
+		const toolbarHeight = toolbarRect ? Math.round(toolbarRect.height) : 0;
+		const stickyToolbarOffset = Math.round(toolbarHeight);
+
+		const dayHeaderCell = this.container.querySelector(".fc-col-header-cell");
+		const dayHeaderEl = dayHeaderCell instanceof HTMLElement ? dayHeaderCell : null;
+		const dayHeaderHeight = dayHeaderEl ? Math.round(dayHeaderEl.getBoundingClientRect().height) : 0;
+
+		this.container.style.setProperty("--prisma-sticky-toolbar-offset", `${stickyToolbarOffset}px`);
+		this.container.style.setProperty("--prisma-sticky-day-header-height", `${dayHeaderHeight}px`);
+	}
+
+	// ─── Event Count Buttons ─────────────────────────────────────
+
+	private updateSkippedEventsButton(count: number): void {
+		this.skippedEventsCount = count;
+		this.applySkippedEventsButtonState();
+	}
+
+	private updateFilteredEventsButton(count: number): void {
+		this.filteredEventsCount = count;
+		this.applyFilteredEventsButtonState();
+	}
+
+	private applyFilteredEventsButtonState(): void {
+		if (!this.calendar) return;
+		const text = this.getFilteredEventsButtonText();
+		const tooltip = `${this.filteredEventsCount} event${this.filteredEventsCount === 1 ? "" : "s"} filtered out by search or expression filters`;
+		this.updateButtonElement(".fc-filteredEvents-button", text, this.filteredEventsCount > 0, tooltip);
+	}
+
+	private applySkippedEventsButtonState(): void {
+		if (!this.calendar) return;
+		const text = this.getSkippedEventsButtonText();
+		const tooltip = `${this.skippedEventsCount} event${this.skippedEventsCount === 1 ? "" : "s"} hidden from calendar`;
+		this.updateButtonElement(".fc-skippedEvents-button", text, this.skippedEventsCount > 0, tooltip);
+	}
+
+	private updateButtonElement(selector: string, text: string, isVisible: boolean, tooltip?: string): void {
+		if (!this.container) return;
+		const btn = this.container.querySelector(selector);
+		if (!(btn instanceof HTMLElement)) {
+			return;
+		}
+
+		// Only update if text has changed to prevent unnecessary DOM manipulation and duplication
+		if (btn.textContent !== text) {
+			btn.textContent = text;
+		}
+
+		if (tooltip !== undefined && btn.title !== tooltip) {
+			btn.title = tooltip;
+		}
+
+		if (isVisible) {
+			btn.classList.remove(cls("fc-button-hidden"));
+			btn.classList.add(cls("fc-button-visible"));
+		} else {
+			btn.classList.remove(cls("fc-button-visible"));
+			btn.classList.add(cls("fc-button-hidden"));
+		}
+	}
+
+	private cleanupEventCountButtons(): void {
+		if (!this.container) return;
+
+		const cleanupButton = (selector: string) => {
+			const btn = this.container?.querySelector(selector);
+			if (btn instanceof HTMLElement) {
+				btn.textContent = "";
+				btn.title = "";
+				btn.classList.remove(cls("fc-button-visible"));
+				btn.classList.add(cls("fc-button-hidden"));
+			}
+		};
+
+		cleanupButton(".fc-filteredEvents-button");
+		cleanupButton(".fc-skippedEvents-button");
+	}
+
+	private getFilteredEventsButtonText(): string {
+		return `${this.filteredEventsCount} filtered`;
+	}
+
+	private getSkippedEventsButtonText(): string {
+		return `${this.skippedEventsCount} skipped`;
+	}
+
+	private getSelectedEventsButtonText(): string {
+		return `${this.selectedEventsCount} selected`;
+	}
+
+	// ─── Event Refresh ───────────────────────────────────────────
+
 	/**
 	 * Debounced entry point for all event refreshes.
 	 * Coalesces rapid calls into a single RAF and prevents re-entrance
@@ -1526,10 +1124,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			this.pendingRefreshRequest = false;
 			this.scheduleRefreshEvents();
 		}
-	}
-
-	refreshCalendar(): void {
-		this.bundle.refreshCalendar();
 	}
 
 	private async refreshEvents(): Promise<void> {
@@ -1730,31 +1324,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.hasPerformedInitialLoad = false;
 	}
 
-	private getEventIcon(event: CalendarEventData): { userIcon?: string; integrationIcon?: string } {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const displayData = event.extendedProps.frontmatterDisplayData;
-		const result: { userIcon?: string; integrationIcon?: string } = {};
-
-		// User-set icon (highest precedence, overrides everything)
-		const iconValue = displayData?.[settings.iconProp];
-		if (typeof iconValue === "string" && iconValue.trim()) {
-			result.userIcon = iconValue.trim();
-		}
-
-		// Integration icons (CalDAV / ICS subscription)
-		const caldavMetadata = displayData?.[settings.caldavProp] as { accountId?: string } | undefined;
-		const icsSubscriptionMetadata = displayData?.[settings.icsSubscriptionProp] as
-			| { subscriptionId?: string }
-			| undefined;
-
-		if (caldavMetadata?.accountId) {
-			result.integrationIcon = this.calendarIconCache.get(`caldav:${caldavMetadata.accountId}`);
-		} else if (icsSubscriptionMetadata?.subscriptionId) {
-			result.integrationIcon = this.calendarIconCache.get(`ics:${icsSubscriptionMetadata.subscriptionId}`);
-		}
-
-		return result;
-	}
+	// ─── Event Rendering ─────────────────────────────────────────
 
 	private renderEventContent(arg: EventContentArg): {
 		domNodes: HTMLElement[];
@@ -1865,137 +1435,34 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return { domNodes: [container] };
 	}
 
+	private getEventIcon(event: CalendarEventData): { userIcon?: string; integrationIcon?: string } {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const displayData = event.extendedProps.frontmatterDisplayData;
+		const result: { userIcon?: string; integrationIcon?: string } = {};
+
+		// User-set icon (highest precedence, overrides everything)
+		const iconValue = displayData?.[settings.iconProp];
+		if (typeof iconValue === "string" && iconValue.trim()) {
+			result.userIcon = iconValue.trim();
+		}
+
+		// Integration icons (CalDAV / ICS subscription)
+		const caldavMetadata = displayData?.[settings.caldavProp] as { accountId?: string } | undefined;
+		const icsSubscriptionMetadata = displayData?.[settings.icsSubscriptionProp] as
+			| { subscriptionId?: string }
+			| undefined;
+
+		if (caldavMetadata?.accountId) {
+			result.integrationIcon = this.calendarIconCache.get(`caldav:${caldavMetadata.accountId}`);
+		} else if (icsSubscriptionMetadata?.subscriptionId) {
+			result.integrationIcon = this.calendarIconCache.get(`ics:${icsSubscriptionMetadata.subscriptionId}`);
+		}
+
+		return result;
+	}
+
 	private getEventColor(event: Pick<CalendarEvent, "meta">): string {
 		return resolveEventColor(event.meta ?? {}, this.bundle, this.colorEvaluator);
-	}
-
-	private updateColorDots(): void {
-		if (!this.calendar) return;
-
-		const settings = this.bundle.settingsStore.currentSettings;
-
-		// Remove existing dots first
-		const existingDots = Array.from(this.container.querySelectorAll(`.${cls("day-color-dots")}`));
-		for (const dot of existingDots) {
-			dot.remove();
-		}
-
-		// Only render if setting is enabled and on monthly view
-		const viewType = this.calendar.view?.type;
-		if (!settings.showColorDots || viewType !== "dayGridMonth") return;
-
-		const dayCells = Array.from(this.container.querySelectorAll(".fc-daygrid-day"));
-		const maxDots = this.isMobileView() ? 6 : 8;
-
-		for (const dayCell of dayCells) {
-			const dateAttr = dayCell.getAttribute("data-date");
-			if (!dateAttr) continue;
-
-			// O(1) lookup from pre-built index instead of filtering all events
-			const colors = this.colorDotIndex.get(dateAttr);
-			if (!colors || colors.size === 0) continue;
-
-			// Create dots container
-			const dotsContainer = document.createElement("div");
-			dotsContainer.className = cls("day-color-dots");
-
-			let count = 0;
-			for (const color of colors) {
-				if (count >= maxDots) break;
-				const dot = document.createElement("div");
-				dot.className = cls("day-color-dot");
-				dot.style.setProperty("--dot-color", color);
-				dotsContainer.appendChild(dot);
-				count++;
-			}
-
-			const dayTop = dayCell.querySelector(".fc-daygrid-day-top");
-			if (dayTop) {
-				dayTop.appendChild(dotsContainer);
-			}
-		}
-	}
-
-	private handleEventClick(
-		info: {
-			event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay">;
-		},
-		eventEl: HTMLElement
-	): void {
-		const event = info.event;
-		const filePath = event.extendedProps.filePath;
-		const isVirtual = event.extendedProps.isVirtual;
-		const isHoliday = typeof filePath === "string" && filePath.startsWith("holiday:");
-
-		if (isHoliday) {
-			return;
-		}
-
-		// For virtual events, show preview of the source event
-		if (isVirtual && filePath && typeof filePath === "string") {
-			const sourceFile = this.app.vault.getAbstractFileByPath(filePath);
-			if (sourceFile instanceof TFile) {
-				const cache = this.app.metadataCache.getFileCache(sourceFile);
-				if (cache?.frontmatter) {
-					// Create a pseudo-event object with source file data for the preview
-					const sourceEvent = {
-						title: event.title,
-						extendedProps: {
-							filePath: filePath,
-							frontmatterDisplayData: cache.frontmatter,
-						},
-					};
-					const previewEvent: PreviewEventData = {
-						title: sourceEvent.title,
-						start: null,
-						end: null,
-						allDay: false,
-						extendedProps: sourceEvent.extendedProps,
-					};
-					new EventPreviewModal(this.app, this.bundle, previewEvent).open();
-					return;
-				}
-			}
-		}
-
-		// On mobile: single tap = context menu, double tap = open note
-		if (this.isMobileView()) {
-			const currentTime = Date.now();
-			const timeSinceLastTap = currentTime - this.lastMobileTapTime;
-			const DOUBLE_TAP_DELAY = 300;
-
-			if (timeSinceLastTap < DOUBLE_TAP_DELAY && timeSinceLastTap > 0) {
-				// Double tap - open the note
-				this.lastMobileTapTime = 0;
-				if (filePath && typeof filePath === "string") {
-					void this.app.workspace.openLinkText(filePath, "", false);
-				}
-				return;
-			}
-
-			// Single tap - show context menu
-			this.lastMobileTapTime = currentTime;
-			const rect = eventEl.getBoundingClientRect();
-			const menuEvent = {
-				title: event.title,
-				start: event.start,
-				end: event.end,
-				allDay: event.allDay,
-				extendedProps: event.extendedProps,
-			};
-			this.eventContextMenu.show(
-				{ x: rect.left + rect.width / 2, y: rect.top },
-				{ event: menuEvent },
-				eventEl,
-				this.container
-			);
-			return;
-		}
-
-		// For regular and physical events, open the file
-		if (filePath && typeof filePath === "string") {
-			void this.app.workspace.openLinkText(filePath, "", false);
-		}
 	}
 
 	private handleEventMount(info: EventMountInfo): void {
@@ -2081,10 +1548,135 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
-	private setupMouseTracking(container: HTMLElement): void {
-		container.addEventListener("mousedown", () => {
-			this.mouseDownTime = Date.now();
-		});
+	private updateColorDots(): void {
+		if (!this.calendar) return;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+
+		// Remove existing dots first
+		const existingDots = Array.from(this.container.querySelectorAll(`.${cls("day-color-dots")}`));
+		for (const dot of existingDots) {
+			dot.remove();
+		}
+
+		// Only render if setting is enabled and on monthly view
+		const viewType = this.calendar.view?.type;
+		if (!settings.showColorDots || viewType !== "dayGridMonth") return;
+
+		const dayCells = Array.from(this.container.querySelectorAll(".fc-daygrid-day"));
+		const maxDots = this.isMobileView() ? 6 : 8;
+
+		for (const dayCell of dayCells) {
+			const dateAttr = dayCell.getAttribute("data-date");
+			if (!dateAttr) continue;
+
+			// O(1) lookup from pre-built index instead of filtering all events
+			const colors = this.colorDotIndex.get(dateAttr);
+			if (!colors || colors.size === 0) continue;
+
+			// Create dots container
+			const dotsContainer = document.createElement("div");
+			dotsContainer.className = cls("day-color-dots");
+
+			let count = 0;
+			for (const color of colors) {
+				if (count >= maxDots) break;
+				const dot = document.createElement("div");
+				dot.className = cls("day-color-dot");
+				dot.style.setProperty("--dot-color", color);
+				dotsContainer.appendChild(dot);
+				count++;
+			}
+
+			const dayTop = dayCell.querySelector(".fc-daygrid-day-top");
+			if (dayTop) {
+				dayTop.appendChild(dotsContainer);
+			}
+		}
+	}
+
+	// ─── Event Interaction ───────────────────────────────────────
+
+	private handleEventClick(
+		info: {
+			event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay">;
+		},
+		eventEl: HTMLElement
+	): void {
+		const event = info.event;
+		const filePath = event.extendedProps.filePath;
+		const isVirtual = event.extendedProps.isVirtual;
+		const isHoliday = typeof filePath === "string" && filePath.startsWith("holiday:");
+
+		if (isHoliday) {
+			return;
+		}
+
+		// For virtual events, show preview of the source event
+		if (isVirtual && filePath && typeof filePath === "string") {
+			const sourceFile = this.app.vault.getAbstractFileByPath(filePath);
+			if (sourceFile instanceof TFile) {
+				const cache = this.app.metadataCache.getFileCache(sourceFile);
+				if (cache?.frontmatter) {
+					// Create a pseudo-event object with source file data for the preview
+					const sourceEvent = {
+						title: event.title,
+						extendedProps: {
+							filePath: filePath,
+							frontmatterDisplayData: cache.frontmatter,
+						},
+					};
+					const previewEvent: PreviewEventData = {
+						title: sourceEvent.title,
+						start: null,
+						end: null,
+						allDay: false,
+						extendedProps: sourceEvent.extendedProps,
+					};
+					new EventPreviewModal(this.app, this.bundle, previewEvent).open();
+					return;
+				}
+			}
+		}
+
+		// On mobile: single tap = context menu, double tap = open note
+		if (this.isMobileView()) {
+			const currentTime = Date.now();
+			const timeSinceLastTap = currentTime - this.lastMobileTapTime;
+			const DOUBLE_TAP_DELAY = 300;
+
+			if (timeSinceLastTap < DOUBLE_TAP_DELAY && timeSinceLastTap > 0) {
+				// Double tap - open the note
+				this.lastMobileTapTime = 0;
+				if (filePath && typeof filePath === "string") {
+					void this.app.workspace.openLinkText(filePath, "", false);
+				}
+				return;
+			}
+
+			// Single tap - show context menu
+			this.lastMobileTapTime = currentTime;
+			const rect = eventEl.getBoundingClientRect();
+			const menuEvent = {
+				title: event.title,
+				start: event.start,
+				end: event.end,
+				allDay: event.allDay,
+				extendedProps: event.extendedProps,
+			};
+			this.eventContextMenu.show(
+				{ x: rect.left + rect.width / 2, y: rect.top },
+				{ event: menuEvent },
+				eventEl,
+				this.container
+			);
+			return;
+		}
+
+		// For regular and physical events, open the file
+		if (filePath && typeof filePath === "string") {
+			void this.app.workspace.openLinkText(filePath, "", false);
+		}
 	}
 
 	private handleDateClick(info: { date: Date; allDay: boolean }): void {
@@ -2180,37 +1772,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.eventContextMenu.openEditModal(eventInfo);
 	}
 
-	private fillFocusedEventTime(
-		propertyGetter: (settings: SingleCalendarConfig) => string,
-		timeValueGetter: (event: CalendarEventData, filePath: string) => string | undefined
-	): void {
-		if (!this.lastFocusedEventInfo) {
-			return;
-		}
-
-		const event = this.lastFocusedEventInfo;
-
-		if (event.extendedProps?.isVirtual) {
-			return;
-		}
-
-		const filePath = event.extendedProps?.filePath;
-		if (!filePath || typeof filePath !== "string") {
-			return;
-		}
-
-		const timeValue = timeValueGetter(event, filePath);
-		if (!timeValue) {
-			return;
-		}
-
-		const settings = this.bundle.settingsStore.currentSettings;
-		const propertyName = propertyGetter(settings);
-
-		void this.bundle.commandManager.executeCommand(
-			new FillTimeCommand(this.app, this.bundle, filePath, propertyName, timeValue)
-		);
-	}
+	// ─── Focused Event Actions ───────────────────────────────────
 
 	setFocusedEventStartToNow(): void {
 		this.fillFocusedEventTime(
@@ -2246,38 +1808,60 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		);
 	}
 
-	async openCategoryAssignModal(): Promise<void> {
-		if (!this.batchSelectionManager) return;
+	private fillFocusedEventTime(
+		propertyGetter: (settings: SingleCalendarConfig) => string,
+		timeValueGetter: (event: CalendarEventData, filePath: string) => string | undefined
+	): void {
+		if (!this.lastFocusedEventInfo) {
+			return;
+		}
 
-		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
+		const event = this.lastFocusedEventInfo;
+
+		if (event.extendedProps?.isVirtual) {
+			return;
+		}
+
+		const filePath = event.extendedProps?.filePath;
+		if (!filePath || typeof filePath !== "string") {
+			return;
+		}
+
+		const timeValue = timeValueGetter(event, filePath);
+		if (!timeValue) {
+			return;
+		}
+
 		const settings = this.bundle.settingsStore.currentSettings;
-		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
-		const commonCategories = getCommonCategories(this.app, selectedEvents, settings.categoryProp);
+		const propertyName = propertyGetter(settings);
 
-		openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, commonCategories, (selectedCategories) => {
-			if (this.batchSelectionManager) {
-				this.batchSelectionManager.executeAssignCategories(selectedCategories);
-			}
-		});
+		void this.bundle.commandManager.executeCommand(
+			new FillTimeCommand(this.app, this.bundle, filePath, propertyName, timeValue)
+		);
 	}
 
-	async openBatchFrontmatterModal(): Promise<void> {
-		if (!this.batchSelectionManager) return;
+	// ─── Drag & Drop ─────────────────────────────────────────────
 
-		const settings = this.bundle.settingsStore.currentSettings;
-		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
+	private async handleEventDrop(info: {
+		event: CalendarEventData;
+		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
+		revert: () => void;
+	}): Promise<void> {
+		const updateInfo = this.extractEventUpdateInfo(info);
+		if (updateInfo) {
+			await this.handleEventUpdate(updateInfo, "Error updating event dates:");
+		}
+	}
 
-		const modal = new BatchFrontmatterModal(
-			this.app,
-			settings,
-			selectedEvents,
-			(propertyUpdates: Map<string, string | null>) => {
-				if (this.batchSelectionManager) {
-					this.batchSelectionManager.executeUpdateFrontmatter(propertyUpdates);
-				}
-			}
-		);
-		modal.open();
+	private async handleEventResize(info: {
+		event: CalendarEventData;
+		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
+		revert: () => void;
+	}): Promise<void> {
+		const updateInfo = this.extractEventUpdateInfo(info);
+		if (updateInfo) {
+			await this.handleEventUpdate(updateInfo, "Error updating event duration:");
+		}
 	}
 
 	private async handleEventUpdate(info: EventUpdateInfo, errorMessage: string): Promise<void> {
@@ -2344,28 +1928,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 			revert: info.revert,
 		};
-	}
-
-	private async handleEventDrop(info: {
-		event: CalendarEventData;
-		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
-		revert: () => void;
-	}): Promise<void> {
-		const updateInfo = this.extractEventUpdateInfo(info);
-		if (updateInfo) {
-			await this.handleEventUpdate(updateInfo, "Error updating event dates:");
-		}
-	}
-
-	private async handleEventResize(info: {
-		event: CalendarEventData;
-		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
-		revert: () => void;
-	}): Promise<void> {
-		const updateInfo = this.extractEventUpdateInfo(info);
-		if (updateInfo) {
-			await this.handleEventUpdate(updateInfo, "Error updating event duration:");
-		}
 	}
 
 	private handleGlobalPointerUpForUntrackedDrop = (e: PointerEvent): void => {
@@ -2444,216 +2006,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
-	private setupKeyboardShortcuts(): void {
-		this.containerEl.setAttribute("tabindex", "-1");
-
-		const keydownHandler = (e: KeyboardEvent) => {
-			if (!this.calendar) return;
-
-			// Only handle arrow keys without any modifiers
-			if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-
-			// Check if keyboard navigation is enabled
-			const settings = this.bundle.settingsStore.currentSettings;
-			if (!settings.enableKeyboardNavigation) return;
-
-			// Don't navigate if any filter input is focused
-			if (this.searchFilter.isFocused() || this.expressionFilter.isFocused()) return;
-
-			if (e.key === "ArrowLeft") {
-				e.preventDefault();
-				this.calendar.prev();
-			} else if (e.key === "ArrowRight") {
-				e.preventDefault();
-				this.calendar.next();
-			}
-		};
-
-		this.containerEl.addEventListener("keydown", keydownHandler);
-
-		this.containerEl.addEventListener("click", (e: MouseEvent) => {
-			// Don't steal focus from input elements
-			const target = e.target as HTMLElement;
-			if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT") {
-				return;
-			}
-			this.containerEl.focus();
-		});
-
-		// Register cleanup
-		this.register(() => {
-			this.containerEl.removeEventListener("keydown", keydownHandler);
-		});
-	}
-
-	async mount(): Promise<void> {
-		const root = this.containerEl.children[1] as HTMLElement;
-		root.empty();
-		root.addClass(getCalendarViewType(this.bundle.calendarId));
-
-		this.showLoading(root, "Indexing calendar events…");
-
-		// Create calendar host
-		this.container = root.createDiv(cls("calendar-container"));
-
-		// Wait for layout before rendering FullCalendar
-		await this.waitForLayout(this.container);
-		this.initializeCalendar(this.container);
-
-		this.setupKeyboardShortcuts();
-
-		// Detect calendar-event drag release point reliably (FullCalendar's jsEvent in eventDragStop can be stale
-		// when releasing outside the calendar grid, e.g. over toolbar/dropdowns).
-		document.addEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
-		this.register(() => {
-			document.removeEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
-		});
-
-		setTimeout(() => this.containerEl.focus(), 100);
-
-		// Re-focus container when this leaf becomes active (e.g. switching back from another tab)
-		// so keyboard navigation (arrow keys for intervals) works immediately without clicking
-		this.registerEvent(
-			this.app.workspace.on("active-leaf-change", (leaf) => {
-				if (leaf === this.leaf) {
-					this.containerEl.focus();
-				}
-			})
-		);
-
-		// Resize updates
-		this.observeResize(this.container, () => this.calendar?.updateSize());
-
-		// Settings subscription
-		const settingsSubscription = this.bundle.settingsStore.settings$.subscribe((settings: SingleCalendarConfig) => {
-			this.updateCalendarSettings(settings);
-		});
-		this.register(() => settingsSubscription.unsubscribe());
-
-		const caldavSettingsSubscription = this.bundle.settingsStore.mainSettingsStore.settings$.subscribe(
-			(fullSettings) => {
-				const caldavColorKey = fullSettings.caldav.integrationEventColor;
-				const icsColorKey = fullSettings.icsSubscriptions.integrationEventColor;
-				const combinedKey = `${caldavColorKey}|${icsColorKey}`;
-				if (combinedKey !== this.previousIntegrationColorKey) {
-					this.previousIntegrationColorKey = combinedKey;
-					this.scheduleRefreshEvents();
-				}
-				this.rebuildCalendarIconCache();
-			}
-		);
-		this.register(() => caldavSettingsSubscription.unsubscribe());
-
-		// Subscribe to indexing complete state
-		const indexingCompleteSubscription = this.bundle.indexer.indexingComplete$.subscribe((isComplete) => {
-			this.isIndexingComplete = isComplete;
-			if (isComplete) {
-				this.hideLoading();
-				this.scheduleRefreshEvents();
-			} else {
-				// Indexing started (e.g., filter expressions changed)
-				const root = this.containerEl.children[1] as HTMLElement;
-				this.showLoading(root, "Re-indexing calendar events…");
-			}
-		});
-		this.register(() => indexingCompleteSubscription.unsubscribe());
-
-		// Event store updates (only refreshes if indexing is complete)
-		const eventStoreSubscription = this.bundle.eventStore.subscribe(() => this.scheduleRefreshEvents());
-		this.register(() => eventStoreSubscription.unsubscribe());
-
-		const recurringEventManagerSubscription = this.bundle.recurringEventManager.subscribe(() =>
-			this.scheduleRefreshEvents()
-		);
-		this.register(() => recurringEventManagerSubscription.unsubscribe());
-	}
-
-	toggleBatchSelection(): void {
-		const wasInSelectionMode = this.batchSelectionManager?.isInSelectionMode() ?? false;
-		this.batchSelectionManager?.toggleSelectionMode();
-
-		// Refresh events when exiting batch mode to restore skipped events button
-		if (wasInSelectionMode) {
-			this.scheduleRefreshEvents();
-		}
-	}
-
-	isInBatchSelectionMode(): boolean {
-		return this.batchSelectionManager?.isInSelectionMode() ?? false;
-	}
-
-	selectAll(): void {
-		this.batchSelectionManager?.selectAllVisibleEvents();
-	}
-
-	clearSelection(): void {
-		this.batchSelectionManager?.clearSelection();
-	}
-
-	skipSelection(): void {
-		void this.batchSelectionManager?.executeSkip();
-	}
-
-	markAsDoneSelection(): void {
-		void this.batchSelectionManager?.executeMarkAsDone();
-	}
-
-	markAsNotDoneSelection(): void {
-		void this.batchSelectionManager?.executeMarkAsNotDone();
-	}
-
-	duplicateSelection(): void {
-		void this.batchSelectionManager?.executeDuplicate();
-	}
-
-	cloneSelection(weeks: number): void {
-		void this.batchSelectionManager?.executeClone(weeks);
-	}
-
-	moveSelection(weeks: number): void {
-		void this.batchSelectionManager?.executeMove(weeks);
-	}
-
-	deleteSelection(): void {
-		void this.batchSelectionManager?.executeDelete();
-	}
-
-	openSelection(): void {
-		void this.batchSelectionManager?.executeOpenAll();
-	}
-
-	moveBySelection(): void {
-		this.batchSelectionManager?.executeMoveBy();
-	}
-
-	openFilterPresetSelector(): void {
-		this.ensureMobileControlsExpanded();
-		this.filterPresetSelector.open();
-	}
-
-	toggleUntrackedEventsDropdown(): void {
-		this.untrackedEventsDropdown?.toggle();
-	}
-
-	focusSearch(): void {
-		this.ensureMobileControlsExpanded();
-		this.searchFilter.focus();
-	}
-
-	focusExpressionFilter(): void {
-		this.ensureMobileControlsExpanded();
-		this.expressionFilter.focus();
-	}
-
-	private isRestoring = false;
-
-	private saveCurrentState(): void {
-		if (!this.calendar || this.isRestoring) return;
-
-		const currentZoomLevel = this.zoomManager.getCurrentZoomLevel();
-		this.bundle.viewStateManager.saveState(this.calendar, currentZoomLevel);
-	}
-
 	private setupDragEdgeScrolling(): void {
 		if (!this.calendar || !this.container) return;
 
@@ -2702,38 +2054,717 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.lastEdgeScrollTime = 0;
 	}
 
-	unmount(): Promise<void> {
-		this.saveCurrentState();
+	private setupMouseTracking(container: HTMLElement): void {
+		container.addEventListener("mousedown", () => {
+			this.mouseDownTime = Date.now();
+		});
+	}
 
-		// Stop upcoming event check interval
+	// ─── Navigation ──────────────────────────────────────────────
+
+	navigateToDate(date: Date, viewType?: string): void {
+		if (!this.calendar) return;
+
+		this.storePreviousViewState();
+
+		if (viewType) {
+			this.calendar.changeView(viewType);
+		}
+
+		this.calendar.gotoDate(date);
+	}
+
+	goToToday(): void {
+		if (!this.calendar) return;
+		this.calendar.today();
+	}
+
+	navigateBack(): boolean {
+		if (!this.calendar || !this.previousViewState) {
+			return false;
+		}
+
+		const { date, viewType } = this.previousViewState;
+
+		// Don't store the current state as previous when going back
+		// (to avoid creating a navigation loop)
+		const tempPrevious = this.previousViewState;
+		this.previousViewState = null;
+
+		this.calendar.changeView(viewType);
+		this.calendar.gotoDate(date);
+
+		// Restore the previous state reference
+		this.previousViewState = tempPrevious;
+
+		return true;
+	}
+
+	scrollToNow(): void {
+		if (!this.calendar) return;
+
+		const currentView = this.calendar.view.type;
+		let targetElement: Element | null = null;
+
+		if (currentView === "timeGridWeek" || currentView === "timeGridDay") {
+			// For time grid views, find the now indicator line
+			targetElement = this.container.querySelector(".fc-timegrid-now-indicator-line");
+		} else if (currentView === "dayGridMonth") {
+			// For month view, find today's cell
+			targetElement = this.container.querySelector(".fc-day-today");
+		}
+
+		// Center the target element if found
+		if (targetElement) {
+			this.scrollElementToCenter(targetElement);
+		}
+	}
+
+	private scrollElementToCenter(element: Element): void {
+		const viewContent = this.containerEl.querySelector(".view-content");
+		if (!viewContent) return;
+
+		const elementRect = element.getBoundingClientRect();
+		const viewContentRect = viewContent.getBoundingClientRect();
+
+		// Calculate scroll position to center the element
+		const scrollTop =
+			viewContent.scrollTop +
+			elementRect.top -
+			viewContentRect.top -
+			viewContent.clientHeight / 2 +
+			elementRect.height / 2;
+
+		viewContent.scrollTop = scrollTop;
+	}
+
+	private storePreviousViewState(): void {
+		if (!this.calendar) return;
+
+		const currentDate = this.calendar.getDate();
+		const currentViewType = this.calendar.view.type;
+
+		this.previousViewState = {
+			date: new Date(currentDate),
+			viewType: currentViewType,
+		};
+	}
+
+	// ─── Batch Selection ─────────────────────────────────────────
+
+	toggleBatchSelection(): void {
+		const wasInSelectionMode = this.batchSelectionManager?.isInSelectionMode() ?? false;
+		this.batchSelectionManager?.toggleSelectionMode();
+
+		// Refresh events when exiting batch mode to restore skipped events button
+		if (wasInSelectionMode) {
+			this.scheduleRefreshEvents();
+		}
+	}
+
+	selectAll(): void {
+		this.batchSelectionManager?.selectAllVisibleEvents();
+	}
+
+	clearSelection(): void {
+		this.batchSelectionManager?.clearSelection();
+	}
+
+	skipSelection(): void {
+		void this.batchSelectionManager?.executeSkip();
+	}
+
+	markAsDoneSelection(): void {
+		void this.batchSelectionManager?.executeMarkAsDone();
+	}
+
+	markAsNotDoneSelection(): void {
+		void this.batchSelectionManager?.executeMarkAsNotDone();
+	}
+
+	duplicateSelection(): void {
+		void this.batchSelectionManager?.executeDuplicate();
+	}
+
+	cloneSelection(weeks: number): void {
+		void this.batchSelectionManager?.executeClone(weeks);
+	}
+
+	moveSelection(weeks: number): void {
+		void this.batchSelectionManager?.executeMove(weeks);
+	}
+
+	deleteSelection(): void {
+		void this.batchSelectionManager?.executeDelete();
+	}
+
+	openSelection(): void {
+		void this.batchSelectionManager?.executeOpenAll();
+	}
+
+	moveBySelection(): void {
+		this.batchSelectionManager?.executeMoveBy();
+	}
+
+	async openCategoryAssignModal(): Promise<void> {
+		if (!this.batchSelectionManager) return;
+
+		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
+		const settings = this.bundle.settingsStore.currentSettings;
+		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
+		const commonCategories = getCommonCategories(this.app, selectedEvents, settings.categoryProp);
+
+		openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, commonCategories, (selectedCategories) => {
+			if (this.batchSelectionManager) {
+				this.batchSelectionManager.executeAssignCategories(selectedCategories);
+			}
+		});
+	}
+
+	async openBatchFrontmatterModal(): Promise<void> {
+		if (!this.batchSelectionManager) return;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
+
+		const modal = new BatchFrontmatterModal(
+			this.app,
+			settings,
+			selectedEvents,
+			(propertyUpdates: Map<string, string | null>) => {
+				if (this.batchSelectionManager) {
+					this.batchSelectionManager.executeUpdateFrontmatter(propertyUpdates);
+				}
+			}
+		);
+		modal.open();
+	}
+
+	// ─── Modals ──────────────────────────────────────────────────
+
+	async showSkippedEventsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.skippedEventsModal,
+			(modal) => {
+				this.skippedEventsModal = modal;
+			},
+			async () => {
+				if (!this.calendar) throw new Error("Calendar not initialized");
+
+				const view = this.calendar.view;
+				if (!view) throw new Error("Calendar view not available");
+
+				const start = toLocalISOString(view.activeStart);
+				const end = toLocalISOString(view.activeEnd);
+				const skippedEvents = this.bundle.eventStore.getSkippedEvents({
+					start,
+					end,
+				});
+
+				return new SkippedEventsModal(this.app, this.bundle, skippedEvents);
+			}
+		);
+	}
+
+	async showEventsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.eventsModal,
+			(modal) => {
+				this.eventsModal = modal;
+			},
+			() => {
+				return new EventsModal(this.app, this.bundle, this);
+			}
+		);
+	}
+
+	showAllEventsTimeline(): void {
+		const allEvents = this.bundle.eventStore.getAllEvents();
+		new EventSeriesTimelineModal(this.app, this.bundle, {
+			events: allEvents,
+			title: "All Events Timeline",
+		}).open();
+	}
+
+	async showFilteredEventsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.filteredEventsModal,
+			(modal) => {
+				this.filteredEventsModal = modal;
+			},
+			() => new FilteredEventsModal(this.app, this.bundle, this.filteredEvents)
+		);
+	}
+
+	async showSelectedEventsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.selectedEventsModal,
+			(modal) => {
+				this.selectedEventsModal = modal;
+			},
+			() => {
+				if (!this.batchSelectionManager) throw new Error("Batch selection manager not initialized");
+
+				const selected = this.batchSelectionManager.getSelectedEvents();
+				return new SelectedEventsModal(this.app, this.bundle, selected, (eventId: string) => {
+					this.batchSelectionManager?.unselectEvent(eventId);
+				});
+			}
+		);
+	}
+
+	async showGlobalSearchModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.globalSearchModal,
+			(modal) => {
+				this.globalSearchModal = modal;
+			},
+			() => new GlobalSearchModal(this.app, this.bundle, this)
+		);
+	}
+
+	async showDailyStatsModal(date?: Date): Promise<void> {
+		await this.toggleModal(
+			() => this.dailyStatsModal,
+			(modal) => {
+				this.dailyStatsModal = modal;
+			},
+			() => {
+				const currentDate = date || this.calendar?.getDate() || new Date();
+				const viewType = this.calendar?.view?.type;
+				return new DailyStatsModal(this.app, this.bundle, currentDate, viewType);
+			}
+		);
+	}
+
+	async showWeeklyStatsModal(date?: Date): Promise<void> {
+		await this.toggleModal(
+			() => this.weeklyStatsModal,
+			(modal) => {
+				this.weeklyStatsModal = modal;
+			},
+			() => {
+				const currentDate = date || this.calendar?.getDate() || new Date();
+				return new WeeklyStatsModal(this.app, this.bundle, currentDate);
+			}
+		);
+	}
+
+	async showMonthlyStatsModal(date?: Date): Promise<void> {
+		await this.toggleModal(
+			() => this.monthlyStatsModal,
+			(modal) => {
+				this.monthlyStatsModal = modal;
+			},
+			() => {
+				const currentDate = date || this.calendar?.getDate() || new Date();
+				return new MonthlyStatsModal(this.app, this.bundle, currentDate);
+			}
+		);
+	}
+
+	async showAllTimeStatsModal(): Promise<void> {
+		await this.toggleModal(
+			() => this.alltimeStatsModal,
+			(modal) => {
+				this.alltimeStatsModal = modal;
+			},
+			() => {
+				return new AllTimeStatsModal(this.app, this.bundle);
+			}
+		);
+	}
+
+	async showIntervalEventsModal(): Promise<void> {
+		if (!this.calendar?.view) return;
+
+		const view = this.calendar.view;
+		const viewType = view.type;
+
+		const adjustedStart = new Date(view.currentStart);
+		adjustedStart.setMinutes(adjustedStart.getMinutes() - 1);
+		const startDate = stripISOSuffix(toLocalISOString(adjustedStart));
+
+		const adjustedEnd = new Date(view.currentEnd);
+		adjustedEnd.setMinutes(adjustedEnd.getMinutes() - 1);
+		const endDate = stripISOSuffix(toLocalISOString(adjustedEnd));
+
+		let intervalLabel = "";
+		if (viewType.includes("Day")) {
+			const date = new Date(view.currentStart);
+			intervalLabel = date.toLocaleDateString("en-US", {
+				weekday: "long",
+				month: "short",
+				day: "numeric",
+				year: "numeric",
+			});
+		} else if (viewType.includes("Week")) {
+			const start = new Date(view.currentStart);
+			const end = new Date(view.currentEnd);
+			end.setDate(end.getDate() - 1);
+			intervalLabel = `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+		} else if (viewType.includes("Month")) {
+			const date = new Date(view.currentStart);
+			intervalLabel = date.toLocaleDateString("en-US", {
+				month: "long",
+				year: "numeric",
+			});
+		} else {
+			intervalLabel = "Current View";
+		}
+
+		await this.toggleModal(
+			() => this.intervalEventsModal,
+			(modal) => {
+				this.intervalEventsModal = modal;
+			},
+			() => {
+				return new IntervalEventsModal(
+					this.app,
+					intervalLabel,
+					startDate,
+					endDate,
+					this.bundle.settingsStore.currentSettings
+				);
+			}
+		);
+	}
+
+	private async toggleModal<T extends Modal>(
+		getCurrentModal: () => T | null,
+		setModal: (modal: T | null) => void,
+		modalFactory: () => Promise<T> | T
+	): Promise<void> {
+		const currentModal = getCurrentModal();
+
+		if (currentModal) {
+			setModal(null);
+			currentModal.close();
+			return;
+		}
+
+		const modal = await modalFactory();
+		setModal(modal);
+
+		const originalOnClose = modal.onClose.bind(modal) as () => void;
+		modal.onClose = () => {
+			originalOnClose();
+			setModal(null);
+		};
+
+		modal.open();
+	}
+
+	// ─── Highlighting ─────────────────────────────────────────────
+
+	highlightEventByPath(filePath: string, durationMs = 5000): void {
+		if (!this.calendar) return;
+
+		// Find all events with matching file path
+		const events = this.calendar.getEvents();
+		const matchingEvents = events.filter((event) => event.extendedProps?.filePath === filePath);
+
+		for (const event of matchingEvents) {
+			const eventElements = this.container.querySelectorAll<HTMLElement>(`[data-event-id="${event.id}"]`);
+			for (let i = 0; i < eventElements.length; i++) {
+				const element = eventElements[i];
+				element.classList.add(cls("event-highlighted"));
+				setTimeout(() => {
+					element.classList.remove(cls("event-highlighted"));
+				}, durationMs);
+			}
+		}
+	}
+
+	public highlightEventsWithoutCategories(): void {
+		this.highlightCategoryEvents(() => {
+			const filesWithCategories = this.bundle.categoryTracker.getAllFilesWithCategories();
+			return this.findEventIdsByPredicate((filePath) => !filesWithCategories.has(filePath));
+		});
+	}
+
+	public showCategorySelectModal(): void {
+		const modal = new CategorySelectModal(this.app, this.bundle.categoryTracker, (category: string) => {
+			this.highlightEventsWithCategory(category);
+		});
+		modal.open();
+	}
+
+	public highlightEventsWithCategory(category: string): void {
+		this.highlightCategoryEvents(() => {
+			const events = this.bundle.categoryTracker.getEventsWithCategory(category);
+			const filePaths = new Set(events.map((e) => e.ref.filePath));
+			return this.findEventIdsByPredicate((filePath) => filePaths.has(filePath));
+		});
+	}
+
+	private highlightCategoryEvents(getEventIds: () => Set<string>): void {
+		if (!this.calendar) return;
+
+		const highlightClass = cls("event-category-highlight");
+		this.clearCategoryHighlight();
+
+		const eventIds = getEventIds();
+
+		for (const eventId of eventIds) {
+			toggleEventHighlight(eventId, highlightClass, true, this.container);
+		}
+
+		this.highlightedCategoryEvents = eventIds;
+		this.currentCategoryHighlightClass = highlightClass;
+
+		this.categoryHighlightTimeout = window.setTimeout(() => {
+			this.clearCategoryHighlight();
+		}, 10000);
+	}
+
+	private clearCategoryHighlight(): void {
+		if (this.categoryHighlightTimeout !== null) {
+			window.clearTimeout(this.categoryHighlightTimeout);
+			this.categoryHighlightTimeout = null;
+		}
+
+		if (this.currentCategoryHighlightClass !== null) {
+			for (const eventId of this.highlightedCategoryEvents) {
+				toggleEventHighlight(eventId, this.currentCategoryHighlightClass, false, this.container);
+			}
+			this.highlightedCategoryEvents.clear();
+			this.currentCategoryHighlightClass = null;
+		}
+	}
+
+	private findEventIdsByPredicate(predicate: (filePath: string) => boolean): Set<string> {
+		const result = new Set<string>();
+		if (!this.calendar) return result;
+
+		const events = this.calendar.getEvents();
+		for (const event of events) {
+			if (event.extendedProps.isVirtual) continue;
+
+			const filePath = event.extendedProps.filePath as string | undefined;
+			if (filePath && predicate(filePath)) {
+				result.add(event.id);
+			}
+		}
+		return result;
+	}
+
+	private startUpcomingEventCheck(): void {
+		// Clear any existing interval
 		this.stopUpcomingEventCheck();
 
-		// Cleanup drag edge scrolling
-		this.cleanupDragEdgeScrolling();
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.highlightUpcomingEvent) return;
 
-		this.zoomManager.destroy();
-		this.searchFilter.destroy();
-		this.expressionFilter.destroy();
-		this.untrackedEventsDropdown?.destroy();
+		// Initial check
+		this.updateUpcomingEventHighlight();
 
-		// Cancel any pending refresh
-		if (this.refreshRafId !== null) {
-			cancelAnimationFrame(this.refreshRafId);
-			this.refreshRafId = null;
+		// Set up interval to check once per minute (60000ms)
+		this.upcomingEventCheckInterval = window.setInterval(() => {
+			this.updateUpcomingEventHighlight();
+		}, 60000);
+	}
+
+	private stopUpcomingEventCheck(): void {
+		if (this.upcomingEventCheckInterval !== null) {
+			window.clearInterval(this.upcomingEventCheckInterval);
+			this.upcomingEventCheckInterval = null;
 		}
-		if (this.stickyOffsetsRafId !== null) {
-			cancelAnimationFrame(this.stickyOffsetsRafId);
-			this.stickyOffsetsRafId = null;
+
+		// Clear all highlighted upcoming events
+		for (const eventId of this.currentUpcomingEventIds) {
+			toggleEventHighlight(eventId, cls("event-upcoming"), false, this.container);
+		}
+		this.currentUpcomingEventIds.clear();
+	}
+
+	private updateUpcomingEventHighlight(): void {
+		if (!this.calendar) return;
+
+		const newUpcomingEventIds = this.findUpcomingEventIds();
+
+		// Check if the set of highlighted events has changed
+		const hasChanged =
+			newUpcomingEventIds.size !== this.currentUpcomingEventIds.size ||
+			Array.from(newUpcomingEventIds).some((id) => !this.currentUpcomingEventIds.has(id));
+
+		if (!hasChanged) {
+			return;
 		}
 
-		this.clearRenderedEventsCache();
+		// Remove highlight from previous upcoming events that are no longer active
+		for (const oldId of this.currentUpcomingEventIds) {
+			if (!newUpcomingEventIds.has(oldId)) {
+				toggleEventHighlight(oldId, cls("event-upcoming"), false, this.container);
+			}
+		}
 
-		this.calendar?.destroy();
-		this.calendar = null;
+		// Add highlight to new upcoming events
+		for (const newId of newUpcomingEventIds) {
+			if (!this.currentUpcomingEventIds.has(newId)) {
+				toggleEventHighlight(newId, cls("event-upcoming"), true, this.container);
+			}
+		}
 
-		this.colorEvaluator.destroy();
-		this.batchSelectionManager = null;
+		// Update tracked IDs
+		this.currentUpcomingEventIds = newUpcomingEventIds;
+	}
 
-		return Promise.resolve();
+	private findUpcomingEventIds(): Set<string> {
+		const result = new Set<string>();
+
+		if (!this.calendar) return result;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.highlightUpcomingEvent) return result;
+
+		const view = this.calendar.view;
+		if (!view) return result;
+
+		const now = new Date();
+		const viewStart = view.activeStart;
+		const viewEnd = view.activeEnd;
+
+		// Only highlight if "now" is within the current view's date range
+		if (now < viewStart || now > viewEnd) {
+			return result;
+		}
+
+		// Single pass through rendered events: find active events AND track nearest upcoming.
+		// Replaces the original triple-filter-then-sort with one loop.
+		let nearestUpcomingId: string | null = null;
+		let nearestUpcomingStart = Infinity;
+
+		const events = this.calendar.getEvents();
+		for (const event of events) {
+			if (!event.start || event.allDay || event.extendedProps?.isVirtual) continue;
+
+			const eventEnd = event.end || event.start;
+
+			if (event.start <= now && now <= eventEnd) {
+				// Active event — currently happening
+				result.add(event.id);
+			} else if (result.size === 0 && event.start > now) {
+				// Track nearest future event (only matters if no active events found)
+				const startTime = event.start.getTime();
+				if (startTime < nearestUpcomingStart) {
+					nearestUpcomingStart = startTime;
+					nearestUpcomingId = event.id;
+				}
+			}
+		}
+
+		// If no active events, highlight the nearest upcoming one
+		if (result.size === 0 && nearestUpcomingId) {
+			result.add(nearestUpcomingId);
+		}
+
+		return result;
+	}
+
+	// ─── Keyboard & Focus ────────────────────────────────────────
+
+	private setupKeyboardShortcuts(): void {
+		this.containerEl.setAttribute("tabindex", "-1");
+
+		const keydownHandler = (e: KeyboardEvent) => {
+			if (!this.calendar) return;
+
+			// Only handle arrow keys without any modifiers
+			if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+
+			// Check if keyboard navigation is enabled
+			const settings = this.bundle.settingsStore.currentSettings;
+			if (!settings.enableKeyboardNavigation) return;
+
+			// Don't navigate if any filter input is focused
+			if (this.searchFilter.isFocused() || this.expressionFilter.isFocused()) return;
+
+			if (e.key === "ArrowLeft") {
+				e.preventDefault();
+				this.calendar.prev();
+			} else if (e.key === "ArrowRight") {
+				e.preventDefault();
+				this.calendar.next();
+			}
+		};
+
+		this.containerEl.addEventListener("keydown", keydownHandler);
+
+		this.containerEl.addEventListener("click", (e: MouseEvent) => {
+			// Don't steal focus from input elements
+			const target = e.target as HTMLElement;
+			if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT") {
+				return;
+			}
+			this.containerEl.focus();
+		});
+
+		// Register cleanup
+		this.register(() => {
+			this.containerEl.removeEventListener("keydown", keydownHandler);
+		});
+	}
+
+	openFilterPresetSelector(): void {
+		this.ensureMobileControlsExpanded();
+		this.filterPresetSelector.open();
+	}
+
+	toggleUntrackedEventsDropdown(): void {
+		this.untrackedEventsDropdown?.toggle();
+	}
+
+	focusSearch(): void {
+		this.ensureMobileControlsExpanded();
+		this.searchFilter.focus();
+	}
+
+	focusExpressionFilter(): void {
+		this.ensureMobileControlsExpanded();
+		this.expressionFilter.focus();
+	}
+
+	// ─── State ───────────────────────────────────────────────────
+
+	private saveCurrentState(): void {
+		if (!this.calendar || this.isRestoring) return;
+
+		const currentZoomLevel = this.zoomManager.getCurrentZoomLevel();
+		this.bundle.viewStateManager.saveState(this.calendar, currentZoomLevel);
+	}
+
+	// ─── Utilities & Query API ───────────────────────────────────
+
+	async undo(): Promise<boolean> {
+		return await this.bundle.undo();
+	}
+
+	async redo(): Promise<boolean> {
+		return await this.bundle.redo();
+	}
+
+	getViewType(): string {
+		return this.viewType;
+	}
+
+	getDisplayText(): string {
+		return this.bundle.settingsStore.currentSettings.name;
+	}
+
+	getIcon(): string {
+		return "calendar";
+	}
+
+	refreshCalendar(): void {
+		this.bundle.refreshCalendar();
+	}
+
+	isInBatchSelectionMode(): boolean {
+		return this.batchSelectionManager?.isInSelectionMode() ?? false;
+	}
+
+	private isMobileView(): boolean {
+		return window.innerWidth <= 768;
 	}
 }

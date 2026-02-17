@@ -116,6 +116,14 @@ export class EventSeriesModal extends Modal {
 		this.renderContent();
 	}
 
+	onClose(): void {
+		if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
+		this.colorEvaluator.destroy();
+		this.contentEl.empty();
+	}
+
+	// ─── Tab Setup ───────────────────────────────────────────────
+
 	private getAvailableTabs(): TabConfig[] {
 		const tabs: TabConfig[] = [];
 		if (this.rruleId != null) tabs.push({ id: "recurring", label: "Recurring" });
@@ -149,6 +157,8 @@ export class EventSeriesModal extends Modal {
 			return false;
 		});
 	}
+
+	// ─── Content Rendering ───────────────────────────────────────
 
 	private renderContent(): void {
 		this.contentArea.empty();
@@ -233,61 +243,101 @@ export class EventSeriesModal extends Modal {
 		}
 	}
 
-	// --- Shared: search input (created fresh each render) ---
+	private renderRecurringTab(): void {
+		if (!this.rruleId) return;
 
-	private createSearchInput(container: HTMLElement): void {
-		const searchContainer = container.createDiv(cls("generic-event-list-search"));
-		this.searchInput = searchContainer.createEl("input", {
-			type: "text",
-			placeholder: "Search instances... (Ctrl/Cmd+F)",
-			cls: cls("generic-event-search-input"),
-		});
-		this.searchInput.value = this.searchQuery;
-
-		// Track input value and debounce search
-		this.searchInput.addEventListener("input", (e) => {
-			this.searchQuery = (e.target as HTMLInputElement).value;
-			if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
-			this.searchDebounceTimer = setTimeout(() => {
-				this.restoreFocusToSearch = true;
-				this.renderContent();
-			}, 350);
-		});
-
-		// Trigger search immediately on Enter
-		this.searchInput.addEventListener("keydown", (e) => {
-			if (e.key === "Enter") {
-				e.preventDefault();
-				if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
-				this.restoreFocusToSearch = true;
-				this.renderContent();
-			}
-		});
-
-		// Trigger search on blur (clicking away)
-		this.searchInput.addEventListener("blur", () => {
-			// Only re-render if the displayed results don't match current query
-			const displayedQuery = this.searchInput?.dataset.appliedQuery ?? "";
-			if (displayedQuery !== this.searchQuery) {
-				this.renderContent();
-			}
-		});
-
-		// Restore focus after re-render if needed
-		if (this.restoreFocusToSearch) {
-			this.restoreFocusToSearch = false;
-			this.searchInput.focus();
-			this.searchInput.setSelectionRange(this.searchQuery.length, this.searchQuery.length);
+		const series = this.bundle.recurringEventManager.getRecurringEventSeries(this.rruleId);
+		if (!series) {
+			this.contentArea.createEl("p", {
+				text: "Recurring event series not found",
+				cls: cls("recurring-events-list-empty"),
+			});
+			return;
 		}
 
-		// Track which query the current render reflects
-		this.searchInput.dataset.appliedQuery = this.searchQuery;
+		// Apply category color to modal background
+		if (series.sourceCategory) {
+			this.contentEl.style.setProperty("--source-category-color", series.sourceCategory);
+			addCls(this.contentEl, "recurring-events-list-modal-categorized");
+		}
+
+		// Normalize instances to EventListItems (excluding source file)
+		const items: EventListItem[] = [...series.instances]
+			.filter((instance) => instance.event.ref.filePath !== series.sourceFilePath)
+			.map((instance) => ({
+				date: instance.instanceDate,
+				title: removeZettelId(instance.event.title),
+				filePath: instance.event.ref.filePath,
+				skipped: !!instance.event.skipped,
+			}));
+
+		this.renderEventList(items, {
+			title: removeZettelId(series.sourceTitle),
+			onTitleClick: () => {
+				void this.app.workspace.openLinkText(series.sourceFilePath, "", false);
+				this.close();
+			},
+			hidePast: this.hidePastEvents,
+			hideSkipped: this.hideSkippedEvents,
+			onHidePastChange: (v) => {
+				this.hidePastEvents = v;
+			},
+			onHideSkippedChange: (v) => {
+				this.hideSkippedEvents = v;
+			},
+			beforeStats: (container) => {
+				if (!series.rruleType) return;
+				const infoContainer = container.createDiv(cls("recurring-events-info"));
+				const typeLabel = RECURRENCE_TYPE_OPTIONS[series.rruleType] || series.rruleType;
+				let infoText = `Recurrence: ${typeLabel}`;
+
+				if (series.rruleSpec && (series.rruleType === "weekly" || series.rruleType === "bi-weekly")) {
+					const days = series.rruleSpec
+						.split(",")
+						.map((day) => day.trim())
+						.map((day) => day.charAt(0).toUpperCase() + day.slice(1))
+						.join(", ");
+					infoText += ` \u2022 Days: ${days}`;
+				}
+
+				infoContainer.createEl("p", {
+					text: infoText,
+					cls: cls("recurring-events-info-text"),
+				});
+			},
+		});
 	}
 
-	// --- Shared rendering ---
+	private renderEventListTab(events: CalendarEvent[], title?: string): void {
+		const isCategory = this.activeTab === "category";
 
-	private getEventColor(event: CalendarEvent): string {
-		return resolveEventColor(event.meta ?? {}, this.bundle, this.colorEvaluator);
+		const items: EventListItem[] = events.map((event) => ({
+			date: DateTime.fromISO(event.start, { zone: "utc" }),
+			title: removeZettelId(event.title),
+			filePath: event.ref.filePath,
+			skipped: !!event.skipped,
+			color: isCategory ? undefined : this.getEventColor(event),
+		}));
+
+		this.renderEventList(items, {
+			title,
+			hidePast: isCategory ? this.hidePastEventsCategory : this.hidePastEventsNameProp,
+			hideSkipped: isCategory ? this.hideSkippedEventsCategory : this.hideSkippedEventsNameProp,
+			onHidePastChange: (v) => {
+				if (isCategory) {
+					this.hidePastEventsCategory = v;
+				} else {
+					this.hidePastEventsNameProp = v;
+				}
+			},
+			onHideSkippedChange: (v) => {
+				if (isCategory) {
+					this.hideSkippedEventsCategory = v;
+				} else {
+					this.hideSkippedEventsNameProp = v;
+				}
+			},
+		});
 	}
 
 	private renderEventList(items: EventListItem[], options: EventListOptions): void {
@@ -412,108 +462,56 @@ export class EventSeriesModal extends Modal {
 		}
 	}
 
-	// --- Name / Category tab ---
-
-	private renderEventListTab(events: CalendarEvent[], title?: string): void {
-		const isCategory = this.activeTab === "category";
-
-		const items: EventListItem[] = events.map((event) => ({
-			date: DateTime.fromISO(event.start, { zone: "utc" }),
-			title: removeZettelId(event.title),
-			filePath: event.ref.filePath,
-			skipped: !!event.skipped,
-			color: isCategory ? undefined : this.getEventColor(event),
-		}));
-
-		this.renderEventList(items, {
-			title,
-			hidePast: isCategory ? this.hidePastEventsCategory : this.hidePastEventsNameProp,
-			hideSkipped: isCategory ? this.hideSkippedEventsCategory : this.hideSkippedEventsNameProp,
-			onHidePastChange: (v) => {
-				if (isCategory) {
-					this.hidePastEventsCategory = v;
-				} else {
-					this.hidePastEventsNameProp = v;
-				}
-			},
-			onHideSkippedChange: (v) => {
-				if (isCategory) {
-					this.hideSkippedEventsCategory = v;
-				} else {
-					this.hideSkippedEventsNameProp = v;
-				}
-			},
+	private createSearchInput(container: HTMLElement): void {
+		const searchContainer = container.createDiv(cls("generic-event-list-search"));
+		this.searchInput = searchContainer.createEl("input", {
+			type: "text",
+			placeholder: "Search instances... (Ctrl/Cmd+F)",
+			cls: cls("generic-event-search-input"),
 		});
-	}
+		this.searchInput.value = this.searchQuery;
 
-	// --- Recurring tab ---
+		// Track input value and debounce search
+		this.searchInput.addEventListener("input", (e) => {
+			this.searchQuery = (e.target as HTMLInputElement).value;
+			if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
+			this.searchDebounceTimer = setTimeout(() => {
+				this.restoreFocusToSearch = true;
+				this.renderContent();
+			}, 350);
+		});
 
-	private renderRecurringTab(): void {
-		if (!this.rruleId) return;
+		// Trigger search immediately on Enter
+		this.searchInput.addEventListener("keydown", (e) => {
+			if (e.key === "Enter") {
+				e.preventDefault();
+				if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
+				this.restoreFocusToSearch = true;
+				this.renderContent();
+			}
+		});
 
-		const series = this.bundle.recurringEventManager.getRecurringEventSeries(this.rruleId);
-		if (!series) {
-			this.contentArea.createEl("p", {
-				text: "Recurring event series not found",
-				cls: cls("recurring-events-list-empty"),
-			});
-			return;
+		// Trigger search on blur (clicking away)
+		this.searchInput.addEventListener("blur", () => {
+			// Only re-render if the displayed results don't match current query
+			const displayedQuery = this.searchInput?.dataset.appliedQuery ?? "";
+			if (displayedQuery !== this.searchQuery) {
+				this.renderContent();
+			}
+		});
+
+		// Restore focus after re-render if needed
+		if (this.restoreFocusToSearch) {
+			this.restoreFocusToSearch = false;
+			this.searchInput.focus();
+			this.searchInput.setSelectionRange(this.searchQuery.length, this.searchQuery.length);
 		}
 
-		// Apply category color to modal background
-		if (series.sourceCategory) {
-			this.contentEl.style.setProperty("--source-category-color", series.sourceCategory);
-			addCls(this.contentEl, "recurring-events-list-modal-categorized");
-		}
-
-		// Normalize instances to EventListItems (excluding source file)
-		const items: EventListItem[] = [...series.instances]
-			.filter((instance) => instance.event.ref.filePath !== series.sourceFilePath)
-			.map((instance) => ({
-				date: instance.instanceDate,
-				title: removeZettelId(instance.event.title),
-				filePath: instance.event.ref.filePath,
-				skipped: !!instance.event.skipped,
-			}));
-
-		this.renderEventList(items, {
-			title: removeZettelId(series.sourceTitle),
-			onTitleClick: () => {
-				void this.app.workspace.openLinkText(series.sourceFilePath, "", false);
-				this.close();
-			},
-			hidePast: this.hidePastEvents,
-			hideSkipped: this.hideSkippedEvents,
-			onHidePastChange: (v) => {
-				this.hidePastEvents = v;
-			},
-			onHideSkippedChange: (v) => {
-				this.hideSkippedEvents = v;
-			},
-			beforeStats: (container) => {
-				if (!series.rruleType) return;
-				const infoContainer = container.createDiv(cls("recurring-events-info"));
-				const typeLabel = RECURRENCE_TYPE_OPTIONS[series.rruleType] || series.rruleType;
-				let infoText = `Recurrence: ${typeLabel}`;
-
-				if (series.rruleSpec && (series.rruleType === "weekly" || series.rruleType === "bi-weekly")) {
-					const days = series.rruleSpec
-						.split(",")
-						.map((day) => day.trim())
-						.map((day) => day.charAt(0).toUpperCase() + day.slice(1))
-						.join(", ");
-					infoText += ` \u2022 Days: ${days}`;
-				}
-
-				infoContainer.createEl("p", {
-					text: infoText,
-					cls: cls("recurring-events-info-text"),
-				});
-			},
-		});
+		// Track which query the current render reflects
+		this.searchInput.dataset.appliedQuery = this.searchQuery;
 	}
 
-	// --- Bases footer ---
+	// ─── Bases Footer ────────────────────────────────────────────
 
 	private renderBasesFooter(container: HTMLElement): void {
 		const footer = container.createDiv(cls("event-series-bases-footer"));
@@ -604,9 +602,9 @@ export class EventSeriesModal extends Modal {
 		new EventSeriesBasesViewModal(this.app, settings, config).open();
 	}
 
-	onClose(): void {
-		if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
-		this.colorEvaluator.destroy();
-		this.contentEl.empty();
+	// ─── Utilities ───────────────────────────────────────────────
+
+	private getEventColor(event: CalendarEvent): string {
+		return resolveEventColor(event.meta ?? {}, this.bundle, this.colorEvaluator);
 	}
 }
