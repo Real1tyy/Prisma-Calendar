@@ -13,7 +13,7 @@ export abstract class StatsModal extends Modal {
 	protected tableComponent: TableComponent | null = null;
 	protected aggregationMode: AggregationMode = "name";
 	protected includeSkippedEvents = false;
-	protected contentContainer: HTMLElement | null = null;
+	protected contentContainer!: HTMLElement;
 	protected showDecimalHours = false;
 
 	constructor(app: App, bundle: CalendarBundle) {
@@ -34,6 +34,8 @@ export abstract class StatsModal extends Modal {
 
 		this.showDecimalHours = this.bundle.settingsStore.currentSettings.showDecimalHours;
 		this.aggregationMode = this.bundle.settingsStore.currentSettings.defaultAggregationMode;
+
+		this.contentContainer = contentEl.createDiv(cls("stats-content"));
 
 		this.setupKeyboardShortcuts();
 		void this.renderContent();

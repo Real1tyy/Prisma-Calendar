@@ -5,7 +5,7 @@ import { formatDuration, type WeeklyStatEntry } from "../../utils/weekly-stats";
 const MAX_LABELS = 25; // to prevent label overflow
 
 export class ChartComponent {
-	private chartBuilder: PieChartBuilder | null = null;
+	private chartBuilder!: PieChartBuilder;
 	private container: HTMLElement;
 	private chartVisible = true;
 
@@ -47,12 +47,7 @@ export class ChartComponent {
 	}
 
 	private renderChart(entries: WeeklyStatEntry[]): void {
-		const canvas = this.container.querySelector("canvas");
-		if (!canvas) return;
-
-		// `renderChart` may be called more than once if the stats view refreshes.
-		// Ensure we don't leak a Chart.js instance bound to the same canvas.
-		this.chartBuilder?.destroy();
+		const canvas = this.container.querySelector("canvas") as HTMLCanvasElement;
 
 		const limitedEntries = entries.slice(0, MAX_LABELS);
 		const isMobile = this.isMobileView();
@@ -64,7 +59,7 @@ export class ChartComponent {
 			color: colors[index],
 		}));
 
-		this.chartBuilder = new PieChartBuilder(canvas as HTMLCanvasElement, chartData, {
+		this.chartBuilder = new PieChartBuilder(canvas, chartData, {
 			isMobile,
 			tooltipFormatter: (label, value, percentage) => {
 				return `${label}: ${formatDuration(value)} (${percentage}%)`;
@@ -75,9 +70,6 @@ export class ChartComponent {
 	}
 
 	destroy(): void {
-		if (this.chartBuilder) {
-			this.chartBuilder.destroy();
-			this.chartBuilder = null;
-		}
+		this.chartBuilder.destroy();
 	}
 }

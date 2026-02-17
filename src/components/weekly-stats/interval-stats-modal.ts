@@ -80,13 +80,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 	}
 
 	protected async renderContent(): Promise<void> {
-		const { contentEl } = this;
-
-		if (this.contentContainer) {
-			this.contentContainer.remove();
-		}
-
-		this.contentContainer = contentEl.createDiv(cls("stats-content"));
+		this.contentContainer.empty();
 
 		const { start, end } = this.intervalConfig.getBounds(this.currentDate);
 

@@ -10,13 +10,7 @@ export class AllTimeStatsModal extends StatsModal {
 	}
 
 	protected renderContent(): Promise<void> {
-		const { contentEl } = this;
-
-		if (this.contentContainer) {
-			this.contentContainer.remove();
-		}
-
-		this.contentContainer = contentEl.createDiv(cls("stats-content"));
+		this.contentContainer.empty();
 
 		const events = this.bundle.eventStore.getAllEvents();
 		const filteredEvents = this.filterSkippedEvents(events);
