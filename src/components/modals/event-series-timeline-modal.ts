@@ -17,7 +17,7 @@ export interface EventSeriesTimelineConfig {
 
 export class EventSeriesTimelineModal extends Modal {
 	private timeline: Timeline | null = null;
-	private timelineContainer: HTMLElement | null = null;
+	private timelineContainer!: HTMLElement;
 	private eventMap: Map<string, CalendarEvent> = new Map();
 	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 
@@ -57,8 +57,6 @@ export class EventSeriesTimelineModal extends Modal {
 	}
 
 	private renderTimeline(): void {
-		if (!this.timelineContainer) return;
-
 		// Destroy existing timeline
 		if (this.timeline) {
 			this.timeline.destroy();

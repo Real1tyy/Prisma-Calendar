@@ -40,7 +40,7 @@ export class EventSeriesModal extends Modal {
 	private activeTab: SourceTab | null = null;
 	private searchQuery = "";
 	private searchInput: HTMLInputElement | null = null;
-	private contentArea: HTMLElement | null = null;
+	private contentArea!: HTMLElement;
 	private restoreFocusToSearch = false;
 	private searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 	private tabsContainer: HTMLElement | null = null;
@@ -151,7 +151,6 @@ export class EventSeriesModal extends Modal {
 	}
 
 	private renderContent(): void {
-		if (!this.contentArea) return;
 		this.contentArea.empty();
 
 		// Remove previous categorized styling
@@ -181,7 +180,7 @@ export class EventSeriesModal extends Modal {
 	}
 
 	private renderCategoryTab(): void {
-		if (!this.contentArea || !this.categoryValues) return;
+		if (!this.categoryValues) return;
 
 		if (this.categoryValues.length === 1 || this.selectedCategoryValue != null) {
 			const categoryValue = this.selectedCategoryValue ?? this.categoryValues[0];
@@ -213,7 +212,7 @@ export class EventSeriesModal extends Modal {
 	}
 
 	private renderCategoryChooser(): void {
-		if (!this.contentArea || !this.categoryValues) return;
+		if (!this.categoryValues) return;
 
 		this.contentArea.createEl("h3", { text: "Select a category" });
 
@@ -292,8 +291,6 @@ export class EventSeriesModal extends Modal {
 	}
 
 	private renderEventList(items: EventListItem[], options: EventListOptions): void {
-		if (!this.contentArea) return;
-
 		// Header
 		if (options.title) {
 			const header = this.contentArea.createDiv(cls("recurring-events-list-header"));
@@ -418,8 +415,6 @@ export class EventSeriesModal extends Modal {
 	// --- Name / Category tab ---
 
 	private renderEventListTab(events: CalendarEvent[], title?: string): void {
-		if (!this.contentArea) return;
-
 		const isCategory = this.activeTab === "category";
 
 		const items: EventListItem[] = events.map((event) => ({
@@ -454,7 +449,7 @@ export class EventSeriesModal extends Modal {
 	// --- Recurring tab ---
 
 	private renderRecurringTab(): void {
-		if (!this.contentArea || !this.rruleId) return;
+		if (!this.rruleId) return;
 
 		const series = this.bundle.recurringEventManager.getRecurringEventSeries(this.rruleId);
 		if (!series) {

@@ -10,7 +10,7 @@ export class CategorySelectModal extends Modal {
 	private dropdownPanel!: HTMLElement;
 	private searchInput!: HTMLInputElement;
 	private listContainer!: HTMLElement;
-	private highlightButton: HTMLButtonElement | null = null;
+	private highlightButton!: HTMLButtonElement;
 	private selectedCategory: string | null = null;
 	private allCategories: CategoryInfo[] = [];
 	private dropdownContainer!: HTMLElement;
@@ -204,9 +204,7 @@ export class CategorySelectModal extends Modal {
 			cls: cls("category-selected-name"),
 		});
 
-		if (this.highlightButton) {
-			this.highlightButton.disabled = false;
-		}
+		this.highlightButton.disabled = false;
 	}
 
 	private handleHighlight(): void {

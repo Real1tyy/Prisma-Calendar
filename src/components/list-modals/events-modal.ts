@@ -48,8 +48,8 @@ export class EventsModal extends Modal {
 	private activeTab: TabId = "recurring";
 	private sortMode: SortMode = "count-desc";
 	private searchQuery = "";
-	private searchInput: HTMLInputElement | null = null;
-	private contentArea: HTMLElement | null = null;
+	private searchInput!: HTMLInputElement;
+	private contentArea!: HTMLElement;
 	private tabButtons: Map<TabId, HTMLButtonElement> = new Map();
 
 	// Recurring tab state
@@ -125,7 +125,7 @@ export class EventsModal extends Modal {
 		});
 
 		setTimeout(() => {
-			this.searchInput?.focus();
+			this.searchInput.focus();
 		}, 50);
 
 		// Content area
@@ -160,13 +160,13 @@ export class EventsModal extends Modal {
 	private registerHotkeys(): void {
 		this.scope.register(["Mod"], "f", (evt) => {
 			evt.preventDefault();
-			this.searchInput?.focus();
-			this.searchInput?.select();
+			this.searchInput.focus();
+			this.searchInput.select();
 			return false;
 		});
 
 		this.scope.register([], "Escape", () => {
-			if (this.searchInput && document.activeElement === this.searchInput) {
+			if (document.activeElement === this.searchInput) {
 				if (this.searchInput.value) {
 					this.searchInput.value = "";
 					this.searchQuery = "";
@@ -200,7 +200,6 @@ export class EventsModal extends Modal {
 	}
 
 	private renderContent(): void {
-		if (!this.contentArea) return;
 		this.contentArea.empty();
 
 		switch (this.activeTab) {
@@ -224,8 +223,6 @@ export class EventsModal extends Modal {
 		countLabel: string,
 		emptyMessage: string
 	): void {
-		if (!this.contentArea) return;
-
 		this.contentArea.createEl("p", {
 			text:
 				items.length === totalCount ? `${totalCount} ${countLabel}` : `${items.length} of ${totalCount} ${countLabel}`,
@@ -323,8 +320,6 @@ export class EventsModal extends Modal {
 	// --- Recurring Tab ---
 
 	private renderRecurringTab(): void {
-		if (!this.contentArea) return;
-
 		const filtersContainer = this.contentArea.createDiv(cls("recurring-events-modal-filters"));
 
 		// Type filter dropdown
@@ -406,8 +401,6 @@ export class EventsModal extends Modal {
 	}
 
 	private renderRecurringList(items: RecurringListItem[]): void {
-		if (!this.contentArea) return;
-
 		const totalCount = (this.showDisabledOnly ? this.disabledEvents : this.enabledEvents).length;
 		this.contentArea.createEl("p", {
 			text:
