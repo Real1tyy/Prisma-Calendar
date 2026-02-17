@@ -35,6 +35,8 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private skippedAllDayByDate = new BTree<string, AllDayEvent>();
 	private holidayStore: HolidayStore | null = null;
 
+	// ─── Lifecycle ────────────────────────────────────────────────
+
 	constructor(
 		indexer: Indexer,
 		private parser: Parser,
@@ -54,17 +56,30 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		});
 	}
 
-	setHolidayStore(holidayStore: HolidayStore): void {
-		this.holidayStore = holidayStore;
+	override destroy(): void {
+		this.indexingCompleteSubscription?.unsubscribe();
+		this.indexingCompleteSubscription = null;
+		super.destroy();
+	}
+
+	override clear(): void {
+		super.clear();
+		this.clearAllTrees();
 	}
 
 	/**
-	 * Triggers a refresh notification without modifying the cache.
-	 * Used when virtual events (like holidays) need to be refreshed.
+	 * Clears the cache without notifying subscribers.
+	 * Used during resync to avoid triggering a refresh before new data is loaded.
 	 */
-	refreshVirtualEvents(): void {
-		this.notifyChange();
+	clearWithoutNotify(): void {
+		for (const cached of this.cache.values()) {
+			this.onBeforeRemove(cached.template);
+		}
+		this.cache.clear();
+		this.clearAllTrees();
 	}
+
+	// ─── Cache Hooks ──────────────────────────────────────────────
 
 	protected buildTemplate(source: RawEventSource): CalendarEvent | null {
 		return this.parser.parseEventSource(source);
@@ -94,32 +109,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		this.removeFromSortedSets(event);
 	}
 
-	override clear(): void {
-		super.clear();
-		this.clearAllTrees();
-	}
-
-	override destroy(): void {
-		this.indexingCompleteSubscription?.unsubscribe();
-		this.indexingCompleteSubscription = null;
-		super.destroy();
-	}
-
-	/**
-	 * Clears the cache without notifying subscribers.
-	 * Used during resync to avoid triggering a refresh before new data is loaded.
-	 */
-	clearWithoutNotify(): void {
-		for (const cached of this.cache.values()) {
-			this.onBeforeRemove(cached.template);
-		}
-		this.cache.clear();
-		this.clearAllTrees();
-	}
-
-	updateEvent(filePath: string, template: CalendarEvent, mtime: number): void {
-		this.upsert(filePath, template, mtime);
-	}
+	// ─── Public Event API ─────────────────────────────────────────
 
 	/**
 	 * Returns non-skipped events in the given range: physical + virtual + holidays.
@@ -144,10 +134,6 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		return mergeSorted(physical, supplementary, EventStore.compareByStart);
 	}
 
-	private static compareByStart(a: CalendarEvent, b: CalendarEvent): number {
-		return a.start.localeCompare(b.start);
-	}
-
 	/**
 	 * Returns only skipped physical events in the given range.
 	 * Uses dedicated skipped BTrees — O(log n + k), no filtering needed.
@@ -165,6 +151,32 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		const skipped = this.querySkippedPhysical(query);
 		return mergeSorted(nonSkipped, skipped, EventStore.compareByStart);
 	}
+
+	getAllEvents(): CalendarEvent[] {
+		return this.getAll().sort(EventStore.compareByStart);
+	}
+
+	getEventByPath(filePath: string): CalendarEvent | null {
+		return this.getByPath(filePath);
+	}
+
+	updateEvent(filePath: string, template: CalendarEvent, mtime: number): void {
+		this.upsert(filePath, template, mtime);
+	}
+
+	/**
+	 * Triggers a refresh notification without modifying the cache.
+	 * Used when virtual events (like holidays) need to be refreshed.
+	 */
+	refreshVirtualEvents(): void {
+		this.notifyChange();
+	}
+
+	setHolidayStore(holidayStore: HolidayStore): void {
+		this.holidayStore = holidayStore;
+	}
+
+	// ─── Query Helpers ────────────────────────────────────────────
 
 	private queryNonSkippedPhysical(query: EventQuery): CalendarEvent[] {
 		return this.queryPhysicalFromTrees(query, this.timedByEndTime, this.allDayByDate);
@@ -212,13 +224,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		return mergeSorted(timedResults, allDayResults, EventStore.compareByStart);
 	}
 
-	getAllEvents(): CalendarEvent[] {
-		return this.getAll().sort(EventStore.compareByStart);
-	}
-
-	getEventByPath(filePath: string): CalendarEvent | null {
-		return this.getByPath(filePath);
-	}
+	// ─── Navigation ───────────────────────────────────────────────
 
 	findNextEventByStartTime(currentStartISO: string, excludeFilePath?: string): CalendarEvent | null {
 		return this.findAdjacentEventInTree(
@@ -240,17 +246,28 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		);
 	}
 
-	/**
-	 * Normalizes an ISO string to a consistent UTC format for BTree key comparison.
-	 * Both keys and query bounds pass through this, ensuring consistent comparison.
-	 */
-	private normIso(iso: string): string {
-		return new Date(iso).toISOString();
+	private findAdjacentEventInTree(
+		currentTimeISO: string,
+		excludeFilePath: string | undefined,
+		tree: BTree<string, TimedEvent>,
+		getNextPair: (tree: BTree<string, TimedEvent>, key: string) => [string, TimedEvent] | undefined,
+		makeSearchKey: (currentTime: string) => string
+	): TimedEvent | null {
+		const currentTime = this.normIso(currentTimeISO);
+		let pair = getNextPair(tree, makeSearchKey(currentTime));
+
+		while (pair) {
+			const [key, event] = pair;
+			if (!excludeFilePath || event.ref.filePath !== excludeFilePath) {
+				return event;
+			}
+			pair = getNextPair(tree, key);
+		}
+
+		return null;
 	}
 
-	private makeTreeKey(time: string, filePath: string): string {
-		return `${time}${EventStore.SEP}${filePath}`;
-	}
+	// ─── Tree Management ──────────────────────────────────────────
 
 	private addToSortedSets(event: CalendarEvent): void {
 		if (isTimedEvent(event)) {
@@ -301,24 +318,21 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		this.skippedAllDayByDate.clear();
 	}
 
-	private findAdjacentEventInTree(
-		currentTimeISO: string,
-		excludeFilePath: string | undefined,
-		tree: BTree<string, TimedEvent>,
-		getNextPair: (tree: BTree<string, TimedEvent>, key: string) => [string, TimedEvent] | undefined,
-		makeSearchKey: (currentTime: string) => string
-	): TimedEvent | null {
-		const currentTime = this.normIso(currentTimeISO);
-		let pair = getNextPair(tree, makeSearchKey(currentTime));
+	// ─── Utilities ────────────────────────────────────────────────
 
-		while (pair) {
-			const [key, event] = pair;
-			if (!excludeFilePath || event.ref.filePath !== excludeFilePath) {
-				return event;
-			}
-			pair = getNextPair(tree, key);
-		}
+	private static compareByStart(a: CalendarEvent, b: CalendarEvent): number {
+		return a.start.localeCompare(b.start);
+	}
 
-		return null;
+	/**
+	 * Normalizes an ISO string to a consistent UTC format for BTree key comparison.
+	 * Both keys and query bounds pass through this, ensuring consistent comparison.
+	 */
+	private normIso(iso: string): string {
+		return new Date(iso).toISOString();
+	}
+
+	private makeTreeKey(time: string, filePath: string): string {
+		return `${time}${EventStore.SEP}${filePath}`;
 	}
 }

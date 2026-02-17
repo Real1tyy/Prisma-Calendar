@@ -77,6 +77,8 @@ export class Indexer {
 	public readonly events$: Observable<IndexerEvent>;
 	public readonly indexingComplete$: Observable<boolean>;
 
+	// ─── Lifecycle ────────────────────────────────────────────────
+
 	constructor(
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
@@ -134,31 +136,6 @@ export class Indexer {
 		this.indexingComplete$ = this.indexingCompleteSubject.asObservable();
 	}
 
-	/**
-	 * Serialize processFrontMatter calls per file to prevent interleaving writes
-	 * and suppress the resulting file-changed events from our own writebacks.
-	 */
-	private enqueueFrontmatterWrite(file: TFile, fn: (fm: Frontmatter) => void): Promise<void> {
-		const path = file.path;
-		const prev = this.fmLocks.get(path) ?? Promise.resolve();
-		const next = prev
-			.then(() => this.app.fileManager.processFrontMatter(file, fn))
-			.finally(() => {
-				if (this.fmLocks.get(path) === next) this.fmLocks.delete(path);
-			});
-		this.fmLocks.set(path, next);
-		return next;
-	}
-
-	private buildIndexerConfig(): IndexerConfig {
-		return {
-			includeFile: this.includeFile,
-			excludedDiffProps: getRecurringInstanceExcludedProps(this.settings),
-			scanConcurrency: SCAN_CONCURRENCY,
-			debounceMs: 100,
-		};
-	}
-
 	async start(): Promise<void> {
 		this.indexingCompleteSubject.next(false);
 		await this.genericIndexer.start();
@@ -212,6 +189,8 @@ export class Indexer {
 
 		this.genericIndexer.resync();
 	}
+
+	// ─── Event Processing ─────────────────────────────────────────
 
 	private async handleGenericEvent(genericEvent: GenericIndexerEvent): Promise<void> {
 		if (genericEvent.type === "file-deleted") {
@@ -391,6 +370,8 @@ export class Indexer {
 		};
 	}
 
+	// ─── Background File Updates ──────────────────────────────────
+
 	private async updateCalendarTitleProperty(file: TFile, frontmatter: Frontmatter): Promise<void> {
 		if (this.syncStore?.data.readOnly) return;
 
@@ -486,5 +467,32 @@ export class Indexer {
 				}
 			}
 		}
+	}
+
+	// ─── Utilities ────────────────────────────────────────────────
+
+	private buildIndexerConfig(): IndexerConfig {
+		return {
+			includeFile: this.includeFile,
+			excludedDiffProps: getRecurringInstanceExcludedProps(this.settings),
+			scanConcurrency: SCAN_CONCURRENCY,
+			debounceMs: 100,
+		};
+	}
+
+	/**
+	 * Serialize processFrontMatter calls per file to prevent interleaving writes
+	 * and suppress the resulting file-changed events from our own writebacks.
+	 */
+	private enqueueFrontmatterWrite(file: TFile, fn: (fm: Frontmatter) => void): Promise<void> {
+		const path = file.path;
+		const prev = this.fmLocks.get(path) ?? Promise.resolve();
+		const next = prev
+			.then(() => this.app.fileManager.processFrontMatter(file, fn))
+			.finally(() => {
+				if (this.fmLocks.get(path) === next) this.fmLocks.delete(path);
+			});
+		this.fmLocks.set(path, next);
+		return next;
 	}
 }

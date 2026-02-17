@@ -44,6 +44,8 @@ export class Stopwatch {
 	private callbacks: StopwatchCallbacks;
 	private showContinueButton: boolean;
 
+	// ─── Lifecycle ────────────────────────────────────────────────
+
 	constructor(callbacks: StopwatchCallbacks, showContinueButton: boolean) {
 		this.callbacks = callbacks;
 		this.showContinueButton = showContinueButton;
@@ -170,17 +172,24 @@ export class Stopwatch {
 		return this.container;
 	}
 
+	expand(): void {
+		if (!this.isExpanded) {
+			this.toggleExpanded();
+		}
+	}
+
 	private toggleExpanded(): void {
 		this.isExpanded = !this.isExpanded;
 		this.contentEl.classList.toggle("prisma-hidden", !this.isExpanded);
 		this.toggleIcon.textContent = this.isExpanded ? "▼" : "▶";
 	}
 
-	expand(): void {
-		if (!this.isExpanded) {
-			this.toggleExpanded();
-		}
+	destroy(): void {
+		this.stopInterval();
+		this.container.remove();
 	}
+
+	// ─── Timer Control ────────────────────────────────────────────
 
 	start(): void {
 		if (this.state === "running") return;
@@ -278,6 +287,8 @@ export class Stopwatch {
 		this.updateButtonStates();
 	}
 
+	// ─── Tick Loop ────────────────────────────────────────────────
+
 	private startInterval(): void {
 		this.stopInterval();
 		this.intervalId = window.setInterval(() => {
@@ -291,6 +302,8 @@ export class Stopwatch {
 			this.intervalId = null;
 		}
 	}
+
+	// ─── Rendering ────────────────────────────────────────────────
 
 	private updateDisplay(): void {
 		// Total elapsed time (total time since start, including breaks)
@@ -378,6 +391,8 @@ export class Stopwatch {
 		}
 	}
 
+	// ─── Public Query API ──────────────────────────────────────────
+
 	getBreakMinutes(): number {
 		let totalBreakMs = this.totalBreakMs;
 		if (this.state === "paused" && this.breakStartTime) {
@@ -426,10 +441,5 @@ export class Stopwatch {
 				this.toggleExpanded();
 			}
 		}
-	}
-
-	destroy(): void {
-		this.stopInterval();
-		this.container.remove();
 	}
 }

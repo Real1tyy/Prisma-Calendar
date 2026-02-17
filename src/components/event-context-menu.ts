@@ -60,117 +60,15 @@ export class EventContextMenu {
 	private calendarView: CalendarView;
 	private currentMenu: Menu | null = null;
 
+	// ─── Lifecycle ────────────────────────────────────────────────
+
 	constructor(app: App, bundle: CalendarBundle, calendarView: CalendarView) {
 		this.app = app;
 		this.bundle = bundle;
 		this.calendarView = calendarView;
 	}
 
-	private async runCommand(createCommand: () => unknown, messages: CommandMessages): Promise<void> {
-		try {
-			const command = createCommand();
-			await this.bundle.commandManager.executeCommand(
-				command as Parameters<typeof this.bundle.commandManager.executeCommand>[0]
-			);
-			new Notice(messages.success);
-		} catch (error) {
-			console.error(messages.error, error);
-			new Notice(messages.error);
-		}
-	}
-
-	private async withFilePath(
-		event: CalendarEventInfo,
-		operation: string,
-		fn: (filePath: string) => void | Promise<void>
-	): Promise<void> {
-		const filePath = event.extendedProps?.filePath;
-		if (!filePath) {
-			new Notice(`Failed to ${operation}: No file path found`);
-			return;
-		}
-		await fn(filePath);
-	}
-
-	private async withSourceFilePath(
-		event: CalendarEventInfo,
-		operation: string,
-		fn: (sourceFilePath: string) => void | Promise<void>
-	): Promise<void> {
-		const sourceFilePath = this.getSourceFilePath(event);
-		if (!sourceFilePath) {
-			new Notice(`Failed to ${operation}: source event not found`);
-			return;
-		}
-		await fn(sourceFilePath);
-	}
-
-	private getEventKind(event: CalendarEventInfo): EventKind {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const frontmatter = event.extendedProps?.frontmatterDisplayData;
-
-		// Check isVirtual FIRST - virtual events have rruleProp in their meta but are not source events
-		if (event.extendedProps?.isVirtual) return "virtual";
-		if (frontmatter?.[settings.rruleProp]) return "source";
-		if (frontmatter?.[settings.rruleIdProp] && !frontmatter?.[settings.rruleProp]) return "physical";
-		return "normal";
-	}
-
-	private isRecurringEvent(event: CalendarEventInfo): boolean {
-		const kind = this.getEventKind(event);
-		return kind === "source" || kind === "physical" || kind === "virtual";
-	}
-
-	private getRRuleId(event: CalendarEventInfo): string | null {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const frontmatter = event.extendedProps?.frontmatterDisplayData;
-		const kind = this.getEventKind(event);
-
-		// Source events and physical events both have rruleIdProp in frontmatter
-		const rruleIdFromProp = frontmatter?.[settings.rruleIdProp];
-		if (rruleIdFromProp && typeof rruleIdFromProp === "string") {
-			return rruleIdFromProp;
-		}
-
-		// Virtual events have rruleId in meta
-		if (kind === "virtual") {
-			const virtualRruleId = frontmatter?.rruleId;
-			return typeof virtualRruleId === "string" ? virtualRruleId : null;
-		}
-
-		return null;
-	}
-
-	private getSourceFilePath(event: CalendarEventInfo): string | null {
-		const kind = this.getEventKind(event);
-
-		// For source events, return the file path directly
-		if (kind === "source") {
-			return event.extendedProps?.filePath || null;
-		}
-
-		// For virtual events, the source file path is the event's file path
-		if (kind === "virtual") {
-			return event.extendedProps?.filePath || null;
-		}
-
-		// For physical instances, extract source file path from the source property
-		if (kind === "physical") {
-			const settings = this.bundle.settingsStore.currentSettings;
-			const frontmatter = event.extendedProps?.frontmatterDisplayData;
-			const sourceLink = frontmatter?.[settings.sourceProp];
-
-			if (!sourceLink || typeof sourceLink !== "string") return null;
-
-			// Use Obsidian's link resolution to get the actual file
-			const linkPath = getObsidianLinkPath(sourceLink);
-			const sourceFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, event.extendedProps?.filePath || "");
-
-			return sourceFile?.path || null;
-		}
-
-		return null;
-	}
+	// ─── Menu Display ─────────────────────────────────────────────
 
 	show(
 		eOrPosition: MouseEvent | { x: number; y: number },
@@ -518,6 +416,75 @@ export class EventContextMenu {
 		}
 	}
 
+	// ─── Event Classification ─────────────────────────────────────
+
+	private getEventKind(event: CalendarEventInfo): EventKind {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const frontmatter = event.extendedProps?.frontmatterDisplayData;
+
+		// Check isVirtual FIRST - virtual events have rruleProp in their meta but are not source events
+		if (event.extendedProps?.isVirtual) return "virtual";
+		if (frontmatter?.[settings.rruleProp]) return "source";
+		if (frontmatter?.[settings.rruleIdProp] && !frontmatter?.[settings.rruleProp]) return "physical";
+		return "normal";
+	}
+
+	private isRecurringEvent(event: CalendarEventInfo): boolean {
+		const kind = this.getEventKind(event);
+		return kind === "source" || kind === "physical" || kind === "virtual";
+	}
+
+	private getRRuleId(event: CalendarEventInfo): string | null {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const frontmatter = event.extendedProps?.frontmatterDisplayData;
+		const kind = this.getEventKind(event);
+
+		// Source events and physical events both have rruleIdProp in frontmatter
+		const rruleIdFromProp = frontmatter?.[settings.rruleIdProp];
+		if (rruleIdFromProp && typeof rruleIdFromProp === "string") {
+			return rruleIdFromProp;
+		}
+
+		// Virtual events have rruleId in meta
+		if (kind === "virtual") {
+			const virtualRruleId = frontmatter?.rruleId;
+			return typeof virtualRruleId === "string" ? virtualRruleId : null;
+		}
+
+		return null;
+	}
+
+	private getSourceFilePath(event: CalendarEventInfo): string | null {
+		const kind = this.getEventKind(event);
+
+		// For source events, return the file path directly
+		if (kind === "source") {
+			return event.extendedProps?.filePath || null;
+		}
+
+		// For virtual events, the source file path is the event's file path
+		if (kind === "virtual") {
+			return event.extendedProps?.filePath || null;
+		}
+
+		// For physical instances, extract source file path from the source property
+		if (kind === "physical") {
+			const settings = this.bundle.settingsStore.currentSettings;
+			const frontmatter = event.extendedProps?.frontmatterDisplayData;
+			const sourceLink = frontmatter?.[settings.sourceProp];
+
+			if (!sourceLink || typeof sourceLink !== "string") return null;
+
+			// Use Obsidian's link resolution to get the actual file
+			const linkPath = getObsidianLinkPath(sourceLink);
+			const sourceFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, event.extendedProps?.filePath || "");
+
+			return sourceFile?.path || null;
+		}
+
+		return null;
+	}
+
 	private isSourceEventDisabled(event: CalendarEventInfo): boolean {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const sourceFilePath = this.getSourceFilePath(event);
@@ -546,52 +513,133 @@ export class EventContextMenu {
 		return isEventDone(this.app, filePath, settings.statusProperty, settings.doneValue);
 	}
 
-	moveEventBy(event: CalendarEventInfo): void {
-		const isAllDay = event.allDay || false;
+	// ─── Navigation ───────────────────────────────────────────────
 
-		void this.withFilePath(event, "move event", (filePath) => {
-			new MoveByModal(this.app, (result) => {
-				void (async () => {
-					const { offsetMs, unit } = calculateTimeOffset(result);
+	private openEventPreview(event: CalendarEventInfo): void {
+		const previewEvent: PreviewEventData = {
+			title: event.title,
+			start: intoDate(event.start),
+			end: event.end ? intoDate(event.end) : undefined,
+			allDay: event.allDay || false,
+			extendedProps: event.extendedProps,
+		};
+		new EventPreviewModal(this.app, this.bundle, previewEvent).open();
+	}
 
-					// Validate time unit for all-day events
-					if (isAllDay && !isTimeUnitAllowedForAllDay(unit)) {
-						console.warn(
-							`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
-						);
-						new Notice(`Cannot move all-day event by ${unit}. Please use days, weeks, months, or years.`, 5000);
-						return;
-					}
+	private showHoverPreview(
+		targetEl: HTMLElement,
+		containerEl: HTMLElement,
+		_clickEvent: MouseEvent | KeyboardEvent,
+		filePath: string
+	): void {
+		// Create a synthetic mouse event positioned at the target element for the hover
+		const rect = targetEl.getBoundingClientRect();
+		const syntheticEvent = new MouseEvent("mouseover", {
+			clientX: rect.left + rect.width / 2,
+			clientY: rect.top + rect.height / 2,
+			bubbles: true,
+			cancelable: true,
+			ctrlKey: true,
+			view: window,
+		});
 
-					await this.runCommand(() => new MoveByCommand(this.app, this.bundle, filePath, offsetMs), {
-						success: `Event moved by ${result.value} ${result.unit}`,
-						error: "Failed to move event",
-					});
-				})();
-			}).open();
+		// Dispatch the event on the target element first to simulate actual hover
+		targetEl.dispatchEvent(syntheticEvent);
+
+		// Then trigger Obsidian's hover-link event
+		emitHover(this.app, containerEl, targetEl, syntheticEvent, filePath, this.bundle.calendarId);
+	}
+
+	openEditModal(event: CalendarEventInfo): void {
+		new EventEditModal(this.app, this.bundle, event).open();
+	}
+
+	private goToSourceEvent(event: CalendarEventInfo): void {
+		this.withSourceEvent(event, (sourceEvent, sourceFilePath) => {
+			const eventDate = new Date(sourceEvent.start);
+			this.calendarView.navigateToDate(eventDate, "timeGridWeek");
+
+			setTimeout(() => {
+				this.calendarView.highlightEventByPath(sourceFilePath, 5000);
+			}, 300);
+
+			new Notice("Navigated to source event");
 		});
 	}
 
-	async moveEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
-		const direction = weeks > 0 ? "next" : "previous";
+	private editSourceEvent(event: CalendarEventInfo): void {
+		this.withSourceEvent(event, (sourceEvent) => {
+			const sourceEventInfo = {
+				title: sourceEvent.title,
+				start: sourceEvent.start,
+				end: isTimedEvent(sourceEvent) ? sourceEvent.end : undefined,
+				allDay: sourceEvent.allDay,
+				extendedProps: {
+					filePath: sourceEvent.ref.filePath,
+					frontmatterDisplayData: sourceEvent.meta,
+				},
+			};
 
-		await this.withFilePath(event, "move event", async (filePath) => {
-			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
-			await this.runCommand(() => new MoveEventCommand(this.app, this.bundle, filePath, startOffset, endOffset), {
-				success: `Event moved to ${direction} week`,
-				error: "Failed to move event",
+			this.openEditModal(sourceEventInfo);
+		});
+	}
+
+	private withSourceEvent(
+		event: CalendarEventInfo,
+		action: (sourceEvent: CalendarEvent, sourceFilePath: string) => void
+	): void {
+		const sourceFilePath = this.getSourceFilePath(event);
+
+		if (!sourceFilePath) {
+			new Notice("Source event not found");
+			return;
+		}
+
+		const sourceEvent = this.bundle.eventStore.getEventByPath(sourceFilePath);
+		if (!sourceEvent) {
+			new Notice("Source event not found in calendar");
+			return;
+		}
+
+		action(sourceEvent, sourceFilePath);
+	}
+
+	private showEventSeries(event: CalendarEventInfo): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const frontmatter = event.extendedProps?.frontmatterDisplayData;
+		const filePath = event.extendedProps?.filePath ?? null;
+
+		const nameKey =
+			getEventName(settings.titleProp, frontmatter ?? {}, filePath, settings.calendarTitleProp)?.toLowerCase() ?? null;
+		const rruleId = this.isRecurringEvent(event) ? this.getRRuleId(event) : null;
+		const categoryValues =
+			settings.categoryProp && frontmatter ? parseIntoList(frontmatter[settings.categoryProp]) : [];
+
+		new EventSeriesModal(
+			this.app,
+			this.bundle,
+			nameKey,
+			rruleId,
+			categoryValues.length > 0 ? categoryValues : null
+		).open();
+	}
+
+	// ─── Event Actions ────────────────────────────────────────────
+
+	async markEventAsDone(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "mark event as done", async (filePath) => {
+			await this.runCommand(() => new MarkAsDoneCommand(this.app, this.bundle, filePath), {
+				success: "Event marked as done",
+				error: "Failed to mark event as done",
 			});
 		});
 	}
 
-	async cloneEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
-		const direction = weeks > 0 ? "next" : "previous";
-
-		await this.withFilePath(event, "clone event", async (filePath) => {
-			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
-			await this.runCommand(() => new CloneEventCommand(this.app, this.bundle, filePath, startOffset, endOffset), {
-				success: `Event cloned to ${direction} week`,
-				error: "Failed to clone event",
+	async markEventAsUndone(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "mark event as undone", async (filePath) => {
+			await this.runCommand(() => new MarkAsUndoneCommand(this.app, this.bundle, filePath), {
+				success: "Event marked as undone",
+				error: "Failed to mark event as undone",
 			});
 		});
 	}
@@ -648,48 +696,54 @@ export class EventContextMenu {
 		});
 	}
 
-	async markEventAsDone(event: CalendarEventInfo): Promise<void> {
-		await this.withFilePath(event, "mark event as done", async (filePath) => {
-			await this.runCommand(() => new MarkAsDoneCommand(this.app, this.bundle, filePath), {
-				success: "Event marked as done",
-				error: "Failed to mark event as done",
+	moveEventBy(event: CalendarEventInfo): void {
+		const isAllDay = event.allDay || false;
+
+		void this.withFilePath(event, "move event", (filePath) => {
+			new MoveByModal(this.app, (result) => {
+				void (async () => {
+					const { offsetMs, unit } = calculateTimeOffset(result);
+
+					// Validate time unit for all-day events
+					if (isAllDay && !isTimeUnitAllowedForAllDay(unit)) {
+						console.warn(
+							`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
+						);
+						new Notice(`Cannot move all-day event by ${unit}. Please use days, weeks, months, or years.`, 5000);
+						return;
+					}
+
+					await this.runCommand(() => new MoveByCommand(this.app, this.bundle, filePath, offsetMs), {
+						success: `Event moved by ${result.value} ${result.unit}`,
+						error: "Failed to move event",
+					});
+				})();
+			}).open();
+		});
+	}
+
+	async moveEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
+		const direction = weeks > 0 ? "next" : "previous";
+
+		await this.withFilePath(event, "move event", async (filePath) => {
+			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
+			await this.runCommand(() => new MoveEventCommand(this.app, this.bundle, filePath, startOffset, endOffset), {
+				success: `Event moved to ${direction} week`,
+				error: "Failed to move event",
 			});
 		});
 	}
 
-	async markEventAsUndone(event: CalendarEventInfo): Promise<void> {
-		await this.withFilePath(event, "mark event as undone", async (filePath) => {
-			await this.runCommand(() => new MarkAsUndoneCommand(this.app, this.bundle, filePath), {
-				success: "Event marked as undone",
-				error: "Failed to mark event as undone",
+	async cloneEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
+		const direction = weeks > 0 ? "next" : "previous";
+
+		await this.withFilePath(event, "clone event", async (filePath) => {
+			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
+			await this.runCommand(() => new CloneEventCommand(this.app, this.bundle, filePath, startOffset, endOffset), {
+				success: `Event cloned to ${direction} week`,
+				error: "Failed to clone event",
 			});
 		});
-	}
-
-	private async handlePhysicalInstancesIfNeeded(
-		rruleId: string | null,
-		onComplete: () => void | Promise<void>
-	): Promise<void> {
-		if (!rruleId) {
-			await onComplete();
-			return;
-		}
-
-		const physicalInstances = this.bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
-		if (physicalInstances.length > 0) {
-			new DeleteRecurringEventsModal(
-				this.app,
-				async () => {
-					await this.bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
-					await onComplete();
-				},
-				() => {
-					void onComplete();
-				}
-			).open();
-		} else {
-			await onComplete();
-		}
 	}
 
 	async deleteEvent(event: CalendarEventInfo): Promise<void> {
@@ -722,6 +776,32 @@ export class EventContextMenu {
 		});
 	}
 
+	private async handlePhysicalInstancesIfNeeded(
+		rruleId: string | null,
+		onComplete: () => void | Promise<void>
+	): Promise<void> {
+		if (!rruleId) {
+			await onComplete();
+			return;
+		}
+
+		const physicalInstances = this.bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
+		if (physicalInstances.length > 0) {
+			new DeleteRecurringEventsModal(
+				this.app,
+				async () => {
+					await this.bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
+					await onComplete();
+				},
+				() => {
+					void onComplete();
+				}
+			).open();
+		} else {
+			await onComplete();
+		}
+	}
+
 	async toggleSkipEvent(event: CalendarEventInfo): Promise<void> {
 		await this.withFilePath(event, "toggle skip event", async (filePath) => {
 			await this.runCommand(() => new ToggleSkipCommand(this.app, this.bundle, filePath), {
@@ -731,114 +811,41 @@ export class EventContextMenu {
 		});
 	}
 
-	private openEventPreview(event: CalendarEventInfo): void {
-		const previewEvent: PreviewEventData = {
-			title: event.title,
-			start: intoDate(event.start),
-			end: event.end ? intoDate(event.end) : undefined,
-			allDay: event.allDay || false,
-			extendedProps: event.extendedProps,
-		};
-		new EventPreviewModal(this.app, this.bundle, previewEvent).open();
-	}
-
-	private showHoverPreview(
-		targetEl: HTMLElement,
-		containerEl: HTMLElement,
-		_clickEvent: MouseEvent | KeyboardEvent,
-		filePath: string
-	): void {
-		// Create a synthetic mouse event positioned at the target element for the hover
-		const rect = targetEl.getBoundingClientRect();
-		const syntheticEvent = new MouseEvent("mouseover", {
-			clientX: rect.left + rect.width / 2,
-			clientY: rect.top + rect.height / 2,
-			bubbles: true,
-			cancelable: true,
-			ctrlKey: true,
-			view: window,
-		});
-
-		// Dispatch the event on the target element first to simulate actual hover
-		targetEl.dispatchEvent(syntheticEvent);
-
-		// Then trigger Obsidian's hover-link event
-		emitHover(this.app, containerEl, targetEl, syntheticEvent, filePath, this.bundle.calendarId);
-	}
-
-	openEditModal(event: CalendarEventInfo): void {
-		new EventEditModal(this.app, this.bundle, event).open();
-	}
-
-	private withSourceEvent(
-		event: CalendarEventInfo,
-		action: (sourceEvent: CalendarEvent, sourceFilePath: string) => void
-	): void {
-		const sourceFilePath = this.getSourceFilePath(event);
-
-		if (!sourceFilePath) {
-			new Notice("Source event not found");
-			return;
-		}
-
-		const sourceEvent = this.bundle.eventStore.getEventByPath(sourceFilePath);
-		if (!sourceEvent) {
-			new Notice("Source event not found in calendar");
-			return;
-		}
-
-		action(sourceEvent, sourceFilePath);
-	}
-
-	private goToSourceEvent(event: CalendarEventInfo): void {
-		this.withSourceEvent(event, (sourceEvent, sourceFilePath) => {
-			const eventDate = new Date(sourceEvent.start);
-			this.calendarView.navigateToDate(eventDate, "timeGridWeek");
-
-			setTimeout(() => {
-				this.calendarView.highlightEventByPath(sourceFilePath, 5000);
-			}, 300);
-
-			new Notice("Navigated to source event");
-		});
-	}
-
-	private editSourceEvent(event: CalendarEventInfo): void {
-		this.withSourceEvent(event, (sourceEvent) => {
-			const sourceEventInfo = {
-				title: sourceEvent.title,
-				start: sourceEvent.start,
-				end: isTimedEvent(sourceEvent) ? sourceEvent.end : undefined,
-				allDay: sourceEvent.allDay,
-				extendedProps: {
-					filePath: sourceEvent.ref.filePath,
-					frontmatterDisplayData: sourceEvent.meta,
-				},
-			};
-
-			this.openEditModal(sourceEventInfo);
-		});
-	}
-
-	private showEventSeries(event: CalendarEventInfo): void {
+	private async triggerStopwatch(event: CalendarEventInfo): Promise<void> {
 		const settings = this.bundle.settingsStore.currentSettings;
-		const frontmatter = event.extendedProps?.frontmatterDisplayData;
-		const filePath = event.extendedProps?.filePath ?? null;
-
-		const nameKey =
-			getEventName(settings.titleProp, frontmatter ?? {}, filePath, settings.calendarTitleProp)?.toLowerCase() ?? null;
-		const rruleId = this.isRecurringEvent(event) ? this.getRRuleId(event) : null;
-		const categoryValues =
-			settings.categoryProp && frontmatter ? parseIntoList(frontmatter[settings.categoryProp]) : [];
-
-		new EventSeriesModal(
-			this.app,
-			this.bundle,
-			nameKey,
-			rruleId,
-			categoryValues.length > 0 ? categoryValues : null
-		).open();
+		if (!settings.showStopwatch) {
+			new Notice("Enable time tracker in settings to use this action");
+			return;
+		}
+		await this.withFilePath(event, "trigger stopwatch", async () => {
+			// Stop any running minimized stopwatch first
+			if (MinimizedModalManager.hasMinimizedModal()) {
+				MinimizedModalManager.stopAndSaveCurrentEvent(this.app, this.bundle.plugin.calendarBundles);
+			}
+			const modal = new EventEditModal(this.app, this.bundle, event);
+			modal.setStartStopwatchAndMinimize();
+			modal.open();
+		});
 	}
+
+	private async openAssignCategoriesModal(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "assign categories", async (filePath) => {
+			getFileByPathOrThrow(this.app, filePath);
+
+			const settings = this.bundle.settingsStore.currentSettings;
+			const currentCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
+			const categories = this.bundle.categoryTracker.getCategoriesWithColors();
+
+			openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, currentCategories, (selected) => {
+				void this.runCommand(() => new AssignCategoriesCommand(this.app, this.bundle, filePath, selected), {
+					success: "Categories updated",
+					error: "Failed to assign categories",
+				});
+			});
+		});
+	}
+
+	// ─── Fill Time Actions ────────────────────────────────────────
 
 	async fillEndTimeFromNext(event: CalendarEventInfo): Promise<void> {
 		const settings = this.bundle.settingsStore.currentSettings;
@@ -930,37 +937,44 @@ export class EventContextMenu {
 		});
 	}
 
-	private async triggerStopwatch(event: CalendarEventInfo): Promise<void> {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.showStopwatch) {
-			new Notice("Enable time tracker in settings to use this action");
-			return;
+	// ─── Command Helpers ──────────────────────────────────────────
+
+	private async runCommand(createCommand: () => unknown, messages: CommandMessages): Promise<void> {
+		try {
+			const command = createCommand();
+			await this.bundle.commandManager.executeCommand(
+				command as Parameters<typeof this.bundle.commandManager.executeCommand>[0]
+			);
+			new Notice(messages.success);
+		} catch (error) {
+			console.error(messages.error, error);
+			new Notice(messages.error);
 		}
-		await this.withFilePath(event, "trigger stopwatch", async () => {
-			// Stop any running minimized stopwatch first
-			if (MinimizedModalManager.hasMinimizedModal()) {
-				MinimizedModalManager.stopAndSaveCurrentEvent(this.app, this.bundle.plugin.calendarBundles);
-			}
-			const modal = new EventEditModal(this.app, this.bundle, event);
-			modal.setStartStopwatchAndMinimize();
-			modal.open();
-		});
 	}
 
-	private async openAssignCategoriesModal(event: CalendarEventInfo): Promise<void> {
-		await this.withFilePath(event, "assign categories", async (filePath) => {
-			getFileByPathOrThrow(this.app, filePath);
+	private async withFilePath(
+		event: CalendarEventInfo,
+		operation: string,
+		fn: (filePath: string) => void | Promise<void>
+	): Promise<void> {
+		const filePath = event.extendedProps?.filePath;
+		if (!filePath) {
+			new Notice(`Failed to ${operation}: No file path found`);
+			return;
+		}
+		await fn(filePath);
+	}
 
-			const settings = this.bundle.settingsStore.currentSettings;
-			const currentCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
-			const categories = this.bundle.categoryTracker.getCategoriesWithColors();
-
-			openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, currentCategories, (selected) => {
-				void this.runCommand(() => new AssignCategoriesCommand(this.app, this.bundle, filePath, selected), {
-					success: "Categories updated",
-					error: "Failed to assign categories",
-				});
-			});
-		});
+	private async withSourceFilePath(
+		event: CalendarEventInfo,
+		operation: string,
+		fn: (sourceFilePath: string) => void | Promise<void>
+	): Promise<void> {
+		const sourceFilePath = this.getSourceFilePath(event);
+		if (!sourceFilePath) {
+			new Notice(`Failed to ${operation}: source event not found`);
+			return;
+		}
+		await fn(sourceFilePath);
 	}
 }

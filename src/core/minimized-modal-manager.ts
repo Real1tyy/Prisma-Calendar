@@ -64,6 +64,8 @@ class MinimizedModalManagerClass {
 	private app: App | null = null;
 	private bundle: CalendarBundle | null = null;
 
+	// ─── State Management ─────────────────────────────────────────
+
 	/**
 	 * Save modal state and start internal time tracking if stopwatch was active.
 	 * Also subscribes to indexer events to auto-update when the file changes.
@@ -89,20 +91,6 @@ class MinimizedModalManagerClass {
 	}
 
 	/**
-	 * Get the saved state, including updated stopwatch times.
-	 */
-	getState(): MinimizedModalState | null {
-		return this.savedState;
-	}
-
-	/**
-	 * Check if there's a minimized modal state saved.
-	 */
-	hasMinimizedModal(): boolean {
-		return this.savedState !== null;
-	}
-
-	/**
 	 * Clear the saved state and stop internal tracking.
 	 */
 	clear(): void {
@@ -114,37 +102,20 @@ class MinimizedModalManagerClass {
 	}
 
 	/**
-	 * Get the current stopwatch elapsed time in milliseconds.
-	 * Returns 0 if no active stopwatch.
+	 * Check if there's a minimized modal state saved.
 	 */
-	getElapsedMs(): number {
-		if (!this.savedState?.stopwatch.startTime) {
-			return 0;
-		}
-		return Date.now() - this.savedState.stopwatch.startTime;
+	hasMinimizedModal(): boolean {
+		return this.savedState !== null;
 	}
 
 	/**
-	 * Get the current break time in milliseconds.
+	 * Get the saved state, including updated stopwatch times.
 	 */
-	getBreakMs(): number {
-		if (!this.savedState) {
-			return 0;
-		}
-
-		let breakMs = this.savedState.stopwatch.totalBreakMs;
-
-		// If currently on break, add time since break started
-		if (this.savedState.stopwatch.state === "paused" && this.savedState.stopwatch.breakStartTime) {
-			breakMs += Date.now() - this.savedState.stopwatch.breakStartTime;
-		}
-
-		return breakMs;
+	getState(): MinimizedModalState | null {
+		return this.savedState;
 	}
 
-	getBreakMinutes(): number {
-		return Math.round((this.getBreakMs() / 60000) * 100) / 100;
-	}
+	// ─── Internal Time Tracking ───────────────────────────────────
 
 	/**
 	 * Start internal tracking interval that periodically persists the
@@ -180,6 +151,8 @@ class MinimizedModalManagerClass {
 			this.intervalId = null;
 		}
 	}
+
+	// ─── File Change Subscription ─────────────────────────────────
 
 	private subscribeToFileChanges(bundle: CalendarBundle): void {
 		this.unsubscribeFromFileChanges();
@@ -240,28 +213,7 @@ class MinimizedModalManagerClass {
 		}
 	}
 
-	formatElapsed(): string {
-		return formatMsToHHMMSS(this.getElapsedMs());
-	}
-
-	formatBreak(): string {
-		return formatMsToMMSS(this.getBreakMs());
-	}
-
-	/**
-	 * Build event data object from minimized modal state.
-	 */
-	private buildEventDataFromState(state: MinimizedModalState) {
-		return {
-			title: state.title ?? "",
-			start: state.startDate ?? null,
-			end: state.endDate ?? null,
-			allDay: state.allDay ?? false,
-			extendedProps: {
-				filePath: state.filePath,
-			},
-		};
-	}
+	// ─── Modal Operations ─────────────────────────────────────────
 
 	/**
 	 * Restore a minimized modal by reopening it with the saved state.
@@ -291,6 +243,43 @@ class MinimizedModalManagerClass {
 		}
 
 		modal.setRestoreState(state);
+		this.clear();
+		modal.open();
+	}
+
+	/**
+	 * Stop the running stopwatch and save the current minimized event.
+	 * Restores the modal hidden, stops the stopwatch (which updates end time
+	 * and break via callbacks), then triggers the normal save path.
+	 * This reuses the full modal save logic without duplicating event building.
+	 */
+	stopAndSaveCurrentEvent(app: App, calendarBundles: CalendarBundle[]): void {
+		const state = this.getState();
+		if (!state) return;
+
+		const isStopwatchActive = state.stopwatch.state === "running" || state.stopwatch.state === "paused";
+		if (!isStopwatchActive) {
+			this.clear();
+			return;
+		}
+
+		const bundle = calendarBundles.find((b) => b.calendarId === state.calendarId);
+		if (!bundle) {
+			this.clear();
+			return;
+		}
+
+		const eventData = this.buildEventDataFromState(state);
+
+		let modal: EventCreateModal | EventEditModal;
+		if (state.modalType === "edit" && state.filePath) {
+			modal = new EventEditModal(app, bundle, eventData);
+		} else {
+			modal = new EventCreateModal(app, bundle, eventData);
+		}
+
+		modal.setRestoreState(state);
+		modal.setSilentStopAndSave();
 		this.clear();
 		modal.open();
 	}
@@ -333,40 +322,61 @@ class MinimizedModalManagerClass {
 	}
 
 	/**
-	 * Stop the running stopwatch and save the current minimized event.
-	 * Restores the modal hidden, stops the stopwatch (which updates end time
-	 * and break via callbacks), then triggers the normal save path.
-	 * This reuses the full modal save logic without duplicating event building.
+	 * Build event data object from minimized modal state.
 	 */
-	stopAndSaveCurrentEvent(app: App, calendarBundles: CalendarBundle[]): void {
-		const state = this.getState();
-		if (!state) return;
+	private buildEventDataFromState(state: MinimizedModalState) {
+		return {
+			title: state.title ?? "",
+			start: state.startDate ?? null,
+			end: state.endDate ?? null,
+			allDay: state.allDay ?? false,
+			extendedProps: {
+				filePath: state.filePath,
+			},
+		};
+	}
 
-		const isStopwatchActive = state.stopwatch.state === "running" || state.stopwatch.state === "paused";
-		if (!isStopwatchActive) {
-			this.clear();
-			return;
+	// ─── Public Query API ──────────────────────────────────────────
+
+	/**
+	 * Get the current stopwatch elapsed time in milliseconds.
+	 * Returns 0 if no active stopwatch.
+	 */
+	getElapsedMs(): number {
+		if (!this.savedState?.stopwatch.startTime) {
+			return 0;
+		}
+		return Date.now() - this.savedState.stopwatch.startTime;
+	}
+
+	/**
+	 * Get the current break time in milliseconds.
+	 */
+	getBreakMs(): number {
+		if (!this.savedState) {
+			return 0;
 		}
 
-		const bundle = calendarBundles.find((b) => b.calendarId === state.calendarId);
-		if (!bundle) {
-			this.clear();
-			return;
+		let breakMs = this.savedState.stopwatch.totalBreakMs;
+
+		// If currently on break, add time since break started
+		if (this.savedState.stopwatch.state === "paused" && this.savedState.stopwatch.breakStartTime) {
+			breakMs += Date.now() - this.savedState.stopwatch.breakStartTime;
 		}
 
-		const eventData = this.buildEventDataFromState(state);
+		return breakMs;
+	}
 
-		let modal: EventCreateModal | EventEditModal;
-		if (state.modalType === "edit" && state.filePath) {
-			modal = new EventEditModal(app, bundle, eventData);
-		} else {
-			modal = new EventCreateModal(app, bundle, eventData);
-		}
+	getBreakMinutes(): number {
+		return Math.round((this.getBreakMs() / 60000) * 100) / 100;
+	}
 
-		modal.setRestoreState(state);
-		modal.setSilentStopAndSave();
-		this.clear();
-		modal.open();
+	formatElapsed(): string {
+		return formatMsToHHMMSS(this.getElapsedMs());
+	}
+
+	formatBreak(): string {
+		return formatMsToMMSS(this.getBreakMs());
 	}
 }
 

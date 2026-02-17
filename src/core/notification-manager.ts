@@ -39,6 +39,8 @@ export class NotificationManager {
 	// Sorted array of notification entries (sorted by notifyAt time)
 	private notificationQueue: NotificationEntry[] = [];
 
+	// ─── Lifecycle ────────────────────────────────────────────────
+
 	constructor(
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
@@ -89,6 +91,8 @@ export class NotificationManager {
 		this.stopPeriodicCheck();
 		this.notificationQueue = [];
 	}
+
+	// ─── Indexer Event Handling ───────────────────────────────────
 
 	private handleIndexerEvent(event: IndexerEvent): void {
 		if (!this.settings.enableNotifications) {
@@ -214,6 +218,8 @@ export class NotificationManager {
 		this.notificationQueue = this.notificationQueue.filter((e) => e.filePath !== filePath);
 	}
 
+	// ─── Notification Queue ───────────────────────────────────────
+
 	private startPeriodicCheck(): void {
 		this.stopPeriodicCheck();
 
@@ -257,6 +263,16 @@ export class NotificationManager {
 		}
 	}
 
+	private rebuildNotificationQueue(): void {
+		// Clear existing queue
+		this.notificationQueue = [];
+
+		// Re-scan all files and rebuild notifications
+		// This will be handled naturally by indexer events when settings change triggers re-index
+	}
+
+	// ─── Notification Trigger ─────────────────────────────────────
+
 	private async triggerNotification(entry: NotificationEntry): Promise<void> {
 		try {
 			this.removeNotification(entry.filePath);
@@ -265,6 +281,21 @@ export class NotificationManager {
 			this.showNotificationModal(entry);
 		} catch (error) {
 			console.error(`[NotificationManager] ❌ Error triggering notification for ${entry.filePath}:`, error);
+		}
+	}
+
+	private async markAsNotified(filePath: string): Promise<void> {
+		if (this.syncStore?.data.readOnly) {
+			return;
+		}
+
+		try {
+			const file = getFileByPathOrThrow(this.app, filePath);
+			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+				fm[this.settings.alreadyNotifiedProp] = true;
+			});
+		} catch (error) {
+			console.error(`Error marking event as notified: ${filePath}:`, error);
 		}
 	}
 
@@ -312,21 +343,6 @@ export class NotificationManager {
 		}
 	}
 
-	private async markAsNotified(filePath: string): Promise<void> {
-		if (this.syncStore?.data.readOnly) {
-			return;
-		}
-
-		try {
-			const file = getFileByPathOrThrow(this.app, filePath);
-			await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
-				fm[this.settings.alreadyNotifiedProp] = true;
-			});
-		} catch (error) {
-			console.error(`Error marking event as notified: ${filePath}:`, error);
-		}
-	}
-
 	private showNotificationModal(entry: NotificationEntry): void {
 		const eventData = {
 			title: entry.title,
@@ -341,14 +357,6 @@ export class NotificationManager {
 		};
 
 		new NotificationModal(this.app, eventData, this.settings, onSnooze).open();
-	}
-
-	private rebuildNotificationQueue(): void {
-		// Clear existing queue
-		this.notificationQueue = [];
-
-		// Re-scan all files and rebuild notifications
-		// This will be handled naturally by indexer events when settings change triggers re-index
 	}
 
 	private async snoozeNotification(entry: NotificationEntry): Promise<void> {
