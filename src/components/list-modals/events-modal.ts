@@ -45,6 +45,7 @@ interface SimpleListItem {
 }
 
 export class EventsModal extends Modal {
+	// ─── Lifecycle ───────────────────────────────────────────────
 	private activeTab: TabId = "recurring";
 	private sortMode: SortMode = "count-desc";
 	private searchQuery = "";
@@ -135,6 +136,12 @@ export class EventsModal extends Modal {
 		this.renderContent();
 	}
 
+	onClose(): void {
+		this.contentEl.empty();
+	}
+
+	// ─── Tab Setup ───────────────────────────────────────────────
+
 	private createTabButton(container: HTMLElement, tabId: TabId, label: string): void {
 		const btn = container.createEl("button", {
 			text: label,
@@ -199,6 +206,8 @@ export class EventsModal extends Modal {
 		}
 	}
 
+	// ─── Content Rendering ────────────────────────────────────────
+
 	private renderContent(): void {
 		this.contentArea.empty();
 
@@ -215,7 +224,7 @@ export class EventsModal extends Modal {
 		}
 	}
 
-	// --- Simple list (shared by Series + By Name tabs) ---
+	// ─── Item Helpers ─────────────────────────────────────────────
 
 	private renderSimpleList(
 		items: SimpleListItem[],
@@ -250,6 +259,16 @@ export class EventsModal extends Modal {
 		}
 	}
 
+	private filterAndSortSimpleItems(items: SimpleListItem[]): SimpleListItem[] {
+		this.sortByTitleAndCount(items, (i) => i.count);
+
+		if (this.searchQuery.trim()) {
+			const q = this.searchQuery.toLowerCase().trim();
+			return items.filter((item) => item.title.toLowerCase().includes(q));
+		}
+		return items;
+	}
+
 	private sortByTitleAndCount<T extends { title: string }>(items: T[], getCount: (item: T) => number): void {
 		switch (this.sortMode) {
 			case "count-desc":
@@ -267,17 +286,7 @@ export class EventsModal extends Modal {
 		}
 	}
 
-	private filterAndSortSimpleItems(items: SimpleListItem[]): SimpleListItem[] {
-		this.sortByTitleAndCount(items, (i) => i.count);
-
-		if (this.searchQuery.trim()) {
-			const q = this.searchQuery.toLowerCase().trim();
-			return items.filter((item) => item.title.toLowerCase().includes(q));
-		}
-		return items;
-	}
-
-	// --- By Category Tab ---
+	// ─── By Category Tab ─────────────────────────────────────────
 
 	private renderByCategoryTab(): void {
 		const categories = this.bundle.categoryTracker.getCategories();
@@ -297,7 +306,7 @@ export class EventsModal extends Modal {
 		);
 	}
 
-	// --- By Name Tab ---
+	// ─── By Name Tab ─────────────────────────────────────────────
 
 	private renderByNameTab(): void {
 		const nameSeries = this.bundle.nameSeriesTracker.getNameBasedSeries();
@@ -317,7 +326,7 @@ export class EventsModal extends Modal {
 		);
 	}
 
-	// --- Recurring Tab ---
+	// ─── Recurring Tab ───────────────────────────────────────────
 
 	private renderRecurringTab(): void {
 		const filtersContainer = this.contentArea.createDiv(cls("recurring-events-modal-filters"));
@@ -486,6 +495,8 @@ export class EventsModal extends Modal {
 		});
 	}
 
+	// ─── Item Actions ─────────────────────────────────────────────
+
 	private openRecurringEventSeries(item: RecurringListItem): void {
 		const events = this.showDisabledOnly ? this.disabledEvents : this.enabledEvents;
 		const event = events.find((e) => e.sourceFilePath === item.filePath);
@@ -618,9 +629,5 @@ export class EventsModal extends Modal {
 		const categoryInfo = this.bundle.categoryTracker.getCategoriesWithColors().find((c) => c.name === categories[0]);
 
 		return categoryInfo?.color || null;
-	}
-
-	onClose(): void {
-		this.contentEl.empty();
 	}
 }

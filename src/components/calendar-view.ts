@@ -679,6 +679,33 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	// ─── Toolbar ─────────────────────────────────────────────────
 
+	private updateToolbar(): void {
+		if (!this.calendar || !this.batchSelectionManager) return;
+
+		const inSelectionMode = this.batchSelectionManager.isInSelectionMode();
+
+		if (inSelectionMode) {
+			this.cleanupEventCountButtons();
+		}
+
+		const { headerToolbar, customButtons } = this.buildToolbarConfig(inSelectionMode);
+
+		this.calendar.setOption("headerToolbar", headerToolbar);
+		// Cast to CustomButtonInput - className is accepted at runtime but not in FullCalendar's types
+		this.calendar.setOption("customButtons", customButtons as Record<string, CustomButtonInput>);
+		this.applyMobileControlsCollapsedState();
+		this.scheduleStickyOffsetsUpdate();
+
+		void afterRender().then(() => {
+			if (!inSelectionMode) {
+				this.applyFilteredEventsButtonState();
+				this.applySkippedEventsButtonState();
+				this.zoomManager.updateZoomLevelButton();
+			}
+			this.scheduleStickyOffsetsUpdate();
+		});
+	}
+
 	private buildToolbarConfig(inSelectionMode: boolean): {
 		headerToolbar: { left: string; center: string; right: string };
 		customButtons: Record<string, ExtendedButtonInput>;
@@ -899,33 +926,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				className: `${clsBase} ${cls("exit-btn")}`,
 			},
 		};
-	}
-
-	private updateToolbar(): void {
-		if (!this.calendar || !this.batchSelectionManager) return;
-
-		const inSelectionMode = this.batchSelectionManager.isInSelectionMode();
-
-		if (inSelectionMode) {
-			this.cleanupEventCountButtons();
-		}
-
-		const { headerToolbar, customButtons } = this.buildToolbarConfig(inSelectionMode);
-
-		this.calendar.setOption("headerToolbar", headerToolbar);
-		// Cast to CustomButtonInput - className is accepted at runtime but not in FullCalendar's types
-		this.calendar.setOption("customButtons", customButtons as Record<string, CustomButtonInput>);
-		this.applyMobileControlsCollapsedState();
-		this.scheduleStickyOffsetsUpdate();
-
-		void afterRender().then(() => {
-			if (!inSelectionMode) {
-				this.applyFilteredEventsButtonState();
-				this.applySkippedEventsButtonState();
-				this.zoomManager.updateZoomLevelButton();
-			}
-			this.scheduleStickyOffsetsUpdate();
-		});
 	}
 
 	private getToolbarComponentDefinitions() {

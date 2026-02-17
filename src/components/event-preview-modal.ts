@@ -28,6 +28,8 @@ export class EventPreviewModal extends Modal {
 	private bundle: CalendarBundle;
 	private allFrontmatter: Frontmatter = {};
 
+	// ─── Lifecycle ───────────────────────────────────────────────
+
 	constructor(app: App, bundle: CalendarBundle, event: PreviewEventData) {
 		super(app);
 		this.bundle = bundle;
@@ -41,6 +43,13 @@ export class EventPreviewModal extends Modal {
 		this.loadAllFrontmatter();
 		this.renderEventPreview();
 	}
+
+	onClose(): void {
+		const { contentEl } = this;
+		contentEl.empty();
+	}
+
+	// ─── Data Loading ─────────────────────────────────────────────
 
 	private loadAllFrontmatter(): void {
 		try {
@@ -58,6 +67,8 @@ export class EventPreviewModal extends Modal {
 			console.error("Error loading frontmatter:", error);
 		}
 	}
+
+	// ─── Rendering ───────────────────────────────────────────────
 
 	private renderEventPreview(): void {
 		const { contentEl } = this;
@@ -165,6 +176,8 @@ export class EventPreviewModal extends Modal {
 		renderPropertyValue(valueEl, value, config);
 	}
 
+	// ─── Utilities ────────────────────────────────────────────────
+
 	private formatDateTime(date: Date | null, allDay: boolean): string {
 		if (!date || Number.isNaN(date.getTime())) return "N/A";
 
@@ -179,10 +192,5 @@ export class EventPreviewModal extends Modal {
 				};
 
 		return date.toLocaleDateString(undefined, options);
-	}
-
-	onClose(): void {
-		const { contentEl } = this;
-		contentEl.empty();
 	}
 }

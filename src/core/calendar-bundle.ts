@@ -25,6 +25,7 @@ import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore, type SettingsStore } from "./settings-store";
 
 export class CalendarBundle {
+	// ─── Lifecycle ───────────────────────────────────────────────
 	public readonly settingsStore: CalendarSettingsStore;
 	public readonly indexer: Indexer;
 	public readonly parser: Parser;
@@ -114,14 +115,6 @@ export class CalendarBundle {
 		);
 	}
 
-	getCalDAVSettings() {
-		return this.mainSettingsStore.currentSettings.caldav;
-	}
-
-	getICSSubscriptionSettings() {
-		return this.mainSettingsStore.currentSettings.icsSubscriptions;
-	}
-
 	async initialize(): Promise<void> {
 		return await onceAsync(async () => {
 			await this.notificationManager.start();
@@ -177,6 +170,34 @@ export class CalendarBundle {
 			this.updateRibbonIcon(this.settingsStore.currentSettings.showRibbonIcon);
 		})();
 	}
+
+	destroy(): void {
+		// Don't detach leaves here - Obsidian handles that automatically during plugin updates
+		// Detaching in onunload causes leaves to reset to their original positions
+		// See: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60
+
+		for (const sub of this.subscriptions) sub.unsubscribe();
+
+		if (this.ribbonIconEl) {
+			this.ribbonIconEl.remove();
+			this.ribbonIconEl = null;
+		}
+
+		this.caldavSync.destroy();
+		this.icsSubscriptionSync.destroy();
+		this.caldavSyncStateManager.destroy();
+		this.icsSubscriptionSyncStateManager.destroy();
+		this.holidayStore.clear();
+
+		this.commandManager.clearHistory();
+
+		// Release shared infrastructure through registry (will only destroy if no other calendars are using it)
+		this.indexerRegistry.releaseIndexer(this.calendarId, this.directory);
+		// Don't destroy indexer/parser/eventStore/recurringEventManager directly - the registry handles that
+		this.settingsStore?.destroy?.();
+	}
+
+	// ─── Calendar View ────────────────────────────────────────────
 
 	private updateRibbonIcon(show: boolean): void {
 		if (show && !this.ribbonIconEl) {
@@ -260,6 +281,8 @@ export class CalendarBundle {
 		return true;
 	}
 
+	// ─── Utilities & Query API ───────────────────────────────────
+
 	async undo(): Promise<boolean> {
 		return await this.commandManager.undo();
 	}
@@ -277,31 +300,15 @@ export class CalendarBundle {
 		this.indexer.resync();
 	}
 
-	destroy(): void {
-		// Don't detach leaves here - Obsidian handles that automatically during plugin updates
-		// Detaching in onunload causes leaves to reset to their original positions
-		// See: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60
-
-		for (const sub of this.subscriptions) sub.unsubscribe();
-
-		if (this.ribbonIconEl) {
-			this.ribbonIconEl.remove();
-			this.ribbonIconEl = null;
-		}
-
-		this.caldavSync.destroy();
-		this.icsSubscriptionSync.destroy();
-		this.caldavSyncStateManager.destroy();
-		this.icsSubscriptionSyncStateManager.destroy();
-		this.holidayStore.clear();
-
-		this.commandManager.clearHistory();
-
-		// Release shared infrastructure through registry (will only destroy if no other calendars are using it)
-		this.indexerRegistry.releaseIndexer(this.calendarId, this.directory);
-		// Don't destroy indexer/parser/eventStore/recurringEventManager directly - the registry handles that
-		this.settingsStore?.destroy?.();
+	getCalDAVSettings() {
+		return this.mainSettingsStore.currentSettings.caldav;
 	}
+
+	getICSSubscriptionSettings() {
+		return this.mainSettingsStore.currentSettings.icsSubscriptions;
+	}
+
+	// ─── Event CRUD ───────────────────────────────────────────────
 
 	async createEvent(eventData: EventSaveData): Promise<string | null> {
 		const settings = this.settingsStore.currentSettings;
@@ -371,6 +378,8 @@ export class CalendarBundle {
 		}
 	}
 
+	// ─── CalDAV Sync ──────────────────────────────────────────────
+
 	async syncAccount(accountId: string): Promise<void> {
 		return this.caldavSync.sync(accountId, () => this.performCalDAVSync(accountId));
 	}
@@ -427,6 +436,8 @@ export class CalendarBundle {
 			syncFn: (id) => this.syncAccount(id),
 		});
 	}
+
+	// ─── ICS Subscription Sync ────────────────────────────────────
 
 	async syncICSSubscription(subscriptionId: string): Promise<void> {
 		return this.icsSubscriptionSync.sync(subscriptionId, () => this.performICSSubscriptionSync(subscriptionId));

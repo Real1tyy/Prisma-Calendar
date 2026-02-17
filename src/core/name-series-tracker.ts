@@ -43,6 +43,8 @@ export class NameSeriesTracker {
 		nameKey: string;
 	}>;
 
+	// ─── Lifecycle ───────────────────────────────────────────────
+
 	constructor(
 		private app: App,
 		private indexer: Indexer,
@@ -81,6 +83,19 @@ export class NameSeriesTracker {
 		});
 	}
 
+	destroy(): void {
+		this.subscription?.unsubscribe();
+		this.subscription = null;
+		this.indexingCompleteSubscription?.unsubscribe();
+		this.indexingCompleteSubscription = null;
+		this.settingsSubscription?.unsubscribe();
+		this.settingsSubscription = null;
+		this.propagationDebouncer.destroy();
+		this.propagatingFilePaths.clear();
+	}
+
+	// ─── Indexer Event Handling ────────────────────────────────────
+
 	private handleIndexerEvent(event: IndexerEvent): void {
 		if (!this._settings.enableNameSeriesTracking) return;
 
@@ -100,6 +115,8 @@ export class NameSeriesTracker {
 				break;
 		}
 	}
+
+	// ─── Name Propagation ─────────────────────────────────────────
 
 	private handleNamePropagation(filePath: string, sourceFrontmatter: Frontmatter, diff: FrontmatterDiff): void {
 		const enabled = this._settings.propagateFrontmatterToNameSeries || this._settings.askBeforePropagatingToNameSeries;
@@ -161,6 +178,8 @@ export class NameSeriesTracker {
 		}
 	}
 
+	// ─── File Management ──────────────────────────────────────────
+
 	private updateFile(filePath: string, frontmatter: Record<string, unknown>): void {
 		this.removeFile(filePath);
 
@@ -203,6 +222,8 @@ export class NameSeriesTracker {
 		}
 	}
 
+	// ─── Public Query API ─────────────────────────────────────────
+
 	/** Returns all known name keys (lowercase event titles) tracked by the name series */
 	getAllNameKeys(): string[] {
 		return Array.from(this.seriesByName.keys());
@@ -223,16 +244,5 @@ export class NameSeriesTracker {
 			if (event) events.push(event);
 		}
 		return events;
-	}
-
-	destroy(): void {
-		this.subscription?.unsubscribe();
-		this.subscription = null;
-		this.indexingCompleteSubscription?.unsubscribe();
-		this.indexingCompleteSubscription = null;
-		this.settingsSubscription?.unsubscribe();
-		this.settingsSubscription = null;
-		this.propagationDebouncer.destroy();
-		this.propagatingFilePaths.clear();
 	}
 }

@@ -13,6 +13,8 @@ export class ZoomManager {
 	private currentZoomLevel: number;
 	private onZoomChangeCallback?: () => void;
 
+	// ─── Lifecycle ───────────────────────────────────────────────
+
 	constructor(settingsStore: CalendarSettingsStore) {
 		this.settingsStore = settingsStore;
 		this.currentZoomLevel = settingsStore.currentSettings.slotDurationMinutes;
@@ -37,43 +39,13 @@ export class ZoomManager {
 		this.viewContainerEl = null;
 	}
 
-	private get zoomLevels(): number[] {
-		return this.settingsStore.currentSettings.zoomLevels;
-	}
+	// ─── Zoom Control ─────────────────────────────────────────────
 
-	private getZoomLevelText(): string {
-		return `Zoom: ${this.currentZoomLevel}min`;
-	}
-
-	updateZoomLevelButton(): void {
-		const button = this.calendar?.el?.querySelector(".fc-zoomLevel-button");
-		if (!button) return;
-
-		const currentView = this.calendar?.view?.type;
-		const isTimeGridView = currentView?.includes("timeGrid");
-
-		if (isTimeGridView) {
-			const newText = this.getZoomLevelText();
-
-			// Always set textContent directly to prevent duplication
-			button.textContent = newText;
-
-			removeCls(button as HTMLElement, "zoom-button-hidden");
-			addCls(button as HTMLElement, "zoom-button-visible");
-		} else {
-			removeCls(button as HTMLElement, "zoom-button-visible");
-			addCls(button as HTMLElement, "zoom-button-hidden");
-		}
-	}
-
-	private getCurrentZoomIndex(): number {
-		const exactIndex = this.zoomLevels.indexOf(this.currentZoomLevel);
-
-		if (exactIndex !== -1) {
-			return exactIndex;
-		}
-
-		return Math.floor(this.zoomLevels.length / 2);
+	setCurrentZoomLevel(zoomLevel: number): void {
+		this.currentZoomLevel = zoomLevel;
+		this.scrollPreservingZoom(() => this.applyZoomToCalendar());
+		this.updateZoomLevelButton();
+		this.onZoomChangeCallback?.();
 	}
 
 	private setZoomLevel(zoomIndex: number): void {
@@ -84,13 +56,6 @@ export class ZoomManager {
 		this.scrollPreservingZoom(() => this.applyZoomToCalendar());
 		this.updateZoomLevelButton();
 		this.onZoomChangeCallback?.();
-	}
-
-	private applyZoomToCalendar(): void {
-		if (!this.calendar) return;
-
-		this.calendar.setOption("slotDuration", formatDuration(this.currentZoomLevel));
-		this.calendar.setOption("snapDuration", formatDuration(this.currentZoomLevel));
 	}
 
 	private scrollPreservingZoom(applyZoom: () => void): void {
@@ -127,6 +92,73 @@ export class ZoomManager {
 			scrollable.scrollTop = slotsOffsetFromScrollable + targetSlotsY - newScrollableRect.height / 2;
 		});
 	}
+
+	private applyZoomToCalendar(): void {
+		if (!this.calendar) return;
+
+		this.calendar.setOption("slotDuration", formatDuration(this.currentZoomLevel));
+		this.calendar.setOption("snapDuration", formatDuration(this.currentZoomLevel));
+	}
+
+	// ─── Zoom Button ──────────────────────────────────────────────
+
+	updateZoomLevelButton(): void {
+		const button = this.calendar?.el?.querySelector(".fc-zoomLevel-button");
+		if (!button) return;
+
+		const currentView = this.calendar?.view?.type;
+		const isTimeGridView = currentView?.includes("timeGrid");
+
+		if (isTimeGridView) {
+			const newText = this.getZoomLevelText();
+
+			// Always set textContent directly to prevent duplication
+			button.textContent = newText;
+
+			removeCls(button as HTMLElement, "zoom-button-hidden");
+			addCls(button as HTMLElement, "zoom-button-visible");
+		} else {
+			removeCls(button as HTMLElement, "zoom-button-visible");
+			addCls(button as HTMLElement, "zoom-button-hidden");
+		}
+	}
+
+	createZoomLevelButton(): { text: string; click: (e: MouseEvent) => void } {
+		return {
+			text: this.getZoomLevelText(), // Return current zoom level text immediately
+			click: (e: MouseEvent) => {
+				this.showZoomMenu(e);
+			},
+		};
+	}
+
+	private showZoomMenu(e: MouseEvent): void {
+		const menu = new Menu();
+
+		const currentZoomIndex = this.getCurrentZoomIndex();
+
+		this.zoomLevels.forEach((zoomLevel, index) => {
+			menu.addItem((item) => {
+				item
+					.setTitle(`${zoomLevel} min`)
+					.setIcon(index === currentZoomIndex ? "check" : "")
+					.onClick(() => {
+						this.setZoomLevel(index);
+					});
+			});
+		});
+
+		// Show menu at button position
+		const target = e.target as HTMLElement;
+		const rect = target.getBoundingClientRect();
+		menu.showAtPosition({ x: rect.left, y: rect.bottom + 4 });
+	}
+
+	private getZoomLevelText(): string {
+		return `Zoom: ${this.currentZoomLevel}min`;
+	}
+
+	// ─── Wheel Listener ───────────────────────────────────────────
 
 	private setupZoomListener(): void {
 		if (!this.container) return;
@@ -169,49 +201,27 @@ export class ZoomManager {
 		}
 	}
 
+	// ─── Utilities & Query API ────────────────────────────────────
+
 	getCurrentZoomLevel(): number {
 		return this.currentZoomLevel;
-	}
-
-	setCurrentZoomLevel(zoomLevel: number): void {
-		this.currentZoomLevel = zoomLevel;
-		this.scrollPreservingZoom(() => this.applyZoomToCalendar());
-		this.updateZoomLevelButton();
-		this.onZoomChangeCallback?.();
 	}
 
 	setOnZoomChangeCallback(callback: () => void): void {
 		this.onZoomChangeCallback = callback;
 	}
 
-	createZoomLevelButton(): { text: string; click: (e: MouseEvent) => void } {
-		return {
-			text: this.getZoomLevelText(), // Return current zoom level text immediately
-			click: (e: MouseEvent) => {
-				this.showZoomMenu(e);
-			},
-		};
+	private getCurrentZoomIndex(): number {
+		const exactIndex = this.zoomLevels.indexOf(this.currentZoomLevel);
+
+		if (exactIndex !== -1) {
+			return exactIndex;
+		}
+
+		return Math.floor(this.zoomLevels.length / 2);
 	}
 
-	private showZoomMenu(e: MouseEvent): void {
-		const menu = new Menu();
-
-		const currentZoomIndex = this.getCurrentZoomIndex();
-
-		this.zoomLevels.forEach((zoomLevel, index) => {
-			menu.addItem((item) => {
-				item
-					.setTitle(`${zoomLevel} min`)
-					.setIcon(index === currentZoomIndex ? "check" : "")
-					.onClick(() => {
-						this.setZoomLevel(index);
-					});
-			});
-		});
-
-		// Show menu at button position
-		const target = e.target as HTMLElement;
-		const rect = target.getBoundingClientRect();
-		menu.showAtPosition({ x: rect.left, y: rect.bottom + 4 });
+	private get zoomLevels(): number[] {
+		return this.settingsStore.currentSettings.zoomLevels;
 	}
 }

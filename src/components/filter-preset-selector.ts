@@ -5,6 +5,8 @@ import type { FilterPreset } from "../types/settings";
 export class FilterPresetSelector {
 	private select: HTMLSelectElement | null = null;
 
+	// ─── Lifecycle ───────────────────────────────────────────────
+
 	constructor(
 		private presets: FilterPreset[],
 		private onPresetSelected: (expression: string) => void
@@ -16,43 +18,17 @@ export class FilterPresetSelector {
 		}, 100);
 	}
 
+	destroy(): void {
+		this.select = null;
+	}
+
+	// ─── Preset Management ────────────────────────────────────────
+
 	updatePresets(presets: FilterPreset[]): void {
 		this.presets = presets;
 		if (this.select) {
 			this.rebuildSelectOptions();
 		}
-	}
-
-	open(): void {
-		if (!this.select) return;
-
-		// Focus the select element
-		this.select.focus();
-
-		// Use showPicker() if available (modern browsers)
-		if ("showPicker" in this.select) {
-			try {
-				(this.select as unknown as { showPicker: () => void }).showPicker();
-			} catch {
-				// Fallback if showPicker fails
-				this.triggerDropdownOpen();
-			}
-		} else {
-			// Fallback for older browsers
-			this.triggerDropdownOpen();
-		}
-	}
-
-	private triggerDropdownOpen(): void {
-		if (!this.select) return;
-
-		// Create and dispatch a mousedown event to open the dropdown
-		const event = new MouseEvent("mousedown", {
-			bubbles: true,
-			cancelable: true,
-			view: window,
-		});
-		this.select.dispatchEvent(event);
 	}
 
 	private injectSelect(container: HTMLElement): void {
@@ -131,7 +107,37 @@ export class FilterPresetSelector {
 		this.select.selectedIndex = 0;
 	}
 
-	destroy(): void {
-		this.select = null;
+	// ─── Dropdown Control ─────────────────────────────────────────
+
+	open(): void {
+		if (!this.select) return;
+
+		// Focus the select element
+		this.select.focus();
+
+		// Use showPicker() if available (modern browsers)
+		if ("showPicker" in this.select) {
+			try {
+				(this.select as unknown as { showPicker: () => void }).showPicker();
+			} catch {
+				// Fallback if showPicker fails
+				this.triggerDropdownOpen();
+			}
+		} else {
+			// Fallback for older browsers
+			this.triggerDropdownOpen();
+		}
+	}
+
+	private triggerDropdownOpen(): void {
+		if (!this.select) return;
+
+		// Create and dispatch a mousedown event to open the dropdown
+		const event = new MouseEvent("mousedown", {
+			bubbles: true,
+			cancelable: true,
+			view: window,
+		});
+		this.select.dispatchEvent(event);
 	}
 }

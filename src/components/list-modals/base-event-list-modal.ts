@@ -23,6 +23,8 @@ export abstract class BaseEventListModal extends Modal {
 	protected filteredItems: EventListItem[] = [];
 	protected items: EventListItem[] = [];
 
+	// ─── Abstract Interface ───────────────────────────────────────
+
 	// Abstract methods that subclasses must implement
 	protected abstract getTitle(): string;
 	protected abstract getEmptyMessage(): string;
@@ -42,6 +44,8 @@ export abstract class BaseEventListModal extends Modal {
 	protected onBeforeRender(): void {
 		// Default: no async initialization
 	}
+
+	// ─── Lifecycle ───────────────────────────────────────────────
 
 	onOpen(): void {
 		const { contentEl } = this;
@@ -105,6 +109,14 @@ export abstract class BaseEventListModal extends Modal {
 		this.renderItems();
 	}
 
+	onClose(): void {
+		const { contentEl } = this;
+		contentEl.empty();
+		this.onModalClose();
+	}
+
+	// ─── Hotkeys ─────────────────────────────────────────────────
+
 	protected registerHotkeys(): void {
 		// Register Ctrl/Cmd+F to focus search
 		this.scope.register(["Mod"], "f", (evt) => {
@@ -152,6 +164,8 @@ export abstract class BaseEventListModal extends Modal {
 		}
 	}
 
+	// ─── Search & Filtering ───────────────────────────────────────
+
 	protected filterItems(searchText: string): void {
 		const normalizedSearch = searchText.toLowerCase().trim();
 
@@ -190,6 +204,8 @@ export abstract class BaseEventListModal extends Modal {
 
 		countEl.textContent = countText;
 	}
+
+	// ─── Rendering ───────────────────────────────────────────────
 
 	protected renderItems(): void {
 		if (!this.listContainer) return;
@@ -255,11 +271,7 @@ export abstract class BaseEventListModal extends Modal {
 		}
 	}
 
-	onClose(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-		this.onModalClose();
-	}
+	// ─── Item Management ──────────────────────────────────────────
 
 	// Helper method for removing items with animation
 	protected removeItem(itemEl: HTMLElement, item: EventListItem): void {
