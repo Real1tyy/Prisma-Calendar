@@ -37,6 +37,7 @@ import {
 } from "../../utils/format";
 import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../utils/obsidian";
+import { afterRender } from "../../utils/scheduling";
 import { parseAsLocalDate } from "../../utils/time-formatter";
 import { Stopwatch } from "../stopwatch";
 import { openCategoryAssignModal } from "./assignment-modal";
@@ -189,10 +190,8 @@ export abstract class BaseEventModal extends Modal {
 			return;
 		}
 
-		requestAnimationFrame(() => {
-			setTimeout(() => {
-				this.titleInput.focus();
-			}, 50);
+		void afterRender().then(() => {
+			this.titleInput.focus();
 		});
 	}
 

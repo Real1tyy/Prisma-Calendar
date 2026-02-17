@@ -39,7 +39,7 @@ export class UntrackedEventCreateModal extends Modal {
 			return false;
 		});
 
-		setTimeout(() => this.titleInput.focus(), 0);
+		requestAnimationFrame(() => this.titleInput.focus());
 	}
 
 	onClose(): void {

@@ -49,6 +49,7 @@ import {
 	toLocalISOString,
 } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
+import { afterRender } from "../utils/scheduling";
 import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
@@ -182,7 +183,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			document.removeEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
 		});
 
-		setTimeout(() => this.containerEl.focus(), 100);
+		requestAnimationFrame(() => this.containerEl.focus());
 
 		// Re-focus container when this leaf becomes active (e.g. switching back from another tab)
 		// so keyboard navigation (arrow keys for intervals) works immediately without clicking
@@ -518,12 +519,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			datesSet: () => {
 				this.scheduleRefreshEvents();
-				// Update zoom button visibility when view changes
-				setTimeout(() => this.zoomManager.updateZoomLevelButton(), 100);
-				// Save current state when view or date changes
-				setTimeout(() => this.saveCurrentState(), 200);
-				// Update upcoming event highlight when view changes
-				setTimeout(() => this.updateUpcomingEventHighlight(), 300);
+				// Update zoom button, save state, and highlight after FC re-renders
+				void afterRender().then(() => {
+					this.zoomManager.updateZoomLevelButton();
+					this.saveCurrentState();
+					this.updateUpcomingEventHighlight();
+				});
 			},
 
 			eventsSet: () => {
@@ -917,14 +918,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.applyMobileControlsCollapsedState();
 		this.scheduleStickyOffsetsUpdate();
 
-		setTimeout(() => {
+		void afterRender().then(() => {
 			if (!inSelectionMode) {
 				this.applyFilteredEventsButtonState();
 				this.applySkippedEventsButtonState();
 				this.zoomManager.updateZoomLevelButton();
 			}
 			this.scheduleStickyOffsetsUpdate();
-		}, 0);
+		});
 	}
 
 	private getToolbarComponentDefinitions() {

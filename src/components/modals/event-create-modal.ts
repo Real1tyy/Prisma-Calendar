@@ -1,5 +1,6 @@
 import { MinimizedModalManager } from "../../core/minimized-modal-manager";
 import { openFileInNewTab } from "../../utils/obsidian";
+import { afterRender } from "../../utils/scheduling";
 import { BaseEventModal } from "./base-event-modal";
 
 export class EventCreateModal extends BaseEventModal {
@@ -36,10 +37,8 @@ export class EventCreateModal extends BaseEventModal {
 
 		if (this.autoStartStopwatch && this.stopwatch) {
 			this.stopwatch.expand();
-			requestAnimationFrame(() => {
-				setTimeout(() => {
-					this.stopwatch?.start();
-				}, 100);
+			void afterRender().then(() => {
+				this.stopwatch?.start();
 			});
 		}
 	}
