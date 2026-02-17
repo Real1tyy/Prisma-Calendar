@@ -81,6 +81,7 @@ export interface NodeRecurringEvent {
 	rrules: RRuleFrontmatter;
 	frontmatter: Frontmatter;
 	metadata: EventMetadata; // validated typed data from frontmatter
+	skipped: boolean; // pre-computed from frontmatter skip property at parse time
 	content?: string;
 }
 

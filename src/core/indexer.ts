@@ -384,6 +384,7 @@ export class Indexer {
 			rrules,
 			frontmatter: frontmatterCopy,
 			metadata,
+			skipped: metadata.skip,
 			content: undefined, // Empty initially - will be loaded on-demand by RecurringEventManager
 		};
 	}

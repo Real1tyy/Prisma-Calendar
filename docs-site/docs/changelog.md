@@ -8,7 +8,7 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 
-- **Self-healing for duplicate events**: The indexer now automatically detects and trashes duplicate recurring event instances and duplicate integration events (ICS/CalDAV) caused by race conditions during concurrent syncs. Duplicates are moved to trash as they are indexed, keeping the first-seen file.
+- **Self-healing for duplicate events**: The indexer now automatically detects and trashes duplicate recurring event instances and duplicate integration events (ICS/CalDAV) caused by race conditions during concurrent syncs. Duplicates are moved to trash as they are indexed, keeping the first-seen file. The recurring event manager also enforces uniqueness per `(rruleId, instanceDate)` — if a second file claims the same slot (from vault copies, sync conflicts, or race conditions), the newcomer is trashed immediately without being registered.
 
 - **Date format corruption on drag-drop**: Fixed `shiftISO()` corrupting date-only values (e.g. `2026-01-25`) into full timestamps (e.g. `2026-01-25T00:00:00.000Z`) when all-day events were drag-dropped or shifted. The function now preserves the original date-only format.
 
