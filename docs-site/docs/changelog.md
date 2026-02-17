@@ -16,6 +16,8 @@ All notable changes to this project will be documented here.
 
 - **Date format corruption on drag-drop**: Fixed `shiftISO()` corrupting date-only values (e.g. `2026-01-25`) into full timestamps (e.g. `2026-01-25T00:00:00.000Z`) when all-day events were drag-dropped or shifted. The function now preserves the original date-only format.
 
+- **Physical instances not correctly renamed when source recurring event is renamed**: When renaming a recurring source event, physical instance files were not correctly renamed — the old event name would persist in their filenames (e.g. `Old Name 2026-01-15-…` instead of `New Name 2026-01-15-…`). 
+
 ---
 
 ## 2.1.0 - 2/16/2026

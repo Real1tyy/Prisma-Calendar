@@ -52,8 +52,8 @@ export const extractDateAndSuffix = (basename: string): { dateStr: string; suffi
  * @returns New filename, or null if current filename format is invalid
  *
  * @example
- * rebuildPhysicalInstanceFilename("Old Title 2025-01-15-ABC123", "New Title-XYZ789")
- * // Returns: "New Title 2025-01-15-ABC123"
+ * rebuildPhysicalInstanceFilename("Team Meeting 2025-01-15-00001125853328", "Project Planning-20250203140530")
+ * // Returns: "Project Planning 2025-01-15-00001125853328"
  */
 export const rebuildPhysicalInstanceFilename = (currentBasename: string, newTitle: string): string | null => {
 	const dateAndSuffix = extractDateAndSuffix(currentBasename);
@@ -63,8 +63,11 @@ export const rebuildPhysicalInstanceFilename = (currentBasename: string, newTitl
 
 	const { dateStr, suffix } = dateAndSuffix;
 
-	// Remove any zettel ID from the new title (just in case)
-	const newTitleClean = newTitle.replace(/-[A-Z0-9]{6}$/, "");
+	// Remove any zettel ID from the new title (14-digit numeric format used by Prisma)
+	const newTitleClean = newTitle
+		.replace(/-\d{14}$/, "")
+		.replace(/\s+\d{14}$/, "")
+		.trim();
 	const newTitleSanitized = sanitizeFilenamePreserveSpaces(newTitleClean);
 
 	return `${newTitleSanitized} ${dateStr}${suffix}`;
