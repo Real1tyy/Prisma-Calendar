@@ -7013,6 +7013,26 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
 }
 
+.prisma-untracked-dropdown-create-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding: 10px 12px;
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-bottom: 1px solid var(--background-modifier-border);
+	font-size: var(--font-ui-small);
+	font-family: var(--font-interface);
+	font-weight: var(--font-semibold);
+	cursor: pointer;
+}
+
+.prisma-untracked-dropdown-create-btn:hover {
+	background-color: var(--interactive-accent-hover);
+}
+
 .prisma-untracked-dropdown-search {
 	padding: 12px;
 	border-bottom: 1px solid var(--background-modifier-border);

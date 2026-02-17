@@ -39,6 +39,10 @@ The dropdown appears in the calendar toolbar as an **"Untracked"** button. Click
 - Color coding based on your color rules
 - Search bar to filter events by title
 
+### ➕ Create from Dropdown
+
+A **"+ Create untracked event"** button appears at the top of the dropdown. Clicking it closes the dropdown and opens the create modal, identical to using the "Create new untracked event" command from the command palette.
+
 ### 🎯 Drag & Drop - From Dropdown to Calendar
 
 Drag any untracked event from the dropdown onto the calendar to assign it a date:

@@ -77,6 +77,16 @@ export class UntrackedEventsDropdown {
 		this.dropdownEl.className = cls("untracked-dropdown");
 		addCls(this.dropdownEl, "hidden");
 
+		const createBtnEl = this.dropdownEl.createEl("button", {
+			text: "+ Create untracked event",
+			cls: cls("untracked-dropdown-create-btn"),
+		});
+		createBtnEl.addEventListener("click", (e) => {
+			e.stopPropagation();
+			this.close();
+			this.bundle.plugin.apiManager.openCreateUntrackedEventModal();
+		});
+
 		const searchContainer = this.dropdownEl.createDiv(cls("untracked-dropdown-search"));
 		this.searchInput = searchContainer.createEl("input", {
 			type: "text",

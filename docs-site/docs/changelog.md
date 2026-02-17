@@ -6,6 +6,10 @@ All notable changes to this project will be documented here.
 
 ## 2.2.0 - 2/17/2026
 
+### Added
+
+- **Create untracked event from dropdown**: A "+ Create untracked event" button is now shown at the top of the untracked events dropdown. Clicking it opens the same modal as the "Create new untracked event" command. See [Untracked Events](./features/untracked-events.md#create-from-dropdown).
+
 ### Fixed
 
 - **Self-healing for duplicate events**: The indexer now automatically detects and trashes duplicate recurring event instances and duplicate integration events (ICS/CalDAV) caused by race conditions during concurrent syncs. Duplicates are moved to trash as they are indexed, keeping the first-seen file. The recurring event manager also enforces uniqueness per `(rruleId, instanceDate)` — if a second file claims the same slot (from vault copies, sync conflicts, or race conditions), the newcomer is trashed immediately without being registered.
