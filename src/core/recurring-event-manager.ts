@@ -70,6 +70,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private eventStore: EventStore | null = null;
 	private categoryTracker: CategoryTracker | null = null;
 
+	// ─── Lifecycle ────────────────────────────────────────────────
+
 	constructor(
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
@@ -96,6 +98,37 @@ export class RecurringEventManager extends DebouncedNotifier {
 			void this.handleIndexerEvent(event);
 		});
 	}
+
+	destroy(): void {
+		this.subscription?.unsubscribe();
+		this.subscription = null;
+		this.settingsSubscription?.unsubscribe();
+		this.settingsSubscription = null;
+		this.indexingCompleteSubscription?.unsubscribe();
+		this.indexingCompleteSubscription = null;
+		this.propagationDebouncer.destroy();
+		super.destroy();
+		this.recurringEventsMap.clear();
+		this.creationLocks.clear();
+		this.sourceFileToRRuleId.clear();
+		this.instanceFileToRRuleId.clear();
+		this.physicalSourceToRRuleIds.clear();
+		this.ensureInstancesLocks.clear();
+	}
+
+	/**
+	 * Clears all internal state without notifying subscribers.
+	 * Used during resync to avoid triggering a refresh before new data is loaded.
+	 */
+	clearWithoutNotify(): void {
+		this.recurringEventsMap.clear();
+		this.sourceFileToRRuleId.clear();
+		this.instanceFileToRRuleId.clear();
+		this.physicalSourceToRRuleIds.clear();
+		// Keep locks intact to prevent race conditions during resync
+	}
+
+	// ─── Indexer Event Handling ───────────────────────────────────
 
 	private async handleIndexerEvent(event: IndexerEvent): Promise<void> {
 		switch (event.type) {
@@ -129,14 +162,6 @@ export class RecurringEventManager extends DebouncedNotifier {
 		return withLock(this.ensureInstancesLocks, recurringEvent.rRuleId, () =>
 			this.handleRecurringEventRenamed(recurringEvent)
 		);
-	}
-
-	private getPhysicalInstancesList(
-		physicalInstances: Map<string, PhysicalInstance>,
-		removeIgnored = false
-	): PhysicalInstance[] {
-		const instances = Array.from(physicalInstances.values());
-		return removeIgnored ? instances.filter((instance) => !instance.ignored) : instances;
 	}
 
 	private async handleRecurringEventRenamed(recurringEvent: NodeRecurringEvent): Promise<void> {
@@ -240,6 +265,101 @@ export class RecurringEventManager extends DebouncedNotifier {
 		);
 	}
 
+	private handleFileChanged(filePath: string, metadata: EventMetadata): void {
+		const { rruleId, instanceDate, ignoreRecurring, source } = metadata;
+
+		if (rruleId && instanceDate) {
+			const parsedInstanceDate = DateTime.fromISO(instanceDate, {
+				zone: "utc",
+			});
+			if (parsedInstanceDate.isValid) {
+				let recurringData = this.recurringEventsMap.get(rruleId);
+
+				if (!recurringData) {
+					recurringData = {
+						recurringEvent: null,
+						physicalInstances: new Map(),
+					};
+					this.recurringEventsMap.set(rruleId, recurringData);
+				}
+
+				const dateKey = parsedInstanceDate.toISODate();
+				if (dateKey) {
+					const existing = recurringData.physicalInstances.get(dateKey);
+					if (existing && existing.filePath !== filePath) {
+						// First file wins — trash the newcomer (matches ICS/CalDAV convention)
+						trashDuplicateFile(this.app, filePath, `recurring instance (rruleId: ${rruleId}, date: ${dateKey})`);
+						return;
+					}
+
+					recurringData.physicalInstances.set(dateKey, {
+						filePath,
+						instanceDate: parsedInstanceDate,
+						ignored: ignoreRecurring,
+					});
+					this.instanceFileToRRuleId.set(filePath, rruleId);
+					this.trackPhysicalSourceMapping(rruleId, source, filePath);
+					this.scheduleRefresh();
+				}
+			}
+		}
+	}
+
+	private trackPhysicalSourceMapping(rruleId: string, sourceLinkValue: unknown, instancePath: string): void {
+		if (typeof sourceLinkValue !== "string" || !sourceLinkValue.trim()) {
+			return;
+		}
+		const sourcePath = this.resolvePhysicalSourcePath(sourceLinkValue, instancePath);
+		if (!sourcePath) {
+			return;
+		}
+		const existing = this.physicalSourceToRRuleIds.get(sourcePath) ?? new Set<string>();
+		existing.add(rruleId);
+		this.physicalSourceToRRuleIds.set(sourcePath, existing);
+	}
+
+	private resolvePhysicalSourcePath(sourceLink: string, instancePath: string): string | null {
+		const linkPath = getObsidianLinkPath(sourceLink);
+		const sourceFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, instancePath);
+		return sourceFile?.path || null;
+	}
+
+	private handleFileDeleted(event: IndexerEvent): void {
+		const rruleId = this.sourceFileToRRuleId.get(event.filePath);
+
+		if (rruleId) {
+			if (event.isRename) {
+				// Rename: only remove the old path mapping, keep recurring event data
+				// and physical instances intact. The subsequent "recurring-event-found"
+				// event for the new path will re-associate the data and rename instances.
+				this.sourceFileToRRuleId.delete(event.filePath);
+			} else {
+				this.recurringEventsMap.delete(rruleId);
+				this.sourceFileToRRuleId.delete(event.filePath);
+			}
+			this.scheduleRefresh();
+			return;
+		}
+
+		// Check if this is an instance file using the O(1) cache
+		const instanceRRuleId = this.instanceFileToRRuleId.get(event.filePath);
+		if (instanceRRuleId) {
+			this.instanceFileToRRuleId.delete(event.filePath);
+			const data = this.recurringEventsMap.get(instanceRRuleId);
+			if (data) {
+				for (const [dateKey, instance] of data.physicalInstances.entries()) {
+					if (instance.filePath === event.filePath) {
+						data.physicalInstances.delete(dateKey);
+						break;
+					}
+				}
+			}
+			this.scheduleRefresh();
+		}
+	}
+
+	// ─── Recurring Event Registration ─────────────────────────────
+
 	private async processAllRecurringEvents(): Promise<void> {
 		await Promise.all(
 			Array.from(this.recurringEventsMap.entries()).map(async ([rruleId, data]) => {
@@ -254,35 +374,6 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 		// Force immediate notification after all recurring events are processed
 		this.flushPendingRefresh();
-	}
-
-	destroy(): void {
-		this.subscription?.unsubscribe();
-		this.subscription = null;
-		this.settingsSubscription?.unsubscribe();
-		this.settingsSubscription = null;
-		this.indexingCompleteSubscription?.unsubscribe();
-		this.indexingCompleteSubscription = null;
-		this.propagationDebouncer.destroy();
-		super.destroy();
-		this.recurringEventsMap.clear();
-		this.creationLocks.clear();
-		this.sourceFileToRRuleId.clear();
-		this.instanceFileToRRuleId.clear();
-		this.physicalSourceToRRuleIds.clear();
-		this.ensureInstancesLocks.clear();
-	}
-
-	/**
-	 * Clears all internal state without notifying subscribers.
-	 * Used during resync to avoid triggering a refresh before new data is loaded.
-	 */
-	clearWithoutNotify(): void {
-		this.recurringEventsMap.clear();
-		this.sourceFileToRRuleId.clear();
-		this.instanceFileToRRuleId.clear();
-		this.physicalSourceToRRuleIds.clear();
-		// Keep locks intact to prevent race conditions during resync
 	}
 
 	private addRecurringEvent(recurringEvent: NodeRecurringEvent, oldFrontmatter?: Frontmatter): void {
@@ -395,98 +486,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		);
 	}
 
-	private resolvePhysicalSourcePath(sourceLink: string, instancePath: string): string | null {
-		const linkPath = getObsidianLinkPath(sourceLink);
-		const sourceFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, instancePath);
-		return sourceFile?.path || null;
-	}
-
-	private trackPhysicalSourceMapping(rruleId: string, sourceLinkValue: unknown, instancePath: string): void {
-		if (typeof sourceLinkValue !== "string" || !sourceLinkValue.trim()) {
-			return;
-		}
-		const sourcePath = this.resolvePhysicalSourcePath(sourceLinkValue, instancePath);
-		if (!sourcePath) {
-			return;
-		}
-		const existing = this.physicalSourceToRRuleIds.get(sourcePath) ?? new Set<string>();
-		existing.add(rruleId);
-		this.physicalSourceToRRuleIds.set(sourcePath, existing);
-	}
-
-	private handleFileChanged(filePath: string, metadata: EventMetadata): void {
-		const { rruleId, instanceDate, ignoreRecurring, source } = metadata;
-
-		if (rruleId && instanceDate) {
-			const parsedInstanceDate = DateTime.fromISO(instanceDate, {
-				zone: "utc",
-			});
-			if (parsedInstanceDate.isValid) {
-				let recurringData = this.recurringEventsMap.get(rruleId);
-
-				if (!recurringData) {
-					recurringData = {
-						recurringEvent: null,
-						physicalInstances: new Map(),
-					};
-					this.recurringEventsMap.set(rruleId, recurringData);
-				}
-
-				const dateKey = parsedInstanceDate.toISODate();
-				if (dateKey) {
-					const existing = recurringData.physicalInstances.get(dateKey);
-					if (existing && existing.filePath !== filePath) {
-						// First file wins — trash the newcomer (matches ICS/CalDAV convention)
-						trashDuplicateFile(this.app, filePath, `recurring instance (rruleId: ${rruleId}, date: ${dateKey})`);
-						return;
-					}
-
-					recurringData.physicalInstances.set(dateKey, {
-						filePath,
-						instanceDate: parsedInstanceDate,
-						ignored: ignoreRecurring,
-					});
-					this.instanceFileToRRuleId.set(filePath, rruleId);
-					this.trackPhysicalSourceMapping(rruleId, source, filePath);
-					this.scheduleRefresh();
-				}
-			}
-		}
-	}
-
-	private handleFileDeleted(event: IndexerEvent): void {
-		const rruleId = this.sourceFileToRRuleId.get(event.filePath);
-
-		if (rruleId) {
-			if (event.isRename) {
-				// Rename: only remove the old path mapping, keep recurring event data
-				// and physical instances intact. The subsequent "recurring-event-found"
-				// event for the new path will re-associate the data and rename instances.
-				this.sourceFileToRRuleId.delete(event.filePath);
-			} else {
-				this.recurringEventsMap.delete(rruleId);
-				this.sourceFileToRRuleId.delete(event.filePath);
-			}
-			this.scheduleRefresh();
-			return;
-		}
-
-		// Check if this is an instance file using the O(1) cache
-		const instanceRRuleId = this.instanceFileToRRuleId.get(event.filePath);
-		if (instanceRRuleId) {
-			this.instanceFileToRRuleId.delete(event.filePath);
-			const data = this.recurringEventsMap.get(instanceRRuleId);
-			if (data) {
-				for (const [dateKey, instance] of data.physicalInstances.entries()) {
-					if (instance.filePath === event.filePath) {
-						data.physicalInstances.delete(dateKey);
-						break;
-					}
-				}
-			}
-			this.scheduleRefresh();
-		}
-	}
+	// ─── Physical Instance Management ─────────────────────────────
 
 	private async ensurePhysicalInstancesWithLock(rruleId: string): Promise<void> {
 		return withLock(this.ensureInstancesLocks, rruleId, async () => {
@@ -585,36 +585,6 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 	}
 
-	private getNextOccurrenceFromTime(
-		recurringEvent: NodeRecurringEvent,
-		existingInstances: Array<PhysicalInstance>,
-		fromDate: DateTime
-	): DateTime {
-		const nonIgnoredInstances = existingInstances.filter((instance) => !instance.ignored);
-
-		if (nonIgnoredInstances.length > 0) {
-			const sortedInstances = [...nonIgnoredInstances].sort(
-				(a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis()
-			);
-			const latestInstanceDate = sortedInstances[sortedInstances.length - 1].instanceDate;
-			return getNextOccurrence(latestInstanceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
-		}
-
-		const sourceDateTime = getStartDateTime(recurringEvent.rrules);
-		const firstValidDate = findFirstValidStartDate(recurringEvent.rrules);
-
-		let currentDate = firstValidDate;
-		if (firstValidDate.hasSame(sourceDateTime, "day")) {
-			currentDate = getNextOccurrence(firstValidDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
-		}
-
-		while (currentDate <= fromDate) {
-			currentDate = getNextOccurrence(currentDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
-		}
-
-		return currentDate;
-	}
-
 	private async createPhysicalInstance(
 		recurringEvent: NodeRecurringEvent,
 		instanceDate: DateTime
@@ -707,6 +677,49 @@ export class RecurringEventManager extends DebouncedNotifier {
 		});
 	}
 
+	private getNextOccurrenceFromTime(
+		recurringEvent: NodeRecurringEvent,
+		existingInstances: Array<PhysicalInstance>,
+		fromDate: DateTime
+	): DateTime {
+		const nonIgnoredInstances = existingInstances.filter((instance) => !instance.ignored);
+
+		if (nonIgnoredInstances.length > 0) {
+			const sortedInstances = [...nonIgnoredInstances].sort(
+				(a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis()
+			);
+			const latestInstanceDate = sortedInstances[sortedInstances.length - 1].instanceDate;
+			return getNextOccurrence(latestInstanceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
+		}
+
+		const sourceDateTime = getStartDateTime(recurringEvent.rrules);
+		const firstValidDate = findFirstValidStartDate(recurringEvent.rrules);
+
+		let currentDate = firstValidDate;
+		if (firstValidDate.hasSame(sourceDateTime, "day")) {
+			currentDate = getNextOccurrence(firstValidDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
+		}
+
+		while (currentDate <= fromDate) {
+			currentDate = getNextOccurrence(currentDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
+		}
+
+		return currentDate;
+	}
+
+	private generateNodeInstanceFilePath(recurringEvent: NodeRecurringEvent, instanceDate: DateTime): string {
+		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
+		const titleNoZettel = removeZettelId(recurringEvent.title);
+		const zettelHash = hashRRuleIdToZettelFormat(recurringEvent.rRuleId);
+		const base = sanitizeForFilename(`${titleNoZettel} ${dateStr}`, {
+			style: "preserve",
+		});
+		const folder = this.settings.directory ? `${this.settings.directory}/` : "";
+		return `${folder}${base}-${zettelHash}.md`;
+	}
+
+	// ─── Virtual Instance Generation ──────────────────────────────
+
 	generateAllVirtualInstances(rangeStart: DateTime, rangeEnd: DateTime): CalendarEvent[] {
 		const virtualEvents = Array.from(this.recurringEventsMap.values()).flatMap(
 			({ recurringEvent, physicalInstances }) =>
@@ -779,31 +792,6 @@ export class RecurringEventManager extends DebouncedNotifier {
 		return virtualInstances;
 	}
 
-	private calculateInstanceTimes(
-		recurringEvent: NodeRecurringEvent,
-		instanceDate: DateTime
-	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
-		const { rrules } = recurringEvent;
-		const sourceStart = getStartDateTime(rrules).toUTC();
-		const sourceEnd = rrules.allDay ? null : rrules.endTime?.toUTC() || null;
-
-		const normalizedInstanceDate = rrules.allDay
-			? DateTime.fromObject(
-					{
-						year: instanceDate.year,
-						month: instanceDate.month,
-						day: instanceDate.day,
-					},
-					{ zone: "utc" }
-				)
-			: instanceDate.toUTC();
-
-		const instanceStart = applySourceTimeToInstanceDate(normalizedInstanceDate, sourceStart);
-		const instanceEnd = sourceEnd ? applySourceTimeToInstanceDate(normalizedInstanceDate, sourceEnd) : null;
-
-		return { instanceStart, instanceEnd };
-	}
-
 	private createVirtualEvent(occurrence: NodeRecurringEventInstance): CalendarEvent {
 		const { recurringEvent, instanceDate } = occurrence;
 		const { instanceStart, instanceEnd } = this.calculateInstanceTimes(recurringEvent, instanceDate);
@@ -844,47 +832,32 @@ export class RecurringEventManager extends DebouncedNotifier {
 				};
 	}
 
-	private generateNodeInstanceFilePath(recurringEvent: NodeRecurringEvent, instanceDate: DateTime): string {
-		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
-		const titleNoZettel = removeZettelId(recurringEvent.title);
-		const zettelHash = hashRRuleIdToZettelFormat(recurringEvent.rRuleId);
-		const base = sanitizeForFilename(`${titleNoZettel} ${dateStr}`, {
-			style: "preserve",
-		});
-		const folder = this.settings.directory ? `${this.settings.directory}/` : "";
-		return `${folder}${base}-${zettelHash}.md`;
+	private calculateInstanceTimes(
+		recurringEvent: NodeRecurringEvent,
+		instanceDate: DateTime
+	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
+		const { rrules } = recurringEvent;
+		const sourceStart = getStartDateTime(rrules).toUTC();
+		const sourceEnd = rrules.allDay ? null : rrules.endTime?.toUTC() || null;
+
+		const normalizedInstanceDate = rrules.allDay
+			? DateTime.fromObject(
+					{
+						year: instanceDate.year,
+						month: instanceDate.month,
+						day: instanceDate.day,
+					},
+					{ zone: "utc" }
+				)
+			: instanceDate.toUTC();
+
+		const instanceStart = applySourceTimeToInstanceDate(normalizedInstanceDate, sourceStart);
+		const instanceEnd = sourceEnd ? applySourceTimeToInstanceDate(normalizedInstanceDate, sourceEnd) : null;
+
+		return { instanceStart, instanceEnd };
 	}
 
-	getPhysicalInstancesByRRuleId(rruleId: string): PhysicalInstance[] {
-		const data = this.recurringEventsMap.get(rruleId);
-		return data ? this.getPhysicalInstancesList(data.physicalInstances) : [];
-	}
-
-	getInstanceCountByRRuleId(rruleId: string): number {
-		return this.getPhysicalInstancesAsEvents(rruleId).length;
-	}
-
-	getPhysicalInstancesAsEvents(rruleId: string): Array<{
-		event: CalendarEvent;
-		instanceDate: DateTime;
-	}> {
-		const physicalInstances = this.getPhysicalInstancesByRRuleId(rruleId);
-
-		return physicalInstances
-			.map((instance) => {
-				const event = this.eventStore?.getEventByPath(instance.filePath);
-				return event ? { event, instanceDate: instance.instanceDate } : null;
-			})
-			.filter((result): result is { event: CalendarEvent; instanceDate: DateTime } => result !== null);
-	}
-
-	setEventStore(eventStore: EventStore): void {
-		this.eventStore = eventStore;
-	}
-
-	setCategoryTracker(categoryTracker: CategoryTracker): void {
-		this.categoryTracker = categoryTracker;
-	}
+	// ─── Public Query API ──────────────────────────────────────────
 
 	getRecurringEventSeries(rruleId: string): RecurringEventSeries | null {
 		const data = this.recurringEventsMap.get(rruleId);
@@ -909,6 +882,29 @@ export class RecurringEventManager extends DebouncedNotifier {
 			sourceFilePath: firstInstance.event.ref.filePath,
 			instances,
 		};
+	}
+
+	getInstanceCountByRRuleId(rruleId: string): number {
+		return this.getPhysicalInstancesAsEvents(rruleId).length;
+	}
+
+	getPhysicalInstancesAsEvents(rruleId: string): Array<{
+		event: CalendarEvent;
+		instanceDate: DateTime;
+	}> {
+		const physicalInstances = this.getPhysicalInstancesByRRuleId(rruleId);
+
+		return physicalInstances
+			.map((instance) => {
+				const event = this.eventStore?.getEventByPath(instance.filePath);
+				return event ? { event, instanceDate: instance.instanceDate } : null;
+			})
+			.filter((result): result is { event: CalendarEvent; instanceDate: DateTime } => result !== null);
+	}
+
+	getPhysicalInstancesByRRuleId(rruleId: string): PhysicalInstance[] {
+		const data = this.recurringEventsMap.get(rruleId);
+		return data ? this.getPhysicalInstancesList(data.physicalInstances) : [];
 	}
 
 	private getCategoryColor(categories: string[] | undefined): string {
@@ -952,6 +948,14 @@ export class RecurringEventManager extends DebouncedNotifier {
 		return disabledEvents;
 	}
 
+	setEventStore(eventStore: EventStore): void {
+		this.eventStore = eventStore;
+	}
+
+	setCategoryTracker(categoryTracker: CategoryTracker): void {
+		this.categoryTracker = categoryTracker;
+	}
+
 	async deleteAllPhysicalInstances(rruleId: string): Promise<void> {
 		const data = this.recurringEventsMap.get(rruleId);
 		if (!data) return;
@@ -965,5 +969,15 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 		data.physicalInstances.clear();
 		this.scheduleRefresh();
+	}
+
+	// ─── Utilities ────────────────────────────────────────────────
+
+	private getPhysicalInstancesList(
+		physicalInstances: Map<string, PhysicalInstance>,
+		removeIgnored = false
+	): PhysicalInstance[] {
+		const instances = Array.from(physicalInstances.values());
+		return removeIgnored ? instances.filter((instance) => !instance.ignored) : instances;
 	}
 }
