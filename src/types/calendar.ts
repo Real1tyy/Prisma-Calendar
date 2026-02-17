@@ -11,6 +11,24 @@ const BaseEventSchema = z.object({
 	title: z.string(),
 	location: z.string().optional(),
 	participants: z.array(z.string()).optional(),
+	// Structured metadata fields (parsed from frontmatter via Zod)
+	categories: z.array(z.string()).optional(),
+	breakMinutes: z.number().optional(),
+	icon: z.string().optional(),
+	status: z.string().optional(),
+	minutesBefore: z.number().optional(),
+	daysBefore: z.number().optional(),
+	alreadyNotified: z.boolean().optional(),
+	rruleType: z.string().optional(),
+	rruleSpec: z.string().optional(),
+	rruleId: z.string().optional(),
+	instanceDate: z.string().optional(),
+	source: z.string().optional(),
+	ignoreRecurring: z.boolean().optional(),
+	futureInstancesCount: z.number().optional(),
+	generatePastEvents: z.boolean().optional(),
+	caldav: z.unknown().optional(),
+	icsSubscription: z.unknown().optional(),
 });
 
 // Timed Event: has start and end, can be skipped, can be virtual

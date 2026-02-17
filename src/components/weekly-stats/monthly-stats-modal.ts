@@ -24,14 +24,8 @@ export class MonthlyStatsModal extends IntervalStatsModal {
 			date.setFullYear(date.getFullYear() - 1);
 		},
 
-		aggregateStats: (
-			events: CalendarEvent[],
-			date: Date,
-			mode: AggregationMode,
-			categoryProp: string,
-			breakProp?: string
-		): Stats => {
-			return aggregateMonthlyStats(events, date, mode, categoryProp, breakProp);
+		aggregateStats: (events: CalendarEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats => {
+			return aggregateMonthlyStats(events, date, mode, categoryProp);
 		},
 
 		formatDateRange: (start: Date, _end: Date): string => {

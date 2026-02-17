@@ -1,4 +1,4 @@
-import { addCls, cls, parseIntoList, removeCls } from "@real1ty-obsidian-plugins";
+import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -502,7 +502,7 @@ export class EventsModal extends Modal {
 				event.sourceFilePath,
 				settings.calendarTitleProp
 			)?.toLowerCase() ?? null;
-		const categoryValues = settings.categoryProp ? parseIntoList(event.frontmatter[settings.categoryProp]) : [];
+		const categoryValues = event.metadata.categories ?? [];
 
 		new EventSeriesModal(
 			this.app,

@@ -5,6 +5,7 @@ import type { CalendarEvent } from "./calendar";
 import type { Weekday } from "../utils/date-recurrence";
 import { WEEKDAY_TO_NUMBER } from "../utils/date-recurrence";
 import { booleanTransform, optionalDateTransform, optionalTimeTransform } from "../utils/validation";
+import type { EventMetadata } from "./event";
 import type { Frontmatter } from "./index";
 import type { SingleCalendarConfig } from "./settings";
 
@@ -79,6 +80,7 @@ export interface NodeRecurringEvent {
 	rRuleId: string; // unique ID for this recurring event
 	rrules: RRuleFrontmatter;
 	frontmatter: Frontmatter;
+	metadata: EventMetadata; // validated typed data from frontmatter
 	content?: string;
 }
 

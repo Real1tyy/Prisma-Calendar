@@ -1,9 +1,4 @@
-import {
-	FilterEvaluator,
-	getFilenameFromPath,
-	parseIntoList,
-	removeMarkdownExtension,
-} from "@real1ty-obsidian-plugins";
+import { FilterEvaluator, getFilenameFromPath, removeMarkdownExtension } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
@@ -11,6 +6,7 @@ import { v5 as uuidv5 } from "uuid";
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../types/calendar";
 import { convertToISO, parseEventFrontmatter } from "../types/event";
+import type { EventMetadata } from "../types/event";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
 import { applyDateNormalizationToFile, getEventName } from "../utils/calendar-events";
 import type { RawEventSource } from "./indexer";
@@ -45,22 +41,20 @@ export class Parser {
 
 		const id = uuidv5(filePath, PRISMA_CALENDAR_NAMESPACE);
 
-		const parsed = parseEventFrontmatter(frontmatter, this.settings);
-		if (!parsed) {
+		const result = parseEventFrontmatter(frontmatter, this.settings);
+		if (!result) {
 			return null;
 		}
 
-		const isSkipped = frontmatter[this.settings.skipProp] === true;
+		const { datetime: parsed, metadata } = result;
+
 		const title =
 			getEventName(this.settings.titleProp, frontmatter, filePath, this.settings.calendarTitleProp) ||
 			removeMarkdownExtension(getFilenameFromPath(filePath));
 
-		const location = this.extractLocation(frontmatter);
-		const participants = this.extractParticipants(frontmatter);
-
 		return parsed.allDay
-			? this.parseAllDayEvent(source, id, title, parsed.date, isSkipped, location, participants)
-			: this.parseTimedEvent(source, id, title, parsed.startTime, parsed.endTime, isSkipped, location, participants);
+			? this.parseAllDayEvent(source, id, title, parsed.date, metadata)
+			: this.parseTimedEvent(source, id, title, parsed.startTime, parsed.endTime, metadata);
 	}
 
 	private parseAllDayEvent(
@@ -68,9 +62,7 @@ export class Parser {
 		id: string,
 		title: string,
 		date: DateTime,
-		isSkipped: boolean,
-		location?: string,
-		participants?: string[]
+		metadata: EventMetadata
 	): AllDayEvent {
 		const { filePath, frontmatter } = source;
 		const start = date.startOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
@@ -87,9 +79,26 @@ export class Parser {
 			start: start as ISO,
 			allDay: true,
 			isVirtual: false,
-			skipped: isSkipped,
-			location,
-			participants,
+			skipped: metadata.skip,
+			location: metadata.location,
+			participants: metadata.participants,
+			categories: metadata.categories,
+			breakMinutes: metadata.breakMinutes,
+			icon: metadata.icon,
+			status: metadata.status,
+			minutesBefore: metadata.minutesBefore,
+			daysBefore: metadata.daysBefore,
+			alreadyNotified: metadata.alreadyNotified,
+			rruleType: metadata.rruleType,
+			rruleSpec: metadata.rruleSpec,
+			rruleId: metadata.rruleId,
+			instanceDate: metadata.instanceDate,
+			source: metadata.source,
+			ignoreRecurring: metadata.ignoreRecurring,
+			futureInstancesCount: metadata.futureInstancesCount,
+			generatePastEvents: metadata.generatePastEvents,
+			caldav: metadata.caldav,
+			icsSubscription: metadata.icsSubscription,
 			meta,
 		};
 	}
@@ -100,9 +109,7 @@ export class Parser {
 		title: string,
 		startTime: DateTime,
 		endTime: DateTime | null | undefined,
-		isSkipped: boolean,
-		location?: string,
-		participants?: string[]
+		metadata: EventMetadata
 	): TimedEvent {
 		const { filePath, frontmatter } = source;
 		const start = convertToISO(startTime);
@@ -122,9 +129,26 @@ export class Parser {
 			end,
 			allDay: false,
 			isVirtual: false,
-			skipped: isSkipped,
-			location,
-			participants,
+			skipped: metadata.skip,
+			location: metadata.location,
+			participants: metadata.participants,
+			categories: metadata.categories,
+			breakMinutes: metadata.breakMinutes,
+			icon: metadata.icon,
+			status: metadata.status,
+			minutesBefore: metadata.minutesBefore,
+			daysBefore: metadata.daysBefore,
+			alreadyNotified: metadata.alreadyNotified,
+			rruleType: metadata.rruleType,
+			rruleSpec: metadata.rruleSpec,
+			rruleId: metadata.rruleId,
+			instanceDate: metadata.instanceDate,
+			source: metadata.source,
+			ignoreRecurring: metadata.ignoreRecurring,
+			futureInstancesCount: metadata.futureInstancesCount,
+			generatePastEvents: metadata.generatePastEvents,
+			caldav: metadata.caldav,
+			icsSubscription: metadata.icsSubscription,
 			meta,
 		};
 	}
@@ -139,22 +163,6 @@ export class Parser {
 			originalDate: frontmatter[this.settings.dateProp],
 			...frontmatter,
 		};
-	}
-
-	private extractLocation(frontmatter: Frontmatter): string | undefined {
-		const locationValue = frontmatter[this.settings.locationProp];
-		if (locationValue && typeof locationValue === "string" && locationValue.trim()) {
-			return locationValue;
-		}
-		return undefined;
-	}
-
-	private extractParticipants(frontmatter: Frontmatter): string[] | undefined {
-		const participantsValue = frontmatter[this.settings.participantsProp];
-		if (!participantsValue) return undefined;
-
-		const participants = parseIntoList(participantsValue);
-		return participants.length > 0 ? participants : undefined;
 	}
 
 	private calculateDefaultEnd(start: DateTime, allDay: boolean): DateTime {

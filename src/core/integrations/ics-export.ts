@@ -5,7 +5,6 @@ import type { ExportOptions } from "../../components/modals/calendar-select-moda
 import type { CalendarEvent } from "../../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
-import { parseIntoList } from "@real1ty-obsidian-plugins";
 
 interface NotificationSettings {
 	minutesBeforeProp?: string;
@@ -101,27 +100,15 @@ function getNotificationMinutes(event: CalendarEvent, notifications?: Notificati
 	if (!notifications) return null;
 
 	if (isAllDayEvent(event)) {
-		if (notifications.daysBeforeProp) {
-			const daysBeforeValue = event.meta?.[notifications.daysBeforeProp];
-			if (daysBeforeValue !== undefined && daysBeforeValue !== null) {
-				const days = Number(daysBeforeValue);
-				if (!Number.isNaN(days) && days >= 0) {
-					return Math.round(days * 24 * 60);
-				}
-			}
+		if (event.daysBefore !== undefined) {
+			return Math.round(event.daysBefore * 24 * 60);
 		}
 		if (notifications.defaultDaysBefore !== undefined) {
 			return Math.round(notifications.defaultDaysBefore * 24 * 60);
 		}
 	} else {
-		if (notifications.minutesBeforeProp) {
-			const minutesBeforeValue = event.meta?.[notifications.minutesBeforeProp];
-			if (minutesBeforeValue !== undefined && minutesBeforeValue !== null) {
-				const minutes = Number(minutesBeforeValue);
-				if (!Number.isNaN(minutes) && minutes >= 0) {
-					return Math.round(minutes);
-				}
-			}
+		if (event.minutesBefore !== undefined) {
+			return Math.round(event.minutesBefore);
 		}
 		if (notifications.defaultMinutesBefore !== undefined) {
 			return Math.round(notifications.defaultMinutesBefore);
@@ -163,7 +150,7 @@ function parsedEventToVEvent(
 		vevent.addPropertyWithValue("description", noteContent);
 	}
 
-	const categories = parseIntoList(event.meta?.[options.categoryProp]);
+	const categories = event.categories ?? [];
 	if (categories.length > 0) {
 		vevent.addPropertyWithValue("categories", categories.join(","));
 	}

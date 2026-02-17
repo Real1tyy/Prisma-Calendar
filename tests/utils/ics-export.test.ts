@@ -107,6 +107,7 @@ describe("ICS Export", () => {
 
 		it("should include categories when present in frontmatter", () => {
 			const event = createMockTimedEvent({
+				categories: ["work", "meeting", "important"],
 				meta: { Category: ["work", "meeting", "important"] },
 			});
 			const result = createICSFromEvents([event], createOptions());
@@ -125,6 +126,7 @@ describe("ICS Export", () => {
 
 		it("should handle single category value as string", () => {
 			const event = createMockTimedEvent({
+				categories: ["work"],
 				meta: { Category: "work" },
 			});
 			const result = createICSFromEvents([event], createOptions());
@@ -529,6 +531,7 @@ describe("ICS Export", () => {
 		describe("VALARM notifications", () => {
 			it("should include VALARM when minutesBefore is in frontmatter", () => {
 				const event = createMockTimedEvent({
+					minutesBefore: 15,
 					meta: { "Minutes Before": 15 },
 				});
 				const result = createICSFromEvents(
@@ -575,6 +578,7 @@ describe("ICS Export", () => {
 			it("should use daysBeforeProp for all-day events", () => {
 				const event = createMockAllDayEvent({
 					start: "2025-03-20T00:00:00Z",
+					daysBefore: 1,
 					meta: { "Days Before": 1 },
 				});
 				const result = createICSFromEvents(
@@ -612,6 +616,7 @@ describe("ICS Export", () => {
 
 			it("should prefer frontmatter over default", () => {
 				const event = createMockTimedEvent({
+					minutesBefore: 5,
 					meta: { "Minutes Before": 5 },
 				});
 				const result = createICSFromEvents(
@@ -632,6 +637,7 @@ describe("ICS Export", () => {
 			describe("decimal rounding", () => {
 				it("should round decimal minutes from frontmatter", () => {
 					const event = createMockTimedEvent({
+						minutesBefore: 15.5,
 						meta: { "Minutes Before": 15.5 },
 					});
 					const result = createICSFromEvents(
@@ -670,6 +676,7 @@ describe("ICS Export", () => {
 
 				it("should round 0.25 hours (15 min) correctly", () => {
 					const event = createMockTimedEvent({
+						minutesBefore: 15,
 						meta: { "Minutes Before": 0.25 * 60 },
 					});
 					const result = createICSFromEvents(
@@ -689,6 +696,7 @@ describe("ICS Export", () => {
 				it("should round decimal days for all-day events", () => {
 					const event = createMockAllDayEvent({
 						start: "2025-03-20T00:00:00Z",
+						daysBefore: 1.5,
 						meta: { "Days Before": 1.5 },
 					});
 					const result = createICSFromEvents(

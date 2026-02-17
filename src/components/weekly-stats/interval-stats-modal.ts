@@ -14,13 +14,7 @@ export interface IntervalConfig {
 	navigatePrevious(date: Date): void;
 	navigateFastNext(date: Date): void;
 	navigateFastPrevious(date: Date): void;
-	aggregateStats(
-		events: CalendarEvent[],
-		date: Date,
-		mode: AggregationMode,
-		categoryProp: string,
-		breakProp?: string
-	): Stats;
+	aggregateStats(events: CalendarEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats;
 	formatDateRange(start: Date, end: Date): string;
 }
 
@@ -109,13 +103,11 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 		const settings = this.bundle.settingsStore.currentSettings;
 		const categoryProp = settings.categoryProp || "Category";
-		const breakProp = settings.breakProp || undefined;
 		const stats = this.intervalConfig.aggregateStats(
 			filteredEvents,
 			this.currentDate,
 			this.aggregationMode,
-			categoryProp,
-			breakProp
+			categoryProp
 		);
 
 		this.renderHeader(this.contentContainer, start, end, stats);

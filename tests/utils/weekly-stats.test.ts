@@ -143,12 +143,13 @@ describe("getEventDuration", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				breakMinutes: 30,
 				meta: {
 					Break: 30, // 30 minute break
 				},
 			};
 
-			const duration = getEventDuration(event, "Break");
+			const duration = getEventDuration(event);
 			expect(duration).toBe(120 * 60 * 1000); // 150 - 30 = 120 minutes
 		});
 
@@ -159,12 +160,13 @@ describe("getEventDuration", () => {
 				title: "Meeting",
 				start: "2025-02-03T10:00:00Z",
 				end: "2025-02-03T11:30:00Z", // 90 minutes
+				breakMinutes: 15.5,
 				meta: {
 					Break: 15.5, // 15.5 minute break
 				},
 			});
 
-			const duration = getEventDuration(event, "Break");
+			const duration = getEventDuration(event);
 			expect(duration).toBe(74.5 * 60 * 1000); // 90 - 15.5 = 74.5 minutes
 		});
 
@@ -198,7 +200,7 @@ describe("getEventDuration", () => {
 				meta: {},
 			};
 
-			const duration = getEventDuration(event, "Break");
+			const duration = getEventDuration(event);
 			expect(duration).toBe(90 * 60 * 1000);
 		});
 
@@ -213,12 +215,13 @@ describe("getEventDuration", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				breakMinutes: 60,
 				meta: {
 					Break: 60, // 60 minute break (more than duration)
 				},
 			};
 
-			const duration = getEventDuration(event, "Break");
+			const duration = getEventDuration(event);
 			expect(duration).toBe(0); // Should clamp to 0
 		});
 
@@ -238,7 +241,7 @@ describe("getEventDuration", () => {
 				},
 			};
 
-			const duration = getEventDuration(event, "Break");
+			const duration = getEventDuration(event);
 			expect(duration).toBe(90 * 60 * 1000);
 		});
 
@@ -258,7 +261,7 @@ describe("getEventDuration", () => {
 				},
 			};
 
-			const duration = getEventDuration(event, "Break");
+			const duration = getEventDuration(event);
 			expect(duration).toBe(90 * 60 * 1000);
 		});
 
@@ -278,11 +281,11 @@ describe("getEventDuration", () => {
 				},
 			};
 
-			const duration = getEventDuration(event, "Break");
+			const duration = getEventDuration(event);
 			expect(duration).toBe(90 * 60 * 1000);
 		});
 
-		it("should work with custom break property name", () => {
+		it("should work with breakMinutes typed field", () => {
 			const event: CalendarEvent = {
 				id: "1",
 				ref: { filePath: "test.md" },
@@ -293,12 +296,13 @@ describe("getEventDuration", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				breakMinutes: 45,
 				meta: {
 					Pause: 45,
 				},
 			};
 
-			const duration = getEventDuration(event, "Pause");
+			const duration = getEventDuration(event);
 			expect(duration).toBe(75 * 60 * 1000); // 120 - 45 = 75 minutes
 		});
 	});
@@ -1613,6 +1617,7 @@ describe("aggregateDailyStats", () => {
 				allDay: false,
 				isVirtual: false,
 				skipped: false,
+				breakMinutes: 30,
 				meta: {
 					Break: 30, // 30 minute break
 				},
@@ -1620,7 +1625,7 @@ describe("aggregateDailyStats", () => {
 		];
 
 		const dayDate = new Date("2025-02-15T12:00:00");
-		const stats = aggregateDailyStats(events, dayDate, "name", "Category", "Break");
+		const stats = aggregateDailyStats(events, dayDate, "name", "Category");
 
 		expect(stats.entries).toHaveLength(1);
 		expect(stats.entries[0].duration).toBe(150 * 60 * 1000); // 180 - 30 = 150 minutes
@@ -2025,6 +2030,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					breakMinutes: 30,
 					meta: {
 						Break: 30, // 30 minute break
 					},
@@ -2032,7 +2038,7 @@ describe("Break time in aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "name", "Category", "Break");
+			const stats = aggregateWeeklyStats(events, date, "name", "Category");
 
 			expect(stats.entries).toHaveLength(1);
 			expect(stats.entries[0].duration).toBe(120 * 60 * 1000); // 150 - 30 = 120 minutes
@@ -2051,6 +2057,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					breakMinutes: 30,
 					meta: {
 						Break: 30, // 30 minute break
 					},
@@ -2065,6 +2072,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					breakMinutes: 45,
 					meta: {
 						Break: 45, // 45 minute break
 					},
@@ -2072,7 +2080,7 @@ describe("Break time in aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "name", "Category", "Break");
+			const stats = aggregateWeeklyStats(events, date, "name", "Category");
 
 			expect(stats.entries).toHaveLength(1);
 			expect(stats.entries[0].name).toBe("Work Session");
@@ -2093,6 +2101,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					breakMinutes: 30,
 					meta: {
 						Break: 30, // Has break
 					},
@@ -2112,7 +2121,7 @@ describe("Break time in aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "name", "Category", "Break");
+			const stats = aggregateWeeklyStats(events, date, "name", "Category");
 
 			expect(stats.entries).toHaveLength(2);
 			// Event 1: 120 - 30 = 90 minutes
@@ -2132,6 +2141,8 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					breakMinutes: 45,
+					categories: ["Work"],
 					meta: {
 						Category: "Work",
 						Break: 45,
@@ -2147,6 +2158,8 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					breakMinutes: 15,
+					categories: ["Health"],
 					meta: {
 						Category: "Health",
 						Break: 15,
@@ -2155,7 +2168,7 @@ describe("Break time in aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "category", "Category", "Break");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
 
 			expect(stats.entries).toHaveLength(2);
 
@@ -2205,6 +2218,7 @@ describe("Break time in aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					breakMinutes: 30,
 					meta: {
 						Break: 30,
 					},
@@ -2212,7 +2226,7 @@ describe("Break time in aggregation", () => {
 			];
 
 			const monthDate = new Date("2025-02-15T12:00:00");
-			const stats = aggregateMonthlyStats(events, monthDate, "name", "Category", "Break");
+			const stats = aggregateMonthlyStats(events, monthDate, "name", "Category");
 
 			expect(stats.entries).toHaveLength(1);
 			expect(stats.entries[0].duration).toBe(150 * 60 * 1000); // 180 - 30 = 150
@@ -2810,6 +2824,8 @@ describe("Multi-category aggregation", () => {
 					allDay: false,
 					isVirtual: false,
 					skipped: false,
+					breakMinutes: 30,
+					categories: ["Work", "Learning"],
 					meta: {
 						Category: "Work, Learning",
 						Break: 30, // 30 minute break
@@ -2818,7 +2834,7 @@ describe("Multi-category aggregation", () => {
 			];
 
 			const date = new Date("2025-02-05");
-			const stats = aggregateWeeklyStats(events, date, "category", "Category", "Break");
+			const stats = aggregateWeeklyStats(events, date, "category", "Category");
 
 			expect(stats.entries).toHaveLength(2);
 

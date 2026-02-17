@@ -27,19 +27,19 @@ export class Stopwatch {
 	private intervalId: number | null = null;
 	private isExpanded = false;
 
-	private container: HTMLElement | null = null;
-	private contentEl: HTMLElement | null = null;
-	private toggleIcon: HTMLElement | null = null;
-	private displayEl: HTMLElement | null = null;
-	private breakDisplayEl: HTMLElement | null = null;
-	private midContainer: HTMLElement | null = null;
-	private midLabelEl: HTMLElement | null = null;
-	private midDisplayEl: HTMLElement | null = null;
-	private startBtn: HTMLButtonElement | null = null;
+	private container!: HTMLElement;
+	private contentEl!: HTMLElement;
+	private toggleIcon!: HTMLElement;
+	private displayEl!: HTMLElement;
+	private breakDisplayEl!: HTMLElement;
+	private midContainer!: HTMLElement;
+	private midLabelEl!: HTMLElement;
+	private midDisplayEl!: HTMLElement;
+	private startBtn!: HTMLButtonElement;
 	private continueBtn: HTMLButtonElement | null = null;
-	private pauseBtn: HTMLButtonElement | null = null;
-	private stopBtn: HTMLButtonElement | null = null;
-	private resumeBtn: HTMLButtonElement | null = null;
+	private pauseBtn!: HTMLButtonElement;
+	private stopBtn!: HTMLButtonElement;
+	private resumeBtn!: HTMLButtonElement;
 
 	private callbacks: StopwatchCallbacks;
 	private showContinueButton: boolean;
@@ -172,10 +172,8 @@ export class Stopwatch {
 
 	private toggleExpanded(): void {
 		this.isExpanded = !this.isExpanded;
-		if (this.contentEl && this.toggleIcon) {
-			this.contentEl.classList.toggle("prisma-hidden", !this.isExpanded);
-			this.toggleIcon.textContent = this.isExpanded ? "▼" : "▶";
-		}
+		this.contentEl.classList.toggle("prisma-hidden", !this.isExpanded);
+		this.toggleIcon.textContent = this.isExpanded ? "▼" : "▶";
 	}
 
 	expand(): void {
@@ -295,8 +293,6 @@ export class Stopwatch {
 	}
 
 	private updateDisplay(): void {
-		if (!this.displayEl || !this.breakDisplayEl) return;
-
 		// Total elapsed time (total time since start, including breaks)
 		if (this.startTime) {
 			const elapsedMs = Date.now() - this.startTime.getTime();
@@ -313,26 +309,22 @@ export class Stopwatch {
 		this.breakDisplayEl.textContent = formatMsToHHMMSS(currentBreakMs);
 
 		// Mid timer (shows Session when running, Current Break when paused)
-		if (this.midContainer && this.midLabelEl && this.midDisplayEl) {
-			if (this.state === "running" && this.sessionStartTime) {
-				const sessionMs = Date.now() - this.sessionStartTime.getTime();
-				this.midLabelEl.textContent = "Session:";
-				this.midDisplayEl.textContent = formatMsToHHMMSS(sessionMs);
-				this.midContainer.classList.remove("prisma-hidden");
-			} else if (this.state === "paused" && this.breakStartTime) {
-				const breakMs = Date.now() - this.breakStartTime.getTime();
-				this.midLabelEl.textContent = "Current break:";
-				this.midDisplayEl.textContent = formatMsToHHMMSS(breakMs);
-				this.midContainer.classList.remove("prisma-hidden");
-			} else {
-				this.midContainer.classList.add("prisma-hidden");
-			}
+		if (this.state === "running" && this.sessionStartTime) {
+			const sessionMs = Date.now() - this.sessionStartTime.getTime();
+			this.midLabelEl.textContent = "Session:";
+			this.midDisplayEl.textContent = formatMsToHHMMSS(sessionMs);
+			this.midContainer.classList.remove("prisma-hidden");
+		} else if (this.state === "paused" && this.breakStartTime) {
+			const breakMs = Date.now() - this.breakStartTime.getTime();
+			this.midLabelEl.textContent = "Current break:";
+			this.midDisplayEl.textContent = formatMsToHHMMSS(breakMs);
+			this.midContainer.classList.remove("prisma-hidden");
+		} else {
+			this.midContainer.classList.add("prisma-hidden");
 		}
 	}
 
 	private updateButtonStates(): void {
-		if (!this.startBtn || !this.pauseBtn || !this.stopBtn || !this.resumeBtn) return;
-
 		switch (this.state) {
 			case "idle":
 				this.startBtn.classList.remove("prisma-hidden");
@@ -438,8 +430,6 @@ export class Stopwatch {
 
 	destroy(): void {
 		this.stopInterval();
-		if (this.container) {
-			this.container.remove();
-		}
+		this.container.remove();
 	}
 }

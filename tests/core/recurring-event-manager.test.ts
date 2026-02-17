@@ -4,6 +4,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { parse } from "yaml";
 import { RecurringEventManager } from "../../src/core/recurring-event-manager";
 import { isTimedEvent } from "../../src/types/calendar";
+import type { EventMetadata } from "../../src/types/event";
+
+const defaultMetadata: EventMetadata = {
+	skip: false,
+	alreadyNotified: false,
+	ignoreRecurring: false,
+	generatePastEvents: false,
+};
 
 // Helper to extract frontmatter from file content
 function extractFrontmatter(fileContent: string): any {
@@ -165,6 +173,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					"Start Date": "2024-01-01T10:00:00Z",
 				},
 				futureInstancesCount: 2,
+				metadata: defaultMetadata,
 				content: "",
 			};
 
@@ -231,6 +240,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				frontmatter: {},
 				futureInstancesCount: 2,
 				sourceFilePath: "recurring.md",
+				metadata: defaultMetadata,
 				content: "",
 			};
 
@@ -307,6 +317,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				},
 				futureInstancesCount: 2,
 				sourceFilePath: "recurring.md",
+				metadata: defaultMetadata,
 				content: "",
 			};
 
@@ -353,6 +364,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				},
 				frontmatter: { "Start Date": "2024-01-01T10:00:00" },
 				sourceFilePath: "recurring.md",
+				metadata: defaultMetadata,
 				content: "",
 			};
 
@@ -395,6 +407,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					metadata: defaultMetadata,
 					content: "",
 				};
 
@@ -445,6 +458,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					metadata: defaultMetadata,
 					content: "",
 				};
 
@@ -493,6 +507,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					metadata: defaultMetadata,
 					content: "",
 				};
 
@@ -539,6 +554,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					metadata: defaultMetadata,
 					content: "",
 				};
 
@@ -587,6 +603,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					metadata: defaultMetadata,
 					content: "",
 				};
 
@@ -635,6 +652,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					metadata: defaultMetadata,
 					content: "",
 				};
 
@@ -679,6 +697,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					metadata: defaultMetadata,
 					content: "",
 				};
 
@@ -722,6 +741,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 2,
 					sourceFilePath: "recurring.md",
+					metadata: defaultMetadata,
 					content: "",
 				};
 
@@ -765,6 +785,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					},
 					futureInstancesCount: 0, // No physical instances - test pure virtual generation
 					sourceFilePath: "recurring.md",
+					metadata: defaultMetadata,
 					content: "",
 				};
 
@@ -820,6 +841,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 						"Start Date": "2024-01-01T10:00:00.000Z",
 					},
 					sourceFilePath: "daily1.md",
+					metadata: defaultMetadata,
 					content: "Daily event content",
 				},
 				{
@@ -836,6 +858,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 						"Start Date": "2024-01-01T14:00:00.000Z",
 					},
 					sourceFilePath: "daily2.md",
+					metadata: defaultMetadata,
 					content: "Daily event content 2",
 				},
 				{
@@ -852,6 +875,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 						"Start Date": "2024-01-01T09:00:00.000Z",
 					},
 					sourceFilePath: "weekly.md",
+					metadata: defaultMetadata,
 					content: "Weekly event content",
 				},
 			];
@@ -902,6 +926,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					"Start Date": "2024-01-01T10:00:00.000Z",
 				},
 				sourceFilePath: "test.md",
+				metadata: defaultMetadata,
 				content: "Test content",
 			};
 
@@ -957,6 +982,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					"Start Date": "2024-01-01T10:00:00.000Z",
 				},
 				sourceFilePath: "new.md",
+				metadata: defaultMetadata,
 				content: "New content",
 			};
 
@@ -992,6 +1018,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					"Start Date": "2024-01-01T10:00:00.000Z",
 				},
 				sourceFilePath: "source.md",
+				metadata: defaultMetadata,
 				content: "Test content",
 			};
 
@@ -1024,6 +1051,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					"Start Date": "2024-01-01T10:00:00.000Z",
 				},
 				sourceFilePath: "source.md",
+				metadata: defaultMetadata,
 				content: "Test content",
 			};
 
@@ -1060,6 +1088,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				},
 				frontmatter: {},
 				sourceFilePath: "source1.md",
+				metadata: defaultMetadata,
 				content: "Test content",
 			};
 
@@ -1105,6 +1134,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					"Start Date": "2024-01-01T10:00:00.000Z",
 				},
 				sourceFilePath: "source.md",
+				metadata: defaultMetadata,
 				content: "Test content",
 			};
 
@@ -1143,6 +1173,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					"Start Date": "2024-01-01T10:00:00.000Z",
 				},
 				sourceFilePath: "source.md",
+				metadata: defaultMetadata,
 				content: "Test content",
 			};
 
@@ -1177,6 +1208,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					"Start Date": "2024-01-01T10:00:00.000Z",
 				},
 				sourceFilePath: "source.md",
+				metadata: defaultMetadata,
 				content: "Test content",
 			};
 
@@ -1221,6 +1253,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				},
 				frontmatter: {},
 				sourceFilePath: "source.md",
+				metadata: defaultMetadata,
 				content: "Test content",
 			};
 

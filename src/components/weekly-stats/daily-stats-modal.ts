@@ -28,14 +28,8 @@ export class DailyStatsModal extends IntervalStatsModal {
 			date.setDate(date.getDate() - 10);
 		},
 
-		aggregateStats: (
-			events: CalendarEvent[],
-			date: Date,
-			mode: AggregationMode,
-			categoryProp: string,
-			breakProp?: string
-		): Stats => {
-			return aggregateDailyStats(events, date, mode, categoryProp, breakProp);
+		aggregateStats: (events: CalendarEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats => {
+			return aggregateDailyStats(events, date, mode, categoryProp);
 		},
 
 		formatDateRange: (start: Date, _end: Date): string => {

@@ -24,9 +24,9 @@ export type WeeklyStatEntry = StatEntry;
 /**
  * Calculates the duration of an event in milliseconds.
  * For all-day events without explicit end time, assumes 1 day duration.
- * If breakProp is provided and the event has a break value, it's subtracted from the duration.
+ * If the event has a breakMinutes value, it's subtracted from the duration.
  */
-export function getEventDuration(event: CalendarEvent, breakProp?: string): number {
+export function getEventDuration(event: CalendarEvent): number {
 	const start = new Date(event.start);
 	let end: Date;
 
@@ -43,13 +43,9 @@ export function getEventDuration(event: CalendarEvent, breakProp?: string): numb
 
 	let duration = end.getTime() - start.getTime();
 
-	// Subtract break time if breakProp is configured and event has a break value
-	if (breakProp && event.meta?.[breakProp]) {
-		const breakMinutes = Number(event.meta[breakProp]);
-		if (!Number.isNaN(breakMinutes) && breakMinutes > 0) {
-			const breakMs = breakMinutes * 60 * 1000;
-			duration = Math.max(0, duration - breakMs);
-		}
+	if (event.breakMinutes && event.breakMinutes > 0) {
+		const breakMs = event.breakMinutes * 60 * 1000;
+		duration = Math.max(0, duration - breakMs);
 	}
 
 	return duration;
@@ -126,7 +122,7 @@ export function getDayBounds(date: Date): { start: Date; end: Date } {
  * 3. Both virtual (recurring) and regular events use their actual title/category
  * 4. Calculates total duration and count for each group
  * 5. Events without a category are grouped under "No Category" when mode is "category"
- * 6. Break time is subtracted from duration if breakProp is configured
+ * 6. Break time is subtracted from duration if event has breakMinutes
  * 7. Events with multiple categories have their time split evenly across categories
  */
 export function aggregateStats(
@@ -134,8 +130,7 @@ export function aggregateStats(
 	periodStart?: Date,
 	periodEnd?: Date,
 	mode: AggregationMode = "name",
-	categoryProp = "Category",
-	breakProp?: string
+	categoryProp = "Category"
 ): Stats {
 	let filteredEvents = events;
 
@@ -152,14 +147,15 @@ export function aggregateStats(
 
 	for (const event of timedEvents) {
 		const isRecurring = event.isVirtual;
-		const duration = getEventDuration(event, breakProp);
+		const duration = getEventDuration(event);
 
 		// Get all group keys for this event (may be multiple for category mode)
 		let groupKeys: string[];
 
 		if (mode === "category") {
-			// Parse comma-separated categories - event is counted under each category
-			groupKeys = parseCategories(event.meta?.[categoryProp]);
+			// Use typed categories field, falling back to parsing from meta for backward compatibility
+			const categories = event.categories ?? parseCategories(event.meta?.[categoryProp]);
+			groupKeys = categories;
 		} else {
 			// Group by cleaned event name (default behavior)
 			groupKeys = [extractNotesCoreName(event.title)];
@@ -208,11 +204,10 @@ export function aggregateWeeklyStats(
 	events: CalendarEvent[],
 	weekDate: Date,
 	mode: AggregationMode = "name",
-	categoryProp = "Category",
-	breakProp?: string
+	categoryProp = "Category"
 ): Stats {
 	const { start, end } = getWeekBounds(weekDate);
-	return aggregateStats(events, start, end, mode, categoryProp, breakProp);
+	return aggregateStats(events, start, end, mode, categoryProp);
 }
 
 /**
@@ -222,11 +217,10 @@ export function aggregateMonthlyStats(
 	events: CalendarEvent[],
 	monthDate: Date,
 	mode: AggregationMode = "name",
-	categoryProp = "Category",
-	breakProp?: string
+	categoryProp = "Category"
 ): Stats {
 	const { start, end } = getMonthBounds(monthDate);
-	return aggregateStats(events, start, end, mode, categoryProp, breakProp);
+	return aggregateStats(events, start, end, mode, categoryProp);
 }
 
 /**
@@ -236,11 +230,10 @@ export function aggregateDailyStats(
 	events: CalendarEvent[],
 	dayDate: Date,
 	mode: AggregationMode = "name",
-	categoryProp = "Category",
-	breakProp?: string
+	categoryProp = "Category"
 ): Stats {
 	const { start, end } = getDayBounds(dayDate);
-	return aggregateStats(events, start, end, mode, categoryProp, breakProp);
+	return aggregateStats(events, start, end, mode, categoryProp);
 }
 
 /**

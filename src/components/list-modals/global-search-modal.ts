@@ -2,7 +2,6 @@ import { addCls, ColorEvaluator, cls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import type { Frontmatter } from "../../types";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
 import type { CalendarView } from "../calendar-view";
@@ -144,9 +143,8 @@ export class GlobalSearchModal extends BaseEventListModal {
 		}
 	}
 
-	private formatEventSubtitle(event: { allDay: boolean; start: string; end?: string; meta?: Frontmatter }): string {
+	private formatEventSubtitle(event: { allDay: boolean; start: string; end?: string; rruleType?: string }): string {
 		const parts: string[] = [];
-		const settings = this.bundle.settingsStore.currentSettings;
 
 		// Event type indicator
 		if (event.allDay) {
@@ -192,8 +190,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		}
 
 		// Add recurring indicator
-		const rrule = event.meta?.[settings.rruleProp];
-		if (rrule) {
+		if (event.rruleType) {
 			parts.push("🔄 Recurring");
 		}
 
@@ -283,17 +280,10 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 			let filteredEvents = events.filter((event) => !event.isVirtual);
 
-			const settings = this.bundle.settingsStore.currentSettings;
 			if (this.filters.recurring === "skip") {
-				filteredEvents = filteredEvents.filter((event) => {
-					const rrule = event.meta?.[settings.rruleProp];
-					return !rrule;
-				});
+				filteredEvents = filteredEvents.filter((event) => !event.rruleType);
 			} else if (this.filters.recurring === "only") {
-				filteredEvents = filteredEvents.filter((event) => {
-					const rrule = event.meta?.[settings.rruleProp];
-					return !!rrule;
-				});
+				filteredEvents = filteredEvents.filter((event) => !!event.rruleType);
 			}
 
 			if (this.filters.allDay === "skip") {

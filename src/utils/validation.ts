@@ -1,4 +1,4 @@
-import { parseDateTimeString, parseTimeString } from "@real1ty-obsidian-plugins";
+import { parseDateTimeString, parseIntoList, parseTimeString } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import { z } from "zod";
 
@@ -76,6 +76,58 @@ export const booleanTransform = z.preprocess((value) => {
 	}
 	return false;
 }, z.boolean());
+
+/** Trimmed string → undefined if empty */
+export const optionalTrimmedString = z
+	.unknown()
+	.transform((v) => (typeof v === "string" && v.trim() ? v.trim() : undefined))
+	.pipe(z.string().optional());
+
+/** Unknown → string[] via parseIntoList, undefined if empty */
+export const optionalListTransform = z
+	.unknown()
+	.transform((v) => {
+		if (!v) return undefined;
+		const list = parseIntoList(v);
+		return list.length > 0 ? list : undefined;
+	})
+	.pipe(z.array(z.string()).optional());
+
+/** Unknown → positive number, undefined otherwise */
+export const optionalPositiveNumber = z
+	.unknown()
+	.transform((v) => {
+		if (v == null) return undefined;
+		const n = Number(v);
+		return !Number.isNaN(n) && n > 0 ? n : undefined;
+	})
+	.pipe(z.number().optional());
+
+/** Unknown → non-negative integer, undefined otherwise */
+export const optionalNonNegativeInt = z
+	.unknown()
+	.transform((v) => {
+		if (v == null) return undefined;
+		const n = Number.parseInt(String(v), 10);
+		return !Number.isNaN(n) && n >= 0 ? n : undefined;
+	})
+	.pipe(z.number().optional());
+
+/** Unknown → number (any valid finite number), undefined otherwise */
+export const optionalNumber = z
+	.unknown()
+	.transform((v) => {
+		if (v == null) return undefined;
+		const n = Number(v);
+		return Number.isFinite(n) ? n : undefined;
+	})
+	.pipe(z.number().optional());
+
+/** Unknown → true if boolean true or string "true" */
+export const strictBooleanTransform = z
+	.unknown()
+	.transform((v) => v === true || v === "true")
+	.pipe(z.boolean());
 
 export const requiredDateTimeTransform = requiredParsed<DateTime>("datetime", parseDT);
 export const optionalDateTimeTransform = optionalParsed<DateTime>("datetime", parseDT);

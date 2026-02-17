@@ -105,10 +105,9 @@ export class CategoryTracker {
 	}
 
 	private addEventToCategories(event: CalendarEvent): void {
-		const categoryProp = this._settings.categoryProp;
-		if (!categoryProp) return;
+		if (!this._settings.categoryProp) return;
 
-		const categories = parseIntoList(event.meta[categoryProp]);
+		const categories = event.categories ?? [];
 		for (const category of categories) {
 			if (!this.categoryToEvents.has(category)) {
 				this.categoryToEvents.set(category, []);

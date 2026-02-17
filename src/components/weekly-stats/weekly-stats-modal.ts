@@ -24,14 +24,8 @@ export class WeeklyStatsModal extends IntervalStatsModal {
 			date.setDate(date.getDate() - 28);
 		},
 
-		aggregateStats: (
-			events: CalendarEvent[],
-			date: Date,
-			mode: AggregationMode,
-			categoryProp: string,
-			breakProp?: string
-		): Stats => {
-			return aggregateWeeklyStats(events, date, mode, categoryProp, breakProp);
+		aggregateStats: (events: CalendarEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats => {
+			return aggregateWeeklyStats(events, date, mode, categoryProp);
 		},
 
 		formatDateRange: (start: Date, end: Date): string => {

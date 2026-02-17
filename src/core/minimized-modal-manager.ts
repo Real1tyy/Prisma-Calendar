@@ -1,6 +1,6 @@
-import { parseIntoList } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
+import { parseEventMetadata } from "../types/event";
 import type { Subscription } from "rxjs";
 import { openCategoryAssignModal } from "../components/modals/assignment-modal";
 import { EventCreateModal, EventEditModal } from "../components/modals";
@@ -213,20 +213,18 @@ class MinimizedModalManagerClass {
 			if (event.type === "file-changed" && event.source) {
 				const settings = bundle.settingsStore.currentSettings;
 				const frontmatter = event.source.frontmatter;
+				const metadata = parseEventMetadata(frontmatter, settings);
 
 				// Update the saved state with new frontmatter values
 				// Keep stopwatch state intact - only update form data
-				// Both categories and participants use parseIntoList for consistent handling of string/array in frontmatter
 				this.savedState = {
 					...this.savedState,
 					filePath: event.filePath,
 					originalFrontmatter: frontmatter,
 					title: getEventName(settings.titleProp, frontmatter, event.filePath, settings.calendarTitleProp),
-					categories: settings.categoryProp ? parseIntoList(frontmatter[settings.categoryProp]).join(", ") : undefined,
-					location: frontmatter[settings.locationProp] as string | undefined,
-					participants: settings.participantsProp
-						? parseIntoList(frontmatter[settings.participantsProp]).join(", ")
-						: undefined,
+					categories: metadata.categories?.join(", "),
+					location: metadata.location,
+					participants: metadata.participants?.join(", "),
 					date: frontmatter[settings.dateProp] as string | undefined,
 					startDate: frontmatter[settings.startProp] as string | undefined,
 					endDate: frontmatter[settings.endProp] as string | undefined,
@@ -328,6 +326,7 @@ class MinimizedModalManagerClass {
 				// the indexer will detect the file change and automatically update the minimized modal state
 				new Notice("Categories updated for minimized event");
 			} catch (error) {
+				// eslint-disable-next-line no-console
 				console.error("Failed to assign categories:", error);
 				new Notice("Failed to assign categories");
 			}

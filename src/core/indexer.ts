@@ -11,6 +11,7 @@ import { type App, TFile } from "obsidian";
 import { BehaviorSubject, type Observable, Subject, Subscription } from "rxjs";
 import { filter, take } from "rxjs/operators";
 import { SCAN_CONCURRENCY } from "../constants";
+import { parseEventMetadata } from "../types/event";
 import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import {
@@ -372,6 +373,8 @@ export class Indexer {
 
 		frontmatterCopy[this.settings.rruleIdProp] = rRuleId;
 
+		const metadata = parseEventMetadata(frontmatterCopy, this.settings);
+
 		// Defer content reading - we'll read it lazily when needed
 		// This avoids blocking I/O during the initial scan
 		return {
@@ -380,6 +383,7 @@ export class Indexer {
 			rRuleId,
 			rrules,
 			frontmatter: frontmatterCopy,
+			metadata,
 			content: undefined, // Empty initially - will be loaded on-demand by RecurringEventManager
 		};
 	}

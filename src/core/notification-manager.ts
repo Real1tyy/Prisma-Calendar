@@ -4,6 +4,7 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import { NotificationModal } from "../components/notification-modal";
 import { MAX_PAST_NOTIFICATION_THRESHOLD } from "../constants";
 import type { Frontmatter, PrismaSyncDataSchema } from "../types";
+import { parseEventMetadata } from "../types/event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/calendar-events";
 import { toSafeString } from "../utils/format";
@@ -107,13 +108,14 @@ export class NotificationManager {
 	}
 
 	private processEventSource(filePath: string, frontmatter: Frontmatter, isAllDay: boolean): void {
-		if (frontmatter[this.settings.skipProp] === true) {
+		const metadata = parseEventMetadata(frontmatter, this.settings);
+
+		if (metadata.skip) {
 			this.removeNotification(filePath);
 			return;
 		}
 
-		const alreadyNotified = frontmatter[this.settings.alreadyNotifiedProp];
-		if (alreadyNotified === true || alreadyNotified === "true") {
+		if (metadata.alreadyNotified) {
 			this.removeNotification(filePath);
 			return;
 		}
@@ -133,11 +135,9 @@ export class NotificationManager {
 			return;
 		}
 
-		const notificationProp = isAllDay ? this.settings.daysBeforeProp : this.settings.minutesBeforeProp;
 		const defaultValue = isAllDay ? this.settings.defaultDaysBefore : this.settings.defaultMinutesBefore;
-		const notificationValue = frontmatter[notificationProp];
-		const notificationAmount =
-			notificationValue !== undefined && notificationValue !== null ? Number(notificationValue) : defaultValue;
+		const typedNotificationValue = isAllDay ? metadata.daysBefore : metadata.minutesBefore;
+		const notificationAmount = typedNotificationValue !== undefined ? typedNotificationValue : defaultValue;
 
 		if (notificationAmount === undefined) {
 			this.removeNotification(filePath);

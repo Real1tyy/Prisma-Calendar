@@ -4,7 +4,7 @@ import type { SingleCalendarConfig } from "../../types/settings";
 
 export abstract class BaseBasesViewModal extends Modal {
 	private component: Component;
-	private markdownContainerEl: HTMLElement | null = null;
+	private markdownContainerEl!: HTMLElement;
 
 	constructor(
 		app: App,
@@ -33,12 +33,9 @@ export abstract class BaseBasesViewModal extends Modal {
 	onClose(): void {
 		this.component.unload();
 		this.contentEl.empty();
-		this.markdownContainerEl = null;
 	}
 
 	private async renderBasesView(): Promise<void> {
-		if (!this.markdownContainerEl) return;
-
 		this.markdownContainerEl.empty();
 
 		const basesMarkdown = this.buildBasesMarkdown();

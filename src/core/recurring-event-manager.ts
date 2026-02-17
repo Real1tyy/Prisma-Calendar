@@ -18,6 +18,7 @@ import { TFile } from "obsidian";
 import { SyncStore } from "@real1ty-obsidian-plugins";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import type { CalendarEvent, Frontmatter, ISO, PrismaSyncDataSchema } from "../types";
+import { parseEventMetadata } from "../types/event";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import {
@@ -32,7 +33,6 @@ import { getNextOccurrence } from "../utils/date-recurrence";
 import { applySourceTimeToInstanceDate } from "../utils/format";
 import { deleteFilesByPaths, getFileByPathOrThrow } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
-import { parseIntoList } from "@real1ty-obsidian-plugins";
 import type { CategoryTracker } from "./category-tracker";
 import type { EventStore } from "./event-store";
 import type { Indexer, IndexerEvent } from "./indexer";
@@ -409,9 +409,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	private handleFileChanged(filePath: string, frontmatter: Frontmatter): void {
-		const rruleId = frontmatter[this.settings.rruleIdProp] as string;
-		const instanceDate = frontmatter[this.settings.instanceDateProp] as string;
-		const isIgnored = frontmatter[this.settings.ignoreRecurringProp] === true;
+		const metadata = parseEventMetadata(frontmatter, this.settings);
+		const { rruleId, instanceDate, ignoreRecurring, source } = metadata;
 
 		if (rruleId && instanceDate) {
 			const parsedInstanceDate = DateTime.fromISO(instanceDate, {
@@ -432,7 +431,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 				if (dateKey) {
 					const instances = recurringData.physicalInstances.get(dateKey) || [];
 					const existingIndex = instances.findIndex((i) => i.filePath === filePath);
-					const newInstance = { filePath, instanceDate: parsedInstanceDate, ignored: isIgnored };
+					const newInstance = { filePath, instanceDate: parsedInstanceDate, ignored: ignoreRecurring };
 
 					if (existingIndex >= 0) {
 						instances[existingIndex] = newInstance; // Update existing
@@ -440,7 +439,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 						instances.push(newInstance); // Add new
 					}
 					recurringData.physicalInstances.set(dateKey, instances);
-					this.trackPhysicalSourceMapping(rruleId, frontmatter[this.settings.sourceProp], filePath);
+					this.trackPhysicalSourceMapping(rruleId, source, filePath);
 					this.scheduleRefresh();
 				}
 			}
@@ -495,13 +494,12 @@ export class RecurringEventManager extends DebouncedNotifier {
 		try {
 			const { recurringEvent, physicalInstances } = data;
 
-			const isSkipped = recurringEvent.frontmatter[this.settings.skipProp] === true;
-			if (isSkipped) {
+			if (recurringEvent.metadata.skip) {
 				return;
 			}
 
 			const now = DateTime.now().toUTC();
-			const generatePastEvents = recurringEvent.frontmatter[this.settings.generatePastEventsProp] === true;
+			const generatePastEvents = recurringEvent.metadata.generatePastEvents;
 
 			const futureInstances = this.flattenPhysicalInstances(physicalInstances, true).filter(
 				(instance) => instance.instanceDate >= now.startOf("day")
@@ -509,7 +507,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 			const targetInstanceCount = calculateTargetInstanceCount(
 				recurringEvent.rrules,
-				recurringEvent.frontmatter[this.settings.futureInstancesCountProp],
+				recurringEvent.metadata.futureInstancesCount,
 				this.settings.futureInstancesCount
 			);
 			const currentCount = futureInstances.length;
@@ -717,8 +715,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		if (!recurringEvent) return [];
 
 		// Don't generate virtual events if recurring event is disabled (skipped)
-		const isSkipped = recurringEvent.frontmatter[this.settings.skipProp] === true;
-		if (isSkipped) {
+		if (recurringEvent.metadata.skip) {
 			return [];
 		}
 
@@ -801,6 +798,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const { instanceStart, instanceEnd } = this.calculateInstanceTimes(recurringEvent, instanceDate);
 		const isAllDay = recurringEvent.rrules.allDay;
 		const start = instanceStart.toISO({ suppressMilliseconds: true }) || "";
+		const { metadata } = recurringEvent;
 
 		const baseEvent = {
 			id: `${recurringEvent.rRuleId}-${instanceDate.toISODate()}`,
@@ -809,6 +807,26 @@ export class RecurringEventManager extends DebouncedNotifier {
 			start: start as ISO,
 			isVirtual: true,
 			skipped: false,
+			// Typed metadata fields from source
+			location: metadata.location,
+			participants: metadata.participants,
+			categories: metadata.categories,
+			breakMinutes: metadata.breakMinutes,
+			icon: metadata.icon,
+			status: metadata.status,
+			minutesBefore: metadata.minutesBefore,
+			daysBefore: metadata.daysBefore,
+			alreadyNotified: metadata.alreadyNotified,
+			rruleType: metadata.rruleType,
+			rruleSpec: metadata.rruleSpec,
+			rruleId: recurringEvent.rRuleId,
+			instanceDate: instanceDate.toISODate() ?? undefined,
+			source: metadata.source,
+			ignoreRecurring: metadata.ignoreRecurring,
+			futureInstancesCount: metadata.futureInstancesCount,
+			generatePastEvents: metadata.generatePastEvents,
+			caldav: metadata.caldav,
+			icsSubscription: metadata.icsSubscription,
 			meta: {
 				...recurringEvent.frontmatter,
 				rruleId: recurringEvent.rRuleId,
@@ -878,10 +896,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const instances = this.getPhysicalInstancesAsEvents(rruleId);
 
 		if (data.recurringEvent) {
-			const { title: sourceTitle, sourceFilePath, rrules, frontmatter } = data.recurringEvent;
+			const { title: sourceTitle, sourceFilePath, rrules, metadata } = data.recurringEvent;
 			const rruleType = rrules.type;
 			const rruleSpec = rrules.weekdays?.join(", ");
-			const sourceCategory = this.getCategoryColor(frontmatter[this.settings.categoryProp]);
+			const sourceCategory = this.getCategoryColor(metadata.categories);
 			return { sourceTitle, sourceFilePath, instances, rruleType, rruleSpec, sourceCategory };
 		}
 
@@ -896,13 +914,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 		};
 	}
 
-	private getCategoryColor(categoryValue: unknown): string {
-		if (!categoryValue || !this.categoryTracker) {
-			return this.settings.defaultNodeColor;
-		}
-
-		const categories = parseIntoList(categoryValue);
-		if (categories.length === 0) {
+	private getCategoryColor(categories: string[] | undefined): string {
+		if (!categories || categories.length === 0 || !this.categoryTracker) {
 			return this.settings.defaultNodeColor;
 		}
 
@@ -923,7 +936,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 	getEnabledRecurringEvents(): NodeRecurringEvent[] {
 		return Array.from(this.recurringEventsMap.values())
-			.filter((data) => data.recurringEvent && data.recurringEvent.frontmatter[this.settings.skipProp] !== true)
+			.filter((data) => data.recurringEvent && !data.recurringEvent.metadata.skip)
 			.map((data) => data.recurringEvent as NodeRecurringEvent);
 	}
 
@@ -934,9 +947,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		for (const data of this.recurringEventsMap.values()) {
 			if (!data.recurringEvent) continue;
 
-			// Check if this recurring event is disabled (skipped)
-			const isSkipped = data.recurringEvent.frontmatter[this.settings.skipProp] === true;
-			if (isSkipped) {
+			if (data.recurringEvent.metadata.skip) {
 				disabledEvents.push(data.recurringEvent);
 			}
 		}

@@ -23,8 +23,7 @@ export class AllTimeStatsModal extends StatsModal {
 
 		const settings = this.bundle.settingsStore.currentSettings;
 		const categoryProp = settings.categoryProp || "Category";
-		const breakProp = settings.breakProp || undefined;
-		const stats = aggregateStats(filteredEvents, undefined, undefined, this.aggregationMode, categoryProp, breakProp);
+		const stats = aggregateStats(filteredEvents, undefined, undefined, this.aggregationMode, categoryProp);
 
 		this.renderHeader(this.contentContainer, stats);
 
