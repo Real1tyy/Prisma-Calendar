@@ -174,7 +174,7 @@ Set which day starts the week (0 = Sunday, 1 = Monday, etc.) in **Settings → C
 
 ## See Also
 
-- [Configuration](../../configuration#calendar-settings-ui) for the full settings reference
+- [Configuration](../../configuration/calendar-ui) for the full settings reference
 - [Filtering](../organization/filtering) for search, expression filters, and filter presets
 - [Color Rules](../organization/color-rules) for event background coloring
 - [Hotkeys](../advanced/hotkeys) for keyboard shortcuts in the calendar view

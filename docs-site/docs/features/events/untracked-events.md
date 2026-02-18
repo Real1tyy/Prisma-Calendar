@@ -110,7 +110,7 @@ Filter untracked events by typing in the search bar at the top of the dropdown. 
 
 ## Configuration
 
-- **[Configuration Guide](../../configuration.md#parsing)** — Enable/disable, display properties, default duration
+- **[Configuration Guide](../../configuration/general#parsing)** — Enable/disable, display properties, default duration
 - **[Hotkeys](../advanced/hotkeys.md#toggle-untracked-events-dropdown)** — Toggle command and hotkey setup
 
 ## Double-Click to Open

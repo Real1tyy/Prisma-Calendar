@@ -82,7 +82,7 @@ Automatically marks events as notified if they were created within the last minu
 
 **Use Case**: Prevents unwanted notification spam when batch-creating events or using the Stopwatch to track work sessions.
 
-For complete notification settings reference, see [Configuration](../../configuration.md#notifications-settings).
+For complete notification settings reference, see [Configuration](../../configuration/notifications).
 
 ## Frontmatter Properties
 

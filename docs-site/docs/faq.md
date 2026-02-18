@@ -145,7 +145,7 @@ Alternatively, you can edit `.obsidian/types.json` directly and add the property
 }
 ```
 
-After changing the property type, Bases will sort events chronologically. See the [Configuration — Sorting Normalization](./configuration.md#sorting-normalization-for-external-tools) documentation for full details on how sort date normalization works.
+After changing the property type, Bases will sort events chronologically. See the [Configuration — Sorting Normalization](./configuration/properties#sorting-normalization-for-external-tools) documentation for full details on how sort date normalization works.
 
 ---
 

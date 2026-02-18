@@ -18,7 +18,7 @@ Icon: "📅"
 
 Any string value works: emoji, Unicode characters, or short text.
 
-The icon can also be set via the **Icon** field in the Create/Edit Event modal, and is saved as part of [event presets](../../configuration#event-presets).
+The icon can also be set via the **Icon** field in the Create/Edit Event modal, and is saved as part of [event presets](../../configuration/general#event-presets).
 
 ## Icon Precedence
 

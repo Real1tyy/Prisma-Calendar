@@ -218,7 +218,7 @@ The **Excluded properties** and **Propagation debounce delay** settings (under "
 
 Loop prevention ensures that when a change propagates from event A to events B and C, the updates to B and C do not trigger further propagation back to A.
 
-See [Frontmatter Propagation](../../configuration#frontmatter-propagation) for full configuration details.
+See [Frontmatter Propagation](../../configuration/event-groups#frontmatter-propagation) for full configuration details.
 
 ## Events Browser
 

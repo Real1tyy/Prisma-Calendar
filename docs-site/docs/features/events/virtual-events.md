@@ -68,4 +68,4 @@ Right-click any virtual event → "Go to source" to navigate to the source event
 ## Related
 
 - [Recurring Events](./recurring-dsl.md) - Complete recurring event documentation
-- [Configuration](../../configuration.md#recurring-instances-generation-horizon) - Future instances count settings
+- [Configuration](../../configuration/event-groups#recurring-instances-generation-horizon) - Future instances count settings

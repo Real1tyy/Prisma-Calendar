@@ -300,7 +300,7 @@ The **Open Current Note in Calendar** command provides quick navigation from any
 -   **Behavior**: Displays events from the visible calendar range (day/week/month) in a structured table
 -   **Features**: Full Bases filtering, sorting, and column customization
 -   **Use Case**: Analyze and manage events within the current view using Bases' powerful table interface
--   **See Also**: [Configuration](../../configuration.md#bases-view-properties) for customizing displayed columns
+-   **See Also**: [Configuration](../../configuration/bases) for customizing displayed columns
 
 ## Undo/Redo Commands
 
