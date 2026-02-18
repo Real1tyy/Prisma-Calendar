@@ -58,6 +58,10 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 			errors: [] as string[],
 		};
 
+		if (this.destroyed) {
+			return { ...defaultResult, success: false, errors: ["Sync service destroyed"] };
+		}
+
 		if (!this.account.enabled) {
 			return {
 				...defaultResult,
@@ -75,6 +79,8 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 
 			let processedCount = 0;
 			for (const event of events) {
+				if (this.destroyed) break;
+
 				try {
 					const uid = event.uid ?? "";
 					const existingEvent = this.syncStateManager.findByUid(this.account.id, this.calendar.url, uid);

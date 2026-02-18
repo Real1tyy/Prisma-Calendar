@@ -352,6 +352,10 @@ export function buildFrontmatterFromImportedEvent(
 		if (event.rrule.weekdays && event.rrule.weekdays.length > 0) {
 			fm[settings.rruleSpecProp] = event.rrule.weekdays.join(", ");
 		}
+		// Disable recurring instance generation by default for imported events.
+		// The integration handles individual occurrences — the user can enable
+		// generation manually if they want Prisma to expand the RRULE.
+		fm[settings.skipProp] = true;
 	}
 
 	return fm;

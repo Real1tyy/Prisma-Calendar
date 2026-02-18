@@ -37,6 +37,7 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 	protected bundle: CalendarBundle;
 	protected mainSettingsStore: SettingsStore;
 	protected settingsSubscription: Subscription | null = null;
+	protected destroyed = false;
 
 	constructor(options: BaseSyncServiceOptions) {
 		this.app = options.app;
@@ -156,7 +157,12 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 		new Notice(`${this.getSyncName()} sync failed: ${errorMsg}`);
 	}
 
+	protected isDestroyed(): boolean {
+		return this.destroyed;
+	}
+
 	destroy(): void {
+		this.destroyed = true;
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
 	}

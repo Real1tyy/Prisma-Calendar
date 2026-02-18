@@ -6,6 +6,11 @@ All notable changes to this project will be documented here.
 
 ## 2.4.0 - 2/18/2026
 
+### Fixed
+
+- **Duplicate events on plugin hot-reload**: In-flight CalDAV/ICS sync operations from a previous plugin instance could continue running after unload, creating duplicate events alongside the new instance's sync. Sync services now abort all pending file operations immediately on destroy, preventing duplicates at the source rather than relying on reactive self-healing.
+- **Imported recurring events disabled by default**: Events imported via CalDAV, ICS subscriptions, or manual ICS import that contain RRULE data (e.g., recurring habits from Reclaim.ai) are now imported with generation disabled (`Skip: true`). Integration sources already provide individual occurrences, so auto-generating instances from the RRULE would create duplicates. The RRULE metadata is preserved — set Skip to `false` to enable generation if needed. See [Integrations — Recurring Event Support](./features/advanced/integrations.md#recurring-event-support).
+
 ### Improved
 
 - **Faster view switching and month navigation**: Switching between monthly and weekly views (and navigating months) is now significantly faster on larger vaults. When most rendered events change at once (e.g., month→week), the calendar now performs a single bulk reload instead of hundreds of individual event removals, eliminating the lag spike during view transitions.

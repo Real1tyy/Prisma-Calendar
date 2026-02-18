@@ -111,7 +111,7 @@ For each imported event, Prisma Calendar:
 
 ### Recurring Event Support
 
-Recurring events defined with ICS `RRULE` properties are automatically converted to Prisma's internal recurring event system. The following recurrence patterns are supported:
+Recurring events defined with ICS `RRULE` properties are automatically converted to Prisma's internal recurring event format. The following recurrence patterns are supported:
 
 | ICS RRULE | Prisma Recurrence Type |
 |-----------|----------------------|
@@ -125,7 +125,11 @@ Recurring events defined with ICS `RRULE` properties are automatically converted
 | `FREQ=MONTHLY;INTERVAL=6` | Semi-annual |
 | `FREQ=YEARLY` | Yearly |
 
-For weekly and bi-weekly events, `BYDAY` values (e.g., `BYDAY=MO,WE,FR`) are mapped to weekday selections. Once imported, recurring events generate instances automatically via the existing [recurring event system](../events/recurring-dsl).
+For weekly and bi-weekly events, `BYDAY` values (e.g., `BYDAY=MO,WE,FR`) are mapped to weekday selections.
+
+**Imported recurring events are disabled by default** (`Skip: true`). This is because integration sources like CalDAV and ICS subscriptions typically provide individual occurrences of recurring events — if Prisma also generated its own instances from the RRULE, you would get duplicates. The RRULE metadata is preserved in frontmatter so you can see the recurrence pattern, but instance generation does not happen automatically.
+
+If you want Prisma to generate recurring instances from an imported event (e.g., for a manual ICS import where individual occurrences are not synced), set `Skip` to `false` in the event's frontmatter. The [recurring event system](../events/recurring-dsl) will then create instances normally.
 
 Unsupported RRULE patterns (e.g., `INTERVAL=3` on weekly) are imported as single non-recurring events.
 

@@ -6,6 +6,7 @@ export class SyncState<TService extends Destroyable> {
 	private services: Map<string, TService> = new Map();
 	private autoSyncIntervals: Map<string, number> = new Map();
 	private syncPromises: Map<string, Promise<void>> = new Map();
+	private destroyed = false;
 
 	constructor(private logPrefix: string) {}
 
@@ -18,6 +19,8 @@ export class SyncState<TService extends Destroyable> {
 	}
 
 	async sync(id: string, performSync: () => Promise<void>): Promise<void> {
+		if (this.destroyed) return;
+
 		const existingSync = this.syncPromises.get(id);
 		if (existingSync) {
 			console.debug(`[${this.logPrefix}] Sync already in progress for ${id}, reusing promise`);
@@ -35,6 +38,7 @@ export class SyncState<TService extends Destroyable> {
 	}
 
 	startAutoSync(items: { id: string; syncIntervalMinutes: number }[], syncFn: (id: string) => Promise<void>): void {
+		if (this.destroyed) return;
 		this.stopAutoSync();
 
 		for (const item of items) {
@@ -66,6 +70,7 @@ export class SyncState<TService extends Destroyable> {
 	}
 
 	destroy(): void {
+		this.destroyed = true;
 		this.stopAutoSync();
 		for (const service of this.services.values()) {
 			service.destroy();

@@ -51,6 +51,10 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			errors: [],
 		};
 
+		if (this.destroyed) {
+			return { ...defaultResult, success: false, errors: ["Sync service destroyed"] };
+		}
+
 		if (!this.subscription.enabled) {
 			return {
 				...defaultResult,
@@ -83,6 +87,8 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 
 			let processedCount = 0;
 			for (const event of parsed.events) {
+				if (this.destroyed) break;
+
 				const uid = event.uid;
 				if (!uid) continue;
 
@@ -120,7 +126,7 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 			}
 
 			const trackedEvents = this.syncStateManager.getAllForSubscription(this.subscription.id);
-			for (const tracked of trackedEvents) {
+			for (const tracked of this.destroyed ? [] : trackedEvents) {
 				if (!remoteUids.has(tracked.metadata.uid)) {
 					try {
 						const file = this.app.vault.getAbstractFileByPath(tracked.filePath);
