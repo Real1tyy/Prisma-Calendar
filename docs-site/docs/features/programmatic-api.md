@@ -91,6 +91,13 @@ Creates a tracked event with full frontmatter.
 
 Omit `start` for an untracked event.
 
+:::tip Datetime format
+Datetime strings are automatically normalized to the internal `.000Z` suffix format. You can pass any of these — they are all equivalent:
+- `"2025-02-14T09:00:00.000Z"` (full format)
+- `"2025-02-14T09:00:00"` (no suffix)
+- `"2025-02-14T09:00"` (no seconds)
+:::
+
 **Returns:** `Promise<string | null>` — File path of the created note, or `null` if creation failed.
 
 **Example:**

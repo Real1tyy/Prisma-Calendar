@@ -10,6 +10,10 @@ All notable changes to this project will be documented here.
 
 - **Detailed documentation with videos**: Added comprehensive video walkthroughs for every major feature, embedded directly into the documentation pages. Browse the full [documentation site](https://real1tyy.github.io/Prisma-Calendar/) or visit the [Gallery](https://real1tyy.github.io/Prisma-Calendar/gallery) for a visual overview of all features.
 
+### Fixed
+
+- **API datetime timezone normalization**: The programmatic API (`createEvent`, `convertFileToEvent`) now automatically normalizes datetime strings to the expected `.000Z` suffix format. Passing `"2025-02-18T09:00:00"` or `"2025-02-18T09:00"` is now equivalent to `"2025-02-18T09:00:00.000Z"` — the suffix is appended automatically when missing, preventing timezone interpretation conflicts. See [Programmatic API](./features/programmatic-api.md).
+
 ---
 
 ## 2.2.0 - 2/17/2026

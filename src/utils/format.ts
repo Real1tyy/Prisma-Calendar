@@ -182,6 +182,31 @@ export function buildEventTooltip(
 	return tooltipParts.join("\n");
 }
 
+/**
+ * Ensures a datetime string ends with the expected `.000Z` suffix.
+ * Handles inputs like "2025-02-18T09:00", "2025-02-18T09:00:00", and already-correct "2025-02-18T09:00:00.000Z".
+ * Only processes strings containing "T" (timed values); date-only strings are returned unchanged.
+ */
+export function ensureISOSuffix(datetime: string): string {
+	if (!datetime.includes("T")) return datetime;
+	if (datetime.endsWith(".000Z")) return datetime;
+
+	// Strip trailing Z if present (e.g. "...T09:00:00Z")
+	const stripped = datetime.endsWith("Z") ? datetime.slice(0, -1) : datetime;
+
+	// Count colon-separated time parts after the T
+	const timePart = stripped.split("T")[1];
+	const parts = timePart.split(":");
+
+	if (parts.length === 2) {
+		// "HH:MM" → "HH:MM:00.000Z"
+		return `${stripped}:00.000Z`;
+	}
+	// "HH:MM:SS" or "HH:MM:SS.xxx" → strip any existing fractional seconds and append .000Z
+	const base = stripped.includes(".") ? stripped.split(".")[0] : stripped;
+	return `${base}.000Z`;
+}
+
 export function toLocalISOString(date: Date): string {
 	const year = date.getFullYear();
 	const month = String(date.getMonth() + 1).padStart(2, "0");

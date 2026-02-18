@@ -10,7 +10,7 @@ import {
 	setEventBasics,
 	setUntrackedEventBasics,
 } from "../utils/calendar-events";
-import { roundToNearestHour, toLocalISOString } from "../utils/format";
+import { ensureISOSuffix, roundToNearestHour, toLocalISOString } from "../utils/format";
 import { openFileInNewTab } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
 import { MinimizedModalManager } from "./minimized-modal-manager";
@@ -247,11 +247,13 @@ export class PrismaCalendarApiManager {
 		if (!bundle) return null;
 
 		const frontmatter = this.buildFrontmatterFromInput(bundle, input);
+		const normalizedStart = input.start ? ensureISOSuffix(input.start) : "";
+		const normalizedEnd = input.end ? ensureISOSuffix(input.end) : null;
 		const filePath = await bundle.createEvent({
 			filePath: null,
 			title: input.title,
-			start: input.start ?? "",
-			end: input.end ?? null,
+			start: normalizedStart,
+			end: normalizedEnd,
 			allDay: input.allDay ?? false,
 			preservedFrontmatter: frontmatter,
 		});
@@ -293,10 +295,11 @@ export class PrismaCalendarApiManager {
 
 		if (hasTrackedDateData) {
 			const allDay = input.allDay === true;
-			const end = allDay ? undefined : input.end;
+			const normalizedStart = ensureISOSuffix(input.start!);
+			const end = allDay ? undefined : input.end ? ensureISOSuffix(input.end) : undefined;
 			setEventBasics(frontmatter, settings, {
 				title: input.title,
-				start: input.start!,
+				start: normalizedStart,
 				end,
 				allDay,
 			});
