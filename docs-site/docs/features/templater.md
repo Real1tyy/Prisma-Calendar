@@ -63,3 +63,12 @@ All standard `tp.*` functions work, including `tp.file.title`, `tp.file.path`, `
 | `tp.file.tags` | Returns empty/null (same reason as above). |
 
 These limitations only apply to templates for new event creation. They do not affect templates used outside of Prisma Calendar.
+
+## Recurring Event Instances
+
+When a template is configured, [recurring event](./recurring-dsl.md) instances also use it. The template renders first, then any body content from the source recurring event is appended after the template body. This means your instances get the full template structure (headings, boilerplate, Templater functions) plus whatever content you wrote in the source event.
+
+- **Event frontmatter wins**: Instance-specific properties (`Start Date`, `End Date`, `RRuleID`, etc.) override any matching template defaults, just like regular event creation.
+- **Source body appended**: If the source recurring event has body content (text below the frontmatter), it is appended after the rendered template body with a blank line separator.
+- **Empty source body**: If the source event has no body content, the instance contains only the rendered template.
+- **Graceful fallback**: If Templater is unavailable or the template fails to render, instances are created with frontmatter and source body content as before — no instance is ever lost.

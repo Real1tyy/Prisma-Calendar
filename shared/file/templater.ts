@@ -247,6 +247,98 @@ export async function renderTemplateContent(
 }
 
 // ============================================================================
+// Internal helpers — body appending
+// ============================================================================
+
+/**
+ * Appends extra body content after the rendered template body. Preserves
+ * frontmatter intact and separates the two bodies with a blank line.
+ * Returns the rendered content unchanged if extraBody is empty/whitespace.
+ */
+function appendBodyToRenderedContent(renderedContent: string, extraBody: string): string {
+	const trimmedExtra = extraBody.trim();
+	if (!trimmedExtra) {
+		return renderedContent;
+	}
+
+	const fmMatch = renderedContent.match(/^---\n[\s\S]*?\n---\n?([\s\S]*)$/);
+	const renderedBody = fmMatch ? fmMatch[1] : renderedContent;
+	const fmPart = fmMatch ? renderedContent.slice(0, renderedContent.length - renderedBody.length) : "";
+
+	const trimmedRenderedBody = renderedBody.trimEnd();
+
+	if (trimmedRenderedBody) {
+		return `${fmPart}${trimmedRenderedBody}\n\n${trimmedExtra}\n`;
+	}
+
+	return `${fmPart}\n${trimmedExtra}\n`;
+}
+
+// ============================================================================
+// Public API — atomic file creation at path
+// ============================================================================
+
+/**
+ * Creates a file at the given path using the sentinel → guard → render → modify
+ * pattern when a Templater template is configured. If content is provided
+ * alongside a template, the template renders first and the content is appended
+ * after the template body.
+ *
+ * Falls back to `createFileAtPath` (no Templater) when:
+ *  - No template path is configured
+ *  - Templater plugin is unavailable
+ *  - Template file doesn't exist
+ *
+ * Falls back to frontmatter+content if rendering fails or returns null.
+ */
+export async function createFileAtPathAtomic(
+	app: App,
+	filePath: string,
+	options: {
+		content?: string;
+		frontmatter?: Record<string, unknown>;
+		templatePath?: string;
+	}
+): Promise<TFile> {
+	const { content, frontmatter, templatePath } = options;
+
+	if (!shouldUseTemplate(app, templatePath)) {
+		return createFileAtPath(app, filePath, content, frontmatter);
+	}
+
+	const existing = app.vault.getAbstractFileByPath(filePath);
+	if (existing instanceof TFile) {
+		return existing;
+	}
+
+	const releaseGuard = guardFromTemplater(app, filePath);
+	const sentinelFile = await app.vault.create(filePath, PENDING_WRITE_SENTINEL);
+
+	try {
+		const renderedContent = await renderTemplateContent(app, templatePath!, sentinelFile, frontmatter);
+
+		if (renderedContent !== null) {
+			const finalContent = content?.trim() ? appendBodyToRenderedContent(renderedContent, content) : renderedContent;
+			await app.vault.modify(sentinelFile, finalContent);
+			return sentinelFile;
+		}
+	} catch (err) {
+		console.error("[createFileAtPathAtomic] renderTemplateContent threw:", err);
+	} finally {
+		releaseGuard();
+	}
+
+	// Rendering returned null or threw — write frontmatter-only content so
+	// the file is still created correctly, just without the template body.
+	const fallbackContent =
+		frontmatter && Object.keys(frontmatter).length > 0
+			? createFileContentWithFrontmatter(frontmatter, content || "")
+			: content || "";
+	await app.vault.modify(sentinelFile, fallbackContent);
+	return sentinelFile;
+}
+
+// ============================================================================
 // Public API — file creation
 // ============================================================================
 

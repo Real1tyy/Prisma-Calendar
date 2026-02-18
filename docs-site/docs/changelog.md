@@ -9,10 +9,15 @@ All notable changes to this project will be documented here.
 ### Added
 
 - **Detailed documentation with videos**: Added comprehensive video walkthroughs for every major feature, embedded directly into the documentation pages. Browse the full [documentation site](https://real1tyy.github.io/Prisma-Calendar/) or visit the [Gallery](https://real1tyy.github.io/Prisma-Calendar/gallery) for a visual overview of all features.
+- **Templater support for recurring event instances**: Recurring event instances now use your configured Templater template when one is set. The template renders first, and any body content from the source recurring event is appended after the template body. Falls back gracefully if Templater is unavailable. See [Templater Integration — Recurring Event Instances](./features/templater.md#recurring-event-instances).
 
 ### Fixed
 
 - **API datetime timezone normalization**: The programmatic API (`createEvent`, `convertFileToEvent`) now automatically normalizes datetime strings to the expected `.000Z` suffix format. Passing `"2025-02-18T09:00:00"` or `"2025-02-18T09:00"` is now equivalent to `"2025-02-18T09:00:00.000Z"` — the suffix is appended automatically when missing, preventing timezone interpretation conflicts. See [Programmatic API](./features/programmatic-api.md).
+
+### Improved
+
+- **Batch frontmatter modal redesign**: The batch frontmatter modal now shows all unique properties across selected events (union) instead of only properties common to all. Existing properties are visually distinguished with an accent border. The delete checkbox has been replaced with a toggle-based X button — clicking X on an existing property marks it for deletion (strikethrough), clicking again restores it. New properties are removed immediately on X. Non-core properties like location, participants, and icon are now visible. See [Batch Operations](./features/batch-operations.md#batch-frontmatter-management).
 
 ---
 

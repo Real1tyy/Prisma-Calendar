@@ -1,5 +1,5 @@
 import {
-	createFileAtPath,
+	createFileAtPathAtomic,
 	createFileLink,
 	DebouncedNotifier,
 	extractContentAfterFrontmatter,
@@ -669,7 +669,12 @@ export class RecurringEventManager extends DebouncedNotifier {
 			}
 
 			const uniquePath = getUniqueFilePathFromFull(this.app, filePath);
-			const file = await createFileAtPath(this.app, uniquePath, content, instanceFrontmatter);
+
+			const file = await createFileAtPathAtomic(this.app, uniquePath, {
+				content: content ?? undefined,
+				frontmatter: instanceFrontmatter,
+				templatePath: this.settings.templatePath,
+			});
 
 			// Don't notify here - let the batch operation handle notification
 			// Individual file creations will be picked up by the indexer

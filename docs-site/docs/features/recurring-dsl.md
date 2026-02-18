@@ -43,6 +43,8 @@ This makes it instantly clear which events are source templates versus generated
 
 **Inheritance**: All frontmatter properties, complete file content, exact formatting. Only `Start`/`End` dates and `RRuleID` are adjusted automatically.
 
+**Templater Support**: When a [Templater template](./templater.md) is configured, generated instances use it — the template renders first and source body content is appended after. See [Templater Integration — Recurring Event Instances](./templater.md#recurring-event-instances).
+
 **Frontmatter Propagation**: 
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>

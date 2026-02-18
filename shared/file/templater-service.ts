@@ -1,12 +1,10 @@
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { FileCreationOptions } from "./templater";
-import { createFileContentWithFrontmatter } from "./frontmatter-serialization";
 import {
-	PENDING_WRITE_SENTINEL,
+	createFileAtPathAtomic,
 	createFileManually,
 	createFromTemplate,
-	guardFromTemplater,
 	isTemplaterAvailable,
 	renderTemplateContent,
 	shouldUseTemplate,
@@ -91,13 +89,8 @@ export class TemplaterService {
 	 * atomic creation, eliminating the race condition with the indexer and
 	 * Templater's folder-template handler.
 	 *
-	 * The flow:
-	 *  1. Register the target path in Templater's files_with_pending_templates
-	 *     set so its on_file_creation handler skips this file entirely.
-	 *  2. Create a sentinel file (so Templater can read it during rendering).
-	 *  3. Render the template via read_and_parse_template, merge frontmatter.
-	 *  4. Write the final content with vault.modify — the indexer only sees the
-	 *     complete, correct file state.
+	 * When a template is configured and content is also provided, the template
+	 * renders first and the content is appended after the template body.
 	 *
 	 * Falls back to manual creation if Templater is unavailable or rendering fails.
 	 */
@@ -105,50 +98,11 @@ export class TemplaterService {
 		const { title, targetDirectory, filename, content, frontmatter, templatePath, useTemplater } = options;
 
 		const finalFilename = filename || title;
+		const baseName = finalFilename.replace(/\.md$/, "");
+		const filePath = `${targetDirectory}/${baseName}.md`;
 
-		if (content) {
-			return createFileManually(this.app, targetDirectory, finalFilename, content, frontmatter);
-		}
-
-		if (useTemplater && shouldUseTemplate(this.app, templatePath)) {
-			const baseName = finalFilename.replace(/\.md$/, "");
-			const filePath = `${targetDirectory}/${baseName}.md`;
-
-			// Guard: return existing file rather than overwrite
-			const existing = this.app.vault.getAbstractFileByPath(filePath);
-			if (existing instanceof TFile) {
-				return existing;
-			}
-
-			// Register the path in Templater's files_with_pending_templates set
-			// BEFORE creating the file. Templater's on_file_creation handler checks
-			// this set (after a 300ms delay) and returns immediately if the path is
-			// present — preventing both folder-template application AND the
-			// overwrite_file_commands branch from running.
-			const releaseGuard = guardFromTemplater(this.app, filePath);
-
-			// Create sentinel so Templater can read it during read_and_parse_template
-			// (tp.file.content is eagerly evaluated and requires the file on disk).
-			const sentinelFile = await this.app.vault.create(filePath, PENDING_WRITE_SENTINEL);
-
-			try {
-				const renderedContent = await renderTemplateContent(this.app, templatePath!, sentinelFile, frontmatter);
-
-				if (renderedContent !== null) {
-					await this.app.vault.modify(sentinelFile, renderedContent);
-					return sentinelFile;
-				}
-			} catch (err) {
-				console.error("[createFileAtomic] renderTemplateContent threw:", err);
-			} finally {
-				releaseGuard();
-			}
-
-			// Rendering returned null or threw — write frontmatter-only content so
-			// the event is still created correctly, just without the template body.
-			const fallbackContent = frontmatter ? createFileContentWithFrontmatter(frontmatter, "") : "";
-			await this.app.vault.modify(sentinelFile, fallbackContent);
-			return sentinelFile;
+		if (useTemplater) {
+			return createFileAtPathAtomic(this.app, filePath, { content, frontmatter, templatePath });
 		}
 
 		return createFileManually(this.app, targetDirectory, finalFilename, content, frontmatter);
