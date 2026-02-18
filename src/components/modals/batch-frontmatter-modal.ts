@@ -9,6 +9,8 @@ interface FrontmatterProperty {
 	value: string;
 	isExisting: boolean;
 	markedForDeletion: boolean;
+	originalKey: string;
+	originalValue: string;
 }
 
 export class BatchFrontmatterModal extends Modal {
@@ -116,6 +118,8 @@ export class BatchFrontmatterModal extends Modal {
 			value,
 			isExisting,
 			markedForDeletion: false,
+			originalKey: key,
+			originalValue: value,
 		};
 
 		this.properties.push(property);
@@ -203,7 +207,23 @@ export class BatchFrontmatterModal extends Modal {
 
 			if (property.markedForDeletion) {
 				propertyMap.set(key, null);
+			} else if (property.isExisting) {
+				// Only include existing properties if the user actually changed them
+				const value = property.value.trim();
+				const keyChanged = key !== property.originalKey;
+				const valueChanged = value !== property.originalValue.trim();
+
+				if (keyChanged || valueChanged) {
+					if (keyChanged && property.originalKey.trim()) {
+						// Key was renamed: delete old key, set new key
+						propertyMap.set(property.originalKey.trim(), null);
+					}
+					if (value) {
+						propertyMap.set(key, value);
+					}
+				}
 			} else {
+				// New property: include if it has a value
 				const value = property.value.trim();
 				if (value) {
 					propertyMap.set(key, value);
