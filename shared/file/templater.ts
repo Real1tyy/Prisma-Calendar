@@ -1,8 +1,36 @@
-import { type App, Notice, normalizePath, TFile } from "obsidian";
+import { type App, Notice, TFile, normalizePath } from "obsidian";
+import { parse as parseYAML } from "yaml";
 import { waitForFileReady } from "./file-utils";
 import { createFileContentWithFrontmatter } from "./frontmatter-serialization";
 
 const TEMPLATER_ID = "templater-obsidian";
+
+/**
+ * Frontmatter key written into the sentinel file during atomic creation.
+ * The indexer checks for this key (via metadataCache) to skip mid-write files
+ * without performing any additional I/O.
+ */
+export const PENDING_WRITE_SENTINEL_FM_KEY = "pending_write";
+
+export const PENDING_WRITE_SENTINEL_BODY_COMMENT = "pending-write";
+
+/**
+ * Full initial file content written during atomic creation.
+ *
+ * Must satisfy two constraints simultaneously:
+ *  1. Frontmatter with PENDING_WRITE_SENTINEL_FM_KEY — lets the indexer detect
+ *     and skip the file using the already-populated metadataCache (zero I/O).
+ *  2. Non-empty body after the frontmatter — Templater's folder-template handler
+ *     fires 300 ms after file creation and checks `content_size` (body length
+ *     after frontmatter). content_size == 0 triggers the folder template; > 0
+ *     sends it to overwrite_file_commands which is a no-op when the body has no
+ *     Templater tags. Both frontmatter-only and empty files have content_size 0.
+ */
+export const PENDING_WRITE_SENTINEL = `---\n${PENDING_WRITE_SENTINEL_FM_KEY}: true\n---\n${PENDING_WRITE_SENTINEL_BODY_COMMENT}\n`;
+
+// ============================================================================
+// Types — legacy public API (create_new_note_from_template)
+// ============================================================================
 
 type CreateFn = (
 	templateFile: TFile,
@@ -15,6 +43,38 @@ interface TemplaterLike {
 	create_new_note_from_template: CreateFn;
 }
 
+// ============================================================================
+// Types — internal API (read_and_parse_template)
+// ============================================================================
+
+interface RunningConfig {
+	template_file: TFile | null;
+	target_file: TFile;
+	run_mode: number;
+	active_file: TFile | null;
+}
+
+interface TemplaterInternalApi {
+	// Reads the template file from disk, then renders it against target_file.
+	// target_file must exist in the vault so Templater can resolve tp.file.* and
+	// read the target's content/frontmatter if the template requests them.
+	read_and_parse_template: (config: RunningConfig) => Promise<string>;
+
+	// Set of file paths currently being processed by Templater.
+	// Templater's folder-template handler (on_file_creation) checks this set
+	// after a 300ms delay and skips the file entirely if present. Adding a path
+	// here before vault.create prevents Templater from ever touching our file.
+	files_with_pending_templates: Set<string>;
+}
+
+interface TemplaterPlugin {
+	templater: TemplaterInternalApi;
+}
+
+// ============================================================================
+// Shared options type
+// ============================================================================
+
 export interface FileCreationOptions {
 	title: string;
 	targetDirectory: string;
@@ -24,6 +84,10 @@ export interface FileCreationOptions {
 	templatePath?: string;
 	useTemplater?: boolean;
 }
+
+// ============================================================================
+// Internal helpers — legacy
+// ============================================================================
 
 async function waitForTemplater(app: App, timeoutMs = 8000): Promise<TemplaterLike | null> {
 	await new Promise<void>((resolve) => app.workspace.onLayoutReady(resolve));
@@ -45,12 +109,76 @@ async function waitForTemplater(app: App, timeoutMs = 8000): Promise<TemplaterLi
 	return null;
 }
 
+// ============================================================================
+// Internal helpers — atomic rendering
+// ============================================================================
+
+function getTemplaterPlugin(app: App): TemplaterPlugin | null {
+	const appWithPlugins = app as App & {
+		plugins?: { getPlugin?: (id: string) => TemplaterPlugin | null | undefined };
+	};
+	return appWithPlugins.plugins?.getPlugin?.(TEMPLATER_ID) ?? null;
+}
+
+/**
+ * Registers a file path in Templater's files_with_pending_templates set so that
+ * Templater's on_file_creation handler (folder-template / overwrite_file_commands)
+ * skips the file entirely. Returns a cleanup function that removes the path after
+ * Templater's 300ms handler window has safely passed.
+ *
+ * This is the same mechanism Templater uses internally (start_templater_task /
+ * end_templater_task) and is the only way to fully prevent Templater from
+ * touching a file we're managing ourselves.
+ */
+export function guardFromTemplater(app: App, filePath: string): () => void {
+	const plugin = getTemplaterPlugin(app);
+	const pending = plugin?.templater?.files_with_pending_templates;
+	if (pending) {
+		pending.add(filePath);
+	}
+	return () => {
+		// Hold the guard past Templater's 300ms delay + some margin, then release.
+		setTimeout(() => {
+			pending?.delete(filePath);
+		}, 500);
+	};
+}
+
+/**
+ * Merges frontmatter overrides into processed template content. Overrides win.
+ * Always strips PENDING_WRITE_SENTINEL_FM_KEY from the result — the template may
+ * have inherited it from the target file's frontmatter via tp.file.frontmatter.
+ */
+function mergeTemplateContent(processedContent: string, overrides: Record<string, unknown>): string {
+	const fmMatch = processedContent.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+	if (!fmMatch) {
+		if (Object.keys(overrides).length === 0) {
+			return processedContent;
+		}
+		return createFileContentWithFrontmatter(overrides, processedContent);
+	}
+
+	const rawTemplateFm = fmMatch[1];
+	const body = fmMatch[2] ?? "";
+	const templateFm = (parseYAML(rawTemplateFm) as Record<string, unknown>) ?? {};
+
+	const mergedFm = { ...templateFm, ...overrides };
+
+	// Strip the sentinel key so it never ends up in the final written content
+	delete mergedFm[PENDING_WRITE_SENTINEL_FM_KEY];
+
+	return createFileContentWithFrontmatter(mergedFm, body);
+}
+
+// ============================================================================
+// Public API — availability checks
+// ============================================================================
+
 export function isTemplaterAvailable(app: App): boolean {
 	const appWithPlugins = app as App & {
 		plugins?: { getPlugin?: (id: string) => unknown | null | undefined };
 	};
-	const instance = appWithPlugins.plugins?.getPlugin?.(TEMPLATER_ID);
-	return !!instance;
+	return !!appWithPlugins.plugins?.getPlugin?.(TEMPLATER_ID);
 }
 
 /**
@@ -65,6 +193,63 @@ export function shouldUseTemplate(app: App, templatePath: string | undefined): b
 	);
 }
 
+// ============================================================================
+// Public API — atomic rendering (new)
+// ============================================================================
+
+/**
+ * Renders a Templater template against an existing target file and returns the
+ * fully processed content as a string, without any additional vault operations.
+ *
+ * targetFile must already exist in the vault (even as an empty file) so that
+ * Templater can resolve tp.file.* functions and read the target's content from
+ * the real filesystem path. Passing a non-existent file will cause Templater to
+ * throw ENOENT when it accesses the target on disk.
+ *
+ * Any provided frontmatter overrides are merged on top of the template's own
+ * frontmatter (overrides win).
+ *
+ * @returns The rendered content string, or null if Templater is unavailable,
+ *          lacks the internal API, the template is missing, or rendering throws.
+ */
+export async function renderTemplateContent(
+	app: App,
+	templatePath: string,
+	targetFile: TFile,
+	overrides?: Record<string, unknown>
+): Promise<string | null> {
+	try {
+		const plugin = getTemplaterPlugin(app);
+		if (!plugin?.templater?.read_and_parse_template) {
+			return null;
+		}
+
+		const templateFile = app.vault.getFileByPath(normalizePath(templatePath));
+		if (!templateFile) {
+			console.error(`[renderTemplateContent] Template not found: ${templatePath}`);
+			return null;
+		}
+
+		const processedContent = await plugin.templater.read_and_parse_template({
+			template_file: templateFile,
+			target_file: targetFile,
+			run_mode: 0, // RunMode.CreateNewFromTemplate
+			active_file: null,
+		});
+
+		// Always merge (even with no overrides) so the sentinel key is stripped
+		// from content if the template inherited it from the target file's frontmatter.
+		return mergeTemplateContent(processedContent, overrides ?? {});
+	} catch (error) {
+		console.error("[renderTemplateContent] Error rendering template:", error);
+		return null;
+	}
+}
+
+// ============================================================================
+// Public API — file creation
+// ============================================================================
+
 /**
  * Creates a file at the specified full path with optional frontmatter and content.
  * Returns existing file if it already exists.
@@ -75,23 +260,21 @@ export async function createFileAtPath(
 	content?: string,
 	frontmatter?: Record<string, unknown>
 ): Promise<TFile> {
-	// Check if file already exists
 	const existingFile = app.vault.getAbstractFileByPath(filePath);
 	if (existingFile instanceof TFile) {
 		return existingFile;
 	}
 
 	const bodyContent = content || "";
+	const fileContent =
+		frontmatter && Object.keys(frontmatter).length > 0
+			? createFileContentWithFrontmatter(frontmatter, bodyContent)
+			: bodyContent;
 
-	let fileContent: string;
-	if (frontmatter && Object.keys(frontmatter).length > 0) {
-		fileContent = createFileContentWithFrontmatter(frontmatter, bodyContent);
-	} else {
-		fileContent = bodyContent;
-	}
+	// Prevent Templater's folder-template handler from overwriting our file.
+	guardFromTemplater(app, filePath);
 
-	const file = await app.vault.create(filePath, fileContent);
-	return file;
+	return app.vault.create(filePath, fileContent);
 }
 
 /**
@@ -107,10 +290,17 @@ export async function createFileManually(
 ): Promise<TFile> {
 	const baseName = filename.replace(/\.md$/, "");
 	const filePath = `${targetDirectory}/${baseName}.md`;
-
 	return createFileAtPath(app, filePath, content, frontmatter);
 }
 
+/**
+ * Creates a file from a Templater template using Templater's public
+ * create_new_note_from_template API.
+ *
+ * Note: this performs two vault writes (Templater creates the file, then we
+ * apply frontmatter overrides), which can cause a brief race window with the
+ * indexer. For atomic creation use TemplaterService.createFileAtomic().
+ */
 export async function createFromTemplate(
 	app: App,
 	templatePath: string,
@@ -121,28 +311,25 @@ export async function createFromTemplate(
 ): Promise<TFile | null> {
 	const templater = await waitForTemplater(app);
 	if (!templater) {
-		console.warn("Templater isn't ready yet (or not installed/enabled).");
 		new Notice("Templater plugin is not available or enabled. Please ensure it is installed and enabled.");
 		return null;
 	}
 
 	const templateFile = app.vault.getFileByPath(normalizePath(templatePath));
 	if (!templateFile) {
-		console.error(`Template not found: ${templatePath}`);
+		console.error(`[createFromTemplate] Template not found: ${templatePath}`);
 		new Notice(`Template file not found: ${templatePath}. Please ensure the template file exists.`);
 		return null;
 	}
 
 	try {
 		const newFile = await templater.create_new_note_from_template(templateFile, targetFolder, filename, openNewNote);
-
 		if (!newFile) {
 			return null;
 		}
 
 		if (frontmatter && Object.keys(frontmatter).length > 0) {
 			const readyFile = await waitForFileReady(app, newFile.path);
-
 			if (readyFile) {
 				await app.fileManager.processFrontMatter(readyFile, (fm) => {
 					Object.assign(fm, frontmatter);
@@ -153,7 +340,7 @@ export async function createFromTemplate(
 
 		return newFile;
 	} catch (error) {
-		console.error("Error creating file from template:", error);
+		console.error("[createFromTemplate] Error creating file from template:", error);
 		new Notice("Error creating file from template. Please ensure the template file is valid.");
 		return null;
 	}
@@ -164,12 +351,10 @@ export async function createFileWithTemplate(app: App, options: FileCreationOpti
 
 	const finalFilename = filename || title;
 
-	// If content is provided, use manual creation to preserve the content
 	if (content) {
 		return createFileManually(app, targetDirectory, finalFilename, content, frontmatter);
 	}
 
-	// Try to use template if requested and available
 	if (useTemplater && shouldUseTemplate(app, templatePath)) {
 		const templateFile = await createFromTemplate(
 			app,

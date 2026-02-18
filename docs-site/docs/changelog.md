@@ -12,6 +12,8 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 
+- **Templater template properties overwritten on event creation**: When creating an event with a Templater template configured, the plugin's own frontmatter properties could be dropped or overwritten by a race condition between Prisma, Templater's folder-template handler, and the metadata indexer. The Templater integration now renders templates in memory and writes the final merged content in a single vault operation, fully eliminating the race. Prisma Calendar now uses **exclusively** the template path configured in its own settings — Templater's folder-template assignment for the same directory is bypassed for Prisma-created events. Notes created manually in the same folder still follow Templater's normal folder-template rules. See [Templater Integration](./features/templater.md).
+
 - **Self-healing for duplicate events**: The indexer now automatically detects and trashes duplicate recurring event instances and duplicate integration events (ICS/CalDAV) caused by race conditions during concurrent syncs. Duplicates are moved to trash as they are indexed, keeping the first-seen file. The recurring event manager also enforces uniqueness per `(rruleId, instanceDate)` — if a second file claims the same slot (from vault copies, sync conflicts, or race conditions), the newcomer is trashed immediately without being registered.
 
 - **Date format corruption on drag-drop**: Fixed `shiftISO()` corrupting date-only values (e.g. `2026-01-25`) into full timestamps (e.g. `2026-01-25T00:00:00.000Z`) when all-day events were drag-dropped or shifted. The function now preserves the original date-only format.

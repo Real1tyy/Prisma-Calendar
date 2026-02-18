@@ -67,7 +67,7 @@ export class CreateEventCommand implements Command {
 			frontmatter[settings.zettelIdProp] = zettelId;
 		}
 
-		const file = await this.bundle.templateService.createFile({
+		const file = await this.bundle.templateService.createFileAtomic({
 			title,
 			targetDirectory: this.targetDirectory,
 			filename,

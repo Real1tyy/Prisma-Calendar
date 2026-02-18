@@ -3,6 +3,7 @@ import {
 	Indexer as GenericIndexer,
 	type IndexerEvent as GenericIndexerEvent,
 	type IndexerConfig,
+	PENDING_WRITE_SENTINEL_FM_KEY,
 	areSetsEqual,
 	removeMarkdownExtension,
 	SyncStore,
@@ -208,6 +209,10 @@ export class Indexer {
 
 			const file = this.app.vault.getAbstractFileByPath(filePath);
 			if (!(file instanceof TFile)) return;
+
+			// Skip files mid-write (sentinel frontmatter set by TemplaterService.createFileAtomic).
+			// Uses source.frontmatter (already from metadataCache) — zero extra I/O.
+			if (source.frontmatter[PENDING_WRITE_SENTINEL_FM_KEY]) return;
 
 			// Clone immediately — source.frontmatter may be a reference owned by the generic indexer
 			const frontmatter = { ...(source.frontmatter as Frontmatter) };

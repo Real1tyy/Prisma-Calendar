@@ -399,7 +399,7 @@ export async function createEventNoteFromImportedEvent(
 
 	const content = event.description ? `\n${event.description}\n` : undefined;
 
-	return await bundle.templateService.createFile({
+	return await bundle.templateService.createFileAtomic({
 		title: event.title,
 		targetDirectory,
 		filename,
