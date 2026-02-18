@@ -84,7 +84,7 @@ These will create **separate indexers** that may conflict, potentially causing:
 ```
 Calendar "Work - Tasks":    Directory: tasks/
 Calendar "Work - Calendar":  Directory: tasks/
-Filter: fm.type === 'task'   Filter: fm.type === 'event'
+Filter: type === 'task'   Filter: type === 'event'
 ```
 
 **Example - Problematic Configuration:**

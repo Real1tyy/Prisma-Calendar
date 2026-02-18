@@ -49,7 +49,9 @@ Here is a complete list of the batch operations you can assign hotkeys to:
 -   `Batch: Move By`: Opens a dialog to move selected events by a custom number of days. Supports positive values (move forward) and negative values (move backward). For example, enter `7` to move events one week forward, or `-3` to move them 3 days back.
 -   `Batch: Skip Selection`: Marks all selected events as skipped (hidden from calendar).
 -   `Batch: Mark Selection as Done`: Marks all selected events as done by setting the status property to the done value configured in settings.
+-   `Batch: Mark Selection as Not Done`: Marks all selected events as not done by clearing the status property (or applying the custom undone property if configured).
 -   `Batch: Assign categories to selection`: Opens the category assignment modal to assign categories to all selected events at once. The modal shows all available categories with their configured colors and allows multi-select. The operation is fully undoable.
+-   `Batch: Update Frontmatter`: Opens the batch frontmatter modal to add, update, or delete properties across all selected events.
 
 ## Filtering Commands
 
@@ -102,6 +104,17 @@ Here is a complete list of the batch operations you can assign hotkeys to:
     -   Quickly find the current time after scrolling vertically through the timeline
 -   **Available As**: Toolbar button ("Now") and Obsidian command
 
+### Navigate Back
+
+-   **Function**: Returns to the previous calendar view after navigating to a specific event or date
+-   **Use Case**: Quickly return to where you were after following a link or jumping to an event
+
+### Show All Events Timeline
+
+-   **Function**: Opens an interactive timeline visualization of all events in the current calendar
+-   **Features**: Zoomable, pannable time axis with category colors, click-to-preview, and current time indicator
+-   **Available As**: Toolbar button ("Timeline") and Obsidian command
+
 ### Open Current Note in Calendar
 
 The **Open Current Note in Calendar** command provides quick navigation from any note to its corresponding event in the calendar:
@@ -115,25 +128,6 @@ The **Open Current Note in Calendar** command provides quick navigation from any
 -   **Requirements**: The active note must:
     -   Be located in a calendar directory
     -   Have frontmatter with a date property (Start, Date, or configured start property)
-
-## Filtering & Search Commands
-
-The filtering commands enable keyboard-driven navigation of the calendar's powerful filtering system:
-
-### Focus Search
-
--   **Function**: Jumps directly to the search bar input in the calendar toolbar
--   **Use Case**: Quick text-based filtering by event title
-
-### Focus Expression Filter
-
--   **Function**: Jumps directly to the expression filter input
--   **Use Case**: Advanced property-based filtering with JavaScript expressions
-
-### Open Filter Preset Selector
-
--   **Function**: Opens the filter presets dropdown for quick preset selection
--   **Use Case**: Apply saved filter expressions with a single click
 
 ## Event Management Commands
 

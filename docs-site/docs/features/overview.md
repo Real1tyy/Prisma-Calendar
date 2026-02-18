@@ -1,118 +1,113 @@
 # Features Overview
 
-Prisma Calendar is packed with powerful features designed for flexibility, efficiency, and complete control over your calendar workflow.
+Prisma Calendar provides a comprehensive set of features for managing calendar events inside Obsidian. This page serves as an index — click any feature to see its full documentation.
 
 ---
 
-## 🎯 **Core Capabilities**
+## Core Capabilities
 
-### **[Multiple Isolated Calendars](./multiple-calendars)**
+### [Multiple Isolated Calendars](./multiple-calendars)
 Up to 10 separate calendars with independent configurations, dedicated folders, custom hotkeys, and clone/duplicate support.
 
-### **[Folder-Based Event Scanning](./folder-scanning)**
-Automatic indexing of notes with frontmatter, recursive subfolder scanning, real-time updates, and date property normalization for external tool compatibility (enables Dataview, Bases, etc. to sort all events chronologically).
+### [Folder-Based Event Scanning](./folder-scanning)
+Automatic indexing of notes with frontmatter, recursive subfolder scanning, real-time updates, and date property normalization for external tool compatibility (Dataview, Bases).
 
-### **[Templater Integration](./templater)**
+### [Templater Integration](./templater)
 Use Templater templates to scaffold consistent event metadata and custom frontmatter structures.
 
 ---
 
-## 🔔 **[Notifications & Alerts](./notifications)**
+## Notifications & Alerts
 
-Desktop notifications with rich modal interface, flexible timing (minutes for timed events, days for all-day), per-event overrides, snooze functionality, and automatic duplicate prevention. Includes visual highlighting of upcoming events with configurable contrast.
+### [Notifications](./notifications)
+Desktop notifications with flexible timing (minutes for timed events, days for all-day), per-event overrides, snooze, and automatic duplicate prevention. Includes visual highlighting of upcoming events.
 
-## 🎨 **Customization & Visual Control**
+---
 
-### **[Dynamic Color Rules](./color-rules)**
-JavaScript expressions map frontmatter to colors (`Priority === 'High' → #ef4444`). First match wins, with default fallback and live updates.
+## Customization & Visual Control
 
-### **[Advanced Filtering & Search](./filtering)**
-[Global event search](./global-events-management) with cycle filters, search bar for quick text filtering, expression filter for property-based logic, filter presets, and filtered events modal. Includes command to highlight events without categories.
+### [Dynamic Color Rules](./color-rules)
+JavaScript expressions map frontmatter to colors (`Priority === 'High'` → `#ef4444`). First match wins, with default fallback and live updates.
 
-### **[Statistics & Time Tracking](./statistics)**
+### [Advanced Filtering & Search](./filtering)
+[Global event search](./global-events-management) with cycle filters, search bar for quick text filtering, expression filter for property-based logic, filter presets, and filtered events modal. Includes commands to highlight events by category.
+
+### [Statistics & Time Tracking](./statistics)
 Daily, weekly, monthly, and all-time views with pie charts and breakdown tables. Dual aggregation modes (Event Name vs Category), break time support, smart grouping, period navigation, and paginated tables (20 entries per page).
 
-### **Frontmatter Display**
-Display custom properties inside event chips with clickable wikilinks and configurable property selection.
+### Frontmatter Display
+Display custom properties inside event chips with clickable wikilinks and configurable property selection. Configure in Settings → Calendar → Frontmatter display properties.
 
-### **View Modes & Display**
+### View Modes & Display
 Month, week, day, and list views with CTRL+scroll zoom (1-60 minute increments), display density options, event overlap control, and customizable time ranges.
 
 ---
 
-## 🔄 **[Recurring Events System](./recurring-dsl)**
+## [Recurring Events System](./recurring-dsl)
 
-Node-based architecture where one source file controls the entire series. Creates real Obsidian notes with complete frontmatter and content inheritance. [Virtual events](./virtual-events) show far-future instances without creating files. Includes calendar-based creation, source navigation, instance dropdown, and centralized management modal with type filters and quick actions.
+Node-based architecture where one source file controls an entire series. Creates real Obsidian notes with complete frontmatter and content inheritance. [Virtual events](./virtual-events) show far-future instances without creating files. Includes calendar-based creation, source navigation, instance dropdown, and centralized [Events Browser](./event-series#events-browser) with type filters and quick actions.
 
 ---
 
-## ⚡ **Event Interaction & Management**
+## Event Interaction & Management
 
-### **[Hidden ZettelID Naming System](./zettelid-naming)**
-Create unlimited events with identical display names. Files stored with unique timestamp suffixes (e.g., `Meeting-20250106143022.md`) but displayed as `Meeting` throughout the UI.
+### [Event Naming](./zettelid-naming)
+ZettelID gives every file a unique timestamp suffix (e.g., `Meeting-20250106143022.md`) while displaying just `Meeting` in the UI. The Calendar Title property stores a clean wiki-link display name in frontmatter, used across the calendar view, Bases, modals, and context menus.
 
-### **[Enhanced Event Previews](./event-previews)**
+### [Event Previews](./event-previews)
 Hover previews and enlarged modals with clickable frontmatter, wikilink navigation, and complete event context.
 
-### **Event Creation & Editing**
+### [Event Icons](./event-icons)
+Custom emoji or text icons displayed on events via a frontmatter property. Configurable precedence over recurring markers, CalDAV, ICS, and holiday icons.
 
-*Create and edit events with full frontmatter support, recurring options, categories, break time, and built-in time tracker with session and break timers*
+### Event Creation & Editing
 
-Quick create button, enhanced edit modal with full frontmatter editing, "Now" button for current time, [built-in time tracker](./time-tracker) with break time support, session tracking, and real-time timers (total, total break, session, current break), drag & drop, resize support, edge scrolling for cross-week movement, and direct file opening.
+Create and edit events with full frontmatter support, recurring options, categories, break time, and a [built-in time tracker](./time-tracker) with session and break timers.
 
-**Fast Editing Commands**: Hover any event to focus it, then use hotkeys for rapid time updates:
-- Edit last focused event (opens edit modal)
-- Set start/end time to now (instant time logging)
-- Fill start from previous event / Fill end from next event (chain tasks seamlessly)
+Features: quick create button, drag & drop, resize with edge scrolling, "Now" button for current time, and direct file opening.
 
-See [Hotkeys](./hotkeys) for recommended keybindings.
+**Fast Editing Commands**: Hover any event to focus it, then use hotkeys for rapid time updates — set start/end to now, or fill from previous/next events. See [Hotkeys](./hotkeys) for recommended keybindings.
 
-**Category Management**: Assign categories directly from the event modal or context menu using the "Assign Categories" button. Multi-select interface with search, color indicators, and the ability to create new categories on the fly. See [Color Rules](./color-rules#working-with-categories) for details.
+**Category Management**: Assign categories from the event modal or context menu. Multi-select interface with search, color indicators, and inline category creation. See [Categories](./categories) for details.
 
-See [Gallery](../gallery) for modal examples.
+### Event Presets
+Save reusable templates with pre-filled values including title, dates, categories, recurring patterns, and custom properties. Configure a default preset that auto-applies to new events. Configure in Settings → General → Event presets.
 
-### **Event Presets**
-Save reusable templates with pre-filled values including title, dates, categories, recurring patterns, and custom properties. Configure a default preset that auto-applies to new events.
-
-### **[Event Skipping](./event-skipping)**
+### [Event Skipping](./event-skipping)
 Mark events as skipped without deletion. Preserves recurring series integrity with management dialog and undo support.
 
 ---
 
-## **[Batch Operations](./batch-operations)**
+## [Batch Operations](./batch-operations)
 
-Multi-select mode with visual indication and selection persistence. Bulk actions include delete, duplicate, week shifting (move/clone), batch skip, batch category assignment, and batch open in tabs.
+Multi-select mode with visual indication and selection persistence. Bulk actions include delete, duplicate, week shifting (move/clone), batch skip, batch category assignment, batch frontmatter updates, and batch open in tabs.
 
 ---
 
-## 🔧 **System Features**
+## System Features
 
-### **Manual Calendar Refresh**
-Manually trigger full resync via command palette when events appear out of sync or after bulk file operations. Automatic refresh with loading indicator.
+### Manual Calendar Refresh
+Trigger a full resync via command palette when events appear out of sync or after bulk file operations.
 
-### **Reactive Settings**
-All settings changes apply instantly without restart. Live recalculation of color rules, filters, and views with real-time feedback.
+### Reactive Settings
+All settings changes apply instantly without restart. Color rules, filters, and views recalculate in real time.
 
-### **[Undo/Redo System](./undo-redo)**
-Every action is undoable with semantic labels ("Undo Create Event", "Undo Batch Delete"). Full history across all calendar operations.
+### [Undo/Redo System](./undo-redo)
+Every action is undoable with descriptive labels ("Undo Create Event", "Undo Batch Delete"). Full history across all calendar operations.
 
-### **Fill Time from Adjacent Events**
-Right-click timed events to fill start/end times from neighboring events or current time. Options include:
-- Fill start/end time from previous/next event (eliminate calendar gaps)
+### Fill Time from Adjacent Events
+Right-click timed events to fill start/end times from neighboring events or current time:
+- Fill start/end time from previous/next event (eliminate gaps)
 - Fill start/end time from current time (instant time logging)
 
 All operations support undo/redo.
 
-### **Duplicate Remaining Week Days**
-Right-click an event → "Duplicate remaining week days" to copy it to every remaining day of the current week (through Sunday). The week runs Monday–Sunday — for example, duplicating a Wednesday event creates copies for Thursday, Friday, Saturday, and Sunday. Sunday events have no remaining days, so nothing happens. All copies are grouped as a single undoable operation. Hidden by default — enable in Settings → Configuration → Context Menu Items.
-
-
-### **[ICS Integrations](./integrations)**
-Export/import ICS files with timezone selection, skip filtering, and wide compatibility (Google Calendar, Apple Calendar, Outlook, Nextcloud). Includes VALARM reminders and CalDAV sync.
+### [Integrations](./integrations)
+Export/import ICS files with timezone selection, skip filtering, and broad compatibility (Google Calendar, Apple Calendar, Outlook, Nextcloud). Includes CalDAV sync and ICS URL subscriptions.
 
 ---
 
-## 📋 **Example Configurations**
+## Example Configurations
 
 ### Example Frontmatter
 
@@ -138,23 +133,21 @@ Tags: [meeting, planning, sprint]
 ### Example Color Rules
 
 ```javascript
-fm.Priority === 'High'          → #ef4444  // Red for high priority
-fm.Project === 'Work'           → #3b82f6  // Blue for work projects
-fm.Status === 'Done'            → #10b981  // Green for completed
-fm.Tags?.includes('urgent')     → #f59e0b  // Orange for urgent
+Priority === 'High'          → #ef4444  // Red for high priority
+Project === 'Work'           → #3b82f6  // Blue for work projects
+Status === 'Done'            → #10b981  // Green for completed
+Tags?.includes('urgent')     → #f59e0b  // Orange for urgent
 ```
 
 ### Example Filter
 
 ```javascript
 // Show only active, non-completed events
-fm.Status !== 'Done' && fm.Status !== 'Cancelled'
+Status !== 'Done' && Status !== 'Cancelled'
 
 // Show only work-related events
-fm.Project === 'Work' || fm.Tags?.includes('work')
+Project === 'Work' || Tags?.includes('work')
 
 // Hide archived events
-!fm.Tags?.includes('archived')
+!Tags?.includes('archived')
 ```
-
----

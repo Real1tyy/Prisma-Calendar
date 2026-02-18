@@ -146,7 +146,7 @@ Select multiple events and perform bulk actions: **clone, move, skip, delete, or
 - **Clone & duplicate** - Copy calendars with all settings intact
 
 ### 🎨 **Dynamic Visual Customization**
-- **JavaScript-powered color rules** - `fm.Priority === 'High' → #ef4444`
+- **JavaScript-powered color rules** - `Priority === 'High' → #ef4444`
 - **Property-based filtering** - Show/hide events with complex expressions
 - **Frontmatter display** - Show extra frontmatter properties inside event chips
 - **Multiple view modes** - Month, week, day, list with customizable time ranges

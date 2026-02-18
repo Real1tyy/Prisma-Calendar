@@ -59,7 +59,7 @@ Calendar "Personal":
 ```
 Calendar "Active Projects":
   Directory: projects/active/
-  Filters: fm.status !== 'done'
+  Filters: status !== 'done'
   Colors: Priority-based colors
 
 Calendar "Archive":

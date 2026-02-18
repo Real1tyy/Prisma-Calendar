@@ -119,7 +119,7 @@ Tell Prisma Calendar which frontmatter keys you use.
 
 ### Identification & Tracking
 
-- **Calendar title property**: auto-computed display title stored as a wiki link with ZettelID stripped (default: `Calendar Title`). Used for clean rendering in the calendar and Bases views. Always kept in sync automatically. See [Calendar Title](./features/calendar-title) for details
+- **Calendar title property**: auto-computed display title stored as a wiki link with ZettelID stripped (default: `Calendar Title`). Used for clean rendering in the calendar and Bases views. Always kept in sync automatically. See [Event Naming](./features/zettelid-naming#calendar-title-property) for details
 - **ZettelID property** (optional): when set, a timestamp-based ID is generated on creation/cloning (see [ZettelID Naming System](./features/zettelid-naming) for details). Default: `ZettelID`
 - **Status property**: frontmatter property name for event status (default: `Status`), used when marking events as done or undone
 - **Done value**: value to set in the status property when marking an event as done (default: `Done`)
