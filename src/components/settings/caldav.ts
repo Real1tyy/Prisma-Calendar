@@ -196,8 +196,22 @@ export class CalDAVSettings {
 
 	private async deleteEventsForAccount(bundle: CalendarBundle, accountId: string): Promise<void> {
 		const events = bundle.caldavSyncStateManager.getAllForAccount(accountId);
+		let deletedCount = events.length;
+
+		for (const event of events) {
+			const rruleId = bundle.recurringEventManager.getRRuleIdForSourcePath(event.filePath);
+			if (rruleId) {
+				const instances = bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
+				deletedCount += instances.length;
+				await bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
+			}
+		}
+
 		const filePaths = events.map((event) => event.filePath);
 		await deleteFilesByPaths(this.app, filePaths);
+
+		console.log(`[CalDAV] Deleted ${deletedCount} event(s) for account ${accountId}`);
+		new Notice(`Deleted ${deletedCount} event(s)`);
 	}
 
 	private async deleteAccount(accountId: string, container: HTMLElement): Promise<void> {
@@ -769,8 +783,22 @@ class EditCalDAVAccountModal extends Modal {
 
 	private async deleteEventsForCalendar(bundle: CalendarBundle, accountId: string, calendarUrl: string): Promise<void> {
 		const events = bundle.caldavSyncStateManager.getAllForCalendar(accountId, calendarUrl);
+		let deletedCount = events.length;
+
+		for (const event of events) {
+			const rruleId = bundle.recurringEventManager.getRRuleIdForSourcePath(event.filePath);
+			if (rruleId) {
+				const instances = bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
+				deletedCount += instances.length;
+				await bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
+			}
+		}
+
 		const filePaths = events.map((event) => event.filePath);
 		await deleteFilesByPaths(this.app, filePaths);
+
+		console.log(`[CalDAV] Deleted ${deletedCount} event(s) for calendar ${calendarUrl}`);
+		new Notice(`Deleted ${deletedCount} event(s)`);
 	}
 
 	onClose(): void {

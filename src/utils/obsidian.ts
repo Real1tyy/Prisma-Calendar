@@ -34,22 +34,32 @@ export function trashDuplicateFile(app: App, filePath: string, context: string):
 }
 
 /**
- * Deletes multiple files by their paths using Promise.all.
- * Handles errors gracefully and continues deleting other files even if some fail.
+ * Deletes multiple files by their paths in small batches to avoid overwhelming
+ * Obsidian's event loop. Each deletion triggers indexer events, so unbounded
+ * parallelism can freeze or crash the app on large sets.
  */
 export async function deleteFilesByPaths(app: App, filePaths: string[]): Promise<void> {
-	await Promise.all(
-		filePaths.map(async (filePath) => {
-			try {
-				const file = app.vault.getAbstractFileByPath(filePath);
-				if (file instanceof TFile) {
-					await app.fileManager.trashFile(file);
+	const BATCH_SIZE = 10;
+
+	for (let i = 0; i < filePaths.length; i += BATCH_SIZE) {
+		const batch = filePaths.slice(i, i + BATCH_SIZE);
+		await Promise.all(
+			batch.map(async (filePath) => {
+				try {
+					const file = app.vault.getAbstractFileByPath(filePath);
+					if (file instanceof TFile) {
+						await app.fileManager.trashFile(file);
+					}
+				} catch (error) {
+					console.error(`Error deleting file ${filePath}:`, error);
 				}
-			} catch (error) {
-				console.error(`Error deleting file ${filePath}:`, error);
-			}
-		})
-	);
+			})
+		);
+		// Yield to the main thread between batches so the UI stays responsive
+		if (i + BATCH_SIZE < filePaths.length) {
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
+		}
+	}
 }
 
 /**

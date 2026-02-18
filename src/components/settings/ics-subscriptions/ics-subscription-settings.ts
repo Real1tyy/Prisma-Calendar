@@ -1,5 +1,5 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
-import { type App, Setting } from "obsidian";
+import { type App, Notice, Setting } from "obsidian";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
 import type { SettingsStore } from "../../../core/settings-store";
@@ -184,8 +184,23 @@ export class ICSSubscriptionSettings {
 
 	private async deleteEventsForSubscription(bundle: CalendarBundle, subscriptionId: string): Promise<void> {
 		const events = bundle.icsSubscriptionSyncStateManager.getAllForSubscription(subscriptionId);
+		let deletedCount = events.length;
+
+		// Also delete any recurring instances that were generated from imported events
+		for (const event of events) {
+			const rruleId = bundle.recurringEventManager.getRRuleIdForSourcePath(event.filePath);
+			if (rruleId) {
+				const instances = bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
+				deletedCount += instances.length;
+				await bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
+			}
+		}
+
 		const filePaths = events.map((event) => event.filePath);
 		await deleteFilesByPaths(this.app, filePaths);
+
+		console.log(`[ICS Subscription] Deleted ${deletedCount} event(s) for subscription ${subscriptionId}`);
+		new Notice(`Deleted ${deletedCount} event(s)`);
 	}
 
 	private async deleteSubscription(subscriptionId: string, container: HTMLElement): Promise<void> {

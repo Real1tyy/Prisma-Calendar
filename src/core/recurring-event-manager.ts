@@ -922,6 +922,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 		return categoryColor || this.settings.defaultNodeColor;
 	}
 
+	getRRuleIdForSourcePath(sourceFilePath: string): string | null {
+		return this.sourceFileToRRuleId.get(sourceFilePath) ?? null;
+	}
+
 	getAllRRuleIds(): string[] {
 		return Array.from(this.recurringEventsMap.keys());
 	}
