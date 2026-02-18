@@ -137,11 +137,11 @@ The stopwatch displays multiple timers to give you complete visibility into your
 
 ## Integration
 
-**[Statistics](./statistics)**: Break time subtracted from duration for accurate tracking
+**[Statistics](../organization/statistics)**: Break time subtracted from duration for accurate tracking
 
 **Duration Field**: Updates automatically on start/stop
 
-**[Event Presets](./overview#event-presets)**: Works alongside presets for template + precision timing
+**[Event Presets](../overview#event-presets)**: Works alongside presets for template + precision timing
 
 ## Configuration
 
@@ -155,6 +155,6 @@ The stopwatch displays multiple timers to give you complete visibility into your
 
 ## Related Features
 
-- [Statistics](./statistics) - Break time subtracted from duration
-- [Event Creation](./overview#event-creation--editing) - Other creation features
-- [Event Presets](./overview#event-presets) - Pre-fill templates
+- [Statistics](../organization/statistics) - Break time subtracted from duration
+- [Event Creation](../overview#event-creation--editing) - Other creation features
+- [Event Presets](../overview#event-presets) - Pre-fill templates

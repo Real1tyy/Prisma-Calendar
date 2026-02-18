@@ -152,7 +152,7 @@ When creating or editing an event, use the **"Assign Categories"** button in the
 
 Select multiple events in batch mode and use the **"Categories"** button to assign categories to all selected events at once.
 
-📖 See [Batch Operations](/features/batch-operations#assign-categories) for detailed batch assignment instructions.
+📖 See [Batch Operations](/features/management/batch-operations#assign-categories) for detailed batch assignment instructions.
 
 ### 6. Recurring Events
 
@@ -163,7 +163,7 @@ Assign categories to recurring events through the **Recurring Events Modal** (ac
 - Each recurring event displays a **category-colored background** across the entire row with a left border accent for easy visual identification
 - The instances list modal displays a **category-colored background gradient** when viewing a recurring event's instances
 
-📖 See [Recurring Events (DSL)](/features/recurring-dsl#managing-recurring-events) for more details on recurring event management.
+📖 See [Recurring Events (DSL)](/features/events/recurring-dsl#managing-recurring-events) for more details on recurring event management.
 
 ## Category Assignment Modal
 
@@ -314,7 +314,7 @@ Behind the scenes, category colors are stored as color rules using expressions l
 - You can manually create category color rules if needed
 - Category colors follow the same priority system as other color rules
 
-📖 See [Color Rules](/features/color-rules#category-color-management) for more details on the underlying color system.
+📖 See [Color Rules](/features/organization/color-rules#category-color-management) for more details on the underlying color system.
 
 ## Viewing Events by Category
 
@@ -368,11 +368,11 @@ Categories integrate with the statistics system to show time distribution:
 
 Categories with the **Break property** configured will have break time subtracted from the total duration in statistics.
 
-📖 See [Statistics](/features/statistics) for more details on time tracking and analysis.
+📖 See [Statistics](/features/organization/statistics) for more details on time tracking and analysis.
 
 ## Related Features
 
-- **[Color Rules](/features/color-rules)** - Understanding the color system that powers category colors
-- **[Batch Operations](/features/batch-operations#assign-categories)** - Assigning categories to multiple events at once
-- **[Statistics](/features/statistics)** - Analyzing time spent on different categories
-- **[Filtering](/features/filtering)** - Filtering events by category expressions
+- **[Color Rules](/features/organization/color-rules)** - Understanding the color system that powers category colors
+- **[Batch Operations](/features/management/batch-operations#assign-categories)** - Assigning categories to multiple events at once
+- **[Statistics](/features/organization/statistics)** - Analyzing time spent on different categories
+- **[Filtering](/features/organization/filtering)** - Filtering events by category expressions

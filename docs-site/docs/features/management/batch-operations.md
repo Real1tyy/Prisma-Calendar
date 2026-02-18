@@ -292,4 +292,4 @@ You can customize which buttons appear in the batch selection toolbar by going t
 - Filter before selecting to narrow down to intended events
 - Batch selection not available in List view
 - Snap duration and slot duration affect drag/resize behavior after cloning
-- **Keyboard Access**: All batch operations can be performed using Obsidian commands, which can be assigned custom hotkeys for faster access. See the [Hotkeys documentation](/features/hotkeys) for a complete list of available commands and how to assign hotkeys.
+- **Keyboard Access**: All batch operations can be performed using Obsidian commands, which can be assigned custom hotkeys for faster access. See the [Hotkeys documentation](/features/advanced/hotkeys) for a complete list of available commands and how to assign hotkeys.

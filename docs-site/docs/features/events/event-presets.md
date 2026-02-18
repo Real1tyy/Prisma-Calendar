@@ -55,6 +55,6 @@ To stop auto-filling, set the default preset back to "None".
 
 ## See Also
 
-- [Configuration → Event Presets](../configuration#event-presets) for the settings reference
-- [Categories](./categories) for managing event categories used in presets
+- [Configuration → Event Presets](../../configuration#event-presets) for the settings reference
+- [Categories](../organization/categories) for managing event categories used in presets
 - [Recurring Events](./recurring-dsl) for recurring settings saved in presets

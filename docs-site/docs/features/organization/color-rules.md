@@ -59,7 +59,7 @@ Status === 'Active' && (Priority === 'High' || DueDate < new Date())  → #3b82f
 
 For a convenient way to manage category colors without writing expressions manually, use the **Categories Settings** section (Settings → Categories). This interface automatically detects all categories from your events, displays event counts, and provides color pickers for each category. Behind the scenes, category colors are stored as color rules using expressions like `Category.includes('Work')`.
 
-📖 See [Categories](/features/categories) for complete documentation on working with categories, including assignment, viewing, and statistics.
+📖 See [Categories](/features/organization/categories) for complete documentation on working with categories, including assignment, viewing, and statistics.
 
 ## Troubleshooting
 

@@ -170,7 +170,7 @@ Color rules are evaluated top-to-bottom. The first expression that evaluates to 
 
 ### Can I preview notes on hover?
 
-Yes. Enable "Enable event preview" in Calendar Settings (UI). Event tooltips also show the first three lines of the note's body content, loaded on first hover. See [Event Previews](./features/event-previews) for details.
+Yes. Enable "Enable event preview" in Calendar Settings (UI). Event tooltips also show the first three lines of the note's body content, loaded on first hover. See [Event Previews](./features/events/event-previews) for details.
 
 ### Is external calendar integration supported?
 
@@ -185,11 +185,11 @@ Yes! Prisma Calendar supports integration with external calendars through two me
 - ✅ **ICS**: Full import/export support
 - 🔄 **Planned Improvements**: Two-way sync, write support for CalDAV, and enhanced sync capabilities
 
-For detailed setup instructions and configuration, see the [Integrations documentation](/features/integrations).
+For detailed setup instructions and configuration, see the [Integrations documentation](/features/advanced/integrations).
 
 ### Is Google Calendar integration supported?
 
-Google Calendar integration is planned for the future. Currently, you can use **ICS import/export** to exchange events with Google Calendar. Export your Prisma Calendar events as ICS files and import them into Google Calendar, or import Google Calendar exports into Prisma Calendar. See the [Integrations documentation](/features/integrations) for detailed instructions.
+Google Calendar integration is planned for the future. Currently, you can use **ICS import/export** to exchange events with Google Calendar. Export your Prisma Calendar events as ICS files and import them into Google Calendar, or import Google Calendar exports into Prisma Calendar. See the [Integrations documentation](/features/advanced/integrations) for detailed instructions.
 
 ### Can I use Prisma Calendar with Templater?
 

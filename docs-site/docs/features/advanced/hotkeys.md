@@ -59,19 +59,19 @@ Here is a complete list of the batch operations you can assign hotkeys to:
 
 -   **Function**: Jumps focus to the search bar in the calendar toolbar
 -   **Use Case**: Quick keyboard access to title-based event filtering
--   **See Also**: [Filtering documentation](./filtering.md) for details on search functionality
+-   **See Also**: [Filtering documentation](../organization/filtering.md) for details on search functionality
 
 ### Focus Expression Filter
 
 -   **Function**: Jumps focus to the expression filter input in the calendar toolbar
 -   **Use Case**: Quick keyboard access to advanced property-based filtering
--   **See Also**: [Filtering documentation](./filtering.md) for expression syntax and examples
+-   **See Also**: [Filtering documentation](../organization/filtering.md) for expression syntax and examples
 
 ### Open Filter Preset Selector
 
 -   **Function**: Opens the filter preset dropdown menu
 -   **Use Case**: Quick access to saved filter expressions
--   **See Also**: [Filtering documentation](./filtering.md) for creating and managing presets
+-   **See Also**: [Filtering documentation](../organization/filtering.md) for creating and managing presets
 
 ### Show Filtered Events
 
@@ -80,7 +80,7 @@ Here is a complete list of the batch operations you can assign hotkeys to:
     -   Search within filtered events by name
     -   Click any event to open its file
     -   Helps identify which events are excluded by current search and expression filters
--   **See Also**: [Filtering documentation](./filtering.md) for filter behavior
+-   **See Also**: [Filtering documentation](../organization/filtering.md) for filter behavior
 
 ## Navigation Commands
 
@@ -199,7 +199,7 @@ The **Open Current Note in Calendar** command provides quick navigation from any
 
 -   **Function**: Opens a modal listing all recurring event sources
 -   **Features**: View, filter, enable/disable, and navigate to recurring events
--   **See Also**: [Recurring Events documentation](./recurring-dsl.md)
+-   **See Also**: [Recurring Events documentation](../events/recurring-dsl.md)
 
 ### Show Skipped Events
 
@@ -213,7 +213,7 @@ The **Open Current Note in Calendar** command provides quick navigation from any
     -   Opens/closes the dropdown showing events without date properties
     -   Quick keyboard access without using the mouse
     -   Works whether the dropdown is currently open or closed
--   **See Also**: [Untracked Events documentation](./untracked-events.md)
+-   **See Also**: [Untracked Events documentation](../events/untracked-events.md)
 
 ### Show Disabled Recurring Events
 
@@ -224,7 +224,7 @@ The **Open Current Note in Calendar** command provides quick navigation from any
 
 -   **Function**: Opens the global event search modal
 -   **Features**: Search across all events with cycle filters for recurring, all-day, and skipped events
--   **See Also**: [Global Search documentation](./global-events-management.md)
+-   **See Also**: [Global Search documentation](../management/global-events-management.md)
 
 ### Highlight Events Without Categories
 
@@ -253,46 +253,46 @@ The **Open Current Note in Calendar** command provides quick navigation from any
 
 -   **Function**: Opens daily statistics modal for the current day
 -   **Features**: Pie chart and breakdown table showing time distribution for a single day
--   **See Also**: [Statistics documentation](./statistics.md)
+-   **See Also**: [Statistics documentation](../organization/statistics.md)
 
 ### Show Weekly Statistics
 
 -   **Function**: Opens weekly statistics modal for the current week
 -   **Features**: Pie chart and breakdown table showing time distribution for the week
--   **See Also**: [Statistics documentation](./statistics.md)
+-   **See Also**: [Statistics documentation](../organization/statistics.md)
 
 ### Show Monthly Statistics
 
 -   **Function**: Opens monthly statistics modal for the current month
 -   **Features**: Pie chart and breakdown table showing time distribution for the month
--   **See Also**: [Statistics documentation](./statistics.md)
+-   **See Also**: [Statistics documentation](../organization/statistics.md)
 
 ### Show All-Time Statistics
 
 -   **Function**: Opens all-time statistics modal
 -   **Features**: Pie chart and breakdown table showing lifetime time distribution
--   **See Also**: [Statistics documentation](./statistics.md)
+-   **See Also**: [Statistics documentation](../organization/statistics.md)
 
 ### Show Daily Statistics for Now
 
 -   **Function**: Opens daily statistics modal for today (current date)
 -   **Features**: Shows statistics for today, regardless of which day is currently visible in the calendar
 -   **Use Case**: Quickly view today's statistics while viewing a different date in the calendar
--   **See Also**: [Statistics documentation](./statistics.md)
+-   **See Also**: [Statistics documentation](../organization/statistics.md)
 
 ### Show Weekly Statistics for Now
 
 -   **Function**: Opens weekly statistics modal for the current week
 -   **Features**: Shows statistics for this week, regardless of which week is currently visible in the calendar
 -   **Use Case**: Quickly view this week's statistics while viewing a different week in the calendar
--   **See Also**: [Statistics documentation](./statistics.md)
+-   **See Also**: [Statistics documentation](../organization/statistics.md)
 
 ### Show Monthly Statistics for Now
 
 -   **Function**: Opens monthly statistics modal for the current month
 -   **Features**: Shows statistics for this month, regardless of which month is currently visible in the calendar
 -   **Use Case**: Quickly view this month's statistics while viewing a different month in the calendar
--   **See Also**: [Statistics documentation](./statistics.md)
+-   **See Also**: [Statistics documentation](../organization/statistics.md)
 
 ### Show Current Interval in Bases
 
@@ -300,7 +300,7 @@ The **Open Current Note in Calendar** command provides quick navigation from any
 -   **Behavior**: Displays events from the visible calendar range (day/week/month) in a structured table
 -   **Features**: Full Bases filtering, sorting, and column customization
 -   **Use Case**: Analyze and manage events within the current view using Bases' powerful table interface
--   **See Also**: [Configuration](../configuration.md#bases-view-properties) for customizing displayed columns
+-   **See Also**: [Configuration](../../configuration.md#bases-view-properties) for customizing displayed columns
 
 ## Undo/Redo Commands
 
@@ -344,14 +344,14 @@ The **Open Current Note in Calendar** command provides quick navigation from any
 
 -   **Function**: Restores a previously minimized event creation/edit modal
 -   **Use Case**: Resume event creation after minimizing the modal
--   **See Also**: [Time Tracker documentation](./time-tracker.md) for minimize functionality
+-   **See Also**: [Time Tracker documentation](../management/time-tracker.md) for minimize functionality
 
 ### Assign Categories to Minimized Event
 
 -   **Function**: Opens the category assignment modal for a minimized event without restoring the full modal
 -   **Use Case**: Quickly assign or update categories while keeping the event modal minimized
 -   **Workflow**: When you have a minimized event, run this command to assign categories and continue working
--   **See Also**: [Time Tracker documentation](./time-tracker.md) for minimize functionality
+-   **See Also**: [Time Tracker documentation](../management/time-tracker.md) for minimize functionality
 
 ## Programmatic API
 

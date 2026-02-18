@@ -160,7 +160,7 @@ Select multiple events and perform bulk actions: **clone, move, skip, delete, or
 - **Multiple accounts** - Connect multiple CalDAV or ICS sources to different Prisma calendars
 - **Note creation** - Synced or imported events become Obsidian notes with full frontmatter
 
-> **⚠️ Security Warning**: CalDAV credentials are stored in **plaintext** in your vault's `data.json` file. Always use **app-specific passwords**, never your main account password. See [documentation](/features/integrations#security-considerations) for detailed security considerations.
+> **Secure Credentials**: CalDAV passwords and ICS subscription URLs are stored in Obsidian's [SecretStorage](https://docs.obsidian.md/Reference/TypeScript+API/SecretStorage), not in your vault's `data.json`. Create secrets in **Settings → General → Manage secrets** before adding accounts. See the [Integrations documentation](/features/advanced/integrations#security-considerations) for details.
 
 ### What does an event look like?
 

@@ -260,7 +260,7 @@ Several filtering commands can be assigned hotkeys for quick access:
 - `Highlight events without categories` - Highlight events missing category assignments
 - `Highlight events with category` - Open modal to select and highlight events by category
 
-For a complete list of available commands and how to set up hotkeys, see the [Hotkeys documentation](./hotkeys.md).
+For a complete list of available commands and how to set up hotkeys, see the [Hotkeys documentation](../advanced/hotkeys.md).
 
 
 ## Troubleshooting

@@ -12,7 +12,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
 
 ## Videos
 
-### [Batch Operations](features/batch-operations) — Multi-Select
+### [Batch Operations](features/management/batch-operations) — Multi-Select
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -27,7 +27,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Categories](features/categories) — Assign Categories
+### [Categories](features/organization/categories) — Assign Categories
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -42,7 +42,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Color Rules](features/color-rules) - Prioritize Colors
+### [Color Rules](features/organization/color-rules) - Prioritize Colors
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -57,7 +57,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Enlarged Preview](features/event-previews) — Quick Look
+### [Enlarged Preview](features/events/event-previews) — Quick Look
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -72,7 +72,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Event Groups](features/event-series) - Group Events
+### [Event Groups](features/events/event-series) - Group Events
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -87,7 +87,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Event Skipping](features/event-skipping) - Skip Events
+### [Event Skipping](features/events/event-skipping) - Skip Events
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -102,7 +102,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Filtering](features/filtering) - filter events
+### [Filtering](features/organization/filtering) - filter events
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -132,7 +132,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
 </div>
 
 
-### [Folder Scanning](features/folder-scanning) - Scan Individual Folders
+### [Folder Scanning](features/calendar/folder-scanning) - Scan Individual Folders
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -147,7 +147,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Managing Global Events](features/global-events-management) - Global Search + Timeline
+### [Managing Global Events](features/management/global-events-management) - Global Search + Timeline
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -176,7 +176,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Public Holidays](features/holidays) — Seamless Integration
+### [Public Holidays](features/calendar/holidays) — Seamless Integration
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -191,7 +191,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Integration](features/integrations) — IMP/EXP + example
+### [Integration](features/advanced/integrations) — IMP/EXP + example
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -220,7 +220,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Multiple Calendars](features/multiple-calendars) — Support for Multi-Calendars
+### [Multiple Calendars](features/calendar/multiple-calendars) — Support for Multi-Calendars
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -235,7 +235,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Notifications](features/notifications) — Get Notified
+### [Notifications](features/management/notifications) — Get Notified
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -250,7 +250,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Reaccuring Events](features/recurring-dsl) — Reaccuring + Virtual Events
+### [Reaccuring Events](features/events/recurring-dsl) — Reaccuring + Virtual Events
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -279,7 +279,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Statistics](features/statistics) — Piechart Graph + Categories Statistics
+### [Statistics](features/organization/statistics) — Piechart Graph + Categories Statistics
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -308,7 +308,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Templater](features/templater) - Consistent event notes with your favorite tokens.
+### [Templater](features/advanced/templater) - Consistent event notes with your favorite tokens.
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -323,7 +323,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Time Tracker](features/time-tracker) — Fully Tracked Time Allocation and more
+### [Time Tracker](features/management/time-tracker) — Fully Tracked Time Allocation and more
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -338,7 +338,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Undo / Redo](features/undo-redo) - Undo/Redo Almost ANY action
+### [Undo / Redo](features/management/undo-redo) - Undo/Redo Almost ANY action
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -353,7 +353,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Untracked Events](features/untracked-events) - Manage Untracked Events
+### [Untracked Events](features/events/untracked-events) - Manage Untracked Events
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -368,7 +368,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Zettelid naming](features/zettelid-naming) - Core Feature
+### [Zettelid naming](features/management/zettelid-naming) - Core Feature
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -399,13 +399,13 @@ Weekly calendar view with color-coded events, time grid, search, filtering, and 
 
 Create and edit events with full frontmatter support, recurring event options, and built-in time tracker.
 
-### [Batch Operations](features/batch-operations)
+### [Batch Operations](features/management/batch-operations)
 
 ![Batch Selection Mode](/img/batch_select.png)
 
 Select multiple events for bulk operations like delete, duplicate, move, or skip.
 
-### [Statistics & Time Tracking](features/statistics)
+### [Statistics & Time Tracking](features/organization/statistics)
 
 ![Weekly Statistics Pie Chart](/img/weekly_stats_pie.png)
 
@@ -425,19 +425,19 @@ Visual time tracking with pie charts and detailed breakdown tables showing how y
 
 Fully configurable settings for each calendar with tabs for General, Properties, Calendar UI, Notifications, and Rules. Categories Settings provides visual category color management with pie chart visualization.
 
-### [Notifications](features/notifications)
+### [Notifications](features/management/notifications)
 
 ![Notification Modal](/img/notification_modal.png)
 
 Rich notification modal with complete event preview and action buttons for snoozing or opening events.
 
-### [Time Tracker & Stopwatch](features/time-tracker)
+### [Time Tracker & Stopwatch](features/management/time-tracker)
 
 ![Stopwatch Time Tracker](/img/stopwatch.png)
 
 Built-in stopwatch for tracking event duration with break time support, session tracking, and real-time timers.
 
-### [Recurring Events](features/recurring-dsl)
+### [Recurring Events](features/events/recurring-dsl)
 
 ![Recurring Events List](/img/recurring_events_list_modal.png)
 
@@ -449,7 +449,7 @@ Built-in stopwatch for tracking event duration with break time support, session 
 
 Recurring event management with source navigation, instance lists, virtual event previews, and frontmatter propagation with change preview.
 
-### [Event Previews & Interactions](features/event-previews)
+### [Event Previews & Interactions](features/events/event-previews)
 
 ![Hover Event Preview](/img/hover_event.png)
 
@@ -457,7 +457,7 @@ Recurring event management with source navigation, instance lists, virtual event
 
 Hover previews and enlarged modal views showing complete frontmatter and content.
 
-### [Filtering & Search](features/filtering)
+### [Filtering & Search](features/organization/filtering)
 
 ![Filtered Events](/img/filtered_events_modal.png)
 
@@ -467,7 +467,7 @@ Hover previews and enlarged modal views showing complete frontmatter and content
 
 Advanced filtering system and global event search across all calendars with cycle filters.
 
-### [Categories](features/categories)
+### [Categories](features/organization/categories)
 
 ![Assign Categories Modal](/img/assign_categories_modal.png)
 
@@ -477,19 +477,19 @@ Multi-select category assignment modal with search, color indicators, and the ab
 
 Click any category in the event modal or settings to open a Bases table view showing all events with that category.
 
-### [Event Skipping](features/event-skipping)
+### [Event Skipping](features/events/event-skipping)
 
 ![Skipped Events](/img/skipped_events_modal.png)
 
 Skip individual recurring event instances without breaking the series.
 
-### [Undo/Redo](features/undo-redo)
+### [Undo/Redo](features/management/undo-redo)
 
 ![Undo Redo System](/img/undo_redo.png)
 
 Complete command history with semantic undo/redo for all calendar operations.
 
-### [CalDAV & ICS Integration](features/integrations)
+### [CalDAV & ICS Integration](features/advanced/integrations)
 
 ![CalDAV Setup](/img/caldav_setup.png)
 

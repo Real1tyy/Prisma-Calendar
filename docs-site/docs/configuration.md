@@ -119,8 +119,8 @@ Tell Prisma Calendar which frontmatter keys you use.
 
 ### Identification & Tracking
 
-- **Calendar title property**: auto-computed display title stored as a wiki link with ZettelID stripped (default: `Calendar Title`). Used for clean rendering in the calendar and Bases views. Always kept in sync automatically. See [Event Naming](./features/zettelid-naming#calendar-title-property) for details
-- **ZettelID property** (optional): when set, a timestamp-based ID is generated on creation/cloning (see [ZettelID Naming System](./features/zettelid-naming) for details). Default: `ZettelID`
+- **Calendar title property**: auto-computed display title stored as a wiki link with ZettelID stripped (default: `Calendar Title`). Used for clean rendering in the calendar and Bases views. Always kept in sync automatically. See [Event Naming](./features/management/zettelid-naming#calendar-title-property) for details
+- **ZettelID property** (optional): when set, a timestamp-based ID is generated on creation/cloning (see [ZettelID Naming System](./features/management/zettelid-naming) for details). Default: `ZettelID`
 - **Status property**: frontmatter property name for event status (default: `Status`), used when marking events as done or undone
 - **Done value**: value to set in the status property when marking an event as done (default: `Done`)
 - **Not done value**: value to set in the status property when marking an event as undone (default: `Not Done`)
@@ -130,7 +130,7 @@ Tell Prisma Calendar which frontmatter keys you use.
 - **Location property**: frontmatter property name for event location (default: `Location`), a single string (e.g., "Conference Room A", "Zoom"). Shown in the Create/Edit Event modal when configured. **ICS Integration**: Location is mapped to the standard `LOCATION` field when exporting to ICS format and automatically imported from `LOCATION` fields in ICS files from external calendars (Google Calendar, Outlook, Apple Calendar, etc.).
 - **Participants property**: frontmatter property name for event participants (default: `Participants`), an array of strings. In the modal, enter comma-separated names (e.g., "Alice, Bob, Charlie"). Stored as a YAML list in frontmatter. **ICS Integration**: Participants are exported as multiple `ATTENDEE` fields with RFC 5545-compliant formatting (including `mailto:` URIs and CN parameters) and imported from `ATTENDEE` fields in ICS files. Full round-trip compatibility with external calendar applications.
 - **Break property**: frontmatter property name for break time in minutes (default: `Break`), subtracted from duration in statistics
-- **Icon property**: frontmatter property name for event icon override (default: `Icon`). Accepts any emoji or text string (e.g., `🎉`, `📅`, `★`). The icon appears in the top-right corner of the event chip on the calendar, taking highest precedence over CalDAV account icons, ICS subscription icons, and recurring event markers. Shown as an input field in the Create/Edit Event modal when configured. See [Event Icons](./features/event-icons) for details.
+- **Icon property**: frontmatter property name for event icon override (default: `Icon`). Accepts any emoji or text string (e.g., `🎉`, `📅`, `★`). The icon appears in the top-right corner of the event chip on the calendar, taking highest precedence over CalDAV account icons, ICS subscription icons, and recurring event markers. Shown as an input field in the Create/Edit Event modal when configured. See [Event Icons](./features/events/event-icons) for details.
 - **CalDAV property**: property name for CalDAV sync metadata (default: `CalDAV`)
 
 ### Recurring Event Properties
@@ -289,7 +289,7 @@ STATUS: Done
 
 ## Calendar Settings (UI)
 
-These settings control the calendar's view modes, time display, visual appearance, event interaction, and overlap behavior. For a thorough walkthrough of every calendar UI element — including toolbar buttons, view modes, event text coloring, sticky headers, and more — see the dedicated [Calendar View](./features/calendar-view) page.
+These settings control the calendar's view modes, time display, visual appearance, event interaction, and overlap behavior. For a thorough walkthrough of every calendar UI element — including toolbar buttons, view modes, event text coloring, sticky headers, and more — see the dedicated [Calendar View](./features/calendar/calendar-view) page.
 
 ### View Configuration
 
@@ -315,7 +315,7 @@ These settings control the calendar's view modes, time display, visual appearanc
 - **Thicker hour lines**: bolder full-hour lines in day/week views (enabled by default)
 - **Show duration in event title**: appends duration after event title (enabled by default)
 - **Default event text color**: text color for events with dark backgrounds (default: white)
-- **Alternative event text color**: text color for events with light backgrounds (default: black). See [Calendar View → Event Text Coloring](./features/calendar-view#event-text-coloring) for details.
+- **Alternative event text color**: text color for events with light backgrounds (default: black). See [Calendar View → Event Text Coloring](./features/calendar/calendar-view#event-text-coloring) for details.
 - **Sticky day headers**: pin day/date headers when scrolling in day/week views
 - **Sticky all-day events**: pin all-day section when scrolling in day/week views (disabled by default)
 
@@ -343,7 +343,7 @@ Customize which buttons appear in the calendar's top toolbar. All buttons are en
 
 Available buttons: Left, Today, Now, Create Event, Right, Zoom Level, Filter Presets, Search Input, Expression Filter, Untracked Events, Timeline.
 
-For a detailed description of each toolbar button and what it does, see [Calendar View → Toolbar](./features/calendar-view#toolbar).
+For a detailed description of each toolbar button and what it does, see [Calendar View → Toolbar](./features/calendar/calendar-view#toolbar).
 
 ### Batch Selection
 
@@ -563,7 +563,7 @@ Automatically assigns a category when the event name matches a category name (ca
 
 When enabled, the plugin uses fuzzy matching to detect likely typos in event names after the title field loses focus. If the entered name is close to a known category, preset event name, or existing event series, a "Did you mean?" modal appears with up to 3 suggestions. Navigate with arrow keys, accept with Enter, or dismiss with Escape. Enabled by default. Located in **Settings → General → Parsing**.
 
-📖 See [Categories - Typo Detection](/features/categories#event-name-typo-detection) for details.
+📖 See [Categories - Typo Detection](/features/organization/categories#event-name-typo-detection) for details.
 
 #### Custom category assignment presets
 
@@ -581,7 +581,7 @@ Define custom rules to map specific event names to multiple categories. Each pre
 - Event names: `Gym, Exercise, Workout` → Categories: Health, Fitness
 - Event names: `Reading, Study` → Categories: Learning, Personal Development
 
-📖 See [Categories - Auto-Assignment](/features/categories#1-auto-assignment-new-event-creation) for detailed usage and examples.
+📖 See [Categories - Auto-Assignment](/features/organization/categories#1-auto-assignment-new-event-creation) for detailed usage and examples.
 
 ## Frontmatter Display
 
@@ -600,7 +600,7 @@ priority: High
 project: Q4 Planning
 ```
 
-**See Also**: [Untracked Events documentation](./features/untracked-events.md) for details on the untracked events dropdown
+**See Also**: [Untracked Events documentation](./features/events/untracked-events.md) for details on the untracked events dropdown
 
 ## Bases
 
@@ -640,9 +640,9 @@ Properties you add to "Additional properties" appear after the default columns. 
 - **attendees**: List event participants
 
 **See Also**:
-- [Event Series Bases Integration](./features/event-series.md#bases-view-integration) for viewing event series in Bases
-- [Hotkeys documentation](./features/hotkeys.md#show-current-interval-in-bases) for using the "Show current interval in Bases" command
-- [Categories documentation](./features/categories.md) for category-based Bases views
+- [Event Series Bases Integration](./features/events/event-series.md#bases-view-integration) for viewing event series in Bases
+- [Hotkeys documentation](./features/advanced/hotkeys.md#show-current-interval-in-bases) for using the "Show current interval in Bases" command
+- [Categories documentation](./features/organization/categories.md) for category-based Bases views
 
 ## Event Presets
 
@@ -650,7 +650,7 @@ Save reusable event templates with pre-filled values for quick event creation. C
 
 Presets save title, dates, categories, location, icon, participants, recurring settings, and custom properties.
 
-📖 See [Event Presets](./features/event-presets) for full documentation on creating, using, and managing presets.
+📖 See [Event Presets](./features/events/event-presets) for full documentation on creating, using, and managing presets.
 
 ## Break Time for Statistics
 
@@ -764,15 +764,15 @@ Integration settings for connecting with external calendar services and importin
 - **Export calendar**: export all events to an .ics file
 - **Import .ics**: import events from an .ics file
 
-See the [Integrations](./features/integrations) documentation for full details.
+See the [Integrations](./features/advanced/integrations) documentation for full details.
 
 ### CalDAV
 
-Configure CalDAV accounts for two-way sync with external calendar servers. See the [CalDAV](./features/integrations#caldav) documentation.
+Configure CalDAV accounts for two-way sync with external calendar servers. See the [CalDAV](./features/advanced/integrations#caldav) documentation.
 
 ### ICS URL Subscriptions
 
-Subscribe to external calendars via public ICS URLs for automatic periodic syncing. See the [ICS Subscriptions](./features/integrations#ics-url-subscriptions) documentation.
+Subscribe to external calendars via public ICS URLs for automatic periodic syncing. See the [ICS Subscriptions](./features/advanced/integrations#ics-url-subscriptions) documentation.
 
 ### Holidays
 
@@ -783,4 +783,4 @@ Subscribe to external calendars via public ICS URLs for automatic periodic synci
 - **Holiday types**: select which types of holidays to display (public, bank, school, observance, optional)
 - **Timezone**: optional timezone for holiday calculations
 
-See the [Holidays](./features/holidays) documentation for full details.
+See the [Holidays](./features/calendar/holidays) documentation for full details.

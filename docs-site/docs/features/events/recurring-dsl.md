@@ -43,7 +43,7 @@ This makes it instantly clear which events are source templates versus generated
 
 **Inheritance**: All frontmatter properties, complete file content, exact formatting. Only `Start`/`End` dates and `RRuleID` are adjusted automatically.
 
-**Templater Support**: When a [Templater template](./templater.md) is configured, generated instances use it — the template renders first and source body content is appended after. See [Templater Integration — Recurring Event Instances](./templater.md#recurring-event-instances).
+**Templater Support**: When a [Templater template](../advanced/templater.md) is configured, generated instances use it — the template renders first and source body content is appended after. See [Templater Integration — Recurring Event Instances](../advanced/templater.md#recurring-event-instances).
 
 **Frontmatter Propagation**: 
 
@@ -91,7 +91,7 @@ You can control how frontmatter changes are propagated in Settings → Calendar 
 
 5. If "Ask before propagating" is enabled, a modal shows all accumulated changes before applying them. If "Propagate frontmatter to instances" is enabled, changes are applied automatically after the debounce delay.
 
-📖 See [Frontmatter Propagation Settings](../configuration#frontmatter-propagation) for detailed configuration options including debounce delay and excluded properties. Propagation is also available for [name-based and property-based series](./event-series#frontmatter-propagation).
+📖 See [Frontmatter Propagation Settings](../../configuration#frontmatter-propagation) for detailed configuration options including debounce delay and excluded properties. Propagation is also available for [name-based and property-based series](./event-series#frontmatter-propagation).
 
 ### Start Date as Calculation Point
 
@@ -186,7 +186,7 @@ Beyond generation horizon, read-only [virtual events](./virtual-events) show com
 
 Right-click physical instance → "Duplicate recurring instance"
 
-Duplicate preserves frontmatter (RRuleID, Source, Instance Date), gets new [ZettelID](./zettelid-naming), and receives `Ignore Recurring: true` property. Tracked in instance list but not counted toward "Future instances count" limit.
+Duplicate preserves frontmatter (RRuleID, Source, Instance Date), gets new [ZettelID](../management/zettelid-naming), and receives `Ignore Recurring: true` property. Tracked in instance list but not counted toward "Future instances count" limit.
 
 **Multiple Instances Per Date**: The system supports multiple physical instances sharing the same instance date. When you duplicate an event, both the original and the duplicate appear on the calendar for the same day. This allows you to:
 - Create variations of a recurring event for the same day (e.g., multiple meetings based on the same template)

@@ -8,7 +8,7 @@ Assign a custom icon (emoji or text) to any event via frontmatter.
 
 ## How It Works
 
-Set the `Icon` property in an event's frontmatter. The icon appears in the top-right corner of the event chip on the calendar — the same position used by [CalDAV/ICS integration icons](./integrations) and recurring event markers.
+Set the `Icon` property in an event's frontmatter. The icon appears in the top-right corner of the event chip on the calendar — the same position used by [CalDAV/ICS integration icons](../advanced/integrations) and recurring event markers.
 
 ```yaml
 ---
@@ -18,7 +18,7 @@ Icon: "📅"
 
 Any string value works: emoji, Unicode characters, or short text.
 
-The icon can also be set via the **Icon** field in the Create/Edit Event modal, and is saved as part of [event presets](../configuration#event-presets).
+The icon can also be set via the **Icon** field in the Create/Edit Event modal, and is saved as part of [event presets](../../configuration#event-presets).
 
 ## Icon Precedence
 

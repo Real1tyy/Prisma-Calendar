@@ -55,7 +55,7 @@ Example with Google Calendar
 3. Select export options:
    - **Calendar**: Choose which calendar to export
    - **Timezone**: Select timezone for exported events
-   - **Exclude skipped events**: Toggle to include/exclude [skipped events](./event-skipping)
+   - **Exclude skipped events**: Toggle to include/exclude [skipped events](../events/event-skipping)
 
 ![Export Modal](/img/integrations_export.png)
 
@@ -99,7 +99,7 @@ Each event includes:
 For each imported event, Prisma Calendar:
 
 1. Creates a new markdown note in the calendar's folder
-2. Generates a [Zettel ID](./zettelid-naming) timestamp for the filename
+2. Generates a [Zettel ID](../management/zettelid-naming) timestamp for the filename
 3. Populates frontmatter:
    - Start/End dates
    - All-day flag
@@ -125,7 +125,7 @@ Recurring events defined with ICS `RRULE` properties are automatically converted
 | `FREQ=MONTHLY;INTERVAL=6` | Semi-annual |
 | `FREQ=YEARLY` | Yearly |
 
-For weekly and bi-weekly events, `BYDAY` values (e.g., `BYDAY=MO,WE,FR`) are mapped to weekday selections. Once imported, recurring events generate instances automatically via the existing [recurring event system](./recurring-dsl).
+For weekly and bi-weekly events, `BYDAY` values (e.g., `BYDAY=MO,WE,FR`) are mapped to weekday selections. Once imported, recurring events generate instances automatically via the existing [recurring event system](../events/recurring-dsl).
 
 Unsupported RRULE patterns (e.g., `INTERVAL=3` on weekly) are imported as single non-recurring events.
 
@@ -213,7 +213,7 @@ Configure automatic synchronization behavior:
 1. Fetches all events from selected calendars
 2. For each event:
    - Creates markdown note in calendar's folder
-   - Generates [Zettel ID](./zettelid-naming) for conflict-free filename
+   - Generates [Zettel ID](../management/zettelid-naming) for conflict-free filename
    - Populates frontmatter with event data
    - Adds CalDAV metadata for tracking
 
@@ -242,13 +242,13 @@ CalDAV-synced events display with a custom color:
 2. Set **"Integration event color"** (default: purple `#8b5cf6`)
 3. Calendar immediately updates all CalDAV events
 
-**Color Priority**: CalDAV integration color overrides other [color rules](./color-rules).
+**Color Priority**: CalDAV integration color overrides other [color rules](../organization/color-rules).
 
 ### Title Changes and File Renaming
 
 When an event title changes on the CalDAV server:
 - Prisma detects title change via ETag
-- Renames file with preserved [Zettel ID](./zettelid-naming)
+- Renames file with preserved [Zettel ID](../management/zettelid-naming)
 - Updates frontmatter automatically
 
 **Example**: `Team Meeting - 20250115140000.md` → `Weekly Standup - 20250115140000.md`
@@ -344,6 +344,6 @@ When deleting a subscription that has synced events, you'll be prompted to choos
 
 ## Related Features
 
-- [Event Skipping](./event-skipping) - Hide events without deleting
-- [Multiple Calendars](./multiple-calendars) - Manage separate calendars
-- [Notifications](./notifications) - Configure event reminders
+- [Event Skipping](../events/event-skipping) - Hide events without deleting
+- [Multiple Calendars](../calendar/multiple-calendars) - Manage separate calendars
+- [Notifications](../management/notifications) - Configure event reminders

@@ -60,13 +60,13 @@ Zoom controls the granularity of time slots in day and week views. The default z
 | **Expression Filter** | Text field for property-based filtering using JavaScript expressions (e.g., `Status !== 'Done'`). |
 | **Filter Presets** (▼) | Dropdown to apply saved filter expressions with one click. Select "Clear" to remove the active filter. |
 
-See [Filtering](./filtering) for full documentation on search, expressions, and presets.
+See [Filtering](../organization/filtering) for full documentation on search, expressions, and presets.
 
 ### Other Toolbar Buttons
 
 | Button | Action |
 |--------|--------|
-| **Untracked Events** | Opens a dropdown showing events without date properties. See [Untracked Events](./untracked-events). |
+| **Untracked Events** | Opens a dropdown showing events without date properties. See [Untracked Events](../events/untracked-events). |
 | **Timeline** | Opens the timeline visualization showing all events in a horizontal layout. |
 
 :::note
@@ -174,8 +174,8 @@ Set which day starts the week (0 = Sunday, 1 = Monday, etc.) in **Settings → C
 
 ## See Also
 
-- [Configuration](../configuration#calendar-settings-ui) for the full settings reference
-- [Filtering](./filtering) for search, expression filters, and filter presets
-- [Color Rules](./color-rules) for event background coloring
-- [Hotkeys](./hotkeys) for keyboard shortcuts in the calendar view
-- [Batch Operations](./batch-operations) for multi-select mode
+- [Configuration](../../configuration#calendar-settings-ui) for the full settings reference
+- [Filtering](../organization/filtering) for search, expression filters, and filter presets
+- [Color Rules](../organization/color-rules) for event background coloring
+- [Hotkeys](../advanced/hotkeys) for keyboard shortcuts in the calendar view
+- [Batch Operations](../management/batch-operations) for multi-select mode

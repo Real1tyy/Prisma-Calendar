@@ -68,7 +68,7 @@ ZettelID: 20250106143022
 - Create unlimited events with identical names
 - Clean UI without timestamp clutter
 - Automatic collision prevention
-- Works with all calendar features ([recurring events](./recurring-dsl.md), [batch operations](./batch-operations.md), [undo/redo](./undo-redo.md))
+- Works with all calendar features ([recurring events](../events/recurring-dsl.md), [batch operations](./batch-operations.md), [undo/redo](./undo-redo.md))
 
 ### Manual Events
 

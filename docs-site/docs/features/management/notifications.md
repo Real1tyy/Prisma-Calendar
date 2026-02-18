@@ -82,7 +82,7 @@ Automatically marks events as notified if they were created within the last minu
 
 **Use Case**: Prevents unwanted notification spam when batch-creating events or using the Stopwatch to track work sessions.
 
-For complete notification settings reference, see [Configuration](../configuration.md#notifications-settings).
+For complete notification settings reference, see [Configuration](../../configuration.md#notifications-settings).
 
 ## Frontmatter Properties
 
@@ -94,5 +94,5 @@ Already Notified: false   # Auto-managed tracking
 
 ## Related Features
 
-- [Event Previews](./event-previews) - Rich hover and modal previews
-- [Filtering](./filtering) - Filter which events appear
+- [Event Previews](../events/event-previews) - Rich hover and modal previews
+- [Filtering](../organization/filtering) - Filter which events appear

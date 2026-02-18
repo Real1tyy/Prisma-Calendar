@@ -36,7 +36,7 @@ Filter which untracked events appear using JavaScript expressions in **Settings 
 - Works identically to calendar event filtering
 - Changes apply immediately
 
-See [Filtering](./filtering.md) for expression syntax and examples.
+See [Filtering](../organization/filtering.md) for expression syntax and examples.
 
 ## Features
 
@@ -102,7 +102,7 @@ Properties render with proper formatting — links are clickable, lists are comm
 
 ### Color Rules
 
-[Color rules](./color-rules.md) automatically apply to untracked events. Events matching your rules display with the appropriate colors in the dropdown.
+[Color rules](../organization/color-rules.md) automatically apply to untracked events. Events matching your rules display with the appropriate colors in the dropdown.
 
 ### Search
 
@@ -110,8 +110,8 @@ Filter untracked events by typing in the search bar at the top of the dropdown. 
 
 ## Configuration
 
-- **[Configuration Guide](../configuration.md#parsing)** — Enable/disable, display properties, default duration
-- **[Hotkeys](./hotkeys.md#toggle-untracked-events-dropdown)** — Toggle command and hotkey setup
+- **[Configuration Guide](../../configuration.md#parsing)** — Enable/disable, display properties, default duration
+- **[Hotkeys](../advanced/hotkeys.md#toggle-untracked-events-dropdown)** — Toggle command and hotkey setup
 
 ## Double-Click to Open
 

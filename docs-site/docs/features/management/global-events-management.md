@@ -20,9 +20,9 @@ Search across all events in your calendar with powerful filtering and quick navi
 
 ## Overview
 
-The Global Event Search modal provides a fast way to find and navigate to any event in your current calendar. Unlike the [toolbar search](./filtering.md) which filters the visible calendar, this modal shows all matching events in a searchable list.
+The Global Event Search modal provides a fast way to find and navigate to any event in your current calendar. Unlike the [toolbar search](../organization/filtering.md) which filters the visible calendar, this modal shows all matching events in a searchable list.
 
-**Access**: Command palette → "Open global event search" or assign a [hotkey](./hotkeys.md)
+**Access**: Command palette → "Open global event search" or assign a [hotkey](../advanced/hotkeys.md)
 
 ## Usage
 
@@ -41,17 +41,17 @@ Three filter buttons narrow results by event type. Each button cycles through th
 3. **Skip** - Hides this type
 
 **Available Filters**:
-- **Recurring**: Filter by [recurring events](./recurring-dsl.md)
+- **Recurring**: Filter by [recurring events](../events/recurring-dsl.md)
 - **All-day**: Filter by all-day vs timed events
-- **Skipped**: Filter by [skipped events](./event-skipping.md)
+- **Skipped**: Filter by [skipped events](../events/event-skipping.md)
 
 Filters combine with AND logic. Example: "Only Recurring + Skip All-day" shows only recurring timed events.
 
 ## Notes
 
-- Shows only physical event files, not [virtual recurring previews](./virtual-events.md)
-- Respects calendar-level [filter rules](./filtering.md) from settings
-- Events display with your configured [color rules](./color-rules.md)
+- Shows only physical event files, not [virtual recurring previews](../events/virtual-events.md)
+- Respects calendar-level [filter rules](../organization/filtering.md) from settings
+- Events display with your configured [color rules](../organization/color-rules.md)
 - Each row is tinted with the event's category color and a colored left border for quick visual identification
 
 ## Global Timeline
@@ -73,7 +73,7 @@ Filters combine with AND logic. Example: "Only Recurring + Skip All-day" shows o
 
 ## Related Features
 
-- [Filtering](./filtering.md) - Toolbar search and expression filters
-- [Event Skipping](./event-skipping.md) - Managing skipped events
-- [Recurring Events](./recurring-dsl.md) - Recurring event patterns
-- [Hotkeys](./hotkeys.md) - Assign keyboard shortcuts
+- [Filtering](../organization/filtering.md) - Toolbar search and expression filters
+- [Event Skipping](../events/event-skipping.md) - Managing skipped events
+- [Recurring Events](../events/recurring-dsl.md) - Recurring event patterns
+- [Hotkeys](../advanced/hotkeys.md) - Assign keyboard shortcuts

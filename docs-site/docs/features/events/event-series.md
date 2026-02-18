@@ -40,7 +40,7 @@ Events sharing the same category property value are grouped together. If an even
 
 ### 3. By Name (Automatic)
 
-Events whose cleaned title (with [ZettelID](./zettelid-naming) stripped) matches are automatically grouped. No configuration needed — if you have events named "Morning Routine 20260210123456" and "Morning Routine 20260211134567", they appear together under "Morning Routine". This is useful for tracking recurring activities that aren't formally set up as recurring events.
+Events whose cleaned title (with [ZettelID](../management/zettelid-naming) stripped) matches are automatically grouped. No configuration needed — if you have events named "Morning Routine 20260210123456" and "Morning Routine 20260211134567", they appear together under "Morning Routine". This is useful for tracking recurring activities that aren't formally set up as recurring events.
 
 ## The Event Series Modal
 
@@ -182,7 +182,7 @@ Focus is automatically restored to the search input after the list re-renders.
 
 ### Color-Coded Rows
 
-In the By Category and By Name tabs, each event row is color-coded based on the event's resolved color from your [color rules](./color-rules). The row displays a subtle tinted background and a colored left border, matching the colors you see on the calendar itself.
+In the By Category and By Name tabs, each event row is color-coded based on the event's resolved color from your [color rules](../organization/color-rules). The row displays a subtle tinted background and a colored left border, matching the colors you see on the calendar itself.
 
 ### Event Navigation
 
@@ -218,7 +218,7 @@ The **Excluded properties** and **Propagation debounce delay** settings (under "
 
 Loop prevention ensures that when a change propagates from event A to events B and C, the updates to B and C do not trigger further propagation back to A.
 
-See [Frontmatter Propagation](../configuration#frontmatter-propagation) for full configuration details.
+See [Frontmatter Propagation](../../configuration#frontmatter-propagation) for full configuration details.
 
 ## Events Browser
 

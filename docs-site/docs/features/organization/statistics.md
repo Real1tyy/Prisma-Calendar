@@ -83,11 +83,11 @@ The default aggregation mode can be configured in Settings → Parsing → "Defa
 
 ### Recurring Events (Name Mode)
 
-All [recurring](./recurring-dsl) events grouped together under "Recurring Events" category.
+All [recurring](../events/recurring-dsl) events grouped together under "Recurring Events" category.
 
 ### Non-Recurring Events (Name Mode)
 
-Grouped by name after stripping [Zettel IDs](./zettelid-naming) (14-digit timestamps), ISO dates, and trailing timestamps. Example: `Gym 20250203140530` → `Gym`
+Grouped by name after stripping [Zettel IDs](../management/zettelid-naming) (14-digit timestamps), ISO dates, and trailing timestamps. Example: `Gym 20250203140530` → `Gym`
 
 ### Multi-Category Support (Category Mode)
 
@@ -99,7 +99,7 @@ Add `Break` property (in minutes) to exclude break time from statistics. Support
 
 **Example**: 8-hour event with `Break: 60` shows as 7 hours in statistics.
 
-**Automatic Tracking**: Use [Time Tracker](./time-tracker) to automatically calculate break time with ⏸ break / ▶ resume buttons.
+**Automatic Tracking**: Use [Time Tracker](../management/time-tracker) to automatically calculate break time with ⏸ break / ▶ resume buttons.
 
 ## What Gets Included
 
@@ -141,8 +141,8 @@ Add `Break` property (in minutes) to exclude break time from statistics. Support
 
 ## Related Features
 
-- [Time Tracker](./time-tracker) - Automatic break time calculation
-- [Global Event Search](./global-events-management) - Search and filter events
+- [Time Tracker](../management/time-tracker) - Automatic break time calculation
+- [Global Event Search](../management/global-events-management) - Search and filter events
 - [Filtering](./filtering) - Filter events by properties
-- [Recurring Events](./recurring-dsl) - Set up recurring series
-- [Event Previews](./event-previews) - View detailed information
+- [Recurring Events](../events/recurring-dsl) - Set up recurring series
+- [Event Previews](../events/event-previews) - View detailed information

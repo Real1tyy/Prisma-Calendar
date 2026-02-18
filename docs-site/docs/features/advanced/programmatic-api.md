@@ -174,5 +174,5 @@ Use `calendarId` when you need to target a specific calendar.
 ## See Also
 
 - [Hotkeys](./hotkeys.md) — The corresponding commands you can assign to hotkeys
-- [Untracked Events](./untracked-events.md) — How untracked events work
-- [ZettelID Naming](./zettelid-naming.md) — How ZettelIDs are generated and used
+- [Untracked Events](../events/untracked-events.md) — How untracked events work
+- [ZettelID Naming](../management/zettelid-naming.md) — How ZettelIDs are generated and used

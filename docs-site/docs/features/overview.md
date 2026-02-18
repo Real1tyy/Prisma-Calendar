@@ -6,36 +6,36 @@ Prisma Calendar provides a comprehensive set of features for managing calendar e
 
 ## Core Capabilities
 
-### [Multiple Isolated Calendars](./multiple-calendars)
+### [Multiple Isolated Calendars](./calendar/multiple-calendars)
 Up to 10 separate calendars with independent configurations, dedicated folders, custom hotkeys, and clone/duplicate support.
 
-### [Folder-Based Event Scanning](./folder-scanning)
+### [Folder-Based Event Scanning](./calendar/folder-scanning)
 Automatic indexing of notes with frontmatter, recursive subfolder scanning, real-time updates, and date property normalization for external tool compatibility (Dataview, Bases).
 
-### [Templater Integration](./templater)
+### [Templater Integration](./advanced/templater)
 Use Templater templates to scaffold consistent event metadata and custom frontmatter structures.
 
 ---
 
 ## Notifications & Alerts
 
-### [Notifications](./notifications)
+### [Notifications](./management/notifications)
 Desktop notifications with flexible timing (minutes for timed events, days for all-day), per-event overrides, snooze, and automatic duplicate prevention. Includes visual highlighting of upcoming events.
 
 ---
 
 ## Customization & Visual Control
 
-### [Dynamic Color Rules](./color-rules)
+### [Dynamic Color Rules](./organization/color-rules)
 JavaScript expressions map frontmatter to colors (`Priority === 'High'` → `#ef4444`). First match wins, with default fallback and live updates.
 
-### [Advanced Filtering & Search](./filtering)
-[Global event search](./global-events-management) with cycle filters, search bar for quick text filtering, expression filter for property-based logic, filter presets, and filtered events modal. Includes commands to highlight events by category.
+### [Advanced Filtering & Search](./organization/filtering)
+[Global event search](./management/global-events-management) with cycle filters, search bar for quick text filtering, expression filter for property-based logic, filter presets, and filtered events modal. Includes commands to highlight events by category.
 
-### [Statistics & Time Tracking](./statistics)
+### [Statistics & Time Tracking](./organization/statistics)
 Daily, weekly, monthly, and all-time views with pie charts and breakdown tables. Dual aggregation modes (Event Name vs Category), break time support, smart grouping, period navigation, and paginated tables (20 entries per page).
 
-### [Calendar View](./calendar-view)
+### [Calendar View](./calendar/calendar-view)
 Month, week, day, and list views with a fully customizable toolbar, CTRL+scroll zoom, display density options, event text coloring, sticky headers, event overlap control, and customizable time ranges.
 
 ### Frontmatter Display
@@ -43,42 +43,42 @@ Display custom properties inside event chips with clickable wikilinks and config
 
 ---
 
-## [Recurring Events System](./recurring-dsl)
+## [Recurring Events System](./events/recurring-dsl)
 
-Node-based architecture where one source file controls an entire series. Creates real Obsidian notes with complete frontmatter and content inheritance. [Virtual events](./virtual-events) show far-future instances without creating files. Includes calendar-based creation, source navigation, instance dropdown, and centralized [Events Browser](./event-series#events-browser) with type filters and quick actions.
+Node-based architecture where one source file controls an entire series. Creates real Obsidian notes with complete frontmatter and content inheritance. [Virtual events](./events/virtual-events) show far-future instances without creating files. Includes calendar-based creation, source navigation, instance dropdown, and centralized [Events Browser](./events/event-series#events-browser) with type filters and quick actions.
 
 ---
 
 ## Event Interaction & Management
 
-### [Event Naming](./zettelid-naming)
+### [Event Naming](./management/zettelid-naming)
 ZettelID gives every file a unique timestamp suffix (e.g., `Meeting-20250106143022.md`) while displaying just `Meeting` in the UI. The Calendar Title property stores a clean wiki-link display name in frontmatter, used across the calendar view, Bases, modals, and context menus.
 
-### [Event Previews](./event-previews)
+### [Event Previews](./events/event-previews)
 Hover previews and enlarged modals with clickable frontmatter, wikilink navigation, and complete event context.
 
-### [Event Icons](./event-icons)
+### [Event Icons](./events/event-icons)
 Custom emoji or text icons displayed on events via a frontmatter property. Configurable precedence over recurring markers, CalDAV, ICS, and holiday icons.
 
 ### Event Creation & Editing
 
-Create and edit events with full frontmatter support, recurring options, categories, break time, and a [built-in time tracker](./time-tracker) with session and break timers.
+Create and edit events with full frontmatter support, recurring options, categories, break time, and a [built-in time tracker](./management/time-tracker) with session and break timers.
 
 Features: quick create button, drag & drop, resize with edge scrolling, "Now" button for current time, and direct file opening.
 
-**Fast Editing Commands**: Hover any event to focus it, then use hotkeys for rapid time updates — set start/end to now, or fill from previous/next events. See [Hotkeys](./hotkeys) for recommended keybindings.
+**Fast Editing Commands**: Hover any event to focus it, then use hotkeys for rapid time updates — set start/end to now, or fill from previous/next events. See [Hotkeys](./advanced/hotkeys) for recommended keybindings.
 
-**Category Management**: Assign categories from the event modal or context menu. Multi-select interface with search, color indicators, and inline category creation. See [Categories](./categories) for details.
+**Category Management**: Assign categories from the event modal or context menu. Multi-select interface with search, color indicators, and inline category creation. See [Categories](./organization/categories) for details.
 
-### [Event Presets](./event-presets)
+### [Event Presets](./events/event-presets)
 Save reusable templates with pre-filled values including title, dates, categories, recurring patterns, and custom properties. Configure a default preset that auto-applies to new events.
 
-### [Event Skipping](./event-skipping)
+### [Event Skipping](./events/event-skipping)
 Mark events as skipped without deletion. Preserves recurring series integrity with management dialog and undo support.
 
 ---
 
-## [Batch Operations](./batch-operations)
+## [Batch Operations](./management/batch-operations)
 
 Multi-select mode with visual indication and selection persistence. Bulk actions include delete, duplicate, week shifting (move/clone), batch skip, batch category assignment, batch frontmatter updates, and batch open in tabs.
 
@@ -92,7 +92,7 @@ Trigger a full resync via command palette when events appear out of sync or afte
 ### Reactive Settings
 All settings changes apply instantly without restart. Color rules, filters, and views recalculate in real time.
 
-### [Undo/Redo System](./undo-redo)
+### [Undo/Redo System](./management/undo-redo)
 Every action is undoable with descriptive labels ("Undo Create Event", "Undo Batch Delete"). Full history across all calendar operations.
 
 ### Fill Time from Adjacent Events
@@ -102,7 +102,7 @@ Right-click timed events to fill start/end times from neighboring events or curr
 
 All operations support undo/redo.
 
-### [Integrations](./integrations)
+### [Integrations](./advanced/integrations)
 Export/import ICS files with timezone selection, skip filtering, and broad compatibility (Google Calendar, Apple Calendar, Outlook, Nextcloud). Includes CalDAV sync and ICS URL subscriptions.
 
 ---
