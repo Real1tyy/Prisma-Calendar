@@ -45,29 +45,29 @@ Pick the calendar you want to configure. Actions like Clone Current and Delete C
 
 ## Settings Sections
 
-### [General](./general)
+### [General](/configuration/general)
 Calendar directory, parsing options, time tracker, statistics display, read-only mode, event presets, and break time for statistics.
 
-### [Properties](./properties)
+### [Properties](/configuration/properties)
 Core event properties, sorting normalization, identification & tracking, notification property names, recurring event properties, frontmatter display, and auto-mark past events.
 
-### [Calendar UI](./calendar-ui)
+### [Calendar UI](/configuration/calendar-ui)
 View configuration, time display, visual appearance, event interaction, and event overlap.
 
-### [Toolbar & Menus](./toolbar-and-menus)
+### [Toolbar & Menus](/configuration/toolbar-and-menus)
 Desktop and mobile toolbar button visibility, batch selection action buttons, context menu item toggles, and performance settings.
 
-### [Notifications](./notifications)
+### [Notifications](/configuration/notifications)
 Desktop notification settings, skip newly created events, timing defaults, snooze, and per-event overrides.
 
-### [Rules](./rules)
+### [Rules](/configuration/rules)
 Event color rules, expression-based filtering, untracked event filtering, filter presets, category color management, and auto-assign categories.
 
-### [Bases](./bases)
+### [Bases](/configuration/bases)
 Default view type, additional property columns, and where Bases views are used throughout the plugin.
 
-### [Event Groups](./event-groups)
+### [Event Groups](/configuration/event-groups)
 Recurring instance generation horizon, event markers, and frontmatter propagation for recurring, name, and category series.
 
-### [Integrations](./integrations)
+### [Integrations](/configuration/integrations)
 ICS export/import, CalDAV two-way sync, ICS URL subscriptions, and public holiday display.
