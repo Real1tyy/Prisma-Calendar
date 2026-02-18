@@ -143,6 +143,18 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	}
 
 	/**
+	 * Returns the count of skipped physical events in the given range.
+	 * Reuses the shared scan logic but only increments a counter — no array allocation or sorting.
+	 */
+	countSkippedEvents(query: EventQuery): number {
+		let count = 0;
+		this.scanPhysicalFromTrees(query, this.skippedTimedByEndTime, this.skippedAllDayByDate, () => {
+			count++;
+		});
+		return count;
+	}
+
+	/**
 	 * Returns ALL physical events (both skipped and non-skipped) in the given range.
 	 * Used by callers that need the full set (e.g., global search with filter toggles).
 	 */
@@ -196,32 +208,53 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		timedTree: BTree<string, TimedEvent>,
 		allDayTree: BTree<string, AllDayEvent>
 	): CalendarEvent[] {
+		const timedResults: CalendarEvent[] = [];
+		const allDayResults: CalendarEvent[] = [];
+
+		this.scanPhysicalFromTrees(query, timedTree, allDayTree, (event) => {
+			if (isTimedEvent(event)) {
+				timedResults.push(event);
+			} else {
+				allDayResults.push(event);
+			}
+		});
+
+		timedResults.sort(EventStore.compareByStart);
+		return mergeSorted(timedResults, allDayResults, EventStore.compareByStart);
+	}
+
+	/**
+	 * Shared BTree range scan logic. Visits each matching event via the callback.
+	 * Used by both queryPhysicalFromTrees (collects into arrays) and
+	 * countSkippedEvents (increments a counter) to avoid duplicating scan logic.
+	 */
+	private scanPhysicalFromTrees(
+		query: EventQuery,
+		timedTree: BTree<string, TimedEvent>,
+		allDayTree: BTree<string, AllDayEvent>,
+		visitor: (event: CalendarEvent) => void
+	): void {
 		let queryStartNorm: string;
 		let queryEndNorm: string;
 		try {
 			queryStartNorm = this.normIso(query.start);
 			queryEndNorm = this.normIso(query.end);
 		} catch {
-			return [];
+			return;
 		}
 
-		const timedResults: CalendarEvent[] = [];
 		const timedLowKey = `${queryStartNorm}${EventStore.SEP}`;
 		timedTree.forRange(timedLowKey, `${EventStore.MAX}`, true, (_key, event) => {
 			if (this.normIso(event.start) < queryEndNorm) {
-				timedResults.push(event);
+				visitor(event);
 			}
 		});
 
-		const allDayResults: CalendarEvent[] = [];
 		const allDayLowKey = `${queryStartNorm}${EventStore.SEP}`;
 		const allDayHighKey = `${queryEndNorm}${EventStore.SEP}`;
 		allDayTree.forRange(allDayLowKey, allDayHighKey, false, (_key, event) => {
-			allDayResults.push(event);
+			visitor(event);
 		});
-
-		timedResults.sort(EventStore.compareByStart);
-		return mergeSorted(timedResults, allDayResults, EventStore.compareByStart);
 	}
 
 	// ─── Navigation ───────────────────────────────────────────────
@@ -327,8 +360,17 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	/**
 	 * Normalizes an ISO string to a consistent UTC format for BTree key comparison.
 	 * Both keys and query bounds pass through this, ensuring consistent comparison.
+	 *
+	 * Fast path: stored events use 20-char `YYYY-MM-DDTHH:MM:SSZ` (Luxon suppressMilliseconds).
+	 * These are already valid ISO-8601 UTC — splice in `.000` to match Date.toISOString() format
+	 * without allocating a Date object. Query bounds (24-char with `.000Z`) and other formats
+	 * fall through to the Date constructor.
 	 */
 	private normIso(iso: string): string {
+		if (iso.length === 20 && iso.charCodeAt(19) === 90) {
+			// "YYYY-MM-DDTHH:MM:SSZ" → "YYYY-MM-DDTHH:MM:SS.000Z"
+			return `${iso.slice(0, 19)}.000Z`;
+		}
 		return new Date(iso).toISOString();
 	}
 

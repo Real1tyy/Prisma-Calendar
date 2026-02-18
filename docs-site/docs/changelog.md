@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.4.0 - 2/18/2026
+
+### Improved
+
+- **Faster view switching and month navigation**: Switching between monthly and weekly views (and navigating months) is now significantly faster on larger vaults. When most rendered events change at once (e.g., month→week), the calendar now performs a single bulk reload instead of hundreds of individual event removals, eliminating the lag spike during view transitions.
+
+---
+
 ## 2.3.0 - 2/18/2026
 
 ### Added

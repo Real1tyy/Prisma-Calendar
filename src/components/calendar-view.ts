@@ -137,6 +137,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private cachedTextColorSource: string | null = null;
 	/** Pre-indexed map of date string → unique event colors, built during buildCalendarEvents(). */
 	private colorDotIndex = new Map<string, Set<string>>();
+	/** Serialized snapshot of colorDotIndex used to skip redundant DOM rebuilds. */
+	private colorDotSnapshot = "";
+	/** Cached "now" timestamp, refreshed once per datesSet cycle (not per event). */
+	private cachedNow = new Date();
+	private cachedTodayStart = new Date();
 	private isRestoring = false;
 
 	// ─── Lifecycle ───────────────────────────────────────────────
@@ -319,7 +324,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 
 			eventClassNames: (arg) => {
-				const now = new Date();
 				const eventEnd = arg.event.end || arg.event.start;
 				if (!eventEnd) return [];
 
@@ -328,13 +332,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 				if (isAllDay) {
 					// For all-day events, compare dates only (not times)
-					// An all-day event is past only if its date is before today
-					const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 					const eventDate = new Date(eventEnd.getFullYear(), eventEnd.getMonth(), eventEnd.getDate());
-					isPast = eventDate < today;
+					isPast = eventDate < this.cachedTodayStart;
 				} else {
-					// For timed events, check if end time is before now
-					isPast = eventEnd < now;
+					isPast = eventEnd < this.cachedNow;
 				}
 
 				const classes = [];
@@ -518,6 +519,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 
 			datesSet: () => {
+				// Refresh cached timestamps once per navigation (not per event)
+				this.cachedNow = new Date();
+				const n = this.cachedNow;
+				this.cachedTodayStart = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+
 				this.scheduleRefreshEvents();
 				// Update zoom button, save state, and highlight after FC re-renders
 				void afterRender().then(() => {
@@ -529,8 +535,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			eventsSet: () => {
 				this.batchSelectionManager?.refreshSelectionStyling();
-				// Update upcoming event highlight when events change
-				this.updateUpcomingEventHighlight();
 			},
 
 			height: "auto",
@@ -1182,7 +1186,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const end = toLocalISOString(view.activeEnd);
 
 		const nonSkipped = await this.bundle.eventStore.getEvents({ start, end });
-		const skippedCount = this.bundle.eventStore.getSkippedEvents({ start, end }).length;
+		const skippedCount = this.bundle.eventStore.countSkippedEvents({ start, end });
 		this.updateSkippedEventsButton(skippedCount);
 
 		const visibleEvents: CalendarEvent[] = [];
@@ -1271,6 +1275,15 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			return false;
 		}
 
+		// When a large fraction of events changed (e.g., month→week switch),
+		// a single removeAllEvents + batch add is faster than N individual removes.
+		const totalChurn = diff.added.length + diff.removed.length + diff.changed.length;
+		const renderedCount = this.renderedEvents.size;
+		if (renderedCount > 0 && totalChurn / renderedCount > 0.5) {
+			this.performInitialLoad(calendarEvents);
+			return true;
+		}
+
 		for (const id of diff.removed) {
 			this.removeAllFCEventsById(id);
 		}
@@ -1323,6 +1336,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private clearRenderedEventsCache(): void {
 		this.renderedEvents.clear();
 		this.hasPerformedInitialLoad = false;
+		this.colorDotSnapshot = "";
 	}
 
 	// ─── Event Rendering ─────────────────────────────────────────
@@ -1553,16 +1567,21 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		if (!this.calendar) return;
 
 		const settings = this.bundle.settingsStore.currentSettings;
+		const viewType = this.calendar.view?.type;
+		const shouldRender = settings.showColorDots && viewType === "dayGridMonth";
 
-		// Remove existing dots first
+		// Build a snapshot string from the index to detect changes cheaply
+		const snapshot = shouldRender ? this.buildColorDotSnapshot() : "";
+		if (snapshot === this.colorDotSnapshot) return;
+		this.colorDotSnapshot = snapshot;
+
+		// Remove existing dots
 		const existingDots = Array.from(this.container.querySelectorAll(`.${cls("day-color-dots")}`));
 		for (const dot of existingDots) {
 			dot.remove();
 		}
 
-		// Only render if setting is enabled and on monthly view
-		const viewType = this.calendar.view?.type;
-		if (!settings.showColorDots || viewType !== "dayGridMonth") return;
+		if (!shouldRender) return;
 
 		const dayCells = Array.from(this.container.querySelectorAll(".fc-daygrid-day"));
 		const maxDots = this.isMobileView() ? 6 : 8;
@@ -1594,6 +1613,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				dayTop.appendChild(dotsContainer);
 			}
 		}
+	}
+
+	private buildColorDotSnapshot(): string {
+		const parts: string[] = [];
+		for (const [date, colors] of this.colorDotIndex) {
+			parts.push(`${date}:${[...colors].join(",")}`);
+		}
+		return parts.join("|");
 	}
 
 	// ─── Event Interaction ───────────────────────────────────────
