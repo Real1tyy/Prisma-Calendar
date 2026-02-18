@@ -14,6 +14,7 @@ All notable changes to this project will be documented here.
 ### Fixed
 
 - **API datetime timezone normalization**: The programmatic API (`createEvent`, `convertFileToEvent`) now automatically normalizes datetime strings to the expected `.000Z` suffix format. Passing `"2025-02-18T09:00:00"` or `"2025-02-18T09:00"` is now equivalent to `"2025-02-18T09:00:00.000Z"` — the suffix is appended automatically when missing, preventing timezone interpretation conflicts. See [Programmatic API](./features/programmatic-api.md).
+- **Undo frontmatter changes preserves property order**: Undoing batch frontmatter deletions now restores properties to their original position in the YAML frontmatter instead of appending them at the end. See [Batch Operations](./features/batch-operations.md#batch-frontmatter-management).
 
 ### Improved
 
