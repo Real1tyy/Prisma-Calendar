@@ -9,6 +9,8 @@ All notable changes to this project will be documented here.
 ### Improved
 
 - **Faster view switching and month navigation**: Switching between monthly and weekly views (and navigating months) is now significantly faster on larger vaults. When most rendered events change at once (e.g., month→week), the calendar now performs a single bulk reload instead of hundreds of individual event removals, eliminating the lag spike during view transitions.
+- **Faster event rendering and past-event styling**: Past-event classification no longer allocates Date objects per event — timestamps are cached once per navigation cycle, reducing GC pressure on large calendars.
+- **Faster incremental refreshes**: Frontmatter hashing is now cached per object reference across refreshes, and color dot indicators skip DOM rebuilds when nothing changed.
 
 ---
 

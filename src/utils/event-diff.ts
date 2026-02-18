@@ -20,11 +20,24 @@ function fnv1aHash(str: string): number {
 }
 
 /**
+ * WeakMap cache for frontmatter hashes. Keyed on the `meta` object reference —
+ * unchanged events between refreshes reuse the same object, turning repeated
+ * JSON.stringify into an O(1) lookup. New objects from re-parsed files
+ * auto-invalidate via GC.
+ */
+const frontmatterHashCache = new WeakMap<object, number>();
+
+/**
  * Computes a numeric hash of frontmatter data for fast diff comparison.
  * Avoids repeated JSON.stringify in eventFingerprint by pre-computing once.
+ * Results are cached per object reference via WeakMap.
  */
 export function hashFrontmatter(data: Frontmatter): number {
-	return fnv1aHash(JSON.stringify(data));
+	let hash = frontmatterHashCache.get(data);
+	if (hash !== undefined) return hash;
+	hash = fnv1aHash(JSON.stringify(data));
+	frontmatterHashCache.set(data, hash);
+	return hash;
 }
 
 /**

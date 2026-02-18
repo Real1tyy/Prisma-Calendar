@@ -754,9 +754,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const nonIgnoredInstances = this.getPhysicalInstancesList(physicalInstances, true);
 
 		if (nonIgnoredInstances.length > 0) {
-			// Sort physical instances and get the latest one
-			const sortedInstances = nonIgnoredInstances.sort((a, b) => a.instanceDate.toMillis() - b.instanceDate.toMillis());
-			const latestPhysicalDate = sortedInstances[sortedInstances.length - 1].instanceDate;
+			const latestPhysicalDate = nonIgnoredInstances.reduce((latest, current) =>
+				current.instanceDate > latest.instanceDate ? current : latest
+			).instanceDate;
 
 			// Start from the next occurrence after the latest non-ignored physical instance
 			virtualStartDate = getNextOccurrence(
