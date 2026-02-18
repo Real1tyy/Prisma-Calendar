@@ -744,6 +744,7 @@ export class AssignCategoriesCommand implements Command {
 
 export class UpdateFrontmatterCommand implements Command {
 	private originalValues: Map<string, unknown> = new Map();
+	private originalKeyOrder: string[] = [];
 
 	constructor(
 		private app: App,
@@ -756,6 +757,10 @@ export class UpdateFrontmatterCommand implements Command {
 		const file = getTFileOrThrow(this.app, this.filePath);
 
 		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+			if (this.originalKeyOrder.length === 0) {
+				this.originalKeyOrder = Object.keys(fm);
+			}
+
 			for (const [key, value] of this.propertyUpdates.entries()) {
 				if (!this.originalValues.has(key)) {
 					this.originalValues.set(key, fm[key]);
@@ -775,11 +780,34 @@ export class UpdateFrontmatterCommand implements Command {
 		const file = getTFileOrThrow(this.app, this.filePath);
 
 		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+			// Restore original values
 			for (const [key, originalValue] of this.originalValues.entries()) {
 				if (originalValue === undefined) {
 					delete fm[key];
 				} else {
 					fm[key] = originalValue;
+				}
+			}
+
+			// Rebuild object in original key order to preserve YAML property positions
+			if (this.originalKeyOrder.length > 0) {
+				const currentKeys = Object.keys(fm);
+				const orderedKeys = [
+					...this.originalKeyOrder.filter((k) => k in fm),
+					...currentKeys.filter((k) => !this.originalKeyOrder.includes(k)),
+				];
+
+				const snapshot: Record<string, unknown> = {};
+				for (const k of orderedKeys) {
+					snapshot[k] = fm[k];
+				}
+
+				for (const k of currentKeys) {
+					delete fm[k];
+				}
+
+				for (const k of orderedKeys) {
+					fm[k] = snapshot[k];
 				}
 			}
 		});
