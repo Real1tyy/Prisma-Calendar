@@ -3594,32 +3594,22 @@
 	max-width: 175px;
 }
 
-.prisma-batch-frontmatter-delete-container {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	flex-shrink: 0;
+.prisma-batch-frontmatter-existing {
+	border-left: 3px solid var(--interactive-accent);
 }
 
-.prisma-batch-frontmatter-delete-checkbox {
-	cursor: pointer;
-}
-
-.prisma-batch-frontmatter-delete-label {
-	cursor: pointer;
-	user-select: none;
-	color: var(--text-muted);
-	font-size: var(--font-ui-smaller);
-}
-
-.prisma-batch-frontmatter-disabled {
+.prisma-batch-frontmatter-marked-deletion {
 	opacity: 0.5;
-	background-color: var(--background-modifier-border);
+	text-decoration: line-through;
+}
+
+.prisma-batch-frontmatter-marked-deletion .prisma-setting-item-control {
+	opacity: 0.5;
 	cursor: not-allowed;
 }
 
 .prisma-batch-frontmatter-remove-button {
-	padding: 6px 12px;
+	padding: 6px 10px;
 	border-radius: 4px;
 	border: 1px solid var(--background-modifier-border);
 	background-color: var(--background-primary);

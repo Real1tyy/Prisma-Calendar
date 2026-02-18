@@ -1,13 +1,14 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins";
+import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { getCommonFrontmatterProperties } from "../../utils/calendar-events";
+import { getAllFrontmatterProperties } from "../../utils/calendar-events";
 
 interface FrontmatterProperty {
 	key: string;
 	value: string;
-	deleteMode: boolean;
+	isExisting: boolean;
+	markedForDeletion: boolean;
 }
 
 export class BatchFrontmatterModal extends Modal {
@@ -38,14 +39,14 @@ export class BatchFrontmatterModal extends Modal {
 		contentEl.createEl("h2", { text: "Batch frontmatter management" });
 
 		const description = contentEl.createEl("p", {
-			text: "Add, update, or delete frontmatter properties across all selected events. Leave value empty and check delete to remove a property.",
+			text: "Add, update, or delete frontmatter properties across all selected events.",
 		});
 		addCls(description, "setting-item-description");
 
 		this.createPropertiesSection(contentEl);
 		this.createButtons(contentEl);
 
-		this.prefillCommonProperties();
+		this.prefillExistingProperties();
 
 		this.setupKeyboardHandlers();
 	}
@@ -82,8 +83,12 @@ export class BatchFrontmatterModal extends Modal {
 		this.propertiesContainer = container.createDiv(cls("batch-frontmatter-container"));
 	}
 
-	private addProperty(key = "", value = "", deleteMode = false): void {
+	private addProperty(key = "", value = "", isExisting = false): void {
 		const propertyRow = this.propertiesContainer.createDiv(cls("batch-frontmatter-row"));
+
+		if (isExisting) {
+			addCls(propertyRow, "batch-frontmatter-existing");
+		}
 
 		const keyInput = propertyRow.createEl("input", {
 			type: "text",
@@ -101,64 +106,48 @@ export class BatchFrontmatterModal extends Modal {
 		});
 		addCls(valueInput, "batch-frontmatter-value");
 
-		const checkboxContainer = propertyRow.createDiv(cls("batch-frontmatter-delete-container"));
-		const deleteCheckbox = checkboxContainer.createEl("input", {
-			type: "checkbox",
-			attr: { id: `delete-${Date.now()}-${Math.random()}` },
-		});
-		deleteCheckbox.checked = deleteMode;
-		addCls(deleteCheckbox, "batch-frontmatter-delete-checkbox");
-
-		const deleteLabel = checkboxContainer.createEl("label", {
-			text: "Delete",
-			attr: { for: deleteCheckbox.id },
-		});
-		addCls(deleteLabel, "batch-frontmatter-delete-label");
-
-		deleteCheckbox.addEventListener("change", () => {
-			if (deleteCheckbox.checked) {
-				valueInput.disabled = true;
-				valueInput.value = "";
-				addCls(valueInput, "batch-frontmatter-disabled");
-			} else {
-				valueInput.disabled = false;
-				valueInput.classList.remove(cls("batch-frontmatter-disabled"));
-			}
-		});
-
-		if (deleteMode) {
-			valueInput.disabled = true;
-			addCls(valueInput, "batch-frontmatter-disabled");
-		}
-
 		const removeButton = propertyRow.createEl("button", {
-			text: "Remove",
+			text: "✕",
 		});
 		addCls(removeButton, "batch-frontmatter-remove-button");
-		removeButton.addEventListener("click", () => {
-			const index = this.properties.indexOf(property);
-			if (index !== -1) {
-				this.properties.splice(index, 1);
-			}
-			propertyRow.remove();
-		});
 
 		const property: FrontmatterProperty = {
 			key,
 			value,
-			deleteMode,
+			isExisting,
+			markedForDeletion: false,
 		};
 
 		this.properties.push(property);
+
+		removeButton.addEventListener("click", () => {
+			if (isExisting) {
+				// Toggle deletion state
+				property.markedForDeletion = !property.markedForDeletion;
+				if (property.markedForDeletion) {
+					addCls(propertyRow, "batch-frontmatter-marked-deletion");
+					keyInput.disabled = true;
+					valueInput.disabled = true;
+				} else {
+					removeCls(propertyRow, "batch-frontmatter-marked-deletion");
+					keyInput.disabled = false;
+					valueInput.disabled = false;
+				}
+			} else {
+				// Remove new property immediately
+				const index = this.properties.indexOf(property);
+				if (index !== -1) {
+					this.properties.splice(index, 1);
+				}
+				propertyRow.remove();
+			}
+		});
 
 		keyInput.addEventListener("input", () => {
 			property.key = keyInput.value;
 		});
 		valueInput.addEventListener("input", () => {
 			property.value = valueInput.value;
-		});
-		deleteCheckbox.addEventListener("change", () => {
-			property.deleteMode = deleteCheckbox.checked;
 		});
 	}
 
@@ -190,16 +179,16 @@ export class BatchFrontmatterModal extends Modal {
 		});
 	}
 
-	private prefillCommonProperties(): void {
-		const commonProperties = getCommonFrontmatterProperties(this.app, this.selectedEvents, this.settings);
+	private prefillExistingProperties(): void {
+		const existingProperties = getAllFrontmatterProperties(this.app, this.selectedEvents, this.settings);
 
-		if (commonProperties.size === 0) {
+		if (existingProperties.size === 0) {
 			this.addProperty("", "", false);
 			return;
 		}
 
-		for (const [key, value] of commonProperties.entries()) {
-			this.addProperty(key, value, false);
+		for (const [key, value] of existingProperties.entries()) {
+			this.addProperty(key, value, true);
 		}
 
 		this.addProperty("", "", false);
@@ -212,7 +201,7 @@ export class BatchFrontmatterModal extends Modal {
 			const key = property.key.trim();
 			if (!key) continue;
 
-			if (property.deleteMode) {
+			if (property.markedForDeletion) {
 				propertyMap.set(key, null);
 			} else {
 				const value = property.value.trim();

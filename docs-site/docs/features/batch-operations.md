@@ -199,14 +199,13 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 
 ### Batch Frontmatter Management
 - Opens a modal to add, update, or delete frontmatter properties across all selected events
-- **Smart Prefilling**: Properties that are common to ALL selected events (with the same value) are automatically prefilled for easy editing
-- **Add Properties**: Type property name and value to add new properties to all selected events
-- **Update Properties**: Modify the prefilled values to update common properties across all events
-- **Delete Properties**: Check the "Delete" checkbox next to a property name to remove it from all selected events
-- **Multiple Properties**: Add as many properties as needed using the "Add property" button
-- **Flexible Input**: Leave value empty and check "Delete" to remove a property, or provide a value to set/update it
-- **Undo Support**: Fully undoable - restores previous frontmatter state for all events
-- **Smart Filtering**: Automatically excludes internal Prisma properties (Start, End, Date, Category, Status, etc.)
+- **Union of Properties**: Shows all unique properties found across any selected event, not just properties common to all. Properties with different values across events show an empty value field for you to fill in.
+- **Existing vs New**: Existing properties (prefilled from events) are visually distinguished with an accent border on the left. New properties you add have no accent.
+- **Add Properties**: Click "Add property" or type property name and value to add new properties to all selected events
+- **Update Properties**: Modify the prefilled values to update properties across all events
+- **Delete Properties**: Click the X button on an existing property to mark it for deletion (shown with strikethrough). Click X again to restore it. For new properties, X removes the row immediately.
+- **More Visible Properties**: Non-core properties like location, participants, and icon are now shown in the modal. Only internal scheduling properties (start, end, date, category, etc.) are hidden.
+- **Undo Support**: Fully undoable — restores previous frontmatter state for all events
 - **Keyboard Shortcut**: Press Enter to apply changes
 
 ### Open All in Tabs

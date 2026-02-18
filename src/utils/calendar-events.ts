@@ -755,11 +755,12 @@ export const getCommonCategories = (app: App, selectedEvents: CalendarEvent[], c
 export const getCommonFrontmatterProperties = (
 	app: App,
 	selectedEvents: CalendarEvent[],
-	settings: SingleCalendarConfig
+	settings: SingleCalendarConfig,
+	excludedProps?: Set<string>
 ): Map<string, string> => {
 	if (selectedEvents.length === 0) return new Map();
 
-	const internalProperties = getInternalProperties(settings);
+	const internalProperties = excludedProps ?? getInternalProperties(settings);
 
 	const allEventProperties = selectedEvents
 		.map((event) => {
@@ -796,6 +797,85 @@ export const getCommonFrontmatterProperties = (
 
 		return commonProps;
 	}, new Map<string, string>());
+};
+
+/**
+ * Returns a smaller exclusion set for batch frontmatter operations.
+ * Only excludes core scheduling properties and Obsidian internals,
+ * allowing user-facing properties like location, participants, and icon to be shown.
+ */
+export const getBatchFrontmatterExcludedProps = (settings: SingleCalendarConfig): Set<string> => {
+	return new Set(
+		[
+			settings.startProp,
+			settings.endProp,
+			settings.dateProp,
+			settings.sortDateProp,
+			settings.allDayProp,
+			settings.categoryProp,
+			settings.calendarTitleProp,
+			"position",
+		].filter((prop): prop is string => prop !== undefined && prop !== "")
+	);
+};
+
+/**
+ * Gets ALL unique frontmatter properties across any selected event (union).
+ * Uses the smaller batch exclusion set so user-facing properties like location,
+ * participants, and icon are included.
+ * For properties with different values across events, uses an empty string.
+ */
+export const getAllFrontmatterProperties = (
+	app: App,
+	selectedEvents: CalendarEvent[],
+	settings: SingleCalendarConfig
+): Map<string, string> => {
+	if (selectedEvents.length === 0) return new Map();
+
+	const excludedProps = getBatchFrontmatterExcludedProps(settings);
+
+	const allEventFrontmatters = selectedEvents
+		.map((event) => {
+			try {
+				const { frontmatter } = getFileAndFrontmatter(app, event.ref.filePath);
+				return frontmatter;
+			} catch {
+				return null;
+			}
+		})
+		.filter((fm): fm is Frontmatter => fm !== null && fm !== undefined);
+
+	if (allEventFrontmatters.length === 0) return new Map();
+
+	const result = new Map<string, string>();
+
+	// Collect all unique keys across all events
+	const allKeys = new Set<string>();
+	for (const fm of allEventFrontmatters) {
+		for (const key of Object.keys(fm)) {
+			if (!excludedProps.has(key)) {
+				if (settings.skipUnderscoreProperties && key.startsWith("_")) continue;
+				allKeys.add(key);
+			}
+		}
+	}
+
+	for (const key of allKeys) {
+		// Check if all events that have this key share the same value
+		const values: string[] = [];
+		for (const fm of allEventFrontmatters) {
+			if (key in fm) {
+				values.push(serializeFrontmatterValue(fm[key]));
+			}
+		}
+
+		if (values.length === 0) continue;
+
+		const allSame = values.every((v) => v === values[0]);
+		result.set(key, allSame && values[0].trim() !== "" ? values[0] : "");
+	}
+
+	return result;
 };
 
 export const assignListToFrontmatter = (fm: Frontmatter, prop: string, items: string[]): void => {

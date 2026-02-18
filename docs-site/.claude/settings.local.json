@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(npx vitest:*)",
+      "Bash(mise run:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git -C /home/real1ty/Desktop/Programming/Obsidian/ObsidianMonorepo diff --name-only)"
+    ]
+  }
+}
