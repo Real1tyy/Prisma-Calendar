@@ -35,11 +35,11 @@ JavaScript expressions map frontmatter to colors (`Priority === 'High'` → `#ef
 ### [Statistics & Time Tracking](./statistics)
 Daily, weekly, monthly, and all-time views with pie charts and breakdown tables. Dual aggregation modes (Event Name vs Category), break time support, smart grouping, period navigation, and paginated tables (20 entries per page).
 
+### [Calendar View](./calendar-view)
+Month, week, day, and list views with a fully customizable toolbar, CTRL+scroll zoom, display density options, event text coloring, sticky headers, event overlap control, and customizable time ranges.
+
 ### Frontmatter Display
 Display custom properties inside event chips with clickable wikilinks and configurable property selection. Configure in Settings → Calendar → Frontmatter display properties.
-
-### View Modes & Display
-Month, week, day, and list views with CTRL+scroll zoom (1-60 minute increments), display density options, event overlap control, and customizable time ranges.
 
 ---
 
@@ -70,8 +70,8 @@ Features: quick create button, drag & drop, resize with edge scrolling, "Now" bu
 
 **Category Management**: Assign categories from the event modal or context menu. Multi-select interface with search, color indicators, and inline category creation. See [Categories](./categories) for details.
 
-### Event Presets
-Save reusable templates with pre-filled values including title, dates, categories, recurring patterns, and custom properties. Configure a default preset that auto-applies to new events. Configure in Settings → General → Event presets.
+### [Event Presets](./event-presets)
+Save reusable templates with pre-filled values including title, dates, categories, recurring patterns, and custom properties. Configure a default preset that auto-applies to new events.
 
 ### [Event Skipping](./event-skipping)
 Mark events as skipped without deletion. Preserves recurring series integrity with management dialog and undo support.

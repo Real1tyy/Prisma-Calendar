@@ -17,6 +17,8 @@ const sidebars: SidebarsConfig = {
 			collapsible: true,
 			items: [
 				"features/overview",
+				"features/calendar-view",
+				"features/event-presets",
 				"features/multiple-calendars",
 				"features/folder-scanning",
 				"features/templater",
