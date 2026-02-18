@@ -8,7 +8,13 @@
 ![License](https://img.shields.io/github/license/Real1tyy/Prisma-Calendar?style=for-the-badge)
 ![Obsidian](https://img.shields.io/badge/obsidian-plugin-purple.svg?style=for-the-badge)
 
-**The most powerful and flexible calendar plugin ever built for Obsidian — fully configurable, reactive, and built for power users who want real control over their schedule.**
+**The most powerful and flexible calendar plugin for Obsidian. Period.**
+
+Prisma Calendar isn't just a calendar — it's a full-featured event management system built directly into your vault. Create, organize, automate, and analyze your events without ever leaving Obsidian.
+
+**Every setting is configurable. Every change is reactive. Every action is undoable.**
+
+Whether you need recurring events that generate real notes, batch operations across dozens of events, intelligent category auto-assignment with fuzzy matching, time-based statistics, CalDAV sync, scriptable event creation via API, or just a clean calendar that works exactly how you want — Prisma Calendar does it all.
 
 ---
 
@@ -114,92 +120,67 @@ Once approved for the Community Plugin store, you'll be able to install Prisma C
 
 ---
 
-## **Top 5 Killer Features**
+## Why Prisma Calendar?
 
-### **1️⃣ Flexibility — Fully Configurable Everything**
+Other Obsidian calendar plugins give you a basic view. Prisma Calendar gives you **a complete event management platform** — with the depth of a standalone app and the integration only a native plugin can offer.
 
-Every aspect of Prisma Calendar is customizable. From frontmatter properties to calendar appearance and behavior, everything adapts to **your** workflow. You define the rules — Prisma Calendar follows.
+Here's what sets it apart:
 
-- **Custom frontmatter mapping** - Use your own property names (`Start`, `Begin`, `Date` — your choice)
-- **Dynamic color rules** - JavaScript expressions for intelligent event coloring
-- **Filtering system** - Show/hide events based on any frontmatter property
-- **View customization** - Adjust time ranges, zoom levels, display density, and visual themes
-- **Multiple calendars** - Up to 10 isolated calendars, each with independent settings
+### **Configure Literally Everything**
 
-### **2️⃣ Reactivity — No Restarts. Ever.**
+Prisma Calendar adapts to you, not the other way around. Map your own frontmatter properties, define JavaScript-powered color rules, set up advanced filters, customize the calendar appearance down to event text, icons, and density — and manage up to **10 independent calendars**, each with their own settings and folder scope.
 
-Change a setting → The calendar **immediately updates**. No more restarting Obsidian. Every parameter, toggle, or setting change is applied live, instantly reflecting in your workspace.
+### **Fully Reactive — Changes Propagate Instantly**
 
-- **Instant feedback** - All settings changes apply in real-time
-- **Live recalculation** - Color rules, filters, and views update automatically
-- **Zero downtime** - Never interrupt your workflow with restarts
+There's no "restart Obsidian to apply changes" here. Every setting change, every color rule tweak, every filter adjustment takes effect **immediately**. Edit a note's frontmatter and watch the calendar update in real time. This isn't a static display — it's a live, reactive system.
 
-### **3️⃣ History & Memento System — Undo / Redo Like a Pro**
+### **Undo and Redo Everything**
 
-Prisma Calendar keeps a complete memento history of your actions. Every move, edit, or deletion can be undone or redone instantly. Misclicked? Don't worry — we've got you covered.
+Every action you take — creating, editing, moving, deleting, batch operations — is tracked in a full memento history. Made a mistake? Hit undo. Changed your mind? Redo. You'll see exactly what's being reversed ("Undo Batch Delete", "Undo Move Event") so you're always in control.
 
-- **Command pattern architecture** - Every action is undoable
-- **Semantic undo** - See exactly what you're undoing ("Undo Create Event", "Undo Batch Delete")
-- **Full history** - Undo/redo across all calendar operations
-- **Safety net** - Experiment confidently knowing you can always revert
+### **Recurring Events That Actually Work**
 
-### **4️⃣ Recurring Events — Smart, Linked, Isolated**
+Define a source node with a frequency (daily, weekly, bi-weekly, monthly, ...), and Prisma generates **real Obsidian notes** for each instance — fully linked back to the source. Virtual previews let you see future instances without cluttering your vault. Navigate between instances with one click, and view statistics about your recurring series at a glance.
 
-Recurring events are built around a **source node** that defines frequency (daily, weekly, bi-weekly, etc.). Each instance is an independent Obsidian note, fully linked to its source — giving you both structure and freedom.
+### **Batch Operations at Scale**
 
-- **Source node architecture** - One configuration file controls the entire series
-- **Real note generation** - Physical Obsidian notes, not just calendar entries
-- **Complete inheritance** - All frontmatter and content copied to instances
-- **Virtual previews** - See far-future instances without cluttering your vault
-- **Source navigation** - Jump between instances and their source with one click
-- **Calendar creation** - Create recurring events directly from the calendar interface with full frontmatter support
+Select multiple events and delete, duplicate, move, clone, skip, or open them — all at once. Shift entire weeks of events forward or backward. When you're managing a busy schedule, this isn't a nice-to-have — it's essential.
 
-### **5️⃣ Batch Operations — Work Fast, Think Big**
+### **Smart Categories with Fuzzy Matching**
 
-Select multiple events and perform bulk actions: **clone, move, skip, delete, or open them** — all at once. Perfect for power users who value efficiency and speed.
+Define categories with color coding, then let Prisma **auto-assign them** based on event names. The built-in fuzzy matching catches typos and close matches, so your events get categorized correctly even when you're typing fast. Categories also power event group aggregation, giving you a bird's-eye view of related events across your calendar.
 
-- **Multi-select mode** - Click to select multiple events
-- **Bulk operations** - Delete, duplicate, move, or clone selected events
-- **Skip functionality** - Mark events as skipped without deletion
-- **Batch open** - Open all selected event files in editor tabs
-- **Week shifting** - Move or clone entire sets of events forward/backward
+### **Statistics and Time Insights**
 
----
+Track how you spend your time with visual statistics — pie charts, breakdowns by category, and detailed tables — all filterable by time horizon. See where your hours go across days, weeks, or months. Recurring event series get their own statistics too, so you can track consistency and trends.
 
-## ✨ **Additional Powerful Features**
+### **Built-in Notifications**
 
-### 🔗 **Recurring Event Management**
+Set up reminders for your events and get notified directly inside Obsidian. Never miss an important event without needing an external tool.
 
-- **Source button** - Navigate to source node from any recurring instance
-- **Instance dropdown** - View all physical instances of a recurring series
-- **Past filter** - Toggle past event visibility to reduce clutter
-- **Virtual event source preview** - Click virtual events to see their source configuration
+### **Time Tracker**
 
-### 🗓️ **Multiple Isolated Calendars**
+Start and stop a timer directly from any event modal. Track actual time spent on tasks, compare it against planned durations, and build a real picture of how your time is used.
 
-- **Up to 10 separate calendars** with independent configuration
-- **Dedicated folders** - Each calendar scans its own directory tree
-- **Custom hotkeys** - Instant switching between calendars
-- **Clone & duplicate** - Copy calendars with all settings intact
+### **Event Presets and Templates**
 
-### 🎨 **Dynamic Visual Customization**
+Create reusable event presets so you can spin up new events with pre-filled frontmatter in seconds. Pair with Templater integration for even more powerful template-driven workflows.
 
-- **JavaScript-powered color rules** - `fm.Priority === 'High' → #ef4444`
-- **Property-based filtering** - Show/hide events with complex expressions
-- **Frontmatter display** - Show extra frontmatter properties inside event chips
-- **Multiple view modes** - Month, week, day, list with customizable time ranges
-- **Zoom controls** - CTRL+scroll with configurable zoom levels (1-60 minutes)
+### **Scriptable via Programmatic API**
 
-### 🔄 **CalDAV & ICS Integration**
+Prisma Calendar exposes a programmatic API, so you can create, modify, and query events from scripts, Templater templates, or other plugins. Automate event creation, build custom workflows, and integrate your calendar into your broader Obsidian setup.
 
-- **Read-only CalDAV sync** - Automatically import events from external CalDAV servers (Fastmail, Nextcloud, iCloud, etc.)
-- **ICS import & export** - Import `.ics` calendar files into Prisma, or export your calendar/events to standard ICS format for use in other apps and services
-- **Auto-sync** - Configurable sync intervals with manual trigger option
-- **Smart updates** - Incremental CalDAV sync using ETags for efficiency
-- **Multiple accounts** - Connect multiple CalDAV or ICS sources to different Prisma calendars
-- **Note creation** - Synced or imported events become Obsidian notes with full frontmatter
+### **CalDAV and ICS Integration**
 
-> **⚠️ Security Warning**: CalDAV credentials are stored in **plaintext** in your vault's `data.json` file. Always use **app-specific passwords**, never your main account password. See [documentation](https://real1tyy.github.io/Prisma-Calendar/features/integrations#security-considerations) for detailed security considerations.
+Sync events from external CalDAV servers (Fastmail, Nextcloud, iCloud, and more) or import/export `.ics` files — compatible with Google Calendar, Microsoft Outlook, and any service that supports the ICS standard. Synced events become real Obsidian notes with full frontmatter. Connect multiple sources to different calendars with configurable auto-sync intervals.
+
+### **Multiple Views, Full Control**
+
+Switch between month, week, day, and list views. Zoom into time slots from 1 to 60 minutes. Display extra frontmatter properties inside event chips. Filter events with complex expressions. Toggle holidays on or off. The calendar looks and works exactly how you want it to.
+
+### **Global Event Management**
+
+Browse, search, and manage all events across all your calendars from a single unified interface. No more hunting through folders — everything is accessible from one place.
 
 ## Support & Sponsorship
 
