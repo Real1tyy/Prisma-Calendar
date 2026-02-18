@@ -1,5 +1,21 @@
 # Event Groups
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventGroups.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Track, group, and analyze related events through the Event Groups system. Events are grouped in three ways — by recurring event rules (automatic), by shared category (automatic), and by shared name with ZettelID stripped (automatic). All perspectives are accessible from a single unified modal.
 
 ## Overview
@@ -38,6 +54,20 @@ When multiple tabs are available, they appear in the order above (Recurring firs
 
 ### Recurring Tab
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventSeriesModaReaccuring.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Shows all physical instances of a recurring event series.
 
 **What you see (top to bottom):**
@@ -51,6 +81,21 @@ Shows all physical instances of a recurring event series.
 If the source event has a category, the modal background is tinted with the category color.
 
 ### By Category Tab
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventSeriesModalREST.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 
 Shows all events sharing the same category value.
 
@@ -224,6 +269,20 @@ The selected sort applies to all tabs.
 
 ## Visualization Options
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/TimelineViewSeriesGroups.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 The Event Series Modal includes a footer with multiple visualization options for viewing the current event series.
 
 ### Available Views
@@ -251,12 +310,27 @@ The generated Bases view includes:
 
 ### Timeline View
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/TimelineView.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Click **Timeline** to open an interactive timeline visualization showing all events in the series plotted on a time axis. The modal title clearly indicates the context, such as:
 - "Timeline for Recurring - Gym"
 - "Timeline for Name - Team Meeting"
 - "Timeline for Category - Health"
 
 **Features:**
+
 - **Interactive navigation** — Zoom in/out with mouse wheel, pan by dragging to navigate through time
 - **Event type distinction** — Timed events have a square dot, while all-day events have a hollow circle dot with a dashed border, making the two types instantly recognizable at a glance
 - **Event names** — Each event displays its clean title (with ZettelID and instance dates stripped)

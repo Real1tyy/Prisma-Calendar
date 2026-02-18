@@ -2,6 +2,7 @@
 slug: /
 title: Prisma Calendar
 ---
+import useBaseUrl from '@docusaurus/useBaseUrl';
 
 <div align="center">
 
@@ -21,6 +22,26 @@ title: Prisma Calendar
 
 **The most powerful and flexible calendar plugin ever built for Obsidian — fully configurable, reactive, and engineered for power users who want real control over their time-linked notes.**
 
+</div>
+
+## Preview
+
+<div style={{"display": "flex", "flexWrap": "wrap", "gap": "1em", "justifyContent": "center", "marginBottom": "1em"}}>
+  <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/StatisticPiechart.webm")} type="video/webm" />
+  </video>
+  <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/batchFULL.webm")} type="video/webm" />
+  </video>
+</div>
+
+<div style={{"display": "flex", "flexWrap": "wrap", "gap": "1em", "justifyContent": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/AssignCategory.webm")} type="video/webm" />
+  </video>
+  <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/GlobalTimelineView.webm")} type="video/webm" />
+  </video>
 </div>
 
 ---
@@ -44,39 +65,6 @@ Check out the [complete video tutorial collection](/videos) with all videos, det
   </iframe>
   <p><strong>Full walkthrough of core features:</strong> Event creation, editing, drag-and-drop, batch operations, undo/redo system, recurring events with source nodes, dynamic color rules, filtering, and calendar customization. See how Prisma Calendar gives you real control over your time-linked notes inside Obsidian.</p>
 </div>
-
----
-
-## 📸 **Screenshots**
-
-### Full Calendar View
-
-![Full Calendar View](/img/full_calendar.png)
-
-*Weekly calendar view with color-coded events, time grid, search, filtering, and batch operations*
-
-### Batch Operations
-
-![Batch Selection Mode](/img/batch_select.png)
-
-*Select multiple events for bulk operations like delete, duplicate, move, or skip*
-
-### Event Creation & Editing
-
-<p align="center">
-  <img src="/img/create_event_modal.png" alt="Create Event Modal" width="45%" />
-  <img src="/img/edit_event_modal.png" alt="Edit Event Modal" width="45%" />
-</p>
-
-*Create and edit events with full frontmatter support, recurring event options, and built-in time tracker*
-
-### Weekly Statistics
-
-![Weekly Statistics](/img/weekly_stats_pie.png)
-
-*Visual time tracking with pie charts and detailed breakdown tables*
-
-Check out the [complete screenshots gallery](/screenshots) to see all the plugin's visuals, including calendar views, event modals, batch operations, statistics, settings, notifications, and more.
 
 ---
 

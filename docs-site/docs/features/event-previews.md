@@ -1,5 +1,21 @@
 # Event Previews
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/Enlarge.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 See note content and navigate links without opening files.
 
 ## Hover Previews

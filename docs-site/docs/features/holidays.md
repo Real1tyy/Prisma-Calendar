@@ -1,5 +1,21 @@
 # Holidays
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/Holidays.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Display public holidays on your calendar with automatic detection based on your country, state, and region.
 
 ## Overview

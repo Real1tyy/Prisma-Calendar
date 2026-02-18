@@ -2,7 +2,21 @@
 
 Quickly make changes to many events at once.
 
-![Batch Selection Mode](/img/batch_select.png)
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchFULL.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 *Select multiple events across your calendar for bulk operations*
 
@@ -17,28 +31,118 @@ Quickly make changes to many events at once.
 ## Available Actions
 
 ### Delete Selected
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchDelete.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - Permanently removes event files (with confirmation)
 - Clean up old or placeholder events
 
 ### Duplicate Selected
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchDuplicate.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - Creates exact copies at same time/date
 - Useful for template copies
 
 ### Move to Next/Previous Week
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/BatchMoveNext.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - Shifts events ±7 days
 - Original events are moved (not copied)
 
 ### Clone to Next/Previous Week
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchCloneNext.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - Creates copies ±7 days away
 - Keeps originals in place
 - Perfect for repeating weekly patterns
 
 ### Skip Selected
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/BatchSKIP.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - Mark events as skipped without deletion
 - Preserves recurring series
 - View/restore via Calendar menu → "View Skipped Events"
 
 ### Mark Done / Mark as Not Done
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchDone-NotDone.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - **Mark Done**: Marks all selected events as done by setting the status property
 - **Mark as Not Done**: Marks all selected events as not done by setting the status property
 - Uses the status property and done/not done values configured in Settings → Properties
@@ -47,11 +151,41 @@ Quickly make changes to many events at once.
 - **Tip:** You can also mark individual events as done/undone by right-clicking them in the calendar
 
 ### Move By
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/BatchMOVEBY.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - Opens a dialog to move selected events by a custom number of days
 - Supports positive values (move forward) and negative values (move backward)
 - Example: Enter `7` to move events one week forward, or `-3` to move them 3 days back
 
 ### Assign Categories
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchAssignCategories.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - Opens a multi-select modal to assign categories to all selected events
 - **Search**: Type to filter categories by name
 - **Select Multiple**: Check multiple categories to assign them all at once
@@ -76,17 +210,39 @@ Quickly make changes to many events at once.
 - **Keyboard Shortcut**: Press Enter to apply changes
 
 ### Open All in Tabs
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchOPENALL.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - Opens all selected event files in editor tabs
 - Quick access for batch reviewing/editing
 
-### Duplicate Remaining Week Days
-- Right-click an event → "Duplicate remaining week days" to copy it to every remaining day of the current week (through Sunday)
-- The week runs Monday–Sunday. For example, duplicating a Wednesday event creates copies for Thursday, Friday, Saturday, and Sunday
-- Sunday events have no remaining days, so nothing happens
-- All copies are grouped as a single undoable operation
-- Hidden by default — enable in Settings → Configuration → Context Menu Items
-
 ## Customizing Batch Action Buttons
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchButtonsConfig.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 By default, not all batch action buttons are shown in the toolbar to keep the interface compact and prevent the toolbar from spanning multiple rows. The following buttons are **disabled by default**:
 

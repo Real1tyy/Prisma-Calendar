@@ -1,4 +1,5 @@
 # Filtering
+import useBaseUrl from "@docusaurus/useBaseUrl";
 
 Prisma Calendar provides multiple powerful ways to filter events, from simple text search to advanced property-based expressions. These filtering options work together to help you focus on exactly what matters.
 
@@ -13,6 +14,20 @@ Both use the same JavaScript expression syntax but are configured separately.
 ## Three Ways to Filter
 
 ### 1. Search Bar (Simple Text Filter)
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/Searching.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 The **Search Bar** in the calendar toolbar lets you quickly filter events by title:
 
@@ -61,6 +76,20 @@ Project === 'Work' && Priority === 'High' && Status !== 'Done'
 
 ### 3. Filter Presets (Quick Access)
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/FilteringFilteringPresets.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 **Filter Presets** let you save and reuse common filter expressions:
 
 - **Location**: Dropdown (▼) in calendar toolbar
@@ -90,6 +119,20 @@ The **"Highlight events without categories"** command temporarily highlights all
 **Note**: The category property name is configurable in Settings → Properties → "Category property" (default: `Category`).
 
 ## Highlight Events With Category
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/highlight.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 The **"Highlight events with category"** command opens a modal that lets you select a specific category and temporarily highlights all events assigned to that category. This makes it easy to visually identify events belonging to a particular category across your calendar.
 

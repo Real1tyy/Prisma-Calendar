@@ -1,5 +1,21 @@
 # Notifications
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/Notified.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Desktop alerts before events start with rich modal interface, flexible timing, per-event overrides, snooze functionality, and automatic duplicate prevention.
 
 ---

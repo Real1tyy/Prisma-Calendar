@@ -1,5 +1,21 @@
 # Time Tracker
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/StopwatchAndMinimizedModal.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Built-in stopwatch in Create/Edit Event modal for precise time tracking with automatic break tracking.
 
 ## Quick Start
@@ -61,6 +77,20 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 - **Resume** (after stop): Restarts the timer after it has been completely stopped. The end time was filled, but you want to continue. Best for resuming work after interruptions.
 
 ## Minimize & Auto-Save
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/MinimizedModalManagement.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 **Manual Minimize**: Click **−** to save modal state (pre-configure events for later)
 

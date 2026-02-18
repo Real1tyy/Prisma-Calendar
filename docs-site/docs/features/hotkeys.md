@@ -230,7 +230,7 @@ The filtering commands enable keyboard-driven navigation of the calendar's power
 
 -   **Function**: Opens the global event search modal
 -   **Features**: Search across all events with cycle filters for recurring, all-day, and skipped events
--   **See Also**: [Global Search documentation](./global-search.md)
+-   **See Also**: [Global Search documentation](./global-events-management.md)
 
 ### Highlight Events Without Categories
 

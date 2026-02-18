@@ -1,8 +1,24 @@
 # Recurring Events (DSL)
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 Create repeating events using `RRule` and `RRuleSpec` in frontmatter.
 
 ## How It Works
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/Reaccur.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 One **configuration node** serves as the master template. Defines recurrence pattern, all frontmatter properties, and complete content (headings, text, checkboxes). System copies entire file structure to create each instance.
 
@@ -27,7 +43,23 @@ This makes it instantly clear which events are source templates versus generated
 
 **Inheritance**: All frontmatter properties, complete file content, exact formatting. Only `Start`/`End` dates and `RRuleID` are adjusted automatically.
 
-**Frontmatter Propagation**: Changes to custom frontmatter properties (Category, Priority, Status, etc.) in the source event automatically propagate to all existing physical instances. The system intelligently detects three types of changes (added, modified, deleted) and can accumulate multiple rapid changes within a configurable debounce window. Time-related and system-managed properties (Start, End, Date, RRule, RRuleID, Source, etc.) are never propagated to preserve instance-specific timing and system integrity.
+**Frontmatter Propagation**: 
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/ReaccurFrontmatter.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+Changes to custom frontmatter properties (Category, Priority, Status, etc.) in the source event automatically propagate to all existing physical instances. The system intelligently detects three types of changes (added, modified, deleted) and can accumulate multiple rapid changes within a configurable debounce window. Time-related and system-managed properties (Start, End, Date, RRule, RRuleID, Source, etc.) are never propagated to preserve instance-specific timing and system integrity.
 
 ### Propagation Modes
 

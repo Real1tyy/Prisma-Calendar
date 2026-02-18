@@ -1,5 +1,21 @@
 # Installation
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/BRAT.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Prisma Calendar is currently **awaiting approval** for the Obsidian Community Plugin store. While we wait for approval, you can install it using one of the methods below.
 
 ## 🎯 Recommended: BRAT (Beta Reviewers Auto-update Tool)

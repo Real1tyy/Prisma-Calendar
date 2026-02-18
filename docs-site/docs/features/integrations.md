@@ -1,5 +1,7 @@
 # Integrations
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 Sync with external calendars or exchange events using standard calendar formats.
 
 ## Overview
@@ -12,7 +14,37 @@ Prisma Calendar offers three integration methods:
 
 **ICS Format**: Prisma Calendar stores all event times internally in **UTC**. When exporting or importing, you select a timezone for conversion. This ensures events display correctly in any calendar application.
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/IMPORTEXPORT.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+
 **Compatible with**: Google Calendar, Apple Calendar (iCal), Microsoft Outlook, Nextcloud Calendar, Thunderbird, and any application supporting ICS/iCalendar format.
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/googlecal.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+Example with Google Calendar
 
 ## Exporting Events
 
@@ -232,6 +264,20 @@ ICS URL subscriptions enable read-only synchronization from public ICS URLs to P
 - Create Obsidian notes for external events
 - Full sync with deletions — events removed from the source are deleted locally
 - No authentication needed — works with public sharing links
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/googlecal.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ### Setting Up ICS Subscriptions
 

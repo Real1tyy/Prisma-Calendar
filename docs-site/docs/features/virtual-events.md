@@ -1,8 +1,22 @@
 # Virtual Events
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 Show recurring events beyond your generation horizon without creating physical files.
 
-![Virtual Events](/img/virtual_events.png)
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/VirtualEvents.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 *Calendar view showing both physical events (solid) and virtual events (far future recurring instances)*
 

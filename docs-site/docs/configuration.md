@@ -1,7 +1,20 @@
 # Configuration
 
-![Settings Panel](/img/settings.png)
+import useBaseUrl from "@docusaurus/useBaseUrl";
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/SettingConfig.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 *Prisma Calendar settings with tabs for General, Properties, Calendar, Event Groups, Configuration, Notifications, Rules, Categories, Bases, and Integrations*
 
 ## Settings Search
@@ -300,6 +313,21 @@ STATUS: Done
 - **Thicker hour lines**: make full-hour lines thicker in day/week views (enabled by default)
 - **Show duration in event title**: display event duration in parentheses after the event title for timed events (e.g., "Meeting (2h 30m)"). Only applies to events with both start and end times. Enabled by default.
 - **Default event text color**: text color for events with dark backgrounds (default: white). Used when the event background provides sufficient contrast.
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventTextColour.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - **Alternative event text color**: text color used when the event background is light or white (e.g., pastel colors). The calendar automatically detects light backgrounds and applies this color for better readability. Default: black.
 - **Sticky day headers**: keep day/date headers visible at the top when scrolling down in weekly and daily views
 - **Sticky all-day events**: keep all-day event section visible at the top when scrolling down in weekly and daily views (disabled by default)

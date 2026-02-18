@@ -1,5 +1,21 @@
 # Statistics
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/StatisticPiechart.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Track how you spend your time with visual insights and detailed breakdowns of your events across different time periods.
 
 ## Screenshots
@@ -126,7 +142,7 @@ Add `Break` property (in minutes) to exclude break time from statistics. Support
 ## Related Features
 
 - [Time Tracker](./time-tracker) - Automatic break time calculation
-- [Global Event Search](./global-search) - Search and filter events
+- [Global Event Search](./global-events-management) - Search and filter events
 - [Filtering](./filtering) - Filter events by properties
 - [Recurring Events](./recurring-dsl) - Set up recurring series
 - [Event Previews](./event-previews) - View detailed information

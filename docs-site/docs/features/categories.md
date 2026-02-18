@@ -1,4 +1,19 @@
 # Categories
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/AssignCategory.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 Organize and visualize your events using categories. Categories provide a powerful way to group events, apply colors, and analyze how you spend your time.
 
@@ -43,6 +58,21 @@ You can assign categories to events in multiple ways:
 
 ### 1. Auto-Assignment (Event Creation and Editing)
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/AutoAssign.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+
 Categories can be automatically assigned when creating or editing events based on the event name. When you finish typing the event title and move to another field, the system checks if the title matches any auto-assignment rules and replaces the categories accordingly.
 
 Configure in **Settings → Categories → Auto-assign categories**:
@@ -54,6 +84,20 @@ When enabled, if the event name matches a category name (case-insensitive, ignor
 - Type "Health" and click away → Categories replaced with "health"
 
 #### Custom category assignment presets
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/AssignCategoryPreset.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 Define custom rules to automatically assign specific categories based on event names. Each preset can assign multiple categories, and now supports **multiple comma-separated event names** in a single preset for maximum flexibility.
 
@@ -134,7 +178,19 @@ All category assignment interfaces share the same powerful modal:
 - **Full undo support** - Restores previous category state (batch operations only)
 - **Keyboard navigation** - Navigate categories with arrow keys and Enter to select, or press Enter to submit the form
 
-![Assign Categories Modal](/img/assign_categories_modal.png)
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/AssignCategory.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ### Keyboard Shortcuts
 
@@ -236,9 +292,19 @@ After renaming or deleting categories, restart Obsidian for changes to fully pro
 
 Below the category list, an interactive pie chart shows the overall category distribution with click-to-filter functionality.
 
-![Categories Settings](/img/categories_settings.png)
-
-![Categories Settings Pie Chart](/img/categories_settings_pie_chart.png)
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/StatisticSettings.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ### How Category Colors Work
 

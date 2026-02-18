@@ -27,7 +27,7 @@ Desktop notifications with rich modal interface, flexible timing (minutes for ti
 JavaScript expressions map frontmatter to colors (`Priority === 'High' → #ef4444`). First match wins, with default fallback and live updates.
 
 ### **[Advanced Filtering & Search](./filtering)**
-[Global event search](./global-search) with cycle filters, search bar for quick text filtering, expression filter for property-based logic, filter presets, and filtered events modal. Includes command to highlight events without categories.
+[Global event search](./global-events-management) with cycle filters, search bar for quick text filtering, expression filter for property-based logic, filter presets, and filtered events modal. Includes command to highlight events without categories.
 
 ### **[Statistics & Time Tracking](./statistics)**
 Daily, weekly, monthly, and all-time views with pie charts and breakdown tables. Dual aggregation modes (Event Name vs Category), break time support, smart grouping, period navigation, and paginated tables (20 entries per page).
@@ -69,7 +69,7 @@ See [Hotkeys](./hotkeys) for recommended keybindings.
 
 **Category Management**: Assign categories directly from the event modal or context menu using the "Assign Categories" button. Multi-select interface with search, color indicators, and the ability to create new categories on the fly. See [Color Rules](./color-rules#working-with-categories) for details.
 
-See [Screenshots](../screenshots.md) for modal examples.
+See [Gallery](../gallery) for modal examples.
 
 ### **Event Presets**
 Save reusable templates with pre-filled values including title, dates, categories, recurring patterns, and custom properties. Configure a default preset that auto-applies to new events.
@@ -102,6 +102,9 @@ Right-click timed events to fill start/end times from neighboring events or curr
 - Fill start/end time from current time (instant time logging)
 
 All operations support undo/redo.
+
+### **Duplicate Remaining Week Days**
+Right-click an event → "Duplicate remaining week days" to copy it to every remaining day of the current week (through Sunday). The week runs Monday–Sunday — for example, duplicating a Wednesday event creates copies for Thursday, Friday, Saturday, and Sunday. Sunday events have no remaining days, so nothing happens. All copies are grouped as a single undoable operation. Hidden by default — enable in Settings → Configuration → Context Menu Items.
 
 
 ### **[ICS Integrations](./integrations)**

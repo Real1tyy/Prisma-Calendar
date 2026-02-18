@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.3.0 - 2/18/2026
+
+### Added
+
+- **Detailed documentation with videos**: Added comprehensive video walkthroughs for every major feature, embedded directly into the documentation pages. Browse the full [documentation site](https://real1tyy.github.io/Prisma-Calendar/) or visit the [Gallery](https://real1tyy.github.io/Prisma-Calendar/gallery) for a visual overview of all features.
+
+---
+
 ## 2.2.0 - 2/17/2026
 
 ### Added

@@ -1,5 +1,21 @@
 # Undo/Redo System
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/UndoRedo.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Prisma Calendar features a powerful and reliable undo/redo system for every action you take. You can confidently make changes, knowing you can easily reverse them.
 
 ## Per-Calendar History

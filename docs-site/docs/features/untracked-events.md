@@ -1,5 +1,21 @@
 # Untracked Events
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/UntrackedEvents.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 The **Untracked Events Dropdown** provides a convenient way to view and manage events that don't have date properties assigned yet. Think of it as your "inbox" for calendar events.
 
 ## Overview
