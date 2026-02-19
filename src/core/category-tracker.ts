@@ -15,6 +15,7 @@ import {
 	filterExcludedPropsFromDiff,
 	getRecurringInstanceExcludedProps,
 } from "../utils/calendar-events";
+import { batchedPromiseAll } from "../utils/obsidian";
 import type { EventStore } from "./event-store";
 import type { Indexer, IndexerEvent } from "./indexer";
 
@@ -301,10 +302,10 @@ export class CategoryTracker {
 		const excludedProps = getRecurringInstanceExcludedProps(this._settings);
 
 		try {
-			await Promise.all(
-				targetFilePaths.map((fp) =>
-					applyFrontmatterChangesToInstance(this.app, fp, sourceFrontmatter, diff, excludedProps)
-				)
+			await batchedPromiseAll(
+				targetFilePaths,
+				(fp) => applyFrontmatterChangesToInstance(this.app, fp, sourceFrontmatter, diff, excludedProps),
+				this._settings.fileConcurrencyLimit
 			);
 		} finally {
 			setTimeout(() => {

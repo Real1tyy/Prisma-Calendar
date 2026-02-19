@@ -14,6 +14,7 @@ import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
 import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import type { CustomCalendarSettingsSchema } from "../../types/settings";
+import { getCalendarById } from "../../utils/calendar-settings";
 import { deleteFilesByPaths } from "../../utils/obsidian";
 import { CalendarIntegrationDeleteEventsModal } from "../modals";
 import { ConfirmDeleteModal } from "./generic";
@@ -208,7 +209,11 @@ export class CalDAVSettings {
 		}
 
 		const filePaths = events.map((event) => event.filePath);
-		await deleteFilesByPaths(this.app, filePaths);
+		await deleteFilesByPaths(
+			this.app,
+			filePaths,
+			getCalendarById(this.settingsStore.currentSettings, this.calendarId)?.fileConcurrencyLimit
+		);
 
 		console.log(`[CalDAV] Deleted ${deletedCount} event(s) for account ${accountId}`);
 		new Notice(`Deleted ${deletedCount} event(s)`);
@@ -795,7 +800,11 @@ class EditCalDAVAccountModal extends Modal {
 		}
 
 		const filePaths = events.map((event) => event.filePath);
-		await deleteFilesByPaths(this.app, filePaths);
+		await deleteFilesByPaths(
+			this.app,
+			filePaths,
+			getCalendarById(this.settingsStore.currentSettings, this.calendarId)?.fileConcurrencyLimit
+		);
 
 		console.log(`[CalDAV] Deleted ${deletedCount} event(s) for calendar ${calendarUrl}`);
 		new Notice(`Deleted ${deletedCount} event(s)`);

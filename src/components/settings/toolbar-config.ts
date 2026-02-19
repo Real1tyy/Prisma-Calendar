@@ -130,6 +130,15 @@ export class ConfigurationSettings {
 			name: "Enable name series tracking",
 			desc: "Track name-based event series (groups events sharing the same title). Used for name series propagation and series views. Disable to reduce memory usage in large vaults.",
 		});
+
+		this.ui.addSlider(containerEl, {
+			key: "fileConcurrencyLimit",
+			name: "File operation concurrency limit",
+			desc: "Maximum number of files to modify in parallel. Lower values reduce the risk of Obsidian freezing on large batch operations. Applies to recurring event propagation, name/category series propagation, and file deletions.",
+			min: 1,
+			max: 50,
+			step: 1,
+		});
 	}
 
 	private renderToolbarButtonToggles(containerEl: HTMLElement, key: ToolbarButtonsKey): void {

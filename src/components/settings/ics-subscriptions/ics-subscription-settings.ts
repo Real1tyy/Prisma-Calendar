@@ -5,6 +5,7 @@ import type { ICSSubscription } from "../../../core/integrations/ics-subscriptio
 import type { SettingsStore } from "../../../core/settings-store";
 import type CustomCalendarPlugin from "../../../main";
 import type { CustomCalendarSettingsSchema } from "../../../types/settings";
+import { getCalendarById } from "../../../utils/calendar-settings";
 import { deleteFilesByPaths } from "../../../utils/obsidian";
 import { CalendarIntegrationDeleteEventsModal } from "../../modals";
 import { ConfirmDeleteModal } from "../generic";
@@ -197,7 +198,11 @@ export class ICSSubscriptionSettings {
 		}
 
 		const filePaths = events.map((event) => event.filePath);
-		await deleteFilesByPaths(this.app, filePaths);
+		await deleteFilesByPaths(
+			this.app,
+			filePaths,
+			getCalendarById(this.settingsStore.currentSettings, this.calendarId)?.fileConcurrencyLimit
+		);
 
 		console.log(`[ICS Subscription] Deleted ${deletedCount} event(s) for subscription ${subscriptionId}`);
 		new Notice(`Deleted ${deletedCount} event(s)`);

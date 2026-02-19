@@ -4,13 +4,21 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.4.0 - 2/18/2026
+## 2.5.0 - 2/19/2026
+
+### Added
+
+- **File operation concurrency limit**: New slider in Configuration > Performance to control the maximum number of files modified in parallel during batch operations (recurring event propagation, name/category series propagation, and file deletions). Lower values reduce the risk of Obsidian freezing on large vaults with many recurring instances. Default: 10, range: 1–50. See [Configuration — Performance](./configuration/toolbar-and-menus#performance).
 
 ### Fixed
 
 - **Duplicate events on plugin hot-reload**: In-flight CalDAV/ICS sync operations from a previous plugin instance could continue running after unload, creating duplicate events alongside the new instance's sync. Sync services now abort all pending file operations immediately on destroy, preventing duplicates at the source rather than relying on reactive self-healing.
 - **Imported recurring events disabled by default**: Events imported via CalDAV, ICS subscriptions, or manual ICS import that contain RRULE data (e.g., recurring habits from Reclaim.ai) are now imported with generation disabled (`Skip: true`). Integration sources already provide individual occurrences, so auto-generating instances from the RRULE would create duplicates. The RRULE metadata is preserved — set Skip to `false` to enable generation if needed. See [Integrations — Recurring Event Support](./features/advanced/integrations.md#recurring-event-support).
 - **Deleting CalDAV/ICS subscriptions crashes Obsidian**: Deleting an integration account or subscription with many synced events could freeze or crash Obsidian. File deletions are now batched with main-thread yields between batches. Additionally, any recurring instances generated from imported events are now cleaned up when deleting the subscription or account. See [Integrations](./features/advanced/integrations.md).
+
+---
+
+## 2.4.0 - 2/18/2026
 
 ### Improved
 

@@ -70,3 +70,4 @@ Available buttons are the same as desktop: Previous/Next, Today, Now, Create Eve
 ## Performance
 
 - **Enable name series tracking**: track name-based event series (groups events sharing the same title). Used for name series propagation and series views. Disable to reduce memory usage in large vaults (enabled by default).
+- **File operation concurrency limit**: maximum number of files to modify in parallel during batch operations. Applies to recurring event frontmatter propagation, name/category series propagation, and file deletions (e.g., when deleting a CalDAV account or ICS subscription with many events). Lower values reduce the risk of Obsidian freezing on large batch operations; higher values complete faster. Range: 1–50, default: 10.

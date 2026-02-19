@@ -34,32 +34,43 @@ export function trashDuplicateFile(app: App, filePath: string, context: string):
 }
 
 /**
+ * Runs an async operation over a list of items in batches, yielding to the
+ * main thread between batches so the UI stays responsive.
+ */
+export async function batchedPromiseAll<T>(
+	items: T[],
+	fn: (item: T) => Promise<void>,
+	batchSize: number
+): Promise<void> {
+	for (let i = 0; i < items.length; i += batchSize) {
+		const batch = items.slice(i, i + batchSize);
+		await Promise.all(batch.map(fn));
+		if (i + batchSize < items.length) {
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
+		}
+	}
+}
+
+/**
  * Deletes multiple files by their paths in small batches to avoid overwhelming
  * Obsidian's event loop. Each deletion triggers indexer events, so unbounded
  * parallelism can freeze or crash the app on large sets.
  */
-export async function deleteFilesByPaths(app: App, filePaths: string[]): Promise<void> {
-	const BATCH_SIZE = 10;
-
-	for (let i = 0; i < filePaths.length; i += BATCH_SIZE) {
-		const batch = filePaths.slice(i, i + BATCH_SIZE);
-		await Promise.all(
-			batch.map(async (filePath) => {
-				try {
-					const file = app.vault.getAbstractFileByPath(filePath);
-					if (file instanceof TFile) {
-						await app.fileManager.trashFile(file);
-					}
-				} catch (error) {
-					console.error(`Error deleting file ${filePath}:`, error);
+export async function deleteFilesByPaths(app: App, filePaths: string[], batchSize = 10): Promise<void> {
+	await batchedPromiseAll(
+		filePaths,
+		async (filePath) => {
+			try {
+				const file = app.vault.getAbstractFileByPath(filePath);
+				if (file instanceof TFile) {
+					await app.fileManager.trashFile(file);
 				}
-			})
-		);
-		// Yield to the main thread between batches so the UI stays responsive
-		if (i + BATCH_SIZE < filePaths.length) {
-			await new Promise((resolve) => window.setTimeout(resolve, 0));
-		}
-	}
+			} catch (error) {
+				console.error(`Error deleting file ${filePath}:`, error);
+			}
+		},
+		batchSize
+	);
 }
 
 /**

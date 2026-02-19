@@ -31,7 +31,7 @@ import {
 } from "../utils/calendar-events";
 import { getNextOccurrence } from "../utils/date-recurrence";
 import { applySourceTimeToInstanceDate } from "../utils/format";
-import { deleteFilesByPaths, getFileByPathOrThrow, trashDuplicateFile } from "../utils/obsidian";
+import { batchedPromiseAll, deleteFilesByPaths, getFileByPathOrThrow, trashDuplicateFile } from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { CategoryTracker } from "./category-tracker";
 import type { EventStore } from "./event-store";
@@ -170,10 +170,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 			return;
 		}
 
-		await Promise.all(
-			this.getPhysicalInstancesList(data.physicalInstances).map((instance) =>
-				this.renamePhysicalInstance(instance, recurringEvent.title, recurringEvent.rRuleId)
-			)
+		await batchedPromiseAll(
+			this.getPhysicalInstancesList(data.physicalInstances),
+			(instance) => this.renamePhysicalInstance(instance, recurringEvent.title, recurringEvent.rRuleId),
+			this.settings.fileConcurrencyLimit
 		);
 	}
 
@@ -252,16 +252,17 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 		const excludedProps = getRecurringInstanceExcludedProps(this.settings);
 
-		await Promise.all(
-			this.getPhysicalInstancesList(data.physicalInstances).map((instance) =>
+		await batchedPromiseAll(
+			this.getPhysicalInstancesList(data.physicalInstances),
+			(instance) =>
 				applyFrontmatterChangesToInstance(
 					this.app,
 					instance.filePath,
 					recurringEvent.frontmatter,
 					frontmatterDiff,
 					excludedProps
-				)
-			)
+				),
+			this.settings.fileConcurrencyLimit
 		);
 	}
 
@@ -471,8 +472,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 		physicalInstances: Map<string, PhysicalInstance>,
 		newRRuleId: string
 	): Promise<void> {
-		await Promise.all(
-			Array.from(physicalInstances.values()).map(async (instance) => {
+		await batchedPromiseAll(
+			Array.from(physicalInstances.values()),
+			async (instance) => {
 				const file = this.app.vault.getAbstractFileByPath(instance.filePath);
 				if (!(file instanceof TFile)) {
 					return;
@@ -482,7 +484,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 						fm[this.settings.rruleIdProp] = newRRuleId;
 					}
 				});
-			})
+			},
+			this.settings.fileConcurrencyLimit
 		);
 	}
 
@@ -971,7 +974,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 		const physicalInstances = this.getPhysicalInstancesList(data.physicalInstances);
 		const filePaths = physicalInstances.map((instance) => instance.filePath);
-		await deleteFilesByPaths(this.app, filePaths);
+		await deleteFilesByPaths(this.app, filePaths, this.settings.fileConcurrencyLimit);
 
 		for (const filePath of filePaths) {
 			this.instanceFileToRRuleId.delete(filePath);
