@@ -17,6 +17,7 @@ import {
 	applyStartEndOffsets,
 	assignListToFrontmatter,
 	ensureFileHasZettelId,
+	extractZettelId,
 	generateUniqueEventPath,
 	isPhysicalRecurringEvent,
 	parseCustomDoneProperty,
@@ -739,6 +740,113 @@ export class AssignCategoriesCommand implements Command {
 
 	getType(): string {
 		return "assign-categories";
+	}
+}
+
+export class ConvertFileToEventCommand implements Command {
+	private originalFrontmatter?: Frontmatter;
+	private originalFilePath: string;
+	private renamedFilePath: string | null = null;
+
+	constructor(
+		private app: App,
+		private bundle: CalendarBundle,
+		private filePath: string,
+		private newFrontmatter: Frontmatter
+	) {
+		this.originalFilePath = filePath;
+	}
+
+	async execute(): Promise<void> {
+		let file = getTFileOrThrow(this.app, this.originalFilePath);
+		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const hadZettelId = !!extractZettelId(file.basename);
+		const ensured = await ensureFileHasZettelId(this.app, file, settings.zettelIdProp);
+		file = ensured.file;
+
+		if (!hadZettelId) {
+			this.renamedFilePath = file.path;
+		}
+
+		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+			Object.assign(fm, this.newFrontmatter);
+		});
+	}
+
+	async undo(): Promise<void> {
+		if (!this.originalFrontmatter) return;
+
+		const currentPath = this.renamedFilePath ?? this.originalFilePath;
+		const file = getTFileOrThrow(this.app, currentPath);
+
+		await restoreFrontmatter(this.app, file, this.originalFrontmatter);
+
+		if (this.renamedFilePath) {
+			await this.app.fileManager.renameFile(file, this.originalFilePath);
+			this.renamedFilePath = null;
+		}
+	}
+
+	getType(): string {
+		return "convert-file-to-event";
+	}
+
+	canUndo(): boolean {
+		return this.originalFrontmatter !== undefined;
+	}
+}
+
+export class AddZettelIdCommand implements Command {
+	private originalFrontmatter?: Frontmatter;
+	private originalFilePath: string;
+	private renamedFilePath: string | null = null;
+
+	constructor(
+		private app: App,
+		private bundle: CalendarBundle,
+		private filePath: string
+	) {
+		this.originalFilePath = filePath;
+	}
+
+	async execute(): Promise<void> {
+		const file = getTFileOrThrow(this.app, this.originalFilePath);
+		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const result = await ensureFileHasZettelId(this.app, file, settings.zettelIdProp);
+
+		if (result.file.path !== this.originalFilePath) {
+			this.renamedFilePath = result.file.path;
+		}
+	}
+
+	async undo(): Promise<void> {
+		if (!this.originalFrontmatter) return;
+
+		const currentPath = this.renamedFilePath ?? this.originalFilePath;
+		const file = getTFileOrThrow(this.app, currentPath);
+
+		await restoreFrontmatter(this.app, file, this.originalFrontmatter);
+
+		if (this.renamedFilePath) {
+			await this.app.fileManager.renameFile(file, this.originalFilePath);
+			this.renamedFilePath = null;
+		}
+	}
+
+	getType(): string {
+		return "add-zettel-id";
+	}
+
+	canUndo(): boolean {
+		return this.originalFrontmatter !== undefined;
+	}
+
+	getRenamedFilePath(): string | null {
+		return this.renamedFilePath;
 	}
 }
 

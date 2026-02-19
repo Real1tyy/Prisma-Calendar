@@ -1,3 +1,4 @@
+import { getTFileOrThrow } from "@real1ty-obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 import { CalendarView } from "../components/calendar-view";
 import { EventCreateModal, EventEditModal, UntrackedEventCreateModal } from "../components/modals";
@@ -5,7 +6,6 @@ import type CustomCalendarPlugin from "../main";
 import type { Frontmatter } from "../types";
 import {
 	assignListToFrontmatter,
-	ensureFileHasZettelId,
 	parseCustomDoneProperty,
 	setEventBasics,
 	setUntrackedEventBasics,
@@ -13,6 +13,7 @@ import {
 import { ensureISOSuffix, roundToNearestHour, toLocalISOString } from "../utils/format";
 import { openFileInNewTab } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
+import { AddZettelIdCommand, ConvertFileToEventCommand } from "./commands/event-commands";
 import { MinimizedModalManager } from "./minimized-modal-manager";
 
 interface PrismaEventInput {
@@ -162,8 +163,12 @@ export class PrismaCalendarApiManager {
 			return false;
 		}
 
-		const ensured = await ensureFileHasZettelId(this.plugin.app, activeFile, settings.zettelIdProp);
-		const metadata = this.plugin.app.metadataCache.getFileCache(ensured.file);
+		const command = new AddZettelIdCommand(this.plugin.app, bundle, activeFile.path);
+		await bundle.commandManager.executeCommand(command);
+		const ensuredPath = command.getRenamedFilePath() ?? activeFile.path;
+		const ensuredFile = getTFileOrThrow(this.plugin.app, ensuredPath);
+
+		const metadata = this.plugin.app.metadataCache.getFileCache(ensuredFile);
 		const frontmatter = metadata?.frontmatter ?? {};
 		const allDayValue = frontmatter[settings.allDayProp];
 		const allDay = allDayValue === true || allDayValue === "true";
@@ -175,12 +180,12 @@ export class PrismaCalendarApiManager {
 		const endValue = allDay ? null : ((frontmatter[settings.endProp] as string | undefined) ?? null);
 
 		const eventData = {
-			title: ensured.file.basename,
+			title: ensuredFile.basename,
 			start: startValue,
 			end: endValue,
 			allDay,
 			extendedProps: {
-				filePath: ensured.file.path,
+				filePath: ensuredFile.path,
 			},
 		};
 
@@ -201,12 +206,10 @@ export class PrismaCalendarApiManager {
 			return false;
 		}
 
-		const result = await ensureFileHasZettelId(
-			this.plugin.app,
-			activeFile,
-			bundle.settingsStore.currentSettings.zettelIdProp
-		);
-		if (result.file.path !== activeFile.path) {
+		const command = new AddZettelIdCommand(this.plugin.app, bundle, activeFile.path);
+		await bundle.commandManager.executeCommand(command);
+
+		if (command.getRenamedFilePath()) {
 			new Notice("ZettelID added and file renamed");
 		} else {
 			new Notice("ZettelID already present");
@@ -273,14 +276,25 @@ export class PrismaCalendarApiManager {
 			return false;
 		}
 
-		const settings = bundle.settingsStore.currentSettings;
-		const ensured = await ensureFileHasZettelId(this.plugin.app, file, settings.zettelIdProp);
 		const frontmatter = this.buildFrontmatterFromInput(bundle, input);
-		await this.plugin.app.fileManager.processFrontMatter(ensured.file, (fm) => {
-			Object.assign(fm, frontmatter);
-		});
+		const command = new ConvertFileToEventCommand(this.plugin.app, bundle, file.path, frontmatter);
+		await bundle.commandManager.executeCommand(command);
 		void this.plugin.rememberLastUsedCalendar(bundle.calendarId);
 		return true;
+	}
+
+	// ─── Undo / Redo ─────────────────────────────────────────────
+
+	async undo(): Promise<boolean> {
+		const bundle = this.resolveBundle();
+		if (!bundle) return false;
+		return await bundle.undo();
+	}
+
+	async redo(): Promise<boolean> {
+		const bundle = this.resolveBundle();
+		if (!bundle) return false;
+		return await bundle.redo();
 	}
 
 	// ─── Utilities ───────────────────────────────────────────────

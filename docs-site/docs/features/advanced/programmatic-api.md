@@ -162,6 +162,12 @@ Adds ZettelID to the currently active note (same as "Add ZettelID to current not
 const ok = await window.PrismaCalendar.addZettelIdToActiveNote();
 ```
 
+## Undo / Redo Support
+
+All API methods that modify files are fully undoable and redoable via **Ctrl+Z** / **Ctrl+Shift+Z** (or the Undo/Redo toolbar buttons). This includes `createEvent`, `createUntrackedEvent`, `convertFileToEvent`, `addZettelIdToActiveNote`, and `openEditActiveNoteModal`. Undo reverts frontmatter changes and any file renames (e.g., ZettelID addition), and Redo re-applies them.
+
+Undo and Redo commands are available globally — they work from the command palette regardless of whether the calendar view is focused. The commands automatically resolve the last used calendar.
+
 ## Calendar Selection
 
 When `calendarId` is not provided, the API uses:

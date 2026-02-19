@@ -140,27 +140,6 @@ export default class CustomCalendarPlugin extends Plugin {
 			});
 		};
 
-		const addUndoRedoCommand = (id: string, name: string, action: (view: CalendarView) => Promise<boolean>): void => {
-			this.addCommand({
-				id,
-				name,
-				checkCallback: (checking: boolean) => {
-					const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
-					if (calendarView) {
-						if (!checking) {
-							void action(calendarView).then((success) => {
-								if (!success) {
-									new Notice(`Nothing to ${name.toLowerCase()}`);
-								}
-							});
-						}
-						return true;
-					}
-					return false;
-				},
-			});
-		};
-
 		const addApiCommand = (id: string, name: string, action: () => void): void => {
 			this.addCommand({
 				id,
@@ -190,8 +169,16 @@ export default class CustomCalendarPlugin extends Plugin {
 		addBatchCommand(COMMAND_IDS.BATCH_MOVE_NEXT_WEEK, "Move to next week", (view) => view.moveSelection(1));
 		addBatchCommand(COMMAND_IDS.BATCH_MOVE_PREV_WEEK, "Move to previous week", (view) => view.moveSelection(-1));
 
-		addUndoRedoCommand(COMMAND_IDS.UNDO, "Undo", (view) => view.undo());
-		addUndoRedoCommand(COMMAND_IDS.REDO, "Redo", (view) => view.redo());
+		addApiCommand(COMMAND_IDS.UNDO, "Undo", () => {
+			void this.apiManager.undo().then((success) => {
+				if (!success) new Notice("Nothing to undo");
+			});
+		});
+		addApiCommand(COMMAND_IDS.REDO, "Redo", () => {
+			void this.apiManager.redo().then((success) => {
+				if (!success) new Notice("Nothing to redo");
+			});
+		});
 
 		addApiCommand(COMMAND_IDS.CREATE_EVENT, "Create new event", () => {
 			void this.apiManager.openCreateEventModal(undefined, false, true);

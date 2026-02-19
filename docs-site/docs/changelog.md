@@ -10,6 +10,11 @@ All notable changes to this project will be documented here.
 
 - **File operation concurrency limit**: New slider in Configuration > Performance to control the maximum number of files modified in parallel during batch operations (recurring event propagation, name/category series propagation, and file deletions). Lower values reduce the risk of Obsidian freezing on large vaults with many recurring instances. Default: 10, range: 1–50. See [Configuration — Performance](./configuration/toolbar-and-menus#performance).
 
+### Improved
+
+- **Full undo/redo for all global commands**: All global event operations (both manual commands, and API scripts, e.g. - `convertFileToEvent`, `addZettelIdToActiveNote`, `openEditActiveNoteModal`) now go through the command system, making them fully undoable and redoable. See [Programmatic API](./features/advanced/programmatic-api.md).
+- **Global undo/redo commands**: Undo and Redo are no longer limited to when the calendar view is focused — they now work from anywhere via the command palette, resolving the last used calendar automatically. See [Hotkeys](./features/advanced/hotkeys.md).
+
 ### Fixed
 
 - **Duplicate events on plugin hot-reload**: In-flight CalDAV/ICS sync operations from a previous plugin instance could continue running after unload, creating duplicate events alongside the new instance's sync. Sync services now abort all pending file operations immediately on destroy, preventing duplicates at the source rather than relying on reactive self-healing.
