@@ -9,6 +9,7 @@ import { BaseEventModal } from "./base-event-modal";
 export class EventEditModal extends BaseEventModal {
 	private originalZettelId: string | null = null;
 	private displayTitle = "";
+	private ensureZettelIdOnSave = true;
 
 	protected getModalTitle(): string {
 		return "Edit Event";
@@ -211,6 +212,10 @@ export class EventEditModal extends BaseEventModal {
 		this.participantsInput.value = participantsList.join(", ");
 	}
 
+	setEnsureZettelIdOnSave(value: boolean): void {
+		this.ensureZettelIdOnSave = value;
+	}
+
 	public saveEvent(): void {
 		this.applyAutoCategories();
 
@@ -233,7 +238,7 @@ export class EventEditModal extends BaseEventModal {
 		this.titleInput.value = originalInputValue;
 
 		this.bundle
-			.updateEvent(eventData)
+			.updateEvent(eventData, { ensureZettelId: this.ensureZettelIdOnSave })
 			.then((newFilePath) => {
 				// If the user changed the title, the file may have been renamed.
 				// We must update the file path to prevent "invalid path" errors when

@@ -1,4 +1,3 @@
-import { getTFileOrThrow } from "@real1ty-obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 import { CalendarView } from "../components/calendar-view";
 import { EventCreateModal, EventEditModal, UntrackedEventCreateModal } from "../components/modals";
@@ -163,12 +162,7 @@ export class PrismaCalendarApiManager {
 			return false;
 		}
 
-		const command = new AddZettelIdCommand(this.plugin.app, bundle, activeFile.path);
-		await bundle.commandManager.executeCommand(command);
-		const ensuredPath = command.getRenamedFilePath() ?? activeFile.path;
-		const ensuredFile = getTFileOrThrow(this.plugin.app, ensuredPath);
-
-		const metadata = this.plugin.app.metadataCache.getFileCache(ensuredFile);
+		const metadata = this.plugin.app.metadataCache.getFileCache(activeFile);
 		const frontmatter = metadata?.frontmatter ?? {};
 		const allDayValue = frontmatter[settings.allDayProp];
 		const allDay = allDayValue === true || allDayValue === "true";
@@ -180,12 +174,12 @@ export class PrismaCalendarApiManager {
 		const endValue = allDay ? null : ((frontmatter[settings.endProp] as string | undefined) ?? null);
 
 		const eventData = {
-			title: ensuredFile.basename,
+			title: activeFile.basename,
 			start: startValue,
 			end: endValue,
 			allDay,
 			extendedProps: {
-				filePath: ensuredFile.path,
+				filePath: activeFile.path,
 			},
 		};
 

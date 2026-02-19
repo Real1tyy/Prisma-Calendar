@@ -38,6 +38,20 @@ export class CommandManager {
 		}
 	}
 
+	/**
+	 * Push an already-executed command onto the undo stack without re-executing it.
+	 * Useful when sub-commands were executed manually and need to be grouped
+	 * into a single undo entry (e.g., via a composite command).
+	 */
+	pushExecutedCommand(command: Command): void {
+		this.undoStack.push(command);
+		this.redoStack = [];
+
+		if (this.undoStack.length > this.maxHistorySize) {
+			this.undoStack.shift();
+		}
+	}
+
 	async undo(): Promise<boolean> {
 		const command = this.undoStack.pop();
 		if (!command) return false;

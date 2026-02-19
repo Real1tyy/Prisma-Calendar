@@ -8,7 +8,14 @@ import { generateUniqueEventPath } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import type { CategoryTracker } from "./category-tracker";
-import { BatchCommandFactory, CommandManager, CreateEventCommand, EditEventCommand, type EventData } from "./commands";
+import {
+	AddZettelIdCommand,
+	BatchCommandFactory,
+	CommandManager,
+	CreateEventCommand,
+	EditEventCommand,
+	type EventData,
+} from "./commands";
 import type { EventStore, UntrackedEventStore } from "./event-store";
 import { HolidayStore } from "./holidays";
 import type { Indexer } from "./indexer";
@@ -333,7 +340,7 @@ export class CalendarBundle {
 		}
 	}
 
-	async updateEvent(eventData: EventSaveData): Promise<string | null> {
+	async updateEvent(eventData: EventSaveData, options?: { ensureZettelId?: boolean }): Promise<string | null> {
 		const { filePath } = eventData;
 		if (!filePath) {
 			new Notice("Failed to update event: no file path found");
@@ -341,16 +348,33 @@ export class CalendarBundle {
 		}
 
 		try {
-			const file = this.app.vault.getAbstractFileByPath(filePath);
-			if (!(file instanceof TFile)) {
+			const abstractFile = this.app.vault.getAbstractFileByPath(filePath);
+			if (!(abstractFile instanceof TFile)) {
 				new Notice(`File not found: ${filePath}`);
 				return null;
 			}
 
-			// Handle file renaming when titleProp is undefined/empty
-			const settings = this.settingsStore.currentSettings;
+			let file: TFile = abstractFile;
 			let finalFilePath = filePath;
-			if (eventData.title && !settings.titleProp) {
+			let zettelIdCommand: AddZettelIdCommand | null = null;
+
+			// Ensure ZettelID if requested (wraps into a single undo entry with the edit)
+			if (options?.ensureZettelId) {
+				zettelIdCommand = new AddZettelIdCommand(this.app, this, filePath);
+				await zettelIdCommand.execute();
+				const renamedPath = zettelIdCommand.getRenamedFilePath();
+				if (renamedPath) {
+					finalFilePath = renamedPath;
+					file = this.app.vault.getAbstractFileByPath(finalFilePath) as TFile;
+				}
+			}
+
+			// Handle file renaming when titleProp is undefined/empty
+			// Skip when ensureZettelId is active — the zettel ID rename already set the filename
+			// and the modal title doesn't include the zettel ID suffix, so the comparison would
+			// always mismatch and trigger a conflicting double-rename.
+			const settings = this.settingsStore.currentSettings;
+			if (!options?.ensureZettelId && eventData.title && !settings.titleProp) {
 				const sanitizedTitle = sanitizeForFilename(eventData.title, {
 					style: "preserve",
 				});
@@ -366,8 +390,26 @@ export class CalendarBundle {
 				...eventData,
 				end: eventData.end ?? undefined,
 			};
-			const command = new EditEventCommand(this.app, finalFilePath, eventDataForCommand);
-			await this.commandManager.executeCommand(command);
+			const editCommand = new EditEventCommand(this.app, finalFilePath, eventDataForCommand);
+
+			if (zettelIdCommand) {
+				// Execute the edit manually, then push a composite command as a single undo entry
+				await editCommand.execute();
+				this.commandManager.pushExecutedCommand({
+					execute: async () => {
+						await zettelIdCommand.execute();
+						await editCommand.execute();
+					},
+					undo: async () => {
+						await editCommand.undo();
+						await zettelIdCommand.undo();
+					},
+					getType: () => "edit-with-zettel-id",
+					canUndo: () => true,
+				});
+			} else {
+				await this.commandManager.executeCommand(editCommand);
+			}
 
 			new Notice("Event updated successfully");
 			return finalFilePath;

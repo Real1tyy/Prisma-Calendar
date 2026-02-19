@@ -2,6 +2,7 @@ export { BatchCommandFactory } from "./batch-commands";
 
 export { CommandManager } from "./command-manager";
 export {
+	AddZettelIdCommand,
 	AssignCategoriesCommand,
 	CloneEventCommand,
 	CreateEventCommand,

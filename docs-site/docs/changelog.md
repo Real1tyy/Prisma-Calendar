@@ -12,7 +12,8 @@ All notable changes to this project will be documented here.
 
 ### Improved
 
-- **Full undo/redo for all global commands**: All global event operations (both manual commands, and API scripts, e.g. - `convertFileToEvent`, `addZettelIdToActiveNote`, `openEditActiveNoteModal`) now go through the command system, making them fully undoable and redoable. See [Programmatic API](./features/advanced/programmatic-api.md).
+- **Full undo/redo for all global commands**: All global event operations (both manual commands and API methods — `convertFileToEvent`, `addZettelIdToActiveNote`, `openEditActiveNoteModal`) now go through the command system, making them fully undoable and redoable. See [Programmatic API](./features/advanced/programmatic-api.md).
+- **Edit current note as event — single undoable operation**: The "Edit current note as event" command no longer adds a ZettelID before opening the modal. Instead, the ZettelID is added together with the edit on save, so both changes are a single undo entry — one Ctrl+Z reverts the edit and the ZettelID addition at once. See [Programmatic API](./features/advanced/programmatic-api.md).
 - **Global undo/redo commands**: Undo and Redo are no longer limited to when the calendar view is focused — they now work from anywhere via the command palette, resolving the last used calendar automatically. See [Hotkeys](./features/advanced/hotkeys.md).
 
 ### Fixed
