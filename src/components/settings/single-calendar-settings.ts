@@ -57,6 +57,7 @@ export class SingleCalendarSettings {
 				{ text: "Documentation", href: "https://real1tyy.github.io/Prisma-Calendar/" },
 				{ text: "Changelog", href: "https://real1tyy.github.io/Prisma-Calendar/changelog" },
 				{ text: "Gallery", href: "https://real1tyy.github.io/Prisma-Calendar/gallery" },
+				{ text: "Other Plugins", href: "https://matejvavroproductivity.com/tools/" },
 				{ text: "Support", href: "https://matejvavroproductivity.com/support/" },
 				{ text: "Playlist", href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4" },
 			],
