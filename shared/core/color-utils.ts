@@ -64,21 +64,55 @@ export function parseColor(color: string): { h: number; s: number; l: number } |
 }
 
 /**
- * Generates an array of evenly distributed HSL colors for visualization.
- * Uses the HSL color space to create visually distinct colors by distributing
- * them evenly around the color wheel.
+ * A curated palette of 20 visually distinct, vibrant colors for charts and
+ * visualizations. When more than 20 colors are needed, the palette cycles
+ * with shifted lightness to stay distinguishable.
+ */
+const COLOR_PALETTE: readonly string[] = [
+	"hsl(210, 75%, 55%)", // Blue
+	"hsl(340, 75%, 55%)", // Rose
+	"hsl(160, 70%, 45%)", // Teal
+	"hsl(30, 85%, 55%)", // Orange
+	"hsl(270, 65%, 58%)", // Purple
+	"hsl(50, 80%, 50%)", // Gold
+	"hsl(190, 70%, 48%)", // Cyan
+	"hsl(0, 70%, 55%)", // Red
+	"hsl(140, 60%, 45%)", // Green
+	"hsl(300, 55%, 55%)", // Magenta
+	"hsl(220, 60%, 65%)", // Periwinkle
+	"hsl(15, 75%, 50%)", // Vermilion
+	"hsl(175, 65%, 42%)", // Dark teal
+	"hsl(45, 90%, 52%)", // Amber
+	"hsl(255, 55%, 62%)", // Lavender
+	"hsl(95, 55%, 48%)", // Olive green
+	"hsl(330, 60%, 50%)", // Raspberry
+	"hsl(200, 65%, 50%)", // Steel blue
+	"hsl(75, 60%, 48%)", // Chartreuse
+	"hsl(355, 60%, 48%)", // Crimson
+];
+
+/**
+ * Generates an array of visually distinct colors for charts and visualizations.
+ * Uses a curated palette for the best visual variety. When more colors are
+ * needed than the palette contains, cycles with adjusted lightness.
  *
  * @param count - Number of colors to generate
- * @param saturation - Saturation percentage (0-100), defaults to 70
- * @param lightness - Lightness percentage (0-100), defaults to 60
  * @returns Array of HSL color strings
  */
-export function generateColors(count: number, saturation = 70, lightness = 60): string[] {
+export function generateColors(count: number): string[] {
 	if (count <= 0) return [];
 	const colors: string[] = [];
 	for (let i = 0; i < count; i++) {
-		const hue = (i * 360) / count;
-		colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+		const paletteIndex = i % COLOR_PALETTE.length;
+		const cycle = Math.floor(i / COLOR_PALETTE.length);
+		const base = COLOR_PALETTE[paletteIndex];
+		if (cycle === 0) {
+			colors.push(base);
+		} else {
+			// Shift lightness for subsequent cycles
+			const lightnessShift = cycle * 12;
+			colors.push(base.replace(/(\d+)%\)$/, (_, l) => `${Math.min(Number(l) + lightnessShift, 85)}%)`));
+		}
 	}
 	return colors;
 }
