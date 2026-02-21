@@ -10,6 +10,8 @@ export const AI_DEFAULTS = {
 	ANTHROPIC_API_URL: "https://api.anthropic.com/v1/messages",
 	ANTHROPIC_VERSION: "2023-06-01",
 	DEFAULT_MODEL: "claude-sonnet-4-6",
+	DEFAULT_BATCH_EXECUTION: true,
+	DEFAULT_CONFIRM_EXECUTION: true,
 	MODEL_OPTIONS: {
 		"claude-opus-4-6": { label: "Claude Opus 4.6 (best quality)", provider: "anthropic" },
 		"claude-sonnet-4-6": { label: "Claude Sonnet 4.6 (recommended)", provider: "anthropic" },

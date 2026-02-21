@@ -1,18 +1,23 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { SecretComponent, Setting } from "obsidian";
 import { AI_DEFAULTS } from "../../core/ai";
 import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
-import type { CustomPrompt } from "../../types/settings";
+import { CustomCalendarSettingsSchema, type CustomPrompt } from "../../types/settings";
 
 export class AISettings {
+	private ui: SettingsUIBuilder<typeof CustomCalendarSettingsSchema>;
+
 	constructor(
 		private plugin: CustomCalendarPlugin,
 		private mainSettingsStore: SettingsStore
-	) {}
+	) {
+		this.ui = new SettingsUIBuilder(this.mainSettingsStore as never);
+	}
 
 	display(containerEl: HTMLElement): void {
 		this.addAPISettings(containerEl);
+		this.addManipulationSettings(containerEl);
 		this.addCustomPromptsSection(containerEl);
 	}
 
@@ -66,6 +71,22 @@ export class AISettings {
 					}));
 				});
 			});
+	}
+
+	private addManipulationSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("Event Manipulation").setHeading();
+
+		this.ui.addToggle(containerEl, {
+			key: "ai.aiBatchExecution",
+			name: "Batch execution",
+			desc: "When enabled, all AI-suggested operations execute as a single batch — one undo reverts everything. When disabled, each operation is a separate undo entry.",
+		});
+
+		this.ui.addToggle(containerEl, {
+			key: "ai.aiConfirmExecution",
+			name: "Confirm before execution",
+			desc: "When enabled, AI-suggested operations show a preview with an Execute button. When disabled, operations execute immediately without confirmation.",
+		});
 	}
 
 	private addCustomPromptsSection(containerEl: HTMLElement): void {

@@ -63,7 +63,14 @@ Describe calendar changes in natural language. The AI responds with structured o
 - **Edit** cards (blue) show the file path and changed fields
 - **Delete** cards (red) show the file path of the event to remove
 
-Below the cards, an **Execute All** button applies all operations at once. Each operation calls the Prisma Calendar API (`createEvent`, `editEvent`, `deleteEvent`) and shows a success/failure summary.
+Below the cards, an **Execute All** button applies all operations at once, showing a success/failure summary when done.
+
+#### Execution Settings
+
+Two settings in **Settings > AI > Event Manipulation** control how operations are executed:
+
+- **Batch execution** (on by default) — All AI-suggested operations execute as a single batch. One undo (`Ctrl/Cmd + Z`) reverts everything. When disabled, each operation is a separate undo entry.
+- **Confirm before execution** (on by default) — Operations render as preview cards with an Execute button. When disabled, operations execute immediately after the AI responds, without a confirmation step.
 
 **Example prompts:**
 

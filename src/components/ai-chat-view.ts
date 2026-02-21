@@ -1,4 +1,4 @@
-import { cls, MacroCommand, MountableView } from "@real1ty-obsidian-plugins";
+import { cls, MacroCommand, MountableView, type Command } from "@real1ty-obsidian-plugins";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { AIChatManager, type ChatMessage } from "../core/ai";
 import {
@@ -8,10 +8,11 @@ import {
 	type CalendarContext,
 	type ManipulationContext,
 } from "../core/ai/ai-context-builder";
+import type { CalendarBundle } from "../core/calendar-bundle";
 import type CustomCalendarPlugin from "../main";
+import { CalendarView, getCalendarViewType } from "./calendar-view";
 
 type AIMode = "query" | "manipulation";
-import { CalendarView, getCalendarViewType } from "./calendar-view";
 
 type AIOperation =
 	| {
@@ -273,8 +274,13 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 
 	private handleManipulationResponse(response: string): void {
 		const operations = this.parseOperations(response);
-		if (operations) {
+		if (!operations) return;
+
+		const confirmExecution = this.plugin.settingsStore.currentSettings.ai.aiConfirmExecution;
+		if (confirmExecution) {
 			this.pendingOperations = operations;
+		} else {
+			void this.executeOperations(operations);
 		}
 	}
 
@@ -350,64 +356,109 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		});
 	}
 
-	private async executeOperations(operations: AIOperation[], executeBtn: HTMLButtonElement): Promise<void> {
-		executeBtn.disabled = true;
-		executeBtn.setText("Executing...");
+	private async executeOperations(operations: AIOperation[], executeBtn?: HTMLButtonElement): Promise<void> {
+		if (executeBtn) {
+			executeBtn.disabled = true;
+			executeBtn.setText("Executing...");
+		}
 
+		const batchExecution = this.plugin.settingsStore.currentSettings.ai.aiBatchExecution;
+		let summary: string;
+
+		if (batchExecution) {
+			summary = await this.executeBatch(operations);
+		} else {
+			summary = await this.executeIndividually(operations);
+		}
+
+		new Notice(`Prisma AI: ${summary}`);
+		if (executeBtn) executeBtn.setText(summary);
+		this.pendingOperations = [];
+
+		this.chatManager.clearHistory();
+		this.appendMessage({ role: "assistant", content: `**Execution complete:** ${summary}` });
+	}
+
+	private async executeBatch(operations: AIOperation[]): Promise<string> {
+		const commands: Command[] = [];
+		let bundle: CalendarBundle | null = null;
+		let failed = 0;
+
+		for (const op of operations) {
+			const result = this.buildCommandForOperation(op);
+			if (result) {
+				commands.push(result.command);
+				bundle = result.bundle;
+			} else {
+				failed++;
+			}
+		}
+
+		if (commands.length > 0 && bundle) {
+			try {
+				const macro = new MacroCommand(commands);
+				await bundle.commandManager.executeCommand(macro);
+			} catch {
+				return `Batch execution failed`;
+			}
+		}
+
+		const succeeded = commands.length;
+		return failed > 0
+			? `${succeeded} succeeded, ${failed} failed`
+			: `${succeeded} operation${succeeded !== 1 ? "s" : ""} executed successfully`;
+	}
+
+	private async executeIndividually(operations: AIOperation[]): Promise<string> {
 		let succeeded = 0;
 		let failed = 0;
 
 		for (const op of operations) {
 			try {
-				if (op.type === "create") {
-					const result = await this.plugin.apiManager.createEvent({
-						title: op.title,
-						start: op.start,
-						end: op.end,
-						allDay: op.allDay,
-						categories: op.categories,
-						location: op.location,
-						participants: op.participants,
-					});
-					if (result) succeeded++;
-					else failed++;
-				} else if (op.type === "edit") {
-					const result = await this.plugin.apiManager.editEvent({
-						filePath: op.filePath,
-						title: op.title,
-						start: op.start,
-						end: op.end,
-						allDay: op.allDay,
-						categories: op.categories,
-						location: op.location,
-						participants: op.participants,
-					});
-					if (result) succeeded++;
-					else failed++;
-				} else if (op.type === "delete") {
-					const result = await this.plugin.apiManager.deleteEvent({
-						filePath: op.filePath,
-					});
-					if (result) succeeded++;
-					else failed++;
+				const result = this.buildCommandForOperation(op);
+				if (result) {
+					await result.bundle.commandManager.executeCommand(result.command);
+					succeeded++;
+				} else {
+					failed++;
 				}
 			} catch {
 				failed++;
 			}
 		}
 
-		const summary =
-			failed > 0
-				? `${succeeded} succeeded, ${failed} failed`
-				: `${succeeded} operation${succeeded !== 1 ? "s" : ""} executed successfully`;
+		return failed > 0
+			? `${succeeded} succeeded, ${failed} failed`
+			: `${succeeded} operation${succeeded !== 1 ? "s" : ""} executed successfully`;
+	}
 
-		new Notice(`Prisma AI: ${summary}`);
-		executeBtn.setText(summary);
-		this.pendingOperations = [];
-
-		// Add summary to chat
-		this.chatManager.clearHistory();
-		this.appendMessage({ role: "assistant", content: `**Execution complete:** ${summary}` });
+	private buildCommandForOperation(op: AIOperation): { command: Command; bundle: CalendarBundle } | null {
+		if (op.type === "create") {
+			return this.plugin.apiManager.buildCreateEventCommand({
+				title: op.title,
+				start: op.start,
+				end: op.end,
+				allDay: op.allDay,
+				categories: op.categories,
+				location: op.location,
+				participants: op.participants,
+			});
+		} else if (op.type === "edit") {
+			return this.plugin.apiManager.buildEditEventCommand({
+				filePath: op.filePath,
+				title: op.title,
+				start: op.start,
+				end: op.end,
+				allDay: op.allDay,
+				categories: op.categories,
+				location: op.location,
+				participants: op.participants,
+			});
+		} else {
+			return this.plugin.apiManager.buildDeleteEventCommand({
+				filePath: op.filePath,
+			});
+		}
 	}
 
 	private async gatherCalendarContext(): Promise<CalendarContext | null> {

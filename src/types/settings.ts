@@ -247,6 +247,8 @@ const AISettingsSchema = z
 		openaiApiKeySecretName: z.string().catch(""),
 		anthropicApiKeySecretName: z.string().catch(""),
 		aiModel: z.string().catch(AI_DEFAULTS.DEFAULT_MODEL),
+		aiBatchExecution: z.boolean().catch(AI_DEFAULTS.DEFAULT_BATCH_EXECUTION),
+		aiConfirmExecution: z.boolean().catch(AI_DEFAULTS.DEFAULT_CONFIRM_EXECUTION),
 		customPrompts: z.array(CustomPromptSchema).catch([]),
 	})
 	.strip();
