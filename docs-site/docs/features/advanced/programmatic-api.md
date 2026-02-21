@@ -111,6 +111,63 @@ const path = await window.PrismaCalendar.createEvent({
 });
 ```
 
+### `editEvent(input)`
+
+Edits an existing event's frontmatter properties by file path.
+
+**Input:**
+
+| Property     | Type           | Required | Description                                      |
+| ------------ | -------------- | -------- | ------------------------------------------------ |
+| `filePath`   | string         | yes      | Path to the event file to edit                   |
+| `title`      | string         | no       | New event name                                   |
+| `start`      | string         | no       | New ISO datetime for start                       |
+| `end`        | string         | no       | New ISO datetime for end                         |
+| `allDay`     | boolean        | no       | Set all-day flag                                 |
+| `categories` | string[]       | no       | New category values                              |
+| `location`   | string         | no       | New location                                     |
+| `participants`| string[]      | no       | New participants                                 |
+| `markAsDone` | boolean        | no       | Set status to done                               |
+| `skip`       | boolean        | no       | Mark as skipped                                  |
+| `calendarId` | string         | no       | Target calendar ID                               |
+| `frontmatter`| object         | no       | Additional frontmatter properties                |
+
+Only include fields that should change — omitted fields are left unchanged.
+
+**Returns:** `Promise<boolean>` — `true` if the edit succeeded, `false` otherwise (e.g., file not found).
+
+**Example:**
+
+```javascript
+const ok = await window.PrismaCalendar.editEvent({
+  filePath: "Calendar/240101120000 Meeting.md",
+  start: "2025-02-14T10:00:00",
+  end: "2025-02-14T11:00:00",
+  categories: ["Work"]
+});
+```
+
+### `deleteEvent(input)`
+
+Deletes an event by file path (moves to trash).
+
+**Input:**
+
+| Property     | Type   | Required | Description                    |
+| ------------ | ------ | -------- | ------------------------------ |
+| `filePath`   | string | yes      | Path to the event file to delete |
+| `calendarId` | string | no       | Target calendar ID             |
+
+**Returns:** `Promise<boolean>` — `true` if the deletion succeeded, `false` otherwise (e.g., file not found).
+
+**Example:**
+
+```javascript
+const ok = await window.PrismaCalendar.deleteEvent({
+  filePath: "Calendar/240101120000 Meeting.md"
+});
+```
+
 ### `convertFileToEvent(input)`
 
 Converts an existing file to Prisma format: ensures ZettelID and updates frontmatter (same as "Add ZettelID to current note" but for any file by path).
@@ -164,7 +221,7 @@ const ok = await window.PrismaCalendar.addZettelIdToActiveNote();
 
 ## Undo / Redo Support
 
-All API methods that modify files are fully undoable and redoable via **Ctrl+Z** / **Ctrl+Shift+Z** (or the Undo/Redo toolbar buttons). This includes `createEvent`, `createUntrackedEvent`, `convertFileToEvent`, `addZettelIdToActiveNote`, and `openEditActiveNoteModal`. Undo reverts frontmatter changes and any file renames (e.g., ZettelID addition), and Redo re-applies them.
+All API methods that modify files are fully undoable and redoable via **Ctrl+Z** / **Ctrl+Shift+Z** (or the Undo/Redo toolbar buttons). This includes `createEvent`, `editEvent`, `deleteEvent`, `createUntrackedEvent`, `convertFileToEvent`, `addZettelIdToActiveNote`, and `openEditActiveNoteModal`. Undo reverts frontmatter changes and any file renames (e.g., ZettelID addition), and Redo re-applies them.
 
 Undo and Redo commands are available globally — they work from the command palette regardless of whether the calendar view is focused. The commands automatically resolve the last used calendar.
 

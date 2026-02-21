@@ -13,8 +13,9 @@ export interface CalendarContext {
 	totalDuration: string;
 }
 
-interface AIEventSummary {
+export interface AIEventSummary {
 	title: string;
+	filePath?: string;
 	start: string;
 	end?: string;
 	allDay: boolean;
@@ -152,3 +153,81 @@ ${categoryStatsTable}Total: ${context.totalDuration}`;
 
 export const NO_CONTEXT_PROMPT_SUFFIX =
 	"\n\nNo calendar view is currently open, so you don't have access to specific event data. Answer general questions about calendars and scheduling.";
+
+export interface ManipulationContext {
+	calendarName: string;
+	dateRange: string;
+	events: AIEventSummary[];
+}
+
+export function buildManipulationContext(
+	calendarName: string,
+	currentStart: Date,
+	currentEnd: Date,
+	events: CalendarEvent[]
+): ManipulationContext {
+	const dateRange = formatDateRange(currentStart, currentEnd);
+	const eventSummaries = events.map(mapEventToManipulationSummary);
+
+	return {
+		calendarName,
+		dateRange,
+		events: eventSummaries,
+	};
+}
+
+function mapEventToManipulationSummary(event: CalendarEvent): AIEventSummary {
+	const summary: AIEventSummary = {
+		title: event.title,
+		filePath: event.ref.filePath,
+		start: event.start,
+		allDay: event.allDay,
+	};
+
+	if (isTimedEvent(event)) {
+		summary.end = event.end;
+	}
+
+	if (event.metadata?.categories && event.metadata.categories.length > 0) {
+		summary.categories = event.metadata.categories;
+	}
+
+	if (event.metadata?.location) {
+		summary.location = event.metadata.location;
+	}
+
+	if (event.metadata?.status) {
+		summary.status = event.metadata.status;
+	}
+
+	return summary;
+}
+
+export function buildManipulationSystemPrompt(context: ManipulationContext, basePrompt: string): string {
+	const eventsJson = JSON.stringify(context.events, null, 2);
+
+	return `${basePrompt}
+
+You are an AI assistant for Prisma Calendar. The user will describe calendar changes in natural language.
+You MUST respond with ONLY a JSON code block containing an array of operations. No other text.
+
+Available operations:
+- create: { "type": "create", "title": string, "start": ISO datetime, "end": ISO datetime, "allDay"?: boolean, "categories"?: string[], "location"?: string, "participants"?: string[] }
+- edit: { "type": "edit", "filePath": string, "title"?: string, "start"?: ISO datetime, "end"?: ISO datetime, "allDay"?: boolean, "categories"?: string[], "location"?: string, "participants"?: string[] }
+- delete: { "type": "delete", "filePath": string }
+
+Rules:
+- Use ISO datetime format: "YYYY-MM-DDTHH:mm:ss"
+- For edits, only include fields that should change
+- For deletes, reference the filePath of the event to remove
+- To replace an event: delete the old one, then create a new one
+
+## Calendar Context
+- Calendar: ${context.calendarName}
+- Date range: ${context.dateRange}
+
+## Events (${context.events.length} events)
+\`\`\`json
+${eventsJson}
+\`\`\``;
+}

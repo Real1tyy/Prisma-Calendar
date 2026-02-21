@@ -1,3 +1,4 @@
+import type { Command } from "@real1ty-obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 import { CalendarView } from "../components/calendar-view";
 import { EventCreateModal, EventEditModal, UntrackedEventCreateModal } from "../components/modals";
@@ -5,6 +6,7 @@ import type CustomCalendarPlugin from "../main";
 import type { Frontmatter } from "../types";
 import {
 	assignListToFrontmatter,
+	autoAssignCategories,
 	parseCustomDoneProperty,
 	setEventBasics,
 	setUntrackedEventBasics,
@@ -12,7 +14,14 @@ import {
 import { ensureISOSuffix, roundToNearestHour, toLocalISOString } from "../utils/format";
 import { openFileInNewTab } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
-import { AddZettelIdCommand, ConvertFileToEventCommand } from "./commands/event-commands";
+import {
+	AddZettelIdCommand,
+	ConvertFileToEventCommand,
+	CreateEventCommand,
+	DeleteEventCommand,
+	EditEventCommand,
+	type EventData,
+} from "./commands/event-commands";
 import { MinimizedModalManager } from "./minimized-modal-manager";
 
 interface PrismaEventInput {
@@ -33,6 +42,16 @@ interface PrismaCreateEventInput extends PrismaEventInput {
 	calendarId?: string;
 }
 
+interface PrismaEditEventInput extends PrismaEventInput {
+	filePath: string;
+	calendarId?: string;
+}
+
+interface PrismaDeleteEventInput {
+	filePath: string;
+	calendarId?: string;
+}
+
 interface PrismaConvertEventInput extends PrismaEventInput {
 	filePath: string;
 	calendarId?: string;
@@ -47,6 +66,8 @@ interface PrismaCalendarApi {
 	openEditActiveNoteModal: (options?: { calendarId?: string }) => Promise<boolean>;
 	createUntrackedEvent: (title: string, options?: { calendarId?: string }) => Promise<string | null>;
 	createEvent: (input: PrismaCreateEventInput) => Promise<string | null>;
+	editEvent: (input: PrismaEditEventInput) => Promise<boolean>;
+	deleteEvent: (input: PrismaDeleteEventInput) => Promise<boolean>;
 	convertFileToEvent: (input: PrismaConvertEventInput) => Promise<boolean>;
 	addZettelIdToActiveNote: (options?: { calendarId?: string }) => Promise<boolean>;
 }
@@ -75,6 +96,12 @@ export class PrismaCalendarApiManager {
 			},
 			createEvent: async (input) => {
 				return await this.createEvent(input);
+			},
+			editEvent: async (input) => {
+				return await this.editEvent(input);
+			},
+			deleteEvent: async (input) => {
+				return await this.deleteEvent(input);
 			},
 			convertFileToEvent: async (input) => {
 				return await this.convertFileToEvent(input);
@@ -260,6 +287,29 @@ export class PrismaCalendarApiManager {
 		return filePath;
 	}
 
+	async editEvent(input: PrismaEditEventInput): Promise<boolean> {
+		const result = this.buildEditEventCommand(input);
+		if (!result) return false;
+
+		await result.bundle.commandManager.executeCommand(result.command);
+		return true;
+	}
+
+	async deleteEvent(input: PrismaDeleteEventInput): Promise<boolean> {
+		const bundle = this.resolveBundleOrNotice(input.calendarId);
+		if (!bundle) return false;
+
+		const file = this.plugin.app.vault.getAbstractFileByPath(input.filePath);
+		if (!(file instanceof TFile)) {
+			new Notice(`File not found: ${input.filePath}`);
+			return false;
+		}
+
+		const command = new DeleteEventCommand(this.plugin.app, bundle, file.path);
+		await bundle.commandManager.executeCommand(command);
+		return true;
+	}
+
 	async convertFileToEvent(input: PrismaConvertEventInput): Promise<boolean> {
 		const bundle = this.resolveBundleOrNotice(input.calendarId);
 		if (!bundle) return false;
@@ -291,6 +341,81 @@ export class PrismaCalendarApiManager {
 		return await bundle.redo();
 	}
 
+	// ─── Command Builders (for batch execution) ─────────────────
+
+	buildCreateEventCommand(input: PrismaCreateEventInput): { command: Command; bundle: CalendarBundle } | null {
+		const bundle = this.resolveBundleOrNotice(input.calendarId);
+		if (!bundle) return null;
+
+		const frontmatter = this.buildFrontmatterFromInput(bundle, input);
+		const normalizedStart = input.start ? ensureISOSuffix(input.start) : "";
+		const normalizedEnd = input.end ? ensureISOSuffix(input.end) : null;
+		const settings = bundle.settingsStore.currentSettings;
+
+		const commandEventData: EventData = {
+			filePath: null,
+			title: input.title,
+			start: normalizedStart,
+			end: normalizedEnd ?? undefined,
+			allDay: input.allDay ?? false,
+			preservedFrontmatter: frontmatter,
+		};
+
+		const command = new CreateEventCommand(this.plugin.app, bundle, commandEventData, settings.directory);
+		return { command, bundle };
+	}
+
+	buildEditEventCommand(input: PrismaEditEventInput): { command: Command; bundle: CalendarBundle } | null {
+		const bundle = this.resolveBundleOrNotice(input.calendarId);
+		if (!bundle) return null;
+
+		const file = this.plugin.app.vault.getAbstractFileByPath(input.filePath);
+		if (!(file instanceof TFile)) {
+			new Notice(`File not found: ${input.filePath}`);
+			return null;
+		}
+
+		const metadata = this.plugin.app.metadataCache.getFileCache(file);
+		const frontmatter: Frontmatter = metadata?.frontmatter ? { ...metadata.frontmatter } : {};
+		const settings = bundle.settingsStore.currentSettings;
+
+		this.patchEditFrontmatter(frontmatter, settings, bundle, input, file);
+
+		const existingAllDay = frontmatter[settings.allDayProp] === true;
+		const existingStart = existingAllDay
+			? frontmatter[settings.dateProp]
+				? `${String(frontmatter[settings.dateProp])}T00:00:00`
+				: ""
+			: ((frontmatter[settings.startProp] as string) ?? "");
+		const existingEnd = (frontmatter[settings.endProp] as string) ?? undefined;
+
+		const eventData: EventData = {
+			filePath: file.path,
+			title: input.title ?? file.basename,
+			start: existingStart,
+			end: existingEnd,
+			allDay: existingAllDay,
+			preservedFrontmatter: frontmatter,
+		};
+
+		const command = new EditEventCommand(this.plugin.app, file.path, eventData);
+		return { command, bundle };
+	}
+
+	buildDeleteEventCommand(input: PrismaDeleteEventInput): { command: Command; bundle: CalendarBundle } | null {
+		const bundle = this.resolveBundleOrNotice(input.calendarId);
+		if (!bundle) return null;
+
+		const file = this.plugin.app.vault.getAbstractFileByPath(input.filePath);
+		if (!(file instanceof TFile)) {
+			new Notice(`File not found: ${input.filePath}`);
+			return null;
+		}
+
+		const command = new DeleteEventCommand(this.plugin.app, bundle, file.path);
+		return { command, bundle };
+	}
+
 	// ─── Utilities ───────────────────────────────────────────────
 
 	private buildFrontmatterFromInput(bundle: CalendarBundle, input: PrismaEventInput): Frontmatter {
@@ -317,6 +442,12 @@ export class PrismaCalendarApiManager {
 
 		if (settings.categoryProp && input.categories) {
 			assignListToFrontmatter(frontmatter, settings.categoryProp, input.categories);
+		} else if (settings.categoryProp && input.title) {
+			const availableCategories = bundle.categoryTracker.getCategories();
+			const autoAssigned = autoAssignCategories(input.title, settings, availableCategories);
+			if (autoAssigned.length > 0) {
+				assignListToFrontmatter(frontmatter, settings.categoryProp, autoAssigned);
+			}
 		}
 
 		if (settings.locationProp && input.location !== undefined) {

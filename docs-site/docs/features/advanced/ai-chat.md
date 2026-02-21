@@ -47,6 +47,33 @@ A **context badge** above the input area shows what the AI has access to — for
 
 If no calendar view is open, the badge shows "No calendar open" and the AI acts as a general scheduling assistant without access to your specific events.
 
+## Modes
+
+The AI chat has two modes, selectable via the toggle above the input area:
+
+### Query Mode (default)
+
+Ask read-only questions about your calendar. The AI sees your events, statistics, and date range, and answers with text.
+
+### Event Manipulation Mode
+
+Describe calendar changes in natural language. The AI responds with structured operations — creates, edits, and deletes — rendered as preview cards:
+
+- **Create** cards (green) show the new event's title and time range
+- **Edit** cards (blue) show the file path and changed fields
+- **Delete** cards (red) show the file path of the event to remove
+
+Below the cards, an **Execute All** button applies all operations at once. Each operation calls the Prisma Calendar API (`createEvent`, `editEvent`, `deleteEvent`) and shows a success/failure summary.
+
+**Example prompts:**
+
+- "Create a meeting tomorrow at 10am for 1 hour"
+- "Delete the event on Wednesday at 2pm"
+- "Move my morning event to 8am and rename it to Gym"
+- "Replace my 3pm call with a 1-hour review session"
+
+Switching between modes clears the conversation, since each mode uses a different system prompt.
+
 ## Using the Chat
 
 Type your message in the text area at the bottom and press **Enter** (or click **Send**). The AI will respond in the message area above.
@@ -61,4 +88,5 @@ Type your message in the text area at the bottom and press **Enter** (or click *
 - Analyze time usage: "What categories am I spending the most time on?"
 - Ask about scheduling patterns: "What's a good way to organize weekly meetings?"
 - Get advice on calendar setup: "How should I configure recurring events?"
+- Use Manipulation mode to quickly batch-create or reschedule events
 - The AI remembers the full conversation within a session, so you can ask follow-up questions

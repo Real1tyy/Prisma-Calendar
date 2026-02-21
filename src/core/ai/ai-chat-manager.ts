@@ -1,6 +1,12 @@
 import { AI_DEFAULTS } from "./ai-constants";
 import type { AIProvider } from "./ai-constants";
-import { buildSystemPromptWithContext, NO_CONTEXT_PROMPT_SUFFIX, type CalendarContext } from "./ai-context-builder";
+import {
+	buildManipulationSystemPrompt,
+	buildSystemPromptWithContext,
+	NO_CONTEXT_PROMPT_SUFFIX,
+	type CalendarContext,
+	type ManipulationContext,
+} from "./ai-context-builder";
 import { AIServiceError, callAI, type ChatMessage } from "./ai-service";
 import type { SettingsStore } from "../settings-store";
 
@@ -17,14 +23,17 @@ export class AIChatManager {
 	async sendMessage(
 		userMessage: string,
 		customPrompts?: Array<{ title: string; content: string }>,
-		calendarContext?: CalendarContext
+		calendarContext?: CalendarContext,
+		manipulationContext?: ManipulationContext
 	): Promise<string> {
 		const { model, provider, apiKey } = this.resolveAIConfig();
 
 		this.messages.push({ role: "user", content: userMessage });
 
 		let systemPrompt: string;
-		if (calendarContext) {
+		if (manipulationContext) {
+			systemPrompt = buildManipulationSystemPrompt(manipulationContext, BASE_SYSTEM_PROMPT);
+		} else if (calendarContext) {
 			systemPrompt = buildSystemPromptWithContext(calendarContext, BASE_SYSTEM_PROMPT);
 		} else {
 			systemPrompt = BASE_SYSTEM_PROMPT + NO_CONTEXT_PROMPT_SUFFIX;
