@@ -51,36 +51,6 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		this.createCalendarManagementHeader();
 		this.renderSelectedCalendarSettings();
-
-		const footerEl = containerEl.createDiv({
-			cls: `setting-item ${cls("settings-footer")}`,
-		});
-
-		const linksContainer = footerEl.createDiv(cls("settings-footer-links"));
-
-		linksContainer.createEl("a", {
-			text: "Documentation",
-			href: "https://real1tyy.github.io/Prisma-Calendar/",
-			cls: cls("settings-support-link"),
-		});
-
-		linksContainer.createEl("a", {
-			text: "Changelog",
-			href: "https://real1tyy.github.io/Prisma-Calendar/changelog",
-			cls: cls("settings-support-link"),
-		});
-
-		linksContainer.createEl("a", {
-			text: "Support",
-			href: "https://matejvavroproductivity.com/support/",
-			cls: cls("settings-support-link"),
-		});
-
-		linksContainer.createEl("a", {
-			text: "Playlist",
-			href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4",
-			cls: cls("settings-support-link"),
-		});
 	}
 
 	private createCalendarManagementHeader(): void {
