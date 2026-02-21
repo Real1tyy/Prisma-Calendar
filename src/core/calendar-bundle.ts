@@ -407,7 +407,7 @@ export class CalendarBundle {
 				await editCommand.execute();
 				const titleRenameOldPath = pathBeforeTitleRename;
 				const titleRenameNewPath = finalFilePath;
-				this.commandManager.pushExecutedCommand({
+				this.commandManager.registerExecutedCommand({
 					execute: async () => {
 						if (zettelIdCommand) await zettelIdCommand.execute();
 						if (titleRenameOldPath) {

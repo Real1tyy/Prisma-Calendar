@@ -3,7 +3,7 @@ import { addCls, cls, getWeekDirection, pluralize, removeCls, runBatchOperation 
 import { type App, Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
-import type { Command } from "../core/commands/command";
+import type { Command } from "@real1ty-obsidian-plugins";
 import type { CalendarEvent } from "../types/calendar";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
 import { MoveByModal } from "./modals/move-by-modal";

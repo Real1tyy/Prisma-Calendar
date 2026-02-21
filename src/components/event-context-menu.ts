@@ -14,7 +14,7 @@ import {
 	MoveEventCommand,
 	ToggleSkipCommand,
 } from "../core/commands";
-import { MacroCommand } from "../core/commands/command";
+import { MacroCommand } from "@real1ty-obsidian-plugins";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import { type ContextMenuItem, isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";

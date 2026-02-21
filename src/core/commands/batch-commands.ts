@@ -1,6 +1,6 @@
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
-import { MacroCommand } from "./command";
+import { MacroCommand } from "@real1ty-obsidian-plugins";
 import {
 	AssignCategoriesCommand,
 	CloneEventCommand,

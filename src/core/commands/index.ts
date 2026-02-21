@@ -1,6 +1,6 @@
 export { BatchCommandFactory } from "./batch-commands";
 
-export { CommandManager } from "./command-manager";
+export { CommandManager } from "@real1ty-obsidian-plugins";
 export {
 	AddZettelIdCommand,
 	AssignCategoriesCommand,

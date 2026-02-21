@@ -28,7 +28,7 @@ import {
 	shouldUpdateInstanceDateOnMove,
 } from "../../utils/calendar-events";
 import type { CalendarBundle } from "../calendar-bundle";
-import type { Command } from "./command";
+import type { Command } from "@real1ty-obsidian-plugins";
 
 export interface EventData {
 	filePath: string | null;

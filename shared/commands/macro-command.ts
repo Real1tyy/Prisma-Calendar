@@ -1,49 +1,24 @@
-/**
- * Base Command interface for invertible calendar operations.
- *
- * Each command encapsulates an action that can be executed and undone,
- * providing semantic undo functionality for calendar operations.
- */
-export interface Command {
-	/**
-	 * Execute the command operation.
-	 * Should be idempotent - safe to call multiple times.
-	 */
-	execute(): Promise<void>;
+import type { Command } from "./command";
 
-	/**
-	 * Undo the command operation, restoring previous state.
-	 * Should be idempotent and inverse of execute().
-	 */
-	undo(): Promise<void>;
-
-	/**
-	 * Unique identifier for the command type.
-	 * Used for debugging and potential command filtering.
-	 */
-	getType(): string;
-
-	/**
-	 * Optional: Check if the command can still be undone.
-	 * Returns false if referenced files/events no longer exist.
-	 */
-	canUndo?(): boolean | Promise<boolean>;
+export interface MacroCommandOptions {
+	rollbackOnError?: boolean;
 }
 
-/**
- * Macro command that groups multiple commands into a single undoable unit.
- * Perfect for batch operations where multiple events are modified together.
- *
- * Executes commands individually and continues on failure, collecting errors
- * to report at the end. Only successfully executed commands are tracked for undo.
- */
 export class MacroCommand implements Command {
 	private commands: Command[] = [];
 	private executedCommands: Command[] = [];
 	private executionErrors: Array<{ command: Command; error: Error }> = [];
+	private rollbackOnError: boolean;
 
-	constructor(commands: Command[] = []) {
+	constructor(commands: Command[] = [], options?: MacroCommandOptions) {
 		this.commands = [...commands];
+		this.rollbackOnError = options?.rollbackOnError ?? false;
+	}
+
+	static fromExecuted(executedCommands: Command[]): MacroCommand {
+		const macro = new MacroCommand(executedCommands);
+		macro.executedCommands = [...executedCommands];
+		return macro;
 	}
 
 	addCommand(command: Command): void {
@@ -54,53 +29,70 @@ export class MacroCommand implements Command {
 		this.executedCommands = [];
 		this.executionErrors = [];
 
-		// Execute all commands, continuing on failure
 		for (const command of this.commands) {
 			try {
 				await command.execute();
 				this.executedCommands.push(command);
 			} catch (error) {
+				if (this.rollbackOnError) {
+					await this.undoExecuted();
+					throw error;
+				}
+
 				const errorObj = error instanceof Error ? error : new Error(String(error));
 				this.executionErrors.push({ command, error: errorObj });
 				console.warn(`Command ${command.getType()} failed:`, errorObj.message);
 			}
 		}
 
-		// If some commands failed, throw an error with details
 		if (this.executionErrors.length > 0) {
 			const successCount = this.executedCommands.length;
 			const failCount = this.executionErrors.length;
 			const totalCount = this.commands.length;
 
 			if (successCount === 0) {
-				// All commands failed
 				throw new Error(`All ${totalCount} operations failed`);
 			}
 
-			// Some commands succeeded, some failed
 			const errorMessages = this.executionErrors.map((e) => e.error.message).join("; ");
 			throw new Error(`Completed ${successCount}/${totalCount} operations. ${failCount} failed: ${errorMessages}`);
 		}
 	}
 
 	async undo(): Promise<void> {
-		// Only undo commands that were successfully executed
+		await this.undoExecuted();
+	}
+
+	private async undoExecuted(): Promise<void> {
 		for (let i = this.executedCommands.length - 1; i >= 0; i--) {
-			await this.executedCommands[i].undo();
+			const command = this.executedCommands[i];
+			try {
+				await command.undo();
+			} catch (error) {
+				console.error(`Failed to undo command ${command.getType()}:`, error);
+			}
 		}
+		this.executedCommands = [];
 	}
 
 	getType(): string {
-		return "macro";
+		return "MacroCommand";
 	}
 
 	async canUndo(): Promise<boolean> {
-		// Only check commands that were successfully executed
+		if (this.executedCommands.length === 0) {
+			return false;
+		}
+
 		for (const command of this.executedCommands) {
-			if (command.canUndo && !(await command.canUndo())) {
-				return false;
+			if (command.canUndo) {
+				const canUndo = await command.canUndo();
+				if (!canUndo) {
+					return false;
+				}
 			}
 		}
+
 		return true;
 	}
 
@@ -110,6 +102,10 @@ export class MacroCommand implements Command {
 
 	isEmpty(): boolean {
 		return this.commands.length === 0;
+	}
+
+	getCommandCount(): number {
+		return this.commands.length;
 	}
 
 	getExecutionSummary(): {
