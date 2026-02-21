@@ -30,9 +30,9 @@ Every setting is configurable. Every change is reactive. Every action is undoabl
 
 Whether you need recurring events that generate real notes, batch operations across dozens of events, intelligent category auto-assignment with fuzzy matching, time-based statistics, CalDAV sync, a scriptable API, or just a clean timeline that works exactly how you want — Prisma does it all.
 
-</div>
-
 ## Preview
+
+</div>
 
 <div style={{"display": "flex", "flexWrap": "wrap", "gap": "1em", "justifyContent": "center", "marginBottom": "1em"}}>
   <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
@@ -45,10 +45,10 @@ Whether you need recurring events that generate real notes, batch operations acr
 
 <div style={{"display": "flex", "flexWrap": "wrap", "gap": "1em", "justifyContent": "center", "marginBottom": "2em"}}>
   <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
-    <source src={useBaseUrl("/video/AssignCategory.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/Reaccur.webm")} type="video/webm" />
   </video>
   <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
-    <source src={useBaseUrl("/video/GlobalTimelineView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/UntrackedEvents.webm")} type="video/webm" />
   </video>
 </div>
 
