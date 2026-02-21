@@ -198,6 +198,21 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 - **Format Support**: Works with both YAML array format (`Category: - Work - Meeting`) and single string format (`Category: Work`)
 
 ### Batch Frontmatter Management
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/BatchManagementFrontmatter.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 - Opens a modal to add, update, or delete frontmatter properties across all selected events
 - **Union of Properties**: Shows all unique properties found across any selected event, not just properties common to all. Properties with different values across events show an empty value field for you to fill in.
 - **Existing vs New**: Existing properties (prefilled from events) are visually distinguished with an accent border on the left. New properties you add have no accent.

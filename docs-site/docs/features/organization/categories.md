@@ -110,7 +110,21 @@ Define custom rules to automatically assign specific categories based on event n
 - **Works in both create and edit modals** - change an event's title and categories will auto-update based on the new name
 - Perfect for quick event creation workflows with consistent naming patterns
 
-#### Event name typo detection
+#### Event Name Typo Detection
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/AutoCorrection.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 When no exact match is found for the event name, the plugin uses fuzzy matching to detect likely typos. If the entered name is close to a known category name, preset event name, or existing event series name, a modal appears with up to 3 suggestions ranked by similarity.
 
@@ -246,7 +260,23 @@ Each category card displays:
 
 This detailed breakdown helps you understand not just how many events are in each category, but also the nature of those events (timed vs all-day). The visual design makes it easy to scan through categories and quickly identify the ones you're looking for.
 
-#### Renaming Categories
+## Renaming and Deleting Categories
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/CategoriesDeletionRenaming.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+### Renaming Categories
 
 To rename a category across all your events:
 
@@ -265,7 +295,7 @@ To rename a category across all your events:
 
 **Example**: Renaming "Work" to "Business" will update all events with `Category: Work` to `Category: Business` and update the color rule from `Category.includes('Work')` to `Category.includes('Business')`.
 
-#### Deleting Categories
+### Deleting Categories
 
 To remove a category from all your events:
 

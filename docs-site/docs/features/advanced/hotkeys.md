@@ -1,5 +1,21 @@
 # Hotkeys
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/Hotkeys.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Prisma Calendar provides a comprehensive set of hotkeys to streamline your workflow. You can assign custom key combinations to these actions in Obsidian's settings under `Settings` → `Hotkeys`.
 
 ## Opening Your Calendar
@@ -130,6 +146,20 @@ The **Open Current Note in Calendar** command provides quick navigation from any
     -   Have frontmatter with a date property (Start, Date, or configured start property)
 
 ## Event Management Commands
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventCreationManipulationHotkeys.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ### Create New Event
 

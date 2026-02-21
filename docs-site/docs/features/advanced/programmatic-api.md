@@ -1,5 +1,21 @@
 # Programmatic API
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/ProgrammaticCreation.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Prisma Calendar exposes a scripting API on `window.PrismaCalendar` that lets you create events, open modals, and convert notes from external scripts, plugins, or the Obsidian console. This enables automation, custom workflows, and integration with other Obsidian plugins.
 
 ## Overview

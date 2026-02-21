@@ -45,6 +45,20 @@ Type "meeting" → Shows only events with "meeting" in the title
 
 ### 2. Expression Filter (Advanced Property Filter)
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/ManualFilteringExpression.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 The **Expression Filter** enables powerful, property-based filtering using JavaScript expressions:
 
 - **Location**: Calendar toolbar (next to search bar)

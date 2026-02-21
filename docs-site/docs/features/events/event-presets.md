@@ -4,7 +4,19 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 
 Save reusable event templates with pre-filled values for quick event creation.
 
-{/* TODO: Add video showing preset creation and usage */}
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventPresets.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ## Creating Presets
 

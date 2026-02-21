@@ -162,6 +162,20 @@ Configure both in **Settings → Calendar → Visual Appearance**.
 
 ## Sticky Headers
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/StickyHeader.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Sticky headers keep context visible while scrolling in day and week views:
 
 - **Sticky day headers**: Pins the day/date column headers at the top of the viewport

@@ -4,6 +4,22 @@ sidebar_position: 12
 
 # Event Icons
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/Icons.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Assign a custom icon (emoji or text) to any event via frontmatter.
 
 ## How It Works
