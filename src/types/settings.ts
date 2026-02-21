@@ -7,6 +7,7 @@ import {
 	DEFAULT_TOOLBAR_BUTTONS,
 	SETTINGS_DEFAULTS,
 } from "../constants";
+import { AI_DEFAULTS } from "../core/ai";
 import { CalDAVSettingsSchema } from "../core/integrations/caldav";
 import { ICSSubscriptionSettingsSchema } from "../core/integrations/ics-subscription";
 import { ColorSchema } from "../utils/validation";
@@ -233,6 +234,23 @@ const RulesSettingsSchema = z
 	})
 	.strip();
 
+const CustomPromptSchema = z
+	.object({
+		id: z.string(),
+		title: z.string(),
+		content: z.string(),
+	})
+	.strip();
+
+const AISettingsSchema = z
+	.object({
+		openaiApiKeySecretName: z.string().catch(""),
+		anthropicApiKeySecretName: z.string().catch(""),
+		aiModel: z.string().catch(AI_DEFAULTS.DEFAULT_MODEL),
+		customPrompts: z.array(CustomPromptSchema).catch([]),
+	})
+	.strip();
+
 export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSettingsSchema.shape)
 	.extend(CalendarSettingsSchema.shape)
 	.extend(RulesSettingsSchema.shape)
@@ -265,11 +283,14 @@ export const CustomCalendarSettingsSchema = z
 					holidays: HolidaySettingsSchema.parse({}),
 				},
 			]),
+		ai: AISettingsSchema.catch(AISettingsSchema.parse({})),
 		caldav: CalDAVSettingsSchema.catch(CalDAVSettingsSchema.parse({})),
 		icsSubscriptions: ICSSubscriptionSettingsSchema.catch(ICSSubscriptionSettingsSchema.parse({})),
 	})
 	.strip();
 
+export type CustomPrompt = z.infer<typeof CustomPromptSchema>;
+export type AISettings = z.infer<typeof AISettingsSchema>;
 export type FilterPreset = z.infer<typeof FilterPresetSchema>;
 export type CategoryAssignmentPreset = z.infer<typeof CategoryAssignmentPresetSchema>;
 export type EventPreset = z.infer<typeof EventPresetSchema>;

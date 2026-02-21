@@ -3,6 +3,7 @@ import type { App } from "obsidian";
 import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import {
+	AISettings,
 	BasesSettings,
 	CalendarSettings,
 	CategoriesSettings,
@@ -35,6 +36,7 @@ export class SingleCalendarSettings {
 			categories: new CategoriesSettings(settingsStore, plugin),
 			bases: new BasesSettings(settingsStore),
 			integrations: new IntegrationsSettings(settingsStore, app, plugin, mainSettingsStore),
+			ai: new AISettings(plugin, mainSettingsStore),
 		};
 
 		const sections: SettingsSection[] = [
@@ -48,6 +50,7 @@ export class SingleCalendarSettings {
 			{ id: "categories", label: "Categories", display: (el) => settingsInstances.categories.display(el) },
 			{ id: "bases", label: "Bases", display: (el) => settingsInstances.bases.display(el) },
 			{ id: "integrations", label: "Integrations", display: (el) => settingsInstances.integrations.display(el) },
+			{ id: "ai", label: "AI", display: (el) => settingsInstances.ai.display(el) },
 		];
 
 		this.navigation = new SettingsNavigation({

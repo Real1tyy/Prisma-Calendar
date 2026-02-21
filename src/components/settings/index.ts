@@ -1,3 +1,4 @@
+export { AISettings } from "./ai";
 export { BasesSettings } from "./bases";
 export { CalendarSettings } from "./calendar";
 export { CategoriesSettings } from "./categories";

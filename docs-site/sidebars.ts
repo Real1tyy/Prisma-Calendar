@@ -76,6 +76,7 @@ const sidebars: SidebarsConfig = {
 						"features/advanced/integrations",
 						"features/advanced/hotkeys",
 						"features/advanced/programmatic-api",
+						"features/advanced/ai-chat",
 					],
 				},
 			],

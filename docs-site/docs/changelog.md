@@ -6,6 +6,10 @@ All notable changes to this project will be documented here.
 
 ## 2.5.1 - 2/21/2026
 
+### Added
+
+- **AI Chat sidebar**: A built-in AI chat panel in the right sidebar where you can converse with an AI assistant. Supports Anthropic (Claude) and OpenAI (GPT) models, with configurable API keys, model selection, and custom prompts that provide persistent context to every conversation. Open via the command palette with "Open AI chat". See [AI Chat](./features/advanced/ai-chat.md).
+
 ### Fixed
 
 - **Event title not saving in edit modal**: Changing the title of an existing event in the edit modal had no effect — the title remained unchanged after saving in certain scenarios.

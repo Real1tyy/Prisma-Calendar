@@ -1,6 +1,7 @@
 import { onceAsync, SyncStore, WhatsNewModal, type WhatsNewModalConfig } from "@real1ty-obsidian-plugins";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
+import { AIChatView, AI_CHAT_VIEW_TYPE } from "./components/ai-chat-view";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
 import { CalendarSelectModal, ICSImportModal } from "./components/modals";
 import { ICSImportProgressModal } from "./components/modals/ics-import-progress-modal";
@@ -43,6 +44,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
 
 		this.registerCommands();
+		this.registerAIChatView();
 		this.apiManager.exposeProgrammaticApi();
 
 		this.app.workspace.onLayoutReady(() => {
@@ -91,6 +93,32 @@ export default class CustomCalendarPlugin extends Plugin {
 		await this.syncStore.updateData({
 			lastUsedCalendarId: calendarId,
 		});
+	}
+
+	private registerAIChatView(): void {
+		this.registerViewTypeSafe(AI_CHAT_VIEW_TYPE, (leaf) => new AIChatView(leaf, this));
+
+		this.addCommand({
+			id: COMMAND_IDS.OPEN_AI_CHAT,
+			name: "Open AI chat",
+			callback: () => {
+				void this.toggleAIChatPanel();
+			},
+		});
+	}
+
+	private async toggleAIChatPanel(): Promise<void> {
+		const existing = this.app.workspace.getLeavesOfType(AI_CHAT_VIEW_TYPE);
+		if (existing.length > 0) {
+			this.app.workspace.detachLeavesOfType(AI_CHAT_VIEW_TYPE);
+			return;
+		}
+
+		const leaf = this.app.workspace.getRightLeaf(false);
+		if (leaf) {
+			await leaf.setViewState({ type: AI_CHAT_VIEW_TYPE, active: true });
+			this.app.workspace.revealLeaf(leaf);
+		}
 	}
 
 	private registerCommands(): void {

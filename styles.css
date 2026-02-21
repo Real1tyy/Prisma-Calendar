@@ -4514,6 +4514,266 @@
 	font-size: 1.1rem;
 }
 
+/* AI Chat Sidebar */
+
+.prisma-ai-chat-container {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 0;
+}
+
+.prisma-ai-chat-messages {
+	flex: 1;
+	overflow-y: auto;
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.prisma-ai-chat-empty {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	text-align: center;
+	padding: 2rem 1rem;
+}
+
+.prisma-ai-chat-message {
+	padding: 8px 12px;
+	border-radius: 8px;
+	max-width: 100%;
+	word-wrap: break-word;
+}
+
+.prisma-ai-chat-message-user {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	align-self: flex-end;
+}
+
+.prisma-ai-chat-message-assistant {
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	align-self: flex-start;
+}
+
+.prisma-ai-chat-message-content {
+	font-size: var(--font-ui-small);
+	line-height: 1.5;
+}
+
+.prisma-ai-chat-message-assistant .prisma-ai-chat-message-content p:first-child {
+	margin-top: 0;
+}
+
+.prisma-ai-chat-message-assistant .prisma-ai-chat-message-content p:last-child {
+	margin-bottom: 0;
+}
+
+.prisma-ai-chat-input-area {
+	border-top: 1px solid var(--background-modifier-border);
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.prisma-ai-chat-textarea {
+	width: 100%;
+	resize: vertical;
+	min-height: 60px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 8px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	font-family: inherit;
+}
+
+.prisma-ai-chat-textarea:focus {
+	border-color: var(--interactive-accent);
+	outline: none;
+}
+
+.prisma-ai-chat-textarea:disabled {
+	opacity: 0.6;
+}
+
+.prisma-ai-chat-btn-row {
+	display: flex;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.prisma-ai-chat-send-btn {
+	padding: 6px 16px;
+	border-radius: 6px;
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.prisma-ai-chat-send-btn:hover {
+	opacity: 0.9;
+}
+
+.prisma-ai-chat-send-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.prisma-ai-chat-clear-btn {
+	padding: 6px 12px;
+	border-radius: 6px;
+	background-color: var(--background-modifier-border);
+	color: var(--text-muted);
+	border: none;
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.prisma-ai-chat-clear-btn:hover {
+	color: var(--text-normal);
+}
+
+/* AI Settings — shared UI primitives */
+
+.prisma-hint {
+	font-size: 12px;
+	color: var(--text-muted);
+	margin: 0;
+}
+
+.prisma-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.prisma-btn {
+	padding: 4px 10px;
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	cursor: pointer;
+}
+
+.prisma-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.prisma-btn-cta {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.prisma-btn-cta:hover {
+	background: var(--interactive-accent-hover);
+}
+
+.prisma-btn-warning {
+	color: var(--text-error);
+	border-color: var(--text-error);
+}
+
+.prisma-btn-add {
+	align-self: flex-start;
+	font-size: 12px;
+}
+
+.prisma-filter-label {
+	font-size: 12px;
+	font-weight: 600;
+	min-width: 80px;
+	color: var(--text-muted);
+}
+
+.prisma-filter-input {
+	flex: 1;
+	padding: 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 12px;
+}
+
+.prisma-transform-editor {
+	width: 100%;
+	font-family: var(--font-monospace);
+	font-size: 13px;
+	padding: 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background: var(--background-primary);
+	color: var(--text-normal);
+	resize: vertical;
+}
+
+/* AI Settings — custom prompts */
+
+.prisma-custom-prompt-list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 4px 0;
+	margin-bottom: 16px;
+}
+
+.prisma-custom-prompt-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	gap: 16px;
+}
+
+.prisma-custom-prompt-info {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.prisma-custom-prompt-title {
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--text-normal);
+}
+
+.prisma-custom-prompt-content {
+	font-size: 12px;
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.prisma-custom-prompt-actions {
+	display: flex;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.prisma-custom-prompt-add {
+	margin-top: 4px;
+}
+
+.prisma-custom-prompt-form {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
 /* vis-timeline overrides for theme compatibility */
 
 .prisma-timeline-modal .vis-timeline {
