@@ -192,19 +192,8 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
 </div>
 
 ### [Integration](features/advanced/integrations) — IMP/EXP + example
-<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <video
-    controls
-    autoPlay
-    loop
-    muted
-    playsInline
-    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
-  >
-    <source src={useBaseUrl("/video/IMPORTEXPORT.webm")} type="video/webm" />
-    Your browser does not support the video tag.
-  </video>
-</div>
+
+##### Import
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
@@ -215,7 +204,39 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/googlecal.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/IMPORT.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Export
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EXPORT.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Google Calendar
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/CalBlur.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -387,7 +408,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
 
 ### [Main Calendar View](features/overview)
 
-![Full Calendar View](/img/full_calendar.png)
+![Full Calendar View](/img/fullcal.png)
 
 Weekly calendar view with color-coded events, time grid, search, filtering, and batch operations.
 
@@ -401,13 +422,13 @@ Create and edit events with full frontmatter support, recurring event options, a
 
 ### [Batch Operations](features/management/batch-operations)
 
-![Batch Selection Mode](/img/batch_select.png)
+![Batch Selection Mode](/img/batch.png)
 
 Select multiple events for bulk operations like delete, duplicate, move, or skip.
 
 ### [Statistics & Time Tracking](features/organization/statistics)
 
-![Weekly Statistics Pie Chart](/img/weekly_stats_pie.png)
+![Weekly Statistics Pie Chart](/img/statspie.png)
 
 ![Weekly Statistics by Category](/img/weekly_stats_pie_category.png)
 

@@ -4,7 +4,12 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 
 The calendar view is the main interface for viewing and interacting with your events. It supports multiple view modes, a customizable toolbar, and a range of visual options.
 
-{/* TODO: Add screenshot of calendar view with toolbar visible */}
+<div style={{"textAlign": "center", "marginBottom": "2em"}}>
+
+![Calendar View](/img/fullcal.png)
+
+</div>
+
 
 ## View Modes
 
@@ -44,6 +49,12 @@ The toolbar sits at the top of the calendar and provides quick access to navigat
 |--------|--------|
 | **Create Event** | Opens the Create Event modal. You can also create events by clicking or dragging on empty calendar space. |
 
+<div style={{"textAlign": "center", "marginBottom": "2em"}}>
+
+![Create Event Modal](/img/create_event_modal.png)
+
+</div>
+
 ### Zoom Level
 
 | Button | Action |
@@ -60,6 +71,12 @@ Zoom controls the granularity of time slots in day and week views. The default z
 | **Expression Filter** | Text field for property-based filtering using JavaScript expressions (e.g., `Status !== 'Done'`). |
 | **Filter Presets** (▼) | Dropdown to apply saved filter expressions with one click. Select "Clear" to remove the active filter. |
 
+<div style={{"textAlign": "center", "marginBottom": "2em"}}>
+
+![Filtered Events](/img/filtered_events_modal.png)
+
+</div>
+
 See [Filtering](../organization/filtering) for full documentation on search, expressions, and presets.
 
 ### Other Toolbar Buttons
@@ -68,6 +85,22 @@ See [Filtering](../organization/filtering) for full documentation on search, exp
 |--------|--------|
 | **Untracked Events** | Opens a dropdown showing events without date properties. See [Untracked Events](../events/untracked-events). |
 | **Timeline** | Opens the timeline visualization showing all events in a horizontal layout. |
+
+<div style={{"textAlign": "center", "marginBottom": "2em"}}>
+
+#### Untracked Events Menu
+
+![Untracked Events Menu](/img/Untracked.png)
+
+</div>
+
+<div style={{"textAlign": "center", "marginBottom": "2em"}}>
+
+#### Timeline View
+
+![Timeline View](/img/Timeline.png)
+
+</div>
 
 :::note
 Reopen the calendar view for toolbar changes to take effect.

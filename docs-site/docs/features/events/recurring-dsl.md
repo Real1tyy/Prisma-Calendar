@@ -71,7 +71,7 @@ You can control how frontmatter changes are propagated in Settings → Calendar 
 
 2. **Ask Before Propagating**: A confirmation modal appears showing all accumulated changes (added, modified, deleted properties) with their old and new values. You can review the changes before confirming or canceling the propagation.
 
-![Frontmatter Propagation Modal](/img/frontmatter_propagation_modal.png)
+![Frontmatter Propagation Modal](/img/askbefore.png)
 
 3. **Both Disabled**: Frontmatter changes are not propagated to instances. Each instance maintains its own independent frontmatter.
 
@@ -113,7 +113,7 @@ Deterministic file paths based on (RRuleID, Instance Date) prevent duplicates. F
 
 ## Source Navigation & Instance Management
 
-![Recurring Instance Modal](/img/view_recurring_events_modal.png)
+![Recurring Instance Modal](/img/reaccur.png)
 
 **Source Button**: Navigate to source event from instances
 **Instance Dropdown**: View all physical instances with "Show Past" filter
@@ -126,7 +126,7 @@ The instance list modal includes:
 - **Smart Sorting**: When showing past events, instances are sorted from newest to oldest (most recent first). When showing only future events, instances are sorted from oldest to newest (next occurrence first)
 - **Click to Open**: Click any instance to open its file directly
 
-![Recurring Events Modal](/img/recurring_events_list_modal.png)
+![Recurring Events Modal](/img/reTAB.png)
 
 *Centralized modal to view, filter, enable/disable, and navigate to all recurring events*
 

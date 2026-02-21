@@ -14,21 +14,6 @@ Prisma Calendar offers three integration methods:
 
 **ICS Format**: Prisma Calendar stores all event times internally in **UTC**. When exporting or importing, you select a timezone for conversion. This ensures events display correctly in any calendar application.
 
-<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <video
-    controls
-    autoPlay
-    loop
-    muted
-    playsInline
-    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
-  >
-    <source src={useBaseUrl("/video/IMPORTEXPORT.webm")} type="video/webm" />
-    Your browser does not support the video tag.
-  </video>
-</div>
-
-
 **Compatible with**: Google Calendar, Apple Calendar (iCal), Microsoft Outlook, Nextcloud Calendar, Thunderbird, and any application supporting ICS/iCalendar format.
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
@@ -40,13 +25,27 @@ Prisma Calendar offers three integration methods:
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/googlecal.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/CalBlur.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
 Example with Google Calendar
 
 ## Exporting Events
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EXPORT.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ### How to Export
 
@@ -82,6 +81,20 @@ Each event includes:
 **Output Location**: Exported files saved to `Prisma-Exports/` folder in your vault.
 
 ## Importing Events
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/IMPORT.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ### How to Import
 
@@ -278,7 +291,7 @@ ICS URL subscriptions enable read-only synchronization from public ICS URLs to P
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/googlecal.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/CalBlur.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>

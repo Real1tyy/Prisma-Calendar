@@ -40,7 +40,7 @@ Skipping preserves files and history while hiding events from calendar view. Use
 
 **View skipped:** Calendar menu → "View Skipped Events"
 
-![Skipped Events Modal](/img/skipped_events_modal.png)
+![Skipped Events Modal](/img/skip.png)
 
 *View all skipped events with search functionality and quick un-skip/open actions*
 

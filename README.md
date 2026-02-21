@@ -50,12 +50,12 @@ For the **Full Tutorial** (Zero to Mastery), **Part 2** (Intelligence & Automati
 
 ### Full Calendar View
 
-![Full Calendar View](docs-site/static/img/full_calendar.png)
+![Full Calendar View](docs-site/static/img/fullcal.png)
 _Weekly calendar view with color-coded events, time grid, and powerful toolbar_
 
 ### Batch Operations
 
-![Batch Selection Mode](docs-site/static/img/batch_select.png)
+![Batch Selection Mode](docs-site/static/img/batch.png)
 _Select multiple events for bulk operations like delete, duplicate, move, or skip_
 
 ### Event Creation & Editing
@@ -69,7 +69,7 @@ _Create and edit events with full frontmatter support, recurring event options, 
 
 ### Weekly Statistics
 
-![Weekly Statistics](docs-site/static/img/weekly_stats_pie.png)
+![Weekly Statistics](docs-site/static/img/statspie.png)
 _Visual time tracking with pie charts and detailed breakdown tables_
 
 Check out the [complete screenshots gallery](https://real1tyy.github.io/Prisma-Calendar/screenshots) in the documentation to see all the plugin's visuals, including calendar views, event modals, batch operations, statistics, settings, and more.
