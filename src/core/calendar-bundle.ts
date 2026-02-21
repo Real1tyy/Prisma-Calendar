@@ -4,7 +4,7 @@ import { type Subscription, filter, firstValueFrom } from "rxjs";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type { EventSaveData } from "../components/modals/base-event-modal";
 import type CustomCalendarPlugin from "../main";
-import { generateUniqueEventPath } from "../utils/calendar-events";
+import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/calendar-events";
 import { intoDate } from "../utils/format";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import type { CategoryTracker } from "./category-tracker";
@@ -369,20 +369,29 @@ export class CalendarBundle {
 				}
 			}
 
-			// Handle file renaming when titleProp is undefined/empty
-			// Skip when ensureZettelId is active — the zettel ID rename already set the filename
-			// and the modal title doesn't include the zettel ID suffix, so the comparison would
-			// always mismatch and trigger a conflicting double-rename.
+			// Handle file renaming when titleProp is undefined/empty (title lives in the filename).
+			// Compare only the title portion (without zettel ID) to detect actual title changes,
+			// then rebuild the filename preserving any existing zettel ID suffix.
 			const settings = this.settingsStore.currentSettings;
-			if (!options?.ensureZettelId && eventData.title && !settings.titleProp) {
-				const sanitizedTitle = sanitizeForFilename(eventData.title, {
+			let pathBeforeTitleRename: string | null = null;
+
+			if (eventData.title && !settings.titleProp) {
+				const newTitlePart = removeZettelId(eventData.title);
+				const sanitizedTitle = sanitizeForFilename(newTitlePart, {
 					style: "preserve",
 				});
-				if (sanitizedTitle && sanitizedTitle !== file.basename) {
+				const currentTitlePart = removeZettelId(file.basename);
+
+				if (sanitizedTitle && sanitizedTitle !== currentTitlePart) {
+					const currentZettelId = extractZettelId(file.basename);
+					const newBasename = currentZettelId ? `${sanitizedTitle}-${currentZettelId}` : sanitizedTitle;
+
+					pathBeforeTitleRename = finalFilePath;
 					const parentPath = file.parent?.path || "";
-					const { fullPath } = generateUniqueEventPath(this.app, parentPath, sanitizedTitle);
+					const { fullPath } = generateUniqueEventPath(this.app, parentPath, newBasename);
 					await this.app.fileManager.renameFile(file, fullPath);
 					finalFilePath = fullPath;
+					file = this.app.vault.getAbstractFileByPath(finalFilePath) as TFile;
 				}
 			}
 
@@ -392,19 +401,30 @@ export class CalendarBundle {
 			};
 			const editCommand = new EditEventCommand(this.app, finalFilePath, eventDataForCommand);
 
-			if (zettelIdCommand) {
+			if (zettelIdCommand || pathBeforeTitleRename) {
 				// Execute the edit manually, then push a composite command as a single undo entry
+				// that covers: zettel ID rename + title rename + frontmatter edit
 				await editCommand.execute();
+				const titleRenameOldPath = pathBeforeTitleRename;
+				const titleRenameNewPath = finalFilePath;
 				this.commandManager.pushExecutedCommand({
 					execute: async () => {
-						await zettelIdCommand.execute();
+						if (zettelIdCommand) await zettelIdCommand.execute();
+						if (titleRenameOldPath) {
+							const f = this.app.vault.getAbstractFileByPath(titleRenameOldPath);
+							if (f) await this.app.fileManager.renameFile(f, titleRenameNewPath);
+						}
 						await editCommand.execute();
 					},
 					undo: async () => {
 						await editCommand.undo();
-						await zettelIdCommand.undo();
+						if (titleRenameOldPath) {
+							const f = this.app.vault.getAbstractFileByPath(titleRenameNewPath);
+							if (f) await this.app.fileManager.renameFile(f, titleRenameOldPath);
+						}
+						if (zettelIdCommand) await zettelIdCommand.undo();
 					},
-					getType: () => "edit-with-zettel-id",
+					getType: () => "edit-with-rename",
 					canUndo: () => true,
 				});
 			} else {

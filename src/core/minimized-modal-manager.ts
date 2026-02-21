@@ -7,7 +7,7 @@ import type { StopwatchSnapshot } from "../components/stopwatch";
 import type { Frontmatter } from "../types";
 import type { EventPreset } from "../types/settings";
 import { getEventName } from "../utils/calendar-events";
-import { formatDateTimeForInput } from "../utils/format";
+import { formatDateTimeForInput, inputValueToISOString } from "../utils/format";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import { formatMsToHHMMSS, formatMsToMMSS } from "../utils/time-formatter";
 import type { CalendarBundle } from "./calendar-bundle";
@@ -139,7 +139,7 @@ class MinimizedModalManagerClass {
 		const file = this.app.vault.getAbstractFileByPath(this.savedState.filePath);
 		if (!(file instanceof TFile)) return;
 
-		const now = formatDateTimeForInput(new Date());
+		const now = inputValueToISOString(formatDateTimeForInput(new Date()));
 		await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 			fm[settings.endProp] = now;
 		});

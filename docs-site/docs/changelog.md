@@ -4,6 +4,15 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.5.1 - 2/21/2026
+
+### Fixed
+
+- **Event title not saving in edit modal**: Changing the title of an existing event in the edit modal had no effect — the title remained unchanged after saving in certain scenarios.
+- **Time tracker writing end date in wrong format**: The time tracker's periodic end-time sync wrote dates in a truncated format (e.g., `2026-02-21T14:35` instead of `2026-02-21T14:35:00.000Z`), which could cause the end date to not display when reopening the edit modal.
+
+---
+
 ## 2.5.0 - 2/19/2026
 
 ### Added
