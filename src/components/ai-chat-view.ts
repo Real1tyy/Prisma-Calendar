@@ -4,15 +4,17 @@ import { AIChatManager, type ChatMessage } from "../core/ai";
 import {
 	buildCalendarContext,
 	buildManipulationContext,
+	buildPlanningContext,
 	getViewLabel,
 	type CalendarContext,
 	type ManipulationContext,
+	type PlanningContext,
 } from "../core/ai/ai-context-builder";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type CustomCalendarPlugin from "../main";
 import { CalendarView, getCalendarViewType } from "./calendar-view";
 
-type AIMode = "query" | "manipulation";
+type AIMode = "query" | "manipulation" | "planning";
 
 type AIOperation =
 	| {
@@ -200,6 +202,14 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		manipulateBtn.addEventListener("click", () => {
 			if (this.currentMode !== "manipulation") this.setMode("manipulation");
 		});
+
+		const planBtn = this.modeToggleEl.createEl("button", {
+			text: "Plan",
+			cls: `${cls("ai-chat-mode-btn")}${this.currentMode === "planning" ? ` ${cls("ai-chat-mode-active")}` : ""}`,
+		});
+		planBtn.addEventListener("click", () => {
+			if (this.currentMode !== "planning") this.setMode("planning");
+		});
 	}
 
 	private updateModeToggle(): void {
@@ -220,7 +230,18 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			const allPrompts = this.plugin.settingsStore.currentSettings.ai.customPrompts;
 			const selectedPrompts = allPrompts.filter((p) => this.selectedPromptIds.has(p.id));
 
-			if (this.currentMode === "manipulation") {
+			if (this.currentMode === "planning") {
+				const planningContext = await this.gatherPlanningContext();
+				this.refreshContextBadge();
+				const response = await this.chatManager.sendMessage(
+					message,
+					selectedPrompts,
+					undefined,
+					undefined,
+					planningContext ?? undefined
+				);
+				this.handleManipulationResponse(response);
+			} else if (this.currentMode === "manipulation") {
 				const manipulationContext = await this.gatherManipulationContext();
 				this.refreshContextBadge();
 				const response = await this.chatManager.sendMessage(
@@ -267,6 +288,65 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			const calendarName = bundle.settingsStore.currentSettings.name;
 
 			return buildManipulationContext(calendarName, viewContext.currentStart, viewContext.currentEnd, events);
+		}
+
+		return null;
+	}
+
+	private async gatherPlanningContext(): Promise<PlanningContext | null> {
+		const lastUsedCalendarId = this.plugin.syncStore.data.lastUsedCalendarId;
+		if (!lastUsedCalendarId) return null;
+
+		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId);
+		if (!bundle) return null;
+
+		const viewType = getCalendarViewType(lastUsedCalendarId);
+		const leaves = this.app.workspace.getLeavesOfType(viewType);
+
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (!(view instanceof CalendarView)) continue;
+
+			const viewContext = view.getViewContext();
+			if (!viewContext) continue;
+
+			const currentStart = viewContext.currentStart;
+			const currentEnd = viewContext.currentEnd;
+
+			// Compute previous interval with same duration
+			let previousStart: Date;
+			let previousEnd: Date;
+
+			if (viewContext.viewType === "dayGridMonth") {
+				previousStart = new Date(currentStart);
+				previousStart.setMonth(previousStart.getMonth() - 1);
+				previousEnd = new Date(currentStart);
+			} else {
+				const duration = currentEnd.getTime() - currentStart.getTime();
+				previousEnd = new Date(currentStart);
+				previousStart = new Date(currentStart.getTime() - duration);
+			}
+
+			const currentEvents = await bundle.eventStore.getEvents({
+				start: currentStart.toISOString(),
+				end: currentEnd.toISOString(),
+			});
+			const previousEvents = await bundle.eventStore.getEvents({
+				start: previousStart.toISOString(),
+				end: previousEnd.toISOString(),
+			});
+
+			const calendarName = bundle.settingsStore.currentSettings.name;
+
+			return buildPlanningContext(
+				calendarName,
+				currentStart,
+				currentEnd,
+				currentEvents,
+				previousStart,
+				previousEnd,
+				previousEvents
+			);
 		}
 
 		return null;
@@ -595,7 +675,11 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 
 		if (msg.role === "user") {
 			messageEl.createDiv({ cls: cls("ai-chat-message-content"), text: msg.content });
-		} else if (this.currentMode === "manipulation" && isLastAssistant && this.pendingOperations.length > 0) {
+		} else if (
+			(this.currentMode === "manipulation" || this.currentMode === "planning") &&
+			isLastAssistant &&
+			this.pendingOperations.length > 0
+		) {
 			// Render operation cards instead of raw JSON
 			this.renderOperationCards(this.pendingOperations, messageEl);
 		} else {

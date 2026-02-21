@@ -203,6 +203,76 @@ function mapEventToManipulationSummary(event: CalendarEvent): AIEventSummary {
 	return summary;
 }
 
+export interface PlanningContext {
+	calendarName: string;
+	currentDateRange: string;
+	currentStart: string;
+	currentEnd: string;
+	currentEvents: AIEventSummary[];
+	previousDateRange: string;
+	previousEvents: AIEventSummary[];
+}
+
+export function buildPlanningContext(
+	calendarName: string,
+	currentStart: Date,
+	currentEnd: Date,
+	currentEvents: CalendarEvent[],
+	previousStart: Date,
+	previousEnd: Date,
+	previousEvents: CalendarEvent[]
+): PlanningContext {
+	return {
+		calendarName,
+		currentDateRange: formatDateRange(currentStart, currentEnd),
+		currentStart: currentStart.toISOString(),
+		currentEnd: currentEnd.toISOString(),
+		currentEvents: currentEvents.map(mapEventToManipulationSummary),
+		previousDateRange: formatDateRange(previousStart, previousEnd),
+		previousEvents: previousEvents.map(mapEventToSummary),
+	};
+}
+
+export function buildPlanningSystemPrompt(context: PlanningContext, basePrompt: string): string {
+	const currentEventsJson = JSON.stringify(context.currentEvents, null, 2);
+	const previousEventsJson = JSON.stringify(context.previousEvents, null, 2);
+
+	return `${basePrompt}
+
+You are an AI assistant for Prisma Calendar. The user will describe how they want to allocate their time for the current interval.
+You MUST respond with ONLY a JSON code block containing an array of operations. No other text.
+
+Available operations:
+- create: { "type": "create", "title": string, "start": ISO datetime, "end": ISO datetime, "allDay"?: boolean, "categories"?: string[], "location"?: string, "participants"?: string[] }
+- edit: { "type": "edit", "filePath": string, "title"?: string, "start"?: ISO datetime, "end"?: ISO datetime, "allDay"?: boolean, "categories"?: string[], "location"?: string, "participants"?: string[] }
+- delete: { "type": "delete", "filePath": string }
+
+Planning rules:
+1. Respect existing events in the current interval — plan around them unless the user explicitly says otherwise.
+2. Events must not overlap. Align on borders (e.g. 9:00–12:00, 12:00–12:30, 12:30–13:00).
+3. Learn patterns from the previous interval — recurring start times, break durations, block lengths, preferred time slots.
+4. Stay within the current interval boundaries: ${context.currentStart} to ${context.currentEnd}.
+5. Distribute activities across all days in the interval, not just one day.
+6. Use ISO datetime format: "YYYY-MM-DDTHH:mm:ss"
+7. For edits, only include fields that should change.
+8. For deletes, reference the filePath of the event to remove.
+
+## Calendar Context
+- Calendar: ${context.calendarName}
+- Current interval: ${context.currentDateRange}
+
+## Current Events (${context.currentEvents.length} events — plan around these)
+\`\`\`json
+${currentEventsJson}
+\`\`\`
+
+## Previous Interval Events (${context.previousEvents.length} events — learn patterns from these)
+- Previous interval: ${context.previousDateRange}
+\`\`\`json
+${previousEventsJson}
+\`\`\``;
+}
+
 export function buildManipulationSystemPrompt(context: ManipulationContext, basePrompt: string): string {
 	const eventsJson = JSON.stringify(context.events, null, 2);
 

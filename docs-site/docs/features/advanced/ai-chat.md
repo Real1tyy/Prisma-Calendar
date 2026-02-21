@@ -49,7 +49,7 @@ If no calendar view is open, the badge shows "No calendar open" and the AI acts 
 
 ## Modes
 
-The AI chat has two modes, selectable via the toggle above the input area:
+The AI chat has three modes, selectable via the toggle above the input area:
 
 ### Query Mode (default)
 
@@ -78,6 +78,18 @@ Two settings in **Settings > AI > Event Manipulation** control how operations ar
 - "Delete the event on Wednesday at 2pm"
 - "Move my morning event to 8am and rename it to Gym"
 - "Replace my 3pm call with a 1-hour review session"
+
+### Planning Mode
+
+Describe how you want to allocate your time for the current interval and the AI fills your calendar with non-overlapping events. Unlike Manipulation mode, Planning mode also provides the AI with your **previous interval's events** as context — so it can learn your patterns (work blocks, lunch timing, gym schedule) and generate a plan that matches your habits.
+
+Existing events in the current interval take priority — the AI plans around them. The response format is the same as Manipulation mode (operation cards with Execute All), so the same batch execution and undo behavior applies.
+
+**Example prompts:**
+
+- "Plan this week: 30 hours coding, 4 gym sessions, 1 hour reading each evening"
+- "Fill my schedule with focused work blocks and a lunch break"
+- "Plan tomorrow with 3 hours of deep work in the morning and meetings after lunch"
 
 Switching between modes clears the conversation, since each mode uses a different system prompt.
 
