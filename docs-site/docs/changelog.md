@@ -4,11 +4,20 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.5.1 - 2/21/2026
+## 2.6.0 - 2/21/2026
 
 ### Added
 
 - **AI Chat sidebar**: A built-in AI chat panel in the right sidebar where you can converse with an AI assistant. Supports Anthropic (Claude) and OpenAI (GPT) models, with configurable API keys, model selection, and custom prompts that provide persistent context to every conversation. Open via the command palette with "Open AI chat". See [AI Chat](./features/advanced/ai-chat.md).
+- **AI Chat calendar context**: The AI chat automatically includes events and statistics from your active calendar view, so you can ask data-driven questions like "How many hours did I spend on Work this week?" A context badge shows the active calendar and view type, updating live as you switch between views. See [AI Chat](./features/advanced/ai-chat.md).
+
+### Fixed
+
+- **Time tracker scheduler not cleaned up**: The background scheduler that periodically saves the end date every 5 minutes while an event is minimized was not stopped when the plugin unloaded or when calendar bundles were refreshed. This caused the interval to keep running with stale references, writing to files even after the modal was closed or the calendar was destroyed. See [Time Tracker](./features/time-tracker.md).
+
+---
+
+## 2.5.1 - 2/21/2026
 
 ### Fixed
 

@@ -1,26 +1,38 @@
 import { AI_DEFAULTS } from "./ai-constants";
 import type { AIProvider } from "./ai-constants";
+import { buildSystemPromptWithContext, NO_CONTEXT_PROMPT_SUFFIX, type CalendarContext } from "./ai-context-builder";
 import { AIServiceError, callAI, type ChatMessage } from "./ai-service";
 import type { SettingsStore } from "../settings-store";
 
-const SYSTEM_PROMPT = `You are an AI assistant integrated into Prisma Calendar, an Obsidian plugin for managing calendar events. You help users understand and manage their calendar data.
+const BASE_SYSTEM_PROMPT = `You are an AI assistant integrated into Prisma Calendar, an Obsidian plugin for managing calendar events. You help users understand and manage their calendar data.
+The user is viewing their calendar and asking about their events and schedule.
 
-Be concise and helpful. Format responses using Markdown when appropriate. If the user asks about specific events or dates, do your best to help based on the conversation context.`;
+Be concise and helpful. Format responses using Markdown when appropriate.`;
 
 export class AIChatManager {
 	private messages: ChatMessage[] = [];
 
 	constructor(private settingsStore: SettingsStore) {}
 
-	async sendMessage(userMessage: string, customPrompts?: Array<{ title: string; content: string }>): Promise<string> {
+	async sendMessage(
+		userMessage: string,
+		customPrompts?: Array<{ title: string; content: string }>,
+		calendarContext?: CalendarContext
+	): Promise<string> {
 		const { model, provider, apiKey } = this.resolveAIConfig();
 
 		this.messages.push({ role: "user", content: userMessage });
 
-		let systemPrompt = SYSTEM_PROMPT;
+		let systemPrompt: string;
+		if (calendarContext) {
+			systemPrompt = buildSystemPromptWithContext(calendarContext, BASE_SYSTEM_PROMPT);
+		} else {
+			systemPrompt = BASE_SYSTEM_PROMPT + NO_CONTEXT_PROMPT_SUFFIX;
+		}
+
 		if (customPrompts && customPrompts.length > 0) {
 			const contextBlock = customPrompts.map((p) => `### ${p.title}\n${p.content}`).join("\n\n");
-			systemPrompt = `${SYSTEM_PROMPT}\n\n## Custom Context\n${contextBlock}`;
+			systemPrompt = `${systemPrompt}\n\n## Custom Context\n${contextBlock}`;
 		}
 
 		try {

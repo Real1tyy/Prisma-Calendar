@@ -56,6 +56,8 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	onunload(): void {
+		MinimizedModalManager.clear();
+
 		for (const bundle of this.calendarBundles) {
 			bundle.destroy();
 		}
@@ -450,6 +452,8 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	async refreshCalendarBundles(): Promise<void> {
+		MinimizedModalManager.clear();
+
 		for (const bundle of this.calendarBundles) {
 			bundle.destroy();
 		}

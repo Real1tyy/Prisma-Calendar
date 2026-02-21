@@ -35,6 +35,18 @@ Define reusable context snippets that are automatically included in every conver
 
 Each custom prompt has a **title** (for your reference) and **content** (the actual context sent to the AI).
 
+## Calendar Context
+
+When you have a calendar view open, the AI chat automatically includes your current events and statistics as context. This lets you ask data-driven questions like:
+
+- "How many hours did I spend on Work this week?"
+- "What's my busiest day?"
+- "Which categories am I spending the most time on?"
+
+A **context badge** above the input area shows what the AI has access to — for example, "Main Calendar · Weekly View". The context is gathered fresh each time you send a message, so if you navigate to a different date range between messages, the AI sees the updated data.
+
+If no calendar view is open, the badge shows "No calendar open" and the AI acts as a general scheduling assistant without access to your specific events.
+
 ## Using the Chat
 
 Type your message in the text area at the bottom and press **Enter** (or click **Send**). The AI will respond in the message area above.
@@ -45,6 +57,8 @@ Type your message in the text area at the bottom and press **Enter** (or click *
 
 ## Tips
 
+- Ask about your schedule: "How many events do I have this week?"
+- Analyze time usage: "What categories am I spending the most time on?"
 - Ask about scheduling patterns: "What's a good way to organize weekly meetings?"
 - Get advice on calendar setup: "How should I configure recurring events?"
 - The AI remembers the full conversation within a session, so you can ask follow-up questions

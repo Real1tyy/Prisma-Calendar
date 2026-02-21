@@ -1,7 +1,9 @@
 import { cls, MountableView } from "@real1ty-obsidian-plugins";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { AIChatManager, type ChatMessage } from "../core/ai";
+import { buildCalendarContext, getViewLabel, type CalendarContext } from "../core/ai/ai-context-builder";
 import type CustomCalendarPlugin from "../main";
+import { CalendarView, getCalendarViewType } from "./calendar-view";
 
 export const AI_CHAT_VIEW_TYPE = "prisma-ai-chat";
 
@@ -9,6 +11,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	private chatManager: AIChatManager;
 	private messagesContainerEl!: HTMLElement;
 	private chipsContainerEl!: HTMLElement;
+	private contextBadgeEl!: HTMLElement;
 	private textareaEl!: HTMLTextAreaElement;
 	private sendBtnEl!: HTMLButtonElement;
 	private isLoading = false;
@@ -43,6 +46,13 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 
 		this.buildUI(container);
 		this.renderMessages();
+		this.refreshContextBadge();
+
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", () => {
+				this.refreshContextBadge();
+			})
+		);
 	}
 
 	async onClose(): Promise<void> {
@@ -56,6 +66,9 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 
 		// Input area
 		const inputArea = container.createDiv({ cls: cls("ai-chat-input-area") });
+
+		// Context badge
+		this.contextBadgeEl = inputArea.createDiv({ cls: cls("ai-chat-context-badge") });
 
 		// Custom prompt chips
 		this.chipsContainerEl = inputArea.createDiv({ cls: cls("ai-chat-chips") });
@@ -127,18 +140,94 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		this.textareaEl.value = "";
 		this.setLoading(true);
 
+		// Show user message immediately
+		this.appendMessage({ role: "user", content: message });
+
 		try {
 			const allPrompts = this.plugin.settingsStore.currentSettings.ai.customPrompts;
 			const selectedPrompts = allPrompts.filter((p) => this.selectedPromptIds.has(p.id));
-			await this.chatManager.sendMessage(message, selectedPrompts);
+			const calendarContext = await this.gatherCalendarContext();
+			this.refreshContextBadge();
+			await this.chatManager.sendMessage(message, selectedPrompts, calendarContext ?? undefined);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
 			new Notice(`Prisma AI: ${errorMessage}`);
-			// Re-render to show the user message that was already added before the error rolled it back
 		} finally {
 			this.setLoading(false);
 			this.renderMessages();
 		}
+	}
+
+	private async gatherCalendarContext(): Promise<CalendarContext | null> {
+		const lastUsedCalendarId = this.plugin.syncStore.data.lastUsedCalendarId;
+		if (!lastUsedCalendarId) return null;
+
+		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId);
+		if (!bundle) return null;
+
+		const viewType = getCalendarViewType(lastUsedCalendarId);
+		const leaves = this.app.workspace.getLeavesOfType(viewType);
+
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (!(view instanceof CalendarView)) continue;
+
+			const viewContext = view.getViewContext();
+			if (!viewContext) continue;
+
+			const start = viewContext.currentStart.toISOString();
+			const end = viewContext.currentEnd.toISOString();
+			const events = await bundle.eventStore.getEvents({ start, end });
+			const calendarName = bundle.settingsStore.currentSettings.name;
+			const categoryProp = bundle.settingsStore.currentSettings.categoryProp;
+
+			return buildCalendarContext(
+				calendarName,
+				viewContext.viewType,
+				viewContext.currentStart,
+				viewContext.currentEnd,
+				events,
+				categoryProp
+			);
+		}
+
+		return null;
+	}
+
+	private refreshContextBadge(): void {
+		const info = this.getActiveCalendarInfo();
+		if (info) {
+			this.contextBadgeEl.setText(`${info.calendarName} · ${info.viewLabel}`);
+		} else {
+			this.contextBadgeEl.setText("No calendar open");
+		}
+		this.contextBadgeEl.show();
+	}
+
+	private getActiveCalendarInfo(): { calendarName: string; viewLabel: string } | null {
+		const lastUsedCalendarId = this.plugin.syncStore.data.lastUsedCalendarId;
+		if (!lastUsedCalendarId) return null;
+
+		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId);
+		if (!bundle) return null;
+
+		const viewType = getCalendarViewType(lastUsedCalendarId);
+		const leaves = this.app.workspace.getLeavesOfType(viewType);
+
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (!(view instanceof CalendarView)) continue;
+
+			const viewContext = view.getViewContext();
+			if (!viewContext) continue;
+
+			return {
+				calendarName: bundle.settingsStore.currentSettings.name,
+				viewLabel: getViewLabel(viewContext.viewType),
+			};
+		}
+
+		return null;
 	}
 
 	private setLoading(loading: boolean): void {
@@ -151,6 +240,15 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		} else {
 			this.sendBtnEl.setText("Send");
 		}
+	}
+
+	private appendMessage(msg: ChatMessage): void {
+		// Remove empty state if present
+		const emptyEl = this.messagesContainerEl.querySelector(`.${cls("ai-chat-empty")}`);
+		if (emptyEl) emptyEl.remove();
+
+		this.renderMessage(msg);
+		this.messagesContainerEl.scrollTop = this.messagesContainerEl.scrollHeight;
 	}
 
 	private renderMessages(): void {

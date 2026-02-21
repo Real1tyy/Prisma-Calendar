@@ -2784,6 +2784,19 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		return "calendar";
 	}
 
+	getViewContext(): { viewType: string; currentStart: Date; currentEnd: Date } | null {
+		if (!this.calendar?.view) return null;
+		return {
+			viewType: this.calendar.view.type,
+			currentStart: this.calendar.view.currentStart,
+			currentEnd: this.calendar.view.currentEnd,
+		};
+	}
+
+	getBundle(): CalendarBundle {
+		return this.bundle;
+	}
+
 	refreshCalendar(): void {
 		this.bundle.refreshCalendar();
 	}

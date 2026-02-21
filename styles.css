@@ -4579,6 +4579,15 @@
 	gap: 8px;
 }
 
+.prisma-ai-chat-context-badge {
+	font-size: var(--font-smallest);
+	color: var(--text-muted);
+	padding: 4px 8px;
+	background: var(--background-secondary);
+	border-radius: 6px;
+	text-align: center;
+}
+
 .prisma-ai-chat-chips {
 	display: flex;
 	flex-wrap: wrap;
