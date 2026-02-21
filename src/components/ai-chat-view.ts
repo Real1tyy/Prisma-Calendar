@@ -8,10 +8,12 @@ export const AI_CHAT_VIEW_TYPE = "prisma-ai-chat";
 export class AIChatView extends MountableView(ItemView, "prisma") {
 	private chatManager: AIChatManager;
 	private messagesContainerEl!: HTMLElement;
+	private chipsContainerEl!: HTMLElement;
 	private textareaEl!: HTMLTextAreaElement;
 	private sendBtnEl!: HTMLButtonElement;
 	private isLoading = false;
 	private markdownComponent = new Component();
+	private selectedPromptIds = new Set<string>();
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -55,6 +57,10 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		// Input area
 		const inputArea = container.createDiv({ cls: cls("ai-chat-input-area") });
 
+		// Custom prompt chips
+		this.chipsContainerEl = inputArea.createDiv({ cls: cls("ai-chat-chips") });
+		this.renderPromptChips();
+
 		this.textareaEl = inputArea.createEl("textarea", {
 			cls: cls("ai-chat-textarea"),
 			attr: { placeholder: "Ask about your calendar...", rows: "3" },
@@ -87,6 +93,33 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		});
 	}
 
+	private renderPromptChips(): void {
+		this.chipsContainerEl.empty();
+		const customPrompts = this.plugin.settingsStore.currentSettings.ai.customPrompts;
+		if (customPrompts.length === 0) {
+			this.chipsContainerEl.hide();
+			return;
+		}
+		this.chipsContainerEl.show();
+
+		for (const prompt of customPrompts) {
+			const isActive = this.selectedPromptIds.has(prompt.id);
+			const chip = this.chipsContainerEl.createEl("button", {
+				text: prompt.title,
+				cls: `${cls("ai-chat-chip")}${isActive ? ` ${cls("ai-chat-chip-active")}` : ""}`,
+			});
+			chip.addEventListener("click", () => {
+				if (this.selectedPromptIds.has(prompt.id)) {
+					this.selectedPromptIds.delete(prompt.id);
+					chip.removeClass(cls("ai-chat-chip-active"));
+				} else {
+					this.selectedPromptIds.add(prompt.id);
+					chip.addClass(cls("ai-chat-chip-active"));
+				}
+			});
+		}
+	}
+
 	private async handleSend(): Promise<void> {
 		const message = this.textareaEl.value.trim();
 		if (!message || this.isLoading) return;
@@ -95,8 +128,9 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		this.setLoading(true);
 
 		try {
-			const customPrompts = this.plugin.settingsStore.currentSettings.ai.customPrompts;
-			await this.chatManager.sendMessage(message, customPrompts);
+			const allPrompts = this.plugin.settingsStore.currentSettings.ai.customPrompts;
+			const selectedPrompts = allPrompts.filter((p) => this.selectedPromptIds.has(p.id));
+			await this.chatManager.sendMessage(message, selectedPrompts);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
 			new Notice(`Prisma AI: ${errorMessage}`);

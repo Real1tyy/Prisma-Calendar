@@ -4579,6 +4579,39 @@
 	gap: 8px;
 }
 
+.prisma-ai-chat-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.prisma-ai-chat-chip {
+	padding: 3px 10px;
+	border-radius: 12px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-muted);
+	font-size: 12px;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+
+.prisma-ai-chat-chip:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.prisma-ai-chat-chip-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.prisma-ai-chat-chip-active:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-on-accent);
+}
+
 .prisma-ai-chat-textarea {
 	width: 100%;
 	resize: vertical;
