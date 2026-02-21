@@ -12,7 +12,6 @@ import {
 	PrismaCalendarApiManager,
 	SettingsStore,
 } from "./core";
-import { SecretManager } from "./core/secret-manager";
 import { type CalDAVAccount } from "./core/integrations/caldav";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
@@ -23,7 +22,6 @@ import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;
 	syncStore!: SyncStore<typeof PrismaSyncDataSchema>;
-	secretManager!: SecretManager;
 	calendarBundles: CalendarBundle[] = [];
 	apiManager!: PrismaCalendarApiManager;
 	private registeredViewTypes: Set<string> = new Set();
@@ -34,8 +32,6 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		this.syncStore = new SyncStore(this.app, this, PrismaSyncDataSchema);
 		await this.syncStore.loadData();
-
-		this.secretManager = new SecretManager(this.app);
 
 		const registry = IndexerRegistry.getInstance(this.app);
 		registry.setSyncStore(this.syncStore);

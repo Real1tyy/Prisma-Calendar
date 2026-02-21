@@ -83,4 +83,8 @@ export class SettingsStore<TSchema extends z.ZodTypeAny> {
 		const defaults = this.getDefaults();
 		return JSON.stringify(this.currentSettings) !== JSON.stringify(defaults);
 	}
+
+	getSecret(secretName: string): string {
+		return this.plugin.app.secretStorage.getSecret(secretName) ?? "";
+	}
 }
