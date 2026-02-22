@@ -72,7 +72,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Event Groups](features/events/event-series) - Group Events
+### [Event Groups](features/events/event-groups) - Group Events
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls

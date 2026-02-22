@@ -110,7 +110,7 @@ There's no "restart Obsidian to apply changes" here. Every setting change, every
 Every action you take — creating, editing, moving, deleting, batch operations — is tracked in a full memento history. Made a mistake? Hit undo. Changed your mind? Redo. You'll see exactly what's being reversed ("Undo Batch Delete", "Undo Move Event") so you're always in control. [Learn more →](/features/management/undo-redo)
 
 ### Recurring Events That Actually Work
-Define a source node with a frequency (daily, weekly, bi-weekly, monthly, or a [custom DSL](/features/events/recurring-dsl)), and Prisma generates **real Obsidian notes** for each instance — fully linked back to the source. [Virtual previews](/features/events/virtual-events) let you see future instances without cluttering your vault. Navigate between instances with one click, and view statistics about your recurring series at a glance. [Learn more →](/features/events/event-series)
+Define a source node with a frequency (daily, weekly, bi-weekly, monthly, or a [custom DSL](/features/events/recurring-dsl)), and Prisma generates **real Obsidian notes** for each instance — fully linked back to the source. [Virtual previews](/features/events/virtual-events) let you see future instances without cluttering your vault. Navigate between instances with one click, and view statistics about your recurring series at a glance. [Learn more →](/features/events/event-groups)
 
 ### Batch Operations at Scale
 Select multiple events and delete, duplicate, move, clone, skip, or open them — all at once. Shift entire weeks of events forward or backward. When you're managing a busy schedule, this isn't a nice-to-have — it's essential. [Learn more →](/features/management/batch-operations)

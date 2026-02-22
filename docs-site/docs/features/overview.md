@@ -45,7 +45,7 @@ Display custom properties inside event chips with clickable wikilinks and config
 
 ## [Recurring Events System](./events/recurring-dsl)
 
-Node-based architecture where one source file controls an entire series. Creates real Obsidian notes with complete frontmatter and content inheritance. [Virtual events](./events/virtual-events) show far-future instances without creating files. Includes calendar-based creation, source navigation, instance dropdown, and centralized [Events Browser](./events/event-series#events-browser) with type filters and quick actions.
+Node-based architecture where one source file controls an entire series. Creates real Obsidian notes with complete frontmatter and content inheritance. [Virtual events](./events/virtual-events) show far-future instances without creating files. Includes calendar-based creation, source navigation, instance dropdown, and centralized [Events Browser](./events/event-groups#events-browser) with type filters and quick actions.
 
 ---
 

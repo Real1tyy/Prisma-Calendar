@@ -26,7 +26,7 @@ const sidebars: SidebarsConfig = {
 						"features/events/event-previews",
 						"features/events/event-icons",
 						"features/events/event-skipping",
-						"features/events/event-series",
+						"features/events/event-groups",
 						"features/events/virtual-events",
 						"features/events/recurring-dsl",
 						"features/events/untracked-events",

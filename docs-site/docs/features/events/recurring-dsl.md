@@ -91,7 +91,7 @@ You can control how frontmatter changes are propagated in Settings → Calendar 
 
 5. If "Ask before propagating" is enabled, a modal shows all accumulated changes before applying them. If "Propagate frontmatter to instances" is enabled, changes are applied automatically after the debounce delay.
 
-📖 See [Frontmatter Propagation Settings](../../configuration/event-groups#frontmatter-propagation) for detailed configuration options including debounce delay and excluded properties. Propagation is also available for [name-based and property-based series](./event-series#frontmatter-propagation).
+📖 See [Frontmatter Propagation Settings](../../configuration/event-groups#frontmatter-propagation) for detailed configuration options including debounce delay and excluded properties. Propagation is also available for [name-based and property-based series](./event-groups#frontmatter-propagation).
 
 ### Start Date as Calculation Point
 
