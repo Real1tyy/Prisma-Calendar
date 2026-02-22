@@ -117,13 +117,10 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		// Context badge
 		this.contextBadgeEl = inputArea.createDiv({ cls: cls("ai-chat-context-badge") });
 
-		// Mode toggle
+		// Mode toggle row (mode buttons + custom prompt chips inline)
 		this.modeToggleEl = inputArea.createDiv({ cls: cls("ai-chat-mode-toggle") });
+		this.chipsContainerEl = this.modeToggleEl; // chips render into the same row
 		this.buildModeToggle();
-
-		// Custom prompt chips
-		this.chipsContainerEl = inputArea.createDiv({ cls: cls("ai-chat-chips") });
-		this.renderPromptChips();
 
 		this.textareaEl = inputArea.createEl("textarea", {
 			cls: cls("ai-chat-textarea"),
@@ -158,13 +155,11 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	private renderPromptChips(): void {
-		this.chipsContainerEl.empty();
 		const customPrompts = this.plugin.settingsStore.currentSettings.ai.customPrompts;
-		if (customPrompts.length === 0) {
-			this.chipsContainerEl.hide();
-			return;
-		}
-		this.chipsContainerEl.show();
+		if (customPrompts.length === 0) return;
+
+		// Vertical separator between mode group and prompt chips
+		this.chipsContainerEl.createDiv({ cls: cls("ai-chat-chips-separator") });
 
 		for (const prompt of customPrompts) {
 			const isActive = this.selectedPromptIds.has(prompt.id);
@@ -187,7 +182,9 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	private buildModeToggle(): void {
 		this.modeToggleEl.empty();
 
-		const queryBtn = this.modeToggleEl.createEl("button", {
+		const modeGroup = this.modeToggleEl.createDiv({ cls: cls("ai-chat-mode-group") });
+
+		const queryBtn = modeGroup.createEl("button", {
 			text: "Query",
 			cls: `${cls("ai-chat-mode-btn")}${this.currentMode === "query" ? ` ${cls("ai-chat-mode-active")}` : ""}`,
 		});
@@ -195,7 +192,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			if (this.currentMode !== "query") this.setMode("query");
 		});
 
-		const manipulateBtn = this.modeToggleEl.createEl("button", {
+		const manipulateBtn = modeGroup.createEl("button", {
 			text: "Manipulate",
 			cls: `${cls("ai-chat-mode-btn")}${this.currentMode === "manipulation" ? ` ${cls("ai-chat-mode-active")}` : ""}`,
 		});
@@ -203,13 +200,16 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			if (this.currentMode !== "manipulation") this.setMode("manipulation");
 		});
 
-		const planBtn = this.modeToggleEl.createEl("button", {
+		const planBtn = modeGroup.createEl("button", {
 			text: "Plan",
 			cls: `${cls("ai-chat-mode-btn")}${this.currentMode === "planning" ? ` ${cls("ai-chat-mode-active")}` : ""}`,
 		});
 		planBtn.addEventListener("click", () => {
 			if (this.currentMode !== "planning") this.setMode("planning");
 		});
+
+		// Render custom prompt chips inline after mode buttons
+		this.renderPromptChips();
 	}
 
 	private updateModeToggle(): void {
@@ -620,9 +620,28 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 
 		if (loading) {
 			this.sendBtnEl.setText("...");
+			this.showThinkingIndicator();
 		} else {
 			this.sendBtnEl.setText("Send");
+			this.removeThinkingIndicator();
 		}
+	}
+
+	private showThinkingIndicator(): void {
+		this.removeThinkingIndicator();
+		const indicator = this.messagesContainerEl.createDiv({
+			cls: `${cls("ai-chat-message")} ${cls("ai-chat-message-assistant")} ${cls("ai-chat-thinking")}`,
+		});
+		const dots = indicator.createDiv({ cls: cls("ai-chat-thinking-dots") });
+		dots.createSpan();
+		dots.createSpan();
+		dots.createSpan();
+		this.messagesContainerEl.scrollTop = this.messagesContainerEl.scrollHeight;
+	}
+
+	private removeThinkingIndicator(): void {
+		const el = this.messagesContainerEl.querySelector(`.${cls("ai-chat-thinking")}`);
+		if (el) el.remove();
 	}
 
 	private appendMessage(msg: ChatMessage): void {
