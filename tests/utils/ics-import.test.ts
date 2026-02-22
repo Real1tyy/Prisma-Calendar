@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { createICSFromEvents, type ICSExportOptions } from "../../src/core/integrations/ics-export";
+import { createICSFromEvents } from "../../src/core/integrations/ics-export";
 import {
 	buildFrontmatterFromImportedEvent,
 	type ImportedEvent,
 	parseICSContent,
 	parseICSRRule,
 } from "../../src/core/integrations/ics-import";
-import type { CalendarEvent } from "../../src/types/calendar";
 import type { SingleCalendarConfig } from "../../src/types/settings";
-import { createDefaultMetadata, createMockTimedEvent } from "../fixtures/event-fixtures";
+import { createDefaultMetadata, createICSExportOptions, createImportedEvent, createMockTimedEvent } from "../fixtures";
 import { createMockSingleCalendarSettings } from "../setup";
 
 const SAMPLE_ICS_SINGLE_EVENT = `BEGIN:VCALENDAR
@@ -481,8 +480,8 @@ END:VCALENDAR`;
 	});
 
 	describe("round-trip idempotency", () => {
-		function createMockEvent(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
-			const event = createMockTimedEvent({
+		function createMockEvent(overrides: Partial<Parameters<typeof createMockTimedEvent>[0]> = {}) {
+			return createMockTimedEvent({
 				id: "test-event-id",
 				ref: { filePath: "calendar/test-event-20250115143000.md" },
 				title: "Test Event",
@@ -490,31 +489,6 @@ END:VCALENDAR`;
 				end: "2025-01-15T11:00:00Z",
 				...overrides,
 			});
-			return event;
-		}
-
-		function createOptions(overrides: Partial<ICSExportOptions> = {}): ICSExportOptions {
-			return {
-				calendarName: "Test Calendar",
-				vaultName: "TestVault",
-				timezone: "UTC",
-				noteContents: new Map(),
-				categoryProp: "Category",
-				locationProp: "Location",
-				participantsProp: "Participants",
-				notifications: {
-					minutesBeforeProp: "Minutes Before",
-					daysBeforeProp: "Days Before",
-				},
-				excludeProps: {
-					startProp: "Start Date",
-					endProp: "End Date",
-					dateProp: "Date",
-					allDayProp: "All Day",
-					titleProp: "Title",
-				},
-				...overrides,
-			};
 		}
 
 		it("should preserve custom frontmatter through export and import cycle", () => {
@@ -526,7 +500,7 @@ END:VCALENDAR`;
 			};
 
 			const event = createMockEvent({ meta: originalMeta });
-			const exportResult = createICSFromEvents([event], createOptions());
+			const exportResult = createICSFromEvents([event], createICSExportOptions());
 			expect(exportResult.success).toBe(true);
 
 			const importResult = parseICSContent(exportResult.content!);
@@ -551,7 +525,7 @@ END:VCALENDAR`;
 			};
 
 			const event = createMockEvent({ meta: originalMeta });
-			const exportResult = createICSFromEvents([event], createOptions());
+			const exportResult = createICSFromEvents([event], createICSExportOptions());
 			expect(exportResult.success).toBe(true);
 
 			const importResult = parseICSContent(exportResult.content!);
@@ -572,7 +546,7 @@ END:VCALENDAR`;
 				ref: { filePath: "Tasks/Add A shortcut To Auto Tag nOtes-20251130110500.md" },
 			});
 
-			const exportResult = createICSFromEvents([event], createOptions());
+			const exportResult = createICSFromEvents([event], createICSExportOptions());
 			expect(exportResult.success).toBe(true);
 
 			const importResult = parseICSContent(exportResult.content!);
@@ -583,7 +557,7 @@ END:VCALENDAR`;
 		it("should preserve event ID through round-trip via UID", () => {
 			const event = createMockEvent({ id: "unique-event-id-123" });
 
-			const exportResult = createICSFromEvents([event], createOptions());
+			const exportResult = createICSFromEvents([event], createICSExportOptions());
 			expect(exportResult.success).toBe(true);
 			expect(exportResult.content).toContain("UID:unique-event-id-123");
 
@@ -610,7 +584,7 @@ END:VCALENDAR`;
 				},
 			});
 
-			const exportResult = createICSFromEvents([event], createOptions({ vaultName: "SecondBrain" }));
+			const exportResult = createICSFromEvents([event], createICSExportOptions({ vaultName: "SecondBrain" }));
 			expect(exportResult.success).toBe(true);
 			expect(exportResult.content).toContain("SUMMARY:Add A shortcut To Auto Tag nOtes");
 			expect(exportResult.content).toContain("X-PRISMA-VAULT:SecondBrain");
@@ -648,17 +622,6 @@ END:VCALENDAR`;
 			daysBeforeProp: "Days Before",
 			categoryProp: "Category",
 		};
-
-		function createImportedEvent(overrides: Partial<ImportedEvent> = {}): ImportedEvent {
-			return {
-				title: "Test Event",
-				start: new Date("2025-01-15T13:00:00.000Z"),
-				end: new Date("2025-01-15T14:00:00.000Z"),
-				allDay: false,
-				uid: "test-uid",
-				...overrides,
-			};
-		}
 
 		it("should convert timed event to UTC timezone (stays the same)", () => {
 			const event = createImportedEvent({
@@ -1116,17 +1079,6 @@ END:VCALENDAR`;
 			daysBeforeProp: "Days Before",
 			categoryProp: "Category",
 		};
-
-		function createImportedEvent(overrides: Partial<ImportedEvent> = {}): ImportedEvent {
-			return {
-				title: "Recurring Event",
-				start: new Date("2025-01-15T13:00:00.000Z"),
-				end: new Date("2025-01-15T14:00:00.000Z"),
-				allDay: false,
-				uid: "test-uid",
-				...overrides,
-			};
-		}
 
 		it("should set rruleProp when rrule is present", () => {
 			const event = createImportedEvent({

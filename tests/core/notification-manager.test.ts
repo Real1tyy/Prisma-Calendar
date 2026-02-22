@@ -4,7 +4,12 @@ import type { IndexerEvent, RawEventSource } from "../../src/core/indexer";
 import { NotificationManager } from "../../src/core/notification-manager";
 import type { SingleCalendarConfig } from "../../src/types/settings";
 import { parseAsLocalDate } from "../../src/utils/time-formatter";
-import { createDefaultMetadata } from "../fixtures/event-fixtures";
+import {
+	createDefaultMetadata,
+	createMockIntegrationApp,
+	createNotificationSettings,
+	createRawEventSource,
+} from "../fixtures";
 import type { MockApp } from "../mocks/obsidian";
 import { TFile } from "../mocks/obsidian";
 
@@ -19,25 +24,7 @@ describe("NotificationManager", () => {
 	let indexerEventsSubject: Subject<IndexerEvent>;
 	let mockIndexer: any;
 
-	const createDefaultSettings = (): SingleCalendarConfig =>
-		({
-			id: "test",
-			name: "Test Calendar",
-			enabled: true,
-			directory: "test-dir",
-			enableNotifications: true,
-			notificationSound: false,
-			defaultMinutesBefore: undefined,
-			minutesBeforeProp: "Minutes Before",
-			defaultDaysBefore: undefined,
-			daysBeforeProp: "Days Before",
-			alreadyNotifiedProp: "Already Notified",
-			startProp: "Start Date",
-			endProp: "End Date",
-			dateProp: "Date",
-			allDayProp: "All Day",
-			titleProp: "Title",
-		}) as SingleCalendarConfig;
+	const createDefaultSettings = (): SingleCalendarConfig => createNotificationSettings();
 
 	const createFutureDate = (hoursOffset: number = 2): Date => {
 		const date = new Date();
@@ -56,17 +43,6 @@ describe("NotificationManager", () => {
 		file.basename = basename;
 		return file;
 	};
-
-	const createRawEventSource = (overrides: Partial<RawEventSource> = {}): RawEventSource => ({
-		filePath: "event.md",
-		mtime: Date.now(),
-		frontmatter: {},
-		folder: "",
-		isAllDay: false,
-		isUntracked: false,
-		metadata: createDefaultMetadata(overrides.metadata),
-		...overrides,
-	});
 
 	const createTimedEventSource = (overrides: Partial<RawEventSource> = {}): RawEventSource => {
 		const futureDate = createFutureDate(2);
@@ -139,35 +115,7 @@ describe("NotificationManager", () => {
 		(global as any).Notification = mockNotification;
 
 		// Initialize mock app and its components
-		mockApp = {
-			fileManager: {
-				processFrontMatter: vi.fn(),
-				renameFile: vi.fn().mockResolvedValue(undefined),
-			},
-			metadataCache: {
-				getFileCache: vi.fn(),
-			},
-			vault: {
-				getAbstractFileByPath: vi.fn(),
-				on: vi.fn(),
-				read: vi.fn(),
-				cachedRead: vi.fn(),
-				modify: vi.fn(),
-				create: vi.fn(),
-				delete: vi.fn(),
-				rename: vi.fn(),
-				getFiles: vi.fn().mockReturnValue([]),
-				getMarkdownFiles: vi.fn().mockReturnValue([]),
-				getFolderByPath: vi.fn(),
-			},
-			workspace: {
-				getActiveFile: vi.fn(),
-				on: vi.fn(),
-				getLeaf: vi.fn().mockReturnValue({
-					openFile: vi.fn(),
-				}),
-			} as any,
-		};
+		mockApp = createMockIntegrationApp();
 
 		mockVault = mockApp.vault;
 		mockMetadataCache = mockApp.metadataCache;

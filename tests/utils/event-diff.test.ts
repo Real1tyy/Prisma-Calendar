@@ -1,41 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PrismaEventInput } from "../../src/types/calendar";
 import { diffEvents, eventFingerprint } from "../../src/utils/event-diff";
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function makeEvent(overrides: Partial<PrismaEventInput> & { id: string }): PrismaEventInput {
-	return {
-		title: "Event",
-		start: "2024-03-15T09:00:00",
-		end: "2024-03-15T10:00:00",
-		allDay: false,
-		backgroundColor: "#3788d8",
-		borderColor: "#3788d8",
-		className: "regular-event",
-		extendedProps: {
-			filePath: "events/test.md",
-			folder: "events",
-			originalTitle: "Event",
-			frontmatterDisplayData: {},
-			isVirtual: false,
-		},
-		...overrides,
-	} as PrismaEventInput;
-}
-
-/**
- * Build the `previous` map that `diffEvents` expects, from an array of events.
- */
-function buildPreviousMap(events: PrismaEventInput[]): Map<string, string> {
-	const map = new Map<string, string>();
-	for (const ev of events) {
-		map.set(ev.id as string, eventFingerprint(ev));
-	}
-	return map;
-}
+import { buildPreviousMap, createPrismaEventInput as makeEvent } from "../fixtures";
 
 // ---------------------------------------------------------------------------
 // eventFingerprint

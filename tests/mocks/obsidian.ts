@@ -255,6 +255,7 @@ export interface MockApp {
 	vault: {
 		getAbstractFileByPath: ReturnType<typeof vi.fn>;
 		on: ReturnType<typeof vi.fn>;
+		off: ReturnType<typeof vi.fn>;
 		read: ReturnType<typeof vi.fn>;
 		cachedRead: ReturnType<typeof vi.fn>;
 		modify: ReturnType<typeof vi.fn>;
@@ -284,6 +285,7 @@ export function createMockApp(): MockApp {
 		vault: {
 			getAbstractFileByPath: vi.fn(),
 			on: vi.fn(),
+			off: vi.fn(),
 			read: vi.fn(),
 			cachedRead: vi.fn(),
 			modify: vi.fn(),

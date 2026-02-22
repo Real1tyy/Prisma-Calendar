@@ -1,36 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	COMMON_TIMEZONES,
-	createICSFromEvents,
-	generateICSFilename,
-	type ICSExportOptions,
-} from "../../src/core/integrations/ics-export";
+import { COMMON_TIMEZONES, createICSFromEvents, generateICSFilename } from "../../src/core/integrations/ics-export";
 import type { CalendarEvent } from "../../src/types/calendar";
-import { createDefaultMetadata, createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
-
-function createOptions(overrides: Partial<ICSExportOptions> = {}): ICSExportOptions {
-	return {
-		calendarName: "Test Calendar",
-		vaultName: "TestVault",
-		timezone: "UTC",
-		noteContents: new Map(),
-		categoryProp: "Category",
-		locationProp: "Location",
-		participantsProp: "Participants",
-		notifications: {
-			minutesBeforeProp: "Minutes Before",
-			daysBeforeProp: "Days Before",
-		},
-		excludeProps: {
-			startProp: "Start Date",
-			endProp: "End Date",
-			dateProp: "Date",
-			allDayProp: "All Day",
-			titleProp: "Title",
-		},
-		...overrides,
-	};
-}
+import {
+	createDefaultMetadata,
+	createICSExportOptions as createOptions,
+	createMockAllDayEvent,
+	createMockTimedEvent,
+} from "../fixtures";
 
 describe("ICS Export", () => {
 	describe("createICSFromEvents", () => {

@@ -3,7 +3,8 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, type MockedFunction, vi } from "vitest";
 import { Indexer, type IndexerEvent } from "../../src/core/indexer";
 import type { Frontmatter } from "../../src/types";
-import { createMockFile as createMockTFile } from "../mocks/obsidian";
+import { createMockMetadataCache, createMockVault } from "../fixtures";
+import { createMockFile } from "../mocks/obsidian";
 import { createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
 
 describe("Indexer", () => {
@@ -17,22 +18,19 @@ describe("Indexer", () => {
 
 	beforeEach(async () => {
 		const filesStore: any[] = [];
-		mockVault = {
-			on: vi.fn(),
+		mockVault = createMockVault({
 			off: vi.fn(),
 			getMarkdownFiles: vi.fn(() => filesStore),
 			getAbstractFileByPath: vi.fn((path: string) => {
 				return filesStore.find((f: any) => f.path === path) || null;
 			}),
-			_setFiles: (files: any[]) => {
-				filesStore.length = 0;
-				filesStore.push(...files);
-			},
+		});
+		(mockVault as any)._setFiles = (files: any[]) => {
+			filesStore.length = 0;
+			filesStore.push(...files);
 		};
 
-		mockMetadataCache = {
-			getFileCache: vi.fn(),
-		};
+		mockMetadataCache = createMockMetadataCache();
 
 		settings = {
 			...createMockSingleCalendarSettings(),
@@ -466,9 +464,4 @@ describe("Indexer", () => {
 			indexerWithMarkDone.stop();
 		});
 	});
-
-	function createMockFile(path: string): TFile {
-		const parentPath = path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "";
-		return createMockTFile(path, { parentPath });
-	}
 });

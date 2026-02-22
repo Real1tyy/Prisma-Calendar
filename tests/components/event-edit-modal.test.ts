@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EventEditModal } from "../../src/components/modals";
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
+import { createMockIntegrationApp } from "../fixtures";
 
 describe("EventEditModal - Custom Properties", () => {
 	let mockApp: App;
@@ -9,15 +10,7 @@ describe("EventEditModal - Custom Properties", () => {
 	let updateEventMock: ReturnType<typeof vi.fn>;
 
 	beforeEach(() => {
-		// Mock App
-		mockApp = {
-			vault: {
-				getAbstractFileByPath: vi.fn(),
-			},
-			metadataCache: {
-				getFileCache: vi.fn(),
-			},
-		} as unknown as App;
+		mockApp = createMockIntegrationApp() as unknown as App;
 
 		updateEventMock = vi.fn().mockResolvedValue(null);
 

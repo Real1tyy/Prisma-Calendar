@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type EventQuery, EventStore } from "../../src/core/event-store";
 import type { IndexerEvent } from "../../src/core/indexer";
 import type { CalendarEvent } from "../../src/types/calendar";
-import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures/event-fixtures";
+import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures";
 
 describe("EventStore", () => {
 	let eventStore: EventStore;

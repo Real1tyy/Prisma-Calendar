@@ -1,10 +1,12 @@
-import type { App, TFile } from "obsidian";
+import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EventStore } from "../../src/core/event-store";
 import { Indexer } from "../../src/core/indexer";
 import { Parser } from "../../src/core/parser";
 import { RecurringEventManager } from "../../src/core/recurring-event-manager";
+import { createMockIntegrationApp } from "../fixtures";
+import { createMockFile } from "../mocks/obsidian";
 import { createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
 
 describe("Integration: Indexer -> Parser -> EventStore", () => {
@@ -18,16 +20,6 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 	let recurringEventManager: RecurringEventManager;
 
 	beforeEach(async () => {
-		mockVault = {
-			on: vi.fn(),
-			off: vi.fn(),
-			getMarkdownFiles: vi.fn().mockReturnValue([]),
-		};
-
-		mockMetadataCache = {
-			getFileCache: vi.fn(),
-		};
-
 		settings = {
 			...createMockSingleCalendarSettings(),
 			directory: "Events",
@@ -39,11 +31,9 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 		};
 
 		settingsStore = createMockSingleCalendarSettingsStore(settings);
-		const mockApp = {
-			vault: mockVault,
-			metadataCache: mockMetadataCache,
-			fileManager: { processFrontMatter: vi.fn() },
-		} as any;
+		const mockApp = createMockIntegrationApp() as any;
+		mockVault = mockApp.vault;
+		mockMetadataCache = mockApp.metadataCache;
 		indexer = new Indexer(mockApp, settingsStore, null);
 		parser = new Parser(mockApp as App, settingsStore);
 		recurringEventManager = new RecurringEventManager(
@@ -65,14 +55,6 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 		indexer.stop();
 		eventStore.destroy();
 	});
-
-	const createMockFile = (path: string): TFile =>
-		({
-			path,
-			extension: "md",
-			parent: { path: path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "" },
-			stat: { mtime: Date.now() },
-		}) as any;
 
 	describe("end-to-end event processing", () => {
 		it("should process a complete event lifecycle", () => {
