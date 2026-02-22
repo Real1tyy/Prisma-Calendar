@@ -98,6 +98,16 @@ const config: Config = {
 					position: "left",
 				},
 				{
+					to: "/gallery",
+					label: "Gallery",
+					position: "left",
+				},
+				{
+					to: "/changelog",
+					label: "Changelog",
+					position: "left",
+				},
+				{
 					href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4",
 					label: "YouTube Playlist",
 					position: "right",
@@ -105,6 +115,11 @@ const config: Config = {
 				{
 					href: "https://matejvavroproductivity.com/tools/prisma-calendar/",
 					label: "Website",
+					position: "right",
+				},
+				{
+					href: "https://matejvavroproductivity.com/tools/",
+					label: "Other Plugins",
 					position: "right",
 				},
 				{
@@ -135,6 +150,14 @@ const config: Config = {
 						{
 							label: "Video Tutorials",
 							to: "/videos",
+						},
+						{
+							label: "Gallery",
+							to: "/gallery",
+						},
+						{
+							label: "Changelog",
+							to: "/changelog",
 						},
 					],
 				},
