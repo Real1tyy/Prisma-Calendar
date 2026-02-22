@@ -1575,9 +1575,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		if (snapshot === this.colorDotSnapshot) return;
 		this.colorDotSnapshot = snapshot;
 
-		// Remove existing dots
-		const existingDots = Array.from(this.container.querySelectorAll(`.${cls("day-color-dots")}`));
-		for (const dot of existingDots) {
+		// Batch remove existing dots
+		for (const dot of Array.from(this.container.querySelectorAll(`.${cls("day-color-dots")}`))) {
 			dot.remove();
 		}
 
@@ -1594,7 +1593,8 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const colors = this.colorDotIndex.get(dateAttr);
 			if (!colors || colors.size === 0) continue;
 
-			// Create dots container
+			// Build dots in a DocumentFragment to minimize layout thrashing
+			const frag = document.createDocumentFragment();
 			const dotsContainer = document.createElement("div");
 			dotsContainer.className = cls("day-color-dots");
 
@@ -1607,11 +1607,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				dotsContainer.appendChild(dot);
 				count++;
 			}
+			frag.appendChild(dotsContainer);
 
-			const dayTop = dayCell.querySelector(".fc-daygrid-day-top");
-			if (dayTop) {
-				dayTop.appendChild(dotsContainer);
-			}
+			dayCell.querySelector(".fc-daygrid-day-top")?.appendChild(frag);
 		}
 	}
 
