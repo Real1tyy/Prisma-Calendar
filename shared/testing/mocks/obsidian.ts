@@ -197,8 +197,8 @@ export class Modal {
 
 // Notice mock
 export class Notice {
-	constructor(message: string) {
-		console.log(`Notice: ${message}`);
+	constructor(_message: string) {
+		// No-op: avoid polluting test output
 	}
 }
 
@@ -249,8 +249,11 @@ export interface MockApp {
 	};
 	vault: {
 		getAbstractFileByPath: ReturnType<typeof vi.fn>;
+		getFileByPath: ReturnType<typeof vi.fn>;
 		on: ReturnType<typeof vi.fn>;
+		off: ReturnType<typeof vi.fn>;
 		read: ReturnType<typeof vi.fn>;
+		cachedRead: ReturnType<typeof vi.fn>;
 		modify: ReturnType<typeof vi.fn>;
 		create: ReturnType<typeof vi.fn>;
 		delete: ReturnType<typeof vi.fn>;
@@ -266,18 +269,28 @@ export interface MockApp {
 }
 
 // Helper function to create a fully mocked app
-export function createMockApp(): MockApp {
+export function createMockApp(overrides?: {
+	vault?: Partial<MockApp["vault"]>;
+	metadataCache?: Partial<MockApp["metadataCache"]>;
+	fileManager?: Partial<MockApp["fileManager"]>;
+	workspace?: Partial<MockApp["workspace"]>;
+}): MockApp {
 	return {
 		fileManager: {
 			processFrontMatter: vi.fn(),
+			...overrides?.fileManager,
 		},
 		metadataCache: {
 			getFileCache: vi.fn(),
+			...overrides?.metadataCache,
 		},
 		vault: {
 			getAbstractFileByPath: vi.fn(),
+			getFileByPath: vi.fn(),
 			on: vi.fn(),
+			off: vi.fn(),
 			read: vi.fn(),
+			cachedRead: vi.fn(),
 			modify: vi.fn(),
 			create: vi.fn(),
 			delete: vi.fn(),
@@ -285,10 +298,12 @@ export function createMockApp(): MockApp {
 			getFiles: vi.fn().mockReturnValue([]),
 			getMarkdownFiles: vi.fn().mockReturnValue([]),
 			getFolderByPath: vi.fn(),
+			...overrides?.vault,
 		},
 		workspace: {
 			getActiveFile: vi.fn(),
 			on: vi.fn(),
+			...overrides?.workspace,
 		},
 	};
 }
