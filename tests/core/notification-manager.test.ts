@@ -103,6 +103,9 @@ describe("NotificationManager", () => {
 		vi.useFakeTimers();
 		vi.setSystemTime(new Date("2025-02-17T12:00:00.000Z"));
 
+		// Suppress expected console.error noise from production code error paths
+		vi.spyOn(console, "error").mockImplementation(() => {});
+
 		// Mock Web Notifications API
 		const mockNotification = vi.fn().mockImplementation((_title: string, _options?: NotificationOptions) => {
 			return {

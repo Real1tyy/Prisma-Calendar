@@ -48,6 +48,9 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
+		// Suppress expected console.error noise from production code error paths
+		vi.spyOn(console, "error").mockImplementation(() => {});
+
 		// Setup mock implementations for date utilities
 		mockGetNextOccurrence.mockImplementation(
 			(currentDate: DateTime, recurrenceType: string, originalDateTime: DateTime) => {
