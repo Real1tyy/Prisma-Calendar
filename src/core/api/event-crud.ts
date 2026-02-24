@@ -1,7 +1,9 @@
+import type { Command } from "@real1ty-obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 import type CustomCalendarPlugin from "../../main";
 import { setUntrackedEventBasics } from "../../utils/event-frontmatter";
 import { ensureISOSuffix } from "../../utils/format";
+import type { CalendarBundle } from "../calendar-bundle";
 import { ConvertFileToEventCommand } from "../commands/update-commands";
 import { resolveBundleOrNotice } from "./bundle-resolver";
 import { buildDeleteEventCommand, buildEditEventCommand } from "./command-builders";
@@ -12,6 +14,12 @@ import type {
 	PrismaDeleteEventInput,
 	PrismaEditEventInput,
 } from "./types";
+
+async function executeBuiltCommand(result: { command: Command; bundle: CalendarBundle } | null): Promise<boolean> {
+	if (!result) return false;
+	await result.bundle.commandManager.executeCommand(result.command);
+	return true;
+}
 
 export async function createUntrackedEvent(
 	plugin: CustomCalendarPlugin,
@@ -63,19 +71,11 @@ export async function createEvent(plugin: CustomCalendarPlugin, input: PrismaCre
 }
 
 export async function editEvent(plugin: CustomCalendarPlugin, input: PrismaEditEventInput): Promise<boolean> {
-	const result = buildEditEventCommand(plugin, input);
-	if (!result) return false;
-
-	await result.bundle.commandManager.executeCommand(result.command);
-	return true;
+	return executeBuiltCommand(buildEditEventCommand(plugin, input));
 }
 
 export async function deleteEvent(plugin: CustomCalendarPlugin, input: PrismaDeleteEventInput): Promise<boolean> {
-	const result = buildDeleteEventCommand(plugin, input);
-	if (!result) return false;
-
-	await result.bundle.commandManager.executeCommand(result.command);
-	return true;
+	return executeBuiltCommand(buildDeleteEventCommand(plugin, input));
 }
 
 export async function convertFileToEvent(

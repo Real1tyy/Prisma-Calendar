@@ -11,8 +11,21 @@ import {
 	getWeekBounds,
 } from "../../utils/weekly-stats";
 import { toLocalISOString } from "../../utils/format";
+import type { CalendarBundle } from "../calendar-bundle";
 import { resolveBundle, resolveBundleOrNotice } from "./bundle-resolver";
 import type { PrismaCalendarInfo, PrismaStatEntry, PrismaStatisticsOutput } from "./types";
+
+function bundleToCalendarInfo(bundle: CalendarBundle): PrismaCalendarInfo {
+	const settings = bundle.settingsStore.currentSettings;
+	return {
+		calendarId: bundle.calendarId,
+		name: settings.name,
+		directory: settings.directory,
+		enabled: true,
+		eventCount: bundle.eventStore.getAllEvents().length,
+		untrackedEventCount: bundle.untrackedEventStore.getUntrackedEvents().length,
+	};
+}
 
 export function refreshCalendar(plugin: CustomCalendarPlugin, input?: { calendarId?: string }): void {
 	const bundle = resolveBundleOrNotice(plugin, input?.calendarId);
@@ -26,29 +39,11 @@ export function getCalendarInfo(
 ): PrismaCalendarInfo | null {
 	const bundle = resolveBundle(plugin, input?.calendarId);
 	if (!bundle) return null;
-	const settings = bundle.settingsStore.currentSettings;
-	return {
-		calendarId: bundle.calendarId,
-		name: settings.name,
-		directory: settings.directory,
-		enabled: true,
-		eventCount: bundle.eventStore.getAllEvents().length,
-		untrackedEventCount: bundle.untrackedEventStore.getUntrackedEvents().length,
-	};
+	return bundleToCalendarInfo(bundle);
 }
 
 export function listCalendars(plugin: CustomCalendarPlugin): PrismaCalendarInfo[] {
-	return plugin.calendarBundles.map((bundle) => {
-		const settings = bundle.settingsStore.currentSettings;
-		return {
-			calendarId: bundle.calendarId,
-			name: settings.name,
-			directory: settings.directory,
-			enabled: true,
-			eventCount: bundle.eventStore.getAllEvents().length,
-			untrackedEventCount: bundle.untrackedEventStore.getUntrackedEvents().length,
-		};
-	});
+	return plugin.calendarBundles.map(bundleToCalendarInfo);
 }
 
 export async function getStatistics(

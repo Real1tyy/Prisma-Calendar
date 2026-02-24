@@ -1,41 +1,26 @@
+import type { Command } from "@real1ty-obsidian-plugins";
+import type { App } from "obsidian";
 import type CustomCalendarPlugin from "../../main";
+import type { CalendarBundle } from "../calendar-bundle";
 import { CloneEventCommand } from "../commands/lifecycle-commands";
 import { MarkAsDoneCommand, MarkAsUndoneCommand, ToggleSkipCommand } from "../commands/status-commands";
 import { MoveEventCommand } from "../commands/update-commands";
 import { resolveBundleOrNotice } from "./bundle-resolver";
 
-export async function markAsDone(
-	plugin: CustomCalendarPlugin,
-	input: { filePath: string; calendarId?: string }
-): Promise<boolean> {
-	const bundle = resolveBundleOrNotice(plugin, input.calendarId);
-	if (!bundle) return false;
-	const command = new MarkAsDoneCommand(plugin.app, bundle, input.filePath);
-	await bundle.commandManager.executeCommand(command);
-	return true;
+type StatusCommandCtor = new (app: App, bundle: CalendarBundle, filePath: string) => Command;
+
+function statusOp(Ctor: StatusCommandCtor) {
+	return async (plugin: CustomCalendarPlugin, input: { filePath: string; calendarId?: string }): Promise<boolean> => {
+		const bundle = resolveBundleOrNotice(plugin, input.calendarId);
+		if (!bundle) return false;
+		await bundle.commandManager.executeCommand(new Ctor(plugin.app, bundle, input.filePath));
+		return true;
+	};
 }
 
-export async function markAsUndone(
-	plugin: CustomCalendarPlugin,
-	input: { filePath: string; calendarId?: string }
-): Promise<boolean> {
-	const bundle = resolveBundleOrNotice(plugin, input.calendarId);
-	if (!bundle) return false;
-	const command = new MarkAsUndoneCommand(plugin.app, bundle, input.filePath);
-	await bundle.commandManager.executeCommand(command);
-	return true;
-}
-
-export async function toggleSkip(
-	plugin: CustomCalendarPlugin,
-	input: { filePath: string; calendarId?: string }
-): Promise<boolean> {
-	const bundle = resolveBundleOrNotice(plugin, input.calendarId);
-	if (!bundle) return false;
-	const command = new ToggleSkipCommand(plugin.app, bundle, input.filePath);
-	await bundle.commandManager.executeCommand(command);
-	return true;
-}
+export const markAsDone = statusOp(MarkAsDoneCommand);
+export const markAsUndone = statusOp(MarkAsUndoneCommand);
+export const toggleSkip = statusOp(ToggleSkipCommand);
 
 export async function cloneEvent(
 	plugin: CustomCalendarPlugin,
@@ -55,7 +40,8 @@ export async function moveEvent(
 ): Promise<boolean> {
 	const bundle = resolveBundleOrNotice(plugin, input.calendarId);
 	if (!bundle) return false;
-	const command = new MoveEventCommand(plugin.app, bundle, input.filePath, input.offsetMs, input.offsetMs);
-	await bundle.commandManager.executeCommand(command);
+	await bundle.commandManager.executeCommand(
+		new MoveEventCommand(plugin.app, bundle, input.filePath, input.offsetMs, input.offsetMs)
+	);
 	return true;
 }
