@@ -92,10 +92,11 @@ export class CalDAVSettings {
 			desc: "Show notifications when calendar sync completes",
 		});
 
-		this.ui.addColorPicker(containerEl, {
+		this.ui.addOptionalColorPicker(containerEl, {
 			key: "caldav.integrationEventColor",
 			name: "Integration event color",
-			desc: "Color to apply to calendar-synced events (overrides color rules)",
+			descWhenSet: "Color applied to synced events. Clear to use your color rules instead.",
+			descWhenEmpty: "Disabled — synced events use your color rules.",
 			fallback: "#8b5cf6",
 		});
 	}

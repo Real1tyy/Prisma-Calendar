@@ -32,11 +32,13 @@ export function resolveEventColor(
 	const settings = bundle.settingsStore.currentSettings;
 
 	if (meta[settings.caldavProp]) {
-		return bundle.getCalDAVSettings().integrationEventColor;
+		const color = bundle.getCalDAVSettings().integrationEventColor;
+		if (color) return color;
 	}
 
 	if (meta[settings.icsSubscriptionProp]) {
-		return bundle.getICSSubscriptionSettings().integrationEventColor;
+		const color = bundle.getICSSubscriptionSettings().integrationEventColor;
+		if (color) return color;
 	}
 
 	const normalized = normalizeFrontmatterForColorEvaluation(meta, settings.colorRules);

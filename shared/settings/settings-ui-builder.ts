@@ -6,6 +6,7 @@ interface BaseSettingConfig {
 	key: string;
 	name: string;
 	desc: string;
+	onChanged?: () => void;
 }
 
 interface TextSettingConfig extends BaseSettingConfig {
@@ -35,6 +36,14 @@ interface ArraySettingConfig<T = string> extends BaseSettingConfig {
 }
 
 interface ColorPickerSettingConfig extends BaseSettingConfig {
+	fallback?: string;
+}
+
+interface OptionalColorPickerSettingConfig {
+	key: string;
+	name: string;
+	descWhenSet: string;
+	descWhenEmpty: string;
 	fallback?: string;
 }
 
@@ -263,7 +272,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 	}
 
 	addToggle(containerEl: HTMLElement, config: BaseSettingConfig): void {
-		const { key, name, desc } = config;
+		const { key, name, desc, onChanged } = config;
 		const value = this.getNestedValue(key);
 
 		new Setting(containerEl)
@@ -272,6 +281,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			.addToggle((toggle) =>
 				toggle.setValue(Boolean(value)).onChange(async (newValue) => {
 					await this.updateSetting(key, newValue);
+					onChanged?.();
 				})
 			);
 	}
@@ -327,7 +337,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 	}
 
 	addSlider(containerEl: HTMLElement, config: SliderSettingConfig): void {
-		const { key, name, desc, step = 1, commitOnChange = false } = config;
+		const { key, name, desc, step = 1, commitOnChange = false, onChanged } = config;
 		const value = this.getNestedValue(key);
 
 		const inferredBounds = this.inferSliderBounds(key);
@@ -344,12 +354,14 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 					// Reactive: commit on every change
 					slider.onChange(async (newValue) => {
 						await this.updateSetting(key, newValue);
+						onChanged?.();
 					});
 				} else {
 					// Commit only when user finishes dragging
 					const commit = async (newValue: number) => {
 						try {
 							await this.updateSetting(key, newValue);
+							onChanged?.();
 						} catch (error) {
 							new Notice(`Invalid input: ${error}`, 5000);
 						}
@@ -378,7 +390,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 	}
 
 	addText(containerEl: HTMLElement, config: TextSettingConfig): void {
-		const { key, name, desc, placeholder = "", commitOnChange = false } = config;
+		const { key, name, desc, placeholder = "", commitOnChange = false, onChanged } = config;
 		const value = this.getNestedValue(key);
 
 		new Setting(containerEl)
@@ -392,12 +404,14 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 					// Reactive: commit on every change
 					text.onChange(async (newValue) => {
 						await this.updateSetting(key, newValue);
+						onChanged?.();
 					});
 				} else {
 					// Commit only on blur or Ctrl/Cmd+Enter
 					const commit = async (inputValue: string) => {
 						try {
 							await this.updateSetting(key, inputValue);
+							onChanged?.();
 						} catch (error) {
 							new Notice(`Invalid input: ${error}`, 5000);
 						}
@@ -415,7 +429,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 	}
 
 	addDropdown(containerEl: HTMLElement, config: DropdownSettingConfig): void {
-		const { key, name, desc, options } = config;
+		const { key, name, desc, options, onChanged } = config;
 		const value = this.getNestedValue(key);
 
 		new Setting(containerEl)
@@ -427,12 +441,13 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 					.setValue(String(value))
 					.onChange(async (newValue) => {
 						await this.updateSetting(key, newValue);
+						onChanged?.();
 					})
 			);
 	}
 
 	addColorPicker(containerEl: HTMLElement, config: ColorPickerSettingConfig): void {
-		const { key, name, desc, fallback } = config;
+		const { key, name, desc, fallback, onChanged } = config;
 		const value = this.getNestedValue(key);
 
 		new Setting(containerEl)
@@ -441,8 +456,40 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			.addColorPicker((colorPicker) =>
 				colorPicker.setValue(String(value ?? fallback ?? "#000000")).onChange(async (newValue) => {
 					await this.updateSetting(key, newValue || fallback || "#000000");
+					onChanged?.();
 				})
 			);
+	}
+
+	addOptionalColorPicker(containerEl: HTMLElement, config: OptionalColorPickerSettingConfig): void {
+		const { key, name, descWhenSet, descWhenEmpty, fallback = "#000000" } = config;
+		const wrapper = containerEl.createDiv();
+
+		const render = (): void => {
+			wrapper.empty();
+			const color = String(this.getNestedValue(key) ?? "");
+
+			const setting = new Setting(wrapper).setName(name).addColorPicker((picker) => {
+				picker.setValue(color || fallback).onChange(async (value) => {
+					await this.updateSetting(key, value);
+					render();
+				});
+			});
+
+			if (color) {
+				setting.setDesc(descWhenSet);
+				setting.addButton((button) => {
+					button.setButtonText("Clear").onClick(async () => {
+						await this.updateSetting(key, "");
+						render();
+					});
+				});
+			} else {
+				setting.setDesc(descWhenEmpty);
+			}
+		};
+
+		render();
 	}
 
 	addTextArray<T = string>(containerEl: HTMLElement, config: ArraySettingConfig<T>): void {
@@ -454,6 +501,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			arrayDelimiter = ", ",
 			multiline = false,
 			commitOnChange = false,
+			onChanged,
 		} = config;
 		const value = this.getNestedValue(key) as T[];
 
@@ -489,6 +537,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 					try {
 						const items = lines.map(parser).filter(validator);
 						await this.updateSetting(key, items);
+						onChanged?.();
 					} catch (error) {
 						new Notice(`Invalid input: ${error}`, 5000);
 					}
@@ -527,6 +576,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 					try {
 						const items = tokens.map(parser).filter(validator);
 						await this.updateSetting(key, items);
+						onChanged?.();
 					} catch (error) {
 						new Notice(`Invalid input: ${error}`, 5000);
 					}

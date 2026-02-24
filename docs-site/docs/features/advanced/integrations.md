@@ -216,7 +216,7 @@ Configure automatic synchronization behavior:
 | **Sync on startup** | `true` | Sync when Obsidian starts |
 | **Sync interval** | 15 minutes | How often to sync (1-1440 minutes) |
 | **Show sync notifications** | `true` | Display sync status messages |
-| **Integration event color** | Purple | Color applied to CalDAV-synced events (overrides color rules) |
+| **Integration event color** | Purple | Color applied to CalDAV-synced events. Clear to use [color rules](../organization/color-rules) instead |
 | **Calendar icon** | None | Optional icon/emoji displayed on synced events to identify the source calendar |
 
 **Manual Sync**: Use **"Sync now"** button in CalDAV settings to trigger immediate synchronization.
@@ -259,7 +259,9 @@ CalDAV-synced events display with a custom color:
 2. Set **"Integration event color"** (default: purple `#8b5cf6`)
 3. Calendar immediately updates all CalDAV events
 
-**Color Priority**: CalDAV integration color overrides other [color rules](../organization/color-rules).
+To disable the integration color and let synced events use your normal [color rules](../organization/color-rules), click **"Clear"** next to the color picker. You can re-enable it at any time by picking a new color.
+
+**Color Priority**: When set, CalDAV integration color overrides other [color rules](../organization/color-rules). When cleared, synced events follow the same color resolution as all other events.
 
 ### Title Changes and File Renaming
 
@@ -326,7 +328,7 @@ Configure automatic synchronization behavior:
 | **Sync on startup** | `true` | Sync when Obsidian starts |
 | **Sync interval** | 60 minutes | How often to sync (per subscription) |
 | **Show sync notifications** | `true` | Display sync status messages |
-| **Integration event color** | Purple | Color applied to ICS subscription-synced events (overrides color rules) |
+| **Integration event color** | Purple | Color applied to ICS subscription-synced events. Clear to use [color rules](../organization/color-rules) instead |
 | **Calendar icon** | None | Optional icon/emoji displayed on synced events to identify the source calendar |
 
 **Manual Sync**: Use **"Sync now"** button in subscription settings or run the **"Prisma Calendar: Sync ICS subscriptions"** command.

@@ -87,10 +87,11 @@ export class ICSSubscriptionSettings {
 			desc: "Show notifications when ICS subscription sync completes",
 		});
 
-		this.ui.addColorPicker(containerEl, {
+		this.ui.addOptionalColorPicker(containerEl, {
 			key: "icsSubscriptions.integrationEventColor",
 			name: "Integration event color",
-			desc: "Color to apply to ICS subscription-synced events (overrides color rules)",
+			descWhenSet: "Color applied to synced events. Clear to use your color rules instead.",
+			descWhenEmpty: "Disabled — synced events use your color rules.",
 			fallback: "#8b5cf6",
 		});
 	}
