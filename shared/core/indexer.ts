@@ -5,7 +5,7 @@ import {
 	fromEventPattern,
 	lastValueFrom,
 	merge,
-	type Observable,
+	Observable,
 	of,
 	BehaviorSubject as RxBehaviorSubject,
 	Subject,
@@ -78,7 +78,7 @@ export interface IndexerEvent {
 	isRename?: boolean;
 }
 
-type VaultEvent = "create" | "modify" | "delete" | "rename";
+type VaultEvent = "create" | "delete" | "rename";
 
 type FileIntent =
 	| { kind: "changed"; file: TFile; path: string; oldPath?: string }
@@ -203,13 +203,6 @@ export class Indexer {
 			);
 		}
 
-		if (eventName === "modify") {
-			return fromEventPattern<TAbstractFile>(
-				(handler) => this.vault.on("modify", handler),
-				(handler) => this.vault.off("modify", handler)
-			);
-		}
-
 		if (eventName === "delete") {
 			return fromEventPattern<TAbstractFile>(
 				(handler) => this.vault.on("delete", handler),
@@ -222,6 +215,22 @@ export class Indexer {
 			(handler) => this.vault.on("rename", handler),
 			(handler) => this.vault.off("rename", handler)
 		).pipe(map(([file]) => file));
+	}
+
+	/**
+	 * Create an observable from metadataCache "changed" events.
+	 * Unlike vault.on("modify"), this fires AFTER the metadata cache has been
+	 * updated for the file, guaranteeing that getFileCache() returns fresh frontmatter.
+	 */
+	private fromMetadataCacheChanged(): Observable<TFile> {
+		return new Observable<TFile>((subscriber) => {
+			const ref = this.metadataCache.on("changed", (file: TFile) => {
+				subscriber.next(file);
+			});
+			return () => {
+				this.metadataCache.offref(ref);
+			};
+		});
 	}
 
 	private static isMarkdownFile(f: TAbstractFile): f is TFile {
@@ -251,11 +260,19 @@ export class Indexer {
 	}
 
 	/**
-	 * Build the file system events observable stream
+	 * Build the file system events observable stream.
+	 *
+	 * Uses metadataCache "changed" instead of vault "modify" to detect file changes.
+	 * vault.on("modify") fires BEFORE the metadata cache updates, which causes stale
+	 * frontmatter reads during batch operations. metadataCache "changed" fires AFTER
+	 * the cache is updated, guaranteeing getFileCache() returns fresh data.
+	 *
+	 * vault.on("create") is kept as a safety net for new files (metadataCache "changed"
+	 * also covers these, and the debounce deduplicates).
 	 */
 	private buildFileSystemEvents$(): Observable<IndexerEvent> {
 		const created$ = this.fromVaultEvent("create").pipe(this.toRelevantFiles());
-		const modified$ = this.fromVaultEvent("modify").pipe(this.toRelevantFiles());
+		const metadataChanged$ = this.fromMetadataCacheChanged().pipe(this.toRelevantFiles());
 		const deleted$ = this.fromVaultEvent("delete").pipe(this.toRelevantFiles());
 
 		const renamed$ = fromEventPattern<[TAbstractFile, string]>(
@@ -263,7 +280,7 @@ export class Indexer {
 			(handler) => this.vault.off("rename", handler)
 		);
 
-		const changedIntents$ = merge(created$, modified$).pipe(
+		const changedIntents$ = merge(created$, metadataChanged$).pipe(
 			this.debounceByPath(this.config.debounceMs, (f) => f.path),
 			map((file): FileIntent => ({ kind: "changed", file, path: file.path }))
 		);
