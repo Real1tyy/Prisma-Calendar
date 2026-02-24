@@ -45,7 +45,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		this.registerCommands();
 		this.registerAIChatView();
-		this.apiManager.exposeProgrammaticApi();
+		this.apiManager.expose();
 
 		this.app.workspace.onLayoutReady(() => {
 			void this.waitForMetadataResolve().then(() => {
@@ -66,7 +66,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		const registry = IndexerRegistry.getInstance(this.app);
 		registry.destroy();
-		this.apiManager.unexposeProgrammaticApi();
+		this.apiManager.unexpose();
 	}
 
 	async ensureCalendarViewFocus(leaf: WorkspaceLeaf): Promise<void> {

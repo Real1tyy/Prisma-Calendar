@@ -1,3 +1,4 @@
+import { ParamCoercion, PluginApiGateway, type ActionDefMap } from "@real1ty-obsidian-plugins";
 import type { Command } from "@real1ty-obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 import { CalendarView } from "../components/calendar-view";
@@ -17,6 +18,12 @@ import type { CalendarBundle } from "./calendar-bundle";
 import { CreateEventCommand, DeleteEventCommand, type EventData } from "./commands/lifecycle-commands";
 import { AddZettelIdCommand, ConvertFileToEventCommand, EditEventCommand } from "./commands/update-commands";
 import { MinimizedModalManager } from "./minimized-modal-manager";
+
+type NavigateInput = {
+	date?: string;
+	view?: string;
+	calendarId?: string;
+};
 
 interface PrismaEventInput {
 	title?: string;
@@ -51,65 +58,30 @@ interface PrismaConvertEventInput extends PrismaEventInput {
 	calendarId?: string;
 }
 
-interface PrismaCalendarApi {
-	openCreateEventModal: (options?: {
-		calendarId?: string;
-		autoStartStopwatch?: boolean;
-		openCreatedInNewTab?: boolean;
-	}) => void;
-	openEditActiveNoteModal: (options?: { calendarId?: string }) => Promise<boolean>;
-	createUntrackedEvent: (title: string, options?: { calendarId?: string }) => Promise<string | null>;
-	createEvent: (input: PrismaCreateEventInput) => Promise<string | null>;
-	editEvent: (input: PrismaEditEventInput) => Promise<boolean>;
-	deleteEvent: (input: PrismaDeleteEventInput) => Promise<boolean>;
-	convertFileToEvent: (input: PrismaConvertEventInput) => Promise<boolean>;
-	addZettelIdToActiveNote: (options?: { calendarId?: string }) => Promise<boolean>;
-}
-
 export class PrismaCalendarApiManager {
-	private readonly apiGlobalKey = "PrismaCalendar";
+	private readonly gateway: PluginApiGateway<ActionDefMap>;
 
-	constructor(private readonly plugin: CustomCalendarPlugin) {}
+	constructor(private readonly plugin: CustomCalendarPlugin) {
+		this.gateway = new PluginApiGateway({
+			plugin: this.plugin,
+			globalKey: "PrismaCalendar",
+			protocolKey: "prisma-calendar",
+			actions: this.buildActions(),
+		});
+	}
 
 	// ─── API Registration ─────────────────────────────────────────
 
-	exposeProgrammaticApi(): void {
-		const api: PrismaCalendarApi = {
-			openCreateEventModal: (options) => {
-				void this.openCreateEventModal(
-					options?.calendarId,
-					options?.autoStartStopwatch ?? false,
-					options?.openCreatedInNewTab ?? false
-				);
-			},
-			openEditActiveNoteModal: async (options) => {
-				return await this.openEditActiveNoteModal(options?.calendarId);
-			},
-			createUntrackedEvent: async (title, options) => {
-				return await this.createUntrackedEvent(title, options?.calendarId);
-			},
-			createEvent: async (input) => {
-				return await this.createEvent(input);
-			},
-			editEvent: async (input) => {
-				return await this.editEvent(input);
-			},
-			deleteEvent: async (input) => {
-				return await this.deleteEvent(input);
-			},
-			convertFileToEvent: async (input) => {
-				return await this.convertFileToEvent(input);
-			},
-			addZettelIdToActiveNote: async (options) => {
-				return await this.addZettelIdToActiveNote(options?.calendarId);
-			},
-		};
-
-		(window as unknown as Record<string, unknown>)[this.apiGlobalKey] = api;
+	expose(): void {
+		this.gateway.expose();
 	}
 
-	unexposeProgrammaticApi(): void {
-		delete (window as unknown as Record<string, unknown>)[this.apiGlobalKey];
+	unexpose(): void {
+		this.gateway.unexpose();
+	}
+
+	buildUrl(call: string, params?: Record<string, string | number | boolean>): string {
+		return this.gateway.buildUrl(call, params);
 	}
 
 	// ─── Modal Actions ────────────────────────────────────────────
@@ -328,6 +300,46 @@ export class PrismaCalendarApiManager {
 		return await bundle.redo();
 	}
 
+	// ─── Navigation ──────────────────────────────────────────────
+
+	async navigateToDate(input: NavigateInput): Promise<boolean> {
+		console.debug("[PrismaCalendar] navigateToDate called with:", JSON.stringify(input));
+
+		const bundle = this.resolveBundleOrNotice(input.calendarId);
+		if (!bundle) {
+			console.debug("[PrismaCalendar] navigateToDate: no bundle resolved");
+			return false;
+		}
+
+		await bundle.activateCalendarView();
+
+		const { workspace } = this.plugin.app;
+		const existingLeaves = workspace.getLeavesOfType(bundle.viewType);
+		const calendarLeaf = existingLeaves[0];
+		if (!calendarLeaf) {
+			console.debug("[PrismaCalendar] navigateToDate: no calendar leaf found for viewType:", bundle.viewType);
+			return false;
+		}
+
+		const calendarView = calendarLeaf.view;
+		if (!(calendarView instanceof CalendarView)) {
+			console.debug("[PrismaCalendar] navigateToDate: leaf view is not CalendarView");
+			return false;
+		}
+
+		const date = input.date ? new Date(input.date) : new Date();
+		console.debug(
+			"[PrismaCalendar] navigateToDate: date =",
+			date,
+			"view =",
+			input.view,
+			"isValidDate =",
+			!isNaN(date.getTime())
+		);
+		calendarView.navigateToDate(date, input.view);
+		return true;
+	}
+
 	// ─── Command Builders (for batch execution) ─────────────────
 
 	buildCreateEventCommand(input: PrismaCreateEventInput): { command: Command; bundle: CalendarBundle } | null {
@@ -401,6 +413,124 @@ export class PrismaCalendarApiManager {
 
 		const command = new DeleteEventCommand(this.plugin.app, bundle, file.path);
 		return { command, bundle };
+	}
+
+	// ─── Action Definitions ──────────────────────────────────────
+
+	private buildActions(): ActionDefMap {
+		return {
+			openCreateEventModal: {
+				handler: (options?: { calendarId?: string; autoStartStopwatch?: boolean; openCreatedInNewTab?: boolean }) => {
+					void this.openCreateEventModal(
+						options?.calendarId,
+						options?.autoStartStopwatch ?? false,
+						options?.openCreatedInNewTab ?? false
+					);
+				},
+				parseParams: (raw: Record<string, string>) => ({
+					calendarId: ParamCoercion.string(raw, "calendarId"),
+					autoStartStopwatch: ParamCoercion.boolean(raw, "autoStartStopwatch"),
+					openCreatedInNewTab: ParamCoercion.boolean(raw, "openCreatedInNewTab"),
+				}),
+			},
+			openEditActiveNoteModal: {
+				handler: async (options?: { calendarId?: string }) => {
+					await this.openEditActiveNoteModal(options?.calendarId);
+				},
+				parseParams: (raw: Record<string, string>) => ({
+					calendarId: ParamCoercion.string(raw, "calendarId"),
+				}),
+			},
+			createUntrackedEvent: {
+				handler: async (input: { title: string; calendarId?: string }) => {
+					await this.createUntrackedEvent(input.title, input.calendarId);
+				},
+				parseParams: (raw: Record<string, string>) => ({
+					title: ParamCoercion.required.string(raw, "title"),
+					calendarId: ParamCoercion.string(raw, "calendarId"),
+				}),
+			},
+			createEvent: {
+				handler: async (input: PrismaCreateEventInput) => {
+					await this.createEvent(input);
+				},
+				parseParams: (raw: Record<string, string>) => ({
+					title: ParamCoercion.required.string(raw, "title"),
+					start: ParamCoercion.string(raw, "start"),
+					end: ParamCoercion.string(raw, "end"),
+					allDay: ParamCoercion.boolean(raw, "allDay"),
+					categories: ParamCoercion.stringArray(raw, "categories"),
+					location: ParamCoercion.string(raw, "location"),
+					participants: ParamCoercion.stringArray(raw, "participants"),
+					markAsDone: ParamCoercion.boolean(raw, "markAsDone"),
+					skip: ParamCoercion.boolean(raw, "skip"),
+					calendarId: ParamCoercion.string(raw, "calendarId"),
+				}),
+			},
+			editEvent: {
+				handler: async (input: PrismaEditEventInput) => {
+					await this.editEvent(input);
+				},
+				parseParams: (raw: Record<string, string>) => ({
+					filePath: ParamCoercion.required.string(raw, "filePath"),
+					title: ParamCoercion.string(raw, "title"),
+					start: ParamCoercion.string(raw, "start"),
+					end: ParamCoercion.string(raw, "end"),
+					allDay: ParamCoercion.boolean(raw, "allDay"),
+					categories: ParamCoercion.stringArray(raw, "categories"),
+					location: ParamCoercion.string(raw, "location"),
+					participants: ParamCoercion.stringArray(raw, "participants"),
+					markAsDone: ParamCoercion.boolean(raw, "markAsDone"),
+					skip: ParamCoercion.boolean(raw, "skip"),
+					calendarId: ParamCoercion.string(raw, "calendarId"),
+				}),
+			},
+			deleteEvent: {
+				handler: async (input: PrismaDeleteEventInput) => {
+					await this.deleteEvent(input);
+				},
+				parseParams: (raw: Record<string, string>) => ({
+					filePath: ParamCoercion.required.string(raw, "filePath"),
+					calendarId: ParamCoercion.string(raw, "calendarId"),
+				}),
+			},
+			convertFileToEvent: {
+				handler: async (input: PrismaConvertEventInput) => {
+					await this.convertFileToEvent(input);
+				},
+				parseParams: (raw: Record<string, string>) => ({
+					filePath: ParamCoercion.required.string(raw, "filePath"),
+					title: ParamCoercion.string(raw, "title"),
+					start: ParamCoercion.string(raw, "start"),
+					end: ParamCoercion.string(raw, "end"),
+					allDay: ParamCoercion.boolean(raw, "allDay"),
+					categories: ParamCoercion.stringArray(raw, "categories"),
+					location: ParamCoercion.string(raw, "location"),
+					participants: ParamCoercion.stringArray(raw, "participants"),
+					markAsDone: ParamCoercion.boolean(raw, "markAsDone"),
+					skip: ParamCoercion.boolean(raw, "skip"),
+					calendarId: ParamCoercion.string(raw, "calendarId"),
+				}),
+			},
+			addZettelIdToActiveNote: {
+				handler: async (options?: { calendarId?: string }) => {
+					await this.addZettelIdToActiveNote(options?.calendarId);
+				},
+				parseParams: (raw: Record<string, string>) => ({
+					calendarId: ParamCoercion.string(raw, "calendarId"),
+				}),
+			},
+			navigateToDate: {
+				handler: async (input: NavigateInput) => {
+					await this.navigateToDate(input);
+				},
+				parseParams: (raw: Record<string, string>) => ({
+					date: ParamCoercion.string(raw, "date"),
+					view: ParamCoercion.string(raw, "view"),
+					calendarId: ParamCoercion.string(raw, "calendarId"),
+				}),
+			},
+		};
 	}
 
 	// ─── Utilities ───────────────────────────────────────────────

@@ -68,21 +68,23 @@ Opens the edit modal for the currently active note (same as "Edit current note a
 const opened = await window.PrismaCalendar.openEditActiveNoteModal();
 ```
 
-### `createUntrackedEvent(title, options?)`
+### `createUntrackedEvent(input)`
 
 Creates a Prisma note with ZettelID and no date properties (same as "Create new untracked event").
 
-**Arguments:**
+**Input:**
 
-- `title` (string) — Event name
-- `options.calendarId` (string?) — Target calendar ID
+| Property     | Type   | Required | Description            |
+| ------------ | ------ | -------- | ---------------------- |
+| `title`      | string | yes      | Event name             |
+| `calendarId` | string | no       | Target calendar ID     |
 
 **Returns:** `Promise<string | null>` — File path of the created note, or `null` if creation failed.
 
 **Example:**
 
 ```javascript
-const path = await window.PrismaCalendar.createUntrackedEvent("Quick capture");
+const path = await window.PrismaCalendar.createUntrackedEvent({ title: "Quick capture" });
 ```
 
 ### `createEvent(input)`
@@ -235,11 +237,105 @@ Adds ZettelID to the currently active note (same as "Add ZettelID to current not
 const ok = await window.PrismaCalendar.addZettelIdToActiveNote();
 ```
 
+### `navigateToDate(input)`
+
+Opens the calendar and navigates to a specific date and view type.
+
+**Input:**
+
+| Property     | Type   | Required | Description                                                                 |
+| ------------ | ------ | -------- | --------------------------------------------------------------------------- |
+| `date`       | string | no       | ISO date or datetime to navigate to (e.g. `2026-02-24`). Defaults to today. |
+| `view`       | string | no       | View type: `dayGridMonth`, `timeGridWeek`, `timeGridDay`, or `listWeek`.    |
+| `calendarId` | string | no       | Target calendar ID                                                          |
+
+**Returns:** `Promise<boolean>` — `true` if the calendar was opened and navigated, `false` otherwise.
+
+**Example:**
+
+```javascript
+// Open weekly view for a specific date
+await window.PrismaCalendar.navigateToDate({
+  date: "2026-03-01",
+  view: "timeGridWeek"
+});
+
+// Open today in daily view
+await window.PrismaCalendar.navigateToDate({ view: "timeGridDay" });
+
+// Open monthly view (defaults to today)
+await window.PrismaCalendar.navigateToDate({ view: "dayGridMonth" });
+```
+
 ## Undo / Redo Support
 
 All API methods that modify files are fully undoable and redoable via **Ctrl+Z** / **Ctrl+Shift+Z** (or the Undo/Redo toolbar buttons). This includes `createEvent`, `editEvent`, `deleteEvent`, `createUntrackedEvent`, `convertFileToEvent`, `addZettelIdToActiveNote`, and `openEditActiveNoteModal`. Undo reverts frontmatter changes and any file renames (e.g., ZettelID addition), and Redo re-applies them.
 
 Undo and Redo commands are available globally — they work from the command palette regardless of whether the calendar view is focused. The commands automatically resolve the last used calendar.
+
+## URL Protocol Handler
+
+All API actions are also accessible via `obsidian://` URLs, enabling cross-app automation, browser bookmarks, iOS Shortcuts, and integration with external tools. The URL format is:
+
+```
+obsidian://prisma-calendar?call=actionName&param1=value1&param2=value2
+```
+
+The `call` parameter selects the action. All remaining parameters are passed to that action.
+
+### Examples
+
+**Create an event:**
+
+```
+obsidian://prisma-calendar?call=createEvent&title=Meeting&start=2026-02-24T09:00:00&end=2026-02-24T10:00:00&categories=Work
+```
+
+**Open the create event modal with stopwatch:**
+
+```
+obsidian://prisma-calendar?call=openCreateEventModal&autoStartStopwatch=true
+```
+
+**Delete an event by file path:**
+
+```
+obsidian://prisma-calendar?call=deleteEvent&filePath=Calendar/240101120000 Meeting.md
+```
+
+**Edit an event:**
+
+```
+obsidian://prisma-calendar?call=editEvent&filePath=Calendar/240101120000 Meeting.md&start=2026-02-24T10:00:00
+```
+
+**Navigate to a date in weekly view:**
+
+```
+obsidian://prisma-calendar?call=navigateToDate&date=2026-03-01&view=timeGridWeek
+```
+
+**Open today in daily view:**
+
+```
+obsidian://prisma-calendar?call=navigateToDate&view=timeGridDay
+```
+
+**Open monthly view for a specific month:**
+
+```
+obsidian://prisma-calendar?call=navigateToDate&date=2026-06-01&view=dayGridMonth
+```
+
+### Parameter encoding
+
+- **Booleans**: use `true` / `false` or `1` / `0`
+- **Arrays** (e.g., `categories`, `participants`): comma-separated values (e.g., `categories=Work,Personal`)
+- **Strings with special characters**: URL-encode as usual (e.g., spaces become `%20`)
+
+### Available URL actions
+
+All API methods are URL-accessible: `openCreateEventModal`, `openEditActiveNoteModal`, `createUntrackedEvent`, `createEvent`, `editEvent`, `deleteEvent`, `convertFileToEvent`, `addZettelIdToActiveNote`, and `navigateToDate`. The parameters match the corresponding JavaScript API — see the method documentation above.
 
 ## Calendar Selection
 

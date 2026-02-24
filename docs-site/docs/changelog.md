@@ -16,10 +16,13 @@ All notable changes to this project will be documented here.
 - **AI Planning mode**: A new "Plan" mode in the AI chat sidebar where you describe how you want to allocate your time and the AI fills your calendar with non-overlapping events. The AI uses your previous interval's events as context to learn your patterns (work blocks, lunch timing, gym schedule) and plans around existing events. Same execution pipeline as Manipulation mode — batch undo, preview cards, and configurable settings all apply. See [AI Chat — Planning Mode](./features/advanced/ai-chat.md#planning-mode).
 - **Programmatic `editEvent` and `deleteEvent` API methods**: The scripting API on `window.PrismaCalendar` now supports editing and deleting events by file path, enabling automation for event lifecycle management. See [Programmatic API](./features/advanced/programmatic-api.md).
 - **Optional integration event color**: CalDAV and ICS subscription event colors can now be cleared, allowing synced events to use your [color rules](./features/organization/color-rules.md) instead of a forced integration color. See [Integrations](./features/advanced/integrations.md).
+- **URL protocol handler**: All programmatic API actions are now accessible via `obsidian://prisma-calendar?call=actionName&param=value` URLs, enabling cross-app automation, bookmarks, and integration with external tools. See [Programmatic API](./features/advanced/programmatic-api.md#url-protocol-handler).
+- **Programmatic `navigateToDate` API method**: Open the calendar at a specific date and view type (daily, weekly, monthly, or list) via the scripting API or URL protocol. See [Programmatic API](./features/advanced/programmatic-api.md#navigatetodateinput).
 
 ### Changed
 
 - **Time tracker initial end time**: Starting the stopwatch now sets the end time to start + 5 minutes (matching the periodic sync interval) instead of using the configured default duration, since the end time is continuously updated while tracking. See [Time Tracker](./features/management/time-tracker.md).
+- **`createUntrackedEvent` API signature**: Now takes a single object `{ title, calendarId? }` instead of two arguments `(title, options?)`, consistent with all other API methods. See [Programmatic API](./features/advanced/programmatic-api.md).
 
 ### Fixed
 

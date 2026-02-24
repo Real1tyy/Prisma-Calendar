@@ -1,3 +1,5 @@
+// API gateway
+export * from "./api-gateway";
 // Command pattern
 export * from "./commands";
 // View component
