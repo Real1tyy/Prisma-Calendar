@@ -2,7 +2,7 @@ import { sanitizeForFilename } from "@real1ty-obsidian-plugins";
 import { type App, Notice, normalizePath, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { Frontmatter } from "../../types";
-import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
+import { extractZettelId, removeZettelId } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { SettingsStore } from "../settings-store";
 import { buildFrontmatterFromImportedEvent, createEventNoteFromImportedEvent, type ImportedEvent } from "./ics-import";

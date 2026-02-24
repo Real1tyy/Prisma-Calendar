@@ -5,7 +5,7 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
-import { removeZettelId } from "../../utils/calendar-events";
+import { removeZettelId } from "../../utils/event-naming";
 import { resolveEventColor } from "../../utils/event-color";
 import { calculateEventStatistics } from "../../utils/event-statistics";
 import { EventSeriesBasesViewModal, type EventSeriesBasesViewConfig } from "../modals/event-series-bases-view-modal";

@@ -5,7 +5,8 @@ import type { App, TFile } from "obsidian";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import type { RecurrenceType } from "../../types/recurring-event";
 import type { Weekday } from "../../utils/date-recurrence";
-import { extractZettelId, generateUniqueEventPath, removeZettelId, setEventBasics } from "../../utils/calendar-events";
+import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/event-naming";
+import { setEventBasics } from "../../utils/event-frontmatter";
 import { parseIntoList } from "@real1ty-obsidian-plugins";
 import type { CalendarBundle } from "../calendar-bundle";
 

@@ -18,6 +18,22 @@ export interface IntervalConfig {
 	formatDateRange(start: Date, end: Date): string;
 }
 
+type StepFn = (date: Date, direction: 1 | -1) => void;
+
+type NavigationConfig = Pick<
+	IntervalConfig,
+	"navigateNext" | "navigatePrevious" | "navigateFastNext" | "navigateFastPrevious"
+>;
+
+export function createNavigationConfig(step: StepFn, fastStep: StepFn): NavigationConfig {
+	return {
+		navigateNext: (date) => step(date, 1),
+		navigatePrevious: (date) => step(date, -1),
+		navigateFastNext: (date) => fastStep(date, 1),
+		navigateFastPrevious: (date) => fastStep(date, -1),
+	};
+}
+
 export abstract class IntervalStatsModal extends StatsModal {
 	protected currentDate: Date;
 	protected abstract intervalConfig: IntervalConfig;

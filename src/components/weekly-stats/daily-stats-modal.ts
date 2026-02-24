@@ -1,45 +1,21 @@
 import type { App } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import type { CalendarEvent } from "../../types/calendar";
-import type { AggregationMode, Stats } from "../../utils/weekly-stats";
 import { aggregateDailyStats, getDayBounds, getMonthBounds, getWeekBounds } from "../../utils/weekly-stats";
 import type { IntervalConfig } from "./interval-stats-modal";
-import { IntervalStatsModal } from "./interval-stats-modal";
+import { createNavigationConfig, IntervalStatsModal } from "./interval-stats-modal";
 
 export class DailyStatsModal extends IntervalStatsModal {
 	private calendarViewType?: string;
 
 	protected intervalConfig: IntervalConfig = {
-		getBounds: (date: Date) => getDayBounds(date),
-
-		navigateNext: (date: Date) => {
-			date.setDate(date.getDate() + 1);
-		},
-
-		navigatePrevious: (date: Date) => {
-			date.setDate(date.getDate() - 1);
-		},
-
-		navigateFastNext: (date: Date) => {
-			date.setDate(date.getDate() + 10);
-		},
-
-		navigateFastPrevious: (date: Date) => {
-			date.setDate(date.getDate() - 10);
-		},
-
-		aggregateStats: (events: CalendarEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats => {
-			return aggregateDailyStats(events, date, mode, categoryProp);
-		},
-
-		formatDateRange: (start: Date, _end: Date): string => {
-			return start.toLocaleDateString("en-US", {
-				weekday: "long",
-				month: "short",
-				day: "numeric",
-				year: "numeric",
-			});
-		},
+		...createNavigationConfig(
+			(date, dir) => date.setDate(date.getDate() + dir),
+			(date, dir) => date.setDate(date.getDate() + 10 * dir)
+		),
+		getBounds: (date) => getDayBounds(date),
+		aggregateStats: (events, date, mode, categoryProp) => aggregateDailyStats(events, date, mode, categoryProp),
+		formatDateRange: (start) =>
+			start.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" }),
 	};
 
 	constructor(app: App, bundle: CalendarBundle, initialDate?: Date, calendarViewType?: string) {

@@ -14,19 +14,21 @@ import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import {
-	applyStartEndOffsets,
-	assignListToFrontmatter,
 	ensureFileHasZettelId,
 	extractZettelId,
 	generateUniqueEventPath,
+	rebuildPhysicalInstanceWithNewDate,
+	removeZettelId,
+} from "../../utils/event-naming";
+import {
+	applyStartEndOffsets,
+	assignListToFrontmatter,
 	isPhysicalRecurringEvent,
 	parseCustomDoneProperty,
-	rebuildPhysicalInstanceWithNewDate,
 	removeNonCloneableProperties,
-	removeZettelId,
 	setEventBasics,
 	shouldUpdateInstanceDateOnMove,
-} from "../../utils/calendar-events";
+} from "../../utils/event-frontmatter";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { Command } from "@real1ty-obsidian-plugins";
 

@@ -4,7 +4,7 @@ import {
 	autoAssignCategories,
 	findFuzzyNameMatch,
 	normalizeEventNameForComparison,
-} from "../../src/utils/calendar-events";
+} from "../../src/utils/event-matching";
 
 describe("Auto-Category Assignment", () => {
 	describe("normalizeEventNameForComparison", () => {

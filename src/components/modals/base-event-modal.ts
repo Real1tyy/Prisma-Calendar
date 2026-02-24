@@ -22,13 +22,11 @@ import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } fro
 import type { EventPreset } from "../../types/settings";
 import {
 	assignListToFrontmatter,
-	autoAssignCategories,
-	findAdjacentEvent,
-	findFuzzyNameMatch,
 	parseCustomDoneProperty,
 	setEventBasics,
 	setUntrackedEventBasics,
-} from "../../utils/calendar-events";
+} from "../../utils/event-frontmatter";
+import { autoAssignCategories, findAdjacentEvent, findFuzzyNameMatch } from "../../utils/event-matching";
 import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
 import {
 	calculateDurationMinutes,

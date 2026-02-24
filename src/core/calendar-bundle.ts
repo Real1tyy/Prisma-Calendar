@@ -4,7 +4,7 @@ import { type Subscription, filter, firstValueFrom } from "rxjs";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type { EventSaveData } from "../components/modals/base-event-modal";
 import type CustomCalendarPlugin from "../main";
-import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/calendar-events";
+import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/event-naming";
 import { intoDate } from "../utils/format";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import type { CategoryTracker } from "./category-tracker";

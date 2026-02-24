@@ -1,7 +1,7 @@
 import { parseIntoList, parsePositiveInt, serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
 import { MinimizedModalManager } from "../../core/minimized-modal-manager";
 import { WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
-import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
+import { extractZettelId, removeZettelId } from "../../utils/event-naming";
 import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
 import { categorizeProperties } from "../../utils/format";
 import { BaseEventModal } from "./base-event-modal";

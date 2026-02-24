@@ -5,7 +5,7 @@ import type { App } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type { ParsedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
-import { removeZettelId } from "../utils/calendar-events";
+import { removeZettelId } from "../utils/event-naming";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
 import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
 

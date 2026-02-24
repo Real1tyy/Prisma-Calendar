@@ -6,7 +6,7 @@ import { EventCreateModal, EventEditModal } from "../components/modals";
 import type { StopwatchSnapshot } from "../components/stopwatch";
 import type { Frontmatter } from "../types";
 import type { EventPreset } from "../types/settings";
-import { getEventName } from "../utils/calendar-events";
+import { getEventName } from "../utils/event-naming";
 import { formatDateTimeForInput, inputValueToISOString } from "../utils/format";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import { formatMsToHHMMSS, formatMsToMMSS } from "../utils/time-formatter";

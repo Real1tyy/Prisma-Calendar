@@ -3,8 +3,8 @@ import type { DateTime } from "luxon";
 import type { Frontmatter } from "../types";
 import type { CalendarEvent, CalendarEventData } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
-import { cleanupTitle } from "./calendar-events";
-import { getInternalProperties } from "./calendar-events";
+import { cleanupTitle } from "./event-naming";
+import { getInternalProperties } from "./event-frontmatter";
 import { extractPropertyText, getDisplayProperties } from "./property-display";
 
 /**

@@ -21,14 +21,13 @@ import type { CalendarEvent, Frontmatter, ISO, PrismaSyncDataSchema } from "../t
 import type { EventMetadata } from "../types/event";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
+import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/event-naming";
 import {
 	applyFrontmatterChangesToInstance,
 	filterExcludedPropsFromDiff,
 	getRecurringInstanceExcludedProps,
-	hashRRuleIdToZettelFormat,
-	removeZettelId,
 	setEventBasics,
-} from "../utils/calendar-events";
+} from "../utils/event-frontmatter";
 import { getNextOccurrence } from "../utils/date-recurrence";
 import { applySourceTimeToInstanceDate } from "../utils/format";
 import { batchedPromiseAll, deleteFilesByPaths, getFileByPathOrThrow, trashDuplicateFile } from "../utils/obsidian";

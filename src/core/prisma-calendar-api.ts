@@ -6,11 +6,11 @@ import type CustomCalendarPlugin from "../main";
 import type { Frontmatter } from "../types";
 import {
 	assignListToFrontmatter,
-	autoAssignCategories,
 	parseCustomDoneProperty,
 	setEventBasics,
 	setUntrackedEventBasics,
-} from "../utils/calendar-events";
+} from "../utils/event-frontmatter";
+import { autoAssignCategories } from "../utils/event-matching";
 import { ensureISOSuffix, roundToNearestHour, toLocalISOString } from "../utils/format";
 import { openFileInNewTab } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";

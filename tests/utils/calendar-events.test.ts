@@ -7,16 +7,18 @@ import {
 	extractZettelId,
 	generateUniqueEventPath,
 	generateUniqueZettelId,
-	getCommonCategories,
 	hashRRuleIdToZettelFormat,
 	hasTimestamp,
+	rebuildPhysicalInstanceWithNewDate,
+	removeZettelId,
+} from "../../src/utils/event-naming";
+import {
+	getCommonCategories,
 	isEventDone,
 	isPhysicalRecurringEvent,
 	parseCustomDoneProperty,
-	rebuildPhysicalInstanceWithNewDate,
-	removeZettelId,
 	shouldUpdateInstanceDateOnMove,
-} from "../../src/utils/calendar-events";
+} from "../../src/utils/event-frontmatter";
 import { createMockTimedEvent } from "../fixtures/event-fixtures";
 import { createMockApp, createMockFile, createMockSingleCalendarSettings } from "../setup";
 

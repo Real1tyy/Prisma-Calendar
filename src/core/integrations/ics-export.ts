@@ -4,7 +4,7 @@ import { type App, Notice, TFile } from "obsidian";
 import type { ExportOptions } from "../../components/modals/calendar-select-modal";
 import type { CalendarEvent } from "../../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
-import { extractZettelId, removeZettelId } from "../../utils/calendar-events";
+import { extractZettelId, removeZettelId } from "../../utils/event-naming";
 
 interface NotificationSettings {
 	minutesBeforeProp?: string;

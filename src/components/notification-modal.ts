@@ -8,7 +8,7 @@ import {
 import { type App, Modal } from "obsidian";
 import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
-import { removeZettelId } from "../utils/calendar-events";
+import { removeZettelId } from "../utils/event-naming";
 import { createTextDiv } from "../utils/dom-utils";
 import { categorizeProperties } from "../utils/format";
 

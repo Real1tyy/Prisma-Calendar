@@ -5,7 +5,7 @@ import { Timeline, type TimelineOptions } from "vis-timeline";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { cleanupTitle } from "../../utils/calendar-events";
+import { cleanupTitle } from "../../utils/event-naming";
 import { resolveEventColor } from "../../utils/event-color";
 import { buildEventTooltip } from "../../utils/format";
 import { EventPreviewModal, type PreviewEventData } from "../event-preview-modal";

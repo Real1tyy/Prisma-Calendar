@@ -1,6 +1,6 @@
 import { cls } from "@real1ty-obsidian-plugins";
 import { type App, SuggestModal } from "obsidian";
-import type { FuzzyNameMatch } from "../../utils/calendar-events";
+import type { FuzzyNameMatch } from "../../utils/event-matching";
 
 export class TypoSuggestionModal extends SuggestModal<FuzzyNameMatch> {
 	private suggestions: FuzzyNameMatch[];

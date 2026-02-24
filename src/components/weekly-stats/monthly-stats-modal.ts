@@ -1,39 +1,16 @@
-import type { CalendarEvent } from "../../types/calendar";
-import type { AggregationMode, Stats } from "../../utils/weekly-stats";
 import { aggregateMonthlyStats, getMonthBounds } from "../../utils/weekly-stats";
 import type { IntervalConfig } from "./interval-stats-modal";
-import { IntervalStatsModal } from "./interval-stats-modal";
+import { createNavigationConfig, IntervalStatsModal } from "./interval-stats-modal";
 
 export class MonthlyStatsModal extends IntervalStatsModal {
 	protected intervalConfig: IntervalConfig = {
-		getBounds: (date: Date) => getMonthBounds(date),
-
-		navigateNext: (date: Date) => {
-			date.setMonth(date.getMonth() + 1);
-		},
-
-		navigatePrevious: (date: Date) => {
-			date.setMonth(date.getMonth() - 1);
-		},
-
-		navigateFastNext: (date: Date) => {
-			date.setFullYear(date.getFullYear() + 1);
-		},
-
-		navigateFastPrevious: (date: Date) => {
-			date.setFullYear(date.getFullYear() - 1);
-		},
-
-		aggregateStats: (events: CalendarEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats => {
-			return aggregateMonthlyStats(events, date, mode, categoryProp);
-		},
-
-		formatDateRange: (start: Date, _end: Date): string => {
-			return start.toLocaleDateString("en-US", {
-				month: "long",
-				year: "numeric",
-			});
-		},
+		...createNavigationConfig(
+			(date, dir) => date.setMonth(date.getMonth() + dir),
+			(date, dir) => date.setFullYear(date.getFullYear() + dir)
+		),
+		getBounds: (date) => getMonthBounds(date),
+		aggregateStats: (events, date, mode, categoryProp) => aggregateMonthlyStats(events, date, mode, categoryProp),
+		formatDateRange: (start) => start.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
 	};
 
 	protected getModalTitle(): string {

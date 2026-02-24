@@ -15,13 +15,8 @@ import { SCAN_CONCURRENCY } from "../constants";
 import { type EventMetadata, parseEventMetadata } from "../types/event";
 import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
-import {
-	cleanupTitle,
-	ensureFileHasZettelId,
-	generateUniqueRruleId,
-	getRecurringInstanceExcludedProps,
-	hasTimestamp,
-} from "../utils/calendar-events";
+import { cleanupTitle, ensureFileHasZettelId, generateUniqueRruleId, hasTimestamp } from "../utils/event-naming";
+import { getRecurringInstanceExcludedProps } from "../utils/event-frontmatter";
 import { intoDate, toSafeString } from "../utils/format";
 
 export interface RawEventSource {

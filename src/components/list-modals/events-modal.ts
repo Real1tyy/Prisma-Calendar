@@ -4,7 +4,7 @@ import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { AssignCategoriesCommand, ToggleSkipCommand } from "../../core/commands";
 import { type NodeRecurringEvent, RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
-import { getEventName, removeZettelId } from "../../utils/calendar-events";
+import { getEventName, removeZettelId } from "../../utils/event-naming";
 import type { RecurrenceType } from "../../utils/date-recurrence";
 import { getCategoriesFromFilePath, openFileInNewTab } from "../../utils/obsidian";
 import { getStartDateTime } from "../../utils/recurring-utils";

@@ -1,42 +1,19 @@
-import type { CalendarEvent } from "../../types/calendar";
-import type { AggregationMode, Stats } from "../../utils/weekly-stats";
 import { aggregateWeeklyStats, getWeekBounds } from "../../utils/weekly-stats";
 import type { IntervalConfig } from "./interval-stats-modal";
-import { IntervalStatsModal } from "./interval-stats-modal";
+import { createNavigationConfig, IntervalStatsModal } from "./interval-stats-modal";
 
 export class WeeklyStatsModal extends IntervalStatsModal {
 	protected intervalConfig: IntervalConfig = {
-		getBounds: (date: Date) => getWeekBounds(date),
-
-		navigateNext: (date: Date) => {
-			date.setDate(date.getDate() + 7);
-		},
-
-		navigatePrevious: (date: Date) => {
-			date.setDate(date.getDate() - 7);
-		},
-
-		navigateFastNext: (date: Date) => {
-			date.setDate(date.getDate() + 28);
-		},
-
-		navigateFastPrevious: (date: Date) => {
-			date.setDate(date.getDate() - 28);
-		},
-
-		aggregateStats: (events: CalendarEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats => {
-			return aggregateWeeklyStats(events, date, mode, categoryProp);
-		},
-
-		formatDateRange: (start: Date, end: Date): string => {
-			const formatDate = (date: Date): string => {
-				return date.toLocaleDateString("en-US", {
-					month: "short",
-					day: "numeric",
-					year: "numeric",
-				});
-			};
-			return `${formatDate(start)} - ${formatDate(end)}`;
+		...createNavigationConfig(
+			(date, dir) => date.setDate(date.getDate() + 7 * dir),
+			(date, dir) => date.setDate(date.getDate() + 28 * dir)
+		),
+		getBounds: (date) => getWeekBounds(date),
+		aggregateStats: (events, date, mode, categoryProp) => aggregateWeeklyStats(events, date, mode, categoryProp),
+		formatDateRange: (start, end) => {
+			const fmt = (d: Date): string =>
+				d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+			return `${fmt(start)} - ${fmt(end)}`;
 		},
 	};
 

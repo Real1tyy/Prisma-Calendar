@@ -9,7 +9,8 @@ import type { EventMetadata } from "../types/event";
 import { convertToISO, parseEventFrontmatter } from "../types/event";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
 
-import { applyDateNormalizationToFile, getEventName } from "../utils/calendar-events";
+import { getEventName } from "../utils/event-naming";
+import { applyDateNormalizationToFile } from "../utils/event-frontmatter";
 import type { RawEventSource } from "./indexer";
 
 export class Parser {

@@ -18,7 +18,9 @@ import { MacroCommand } from "@real1ty-obsidian-plugins";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
 import { type ContextMenuItem, isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
-import { findAdjacentEvent, getEventName, isEventDone, parseCustomDoneProperty } from "../utils/calendar-events";
+import { getEventName } from "../utils/event-naming";
+import { isEventDone, parseCustomDoneProperty } from "../utils/event-frontmatter";
+import { findAdjacentEvent } from "../utils/event-matching";
 import { intoDate, toLocalISOString } from "../utils/format";
 import {
 	emitHover,

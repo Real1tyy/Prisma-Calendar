@@ -28,13 +28,9 @@ import type {
 } from "../types/calendar";
 import { isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
-import {
-	cleanupTitle,
-	findAdjacentEvent,
-	getCommonCategories,
-	getSourceEventInfoFromVirtual,
-	stripISOSuffix,
-} from "../utils/calendar-events";
+import { cleanupTitle } from "../utils/event-naming";
+import { getCommonCategories, stripISOSuffix } from "../utils/event-frontmatter";
+import { findAdjacentEvent, getSourceEventInfoFromVirtual } from "../utils/event-matching";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { getEventRenderingKey } from "../utils/calendar-settings";
 import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/event-diff";

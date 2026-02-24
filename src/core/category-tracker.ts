@@ -14,7 +14,7 @@ import {
 	applyFrontmatterChangesToInstance,
 	filterExcludedPropsFromDiff,
 	getRecurringInstanceExcludedProps,
-} from "../utils/calendar-events";
+} from "../utils/event-frontmatter";
 import { batchedPromiseAll } from "../utils/obsidian";
 import type { EventStore } from "./event-store";
 import type { Indexer, IndexerEvent } from "./indexer";

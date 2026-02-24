@@ -6,7 +6,7 @@ import { MAX_PAST_NOTIFICATION_THRESHOLD } from "../constants";
 import type { Frontmatter, PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
 import type { SingleCalendarConfig } from "../types/settings";
-import { getEventName } from "../utils/calendar-events";
+import { getEventName } from "../utils/event-naming";
 import { toSafeString } from "../utils/format";
 import { getFileByPathOrThrow, openFileInNewTab } from "../utils/obsidian";
 import { parseAsLocalDate } from "../utils/time-formatter";
