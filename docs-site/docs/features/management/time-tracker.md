@@ -22,7 +22,7 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 
 1. Open Create Event modal
 2. Expand **▶ Time tracker** header
-3. Click **▶ start** (fills Start Date with current time and End Date with start time + default duration, starts tracking)
+3. Click **▶ start** (fills Start Date with current time and End Date with start time + 5 minutes, starts tracking)
 4. Work on your task - watch the **Session** timer at the bottom track your current work session
 5. Click **⏸ break** when you need a break - the **Current Break** timer appears at the bottom
 6. Click **▶ resume** (on pause button) when ready to continue - the **Session** timer restarts from zero
@@ -39,8 +39,8 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 **Collapsed** (default): Click **▶ Time tracker** header to expand
 
 **Controls**:
-- **▶ start**: Begin tracking, fills Start Date with current time and End Date with start time + default duration (configured in settings). Starts both the total timer and session timer.
-- **▶ start new**: (After stopping) Start a completely new tracking session with a fresh start time and auto-filled end time.
+- **▶ start**: Begin tracking, fills Start Date with current time and End Date with start time + 5 minutes. The end time is continuously updated while tracking. Starts both the total timer and session timer.
+- **▶ start new**: (After stopping) Start a completely new tracking session with a fresh start time and end time set to start + 5 minutes.
 - **▶ continue**: (Optional, when enabled in settings) Continue tracking from the existing start date in the event. Calculates elapsed time based on the event's start time and resumes tracking from that point. Perfect for resuming work on existing events.
 - **⏸ break**: Pause productive time and start tracking break time. The total timer continues, but the session timer pauses and the current break timer starts.
 - **▶ resume** (during break): End break and resume productive time. The current break time is added to total break time, and the session timer restarts from zero.
@@ -50,7 +50,7 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 
 ## Start vs Continue
 
-**▶ start**: Creates a new start time (now) and end time (now + default duration) and begins tracking. Use this when:
+**▶ start**: Creates a new start time (now) and end time (now + 5 minutes) and begins tracking. The end time is automatically updated every 5 minutes while tracking. Use this when:
 - Creating a brand new event
 - Starting work exactly when you click the button
 - You want both start and end times to be auto-filled based on the current time
@@ -60,8 +60,8 @@ Built-in stopwatch in Create/Edit Event modal for precise time tracking with aut
 - The event already has a start time you want to preserve
 - You want the timer to show elapsed time since the original start
 
-**Example**: An event has `Start: 10:00 AM` and it's now `10:30 AM`. Assume default duration is 60 minutes.
-- Click **▶ start**: Start time changes to 10:30 AM, End time set to 11:30 AM (10:30 + 60 min), timer starts from 00:00:00
+**Example**: An event has `Start: 10:00 AM` and it's now `10:30 AM`.
+- Click **▶ start**: Start time changes to 10:30 AM, End time set to 10:35 AM (10:30 + 5 min), timer starts from 00:00:00
 - Click **▶ continue**: Start time stays 10:00 AM, End time unchanged, timer shows 00:30:00 and continues
 
 ## Resume After Stopping

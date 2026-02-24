@@ -55,7 +55,7 @@ export interface MinimizedModalState extends FormData {
  * Automatically updates the saved state when the underlying event file
  * is modified, but only if the stopwatch is actively running.
  */
-const END_TIME_SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+export const END_TIME_SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 class MinimizedModalManagerClass {
 	private savedState: MinimizedModalState | null = null;

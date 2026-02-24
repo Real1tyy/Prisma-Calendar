@@ -11,6 +11,7 @@ import type { Subscription } from "rxjs";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import {
 	type FormData,
+	END_TIME_SYNC_INTERVAL_MS,
 	MinimizedModalManager,
 	type MinimizedModalState,
 	type PresetFormData,
@@ -456,7 +457,7 @@ export abstract class BaseEventModal extends Modal {
 					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
 					this.startInput.value = formatDateTimeForInput(startTime);
 
-					const endTime = new Date(startTime.getTime() + settings.defaultDurationMinutes * 60 * 1000);
+					const endTime = new Date(startTime.getTime() + END_TIME_SYNC_INTERVAL_MS);
 					this.endInput.value = formatDateTimeForInput(endTime);
 
 					const event = new Event("change", { bubbles: true });

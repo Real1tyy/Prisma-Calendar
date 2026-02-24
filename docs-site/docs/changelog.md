@@ -14,6 +14,10 @@ All notable changes to this project will be documented here.
 - **AI Planning mode**: A new "Plan" mode in the AI chat sidebar where you describe how you want to allocate your time and the AI fills your calendar with non-overlapping events. The AI uses your previous interval's events as context to learn your patterns (work blocks, lunch timing, gym schedule) and plans around existing events. Same execution pipeline as Manipulation mode — batch undo, preview cards, and configurable settings all apply. See [AI Chat — Planning Mode](./features/advanced/ai-chat.md#planning-mode).
 - **Programmatic `editEvent` and `deleteEvent` API methods**: The scripting API on `window.PrismaCalendar` now supports editing and deleting events by file path, enabling automation for event lifecycle management. See [Programmatic API](./features/advanced/programmatic-api.md).
 
+### Changed
+
+- **Time tracker initial end time**: Starting the stopwatch now sets the end time to start + 5 minutes (matching the periodic sync interval) instead of using the configured default duration, since the end time is continuously updated while tracking. See [Time Tracker](./features/management/time-tracker.md).
+
 ### Fixed
 
 - **Time tracker scheduler not cleaned up**: The background scheduler that periodically saves the end date every 5 minutes while an event is minimized was not stopped when the plugin unloaded or when calendar bundles were refreshed. This caused the interval to keep running with stale references, writing to files even after the modal was closed or the calendar was destroyed. See [Time Tracker](./features/management/time-tracker.md).
