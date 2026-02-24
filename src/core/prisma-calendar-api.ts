@@ -14,14 +14,8 @@ import { autoAssignCategories } from "../utils/event-matching";
 import { ensureISOSuffix, roundToNearestHour, toLocalISOString } from "../utils/format";
 import { openFileInNewTab } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
-import {
-	AddZettelIdCommand,
-	ConvertFileToEventCommand,
-	CreateEventCommand,
-	DeleteEventCommand,
-	EditEventCommand,
-	type EventData,
-} from "./commands/event-commands";
+import { CreateEventCommand, DeleteEventCommand, type EventData } from "./commands/lifecycle-commands";
+import { AddZettelIdCommand, ConvertFileToEventCommand, EditEventCommand } from "./commands/update-commands";
 import { MinimizedModalManager } from "./minimized-modal-manager";
 
 interface PrismaEventInput {

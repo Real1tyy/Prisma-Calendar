@@ -11,7 +11,7 @@ import { formatDateTimeForInput, inputValueToISOString } from "../utils/format";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import { formatMsToHHMMSS, formatMsToMMSS } from "../utils/time-formatter";
 import type { CalendarBundle } from "./calendar-bundle";
-import { AssignCategoriesCommand } from "./commands/event-commands";
+import { AssignCategoriesCommand } from "./commands/status-commands";
 import type { IndexerEvent } from "./indexer";
 
 /**

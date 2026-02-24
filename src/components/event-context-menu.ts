@@ -10,7 +10,6 @@ import {
 	FillTimeCommand,
 	MarkAsDoneCommand,
 	MarkAsUndoneCommand,
-	MoveByCommand,
 	MoveEventCommand,
 	ToggleSkipCommand,
 } from "../core/commands";
@@ -715,7 +714,7 @@ export class EventContextMenu {
 						return;
 					}
 
-					await this.runCommand(() => new MoveByCommand(this.app, this.bundle, filePath, offsetMs), {
+					await this.runCommand(() => new MoveEventCommand(this.app, this.bundle, filePath, offsetMs, offsetMs), {
 						success: `Event moved by ${result.value} ${result.unit}`,
 						error: "Failed to move event",
 					});

@@ -1,21 +1,23 @@
 export { BatchCommandFactory } from "./batch-commands";
 
 export { CommandManager } from "@real1ty-obsidian-plugins";
+
 export {
-	AddZettelIdCommand,
-	AssignCategoriesCommand,
-	CloneEventCommand,
+	type EventData,
 	CreateEventCommand,
 	DeleteEventCommand,
+	CloneEventCommand,
 	DuplicateRecurringEventCommand,
+} from "./lifecycle-commands";
+
+export {
 	EditEventCommand,
-	type EventData,
-	FillTimeCommand,
-	MarkAsDoneCommand,
-	MarkAsUndoneCommand,
-	MoveByCommand,
 	MoveEventCommand,
-	ToggleSkipCommand,
 	UpdateEventCommand,
+	FillTimeCommand,
 	UpdateFrontmatterCommand,
-} from "./event-commands";
+	ConvertFileToEventCommand,
+	AddZettelIdCommand,
+} from "./update-commands";
+
+export { MarkAsDoneCommand, MarkAsUndoneCommand, ToggleSkipCommand, AssignCategoriesCommand } from "./status-commands";
