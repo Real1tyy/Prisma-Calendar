@@ -23,6 +23,12 @@ export const DENSITY_OPTIONS: Record<string, string> = {
 	compact: "Compact",
 };
 
+export const DAY_CELL_COLORING_OPTIONS: Record<string, string> = {
+	off: "Off",
+	uniform: "Uniform",
+	boundary: "Month boundary",
+};
+
 export const FIRST_DAY_OPTIONS: Record<number, string> = Object.entries(WEEKDAY_TO_NUMBER).reduce(
 	(acc, [weekday, number]) => {
 		acc[number] = WEEKDAY_OPTIONS[weekday as Weekday];

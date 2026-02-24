@@ -4,15 +4,17 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.6.0 - 2/21/2026
+## 2.6.0 - 2/24/2026
 
 ### Added
 
+- **Day cell coloring**: New dropdown in Visual Appearance with three modes — "Off" (default, no change), "Uniform" (single gradient color on all day cells), or "Month boundary" (alternating even/odd month colors to distinguish month transitions). Color pickers appear based on the selected mode. Changes apply immediately. See [Calendar View](./features/calendar/calendar-view.md#day-cell-coloring).
 - **AI Chat sidebar**: A built-in AI chat panel in the right sidebar where you can converse with an AI assistant. Supports Anthropic (Claude) and OpenAI (GPT) models, with configurable API keys, model selection, and custom prompts that provide persistent context to every conversation. Open via the command palette with "Open AI chat". See [AI Chat](./features/advanced/ai-chat.md).
 - **AI Chat calendar context**: The AI chat automatically includes events and statistics from your active calendar view, so you can ask data-driven questions like "How many hours did I spend on Work this week?" A context badge shows the active calendar and view type, updating live as you switch between views. See [AI Chat](./features/advanced/ai-chat.md).
 - **AI Event Manipulation mode**: A new "Manipulate" mode in the AI chat sidebar lets you describe calendar changes in natural language (e.g., "Create a meeting tomorrow at 10am for 1 hour"). The AI returns structured operations that render as preview cards with create/edit/delete actions. Click "Execute All" to batch-apply changes to your calendar. Configurable batch execution (single undo for all operations) and optional auto-execute without confirmation. See [AI Chat — Event Manipulation](./features/advanced/ai-chat.md#event-manipulation-mode).
 - **AI Planning mode**: A new "Plan" mode in the AI chat sidebar where you describe how you want to allocate your time and the AI fills your calendar with non-overlapping events. The AI uses your previous interval's events as context to learn your patterns (work blocks, lunch timing, gym schedule) and plans around existing events. Same execution pipeline as Manipulation mode — batch undo, preview cards, and configurable settings all apply. See [AI Chat — Planning Mode](./features/advanced/ai-chat.md#planning-mode).
 - **Programmatic `editEvent` and `deleteEvent` API methods**: The scripting API on `window.PrismaCalendar` now supports editing and deleting events by file path, enabling automation for event lifecycle management. See [Programmatic API](./features/advanced/programmatic-api.md).
+- **Optional integration event color**: CalDAV and ICS subscription event colors can now be cleared, allowing synced events to use your [color rules](./features/organization/color-rules.md) instead of a forced integration color. See [Integrations](./features/advanced/integrations.md).
 
 ### Changed
 

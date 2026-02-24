@@ -514,6 +514,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				}
 			},
 
+			dayCellDidMount: (info) => {
+				const month = info.date.getMonth();
+				info.el.classList.add(cls(month % 2 === 0 ? "month-even" : "month-odd"));
+			},
+
 			datesSet: () => {
 				// Refresh cached timestamps once per navigation (not per event)
 				this.cachedNow = new Date();
@@ -526,6 +531,16 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					this.zoomManager.updateZoomLevelButton();
 					this.saveCurrentState();
 					this.updateUpcomingEventHighlight();
+
+					// Apply month boundary classes to timeGrid columns
+					this.container.querySelectorAll<HTMLElement>(".fc-timegrid-col[data-date]").forEach((col) => {
+						const dateStr = col.getAttribute("data-date");
+						if (dateStr) {
+							const month = new Date(dateStr).getMonth();
+							col.classList.toggle(cls("month-even"), month % 2 === 0);
+							col.classList.toggle(cls("month-odd"), month % 2 !== 0);
+						}
+					});
 				});
 			},
 
@@ -584,6 +599,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		toggleCls(container, "sticky-all-day-events", settings.stickyAllDayEvents);
 		// Note: sticky-day-headers class is still applied for CSS that depends on both settings
 		toggleCls(container, "sticky-day-headers", settings.stickyDayHeaders);
+		toggleCls(container, "month-boundary-colors", settings.dayCellColoring === "boundary");
+		toggleCls(container, "uniform-day-color", settings.dayCellColoring === "uniform");
+		container.style.setProperty("--month-even-color", settings.monthEvenColor);
+		container.style.setProperty("--month-odd-color", settings.monthOddColor);
 
 		container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
 
@@ -619,6 +638,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		toggleCls(this.container, "sticky-all-day-events", settings.stickyAllDayEvents);
 		// Note: sticky-day-headers class is still applied for CSS that depends on both settings
 		toggleCls(this.container, "sticky-day-headers", settings.stickyDayHeaders);
+		toggleCls(this.container, "month-boundary-colors", settings.dayCellColoring === "boundary");
+		toggleCls(this.container, "uniform-day-color", settings.dayCellColoring === "uniform");
+		this.container.style.setProperty("--month-even-color", settings.monthEvenColor);
+		this.container.style.setProperty("--month-odd-color", settings.monthOddColor);
 
 		this.container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
 		this.scheduleStickyOffsetsUpdate();

@@ -171,6 +171,74 @@
 	color: var(--text-faint);
 }
 
+/* Day cell coloring — uniform mode: single color applied to all day cells */
+.prisma-calendar-container.prisma-uniform-day-color .fc-daygrid-day,
+.prisma-calendar-container.prisma-uniform-day-color .fc-timegrid-col[data-date] {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%,
+		color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%
+	);
+}
+.prisma-calendar-container.prisma-uniform-day-color .fc-day-other {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--month-even-color) 38%, transparent) 0%,
+		color-mix(in srgb, var(--month-even-color) 22%, transparent) 100%
+	);
+}
+/* Uniform — preserve today highlight */
+.prisma-calendar-container.prisma-uniform-day-color .fc-day-today {
+	background: var(--background-modifier-form-field);
+}
+/* Uniform — preserve hover */
+.prisma-calendar-container.prisma-uniform-day-color .fc-daygrid-day:hover {
+	background: var(--background-modifier-hover);
+}
+
+/* Day cell coloring — boundary mode: alternate gradient backgrounds by even/odd month */
+.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even,
+.prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-even {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%,
+		color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%
+	);
+}
+.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd,
+.prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-odd {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--month-odd-color) 25%, transparent) 0%,
+		color-mix(in srgb, var(--month-odd-color) 12%, transparent) 100%
+	);
+}
+/* Boundary — stronger tint for out-of-month overflow days */
+.prisma-calendar-container.prisma-month-boundary-colors .fc-day-other.prisma-month-even {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--month-even-color) 38%, transparent) 0%,
+		color-mix(in srgb, var(--month-even-color) 22%, transparent) 100%
+	);
+}
+.prisma-calendar-container.prisma-month-boundary-colors .fc-day-other.prisma-month-odd {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--month-odd-color) 38%, transparent) 0%,
+		color-mix(in srgb, var(--month-odd-color) 22%, transparent) 100%
+	);
+}
+/* Boundary — preserve today highlight */
+.prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-even,
+.prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-odd {
+	background: var(--background-modifier-form-field);
+}
+/* Boundary — preserve hover */
+.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even:hover,
+.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd:hover {
+	background: var(--background-modifier-hover);
+}
+
 /* Button visibility utilities - using proper selector chain for specificity without !important */
 .prisma-calendar-container .fc-header-toolbar .fc-toolbar-chunk .fc-button.prisma-fc-button-hidden {
 	display: none;

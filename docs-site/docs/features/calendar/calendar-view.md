@@ -159,6 +159,37 @@ Configure both in **Settings → Calendar → Visual Appearance**.
 - **Thicker hour lines**: Bolder full-hour dividers in day/week views (enabled by default)
 - **Show duration in event title**: Appends duration in parentheses after the title for timed events, e.g., "Meeting (2h 30m)" (enabled by default)
 - **Show decimal hours**: Displays durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m)
+- **Day cell coloring**: Configurable gradient background for day cells, with optional month boundary mode. See [Day Cell Coloring](#day-cell-coloring) below.
+
+## Day Cell Coloring
+
+The **Day cell coloring** dropdown controls the background coloring of day cells in the calendar. There are three modes:
+
+### Off (default)
+
+No custom background is applied to day cells. The calendar uses its default appearance.
+
+### Uniform
+
+All day cells receive a single gradient background using the **Day background color** picker that appears below the dropdown. This gives the entire calendar a consistent tinted look. Pick any color — the calendar applies it as a subtle gradient overlay on every cell.
+
+### Month boundary
+
+Day cells alternate between two gradient colors based on their month, using the **Even month color** and **Odd month color** pickers that appear below the dropdown:
+
+- **Even month color** — applied to January, March, May, July, September, November
+- **Odd month color** — applied to February, April, June, August, October, December
+
+Since adjacent months always have different parity, this creates a clear visual boundary wherever one month ends and the next begins — useful in week views that span two months or in month views that show overflow days from neighboring months.
+
+### Behavior details
+
+- Colors are applied as gradient overlays, so they blend naturally with your theme's background.
+- **Today highlighting** and **hover states** are preserved and take priority over the coloring.
+- Out-of-month overflow days (the faded days in month view) use a slightly stronger tint for additional contrast.
+- Changes take effect immediately — no need to reopen the calendar.
+
+Configure in **Settings → Calendar → Visual Appearance → Day cell coloring**.
 
 ## Sticky Headers
 

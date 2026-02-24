@@ -2,7 +2,13 @@ import { SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 import { SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
-import { CALENDAR_VIEW_OPTIONS, type CalendarViewType, DENSITY_OPTIONS, FIRST_DAY_OPTIONS } from "../../types/index";
+import {
+	CALENDAR_VIEW_OPTIONS,
+	type CalendarViewType,
+	DAY_CELL_COLORING_OPTIONS,
+	DENSITY_OPTIONS,
+	FIRST_DAY_OPTIONS,
+} from "../../types/index";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
 
 export class CalendarSettings {
@@ -79,6 +85,8 @@ export class CalendarSettings {
 			name: "Thicker hour lines",
 			desc: "Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast",
 		});
+
+		this.renderDayCellColoringSection(containerEl);
 
 		this.ui.addToggle(containerEl, {
 			key: "showDurationInTitle",
@@ -287,5 +295,49 @@ export class CalendarSettings {
 			desc: "Text color used when event background is light or white (e.g., pastel colors) for better contrast",
 			fallback: SETTINGS_DEFAULTS.DEFAULT_EVENT_TEXT_COLOR_ALT,
 		});
+	}
+
+	private renderDayCellColoringSection(containerEl: HTMLElement): void {
+		const colorPickersWrapper = containerEl.createDiv();
+
+		const renderColorPickers = (): void => {
+			colorPickersWrapper.empty();
+			const mode = this.settingsStore.currentSettings.dayCellColoring;
+
+			if (mode === "uniform") {
+				this.ui.addColorPicker(colorPickersWrapper, {
+					key: "monthEvenColor",
+					name: "Day background color",
+					desc: "Gradient color applied uniformly to all day cells in every view",
+					fallback: SETTINGS_DEFAULTS.DEFAULT_MONTH_EVEN_COLOR,
+				});
+			} else if (mode === "boundary") {
+				this.ui.addColorPicker(colorPickersWrapper, {
+					key: "monthEvenColor",
+					name: "Even month color",
+					desc: "Gradient color for even months (January, March, May, July, September, November)",
+					fallback: SETTINGS_DEFAULTS.DEFAULT_MONTH_EVEN_COLOR,
+				});
+
+				this.ui.addColorPicker(colorPickersWrapper, {
+					key: "monthOddColor",
+					name: "Odd month color",
+					desc: "Gradient color for odd months (February, April, June, August, October, December)",
+					fallback: SETTINGS_DEFAULTS.DEFAULT_MONTH_ODD_COLOR,
+				});
+			}
+		};
+
+		this.ui.addDropdown(containerEl, {
+			key: "dayCellColoring",
+			name: "Day cell coloring",
+			desc: "Controls the background coloring of day cells. Off: default calendar appearance. Uniform: applies a single gradient color to all day cells. Month boundary: alternates two gradient colors by even/odd month, making month transitions clearly visible.",
+			options: DAY_CELL_COLORING_OPTIONS,
+			onChanged: renderColorPickers,
+		});
+
+		// Move the wrapper below the dropdown (it was created before the dropdown setting)
+		containerEl.appendChild(colorPickersWrapper);
+		renderColorPickers();
 	}
 }
