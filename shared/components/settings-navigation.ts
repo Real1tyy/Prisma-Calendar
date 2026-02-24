@@ -77,7 +77,7 @@ export class SettingsNavigation {
 			this.navButtons.push(button);
 		});
 
-		const searchContainer = navContainer.createDiv(this.css.cls("settings-search"));
+		const searchContainer = buttonContainer.createDiv(this.css.cls("settings-search"));
 		this.searchInput = new TextComponent(searchContainer);
 		this.searchInput.setPlaceholder("Search settings...");
 		this.searchInput.setValue(this.searchQuery);
