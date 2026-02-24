@@ -24,6 +24,8 @@ export function createMockVault(overrides: Partial<MockApp["vault"]> = {}): Mock
 export function createMockMetadataCache(overrides: Partial<MockApp["metadataCache"]> = {}): MockApp["metadataCache"] {
 	return {
 		getFileCache: vi.fn(),
+		on: vi.fn().mockReturnValue({ id: "mock-event-ref" }),
+		offref: vi.fn(),
 		...overrides,
 	};
 }

@@ -67,20 +67,22 @@ describe("Indexer", () => {
 		});
 
 		it("should register vault event listeners when started", () => {
-			// The indexer registers listeners when start() is called
+			// The indexer registers vault listeners for create, delete, rename
 			expect(mockVault.on).toHaveBeenCalledWith("create", expect.any(Function));
-			expect(mockVault.on).toHaveBeenCalledWith("modify", expect.any(Function));
 			expect(mockVault.on).toHaveBeenCalledWith("rename", expect.any(Function));
 			expect(mockVault.on).toHaveBeenCalledWith("delete", expect.any(Function));
+			// Modify events are handled via metadataCache "changed" instead of vault "modify"
+			expect(mockMetadataCache.on).toHaveBeenCalledWith("changed", expect.any(Function));
 		});
 
 		it("should unregister vault event listeners when stopped", () => {
 			indexer.stop();
 
 			expect(mockVault.off).toHaveBeenCalledWith("create", expect.any(Function));
-			expect(mockVault.off).toHaveBeenCalledWith("modify", expect.any(Function));
 			expect(mockVault.off).toHaveBeenCalledWith("rename", expect.any(Function));
 			expect(mockVault.off).toHaveBeenCalledWith("delete", expect.any(Function));
+			// metadataCache "changed" listener is cleaned up via offref
+			expect(mockMetadataCache.offref).toHaveBeenCalled();
 		});
 	});
 
@@ -121,15 +123,16 @@ describe("Indexer", () => {
 		it("should register debounced event handlers", () => {
 			// Verify that the RxJS stream has registered event handlers
 			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
-			const modifyHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "modify")?.[1];
+			// Modify events are now handled via metadataCache "changed"
+			const changedHandler = mockMetadataCache.on.mock.calls.find((call: any[]) => call[0] === "changed")?.[1];
 
 			expect(createHandler).toBeDefined();
-			expect(modifyHandler).toBeDefined();
+			expect(changedHandler).toBeDefined();
 
 			// Verify handlers can be called without throwing
 			const file = createMockFile("Events/meeting.md");
 			expect(() => createHandler?.(file)).not.toThrow();
-			expect(() => modifyHandler?.(file)).not.toThrow();
+			expect(() => changedHandler?.(file)).not.toThrow();
 		});
 	});
 

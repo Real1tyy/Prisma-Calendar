@@ -251,6 +251,8 @@ export interface MockApp {
 	};
 	metadataCache: {
 		getFileCache: ReturnType<typeof vi.fn>;
+		on: ReturnType<typeof vi.fn>;
+		offref: ReturnType<typeof vi.fn>;
 	};
 	vault: {
 		getAbstractFileByPath: ReturnType<typeof vi.fn>;
@@ -281,6 +283,8 @@ export function createMockApp(): MockApp {
 		},
 		metadataCache: {
 			getFileCache: vi.fn(),
+			on: vi.fn().mockReturnValue({ id: "mock-event-ref" }),
+			offref: vi.fn(),
 		},
 		vault: {
 			getAbstractFileByPath: vi.fn(),
