@@ -5,8 +5,8 @@ import { createNavigationConfig, IntervalStatsModal } from "./interval-stats-mod
 export class WeeklyStatsModal extends IntervalStatsModal {
 	protected intervalConfig: IntervalConfig = {
 		...createNavigationConfig(
-			(date, dir) => date.setDate(date.getDate() + 7 * dir),
-			(date, dir) => date.setDate(date.getDate() + 28 * dir)
+			(date: Date, dir: number) => date.setDate(date.getDate() + 7 * dir),
+			(date: Date, dir: number) => date.setDate(date.getDate() + 28 * dir)
 		),
 		getBounds: (date) => getWeekBounds(date),
 		aggregateStats: (events, date, mode, categoryProp) => aggregateWeeklyStats(events, date, mode, categoryProp),
