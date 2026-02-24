@@ -7,6 +7,28 @@ export interface ChatMessage {
 	content: string;
 }
 
+export interface StoredChatMessage extends ChatMessage {
+	id: string;
+	createdAt: string;
+}
+
+export interface ThreadMeta {
+	id: string;
+	title: string;
+	mode: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface ThreadData {
+	id: string;
+	title: string;
+	mode: string;
+	createdAt: string;
+	updatedAt: string;
+	messages: StoredChatMessage[];
+}
+
 export class AIServiceError extends Error {
 	constructor(
 		message: string,

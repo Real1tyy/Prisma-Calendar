@@ -91,15 +91,34 @@ Existing events in the current interval take priority — the AI plans around th
 - "Fill my schedule with focused work blocks and a lunch break"
 - "Plan tomorrow with 3 hours of deep work in the morning and meetings after lunch"
 
-Switching between modes clears the conversation, since each mode uses a different system prompt.
+Switching between modes updates the current conversation's mode without clearing messages.
+
+## Conversation History
+
+Conversations are saved automatically as you chat. Your conversation history persists across panel closes and Obsidian restarts.
+
+### Thread List
+
+Click the **Conversations** header above the message area to expand the thread list. From here you can:
+
+- **Browse** all past conversations, sorted by most recent
+- **Search** by title using the search input
+- **Switch** between conversations by clicking on one
+- **Delete** a conversation by clicking the × button
+- **Start a new conversation** by clicking the + button or the Clear button
+
+Each conversation remembers its mode (Query, Manipulate, or Plan), so switching to a previous thread restores the mode it was in.
+
+### Auto-Generated Titles
+
+The first message you send in a new conversation automatically becomes the thread title (truncated to 50 characters). This makes it easy to find past conversations in the thread list.
 
 ## Using the Chat
 
 Type your message in the text area at the bottom and press **Enter** (or click **Send**). The AI will respond in the message area above.
 
 - Press **Shift+Enter** to add a new line without sending
-- Click **Clear** to reset the conversation
-- Conversations are ephemeral — they reset when you close the panel
+- Click **Clear** to start a new conversation (the previous one is saved in the thread list)
 
 ## Tips
 
@@ -108,4 +127,5 @@ Type your message in the text area at the bottom and press **Enter** (or click *
 - Ask about scheduling patterns: "What's a good way to organize weekly meetings?"
 - Get advice on calendar setup: "How should I configure recurring events?"
 - Use Manipulation mode to quickly batch-create or reschedule events
-- The AI remembers the full conversation within a session, so you can ask follow-up questions
+- The AI remembers the full conversation within a thread, so you can ask follow-up questions
+- Past conversations are always available in the thread list — expand it to pick up where you left off

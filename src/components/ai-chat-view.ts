@@ -1,6 +1,6 @@
 import { cls, MacroCommand, MountableView, type Command } from "@real1ty-obsidian-plugins";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
-import { AIChatManager, type ChatMessage } from "../core/ai";
+import { AIChatManager, ChatStore, type ChatMessage } from "../core/ai";
 import {
 	buildCalendarContext,
 	buildManipulationContext,
@@ -44,24 +44,30 @@ export const AI_CHAT_VIEW_TYPE = "prisma-ai-chat";
 
 export class AIChatView extends MountableView(ItemView, "prisma") {
 	private chatManager: AIChatManager;
+	private chatStore: ChatStore;
 	private messagesContainerEl!: HTMLElement;
 	private chipsContainerEl!: HTMLElement;
 	private contextBadgeEl!: HTMLElement;
 	private modeToggleEl!: HTMLElement;
 	private textareaEl!: HTMLTextAreaElement;
 	private sendBtnEl!: HTMLButtonElement;
+	private threadListContentEl!: HTMLElement;
+	private threadListHeaderIconEl!: HTMLElement;
 	private isLoading = false;
 	private markdownComponent = new Component();
 	private selectedPromptIds = new Set<string>();
 	private pendingOperations: AIOperation[] = [];
 	private currentMode: AIMode = "query";
+	private threadListOpen = false;
+	private threadSearchQuery = "";
 
 	constructor(
 		leaf: WorkspaceLeaf,
 		private plugin: CustomCalendarPlugin
 	) {
 		super(leaf);
-		this.chatManager = new AIChatManager(this.plugin.settingsStore);
+		this.chatStore = new ChatStore(this.app, this.plugin);
+		this.chatManager = new AIChatManager(this.plugin.settingsStore, this.chatStore);
 	}
 
 	getViewType(): string {
@@ -78,6 +84,13 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 
 	async onOpen(): Promise<void> {
 		this.markdownComponent.load();
+		await this.chatManager.initialize();
+
+		const currentThread = this.chatManager.getCurrentThread();
+		if (currentThread) {
+			this.currentMode = currentThread.mode as AIMode;
+		}
+
 		const container = this.containerEl.children[1] as HTMLElement;
 		container.empty();
 		container.addClass(cls("ai-chat-container"));
@@ -95,12 +108,12 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 
 	async onClose(): Promise<void> {
 		this.markdownComponent.unload();
-		this.chatManager.clearHistory();
+		await this.chatManager.saveCurrentThread();
 	}
 
 	private setMode(mode: AIMode): void {
 		this.currentMode = mode;
-		this.chatManager.clearHistory();
+		this.chatManager.setMode(mode);
 		this.pendingOperations = [];
 		this.renderMessages();
 		this.updateModeToggle();
@@ -108,6 +121,9 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	private buildUI(container: HTMLElement): void {
+		// Thread list (collapsible, before messages)
+		this.buildThreadList(container);
+
 		// Messages area
 		this.messagesContainerEl = container.createDiv({ cls: cls("ai-chat-messages") });
 
@@ -141,8 +157,10 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			text: "Clear",
 		});
 		clearBtn.addEventListener("click", () => {
-			this.chatManager.clearHistory();
+			void this.chatManager.startNewThread(this.currentMode);
+			this.pendingOperations = [];
 			this.renderMessages();
+			this.renderThreadList();
 		});
 
 		this.sendBtnEl = btnRow.createEl("button", {
@@ -152,6 +170,145 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		this.sendBtnEl.addEventListener("click", () => {
 			void this.handleSend();
 		});
+	}
+
+	private buildThreadList(container: HTMLElement): void {
+		const threadListEl = container.createDiv({ cls: cls("ai-chat-thread-list") });
+
+		const header = threadListEl.createDiv({ cls: cls("ai-chat-thread-list-header") });
+
+		this.threadListHeaderIconEl = header.createSpan({ cls: cls("ai-chat-thread-list-icon"), text: "▶" });
+
+		header.createSpan({ text: "Conversations" });
+
+		const newBtn = header.createEl("button", {
+			cls: cls("ai-chat-thread-new-btn"),
+			text: "+",
+			attr: { "aria-label": "New conversation" },
+		});
+		newBtn.addEventListener("click", (e) => {
+			e.stopPropagation();
+			void this.chatManager.startNewThread(this.currentMode);
+			this.pendingOperations = [];
+			this.renderMessages();
+			this.renderThreadList();
+		});
+
+		header.addEventListener("click", () => {
+			this.toggleThreadList();
+		});
+
+		this.threadListContentEl = threadListEl.createDiv({
+			cls: `${cls("ai-chat-thread-list-content")} ${cls("hidden")}`,
+		});
+
+		this.renderThreadList();
+	}
+
+	private toggleThreadList(): void {
+		this.threadListOpen = !this.threadListOpen;
+		if (this.threadListOpen) {
+			this.threadListContentEl.removeClass(cls("hidden"));
+			this.threadListHeaderIconEl.setText("▼");
+		} else {
+			this.threadListContentEl.addClass(cls("hidden"));
+			this.threadListHeaderIconEl.setText("▶");
+		}
+	}
+
+	private renderThreadList(): void {
+		this.threadListContentEl.empty();
+
+		// Search input
+		const searchInput = this.threadListContentEl.createEl("input", {
+			cls: cls("ai-chat-thread-search"),
+			attr: { type: "text", placeholder: "Search conversations..." },
+		});
+		searchInput.value = this.threadSearchQuery;
+		searchInput.addEventListener("input", () => {
+			this.threadSearchQuery = searchInput.value;
+			this.renderThreadItems();
+		});
+
+		this.renderThreadItems();
+	}
+
+	private renderThreadItems(): void {
+		// Remove existing thread items (keep search input)
+		const existingItems = this.threadListContentEl.querySelectorAll(`.${cls("ai-chat-thread-item")}`);
+		existingItems.forEach((el) => el.remove());
+
+		const currentThread = this.chatManager.getCurrentThread();
+		let threads = this.chatManager.getThreadList();
+
+		if (this.threadSearchQuery) {
+			const query = this.threadSearchQuery.toLowerCase();
+			threads = threads.filter((t) => t.title.toLowerCase().includes(query));
+		}
+
+		for (const thread of threads) {
+			const itemEl = this.threadListContentEl.createDiv({ cls: cls("ai-chat-thread-item") });
+
+			if (currentThread && thread.id === currentThread.id) {
+				itemEl.addClass(cls("ai-chat-thread-item-active"));
+			}
+
+			const infoEl = itemEl.createDiv({ cls: cls("ai-chat-thread-item-info") });
+			infoEl.createDiv({ cls: cls("ai-chat-thread-item-title"), text: thread.title });
+			infoEl.createDiv({
+				cls: cls("ai-chat-thread-item-time"),
+				text: this.formatRelativeTime(thread.updatedAt),
+			});
+
+			infoEl.addEventListener("click", () => {
+				void this.onThreadSelect(thread.id);
+			});
+
+			const deleteBtn = itemEl.createEl("button", {
+				cls: cls("ai-chat-thread-delete-btn"),
+				text: "×",
+				attr: { "aria-label": "Delete conversation" },
+			});
+			deleteBtn.addEventListener("click", (e) => {
+				e.stopPropagation();
+				void this.onThreadDelete(thread.id);
+			});
+		}
+	}
+
+	private async onThreadSelect(id: string): Promise<void> {
+		await this.chatManager.loadThread(id);
+		const thread = this.chatManager.getCurrentThread();
+		if (thread) {
+			this.currentMode = thread.mode as AIMode;
+			this.pendingOperations = [];
+			this.renderMessages();
+			this.updateModeToggle();
+			this.refreshContextBadge();
+			this.renderThreadList();
+		}
+	}
+
+	private async onThreadDelete(id: string): Promise<void> {
+		await this.chatManager.deleteThread(id);
+		this.pendingOperations = [];
+		this.renderMessages();
+		this.renderThreadList();
+	}
+
+	private formatRelativeTime(isoString: string): string {
+		const date = new Date(isoString);
+		const now = new Date();
+		const diffMs = now.getTime() - date.getTime();
+		const diffMins = Math.floor(diffMs / 60000);
+		const diffHours = Math.floor(diffMs / 3600000);
+		const diffDays = Math.floor(diffMs / 86400000);
+
+		if (diffMins < 1) return "just now";
+		if (diffMins < 60) return `${diffMins}m ago`;
+		if (diffHours < 24) return `${diffHours}h ago`;
+		if (diffDays < 7) return `${diffDays}d ago`;
+		return date.toLocaleDateString();
 	}
 
 	private renderPromptChips(): void {
@@ -262,6 +419,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		} finally {
 			this.setLoading(false);
 			this.renderMessages();
+			this.renderThreadList();
 		}
 	}
 
@@ -455,7 +613,6 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		if (executeBtn) executeBtn.setText(summary);
 		this.pendingOperations = [];
 
-		this.chatManager.clearHistory();
 		this.appendMessage({ role: "assistant", content: `**Execution complete:** ${summary}` });
 	}
 
@@ -664,7 +821,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		if (messages.length === 0) {
 			this.messagesContainerEl.createDiv({
 				cls: cls("ai-chat-empty"),
-				text: "Ask anything about your calendar. Conversations reset when you close this panel.",
+				text: "Ask anything about your calendar. Your conversations are saved automatically.",
 			});
 			return;
 		}
