@@ -119,6 +119,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private isHandlingSelection = false;
 	private isDraggingCalendarEvent = false;
 	private draggingCalendarEventFilePath: string | null = null;
+	private dragNavigatedInterval = false;
 	private isMobileLayout = false;
 	private mobileControlsCollapsed = false;
 	private renderedEvents = new Map<string, string>();
@@ -459,6 +460,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			},
 
 			eventDragStart: (info) => {
+				this.dragNavigatedInterval = false;
 				this.setupDragEdgeScrolling();
 				const filePath = info.event.extendedProps?.filePath;
 				const isVirtual = info.event.extendedProps?.isVirtual ?? false;
@@ -474,6 +476,15 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 			eventDrop: (info) => {
 				this.cleanupDragEdgeScrolling();
+
+				// When a drag navigated to a new interval via edge scrolling,
+				// clear the rendered events cache so the file-change-triggered
+				// refresh does a full reload and avoids duplicate rendering.
+				if (this.dragNavigatedInterval) {
+					this.dragNavigatedInterval = false;
+					this.clearRenderedEventsCache();
+				}
+
 				void this.handleEventDrop(info);
 			},
 
@@ -524,6 +535,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				this.cachedNow = new Date();
 				const n = this.cachedNow;
 				this.cachedTodayStart = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+
+				if (this.dragEdgeScrollListener) {
+					this.dragNavigatedInterval = true;
+				}
 
 				this.scheduleRefreshEvents();
 				// Update zoom button, save state, and highlight after FC re-renders

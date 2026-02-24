@@ -27,6 +27,7 @@ All notable changes to this project will be documented here.
 ### Fixed
 
 - **Time tracker scheduler not cleaned up**: The background scheduler that periodically saves the end date every 5 minutes while an event is minimized was not stopped when the plugin unloaded or when calendar bundles were refreshed. This caused the interval to keep running with stale references, writing to files even after the modal was closed or the calendar was destroyed. See [Time Tracker](./features/management/time-tracker.md).
+- **All-day event rendered twice after drag-to-edge navigation**: Dragging an all-day event to the calendar edge to navigate to a new interval, then dropping it, caused the event to appear twice visually. See [Calendar View](./features/calendar/calendar-view.md).
 
 ---
 
