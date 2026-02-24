@@ -1,5 +1,6 @@
 import type { CalendarEvent } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
+import type { CategoryAssignmentPreset } from "../../types/settings";
 import { aggregateStats, formatDuration, formatPercentage, type Stats } from "../../utils/weekly-stats";
 
 export interface CalendarContext {
@@ -29,6 +30,40 @@ interface AIStatEntry {
 	count: number;
 	duration: string;
 	percentage: string;
+}
+
+export interface CategoryContext {
+	availableCategories: string[];
+	presets: CategoryAssignmentPreset[];
+}
+
+export function buildCategoryContextBlock(context: CategoryContext): string {
+	if (context.availableCategories.length === 0 && context.presets.length === 0) {
+		return "";
+	}
+
+	let block = "\n\n## User Categories & Event Name Mappings";
+
+	if (context.availableCategories.length > 0) {
+		block += `\n\nAvailable categories: ${context.availableCategories.join(", ")}`;
+	}
+
+	if (context.presets.length > 0) {
+		block += "\n\nEvent name → category mappings (auto-assigned when creating events):";
+		for (const preset of context.presets) {
+			block += `\n- "${preset.eventName}" → [${preset.categories.join(", ")}]`;
+		}
+	}
+
+	block += `
+
+Category matching rules:
+- Always use the categories listed above when they match what the user is describing. Categories are assigned automatically based on event names — you do not need to set them manually.
+- If the user mentions an event name that closely matches one of the event name mappings above, use the exact event name from the mapping (the user may have a typo).
+- Only use a category NOT in the list if the user explicitly asks to create a new category or refers to something clearly unrelated to any existing category.
+- If the user's text has a typo that resembles an existing category, use the existing category spelling.`;
+
+	return block;
 }
 
 const VIEW_TYPE_LABELS: Record<string, string> = {
@@ -116,7 +151,11 @@ function formatDateRange(start: Date, end: Date): string {
 	return `${startStr} – ${endStr}`;
 }
 
-export function buildSystemPromptWithContext(context: CalendarContext, basePrompt: string): string {
+export function buildSystemPromptWithContext(
+	context: CalendarContext,
+	basePrompt: string,
+	categoryContext?: CategoryContext
+): string {
 	const eventsJson = JSON.stringify(context.events, null, 2);
 
 	let nameStatsTable = "| Name | Count | Duration | % |\n|------|-------|----------|---|\n";
@@ -148,7 +187,7 @@ ${eventsJson}
 ${nameStatsTable}Total: ${context.totalDuration}
 
 ## Statistics by Category
-${categoryStatsTable}Total: ${context.totalDuration}`;
+${categoryStatsTable}Total: ${context.totalDuration}${categoryContext ? buildCategoryContextBlock(categoryContext) : ""}`;
 }
 
 export const NO_CONTEXT_PROMPT_SUFFIX =
@@ -233,7 +272,11 @@ export function buildPlanningContext(
 	};
 }
 
-export function buildPlanningSystemPrompt(context: PlanningContext, basePrompt: string): string {
+export function buildPlanningSystemPrompt(
+	context: PlanningContext,
+	basePrompt: string,
+	categoryContext?: CategoryContext
+): string {
 	const currentEventsJson = JSON.stringify(context.currentEvents, null, 2);
 	const previousEventsJson = JSON.stringify(context.previousEvents, null, 2);
 
@@ -270,10 +313,14 @@ ${currentEventsJson}
 - Previous interval: ${context.previousDateRange}
 \`\`\`json
 ${previousEventsJson}
-\`\`\``;
+\`\`\`${categoryContext ? buildCategoryContextBlock(categoryContext) : ""}`;
 }
 
-export function buildManipulationSystemPrompt(context: ManipulationContext, basePrompt: string): string {
+export function buildManipulationSystemPrompt(
+	context: ManipulationContext,
+	basePrompt: string,
+	categoryContext?: CategoryContext
+): string {
 	const eventsJson = JSON.stringify(context.events, null, 2);
 
 	return `${basePrompt}
@@ -299,5 +346,5 @@ Rules:
 ## Events (${context.events.length} events)
 \`\`\`json
 ${eventsJson}
-\`\`\``;
+\`\`\`${categoryContext ? buildCategoryContextBlock(categoryContext) : ""}`;
 }

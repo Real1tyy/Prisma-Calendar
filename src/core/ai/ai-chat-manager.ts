@@ -1,11 +1,11 @@
-import { AI_DEFAULTS } from "./ai-constants";
-import type { AIProvider } from "./ai-constants";
+import { AI_DEFAULTS, type AIProvider } from "./ai-constants";
 import {
 	buildManipulationSystemPrompt,
 	buildPlanningSystemPrompt,
 	buildSystemPromptWithContext,
 	NO_CONTEXT_PROMPT_SUFFIX,
 	type CalendarContext,
+	type CategoryContext,
 	type ManipulationContext,
 	type PlanningContext,
 } from "./ai-context-builder";
@@ -19,6 +19,8 @@ The user is viewing their calendar and asking about their events and schedule.
 Be concise and helpful. Format responses using Markdown when appropriate.`;
 
 const MAX_TITLE_LENGTH = 50;
+
+const TITLE_GENERATION_PROMPT = `Summarize the user's message into a short conversation title (3-8 words). Reply with ONLY the title, no quotes, no punctuation at the end, no explanation.`;
 
 export class AIChatManager {
 	private currentThread: ThreadData | null = null;
@@ -43,7 +45,8 @@ export class AIChatManager {
 		customPrompts?: Array<{ title: string; content: string }>,
 		calendarContext?: CalendarContext,
 		manipulationContext?: ManipulationContext,
-		planningContext?: PlanningContext
+		planningContext?: PlanningContext,
+		categoryContext?: CategoryContext
 	): Promise<string> {
 		const { model, provider, apiKey } = this.resolveAIConfig();
 
@@ -51,10 +54,11 @@ export class AIChatManager {
 			this.currentThread = this.chatStore.createThread("query");
 		}
 
+		const isFirstMessage = this.currentThread.messages.length === 0;
 		this.chatStore.addMessage(this.currentThread, "user", userMessage);
 
-		// Auto-generate title from first user message
-		if (this.currentThread.messages.length === 1) {
+		// Set a temporary title from the user message until AI generates one
+		if (isFirstMessage) {
 			this.currentThread.title =
 				userMessage.length > MAX_TITLE_LENGTH ? userMessage.slice(0, MAX_TITLE_LENGTH) + "…" : userMessage;
 		}
@@ -66,11 +70,11 @@ export class AIChatManager {
 
 		let systemPrompt: string;
 		if (planningContext) {
-			systemPrompt = buildPlanningSystemPrompt(planningContext, BASE_SYSTEM_PROMPT);
+			systemPrompt = buildPlanningSystemPrompt(planningContext, BASE_SYSTEM_PROMPT, categoryContext);
 		} else if (manipulationContext) {
-			systemPrompt = buildManipulationSystemPrompt(manipulationContext, BASE_SYSTEM_PROMPT);
+			systemPrompt = buildManipulationSystemPrompt(manipulationContext, BASE_SYSTEM_PROMPT, categoryContext);
 		} else if (calendarContext) {
-			systemPrompt = buildSystemPromptWithContext(calendarContext, BASE_SYSTEM_PROMPT);
+			systemPrompt = buildSystemPromptWithContext(calendarContext, BASE_SYSTEM_PROMPT, categoryContext);
 		} else {
 			systemPrompt = BASE_SYSTEM_PROMPT + NO_CONTEXT_PROMPT_SUFFIX;
 		}
@@ -83,6 +87,12 @@ export class AIChatManager {
 		try {
 			const response = await callAI(provider, apiKey, model, systemPrompt, messages);
 			this.chatStore.addMessage(this.currentThread, "assistant", response);
+
+			// Generate AI title from first user message (fire-and-forget)
+			if (isFirstMessage) {
+				void this.generateTitle(provider, apiKey, model, userMessage);
+			}
+
 			await this.chatStore.saveThread(this.currentThread);
 			return response;
 		} catch (error) {
@@ -142,6 +152,26 @@ export class AIChatManager {
 
 	getMessages(): ReadonlyArray<ChatMessage> {
 		return this.currentThread?.messages ?? [];
+	}
+
+	private async generateTitle(provider: AIProvider, apiKey: string, model: string, userMessage: string): Promise<void> {
+		if (!this.currentThread) return;
+
+		try {
+			const title = await callAI(provider, apiKey, model, TITLE_GENERATION_PROMPT, [
+				{ role: "user", content: userMessage },
+			]);
+
+			if (this.currentThread) {
+				this.currentThread.title = title
+					.trim()
+					.replace(/^["']|["']$/g, "")
+					.slice(0, MAX_TITLE_LENGTH);
+				await this.chatStore.saveThread(this.currentThread);
+			}
+		} catch {
+			// Keep the truncated user message as title on failure
+		}
 	}
 
 	private resolveAIConfig(): { model: string; provider: AIProvider; apiKey: string } {

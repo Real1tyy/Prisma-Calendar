@@ -10,6 +10,7 @@ export {
 	getViewLabel,
 	type AIEventSummary,
 	type CalendarContext,
+	type CategoryContext,
 	type ManipulationContext,
 	type PlanningContext,
 } from "./ai-context-builder";

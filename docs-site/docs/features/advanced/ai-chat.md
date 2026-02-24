@@ -47,6 +47,16 @@ A **context badge** above the input area shows what the AI has access to — for
 
 If no calendar view is open, the badge shows "No calendar open" and the AI acts as a general scheduling assistant without access to your specific events.
 
+### Category & Event Name Context
+
+The AI also receives your full list of **categories** and **category assignment presets** (event name → category mappings) from your calendar settings. This means:
+
+- When you mention an event name, the AI uses your existing categories and naming conventions rather than inventing new ones.
+- If you have [category assignment presets](../organization/categories.md) configured (e.g., "Coding" → Software, "Gym" → Health), the AI recognizes those event names and applies the correct categories automatically.
+- Typos in category or event names are corrected to match your existing data.
+
+To improve the AI's accuracy, configure your category assignment presets in **Settings > Categories > Custom Category Assignment**. The more mappings you define, the better the AI can match your intent when creating or editing events.
+
 ## Modes
 
 The AI chat has three modes, selectable via the toggle above the input area:
@@ -111,7 +121,7 @@ Each conversation remembers its mode (Query, Manipulate, or Plan), so switching 
 
 ### Auto-Generated Titles
 
-The first message you send in a new conversation automatically becomes the thread title (truncated to 50 characters). This makes it easy to find past conversations in the thread list.
+When you send the first message in a new conversation, the AI generates a short summary title to label the thread. This makes it easy to identify and find past conversations in the thread list.
 
 ## Using the Chat
 

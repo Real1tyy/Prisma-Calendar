@@ -7,6 +7,7 @@ import {
 	buildPlanningContext,
 	getViewLabel,
 	type CalendarContext,
+	type CategoryContext,
 	type ManipulationContext,
 	type PlanningContext,
 } from "../core/ai/ai-context-builder";
@@ -386,6 +387,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		try {
 			const allPrompts = this.plugin.settingsStore.currentSettings.ai.customPrompts;
 			const selectedPrompts = allPrompts.filter((p) => this.selectedPromptIds.has(p.id));
+			const categoryContext = this.gatherCategoryContext();
 
 			if (this.currentMode === "planning") {
 				const planningContext = await this.gatherPlanningContext();
@@ -395,7 +397,8 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 					selectedPrompts,
 					undefined,
 					undefined,
-					planningContext ?? undefined
+					planningContext ?? undefined,
+					categoryContext ?? undefined
 				);
 				this.handleManipulationResponse(response);
 			} else if (this.currentMode === "manipulation") {
@@ -405,13 +408,22 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 					message,
 					selectedPrompts,
 					undefined,
-					manipulationContext ?? undefined
+					manipulationContext ?? undefined,
+					undefined,
+					categoryContext ?? undefined
 				);
 				this.handleManipulationResponse(response);
 			} else {
 				const calendarContext = await this.gatherCalendarContext();
 				this.refreshContextBadge();
-				await this.chatManager.sendMessage(message, selectedPrompts, calendarContext ?? undefined);
+				await this.chatManager.sendMessage(
+					message,
+					selectedPrompts,
+					calendarContext ?? undefined,
+					undefined,
+					undefined,
+					categoryContext ?? undefined
+				);
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
@@ -421,6 +433,21 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			this.renderMessages();
 			this.renderThreadList();
 		}
+	}
+
+	private gatherCategoryContext(): CategoryContext | null {
+		const lastUsedCalendarId = this.plugin.syncStore.data.lastUsedCalendarId;
+		if (!lastUsedCalendarId) return null;
+
+		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId);
+		if (!bundle) return null;
+
+		const availableCategories = bundle.categoryTracker.getCategories();
+		const presets = bundle.settingsStore.currentSettings.categoryAssignmentPresets ?? [];
+
+		if (availableCategories.length === 0 && presets.length === 0) return null;
+
+		return { availableCategories, presets };
 	}
 
 	private async gatherManipulationContext(): Promise<ManipulationContext | null> {
