@@ -2,10 +2,11 @@ import type { Plugin } from "obsidian";
 
 /**
  * Handler function for an action. If TParams is void, the handler takes no arguments.
+ * TReturn allows handlers to return data (e.g. for read operations).
  */
-export type ActionHandler<TParams = void> = TParams extends void
-	? () => void | Promise<void>
-	: (params: TParams) => void | Promise<void>;
+export type ActionHandler<TParams = void, TReturn = void> = TParams extends void
+	? () => TReturn | Promise<TReturn>
+	: (params: TParams) => TReturn | Promise<TReturn>;
 
 /**
  * Definition of a single action in the API gateway.
@@ -13,15 +14,15 @@ export type ActionHandler<TParams = void> = TParams extends void
  * - `parseParams`: optional converter from URL query params to typed params.
  *   If omitted, the action is window-API-only (not URL-accessible).
  */
-export interface ActionDef<TParams = void> {
-	handler: ActionHandler<TParams>;
+export interface ActionDef<TParams = void, TReturn = void> {
+	handler: ActionHandler<TParams, TReturn>;
 	parseParams?: (raw: Record<string, string>) => TParams;
 }
 
 /**
  * Map of action name → action definition.
  */
-export type ActionDefMap = Record<string, ActionDef<any>>;
+export type ActionDefMap = Record<string, ActionDef<any, any>>;
 
 /**
  * Extracts the typed window API shape from an ActionDefMap.
