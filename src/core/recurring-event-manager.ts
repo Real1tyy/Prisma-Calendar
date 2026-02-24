@@ -181,13 +181,13 @@ export class RecurringEventManager extends DebouncedNotifier {
 		try {
 			const file = this.app.vault.getAbstractFileByPath(instance.filePath);
 			if (!(file instanceof TFile)) {
-				console.warn(`Physical instance file not found: ${instance.filePath}`);
+				console.warn(`[RecurringEvents] Physical instance file not found: ${instance.filePath}`);
 				return;
 			}
 
 			const newBasename = rebuildPhysicalInstanceFilename(file.basename, newTitle);
 			if (!newBasename) {
-				console.warn(`Could not rebuild filename for physical instance: ${file.basename}`);
+				console.warn(`[RecurringEvents] Could not rebuild filename for physical instance: ${file.basename}`);
 				return;
 			}
 
@@ -199,7 +199,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			this.instanceFileToRRuleId.delete(oldPath);
 			this.instanceFileToRRuleId.set(newPath, rruleId);
 		} catch (error) {
-			console.error(`Error renaming physical instance ${instance.filePath}:`, error);
+			console.error(`[RecurringEvents] Error renaming physical instance ${instance.filePath}:`, error);
 		}
 	}
 
@@ -368,7 +368,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 					await this.ensurePhysicalInstancesWithLock(rruleId);
 				} catch (error) {
 					const eventTitle = data?.recurringEvent?.title || "Unknown Event";
-					console.error(`❌ Failed to process recurring event ${eventTitle} (${rruleId}):`, error);
+					console.error(`[RecurringEvents] ❌ Failed to process recurring event ${eventTitle} (${rruleId}):`, error);
 				}
 			})
 		);
@@ -548,7 +548,10 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 			this.scheduleRefresh();
 		} catch (error) {
-			console.error(`❌ Failed to ensure physical instances for ${data.recurringEvent.title}:`, error);
+			console.error(
+				`[RecurringEvents] ❌ Failed to ensure physical instances for ${data.recurringEvent.title}:`,
+				error
+			);
 		}
 	}
 

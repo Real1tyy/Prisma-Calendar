@@ -3,6 +3,7 @@ import { type App, Modal, Notice, TFile } from "obsidian";
 import type { CategoryTracker } from "../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { CalendarEvent } from "../../types/calendar";
+import { createModalButtons } from "../../utils/dom-utils";
 
 export abstract class BaseCategoryOperationModal extends Modal {
 	protected actionButton!: HTMLButtonElement;
@@ -40,20 +41,13 @@ export abstract class BaseCategoryOperationModal extends Modal {
 
 		this.renderModalContent(contentEl, eventsWithCategory);
 
-		const buttonContainer = contentEl.createDiv({ cls: "modal-button-container" });
-
-		const cancelButton = buttonContainer.createEl("button", { text: "Cancel" });
-		cancelButton.addEventListener("click", () => {
-			this.close();
+		const { submitButton } = createModalButtons(contentEl, {
+			submitText: this.getActionButtonText(),
+			submitCls: this.getActionButtonClass(),
+			onSubmit: () => void this.handleOperation(),
+			onCancel: () => this.close(),
 		});
-
-		this.actionButton = buttonContainer.createEl("button", {
-			text: this.getActionButtonText(),
-			cls: this.getActionButtonClass(),
-		});
-		this.actionButton.addEventListener("click", () => {
-			void this.handleOperation();
-		});
+		this.actionButton = submitButton;
 	}
 
 	protected async handleOperation(): Promise<void> {
@@ -76,7 +70,7 @@ export abstract class BaseCategoryOperationModal extends Modal {
 				new Notice(
 					`${this.getSuccessMessage(result.filesModified.length)}, but ${result.filesWithErrors.length} failed. Check console for details.`
 				);
-				console.error(`Errors in category operation:`, result.filesWithErrors);
+				console.error(`[CategoryOperation] Errors in category operation:`, result.filesWithErrors);
 			} else {
 				new Notice(this.getSuccessMessage(result.filesModified.length));
 			}
@@ -84,7 +78,7 @@ export abstract class BaseCategoryOperationModal extends Modal {
 			this.close();
 		} catch (error) {
 			new Notice(this.getErrorMessage(error));
-			console.error("Error in category operation:", error);
+			console.error("[CategoryOperation] Error in category operation:", error);
 			this.actionButton.disabled = false;
 			this.actionButton.setText(this.getActionButtonText());
 		}

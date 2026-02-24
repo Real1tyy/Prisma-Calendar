@@ -315,7 +315,7 @@ class MinimizedModalManagerClass {
 				new Notice("Categories updated for minimized event");
 			} catch (error) {
 				// eslint-disable-next-line no-console
-				console.error("Failed to assign categories:", error);
+				console.error("[MinimizedModal] Failed to assign categories:", error);
 				new Notice("Failed to assign categories");
 			}
 		});

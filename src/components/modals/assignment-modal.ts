@@ -1,5 +1,6 @@
-import { addCls, cls, removeCls, toggleCls } from "@real1ty-obsidian-plugins";
+import { addCls, removeCls, toggleCls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
+import { createModalButtons } from "../../utils/dom-utils";
 
 export interface AssignmentItem {
 	name: string;
@@ -362,18 +363,12 @@ export class AssignmentModal extends Modal {
 	}
 
 	private createButtons(container: HTMLElement): void {
-		const buttonContainer = container.createDiv(cls("modal-button-container"));
-
-		const cancelBtn = buttonContainer.createEl("button", { text: "Cancel" });
-		cancelBtn.onclick = () => this.close();
-
-		this.assignButton = buttonContainer.createEl("button", {
-			text: this.config.removeLabel,
-			cls: cls("mod-cta"),
+		const { submitButton } = createModalButtons(container, {
+			submitText: this.config.removeLabel,
+			onSubmit: () => this.submitSelection(),
+			onCancel: () => this.close(),
 		});
-		this.assignButton.onclick = () => {
-			this.submitSelection();
-		};
+		this.assignButton = submitButton;
 	}
 
 	private submitSelection(): void {

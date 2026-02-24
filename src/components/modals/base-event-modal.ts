@@ -39,6 +39,7 @@ import {
 import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../utils/obsidian";
 import { afterRender } from "../../utils/scheduling";
+import { registerSubmitHotkey } from "../../utils/dom-utils";
 import { parseAsLocalDate } from "../../utils/time-formatter";
 import { Stopwatch } from "../stopwatch";
 import { openCategoryAssignModal } from "./assignment-modal";
@@ -975,14 +976,7 @@ export abstract class BaseEventModal extends Modal {
 			toggleCls(this.weekdayContainer, "hidden", !showWeekdays);
 		});
 
-		// Use Obsidian's Scope system for Enter key so it works regardless of focus position.
-		// A contentEl keydown handler breaks when focus leaves contentEl descendants
-		// (e.g., clicking the non-focusable stopwatch header moves focus to modalEl/body).
-		this.scope.register([], "Enter", (e) => {
-			e.preventDefault();
-			this.saveWithTypoCheck();
-			return false;
-		});
+		registerSubmitHotkey(this.scope, () => this.saveWithTypoCheck());
 	}
 
 	protected setupTitleBlurListener(): void {
@@ -1886,7 +1880,7 @@ export abstract class BaseEventModal extends Modal {
 			this.selectedCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
 		} catch (error) {
 			// eslint-disable-next-line no-console
-			console.error("Error loading existing frontmatter:", error);
+			console.error("[EventModal] Error loading existing frontmatter:", error);
 		}
 	}
 

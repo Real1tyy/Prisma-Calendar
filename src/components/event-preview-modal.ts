@@ -64,7 +64,7 @@ export class EventPreviewModal extends Modal {
 				this.allFrontmatter = { ...cache.frontmatter };
 			}
 		} catch (error) {
-			console.error("Error loading frontmatter:", error);
+			console.error("[EventPreview] Error loading frontmatter:", error);
 		}
 	}
 

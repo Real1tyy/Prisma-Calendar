@@ -546,7 +546,7 @@ export class EventsModal extends Modal {
 					new Notice("Categories updated");
 					this.renderContent();
 				} catch (error) {
-					console.error("Failed to assign categories:", error);
+					console.error("[EventsModal] Failed to assign categories:", error);
 					new Notice("Failed to assign categories");
 				}
 			}
@@ -610,7 +610,7 @@ export class EventsModal extends Modal {
 
 			new Notice(this.showDisabledOnly ? "Recurring event enabled" : "Recurring event disabled");
 		} catch (error) {
-			console.error("Failed to toggle recurring event:", error);
+			console.error("[EventsModal] Failed to toggle recurring event:", error);
 			new Notice("Failed to toggle recurring event");
 		}
 	}

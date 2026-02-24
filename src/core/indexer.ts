@@ -97,7 +97,7 @@ export class Indexer {
 		this.subs.add(
 			this.genericIndexer.events$.subscribe((genericEvent) => {
 				const handler = this.handleGenericEvent(genericEvent).catch((error) => {
-					console.error("Indexer handleGenericEvent error:", error);
+					console.error("[Indexer] handleGenericEvent error:", error);
 				});
 				// Push to whichever collector is active (initialScanHandlers during start, handlerCollector during resync)
 				if (this.initialScanHandlers) {
@@ -275,17 +275,17 @@ export class Indexer {
 			// Auto-assign ZettelID: fire-and-forget. The rename triggers a new indexer
 			// event cycle with the updated path, so we don't need to await or update state here.
 			void this.autoAssignZettelId(file, isUntracked).catch((error) => {
-				console.error(`Error auto-assigning ZettelID for ${file.path}:`, error);
+				console.error(`[Indexer] Error auto-assigning ZettelID for ${file.path}:`, error);
 			});
 
 			if (this.settings.markPastInstancesAsDone && hasDateOrTime) {
 				void this.markPastEventAsDone(file, frontmatter).catch((error) => {
-					console.error(`Error in background marking of past event ${file.path}:`, error);
+					console.error(`[Indexer] Error in background marking of past event ${file.path}:`, error);
 				});
 			}
 
 			void this.updateCalendarTitleProperty(file, frontmatter).catch((error) => {
-				console.error(`Error updating calendar title for ${file.path}:`, error);
+				console.error(`[Indexer] Error updating calendar title for ${file.path}:`, error);
 			});
 
 			const allDayProp = frontmatter[this.settings.allDayProp];
@@ -415,7 +415,7 @@ export class Indexer {
 		try {
 			await ensureFileHasZettelId(this.app, file, this.settings.zettelIdProp);
 		} catch (error) {
-			console.error(`Error auto-assigning ZettelID to ${file.path}:`, error);
+			console.error(`[Indexer] Error auto-assigning ZettelID to ${file.path}:`, error);
 		} finally {
 			this.zettelIdRenamesInFlight.delete(file.path);
 		}
@@ -468,7 +468,7 @@ export class Indexer {
 						fm[this.settings.statusProperty] = doneValue;
 					});
 				} catch (error) {
-					console.error(`Error marking event as done in file ${file.path}:`, error);
+					console.error(`[Indexer] Error marking event as done in file ${file.path}:`, error);
 				}
 			}
 		}

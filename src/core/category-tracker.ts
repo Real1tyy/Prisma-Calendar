@@ -44,7 +44,7 @@ export class CategoryTracker {
 	private subscription: Subscription | null = null;
 	private indexingCompleteSubscription: Subscription | null = null;
 	private settingsSubscription: Subscription | null = null;
-	private _settings: SingleCalendarConfig;
+	private settings: SingleCalendarConfig;
 
 	/** File paths currently being propagated to — prevents infinite loops */
 	private propagatingFilePaths = new Set<string>();
@@ -62,16 +62,16 @@ export class CategoryTracker {
 		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
-		this._settings = settingsStore.value;
+		this.settings = settingsStore.value;
 		this.categories$ = this.categoriesSubject.asObservable();
 		this.propagationDebouncer = new FrontmatterPropagationDebouncer({
-			debounceMs: this._settings.propagationDebounceMs,
+			debounceMs: this.settings.propagationDebounceMs,
 			filterDiff: (diff) =>
-				filterExcludedPropsFromDiff(diff, this._settings, getRecurringInstanceExcludedProps(this._settings)),
+				filterExcludedPropsFromDiff(diff, this.settings, getRecurringInstanceExcludedProps(this.settings)),
 		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
-			this._settings = newSettings;
+			this.settings = newSettings;
 		});
 
 		this.subscription = this.indexer.events$
@@ -106,7 +106,7 @@ export class CategoryTracker {
 	}
 
 	private addEventToCategories(event: CalendarEvent): void {
-		if (!this._settings.categoryProp) return;
+		if (!this.settings.categoryProp) return;
 
 		const categories = event.metadata.categories ?? [];
 		for (const category of categories) {
@@ -146,14 +146,14 @@ export class CategoryTracker {
 				}
 			} else {
 				console.error(
-					`Category ${category} not found for file ${filePath}, this should not happen, please report this as a bug.`
+					`[CategoryTracker] Category ${category} not found for file ${filePath}, this should not happen, please report this as a bug.`
 				);
 			}
 		}
 	}
 
 	private updateFileCategories(filePath: string, frontmatter: Frontmatter): void {
-		const categoryProp = this._settings.categoryProp;
+		const categoryProp = this.settings.categoryProp;
 		if (!categoryProp) return;
 
 		const oldCategories = this.fileToCategories.get(filePath) || new Set<string>();
@@ -202,19 +202,19 @@ export class CategoryTracker {
 	}
 
 	private resolveCategoryColor(category: string): string {
-		const categoryProp = this._settings.categoryProp;
-		if (!categoryProp) return this._settings.defaultNodeColor;
+		const categoryProp = this.settings.categoryProp;
+		if (!categoryProp) return this.settings.defaultNodeColor;
 
 		const escapedCategory = category.replace(/'/g, "\\'");
 		const expectedExpression = `${categoryProp}.includes('${escapedCategory}')`;
 
-		for (const rule of this._settings.colorRules) {
+		for (const rule of this.settings.colorRules) {
 			if (rule.enabled && rule.expression === expectedExpression) {
 				return rule.color;
 			}
 		}
 
-		return this._settings.defaultNodeColor;
+		return this.settings.defaultNodeColor;
 	}
 
 	getCategories(): string[] {
@@ -256,10 +256,10 @@ export class CategoryTracker {
 
 	private handleCategoryPropagation(filePath: string, sourceFrontmatter: Frontmatter, diff: FrontmatterDiff): void {
 		const enabled =
-			this._settings.propagateFrontmatterToCategorySeries || this._settings.askBeforePropagatingToCategorySeries;
+			this.settings.propagateFrontmatterToCategorySeries || this.settings.askBeforePropagatingToCategorySeries;
 		if (!enabled) return;
 
-		const categoryProp = this._settings.categoryProp;
+		const categoryProp = this.settings.categoryProp;
 		if (!categoryProp) return;
 
 		const categoryValues = parseIntoList(sourceFrontmatter[categoryProp]);
@@ -275,9 +275,9 @@ export class CategoryTracker {
 						.filter((fp) => fp !== ctx.filePath);
 					if (targetFilePaths.length === 0) return;
 
-					if (this._settings.propagateFrontmatterToCategorySeries) {
+					if (this.settings.propagateFrontmatterToCategorySeries) {
 						void this.propagateToMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths);
-					} else if (this._settings.askBeforePropagatingToCategorySeries) {
+					} else if (this.settings.askBeforePropagatingToCategorySeries) {
 						new FrontmatterPropagationModal(this.app, {
 							eventTitle: `Category series: ${ctx.categoryValue}`,
 							diff: filteredDiff,
@@ -299,13 +299,13 @@ export class CategoryTracker {
 			this.propagatingFilePaths.add(fp);
 		}
 
-		const excludedProps = getRecurringInstanceExcludedProps(this._settings);
+		const excludedProps = getRecurringInstanceExcludedProps(this.settings);
 
 		try {
 			await batchedPromiseAll(
 				targetFilePaths,
 				(fp) => applyFrontmatterChangesToInstance(this.app, fp, sourceFrontmatter, diff, excludedProps),
-				this._settings.fileConcurrencyLimit
+				this.settings.fileConcurrencyLimit
 			);
 		} finally {
 			setTimeout(() => {

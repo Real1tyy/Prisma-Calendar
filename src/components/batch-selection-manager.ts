@@ -210,7 +210,7 @@ export class BatchSelectionManager {
 			});
 			this.clearSelection();
 		} catch (error) {
-			console.error("Failed to open files:", error);
+			console.error("[BatchSelection] Failed to open files:", error);
 			new Notice("Failed to open files");
 		}
 	}
@@ -254,7 +254,7 @@ export class BatchSelectionManager {
 				// Validate time unit for all-day events
 				if (hasAllDayEvents && !isTimeUnitAllowedForAllDay(unit)) {
 					console.warn(
-						`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
+						`[BatchSelection] Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
 					);
 					new Notice(`Cannot move all-day events by ${unit}. Please use days, weeks, months, or years.`, 5000);
 					return;
@@ -306,7 +306,7 @@ export class BatchSelectionManager {
 
 			if (postHook) postHook();
 		} catch (error) {
-			console.error(`Failed operation: ${errorMessage}`, error);
+			console.error(`[BatchSelection] Failed operation: ${errorMessage}`, error);
 
 			// Check if this is a partial failure (some succeeded)
 			const errorMsg = error instanceof Error ? error.message : String(error);
@@ -360,7 +360,7 @@ export class BatchSelectionManager {
 				new Notice(successMessage(filePaths.length));
 				this.clearSelection();
 			} catch (error) {
-				console.error(`Failed operation: ${errorMessage}`, error);
+				console.error(`[BatchSelection] Failed operation: ${errorMessage}`, error);
 
 				// Check if this is a partial failure (some succeeded)
 				const errorMsg = error instanceof Error ? error.message : String(error);

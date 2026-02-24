@@ -258,7 +258,7 @@ export class EventEditModal extends BaseEventModal {
 				}
 			})
 			.catch((error) => {
-				console.error("Error updating event:", error);
+				console.error("[EventEdit] Error updating event:", error);
 			});
 
 		this.close();

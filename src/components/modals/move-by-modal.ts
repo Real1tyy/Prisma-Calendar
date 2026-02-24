@@ -1,5 +1,6 @@
 import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
+import { createModalButtons, registerSubmitHotkey } from "../../utils/dom-utils";
 
 const TIME_UNITS = ["minutes", "hours", "days", "weeks", "months", "years"] as const;
 
@@ -84,29 +85,13 @@ export class MoveByModal extends Modal {
 		}
 
 		// Action buttons
-		const buttonContainer = contentEl.createDiv(cls("modal-button-container"));
-
-		const submitButton = buttonContainer.createEl("button", {
-			text: "Move",
-			cls: "mod-cta",
-		});
-		submitButton.addEventListener("click", () => {
-			this.submit();
+		createModalButtons(contentEl, {
+			submitText: "Move",
+			onSubmit: () => this.submit(),
+			onCancel: () => this.close(),
 		});
 
-		const cancelButton = buttonContainer.createEl("button", {
-			text: "Cancel",
-		});
-		cancelButton.addEventListener("click", () => {
-			this.close();
-		});
-
-		// Handle Enter key (scope.register works modal-wide regardless of focus)
-		this.scope.register([], "Enter", (e) => {
-			e.preventDefault();
-			this.submit();
-			return false;
-		});
+		registerSubmitHotkey(this.scope, () => this.submit());
 
 		// Initialize selection states
 		this.selectUnit("minutes");

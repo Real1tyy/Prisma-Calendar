@@ -1,6 +1,7 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
 import type { EventPreset } from "../../types/settings";
+import { createModalButtons, registerSubmitHotkey } from "../../utils/dom-utils";
 
 export class SavePresetModal extends Modal {
 	private onSave: (name: string, overridePresetId: string | null) => void;
@@ -75,29 +76,13 @@ export class SavePresetModal extends Modal {
 			cls: cls("setting-item-control"),
 		});
 
-		const buttonContainer = contentEl.createDiv(cls("modal-button-container"));
-
-		const cancelButton = buttonContainer.createEl("button", {
-			text: "Cancel",
-		});
-		cancelButton.addEventListener("click", () => {
-			this.close();
+		createModalButtons(contentEl, {
+			submitText: "Save",
+			onSubmit: () => this.handleSave(),
+			onCancel: () => this.close(),
 		});
 
-		const saveButton = buttonContainer.createEl("button", {
-			text: "Save",
-			cls: cls("mod-cta"),
-		});
-		saveButton.addEventListener("click", () => {
-			this.handleSave();
-		});
-
-		// Handle Enter key (scope.register works modal-wide regardless of focus)
-		this.scope.register([], "Enter", (e) => {
-			e.preventDefault();
-			this.handleSave();
-			return false;
-		});
+		registerSubmitHotkey(this.scope, () => this.handleSave());
 
 		this.nameInput.focus();
 	}

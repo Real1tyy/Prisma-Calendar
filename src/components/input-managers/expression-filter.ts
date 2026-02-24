@@ -55,7 +55,7 @@ export class ExpressionFilterInputManager extends InputFilterManager {
 			}
 
 			if (this.lastWarnedExpression !== this.currentFilterValue) {
-				console.warn("Invalid filter expression:", this.currentFilterValue, error);
+				console.warn("[ExpressionFilter] Invalid filter expression:", this.currentFilterValue, error);
 				this.lastWarnedExpression = this.currentFilterValue;
 			}
 			return false;

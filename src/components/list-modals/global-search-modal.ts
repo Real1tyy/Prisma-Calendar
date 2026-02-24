@@ -138,7 +138,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 				categoryColor: resolveEventColor(event.meta, this.bundle, this.colorEvaluator),
 			}));
 		} catch (error) {
-			console.error("Error loading events for global search:", error);
+			console.error("[GlobalSearch] Error loading events for global search:", error);
 			this.allEvents = [];
 		}
 	}
@@ -311,7 +311,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 				categoryColor: resolveEventColor(event.meta, this.bundle, this.colorEvaluator),
 			}));
 		} catch (error) {
-			console.error("Error applying filters:", error);
+			console.error("[GlobalSearch] Error applying filters:", error);
 			this.allEvents = [];
 		}
 	}
@@ -326,7 +326,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 				new Notice(`File not found: ${item.filePath}`);
 			}
 		} catch (error) {
-			console.error("Error opening file:", error);
+			console.error("[GlobalSearch] Error opening file:", error);
 			new Notice(`Failed to open: ${item.filePath}`);
 		}
 	}
@@ -365,7 +365,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 			new Notice(`Navigated to: ${item.title}`);
 			this.close();
 		} catch (error) {
-			console.error("Error navigating to event:", error);
+			console.error("[GlobalSearch] Error navigating to event:", error);
 			new Notice(`Failed to navigate to: ${item.filePath}`);
 		}
 	}

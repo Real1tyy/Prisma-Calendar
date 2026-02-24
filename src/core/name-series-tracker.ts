@@ -33,7 +33,7 @@ export class NameSeriesTracker {
 	private subscription: Subscription | null = null;
 	private indexingCompleteSubscription: Subscription | null = null;
 	private settingsSubscription: Subscription | null = null;
-	private _settings: SingleCalendarConfig;
+	private settings: SingleCalendarConfig;
 
 	/** File paths currently being propagated to — prevents infinite loops */
 	private propagatingFilePaths = new Set<string>();
@@ -52,16 +52,16 @@ export class NameSeriesTracker {
 		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
-		this._settings = settingsStore.value;
+		this.settings = settingsStore.value;
 		this.propagationDebouncer = new FrontmatterPropagationDebouncer({
-			debounceMs: this._settings.propagationDebounceMs,
+			debounceMs: this.settings.propagationDebounceMs,
 			filterDiff: (diff) =>
-				filterExcludedPropsFromDiff(diff, this._settings, getRecurringInstanceExcludedProps(this._settings)),
+				filterExcludedPropsFromDiff(diff, this.settings, getRecurringInstanceExcludedProps(this.settings)),
 		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
-			const wasEnabled = this._settings.enableNameSeriesTracking;
-			this._settings = newSettings;
+			const wasEnabled = this.settings.enableNameSeriesTracking;
+			this.settings = newSettings;
 
 			if (wasEnabled && !newSettings.enableNameSeriesTracking) {
 				this.seriesByName.clear();
@@ -98,7 +98,7 @@ export class NameSeriesTracker {
 	// ─── Indexer Event Handling ────────────────────────────────────
 
 	private handleIndexerEvent(event: IndexerEvent): void {
-		if (!this._settings.enableNameSeriesTracking) return;
+		if (!this.settings.enableNameSeriesTracking) return;
 
 		switch (event.type) {
 			case "file-changed":
@@ -120,7 +120,7 @@ export class NameSeriesTracker {
 	// ─── Name Propagation ─────────────────────────────────────────
 
 	private handleNamePropagation(filePath: string, sourceFrontmatter: Frontmatter, diff: FrontmatterDiff): void {
-		const enabled = this._settings.propagateFrontmatterToNameSeries || this._settings.askBeforePropagatingToNameSeries;
+		const enabled = this.settings.propagateFrontmatterToNameSeries || this.settings.askBeforePropagatingToNameSeries;
 		if (!enabled) return;
 
 		const nameKey = this.fileToNameKey.get(filePath);
@@ -138,9 +138,9 @@ export class NameSeriesTracker {
 			const targetFilePaths = Array.from(filePaths).filter((fp) => fp !== ctx.filePath);
 			if (targetFilePaths.length === 0) return;
 
-			if (this._settings.propagateFrontmatterToNameSeries) {
+			if (this.settings.propagateFrontmatterToNameSeries) {
 				void this.propagateToSeriesMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths);
-			} else if (this._settings.askBeforePropagatingToNameSeries) {
+			} else if (this.settings.askBeforePropagatingToNameSeries) {
 				new FrontmatterPropagationModal(this.app, {
 					eventTitle: `Name series: ${ctx.nameKey}`,
 					diff: filteredDiff,
@@ -161,13 +161,13 @@ export class NameSeriesTracker {
 			this.propagatingFilePaths.add(fp);
 		}
 
-		const excludedProps = getRecurringInstanceExcludedProps(this._settings);
+		const excludedProps = getRecurringInstanceExcludedProps(this.settings);
 
 		try {
 			await batchedPromiseAll(
 				targetFilePaths,
 				(fp) => applyFrontmatterChangesToInstance(this.app, fp, sourceFrontmatter, diff, excludedProps),
-				this._settings.fileConcurrencyLimit
+				this.settings.fileConcurrencyLimit
 			);
 		} finally {
 			// Remove targets from loop prevention after a delay to account for indexer processing
@@ -184,7 +184,7 @@ export class NameSeriesTracker {
 	private updateFile(filePath: string, frontmatter: Record<string, unknown>): void {
 		this.removeFile(filePath);
 
-		const title = getEventName(this._settings.titleProp, frontmatter, filePath, this._settings.calendarTitleProp);
+		const title = getEventName(this.settings.titleProp, frontmatter, filePath, this.settings.calendarTitleProp);
 		if (title) {
 			const nameKey = title.toLowerCase();
 			if (nameKey) {
@@ -215,7 +215,7 @@ export class NameSeriesTracker {
 		this.seriesByName.clear();
 		this.fileToNameKey.clear();
 
-		if (!this._settings.enableNameSeriesTracking) return;
+		if (!this.settings.enableNameSeriesTracking) return;
 
 		const allEvents = this.eventStore.getAllEvents();
 		for (const event of allEvents) {

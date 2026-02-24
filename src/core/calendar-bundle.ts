@@ -334,7 +334,7 @@ export class CalendarBundle {
 			new Notice("Event created successfully");
 			return command.getCreatedFilePath();
 		} catch (error) {
-			console.error("Error creating new event:", error);
+			console.error("[CalendarBundle] Error creating new event:", error);
 			new Notice("Failed to create event");
 			return null;
 		}
@@ -434,7 +434,7 @@ export class CalendarBundle {
 			new Notice("Event updated successfully");
 			return finalFilePath;
 		} catch (error) {
-			console.error("Failed to update event:", error);
+			console.error("[CalendarBundle] Failed to update event:", error);
 			new Notice("Failed to update event");
 			return null;
 		}

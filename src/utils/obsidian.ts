@@ -66,7 +66,7 @@ export async function deleteFilesByPaths(app: App, filePaths: string[], batchSiz
 					await app.fileManager.trashFile(file);
 				}
 			} catch (error) {
-				console.error(`Error deleting file ${filePath}:`, error);
+				console.error(`[Obsidian] Error deleting file ${filePath}:`, error);
 			}
 		},
 		batchSize
@@ -151,7 +151,7 @@ export async function getFrontmatterWithRetry(
 export function getFileByPathOrThrow(app: App, filePath: string): TFile {
 	const file = app.vault.getAbstractFileByPath(filePath);
 	if (!(file instanceof TFile)) {
-		const error = new Error(`File not found or is not a TFile: ${filePath}`);
+		const error = new Error(`[Obsidian] File not found or is not a TFile: ${filePath}`);
 		console.error(error);
 		throw error;
 	}
@@ -172,7 +172,7 @@ export function getFileAndFrontmatter(app: App, filePath: string): { file: TFile
 	const frontmatter = metadata?.frontmatter;
 
 	if (!frontmatter) {
-		const error = new Error(`File has no frontmatter: ${filePath}`);
+		const error = new Error(`[Obsidian] File has no frontmatter: ${filePath}`);
 		console.error(error);
 		throw error;
 	}
@@ -242,7 +242,7 @@ async function openFileWithStrategy(
 		const leaf = app.workspace.getLeaf(leafStrategy);
 		await leaf.openFile(file);
 	} catch (error) {
-		console.error(`Error ${options.errorContext}:`, error);
+		console.error(`[Obsidian] Error ${options.errorContext}:`, error);
 		new Notice(`${options.errorMessage}: ${filePath}`);
 	}
 }

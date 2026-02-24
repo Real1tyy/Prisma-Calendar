@@ -3,6 +3,7 @@ import { type App, Modal } from "obsidian";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { getAllFrontmatterProperties } from "../../utils/calendar-events";
+import { createModalButtons, registerSubmitHotkey } from "../../utils/dom-utils";
 
 interface FrontmatterProperty {
 	key: string;
@@ -156,16 +157,11 @@ export class BatchFrontmatterModal extends Modal {
 	}
 
 	private createButtons(container: HTMLElement): void {
-		const buttonContainer = container.createDiv(cls("modal-button-container"));
-
-		const cancelBtn = buttonContainer.createEl("button", { text: "Cancel" });
-		cancelBtn.onclick = () => this.close();
-
-		const applyButton = buttonContainer.createEl("button", {
-			text: "Apply changes",
-			cls: cls("mod-cta"),
+		createModalButtons(container, {
+			submitText: "Apply changes",
+			onSubmit: () => this.applyChanges(),
+			onCancel: () => this.close(),
 		});
-		applyButton.onclick = () => this.applyChanges();
 	}
 
 	private applyChanges(): void {
@@ -175,12 +171,7 @@ export class BatchFrontmatterModal extends Modal {
 	}
 
 	private setupKeyboardHandlers(): void {
-		// scope.register works modal-wide regardless of focus
-		this.scope.register([], "Enter", (e) => {
-			e.preventDefault();
-			this.applyChanges();
-			return false;
-		});
+		registerSubmitHotkey(this.scope, () => this.applyChanges());
 	}
 
 	private prefillExistingProperties(): void {

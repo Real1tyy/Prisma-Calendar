@@ -446,7 +446,7 @@ export async function importEventsToCalendar(
 			successCount++;
 			onProgress?.(i + 1, newEvents.length, event.title);
 		} catch (error) {
-			console.error(`Failed to import event "${event.title}":`, error);
+			console.error(`[ICSImport] Failed to import event "${event.title}":`, error);
 			errorCount++;
 			onProgress?.(i + 1, newEvents.length, event.title);
 		}

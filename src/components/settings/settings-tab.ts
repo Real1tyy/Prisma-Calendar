@@ -152,7 +152,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 				this.calendarStores.set(calendarId, store);
 				return store;
 			} catch (error) {
-				console.error(`Failed to create calendar store for ${calendarId}:`, error);
+				console.error(`[Settings] Failed to create calendar store for ${calendarId}:`, error);
 				return null;
 			}
 		}

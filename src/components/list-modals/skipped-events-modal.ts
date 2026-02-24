@@ -57,7 +57,7 @@ export class SkippedEventsModal extends BaseEventListModal {
 
 						new Notice("Event un-skipped");
 					} catch (error) {
-						console.error("Failed to un-skip event:", error);
+						console.error("[SkippedEvents] Failed to un-skip event:", error);
 						new Notice("Failed to un-skip event");
 					}
 				},

@@ -707,7 +707,7 @@ export class EventContextMenu {
 					// Validate time unit for all-day events
 					if (isAllDay && !isTimeUnitAllowedForAllDay(unit)) {
 						console.warn(
-							`Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
+							`[ContextMenu] Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
 						);
 						new Notice(`Cannot move all-day event by ${unit}. Please use days, weeks, months, or years.`, 5000);
 						return;

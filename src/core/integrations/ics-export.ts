@@ -353,7 +353,7 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 
 		if (!result.success || !result.content) {
 			new Notice(`Failed to generate ICS: ${result.error?.message || "Unknown error"}`);
-			console.error("ICS export error:", result.error);
+			console.error("[ICSExport] ICS export error:", result.error);
 			return;
 		}
 
@@ -368,7 +368,7 @@ export async function exportCalendarAsICS(app: App, options: ExportOptions): Pro
 		await app.vault.create(filePath, result.content);
 		new Notice(`Exported ${events.length} events to ${filePath}`);
 	} catch (error) {
-		console.error("ICS export failed:", error);
+		console.error("[ICSExport] ICS export failed:", error);
 		new Notice("Failed to export calendar. See console for details.");
 	}
 }

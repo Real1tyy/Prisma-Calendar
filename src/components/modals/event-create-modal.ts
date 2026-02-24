@@ -87,7 +87,7 @@ export class EventCreateModal extends BaseEventModal {
 				}
 			})
 			.catch((error) => {
-				console.error("Error creating event:", error);
+				console.error("[EventCreate] Error creating event:", error);
 			});
 
 		this.close();

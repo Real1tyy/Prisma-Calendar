@@ -120,7 +120,7 @@ export class HolidayStore {
 				}
 			}
 		} catch (error) {
-			console.error("Error loading holiday cache:", error);
+			console.error("[HolidayStore] Error loading holiday cache:", error);
 		}
 		return null;
 	}
@@ -130,7 +130,7 @@ export class HolidayStore {
 			const key = this.getCacheKey(year);
 			await this.app.saveLocalStorage(key, JSON.stringify(data));
 		} catch (error) {
-			console.error("Error saving holiday cache:", error);
+			console.error("[HolidayStore] Error saving holiday cache:", error);
 		}
 	}
 

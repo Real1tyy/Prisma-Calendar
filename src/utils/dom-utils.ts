@@ -35,3 +35,46 @@ export function isPointInsideElement(x: number, y: number, el: Element | null | 
 	const rect = el.getBoundingClientRect();
 	return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
 }
+
+// ─── Modal Helpers ──────────────────────────────────────────
+
+interface ModalButtonOptions {
+	submitText: string;
+	submitCls?: string;
+	onSubmit: () => void;
+	onCancel: () => void;
+}
+
+/**
+ * Creates a standard modal button container with Cancel and Submit buttons.
+ * Returns both buttons so callers can customize them further (e.g., dynamic text).
+ */
+export function createModalButtons(
+	container: HTMLElement,
+	{ submitText, submitCls, onSubmit, onCancel }: ModalButtonOptions
+): { submitButton: HTMLButtonElement; cancelButton: HTMLButtonElement } {
+	const buttonContainer = container.createDiv("prisma-modal-button-container");
+
+	const cancelButton = buttonContainer.createEl("button", { text: "Cancel" });
+	cancelButton.addEventListener("click", onCancel);
+
+	const submitButton = buttonContainer.createEl("button", {
+		text: submitText,
+		cls: submitCls ?? "mod-cta",
+	});
+	submitButton.addEventListener("click", onSubmit);
+
+	return { submitButton, cancelButton };
+}
+
+/**
+ * Registers Enter key as a submit hotkey on a modal scope.
+ * Uses Obsidian's Scope system so it works regardless of focus position.
+ */
+export function registerSubmitHotkey(scope: { register: CallableFunction }, onSubmit: () => void): void {
+	scope.register([], "Enter", (e: KeyboardEvent) => {
+		e.preventDefault();
+		onSubmit();
+		return false;
+	});
+}

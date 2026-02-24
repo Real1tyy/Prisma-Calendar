@@ -1,4 +1,5 @@
 import { Modal, type App } from "obsidian";
+import { createModalButtons, registerSubmitHotkey } from "../../utils/dom-utils";
 
 export class UntrackedEventCreateModal extends Modal {
 	private titleInput!: HTMLInputElement;
@@ -28,16 +29,13 @@ export class UntrackedEventCreateModal extends Modal {
 			cls: "prisma-untracked-event-input",
 		});
 
-		const buttons = contentEl.createDiv({ cls: "prisma-modal-button-container" });
-		buttons.createEl("button", { text: "Cancel" }).addEventListener("click", () => this.close());
-
-		buttons.createEl("button", { text: "Create", cls: "mod-cta" }).addEventListener("click", () => void this.submit());
-
-		this.scope.register([], "Enter", (e) => {
-			e.preventDefault();
-			void this.submit();
-			return false;
+		createModalButtons(contentEl, {
+			submitText: "Create",
+			onSubmit: () => void this.submit(),
+			onCancel: () => this.close(),
 		});
+
+		registerSubmitHotkey(this.scope, () => void this.submit());
 
 		requestAnimationFrame(() => this.titleInput.focus());
 	}

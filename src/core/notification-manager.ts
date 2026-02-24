@@ -76,7 +76,7 @@ export class NotificationManager {
 			try {
 				await Notification.requestPermission();
 			} catch (error) {
-				console.warn("Could not request notification permission:", error);
+				console.warn("[NotificationManager] Could not request notification permission:", error);
 			}
 		}
 	}
@@ -295,7 +295,7 @@ export class NotificationManager {
 				fm[this.settings.alreadyNotifiedProp] = true;
 			});
 		} catch (error) {
-			console.error(`Error marking event as notified: ${filePath}:`, error);
+			console.error(`[NotificationManager] Error marking event as notified: ${filePath}:`, error);
 		}
 	}
 
@@ -339,7 +339,7 @@ export class NotificationManager {
 				};
 			}
 		} catch (error) {
-			console.error("Error showing system notification:", error);
+			console.error("[NotificationManager] Error showing system notification:", error);
 		}
 	}
 

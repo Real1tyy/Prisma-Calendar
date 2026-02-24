@@ -40,7 +40,7 @@ class DeletePhysicalEventsModal extends Modal {
 			const result = this.options.onCancel?.();
 			if (result instanceof Promise) {
 				void result.catch((error) => {
-					console.error("Error in onCancel callback:", error);
+					console.error("[DeleteEvents] Error in onCancel callback:", error);
 				});
 			}
 			this.close();
@@ -56,7 +56,7 @@ class DeletePhysicalEventsModal extends Modal {
 					this.close();
 				})
 				.catch((error) => {
-					console.error("Error in onConfirm callback:", error);
+					console.error("[DeleteEvents] Error in onConfirm callback:", error);
 					this.close();
 				});
 		});

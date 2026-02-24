@@ -193,7 +193,7 @@ export class ICSImportModal extends Modal {
 			await this.onImport(this.selectedBundle, this.parsedEvents, this.selectedTimezone);
 			this.close();
 		} catch (error) {
-			console.error("Import failed:", error);
+			console.error("[ICSImport] Import failed:", error);
 			new Notice("Failed to import events. See console for details.");
 		}
 	}

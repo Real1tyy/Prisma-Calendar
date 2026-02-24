@@ -125,7 +125,7 @@ export const applyDateNormalizationToFile = async (
 			fm[targetProp] = value;
 		});
 	} catch (error) {
-		console.error(`Error writing sort date to file ${filePath}:`, error);
+		console.error(`[CalendarEvents] Error writing sort date to file ${filePath}:`, error);
 	}
 };
 
@@ -535,7 +535,7 @@ export const applyFrontmatterChangesToInstance = async (
 			}
 		});
 	} catch (error) {
-		console.error(`Error applying frontmatter changes to instance ${filePath}:`, error);
+		console.error(`[CalendarEvents] Error applying frontmatter changes to instance ${filePath}:`, error);
 	}
 };
 
