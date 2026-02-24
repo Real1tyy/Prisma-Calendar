@@ -303,39 +303,22 @@ export class PrismaCalendarApiManager {
 	// ─── Navigation ──────────────────────────────────────────────
 
 	async navigateToDate(input: NavigateInput): Promise<boolean> {
-		console.debug("[PrismaCalendar] navigateToDate called with:", JSON.stringify(input));
-
 		const bundle = this.resolveBundleOrNotice(input.calendarId);
-		if (!bundle) {
-			console.debug("[PrismaCalendar] navigateToDate: no bundle resolved");
-			return false;
-		}
+		if (!bundle) return false;
 
 		await bundle.activateCalendarView();
 
 		const { workspace } = this.plugin.app;
 		const existingLeaves = workspace.getLeavesOfType(bundle.viewType);
 		const calendarLeaf = existingLeaves[0];
-		if (!calendarLeaf) {
-			console.debug("[PrismaCalendar] navigateToDate: no calendar leaf found for viewType:", bundle.viewType);
-			return false;
-		}
+		if (!calendarLeaf) return false;
 
 		const calendarView = calendarLeaf.view;
-		if (!(calendarView instanceof CalendarView)) {
-			console.debug("[PrismaCalendar] navigateToDate: leaf view is not CalendarView");
-			return false;
-		}
+		if (!(calendarView instanceof CalendarView)) return false;
 
 		const date = input.date ? new Date(input.date) : new Date();
-		console.debug(
-			"[PrismaCalendar] navigateToDate: date =",
-			date,
-			"view =",
-			input.view,
-			"isValidDate =",
-			!isNaN(date.getTime())
-		);
+		if (isNaN(date.getTime())) return false;
+
 		calendarView.navigateToDate(date, input.view);
 		return true;
 	}

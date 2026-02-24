@@ -2113,10 +2113,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.storePreviousViewState();
 
 		if (viewType) {
-			this.calendar.changeView(viewType);
+			this.calendar.changeView(viewType, date);
+		} else {
+			this.calendar.gotoDate(date);
 		}
-
-		this.calendar.gotoDate(date);
 	}
 
 	goToToday(): void {
