@@ -1,10 +1,10 @@
 import {
+	areSetsEqual,
 	type FrontmatterDiff,
 	Indexer as GenericIndexer,
 	type IndexerEvent as GenericIndexerEvent,
 	type IndexerConfig,
 	PENDING_WRITE_SENTINEL_FM_KEY,
-	areSetsEqual,
 	removeMarkdownExtension,
 	SyncStore,
 } from "@real1ty-obsidian-plugins";
@@ -15,8 +15,8 @@ import { SCAN_CONCURRENCY } from "../constants";
 import { type EventMetadata, parseEventMetadata } from "../types/event";
 import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
-import { cleanupTitle, ensureFileHasZettelId, generateUniqueRruleId, hasTimestamp } from "../utils/event-naming";
 import { getRecurringInstanceExcludedProps } from "../utils/event-frontmatter";
+import { cleanupTitle, ensureFileHasZettelId, generateUniqueRruleId, hasTimestamp } from "../utils/event-naming";
 import { intoDate, toSafeString } from "../utils/format";
 
 export interface RawEventSource {
