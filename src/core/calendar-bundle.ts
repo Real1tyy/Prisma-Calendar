@@ -1,6 +1,6 @@
 import { onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsidian-plugins";
 import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
-import { type Subscription, filter, firstValueFrom } from "rxjs";
+import { filter, firstValueFrom, type Subscription } from "rxjs";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type { EventSaveData } from "../components/modals/base-event-modal";
 import type CustomCalendarPlugin from "../main";
