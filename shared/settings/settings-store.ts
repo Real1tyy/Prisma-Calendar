@@ -85,6 +85,6 @@ export class SettingsStore<TSchema extends z.ZodTypeAny> {
 	}
 
 	getSecret(secretName: string): string {
-		return this.plugin.app.secretStorage.getSecret(secretName) ?? "";
+		return (this.plugin.app as any).secretStorage?.getSecret(secretName) ?? "";
 	}
 }

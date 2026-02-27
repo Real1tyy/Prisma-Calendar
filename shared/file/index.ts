@@ -1,3 +1,4 @@
+export * from "./code-block-repository";
 export * from "./file";
 export * from "./file-operations";
 export * from "./file-utils";
