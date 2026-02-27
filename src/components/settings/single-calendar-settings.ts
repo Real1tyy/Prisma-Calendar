@@ -1,7 +1,5 @@
 import { SettingsNavigation, type SettingsSection } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
-import type CustomCalendarPlugin from "../../main";
 import {
 	AISettings,
 	BasesSettings,
@@ -15,6 +13,8 @@ import {
 	PropertiesSettings,
 	RulesSettings,
 } from ".";
+import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
+import type CustomCalendarPlugin from "../../main";
 
 export class SingleCalendarSettings {
 	private navigation: SettingsNavigation;
