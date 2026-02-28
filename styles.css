@@ -18,7 +18,10 @@
 .prisma-calendar-view {
 	padding: 8px;
 	height: 100%;
-	overflow: auto;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	position: relative;
 }
 
 .prisma-calendar-container {

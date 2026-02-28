@@ -198,7 +198,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		);
 
 		// Resize updates
-		this.observeResize(this.container, () => this.calendar?.updateSize());
+		this.observeResize(this.container, () => {
+			this.calendar?.updateSize();
+			this.scheduleStickyOffsetsUpdate();
+		});
 
 		// Settings subscription
 		const settingsSubscription = this.bundle.settingsStore.settings$.subscribe((settings: SingleCalendarConfig) => {
@@ -546,6 +549,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 					this.zoomManager.updateZoomLevelButton();
 					this.saveCurrentState();
 					this.updateUpcomingEventHighlight();
+					this.scheduleStickyOffsetsUpdate();
 
 					// Apply month boundary classes to timeGrid columns
 					this.container.querySelectorAll<HTMLElement>(".fc-timegrid-col[data-date]").forEach((col) => {
