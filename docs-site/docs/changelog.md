@@ -34,6 +34,7 @@ All notable changes to this project will be documented here.
 
 - **Time tracker scheduler not cleaned up**: The background scheduler that periodically saves the end date every 5 minutes while an event is minimized was not stopped when the plugin unloaded or when calendar bundles were refreshed. This caused the interval to keep running with stale references, writing to files even after the modal was closed or the calendar was destroyed. See [Time Tracker](./features/management/time-tracker.md).
 - **All-day event rendered twice after drag-to-edge navigation**: Dragging an all-day event to the calendar edge to navigate to a new interval, then dropping it, caused the event to appear twice visually. See [Calendar View](./features/calendar/calendar-view.md).
+- **Typo detection triggered on exact matches**: The typo suggestion modal appeared even when the event name exactly matched a category, preset event name, or existing event name. Fuzzy matching now only runs when there is no direct match and the event name doesn't belong to an established name series (5+ events). See [Categories](./features/organization/categories.md).
 
 ---
 

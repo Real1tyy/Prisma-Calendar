@@ -280,9 +280,22 @@ describe("Auto-Category Assignment", () => {
 			autoAssignCategoryByName: true,
 			categoryAssignmentPresets: [],
 		};
+		const emptyNameSeries = new Map<string, Set<string>>();
+
+		/** Creates a name-series map entry with the given number of dummy file paths */
+		const nameSeriesOf = (name: string, count: number): Map<string, Set<string>> => {
+			const files = new Set<string>();
+			for (let i = 0; i < count; i++) files.add(`path/${name}-${i}.md`);
+			return new Map([[name, files]]);
+		};
 
 		it("should detect a typo in a category name (missing letter)", () => {
-			const result = findFuzzyNameMatch("Obsidiae", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+			const result = findFuzzyNameMatch(
+				"Obsidiae",
+				mockSettings as SingleCalendarConfig,
+				["Obsidian"],
+				emptyNameSeries
+			);
 
 			expect(result).not.toBeNull();
 			expect(result![0].suggestion).toBe("Obsidian");
@@ -290,7 +303,12 @@ describe("Auto-Category Assignment", () => {
 		});
 
 		it("should detect a typo with extra letters", () => {
-			const result = findFuzzyNameMatch("Obsidianee", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+			const result = findFuzzyNameMatch(
+				"Obsidianee",
+				mockSettings as SingleCalendarConfig,
+				["Obsidian"],
+				emptyNameSeries
+			);
 
 			expect(result).not.toBeNull();
 			expect(result![0].suggestion).toBe("Obsidian");
@@ -298,7 +316,12 @@ describe("Auto-Category Assignment", () => {
 		});
 
 		it("should detect a transposition typo", () => {
-			const result = findFuzzyNameMatch("Busienss", mockSettings as SingleCalendarConfig, ["Business"], []);
+			const result = findFuzzyNameMatch(
+				"Busienss",
+				mockSettings as SingleCalendarConfig,
+				["Business"],
+				emptyNameSeries
+			);
 
 			expect(result).not.toBeNull();
 			expect(result![0].suggestion).toBe("Business");
@@ -306,7 +329,7 @@ describe("Auto-Category Assignment", () => {
 		});
 
 		it("should detect a typo with a missing letter at end", () => {
-			const result = findFuzzyNameMatch("Busines", mockSettings as SingleCalendarConfig, ["Business"], []);
+			const result = findFuzzyNameMatch("Busines", mockSettings as SingleCalendarConfig, ["Business"], emptyNameSeries);
 
 			expect(result).not.toBeNull();
 			expect(result![0].suggestion).toBe("Business");
@@ -314,25 +337,81 @@ describe("Auto-Category Assignment", () => {
 		});
 
 		it("should return null for exact matches (handled by autoAssignCategories)", () => {
-			const result = findFuzzyNameMatch("Obsidian", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+			const result = findFuzzyNameMatch(
+				"Obsidian",
+				mockSettings as SingleCalendarConfig,
+				["Obsidian"],
+				emptyNameSeries
+			);
 
 			expect(result).toBeNull();
 		});
 
+		it("should return null when event name matches a preset event name exactly", () => {
+			const settings = {
+				...mockSettings,
+				categoryAssignmentPresets: [
+					{
+						id: "1",
+						eventName: "Exercise, Workout",
+						categories: ["Fitness"],
+					},
+				],
+			} as SingleCalendarConfig;
+
+			const result = findFuzzyNameMatch("Exercise", settings, [], emptyNameSeries);
+
+			expect(result).toBeNull();
+		});
+
+		it("should return null when event name matches an existing name-series key exactly", () => {
+			const result = findFuzzyNameMatch(
+				"Team Meeting",
+				mockSettings as SingleCalendarConfig,
+				[],
+				nameSeriesOf("team meeting", 1)
+			);
+
+			expect(result).toBeNull();
+		});
+
+		it("should return null when event name belongs to an established name series (5+ events)", () => {
+			const result = findFuzzyNameMatch(
+				"Daily Standup",
+				mockSettings as SingleCalendarConfig,
+				["Daily Standard"],
+				nameSeriesOf("daily standup", 5)
+			);
+
+			expect(result).toBeNull();
+		});
+
+		it("should still show fuzzy suggestions for name series with fewer than 5 events", () => {
+			const result = findFuzzyNameMatch(
+				"Daily Standub",
+				mockSettings as SingleCalendarConfig,
+				[],
+				nameSeriesOf("daily standup", 4)
+			);
+
+			expect(result).not.toBeNull();
+			expect(result![0].suggestion).toBe("daily standup");
+		});
+
 		it("should return null for completely different names", () => {
-			const result = findFuzzyNameMatch("Cooking", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+			const result = findFuzzyNameMatch("Cooking", mockSettings as SingleCalendarConfig, ["Obsidian"], emptyNameSeries);
 
 			expect(result).toBeNull();
 		});
 
 		it("should return null for empty input", () => {
-			const result = findFuzzyNameMatch("", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+			const result = findFuzzyNameMatch("", mockSettings as SingleCalendarConfig, ["Obsidian"], emptyNameSeries);
 
 			expect(result).toBeNull();
 		});
 
 		it("should return null when no known names exist", () => {
-			const result = findFuzzyNameMatch("Obsidian", mockSettings as SingleCalendarConfig, [], []);
+			const result = findFuzzyNameMatch("Obsidian", mockSettings as SingleCalendarConfig, [], emptyNameSeries);
 
 			expect(result).toBeNull();
 		});
@@ -349,21 +428,31 @@ describe("Auto-Category Assignment", () => {
 				],
 			} as SingleCalendarConfig;
 
-			const result = findFuzzyNameMatch("Exercis", settings, [], []);
+			const result = findFuzzyNameMatch("Exercis", settings, [], emptyNameSeries);
 
 			expect(result).not.toBeNull();
 			expect(result![0].suggestion).toBe("Exercise");
 		});
 
 		it("should match against existing name-series keys", () => {
-			const result = findFuzzyNameMatch("team meetin", mockSettings as SingleCalendarConfig, [], ["team meeting"]);
+			const result = findFuzzyNameMatch(
+				"team meetin",
+				mockSettings as SingleCalendarConfig,
+				[],
+				nameSeriesOf("team meeting", 3)
+			);
 
 			expect(result).not.toBeNull();
 			expect(result![0].suggestion).toBe("team meeting");
 		});
 
 		it("should preserve original casing of category names in suggestions", () => {
-			const result = findFuzzyNameMatch("obsidiae", mockSettings as SingleCalendarConfig, ["Obsidian"], []);
+			const result = findFuzzyNameMatch(
+				"obsidiae",
+				mockSettings as SingleCalendarConfig,
+				["Obsidian"],
+				emptyNameSeries
+			);
 
 			expect(result).not.toBeNull();
 			expect(result![0].suggestion).toBe("Obsidian");
@@ -374,7 +463,7 @@ describe("Auto-Category Assignment", () => {
 				"Obsidiae-20250203140530",
 				mockSettings as SingleCalendarConfig,
 				["Obsidian"],
-				[]
+				emptyNameSeries
 			);
 
 			expect(result).not.toBeNull();
@@ -386,7 +475,7 @@ describe("Auto-Category Assignment", () => {
 				"Persona",
 				mockSettings as SingleCalendarConfig,
 				["Personal", "Business", "Health"],
-				[]
+				emptyNameSeries
 			);
 
 			expect(result).not.toBeNull();
@@ -398,7 +487,7 @@ describe("Auto-Category Assignment", () => {
 				"Softwre Development",
 				mockSettings as SingleCalendarConfig,
 				["Software Development", "Hardware", "Design"],
-				[]
+				emptyNameSeries
 			);
 
 			expect(result).not.toBeNull();
@@ -410,7 +499,7 @@ describe("Auto-Category Assignment", () => {
 				"Persona",
 				mockSettings as SingleCalendarConfig,
 				["Personal", "Personnel", "Health"],
-				[]
+				emptyNameSeries
 			);
 
 			expect(result).not.toBeNull();
@@ -423,7 +512,7 @@ describe("Auto-Category Assignment", () => {
 				"Persona",
 				mockSettings as SingleCalendarConfig,
 				["Personal", "Personnel", "Health"],
-				[],
+				emptyNameSeries,
 				1
 			);
 

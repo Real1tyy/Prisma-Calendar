@@ -130,6 +130,8 @@ When no exact match is found for the event name, the plugin uses fuzzy matching 
 
 **How it works:**
 - After you blur the title field, the plugin first tries exact matching (auto-assign and presets above)
+- If the event name exactly matches a category name, preset event name, or existing event series name (case-insensitive), fuzzy matching is skipped entirely — no suggestion modal appears
+- If the event name belongs to an established name series (5 or more events with that name), fuzzy matching is also skipped — the name is considered intentional
 - If no exact match is found, it compares the entered name against all known names using approximate string matching
 - If close matches are found (similar but not identical), a "Did you mean?" modal appears with up to 3 suggestions
 - Use arrow keys to navigate between suggestions, Enter to accept the highlighted one, or Escape to dismiss

@@ -1605,7 +1605,7 @@ export abstract class BaseEventModal extends Modal {
 		// No exact match — try fuzzy matching (always runs, even if categories were manually set)
 		// This corrects the event NAME regardless of category assignment
 		if (settings.detectEventNameTypos) {
-			const existingNameKeys = this.bundle.nameSeriesTracker.getAllNameKeys();
+			const existingNameKeys = this.bundle.nameSeriesTracker.getNameSeriesMap();
 			const fuzzyResults = findFuzzyNameMatch(eventName, settings, availableCategories, existingNameKeys);
 
 			if (fuzzyResults) {

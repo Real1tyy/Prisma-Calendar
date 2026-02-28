@@ -225,9 +225,9 @@ export class NameSeriesTracker {
 
 	// ─── Public Query API ─────────────────────────────────────────
 
-	/** Returns all known name keys (lowercase event titles) tracked by the name series */
-	getAllNameKeys(): string[] {
-		return Array.from(this.seriesByName.keys());
+	/** Returns the internal name-series map as a read-only view (no copy) */
+	getNameSeriesMap(): ReadonlyMap<string, ReadonlySet<string>> {
+		return this.seriesByName;
 	}
 
 	/** Returns name-based series that contain 2+ events (single events aren't a "series") */
