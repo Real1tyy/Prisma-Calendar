@@ -197,10 +197,14 @@ export const parseCustomDoneProperty = (expression: string): { key: string; valu
 };
 
 /**
- * Returns a Set of core Prisma-managed internal properties.
- * These are the base properties that Prisma uses for calendar functionality.
+ * Returns per-instance system properties that should NOT be copied from a source
+ * recurring event to its physical instances. These are fields Prisma sets or
+ * recalculates for each instance (timing, identity, recurrence metadata).
+ *
+ * User-configured event data (icon, location, participants, categories, etc.)
+ * is intentionally excluded so it propagates to physical instances.
  */
-const getPrismaInternalProps = (settings: SingleCalendarConfig): Set<string> => {
+const getRecurringInstanceSystemProps = (settings: SingleCalendarConfig): Set<string> => {
 	return new Set(
 		[
 			settings.startProp,
@@ -223,48 +227,46 @@ const getPrismaInternalProps = (settings: SingleCalendarConfig): Set<string> => 
 			settings.icsSubscriptionProp,
 			settings.generatePastEventsProp,
 			settings.ignoreRecurringProp,
-			settings.locationProp,
-			settings.participantsProp,
-			settings.iconProp,
 		].filter((prop) => prop !== "")
 	);
 };
 
 /**
- * Returns a Set of internal properties that should not be displayed in UI.
- * Includes calendar-specific property names and global internal properties.
- * Uses getPrismaInternalProps as the base and adds additional internal-only properties.
+ * Returns ALL Prisma-managed internal properties that should not be displayed
+ * in UI as regular display properties. Combines the recurring-instance system
+ * props with user-facing props that have their own dedicated rendering.
  */
 export function getInternalProperties(settings: SingleCalendarConfig): Set<string> {
-	const prismaInternalProps = getPrismaInternalProps(settings);
-	const additionalInternalProps = [
+	const systemProps = getRecurringInstanceSystemProps(settings);
+	const additionalProps = [
 		settings.statusProperty,
 		settings.categoryProp,
 		settings.minutesBeforeProp,
 		settings.daysBeforeProp,
+		settings.iconProp,
+		settings.locationProp,
+		settings.participantsProp,
 		...INTERNAL_FRONTMATTER_PROPERTIES,
 	].filter((prop): prop is string => prop !== undefined && prop !== "");
 
-	return new Set([...prismaInternalProps, ...additionalInternalProps]);
+	return new Set([...systemProps, ...additionalProps]);
 }
 
 /**
- * Returns a Set of frontmatter properties that should be excluded when creating
- * physical recurring event instances from a source event.
- * This includes Prisma-managed properties plus additional properties that shouldn't
- * be copied to instances (like notification status and archived state).
+ * Returns properties excluded when creating physical recurring event instances.
+ * Uses the per-instance system props as the base, plus any user-configured exclusions.
  */
 export const getRecurringInstanceExcludedProps = (settings: SingleCalendarConfig): Set<string> => {
-	const prismaInternalProps = getPrismaInternalProps(settings);
+	const systemProps = getRecurringInstanceSystemProps(settings);
 
 	if (settings.excludedRecurringPropagatedProps) {
 		const userExcludedProps = settings.excludedRecurringPropagatedProps
 			.split(",")
 			.map((prop) => prop.trim())
 			.filter((prop) => prop !== "");
-		return new Set([...prismaInternalProps, ...userExcludedProps]);
+		return new Set([...systemProps, ...userExcludedProps]);
 	}
-	return prismaInternalProps;
+	return systemProps;
 };
 
 /**

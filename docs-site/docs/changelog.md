@@ -4,7 +4,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.6.0 - 2/28/2026
+## 2.6.0 - 3/2/2026
 
 ### Added
 
@@ -37,6 +37,7 @@ All notable changes to this project will be documented here.
 - **All-day event rendered twice after drag-to-edge navigation**: Dragging an all-day event to the calendar edge to navigate to a new interval, then dropping it, caused the event to appear twice visually. See [Calendar View](./features/calendar/calendar-view.md).
 - **Typo detection triggered on exact matches**: The typo suggestion modal appeared even when the event name exactly matched a category, preset event name, or existing event name. Fuzzy matching now only runs when there is no direct match and the event name doesn't belong to an established name series (5+ events). See [Categories](./features/organization/categories.md).
 - **Sticky header detached after resize or navigation**: The toolbar and all-day section could lose their sticky positioning after resizing the panel or navigating between dates, causing them to scroll away with the content. See [Calendar View](./features/calendar/calendar-view.md).
+- **Custom icon, location, and participants not propagated to physical recurring events**: The custom icon, location, and participants properties were excluded when creating physical recurring instances from a source event. Physical instances now inherit these properties from the source event. The custom icon also takes priority over the recurring marker as intended. See [Event Icons](./features/events/event-icons.md).
 
 ---
 

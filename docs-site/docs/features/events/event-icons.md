@@ -50,6 +50,8 @@ When multiple icon sources exist for an event:
 
 Clear the `Icon` property to fall back to integration or recurring icons.
 
+When a source recurring event has a custom icon, it is automatically propagated to newly created physical instances. Existing physical instances can also have their icon set or overridden individually.
+
 ## Configuration
 
 **Setting**: Settings → Properties → Icon property
