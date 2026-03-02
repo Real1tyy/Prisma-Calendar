@@ -4,7 +4,6 @@ import { DateTime } from "luxon";
 import type { App, TFile } from "obsidian";
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import type { RecurrenceType } from "../../types/recurring-event";
-import type { Weekday } from "../../utils/date-recurrence";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/event-naming";
 import { setEventBasics } from "../../utils/event-frontmatter";
 import { parseIntoList } from "@real1ty-obsidian-plugins";
@@ -30,8 +29,7 @@ export interface ImportedEvent {
 	lastModified?: number;
 	/** Parsed RRULE data mapped to internal recurrence types */
 	rrule?: {
-		type: RecurrenceType;
-		weekdays?: Weekday[];
+		type: string;
 	};
 }
 
@@ -112,17 +110,7 @@ function getPrismaProperty(vevent: ICAL.Component, propName: string): string | u
 	return value ? String(value) : undefined;
 }
 
-const ICS_BYDAY_TO_WEEKDAY: Record<string, Weekday> = {
-	SU: "sunday",
-	MO: "monday",
-	TU: "tuesday",
-	WE: "wednesday",
-	TH: "thursday",
-	FR: "friday",
-	SA: "saturday",
-};
-
-export function parseICSRRule(vevent: ICAL.Component): { type: RecurrenceType; weekdays?: Weekday[] } | undefined {
+export function parseICSRRule(vevent: ICAL.Component): { type: RecurrenceType } | undefined {
 	const rruleProp = vevent.getFirstPropertyValue("rrule");
 	if (!rruleProp) return undefined;
 
@@ -130,45 +118,10 @@ export function parseICSRRule(vevent: ICAL.Component): { type: RecurrenceType; w
 	const freq: string = recur.freq;
 	const interval: number = recur.interval || 1;
 
-	let type: RecurrenceType | undefined;
+	const validFreqs = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"];
+	if (!validFreqs.includes(freq) || interval < 1) return undefined;
 
-	if (freq === "DAILY" && interval === 1) {
-		type = "daily";
-	} else if (freq === "DAILY" && interval === 2) {
-		type = "bi-daily";
-	} else if (freq === "WEEKLY" && interval === 1) {
-		type = "weekly";
-	} else if (freq === "WEEKLY" && interval === 2) {
-		type = "bi-weekly";
-	} else if (freq === "MONTHLY" && interval === 1) {
-		type = "monthly";
-	} else if (freq === "MONTHLY" && interval === 2) {
-		type = "bi-monthly";
-	} else if (freq === "MONTHLY" && interval === 3) {
-		type = "quarterly";
-	} else if (freq === "MONTHLY" && interval === 6) {
-		type = "semi-annual";
-	} else if (freq === "YEARLY" && interval === 1) {
-		type = "yearly";
-	}
-
-	if (!type) return undefined;
-
-	// Parse BYDAY for weekly/bi-weekly
-	let weekdays: Weekday[] | undefined;
-	if (type === "weekly" || type === "bi-weekly") {
-		const byDay = recur.getComponent("BYDAY");
-		if (byDay && byDay.length > 0) {
-			const mapped = byDay
-				.map((day: string) => ICS_BYDAY_TO_WEEKDAY[day.toUpperCase()])
-				.filter((w: Weekday | undefined): w is Weekday => w !== undefined);
-			if (mapped.length > 0) {
-				weekdays = mapped;
-			}
-		}
-	}
-
-	return weekdays ? { type, weekdays } : { type };
+	return { type: `${freq};INTERVAL=${interval}` };
 }
 
 export function parseICSContent(icsContent: string): ICSImportResult {
@@ -350,9 +303,6 @@ export function buildFrontmatterFromImportedEvent(
 
 	if (event.rrule) {
 		fm[settings.rruleProp] = event.rrule.type;
-		if (event.rrule.weekdays && event.rrule.weekdays.length > 0) {
-			fm[settings.rruleSpecProp] = event.rrule.weekdays.join(", ");
-		}
 		// Disable recurring instance generation by default for imported events.
 		// The integration handles individual occurrences — the user can enable
 		// generation manually if they want Prisma to expand the RRULE.

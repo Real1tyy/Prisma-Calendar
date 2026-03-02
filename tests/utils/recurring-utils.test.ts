@@ -286,4 +286,54 @@ describe("recurring-utils", () => {
 			expect(result.toISODate()).toBe(date.toISODate());
 		});
 	});
+
+	describe("custom interval support", () => {
+		it("calculateTargetInstanceCount should not multiply weekdays for custom WEEKLY;INTERVAL=3", () => {
+			const rrules: RRuleFrontmatter = {
+				type: "WEEKLY;INTERVAL=3",
+				weekdays: [],
+				allDay: true,
+				date: DateTime.utc(2025, 1, 1),
+			};
+			const result = calculateTargetInstanceCount(rrules, undefined, 2);
+			expect(result).toBe(2); // Custom intervals don't support weekdays
+		});
+
+		it("calculateTargetInstanceCount should not multiply weekdays for DAILY;INTERVAL=5", () => {
+			const rrules: RRuleFrontmatter = {
+				type: "DAILY;INTERVAL=5",
+				weekdays: [],
+				allDay: true,
+				date: DateTime.utc(2025, 1, 1),
+			};
+			const result = calculateTargetInstanceCount(rrules, undefined, 3);
+			expect(result).toBe(3);
+		});
+
+		it("findFirstValidStartDate should return start date for custom WEEKLY;INTERVAL=3", () => {
+			// Tuesday, Jan 7, 2025
+			const date = DateTime.utc(2025, 1, 7);
+			const rrules: RRuleFrontmatter = {
+				type: "WEEKLY;INTERVAL=3",
+				weekdays: [],
+				allDay: true,
+				date,
+			};
+			const result = findFirstValidStartDate(rrules);
+			// Custom intervals don't use weekday logic, returns start date directly
+			expect(result.toISODate()).toBe("2025-01-07");
+		});
+
+		it("findFirstValidStartDate should return start date for MONTHLY;INTERVAL=4", () => {
+			const date = DateTime.utc(2025, 3, 15);
+			const rrules: RRuleFrontmatter = {
+				type: "MONTHLY;INTERVAL=4",
+				weekdays: [],
+				allDay: true,
+				date,
+			};
+			const result = findFirstValidStartDate(rrules);
+			expect(result.toISODate()).toBe(date.toISODate());
+		});
+	});
 });

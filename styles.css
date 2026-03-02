@@ -3127,6 +3127,40 @@
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
+/* Custom interval controls - right-aligned row with gap */
+.prisma-event-modal .prisma-custom-interval-controls {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+
+.prisma-event-modal .prisma-custom-interval-controls span {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	white-space: nowrap;
+}
+
+.prisma-event-modal .prisma-custom-interval-input {
+	width: 4rem;
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--background-modifier-form-field);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	text-align: right;
+}
+
+.prisma-event-modal .prisma-custom-freq-select {
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--background-modifier-form-field);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+}
+
 /* Checkbox rows - checkbox on the right */
 .prisma-event-modal .prisma-setting-item-control[type="checkbox"] {
 	margin-left: auto;

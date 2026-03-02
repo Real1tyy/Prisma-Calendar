@@ -3,9 +3,13 @@ import { type App, Modal, Notice } from "obsidian";
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { AssignCategoriesCommand, ToggleSkipCommand } from "../../core/commands";
-import { type NodeRecurringEvent, RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
+import {
+	type NodeRecurringEvent,
+	RECURRENCE_TYPE_OPTIONS,
+	formatRecurrenceLabel,
+	isPresetType,
+} from "../../types/recurring-event";
 import { getEventName, removeZettelId } from "../../utils/event-naming";
-import type { RecurrenceType } from "../../utils/date-recurrence";
 import { getCategoriesFromFilePath, openFileInNewTab } from "../../utils/obsidian";
 import { getStartDateTime } from "../../utils/recurring-utils";
 import type { CalendarView } from "../calendar-view";
@@ -26,12 +30,13 @@ const SORT_OPTIONS: Record<SortMode, string> = {
 const RECURRENCE_TYPE_FILTER_OPTIONS = {
 	all: "All Types",
 	...RECURRENCE_TYPE_OPTIONS,
+	custom: "Custom Interval",
 } as const;
 
 interface RecurringListItem {
 	filePath: string;
 	title: string;
-	recurrenceType: RecurrenceType;
+	recurrenceType: string;
 	categories: string[];
 	instanceCount: number;
 	rruleId: string;
@@ -378,7 +383,9 @@ export class EventsModal extends Modal {
 	private getRecurringItems(): RecurringListItem[] {
 		let events = this.showDisabledOnly ? this.disabledEvents : this.enabledEvents;
 
-		if (this.selectedTypeFilter !== "all") {
+		if (this.selectedTypeFilter === "custom") {
+			events = events.filter((event) => !isPresetType(event.rrules.type));
+		} else if (this.selectedTypeFilter !== "all") {
 			events = events.filter((event) => event.rrules.type === this.selectedTypeFilter);
 		}
 
@@ -462,11 +469,12 @@ export class EventsModal extends Modal {
 		const titleRow = infoEl.createDiv(cls("recurring-event-title-row"));
 		titleRow.createEl("div", { cls: cls("generic-event-title") }).textContent = item.title;
 
+		const badgeClassSuffix = isPresetType(item.recurrenceType) ? item.recurrenceType : "custom";
 		const typeBadge = titleRow.createEl("span", {
-			cls: `${cls("recurring-type-badge")} ${cls(`recurring-type-${item.recurrenceType}`)}`,
-			text: RECURRENCE_TYPE_OPTIONS[item.recurrenceType],
+			cls: `${cls("recurring-type-badge")} ${cls(`recurring-type-${badgeClassSuffix}`)}`,
+			text: formatRecurrenceLabel(item.recurrenceType),
 		});
-		addCls(typeBadge, `prisma-recurring-type-${item.recurrenceType}`);
+		addCls(typeBadge, `prisma-recurring-type-${badgeClassSuffix}`);
 
 		infoEl.createEl("div", { cls: cls("generic-event-subtitle") }).textContent =
 			`${item.instanceCount} instance${item.instanceCount === 1 ? "" : "s"}`;

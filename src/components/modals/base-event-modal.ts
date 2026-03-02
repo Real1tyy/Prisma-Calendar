@@ -18,7 +18,14 @@ import {
 } from "../../core/minimized-modal-manager";
 import type { Frontmatter } from "../../types";
 import { isTimedEvent } from "../../types/calendar";
-import { RECURRENCE_TYPE_OPTIONS, WEEKDAY_OPTIONS, WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
+import {
+	RECURRENCE_TYPE_OPTIONS,
+	WEEKDAY_OPTIONS,
+	buildCustomIntervalDSL,
+	isPresetType,
+	isWeekdaySupported,
+	parseRecurrenceType,
+} from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
 import {
 	assignListToFrontmatter,
@@ -27,7 +34,7 @@ import {
 	setUntrackedEventBasics,
 } from "../../utils/event-frontmatter";
 import { autoAssignCategories, findAdjacentEvent, findFuzzyNameMatch } from "../../utils/event-matching";
-import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
+import type { Weekday } from "../../utils/date-recurrence";
 import {
 	calculateDurationMinutes,
 	formatDateOnly,
@@ -95,6 +102,9 @@ export abstract class BaseEventModal extends Modal {
 	protected weekdayCheckboxes: Map<Weekday, HTMLInputElement> = new Map();
 	protected futureInstancesCountInput!: HTMLInputElement;
 	protected generatePastEventsCheckbox!: HTMLInputElement;
+	protected customIntervalContainer!: HTMLElement;
+	protected customFreqSelect!: HTMLSelectElement;
+	protected customIntervalInput!: HTMLInputElement;
 
 	protected categoriesContainer?: HTMLElement;
 	protected selectedCategories: string[] = [];
@@ -534,6 +544,49 @@ export abstract class BaseEventModal extends Modal {
 			});
 			option.value = value;
 		}
+		// Add custom interval option
+		const customOption = this.rruleSelect.createEl("option", {
+			value: "custom",
+			text: "Custom interval...",
+		});
+		customOption.value = "custom";
+
+		// Custom interval container (initially hidden)
+		this.customIntervalContainer = this.recurringContainer.createDiv(cls("setting-item", "custom-interval"));
+		addCls(this.customIntervalContainer, "hidden");
+		this.customIntervalContainer.createEl("div", {
+			text: "Custom interval",
+			cls: cls("setting-item-name"),
+		});
+
+		const customControlsRow = this.customIntervalContainer.createDiv(
+			cls("setting-item-control", "custom-interval-controls")
+		);
+
+		// "Every" label
+		customControlsRow.createEl("span", { text: "Every " });
+
+		// Interval number input
+		this.customIntervalInput = customControlsRow.createEl("input", {
+			type: "number",
+			cls: cls("custom-interval-input"),
+			attr: { min: "1", step: "1", value: "1" },
+		});
+
+		// Frequency select
+		this.customFreqSelect = customControlsRow.createEl("select", {
+			cls: cls("custom-freq-select"),
+		});
+		const freqOptions: Array<{ value: string; label: string }> = [
+			{ value: "DAILY", label: "Days" },
+			{ value: "WEEKLY", label: "Weeks" },
+			{ value: "MONTHLY", label: "Months" },
+			{ value: "YEARLY", label: "Years" },
+		];
+		for (const { value, label } of freqOptions) {
+			const opt = this.customFreqSelect.createEl("option", { value, text: label });
+			opt.value = value;
+		}
 
 		// Weekday selection (initially hidden, shown when weekly/bi-weekly selected)
 		this.weekdayContainer = this.recurringContainer.createDiv(cls("setting-item", "weekday-selection"));
@@ -968,10 +1021,15 @@ export abstract class BaseEventModal extends Modal {
 
 		// Handle RRule type selection
 		this.rruleSelect.addEventListener("change", () => {
-			const selectedType = this.rruleSelect.value as RecurrenceType;
-			// Show weekday selection only for weekly and bi-weekly
-			const showWeekdays = (WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(selectedType);
-			toggleCls(this.weekdayContainer, "hidden", !showWeekdays);
+			const selectedValue = this.rruleSelect.value;
+			if (selectedValue === "custom") {
+				removeCls(this.customIntervalContainer, "hidden");
+				addCls(this.weekdayContainer, "hidden");
+			} else {
+				addCls(this.customIntervalContainer, "hidden");
+				const showWeekdays = isWeekdaySupported(selectedValue);
+				toggleCls(this.weekdayContainer, "hidden", !showWeekdays);
+			}
 		});
 
 		registerSubmitHotkey(this.scope, () => this.saveWithTypoCheck());
@@ -1178,6 +1236,9 @@ export abstract class BaseEventModal extends Modal {
 		removeCls(this.recurringContainer, "hidden");
 		this.rruleSelect.value = Object.keys(RECURRENCE_TYPE_OPTIONS)[0];
 		addCls(this.weekdayContainer, "hidden");
+		addCls(this.customIntervalContainer, "hidden");
+		this.customFreqSelect.value = "DAILY";
+		this.customIntervalInput.value = "1";
 		for (const checkbox of this.weekdayCheckboxes.values()) {
 			checkbox.checked = false;
 		}
@@ -1284,14 +1345,15 @@ export abstract class BaseEventModal extends Modal {
 		if (preset.rruleType) {
 			this.recurringCheckbox.checked = true;
 			removeCls(this.recurringContainer, "hidden");
-			this.rruleSelect.value = preset.rruleType;
 
-			// Trigger change to show/hide weekday selector
+			this.applyRruleTypeToForm(preset.rruleType);
+
+			// Trigger change to show/hide weekday selector and custom container
 			const rruleChangeEvent = new Event("change", { bubbles: true });
 			this.rruleSelect.dispatchEvent(rruleChangeEvent);
 
 			// Apply weekdays if set
-			if (preset.rruleSpec && (WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(preset.rruleType)) {
+			if (preset.rruleSpec && isWeekdaySupported(preset.rruleType)) {
 				const weekdays = preset.rruleSpec.split(",").map((day) => day.trim().toLowerCase());
 				for (const weekday of weekdays) {
 					const checkbox = this.weekdayCheckboxes.get(weekday as Weekday);
@@ -1527,9 +1589,9 @@ export abstract class BaseEventModal extends Modal {
 		}
 
 		if (this.recurringCheckbox.checked) {
-			presetData.rruleType = this.rruleSelect.value;
+			presetData.rruleType = this.getEffectiveRruleType();
 
-			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(this.rruleSelect.value)) {
+			if (isWeekdaySupported(presetData.rruleType)) {
 				const selectedWeekdays: Weekday[] = [];
 				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
 					if (checkbox.checked) {
@@ -1799,11 +1861,11 @@ export abstract class BaseEventModal extends Modal {
 
 		// Handle recurring event properties
 		if (!isUntracked && this.recurringCheckbox.checked) {
-			const rruleType = this.rruleSelect.value as RecurrenceType;
+			const rruleType = this.getEffectiveRruleType();
 			preservedFrontmatter[settings.rruleProp] = rruleType;
 
-			// Handle weekdays for weekly/bi-weekly events
-			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(rruleType)) {
+			// Handle weekdays for weekly-based events
+			if (isWeekdaySupported(rruleType)) {
 				const selectedWeekdays: Weekday[] = [];
 				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
 					if (checkbox.checked) {
@@ -1864,6 +1926,38 @@ export abstract class BaseEventModal extends Modal {
 			allDay: isUntracked ? false : this.allDayCheckbox.checked,
 			preservedFrontmatter,
 		};
+	}
+
+	/**
+	 * Applies an rrule type string to the form controls.
+	 * Handles both preset values and custom DSL strings.
+	 */
+	protected applyRruleTypeToForm(rruleType: string): void {
+		if (isPresetType(rruleType)) {
+			this.rruleSelect.value = rruleType;
+			return;
+		}
+		// Custom DSL string — set to custom mode and populate fields
+		const parsed = parseRecurrenceType(rruleType);
+		if (parsed) {
+			this.rruleSelect.value = "custom";
+			this.customFreqSelect.value = parsed.freq;
+			this.customIntervalInput.value = String(parsed.interval);
+		}
+	}
+
+	/**
+	 * Returns the effective rrule type string. For custom intervals, constructs
+	 * the DSL string from freq select and interval input. For presets, returns the select value.
+	 */
+	protected getEffectiveRruleType(): string {
+		if (this.rruleSelect.value === "custom") {
+			return buildCustomIntervalDSL(
+				this.customFreqSelect.value,
+				Number.parseInt(this.customIntervalInput.value, 10) || 1
+			);
+		}
+		return this.rruleSelect.value;
 	}
 
 	protected loadExistingFrontmatter(): void {

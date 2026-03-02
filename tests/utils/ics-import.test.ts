@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createICSFromEvents } from "../../src/core/integrations/ics-export";
-import {
-	buildFrontmatterFromImportedEvent,
-	type ImportedEvent,
-	parseICSContent,
-	parseICSRRule,
-} from "../../src/core/integrations/ics-import";
+import { buildFrontmatterFromImportedEvent, parseICSContent } from "../../src/core/integrations/ics-import";
 import type { SingleCalendarConfig } from "../../src/types/settings";
 import { createDefaultMetadata, createICSExportOptions, createImportedEvent, createMockTimedEvent } from "../fixtures";
 import { createMockSingleCalendarSettings } from "../setup";
@@ -974,96 +969,48 @@ END:VEVENT
 END:VCALENDAR`;
 		}
 
-		it("should parse FREQ=DAILY as daily", () => {
-			const result = parseICSContent(makeICSWithRRule("FREQ=DAILY"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toEqual({ type: "daily" });
+		it("should always map to custom interval format", () => {
+			expect(parseICSContent(makeICSWithRRule("FREQ=DAILY")).events[0].rrule).toEqual({
+				type: "DAILY;INTERVAL=1",
+			});
+			expect(parseICSContent(makeICSWithRRule("FREQ=DAILY;INTERVAL=2")).events[0].rrule).toEqual({
+				type: "DAILY;INTERVAL=2",
+			});
+			expect(parseICSContent(makeICSWithRRule("FREQ=WEEKLY")).events[0].rrule).toEqual({
+				type: "WEEKLY;INTERVAL=1",
+			});
+			expect(parseICSContent(makeICSWithRRule("FREQ=WEEKLY;INTERVAL=2")).events[0].rrule).toEqual({
+				type: "WEEKLY;INTERVAL=2",
+			});
+			expect(parseICSContent(makeICSWithRRule("FREQ=WEEKLY;INTERVAL=3")).events[0].rrule).toEqual({
+				type: "WEEKLY;INTERVAL=3",
+			});
+			expect(parseICSContent(makeICSWithRRule("FREQ=MONTHLY")).events[0].rrule).toEqual({
+				type: "MONTHLY;INTERVAL=1",
+			});
+			expect(parseICSContent(makeICSWithRRule("FREQ=MONTHLY;INTERVAL=2")).events[0].rrule).toEqual({
+				type: "MONTHLY;INTERVAL=2",
+			});
+			expect(parseICSContent(makeICSWithRRule("FREQ=MONTHLY;INTERVAL=3")).events[0].rrule).toEqual({
+				type: "MONTHLY;INTERVAL=3",
+			});
+			expect(parseICSContent(makeICSWithRRule("FREQ=MONTHLY;INTERVAL=6")).events[0].rrule).toEqual({
+				type: "MONTHLY;INTERVAL=6",
+			});
+			expect(parseICSContent(makeICSWithRRule("FREQ=YEARLY")).events[0].rrule).toEqual({
+				type: "YEARLY;INTERVAL=1",
+			});
 		});
 
-		it("should parse FREQ=DAILY;INTERVAL=2 as bi-daily", () => {
-			const result = parseICSContent(makeICSWithRRule("FREQ=DAILY;INTERVAL=2"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toEqual({ type: "bi-daily" });
-		});
-
-		it("should parse FREQ=WEEKLY as weekly", () => {
-			const result = parseICSContent(makeICSWithRRule("FREQ=WEEKLY"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toEqual({ type: "weekly" });
-		});
-
-		it("should parse FREQ=WEEKLY;BYDAY=MO,WE,FR as weekly with weekdays", () => {
+		it("should ignore BYDAY — weekdays are not mapped on import", () => {
 			const result = parseICSContent(makeICSWithRRule("FREQ=WEEKLY;BYDAY=MO,WE,FR"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toEqual({
-				type: "weekly",
-				weekdays: ["monday", "wednesday", "friday"],
-			});
-		});
-
-		it("should parse FREQ=WEEKLY;INTERVAL=2;BYDAY=TU as bi-weekly with weekdays", () => {
-			const result = parseICSContent(makeICSWithRRule("FREQ=WEEKLY;INTERVAL=2;BYDAY=TU"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toEqual({
-				type: "bi-weekly",
-				weekdays: ["tuesday"],
-			});
-		});
-
-		it("should parse FREQ=MONTHLY as monthly", () => {
-			const result = parseICSContent(makeICSWithRRule("FREQ=MONTHLY"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toEqual({ type: "monthly" });
-		});
-
-		it("should parse FREQ=MONTHLY;INTERVAL=2 as bi-monthly", () => {
-			const result = parseICSContent(makeICSWithRRule("FREQ=MONTHLY;INTERVAL=2"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toEqual({ type: "bi-monthly" });
-		});
-
-		it("should parse FREQ=MONTHLY;INTERVAL=3 as quarterly", () => {
-			const result = parseICSContent(makeICSWithRRule("FREQ=MONTHLY;INTERVAL=3"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toEqual({ type: "quarterly" });
-		});
-
-		it("should parse FREQ=MONTHLY;INTERVAL=6 as semi-annual", () => {
-			const result = parseICSContent(makeICSWithRRule("FREQ=MONTHLY;INTERVAL=6"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toEqual({ type: "semi-annual" });
-		});
-
-		it("should parse FREQ=YEARLY as yearly", () => {
-			const result = parseICSContent(makeICSWithRRule("FREQ=YEARLY"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toEqual({ type: "yearly" });
-		});
-
-		it("should return undefined rrule for unsupported patterns", () => {
-			// FREQ=WEEKLY with INTERVAL=3 is not supported
-			const result = parseICSContent(makeICSWithRRule("FREQ=WEEKLY;INTERVAL=3"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toBeUndefined();
-		});
-
-		it("should return undefined rrule for unsupported daily interval", () => {
-			const result = parseICSContent(makeICSWithRRule("FREQ=DAILY;INTERVAL=3"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toBeUndefined();
+			expect(result.events[0].rrule).toEqual({ type: "WEEKLY;INTERVAL=1" });
 		});
 
 		it("should return undefined rrule when no RRULE is present", () => {
 			const result = parseICSContent(SAMPLE_ICS_SINGLE_EVENT);
 			expect(result.success).toBe(true);
 			expect(result.events[0].rrule).toBeUndefined();
-		});
-
-		it("should not parse BYDAY for non-weekly types", () => {
-			// BYDAY on monthly should be ignored (we only support weekdays for weekly/bi-weekly)
-			const result = parseICSContent(makeICSWithRRule("FREQ=MONTHLY;BYDAY=MO,FR"));
-			expect(result.success).toBe(true);
-			expect(result.events[0].rrule).toEqual({ type: "monthly" });
 		});
 	});
 
@@ -1082,24 +1029,24 @@ END:VCALENDAR`;
 
 		it("should set rruleProp when rrule is present", () => {
 			const event = createImportedEvent({
-				rrule: { type: "daily" },
+				rrule: { type: "DAILY;INTERVAL=1" },
 			});
 
 			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "UTC");
 
-			expect(fm[defaultSettings.rruleProp]).toBe("daily");
+			expect(fm[defaultSettings.rruleProp]).toBe("DAILY;INTERVAL=1");
 			expect(fm[defaultSettings.rruleSpecProp]).toBeUndefined();
 		});
 
-		it("should set rruleSpecProp when weekdays are present", () => {
+		it("should not set rruleSpecProp — imports never include weekdays", () => {
 			const event = createImportedEvent({
-				rrule: { type: "weekly", weekdays: ["monday", "wednesday", "friday"] },
+				rrule: { type: "WEEKLY;INTERVAL=1" },
 			});
 
 			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "UTC");
 
-			expect(fm[defaultSettings.rruleProp]).toBe("weekly");
-			expect(fm[defaultSettings.rruleSpecProp]).toBe("monday, wednesday, friday");
+			expect(fm[defaultSettings.rruleProp]).toBe("WEEKLY;INTERVAL=1");
+			expect(fm[defaultSettings.rruleSpecProp]).toBeUndefined();
 		});
 
 		it("should not set rrule properties when rrule is absent", () => {

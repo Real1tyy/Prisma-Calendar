@@ -1,11 +1,12 @@
 import { parsePositiveInt } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
 import type { RRuleFrontmatter } from "../types/recurring-event";
+import { isWeekdaySupported } from "../types/recurring-event";
 import { iterateOccurrencesInRange } from "./date-recurrence";
 
 /**
  * Calculates the target number of physical instances to maintain for a recurring event.
- * For weekly/bi-weekly events, multiplies intervals by the number of weekdays.
+ * For weekly-based events (weekly, bi-weekly, custom weekly), multiplies intervals by the number of weekdays.
  */
 export function calculateTargetInstanceCount(
 	rrules: RRuleFrontmatter,
@@ -16,7 +17,7 @@ export function calculateTargetInstanceCount(
 
 	const { type, weekdays } = rrules;
 
-	if (type === "weekly" || type === "bi-weekly") {
+	if (isWeekdaySupported(type)) {
 		return (weekdays?.length || 1) * intervals;
 	}
 	return intervals;
@@ -39,9 +40,9 @@ export function getStartDateTime(rrules: RRuleFrontmatter): DateTime {
 export function findFirstValidStartDate(rrules: RRuleFrontmatter): DateTime {
 	const startDateTime = getStartDateTime(rrules);
 
-	// For weekly/bi-weekly, the start date might not match the weekday rule.
+	// For weekly-based types, the start date might not match the weekday rule.
 	// We must find the first date that IS a valid weekday on or after the start time.
-	if ((rrules.type === "weekly" || rrules.type === "bi-weekly") && rrules.weekdays?.length) {
+	if (isWeekdaySupported(rrules.type) && rrules.weekdays?.length) {
 		// Use the iterator to find the true first occurrence.
 		const iterator = iterateOccurrencesInRange(
 			startDateTime,

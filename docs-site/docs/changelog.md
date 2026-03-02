@@ -4,10 +4,11 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.6.0 - 2/24/2026
+## 2.6.0 - 2/28/2026
 
 ### Added
 
+- **Custom recurring intervals**: Define arbitrary recurrence patterns beyond the 9 built-in presets — every 5 days, every 3 weeks, every 4 months, etc. Select "Custom interval..." in the recurrence dropdown or use the `FREQ;INTERVAL=N` format directly in frontmatter (e.g., `DAILY;INTERVAL=5`). ICS imports now map all recurrence rules to the custom interval format. See [Recurring Events — Custom Intervals](./features/events/recurring-dsl.md#custom-intervals).
 - **Programmatic read API**: New query methods on `window.PrismaCalendar` — `getEvents`, `getEventByPath`, `getAllEvents`, `getCategories`, `getUntrackedEvents` — let you read events and categories programmatically for Templater scripts, Dataview integration, and dashboards. See [Programmatic API — Query Methods](./features/advanced/programmatic-api.md#query-methods).
 - **Programmatic status and lifecycle methods**: New `markAsDone`, `markAsUndone`, `toggleSkip`, `cloneEvent`, and `moveEvent` API methods enable event status management and lifecycle operations from scripts. All are undoable and URL-accessible. See [Programmatic API — Status Methods](./features/advanced/programmatic-api.md#status-methods) and [Lifecycle Methods](./features/advanced/programmatic-api.md#lifecycle-methods).
 - **Programmatic batch operations**: New `batchMarkAsDone`, `batchMarkAsUndone`, `batchDelete`, and `batchToggleSkip` API methods apply actions to multiple events in a single undoable command. See [Programmatic API — Batch Methods](./features/advanced/programmatic-api.md#batch-methods).

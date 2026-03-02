@@ -249,4 +249,118 @@ describe("RRuleFrontmatterSchema validation", () => {
 			expect(result.success).toBe(false);
 		});
 	});
+
+	describe("custom recurrence DSL validation", () => {
+		it("should accept valid custom DSL strings", () => {
+			const result = RRuleFrontmatterSchema.safeParse({
+				type: "DAILY;INTERVAL=5",
+				weekdays: null,
+				startTime: "2024-01-01T10:45:00",
+				endTime: "2024-01-01T12:30:00",
+				allDay: false,
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept WEEKLY;INTERVAL=3", () => {
+			const result = RRuleFrontmatterSchema.safeParse({
+				type: "WEEKLY;INTERVAL=3",
+				weekdays: "monday, wednesday",
+				startTime: "2024-01-01T10:45:00",
+				endTime: "2024-01-01T12:30:00",
+				allDay: false,
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept MONTHLY;INTERVAL=4", () => {
+			const result = RRuleFrontmatterSchema.safeParse({
+				type: "MONTHLY;INTERVAL=4",
+				weekdays: null,
+				date: "2024-01-15",
+				allDay: true,
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept YEARLY;INTERVAL=2", () => {
+			const result = RRuleFrontmatterSchema.safeParse({
+				type: "YEARLY;INTERVAL=2",
+				weekdays: null,
+				date: "2024-01-15",
+				allDay: true,
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject HOURLY;INTERVAL=2 (invalid frequency)", () => {
+			const result = RRuleFrontmatterSchema.safeParse({
+				type: "HOURLY;INTERVAL=2",
+				weekdays: null,
+				startTime: "2024-01-01T10:45:00",
+				endTime: "2024-01-01T12:30:00",
+				allDay: false,
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject DAILY;INTERVAL=0 (invalid interval)", () => {
+			const result = RRuleFrontmatterSchema.safeParse({
+				type: "DAILY;INTERVAL=0",
+				weekdays: null,
+				startTime: "2024-01-01T10:45:00",
+				endTime: "2024-01-01T12:30:00",
+				allDay: false,
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject malformed DSL strings", () => {
+			const malformed = [
+				"DAILY;INTERVAL=-1",
+				"DAILY;INTERVAL=abc",
+				"DAILY;INTERVAL",
+				"DAILY;INTERVAL=",
+				"WEEKLY;3",
+				"invalid",
+				"",
+			];
+
+			for (const type of malformed) {
+				const result = RRuleFrontmatterSchema.safeParse({
+					type,
+					weekdays: null,
+					startTime: "2024-01-01T10:45:00",
+					endTime: "2024-01-01T12:30:00",
+					allDay: false,
+				});
+				expect(result.success).toBe(false);
+			}
+		});
+
+		it("should still accept all 9 preset types", () => {
+			const presets = [
+				"daily",
+				"bi-daily",
+				"weekly",
+				"bi-weekly",
+				"monthly",
+				"bi-monthly",
+				"quarterly",
+				"semi-annual",
+				"yearly",
+			];
+
+			for (const type of presets) {
+				const result = RRuleFrontmatterSchema.safeParse({
+					type,
+					weekdays: null,
+					startTime: "2024-01-01T10:45:00",
+					endTime: "2024-01-01T12:30:00",
+					allDay: false,
+				});
+				expect(result.success).toBe(true);
+			}
+		});
+	});
 });

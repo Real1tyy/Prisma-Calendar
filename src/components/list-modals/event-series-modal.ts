@@ -4,7 +4,7 @@ import { type App, Modal, Setting } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { RECURRENCE_TYPE_OPTIONS } from "../../types/recurring-event";
+import { formatRecurrenceLabel, isWeekdaySupported } from "../../types/recurring-event";
 import { removeZettelId } from "../../utils/event-naming";
 import { resolveEventColor } from "../../utils/event-color";
 import { calculateEventStatistics } from "../../utils/event-statistics";
@@ -288,10 +288,10 @@ export class EventSeriesModal extends Modal {
 			beforeStats: (container) => {
 				if (!series.rruleType) return;
 				const infoContainer = container.createDiv(cls("recurring-events-info"));
-				const typeLabel = RECURRENCE_TYPE_OPTIONS[series.rruleType] || series.rruleType;
+				const typeLabel = formatRecurrenceLabel(series.rruleType);
 				let infoText = `Recurrence: ${typeLabel}`;
 
-				if (series.rruleSpec && (series.rruleType === "weekly" || series.rruleType === "bi-weekly")) {
+				if (series.rruleSpec && isWeekdaySupported(series.rruleType)) {
 					const days = series.rruleSpec
 						.split(",")
 						.map((day) => day.trim())

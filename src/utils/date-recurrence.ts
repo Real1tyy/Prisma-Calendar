@@ -1,5 +1,6 @@
 import type { DateTime } from "luxon";
 import type { RecurrenceType } from "../types/recurring-event";
+import { parseRecurrenceType } from "../types/recurring-event";
 
 export type { RecurrenceType };
 
@@ -29,32 +30,10 @@ export function isDateOnWeekdays(date: DateTime, weekdays: Weekday[]): boolean {
 }
 
 /**
- * Finds the next occurrence on specified weekdays
+ * Finds the next N-weekly occurrence on specified weekdays.
+ * Returns next matching weekday in current week, OR first matching weekday N weeks later.
  */
-export function getNextWeekdayOccurrence(currentDate: DateTime, weekdays: Weekday[]): DateTime {
-	const currentWeekday = currentDate.weekday;
-	const luxonWeekdays = weekdays.map((day) => {
-		const dayNumber = WEEKDAY_TO_NUMBER[day];
-		return dayNumber === 0 ? 7 : dayNumber;
-	});
-
-	const futureWeekdays = luxonWeekdays.filter((day) => day > currentWeekday);
-	if (futureWeekdays.length > 0) {
-		const nextWeekday = Math.min(...futureWeekdays);
-		return currentDate.set({
-			weekday: nextWeekday as 1 | 2 | 3 | 4 | 5 | 6 | 7,
-		});
-	}
-
-	const firstWeekday = Math.min(...luxonWeekdays);
-	return currentDate.plus({ weeks: 1 }).set({ weekday: firstWeekday as 1 | 2 | 3 | 4 | 5 | 6 | 7 });
-}
-
-/**
- * Finds the next bi-weekly occurrence on specified weekdays.
- * Returns next matching weekday in current week, OR first matching weekday 2 weeks later.
- */
-export function getNextBiWeeklyOccurrence(currentDate: DateTime, weekdays: Weekday[]): DateTime {
+export function getNextNWeeklyOccurrence(currentDate: DateTime, weekdays: Weekday[], weekInterval: number): DateTime {
 	const currentWeekday = currentDate.weekday;
 	const luxonWeekdays = weekdays.map((day) => {
 		const dayNumber = WEEKDAY_TO_NUMBER[day];
@@ -64,16 +43,24 @@ export function getNextBiWeeklyOccurrence(currentDate: DateTime, weekdays: Weekd
 	// Check if there's a matching weekday later in the current week
 	const futureWeekdays = luxonWeekdays.filter((day) => day > currentWeekday);
 	if (futureWeekdays.length > 0) {
-		// Stay in same bi-weekly cycle - return next matching weekday this week
+		// Stay in same cycle - return next matching weekday this week
 		const nextWeekday = Math.min(...futureWeekdays);
 		return currentDate.set({
 			weekday: nextWeekday as 1 | 2 | 3 | 4 | 5 | 6 | 7,
 		});
 	}
 
-	// No more matching weekdays this week, jump to next bi-weekly cycle (2 weeks later)
+	// No more matching weekdays this week, jump to next cycle (N weeks later)
 	const firstWeekday = Math.min(...luxonWeekdays);
-	return currentDate.plus({ weeks: 2 }).set({ weekday: firstWeekday as 1 | 2 | 3 | 4 | 5 | 6 | 7 });
+	return currentDate.plus({ weeks: weekInterval }).set({ weekday: firstWeekday as 1 | 2 | 3 | 4 | 5 | 6 | 7 });
+}
+
+/**
+ * Finds the next bi-weekly occurrence on specified weekdays.
+ * Thin wrapper around getNextNWeeklyOccurrence for backward compatibility.
+ */
+export function getNextBiWeeklyOccurrence(currentDate: DateTime, weekdays: Weekday[]): DateTime {
+	return getNextNWeeklyOccurrence(currentDate, weekdays, 2);
 }
 
 /**
@@ -84,31 +71,21 @@ export function getNextOccurrence(
 	recurrenceType: RecurrenceType,
 	weekdays?: Weekday[]
 ): DateTime {
-	switch (recurrenceType) {
-		case "daily":
-			return currentDate.plus({ days: 1 });
-		case "bi-daily":
-			return currentDate.plus({ days: 2 });
-		case "weekly":
+	const parsed = parseRecurrenceType(recurrenceType);
+	if (!parsed) return currentDate.plus({ days: 1 });
+
+	switch (parsed.freq) {
+		case "DAILY":
+			return currentDate.plus({ days: parsed.interval });
+		case "WEEKLY":
 			if (weekdays && weekdays.length > 0) {
-				return getNextWeekdayOccurrence(currentDate, weekdays);
+				return getNextNWeeklyOccurrence(currentDate, weekdays, parsed.interval);
 			}
-			return currentDate.plus({ weeks: 1 });
-		case "bi-weekly":
-			if (weekdays && weekdays.length > 0) {
-				return getNextBiWeeklyOccurrence(currentDate, weekdays);
-			}
-			return currentDate.plus({ weeks: 2 });
-		case "monthly":
-			return currentDate.plus({ months: 1 });
-		case "bi-monthly":
-			return currentDate.plus({ months: 2 });
-		case "quarterly":
-			return currentDate.plus({ months: 3 });
-		case "semi-annual":
-			return currentDate.plus({ months: 6 });
-		case "yearly":
-			return currentDate.plus({ years: 1 });
+			return currentDate.plus({ weeks: parsed.interval });
+		case "MONTHLY":
+			return currentDate.plus({ months: parsed.interval });
+		case "YEARLY":
+			return currentDate.plus({ years: parsed.interval });
 		default:
 			return currentDate.plus({ days: 1 });
 	}
@@ -129,9 +106,11 @@ export function* iterateOccurrencesInRange(
 
 	let currentDate = normalizedStart >= normalizedRangeStart ? normalizedStart : normalizedRangeStart;
 
-	if ((rrules.type === "weekly" || rrules.type === "bi-weekly") && rrules.weekdays && rrules.weekdays.length > 0) {
+	const parsed = parseRecurrenceType(rrules.type);
+
+	if (parsed && parsed.freq === "WEEKLY" && rrules.weekdays && rrules.weekdays.length > 0) {
 		const weeksFromStart = Math.floor(currentDate.diff(normalizedStart, "weeks").weeks);
-		const weekInterval = rrules.type === "bi-weekly" ? 2 : 1;
+		const weekInterval = parsed.interval;
 		const weekOffset = weeksFromStart % weekInterval;
 
 		if (weekOffset !== 0) {
@@ -153,30 +132,8 @@ export function* iterateOccurrencesInRange(
 
 			currentDate = currentDate.plus({ weeks: weekInterval });
 		}
-	} else if (
-		rrules.type === "monthly" ||
-		rrules.type === "bi-monthly" ||
-		rrules.type === "quarterly" ||
-		rrules.type === "semi-annual"
-	) {
-		// For month-based intervals, align to the cycle from the source date
-		let monthInterval: number;
-		switch (rrules.type) {
-			case "monthly":
-				monthInterval = 1;
-				break;
-			case "bi-monthly":
-				monthInterval = 2;
-				break;
-			case "quarterly":
-				monthInterval = 3;
-				break;
-			case "semi-annual":
-				monthInterval = 6;
-				break;
-			default:
-				monthInterval = 1;
-		}
+	} else if (parsed && parsed.freq === "MONTHLY") {
+		const monthInterval = parsed.interval;
 
 		// If currentDate is past the source, align it to the next occurrence in the cycle
 		if (currentDate > normalizedStart) {
@@ -242,12 +199,13 @@ export function calculateRecurringInstanceDateTime(
 	allDay?: boolean
 ): DateTime {
 	const originalInTargetZone = nodeRecuringEventDateTime.setZone(nextInstanceDateTime.zone);
+	const parsed = parseRecurrenceType(recurrenceType);
 
-	switch (recurrenceType) {
-		case "daily":
-		case "bi-daily":
-		case "weekly":
-		case "bi-weekly": {
+	if (!parsed) return nextInstanceDateTime.startOf("day");
+
+	switch (parsed.freq) {
+		case "DAILY":
+		case "WEEKLY": {
 			if (allDay) {
 				return nextInstanceDateTime.startOf("day");
 			}
@@ -260,10 +218,7 @@ export function calculateRecurringInstanceDateTime(
 			});
 		}
 
-		case "monthly":
-		case "bi-monthly":
-		case "quarterly":
-		case "semi-annual": {
+		case "MONTHLY": {
 			if (allDay) {
 				return nextInstanceDateTime.set({ day: originalInTargetZone.day }).startOf("day");
 			}
@@ -277,7 +232,7 @@ export function calculateRecurringInstanceDateTime(
 			});
 		}
 
-		case "yearly": {
+		case "YEARLY": {
 			if (allDay) {
 				return nextInstanceDateTime
 					.set({

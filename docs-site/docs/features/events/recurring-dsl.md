@@ -155,6 +155,23 @@ The recurring events modal (accessible via command palette: "Show recurring even
 - `semiannual` - Every 6 months
 - `yearly` - Every year
 
+### Custom Intervals
+
+For intervals not covered by presets, use the custom interval format: `FREQ;INTERVAL=N` where FREQ is `DAILY`, `WEEKLY`, `MONTHLY`, or `YEARLY`, and N is the number of intervals (must be 1 or greater).
+
+**Examples:**
+- `DAILY;INTERVAL=5` — Every 5 days (e.g., medication schedules)
+- `WEEKLY;INTERVAL=3` — Every 3 weeks
+- `MONTHLY;INTERVAL=4` — Every 4 months
+- `YEARLY;INTERVAL=2` — Every 2 years
+
+**In the modal:** Select "Custom interval..." from the recurrence pattern dropdown. Choose a frequency (Days, Weeks, Months, Years) and enter the interval number.
+
+**In frontmatter:** Set the `RRule` property directly:
+```yaml
+RRule: DAILY;INTERVAL=5
+```
+
 ### RRuleSpec for Weekly Patterns
 When using `weekly` or `biweekly`, specify days with `RRuleSpec`:
 

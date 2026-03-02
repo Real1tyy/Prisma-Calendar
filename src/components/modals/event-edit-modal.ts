@@ -1,8 +1,8 @@
 import { parseIntoList, parsePositiveInt, serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
 import { MinimizedModalManager } from "../../core/minimized-modal-manager";
-import { WEEKDAY_SUPPORTED_TYPES } from "../../types/recurring-event";
+import { isWeekdaySupported } from "../../types/recurring-event";
 import { extractZettelId, removeZettelId } from "../../utils/event-naming";
-import type { RecurrenceType, Weekday } from "../../utils/date-recurrence";
+import type { Weekday } from "../../utils/date-recurrence";
 import { categorizeProperties } from "../../utils/format";
 import { BaseEventModal } from "./base-event-modal";
 
@@ -53,18 +53,20 @@ export class EventEditModal extends BaseEventModal {
 
 	private loadRecurringEventData(): void {
 		const settings = this.bundle.settingsStore.currentSettings;
-		const rruleType = this.originalFrontmatter[settings.rruleProp] as RecurrenceType | undefined;
+		const rruleType = this.originalFrontmatter[settings.rruleProp] as string | undefined;
 
 		if (rruleType) {
 			// Event has recurring rule
 			this.recurringCheckbox.checked = true;
 			this.recurringContainer.classList.remove("prisma-hidden");
-			this.rruleSelect.value = rruleType;
 
-			// Load weekdays if applicable
-			if ((WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(rruleType)) {
-				this.weekdayContainer.classList.remove("prisma-hidden");
+			this.applyRruleTypeToForm(rruleType);
 
+			// Trigger change to show/hide custom interval container and weekday grid
+			this.rruleSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+			// Load weekdays for preset weekly/bi-weekly types
+			if (isWeekdaySupported(rruleType)) {
 				const rruleSpec = this.originalFrontmatter[settings.rruleSpecProp] as string | undefined;
 				if (rruleSpec) {
 					const weekdays = rruleSpec.split(",").map((day) => day.trim().toLowerCase());
