@@ -27,6 +27,7 @@ import {
 	parseRecurrenceType,
 } from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
+import { createFormField } from "./event-form-fields";
 import {
 	assignListToFrontmatter,
 	parseCustomDoneProperty,
@@ -695,118 +696,51 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	private createLocationField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.locationProp) return;
-
-		const locationContainer = contentEl.createDiv(cls("setting-item"));
-		locationContainer.createEl("div", {
-			text: "Location",
-			cls: cls("setting-item-name"),
-		});
-		this.locationInput = locationContainer.createEl("input", {
-			type: "text",
-			cls: cls("setting-item-control"),
-			attr: {
-				placeholder: "Event location",
-			},
-		});
+		if (!this.bundle.settingsStore.currentSettings.locationProp) return;
+		this.locationInput = createFormField(contentEl, { label: "Location", type: "text", placeholder: "Event location" });
 	}
 
 	private createIconField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.iconProp) return;
-
-		const iconContainer = contentEl.createDiv(cls("setting-item"));
-		iconContainer.createEl("div", {
-			text: "Icon",
-			cls: cls("setting-item-name"),
-		});
-		this.iconInput = iconContainer.createEl("input", {
+		if (!this.bundle.settingsStore.currentSettings.iconProp) return;
+		this.iconInput = createFormField(contentEl, {
+			label: "Icon",
 			type: "text",
-			cls: cls("setting-item-control"),
-			attr: {
-				placeholder: "Event icon (emoji or text)",
-			},
+			placeholder: "Event icon (emoji or text)",
 		});
 	}
 
 	private createParticipantsField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.participantsProp) return;
-
-		const participantsContainer = contentEl.createDiv(cls("setting-item"));
-		participantsContainer.createEl("div", {
-			text: "Participants",
-			cls: cls("setting-item-name"),
-		});
-		const participantsDesc = participantsContainer.createEl("div", {
-			cls: cls("setting-item-description"),
-		});
-		participantsDesc.setText("Comma-separated list of participants");
-		this.participantsInput = participantsContainer.createEl("input", {
+		if (!this.bundle.settingsStore.currentSettings.participantsProp) return;
+		this.participantsInput = createFormField(contentEl, {
+			label: "Participants",
 			type: "text",
-			cls: cls("setting-item-control"),
-			attr: {
-				placeholder: "Alice, Bob, Charlie",
-			},
+			placeholder: "Alice, Bob, Charlie",
+			description: "Comma-separated list of participants",
 		});
 	}
 
 	private createBreakField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.breakProp) return;
-
-		const breakContainer = contentEl.createDiv(cls("setting-item"));
-		breakContainer.createEl("div", {
-			text: "Break (min)",
-			cls: cls("setting-item-name"),
-		});
-		const breakDesc = breakContainer.createEl("div", {
-			cls: cls("setting-item-description"),
-		});
-		breakDesc.setText("Time to subtract from duration in statistics (decimals supported)");
-		this.breakInput = breakContainer.createEl("input", {
+		if (!this.bundle.settingsStore.currentSettings.breakProp) return;
+		this.breakInput = createFormField(contentEl, {
+			label: "Break (min)",
 			type: "number",
-			cls: cls("setting-item-control"),
-			attr: {
-				min: "0",
-				step: "any",
-				placeholder: "0",
-			},
+			description: "Time to subtract from duration in statistics (decimals supported)",
+			attrs: { min: "0", step: "any" },
+			placeholder: "0",
 		});
 	}
 
 	private createMarkAsDoneField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.statusProperty) return;
-
-		const markAsDoneContainer = contentEl.createDiv(cls("setting-item"));
-		markAsDoneContainer.createEl("div", {
-			text: "Mark as done",
-			cls: cls("setting-item-name"),
-		});
-		this.markAsDoneCheckbox = markAsDoneContainer.createEl("input", {
-			type: "checkbox",
-			cls: cls("setting-item-control"),
-		});
+		if (!this.bundle.settingsStore.currentSettings.statusProperty) return;
+		this.markAsDoneCheckbox = createFormField(contentEl, { label: "Mark as done", type: "checkbox" });
 	}
 
 	private createSkipField(contentEl: HTMLElement): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.skipProp) return;
-
-		const skipContainer = contentEl.createDiv(cls("setting-item"));
-		skipContainer.createEl("div", {
-			text: "Skip event",
-			cls: cls("setting-item-name"),
-		});
-		const skipDesc = skipContainer.createEl("div", {
-			cls: cls("setting-item-description"),
-		});
-		skipDesc.setText("Hide event from calendar");
-		this.skipCheckbox = skipContainer.createEl("input", {
+		if (!this.bundle.settingsStore.currentSettings.skipProp) return;
+		this.skipCheckbox = createFormField(contentEl, {
+			label: "Skip event",
 			type: "checkbox",
-			cls: cls("setting-item-control"),
+			description: "Hide event from calendar",
 		});
 	}
 
