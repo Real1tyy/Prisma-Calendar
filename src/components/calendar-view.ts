@@ -1,4 +1,5 @@
 import { Calendar, type CustomButtonInput, type EventContentArg } from "@fullcalendar/core";
+import allLocales from "@fullcalendar/core/locales-all";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DropArg } from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
@@ -296,6 +297,9 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		this.calendar = new Calendar(container, {
 			plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+
+			locales: allLocales,
+			locale: settings.locale,
 
 			timeZone: "local",
 
@@ -641,6 +645,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		this.zoomManager.updateZoomLevelButton();
 
+		this.calendar.setOption("locale", settings.locale);
 		this.calendar.setOption("weekends", !settings.hideWeekends);
 		this.calendar.setOption("firstDay", settings.firstDayOfWeek);
 		this.calendar.setOption("nowIndicator", settings.nowIndicator);
@@ -2453,10 +2458,11 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		adjustedEnd.setMinutes(adjustedEnd.getMinutes() - 1);
 		const endDate = stripISOSuffix(toLocalISOString(adjustedEnd));
 
+		const settings = this.bundle.settingsStore.currentSettings;
 		let intervalLabel = "";
 		if (viewType.includes("Day")) {
 			const date = new Date(view.currentStart);
-			intervalLabel = date.toLocaleDateString("en-US", {
+			intervalLabel = date.toLocaleDateString(settings.locale, {
 				weekday: "long",
 				month: "short",
 				day: "numeric",
@@ -2466,10 +2472,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			const start = new Date(view.currentStart);
 			const end = new Date(view.currentEnd);
 			end.setDate(end.getDate() - 1);
-			intervalLabel = `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+			intervalLabel = `${start.toLocaleDateString(settings.locale, { month: "short", day: "numeric" })} - ${end.toLocaleDateString(settings.locale, { month: "short", day: "numeric", year: "numeric" })}`;
 		} else if (viewType.includes("Month")) {
 			const date = new Date(view.currentStart);
-			intervalLabel = date.toLocaleDateString("en-US", {
+			intervalLabel = date.toLocaleDateString(settings.locale, {
 				month: "long",
 				year: "numeric",
 			});

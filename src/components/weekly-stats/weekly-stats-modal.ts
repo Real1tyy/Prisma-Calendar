@@ -10,9 +10,9 @@ export class WeeklyStatsModal extends IntervalStatsModal {
 		),
 		getBounds: (date) => getWeekBounds(date),
 		aggregateStats: (events, date, mode, categoryProp) => aggregateWeeklyStats(events, date, mode, categoryProp),
-		formatDateRange: (start, end) => {
+		formatDateRange: (start, end, locale) => {
 			const fmt = (d: Date): string =>
-				d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+				d.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
 			return `${fmt(start)} - ${fmt(end)}`;
 		},
 	};

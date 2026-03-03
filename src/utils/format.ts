@@ -130,9 +130,9 @@ export function calculateDurationMinutes(start: string | Date, end: string | Dat
  * Timed with end: "Title - 02:30 PM - 03:45 PM (1h 15m)"
  * Timed without end: "Title - 02:30 PM"
  */
-export function formatEventDateSuffix(start: Date, end: Date | null, allDay: boolean): string {
+export function formatEventDateSuffix(start: Date, end: Date | null, allDay: boolean, locale: string): string {
 	if (allDay) {
-		const dateStr = start.toLocaleDateString("en-US", {
+		const dateStr = start.toLocaleDateString(locale, {
 			weekday: "short",
 			month: "short",
 			day: "numeric",
@@ -141,13 +141,13 @@ export function formatEventDateSuffix(start: Date, end: Date | null, allDay: boo
 		return ` - ${dateStr}`;
 	}
 
-	const startStr = start.toLocaleTimeString("en-US", {
+	const startStr = start.toLocaleTimeString(locale, {
 		hour: "2-digit",
 		minute: "2-digit",
 	});
 
 	if (end) {
-		const endStr = end.toLocaleTimeString("en-US", {
+		const endStr = end.toLocaleTimeString(locale, {
 			hour: "2-digit",
 			minute: "2-digit",
 		});
@@ -164,7 +164,7 @@ export function formatEventDateSuffix(start: Date, end: Date | null, allDay: boo
  */
 export function buildEventTooltip(
 	event: CalendarEvent | CalendarEventData,
-	settings: Pick<SingleCalendarConfig, "frontmatterDisplayProperties" | "frontmatterDisplayPropertiesAllDay">
+	settings: Pick<SingleCalendarConfig, "frontmatterDisplayProperties" | "frontmatterDisplayPropertiesAllDay" | "locale">
 ): string {
 	const title = event.title;
 	const meta = "meta" in event ? (event.meta ?? {}) : (event.extendedProps?.frontmatterDisplayData ?? {});
@@ -174,7 +174,7 @@ export function buildEventTooltip(
 
 	if (!start) return cleanupTitle(title);
 
-	const tooltipParts: string[] = [cleanupTitle(title) + formatEventDateSuffix(start, end, allDay)];
+	const tooltipParts: string[] = [cleanupTitle(title) + formatEventDateSuffix(start, end, allDay, settings.locale)];
 	const displayProps = allDay ? settings.frontmatterDisplayPropertiesAllDay : settings.frontmatterDisplayProperties;
 	for (const [prop, value] of getDisplayProperties(meta, displayProps)) {
 		tooltipParts.push(`${prop}: ${extractPropertyText(value)}`);

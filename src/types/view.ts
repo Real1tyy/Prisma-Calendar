@@ -37,6 +37,28 @@ export const FIRST_DAY_OPTIONS: Record<number, string> = Object.entries(WEEKDAY_
 	{} as Record<number, string>
 );
 
+export const LOCALE_OPTIONS: Record<string, string> = {
+	en: "English",
+	fr: "French (Français)",
+	de: "German (Deutsch)",
+	es: "Spanish (Español)",
+	it: "Italian (Italiano)",
+	"pt-br": "Portuguese - Brazil (Português)",
+	nl: "Dutch (Nederlands)",
+	ja: "Japanese (日本語)",
+	ko: "Korean (한국어)",
+	"zh-cn": "Chinese - Simplified (简体中文)",
+	"zh-tw": "Chinese - Traditional (繁體中文)",
+	ru: "Russian (Русский)",
+	ar: "Arabic (العربية)",
+	pl: "Polish (Polski)",
+	tr: "Turkish (Türkçe)",
+	sv: "Swedish (Svenska)",
+	da: "Danish (Dansk)",
+	fi: "Finnish (Suomi)",
+	nb: "Norwegian (Norsk bokmål)",
+};
+
 export type ContextMenuItem = keyof typeof CONTEXT_MENU_BUTTON_LABELS;
 
 export const ContextMenuItemSchema = z.enum(CONTEXT_MENU_ITEM_IDS as [ContextMenuItem, ...ContextMenuItem[]]);

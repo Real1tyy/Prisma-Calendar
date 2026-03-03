@@ -1,4 +1,5 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
+import { LOCALE_OPTIONS } from "../../types/view";
 import { type App, Setting } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { CalendarSettingsStore } from "../../core/settings-store";
@@ -47,6 +48,13 @@ export class GeneralSettings {
 			name: "Template path",
 			desc: "Path to Templater template file for new events (optional, requires Templater plugin)",
 			placeholder: "e.g., Templates/event-template.md",
+		});
+
+		this.ui.addDropdown(containerEl, {
+			key: "locale",
+			name: "Locale",
+			desc: "Language and date format for calendar headings, day names, month names, toolbar labels, and date displays",
+			options: LOCALE_OPTIONS,
 		});
 
 		this.ui.addToggle(containerEl, {

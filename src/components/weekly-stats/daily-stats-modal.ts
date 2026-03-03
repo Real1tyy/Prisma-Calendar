@@ -14,8 +14,13 @@ export class DailyStatsModal extends IntervalStatsModal {
 		),
 		getBounds: (date) => getDayBounds(date),
 		aggregateStats: (events, date, mode, categoryProp) => aggregateDailyStats(events, date, mode, categoryProp),
-		formatDateRange: (start) =>
-			start.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" }),
+		formatDateRange: (start, _end, locale) =>
+			start.toLocaleDateString(locale, {
+				weekday: "long",
+				month: "short",
+				day: "numeric",
+				year: "numeric",
+			}),
 	};
 
 	constructor(app: App, bundle: CalendarBundle, initialDate?: Date, calendarViewType?: string) {

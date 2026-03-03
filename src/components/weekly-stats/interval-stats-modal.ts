@@ -15,7 +15,7 @@ export interface IntervalConfig {
 	navigateFastNext(date: Date): void;
 	navigateFastPrevious(date: Date): void;
 	aggregateStats(events: CalendarEvent[], date: Date, mode: AggregationMode, categoryProp: string): Stats;
-	formatDateRange(start: Date, end: Date): string;
+	formatDateRange(start: Date, end: Date, locale?: string): string;
 }
 
 type StepFn = (date: Date, direction: 1 | -1) => void;
@@ -177,7 +177,9 @@ export abstract class IntervalStatsModal extends StatsModal {
 		const middleSection = header.createDiv(cls("stats-middle-section"));
 
 		const periodLabel = middleSection.createDiv(cls("stats-week-label"));
-		periodLabel.setText(this.intervalConfig.formatDateRange(start, end));
+		periodLabel.setText(
+			this.intervalConfig.formatDateRange(start, end, this.bundle.settingsStore.currentSettings.locale)
+		);
 
 		const controlsRow = middleSection.createDiv(cls("stats-controls-row"));
 

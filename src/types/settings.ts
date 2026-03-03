@@ -58,6 +58,7 @@ const GeneralSettingsSchema = z
 		showStopwatch: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_STOPWATCH), // show stopwatch in event modal for precise time tracking
 		showStopwatchStartWithoutFill: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_STOPWATCH_START_WITHOUT_FILL), // show "continue" button that continues tracking from existing start time without creating a new one
 		showRibbonIcon: z.boolean().catch(SETTINGS_DEFAULTS.SHOW_RIBBON_ICON), // show ribbon icon in left sidebar to open calendar
+		locale: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_LOCALE), // locale for calendar display language and date formatting
 		templatePath: z.string().optional(), // path to Templater template for new events
 		markPastInstancesAsDone: z.boolean().catch(false), // automatically mark past events as done on startup
 		eventPresets: z.array(EventPresetSchema).catch([]), // Event creation presets with pre-filled values

@@ -10,7 +10,7 @@ export class MonthlyStatsModal extends IntervalStatsModal {
 		),
 		getBounds: (date) => getMonthBounds(date),
 		aggregateStats: (events, date, mode, categoryProp) => aggregateMonthlyStats(events, date, mode, categoryProp),
-		formatDateRange: (start) => start.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+		formatDateRange: (start, _end, locale) => start.toLocaleDateString(locale, { month: "long", year: "numeric" }),
 	};
 
 	protected getModalTitle(): string {
