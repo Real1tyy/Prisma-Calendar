@@ -27,6 +27,171 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
+##### Delete
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchDelete.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Duplicate
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchDuplicate.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Move to Next Occurrence
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/BatchMoveNext.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Clone to Next Occurrence
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchCloneNext.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Skip
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/BatchSKIP.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Mark Done / Not Done
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchDone-NotDone.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Move By Days
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/BatchMOVEBY.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Assign Categories
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchAssignCategories.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Frontmatter Management
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/BatchManagementFrontmatter.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Open All
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchOPENALL.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Button Configuration
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/batchButtonsConfig.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ### [Categories](features/organization/categories) — Assign Categories
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
@@ -38,6 +203,66 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
     <source src={useBaseUrl("/video/AssignCategory.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Auto-Assign
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/AutoAssignCategories.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Category Presets
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/AssignCategoryPreset.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Auto-Correction
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/AutoCorrection.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Deletion & Renaming
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/CategoriesDeletionAndRenaming.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -87,6 +312,51 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
+##### Series Modal — Recurring Tab
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventSeriesModalReaccuring.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Series Modal — Category Tab
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventSeriesModalCategory.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Series Modal — Name Tab
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventSeriesModalNameTab.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ### [Event Skipping](features/events/event-skipping) - Skip Events
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
@@ -127,6 +397,36 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
     <source src={useBaseUrl("/video/FilteringFilteringPresets.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Manual Filtering Expression
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/ManualFilteringExpression.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Highlight Events by Category
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/HighlightEventsWithCategory.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -266,7 +566,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/Notified.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/Notifications.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -282,6 +582,21 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
     <source src={useBaseUrl("/video/ReaccuringEvents.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Recurring Frontmatter
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/ReaccurFrontmatter.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -359,6 +674,21 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
+##### Minimized Modal Management
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/MinimizedModalManagement.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ### [Undo / Redo](features/management/undo-redo) - Undo/Redo Almost ANY action
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
@@ -403,6 +733,197 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     Your browser does not support the video tag.
   </video>
 </div>
+
+
+### [Calendar View](features/calendar/calendar-view) — Customizing the View
+##### Event Text Color
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventTextColour.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Sticky Header
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/StickyHeader.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+
+### [Event Icons](features/events/event-icons) — Custom Icons
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/Icons.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+
+### [Event Presets](features/events/event-presets) — Quick Event Creation
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventPresets.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+
+### [Hotkeys](features/advanced/hotkeys) — Keyboard Shortcuts
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/Hotkeys.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Event Creation & Manipulation
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/EventCreationManipulationHotkeys.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+
+### [Installation](installation) — BRAT Installation
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/InstallationBRAT.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+
+### [Programmatic API](features/advanced/programmatic-api) — Scripting
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/ProgramaticCreation.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+
+### [Quickstart](quickstart) — Getting Started
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/Quickstart.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+
+### [Settings](configuration) — Configuration
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/SettingConfig.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+
+### [Timeline View](features/events/event-groups) — Timeline
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/TimelineView.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Series Groups in Timeline
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/TimelineViewSeriesGroups.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 
 ## Screenshots
 
