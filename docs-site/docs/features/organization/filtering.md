@@ -24,7 +24,7 @@ Both use the same JavaScript expression syntax but are configured separately.
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/Searching.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/FilteringBySearching.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -143,7 +143,7 @@ The **"Highlight events without categories"** command temporarily highlights all
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/highlight.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/HighlightEventsWithCategory.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>

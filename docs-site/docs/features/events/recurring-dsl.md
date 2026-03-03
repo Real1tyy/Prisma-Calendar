@@ -15,7 +15,7 @@ Create repeating events using `RRule` and `RRuleSpec` in frontmatter.
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/Reaccur.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/ReaccuringEvents.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -45,7 +45,7 @@ This makes it instantly clear which events are source templates versus generated
 
 **Templater Support**: When a [Templater template](../advanced/templater.md) is configured, generated instances use it — the template renders first and source body content is appended after. See [Templater Integration — Recurring Event Instances](../advanced/templater.md#recurring-event-instances).
 
-**Frontmatter Propagation**: 
+**Frontmatter Propagation**:
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video

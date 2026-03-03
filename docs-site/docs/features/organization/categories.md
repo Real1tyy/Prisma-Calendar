@@ -67,7 +67,7 @@ You can assign categories to events in multiple ways:
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/AutoAssign.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/AutoAssignCategories.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -273,7 +273,7 @@ This detailed breakdown helps you understand not just how many events are in eac
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/CategoriesDeletionRenaming.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/CategoriesDeletionAndRenaming.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>

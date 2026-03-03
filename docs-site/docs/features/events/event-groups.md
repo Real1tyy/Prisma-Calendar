@@ -63,7 +63,7 @@ When multiple tabs are available, they appear in the order above (Recurring firs
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/EventSeriesModaReaccuring.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/EventSeriesModalReaccuring.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -91,7 +91,7 @@ If the source event has a category, the modal background is tinted with the cate
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/CategoryTAB.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/EventSeriesModalCategory.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -119,7 +119,7 @@ If the event has **multiple categories**, a category chooser is displayed first 
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/NameTAB.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/EventSeriesModalNameTab.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>

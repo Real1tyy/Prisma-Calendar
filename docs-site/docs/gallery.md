@@ -67,7 +67,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/Enlarge.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/EnlargeEventPreview.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -97,7 +97,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/ESkip.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/EventSkip.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -112,7 +112,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/Searching.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/FilteringBySearching.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -236,7 +236,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/CalBlur.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/GoogleCalendarIntegration.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -281,7 +281,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/Reaccur.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/ReaccuringEvents.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>

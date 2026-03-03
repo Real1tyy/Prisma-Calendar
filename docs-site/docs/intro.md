@@ -45,7 +45,7 @@ Whether you need recurring events that generate real notes, batch operations acr
 
 <div style={{"display": "flex", "flexWrap": "wrap", "gap": "1em", "justifyContent": "center", "marginBottom": "2em"}}>
   <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
-    <source src={useBaseUrl("/video/Reaccur.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/ReaccuringEvents.webm")} type="video/webm" />
   </video>
   <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
     <source src={useBaseUrl("/video/UntrackedEvents.webm")} type="video/webm" />
