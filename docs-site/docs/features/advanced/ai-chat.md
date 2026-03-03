@@ -103,6 +103,28 @@ Existing events in the current interval take priority — the AI plans around th
 
 Switching between modes updates the current conversation's mode without clearing messages.
 
+### Validation & Auto-Correction
+
+Both Manipulation and Planning modes validate the AI's response before showing it to you:
+
+- **Schema validation**: Every operation is checked for correct structure — valid ISO datetime formats, required fields, and proper types.
+- **Overlap detection**: Events on the same day must not overlap with each other or with existing events.
+- **Gap detection** (Planning mode): Consecutive events should be back-to-back during active hours — gaps longer than 5 minutes are flagged.
+- **Day coverage** (Planning mode): Every day in the interval must have at least one event.
+- **Boundary check**: All events must fall within the current interval.
+
+If the AI's response fails validation, it is automatically reprompted with the specific errors and asked to fix them (up to 2 retries). If issues remain after retries, the operations are shown with a warning notice so you can review them before executing.
+
+### Pattern Detection (Planning Mode)
+
+In Planning mode, the AI analyzes your previous interval's events to detect scheduling patterns:
+
+- **Active hours**: When your day typically starts and ends
+- **Recurring blocks**: Activities that appear 3+ days at similar times (e.g., lunch at 12:00, gym at 18:00)
+- **Daily template**: A representative schedule from your busiest day
+
+These patterns are injected into the AI's prompt so it generates plans that match your existing habits rather than starting from scratch.
+
 ## Conversation History
 
 Conversations are saved automatically as you chat. Your conversation history persists across panel closes and Obsidian restarts.

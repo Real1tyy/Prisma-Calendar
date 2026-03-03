@@ -34,10 +34,8 @@ export class AIChatManager {
 		await this.chatStore.ensureDir();
 		await this.chatStore.loadIndex();
 
-		const threads = this.chatStore.getThreadList();
-		if (threads.length > 0) {
-			this.currentThread = await this.chatStore.loadThread(threads[0].id);
-		}
+		// If the user was already using a thread this session, keep it.
+		// Otherwise start fresh (new conversation) — don't auto-load the latest.
 	}
 
 	async sendMessage(

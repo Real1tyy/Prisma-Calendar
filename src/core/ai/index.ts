@@ -2,6 +2,7 @@ export { AI_DEFAULTS, type AIModelOption, type AIProvider } from "./ai-constants
 export { AIChatManager } from "./ai-chat-manager";
 export { ChatStore } from "./chat-store";
 export {
+	analyzePreviousPatterns,
 	buildCalendarContext,
 	buildManipulationContext,
 	buildManipulationSystemPrompt,
@@ -12,6 +13,7 @@ export {
 	type CalendarContext,
 	type CategoryContext,
 	type ManipulationContext,
+	type PatternAnalysis,
 	type PlanningContext,
 } from "./ai-context-builder";
 export {

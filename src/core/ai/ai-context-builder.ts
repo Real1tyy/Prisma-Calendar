@@ -242,6 +242,145 @@ function mapEventToManipulationSummary(event: CalendarEvent): AIEventSummary {
 	return summary;
 }
 
+export interface PatternAnalysis {
+	earliestStart: string;
+	latestEnd: string;
+	avgEventsPerDay: number;
+	recurringBlocks: Array<{
+		title: string;
+		typicalStart: string;
+		typicalDurationMins: number;
+		frequency: number;
+	}>;
+	dailyTemplate: string;
+	activeDays: string[];
+}
+
+export function analyzePreviousPatterns(events: AIEventSummary[]): PatternAnalysis {
+	const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+	const timedEvents = events.filter((e) => !e.allDay && e.end);
+
+	if (timedEvents.length === 0) {
+		return {
+			earliestStart: "09:00",
+			latestEnd: "17:00",
+			avgEventsPerDay: 0,
+			recurringBlocks: [],
+			dailyTemplate: "No previous events to analyze.",
+			activeDays: [],
+		};
+	}
+
+	// Group events by day (YYYY-MM-DD)
+	const byDay = new Map<string, AIEventSummary[]>();
+	for (const event of timedEvents) {
+		const dayKey = event.start.slice(0, 10);
+		const existing = byDay.get(dayKey);
+		if (existing) {
+			existing.push(event);
+		} else {
+			byDay.set(dayKey, [event]);
+		}
+	}
+
+	// Find earliest start and latest end across all days
+	let earliestMins = 24 * 60;
+	let latestMins = 0;
+	for (const event of timedEvents) {
+		const startMins = parseTimeToMins(event.start);
+		const endMins = event.end ? parseTimeToMins(event.end) : startMins;
+		if (startMins < earliestMins) earliestMins = startMins;
+		if (endMins > latestMins) latestMins = endMins;
+	}
+
+	const earliestStart = minsToTimeStr(earliestMins);
+	const latestEnd = minsToTimeStr(latestMins);
+
+	// Average events per day (only counting days that have events)
+	const dayCount = byDay.size;
+	const avgEventsPerDay = Math.round((timedEvents.length / dayCount) * 10) / 10;
+
+	// Active days of the week
+	const activeDaysSet = new Set<string>();
+	for (const dayKey of byDay.keys()) {
+		const date = new Date(dayKey + "T00:00:00");
+		activeDaysSet.add(DAY_NAMES[date.getDay()]);
+	}
+	const activeDays = DAY_NAMES.filter((d) => activeDaysSet.has(d));
+
+	// Recurring block detection: group by title, find blocks appearing 3+ days at similar times
+	const titleOccurrences = new Map<string, Array<{ startMins: number; durationMins: number }>>();
+	for (const event of timedEvents) {
+		const startMins = parseTimeToMins(event.start);
+		const endMins = event.end ? parseTimeToMins(event.end) : startMins + 60;
+		const entry = titleOccurrences.get(event.title);
+		if (entry) {
+			entry.push({ startMins, durationMins: endMins - startMins });
+		} else {
+			titleOccurrences.set(event.title, [{ startMins, durationMins: endMins - startMins }]);
+		}
+	}
+
+	const recurringBlocks: PatternAnalysis["recurringBlocks"] = [];
+	for (const [title, occurrences] of titleOccurrences) {
+		if (occurrences.length < 3) continue;
+
+		// Check if start times cluster within a 30-minute window
+		const sortedStarts = occurrences.map((o) => o.startMins).sort((a, b) => a - b);
+		const medianStart = sortedStarts[Math.floor(sortedStarts.length / 2)];
+		const inWindow = occurrences.filter((o) => Math.abs(o.startMins - medianStart) <= 30);
+
+		if (inWindow.length >= 3) {
+			const avgDuration = Math.round(inWindow.reduce((sum, o) => sum + o.durationMins, 0) / inWindow.length);
+			recurringBlocks.push({
+				title,
+				typicalStart: minsToTimeStr(medianStart),
+				typicalDurationMins: avgDuration,
+				frequency: inWindow.length,
+			});
+		}
+	}
+
+	// Daily template: pick the day with the most events, format as time slots
+	let bestDay = "";
+	let bestCount = 0;
+	for (const [dayKey, dayEvents] of byDay) {
+		if (dayEvents.length > bestCount) {
+			bestCount = dayEvents.length;
+			bestDay = dayKey;
+		}
+	}
+
+	let dailyTemplate = "No template available.";
+	const templateEvents = byDay.get(bestDay);
+	if (templateEvents) {
+		const sorted = [...templateEvents].sort((a, b) => a.start.localeCompare(b.start));
+		dailyTemplate = sorted
+			.map((e) => {
+				const startTime = e.start.slice(11, 16);
+				const endTime = e.end ? e.end.slice(11, 16) : "??:??";
+				return `${startTime}-${endTime} ${e.title}`;
+			})
+			.join("\n");
+	}
+
+	return { earliestStart, latestEnd, avgEventsPerDay, recurringBlocks, dailyTemplate, activeDays };
+}
+
+function parseTimeToMins(isoStr: string): number {
+	const timePart = isoStr.slice(11, 16);
+	const [hours, minutes] = timePart.split(":").map(Number);
+	return hours * 60 + minutes;
+}
+
+function minsToTimeStr(mins: number): string {
+	const h = Math.floor(mins / 60)
+		.toString()
+		.padStart(2, "0");
+	const m = (mins % 60).toString().padStart(2, "0");
+	return `${h}:${m}`;
+}
+
 export interface PlanningContext {
 	calendarName: string;
 	currentDateRange: string;
@@ -279,6 +418,22 @@ export function buildPlanningSystemPrompt(
 ): string {
 	const currentEventsJson = JSON.stringify(context.currentEvents, null, 2);
 	const previousEventsJson = JSON.stringify(context.previousEvents, null, 2);
+	const patterns = analyzePreviousPatterns(context.previousEvents);
+
+	let patternsBlock = `## Detected Patterns from Previous Interval
+- Day typically starts at: ${patterns.earliestStart}
+- Day typically ends at: ${patterns.latestEnd}
+- Average events per day: ${patterns.avgEventsPerDay}
+- Days with events: ${patterns.activeDays.length > 0 ? patterns.activeDays.join(", ") : "None detected"}`;
+
+	if (patterns.recurringBlocks.length > 0) {
+		patternsBlock += "\n- Recurring blocks:";
+		for (const block of patterns.recurringBlocks) {
+			patternsBlock += `\n  - "${block.title}" at ${block.typicalStart}, ~${block.typicalDurationMins}min, ${block.frequency} days/interval`;
+		}
+	}
+
+	patternsBlock += `\n\n## Daily Template (from previous interval)\n${patterns.dailyTemplate}`;
 
 	return `${basePrompt}
 
@@ -290,15 +445,20 @@ Available operations:
 - edit: { "type": "edit", "filePath": string, "title"?: string, "start"?: ISO datetime, "end"?: ISO datetime, "allDay"?: boolean, "categories"?: string[], "location"?: string, "participants"?: string[] }
 - delete: { "type": "delete", "filePath": string }
 
-Planning rules:
-1. Respect existing events in the current interval — plan around them unless the user explicitly says otherwise.
-2. Events must not overlap. Align on borders (e.g. 9:00–12:00, 12:00–12:30, 12:30–13:00).
-3. Learn patterns from the previous interval — recurring start times, break durations, block lengths, preferred time slots.
-4. Stay within the current interval boundaries: ${context.currentStart} to ${context.currentEnd}.
-5. Distribute activities across all days in the interval, not just one day.
-6. Use ISO datetime format: "YYYY-MM-DDTHH:mm:ss"
-7. For edits, only include fields that should change.
-8. For deletes, reference the filePath of the event to remove.
+${patternsBlock}
+
+## Planning Rules (MANDATORY — violations will be rejected and you will be asked to fix them)
+1. FILL ALL DAYS: Create events for EVERY day in the interval. Never skip a day including weekends.
+2. NO OVERLAPS: Events overlap ONLY when one event's time range crosses into another's (e.g., 09:00-10:30 and 10:00-11:00 overlap). Sharing a boundary is NOT an overlap — 09:00-10:00 and 10:00-11:00 do NOT overlap.
+3. CONTIGUOUS SCHEDULING: Events MUST be exactly back-to-back with zero gaps. When one ends at 18:30, the next MUST start at 18:30 — not 18:31, not 18:35. Every minute of gap is a validation error.
+4. EXACT HOUR ACCOUNTING: If the user requests N hours of an activity, the TOTAL minutes across all created events for that activity must equal exactly N*60 minutes. Before outputting, verify your math: sum up the duration of every event for each requested activity and confirm it matches.
+5. RESPECT EXISTING: Plan around existing events unless the user says otherwise.
+6. MATCH PATTERNS: Start days at ${patterns.earliestStart}, end at ${patterns.latestEnd}. Preserve recurring blocks (meals, routines) at their detected times.
+7. BLOCK SIZES: Use 1.5-3 hour focused blocks. Avoid <30min or >4h blocks unless requested.
+8. BOUNDARIES: All events must fall within ${context.currentStart} to ${context.currentEnd}.
+9. FORMAT: Use ISO datetime format "YYYY-MM-DDTHH:mm:ss". Respond with ONLY a JSON array of operations.
+10. For edits, only include fields that should change.
+11. For deletes, reference the filePath of the event to remove.
 
 ## Calendar Context
 - Calendar: ${context.calendarName}
@@ -333,11 +493,15 @@ Available operations:
 - edit: { "type": "edit", "filePath": string, "title"?: string, "start"?: ISO datetime, "end"?: ISO datetime, "allDay"?: boolean, "categories"?: string[], "location"?: string, "participants"?: string[] }
 - delete: { "type": "delete", "filePath": string }
 
-Rules:
+Rules (MANDATORY — violations will be rejected and you will be asked to fix them):
 - Use ISO datetime format: "YYYY-MM-DDTHH:mm:ss"
 - For edits, only include fields that should change
 - For deletes, reference the filePath of the event to remove
 - To replace an event: delete the old one, then create a new one
+- Events overlap ONLY when one event's time range crosses into another's. Sharing a boundary is NOT an overlap — 09:00-10:00 and 10:00-11:00 do NOT overlap. NEVER create truly overlapping events.
+- When adjusting times, ensure events are contiguous with zero gaps — if one ends at 18:30, the next starts at 18:30 exactly.
+- When shifting events, preserve their durations. Shift rather than shrink
+- Verify no events overlap before responding
 
 ## Calendar Context
 - Calendar: ${context.calendarName}
