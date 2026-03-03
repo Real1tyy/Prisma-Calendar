@@ -18,6 +18,7 @@ export class AISettings {
 	display(containerEl: HTMLElement): void {
 		this.addAPISettings(containerEl);
 		this.addManipulationSettings(containerEl);
+		this.addPlanningSettings(containerEl);
 		this.addCustomPromptsSection(containerEl);
 	}
 
@@ -86,6 +87,22 @@ export class AISettings {
 			key: "ai.aiConfirmExecution",
 			name: "Confirm before execution",
 			desc: "When enabled, AI-suggested operations show a preview with an Execute button. When disabled, operations execute immediately without confirmation.",
+		});
+	}
+
+	private addPlanningSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("Planning").setHeading();
+
+		this.ui.addToggle(containerEl, {
+			key: "ai.aiPlanningGapDetection",
+			name: "Gap detection",
+			desc: "Validate that AI-planned events are contiguous with no gaps between consecutive events.",
+		});
+
+		this.ui.addToggle(containerEl, {
+			key: "ai.aiPlanningDayCoverage",
+			name: "Day coverage",
+			desc: "Validate that AI plans cover every day in the interval.",
 		});
 	}
 

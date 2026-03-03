@@ -1,22 +1,20 @@
 import { cls, MacroCommand, MountableView, type Command } from "@real1ty-obsidian-plugins";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { z } from "zod";
-import { AIChatManager, ChatStore, type ChatMessage } from "../core/ai";
+import { AI_DEFAULTS, AIChatManager, ChatStore, type ChatMessage } from "../core/ai";
 import {
 	buildCalendarContext,
 	buildManipulationContext,
 	buildPlanningContext,
 	getViewLabel,
-	type AIEventSummary,
 	type CalendarContext,
 	type CategoryContext,
 	type ManipulationContext,
 	type PlanningContext,
 } from "../core/ai/ai-context-builder";
+import { validateOperationsSemantically, type SemanticValidationContext } from "../core/ai/ai-validation";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type CustomCalendarPlugin from "../main";
-import { stripISOSuffix } from "../utils/event-frontmatter";
-import { calculateDurationMinutes, intoDate } from "../utils/format";
 import { CalendarView, getCalendarViewType } from "./calendar-view";
 
 type AIMode = "query" | "manipulation" | "planning";
@@ -50,122 +48,6 @@ const DeleteOpSchema = z.object({
 const AIOperationsSchema = z.array(z.discriminatedUnion("type", [CreateOpSchema, EditOpSchema, DeleteOpSchema]));
 
 type AIOperation = z.infer<typeof AIOperationsSchema>[number];
-
-const MAX_REPROMPT_RETRIES = 2;
-
-interface SemanticValidationContext {
-	mode: AIMode;
-	currentEvents?: AIEventSummary[];
-	intervalStart?: string;
-	intervalEnd?: string;
-}
-
-function validateOperationsSemantically(operations: AIOperation[], context: SemanticValidationContext): string[] {
-	const errors: string[] = [];
-	const createOps = operations.filter((op): op is Extract<AIOperation, { type: "create" }> => op.type === "create");
-	const timedCreateOps = createOps.filter((op) => !op.allDay);
-
-	// 1. end > start check
-	for (const op of timedCreateOps) {
-		const startDate = intoDate(op.start);
-		const endDate = intoDate(op.end);
-		if (startDate && endDate && endDate <= startDate) {
-			errors.push(`Event "${op.title}" has end (${op.end}) not after start (${op.start}).`);
-		}
-	}
-
-	// 2. Overlap detection among created events
-	const byDay = new Map<string, Array<{ title: string; start: Date; end: Date; startRaw: string; endRaw: string }>>();
-	const addEntry = (dayKey: string, title: string, start: string, end: string) => {
-		const startDate = intoDate(start);
-		const endDate = intoDate(end);
-		if (!startDate || !endDate) return;
-		const entry = {
-			title,
-			start: startDate,
-			end: endDate,
-			startRaw: stripISOSuffix(start),
-			endRaw: stripISOSuffix(end),
-		};
-		const existing = byDay.get(dayKey);
-		if (existing) {
-			existing.push(entry);
-		} else {
-			byDay.set(dayKey, [entry]);
-		}
-	};
-
-	for (const op of timedCreateOps) {
-		addEntry(op.start.slice(0, 10), op.title, op.start, op.end);
-	}
-
-	// Also include existing current events for overlap checking
-	if (context.currentEvents) {
-		for (const ev of context.currentEvents) {
-			if (ev.allDay || !ev.end) continue;
-			addEntry(ev.start.slice(0, 10), ev.title + " (existing)", ev.start, ev.end);
-		}
-	}
-
-	for (const [day, dayEvents] of byDay) {
-		const sorted = [...dayEvents].sort((a, b) => a.start.getTime() - b.start.getTime());
-		for (let i = 0; i < sorted.length - 1; i++) {
-			if (sorted[i].end > sorted[i + 1].start) {
-				errors.push(
-					`Overlap on ${day}: "${sorted[i].title}" ends at ${sorted[i].endRaw} but "${sorted[i + 1].title}" starts at ${sorted[i + 1].startRaw}.`
-				);
-			}
-		}
-	}
-
-	// 3. Gap detection (planning mode only) — no gaps allowed between consecutive events
-	if (context.mode === "planning") {
-		for (const [day, dayEvents] of byDay) {
-			const sorted = [...dayEvents].sort((a, b) => a.start.getTime() - b.start.getTime());
-			for (let i = 0; i < sorted.length - 1; i++) {
-				const gapMins = calculateDurationMinutes(sorted[i].end, sorted[i + 1].start);
-				if (gapMins > 0) {
-					errors.push(
-						`Gap on ${day}: ${gapMins}min gap between "${sorted[i].title}" (ends ${sorted[i].endRaw.slice(11, 16)}) and "${sorted[i + 1].title}" (starts ${sorted[i + 1].startRaw.slice(11, 16)}). Events must be contiguous — the next event should start exactly when the previous one ends.`
-					);
-				}
-			}
-		}
-
-		// 4. Day coverage: check all days in the interval have at least one event
-		if (context.intervalStart && context.intervalEnd) {
-			const start = intoDate(context.intervalStart);
-			const end = intoDate(context.intervalEnd);
-			if (start && end) {
-				const current = new Date(start);
-				while (current < end) {
-					const dayKey = current.toISOString().slice(0, 10);
-					if (!byDay.has(dayKey)) {
-						errors.push(`Missing coverage: no events on ${dayKey}.`);
-					}
-					current.setDate(current.getDate() + 1);
-				}
-			}
-		}
-	}
-
-	// 5. Boundary check
-	if (context.intervalStart && context.intervalEnd) {
-		const intervalStart = intoDate(context.intervalStart);
-		const intervalEnd = intoDate(context.intervalEnd);
-		if (intervalStart && intervalEnd) {
-			for (const op of timedCreateOps) {
-				const opStart = intoDate(op.start);
-				const opEnd = intoDate(op.end);
-				if (opStart && opEnd && (opStart < intervalStart || opEnd > intervalEnd)) {
-					errors.push(`Event "${op.title}" (${op.start} - ${op.end}) is outside interval boundaries.`);
-				}
-			}
-		}
-	}
-
-	return errors;
-}
 
 export const AI_CHAT_VIEW_TYPE = "prisma-ai-chat";
 
@@ -564,23 +446,31 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		manipulationContext?: ManipulationContext,
 		planningContext?: PlanningContext
 	): Promise<void> {
+		const aiSettings = this.plugin.settingsStore.currentSettings.ai;
 		const validationContext: SemanticValidationContext = {
 			mode: this.currentMode,
 			currentEvents: planningContext?.currentEvents ?? manipulationContext?.events,
 			intervalStart: planningContext?.currentStart,
 			intervalEnd: planningContext?.currentEnd,
+			gapDetection: aiSettings.aiPlanningGapDetection,
+			dayCoverage: aiSettings.aiPlanningDayCoverage,
 		};
 
 		let currentMessage = userMessage;
 
-		for (let attempt = 0; attempt <= MAX_REPROMPT_RETRIES; attempt++) {
+		const planningPromptFlags = planningContext
+			? { gapDetection: aiSettings.aiPlanningGapDetection, dayCoverage: aiSettings.aiPlanningDayCoverage }
+			: undefined;
+
+		for (let attempt = 0; attempt <= AI_DEFAULTS.MAX_REPROMPT_RETRIES; attempt++) {
 			const response = await this.chatManager.sendMessage(
 				currentMessage,
 				attempt === 0 ? selectedPrompts : undefined,
 				undefined,
 				manipulationContext,
 				planningContext,
-				categoryContext ?? undefined
+				categoryContext ?? undefined,
+				planningPromptFlags
 			);
 
 			const operations = this.parseOperations(response);
@@ -595,9 +485,9 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 				return;
 			}
 
-			if (attempt < MAX_REPROMPT_RETRIES) {
+			if (attempt < AI_DEFAULTS.MAX_REPROMPT_RETRIES) {
 				console.warn(
-					`[Prisma AI] Validation failed (attempt ${attempt + 1}/${MAX_REPROMPT_RETRIES + 1}), retrying. Errors:\n`,
+					`[Prisma AI] Validation failed (attempt ${attempt + 1}/${AI_DEFAULTS.MAX_REPROMPT_RETRIES + 1}), retrying. Errors:\n`,
 					errors.join("\n")
 				);
 				currentMessage =
@@ -609,10 +499,12 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 
 			// Max retries exhausted — show operations with warning
 			console.error(
-				`[Prisma AI] Validation still failing after ${MAX_REPROMPT_RETRIES} retries. Remaining errors:\n`,
+				`[Prisma AI] Validation still failing after ${AI_DEFAULTS.MAX_REPROMPT_RETRIES} retries. Remaining errors:\n`,
 				errors.join("\n")
 			);
-			new Notice(`Prisma AI: Validation issues remain after ${MAX_REPROMPT_RETRIES} retries. Review carefully.`);
+			new Notice(
+				`Prisma AI: Validation issues remain after ${AI_DEFAULTS.MAX_REPROMPT_RETRIES} retries. Review carefully.`
+			);
 			this.handleManipulationResponse(response);
 		}
 	}

@@ -253,6 +253,8 @@ const AISettingsSchema = z
 		aiBatchExecution: z.boolean().catch(AI_DEFAULTS.DEFAULT_BATCH_EXECUTION),
 		aiConfirmExecution: z.boolean().catch(AI_DEFAULTS.DEFAULT_CONFIRM_EXECUTION),
 		customPrompts: z.array(CustomPromptSchema).catch([]),
+		aiPlanningGapDetection: z.boolean().catch(AI_DEFAULTS.DEFAULT_PLANNING_GAP_DETECTION),
+		aiPlanningDayCoverage: z.boolean().catch(AI_DEFAULTS.DEFAULT_PLANNING_DAY_COVERAGE),
 	})
 	.strip();
 

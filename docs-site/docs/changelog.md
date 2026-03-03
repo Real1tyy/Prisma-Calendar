@@ -4,7 +4,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.6.0 - 3/2/2026
+## 2.6.0 - 3/3/2026
 
 ### Added
 
@@ -26,6 +26,7 @@ All notable changes to this project will be documented here.
 - **URL protocol handler**: All programmatic API actions are now accessible via `obsidian://prisma-calendar?call=actionName&param=value` URLs, enabling cross-app automation, bookmarks, and integration with external tools. See [Programmatic API](./features/advanced/programmatic-api.md#url-protocol-handler).
 - **Programmatic `navigateToDate` API method**: Open the calendar at a specific date and view type (daily, weekly, monthly, or list) via the scripting API or URL protocol. See [Programmatic API](./features/advanced/programmatic-api.md#navigatetodateinput).
 - **AI planning & manipulation validation**: The AI planning and manipulation modes now validate responses using strict schema and semantic checks — detecting overlapping events, missing days, gaps between events, boundary violations, and hour accounting mismatches. When issues are found, the AI is automatically reprompted (up to 2 retries) to fix them before showing results. Planning mode also analyzes your previous interval to detect daily patterns (start/end times, recurring blocks) and injects them into the prompt for more accurate scheduling. See [AI Chat — Validation & Auto-Correction](./features/advanced/ai-chat.md#validation--auto-correction).
+- **AI planning validation settings**: New toggles in Settings > AI > Planning to control gap detection and day coverage validation independently. Disable either check if your planning style doesn't require contiguous scheduling or full-day coverage. See [AI Chat — Validation Settings](./features/advanced/ai-chat.md#validation-settings).
 
 ### Changed
 

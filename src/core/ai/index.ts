@@ -15,6 +15,7 @@ export {
 	type ManipulationContext,
 	type PatternAnalysis,
 	type PlanningContext,
+	type PlanningPromptFlags,
 } from "./ai-context-builder";
 export {
 	AIServiceError,
@@ -23,3 +24,16 @@ export {
 	type ThreadData,
 	type ThreadMeta,
 } from "./ai-service";
+export {
+	buildDayMap,
+	validateDayCoverage,
+	validateEndAfterStart,
+	validateNoGaps,
+	validateNoOverlaps,
+	validateOperationsSemantically,
+	validateWithinBounds,
+	type DayEntry,
+	type DayMap,
+	type SemanticValidationContext,
+	type TimedCreateOp,
+} from "./ai-validation";

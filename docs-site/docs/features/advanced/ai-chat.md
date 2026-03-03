@@ -115,6 +115,15 @@ Both Manipulation and Planning modes validate the AI's response before showing i
 
 If the AI's response fails validation, it is automatically reprompted with the specific errors and asked to fix them (up to 2 retries). If issues remain after retries, the operations are shown with a warning notice so you can review them before executing.
 
+### Validation Settings
+
+Two toggles in **Settings > AI > Planning** let you control which validation checks run in Planning mode:
+
+- **Gap detection** (on by default) — Validates that AI-planned events are contiguous with no gaps between consecutive events. Turn this off if your planning style allows free time between activities.
+- **Day coverage** (on by default) — Validates that the AI plan covers every day in the interval. Turn this off if you only want the AI to plan specific days rather than the full interval.
+
+When a check is disabled, it is also removed from the AI's prompt instructions, so the model won't try to satisfy a rule you've turned off.
+
 ### Pattern Detection (Planning Mode)
 
 In Planning mode, the AI analyzes your previous interval's events to detect scheduling patterns:

@@ -1,6 +1,7 @@
 import type { CalendarEvent } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
 import type { CategoryAssignmentPreset } from "../../types/settings";
+import { minsToTimeStr, parseTimeToMins } from "../../utils/format";
 import { aggregateStats, formatDuration, formatPercentage, type Stats } from "../../utils/weekly-stats";
 
 export interface CalendarContext {
@@ -246,6 +247,7 @@ export interface PatternAnalysis {
 	earliestStart: string;
 	latestEnd: string;
 	avgEventsPerDay: number;
+	typicalBlockMins: number;
 	recurringBlocks: Array<{
 		title: string;
 		typicalStart: string;
@@ -265,6 +267,7 @@ export function analyzePreviousPatterns(events: AIEventSummary[]): PatternAnalys
 			earliestStart: "09:00",
 			latestEnd: "17:00",
 			avgEventsPerDay: 0,
+			typicalBlockMins: 0,
 			recurringBlocks: [],
 			dailyTemplate: "No previous events to analyze.",
 			activeDays: [],
@@ -364,21 +367,17 @@ export function analyzePreviousPatterns(events: AIEventSummary[]): PatternAnalys
 			.join("\n");
 	}
 
-	return { earliestStart, latestEnd, avgEventsPerDay, recurringBlocks, dailyTemplate, activeDays };
-}
+	const allDurations = timedEvents
+		.map((e) => {
+			const s = parseTimeToMins(e.start);
+			const en = e.end ? parseTimeToMins(e.end) : s + 60;
+			return en - s;
+		})
+		.filter((d) => d > 0)
+		.sort((a, b) => a - b);
+	const typicalBlockMins = allDurations.length > 0 ? allDurations[Math.floor(allDurations.length / 2)] : 0;
 
-function parseTimeToMins(isoStr: string): number {
-	const timePart = isoStr.slice(11, 16);
-	const [hours, minutes] = timePart.split(":").map(Number);
-	return hours * 60 + minutes;
-}
-
-function minsToTimeStr(mins: number): string {
-	const h = Math.floor(mins / 60)
-		.toString()
-		.padStart(2, "0");
-	const m = (mins % 60).toString().padStart(2, "0");
-	return `${h}:${m}`;
+	return { earliestStart, latestEnd, avgEventsPerDay, typicalBlockMins, recurringBlocks, dailyTemplate, activeDays };
 }
 
 export interface PlanningContext {
@@ -411,10 +410,16 @@ export function buildPlanningContext(
 	};
 }
 
+export interface PlanningPromptFlags {
+	gapDetection: boolean;
+	dayCoverage: boolean;
+}
+
 export function buildPlanningSystemPrompt(
 	context: PlanningContext,
 	basePrompt: string,
-	categoryContext?: CategoryContext
+	categoryContext?: CategoryContext,
+	flags?: PlanningPromptFlags
 ): string {
 	const currentEventsJson = JSON.stringify(context.currentEvents, null, 2);
 	const previousEventsJson = JSON.stringify(context.previousEvents, null, 2);
@@ -423,7 +428,7 @@ export function buildPlanningSystemPrompt(
 	let patternsBlock = `## Detected Patterns from Previous Interval
 - Day typically starts at: ${patterns.earliestStart}
 - Day typically ends at: ${patterns.latestEnd}
-- Average events per day: ${patterns.avgEventsPerDay}
+- Average events per day: ${patterns.avgEventsPerDay}${patterns.typicalBlockMins > 0 ? `\n- Typical event duration: ~${patterns.typicalBlockMins} minutes` : ""}
 - Days with events: ${patterns.activeDays.length > 0 ? patterns.activeDays.join(", ") : "None detected"}`;
 
 	if (patterns.recurringBlocks.length > 0) {
@@ -434,6 +439,41 @@ export function buildPlanningSystemPrompt(
 	}
 
 	patternsBlock += `\n\n## Daily Template (from previous interval)\n${patterns.dailyTemplate}`;
+
+	const enableDayCoverage = flags?.dayCoverage ?? true;
+	const enableGapDetection = flags?.gapDetection ?? true;
+
+	const planningRules: string[] = [];
+	if (enableDayCoverage) {
+		planningRules.push(
+			"FILL ALL DAYS: Create events for EVERY day in the interval. Never skip a day including weekends."
+		);
+	}
+	planningRules.push(
+		"NO OVERLAPS: Events overlap ONLY when one event's time range crosses into another's (e.g., 09:00-10:30 and 10:00-11:00 overlap). Sharing a boundary is NOT an overlap — 09:00-10:00 and 10:00-11:00 do NOT overlap."
+	);
+	if (enableGapDetection) {
+		planningRules.push(
+			"CONTIGUOUS SCHEDULING: Events MUST be exactly back-to-back with zero gaps. When one ends at 18:30, the next MUST start at 18:30 — not 18:31, not 18:35. Every minute of gap is a validation error."
+		);
+	}
+	const blockSizeRule =
+		patterns.typicalBlockMins > 0
+			? `BLOCK SIZES: The user's typical event duration is ~${patterns.typicalBlockMins} minutes. Use similar block sizes unless the user specifies otherwise.`
+			: "BLOCK SIZES: Choose block sizes based on what the user requests. If not specified, use reasonable durations.";
+
+	planningRules.push(
+		"EXACT DURATION ACCOUNTING: When the user requests a specific amount of time for an activity (whether in hours, minutes, or any unit), the TOTAL minutes across all created events for that activity must match exactly. Before outputting, verify your math: sum up the duration of every event for each requested activity and confirm it matches.",
+		"RESPECT EXISTING: Plan around existing events unless the user says otherwise.",
+		`MATCH PATTERNS: Start days at ${patterns.earliestStart}, end at ${patterns.latestEnd}. Preserve recurring blocks (meals, routines) at their detected times.`,
+		blockSizeRule,
+		`BOUNDARIES: All events must fall within ${context.currentStart} to ${context.currentEnd}.`,
+		'FORMAT: Use ISO datetime format "YYYY-MM-DDTHH:mm:ss". Respond with ONLY a JSON array of operations.',
+		"For edits, only include fields that should change.",
+		"For deletes, reference the filePath of the event to remove."
+	);
+
+	const numberedRules = planningRules.map((rule, i) => `${i + 1}. ${rule}`).join("\n");
 
 	return `${basePrompt}
 
@@ -448,17 +488,7 @@ Available operations:
 ${patternsBlock}
 
 ## Planning Rules (MANDATORY — violations will be rejected and you will be asked to fix them)
-1. FILL ALL DAYS: Create events for EVERY day in the interval. Never skip a day including weekends.
-2. NO OVERLAPS: Events overlap ONLY when one event's time range crosses into another's (e.g., 09:00-10:30 and 10:00-11:00 overlap). Sharing a boundary is NOT an overlap — 09:00-10:00 and 10:00-11:00 do NOT overlap.
-3. CONTIGUOUS SCHEDULING: Events MUST be exactly back-to-back with zero gaps. When one ends at 18:30, the next MUST start at 18:30 — not 18:31, not 18:35. Every minute of gap is a validation error.
-4. EXACT HOUR ACCOUNTING: If the user requests N hours of an activity, the TOTAL minutes across all created events for that activity must equal exactly N*60 minutes. Before outputting, verify your math: sum up the duration of every event for each requested activity and confirm it matches.
-5. RESPECT EXISTING: Plan around existing events unless the user says otherwise.
-6. MATCH PATTERNS: Start days at ${patterns.earliestStart}, end at ${patterns.latestEnd}. Preserve recurring blocks (meals, routines) at their detected times.
-7. BLOCK SIZES: Use 1.5-3 hour focused blocks. Avoid <30min or >4h blocks unless requested.
-8. BOUNDARIES: All events must fall within ${context.currentStart} to ${context.currentEnd}.
-9. FORMAT: Use ISO datetime format "YYYY-MM-DDTHH:mm:ss". Respond with ONLY a JSON array of operations.
-10. For edits, only include fields that should change.
-11. For deletes, reference the filePath of the event to remove.
+${numberedRules}
 
 ## Calendar Context
 - Calendar: ${context.calendarName}

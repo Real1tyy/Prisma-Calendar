@@ -12,6 +12,9 @@ export const AI_DEFAULTS = {
 	DEFAULT_MODEL: "claude-sonnet-4-6",
 	DEFAULT_BATCH_EXECUTION: true,
 	DEFAULT_CONFIRM_EXECUTION: true,
+	DEFAULT_PLANNING_GAP_DETECTION: true,
+	DEFAULT_PLANNING_DAY_COVERAGE: true,
+	MAX_REPROMPT_RETRIES: 2,
 	MODEL_OPTIONS: {
 		"claude-opus-4-6": { label: "Claude Opus 4.6 (best quality)", provider: "anthropic" },
 		"claude-sonnet-4-6": { label: "Claude Sonnet 4.6 (recommended)", provider: "anthropic" },

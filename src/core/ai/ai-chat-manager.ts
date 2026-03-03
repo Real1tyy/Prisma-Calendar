@@ -8,6 +8,7 @@ import {
 	type CategoryContext,
 	type ManipulationContext,
 	type PlanningContext,
+	type PlanningPromptFlags,
 } from "./ai-context-builder";
 import { AIServiceError, callAI, type ChatMessage, type ThreadData } from "./ai-service";
 import type { ChatStore } from "./chat-store";
@@ -44,7 +45,8 @@ export class AIChatManager {
 		calendarContext?: CalendarContext,
 		manipulationContext?: ManipulationContext,
 		planningContext?: PlanningContext,
-		categoryContext?: CategoryContext
+		categoryContext?: CategoryContext,
+		planningPromptFlags?: PlanningPromptFlags
 	): Promise<string> {
 		const { model, provider, apiKey } = this.resolveAIConfig();
 
@@ -68,7 +70,12 @@ export class AIChatManager {
 
 		let systemPrompt: string;
 		if (planningContext) {
-			systemPrompt = buildPlanningSystemPrompt(planningContext, BASE_SYSTEM_PROMPT, categoryContext);
+			systemPrompt = buildPlanningSystemPrompt(
+				planningContext,
+				BASE_SYSTEM_PROMPT,
+				categoryContext,
+				planningPromptFlags
+			);
 		} else if (manipulationContext) {
 			systemPrompt = buildManipulationSystemPrompt(manipulationContext, BASE_SYSTEM_PROMPT, categoryContext);
 		} else if (calendarContext) {

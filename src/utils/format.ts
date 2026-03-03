@@ -287,6 +287,28 @@ export function getNotePreviewLines(content: string, lineCount: number): string 
 	return lines.join("\n");
 }
 
+/**
+ * Extracts hours and minutes from an ISO datetime string (position 11-16) and converts to total minutes.
+ * E.g., "2025-03-15T14:30:00" → 870
+ */
+export function parseTimeToMins(isoStr: string): number {
+	const timePart = isoStr.slice(11, 16);
+	const [hours, minutes] = timePart.split(":").map(Number);
+	return hours * 60 + minutes;
+}
+
+/**
+ * Converts total minutes to an "HH:MM" string.
+ * E.g., 870 → "14:30"
+ */
+export function minsToTimeStr(mins: number): string {
+	const h = Math.floor(mins / 60)
+		.toString()
+		.padStart(2, "0");
+	const m = (mins % 60).toString().padStart(2, "0");
+	return `${h}:${m}`;
+}
+
 export function categorizeProperties(
 	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig,
