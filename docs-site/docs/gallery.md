@@ -22,7 +22,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchFULL.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchFull.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -37,7 +37,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchDelete.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchDelete.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -52,7 +52,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchDuplicate.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchDuplicate.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -82,7 +82,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchCloneNext.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchCloneNext.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -97,7 +97,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/BatchSKIP.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchSkip.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -112,7 +112,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchDone-NotDone.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchDoneNotDone.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -127,7 +127,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/BatchMOVEBY.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchMoveBy.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -142,7 +142,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchAssignCategories.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchAssignCategories.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -172,7 +172,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchOPENALL.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchOpenAll.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -187,7 +187,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchButtonsConfig.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchButtonsConfig.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -396,7 +396,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/FilteringFilteringPresets.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/FilteringPresets.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -457,7 +457,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/Globalsearch.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/GlobalSearch.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -504,7 +504,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/IMPORT.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/Import.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -520,7 +520,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/EXPORT.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/Export.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -729,7 +729,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/zettelid.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/Zettelid.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -840,7 +840,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/InstallationBRAT.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/InstallationBrat.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -856,7 +856,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/ProgramaticCreation.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/ProgrammaticCreation.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>

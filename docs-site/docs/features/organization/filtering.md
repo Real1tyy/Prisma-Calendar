@@ -99,7 +99,7 @@ Project === 'Work' && Priority === 'High' && Status !== 'Done'
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/FilteringFilteringPresets.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/FilteringPresets.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>

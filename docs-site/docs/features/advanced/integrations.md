@@ -42,7 +42,7 @@ Example with Google Calendar
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/EXPORT.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/Export.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -91,7 +91,7 @@ Each event includes:
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/IMPORT.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/Import.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>

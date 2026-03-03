@@ -11,7 +11,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/InstallationBRAT.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/InstallationBrat.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>

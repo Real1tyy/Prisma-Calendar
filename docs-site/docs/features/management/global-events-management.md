@@ -11,7 +11,7 @@ Search across all events in your calendar with powerful filtering and quick navi
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/Globalsearch.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/GlobalSearch.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>

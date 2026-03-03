@@ -39,7 +39,7 @@ Whether you need recurring events that generate real notes, batch operations acr
     <source src={useBaseUrl("/video/StatisticPiechart.webm")} type="video/webm" />
   </video>
   <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
-    <source src={useBaseUrl("/video/batchFULL.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchFull.webm")} type="video/webm" />
   </video>
 </div>
 

@@ -13,7 +13,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchFULL.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchFull.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -41,7 +41,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchDelete.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchDelete.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -60,7 +60,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchDuplicate.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchDuplicate.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -98,7 +98,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchCloneNext.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchCloneNext.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -118,7 +118,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/BatchSKIP.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchSkip.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -138,7 +138,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchDone-NotDone.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchDoneNotDone.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -161,7 +161,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/BatchMOVEBY.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchMoveBy.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -181,7 +181,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchAssignCategories.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchAssignCategories.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -234,7 +234,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchOPENALL.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchOpenAll.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -253,7 +253,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
     playsInline
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
-    <source src={useBaseUrl("/video/batchButtonsConfig.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BatchButtonsConfig.webm")} type="video/webm" />
     Your browser does not support the video tag.
   </video>
 </div>
