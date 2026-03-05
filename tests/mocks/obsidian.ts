@@ -206,6 +206,56 @@ export class SuggestModal<T> extends Modal {
 	onChooseSuggestion(_item: T, _evt: MouseEvent | KeyboardEvent): void {}
 }
 
+// PopoverSuggest mock
+export class PopoverSuggest<T> {
+	app: any;
+	scope: any;
+
+	constructor(app: any, _scope?: any) {
+		this.app = app;
+		this.scope = {};
+	}
+
+	open = vi.fn();
+	close = vi.fn();
+	renderSuggestion(_value: T, _el: HTMLElement): void {}
+	selectSuggestion(_value: T, _evt: MouseEvent | KeyboardEvent): void {}
+}
+
+// AbstractInputSuggest mock
+export class AbstractInputSuggest<T> extends PopoverSuggest<T> {
+	limit = 100;
+	protected textInputEl: HTMLInputElement | HTMLDivElement;
+
+	constructor(app: any, textInputEl: HTMLInputElement | HTMLDivElement) {
+		super(app);
+		this.textInputEl = textInputEl;
+	}
+
+	setValue(value: string): void {
+		if (this.textInputEl instanceof HTMLInputElement) {
+			this.textInputEl.value = value;
+		} else {
+			this.textInputEl.textContent = value;
+		}
+	}
+
+	getValue(): string {
+		if (this.textInputEl instanceof HTMLInputElement) {
+			return this.textInputEl.value;
+		}
+		return this.textInputEl.textContent || "";
+	}
+
+	protected getSuggestions(_query: string): T[] | Promise<T[]> {
+		return [];
+	}
+
+	onSelect(_callback: (value: T, evt: MouseEvent | KeyboardEvent) => any): this {
+		return this;
+	}
+}
+
 // Notice mock
 export class Notice {
 	constructor(message: string) {

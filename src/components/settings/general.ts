@@ -117,9 +117,9 @@ export class GeneralSettings {
 		});
 
 		this.ui.addToggle(containerEl, {
-			key: "detectEventNameTypos",
-			name: "Detect event name typos",
-			desc: 'Show a "Did you mean?" modal when an event name is close to a known category, preset name, or existing event series. Uses fuzzy matching to detect likely typos.',
+			key: "titleAutocomplete",
+			name: "Title autocomplete",
+			desc: "Show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names.",
 		});
 	}
 

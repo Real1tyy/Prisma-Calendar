@@ -22,6 +22,7 @@ const sidebars: SidebarsConfig = {
 					label: "Events",
 					collapsible: true,
 					items: [
+						"features/events/title-autocomplete",
 						"features/events/event-presets",
 						"features/events/event-previews",
 						"features/events/event-icons",

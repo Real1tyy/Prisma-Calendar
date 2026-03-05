@@ -3161,6 +3161,59 @@
 	font-size: var(--font-ui-small);
 }
 
+/* Title input autocomplete */
+.prisma-title-input-wrapper {
+	position: relative;
+	flex: 1;
+	min-width: 0;
+}
+
+.prisma-event-modal .prisma-title-input-wrapper input {
+	width: 100%;
+	text-align: center;
+}
+
+.prisma-title-ghost-text {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	pointer-events: none;
+	padding: 6px 10px;
+	font-size: var(--font-ui-small);
+	white-space: nowrap;
+	overflow: hidden;
+	text-align: center;
+	direction: ltr;
+}
+
+.prisma-title-ghost-prefix {
+	visibility: hidden;
+}
+
+.prisma-title-ghost-suffix {
+	color: var(--text-faint);
+	opacity: 0.6;
+}
+
+.prisma-suggest-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
+}
+
+.prisma-suggest-source-badge {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	background-color: var(--background-modifier-hover);
+	padding: 1px 6px;
+	border-radius: var(--radius-s);
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
 /* Checkbox rows - checkbox on the right */
 .prisma-event-modal .prisma-setting-item-control[type="checkbox"] {
 	margin-left: auto;
@@ -7520,16 +7573,6 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 
 .prisma-assign-categories-button:hover {
 	background-color: var(--interactive-hover);
-}
-
-/* Typo suggestion modal (SuggestModal) */
-.prisma-typo-suggestion-item-name {
-	font-weight: 600;
-}
-
-.prisma-typo-suggestion-item-score {
-	font-size: var(--font-ui-smaller);
-	color: var(--text-muted);
 }
 
 .prisma-category-modal {

@@ -4,9 +4,12 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.6.0 - 3/3/2026
+## 2.6.0 - 3/5/2026
 
 ### Added
+
+- **Title autocomplete**: Inline type-ahead suggestions when typing event titles in the create/edit modal. Suggestions are drawn from categories, event presets, and frequently used event names — prioritized in that order. Press Tab to accept ghost text or use arrow keys to browse the dropdown. Configurable via Settings > General > Parsing > Title autocomplete (enabled by default). See [Title Autocomplete](./features/events/title-autocomplete.md).
+- **Time propagation for recurring instances**: Changing the start or end time of a source recurring event now propagates the new time to all future physical instances that still have the original time. Instances where the time was manually changed are left untouched. Respects the same propagation settings as frontmatter propagation. See [Recurring Events — Time Propagation](./features/events/recurring-dsl.md#time-propagation).
 
 - **Locale setting**: Choose a display language for calendar headings, day names, month names, toolbar labels, event date suffixes, and statistics date ranges. Supports ~20 languages including French, German, Spanish, Japanese, and more. Defaults to English. See [General Settings](./configuration/general.md#calendar-directory).
 - **Custom recurring intervals**: Define arbitrary recurrence patterns beyond the 9 built-in presets — every 5 days, every 3 weeks, every 4 months, etc. Select "Custom interval..." in the recurrence dropdown or use the `FREQ;INTERVAL=N` format directly in frontmatter (e.g., `DAILY;INTERVAL=5`). ICS imports now map all recurrence rules to the custom interval format. See [Recurring Events — Custom Intervals](./features/events/recurring-dsl.md#custom-intervals).
@@ -29,6 +32,10 @@ All notable changes to this project will be documented here.
 - **AI planning & manipulation validation**: The AI planning and manipulation modes now validate responses using strict schema and semantic checks — detecting overlapping events, missing days, gaps between events, boundary violations, and hour accounting mismatches. When issues are found, the AI is automatically reprompted (up to 2 retries) to fix them before showing results. Planning mode also analyzes your previous interval to detect daily patterns (start/end times, recurring blocks) and injects them into the prompt for more accurate scheduling. See [AI Chat — Validation & Auto-Correction](./features/advanced/ai-chat.md#validation--auto-correction).
 - **AI planning validation settings**: New toggles in Settings > AI > Planning to control gap detection and day coverage validation independently. Disable either check if your planning style doesn't require contiguous scheduling or full-day coverage. See [AI Chat — Validation Settings](./features/advanced/ai-chat.md#validation-settings).
 
+### Removed
+
+- **Fuzzy event name typo detection**: The "Detect event name typos" setting and "Did you mean?" modal have been removed. Title autocomplete now serves as the primary mechanism for consistent event naming, making fuzzy matching redundant. The `fuzzyset.js` dependency has been removed. See [Title Autocomplete](./features/events/title-autocomplete.md).
+
 ### Changed
 
 - **Time tracker initial end time**: Starting the stopwatch now sets the end time to start + 5 minutes (matching the periodic sync interval) instead of using the configured default duration, since the end time is continuously updated while tracking. See [Time Tracker](./features/management/time-tracker.md).
@@ -38,7 +45,6 @@ All notable changes to this project will be documented here.
 
 - **Time tracker scheduler not cleaned up**: The background scheduler that periodically saves the end date every 5 minutes while an event is minimized was not stopped when the plugin unloaded or when calendar bundles were refreshed. This caused the interval to keep running with stale references, writing to files even after the modal was closed or the calendar was destroyed. See [Time Tracker](./features/management/time-tracker.md).
 - **All-day event rendered twice after drag-to-edge navigation**: Dragging an all-day event to the calendar edge to navigate to a new interval, then dropping it, caused the event to appear twice visually. See [Calendar View](./features/calendar/calendar-view.md).
-- **Typo detection triggered on exact matches**: The typo suggestion modal appeared even when the event name exactly matched a category, preset event name, or existing event name. Fuzzy matching now only runs when there is no direct match and the event name doesn't belong to an established name series (5+ events). See [Categories](./features/organization/categories.md).
 - **Sticky header detached after resize or navigation**: The toolbar and all-day section could lose their sticky positioning after resizing the panel or navigating between dates, causing them to scroll away with the content. See [Calendar View](./features/calendar/calendar-view.md).
 - **Custom icon, location, and participants not propagated to physical recurring events**: The custom icon, location, and participants properties were excluded when creating physical recurring instances from a source event. Physical instances now inherit these properties from the source event. The custom icon also takes priority over the recurring marker as intended. See [Event Icons](./features/events/event-icons.md).
 

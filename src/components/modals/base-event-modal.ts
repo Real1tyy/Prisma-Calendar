@@ -34,7 +34,7 @@ import {
 	setEventBasics,
 	setUntrackedEventBasics,
 } from "../../utils/event-frontmatter";
-import { autoAssignCategories, findAdjacentEvent, findFuzzyNameMatch } from "../../utils/event-matching";
+import { autoAssignCategories, findAdjacentEvent } from "../../utils/event-matching";
 import type { Weekday } from "../../utils/date-recurrence";
 import {
 	calculateDurationMinutes,
@@ -48,10 +48,10 @@ import { afterRender } from "../../utils/scheduling";
 import { registerSubmitHotkey } from "../../utils/dom-utils";
 import { parseAsLocalDate } from "../../utils/time-formatter";
 import { Stopwatch } from "../stopwatch";
+import { TitleInputSuggest } from "../title-input-suggest";
 import { openCategoryAssignModal } from "./assignment-modal";
 import { CategoryEventsModal } from "./category-events-modal";
 import { SavePresetModal } from "./save-preset-modal";
-import { TypoSuggestionModal } from "./typo-suggestion-modal";
 
 interface EventModalData {
 	title: string;
@@ -138,7 +138,6 @@ export abstract class BaseEventModal extends Modal {
 
 	// Suppress auto-category assignment once user interacts with category UI
 	private suppressAutoCategories = false;
-	private typoModalOpen = false;
 
 	// Flag to prevent double-saving when minimize() is called explicitly
 	private isMinimizing = false;
@@ -149,6 +148,7 @@ export abstract class BaseEventModal extends Modal {
 	// Flag to start stopwatch and auto-minimize (used by context menu "Trigger stopwatch")
 	private startStopwatchAndMinimize = false;
 
+	private titleSuggest?: TitleInputSuggest;
 	private settingsSubscription: Subscription | null = null;
 
 	// ─── Lifecycle ───────────────────────────────────────────────
@@ -182,6 +182,9 @@ export abstract class BaseEventModal extends Modal {
 		this.createFormFields(bodyEl);
 		this.setupEventHandlers(bodyEl);
 		this.setupTitleBlurListener();
+		if (this.bundle.settingsStore.currentSettings.titleAutocomplete) {
+			this.titleSuggest = new TitleInputSuggest(this.app, this.titleInput, this.bundle);
+		}
 		this.createActionButtons(footerEl);
 
 		// Check if we're restoring from minimized state
@@ -216,6 +219,9 @@ export abstract class BaseEventModal extends Modal {
 
 		// Clean up stopwatch to stop any running intervals
 		this.stopwatch?.destroy();
+
+		this.titleSuggest?.destroy();
+		this.titleSuggest?.close();
 
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
@@ -345,7 +351,7 @@ export abstract class BaseEventModal extends Modal {
 			cls: cls("mod-cta"),
 		});
 		saveButton.addEventListener("click", () => {
-			this.saveWithTypoCheck();
+			this.saveWithAutoCategories();
 		});
 	}
 
@@ -966,7 +972,7 @@ export abstract class BaseEventModal extends Modal {
 			}
 		});
 
-		registerSubmitHotkey(this.scope, () => this.saveWithTypoCheck());
+		registerSubmitHotkey(this.scope, () => this.saveWithAutoCategories());
 	}
 
 	protected setupTitleBlurListener(): void {
@@ -1564,15 +1570,7 @@ export abstract class BaseEventModal extends Modal {
 
 	// ─── Save ─────────────────────────────────────────────────────
 
-	/**
-	 * Check for typo in event name before saving. If a fuzzy match is found,
-	 * show the typo suggestion modal. On accept: correct title + assign categories, then save.
-	 * On dismiss (Escape): save with original name.
-	 */
-	protected saveWithTypoCheck(): void {
-		// Guard against re-entrant calls (Enter key propagation from SuggestModal)
-		if (this.typoModalOpen) return;
-
+	protected saveWithAutoCategories(): void {
 		const eventName = this.titleInput.value.trim();
 		if (!eventName) {
 			this.saveEvent();
@@ -1582,7 +1580,6 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const availableCategories = this.bundle.categoryTracker.getCategories();
 
-		// First try exact auto-assign (in case blur didn't fire) — skip if user manually set categories
 		if (!this.suppressAutoCategories) {
 			if (
 				settings.autoAssignCategoryByName ||
@@ -1592,51 +1589,7 @@ export abstract class BaseEventModal extends Modal {
 				if (autoAssigned.length > 0) {
 					this.selectedCategories = autoAssigned;
 					this.renderCategories();
-					this.saveEvent();
-					return;
 				}
-			}
-		}
-
-		// No exact match — try fuzzy matching (always runs, even if categories were manually set)
-		// This corrects the event NAME regardless of category assignment
-		if (settings.detectEventNameTypos) {
-			const existingNameKeys = this.bundle.nameSeriesTracker.getNameSeriesMap();
-			const fuzzyResults = findFuzzyNameMatch(eventName, settings, availableCategories, existingNameKeys);
-
-			if (fuzzyResults) {
-				this.typoModalOpen = true;
-				let accepted = false;
-				const modal = new TypoSuggestionModal(this.app, fuzzyResults, (suggestion) => {
-					accepted = true;
-					this.titleInput.value = suggestion;
-
-					// Only auto-assign categories if user hasn't manually set them
-					if (!this.suppressAutoCategories) {
-						const autoAssigned = autoAssignCategories(suggestion, settings, availableCategories);
-						if (autoAssigned.length > 0) {
-							this.selectedCategories = autoAssigned;
-							this.renderCategories();
-						}
-					}
-
-					this.saveEvent();
-				});
-				const origOnClose = modal.onClose.bind(modal);
-				modal.onClose = () => {
-					origOnClose();
-					this.typoModalOpen = false;
-					// Defer dismiss check: Obsidian's SuggestModal calls close() before
-					// onChooseSuggestion, so `accepted` is still false when onClose fires.
-					// A zero-delay timeout lets onChooseSuggestion set `accepted = true` first.
-					setTimeout(() => {
-						if (!accepted) {
-							this.saveEvent();
-						}
-					}, 0);
-				};
-				modal.open();
-				return;
 			}
 		}
 
