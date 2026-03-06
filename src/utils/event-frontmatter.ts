@@ -7,7 +7,6 @@ import {
 import { type App, TFile } from "obsidian";
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { CalendarEvent, Frontmatter, SingleCalendarConfig } from "../types";
-import { isTimedEvent } from "../types/calendar";
 import { getFileAndFrontmatter, getFileByPathOrThrow } from "./obsidian";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
@@ -523,30 +522,29 @@ export interface TimePropagationDiff {
 	endChange?: { oldValue: string; newValue: string };
 }
 
+interface StringChange {
+	oldValue: string;
+	newValue: string;
+}
+
+function findStringChange(diff: FrontmatterDiff, prop: string): StringChange | undefined {
+	for (const c of diff.modified) {
+		if (c.key === prop && typeof c.oldValue === "string" && typeof c.newValue === "string") {
+			return { oldValue: c.oldValue, newValue: c.newValue };
+		}
+	}
+	return undefined;
+}
+
 export function extractTimeDiffFromFrontmatterDiff(
 	diff: FrontmatterDiff,
 	settings: SingleCalendarConfig
 ): TimePropagationDiff | null {
-	let startChange: TimePropagationDiff["startChange"];
-	let endChange: TimePropagationDiff["endChange"];
-
-	for (const change of diff.modified) {
-		if (
-			change.key === settings.startProp &&
-			typeof change.oldValue === "string" &&
-			typeof change.newValue === "string"
-		) {
-			startChange = { oldValue: change.oldValue, newValue: change.newValue };
-		} else if (
-			change.key === settings.endProp &&
-			typeof change.oldValue === "string" &&
-			typeof change.newValue === "string"
-		) {
-			endChange = { oldValue: change.oldValue, newValue: change.newValue };
-		}
-	}
+	const startChange = findStringChange(diff, settings.startProp);
+	const endChange = findStringChange(diff, settings.endProp);
 
 	if (!startChange && !endChange) return null;
+
 	return { startChange, endChange };
 }
 

@@ -288,6 +288,32 @@ export function getNotePreviewLines(content: string, lineCount: number): string 
 }
 
 /**
+ * Returns the date portion of an ISO datetime string (everything before "T").
+ * E.g., "2025-03-15T14:30:00" → "2025-03-15"
+ */
+export function getISODatePart(iso: string): string {
+	const idx = iso.indexOf("T");
+	return idx === -1 ? iso : iso.slice(0, idx);
+}
+
+/**
+ * Returns the time portion of an ISO datetime string (everything from "T" onward, inclusive).
+ * E.g., "2025-03-15T14:30:00" → "T14:30:00"
+ */
+export function getISOTimePart(iso: string): string {
+	const idx = iso.indexOf("T");
+	return idx === -1 ? "" : iso.slice(idx);
+}
+
+/**
+ * Replaces the time portion of an ISO datetime string while keeping the date.
+ * E.g., replaceISOTime("2025-03-15T09:00:00", "T14:30:00") → "2025-03-15T14:30:00"
+ */
+export function replaceISOTime(iso: string, newTimePart: string): string {
+	return `${getISODatePart(iso)}${newTimePart}`;
+}
+
+/**
  * Extracts hours and minutes from an ISO datetime string (position 11-16) and converts to total minutes.
  * E.g., "2025-03-15T14:30:00" → 870
  */

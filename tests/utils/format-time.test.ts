@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { minsToTimeStr, parseTimeToMins } from "../../src/utils/format";
+import { getISODatePart, getISOTimePart, minsToTimeStr, parseTimeToMins, replaceISOTime } from "../../src/utils/format";
 
 describe("parseTimeToMins", () => {
 	it("should parse midnight as 0", () => {
@@ -46,5 +46,51 @@ describe("minsToTimeStr", () => {
 
 	it("should handle exact hours", () => {
 		expect(minsToTimeStr(720)).toBe("12:00");
+	});
+});
+
+describe("getISODatePart", () => {
+	it("should extract date from standard ISO", () => {
+		expect(getISODatePart("2025-03-15T14:30:00")).toBe("2025-03-15");
+	});
+
+	it("should extract date from ISO with suffix", () => {
+		expect(getISODatePart("2025-03-15T14:30:00.000Z")).toBe("2025-03-15");
+	});
+
+	it("should return the full string when no T separator", () => {
+		expect(getISODatePart("2025-03-15")).toBe("2025-03-15");
+	});
+});
+
+describe("getISOTimePart", () => {
+	it("should extract time including T separator", () => {
+		expect(getISOTimePart("2025-03-15T14:30:00")).toBe("T14:30:00");
+	});
+
+	it("should extract time with suffix", () => {
+		expect(getISOTimePart("2025-03-15T14:30:00.000Z")).toBe("T14:30:00.000Z");
+	});
+
+	it("should return empty string when no T separator", () => {
+		expect(getISOTimePart("2025-03-15")).toBe("");
+	});
+
+	it("should handle midnight", () => {
+		expect(getISOTimePart("2025-03-15T00:00:00")).toBe("T00:00:00");
+	});
+});
+
+describe("replaceISOTime", () => {
+	it("should replace the time portion while keeping the date", () => {
+		expect(replaceISOTime("2025-03-15T09:00:00", "T14:30:00")).toBe("2025-03-15T14:30:00");
+	});
+
+	it("should work with suffixed ISO strings", () => {
+		expect(replaceISOTime("2025-03-15T09:00:00.000Z", "T14:30:00")).toBe("2025-03-15T14:30:00");
+	});
+
+	it("should handle different dates with same time swap", () => {
+		expect(replaceISOTime("2026-01-20T08:00:00", "T10:00:00")).toBe("2026-01-20T10:00:00");
 	});
 });

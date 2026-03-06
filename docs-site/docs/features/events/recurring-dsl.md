@@ -108,8 +108,7 @@ When you change the start or end time of a source recurring event (e.g., moving 
 - Only future instances (today or later) are updated — past instances are never modified.
 - Start and end times are handled independently. If only the start time changed, only start times are compared and updated.
 - All-day events are not affected since they use a date property rather than start/end times.
-- Time propagation respects the same propagation settings as frontmatter propagation (automatic or ask-before-propagating).
-- Multiple rapid time changes within the debounce window are accumulated — only the original old time and the final new time are used for comparison.
+- Time propagation always runs automatically — it does not depend on the frontmatter propagation settings.
 
 ### Start Date as Calculation Point
 
