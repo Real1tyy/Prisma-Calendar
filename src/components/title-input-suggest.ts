@@ -58,6 +58,7 @@ export function collectSuggestions(query: string, bundle: CalendarBundle): Title
 
 export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 	private bundle: CalendarBundle;
+	private titleInputEl: HTMLInputElement;
 	private ghostEl: HTMLSpanElement | null = null;
 	private ghostPrefixEl: HTMLSpanElement | null = null;
 	private ghostSuffixEl: HTMLSpanElement | null = null;
@@ -68,6 +69,7 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 	constructor(app: App, inputEl: HTMLInputElement, bundle: CalendarBundle) {
 		super(app, inputEl);
 		this.bundle = bundle;
+		this.titleInputEl = inputEl;
 		this.limit = SUGGESTION_LIMIT;
 		this.setupGhostText(inputEl);
 		this.setupTabHandler(inputEl);
@@ -132,7 +134,7 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 	}
 
 	private updateGhostText(query: string, suggestions: TitleSuggestion[]): void {
-		if (!this.ghostPrefixEl || !this.ghostSuffixEl) return;
+		if (!this.ghostEl || !this.ghostSuffixEl) return;
 
 		if (!query || suggestions.length === 0) {
 			this.clearGhost();
@@ -145,16 +147,32 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 
 		if (lowerText.startsWith(lowerQuery)) {
 			const completion = top.text.slice(query.length);
-			this.ghostPrefixEl.textContent = query;
 			this.ghostSuffixEl.textContent = completion;
 			this.currentCompletion = completion;
+			this.positionGhost(this.titleInputEl);
 		} else {
 			this.clearGhost();
 		}
 	}
 
+	private positionGhost(inputEl: HTMLInputElement): void {
+		if (!this.ghostEl) return;
+
+		const canvas = document.createElement("canvas");
+		const ctx = canvas.getContext("2d")!;
+		const style = getComputedStyle(inputEl);
+		ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+		const textWidth = ctx.measureText(inputEl.value).width;
+
+		const inputWidth = inputEl.clientWidth;
+		const paddingLeft = parseFloat(style.paddingLeft);
+		const paddingRight = parseFloat(style.paddingRight);
+		const availableWidth = inputWidth - paddingLeft - paddingRight;
+		const textStart = paddingLeft + (availableWidth - textWidth) / 2;
+		this.ghostEl.style.setProperty("--ghost-left", `${textStart + textWidth}px`);
+	}
+
 	private clearGhost(): void {
-		if (this.ghostPrefixEl) this.ghostPrefixEl.textContent = "";
 		if (this.ghostSuffixEl) this.ghostSuffixEl.textContent = "";
 		this.currentCompletion = "";
 	}

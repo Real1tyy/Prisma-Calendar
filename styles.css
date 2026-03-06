@@ -3168,28 +3168,24 @@
 	min-width: 0;
 }
 
-.prisma-event-modal .prisma-title-input-wrapper input {
-	width: 100%;
+.prisma-event-modal .prisma-title-input-wrapper input.prisma-setting-item-control {
 	text-align: center;
 }
 
 .prisma-title-ghost-text {
 	position: absolute;
 	top: 0;
-	left: 0;
-	right: 0;
 	bottom: 0;
+	left: var(--ghost-left, 0);
 	pointer-events: none;
-	padding: 6px 10px;
-	font-size: var(--font-ui-small);
+	display: flex;
+	align-items: center;
 	white-space: nowrap;
 	overflow: hidden;
-	text-align: center;
-	direction: ltr;
 }
 
 .prisma-title-ghost-prefix {
-	visibility: hidden;
+	display: none;
 }
 
 .prisma-title-ghost-suffix {
