@@ -82,12 +82,20 @@ export async function openEditActiveNoteModal(plugin: CustomCalendarPlugin, cale
 	const frontmatter = metadata?.frontmatter ?? {};
 	const allDayValue = frontmatter[settings.allDayProp];
 	const allDay = allDayValue === true || allDayValue === "true";
+
+	const now = new Date();
+	const roundedStart = roundToNearestHour(now);
+	const defaultEnd = new Date(roundedStart);
+	defaultEnd.setMinutes(defaultEnd.getMinutes() + settings.defaultDurationMinutes);
+
 	const startValue = allDay
 		? (frontmatter[settings.dateProp] as string | undefined)
 			? `${String(frontmatter[settings.dateProp])}T00:00:00`
-			: null
-		: ((frontmatter[settings.startProp] as string | undefined) ?? null);
-	const endValue = allDay ? null : ((frontmatter[settings.endProp] as string | undefined) ?? null);
+			: toLocalISOString(roundedStart)
+		: ((frontmatter[settings.startProp] as string | undefined) ?? toLocalISOString(roundedStart));
+	const endValue = allDay
+		? null
+		: ((frontmatter[settings.endProp] as string | undefined) ?? toLocalISOString(defaultEnd));
 
 	const eventData = {
 		title: activeFile.basename,

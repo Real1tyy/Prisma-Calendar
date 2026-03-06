@@ -28,7 +28,7 @@ It's not just a calendar. It's a way to **see your entire vault through time**.
 
 Every setting is configurable. Every change is reactive. Every action is undoable.
 
-Whether you need recurring events that generate real notes, batch operations across dozens of events, intelligent category auto-assignment with fuzzy matching, time-based statistics, CalDAV sync, a scriptable API, or just a clean timeline that works exactly how you want — Prisma does it all.
+Whether you need recurring events that generate real notes, batch operations across dozens of events, intelligent category auto-assignment with title autocomplete, time-based statistics, CalDAV sync, a scriptable API, or just a clean timeline that works exactly how you want — Prisma does it all.
 
 ## Preview
 
@@ -115,8 +115,8 @@ Define a source node with a frequency (daily, weekly, bi-weekly, monthly, or a [
 ### Batch Operations at Scale
 Select multiple events and delete, duplicate, move, clone, skip, or open them — all at once. Shift entire weeks of events forward or backward. When you're managing a busy schedule, this isn't a nice-to-have — it's essential. [Learn more →](/features/management/batch-operations)
 
-### Smart Categories with Fuzzy Matching
-Define [categories](/features/organization/categories) with color coding, then let Prisma **auto-assign them** based on event names. The built-in fuzzy matching catches typos and close matches, so your events get categorized correctly even when you're typing fast. Categories also power event group aggregation, giving you a bird's-eye view of related events across your calendar.
+### Smart Categories with Title Autocomplete
+Define [categories](/features/organization/categories) with color coding, then let Prisma **auto-assign them** based on event names. [Title autocomplete](/features/events/title-autocomplete) suggests matching names as you type, keeping naming consistent and preventing typos. Categories also power event group aggregation, giving you a bird's-eye view of related events across your calendar.
 
 ### Statistics and Time Insights
 Track how you spend your time with visual [statistics](/features/organization/statistics) — pie charts, breakdowns by category, and detailed tables — all filterable by time horizon. See where your hours go across days, weeks, or months. Recurring event series get their own statistics too, so you can track consistency and trends.

@@ -16,7 +16,7 @@ It's not just a calendar. It's a way to **see your entire vault through time**.
 
 **Every setting is configurable. Every change is reactive. Every action is undoable.**
 
-Whether you need recurring events that generate real notes, batch operations across dozens of events, intelligent category auto-assignment with fuzzy matching, time-based statistics, CalDAV sync, scriptable event creation via API, or just a clean timeline that works exactly how you want — Prisma does it all.
+Whether you need recurring events that generate real notes, batch operations across dozens of events, intelligent category auto-assignment with title autocomplete, time-based statistics, CalDAV sync, scriptable event creation via API, or just a clean timeline that works exactly how you want — Prisma does it all.
 
 ### The Missing Piece for Your Obsidian Workflow
 
@@ -158,9 +158,9 @@ Define a source node with a frequency (daily, weekly, bi-weekly, monthly, ...), 
 
 Select multiple events and delete, duplicate, move, clone, skip, or open them — all at once. Shift entire weeks of events forward or backward. When you're managing a busy schedule, this isn't a nice-to-have — it's essential.
 
-### **Smart Categories with Fuzzy Matching**
+### **Smart Categories with Title Autocomplete**
 
-Define categories with color coding, then let Prisma **auto-assign them** based on event names. The built-in fuzzy matching catches typos and close matches, so your events get categorized correctly even when you're typing fast. Categories also power event group aggregation, giving you a bird's-eye view of related events across your calendar.
+Define categories with color coding, then let Prisma **auto-assign them** based on event names. Title autocomplete suggests matching names as you type, keeping naming consistent and preventing typos. Categories also power event group aggregation, giving you a bird's-eye view of related events across your calendar.
 
 ### **Statistics and Time Insights**
 

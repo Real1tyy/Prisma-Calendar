@@ -11,6 +11,7 @@ import {
 	rebuildPhysicalInstanceFilename,
 	sanitizeForFilename,
 	SyncStore,
+	withFrontmatter,
 	withLock,
 } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
@@ -24,13 +25,22 @@ import type { SingleCalendarConfig } from "../types/settings";
 import { getNextOccurrence } from "../utils/date-recurrence";
 import {
 	applyFrontmatterChangesToInstance,
+	extractTimeDiffFromFrontmatterDiff,
 	filterExcludedPropsFromDiff,
 	getRecurringInstanceExcludedProps,
 	setEventBasics,
+	stripISOSuffix,
+	type TimePropagationDiff,
 } from "../utils/event-frontmatter";
 import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/event-naming";
-import { applySourceTimeToInstanceDate } from "../utils/format";
-import { batchedPromiseAll, deleteFilesByPaths, getFileByPathOrThrow, trashDuplicateFile } from "../utils/obsidian";
+import { applySourceTimeToInstanceDate, parseTimeToMins } from "../utils/format";
+import {
+	batchedPromiseAll,
+	deleteFilesByPaths,
+	getFileAndFrontmatter,
+	getFileByPathOrThrow,
+	trashDuplicateFile,
+} from "../utils/obsidian";
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { CategoryTracker } from "./category-tracker";
 import type { EventStore } from "./event-store";
@@ -66,6 +76,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 	private physicalSourceToRRuleIds: Map<string, Set<string>> = new Map();
 	private ensureInstancesLocks: Map<string, Promise<void>> = new Map();
 	private propagationDebouncer: FrontmatterPropagationDebouncer<string>;
+	private pendingTimeDiffs: Map<string, TimePropagationDiff> = new Map();
+	private timePropagationTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
 	private eventStore: EventStore | null = null;
 	private categoryTracker: CategoryTracker | null = null;
 
@@ -106,6 +118,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.indexingCompleteSubscription?.unsubscribe();
 		this.indexingCompleteSubscription = null;
 		this.propagationDebouncer.destroy();
+		this.pendingTimeDiffs.clear();
+		for (const timer of this.timePropagationTimers.values()) clearTimeout(timer);
+		this.timePropagationTimers.clear();
 		super.destroy();
 		this.recurringEventsMap.clear();
 		this.creationLocks.clear();
@@ -124,6 +139,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.sourceFileToRRuleId.clear();
 		this.instanceFileToRRuleId.clear();
 		this.physicalSourceToRRuleIds.clear();
+		this.pendingTimeDiffs.clear();
+		for (const timer of this.timePropagationTimers.values()) clearTimeout(timer);
+		this.timePropagationTimers.clear();
 		// Keep locks intact to prevent race conditions during resync
 	}
 
@@ -212,6 +230,12 @@ export class RecurringEventManager extends DebouncedNotifier {
 			return;
 		}
 
+		const timeDiff = extractTimeDiffFromFrontmatterDiff(frontmatterDiff, this.settings);
+		if (timeDiff) {
+			this.accumulateTimeDiff(recurringEvent.rRuleId, timeDiff);
+			this.scheduleTimePropagation(recurringEvent.rRuleId);
+		}
+
 		this.propagationDebouncer.schedule(
 			recurringEvent.rRuleId,
 			frontmatterDiff,
@@ -234,6 +258,48 @@ export class RecurringEventManager extends DebouncedNotifier {
 				}
 			}
 		);
+	}
+
+	private accumulateTimeDiff(rruleId: string, timeDiff: TimePropagationDiff): void {
+		const existing = this.pendingTimeDiffs.get(rruleId);
+		if (!existing) {
+			this.pendingTimeDiffs.set(rruleId, timeDiff);
+			return;
+		}
+
+		if (timeDiff.startChange) {
+			existing.startChange = {
+				oldValue: existing.startChange?.oldValue ?? timeDiff.startChange.oldValue,
+				newValue: timeDiff.startChange.newValue,
+			};
+		}
+		if (timeDiff.endChange) {
+			existing.endChange = {
+				oldValue: existing.endChange?.oldValue ?? timeDiff.endChange.oldValue,
+				newValue: timeDiff.endChange.newValue,
+			};
+		}
+	}
+
+	private scheduleTimePropagation(rruleId: string): void {
+		const timerKey = `time-${rruleId}`;
+		const existing = this.timePropagationTimers.get(timerKey);
+		if (existing) clearTimeout(existing);
+
+		const timer = setTimeout(() => {
+			this.timePropagationTimers.delete(timerKey);
+			const pendingTimeDiff = this.pendingTimeDiffs.get(rruleId);
+			this.pendingTimeDiffs.delete(rruleId);
+			if (!pendingTimeDiff) return;
+
+			const currentData = this.recurringEventsMap.get(rruleId);
+			const currentEvent = currentData?.recurringEvent;
+			if (!currentData || !currentEvent || currentData.physicalInstances.size === 0) return;
+
+			void this.propagateTimeToFutureInstances(currentEvent, pendingTimeDiff);
+		}, this.settings.propagationDebounceMs);
+
+		this.timePropagationTimers.set(timerKey, timer);
 	}
 
 	private async propagateFrontmatterToInstances(
@@ -263,6 +329,79 @@ export class RecurringEventManager extends DebouncedNotifier {
 				),
 			this.settings.fileConcurrencyLimit
 		);
+	}
+
+	private async propagateTimeToFutureInstances(
+		recurringEvent: NodeRecurringEvent,
+		timeDiff: TimePropagationDiff
+	): Promise<void> {
+		const data = this.recurringEventsMap.get(recurringEvent.rRuleId);
+		if (!data || data.physicalInstances.size === 0) return;
+
+		const today = DateTime.now().toUTC().startOf("day");
+		const futureInstances = this.getPhysicalInstancesList(data.physicalInstances).filter(
+			(instance) => !instance.ignored && instance.instanceDate >= today
+		);
+
+		if (futureInstances.length === 0) return;
+
+		const oldStartMins = timeDiff.startChange ? parseTimeToMins(timeDiff.startChange.oldValue) : null;
+		const oldEndMins = timeDiff.endChange ? parseTimeToMins(timeDiff.endChange.oldValue) : null;
+		const newStartDT = timeDiff.startChange ? DateTime.fromISO(timeDiff.startChange.newValue, { zone: "utc" }) : null;
+		const newEndDT = timeDiff.endChange ? DateTime.fromISO(timeDiff.endChange.newValue, { zone: "utc" }) : null;
+
+		await batchedPromiseAll(
+			futureInstances,
+			(instance) => this.applyTimeChangeToInstance(instance, oldStartMins, oldEndMins, newStartDT, newEndDT),
+			this.settings.fileConcurrencyLimit
+		);
+	}
+
+	private async applyTimeChangeToInstance(
+		instance: PhysicalInstance,
+		oldStartMins: number | null,
+		oldEndMins: number | null,
+		newStartDT: DateTime | null,
+		newEndDT: DateTime | null
+	): Promise<void> {
+		try {
+			const { frontmatter } = getFileAndFrontmatter(this.app, instance.filePath);
+			const currentStart = frontmatter[this.settings.startProp];
+			const currentEnd = frontmatter[this.settings.endProp];
+
+			if (typeof currentStart !== "string" || !currentStart) return;
+
+			let shouldUpdateStart = false;
+			let shouldUpdateEnd = false;
+
+			if (oldStartMins !== null && newStartDT) {
+				const instanceStartMins = parseTimeToMins(currentStart);
+				shouldUpdateStart = instanceStartMins === oldStartMins;
+			}
+
+			if (oldEndMins !== null && newEndDT && typeof currentEnd === "string" && currentEnd) {
+				const instanceEndMins = parseTimeToMins(currentEnd);
+				shouldUpdateEnd = instanceEndMins === oldEndMins;
+			}
+
+			if (!shouldUpdateStart && !shouldUpdateEnd) return;
+
+			const file = getFileByPathOrThrow(this.app, instance.filePath);
+			await withFrontmatter(this.app, file, (fm) => {
+				if (shouldUpdateStart && newStartDT) {
+					const newStart = applySourceTimeToInstanceDate(instance.instanceDate.toUTC(), newStartDT);
+					const iso = newStart.toUTC().toISO();
+					if (iso) fm[this.settings.startProp] = stripISOSuffix(iso);
+				}
+				if (shouldUpdateEnd && newEndDT) {
+					const newEnd = applySourceTimeToInstanceDate(instance.instanceDate.toUTC(), newEndDT);
+					const iso = newEnd.toUTC().toISO();
+					if (iso) fm[this.settings.endProp] = stripISOSuffix(iso);
+				}
+			});
+		} catch (error) {
+			console.error(`[RecurringEvents] Error applying time change to instance ${instance.filePath}:`, error);
+		}
 	}
 
 	private handleFileChanged(filePath: string, metadata: EventMetadata): void {

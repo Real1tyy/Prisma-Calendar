@@ -130,12 +130,6 @@ Automatically assigns a category when the event name matches a category name (ca
 - **Edit modal**: Categories are auto-assigned when you change the title and blur the title field
 - **Applies to both**: Name matching and custom presets work consistently in both create and edit workflows
 
-### Detect event name typos
-
-When enabled, the plugin uses fuzzy matching to detect likely typos in event names after the title field loses focus. If the entered name is close to a known category, preset event name, or existing event series, a "Did you mean?" modal appears with up to 3 suggestions. Navigate with arrow keys, accept with Enter, or dismiss with Escape. Enabled by default. Located in **Settings → General → Parsing**.
-
-See [Categories - Typo Detection](../features/organization/categories#event-name-typo-detection) for details.
-
 ### Custom category assignment presets
 
 Define custom rules to map specific event names to multiple categories. Each preset can now include **multiple comma-separated event names** that will all receive the same category assignments.

@@ -110,37 +110,9 @@ Define custom rules to automatically assign specific categories based on event n
 - **Works in both create and edit modals** - change an event's title and categories will auto-update based on the new name
 - Perfect for quick event creation workflows with consistent naming patterns
 
-#### Event Name Typo Detection
-
-<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <video
-    controls
-    autoPlay
-    loop
-    muted
-    playsInline
-    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
-  >
-    <source src={useBaseUrl("/video/AutoCorrection.webm")} type="video/webm" />
-    Your browser does not support the video tag.
-  </video>
-</div>
-
-When no exact match is found for the event name, the plugin uses fuzzy matching to detect likely typos. If the entered name is close to a known category name, preset event name, or existing event series name, a modal appears with up to 3 suggestions ranked by similarity.
-
-**How it works:**
-- After you blur the title field, the plugin first tries exact matching (auto-assign and presets above)
-- If the event name exactly matches a category name, preset event name, or existing event series name (case-insensitive), fuzzy matching is skipped entirely — no suggestion modal appears
-- If the event name belongs to an established name series (5 or more events with that name), fuzzy matching is also skipped — the name is considered intentional
-- If no exact match is found, it compares the entered name against all known names using approximate string matching
-- If close matches are found (similar but not identical), a "Did you mean?" modal appears with up to 3 suggestions
-- Use arrow keys to navigate between suggestions, Enter to accept the highlighted one, or Escape to dismiss
-- Click any suggestion to accept it — the title is corrected and categories are auto-assigned based on the corrected name
-- If you dismiss the modal, the original name is preserved as-is
-
-The known names checked against include category names, event names from custom presets, and existing event series names tracked by the plugin.
-
-Configure in **Settings → General → Parsing → Detect event name typos** (enabled by default).
+:::tip
+For consistent event naming, use [Title Autocomplete](../events/title-autocomplete.md) — it suggests matching names as you type, preventing typos before they happen.
+:::
 
 ### 2. Individual Events (Manual)
 

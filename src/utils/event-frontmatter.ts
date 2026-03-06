@@ -518,6 +518,38 @@ export const removeNonCloneableProperties = (frontmatter: Frontmatter, settings:
  * Checks if a physical recurring event file should have its instance date updated on move.
  * Only events with ignoreRecurring = true should have their instance date updated.
  */
+export interface TimePropagationDiff {
+	startChange?: { oldValue: string; newValue: string };
+	endChange?: { oldValue: string; newValue: string };
+}
+
+export function extractTimeDiffFromFrontmatterDiff(
+	diff: FrontmatterDiff,
+	settings: SingleCalendarConfig
+): TimePropagationDiff | null {
+	let startChange: TimePropagationDiff["startChange"];
+	let endChange: TimePropagationDiff["endChange"];
+
+	for (const change of diff.modified) {
+		if (
+			change.key === settings.startProp &&
+			typeof change.oldValue === "string" &&
+			typeof change.newValue === "string"
+		) {
+			startChange = { oldValue: change.oldValue, newValue: change.newValue };
+		} else if (
+			change.key === settings.endProp &&
+			typeof change.oldValue === "string" &&
+			typeof change.newValue === "string"
+		) {
+			endChange = { oldValue: change.oldValue, newValue: change.newValue };
+		}
+	}
+
+	if (!startChange && !endChange) return null;
+	return { startChange, endChange };
+}
+
 export const shouldUpdateInstanceDateOnMove = (
 	frontmatter: Frontmatter | undefined,
 	ignoreRecurringProp: string

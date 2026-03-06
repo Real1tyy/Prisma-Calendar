@@ -15,7 +15,7 @@
 - **Default duration (minutes)**: default event duration when only start time is provided (default: 60 minutes, range: 1–240)
 - **Show duration field in event modal**: display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa (enabled by default)
 - **Mark past events as done**: automatically mark past events as done during startup by updating their status property (configure the status property and done value in the [Properties](./properties) section)
-- **Detect event name typos**: show a "Did you mean?" modal when an event name is close to a known category, preset name, or existing event series. Uses fuzzy matching to detect likely typos (enabled by default). See [Categories - Typo Detection](../features/organization/categories#event-name-typo-detection) for details.
+- **Title autocomplete**: show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names (enabled by default). See [Title Autocomplete](../features/events/title-autocomplete.md) for details.
 
 ## Time Tracker
 

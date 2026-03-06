@@ -93,6 +93,24 @@ You can control how frontmatter changes are propagated in Settings → Calendar 
 
 📖 See [Frontmatter Propagation Settings](../../configuration/event-groups#frontmatter-propagation) for detailed configuration options including debounce delay and excluded properties. Propagation is also available for [name-based and property-based series](./event-groups#frontmatter-propagation).
 
+### Time Propagation
+
+When you change the start or end time of a source recurring event (e.g., moving a daily standup from 9:00 AM to 10:00 AM), the new time automatically propagates to all **future** physical instances that still have the original time. Past instances and instances where the time was manually changed are left untouched.
+
+**How it works:**
+
+1. Edit the start or end time on the source recurring event.
+2. The system detects the time change and compares each future instance's time against the **old** source time.
+3. If an instance's time matches the old time, it is updated to the new time. If it doesn't match (meaning you manually adjusted that instance), it is skipped.
+
+**Key behaviors:**
+
+- Only future instances (today or later) are updated — past instances are never modified.
+- Start and end times are handled independently. If only the start time changed, only start times are compared and updated.
+- All-day events are not affected since they use a date property rather than start/end times.
+- Time propagation respects the same propagation settings as frontmatter propagation (automatic or ask-before-propagating).
+- Multiple rapid time changes within the debounce window are accumulated — only the original old time and the final new time are used for comparison.
+
 ### Start Date as Calculation Point
 
 For `weekly`/`biweekly`, system finds first day matching `RRuleSpec` on or after `Start` date. For `daily`/`monthly`/`quarterly`/`semiannual`/`yearly`, `Start` is typically the first instance.
