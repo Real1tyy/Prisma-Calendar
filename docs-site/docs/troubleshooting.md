@@ -123,6 +123,10 @@ Calendar "Schedule":       Directory: schedule/
 
 **Alternative**: If events truly belong in the same directory, standardize on one set of property names and use that across all calendars viewing that directory.
 
+## "Show current interval in Bases" shows no events
+
+This command requires **Sorting normalization** to be enabled. See [Bases — Sort date property required for interval views](./configuration/bases.md#where-bases-views-are-used) for the fix.
+
 ## Templater integration
 
 ### Templates not applying to Prisma-created events

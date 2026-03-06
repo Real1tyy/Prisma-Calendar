@@ -125,6 +125,10 @@ What you see in calendar:
 
 All have the same clean "Standup" title in the UI, but unique filenames on disk.
 
+### "Show current interval in Bases" shows no events
+
+This command requires **Sorting normalization** to be enabled. See [Bases — Sort date property required for interval views](./configuration/bases.md#where-bases-views-are-used) for the fix.
+
 ### Events are not sorting correctly by Sort Date in Bases
 
 If events appear out of order when sorting by `Sort Date` in Bases views, the property type is likely set to "Text" instead of "Date & time". Obsidian's Bases sorts text properties alphabetically, which produces incorrect results for datetime values.

@@ -67,9 +67,9 @@ ${filterLines.map((line) => `        - ${line}`).join("\n")}
     order:
 ${orderProperties.map((prop) => `      - ${prop}`).join("\n")}
     columnSize:
-      note["${sortProp}"]: 170
+      note.${sortProp}: 170
     sort:
-      - property: note["${sortProp}"]
+      - property: ${sortProp}
         direction: DESC
 \`\`\``;
 	}

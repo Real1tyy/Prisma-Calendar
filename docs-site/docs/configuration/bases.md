@@ -17,6 +17,13 @@ These configured settings apply to all Bases views:
 2. **Category Events View**: When clicking on a category in Settings → Categories
 3. **Current Interval View**: When using the "Show current interval in Bases" command (daily, weekly, or monthly views)
 
+:::warning Sort date property required for interval views
+
+The **Current Interval View** filters events by the **Sort date property**. This property is only populated when **Sorting normalization** is set to a strategy other than "None" (the default). If it's "None", the command will show an empty view.
+
+**To fix this**, go to Settings → Properties → Sorting normalization and select a strategy (recommended: **All events — start datetime**). See [Sorting Normalization for External Tools](./properties.md#sorting-normalization-for-external-tools) for all available modes.
+:::
+
 ## Default Columns
 
 All Bases views include these columns by default:
