@@ -60,6 +60,9 @@ export class PrismaCalendarApiManager {
 	// ─── API Registration ─────────────────────────────────────────
 
 	expose(): void {
+		if (!this.plugin.isProEnabled) {
+			return;
+		}
 		this.gateway.expose();
 	}
 

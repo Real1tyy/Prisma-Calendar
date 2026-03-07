@@ -20,7 +20,7 @@ function applyMetadataFields(
 		assignListToFrontmatter(frontmatter, settings.categoryProp, input.categories);
 	} else if (input.title !== undefined && settings.categoryProp && !input.categories) {
 		const availableCategories = bundle.categoryTracker.getCategories();
-		const autoAssigned = autoAssignCategories(input.title, settings, availableCategories);
+		const autoAssigned = autoAssignCategories(input.title, settings, availableCategories, bundle.plugin.isProEnabled);
 		if (autoAssigned.length > 0) {
 			assignListToFrontmatter(frontmatter, settings.categoryProp, autoAssigned);
 		}

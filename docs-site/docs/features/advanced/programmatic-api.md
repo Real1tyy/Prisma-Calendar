@@ -1,5 +1,9 @@
 # Programmatic API
 
+:::info Pro Feature
+The Programmatic API requires [Prisma Calendar Pro](../free-vs-pro.md).
+:::
+
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>

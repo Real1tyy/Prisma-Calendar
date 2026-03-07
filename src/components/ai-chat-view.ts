@@ -1,6 +1,8 @@
 import { cls, MacroCommand, MountableView, type Command } from "@real1ty-obsidian-plugins";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { z } from "zod";
+import { renderProUpgradeBanner } from "./settings/pro-upgrade-banner";
+import { PRO_FEATURES } from "../core/license";
 import { AI_DEFAULTS, AIChatManager, ChatStore, type ChatMessage } from "../core/ai";
 import {
 	buildCalendarContext,
@@ -92,6 +94,17 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	async onOpen(): Promise<void> {
+		if (!this.plugin.isProEnabled) {
+			const container = this.containerEl.children[1] as HTMLElement;
+			container.empty();
+			renderProUpgradeBanner(
+				container,
+				PRO_FEATURES.AI_CHAT,
+				"AI chat with Claude and GPT, including query, manipulation, and planning modes, requires Prisma Calendar Pro."
+			);
+			return;
+		}
+
 		this.markdownComponent.load();
 		await this.chatManager.initialize();
 

@@ -16,6 +16,7 @@ const sidebars: SidebarsConfig = {
 			label: "Features",
 			collapsible: true,
 			items: [
+				"features/free-vs-pro",
 				"features/overview",
 				{
 					type: "category",

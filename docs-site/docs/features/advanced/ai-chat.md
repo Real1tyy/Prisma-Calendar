@@ -1,5 +1,9 @@
 # AI Chat
 
+:::info Pro Feature
+AI Chat requires [Prisma Calendar Pro](../free-vs-pro.md).
+:::
+
 Prisma Calendar includes a built-in AI chat sidebar where you can ask questions about your calendar, get scheduling advice, or have a general conversation with an AI assistant.
 
 ## Opening the Chat

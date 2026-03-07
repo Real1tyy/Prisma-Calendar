@@ -13,6 +13,7 @@ import {
 	PrismaCalendarApiManager,
 	SettingsStore,
 } from "./core";
+import { isProEnabled, showProUpgradeNotice, PRO_FEATURES } from "./core/license";
 import { type CalDAVAccount } from "./core/integrations/caldav";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
@@ -26,6 +27,10 @@ export default class CustomCalendarPlugin extends Plugin {
 	calendarBundles: CalendarBundle[] = [];
 	apiManager!: PrismaCalendarApiManager;
 	private registeredViewTypes: Set<string> = new Set();
+
+	get isProEnabled(): boolean {
+		return isProEnabled();
+	}
 
 	async onload() {
 		this.settingsStore = new SettingsStore(this);
@@ -345,6 +350,10 @@ export default class CustomCalendarPlugin extends Plugin {
 			id: COMMAND_IDS.SYNC_CALDAV,
 			name: "Sync calendar accounts",
 			callback: async () => {
+				if (!this.isProEnabled) {
+					showProUpgradeNotice(PRO_FEATURES.CALDAV_SYNC);
+					return;
+				}
 				const caldavAccounts = this.settingsStore.currentSettings.caldav.accounts;
 				for (const account of caldavAccounts) {
 					if (account.enabled) {
@@ -358,6 +367,10 @@ export default class CustomCalendarPlugin extends Plugin {
 			id: COMMAND_IDS.SYNC_ICS_SUBSCRIPTIONS,
 			name: "Sync ICS subscriptions",
 			callback: async () => {
+				if (!this.isProEnabled) {
+					showProUpgradeNotice(PRO_FEATURES.ICS_SYNC);
+					return;
+				}
 				const subscriptions = this.settingsStore.currentSettings.icsSubscriptions.subscriptions;
 				for (const sub of subscriptions) {
 					if (sub.enabled) {

@@ -2,9 +2,11 @@ import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { LOCALE_OPTIONS } from "../../types/view";
 import { type App, Setting } from "obsidian";
 import type { Subscription } from "rxjs";
+import { FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
+import { renderProUpgradeBanner } from "./pro-upgrade-banner";
 
 export class GeneralSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -265,6 +267,14 @@ export class GeneralSettings {
 			const emptyState = container.createDiv(cls("event-preset-empty"));
 			emptyState.textContent = "No event presets defined. Create presets from the event modal.";
 			return;
+		}
+
+		if (!this.plugin.isProEnabled && eventPresets.length >= FREE_MAX_EVENT_PRESETS) {
+			renderProUpgradeBanner(
+				container,
+				"Unlimited Event Presets",
+				`Free plan supports up to ${FREE_MAX_EVENT_PRESETS} event presets. Upgrade to Pro for unlimited presets.`
+			);
 		}
 
 		for (const preset of eventPresets) {

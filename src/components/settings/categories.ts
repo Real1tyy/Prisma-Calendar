@@ -12,6 +12,7 @@ import { type ChartDataItem, createChartCanvas, PieChartBuilder } from "../../ut
 import { CategoryDeleteModal } from "../modals/category-delete-modal";
 import { CategoryEventsModal } from "../modals/category-events-modal";
 import { CategoryRenameModal } from "../modals/category-rename-modal";
+import { renderProUpgradeBanner } from "./pro-upgrade-banner";
 
 interface CategoryInfoWithCount extends CategoryInfo {
 	count: number;
@@ -164,14 +165,21 @@ export class CategoriesSettings {
 			text: "Automatically assign categories to events during creation based on the event name.",
 		});
 
-		// Auto-assign when name matches category
 		this.ui.addToggle(containerEl, {
 			key: "autoAssignCategoryByName",
 			name: "Auto-assign when name matches category",
 			desc: "Automatically assign a category when the event name (without ZettelID) matches a category name (case-insensitive). Example: creating an event named 'Health' will auto-assign the 'health' category.",
 		});
 
-		// Custom assignment presets
+		if (!this.plugin.isProEnabled) {
+			renderProUpgradeBanner(
+				containerEl,
+				"Custom Category Assignment Presets",
+				"Define custom rules to auto-assign categories based on event names. Each preset can assign multiple categories to events with a specific name."
+			);
+			return;
+		}
+
 		new Setting(containerEl)
 			.setName("Custom category assignment presets")
 			.setDesc(
@@ -191,7 +199,6 @@ export class CategoriesSettings {
 		this.categoryAssignmentPresetsContainer = containerEl.createDiv();
 		this.renderCategoryAssignmentPresets(this.categoryAssignmentPresetsContainer);
 
-		// Add preset button
 		const addButton = containerEl.createEl("button", {
 			text: "Add preset",
 			cls: cls("settings-button"),

@@ -13,8 +13,10 @@ import {
 	PropertiesSettings,
 	RulesSettings,
 } from ".";
+import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import { renderProUpgradeBanner } from "./pro-upgrade-banner";
 
 export class SingleCalendarSettings {
 	private navigation: SettingsNavigation;
@@ -39,6 +41,8 @@ export class SingleCalendarSettings {
 			ai: new AISettings(plugin, mainSettingsStore),
 		};
 
+		const isPro = plugin.isProEnabled;
+
 		const sections: SettingsSection[] = [
 			{ id: "general", label: "General", display: (el) => settingsInstances.general.display(el) },
 			{ id: "properties", label: "Properties", display: (el) => settingsInstances.properties.display(el) },
@@ -49,8 +53,30 @@ export class SingleCalendarSettings {
 			{ id: "rules", label: "Rules", display: (el) => settingsInstances.rules.display(el) },
 			{ id: "categories", label: "Categories", display: (el) => settingsInstances.categories.display(el) },
 			{ id: "bases", label: "Bases", display: (el) => settingsInstances.bases.display(el) },
-			{ id: "integrations", label: "Integrations", display: (el) => settingsInstances.integrations.display(el) },
-			{ id: "ai", label: "AI", display: (el) => settingsInstances.ai.display(el) },
+			{
+				id: "integrations",
+				label: "Integrations",
+				display: (el) =>
+					isPro
+						? settingsInstances.integrations.display(el)
+						: renderProUpgradeBanner(
+								el,
+								PRO_FEATURES.CALDAV_SYNC,
+								"CalDAV sync, ICS subscriptions, and import/export require Prisma Calendar Pro."
+							),
+			},
+			{
+				id: "ai",
+				label: "AI",
+				display: (el) =>
+					isPro
+						? settingsInstances.ai.display(el)
+						: renderProUpgradeBanner(
+								el,
+								PRO_FEATURES.AI_CHAT,
+								"AI chat with Claude and GPT, including query, manipulation, and planning modes, requires Prisma Calendar Pro."
+							),
+			},
 		];
 
 		this.navigation = new SettingsNavigation({

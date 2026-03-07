@@ -1,6 +1,6 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Modal, PluginSettingTab, Setting } from "obsidian";
-import { SETTINGS_DEFAULTS } from "../../constants";
+import { FREE_MAX_CALENDARS } from "../../core/license";
 import { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import {
@@ -16,15 +16,20 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 	private calendarSettings: Map<string, SingleCalendarSettings> = new Map();
 	private calendarStores: Map<string, CalendarSettingsStore> = new Map();
 
+	private getMaxCalendars(): number {
+		return this.plugin.isProEnabled ? Infinity : FREE_MAX_CALENDARS;
+	}
+
 	private isAtMaxCalendars(): boolean {
-		return this.plugin.settingsStore.currentSettings.calendars.length >= SETTINGS_DEFAULTS.MAX_CALENDARS;
+		return this.plugin.settingsStore.currentSettings.calendars.length >= this.getMaxCalendars();
 	}
 
 	private configureMaxCalendarsButton(button: HTMLButtonElement): void {
 		if (this.isAtMaxCalendars()) {
 			button.disabled = true;
 			addCls(button, "calendar-button-disabled");
-			button.title = `Maximum ${SETTINGS_DEFAULTS.MAX_CALENDARS} calendars allowed`;
+			const max = this.getMaxCalendars();
+			button.title = `Free plan allows up to ${max} calendars. Upgrade to Pro for unlimited.`;
 		}
 	}
 
@@ -124,7 +129,9 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 
 		// Calendar count info
 		const countInfo = headerContainer.createDiv(cls("calendar-count-info"));
-		countInfo.textContent = `${settings.calendars.length}/${SETTINGS_DEFAULTS.MAX_CALENDARS} calendars`;
+		const max = this.getMaxCalendars();
+		countInfo.textContent =
+			max === Infinity ? `${settings.calendars.length} calendars` : `${settings.calendars.length}/${max} calendars`;
 	}
 
 	private renderSelectedCalendarSettings(): void {

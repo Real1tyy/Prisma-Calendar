@@ -16,7 +16,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
   </video>
 </div>
 
-Separate contexts with dedicated configurations.
+Separate contexts with dedicated configurations. The free plan supports up to 3 calendars. [Upgrade to Pro](../free-vs-pro.md) for unlimited calendars.
 
 ## Why multiple calendars?
 

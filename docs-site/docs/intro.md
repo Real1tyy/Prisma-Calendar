@@ -101,7 +101,7 @@ Here's what makes it the best calendar option for Obsidian, hands down.
 ---
 
 ### Configure Literally Everything
-Prisma Calendar adapts to you, not the other way around. Map your own frontmatter properties, define JavaScript-powered [color rules](/features/organization/color-rules), set up advanced [filters](/features/organization/filtering), and customize the calendar appearance down to event text, icons, and density. Manage up to **10 independent calendars**, each with their own settings and folder scope. [Learn more →](/features/calendar/multiple-calendars)
+Prisma Calendar adapts to you, not the other way around. Map your own frontmatter properties, define JavaScript-powered [color rules](/features/organization/color-rules), set up advanced [filters](/features/organization/filtering), and customize the calendar appearance down to event text, icons, and density. Manage **multiple independent calendars**, each with their own settings and folder scope. [Learn more →](/features/calendar/multiple-calendars)
 
 ### Fully Reactive — Changes Propagate Instantly
 There's no "restart Obsidian to apply changes" here. Every setting change, every color rule tweak, every filter adjustment takes effect **immediately**. Edit a note's frontmatter and watch the calendar update in real time. This isn't a static display — it's a live, reactive system.
@@ -161,6 +161,47 @@ Agenda...
 ```
 
 See Configuration for how to map these property names to your preferences and how to display extra properties inside event chips.
+
+## Free vs Pro
+
+Prisma Calendar is free and fully-featured out of the box — no account, no trial, no limitations on the core experience.
+
+### What you get for free
+
+| Feature | Details |
+|---------|---------|
+| **4 Calendar Views** | Month, Week, Day, List — CTRL+scroll zoom and density options |
+| **Up to 3 Calendars** | Independent settings, directories, property mappings, and views |
+| **Up to 2 Event Presets** | Quick event creation with pre-filled frontmatter |
+| **Recurring Events** | 9 recurrence types + custom intervals, real notes, virtual previews |
+| **50-Action Undo/Redo** | Full memento history for every operation |
+| **10+ Batch Operations** | Multi-select delete, duplicate, move, clone, skip, and more |
+| **Time Tracker** | Built-in stopwatch with start, break, resume, minimize |
+| **Statistics Dashboard** | Pie charts, category breakdowns, daily/weekly/monthly/all-time |
+| **Color Rules** | JavaScript expressions mapping frontmatter to colors |
+| **Advanced Filtering** | Text search + JS expression filters + saved presets |
+| **Desktop Notifications** | Configurable lead time, snooze, per-event overrides |
+| **Holidays** | 50+ countries offline, ~20 language locales |
+| **Title Autocomplete** | Ghost text from categories, presets, and history |
+| **Auto-Assign Categories** | Automatic matching when event name matches category name |
+| **ICS Import/Export** | Manual `.ics` file exchange with any calendar app |
+| **30+ Hotkeys** | Full keyboard control for navigation and operations |
+
+### What Pro adds
+
+| Feature | Details |
+|---------|---------|
+| **AI Chat** | Built-in sidebar with Claude and GPT — query, create, edit, and plan via natural language |
+| **CalDAV & ICS URL Sync** | One-way read-only sync from Google Calendar, Apple Calendar, Fastmail, Nextcloud, iCloud |
+| **Programmatic API** | `window.PrismaCalendar` and URL scheme for full CRUD, batch ops, and scripting |
+| **Custom Category Presets** | Map event names to categories with comma-separated rules |
+| **Unlimited Calendars** | Remove the 3-calendar limit |
+| **Unlimited Event Presets** | Remove the 2-preset limit |
+| **Priority Support** | First in line for help and feature requests |
+
+[Learn more about Free vs Pro →](/features/free-vs-pro)
+
+---
 
 ## Help Shape the Future
 

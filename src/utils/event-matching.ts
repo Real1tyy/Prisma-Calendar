@@ -91,7 +91,8 @@ export const normalizeEventNameForComparison = (eventName: string): string => {
 export const autoAssignCategories = (
 	eventName: string,
 	settings: SingleCalendarConfig,
-	availableCategories: string[]
+	availableCategories: string[],
+	isProEnabled = false
 ): string[] => {
 	const normalizedEventName = normalizeEventNameForComparison(eventName);
 	const categoriesToAssign = new Set<string>();
@@ -106,8 +107,8 @@ export const autoAssignCategories = (
 		}
 	}
 
-	// Rule 2: Apply custom category assignment presets (supports comma-separated event names)
-	if (settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0) {
+	// Rule 2: Apply custom category assignment presets (Pro only)
+	if (isProEnabled && settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0) {
 		for (const preset of settings.categoryAssignmentPresets) {
 			const presetEventNames = preset.eventName
 				.split(",")

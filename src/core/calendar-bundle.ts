@@ -4,6 +4,7 @@ import { filter, firstValueFrom, type Subscription } from "rxjs";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type { EventSaveData } from "../components/modals/base-event-modal";
 import type CustomCalendarPlugin from "../main";
+import { isProEnabled } from "./license";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/event-naming";
 import { intoDate } from "../utils/format";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
@@ -147,32 +148,34 @@ export class CalendarBundle {
 				},
 			});
 
-			const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
+			if (isProEnabled()) {
+				const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
 
-			if (caldavSettings.syncOnStartup) {
-				const accountsForThisCalendar = caldavSettings.accounts.filter(
-					(a) => a.enabled && a.calendarId === this.calendarId
-				);
+				if (caldavSettings.syncOnStartup) {
+					const accountsForThisCalendar = caldavSettings.accounts.filter(
+						(a) => a.enabled && a.calendarId === this.calendarId
+					);
 
-				for (const account of accountsForThisCalendar) {
-					void this.syncAccount(account.id);
+					for (const account of accountsForThisCalendar) {
+						void this.syncAccount(account.id);
+					}
 				}
-			}
 
-			const icsSubSettings = this.mainSettingsStore.currentSettings.icsSubscriptions;
+				const icsSubSettings = this.mainSettingsStore.currentSettings.icsSubscriptions;
 
-			if (icsSubSettings.syncOnStartup) {
-				const subscriptionsForThisCalendar = icsSubSettings.subscriptions.filter(
-					(s) => s.enabled && s.calendarId === this.calendarId
-				);
+				if (icsSubSettings.syncOnStartup) {
+					const subscriptionsForThisCalendar = icsSubSettings.subscriptions.filter(
+						(s) => s.enabled && s.calendarId === this.calendarId
+					);
 
-				for (const subscription of subscriptionsForThisCalendar) {
-					void this.syncICSSubscription(subscription.id);
+					for (const subscription of subscriptionsForThisCalendar) {
+						void this.syncICSSubscription(subscription.id);
+					}
 				}
-			}
 
-			this.startCalDAVAutoSync();
-			this.startICSAutoSync();
+				this.startCalDAVAutoSync();
+				this.startICSAutoSync();
+			}
 
 			this.updateRibbonIcon(this.settingsStore.currentSettings.showRibbonIcon);
 		})();

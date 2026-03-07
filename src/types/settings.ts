@@ -277,7 +277,6 @@ export const CustomCalendarSettingsSchema = z
 		calendars: z
 			.array(SingleCalendarConfigSchema)
 			.min(1)
-			.max(SETTINGS_DEFAULTS.MAX_CALENDARS)
 			.catch([
 				{
 					id: "default",

@@ -120,7 +120,7 @@ describe("Auto-Category Assignment", () => {
 					],
 				} as SingleCalendarConfig;
 
-				const result = autoAssignCategories("Productivity", settings, availableCategories);
+				const result = autoAssignCategories("Productivity", settings, availableCategories, true);
 
 				expect(result).toContain("Health");
 				expect(result).toContain("Business");
@@ -138,7 +138,7 @@ describe("Auto-Category Assignment", () => {
 					],
 				} as SingleCalendarConfig;
 
-				const result = autoAssignCategories("PRODUCTIVITY", settings, availableCategories);
+				const result = autoAssignCategories("PRODUCTIVITY", settings, availableCategories, true);
 
 				expect(result).toContain("Health");
 				expect(result).toContain("Business");
@@ -156,7 +156,7 @@ describe("Auto-Category Assignment", () => {
 					],
 				} as SingleCalendarConfig;
 
-				const result = autoAssignCategories("Productivity-20250103123456", settings, availableCategories);
+				const result = autoAssignCategories("Productivity-20250103123456", settings, availableCategories, true);
 
 				expect(result).toContain("Health");
 			});
@@ -173,7 +173,7 @@ describe("Auto-Category Assignment", () => {
 					],
 				} as SingleCalendarConfig;
 
-				const result = autoAssignCategories("Productivity", settings, availableCategories);
+				const result = autoAssignCategories("Productivity", settings, availableCategories, true);
 
 				expect(result).toEqual(["Health", "Business"]);
 			});
@@ -195,7 +195,7 @@ describe("Auto-Category Assignment", () => {
 					],
 				} as SingleCalendarConfig;
 
-				const result = autoAssignCategories("Productivity", settings, availableCategories);
+				const result = autoAssignCategories("Productivity", settings, availableCategories, true);
 
 				expect(result).toContain("Health");
 				expect(result).toContain("Business");
@@ -216,7 +216,7 @@ describe("Auto-Category Assignment", () => {
 					],
 				} as SingleCalendarConfig;
 
-				const result = autoAssignCategories("Health", settings, availableCategories);
+				const result = autoAssignCategories("Health", settings, availableCategories, true);
 
 				// Should match both the category name AND the preset
 				expect(result).toContain("Health"); // From name matching
@@ -236,7 +236,7 @@ describe("Auto-Category Assignment", () => {
 					],
 				} as SingleCalendarConfig;
 
-				const result = autoAssignCategories("Health", settings, availableCategories);
+				const result = autoAssignCategories("Health", settings, availableCategories, true);
 
 				// Health should only appear once
 				expect(result.filter((c) => c === "Health")).toHaveLength(1);

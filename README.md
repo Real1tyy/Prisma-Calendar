@@ -140,7 +140,7 @@ Here's what sets it apart:
 
 ### **Configure Literally Everything**
 
-Prisma Calendar adapts to you, not the other way around. Map your own frontmatter properties, define JavaScript-powered color rules, set up advanced filters, customize the calendar appearance down to event text, icons, and density — and manage up to **10 independent calendars**, each with their own settings and folder scope.
+Prisma Calendar adapts to you, not the other way around. Map your own frontmatter properties, define JavaScript-powered color rules, set up advanced filters, customize the calendar appearance down to event text, icons, and density — and manage **multiple independent calendars**, each with their own settings and folder scope.
 
 ### **Fully Reactive — Changes Propagate Instantly**
 
@@ -193,6 +193,47 @@ Switch between month, week, day, and list views. Zoom into time slots from 1 to 
 ### **Global Event Management**
 
 Browse, search, and manage all events across all your calendars from a single unified interface. No more hunting through folders — everything is accessible from one place.
+
+## Free vs Pro
+
+Prisma Calendar is free and fully-featured out of the box. No account, no trial — just install and go.
+
+### What you get for free
+
+| Feature                    | Details                                                                       |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| **4 Calendar Views**       | Month, Week, Day, List — with CTRL+scroll zoom and density options            |
+| **Up to 3 Calendars**      | Independent settings, directories, property mappings, and views               |
+| **Up to 2 Event Presets**  | Quick event creation with pre-filled frontmatter                              |
+| **Recurring Events**       | 9 recurrence types + custom intervals, real note generation, virtual previews |
+| **50-Action Undo/Redo**    | Full memento history for every operation                                      |
+| **10+ Batch Operations**   | Multi-select delete, duplicate, move, clone, skip, and more                   |
+| **Time Tracker**           | Built-in stopwatch with start, break, resume, minimize                        |
+| **Statistics Dashboard**   | Pie charts, category breakdowns, daily/weekly/monthly/all-time                |
+| **Color Rules**            | JavaScript expressions mapping frontmatter to colors                          |
+| **Advanced Filtering**     | Text search + JS expression filters + saved presets                           |
+| **Desktop Notifications**  | Configurable lead time, snooze, per-event overrides                           |
+| **Holidays**               | 50+ countries offline, ~20 language locales                                   |
+| **Title Autocomplete**     | Ghost text suggestions from categories, presets, and history                  |
+| **Auto-Assign Categories** | Automatic matching when event name matches category name                      |
+| **ICS Import/Export**      | Manual `.ics` file exchange with any calendar app                             |
+| **30+ Hotkeys**            | Full keyboard control for navigation and operations                           |
+
+### What Pro adds
+
+| Feature                     | Details                                                                                   |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| **AI Chat**                 | Built-in sidebar with Claude and GPT — query, create, edit, and plan via natural language |
+| **CalDAV & ICS URL Sync**   | One-way read-only sync from Google Calendar, Apple Calendar, Fastmail, Nextcloud, iCloud  |
+| **Programmatic API**        | `window.PrismaCalendar` and URL scheme for full CRUD, batch ops, and scripting            |
+| **Custom Category Presets** | Map event names to categories with comma-separated rules                                  |
+| **Unlimited Calendars**     | Remove the 3-calendar limit                                                               |
+| **Unlimited Event Presets** | Remove the 2-preset limit                                                                 |
+| **Priority Support**        | First in line for help and feature requests                                               |
+
+[Learn more about Free vs Pro →](https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro)
+
+---
 
 ## Support & Sponsorship
 

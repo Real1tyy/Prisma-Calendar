@@ -51,6 +51,7 @@ import { Stopwatch } from "../stopwatch";
 import { TitleInputSuggest } from "../title-input-suggest";
 import { openCategoryAssignModal } from "./assignment-modal";
 import { CategoryEventsModal } from "./category-events-modal";
+import { FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import { SavePresetModal } from "./save-preset-modal";
 
 interface EventModalData {
@@ -1078,7 +1079,12 @@ export abstract class BaseEventModal extends Modal {
 		if (!hasAutoAssign) return;
 
 		const availableCategories = this.bundle.categoryTracker.getCategories();
-		const autoAssignedCategories = autoAssignCategories(eventName, settings, availableCategories);
+		const autoAssignedCategories = autoAssignCategories(
+			eventName,
+			settings,
+			availableCategories,
+			this.bundle.plugin.isProEnabled
+		);
 
 		if (autoAssignedCategories.length > 0) {
 			this.selectedCategories = autoAssignedCategories;
@@ -1374,8 +1380,9 @@ export abstract class BaseEventModal extends Modal {
 	private openSavePresetModal(): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const existingPresets = settings.eventPresets || [];
+		const atFreeLimit = !this.bundle.plugin.isProEnabled && existingPresets.length >= FREE_MAX_EVENT_PRESETS;
 
-		const modal = new SavePresetModal(this.app, existingPresets, (presetName, overridePresetId) => {
+		const modal = new SavePresetModal(this.app, existingPresets, atFreeLimit, (presetName, overridePresetId) => {
 			this.saveCurrentAsPreset(presetName, overridePresetId);
 		});
 		modal.open();
@@ -1585,7 +1592,12 @@ export abstract class BaseEventModal extends Modal {
 				settings.autoAssignCategoryByName ||
 				(settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0)
 			) {
-				const autoAssigned = autoAssignCategories(eventName, settings, availableCategories);
+				const autoAssigned = autoAssignCategories(
+					eventName,
+					settings,
+					availableCategories,
+					this.bundle.plugin.isProEnabled
+				);
 				if (autoAssigned.length > 0) {
 					this.selectedCategories = autoAssigned;
 					this.renderCategories();

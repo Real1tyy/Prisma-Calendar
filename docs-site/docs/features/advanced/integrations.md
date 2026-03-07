@@ -1,5 +1,9 @@
 # Integrations
 
+:::info Pro Feature
+CalDAV sync and ICS URL subscriptions require [Prisma Calendar Pro](../free-vs-pro.md). ICS manual import/export is free.
+:::
+
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
 Sync with external calendars or exchange events using standard calendar formats.

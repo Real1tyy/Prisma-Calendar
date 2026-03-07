@@ -6,16 +6,19 @@ import { createModalButtons, registerSubmitHotkey } from "../../utils/dom-utils"
 export class SavePresetModal extends Modal {
 	private onSave: (name: string, overridePresetId: string | null) => void;
 	private existingPresets: EventPreset[];
+	private blockCreateNew: boolean;
 	private nameInput!: HTMLInputElement;
 	private overrideSelect!: HTMLSelectElement;
 
 	constructor(
 		app: App,
 		existingPresets: EventPreset[],
+		blockCreateNew: boolean,
 		onSave: (name: string, overridePresetId: string | null) => void
 	) {
 		super(app);
 		this.existingPresets = existingPresets;
+		this.blockCreateNew = blockCreateNew;
 		this.onSave = onSave;
 	}
 
@@ -37,14 +40,15 @@ export class SavePresetModal extends Modal {
 			cls: cls("setting-item-dropdown"),
 		});
 
-		// Add "Create new" option
 		const newOption = this.overrideSelect.createEl("option", {
 			value: "",
-			text: "Create new preset",
+			text: this.blockCreateNew ? "Create new preset (Pro)" : "Create new preset",
 		});
 		newOption.value = "";
+		if (this.blockCreateNew) {
+			newOption.disabled = true;
+		}
 
-		// Add existing presets
 		for (const preset of this.existingPresets) {
 			const option = this.overrideSelect.createEl("option", {
 				value: preset.id,
@@ -53,7 +57,10 @@ export class SavePresetModal extends Modal {
 			option.value = preset.id;
 		}
 
-		// Update name field when override selection changes
+		if (this.blockCreateNew && this.existingPresets.length > 0) {
+			this.overrideSelect.value = this.existingPresets[0].id;
+		}
+
 		this.overrideSelect.addEventListener("change", () => {
 			const selectedId = this.overrideSelect.value;
 			if (selectedId) {
@@ -75,6 +82,10 @@ export class SavePresetModal extends Modal {
 			placeholder: "e.g., 30 min meeting, All-day event",
 			cls: cls("setting-item-control"),
 		});
+
+		if (this.blockCreateNew && this.existingPresets.length > 0) {
+			this.nameInput.value = this.existingPresets[0].name;
+		}
 
 		createModalButtons(contentEl, {
 			submitText: "Save",

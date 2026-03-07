@@ -83,7 +83,11 @@ When enabled, if the event name matches a category name (case-insensitive, ignor
 **Example:**
 - Type "Health" and click away → Categories replaced with "health"
 
-#### Custom category assignment presets
+#### Custom category assignment presets {#custom-presets}
+
+:::info Pro Feature
+Custom category assignment presets require [Prisma Calendar Pro](../free-vs-pro.md). The basic "auto-assign when name matches category" toggle is free.
+:::
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video

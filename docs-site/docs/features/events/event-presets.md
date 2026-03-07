@@ -2,7 +2,7 @@
 
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
-Save reusable event templates with pre-filled values for quick event creation.
+Save reusable event templates with pre-filled values for quick event creation. The free plan supports up to 2 event presets. [Upgrade to Pro](../free-vs-pro.md) for unlimited presets.
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
