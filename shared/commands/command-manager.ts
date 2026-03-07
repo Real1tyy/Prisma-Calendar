@@ -160,4 +160,22 @@ export class CommandManager {
 	pushToRedoStack(command: Command): void {
 		this.redoStack.push(command);
 	}
+
+	removeFromUndoStack(command: Command): boolean {
+		const index = this.undoStack.indexOf(command);
+		if (index !== -1) {
+			this.undoStack.splice(index, 1);
+			return true;
+		}
+		return false;
+	}
+
+	removeFromRedoStack(command: Command): boolean {
+		const index = this.redoStack.indexOf(command);
+		if (index !== -1) {
+			this.redoStack.splice(index, 1);
+			return true;
+		}
+		return false;
+	}
 }
