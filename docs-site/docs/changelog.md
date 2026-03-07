@@ -4,10 +4,11 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.6.0 - 3/5/2026
+## 2.6.0 - 3/7/2026
 
 ### Added
 
+- **Free vs Pro tiers**: Prisma Calendar now offers a Pro tier for power users. Free users get the full core experience — 4 views, up to 3 calendars, 2 event presets, recurring events, 50-action undo/redo, batch operations, time tracker, statistics, color rules, filtering, notifications, holidays, ICS import/export, and 30+ hotkeys. Pro unlocks AI chat, CalDAV & ICS URL sync, programmatic API, unlimited calendars & presets, and custom category assignment presets. See [Free vs Pro](./features/free-vs-pro.md).
 - **Title autocomplete**: Inline type-ahead suggestions when typing event titles in the create/edit modal. Suggestions are drawn from categories, event presets, and frequently used event names — prioritized in that order. Press Tab to accept ghost text or use arrow keys to browse the dropdown. Configurable via Settings > General > Parsing > Title autocomplete (enabled by default). See [Title Autocomplete](./features/events/title-autocomplete.md).
 - **Time propagation for recurring instances**: Changing the start or end time of a source recurring event now automatically propagates the new time to all future physical instances that still have the original time. Instances where the time was manually changed are left untouched. Always runs automatically regardless of frontmatter propagation settings. See [Recurring Events — Time Propagation](./features/events/recurring-dsl.md#time-propagation).
 
@@ -47,6 +48,7 @@ All notable changes to this project will be documented here.
 - **All-day event rendered twice after drag-to-edge navigation**: Dragging an all-day event to the calendar edge to navigate to a new interval, then dropping it, caused the event to appear twice visually. See [Calendar View](./features/calendar/calendar-view.md).
 - **Sticky header detached after resize or navigation**: The toolbar and all-day section could lose their sticky positioning after resizing the panel or navigating between dates, causing them to scroll away with the content. See [Calendar View](./features/calendar/calendar-view.md).
 - **Custom icon, location, and participants not propagated to physical recurring events**: The custom icon, location, and participants properties were excluded when creating physical recurring instances from a source event. Physical instances now inherit these properties from the source event. The custom icon also takes priority over the recurring marker as intended. See [Event Icons](./features/events/event-icons.md).
+- **New calendar with empty folder indexed entire vault**: Creating a new calendar without setting a folder caused the indexer to treat every note in the vault as belonging to that calendar, assigning calendar titles and processing all files. An empty folder now correctly means "no events" until a specific folder is configured. See [Multiple Calendars](./features/calendar/multiple-calendars.md).
 
 ---
 

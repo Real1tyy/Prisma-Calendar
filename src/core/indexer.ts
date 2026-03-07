@@ -66,7 +66,7 @@ export class Indexer {
 	private zettelIdRenamesInFlight = new Set<string>();
 	private readonly includeFile = (filePath: string): boolean => {
 		const directory = this.settings.directory;
-		if (!directory) return true;
+		if (!directory) return false;
 		return filePath === directory || filePath.startsWith(`${directory}/`);
 	};
 
