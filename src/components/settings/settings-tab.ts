@@ -1,6 +1,6 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins";
-import { type App, Modal, PluginSettingTab, Setting } from "obsidian";
-import { FREE_MAX_CALENDARS } from "../../core/license";
+import { type App, Modal, PluginSettingTab, SecretComponent, Setting } from "obsidian";
+import { FREE_MAX_CALENDARS, PRO_PURCHASE_URL } from "../../core/license";
 import { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import {
@@ -54,8 +54,33 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
+		this.createLicenseSection(containerEl);
 		this.createCalendarManagementHeader();
 		this.renderSelectedCalendarSettings();
+	}
+
+	private createLicenseSection(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("License").setHeading();
+
+		const desc = document.createDocumentFragment();
+		desc.appendText("Enter your Prisma Calendar Pro license key to unlock advanced features. ");
+		const link = desc.createEl("a", { text: "Get a license", href: PRO_PURCHASE_URL });
+		link.setAttr("target", "_blank");
+		link.setAttr("rel", "noopener noreferrer");
+
+		new Setting(containerEl)
+			.setName("License key")
+			.setDesc(desc)
+			.addComponent((el) =>
+				new SecretComponent(this.plugin.app, el)
+					.setValue(this.plugin.settingsStore.currentSettings.licenseKeySecretName)
+					.onChange(async (value) => {
+						await this.plugin.settingsStore.updateSettings((s) => ({
+							...s,
+							licenseKeySecretName: value,
+						}));
+					})
+			);
 	}
 
 	private createCalendarManagementHeader(): void {

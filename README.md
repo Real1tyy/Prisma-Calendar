@@ -237,9 +237,11 @@ Prisma Calendar is free and fully-featured out of the box. No account, no trial 
 
 ## Support & Sponsorship
 
-If you find Prisma Calendar useful and want to support its ongoing development, please consider becoming a sponsor. Your contribution helps ensure continuous maintenance, bug fixes, and the introduction of new features.
+The best way to support Prisma Calendar is by purchasing the **[Advanced Features](https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro)** license. You get powerful pro capabilities, priority support, and you directly fund the continued development of the plugin — allowing me to dedicate my time to maintaining and improving it.
 
-- [Support My Work](https://matejvavroproductivity.com/support/)
+You can also support the project through a donation:
+
+- [View all donation options](https://matejvavroproductivity.com/support/)
 
 Every contribution, no matter the size, is greatly appreciated!
 

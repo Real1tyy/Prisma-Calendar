@@ -273,6 +273,7 @@ export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSett
 
 export const CustomCalendarSettingsSchema = z
 	.object({
+		licenseKeySecretName: z.string().catch(""),
 		version: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_VERSION),
 		calendars: z
 			.array(SingleCalendarConfigSchema)
