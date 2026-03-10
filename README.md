@@ -26,6 +26,10 @@ Recurring events that generate real notes. Batch operations across dozens of eve
 
 ### The Missing Piece for Your Obsidian Workflow
 
+Other Obsidian calendar plugins give you a basic view. Prisma Calendar gives you **a complete event management platform** — with the depth of a standalone app and the seamless integration only a native plugin can offer.
+
+The core challenge for power users is simple: how do you visualize entirely disparate records — sharing only a timestamp — in a single, cohesive view? Prisma solves this by stepping beyond the definition of a "calendar." It is a visualization layer that takes any data with a time parameter and renders it using your custom rules, properties, and filters. Projects, habits, meetings, tasks, people — if it has a date, Prisma displays it.
+
 Prisma is fundamentally different from any conventional calendar. Tools like Google Calendar lock you into predefined fields that rarely fit complex needs. Platforms like Notion lack the seamless database visualization required for advanced workflows. Prisma breaks free from both.
 
 It takes any data with a time parameter and projects it onto a unified, fully customizable timeline. For Obsidian users managing thousands of heavily customized markdown files, Prisma flawlessly renders those individual properties onto a single cohesive view — turning your vault into a full **enterprise resource planning** system. Plan projects, track habits, manage people, schedule tasks — all powered by the frontmatter you already write.
@@ -83,27 +87,7 @@ Quick Links:
 
 ---
 
-## 📦 Installation
-
-Install via **BRAT**, the **Obsidian Community Plugin store**, or manually from [GitHub Releases](https://github.com/Real1tyy/Prisma-Calendar/releases).
-
-**[Full installation guide →](https://real1tyy.github.io/Prisma-Calendar/installation)**
-
----
-
-## 📱 **Mobile Support**
-
-Core features work on mobile without any problems. The design is responsive, and I'm continuously tightening up the mobile experience based on feedback to make it rock solid. If you run into anything, please open a [GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues).
-
----
-
 ## Why Prisma Calendar?
-
-Other Obsidian calendar plugins give you a basic view. Prisma Calendar gives you **a complete event management platform** — with the depth of a standalone app and the seamless integration only a native plugin can offer.
-
-The core challenge for power users is simple: how do you visualize entirely disparate records — sharing only a timestamp — in a single, cohesive view? Prisma solves this by stepping beyond the definition of a "calendar." It is a visualization layer that takes any data with a time parameter and renders it using your custom rules, properties, and filters. Projects, habits, meetings, tasks, people — if it has a date, Prisma displays it.
-
-Here's what sets it apart:
 
 ### **Configure Literally Everything**
 
@@ -160,6 +144,20 @@ Switch between month, week, day, and list views. Zoom into time slots from 1 to 
 ### **Global Event Management**
 
 Browse, search, and manage all events across all your calendars from a single unified interface. No more hunting through folders — everything is accessible from one place.
+
+---
+
+## 📱 **Mobile Support**
+
+Core features work on mobile without any problems. The design is responsive, and I'm continuously tightening up the mobile experience based on feedback to make it rock solid. If you run into anything, please open a [GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues).
+
+---
+
+## 📦 Installation
+
+Install via **BRAT**, the **Obsidian Community Plugin store**, or manually from [GitHub Releases](https://github.com/Real1tyy/Prisma-Calendar/releases).
+
+**[Full installation guide →](https://real1tyy.github.io/Prisma-Calendar/installation)**
 
 ## Free vs Pro
 
@@ -239,11 +237,7 @@ For full details, please review our legal documents:
 
 ## License
 
-[AGPL-3.0](./LICENSE). Versions before v2.0.0 were MIT.
-
-## Contributing
-
-PRs welcome! Contributions are licensed under AGPL-3.0.
+[AGPL-3.0](./LICENSE).
 
 ---
 

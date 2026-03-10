@@ -36,6 +36,40 @@ Recurring events that generate real notes. Batch operations across dozens of eve
 
 <div align="center">
 
+### The Missing Piece for Your Obsidian Workflow
+
+Other Obsidian calendar plugins give you a basic view. Prisma Calendar gives you **a complete event management platform** — with the depth of a standalone app and the seamless integration only a native plugin can offer.
+
+The core challenge for power users is simple: how do you visualize entirely disparate records — sharing only a timestamp — in a single, cohesive view? Prisma solves this by stepping beyond the definition of a "calendar." It is a visualization layer that takes any data with a time parameter and renders it using your custom rules, properties, and filters. Projects, habits, meetings, tasks, people — if it has a date, Prisma displays it.
+
+Prisma is fundamentally different from any conventional calendar. Tools like Google Calendar lock you into predefined fields that rarely fit complex needs. Platforms like Notion lack the seamless database visualization required for advanced workflows. Prisma breaks free from both.
+
+It takes any data with a time parameter and projects it onto a unified, fully customizable timeline. For Obsidian users managing thousands of heavily customized markdown files, Prisma flawlessly renders those individual properties onto a single cohesive view — turning your vault into a full **enterprise resource planning** system. Plan projects, track habits, manage people, schedule tasks — all powered by the frontmatter you already write.
+
+Prisma is production-ready, fully featured, and built for users who demand absolute freedom over how their information is visualized.
+
+---
+
+## 🎬 Video Tutorials
+
+:::tip Watch All Videos
+Check out the [complete video tutorial collection](/videos) with all videos, detailed chapters, and timestamps!
+:::
+
+### Part 1: Feature Showcase — Core Capabilities
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <iframe
+    style={{"width":"100%", "aspectRatio": "16/9"}}
+    src="https://www.youtube.com/embed/aULuB6petbU"
+    title="Prisma Calendar - Feature Showcase (Part 1)"
+    frameBorder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen>
+  </iframe>
+  <p><strong>Full walkthrough of core features:</strong> Event creation, editing, drag-and-drop, batch operations, undo/redo system, recurring events with source nodes, dynamic color rules, filtering, and calendar customization. See how Prisma Calendar gives you real control over your time-linked notes inside Obsidian.</p>
+</div>
+
 ## Preview
 
 </div>
@@ -60,28 +94,6 @@ Recurring events that generate real notes. Batch operations across dozens of eve
 
 ---
 
-## 🎬 Video Tutorials
-
-:::tip Watch All Videos
-Check out the [complete video tutorial collection](/videos) with all videos, detailed chapters, and timestamps!
-:::
-
-### Part 1: Feature Showcase — Core Capabilities
-
-<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <iframe
-    style={{"width":"100%", "aspectRatio": "16/9"}}
-    src="https://www.youtube.com/embed/aULuB6petbU"
-    title="Prisma Calendar - Feature Showcase (Part 1)"
-    frameBorder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowFullScreen>
-  </iframe>
-  <p><strong>Full walkthrough of core features:</strong> Event creation, editing, drag-and-drop, batch operations, undo/redo system, recurring events with source nodes, dynamic color rules, filtering, and calendar customization. See how Prisma Calendar gives you real control over your time-linked notes inside Obsidian.</p>
-</div>
-
----
-
 ## 📚 **Documentation**
 
 Quick Links:
@@ -90,21 +102,7 @@ Quick Links:
 
 ---
 
-## The Missing Piece for Your Obsidian Workflow
-
-Prisma is fundamentally different from any conventional calendar. Tools like Google Calendar lock you into predefined fields that rarely fit complex needs. Platforms like Notion lack the seamless database visualization required for advanced workflows. Prisma breaks free from both.
-
-It takes any data with a time parameter and projects it onto a unified, fully customizable timeline. For Obsidian users managing thousands of heavily customized markdown files, Prisma flawlessly renders those individual properties onto a single cohesive view — turning your vault into a full **enterprise resource planning** system. Plan projects, track habits, manage people, schedule tasks — all powered by the frontmatter you already write.
-
-Prisma is production-ready, fully featured, and built for users who demand absolute freedom over how their information is visualized.
-
 ## Why Prisma Calendar?
-
-The core challenge for power users is simple: how do you visualize entirely disparate records — sharing only a timestamp — in a single, cohesive view? Prisma solves this by stepping beyond the definition of a "calendar." It is a visualization layer that renders your data using your custom rules, properties, and filters. Projects, habits, meetings, tasks, people — if it has a date, Prisma displays it.
-
-Here's what makes it the best calendar option for Obsidian, hands down.
-
----
 
 ### Configure Literally Everything
 Prisma Calendar adapts to you, not the other way around. Map your own frontmatter properties, define JavaScript-powered [color rules](/features/organization/color-rules), set up advanced [filters](/features/organization/filtering), and customize the calendar appearance down to event text, icons, and density. Manage **multiple independent calendars**, each with their own settings and folder scope. [Learn more →](/features/calendar/multiple-calendars)
@@ -168,6 +166,20 @@ Agenda...
 
 See Configuration for how to map these property names to your preferences and how to display extra properties inside event chips.
 
+---
+
+## 📱 **Mobile Support**
+
+Core features work on mobile without any problems. The design is responsive, and I'm continuously tightening up the mobile experience based on feedback to make it rock solid. If you run into anything, please open a [GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues).
+
+---
+
+## 📦 Installation
+
+Install via **BRAT**, the **Obsidian Community Plugin store**, or manually from [GitHub Releases](https://github.com/Real1tyy/Prisma-Calendar/releases).
+
+**[Full installation guide →](/installation)**
+
 ## Free vs Pro
 
 Prisma Calendar is free and fully-featured out of the box — no account, no trial, no limitations on the core experience.
@@ -216,8 +228,6 @@ This plugin is under active development and is personally used every day by the 
 Have an idea or a feature request?
 1.  **Open an Issue** on our [GitHub repository](https://github.com/Real1tyy/Prisma-Calendar/issues).
 2.  **Upvote Existing Ideas**: If you see a feature request you'd like, give it a 👍 reaction.
-
-We prioritize development based on community demand, so your voice helps us build a better calendar for everyone.
 
 ---
 
