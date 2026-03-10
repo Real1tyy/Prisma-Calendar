@@ -24,7 +24,7 @@ Prisma Calendar exposes a scripting API on `window.PrismaCalendar` that lets you
 
 ## Overview
 
-The API is available on `window.PrismaCalendar` when Prisma Calendar is loaded and enabled. It exposes read operations, write operations, status commands, batch operations, and calendar metadata as JavaScript functions you can call programmatically.
+The API is available on `window.PrismaCalendar` when Prisma Calendar is loaded and enabled. It exposes a license status check, read operations, write operations, status commands, batch operations, and calendar metadata as JavaScript functions you can call programmatically. The `isPro()` method is available to all users; other methods require an active Pro license.
 
 **Use cases:**
 
@@ -36,6 +36,26 @@ The API is available on `window.PrismaCalendar` when Prisma Calendar is loaded a
 - Get calendar statistics for dashboards and reports
 - Integrate with other plugins (e.g., Dataview, QuickAdd, Templater)
 - Automate workflows via URL protocol from external apps
+
+## License Status
+
+### `isPro()`
+
+Returns whether the current installation has an active Pro license. Available to both free and Pro users — use this to conditionally enable Pro-only logic in your scripts.
+
+**Returns:** `boolean` — `true` if Pro is active, `false` otherwise.
+
+**Example:**
+
+```javascript
+if (window.PrismaCalendar.isPro()) {
+  // Use Pro API features
+  const stats = await window.PrismaCalendar.getStatistics();
+  console.log(stats.totalDurationFormatted);
+} else {
+  console.log("Pro features not available");
+}
+```
 
 ## Modal Methods
 

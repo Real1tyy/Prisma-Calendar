@@ -1,5 +1,6 @@
-import { PluginApiGateway, type ActionDefMap } from "@real1ty-obsidian-plugins";
 import type { Command } from "@real1ty-obsidian-plugins";
+import { type ActionDefMap, PluginApiGateway } from "@real1ty-obsidian-plugins";
+
 import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfig } from "../../types";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -44,6 +45,7 @@ import type {
 } from "./types";
 
 export class PrismaCalendarApiManager {
+	private static readonly GLOBAL_KEY = "PrismaCalendar";
 	private readonly gateway: PluginApiGateway<ActionDefMap>;
 	readonly plugin: CustomCalendarPlugin;
 
@@ -51,13 +53,19 @@ export class PrismaCalendarApiManager {
 		this.plugin = plugin;
 		this.gateway = new PluginApiGateway({
 			plugin: this.plugin,
-			globalKey: "PrismaCalendar",
+			globalKey: PrismaCalendarApiManager.GLOBAL_KEY,
 			protocolKey: "prisma-calendar",
 			actions: buildActions(this),
 		});
 	}
 
 	// ─── API Registration ─────────────────────────────────────────
+
+	exposeFree(): void {
+		(window as unknown as Record<string, unknown>)[PrismaCalendarApiManager.GLOBAL_KEY] = {
+			isPro: () => this.isPro(),
+		};
+	}
 
 	expose(): void {
 		if (!this.plugin.isProEnabled) {
@@ -68,6 +76,17 @@ export class PrismaCalendarApiManager {
 
 	unexpose(): void {
 		this.gateway.unexpose();
+		this.exposeFree();
+	}
+
+	destroy(): void {
+		this.gateway.unexpose();
+	}
+
+	// ─── License Status ───────────────────────────────────────────
+
+	isPro(): boolean {
+		return this.plugin.isProEnabled;
 	}
 
 	buildUrl(call: string, params?: Record<string, string | number | boolean>): string {

@@ -1,16 +1,22 @@
-import { ParamCoercion, type ActionDefMap } from "@real1ty-obsidian-plugins";
+import { type ActionDefMap, ParamCoercion } from "@real1ty-obsidian-plugins";
+
 import type { SingleCalendarConfig } from "../../types";
 import type { PrismaCalendarApiManager } from "./api-manager";
 import type {
+	NavigateInput,
 	PrismaConvertEventInput,
 	PrismaCreateEventInput,
 	PrismaDeleteEventInput,
 	PrismaEditEventInput,
-	NavigateInput,
 } from "./types";
 
 export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 	return {
+		isPro: {
+			handler: () => {
+				return manager.isPro();
+			},
+		},
 		openCreateEventModal: {
 			handler: (options?: { calendarId?: string; autoStartStopwatch?: boolean; openCreatedInNewTab?: boolean }) => {
 				void manager.openCreateEventModal(

@@ -1,8 +1,10 @@
 import { onceAsync, SyncStore, WhatsNewModal, type WhatsNewModalConfig } from "@real1ty-obsidian-plugins";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
+import { Subscription } from "rxjs";
+
 import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
-import { AIChatView, AI_CHAT_VIEW_TYPE } from "./components/ai-chat-view";
 import { CalendarView, CustomCalendarSettingsTab } from "./components";
+import { AI_CHAT_VIEW_TYPE, AIChatView } from "./components/ai-chat-view";
 import { CalendarSelectModal, ICSImportModal } from "./components/modals";
 import { ICSImportProgressModal } from "./components/modals/ics-import-progress-modal";
 import { COMMAND_IDS } from "./constants";
@@ -13,14 +15,13 @@ import {
 	PrismaCalendarApiManager,
 	SettingsStore,
 } from "./core";
-import { PRO_FEATURES, LicenseManager } from "./core/license";
 import { type CalDAVAccount } from "./core/integrations/caldav";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
 import { type ICSSubscription } from "./core/integrations/ics-subscription";
+import { LicenseManager, PRO_FEATURES } from "./core/license";
 import { PrismaSyncDataSchema } from "./types";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
-import { Subscription } from "rxjs";
 
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;
@@ -51,6 +52,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		this.initializeCalendarBundles();
 		this.apiManager = new PrismaCalendarApiManager(this);
+		this.apiManager.exposeFree();
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
 
 		this.registerCommands();
@@ -86,7 +88,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		const registry = IndexerRegistry.getInstance(this.app);
 		registry.destroy();
-		this.apiManager.unexpose();
+		this.apiManager.destroy();
 	}
 
 	async ensureCalendarViewFocus(leaf: WorkspaceLeaf): Promise<void> {
