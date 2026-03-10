@@ -586,6 +586,15 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
+##### Start/End Date Propagation
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/RecurringEventsStartEndDatePropagation.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/RecurringEventsStartEndDatePropagation.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ##### Recurring Frontmatter
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
@@ -655,6 +664,15 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
     <source src={useBaseUrl("/video/TemplaterIntegration.webm")} type="video/webm" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+### [Title Autocomplete](features/events/title-autocomplete) — Smart Title Suggestions
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/TitleAutocomplete.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/TitleAutocomplete.mp4")} type="video/mp4" />
     Your browser does not support the video tag.
   </video>
 </div>
@@ -829,6 +847,15 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
+
+### [Licence Activation](features/free-vs-pro) — Activating Pro
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/LicenceActivation.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/LicenceActivation.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ### [Installation](installation) — BRAT Installation
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>

@@ -1,4 +1,14 @@
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 # Title Autocomplete
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/TitleAutocomplete.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/TitleAutocomplete.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 When you type an event title in the create or edit modal, Prisma Calendar suggests matching names in a dropdown below the input. This speeds up event creation and keeps naming consistent across your calendar.
 

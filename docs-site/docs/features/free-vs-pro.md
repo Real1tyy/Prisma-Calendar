@@ -1,5 +1,7 @@
 # Free vs Pro
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 **👉 [Visit the product page](https://matejvavroproductivity.com/tools/prisma-calendar/) to learn more or start a 30-day free trial.**
 
 Prisma Calendar follows a freemium model. The free version is not a demo — it's a fully-featured calendar plugin packed with more capabilities than most standalone calendar apps. Pro adds advanced power-user features for those who need AI assistance, external calendar sync, scripting, and more.
@@ -59,6 +61,14 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 2. After subscribing, you'll receive a license key
 3. Enter the license key in **Settings → General → Obsidian Secrets → License key** to unlock Pro features
 4. Click **Verify now** to activate — Pro features unlock immediately, no restart required
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/LicenceActivation.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/LicenceActivation.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 Once verified, the license section in General settings shows:
 

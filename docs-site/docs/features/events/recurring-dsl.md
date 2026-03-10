@@ -95,6 +95,14 @@ You can control how frontmatter changes are propagated in Settings → Calendar 
 
 ### Time Propagation
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/RecurringEventsStartEndDatePropagation.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/RecurringEventsStartEndDatePropagation.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 When you change the start or end time of a source recurring event (e.g., moving a daily standup from 9:00 AM to 10:00 AM), the new time automatically propagates to all **future** physical instances that still have the original time. Past instances and instances where the time was manually changed are left untouched.
 
 **How it works:**
