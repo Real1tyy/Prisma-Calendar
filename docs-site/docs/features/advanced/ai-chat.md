@@ -164,13 +164,3 @@ Type your message in the text area at the bottom and press **Enter** (or click *
 
 - Press **Shift+Enter** to add a new line without sending
 - Click **Clear** to start a new conversation (the previous one is saved in the thread list)
-
-## Tips
-
-- Ask about your schedule: "How many events do I have this week?"
-- Analyze time usage: "What categories am I spending the most time on?"
-- Ask about scheduling patterns: "What's a good way to organize weekly meetings?"
-- Get advice on calendar setup: "How should I configure recurring events?"
-- Use Manipulation mode to quickly batch-create or reschedule events
-- The AI remembers the full conversation within a thread, so you can ask follow-up questions
-- Past conversations are always available in the thread list — expand it to pick up where you left off

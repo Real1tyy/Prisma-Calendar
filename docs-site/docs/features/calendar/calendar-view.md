@@ -6,7 +6,7 @@ The calendar view is the main interface for viewing and interacting with your ev
 
 <div style={{"textAlign": "center", "marginBottom": "2em"}}>
 
-![Calendar View](/img/fullcal.png)
+![Calendar View](/img/landing_page.png)
 
 </div>
 
