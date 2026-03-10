@@ -2,11 +2,13 @@
 
 # Prisma Calendar
 
-![Downloads](https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge)
-![Release](https://img.shields.io/github/v/release/Real1tyy/Prisma-Calendar?label=Latest%20Release&style=for-the-badge)
-![Stars](https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge)
-![License](https://img.shields.io/github/license/Real1tyy/Prisma-Calendar?style=for-the-badge)
-![Obsidian](https://img.shields.io/badge/obsidian-plugin-purple.svg?style=for-the-badge)
+<table>
+  <tr>
+    <td align="center"><img src="https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge" alt="Downloads" /></td>
+    <td align="center"><img src="docs-site/static/img/prisma_logo.png" alt="Prisma Calendar Logo" width="120" /></td>
+    <td align="center"><img src="https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge" alt="Stars" /></td>
+  </tr>
+</table>
 
 **The Ultimate Temporal Visualization Engine for Obsidian.**
 
@@ -17,6 +19,14 @@ It's not just a calendar. It's a way to **see your entire vault through time**.
 **Every setting is configurable. Every change is reactive. Every action is undoable.**
 
 Whether you need recurring events that generate real notes, batch operations across dozens of events, intelligent category auto-assignment with title autocomplete, time-based statistics, CalDAV sync, scriptable event creation via API, or just a clean timeline that works exactly how you want — Prisma does it all.
+
+**[View Full Product Page →](https://matejvavroproductivity.com/tools/prisma-calendar/)**
+
+</div>
+
+![Prisma Calendar Preview](docs-site/static/img/landing_page.png)
+
+<div align="center">
 
 ### The Missing Piece for Your Obsidian Workflow
 
@@ -244,6 +254,31 @@ You can also support the project through a donation:
 - [View all donation options](https://matejvavroproductivity.com/support/)
 
 Every contribution, no matter the size, is greatly appreciated!
+
+## Third-Party Independence
+
+Prisma Calendar is developed by [Matej Vavro](https://matejvavroproductivity.com/) and is an independent, third-party product. **We are not affiliated with, endorsed by, or sponsored by Obsidian (Dynalist Inc.).** Prisma Calendar is a third-party community plugin. All references to "Obsidian" are for descriptive and compatibility purposes only.
+
+## Privacy & Telemetry
+
+Prisma Calendar **does not include any client-side telemetry or analytics**. No vault content, file names, note content, or personal data from your Obsidian vault is ever transmitted.
+
+**Server-side telemetry** is collected exclusively during license verification requests for Pro (advanced) features. When the plugin contacts our license server, the following data is transmitted:
+
+- License key
+- Plugin version
+- Obsidian version
+- Operating system / platform
+- Device identifier (a locally generated unique ID)
+- Device name
+
+This data is used solely for license validation, activation seat management (up to 5 devices per license), compatibility monitoring, abuse prevention, and product improvement. **If you only use the free features, no telemetry data is collected.**
+
+For full details, please review our legal documents:
+
+- [Privacy Policy](https://matejvavroproductivity.com/privacy/)
+- [Terms of Service](https://matejvavroproductivity.com/terms/)
+- [Legal Notice / Imprint](https://matejvavroproductivity.com/legal/)
 
 ## License
 

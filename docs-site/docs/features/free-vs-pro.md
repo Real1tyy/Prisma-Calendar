@@ -55,8 +55,15 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 
 1. Visit [matejvavroproductivity.com/tools/prisma-calendar](https://matejvavroproductivity.com/tools/prisma-calendar) and start a 30-day free trial
 2. After subscribing, you'll receive a license key
-3. Enter the license key in Prisma Calendar settings to unlock Pro features
-4. Pro features activate immediately — no restart required
+3. Enter the license key in **Settings > License > License key** to unlock Pro features
+4. Click **Verify now** to activate — Pro features unlock immediately, no restart required
+
+Once verified, the License section in settings shows:
+
+- **License status** — whether your license is active
+- **Device activations** — how many of your allowed devices are active (e.g., 2/5)
+- **Offline expiry** — how long the license remains valid without an internet connection (7 days from last verification)
+- **Verify now** button — manually refresh your license status at any time
 
 ## FAQ
 
@@ -66,7 +73,7 @@ Nothing is deleted. If you created 5 calendars or 4 presets while on Pro, they a
 
 ### Does Pro work offline?
 
-Yes. Your license key is verified periodically (approximately weekly) when you're online. Between checks, everything works offline. Your notes never leave your vault.
+Yes. Your license is verified on startup and cached locally for 7 days. During that period, everything works offline — no internet required. The offline expiry date is shown in **Settings > License > License status**. When the cached token expires, connect to the internet and click **Verify now** to refresh. Your notes never leave your vault.
 
 ### Can I cancel anytime?
 

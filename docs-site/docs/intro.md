@@ -8,17 +8,13 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Prisma Calendar
 
-<p>
-  <img src="https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge" alt="Downloads" />
-  {" "}
-  <img src="https://img.shields.io/github/v/release/Real1tyy/Prisma-Calendar?label=Latest%20Release&style=for-the-badge" alt="Release" />
-  {" "}
-  <img src="https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge" alt="Stars" />
-  {" "}
-  <img src="https://img.shields.io/github/license/Real1tyy/Prisma-Calendar?style=for-the-badge" alt="License" />
-  {" "}
-  <img src="https://img.shields.io/badge/obsidian-plugin-purple.svg?style=for-the-badge" alt="Obsidian" />
-</p>
+<table style={{border: "none", borderCollapse: "collapse"}}>
+  <tr style={{border: "none"}}>
+    <td align="center" style={{border: "none", padding: "0 1.5em"}}><img src="https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge" alt="Downloads" /></td>
+    <td align="center" style={{border: "none", padding: "0 1.5em"}}><img src={useBaseUrl("/img/prisma_logo.png")} alt="Prisma Calendar Logo" width="120" /></td>
+    <td align="center" style={{border: "none", padding: "0 1.5em"}}><img src="https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge" alt="Stars" /></td>
+  </tr>
+</table>
 
 **The Ultimate Temporal Visualization Engine for Obsidian.**
 
@@ -29,6 +25,16 @@ It's not just a calendar. It's a way to **see your entire vault through time**.
 Every setting is configurable. Every change is reactive. Every action is undoable.
 
 Whether you need recurring events that generate real notes, batch operations across dozens of events, intelligent category auto-assignment with title autocomplete, time-based statistics, CalDAV sync, a scriptable API, or just a clean timeline that works exactly how you want — Prisma does it all.
+
+**[View Full Product Page →](https://matejvavroproductivity.com/tools/prisma-calendar/)**
+
+</div>
+
+<div style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <img src={useBaseUrl("/img/landing_page.png")} alt="Prisma Calendar Preview" style={{"width": "100%", "maxWidth": "900px", "borderRadius": "12px", "boxShadow": "0 8px 30px rgba(0,0,0,0.3)"}} />
+</div>
+
+<div align="center">
 
 ## Preview
 
@@ -212,6 +218,35 @@ Have an idea or a feature request?
 2.  **Upvote Existing Ideas**: If you see a feature request you'd like, give it a 👍 reaction.
 
 We prioritize development based on community demand, so your voice helps us build a better calendar for everyone.
+
+---
+
+## Third-Party Independence
+
+Prisma Calendar is developed by [Matej Vavro](https://matejvavroproductivity.com/) and is an independent, third-party product. **We are not affiliated with, endorsed by, or sponsored by Obsidian (Dynalist Inc.).** Prisma Calendar is a third-party community plugin distributed through Obsidian's community plugin marketplace. All references to "Obsidian" are for descriptive and compatibility purposes only and do not imply any official partnership or endorsement.
+
+## Privacy & Telemetry
+
+Prisma Calendar **does not include any client-side telemetry or analytics**. No vault content, file names, note content, or personal data from your Obsidian vault is ever transmitted.
+
+**Server-side telemetry** is collected exclusively during license verification requests for Pro (advanced) features. When the plugin contacts our license server, the following data is transmitted:
+
+- License key
+- Plugin version
+- Obsidian version
+- Operating system / platform
+- Device identifier (a locally generated unique ID)
+- Device name
+
+This data is used solely for license validation, activation seat management (up to 5 devices per license), compatibility monitoring, abuse prevention, and product improvement. **If you only use the free features, no telemetry data is collected.**
+
+This approach complies with [Obsidian Developer Policies](https://docs.obsidian.md/Developer+policies), which permit server-side telemetry with disclosure and a linked privacy policy, while prohibiting client-side telemetry.
+
+For full details, please review our legal documents:
+
+- [Privacy Policy](https://matejvavroproductivity.com/privacy/)
+- [Terms of Service](https://matejvavroproductivity.com/terms/)
+- [Legal Notice / Imprint](https://matejvavroproductivity.com/legal/)
 
 ---
 
