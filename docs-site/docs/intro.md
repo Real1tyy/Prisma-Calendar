@@ -8,13 +8,13 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Prisma Calendar
 
-<table style={{border: "none", borderCollapse: "collapse"}}>
-  <tr style={{border: "none"}}>
-    <td align="center" style={{border: "none", padding: "0 1.5em"}}><img src="https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge" alt="Downloads" /></td>
-    <td align="center" style={{border: "none", padding: "0 1.5em"}}><img src={useBaseUrl("/img/prisma_logo.png")} alt="Prisma Calendar Logo" width="120" /></td>
-    <td align="center" style={{border: "none", padding: "0 1.5em"}}><img src="https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge" alt="Stars" /></td>
-  </tr>
-</table>
+<img src={useBaseUrl("/img/prisma_logo.png")} alt="Prisma Calendar Logo" width="120" />
+
+<p>
+  <img src="https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge" alt="Downloads" />
+  {" "}
+  <img src="https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge" alt="Stars" />
+</p>
 
 **The Ultimate Temporal Visualization Engine for Obsidian.**
 
@@ -24,7 +24,7 @@ It's not just a calendar. It's a way to **see your entire vault through time**.
 
 Every setting is configurable. Every change is reactive. Every action is undoable.
 
-Whether you need recurring events that generate real notes, batch operations across dozens of events, intelligent category auto-assignment with title autocomplete, time-based statistics, CalDAV sync, a scriptable API, or just a clean timeline that works exactly how you want — Prisma does it all.
+Recurring events that generate real notes. Batch operations across dozens of events. Time-based statistics. CalDAV sync. A scriptable API. Prisma Calendar handles the workflows other calendars can't.
 
 **[View Full Product Page →](https://matejvavroproductivity.com/tools/prisma-calendar/)**
 

@@ -2,13 +2,9 @@
 
 # Prisma Calendar
 
-<table>
-  <tr>
-    <td align="center"><img src="https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge" alt="Downloads" /></td>
-    <td align="center"><img src="docs-site/static/img/prisma_logo.png" alt="Prisma Calendar Logo" width="120" /></td>
-    <td align="center"><img src="https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge" alt="Stars" /></td>
-  </tr>
-</table>
+<img src="docs-site/static/img/prisma_logo.png" alt="Prisma Calendar Logo" width="120" />
+
+![Downloads](https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge) ![Stars](https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge)
 
 **The Ultimate Temporal Visualization Engine for Obsidian.**
 
@@ -18,7 +14,7 @@ It's not just a calendar. It's a way to **see your entire vault through time**.
 
 **Every setting is configurable. Every change is reactive. Every action is undoable.**
 
-Whether you need recurring events that generate real notes, batch operations across dozens of events, intelligent category auto-assignment with title autocomplete, time-based statistics, CalDAV sync, scriptable event creation via API, or just a clean timeline that works exactly how you want — Prisma does it all.
+Recurring events that generate real notes. Batch operations across dozens of events. Time-based statistics. CalDAV sync. A scriptable API. Prisma Calendar handles the workflows other calendars can't.
 
 **[View Full Product Page →](https://matejvavroproductivity.com/tools/prisma-calendar/)**
 
@@ -58,16 +54,6 @@ For the **Full Tutorial** (Zero to Mastery), **Part 2** (Intelligence & Automati
 
 ## 📸 Screenshots
 
-### Full Calendar View
-
-![Full Calendar View](docs-site/static/img/fullcal.png)
-_Weekly calendar view with color-coded events, time grid, and powerful toolbar_
-
-### Batch Operations
-
-![Batch Selection Mode](docs-site/static/img/batch.png)
-_Select multiple events for bulk operations like delete, duplicate, move, or skip_
-
 ### Event Creation & Editing
 
 <p align="center">
@@ -99,44 +85,15 @@ Quick Links:
 
 ## 📦 Installation
 
-Prisma Calendar is currently **awaiting approval** for the Obsidian Community Plugin store. In the meantime, you can install it using one of these methods:
+Install via **BRAT**, the **Obsidian Community Plugin store**, or manually from [GitHub Releases](https://github.com/Real1tyy/Prisma-Calendar/releases).
 
-### 🎯 Recommended: BRAT (Beta Reviewers Auto-update Tool)
-
-The easiest way to install and keep Prisma Calendar up to date:
-
-1. Install the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) from Obsidian's Community Plugins
-2. Open BRAT settings (Settings → BRAT)
-3. Click **Add Beta Plugin**
-4. Enter this repository URL: `https://github.com/Real1tyy/Prisma-Calendar`
-5. Click **Add Plugin**
-6. Enable Prisma Calendar in Settings → Community Plugins
-
-**Benefits**: Automatic updates, smooth experience, one-click installation
-
-### 📥 Manual Installation from GitHub Releases
-
-1. Go to [Releases](https://github.com/Real1tyy/Prisma-Calendar/releases)
-2. Download the latest release assets:
-   - `main.js`
-   - `manifest.json`
-   - `styles.css`
-3. Create folder: `{VaultFolder}/.obsidian/plugins/prisma-calendar/`
-4. Move downloaded files into the folder
-5. Reload Obsidian (Ctrl/Cmd + R)
-6. Enable Prisma Calendar in Settings → Community Plugins
-
-**Note**: All releases are versioned and tagged for easy reference.
-
-### ✨ Coming Soon
-
-Once approved for the Community Plugin store, you'll be able to install Prisma Calendar directly from Settings → Community Plugins → Browse.
+**[Full installation guide →](https://real1tyy.github.io/Prisma-Calendar/installation)**
 
 ---
 
 ## 📱 **Mobile Support**
 
-**Core features work on mobile without any problems**. We have users who rely on mobile, and thanks to their feedback, we continually improve and tighten up the mobile experience to make it rock solid. Our design is responsive, so most things work, and we're committed to making it even better over time. If you encounter any problems or have suggestions for improvement, please create a [GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues) and we'll address it.
+Core features work on mobile without any problems. The design is responsive, and I'm continuously tightening up the mobile experience based on feedback to make it rock solid. If you run into anything, please open a [GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues).
 
 ---
 
