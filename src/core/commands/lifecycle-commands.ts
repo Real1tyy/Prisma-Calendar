@@ -1,3 +1,4 @@
+import type { Command } from "@real1ty-obsidian-plugins";
 import {
 	createFileAtPath,
 	extractContentAfterFrontmatter,
@@ -7,10 +8,10 @@ import {
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
-import type { Command } from "@real1ty-obsidian-plugins";
+
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
-import { ensureFileHasZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/event-naming";
 import { applyStartEndOffsets, removeNonCloneableProperties } from "../../utils/event-frontmatter";
+import { ensureFileHasZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
 
 export interface EventData {

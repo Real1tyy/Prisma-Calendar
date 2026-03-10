@@ -18,6 +18,7 @@ import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
+
 import type { CalendarEvent, Frontmatter, ISO, PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring-event";
