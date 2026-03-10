@@ -1,19 +1,29 @@
 # Troubleshooting
 
-Use this checklist to diagnose common issues.
+Use this checklist to diagnose common issues. If your problem isn't listed here, please [open a GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose).
 
-## Performance / lag
+## ⚡ Performance
 
-If the calendar feels slow in a large vault:
+<details>
+<summary>Calendar feels slow in a large vault</summary>
 
-- Disable **Enable name series tracking** (Settings → Configuration → Performance) to stop indexing events by title
+Prisma Calendar is designed to handle large vaults without issues. If you're experiencing lag, try the tips below. For very large vaults, if you experience severe issues, please also [open a GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose) — I want Prisma to work smoothly for vaults of any size.
+
+- Disable **Enable name series tracking** (Settings → Configuration → Performance) to stop tracking events by title
 - Disable **Show color dots** (Settings → Calendar) to skip per-day event scanning in monthly view
 - Disable **Highlight upcoming event** (Settings → Calendar) to remove the 1-minute interval timer
 - Disable **Enable event preview** (Settings → Calendar) to skip loading note content on hover
 - Disable **Enable notifications** (Settings → Notifications) to remove the 1-minute interval check
 - Disable **Enable holidays** (Settings → Integrations) to skip external library loading
 
-## Events not appearing
+</details>
+
+---
+
+## 📅 Events
+
+<details>
+<summary>Events not appearing</summary>
 
 - Plugin enabled and vault reloaded
 - Calendar Directory points to the correct folder (subfolders included)
@@ -22,29 +32,45 @@ If the calendar feels slow in a large vault:
 - Frontmatter keys match your Properties Settings (e.g., `Start` vs `start`)
 - **Try refreshing**: Open command palette (Ctrl/Cmd+P) and run "Refresh calendar" to force a full resync
 
-## Wrong colors or no color applied
+</details>
+
+<details>
+<summary>Wrong colors or no color applied</summary>
 
 - The first matching color rule wins — check rule order
 - Expressions use property names directly (e.g., `Priority === 'High'`)
 - Color value is valid CSS (hex/name/HSL)
 
-## Templater not working
+</details>
 
-- Templater plugin is installed and enabled
-- Template path in General Settings is correct
-- Your template render outside Prisma Calendar (sanity check)
-
-## Recurring events missing
+<details>
+<summary>Recurring events missing</summary>
 
 - `RRule` is set (e.g., `weekly`) and valid `RRuleSpec` for week-based schedules
 - "Future instances count" is high enough to cover the date you expect
 - Virtual events show beyond the generation horizon (read-only)
 
-## Calendar stuck on "Indexing calendar events..." after duplicating
+</details>
+
+<details>
+<summary>Events appearing as all-day when they should be timed (or vice versa)</summary>
+
+**Problem**: You duplicate a timed event, but the duplicate appears as an all-day event. Or you have events that show start/end times in frontmatter but display as all-day on the calendar.
+
+**Root Cause**: The `All Day` property is the **source of truth** for determining event type. Prisma ignores `Start`/`End` properties when `All Day: true` is set, and ignores the `Date` property when `All Day: false` (or unset).
+
+</details>
+
+---
+
+## 📆 Multiple Calendars
+
+<details>
+<summary>Calendar stuck on "Indexing calendar events..." after duplicating</summary>
 
 **Problem**: After duplicating a calendar or creating a second calendar that points to the same directory, one or both calendars hang on "Indexing calendar events..." and never complete.
 
-**Root Cause**: When multiple calendars share the same directory, they share infrastructure (indexer, parser, event store). The initialization flow when duplicating calendars can cause synchronization issues where the shared infrastructure doesn't properly notify all calendar views.
+**Root Cause**: When multiple calendars share the same directory, they share the same underlying data layer. The initialization flow when duplicating calendars can cause synchronization issues where the shared layer doesn't properly notify all calendar views.
 
 **Solution**: Reload the plugin after creating/duplicating calendars:
 
@@ -58,19 +84,22 @@ If the calendar feels slow in a large vault:
 - Creating all calendars at once, then reloading the plugin once
 - Using different directories for different calendars if you don't need them to share events
 
-## Multiple calendars creating duplicate events
+</details>
+
+<details>
+<summary>Multiple calendars creating duplicate events</summary>
 
 If you're seeing duplicate events or recurring instances being created multiple times, this may be caused by multiple calendars using overlapping directories.
 
 **Automatic Conflict Prevention:**
-When multiple calendars use the **exact same directory path**, they automatically share the same indexer and recurring event manager. This prevents duplicates and conflicts.
+When multiple calendars use the **exact same directory path**, they automatically share the same underlying data layer and recurring event manager. This prevents duplicates and conflicts.
 
 **Known Limitation - Directory Subsets:**
 The system **cannot detect** when one calendar uses a parent directory and another uses a subdirectory. For example:
 - Calendar A uses `tasks`
 - Calendar B uses `tasks/homework`
 
-These will create **separate indexers** that may conflict, potentially causing:
+These will be managed separately and may conflict, potentially causing:
 - Duplicate recurring event instances
 - File change events processed multiple times
 - Inconsistent event states
@@ -93,11 +122,14 @@ Calendar A: Directory: tasks/          ❌ Will conflict
 Calendar B: Directory: tasks/homework/ ❌ Will conflict
 ```
 
-## Calendars sharing directory have different frontmatter property settings
+</details>
+
+<details>
+<summary>Calendars sharing directory have different frontmatter property settings</summary>
 
 **Problem**: You have two calendars pointing to the same directory, but want Calendar 1 to use `start` property and Calendar 2 to use `scheduledDate` property. However, both calendars seem to use the same property mappings.
 
-**Root Cause**: When multiple calendars share the same directory, they share the Parser and Indexer. These components are created with the FIRST calendar's settings and are reused by all subsequent calendars pointing to that directory.
+**Root Cause**: When multiple calendars share the same directory, they share the same underlying data layer. This layer is initialized with the FIRST calendar's settings and is reused by all subsequent calendars pointing to that directory.
 
 **What's Shared**:
 - Frontmatter property mappings (Start, End, Date, Title, etc.)
@@ -123,13 +155,59 @@ Calendar "Schedule":       Directory: schedule/
 
 **Alternative**: If events truly belong in the same directory, standardize on one set of property names and use that across all calendars viewing that directory.
 
-## "Show current interval in Bases" shows no events
+</details>
+
+---
+
+## 📊 Bases Integration
+
+<details>
+<summary>"Show current interval in Bases" shows no events</summary>
 
 This command requires **Sorting normalization** to be enabled. See [Bases — Sort date property required for interval views](./configuration/bases.md#where-bases-views-are-used) for the fix.
 
-## Templater integration
+</details>
 
-### Templates not applying to Prisma-created events
+<details>
+<summary>Events not sorting correctly by Sort Date in Bases</summary>
+
+If events appear out of order when sorting by `Sort Date` in Bases views, the property type is likely set to "Text" instead of "Date & time". Obsidian's Bases sorts text properties alphabetically, which produces incorrect results for datetime values.
+
+**To fix this:**
+
+1. Open **Obsidian Settings → Properties**
+2. Find the `Sort Date` property (or whatever name you configured in Prisma Calendar's "Sort date property" setting)
+3. Change its type to **Date & time**
+
+Alternatively, you can edit `.obsidian/types.json` directly and add the property with the `datetime` type:
+
+```json
+{
+  "types": {
+    "Sort Date": "datetime"
+  }
+}
+```
+
+After changing the property type, Bases will sort events chronologically. See the [Configuration — Sorting Normalization](./configuration/properties#sorting-normalization-for-external-tools) documentation for full details on how sort date normalization works.
+
+</details>
+
+---
+
+## 🔌 Templater Integration
+
+<details>
+<summary>Templater not working</summary>
+
+- Templater plugin is installed and enabled
+- Template path in General Settings is correct
+- Your template renders outside Prisma Calendar (sanity check)
+
+</details>
+
+<details>
+<summary>Templates not applying to Prisma-created events</summary>
 
 **Problem**: Templater folder templates work for manually created notes, but not for events created through Prisma Calendar.
 
@@ -142,7 +220,10 @@ This command requires **Sorting normalization** to be enabled. See [Bases — So
 
 This ensures the template is applied atomically when Prisma creates the event file.
 
-### Events created are saved to root folder instead of configured directory
+</details>
+
+<details>
+<summary>Events created are saved to root folder instead of configured directory</summary>
 
 **Problem**: When creating events, files are saved to the vault root instead of the configured directory (e.g., "Tasks" folder). This only happens when Templater is enabled and `templatePath` is set.
 
@@ -158,7 +239,10 @@ This ensures the template is applied atomically when Prisma creates the event fi
 
 **Verified Working**: Templater version 2.15+ correctly respects the `templatePath` setting and creates files in the configured directory.
 
-### Inconsistent date properties for sorting
+</details>
+
+<details>
+<summary>Inconsistent date properties for sorting</summary>
 
 **Problem**: Events have different property names (`Start Date` for timed events, `Date` for all-day events) and formats (`2025-02-10T14:00:00.000Z` vs `2025-02-10T14:00:00`), making it impossible to sort chronologically in other tools like Bases or Dataview.
 
@@ -168,8 +252,4 @@ This ensures the template is applied atomically when Prisma creates the event fi
 
 **Result**: Consistent `sort_date` property across all events for reliable chronological sorting in Bases, Dataview, or other tools.
 
-## Events appearing as all-day when they should be timed (or vice versa)
-
-**Problem**: You duplicate a timed event, but the duplicate appears as an all-day event. Or you have events that show start/end times in frontmatter but display as all-day on the calendar.
-
-**Root Cause**: The `All Day` property is the **source of truth** for determining event type. Prisma ignores `Start`/`End` properties when `All Day: true` is set, and ignores the `Date` property when `All Day: false` (or unset).
+</details>

@@ -10,6 +10,21 @@
 - **Auto-assign Zettel ID**: automatically add a Zettel ID timestamp (`-YYYYMMDDHHmmss`) to filenames of events in the calendar directory that don't have one. Three modes: **Disabled** (default), **Calendar events only** (timed and all-day events), or **All events** (including untracked). When active, files are renamed as they are indexed — for example, `My Event.md` becomes `My Event-20260216120000.md`.
 - **Read-only mode**: prevent automatic file modifications (see [Read-only Mode](#read-only-mode) below)
 
+## License
+
+Enter your Pro license key to activate advanced features.
+
+- **License key**: enter your key in **Obsidian Secrets → License key** (inside General settings) and click **Verify now** to activate. Pro features unlock immediately — no restart required.
+
+Once verified, the license section shows:
+
+- **License status** — whether your license is active
+- **Device activations** — how many of your allowed devices are active (e.g., 2/5)
+- **Offline expiry** — how long the license remains valid without an internet connection (7 days from last verification)
+- **Verify now** button — manually refresh your license status at any time
+
+See [Free vs Pro](../features/free-vs-pro.md) for details on what Pro includes and how to get a license.
+
 ## Parsing
 
 - **Default duration (minutes)**: default event duration when only start time is provided (default: 60 minutes, range: 1–240)

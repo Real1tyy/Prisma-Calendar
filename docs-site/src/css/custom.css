@@ -5,3 +5,41 @@
 	--ifm-color-primary-light: #8b5cf6;
 	--ifm-color-primary-lighter: #a78bfa;
 }
+
+/* Collapsible details/summary styling (FAQ, Troubleshooting) */
+details {
+	border: 1px solid var(--ifm-color-primary-dark);
+	border-radius: 8px;
+	margin-bottom: 0.75em;
+	background: rgba(124, 58, 237, 0.08);
+}
+
+details summary {
+	padding: 0.75em 1em;
+	font-weight: 600;
+	cursor: pointer;
+	color: var(--ifm-color-primary-lighter);
+	transition: background 0.15s ease;
+}
+
+details summary:hover {
+	background: rgba(124, 58, 237, 0.15);
+	border-radius: 8px;
+}
+
+details[open] summary {
+	border-bottom: 1px solid var(--ifm-color-primary-dark);
+	border-radius: 8px 8px 0 0;
+}
+
+details > :not(summary) {
+	padding: 0 1em;
+}
+
+[data-theme="light"] details {
+	background: rgba(124, 58, 237, 0.05);
+}
+
+[data-theme="light"] details summary {
+	color: var(--ifm-color-primary-dark);
+}

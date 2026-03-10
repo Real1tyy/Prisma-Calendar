@@ -120,13 +120,13 @@ For `weekly`/`biweekly`, system finds first day matching `RRuleSpec` on or after
 
 ### Duplicate Prevention
 
-Deterministic file paths based on (RRuleID, Instance Date) prevent duplicates. Format: `[Title] [YYYY-MM-DD]-[14-digit-hash].md`. Filesystem itself acts as deduplication gate - if file exists, creation skipped. Resilient to race conditions, plugin reloads, vault sync, and indexer restarts.
+Deterministic file paths based on (RRuleID, Instance Date) prevent duplicates. Format: `[Title] [YYYY-MM-DD]-[14-digit-hash].md`. Filesystem itself acts as deduplication gate — if file exists, creation skipped. Resilient to race conditions, plugin reloads, and vault sync.
 
 ## Creating Recurring Events
 
 **Calendar Interface** (Recommended): Right-click time slot → "Create Event" → Set RRule properties → Create
 
-**Manual**: Create note with frontmatter. Add `RRule` property last (indexer starts generating immediately when detected).
+**Manual**: Create note with frontmatter. Add `RRule` property last (Prisma starts generating instances immediately when detected).
 
 ## Source Navigation & Instance Management
 

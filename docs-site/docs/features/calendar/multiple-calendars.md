@@ -104,7 +104,7 @@ You **cannot** use the same directory if you need:
 - ❌ Different property mappings (one uses `start`, another uses `scheduledDate`)
 - ❌ Different recurring event settings
 
-**Why this limitation exists**: Calendars sharing a directory share infrastructure (indexer, parser, event store) to prevent conflicts and duplicate event creation. These shared components use the **FIRST calendar's settings** for:
+**Why this limitation exists**: Calendars sharing a directory share the same underlying data layer to prevent conflicts and duplicate event creation. This shared layer uses the **FIRST calendar's settings** for:
 - Filter expressions
 - Property mappings (Start, End, Date, etc.)
 - Recurring event settings
