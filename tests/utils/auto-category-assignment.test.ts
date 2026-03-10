@@ -269,5 +269,242 @@ describe("Auto-Category Assignment", () => {
 				expect(result).toEqual([]);
 			});
 		});
+
+		describe("Pro feature gating for presets", () => {
+			it("should NOT apply presets when isProEnabled is false", () => {
+				const settings = {
+					...mockSettings,
+					categoryAssignmentPresets: [
+						{
+							id: "1",
+							eventName: "Coding",
+							categories: ["Business"],
+						},
+					],
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("Coding", settings, availableCategories, false);
+
+				expect(result).toEqual([]);
+			});
+
+			it("should apply presets when isProEnabled is true", () => {
+				const settings = {
+					...mockSettings,
+					categoryAssignmentPresets: [
+						{
+							id: "1",
+							eventName: "Coding",
+							categories: ["Business"],
+						},
+					],
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("Coding", settings, availableCategories, true);
+
+				expect(result).toEqual(["Business"]);
+			});
+
+			it("should still apply name matching even without Pro", () => {
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByName: true,
+					categoryAssignmentPresets: [
+						{
+							id: "1",
+							eventName: "Health",
+							categories: ["Business"],
+						},
+					],
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("Health", settings, availableCategories, false);
+
+				expect(result).toEqual(["Health"]);
+			});
+
+			it("should default isProEnabled to false when not provided", () => {
+				const settings = {
+					...mockSettings,
+					categoryAssignmentPresets: [
+						{
+							id: "1",
+							eventName: "Coding",
+							categories: ["Business"],
+						},
+					],
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("Coding", settings, availableCategories);
+
+				expect(result).toEqual([]);
+			});
+		});
+
+		describe("comma-separated preset event names", () => {
+			it("should match any name in comma-separated list", () => {
+				const settings = {
+					...mockSettings,
+					categoryAssignmentPresets: [
+						{
+							id: "1",
+							eventName: "Coding, Work, Dev",
+							categories: ["Business"],
+						},
+					],
+				} as SingleCalendarConfig;
+
+				expect(autoAssignCategories("Coding", settings, availableCategories, true)).toEqual(["Business"]);
+				expect(autoAssignCategories("Work", settings, availableCategories, true)).toEqual(["Business"]);
+				expect(autoAssignCategories("Dev", settings, availableCategories, true)).toEqual(["Business"]);
+			});
+
+			it("should not match partial names from comma-separated list", () => {
+				const settings = {
+					...mockSettings,
+					categoryAssignmentPresets: [
+						{
+							id: "1",
+							eventName: "Coding, Work",
+							categories: ["Business"],
+						},
+					],
+				} as SingleCalendarConfig;
+
+				expect(autoAssignCategories("Cod", settings, availableCategories, true)).toEqual([]);
+				expect(autoAssignCategories("Working", settings, availableCategories, true)).toEqual([]);
+			});
+
+			it("should handle extra whitespace in comma-separated names", () => {
+				const settings = {
+					...mockSettings,
+					categoryAssignmentPresets: [
+						{
+							id: "1",
+							eventName: "  Coding ,  Work  ,Dev  ",
+							categories: ["Business"],
+						},
+					],
+				} as SingleCalendarConfig;
+
+				expect(autoAssignCategories("Coding", settings, availableCategories, true)).toEqual(["Business"]);
+				expect(autoAssignCategories("Work", settings, availableCategories, true)).toEqual(["Business"]);
+				expect(autoAssignCategories("Dev", settings, availableCategories, true)).toEqual(["Business"]);
+			});
+
+			it("should skip empty entries in comma-separated names", () => {
+				const settings = {
+					...mockSettings,
+					categoryAssignmentPresets: [
+						{
+							id: "1",
+							eventName: "Coding,,  ,Work",
+							categories: ["Business"],
+						},
+					],
+				} as SingleCalendarConfig;
+
+				expect(autoAssignCategories("Coding", settings, availableCategories, true)).toEqual(["Business"]);
+				expect(autoAssignCategories("Work", settings, availableCategories, true)).toEqual(["Business"]);
+				expect(autoAssignCategories("", settings, availableCategories, true)).toEqual([]);
+			});
+
+			it("should match comma-separated names with ZettelID suffix", () => {
+				const settings = {
+					...mockSettings,
+					categoryAssignmentPresets: [
+						{
+							id: "1",
+							eventName: "Gym, Exercise",
+							categories: ["Health"],
+						},
+					],
+				} as SingleCalendarConfig;
+
+				expect(autoAssignCategories("Gym-20250103123456", settings, availableCategories, true)).toEqual(["Health"]);
+				expect(autoAssignCategories("Exercise 2025-01-15-20250103123456", settings, availableCategories, true)).toEqual(
+					["Health"]
+				);
+			});
+		});
+
+		describe("edge cases", () => {
+			it("should return empty array for empty event name", () => {
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByName: true,
+				} as SingleCalendarConfig;
+
+				expect(autoAssignCategories("", settings, availableCategories)).toEqual([]);
+			});
+
+			it("should return empty array for whitespace-only event name", () => {
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByName: true,
+				} as SingleCalendarConfig;
+
+				expect(autoAssignCategories("   ", settings, availableCategories)).toEqual([]);
+			});
+
+			it("should return empty array when no categories available", () => {
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByName: true,
+				} as SingleCalendarConfig;
+
+				expect(autoAssignCategories("Health", settings, [])).toEqual([]);
+			});
+
+			it("should handle undefined categoryAssignmentPresets", () => {
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByName: false,
+					categoryAssignmentPresets: undefined,
+				} as unknown as SingleCalendarConfig;
+
+				expect(autoAssignCategories("Health", settings, availableCategories, true)).toEqual([]);
+			});
+
+			it("should handle empty categoryAssignmentPresets array", () => {
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByName: false,
+					categoryAssignmentPresets: [],
+				} as SingleCalendarConfig;
+
+				expect(autoAssignCategories("Coding", settings, availableCategories, true)).toEqual([]);
+			});
+		});
+	});
+
+	describe("normalizeEventNameForComparison edge cases", () => {
+		it("should handle empty string", () => {
+			expect(normalizeEventNameForComparison("")).toBe("");
+		});
+
+		it("should not strip standalone 14-digit number (not preceded by separator)", () => {
+			expect(normalizeEventNameForComparison("20250103123456")).toBe("20250103123456");
+		});
+
+		it("should preserve numbers that are not ZettelIDs", () => {
+			expect(normalizeEventNameForComparison("Meeting 12345")).toBe("meeting 12345");
+		});
+
+		it("should preserve short numeric suffixes (not 14-digit ZettelID)", () => {
+			expect(normalizeEventNameForComparison("Task-123")).toBe("task-123");
+		});
+
+		it("should handle multiple spaces before ZettelID", () => {
+			expect(normalizeEventNameForComparison("Event  20250103123456")).toBe("event");
+		});
+
+		it("should handle event names with hyphens", () => {
+			expect(normalizeEventNameForComparison("work-session-20250103123456")).toBe("work-session");
+		});
+
+		it("should handle instance date without ZettelID", () => {
+			expect(normalizeEventNameForComparison("Event 2025-01-15")).toBe("event 2025-01-15");
+		});
 	});
 });

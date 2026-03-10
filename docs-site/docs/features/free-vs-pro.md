@@ -1,5 +1,7 @@
 # Free vs Pro
 
+**👉 [Visit the product page](https://matejvavroproductivity.com/tools/prisma-calendar/) to learn more or start a 30-day free trial.**
+
 Prisma Calendar follows a freemium model. The free version is not a demo — it's a fully-featured calendar plugin packed with more capabilities than most standalone calendar apps. Pro adds advanced power-user features for those who need AI assistance, external calendar sync, scripting, and more.
 
 ## What's Free

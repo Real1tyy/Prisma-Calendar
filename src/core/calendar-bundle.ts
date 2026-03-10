@@ -1,6 +1,6 @@
 import { onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsidian-plugins";
 import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
-import { filter, firstValueFrom, type Subscription } from "rxjs";
+import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type { EventSaveData } from "../components/modals/base-event-modal";
 import type CustomCalendarPlugin from "../main";
@@ -147,37 +147,48 @@ export class CalendarBundle {
 				},
 			});
 
-			if (this.plugin.licenseManager.isPro) {
-				const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
-
-				if (caldavSettings.syncOnStartup) {
-					const accountsForThisCalendar = caldavSettings.accounts.filter(
-						(a) => a.enabled && a.calendarId === this.calendarId
-					);
-
-					for (const account of accountsForThisCalendar) {
-						void this.syncAccount(account.id);
+			this.subscriptions.push(
+				this.plugin.licenseManager.isPro$.pipe(distinctUntilChanged()).subscribe((isPro) => {
+					if (isPro) {
+						this.onProActivated();
+					} else {
+						this.caldavSync.stopAutoSync();
+						this.icsSubscriptionSync.stopAutoSync();
 					}
-				}
-
-				const icsSubSettings = this.mainSettingsStore.currentSettings.icsSubscriptions;
-
-				if (icsSubSettings.syncOnStartup) {
-					const subscriptionsForThisCalendar = icsSubSettings.subscriptions.filter(
-						(s) => s.enabled && s.calendarId === this.calendarId
-					);
-
-					for (const subscription of subscriptionsForThisCalendar) {
-						void this.syncICSSubscription(subscription.id);
-					}
-				}
-
-				this.startCalDAVAutoSync();
-				this.startICSAutoSync();
-			}
+				})
+			);
 
 			this.updateRibbonIcon(this.settingsStore.currentSettings.showRibbonIcon);
 		})();
+	}
+
+	private onProActivated(): void {
+		const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
+
+		if (caldavSettings.syncOnStartup) {
+			const accountsForThisCalendar = caldavSettings.accounts.filter(
+				(a) => a.enabled && a.calendarId === this.calendarId
+			);
+
+			for (const account of accountsForThisCalendar) {
+				void this.syncAccount(account.id);
+			}
+		}
+
+		const icsSubSettings = this.mainSettingsStore.currentSettings.icsSubscriptions;
+
+		if (icsSubSettings.syncOnStartup) {
+			const subscriptionsForThisCalendar = icsSubSettings.subscriptions.filter(
+				(s) => s.enabled && s.calendarId === this.calendarId
+			);
+
+			for (const subscription of subscriptionsForThisCalendar) {
+				void this.syncICSSubscription(subscription.id);
+			}
+		}
+
+		this.startCalDAVAutoSync();
+		this.startICSAutoSync();
 	}
 
 	destroy(): void {

@@ -81,6 +81,7 @@ export class SingleCalendarSettings {
 			cssPrefix: "prisma-",
 			sections,
 			footerLinks: [
+				{ text: "Product Page", href: "https://matejvavroproductivity.com/tools/prisma-calendar/" },
 				{ text: "Documentation", href: "https://real1tyy.github.io/Prisma-Calendar/" },
 				{ text: "Changelog", href: "https://real1tyy.github.io/Prisma-Calendar/changelog" },
 				{ text: "Gallery", href: "https://real1tyy.github.io/Prisma-Calendar/gallery" },

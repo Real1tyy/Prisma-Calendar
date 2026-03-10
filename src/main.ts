@@ -20,6 +20,7 @@ import { importEventsToCalendar } from "./core/integrations/ics-import";
 import { type ICSSubscription } from "./core/integrations/ics-subscription";
 import { PrismaSyncDataSchema } from "./types";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
+import { Subscription } from "rxjs";
 
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: SettingsStore;
@@ -28,6 +29,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	apiManager!: PrismaCalendarApiManager;
 	licenseManager!: LicenseManager;
 	private registeredViewTypes: Set<string> = new Set();
+	private licenseSubscription: Subscription | null = null;
 
 	get isProEnabled(): boolean {
 		return this.licenseManager.isPro;
@@ -53,7 +55,14 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		this.registerCommands();
 		this.registerAIChatView();
-		this.apiManager.expose();
+
+		this.licenseSubscription = this.licenseManager.isPro$.subscribe((isPro) => {
+			if (isPro) {
+				this.apiManager.expose();
+			} else {
+				this.apiManager.unexpose();
+			}
+		});
 
 		this.app.workspace.onLayoutReady(() => {
 			void this.waitForMetadataResolve().then(() => {
@@ -65,6 +74,8 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	onunload(): void {
+		this.licenseSubscription?.unsubscribe();
+		this.licenseSubscription = null;
 		MinimizedModalManager.clear();
 
 		for (const bundle of this.calendarBundles) {
@@ -572,7 +583,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				changelogContent: CHANGELOG_CONTENT,
 				links: {
 					github: "https://github.com/Real1tyy/Prisma-Calendar",
-					support: "https://matejvavroproductivity.com/support/",
+					support: "https://real1tyy.github.io/Prisma-Calendar/support",
 					changelog: "https://real1tyy.github.io/Prisma-Calendar/changelog",
 					documentation: (this.manifest as any).helpUrl || "https://real1tyy.github.io/Prisma-Calendar/",
 				},

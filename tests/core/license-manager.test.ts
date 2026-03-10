@@ -660,5 +660,59 @@ describe("LicenseManager", () => {
 			const trueCount = emissions.filter((v) => v === true).length;
 			expect(trueCount).toBe(1);
 		});
+
+		it("should transition from true to false when license becomes invalid on refresh", async () => {
+			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
+			mockRequestUrl.mockResolvedValue(successResponse());
+
+			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const emissions: boolean[] = [];
+			manager.isPro$.subscribe((v) => emissions.push(v));
+
+			await manager.initialize();
+			expect(manager.isPro).toBe(true);
+
+			mockRequestUrl.mockResolvedValueOnce(mockResponse(401, {}));
+			await manager.refreshLicense();
+
+			expect(manager.isPro).toBe(false);
+			expect(emissions).toEqual([false, true, false]);
+		});
+
+		it("should transition back to true when re-verified after invalidation", async () => {
+			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
+			mockRequestUrl.mockResolvedValueOnce(mockResponse(401, {}));
+
+			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const emissions: boolean[] = [];
+			manager.isPro$.subscribe((v) => emissions.push(v));
+
+			await manager.initialize();
+			expect(manager.isPro).toBe(false);
+
+			mockRequestUrl.mockResolvedValueOnce(successResponse());
+			await manager.refreshLicense();
+
+			expect(manager.isPro).toBe(true);
+			expect(emissions).toEqual([false, true]);
+		});
+
+		it("should allow reactive subscription for API exposure", async () => {
+			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
+			mockRequestUrl.mockResolvedValue(successResponse());
+
+			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+
+			let apiExposed = false;
+			manager.isPro$.subscribe((isPro) => {
+				apiExposed = isPro;
+			});
+
+			expect(apiExposed).toBe(false);
+
+			await manager.initialize();
+
+			expect(apiExposed).toBe(true);
+		});
 	});
 });
