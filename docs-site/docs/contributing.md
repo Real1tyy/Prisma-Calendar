@@ -110,7 +110,7 @@ The feature request template will guide you through providing:
 
 ## 📝 Documentation Contributions
 
-### Help Us Improve the Docs
+### Help Improve the Docs
 
 Prisma Calendar has documentation covering features and configurations. If you spot something that's incorrect, outdated, or unclear, **I'd love your help!**
 

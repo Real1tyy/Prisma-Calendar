@@ -220,14 +220,14 @@ Prisma Calendar is free and fully-featured out of the box — no account, no tri
 This plugin is under active development and is personally used every day by the developer. The goal is to make it the best calendar for Obsidian, and community feedback is crucial.
 
 Have an idea or a feature request?
-1.  **Open an Issue** on our [GitHub repository](https://github.com/Real1tyy/Prisma-Calendar/issues).
+1.  **Open an Issue** on the [GitHub repository](https://github.com/Real1tyy/Prisma-Calendar/issues).
 2.  **Upvote Existing Ideas**: If you see a feature request you'd like, give it a 👍 reaction.
 
 ---
 
 ## Third-Party Independence
 
-Prisma Calendar is developed by [Matej Vavro](https://matejvavroproductivity.com/) and is an independent, third-party product. **We are not affiliated with, endorsed by, or sponsored by Obsidian (Dynalist Inc.).** Prisma Calendar is a third-party community plugin distributed through Obsidian's community plugin marketplace. All references to "Obsidian" are for descriptive and compatibility purposes only and do not imply any official partnership or endorsement.
+Prisma Calendar is developed by [Matej Vavro](https://matejvavroproductivity.com/) and is an independent, third-party product. **It is not affiliated with, endorsed by, or sponsored by Obsidian (Dynalist Inc.).** Prisma Calendar is a third-party community plugin distributed through Obsidian's community plugin marketplace. All references to "Obsidian" are for descriptive and compatibility purposes only and do not imply any official partnership or endorsement.
 
 ## Privacy & Telemetry
 
@@ -244,8 +244,6 @@ Prisma Calendar **does not include any client-side telemetry or analytics**. No 
 
 This data is used solely for license validation, activation seat management (up to 5 devices per license), compatibility monitoring, abuse prevention, and product improvement. **If you only use the free features, no telemetry data is collected.**
 
-This approach complies with [Obsidian Developer Policies](https://docs.obsidian.md/Developer+policies), which permit server-side telemetry with disclosure and a linked privacy policy, while prohibiting client-side telemetry.
-
 For full details, please review the legal documents:
 
 - [Privacy Policy](https://matejvavroproductivity.com/privacy/)
@@ -256,4 +254,4 @@ For full details, please review the legal documents:
 
 ## Credits & Acknowledgments
 
-Prisma Calendar is built using [FullCalendar](https://fullcalendar.io/), a powerful and flexible JavaScript calendar library. FullCalendar provides the robust calendar rendering engine that powers Prisma Calendar's views and interactions. We're grateful to the FullCalendar team for creating such an excellent foundation.
+Prisma Calendar is built using [FullCalendar](https://fullcalendar.io/), a powerful and flexible JavaScript calendar library. FullCalendar provides the robust calendar rendering engine that powers Prisma Calendar's views and interactions. I'm grateful to the FullCalendar team for creating such an excellent foundation.

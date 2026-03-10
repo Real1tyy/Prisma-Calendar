@@ -28,17 +28,7 @@ I create **video content** about productivity, Obsidian, and digital setups, inc
 
 ## Spread the Word
 
-Help Prisma Calendar grow by sharing it with others:
-
-- Tell your friends and colleagues about the plugin
-
-- Share your experience on social media
-
-- Write about it in your blog or community forums
-
-- Recommend it in Obsidian communities
-
-Every recommendation helps more people discover and benefit from Prisma Calendar!
+Help Prisma Calendar grow by sharing it with others. Every recommendation helps more people discover and benefit from the plugin!
 
 ## Donate
 

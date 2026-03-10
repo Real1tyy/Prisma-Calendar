@@ -78,3 +78,13 @@ Yes. Your license is verified on startup and cached locally for 7 days. During t
 ### Can I cancel anytime?
 
 Yes. Cancel from your account page. If you cancel during the free trial, you're never charged. After the trial, you keep Pro access until the end of your billing period.
+
+### Does Prisma Calendar collect any data from my vault?
+
+**No.** Prisma Calendar does not include any client-side telemetry or analytics. No vault content, file names, note content, or personal data from your Obsidian vault is ever transmitted. Your data is 100% yours and stays local.
+
+### What data is collected for Pro license verification?
+
+Server-side telemetry is collected **exclusively** during license verification requests. When the plugin contacts the license server, only the following data is transmitted: license key, plugin version, Obsidian version, operating system/platform, device identifier (a locally generated unique ID), and device name. This data is used solely for license validation, activation seat management (up to 5 devices), compatibility monitoring, and abuse prevention. **If you only use the free features, no telemetry data is collected at all.**
+
+For full details, see the [Privacy Policy](https://matejvavroproductivity.com/privacy/), [Terms of Service](https://matejvavroproductivity.com/terms/), and [Legal Notice](https://matejvavroproductivity.com/legal/).
