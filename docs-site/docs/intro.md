@@ -233,7 +233,7 @@ Prisma Calendar is developed by [Matej Vavro](https://matejvavroproductivity.com
 
 Prisma Calendar **does not include any client-side telemetry or analytics**. No vault content, file names, note content, or personal data from your Obsidian vault is ever transmitted.
 
-**Server-side telemetry** is collected exclusively during license verification requests for Pro (advanced) features. When the plugin contacts our license server, the following data is transmitted:
+**Server-side telemetry** is collected exclusively during license verification requests for Pro (advanced) features. When the plugin contacts the license server, the following data is transmitted:
 
 - License key
 - Plugin version
@@ -246,7 +246,7 @@ This data is used solely for license validation, activation seat management (up 
 
 This approach complies with [Obsidian Developer Policies](https://docs.obsidian.md/Developer+policies), which permit server-side telemetry with disclosure and a linked privacy policy, while prohibiting client-side telemetry.
 
-For full details, please review our legal documents:
+For full details, please review the legal documents:
 
 - [Privacy Policy](https://matejvavroproductivity.com/privacy/)
 - [Terms of Service](https://matejvavroproductivity.com/terms/)

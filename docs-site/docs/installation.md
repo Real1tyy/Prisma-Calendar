@@ -16,7 +16,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
   </video>
 </div>
 
-Prisma Calendar is currently **awaiting approval** for the Obsidian Community Plugin store. While we wait for approval, you can install it using one of the methods below.
+Prisma Calendar is currently **awaiting approval** for the Obsidian Community Plugin store. While it's pending approval, you can install it using one of the methods below.
 
 ## 🎯 Recommended: BRAT (Beta Reviewers Auto-update Tool)
 

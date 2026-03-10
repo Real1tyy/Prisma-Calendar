@@ -4,7 +4,7 @@ sidebar_position: 10
 
 # Contributing
 
-We welcome contributions and feedback from the community! Here's how you can help make Prisma Calendar better.
+I welcome contributions and feedback from the community! Here's how you can help make Prisma Calendar better.
 
 ## Found a Bug?
 
@@ -28,7 +28,7 @@ Before creating a new issue, please follow this process:
 
 - 📎 **Share your specific case** if it differs from the original report
 
-**Don't create duplicates!** Upvoting existing issues helps us prioritize better.
+**Don't create duplicates!** Upvoting existing issues helps prioritize better.
 
 ### 2. Verify You Have the Latest Version
 
@@ -48,7 +48,7 @@ Before reporting, ensure you're using the latest version:
 
 If no existing issue matches and you're on the latest version, **[create a new bug report](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose)**.
 
-Our bug report template will guide you through providing all necessary information:
+The bug report template will guide you through providing all necessary information:
 
 - Operating System (with version/build)
 
@@ -68,7 +68,7 @@ Our bug report template will guide you through providing all necessary informati
 
 ## Feature Requests
 
-Have an idea for a new feature? We'd love to hear it!
+Have an idea for a new feature? I'd love to hear it!
 
 ### Before Requesting
 
@@ -80,9 +80,9 @@ Have an idea for a new feature? We'd love to hear it!
 
 ### Submit a New Feature Request
 
-**[Create a feature request](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose)** using our structured template.
+**[Create a feature request](https://github.com/Real1tyy/Prisma-Calendar/issues/new/choose)** using the structured template.
 
-Our feature request template will guide you through providing:
+The feature request template will guide you through providing:
 
 - Feature title and problem statement
 
@@ -108,29 +108,11 @@ Our feature request template will guide you through providing:
 
 - ❌ **Just the what**: Don't only describe what you want
 
-## Contributing Code
-
-1. **Fork the repository** on GitHub
-
-2. **Clone your fork** locally
-
-3. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-
-4. **Make your changes** and ensure they follow our coding standards
-
-5. **Run quality checks** with `mise run ci` to ensure everything passes
-
-6. **Commit your changes** (`git commit -m 'Add amazing feature'`)
-
-7. **Push to your branch** (`git push origin feature/amazing-feature`)
-
-8. **Open a Pull Request** on GitHub
-
 ## 📝 Documentation Contributions
 
 ### Help Us Improve the Docs
 
-Prisma Calendar has documentation covering features and configurations. If you spot something that's incorrect, outdated, or unclear, **we'd love your help!**
+Prisma Calendar has documentation covering features and configurations. If you spot something that's incorrect, outdated, or unclear, **I'd love your help!**
 
 **How you can contribute:**
 
@@ -140,7 +122,7 @@ Prisma Calendar has documentation covering features and configurations. If you s
 
 - **Missing information?** Add what's needed
 
-- **Better examples?** Share them with us
+- **Better examples?** Share them
 
 Documentation contributions are **highly appreciated** and help everyone in the community.
 
@@ -156,9 +138,9 @@ Documentation contributions are **highly appreciated** and help everyone in the 
 
 ## 🤝 Getting Help
 
-- **Documentation**: Check our [comprehensive docs](https://real1tyy.github.io/Prisma-Calendar/)
+- **Documentation**: Check the [comprehensive docs](https://real1tyy.github.io/Prisma-Calendar/)
 
-- **FAQ**: Common questions are answered in our [FAQ section](/faq)
+- **FAQ**: Common questions are answered in the [FAQ section](/faq)
 
 - **Issues**: For bugs and feature requests, use [GitHub Issues](https://github.com/Real1tyy/Prisma-Calendar/issues)
 

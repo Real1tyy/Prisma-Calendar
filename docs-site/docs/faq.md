@@ -8,7 +8,11 @@ Core features work on mobile without any problems. The design is responsive, and
 
 ### Is it free?
 
-Yes! Prisma Calendar is free and fully-featured out of the box — no account, no trial, no limitations on the core experience. Pro adds advanced power-user features (AI chat, CalDAV sync, programmatic API, unlimited calendars/presets). See [Free vs Pro](./features/free-vs-pro.md) for details.
+Yes! Prisma Calendar is free and fully-featured out of the box — no account, no trial, no limitations on the core experience. You get 4 calendar views, up to 3 calendars, recurring events with 9 recurrence types, 50-action undo/redo, 10+ batch operations, a time tracker, statistics dashboard, color rules, advanced filtering, desktop notifications, holidays for 50+ countries, title autocomplete, and 30+ hotkeys — all for free.
+
+Pro unlocks additional power-user features: AI chat, CalDAV & ICS sync, programmatic API, unlimited calendars/presets, and priority support.
+
+See [Free vs Pro](./features/free-vs-pro.md) for the full breakdown, or visit the [product page](https://matejvavroproductivity.com/tools/prisma-calendar/) to start a 30-day free trial.
 
 ### How do I open the calendar view?
 
@@ -20,14 +24,14 @@ See the [Quick Start guide](/quickstart) for detailed instructions on opening yo
 
 ### Is the documentation completely up to date and accurate?
 
-We strive for perfection, but Prisma Calendar is a **large, feature-rich project** with extensive documentation. It's quite complex for one person to manage everything perfectly, so there may be occasional inaccuracies or outdated information.
+I strive for perfection, but Prisma Calendar is a **large, feature-rich project** with extensive documentation. It's quite complex for one person to manage everything perfectly, so there may be occasional inaccuracies or outdated information.
 
-**If you spot something wrong, please help us!**
+**If you spot something wrong, please help!**
 - Create a [Pull Request](https://github.com/Real1tyy/Prisma-Calendar/pulls) to fix it
 - [Open an issue](https://github.com/Real1tyy/Prisma-Calendar/issues) to report it
 - Suggest improvements or clarifications
 
-Community contributions help us continuously improve the documentation and keep it accurate. Every correction, no matter how small, makes the docs better for everyone. Thank you for helping us improve! 🙏
+Community contributions help continuously improve the documentation and keep it accurate. Every correction, no matter how small, makes the docs better for everyone.
 
 ---
 
@@ -45,7 +49,7 @@ Yes. Calendars can use separate directories for full isolation, or share the sam
 
 Multiple calendars **can** share the same directory! This is great for creating different views and color schemes of the same events.
 
-**✅ Perfect Use Case: Different Visual Perspectives**
+**Perfect Use Case: Different Visual Perspectives**
 
 Example - Same events, different views:
 ```
@@ -87,12 +91,12 @@ Yes. Prisma Calendar generates real notes up to your configured "Future instance
 
 This is one of Prisma Calendar's core UX features: **hidden ZettelID naming**.
 
-**📝 What You See vs. What's Stored:**
+**What You See vs. What's Stored:**
 
 - **In the calendar**: `Team Meeting` (clean, readable)
 - **On disk**: `Team Meeting-20250106143022.md` (unique, timestamped)
 
-**🎯 Why This Matters:**
+**Why This Matters:**
 
 The ZettelID (timestamp suffix like `-20250106143022`) acts as a unique identifier, allowing you to:
 
@@ -101,14 +105,14 @@ The ZettelID (timestamp suffix like `-20250106143022`) acts as a unique identifi
 3. **Work with clean names** - You never see the timestamp when editing, viewing, or previewing events
 4. **Avoid manual naming** - No need to add "Team Meeting 1", "Team Meeting 2", etc.
 
-**🔧 How It Works:**
+**How It Works:**
 
 1. When you create an event called "Team Meeting", the file is saved as `Team Meeting-20250106143022.md`
 2. The calendar automatically strips the `-20250106143022` part when displaying events
 3. When editing, enlarging, previewing, or interacting with the event, you only see "Team Meeting"
-4. The ZLID stays hidden in the background, ensuring uniqueness
+4. The ZettelID stays hidden in the background, ensuring uniqueness
 
-**💡 Example Use Case:**
+**Example Use Case:**
 
 You have a recurring daily standup:
 ```
