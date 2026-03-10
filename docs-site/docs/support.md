@@ -6,6 +6,12 @@ sidebar_position: 11
 
 If you find Prisma Calendar valuable and want to support its continued development, there are several ways you can help!
 
+## Get My Tools
+
+The best way to support my work is by using my tools. I build Obsidian plugins and productivity software designed to make your workflow better.
+
+**👉 [Browse all my tools](https://matejvavroproductivity.com/tools/)**
+
 ## Get Advanced Features
 
 The best way to support Prisma Calendar is by purchasing the **Advanced Features** license. You get powerful capabilities like AI Chat, CalDAV sync, Programmatic API, unlimited calendars and presets, and priority support — while directly funding the development of the plugin.
