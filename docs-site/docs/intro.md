@@ -8,11 +8,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Prisma Calendar
 
-<div style={{"display": "flex", "alignItems": "flex-start", "justifyContent": "center", "gap": "2em", "marginBottom": "1em"}}>
-  <img src="https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge" alt="Downloads" style={{"marginTop": "2.5em"}} />
-  <img src={useBaseUrl("/img/prisma_logo.png")} alt="Prisma Calendar Logo" width="120" />
-  <img src="https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge" alt="Stars" style={{"marginTop": "2.5em"}} />
-</div>
+![Downloads](https://img.shields.io/github/downloads/Real1tyy/Prisma-Calendar/total?label=Downloads&style=for-the-badge) ![Release](https://img.shields.io/github/v/release/Real1tyy/Prisma-Calendar?label=Latest%20Release&style=for-the-badge) ![Stars](https://img.shields.io/github/stars/Real1tyy/Prisma-Calendar?style=for-the-badge)
 
 **The Ultimate Temporal Visualization Engine for Obsidian.**
 
