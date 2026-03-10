@@ -13,7 +13,7 @@ import {
 	PrismaCalendarApiManager,
 	SettingsStore,
 } from "./core";
-import { isProEnabled, showProUpgradeNotice, PRO_FEATURES } from "./core/license";
+import { PRO_FEATURES, LicenseManager } from "./core/license";
 import { type CalDAVAccount } from "./core/integrations/caldav";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
@@ -26,15 +26,18 @@ export default class CustomCalendarPlugin extends Plugin {
 	syncStore!: SyncStore<typeof PrismaSyncDataSchema>;
 	calendarBundles: CalendarBundle[] = [];
 	apiManager!: PrismaCalendarApiManager;
+	licenseManager!: LicenseManager;
 	private registeredViewTypes: Set<string> = new Set();
 
 	get isProEnabled(): boolean {
-		return isProEnabled();
+		return this.licenseManager.isPro;
 	}
 
 	async onload() {
 		this.settingsStore = new SettingsStore(this);
 		await this.settingsStore.loadSettings();
+
+		this.licenseManager = new LicenseManager(this.app, this.settingsStore, this.manifest.version);
 
 		this.syncStore = new SyncStore(this.app, this, PrismaSyncDataSchema);
 		await this.syncStore.loadData();
@@ -57,6 +60,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				void this.ensureCalendarBundlesReady();
 			});
 			void this.checkForUpdates();
+			void this.licenseManager.initialize();
 		});
 	}
 
@@ -350,8 +354,7 @@ export default class CustomCalendarPlugin extends Plugin {
 			id: COMMAND_IDS.SYNC_CALDAV,
 			name: "Sync calendar accounts",
 			callback: async () => {
-				if (!this.isProEnabled) {
-					showProUpgradeNotice(PRO_FEATURES.CALDAV_SYNC);
+				if (!this.licenseManager.requirePro(PRO_FEATURES.CALDAV_SYNC)) {
 					return;
 				}
 				const caldavAccounts = this.settingsStore.currentSettings.caldav.accounts;
@@ -367,8 +370,7 @@ export default class CustomCalendarPlugin extends Plugin {
 			id: COMMAND_IDS.SYNC_ICS_SUBSCRIPTIONS,
 			name: "Sync ICS subscriptions",
 			callback: async () => {
-				if (!this.isProEnabled) {
-					showProUpgradeNotice(PRO_FEATURES.ICS_SYNC);
+				if (!this.licenseManager.requirePro(PRO_FEATURES.ICS_SYNC)) {
 					return;
 				}
 				const subscriptions = this.settingsStore.currentSettings.icsSubscriptions.subscriptions;

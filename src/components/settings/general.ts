@@ -1,8 +1,9 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { LOCALE_OPTIONS } from "../../types/view";
-import { type App, Setting } from "obsidian";
+import { type App, SecretComponent, Setting } from "obsidian";
 import type { Subscription } from "rxjs";
-import { FREE_MAX_EVENT_PRESETS } from "../../core/license";
+import { FREE_MAX_EVENT_PRESETS, PRO_PURCHASE_URL } from "../../core/license";
+import type { LicenseStatus } from "../../types/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
@@ -28,11 +29,89 @@ export class GeneralSettings {
 		this.defaultPresetDropdown = null;
 		this.presetsListContainer = null;
 
+		this.addLicenseSettings(containerEl);
 		this.addDirectorySettings(containerEl);
 		this.addParsingSettings(containerEl);
 		this.addStopwatchSettings(containerEl);
 		this.addStatisticsSettings(containerEl);
 		this.addEventPresetSettings(containerEl);
+	}
+
+	private addLicenseSettings(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("License").setHeading();
+
+		const desc = document.createDocumentFragment();
+		desc.appendText("Enter your Prisma Calendar Pro license key to unlock advanced features. ");
+		const link = desc.createEl("a", { text: "Get a license", href: PRO_PURCHASE_URL });
+		link.setAttr("target", "_blank");
+		link.setAttr("rel", "noopener noreferrer");
+
+		new Setting(containerEl)
+			.setName("License key")
+			.setDesc(desc)
+			.addComponent((el) =>
+				new SecretComponent(this.app, el)
+					.setValue(this.plugin.settingsStore.currentSettings.licenseKeySecretName)
+					.onChange(async (value) => {
+						await this.plugin.settingsStore.updateSettings((s) => ({
+							...s,
+							licenseKeySecretName: value,
+						}));
+					})
+			);
+
+		const statusSetting = new Setting(containerEl).setName("License status");
+		this.refreshLicenseStatusDesc(statusSetting);
+
+		statusSetting.addButton((button) =>
+			button
+				.setButtonText("Verify")
+				.setCta()
+				.onClick(async () => {
+					try {
+						button.setDisabled(true);
+						button.setButtonText("Verifying...");
+						await this.plugin.licenseManager.refreshLicense();
+					} catch (error) {
+						console.error("[Settings] License verification failed:", error);
+					} finally {
+						this.refreshLicenseStatusDesc(statusSetting);
+						button.setButtonText("Verify");
+						button.setDisabled(false);
+					}
+				})
+		);
+	}
+
+	private refreshLicenseStatusDesc(setting: Setting): void {
+		const status = this.plugin.licenseManager.getStatus();
+		const fragment = document.createDocumentFragment();
+		fragment.appendText(this.getLicenseStatusText(status));
+		if (status.state === "valid") {
+			const badge = fragment.createSpan({ cls: cls("license-activations-badge") });
+			badge.textContent = `${status.activationsCurrent}/${status.activationsLimit} devices`;
+		}
+		setting.setDesc(fragment);
+	}
+
+	private getLicenseStatusText(status: LicenseStatus): string {
+		if (status.state === "none") return "No license key configured";
+		if (status.state === "valid") {
+			if (status.expiresAt) {
+				const expiryDate = new Date(status.expiresAt).toLocaleDateString(undefined, {
+					year: "numeric",
+					month: "long",
+					day: "numeric",
+				});
+				return `License active — valid offline until ${expiryDate}`;
+			}
+			return "License active";
+		}
+		if (status.state === "expired") return "License expired. Click Verify to refresh.";
+		if (status.state === "invalid") return status.errorMessage ?? "Invalid license key.";
+		if (status.state === "device_limit") return status.errorMessage ?? "Device limit reached.";
+		if (status.state === "error") return status.errorMessage ?? "Could not verify license.";
+		return "";
 	}
 
 	private addDirectorySettings(containerEl: HTMLElement): void {

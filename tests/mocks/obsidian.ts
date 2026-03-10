@@ -257,10 +257,30 @@ export class AbstractInputSuggest<T> extends PopoverSuggest<T> {
 }
 
 // Notice mock
-export class Notice {
-	constructor(message: string) {
-		console.log(`Notice: ${message}`);
-	}
+export const Notice = vi.fn();
+
+// Platform mock
+export const Platform = {
+	isDesktopApp: true,
+	isMobileApp: false,
+	isMacOS: false,
+	isWin: false,
+	isLinux: true,
+	isIosApp: false,
+	isAndroidApp: false,
+};
+
+// requestUrl mock
+export const requestUrl = vi.fn();
+
+// apiVersion mock
+export const apiVersion = "1.8.0";
+
+// SecretComponent mock
+export class SecretComponent {
+	constructor(_app: any, _el: any) {}
+	setValue = vi.fn().mockReturnThis();
+	onChange = vi.fn().mockReturnThis();
 }
 
 // MarkdownRenderer mock

@@ -9331,3 +9331,17 @@ div.vis-tooltip {
 	text-decoration: none;
 	color: var(--text-on-accent);
 }
+
+/* ─── License Activations Badge ──────────────────────────────── */
+
+.prisma-license-activations-badge {
+	display: inline-block;
+	margin-left: 8px;
+	padding: 1px 8px;
+	border-radius: 999px;
+	font-size: var(--font-smallest);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-on-accent);
+	background: var(--interactive-accent);
+	vertical-align: middle;
+}

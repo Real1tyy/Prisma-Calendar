@@ -4,7 +4,6 @@ import { filter, firstValueFrom, type Subscription } from "rxjs";
 import { CalendarView, getCalendarViewType } from "../components/calendar-view";
 import type { EventSaveData } from "../components/modals/base-event-modal";
 import type CustomCalendarPlugin from "../main";
-import { isProEnabled } from "./license";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/event-naming";
 import { intoDate } from "../utils/format";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
@@ -148,7 +147,7 @@ export class CalendarBundle {
 				},
 			});
 
-			if (isProEnabled()) {
+			if (this.plugin.licenseManager.isPro) {
 				const caldavSettings = this.mainSettingsStore.currentSettings.caldav;
 
 				if (caldavSettings.syncOnStartup) {
