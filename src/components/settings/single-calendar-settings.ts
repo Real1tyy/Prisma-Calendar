@@ -41,8 +41,6 @@ export class SingleCalendarSettings {
 			ai: new AISettings(plugin, mainSettingsStore),
 		};
 
-		const isPro = plugin.isProEnabled;
-
 		const sections: SettingsSection[] = [
 			{ id: "general", label: "General", display: (el) => settingsInstances.general.display(el) },
 			{ id: "properties", label: "Properties", display: (el) => settingsInstances.properties.display(el) },
@@ -57,7 +55,7 @@ export class SingleCalendarSettings {
 				id: "integrations",
 				label: "Integrations",
 				display: (el) =>
-					isPro
+					plugin.isProEnabled
 						? settingsInstances.integrations.display(el)
 						: renderProUpgradeBanner(
 								el,
@@ -69,7 +67,7 @@ export class SingleCalendarSettings {
 				id: "ai",
 				label: "AI",
 				display: (el) =>
-					isPro
+					plugin.isProEnabled
 						? settingsInstances.ai.display(el)
 						: renderProUpgradeBanner(
 								el,
