@@ -3,14 +3,14 @@ import type { DateTime } from "luxon";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { v5 as uuidv5 } from "uuid";
+
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../types/calendar";
 import type { EventMetadata } from "../types/event";
 import { convertToISO, parseEventFrontmatter } from "../types/event";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
-
-import { getEventName } from "../utils/event-naming";
 import { applyDateNormalizationToFile } from "../utils/event-frontmatter";
+import { getEventName } from "../utils/event-naming";
 import type { RawEventSource } from "./indexer";
 
 export class Parser {

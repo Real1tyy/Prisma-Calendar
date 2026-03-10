@@ -1,4 +1,5 @@
 import type { App } from "obsidian";
+
 import type { SingleCalendarConfig } from "../../types/settings";
 import { BaseBasesViewModal } from "./base-bases-view-modal";
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { createICSFromEvents } from "../../src/core/integrations/ics-export";
 import { buildFrontmatterFromImportedEvent, parseICSContent } from "../../src/core/integrations/ics-import";
 import type { SingleCalendarConfig } from "../../src/types/settings";

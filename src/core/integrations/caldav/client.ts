@@ -1,6 +1,6 @@
 import type { App } from "obsidian";
-import { patchGlobalFetch } from "./obsidian-fetch";
 
+import { patchGlobalFetch } from "./obsidian-fetch";
 import type {
 	CalDAVAccount,
 	CalDAVBasicCredentials,

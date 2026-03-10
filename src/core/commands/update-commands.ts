@@ -1,3 +1,4 @@
+import type { Command } from "@real1ty-obsidian-plugins";
 import {
 	backupFrontmatter,
 	compareFrontmatter,
@@ -8,15 +9,15 @@ import {
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
-import type { Command } from "@real1ty-obsidian-plugins";
+
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
-import { ensureFileHasZettelId, extractZettelId, rebuildPhysicalInstanceWithNewDate } from "../../utils/event-naming";
 import {
 	applyStartEndOffsets,
 	isPhysicalRecurringEvent,
 	setEventBasics,
 	shouldUpdateInstanceDateOnMove,
 } from "../../utils/event-frontmatter";
+import { ensureFileHasZettelId, extractZettelId, rebuildPhysicalInstanceWithNewDate } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { EditEventData } from "./lifecycle-commands";
 

@@ -1,5 +1,6 @@
 import type { Command } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
+
 import type CustomCalendarPlugin from "../../main";
 import type { CalendarBundle } from "../calendar-bundle";
 import { CloneEventCommand } from "../commands/lifecycle-commands";

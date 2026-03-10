@@ -1,9 +1,10 @@
 import type { BehaviorSubject, Subscription } from "rxjs";
+
 import type { UntrackedEvent } from "../../types/calendar";
 import type { Frontmatter, SingleCalendarConfig } from "../../types/index";
 import { UntrackedFilterEvaluator } from "../../utils/untracked-filter-evaluator";
-import { IndexedCacheStore } from "./indexed-cache-store";
 import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
+import { IndexedCacheStore } from "./indexed-cache-store";
 
 export class UntrackedEventStore extends IndexedCacheStore<UntrackedEvent> {
 	private settingsSubscription: Subscription | null = null;

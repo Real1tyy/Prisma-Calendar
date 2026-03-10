@@ -1,4 +1,4 @@
-import { type RequestUrlResponse, requestUrl } from "obsidian";
+import { requestUrl, type RequestUrlResponse } from "obsidian";
 
 const initialFetch = globalThis.fetch;
 

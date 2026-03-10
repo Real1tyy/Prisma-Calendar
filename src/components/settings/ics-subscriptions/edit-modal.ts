@@ -1,8 +1,9 @@
 import { cls } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice, SecretComponent, Setting } from "obsidian";
+
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
-import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
 import { COMMON_TIMEZONES } from "../../../core/integrations/ics-export";
+import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
 import type { SettingsStore } from "../../../core/settings-store";
 
 export class EditICSSubscriptionModal extends Modal {

@@ -1,4 +1,5 @@
 import { cls } from "@real1ty-obsidian-plugins";
+
 import type { WeeklyStatEntry } from "../../utils/weekly-stats";
 import { formatDuration, formatDurationAsDecimalHours, formatPercentage } from "../../utils/weekly-stats";
 

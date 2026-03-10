@@ -1,5 +1,6 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { type App, Notice, Setting } from "obsidian";
+
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
 import type { SettingsStore } from "../../../core/settings-store";

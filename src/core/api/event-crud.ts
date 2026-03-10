@@ -1,5 +1,6 @@
 import type { Command } from "@real1ty-obsidian-plugins";
 import { Notice, TFile } from "obsidian";
+
 import type CustomCalendarPlugin from "../../main";
 import { setUntrackedEventBasics } from "../../utils/event-frontmatter";
 import { ensureISOSuffix } from "../../utils/format";

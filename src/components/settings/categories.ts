@@ -2,6 +2,7 @@ import { cls, hexToRgb, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
 import { setIcon, Setting } from "obsidian";
 import type { Subscription } from "rxjs";
+
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../core/settings-store";

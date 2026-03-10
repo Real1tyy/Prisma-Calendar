@@ -1,5 +1,6 @@
 import { parsePositiveInt } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
+
 import type { RRuleFrontmatter } from "../types/recurring-event";
 import { isWeekdaySupported } from "../types/recurring-event";
 import { iterateOccurrencesInRange } from "./date-recurrence";

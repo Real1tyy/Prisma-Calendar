@@ -1,6 +1,7 @@
+import type { Command } from "@real1ty-obsidian-plugins";
 import { getTFileOrThrow, withFrontmatter } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import type { Command } from "@real1ty-obsidian-plugins";
+
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { assignListToFrontmatter, parseCustomDoneProperty } from "../../utils/event-frontmatter";
 import type { CalendarBundle } from "../calendar-bundle";

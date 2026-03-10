@@ -6,12 +6,15 @@ import {
 	serializeFrontmatterValue,
 	toggleCls,
 } from "@real1ty-obsidian-plugins";
+import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
 import type { Subscription } from "rxjs";
+
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import { FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import {
-	type FormData,
 	END_TIME_SYNC_INTERVAL_MS,
+	type FormData,
 	MinimizedModalManager,
 	type MinimizedModalState,
 	type PresetFormData,
@@ -19,15 +22,16 @@ import {
 import type { Frontmatter } from "../../types";
 import { isTimedEvent } from "../../types/calendar";
 import {
-	RECURRENCE_TYPE_OPTIONS,
-	WEEKDAY_OPTIONS,
 	buildCustomIntervalDSL,
 	isPresetType,
 	isWeekdaySupported,
 	parseRecurrenceType,
+	RECURRENCE_TYPE_OPTIONS,
+	WEEKDAY_OPTIONS,
 } from "../../types/recurring-event";
 import type { EventPreset } from "../../types/settings";
-import { createFormField } from "./event-form-fields";
+import type { Weekday } from "../../utils/date-recurrence";
+import { registerSubmitHotkey } from "../../utils/dom-utils";
 import {
 	assignListToFrontmatter,
 	parseCustomDoneProperty,
@@ -35,23 +39,20 @@ import {
 	setUntrackedEventBasics,
 } from "../../utils/event-frontmatter";
 import { autoAssignCategories, findAdjacentEvent } from "../../utils/event-matching";
-import type { Weekday } from "../../utils/date-recurrence";
 import {
 	calculateDurationMinutes,
 	formatDateOnly,
 	formatDateTimeForInput,
 	inputValueToISOString,
 } from "../../utils/format";
-import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../utils/obsidian";
 import { afterRender } from "../../utils/scheduling";
-import { registerSubmitHotkey } from "../../utils/dom-utils";
 import { parseAsLocalDate } from "../../utils/time-formatter";
 import { Stopwatch } from "../stopwatch";
 import { TitleInputSuggest } from "../title-input-suggest";
 import { openCategoryAssignModal } from "./assignment-modal";
 import { CategoryEventsModal } from "./category-events-modal";
-import { FREE_MAX_EVENT_PRESETS } from "../../core/license";
+import { createFormField } from "./event-form-fields";
 import { SavePresetModal } from "./save-preset-modal";
 
 interface EventModalData {

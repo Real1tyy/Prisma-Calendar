@@ -1,4 +1,5 @@
 import { cls } from "@real1ty-obsidian-plugins";
+
 import type { Frontmatter } from "../../types";
 import { buildPropertyMapping, sanitizeExpression } from "../../utils/expression-utils";
 import { InputFilterManager } from "./base";

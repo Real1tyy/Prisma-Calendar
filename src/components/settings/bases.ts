@@ -1,5 +1,6 @@
 import { SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
+
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
 

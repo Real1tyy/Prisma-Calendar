@@ -1,4 +1,5 @@
-import { Modal, type App } from "obsidian";
+import { type App, Modal } from "obsidian";
+
 import { createModalButtons, registerSubmitHotkey } from "../../utils/dom-utils";
 
 export class UntrackedEventCreateModal extends Modal {

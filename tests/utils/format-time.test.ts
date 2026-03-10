@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { getISODatePart, getISOTimePart, minsToTimeStr, parseTimeToMins, replaceISOTime } from "../../src/utils/format";
 
 describe("parseTimeToMins", () => {

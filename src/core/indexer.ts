@@ -2,8 +2,8 @@ import {
 	areSetsEqual,
 	type FrontmatterDiff,
 	Indexer as GenericIndexer,
-	type IndexerEvent as GenericIndexerEvent,
 	type IndexerConfig,
+	type IndexerEvent as GenericIndexerEvent,
 	PENDING_WRITE_SENTINEL_FM_KEY,
 	removeMarkdownExtension,
 	SyncStore,
@@ -11,6 +11,7 @@ import {
 import { type App, TFile } from "obsidian";
 import { BehaviorSubject, type Observable, Subject, Subscription } from "rxjs";
 import { filter, take } from "rxjs/operators";
+
 import { SCAN_CONCURRENCY } from "../constants";
 import { type EventMetadata, parseEventMetadata } from "../types/event";
 import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types/index";

@@ -1,5 +1,6 @@
 import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
+
 import { createModalButtons, registerSubmitHotkey } from "../../utils/dom-utils";
 
 const TIME_UNITS = ["minutes", "hours", "days", "weeks", "months", "years"] as const;

@@ -1,5 +1,6 @@
 import { SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
+
 import {
 	BATCH_BUTTON_IDS,
 	BATCH_BUTTON_LABELS,

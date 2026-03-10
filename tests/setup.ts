@@ -1,5 +1,6 @@
 import { BehaviorSubject } from "rxjs";
 import { beforeEach, vi } from "vitest";
+
 import type { CustomCalendarSettings } from "../src/types/index";
 import { CustomCalendarSettingsSchema } from "../src/types/index";
 
@@ -64,7 +65,7 @@ export class Menu {
 }
 
 // Re-export centralized mocks for use in tests
-export { Plugin, PluginSettingTab, ItemView, TFile, Notice, Modal, SuggestModal, debounce };
+export { debounce, ItemView, Modal, Notice, Plugin, PluginSettingTab, SuggestModal, TFile };
 
 // Export mock helpers directly
 export const createMockApp = createMockAppImpl;

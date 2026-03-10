@@ -1,7 +1,8 @@
 import type { FrontmatterDiff } from "@real1ty-obsidian-plugins";
 import { describe, expect, it } from "vitest";
-import { extractTimeDiffFromFrontmatterDiff, stripISOSuffix } from "../../src/utils/event-frontmatter";
+
 import type { SingleCalendarConfig } from "../../src/types/settings";
+import { extractTimeDiffFromFrontmatterDiff, stripISOSuffix } from "../../src/utils/event-frontmatter";
 
 const mockSettings = {
 	startProp: "Start",

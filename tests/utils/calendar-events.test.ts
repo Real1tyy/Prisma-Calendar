@@ -1,6 +1,14 @@
 import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
+
 import type { Frontmatter } from "../../src/types";
+import {
+	getCommonCategories,
+	isEventDone,
+	isPhysicalRecurringEvent,
+	parseCustomDoneProperty,
+	shouldUpdateInstanceDateOnMove,
+} from "../../src/utils/event-frontmatter";
 import {
 	ensureFileHasZettelId,
 	extractNotesCoreName,
@@ -12,13 +20,6 @@ import {
 	rebuildPhysicalInstanceWithNewDate,
 	removeZettelId,
 } from "../../src/utils/event-naming";
-import {
-	getCommonCategories,
-	isEventDone,
-	isPhysicalRecurringEvent,
-	parseCustomDoneProperty,
-	shouldUpdateInstanceDateOnMove,
-} from "../../src/utils/event-frontmatter";
 import { createMockTimedEvent } from "../fixtures/event-fixtures";
 import { createMockApp, createMockFile, createMockSingleCalendarSettings } from "../setup";
 

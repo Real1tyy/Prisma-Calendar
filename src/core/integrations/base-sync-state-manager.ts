@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 import type { z } from "zod";
+
 import type { Frontmatter } from "../../types";
 import type { SingleCalendarConfig } from "../../types/settings";
 import type { Indexer, IndexerEvent } from "../indexer";

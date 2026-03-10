@@ -1,5 +1,6 @@
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
+
 import type { SingleCalendarConfig } from "../../../types/settings";
 import { trashDuplicateFile } from "../../../utils/obsidian";
 import type { Indexer } from "../../indexer";

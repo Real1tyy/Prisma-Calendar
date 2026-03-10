@@ -1,14 +1,15 @@
-import { addCls, ColorEvaluator, cls, removeCls } from "@real1ty-obsidian-plugins";
+import { addCls, cls, ColorEvaluator, removeCls } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import { type App, Modal, Setting } from "obsidian";
+
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
-import type { SingleCalendarConfig } from "../../types/settings";
 import { formatRecurrenceLabel, isWeekdaySupported } from "../../types/recurring-event";
-import { removeZettelId } from "../../utils/event-naming";
+import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
+import { removeZettelId } from "../../utils/event-naming";
 import { calculateEventStatistics } from "../../utils/event-statistics";
-import { EventSeriesBasesViewModal, type EventSeriesBasesViewConfig } from "../modals/event-series-bases-view-modal";
+import { type EventSeriesBasesViewConfig, EventSeriesBasesViewModal } from "../modals/event-series-bases-view-modal";
 import { EventSeriesTimelineModal } from "../modals/event-series-timeline-modal";
 
 type SourceTab = "name" | "category" | "recurring";

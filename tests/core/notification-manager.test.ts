@@ -1,5 +1,6 @@
 import { BehaviorSubject, Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { IndexerEvent, RawEventSource } from "../../src/core/indexer";
 import { NotificationManager } from "../../src/core/notification-manager";
 import type { SingleCalendarConfig } from "../../src/types/settings";

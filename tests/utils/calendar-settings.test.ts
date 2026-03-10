@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import type { SingleCalendarConfig } from "../../src/types";
 import { createDefaultCalendarConfig, duplicateCalendarConfig } from "../../src/utils/calendar-settings";
 

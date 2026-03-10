@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { RRuleFrontmatterSchema } from "../../src/types/recurring-event";
 
 describe("RRuleFrontmatterSchema validation", () => {

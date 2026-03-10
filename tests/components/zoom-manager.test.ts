@@ -1,5 +1,6 @@
 import type { Calendar } from "@fullcalendar/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { ZoomManager } from "../../src/components/zoom-manager";
 import type { CalendarSettingsStore } from "../../src/core/settings-store";
 

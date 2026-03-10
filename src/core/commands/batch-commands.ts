@@ -1,9 +1,10 @@
-import type { App } from "obsidian";
-import type { CalendarBundle } from "../calendar-bundle";
 import { MacroCommand } from "@real1ty-obsidian-plugins";
+import type { App } from "obsidian";
+
+import type { CalendarBundle } from "../calendar-bundle";
 import { CloneEventCommand, DeleteEventCommand } from "./lifecycle-commands";
-import { MoveEventCommand, UpdateFrontmatterCommand } from "./update-commands";
 import { AssignCategoriesCommand, MarkAsDoneCommand, MarkAsUndoneCommand, ToggleSkipCommand } from "./status-commands";
+import { MoveEventCommand, UpdateFrontmatterCommand } from "./update-commands";
 
 function createBatchDeleteCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
 	const deleteCommands = filePaths.map((filePath) => new DeleteEventCommand(app, bundle, filePath));

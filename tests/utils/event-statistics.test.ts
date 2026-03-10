@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { describe, expect, it } from "vitest";
+
 import { calculateEventStatistics } from "../../src/utils/event-statistics";
 
 describe("calculateEventStatistics", () => {

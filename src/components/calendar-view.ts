@@ -5,8 +5,8 @@ import interactionPlugin, { type DropArg } from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import {
-	ColorEvaluator,
 	cls,
+	ColorEvaluator,
 	extractContentAfterFrontmatter,
 	formatDuration,
 	hasVeryCloseShadeFromRgb,
@@ -16,6 +16,7 @@ import {
 	toggleCls,
 } from "@real1ty-obsidian-plugins";
 import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
+
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { FillTimeCommand, UpdateEventCommand, UpdateFrontmatterCommand } from "../core/commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
@@ -29,13 +30,13 @@ import type {
 } from "../types/calendar";
 import { isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
-import { cleanupTitle } from "../utils/event-naming";
+import { getEventRenderingKey } from "../utils/calendar-settings";
+import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
+import { resolveEventColor } from "../utils/event-color";
+import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/event-diff";
 import { getCommonCategories, stripISOSuffix } from "../utils/event-frontmatter";
 import { findAdjacentEvent, getSourceEventInfoFromVirtual } from "../utils/event-matching";
-import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
-import { getEventRenderingKey } from "../utils/calendar-settings";
-import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/event-diff";
-import { resolveEventColor } from "../utils/event-color";
+import { cleanupTitle } from "../utils/event-naming";
 import { invalidatePropertyExtractionCache } from "../utils/expression-utils";
 import {
 	buildEventTooltip,
@@ -46,8 +47,8 @@ import {
 	toLocalISOString,
 } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
-import { afterRender } from "../utils/scheduling";
 import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
+import { afterRender } from "../utils/scheduling";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import { EventContextMenu } from "./event-context-menu";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
@@ -62,10 +63,10 @@ import {
 	SkippedEventsModal,
 } from "./list-modals";
 import { EventCreateModal } from "./modals";
-import { EventSeriesTimelineModal } from "./modals/event-series-timeline-modal";
-import { BatchFrontmatterModal } from "./modals/batch-frontmatter-modal";
 import { openCategoryAssignModal } from "./modals/assignment-modal";
+import { BatchFrontmatterModal } from "./modals/batch-frontmatter-modal";
 import { CategorySelectModal } from "./modals/category-select-modal";
+import { EventSeriesTimelineModal } from "./modals/event-series-timeline-modal";
 import { IntervalEventsModal } from "./modals/interval-events-modal";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";

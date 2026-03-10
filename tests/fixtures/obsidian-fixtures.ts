@@ -1,4 +1,5 @@
 import { vi } from "vitest";
+
 import type { MockApp } from "../mocks/obsidian";
 
 /** Factory for a mock Obsidian Vault with all common methods stubbed. */

@@ -1,5 +1,6 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
+
 import type { EventPreset } from "../../types/settings";
 import { createModalButtons, registerSubmitHotkey } from "../../utils/dom-utils";
 

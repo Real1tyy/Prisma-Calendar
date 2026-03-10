@@ -6,10 +6,11 @@ import {
 	renderPropertyValue,
 } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
+
 import type { Frontmatter } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
-import { removeZettelId } from "../utils/event-naming";
 import { createTextDiv } from "../utils/dom-utils";
+import { removeZettelId } from "../utils/event-naming";
 import { categorizeProperties } from "../utils/format";
 
 interface NotificationEventData {

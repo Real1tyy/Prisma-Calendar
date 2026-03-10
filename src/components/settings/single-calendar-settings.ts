@@ -1,5 +1,9 @@
 import { SettingsNavigation, type SettingsSection } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
+
+import { PRO_FEATURES } from "../../core/license";
+import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
+import type CustomCalendarPlugin from "../../main";
 import {
 	AISettings,
 	BasesSettings,
@@ -13,9 +17,6 @@ import {
 	PropertiesSettings,
 	RulesSettings,
 } from ".";
-import { PRO_FEATURES } from "../../core/license";
-import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
-import type CustomCalendarPlugin from "../../main";
 import { renderProUpgradeBanner } from "./pro-upgrade-banner";
 
 export class SingleCalendarSettings {

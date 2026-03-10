@@ -2,14 +2,15 @@ import { mergeSorted } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import type { Subscription } from "rxjs";
 import BTree from "sorted-btree";
+
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
 import type { ISO } from "../../types/index";
-import { IndexedCacheStore } from "./indexed-cache-store";
+import type { HolidayStore } from "../holidays";
 import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
 import type { Parser } from "../parser";
 import type { RecurringEventManager } from "../recurring-event-manager";
-import type { HolidayStore } from "../holidays";
+import { IndexedCacheStore } from "./indexed-cache-store";
 
 export interface EventQuery {
 	start: ISO;

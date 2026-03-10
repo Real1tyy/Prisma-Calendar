@@ -1,5 +1,6 @@
 import { Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { StopwatchSnapshot } from "../../src/components/stopwatch";
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
 import type { IndexerEvent } from "../../src/core/indexer";

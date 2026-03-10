@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { collectSuggestions, type TitleSuggestion } from "../../src/components/title-input-suggest";
 
 function createMockBundle(options: {

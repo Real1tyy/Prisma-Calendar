@@ -1,5 +1,6 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Modal, PluginSettingTab, Setting } from "obsidian";
+
 import { FREE_MAX_CALENDARS } from "../../core/license";
 import { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";

@@ -1,12 +1,13 @@
-import { ColorEvaluator, cls } from "@real1ty-obsidian-plugins";
+import { cls, ColorEvaluator } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
 import { DataSet } from "vis-data";
 import { Timeline, type TimelineOptions } from "vis-timeline";
+
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { cleanupTitle } from "../../utils/event-naming";
 import { resolveEventColor } from "../../utils/event-color";
+import { cleanupTitle } from "../../utils/event-naming";
 import { buildEventTooltip } from "../../utils/format";
 import { EventPreviewModal, type PreviewEventData } from "../event-preview-modal";
 

@@ -1,6 +1,7 @@
-import { type App, Notice, Platform, apiVersion, requestUrl } from "obsidian";
 import { errors, importSPKI, jwtVerify } from "jose";
+import { apiVersion, type App, Notice, Platform, requestUrl } from "obsidian";
 import { BehaviorSubject, type Observable } from "rxjs";
+
 import type { CachedLicenseData, LicenseStatus, LicenseVerifyResponse } from "../types/license";
 import type { SettingsStore } from "./settings-store";
 

@@ -1,6 +1,7 @@
 import type { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, type MockedFunction, vi } from "vitest";
+
 import { Indexer, type IndexerEvent } from "../../src/core/indexer";
 import type { Frontmatter } from "../../src/types";
 import { createMockMetadataCache, createMockVault } from "../fixtures";

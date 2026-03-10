@@ -1,10 +1,11 @@
 import { cls } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
-import { type App, Modal, Notice, SecretComponent, Setting, requestUrl } from "obsidian";
+import { type App, Modal, Notice, requestUrl, SecretComponent, Setting } from "obsidian";
+
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
-import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
-import { parseICSContent } from "../../../core/integrations/ics-import";
 import { COMMON_TIMEZONES } from "../../../core/integrations/ics-export";
+import { parseICSContent } from "../../../core/integrations/ics-import";
+import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
 import type { SettingsStore } from "../../../core/settings-store";
 
 export class AddICSSubscriptionModal extends Modal {

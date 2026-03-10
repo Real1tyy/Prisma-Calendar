@@ -1,5 +1,6 @@
 import Holidays, { type HolidaysTypes } from "date-holidays";
-import type { HolidayEvent, HolidayProvider, HolidayConfig } from "./types";
+
+import type { HolidayConfig, HolidayEvent, HolidayProvider } from "./types";
 
 export class DateHolidaysProvider implements HolidayProvider {
 	private readonly hd: Holidays;

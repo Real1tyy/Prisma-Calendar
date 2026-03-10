@@ -2,6 +2,7 @@ import { DateTime } from "luxon";
 import { BehaviorSubject, Subject } from "rxjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { parse } from "yaml";
+
 import { RecurringEventManager } from "../../src/core/recurring-event-manager";
 import { isTimedEvent } from "../../src/types/calendar";
 import type { EventMetadata } from "../../src/types/event";

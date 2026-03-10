@@ -1,10 +1,11 @@
 import { isNotEmpty } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
+
 import type { Frontmatter } from "../types";
 import type { CalendarEvent, CalendarEventData } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
-import { cleanupTitle } from "./event-naming";
 import { getInternalProperties } from "./event-frontmatter";
+import { cleanupTitle } from "./event-naming";
 import { extractPropertyText, getDisplayProperties } from "./property-display";
 
 /**

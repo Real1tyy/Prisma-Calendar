@@ -6,10 +6,11 @@ import {
 	renderPropertyValue,
 } from "@real1ty-obsidian-plugins";
 import { type App, Modal, TFile } from "obsidian";
+
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type { Frontmatter } from "../types";
-import { removeZettelId } from "../utils/event-naming";
 import { createTextDiv } from "../utils/dom-utils";
+import { removeZettelId } from "../utils/event-naming";
 import { calculateDuration, categorizeProperties, intoDate } from "../utils/format";
 
 export interface PreviewEventData {

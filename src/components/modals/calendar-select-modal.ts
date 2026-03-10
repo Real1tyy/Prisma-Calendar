@@ -1,6 +1,7 @@
 import { cls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Modal } from "obsidian";
+
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
 

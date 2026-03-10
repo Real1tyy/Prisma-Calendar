@@ -1,12 +1,13 @@
 import { getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from "@real1ty-obsidian-plugins";
+import { parseIntoList } from "@real1ty-obsidian-plugins";
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
 import type { App, TFile } from "obsidian";
+
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import type { RecurrenceType } from "../../types/recurring-event";
-import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/event-naming";
 import { setEventBasics } from "../../utils/event-frontmatter";
-import { parseIntoList } from "@real1ty-obsidian-plugins";
+import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
 
 export interface ImportedEvent {

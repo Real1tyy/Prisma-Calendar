@@ -1,12 +1,13 @@
 import {
 	type FrontmatterDiff,
-	FrontmatterPropagationModal,
 	FrontmatterPropagationDebouncer,
+	FrontmatterPropagationModal,
 	parseIntoList,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
+
 import type { Frontmatter } from "../types";
 import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";

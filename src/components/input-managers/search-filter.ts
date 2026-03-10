@@ -1,4 +1,5 @@
 import { cls } from "@real1ty-obsidian-plugins";
+
 import type { Frontmatter } from "../../types";
 import { InputFilterManager } from "./base";
 

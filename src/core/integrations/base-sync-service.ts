@@ -1,6 +1,7 @@
 import { sanitizeForFilename } from "@real1ty-obsidian-plugins";
-import { type App, Notice, normalizePath, TFile } from "obsidian";
+import { type App, normalizePath, Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
+
 import type { Frontmatter } from "../../types";
 import { extractZettelId, removeZettelId } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";

@@ -1,5 +1,5 @@
-import type { Frontmatter } from "../types/index";
 import type { PrismaEventInput } from "../types/calendar";
+import type { Frontmatter } from "../types/index";
 
 export interface EventDiff {
 	added: PrismaEventInput[];

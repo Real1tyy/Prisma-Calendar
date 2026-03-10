@@ -1,10 +1,11 @@
 import {
 	type FrontmatterDiff,
+	parseIntoList,
 	serializeFrontmatterValue,
 	withFrontmatter,
-	parseIntoList,
 } from "@real1ty-obsidian-plugins";
 import { type App, TFile } from "obsidian";
+
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { CalendarEvent, Frontmatter, SingleCalendarConfig } from "../types";
 import { getFileAndFrontmatter, getFileByPathOrThrow } from "./obsidian";

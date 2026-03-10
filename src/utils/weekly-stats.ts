@@ -1,4 +1,5 @@
 import { parseCategories } from "@real1ty-obsidian-plugins";
+
 import type { CalendarEvent } from "../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../types/calendar";
 import { extractNotesCoreName } from "./event-naming";

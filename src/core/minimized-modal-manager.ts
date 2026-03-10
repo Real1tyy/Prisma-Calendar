@@ -1,8 +1,9 @@
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
-import { openCategoryAssignModal } from "../components/modals/assignment-modal";
+
 import { EventCreateModal, EventEditModal } from "../components/modals";
+import { openCategoryAssignModal } from "../components/modals/assignment-modal";
 import type { StopwatchSnapshot } from "../components/stopwatch";
 import type { Frontmatter } from "../types";
 import type { EventPreset } from "../types/settings";

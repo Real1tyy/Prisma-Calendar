@@ -1,5 +1,6 @@
 import { cls } from "@real1ty-obsidian-plugins";
 import { AbstractInputSuggest, type App } from "obsidian";
+
 import type { CalendarBundle } from "../core/calendar-bundle";
 
 export type SuggestionSource = "category" | "preset" | "name-series";

@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+
 import type { CalendarEvent } from "../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../types/calendar";
 import { formatDurationHumanReadable } from "./format";

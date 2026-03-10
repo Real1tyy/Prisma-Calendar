@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { SETTINGS_DEFAULTS } from "../constants";
 
 export const PrismaSyncDataSchema = z

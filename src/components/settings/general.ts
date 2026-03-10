@@ -1,12 +1,13 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
-import { LOCALE_OPTIONS } from "../../types/view";
 import { type App, SecretComponent, Setting } from "obsidian";
 import type { Subscription } from "rxjs";
+
 import { FREE_MAX_EVENT_PRESETS, PRO_PURCHASE_URL } from "../../core/license";
-import type { LicenseStatus } from "../../types/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import type { LicenseStatus } from "../../types/license";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
+import { LOCALE_OPTIONS } from "../../types/view";
 import { renderProUpgradeBanner } from "./pro-upgrade-banner";
 
 export class GeneralSettings {

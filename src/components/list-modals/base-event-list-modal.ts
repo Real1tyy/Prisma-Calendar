@@ -1,5 +1,6 @@
 import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { Modal, type Modifier, Notice } from "obsidian";
+
 import { removeZettelId } from "../../utils/event-naming";
 
 export interface EventListItem {

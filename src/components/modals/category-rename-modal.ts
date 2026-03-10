@@ -1,5 +1,6 @@
 import { bulkRenameCategoryInFiles, type CategoryOperationResult } from "@real1ty-obsidian-plugins";
 import { Notice, Setting, type TFile } from "obsidian";
+
 import type { CalendarEvent } from "../../types/calendar";
 import { BaseCategoryOperationModal } from "./base-category-operation-modal";
 

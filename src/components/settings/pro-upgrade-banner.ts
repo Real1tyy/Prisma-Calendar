@@ -1,4 +1,5 @@
 import { cls } from "@real1ty-obsidian-plugins";
+
 import { PRO_PURCHASE_URL } from "../../core/license";
 
 export function renderProUpgradeBanner(containerEl: HTMLElement, featureName: string, description: string): void {

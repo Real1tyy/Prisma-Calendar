@@ -1,13 +1,14 @@
 import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
+
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { AssignCategoriesCommand, ToggleSkipCommand } from "../../core/commands";
 import {
-	type NodeRecurringEvent,
-	RECURRENCE_TYPE_OPTIONS,
 	formatRecurrenceLabel,
 	isPresetType,
+	type NodeRecurringEvent,
+	RECURRENCE_TYPE_OPTIONS,
 } from "../../types/recurring-event";
 import { getEventName, removeZettelId } from "../../utils/event-naming";
 import { getCategoriesFromFilePath, openFileInNewTab } from "../../utils/obsidian";

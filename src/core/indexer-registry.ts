@@ -1,16 +1,17 @@
 import { normalizeDirectoryPath, SyncStore } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
+
 import type { PrismaSyncDataSchema } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 import { CategoryTracker } from "./category-tracker";
 import { EventStore } from "./event-store";
+import { UntrackedEventStore } from "./event-store";
 import { Indexer } from "./indexer";
+import { NameSeriesTracker } from "./name-series-tracker";
 import { NotificationManager } from "./notification-manager";
 import { Parser } from "./parser";
 import { RecurringEventManager } from "./recurring-event-manager";
-import { NameSeriesTracker } from "./name-series-tracker";
-import { UntrackedEventStore } from "./event-store";
 
 interface IndexerEntry {
 	indexer: Indexer;

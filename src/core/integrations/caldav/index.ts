@@ -2,7 +2,6 @@
 // Re-exports all CalDAV-related functionality
 
 export { CalDAVClientService } from "./client";
-
 export {
 	// Presets
 	CALDAV_PRESETS,

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { Stopwatch } from "../../src/components/stopwatch";
 
 function setupObsidianDOMHelpers(element: HTMLElement) {

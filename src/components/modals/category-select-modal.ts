@@ -1,6 +1,7 @@
 import { cls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Modal } from "obsidian";
+
 import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
 
 export class CategorySelectModal extends Modal {

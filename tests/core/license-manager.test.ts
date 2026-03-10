@@ -1,9 +1,10 @@
+import { Notice, requestUrl } from "obsidian";
+import { BehaviorSubject } from "rxjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { LicenseManager, DEVICE_ID_STORAGE_KEY, LICENSE_CACHE_STORAGE_KEY } from "../../src/core/license";
+
+import { DEVICE_ID_STORAGE_KEY, LICENSE_CACHE_STORAGE_KEY, LicenseManager } from "../../src/core/license";
 import type { CachedLicenseData, LicenseVerifyResponse } from "../../src/types/license";
 import { CustomCalendarSettingsSchema } from "../../src/types/settings";
-import { BehaviorSubject } from "rxjs";
-import { Notice, requestUrl } from "obsidian";
 
 const mockRequestUrl = vi.mocked(requestUrl);
 

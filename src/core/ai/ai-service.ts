@@ -1,5 +1,6 @@
 import type { RequestUrlResponse } from "obsidian";
 import { requestUrl } from "obsidian";
+
 import { AI_DEFAULTS, type AIProvider } from "./ai-constants";
 
 export interface ChatMessage {

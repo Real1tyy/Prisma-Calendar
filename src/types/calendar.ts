@@ -1,7 +1,8 @@
 import type { CustomButtonInput, EventInput } from "@fullcalendar/core";
 import { z } from "zod";
-import type { Frontmatter } from "./index";
+
 import { EventMetadataSchema } from "./event";
+import type { Frontmatter } from "./index";
 
 // Base properties shared by all event types
 const BaseEventSchema = z.object({

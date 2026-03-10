@@ -1,10 +1,11 @@
 import { ColorEvaluator } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
+
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { formatEventTimeInfo } from "../../utils/time-formatter";
 import { resolveEventColor } from "../../utils/event-color";
+import { formatEventTimeInfo } from "../../utils/time-formatter";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 export class SelectedEventsModal extends BaseEventListModal {

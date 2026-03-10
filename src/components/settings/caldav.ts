@@ -1,6 +1,7 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
 import { type App, Modal, Notice, SecretComponent, Setting } from "obsidian";
+
 import { CALDAV_DEFAULTS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import {

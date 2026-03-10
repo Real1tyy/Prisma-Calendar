@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
+
 import { CustomCalendarSettingsSchema } from "../src/types/index";
 
 // Mock CSS.supports for color validation tests

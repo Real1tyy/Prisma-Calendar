@@ -1,5 +1,6 @@
 import type { App } from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { EventEditModal } from "../../src/components/modals";
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
 import { createMockIntegrationApp } from "../fixtures";

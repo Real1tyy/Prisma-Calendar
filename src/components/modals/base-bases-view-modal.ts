@@ -1,5 +1,6 @@
 import { cls } from "@real1ty-obsidian-plugins";
 import { type App, Component, MarkdownRenderer, Modal } from "obsidian";
+
 import type { SingleCalendarConfig } from "../../types/settings";
 
 export abstract class BaseBasesViewModal extends Modal {

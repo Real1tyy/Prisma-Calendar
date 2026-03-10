@@ -1,6 +1,6 @@
-import type { AIEventSummary } from "./ai-context-builder";
 import { stripISOSuffix } from "../../utils/event-frontmatter";
 import { calculateDurationMinutes, intoDate } from "../../utils/format";
+import type { AIEventSummary } from "./ai-context-builder";
 
 // ─── Types ──────────────────────────────────────────────────────────
 

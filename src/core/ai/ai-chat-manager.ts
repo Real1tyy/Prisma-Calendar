@@ -1,18 +1,18 @@
+import type { SettingsStore } from "../settings-store";
 import { AI_DEFAULTS, type AIProvider } from "./ai-constants";
 import {
 	buildManipulationSystemPrompt,
 	buildPlanningSystemPrompt,
 	buildSystemPromptWithContext,
-	NO_CONTEXT_PROMPT_SUFFIX,
 	type CalendarContext,
 	type CategoryContext,
 	type ManipulationContext,
+	NO_CONTEXT_PROMPT_SUFFIX,
 	type PlanningContext,
 	type PlanningPromptFlags,
 } from "./ai-context-builder";
 import { AIServiceError, callAI, type ChatMessage, type ThreadData } from "./ai-service";
 import type { ChatStore } from "./chat-store";
-import type { SettingsStore } from "../settings-store";
 
 const BASE_SYSTEM_PROMPT = `You are an AI assistant integrated into Prisma Calendar, an Obsidian plugin for managing calendar events. You help users understand and manage their calendar data.
 The user is viewing their calendar and asking about their events and schedule.

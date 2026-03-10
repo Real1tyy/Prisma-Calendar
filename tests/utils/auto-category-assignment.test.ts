@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import type { SingleCalendarConfig } from "../../src/types/settings";
 import { autoAssignCategories, normalizeEventNameForComparison } from "../../src/utils/event-matching";
 

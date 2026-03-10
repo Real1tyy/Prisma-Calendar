@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { ensureISOSuffix } from "../../src/utils/format";
 
 describe("ensureISOSuffix", () => {

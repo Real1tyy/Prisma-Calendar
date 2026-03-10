@@ -1,23 +1,24 @@
-import { cls, MacroCommand, MountableView, type Command } from "@real1ty-obsidian-plugins";
+import { cls, type Command, MacroCommand, MountableView } from "@real1ty-obsidian-plugins";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { z } from "zod";
-import { renderProUpgradeBanner } from "./settings/pro-upgrade-banner";
-import { PRO_FEATURES } from "../core/license";
-import { AI_DEFAULTS, AIChatManager, ChatStore, type ChatMessage } from "../core/ai";
+
+import { AI_DEFAULTS, AIChatManager, type ChatMessage, ChatStore } from "../core/ai";
 import {
 	buildCalendarContext,
 	buildManipulationContext,
 	buildPlanningContext,
-	getViewLabel,
 	type CalendarContext,
 	type CategoryContext,
+	getViewLabel,
 	type ManipulationContext,
 	type PlanningContext,
 } from "../core/ai/ai-context-builder";
-import { validateOperationsSemantically, type SemanticValidationContext } from "../core/ai/ai-validation";
+import { type SemanticValidationContext, validateOperationsSemantically } from "../core/ai/ai-validation";
 import type { CalendarBundle } from "../core/calendar-bundle";
+import { PRO_FEATURES } from "../core/license";
 import type CustomCalendarPlugin from "../main";
 import { CalendarView, getCalendarViewType } from "./calendar-view";
+import { renderProUpgradeBanner } from "./settings/pro-upgrade-banner";
 
 type AIMode = "query" | "manipulation" | "planning";
 

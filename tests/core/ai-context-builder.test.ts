@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { analyzePreviousPatterns, type AIEventSummary } from "../../src/core/ai/ai-context-builder";
+
+import { type AIEventSummary, analyzePreviousPatterns } from "../../src/core/ai/ai-context-builder";
 
 function makeEvent(title: string, start: string, end: string, allDay = false, categories?: string[]): AIEventSummary {
 	return { title, start, end, allDay, categories };

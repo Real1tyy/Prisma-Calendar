@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { ExpressionFilterInputManager } from "../../src/components/input-managers/expression-filter";
 
 describe("ExpressionFilterManager", () => {

@@ -1,8 +1,8 @@
 export { PrismaCalendarApiManager } from "./api-manager";
 export type {
-	PrismaEventOutput,
-	PrismaCategoryOutput,
 	PrismaCalendarInfo,
+	PrismaCategoryOutput,
+	PrismaEventOutput,
 	PrismaStatEntry,
 	PrismaStatisticsOutput,
 } from "./types";

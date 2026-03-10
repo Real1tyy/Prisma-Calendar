@@ -1,4 +1,5 @@
 import { Notice, TFile } from "obsidian";
+
 import { EventCreateModal, EventEditModal, UntrackedEventCreateModal } from "../../components/modals";
 import type CustomCalendarPlugin from "../../main";
 import { roundToNearestHour, toLocalISOString } from "../../utils/format";

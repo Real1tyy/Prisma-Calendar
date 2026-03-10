@@ -1,6 +1,7 @@
 import type { ColorRule } from "@real1ty-obsidian-plugins";
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
+
 import { SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { SingleCalendarConfigSchema } from "../../types/settings";

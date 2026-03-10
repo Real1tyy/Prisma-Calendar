@@ -1,7 +1,8 @@
 import { Frontmatter, getObsidianLinkPath, parseIntoList } from "@real1ty-obsidian-plugins";
+import { MacroCommand } from "@real1ty-obsidian-plugins";
 import { type App, Menu, Notice } from "obsidian";
+
 import type { CalendarBundle } from "../core/calendar-bundle";
-import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import {
 	AssignCategoriesCommand,
 	CloneEventCommand,
@@ -13,13 +14,13 @@ import {
 	MoveEventCommand,
 	ToggleSkipCommand,
 } from "../core/commands";
-import { MacroCommand } from "@real1ty-obsidian-plugins";
 import { calculateWeekOffsets } from "../core/commands/batch-commands";
+import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import { type ContextMenuItem, isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
-import { getEventName } from "../utils/event-naming";
 import { isEventDone, parseCustomDoneProperty } from "../utils/event-frontmatter";
 import { findAdjacentEvent } from "../utils/event-matching";
+import { getEventName } from "../utils/event-naming";
 import { intoDate, toLocalISOString } from "../utils/format";
 import {
 	emitHover,

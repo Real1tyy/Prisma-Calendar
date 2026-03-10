@@ -1,7 +1,8 @@
 import type { Calendar } from "@fullcalendar/core";
 import { Draggable } from "@fullcalendar/interaction";
-import { addCls, ColorEvaluator, cls, removeCls } from "@real1ty-obsidian-plugins";
+import { addCls, cls, ColorEvaluator, removeCls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
+
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type { ParsedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";

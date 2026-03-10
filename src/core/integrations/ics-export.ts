@@ -1,6 +1,7 @@
 import { extractContentAfterFrontmatter, serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
 import ICAL from "ical.js";
 import { type App, Notice, TFile } from "obsidian";
+
 import type { ExportOptions } from "../../components/modals/calendar-select-modal";
 import type { CalendarEvent } from "../../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";

@@ -1,4 +1,5 @@
 import { cls } from "@real1ty-obsidian-plugins";
+
 import { formatMsToHHMMSS } from "../utils/time-formatter";
 
 type StopwatchState = "idle" | "running" | "paused" | "stopped";

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { TableComponent } from "../../src/components/weekly-stats/table-component";
 import type { StatEntry } from "../../src/utils/weekly-stats";
 

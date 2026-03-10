@@ -1,4 +1,5 @@
 import { requestUrl, TFile } from "obsidian";
+
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { BaseSyncService, type BaseSyncServiceOptions, yieldToMainThread } from "../base-sync-service";
 import { type ImportedEvent, parseICSContent } from "../ics-import";

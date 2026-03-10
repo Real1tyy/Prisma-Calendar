@@ -1,6 +1,7 @@
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { EventStore } from "../../src/core/event-store";
 import { Indexer } from "../../src/core/indexer";
 import { Parser } from "../../src/core/parser";

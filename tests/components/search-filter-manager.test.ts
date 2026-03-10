@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { SearchFilterInputManager } from "../../src/components/input-managers/search-filter";
 
 describe("SearchFilterManager", () => {

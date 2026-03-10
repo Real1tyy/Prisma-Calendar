@@ -1,5 +1,6 @@
 import type { CategoryOperationResult } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice, TFile } from "obsidian";
+
 import type { CategoryTracker } from "../../core/category-tracker";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { CalendarEvent } from "../../types/calendar";

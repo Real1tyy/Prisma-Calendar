@@ -1,6 +1,7 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { type App, Setting } from "obsidian";
 import type { Subscription } from "rxjs";
+
 import { COMMAND_IDS, SETTINGS_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";

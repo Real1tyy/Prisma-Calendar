@@ -2,6 +2,7 @@ import { DateTime } from "luxon";
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { RawEventSource } from "../../src/core/indexer";
 import { Parser } from "../../src/core/parser";
 import { isAllDayEvent, isTimedEvent } from "../../src/types/calendar";

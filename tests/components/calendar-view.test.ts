@@ -1,5 +1,6 @@
 import type { WorkspaceLeaf } from "obsidian";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { SETTINGS_DEFAULTS } from "../../src/constants";
 // import { CalendarView } from "../../src/components/calendar-view";
 import type { EventStore } from "../../src/core/event-store";

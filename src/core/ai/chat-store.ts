@@ -1,5 +1,6 @@
-import { normalizePath, type App, type Plugin } from "obsidian";
 import { nanoid } from "nanoid";
+import { type App, normalizePath, type Plugin } from "obsidian";
+
 import type { StoredChatMessage, ThreadData, ThreadMeta } from "./ai-service";
 
 export class ChatStore {

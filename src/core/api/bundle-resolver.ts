@@ -1,4 +1,5 @@
 import { Notice } from "obsidian";
+
 import { CalendarView } from "../../components/calendar-view";
 import type CustomCalendarPlugin from "../../main";
 import type { CalendarBundle } from "../calendar-bundle";

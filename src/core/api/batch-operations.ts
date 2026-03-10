@@ -1,4 +1,5 @@
 import type { Command } from "@real1ty-obsidian-plugins";
+
 import type CustomCalendarPlugin from "../../main";
 import type { CalendarBundle } from "../calendar-bundle";
 import { resolveBundleOrNotice } from "./bundle-resolver";

@@ -1,6 +1,7 @@
 import { SyncStore } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
+
 import { NotificationModal } from "../components/notification-modal";
 import { MAX_PAST_NOTIFICATION_THRESHOLD } from "../constants";
 import type { Frontmatter, PrismaSyncDataSchema } from "../types";

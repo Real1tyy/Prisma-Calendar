@@ -1,6 +1,7 @@
 import { SettingsStore as GenericSettingsStore } from "@real1ty-obsidian-plugins";
 import type { Plugin } from "obsidian";
 import { BehaviorSubject, type Subscription } from "rxjs";
+
 import { TOOLBAR_BUTTON_IDS } from "../constants";
 import { CustomCalendarSettingsSchema, type SingleCalendarConfig, SingleCalendarConfigSchema } from "../types/index";
 import { getCalendarById } from "../utils/calendar-settings";

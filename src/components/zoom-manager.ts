@@ -1,6 +1,7 @@
 import type { Calendar } from "@fullcalendar/core";
 import { addCls, formatDuration, removeCls } from "@real1ty-obsidian-plugins";
 import { Menu } from "obsidian";
+
 import type { CalendarSettingsStore } from "../core/settings-store";
 
 export class ZoomManager {

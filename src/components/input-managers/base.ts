@@ -1,5 +1,6 @@
 import type { Calendar } from "@fullcalendar/core";
 import { cls } from "@real1ty-obsidian-plugins";
+
 import type { Frontmatter } from "../../types";
 
 type FilterChangeCallback = () => void;

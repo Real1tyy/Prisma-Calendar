@@ -1,8 +1,9 @@
-import type { App } from "obsidian";
 import { DateTime } from "luxon";
-import type { HolidayProvider, HolidayEvent, HolidayConfig } from "./types";
-import { DateHolidaysProvider } from "./date-holidays-provider";
+import type { App } from "obsidian";
+
 import type { CalendarEvent } from "../../types/calendar";
+import { DateHolidaysProvider } from "./date-holidays-provider";
+import type { HolidayConfig, HolidayEvent, HolidayProvider } from "./types";
 
 interface CachedHolidays {
 	year: number;

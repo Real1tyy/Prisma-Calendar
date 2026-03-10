@@ -1,4 +1,5 @@
 import type { App } from "obsidian";
+
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { aggregateDailyStats, getDayBounds, getMonthBounds, getWeekBounds } from "../../utils/weekly-stats";
 import type { IntervalConfig } from "./interval-stats-modal";

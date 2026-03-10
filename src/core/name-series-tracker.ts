@@ -1,19 +1,20 @@
 import {
 	type FrontmatterDiff,
-	FrontmatterPropagationModal,
 	FrontmatterPropagationDebouncer,
+	FrontmatterPropagationModal,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
+
 import type { CalendarEvent } from "../types/calendar";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
-import { getEventName } from "../utils/event-naming";
 import {
 	applyFrontmatterChangesToInstance,
 	filterExcludedPropsFromDiff,
 	getRecurringInstanceExcludedProps,
 } from "../utils/event-frontmatter";
+import { getEventName } from "../utils/event-naming";
 import { batchedPromiseAll } from "../utils/obsidian";
 import type { EventStore } from "./event-store";
 import type { Indexer, IndexerEvent } from "./indexer";

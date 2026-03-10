@@ -1,5 +1,6 @@
 import { addCls, removeCls, toggleCls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
+
 import { createModalButtons } from "../../utils/dom-utils";
 
 export interface AssignmentItem {

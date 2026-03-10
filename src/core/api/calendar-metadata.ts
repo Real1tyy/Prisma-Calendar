@@ -1,8 +1,9 @@
 import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfig } from "../../types";
+import { toLocalISOString } from "../../utils/format";
 import {
-	type AggregationMode,
 	aggregateStats,
+	type AggregationMode,
 	formatDuration,
 	formatDurationAsDecimalHours,
 	formatPercentage,
@@ -10,7 +11,6 @@ import {
 	getMonthBounds,
 	getWeekBounds,
 } from "../../utils/weekly-stats";
-import { toLocalISOString } from "../../utils/format";
 import type { CalendarBundle } from "../calendar-bundle";
 import { resolveBundle, resolveBundleOrNotice } from "./bundle-resolver";
 import type { PrismaCalendarInfo, PrismaStatEntry, PrismaStatisticsOutput } from "./types";
