@@ -93,6 +93,11 @@ const config: Config = {
 					position: "left",
 				},
 				{
+					to: "/features/free-vs-pro",
+					label: "Free vs Pro",
+					position: "left",
+				},
+				{
 					to: "/videos",
 					label: "Videos",
 					position: "left",
@@ -138,6 +143,10 @@ const config: Config = {
 						{
 							label: "Prisma Calendar",
 							to: "/",
+						},
+						{
+							label: "Free vs Pro",
+							to: "/features/free-vs-pro",
 						},
 						{
 							label: "Installation",

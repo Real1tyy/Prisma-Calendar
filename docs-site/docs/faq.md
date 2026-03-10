@@ -4,11 +4,11 @@
 
 ### Does it work on mobile?
 
-**Core features work on mobile without any problems**. We have users who rely on mobile, and thanks to their feedback, we continually improve and tighten up the mobile experience to make it rock solid. Our design is responsive, so most things work, and we're committed to making it even better over time. If you encounter any problems or have suggestions for improvement, please create a [GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues) and we'll address it.
+Core features work on mobile without any problems. The design is responsive, and I'm continuously tightening up the mobile experience based on feedback to make it rock solid. If you run into anything, please open a [GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues).
 
 ### Is it free?
 
-Yes! Prisma Calendar is completely free and open source under the MIT license.
+Yes! Prisma Calendar is free and fully-featured out of the box — no account, no trial, no limitations on the core experience. Pro adds advanced power-user features (AI chat, CalDAV sync, programmatic API, unlimited calendars/presets). See [Free vs Pro](./features/free-vs-pro.md) for details.
 
 ### How do I open the calendar view?
 
@@ -202,3 +202,36 @@ Yes. Configure your template path in both Templater (folder template) AND Prisma
 ### Does this plugin use any calendar library?
 
 Yes! Prisma Calendar is built using [FullCalendar](https://fullcalendar.io/), a powerful and flexible JavaScript calendar library. FullCalendar provides the robust calendar rendering engine that powers Prisma Calendar's views and interactions.
+
+---
+
+## Privacy & Telemetry
+
+### Does Prisma Calendar collect any data from my vault?
+
+**No.** Prisma Calendar does not include any client-side telemetry or analytics. No vault content, file names, note content, or personal data from your Obsidian vault is ever transmitted. Your data is 100% yours and stays local.
+
+### What about server-side telemetry?
+
+Server-side telemetry is collected **exclusively** during license verification requests for Pro (advanced) features. When the plugin contacts the license server, only the following data is transmitted:
+
+- License key
+- Plugin version
+- Obsidian version
+- Operating system / platform
+- Device identifier (a locally generated unique ID)
+- Device name
+
+This data is used solely for license validation, activation seat management (up to 5 devices per license), compatibility monitoring, abuse prevention, and product improvement. **If you only use the free features, no telemetry data is collected at all.**
+
+This approach complies with [Obsidian Developer Policies](https://docs.obsidian.md/Developer+policies), which permit server-side telemetry with disclosure and a linked privacy policy, while prohibiting client-side telemetry.
+
+### Where can I read the full legal terms?
+
+- [Privacy Policy](https://matejvavroproductivity.com/privacy/)
+- [Terms of Service](https://matejvavroproductivity.com/terms/)
+- [Legal Notice / Imprint](https://matejvavroproductivity.com/legal/)
+
+### Is Prisma Calendar affiliated with Obsidian?
+
+No. Prisma Calendar is developed by [Matej Vavro](https://matejvavroproductivity.com/) and is an independent, third-party product. It is not affiliated with, endorsed by, or sponsored by Obsidian (Dynalist Inc.). All references to "Obsidian" are for descriptive and compatibility purposes only.
