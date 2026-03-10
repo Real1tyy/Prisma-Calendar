@@ -21,6 +21,7 @@ import {
 } from "../../core/minimized-modal-manager";
 import type { Frontmatter } from "../../types";
 import { isTimedEvent } from "../../types/calendar";
+import type { EventSaveData } from "../../types/event-save";
 import {
 	buildCustomIntervalDSL,
 	isPresetType,
@@ -67,15 +68,6 @@ interface EventModalData {
 		filePath?: string | null;
 		[key: string]: unknown;
 	};
-}
-
-export interface EventSaveData {
-	filePath: string | null;
-	title: string;
-	start: string;
-	end: string | null;
-	allDay: boolean;
-	preservedFrontmatter: Frontmatter;
 }
 
 interface CustomProperty {

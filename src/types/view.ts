@@ -2,9 +2,9 @@ import { z } from "zod";
 
 import type { CONTEXT_MENU_BUTTON_LABELS } from "../constants";
 import { CONTEXT_MENU_ITEM_IDS, TOOLBAR_BUTTON_IDS } from "../constants";
-import type { Weekday } from "../utils/date-recurrence";
-import { WEEKDAY_TO_NUMBER } from "../utils/date-recurrence";
 import { WEEKDAY_OPTIONS } from "./recurring-event";
+import type { Weekday } from "./weekday";
+import { WEEKDAY_TO_NUMBER } from "./weekday";
 
 export const CALENDAR_VIEW_OPTIONS = {
 	dayGridMonth: "Month",

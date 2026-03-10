@@ -1,22 +1,13 @@
 import { cls } from "@real1ty-obsidian-plugins";
 
+import type { StopwatchSnapshot, StopwatchState } from "../types/stopwatch";
 import { formatMsToHHMMSS } from "../utils/time-formatter";
-
-type StopwatchState = "idle" | "running" | "paused" | "stopped";
 
 interface StopwatchCallbacks {
 	onStart: (startTime: Date) => void;
 	onContinueRequested: () => Date | null;
 	onStop: (endTime: Date) => void;
 	onBreakUpdate: (breakMinutes: number) => void;
-}
-
-export interface StopwatchSnapshot {
-	state: StopwatchState;
-	startTime: number | null;
-	breakStartTime: number | null;
-	sessionStartTime: number | null;
-	totalBreakMs: number;
 }
 
 export class Stopwatch {

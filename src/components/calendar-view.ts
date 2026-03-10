@@ -31,6 +31,7 @@ import type {
 import { isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import { getEventRenderingKey } from "../utils/calendar-settings";
+import { getCalendarViewType } from "../utils/calendar-view-type";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { resolveEventColor } from "../utils/event-color";
 import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/event-diff";
@@ -71,12 +72,6 @@ import { IntervalEventsModal } from "./modals/interval-events-modal";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
-
-const CALENDAR_VIEW_TYPE = "custom-calendar-view";
-
-export function getCalendarViewType(calendarId: string): string {
-	return `${CALENDAR_VIEW_TYPE}-${calendarId}`;
-}
 
 export class CalendarView extends MountableView(ItemView, "prisma") {
 	calendar: Calendar | null = null;

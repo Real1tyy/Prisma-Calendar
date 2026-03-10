@@ -1,9 +1,10 @@
+import type { CalDAVAccount, CalDAVCalendarInfo } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { BaseSyncService, type BaseSyncServiceOptions, yieldToMainThread } from "../base-sync-service";
 import { parseICSContent } from "../ics-import";
 import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
 import type { CalDAVSyncStateManager } from "./sync-state-manager";
-import type { CalDAVAccount, CalDAVCalendarInfo, CalDAVSyncMetadata, CalDAVSyncResult } from "./types";
+import type { CalDAVSyncMetadata, CalDAVSyncResult } from "./types";
 
 interface CalDAVSyncServiceOptions extends BaseSyncServiceOptions {
 	syncStateManager: CalDAVSyncStateManager;

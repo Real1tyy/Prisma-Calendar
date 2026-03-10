@@ -1,5 +1,5 @@
+import { AI_DEFAULTS, type AIProvider } from "../../types/ai";
 import type { SettingsStore } from "../settings-store";
-import { AI_DEFAULTS, type AIProvider } from "./ai-constants";
 import {
 	buildManipulationSystemPrompt,
 	buildPlanningSystemPrompt,

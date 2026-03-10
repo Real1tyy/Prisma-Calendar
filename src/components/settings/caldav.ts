@@ -4,16 +4,16 @@ import { type App, Modal, Notice, SecretComponent, Setting } from "obsidian";
 
 import { CALDAV_DEFAULTS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import { CalDAVClientService } from "../../core/integrations/caldav";
+import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
+import type { SettingsStore } from "../../core/settings-store";
+import type CustomCalendarPlugin from "../../main";
 import {
 	CALDAV_PRESETS,
 	type CalDAVAccount,
 	type CalDAVCalendarInfo,
-	CalDAVClientService,
 	type CalDAVPresetKey,
-} from "../../core/integrations/caldav";
-import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
-import type { SettingsStore } from "../../core/settings-store";
-import type CustomCalendarPlugin from "../../main";
+} from "../../types/integrations";
 import type { CustomCalendarSettingsSchema } from "../../types/settings";
 import { getCalendarById } from "../../utils/calendar-settings";
 import { deleteFilesByPaths } from "../../utils/obsidian";

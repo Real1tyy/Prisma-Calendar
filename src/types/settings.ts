@@ -8,10 +8,10 @@ import {
 	DEFAULT_TOOLBAR_BUTTONS,
 	SETTINGS_DEFAULTS,
 } from "../constants";
-import { AI_DEFAULTS } from "../core/ai";
-import { CalDAVSettingsSchema } from "../core/integrations/caldav";
-import { ICSSubscriptionSettingsSchema } from "../core/integrations/ics-subscription";
 import { ColorSchema } from "../utils/validation";
+import { AI_DEFAULTS } from "./ai";
+import { CalDAVSettingsSchema } from "./integrations";
+import { ICSSubscriptionSettingsSchema } from "./integrations";
 import { CalendarViewTypeSchema, ContextMenuItemSchema, ToolbarButtonSchema } from "./view";
 
 // Use library's HolidayType definition

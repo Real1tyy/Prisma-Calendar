@@ -3,13 +3,7 @@ import type { App } from "obsidian";
 import { Modal } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
-
-export interface ExportOptions {
-	bundle: CalendarBundle;
-	timezone: string;
-	excludeSkipped: boolean;
-}
+import { COMMON_TIMEZONES, type ExportOptions } from "../../core/integrations/ics-export";
 
 export class CalendarSelectModal extends Modal {
 	private onSelect: (options: ExportOptions) => void;

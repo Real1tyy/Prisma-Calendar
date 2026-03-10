@@ -3,8 +3,8 @@ import { type App, Modal, Notice, SecretComponent, Setting } from "obsidian";
 
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
 import { COMMON_TIMEZONES } from "../../../core/integrations/ics-export";
-import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
 import type { SettingsStore } from "../../../core/settings-store";
+import type { ICSSubscription } from "../../../types/integrations";
 
 export class EditICSSubscriptionModal extends Modal {
 	private name: string;

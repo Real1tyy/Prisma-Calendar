@@ -1,10 +1,11 @@
 import { requestUrl, TFile } from "obsidian";
 
+import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { BaseSyncService, type BaseSyncServiceOptions, yieldToMainThread } from "../base-sync-service";
 import { type ImportedEvent, parseICSContent } from "../ics-import";
 import type { ICSSubscriptionSyncStateManager } from "./sync-state-manager";
-import type { ICSSubscription, ICSSubscriptionSyncMetadata, ICSSubscriptionSyncResult } from "./types";
+import type { ICSSubscriptionSyncMetadata, ICSSubscriptionSyncResult } from "./types";
 
 interface ICSSubscriptionSyncServiceOptions extends BaseSyncServiceOptions {
 	syncStateManager: ICSSubscriptionSyncStateManager;

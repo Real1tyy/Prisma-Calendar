@@ -1,5 +1,4 @@
 export { AIChatManager } from "./ai-chat-manager";
-export { AI_DEFAULTS, type AIModelOption, type AIProvider } from "./ai-constants";
 export {
 	type AIEventSummary,
 	analyzePreviousPatterns,

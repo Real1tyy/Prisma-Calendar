@@ -2,20 +2,12 @@ import type { DateTime } from "luxon";
 
 import type { RecurrenceType } from "../types/recurring-event";
 import { parseRecurrenceType } from "../types/recurring-event";
+import type { Weekday } from "../types/weekday";
+import { WEEKDAY_TO_NUMBER } from "../types/weekday";
 
+export type { Weekday } from "../types/weekday";
 export type { RecurrenceType };
-
-export type Weekday = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday";
-
-export const WEEKDAY_TO_NUMBER: Record<Weekday, number> = {
-	sunday: 0,
-	monday: 1,
-	tuesday: 2,
-	wednesday: 3,
-	thursday: 4,
-	friday: 5,
-	saturday: 6,
-};
+export { WEEKDAY_TO_NUMBER };
 
 /**
  * Checks if a given date matches any of the specified weekdays

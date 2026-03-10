@@ -2,9 +2,10 @@ import { onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsid
 import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 
-import { CalendarView, getCalendarViewType } from "../components/calendar-view";
-import type { EventSaveData } from "../components/modals/base-event-modal";
+import { CalendarView } from "../components/calendar-view";
 import type CustomCalendarPlugin from "../main";
+import type { EventSaveData } from "../types/event-save";
+import { getCalendarViewType } from "../utils/calendar-view-type";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/event-naming";
 import { intoDate } from "../utils/format";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";

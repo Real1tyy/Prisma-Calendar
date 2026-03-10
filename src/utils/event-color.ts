@@ -1,8 +1,13 @@
 import { type ColorEvaluator, parseIntoList } from "@real1ty-obsidian-plugins";
 
-import type { CalendarBundle } from "../core/calendar-bundle";
 import type { SingleCalendarConfig } from "../types/settings";
 import { normalizeFrontmatterForColorEvaluation } from "./expression-utils";
+
+interface EventColorContext {
+	settingsStore: { currentSettings: SingleCalendarConfig };
+	getCalDAVSettings(): { integrationEventColor: string };
+	getICSSubscriptionSettings(): { integrationEventColor: string };
+}
 
 /**
  * Resolves the category color for an event based on its frontmatter metadata.
@@ -27,7 +32,7 @@ export function resolveEventCategoryColor(
  */
 export function resolveEventColor(
 	meta: Record<string, unknown>,
-	bundle: CalendarBundle,
+	bundle: EventColorContext,
 	colorEvaluator: ColorEvaluator<SingleCalendarConfig>
 ): string {
 	const settings = bundle.settingsStore.currentSettings;

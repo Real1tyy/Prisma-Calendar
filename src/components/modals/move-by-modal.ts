@@ -1,16 +1,8 @@
 import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins";
 import { type App, Modal } from "obsidian";
 
+import { type MoveByResult, TIME_UNITS, type TimeUnit } from "../../types/move-by";
 import { createModalButtons, registerSubmitHotkey } from "../../utils/dom-utils";
-
-const TIME_UNITS = ["minutes", "hours", "days", "weeks", "months", "years"] as const;
-
-export type TimeUnit = (typeof TIME_UNITS)[number];
-
-export interface MoveByResult {
-	value: number;
-	unit: TimeUnit;
-}
 
 export class MoveByModal extends Modal {
 	private valueInput!: HTMLInputElement;

@@ -15,12 +15,11 @@ import {
 	PrismaCalendarApiManager,
 	SettingsStore,
 } from "./core";
-import { type CalDAVAccount } from "./core/integrations/caldav";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
-import { type ICSSubscription } from "./core/integrations/ics-subscription";
 import { LicenseManager, PRO_FEATURES } from "./core/license";
 import { PrismaSyncDataSchema } from "./types";
+import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 
 export default class CustomCalendarPlugin extends Plugin {

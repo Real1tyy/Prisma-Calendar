@@ -2,9 +2,9 @@ import { extractContentAfterFrontmatter, serializeFrontmatterValue } from "@real
 import ICAL from "ical.js";
 import { type App, Notice, TFile } from "obsidian";
 
-import type { ExportOptions } from "../../components/modals/calendar-select-modal";
 import type { CalendarEvent } from "../../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
+import type { SingleCalendarConfig } from "../../types/settings";
 import { extractZettelId, removeZettelId } from "../../utils/event-naming";
 
 interface NotificationSettings {
@@ -297,6 +297,17 @@ export const COMMON_TIMEZONES: TimezoneInfo[] = [
 	{ id: "Australia/Sydney", label: "Australia/Sydney (UTC+10)" },
 	{ id: "Pacific/Auckland", label: "Pacific/Auckland (UTC+12)" },
 ];
+
+interface ExportBundle {
+	settingsStore: { currentSettings: SingleCalendarConfig };
+	eventStore: { getAllEvents(): CalendarEvent[] };
+}
+
+export interface ExportOptions {
+	bundle: ExportBundle;
+	timezone: string;
+	excludeSkipped: boolean;
+}
 
 export async function exportCalendarAsICS(app: App, options: ExportOptions): Promise<void> {
 	const { bundle, timezone, excludeSkipped } = options;

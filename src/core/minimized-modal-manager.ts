@@ -4,9 +4,9 @@ import type { Subscription } from "rxjs";
 
 import { EventCreateModal, EventEditModal } from "../components/modals";
 import { openCategoryAssignModal } from "../components/modals/assignment-modal";
-import type { StopwatchSnapshot } from "../components/stopwatch";
 import type { Frontmatter } from "../types";
 import type { EventPreset } from "../types/settings";
+import type { StopwatchSnapshot } from "../types/stopwatch";
 import { getEventName } from "../utils/event-naming";
 import { formatDateTimeForInput, inputValueToISOString } from "../utils/format";
 import { getCategoriesFromFilePath } from "../utils/obsidian";

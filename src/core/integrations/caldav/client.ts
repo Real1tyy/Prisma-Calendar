@@ -1,13 +1,13 @@
 import type { App } from "obsidian";
 
-import { patchGlobalFetch } from "./obsidian-fetch";
 import type {
 	CalDAVAccount,
 	CalDAVBasicCredentials,
 	CalDAVCalendarInfo,
 	CalDAVOAuthCredentials,
-	CalDAVStoredCalendar,
-} from "./types";
+} from "../../../types/integrations";
+import { patchGlobalFetch } from "./obsidian-fetch";
+import type { CalDAVStoredCalendar } from "./types";
 
 interface CalDAVConnectionResult {
 	success: boolean;

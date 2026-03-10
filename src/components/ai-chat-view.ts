@@ -2,7 +2,7 @@ import { cls, type Command, MacroCommand, MountableView } from "@real1ty-obsidia
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { z } from "zod";
 
-import { AI_DEFAULTS, AIChatManager, type ChatMessage, ChatStore } from "../core/ai";
+import { AIChatManager, type ChatMessage, ChatStore } from "../core/ai";
 import {
 	buildCalendarContext,
 	buildManipulationContext,
@@ -17,7 +17,9 @@ import { type SemanticValidationContext, validateOperationsSemantically } from "
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { PRO_FEATURES } from "../core/license";
 import type CustomCalendarPlugin from "../main";
-import { CalendarView, getCalendarViewType } from "./calendar-view";
+import { AI_DEFAULTS } from "../types/ai";
+import { getCalendarViewType } from "../utils/calendar-view-type";
+import { CalendarView } from "./calendar-view";
 import { renderProUpgradeBanner } from "./settings/pro-upgrade-banner";
 
 type AIMode = "query" | "manipulation" | "planning";
@@ -94,7 +96,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		return "bot";
 	}
 
-	async onOpen(): Promise<void> {
+	async mount(): Promise<void> {
 		if (!this.plugin.isProEnabled) {
 			const container = this.containerEl.children[1] as HTMLElement;
 			container.empty();
@@ -129,7 +131,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		);
 	}
 
-	async onClose(): Promise<void> {
+	async unmount(): Promise<void> {
 		this.markdownComponent.unload();
 		await this.chatManager.saveCurrentThread();
 	}

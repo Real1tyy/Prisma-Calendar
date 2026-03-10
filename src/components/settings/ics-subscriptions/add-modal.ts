@@ -5,8 +5,8 @@ import { type App, Modal, Notice, requestUrl, SecretComponent, Setting } from "o
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
 import { COMMON_TIMEZONES } from "../../../core/integrations/ics-export";
 import { parseICSContent } from "../../../core/integrations/ics-import";
-import type { ICSSubscription } from "../../../core/integrations/ics-subscription";
 import type { SettingsStore } from "../../../core/settings-store";
+import type { ICSSubscription } from "../../../types/integrations";
 
 export class AddICSSubscriptionModal extends Modal {
 	private name = "";

@@ -1,6 +1,11 @@
-import type { EventStore } from "../core/event-store";
-import type { SingleCalendarConfig } from "../types";
+import type { CalendarEvent, SingleCalendarConfig } from "../types";
 import { isTimedEvent } from "../types/calendar";
+
+interface EventLookup {
+	getEventByPath(path: string): CalendarEvent | null;
+	findNextEventByStartTime(searchTime: string, excludeFilePath?: string): CalendarEvent | null;
+	findPreviousEventByEndTime(searchTime: string, excludeFilePath?: string): CalendarEvent | null;
+}
 
 /**
  * Extracts source event information from a virtual event.
@@ -8,7 +13,7 @@ import { isTimedEvent } from "../types/calendar";
  */
 export function getSourceEventInfoFromVirtual(
 	event: { extendedProps?: { isVirtual?: boolean; filePath?: string } },
-	eventStore: EventStore
+	eventStore: EventLookup
 ): {
 	title: string;
 	start: string;
@@ -42,7 +47,7 @@ export function getSourceEventInfoFromVirtual(
 }
 
 export const findAdjacentEvent = (
-	eventStore: EventStore,
+	eventStore: EventLookup,
 	currentStart: string | Date | null,
 	currentFilePath: string | null | undefined,
 	direction: "next" | "previous"

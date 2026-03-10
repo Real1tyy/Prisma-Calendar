@@ -1,9 +1,9 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { SecretComponent, Setting } from "obsidian";
 
-import { AI_DEFAULTS } from "../../core/ai";
 import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import { AI_DEFAULTS } from "../../types/ai";
 import { CustomCalendarSettingsSchema, type CustomPrompt } from "../../types/settings";
 
 export class AISettings {
