@@ -120,7 +120,7 @@ Yes. Prisma Calendar generates real notes up to your configured "Future instance
 
 Prisma Calendar uses **ZettelID naming** — each event file gets a unique timestamp suffix (e.g., `Team Meeting-20250106143022.md`), but the calendar always displays just the clean title (`Team Meeting`). This lets you create multiple events with the same name without conflicts, while keeping the UI clean.
 
-See [ZettelID Naming](./features/events/zettelid-naming) for full details.
+See [ZettelID Naming](./features/management/zettelid-naming) for full details.
 
 </details>
 
