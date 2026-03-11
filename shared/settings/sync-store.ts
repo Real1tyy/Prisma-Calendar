@@ -62,7 +62,10 @@ export class SyncStore<TSchema extends z.ZodTypeAny> {
 	}
 
 	async updateData(updates: Partial<z.infer<TSchema>>): Promise<void> {
-		this._data = Object.assign({}, this._data, updates) as z.infer<TSchema>;
+		this._data = {
+			...(structuredClone(this._data) as Record<string, unknown>),
+			...(structuredClone(updates) as Record<string, unknown>),
+		} as z.infer<TSchema>;
 		await this.saveData();
 	}
 }

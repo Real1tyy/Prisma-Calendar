@@ -1,3 +1,4 @@
+export * from "./mocks/license";
 export * from "./mocks/obsidian";
 // Re-export commonly used combinations
 export {

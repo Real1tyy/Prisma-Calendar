@@ -1,5 +1,6 @@
-import { Notice, Setting } from "obsidian";
-import type { ZodArray, ZodNumber, ZodObject, ZodRawShape, z } from "zod";
+import { type App, Notice, SecretComponent, Setting } from "obsidian";
+import type { z, ZodArray, ZodNumber, ZodObject, ZodRawShape } from "zod";
+
 import type { SettingsStore } from "./settings-store";
 
 interface BaseSettingConfig {
@@ -66,7 +67,10 @@ interface ArrayManagerConfig extends BaseSettingConfig {
 }
 
 export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
-	constructor(private settingsStore: SettingsStore<TSchema>) {}
+	constructor(
+		private settingsStore: SettingsStore<TSchema>,
+		private app?: App
+	) {}
 
 	private get settings(): z.infer<TSchema> {
 		return this.settingsStore.currentSettings;
@@ -131,7 +135,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			throw new Error(`Validation failed: ${errors}`);
 		}
 
-		await this.settingsStore.updateSettings(() => newSettings);
+		await this.settingsStore.updateSettings(() => result.data as z.infer<TSchema>);
 	}
 
 	private inferSliderBounds(key: string): { min?: number; max?: number; step?: number } {
@@ -286,6 +290,25 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			);
 	}
 
+	addSecret(containerEl: HTMLElement, config: BaseSettingConfig): void {
+		if (!this.app)
+			throw new Error("SettingsUIBuilder: app is required for addSecret. Pass it as the second constructor argument.");
+
+		const { key, name, desc, onChanged } = config;
+		const value = this.getNestedValue(key);
+		const app = this.app;
+
+		new Setting(containerEl)
+			.setName(name)
+			.setDesc(desc)
+			.addComponent((el) =>
+				new SecretComponent(app, el).setValue(String(value ?? "")).onChange(async (newValue) => {
+					await this.updateSetting(key, newValue);
+					onChanged?.();
+				})
+			);
+	}
+
 	/**
 	 * Renders a pair of mutually exclusive toggles.
 	 * Enabling one automatically disables the other.
@@ -336,28 +359,81 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			);
 	}
 
-	addSlider(containerEl: HTMLElement, config: SliderSettingConfig): void {
-		const { key, name, desc, step = 1, commitOnChange = false, onChanged } = config;
-		const value = this.getNestedValue(key);
+	private resolveSliderConfig(config: SliderSettingConfig): {
+		value: number;
+		min: number;
+		max: number;
+		step: number;
+	} {
+		const inferredBounds = this.inferSliderBounds(config.key);
+		return {
+			value: Number(this.getNestedValue(config.key)),
+			min: config.min ?? inferredBounds.min ?? 0,
+			max: config.max ?? inferredBounds.max ?? 100,
+			step: config.step ?? 1,
+		};
+	}
 
-		const inferredBounds = this.inferSliderBounds(key);
-		const min = config.min ?? inferredBounds.min ?? 0;
-		const max = config.max ?? inferredBounds.max ?? 100;
+	private attachDeferredSliderCommit(sliderEl: HTMLInputElement, commit: (value: number) => Promise<unknown>): void {
+		sliderEl.addEventListener("mouseup", () => {
+			void commit(Number(sliderEl.value));
+		});
+
+		sliderEl.addEventListener("keyup", (e: KeyboardEvent) => {
+			if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) {
+				void commit(Number(sliderEl.value));
+			}
+		});
+	}
+
+	private createNumberInput(
+		parentEl: HTMLElement,
+		bounds: { value: number; min: number; max: number; step: number },
+		commit: (value: number) => Promise<number>
+	): HTMLInputElement {
+		const inputEl = parentEl.createEl("input", {
+			type: "number",
+			cls: "settings-ui-builder-slider-input",
+			value: String(bounds.value),
+		});
+		inputEl.min = String(bounds.min);
+		inputEl.max = String(bounds.max);
+		inputEl.step = String(bounds.step);
+
+		const commitFromInput = async () => {
+			const parsed = Number(inputEl.value);
+			if (Number.isNaN(parsed)) return;
+			const clamped = await commit(parsed);
+			inputEl.value = String(clamped);
+		};
+
+		inputEl.addEventListener("blur", () => void commitFromInput());
+		inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
+			if (e.key === "Enter") {
+				e.preventDefault();
+				void commitFromInput();
+			}
+		});
+
+		return inputEl;
+	}
+
+	addSlider(containerEl: HTMLElement, config: SliderSettingConfig): void {
+		const { key, name, desc, commitOnChange = false, onChanged } = config;
+		const { value, min, max, step } = this.resolveSliderConfig(config);
 
 		new Setting(containerEl)
 			.setName(name)
 			.setDesc(desc)
 			.addSlider((slider) => {
-				slider.setLimits(min, max, step).setValue(Number(value)).setDynamicTooltip();
+				slider.setLimits(min, max, step).setValue(value).setDynamicTooltip();
 
 				if (commitOnChange) {
-					// Reactive: commit on every change
 					slider.onChange(async (newValue) => {
 						await this.updateSetting(key, newValue);
 						onChanged?.();
 					});
 				} else {
-					// Commit only when user finishes dragging
 					const commit = async (newValue: number) => {
 						try {
 							await this.updateSetting(key, newValue);
@@ -367,26 +443,74 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 						}
 					};
 
-					// Update tooltip during drag for visual feedback
 					slider.onChange((newValue) => {
 						slider.sliderEl.setAttribute("aria-valuenow", String(newValue));
 					});
 
-					// Commit on mouse up
-					slider.sliderEl.addEventListener("mouseup", () => {
-						void commit(Number(slider.sliderEl.value));
-					});
-
-					// Commit on keyboard navigation
-					slider.sliderEl.addEventListener("keyup", (e: KeyboardEvent) => {
-						if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) {
-							void commit(Number(slider.sliderEl.value));
-						}
-					});
+					this.attachDeferredSliderCommit(slider.sliderEl, commit);
 				}
 
 				return slider;
 			});
+	}
+
+	addSliderWithInput(containerEl: HTMLElement, config: SliderSettingConfig): void {
+		const { key, name, desc, onChanged } = config;
+		const { value, min, max, step } = this.resolveSliderConfig(config);
+
+		const setting = new Setting(containerEl).setName(name).setDesc(desc);
+
+		let sliderInputEl: HTMLInputElement | null = null;
+		let numberInputEl: HTMLInputElement | null = null;
+
+		const commit = async (newValue: number) => {
+			const clamped = Math.min(max, Math.max(min, newValue));
+			try {
+				await this.updateSetting(key, clamped);
+				onChanged?.();
+			} catch (error) {
+				new Notice(`Invalid input: ${error}`, 5000);
+			}
+			return clamped;
+		};
+
+		setting.addSlider((slider) => {
+			sliderInputEl = slider.sliderEl;
+			slider.setLimits(min, max, step).setValue(value).setDynamicTooltip();
+
+			slider.onChange((newValue) => {
+				sliderInputEl!.setAttribute("aria-valuenow", String(newValue));
+				if (numberInputEl) numberInputEl.value = String(newValue);
+			});
+
+			this.attachDeferredSliderCommit(sliderInputEl!, commit);
+
+			return slider;
+		});
+
+		numberInputEl = this.createNumberInput(setting.controlEl, { value, min, max, step }, async (v) => {
+			const clamped = await commit(v);
+			if (sliderInputEl) sliderInputEl.value = String(clamped);
+			return clamped;
+		});
+	}
+
+	addNumberInput(containerEl: HTMLElement, config: SliderSettingConfig): void {
+		const { key, name, desc, onChanged } = config;
+		const { value, min, max, step } = this.resolveSliderConfig(config);
+
+		const setting = new Setting(containerEl).setName(name).setDesc(desc);
+
+		this.createNumberInput(setting.controlEl, { value, min, max, step }, async (newValue) => {
+			const clamped = Math.min(max, Math.max(min, newValue));
+			try {
+				await this.updateSetting(key, clamped);
+				onChanged?.();
+			} catch (error) {
+				new Notice(`Invalid input: ${error}`, 5000);
+			}
+			return clamped;
+		});
 	}
 
 	addText(containerEl: HTMLElement, config: TextSettingConfig): void {

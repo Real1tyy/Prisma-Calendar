@@ -22,5 +22,6 @@ export * from "./settings";
 // String utilities
 export * from "./string";
 // List utilities
-export * from "./utils/list-utils";
+export * from "./license";
 export * from "./settings/sync-store";
+export * from "./utils/list-utils";
