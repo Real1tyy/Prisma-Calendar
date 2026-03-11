@@ -1,7 +1,7 @@
-# Programmatic AI API
+# AI
 
 :::info Pro Feature
-The Programmatic AI API requires [Prisma Calendar Pro](../free-vs-pro.md).
+The Programmatic AI API requires [Prisma Calendar Pro](../../free-vs-pro.md).
 :::
 
 The AI Chat's three modes — Query, Manipulate, and Plan — are available as a programmatic API on `window.PrismaCalendar`. This lets you send natural-language messages and receive structured JSON responses from scripts, Templater, QuickAdd, or external plugins — without opening the AI Chat sidebar.
@@ -146,5 +146,5 @@ Note: `customPromptIds` is not available via URL since arrays don't serialize we
 
 ## See Also
 
-- [AI Chat](./ai-chat.md) — The interactive AI chat sidebar
-- [Programmatic API](./programmatic-api.md) — The full scripting API for calendar operations
+- [AI Chat](../ai-chat.md) — The interactive AI chat sidebar
+- [Overview](./overview.md) — Programmatic API introduction and URL protocol

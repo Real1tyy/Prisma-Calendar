@@ -395,7 +395,7 @@ Prisma Calendar exposes a **scripting API** on `window.PrismaCalendar` that lets
 
 The API mirrors the functionality of the commands described above and uses the same calendar selection (last opened or first enabled). Ideal for Templater templates, QuickAdd, Dataview automation, or custom plugin integrations.
 
--   **See Also**: [Programmatic API documentation](./programmatic-api.md) for full method signatures, options, and code examples.
+-   **See Also**: [Programmatic API documentation](./programmatic-api/overview.md) for full method signatures, options, and code examples.
 
 ## Tips
 
