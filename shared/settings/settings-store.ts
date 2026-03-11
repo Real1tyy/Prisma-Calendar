@@ -71,7 +71,10 @@ export class SettingsStore<TSchema extends z.ZodTypeAny> {
 
 	async updateProperties(updates: Partial<z.infer<TSchema>>): Promise<void> {
 		await this.updateSettings((settings) => {
-			return Object.assign({}, settings, updates);
+			return {
+				...(structuredClone(settings) as Record<string, unknown>),
+				...(structuredClone(updates) as Record<string, unknown>),
+			} as z.infer<TSchema>;
 		});
 	}
 
