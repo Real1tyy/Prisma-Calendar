@@ -66,6 +66,7 @@ export const COMMAND_IDS = {
 	SCROLL_TO_NOW: "scroll-to-now",
 	GO_TO_TODAY: "go-to-today",
 	SHOW_ALL_EVENTS_TIMELINE: "show-all-events-timeline",
+	SHOW_ALL_EVENTS_HEATMAP: "show-all-events-heatmap",
 	OPEN_AI_CHAT: "open-ai-chat",
 } as const;
 

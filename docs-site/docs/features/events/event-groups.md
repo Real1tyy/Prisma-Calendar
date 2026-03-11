@@ -362,10 +362,31 @@ The timeline is perfect for:
 - Understanding event distribution over time
 - Identifying clusters of activity
 
+### Heatmap View (Pro)
+
+Click **Heatmap** to open a GitHub-style contribution heatmap showing event density over time. The modal title indicates the context, such as:
+- "Heatmap for Recurring - Gym"
+- "Heatmap for Name - Team Meeting"
+- "Heatmap for Category - Health"
+
+**Features:**
+
+- **Two display modes** — **Yearly** shows a full year as a 7-row x 52-column grid (days of week by weeks), **Monthly** shows a single month with larger cells and day numbers
+- **Navigation** — Use arrow buttons to move between years or months. The current period is shown between the arrows
+- **Color-coded density** — Cells are colored in 5 quantile buckets from empty to maximum density. For category-scoped views, the gradient uses the category color with varying opacity. For global views, a green gradient is used (matching the GitHub contribution style)
+- **Hover tooltips** — Hover over any cell to see the date and event count (e.g., "Mar 11, 2026: 3 events")
+- **Click to inspect** — Click any cell to expand a detail panel below the heatmap showing all events for that day. Click an event to open its note
+- **Legend** — A 5-level color scale with "Less" and "More" labels helps interpret the density
+- **Theme-aware** — Empty cells and labels adapt to your Obsidian theme (light or dark)
+
+The heatmap is also available as a global command via the command palette ("Show all events heatmap"), which displays a heatmap of all events across all series.
+
+The heatmap is a Pro feature. Free users will see an upgrade notice when clicking the button.
+
 ### Requirements
 
 The Bases view feature requires:
 - Obsidian Bases plugin installed and enabled
 - At least one calendar configured in Prisma Calendar settings
 
-The Timeline view is built-in and requires no additional plugins.
+The Timeline view and Heatmap view are built-in and require no additional plugins.

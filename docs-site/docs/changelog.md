@@ -8,6 +8,7 @@ All notable changes to this project will be documented here.
 
 ### Added
 
+- **Heatmap View** (Pro): A GitHub-style contribution heatmap showing event density over time, available from the Event Series Modal footer and as a global command. Supports yearly and monthly modes with navigation, category-colored gradients, click-to-inspect day details, and hover tooltips. See [Event Groups — Heatmap View](./features/events/event-groups.md#heatmap-view-pro).
 - **Programmatic AI API** (Pro): All three AI modes — Query, Manipulate, and Plan — are now callable programmatically via `window.PrismaCalendar.aiQuery()` and the `obsidian://prisma-calendar?call=aiQuery` URL protocol. Send a natural-language message with a mode, and receive a structured JSON response containing the AI's answer (for queries) or parsed operations (for manipulation/planning). Operations can optionally be auto-executed by passing `execute: true`. Uses the same context gathering, validation, and retry logic as the AI Chat sidebar — including pattern detection, semantic validation, and automatic reprompting. Requires an open calendar view for context. See [Programmatic AI API](./features/advanced/programmatic-api/ai.md).
 
 ---

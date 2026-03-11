@@ -19,6 +19,7 @@ import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { FillTimeCommand, UpdateEventCommand, UpdateFrontmatterCommand } from "../core/commands";
+import { PRO_FEATURES } from "../core/license";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import type {
 	CalendarEvent,
@@ -67,6 +68,7 @@ import { EventCreateModal } from "./modals";
 import { openCategoryAssignModal } from "./modals/assignment-modal";
 import { BatchFrontmatterModal } from "./modals/batch-frontmatter-modal";
 import { CategorySelectModal } from "./modals/category-select-modal";
+import { EventSeriesHeatmapModal } from "./modals/event-series-heatmap-modal";
 import { EventSeriesTimelineModal } from "./modals/event-series-timeline-modal";
 import { IntervalEventsModal } from "./modals/interval-events-modal";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
@@ -2344,6 +2346,15 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		new EventSeriesTimelineModal(this.app, this.bundle, {
 			events: allEvents,
 			title: "All Events Timeline",
+		}).open();
+	}
+
+	showAllEventsHeatmap(): void {
+		if (!this.bundle.plugin.licenseManager.requirePro(PRO_FEATURES.HEATMAP)) return;
+		const allEvents = this.bundle.eventStore.getAllEvents();
+		new EventSeriesHeatmapModal(this.app, this.bundle, {
+			events: allEvents,
+			title: "All Events Heatmap",
 		}).open();
 	}
 

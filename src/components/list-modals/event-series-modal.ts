@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { type App, Modal, Setting } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import { PRO_FEATURES } from "../../core/license";
 import type { CalendarEvent } from "../../types/calendar";
 import { formatRecurrenceLabel, isWeekdaySupported } from "../../types/recurring-event";
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -10,6 +11,7 @@ import { resolveEventColor } from "../../utils/event-color";
 import { removeZettelId } from "../../utils/event-naming";
 import { calculateEventStatistics } from "../../utils/event-statistics";
 import { type EventSeriesBasesViewConfig, EventSeriesBasesViewModal } from "../modals/event-series-bases-view-modal";
+import { EventSeriesHeatmapModal } from "../modals/event-series-heatmap-modal";
 import { EventSeriesTimelineModal } from "../modals/event-series-timeline-modal";
 
 type SourceTab = "name" | "category" | "recurring";
@@ -518,7 +520,7 @@ export class EventSeriesModal extends Modal {
 		const footer = container.createDiv(cls("event-series-bases-footer"));
 
 		const buttonsContainer = footer.createDiv(cls("event-series-bases-footer-buttons"));
-		const viewTypes = ["table", "list", "cards", "timeline"] as const;
+		const viewTypes = ["table", "list", "cards", "timeline", "heatmap"] as const;
 
 		for (const viewType of viewTypes) {
 			const btn = buttonsContainer.createEl("button", {
@@ -528,6 +530,8 @@ export class EventSeriesModal extends Modal {
 
 			if (viewType === "timeline") {
 				btn.addEventListener("click", () => this.openTimelineView());
+			} else if (viewType === "heatmap") {
+				btn.addEventListener("click", () => this.openHeatmapView());
 			} else {
 				btn.addEventListener("click", () => this.openBasesView(viewType));
 			}
@@ -560,6 +564,39 @@ export class EventSeriesModal extends Modal {
 
 		if (events.length > 0) {
 			new EventSeriesTimelineModal(this.app, this.bundle, { events, title }).open();
+		}
+	}
+
+	private openHeatmapView(): void {
+		if (!this.bundle.plugin.licenseManager.requirePro(PRO_FEATURES.HEATMAP)) return;
+
+		let events: CalendarEvent[] = [];
+		let title = "";
+		let categoryColor: string | undefined;
+
+		if (this.activeTab === "recurring" && this.rruleId) {
+			const series = this.bundle.recurringEventManager.getRecurringEventSeries(this.rruleId);
+			if (series) {
+				events = series.instances.map((instance) => instance.event);
+				const displayName = removeZettelId(series.sourceTitle);
+				title = `Heatmap for Recurring - ${displayName}`;
+			}
+		} else if (this.activeTab === "name" && this.nameKey) {
+			events = this.bundle.nameSeriesTracker.getEventsInNameSeries(this.nameKey);
+			const displayName = events.length > 0 ? removeZettelId(events[0].title) : this.nameKey;
+			title = `Heatmap for Name - ${displayName}`;
+		} else if (this.activeTab === "category") {
+			const categoryValue =
+				this.selectedCategoryValue ?? (this.categoryValues?.length === 1 ? this.categoryValues[0] : null);
+			if (categoryValue) {
+				events = this.bundle.categoryTracker.getEventsWithCategory(categoryValue);
+				title = `Heatmap for Category - ${categoryValue}`;
+				categoryColor = this.bundle.categoryTracker.getCategoryColor(categoryValue);
+			}
+		}
+
+		if (events.length > 0) {
+			new EventSeriesHeatmapModal(this.app, this.bundle, { events, title, categoryColor }).open();
 		}
 	}
 
