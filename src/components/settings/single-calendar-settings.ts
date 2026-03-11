@@ -55,14 +55,7 @@ export class SingleCalendarSettings {
 			{
 				id: "integrations",
 				label: "Integrations",
-				display: (el) =>
-					plugin.isProEnabled
-						? settingsInstances.integrations.display(el)
-						: renderProUpgradeBanner(
-								el,
-								PRO_FEATURES.CALDAV_SYNC,
-								"CalDAV sync, ICS subscriptions, and import/export require Prisma Calendar Pro."
-							),
+				display: (el) => settingsInstances.integrations.display(el),
 			},
 			{
 				id: "ai",

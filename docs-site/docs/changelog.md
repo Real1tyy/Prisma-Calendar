@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.6.1 - 3/11/2026
+
+### Fixed
+
+- **Integrations tab incorrectly gated behind Pro**: The entire Integrations settings tab was blocked for free users, preventing access to holidays and ICS import/export — both of which are free features. Only CalDAV sync and ICS URL subscriptions are Pro features; the tab is now always accessible with Pro upgrade banners shown only for those two sections. See [Integrations](./features/advanced/integrations.md).
+
+---
+
 ## 2.6.0 - 3/7/2026
 
 ### Added

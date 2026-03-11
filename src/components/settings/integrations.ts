@@ -3,11 +3,13 @@ import { type App, Setting } from "obsidian";
 import type { Subscription } from "rxjs";
 
 import { COMMAND_IDS, SETTINGS_DEFAULTS } from "../../constants";
+import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
 import { CalDAVSettings } from "./caldav";
 import { ICSSubscriptionSettings } from "./ics-subscriptions";
+import { renderProUpgradeBanner } from "./pro-upgrade-banner";
 
 export class IntegrationsSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -92,12 +94,28 @@ export class IntegrationsSettings {
 	}
 
 	private addCalDAVSettings(containerEl: HTMLElement): void {
+		if (!this.plugin.isProEnabled) {
+			renderProUpgradeBanner(
+				containerEl,
+				PRO_FEATURES.CALDAV_SYNC,
+				"Sync events with CalDAV servers like Nextcloud, iCloud, Google Calendar, and more."
+			);
+			return;
+		}
 		const calendarId = this.settingsStore.calendarId;
 		const caldavSettings = new CalDAVSettings(this.app, this.mainSettingsStore, this.plugin, calendarId);
 		caldavSettings.display(containerEl);
 	}
 
 	private addICSSubscriptionSettings(containerEl: HTMLElement): void {
+		if (!this.plugin.isProEnabled) {
+			renderProUpgradeBanner(
+				containerEl,
+				PRO_FEATURES.ICS_SYNC,
+				"Subscribe to external ICS calendar URLs and sync events automatically."
+			);
+			return;
+		}
 		const calendarId = this.settingsStore.calendarId;
 		const icsSubSettings = new ICSSubscriptionSettings(this.app, this.mainSettingsStore, this.plugin, calendarId);
 		icsSubSettings.display(containerEl);
