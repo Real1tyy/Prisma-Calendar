@@ -21,8 +21,6 @@ export class RulesSettings {
 	}
 
 	private addColorSettings(containerEl: HTMLElement): void {
-		const settings = this.settingsStore.currentSettings;
-
 		new Setting(containerEl).setName("Event colors").setHeading();
 
 		// Default color setting with color picker

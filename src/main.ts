@@ -586,7 +586,7 @@ export default class CustomCalendarPlugin extends Plugin {
 					github: "https://github.com/Real1tyy/Prisma-Calendar",
 					support: "https://real1tyy.github.io/Prisma-Calendar/support",
 					changelog: "https://real1tyy.github.io/Prisma-Calendar/changelog",
-					documentation: (this.manifest as any).helpUrl || "https://real1tyy.github.io/Prisma-Calendar/",
+					documentation: "https://real1tyy.github.io/Prisma-Calendar/",
 				},
 			};
 
