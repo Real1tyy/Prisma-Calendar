@@ -4,6 +4,7 @@ import type { SingleCalendarConfig } from "../../types";
 import type { PrismaCalendarApiManager } from "./api-manager";
 import type {
 	NavigateInput,
+	PrismaAIQueryInput,
 	PrismaConvertEventInput,
 	PrismaCreateEventInput,
 	PrismaDeleteEventInput,
@@ -281,6 +282,20 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 			handler: async (input: { settings: Partial<SingleCalendarConfig>; calendarId?: string }) => {
 				return await manager.updateSettings(input);
 			},
+		},
+
+		// ── AI Operations ─────────────────────────────────────
+
+		aiQuery: {
+			handler: async (input: PrismaAIQueryInput) => {
+				return await manager.aiQuery(input);
+			},
+			parseParams: (raw: Record<string, string>) => ({
+				message: ParamCoercion.required.string(raw, "message"),
+				mode: ParamCoercion.string(raw, "mode") as "query" | "manipulation" | "planning" | undefined,
+				execute: ParamCoercion.boolean(raw, "execute"),
+				calendarId: ParamCoercion.string(raw, "calendarId"),
+			}),
 		},
 	};
 }

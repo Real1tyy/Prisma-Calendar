@@ -5,6 +5,7 @@ import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfig } from "../../types";
 import type { CalendarBundle } from "../calendar-bundle";
 import { buildActions } from "./action-definitions";
+import { aiQuery } from "./ai-operations";
 import { batchDelete, batchMarkAsDone, batchMarkAsUndone, batchToggleSkip } from "./batch-operations";
 import {
 	getCalendarInfo,
@@ -34,6 +35,8 @@ import {
 } from "./read-operations";
 import { cloneEvent, markAsDone, markAsUndone, moveEvent, toggleSkip } from "./status-lifecycle";
 import type {
+	PrismaAIQueryInput,
+	PrismaAIQueryResult,
 	PrismaCalendarInfo,
 	PrismaCategoryOutput,
 	PrismaConvertEventInput,
@@ -248,6 +251,12 @@ export class PrismaCalendarApiManager {
 
 	async navigateToDate(input: { date?: string; view?: string; calendarId?: string }): Promise<boolean> {
 		return navigateToDate(this.plugin, input);
+	}
+
+	// ─── AI Operations ──────────────────────────────────────────
+
+	async aiQuery(input: PrismaAIQueryInput): Promise<PrismaAIQueryResult> {
+		return aiQuery(this.plugin, input);
 	}
 
 	// ─── Command Builders (for batch execution) ─────────────────

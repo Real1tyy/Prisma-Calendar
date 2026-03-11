@@ -1,58 +1,27 @@
-import { cls, type Command, MacroCommand, MountableView } from "@real1ty-obsidian-plugins";
+import { cls, MountableView } from "@real1ty-obsidian-plugins";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
-import { z } from "zod";
 
 import { AIChatManager, type ChatMessage, ChatStore } from "../core/ai";
+import { type CategoryContext, type ManipulationContext, type PlanningContext } from "../core/ai/ai-context-builder";
 import {
-	buildCalendarContext,
-	buildManipulationContext,
-	buildPlanningContext,
-	type CalendarContext,
-	type CategoryContext,
-	getViewLabel,
-	type ManipulationContext,
-	type PlanningContext,
-} from "../core/ai/ai-context-builder";
+	executeOperations,
+	gatherCalendarContext,
+	gatherCategoryContext,
+	gatherManipulationContext,
+	gatherPlanningContext,
+	getActiveCalendarInfo,
+	parseOperations,
+	resolveActiveViewContext,
+} from "../core/ai/ai-engine";
 import { type SemanticValidationContext, validateOperationsSemantically } from "../core/ai/ai-validation";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { PRO_FEATURES } from "../core/license";
 import type CustomCalendarPlugin from "../main";
 import { AI_DEFAULTS } from "../types/ai";
-import { getCalendarViewType } from "../utils/calendar-view-type";
-import { CalendarView } from "./calendar-view";
+import type { AIOperation } from "../types/ai-operation-schemas";
 import { renderProUpgradeBanner } from "./settings/pro-upgrade-banner";
 
 type AIMode = "query" | "manipulation" | "planning";
-
-const ISODatetimeSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
-
-const EventFieldsSchema = z.object({
-	title: z.string().min(1),
-	start: ISODatetimeSchema,
-	end: ISODatetimeSchema,
-	allDay: z.boolean().optional(),
-	categories: z.array(z.string()).optional(),
-	location: z.string().optional(),
-	participants: z.array(z.string()).optional(),
-});
-
-const CreateOpSchema = EventFieldsSchema.extend({
-	type: z.literal("create"),
-});
-
-const EditOpSchema = EventFieldsSchema.partial().extend({
-	type: z.literal("edit"),
-	filePath: z.string().min(1),
-});
-
-const DeleteOpSchema = z.object({
-	type: z.literal("delete"),
-	filePath: z.string().min(1),
-});
-
-const AIOperationsSchema = z.array(z.discriminatedUnion("type", [CreateOpSchema, EditOpSchema, DeleteOpSchema]));
-
-type AIOperation = z.infer<typeof AIOperationsSchema>[number];
 
 export const AI_CHAT_VIEW_TYPE = "prisma-ai-chat";
 
@@ -146,21 +115,16 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	private buildUI(container: HTMLElement): void {
-		// Thread list (collapsible, before messages)
 		this.buildThreadList(container);
 
-		// Messages area
 		this.messagesContainerEl = container.createDiv({ cls: cls("ai-chat-messages") });
 
-		// Input area
 		const inputArea = container.createDiv({ cls: cls("ai-chat-input-area") });
 
-		// Context badge
 		this.contextBadgeEl = inputArea.createDiv({ cls: cls("ai-chat-context-badge") });
 
-		// Mode toggle row (mode buttons + custom prompt chips inline)
 		this.modeToggleEl = inputArea.createDiv({ cls: cls("ai-chat-mode-toggle") });
-		this.chipsContainerEl = this.modeToggleEl; // chips render into the same row
+		this.chipsContainerEl = this.modeToggleEl;
 		this.buildModeToggle();
 
 		this.textareaEl = inputArea.createEl("textarea", {
@@ -244,7 +208,6 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	private renderThreadList(): void {
 		this.threadListContentEl.empty();
 
-		// Search input
 		const searchInput = this.threadListContentEl.createEl("input", {
 			cls: cls("ai-chat-thread-search"),
 			attr: { type: "text", placeholder: "Search conversations..." },
@@ -259,7 +222,6 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	private renderThreadItems(): void {
-		// Remove existing thread items (keep search input)
 		const existingItems = this.threadListContentEl.querySelectorAll(`.${cls("ai-chat-thread-item")}`);
 		existingItems.forEach((el) => el.remove());
 
@@ -340,7 +302,6 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		const customPrompts = this.plugin.settingsStore.currentSettings.ai.customPrompts;
 		if (customPrompts.length === 0) return;
 
-		// Vertical separator between mode group and prompt chips
 		this.chipsContainerEl.createDiv({ cls: cls("ai-chat-chips-separator") });
 
 		for (const prompt of customPrompts) {
@@ -390,12 +351,17 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			if (this.currentMode !== "planning") this.setMode("planning");
 		});
 
-		// Render custom prompt chips inline after mode buttons
 		this.renderPromptChips();
 	}
 
 	private updateModeToggle(): void {
 		this.buildModeToggle();
+	}
+
+	private resolveBundle(): CalendarBundle | null {
+		const lastUsedCalendarId = this.plugin.syncStore.data.lastUsedCalendarId;
+		if (!lastUsedCalendarId) return null;
+		return this.plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId) ?? null;
 	}
 
 	private async handleSend(): Promise<void> {
@@ -405,16 +371,18 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		this.textareaEl.value = "";
 		this.setLoading(true);
 
-		// Show user message immediately
 		this.appendMessage({ role: "user", content: message });
 
 		try {
+			const bundle = this.resolveBundle();
+			const viewContext = bundle ? resolveActiveViewContext(this.plugin, bundle) : null;
+
 			const allPrompts = this.plugin.settingsStore.currentSettings.ai.customPrompts;
 			const selectedPrompts = allPrompts.filter((p) => this.selectedPromptIds.has(p.id));
-			const categoryContext = this.gatherCategoryContext();
+			const categoryContext = bundle ? gatherCategoryContext(bundle) : null;
 
 			if (this.currentMode === "planning") {
-				const planningContext = await this.gatherPlanningContext();
+				const planningContext = bundle && viewContext ? await gatherPlanningContext(bundle, viewContext) : null;
 				this.refreshContextBadge();
 				await this.handleOperationModeWithRetries(
 					message,
@@ -424,7 +392,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 					planningContext ?? undefined
 				);
 			} else if (this.currentMode === "manipulation") {
-				const manipulationContext = await this.gatherManipulationContext();
+				const manipulationContext = bundle && viewContext ? await gatherManipulationContext(bundle, viewContext) : null;
 				this.refreshContextBadge();
 				await this.handleOperationModeWithRetries(
 					message,
@@ -434,7 +402,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 					undefined
 				);
 			} else {
-				const calendarContext = await this.gatherCalendarContext();
+				const calendarContext = bundle && viewContext ? await gatherCalendarContext(bundle, viewContext) : null;
 				this.refreshContextBadge();
 				await this.chatManager.sendMessage(
 					message,
@@ -489,9 +457,8 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 				planningPromptFlags
 			);
 
-			const operations = this.parseOperations(response);
+			const operations = parseOperations(response);
 			if (!operations) {
-				// Structural parse failure — show raw response, no retry
 				break;
 			}
 
@@ -513,7 +480,6 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 				continue;
 			}
 
-			// Max retries exhausted — show operations with warning
 			console.error(
 				`[Prisma AI] Validation still failing after ${AI_DEFAULTS.MAX_REPROMPT_RETRIES} retries. Remaining errors:\n`,
 				errors.join("\n")
@@ -525,132 +491,15 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		}
 	}
 
-	private gatherCategoryContext(): CategoryContext | null {
-		const lastUsedCalendarId = this.plugin.syncStore.data.lastUsedCalendarId;
-		if (!lastUsedCalendarId) return null;
-
-		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId);
-		if (!bundle) return null;
-
-		const availableCategories = bundle.categoryTracker.getCategories();
-		const presets = bundle.settingsStore.currentSettings.categoryAssignmentPresets ?? [];
-
-		if (availableCategories.length === 0 && presets.length === 0) return null;
-
-		return { availableCategories, presets };
-	}
-
-	private async gatherManipulationContext(): Promise<ManipulationContext | null> {
-		const lastUsedCalendarId = this.plugin.syncStore.data.lastUsedCalendarId;
-		if (!lastUsedCalendarId) return null;
-
-		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId);
-		if (!bundle) return null;
-
-		const viewType = getCalendarViewType(lastUsedCalendarId);
-		const leaves = this.app.workspace.getLeavesOfType(viewType);
-
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			if (!(view instanceof CalendarView)) continue;
-
-			const viewContext = view.getViewContext();
-			if (!viewContext) continue;
-
-			const start = viewContext.currentStart.toISOString();
-			const end = viewContext.currentEnd.toISOString();
-			const events = await bundle.eventStore.getEvents({ start, end });
-			const calendarName = bundle.settingsStore.currentSettings.name;
-
-			return buildManipulationContext(calendarName, viewContext.currentStart, viewContext.currentEnd, events);
-		}
-
-		return null;
-	}
-
-	private async gatherPlanningContext(): Promise<PlanningContext | null> {
-		const lastUsedCalendarId = this.plugin.syncStore.data.lastUsedCalendarId;
-		if (!lastUsedCalendarId) return null;
-
-		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId);
-		if (!bundle) return null;
-
-		const viewType = getCalendarViewType(lastUsedCalendarId);
-		const leaves = this.app.workspace.getLeavesOfType(viewType);
-
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			if (!(view instanceof CalendarView)) continue;
-
-			const viewContext = view.getViewContext();
-			if (!viewContext) continue;
-
-			const currentStart = viewContext.currentStart;
-			const currentEnd = viewContext.currentEnd;
-
-			// Compute previous interval with same duration
-			let previousStart: Date;
-			let previousEnd: Date;
-
-			if (viewContext.viewType === "dayGridMonth") {
-				previousStart = new Date(currentStart);
-				previousStart.setMonth(previousStart.getMonth() - 1);
-				previousEnd = new Date(currentStart);
-			} else {
-				const duration = currentEnd.getTime() - currentStart.getTime();
-				previousEnd = new Date(currentStart);
-				previousStart = new Date(currentStart.getTime() - duration);
-			}
-
-			const currentEvents = await bundle.eventStore.getEvents({
-				start: currentStart.toISOString(),
-				end: currentEnd.toISOString(),
-			});
-			const previousEvents = await bundle.eventStore.getEvents({
-				start: previousStart.toISOString(),
-				end: previousEnd.toISOString(),
-			});
-
-			const calendarName = bundle.settingsStore.currentSettings.name;
-
-			return buildPlanningContext(
-				calendarName,
-				currentStart,
-				currentEnd,
-				currentEvents,
-				previousStart,
-				previousEnd,
-				previousEvents
-			);
-		}
-
-		return null;
-	}
-
 	private handleManipulationResponse(response: string): void {
-		const operations = this.parseOperations(response);
+		const operations = parseOperations(response);
 		if (!operations) return;
 
 		const confirmExecution = this.plugin.settingsStore.currentSettings.ai.aiConfirmExecution;
 		if (confirmExecution) {
 			this.pendingOperations = operations;
 		} else {
-			void this.executeOperations(operations);
-		}
-	}
-
-	private parseOperations(response: string): AIOperation[] | null {
-		// Try to extract JSON from markdown code block
-		const codeBlockMatch = response.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
-		const jsonStr = codeBlockMatch ? codeBlockMatch[1] : response.trim();
-
-		try {
-			const parsed = JSON.parse(jsonStr) as unknown;
-			const result = AIOperationsSchema.safeParse(parsed);
-			if (!result.success) return null;
-			return result.data;
-		} catch {
-			return null;
+			void this.handleExecuteOperations(operations);
 		}
 	}
 
@@ -693,24 +542,22 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			text: `Execute All (${operations.length})`,
 		});
 		executeBtn.addEventListener("click", () => {
-			void this.executeOperations(operations, executeBtn);
+			void this.handleExecuteOperations(operations, executeBtn);
 		});
 	}
 
-	private async executeOperations(operations: AIOperation[], executeBtn?: HTMLButtonElement): Promise<void> {
+	private async handleExecuteOperations(operations: AIOperation[], executeBtn?: HTMLButtonElement): Promise<void> {
 		if (executeBtn) {
 			executeBtn.disabled = true;
 			executeBtn.setText("Executing...");
 		}
 
-		const batchExecution = this.plugin.settingsStore.currentSettings.ai.aiBatchExecution;
-		let summary: string;
+		const result = await executeOperations(this.plugin, operations);
 
-		if (batchExecution) {
-			summary = await this.executeBatch(operations);
-		} else {
-			summary = await this.executeIndividually(operations);
-		}
+		const summary =
+			result.failed > 0
+				? `${result.succeeded} succeeded, ${result.failed} failed`
+				: `${result.succeeded} operation${result.succeeded !== 1 ? "s" : ""} executed successfully`;
 
 		new Notice(`Prisma AI: ${summary}`);
 		if (executeBtn) executeBtn.setText(summary);
@@ -719,158 +566,14 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		this.appendMessage({ role: "assistant", content: `**Execution complete:** ${summary}` });
 	}
 
-	private async executeBatch(operations: AIOperation[]): Promise<string> {
-		const commands: Command[] = [];
-		let bundle: CalendarBundle | null = null;
-		let failed = 0;
-
-		for (const op of operations) {
-			const result = this.buildCommandForOperation(op);
-			if (result) {
-				commands.push(result.command);
-				bundle = result.bundle;
-			} else {
-				failed++;
-			}
-		}
-
-		if (commands.length > 0 && bundle) {
-			try {
-				const macro = new MacroCommand(commands);
-				await bundle.commandManager.executeCommand(macro);
-			} catch {
-				return `Batch execution failed`;
-			}
-		}
-
-		const succeeded = commands.length;
-		return failed > 0
-			? `${succeeded} succeeded, ${failed} failed`
-			: `${succeeded} operation${succeeded !== 1 ? "s" : ""} executed successfully`;
-	}
-
-	private async executeIndividually(operations: AIOperation[]): Promise<string> {
-		let succeeded = 0;
-		let failed = 0;
-
-		for (const op of operations) {
-			try {
-				const result = this.buildCommandForOperation(op);
-				if (result) {
-					await result.bundle.commandManager.executeCommand(result.command);
-					succeeded++;
-				} else {
-					failed++;
-				}
-			} catch {
-				failed++;
-			}
-		}
-
-		return failed > 0
-			? `${succeeded} succeeded, ${failed} failed`
-			: `${succeeded} operation${succeeded !== 1 ? "s" : ""} executed successfully`;
-	}
-
-	private buildCommandForOperation(op: AIOperation): { command: Command; bundle: CalendarBundle } | null {
-		if (op.type === "create") {
-			return this.plugin.apiManager.buildCreateEventCommand({
-				title: op.title,
-				start: op.start,
-				end: op.end,
-				allDay: op.allDay,
-				categories: op.categories,
-				location: op.location,
-				participants: op.participants,
-			});
-		} else if (op.type === "edit") {
-			return this.plugin.apiManager.buildEditEventCommand({
-				filePath: op.filePath,
-				title: op.title,
-				start: op.start,
-				end: op.end,
-				allDay: op.allDay,
-				categories: op.categories,
-				location: op.location,
-				participants: op.participants,
-			});
-		} else {
-			return this.plugin.apiManager.buildDeleteEventCommand({
-				filePath: op.filePath,
-			});
-		}
-	}
-
-	private async gatherCalendarContext(): Promise<CalendarContext | null> {
-		const lastUsedCalendarId = this.plugin.syncStore.data.lastUsedCalendarId;
-		if (!lastUsedCalendarId) return null;
-
-		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId);
-		if (!bundle) return null;
-
-		const viewType = getCalendarViewType(lastUsedCalendarId);
-		const leaves = this.app.workspace.getLeavesOfType(viewType);
-
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			if (!(view instanceof CalendarView)) continue;
-
-			const viewContext = view.getViewContext();
-			if (!viewContext) continue;
-
-			const start = viewContext.currentStart.toISOString();
-			const end = viewContext.currentEnd.toISOString();
-			const events = await bundle.eventStore.getEvents({ start, end });
-			const calendarName = bundle.settingsStore.currentSettings.name;
-			const categoryProp = bundle.settingsStore.currentSettings.categoryProp;
-
-			return buildCalendarContext(
-				calendarName,
-				viewContext.viewType,
-				viewContext.currentStart,
-				viewContext.currentEnd,
-				events,
-				categoryProp
-			);
-		}
-
-		return null;
-	}
-
 	private refreshContextBadge(): void {
-		const info = this.getActiveCalendarInfo();
+		const info = getActiveCalendarInfo(this.plugin);
 		if (info) {
 			this.contextBadgeEl.setText(`${info.calendarName} · ${info.viewLabel}`);
 		} else {
 			this.contextBadgeEl.setText("No calendar open");
 		}
 		this.contextBadgeEl.show();
-	}
-
-	private getActiveCalendarInfo(): { calendarName: string; viewLabel: string } | null {
-		const lastUsedCalendarId = this.plugin.syncStore.data.lastUsedCalendarId;
-		if (!lastUsedCalendarId) return null;
-
-		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === lastUsedCalendarId);
-		if (!bundle) return null;
-
-		const viewType = getCalendarViewType(lastUsedCalendarId);
-		const leaves = this.app.workspace.getLeavesOfType(viewType);
-
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			if (!(view instanceof CalendarView)) continue;
-
-			const viewContext = view.getViewContext();
-			if (!viewContext) continue;
-
-			return {
-				calendarName: bundle.settingsStore.currentSettings.name,
-				viewLabel: getViewLabel(viewContext.viewType),
-			};
-		}
-
-		return null;
 	}
 
 	private setLoading(loading: boolean): void {
@@ -905,7 +608,6 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	private appendMessage(msg: ChatMessage): void {
-		// Remove empty state if present
 		const emptyEl = this.messagesContainerEl.querySelector(`.${cls("ai-chat-empty")}`);
 		if (emptyEl) emptyEl.remove();
 
@@ -929,7 +631,6 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			return;
 		}
 
-		// Find the last assistant message index
 		let lastAssistantIdx = -1;
 		for (let i = messages.length - 1; i >= 0; i--) {
 			if (messages[i].role === "assistant") {
@@ -942,7 +643,6 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			this.renderMessage(messages[i], i === lastAssistantIdx);
 		}
 
-		// Scroll to bottom
 		this.messagesContainerEl.scrollTop = this.messagesContainerEl.scrollHeight;
 	}
 
@@ -959,7 +659,6 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			isLastAssistant &&
 			this.pendingOperations.length > 0
 		) {
-			// Render operation cards instead of raw JSON
 			this.renderOperationCards(this.pendingOperations, messageEl);
 		} else {
 			const contentEl = messageEl.createDiv({ cls: cls("ai-chat-message-content") });

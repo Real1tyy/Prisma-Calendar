@@ -100,6 +100,36 @@ export interface PrismaStatisticsOutput {
 	entries: PrismaStatEntry[];
 }
 
+// ─── AI API Interfaces ──────────────────────────────────────
+
+import type { AIOperation } from "../../types/ai-operation-schemas";
+
+export type { AIOperation as PrismaAIOperation } from "../../types/ai-operation-schemas";
+
+export interface PrismaAIQueryInput {
+	message: string;
+	mode?: "query" | "manipulation" | "planning";
+	execute?: boolean;
+	customPromptIds?: string[];
+	calendarId?: string;
+}
+
+export interface PrismaAIOperationResult {
+	succeeded: number;
+	failed: number;
+	total: number;
+}
+
+export interface PrismaAIQueryResult {
+	success: boolean;
+	error?: string;
+	response?: string;
+	mode?: "query" | "manipulation" | "planning";
+	operations?: AIOperation[];
+	validationErrors?: string[];
+	executionResult?: PrismaAIOperationResult;
+}
+
 export function serializeEvent(event: ParsedEvent): PrismaEventOutput {
 	const output: PrismaEventOutput = {
 		filePath: event.ref.filePath,
