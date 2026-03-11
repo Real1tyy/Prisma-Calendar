@@ -1,5 +1,4 @@
 import type CustomCalendarPlugin from "../../main";
-import type { CalendarBundle } from "../calendar-bundle";
 import { resolveBundle } from "./bundle-resolver";
 import { type PrismaCategoryOutput, type PrismaEventOutput, serializeEvent } from "./types";
 
