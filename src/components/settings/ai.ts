@@ -1,5 +1,5 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
-import { SecretComponent, Setting } from "obsidian";
+import { Setting } from "obsidian";
 
 import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
@@ -13,7 +13,7 @@ export class AISettings {
 		private plugin: CustomCalendarPlugin,
 		private mainSettingsStore: SettingsStore
 	) {
-		this.ui = new SettingsUIBuilder(this.mainSettingsStore as never);
+		this.ui = new SettingsUIBuilder(this.mainSettingsStore as never, this.plugin.app);
 	}
 
 	display(containerEl: HTMLElement): void {
@@ -26,53 +26,24 @@ export class AISettings {
 	private addAPISettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("AI Assistant").setHeading();
 
-		new Setting(containerEl)
-			.setName("Anthropic API key")
-			.setDesc(
-				"Select an Anthropic API key from SecretStorage for Claude models. Secrets are stored securely by Obsidian."
-			)
-			.addComponent((el) =>
-				new SecretComponent(this.plugin.app, el)
-					.setValue(this.mainSettingsStore.currentSettings.ai.anthropicApiKeySecretName)
-					.onChange(async (value) => {
-						await this.mainSettingsStore.updateSettings((s) => ({
-							...s,
-							ai: { ...s.ai, anthropicApiKeySecretName: value },
-						}));
-					})
-			);
+		this.ui.addSecret(containerEl, {
+			key: "ai.anthropicApiKeySecretName",
+			name: "Anthropic API key",
+			desc: "Select an Anthropic API key from SecretStorage for Claude models. Secrets are stored securely by Obsidian.",
+		});
 
-		new Setting(containerEl)
-			.setName("OpenAI API key")
-			.setDesc("Select an OpenAI API key from SecretStorage for GPT models. Secrets are stored securely by Obsidian.")
-			.addComponent((el) =>
-				new SecretComponent(this.plugin.app, el)
-					.setValue(this.mainSettingsStore.currentSettings.ai.openaiApiKeySecretName)
-					.onChange(async (value) => {
-						await this.mainSettingsStore.updateSettings((s) => ({
-							...s,
-							ai: { ...s.ai, openaiApiKeySecretName: value },
-						}));
-					})
-			);
+		this.ui.addSecret(containerEl, {
+			key: "ai.openaiApiKeySecretName",
+			name: "OpenAI API key",
+			desc: "Select an OpenAI API key from SecretStorage for GPT models. Secrets are stored securely by Obsidian.",
+		});
 
-		new Setting(containerEl)
-			.setName("Model")
-			.setDesc("Which AI model to use for the chat assistant. Requires the corresponding API key.")
-			.addDropdown((dropdown) => {
-				for (const [value, option] of Object.entries(AI_DEFAULTS.MODEL_OPTIONS)) {
-					dropdown.addOption(value, option.label);
-				}
-				const savedModel = this.mainSettingsStore.currentSettings.ai.aiModel;
-				const validModel = AI_DEFAULTS.MODEL_OPTIONS[savedModel] ? savedModel : AI_DEFAULTS.DEFAULT_MODEL;
-				dropdown.setValue(validModel);
-				dropdown.onChange(async (value) => {
-					await this.mainSettingsStore.updateSettings((s) => ({
-						...s,
-						ai: { ...s.ai, aiModel: value },
-					}));
-				});
-			});
+		this.ui.addDropdown(containerEl, {
+			key: "ai.aiModel",
+			name: "Model",
+			desc: "Which AI model to use for the chat assistant. Requires the corresponding API key.",
+			options: Object.fromEntries(Object.entries(AI_DEFAULTS.MODEL_OPTIONS).map(([k, v]) => [k, v.label])),
+		});
 	}
 
 	private addManipulationSettings(containerEl: HTMLElement): void {

@@ -1,10 +1,18 @@
+import type { CachedLicenseData, LicenseVerifyResponse } from "@real1ty-obsidian-plugins";
 import { Notice, requestUrl } from "obsidian";
 import { BehaviorSubject } from "rxjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { LicenseManagerConfig } from "../../src/core/license";
 import { DEVICE_ID_STORAGE_KEY, LICENSE_CACHE_STORAGE_KEY, LicenseManager } from "../../src/core/license";
-import type { CachedLicenseData, LicenseVerifyResponse } from "../../src/types/license";
 import { CustomCalendarSettingsSchema } from "../../src/types/settings";
+
+const TEST_CONFIG: LicenseManagerConfig = {
+	productName: "Prisma Calendar",
+	purchaseUrl: "https://matejvavroproductivity.com/tools/prisma-calendar",
+	deviceIdStorageKey: DEVICE_ID_STORAGE_KEY,
+	licenseCacheStorageKey: LICENSE_CACHE_STORAGE_KEY,
+};
 
 const mockRequestUrl = vi.mocked(requestUrl);
 
@@ -82,7 +90,12 @@ describe("LicenseManager", () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-TEST-KEY");
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(app.loadLocalStorage).toHaveBeenCalledWith(DEVICE_ID_STORAGE_KEY);
@@ -97,7 +110,12 @@ describe("LicenseManager", () => {
 			app.secretStorage = { getSecret: vi.fn().mockReturnValue("PRISM-TEST-KEY") };
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(app.saveLocalStorage).not.toHaveBeenCalledWith(DEVICE_ID_STORAGE_KEY, expect.any(String));
@@ -108,7 +126,12 @@ describe("LicenseManager", () => {
 		it("should stay in 'none' state when no license key secret name is set", async () => {
 			settingsStore = createMockSettingsStore({ licenseKeySecretName: "" });
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
@@ -119,7 +142,12 @@ describe("LicenseManager", () => {
 		it("should stay in 'none' state when secret storage returns null", async () => {
 			app.secretStorage.getSecret.mockReturnValue(null);
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
@@ -136,7 +164,12 @@ describe("LicenseManager", () => {
 		it("should activate pro on 200 response", async () => {
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(true);
@@ -146,7 +179,12 @@ describe("LicenseManager", () => {
 		it("should store activation counts from response", async () => {
 			mockRequestUrl.mockResolvedValue(successResponse({ activations: { current: 3, limit: 5 } }));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			const status = manager.getStatus();
@@ -158,7 +196,12 @@ describe("LicenseManager", () => {
 			const expiresAt = "2026-03-20T12:00:00.000Z";
 			mockRequestUrl.mockResolvedValue(successResponse({ expiresAt }));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.getStatus().expiresAt).toBe(expiresAt);
@@ -167,7 +210,12 @@ describe("LicenseManager", () => {
 		it("should cache token in localStorage", async () => {
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(app.saveLocalStorage).toHaveBeenCalledWith(LICENSE_CACHE_STORAGE_KEY, expect.stringContaining("token"));
@@ -185,7 +233,12 @@ describe("LicenseManager", () => {
 			app.secretStorage = { getSecret: vi.fn().mockReturnValue("PRISM-MY-KEY") };
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(mockRequestUrl).toHaveBeenCalledWith(
@@ -206,7 +259,12 @@ describe("LicenseManager", () => {
 		it("should fire onStatusChange callback", async () => {
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			const callback = vi.fn();
 			manager.setOnStatusChange(callback);
 			await manager.initialize();
@@ -217,7 +275,12 @@ describe("LicenseManager", () => {
 		it("should emit true on isPro$ observable", async () => {
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			const values: boolean[] = [];
 			manager.isPro$.subscribe((v) => values.push(v));
 
@@ -230,7 +293,12 @@ describe("LicenseManager", () => {
 			vi.spyOn(LicenseManager.prototype, "verifyToken").mockResolvedValue("invalid");
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
@@ -247,7 +315,12 @@ describe("LicenseManager", () => {
 		it("should set state to invalid", async () => {
 			mockRequestUrl.mockResolvedValue(mockResponse(401, {}));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
@@ -262,7 +335,12 @@ describe("LicenseManager", () => {
 			app.secretStorage = { getSecret: vi.fn().mockReturnValue("PRISM-BAD-KEY") };
 			mockRequestUrl.mockResolvedValue(mockResponse(401, {}));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(app.saveLocalStorage).toHaveBeenCalledWith(LICENSE_CACHE_STORAGE_KEY, "");
@@ -277,7 +355,12 @@ describe("LicenseManager", () => {
 		it("should detect device limit from error message", async () => {
 			mockRequestUrl.mockResolvedValue(mockResponse(403, { message: "Activation limit exceeded" }));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
@@ -288,7 +371,12 @@ describe("LicenseManager", () => {
 		it("should treat other 403 as expired/canceled", async () => {
 			mockRequestUrl.mockResolvedValue(mockResponse(403, { message: "Entitlement inactive" }));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
@@ -299,7 +387,12 @@ describe("LicenseManager", () => {
 		it("should clear cached token on 403", async () => {
 			mockRequestUrl.mockResolvedValue(mockResponse(403, { message: "Activation limit exceeded" }));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(app.saveLocalStorage).toHaveBeenCalledWith(LICENSE_CACHE_STORAGE_KEY, "");
@@ -315,7 +408,12 @@ describe("LicenseManager", () => {
 			app.secretStorage = { getSecret: vi.fn().mockReturnValue("PRISM-VALID-KEY") };
 			mockRequestUrl.mockRejectedValue(new Error("Network error"));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(true);
@@ -330,7 +428,12 @@ describe("LicenseManager", () => {
 			app.secretStorage = { getSecret: vi.fn().mockReturnValue("PRISM-VALID-KEY") };
 			mockRequestUrl.mockRejectedValue(new Error("Network error"));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			const status = manager.getStatus();
@@ -346,7 +449,12 @@ describe("LicenseManager", () => {
 			app.secretStorage = { getSecret: vi.fn().mockReturnValue("PRISM-VALID-KEY") };
 			mockRequestUrl.mockRejectedValue(new Error("Network error"));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.getStatus().state).toBe("valid");
@@ -361,7 +469,12 @@ describe("LicenseManager", () => {
 			app.secretStorage = { getSecret: vi.fn().mockReturnValue("PRISM-VALID-KEY") };
 			mockRequestUrl.mockRejectedValue(new Error("Network error"));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 			expect(manager.isPro).toBe(true);
 
@@ -384,7 +497,12 @@ describe("LicenseManager", () => {
 				.mockResolvedValueOnce("valid") // loadCachedToken succeeds
 				.mockResolvedValueOnce("invalid"); // handleNetworkFailure fails
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
@@ -403,7 +521,12 @@ describe("LicenseManager", () => {
 				.mockResolvedValueOnce("valid") // loadCachedToken succeeds
 				.mockResolvedValueOnce("expired"); // handleNetworkFailure detects expiration
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
@@ -424,7 +547,12 @@ describe("LicenseManager", () => {
 			mockRequestUrl.mockRejectedValue(new Error("Network error"));
 			vi.spyOn(LicenseManager.prototype, "verifyToken").mockResolvedValue("expired");
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			// loadCachedToken clears the expired cache, then handleNetworkFailure
@@ -439,7 +567,12 @@ describe("LicenseManager", () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
 			mockRequestUrl.mockRejectedValue(new Error("Network error"));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
@@ -456,7 +589,12 @@ describe("LicenseManager", () => {
 			app.secretStorage = { getSecret: vi.fn().mockReturnValue("PRISM-VALID-KEY") };
 			mockRequestUrl.mockResolvedValue(mockResponse(500, {}));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(true);
@@ -477,7 +615,12 @@ describe("LicenseManager", () => {
 				return Promise.resolve(successResponse());
 			}) as any);
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(proBeforeNetworkCall).toBe(true);
@@ -495,7 +638,12 @@ describe("LicenseManager", () => {
 				.mockResolvedValue("valid"); // refreshLicense succeeds
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(app.saveLocalStorage).toHaveBeenCalledWith(LICENSE_CACHE_STORAGE_KEY, "");
@@ -509,7 +657,12 @@ describe("LicenseManager", () => {
 			app.secretStorage = { getSecret: vi.fn().mockReturnValue("PRISM-VALID-KEY") };
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(true);
@@ -526,7 +679,12 @@ describe("LicenseManager", () => {
 
 			mockRequestUrl.mockResolvedValueOnce(mockResponse(401, {}));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 			expect(manager.isPro).toBe(false);
 			expect(manager.getStatus().state).toBe("invalid");
@@ -547,7 +705,12 @@ describe("LicenseManager", () => {
 
 			mockRequestUrl.mockResolvedValueOnce(mockResponse(403, { message: "Activation limit exceeded" }));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 			expect(manager.isPro).toBe(false);
 
@@ -563,7 +726,12 @@ describe("LicenseManager", () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
 			mockRequestUrl.mockResolvedValueOnce(mockResponse(401, {}));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 			expect(manager.isPro).toBe(false);
 
@@ -578,7 +746,12 @@ describe("LicenseManager", () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
 			mockRequestUrl.mockResolvedValueOnce(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 			expect(manager.isPro).toBe(true);
 
@@ -595,7 +768,12 @@ describe("LicenseManager", () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.requirePro("AI Chat")).toBe(true);
@@ -605,7 +783,12 @@ describe("LicenseManager", () => {
 		it("should return false and show notice when pro is not active", async () => {
 			settingsStore = createMockSettingsStore({ licenseKeySecretName: "" });
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			expect(manager.requirePro("AI Chat")).toBe(false);
@@ -618,7 +801,12 @@ describe("LicenseManager", () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			await manager.initialize();
 
 			const status1 = manager.getStatus();
@@ -633,7 +821,12 @@ describe("LicenseManager", () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			const emissions: boolean[] = [];
 			manager.isPro$.subscribe((v) => emissions.push(v));
 
@@ -652,7 +845,12 @@ describe("LicenseManager", () => {
 			app.secretStorage = { getSecret: vi.fn().mockReturnValue("PRISM-VALID-KEY") };
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			const emissions: boolean[] = [];
 			manager.isPro$.subscribe((v) => emissions.push(v));
 
@@ -666,7 +864,12 @@ describe("LicenseManager", () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			const emissions: boolean[] = [];
 			manager.isPro$.subscribe((v) => emissions.push(v));
 
@@ -684,7 +887,12 @@ describe("LicenseManager", () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
 			mockRequestUrl.mockResolvedValueOnce(mockResponse(401, {}));
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 			const emissions: boolean[] = [];
 			manager.isPro$.subscribe((v) => emissions.push(v));
 
@@ -702,7 +910,12 @@ describe("LicenseManager", () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
 			mockRequestUrl.mockResolvedValue(successResponse());
 
-			const manager = new LicenseManager(app, settingsStore, "2.6.0");
+			const manager = new LicenseManager(
+				app,
+				() => settingsStore.currentSettings.licenseKeySecretName,
+				"2.6.0",
+				TEST_CONFIG
+			);
 
 			let apiExposed = false;
 			manager.isPro$.subscribe((isPro) => {

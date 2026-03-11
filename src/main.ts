@@ -17,7 +17,8 @@ import {
 } from "./core";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
-import { LicenseManager, PRO_FEATURES } from "./core/license";
+import type { LicenseManager } from "./core/license";
+import { createLicenseManager, PRO_FEATURES } from "./core/license";
 import { PrismaSyncDataSchema } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
@@ -39,7 +40,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.settingsStore = new SettingsStore(this);
 		await this.settingsStore.loadSettings();
 
-		this.licenseManager = new LicenseManager(this.app, this.settingsStore, this.manifest.version);
+		this.licenseManager = createLicenseManager(this.app, this.settingsStore, this.manifest.version);
 
 		this.syncStore = new SyncStore(this.app, this, PrismaSyncDataSchema);
 		await this.syncStore.loadData();
@@ -344,6 +345,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		});
 		addCalendarViewCommand(COMMAND_IDS.SHOW_ALL_EVENTS_TIMELINE, "Show all events timeline", (view) => {
 			view.showAllEventsTimeline();
+		});
+		addCalendarViewCommand(COMMAND_IDS.SHOW_ALL_EVENTS_HEATMAP, "Show all events heatmap", (view) => {
+			view.showAllEventsHeatmap();
 		});
 
 		this.addCommand({
