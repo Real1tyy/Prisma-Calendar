@@ -37,7 +37,7 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 |---------|-------------|
 | [AI Chat](./advanced/ai-chat.md) | Built-in sidebar with Claude and GPT. Query your calendar, create/edit events via natural language, and auto-plan your schedule. |
 | [CalDAV & ICS URL Sync](./advanced/integrations.md) | One-way read-only sync from Google Calendar, Apple Calendar, Fastmail, Nextcloud, iCloud, and any CalDAV server or public ICS URL. |
-| [Programmatic API](./advanced/programmatic-api.md) | `window.PrismaCalendar` and URL scheme for full CRUD, batch ops, statistics, settings, and navigation from external scripts. |
+| [Programmatic API](./advanced/programmatic-api/overview.md) | `window.PrismaCalendar` and URL scheme for full CRUD, batch ops, statistics, settings, and navigation from external scripts. |
 | [Custom Category Assignment Presets](./organization/categories.md) | Map comma-separated event names to categories. Events auto-match on creation. |
 | Unlimited Calendars | Remove the 3-calendar limit — create as many calendars as you need. |
 | Unlimited Event Presets | Remove the 2-preset limit — create as many presets as you need. |
