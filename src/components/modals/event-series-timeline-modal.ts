@@ -21,6 +21,9 @@ export class EventSeriesTimelineModal extends Modal {
 	private timelineContainer!: HTMLElement;
 	private eventMap: Map<string, CalendarEvent> = new Map();
 	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
+	private yearInput!: HTMLInputElement;
+	private monthInput!: HTMLInputElement;
+	private dayInput!: HTMLInputElement;
 
 	constructor(
 		app: App,
@@ -35,17 +38,86 @@ export class EventSeriesTimelineModal extends Modal {
 		const { contentEl, modalEl } = this;
 		contentEl.empty();
 
-		// Add class to modal element (not content)
 		modalEl.addClass(cls("timeline-modal"));
 
-		// Header
 		const header = contentEl.createDiv(cls("timeline-modal-header"));
 		header.createEl("h2", { text: this.config.title });
 
-		// Timeline container
+		this.renderNavControls(contentEl);
+
 		this.timelineContainer = contentEl.createDiv(cls("timeline-modal-container"));
 
 		this.renderTimeline();
+	}
+
+	private renderNavControls(container: HTMLElement): void {
+		const controls = container.createDiv(cls("timeline-nav-controls"));
+
+		const dateGroup = controls.createDiv(cls("timeline-nav-date-group"));
+
+		const createNumericInput = (placeholder: string, min: string, max: string): HTMLInputElement =>
+			dateGroup.createEl("input", {
+				type: "number",
+				cls: cls("timeline-nav-input"),
+				attr: { placeholder, min, max },
+			});
+
+		this.yearInput = createNumericInput("Year", "1900", "2100");
+		this.monthInput = createNumericInput("Month", "1", "12");
+		this.dayInput = createNumericInput("Day", "1", "31");
+
+		const now = new Date();
+		this.yearInput.value = String(now.getFullYear());
+		this.monthInput.value = String(now.getMonth() + 1);
+		this.dayInput.value = String(now.getDate());
+
+		const goBtn = controls.createEl("button", {
+			text: "Go",
+			cls: cls("timeline-nav-btn"),
+		});
+
+		const todayBtn = controls.createEl("button", {
+			text: "Today",
+			cls: cls("timeline-nav-btn"),
+		});
+
+		const shortcutHint = controls.createSpan(cls("timeline-nav-hint"));
+		shortcutHint.textContent = "Enter to navigate";
+
+		goBtn.addEventListener("click", () => this.navigateToInput());
+		todayBtn.addEventListener("click", () => this.navigateToToday());
+
+		const onEnter = (e: KeyboardEvent) => {
+			if (e.key === "Enter") this.navigateToInput();
+		};
+		this.yearInput.addEventListener("keydown", onEnter);
+		this.monthInput.addEventListener("keydown", onEnter);
+		this.dayInput.addEventListener("keydown", onEnter);
+	}
+
+	private navigateToInput(): void {
+		if (!this.timeline) return;
+
+		const year = parseInt(this.yearInput.value);
+		const month = parseInt(this.monthInput.value) || 1;
+		const day = parseInt(this.dayInput.value) || 1;
+
+		if (isNaN(year)) return;
+
+		const target = new Date(year, month - 1, day);
+		if (isNaN(target.getTime())) return;
+
+		this.timeline.moveTo(target);
+	}
+
+	private navigateToToday(): void {
+		if (!this.timeline) return;
+
+		const now = new Date();
+		this.yearInput.value = String(now.getFullYear());
+		this.monthInput.value = String(now.getMonth() + 1);
+		this.dayInput.value = String(now.getDate());
+		this.timeline.moveTo(now);
 	}
 
 	onClose(): void {
