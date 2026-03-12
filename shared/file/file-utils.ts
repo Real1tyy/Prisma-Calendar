@@ -80,3 +80,10 @@ export const extractContentAfterFrontmatter = (fullContent: string): string => {
 	// If no frontmatter found, return the entire content
 	return fullContent;
 };
+
+export async function ensureDirectory(app: App, directory: string): Promise<void> {
+	const folder = app.vault.getAbstractFileByPath(directory);
+	if (!folder) {
+		await app.vault.createFolder(directory);
+	}
+}
