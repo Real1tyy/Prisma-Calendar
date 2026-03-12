@@ -795,7 +795,15 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		const left = leftItems.length > 0 ? leftItems.join(" ") : "";
-		const right = `filteredEvents eventsButton timeline skippedEvents batchSelect ${viewSwitchers}`;
+		const rightItems = ["filteredEvents", "eventsButton"];
+		if (toolbarButtons.has("timeline")) {
+			rightItems.push("timeline");
+		}
+		if (toolbarButtons.has("heatmap")) {
+			rightItems.push("heatmap");
+		}
+		rightItems.push("skippedEvents", "batchSelect");
+		const right = `${rightItems.join(" ")} ${viewSwitchers}`;
 
 		return {
 			headerToolbar: { left, center: "title", right },
@@ -849,6 +857,12 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				text: "Timeline",
 				click: () => {
 					this.showAllEventsTimeline();
+				},
+			},
+			heatmap: {
+				text: "Heatmap",
+				click: () => {
+					this.showAllEventsHeatmap();
 				},
 			},
 		};

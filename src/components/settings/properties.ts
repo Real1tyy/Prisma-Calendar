@@ -346,5 +346,13 @@ ${settings.futureInstancesCountProp}: 5
 			placeholder: "status, priority, project, tags, category",
 			arrayDelimiter: ", ",
 		});
+
+		this.ui.addTextArray(containerEl, {
+			key: "frontmatterDisplayPropertiesHeatmap",
+			name: "Display properties (heatmap)",
+			desc: "Comma-separated list of frontmatter property names to display in the heatmap day detail panel when inspecting events. Properties appear below each event title with links rendered interactively.",
+			placeholder: "status, priority, project, tags, category",
+			arrayDelimiter: ", ",
+		});
 	}
 }

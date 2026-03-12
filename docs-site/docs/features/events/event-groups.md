@@ -345,7 +345,7 @@ Click **Timeline** to open an interactive timeline visualization showing all eve
 
 **Features:**
 
-- **Interactive navigation** — Zoom in/out with mouse wheel, pan by dragging to navigate through time
+- **Interactive navigation** — Zoom in/out with mouse wheel, pan by dragging to navigate through time. Use the date navigation bar at the top to jump to a specific year, month, and day — fill in the fields and press Enter or click Go. The timeline centers on the chosen date while preserving your current zoom level. Click Today to jump to the current date
 - **Event type distinction** — Timed events have a square dot, while all-day events have a hollow circle dot with a dashed border, making the two types instantly recognizable at a glance
 - **Event names** — Each event displays its clean title (with ZettelID and instance dates stripped)
 - **Category coloring** — Events are colored based on their category, matching the color rules configured in your calendar settings. This provides instant visual grouping on the timeline
@@ -371,8 +371,8 @@ Click **Heatmap** to open a GitHub-style contribution heatmap showing event dens
 
 **Features:**
 
-- **Two display modes** — **Yearly** shows a full year as a 7-row x 52-column grid (days of week by weeks), **Monthly** shows a single month with larger cells and day numbers
-- **Navigation** — Use arrow buttons to move between years or months. The current period is shown between the arrows
+- **Two display modes** — **Yearly** and **Monthly** toggle buttons sit in the header next to the title. Yearly shows a full year as a 7-row x 52-column grid (days of week by weeks), Monthly shows a single month with larger cells and day numbers
+- **Navigation** — Use arrow buttons or the **Left/Right arrow keys** to move between years or months. Press **Now** to jump back to the current period. The current period is shown between the arrows
 - **Color-coded density** — Cells are colored in 5 quantile buckets from empty to maximum density. For category-scoped views, the gradient uses the category color with varying opacity. For global views, a green gradient is used (matching the GitHub contribution style)
 - **Hover tooltips** — Hover over any cell to see the date and event count (e.g., "Mar 11, 2026: 3 events")
 - **Click to inspect** — Click any cell to expand a detail panel below the heatmap showing all events for that day. Click an event to open its note
