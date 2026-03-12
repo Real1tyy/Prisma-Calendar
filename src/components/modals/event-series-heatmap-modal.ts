@@ -161,7 +161,7 @@ export class EventSeriesHeatmapModal extends Modal {
 		if (this.mode === "yearly") {
 			this.controlsLabel.textContent = String(this.year);
 		} else {
-			const dt = DateTime.local(this.year, this.month, 1);
+			const dt = DateTime.utc(this.year, this.month, 1);
 			this.controlsLabel.textContent = dt.toFormat("LLLL yyyy");
 		}
 	}
@@ -169,7 +169,7 @@ export class EventSeriesHeatmapModal extends Modal {
 	private showDayDetail(date: string, events: CalendarEvent[]): void {
 		this.dayDetailPanel.empty();
 
-		const dt = DateTime.fromISO(date);
+		const dt = DateTime.fromISO(date, { zone: "utc" });
 		const header = this.dayDetailPanel.createDiv(cls("heatmap-detail-header"));
 		header.createEl("h3", { text: dt.toFormat("EEEE, LLLL d, yyyy") });
 		header.createSpan({

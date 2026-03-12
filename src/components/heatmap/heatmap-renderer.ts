@@ -77,8 +77,8 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 	const gap = CELL_GAP_YEARLY;
 	const step = cellSize + gap;
 
-	const startDate = DateTime.local(year, 1, 1);
-	const endDate = DateTime.local(year, 12, 31);
+	const startDate = DateTime.utc(year, 1, 1);
+	const endDate = DateTime.utc(year, 12, 31);
 
 	// Calculate week columns
 	const startOffset = normalizedDayOfWeek(startDate, firstDayOfWeek);
@@ -191,7 +191,7 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 	const gap = CELL_GAP_MONTHLY;
 	const step = cellSize + gap;
 
-	const startDate = DateTime.local(year, month, 1);
+	const startDate = DateTime.utc(year, month, 1);
 	const endDate = startDate.endOf("month");
 	const daysInMonth = endDate.day;
 
@@ -222,7 +222,7 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 
 	// Render cells
 	for (let d = 1; d <= daysInMonth; d++) {
-		const day = DateTime.local(year, month, d);
+		const day = DateTime.utc(year, month, d);
 		const offset = normalizedDayOfWeek(day, firstDayOfWeek);
 		const weekRow = Math.floor((d - 1 + startOffset) / 7);
 
