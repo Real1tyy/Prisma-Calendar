@@ -2,7 +2,8 @@
 export * from "./api-gateway";
 // Command pattern
 export * from "./commands";
-// View component
+// View utilities
+export * from "./activate-view";
 export * from "./mountable-view";
 // Async utilities
 export * from "./async";
@@ -28,3 +29,5 @@ export * from "./utils/list-utils";
 export * from "./vault-table";
 // File explorer utilities
 export * from "./file-explorer";
+// Obsidian Bases AST and builder
+export * from "./obsidian-bases";

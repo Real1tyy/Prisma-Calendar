@@ -1,4 +1,4 @@
-import { onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsidian-plugins";
+import { activateView, onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsidian-plugins";
 import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 
@@ -234,25 +234,14 @@ export class CalendarBundle {
 	}
 
 	async activateCalendarView(): Promise<void> {
-		const { workspace } = this.app;
-
-		const existingLeaves = workspace.getLeavesOfType(this.viewType);
-
-		// Case 1: Calendar is already open - reveal/focus it
-		const existingLeaf = existingLeaves[0];
-		if (existingLeaf) {
-			await workspace.revealLeaf(existingLeaf);
-			await this.plugin.ensureCalendarViewFocus(existingLeaf);
-			void this.plugin.rememberLastUsedCalendar(this.calendarId);
-			return;
-		}
-
-		// Case 2: Calendar is not open - open it and focus it
-		const newLeaf = workspace.getLeaf("tab");
-		await newLeaf.setViewState({ type: this.viewType, active: true });
-		await workspace.revealLeaf(newLeaf);
-		await this.plugin.ensureCalendarViewFocus(newLeaf);
-		void this.plugin.rememberLastUsedCalendar(this.calendarId);
+		await activateView(this.app.workspace, {
+			viewType: this.viewType,
+			placement: "tab",
+			onReveal: async (leaf) => {
+				await this.plugin.ensureCalendarViewFocus(leaf);
+				void this.plugin.rememberLastUsedCalendar(this.calendarId);
+			},
+		});
 	}
 
 	async openFileInCalendar(file: TFile): Promise<boolean> {

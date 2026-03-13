@@ -5,14 +5,59 @@ import type { SerializableSchema } from "./create-mapped-schema";
 
 export type InvalidStrategy = "skip" | "correct" | "delete";
 
-export interface VaultTableConfig<TData, TSchema extends SerializableSchema<TData> = SerializableSchema<TData>> {
+export type NodeType = "files" | "folderNotes";
+
+interface VaultTableDefBase<TData, TSchema extends SerializableSchema<TData> = SerializableSchema<TData>> {
+	schema: TSchema;
+	fileNameFilter?: (fileName: string) => boolean;
+	invalidStrategy?: InvalidStrategy;
+	debounceMs?: number;
+	filePathResolver?: (directory: string, fileName: string) => string;
+}
+
+interface FileVaultTableDef<
+	TData,
+	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
+> extends VaultTableDefBase<TData, TSchema> {
+	nodeType?: "files";
+	children?: never;
+}
+
+interface FolderNoteVaultTableDef<
+	TData,
+	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+	TChildren extends VaultTableDefMap = {},
+> extends VaultTableDefBase<TData, TSchema> {
+	nodeType: "folderNotes";
+	children?: TChildren;
+}
+
+export type VaultTableDef<
+	TData,
+	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+	TChildren extends VaultTableDefMap = {},
+> = FileVaultTableDef<TData, TSchema> | FolderNoteVaultTableDef<TData, TSchema, TChildren>;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyVaultTableDef = VaultTableDef<any, any, any>;
+
+export type VaultTableDefMap = Record<string, AnyVaultTableDef>;
+
+export function defineChildren<T extends VaultTableDefMap>(defs: T): T {
+	return defs;
+}
+
+export type VaultTableConfig<
+	TData,
+	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+	TChildren extends VaultTableDefMap = {},
+> = VaultTableDef<TData, TSchema, TChildren> & {
 	app: App;
 	directory: string;
-	schema: TSchema;
-	invalidStrategy?: InvalidStrategy;
-	skipFolderNotes?: boolean;
-	debounceMs?: number;
-}
+};
 
 export interface VaultRow<TData> {
 	id: string;
@@ -29,14 +74,14 @@ export interface InsertVaultRow<TData> {
 	content?: string;
 }
 
-export type VaultTableEvent<TData> =
-	| { type: "row-created"; id: string; filePath: string; row: VaultRow<TData> }
+export type VaultTableEvent<TData, TRow = VaultRow<TData>> =
+	| { type: "row-created"; id: string; filePath: string; row: TRow }
 	| {
 			type: "row-updated";
 			id: string;
 			filePath: string;
-			oldRow: VaultRow<TData>;
-			newRow: VaultRow<TData>;
+			oldRow: TRow;
+			newRow: TRow;
 			diff: FrontmatterDiff;
 	  }
-	| { type: "row-deleted"; id: string; filePath: string; oldRow: VaultRow<TData> };
+	| { type: "row-deleted"; id: string; filePath: string; oldRow: TRow };

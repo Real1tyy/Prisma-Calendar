@@ -93,6 +93,13 @@ export function removeMarkdownExtension(path: string): string {
  * @param input - File path or wiki link string
  * @returns The display name to show in the UI
  */
+export function extractFileName(path: string): string {
+	if (!path) return "";
+	const lastSlash = path.lastIndexOf("/");
+	const filename = lastSlash !== -1 ? path.substring(lastSlash + 1) : path;
+	return filename.replace(/\.md$/i, "");
+}
+
 export function extractDisplayName(input: string): string {
 	if (!input) return "";
 
@@ -729,7 +736,37 @@ export const getFilenameFromPath = (filePath: string): string => {
 	return filePath.split("/").pop() || "Unknown";
 };
 
+export function getParentDirectoryName(filePath: string): string {
+	const segments = filePath.split("/");
+	if (segments.length < 2) return "";
+	return segments[segments.length - 2];
+}
+
 export const isFileInConfiguredDirectory = (filePath: string, directory: string): boolean => {
 	const normalizedDir = directory.endsWith("/") ? directory.slice(0, -1) : directory;
 	return filePath.startsWith(`${normalizedDir}/`) || filePath === normalizedDir;
 };
+
+/**
+ * Checks whether a file path is a direct child of a directory,
+ * either as a plain file (depth 1) or a folder note (depth 2 where filename matches parent folder).
+ *
+ * - `nodeType: "files"` — matches `directory/file.md` (1 segment relative)
+ * - `nodeType: "folderNotes"` — matches `directory/Name/Name.md` (2 segments relative, folder note)
+ */
+export function isDirectChildOrFolderNote(
+	filePath: string,
+	directory: string,
+	nodeType: "files" | "folderNotes"
+): boolean {
+	if (!filePath.startsWith(directory + "/")) return false;
+
+	const relative = filePath.slice(directory.length + 1);
+	const segments = relative.split("/");
+
+	if (nodeType === "folderNotes") {
+		return segments.length === 2 && isFolderNote(filePath);
+	}
+
+	return segments.length === 1;
+}

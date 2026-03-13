@@ -84,6 +84,10 @@ export const extractContentAfterFrontmatter = (fullContent: string): string => {
 export async function ensureDirectory(app: App, directory: string): Promise<void> {
 	const folder = app.vault.getAbstractFileByPath(directory);
 	if (!folder) {
-		await app.vault.createFolder(directory);
+		try {
+			await app.vault.createFolder(directory);
+		} catch {
+			// Folder was created between the check and the call (race condition)
+		}
 	}
 }
