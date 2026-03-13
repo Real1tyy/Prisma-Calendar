@@ -1,17 +1,15 @@
 import type { App, TFile } from "obsidian";
-import type { z } from "zod";
 
 import type { FrontmatterDiff } from "../file/frontmatter-diff";
+import type { SerializableSchema } from "./create-mapped-schema";
 
 export type InvalidStrategy = "skip" | "correct" | "delete";
-export type ParseStrategy = "passthrough" | "strict" | "strip";
 
-export interface VaultTableConfig<TSchema extends z.ZodObject<z.ZodRawShape>> {
+export interface VaultTableConfig<TData, TSchema extends SerializableSchema<TData> = SerializableSchema<TData>> {
 	app: App;
 	directory: string;
 	schema: TSchema;
 	invalidStrategy?: InvalidStrategy;
-	parseStrategy?: ParseStrategy;
 	skipFolderNotes?: boolean;
 	debounceMs?: number;
 }

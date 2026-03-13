@@ -1,26 +1,18 @@
 import type { App } from "obsidian";
 import { BehaviorSubject, type Observable, Subject, type Subscription } from "rxjs";
-import { z } from "zod";
 
 import { Indexer, type IndexerConfig, type IndexerEvent } from "../core/indexer";
 import { extractDisplayName, isFolderNote } from "../file/file";
 import { ensureDirectory, extractContentAfterFrontmatter, getTFileOrThrow, withFrontmatter } from "../file/file-utils";
 import { correctFrontmatter, deleteInvalidFile } from "../file/frontmatter-repair";
 import { createFileContentWithFrontmatter } from "../file/frontmatter-serialization";
-import type {
-	InsertVaultRow,
-	InvalidStrategy,
-	ParseStrategy,
-	VaultRow,
-	VaultTableConfig,
-	VaultTableEvent,
-} from "./types";
+import type { SerializableSchema } from "./create-mapped-schema";
+import type { InsertVaultRow, InvalidStrategy, VaultRow, VaultTableConfig, VaultTableEvent } from "./types";
 
-export class VaultTable<TSchema extends z.ZodObject<z.ZodRawShape>, TData = z.infer<TSchema>> {
+export class VaultTable<TData, TSchema extends SerializableSchema<TData> = SerializableSchema<TData>> {
 	private readonly app: App;
 	private readonly directory: string;
 	private readonly schema: TSchema;
-	private readonly effectiveSchema: z.ZodType;
 	private readonly invalidStrategy: InvalidStrategy;
 
 	private readonly indexer: Indexer;
@@ -38,12 +30,11 @@ export class VaultTable<TSchema extends z.ZodObject<z.ZodRawShape>, TData = z.in
 	public readonly events$: Observable<VaultTableEvent<TData>>;
 	public readonly ready$: Observable<boolean>;
 
-	constructor(config: VaultTableConfig<TSchema>) {
+	constructor(config: VaultTableConfig<TData, TSchema>) {
 		this.app = config.app;
 		this.directory = config.directory;
 		this.schema = config.schema;
 		this.invalidStrategy = config.invalidStrategy ?? "skip";
-		this.effectiveSchema = this.buildEffectiveSchema(config.parseStrategy ?? "passthrough");
 
 		this.events$ = this.eventsSubject.asObservable();
 		this.ready$ = this.readySubject.asObservable();
@@ -104,11 +95,11 @@ export class VaultTable<TSchema extends z.ZodObject<z.ZodRawShape>, TData = z.in
 			throw new Error(`VaultTable: row "${id}" already exists`);
 		}
 
-		const validated = this.effectiveSchema.parse(insert.data) as TData;
+		const validated = this.schema.parse(insert.data) as TData;
 		const filePath = `${this.directory}/${id}.md`;
 		const content = insert.content ?? "";
 
-		const fileContent = createFileContentWithFrontmatter(validated as Record<string, unknown>, content);
+		const fileContent = createFileContentWithFrontmatter(this.serialize(validated), content);
 		const file = await this.app.vault.create(filePath, fileContent);
 
 		const row: VaultRow<TData> = {
@@ -307,10 +298,11 @@ export class VaultTable<TSchema extends z.ZodObject<z.ZodRawShape>, TData = z.in
 
 	private async applyUpdate(existing: VaultRow<TData>, data: Partial<TData>): Promise<VaultRow<TData>> {
 		const merged = { ...existing.data, ...data };
-		const validated = this.effectiveSchema.parse(merged) as TData;
+		const validated = this.schema.parse(merged) as TData;
 
+		const serialized = this.serialize(validated);
 		await withFrontmatter(this.app, existing.file, (fm) => {
-			Object.assign(fm, validated);
+			Object.assign(fm, serialized);
 		});
 
 		const newRow: VaultRow<TData> = {
@@ -347,7 +339,7 @@ export class VaultTable<TSchema extends z.ZodObject<z.ZodRawShape>, TData = z.in
 		const filePath = event.filePath;
 		const id = extractDisplayName(filePath);
 		const raw = event.source.frontmatter;
-		const result = this.effectiveSchema.safeParse(raw);
+		const result = this.schema.safeParse(raw);
 
 		if (!result.success) {
 			this.handleInvalidFrontmatter(filePath, raw);
@@ -421,7 +413,7 @@ export class VaultTable<TSchema extends z.ZodObject<z.ZodRawShape>, TData = z.in
 				break;
 			}
 			case "correct": {
-				void correctFrontmatter(this.app, this.effectiveSchema, filePath, raw);
+				void correctFrontmatter(this.app, this.schema, filePath, raw);
 				break;
 			}
 			case "delete": {
@@ -449,9 +441,7 @@ export class VaultTable<TSchema extends z.ZodObject<z.ZodRawShape>, TData = z.in
 		this.rows = Array.from(this.rowById.values());
 	}
 
-	private buildEffectiveSchema(strategy: ParseStrategy): z.ZodType {
-		if (strategy === "passthrough") return z.looseObject(this.schema.shape);
-		if (strategy === "strict") return z.strictObject(this.schema.shape);
-		return this.schema;
+	private serialize(data: TData): Record<string, unknown> {
+		return this.schema.serialize(data);
 	}
 }

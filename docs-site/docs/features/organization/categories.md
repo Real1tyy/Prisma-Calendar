@@ -83,6 +83,13 @@ When enabled, if the event name matches a category name (case-insensitive, ignor
 **Example:**
 - Type "Health" and click away → Categories replaced with "health"
 
+#### Auto-assign when name contains category
+When enabled, if the event name contains a category name as a substring (case-insensitive, ignoring ZettelID and instance dates), that category will be automatically assigned. This is useful when your event names are more descriptive than your category names.
+
+**Examples:**
+- Type "Youtube Analysis" and click away → "Youtube" category is auto-assigned
+- Type "Personal Health Checkup" → Both "Personal" and "Health" categories are auto-assigned (if both exist)
+
 #### Custom category assignment presets {#custom-presets}
 
 :::info Pro Feature
