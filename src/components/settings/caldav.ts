@@ -6,8 +6,8 @@ import { CALDAV_DEFAULTS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { CalDAVClientService } from "../../core/integrations/caldav";
 import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
-import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import type { PrismaCalendarSettingsStore } from "../../types";
 import {
 	CALDAV_PRESETS,
 	type CalDAVAccount,
@@ -25,7 +25,7 @@ export class CalDAVSettings {
 
 	constructor(
 		private app: App,
-		private settingsStore: SettingsStore,
+		private settingsStore: PrismaCalendarSettingsStore,
 		private plugin: CustomCalendarPlugin,
 		private calendarId: string
 	) {
@@ -252,7 +252,7 @@ class AddCalDAVAccountModal extends Modal {
 
 	constructor(
 		app: App,
-		private settingsStore: SettingsStore,
+		private settingsStore: PrismaCalendarSettingsStore,
 		private calendarId: string,
 		private onSave: () => void
 	) {
@@ -563,7 +563,7 @@ class EditCalDAVAccountModal extends Modal {
 
 	constructor(
 		app: App,
-		private settingsStore: SettingsStore,
+		private settingsStore: PrismaCalendarSettingsStore,
 		private plugin: CustomCalendarPlugin,
 		private calendarId: string,
 		private account: CalDAVAccount,

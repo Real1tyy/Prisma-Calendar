@@ -3,6 +3,7 @@ export { type CalendarEvent, isTimedEvent, type ParsedEvent } from "./calendar";
 export {
 	type CustomCalendarSettings,
 	CustomCalendarSettingsSchema,
+	type PrismaCalendarSettingsStore,
 	type SingleCalendarConfig,
 	SingleCalendarConfigSchema,
 } from "./settings";

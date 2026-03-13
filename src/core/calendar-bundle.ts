@@ -4,6 +4,7 @@ import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from 
 
 import { CalendarView } from "../components/calendar-view";
 import type CustomCalendarPlugin from "../main";
+import type { PrismaCalendarSettingsStore } from "../types";
 import type { EventSaveData } from "../types/event-save";
 import { getCalendarViewType } from "../utils/calendar-view-type";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/event-naming";
@@ -31,7 +32,7 @@ import type { NameSeriesTracker } from "./name-series-tracker";
 import type { NotificationManager } from "./notification-manager";
 import type { Parser } from "./parser";
 import type { RecurringEventManager } from "./recurring-event-manager";
-import { CalendarSettingsStore, type SettingsStore } from "./settings-store";
+import { CalendarSettingsStore } from "./settings-store";
 
 export class CalendarBundle {
 	// ─── Lifecycle ───────────────────────────────────────────────
@@ -55,7 +56,7 @@ export class CalendarBundle {
 	private app: App;
 	private directory: string;
 	private indexerRegistry: IndexerRegistry;
-	private mainSettingsStore: SettingsStore;
+	private mainSettingsStore: PrismaCalendarSettingsStore;
 	private caldavSync = new SyncState<CalDAVSyncService>("CalDAV");
 	private icsSubscriptionSync = new SyncState<ICSSubscriptionSyncService>("ICS Subscription");
 	private ribbonIconEl: HTMLElement | null = null;
@@ -64,7 +65,7 @@ export class CalendarBundle {
 	constructor(
 		public readonly plugin: CustomCalendarPlugin,
 		public readonly calendarId: string,
-		mainSettingsStore: SettingsStore
+		mainSettingsStore: PrismaCalendarSettingsStore
 	) {
 		this.app = plugin.app;
 		this.mainSettingsStore = mainSettingsStore;

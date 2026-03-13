@@ -2,10 +2,9 @@ import { sanitizeForFilename } from "@real1ty-obsidian-plugins";
 import { type App, normalizePath, Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 
-import type { Frontmatter } from "../../types";
+import type { Frontmatter, PrismaCalendarSettingsStore } from "../../types";
 import { extractZettelId, removeZettelId } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
-import type { SettingsStore } from "../settings-store";
 import { buildFrontmatterFromImportedEvent, createEventNoteFromImportedEvent, type ImportedEvent } from "./ics-import";
 
 export async function yieldToMainThread(): Promise<void> {
@@ -30,13 +29,13 @@ export interface BaseSyncResult {
 export interface BaseSyncServiceOptions {
 	app: App;
 	bundle: CalendarBundle;
-	mainSettingsStore: SettingsStore;
+	mainSettingsStore: PrismaCalendarSettingsStore;
 }
 
 export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 	protected app: App;
 	protected bundle: CalendarBundle;
-	protected mainSettingsStore: SettingsStore;
+	protected mainSettingsStore: PrismaCalendarSettingsStore;
 	protected settingsSubscription: Subscription | null = null;
 	protected destroyed = false;
 

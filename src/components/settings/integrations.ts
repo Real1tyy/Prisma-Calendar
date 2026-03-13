@@ -4,8 +4,9 @@ import type { Subscription } from "rxjs";
 
 import { COMMAND_IDS, SETTINGS_DEFAULTS } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
-import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
+import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import type { PrismaCalendarSettingsStore } from "../../types";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
 import { CalDAVSettings } from "./caldav";
 import { ICSSubscriptionSettings } from "./ics-subscriptions";
@@ -20,7 +21,7 @@ export class IntegrationsSettings {
 		private settingsStore: CalendarSettingsStore,
 		private app: App,
 		private plugin: CustomCalendarPlugin,
-		private mainSettingsStore: SettingsStore
+		private mainSettingsStore: PrismaCalendarSettingsStore
 	) {
 		this.ui = new SettingsUIBuilder(this.settingsStore as never);
 	}

@@ -1,8 +1,8 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 
-import type { SettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import type { PrismaCalendarSettingsStore } from "../../types";
 import { AI_DEFAULTS } from "../../types/ai";
 import { CustomCalendarSettingsSchema, type CustomPrompt } from "../../types/settings";
 
@@ -11,7 +11,7 @@ export class AISettings {
 
 	constructor(
 		private plugin: CustomCalendarPlugin,
-		private mainSettingsStore: SettingsStore
+		private mainSettingsStore: PrismaCalendarSettingsStore
 	) {
 		this.ui = new SettingsUIBuilder(this.mainSettingsStore as never, this.plugin.app);
 	}

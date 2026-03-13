@@ -2,8 +2,9 @@ import { SettingsNavigation, type SettingsSection } from "@real1ty-obsidian-plug
 import type { App } from "obsidian";
 
 import { PRO_FEATURES } from "../../core/license";
-import type { CalendarSettingsStore, SettingsStore } from "../../core/settings-store";
+import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
+import type { PrismaCalendarSettingsStore } from "../../types";
 import {
 	AISettings,
 	BasesSettings,
@@ -26,7 +27,7 @@ export class SingleCalendarSettings {
 		settingsStore: CalendarSettingsStore,
 		app: App,
 		plugin: CustomCalendarPlugin,
-		mainSettingsStore: SettingsStore
+		mainSettingsStore: PrismaCalendarSettingsStore
 	) {
 		const settingsInstances = {
 			general: new GeneralSettings(settingsStore, app, plugin),

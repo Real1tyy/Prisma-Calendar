@@ -1,7 +1,7 @@
 import { LicenseManager, type LicenseManagerConfig } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
-import type { SettingsStore } from "./settings-store";
+import type { PrismaCalendarSettingsStore } from "../types";
 
 export { LicenseManager };
 export type {
@@ -38,7 +38,11 @@ const LICENSE_CONFIG: LicenseManagerConfig = {
 	licenseCacheStorageKey: LICENSE_CACHE_STORAGE_KEY,
 };
 
-export function createLicenseManager(app: App, settingsStore: SettingsStore, pluginVersion: string): LicenseManager {
+export function createLicenseManager(
+	app: App,
+	settingsStore: PrismaCalendarSettingsStore,
+	pluginVersion: string
+): LicenseManager {
 	return new LicenseManager(
 		app,
 		() => settingsStore.currentSettings.licenseKeySecretName,

@@ -1,18 +1,14 @@
-import { SettingsStore as GenericSettingsStore } from "@real1ty-obsidian-plugins";
-import type { Plugin } from "obsidian";
 import { BehaviorSubject, type Subscription } from "rxjs";
 
 import { TOOLBAR_BUTTON_IDS } from "../constants";
-import { CustomCalendarSettingsSchema, type SingleCalendarConfig, SingleCalendarConfigSchema } from "../types/index";
+import {
+	type PrismaCalendarSettingsStore,
+	type SingleCalendarConfig,
+	SingleCalendarConfigSchema,
+} from "../types/index";
 import { getCalendarById } from "../utils/calendar-settings";
 
 export type ToolbarButtonsKey = "toolbarButtons" | "mobileToolbarButtons";
-
-export class SettingsStore extends GenericSettingsStore<typeof CustomCalendarSettingsSchema> {
-	constructor(plugin: Plugin) {
-		super(plugin, CustomCalendarSettingsSchema);
-	}
-}
 
 export class CalendarSettingsStore {
 	private subscription: Subscription | null = null;
@@ -21,7 +17,7 @@ export class CalendarSettingsStore {
 	public readonly validationSchema = SingleCalendarConfigSchema;
 
 	constructor(
-		public readonly mainSettingsStore: SettingsStore,
+		public readonly mainSettingsStore: PrismaCalendarSettingsStore,
 		public readonly calendarId: string
 	) {
 		const initialSettings = getCalendarById(mainSettingsStore.currentSettings, calendarId);
