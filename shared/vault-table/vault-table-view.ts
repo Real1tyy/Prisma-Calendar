@@ -1,6 +1,6 @@
 import { type Observable, Subject, type Subscription } from "rxjs";
-import type { z } from "zod";
 
+import type { SerializableSchema } from "./create-mapped-schema";
 import type { VaultRow, VaultTableEvent } from "./types";
 import type { VaultTable } from "./vault-table";
 
@@ -8,7 +8,7 @@ export interface VaultTableViewConfig<TData> {
 	filter: (row: VaultRow<TData>) => boolean;
 }
 
-export class VaultTableView<TSchema extends z.ZodObject<z.ZodRawShape>, TData = z.infer<TSchema>> {
+export class VaultTableView<TData, TSchema extends SerializableSchema<TData> = SerializableSchema<TData>> {
 	private readonly filter: (row: VaultRow<TData>) => boolean;
 
 	private readonly rowById = new Map<string, VaultRow<TData>>();
@@ -21,7 +21,7 @@ export class VaultTableView<TSchema extends z.ZodObject<z.ZodRawShape>, TData = 
 	public readonly events$: Observable<VaultTableEvent<TData>>;
 
 	constructor(
-		private readonly table: VaultTable<TSchema, TData>,
+		private readonly table: VaultTable<TData, TSchema>,
 		config: VaultTableViewConfig<TData>
 	) {
 		this.filter = config.filter;

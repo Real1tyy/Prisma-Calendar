@@ -112,6 +112,15 @@ export const autoAssignCategories = (
 		}
 	}
 
+	// Rule 1b: Auto-assign when event name contains category name (substring match, case-insensitive)
+	if (settings.autoAssignCategoryByIncludes) {
+		for (const category of availableCategories) {
+			if (normalizedEventName.includes(normalizeForComparison(category))) {
+				categoriesToAssign.add(category);
+			}
+		}
+	}
+
 	// Rule 2: Apply custom category assignment presets (Pro only)
 	if (isProEnabled && settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0) {
 		for (const preset of settings.categoryAssignmentPresets) {

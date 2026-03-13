@@ -1,19 +1,20 @@
 import type { App } from "obsidian";
-import type { z } from "zod";
 
+import type { SerializableSchema } from "../vault-table/create-mapped-schema";
 import { getTFileOrThrow, withFrontmatter } from "./file-utils";
 
-export async function correctFrontmatter(
+export async function correctFrontmatter<TData>(
 	app: App,
-	schema: z.ZodType,
+	schema: SerializableSchema<TData>,
 	filePath: string,
 	raw: Record<string, unknown>
 ): Promise<void> {
 	try {
-		const corrected = schema.parse(raw) as Record<string, unknown>;
+		const corrected = schema.parse(raw) as TData;
+		const serialized = schema.serialize(corrected);
 		const file = getTFileOrThrow(app, filePath);
 		await withFrontmatter(app, file, (fm) => {
-			Object.assign(fm, corrected);
+			Object.assign(fm, serialized);
 		});
 	} catch {
 		// If parse also fails (no defaults can fix it), treat as skip

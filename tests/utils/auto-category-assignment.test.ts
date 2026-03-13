@@ -49,6 +49,7 @@ describe("Auto-Category Assignment", () => {
 	describe("autoAssignCategories", () => {
 		const mockSettings: Partial<SingleCalendarConfig> = {
 			autoAssignCategoryByName: false,
+			autoAssignCategoryByIncludes: false,
 			categoryAssignmentPresets: [],
 		};
 
@@ -105,6 +106,91 @@ describe("Auto-Category Assignment", () => {
 				const result = autoAssignCategories("Random Event", settings, availableCategories);
 
 				expect(result).toEqual([]);
+			});
+		});
+
+		describe("with autoAssignCategoryByIncludes enabled", () => {
+			it("should auto-assign category when event name contains category name", () => {
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByIncludes: true,
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("Youtube Analysis", settings, availableCategories);
+
+				expect(result).toEqual([]);
+			});
+
+			it("should match when event name contains category as substring", () => {
+				const categories = ["Youtube", "Health", "Business"];
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByIncludes: true,
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("Youtube Analysis", settings, categories);
+
+				expect(result).toEqual(["Youtube"]);
+			});
+
+			it("should match multiple categories when event name contains several", () => {
+				const categories = ["Health", "Personal"];
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByIncludes: true,
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("Personal Health Checkup", settings, categories);
+
+				expect(result).toContain("Health");
+				expect(result).toContain("Personal");
+			});
+
+			it("should be case-insensitive", () => {
+				const categories = ["Youtube"];
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByIncludes: true,
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("youtube analysis", settings, categories);
+
+				expect(result).toEqual(["Youtube"]);
+			});
+
+			it("should handle event name with ZettelID", () => {
+				const categories = ["Youtube"];
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByIncludes: true,
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("Youtube Analysis-20250103123456", settings, categories);
+
+				expect(result).toEqual(["Youtube"]);
+			});
+
+			it("should not match when event name does not contain any category", () => {
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByIncludes: true,
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("Random Event", settings, availableCategories);
+
+				expect(result).toEqual([]);
+			});
+
+			it("should work together with exact name matching without duplicates", () => {
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByName: true,
+					autoAssignCategoryByIncludes: true,
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("Health", settings, availableCategories);
+
+				expect(result).toEqual(["Health"]);
 			});
 		});
 
