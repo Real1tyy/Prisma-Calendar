@@ -25,3 +25,6 @@ export * from "./string";
 export * from "./license";
 export * from "./settings/sync-store";
 export * from "./utils/list-utils";
+export * from "./vault-table";
+// File explorer utilities
+export * from "./file-explorer";

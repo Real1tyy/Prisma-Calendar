@@ -68,15 +68,13 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 				},
 			});
 
-			// Simulate file creation event
-			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
+			const changedHandler = mockMetadataCache.on.mock.calls.find((call: any[]) => call[0] === "changed")?.[1];
 
-			if (createHandler) {
-				createHandler(file);
+			if (changedHandler) {
+				changedHandler(file);
 			}
 
-			// Verify the integration is set up correctly
-			expect(createHandler).toBeDefined();
+			expect(changedHandler).toBeDefined();
 			expect(eventStore).toBeDefined();
 			expect(parser).toBeDefined();
 		});
@@ -84,30 +82,28 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 		it("should handle file deletion correctly", () => {
 			const file = createMockFile("Events/meeting.md");
 
-			// Simulate file deletion event
-			const deleteHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "delete")?.[1];
+			const deletedHandler = mockMetadataCache.on.mock.calls.find((call: any[]) => call[0] === "deleted")?.[1];
 
-			if (deleteHandler) {
-				deleteHandler(file);
+			if (deletedHandler) {
+				deletedHandler(file, null);
 			}
 
-			expect(deleteHandler).toBeDefined();
+			expect(deletedHandler).toBeDefined();
 		});
 
 		it("should ignore files without relevant frontmatter", () => {
 			const file = createMockFile("Events/notes.md");
 			mockMetadataCache.getFileCache.mockReturnValue({
-				frontmatter: { title: "Just a note" }, // No start property
+				frontmatter: { title: "Just a note" },
 			});
 
-			// Simulate file creation event
-			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
+			const changedHandler = mockMetadataCache.on.mock.calls.find((call: any[]) => call[0] === "changed")?.[1];
 
-			if (createHandler) {
-				createHandler(file);
+			if (changedHandler) {
+				changedHandler(file);
 			}
 
-			expect(createHandler).toBeDefined();
+			expect(changedHandler).toBeDefined();
 		});
 	});
 
@@ -120,15 +116,14 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 				frontmatter: { start: "2024-01-15T10:00:00" },
 			});
 
-			// Simulate concurrent file events
-			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
+			const changedHandler = mockMetadataCache.on.mock.calls.find((call: any[]) => call[0] === "changed")?.[1];
 
-			if (createHandler) {
-				createHandler(file1);
-				createHandler(file2);
+			if (changedHandler) {
+				changedHandler(file1);
+				changedHandler(file2);
 			}
 
-			expect(createHandler).toBeDefined();
+			expect(changedHandler).toBeDefined();
 		});
 
 		it("should handle settings changes affecting the entire data structure", () => {
@@ -147,11 +142,10 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 				frontmatter: { start: "not-a-date" },
 			});
 
-			// Simulate file creation event
-			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
+			const changedHandler = mockMetadataCache.on.mock.calls.find((call: any[]) => call[0] === "changed")?.[1];
 
-			if (createHandler) {
-				expect(() => createHandler(file)).not.toThrow();
+			if (changedHandler) {
+				expect(() => changedHandler(file)).not.toThrow();
 			}
 		});
 
@@ -162,12 +156,12 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 				frontmatter: { start: "2024-01-15T10:00:00" },
 			});
 
-			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
+			const changedHandler = mockMetadataCache.on.mock.calls.find((call: any[]) => call[0] === "changed")?.[1];
 
-			if (createHandler) {
+			if (changedHandler) {
 				expect(() => {
 					files.forEach((file) => {
-						createHandler(file);
+						changedHandler(file);
 					});
 				}).not.toThrow();
 			}

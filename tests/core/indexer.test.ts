@@ -45,6 +45,7 @@ describe("Indexer", () => {
 			vault: mockVault,
 			metadataCache: mockMetadataCache,
 			fileManager: { processFrontMatter: vi.fn() },
+			workspace: { onLayoutReady: vi.fn((cb: () => void) => cb()) },
 		} as any;
 		indexer = new Indexer(mockApp, settingsStore, null);
 		eventListener = vi.fn();
@@ -67,22 +68,20 @@ describe("Indexer", () => {
 			expect(indexer.events$).toBeDefined();
 		});
 
-		it("should register vault event listeners when started", () => {
-			// The indexer registers vault listeners for create, delete, rename
-			expect(mockVault.on).toHaveBeenCalledWith("create", expect.any(Function));
-			expect(mockVault.on).toHaveBeenCalledWith("rename", expect.any(Function));
-			expect(mockVault.on).toHaveBeenCalledWith("delete", expect.any(Function));
-			// Modify events are handled via metadataCache "changed" instead of vault "modify"
+		it("should register event listeners when started", () => {
+			// metadataCache handles changed and deleted events
 			expect(mockMetadataCache.on).toHaveBeenCalledWith("changed", expect.any(Function));
+			expect(mockMetadataCache.on).toHaveBeenCalledWith("deleted", expect.any(Function));
+			// vault only handles rename (metadataCache doesn't emit on rename)
+			expect(mockVault.on).toHaveBeenCalledWith("rename", expect.any(Function));
 		});
 
-		it("should unregister vault event listeners when stopped", () => {
+		it("should unregister event listeners when stopped", () => {
 			indexer.stop();
 
-			expect(mockVault.off).toHaveBeenCalledWith("create", expect.any(Function));
+			// vault rename listener is cleaned up via off
 			expect(mockVault.off).toHaveBeenCalledWith("rename", expect.any(Function));
-			expect(mockVault.off).toHaveBeenCalledWith("delete", expect.any(Function));
-			// metadataCache "changed" listener is cleaned up via offref
+			// metadataCache listeners are cleaned up via offref
 			expect(mockMetadataCache.offref).toHaveBeenCalled();
 		});
 	});
@@ -122,18 +121,15 @@ describe("Indexer", () => {
 
 	describe("performance and debouncing", () => {
 		it("should register debounced event handlers", () => {
-			// Verify that the RxJS stream has registered event handlers
-			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
-			// Modify events are now handled via metadataCache "changed"
 			const changedHandler = mockMetadataCache.on.mock.calls.find((call: any[]) => call[0] === "changed")?.[1];
+			const deletedHandler = mockMetadataCache.on.mock.calls.find((call: any[]) => call[0] === "deleted")?.[1];
 
-			expect(createHandler).toBeDefined();
 			expect(changedHandler).toBeDefined();
+			expect(deletedHandler).toBeDefined();
 
-			// Verify handlers can be called without throwing
 			const file = createMockFile("Events/meeting.md");
-			expect(() => createHandler?.(file)).not.toThrow();
 			expect(() => changedHandler?.(file)).not.toThrow();
+			expect(() => deletedHandler?.(file, null)).not.toThrow();
 		});
 	});
 
@@ -145,23 +141,22 @@ describe("Indexer", () => {
 				vault: mockVault,
 				metadataCache: mockMetadataCache,
 				fileManager: { processFrontMatter: vi.fn() },
+				workspace: { onLayoutReady: vi.fn((cb: () => void) => cb()) },
 			} as any;
 			const emptyIndexer = new Indexer(mockApp, emptySettingsStore, null);
 			const emptyListener = vi.fn();
 			const emptySubscription = emptyIndexer.events$.subscribe(emptyListener);
 
-			// Start the empty indexer
 			await emptyIndexer.start();
 
-			// Simulate a file event that should be filtered out
+			// Simulate a metadataCache changed event
 			const file = createMockFile("Events/meeting.md");
-			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
+			const changedHandler = mockMetadataCache.on.mock.calls.find((call: any[]) => call[0] === "changed")?.[1];
 
-			if (createHandler) {
-				createHandler(file);
+			if (changedHandler) {
+				changedHandler(file);
 			}
 
-			// Should not emit events for files when directory is empty
 			expect(emptyListener).not.toHaveBeenCalled();
 			emptySubscription.unsubscribe();
 			emptyIndexer.stop();
@@ -169,22 +164,18 @@ describe("Indexer", () => {
 
 		it("should handle files at root level of configured directory", () => {
 			const rootFile = createMockFile("Events");
-			rootFile.path = "Events"; // Exact match with directory
+			rootFile.path = "Events";
 			rootFile.extension = "md";
 
 			mockMetadataCache.getFileCache.mockReturnValue({
 				frontmatter: { start: "2024-01-15" },
 			});
 
-			// Simulate the file creation event
-			const createHandler = mockVault.on.mock.calls.find((call: any[]) => call[0] === "create")?.[1];
+			const changedHandler = mockMetadataCache.on.mock.calls.find((call: any[]) => call[0] === "changed")?.[1];
 
-			if (createHandler) {
-				createHandler(rootFile);
+			if (changedHandler) {
+				changedHandler(rootFile);
 			}
-
-			// Should eventually emit an event (after debouncing)
-			// Note: In a real test, we'd need to wait for the debounce timeout
 		});
 	});
 
@@ -204,6 +195,7 @@ describe("Indexer", () => {
 				vault: mockVault,
 				metadataCache: mockMetadataCache,
 				fileManager: { processFrontMatter: processFrontMatterSpy },
+				workspace: { onLayoutReady: vi.fn((cb: () => void) => cb()) },
 			};
 		});
 

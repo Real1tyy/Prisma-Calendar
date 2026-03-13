@@ -1,23 +1,28 @@
-import { type App, type MetadataCache, type TAbstractFile, TFile, type Vault } from "obsidian";
+import { type App, type CachedMetadata, type MetadataCache, type TAbstractFile, TFile, type Vault } from "obsidian";
 import {
 	type BehaviorSubject,
+	BehaviorSubject as RxBehaviorSubject,
 	from,
 	fromEventPattern,
 	lastValueFrom,
 	merge,
 	Observable,
 	of,
-	BehaviorSubject as RxBehaviorSubject,
 	Subject,
 	type Subscription,
 } from "rxjs";
 import { debounceTime, filter, groupBy, map, mergeMap, toArray } from "rxjs/operators";
+
+import { waitForCacheReady } from "../async/wait-for-cache-ready";
 import { compareFrontmatter, type FrontmatterDiff } from "../file/frontmatter-diff";
 
 /**
  * Generic frontmatter object type for indexer
  */
 export type IndexerFrontmatter = Record<string, unknown>;
+
+const DEFAULT_SCAN_CONCURRENCY = 10;
+const DEFAULT_DEBOUNCE_MS = 100;
 
 /**
  * Configuration for the generic indexer
@@ -44,6 +49,12 @@ export interface IndexerConfig {
 	 * Debounce time in milliseconds for file change events
 	 */
 	debounceMs?: number;
+
+	/**
+	 * When true, renames emit a single "file-renamed" event instead of
+	 * the default "file-deleted" + "file-changed" pair.
+	 */
+	emitRenameEvents?: boolean;
 }
 
 /**
@@ -59,7 +70,7 @@ export interface FileSource {
 /**
  * Types of indexer events
  */
-export type IndexerEventType = "file-changed" | "file-deleted";
+export type IndexerEventType = "file-changed" | "file-deleted" | "file-renamed";
 
 /**
  * Generic indexer event
@@ -78,11 +89,10 @@ export interface IndexerEvent {
 	isRename?: boolean;
 }
 
-type VaultEvent = "create" | "delete" | "rename";
-
 type FileIntent =
 	| { kind: "changed"; file: TFile; path: string; oldPath?: string }
-	| { kind: "deleted"; path: string; isRename?: boolean };
+	| { kind: "deleted"; path: string; isRename?: boolean }
+	| { kind: "renamed"; file: TFile; path: string; oldPath: string };
 
 /**
  * Generic indexer that listens to Obsidian vault events and emits
@@ -95,6 +105,7 @@ export class Indexer {
 	private config: Required<IndexerConfig>;
 	private fileSub: Subscription | null = null;
 	private configSubscription: Subscription | null = null;
+	private readonly app: App;
 	private vault: Vault;
 	private metadataCache: MetadataCache;
 	private scanEventsSubject = new Subject<IndexerEvent>();
@@ -105,6 +116,7 @@ export class Indexer {
 	public readonly indexingComplete$: Observable<boolean>;
 
 	constructor(app: App, configStore: BehaviorSubject<IndexerConfig>) {
+		this.app = app;
 		this.vault = app.vault;
 		this.metadataCache = app.metadataCache;
 		this.config = this.normalizeConfig(configStore.value);
@@ -127,12 +139,15 @@ export class Indexer {
 		return {
 			includeFile: config.includeFile || (() => true),
 			excludedDiffProps: config.excludedDiffProps || new Set(),
-			scanConcurrency: config.scanConcurrency || 10,
-			debounceMs: config.debounceMs || 100,
+			scanConcurrency: config.scanConcurrency || DEFAULT_SCAN_CONCURRENCY,
+			debounceMs: config.debounceMs || DEFAULT_DEBOUNCE_MS,
+			emitRenameEvents: config.emitRenameEvents || false,
 		};
 	}
 
 	async start(): Promise<void> {
+		await waitForCacheReady(this.app);
+
 		this.indexingCompleteSubject.next(false);
 
 		const fileSystemEvents$ = this.buildFileSystemEvents$();
@@ -193,38 +208,28 @@ export class Indexer {
 	}
 
 	/**
-	 * Create an observable from a vault event
-	 */
-	private fromVaultEvent(eventName: VaultEvent): Observable<TAbstractFile> {
-		if (eventName === "create") {
-			return fromEventPattern<TAbstractFile>(
-				(handler) => this.vault.on("create", handler),
-				(handler) => this.vault.off("create", handler)
-			);
-		}
-
-		if (eventName === "delete") {
-			return fromEventPattern<TAbstractFile>(
-				(handler) => this.vault.on("delete", handler),
-				(handler) => this.vault.off("delete", handler)
-			);
-		}
-
-		// eventName === "rename"
-		return fromEventPattern<[TAbstractFile, string]>(
-			(handler) => this.vault.on("rename", handler),
-			(handler) => this.vault.off("rename", handler)
-		).pipe(map(([file]) => file));
-	}
-
-	/**
-	 * Create an observable from metadataCache "changed" events.
-	 * Unlike vault.on("modify"), this fires AFTER the metadata cache has been
-	 * updated for the file, guaranteeing that getFileCache() returns fresh frontmatter.
+	 * Create an observable from a metadataCache event, extracting the TFile
+	 * from the first callback argument.
 	 */
 	private fromMetadataCacheChanged(): Observable<TFile> {
 		return new Observable<TFile>((subscriber) => {
 			const ref = this.metadataCache.on("changed", (file: TFile) => {
+				subscriber.next(file);
+			});
+			return () => {
+				this.metadataCache.offref(ref);
+			};
+		});
+	}
+
+	/**
+	 * Create an observable from metadataCache "deleted" events.
+	 * Fires before vault.on("delete"), making vault delete redundant.
+	 * The prevCache parameter provides the last known metadata for the file.
+	 */
+	private fromMetadataCacheDeleted(): Observable<TFile> {
+		return new Observable<TFile>((subscriber) => {
+			const ref = this.metadataCache.on("deleted", (file: TFile, _prevCache: CachedMetadata | null) => {
 				subscriber.next(file);
 			});
 			return () => {
@@ -262,38 +267,45 @@ export class Indexer {
 	/**
 	 * Build the file system events observable stream.
 	 *
-	 * Uses metadataCache "changed" instead of vault "modify" to detect file changes.
-	 * vault.on("modify") fires BEFORE the metadata cache updates, which causes stale
-	 * frontmatter reads during batch operations. metadataCache "changed" fires AFTER
-	 * the cache is updated, guaranteeing getFileCache() returns fresh data.
+	 * Listens to exactly three events (see docs/obsidian/event-firing-order.md):
 	 *
-	 * vault.on("create") is kept as a safety net for new files (metadataCache "changed"
-	 * also covers these, and the debounce deduplicates).
+	 * 1. metadataCache "changed" — covers both file creation and modification.
+	 *    vault.on("create") and vault.on("modify") are redundant because
+	 *    metadataCache "changed" always fires after them with fresh frontmatter.
+	 *
+	 * 2. metadataCache "deleted" — covers file deletion.
+	 *    Fires before vault.on("delete"), making vault delete redundant.
+	 *
+	 * 3. vault.on("rename") — the only event for renames.
+	 *    metadataCache does NOT emit changed/deleted on rename.
 	 */
 	private buildFileSystemEvents$(): Observable<IndexerEvent> {
-		const created$ = this.fromVaultEvent("create").pipe(this.toRelevantFiles());
 		const metadataChanged$ = this.fromMetadataCacheChanged().pipe(this.toRelevantFiles());
-		const deleted$ = this.fromVaultEvent("delete").pipe(this.toRelevantFiles());
+		const metadataDeleted$ = this.fromMetadataCacheDeleted().pipe(this.toRelevantFiles());
 
 		const renamed$ = fromEventPattern<[TAbstractFile, string]>(
 			(handler) => this.vault.on("rename", handler),
 			(handler) => this.vault.off("rename", handler)
 		);
 
-		const changedIntents$ = merge(created$, metadataChanged$).pipe(
+		const changedIntents$ = metadataChanged$.pipe(
 			this.debounceByPath(this.config.debounceMs, (f) => f.path),
 			map((file): FileIntent => ({ kind: "changed", file, path: file.path }))
 		);
 
-		const deletedIntents$ = deleted$.pipe(map((file): FileIntent => ({ kind: "deleted", path: file.path })));
+		const deletedIntents$ = metadataDeleted$.pipe(map((file): FileIntent => ({ kind: "deleted", path: file.path })));
 
 		const renamedIntents$ = renamed$.pipe(
-			map(([f, oldPath]) => [f, oldPath] as const),
 			filter(([f]) => Indexer.isMarkdownFile(f) && this.config.includeFile(f.path)),
-			mergeMap(([f, oldPath]) => [
-				{ kind: "deleted", path: oldPath, isRename: true } as FileIntent,
-				{ kind: "changed", file: f, path: f.path, oldPath } as FileIntent,
-			])
+			mergeMap(([f, oldPath]): FileIntent[] => {
+				const file = f as TFile;
+				return this.config.emitRenameEvents
+					? [{ kind: "renamed", file, path: file.path, oldPath }]
+					: [
+							{ kind: "deleted", path: oldPath, isRename: true },
+							{ kind: "changed", file, path: file.path, oldPath },
+						];
+			})
 		);
 
 		const intents$ = merge(changedIntents$, deletedIntents$, renamedIntents$);
@@ -309,6 +321,19 @@ export class Indexer {
 						type: "file-deleted",
 						filePath: intent.path,
 						isRename: intent.isRename,
+					});
+				}
+
+				if (intent.kind === "renamed") {
+					const cached = this.frontmatterCache.get(intent.oldPath);
+					if (cached) {
+						this.frontmatterCache.delete(intent.oldPath);
+						this.frontmatterCache.set(intent.path, cached);
+					}
+					return of<IndexerEvent>({
+						type: "file-renamed",
+						filePath: intent.path,
+						oldPath: intent.oldPath,
 					});
 				}
 
