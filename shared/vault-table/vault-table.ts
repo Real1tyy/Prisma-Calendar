@@ -1,28 +1,58 @@
-import type { App } from "obsidian";
-import { BehaviorSubject, type Observable, Subject, type Subscription } from "rxjs";
+import type { App, TFile } from "obsidian";
+import { BehaviorSubject, filter, firstValueFrom, type Observable, Subject, type Subscription } from "rxjs";
 
 import { Indexer, type IndexerConfig, type IndexerEvent } from "../core/indexer";
-import { extractDisplayName, isFolderNote } from "../file/file";
-import { ensureDirectory, extractContentAfterFrontmatter, getTFileOrThrow, withFrontmatter } from "../file/file-utils";
+import { extractFileName, getFolderPath, isDirectChildOrFolderNote } from "../file/file";
+import { ensureDirectory, extractContentAfterFrontmatter, withFrontmatter } from "../file/file-utils";
 import { correctFrontmatter, deleteInvalidFile } from "../file/frontmatter-repair";
 import { createFileContentWithFrontmatter } from "../file/frontmatter-serialization";
 import type { SerializableSchema } from "./create-mapped-schema";
-import type { InsertVaultRow, InvalidStrategy, VaultRow, VaultTableConfig, VaultTableEvent } from "./types";
+import type {
+	InsertVaultRow,
+	InvalidStrategy,
+	NodeType,
+	VaultRow,
+	VaultTableConfig,
+	VaultTableDef,
+	VaultTableDefMap,
+	VaultTableEvent,
+} from "./types";
 
-export class VaultTable<TData, TSchema extends SerializableSchema<TData> = SerializableSchema<TData>> {
-	private readonly app: App;
-	private readonly directory: string;
+type ResolveChildRelations<T extends VaultTableDefMap> = {
+	[K in keyof T]: T[K] extends VaultTableDef<infer D, infer S, infer C> ? VaultTable<D, S, C> : never;
+};
+
+export type RowRelations<T extends VaultTableDefMap> = ResolveChildRelations<T>;
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export type VaultTableRow<TData, TChildren extends VaultTableDefMap = {}> = VaultRow<TData> & {
+	relations: RowRelations<TChildren>;
+};
+
+export class VaultTable<
+	TData,
+	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+	TChildren extends VaultTableDefMap = {},
+> {
+	readonly app: App;
+	readonly directory: string;
 	private readonly schema: TSchema;
 	private readonly invalidStrategy: InvalidStrategy;
+	private readonly nodeType: NodeType;
+	private readonly fileNameFilter?: (fileName: string) => boolean;
+	private readonly filePathResolver: (directory: string, fileName: string) => string;
+	private readonly childDefs: TChildren | undefined;
 
 	private readonly indexer: Indexer;
 	private readonly indexerConfigStore: BehaviorSubject<IndexerConfig>;
 	private indexerSub: Subscription | null = null;
 	private readySub: Subscription | null = null;
 
-	private readonly rowById = new Map<string, VaultRow<TData>>();
-	private readonly rowByPath = new Map<string, VaultRow<TData>>();
+	private readonly rowByFileName = new Map<string, VaultRow<TData>>();
 	private rows: VaultRow<TData>[] = [];
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	private readonly childCacheByPath = new Map<string, Map<string, VaultTable<any, any, any>>>();
 
 	private readonly eventsSubject = new Subject<VaultTableEvent<TData>>();
 	private readonly readySubject = new BehaviorSubject<boolean>(false);
@@ -30,19 +60,27 @@ export class VaultTable<TData, TSchema extends SerializableSchema<TData> = Seria
 	public readonly events$: Observable<VaultTableEvent<TData>>;
 	public readonly ready$: Observable<boolean>;
 
-	constructor(config: VaultTableConfig<TData, TSchema>) {
+	constructor(config: VaultTableConfig<TData, TSchema, TChildren>) {
 		this.app = config.app;
 		this.directory = config.directory;
 		this.schema = config.schema;
 		this.invalidStrategy = config.invalidStrategy ?? "skip";
+		this.nodeType = config.nodeType ?? "files";
+		this.fileNameFilter = config.fileNameFilter;
+		this.filePathResolver = config.filePathResolver ?? ((dir, name) => `${dir}/${name}.md`);
+
+		if (config.children && this.nodeType !== "folderNotes") {
+			throw new Error('VaultTable: children are only supported when nodeType is "folderNotes"');
+		}
+		this.childDefs = config.children;
 
 		this.events$ = this.eventsSubject.asObservable();
 		this.ready$ = this.readySubject.asObservable();
 
-		const skipFolderNotes = config.skipFolderNotes ?? false;
+		const includeFile = this.buildIncludeFile();
 		this.indexerConfigStore = new BehaviorSubject<IndexerConfig>({
-			includeFile: (path) => path.startsWith(this.directory + "/") && (!skipFolderNotes || !isFolderNote(path)),
-			debounceMs: config.debounceMs ?? 100,
+			includeFile,
+			debounceMs: config.debounceMs,
 		});
 
 		this.indexer = new Indexer(this.app, this.indexerConfigStore);
@@ -68,6 +106,11 @@ export class VaultTable<TData, TSchema extends SerializableSchema<TData> = Seria
 		await this.indexer.start();
 	}
 
+	async waitUntilReady(): Promise<void> {
+		if (this.readySubject.value) return;
+		await firstValueFrom(this.ready$.pipe(filter(Boolean)));
+	}
+
 	stop(): void {
 		this.indexerSub?.unsubscribe();
 		this.indexerSub = null;
@@ -78,71 +121,98 @@ export class VaultTable<TData, TSchema extends SerializableSchema<TData> = Seria
 
 	destroy(): void {
 		this.stop();
-		this.rowById.clear();
-		this.rowByPath.clear();
+		for (const cache of this.childCacheByPath.values()) {
+			for (const table of cache.values()) {
+				table.destroy();
+			}
+		}
+		this.childCacheByPath.clear();
+		this.rowByFileName.clear();
 		this.rows = [];
 		this.eventsSubject.complete();
 		this.readySubject.complete();
 	}
 
 	// =========================================================================
-	// CRUD
+	// CRUD — eagerly updates in-memory state, events emitted by indexer only
 	// =========================================================================
 
 	async create(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
 		const id = insert.fileName;
-		if (this.rowById.has(id)) {
+		if (this.rowByFileName.has(id)) {
 			throw new Error(`VaultTable: row "${id}" already exists`);
 		}
 
+		if (this.fileNameFilter && !this.fileNameFilter(id)) {
+			throw new Error(`VaultTable: file name "${id}" does not match the file name filter`);
+		}
+
 		const validated = this.schema.parse(insert.data) as TData;
-		const filePath = `${this.directory}/${id}.md`;
+		const filePath = this.filePathResolver(this.directory, id);
 		const content = insert.content ?? "";
 
-		const fileContent = createFileContentWithFrontmatter(this.serialize(validated), content);
-		const file = await this.app.vault.create(filePath, fileContent);
-
-		const row: VaultRow<TData> = {
-			id,
-			file,
-			filePath,
-			data: validated,
-			content,
-			mtime: file.stat.mtime,
-		};
-
+		const file = await this.persistNewFile(filePath, validated, content);
+		const row = this.buildRow(id, file, filePath, validated, content, file.stat.mtime);
 		this.insertRow(row);
-		this.eventsSubject.next({ type: "row-created", id, filePath, row });
 
 		return row;
 	}
 
-	async updateById(id: string, data: Partial<TData>): Promise<VaultRow<TData>> {
-		const existing = this.requireById(id);
-		return this.applyUpdate(existing, data);
+	async update(key: string, data: Partial<TData>): Promise<VaultRow<TData>> {
+		const existing = this.require(key);
+		const merged = { ...existing.data, ...data };
+		const validated = this.schema.parse(merged) as TData;
+		const serialized = this.serialize(validated);
+
+		await withFrontmatter(this.app, existing.file, (fm) => {
+			Object.assign(fm, serialized);
+		});
+
+		const newRow = this.buildRow(
+			existing.id,
+			existing.file,
+			existing.filePath,
+			validated,
+			existing.content,
+			existing.file.stat.mtime
+		);
+		this.removeRow(existing.id);
+		this.insertRow(newRow);
+
+		return newRow;
 	}
 
-	async updateByPath(path: string, data: Partial<TData>): Promise<VaultRow<TData>> {
-		const existing = this.requireByPath(path);
-		return this.applyUpdate(existing, data);
+	async updateContent(key: string, content: string): Promise<VaultRow<TData>> {
+		const existing = this.require(key);
+		const fileContent = createFileContentWithFrontmatter(this.serialize(existing.data), content);
+		await this.app.vault.modify(existing.file, fileContent);
+
+		const newRow = this.buildRow(
+			existing.id,
+			existing.file,
+			existing.filePath,
+			existing.data,
+			content,
+			existing.file.stat.mtime
+		);
+		this.removeRow(existing.id);
+		this.insertRow(newRow);
+
+		return newRow;
 	}
 
 	async upsert(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
-		const existing = this.rowById.get(insert.fileName);
+		const existing = this.rowByFileName.get(insert.fileName);
 		if (existing) {
-			return this.applyUpdate(existing, insert.data);
+			return this.update(insert.fileName, insert.data);
 		}
 		return this.create(insert);
 	}
 
-	async deleteById(id: string): Promise<void> {
-		const existing = this.requireById(id);
-		await this.applyDelete(existing);
-	}
-
-	async deleteByPath(path: string): Promise<void> {
-		const existing = this.requireByPath(path);
-		await this.applyDelete(existing);
+	async delete(key: string): Promise<void> {
+		const existing = this.require(key);
+		await this.app.vault.trash(existing.file, true);
+		this.removeRow(existing.id);
 	}
 
 	// =========================================================================
@@ -150,71 +220,35 @@ export class VaultTable<TData, TSchema extends SerializableSchema<TData> = Seria
 	// =========================================================================
 
 	async createMany(inserts: InsertVaultRow<TData>[]): Promise<VaultRow<TData>[]> {
-		return await Promise.all(inserts.map((insert) => this.create(insert)));
+		return Promise.all(inserts.map((insert) => this.create(insert)));
 	}
 
-	async updateManyById(updates: { id: string; data: Partial<TData> }[]): Promise<VaultRow<TData>[]> {
-		return await Promise.all(
-			updates.map(({ id, data }) => {
-				const existing = this.requireById(id);
-				return this.applyUpdate(existing, data);
-			})
-		);
-	}
-
-	async updateManyByPath(updates: { path: string; data: Partial<TData> }[]): Promise<VaultRow<TData>[]> {
-		return await Promise.all(
-			updates.map(({ path, data }) => {
-				const existing = this.requireByPath(path);
-				return this.applyUpdate(existing, data);
-			})
-		);
+	async updateMany(updates: { key: string; data: Partial<TData> }[]): Promise<VaultRow<TData>[]> {
+		return Promise.all(updates.map(({ key, data }) => this.update(key, data)));
 	}
 
 	async upsertMany(inserts: InsertVaultRow<TData>[]): Promise<VaultRow<TData>[]> {
-		return await Promise.all(inserts.map((insert) => this.upsert(insert)));
+		return Promise.all(inserts.map((insert) => this.upsert(insert)));
 	}
 
-	async deleteManyById(ids: string[]): Promise<void> {
-		await Promise.all(
-			ids.map((id) => {
-				const existing = this.requireById(id);
-				return this.applyDelete(existing);
-			})
-		);
-	}
-
-	async deleteManyByPath(paths: string[]): Promise<void> {
-		await Promise.all(
-			paths.map((path) => {
-				const existing = this.requireByPath(path);
-				return this.applyDelete(existing);
-			})
-		);
+	async deleteMany(keys: string[]): Promise<void> {
+		await Promise.all(keys.map((key) => this.delete(key)));
 	}
 
 	// =========================================================================
 	// Reads
 	// =========================================================================
 
-	getById(id: string): VaultRow<TData> | undefined {
-		return this.rowById.get(id);
+	get(name: string): VaultRow<TData> | undefined {
+		return this.rowByFileName.get(name);
 	}
 
-	getByPath(path: string): VaultRow<TData> | undefined {
-		return this.rowByPath.get(path);
-	}
-
-	hasById(id: string): boolean {
-		return this.rowById.has(id);
-	}
-
-	hasByPath(path: string): boolean {
-		return this.rowByPath.has(path);
+	has(name: string): boolean {
+		return this.rowByFileName.has(name);
 	}
 
 	count(): number {
-		return this.rowById.size;
+		return this.rowByFileName.size;
 	}
 
 	first(predicate?: (row: VaultRow<TData>) => boolean): VaultRow<TData> | undefined {
@@ -277,55 +311,60 @@ export class VaultTable<TData, TSchema extends SerializableSchema<TData> = Seria
 	}
 
 	// =========================================================================
+	// Hydration — lazy child table initialization with sync access after
+	// =========================================================================
+
+	async hydrateRow(row: VaultRow<TData>): Promise<VaultTableRow<TData, TChildren>> {
+		if (!this.childDefs) {
+			return { ...row, relations: {} as RowRelations<TChildren> };
+		}
+
+		let cache = this.childCacheByPath.get(row.filePath);
+		if (!cache) {
+			cache = new Map();
+			this.childCacheByPath.set(row.filePath, cache);
+		}
+
+		const rowDir = this.getRowDirectory(row.filePath);
+
+		for (const key of Object.keys(this.childDefs) as Array<keyof TChildren & string>) {
+			if (!cache.has(key)) {
+				const childDef = this.childDefs[key];
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const child = await this.startChildTable(rowDir, childDef as any);
+				cache.set(key, child);
+			}
+		}
+
+		const relations = {} as RowRelations<TChildren>;
+		for (const key of Object.keys(this.childDefs) as Array<keyof TChildren & string>) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(relations as any)[key] = cache.get(key)!;
+		}
+
+		return { ...row, relations };
+	}
+
+	async getHydrated(key: string): Promise<VaultTableRow<TData, TChildren> | undefined> {
+		const row = this.rowByFileName.get(key);
+		if (!row) return undefined;
+		return this.hydrateRow(row);
+	}
+
+	// =========================================================================
 	// Row Resolution
 	// =========================================================================
 
-	private requireById(id: string): VaultRow<TData> {
-		const row = this.rowById.get(id);
+	private require(name: string): VaultRow<TData> {
+		const row = this.rowByFileName.get(name);
 		if (!row) {
-			throw new Error(`VaultTable: row with id "${id}" not found`);
+			throw new Error(`VaultTable: row "${name}" not found`);
 		}
 		return row;
-	}
-
-	private requireByPath(path: string): VaultRow<TData> {
-		const row = this.rowByPath.get(path);
-		if (!row) {
-			throw new Error(`VaultTable: row with path "${path}" not found`);
-		}
-		return row;
-	}
-
-	private async applyUpdate(existing: VaultRow<TData>, data: Partial<TData>): Promise<VaultRow<TData>> {
-		const merged = { ...existing.data, ...data };
-		const validated = this.schema.parse(merged) as TData;
-
-		const serialized = this.serialize(validated);
-		await withFrontmatter(this.app, existing.file, (fm) => {
-			Object.assign(fm, serialized);
-		});
-
-		const newRow: VaultRow<TData> = {
-			...existing,
-			data: validated,
-			mtime: existing.file.stat.mtime,
-		};
-
-		this.removeRow(existing.id);
-		this.insertRow(newRow);
-
-		return newRow;
-	}
-
-	private async applyDelete(existing: VaultRow<TData>): Promise<void> {
-		await this.app.vault.trash(existing.file, true);
-
-		this.removeRow(existing.id);
-		this.eventsSubject.next({ type: "row-deleted", id: existing.id, filePath: existing.filePath, oldRow: existing });
 	}
 
 	// =========================================================================
-	// Indexer Event Handling
+	// Indexer Event Handling — single source of truth for state and events
 	// =========================================================================
 
 	private handleIndexerEvent(event: IndexerEvent): void {
@@ -337,7 +376,7 @@ export class VaultTable<TData, TSchema extends SerializableSchema<TData> = Seria
 		if (!event.source) return;
 
 		const filePath = event.filePath;
-		const id = extractDisplayName(filePath);
+		const id = extractFileName(filePath);
 		const raw = event.source.frontmatter;
 		const result = this.schema.safeParse(raw);
 
@@ -346,7 +385,7 @@ export class VaultTable<TData, TSchema extends SerializableSchema<TData> = Seria
 			return;
 		}
 
-		const existingRow = this.rowByPath.get(filePath);
+		const existingRow = this.rowByFileName.get(id);
 
 		if (existingRow && existingRow.mtime === event.source.mtime) {
 			return;
@@ -356,25 +395,12 @@ export class VaultTable<TData, TSchema extends SerializableSchema<TData> = Seria
 	}
 
 	private async buildAndUpsertRow(id: string, filePath: string, data: TData, event: IndexerEvent): Promise<void> {
-		let content = "";
-		let file;
-		try {
-			file = getTFileOrThrow(this.app, filePath);
-			const fullContent = await this.app.vault.cachedRead(file);
-			content = extractContentAfterFrontmatter(fullContent);
-		} catch {
-			return;
-		}
+		const file = event.source!.file;
+		const fullContent = await this.app.vault.cachedRead(file);
+		const content = extractContentAfterFrontmatter(fullContent);
 
-		const oldRow = this.rowByPath.get(filePath);
-		const newRow: VaultRow<TData> = {
-			id,
-			file,
-			filePath,
-			data,
-			content,
-			mtime: event.source?.mtime ?? Date.now(),
-		};
+		const oldRow = this.rowByFileName.get(id);
+		const newRow = this.buildRow(id, file, filePath, data, content, event.source?.mtime ?? Date.now());
 
 		if (oldRow) {
 			this.removeRow(oldRow.id);
@@ -396,7 +422,7 @@ export class VaultTable<TData, TSchema extends SerializableSchema<TData> = Seria
 	}
 
 	private handleFileDeleted(filePath: string): void {
-		const existing = this.rowByPath.get(filePath);
+		const existing = this.rowByFileName.get(extractFileName(filePath));
 		if (!existing) return;
 
 		this.removeRow(existing.id);
@@ -406,7 +432,7 @@ export class VaultTable<TData, TSchema extends SerializableSchema<TData> = Seria
 	private handleInvalidFrontmatter(filePath: string, raw: Record<string, unknown>): void {
 		switch (this.invalidStrategy) {
 			case "skip": {
-				const existing = this.rowByPath.get(filePath);
+				const existing = this.rowByFileName.get(extractFileName(filePath));
 				if (existing) {
 					this.removeRow(existing.id);
 				}
@@ -427,21 +453,78 @@ export class VaultTable<TData, TSchema extends SerializableSchema<TData> = Seria
 	// Internal Helpers
 	// =========================================================================
 
+	private buildRow(
+		id: string,
+		file: TFile,
+		filePath: string,
+		data: TData,
+		content: string,
+		mtime: number
+	): VaultRow<TData> {
+		return { id, file, filePath, data, content, mtime };
+	}
+
 	private insertRow(row: VaultRow<TData>): void {
-		this.rowById.set(row.id, row);
-		this.rowByPath.set(row.filePath, row);
-		this.rows = Array.from(this.rowById.values());
+		this.rowByFileName.set(row.id, row);
+		this.rows = Array.from(this.rowByFileName.values());
 	}
 
 	private removeRow(id: string): void {
-		const row = this.rowById.get(id);
+		const row = this.rowByFileName.get(id);
 		if (!row) return;
-		this.rowById.delete(id);
-		this.rowByPath.delete(row.filePath);
-		this.rows = Array.from(this.rowById.values());
+		this.destroyRowChildren(row);
+		this.rowByFileName.delete(id);
+		this.rows = Array.from(this.rowByFileName.values());
+	}
+
+	private buildIncludeFile(): (path: string) => boolean {
+		const nameFilter = this.fileNameFilter;
+		return (path) => {
+			if (!isDirectChildOrFolderNote(path, this.directory, this.nodeType)) return false;
+			if (nameFilter) {
+				return nameFilter(extractFileName(path));
+			}
+			return true;
+		};
+	}
+
+	private async persistNewFile(filePath: string, data: TData, content: string): Promise<TFile> {
+		await ensureDirectory(this.app, this.directory);
+		const fileContent = createFileContentWithFrontmatter(this.serialize(data), content);
+		return this.app.vault.create(filePath, fileContent);
 	}
 
 	private serialize(data: TData): Record<string, unknown> {
 		return this.schema.serialize(data);
+	}
+
+	private getRowDirectory(filePath: string): string {
+		if (this.nodeType !== "folderNotes") {
+			throw new Error("VaultTable: only folderNotes rows can own child relations");
+		}
+		return getFolderPath(filePath);
+	}
+
+	private async startChildTable<D, S extends SerializableSchema<D>, C extends VaultTableDefMap>(
+		directory: string,
+		def: VaultTableDef<D, S, C>
+	): Promise<VaultTable<D, S, C>> {
+		const child = new VaultTable<D, S, C>({
+			app: this.app,
+			directory,
+			...def,
+		} as VaultTableConfig<D, S, C>);
+		await child.start();
+		await child.waitUntilReady();
+		return child;
+	}
+
+	private destroyRowChildren(row: VaultRow<TData>): void {
+		const cache = this.childCacheByPath.get(row.filePath);
+		if (!cache) return;
+		for (const table of cache.values()) {
+			table.destroy();
+		}
+		this.childCacheByPath.delete(row.filePath);
 	}
 }

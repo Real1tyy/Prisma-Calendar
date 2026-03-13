@@ -1,4 +1,5 @@
 import {
+	activateView,
 	onceAsync,
 	SettingsStore,
 	SyncStore,
@@ -133,17 +134,11 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	private async toggleAIChatPanel(): Promise<void> {
-		const existing = this.app.workspace.getLeavesOfType(AI_CHAT_VIEW_TYPE);
-		if (existing.length > 0) {
-			this.app.workspace.detachLeavesOfType(AI_CHAT_VIEW_TYPE);
-			return;
-		}
-
-		const leaf = this.app.workspace.getRightLeaf(false);
-		if (leaf) {
-			await leaf.setViewState({ type: AI_CHAT_VIEW_TYPE, active: true });
-			this.app.workspace.revealLeaf(leaf);
-		}
+		await activateView(this.app.workspace, {
+			viewType: AI_CHAT_VIEW_TYPE,
+			placement: "right-sidebar",
+			toggle: true,
+		});
 	}
 
 	private registerCommands(): void {

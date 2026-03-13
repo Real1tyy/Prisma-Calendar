@@ -11,8 +11,7 @@ export interface VaultTableViewConfig<TData> {
 export class VaultTableView<TData, TSchema extends SerializableSchema<TData> = SerializableSchema<TData>> {
 	private readonly filter: (row: VaultRow<TData>) => boolean;
 
-	private readonly rowById = new Map<string, VaultRow<TData>>();
-	private readonly rowByPath = new Map<string, VaultRow<TData>>();
+	private readonly rowByFileName = new Map<string, VaultRow<TData>>();
 	private rows: VaultRow<TData>[] = [];
 
 	private readonly eventsSubject = new Subject<VaultTableEvent<TData>>();
@@ -38,24 +37,16 @@ export class VaultTableView<TData, TSchema extends SerializableSchema<TData> = S
 	// Reads
 	// =========================================================================
 
-	getById(id: string): VaultRow<TData> | undefined {
-		return this.rowById.get(id);
+	get(name: string): VaultRow<TData> | undefined {
+		return this.rowByFileName.get(name);
 	}
 
-	getByPath(path: string): VaultRow<TData> | undefined {
-		return this.rowByPath.get(path);
-	}
-
-	hasById(id: string): boolean {
-		return this.rowById.has(id);
-	}
-
-	hasByPath(path: string): boolean {
-		return this.rowByPath.has(path);
+	has(name: string): boolean {
+		return this.rowByFileName.has(name);
 	}
 
 	count(): number {
-		return this.rowById.size;
+		return this.rowByFileName.size;
 	}
 
 	first(predicate?: (row: VaultRow<TData>) => boolean): VaultRow<TData> | undefined {
@@ -124,8 +115,7 @@ export class VaultTableView<TData, TSchema extends SerializableSchema<TData> = S
 	destroy(): void {
 		this.subscription?.unsubscribe();
 		this.subscription = null;
-		this.rowById.clear();
-		this.rowByPath.clear();
+		this.rowByFileName.clear();
 		this.rows = [];
 		this.eventsSubject.complete();
 	}
@@ -137,11 +127,10 @@ export class VaultTableView<TData, TSchema extends SerializableSchema<TData> = S
 	private populateFromTable(): void {
 		for (const row of this.table.toArray()) {
 			if (this.filter(row)) {
-				this.rowById.set(row.id, row);
-				this.rowByPath.set(row.filePath, row);
+				this.rowByFileName.set(row.id, row);
 			}
 		}
-		this.rows = Array.from(this.rowById.values());
+		this.rows = Array.from(this.rowByFileName.values());
 	}
 
 	private handleEvent(event: VaultTableEvent<TData>): void {
@@ -166,7 +155,7 @@ export class VaultTableView<TData, TSchema extends SerializableSchema<TData> = S
 	}
 
 	private handleRowUpdated(event: VaultTableEvent<TData> & { type: "row-updated" }): void {
-		const wasInView = this.rowById.has(event.id);
+		const wasInView = this.rowByFileName.has(event.id);
 		const isInView = this.filter(event.newRow);
 
 		if (wasInView && isInView) {
@@ -177,30 +166,27 @@ export class VaultTableView<TData, TSchema extends SerializableSchema<TData> = S
 			this.insertRow(event.newRow);
 			this.eventsSubject.next({ type: "row-created", id: event.id, filePath: event.filePath, row: event.newRow });
 		} else if (wasInView && !isInView) {
-			const oldRow = this.rowById.get(event.id)!;
+			const oldRow = this.rowByFileName.get(event.id)!;
 			this.removeRow(event.id);
 			this.eventsSubject.next({ type: "row-deleted", id: event.id, filePath: event.filePath, oldRow });
 		}
 	}
 
 	private handleRowDeleted(event: VaultTableEvent<TData> & { type: "row-deleted" }): void {
-		if (!this.rowById.has(event.id)) return;
+		if (!this.rowByFileName.has(event.id)) return;
 
 		this.removeRow(event.id);
 		this.eventsSubject.next(event);
 	}
 
 	private insertRow(row: VaultRow<TData>): void {
-		this.rowById.set(row.id, row);
-		this.rowByPath.set(row.filePath, row);
-		this.rows = Array.from(this.rowById.values());
+		this.rowByFileName.set(row.id, row);
+		this.rows = Array.from(this.rowByFileName.values());
 	}
 
 	private removeRow(id: string): void {
-		const row = this.rowById.get(id);
-		if (!row) return;
-		this.rowById.delete(id);
-		this.rowByPath.delete(row.filePath);
-		this.rows = Array.from(this.rowById.values());
+		if (!this.rowByFileName.has(id)) return;
+		this.rowByFileName.delete(id);
+		this.rows = Array.from(this.rowByFileName.values());
 	}
 }

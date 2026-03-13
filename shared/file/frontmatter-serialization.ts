@@ -32,11 +32,10 @@ export function createFileContentWithFrontmatter(frontmatter: Record<string, unk
 		return content;
 	}
 
-	// Ensure content doesn't start with extra newlines
 	const trimmedContent = content.replace(/^\n+/, "");
 
 	if (trimmedContent) {
-		return `---\n${yaml}\n---\n\n${trimmedContent}`;
+		return `---\n${yaml}\n---\n${trimmedContent}`;
 	}
 
 	return `---\n${yaml}\n---\n`;

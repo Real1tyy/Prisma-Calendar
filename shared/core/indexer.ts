@@ -61,6 +61,7 @@ export interface IndexerConfig {
  * Raw file source with frontmatter and metadata
  */
 export interface FileSource {
+	file: TFile;
 	filePath: string;
 	mtime: number;
 	frontmatter: IndexerFrontmatter;
@@ -353,6 +354,7 @@ export class Indexer {
 		const oldFrontmatter = this.frontmatterCache.get(file.path);
 
 		const source: FileSource = {
+			file,
 			filePath: file.path,
 			mtime: file.stat.mtime,
 			frontmatter,
