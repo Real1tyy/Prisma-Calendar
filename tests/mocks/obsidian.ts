@@ -341,6 +341,7 @@ export interface MockApp {
 	workspace: {
 		getActiveFile: ReturnType<typeof vi.fn>;
 		on: ReturnType<typeof vi.fn>;
+		onLayoutReady: ReturnType<typeof vi.fn>;
 	};
 }
 
@@ -373,6 +374,7 @@ export function createMockApp(): MockApp {
 		workspace: {
 			getActiveFile: vi.fn(),
 			on: vi.fn(),
+			onLayoutReady: vi.fn((cb: () => void) => cb()),
 		},
 	};
 }

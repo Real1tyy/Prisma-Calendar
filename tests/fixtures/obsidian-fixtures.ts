@@ -44,6 +44,7 @@ export function createMockIntegrationApp(overrides: Partial<MockApp> = {}): Mock
 		workspace: {
 			getActiveFile: vi.fn(),
 			on: vi.fn(),
+			onLayoutReady: vi.fn((cb: () => void) => cb()),
 			getLeaf: vi.fn().mockReturnValue({
 				openFile: vi.fn(),
 			}),

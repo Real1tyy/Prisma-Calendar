@@ -1,4 +1,10 @@
-import { onceAsync, SyncStore, WhatsNewModal, type WhatsNewModalConfig } from "@real1ty-obsidian-plugins";
+import {
+	onceAsync,
+	SyncStore,
+	waitForCacheReady,
+	WhatsNewModal,
+	type WhatsNewModalConfig,
+} from "@real1ty-obsidian-plugins";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import { Subscription } from "rxjs";
 
@@ -67,7 +73,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		});
 
 		this.app.workspace.onLayoutReady(() => {
-			void this.waitForMetadataResolve().then(() => {
+			void waitForCacheReady(this.app).then(() => {
 				void this.ensureCalendarBundlesReady();
 			});
 			void this.checkForUpdates();
@@ -449,22 +455,6 @@ export default class CustomCalendarPlugin extends Plugin {
 				await bundle.initialize();
 			}
 		})();
-	}
-
-	private waitForMetadataResolve(): Promise<void> {
-		// On hot reload the cache is already fully populated — no pending batch
-		// means 'resolved' will never fire. Check if files already have metadata.
-		const files = this.app.vault.getMarkdownFiles();
-		if (files.length === 0 || this.app.metadataCache.getFileCache(files[0]) !== null) {
-			return Promise.resolve();
-		}
-
-		return new Promise((resolve) => {
-			const ref = this.app.metadataCache.on("resolved", () => {
-				this.app.metadataCache.offref(ref);
-				resolve();
-			});
-		});
 	}
 
 	private async ensureMinimumCalendars(): Promise<void> {
