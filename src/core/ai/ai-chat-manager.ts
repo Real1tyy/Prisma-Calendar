@@ -1,5 +1,5 @@
+import type { PrismaCalendarSettingsStore } from "../../types";
 import { AI_DEFAULTS, type AIProvider } from "../../types/ai";
-import type { SettingsStore } from "../settings-store";
 import {
 	buildManipulationSystemPrompt,
 	buildPlanningSystemPrompt,
@@ -27,7 +27,7 @@ export class AIChatManager {
 	private currentThread: ThreadData | null = null;
 
 	constructor(
-		private settingsStore: SettingsStore,
+		private settingsStore: PrismaCalendarSettingsStore,
 		private chatStore: ChatStore
 	) {}
 

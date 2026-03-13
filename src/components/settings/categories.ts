@@ -172,6 +172,12 @@ export class CategoriesSettings {
 			desc: "Automatically assign a category when the event name (without ZettelID) matches a category name (case-insensitive). Example: creating an event named 'Health' will auto-assign the 'health' category.",
 		});
 
+		this.ui.addToggle(containerEl, {
+			key: "autoAssignCategoryByIncludes",
+			name: "Auto-assign when name contains category",
+			desc: "Automatically assign a category when the event name contains a category name (substring match, case-insensitive). Example: creating an event named 'Youtube Analysis' will auto-assign the 'Youtube' category.",
+		});
+
 		if (!this.plugin.isProEnabled) {
 			renderProUpgradeBanner(
 				containerEl,

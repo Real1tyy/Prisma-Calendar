@@ -1,4 +1,4 @@
-import { normalizeDirectoryPath } from "@real1ty-obsidian-plugins";
+import { normalizeDirectoryPath, type SettingsStore } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
 import {
@@ -203,6 +203,7 @@ const CalendarSettingsSchema = z
 		stickyAllDayEvents: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_STICKY_ALL_DAY_EVENTS), // Make all-day event section sticky during vertical scroll (timegrid views)
 		allDayEventHeight: z.number().int().min(30).max(500).catch(SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_EVENT_HEIGHT), // Maximum height in pixels for all-day events section before overflow
 		autoAssignCategoryByName: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_CATEGORY_BY_NAME), // Automatically assign category when event name matches category name (case-insensitive)
+		autoAssignCategoryByIncludes: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_CATEGORY_BY_INCLUDES), // Automatically assign category when event name contains a category name (substring match, case-insensitive)
 		titleAutocomplete: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_TITLE_AUTOCOMPLETE), // Show inline type-ahead suggestions when typing event titles in the create/edit modal
 		categoryAssignmentPresets: z.array(CategoryAssignmentPresetSchema).catch([]), // Custom category assignment rules based on event name
 		contextMenuItems: z.array(ContextMenuItemSchema).catch([...DEFAULT_CONTEXT_MENU_ITEMS]), // Context menu items to show when right-clicking events
@@ -308,3 +309,4 @@ export type HolidaySettings = z.infer<typeof HolidaySettingsSchema>;
 export type HolidayType = z.infer<typeof HolidayTypeSchema>;
 export type SingleCalendarConfig = z.infer<typeof SingleCalendarConfigSchema>;
 export type CustomCalendarSettings = z.infer<typeof CustomCalendarSettingsSchema>;
+export type PrismaCalendarSettingsStore = SettingsStore<typeof CustomCalendarSettingsSchema>;

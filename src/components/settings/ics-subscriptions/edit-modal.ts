@@ -3,7 +3,7 @@ import { type App, Modal, Notice, SecretComponent, Setting } from "obsidian";
 
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
 import { COMMON_TIMEZONES } from "../../../core/integrations/ics-export";
-import type { SettingsStore } from "../../../core/settings-store";
+import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
 
 export class EditICSSubscriptionModal extends Modal {
@@ -16,7 +16,7 @@ export class EditICSSubscriptionModal extends Modal {
 
 	constructor(
 		app: App,
-		private settingsStore: SettingsStore,
+		private settingsStore: PrismaCalendarSettingsStore,
 		private subscription: ICSSubscription,
 		private onSave: () => void
 	) {

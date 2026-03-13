@@ -1,5 +1,6 @@
 import {
 	onceAsync,
+	SettingsStore,
 	SyncStore,
 	waitForCacheReady,
 	WhatsNewModal,
@@ -14,23 +15,17 @@ import { AI_CHAT_VIEW_TYPE, AIChatView } from "./components/ai-chat-view";
 import { CalendarSelectModal, ICSImportModal } from "./components/modals";
 import { ICSImportProgressModal } from "./components/modals/ics-import-progress-modal";
 import { COMMAND_IDS } from "./constants";
-import {
-	CalendarBundle,
-	IndexerRegistry,
-	MinimizedModalManager,
-	PrismaCalendarApiManager,
-	SettingsStore,
-} from "./core";
+import { CalendarBundle, IndexerRegistry, MinimizedModalManager, PrismaCalendarApiManager } from "./core";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
 import type { LicenseManager } from "./core/license";
 import { createLicenseManager, PRO_FEATURES } from "./core/license";
-import { PrismaSyncDataSchema } from "./types";
+import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
 
 export default class CustomCalendarPlugin extends Plugin {
-	settingsStore!: SettingsStore;
+	settingsStore!: PrismaCalendarSettingsStore;
 	syncStore!: SyncStore<typeof PrismaSyncDataSchema>;
 	calendarBundles: CalendarBundle[] = [];
 	apiManager!: PrismaCalendarApiManager;
@@ -43,7 +38,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	async onload() {
-		this.settingsStore = new SettingsStore(this);
+		this.settingsStore = new SettingsStore(this, CustomCalendarSettingsSchema);
 		await this.settingsStore.loadSettings();
 
 		this.licenseManager = createLicenseManager(this.app, this.settingsStore, this.manifest.version);

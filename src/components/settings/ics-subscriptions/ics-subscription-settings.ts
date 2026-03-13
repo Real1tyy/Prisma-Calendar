@@ -2,8 +2,8 @@ import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { type App, Notice, Setting } from "obsidian";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
-import type { SettingsStore } from "../../../core/settings-store";
 import type CustomCalendarPlugin from "../../../main";
+import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettingsSchema } from "../../../types/settings";
 import { getCalendarById } from "../../../utils/calendar-settings";
@@ -18,7 +18,7 @@ export class ICSSubscriptionSettings {
 
 	constructor(
 		private app: App,
-		private settingsStore: SettingsStore,
+		private settingsStore: PrismaCalendarSettingsStore,
 		private plugin: CustomCalendarPlugin,
 		private calendarId: string
 	) {
