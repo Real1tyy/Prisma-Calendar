@@ -300,6 +300,9 @@ export function debounce<T extends (...args: unknown[]) => unknown>(func: T, wai
 	}) as T;
 }
 
+// setIcon mock
+export function setIcon(_el: HTMLElement, _iconId: string): void {}
+
 // normalizePath mock - simple path normalization for tests
 export function normalizePath(path: string): string {
 	// Basic normalization: replace backslashes with forward slashes

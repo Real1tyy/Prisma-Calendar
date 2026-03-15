@@ -1,22 +1,34 @@
 import type { App, TFile } from "obsidian";
 import { BehaviorSubject, filter, firstValueFrom, type Observable, Subject, type Subscription } from "rxjs";
 
+import { CommandManager } from "../commands/command-manager";
 import { Indexer, type IndexerConfig, type IndexerEvent } from "../core/indexer";
 import { extractFileName, getFolderPath, isDirectChildOrFolderNote } from "../file/file";
 import { ensureDirectory, extractContentAfterFrontmatter, withFrontmatter } from "../file/file-utils";
 import { correctFrontmatter, deleteInvalidFile } from "../file/frontmatter-repair";
 import { createFileContentWithFrontmatter } from "../file/frontmatter-serialization";
 import type { SerializableSchema } from "./create-mapped-schema";
-import type {
-	InsertVaultRow,
-	InvalidStrategy,
-	NodeType,
-	VaultRow,
-	VaultTableConfig,
-	VaultTableDef,
-	VaultTableDefMap,
-	VaultTableEvent,
+import {
+	HISTORY_MAX_SIZE,
+	HISTORY_SHOW_NOTICES,
+	type InsertVaultRow,
+	type InvalidStrategy,
+	type NodeType,
+	type VaultRow,
+	type VaultTableConfig,
+	type VaultTableDef,
+	type VaultTableDefMap,
+	type VaultTableEvent,
+	type VaultTableHistoryConfig,
 } from "./types";
+import {
+	type CommandWithResult,
+	CreateRowCommand,
+	DeleteRowCommand,
+	UpdateContentRowCommand,
+	UpdateRowCommand,
+	type VaultTableOps,
+} from "./vault-table-commands";
 
 type ResolveChildRelations<T extends VaultTableDefMap> = {
 	[K in keyof T]: T[K] extends VaultTableDef<infer D, infer S, infer C> ? VaultTable<D, S, C> : never;
@@ -54,6 +66,9 @@ export class VaultTable<
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private readonly childCacheByPath = new Map<string, Map<string, VaultTable<any, any, any>>>();
 
+	private readonly commandManager: CommandManager | null;
+	private readonly ops: VaultTableOps<TData>;
+
 	private readonly eventsSubject = new Subject<VaultTableEvent<TData>>();
 	private readonly readySubject = new BehaviorSubject<boolean>(false);
 
@@ -74,6 +89,16 @@ export class VaultTable<
 		}
 		this.childDefs = config.children;
 
+		this.commandManager = this.buildCommandManager(config.history);
+		this.ops = {
+			create: (insert) => this.doCreate(insert),
+			update: (key, data) => this.doUpdate(key, data),
+			updateContent: (key, content) => this.doUpdateContent(key, content),
+			delete: (key) => this.doDelete(key),
+			get: (key) => this.rowByFileName.get(key),
+			has: (key) => this.rowByFileName.has(key),
+		};
+
 		this.events$ = this.eventsSubject.asObservable();
 		this.ready$ = this.readySubject.asObservable();
 
@@ -84,6 +109,14 @@ export class VaultTable<
 		});
 
 		this.indexer = new Indexer(this.app, this.indexerConfigStore);
+	}
+
+	private buildCommandManager(history: VaultTableHistoryConfig | undefined): CommandManager | null {
+		if (!history) return null;
+		return new CommandManager({
+			maxHistorySize: history.maxSize ?? HISTORY_MAX_SIZE,
+			showNotices: history.showNotices ?? HISTORY_SHOW_NOTICES,
+		});
 	}
 
 	// =========================================================================
@@ -121,6 +154,7 @@ export class VaultTable<
 
 	destroy(): void {
 		this.stop();
+		this.commandManager?.clearHistory();
 		for (const cache of this.childCacheByPath.values()) {
 			for (const table of cache.values()) {
 				table.destroy();
@@ -138,6 +172,80 @@ export class VaultTable<
 	// =========================================================================
 
 	async create(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
+		return this.executeWithHistory(new CreateRowCommand(insert, this.ops), () => this.doCreate(insert));
+	}
+
+	async update(key: string, data: Partial<TData>): Promise<VaultRow<TData>> {
+		return this.executeWithHistory(new UpdateRowCommand(key, data, this.ops), () => this.doUpdate(key, data));
+	}
+
+	async updateContent(key: string, content: string): Promise<VaultRow<TData>> {
+		return this.executeWithHistory(new UpdateContentRowCommand(key, content, this.ops), () =>
+			this.doUpdateContent(key, content)
+		);
+	}
+
+	async upsert(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
+		const existing = this.rowByFileName.get(insert.fileName);
+		if (existing) {
+			return this.update(insert.fileName, insert.data);
+		}
+		return this.create(insert);
+	}
+
+	async delete(key: string): Promise<void> {
+		if (!this.commandManager) {
+			await this.doDelete(key);
+			return;
+		}
+		await this.commandManager.executeCommand(new DeleteRowCommand(key, this.ops));
+	}
+
+	private async executeWithHistory<T>(cmd: CommandWithResult<T>, raw: () => Promise<T>): Promise<T> {
+		if (!this.commandManager) return raw();
+		await this.commandManager.executeCommand(cmd);
+		return cmd.getResult();
+	}
+
+	// =========================================================================
+	// History — undo/redo delegation to CommandManager
+	// =========================================================================
+
+	async undo(): Promise<boolean> {
+		if (!this.commandManager) return false;
+		return this.commandManager.undo();
+	}
+
+	async redo(): Promise<boolean> {
+		if (!this.commandManager) return false;
+		return this.commandManager.redo();
+	}
+
+	canUndo(): boolean {
+		return this.commandManager?.canUndo() ?? false;
+	}
+
+	canRedo(): boolean {
+		return this.commandManager?.canRedo() ?? false;
+	}
+
+	clearHistory(): void {
+		this.commandManager?.clearHistory();
+	}
+
+	peekUndo(): string | null {
+		return this.commandManager?.peekUndo() ?? null;
+	}
+
+	peekRedo(): string | null {
+		return this.commandManager?.peekRedo() ?? null;
+	}
+
+	// =========================================================================
+	// Raw CRUD — no history tracking, used by commands internally
+	// =========================================================================
+
+	private async doCreate(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
 		const id = insert.fileName;
 		if (this.rowByFileName.has(id)) {
 			throw new Error(`VaultTable: row "${id}" already exists`);
@@ -158,7 +266,7 @@ export class VaultTable<
 		return row;
 	}
 
-	async update(key: string, data: Partial<TData>): Promise<VaultRow<TData>> {
+	private async doUpdate(key: string, data: Partial<TData>): Promise<VaultRow<TData>> {
 		const existing = this.require(key);
 		const merged = { ...existing.data, ...data };
 		const validated = this.schema.parse(merged) as TData;
@@ -182,7 +290,7 @@ export class VaultTable<
 		return newRow;
 	}
 
-	async updateContent(key: string, content: string): Promise<VaultRow<TData>> {
+	private async doUpdateContent(key: string, content: string): Promise<VaultRow<TData>> {
 		const existing = this.require(key);
 		const fileContent = createFileContentWithFrontmatter(this.serialize(existing.data), content);
 		await this.app.vault.modify(existing.file, fileContent);
@@ -201,15 +309,7 @@ export class VaultTable<
 		return newRow;
 	}
 
-	async upsert(insert: InsertVaultRow<TData>): Promise<VaultRow<TData>> {
-		const existing = this.rowByFileName.get(insert.fileName);
-		if (existing) {
-			return this.update(insert.fileName, insert.data);
-		}
-		return this.create(insert);
-	}
-
-	async delete(key: string): Promise<void> {
+	private async doDelete(key: string): Promise<void> {
 		const existing = this.require(key);
 		await this.app.vault.trash(existing.file, true);
 		this.removeRow(existing.id);

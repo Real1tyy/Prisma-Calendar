@@ -4,7 +4,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.7.0 - 3/13/2026
+## 2.7.0 - 3/15/2026
 
 ### Added
 
@@ -16,6 +16,7 @@ All notable changes to this project will be documented here.
 ### Fixed
 
 - **Timeline toolbar button always visible**: The Timeline button in the calendar toolbar was always rendered regardless of toolbar button settings. It now correctly respects the toolbar configuration and is hidden when disabled.
+- **Time tracker break input NaN**: Starting or continuing the stopwatch with an empty break field caused `NaN` to propagate into the break input, triggering a browser warning. The break field now defaults to `0` when empty. See [Time Tracker](./features/events/time-tracker.md).
 
 ---
 

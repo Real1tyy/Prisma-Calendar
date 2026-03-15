@@ -464,7 +464,7 @@ export abstract class BaseEventModal extends Modal {
 		this.stopwatch = new Stopwatch(
 			{
 				onStart: (startTime: Date) => {
-					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
+					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value) || 0;
 					this.startInput.value = formatDateTimeForInput(startTime);
 
 					const endTime = new Date(startTime.getTime() + END_TIME_SYNC_INTERVAL_MS);
@@ -477,7 +477,7 @@ export abstract class BaseEventModal extends Modal {
 				onContinueRequested: () => {
 					// Continue uses the existing start time from the input field
 					// Reset the break counter and return the current start time
-					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value);
+					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value) || 0;
 					const startValue = this.startInput.value;
 					if (startValue) {
 						// If end date is in the past, update it to now
