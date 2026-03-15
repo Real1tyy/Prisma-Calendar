@@ -1,14 +1,12 @@
 import type { App } from "obsidian";
+import { z } from "zod";
 
 export type CellRender = (container: HTMLElement) => void | Promise<void>;
 export type CellCleanup = () => void;
 
-export interface CellDefinition {
-	id?: string;
-	row: number;
-	col: number;
-	rowSpan?: number;
-	colSpan?: number;
+export interface CellOption {
+	id: string;
+	label: string;
 	render: CellRender;
 	cleanup?: CellCleanup;
 	/** When true, shows an enlarge button that opens the cell content in a modal. */
@@ -17,17 +15,58 @@ export interface CellDefinition {
 	enlargeTitle?: string;
 }
 
+export interface CellPlacement extends CellOption {
+	row: number;
+	col: number;
+	rowSpan?: number;
+	colSpan?: number;
+}
+
+/** Zod schema for persisted grid layout state. Reuse in plugin settings schemas. */
+export const GridLayoutStateSchema = z
+	.object({
+		columns: z.number().int().positive().catch(2),
+		rows: z.number().int().positive().catch(2),
+		cells: z
+			.array(
+				z.object({
+					optionId: z.string(),
+					row: z.number().int().nonnegative(),
+					col: z.number().int().nonnegative(),
+				})
+			)
+			.catch([]),
+	})
+	.transform((state) => ({
+		...state,
+		cells: state.cells.filter((c) => c.row < state.rows && c.col < state.columns),
+	}));
+
+/** Serializable snapshot of grid layout state. Safe to persist in plugin settings. */
+export type GridLayoutState = z.infer<typeof GridLayoutStateSchema>;
+
 export interface GridLayoutConfig {
 	columns: number;
 	rows: number;
 	cssPrefix: string;
-	cells?: CellDefinition[];
+	cells?: CellPlacement[];
 	gap?: string;
 	minCellWidth?: number;
 	/** When true, adds a `{cssPrefix}grid-cell-divider` class to each cell for border styling. */
 	dividers?: boolean;
+	/** Catalog of all swappable cell options. When provided, each cell gets a swap button. */
+	cellPalette?: CellOption[];
+	/**
+	 * Persisted state to restore. When provided, overrides `cells`, `columns`, and `rows`.
+	 * Cell option IDs are resolved from `cellPalette`.
+	 */
+	initialState?: GridLayoutState;
 	onCellChange?: (row: number, col: number, id?: string) => void;
-	/** Required when any cell has `enlargeable: true`. The Obsidian App instance used to open modals. */
+	/** Fires on any state mutation (swap, resize) with the new serializable state. */
+	onStateChange?: (state: GridLayoutState) => void;
+	/** When true, renders a gear button on the grid to open the layout editor. Requires `app` and `cellPalette`. */
+	editable?: boolean;
+	/** Required when any cell has `enlargeable: true`, `cellPalette`, or `editable` is provided. */
 	app?: App;
 }
 
@@ -37,6 +76,12 @@ export interface GridLayoutHandle {
 	clearCell(row: number, col: number): void;
 	getCellElement(row: number, col: number): HTMLElement | null;
 	resize(columns: number, rows: number): void;
+	/** Opens the cell palette picker for the given position. No-op if no palette configured. */
+	showCellPicker(row: number, col: number): void;
+	/** Opens the layout editor modal. No-op if no palette or app configured. */
+	showLayoutEditor(): void;
+	/** Returns a serializable snapshot of the current layout state. */
+	getState(): GridLayoutState;
 	readonly columns: number;
 	readonly rows: number;
 	destroy(): void;

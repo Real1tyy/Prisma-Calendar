@@ -49,6 +49,14 @@ export function defineChildren<T extends VaultTableDefMap>(defs: T): T {
 	return defs;
 }
 
+export const HISTORY_MAX_SIZE = 50;
+export const HISTORY_SHOW_NOTICES = false;
+
+export interface VaultTableHistoryConfig {
+	maxSize?: number;
+	showNotices?: boolean;
+}
+
 export type VaultTableConfig<
 	TData,
 	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
@@ -57,6 +65,7 @@ export type VaultTableConfig<
 > = VaultTableDef<TData, TSchema, TChildren> & {
 	app: App;
 	directory: string;
+	history?: VaultTableHistoryConfig;
 };
 
 export interface VaultRow<TData> {
