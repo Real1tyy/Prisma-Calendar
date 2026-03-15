@@ -3,6 +3,9 @@ const PLUGIN_ID = "prisma-calendar";
 // Higher values = faster initial scan but more memory/CPU usage
 export const SCAN_CONCURRENCY = 10;
 
+// Interval for periodic scan that marks past events as done (5 minutes)
+export const MARK_DONE_SCAN_INTERVAL_MS = 5 * 60 * 1000;
+
 // Custom namespace UUID for Prisma Calendar events
 // This ensures our event IDs are unique to this application
 export const PRISMA_CALENDAR_NAMESPACE = "a8f9e6d4-7c2b-4e1a-9f3d-5b8c1a2e4d6f";

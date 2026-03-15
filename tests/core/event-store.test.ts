@@ -5,6 +5,7 @@ import { type EventQuery, EventStore } from "../../src/core/event-store";
 import type { IndexerEvent } from "../../src/core/indexer";
 import type { CalendarEvent } from "../../src/types/calendar";
 import { createMockAllDayEvent, createMockTimedEvent } from "../fixtures";
+import { createMockSingleCalendarSettingsStore } from "../setup";
 
 describe("EventStore", () => {
 	let eventStore: EventStore;
@@ -27,7 +28,12 @@ describe("EventStore", () => {
 		mockRecurringEventManager = {
 			generateAllVirtualInstances: vi.fn().mockReturnValue([]),
 		};
-		eventStore = new EventStore(mockIndexer, mockParser, mockRecurringEventManager);
+		eventStore = new EventStore(
+			mockIndexer,
+			mockParser,
+			mockRecurringEventManager,
+			createMockSingleCalendarSettingsStore()
+		);
 	});
 
 	const createMockEvent = (overrides: Partial<CalendarEvent> = {}): CalendarEvent => {

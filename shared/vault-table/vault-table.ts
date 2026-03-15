@@ -7,6 +7,7 @@ import { extractFileName, getFolderPath, isDirectChildOrFolderNote } from "../fi
 import { ensureDirectory, extractContentAfterFrontmatter, withFrontmatter } from "../file/file-utils";
 import { correctFrontmatter, deleteInvalidFile } from "../file/frontmatter-repair";
 import { createFileContentWithFrontmatter } from "../file/frontmatter-serialization";
+import { createFileAtPathAtomic, guardFromTemplater } from "../file/templater";
 import type { SerializableSchema } from "./create-mapped-schema";
 import {
 	HISTORY_MAX_SIZE,
@@ -55,6 +56,7 @@ export class VaultTable<
 	private readonly fileNameFilter?: (fileName: string) => boolean;
 	private readonly filePathResolver: (directory: string, fileName: string) => string;
 	private readonly childDefs: TChildren | undefined;
+	private templatePath: string | undefined;
 
 	private readonly indexer: Indexer;
 	private readonly indexerConfigStore: BehaviorSubject<IndexerConfig>;
@@ -88,6 +90,7 @@ export class VaultTable<
 			throw new Error('VaultTable: children are only supported when nodeType is "folderNotes"');
 		}
 		this.childDefs = config.children;
+		this.templatePath = config.templatePath;
 
 		this.commandManager = this.buildCommandManager(config.history);
 		this.ops = {
@@ -121,6 +124,10 @@ export class VaultTable<
 			maxHistorySize: history.maxSize ?? HISTORY_MAX_SIZE,
 			showNotices: history.showNotices ?? HISTORY_SHOW_NOTICES,
 		});
+	}
+
+	setTemplatePath(path: string | undefined): void {
+		this.templatePath = path;
 	}
 
 	// =========================================================================
@@ -329,12 +336,14 @@ export class VaultTable<
 		const existing = this.rowByFileName.get(id);
 
 		if (existing) {
+			guardFromTemplater(this.app, existing.file.path);
 			await this.app.vault.modify(existing.file, rawContent);
 			const row = this.buildRow(id, existing.file, filePath, data, bodyContent, existing.file.stat.mtime);
 			this.removeRow(id);
 			this.insertRow(row);
 		} else {
 			await ensureDirectory(this.app, getFolderPath(filePath));
+			guardFromTemplater(this.app, filePath);
 			const file = await this.app.vault.create(filePath, rawContent);
 			const row = this.buildRow(id, file, filePath, data, bodyContent, file.stat.mtime);
 			this.insertRow(row);
@@ -618,7 +627,17 @@ export class VaultTable<
 
 	private async persistNewFile(filePath: string, data: TData, content: string): Promise<TFile> {
 		await ensureDirectory(this.app, getFolderPath(filePath));
+
+		if (this.templatePath) {
+			return createFileAtPathAtomic(this.app, filePath, {
+				content,
+				frontmatter: this.serialize(data),
+				templatePath: this.templatePath,
+			});
+		}
+
 		const fileContent = createFileContentWithFrontmatter(this.serialize(data), content);
+		guardFromTemplater(this.app, filePath);
 		return this.app.vault.create(filePath, fileContent);
 	}
 

@@ -201,6 +201,15 @@ export class Modal {
 	close = vi.fn();
 }
 
+// Menu mock
+export class Menu {
+	addItem = vi.fn().mockReturnThis();
+	addSeparator = vi.fn().mockReturnThis();
+	showAtMouseEvent = vi.fn();
+	showAtPosition = vi.fn();
+	onHide = vi.fn().mockReturnThis();
+}
+
 // SuggestModal mock
 export class SuggestModal extends Modal {
 	getSuggestions = vi.fn().mockReturnValue([]);

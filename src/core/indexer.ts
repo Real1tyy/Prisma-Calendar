@@ -456,17 +456,26 @@ export class Indexer {
 
 		if (isPastEvent) {
 			const currentStatus = frontmatter[this.settings.statusProperty];
-			const doneValue = this.settings.doneValue;
-
-			if (currentStatus !== doneValue) {
-				try {
-					await this.enqueueFrontmatterWrite(file, (fm: Frontmatter) => {
-						fm[this.settings.statusProperty] = doneValue;
-					});
-				} catch (error) {
-					console.error(`[Indexer] Error marking event as done in file ${file.path}:`, error);
-				}
+			if (currentStatus !== this.settings.doneValue) {
+				await this.markFileAsDone(file.path);
 			}
+		}
+	}
+
+	async markFileAsDone(filePath: string): Promise<void> {
+		if (this.syncStore?.data.readOnly) {
+			return;
+		}
+
+		const file = this.app.vault.getAbstractFileByPath(filePath);
+		if (!(file instanceof TFile)) return;
+
+		try {
+			await this.enqueueFrontmatterWrite(file, (fm: Frontmatter) => {
+				fm[this.settings.statusProperty] = this.settings.doneValue;
+			});
+		} catch (error) {
+			console.error(`[Indexer] Error marking event as done in file ${filePath}:`, error);
 		}
 	}
 

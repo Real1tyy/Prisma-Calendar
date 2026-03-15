@@ -41,6 +41,9 @@ export function createMappedSchema<TShape extends z.ZodRawShape>(
 			if (externalKey in raw) {
 				result[internalKey] = raw[externalKey];
 			}
+			if (externalKey !== internalKey) {
+				delete result[externalKey];
+			}
 		}
 		return result;
 	};

@@ -85,7 +85,7 @@ export class IndexerRegistry {
 			const recurringEventManager = new RecurringEventManager(this.app, settingsStore, indexer, this.syncStore);
 			const notificationManager = new NotificationManager(this.app, settingsStore, indexer, this.syncStore);
 			const parser = new Parser(this.app, settingsStore);
-			const eventStore = new EventStore(indexer, parser, recurringEventManager);
+			const eventStore = new EventStore(indexer, parser, recurringEventManager, settingsStore);
 			const categoryTracker = new CategoryTracker(this.app, indexer, eventStore, settingsStore);
 			const nameSeriesTracker = new NameSeriesTracker(this.app, indexer, eventStore, settingsStore);
 			recurringEventManager.setEventStore(eventStore);

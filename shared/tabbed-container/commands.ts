@@ -10,6 +10,16 @@ export function registerTabCommands(
 	tabLabels: string[]
 ): void {
 	plugin.addCommand({
+		id: `${commandPrefix}:manage-tabs`,
+		name: `${displayName}: Manage tabs`,
+		checkCallback: (checking) => {
+			if (handle.tabCount === 0) return false;
+			if (!checking) handle.showTabManager();
+			return true;
+		},
+	});
+
+	plugin.addCommand({
 		id: `${commandPrefix}:next-tab`,
 		name: `${displayName}: Next tab`,
 		checkCallback: (checking) => {
