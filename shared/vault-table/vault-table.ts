@@ -405,7 +405,8 @@ export class VaultTable<
 		if (oldRow) {
 			this.removeRow(oldRow.id);
 			this.insertRow(newRow);
-			if (event.frontmatterDiff) {
+			const contentChanged = oldRow.content !== content;
+			if (event.frontmatterDiff || contentChanged) {
 				this.eventsSubject.next({
 					type: "row-updated",
 					id,
@@ -413,6 +414,7 @@ export class VaultTable<
 					oldRow,
 					newRow,
 					diff: event.frontmatterDiff,
+					contentChanged,
 				});
 			}
 		} else {

@@ -17,6 +17,7 @@ export class NoteDecorator<
 	TChildren extends VaultTableDefMap = Record<string, never>,
 > {
 	private activeContainer: HTMLElement | null = null;
+	private generation = 0;
 
 	constructor(
 		private plugin: Plugin,
@@ -31,6 +32,7 @@ export class NoteDecorator<
 	}
 
 	private async onFileOpen(file: TFile | null): Promise<void> {
+		const currentGen = ++this.generation;
 		this.cleanup();
 
 		if (!file || !file.path.startsWith(this.table.directory + "/")) return;
@@ -43,11 +45,12 @@ export class NoteDecorator<
 		const fileName = extractFileName(file.path);
 
 		await this.table.waitUntilReady();
+		if (currentGen !== this.generation) return;
 
 		if (!this.table.get(fileName)) return;
 
 		const hydrated = await this.table.getHydrated(fileName);
-		if (!hydrated) return;
+		if (!hydrated || currentGen !== this.generation) return;
 
 		const container = createDiv({ cls: "vault-table-note-decorator" });
 		view.contentEl.prepend(container);

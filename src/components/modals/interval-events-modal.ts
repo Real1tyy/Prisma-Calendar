@@ -1,3 +1,4 @@
+import { type BaseFilterNode, Filter } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -22,8 +23,8 @@ export class IntervalEventsModal extends BaseBasesViewModal {
 		return this.intervalLabel;
 	}
 
-	protected getFilterLines(): string[] {
+	protected getFilters(): BaseFilterNode[] {
 		const sortProp = this.settings.sortDateProp;
-		return [`'note["${sortProp}"] > "${this.startDate}"'`, `'note["${sortProp}"] < "${this.endDate}"'`];
+		return [Filter.gt(sortProp, this.startDate), Filter.lt(sortProp, this.endDate)];
 	}
 }

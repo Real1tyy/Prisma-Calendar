@@ -82,6 +82,7 @@ export type VaultTableEvent<TData, TRow = VaultRow<TData>> =
 			filePath: string;
 			oldRow: TRow;
 			newRow: TRow;
-			diff: FrontmatterDiff;
+			diff?: FrontmatterDiff;
+			contentChanged: boolean;
 	  }
 	| { type: "row-deleted"; id: string; filePath: string; oldRow: TRow };
