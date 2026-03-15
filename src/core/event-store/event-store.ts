@@ -1,11 +1,13 @@
 import { mergeSorted } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
-import type { Subscription } from "rxjs";
+import type { BehaviorSubject, Subscription } from "rxjs";
 import BTree from "sorted-btree";
 
+import { MARK_DONE_SCAN_INTERVAL_MS } from "../../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
 import type { ISO } from "../../types/index";
+import type { SingleCalendarConfig } from "../../types/settings";
 import type { HolidayStore } from "../holidays";
 import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
 import type { Parser } from "../parser";
@@ -26,6 +28,9 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private static readonly MAX = "\uffff";
 
 	private indexingCompleteSubscription: Subscription | null = null;
+	private settingsSubscription: Subscription | null = null;
+	private settings: SingleCalendarConfig;
+	private markDoneScanInterval: number | null = null;
 	// Navigation BTrees — non-skipped timed events only (for fill-from-previous/next)
 	private eventsByStartTime = new BTree<string, TimedEvent>();
 	// Query BTrees — non-skipped events for range queries
@@ -41,13 +46,32 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	constructor(
 		indexer: Indexer,
 		private parser: Parser,
-		private recurringEventManager: RecurringEventManager
+		private recurringEventManager: RecurringEventManager,
+		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
 		super(indexer, new Set(["file-changed", "untracked-file-changed", "file-deleted"]));
+
+		this.settings = settingsStore.value;
+
+		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
+			const markDoneChanged = this.settings.markPastInstancesAsDone !== newSettings.markPastInstancesAsDone;
+			this.settings = newSettings;
+
+			if (markDoneChanged) {
+				if (newSettings.markPastInstancesAsDone) {
+					this.startMarkDonePeriodicScan();
+				} else {
+					this.stopMarkDonePeriodicScan();
+				}
+			}
+		});
 
 		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
 			if (isComplete) {
 				this.flushPendingRefresh();
+				if (this.settings.markPastInstancesAsDone) {
+					this.startMarkDonePeriodicScan();
+				}
 			} else {
 				// Indexing restarted (e.g., filter expressions changed or directory changed).
 				// Clear the cache so events are re-parsed with updated settings.
@@ -58,8 +82,11 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	}
 
 	override destroy(): void {
+		this.stopMarkDonePeriodicScan();
 		this.indexingCompleteSubscription?.unsubscribe();
 		this.indexingCompleteSubscription = null;
+		this.settingsSubscription?.unsubscribe();
+		this.settingsSubscription = null;
 		super.destroy();
 	}
 
@@ -350,6 +377,45 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		this.allDayByDate.clear();
 		this.skippedTimedByEndTime.clear();
 		this.skippedAllDayByDate.clear();
+	}
+
+	// ─── Mark Done Periodic Scan ─────────────────────────────────
+
+	private startMarkDonePeriodicScan(): void {
+		this.stopMarkDonePeriodicScan();
+		this.markDoneScanInterval = window.setInterval(() => {
+			this.scanPastEventsForMarkDone();
+		}, MARK_DONE_SCAN_INTERVAL_MS);
+	}
+
+	private stopMarkDonePeriodicScan(): void {
+		if (this.markDoneScanInterval !== null) {
+			window.clearInterval(this.markDoneScanInterval);
+			this.markDoneScanInterval = null;
+		}
+	}
+
+	private scanPastEventsForMarkDone(): void {
+		if (!this.settings.markPastInstancesAsDone) return;
+
+		const now = DateTime.now().toUTC();
+		const nowIso = now.toISO({ suppressMilliseconds: true }) ?? "";
+		// All-day events are past only after the end of that day (23:59:59),
+		// matching the indexer's markPastEventAsDone logic
+		const endOfTodayIso = now.endOf("day").toISO({ suppressMilliseconds: true }) ?? "";
+		const doneValue = this.settings.doneValue;
+
+		for (const cached of this.cache.values()) {
+			const event = cached.template;
+			if (event.isVirtual) continue;
+			if (event.metadata.rruleType) continue;
+			if (event.metadata.status === doneValue) continue;
+
+			const isPast = isTimedEvent(event) ? event.end < nowIso : event.start < endOfTodayIso;
+			if (!isPast) continue;
+
+			void this.indexer.markFileAsDone(event.ref.filePath);
+		}
 	}
 
 	// ─── Utilities ────────────────────────────────────────────────

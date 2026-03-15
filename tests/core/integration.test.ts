@@ -43,7 +43,7 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 			indexer,
 			null
 		) as unknown as RecurringEventManager;
-		eventStore = new EventStore(indexer, parser, recurringEventManager);
+		eventStore = new EventStore(indexer, parser, recurringEventManager, settingsStore);
 
 		// EventStore now handles its own subscription to indexer events
 		// No manual wiring needed

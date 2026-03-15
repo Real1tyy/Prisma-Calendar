@@ -1,5 +1,6 @@
-import { type App, Notice, TFile, normalizePath } from "obsidian";
+import { type App, normalizePath, Notice, TFile } from "obsidian";
 import { parse as parseYAML } from "yaml";
+
 import { waitForFileReady } from "./file-utils";
 import { createFileContentWithFrontmatter } from "./frontmatter-serialization";
 
@@ -130,7 +131,7 @@ function getTemplaterPlugin(app: App): TemplaterPlugin | null {
  * end_templater_task) and is the only way to fully prevent Templater from
  * touching a file we're managing ourselves.
  */
-export function guardFromTemplater(app: App, filePath: string): () => void {
+export function guardFromTemplater(app: App, filePath: string, releaseDelayMs = 500): () => void {
 	const plugin = getTemplaterPlugin(app);
 	const pending = plugin?.templater?.files_with_pending_templates;
 	if (pending) {
@@ -140,7 +141,7 @@ export function guardFromTemplater(app: App, filePath: string): () => void {
 		// Hold the guard past Templater's 300ms delay + some margin, then release.
 		setTimeout(() => {
 			pending?.delete(filePath);
-		}, 500);
+		}, releaseDelayMs);
 	};
 }
 

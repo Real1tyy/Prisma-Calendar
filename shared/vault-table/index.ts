@@ -4,4 +4,7 @@ export * from "./table-view";
 export * from "./types";
 export * from "./vault-table";
 export * from "./vault-table-commands";
+export * from "./vault-table-query";
+export * from "./vault-table-rest-api";
 export * from "./vault-table-view";
+export * from "./zod-filter-sort";

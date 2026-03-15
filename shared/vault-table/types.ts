@@ -15,6 +15,7 @@ interface VaultTableDefBase<TData, TSchema extends SerializableSchema<TData> = S
 	debounceMs?: number;
 	filePathResolver?: (directory: string, fileName: string) => string;
 	history?: VaultTableHistoryConfig;
+	templatePath?: string;
 }
 
 interface FileVaultTableDef<
