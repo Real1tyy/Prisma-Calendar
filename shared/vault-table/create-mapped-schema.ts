@@ -38,7 +38,9 @@ export function createMappedSchema<TShape extends z.ZodRawShape>(
 		const result: Record<string, unknown> = { ...raw };
 		for (const [internalKey, settingsKey] of Object.entries(fieldToSettingsKey)) {
 			const externalKey = settings[settingsKey] as string;
-			result[internalKey] = raw[externalKey];
+			if (externalKey in raw) {
+				result[internalKey] = raw[externalKey];
+			}
 		}
 		return result;
 	};

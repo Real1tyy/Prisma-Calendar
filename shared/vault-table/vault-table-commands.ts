@@ -8,6 +8,8 @@ export interface VaultTableOps<TData> {
 	delete(key: string): Promise<void>;
 	get(key: string): VaultRow<TData> | undefined;
 	has(key: string): boolean;
+	readFileContent(key: string): Promise<string>;
+	restoreFile(filePath: string, rawContent: string, data: TData, bodyContent: string): Promise<void>;
 }
 
 export interface CommandWithResult<T> extends Command {
@@ -47,8 +49,15 @@ export class CreateRowCommand<TData> implements CommandWithResult<VaultRow<TData
 	}
 }
 
+interface FileSnapshot<TData> {
+	filePath: string;
+	rawContent: string;
+	data: TData;
+	bodyContent: string;
+}
+
 export class UpdateRowCommand<TData> implements CommandWithResult<VaultRow<TData>> {
-	private oldData: TData | null = null;
+	private snapshot: FileSnapshot<TData> | null = null;
 	private result: VaultRow<TData> | null = null;
 
 	constructor(
@@ -60,14 +69,24 @@ export class UpdateRowCommand<TData> implements CommandWithResult<VaultRow<TData
 	async execute(): Promise<void> {
 		const existing = this.ops.get(this.key);
 		if (existing) {
-			this.oldData = { ...existing.data };
+			this.snapshot = {
+				filePath: existing.filePath,
+				rawContent: await this.ops.readFileContent(this.key),
+				data: { ...existing.data },
+				bodyContent: existing.content,
+			};
 		}
 		this.result = await this.ops.update(this.key, this.newData);
 	}
 
 	async undo(): Promise<void> {
-		if (this.oldData) {
-			await this.ops.update(this.key, this.oldData);
+		if (this.snapshot) {
+			await this.ops.restoreFile(
+				this.snapshot.filePath,
+				this.snapshot.rawContent,
+				this.snapshot.data,
+				this.snapshot.bodyContent
+			);
 		}
 	}
 
@@ -76,7 +95,7 @@ export class UpdateRowCommand<TData> implements CommandWithResult<VaultRow<TData
 	}
 
 	canUndo(): boolean {
-		return this.oldData !== null && this.ops.has(this.key);
+		return this.snapshot !== null && this.ops.has(this.key);
 	}
 
 	getResult(): VaultRow<TData> {
@@ -86,7 +105,7 @@ export class UpdateRowCommand<TData> implements CommandWithResult<VaultRow<TData
 }
 
 export class UpdateContentRowCommand<TData> implements CommandWithResult<VaultRow<TData>> {
-	private oldContent: string | null = null;
+	private snapshot: FileSnapshot<TData> | null = null;
 	private result: VaultRow<TData> | null = null;
 
 	constructor(
@@ -98,14 +117,24 @@ export class UpdateContentRowCommand<TData> implements CommandWithResult<VaultRo
 	async execute(): Promise<void> {
 		const existing = this.ops.get(this.key);
 		if (existing) {
-			this.oldContent = existing.content;
+			this.snapshot = {
+				filePath: existing.filePath,
+				rawContent: await this.ops.readFileContent(this.key),
+				data: { ...existing.data },
+				bodyContent: existing.content,
+			};
 		}
 		this.result = await this.ops.updateContent(this.key, this.newContent);
 	}
 
 	async undo(): Promise<void> {
-		if (this.oldContent !== null) {
-			await this.ops.updateContent(this.key, this.oldContent);
+		if (this.snapshot) {
+			await this.ops.restoreFile(
+				this.snapshot.filePath,
+				this.snapshot.rawContent,
+				this.snapshot.data,
+				this.snapshot.bodyContent
+			);
 		}
 	}
 
@@ -114,7 +143,7 @@ export class UpdateContentRowCommand<TData> implements CommandWithResult<VaultRo
 	}
 
 	canUndo(): boolean {
-		return this.oldContent !== null && this.ops.has(this.key);
+		return this.snapshot !== null && this.ops.has(this.key);
 	}
 
 	getResult(): VaultRow<TData> {
@@ -124,7 +153,7 @@ export class UpdateContentRowCommand<TData> implements CommandWithResult<VaultRo
 }
 
 export class DeleteRowCommand<TData> implements Command {
-	private snapshot: InsertVaultRow<TData> | null = null;
+	private snapshot: FileSnapshot<TData> | null = null;
 
 	constructor(
 		private readonly key: string,
@@ -135,9 +164,10 @@ export class DeleteRowCommand<TData> implements Command {
 		const existing = this.ops.get(this.key);
 		if (existing) {
 			this.snapshot = {
-				fileName: existing.id,
+				filePath: existing.filePath,
+				rawContent: await this.ops.readFileContent(this.key),
 				data: { ...existing.data },
-				content: existing.content,
+				bodyContent: existing.content,
 			};
 		}
 		await this.ops.delete(this.key);
@@ -145,7 +175,12 @@ export class DeleteRowCommand<TData> implements Command {
 
 	async undo(): Promise<void> {
 		if (this.snapshot) {
-			await this.ops.create(this.snapshot);
+			await this.ops.restoreFile(
+				this.snapshot.filePath,
+				this.snapshot.rawContent,
+				this.snapshot.data,
+				this.snapshot.bodyContent
+			);
 		}
 	}
 
