@@ -1,4 +1,12 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import {
+	BaseBuilder,
+	type BaseFilterNode,
+	BaseRenderer,
+	type BaseViewType,
+	cls,
+	ColumnRef,
+	Filter,
+} from "@real1ty-obsidian-plugins";
 import { type App, Component, MarkdownRenderer, Modal } from "obsidian";
 
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -44,38 +52,29 @@ export abstract class BaseBasesViewModal extends Modal {
 		await MarkdownRenderer.render(this.app, basesMarkdown, this.markdownContainerEl, "", this.component);
 	}
 
-	protected getViewType(): string {
-		return this.settings.basesViewType;
+	protected getViewType(): BaseViewType {
+		return this.settings.basesViewType as BaseViewType;
 	}
 
 	private buildBasesMarkdown(): string {
-		const eventsFolder = this.settings.directory;
-		const sortProp = this.settings.sortDateProp;
-		const statusProp = this.settings.statusProperty;
-		const basesViewProperties = this.settings.basesViewProperties;
-		const nameColumn = this.settings.calendarTitleProp || "file.name";
-		const orderProperties = [nameColumn, sortProp, statusProp, ...basesViewProperties].filter(Boolean);
-		const filterLines = this.getFilterLines();
+		const { directory, sortDateProp, statusProperty, basesViewProperties, calendarTitleProp } = this.settings;
+		const nameColumn = calendarTitleProp || "file.name";
 
-		return `\`\`\`base
-views:
-  - type: ${this.getViewType()}
-    name: ${this.getViewName()}
-    filters:
-      and:
-        - file.inFolder("${eventsFolder}")
-${filterLines.map((line) => `        - ${line}`).join("\n")}
-    order:
-${orderProperties.map((prop) => `      - ${prop}`).join("\n")}
-    columnSize:
-      note.${sortProp}: 170
-    sort:
-      - property: ${sortProp}
-        direction: DESC
-\`\`\``;
+		const def = BaseBuilder.create()
+			.addView({
+				type: this.getViewType(),
+				name: this.getViewName(),
+				filter: Filter.and(Filter.inFolder(directory), ...this.getFilters()),
+				order: [nameColumn, sortDateProp, statusProperty, ...basesViewProperties].filter(Boolean),
+				sort: [{ property: sortDateProp, direction: "DESC" }],
+				columnSize: { [ColumnRef.note(sortDateProp)]: 170 },
+			})
+			.build();
+
+		return BaseRenderer.renderCodeBlock(def);
 	}
 
 	protected abstract getTitle(): string;
 	protected abstract getViewName(): string;
-	protected abstract getFilterLines(): string[];
+	protected abstract getFilters(): BaseFilterNode[];
 }

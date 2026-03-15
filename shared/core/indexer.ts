@@ -239,6 +239,17 @@ export class Indexer {
 		});
 	}
 
+	/**
+	 * Create an observable from vault "modify" events.
+	 * Catches content-only changes that don't trigger metadataCache "changed".
+	 */
+	private fromVaultModify(): Observable<TFile> {
+		return fromEventPattern<TAbstractFile>(
+			(handler) => this.vault.on("modify", handler),
+			(handler) => this.vault.off("modify", handler)
+		).pipe(filter((f): f is TFile => Indexer.isMarkdownFile(f)));
+	}
+
 	private static isMarkdownFile(f: TAbstractFile): f is TFile {
 		return f instanceof TFile && f.extension === "md";
 	}
@@ -268,20 +279,25 @@ export class Indexer {
 	/**
 	 * Build the file system events observable stream.
 	 *
-	 * Listens to exactly three events (see docs/obsidian/event-firing-order.md):
+	 * Listens to four events (see docs/obsidian/event-firing-order.md):
 	 *
-	 * 1. metadataCache "changed" — covers both file creation and modification.
-	 *    vault.on("create") and vault.on("modify") are redundant because
-	 *    metadataCache "changed" always fires after them with fresh frontmatter.
+	 * 1. metadataCache "changed" — covers file creation and frontmatter modifications.
 	 *
-	 * 2. metadataCache "deleted" — covers file deletion.
+	 * 2. vault.on("modify") — covers content-only changes that don't trigger
+	 *    metadataCache "changed" (e.g., plain text edits with no metadata-relevant
+	 *    elements). Merged with metadataCache "changed" and debounced by path so
+	 *    that when both fire for the same modification, only the last event
+	 *    (metadataCache "changed") within the debounce window is processed.
+	 *
+	 * 3. metadataCache "deleted" — covers file deletion.
 	 *    Fires before vault.on("delete"), making vault delete redundant.
 	 *
-	 * 3. vault.on("rename") — the only event for renames.
+	 * 4. vault.on("rename") — the only event for renames.
 	 *    metadataCache does NOT emit changed/deleted on rename.
 	 */
 	private buildFileSystemEvents$(): Observable<IndexerEvent> {
 		const metadataChanged$ = this.fromMetadataCacheChanged().pipe(this.toRelevantFiles());
+		const vaultModified$ = this.fromVaultModify().pipe(this.toRelevantFiles());
 		const metadataDeleted$ = this.fromMetadataCacheDeleted().pipe(this.toRelevantFiles());
 
 		const renamed$ = fromEventPattern<[TAbstractFile, string]>(
@@ -289,7 +305,8 @@ export class Indexer {
 			(handler) => this.vault.off("rename", handler)
 		);
 
-		const changedIntents$ = metadataChanged$.pipe(
+		const changed$ = merge(vaultModified$, metadataChanged$);
+		const changedIntents$ = changed$.pipe(
 			this.debounceByPath(this.config.debounceMs, (f) => f.path),
 			map((file): FileIntent => ({ kind: "changed", file, path: file.path }))
 		);

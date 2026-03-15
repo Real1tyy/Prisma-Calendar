@@ -1,3 +1,4 @@
+import { type BaseFilterNode, type BaseViewType, Filter } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -19,7 +20,7 @@ export class EventSeriesBasesViewModal extends BaseBasesViewModal {
 		super(app, settings);
 	}
 
-	protected getViewType(): string {
+	protected getViewType(): BaseViewType {
 		return this.config.viewType;
 	}
 
@@ -39,19 +40,16 @@ export class EventSeriesBasesViewModal extends BaseBasesViewModal {
 		return this.config.displayTitle ?? this.config.filterValue;
 	}
 
-	protected getFilterLines(): string[] {
-		const escaped = this.config.filterValue.replace(/"/g, '\\"');
-		const rruleProp = this.settings.rruleIdProp;
-		const titleProp = this.settings.calendarTitleProp;
-		const categoryProp = this.settings.categoryProp;
+	protected getFilters(): BaseFilterNode[] {
+		const { filterValue } = this.config;
 
 		switch (this.config.mode) {
 			case "recurring":
-				return [`'note["${rruleProp}"] == "${escaped}"'`];
+				return [Filter.eq(this.settings.rruleIdProp, filterValue)];
 			case "name":
-				return [`'note["${titleProp}"].contains("${escaped}")'`];
+				return [Filter.contains(this.settings.calendarTitleProp, filterValue)];
 			case "category":
-				return [`'note["${categoryProp}"].contains("${escaped}")'`];
+				return [Filter.contains(this.settings.categoryProp, filterValue)];
 		}
 	}
 }

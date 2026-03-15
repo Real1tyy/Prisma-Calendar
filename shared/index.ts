@@ -31,3 +31,9 @@ export * from "./vault-table";
 export * from "./file-explorer";
 // Obsidian Bases AST and builder
 export * from "./obsidian-bases";
+// Component renderer (modal, view, inline)
+export * from "./component-renderer";
+// Tabbed container (multi-panel tabs within a single leaf)
+export * from "./tabbed-container";
+// Grid layout (responsive multi-cell dashboard layouts)
+export * from "./grid-layout";

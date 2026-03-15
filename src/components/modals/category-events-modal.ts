@@ -1,3 +1,4 @@
+import { type BaseFilterNode, Filter } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -20,9 +21,7 @@ export class CategoryEventsModal extends BaseBasesViewModal {
 		return this.categoryName;
 	}
 
-	protected getFilterLines(): string[] {
-		const categoryProp = this.settings.categoryProp;
-		const escapedCategory = this.categoryName.replace(/"/g, '\\"');
-		return [`'note["${categoryProp}"].contains("${escapedCategory}")'`];
+	protected getFilters(): BaseFilterNode[] {
+		return [Filter.contains(this.settings.categoryProp, this.categoryName)];
 	}
 }
