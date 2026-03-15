@@ -1,5 +1,6 @@
 import type { App, TFile } from "obsidian";
 
+import type { CommandManager } from "../commands/command-manager";
 import type { FrontmatterDiff } from "../file/frontmatter-diff";
 import type { SerializableSchema } from "./create-mapped-schema";
 
@@ -13,6 +14,7 @@ interface VaultTableDefBase<TData, TSchema extends SerializableSchema<TData> = S
 	invalidStrategy?: InvalidStrategy;
 	debounceMs?: number;
 	filePathResolver?: (directory: string, fileName: string) => string;
+	history?: VaultTableHistoryConfig;
 }
 
 interface FileVaultTableDef<
@@ -55,6 +57,7 @@ export const HISTORY_SHOW_NOTICES = false;
 export interface VaultTableHistoryConfig {
 	maxSize?: number;
 	showNotices?: boolean;
+	commandManager?: CommandManager;
 }
 
 export type VaultTableConfig<
@@ -65,7 +68,6 @@ export type VaultTableConfig<
 > = VaultTableDef<TData, TSchema, TChildren> & {
 	app: App;
 	directory: string;
-	history?: VaultTableHistoryConfig;
 };
 
 export interface VaultRow<TData> {

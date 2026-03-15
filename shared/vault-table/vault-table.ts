@@ -97,6 +97,9 @@ export class VaultTable<
 			delete: (key) => this.doDelete(key),
 			get: (key) => this.rowByFileName.get(key),
 			has: (key) => this.rowByFileName.has(key),
+			readFileContent: (key) => this.doReadFileContent(key),
+			restoreFile: (filePath, rawContent, data, bodyContent) =>
+				this.doRestoreFile(filePath, rawContent, data, bodyContent),
 		};
 
 		this.events$ = this.eventsSubject.asObservable();
@@ -113,6 +116,7 @@ export class VaultTable<
 
 	private buildCommandManager(history: VaultTableHistoryConfig | undefined): CommandManager | null {
 		if (!history) return null;
+		if (history.commandManager) return history.commandManager;
 		return new CommandManager({
 			maxHistorySize: history.maxSize ?? HISTORY_MAX_SIZE,
 			showNotices: history.showNotices ?? HISTORY_SHOW_NOTICES,
@@ -313,6 +317,28 @@ export class VaultTable<
 		const existing = this.require(key);
 		await this.app.vault.trash(existing.file, true);
 		this.removeRow(existing.id);
+	}
+
+	private async doReadFileContent(key: string): Promise<string> {
+		const row = this.require(key);
+		return this.app.vault.read(row.file);
+	}
+
+	private async doRestoreFile(filePath: string, rawContent: string, data: TData, bodyContent: string): Promise<void> {
+		const id = extractFileName(filePath);
+		const existing = this.rowByFileName.get(id);
+
+		if (existing) {
+			await this.app.vault.modify(existing.file, rawContent);
+			const row = this.buildRow(id, existing.file, filePath, data, bodyContent, existing.file.stat.mtime);
+			this.removeRow(id);
+			this.insertRow(row);
+		} else {
+			await ensureDirectory(this.app, getFolderPath(filePath));
+			const file = await this.app.vault.create(filePath, rawContent);
+			const row = this.buildRow(id, file, filePath, data, bodyContent, file.stat.mtime);
+			this.insertRow(row);
+		}
 	}
 
 	// =========================================================================
@@ -591,7 +617,7 @@ export class VaultTable<
 	}
 
 	private async persistNewFile(filePath: string, data: TData, content: string): Promise<TFile> {
-		await ensureDirectory(this.app, this.directory);
+		await ensureDirectory(this.app, getFolderPath(filePath));
 		const fileContent = createFileContentWithFrontmatter(this.serialize(data), content);
 		return this.app.vault.create(filePath, fileContent);
 	}
@@ -615,6 +641,7 @@ export class VaultTable<
 			app: this.app,
 			directory,
 			...def,
+			...(this.commandManager && { history: { commandManager: this.commandManager } }),
 		} as VaultTableConfig<D, S, C>);
 		await child.start();
 		await child.waitUntilReady();

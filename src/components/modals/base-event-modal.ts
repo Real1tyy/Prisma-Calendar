@@ -1738,6 +1738,7 @@ export abstract class BaseEventModal extends Modal {
 
 		if (
 			!isUntracked &&
+			settings.enableNotifications &&
 			settings.skipNewlyCreatedNotifications &&
 			settings.alreadyNotifiedProp &&
 			!this.bundle.plugin.syncStore.data.readOnly
