@@ -37,3 +37,7 @@ export * from "./component-renderer";
 export * from "./tabbed-container";
 // Grid layout (responsive multi-cell dashboard layouts)
 export * from "./grid-layout";
+// Page header (configurable action buttons in view headers)
+export * from "./page-header";
+// Schema-driven modal (auto-generated create/edit forms from Zod schemas)
+export * from "./schema-modal";

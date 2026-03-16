@@ -55,6 +55,18 @@ export interface IndexerConfig {
 	 * the default "file-deleted" + "file-changed" pair.
 	 */
 	emitRenameEvents?: boolean;
+
+	/**
+	 * When provided, scanAllFiles() uses these instead of vault.getMarkdownFiles().
+	 * Used by child tables that receive pre-filtered files from their parent.
+	 */
+	preloadedFiles?: TFile[];
+
+	/**
+	 * Directory prefix for this indexer's scope. Files under this prefix
+	 * that fail includeFile() are stored as descendant files for child indexers.
+	 */
+	directoryPrefix?: string;
 }
 
 /**
@@ -90,6 +102,11 @@ export interface IndexerEvent {
 	isRename?: boolean;
 }
 
+type NormalizedIndexerConfig = Required<
+	Pick<IndexerConfig, "includeFile" | "excludedDiffProps" | "scanConcurrency" | "debounceMs" | "emitRenameEvents">
+> &
+	Pick<IndexerConfig, "preloadedFiles" | "directoryPrefix">;
+
 type FileIntent =
 	| { kind: "changed"; file: TFile; path: string; oldPath?: string }
 	| { kind: "deleted"; path: string; isRename?: boolean }
@@ -103,7 +120,7 @@ type FileIntent =
  * that needs to track file changes with frontmatter.
  */
 export class Indexer {
-	private config: Required<IndexerConfig>;
+	private config: NormalizedIndexerConfig;
 	private fileSub: Subscription | null = null;
 	private configSubscription: Subscription | null = null;
 	private readonly app: App;
@@ -112,9 +129,14 @@ export class Indexer {
 	private scanEventsSubject = new Subject<IndexerEvent>();
 	private indexingCompleteSubject = new RxBehaviorSubject<boolean>(false);
 	private frontmatterCache: Map<string, IndexerFrontmatter> = new Map();
+	private _descendantFiles: TFile[] = [];
 
 	public readonly events$: Observable<IndexerEvent>;
 	public readonly indexingComplete$: Observable<boolean>;
+
+	get descendantFiles(): ReadonlyArray<TFile> {
+		return this._descendantFiles;
+	}
 
 	constructor(app: App, configStore: BehaviorSubject<IndexerConfig>) {
 		this.app = app;
@@ -136,13 +158,15 @@ export class Indexer {
 		this.indexingComplete$ = this.indexingCompleteSubject.asObservable();
 	}
 
-	private normalizeConfig(config: IndexerConfig): Required<IndexerConfig> {
+	private normalizeConfig(config: IndexerConfig): NormalizedIndexerConfig {
 		return {
 			includeFile: config.includeFile || (() => true),
 			excludedDiffProps: config.excludedDiffProps || new Set(),
 			scanConcurrency: config.scanConcurrency || DEFAULT_SCAN_CONCURRENCY,
 			debounceMs: config.debounceMs || DEFAULT_DEBOUNCE_MS,
 			emitRenameEvents: config.emitRenameEvents || false,
+			preloadedFiles: config.preloadedFiles,
+			directoryPrefix: config.directoryPrefix,
 		};
 	}
 
@@ -165,11 +189,13 @@ export class Indexer {
 		this.fileSub = null;
 		this.configSubscription?.unsubscribe();
 		this.configSubscription = null;
+		this._descendantFiles = [];
 		this.indexingCompleteSubject.complete();
 	}
 
 	resync(): void {
 		this.frontmatterCache.clear();
+		this._descendantFiles = [];
 		this.indexingCompleteSubject.next(false);
 		void this.scanAllFiles();
 	}
@@ -179,8 +205,20 @@ export class Indexer {
 	 */
 	private async scanAllFiles(): Promise<void> {
 		try {
-			const allFiles = this.vault.getMarkdownFiles();
-			const files = allFiles.filter((file) => this.config.includeFile(file.path));
+			const allFiles = this.config.preloadedFiles ?? this.vault.getMarkdownFiles();
+			const files: TFile[] = [];
+			const descendants: TFile[] = [];
+			const dirPrefix = this.config.directoryPrefix ? this.config.directoryPrefix + "/" : undefined;
+
+			for (const file of allFiles) {
+				if (this.config.includeFile(file.path)) {
+					files.push(file);
+				} else if (dirPrefix && file.path.startsWith(dirPrefix)) {
+					descendants.push(file);
+				}
+			}
+
+			this._descendantFiles = descendants;
 
 			const results$ = from(files).pipe(
 				mergeMap(async (file) => {

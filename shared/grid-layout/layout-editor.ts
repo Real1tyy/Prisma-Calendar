@@ -3,6 +3,7 @@ import { setIcon } from "obsidian";
 
 import { showModal } from "../component-renderer/modal";
 import { createCssUtils } from "../core/css-utils";
+import { adjustSizes } from "./grid-layout";
 import type { CellOption, GridLayoutState } from "./types";
 
 const MIN_DIM = 1;
@@ -37,11 +38,13 @@ export function openLayoutEditor(config: LayoutEditorConfig): void {
 
 		const controls = root.createDiv(css.cls("grid-editor-controls"));
 		renderDimRow(controls, "Columns", staged.columns, (v) => {
-			staged = { ...staged, columns: v, cells: staged.cells.filter((c) => c.col < v) };
+			const columnSizes = adjustSizes(staged.columnSizes, staged.columns, v);
+			staged = { ...staged, columns: v, cells: staged.cells.filter((c) => c.col < v), columnSizes };
 			renderEditor(root, closeModal);
 		});
 		renderDimRow(controls, "Rows", staged.rows, (v) => {
-			staged = { ...staged, rows: v, cells: staged.cells.filter((c) => c.row < v) };
+			const rowSizes = adjustSizes(staged.rowSizes, staged.rows, v);
+			staged = { ...staged, rows: v, cells: staged.cells.filter((c) => c.row < v), rowSizes };
 			renderEditor(root, closeModal);
 		});
 

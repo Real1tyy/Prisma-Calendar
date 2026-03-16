@@ -732,6 +732,20 @@ export const sanitizeFilenamePreserveSpaces = (input: string): string => {
 	);
 };
 
+/**
+ * Creates an Obsidian display link from a file path.
+ * Format: `[[path/without/ext|DisplayName]]`
+ *
+ * @example
+ * toDisplayLink("People/Alice/Alice.md") // "[[People/Alice/Alice|Alice]]"
+ * toDisplayLink("Tasks/Build MVP.md")    // "[[Tasks/Build MVP|Build MVP]]"
+ */
+export function toDisplayLink(filePath: string): string {
+	const pathWithoutExt = removeMarkdownExtension(filePath);
+	const displayName = extractFileName(filePath);
+	return `[[${pathWithoutExt}|${displayName}]]`;
+}
+
 export const getFilenameFromPath = (filePath: string): string => {
 	return filePath.split("/").pop() || "Unknown";
 };

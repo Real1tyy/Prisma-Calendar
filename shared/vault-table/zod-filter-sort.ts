@@ -1,4 +1,14 @@
 import { z } from "zod";
+import type { $ZodType } from "zod/v4/core";
+
+import {
+	type FieldType,
+	type JSONSchemaProperty,
+	resolveFieldType,
+	schemaToJSONSchema,
+} from "../core/zod-introspection";
+
+type ZodShape = Record<string, $ZodType>;
 
 // ─── Scalar Schemas ────────────────────────────────────────────
 
@@ -49,7 +59,6 @@ export const ParsedSortSchema = z.object({
 
 // ─── Inferred Types ────────────────────────────────────────────
 
-export type FieldType = z.infer<typeof FieldTypeSchema>;
 export type FilterOperator = z.infer<typeof FilterOperatorSchema>;
 export type RestSortDirection = z.infer<typeof RestSortDirectionSchema>;
 export type RestFilterValue = z.infer<typeof RestFilterValueSchema>;
@@ -89,71 +98,17 @@ const OPERATOR_SUFFIXES: FilterOperator[] = [
 	"in",
 ];
 
-// ─── Zod v4 Type Introspection ─────────────────────────────────
-// z.iso.date() / z.iso.datetime(): `_zod.def.format` directly on def
-// z.string().date() (deprecated): `_zod.def.checks[].format`
-// Both have `_zod.def.type === "string"`.
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyZodSchema = Record<string, any>;
-type ZodShape = Record<string, AnyZodSchema>;
-
-const DATE_FORMATS = new Set(["date", "datetime"]);
-
-function getDefType(zodType: AnyZodSchema): string {
-	return zodType._zod?.def?.type ?? "unknown";
-}
-
-function unwrapZodType(zodType: AnyZodSchema): AnyZodSchema {
-	const defType = getDefType(zodType);
-	if (defType === "optional" || defType === "nullable" || defType === "default") {
-		const inner = zodType._zod?.def?.innerType;
-		if (inner) return unwrapZodType(inner);
-	}
-	return zodType;
-}
-
-function hasDateFormat(zodType: AnyZodSchema): boolean {
-	const def = zodType._zod?.def;
-	if (!def) return false;
-
-	if (def.format && DATE_FORMATS.has(def.format)) return true;
-
-	const checks: Array<{ format?: string }> | undefined = def.checks;
-	if (!checks) return false;
-	return checks.some((check) => check.format && DATE_FORMATS.has(check.format));
-}
-
-export function resolveFieldType(zodType: AnyZodSchema): FieldType {
-	const unwrapped = unwrapZodType(zodType);
-	const defType = getDefType(unwrapped);
-
-	switch (defType) {
-		case "string":
-			return hasDateFormat(unwrapped) ? "date" : "string";
-		case "number":
-			return "number";
-		case "boolean":
-			return "boolean";
-		case "union": {
-			const options: AnyZodSchema[] | undefined = unwrapped._zod?.def?.options;
-			if (!options) return "unknown";
-			const types = new Set(options.map((o) => resolveFieldType(o)));
-			types.delete("unknown");
-			if (types.size === 1) return types.values().next().value!;
-			if (types.has("string")) return "string";
-			return "unknown";
-		}
-		default:
-			return "unknown";
-	}
-}
-
 // ─── Schema Introspection ──────────────────────────────────────
 
+function shapeToProperties(shape: ZodShape): Record<string, JSONSchemaProperty> {
+	const jsonSchema = schemaToJSONSchema(z.object(shape));
+	return jsonSchema.properties ?? {};
+}
+
 function inferFields<T>(shape: ZodShape, mapFn: (key: string, type: FieldType) => T): T[] {
-	return Object.entries(shape)
-		.map(([key, zodType]) => ({ key, type: resolveFieldType(zodType) }))
+	const properties = shapeToProperties(shape);
+	return Object.entries(properties)
+		.map(([key, prop]) => ({ key, type: resolveFieldType(prop) }))
 		.filter(({ type }) => type !== "unknown")
 		.map(({ key, type }) => mapFn(key, type));
 }
