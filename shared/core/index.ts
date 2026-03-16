@@ -7,3 +7,4 @@ export * from "./generate";
 export * from "./indexer";
 export * from "./property-renderer";
 export * from "./validation";
+export * from "./zod-introspection";

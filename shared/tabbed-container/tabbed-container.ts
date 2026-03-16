@@ -1,4 +1,4 @@
-import { Menu, setIcon } from "obsidian";
+import { Menu, setIcon, Setting } from "obsidian";
 
 import { showModal } from "../component-renderer/modal";
 import { createCssUtils } from "../core/css-utils";
@@ -49,6 +49,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 	const { visibleTabs: initialVisible, renames } = resolveVisibleTabs(config);
 	let visibleTabs = [...initialVisible];
 	let currentIndex = clampInitial(resolveInitialTab(visibleTabs, config));
+	let showSettingsButton = config.initialState?.showSettingsButton !== false;
 	let destroyed = false;
 
 	const barParent = tabBarContainer ?? container;
@@ -84,6 +85,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		if (visibleTabs.length !== allTabs.length || currentOrder.some((id, i) => id !== defaultOrder[i])) {
 			state.visibleTabIds = currentOrder;
 		}
+		if (!showSettingsButton) state.showSettingsButton = false;
 		return state;
 	}
 
@@ -136,7 +138,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 			buttons.push(button);
 		}
 
-		if (editable && config.app) {
+		if (editable && config.app && showSettingsButton) {
 			const settingsBtn = tabBar.createEl("button", { cls: css.cls("tab", "tab-settings") });
 			setIcon(settingsBtn, "settings-2");
 			settingsBtn.addEventListener("click", () => handle.showTabManager());
@@ -254,6 +256,17 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 
 	function renderManagerList(root: HTMLElement): void {
 		root.empty();
+
+		new Setting(root).setName("Show settings button").addToggle((toggle) => {
+			toggle.setValue(showSettingsButton);
+			toggle.onChange((value) => {
+				showSettingsButton = value;
+				renderTabBar();
+				activateTab(currentIndex);
+				emitStateChange();
+			});
+		});
+
 		const list = root.createDiv(css.cls("tab-manager-list"));
 
 		const visibleIds = new Set(visibleTabs.map((t) => t.id));

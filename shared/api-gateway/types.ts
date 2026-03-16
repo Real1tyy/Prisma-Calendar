@@ -1,22 +1,22 @@
 import type { Plugin } from "obsidian";
 
-/**
- * Handler function for an action. If TParams is void, the handler takes no arguments.
- * TReturn allows handlers to return data (e.g. for read operations).
- */
-export type ActionHandler<TParams = void, TReturn = void> = TParams extends void
-	? () => TReturn | Promise<TReturn>
-	: (params: TParams) => TReturn | Promise<TReturn>;
+import type { HttpActionConfig, HttpServerConfig } from "./http-types";
+
+/** Handler function for an action. Always accepts params (void for no-input actions). */
+export type ActionHandler<TParams = void, TReturn = void> = (params: TParams) => TReturn | Promise<TReturn>;
 
 /**
  * Definition of a single action in the API gateway.
  * - `handler`: the function that executes the action
  * - `parseParams`: optional converter from URL query params to typed params.
  *   If omitted, the action is window-API-only (not URL-accessible).
+ * - `http`: optional HTTP transport configuration. Controls how (or whether)
+ *   this action is exposed over the HTTP server.
  */
 export interface ActionDef<TParams = void, TReturn = void> {
 	handler: ActionHandler<TParams, TReturn>;
 	parseParams?: (raw: Record<string, string>) => TParams;
+	http?: HttpActionConfig;
 }
 
 /**
@@ -47,4 +47,7 @@ export interface PluginApiGatewayOptions<TActions extends ActionDefMap> {
 	globalKey: string;
 	protocolKey?: string;
 	actions: TActions;
+	http?: HttpServerConfig & {
+		enabled?: boolean;
+	};
 }

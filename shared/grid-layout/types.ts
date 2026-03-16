@@ -36,10 +36,14 @@ export const GridLayoutStateSchema = z
 				})
 			)
 			.catch([]),
+		columnSizes: z.array(z.number().positive()).optional().catch(undefined),
+		rowSizes: z.array(z.number().positive()).optional().catch(undefined),
 	})
 	.transform((state) => ({
 		...state,
 		cells: state.cells.filter((c) => c.row < state.rows && c.col < state.columns),
+		columnSizes: state.columnSizes?.length === state.columns ? state.columnSizes : undefined,
+		rowSizes: state.rowSizes?.length === state.rows ? state.rowSizes : undefined,
 	}));
 
 /** Serializable snapshot of grid layout state. Safe to persist in plugin settings. */
@@ -66,6 +70,8 @@ export interface GridLayoutConfig {
 	onStateChange?: (state: GridLayoutState) => void;
 	/** When true, renders a gear button on the grid to open the layout editor. Requires `app` and `cellPalette`. */
 	editable?: boolean;
+	/** When true, adds drag handles between grid tracks for resizing columns and rows. Mutually exclusive with `minCellWidth`. */
+	resizable?: boolean;
 	/** Required when any cell has `enlargeable: true`, `cellPalette`, or `editable` is provided. */
 	app?: App;
 }

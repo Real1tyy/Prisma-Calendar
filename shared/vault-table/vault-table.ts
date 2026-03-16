@@ -3,7 +3,7 @@ import { BehaviorSubject, filter, firstValueFrom, type Observable, Subject, type
 
 import { CommandManager } from "../commands/command-manager";
 import { Indexer, type IndexerConfig, type IndexerEvent } from "../core/indexer";
-import { extractFileName, getFolderPath, isDirectChildOrFolderNote } from "../file/file";
+import { extractFileName, getFolderPath, isDirectChildOrFolderNote, toDisplayLink } from "../file/file";
 import { ensureDirectory, extractContentAfterFrontmatter, withFrontmatter } from "../file/file-utils";
 import { correctFrontmatter, deleteInvalidFile } from "../file/frontmatter-repair";
 import { createFileContentWithFrontmatter } from "../file/frontmatter-serialization";
@@ -30,6 +30,8 @@ import {
 	UpdateRowCommand,
 	type VaultTableOps,
 } from "./vault-table-commands";
+import { VaultTableQuery } from "./vault-table-query";
+import type { SortField } from "./zod-filter-sort";
 
 type ResolveChildRelations<T extends VaultTableDefMap> = {
 	[K in keyof T]: T[K] extends VaultTableDef<infer D, infer S, infer C> ? VaultTable<D, S, C> : never;
@@ -57,6 +59,7 @@ export class VaultTable<
 	private readonly filePathResolver: (directory: string, fileName: string) => string;
 	private readonly childDefs: TChildren | undefined;
 	private templatePath: string | undefined;
+	private parentLink: { property: string; displayLink: string } | undefined;
 
 	private readonly indexer: Indexer;
 	private readonly indexerConfigStore: BehaviorSubject<IndexerConfig>;
@@ -112,6 +115,8 @@ export class VaultTable<
 		this.indexerConfigStore = new BehaviorSubject<IndexerConfig>({
 			includeFile,
 			debounceMs: config.debounceMs,
+			preloadedFiles: config.preloadedFiles,
+			directoryPrefix: config.directory,
 		});
 
 		this.indexer = new Indexer(this.app, this.indexerConfigStore);
@@ -403,6 +408,10 @@ export class VaultTable<
 		return [...this.rows];
 	}
 
+	query(sortFields?: SortField[]): VaultTableQuery<TData> {
+		return VaultTableQuery.from(this, sortFields);
+	}
+
 	// =========================================================================
 	// Queries
 	// =========================================================================
@@ -466,7 +475,7 @@ export class VaultTable<
 			if (!cache.has(key)) {
 				const childDef = this.childDefs[key];
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const child = await this.startChildTable(rowDir, childDef as any);
+				const child = await this.startChildTable(rowDir, childDef as any, row.filePath);
 				cache.set(key, child);
 			}
 		}
@@ -627,22 +636,31 @@ export class VaultTable<
 
 	private async persistNewFile(filePath: string, data: TData, content: string): Promise<TFile> {
 		await ensureDirectory(this.app, getFolderPath(filePath));
+		const frontmatter = this.serializeWithParentLink(data);
 
 		if (this.templatePath) {
 			return createFileAtPathAtomic(this.app, filePath, {
 				content,
-				frontmatter: this.serialize(data),
+				frontmatter,
 				templatePath: this.templatePath,
 			});
 		}
 
-		const fileContent = createFileContentWithFrontmatter(this.serialize(data), content);
+		const fileContent = createFileContentWithFrontmatter(frontmatter, content);
 		guardFromTemplater(this.app, filePath);
 		return this.app.vault.create(filePath, fileContent);
 	}
 
 	private serialize(data: TData): Record<string, unknown> {
 		return this.schema.serialize(data);
+	}
+
+	private serializeWithParentLink(data: TData): Record<string, unknown> {
+		const serialized = this.serialize(data);
+		if (this.parentLink) {
+			serialized[this.parentLink.property] = this.parentLink.displayLink;
+		}
+		return serialized;
 	}
 
 	private getRowDirectory(filePath: string): string {
@@ -654,14 +672,26 @@ export class VaultTable<
 
 	private async startChildTable<D, S extends SerializableSchema<D>, C extends VaultTableDefMap>(
 		directory: string,
-		def: VaultTableDef<D, S, C>
+		def: VaultTableDef<D, S, C>,
+		parentFilePath: string
 	): Promise<VaultTable<D, S, C>> {
+		const childPrefix = directory + "/";
+		const descendantFiles = this.indexer.descendantFiles;
+		const preloadedFiles =
+			descendantFiles.length > 0 ? descendantFiles.filter((f) => f.path.startsWith(childPrefix)) : undefined;
+
 		const child = new VaultTable<D, S, C>({
 			app: this.app,
 			directory,
 			...def,
+			...(preloadedFiles && { preloadedFiles }),
 			...(this.commandManager && { history: { commandManager: this.commandManager } }),
 		} as VaultTableConfig<D, S, C>);
+
+		if (def.parentProperty) {
+			child.parentLink = { property: def.parentProperty, displayLink: toDisplayLink(parentFilePath) };
+		}
+
 		await child.start();
 		await child.waitUntilReady();
 		return child;

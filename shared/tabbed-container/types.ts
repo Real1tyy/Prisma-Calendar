@@ -8,6 +8,8 @@ export const TabbedContainerStateSchema = z.object({
 	visibleTabIds: z.array(z.string()).optional().catch(undefined),
 	/** Custom labels keyed by tab ID. */
 	renames: z.record(z.string(), z.string()).optional().catch(undefined),
+	/** Whether the settings gear button is shown in the tab bar. Default: true. */
+	showSettingsButton: z.boolean().optional().catch(undefined),
 });
 
 /** Serializable snapshot of tab container state. Safe to persist in plugin settings. */

@@ -2,6 +2,8 @@ import { setIcon } from "obsidian";
 
 import { showModal } from "../component-renderer/modal";
 import { createCssUtils } from "../core/css-utils";
+import type { GridResizeHandle } from "./grid-resize";
+import { setupGridResize } from "./grid-resize";
 import { openLayoutEditor } from "./layout-editor";
 import type {
 	CellCleanup,
@@ -34,6 +36,8 @@ function resolveInitialState(config: GridLayoutConfig): {
 	cols: number;
 	rows: number;
 	cells: CellPlacement[];
+	columnSizes?: number[];
+	rowSizes?: number[];
 } {
 	const { initialState, cellPalette, cells: configCells } = config;
 
@@ -55,16 +59,45 @@ function resolveInitialState(config: GridLayoutConfig): {
 		cols: initialState.columns,
 		rows: initialState.rows,
 		cells: resolvedCells,
+		columnSizes: initialState.columnSizes,
+		rowSizes: initialState.rowSizes,
 	};
 }
 
+export function defaultSizes(count: number): number[] {
+	return Array.from({ length: count }, () => 1);
+}
+
+export function adjustSizes(current: number[] | undefined, oldCount: number, newCount: number): number[] | undefined {
+	if (!current) return undefined;
+	if (newCount <= 0) return undefined;
+	if (newCount === oldCount) return current;
+	if (newCount < oldCount) return current.slice(0, newCount);
+	return [...current, ...Array.from({ length: newCount - oldCount }, () => 1)];
+}
+
+function resolveSizes(
+	resizable: boolean | undefined,
+	persisted: number[] | undefined,
+	count: number
+): number[] | undefined {
+	return resizable ? (persisted ?? defaultSizes(count)) : undefined;
+}
+
+function sizesToTemplate(sizes: number[] | undefined, count: number, fallbackUnit: string): string {
+	return sizes ? sizes.map((s) => `${s}fr`).join(" ") : `repeat(${count}, ${fallbackUnit})`;
+}
+
 export function createGridLayout(container: HTMLElement, config: GridLayoutConfig): GridLayoutHandle {
-	const { cssPrefix, gap, minCellWidth, dividers, cellPalette, editable, onCellChange, onStateChange } = config;
+	const { cssPrefix, gap, minCellWidth, dividers, cellPalette, editable, resizable, onCellChange, onStateChange } =
+		config;
 	const css = createCssUtils(cssPrefix);
 
 	const initial = resolveInitialState(config);
 	let cols = initial.cols;
 	let rows = initial.rows;
+	let columnSizes = resolveSizes(resizable, initial.columnSizes, cols);
+	let rowSizes = resolveSizes(resizable, initial.rowSizes, rows);
 	let destroyed = false;
 
 	const cellMap = new Map<string, CellEntry>();
@@ -73,6 +106,37 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 	const gridEl = container.createDiv(css.cls("grid"));
 	applyGridStyles();
 	renderCells(initial.cells);
+
+	let resizeHandle: GridResizeHandle | null = null;
+	if (resizable && !minCellWidth) {
+		const makeAxis = (getSizes: () => number[] | undefined, count: () => number, set: (s: number[]) => void) => ({
+			getSizes: () => getSizes() ?? defaultSizes(count()),
+			onSizesChange: (sizes: number[]) => {
+				set(sizes);
+				applyGridStyles();
+				emitStateChange();
+			},
+		});
+
+		resizeHandle = setupGridResize({
+			gridEl,
+			css,
+			columns: makeAxis(
+				() => columnSizes,
+				() => cols,
+				(s) => {
+					columnSizes = s;
+				}
+			),
+			rows: makeAxis(
+				() => rowSizes,
+				() => rows,
+				(s) => {
+					rowSizes = s;
+				}
+			),
+		});
+	}
 
 	if (editable && config.app && cellPalette?.length) {
 		const editBtn = gridEl.createEl("button", { cls: css.cls("grid-edit-btn") });
@@ -111,16 +175,24 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 		const resolved = resolveInitialState({ ...config, initialState: state });
 		cols = resolved.cols;
 		rows = resolved.rows;
+		columnSizes = resolveSizes(resizable, resolved.columnSizes, cols);
+		rowSizes = resolveSizes(resizable, resolved.rowSizes, rows);
 		applyGridStyles();
 		renderCells(resolved.cells);
+		resizeHandle?.update();
 		emitStateChange();
 	}
 
 	function applyGridStyles(): void {
 		css.addCls(gridEl, "grid");
-		const colTemplate = minCellWidth ? `repeat(auto-fit, minmax(${minCellWidth}px, 1fr))` : `repeat(${cols}, 1fr)`;
+
+		const colTemplate = minCellWidth
+			? `repeat(auto-fit, minmax(${minCellWidth}px, 1fr))`
+			: sizesToTemplate(columnSizes, cols, "1fr");
+		const rowTemplate = sizesToTemplate(rowSizes, rows, "auto");
+
 		setGridVar(gridEl, "--grid-columns", colTemplate);
-		setGridVar(gridEl, "--grid-rows", `repeat(${rows}, auto)`);
+		setGridVar(gridEl, "--grid-rows", rowTemplate);
 		if (gap) setGridVar(gridEl, "--grid-gap", gap);
 	}
 
@@ -131,7 +203,7 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 			const { row, col } = parseKey(key);
 			stateCells.push({ optionId: entry.id, row, col });
 		}
-		return { columns: cols, rows, cells: stateCells };
+		return { columns: cols, rows, cells: stateCells, columnSizes, rowSizes };
 	}
 
 	function emitStateChange(): void {
@@ -399,9 +471,12 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 				}
 			}
 
+			columnSizes = adjustSizes(columnSizes, cols, newCols);
+			rowSizes = adjustSizes(rowSizes, rows, newRows);
 			cols = newCols;
 			rows = newRows;
 			applyGridStyles();
+			resizeHandle?.update();
 			emitStateChange();
 		},
 
@@ -436,6 +511,9 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 		destroy(): void {
 			if (destroyed) return;
 			destroyed = true;
+
+			resizeHandle?.destroy();
+			resizeHandle = null;
 
 			for (const entry of cellMap.values()) {
 				entry.cleanup?.();
