@@ -5421,8 +5421,6 @@
 
 .prisma-heatmap-day-detail {
 	padding: 0 1.5rem 1rem 1.5rem;
-	max-height: 300px;
-	overflow-y: auto;
 }
 
 .prisma-heatmap-detail-header {

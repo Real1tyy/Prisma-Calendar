@@ -21,6 +21,7 @@ type HeatmapMode = "yearly" | "monthly";
 export interface HeatmapHandle {
 	destroy: () => void;
 	refresh: (events: CalendarEvent[]) => void;
+	navigate: (direction: number) => void;
 }
 
 /**
@@ -69,8 +70,6 @@ export function renderHeatmapInto(
 	const controlsLabel = navGroup.createSpan(cls("heatmap-nav-label"));
 	const nextBtn = navGroup.createEl("button", { text: "\u2192", cls: cls("heatmap-nav-btn") });
 	const nowBtn = controls.createEl("button", { text: "Now", cls: cls("heatmap-nav-btn") });
-	const shortcutHint = controls.createSpan(cls("heatmap-shortcut-hint"));
-	shortcutHint.textContent = "\u2190 \u2192 to navigate";
 
 	function navigate(direction: number): void {
 		if (mode === "yearly") {
@@ -202,6 +201,7 @@ export function renderHeatmapInto(
 			dataset = buildHeatmapDataset(events);
 			renderView();
 		},
+		navigate,
 	};
 }
 
@@ -215,14 +215,11 @@ export function showHeatmapModal(app: App, bundle: CalendarBundle, config: Event
 
 			if (ctx.type === "modal") {
 				ctx.scope.register([], "ArrowLeft", () => {
-					const prevBtn = el.querySelector(`.${cls("heatmap-nav-btn")}`) as HTMLButtonElement | null;
-					prevBtn?.click();
+					handle?.navigate(-1);
 					return false;
 				});
 				ctx.scope.register([], "ArrowRight", () => {
-					const btns = el.querySelectorAll(`.${cls("heatmap-nav-btn")}`);
-					const nextBtn = btns[1] as HTMLButtonElement | undefined;
-					nextBtn?.click();
+					handle?.navigate(1);
 					return false;
 				});
 			}
