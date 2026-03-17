@@ -4,8 +4,7 @@ export * from "./api-gateway";
 export * from "./commands";
 // View utilities
 export * from "./activate-view";
-export * from "./mountable-component";
-export * from "./mountable-view";
+export * from "./mountable";
 // Async utilities
 export * from "./async";
 // Components
