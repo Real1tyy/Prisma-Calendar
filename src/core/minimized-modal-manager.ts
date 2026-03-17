@@ -1,3 +1,4 @@
+import { formatMsToHHMMSS, formatMsToMMSS } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
@@ -10,7 +11,6 @@ import type { StopwatchSnapshot } from "../types/stopwatch";
 import { getEventName } from "../utils/event-naming";
 import { formatDateTimeForInput, inputValueToISOString } from "../utils/format";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
-import { formatMsToHHMMSS, formatMsToMMSS } from "../utils/time-formatter";
 import type { CalendarBundle } from "./calendar-bundle";
 import { AssignCategoriesCommand } from "./commands/status-commands";
 import type { IndexerEvent } from "./indexer";
@@ -308,16 +308,17 @@ class MinimizedModalManagerClass {
 		const categories = bundle.categoryTracker.getCategoriesWithColors();
 		const defaultColor = settings.defaultNodeColor;
 
-		openCategoryAssignModal(app, categories, defaultColor, currentCategories, async (selectedCategories) => {
-			try {
-				const command = new AssignCategoriesCommand(app, bundle, state.filePath!, selectedCategories);
-				await bundle.commandManager.executeCommand(command);
-				// the indexer will detect the file change and automatically update the minimized modal state
-				new Notice("Categories updated for minimized event");
-			} catch (error) {
-				console.error("[MinimizedModal] Failed to assign categories:", error);
-				new Notice("Failed to assign categories");
-			}
+		openCategoryAssignModal(app, categories, defaultColor, currentCategories, (selectedCategories) => {
+			void (async () => {
+				try {
+					const command = new AssignCategoriesCommand(app, bundle, state.filePath!, selectedCategories);
+					await bundle.commandManager.executeCommand(command);
+					new Notice("Categories updated for minimized event");
+				} catch (error) {
+					console.error("[MinimizedModal] Failed to assign categories:", error);
+					new Notice("Failed to assign categories");
+				}
+			})();
 		});
 	}
 

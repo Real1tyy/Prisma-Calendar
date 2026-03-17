@@ -1,5 +1,6 @@
+import { getISODatePart } from "@real1ty-obsidian-plugins";
+
 import type { CalendarEvent } from "../../types/calendar";
-import { getISODatePart } from "../../utils/format";
 
 export interface HeatmapDayData {
 	date: string;

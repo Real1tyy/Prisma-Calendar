@@ -1,20 +1,32 @@
-import { Calendar, type EventInput } from "@fullcalendar/core";
-import allLocales from "@fullcalendar/core/locales-all";
+import { Calendar, type CustomButtonInput } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { cls, ColorEvaluator, formatDuration, toggleCls } from "@real1ty-obsidian-plugins";
+import { cls, ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import type { CalendarEvent } from "../../types/calendar";
-import { isTimedEvent } from "../../types/calendar";
+import { UpdateEventCommand } from "../../core/commands";
+import type { CalendarEventData, EventUpdateInfo, ExtendedButtonInput, PrismaEventInput } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { resolveEventColor } from "../../utils/event-color";
-import { cleanupTitle } from "../../utils/event-naming";
-import { toLocalISOString } from "../../utils/format";
-import { emitHover } from "../../utils/obsidian";
+import { BatchSelectionManager } from "../batch-selection-manager";
+import type { CalendarHost } from "../calendar-host";
+import { EventContextMenu } from "../event-context-menu";
+import { EventPreviewModal } from "../event-preview-modal";
+import { SearchFilterInputManager } from "../input-managers/search-filter";
+import { EventCreateModal } from "../modals";
+import {
+	applyContainerStyles,
+	buildCalendarIconCache,
+	buildCoreCalendarOptions,
+	buildSharedEventClassNames,
+	buildSharedEventContent,
+	buildSharedEventDidMount,
+	mapEventToPrismaInput,
+	type SharedCalendarDeps,
+	syncCalendarSettings,
+} from "./shared-calendar-options";
 
 export interface DailyCalendarHandle {
 	calendar: Calendar;
@@ -28,8 +40,11 @@ export interface DailyCalendarConfig {
 	onDateChange?: (date: Date) => void;
 }
 
+const CLICK_THRESHOLD_MS = 150;
+
 /**
- * Creates a simplified FullCalendar instance locked to timeGridDay view.
+ * Creates a FullCalendar instance locked to timeGridDay view that reuses
+ * the full CalendarComponent rendering and interaction model.
  * Used by Daily+Stats and Dual Daily tabs.
  */
 export function createDailyCalendar(
@@ -43,177 +58,477 @@ export function createDailyCalendar(
 	let isIndexingComplete = false;
 	let refreshRafId: number | null = null;
 	let isRefreshing = false;
+	let pendingRefreshRequest = false;
+	let calendarIconCache = buildCalendarIconCache(bundle);
+	let mouseDownTime = 0;
+	let isHandlingSelection = false;
+	let cachedNow = new Date();
+	let cachedTodayStart = new Date(cachedNow.getFullYear(), cachedNow.getMonth(), cachedNow.getDate());
+
+	const calendarHost: CalendarHost = {
+		navigateToDate: (date) => calendar.gotoDate(date),
+		highlightEventByPath: () => {},
+	};
+
+	const searchFilter = new SearchFilterInputManager(() => scheduleRefresh());
+	let batchSelectionManager: BatchSelectionManager | null = null;
+
+	const deps: SharedCalendarDeps = {
+		app,
+		bundle,
+		container,
+		colorEvaluator,
+		calendarHost,
+		getCalendarIconCache: () => calendarIconCache,
+	};
+
+	const eventContextMenu = new EventContextMenu(app, bundle, calendarHost);
+
+	const eventContentCallback = buildSharedEventContent(deps);
+	const eventClassNamesCallback = buildSharedEventClassNames(deps, () => ({
+		now: cachedNow,
+		todayStart: cachedTodayStart,
+	}));
 
 	const settings = bundle.settingsStore.currentSettings;
+	const coreOptions = buildCoreCalendarOptions(settings);
 
 	const calendar = new Calendar(container, {
+		...coreOptions,
 		plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-		locales: allLocales,
-		locale: settings.locale,
-		timeZone: "local",
 		initialView: "timeGridDay",
-		nowIndicator: settings.nowIndicator,
-
-		eventTimeFormat: {
-			hour: "2-digit",
-			minute: "2-digit",
-			hour12: false,
-		},
-		slotLabelFormat: {
-			hour: "2-digit",
-			minute: "2-digit",
-			hour12: false,
-		},
 
 		headerToolbar: {
 			left: "prev,next today",
 			center: "title",
-			right: "",
+			right: "batchSelect",
+		},
+		customButtons: {} as Record<string, CustomButtonInput>,
+
+		editable: true,
+		eventStartEditable: true,
+		eventDurationEditable: true,
+		eventResizableFromStart: true,
+
+		selectable: true,
+		selectMirror: true,
+		unselectAuto: true,
+		unselectCancel: ".modal",
+
+		fixedMirrorParent: document.body,
+
+		eventAllow: (_dropInfo, draggedEvent) => {
+			return !draggedEvent?.extendedProps["isVirtual"];
 		},
 
-		slotMinTime: `${String(settings.hourStart).padStart(2, "0")}:00:00`,
-		slotMaxTime: `${String(settings.hourEnd).padStart(2, "0")}:00:00`,
-		slotDuration: formatDuration(settings.slotDurationMinutes),
-		snapDuration: formatDuration(settings.snapDurationMinutes),
+		eventContent: (arg) => eventContentCallback(arg),
 
-		weekends: !settings.hideWeekends,
-		firstDay: settings.firstDayOfWeek,
-
-		eventOverlap: settings.eventOverlap,
-		slotEventOverlap: settings.slotEventOverlap,
-
-		editable: false,
-		selectable: false,
-
-		eventClassNames: (arg) => {
-			const eventEnd = arg.event.end || arg.event.start;
-			if (!eventEnd) return [];
-			const now = new Date();
-			const isPast = arg.event.allDay
-				? new Date(eventEnd.getFullYear(), eventEnd.getMonth(), eventEnd.getDate()) <
-					new Date(now.getFullYear(), now.getMonth(), now.getDate())
-				: eventEnd < now;
-			if (!isPast) return [];
-			const contrast = bundle.settingsStore.currentSettings.pastEventContrast;
-			if (contrast === 0) return [cls("past-event-hidden")];
-			if (contrast < 100) return [cls("past-event-faded")];
-			return [];
-		},
-
-		eventContent: (arg) => {
-			const title = cleanupTitle(arg.event.title);
-			const domNodes = document.createElement("div");
-			domNodes.classList.add(cls("fc-event-content"));
-
-			const titleSpan = document.createElement("span");
-			titleSpan.classList.add(cls("fc-event-title"));
-			titleSpan.textContent = title;
-			domNodes.appendChild(titleSpan);
-
-			if (arg.timeText) {
-				const timeSpan = document.createElement("span");
-				timeSpan.classList.add(cls("fc-event-time"));
-				timeSpan.textContent = arg.timeText;
-				domNodes.appendChild(timeSpan);
-			}
-
-			return { domNodes };
-		},
+		eventClassNames: (arg) => eventClassNamesCallback(arg),
 
 		eventDidMount: (info) => {
-			if (info.event.extendedProps.isVirtual) {
-				info.el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
-				const isHoliday = info.event.extendedProps.filePath?.startsWith("holiday:");
-				info.el.title = isHoliday ? "Holiday (read-only)" : "Virtual recurring event (read-only)";
-				if (isHoliday) {
-					info.el.classList.add(cls("holiday-event"));
-				}
-			}
-
-			if (!info.event.extendedProps.isVirtual) {
-				const filePath = info.event.extendedProps.filePath as string | undefined;
-				if (filePath) {
-					info.el.addEventListener("mouseenter", (e) => {
-						if (settings.enableEventPreview) {
-							emitHover(app, container, info.el, e, filePath, bundle.calendarId);
-						}
-					});
-				}
-			}
+			eventDidMountCallback(info);
 		},
 
 		eventClick: (info) => {
-			const filePath = info.event.extendedProps?.filePath;
-			if (filePath && !info.event.extendedProps.isVirtual) {
-				void app.workspace.openLinkText(filePath, "", false);
+			if (batchSelectionManager?.isInSelectionMode()) {
+				if (!info.event.extendedProps["isVirtual"]) {
+					batchSelectionManager.handleEventClick(info.event.id);
+				}
+			} else {
+				handleEventClick(info.event, info.el);
+			}
+		},
+
+		eventMouseEnter: () => {},
+
+		eventDrop: (info) => {
+			void handleEventUpdate(extractEventUpdateInfo(info), "Error updating event dates:");
+		},
+
+		eventResize: (info) => {
+			void handleEventUpdate(extractEventUpdateInfo(info), "Error updating event duration:");
+		},
+
+		dateClick: (info) => {
+			if (!isHandlingSelection) {
+				handleDateClick(info);
+			}
+			setTimeout(() => {
+				isHandlingSelection = false;
+			}, 50);
+		},
+
+		select: (info) => {
+			const now = Date.now();
+			const timeSinceMouseDown = now - mouseDownTime;
+			if (timeSinceMouseDown < CLICK_THRESHOLD_MS) {
+				calendar.unselect();
+			} else {
+				isHandlingSelection = true;
+				handleDateSelection(info);
 			}
 		},
 
 		datesSet: () => {
+			cachedNow = new Date();
+			cachedTodayStart = new Date(cachedNow.getFullYear(), cachedNow.getMonth(), cachedNow.getDate());
 			config?.onDateChange?.(calendar.getDate());
 			scheduleRefresh();
+		},
+
+		eventsSet: () => {
+			batchSelectionManager?.refreshSelectionStyling();
 		},
 
 		height: "100%",
 	});
 
+	const eventDidMountCallback = buildSharedEventDidMount(deps, eventContextMenu, () => batchSelectionManager);
+
+	calendar.render();
+
+	batchSelectionManager = new BatchSelectionManager(app, calendar, bundle);
+	batchSelectionManager.setOnSelectionChangeCallback(() => {
+		updateToolbar();
+	});
+	updateToolbar();
+
+	searchFilter.initialize(calendar, container);
+
+	// Mouse tracking for click-vs-drag detection
+	container.addEventListener("mousedown", () => {
+		mouseDownTime = Date.now();
+	});
+
+	applyContainerStyles(container, settings);
+
+	// ─── Toolbar ──────────────────────────────────────────────────
+
+	function updateToolbar(): void {
+		if (!batchSelectionManager) return;
+
+		const inSelectionMode = batchSelectionManager.isInSelectionMode();
+		const { headerToolbar, customButtons } = buildDailyToolbarConfig(inSelectionMode);
+
+		calendar.setOption("headerToolbar", headerToolbar);
+		calendar.setOption("customButtons", customButtons as Record<string, CustomButtonInput>);
+	}
+
+	function buildDailyToolbarConfig(inSelectionMode: boolean): {
+		headerToolbar: { left: string; center: string; right: string };
+		customButtons: Record<string, ExtendedButtonInput>;
+	} {
+		if (inSelectionMode) {
+			const batchSettings = bundle.settingsStore.currentSettings;
+			const rightButtons = ["batchCounter", ...batchSettings.batchActionButtons, "batchExit"];
+
+			return {
+				headerToolbar: {
+					left: "prev,next today",
+					center: "title",
+					right: rightButtons.join(" "),
+				},
+				customButtons: buildBatchButtons(),
+			};
+		}
+
+		return {
+			headerToolbar: {
+				left: "prev,next today",
+				center: "title",
+				right: "batchSelect",
+			},
+			customButtons: {
+				batchSelect: {
+					text: "Batch Select",
+					click: () => toggleBatchSelection(),
+				},
+			},
+		};
+	}
+
+	function buildBatchButtons(): Record<string, ExtendedButtonInput> {
+		const bsm = batchSelectionManager!;
+		const clsBase = cls("batch-action-btn");
+
+		return {
+			batchCounter: {
+				text: `${bsm.getSelectionCount()} selected`,
+				click: () => {},
+				className: `${clsBase} ${cls("batch-counter")}`,
+			},
+			batchSelectAll: {
+				text: "All",
+				click: () => bsm.selectAllVisibleEvents(),
+				className: `${clsBase} ${cls("select-all-btn")}`,
+			},
+			batchClear: {
+				text: "Clear",
+				click: () => bsm.clearSelection(),
+				className: `${clsBase} ${cls("clear-btn")}`,
+			},
+			batchDuplicate: {
+				text: "Duplicate",
+				click: () => {
+					void bsm.executeDuplicate();
+				},
+				className: `${clsBase} ${cls("duplicate-btn")}`,
+			},
+			batchMoveBy: {
+				text: "Move By",
+				click: () => bsm.executeMoveBy(),
+				className: `${clsBase} ${cls("move-by-btn")}`,
+			},
+			batchCloneNext: {
+				text: "Clone Next",
+				click: () => {
+					void bsm.executeClone(1);
+				},
+				className: `${clsBase} ${cls("clone-next-btn")}`,
+			},
+			batchClonePrev: {
+				text: "Clone Prev",
+				click: () => {
+					void bsm.executeClone(-1);
+				},
+				className: `${clsBase} ${cls("clone-prev-btn")}`,
+			},
+			batchMoveNext: {
+				text: "Move Next",
+				click: () => {
+					void bsm.executeMove(1);
+				},
+				className: `${clsBase} ${cls("move-next-btn")}`,
+			},
+			batchMovePrev: {
+				text: "Move Prev",
+				click: () => {
+					void bsm.executeMove(-1);
+				},
+				className: `${clsBase} ${cls("move-prev-btn")}`,
+			},
+			batchOpenAll: {
+				text: "Open",
+				click: () => {
+					void bsm.executeOpenAll();
+				},
+				className: `${clsBase} ${cls("open-all-btn")}`,
+			},
+			batchSkip: {
+				text: "Skip",
+				click: () => {
+					void bsm.executeSkip();
+				},
+				className: `${clsBase} ${cls("skip-btn")}`,
+			},
+			batchMarkAsDone: {
+				text: "Done",
+				click: () => {
+					void bsm.executeMarkAsDone();
+				},
+				className: `${clsBase} ${cls("mark-done-btn")}`,
+			},
+			batchMarkAsNotDone: {
+				text: "Not Done",
+				click: () => {
+					void bsm.executeMarkAsNotDone();
+				},
+				className: `${clsBase} ${cls("mark-not-done-btn")}`,
+			},
+			batchDelete: {
+				text: "Delete",
+				click: () => {
+					void bsm.executeDelete();
+				},
+				className: `${clsBase} ${cls("delete-btn")}`,
+			},
+			batchExit: {
+				text: "Exit",
+				click: () => toggleBatchSelection(),
+				className: `${clsBase} ${cls("exit-btn")}`,
+			},
+		};
+	}
+
+	function toggleBatchSelection(): void {
+		const wasInSelectionMode = batchSelectionManager?.isInSelectionMode() ?? false;
+		batchSelectionManager?.toggleSelectionMode();
+		if (wasInSelectionMode) {
+			scheduleRefresh();
+		}
+	}
+
+	// ─── Event Refresh ───────────────────────────────────────────
+
 	function scheduleRefresh(): void {
+		if (isRefreshing) {
+			pendingRefreshRequest = true;
+			return;
+		}
 		if (refreshRafId !== null) return;
-		refreshRafId = requestAnimationFrame(async () => {
+
+		refreshRafId = requestAnimationFrame(() => {
 			refreshRafId = null;
-			await refreshEvents();
+			isRefreshing = true;
+			pendingRefreshRequest = false;
+			void refreshEvents();
 		});
 	}
 
+	function releaseRefreshLock(): void {
+		isRefreshing = false;
+		if (pendingRefreshRequest) {
+			pendingRefreshRequest = false;
+			scheduleRefresh();
+		}
+	}
+
 	async function refreshEvents(): Promise<void> {
-		if (!isIndexingComplete || !calendar.view || isRefreshing) return;
-		isRefreshing = true;
+		if (!isIndexingComplete || !calendar.view) {
+			releaseRefreshLock();
+			return;
+		}
+
 		try {
 			const { activeStart, activeEnd } = calendar.view;
 			const start = toLocalISOString(activeStart);
 			const end = toLocalISOString(activeEnd);
 
 			const events = await bundle.eventStore.getEvents({ start, end });
-			const mapped = events.map((event) => buildEvent(event));
+			const visibleEvents: PrismaEventInput[] = events
+				.filter((event) => searchFilter.shouldInclude({ meta: event.meta, title: event.title }))
+				.map((event) => mapEventToPrismaInput(event, bundle, colorEvaluator));
 
 			calendar.removeAllEvents();
-			for (const ev of mapped) {
-				calendar.addEvent(ev);
-			}
-		} finally {
-			isRefreshing = false;
+			calendar.batchRendering(() => {
+				for (const ev of visibleEvents) {
+					calendar.addEvent(ev);
+				}
+			});
+		} catch (error) {
+			console.error("[DailyCalendar] Error refreshing events:", error);
+		}
+
+		releaseRefreshLock();
+	}
+
+	// ─── Event Interaction ───────────────────────────────────────
+
+	function handleEventClick(
+		event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay">,
+		_eventEl: HTMLElement
+	): void {
+		const filePath = event.extendedProps.filePath;
+		const isVirtual = event.extendedProps.isVirtual;
+		const isHoliday = typeof filePath === "string" && filePath.startsWith("holiday:");
+
+		if (isHoliday) return;
+
+		if (isVirtual && filePath && typeof filePath === "string") {
+			new EventPreviewModal(app, bundle, {
+				title: event.title,
+				start: null,
+				end: null,
+				allDay: false,
+				extendedProps: {
+					filePath,
+					frontmatterDisplayData: event.extendedProps.frontmatterDisplayData,
+				},
+			}).open();
+			return;
+		}
+
+		if (filePath && typeof filePath === "string") {
+			void app.workspace.openLinkText(filePath, "", false);
 		}
 	}
 
-	function buildEvent(event: CalendarEvent): EventInput {
-		const eventColor = resolveEventColor(event.meta, bundle, colorEvaluator);
-		const start = event.start.replace(/Z$/, "");
-		const end = isTimedEvent(event) ? event.end.replace(/Z$/, "") : undefined;
+	function handleDateClick(info: { date: Date; allDay: boolean }): void {
+		const currentSettings = bundle.settingsStore.currentSettings;
+		const endDate = new Date(info.date);
+		endDate.setMinutes(endDate.getMinutes() + currentSettings.defaultDurationMinutes);
 
+		new EventCreateModal(app, bundle, {
+			title: "",
+			start: toLocalISOString(info.date),
+			end: info.allDay ? null : toLocalISOString(endDate),
+			allDay: info.allDay,
+			extendedProps: { filePath: null as string | null },
+		}).open();
+		calendar.unselect();
+	}
+
+	function handleDateSelection(info: { start: Date; end: Date; allDay: boolean }): void {
+		new EventCreateModal(app, bundle, {
+			title: "",
+			start: toLocalISOString(info.start),
+			end: toLocalISOString(info.end),
+			allDay: info.allDay,
+			extendedProps: { filePath: null as string | null },
+		}).open();
+		calendar.unselect();
+	}
+
+	function extractEventUpdateInfo(info: {
+		event: CalendarEventData;
+		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
+		revert: () => void;
+	}): EventUpdateInfo | null {
+		if (!info.event.start) {
+			info.revert();
+			return null;
+		}
 		return {
-			id: event.ref.filePath,
-			title: event.title,
-			start,
-			end,
-			allDay: event.type === "allDay",
-			color: eventColor,
-			extendedProps: {
-				filePath: event.ref.filePath,
-				isVirtual: event.isVirtual ?? false,
+			event: {
+				title: info.event.title,
+				start: info.event.start,
+				end: info.event.end,
+				allDay: info.event.allDay,
+				extendedProps: info.event.extendedProps,
 			},
+			oldEvent: {
+				start: info.oldEvent.start || new Date(),
+				end: info.oldEvent.end,
+				allDay: info.oldEvent.allDay,
+			},
+			revert: info.revert,
 		};
 	}
 
-	calendar.render();
+	async function handleEventUpdate(info: EventUpdateInfo | null, errorMessage: string): Promise<void> {
+		if (!info) return;
 
-	function applyContainerStyles(s: SingleCalendarConfig): void {
-		toggleCls(container, "thicker-hour-lines", s.thickerHourLines);
-		toggleCls(container, "sticky-all-day-events", s.stickyAllDayEvents);
-		toggleCls(container, "sticky-day-headers", s.stickyDayHeaders);
-		container.style.setProperty("--all-day-event-height", `${s.allDayEventHeight}px`);
+		if (info.event.extendedProps.isVirtual === true) {
+			info.revert();
+			return;
+		}
+
+		const filePath = info.event.extendedProps.filePath;
+		if (!filePath || typeof filePath !== "string") {
+			info.revert();
+			return;
+		}
+
+		try {
+			const command = new UpdateEventCommand(
+				app,
+				bundle,
+				filePath,
+				toLocalISOString(info.event.start),
+				info.event.end ? toLocalISOString(info.event.end) : undefined,
+				info.event.allDay || false,
+				toLocalISOString(info.oldEvent.start),
+				info.oldEvent.end ? toLocalISOString(info.oldEvent.end) : undefined,
+				info.oldEvent.allDay || false
+			);
+			await bundle.commandManager.executeCommand(command);
+		} catch (error) {
+			console.error(`[DailyCalendar] ${errorMessage}`, error);
+			info.revert();
+		}
 	}
 
-	applyContainerStyles(settings);
+	// ─── Subscriptions ───────────────────────────────────────────
 
 	const indexingSub = bundle.indexer.indexingComplete$.subscribe((complete) => {
 		isIndexingComplete = complete;
@@ -224,18 +539,19 @@ export function createDailyCalendar(
 	const eventStoreSub = bundle.eventStore.subscribe(() => scheduleRefresh());
 	subscriptions.push(eventStoreSub);
 
+	const recurringEventSub = bundle.recurringEventManager.subscribe(() => scheduleRefresh());
+	subscriptions.push(recurringEventSub);
+
 	const settingsSub = bundle.settingsStore.settings$.subscribe((s: SingleCalendarConfig) => {
-		calendar.setOption("locale", s.locale);
-		calendar.setOption("weekends", !s.hideWeekends);
-		calendar.setOption("firstDay", s.firstDayOfWeek);
-		calendar.setOption("nowIndicator", s.nowIndicator);
-		calendar.setOption("slotMinTime", `${String(s.hourStart).padStart(2, "0")}:00:00`);
-		calendar.setOption("slotMaxTime", `${String(s.hourEnd).padStart(2, "0")}:00:00`);
-		calendar.setOption("slotDuration", formatDuration(s.slotDurationMinutes));
-		calendar.setOption("snapDuration", formatDuration(s.snapDurationMinutes));
-		applyContainerStyles(s);
+		syncCalendarSettings(calendar, s);
+		applyContainerStyles(container, s);
 	});
 	subscriptions.push(settingsSub);
+
+	const mainSettingsSub = bundle.settingsStore.mainSettingsStore.settings$.subscribe(() => {
+		calendarIconCache = buildCalendarIconCache(bundle);
+	});
+	subscriptions.push(mainSettingsSub);
 
 	return {
 		calendar,
@@ -249,6 +565,8 @@ export function createDailyCalendar(
 			}
 			for (const sub of subscriptions) sub.unsubscribe();
 			subscriptions.length = 0;
+			searchFilter.destroy();
+			batchSelectionManager = null;
 			colorEvaluator.destroy();
 			calendar.destroy();
 		},

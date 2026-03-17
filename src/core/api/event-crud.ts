@@ -1,9 +1,8 @@
-import type { Command } from "@real1ty-obsidian-plugins";
+import { type Command, ensureISOSuffix } from "@real1ty-obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 
 import type CustomCalendarPlugin from "../../main";
 import { setUntrackedEventBasics } from "../../utils/event-frontmatter";
-import { ensureISOSuffix } from "../../utils/format";
 import type { CalendarBundle } from "../calendar-bundle";
 import { ConvertFileToEventCommand } from "../commands/update-commands";
 import { resolveBundleOrNotice } from "./bundle-resolver";

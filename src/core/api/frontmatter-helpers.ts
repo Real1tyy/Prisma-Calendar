@@ -1,3 +1,5 @@
+import { ensureISOSuffix } from "@real1ty-obsidian-plugins";
+
 import type { Frontmatter } from "../../types";
 import {
 	assignListToFrontmatter,
@@ -6,7 +8,6 @@ import {
 	setUntrackedEventBasics,
 } from "../../utils/event-frontmatter";
 import { autoAssignCategories } from "../../utils/event-matching";
-import { ensureISOSuffix } from "../../utils/format";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { PrismaEditEventInput, PrismaEventInput } from "./types";
 

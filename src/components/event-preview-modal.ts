@@ -1,7 +1,9 @@
 import {
 	addCls,
+	calculateDuration,
 	cls,
 	createDefaultSeparator,
+	intoDate,
 	type PropertyRendererConfig,
 	renderPropertyValue,
 } from "@real1ty-obsidian-plugins";
@@ -11,7 +13,7 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import type { Frontmatter } from "../types";
 import { createTextDiv } from "../utils/dom-utils";
 import { removeZettelId } from "../utils/event-naming";
-import { calculateDuration, categorizeProperties, intoDate } from "../utils/format";
+import { categorizeProperties } from "../utils/format";
 
 export interface PreviewEventData {
 	title: string;

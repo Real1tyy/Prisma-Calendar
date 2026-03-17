@@ -1,5 +1,5 @@
-import { activateView, onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsidian-plugins";
-import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
+import { activateView, intoDate, onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsidian-plugins";
+import { type App, Notice, TFile } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 
 import { type PrismaViewRef, registerPrismaCalendarView } from "../components/views/prisma-view";
@@ -8,7 +8,6 @@ import type { PrismaCalendarSettingsStore } from "../types";
 import type { EventSaveData } from "../types/event-save";
 import { getCalendarViewType } from "../utils/calendar-view-type";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/event-naming";
-import { intoDate } from "../utils/format";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
 import type { CategoryTracker } from "./category-tracker";
 import {
@@ -129,7 +128,7 @@ export class CalendarBundle {
 	async initialize(): Promise<void> {
 		return await onceAsync(async () => {
 			await this.notificationManager.start();
-			this.indexer.start();
+			void this.indexer.start();
 			await firstValueFrom(this.indexer.indexingComplete$.pipe(filter((complete) => complete)));
 
 			registerPrismaCalendarView(this.plugin, this, this.viewRef);

@@ -1,4 +1,6 @@
+import type { SyncStore } from "@real1ty-obsidian-plugins";
 import {
+	applySourceTimeToInstanceDate,
 	createFileAtPathAtomic,
 	createFileLink,
 	DebouncedNotifier,
@@ -6,11 +8,12 @@ import {
 	type FrontmatterDiff,
 	FrontmatterPropagationDebouncer,
 	FrontmatterPropagationModal,
+	getISOTimePart,
 	getObsidianLinkPath,
 	getUniqueFilePathFromFull,
 	rebuildPhysicalInstanceFilename,
+	replaceISOTime,
 	sanitizeForFilename,
-	SyncStore,
 	withFrontmatter,
 	withLock,
 } from "@real1ty-obsidian-plugins";
@@ -32,7 +35,6 @@ import {
 	type TimePropagationDiff,
 } from "../utils/event-frontmatter";
 import { hashRRuleIdToZettelFormat, removeZettelId } from "../utils/event-naming";
-import { applySourceTimeToInstanceDate, getISOTimePart, replaceISOTime } from "../utils/format";
 import {
 	batchedPromiseAll,
 	deleteFilesByPaths,

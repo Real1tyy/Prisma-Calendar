@@ -1,8 +1,8 @@
+import { roundToNearestHour, toLocalISOString } from "@real1ty-obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 
 import { EventCreateModal, EventEditModal, UntrackedEventCreateModal } from "../../components/modals";
 import type CustomCalendarPlugin from "../../main";
-import { roundToNearestHour, toLocalISOString } from "../../utils/format";
 import { openFileInNewTab } from "../../utils/obsidian";
 import { AddZettelIdCommand } from "../commands/update-commands";
 import { MinimizedModalManager } from "../minimized-modal-manager";

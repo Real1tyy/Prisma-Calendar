@@ -1,5 +1,9 @@
 import type { Command } from "./command";
 
+export function batchCommand(filePaths: string[], createOne: (filePath: string) => Command): MacroCommand {
+	return new MacroCommand(filePaths.map(createOne));
+}
+
 export interface MacroCommandOptions {
 	rollbackOnError?: boolean;
 }
