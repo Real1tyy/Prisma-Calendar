@@ -3,7 +3,7 @@ import allLocales from "@fullcalendar/core/locales-all";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { cls, ColorEvaluator, formatDuration } from "@real1ty-obsidian-plugins";
+import { cls, ColorEvaluator, formatDuration, toggleCls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { Subscription } from "rxjs";
 
@@ -20,6 +20,8 @@ export interface DailyCalendarHandle {
 	calendar: Calendar;
 	destroy: () => void;
 	getDate: () => Date;
+	prev: () => void;
+	next: () => void;
 }
 
 export interface DailyCalendarConfig {
@@ -82,6 +84,21 @@ export function createDailyCalendar(
 
 		editable: false,
 		selectable: false,
+
+		eventClassNames: (arg) => {
+			const eventEnd = arg.event.end || arg.event.start;
+			if (!eventEnd) return [];
+			const now = new Date();
+			const isPast = arg.event.allDay
+				? new Date(eventEnd.getFullYear(), eventEnd.getMonth(), eventEnd.getDate()) <
+					new Date(now.getFullYear(), now.getMonth(), now.getDate())
+				: eventEnd < now;
+			if (!isPast) return [];
+			const contrast = bundle.settingsStore.currentSettings.pastEventContrast;
+			if (contrast === 0) return [cls("past-event-hidden")];
+			if (contrast < 100) return [cls("past-event-faded")];
+			return [];
+		},
 
 		eventContent: (arg) => {
 			const title = cleanupTitle(arg.event.title);
@@ -189,6 +206,15 @@ export function createDailyCalendar(
 
 	calendar.render();
 
+	function applyContainerStyles(s: SingleCalendarConfig): void {
+		toggleCls(container, "thicker-hour-lines", s.thickerHourLines);
+		toggleCls(container, "sticky-all-day-events", s.stickyAllDayEvents);
+		toggleCls(container, "sticky-day-headers", s.stickyDayHeaders);
+		container.style.setProperty("--all-day-event-height", `${s.allDayEventHeight}px`);
+	}
+
+	applyContainerStyles(settings);
+
 	const indexingSub = bundle.indexer.indexingComplete$.subscribe((complete) => {
 		isIndexingComplete = complete;
 		if (complete) scheduleRefresh();
@@ -207,12 +233,15 @@ export function createDailyCalendar(
 		calendar.setOption("slotMaxTime", `${String(s.hourEnd).padStart(2, "0")}:00:00`);
 		calendar.setOption("slotDuration", formatDuration(s.slotDurationMinutes));
 		calendar.setOption("snapDuration", formatDuration(s.snapDurationMinutes));
+		applyContainerStyles(s);
 	});
 	subscriptions.push(settingsSub);
 
 	return {
 		calendar,
 		getDate: () => calendar.getDate(),
+		prev: () => calendar.prev(),
+		next: () => calendar.next(),
 		destroy: () => {
 			if (refreshRafId !== null) {
 				cancelAnimationFrame(refreshRafId);
