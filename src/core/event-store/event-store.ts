@@ -19,10 +19,6 @@ export interface EventQuery {
 	end: ISO;
 }
 
-export interface VaultEventId {
-	filePath: string;
-}
-
 export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private static readonly SEP = "\0";
 	private static readonly MAX = "\uffff";

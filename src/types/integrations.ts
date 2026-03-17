@@ -122,5 +122,3 @@ export const ICSSubscriptionSettingsSchema = z
 		integrationEventColor: z.string().catch("#8b5cf6"),
 	})
 	.loose();
-
-export type ICSSubscriptionSettings = z.infer<typeof ICSSubscriptionSettingsSchema>;

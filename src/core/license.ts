@@ -29,8 +29,6 @@ export const PRO_FEATURES = {
 	HEATMAP: "Heatmap View",
 } as const;
 
-export type ProFeature = (typeof PRO_FEATURES)[keyof typeof PRO_FEATURES];
-
 const LICENSE_CONFIG: LicenseManagerConfig = {
 	productName: "Prisma Calendar",
 	purchaseUrl: PRO_PURCHASE_URL,

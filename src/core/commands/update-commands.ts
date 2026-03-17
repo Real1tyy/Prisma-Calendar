@@ -7,6 +7,7 @@ import {
 	restoreFrontmatter,
 	withFrontmatter,
 } from "@real1ty-obsidian-plugins";
+import type { DurationLike } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 
@@ -72,8 +73,8 @@ export class MoveEventCommand implements Command {
 		private app: App,
 		private bundle: CalendarBundle,
 		private filePath: string,
-		private startOffset: number,
-		private endOffset: number
+		private startOffset: DurationLike,
+		private endOffset: DurationLike
 	) {}
 
 	async execute(): Promise<void> {
@@ -346,7 +347,7 @@ export class ConvertFileToEventCommand implements Command {
 	constructor(
 		private app: App,
 		private bundle: CalendarBundle,
-		private filePath: string,
+		filePath: string,
 		private newFrontmatter: Frontmatter
 	) {
 		this.originalFilePath = filePath;
@@ -401,7 +402,7 @@ export class AddZettelIdCommand implements Command {
 	constructor(
 		private app: App,
 		private bundle: CalendarBundle,
-		private filePath: string
+		filePath: string
 	) {
 		this.originalFilePath = filePath;
 	}

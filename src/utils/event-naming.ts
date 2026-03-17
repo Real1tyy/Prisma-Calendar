@@ -1,6 +1,7 @@
 import { extractDisplayName, generateZettelId, withFrontmatter } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
-import { type App, TFile } from "obsidian";
+import type { TFile } from "obsidian";
+import { type App } from "obsidian";
 
 /**
  * Extracts ZettelID from a filename or title.
@@ -36,22 +37,6 @@ const parseZettelIdToDate = (zettelId: string): Date | null => {
 	}
 
 	return date;
-};
-
-export const isEventNewlyCreated = (zettelId: string | null | undefined): boolean => {
-	if (!zettelId) {
-		return false;
-	}
-
-	const creationDate = parseZettelIdToDate(zettelId);
-	if (!creationDate) {
-		return false;
-	}
-
-	const now = new Date();
-	const oneMinuteAgo = new Date(now.getTime() - 60000);
-
-	return creationDate > oneMinuteAgo;
 };
 
 export const removeZettelId = (text: string): string => {

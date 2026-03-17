@@ -4,6 +4,8 @@ import {
 	serializeFrontmatterValue,
 	withFrontmatter,
 } from "@real1ty-obsidian-plugins";
+import type { DurationLike } from "luxon";
+import { DateTime } from "luxon";
 import { type App, TFile } from "obsidian";
 
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
@@ -85,33 +87,30 @@ export const applyDateNormalizationToFile = async (
 	}
 };
 
-// Safe ISO shift (stays ISO even if undefined)
-const shiftISO = (iso: unknown, offsetMs?: number) => {
-	if (!iso || typeof iso !== "string" || !offsetMs) return iso;
-	const d = new Date(iso);
-	if (Number.isNaN(d.getTime())) return iso;
-	d.setTime(d.getTime() + offsetMs);
+const shiftISO = (iso: unknown, duration?: DurationLike) => {
+	if (!iso || typeof iso !== "string" || !duration) return iso;
+	const dt = DateTime.fromISO(iso);
+	if (!dt.isValid) return iso;
+	const shifted = dt.plus(duration);
 	if (!iso.includes("T")) {
-		return d.toISOString().split("T")[0];
+		return shifted.toISODate();
 	}
-	return d.toISOString();
+	return stripISOSuffix(shifted.toISO()!);
 };
 
 export const applyStartEndOffsets = (
 	fm: Frontmatter,
 	settings: SingleCalendarConfig,
-	startOffset?: number,
-	endOffset?: number
+	startOffset?: DurationLike,
+	endOffset?: DurationLike
 ) => {
 	const { startProp, endProp, dateProp, allDayProp } = settings;
 
 	if (isAllDayEvent(fm[allDayProp])) {
-		// ALL-DAY EVENT: Only shift the date property
 		if (fm[dateProp]) {
 			fm[dateProp] = shiftISO(fm[dateProp], startOffset);
 		}
 	} else {
-		// TIMED EVENT: Shift start and end properties
 		if (fm[startProp]) fm[startProp] = shiftISO(fm[startProp], startOffset);
 		if (fm[endProp]) fm[endProp] = shiftISO(fm[endProp], endOffset);
 	}
@@ -379,58 +378,6 @@ export const getCommonCategories = (app: App, selectedEvents: CalendarEvent[], c
 	);
 
 	return commonCategories;
-};
-
-/**
- * Gets frontmatter properties that are common across all selected events with the same value.
- * Excludes internal Prisma properties.
- * Returns a Map of property key to value for properties that have the same value in ALL events.
- */
-export const getCommonFrontmatterProperties = (
-	app: App,
-	selectedEvents: CalendarEvent[],
-	settings: SingleCalendarConfig,
-	excludedProps?: Set<string>
-): Map<string, string> => {
-	if (selectedEvents.length === 0) return new Map();
-
-	const internalProperties = excludedProps ?? getInternalProperties(settings);
-
-	const allEventProperties = selectedEvents
-		.map((event) => {
-			try {
-				const { frontmatter } = getFileAndFrontmatter(app, event.ref.filePath);
-				return frontmatter;
-			} catch {
-				return null;
-			}
-		})
-		.filter((fm): fm is Frontmatter => fm !== null && fm !== undefined);
-
-	if (allEventProperties.length === 0) return new Map();
-
-	const firstEventProperties = allEventProperties[0];
-
-	return Object.entries(firstEventProperties).reduce((commonProps, [key, value]) => {
-		if (internalProperties.has(key)) return commonProps;
-
-		if (settings.skipUnderscoreProperties && key.startsWith("_")) {
-			return commonProps;
-		}
-
-		const stringValue = serializeFrontmatterValue(value);
-
-		const allMatch = allEventProperties.every((eventFm) => {
-			const eventValue = serializeFrontmatterValue(eventFm[key]);
-			return eventValue === stringValue;
-		});
-
-		if (allMatch && stringValue.trim() !== "") {
-			commonProps.set(key, stringValue);
-		}
-
-		return commonProps;
-	}, new Map<string, string>());
 };
 
 /**

@@ -6,6 +6,7 @@ import {
 	getUniqueFilePathFromFull,
 	sanitizeForFilename,
 } from "@real1ty-obsidian-plugins";
+import type { DurationLike } from "luxon";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 
@@ -156,8 +157,8 @@ export class CloneEventCommand extends CreatedFileCommand {
 		app: App,
 		private bundle: CalendarBundle,
 		private sourceFilePath: string,
-		private startOffset?: number,
-		private endOffset?: number
+		private startOffset?: DurationLike,
+		private endOffset?: DurationLike
 	) {
 		super(app);
 	}
