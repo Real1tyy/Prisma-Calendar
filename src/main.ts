@@ -8,7 +8,7 @@ import {
 	type WhatsNewModalConfig,
 } from "@real1ty-obsidian-plugins";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
-import { Subscription } from "rxjs";
+import type { Subscription } from "rxjs";
 
 import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
 import { CustomCalendarSettingsTab } from "./components";
@@ -251,24 +251,28 @@ export default class CustomCalendarPlugin extends Plugin {
 			view.openEditModalForFocusedEvent();
 		});
 		addCalendarViewCommand(
-			COMMAND_IDS.SET_FOCUSED_EVENT_START_TO_NOW,
+			COMMAND_IDS.SET_LAST_FOCUSED_EVENT_START_TO_NOW,
 			"Set start time to now (focused event)",
 			(view) => {
 				view.setFocusedEventStartToNow();
 			}
 		);
-		addCalendarViewCommand(COMMAND_IDS.SET_FOCUSED_EVENT_END_TO_NOW, "Set end time to now (focused event)", (view) => {
-			view.setFocusedEventEndToNow();
-		});
 		addCalendarViewCommand(
-			COMMAND_IDS.FILL_FOCUSED_EVENT_START_FROM_PREVIOUS,
+			COMMAND_IDS.SET_LAST_FOCUSED_EVENT_END_TO_NOW,
+			"Set end time to now (focused event)",
+			(view) => {
+				view.setFocusedEventEndToNow();
+			}
+		);
+		addCalendarViewCommand(
+			COMMAND_IDS.FILL_LAST_FOCUSED_EVENT_START_FROM_PREVIOUS,
 			"Fill start time from previous event (focused event)",
 			(view) => {
 				view.fillFocusedEventStartFromPrevious();
 			}
 		);
 		addCalendarViewCommand(
-			COMMAND_IDS.FILL_FOCUSED_EVENT_END_FROM_NEXT,
+			COMMAND_IDS.FILL_LAST_FOCUSED_EVENT_END_FROM_NEXT,
 			"Fill end time from next event (focused event)",
 			(view) => {
 				view.fillFocusedEventEndFromNext();

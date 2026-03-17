@@ -5,8 +5,17 @@ import {
 	BATCH_BUTTON_IDS,
 	DEFAULT_BATCH_ACTION_BUTTONS,
 	DEFAULT_CONTEXT_MENU_ITEMS,
+	DEFAULT_EVENT_COLOR,
+	DEFAULT_EVENT_TEXT_COLOR,
+	DEFAULT_EVENT_TEXT_COLOR_ALT,
+	DEFAULT_EXPORT_FOLDER,
+	DEFAULT_MONTH_EVEN_COLOR,
+	DEFAULT_MONTH_ODD_COLOR,
+	DEFAULT_PHYSICAL_RECURRING_MARKER,
+	DEFAULT_SOURCE_RECURRING_MARKER,
 	DEFAULT_TOOLBAR_BUTTONS,
-	SETTINGS_DEFAULTS,
+	DEFAULT_ZOOM_LEVELS,
+	PROP_DEFAULTS,
 } from "../constants";
 import { ColorSchema } from "../utils/validation";
 import { AI_DEFAULTS } from "./ai";
@@ -54,78 +63,74 @@ const EventPresetSchema = z
 const GeneralSettingsSchema = z
 	.object({
 		directory: z.string().catch("").transform(normalizeDirectoryPath),
-		defaultDurationMinutes: z.number().int().positive().catch(SETTINGS_DEFAULTS.DEFAULT_DURATION_MINUTES),
-		showDurationField: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_DURATION_FIELD), // show duration in minutes field in event modal for quick editing
-		showStopwatch: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_STOPWATCH), // show stopwatch in event modal for precise time tracking
-		showStopwatchStartWithoutFill: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_STOPWATCH_START_WITHOUT_FILL), // show "continue" button that continues tracking from existing start time without creating a new one
-		showRibbonIcon: z.boolean().catch(SETTINGS_DEFAULTS.SHOW_RIBBON_ICON), // show ribbon icon in left sidebar to open calendar
-		locale: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_LOCALE), // locale for calendar display language and date formatting
+		defaultDurationMinutes: z.number().int().positive().catch(60),
+		showDurationField: z.boolean().catch(true), // show duration in minutes field in event modal for quick editing
+		showStopwatch: z.boolean().catch(true), // show stopwatch in event modal for precise time tracking
+		showStopwatchStartWithoutFill: z.boolean().catch(false), // show "continue" button that continues tracking from existing start time without creating a new one
+		showRibbonIcon: z.boolean().catch(true), // show ribbon icon in left sidebar to open calendar
+		locale: z.string().catch("en"), // locale for calendar display language and date formatting
 		templatePath: z.string().optional(), // path to Templater template for new events
 		markPastInstancesAsDone: z.boolean().catch(false), // automatically mark past events as done on startup
 		eventPresets: z.array(EventPresetSchema).catch([]), // Event creation presets with pre-filled values
 		defaultPresetId: z.string().optional(), // ID of default preset to auto-fill on create modal open
-		exportFolder: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER), // folder for ICS exports
-		enableKeyboardNavigation: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_ENABLE_KEYBOARD_NAVIGATION), // enable arrow key navigation for calendar intervals
-		autoAssignZettelId: z
-			.enum(["disabled", "calendarEvents", "allEvents"])
-			.catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_ZETTEL_ID), // automatically assign ZettelID to files in calendar directory: disabled, calendar events only (timed + all-day), or all events (including untracked)
+		exportFolder: z.string().catch(DEFAULT_EXPORT_FOLDER), // folder for ICS exports
+		enableKeyboardNavigation: z.boolean().catch(true), // enable arrow key navigation for calendar intervals
+		autoAssignZettelId: z.enum(["disabled", "calendarEvents", "allEvents"]).catch("disabled"), // automatically assign ZettelID to files in calendar directory: disabled, calendar events only (timed + all-day), or all events (including untracked)
 	})
 	.strip();
 
 const PropsSettingsSchema = z
 	.object({
-		startProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_START_PROP),
-		endProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_END_PROP),
-		dateProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_DATE_PROP), // property name for all-day events (date only, no time)
-		allDayProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_PROP),
-		sortingStrategy: z
-			.enum(["none", "startDate", "endDate", "allDayOnly", "allStartDate", "allEndDate"])
-			.catch(SETTINGS_DEFAULTS.DEFAULT_SORTING_STRATEGY), // sorting normalization strategy: write normalized datetime to sort date property
-		sortDateProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SORT_DATE_PROP), // dedicated sort date property for normalized datetime values
+		startProp: z.string().catch(PROP_DEFAULTS.start),
+		endProp: z.string().catch(PROP_DEFAULTS.end),
+		dateProp: z.string().catch(PROP_DEFAULTS.date), // property name for all-day events (date only, no time)
+		allDayProp: z.string().catch(PROP_DEFAULTS.allDay),
+		sortingStrategy: z.enum(["none", "startDate", "endDate", "allDayOnly", "allStartDate", "allEndDate"]).catch("none"), // sorting normalization strategy: write normalized datetime to sort date property
+		sortDateProp: z.string().catch(PROP_DEFAULTS.sortDate), // dedicated sort date property for normalized datetime values
 		titleProp: z.string().optional(), // optional; fallback to file name
-		calendarTitleProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CALENDAR_TITLE_PROP), // auto-computed display title (wiki link with zettel ID stripped) for clean rendering in calendar and Bases views
+		calendarTitleProp: z.string().catch(PROP_DEFAULTS.calendarTitle), // auto-computed display title (wiki link with zettel ID stripped) for clean rendering in calendar and Bases views
 		zettelIdProp: z.string().optional(), // optional; property name for ZettelID generation
-		skipProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SKIP_PROP), // property name to skip/hide event from calendar
-		rruleProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_RRULE_PROP), // property name for RRule type (daily, weekly, etc.)
-		rruleSpecProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_RRULE_SPEC_PROP), // property name for RRule specification (weekdays, etc.)
-		rruleIdProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_RRULE_ID_PROP), // property name for recurring event ID
-		sourceProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SOURCE_PROP), // property name for linking physical instances to their source recurring event
-		instanceDateProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_INSTANCE_DATE_PROP), // property name for recurring event instance date
+		skipProp: z.string().catch(PROP_DEFAULTS.skip), // property name to skip/hide event from calendar
+		rruleProp: z.string().catch(PROP_DEFAULTS.rrule), // property name for RRule type (daily, weekly, etc.)
+		rruleSpecProp: z.string().catch(PROP_DEFAULTS.rruleSpec), // property name for RRule specification (weekdays, etc.)
+		rruleIdProp: z.string().catch(PROP_DEFAULTS.rruleId), // property name for recurring event ID
+		sourceProp: z.string().catch(PROP_DEFAULTS.source), // property name for linking physical instances to their source recurring event
+		instanceDateProp: z.string().catch("Recurring Instance Date"), // property name for recurring event instance date
 		frontmatterDisplayProperties: z.array(z.string()).catch([]), // frontmatter properties to display inside timed event chips
 		frontmatterDisplayPropertiesAllDay: z.array(z.string()).catch([]), // frontmatter properties to display inside all-day event chips
 		frontmatterDisplayPropertiesUntracked: z.array(z.string()).catch([]), // frontmatter properties to display inside untracked event chips
 		frontmatterDisplayPropertiesHeatmap: z.array(z.string()).catch([]), // frontmatter properties to display inside heatmap day detail rows
-		statusProperty: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY), // property name to manage event status
-		doneValue: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE), // value to set when marking event as done
-		notDoneValue: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_NOT_DONE_VALUE), // value to set when marking event as not done
-		customDoneProperty: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CUSTOM_DONE_PROPERTY), // DSL expression for additional property to set when marking as done (format: "propertyName value")
-		customUndoneProperty: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CUSTOM_UNDONE_PROPERTY), // DSL expression for additional property to set when marking as undone (format: "propertyName value"), requires customDoneProperty
-		categoryProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CATEGORY_PROP), // property name for event categories used in statistics
-		locationProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_LOCATION_PROP), // property name for event location (single string)
-		participantsProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_PARTICIPANTS_PROP), // property name for event participants (array of strings)
-		breakProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_BREAK_PROP), // property name for break time in minutes (subtracted from duration in statistics)
-		futureInstancesCountProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT_PROP), // property name for per-event override of future instances count
-		generatePastEventsProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_GENERATE_PAST_EVENTS_PROP), // property name for generating past recurring instances from source event start date
-		ignoreRecurringProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_IGNORE_RECURRING_PROP), // property name for ignoring duplicated recurring events from future instance generation
-		caldavProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CALDAV_PROP), // property name for CalDAV sync metadata
-		icsSubscriptionProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_ICS_SUBSCRIPTION_PROP), // property name for ICS subscription sync metadata
-		iconProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_ICON_PROP), // property name for event icon override (emoji or text, takes precedence over integration icons)
+		statusProperty: z.string().catch(PROP_DEFAULTS.status), // property name to manage event status
+		doneValue: z.string().catch(PROP_DEFAULTS.doneValue), // value to set when marking event as done
+		notDoneValue: z.string().catch(PROP_DEFAULTS.notDoneValue), // value to set when marking event as not done
+		customDoneProperty: z.string().catch(""), // DSL expression for additional property to set when marking as done (format: "propertyName value")
+		customUndoneProperty: z.string().catch(""), // DSL expression for additional property to set when marking as undone (format: "propertyName value"), requires customDoneProperty
+		categoryProp: z.string().catch(PROP_DEFAULTS.category), // property name for event categories used in statistics
+		locationProp: z.string().catch(PROP_DEFAULTS.location), // property name for event location (single string)
+		participantsProp: z.string().catch(PROP_DEFAULTS.participants), // property name for event participants (array of strings)
+		breakProp: z.string().catch(PROP_DEFAULTS.break), // property name for break time in minutes (subtracted from duration in statistics)
+		futureInstancesCountProp: z.string().catch(PROP_DEFAULTS.futureInstancesCount), // property name for per-event override of future instances count
+		generatePastEventsProp: z.string().catch(PROP_DEFAULTS.generatePastEvents), // property name for generating past recurring instances from source event start date
+		ignoreRecurringProp: z.string().catch(PROP_DEFAULTS.ignoreRecurring), // property name for ignoring duplicated recurring events from future instance generation
+		caldavProp: z.string().catch("CalDAV"), // property name for CalDAV sync metadata
+		icsSubscriptionProp: z.string().catch("ICSSubscription"), // property name for ICS subscription sync metadata
+		iconProp: z.string().catch(PROP_DEFAULTS.icon), // property name for event icon override (emoji or text, takes precedence over integration icons)
 		basesViewProperties: z.array(z.string()).catch([]), // comma-separated list of properties to include in bases view for category events
-		basesViewType: z.enum(["table", "cards", "list"]).catch(SETTINGS_DEFAULTS.DEFAULT_BASES_VIEW_TYPE), // view type for bases views (table, cards, or list)
+		basesViewType: z.enum(["table", "cards", "list"]).catch("cards"), // view type for bases views (table, cards, or list)
 	})
 	.strip();
 
 const NotificationsSettingsSchema = z
 	.object({
-		enableNotifications: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_ENABLE_NOTIFICATIONS),
-		notificationSound: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_NOTIFICATION_SOUND), // whether to play sound with notifications
-		snoozeMinutes: z.number().int().positive().catch(SETTINGS_DEFAULTS.DEFAULT_SNOOZE_MINUTES), // how many minutes to snooze notifications
-		skipNewlyCreatedNotifications: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SKIP_NEWLY_CREATED_NOTIFICATIONS), // skip notifications for events created within the last minute
+		enableNotifications: z.boolean().catch(true),
+		notificationSound: z.boolean().catch(false), // whether to play sound with notifications
+		snoozeMinutes: z.number().int().positive().catch(15), // how many minutes to snooze notifications
+		skipNewlyCreatedNotifications: z.boolean().catch(true), // skip notifications for events created within the last minute
 		defaultMinutesBefore: z.number().int().nonnegative().optional(), // minutes before event to notify, undefined = no default notification
-		minutesBeforeProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_MINUTES_BEFORE_PROP), // frontmatter property to read per-event notification times
+		minutesBeforeProp: z.string().catch(PROP_DEFAULTS.minutesBefore), // frontmatter property to read per-event notification times
 		defaultDaysBefore: z.number().int().nonnegative().optional(), // days before all-day event to notify, undefined = no default notification
-		daysBeforeProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_DAYS_BEFORE_PROP), // frontmatter property to read per-event notification days for all-day events
-		alreadyNotifiedProp: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_ALREADY_NOTIFIED_PROP), // frontmatter property to mark events as already notified
+		daysBeforeProp: z.string().catch(PROP_DEFAULTS.daysBefore), // frontmatter property to read per-event notification days for all-day events
+		alreadyNotifiedProp: z.string().catch(PROP_DEFAULTS.alreadyNotified), // frontmatter property to mark events as already notified
 	})
 	.strip();
 
@@ -148,77 +153,65 @@ const BatchActionButtonSchema = z.enum(BATCH_BUTTON_IDS as [string, ...string[]]
 
 const CalendarSettingsSchema = z
 	.object({
-		futureInstancesCount: z.number().int().min(1).max(52).catch(SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT), // how many future instances to generate for recurring events
-		propagateFrontmatterToInstances: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_INSTANCES), // automatically propagate non-Prisma frontmatter changes from source to physical instances
-		askBeforePropagatingFrontmatter: z.boolean().catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_FRONTMATTER), // show confirmation modal before propagating frontmatter changes
-		enableNameSeriesTracking: z.boolean().catch(SETTINGS_DEFAULTS.ENABLE_NAME_SERIES_TRACKING), // enable name-based series tracking (groups events by title for propagation and series views)
-		propagateFrontmatterToNameSeries: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_NAME_SERIES), // automatically propagate frontmatter changes across name-based series (events sharing the same title)
-		askBeforePropagatingToNameSeries: z.boolean().catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_TO_NAME_SERIES), // show confirmation modal before propagating frontmatter changes to name series
-		propagateFrontmatterToCategorySeries: z.boolean().catch(SETTINGS_DEFAULTS.PROPAGATE_FRONTMATTER_TO_CATEGORY_SERIES), // automatically propagate frontmatter changes across category-based series (events sharing the same category)
-		askBeforePropagatingToCategorySeries: z
-			.boolean()
-			.catch(SETTINGS_DEFAULTS.ASK_BEFORE_PROPAGATING_TO_CATEGORY_SERIES), // show confirmation modal before propagating frontmatter changes to category series
-		excludedRecurringPropagatedProps: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_EXCLUDED_RECURRING_PROPAGATED_PROPS), // comma-separated list of frontmatter properties to exclude from propagation
-		propagationDebounceMs: z
-			.number()
-			.int()
-			.min(100)
-			.max(10000)
-			.catch(SETTINGS_DEFAULTS.DEFAULT_PROPAGATION_DEBOUNCE_MS), // debounce delay in milliseconds before propagating frontmatter changes to instances
-		defaultView: CalendarViewTypeSchema.catch(SETTINGS_DEFAULTS.DEFAULT_DEFAULT_VIEW),
-		defaultMobileView: CalendarViewTypeSchema.catch(SETTINGS_DEFAULTS.DEFAULT_DEFAULT_VIEW),
+		futureInstancesCount: z.number().int().min(1).max(52).catch(2), // how many future instances to generate for recurring events
+		propagateFrontmatterToInstances: z.boolean().catch(false), // automatically propagate non-Prisma frontmatter changes from source to physical instances
+		askBeforePropagatingFrontmatter: z.boolean().catch(true), // show confirmation modal before propagating frontmatter changes
+		enableNameSeriesTracking: z.boolean().catch(true), // enable name-based series tracking (groups events by title for propagation and series views)
+		propagateFrontmatterToNameSeries: z.boolean().catch(false), // automatically propagate frontmatter changes across name-based series (events sharing the same title)
+		askBeforePropagatingToNameSeries: z.boolean().catch(false), // show confirmation modal before propagating frontmatter changes to name series
+		propagateFrontmatterToCategorySeries: z.boolean().catch(false), // automatically propagate frontmatter changes across category-based series (events sharing the same category)
+		askBeforePropagatingToCategorySeries: z.boolean().catch(false), // show confirmation modal before propagating frontmatter changes to category series
+		excludedRecurringPropagatedProps: z.string().catch(""), // comma-separated list of frontmatter properties to exclude from propagation
+		propagationDebounceMs: z.number().int().min(100).max(10000).catch(3000), // debounce delay in milliseconds before propagating frontmatter changes to instances
+		defaultView: CalendarViewTypeSchema.catch("dayGridMonth"),
+		defaultMobileView: CalendarViewTypeSchema.catch("dayGridMonth"),
 		hideWeekends: z.boolean().catch(false),
 		showDecimalHours: z.boolean().catch(false), // Show durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m)
-		defaultAggregationMode: z.enum(["name", "category"]).catch(SETTINGS_DEFAULTS.DEFAULT_AGGREGATION_MODE), // Default aggregation mode for statistics (name or category)
-		hourStart: z.number().int().min(0).max(23).catch(SETTINGS_DEFAULTS.DEFAULT_HOUR_START),
-		hourEnd: z.number().int().min(1).max(24).catch(SETTINGS_DEFAULTS.DEFAULT_HOUR_END),
-		firstDayOfWeek: z.number().int().min(0).max(6).catch(SETTINGS_DEFAULTS.DEFAULT_FIRST_DAY_OF_WEEK), // 0 = Sunday, 1 = Monday, etc.
-		slotDurationMinutes: z.number().int().min(1).max(60).catch(SETTINGS_DEFAULTS.DEFAULT_SLOT_DURATION_MINUTES), // time slot duration in minutes
-		snapDurationMinutes: z.number().int().min(1).max(60).catch(SETTINGS_DEFAULTS.DEFAULT_SNAP_DURATION_MINUTES), // snap duration for dragging/resizing in minutes
-		zoomLevels: z.array(z.number().int().min(1).max(60)).catch(SETTINGS_DEFAULTS.DEFAULT_ZOOM_LEVELS.slice()), // available zoom levels for slot duration
-		density: z.enum(["comfortable", "compact"]).catch(SETTINGS_DEFAULTS.DEFAULT_DENSITY),
-		enableEventPreview: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_ENABLE_EVENT_PREVIEW), // Enable hover preview for events
-		nowIndicator: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_NOW_INDICATOR), // Show current time indicator line
-		highlightUpcomingEvent: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_HIGHLIGHT_UPCOMING_EVENT), // Highlight the next upcoming event
-		thickerHourLines: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_THICKER_HOUR_LINES), // Make full-hour lines thicker in day/week views
-		pastEventContrast: z.number().int().min(0).max(100).catch(SETTINGS_DEFAULTS.DEFAULT_PAST_EVENT_CONTRAST), // Contrast of past events in %
-		eventOverlap: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_OVERLAP), // Allow events to visually overlap (all views)
-		slotEventOverlap: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SLOT_EVENT_OVERLAP), // Allow events to overlap within the same time slot (timeGrid views only)
-		eventMaxStack: z.number().int().min(1).max(10).catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_MAX_STACK), // Maximum number of events to stack before showing "+ more" link
-		desktopMaxEventsPerDay: z.number().int().min(0).max(10).catch(SETTINGS_DEFAULTS.DEFAULT_DESKTOP_MAX_EVENTS_PER_DAY), // Maximum events to show per day on desktop before showing "+more" (0 = unlimited)
-		mobileMaxEventsPerDay: z.number().int().min(0).max(10).catch(SETTINGS_DEFAULTS.DEFAULT_MOBILE_MAX_EVENTS_PER_DAY), // Maximum events to show per day on mobile before showing "+more"
-		showColorDots: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_COLOR_DOTS), // Show color indicator dots in monthly view
-		skipUnderscoreProperties: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SKIP_UNDERSCORE_PROPERTIES), // Skip displaying properties that start with underscore
+		defaultAggregationMode: z.enum(["name", "category"]).catch("name"), // Default aggregation mode for statistics (name or category)
+		hourStart: z.number().int().min(0).max(23).catch(7),
+		hourEnd: z.number().int().min(1).max(24).catch(23),
+		firstDayOfWeek: z.number().int().min(0).max(6).catch(0), // 0 = Sunday, 1 = Monday, etc.
+		slotDurationMinutes: z.number().int().min(1).max(60).catch(30), // time slot duration in minutes
+		snapDurationMinutes: z.number().int().min(1).max(60).catch(30), // snap duration for dragging/resizing in minutes
+		zoomLevels: z.array(z.number().int().min(1).max(60)).catch(DEFAULT_ZOOM_LEVELS.slice()), // available zoom levels for slot duration
+		density: z.enum(["comfortable", "compact"]).catch("comfortable"),
+		enableEventPreview: z.boolean().catch(true), // Enable hover preview for events
+		nowIndicator: z.boolean().catch(true), // Show current time indicator line
+		highlightUpcomingEvent: z.boolean().catch(true), // Highlight the next upcoming event
+		thickerHourLines: z.boolean().catch(true), // Make full-hour lines thicker in day/week views
+		pastEventContrast: z.number().int().min(0).max(100).catch(70), // Contrast of past events in %
+		eventOverlap: z.boolean().catch(true), // Allow events to visually overlap (all views)
+		slotEventOverlap: z.boolean().catch(true), // Allow events to overlap within the same time slot (timeGrid views only)
+		eventMaxStack: z.number().int().min(1).max(10).catch(1), // Maximum number of events to stack before showing "+ more" link
+		desktopMaxEventsPerDay: z.number().int().min(0).max(10).catch(0), // Maximum events to show per day on desktop before showing "+more" (0 = unlimited)
+		mobileMaxEventsPerDay: z.number().int().min(0).max(10).catch(4), // Maximum events to show per day on mobile before showing "+more"
+		showColorDots: z.boolean().catch(true), // Show color indicator dots in monthly view
+		skipUnderscoreProperties: z.boolean().catch(true), // Skip displaying properties that start with underscore
 		filterPresets: z.array(FilterPresetSchema).catch([]), // Named filter expressions for quick access
-		dragEdgeScrollDelayMs: z
-			.number()
-			.int()
-			.min(50)
-			.max(2000)
-			.catch(SETTINGS_DEFAULTS.DEFAULT_DRAG_EDGE_SCROLL_DELAY_MS), // Delay in milliseconds before scrolling when dragging events near edge
+		dragEdgeScrollDelayMs: z.number().int().min(50).max(2000).catch(600), // Delay in milliseconds before scrolling when dragging events near edge
 		batchActionButtons: z.array(BatchActionButtonSchema).catch([...DEFAULT_BATCH_ACTION_BUTTONS]), // Which batch action buttons to show in batch selection mode toolbar
 		toolbarButtons: z.array(ToolbarButtonSchema).catch([...DEFAULT_TOOLBAR_BUTTONS]), // Which buttons to show in the calendar toolbar (desktop)
 		mobileToolbarButtons: z.array(ToolbarButtonSchema).catch([...DEFAULT_TOOLBAR_BUTTONS]), // Which buttons to show in the calendar toolbar (mobile)
-		stickyDayHeaders: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_STICKY_DAY_HEADERS), // Make day headers sticky during vertical scroll (timegrid views)
-		stickyAllDayEvents: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_STICKY_ALL_DAY_EVENTS), // Make all-day event section sticky during vertical scroll (timegrid views)
-		allDayEventHeight: z.number().int().min(30).max(500).catch(SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_EVENT_HEIGHT), // Maximum height in pixels for all-day events section before overflow
-		autoAssignCategoryByName: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_CATEGORY_BY_NAME), // Automatically assign category when event name matches category name (case-insensitive)
-		autoAssignCategoryByIncludes: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_CATEGORY_BY_INCLUDES), // Automatically assign category when event name contains a category name (substring match, case-insensitive)
-		titleAutocomplete: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_TITLE_AUTOCOMPLETE), // Show inline type-ahead suggestions when typing event titles in the create/edit modal
+		stickyDayHeaders: z.boolean().catch(true), // Make day headers sticky during vertical scroll (timegrid views)
+		stickyAllDayEvents: z.boolean().catch(true), // Make all-day event section sticky during vertical scroll (timegrid views)
+		allDayEventHeight: z.number().int().min(30).max(500).catch(75), // Maximum height in pixels for all-day events section before overflow
+		autoAssignCategoryByName: z.boolean().catch(true), // Automatically assign category when event name matches category name (case-insensitive)
+		autoAssignCategoryByIncludes: z.boolean().catch(false), // Automatically assign category when event name contains a category name (substring match, case-insensitive)
+		titleAutocomplete: z.boolean().catch(true), // Show inline type-ahead suggestions when typing event titles in the create/edit modal
 		categoryAssignmentPresets: z.array(CategoryAssignmentPresetSchema).catch([]), // Custom category assignment rules based on event name
 		activeTab: TabbedContainerStateSchema.optional().catch(undefined), // Persisted tab state (active tab, visibility, order)
 		contextMenuItems: z.array(ContextMenuItemSchema).catch([...DEFAULT_CONTEXT_MENU_ITEMS]), // Context menu items to show when right-clicking events
-		showSourceRecurringMarker: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_SOURCE_RECURRING_MARKER), // Show marker indicator on source recurring events
-		showPhysicalRecurringMarker: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_PHYSICAL_RECURRING_MARKER), // Show marker indicator on physical recurring instance events
-		sourceRecurringMarker: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_SOURCE_RECURRING_MARKER), // Symbol/emoji to display on source recurring events
-		physicalRecurringMarker: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_PHYSICAL_RECURRING_MARKER), // Symbol/emoji to display on physical recurring instance events
-		showDurationInTitle: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_DURATION_IN_TITLE), // Show event duration in the event title
-		dayCellColoring: z.enum(["off", "uniform", "boundary"]).catch(SETTINGS_DEFAULTS.DEFAULT_DAY_CELL_COLORING), // Day cell background coloring mode: off, uniform single color, or alternating by month boundary
-		monthEvenColor: ColorSchema.catch(SETTINGS_DEFAULTS.DEFAULT_MONTH_EVEN_COLOR), // Background color for even months / uniform day background
-		monthOddColor: ColorSchema.catch(SETTINGS_DEFAULTS.DEFAULT_MONTH_ODD_COLOR), // Background color for odd months
-		eventTextColor: ColorSchema.catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_TEXT_COLOR), // Default text color for events (used when it has sufficient contrast on background)
-		eventTextColorAlt: ColorSchema.catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_TEXT_COLOR_ALT), // Alternative text color (used when default has poor contrast)
-		fileConcurrencyLimit: z.number().int().min(1).max(50).catch(SETTINGS_DEFAULTS.DEFAULT_FILE_CONCURRENCY_LIMIT), // Maximum number of files to modify in parallel during batch operations (recurring propagation, series propagation, file deletions)
+		showSourceRecurringMarker: z.boolean().catch(true), // Show marker indicator on source recurring events
+		showPhysicalRecurringMarker: z.boolean().catch(true), // Show marker indicator on physical recurring instance events
+		sourceRecurringMarker: z.string().catch(DEFAULT_SOURCE_RECURRING_MARKER), // Symbol/emoji to display on source recurring events
+		physicalRecurringMarker: z.string().catch(DEFAULT_PHYSICAL_RECURRING_MARKER), // Symbol/emoji to display on physical recurring instance events
+		showDurationInTitle: z.boolean().catch(true), // Show event duration in the event title
+		dayCellColoring: z.enum(["off", "uniform", "boundary"]).catch("off" as const), // Day cell background coloring mode: off, uniform single color, or alternating by month boundary
+		monthEvenColor: ColorSchema.catch(DEFAULT_MONTH_EVEN_COLOR), // Background color for even months / uniform day background
+		monthOddColor: ColorSchema.catch(DEFAULT_MONTH_ODD_COLOR), // Background color for odd months
+		eventTextColor: ColorSchema.catch(DEFAULT_EVENT_TEXT_COLOR), // Default text color for events (used when it has sufficient contrast on background)
+		eventTextColorAlt: ColorSchema.catch(DEFAULT_EVENT_TEXT_COLOR_ALT), // Alternative text color (used when default has poor contrast)
+		fileConcurrencyLimit: z.number().int().min(1).max(50).catch(10), // Maximum number of files to modify in parallel during batch operations (recurring propagation, series propagation, file deletions)
 	})
 	.strip();
 
@@ -226,7 +219,7 @@ const RulesSettingsSchema = z
 	.object({
 		filterExpressions: z.array(z.string()).catch([]), // JavaScript expressions to filter events based on frontmatter
 		untrackedFilterExpressions: z.array(z.string()).catch([]), // JavaScript expressions to filter untracked events based on frontmatter
-		defaultNodeColor: ColorSchema.catch(SETTINGS_DEFAULTS.DEFAULT_EVENT_COLOR), // Default purple color
+		defaultNodeColor: ColorSchema.catch(DEFAULT_EVENT_COLOR), // Default purple color
 		colorRules: z
 			.array(
 				z
@@ -269,7 +262,7 @@ export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSett
 	.extend(NotificationsSettingsSchema.shape)
 	.extend({
 		id: z.string(),
-		name: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_CALENDAR_NAME),
+		name: z.string().catch("Calendar"),
 		enabled: z.boolean().catch(true),
 		holidays: HolidaySettingsSchema.catch(HolidaySettingsSchema.parse({})),
 	})
@@ -278,14 +271,14 @@ export const SingleCalendarConfigSchema = GeneralSettingsSchema.extend(PropsSett
 export const CustomCalendarSettingsSchema = z
 	.object({
 		licenseKeySecretName: z.string().catch(""),
-		version: z.string().catch(SETTINGS_DEFAULTS.DEFAULT_VERSION),
+		version: z.string().catch("1.1.0"),
 		calendars: z
 			.array(SingleCalendarConfigSchema)
 			.min(1)
 			.catch([
 				{
 					id: "default",
-					name: SETTINGS_DEFAULTS.DEFAULT_CALENDAR_NAME,
+					name: "Calendar",
 					enabled: true,
 					...GeneralSettingsSchema.parse({}),
 					...PropsSettingsSchema.parse({}),
@@ -302,12 +295,12 @@ export const CustomCalendarSettingsSchema = z
 	.strip();
 
 export type CustomPrompt = z.infer<typeof CustomPromptSchema>;
-export type AISettings = z.infer<typeof AISettingsSchema>;
+type AISettings = z.infer<typeof AISettingsSchema>;
 export type FilterPreset = z.infer<typeof FilterPresetSchema>;
 export type CategoryAssignmentPreset = z.infer<typeof CategoryAssignmentPresetSchema>;
 export type EventPreset = z.infer<typeof EventPresetSchema>;
-export type HolidaySettings = z.infer<typeof HolidaySettingsSchema>;
-export type HolidayType = z.infer<typeof HolidayTypeSchema>;
+type HolidaySettings = z.infer<typeof HolidaySettingsSchema>;
+type HolidayType = z.infer<typeof HolidayTypeSchema>;
 export type SingleCalendarConfig = z.infer<typeof SingleCalendarConfigSchema>;
 export type CustomCalendarSettings = z.infer<typeof CustomCalendarSettingsSchema>;
 export type PrismaCalendarSettingsStore = SettingsStore<typeof CustomCalendarSettingsSchema>;

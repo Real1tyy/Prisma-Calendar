@@ -1,4 +1,4 @@
-import { SETTINGS_DEFAULTS } from "../constants";
+import { BASE_NAME } from "../constants";
 import { type CustomCalendarSettings, type SingleCalendarConfig, SingleCalendarConfigSchema } from "../types";
 
 export function createDefaultCalendarConfig(id: string, name: string): SingleCalendarConfig {
@@ -58,14 +58,14 @@ export function getEventRenderingKey(settings: SingleCalendarConfig): string {
 export function generateUniqueCalendarId(settings: CustomCalendarSettings): string {
 	const existingIds = new Set(settings.calendars.map((calendar) => calendar.id));
 
-	if (!existingIds.has(SETTINGS_DEFAULTS.BASE_NAME)) {
-		return SETTINGS_DEFAULTS.BASE_NAME;
+	if (!existingIds.has(BASE_NAME)) {
+		return BASE_NAME;
 	}
 
 	let counter = 2;
-	while (existingIds.has(`${SETTINGS_DEFAULTS.BASE_NAME}-${counter}`)) {
+	while (existingIds.has(`${BASE_NAME}-${counter}`)) {
 		counter++;
 	}
 
-	return `${SETTINGS_DEFAULTS.BASE_NAME}-${counter}`;
+	return `${BASE_NAME}-${counter}`;
 }

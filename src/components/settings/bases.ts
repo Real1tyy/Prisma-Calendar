@@ -7,7 +7,7 @@ import type { SingleCalendarConfigSchema } from "../../types/settings";
 export class BasesSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 
-	constructor(private settingsStore: CalendarSettingsStore) {
+	constructor(settingsStore: CalendarSettingsStore) {
 		this.ui = new SettingsUIBuilder(settingsStore as never);
 	}
 

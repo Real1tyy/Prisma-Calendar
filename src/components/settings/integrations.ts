@@ -2,7 +2,7 @@ import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { type App, Setting } from "obsidian";
 import type { Subscription } from "rxjs";
 
-import { COMMAND_IDS, SETTINGS_DEFAULTS } from "../../constants";
+import { COMMAND_IDS, DEFAULT_EXPORT_FOLDER } from "../../constants";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
@@ -64,7 +64,7 @@ export class IntegrationsSettings {
 			key: "exportFolder",
 			name: "Export folder",
 			desc: "Folder where exported .ics files are saved",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_EXPORT_FOLDER,
+			placeholder: DEFAULT_EXPORT_FOLDER,
 		});
 
 		const buttonsContainer = containerEl.createDiv(cls("settings-integrations-buttons"));
