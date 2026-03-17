@@ -52,6 +52,17 @@ export function createDailyStatsTabDefinition(app: App, bundle: CalendarBundle):
 					},
 				],
 			});
+
+			el.setAttribute("tabindex", "-1");
+			el.addEventListener("keydown", (e: KeyboardEvent) => {
+				if (e.key === "ArrowLeft") {
+					calendarHandle?.prev();
+					e.preventDefault();
+				} else if (e.key === "ArrowRight") {
+					calendarHandle?.next();
+					e.preventDefault();
+				}
+			});
 		},
 		cleanup: () => {
 			gridHandle?.destroy();
