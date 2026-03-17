@@ -1,4 +1,5 @@
-import { SyncStore } from "@real1ty-obsidian-plugins";
+import type { SyncStore } from "@real1ty-obsidian-plugins";
+import { parseAsLocalDate, toSafeString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
@@ -8,9 +9,7 @@ import type { Frontmatter, PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/event-naming";
-import { toSafeString } from "../utils/format";
 import { getFileByPathOrThrow, openFileInNewTab } from "../utils/obsidian";
-import { parseAsLocalDate } from "../utils/time-formatter";
 import type { Indexer, IndexerEvent } from "./indexer";
 
 interface NotificationEntry {

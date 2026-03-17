@@ -1,7 +1,6 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls, formatMsToHHMMSS } from "@real1ty-obsidian-plugins";
 
 import type { StopwatchSnapshot, StopwatchState } from "../types/stopwatch";
-import { formatMsToHHMMSS } from "../utils/time-formatter";
 
 interface StopwatchCallbacks {
 	onStart: (startTime: Date) => void;

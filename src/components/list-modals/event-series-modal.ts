@@ -1,4 +1,4 @@
-import { addCls, cls, ColorEvaluator, removeCls } from "@real1ty-obsidian-plugins";
+import { addCls, calculateEventStatistics, cls, ColorEvaluator, removeCls } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import { type App, Modal, Setting } from "obsidian";
 
@@ -9,7 +9,6 @@ import { formatRecurrenceLabel, isWeekdaySupported } from "../../types/recurring
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
 import { removeZettelId } from "../../utils/event-naming";
-import { calculateEventStatistics } from "../../utils/event-statistics";
 import { type EventSeriesBasesViewConfig, EventSeriesBasesViewModal } from "../modals/event-series-bases-view-modal";
 import { showHeatmapModal } from "../modals/event-series-heatmap-modal";
 import { showTimelineModal } from "../modals/event-series-timeline-modal";

@@ -1,12 +1,14 @@
+import type { SyncStore } from "@real1ty-obsidian-plugins";
 import {
 	areSetsEqual,
 	type FrontmatterDiff,
 	Indexer as GenericIndexer,
 	type IndexerConfig,
 	type IndexerEvent as GenericIndexerEvent,
+	intoDate,
 	PENDING_WRITE_SENTINEL_FM_KEY,
 	removeMarkdownExtension,
-	SyncStore,
+	toSafeString,
 } from "@real1ty-obsidian-plugins";
 import { type App, TFile } from "obsidian";
 import { BehaviorSubject, type Observable, Subject, Subscription } from "rxjs";
@@ -18,7 +20,6 @@ import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "..
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
 import { getRecurringInstanceExcludedProps } from "../utils/event-frontmatter";
 import { cleanupTitle, ensureFileHasZettelId, generateUniqueRruleId, hasTimestamp } from "../utils/event-naming";
-import { intoDate, toSafeString } from "../utils/format";
 
 export interface RawEventSource {
 	filePath: string;

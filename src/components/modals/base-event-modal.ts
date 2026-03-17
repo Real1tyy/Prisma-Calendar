@@ -1,6 +1,9 @@
 import {
 	addCls,
+	afterRender,
+	calculateDurationMinutes,
 	cls,
+	parseAsLocalDate,
 	parseFrontmatterRecord,
 	removeCls,
 	serializeFrontmatterValue,
@@ -40,15 +43,8 @@ import {
 	setUntrackedEventBasics,
 } from "../../utils/event-frontmatter";
 import { autoAssignCategories, findAdjacentEvent } from "../../utils/event-matching";
-import {
-	calculateDurationMinutes,
-	formatDateOnly,
-	formatDateTimeForInput,
-	inputValueToISOString,
-} from "../../utils/format";
+import { formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../../utils/format";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../utils/obsidian";
-import { afterRender } from "../../utils/scheduling";
-import { parseAsLocalDate } from "../../utils/time-formatter";
 import { Stopwatch } from "../stopwatch";
 import { TitleInputSuggest } from "../title-input-suggest";
 import { openCategoryAssignModal } from "./assignment-modal";

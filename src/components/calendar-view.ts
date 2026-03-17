@@ -5,15 +5,21 @@ import interactionPlugin, { type DropArg } from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import {
+	afterRender,
+	calculateDuration,
+	calculateEndTime,
 	cls,
 	ColorEvaluator,
 	extractContentAfterFrontmatter,
 	formatDuration,
+	getNotePreviewLines,
 	hasVeryCloseShadeFromRgb,
 	MountableComponent,
 	parseColorToRgb,
 	type RgbColor,
+	roundToNearestHour,
 	toggleCls,
+	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
 import { type App, Component, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 
@@ -38,18 +44,11 @@ import { getCommonCategories, stripISOSuffix } from "../utils/event-frontmatter"
 import { findAdjacentEvent, getSourceEventInfoFromVirtual } from "../utils/event-matching";
 import { cleanupTitle } from "../utils/event-naming";
 import { invalidatePropertyExtractionCache } from "../utils/expression-utils";
-import {
-	buildEventTooltip,
-	calculateDuration,
-	calculateEndTime,
-	getNotePreviewLines,
-	roundToNearestHour,
-	toLocalISOString,
-} from "../utils/format";
+import { buildEventTooltip } from "../utils/format";
 import { emitHover } from "../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
-import { afterRender } from "../utils/scheduling";
 import { BatchSelectionManager } from "./batch-selection-manager";
+import type { CalendarHost } from "./calendar-host";
 import { EventContextMenu } from "./event-context-menu";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { FilterPresetSelector } from "./filter-preset-selector";
@@ -71,7 +70,7 @@ import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 
-export class CalendarComponent extends MountableComponent(Component, "prisma") {
+export class CalendarComponent extends MountableComponent(Component, "prisma") implements CalendarHost {
 	calendar: Calendar | null = null;
 	private eventContextMenu: EventContextMenu;
 	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
@@ -1140,11 +1139,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") {
 		}
 		if (this.refreshRafId !== null) return;
 
-		this.refreshRafId = requestAnimationFrame(async () => {
+		this.refreshRafId = requestAnimationFrame(() => {
 			this.refreshRafId = null;
 			this.isRefreshingEvents = true;
 			this.pendingRefreshRequest = false;
-			await this.refreshEvents();
+			void this.refreshEvents();
 		});
 	}
 
@@ -1563,26 +1562,26 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") {
 
 		const filePath = event.extendedProps?.filePath as string | undefined;
 		if (filePath && !event.extendedProps?.isVirtual) {
-			element.addEventListener("mouseenter", async () => {
+			element.addEventListener("mouseenter", () => {
 				if (element.dataset.notesLoaded) return;
 				element.dataset.notesLoaded = "true";
-				// Remove title immediately so the browser doesn't show a stale tooltip
-				// while the async read is in progress
 				const currentTitle = element.getAttribute("title") ?? "";
 				element.removeAttribute("title");
-				try {
-					const file = this.app.vault.getAbstractFileByPath(filePath);
-					if (!(file instanceof TFile)) {
+				void (async () => {
+					try {
+						const file = this.app.vault.getAbstractFileByPath(filePath);
+						if (!(file instanceof TFile)) {
+							element.setAttribute("title", currentTitle);
+							return;
+						}
+						const fullContent = await this.app.vault.cachedRead(file);
+						const body = extractContentAfterFrontmatter(fullContent);
+						const preview = getNotePreviewLines(body, 3);
+						element.setAttribute("title", preview ? currentTitle + "\n---\n" + preview : currentTitle);
+					} catch {
 						element.setAttribute("title", currentTitle);
-						return;
 					}
-					const fullContent = await this.app.vault.cachedRead(file);
-					const body = extractContentAfterFrontmatter(fullContent);
-					const preview = getNotePreviewLines(body, 3);
-					element.setAttribute("title", preview ? currentTitle + "\n---\n" + preview : currentTitle);
-				} catch {
-					element.setAttribute("title", currentTitle);
-				}
+				})();
 			});
 		}
 	}

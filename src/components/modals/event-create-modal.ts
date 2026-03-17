@@ -1,6 +1,7 @@
+import { afterRender } from "@real1ty-obsidian-plugins";
+
 import { MinimizedModalManager } from "../../core/minimized-modal-manager";
 import { openFileInNewTab } from "../../utils/obsidian";
-import { afterRender } from "../../utils/scheduling";
 import { BaseEventModal } from "./base-event-modal";
 
 export class EventCreateModal extends BaseEventModal {

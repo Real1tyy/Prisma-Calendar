@@ -1,6 +1,7 @@
+import { toLocalISOString } from "@real1ty-obsidian-plugins";
+
 import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfig } from "../../types";
-import { toLocalISOString } from "../../utils/format";
 import {
 	aggregateStats,
 	type AggregationMode,

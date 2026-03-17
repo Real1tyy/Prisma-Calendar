@@ -1,4 +1,5 @@
-import { Frontmatter, getObsidianLinkPath, parseIntoList } from "@real1ty-obsidian-plugins";
+import type { Frontmatter } from "@real1ty-obsidian-plugins";
+import { getObsidianLinkPath, intoDate, parseIntoList, toLocalISOString } from "@real1ty-obsidian-plugins";
 import { MacroCommand } from "@real1ty-obsidian-plugins";
 import { type App, Menu, Notice } from "obsidian";
 
@@ -14,14 +15,14 @@ import {
 	MoveEventCommand,
 	ToggleSkipCommand,
 } from "../core/commands";
-import { calculateWeekOffsets } from "../core/commands/batch-commands";
+import { weekDuration } from "../core/commands/batch-commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import { type ContextMenuItem, isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
+import { isTimeUnitAllowedForAllDay } from "../types/move-by";
 import { isEventDone, parseCustomDoneProperty } from "../utils/event-frontmatter";
 import { findAdjacentEvent } from "../utils/event-matching";
 import { getEventName } from "../utils/event-naming";
-import { intoDate, toLocalISOString } from "../utils/format";
 import {
 	emitHover,
 	getCategoriesFromFilePath,
@@ -29,8 +30,7 @@ import {
 	getFileByPathOrThrow,
 	openFileInNewWindow,
 } from "../utils/obsidian";
-import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
-import type { CalendarComponent } from "./calendar-view";
+import type { CalendarHost } from "./calendar-host";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { EventSeriesModal } from "./list-modals/event-series-modal";
 import { DeleteRecurringEventsModal, EventEditModal } from "./modals";
@@ -59,12 +59,12 @@ type EventKind = "source" | "physical" | "virtual" | "normal";
 export class EventContextMenu {
 	private app: App;
 	private bundle: CalendarBundle;
-	private calendarComponent: CalendarComponent;
+	private calendarComponent: CalendarHost;
 	private currentMenu: Menu | null = null;
 
 	// ─── Lifecycle ────────────────────────────────────────────────
 
-	constructor(app: App, bundle: CalendarBundle, calendarComponent: CalendarComponent) {
+	constructor(app: App, bundle: CalendarBundle, calendarComponent: CalendarHost) {
 		this.app = app;
 		this.bundle = bundle;
 		this.calendarComponent = calendarComponent;
@@ -704,18 +704,16 @@ export class EventContextMenu {
 		void this.withFilePath(event, "move event", (filePath) => {
 			new MoveByModal(this.app, (result) => {
 				void (async () => {
-					const { offsetMs, unit } = calculateTimeOffset(result);
-
-					// Validate time unit for all-day events
-					if (isAllDay && !isTimeUnitAllowedForAllDay(unit)) {
+					if (isAllDay && !isTimeUnitAllowedForAllDay(result.unit)) {
 						console.warn(
-							`[ContextMenu] Skipping MoveBy operation: Time unit "${unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
+							`[ContextMenu] Skipping MoveBy operation: Time unit "${result.unit}" is not allowed for all-day events. Only days, weeks, months, and years are supported.`
 						);
-						new Notice(`Cannot move all-day event by ${unit}. Please use days, weeks, months, or years.`, 5000);
+						new Notice(`Cannot move all-day event by ${result.unit}. Please use days, weeks, months, or years.`, 5000);
 						return;
 					}
 
-					await this.runCommand(() => new MoveEventCommand(this.app, this.bundle, filePath, offsetMs, offsetMs), {
+					const offset = { [result.unit]: result.value };
+					await this.runCommand(() => new MoveEventCommand(this.app, this.bundle, filePath, offset, offset), {
 						success: `Event moved by ${result.value} ${result.unit}`,
 						error: "Failed to move event",
 					});
@@ -728,8 +726,8 @@ export class EventContextMenu {
 		const direction = weeks > 0 ? "next" : "previous";
 
 		await this.withFilePath(event, "move event", async (filePath) => {
-			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
-			await this.runCommand(() => new MoveEventCommand(this.app, this.bundle, filePath, startOffset, endOffset), {
+			const offset = weekDuration(weeks);
+			await this.runCommand(() => new MoveEventCommand(this.app, this.bundle, filePath, offset, offset), {
 				success: `Event moved to ${direction} week`,
 				error: "Failed to move event",
 			});
@@ -740,8 +738,8 @@ export class EventContextMenu {
 		const direction = weeks > 0 ? "next" : "previous";
 
 		await this.withFilePath(event, "clone event", async (filePath) => {
-			const [startOffset, endOffset] = calculateWeekOffsets(weeks);
-			await this.runCommand(() => new CloneEventCommand(this.app, this.bundle, filePath, startOffset, endOffset), {
+			const offset = weekDuration(weeks);
+			await this.runCommand(() => new CloneEventCommand(this.app, this.bundle, filePath, offset, offset), {
 				success: `Event cloned to ${direction} week`,
 				error: "Failed to clone event",
 			});
