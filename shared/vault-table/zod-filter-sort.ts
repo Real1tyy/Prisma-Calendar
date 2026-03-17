@@ -1,12 +1,7 @@
 import { z } from "zod";
 import type { $ZodType } from "zod/v4/core";
 
-import {
-	type FieldType,
-	type JSONSchemaProperty,
-	resolveFieldType,
-	schemaToJSONSchema,
-} from "../core/zod-introspection";
+import { type FieldType, type JSONSchemaProperty, resolveFieldType, schemaToJSONSchema } from "../zod/introspection";
 
 type ZodShape = Record<string, $ZodType>;
 
