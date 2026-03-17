@@ -42,3 +42,5 @@ export * from "./grid-layout";
 export * from "./page-header";
 // Schema-driven modal (auto-generated create/edit forms from Zod schemas)
 export * from "./schema-modal";
+// Zod validation schemas (reusable transforms and primitives)
+export * from "./zod";

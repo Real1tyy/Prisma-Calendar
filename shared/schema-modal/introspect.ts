@@ -8,7 +8,7 @@ import {
 	type JSONSchemaProperty,
 	resolveArrayItemType,
 	schemaToJSONSchema,
-} from "../core/zod-introspection";
+} from "../zod/introspection";
 import type { SchemaFieldDescriptor } from "./types";
 
 const DATE_KEY_PATTERN = /date/i;
