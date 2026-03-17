@@ -137,8 +137,7 @@ export function createDailyCalendar(
 			scheduleRefresh();
 		},
 
-		height: "auto",
-		aspectRatio: 1.35,
+		height: "100%",
 	});
 
 	function scheduleRefresh(): void {

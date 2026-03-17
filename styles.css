@@ -31,42 +31,6 @@
 	--prisma-sticky-day-header-height: 0px;
 }
 
-/* Mountable View Loading Indicator */
-@keyframes prisma-mountable-spin {
-	0% {
-		transform: rotate(0);
-	}
-
-	100% {
-		transform: rotate(360deg);
-	}
-}
-
-.prisma-mountable-loading-container {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 2rem;
-	min-height: 100px;
-}
-
-.prisma-mountable-loading-spinner {
-	width: 20px;
-	height: 20px;
-	border: 2px solid var(--background-modifier-border);
-	border-top: 2px solid var(--interactive-accent);
-	border-radius: 50%;
-	animation: prisma-mountable-spin 1s linear infinite;
-	margin: 0 auto 8px;
-}
-
-.prisma-mountable-loading-text {
-	text-align: center;
-	color: var(--text-muted);
-	font-size: 0.9em;
-}
-
 /* FullCalendar theme integration with Obsidian */
 .prisma-calendar-container .fc {
 	font-family: var(--font-interface);
@@ -9641,78 +9605,6 @@ div.vis-tooltip {
 	color: var(--text-on-accent);
 	background: var(--interactive-accent);
 	vertical-align: middle;
-}
-
-/* ─── Tab Bar (view-header segment control) ──────────────────── */
-
-.prisma-tab-bar {
-	display: flex;
-	align-items: center;
-	gap: 2px;
-	padding: 2px;
-	margin: 0 4px;
-	border-radius: 8px;
-	background: var(--background-modifier-hover);
-	flex-shrink: 0;
-}
-
-.prisma-tab {
-	padding: 4px 12px;
-	font-size: var(--font-ui-smaller);
-	font-weight: 500;
-	color: var(--text-muted);
-	background: none;
-	border: none;
-	border-radius: 6px;
-	cursor: pointer;
-	transition:
-		color 150ms ease,
-		background 150ms ease,
-		box-shadow 150ms ease;
-	box-shadow: none;
-	white-space: nowrap;
-	line-height: 1.4;
-}
-
-.prisma-tab:hover {
-	color: var(--text-normal);
-	background: hsla(var(--color-accent-hsl), 0.08);
-}
-
-.prisma-tab-active {
-	color: var(--text-on-accent);
-	background: var(--interactive-accent);
-	font-weight: 600;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-
-.prisma-tab-active:hover {
-	color: var(--text-on-accent);
-	background: var(--interactive-accent-hover);
-}
-
-.prisma-tab-content {
-	flex: 1;
-	overflow-y: auto;
-	min-height: 0;
-}
-
-.prisma-tab-panel {
-	padding: 0;
-	height: 100%;
-}
-
-.prisma-tab-panel-hidden {
-	display: none;
-}
-
-.prisma-tab-settings {
-	color: var(--text-faint);
-	padding: 4px 6px;
-}
-
-.prisma-tab-settings:hover {
-	color: var(--text-muted);
 }
 
 /* ─── Tab Pro Gate ───────────────────────────────────────────── */
