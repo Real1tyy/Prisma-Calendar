@@ -1,7 +1,7 @@
 import { SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 
-import { SETTINGS_DEFAULTS } from "../../constants";
+import { DEFAULT_PHYSICAL_RECURRING_MARKER, DEFAULT_SOURCE_RECURRING_MARKER } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
 
@@ -122,7 +122,7 @@ export class EventGroupsSettings {
 			key: "sourceRecurringMarker",
 			name: "Source recurring marker",
 			desc: "Symbol/emoji to display on source recurring events in the top-right corner.",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_SOURCE_RECURRING_MARKER,
+			placeholder: DEFAULT_SOURCE_RECURRING_MARKER,
 		});
 
 		this.ui.addToggle(containerEl, {
@@ -135,7 +135,7 @@ export class EventGroupsSettings {
 			key: "physicalRecurringMarker",
 			name: "Physical recurring marker",
 			desc: "Symbol/emoji to display on physical recurring instance events in the top-right corner.",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_PHYSICAL_RECURRING_MARKER,
+			placeholder: DEFAULT_PHYSICAL_RECURRING_MARKER,
 		});
 	}
 }

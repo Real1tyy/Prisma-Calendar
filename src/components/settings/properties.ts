@@ -1,7 +1,7 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 
-import { SETTINGS_DEFAULTS } from "../../constants";
+import { PROP_DEFAULTS } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type { SingleCalendarConfigSchema } from "../../types/settings";
 
@@ -26,28 +26,28 @@ export class PropertiesSettings {
 			key: "startProp",
 			name: "Start property",
 			desc: "Frontmatter property name for event start date/time",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_START_PROP,
+			placeholder: PROP_DEFAULTS.start,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "endProp",
 			name: "End property",
 			desc: "Frontmatter property name for event end date/time (for timed events)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_END_PROP,
+			placeholder: PROP_DEFAULTS.end,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "dateProp",
 			name: "Date property",
 			desc: "Frontmatter property name for all-day events (date only, no time)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_DATE_PROP,
+			placeholder: PROP_DEFAULTS.date,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "allDayProp",
 			name: "All-day property",
 			desc: "Frontmatter property name for all-day flag",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_ALL_DAY_PROP,
+			placeholder: PROP_DEFAULTS.allDay,
 		});
 
 		this.ui.addDropdown(containerEl, {
@@ -68,105 +68,105 @@ export class PropertiesSettings {
 			key: "sortDateProp",
 			name: "Sort date property",
 			desc: "Frontmatter property to write the normalized datetime to. This is a dedicated sorting property, separate from the Date property used by all-day events.",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_SORT_DATE_PROP,
+			placeholder: PROP_DEFAULTS.sortDate,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "titleProp",
 			name: "Title property",
 			desc: "Frontmatter property name for event title (optional, defaults to file name)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_TITLE_PROP,
+			placeholder: PROP_DEFAULTS.title,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "calendarTitleProp",
 			name: "Calendar title property",
 			desc: "Auto-computed display title property (wiki link with ZettelID stripped from filename). Used for clean rendering in calendar and Bases views. The value is always kept up to date automatically.",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_CALENDAR_TITLE_PROP,
+			placeholder: PROP_DEFAULTS.calendarTitle,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "zettelIdProp",
 			name: "ZettelID property",
 			desc: "Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_ZETTEL_ID_PROP,
+			placeholder: PROP_DEFAULTS.zettelId,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "skipProp",
 			name: "Skip property",
 			desc: "Frontmatter property name to hide events from calendar (when set to true)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_SKIP_PROP,
+			placeholder: PROP_DEFAULTS.skip,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "rruleProp",
 			name: "RRule property",
 			desc: "Frontmatter property name for recurring event type (daily, weekly, monthly, etc.)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_RRULE_PROP,
+			placeholder: PROP_DEFAULTS.rrule,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "rruleSpecProp",
 			name: "RRule specification property",
 			desc: "Frontmatter property name for recurring event specification (weekdays for weekly/bi-weekly events)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_RRULE_SPEC_PROP,
+			placeholder: PROP_DEFAULTS.rruleSpec,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "rruleIdProp",
 			name: "RRule ID property",
 			desc: "Frontmatter property name for recurring event unique identifier",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_RRULE_ID_PROP,
+			placeholder: PROP_DEFAULTS.rruleId,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "sourceProp",
 			name: "Source property",
 			desc: "Frontmatter property name for linking recurring event instances to their source event file",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_SOURCE_PROP,
+			placeholder: PROP_DEFAULTS.source,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "ignoreRecurringProp",
 			name: "Ignore recurring property",
 			desc: "Frontmatter property name for excluding duplicated recurring events from future instance generation (events with this set to true are tracked but don't count towards the future instances limit)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_IGNORE_RECURRING_PROP,
+			placeholder: PROP_DEFAULTS.ignoreRecurring,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "futureInstancesCountProp",
 			name: "Future instances count property",
 			desc: "Frontmatter property name for per-event override of future instances count (defaults to global setting if not specified)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_FUTURE_INSTANCES_COUNT_PROP,
+			placeholder: PROP_DEFAULTS.futureInstancesCount,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "generatePastEventsProp",
 			name: "Generate past events property",
 			desc: "Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_GENERATE_PAST_EVENTS_PROP,
+			placeholder: PROP_DEFAULTS.generatePastEvents,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "statusProperty",
 			name: "Status property",
 			desc: "Frontmatter property name for event status (used when automatically marking past events as done)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_STATUS_PROPERTY,
+			placeholder: PROP_DEFAULTS.status,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "doneValue",
 			name: "Done value",
 			desc: "Value to set in the status property when marking an event as done",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_DONE_VALUE,
+			placeholder: PROP_DEFAULTS.doneValue,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "notDoneValue",
 			name: "Not done value",
 			desc: "Value to set in the status property when marking an event as not done",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_NOT_DONE_VALUE,
+			placeholder: PROP_DEFAULTS.notDoneValue,
 		});
 
 		this.ui.addText(containerEl, {
@@ -187,56 +187,56 @@ export class PropertiesSettings {
 			key: "categoryProp",
 			name: "Category property",
 			desc: "Frontmatter property name for event categories (used for grouping in statistics)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_CATEGORY_PROP,
+			placeholder: PROP_DEFAULTS.category,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "locationProp",
 			name: "Location property",
 			desc: "Frontmatter property name for event location (single string)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_LOCATION_PROP,
+			placeholder: PROP_DEFAULTS.location,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "participantsProp",
 			name: "Participants property",
 			desc: "Frontmatter property name for event participants (array of strings, supports comma-separated in YAML)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_PARTICIPANTS_PROP,
+			placeholder: PROP_DEFAULTS.participants,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "breakProp",
 			name: "Break property",
 			desc: "Frontmatter property name for break time in minutes (subtracted from event duration in statistics, supports decimals)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_BREAK_PROP,
+			placeholder: PROP_DEFAULTS.break,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "iconProp",
 			name: "Icon property",
 			desc: "Frontmatter property name for event icon override (emoji or text, takes precedence over integration and recurring icons)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_ICON_PROP,
+			placeholder: PROP_DEFAULTS.icon,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "minutesBeforeProp",
 			name: "Minutes before property",
 			desc: "Frontmatter property name for per-event notification times (timed events)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_MINUTES_BEFORE_PROP,
+			placeholder: PROP_DEFAULTS.minutesBefore,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "daysBeforeProp",
 			name: "Days before property",
 			desc: "Frontmatter property name for per-event notification days (all-day events)",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_DAYS_BEFORE_PROP,
+			placeholder: PROP_DEFAULTS.daysBefore,
 		});
 
 		this.ui.addText(containerEl, {
 			key: "alreadyNotifiedProp",
 			name: "Already notified property",
 			desc: "Frontmatter property name to mark events as already notified",
-			placeholder: SETTINGS_DEFAULTS.DEFAULT_ALREADY_NOTIFIED_PROP,
+			placeholder: PROP_DEFAULTS.alreadyNotified,
 		});
 
 		// Add description for event types

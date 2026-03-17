@@ -1,7 +1,13 @@
 import { SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 
-import { SETTINGS_DEFAULTS } from "../../constants";
+import {
+	DEFAULT_EVENT_TEXT_COLOR,
+	DEFAULT_EVENT_TEXT_COLOR_ALT,
+	DEFAULT_MONTH_EVEN_COLOR,
+	DEFAULT_MONTH_ODD_COLOR,
+	DEFAULT_ZOOM_LEVELS,
+} from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import {
 	CALENDAR_VIEW_OPTIONS,
@@ -196,7 +202,7 @@ export class CalendarSettings {
 			.setName("Zoom levels (minutes)")
 			.setDesc("Available zoom levels for Ctrl+scroll zooming. Enter comma-separated values (1-60 minutes each)")
 			.addTextArea((text) => {
-				text.setPlaceholder(SETTINGS_DEFAULTS.DEFAULT_ZOOM_LEVELS.join(", "));
+				text.setPlaceholder(DEFAULT_ZOOM_LEVELS.join(", "));
 				text.setValue(this.settingsStore.currentSettings.zoomLevels.join(", "));
 				text.onChange(async (value) => {
 					const levels = value
@@ -287,14 +293,14 @@ export class CalendarSettings {
 			key: "eventTextColor",
 			name: "Default event text color",
 			desc: "Text color for events with dark backgrounds (default: white)",
-			fallback: SETTINGS_DEFAULTS.DEFAULT_EVENT_TEXT_COLOR,
+			fallback: DEFAULT_EVENT_TEXT_COLOR,
 		});
 
 		this.ui.addColorPicker(containerEl, {
 			key: "eventTextColorAlt",
 			name: "Alternative event text color",
 			desc: "Text color used when event background is light or white (e.g., pastel colors) for better contrast",
-			fallback: SETTINGS_DEFAULTS.DEFAULT_EVENT_TEXT_COLOR_ALT,
+			fallback: DEFAULT_EVENT_TEXT_COLOR_ALT,
 		});
 	}
 
@@ -310,21 +316,21 @@ export class CalendarSettings {
 					key: "monthEvenColor",
 					name: "Day background color",
 					desc: "Gradient color applied uniformly to all day cells in every view",
-					fallback: SETTINGS_DEFAULTS.DEFAULT_MONTH_EVEN_COLOR,
+					fallback: DEFAULT_MONTH_EVEN_COLOR,
 				});
 			} else if (mode === "boundary") {
 				this.ui.addColorPicker(colorPickersWrapper, {
 					key: "monthEvenColor",
 					name: "Even month color",
 					desc: "Gradient color for even months (January, March, May, July, September, November)",
-					fallback: SETTINGS_DEFAULTS.DEFAULT_MONTH_EVEN_COLOR,
+					fallback: DEFAULT_MONTH_EVEN_COLOR,
 				});
 
 				this.ui.addColorPicker(colorPickersWrapper, {
 					key: "monthOddColor",
 					name: "Odd month color",
 					desc: "Gradient color for odd months (February, April, June, August, October, December)",
-					fallback: SETTINGS_DEFAULTS.DEFAULT_MONTH_ODD_COLOR,
+					fallback: DEFAULT_MONTH_ODD_COLOR,
 				});
 			}
 		};
