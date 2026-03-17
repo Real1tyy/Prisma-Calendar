@@ -68,14 +68,6 @@ export function isAllDayEvent(event: ParsedEvent): event is AllDayEvent {
 	return event.type === "allDay";
 }
 
-export function isUntrackedEvent(event: ParsedEvent): event is UntrackedEvent {
-	return event.type === "untracked";
-}
-
-export function isCalendarEvent(event: ParsedEvent): event is CalendarEvent {
-	return event.type === "timed" || event.type === "allDay";
-}
-
 export interface PrismaExtendedProps {
 	filePath: string;
 	folder: string;

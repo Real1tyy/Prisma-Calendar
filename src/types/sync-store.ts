@@ -6,5 +6,3 @@ export const PrismaSyncDataSchema = z
 		lastUsedCalendarId: z.string().optional(),
 	})
 	.strip();
-
-type PrismaSyncData = z.infer<typeof PrismaSyncDataSchema>;

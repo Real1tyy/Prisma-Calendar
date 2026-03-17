@@ -295,12 +295,9 @@ export const CustomCalendarSettingsSchema = z
 	.strip();
 
 export type CustomPrompt = z.infer<typeof CustomPromptSchema>;
-type AISettings = z.infer<typeof AISettingsSchema>;
 export type FilterPreset = z.infer<typeof FilterPresetSchema>;
 export type CategoryAssignmentPreset = z.infer<typeof CategoryAssignmentPresetSchema>;
 export type EventPreset = z.infer<typeof EventPresetSchema>;
-type HolidaySettings = z.infer<typeof HolidaySettingsSchema>;
-type HolidayType = z.infer<typeof HolidayTypeSchema>;
 export type SingleCalendarConfig = z.infer<typeof SingleCalendarConfigSchema>;
 export type CustomCalendarSettings = z.infer<typeof CustomCalendarSettingsSchema>;
 export type PrismaCalendarSettingsStore = SettingsStore<typeof CustomCalendarSettingsSchema>;

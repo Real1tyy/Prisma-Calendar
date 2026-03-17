@@ -1,4 +1,5 @@
 import { MacroCommand } from "@real1ty-obsidian-plugins";
+import type { DurationLike } from "luxon";
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../calendar-bundle";
@@ -15,10 +16,9 @@ function createBatchMoveCommand(
 	app: App,
 	bundle: CalendarBundle,
 	filePaths: string[],
-	startOffset: number,
-	endOffset: number
+	offset: DurationLike
 ): MacroCommand {
-	const moveCommands = filePaths.map((filePath) => new MoveEventCommand(app, bundle, filePath, startOffset, endOffset));
+	const moveCommands = filePaths.map((filePath) => new MoveEventCommand(app, bundle, filePath, offset, offset));
 	return new MacroCommand(moveCommands);
 }
 
@@ -26,12 +26,9 @@ function createBatchCloneCommand(
 	app: App,
 	bundle: CalendarBundle,
 	filePaths: string[],
-	startOffset: number,
-	endOffset: number
+	offset: DurationLike
 ): MacroCommand {
-	const cloneCommands = filePaths.map(
-		(filePath) => new CloneEventCommand(app, bundle, filePath, startOffset, endOffset)
-	);
+	const cloneCommands = filePaths.map((filePath) => new CloneEventCommand(app, bundle, filePath, offset, offset));
 	return new MacroCommand(cloneCommands);
 }
 
@@ -49,9 +46,9 @@ function createBatchMoveByCommand(
 	app: App,
 	bundle: CalendarBundle,
 	filePaths: string[],
-	offsetMs: number
+	offset: DurationLike
 ): MacroCommand {
-	const moveByCommands = filePaths.map((filePath) => new MoveEventCommand(app, bundle, filePath, offsetMs, offsetMs));
+	const moveByCommands = filePaths.map((filePath) => new MoveEventCommand(app, bundle, filePath, offset, offset));
 	return new MacroCommand(moveByCommands);
 }
 
@@ -89,10 +86,8 @@ function createBatchUpdateFrontmatterCommand(
 	return new MacroCommand(updateCommands);
 }
 
-export function calculateWeekOffsets(weeks: number): [number, number] {
-	const weekInMs = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-	const offset = weeks * weekInMs;
-	return [offset, offset]; // Both start and end get the same offset
+export function weekDuration(weeks: number): DurationLike {
+	return { weeks };
 }
 
 export class BatchCommandFactory {
@@ -110,21 +105,19 @@ export class BatchCommandFactory {
 	}
 
 	createMove(filePaths: string[], weeks: number): MacroCommand {
-		const [startOffset, endOffset] = calculateWeekOffsets(weeks);
-		return createBatchMoveCommand(this.app, this.bundle, filePaths, startOffset, endOffset);
+		return createBatchMoveCommand(this.app, this.bundle, filePaths, weekDuration(weeks));
 	}
 
 	createClone(filePaths: string[], weeks: number): MacroCommand {
-		const [startOffset, endOffset] = calculateWeekOffsets(weeks);
-		return createBatchCloneCommand(this.app, this.bundle, filePaths, startOffset, endOffset);
+		return createBatchCloneCommand(this.app, this.bundle, filePaths, weekDuration(weeks));
 	}
 
 	createSkip(filePaths: string[]): MacroCommand {
 		return createBatchSkipCommand(this.app, this.bundle, filePaths);
 	}
 
-	createMoveBy(filePaths: string[], offsetMs: number): MacroCommand {
-		return createBatchMoveByCommand(this.app, this.bundle, filePaths, offsetMs);
+	createMoveBy(filePaths: string[], offset: DurationLike): MacroCommand {
+		return createBatchMoveByCommand(this.app, this.bundle, filePaths, offset);
 	}
 
 	createMarkAsDone(filePaths: string[]): MacroCommand {
