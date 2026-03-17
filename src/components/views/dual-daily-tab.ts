@@ -1,10 +1,11 @@
-import { cls, type TabDefinition } from "@real1ty-obsidian-plugins";
+import { createGridLayout, type GridLayoutHandle, type TabDefinition } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { createDailyCalendar, type DailyCalendarHandle } from "./daily-calendar";
 
 export function createDualDailyTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
+	let gridHandle: GridLayoutHandle | null = null;
 	let leftCalendar: DailyCalendarHandle | null = null;
 	let rightCalendar: DailyCalendarHandle | null = null;
 
@@ -12,18 +13,46 @@ export function createDualDailyTabDefinition(app: App, bundle: CalendarBundle): 
 		id: "dual-daily",
 		label: "Dual Daily",
 		render: (el) => {
-			const wrapper = el.createDiv({ cls: cls("dual-daily-layout") });
-			const leftCol = wrapper.createDiv({ cls: cls("dual-daily-left") });
-			const rightCol = wrapper.createDiv({ cls: cls("dual-daily-right") });
-
-			leftCalendar = createDailyCalendar(leftCol, app, bundle);
-			rightCalendar = createDailyCalendar(rightCol, app, bundle);
+			gridHandle = createGridLayout(el, {
+				cssPrefix: "prisma-dual-daily-",
+				columns: 2,
+				rows: 1,
+				gap: "12px",
+				resizable: "track",
+				dividers: true,
+				cells: [
+					{
+						id: "left-calendar",
+						label: "Calendar Left",
+						row: 0,
+						col: 0,
+						render: (cellEl) => {
+							leftCalendar = createDailyCalendar(cellEl, app, bundle);
+						},
+						cleanup: () => {
+							leftCalendar?.destroy();
+							leftCalendar = null;
+						},
+					},
+					{
+						id: "right-calendar",
+						label: "Calendar Right",
+						row: 0,
+						col: 1,
+						render: (cellEl) => {
+							rightCalendar = createDailyCalendar(cellEl, app, bundle);
+						},
+						cleanup: () => {
+							rightCalendar?.destroy();
+							rightCalendar = null;
+						},
+					},
+				],
+			});
 		},
 		cleanup: () => {
-			leftCalendar?.destroy();
-			leftCalendar = null;
-			rightCalendar?.destroy();
-			rightCalendar = null;
+			gridHandle?.destroy();
+			gridHandle = null;
 		},
 	};
 }

@@ -1,4 +1,4 @@
-import { cls, type TabDefinition } from "@real1ty-obsidian-plugins";
+import { createGridLayout, type GridLayoutHandle, type TabDefinition } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -6,6 +6,7 @@ import { createDailyCalendar, type DailyCalendarHandle } from "./daily-calendar"
 import { type DailyStatsHandle, renderDailyStatsInto } from "./daily-stats-renderer";
 
 export function createDailyStatsTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
+	let gridHandle: GridLayoutHandle | null = null;
 	let calendarHandle: DailyCalendarHandle | null = null;
 	let statsHandle: DailyStatsHandle | null = null;
 
@@ -13,23 +14,48 @@ export function createDailyStatsTabDefinition(app: App, bundle: CalendarBundle):
 		id: "daily-stats",
 		label: "Daily + Stats",
 		render: (el) => {
-			const wrapper = el.createDiv({ cls: cls("daily-stats-layout") });
-			const leftCol = wrapper.createDiv({ cls: cls("daily-stats-left") });
-			const rightCol = wrapper.createDiv({ cls: cls("daily-stats-right") });
-
-			statsHandle = renderDailyStatsInto(rightCol, bundle);
-
-			calendarHandle = createDailyCalendar(leftCol, app, bundle, {
-				onDateChange: (date) => {
-					statsHandle?.setDate(date);
-				},
+			gridHandle = createGridLayout(el, {
+				cssPrefix: "prisma-daily-stats-",
+				columns: 2,
+				rows: 1,
+				gap: "12px",
+				resizable: "track",
+				dividers: true,
+				cells: [
+					{
+						id: "calendar",
+						label: "Calendar",
+						row: 0,
+						col: 0,
+						render: (cellEl) => {
+							calendarHandle = createDailyCalendar(cellEl, app, bundle, {
+								onDateChange: (date) => statsHandle?.setDate(date),
+							});
+						},
+						cleanup: () => {
+							calendarHandle?.destroy();
+							calendarHandle = null;
+						},
+					},
+					{
+						id: "stats",
+						label: "Statistics",
+						row: 0,
+						col: 1,
+						render: (cellEl) => {
+							statsHandle = renderDailyStatsInto(cellEl, bundle);
+						},
+						cleanup: () => {
+							statsHandle?.destroy();
+							statsHandle = null;
+						},
+					},
+				],
 			});
 		},
 		cleanup: () => {
-			statsHandle?.destroy();
-			statsHandle = null;
-			calendarHandle?.destroy();
-			calendarHandle = null;
+			gridHandle?.destroy();
+			gridHandle = null;
 		},
 	};
 }
