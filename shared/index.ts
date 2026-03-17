@@ -4,6 +4,7 @@ export * from "./api-gateway";
 export * from "./commands";
 // View utilities
 export * from "./activate-view";
+export * from "./mountable-component";
 export * from "./mountable-view";
 // Async utilities
 export * from "./async";
@@ -22,6 +23,7 @@ export * from "./inputs";
 export * from "./settings";
 // String utilities
 export * from "./string";
+export * from "./styles";
 // List utilities
 export * from "./license";
 export * from "./settings/sync-store";

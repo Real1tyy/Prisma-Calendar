@@ -1,4 +1,5 @@
 export { registerTabCommands } from "./commands";
+export { injectTabStyles } from "./styles";
 export { createTabbedContainer } from "./tabbed-container";
 export {
 	type TabbedContainerConfig,

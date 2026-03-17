@@ -39,12 +39,48 @@ export function openLayoutEditor(config: LayoutEditorConfig): void {
 		const controls = root.createDiv(css.cls("grid-editor-controls"));
 		renderDimRow(controls, "Columns", staged.columns, (v) => {
 			const columnSizes = adjustSizes(staged.columnSizes, staged.columns, v);
-			staged = { ...staged, columns: v, cells: staged.cells.filter((c) => c.col < v), columnSizes };
+			const cellColumnSizes = staged.cellColumnSizes
+				? Object.fromEntries(
+						Object.entries(staged.cellColumnSizes).map(([row, sizes]) => [
+							row,
+							adjustSizes(sizes, staged.columns, v) ?? Array.from({ length: v }, () => 1),
+						])
+					)
+				: undefined;
+			const cellRowSizes = staged.cellRowSizes
+				? Object.fromEntries(Object.entries(staged.cellRowSizes).filter(([col]) => Number(col) < v))
+				: undefined;
+			staged = {
+				...staged,
+				columns: v,
+				cells: staged.cells.filter((c) => c.col < v),
+				columnSizes,
+				cellColumnSizes,
+				cellRowSizes,
+			};
 			renderEditor(root, closeModal);
 		});
 		renderDimRow(controls, "Rows", staged.rows, (v) => {
 			const rowSizes = adjustSizes(staged.rowSizes, staged.rows, v);
-			staged = { ...staged, rows: v, cells: staged.cells.filter((c) => c.row < v), rowSizes };
+			const cellColumnSizes = staged.cellColumnSizes
+				? Object.fromEntries(Object.entries(staged.cellColumnSizes).filter(([row]) => Number(row) < v))
+				: undefined;
+			const cellRowSizes = staged.cellRowSizes
+				? Object.fromEntries(
+						Object.entries(staged.cellRowSizes).map(([col, sizes]) => [
+							col,
+							adjustSizes(sizes, staged.rows, v) ?? Array.from({ length: v }, () => 1),
+						])
+					)
+				: undefined;
+			staged = {
+				...staged,
+				rows: v,
+				cells: staged.cells.filter((c) => c.row < v),
+				rowSizes,
+				cellColumnSizes,
+				cellRowSizes,
+			};
 			renderEditor(root, closeModal);
 		});
 

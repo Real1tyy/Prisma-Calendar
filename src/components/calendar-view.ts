@@ -10,16 +10,15 @@ import {
 	extractContentAfterFrontmatter,
 	formatDuration,
 	hasVeryCloseShadeFromRgb,
-	MountableView,
+	MountableComponent,
 	parseColorToRgb,
 	type RgbColor,
 	toggleCls,
 } from "@real1ty-obsidian-plugins";
-import { ItemView, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
+import { type App, Component, type Modal, TFile, type WorkspaceLeaf } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { FillTimeCommand, UpdateEventCommand, UpdateFrontmatterCommand } from "../core/commands";
-import { PRO_FEATURES } from "../core/license";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import type {
 	CalendarEvent,
@@ -32,7 +31,6 @@ import type {
 import { isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import { getEventRenderingKey } from "../utils/calendar-settings";
-import { getCalendarViewType } from "../utils/calendar-view-type";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
 import { resolveEventColor } from "../utils/event-color";
 import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/event-diff";
@@ -68,14 +66,12 @@ import { EventCreateModal } from "./modals";
 import { openCategoryAssignModal } from "./modals/assignment-modal";
 import { BatchFrontmatterModal } from "./modals/batch-frontmatter-modal";
 import { CategorySelectModal } from "./modals/category-select-modal";
-import { EventSeriesHeatmapModal } from "./modals/event-series-heatmap-modal";
-import { EventSeriesTimelineModal } from "./modals/event-series-timeline-modal";
 import { IntervalEventsModal } from "./modals/interval-events-modal";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
 
-export class CalendarView extends MountableView(ItemView, "prisma") {
+export class CalendarComponent extends MountableComponent(Component, "prisma") {
 	calendar: Calendar | null = null;
 	private eventContextMenu: EventContextMenu;
 	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
@@ -84,8 +80,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private searchFilter: SearchFilterInputManager;
 	private expressionFilter: ExpressionFilterInputManager;
 	private filterPresetSelector: FilterPresetSelector;
-	private container!: HTMLElement;
-	private viewType: string;
+	private container: HTMLElement;
 	private skippedEventsModal: SkippedEventsModal | null = null;
 	private eventsModal: EventsModal | null = null;
 	private filteredEventsModal: FilteredEventsModal | null = null;
@@ -139,15 +134,26 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	private cachedNow = new Date();
 	private cachedTodayStart = new Date();
 	private isRestoring = false;
+	readonly app: App;
+	private rootEl: HTMLElement;
+	private hostEl: HTMLElement;
+	private leaf: WorkspaceLeaf;
 
 	// ─── Lifecycle ───────────────────────────────────────────────
 
 	constructor(
-		leaf: WorkspaceLeaf,
-		private bundle: CalendarBundle
+		app: App,
+		private bundle: CalendarBundle,
+		rootEl: HTMLElement,
+		hostEl: HTMLElement,
+		leaf: WorkspaceLeaf
 	) {
-		super(leaf);
-		this.viewType = getCalendarViewType(bundle.calendarId);
+		super();
+		this.app = app;
+		this.rootEl = rootEl;
+		this.hostEl = hostEl;
+		this.leaf = leaf;
+		this.container = rootEl;
 		this.eventContextMenu = new EventContextMenu(this.app, bundle, this);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 		this.zoomManager = new ZoomManager(bundle.settingsStore);
@@ -162,16 +168,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	async mount(): Promise<void> {
-		const root = this.containerEl.children[1] as HTMLElement;
-		root.empty();
-		root.addClass(getCalendarViewType(this.bundle.calendarId));
+		this.showLoading(this.rootEl, "Indexing calendar events…");
 
-		this.showLoading(root, "Indexing calendar events…");
+		this.container = this.rootEl.createDiv(cls("calendar-container"));
 
-		// Create calendar host
-		this.container = root.createDiv(cls("calendar-container"));
-
-		// Wait for layout before rendering FullCalendar
 		await this.waitForLayout(this.container);
 		this.initializeCalendar(this.container);
 
@@ -184,14 +184,14 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			document.removeEventListener("pointerup", this.handleGlobalPointerUpForUntrackedDrop, true);
 		});
 
-		requestAnimationFrame(() => this.containerEl.focus());
+		requestAnimationFrame(() => this.hostEl.focus());
 
 		// Re-focus container when this leaf becomes active (e.g. switching back from another tab)
 		// so keyboard navigation (arrow keys for intervals) works immediately without clicking
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", (leaf) => {
 				if (leaf === this.leaf) {
-					this.containerEl.focus();
+					this.hostEl.focus();
 				}
 			})
 		);
@@ -229,9 +229,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				this.hideLoading();
 				this.scheduleRefreshEvents();
 			} else {
-				// Indexing started (e.g., filter expressions changed)
-				const root = this.containerEl.children[1] as HTMLElement;
-				this.showLoading(root, "Re-indexing calendar events…");
+				this.showLoading(this.rootEl, "Re-indexing calendar events…");
 			}
 		});
 		this.register(() => indexingCompleteSubscription.unsubscribe());
@@ -246,21 +244,15 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		this.register(() => recurringEventManagerSubscription.unsubscribe());
 	}
 
-	unmount(): Promise<void> {
+	async unmount(): Promise<void> {
 		this.saveCurrentState();
-
-		// Stop upcoming event check interval
 		this.stopUpcomingEventCheck();
-
-		// Cleanup drag edge scrolling
 		this.cleanupDragEdgeScrolling();
-
 		this.zoomManager.destroy();
 		this.searchFilter.destroy();
 		this.expressionFilter.destroy();
 		this.untrackedEventsDropdown?.destroy();
 
-		// Cancel any pending refresh
 		if (this.refreshRafId !== null) {
 			cancelAnimationFrame(this.refreshRafId);
 			this.refreshRafId = null;
@@ -271,14 +263,10 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		}
 
 		this.clearRenderedEventsCache();
-
 		this.calendar?.destroy();
 		this.calendar = null;
-
 		this.colorEvaluator.destroy();
 		this.batchSelectionManager = null;
-
-		return Promise.resolve();
 	}
 
 	// ─── Calendar Setup ──────────────────────────────────────────
@@ -584,7 +572,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		});
 		this.updateToolbar();
 
-		this.zoomManager.initialize(this.calendar, this.container, this.containerEl);
+		this.zoomManager.initialize(this.calendar, this.container, this.hostEl);
 		this.zoomManager.setOnZoomChangeCallback(() => this.saveCurrentState());
 
 		this.initializeToolbarComponents(this.isMobileLayout ? settings.mobileToolbarButtons : settings.toolbarButtons);
@@ -796,12 +784,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		const left = leftItems.length > 0 ? leftItems.join(" ") : "";
 		const rightItems = ["filteredEvents", "eventsButton"];
-		if (toolbarButtons.has("timeline")) {
-			rightItems.push("timeline");
-		}
-		if (toolbarButtons.has("heatmap")) {
-			rightItems.push("heatmap");
-		}
 		rightItems.push("skippedEvents", "batchSelect");
 		const right = `${rightItems.join(" ")} ${viewSwitchers}`;
 
@@ -851,18 +833,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				text: "Events",
 				click: () => {
 					void this.showEventsModal();
-				},
-			},
-			timeline: {
-				text: "Timeline",
-				click: () => {
-					this.showAllEventsTimeline();
-				},
-			},
-			heatmap: {
-				text: "Heatmap",
-				click: () => {
-					this.showAllEventsHeatmap();
 				},
 			},
 		};
@@ -1195,7 +1165,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 		const { view } = this.calendar;
 
 		// Capture scroll position before touching events (needed for structural changes)
-		const viewContent = this.containerEl.querySelector(".view-content");
+		const viewContent = this.hostEl.querySelector(".view-content");
 		const innerScroller = this.container.querySelector(".fc-scroller");
 		const viewContentScrollTop = viewContent?.scrollTop ?? 0;
 		const innerScrollTop = innerScroller?.scrollTop ?? 0;
@@ -1217,7 +1187,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 		if (hasStructuralChanges) {
 			requestAnimationFrame(() => {
-				const viewContentRestored = this.containerEl.querySelector(".view-content");
+				const viewContentRestored = this.hostEl.querySelector(".view-content");
 				const inner = this.container.querySelector(".fc-scroller");
 
 				if (viewContentRestored) {
@@ -2198,7 +2168,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	}
 
 	private scrollElementToCenter(element: Element): void {
-		const viewContent = this.containerEl.querySelector(".view-content");
+		const viewContent = this.hostEl.querySelector(".view-content");
 		if (!viewContent) return;
 
 		const elementRect = element.getBoundingClientRect();
@@ -2353,23 +2323,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 				return new EventsModal(this.app, this.bundle, this);
 			}
 		);
-	}
-
-	showAllEventsTimeline(): void {
-		const allEvents = this.bundle.eventStore.getAllEvents();
-		new EventSeriesTimelineModal(this.app, this.bundle, {
-			events: allEvents,
-			title: "All Events Timeline",
-		}).open();
-	}
-
-	showAllEventsHeatmap(): void {
-		if (!this.bundle.plugin.licenseManager.requirePro(PRO_FEATURES.HEATMAP)) return;
-		const allEvents = this.bundle.eventStore.getAllEvents();
-		new EventSeriesHeatmapModal(this.app, this.bundle, {
-			events: allEvents,
-			title: "All Events Heatmap",
-		}).open();
 	}
 
 	async showFilteredEventsModal(): Promise<void> {
@@ -2752,7 +2705,7 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 	// ─── Keyboard & Focus ────────────────────────────────────────
 
 	private setupKeyboardShortcuts(): void {
-		this.containerEl.setAttribute("tabindex", "-1");
+		this.hostEl.setAttribute("tabindex", "-1");
 
 		const keydownHandler = (e: KeyboardEvent) => {
 			if (!this.calendar) return;
@@ -2776,20 +2729,20 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 			}
 		};
 
-		this.containerEl.addEventListener("keydown", keydownHandler);
+		this.hostEl.addEventListener("keydown", keydownHandler);
 
-		this.containerEl.addEventListener("click", (e: MouseEvent) => {
+		this.hostEl.addEventListener("click", (e: MouseEvent) => {
 			// Don't steal focus from input elements
 			const target = e.target as HTMLElement;
 			if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT") {
 				return;
 			}
-			this.containerEl.focus();
+			this.hostEl.focus();
 		});
 
 		// Register cleanup
 		this.register(() => {
-			this.containerEl.removeEventListener("keydown", keydownHandler);
+			this.hostEl.removeEventListener("keydown", keydownHandler);
 		});
 	}
 
@@ -2829,18 +2782,6 @@ export class CalendarView extends MountableView(ItemView, "prisma") {
 
 	async redo(): Promise<boolean> {
 		return await this.bundle.redo();
-	}
-
-	getViewType(): string {
-		return this.viewType;
-	}
-
-	getDisplayText(): string {
-		return this.bundle.settingsStore.currentSettings.name;
-	}
-
-	getIcon(): string {
-		return "calendar";
 	}
 
 	getViewContext(): { viewType: string; currentStart: Date; currentEnd: Date } | null {

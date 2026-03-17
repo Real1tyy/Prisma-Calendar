@@ -1,6 +1,6 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins";
+import { addCls, cls, showModal } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
-import { type App, Modal } from "obsidian";
+import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
@@ -18,197 +18,131 @@ export interface EventSeriesHeatmapConfig {
 
 type HeatmapMode = "yearly" | "monthly";
 
-export class EventSeriesHeatmapModal extends Modal {
-	private dataset!: HeatmapDataset;
-	private mode: HeatmapMode = "yearly";
-	private year: number;
-	private month: number;
-	private svgContainer!: HTMLElement;
-	private legendContainer!: HTMLElement;
-	private controlsLabel!: HTMLElement;
-	private dayDetailPanel!: HTMLElement;
+export interface HeatmapHandle {
+	destroy: () => void;
+	refresh: (events: CalendarEvent[]) => void;
+}
 
-	constructor(
-		app: App,
-		private bundle: CalendarBundle,
-		private config: EventSeriesHeatmapConfig
-	) {
-		super(app);
-		const now = DateTime.now();
-		this.year = now.year;
-		this.month = now.month;
-	}
+/**
+ * Renders a heatmap visualization into any container element.
+ * Returns a handle for cleanup and refreshing with new events.
+ */
+export function renderHeatmapInto(
+	container: HTMLElement,
+	app: App,
+	bundle: CalendarBundle,
+	config: EventSeriesHeatmapConfig
+): HeatmapHandle {
+	let mode: HeatmapMode = "yearly";
+	const now = DateTime.now();
+	let year = now.year;
+	let month = now.month;
+	let dataset: HeatmapDataset;
 
-	onOpen(): void {
-		const { contentEl, modalEl } = this;
-		contentEl.empty();
+	const header = container.createDiv(cls("heatmap-header"));
+	header.createEl("h2", { text: config.title });
 
-		modalEl.addClass(cls("heatmap-modal"));
+	const modeGroup = header.createDiv(cls("heatmap-mode-group"));
+	const yearlyBtn = modeGroup.createEl("button", { text: "Yearly", cls: cls("heatmap-mode-btn") });
+	const monthlyBtn = modeGroup.createEl("button", { text: "Monthly", cls: cls("heatmap-mode-btn") });
+	addCls(yearlyBtn, "is-active");
 
-		const header = contentEl.createDiv(cls("heatmap-header"));
-		header.createEl("h2", { text: this.config.title });
-		this.renderModeToggle(header);
-
-		this.renderNavControls(contentEl);
-		this.legendContainer = contentEl.createDiv(cls("heatmap-legend-container"));
-		this.svgContainer = contentEl.createDiv(cls("heatmap-container"));
-		this.dayDetailPanel = contentEl.createDiv(cls("heatmap-day-detail"));
-
-		this.dataset = buildHeatmapDataset(this.config.events);
-		this.renderView();
-
-		this.scope.register([], "ArrowLeft", () => {
-			this.navigate(-1);
-			return false;
-		});
-		this.scope.register([], "ArrowRight", () => {
-			this.navigate(1);
-			return false;
-		});
-	}
-
-	onClose(): void {
-		this.contentEl.empty();
-	}
-
-	private renderModeToggle(container: HTMLElement): void {
-		const modeGroup = container.createDiv(cls("heatmap-mode-group"));
-		const yearlyBtn = modeGroup.createEl("button", { text: "Yearly", cls: cls("heatmap-mode-btn") });
-		const monthlyBtn = modeGroup.createEl("button", { text: "Monthly", cls: cls("heatmap-mode-btn") });
-
+	yearlyBtn.addEventListener("click", () => {
+		mode = "yearly";
+		yearlyBtn.className = cls("heatmap-mode-btn");
 		addCls(yearlyBtn, "is-active");
+		monthlyBtn.className = cls("heatmap-mode-btn");
+		renderView();
+	});
 
-		yearlyBtn.addEventListener("click", () => {
-			this.mode = "yearly";
-			yearlyBtn.className = cls("heatmap-mode-btn");
-			addCls(yearlyBtn, "is-active");
-			monthlyBtn.className = cls("heatmap-mode-btn");
-			this.renderView();
-		});
+	monthlyBtn.addEventListener("click", () => {
+		mode = "monthly";
+		yearlyBtn.className = cls("heatmap-mode-btn");
+		monthlyBtn.className = cls("heatmap-mode-btn");
+		addCls(monthlyBtn, "is-active");
+		renderView();
+	});
 
-		monthlyBtn.addEventListener("click", () => {
-			this.mode = "monthly";
-			yearlyBtn.className = cls("heatmap-mode-btn");
-			monthlyBtn.className = cls("heatmap-mode-btn");
-			addCls(monthlyBtn, "is-active");
-			this.renderView();
-		});
-	}
+	const controls = container.createDiv(cls("heatmap-controls"));
+	const navGroup = controls.createDiv(cls("heatmap-nav-group"));
+	const prevBtn = navGroup.createEl("button", { text: "\u2190", cls: cls("heatmap-nav-btn") });
+	const controlsLabel = navGroup.createSpan(cls("heatmap-nav-label"));
+	const nextBtn = navGroup.createEl("button", { text: "\u2192", cls: cls("heatmap-nav-btn") });
+	const nowBtn = controls.createEl("button", { text: "Now", cls: cls("heatmap-nav-btn") });
+	const shortcutHint = controls.createSpan(cls("heatmap-shortcut-hint"));
+	shortcutHint.textContent = "\u2190 \u2192 to navigate";
 
-	private renderNavControls(container: HTMLElement): void {
-		const controls = container.createDiv(cls("heatmap-controls"));
-
-		const navGroup = controls.createDiv(cls("heatmap-nav-group"));
-		const prevBtn = navGroup.createEl("button", { text: "\u2190", cls: cls("heatmap-nav-btn") });
-		this.controlsLabel = navGroup.createSpan(cls("heatmap-nav-label"));
-		const nextBtn = navGroup.createEl("button", { text: "\u2192", cls: cls("heatmap-nav-btn") });
-
-		const nowBtn = controls.createEl("button", { text: "Now", cls: cls("heatmap-nav-btn") });
-
-		const shortcutHint = controls.createSpan(cls("heatmap-shortcut-hint"));
-		shortcutHint.textContent = "\u2190 \u2192 to navigate";
-
-		prevBtn.addEventListener("click", () => {
-			this.navigate(-1);
-		});
-		nextBtn.addEventListener("click", () => {
-			this.navigate(1);
-		});
-		nowBtn.addEventListener("click", () => {
-			const now = DateTime.now();
-			this.year = now.year;
-			this.month = now.month;
-			this.renderView();
-		});
-	}
-
-	private navigate(direction: number): void {
-		if (this.mode === "yearly") {
-			this.year += direction;
+	function navigate(direction: number): void {
+		if (mode === "yearly") {
+			year += direction;
 		} else {
-			this.month += direction;
-			if (this.month < 1) {
-				this.month = 12;
-				this.year--;
-			} else if (this.month > 12) {
-				this.month = 1;
-				this.year++;
+			month += direction;
+			if (month < 1) {
+				month = 12;
+				year--;
+			} else if (month > 12) {
+				month = 1;
+				year++;
 			}
 		}
-		this.renderView();
+		renderView();
 	}
 
-	private renderView(): void {
-		this.updateLabel();
-		this.legendContainer.empty();
-		this.dayDetailPanel.empty();
+	prevBtn.addEventListener("click", () => navigate(-1));
+	nextBtn.addEventListener("click", () => navigate(1));
+	nowBtn.addEventListener("click", () => {
+		const current = DateTime.now();
+		year = current.year;
+		month = current.month;
+		renderView();
+	});
 
-		renderHeatmapLegend(this.legendContainer, this.dataset.maxCount, this.config.categoryColor);
+	const legendContainer = container.createDiv(cls("heatmap-legend-container"));
+	const svgContainer = container.createDiv(cls("heatmap-container"));
+	const dayDetailPanel = container.createDiv(cls("heatmap-day-detail"));
 
-		const firstDayOfWeek = this.bundle.settingsStore.currentSettings.firstDayOfWeek ?? 0;
-
-		renderHeatmapSVG(this.svgContainer, this.dataset, {
-			mode: this.mode,
-			year: this.year,
-			month: this.month,
-			firstDayOfWeek,
-			categoryColor: this.config.categoryColor,
-			onDayClick: (date, events) => this.showDayDetail(date, events),
-		});
-	}
-
-	private updateLabel(): void {
-		if (this.mode === "yearly") {
-			this.controlsLabel.textContent = String(this.year);
+	function updateLabel(): void {
+		if (mode === "yearly") {
+			controlsLabel.textContent = String(year);
 		} else {
-			const dt = DateTime.utc(this.year, this.month, 1);
-			this.controlsLabel.textContent = dt.toFormat("LLLL yyyy");
+			const dt = DateTime.utc(year, month, 1);
+			controlsLabel.textContent = dt.toFormat("LLLL yyyy");
 		}
 	}
 
-	private showDayDetail(date: string, events: CalendarEvent[]): void {
-		this.dayDetailPanel.empty();
+	function showDayDetail(date: string, events: CalendarEvent[]): void {
+		dayDetailPanel.empty();
 
 		const dt = DateTime.fromISO(date, { zone: "utc" });
-		const header = this.dayDetailPanel.createDiv(cls("heatmap-detail-header"));
-		header.createEl("h3", { text: dt.toFormat("EEEE, LLLL d, yyyy") });
-		header.createSpan({
+		const detailHeader = dayDetailPanel.createDiv(cls("heatmap-detail-header"));
+		detailHeader.createEl("h3", { text: dt.toFormat("EEEE, LLLL d, yyyy") });
+		detailHeader.createSpan({
 			text: `${events.length} event${events.length === 1 ? "" : "s"}`,
 			cls: cls("heatmap-detail-count"),
 		});
 
 		if (events.length === 0) {
-			this.dayDetailPanel.createEl("p", {
+			dayDetailPanel.createEl("p", {
 				text: "No events on this day",
 				cls: cls("heatmap-detail-empty"),
 			});
 			return;
 		}
 
-		const settings = this.bundle.settingsStore.currentSettings;
+		const settings = bundle.settingsStore.currentSettings;
 		const displayPropertiesList = settings.frontmatterDisplayPropertiesHeatmap;
 
-		const list = this.dayDetailPanel.createDiv(cls("heatmap-detail-list"));
+		const list = dayDetailPanel.createDiv(cls("heatmap-detail-list"));
 		for (const event of events) {
 			const row = list.createDiv(cls("heatmap-detail-row"));
-
 			const mainRow = row.createDiv(cls("heatmap-detail-row-main"));
-			mainRow.createSpan({
-				text: cleanupTitle(event.title),
-				cls: cls("heatmap-detail-title"),
-			});
+			mainRow.createSpan({ text: cleanupTitle(event.title), cls: cls("heatmap-detail-title") });
 
 			if (event.type === "timed") {
 				const startDt = DateTime.fromISO(event.start);
-				mainRow.createSpan({
-					text: startDt.toFormat("h:mm a"),
-					cls: cls("heatmap-detail-time"),
-				});
+				mainRow.createSpan({ text: startDt.toFormat("h:mm a"), cls: cls("heatmap-detail-time") });
 			} else {
-				mainRow.createSpan({
-					text: "All day",
-					cls: cls("heatmap-detail-time"),
-				});
+				mainRow.createSpan({ text: "All day", cls: cls("heatmap-detail-time") });
 			}
 
 			if (displayPropertiesList.length > 0 && event.meta) {
@@ -220,9 +154,8 @@ export class EventSeriesHeatmapModal extends Modal {
 						propEl.createSpan({ text: `${key}: `, cls: cls("prop-key") });
 						const valueSpan = propEl.createSpan({ cls: cls("prop-value") });
 						renderPropertyValue(valueSpan, value, {
-							app: this.app,
+							app,
 							linkClassName: cls("prop-link"),
-							onLinkClick: () => this.close(),
 						});
 					}
 				}
@@ -230,15 +163,73 @@ export class EventSeriesHeatmapModal extends Modal {
 
 			row.addEventListener("click", (e) => {
 				if (e.ctrlKey || e.metaKey) return;
-				void this.app.workspace.openLinkText(event.ref.filePath, "", false);
-				this.close();
+				void app.workspace.openLinkText(event.ref.filePath, "", false);
 			});
 
 			row.addEventListener("mouseover", (e) => {
 				if (e.ctrlKey || e.metaKey) {
-					emitHover(this.app, this.modalEl, row, e, event.ref.filePath, this.bundle.calendarId);
+					emitHover(app, container, row, e, event.ref.filePath, bundle.calendarId);
 				}
 			});
 		}
 	}
+
+	function renderView(): void {
+		updateLabel();
+		legendContainer.empty();
+		dayDetailPanel.empty();
+		renderHeatmapLegend(legendContainer, dataset.maxCount, config.categoryColor);
+
+		const firstDayOfWeek = bundle.settingsStore.currentSettings.firstDayOfWeek ?? 0;
+		renderHeatmapSVG(svgContainer, dataset, {
+			mode,
+			year,
+			month,
+			firstDayOfWeek,
+			categoryColor: config.categoryColor,
+			onDayClick: (date, events) => showDayDetail(date, events),
+		});
+	}
+
+	dataset = buildHeatmapDataset(config.events);
+	renderView();
+
+	return {
+		destroy: () => {
+			container.empty();
+		},
+		refresh: (events: CalendarEvent[]) => {
+			dataset = buildHeatmapDataset(events);
+			renderView();
+		},
+	};
+}
+
+export function showHeatmapModal(app: App, bundle: CalendarBundle, config: EventSeriesHeatmapConfig): void {
+	let handle: HeatmapHandle | null = null;
+	showModal({
+		app,
+		cls: cls("heatmap-modal"),
+		render: (el, ctx) => {
+			handle = renderHeatmapInto(el, app, bundle, config);
+
+			if (ctx.type === "modal") {
+				ctx.scope.register([], "ArrowLeft", () => {
+					const prevBtn = el.querySelector(`.${cls("heatmap-nav-btn")}`) as HTMLButtonElement | null;
+					prevBtn?.click();
+					return false;
+				});
+				ctx.scope.register([], "ArrowRight", () => {
+					const btns = el.querySelectorAll(`.${cls("heatmap-nav-btn")}`);
+					const nextBtn = btns[1] as HTMLButtonElement | undefined;
+					nextBtn?.click();
+					return false;
+				});
+			}
+		},
+		cleanup: () => {
+			handle?.destroy();
+			handle = null;
+		},
+	});
 }

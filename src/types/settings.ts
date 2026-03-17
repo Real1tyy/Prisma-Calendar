@@ -1,4 +1,4 @@
-import { normalizeDirectoryPath, type SettingsStore } from "@real1ty-obsidian-plugins";
+import { normalizeDirectoryPath, type SettingsStore, TabbedContainerStateSchema } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
 import {
@@ -206,6 +206,7 @@ const CalendarSettingsSchema = z
 		autoAssignCategoryByIncludes: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_AUTO_ASSIGN_CATEGORY_BY_INCLUDES), // Automatically assign category when event name contains a category name (substring match, case-insensitive)
 		titleAutocomplete: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_TITLE_AUTOCOMPLETE), // Show inline type-ahead suggestions when typing event titles in the create/edit modal
 		categoryAssignmentPresets: z.array(CategoryAssignmentPresetSchema).catch([]), // Custom category assignment rules based on event name
+		activeTab: TabbedContainerStateSchema.optional().catch(undefined), // Persisted tab state (active tab, visibility, order)
 		contextMenuItems: z.array(ContextMenuItemSchema).catch([...DEFAULT_CONTEXT_MENU_ITEMS]), // Context menu items to show when right-clicking events
 		showSourceRecurringMarker: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_SOURCE_RECURRING_MARKER), // Show marker indicator on source recurring events
 		showPhysicalRecurringMarker: z.boolean().catch(SETTINGS_DEFAULTS.DEFAULT_SHOW_PHYSICAL_RECURRING_MARKER), // Show marker indicator on physical recurring instance events

@@ -1,5 +1,5 @@
 import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins";
-import { type App, Modal, Notice } from "obsidian";
+import { type App, Modal, Modifier, Notice } from "obsidian";
 
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -13,7 +13,7 @@ import {
 import { getEventName, removeZettelId } from "../../utils/event-naming";
 import { getCategoriesFromFilePath, openFileInNewTab } from "../../utils/obsidian";
 import { getStartDateTime } from "../../utils/recurring-utils";
-import type { CalendarView } from "../calendar-view";
+import type { CalendarComponent } from "../calendar-view";
 import { openCategoryAssignModal } from "../modals/assignment-modal";
 import { EventSeriesModal } from "./event-series-modal";
 
@@ -68,7 +68,7 @@ export class EventsModal extends Modal {
 	constructor(
 		app: App,
 		private bundle: CalendarBundle,
-		private calendarView: CalendarView
+		private calendarComponent: CalendarComponent
 	) {
 		super(app);
 	}
@@ -197,7 +197,7 @@ export class EventsModal extends Modal {
 		if (hotkeyCommandId) {
 			const appWithHotkeys = this.app as unknown as {
 				hotkeyManager?: {
-					getHotkeys: (id: string) => Array<{ modifiers: import("obsidian").Modifier[]; key: string }>;
+					getHotkeys: (id: string) => Array<{ modifiers: Modifier[]; key: string }>;
 				};
 			};
 			const hotkeys = appWithHotkeys.hotkeyManager?.getHotkeys(hotkeyCommandId);
@@ -574,10 +574,10 @@ export class EventsModal extends Modal {
 		const startDateTime = getStartDateTime(event.rrules);
 		const eventDate = new Date(startDateTime.toJSDate());
 
-		this.calendarView.navigateToDate(eventDate, "timeGridWeek");
+		this.calendarComponent.navigateToDate(eventDate, "timeGridWeek");
 
 		setTimeout(() => {
-			this.calendarView.highlightEventByPath(event.sourceFilePath, 5000);
+			this.calendarComponent.highlightEventByPath(event.sourceFilePath, 5000);
 		}, 300);
 
 		new Notice(`Navigated to source event: ${item.title}`);

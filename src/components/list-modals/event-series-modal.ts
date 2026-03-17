@@ -11,8 +11,8 @@ import { resolveEventColor } from "../../utils/event-color";
 import { removeZettelId } from "../../utils/event-naming";
 import { calculateEventStatistics } from "../../utils/event-statistics";
 import { type EventSeriesBasesViewConfig, EventSeriesBasesViewModal } from "../modals/event-series-bases-view-modal";
-import { EventSeriesHeatmapModal } from "../modals/event-series-heatmap-modal";
-import { EventSeriesTimelineModal } from "../modals/event-series-timeline-modal";
+import { showHeatmapModal } from "../modals/event-series-heatmap-modal";
+import { showTimelineModal } from "../modals/event-series-timeline-modal";
 
 type SourceTab = "name" | "category" | "recurring";
 
@@ -563,7 +563,7 @@ export class EventSeriesModal extends Modal {
 		}
 
 		if (events.length > 0) {
-			new EventSeriesTimelineModal(this.app, this.bundle, { events, title }).open();
+			showTimelineModal(this.app, this.bundle, { events, title });
 		}
 	}
 
@@ -596,7 +596,7 @@ export class EventSeriesModal extends Modal {
 		}
 
 		if (events.length > 0) {
-			new EventSeriesHeatmapModal(this.app, this.bundle, { events, title, categoryColor }).open();
+			showHeatmapModal(this.app, this.bundle, { events, title, categoryColor });
 		}
 	}
 

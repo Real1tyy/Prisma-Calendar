@@ -1,0 +1,1 @@
+export { injectStyleSheet } from "./inject";
