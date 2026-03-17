@@ -1,6 +1,40 @@
 import type { ItemView } from "obsidian";
 
+import { injectStyleSheet } from "./styles/inject";
+
 type AbstractCtor<T = Record<string, never>> = abstract new (...args: any[]) => T;
+
+function buildLoadingStyles(prefix: string): string {
+	const p = prefix ? `${prefix}-mountable` : "mountable";
+	return `
+@keyframes ${p}-spin {
+	0% { transform: rotate(0); }
+	100% { transform: rotate(360deg); }
+}
+.${p}-loading-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 2rem;
+	min-height: 100px;
+}
+.${p}-loading-spinner {
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--background-modifier-border);
+	border-top: 2px solid var(--interactive-accent);
+	border-radius: 50%;
+	animation: ${p}-spin 1s linear infinite;
+	margin: 0 auto 8px;
+}
+.${p}-loading-text {
+	text-align: center;
+	color: var(--text-muted);
+	font-size: 0.9em;
+}
+`;
+}
 
 export function MountableView<TBase extends AbstractCtor<ItemView>>(Base: TBase, prefix?: string) {
 	abstract class Mountable extends Base {
@@ -91,6 +125,7 @@ export function MountableView<TBase extends AbstractCtor<ItemView>>(Base: TBase,
 				text?: string;
 			}
 		): void {
+			injectStyleSheet(`${this.#classPrefix}-loading-styles`, buildLoadingStyles(prefix ?? ""));
 			this.hideLoading();
 			const containerClass = classes?.container ?? `${this.#classPrefix}-loading-container`;
 			const spinnerClass = classes?.spinner ?? `${this.#classPrefix}-loading-spinner`;

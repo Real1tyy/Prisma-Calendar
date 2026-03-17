@@ -1,9 +1,7 @@
 import { type Command, MacroCommand } from "@real1ty-obsidian-plugins";
 
-import { CalendarView } from "../../components/calendar-view";
 import type CustomCalendarPlugin from "../../main";
 import { type AIOperation, AIOperationsSchema } from "../../types/ai-operation-schemas";
-import { getCalendarViewType } from "../../utils/calendar-view-type";
 import type { CalendarBundle } from "../calendar-bundle";
 import {
 	buildCalendarContext,
@@ -25,23 +23,13 @@ export interface ActiveViewContext {
 }
 
 export function resolveActiveViewContext(
-	plugin: CustomCalendarPlugin,
+	_plugin: CustomCalendarPlugin,
 	bundle: CalendarBundle
 ): ActiveViewContext | null {
-	const viewType = getCalendarViewType(bundle.calendarId);
-	const leaves = plugin.app.workspace.getLeavesOfType(viewType);
+	const component = bundle.viewRef.calendarComponent;
+	if (!component) return null;
 
-	for (const leaf of leaves) {
-		const view = leaf.view;
-		if (!(view instanceof CalendarView)) continue;
-
-		const viewContext = view.getViewContext();
-		if (!viewContext) continue;
-
-		return viewContext;
-	}
-
-	return null;
+	return component.getViewContext() ?? null;
 }
 
 export function getActiveCalendarInfo(

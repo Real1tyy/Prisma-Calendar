@@ -30,7 +30,7 @@ import {
 	openFileInNewWindow,
 } from "../utils/obsidian";
 import { calculateTimeOffset, isTimeUnitAllowedForAllDay } from "../utils/time-offset";
-import type { CalendarView } from "./calendar-view";
+import type { CalendarComponent } from "./calendar-view";
 import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { EventSeriesModal } from "./list-modals/event-series-modal";
 import { DeleteRecurringEventsModal, EventEditModal } from "./modals";
@@ -59,15 +59,15 @@ type EventKind = "source" | "physical" | "virtual" | "normal";
 export class EventContextMenu {
 	private app: App;
 	private bundle: CalendarBundle;
-	private calendarView: CalendarView;
+	private calendarComponent: CalendarComponent;
 	private currentMenu: Menu | null = null;
 
 	// ─── Lifecycle ────────────────────────────────────────────────
 
-	constructor(app: App, bundle: CalendarBundle, calendarView: CalendarView) {
+	constructor(app: App, bundle: CalendarBundle, calendarComponent: CalendarComponent) {
 		this.app = app;
 		this.bundle = bundle;
-		this.calendarView = calendarView;
+		this.calendarComponent = calendarComponent;
 	}
 
 	// ─── Menu Display ─────────────────────────────────────────────
@@ -559,10 +559,10 @@ export class EventContextMenu {
 	private goToSourceEvent(event: CalendarEventInfo): void {
 		this.withSourceEvent(event, (sourceEvent, sourceFilePath) => {
 			const eventDate = new Date(sourceEvent.start);
-			this.calendarView.navigateToDate(eventDate, "timeGridWeek");
+			this.calendarComponent.navigateToDate(eventDate, "timeGridWeek");
 
 			setTimeout(() => {
-				this.calendarView.highlightEventByPath(sourceFilePath, 5000);
+				this.calendarComponent.highlightEventByPath(sourceFilePath, 5000);
 			}, 300);
 
 			new Notice("Navigated to source event");

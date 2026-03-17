@@ -2,7 +2,7 @@ import { activateView, onceAsync, sanitizeForFilename, TemplaterService } from "
 import { type App, Notice, TFile, type WorkspaceLeaf } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 
-import { CalendarView } from "../components/calendar-view";
+import { type PrismaViewRef, registerPrismaCalendarView } from "../components/views/prisma-view";
 import type CustomCalendarPlugin from "../main";
 import type { PrismaCalendarSettingsStore } from "../types";
 import type { EventSaveData } from "../types/event-save";
@@ -61,6 +61,7 @@ export class CalendarBundle {
 	private icsSubscriptionSync = new SyncState<ICSSubscriptionSyncService>("ICS Subscription");
 	private ribbonIconEl: HTMLElement | null = null;
 	private readonly subscriptions: Subscription[] = [];
+	public readonly viewRef: PrismaViewRef = { calendarComponent: null, tabbedHandle: null };
 
 	constructor(
 		public readonly plugin: CustomCalendarPlugin,
@@ -131,7 +132,7 @@ export class CalendarBundle {
 			this.indexer.start();
 			await firstValueFrom(this.indexer.indexingComplete$.pipe(filter((complete) => complete)));
 
-			this.plugin.registerViewTypeSafe(this.viewType, (leaf: WorkspaceLeaf) => new CalendarView(leaf, this));
+			registerPrismaCalendarView(this.plugin, this, this.viewRef);
 
 			(
 				this.app.workspace as unknown as {
@@ -279,13 +280,11 @@ export class CalendarBundle {
 		const calendarLeaf = existingLeaves[0];
 
 		if (calendarLeaf) {
-			const calendarView = calendarLeaf.view;
-			if (calendarView instanceof CalendarView) {
-				calendarView.navigateToDate(parsedDate, "timeGridWeek");
-
-				// Highlight the event after a short delay to ensure the calendar has rendered
+			const component = this.viewRef.calendarComponent;
+			if (component) {
+				component.navigateToDate(parsedDate, "timeGridWeek");
 				setTimeout(() => {
-					calendarView.highlightEventByPath(file.path, 5000);
+					component.highlightEventByPath(file.path, 5000);
 				}, 100);
 			}
 		}

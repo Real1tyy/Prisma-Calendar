@@ -2,9 +2,10 @@ import { setIcon } from "obsidian";
 
 import { showModal } from "../component-renderer/modal";
 import { createCssUtils } from "../core/css-utils";
-import type { GridResizeHandle } from "./grid-resize";
+import type { GridResizeHandle, ResizeAxisConfig } from "./grid-resize";
 import { setupGridResize } from "./grid-resize";
 import { openLayoutEditor } from "./layout-editor";
+import { injectGridStyles } from "./styles";
 import type {
 	CellCleanup,
 	CellOption,
@@ -13,6 +14,7 @@ import type {
 	GridLayoutConfig,
 	GridLayoutHandle,
 	GridLayoutState,
+	ResizeMode,
 } from "./types";
 
 interface CellEntry {
@@ -22,6 +24,23 @@ interface CellEntry {
 	id?: string;
 	enlargeable?: boolean;
 	enlargeTitle?: string;
+}
+
+interface PerCellAxis {
+	containers: HTMLElement[];
+	handles: Map<number, GridResizeHandle>;
+	containerCls: string;
+	gapProp: "columnGap" | "rowGap";
+	templateProp: "gridTemplateColumns" | "gridTemplateRows";
+	perContainerResizeKey: "columns" | "rows";
+	globalResizeKey: "columns" | "rows";
+	containerCount(): number;
+	getContainerIndex(row: number, col: number): number;
+	getSizes(containerIndex: number): number[];
+	setSizes(containerIndex: number, sizes: number[]): void;
+	getGlobalSizes(): number[];
+	setGlobalSizes(sizes: number[]): void;
+	getPerCellSizesMap(): Record<string, number[]> | undefined;
 }
 
 function cellKey(row: number, col: number): string {
@@ -38,6 +57,8 @@ function resolveInitialState(config: GridLayoutConfig): {
 	cells: CellPlacement[];
 	columnSizes?: number[];
 	rowSizes?: number[];
+	cellColumnSizes?: Record<string, number[]>;
+	cellRowSizes?: Record<string, number[]>;
 } {
 	const { initialState, cellPalette, cells: configCells } = config;
 
@@ -61,6 +82,8 @@ function resolveInitialState(config: GridLayoutConfig): {
 		cells: resolvedCells,
 		columnSizes: initialState.columnSizes,
 		rowSizes: initialState.rowSizes,
+		cellColumnSizes: initialState.cellColumnSizes,
+		cellRowSizes: initialState.cellRowSizes,
 	};
 }
 
@@ -77,7 +100,7 @@ export function adjustSizes(current: number[] | undefined, oldCount: number, new
 }
 
 function resolveSizes(
-	resizable: boolean | undefined,
+	resizable: ResizeMode | undefined,
 	persisted: number[] | undefined,
 	count: number
 ): number[] | undefined {
@@ -88,60 +111,212 @@ function sizesToTemplate(sizes: number[] | undefined, count: number, fallbackUni
 	return sizes ? sizes.map((s) => `${s}fr`).join(" ") : `repeat(${count}, ${fallbackUnit})`;
 }
 
+function adjustPerCellSizes(
+	current: Record<string, number[]> | undefined,
+	oldCrossCount: number,
+	newCrossCount: number,
+	newContainerCount: number
+): Record<string, number[]> | undefined {
+	if (!current) return undefined;
+	const result: Record<string, number[]> = {};
+	for (const [idx, sizes] of Object.entries(current)) {
+		if (Number(idx) >= newContainerCount) continue;
+		result[idx] = adjustSizes(sizes, oldCrossCount, newCrossCount) ?? defaultSizes(newCrossCount);
+	}
+	return Object.keys(result).length > 0 ? result : undefined;
+}
+
 export function createGridLayout(container: HTMLElement, config: GridLayoutConfig): GridLayoutHandle {
 	const { cssPrefix, gap, minCellWidth, dividers, cellPalette, editable, resizable, onCellChange, onStateChange } =
 		config;
 	const css = createCssUtils(cssPrefix);
+	injectGridStyles(cssPrefix);
+
+	const cellWidthMode = resizable === "cell-width";
+	const cellHeightMode = resizable === "cell-height";
+	const trackMode = resizable === "track";
+	const hasCellAxis = cellWidthMode || cellHeightMode;
+	const isResizable = hasCellAxis || trackMode;
 
 	const initial = resolveInitialState(config);
 	let cols = initial.cols;
 	let rows = initial.rows;
-	let columnSizes = resolveSizes(resizable, initial.columnSizes, cols);
-	let rowSizes = resolveSizes(resizable, initial.rowSizes, rows);
+	let columnSizes = trackMode || cellHeightMode ? resolveSizes(resizable, initial.columnSizes, cols) : undefined;
+	let rowSizes = trackMode || cellWidthMode ? resolveSizes(resizable, initial.rowSizes, rows) : undefined;
+	let cellColumnSizes: Record<string, number[]> | undefined = cellWidthMode
+		? (initial.cellColumnSizes ?? undefined)
+		: undefined;
+	let cellRowSizes: Record<string, number[]> | undefined = cellHeightMode
+		? (initial.cellRowSizes ?? undefined)
+		: undefined;
 	let destroyed = false;
 
 	const cellMap = new Map<string, CellEntry>();
 	const idMap = new Map<string, string>();
 
+	const perCell: PerCellAxis | null = hasCellAxis
+		? cellWidthMode
+			? {
+					containers: [],
+					handles: new Map(),
+					containerCls: "grid-row",
+					gapProp: "columnGap",
+					templateProp: "gridTemplateColumns",
+					perContainerResizeKey: "columns",
+					globalResizeKey: "rows",
+					containerCount: () => rows,
+					getContainerIndex: (row: number) => row,
+					getSizes: (i: number) => cellColumnSizes?.[String(i)] ?? defaultSizes(cols),
+					setSizes: (i: number, s: number[]) => {
+						if (!cellColumnSizes) cellColumnSizes = {};
+						cellColumnSizes[String(i)] = s;
+					},
+					getGlobalSizes: () => rowSizes ?? defaultSizes(rows),
+					setGlobalSizes: (s: number[]) => {
+						rowSizes = s;
+					},
+					getPerCellSizesMap: () => cellColumnSizes,
+				}
+			: {
+					containers: [],
+					handles: new Map(),
+					containerCls: "grid-col",
+					gapProp: "rowGap",
+					templateProp: "gridTemplateRows",
+					perContainerResizeKey: "rows",
+					globalResizeKey: "columns",
+					containerCount: () => cols,
+					getContainerIndex: (_row: number, col: number) => col,
+					getSizes: (i: number) => cellRowSizes?.[String(i)] ?? defaultSizes(rows),
+					setSizes: (i: number, s: number[]) => {
+						if (!cellRowSizes) cellRowSizes = {};
+						cellRowSizes[String(i)] = s;
+					},
+					getGlobalSizes: () => columnSizes ?? defaultSizes(cols),
+					setGlobalSizes: (s: number[]) => {
+						columnSizes = s;
+					},
+					getPerCellSizesMap: () => cellRowSizes,
+				}
+		: null;
+
 	const gridEl = container.createDiv(css.cls("grid"));
+	if (perCell) buildPerCellContainers();
 	applyGridStyles();
 	renderCells(initial.cells);
 
 	let resizeHandle: GridResizeHandle | null = null;
-	if (resizable && !minCellWidth) {
-		const makeAxis = (getSizes: () => number[] | undefined, count: () => number, set: (s: number[]) => void) => ({
-			getSizes: () => getSizes() ?? defaultSizes(count()),
-			onSizesChange: (sizes: number[]) => {
-				set(sizes);
-				applyGridStyles();
-				emitStateChange();
-			},
-		});
 
-		resizeHandle = setupGridResize({
-			gridEl,
-			css,
-			columns: makeAxis(
-				() => columnSizes,
-				() => cols,
-				(s) => {
-					columnSizes = s;
-				}
-			),
-			rows: makeAxis(
-				() => rowSizes,
-				() => rows,
-				(s) => {
-					rowSizes = s;
-				}
-			),
-		});
+	if (isResizable && !minCellWidth) {
+		if (trackMode) {
+			const makeAxis = (getSizes: () => number[] | undefined, count: () => number, set: (s: number[]) => void) => ({
+				getSizes: () => getSizes() ?? defaultSizes(count()),
+				onSizesChange: (sizes: number[]) => {
+					set(sizes);
+					applyGridStyles();
+					emitStateChange();
+				},
+			});
+
+			resizeHandle = setupGridResize({
+				gridEl,
+				css,
+				columns: makeAxis(
+					() => columnSizes,
+					() => cols,
+					(s) => {
+						columnSizes = s;
+					}
+				),
+				rows: makeAxis(
+					() => rowSizes,
+					() => rows,
+					(s) => {
+						rowSizes = s;
+					}
+				),
+			});
+		} else if (perCell) {
+			const globalAxis: ResizeAxisConfig = {
+				getSizes: () => perCell.getGlobalSizes(),
+				onSizesChange: (sizes) => {
+					perCell.setGlobalSizes(sizes);
+					applyGridStyles();
+					emitStateChange();
+				},
+			};
+
+			resizeHandle = setupGridResize({
+				gridEl,
+				css,
+				[perCell.globalResizeKey]: globalAxis,
+			});
+			setupPerCellResize();
+		}
 	}
 
 	if (editable && config.app && cellPalette?.length) {
 		const editBtn = gridEl.createEl("button", { cls: css.cls("grid-edit-btn") });
 		setIcon(editBtn, "settings-2");
 		editBtn.addEventListener("click", () => handle.showLayoutEditor());
+	}
+
+	function applyContainerTemplate(index: number): void {
+		if (!perCell) return;
+		const el = perCell.containers[index];
+		if (!el) return;
+		const sizes = perCell.getSizes(index);
+		el.style[perCell.templateProp] = sizes.map((s) => `${s}fr`).join(" ");
+	}
+
+	function buildPerCellContainers(): void {
+		if (!perCell) return;
+		for (const el of perCell.containers) el.remove();
+		perCell.containers.length = 0;
+
+		for (let i = 0; i < perCell.containerCount(); i++) {
+			const el = gridEl.createDiv(css.cls(perCell.containerCls));
+			el.style.display = "grid";
+			el.style.position = "relative";
+			el.style.minHeight = "0";
+			el.style.minWidth = "0";
+			if (gap) el.style[perCell.gapProp] = gap;
+			perCell.containers.push(el);
+			applyContainerTemplate(i);
+		}
+	}
+
+	function setupPerCellResize(): void {
+		destroyPerCellResize();
+		if (!perCell) return;
+
+		for (let i = 0; i < perCell.containerCount(); i++) {
+			const el = perCell.containers[i];
+			if (!el) continue;
+
+			const idx = i;
+			const axisConfig: ResizeAxisConfig = {
+				getSizes: () => perCell.getSizes(idx),
+				onSizesChange: (sizes) => {
+					perCell.setSizes(idx, sizes);
+					applyContainerTemplate(idx);
+					emitStateChange();
+				},
+			};
+
+			const h = setupGridResize({
+				gridEl: el,
+				css,
+				[perCell.perContainerResizeKey]: axisConfig,
+			});
+			perCell.handles.set(i, h);
+		}
+	}
+
+	function destroyPerCellResize(): void {
+		if (!perCell) return;
+		for (const h of perCell.handles.values()) h.destroy();
+		perCell.handles.clear();
 	}
 
 	function renderCells(cells: CellPlacement[]): void {
@@ -175,24 +350,36 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 		const resolved = resolveInitialState({ ...config, initialState: state });
 		cols = resolved.cols;
 		rows = resolved.rows;
-		columnSizes = resolveSizes(resizable, resolved.columnSizes, cols);
-		rowSizes = resolveSizes(resizable, resolved.rowSizes, rows);
+		columnSizes = trackMode || cellHeightMode ? resolveSizes(resizable, resolved.columnSizes, cols) : undefined;
+		rowSizes = trackMode || cellWidthMode ? resolveSizes(resizable, resolved.rowSizes, rows) : undefined;
+		cellColumnSizes = cellWidthMode ? (resolved.cellColumnSizes ?? undefined) : undefined;
+		cellRowSizes = cellHeightMode ? (resolved.cellRowSizes ?? undefined) : undefined;
+
+		if (perCell) buildPerCellContainers();
 		applyGridStyles();
 		renderCells(resolved.cells);
 		resizeHandle?.update();
+		if (perCell) setupPerCellResize();
 		emitStateChange();
 	}
 
 	function applyGridStyles(): void {
 		css.addCls(gridEl, "grid");
 
-		const colTemplate = minCellWidth
-			? `repeat(auto-fit, minmax(${minCellWidth}px, 1fr))`
-			: sizesToTemplate(columnSizes, cols, "1fr");
-		const rowTemplate = sizesToTemplate(rowSizes, rows, "auto");
+		if (cellWidthMode) {
+			setGridVar(gridEl, "--grid-columns", "1fr");
+			setGridVar(gridEl, "--grid-rows", sizesToTemplate(rowSizes, rows, "auto"));
+		} else if (cellHeightMode) {
+			setGridVar(gridEl, "--grid-columns", sizesToTemplate(columnSizes, cols, "1fr"));
+			setGridVar(gridEl, "--grid-rows", "1fr");
+		} else {
+			const colTemplate = minCellWidth
+				? `repeat(auto-fit, minmax(${minCellWidth}px, 1fr))`
+				: sizesToTemplate(columnSizes, cols, "1fr");
+			setGridVar(gridEl, "--grid-columns", colTemplate);
+			setGridVar(gridEl, "--grid-rows", sizesToTemplate(rowSizes, rows, "auto"));
+		}
 
-		setGridVar(gridEl, "--grid-columns", colTemplate);
-		setGridVar(gridEl, "--grid-rows", rowTemplate);
 		if (gap) setGridVar(gridEl, "--grid-gap", gap);
 	}
 
@@ -203,7 +390,15 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 			const { row, col } = parseKey(key);
 			stateCells.push({ optionId: entry.id, row, col });
 		}
-		return { columns: cols, rows, cells: stateCells, columnSizes, rowSizes };
+		return {
+			columns: cols,
+			rows,
+			cells: stateCells,
+			columnSizes: trackMode || cellHeightMode ? columnSizes : undefined,
+			rowSizes: trackMode || cellWidthMode ? rowSizes : undefined,
+			cellColumnSizes: cellWidthMode ? cellColumnSizes : undefined,
+			cellRowSizes: cellHeightMode ? cellRowSizes : undefined,
+		};
 	}
 
 	function emitStateChange(): void {
@@ -211,12 +406,22 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 	}
 
 	function createCellElement(row: number, col: number, rowSpan?: number, colSpan?: number): HTMLElement {
-		const el = gridEl.createDiv(css.cls("grid-cell"));
+		const parent = perCell ? perCell.containers[perCell.getContainerIndex(row, col)] : gridEl;
+		if (!parent) return gridEl.createDiv(css.cls("grid-cell"));
+
+		const el = parent.createDiv(css.cls("grid-cell"));
 		if (dividers) css.addCls(el, "grid-cell-divider");
 		el.dataset.row = String(row);
 		el.dataset.col = String(col);
-		setGridVar(el, "--cell-row", `${row + 1} / span ${rowSpan ?? 1}`);
-		setGridVar(el, "--cell-col", `${col + 1} / span ${colSpan ?? 1}`);
+
+		if (perCell) {
+			el.style.minWidth = "0";
+			el.style.minHeight = "0";
+		} else {
+			setGridVar(el, "--cell-row", `${row + 1} / span ${rowSpan ?? 1}`);
+			setGridVar(el, "--cell-col", `${col + 1} / span ${colSpan ?? 1}`);
+		}
+
 		return el;
 	}
 
@@ -368,7 +573,7 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 
 		const element = existing?.element ?? createCellElement(row, col, rowSpan, colSpan);
 
-		if (!existing && (rowSpan || colSpan)) {
+		if (!existing && !perCell && (rowSpan || colSpan)) {
 			setGridVar(element, "--cell-row", `${row + 1} / span ${rowSpan ?? 1}`);
 			setGridVar(element, "--cell-col", `${col + 1} / span ${colSpan ?? 1}`);
 		}
@@ -473,10 +678,15 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 
 			columnSizes = adjustSizes(columnSizes, cols, newCols);
 			rowSizes = adjustSizes(rowSizes, rows, newRows);
+			cellColumnSizes = adjustPerCellSizes(cellColumnSizes, cols, newCols, newRows);
+			cellRowSizes = adjustPerCellSizes(cellRowSizes, rows, newRows, newCols);
 			cols = newCols;
 			rows = newRows;
+
+			if (perCell) buildPerCellContainers();
 			applyGridStyles();
 			resizeHandle?.update();
+			if (perCell) setupPerCellResize();
 			emitStateChange();
 		},
 
@@ -514,6 +724,7 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 
 			resizeHandle?.destroy();
 			resizeHandle = null;
+			destroyPerCellResize();
 
 			for (const entry of cellMap.values()) {
 				entry.cleanup?.();

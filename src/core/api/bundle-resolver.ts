@@ -1,6 +1,5 @@
 import { Notice } from "obsidian";
 
-import { CalendarView } from "../../components/calendar-view";
 import type CustomCalendarPlugin from "../../main";
 import type { CalendarBundle } from "../calendar-bundle";
 
@@ -34,6 +33,5 @@ export function resolveBundleOrNotice(plugin: CustomCalendarPlugin, calendarId?:
 }
 
 export function isCalendarViewFocused(plugin: CustomCalendarPlugin): boolean {
-	const activeView = plugin.app.workspace.getActiveViewOfType(CalendarView);
-	return activeView !== null;
+	return plugin.calendarBundles.some((bundle) => bundle.viewRef.calendarComponent !== null);
 }

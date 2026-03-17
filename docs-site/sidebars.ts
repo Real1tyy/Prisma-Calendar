@@ -36,6 +36,12 @@ const sidebars: SidebarsConfig = {
 				},
 				{
 					type: "category",
+					label: "Views",
+					collapsible: true,
+					items: ["features/views/tabbed-views"],
+				},
+				{
+					type: "category",
 					label: "Calendar",
 					collapsible: true,
 					items: [

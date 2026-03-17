@@ -5,7 +5,7 @@ import { Notice, TFile } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
-import type { CalendarView } from "../calendar-view";
+import type { CalendarComponent } from "../calendar-view";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
 
 type FilterState = "none" | "skip" | "only";
@@ -28,7 +28,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 	constructor(
 		app: App,
 		private bundle: CalendarBundle,
-		private calendarView: CalendarView
+		private calendarComponent: CalendarComponent
 	) {
 		super(app);
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
@@ -356,11 +356,11 @@ export class GlobalSearchModal extends BaseEventListModal {
 			const eventDate = new Date(event.start);
 
 			// Navigate to the week view at that date
-			this.calendarView.navigateToDate(eventDate, "timeGridWeek");
+			this.calendarComponent.navigateToDate(eventDate, "timeGridWeek");
 
 			// Highlight the event
 			setTimeout(() => {
-				this.calendarView.highlightEventByPath(item.filePath, 5000);
+				this.calendarComponent.highlightEventByPath(item.filePath, 5000);
 			}, 300);
 
 			new Notice(`Navigated to: ${item.title}`);

@@ -9642,3 +9642,140 @@ div.vis-tooltip {
 	background: var(--interactive-accent);
 	vertical-align: middle;
 }
+
+/* ─── Tab Bar (view-header segment control) ──────────────────── */
+
+.prisma-tab-bar {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	padding: 2px;
+	margin: 0 4px;
+	border-radius: 8px;
+	background: var(--background-modifier-hover);
+	flex-shrink: 0;
+}
+
+.prisma-tab {
+	padding: 4px 12px;
+	font-size: var(--font-ui-smaller);
+	font-weight: 500;
+	color: var(--text-muted);
+	background: none;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	transition:
+		color 150ms ease,
+		background 150ms ease,
+		box-shadow 150ms ease;
+	box-shadow: none;
+	white-space: nowrap;
+	line-height: 1.4;
+}
+
+.prisma-tab:hover {
+	color: var(--text-normal);
+	background: hsla(var(--color-accent-hsl), 0.08);
+}
+
+.prisma-tab-active {
+	color: var(--text-on-accent);
+	background: var(--interactive-accent);
+	font-weight: 600;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.prisma-tab-active:hover {
+	color: var(--text-on-accent);
+	background: var(--interactive-accent-hover);
+}
+
+.prisma-tab-content {
+	flex: 1;
+	overflow-y: auto;
+	min-height: 0;
+}
+
+.prisma-tab-panel {
+	padding: 0;
+	height: 100%;
+}
+
+.prisma-tab-panel-hidden {
+	display: none;
+}
+
+.prisma-tab-settings {
+	color: var(--text-faint);
+	padding: 4px 6px;
+}
+
+.prisma-tab-settings:hover {
+	color: var(--text-muted);
+}
+
+/* ─── Tab Pro Gate ───────────────────────────────────────────── */
+
+.prisma-tab-pro-gate {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 48px 24px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-medium);
+}
+
+/* ─── Grid Layouts (Heatmap, Daily+Stats, Dual Daily) ────────── */
+
+/* ─── Daily + Stats Tab ──────────────────────────────────────── */
+
+.prisma-daily-stats-layout {
+	display: flex;
+	gap: 12px;
+	height: 100%;
+	min-height: 0;
+}
+
+.prisma-daily-stats-left {
+	flex: 1;
+	min-width: 0;
+	overflow: auto;
+}
+
+.prisma-daily-stats-right {
+	flex: 1;
+	min-width: 0;
+	overflow: auto;
+}
+
+/* ─── Dual Daily Tab ─────────────────────────────────────────── */
+
+.prisma-dual-daily-layout {
+	display: flex;
+	gap: 12px;
+	height: 100%;
+	min-height: 0;
+}
+
+.prisma-dual-daily-left {
+	flex: 1;
+	min-width: 0;
+	overflow: auto;
+}
+
+.prisma-dual-daily-right {
+	flex: 1;
+	min-width: 0;
+	overflow: auto;
+}
+
+/* ─── Daily Stats Renderer ───────────────────────────────────── */
+
+.prisma-stats-tab-date-label {
+	font-size: var(--font-ui-medium);
+	font-weight: 600;
+	color: var(--text-normal);
+	padding: 8px 0;
+	text-align: center;
+}

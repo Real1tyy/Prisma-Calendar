@@ -38,16 +38,34 @@ export const GridLayoutStateSchema = z
 			.catch([]),
 		columnSizes: z.array(z.number().positive()).optional().catch(undefined),
 		rowSizes: z.array(z.number().positive()).optional().catch(undefined),
+		cellColumnSizes: z.record(z.string(), z.array(z.number().positive())).optional().catch(undefined),
+		cellRowSizes: z.record(z.string(), z.array(z.number().positive())).optional().catch(undefined),
 	})
 	.transform((state) => ({
 		...state,
 		cells: state.cells.filter((c) => c.row < state.rows && c.col < state.columns),
 		columnSizes: state.columnSizes?.length === state.columns ? state.columnSizes : undefined,
 		rowSizes: state.rowSizes?.length === state.rows ? state.rowSizes : undefined,
+		cellColumnSizes: state.cellColumnSizes
+			? Object.fromEntries(
+					Object.entries(state.cellColumnSizes).filter(
+						([row, sizes]) => Number(row) < state.rows && sizes.length === state.columns
+					)
+				)
+			: undefined,
+		cellRowSizes: state.cellRowSizes
+			? Object.fromEntries(
+					Object.entries(state.cellRowSizes).filter(
+						([col, sizes]) => Number(col) < state.columns && sizes.length === state.rows
+					)
+				)
+			: undefined,
 	}));
 
 /** Serializable snapshot of grid layout state. Safe to persist in plugin settings. */
 export type GridLayoutState = z.infer<typeof GridLayoutStateSchema>;
+
+export type ResizeMode = "track" | "cell-width" | "cell-height";
 
 export interface GridLayoutConfig {
 	columns: number;
@@ -70,8 +88,13 @@ export interface GridLayoutConfig {
 	onStateChange?: (state: GridLayoutState) => void;
 	/** When true, renders a gear button on the grid to open the layout editor. Requires `app` and `cellPalette`. */
 	editable?: boolean;
-	/** When true, adds drag handles between grid tracks for resizing columns and rows. Mutually exclusive with `minCellWidth`. */
-	resizable?: boolean;
+	/**
+	 * Enables drag handles for resizing. Mutually exclusive with `minCellWidth`.
+	 * - `"track"`: resize entire grid columns/rows uniformly.
+	 * - `"cell-width"`: per-row independent column widths (cells in row sub-grids).
+	 * - `"cell-height"`: per-column independent row heights (cells in column sub-grids).
+	 */
+	resizable?: ResizeMode;
 	/** Required when any cell has `enlargeable: true`, `cellPalette`, or `editable` is provided. */
 	app?: App;
 }

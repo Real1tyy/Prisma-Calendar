@@ -3,7 +3,6 @@ import { z } from "zod";
 
 /** Zod schema for persisted tab container state. Reuse in plugin settings schemas. */
 export const TabbedContainerStateSchema = z.object({
-	activeTabId: z.string().catch(""),
 	/** Ordered list of visible tab IDs. Controls both visibility and order. When absent, all tabs shown in default order. */
 	visibleTabIds: z.array(z.string()).optional().catch(undefined),
 	/** Custom labels keyed by tab ID. */
@@ -25,9 +24,8 @@ export interface TabDefinition {
 export interface TabbedContainerConfig {
 	tabs: TabDefinition[];
 	cssPrefix: string;
-	initialTab?: number;
 	lazy?: boolean;
-	/** Persisted state to restore. When provided, overrides `initialTab`, tab order, visibility, and labels. */
+	/** Persisted state to restore. When provided, overrides tab order, visibility, and labels. */
 	initialState?: TabbedContainerState;
 	onTabChange?: (tabId: string, index: number) => void;
 	/** Fires on any state mutation (tab switch, hide, reorder, rename). */

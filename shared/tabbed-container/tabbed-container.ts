@@ -2,6 +2,7 @@ import { Menu, setIcon, Setting } from "obsidian";
 
 import { showModal } from "../component-renderer/modal";
 import { createCssUtils } from "../core/css-utils";
+import { injectTabStyles } from "./styles";
 import type { TabbedContainerConfig, TabbedContainerHandle, TabbedContainerState, TabDefinition } from "./types";
 
 function resolveVisibleTabs(config: TabbedContainerConfig): {
@@ -30,25 +31,18 @@ function resolveVisibleTabs(config: TabbedContainerConfig): {
 	return { visibleTabs: visible.length > 0 ? visible : tabs, renames };
 }
 
-function resolveInitialTab(tabs: TabDefinition[], config: TabbedContainerConfig): number {
-	if (config.initialState?.activeTabId) {
-		const idx = tabs.findIndex((t) => t.id === config.initialState!.activeTabId);
-		if (idx >= 0) return idx;
-	}
-	return config.initialTab ?? 0;
-}
-
 export function createTabbedContainer(container: HTMLElement, config: TabbedContainerConfig): TabbedContainerHandle {
 	const { cssPrefix, onTabChange, onStateChange, lazy = true, tabBarContainer, tabBarInsertBefore, editable } = config;
 	const allTabs = config.tabs;
 	const css = createCssUtils(cssPrefix);
 
 	const rendered = new Set<string>();
+	injectTabStyles(config.cssPrefix);
 	const panelMap = new Map<string, HTMLElement>();
 
 	const { visibleTabs: initialVisible, renames } = resolveVisibleTabs(config);
 	let visibleTabs = [...initialVisible];
-	let currentIndex = clampInitial(resolveInitialTab(visibleTabs, config));
+	let currentIndex = 0;
 	let showSettingsButton = config.initialState?.showSettingsButton !== false;
 	let destroyed = false;
 
@@ -76,9 +70,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 	}
 
 	function buildState(): TabbedContainerState {
-		const state: TabbedContainerState = {
-			activeTabId: visibleTabs.length > 0 ? visibleTabs[currentIndex].id : "",
-		};
+		const state: TabbedContainerState = {};
 		if (renames.size > 0) state.renames = Object.fromEntries(renames);
 		const defaultOrder = allTabs.map((t) => t.id);
 		const currentOrder = visibleTabs.map((t) => t.id);
@@ -449,15 +441,6 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		renderTabBar();
 		activateTab(currentIndex);
 		emitStateChange();
-	}
-
-	function clampInitial(i: number): number {
-		if (visibleTabs.length === 0) return 0;
-		if (i < 0 || i >= visibleTabs.length) {
-			console.warn(`TabbedContainer: initialTab ${i} out of bounds (0..${visibleTabs.length - 1}), clamping`);
-			return Math.max(0, Math.min(i, visibleTabs.length - 1));
-		}
-		return i;
 	}
 
 	function resolveIndex(indexOrId: number | string): number {

@@ -11,9 +11,12 @@ import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
 import { Subscription } from "rxjs";
 
 import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
-import { CalendarView, CustomCalendarSettingsTab } from "./components";
+import { CustomCalendarSettingsTab } from "./components";
 import { AI_CHAT_VIEW_TYPE, AIChatView } from "./components/ai-chat-view";
+import type { CalendarComponent } from "./components/calendar-view";
 import { CalendarSelectModal, ICSImportModal } from "./components/modals";
+import { showHeatmapModal } from "./components/modals/event-series-heatmap-modal";
+import { showTimelineModal } from "./components/modals/event-series-timeline-modal";
 import { ICSImportProgressModal } from "./components/modals/ics-import-progress-modal";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, PrismaCalendarApiManager } from "./core";
@@ -99,16 +102,10 @@ export default class CustomCalendarPlugin extends Plugin {
 			await leaf.loadIfDeferred();
 		}
 
-		// Ensure this is the active leaf
-		if (this.app.workspace.activeLeaf !== leaf) {
-			this.app.workspace.setActiveLeaf(leaf, { focus: true });
-		}
+		this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
 		// Focus the view's container to make commands available
-		const view = leaf.view;
-		if (view instanceof CalendarView) {
-			setTimeout(() => view.containerEl.focus(), 10);
-		}
+		setTimeout(() => leaf.view.containerEl.focus(), 10);
 	}
 
 	async rememberLastUsedCalendar(calendarId: string): Promise<void> {
@@ -141,18 +138,29 @@ export default class CustomCalendarPlugin extends Plugin {
 		});
 	}
 
-	private registerCommands(): void {
-		type CalendarViewAction = (view: CalendarView) => void;
+	private getActiveBundleFromLeaf(): CalendarBundle | null {
+		const leaf = this.app.workspace.getMostRecentLeaf();
+		if (!leaf) return null;
+		const viewType = leaf.view.getViewType();
+		return this.calendarBundles.find((b) => b.viewType === viewType) ?? null;
+	}
 
-		const addCalendarViewCommand = (id: string, name: string, action: CalendarViewAction): void => {
+	private getActiveCalendarComponent(): CalendarComponent | null {
+		return this.getActiveBundleFromLeaf()?.viewRef.calendarComponent ?? null;
+	}
+
+	private registerCommands(): void {
+		type CalendarComponentAction = (component: CalendarComponent) => void;
+
+		const addCalendarViewCommand = (id: string, name: string, action: CalendarComponentAction): void => {
 			this.addCommand({
 				id,
 				name,
 				checkCallback: (checking: boolean) => {
-					const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
-					if (calendarView) {
+					const component = this.getActiveCalendarComponent();
+					if (component) {
 						if (!checking) {
-							action(calendarView);
+							action(component);
 						}
 						return true;
 					}
@@ -161,19 +169,19 @@ export default class CustomCalendarPlugin extends Plugin {
 			});
 		};
 
-		const addBatchCommand = (id: string, name: string, action: CalendarViewAction): void => {
+		const addBatchCommand = (id: string, name: string, action: CalendarComponentAction): void => {
 			this.addCommand({
 				id,
 				name: `Batch: ${name}`,
 				checkCallback: (checking: boolean) => {
-					const calendarView = this.app.workspace.getActiveViewOfType(CalendarView);
-					if (calendarView?.isInBatchSelectionMode()) {
+					const component = this.getActiveCalendarComponent();
+					if (component?.isInBatchSelectionMode()) {
 						if (!checking) {
-							action(calendarView);
+							action(component);
 						}
 						return true;
 					}
-					if (calendarView && !calendarView.isInBatchSelectionMode()) {
+					if (component && !component.isInBatchSelectionMode()) {
 						if (!checking) {
 							new Notice("Prisma calendar: batch selection mode is not active");
 						}
@@ -339,11 +347,32 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.SCROLL_TO_NOW, "Scroll to current time", (view) => {
 			view.scrollToNow();
 		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_ALL_EVENTS_TIMELINE, "Show all events timeline", (view) => {
-			view.showAllEventsTimeline();
+		this.addCommand({
+			id: COMMAND_IDS.SHOW_ALL_EVENTS_TIMELINE,
+			name: "Show all events timeline",
+			checkCallback: (checking) => {
+				const bundle = this.getActiveBundleFromLeaf();
+				if (!bundle) return false;
+				if (!checking) {
+					const allEvents = bundle.eventStore.getAllEvents();
+					showTimelineModal(this.app, bundle, { events: allEvents, title: "All Events Timeline" });
+				}
+				return true;
+			},
 		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_ALL_EVENTS_HEATMAP, "Show all events heatmap", (view) => {
-			view.showAllEventsHeatmap();
+		this.addCommand({
+			id: COMMAND_IDS.SHOW_ALL_EVENTS_HEATMAP,
+			name: "Show all events heatmap",
+			checkCallback: (checking) => {
+				const bundle = this.getActiveBundleFromLeaf();
+				if (!bundle) return false;
+				if (!checking) {
+					if (!this.licenseManager.requirePro(PRO_FEATURES.HEATMAP)) return true;
+					const allEvents = bundle.eventStore.getAllEvents();
+					showHeatmapModal(this.app, bundle, { events: allEvents, title: "All Events Heatmap" });
+				}
+				return true;
+			},
 		});
 
 		this.addCommand({

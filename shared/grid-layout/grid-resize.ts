@@ -11,8 +11,8 @@ export interface ResizeAxisConfig {
 export interface GridResizeConfig {
 	gridEl: HTMLElement;
 	css: CssUtils;
-	columns: ResizeAxisConfig;
-	rows: ResizeAxisConfig;
+	columns?: ResizeAxisConfig;
+	rows?: ResizeAxisConfig;
 }
 
 export interface GridResizeHandle {
@@ -114,10 +114,9 @@ const ROW_LAYOUT: AxisLayout = {
 export function setupGridResize(config: GridResizeConfig): GridResizeHandle {
 	const { gridEl, css } = config;
 
-	const axes: AxisDescriptor[] = [
-		{ ...COL_LAYOUT, ...config.columns },
-		{ ...ROW_LAYOUT, ...config.rows },
-	];
+	const axes: AxisDescriptor[] = [];
+	if (config.columns) axes.push({ ...COL_LAYOUT, ...config.columns });
+	if (config.rows) axes.push({ ...ROW_LAYOUT, ...config.rows });
 
 	let handlesByAxis: HTMLElement[][] = axes.map(() => []);
 	let observer: ResizeObserver | null = null;

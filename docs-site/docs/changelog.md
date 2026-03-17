@@ -4,10 +4,11 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.7.0 - 3/15/2026
+## 2.7.0 - 3/17/2026
 
 ### Added
 
+- **Tabbed views**: The calendar view now features a tab bar with five tabs — Calendar (original view), Timeline, Heat Map, Daily + Stats, and Dual Daily. Timeline and Heat Map are now persistent embedded views instead of modal overlays. Daily + Stats shows a daily calendar alongside synced statistics with pie chart. Dual Daily shows two independent daily calendars side-by-side. Toolbar buttons for Timeline and Heatmap now switch to the corresponding tab. Tab state (active tab, visibility, order) persists across sessions. Tabs can be reordered, renamed, and hidden via right-click or the settings gear. See [Tabbed Views](./features/views/tabbed-views.md).
 - **Auto-assign category by substring match**: New "Auto-assign when name contains category" toggle in Settings → Categories → Auto-assign categories. When enabled, creating an event named "Youtube Analysis" will auto-assign the "Youtube" category — matching by substring instead of requiring an exact name match. See [Categories — Auto-Assignment](./features/organization/categories.md#1-auto-assignment-event-creation-and-editing).
 - **Timeline date navigation**: The timeline view now has a date navigation bar at the top with year, month, and day inputs. Enter a date and press Enter or click Go to center the timeline on that date while keeping the current zoom level. A Today button jumps to the current date. See [Event Groups — Timeline View](./features/events/event-groups.md#timeline-view).
 - **Heatmap View** (Pro): A GitHub-style contribution heatmap showing event density over time, available from the Event Series Modal footer and as a global command. Supports yearly and monthly modes (toggled in the header), arrow-key navigation, a "Now" button to jump to the current period, category-colored gradients, click-to-inspect day details, and hover tooltips. See [Event Groups — Heatmap View](./features/events/event-groups.md#heatmap-view-pro).
