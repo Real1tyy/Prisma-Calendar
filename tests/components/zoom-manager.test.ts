@@ -111,8 +111,8 @@ describe("ZoomManager", () => {
 			zoomManager.updateZoomLevelButton();
 
 			expect(mockButton.textContent).toBe("Zoom: 30min");
-			expect(mockButton.innerHTML).toBe("Zoom: 30min");
-			expect(mockButton.childNodes.length).toBe(1);
+			expect(mockButton.children.length).toBe(1);
+			expect(mockButton.children[0].tagName).toBe("SPAN");
 		});
 
 		it("should handle multiple rapid updates without duplicating text", () => {
@@ -122,7 +122,7 @@ describe("ZoomManager", () => {
 			}
 
 			expect(mockButton.textContent).toBe("Zoom: 30min");
-			expect(mockButton.innerHTML).toBe("Zoom: 30min");
+			expect(mockButton.children.length).toBe(1);
 		});
 
 		it("should update when zoom level changes", () => {
@@ -145,7 +145,6 @@ describe("ZoomManager", () => {
 			manager.initialize(timeGridCalendar, mockContainer, mockViewContainerEl);
 			manager.updateZoomLevelButton();
 
-			expect(mockButton.classList.contains("prisma-zoom-button-visible")).toBe(true);
 			expect(mockButton.classList.contains("prisma-zoom-button-hidden")).toBe(false);
 		});
 
@@ -162,7 +161,6 @@ describe("ZoomManager", () => {
 			manager.updateZoomLevelButton();
 
 			expect(mockButton.classList.contains("prisma-zoom-button-hidden")).toBe(true);
-			expect(mockButton.classList.contains("prisma-zoom-button-visible")).toBe(false);
 		});
 
 		it("should handle button not found gracefully", () => {
@@ -191,9 +189,10 @@ describe("ZoomManager", () => {
 
 			zoomManager.updateZoomLevelButton();
 
-			// Should completely replace all content
+			// Should completely replace all content with a single span
 			expect(mockButton.textContent).toBe("Zoom: 30min");
 			expect(mockButton.querySelector(".fc-icon")).toBeNull();
+			expect(mockButton.children.length).toBe(1);
 		});
 	});
 
@@ -522,9 +521,9 @@ describe("ZoomManager", () => {
 			zoomManager.initialize(mockCalendar, mockContainer, mockViewContainerEl);
 			zoomManager.updateZoomLevelButton();
 
-			// Should completely replace all content
+			// Should completely replace all content with a single span
 			expect(mockButton.textContent).toBe("Zoom: 30min");
-			expect(mockButton.children.length).toBe(0);
+			expect(mockButton.children.length).toBe(1);
 		});
 
 		it("should handle empty zoom levels array gracefully", () => {

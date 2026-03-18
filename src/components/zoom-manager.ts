@@ -105,23 +105,26 @@ export class ZoomManager {
 	// ─── Zoom Button ──────────────────────────────────────────────
 
 	updateZoomLevelButton(): void {
-		const button = this.calendar?.el?.querySelector(".fc-zoomLevel-button");
+		const button = this.calendar?.el?.querySelector(".fc-zoomLevel-button") as HTMLElement | null;
 		if (!button) return;
+
+		const newText = this.getZoomLevelText();
+
+		// FullCalendar may re-render the toolbar on view change, recreating a
+		// child <span> with stale text. Always clear and set fresh content
+		// to prevent text duplication (e.g. "Zoom: 30minZoom: 30min").
+		button.textContent = "";
+		const span = document.createElement("span");
+		span.textContent = newText;
+		button.appendChild(span);
 
 		const currentView = this.calendar?.view?.type;
 		const isTimeGridView = currentView?.includes("timeGrid");
 
 		if (isTimeGridView) {
-			const newText = this.getZoomLevelText();
-
-			// Always set textContent directly to prevent duplication
-			button.textContent = newText;
-
-			removeCls(button as HTMLElement, "zoom-button-hidden");
-			addCls(button as HTMLElement, "zoom-button-visible");
+			removeCls(button, "zoom-button-hidden");
 		} else {
-			removeCls(button as HTMLElement, "zoom-button-visible");
-			addCls(button as HTMLElement, "zoom-button-hidden");
+			addCls(button, "zoom-button-hidden");
 		}
 	}
 

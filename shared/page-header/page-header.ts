@@ -1,6 +1,7 @@
 import { type ItemView, type WorkspaceLeaf } from "obsidian";
 
 import { openActionManager } from "./action-manager";
+import { injectPageHeaderStyles } from "./styles";
 import type { HeaderActionDefinition, PageHeaderConfig, PageHeaderHandle, PageHeaderState } from "./types";
 
 const HIDDEN_CLS = "page-header-original-hidden";
@@ -92,6 +93,7 @@ function applyColorToElement(el: HTMLElement, color: string): void {
 
 export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 	ensureHiddenStyle();
+	injectPageHeaderStyles(config.cssPrefix);
 	const { app, onStateChange, editable, mode = "override" } = config;
 	const allActions = config.actions;
 	const buttonCls = `${config.cssPrefix}header-btn`;

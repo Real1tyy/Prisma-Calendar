@@ -1,6 +1,7 @@
 export { openActionManager } from "./action-manager";
 export { registerPageHeaderCommands } from "./commands";
 export { createPageHeader } from "./page-header";
+export { injectPageHeaderStyles } from "./styles";
 export {
 	type HeaderActionDefinition,
 	type PageHeaderConfig,
