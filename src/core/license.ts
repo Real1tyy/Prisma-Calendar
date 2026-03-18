@@ -27,6 +27,7 @@ export const PRO_FEATURES = {
 	UNLIMITED_CALENDARS: "Unlimited Calendars",
 	UNLIMITED_EVENT_PRESETS: "Unlimited Event Presets",
 	HEATMAP: "Heatmap View",
+	BASES_VIEW: "Bases Calendar View",
 } as const;
 
 const LICENSE_CONFIG: LicenseManagerConfig = {
