@@ -5,11 +5,12 @@ import {
 	cls,
 	parseAsLocalDate,
 	parseFrontmatterRecord,
+	parseIntoList,
+	registerSubmitHotkey,
 	removeCls,
 	serializeFrontmatterValue,
 	toggleCls,
 } from "@real1ty-obsidian-plugins";
-import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
 import type { Subscription } from "rxjs";
 
@@ -35,7 +36,6 @@ import {
 } from "../../../types/recurring-event";
 import type { EventPreset } from "../../../types/settings";
 import type { Weekday } from "../../../utils/date-recurrence";
-import { registerSubmitHotkey } from "../../../utils/dom-utils";
 import {
 	assignListToFrontmatter,
 	parseCustomDoneProperty,

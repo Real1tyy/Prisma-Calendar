@@ -1,8 +1,8 @@
-import { addCls, cls, removeCls, showModal } from "@real1ty-obsidian-plugins";
+import { addCls, cls, registerSubmitHotkey, removeCls, showModal } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import { type MoveByResult, TIME_UNITS, type TimeUnit } from "../../../types/move-by";
-import { createModalButtons, registerSubmitHotkey } from "../../../utils/dom-utils";
+import { createModalButtons } from "../../../utils/dom-utils";
 
 function renderMoveByForm(el: HTMLElement, onSubmit: (result: MoveByResult) => void, close: () => void): void {
 	el.createEl("h3", { text: "Move event by" });
