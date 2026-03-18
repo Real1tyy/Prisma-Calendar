@@ -1,4 +1,4 @@
-import { Calendar } from "@fullcalendar/core";
+import { Calendar, type CustomButtonInput } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -9,11 +9,14 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
 import { PRO_FEATURES } from "../../core/license";
 import type CustomCalendarPlugin from "../../main";
-import type { CalendarEventData, EventUpdateInfo } from "../../types/calendar";
+import type { CalendarEventData, EventUpdateInfo, ExtendedButtonInput } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { getCommonCategories } from "../../utils/event-frontmatter";
+import { BatchSelectionManager } from "../batch-selection-manager";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
-import { EventCreateModal, showEventPreviewModal } from "../modals";
+import { EventCreateModal, openCategoryAssignModal, showBatchFrontmatterModal, showEventPreviewModal } from "../modals";
+import { UntrackedEventsDropdown } from "../untracked-events-dropdown";
 import {
 	applyContainerStyles,
 	buildCalendarIconCache,
@@ -38,6 +41,8 @@ class PrismaBasesView extends BasesView {
 	private calendarContainerEl: HTMLElement | null = null;
 	private colorEvaluator: ColorEvaluator<SingleCalendarConfig> | null = null;
 	private eventContextMenu: EventContextMenu | null = null;
+	private batchSelectionManager: BatchSelectionManager | null = null;
+	private untrackedEventsDropdown: UntrackedEventsDropdown | null = null;
 	private calendarIconCache = new Map<string, string | undefined>();
 	private cachedNow = new Date();
 	private cachedTodayStart = new Date(
@@ -57,13 +62,42 @@ class PrismaBasesView extends BasesView {
 		private readonly plugin: CustomCalendarPlugin
 	) {
 		super(controller);
+		console.debug("[PrismaBasesView] constructor", {
+			hasData: !!this.data,
+			dataLength: this.data?.data?.length,
+			containerConnected: containerEl.isConnected,
+			containerChildren: containerEl.childElementCount,
+		});
+	}
+
+	override onload(): void {
+		console.debug("[PrismaBasesView] onload", {
+			hasData: !!this.data,
+			dataLength: this.data?.data?.length,
+			hasCalendar: !!this.calendar,
+		});
+		setTimeout(() => {
+			console.debug("[PrismaBasesView] onload setTimeout", {
+				hasData: !!this.data,
+				dataLength: this.data?.data?.length,
+				hasCalendar: !!this.calendar,
+				containerChildren: this.containerEl.childElementCount,
+			});
+			if (this.data && !this.calendar) {
+				this.onDataUpdated();
+			}
+		}, 0);
 	}
 
 	override onunload(): void {
+		console.debug("[PrismaBasesView] onunload");
 		this.destroyCalendar();
 	}
 
 	private destroyCalendar(): void {
+		this.untrackedEventsDropdown?.destroy();
+		this.untrackedEventsDropdown = null;
+		this.batchSelectionManager = null;
 		this.calendar?.destroy();
 		this.calendar = null;
 		this.colorEvaluator?.destroy();
@@ -72,6 +106,7 @@ class PrismaBasesView extends BasesView {
 		this.calendarContainerEl = null;
 		this.currentViewType = null;
 		this.currentBundleId = null;
+		this.hasNavigatedInitially = false;
 	}
 
 	onDataUpdated(): void {
@@ -94,8 +129,12 @@ class PrismaBasesView extends BasesView {
 			return;
 		}
 
-		// Re-initialize if the selected calendar changed
-		if (this.currentBundleId !== bundle.calendarId) {
+		// Re-initialize if: bundle changed, calendar container detached/removed, or container emptied by Obsidian
+		const calendarGone =
+			this.calendar &&
+			(!this.calendarContainerEl || !this.calendarContainerEl.isConnected || this.containerEl.childElementCount === 0);
+
+		if (this.currentBundleId !== bundle.calendarId || calendarGone) {
 			this.destroyCalendar();
 		}
 
@@ -125,6 +164,7 @@ class PrismaBasesView extends BasesView {
 				this.calendar!.addEvent(ev);
 			}
 		});
+		this.calendar.updateSize();
 
 		if (!this.hasNavigatedInitially) {
 			this.hasNavigatedInitially = true;
@@ -161,7 +201,6 @@ class PrismaBasesView extends BasesView {
 			}
 		}
 
-		// Default: navigate to today
 		this.calendar.today();
 	}
 
@@ -194,7 +233,11 @@ class PrismaBasesView extends BasesView {
 			now: this.cachedNow,
 			todayStart: this.cachedTodayStart,
 		}));
-		const eventDidMountCallback = buildSharedEventDidMount(deps, this.eventContextMenu, () => null);
+		const eventDidMountCallback = buildSharedEventDidMount(
+			deps,
+			this.eventContextMenu,
+			() => this.batchSelectionManager
+		);
 
 		const settings = bundle.settingsStore.currentSettings;
 		const coreOptions = buildCoreCalendarOptions(settings);
@@ -206,7 +249,13 @@ class PrismaBasesView extends BasesView {
 			...coreOptions,
 			plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
 			initialView: viewType,
-			headerToolbar: { left: "prev,next today", center: "title", right: "" },
+			headerToolbar: { left: "prev,next today", center: "title", right: "batchSelect" },
+			customButtons: {
+				batchSelect: {
+					text: "Batch Select",
+					click: () => this.toggleBatchSelection(bundle),
+				},
+			} as Record<string, CustomButtonInput>,
 			editable: true,
 			eventStartEditable: true,
 			eventDurationEditable: true,
@@ -219,7 +268,15 @@ class PrismaBasesView extends BasesView {
 			eventContent: eventContentCallback,
 			eventClassNames: eventClassNamesCallback,
 			eventDidMount: eventDidMountCallback,
-			eventClick: (info: { event: CalendarEventData }) => this.handleEventClick(bundle, info.event),
+			eventClick: (info: { event: CalendarEventData & { id: string } }) => {
+				if (this.batchSelectionManager?.isInSelectionMode()) {
+					if (!info.event.extendedProps["isVirtual"]) {
+						this.batchSelectionManager.handleEventClick(info.event.id);
+					}
+				} else {
+					this.handleEventClick(bundle, info.event);
+				}
+			},
 			eventDrop: (info: { event: CalendarEventData; oldEvent: CalendarEventData; revert: () => void }) => {
 				void this.handleEventUpdate(bundle, this.extractEventUpdateInfo(info), "Error updating event dates:");
 			},
@@ -240,6 +297,9 @@ class PrismaBasesView extends BasesView {
 					this.handleDateSelection(bundle, info);
 				}
 			},
+			eventsSet: () => {
+				this.batchSelectionManager?.refreshSelectionStyling();
+			},
 			datesSet: () => {
 				this.cachedNow = new Date();
 				this.cachedTodayStart = new Date(
@@ -253,6 +313,12 @@ class PrismaBasesView extends BasesView {
 
 		this.calendar = new Calendar(this.calendarContainerEl, calendarOptions);
 		this.calendar.render();
+
+		this.batchSelectionManager = new BatchSelectionManager(this.app, this.calendar, bundle);
+		this.batchSelectionManager.setOnSelectionChangeCallback(() => this.updateToolbar(bundle));
+
+		this.untrackedEventsDropdown = new UntrackedEventsDropdown(this.app, bundle);
+		this.untrackedEventsDropdown.initialize(this.calendar, this.calendarContainerEl, "left");
 
 		this.calendarContainerEl.addEventListener("mousedown", () => {
 			this.mouseDownTime = Date.now();
@@ -271,6 +337,189 @@ class PrismaBasesView extends BasesView {
 		});
 		this.register(() => mainSettingsSub.unsubscribe());
 	}
+
+	// ─── Batch Selection Toolbar ─────────────────────────────────
+
+	private toggleBatchSelection(bundle: CalendarBundle): void {
+		const wasInSelectionMode = this.batchSelectionManager?.isInSelectionMode() ?? false;
+		this.batchSelectionManager?.toggleSelectionMode();
+		if (wasInSelectionMode) {
+			this.updateToolbar(bundle);
+		}
+	}
+
+	private updateToolbar(bundle: CalendarBundle): void {
+		if (!this.calendar || !this.batchSelectionManager) return;
+
+		const inSelectionMode = this.batchSelectionManager.isInSelectionMode();
+
+		if (inSelectionMode) {
+			const batchSettings = bundle.settingsStore.currentSettings;
+			const rightButtons = ["batchCounter", ...batchSettings.batchActionButtons, "batchExit"];
+
+			this.calendar.setOption("headerToolbar", {
+				left: "prev,next today",
+				center: "title",
+				right: rightButtons.join(" "),
+			});
+			this.calendar.setOption("customButtons", this.buildBatchButtons(bundle) as Record<string, CustomButtonInput>);
+		} else {
+			this.calendar.setOption("headerToolbar", {
+				left: "prev,next today",
+				center: "title",
+				right: "batchSelect",
+			});
+			this.calendar.setOption("customButtons", {
+				batchSelect: {
+					text: "Batch Select",
+					click: () => this.toggleBatchSelection(bundle),
+				},
+			} as Record<string, CustomButtonInput>);
+		}
+	}
+
+	private buildBatchButtons(bundle: CalendarBundle): Record<string, ExtendedButtonInput> {
+		const bsm = this.batchSelectionManager!;
+		const clsBase = cls("batch-action-btn");
+
+		return {
+			batchCounter: {
+				text: `${bsm.getSelectionCount()} selected`,
+				click: () => {},
+				className: `${clsBase} ${cls("batch-counter")}`,
+			},
+			batchSelectAll: {
+				text: "All",
+				click: () => bsm.selectAllVisibleEvents(),
+				className: `${clsBase} ${cls("select-all-btn")}`,
+			},
+			batchClear: {
+				text: "Clear",
+				click: () => bsm.clearSelection(),
+				className: `${clsBase} ${cls("clear-btn")}`,
+			},
+			batchDuplicate: {
+				text: "Duplicate",
+				click: () => {
+					void bsm.executeDuplicate();
+				},
+				className: `${clsBase} ${cls("duplicate-btn")}`,
+			},
+			batchMoveBy: {
+				text: "Move By",
+				click: () => bsm.executeMoveBy(),
+				className: `${clsBase} ${cls("move-by-btn")}`,
+			},
+			batchCloneNext: {
+				text: "Clone Next",
+				click: () => {
+					void bsm.executeClone(1);
+				},
+				className: `${clsBase} ${cls("clone-next-btn")}`,
+			},
+			batchClonePrev: {
+				text: "Clone Prev",
+				click: () => {
+					void bsm.executeClone(-1);
+				},
+				className: `${clsBase} ${cls("clone-prev-btn")}`,
+			},
+			batchMoveNext: {
+				text: "Move Next",
+				click: () => {
+					void bsm.executeMove(1);
+				},
+				className: `${clsBase} ${cls("move-next-btn")}`,
+			},
+			batchMovePrev: {
+				text: "Move Prev",
+				click: () => {
+					void bsm.executeMove(-1);
+				},
+				className: `${clsBase} ${cls("move-prev-btn")}`,
+			},
+			batchOpenAll: {
+				text: "Open",
+				click: () => {
+					void bsm.executeOpenAll();
+				},
+				className: `${clsBase} ${cls("open-all-btn")}`,
+			},
+			batchSkip: {
+				text: "Skip",
+				click: () => {
+					void bsm.executeSkip();
+				},
+				className: `${clsBase} ${cls("skip-btn")}`,
+			},
+			batchMarkAsDone: {
+				text: "Done",
+				click: () => {
+					void bsm.executeMarkAsDone();
+				},
+				className: `${clsBase} ${cls("mark-done-btn")}`,
+			},
+			batchMarkAsNotDone: {
+				text: "Not Done",
+				click: () => {
+					void bsm.executeMarkAsNotDone();
+				},
+				className: `${clsBase} ${cls("mark-not-done-btn")}`,
+			},
+			batchCategories: {
+				text: "Categories",
+				click: () => {
+					void this.openCategoryAssignModal(bundle);
+				},
+				className: `${clsBase} ${cls("categories-btn")}`,
+			},
+			batchFrontmatter: {
+				text: "Frontmatter",
+				click: () => {
+					void this.openBatchFrontmatterModal(bundle);
+				},
+				className: `${clsBase} ${cls("frontmatter-btn")}`,
+			},
+			batchDelete: {
+				text: "Delete",
+				click: () => {
+					void bsm.executeDelete();
+				},
+				className: `${clsBase} ${cls("delete-btn")}`,
+			},
+			batchExit: {
+				text: "Exit",
+				click: () => this.toggleBatchSelection(bundle),
+				className: `${clsBase} ${cls("exit-btn")}`,
+			},
+		};
+	}
+
+	private async openCategoryAssignModal(bundle: CalendarBundle): Promise<void> {
+		if (!this.batchSelectionManager) return;
+
+		const categories = bundle.categoryTracker.getCategoriesWithColors();
+		const settings = bundle.settingsStore.currentSettings;
+		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
+		const commonCategories = getCommonCategories(this.app, selectedEvents, settings.categoryProp);
+
+		openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, commonCategories, (selectedCategories) => {
+			this.batchSelectionManager?.executeAssignCategories(selectedCategories);
+		});
+	}
+
+	private async openBatchFrontmatterModal(bundle: CalendarBundle): Promise<void> {
+		if (!this.batchSelectionManager) return;
+
+		const settings = bundle.settingsStore.currentSettings;
+		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
+
+		showBatchFrontmatterModal(this.app, settings, selectedEvents, (propertyUpdates: Map<string, string | null>) => {
+			this.batchSelectionManager?.executeUpdateFrontmatter(propertyUpdates);
+		});
+	}
+
+	// ─── Helpers ─────────────────────────────────────────────────
 
 	private resolveView(): string {
 		const view = this.config.get("view");
