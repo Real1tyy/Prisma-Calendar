@@ -1,16 +1,15 @@
-import { Calendar, type CustomButtonInput } from "@fullcalendar/core";
+import { Calendar } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { cls, ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
-import type { CalendarEventData, EventUpdateInfo, ExtendedButtonInput, PrismaEventInput } from "../../types/calendar";
+import type { CalendarEventData, EventUpdateInfo, PrismaEventInput } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { BatchSelectionManager } from "../batch-selection-manager";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
 import { SearchFilterInputManager } from "../input-managers/search-filter";
@@ -70,7 +69,6 @@ export function createDailyCalendar(
 	};
 
 	const searchFilter = new SearchFilterInputManager(() => scheduleRefresh());
-	let batchSelectionManager: BatchSelectionManager | null = null;
 
 	const deps: SharedCalendarDeps = {
 		app,
@@ -100,9 +98,8 @@ export function createDailyCalendar(
 		headerToolbar: {
 			left: "prev,next today",
 			center: "title",
-			right: "batchSelect",
+			right: "",
 		},
-		customButtons: {} as Record<string, CustomButtonInput>,
 
 		editable: true,
 		eventStartEditable: true,
@@ -129,13 +126,7 @@ export function createDailyCalendar(
 		},
 
 		eventClick: (info) => {
-			if (batchSelectionManager?.isInSelectionMode()) {
-				if (!info.event.extendedProps["isVirtual"]) {
-					batchSelectionManager.handleEventClick(info.event.id);
-				}
-			} else {
-				handleEventClick(info.event, info.el);
-			}
+			handleEventClick(info.event, info.el);
 		},
 
 		eventMouseEnter: () => {},
@@ -175,22 +166,12 @@ export function createDailyCalendar(
 			scheduleRefresh();
 		},
 
-		eventsSet: () => {
-			batchSelectionManager?.refreshSelectionStyling();
-		},
-
 		height: "100%",
 	});
 
-	const eventDidMountCallback = buildSharedEventDidMount(deps, eventContextMenu, () => batchSelectionManager);
+	const eventDidMountCallback = buildSharedEventDidMount(deps, eventContextMenu, () => null);
 
 	calendar.render();
-
-	batchSelectionManager = new BatchSelectionManager(app, calendar, bundle);
-	batchSelectionManager.setOnSelectionChangeCallback(() => {
-		updateToolbar();
-	});
-	updateToolbar();
 
 	searchFilter.initialize(calendar, container);
 
@@ -200,162 +181,6 @@ export function createDailyCalendar(
 	});
 
 	applyContainerStyles(container, settings);
-
-	// ─── Toolbar ──────────────────────────────────────────────────
-
-	function updateToolbar(): void {
-		if (!batchSelectionManager) return;
-
-		const inSelectionMode = batchSelectionManager.isInSelectionMode();
-		const { headerToolbar, customButtons } = buildDailyToolbarConfig(inSelectionMode);
-
-		calendar.setOption("headerToolbar", headerToolbar);
-		calendar.setOption("customButtons", customButtons as Record<string, CustomButtonInput>);
-	}
-
-	function buildDailyToolbarConfig(inSelectionMode: boolean): {
-		headerToolbar: { left: string; center: string; right: string };
-		customButtons: Record<string, ExtendedButtonInput>;
-	} {
-		if (inSelectionMode) {
-			const batchSettings = bundle.settingsStore.currentSettings;
-			const rightButtons = ["batchCounter", ...batchSettings.batchActionButtons, "batchExit"];
-
-			return {
-				headerToolbar: {
-					left: "prev,next today",
-					center: "title",
-					right: rightButtons.join(" "),
-				},
-				customButtons: buildBatchButtons(),
-			};
-		}
-
-		return {
-			headerToolbar: {
-				left: "prev,next today",
-				center: "title",
-				right: "batchSelect",
-			},
-			customButtons: {
-				batchSelect: {
-					text: "Batch Select",
-					click: () => toggleBatchSelection(),
-				},
-			},
-		};
-	}
-
-	function buildBatchButtons(): Record<string, ExtendedButtonInput> {
-		const bsm = batchSelectionManager!;
-		const clsBase = cls("batch-action-btn");
-
-		return {
-			batchCounter: {
-				text: `${bsm.getSelectionCount()} selected`,
-				click: () => {},
-				className: `${clsBase} ${cls("batch-counter")}`,
-			},
-			batchSelectAll: {
-				text: "All",
-				click: () => bsm.selectAllVisibleEvents(),
-				className: `${clsBase} ${cls("select-all-btn")}`,
-			},
-			batchClear: {
-				text: "Clear",
-				click: () => bsm.clearSelection(),
-				className: `${clsBase} ${cls("clear-btn")}`,
-			},
-			batchDuplicate: {
-				text: "Duplicate",
-				click: () => {
-					void bsm.executeDuplicate();
-				},
-				className: `${clsBase} ${cls("duplicate-btn")}`,
-			},
-			batchMoveBy: {
-				text: "Move By",
-				click: () => bsm.executeMoveBy(),
-				className: `${clsBase} ${cls("move-by-btn")}`,
-			},
-			batchCloneNext: {
-				text: "Clone Next",
-				click: () => {
-					void bsm.executeClone(1);
-				},
-				className: `${clsBase} ${cls("clone-next-btn")}`,
-			},
-			batchClonePrev: {
-				text: "Clone Prev",
-				click: () => {
-					void bsm.executeClone(-1);
-				},
-				className: `${clsBase} ${cls("clone-prev-btn")}`,
-			},
-			batchMoveNext: {
-				text: "Move Next",
-				click: () => {
-					void bsm.executeMove(1);
-				},
-				className: `${clsBase} ${cls("move-next-btn")}`,
-			},
-			batchMovePrev: {
-				text: "Move Prev",
-				click: () => {
-					void bsm.executeMove(-1);
-				},
-				className: `${clsBase} ${cls("move-prev-btn")}`,
-			},
-			batchOpenAll: {
-				text: "Open",
-				click: () => {
-					void bsm.executeOpenAll();
-				},
-				className: `${clsBase} ${cls("open-all-btn")}`,
-			},
-			batchSkip: {
-				text: "Skip",
-				click: () => {
-					void bsm.executeSkip();
-				},
-				className: `${clsBase} ${cls("skip-btn")}`,
-			},
-			batchMarkAsDone: {
-				text: "Done",
-				click: () => {
-					void bsm.executeMarkAsDone();
-				},
-				className: `${clsBase} ${cls("mark-done-btn")}`,
-			},
-			batchMarkAsNotDone: {
-				text: "Not Done",
-				click: () => {
-					void bsm.executeMarkAsNotDone();
-				},
-				className: `${clsBase} ${cls("mark-not-done-btn")}`,
-			},
-			batchDelete: {
-				text: "Delete",
-				click: () => {
-					void bsm.executeDelete();
-				},
-				className: `${clsBase} ${cls("delete-btn")}`,
-			},
-			batchExit: {
-				text: "Exit",
-				click: () => toggleBatchSelection(),
-				className: `${clsBase} ${cls("exit-btn")}`,
-			},
-		};
-	}
-
-	function toggleBatchSelection(): void {
-		const wasInSelectionMode = batchSelectionManager?.isInSelectionMode() ?? false;
-		batchSelectionManager?.toggleSelectionMode();
-		if (wasInSelectionMode) {
-			scheduleRefresh();
-		}
-	}
 
 	// ─── Event Refresh ───────────────────────────────────────────
 
@@ -565,7 +390,6 @@ export function createDailyCalendar(
 			for (const sub of subscriptions) sub.unsubscribe();
 			subscriptions.length = 0;
 			searchFilter.destroy();
-			batchSelectionManager = null;
 			colorEvaluator.destroy();
 			calendar.destroy();
 		},
