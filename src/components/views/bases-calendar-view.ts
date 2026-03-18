@@ -3,6 +3,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { cls, ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
+import type { BasesQueryResult } from "obsidian";
 import { BasesView, Notice, type QueryController } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -34,6 +35,10 @@ export const BASES_CALENDAR_VIEW_ID = "prisma-calendar";
 const DEFAULT_VIEW = "dayGridMonth";
 const CLICK_THRESHOLD_MS = 150;
 
+// Obsidian skips onDataUpdated() when switching back to a view if data hasn't changed.
+// Cache the last query result so new instances can render immediately.
+let cachedQueryData: BasesQueryResult | null = null;
+
 class PrismaBasesView extends BasesView {
 	readonly type = BASES_CALENDAR_VIEW_ID;
 
@@ -62,35 +67,22 @@ class PrismaBasesView extends BasesView {
 		private readonly plugin: CustomCalendarPlugin
 	) {
 		super(controller);
-		console.debug("[PrismaBasesView] constructor", {
-			hasData: !!this.data,
-			dataLength: this.data?.data?.length,
-			containerConnected: containerEl.isConnected,
-			containerChildren: containerEl.childElementCount,
-		});
 	}
 
 	override onload(): void {
-		console.debug("[PrismaBasesView] onload", {
-			hasData: !!this.data,
-			dataLength: this.data?.data?.length,
-			hasCalendar: !!this.calendar,
-		});
-		setTimeout(() => {
-			console.debug("[PrismaBasesView] onload setTimeout", {
-				hasData: !!this.data,
-				dataLength: this.data?.data?.length,
-				hasCalendar: !!this.calendar,
-				containerChildren: this.containerEl.childElementCount,
-			});
-			if (this.data && !this.calendar) {
+		// Obsidian skips onDataUpdated when switching back if data hasn't changed.
+		// Defer so Obsidian finishes setting up this.config/this.data first.
+		requestAnimationFrame(() => {
+			if (!this.calendar && cachedQueryData) {
+				if (!this.data) {
+					this.data = cachedQueryData;
+				}
 				this.onDataUpdated();
 			}
-		}, 0);
+		});
 	}
 
 	override onunload(): void {
-		console.debug("[PrismaBasesView] onunload");
 		this.destroyCalendar();
 	}
 
@@ -110,6 +102,10 @@ class PrismaBasesView extends BasesView {
 	}
 
 	onDataUpdated(): void {
+		if (this.data) {
+			cachedQueryData = this.data;
+		}
+
 		if (!this.plugin.licenseManager.requirePro(PRO_FEATURES.BASES_VIEW)) {
 			this.containerEl.empty();
 			this.containerEl.createDiv({
@@ -667,9 +663,7 @@ export function registerPrismaBasesView(plugin: CustomCalendarPlugin): boolean {
 		name: "Prisma Calendar",
 		icon: "calendar",
 		factory: (controller, containerEl) => {
-			const view = new PrismaBasesView(controller, containerEl, plugin);
-			view.load();
-			return view;
+			return new PrismaBasesView(controller, containerEl, plugin);
 		},
 		options: () => {
 			const calendars = plugin.calendarBundles;
