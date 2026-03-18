@@ -19,8 +19,8 @@ export interface EventData {
 	filePath: string | null;
 	title: string;
 	start: string;
-	end?: string;
-	allDay?: boolean;
+	end?: string | undefined;
+	allDay?: boolean | undefined;
 	preservedFrontmatter: Frontmatter;
 }
 

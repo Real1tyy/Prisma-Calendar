@@ -1,90 +1,17 @@
-import { MacroCommand } from "@real1ty-obsidian-plugins";
+import { batchCommand, type MacroCommand } from "@real1ty-obsidian-plugins";
 import type { DurationLike } from "luxon";
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../calendar-bundle";
+import {
+	assignCategories,
+	markAsDone,
+	markAsUndone,
+	moveEvent,
+	toggleSkip,
+	updateFrontmatter,
+} from "./frontmatter-update-command";
 import { CloneEventCommand, DeleteEventCommand } from "./lifecycle-commands";
-import { AssignCategoriesCommand, MarkAsDoneCommand, MarkAsUndoneCommand, ToggleSkipCommand } from "./status-commands";
-import { MoveEventCommand, UpdateFrontmatterCommand } from "./update-commands";
-
-function createBatchDeleteCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
-	const deleteCommands = filePaths.map((filePath) => new DeleteEventCommand(app, bundle, filePath));
-	return new MacroCommand(deleteCommands);
-}
-
-function createBatchMoveCommand(
-	app: App,
-	bundle: CalendarBundle,
-	filePaths: string[],
-	offset: DurationLike
-): MacroCommand {
-	const moveCommands = filePaths.map((filePath) => new MoveEventCommand(app, bundle, filePath, offset, offset));
-	return new MacroCommand(moveCommands);
-}
-
-function createBatchCloneCommand(
-	app: App,
-	bundle: CalendarBundle,
-	filePaths: string[],
-	offset: DurationLike
-): MacroCommand {
-	const cloneCommands = filePaths.map((filePath) => new CloneEventCommand(app, bundle, filePath, offset, offset));
-	return new MacroCommand(cloneCommands);
-}
-
-function createBatchDuplicateCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
-	const duplicateCommands = filePaths.map((filePath) => new CloneEventCommand(app, bundle, filePath));
-	return new MacroCommand(duplicateCommands);
-}
-
-function createBatchSkipCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
-	const skipCommands = filePaths.map((filePath) => new ToggleSkipCommand(app, bundle, filePath));
-	return new MacroCommand(skipCommands);
-}
-
-function createBatchMoveByCommand(
-	app: App,
-	bundle: CalendarBundle,
-	filePaths: string[],
-	offset: DurationLike
-): MacroCommand {
-	const moveByCommands = filePaths.map((filePath) => new MoveEventCommand(app, bundle, filePath, offset, offset));
-	return new MacroCommand(moveByCommands);
-}
-
-function createBatchMarkAsDoneCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
-	const markAsDoneCommands = filePaths.map((filePath) => new MarkAsDoneCommand(app, bundle, filePath));
-	return new MacroCommand(markAsDoneCommands);
-}
-
-function createBatchMarkAsNotDoneCommand(app: App, bundle: CalendarBundle, filePaths: string[]): MacroCommand {
-	const markAsNotDoneCommands = filePaths.map((filePath) => new MarkAsUndoneCommand(app, bundle, filePath));
-	return new MacroCommand(markAsNotDoneCommands);
-}
-
-function createBatchAssignCategoriesCommand(
-	app: App,
-	bundle: CalendarBundle,
-	filePaths: string[],
-	categories: string[]
-): MacroCommand {
-	const assignCategoriesCommands = filePaths.map(
-		(filePath) => new AssignCategoriesCommand(app, bundle, filePath, categories)
-	);
-	return new MacroCommand(assignCategoriesCommands);
-}
-
-function createBatchUpdateFrontmatterCommand(
-	app: App,
-	bundle: CalendarBundle,
-	filePaths: string[],
-	propertyUpdates: Map<string, string | null>
-): MacroCommand {
-	const updateCommands = filePaths.map(
-		(filePath) => new UpdateFrontmatterCommand(app, bundle, filePath, propertyUpdates)
-	);
-	return new MacroCommand(updateCommands);
-}
 
 export function weekDuration(weeks: number): DurationLike {
 	return { weeks };
@@ -97,42 +24,44 @@ export class BatchCommandFactory {
 	) {}
 
 	createDelete(filePaths: string[]): MacroCommand {
-		return createBatchDeleteCommand(this.app, this.bundle, filePaths);
+		return batchCommand(filePaths, (fp) => new DeleteEventCommand(this.app, this.bundle, fp));
 	}
 
 	createDuplicate(filePaths: string[]): MacroCommand {
-		return createBatchDuplicateCommand(this.app, this.bundle, filePaths);
+		return batchCommand(filePaths, (fp) => new CloneEventCommand(this.app, this.bundle, fp));
 	}
 
 	createMove(filePaths: string[], weeks: number): MacroCommand {
-		return createBatchMoveCommand(this.app, this.bundle, filePaths, weekDuration(weeks));
+		const d = weekDuration(weeks);
+		return batchCommand(filePaths, (fp) => moveEvent(this.app, this.bundle, fp, d, d));
 	}
 
 	createClone(filePaths: string[], weeks: number): MacroCommand {
-		return createBatchCloneCommand(this.app, this.bundle, filePaths, weekDuration(weeks));
+		const d = weekDuration(weeks);
+		return batchCommand(filePaths, (fp) => new CloneEventCommand(this.app, this.bundle, fp, d, d));
 	}
 
 	createSkip(filePaths: string[]): MacroCommand {
-		return createBatchSkipCommand(this.app, this.bundle, filePaths);
+		return batchCommand(filePaths, (fp) => toggleSkip(this.app, this.bundle, fp));
 	}
 
 	createMoveBy(filePaths: string[], offset: DurationLike): MacroCommand {
-		return createBatchMoveByCommand(this.app, this.bundle, filePaths, offset);
+		return batchCommand(filePaths, (fp) => moveEvent(this.app, this.bundle, fp, offset, offset));
 	}
 
 	createMarkAsDone(filePaths: string[]): MacroCommand {
-		return createBatchMarkAsDoneCommand(this.app, this.bundle, filePaths);
+		return batchCommand(filePaths, (fp) => markAsDone(this.app, this.bundle, fp));
 	}
 
 	createMarkAsNotDone(filePaths: string[]): MacroCommand {
-		return createBatchMarkAsNotDoneCommand(this.app, this.bundle, filePaths);
+		return batchCommand(filePaths, (fp) => markAsUndone(this.app, this.bundle, fp));
 	}
 
 	createAssignCategories(filePaths: string[], categories: string[]): MacroCommand {
-		return createBatchAssignCategoriesCommand(this.app, this.bundle, filePaths, categories);
+		return batchCommand(filePaths, (fp) => assignCategories(this.app, this.bundle, fp, categories));
 	}
 
 	createUpdateFrontmatter(filePaths: string[], propertyUpdates: Map<string, string | null>): MacroCommand {
-		return createBatchUpdateFrontmatterCommand(this.app, this.bundle, filePaths, propertyUpdates);
+		return batchCommand(filePaths, (fp) => updateFrontmatter(this.app, fp, propertyUpdates));
 	}
 }
