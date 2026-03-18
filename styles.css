@@ -5474,8 +5474,17 @@
 	background: var(--background-secondary);
 }
 
+.prisma-heatmap-detail-row.prisma-heatmap-detail-row-categorized {
+	background: color-mix(in srgb, var(--category-color) 15%, transparent);
+	border-left: 3px solid var(--category-color);
+}
+
 .prisma-heatmap-detail-row:hover {
 	background: var(--background-modifier-hover);
+}
+
+.prisma-heatmap-detail-row.prisma-heatmap-detail-row-categorized:hover {
+	background: color-mix(in srgb, var(--category-color) 25%, var(--background-modifier-hover));
 }
 
 .prisma-heatmap-detail-row-main {

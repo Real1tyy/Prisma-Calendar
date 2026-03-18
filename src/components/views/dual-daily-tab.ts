@@ -8,10 +8,19 @@ export function createDualDailyTabDefinition(app: App, bundle: CalendarBundle): 
 	let gridHandle: GridLayoutHandle | null = null;
 	let leftCalendar: DailyCalendarHandle | null = null;
 	let rightCalendar: DailyCalendarHandle | null = null;
+	let focusedSide: "left" | "right" = "left";
+
+	function getFocusedCalendar(): DailyCalendarHandle | null {
+		return focusedSide === "left" ? leftCalendar : rightCalendar;
+	}
 
 	return {
 		id: "dual-daily",
 		label: "Dual Daily",
+		keyHandlers: {
+			ArrowLeft: () => getFocusedCalendar()?.prev(),
+			ArrowRight: () => getFocusedCalendar()?.next(),
+		},
 		render: (el) => {
 			gridHandle = createGridLayout(el, {
 				cssPrefix: "prisma-dual-daily-",
@@ -28,6 +37,9 @@ export function createDualDailyTabDefinition(app: App, bundle: CalendarBundle): 
 						col: 0,
 						render: (cellEl) => {
 							leftCalendar = createDailyCalendar(cellEl, app, bundle);
+							cellEl.addEventListener("pointerdown", () => {
+								focusedSide = "left";
+							});
 						},
 						cleanup: () => {
 							leftCalendar?.destroy();
@@ -41,6 +53,9 @@ export function createDualDailyTabDefinition(app: App, bundle: CalendarBundle): 
 						col: 1,
 						render: (cellEl) => {
 							rightCalendar = createDailyCalendar(cellEl, app, bundle);
+							cellEl.addEventListener("pointerdown", () => {
+								focusedSide = "right";
+							});
 						},
 						cleanup: () => {
 							rightCalendar?.destroy();

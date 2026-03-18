@@ -55,6 +55,26 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 
 	let buttons: HTMLElement[] = [];
 
+	let containerActive = false;
+
+	const onPointerDown = (e: PointerEvent): void => {
+		const target = e.target as Node;
+		containerActive = container.contains(target) || tabBar.contains(target);
+	};
+
+	const onKeyDown = (e: KeyboardEvent): void => {
+		if (!containerActive || destroyed) return;
+		const tab = visibleTabs[currentIndex];
+		const handler = tab?.keyHandlers?.[e.key];
+		if (handler) {
+			handler(e);
+			e.preventDefault();
+		}
+	};
+
+	document.addEventListener("pointerdown", onPointerDown, true);
+	document.addEventListener("keydown", onKeyDown);
+
 	buildPanels();
 	renderTabBar();
 	activateTab(currentIndex);
@@ -528,6 +548,8 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		destroy(): void {
 			if (destroyed) return;
 			destroyed = true;
+			document.removeEventListener("pointerdown", onPointerDown, true);
+			document.removeEventListener("keydown", onKeyDown);
 			for (const tab of allTabs) {
 				tab.cleanup?.();
 			}

@@ -10,11 +10,14 @@ export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): Ta
 	let heatmapHandle: HeatmapHandle | null = null;
 	let eventStoreSub: Subscription | null = null;
 	let recurringEventSub: Subscription | null = null;
-	let keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 
 	return {
 		id: "heatmap",
 		label: "Heat Map",
+		keyHandlers: {
+			ArrowLeft: () => heatmapHandle?.navigate(-1),
+			ArrowRight: () => heatmapHandle?.navigate(1),
+		},
 		render: (el) => {
 			if (!bundle.plugin.licenseManager.requirePro(PRO_FEATURES.HEATMAP)) {
 				el.createDiv({ cls: cls("tab-pro-gate"), text: "Heat Map is a Pro feature." });
@@ -25,19 +28,6 @@ export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): Ta
 				events: bundle.eventStore.getAllEvents(),
 				title: "All Events Heatmap",
 			});
-
-			el.setAttribute("tabindex", "-1");
-			keydownHandler = (e: KeyboardEvent) => {
-				if (e.key === "ArrowLeft") {
-					heatmapHandle?.navigate(-1);
-					e.preventDefault();
-				} else if (e.key === "ArrowRight") {
-					heatmapHandle?.navigate(1);
-					e.preventDefault();
-				}
-			};
-			el.addEventListener("keydown", keydownHandler);
-			el.focus();
 
 			eventStoreSub = bundle.eventStore.subscribe(() => {
 				heatmapHandle?.refresh(bundle.eventStore.getAllEvents());
@@ -52,7 +42,6 @@ export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): Ta
 			eventStoreSub = null;
 			recurringEventSub?.unsubscribe();
 			recurringEventSub = null;
-			keydownHandler = null;
 			heatmapHandle?.destroy();
 			heatmapHandle = null;
 		},
