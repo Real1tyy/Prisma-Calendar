@@ -1,6 +1,6 @@
 # Bases Calendar View (Pro)
 
-Render your Prisma Calendar events directly inside any Obsidian Base as a fully interactive calendar. Use Base queries to filter events and visualize them in month, week, or day layouts.
+Render your Prisma Calendar events directly inside any Obsidian Base as a fully interactive calendar. Use Base queries to filter and sort events, then visualize them in month, week, or day layouts — with the same features as the main calendar view.
 
 ## Prerequisites
 
@@ -23,9 +23,32 @@ Access view options from the Bases toolbar menu:
 - **View** — Set the calendar layout: Month, Week, or Day.
 - **Initial Date** — Optionally set a date (e.g. `2026-03-15`) to navigate to on first load. Leave empty to start at today.
 
-## Interactions
+## Toolbar
 
-The Bases Calendar View supports the same interactions as the main calendar:
+The calendar toolbar provides navigation and actions:
+
+- **Navigation** — Previous, Next, and Today buttons to move between periods.
+- **Untracked Events** — Dropdown button showing events in the calendar folder that are not yet tracked. Drag them onto the calendar to assign a date.
+- **Batch Select** — Enter batch selection mode to perform operations on multiple events at once.
+
+## Batch Operations
+
+Click **Batch Select** in the toolbar to enter selection mode. Click events to select them, then use the batch action buttons:
+
+- **All / Clear** — Select all visible events or clear the selection.
+- **Duplicate** — Duplicate selected events.
+- **Move By** — Shift selected events by a custom duration.
+- **Clone Next / Clone Prev** — Clone events to the next or previous period.
+- **Move Next / Move Prev** — Move events to the next or previous period.
+- **Open** — Open all selected event notes.
+- **Skip** — Mark selected events as skipped.
+- **Done / Not Done** — Toggle completion status.
+- **Categories** — Assign categories to selected events.
+- **Frontmatter** — Bulk-edit frontmatter properties on selected events.
+- **Delete** — Delete selected events.
+- **Exit** — Leave batch selection mode.
+
+## Event Interactions
 
 - **Click** an event to open its note.
 - **Right-click** for the full context menu (edit, duplicate, skip, delete, etc.).
