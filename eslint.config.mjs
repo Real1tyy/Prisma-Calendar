@@ -1,118 +1,124 @@
+// eslint.config.mjs
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
-import eslintConfigPrettier from "eslint-config-prettier";
-import globals from "globals";
+import { defineConfig } from "eslint/config";
+import obsidianmd from "eslint-plugin-obsidianmd";
 
-export default [
-	// Base recommended configs
-	js.configs.recommended,
-	...tseslint.configs.recommended,
-	eslintConfigPrettier,
-
-	// Global ignores
+export default defineConfig([
 	{
 		ignores: [
+			"node_modules/**",
 			"**/node_modules/**",
+			"docs-site/**",
 			"**/dist/**",
-			"**/main.js",
-			"**/styles.css",
-			"**/*.d.ts",
-			"**/docs-site/**",
-			"**/.obsidian/**",
 			"**/build/**",
-			"**/coverage/**",
-			"**/.cache/**",
-			".eslintcache",
-			"**/htmlcov/**",
+			"main.js",
+			"*.config.js",
+			"*.config.mjs",
+			"esbuild.config.mjs",
+			"version-bump.mjs",
 		],
 	},
 
-	// Config files - no type checking
-	{
-		files: [
-			"**/*.config.{js,mjs,ts}",
-			"**/esbuild.config.mjs",
-			"**/vitest.config.ts",
-			"**/version-bump.mjs",
-			".prettierrc.mjs",
-		],
-		languageOptions: {
-			ecmaVersion: 2022,
-			sourceType: "module",
-			globals: {
-				...globals.node,
-			},
-		},
-		rules: {
-			"@typescript-eslint/no-unused-vars": [
-				"warn",
-				{
-					argsIgnorePattern: "^_",
-					varsIgnorePattern: "^_",
-				},
-			],
-			"@typescript-eslint/no-explicit-any": "off",
-			"no-console": "off",
-			"prefer-const": "error",
-		},
-	},
+	js.configs.recommended,
+	...tseslint.configs.recommended,
+	...tseslint.configs.recommendedTypeChecked,
+	...obsidianmd.configs.recommended,
 
-	// TypeScript/JavaScript files configuration with type checking
 	{
-		files: ["**/*.ts", "**/*.tsx"],
-		ignores: ["**/*.config.ts", "**/vitest.config.ts"],
+		files: ["**/*.ts"],
 		languageOptions: {
-			ecmaVersion: 2022,
-			sourceType: "module",
-			globals: {
-				...globals.browser,
-				...globals.node,
-			},
+			parser: tseslint.parser,
 			parserOptions: {
 				projectService: true,
-				tsconfigRootDir: import.meta.dirname,
+			},
+			globals: {
+				console: "readonly",
+				document: "readonly",
+				window: "readonly",
+				setTimeout: "readonly",
+				clearTimeout: "readonly",
+				setInterval: "readonly",
+				clearInterval: "readonly",
+				requestAnimationFrame: "readonly",
+				cancelAnimationFrame: "readonly",
+				NodeJS: "readonly",
+				getComputedStyle: "readonly",
+				HTMLElement: "readonly",
+				HTMLInputElement: "readonly",
+				HTMLTextAreaElement: "readonly",
+				HTMLSelectElement: "readonly",
+				HTMLDivElement: "readonly",
+				Event: "readonly",
+				KeyboardEvent: "readonly",
+				MouseEvent: "readonly",
+				MutationObserver: "readonly",
+				ResizeObserver: "readonly",
+				IntersectionObserver: "readonly",
+				DOMParser: "readonly",
+				fetch: "readonly",
+				AbortController: "readonly",
+				URL: "readonly",
+				Blob: "readonly",
+				File: "readonly",
+				FormData: "readonly",
+				Response: "readonly",
+				Headers: "readonly",
+				CustomEvent: "readonly",
 			},
 		},
 		rules: {
+			"import/no-extraneous-dependencies": "off",
+			"no-console": "off",
+			"@typescript-eslint/no-floating-promises": "error",
+			"@typescript-eslint/await-thenable": "error",
+			"@typescript-eslint/only-throw-error": "error",
+			"@typescript-eslint/no-misused-promises": [
+				"error",
+				{ checksVoidReturn: { arguments: false, attributes: false } },
+			],
 			"@typescript-eslint/no-unused-vars": [
-				"warn",
+				"error",
 				{
 					argsIgnorePattern: "^_",
 					varsIgnorePattern: "^_",
+					caughtErrorsIgnorePattern: "^_",
 				},
 			],
-			"@typescript-eslint/no-explicit-any": "off",
-			"@typescript-eslint/explicit-function-return-type": "off",
-			"@typescript-eslint/explicit-module-boundary-types": "off",
+			"@typescript-eslint/no-explicit-any": "warn",
 			"@typescript-eslint/no-non-null-assertion": "off",
-			"no-console": "off",
-			"prefer-const": "error",
+			"@typescript-eslint/no-unsafe-assignment": "off",
+			"@typescript-eslint/no-unsafe-member-access": "off",
+			"@typescript-eslint/no-unsafe-call": "off",
+			"@typescript-eslint/no-unsafe-return": "off",
+			"@typescript-eslint/no-unsafe-argument": "off",
+			"@typescript-eslint/require-await": "off",
+			"@typescript-eslint/restrict-template-expressions": "off",
+			"@typescript-eslint/unbound-method": "off",
+			"@typescript-eslint/no-implied-eval": "off",
+			"obsidianmd/ui/sentence-case": "off",
+			"obsidianmd/no-static-styles-assignment": "off",
+			"obsidianmd/no-tfile-tfolder-cast": "warn",
+			"@typescript-eslint/no-redundant-type-constituents": "off",
+			"@typescript-eslint/no-base-to-string": "off",
+			"@typescript-eslint/no-deprecated": "warn",
+			"@microsoft/sdl/no-inner-html": "off",
 		},
 	},
 
-	// Regular JavaScript files
 	{
-		files: ["**/*.js", "**/*.mjs"],
-		ignores: ["**/*.config.{js,mjs}"],
+		files: ["**/*.test.ts", "**/*.spec.ts"],
 		languageOptions: {
-			ecmaVersion: 2022,
-			sourceType: "module",
 			globals: {
-				...globals.browser,
-				...globals.node,
+				global: "readonly",
 			},
 		},
 		rules: {
-			"no-console": "off",
-			"prefer-const": "error",
+			"@typescript-eslint/no-non-null-assertion": "off",
+			"@typescript-eslint/no-floating-promises": "off",
+			"@microsoft/sdl/no-inner-html": "off",
+			"@typescript-eslint/no-deprecated": "off",
+			"@typescript-eslint/await-thenable": "off",
 		},
 	},
-
-	// TypeScript declaration files
-	{
-		files: ["**/*.d.ts"],
-		rules: {
-			"@typescript-eslint/triple-slash-reference": "off",
-		},
-	},
-];
+]);
