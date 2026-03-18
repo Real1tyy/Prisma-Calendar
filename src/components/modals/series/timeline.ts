@@ -14,6 +14,7 @@ import { type PreviewEventData, showEventPreviewModal } from "../preview/event-p
 export interface EventSeriesTimelineConfig {
 	events: CalendarEvent[];
 	title: string;
+	fillContainer?: boolean;
 }
 
 export interface TimelineHandle {
@@ -118,6 +119,29 @@ export function renderTimelineInto(
 		showEventPreviewModal(app, bundle, previewEvent);
 	}
 
+	function toItem(event: CalendarEvent, settings: SingleCalendarConfig) {
+		const startDate = new Date(event.start);
+		const eventColor = resolveEventColor(event.meta, bundle, colorEvaluator);
+		const content = cleanupTitle(event.title);
+		const tooltip = buildEventTooltip(event, settings);
+
+		const classes: string[] = [];
+		if (event.skipped) classes.push(cls("timeline-item-skipped"));
+		classes.push(event.type === "allDay" ? cls("timeline-item-allday") : cls("timeline-item-timed"));
+
+		const style = eventColor ? `background-color: ${eventColor}; border-color: ${eventColor};` : "";
+
+		return {
+			id: event.ref.filePath,
+			content,
+			title: tooltip,
+			start: startDate,
+			type: "point" as const,
+			className: classes.join(" "),
+			style,
+		};
+	}
+
 	function buildTimeline(events: CalendarEvent[]): void {
 		if (timeline) {
 			timeline.destroy();
@@ -138,42 +162,25 @@ export function renderTimelineInto(
 			eventMap.set(event.ref.filePath, event);
 		}
 
+		const settings = bundle.settingsStore.currentSettings;
+
 		const sortedEvents = [...events].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 		const firstEvent = new Date(sortedEvents[0].start);
 		const lastEvent = new Date(sortedEvents[sortedEvents.length - 1].start);
 
 		const timeSpan = lastEvent.getTime() - firstEvent.getTime();
-		const padding = Math.max(timeSpan * 0.1, 86400000);
-		const rangeStart = new Date(firstEvent.getTime() - padding);
-		const rangeEnd = new Date(lastEvent.getTime() + padding);
+		const rangePadding = Math.max(timeSpan * 0.1, 86400000);
+		const rangeStart = new Date(firstEvent.getTime() - rangePadding);
+		const rangeEnd = new Date(lastEvent.getTime() + rangePadding);
 
-		const settings = bundle.settingsStore.currentSettings;
-
-		const timelineItems = events.map((event) => {
-			const startDate = new Date(event.start);
-			const eventColor = resolveEventColor(event.meta, bundle, colorEvaluator);
-			const content = cleanupTitle(event.title);
-			const tooltip = buildEventTooltip(event, settings);
-
-			const classes: string[] = [];
-			if (event.skipped) classes.push(cls("timeline-item-skipped"));
-			classes.push(event.type === "allDay" ? cls("timeline-item-allday") : cls("timeline-item-timed"));
-
-			const style = eventColor ? `background-color: ${eventColor}; border-color: ${eventColor};` : "";
-
-			return {
-				id: event.ref.filePath,
-				content,
-				title: tooltip,
-				start: startDate,
-				type: "point" as const,
-				className: classes.join(" "),
-				style,
-			};
-		});
+		const timelineItems = events.map((event) => toItem(event, settings));
 
 		const items = new DataSet(timelineItems);
 
+		const nowMs = Date.now();
+		const halfWeek = 3.5 * 86400000;
+
+		const fillContainer = config.fillContainer === true;
 		const options: TimelineOptions = {
 			editable: false,
 			selectable: false,
@@ -183,17 +190,30 @@ export function renderTimelineInto(
 			height: "600px",
 			margin: { item: 10 },
 			orientation: "top",
-			start: rangeStart,
-			end: rangeEnd,
+			start: new Date(nowMs - halfWeek),
+			end: new Date(nowMs + halfWeek),
 			zoomMin: 86400000,
 			zoomMax: 31536000000 * 10,
 			stack: true,
 			verticalScroll: true,
-			maxHeight: "600px",
+			min: rangeStart,
+			max: rangeEnd,
 		};
+		if (!fillContainer) options.maxHeight = "600px";
 
 		timelineContainer.empty();
 		timeline = new Timeline(timelineContainer, items, options);
+
+		if (fillContainer) {
+			requestAnimationFrame(() => {
+				if (!timeline) return;
+				const top = timelineContainer.getBoundingClientRect().top;
+				const available = window.innerHeight - top - 16;
+				if (available > 200) {
+					timeline.setOptions({ height: `${available}px` });
+				}
+			});
+		}
 
 		type TimelineInteraction = { item?: string | null; event?: MouseEvent };
 		timeline.on("click", (properties: TimelineInteraction) => {

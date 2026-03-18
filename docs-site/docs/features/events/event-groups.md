@@ -346,6 +346,7 @@ Click **Timeline** to open an interactive timeline visualization showing all eve
 **Features:**
 
 - **Interactive navigation** — Zoom in/out with mouse wheel, pan by dragging to navigate through time. Use the date navigation bar at the top to jump to a specific year, month, and day — fill in the fields and press Enter or click Go. The timeline centers on the chosen date while preserving your current zoom level. Click Today to jump to the current date
+- **Optimized initial view** — The timeline opens zoomed in to a one-week window centered on today, keeping initial rendering fast even with thousands of total events. Zoom out with the mouse wheel to see more. When used as a tab, the timeline dynamically fills the available height
 - **Event type distinction** — Timed events have a square dot, while all-day events have a hollow circle dot with a dashed border, making the two types instantly recognizable at a glance
 - **Event names** — Each event displays its clean title (with ZettelID and instance dates stripped)
 - **Category coloring** — Events are colored based on their category, matching the color rules configured in your calendar settings. This provides instant visual grouping on the timeline
