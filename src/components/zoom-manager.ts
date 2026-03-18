@@ -60,7 +60,8 @@ export class ZoomManager {
 	}
 
 	private scrollPreservingZoom(applyZoom: () => void): void {
-		const scrollable = this.viewContainerEl?.querySelector(".view-content") as HTMLElement | null;
+		const scrollable = (this.viewContainerEl?.querySelector(".prisma-tab-content") ??
+			this.viewContainerEl?.querySelector(".view-content")) as HTMLElement | null;
 		const slotsTable = this.viewContainerEl?.querySelector(".fc-timegrid-slots") as HTMLElement | null;
 
 		if (!scrollable || !slotsTable) {

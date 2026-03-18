@@ -1166,7 +1166,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const { view } = this.calendar;
 
 		// Capture scroll position before touching events (needed for structural changes)
-		const viewContent = this.hostEl.querySelector(".view-content");
+		const viewContent = this.hostEl.querySelector(".prisma-tab-content") ?? this.hostEl.querySelector(".view-content");
 		const innerScroller = this.container.querySelector(".fc-scroller");
 		const viewContentScrollTop = viewContent?.scrollTop ?? 0;
 		const innerScrollTop = innerScroller?.scrollTop ?? 0;
@@ -1188,7 +1188,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		if (hasStructuralChanges) {
 			requestAnimationFrame(() => {
-				const viewContentRestored = this.hostEl.querySelector(".view-content");
+				const viewContentRestored =
+					this.hostEl.querySelector(".prisma-tab-content") ?? this.hostEl.querySelector(".view-content");
 				const inner = this.container.querySelector(".fc-scroller");
 
 				if (viewContentRestored) {
@@ -2173,7 +2174,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private scrollElementToCenter(element: Element): void {
-		const viewContent = this.hostEl.querySelector(".view-content");
+		const viewContent = this.hostEl.querySelector(".prisma-tab-content") ?? this.hostEl.querySelector(".view-content");
 		if (!viewContent) return;
 
 		const elementRect = element.getBoundingClientRect();
