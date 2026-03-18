@@ -21,6 +21,14 @@
 	padding: 0;
 }
 
+/* Override shared tab-panel height so sticky positioning works —
+   the panel must grow with its content for sticky children to
+   remain attached to the scroll container (.prisma-tab-content). */
+.view-content.prisma-calendar-view-root .prisma-tab-panel {
+	height: auto;
+	min-height: 100%;
+}
+
 .prisma-calendar-container {
 	height: auto;
 	min-height: max(100%, 400px);
@@ -9383,6 +9391,22 @@ div.vis-tooltip {
 /* ─── Tab Pro Gate ───────────────────────────────────────────── */
 
 .prisma-tab-pro-gate {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 48px 24px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-medium);
+}
+
+/* ─── Bases Calendar View ────────────────────────────────────── */
+
+.prisma-bases-calendar-container {
+	width: 100%;
+}
+
+.prisma-bases-view-pro-gate,
+.prisma-bases-view-empty {
 	display: flex;
 	align-items: center;
 	justify-content: center;
