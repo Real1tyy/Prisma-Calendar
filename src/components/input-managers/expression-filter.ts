@@ -13,7 +13,7 @@ export class ExpressionFilterInputManager extends InputFilterManager {
 		super(onFilterChange, "Status === 'Done'", cls("fc-expression-input"), 50);
 	}
 
-	protected updateFilterValue(filterValue: string): void {
+	protected override updateFilterValue(filterValue: string): void {
 		super.updateFilterValue(filterValue);
 		this.compiledFunc = null;
 		this.propertyMapping.clear();

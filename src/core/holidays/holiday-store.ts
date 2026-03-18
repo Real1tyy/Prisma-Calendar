@@ -65,7 +65,7 @@ export class HolidayStore {
 		};
 
 		this.cache.set(year, entry);
-		await this.saveToStorage(year, entry);
+		this.saveToStorage(year, entry);
 		return events;
 	}
 
@@ -126,10 +126,10 @@ export class HolidayStore {
 		return null;
 	}
 
-	private async saveToStorage(year: number, data: CachedHolidays): Promise<void> {
+	private saveToStorage(year: number, data: CachedHolidays): void {
 		try {
 			const key = this.getCacheKey(year);
-			await this.app.saveLocalStorage(key, JSON.stringify(data));
+			this.app.saveLocalStorage(key, JSON.stringify(data));
 		} catch (error) {
 			console.error("[HolidayStore] Error saving holiday cache:", error);
 		}

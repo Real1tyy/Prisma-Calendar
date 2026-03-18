@@ -55,7 +55,7 @@ export class CategoryRenameModal extends BaseCategoryOperationModal {
 		return "Renaming...";
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		super.onOpen();
 		this.updateActionButton();
 	}
@@ -66,7 +66,7 @@ export class CategoryRenameModal extends BaseCategoryOperationModal {
 		this.actionButton.disabled = !isValid;
 	}
 
-	protected async handleOperation(): Promise<void> {
+	protected override async handleOperation(): Promise<void> {
 		if (!this.actionButton || this.actionButton.disabled) return;
 
 		if (this.newCategoryName === this.categoryName) {

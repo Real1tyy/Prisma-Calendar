@@ -16,8 +16,8 @@ export interface CalDAVStoredCalendar {
 	url: string;
 	displayName: string;
 	accountId: string;
-	ctag?: string;
-	syncToken?: string;
+	ctag?: string | undefined;
+	syncToken?: string | undefined;
 	objects: CalDAVStoredObject[];
 }
 
@@ -25,7 +25,7 @@ interface CalDAVStoredObject {
 	url: string;
 	etag: string;
 	uid: string;
-	localFilePath?: string;
+	localFilePath?: string | undefined;
 }
 
 export interface CalDAVSyncResult {

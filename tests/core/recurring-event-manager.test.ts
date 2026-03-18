@@ -32,7 +32,7 @@ vi.mock("@real1ty-obsidian-plugins/utils/date-recurrence-utils", async () => {
 		getNextOccurrence: mockGetNextOccurrence,
 		isDateOnWeekdays: mockIsDateOnWeekdays,
 		// Use the real function for calculateRecurringInstanceDateTime
-		calculateRecurringInstanceDateTime: actual.calculateRecurringInstanceDateTime,
+		calculateRecurringInstanceDateTime: actual["calculateRecurringInstanceDateTime"],
 		// Return a generator function for iterateOccurrencesInRange
 		iterateOccurrencesInRange: mockIterateOccurrencesInRange,
 	};
@@ -427,7 +427,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				// Verify vault.create was called
 				expect(mockApp.vault.create).toHaveBeenCalled();
-				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const createCall = mockApp.vault.create.mock.calls[0];
 				const fileContent = createCall[1]; // Second argument is content
 				const frontmatter = extractFrontmatter(fileContent);
 
@@ -476,7 +476,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				// Verify vault.create was called
 				expect(mockApp.vault.create).toHaveBeenCalled();
-				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const createCall = mockApp.vault.create.mock.calls[0];
 				const fileContent = createCall[1]; // Second argument is content
 				const frontmatter = extractFrontmatter(fileContent);
 
@@ -525,7 +525,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				// Verify vault.create was called
 				expect(mockApp.vault.create).toHaveBeenCalled();
-				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const createCall = mockApp.vault.create.mock.calls[0];
 				const fileContent = createCall[1];
 				const frontmatter = extractFrontmatter(fileContent);
 
@@ -572,7 +572,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				// Verify vault.create was called
 				expect(mockApp.vault.create).toHaveBeenCalled();
-				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const createCall = mockApp.vault.create.mock.calls[0];
 				const fileContent = createCall[1];
 				const frontmatter = extractFrontmatter(fileContent);
 
@@ -621,7 +621,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				// Verify vault.create was called
 				expect(mockApp.vault.create).toHaveBeenCalled();
-				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const createCall = mockApp.vault.create.mock.calls[0];
 				const fileContent = createCall[1];
 				const frontmatter = extractFrontmatter(fileContent);
 
@@ -670,7 +670,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 
 				// Verify vault.create was called
 				expect(mockApp.vault.create).toHaveBeenCalled();
-				const createCall = (mockApp.vault.create as any).mock.calls[0];
+				const createCall = mockApp.vault.create.mock.calls[0];
 				const fileContent = createCall[1];
 				const frontmatter = extractFrontmatter(fileContent);
 

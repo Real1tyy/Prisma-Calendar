@@ -183,7 +183,7 @@ describe("eventFingerprint", () => {
 	});
 
 	it("should handle missing optional fields gracefully", () => {
-		const ev = makeEvent({ id: "a", title: undefined, end: undefined, backgroundColor: undefined });
+		const ev = makeEvent({ id: "a" });
 		// Should not throw
 		const fp = eventFingerprint(ev);
 		expect(typeof fp).toBe("string");

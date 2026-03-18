@@ -11,7 +11,7 @@ export class SearchFilterInputManager extends InputFilterManager {
 	shouldInclude(data: { meta?: Frontmatter; title?: string }): boolean {
 		if (!this.currentFilterValue) return true;
 		const searchTerm = this.currentFilterValue.toLowerCase();
-		const title = (data.title || (data.meta?.title as string) || "").toLowerCase();
+		const title = (data.title || (data.meta?.["title"] as string) || "").toLowerCase();
 		return title.includes(searchTerm);
 	}
 }

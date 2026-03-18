@@ -46,7 +46,7 @@ function createMockSettingsStore(overrides: Record<string, unknown> = {}) {
 	return {
 		currentSettings: settings,
 		settings$: subject.asObservable(),
-		updateSettings: vi.fn(async (updater: (s: any) => any) => {
+		updateSettings: vi.fn(async (updater: (s: unknown) => unknown) => {
 			const newSettings = updater(settings);
 			Object.assign(settings, newSettings);
 			subject.next(settings);

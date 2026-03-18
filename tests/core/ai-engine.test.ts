@@ -72,7 +72,7 @@ function makeCategoryBundle(
 		settingsStore: {
 			currentSettings: { categoryAssignmentPresets: presets },
 		},
-	} as unknown as CalendarBundle;
+	} as any as CalendarBundle;
 }
 
 function makeMockPlugin() {
@@ -366,17 +366,14 @@ describe("buildCommandForOperation", () => {
 		});
 	});
 
-	it("should pass undefined for missing optional create fields", () => {
+	it("should omit missing optional create fields", () => {
 		const { plugin } = makeMockPlugin();
 		buildCommandForOperation(plugin, VALID_CREATE);
-		expect(plugin.apiManager.buildCreateEventCommand).toHaveBeenCalledWith(
-			expect.objectContaining({
-				allDay: undefined,
-				categories: undefined,
-				location: undefined,
-				participants: undefined,
-			})
-		);
+		const callArg = plugin.apiManager.buildCreateEventCommand.mock.calls[0][0];
+		expect(callArg).not.toHaveProperty("allDay");
+		expect(callArg).not.toHaveProperty("categories");
+		expect(callArg).not.toHaveProperty("location");
+		expect(callArg).not.toHaveProperty("participants");
 	});
 
 	it("should pass all edit fields including optionals", () => {

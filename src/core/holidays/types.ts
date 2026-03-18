@@ -13,6 +13,12 @@ export interface HolidayProvider {
 	list(year: number): Promise<HolidayEvent[]>;
 }
 
-export interface HolidayConfig extends HolidaysTypes.Country, HolidaysTypes.Options {
+export interface HolidayConfig {
 	enabled: boolean;
+	country: string;
+	state?: string;
+	region?: string;
+	languages?: string | string[];
+	timezone?: string;
+	types?: HolidayType[];
 }

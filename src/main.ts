@@ -41,7 +41,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		return this.licenseManager.isPro;
 	}
 
-	async onload() {
+	override async onload() {
 		this.settingsStore = new SettingsStore(this, CustomCalendarSettingsSchema);
 		await this.settingsStore.loadSettings();
 
@@ -80,7 +80,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		});
 	}
 
-	onunload(): void {
+	override onunload(): void {
 		this.licenseSubscription?.unsubscribe();
 		this.licenseSubscription = null;
 		MinimizedModalManager.clear();

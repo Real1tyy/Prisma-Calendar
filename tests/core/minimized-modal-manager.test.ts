@@ -594,8 +594,6 @@ describe("MinimizedModalManager", () => {
 			const state = createMockState({
 				allDay: true,
 				date: "2025-01-15",
-				startDate: undefined,
-				endDate: undefined,
 			});
 
 			MinimizedModalManager.saveState(state, mockBundle as CalendarBundle);

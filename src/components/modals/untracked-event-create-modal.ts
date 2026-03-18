@@ -12,7 +12,7 @@ export class UntrackedEventCreateModal extends Modal {
 		super(app);
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass("prisma-untracked-event-modal");
@@ -41,7 +41,7 @@ export class UntrackedEventCreateModal extends Modal {
 		requestAnimationFrame(() => this.titleInput.focus());
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		this.contentEl.empty();
 	}
 

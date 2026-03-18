@@ -18,12 +18,14 @@ import { categorizeProperties } from "../utils/format";
 export interface PreviewEventData {
 	title: string;
 	start: Date | null;
-	end?: Date | null;
+	end?: Date | null | undefined;
 	allDay: boolean;
-	extendedProps?: {
-		filePath?: string;
-		[key: string]: unknown;
-	};
+	extendedProps?:
+		| {
+				filePath?: string;
+				[key: string]: unknown;
+		  }
+		| undefined;
 }
 
 export class EventPreviewModal extends Modal {
@@ -39,7 +41,7 @@ export class EventPreviewModal extends Modal {
 		this.event = event;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		addCls(contentEl, "event-preview-modal");
 
@@ -47,7 +49,7 @@ export class EventPreviewModal extends Modal {
 		this.renderEventPreview();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

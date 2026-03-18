@@ -73,7 +73,7 @@ export class EventSeriesModal extends Modal {
 		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		addCls(contentEl, "recurring-events-list-modal");
 
@@ -84,7 +84,7 @@ export class EventSeriesModal extends Modal {
 
 		// If only one category, auto-select it
 		if (this.categoryValues && this.categoryValues.length === 1) {
-			this.selectedCategoryValue = this.categoryValues[0];
+			this.selectedCategoryValue = this.categoryValues[0]!;
 		}
 
 		// Render tab buttons only when 2+ sources
@@ -118,7 +118,7 @@ export class EventSeriesModal extends Modal {
 		this.renderContent();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
 		this.colorEvaluator.destroy();
 		this.contentEl.empty();
@@ -313,16 +313,21 @@ export class EventSeriesModal extends Modal {
 	private renderEventListTab(events: CalendarEvent[], title?: string): void {
 		const isCategory = this.activeTab === "category";
 
-		const items: EventListItem[] = events.map((event) => ({
-			date: DateTime.fromISO(event.start, { zone: "utc" }),
-			title: removeZettelId(event.title),
-			filePath: event.ref.filePath,
-			skipped: !!event.skipped,
-			color: isCategory ? undefined : this.getEventColor(event),
-		}));
+		const items: EventListItem[] = events.map((event) => {
+			const item: EventListItem = {
+				date: DateTime.fromISO(event.start, { zone: "utc" }),
+				title: removeZettelId(event.title),
+				filePath: event.ref.filePath,
+				skipped: !!event.skipped,
+			};
+			if (!isCategory) {
+				item.color = this.getEventColor(event);
+			}
+			return item;
+		});
 
 		this.renderEventList(items, {
-			title,
+			title: title ?? "",
 			hidePast: isCategory ? this.hidePastEventsCategory : this.hidePastEventsNameProp,
 			hideSkipped: isCategory ? this.hideSkippedEventsCategory : this.hideSkippedEventsNameProp,
 			onHidePastChange: (v) => {
@@ -496,7 +501,7 @@ export class EventSeriesModal extends Modal {
 		// Trigger search on blur (clicking away)
 		this.searchInput.addEventListener("blur", () => {
 			// Only re-render if the displayed results don't match current query
-			const displayedQuery = this.searchInput?.dataset.appliedQuery ?? "";
+			const displayedQuery = this.searchInput?.dataset["appliedQuery"] ?? "";
 			if (displayedQuery !== this.searchQuery) {
 				this.renderContent();
 			}
@@ -510,7 +515,7 @@ export class EventSeriesModal extends Modal {
 		}
 
 		// Track which query the current render reflects
-		this.searchInput.dataset.appliedQuery = this.searchQuery;
+		this.searchInput.dataset["appliedQuery"] = this.searchQuery;
 	}
 
 	// ─── Bases Footer ────────────────────────────────────────────
@@ -595,7 +600,7 @@ export class EventSeriesModal extends Modal {
 		}
 
 		if (events.length > 0) {
-			showHeatmapModal(this.app, this.bundle, { events, title, categoryColor });
+			showHeatmapModal(this.app, this.bundle, { events, title, ...(categoryColor ? { categoryColor } : {}) });
 		}
 	}
 

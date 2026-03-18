@@ -300,7 +300,7 @@ class RenameCalendarModal extends Modal {
 		this.onSubmit = onSubmit;
 	}
 
-	onOpen() {
+	override onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.createEl("h2", { text: "Rename calendar" });
@@ -353,7 +353,7 @@ class RenameCalendarModal extends Modal {
 		this.close();
 	}
 
-	onClose() {
+	override onClose() {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

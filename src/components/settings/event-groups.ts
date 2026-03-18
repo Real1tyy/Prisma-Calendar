@@ -9,7 +9,7 @@ export class EventGroupsSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 	private currentContainer: HTMLElement | null = null;
 
-	constructor(private settingsStore: CalendarSettingsStore) {
+	constructor(settingsStore: CalendarSettingsStore) {
 		this.ui = new SettingsUIBuilder(settingsStore as never);
 	}
 

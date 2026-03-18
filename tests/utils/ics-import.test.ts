@@ -444,9 +444,9 @@ END:VCALENDAR`;
 
 				expect(result.success).toBe(true);
 				expect(result.events[0].frontmatter).toBeDefined();
-				expect(result.events[0].frontmatter?.Title).toBe("My Custom Title");
-				expect(result.events[0].frontmatter?.priority).toBe(1);
-				expect(result.events[0].frontmatter?.completed).toBe(false);
+				expect(result.events[0].frontmatter?.["Title"]).toBe("My Custom Title");
+				expect(result.events[0].frontmatter?.["priority"]).toBe(1);
+				expect(result.events[0].frontmatter?.["completed"]).toBe(false);
 			});
 
 			it("should parse JSON array values from X-PRISMA-FM-* properties", () => {
@@ -463,7 +463,7 @@ END:VCALENDAR`;
 				const result = parseICSContent(icsWithArray);
 
 				expect(result.success).toBe(true);
-				expect(result.events[0].frontmatter?.tags).toEqual(["work", "meeting", "important"]);
+				expect(result.events[0].frontmatter?.["tags"]).toEqual(["work", "meeting", "important"]);
 			});
 
 			it("should return undefined frontmatter when no X-PRISMA-FM-* properties", () => {
@@ -505,10 +505,10 @@ END:VCALENDAR`;
 
 			const importedEvent = importResult.events[0];
 			expect(importedEvent.frontmatter).toBeDefined();
-			expect(importedEvent.frontmatter?.completed).toBe(originalMeta.completed);
-			expect(importedEvent.frontmatter?.priority).toBe(originalMeta.priority);
-			expect(importedEvent.frontmatter?.location).toBe(originalMeta.location);
-			expect(importedEvent.frontmatter?.tags).toEqual(originalMeta.tags);
+			expect(importedEvent.frontmatter?.["completed"]).toBe(originalMeta.completed);
+			expect(importedEvent.frontmatter?.["priority"]).toBe(originalMeta.priority);
+			expect(importedEvent.frontmatter?.["location"]).toBe(originalMeta.location);
+			expect(importedEvent.frontmatter?.["tags"]).toEqual(originalMeta.tags);
 		});
 
 		it("should NOT include standard properties in X-PRISMA-FM-* (they use standard ICS fields)", () => {
@@ -532,9 +532,9 @@ END:VCALENDAR`;
 			expect(importedEvent.frontmatter?.["Start Date"]).toBeUndefined();
 			expect(importedEvent.frontmatter?.["End Date"]).toBeUndefined();
 			expect(importedEvent.frontmatter?.["Minutes Before"]).toBeUndefined();
-			expect(importedEvent.frontmatter?.Category).toBeUndefined();
+			expect(importedEvent.frontmatter?.["Category"]).toBeUndefined();
 			// Custom properties SHOULD be preserved
-			expect(importedEvent.frontmatter?.customProp).toBe("should be preserved");
+			expect(importedEvent.frontmatter?.["customProp"]).toBe("should be preserved");
 		});
 
 		it("should preserve original file path through round-trip", () => {
@@ -602,12 +602,12 @@ END:VCALENDAR`;
 			expect(imported.end?.toISOString()).toBe("2025-09-07T14:41:26.000Z");
 			expect(imported.reminderMinutes).toBe(1);
 			// Custom properties are restored from X-PRISMA-FM-*
-			expect(imported.frontmatter?.customNote).toBe("This is a custom property");
+			expect(imported.frontmatter?.["customNote"]).toBe("This is a custom property");
 		});
 	});
 
 	describe("timezone conversion on import", () => {
-		const defaultSettings: SingleCalendarConfig = {
+		const defaultSettings = {
 			...createMockSingleCalendarSettings(),
 			startProp: "Start Date",
 			endProp: "End Date",
@@ -625,7 +625,7 @@ END:VCALENDAR`;
 				end: new Date("2025-01-15T14:00:00.000Z"),
 			});
 
-			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "UTC");
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings as SingleCalendarConfig, "UTC");
 
 			expect(fm["Start Date"]).toBe("2025-01-15T13:00:00.000Z");
 			expect(fm["End Date"]).toBe("2025-01-15T14:00:00.000Z");
@@ -637,7 +637,7 @@ END:VCALENDAR`;
 				end: new Date("2025-01-15T14:00:00.000Z"),
 			});
 
-			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "Europe/Berlin");
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings as SingleCalendarConfig, "Europe/Berlin");
 
 			// UTC 13:00 = 14:00 in Berlin → stored as 14:00.000Z (local time normalized to UTC)
 			expect(fm["Start Date"]).toBe("2025-01-15T14:00:00.000Z");
@@ -650,7 +650,7 @@ END:VCALENDAR`;
 				end: new Date("2025-01-15T14:00:00.000Z"),
 			});
 
-			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "America/New_York");
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings as SingleCalendarConfig, "America/New_York");
 
 			// UTC 13:00 = 08:00 in New York → stored as 08:00.000Z (local time normalized to UTC)
 			expect(fm["Start Date"]).toBe("2025-01-15T08:00:00.000Z");
@@ -663,10 +663,10 @@ END:VCALENDAR`;
 				allDay: true,
 			});
 
-			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "UTC");
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings as SingleCalendarConfig, "UTC");
 
 			expect(fm["All Day"]).toBe(true);
-			expect(fm.Date).toBe("2025-01-15");
+			expect(fm["Date"]).toBe("2025-01-15");
 		});
 
 		it("should preserve all-day event date in Europe/Berlin timezone", () => {
@@ -676,10 +676,10 @@ END:VCALENDAR`;
 				allDay: true,
 			});
 
-			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "Europe/Berlin");
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings as SingleCalendarConfig, "Europe/Berlin");
 
 			expect(fm["All Day"]).toBe(true);
-			expect(fm.Date).toBe("2025-01-15");
+			expect(fm["Date"]).toBe("2025-01-15");
 		});
 
 		it("should handle all-day event near date boundary correctly", () => {
@@ -689,11 +689,11 @@ END:VCALENDAR`;
 				allDay: true,
 			});
 
-			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "Europe/Berlin");
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings as SingleCalendarConfig, "Europe/Berlin");
 
 			expect(fm["All Day"]).toBe(true);
 			// Should be the 15th in Berlin timezone
-			expect(fm.Date).toBe("2025-01-15");
+			expect(fm["Date"]).toBe("2025-01-15");
 		});
 
 		it("should include location in frontmatter when present", () => {
@@ -706,24 +706,22 @@ END:VCALENDAR`;
 				locationProp: "Location",
 			};
 
-			const fm = buildFrontmatterFromImportedEvent(event, settings, "UTC");
+			const fm = buildFrontmatterFromImportedEvent(event, settings as SingleCalendarConfig, "UTC");
 
-			expect(fm.Location).toBe("Conference Room A");
+			expect(fm["Location"]).toBe("Conference Room A");
 		});
 
 		it("should not include location in frontmatter when not present", () => {
-			const event = createImportedEvent({
-				location: undefined,
-			});
+			const event = createImportedEvent({});
 
 			const settings = {
 				...defaultSettings,
 				locationProp: "Location",
 			};
 
-			const fm = buildFrontmatterFromImportedEvent(event, settings, "UTC");
+			const fm = buildFrontmatterFromImportedEvent(event, settings as SingleCalendarConfig, "UTC");
 
-			expect(fm.Location).toBeUndefined();
+			expect(fm["Location"]).toBeUndefined();
 		});
 
 		it("should include participants in frontmatter when present", () => {
@@ -736,9 +734,9 @@ END:VCALENDAR`;
 				participantsProp: "Participants",
 			};
 
-			const fm = buildFrontmatterFromImportedEvent(event, settings, "UTC");
+			const fm = buildFrontmatterFromImportedEvent(event, settings as SingleCalendarConfig, "UTC");
 
-			expect(fm.Participants).toEqual(["Alice", "Bob", "Charlie"]);
+			expect(fm["Participants"]).toEqual(["Alice", "Bob", "Charlie"]);
 		});
 
 		it("should handle single participant", () => {
@@ -751,24 +749,22 @@ END:VCALENDAR`;
 				participantsProp: "Participants",
 			};
 
-			const fm = buildFrontmatterFromImportedEvent(event, settings, "UTC");
+			const fm = buildFrontmatterFromImportedEvent(event, settings as SingleCalendarConfig, "UTC");
 
-			expect(fm.Participants).toEqual(["Alice"]);
+			expect(fm["Participants"]).toEqual(["Alice"]);
 		});
 
 		it("should not include participants when not present", () => {
-			const event = createImportedEvent({
-				participants: undefined,
-			});
+			const event = createImportedEvent({});
 
 			const settings = {
 				...defaultSettings,
 				participantsProp: "Participants",
 			};
 
-			const fm = buildFrontmatterFromImportedEvent(event, settings, "UTC");
+			const fm = buildFrontmatterFromImportedEvent(event, settings as SingleCalendarConfig, "UTC");
 
-			expect(fm.Participants).toBeUndefined();
+			expect(fm["Participants"]).toBeUndefined();
 		});
 	});
 
@@ -1016,7 +1012,7 @@ END:VCALENDAR`;
 	});
 
 	describe("buildFrontmatterFromImportedEvent with RRULE", () => {
-		const defaultSettings: SingleCalendarConfig = {
+		const defaultSettings = {
 			...createMockSingleCalendarSettings(),
 			startProp: "Start Date",
 			endProp: "End Date",
@@ -1033,7 +1029,7 @@ END:VCALENDAR`;
 				rrule: { type: "DAILY;INTERVAL=1" },
 			});
 
-			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "UTC");
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings as SingleCalendarConfig, "UTC");
 
 			expect(fm[defaultSettings.rruleProp]).toBe("DAILY;INTERVAL=1");
 			expect(fm[defaultSettings.rruleSpecProp]).toBeUndefined();
@@ -1044,7 +1040,7 @@ END:VCALENDAR`;
 				rrule: { type: "WEEKLY;INTERVAL=1" },
 			});
 
-			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "UTC");
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings as SingleCalendarConfig, "UTC");
 
 			expect(fm[defaultSettings.rruleProp]).toBe("WEEKLY;INTERVAL=1");
 			expect(fm[defaultSettings.rruleSpecProp]).toBeUndefined();
@@ -1053,7 +1049,7 @@ END:VCALENDAR`;
 		it("should not set rrule properties when rrule is absent", () => {
 			const event = createImportedEvent();
 
-			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings, "UTC");
+			const fm = buildFrontmatterFromImportedEvent(event, defaultSettings as SingleCalendarConfig, "UTC");
 
 			expect(fm[defaultSettings.rruleProp]).toBeUndefined();
 			expect(fm[defaultSettings.rruleSpecProp]).toBeUndefined();

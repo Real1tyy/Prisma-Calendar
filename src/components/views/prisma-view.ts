@@ -59,11 +59,13 @@ export function registerPrismaCalendarView(
 			ref.tabbedHandle = createTabbedContainer(el, {
 				tabs,
 				cssPrefix: "prisma-",
-				tabBarContainer: headerEl,
-				tabBarInsertBefore: titleContainer,
+				...(headerEl ? { tabBarContainer: headerEl } : {}),
+				...(titleContainer ? { tabBarInsertBefore: titleContainer } : {}),
 				editable: true,
 				app,
-				initialState: bundle.settingsStore.currentSettings.activeTab,
+				...(bundle.settingsStore.currentSettings.activeTab
+					? { initialState: bundle.settingsStore.currentSettings.activeTab }
+					: {}),
 				onStateChange: (state) => {
 					void bundle.settingsStore.updateSettings((s) => ({ ...s, activeTab: state }));
 				},

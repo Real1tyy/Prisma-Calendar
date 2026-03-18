@@ -16,7 +16,7 @@ export class MoveByModal extends Modal {
 		this.onSubmit = onSubmit;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		addCls(contentEl, "move-by-modal");
@@ -146,7 +146,7 @@ export class MoveByModal extends Modal {
 		this.close();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

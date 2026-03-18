@@ -28,7 +28,7 @@ export abstract class StatsModal extends Modal {
 		void this.renderContent();
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		addCls(contentEl, "weekly-stats-modal");
@@ -102,7 +102,7 @@ export abstract class StatsModal extends Modal {
 		this.createAggregationToggle(aggregationToggle);
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		this.destroyComponents();
 		const { contentEl } = this;
 		contentEl.empty();

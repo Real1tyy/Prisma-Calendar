@@ -23,7 +23,7 @@ export class SavePresetModal extends Modal {
 		this.onSave = onSave;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 
@@ -111,7 +111,7 @@ export class SavePresetModal extends Modal {
 		this.close();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

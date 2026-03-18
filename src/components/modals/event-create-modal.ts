@@ -24,7 +24,7 @@ export class EventCreateModal extends BaseEventModal {
 		return "Create";
 	}
 
-	protected getModalType(): "create" | "edit" {
+	protected override getModalType(): "create" | "edit" {
 		return "create";
 	}
 
@@ -33,7 +33,7 @@ export class EventCreateModal extends BaseEventModal {
 		return Promise.resolve();
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		super.onOpen();
 
 		if (this.autoStartStopwatch && this.stopwatch) {
@@ -44,7 +44,7 @@ export class EventCreateModal extends BaseEventModal {
 		}
 	}
 
-	protected applyDefaultPreset(): void {
+	protected override applyDefaultPreset(): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		if (settings.defaultPresetId) {

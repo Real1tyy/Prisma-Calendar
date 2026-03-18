@@ -9,10 +9,10 @@ export class ZoomManager {
 	private settingsStore: CalendarSettingsStore;
 	private container: HTMLElement | null = null;
 	private viewContainerEl: HTMLElement | null = null;
-	private wheelListener?: (e: WheelEvent) => void;
-	private updateTimeout?: ReturnType<typeof setTimeout>;
+	private wheelListener?: ((e: WheelEvent) => void) | undefined;
+	private updateTimeout?: ReturnType<typeof setTimeout> | undefined;
 	private currentZoomLevel: number;
-	private onZoomChangeCallback?: () => void;
+	private onZoomChangeCallback?: (() => void) | undefined;
 
 	// ─── Lifecycle ───────────────────────────────────────────────
 

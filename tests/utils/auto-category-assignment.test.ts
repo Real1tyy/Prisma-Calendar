@@ -548,7 +548,7 @@ describe("Auto-Category Assignment", () => {
 					...mockSettings,
 					autoAssignCategoryByName: false,
 					categoryAssignmentPresets: undefined,
-				} as unknown as SingleCalendarConfig;
+				} as any as SingleCalendarConfig;
 
 				expect(autoAssignCategories("Health", settings, availableCategories, true)).toEqual([]);
 			});

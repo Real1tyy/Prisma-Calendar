@@ -61,11 +61,11 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		return "Prisma AI";
 	}
 
-	getIcon(): string {
+	override getIcon(): string {
 		return "bot";
 	}
 
-	async mount(): Promise<void> {
+	override async mount(): Promise<void> {
 		if (!this.plugin.isProEnabled) {
 			const container = this.containerEl.children[1] as HTMLElement;
 			container.empty();
@@ -100,7 +100,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		);
 	}
 
-	async unmount(): Promise<void> {
+	override async unmount(): Promise<void> {
 		this.markdownComponent.unload();
 		await this.chatManager.saveCurrentThread();
 	}

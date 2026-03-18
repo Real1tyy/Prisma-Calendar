@@ -12,7 +12,7 @@ import { getEventName } from "../utils/event-naming";
 import { formatDateTimeForInput, inputValueToISOString } from "../utils/format";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
-import { AssignCategoriesCommand } from "./commands/status-commands";
+import { assignCategories } from "./commands/frontmatter-update-command";
 import type { IndexerEvent } from "./indexer";
 
 /**
@@ -26,9 +26,9 @@ export type PresetFormData = Omit<EventPreset, "id" | "name" | "createdAt" | "up
  * Extends PresetFormData with date/time values for restoring modal state.
  */
 export interface FormData extends PresetFormData {
-	date?: string; // Date for all-day events (YYYY-MM-DD format)
-	startDate?: string; // Start datetime for timed events (ISO string)
-	endDate?: string; // End datetime for timed events (ISO string)
+	date?: string | undefined;
+	startDate?: string | undefined;
+	endDate?: string | undefined;
 }
 
 /**
@@ -311,7 +311,7 @@ class MinimizedModalManagerClass {
 		openCategoryAssignModal(app, categories, defaultColor, currentCategories, (selectedCategories) => {
 			void (async () => {
 				try {
-					const command = new AssignCategoriesCommand(app, bundle, state.filePath!, selectedCategories);
+					const command = assignCategories(app, bundle, state.filePath!, selectedCategories);
 					await bundle.commandManager.executeCommand(command);
 					new Notice("Categories updated for minimized event");
 				} catch (error) {

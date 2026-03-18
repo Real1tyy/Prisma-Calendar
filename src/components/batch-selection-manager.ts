@@ -96,14 +96,14 @@ export class BatchSelectionManager {
 	}
 
 	handleEventMount(eventId: string, element: HTMLElement): void {
-		element.dataset.eventId = eventId;
+		element.dataset["eventId"] = eventId;
 	}
 
 	selectAllVisibleEvents(): void {
 		const events = this.calendar.getEvents();
 
 		events
-			.filter((fcEvent) => !fcEvent.extendedProps.isVirtual)
+			.filter((fcEvent) => !fcEvent.extendedProps["isVirtual"])
 			.forEach((fcEvent) => {
 				const eventData = this.mapFCEventToCalendarEvent(fcEvent);
 				this.selectedEvents.set(fcEvent.id, eventData);
@@ -410,12 +410,12 @@ export class BatchSelectionManager {
 	}
 
 	private mapFCEventToCalendarEvent(fcEvent: EventApi): CalendarEvent {
-		const filePath = fcEvent.extendedProps.filePath as string;
-		const title = (fcEvent.extendedProps.originalTitle || fcEvent.title) as string;
+		const filePath = fcEvent.extendedProps["filePath"] as string;
+		const title = (fcEvent.extendedProps["originalTitle"] || fcEvent.title) as string;
 		const start = fcEvent.start?.toISOString() || "";
-		const isVirtual = (fcEvent.extendedProps.isVirtual as boolean) ?? false;
-		const skipped = (fcEvent.extendedProps.skipped as boolean) ?? false;
-		const meta = (fcEvent.extendedProps.frontmatterDisplayData as Record<string, unknown>) ?? {};
+		const isVirtual = (fcEvent.extendedProps["isVirtual"] as boolean) ?? false;
+		const skipped = (fcEvent.extendedProps["skipped"] as boolean) ?? false;
+		const meta = (fcEvent.extendedProps["frontmatterDisplayData"] as Record<string, unknown>) ?? {};
 
 		const baseEvent = {
 			id: fcEvent.id,
@@ -464,7 +464,7 @@ export class BatchSelectionManager {
 		const elements = calendarEl.querySelectorAll<HTMLElement>("[data-event-id]");
 		for (let i = 0; i < elements.length; i++) {
 			const el = elements[i];
-			const eventId = el.dataset.eventId;
+			const eventId = el.dataset["eventId"];
 			if (eventId) {
 				callback(el, eventId);
 			}

@@ -5,15 +5,15 @@ import { type App, Menu, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
-	AssignCategoriesCommand,
+	assignCategories,
 	CloneEventCommand,
 	DeleteEventCommand,
 	DuplicateRecurringEventCommand,
-	FillTimeCommand,
-	MarkAsDoneCommand,
-	MarkAsUndoneCommand,
-	MoveEventCommand,
-	ToggleSkipCommand,
+	fillTime,
+	markAsDone,
+	markAsUndone,
+	moveEvent,
+	toggleSkip,
 } from "../core/commands";
 import { weekDuration } from "../core/commands/batch-commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
@@ -449,7 +449,7 @@ export class EventContextMenu {
 
 		// Virtual events have rruleId in meta
 		if (kind === "virtual") {
-			const virtualRruleId = frontmatter?.rruleId;
+			const virtualRruleId = frontmatter?.["rruleId"];
 			return typeof virtualRruleId === "string" ? virtualRruleId : null;
 		}
 
@@ -571,18 +571,16 @@ export class EventContextMenu {
 
 	private editSourceEvent(event: CalendarEventInfo): void {
 		this.withSourceEvent(event, (sourceEvent) => {
-			const sourceEventInfo = {
+			this.openEditModal({
 				title: sourceEvent.title,
 				start: sourceEvent.start,
-				end: isTimedEvent(sourceEvent) ? sourceEvent.end : undefined,
+				...(isTimedEvent(sourceEvent) ? { end: sourceEvent.end } : {}),
 				allDay: sourceEvent.allDay,
 				extendedProps: {
 					filePath: sourceEvent.ref.filePath,
 					frontmatterDisplayData: sourceEvent.meta,
 				},
-			};
-
-			this.openEditModal(sourceEventInfo);
+			});
 		});
 	}
 
@@ -630,7 +628,7 @@ export class EventContextMenu {
 
 	async markEventAsDone(event: CalendarEventInfo): Promise<void> {
 		await this.withFilePath(event, "mark event as done", async (filePath) => {
-			await this.runCommand(() => new MarkAsDoneCommand(this.app, this.bundle, filePath), {
+			await this.runCommand(() => markAsDone(this.app, this.bundle, filePath), {
 				success: "Event marked as done",
 				error: "Failed to mark event as done",
 			});
@@ -639,7 +637,7 @@ export class EventContextMenu {
 
 	async markEventAsUndone(event: CalendarEventInfo): Promise<void> {
 		await this.withFilePath(event, "mark event as undone", async (filePath) => {
-			await this.runCommand(() => new MarkAsUndoneCommand(this.app, this.bundle, filePath), {
+			await this.runCommand(() => markAsUndone(this.app, this.bundle, filePath), {
 				success: "Event marked as undone",
 				error: "Failed to mark event as undone",
 			});
@@ -713,7 +711,7 @@ export class EventContextMenu {
 					}
 
 					const offset = { [result.unit]: result.value };
-					await this.runCommand(() => new MoveEventCommand(this.app, this.bundle, filePath, offset, offset), {
+					await this.runCommand(() => moveEvent(this.app, this.bundle, filePath, offset, offset), {
 						success: `Event moved by ${result.value} ${result.unit}`,
 						error: "Failed to move event",
 					});
@@ -727,7 +725,7 @@ export class EventContextMenu {
 
 		await this.withFilePath(event, "move event", async (filePath) => {
 			const offset = weekDuration(weeks);
-			await this.runCommand(() => new MoveEventCommand(this.app, this.bundle, filePath, offset, offset), {
+			await this.runCommand(() => moveEvent(this.app, this.bundle, filePath, offset, offset), {
 				success: `Event moved to ${direction} week`,
 				error: "Failed to move event",
 			});
@@ -768,7 +766,7 @@ export class EventContextMenu {
 			const rruleId = willBeDisabled ? this.getRRuleId(event) : null;
 
 			await this.handlePhysicalInstancesIfNeeded(rruleId, async () => {
-				await this.runCommand(() => new ToggleSkipCommand(this.app, this.bundle, sourceFilePath), {
+				await this.runCommand(() => toggleSkip(this.app, this.bundle, sourceFilePath), {
 					success: "Recurring event toggled",
 					error: "Failed to toggle recurring event",
 				});
@@ -804,7 +802,7 @@ export class EventContextMenu {
 
 	async toggleSkipEvent(event: CalendarEventInfo): Promise<void> {
 		await this.withFilePath(event, "toggle skip event", async (filePath) => {
-			await this.runCommand(() => new ToggleSkipCommand(this.app, this.bundle, filePath), {
+			await this.runCommand(() => toggleSkip(this.app, this.bundle, filePath), {
 				success: "Event skip toggled",
 				error: "Failed to toggle skip event",
 			});
@@ -837,7 +835,7 @@ export class EventContextMenu {
 			const categories = this.bundle.categoryTracker.getCategoriesWithColors();
 
 			openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, currentCategories, (selected) => {
-				void this.runCommand(() => new AssignCategoriesCommand(this.app, this.bundle, filePath, selected), {
+				void this.runCommand(() => assignCategories(this.app, this.bundle, filePath, selected), {
 					success: "Categories updated",
 					error: "Failed to assign categories",
 				});
@@ -873,7 +871,7 @@ export class EventContextMenu {
 		const settings = this.bundle.settingsStore.currentSettings;
 		await this.withFilePath(event, "fill start time", async (filePath) => {
 			const now = toLocalISOString(new Date());
-			await this.runCommand(() => new FillTimeCommand(this.app, this.bundle, filePath, settings.startProp, now), {
+			await this.runCommand(() => fillTime(this.app, filePath, settings.startProp, now), {
 				success: "Start time filled from current time",
 				error: "Failed to fill start time",
 			});
@@ -884,7 +882,7 @@ export class EventContextMenu {
 		const settings = this.bundle.settingsStore.currentSettings;
 		await this.withFilePath(event, "fill end time", async (filePath) => {
 			const now = toLocalISOString(new Date());
-			await this.runCommand(() => new FillTimeCommand(this.app, this.bundle, filePath, settings.endProp, now), {
+			await this.runCommand(() => fillTime(this.app, filePath, settings.endProp, now), {
 				success: "End time filled from current time",
 				error: "Failed to fill end time",
 			});
@@ -927,13 +925,10 @@ export class EventContextMenu {
 
 			const timeValueISO = new Date(timeValue).toISOString();
 
-			await this.runCommand(
-				() => new FillTimeCommand(this.app, this.bundle, filePath, config.propertyName, timeValueISO),
-				{
-					success: config.successMessage,
-					error: config.errorMessage,
-				}
-			);
+			await this.runCommand(() => fillTime(this.app, filePath, config.propertyName, timeValueISO), {
+				success: config.successMessage,
+				error: config.errorMessage,
+			});
 		});
 	}
 

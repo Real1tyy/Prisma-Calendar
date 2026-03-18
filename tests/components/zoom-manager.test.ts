@@ -45,7 +45,7 @@ describe("ZoomManager", () => {
 				type: "timeGridWeek",
 			},
 			setOption: vi.fn(),
-		} as unknown as Calendar;
+		} as any as Calendar;
 
 		zoomManager = new ZoomManager(mockSettingsStore);
 	});
@@ -139,7 +139,7 @@ describe("ZoomManager", () => {
 				el: document.body,
 				view: { type: "timeGridWeek" },
 				setOption: vi.fn(),
-			} as unknown as Calendar;
+			} as any as Calendar;
 
 			const manager = new ZoomManager(mockSettingsStore);
 			manager.initialize(timeGridCalendar, mockContainer, mockViewContainerEl);
@@ -155,7 +155,7 @@ describe("ZoomManager", () => {
 				el: document.body,
 				view: { type: "dayGridMonth" },
 				setOption: vi.fn(),
-			} as unknown as Calendar;
+			} as any as Calendar;
 
 			const manager = new ZoomManager(mockSettingsStore);
 			manager.initialize(monthViewCalendar, mockContainer, mockViewContainerEl);
@@ -290,7 +290,7 @@ describe("ZoomManager", () => {
 				el: document.body,
 				view: { type: "dayGridMonth" },
 				setOption: vi.fn(),
-			} as unknown as Calendar;
+			} as any as Calendar;
 
 			const manager = new ZoomManager(mockSettingsStore);
 			manager.initialize(monthViewCalendar, mockContainer, mockViewContainerEl);
@@ -503,7 +503,7 @@ describe("ZoomManager", () => {
 				el: document.body,
 				view: undefined,
 				setOption: vi.fn(),
-			} as unknown as Calendar;
+			} as any as Calendar;
 
 			const managerWithoutView = new ZoomManager(mockSettingsStore);
 			managerWithoutView.initialize(calendarWithoutView, mockContainer, mockViewContainerEl);

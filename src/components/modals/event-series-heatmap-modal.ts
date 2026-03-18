@@ -185,7 +185,7 @@ export function renderHeatmapInto(
 			year,
 			month,
 			firstDayOfWeek,
-			categoryColor: config.categoryColor,
+			...(config.categoryColor ? { categoryColor: config.categoryColor } : {}),
 			onDayClick: (date, events) => showDayDetail(date, events),
 		});
 	}

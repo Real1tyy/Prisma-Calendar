@@ -171,7 +171,7 @@ export interface NodeRecurringEvent {
 	rrules: RRuleFrontmatter;
 	frontmatter: Frontmatter;
 	metadata: EventMetadata;
-	content?: string;
+	content?: string | undefined;
 }
 
 export interface RecurringEventInstance {
@@ -183,9 +183,9 @@ export interface RecurringEventSeries {
 	sourceTitle: string;
 	sourceFilePath: string;
 	instances: RecurringEventInstance[];
-	rruleType?: string;
-	rruleSpec?: string;
-	sourceCategory?: string;
+	rruleType?: string | undefined;
+	rruleSpec?: string | undefined;
+	sourceCategory?: string | undefined;
 }
 
 export function parseRRuleFromFrontmatter(

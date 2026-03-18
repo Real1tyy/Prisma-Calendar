@@ -2,6 +2,7 @@ import { type Command, MacroCommand } from "@real1ty-obsidian-plugins";
 
 import type CustomCalendarPlugin from "../../main";
 import { type AIOperation, AIOperationsSchema } from "../../types/ai-operation-schemas";
+import type { PrismaCreateEventInput, PrismaEditEventInput, PrismaEventInput } from "../api/types";
 import type { CalendarBundle } from "../calendar-bundle";
 import {
 	buildCalendarContext,
@@ -153,35 +154,38 @@ export function parseOperations(response: string): AIOperation[] | null {
 
 // ─── Command Building ───────────────────────────────────────
 
+function applyOptionalFields(
+	input: PrismaEventInput,
+	op: {
+		allDay?: boolean | undefined;
+		categories?: string[] | undefined;
+		location?: string | undefined;
+		participants?: string[] | undefined;
+	}
+): void {
+	if (op.allDay !== undefined) input.allDay = op.allDay;
+	if (op.categories !== undefined) input.categories = op.categories;
+	if (op.location !== undefined) input.location = op.location;
+	if (op.participants !== undefined) input.participants = op.participants;
+}
+
 export function buildCommandForOperation(
 	plugin: CustomCalendarPlugin,
 	op: AIOperation
 ): { command: Command; bundle: CalendarBundle } | null {
 	if (op.type === "create") {
-		return plugin.apiManager.buildCreateEventCommand({
-			title: op.title,
-			start: op.start,
-			end: op.end,
-			allDay: op.allDay,
-			categories: op.categories,
-			location: op.location,
-			participants: op.participants,
-		});
+		const input: PrismaCreateEventInput = { title: op.title, start: op.start, end: op.end };
+		applyOptionalFields(input, op);
+		return plugin.apiManager.buildCreateEventCommand(input);
 	} else if (op.type === "edit") {
-		return plugin.apiManager.buildEditEventCommand({
-			filePath: op.filePath,
-			title: op.title,
-			start: op.start,
-			end: op.end,
-			allDay: op.allDay,
-			categories: op.categories,
-			location: op.location,
-			participants: op.participants,
-		});
+		const input: PrismaEditEventInput = { filePath: op.filePath };
+		if (op.title !== undefined) input.title = op.title;
+		if (op.start !== undefined) input.start = op.start;
+		if (op.end !== undefined) input.end = op.end;
+		applyOptionalFields(input, op);
+		return plugin.apiManager.buildEditEventCommand(input);
 	} else {
-		return plugin.apiManager.buildDeleteEventCommand({
-			filePath: op.filePath,
-		});
+		return plugin.apiManager.buildDeleteEventCommand({ filePath: op.filePath });
 	}
 }
 

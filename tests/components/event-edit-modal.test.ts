@@ -11,7 +11,7 @@ describe("EventEditModal - Custom Properties", () => {
 	let updateEventMock: ReturnType<typeof vi.fn>;
 
 	beforeEach(() => {
-		mockApp = createMockIntegrationApp() as unknown as App;
+		mockApp = createMockIntegrationApp() as any as App;
 
 		updateEventMock = vi.fn().mockResolvedValue(null);
 
@@ -37,7 +37,7 @@ describe("EventEditModal - Custom Properties", () => {
 				getCategories: vi.fn().mockReturnValue(["Work", "Personal", "Meeting"]),
 			},
 			updateEvent: updateEventMock,
-		} as unknown as CalendarBundle;
+		} as any as CalendarBundle;
 	});
 
 	describe("loadCustomPropertiesData", () => {
@@ -88,7 +88,7 @@ describe("EventEditModal - Custom Properties", () => {
 			// This would be called during modal initialization
 			// We're testing the serialization/deserialization cycle
 			const serialized = modal.originalFrontmatter;
-			expect(Array.isArray(serialized.Tags)).toBe(true);
+			expect(Array.isArray(serialized["Tags"])).toBe(true);
 			expect(Array.isArray(serialized["Empty Array"])).toBe(true);
 		});
 
@@ -105,8 +105,8 @@ describe("EventEditModal - Custom Properties", () => {
 				Disabled: false,
 			};
 
-			expect(typeof modal.originalFrontmatter.Enabled).toBe("boolean");
-			expect(typeof modal.originalFrontmatter.Disabled).toBe("boolean");
+			expect(typeof modal.originalFrontmatter["Enabled"]).toBe("boolean");
+			expect(typeof modal.originalFrontmatter["Disabled"]).toBe("boolean");
 		});
 
 		it("should preserve number types", () => {
@@ -123,9 +123,9 @@ describe("EventEditModal - Custom Properties", () => {
 				Negative: -10,
 			};
 
-			expect(typeof modal.originalFrontmatter.Count).toBe("number");
-			expect(typeof modal.originalFrontmatter.Rating).toBe("number");
-			expect(typeof modal.originalFrontmatter.Negative).toBe("number");
+			expect(typeof modal.originalFrontmatter["Count"]).toBe("number");
+			expect(typeof modal.originalFrontmatter["Rating"]).toBe("number");
+			expect(typeof modal.originalFrontmatter["Negative"]).toBe("number");
 		});
 	});
 
@@ -137,7 +137,7 @@ describe("EventEditModal - Custom Properties", () => {
 			mockBundle = {
 				...mockBundle,
 				updateEvent: updateEventMock,
-			} as unknown as CalendarBundle;
+			} as any as CalendarBundle;
 
 			let filePath = "original.md";
 			const setExtendedPropMock = vi.fn((name: string, value: unknown) => {
@@ -215,7 +215,7 @@ describe("EventEditModal - Custom Properties", () => {
 			// Verify onSave was called
 			expect(updateEventMock).toHaveBeenCalled();
 
-			const savedData = updateEventMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0]!;
 			const frontmatter = savedData.preservedFrontmatter;
 
 			// Property1 should still exist
@@ -258,7 +258,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = updateEventMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0]!;
 			const frontmatter = savedData.preservedFrontmatter;
 
 			// Both properties should be deleted
@@ -297,7 +297,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = updateEventMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0]!;
 			const frontmatter = savedData.preservedFrontmatter;
 
 			// Existing property should be updated
@@ -364,7 +364,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = updateEventMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0]!;
 			const frontmatter = savedData.preservedFrontmatter;
 
 			// System properties should remain
@@ -379,7 +379,7 @@ describe("EventEditModal - Custom Properties", () => {
 	describe("Category saving", () => {
 		const mockEmptyContainer = {
 			querySelectorAll: vi.fn().mockReturnValue([]),
-		} as unknown as HTMLElement;
+		} as any as HTMLElement;
 
 		it("should save single category as string", () => {
 			const event = {
@@ -408,7 +408,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = updateEventMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0]!;
 			const frontmatter = savedData.preservedFrontmatter;
 
 			expect(frontmatter.Category).toBe("Work");
@@ -440,7 +440,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = updateEventMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0]!;
 			const frontmatter = savedData.preservedFrontmatter;
 
 			expect(frontmatter.Category).toEqual(["Work", "Meeting", "Important"]);
@@ -473,7 +473,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = updateEventMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0]!;
 			const frontmatter = savedData.preservedFrontmatter;
 
 			expect(frontmatter.Category).toBe("");
@@ -506,7 +506,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			modal.saveEvent();
 
-			const savedData = updateEventMock.mock.calls[0][0];
+			const savedData = updateEventMock.mock.calls[0][0]!;
 			const frontmatter = savedData.preservedFrontmatter;
 
 			expect(frontmatter.Category).toBe("NewCategory");

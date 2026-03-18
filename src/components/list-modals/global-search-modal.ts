@@ -3,6 +3,7 @@ import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
 import type { CalendarComponent } from "../calendar-view";
@@ -81,7 +82,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		this.colorEvaluator.destroy();
 	}
 
-	protected onBeforeRender(): void {
+	protected override onBeforeRender(): void {
 		// Add custom CSS class for this modal
 		addCls(this.contentEl, "global-search-modal");
 
@@ -92,12 +93,12 @@ export class GlobalSearchModal extends BaseEventListModal {
 		this.applyFilters();
 	}
 
-	protected renderCustomHeaderElements(contentEl: HTMLElement): void {
+	protected override renderCustomHeaderElements(contentEl: HTMLElement): void {
 		// Render filter toggles after title
 		this.renderFilterToggles(contentEl);
 	}
 
-	protected filterItems(searchText: string): void {
+	protected override filterItems(searchText: string): void {
 		const normalizedSearch = searchText.toLowerCase().trim();
 
 		if (!normalizedSearch) {
@@ -144,12 +145,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		}
 	}
 
-	private formatEventSubtitle(event: {
-		allDay: boolean;
-		start: string;
-		end?: string;
-		metadata: { rruleType?: string };
-	}): string {
+	private formatEventSubtitle(event: CalendarEvent): string {
 		const parts: string[] = [];
 
 		// Event type indicator

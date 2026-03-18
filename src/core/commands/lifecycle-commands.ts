@@ -107,8 +107,7 @@ export class CreateEventCommand extends CreatedFileCommand {
 			targetDirectory: this.targetDirectory,
 			filename,
 			frontmatter,
-			templatePath: settings.templatePath,
-			useTemplater: !!settings.templatePath,
+			...(settings.templatePath ? { templatePath: settings.templatePath, useTemplater: true } : {}),
 		});
 
 		this.createdFilePath = file.path;

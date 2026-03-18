@@ -18,13 +18,13 @@ export interface CalendarContext {
 
 export interface AIEventSummary {
 	title: string;
-	filePath?: string;
+	filePath?: string | undefined;
 	start: string;
-	end?: string;
+	end?: string | undefined;
 	allDay: boolean;
-	categories?: string[];
-	location?: string;
-	status?: string;
+	categories?: string[] | undefined;
+	location?: string | undefined;
+	status?: string | undefined;
 }
 
 interface AIStatEntry {

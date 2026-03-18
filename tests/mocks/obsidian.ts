@@ -251,7 +251,7 @@ export class AbstractInputSuggest<T> extends PopoverSuggest<T> {
 		return [];
 	}
 
-	onSelect(_callback: (value: T, evt: MouseEvent | KeyboardEvent) => any): this {
+	onSelect(_callback: (value: T, evt: MouseEvent | KeyboardEvent) => unknown): this {
 		return this;
 	}
 }

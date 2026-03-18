@@ -8,8 +8,8 @@ export class DateHolidaysProvider implements HolidayProvider {
 	constructor(config: HolidayConfig) {
 		const { country, state, region, timezone, types } = config;
 		const options: HolidaysTypes.Options = {
-			timezone,
-			types,
+			...(timezone !== undefined && { timezone }),
+			...(types !== undefined && { types }),
 		};
 
 		// Initialize based on what's provided

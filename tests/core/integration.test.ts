@@ -1,6 +1,6 @@
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { EventStore } from "../../src/core/event-store";
 import { Indexer } from "../../src/core/indexer";
@@ -11,7 +11,6 @@ import { createMockFile } from "../mocks/obsidian";
 import { createMockSingleCalendarSettings, createMockSingleCalendarSettingsStore } from "../setup";
 
 describe("Integration: Indexer -> Parser -> EventStore", () => {
-	let mockVault: any;
 	let mockMetadataCache: any;
 	let settings: any;
 	let settingsStore: BehaviorSubject<any>;
@@ -33,7 +32,6 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 
 		settingsStore = createMockSingleCalendarSettingsStore(settings);
 		const mockApp = createMockIntegrationApp() as any;
-		mockVault = mockApp.vault;
 		mockMetadataCache = mockApp.metadataCache;
 		indexer = new Indexer(mockApp, settingsStore, null);
 		parser = new Parser(mockApp as App, settingsStore);
@@ -42,7 +40,7 @@ describe("Integration: Indexer -> Parser -> EventStore", () => {
 			settingsStore,
 			indexer,
 			null
-		) as unknown as RecurringEventManager;
+		) as any as RecurringEventManager;
 		eventStore = new EventStore(indexer, parser, recurringEventManager, settingsStore);
 
 		// EventStore now handles its own subscription to indexer events

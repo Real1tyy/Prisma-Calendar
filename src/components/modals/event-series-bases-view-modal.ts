@@ -20,7 +20,7 @@ export class EventSeriesBasesViewModal extends BaseBasesViewModal {
 		super(app, settings);
 	}
 
-	protected getViewType(): BaseViewType {
+	protected override getViewType(): BaseViewType {
 		return this.config.viewType;
 	}
 

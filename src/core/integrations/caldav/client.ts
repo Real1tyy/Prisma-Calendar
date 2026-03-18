@@ -1,4 +1,5 @@
 import type { App } from "obsidian";
+import type { DAVClient } from "tsdav";
 
 import type {
 	CalDAVAccount,
@@ -23,7 +24,7 @@ export interface CalDAVFetchedEvent {
 	url: string;
 	etag: string;
 	data: string;
-	uid?: string;
+	uid?: string | undefined;
 }
 
 function isOAuthCredentials(
@@ -50,7 +51,7 @@ function buildCredentials(app: App, account: CalDAVAccount): Record<string, stri
 
 // Patch global fetch only while tsdav (and its cross-fetch dependency) is being loaded.
 // cross-fetch captures the global fetch reference at import time, so we can restore immediately after.
-let tsdavImportPromise: Promise<typeof import("tsdav")> | null = null;
+let tsdavImportPromise: Promise<{ DAVClient: typeof DAVClient }> | null = null;
 async function getTsdav() {
 	if (!tsdavImportPromise) {
 		const restoreFetch = patchGlobalFetch();
@@ -62,7 +63,7 @@ async function getTsdav() {
 }
 
 export class CalDAVClientService {
-	private client: InstanceType<typeof import("tsdav").DAVClient> | null = null;
+	private client: InstanceType<typeof DAVClient> | null = null;
 	private account: CalDAVAccount;
 	private app: App;
 
@@ -125,8 +126,8 @@ export class CalDAVClientService {
 		const calendar = {
 			url: options.calendar.url,
 			displayName: options.calendar.displayName,
-			ctag: options.calendar.ctag,
-			syncToken: options.calendar.syncToken,
+			...(options.calendar.ctag !== undefined && { ctag: options.calendar.ctag }),
+			...(options.calendar.syncToken !== undefined && { syncToken: options.calendar.syncToken }),
 		};
 
 		const objects = await this.client.fetchCalendarObjects({
@@ -142,8 +143,8 @@ export class CalDAVClientService {
 		created: CalDAVFetchedEvent[];
 		updated: CalDAVFetchedEvent[];
 		deleted: string[];
-		newSyncToken?: string;
-		newCtag?: string;
+		newSyncToken?: string | undefined;
+		newCtag?: string | undefined;
 	}> {
 		if (!this.client) {
 			throw new Error("Client not initialized");
@@ -152,8 +153,8 @@ export class CalDAVClientService {
 		const collection = {
 			url: storedCalendar.url,
 			displayName: storedCalendar.displayName,
-			ctag: storedCalendar.ctag,
-			syncToken: storedCalendar.syncToken,
+			...(storedCalendar.ctag !== undefined && { ctag: storedCalendar.ctag }),
+			...(storedCalendar.syncToken !== undefined && { syncToken: storedCalendar.syncToken }),
 			objects: storedCalendar.objects.map((obj) => ({
 				url: obj.url,
 				etag: obj.etag,

@@ -78,7 +78,7 @@ export class Parser {
 			ref: { filePath },
 			title,
 			type: "allDay",
-			start: start as ISO,
+			start: start,
 			allDay: true,
 			isVirtual: false,
 			skipped: metadata.skip ?? false,

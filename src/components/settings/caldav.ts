@@ -259,7 +259,7 @@ class AddCalDAVAccountModal extends Modal {
 		super(app);
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass(cls("caldav-modal"));
@@ -545,7 +545,7 @@ class AddCalDAVAccountModal extends Modal {
 		}
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}
@@ -579,7 +579,7 @@ class EditCalDAVAccountModal extends Modal {
 		this.icon = account.icon ?? "";
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass(cls("caldav-modal"));
@@ -812,7 +812,7 @@ class EditCalDAVAccountModal extends Modal {
 		new Notice(`Deleted ${deletedCount} event(s)`);
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

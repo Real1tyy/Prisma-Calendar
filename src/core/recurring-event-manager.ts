@@ -22,7 +22,7 @@ import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
-import type { CalendarEvent, Frontmatter, ISO, PrismaSyncDataSchema } from "../types";
+import type { CalendarEvent, Frontmatter, PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
@@ -115,7 +115,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		});
 	}
 
-	destroy(): void {
+	override destroy(): void {
 		this.subscription?.unsubscribe();
 		this.subscription = null;
 		this.settingsSubscription?.unsubscribe();
@@ -411,7 +411,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 					recurringData.physicalInstances.set(dateKey, {
 						filePath,
 						instanceDate: parsedInstanceDate,
-						ignored: ignoreRecurring,
+						...(ignoreRecurring !== undefined ? { ignored: ignoreRecurring } : {}),
 					});
 					this.instanceFileToRRuleId.set(filePath, rruleId);
 					this.trackPhysicalSourceMapping(rruleId, source, filePath);
@@ -792,9 +792,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 			const uniquePath = getUniqueFilePathFromFull(this.app, filePath);
 
 			const file = await createFileAtPathAtomic(this.app, uniquePath, {
-				content: content ?? undefined,
+				...(content ? { content } : {}),
 				frontmatter: instanceFrontmatter,
-				templatePath: this.settings.templatePath,
+				...(this.settings.templatePath ? { templatePath: this.settings.templatePath } : {}),
 			});
 
 			// Don't notify here - let the batch operation handle notification
@@ -929,7 +929,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			id: `${recurringEvent.rRuleId}-${instanceDate.toISODate()}`,
 			ref: { filePath: recurringEvent.sourceFilePath },
 			title: recurringEvent.title,
-			start: start as ISO,
+			start: start,
 			isVirtual: true,
 			skipped: false,
 			metadata: {
@@ -953,7 +953,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			: {
 					...baseEvent,
 					type: "timed" as const,
-					end: (instanceEnd ? instanceEnd.toISO({ suppressMilliseconds: true }) || "" : "") as ISO,
+					end: instanceEnd ? instanceEnd.toISO({ suppressMilliseconds: true }) || "" : "",
 					allDay: false,
 				};
 	}

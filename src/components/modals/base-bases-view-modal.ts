@@ -23,7 +23,7 @@ export abstract class BaseBasesViewModal extends Modal {
 		this.component = new Component();
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		this.component.load();
 		const { contentEl } = this;
 		contentEl.empty();
@@ -39,7 +39,7 @@ export abstract class BaseBasesViewModal extends Modal {
 		void this.renderBasesView();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		this.component.unload();
 		this.contentEl.empty();
 	}

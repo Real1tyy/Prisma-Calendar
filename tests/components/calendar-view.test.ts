@@ -1,4 +1,3 @@
-import type { WorkspaceLeaf } from "obsidian";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DEFAULT_EVENT_COLOR } from "../../src/constants";
@@ -42,21 +41,12 @@ vi.mock("utils/generate", () => ({
 }));
 
 describe.skip("CalendarView", () => {
-	let _mockLeaf: WorkspaceLeaf;
 	let mockEventStore: EventStore;
 	let mockSettingsStore: CalendarSettingsStore;
 	let mockBundle: any;
 	let calendarView: any; // CalendarView;
 
 	beforeEach(() => {
-		// Mock WorkspaceLeaf
-		_mockLeaf = {
-			view: null,
-			getViewState: vi.fn(),
-			setViewState: vi.fn(),
-		} as any;
-
-		// Mock EventStore
 		mockEventStore = {
 			getEvents: vi.fn(() => []),
 			subscribe: vi.fn(() => ({ unsubscribe: vi.fn() })),
@@ -179,7 +169,7 @@ describe.skip("CalendarView", () => {
 
 	describe("Initialization and Mounting", () => {
 		it("should initialize calendar when opened", async () => {
-			const initializeCalendarSpy = vi.spyOn(calendarView as any, "initializeCalendar");
+			const initializeCalendarSpy = vi.spyOn(calendarView, "initializeCalendar");
 
 			await calendarView.onOpen();
 
@@ -237,7 +227,7 @@ describe.skip("CalendarView", () => {
 			const getEventsSpy = vi.spyOn(mockEventStore, "getEvents");
 
 			// Trigger refresh by calling the method directly
-			await (calendarView as any).refreshEvents();
+			await calendarView.refreshEvents();
 
 			expect(getEventsSpy).toHaveBeenCalled();
 		});
@@ -246,9 +236,9 @@ describe.skip("CalendarView", () => {
 			const getEventsSpy = vi.spyOn(mockEventStore, "getEvents");
 
 			// Destroy calendar to simulate uninitialized state
-			(calendarView as any).calendar = null;
+			calendarView.calendar = null;
 
-			await (calendarView as any).refreshEvents();
+			await calendarView.refreshEvents();
 
 			expect(getEventsSpy).not.toHaveBeenCalled();
 		});
@@ -256,7 +246,7 @@ describe.skip("CalendarView", () => {
 		it("should query events for current view date range", async () => {
 			const getEventsSpy = vi.spyOn(mockEventStore, "getEvents");
 
-			await (calendarView as any).refreshEvents();
+			await calendarView.refreshEvents();
 
 			expect(getEventsSpy).toHaveBeenCalledWith({
 				start: expect.any(String),
@@ -277,10 +267,10 @@ describe.skip("CalendarView", () => {
 
 			mockEventStore.getEvents = vi.fn().mockReturnValue([mockVaultEvent]);
 
-			const calendar = (calendarView as any).calendar;
+			const calendar = calendarView.calendar;
 			const addEventSourceSpy = vi.spyOn(calendar, "addEventSource");
 
-			await (calendarView as any).refreshEvents();
+			await calendarView.refreshEvents();
 
 			expect(addEventSourceSpy).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -308,7 +298,7 @@ describe.skip("CalendarView", () => {
 			});
 
 			// Should not throw
-			await expect((calendarView as any).refreshEvents()).resolves.not.toThrow();
+			await expect(calendarView.refreshEvents()).resolves.not.toThrow();
 		});
 	});
 
@@ -328,17 +318,17 @@ describe.skip("CalendarView", () => {
 		});
 
 		it("should destroy calendar on close", async () => {
-			const calendar = (calendarView as any).calendar;
+			const calendar = calendarView.calendar;
 			const destroySpy = vi.spyOn(calendar, "destroy");
 
 			await calendarView.onClose();
 
 			expect(destroySpy).toHaveBeenCalled();
-			expect((calendarView as any).calendar).toBeNull();
+			expect(calendarView.calendar).toBeNull();
 		});
 
 		it("should handle close when calendar is already null", async () => {
-			(calendarView as any).calendar = null;
+			calendarView.calendar = null;
 
 			// Should not throw
 			await expect(calendarView.onClose()).resolves.not.toThrow();
@@ -358,8 +348,8 @@ describe.skip("CalendarView", () => {
 			const openPromise = calendarView.onOpen();
 
 			// Try to refresh before initialization is complete
-			const refreshPromise1 = (calendarView as any).refreshEvents();
-			const refreshPromise2 = (calendarView as any).refreshEvents();
+			const refreshPromise1 = calendarView.refreshEvents();
+			const refreshPromise2 = calendarView.refreshEvents();
 
 			// Complete initialization
 			resolveIndexer!();
@@ -369,7 +359,7 @@ describe.skip("CalendarView", () => {
 		});
 
 		it("should handle settings changes during initialization", async () => {
-			let settingsCallback: (settings: any) => void;
+			let settingsCallback: (settings: unknown) => void;
 			mockSettingsStore.settings$.subscribe = vi.fn().mockImplementation((callback) => {
 				settingsCallback = callback;
 				return { unsubscribe: vi.fn() };
@@ -402,7 +392,7 @@ describe.skip("CalendarView", () => {
 		beforeEach(async () => {
 			await calendarView.onOpen();
 
-			const mockCalendar = (calendarView as any).calendar;
+			const mockCalendar = calendarView.calendar;
 			if (mockCalendar) {
 				mockCalendar.view = {
 					type: "timeGridWeek",
@@ -413,12 +403,12 @@ describe.skip("CalendarView", () => {
 		});
 
 		it("should handle CTRL + wheel events for zooming", () => {
-			const container = (calendarView as any).container;
-			const zoomManager = (calendarView as any).zoomManager;
-			const saveStateSpy = vi.spyOn((calendarView as any).bundle.viewStateManager, "saveState");
+			const container = calendarView.container;
+			const zoomManager = calendarView.zoomManager;
+			const saveStateSpy = vi.spyOn(calendarView.bundle.viewStateManager, "saveState");
 
 			// Spy on zoom manager's internal method
-			const setZoomLevelSpy = vi.spyOn(zoomManager as any, "setZoomLevel");
+			const setZoomLevelSpy = vi.spyOn(zoomManager, "setZoomLevel");
 
 			// Create a wheel event with CTRL key
 			const wheelEvent = new WheelEvent("wheel", {
@@ -437,7 +427,7 @@ describe.skip("CalendarView", () => {
 		});
 
 		it("should ignore wheel events without CTRL key", () => {
-			const container = (calendarView as any).container;
+			const container = calendarView.container;
 			const updateSettingsSpy = vi.spyOn(mockSettingsStore, "updateSettings");
 
 			// Create a wheel event without CTRL key
@@ -456,10 +446,10 @@ describe.skip("CalendarView", () => {
 		});
 
 		it("should zoom in with negative deltaY (scroll up)", () => {
-			const container = (calendarView as any).container;
-			const zoomManager = (calendarView as any).zoomManager;
-			const saveStateSpy = vi.spyOn((calendarView as any).bundle.viewStateManager, "saveState");
-			const setZoomLevelSpy = vi.spyOn(zoomManager as any, "setZoomLevel");
+			const container = calendarView.container;
+			const zoomManager = calendarView.zoomManager;
+			const saveStateSpy = vi.spyOn(calendarView.bundle.viewStateManager, "saveState");
+			const setZoomLevelSpy = vi.spyOn(zoomManager, "setZoomLevel");
 
 			// Create a wheel event with CTRL key and negative deltaY
 			const wheelEvent = new WheelEvent("wheel", {
@@ -478,10 +468,10 @@ describe.skip("CalendarView", () => {
 		});
 
 		it("should clamp zoom levels at boundaries", () => {
-			const container = (calendarView as any).container;
-			const zoomManager = (calendarView as any).zoomManager;
-			const saveStateSpy = vi.spyOn((calendarView as any).bundle.viewStateManager, "saveState");
-			const setZoomLevelSpy = vi.spyOn(zoomManager as any, "setZoomLevel");
+			const container = calendarView.container;
+			const zoomManager = calendarView.zoomManager;
+			const saveStateSpy = vi.spyOn(calendarView.bundle.viewStateManager, "saveState");
+			const setZoomLevelSpy = vi.spyOn(zoomManager, "setZoomLevel");
 
 			// Try to zoom in further (should clamp at boundaries)
 			const wheelEvent = new WheelEvent("wheel", {
@@ -499,10 +489,10 @@ describe.skip("CalendarView", () => {
 		});
 
 		it("should handle non-standard slot durations by defaulting to middle level", () => {
-			const container = (calendarView as any).container;
-			const zoomManager = (calendarView as any).zoomManager;
-			const saveStateSpy = vi.spyOn((calendarView as any).bundle.viewStateManager, "saveState");
-			const setZoomLevelSpy = vi.spyOn(zoomManager as any, "setZoomLevel");
+			const container = calendarView.container;
+			const zoomManager = calendarView.zoomManager;
+			const saveStateSpy = vi.spyOn(calendarView.bundle.viewStateManager, "saveState");
+			const setZoomLevelSpy = vi.spyOn(zoomManager, "setZoomLevel");
 
 			// Zoom out
 			const wheelEvent = new WheelEvent("wheel", {
@@ -520,11 +510,11 @@ describe.skip("CalendarView", () => {
 		});
 
 		it("should not zoom on month view", () => {
-			const container = (calendarView as any).container;
+			const container = calendarView.container;
 			const updateSettingsSpy = vi.spyOn(mockSettingsStore, "updateSettings");
 
 			// Set calendar view to month view
-			const mockCalendar = (calendarView as any).calendar;
+			const mockCalendar = calendarView.calendar;
 			if (mockCalendar) {
 				mockCalendar.view = {
 					type: "dayGridMonth",
@@ -548,7 +538,7 @@ describe.skip("CalendarView", () => {
 		});
 
 		it("should remove zoom listener on unmount", async () => {
-			const container = (calendarView as any).container;
+			const container = calendarView.container;
 			const removeEventListenerSpy = vi.spyOn(container, "removeEventListener");
 
 			await calendarView.onClose();
