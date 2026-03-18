@@ -9397,10 +9397,6 @@ div.vis-tooltip {
 
 /* ─── Bases Calendar View ────────────────────────────────────── */
 
-.prisma-bases-calendar-container {
-	width: 100%;
-}
-
 .prisma-bases-view-pro-gate,
 .prisma-bases-view-empty {
 	display: flex;

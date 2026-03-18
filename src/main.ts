@@ -20,6 +20,7 @@ import {
 	showICSImportProgressModal,
 	showTimelineModal,
 } from "./components/modals";
+import { registerPrismaBasesView } from "./components/views/bases-calendar-view";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, PrismaCalendarApiManager } from "./core";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
@@ -57,6 +58,7 @@ export default class CustomCalendarPlugin extends Plugin {
 		await this.ensureMinimumCalendars();
 
 		this.initializeCalendarBundles();
+		registerPrismaBasesView(this);
 		this.apiManager = new PrismaCalendarApiManager(this);
 		this.apiManager.exposeFree();
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
