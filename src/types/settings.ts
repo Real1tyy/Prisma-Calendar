@@ -1,4 +1,9 @@
-import { normalizeDirectoryPath, type SettingsStore, TabbedContainerStateSchema } from "@real1ty-obsidian-plugins";
+import {
+	normalizeDirectoryPath,
+	PageHeaderStateSchema,
+	type SettingsStore,
+	TabbedContainerStateSchema,
+} from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
 import {
@@ -200,6 +205,7 @@ const CalendarSettingsSchema = z
 		titleAutocomplete: z.boolean().catch(true), // Show inline type-ahead suggestions when typing event titles in the create/edit modal
 		categoryAssignmentPresets: z.array(CategoryAssignmentPresetSchema).catch([]), // Custom category assignment rules based on event name
 		activeTab: TabbedContainerStateSchema.optional().catch(undefined), // Persisted tab state (active tab, visibility, order)
+		pageHeaderState: PageHeaderStateSchema.optional().catch(undefined), // Persisted page header button state
 		contextMenuItems: z.array(ContextMenuItemSchema).catch([...DEFAULT_CONTEXT_MENU_ITEMS]), // Context menu items to show when right-clicking events
 		showSourceRecurringMarker: z.boolean().catch(true), // Show marker indicator on source recurring events
 		showPhysicalRecurringMarker: z.boolean().catch(true), // Show marker indicator on physical recurring instance events

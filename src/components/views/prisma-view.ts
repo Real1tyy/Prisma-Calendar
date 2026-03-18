@@ -1,6 +1,9 @@
 import {
+	createPageHeader,
 	createTabbedContainer,
+	type PageHeaderHandle,
 	registerComponentView,
+	registerPageHeaderCommands,
 	registerTabCommands,
 	type TabbedContainerHandle,
 	type ViewActivator,
@@ -12,11 +15,13 @@ import { CalendarComponent } from "../calendar-view";
 import { createDailyStatsTabDefinition } from "./daily-stats-tab";
 import { createDualDailyTabDefinition } from "./dual-daily-tab";
 import { createHeatmapTabDefinition } from "./heatmap-tab";
+import { buildPageHeaderActions, DEFAULT_ACTION_IDS } from "./page-header-actions";
 import { createTimelineTabDefinition } from "./timeline-tab";
 
 export interface PrismaViewRef {
 	calendarComponent: CalendarComponent | null;
 	tabbedHandle: TabbedContainerHandle | null;
+	pageHeaderHandle: PageHeaderHandle | null;
 }
 
 export function registerPrismaCalendarView(
@@ -78,10 +83,30 @@ export function registerPrismaCalendarView(
 				ref.tabbedHandle,
 				tabs.map((t) => t.label)
 			);
+
+			const savedHeaderState = bundle.settingsStore.currentSettings.pageHeaderState;
+			ref.pageHeaderHandle = createPageHeader({
+				actions: buildPageHeaderActions(app),
+				cssPrefix: "prisma-",
+				app,
+				editable: true,
+				initialState: savedHeaderState ?? { visibleActionIds: [...DEFAULT_ACTION_IDS] },
+				onStateChange: (state) => {
+					void bundle.settingsStore.updateSettings((s) => ({ ...s, pageHeaderState: state }));
+				},
+			});
+
+			if (ctx.type === "view" && ctx.leaf) {
+				ref.pageHeaderHandle.apply(ctx.leaf);
+			}
+
+			registerPageHeaderCommands(plugin, "prisma-calendar", "Prisma Calendar", ref.pageHeaderHandle);
 		},
 		cleanup: () => {
 			ref.calendarComponent?.unload();
 			ref.calendarComponent = null;
+			ref.pageHeaderHandle?.destroy();
+			ref.pageHeaderHandle = null;
 			ref.tabbedHandle?.destroy();
 			ref.tabbedHandle = null;
 		},
