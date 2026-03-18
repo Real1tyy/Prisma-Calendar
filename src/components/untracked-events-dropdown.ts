@@ -34,9 +34,9 @@ export class UntrackedEventsDropdown {
 		this.colorEvaluator = new ColorEvaluator(this.bundle.settingsStore.settings$);
 	}
 
-	initialize(_calendar: Calendar, container: HTMLElement): void {
+	initialize(_calendar: Calendar, container: HTMLElement, placement: "left" | "right" = "right"): void {
 		setTimeout(() => {
-			this.injectButton(container);
+			this.injectButton(container, placement);
 			this.refreshEvents();
 
 			if (!this.storeSubscription) {
@@ -81,8 +81,9 @@ export class UntrackedEventsDropdown {
 
 	// ─── UI Setup ────────────────────────────────────────────────
 
-	private injectButton(container: HTMLElement): void {
-		const toolbarRight = container.querySelector(".fc-toolbar-chunk:last-child");
+	private injectButton(container: HTMLElement, placement: "left" | "right"): void {
+		const selector = placement === "left" ? ".fc-toolbar-chunk:first-child" : ".fc-toolbar-chunk:last-child";
+		const toolbarRight = container.querySelector(selector);
 		if (!toolbarRight) return;
 
 		const wrapper = document.createElement("div");
@@ -101,7 +102,11 @@ export class UntrackedEventsDropdown {
 		wrapper.appendChild(this.buttonEl);
 		this.createDropdown(wrapper);
 
-		toolbarRight.prepend(wrapper);
+		if (placement === "left") {
+			toolbarRight.appendChild(wrapper);
+		} else {
+			toolbarRight.prepend(wrapper);
+		}
 
 		document.addEventListener("click", this.handleOutsideClick);
 		document.addEventListener("keydown", this.handleKeyDown, true);

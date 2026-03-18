@@ -1,9 +1,11 @@
-import { addCls, cls, showModal } from "@real1ty-obsidian-plugins";
+import { addCls, cls, ColorEvaluator, showModal } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
+import type { SingleCalendarConfig } from "../../../types/settings";
+import { resolveEventColor } from "../../../utils/event-color";
 import { cleanupTitle } from "../../../utils/event-naming";
 import { emitHover } from "../../../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../../../utils/property-display";
@@ -34,6 +36,7 @@ export function renderHeatmapInto(
 	bundle: CalendarBundle,
 	config: EventSeriesHeatmapConfig
 ): HeatmapHandle {
+	const colorEvaluator = new ColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 	let mode: HeatmapMode = "yearly";
 	const now = DateTime.now();
 	let year = now.year;
@@ -134,6 +137,11 @@ export function renderHeatmapInto(
 		const list = dayDetailPanel.createDiv(cls("heatmap-detail-list"));
 		for (const event of events) {
 			const row = list.createDiv(cls("heatmap-detail-row"));
+			const eventColor = resolveEventColor(event.meta ?? {}, bundle, colorEvaluator);
+			if (eventColor) {
+				addCls(row, "heatmap-detail-row-categorized");
+				row.style.setProperty("--category-color", eventColor);
+			}
 			const mainRow = row.createDiv(cls("heatmap-detail-row-main"));
 			mainRow.createSpan({ text: cleanupTitle(event.title), cls: cls("heatmap-detail-title") });
 
@@ -195,6 +203,7 @@ export function renderHeatmapInto(
 
 	return {
 		destroy: () => {
+			colorEvaluator.destroy();
 			container.empty();
 		},
 		refresh: (events: CalendarEvent[]) => {
