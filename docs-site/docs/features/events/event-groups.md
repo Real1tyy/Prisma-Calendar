@@ -376,7 +376,7 @@ Click **Heatmap** to open a GitHub-style contribution heatmap showing event dens
 - **Navigation** — Use arrow buttons or the **Left/Right arrow keys** to move between years or months. Press **Now** to jump back to the current period. The current period is shown between the arrows
 - **Color-coded density** — Cells are colored in 5 quantile buckets from empty to maximum density. For category-scoped views, the gradient uses the category color with varying opacity. For global views, a green gradient is used (matching the GitHub contribution style)
 - **Hover tooltips** — Hover over any cell to see the date and event count (e.g., "Mar 11, 2026: 3 events")
-- **Click to inspect** — Click any cell to expand a detail panel below the heatmap showing all events for that day. Click an event to open its note
+- **Click to inspect** — Click any cell to expand a detail panel below the heatmap showing all events for that day. Each event row is tinted with its resolved color (from color rules or integration color), so you can visually identify categories at a glance. Click an event to open its note
 - **Legend** — A 5-level color scale with "Less" and "More" labels helps interpret the density
 - **Theme-aware** — Empty cells and labels adapt to your Obsidian theme (light or dark)
 

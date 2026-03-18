@@ -2,7 +2,7 @@ import { Calendar } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { cls, ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { Subscription } from "rxjs";
 
@@ -51,6 +51,7 @@ export function createDailyCalendar(
 	bundle: CalendarBundle,
 	config?: DailyCalendarConfig
 ): DailyCalendarHandle {
+	const calendarContainer = container.createDiv({ cls: cls("calendar-container") });
 	const colorEvaluator = new ColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 	const subscriptions: Subscription[] = [];
 	let isIndexingComplete = false;
@@ -73,7 +74,7 @@ export function createDailyCalendar(
 	const deps: SharedCalendarDeps = {
 		app,
 		bundle,
-		container,
+		container: calendarContainer,
 		colorEvaluator,
 		calendarHost,
 		getCalendarIconCache: () => calendarIconCache,
@@ -90,7 +91,7 @@ export function createDailyCalendar(
 	const settings = bundle.settingsStore.currentSettings;
 	const coreOptions = buildCoreCalendarOptions(settings);
 
-	const calendar = new Calendar(container, {
+	const calendar = new Calendar(calendarContainer, {
 		...coreOptions,
 		plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
 		initialView: "timeGridDay",
@@ -173,14 +174,13 @@ export function createDailyCalendar(
 
 	calendar.render();
 
-	searchFilter.initialize(calendar, container);
+	searchFilter.initialize(calendar, calendarContainer);
 
-	// Mouse tracking for click-vs-drag detection
-	container.addEventListener("mousedown", () => {
+	calendarContainer.addEventListener("mousedown", () => {
 		mouseDownTime = Date.now();
 	});
 
-	applyContainerStyles(container, settings);
+	applyContainerStyles(calendarContainer, settings);
 
 	// ─── Event Refresh ───────────────────────────────────────────
 
@@ -368,7 +368,7 @@ export function createDailyCalendar(
 
 	const settingsSub = bundle.settingsStore.settings$.subscribe((s: SingleCalendarConfig) => {
 		syncCalendarSettings(calendar, s);
-		applyContainerStyles(container, s);
+		applyContainerStyles(calendarContainer, s);
 	});
 	subscriptions.push(settingsSub);
 
