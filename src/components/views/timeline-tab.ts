@@ -17,6 +17,7 @@ export function createTimelineTabDefinition(app: App, bundle: CalendarBundle): T
 			handle = renderTimelineInto(el, app, bundle, {
 				events: bundle.eventStore.getAllEvents(),
 				title: "All Events Timeline",
+				fillContainer: true,
 			});
 
 			eventStoreSub = bundle.eventStore.subscribe(() => {

@@ -15,6 +15,10 @@ All notable changes to this project will be documented here.
 - **Programmatic AI API** (Pro): All three AI modes — Query, Manipulate, and Plan — are now callable programmatically via `window.PrismaCalendar.aiQuery()` and the `obsidian://prisma-calendar?call=aiQuery` URL protocol. Send a natural-language message with a mode, and receive a structured JSON response containing the AI's answer (for queries) or parsed operations (for manipulation/planning). Operations can optionally be auto-executed by passing `execute: true`. Uses the same context gathering, validation, and retry logic as the AI Chat sidebar — including pattern detection, semantic validation, and automatic reprompting. Requires an open calendar view for context. See [Programmatic AI API](./features/advanced/programmatic-api/ai.md).
 - **Periodic mark-past-as-done scan**: "Mark past events as done" now runs a background scan every 5 minutes in addition to startup, so events that end while Obsidian is open are marked promptly. The scan starts and stops automatically when the setting is toggled. See [Configuration — General](./configuration/general.md).
 
+### Improved
+
+- **Timeline performance**: The timeline view now opens zoomed in to a one-week window centered on today, so only nearby events are rendered initially. Previously it opened showing the entire date range (potentially years of data), rendering all events at once and causing significant lag with large calendars. The timeline tab also now fills the available height dynamically. See [Event Groups — Timeline View](./features/events/event-groups.md#timeline-view).
+
 ### Fixed
 
 - **Timeline toolbar button always visible**: The Timeline button in the calendar toolbar was always rendered regardless of toolbar button settings. It now correctly respects the toolbar configuration and is hidden when disabled.

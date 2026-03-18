@@ -46,7 +46,10 @@ export function registerComponentView(plugin: Plugin, config: ViewComponentConfi
 		}
 	}
 
-	plugin.registerView(config.viewType, (leaf) => new ComponentView(leaf));
+	const registry = (plugin.app as any).viewRegistry?.viewByType;
+	if (!registry || !registry[config.viewType]) {
+		plugin.registerView(config.viewType, (leaf) => new ComponentView(leaf));
+	}
 
 	return (placement: LeafPlacement = "tab") =>
 		activateView(plugin.app.workspace, {
