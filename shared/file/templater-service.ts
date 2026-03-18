@@ -1,5 +1,6 @@
 import type { App } from "obsidian";
-import { TFile } from "obsidian";
+import type { TFile } from "obsidian";
+
 import type { FileCreationOptions } from "./templater";
 import {
 	createFileAtPathAtomic,
@@ -102,7 +103,11 @@ export class TemplaterService {
 		const filePath = `${targetDirectory}/${baseName}.md`;
 
 		if (useTemplater) {
-			return createFileAtPathAtomic(this.app, filePath, { content, frontmatter, templatePath });
+			return createFileAtPathAtomic(this.app, filePath, {
+				...(content !== undefined ? { content } : {}),
+				...(frontmatter !== undefined ? { frontmatter } : {}),
+				...(templatePath !== undefined ? { templatePath } : {}),
+			});
 		}
 
 		return createFileManually(this.app, targetDirectory, finalFilename, content, frontmatter);

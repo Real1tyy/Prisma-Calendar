@@ -20,7 +20,7 @@ export class FrontmatterPropagationModal extends Modal {
 		this.options = options;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		const prefix = this.options.cssPrefix ?? "frontmatter-propagation";
 
@@ -108,7 +108,7 @@ export class FrontmatterPropagationModal extends Modal {
 		});
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

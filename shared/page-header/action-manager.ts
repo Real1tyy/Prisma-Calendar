@@ -76,7 +76,7 @@ export function openActionManager(config: ActionManagerConfig): void {
 
 			if (isVisible) {
 				row.setAttribute("draggable", "true");
-				row.dataset.actionId = action.id;
+				row.dataset["actionId"] = action.id;
 
 				row.addEventListener("dragstart", (e) => {
 					draggedId = action.id;

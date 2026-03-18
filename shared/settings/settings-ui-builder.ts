@@ -149,19 +149,14 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 
 				// Unwrap nested schemas
 
-				while (
-					fieldSchema &&
-					typeof fieldSchema === "object" &&
-					"_def" in fieldSchema &&
-					(fieldSchema as any)._def?.innerType
-				) {
-					fieldSchema = (fieldSchema as any)._def.innerType;
+				while (fieldSchema && typeof fieldSchema === "object" && "_def" in fieldSchema && fieldSchema._def?.innerType) {
+					fieldSchema = fieldSchema._def.innerType;
 				}
 
 				if (fieldSchema && typeof fieldSchema === "object" && "shape" in fieldSchema) {
-					fieldSchema = (fieldSchema as any).shape?.[k];
+					fieldSchema = fieldSchema.shape?.[k];
 				} else if (fieldSchema && typeof fieldSchema === "object" && k in fieldSchema) {
-					fieldSchema = (fieldSchema as any)[k];
+					fieldSchema = fieldSchema[k];
 				} else {
 					return {};
 				}
@@ -171,36 +166,34 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 
 			let innerSchema: any = fieldSchema;
 
-			while (
-				innerSchema &&
-				typeof innerSchema === "object" &&
-				"_def" in innerSchema &&
-				(innerSchema as any)._def?.innerType
-			) {
-				innerSchema = (innerSchema as any)._def.innerType;
+			while (innerSchema && typeof innerSchema === "object" && "_def" in innerSchema && innerSchema._def?.innerType) {
+				innerSchema = innerSchema._def.innerType;
 			}
 
 			if (
 				innerSchema &&
 				typeof innerSchema === "object" &&
 				"_def" in innerSchema &&
-				(innerSchema as any)._def?.typeName === "ZodNumber"
+				innerSchema._def?.typeName === "ZodNumber"
 			) {
 				const checks = ((innerSchema as ZodNumber)._def as any).checks || [];
 				let min: number | undefined;
 				let max: number | undefined;
 
 				for (const check of checks) {
-					if ((check as any).kind === "min") {
-						min = (check as any).value;
+					if (check.kind === "min") {
+						min = check.value;
 					}
 
-					if ((check as any).kind === "max") {
-						max = (check as any).value;
+					if (check.kind === "max") {
+						max = check.value;
 					}
 				}
 
-				return { min, max };
+				return {
+					...(min !== undefined ? { min } : {}),
+					...(max !== undefined ? { max } : {}),
+				};
 			}
 		} catch (error) {
 			console.warn(`Failed to infer slider bounds for key ${key}:`, error);
@@ -221,19 +214,14 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 
 				// Unwrap nested schemas
 
-				while (
-					fieldSchema &&
-					typeof fieldSchema === "object" &&
-					"_def" in fieldSchema &&
-					(fieldSchema as any)._def?.innerType
-				) {
-					fieldSchema = (fieldSchema as any)._def.innerType;
+				while (fieldSchema && typeof fieldSchema === "object" && "_def" in fieldSchema && fieldSchema._def?.innerType) {
+					fieldSchema = fieldSchema._def.innerType;
 				}
 
 				if (fieldSchema && typeof fieldSchema === "object" && "shape" in fieldSchema) {
-					fieldSchema = (fieldSchema as any).shape?.[k];
+					fieldSchema = fieldSchema.shape?.[k];
 				} else if (fieldSchema && typeof fieldSchema === "object" && k in fieldSchema) {
-					fieldSchema = (fieldSchema as any)[k];
+					fieldSchema = fieldSchema[k];
 				} else {
 					return undefined;
 				}
@@ -243,28 +231,23 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 
 			let innerSchema: any = fieldSchema;
 
-			while (
-				innerSchema &&
-				typeof innerSchema === "object" &&
-				"_def" in innerSchema &&
-				(innerSchema as any)._def?.innerType
-			) {
-				innerSchema = (innerSchema as any)._def.innerType;
+			while (innerSchema && typeof innerSchema === "object" && "_def" in innerSchema && innerSchema._def?.innerType) {
+				innerSchema = innerSchema._def.innerType;
 			}
 
 			if (
 				innerSchema &&
 				typeof innerSchema === "object" &&
 				"_def" in innerSchema &&
-				(innerSchema as any)._def?.typeName === "ZodArray"
+				innerSchema._def?.typeName === "ZodArray"
 			) {
 				const elementType = ((innerSchema as ZodArray<any>)._def as any).type;
 
-				if (elementType && (elementType as any)._def?.typeName === "ZodNumber") {
+				if (elementType && elementType._def?.typeName === "ZodNumber") {
 					return "number";
 				}
 
-				if (elementType && (elementType as any)._def?.typeName === "ZodString") {
+				if (elementType && elementType._def?.typeName === "ZodString") {
 					return "string";
 				}
 			}
@@ -483,7 +466,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 				if (numberInputEl) numberInputEl.value = String(newValue);
 			});
 
-			this.attachDeferredSliderCommit(sliderInputEl!, commit);
+			this.attachDeferredSliderCommit(sliderInputEl, commit);
 
 			return slider;
 		});

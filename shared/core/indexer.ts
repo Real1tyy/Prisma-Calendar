@@ -165,8 +165,8 @@ export class Indexer {
 			scanConcurrency: config.scanConcurrency || DEFAULT_SCAN_CONCURRENCY,
 			debounceMs: config.debounceMs || DEFAULT_DEBOUNCE_MS,
 			emitRenameEvents: config.emitRenameEvents || false,
-			preloadedFiles: config.preloadedFiles,
-			directoryPrefix: config.directoryPrefix,
+			...(config.preloadedFiles !== undefined ? { preloadedFiles: config.preloadedFiles } : {}),
+			...(config.directoryPrefix !== undefined ? { directoryPrefix: config.directoryPrefix } : {}),
 		};
 	}
 
@@ -376,7 +376,7 @@ export class Indexer {
 					return of<IndexerEvent>({
 						type: "file-deleted",
 						filePath: intent.path,
-						isRename: intent.isRename,
+						...(intent.isRename !== undefined ? { isRename: intent.isRename } : {}),
 					});
 				}
 
@@ -416,15 +416,17 @@ export class Indexer {
 			folder: file.parent?.path || "",
 		};
 
+		const frontmatterDiff = oldFrontmatter
+			? compareFrontmatter(oldFrontmatter, frontmatter, this.config.excludedDiffProps)
+			: undefined;
+
 		const event: IndexerEvent = {
 			type: "file-changed",
 			filePath: file.path,
-			oldPath,
+			...(oldPath !== undefined ? { oldPath } : {}),
 			source,
-			oldFrontmatter,
-			frontmatterDiff: oldFrontmatter
-				? compareFrontmatter(oldFrontmatter, frontmatter, this.config.excludedDiffProps)
-				: undefined,
+			...(oldFrontmatter !== undefined ? { oldFrontmatter } : {}),
+			...(frontmatterDiff !== undefined ? { frontmatterDiff } : {}),
 		};
 
 		// Update cache

@@ -48,11 +48,11 @@ export function MountableComponent<TBase extends AbstractCtor<Component>>(Base: 
 			return this.#helpers.waitForLayout(el, fallbackMs);
 		}
 
-		onload(): void {
+		override onload(): void {
 			void this.mount();
 		}
 
-		onunload(): void {
+		override onunload(): void {
 			void this.unmount().finally(() => {
 				this.#helpers.cleanup();
 			});

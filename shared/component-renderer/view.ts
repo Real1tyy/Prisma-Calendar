@@ -20,11 +20,11 @@ export function registerComponentView(plugin: Plugin, config: ViewComponentConfi
 			return config.displayText;
 		}
 
-		getIcon(): string {
+		override getIcon(): string {
 			return config.icon ?? "layout";
 		}
 
-		async onOpen(): Promise<void> {
+		override async onOpen(): Promise<void> {
 			const headerEl = this.containerEl.children[0] as HTMLElement;
 			const root = this.containerEl.children[1] as HTMLElement;
 			root.empty();
@@ -41,7 +41,7 @@ export function registerComponentView(plugin: Plugin, config: ViewComponentConfi
 			await config.render(root, ctx);
 		}
 
-		async onClose(): Promise<void> {
+		override async onClose(): Promise<void> {
 			config.cleanup?.();
 		}
 	}

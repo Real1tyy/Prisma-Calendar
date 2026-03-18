@@ -359,7 +359,7 @@ export class FolderCollapser {
 	private openFile(file: TFile, evt: MouseEvent): void {
 		const newTab = Keymap.isModEvent(evt) || this.config.openInNewTab;
 		const leaf = this.app.workspace.getLeaf(newTab);
-		leaf.openFile(file);
+		void leaf.openFile(file);
 	}
 
 	// ─── MutationObserver ────────────────────────────────────────────────

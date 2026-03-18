@@ -185,7 +185,7 @@ export function setupGridResize(config: GridResizeConfig): GridResizeHandle {
 		}
 	}
 
-	function startResize(e: PointerEvent, axis: AxisDescriptor, handles: HTMLElement[], index: number): void {
+	function startResize(e: PointerEvent, axis: AxisDescriptor, _handles: HTMLElement[], index: number): void {
 		e.preventDefault();
 		const startPos = axis.clientPos(e);
 		const origSizes = [...axis.getSizes()];

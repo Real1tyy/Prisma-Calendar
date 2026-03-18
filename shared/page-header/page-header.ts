@@ -1,4 +1,4 @@
-import { type ItemView, setIcon, type WorkspaceLeaf } from "obsidian";
+import { type ItemView, type WorkspaceLeaf } from "obsidian";
 
 import { openActionManager } from "./action-manager";
 import type { HeaderActionDefinition, PageHeaderConfig, PageHeaderHandle, PageHeaderState } from "./types";

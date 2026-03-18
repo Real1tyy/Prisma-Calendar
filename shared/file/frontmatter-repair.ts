@@ -10,7 +10,7 @@ export async function correctFrontmatter<TData>(
 	raw: Record<string, unknown>
 ): Promise<void> {
 	try {
-		const corrected = schema.parse(raw) as TData;
+		const corrected = schema.parse(raw);
 		const serialized = schema.serialize(corrected);
 		const file = getTFileOrThrow(app, filePath);
 		await withFrontmatter(app, file, (fm) => {

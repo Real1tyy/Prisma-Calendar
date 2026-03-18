@@ -177,7 +177,7 @@ export class VaultTableQuery<TData> {
 		if (this.sorts.length > 0 && this.sortFields.length > 0) {
 			const indexed = rows.map((r) => ({ ...(r.data as Record<string, unknown>), __row: r }));
 			const sorted = applySorts(indexed, this.sorts, this.sortFields);
-			rows = sorted.map((s) => s.__row as VaultRow<TData>);
+			rows = sorted.map((s) => s.__row);
 		}
 
 		const filtered = rows.length;
