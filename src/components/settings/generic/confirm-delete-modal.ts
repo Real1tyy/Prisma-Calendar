@@ -1,43 +1,12 @@
-import { type App, Modal, Setting } from "obsidian";
+import { showConfirmationModal } from "@real1ty-obsidian-plugins";
+import type { App } from "obsidian";
 
-export class ConfirmDeleteModal extends Modal {
-	constructor(
-		app: App,
-		private entityName: string,
-		private entityType: string,
-		private onConfirm: () => void
-	) {
-		super(app);
-	}
-
-	override onOpen(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-
-		contentEl.createEl("h2", { text: `Delete ${this.entityType}` });
-		contentEl.createEl("p", {
-			text: `Are you sure you want to delete the ${this.entityType} "${this.entityName}"?`,
-		});
-
-		new Setting(contentEl)
-			.addButton((button) => {
-				button.setButtonText("Cancel").onClick(() => {
-					this.close();
-				});
-			})
-			.addButton((button) => {
-				button
-					.setButtonText("Delete")
-					.setWarning()
-					.onClick(() => {
-						this.onConfirm();
-						this.close();
-					});
-			});
-	}
-
-	override onClose(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
+export function showConfirmDeleteModal(app: App, entityName: string, entityType: string, onConfirm: () => void): void {
+	showConfirmationModal(app, {
+		title: `Delete ${entityType}`,
+		message: `Are you sure you want to delete the ${entityType} "${entityName}"?`,
+		confirmButton: { text: "Delete", warning: true },
+		cancelButton: "Cancel",
+		onConfirm,
+	});
 }

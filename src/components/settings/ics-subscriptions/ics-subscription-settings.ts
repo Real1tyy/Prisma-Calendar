@@ -9,7 +9,7 @@ import type { CustomCalendarSettingsSchema } from "../../../types/settings";
 import { getCalendarById } from "../../../utils/calendar-settings";
 import { deleteFilesByPaths } from "../../../utils/obsidian";
 import { showCalendarIntegrationDeleteEventsModal } from "../../modals";
-import { ConfirmDeleteModal } from "../generic";
+import { showConfirmDeleteModal } from "../generic";
 import { AddICSSubscriptionModal } from "./add-modal";
 import { EditICSSubscriptionModal } from "./edit-modal";
 
@@ -158,17 +158,17 @@ export class ICSSubscriptionSettings {
 	private handleDeleteSubscription(subscription: ICSSubscription, container: HTMLElement): void {
 		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === subscription.calendarId);
 		if (!bundle) {
-			new ConfirmDeleteModal(this.app, subscription.name, "subscription", () => {
+			showConfirmDeleteModal(this.app, subscription.name, "subscription", () => {
 				void this.deleteSubscription(subscription.id, container);
-			}).open();
+			});
 			return;
 		}
 
 		const events = bundle.icsSubscriptionSyncStateManager.getAllForSubscription(subscription.id);
 		if (events.length === 0) {
-			new ConfirmDeleteModal(this.app, subscription.name, "subscription", () => {
+			showConfirmDeleteModal(this.app, subscription.name, "subscription", () => {
 				void this.deleteSubscription(subscription.id, container);
-			}).open();
+			});
 			return;
 		}
 

@@ -18,7 +18,7 @@ import type { CustomCalendarSettingsSchema } from "../../types/settings";
 import { getCalendarById } from "../../utils/calendar-settings";
 import { deleteFilesByPaths } from "../../utils/obsidian";
 import { showCalendarIntegrationDeleteEventsModal } from "../modals";
-import { ConfirmDeleteModal } from "./generic";
+import { showConfirmDeleteModal } from "./generic";
 
 export class CalDAVSettings {
 	private ui: SettingsUIBuilder<typeof CustomCalendarSettingsSchema>;
@@ -170,7 +170,7 @@ export class CalDAVSettings {
 	private handleDeleteAccount(account: CalDAVAccount, container: HTMLElement): void {
 		const bundle = this.plugin.calendarBundles.find((b) => b.calendarId === account.calendarId);
 		if (!bundle) {
-			new ConfirmDeleteModal(this.app, account.name, "account", () => {
+			showConfirmDeleteModal(this.app, account.name, "account", () => {
 				void this.deleteAccount(account.id, container);
 			});
 			return;
@@ -178,7 +178,7 @@ export class CalDAVSettings {
 
 		const events = bundle.caldavSyncStateManager.getAllForAccount(account.id);
 		if (events.length === 0) {
-			new ConfirmDeleteModal(this.app, account.name, "account", () => {
+			showConfirmDeleteModal(this.app, account.name, "account", () => {
 				void this.deleteAccount(account.id, container);
 			});
 			return;
