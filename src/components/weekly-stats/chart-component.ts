@@ -5,13 +5,17 @@ import { formatDuration, type WeeklyStatEntry } from "../../utils/weekly-stats";
 
 const MAX_LABELS = 25; // to prevent label overflow
 
+export interface ChartComponentOptions {
+	showToggle?: boolean;
+}
+
 export class ChartComponent {
 	private chartBuilder!: PieChartBuilder;
 	private container: HTMLElement;
 	private chartVisible = true;
 
-	constructor(parentEl: HTMLElement, entries: WeeklyStatEntry[]) {
-		this.container = this.createChartSection(parentEl);
+	constructor(parentEl: HTMLElement, entries: WeeklyStatEntry[], options?: ChartComponentOptions) {
+		this.container = this.createChartSection(parentEl, options?.showToggle ?? true);
 		this.renderChart(entries);
 	}
 
@@ -19,30 +23,32 @@ export class ChartComponent {
 		return window.innerWidth <= 768;
 	}
 
-	private createChartSection(parentEl: HTMLElement): HTMLElement {
+	private createChartSection(parentEl: HTMLElement, showToggle: boolean): HTMLElement {
 		const chartSection = parentEl.createDiv(cls("stats-chart-section"));
 
 		const chartHeader = chartSection.createDiv(cls("stats-chart-header"));
 		chartHeader.createEl("h3", { text: "Distribution" });
 
-		const toggleButton = chartHeader.createEl("button", {
-			text: "Hide chart",
-			cls: cls("stats-toggle-chart-btn"),
-		});
-
 		const chartContainer = chartSection.createDiv(cls("stats-chart-container"));
 		createChartCanvas(chartContainer, "stats-chart");
 
-		toggleButton.addEventListener("click", () => {
-			this.chartVisible = !this.chartVisible;
-			if (this.chartVisible) {
-				chartContainer.classList.remove("prisma-hidden");
-				toggleButton.setText("Hide chart");
-			} else {
-				chartContainer.classList.add("prisma-hidden");
-				toggleButton.setText("Show chart");
-			}
-		});
+		if (showToggle) {
+			const toggleButton = chartHeader.createEl("button", {
+				text: "Hide chart",
+				cls: cls("stats-toggle-chart-btn"),
+			});
+
+			toggleButton.addEventListener("click", () => {
+				this.chartVisible = !this.chartVisible;
+				if (this.chartVisible) {
+					chartContainer.classList.remove("prisma-hidden");
+					toggleButton.setText("Hide chart");
+				} else {
+					chartContainer.classList.add("prisma-hidden");
+					toggleButton.setText("Show chart");
+				}
+			});
+		}
 
 		return chartSection;
 	}

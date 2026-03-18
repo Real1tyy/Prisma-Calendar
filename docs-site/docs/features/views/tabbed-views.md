@@ -15,21 +15,32 @@ Displays all events on a horizontal vis-timeline. Navigate by date using the yea
 A GitHub-style contribution heatmap showing event density over time. The tab uses a two-row layout:
 
 - **Top row**: The heatmap visualization with yearly/monthly mode toggle and navigation controls.
-- **Bottom row**: Appears when you click a day cell, showing all events for that day with times and frontmatter properties.
+- **Bottom row**: Appears when you click a day cell, showing all events for that day with times and frontmatter properties. Each event row is tinted with its resolved color (from color rules or integration color) so you can visually identify categories at a glance.
+- **Keyboard navigation**: Use **Left/Right arrow keys** to navigate between years (yearly mode) or months (monthly mode). Works immediately when the tab is active — no click needed.
 
 ## Daily + Stats
 
-A two-column layout:
+A two-column resizable layout with a daily calendar on the left and live statistics on the right:
 
-- **Left column**: A simplified daily calendar (timeGridDay view) with basic prev/next/today navigation.
-- **Right column**: Daily statistics for the date shown in the adjacent calendar — pie chart distribution and event table. The statistics update automatically when you navigate to a different day.
-- **Keyboard navigation**: Use **Left/Right arrow keys** to navigate between days. The tab auto-focuses when opened so keyboard navigation works immediately.
+- **Left column — Daily calendar**: A simplified daily calendar (timeGridDay view) with prev/next/today toolbar buttons and a search filter. Shows the same event rendering, colors, icons, and context menus as the main calendar. Supports drag-and-drop rescheduling, click-to-open, hover preview, and date/time selection to create new events.
+- **Right column — Statistics panel**: Daily statistics for the date shown in the adjacent calendar. Updates automatically when you navigate to a different day. Contains:
+  - **Controls row**: "Include skipped events" checkbox and a "Group by" toggle (Event Name / Category).
+  - **Date label**: Shows the current day (e.g., "Wednesday, Mar 18, 2026").
+  - **Duration stat**: Total tracked time for the day. Click to toggle between formatted (2h 30m) and decimal (2.5h) display.
+  - **Event count**: Number of events for the day.
+  - **Pie chart**: Visual distribution of time across events or categories.
+  - **Table**: Paginated breakdown of each entry with name, duration, percentage, and event count. Navigate pages with First/Prev/Next/Last buttons or type a page number directly.
+- **Keyboard navigation**: Use **Left/Right arrow keys** to navigate between days. Works immediately when the tab is active — no click needed.
+- **Resizable**: Drag the divider between columns to adjust the split.
 
 ## Dual Daily
 
-A two-column layout with two independent daily calendars side by side. Each calendar navigates independently, useful for comparing two different days.
+A two-column resizable layout with two independent daily calendars side by side. Each calendar has its own toolbar, search filter, and date state — useful for comparing two different days or dragging events between dates.
 
-- **Keyboard navigation**: Use **Left/Right arrow keys** to navigate the focused calendar. Click on a calendar to focus it, then arrow keys will navigate that calendar's date.
+- **Independent navigation**: Each calendar navigates independently via its own prev/next/today buttons.
+- **Keyboard navigation**: Use **Left/Right arrow keys** to navigate the focused calendar. Click anywhere on a calendar to focus it, then arrow keys will move that calendar's date forward or backward. Defaults to the left calendar.
+- **Full calendar features**: Both calendars support the same interactions as the Daily + Stats calendar — event rendering, colors, icons, context menus, drag-and-drop, click-to-open, hover preview, and date/time selection.
+- **Resizable**: Drag the divider between columns to adjust the split.
 
 ## Managing Tabs
 
