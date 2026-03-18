@@ -110,7 +110,7 @@ export function renderDailyStatsInto(container: HTMLElement, bundle: CalendarBun
 			return;
 		}
 
-		chartComponent = new ChartComponent(contentContainer, stats.entries);
+		chartComponent = new ChartComponent(contentContainer, stats.entries, { showToggle: false });
 		tableComponent = new TableComponent(contentContainer, stats.entries, stats.totalDuration, showDecimalHours);
 	}
 
