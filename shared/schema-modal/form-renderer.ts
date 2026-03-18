@@ -347,6 +347,14 @@ export function renderSchemaForm<T>(container: HTMLElement, config: SchemaFormCo
 		renderFields(container, descriptors, overrides, values, currentMode, config.extraFields);
 	}
 
+	function setValues(partial: Partial<Record<string, unknown>>): void {
+		for (const [key, val] of Object.entries(partial)) {
+			if (val !== undefined) values[key] = val;
+		}
+		container.empty();
+		renderFields(container, descriptors, overrides, values, currentMode, config.extraFields);
+	}
+
 	function destroy(): void {
 		container.empty();
 	}
@@ -355,6 +363,7 @@ export function renderSchemaForm<T>(container: HTMLElement, config: SchemaFormCo
 		getValues: () => ({ ...values }),
 		validate,
 		setMode,
+		setValues,
 		destroy,
 	};
 }

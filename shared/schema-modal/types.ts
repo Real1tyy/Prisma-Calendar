@@ -130,6 +130,7 @@ export interface SchemaFormHandle<T> {
 	getValues: () => Record<string, unknown>;
 	validate: () => SchemaFormValidationResult<T>;
 	setMode: (mode: SchemaFormMode) => void;
+	setValues: (partial: Partial<Record<string, unknown>>) => void;
 	destroy: () => void;
 }
 

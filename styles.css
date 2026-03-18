@@ -2452,11 +2452,7 @@
 }
 
 /* Zoom Button Styles */
-.prisma-zoom-button-visible {
-	display: "";
-}
-
-.prisma-zoom-button-hidden {
+.prisma-calendar-container .fc-zoomLevel-button.prisma-zoom-button-hidden {
 	display: none;
 }
 
