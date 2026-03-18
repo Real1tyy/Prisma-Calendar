@@ -4,7 +4,7 @@ import type { Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
-import { type HeatmapHandle, renderHeatmapInto } from "../modals/event-series-heatmap-modal";
+import { type HeatmapHandle, renderHeatmapInto } from "../modals";
 
 export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let heatmapHandle: HeatmapHandle | null = null;

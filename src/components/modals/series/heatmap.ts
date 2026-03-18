@@ -2,13 +2,13 @@ import { addCls, cls, showModal } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import type { App } from "obsidian";
 
-import type { CalendarBundle } from "../../core/calendar-bundle";
-import type { CalendarEvent } from "../../types/calendar";
-import { cleanupTitle } from "../../utils/event-naming";
-import { emitHover } from "../../utils/obsidian";
-import { getDisplayProperties, renderPropertyValue } from "../../utils/property-display";
-import { buildHeatmapDataset, type HeatmapDataset } from "../heatmap/heatmap-data";
-import { renderHeatmapLegend, renderHeatmapSVG } from "../heatmap/heatmap-renderer";
+import type { CalendarBundle } from "../../../core/calendar-bundle";
+import type { CalendarEvent } from "../../../types/calendar";
+import { cleanupTitle } from "../../../utils/event-naming";
+import { emitHover } from "../../../utils/obsidian";
+import { getDisplayProperties, renderPropertyValue } from "../../../utils/property-display";
+import { buildHeatmapDataset, type HeatmapDataset } from "../../heatmap/heatmap-data";
+import { renderHeatmapLegend, renderHeatmapSVG } from "../../heatmap/heatmap-renderer";
 
 export interface EventSeriesHeatmapConfig {
 	events: CalendarEvent[];

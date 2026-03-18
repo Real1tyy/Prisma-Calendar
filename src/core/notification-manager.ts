@@ -3,7 +3,7 @@ import { parseAsLocalDate, toSafeString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
-import { NotificationModal } from "../components/notification-modal";
+import { showNotificationModal } from "../components/modals";
 import { MAX_PAST_NOTIFICATION_THRESHOLD } from "../constants";
 import type { Frontmatter, PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
@@ -356,7 +356,7 @@ export class NotificationManager {
 			void this.snoozeNotification(entry);
 		};
 
-		new NotificationModal(this.app, eventData, this.settings, onSnooze).open();
+		showNotificationModal(this.app, eventData, this.settings, onSnooze);
 	}
 
 	private async snoozeNotification(entry: NotificationEntry): Promise<void> {

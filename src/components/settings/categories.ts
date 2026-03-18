@@ -10,9 +10,7 @@ import type CustomCalendarPlugin from "../../main";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import type { CategoryAssignmentPreset, SingleCalendarConfigSchema } from "../../types/settings";
 import { type ChartDataItem, createChartCanvas, PieChartBuilder } from "../../utils/chart-utils";
-import { CategoryDeleteModal } from "../modals/category-delete-modal";
-import { CategoryEventsModal } from "../modals/category-events-modal";
-import { CategoryRenameModal } from "../modals/category-rename-modal";
+import { showCategoryDeleteModal, showCategoryEventsModal, showCategoryRenameModal } from "../modals";
 import { renderProUpgradeBanner } from "./pro-upgrade-banner";
 
 interface CategoryInfoWithCount extends CategoryInfo {
@@ -620,26 +618,23 @@ export class CategoriesSettings {
 
 	private openCategoryEventsModal(categoryName: string): void {
 		const settings = this.settingsStore.currentSettings;
-		const modal = new CategoryEventsModal(this.plugin.app, categoryName, settings);
-		modal.open();
+		showCategoryEventsModal(this.plugin.app, categoryName, settings);
 	}
 
 	private async handleRenameCategory(categoryName: string): Promise<void> {
 		if (!this.categoryTracker) return;
 
-		const modal = new CategoryRenameModal(this.plugin.app, this.categoryTracker, this.settingsStore, categoryName, () =>
+		showCategoryRenameModal(this.plugin.app, this.categoryTracker, this.settingsStore, categoryName, () =>
 			this.rerender()
 		);
-		modal.open();
 	}
 
 	private async handleDeleteCategory(categoryName: string): Promise<void> {
 		if (!this.categoryTracker) return;
 
-		const modal = new CategoryDeleteModal(this.plugin.app, this.categoryTracker, this.settingsStore, categoryName, () =>
+		showCategoryDeleteModal(this.plugin.app, this.categoryTracker, this.settingsStore, categoryName, () =>
 			this.rerender()
 		);
-		modal.open();
 	}
 
 	destroy(): void {

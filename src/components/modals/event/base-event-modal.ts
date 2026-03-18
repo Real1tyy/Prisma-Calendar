@@ -13,18 +13,18 @@ import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
 import type { Subscription } from "rxjs";
 
-import type { CalendarBundle } from "../../core/calendar-bundle";
-import { FREE_MAX_EVENT_PRESETS } from "../../core/license";
+import type { CalendarBundle } from "../../../core/calendar-bundle";
+import { FREE_MAX_EVENT_PRESETS } from "../../../core/license";
 import {
 	END_TIME_SYNC_INTERVAL_MS,
 	type FormData,
 	MinimizedModalManager,
 	type MinimizedModalState,
 	type PresetFormData,
-} from "../../core/minimized-modal-manager";
-import type { Frontmatter } from "../../types";
-import { isTimedEvent } from "../../types/calendar";
-import type { EventSaveData } from "../../types/event-save";
+} from "../../../core/minimized-modal-manager";
+import type { Frontmatter } from "../../../types";
+import { isTimedEvent } from "../../../types/calendar";
+import type { EventSaveData } from "../../../types/event-save";
 import {
 	buildCustomIntervalDSL,
 	isPresetType,
@@ -32,25 +32,25 @@ import {
 	parseRecurrenceType,
 	RECURRENCE_TYPE_OPTIONS,
 	WEEKDAY_OPTIONS,
-} from "../../types/recurring-event";
-import type { EventPreset } from "../../types/settings";
-import type { Weekday } from "../../utils/date-recurrence";
-import { registerSubmitHotkey } from "../../utils/dom-utils";
+} from "../../../types/recurring-event";
+import type { EventPreset } from "../../../types/settings";
+import type { Weekday } from "../../../utils/date-recurrence";
+import { registerSubmitHotkey } from "../../../utils/dom-utils";
 import {
 	assignListToFrontmatter,
 	parseCustomDoneProperty,
 	setEventBasics,
 	setUntrackedEventBasics,
-} from "../../utils/event-frontmatter";
-import { autoAssignCategories, findAdjacentEvent } from "../../utils/event-matching";
-import { formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../../utils/format";
-import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../utils/obsidian";
-import { Stopwatch } from "../stopwatch";
-import { TitleInputSuggest } from "../title-input-suggest";
-import { openCategoryAssignModal } from "./assignment-modal";
-import { CategoryEventsModal } from "./category-events-modal";
+} from "../../../utils/event-frontmatter";
+import { autoAssignCategories, findAdjacentEvent } from "../../../utils/event-matching";
+import { formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../../../utils/format";
+import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
+import { Stopwatch } from "../../stopwatch";
+import { TitleInputSuggest } from "../../title-input-suggest";
+import { openCategoryAssignModal } from "../category/assignment";
+import { showCategoryEventsModal } from "../series/bases-view";
 import { createFormField } from "./event-form-fields";
-import { SavePresetModal } from "./save-preset-modal";
+import { showSavePresetModal } from "./save-preset";
 
 interface EventModalData {
 	title: string;
@@ -1143,8 +1143,7 @@ export abstract class BaseEventModal extends Modal {
 
 	private openCategoryEventsModal(categoryName: string): void {
 		const settings = this.bundle.settingsStore.currentSettings;
-		const modal = new CategoryEventsModal(this.app, categoryName, settings);
-		modal.open();
+		showCategoryEventsModal(this.app, categoryName, settings);
 	}
 
 	// ─── Presets ──────────────────────────────────────────────────
@@ -1371,10 +1370,9 @@ export abstract class BaseEventModal extends Modal {
 		const existingPresets = settings.eventPresets || [];
 		const atFreeLimit = !this.bundle.plugin.isProEnabled && existingPresets.length >= FREE_MAX_EVENT_PRESETS;
 
-		const modal = new SavePresetModal(this.app, existingPresets, atFreeLimit, (presetName, overridePresetId) => {
+		showSavePresetModal(this.app, existingPresets, atFreeLimit, (presetName, overridePresetId) => {
 			this.saveCurrentAsPreset(presetName, overridePresetId);
 		});
-		modal.open();
 	}
 
 	private saveCurrentAsPreset(presetName: string, overridePresetId: string | null): void {

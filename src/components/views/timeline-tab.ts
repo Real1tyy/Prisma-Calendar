@@ -3,7 +3,7 @@ import type { App } from "obsidian";
 import type { Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { renderTimelineInto, type TimelineHandle } from "../modals/event-series-timeline-modal";
+import { renderTimelineInto, type TimelineHandle } from "../modals";
 
 export function createTimelineTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let handle: TimelineHandle | null = null;

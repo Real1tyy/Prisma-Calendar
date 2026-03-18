@@ -1,7 +1,7 @@
 import { roundToNearestHour, toLocalISOString } from "@real1ty-obsidian-plugins";
 import { Notice, TFile } from "obsidian";
 
-import { EventCreateModal, EventEditModal, UntrackedEventCreateModal } from "../../components/modals";
+import { EventCreateModal, EventEditModal, showUntrackedEventCreateModal } from "../../components/modals";
 import type CustomCalendarPlugin from "../../main";
 import { openFileInNewTab } from "../../utils/obsidian";
 import { AddZettelIdCommand } from "../commands/update-commands";
@@ -12,12 +12,12 @@ import { createUntrackedEvent } from "./event-crud";
 export function openCreateUntrackedEventModal(plugin: CustomCalendarPlugin): void {
 	const bundle = resolveBundleOrNotice(plugin);
 	if (!bundle) return;
-	new UntrackedEventCreateModal(plugin.app, async (title) => {
+	showUntrackedEventCreateModal(plugin.app, async (title) => {
 		const filePath = await createUntrackedEvent(plugin, title, bundle.calendarId);
 		if (filePath && !isCalendarViewFocused(plugin)) {
 			await openFileInNewTab(plugin.app, filePath);
 		}
-	}).open();
+	});
 }
 
 export async function openCreateEventModal(

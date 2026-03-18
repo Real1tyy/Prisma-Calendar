@@ -50,7 +50,6 @@ import { getDisplayProperties, renderPropertyValue } from "../utils/property-dis
 import { BatchSelectionManager } from "./batch-selection-manager";
 import type { CalendarHost } from "./calendar-host";
 import { EventContextMenu } from "./event-context-menu";
-import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { FilterPresetSelector } from "./filter-preset-selector";
 import { ExpressionFilterInputManager } from "./input-managers/expression-filter";
 import { SearchFilterInputManager } from "./input-managers/search-filter";
@@ -61,11 +60,15 @@ import {
 	SelectedEventsModal,
 	SkippedEventsModal,
 } from "./list-modals";
-import { EventCreateModal } from "./modals";
-import { openCategoryAssignModal } from "./modals/assignment-modal";
-import { BatchFrontmatterModal } from "./modals/batch-frontmatter-modal";
-import { CategorySelectModal } from "./modals/category-select-modal";
-import { IntervalEventsModal } from "./modals/interval-events-modal";
+import type { PreviewEventData } from "./modals";
+import {
+	EventCreateModal,
+	openCategoryAssignModal,
+	showBatchFrontmatterModal,
+	showCategorySelectModal,
+	showEventPreviewModal,
+	showIntervalEventsModal,
+} from "./modals";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
@@ -90,7 +93,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private weeklyStatsModal: WeeklyStatsModal | null = null;
 	private monthlyStatsModal: MonthlyStatsModal | null = null;
 	private alltimeStatsModal: AllTimeStatsModal | null = null;
-	private intervalEventsModal: IntervalEventsModal | null = null;
 	private filteredEvents: CalendarEvent[] = [];
 	private isIndexingComplete = false;
 	private currentUpcomingEventIds: Set<string> = new Set();
@@ -1685,7 +1687,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 						allDay: false,
 						extendedProps: sourceEvent.extendedProps,
 					};
-					new EventPreviewModal(this.app, this.bundle, previewEvent).open();
+					showEventPreviewModal(this.app, this.bundle, previewEvent);
 					return;
 				}
 			}
@@ -2277,17 +2279,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const settings = this.bundle.settingsStore.currentSettings;
 		const selectedEvents = this.batchSelectionManager.getSelectedEvents();
 
-		const modal = new BatchFrontmatterModal(
-			this.app,
-			settings,
-			selectedEvents,
-			(propertyUpdates: Map<string, string | null>) => {
-				if (this.batchSelectionManager) {
-					this.batchSelectionManager.executeUpdateFrontmatter(propertyUpdates);
-				}
+		showBatchFrontmatterModal(this.app, settings, selectedEvents, (propertyUpdates: Map<string, string | null>) => {
+			if (this.batchSelectionManager) {
+				this.batchSelectionManager.executeUpdateFrontmatter(propertyUpdates);
 			}
-		);
-		modal.open();
+		});
 	}
 
 	// ─── Modals ──────────────────────────────────────────────────
@@ -2456,21 +2452,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			intervalLabel = "Current View";
 		}
 
-		await this.toggleModal(
-			() => this.intervalEventsModal,
-			(modal) => {
-				this.intervalEventsModal = modal;
-			},
-			() => {
-				return new IntervalEventsModal(
-					this.app,
-					intervalLabel,
-					startDate,
-					endDate,
-					this.bundle.settingsStore.currentSettings
-				);
-			}
-		);
+		showIntervalEventsModal(this.app, intervalLabel, startDate, endDate, this.bundle.settingsStore.currentSettings);
 	}
 
 	private async toggleModal<T extends Modal>(
@@ -2527,10 +2509,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	public showCategorySelectModal(): void {
-		const modal = new CategorySelectModal(this.app, this.bundle.categoryTracker, (category: string) => {
+		showCategorySelectModal(this.app, this.bundle.categoryTracker, (category: string) => {
 			this.highlightEventsWithCategory(category);
 		});
-		modal.open();
 	}
 
 	public highlightEventsWithCategory(category: string): void {
