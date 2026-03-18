@@ -6,7 +6,7 @@ import type { IntervalConfig } from "./interval-stats-modal";
 import { createNavigationConfig, IntervalStatsModal } from "./interval-stats-modal";
 
 export class DailyStatsModal extends IntervalStatsModal {
-	private calendarViewType?: string;
+	private calendarViewType?: string | undefined;
 
 	protected intervalConfig: IntervalConfig = {
 		...createNavigationConfig(

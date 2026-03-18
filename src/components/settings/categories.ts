@@ -29,7 +29,7 @@ export class CategoriesSettings {
 	private statsContainer: HTMLElement | null = null;
 	private categoryTracker: CategoryTracker | null = null;
 	private currentBundle: CalendarBundle | null = null;
-	private categoryProp: string;
+	private categoryProp!: string;
 	private categoryAssignmentPresetsContainer: HTMLElement | null = null;
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 
@@ -103,7 +103,7 @@ export class CategoriesSettings {
 
 		const canvas = this.chartContainer?.querySelector("canvas");
 		if (canvas) {
-			this.updateChart(this.categoryTracker, this.categoryProp, canvas as HTMLCanvasElement);
+			this.updateChart(this.categoryTracker, this.categoryProp, canvas);
 		}
 
 		if (this.statsContainer && this.currentBundle) {

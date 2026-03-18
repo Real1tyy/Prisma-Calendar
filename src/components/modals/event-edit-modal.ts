@@ -20,7 +20,7 @@ export class EventEditModal extends BaseEventModal {
 		return "Save";
 	}
 
-	protected getModalType(): "create" | "edit" {
+	protected override getModalType(): "create" | "edit" {
 		return "edit";
 	}
 
@@ -41,7 +41,7 @@ export class EventEditModal extends BaseEventModal {
 		// If no ZettelID found in title, try to extract from filePath.
 		// This handles edge cases where the title doesn't include the ZettelID.
 		if (!this.originalZettelId && this.event.extendedProps?.filePath) {
-			const filePath = this.event.extendedProps.filePath as string;
+			const filePath = this.event.extendedProps.filePath;
 			const basename = filePath.split("/").pop()?.replace(/\.md$/, "") || "";
 			const zettelIdFromPath = extractZettelId(basename);
 			if (zettelIdFromPath) {
@@ -117,7 +117,7 @@ export class EventEditModal extends BaseEventModal {
 		}
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		// Call parent onOpen first
 		super.onOpen();
 

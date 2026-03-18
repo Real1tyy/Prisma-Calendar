@@ -26,7 +26,7 @@ describe("Indexer", () => {
 				return filesStore.find((f: any) => f.path === path) || null;
 			}),
 		});
-		(mockVault as any)._setFiles = (files: any[]) => {
+		mockVault._setFiles = (files: any[]) => {
 			filesStore.length = 0;
 			filesStore.push(...files);
 		};
@@ -289,7 +289,7 @@ describe("Indexer", () => {
 			const callback = processFrontMatterSpy.mock.calls[0][1] as (fm: Frontmatter) => void;
 			const testFm: Frontmatter = {};
 			callback(testFm);
-			expect(testFm.Status).toBe("Done");
+			expect(testFm["Status"]).toBe("Done");
 
 			indexerWithMarkDone.stop();
 		});

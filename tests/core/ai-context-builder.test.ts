@@ -19,9 +19,7 @@ describe("analyzePreviousPatterns", () => {
 	});
 
 	it("should return defaults for only all-day events", () => {
-		const events: AIEventSummary[] = [
-			makeEvent("Holiday", "2025-03-15T00:00:00", undefined as unknown as string, true),
-		];
+		const events: AIEventSummary[] = [makeEvent("Holiday", "2025-03-15T00:00:00", undefined as any as string, true)];
 		const result = analyzePreviousPatterns(events);
 		expect(result.avgEventsPerDay).toBe(0);
 		expect(result.recurringBlocks).toEqual([]);

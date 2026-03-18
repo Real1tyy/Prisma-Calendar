@@ -8,10 +8,10 @@ import type { SingleCalendarConfig } from "../../types/settings";
 import { extractZettelId, removeZettelId } from "../../utils/event-naming";
 
 interface NotificationSettings {
-	minutesBeforeProp?: string;
-	defaultMinutesBefore?: number;
-	daysBeforeProp?: string;
-	defaultDaysBefore?: number;
+	minutesBeforeProp?: string | undefined;
+	defaultMinutesBefore?: number | undefined;
+	daysBeforeProp?: string | undefined;
+	defaultDaysBefore?: number | undefined;
 }
 
 export interface ICSExportOptions {
@@ -29,8 +29,8 @@ export interface ICSExportOptions {
 		endProp: string;
 		dateProp: string;
 		allDayProp: string;
-		titleProp?: string;
-		calendarTitleProp?: string;
+		titleProp?: string | undefined;
+		calendarTitleProp?: string | undefined;
 	};
 }
 

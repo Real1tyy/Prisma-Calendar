@@ -19,7 +19,7 @@ import {
 	type EventData,
 } from "./commands";
 import type { EventStore, UntrackedEventStore } from "./event-store";
-import { HolidayStore } from "./holidays";
+import { type HolidayConfig, HolidayStore } from "./holidays";
 import type { Indexer } from "./indexer";
 import { IndexerRegistry } from "./indexer-registry";
 import { CalDAVSyncService } from "./integrations/caldav/sync";
@@ -105,7 +105,7 @@ export class CalendarBundle {
 		this.viewStateManager = new CalendarViewStateManager();
 		this.commandManager = new CommandManager();
 		this.batchCommandFactory = new BatchCommandFactory(this.app, this);
-		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays);
+		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays as HolidayConfig);
 		this.eventStore.setHolidayStore(this.holidayStore);
 
 		this.subscriptions.push(
@@ -116,7 +116,7 @@ export class CalendarBundle {
 			this.settingsStore.settings$.subscribe((settings) => {
 				this.updateRibbonIcon(settings.showRibbonIcon);
 
-				const holidaySettingsChanged = this.holidayStore.updateConfig(settings.holidays);
+				const holidaySettingsChanged = this.holidayStore.updateConfig(settings.holidays as HolidayConfig);
 
 				if (holidaySettingsChanged) {
 					this.eventStore.refreshVirtualEvents();
@@ -262,7 +262,7 @@ export class CalendarBundle {
 
 		// Try to find a date property (start date, date, or start)
 		const dateValue: unknown =
-			frontmatter[settings.startProp] || frontmatter[settings.dateProp] || frontmatter.Start || frontmatter.Date;
+			frontmatter[settings.startProp] || frontmatter[settings.dateProp] || frontmatter["Start"] || frontmatter["Date"];
 
 		const parsedDate = intoDate(dateValue);
 
@@ -368,7 +368,10 @@ export class CalendarBundle {
 				const renamedPath = zettelIdCommand.getRenamedFilePath();
 				if (renamedPath) {
 					finalFilePath = renamedPath;
-					file = this.app.vault.getAbstractFileByPath(finalFilePath) as TFile;
+					const renamedFile = this.app.vault.getAbstractFileByPath(finalFilePath);
+					if (renamedFile instanceof TFile) {
+						file = renamedFile;
+					}
 				}
 			}
 
@@ -394,7 +397,10 @@ export class CalendarBundle {
 					const { fullPath } = generateUniqueEventPath(this.app, parentPath, newBasename);
 					await this.app.fileManager.renameFile(file, fullPath);
 					finalFilePath = fullPath;
-					file = this.app.vault.getAbstractFileByPath(finalFilePath) as TFile;
+					const titleRenamedFile = this.app.vault.getAbstractFileByPath(finalFilePath);
+					if (titleRenamedFile instanceof TFile) {
+						file = titleRenamedFile;
+					}
 				}
 			}
 

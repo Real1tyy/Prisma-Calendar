@@ -175,7 +175,7 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 		});
 	}
 
-	destroy(): void {
+	override destroy(): void {
 		super.destroy();
 		this.client.destroy();
 	}

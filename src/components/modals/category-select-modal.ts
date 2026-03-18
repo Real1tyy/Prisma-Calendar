@@ -23,7 +23,7 @@ export class CategorySelectModal extends Modal {
 		this.onSelect = onSelect;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass(cls("category-select-modal"));
@@ -215,7 +215,7 @@ export class CategorySelectModal extends Modal {
 		this.close();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

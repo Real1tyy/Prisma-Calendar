@@ -195,8 +195,8 @@ export class Indexer {
 			this.scanEventsSubject.next({
 				type: "file-deleted",
 				filePath: genericEvent.filePath,
-				oldFrontmatter: genericEvent.oldFrontmatter,
-				isRename: genericEvent.isRename,
+				...(genericEvent.oldFrontmatter ? { oldFrontmatter: genericEvent.oldFrontmatter } : {}),
+				...(genericEvent.isRename !== undefined ? { isRename: genericEvent.isRename } : {}),
 			});
 			return;
 		}
@@ -232,9 +232,9 @@ export class Indexer {
 
 		const eventBase = {
 			filePath: file.path,
-			oldPath,
-			oldFrontmatter,
-			frontmatterDiff,
+			...(oldPath ? { oldPath } : {}),
+			...(oldFrontmatter ? { oldFrontmatter } : {}),
+			...(frontmatterDiff ? { frontmatterDiff } : {}),
 		};
 
 		const recurring = await this.tryParseRecurring(file, frontmatter, oldFrontmatter);

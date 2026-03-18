@@ -47,11 +47,11 @@ export type CalDAVOAuthCredentials = z.infer<typeof CalDAVOAuthCredentialsSchema
 export interface CalDAVCalendarInfo {
 	url: string;
 	displayName: string;
-	description?: string;
-	color?: string;
-	ctag?: string;
-	syncToken?: string;
-	components?: string[];
+	description?: string | undefined;
+	color?: string | undefined;
+	ctag?: string | undefined;
+	syncToken?: string | undefined;
+	components?: string[] | undefined;
 }
 
 export type CalDAVPresetKey = keyof typeof CALDAV_PRESETS;

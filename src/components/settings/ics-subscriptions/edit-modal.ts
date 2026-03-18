@@ -29,7 +29,7 @@ export class EditICSSubscriptionModal extends Modal {
 		this.icon = subscription.icon ?? "";
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass(cls("caldav-modal"));
@@ -140,7 +140,7 @@ export class EditICSSubscriptionModal extends Modal {
 		this.close();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

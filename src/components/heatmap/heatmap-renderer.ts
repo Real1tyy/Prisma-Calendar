@@ -105,7 +105,7 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 			y: String(headerHeight + i * step + cellSize),
 			class: cls("heatmap-day-label"),
 		});
-		text.textContent = DAY_LABELS[adjustedIndex];
+		text.textContent = DAY_LABELS[adjustedIndex]!;
 		svg.appendChild(text);
 	}
 

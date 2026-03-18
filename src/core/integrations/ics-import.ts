@@ -199,22 +199,23 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 				lastModified = icalTimeToDate(lastModifiedTime).getTime();
 			}
 
-			events.push({
+			const imported: ImportedEvent = {
 				title: event.summary || "Untitled Event",
-				description: event.description || undefined,
 				start: icalTimeToDate(dtstart),
-				end: endDate,
 				allDay,
-				categories: parsedCategories,
-				location,
-				participants: parsedParticipants,
-				reminderMinutes,
-				frontmatter,
-				originalFilePath,
 				uid,
-				lastModified,
-				rrule,
-			});
+			};
+			if (event.description) imported.description = event.description;
+			if (endDate) imported.end = endDate;
+			if (parsedCategories) imported.categories = parsedCategories;
+			if (location) imported.location = location;
+			if (parsedParticipants) imported.participants = parsedParticipants;
+			if (reminderMinutes !== undefined) imported.reminderMinutes = reminderMinutes;
+			if (frontmatter) imported.frontmatter = frontmatter;
+			if (originalFilePath) imported.originalFilePath = originalFilePath;
+			if (lastModified !== undefined) imported.lastModified = lastModified;
+			if (rrule) imported.rrule = rrule;
+			events.push(imported);
 		}
 
 		return {
@@ -353,16 +354,13 @@ export async function createEventNoteFromImportedEvent(
 		Object.assign(frontmatter, additionalFrontmatter);
 	}
 
-	const content = event.description ? `\n${event.description}\n` : undefined;
-
 	return await bundle.templateService.createFileAtomic({
 		title: event.title,
 		targetDirectory,
 		filename,
-		content,
+		...(event.description ? { content: `\n${event.description}\n` } : {}),
 		frontmatter,
-		templatePath: calendarSettings.templatePath,
-		useTemplater: !!calendarSettings.templatePath,
+		...(calendarSettings.templatePath ? { templatePath: calendarSettings.templatePath, useTemplater: true } : {}),
 	});
 }
 

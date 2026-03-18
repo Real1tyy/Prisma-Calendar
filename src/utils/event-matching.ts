@@ -7,14 +7,7 @@ interface EventLookup {
 	findPreviousEventByEndTime(searchTime: string, excludeFilePath?: string): CalendarEvent | null;
 }
 
-/**
- * Extracts source event information from a virtual event.
- * Returns null if the event is not virtual, has no source file path, or the source event is not found.
- */
-export function getSourceEventInfoFromVirtual(
-	event: { extendedProps?: { isVirtual?: boolean; filePath?: string } },
-	eventStore: EventLookup
-): {
+export interface SourceEventInfo {
 	title: string;
 	start: string;
 	end?: string;
@@ -23,7 +16,12 @@ export function getSourceEventInfoFromVirtual(
 		filePath: string;
 		frontmatterDisplayData?: Record<string, unknown>;
 	};
-} | null {
+}
+
+export function getSourceEventInfoFromVirtual(
+	event: { extendedProps?: { isVirtual?: boolean; filePath?: string } },
+	eventStore: EventLookup
+): SourceEventInfo | null {
 	const sourceFilePath = event.extendedProps?.filePath;
 	if (!sourceFilePath || typeof sourceFilePath !== "string") {
 		return null;
@@ -34,16 +32,24 @@ export function getSourceEventInfoFromVirtual(
 		return null;
 	}
 
-	return {
+	const result: SourceEventInfo = {
 		title: sourceEvent.title,
 		start: sourceEvent.start,
-		end: isTimedEvent(sourceEvent) ? sourceEvent.end : undefined,
 		allDay: sourceEvent.allDay,
 		extendedProps: {
 			filePath: sourceEvent.ref.filePath,
-			frontmatterDisplayData: sourceEvent.meta,
 		},
 	};
+
+	if (isTimedEvent(sourceEvent)) {
+		result.end = sourceEvent.end;
+	}
+
+	if (sourceEvent.meta) {
+		result.extendedProps.frontmatterDisplayData = sourceEvent.meta;
+	}
+
+	return result;
 }
 
 export const findAdjacentEvent = (

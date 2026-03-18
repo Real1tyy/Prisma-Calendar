@@ -25,7 +25,7 @@ export class AddICSSubscriptionModal extends Modal {
 		super(app);
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass(cls("caldav-modal"));
@@ -193,7 +193,7 @@ export class AddICSSubscriptionModal extends Modal {
 		this.close();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

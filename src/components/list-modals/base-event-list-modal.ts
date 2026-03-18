@@ -48,7 +48,7 @@ export abstract class BaseEventListModal extends Modal {
 
 	// ─── Lifecycle ───────────────────────────────────────────────
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		addCls(contentEl, "generic-event-list-modal");
@@ -110,7 +110,7 @@ export abstract class BaseEventListModal extends Modal {
 		this.renderItems();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		this.onModalClose();

@@ -29,7 +29,7 @@ export class ICSImportModal extends Modal {
 		this.selectedBundle = calendars[0] || null;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass(cls("ics-import-modal"));
@@ -199,7 +199,7 @@ export class ICSImportModal extends Modal {
 		}
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

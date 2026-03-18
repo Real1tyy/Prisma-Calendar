@@ -3,25 +3,29 @@ import type { App } from "obsidian";
 
 import type CustomCalendarPlugin from "../../main";
 import type { CalendarBundle } from "../calendar-bundle";
+import {
+	markAsDone as markAsDoneCmd,
+	markAsUndone as markAsUndoneCmd,
+	moveEvent as moveEventCmd,
+	toggleSkip as toggleSkipCmd,
+} from "../commands/frontmatter-update-command";
 import { CloneEventCommand } from "../commands/lifecycle-commands";
-import { MarkAsDoneCommand, MarkAsUndoneCommand, ToggleSkipCommand } from "../commands/status-commands";
-import { MoveEventCommand } from "../commands/update-commands";
 import { resolveBundleOrNotice } from "./bundle-resolver";
 
-type StatusCommandCtor = new (app: App, bundle: CalendarBundle, filePath: string) => Command;
+type CommandFactory = (app: App, bundle: CalendarBundle, filePath: string) => Command;
 
-function statusOp(Ctor: StatusCommandCtor) {
+function statusOp(factory: CommandFactory) {
 	return async (plugin: CustomCalendarPlugin, input: { filePath: string; calendarId?: string }): Promise<boolean> => {
 		const bundle = resolveBundleOrNotice(plugin, input.calendarId);
 		if (!bundle) return false;
-		await bundle.commandManager.executeCommand(new Ctor(plugin.app, bundle, input.filePath));
+		await bundle.commandManager.executeCommand(factory(plugin.app, bundle, input.filePath));
 		return true;
 	};
 }
 
-export const markAsDone = statusOp(MarkAsDoneCommand);
-export const markAsUndone = statusOp(MarkAsUndoneCommand);
-export const toggleSkip = statusOp(ToggleSkipCommand);
+export const markAsDone = statusOp(markAsDoneCmd);
+export const markAsUndone = statusOp(markAsUndoneCmd);
+export const toggleSkip = statusOp(toggleSkipCmd);
 
 export async function cloneEvent(
 	plugin: CustomCalendarPlugin,
@@ -42,7 +46,7 @@ export async function moveEvent(
 	const bundle = resolveBundleOrNotice(plugin, input.calendarId);
 	if (!bundle) return false;
 	await bundle.commandManager.executeCommand(
-		new MoveEventCommand(plugin.app, bundle, input.filePath, input.offsetMs, input.offsetMs)
+		moveEventCmd(plugin.app, bundle, input.filePath, input.offsetMs, input.offsetMs)
 	);
 	return true;
 }

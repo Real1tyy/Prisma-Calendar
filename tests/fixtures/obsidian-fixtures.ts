@@ -32,7 +32,7 @@ export function createMockMetadataCache(overrides: Partial<MockApp["metadataCach
 }
 
 /** Factory for a composite mock App used in integration tests. */
-export function createMockIntegrationApp(overrides: Partial<MockApp> = {}): MockApp & { workspace: any } {
+export function createMockIntegrationApp(overrides: Partial<MockApp> = {}): MockApp & { workspace: unknown } {
 	return {
 		vault: createMockVault(overrides.vault),
 		metadataCache: createMockMetadataCache(overrides.metadataCache),

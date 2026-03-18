@@ -61,7 +61,6 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 	private bundle: CalendarBundle;
 	private titleInputEl: HTMLInputElement;
 	private ghostEl: HTMLSpanElement | null = null;
-	private ghostPrefixEl: HTMLSpanElement | null = null;
 	private ghostSuffixEl: HTMLSpanElement | null = null;
 	private wrapperEl: HTMLElement | null = null;
 	private currentCompletion = "";
@@ -85,14 +84,14 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 		});
 	}
 
-	getSuggestions(query: string): TitleSuggestion[] {
+	override getSuggestions(query: string): TitleSuggestion[] {
 		if (!this.hasUserTyped) return [];
 		const suggestions = collectSuggestions(query, this.bundle);
 		this.updateGhostText(query, suggestions);
 		return suggestions;
 	}
 
-	renderSuggestion(suggestion: TitleSuggestion, el: HTMLElement): void {
+	override renderSuggestion(suggestion: TitleSuggestion, el: HTMLElement): void {
 		el.addClass(cls("suggest-item"));
 
 		el.createSpan({ text: suggestion.text });
@@ -107,7 +106,7 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 		}
 	}
 
-	selectSuggestion(value: TitleSuggestion, evt: MouseEvent | KeyboardEvent): void {
+	override selectSuggestion(value: TitleSuggestion, evt: MouseEvent | KeyboardEvent): void {
 		super.selectSuggestion(value, evt);
 	}
 
@@ -120,7 +119,7 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 		this.wrapperEl.appendChild(inputEl);
 
 		this.ghostEl = this.wrapperEl.createSpan(cls("title-ghost-text"));
-		this.ghostPrefixEl = this.ghostEl.createSpan(cls("title-ghost-prefix"));
+		this.ghostEl.createSpan(cls("title-ghost-prefix"));
 		this.ghostSuffixEl = this.ghostEl.createSpan(cls("title-ghost-suffix"));
 	}
 
@@ -178,7 +177,7 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 		this.currentCompletion = "";
 	}
 
-	close(): void {
+	override close(): void {
 		super.close();
 		this.clearGhost();
 	}
@@ -191,7 +190,6 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 			}
 			this.wrapperEl.remove();
 			this.ghostEl = null;
-			this.ghostPrefixEl = null;
 			this.ghostSuffixEl = null;
 			this.wrapperEl = null;
 		}

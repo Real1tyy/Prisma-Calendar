@@ -24,7 +24,7 @@ interface NotificationEventData {
 export class NotificationModal extends Modal {
 	private eventData: NotificationEventData;
 	private settings: SingleCalendarConfig;
-	private onSnooze?: () => void;
+	private onSnooze?: (() => void) | undefined;
 
 	constructor(app: App, eventData: NotificationEventData, settings: SingleCalendarConfig, onSnooze?: () => void) {
 		super(app);
@@ -33,7 +33,7 @@ export class NotificationModal extends Modal {
 		this.onSnooze = onSnooze;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		addCls(contentEl, "event-notification-modal");
 
@@ -267,7 +267,7 @@ export class NotificationModal extends Modal {
 		return date.toLocaleDateString(undefined, options);
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

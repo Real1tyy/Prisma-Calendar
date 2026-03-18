@@ -46,7 +46,6 @@ export function setupDefaultMockImplementations() {
 		const linkMatch = link.match(/\[\[([^\]]+)\]\]/);
 		if (linkMatch) {
 			const content = linkMatch[1];
-			// Remove display name if present
 			const filePart = content.split("|")[0].trim();
 			if (!filePart) return null;
 

@@ -27,10 +27,10 @@ interface CheckboxState {
 }
 
 export class AssignmentModal extends Modal {
-	private searchInput: HTMLInputElement;
-	private listContainer: HTMLElement;
-	private createNewContainer: HTMLElement;
-	private assignButton: HTMLButtonElement;
+	private searchInput!: HTMLInputElement;
+	private listContainer!: HTMLElement;
+	private createNewContainer!: HTMLElement;
+	private assignButton!: HTMLButtonElement;
 	private states: CheckboxState[] = [];
 	private highlightedIndex = -1;
 	private onSubmit: (selected: string[]) => void;
@@ -52,7 +52,7 @@ export class AssignmentModal extends Modal {
 		this.onSubmit = onSubmit;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 
@@ -379,7 +379,7 @@ export class AssignmentModal extends Modal {
 		this.close();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

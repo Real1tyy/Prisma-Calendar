@@ -13,7 +13,7 @@ export class ICSImportProgressModal extends Modal {
 		this.totalCount = totalEvents;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		addCls(contentEl, "ics-import-progress-modal");
 
@@ -78,7 +78,7 @@ export class ICSImportProgressModal extends Modal {
 		}, 3000);
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

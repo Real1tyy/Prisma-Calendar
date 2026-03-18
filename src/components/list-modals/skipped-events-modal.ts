@@ -3,7 +3,7 @@ import { type App, Notice } from "obsidian";
 
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { ToggleSkipCommand } from "../../core/commands";
+import { toggleSkip } from "../../core/commands";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
@@ -51,7 +51,7 @@ export class SkippedEventsModal extends BaseEventListModal {
 				isPrimary: true,
 				handler: async (item, itemEl) => {
 					try {
-						const command = new ToggleSkipCommand(this.app, this.bundle, item.filePath);
+						const command = toggleSkip(this.app, this.bundle, item.filePath);
 						await this.bundle.commandManager.executeCommand(command);
 
 						this.removeItem(itemEl, item);

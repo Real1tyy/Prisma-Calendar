@@ -120,8 +120,8 @@ async function obsidianFetch(input: RequestInfo | URL, init?: RequestInit): Prom
 	const res = await requestUrl({
 		url,
 		method: init?.method ?? "GET",
-		headers,
-		body,
+		...(headers ? { headers } : {}),
+		...(body ? { body } : {}),
 		throw: false,
 	});
 

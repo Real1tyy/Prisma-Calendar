@@ -99,7 +99,7 @@ export abstract class IndexedCacheStore<TTemplate> extends DebouncedNotifier {
 		this.notifyChange();
 	}
 
-	destroy(): void {
+	override destroy(): void {
 		this.subscription?.unsubscribe();
 		this.subscription = null;
 		super.destroy();

@@ -59,7 +59,7 @@ export const getEventName = (
 	titleProp: string | undefined,
 	frontmatter: Record<string, unknown>,
 	filePath: string | null | undefined,
-	calendarTitleProp?: string | undefined
+	calendarTitleProp?: string
 ): string | undefined => {
 	if (calendarTitleProp && frontmatter[calendarTitleProp]) {
 		return extractDisplayName(String(frontmatter[calendarTitleProp]));

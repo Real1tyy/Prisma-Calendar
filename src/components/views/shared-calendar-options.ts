@@ -202,9 +202,9 @@ export function buildSharedEventDidMount(
 	return (info) => {
 		const { el, event } = info;
 
-		const isVirtual = event.extendedProps["isVirtual"] as boolean | undefined;
-		const eventFilePath = event.extendedProps["filePath"] as string | undefined;
-		const computedColor = event.extendedProps["computedColor"] as string | undefined;
+		const isVirtual = event.extendedProps["isVirtual"];
+		const eventFilePath = event.extendedProps["filePath"];
+		const computedColor = event.extendedProps["computedColor"];
 		const displayData = (event.extendedProps["frontmatterDisplayData"] ?? {}) as Record<string, unknown>;
 
 		if (isVirtual) {

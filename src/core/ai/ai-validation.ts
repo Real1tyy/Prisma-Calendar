@@ -30,9 +30,9 @@ type AIMode = "query" | "manipulation" | "planning";
 
 export interface SemanticValidationContext {
 	mode: AIMode;
-	currentEvents?: AIEventSummary[];
-	intervalStart?: string;
-	intervalEnd?: string;
+	currentEvents?: AIEventSummary[] | undefined;
+	intervalStart?: string | undefined;
+	intervalEnd?: string | undefined;
 	gapDetection: boolean;
 	dayCoverage: boolean;
 }

@@ -14,8 +14,8 @@ export interface StatEntry {
 }
 
 export interface Stats {
-	periodStart?: Date;
-	periodEnd?: Date;
+	periodStart?: Date | undefined;
+	periodEnd?: Date | undefined;
 	entries: StatEntry[];
 	totalDuration: number;
 }

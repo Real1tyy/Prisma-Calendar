@@ -19,7 +19,7 @@ class DeletePhysicalEventsModal extends Modal {
 		this.options = options;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass(cls("delete-physical-events-modal"));
@@ -62,7 +62,7 @@ class DeletePhysicalEventsModal extends Modal {
 		});
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}
@@ -76,7 +76,7 @@ export class DeleteRecurringEventsModal extends DeletePhysicalEventsModal {
 			confirmText: "Yes, delete all",
 			cancelText: "No",
 			onConfirm,
-			onCancel,
+			...(onCancel ? { onCancel } : {}),
 		});
 	}
 }
@@ -106,7 +106,7 @@ export class CalendarIntegrationDeleteEventsModal extends DeletePhysicalEventsMo
 			confirmText,
 			cancelText,
 			onConfirm: options.onConfirm,
-			onCancel: options.onCancel,
+			...(options.onCancel ? { onCancel: options.onCancel } : {}),
 		});
 	}
 }

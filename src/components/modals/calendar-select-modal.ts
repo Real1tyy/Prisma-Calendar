@@ -19,7 +19,7 @@ export class CalendarSelectModal extends Modal {
 		this.selectedBundle = calendars[0] || null;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass(cls("calendar-export-modal"));
@@ -112,7 +112,7 @@ export class CalendarSelectModal extends Modal {
 		this.close();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

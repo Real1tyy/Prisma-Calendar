@@ -149,7 +149,7 @@ export abstract class BaseEventModal extends Modal {
 		this.bundle = bundle;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 
@@ -199,7 +199,7 @@ export abstract class BaseEventModal extends Modal {
 		});
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		// If stopwatch is active and we're NOT already in the minimize flow,
 		// auto-save state before closing (handles ESC key, clicking outside, etc.)
 		if (this.isStopwatchActive() && !this.isMinimizing) {
@@ -1169,7 +1169,7 @@ export abstract class BaseEventModal extends Modal {
 
 		this.recurringCheckbox.checked = false;
 		removeCls(this.recurringContainer, "hidden");
-		this.rruleSelect.value = Object.keys(RECURRENCE_TYPE_OPTIONS)[0];
+		this.rruleSelect.value = Object.keys(RECURRENCE_TYPE_OPTIONS)[0]!;
 		addCls(this.weekdayContainer, "hidden");
 		addCls(this.customIntervalContainer, "hidden");
 		this.customFreqSelect.value = "DAILY";

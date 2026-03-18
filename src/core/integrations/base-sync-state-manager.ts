@@ -22,7 +22,7 @@ export abstract class BaseSyncStateManager<TMetadata> {
 		indexer: Indexer,
 		settings$: BehaviorSubject<SingleCalendarConfig>,
 		getPropFromSettings: (settings: SingleCalendarConfig) => string,
-		private schema: z.ZodSchema<TMetadata>
+		private schema: z.ZodType<TMetadata>
 	) {
 		this.frontmatterProp = getPropFromSettings(settings$.value);
 

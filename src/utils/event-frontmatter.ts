@@ -95,7 +95,7 @@ const shiftISO = (iso: unknown, duration?: DurationLike) => {
 	if (!iso.includes("T")) {
 		return shifted.toISODate();
 	}
-	return stripISOSuffix(shifted.toISO()!);
+	return stripISOSuffix(shifted.toISO());
 };
 
 export const applyStartEndOffsets = (
@@ -120,11 +120,11 @@ export const setEventBasics = (
 	fm: Frontmatter,
 	settings: SingleCalendarConfig,
 	data: {
-		title?: string;
+		title?: string | undefined;
 		start: string;
-		end?: string;
-		allDay?: boolean;
-		zettelId?: number;
+		end?: string | undefined;
+		allDay?: boolean | undefined;
+		zettelId?: number | undefined;
 	}
 ) => {
 	const { titleProp, startProp, endProp, dateProp, allDayProp, zettelIdProp } = settings;
@@ -466,8 +466,8 @@ export const removeNonCloneableProperties = (frontmatter: Frontmatter, settings:
  * Only events with ignoreRecurring = true should have their instance date updated.
  */
 export interface TimePropagationDiff {
-	startChange?: { oldValue: string; newValue: string };
-	endChange?: { oldValue: string; newValue: string };
+	startChange?: { oldValue: string; newValue: string } | undefined;
+	endChange?: { oldValue: string; newValue: string } | undefined;
 }
 
 interface StringChange {

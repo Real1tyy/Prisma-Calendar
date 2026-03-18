@@ -1,4 +1,4 @@
-import { type ColorEvaluator, parseIntoList } from "@real1ty-obsidian-plugins";
+import type { ColorEvaluator } from "@real1ty-obsidian-plugins";
 
 import type { SingleCalendarConfig } from "../types/settings";
 import { normalizeFrontmatterForColorEvaluation } from "./expression-utils";

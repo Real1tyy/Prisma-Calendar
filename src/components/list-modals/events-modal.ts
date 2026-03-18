@@ -1,9 +1,10 @@
 import { addCls, cls, removeCls } from "@real1ty-obsidian-plugins";
-import { type App, Modal, Modifier, Notice } from "obsidian";
+import type { Modifier } from "obsidian";
+import { type App, Modal, Notice } from "obsidian";
 
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { AssignCategoriesCommand, ToggleSkipCommand } from "../../core/commands";
+import { assignCategories, toggleSkip } from "../../core/commands";
 import {
 	formatRecurrenceLabel,
 	isPresetType,
@@ -73,7 +74,7 @@ export class EventsModal extends Modal {
 		super(app);
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		addCls(contentEl, "generic-event-list-modal");
@@ -142,7 +143,7 @@ export class EventsModal extends Modal {
 		this.renderContent();
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		this.contentEl.empty();
 	}
 
@@ -453,13 +454,13 @@ export class EventsModal extends Modal {
 			itemEl.style.setProperty("--category-color", categoryColor);
 		}
 
-		itemEl.addEventListener("click", async (e) => {
+		itemEl.addEventListener("click", (e) => {
 			if (e.target instanceof HTMLButtonElement) return;
 			e.preventDefault();
 			e.stopPropagation();
 
 			if (e.ctrlKey || e.metaKey) {
-				await openFileInNewTab(this.app, item.filePath);
+				void openFileInNewTab(this.app, item.filePath);
 			} else {
 				this.openRecurringEventSeries(item);
 			}
@@ -550,7 +551,7 @@ export class EventsModal extends Modal {
 			currentCategories,
 			async (selectedCategories) => {
 				try {
-					const command = new AssignCategoriesCommand(this.app, this.bundle, item.filePath, selectedCategories);
+					const command = assignCategories(this.app, this.bundle, item.filePath, selectedCategories);
 					await this.bundle.commandManager.executeCommand(command);
 					new Notice("Categories updated");
 					this.renderContent();
@@ -586,7 +587,7 @@ export class EventsModal extends Modal {
 
 	private async handleToggleSkip(item: RecurringListItem, itemEl: HTMLElement): Promise<void> {
 		try {
-			const command = new ToggleSkipCommand(this.app, this.bundle, item.filePath);
+			const command = toggleSkip(this.app, this.bundle, item.filePath);
 			await this.bundle.commandManager.executeCommand(command);
 
 			itemEl.classList.add("prisma-fade-out");

@@ -1,7 +1,6 @@
 import type { App } from "obsidian";
 import { describe, expect, it, vi } from "vitest";
 
-import type { Frontmatter } from "../../src/types";
 import {
 	getCommonCategories,
 	isEventDone,
@@ -21,7 +20,7 @@ import {
 	removeZettelId,
 } from "../../src/utils/event-naming";
 import { createMockTimedEvent } from "../fixtures/event-fixtures";
-import { createMockApp, createMockFile, createMockSingleCalendarSettings } from "../setup";
+import { createMockApp, createMockFile } from "../setup";
 
 describe("ZettelID Utilities", () => {
 	describe("extractZettelId", () => {
@@ -355,7 +354,7 @@ describe("ZettelID Utilities", () => {
 
 	describe("generateUniqueZettelId", () => {
 		it("should generate 14-digit ZettelID when path doesn't exist", () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);
 
 			const result = generateUniqueZettelId(app, "notes/", "Meeting");
@@ -366,7 +365,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should increment ZettelID when path exists", () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			const mockFile = createMockFile("notes/Meeting-20250106120000.md");
 
 			vi.mocked(app.vault.getAbstractFileByPath)
@@ -382,7 +381,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should keep incrementing until unique ID found", () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			const mockFile = createMockFile("notes/Meeting-20250106120000.md");
 
 			vi.mocked(app.vault.getAbstractFileByPath)
@@ -400,7 +399,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should handle empty basePath", () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);
 
 			const result = generateUniqueZettelId(app, "", "Meeting");
@@ -410,7 +409,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should use fallback with random suffix after max attempts", () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			const mockFile = createMockFile("notes/Meeting-20250106120000.md");
 
 			// Always return a file to force max attempts
@@ -425,7 +424,7 @@ describe("ZettelID Utilities", () => {
 
 	describe("generateUniqueEventPath", () => {
 		it("should generate complete event path with unique ZettelID for basename without timestamp", () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);
 
 			const result = generateUniqueEventPath(app, "events", "Team Meeting");
@@ -436,7 +435,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("SHOULD add new ZettelID if basename has non-Prisma timestamp format", () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);
 
 			// 12-digit timestamp - not Prisma format, so add new ZettelID
@@ -462,7 +461,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should handle empty directory", () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);
 
 			const result = generateUniqueEventPath(app, "", "Meeting");
@@ -473,7 +472,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should generate unique path when collision occurs (no existing timestamp)", () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			const mockFile = createMockFile("events/Meeting-20250106120000.md");
 
 			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValueOnce(mockFile).mockReturnValueOnce(null);
@@ -488,7 +487,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should normalize directory with trailing slash", () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);
 
 			const result = generateUniqueEventPath(app, "events/", "Meeting");
@@ -501,7 +500,7 @@ describe("ZettelID Utilities", () => {
 
 	describe("ensureFileHasZettelId", () => {
 		it("should return existing ZettelID if file already has one", async () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			const mockFile = createMockFile("events/Meeting-20250106120000.md");
 			mockFile.basename = "Meeting-20250106120000";
 
@@ -513,7 +512,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should embed ZettelID in frontmatter if it exists but not in frontmatter", async () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			const mockFile = createMockFile("events/Meeting-20250106120000.md");
 			mockFile.basename = "Meeting-20250106120000";
 
@@ -525,7 +524,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should generate and embed ZettelID if file doesn't have one", async () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			const mockFile = createMockFile("events/Meeting.md");
 			mockFile.basename = "Meeting";
 			mockFile.parent = { path: "events" } as any;
@@ -540,7 +539,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should handle file without parent directory", async () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			const mockFile = createMockFile("Meeting.md");
 			mockFile.basename = "Meeting";
 			mockFile.parent = null;
@@ -554,7 +553,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should generate unique ZettelID when collision occurs", async () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			const mockFile = createMockFile("events/Meeting.md");
 			mockFile.basename = "Meeting";
 			mockFile.parent = { path: "events" } as any;
@@ -573,7 +572,7 @@ describe("ZettelID Utilities", () => {
 		});
 
 		it("should work without zettelIdProp parameter", async () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 			const mockFile = createMockFile("events/Meeting-20250106120000.md");
 			mockFile.basename = "Meeting-20250106120000";
 
@@ -586,7 +585,7 @@ describe("ZettelID Utilities", () => {
 
 	describe("Integration: Batch Clone Scenario", () => {
 		it("should handle multiple files with same name getting unique ZettelIDs", () => {
-			const app = createMockApp() as unknown as App;
+			const app = createMockApp() as any as App;
 
 			// First clone - no collision
 			vi.mocked(app.vault.getAbstractFileByPath).mockReturnValue(null);
@@ -896,7 +895,7 @@ describe("Physical Recurring Event Utilities", () => {
 				frontmatter: { Status: "Done" },
 			} as never);
 
-			const result = isEventDone(mockApp as unknown as App, "Events/test-event.md", "Status", "Done");
+			const result = isEventDone(mockApp as any as App, "Events/test-event.md", "Status", "Done");
 			expect(result).toBe(true);
 		});
 
@@ -909,7 +908,7 @@ describe("Physical Recurring Event Utilities", () => {
 				frontmatter: { Status: "In Progress" },
 			} as never);
 
-			const result = isEventDone(mockApp as unknown as App, "Events/test-event.md", "Status", "Done");
+			const result = isEventDone(mockApp as any as App, "Events/test-event.md", "Status", "Done");
 			expect(result).toBe(false);
 		});
 	});
@@ -1016,7 +1015,7 @@ describe("Physical Recurring Event Utilities", () => {
 				createMockTimedEvent({ ref: { filePath: "event3.md" } }),
 			];
 
-			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as any as App, selectedEvents, "Category");
 
 			expect(result).toEqual(["Work", "Meeting"]);
 		});
@@ -1041,7 +1040,7 @@ describe("Physical Recurring Event Utilities", () => {
 				createMockTimedEvent({ ref: { filePath: "event2.md" } }),
 			];
 
-			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as any as App, selectedEvents, "Category");
 
 			expect(result).toEqual(["Entertainment"]);
 		});
@@ -1066,21 +1065,21 @@ describe("Physical Recurring Event Utilities", () => {
 				createMockTimedEvent({ ref: { filePath: "event2.md" } }),
 			];
 
-			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as any as App, selectedEvents, "Category");
 
 			expect(result).toEqual([]);
 		});
 
 		it("should return empty array when no events are selected", async () => {
 			const mockApp = createMockApp();
-			const result = getCommonCategories(mockApp as unknown as App, [], "Category");
+			const result = getCommonCategories(mockApp as any as App, [], "Category");
 			expect(result).toEqual([]);
 		});
 
 		it("should return empty array when categoryProp is empty", async () => {
 			const mockApp = createMockApp();
 			const selectedEvents = [createMockTimedEvent({ ref: { filePath: "event1.md" } })];
-			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "");
+			const result = getCommonCategories(mockApp as any as App, selectedEvents, "");
 			expect(result).toEqual([]);
 		});
 
@@ -1104,7 +1103,7 @@ describe("Physical Recurring Event Utilities", () => {
 				createMockTimedEvent({ ref: { filePath: "event2.md" } }),
 			];
 
-			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as any as App, selectedEvents, "Category");
 
 			expect(result).toEqual(["Work", "Meeting"]);
 		});
@@ -1124,7 +1123,7 @@ describe("Physical Recurring Event Utilities", () => {
 				createMockTimedEvent({ ref: { filePath: "nonexistent.md" } }),
 			];
 
-			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as any as App, selectedEvents, "Category");
 
 			expect(result).toEqual(["Work", "Meeting"]);
 		});
@@ -1149,7 +1148,7 @@ describe("Physical Recurring Event Utilities", () => {
 				createMockTimedEvent({ ref: { filePath: "event2.md" } }),
 			];
 
-			const result = getCommonCategories(mockApp as unknown as App, selectedEvents, "Category");
+			const result = getCommonCategories(mockApp as any as App, selectedEvents, "Category");
 
 			expect(result).toEqual([]);
 		});

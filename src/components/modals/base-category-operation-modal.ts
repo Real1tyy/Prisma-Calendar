@@ -30,7 +30,7 @@ export abstract class BaseCategoryOperationModal extends Modal {
 	abstract getSuccessMessage(filesModified: number): string;
 	abstract getErrorMessage(error: unknown): string;
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 
 		contentEl.empty();
@@ -90,7 +90,7 @@ export abstract class BaseCategoryOperationModal extends Modal {
 		return `${categoryProp}.includes('${escapedCategory}')`;
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

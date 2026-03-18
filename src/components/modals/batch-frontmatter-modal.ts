@@ -34,7 +34,7 @@ export class BatchFrontmatterModal extends Modal {
 		this.onSubmit = onSubmit;
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 
@@ -226,7 +226,7 @@ export class BatchFrontmatterModal extends Modal {
 		return propertyMap;
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

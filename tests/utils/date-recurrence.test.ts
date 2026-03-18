@@ -124,7 +124,7 @@ function iterateDates(
 	rangeEnd: DateTime
 ): string[] {
 	const occurrences = Array.from(
-		iterateOccurrencesInRange(startDate, { type: recurrenceType, weekdays }, rangeStart, rangeEnd)
+		iterateOccurrencesInRange(startDate, { type: recurrenceType, ...(weekdays && { weekdays }) }, rangeStart, rangeEnd)
 	);
 	return occurrences.map(toDate);
 }

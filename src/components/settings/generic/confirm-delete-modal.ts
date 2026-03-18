@@ -10,7 +10,7 @@ export class ConfirmDeleteModal extends Modal {
 		super(app);
 	}
 
-	onOpen(): void {
+	override onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 
@@ -36,7 +36,7 @@ export class ConfirmDeleteModal extends Modal {
 			});
 	}
 
-	onClose(): void {
+	override onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

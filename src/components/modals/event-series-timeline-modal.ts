@@ -159,7 +159,7 @@ export function renderTimelineInto(
 			if (event.skipped) classes.push(cls("timeline-item-skipped"));
 			classes.push(event.type === "allDay" ? cls("timeline-item-allday") : cls("timeline-item-timed"));
 
-			const style = eventColor ? `background-color: ${eventColor}; border-color: ${eventColor};` : undefined;
+			const style = eventColor ? `background-color: ${eventColor}; border-color: ${eventColor};` : "";
 
 			return {
 				id: event.ref.filePath,
