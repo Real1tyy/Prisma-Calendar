@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import type { ZodRawShape } from "zod";
+import type { z, ZodRawShape } from "zod";
 
 import type { ComponentContext } from "../component-renderer/types";
 
@@ -58,11 +58,16 @@ export type SchemaFieldDescriptor =
 
 export type SchemaFieldType = SchemaFieldDescriptor["type"];
 
+export type FieldOptions =
+	| Record<string, string>
+	| [value: string, label: string][]
+	| { value: string; label: string }[];
+
 export interface FieldOverride {
 	label?: string;
 	hidden?: boolean;
 	placeholder?: string;
-	options?: Record<string, string>;
+	options?: FieldOptions;
 	render?: (el: HTMLElement, value: unknown, onChange: (v: unknown) => void) => void;
 	defaultValue?: unknown;
 }
@@ -95,3 +100,62 @@ interface SchemaModalWithUpsert<T> extends SchemaModalConfigBase<T> {
 }
 
 export type SchemaModalConfig<T> = SchemaModalWithSubmit<T> | SchemaModalWithUpsert<T>;
+
+// ─── Schema Form Renderer (container-agnostic) ──────────────
+
+export type SchemaFormMode = "edit" | "readonly";
+
+export interface SchemaFormConfig<T> {
+	shape: ZodRawShape;
+	prefix: string;
+	mode?: SchemaFormMode | undefined;
+	fieldOverrides?: Record<string, FieldOverride> | undefined;
+	existing?: Partial<T> | undefined;
+	extraFields?: ((el: HTMLElement, values: Record<string, unknown>) => void) | undefined;
+}
+
+export interface SchemaFormValidationSuccess<T> {
+	success: true;
+	data: T;
+}
+
+export interface SchemaFormValidationFailure {
+	success: false;
+	errors: string[];
+}
+
+export type SchemaFormValidationResult<T> = SchemaFormValidationSuccess<T> | SchemaFormValidationFailure;
+
+export interface SchemaFormHandle<T> {
+	getValues: () => Record<string, unknown>;
+	validate: () => SchemaFormValidationResult<T>;
+	setMode: (mode: SchemaFormMode) => void;
+	destroy: () => void;
+}
+
+// ─── Schema Form Modal (modal wrapper) ──────────────────────
+
+export interface SchemaFormModalConfig<S extends ZodRawShape = ZodRawShape> {
+	app: App;
+	prefix: string;
+	title?: string | undefined;
+	cls?: string | undefined;
+	shape: S;
+	mode?: SchemaFormMode | undefined;
+	fieldOverrides?: Record<string, FieldOverride> | undefined;
+	existing?: Partial<z.infer<z.ZodObject<S>>> | undefined;
+	extraFields?: ((el: HTMLElement, values: Record<string, unknown>) => void) | undefined;
+	submitText?: string | undefined;
+	onSubmit: (values: z.infer<z.ZodObject<S>>) => void | Promise<void>;
+	nameField?: boolean | { placeholder?: string } | undefined;
+}
+
+// ─── Modal Helpers ──────────────────────────────────────────
+
+export interface ModalButtonOptions {
+	prefix: string;
+	submitText: string;
+	submitCls?: string;
+	onSubmit: () => void;
+	onCancel: () => void;
+}

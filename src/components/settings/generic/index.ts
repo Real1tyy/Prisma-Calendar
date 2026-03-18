@@ -1,1 +1,1 @@
-export { ConfirmDeleteModal } from "./confirm-delete-modal";
+export { showConfirmDeleteModal } from "./confirm-delete-modal";

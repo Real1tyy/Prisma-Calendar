@@ -1,7 +1,7 @@
 import {
 	type FrontmatterDiff,
 	FrontmatterPropagationDebouncer,
-	FrontmatterPropagationModal,
+	showFrontmatterPropagationModal,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
@@ -142,12 +142,12 @@ export class NameSeriesTracker {
 			if (this.settings.propagateFrontmatterToNameSeries) {
 				void this.propagateToSeriesMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths);
 			} else if (this.settings.askBeforePropagatingToNameSeries) {
-				new FrontmatterPropagationModal(this.app, {
+				showFrontmatterPropagationModal(this.app, {
 					eventTitle: `Name series: ${ctx.nameKey}`,
 					diff: filteredDiff,
 					instanceCount: targetFilePaths.length,
 					onConfirm: () => this.propagateToSeriesMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths),
-				}).open();
+				});
 			}
 		});
 	}

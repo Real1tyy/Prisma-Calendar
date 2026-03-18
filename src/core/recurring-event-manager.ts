@@ -7,13 +7,13 @@ import {
 	extractContentAfterFrontmatter,
 	type FrontmatterDiff,
 	FrontmatterPropagationDebouncer,
-	FrontmatterPropagationModal,
 	getISOTimePart,
 	getObsidianLinkPath,
 	getUniqueFilePathFromFull,
 	rebuildPhysicalInstanceFilename,
 	replaceISOTime,
 	sanitizeForFilename,
+	showFrontmatterPropagationModal,
 	withFrontmatter,
 	withLock,
 } from "@real1ty-obsidian-plugins";
@@ -253,12 +253,12 @@ export class RecurringEventManager extends DebouncedNotifier {
 					void this.propagateFrontmatterToInstances(currentEvent, filteredDiff);
 				} else if (this.settings.askBeforePropagatingFrontmatter) {
 					const instanceCount = currentData.physicalInstances.size;
-					new FrontmatterPropagationModal(this.app, {
+					showFrontmatterPropagationModal(this.app, {
 						eventTitle: currentEvent.title,
 						diff: filteredDiff,
 						instanceCount,
 						onConfirm: () => this.propagateFrontmatterToInstances(currentEvent, filteredDiff),
-					}).open();
+					});
 				}
 			}
 		);

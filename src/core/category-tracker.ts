@@ -1,8 +1,8 @@
 import {
 	type FrontmatterDiff,
 	FrontmatterPropagationDebouncer,
-	FrontmatterPropagationModal,
 	parseIntoList,
+	showFrontmatterPropagationModal,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
@@ -279,12 +279,12 @@ export class CategoryTracker {
 					if (this.settings.propagateFrontmatterToCategorySeries) {
 						void this.propagateToMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths);
 					} else if (this.settings.askBeforePropagatingToCategorySeries) {
-						new FrontmatterPropagationModal(this.app, {
+						showFrontmatterPropagationModal(this.app, {
 							eventTitle: `Category series: ${ctx.categoryValue}`,
 							diff: filteredDiff,
 							instanceCount: targetFilePaths.length,
 							onConfirm: () => this.propagateToMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths),
-						}).open();
+						});
 					}
 				});
 			}
