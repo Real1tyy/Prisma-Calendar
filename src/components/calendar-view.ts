@@ -525,13 +525,17 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 
 			datesSet: () => {
-				// Refresh cached timestamps once per navigation (not per event)
 				this.cachedNow = new Date();
 				const n = this.cachedNow;
 				this.cachedTodayStart = new Date(n.getFullYear(), n.getMonth(), n.getDate());
 
 				if (this.dragEdgeScrollListener) {
 					this.dragNavigatedInterval = true;
+				}
+
+				const view = this.calendar?.view;
+				if (view) {
+					this.bundle.viewRef.capacityIndicatorHandle?.setRange(view.activeStart, view.activeEnd);
 				}
 
 				this.scheduleRefreshEvents();

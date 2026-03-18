@@ -1,6 +1,6 @@
 # Tabbed Views
 
-The calendar view features a tab bar in the view header with five tabs. Each tab provides a different perspective on your calendar data. Tabs render lazily — content loads only when you switch to a tab for the first time.
+The calendar view features a tab bar in the view header with six tabs. Each tab provides a different perspective on your calendar data. Tabs render lazily — content loads only when you switch to a tab for the first time.
 
 ## Calendar
 
@@ -30,6 +30,7 @@ A two-column resizable layout with a daily calendar on the left and live statist
   - **Event count**: Number of events for the day.
   - **Pie chart**: Visual distribution of time across events or categories.
   - **Table**: Paginated breakdown of each entry with name, duration, percentage, and event count. Navigate pages with First/Prev/Next/Last buttons or type a page number directly.
+  - **Capacity label** (when enabled): Shows used vs total hours and remaining time for the day. Boundaries are inferred from your earliest and latest events. See [Capacity Tracking](./capacity-tracking.md).
 - **Keyboard navigation**: Use **Left/Right arrow keys** to navigate between days. Works immediately when the tab is active — no click needed.
 - **Resizable**: Drag the divider between columns to adjust the split.
 
@@ -41,6 +42,10 @@ A two-column resizable layout with two independent daily calendars side by side.
 - **Keyboard navigation**: Use **Left/Right arrow keys** to navigate the focused calendar. Click anywhere on a calendar to focus it, then arrow keys will move that calendar's date forward or backward. Defaults to the left calendar.
 - **Full calendar features**: Both calendars support the same interactions as the Daily + Stats calendar — event rendering, colors, icons, context menus, drag-and-drop, click-to-open, hover preview, and date/time selection.
 - **Resizable**: Drag the divider between columns to adjust the split.
+
+## Dashboard
+
+A full-page overview of all events with three collapsible sections — Recurring Events, Categories, and By Name. Each section shows a pie chart distribution alongside a sortable, filterable table with colored rows. See [Dashboard](./dashboard.md) for details.
 
 ## Managing Tabs
 

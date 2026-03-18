@@ -60,7 +60,12 @@ export class CalendarBundle {
 	private icsSubscriptionSync = new SyncState<ICSSubscriptionSyncService>("ICS Subscription");
 	private ribbonIconEl: HTMLElement | null = null;
 	private readonly subscriptions: Subscription[] = [];
-	public readonly viewRef: PrismaViewRef = { calendarComponent: null, tabbedHandle: null, pageHeaderHandle: null };
+	public readonly viewRef: PrismaViewRef = {
+		calendarComponent: null,
+		tabbedHandle: null,
+		pageHeaderHandle: null,
+		capacityIndicatorHandle: null,
+	};
 
 	constructor(
 		public readonly plugin: CustomCalendarPlugin,

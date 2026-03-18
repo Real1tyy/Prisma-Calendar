@@ -9408,6 +9408,70 @@ div.vis-tooltip {
 	min-height: 0;
 }
 
+/* ─── Capacity Tracking ──────────────────────────────────────── */
+
+.prisma-capacity-indicator {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
+	margin-left: 8px;
+	font-size: var(--font-ui-smaller);
+	font-weight: 500;
+	color: var(--text-muted);
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 12px;
+	white-space: nowrap;
+	vertical-align: middle;
+}
+
+.prisma-capacity-chart-section {
+	margin-top: 16px;
+	padding-top: 12px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.prisma-capacity-chart-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 8px;
+}
+
+.prisma-capacity-chart-header h3 {
+	margin: 0;
+	font-size: var(--font-ui-medium);
+	font-weight: 600;
+	color: var(--text-normal);
+}
+
+.prisma-capacity-summary-text {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+
+.prisma-capacity-chart-container {
+	height: 160px;
+	position: relative;
+}
+
+.prisma-capacity-label {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin: 8px auto;
+	padding: 6px 16px;
+	font-size: var(--font-ui-small);
+	font-weight: 500;
+	color: var(--text-muted);
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 16px;
+	white-space: nowrap;
+	width: fit-content;
+}
+
 /* ─── Daily Stats Renderer ───────────────────────────────────── */
 
 .prisma-stats-tab-date-label {
@@ -9416,4 +9480,195 @@ div.vis-tooltip {
 	color: var(--text-normal);
 	padding: 8px 0;
 	text-align: center;
+}
+
+/* ─── Dashboard Tab ─────────────────────────────────────────── */
+
+.prisma-dashboard-container {
+	overflow-y: auto;
+	padding: 16px;
+	height: 100%;
+}
+
+.prisma-dashboard-section {
+	margin-bottom: 24px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	overflow: hidden;
+}
+
+.prisma-dashboard-section-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 16px;
+	background: var(--background-secondary);
+	cursor: pointer;
+	font-weight: var(--font-weight-medium);
+	font-size: var(--font-ui-medium);
+	color: var(--text-normal);
+	user-select: none;
+}
+
+.prisma-dashboard-section-header:hover {
+	background: var(--background-secondary-alt);
+}
+
+.prisma-dashboard-section-chevron {
+	font-size: 10px;
+	color: var(--text-muted);
+	transition: transform 0.15s ease;
+}
+
+.prisma-dashboard-section-content {
+	padding: 16px;
+}
+
+.prisma-dashboard-section-content.prisma-hidden {
+	display: none;
+}
+
+.prisma-dashboard-section-empty {
+	color: var(--text-muted);
+	font-style: italic;
+	padding: 8px 0;
+}
+
+.prisma-dashboard-controls {
+	margin-bottom: 12px;
+}
+
+.prisma-dashboard-search-input {
+	width: 100%;
+	max-width: 300px;
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+}
+
+.prisma-dashboard-search-input:focus {
+	border-color: var(--interactive-accent);
+	outline: none;
+}
+
+.prisma-dashboard-section-layout {
+	display: grid;
+	grid-template-columns: 2fr 3fr;
+	gap: 16px;
+	align-items: start;
+}
+
+.prisma-dashboard-chart-panel {
+	min-height: 250px;
+	max-height: 400px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.prisma-dashboard-chart-panel canvas {
+	max-height: 400px;
+	width: 100%;
+	height: 100%;
+}
+
+.prisma-dashboard-table-panel {
+	overflow-x: auto;
+}
+
+.prisma-dashboard-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--font-ui-small);
+}
+
+.prisma-dashboard-table th {
+	text-align: left;
+	padding: 8px 12px;
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	font-weight: var(--font-weight-medium);
+	border-bottom: 2px solid var(--background-modifier-border);
+	white-space: nowrap;
+}
+
+.prisma-dashboard-table th.prisma-dashboard-table-sortable {
+	cursor: pointer;
+	user-select: none;
+}
+
+.prisma-dashboard-table th.prisma-dashboard-table-sortable:hover {
+	background: var(--background-secondary-alt);
+}
+
+.prisma-dashboard-table td {
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+}
+
+.prisma-dashboard-table tr:last-child td {
+	border-bottom: none;
+}
+
+.prisma-dashboard-table tr:hover {
+	background-color: var(--background-secondary-alt);
+}
+
+.prisma-dashboard-table tr.prisma-dashboard-table-row-colored {
+	background-color: rgba(var(--row-color-rgb), 0.12);
+	border-left: 3px solid rgba(var(--row-color-rgb), 1);
+}
+
+.prisma-dashboard-table tr.prisma-dashboard-table-row-colored:hover {
+	background-color: rgba(var(--row-color-rgb), 0.22);
+}
+
+.prisma-dashboard-table tr.prisma-dashboard-table-row-clickable {
+	cursor: pointer;
+}
+
+.prisma-dashboard-table tr.prisma-dashboard-table-empty-row td {
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.prisma-dashboard-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	padding: 8px 0;
+	margin-top: 8px;
+}
+
+.prisma-dashboard-pagination-btn {
+	padding: 4px 12px;
+	border-radius: var(--radius-s);
+	font-size: var(--font-ui-small);
+}
+
+.prisma-dashboard-pagination-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.prisma-dashboard-pagination-info {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+	.prisma-dashboard-section-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.prisma-dashboard-chart-panel {
+		min-height: 200px;
+		max-height: 300px;
+	}
 }
