@@ -9393,12 +9393,19 @@ div.vis-tooltip {
 
 .prisma-daily-stats-grid,
 .prisma-dual-daily-grid {
-	min-height: 100%;
+	flex: 1;
+	min-height: 0;
 }
 
 .prisma-daily-stats-grid-cell,
 .prisma-dual-daily-grid-cell {
 	overflow-y: auto;
+}
+
+.prisma-daily-stats-grid-cell .prisma-calendar-container,
+.prisma-dual-daily-grid-cell .prisma-calendar-container {
+	flex: 1;
+	min-height: 0;
 }
 
 /* ─── Daily Stats Renderer ───────────────────────────────────── */
