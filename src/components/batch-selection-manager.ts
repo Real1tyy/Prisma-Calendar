@@ -7,7 +7,7 @@ import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
 import type { CalendarEvent } from "../types/calendar";
 import { isTimeUnitAllowedForAllDay } from "../types/move-by";
-import { MoveByModal } from "./modals/move-by-modal";
+import { showMoveByModal } from "./modals";
 
 export class BatchSelectionManager {
 	private selectedEvents = new Map<string, CalendarEvent>();
@@ -248,7 +248,7 @@ export class BatchSelectionManager {
 		// Check if any selected events are all-day
 		const hasAllDayEvents = selectedEventsArray.some((event) => event.allDay);
 
-		new MoveByModal(this.app, (result) => {
+		showMoveByModal(this.app, (result) => {
 			void (async () => {
 				if (hasAllDayEvents && !isTimeUnitAllowedForAllDay(result.unit)) {
 					console.warn(
@@ -265,7 +265,7 @@ export class BatchSelectionManager {
 					"Failed to move events by custom offset"
 				);
 			})();
-		}).open();
+		});
 	}
 
 	executeAssignCategories(categories: string[]): void {

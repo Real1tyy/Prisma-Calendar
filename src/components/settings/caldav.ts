@@ -17,7 +17,7 @@ import {
 import type { CustomCalendarSettingsSchema } from "../../types/settings";
 import { getCalendarById } from "../../utils/calendar-settings";
 import { deleteFilesByPaths } from "../../utils/obsidian";
-import { CalendarIntegrationDeleteEventsModal } from "../modals";
+import { showCalendarIntegrationDeleteEventsModal } from "../modals";
 import { ConfirmDeleteModal } from "./generic";
 
 export class CalDAVSettings {
@@ -70,7 +70,7 @@ export class CalDAVSettings {
 		addButton.addEventListener("click", () => {
 			new AddCalDAVAccountModal(this.app, this.settingsStore, this.calendarId, () => {
 				this.refreshAccountsList(wrapper);
-			}).open();
+			});
 		});
 	}
 
@@ -141,7 +141,7 @@ export class CalDAVSettings {
 		editButton.addEventListener("click", () => {
 			new EditCalDAVAccountModal(this.app, this.settingsStore, this.plugin, this.calendarId, account, () => {
 				this.refreshAccountsList(container.parentElement!);
-			}).open();
+			});
 		});
 
 		const deleteButton = controlsEl.createEl("button", {
@@ -172,7 +172,7 @@ export class CalDAVSettings {
 		if (!bundle) {
 			new ConfirmDeleteModal(this.app, account.name, "account", () => {
 				void this.deleteAccount(account.id, container);
-			}).open();
+			});
 			return;
 		}
 
@@ -180,11 +180,11 @@ export class CalDAVSettings {
 		if (events.length === 0) {
 			new ConfirmDeleteModal(this.app, account.name, "account", () => {
 				void this.deleteAccount(account.id, container);
-			}).open();
+			});
 			return;
 		}
 
-		new CalendarIntegrationDeleteEventsModal(this.app, {
+		showCalendarIntegrationDeleteEventsModal(this.app, {
 			accountName: account.name,
 			eventCount: events.length,
 			onConfirm: async () => {
@@ -194,7 +194,7 @@ export class CalDAVSettings {
 			onCancel: async () => {
 				await this.deleteAccount(account.id, container);
 			},
-		}).open();
+		});
 	}
 
 	private async deleteEventsForAccount(bundle: CalendarBundle, accountId: string): Promise<void> {
@@ -746,7 +746,7 @@ class EditCalDAVAccountModal extends Modal {
 						const calendarIdentifier = calendarUrl.split("/").pop() || calendarUrl;
 
 						await new Promise<void>((resolve) => {
-							new CalendarIntegrationDeleteEventsModal(this.app, {
+							showCalendarIntegrationDeleteEventsModal(this.app, {
 								calendarIdentifier,
 								eventCount: events.length,
 								onConfirm: async () => {
@@ -756,7 +756,7 @@ class EditCalDAVAccountModal extends Modal {
 								onCancel: () => {
 									resolve();
 								},
-							}).open();
+							});
 						});
 					}
 				}

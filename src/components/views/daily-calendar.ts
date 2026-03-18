@@ -13,9 +13,8 @@ import type { SingleCalendarConfig } from "../../types/settings";
 import { BatchSelectionManager } from "../batch-selection-manager";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
-import { EventPreviewModal } from "../event-preview-modal";
 import { SearchFilterInputManager } from "../input-managers/search-filter";
-import { EventCreateModal } from "../modals";
+import { EventCreateModal, showEventPreviewModal } from "../modals";
 import {
 	applyContainerStyles,
 	buildCalendarIconCache,
@@ -425,7 +424,7 @@ export function createDailyCalendar(
 		if (isHoliday) return;
 
 		if (isVirtual && filePath && typeof filePath === "string") {
-			new EventPreviewModal(app, bundle, {
+			showEventPreviewModal(app, bundle, {
 				title: event.title,
 				start: null,
 				end: null,
@@ -434,7 +433,7 @@ export function createDailyCalendar(
 					filePath,
 					frontmatterDisplayData: event.extendedProps.frontmatterDisplayData,
 				},
-			}).open();
+			});
 			return;
 		}
 

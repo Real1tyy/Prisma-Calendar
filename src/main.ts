@@ -14,10 +14,13 @@ import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
 import { CustomCalendarSettingsTab } from "./components";
 import { AI_CHAT_VIEW_TYPE, AIChatView } from "./components/ai-chat-view";
 import type { CalendarComponent } from "./components/calendar-view";
-import { CalendarSelectModal, ICSImportModal } from "./components/modals";
-import { showHeatmapModal } from "./components/modals/event-series-heatmap-modal";
-import { showTimelineModal } from "./components/modals/event-series-timeline-modal";
-import { ICSImportProgressModal } from "./components/modals/ics-import-progress-modal";
+import {
+	showCalendarSelectModal,
+	showHeatmapModal,
+	showICSImportModal,
+	showICSImportProgressModal,
+	showTimelineModal,
+} from "./components/modals";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, PrismaCalendarApiManager } from "./core";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
@@ -543,9 +546,9 @@ export default class CustomCalendarPlugin extends Plugin {
 			return;
 		}
 
-		new CalendarSelectModal(this.app, this.calendarBundles, (options) => {
+		showCalendarSelectModal(this.app, this.calendarBundles, (options) => {
 			void exportCalendarAsICS(this.app, options);
-		}).open();
+		});
 	}
 
 	private showCalendarImportModal(): void {
@@ -554,20 +557,19 @@ export default class CustomCalendarPlugin extends Plugin {
 			return;
 		}
 
-		new ICSImportModal(this.app, this.calendarBundles, async (bundle, events, timezone) => {
-			const progressModal = new ICSImportProgressModal(this.app, events.length);
-			progressModal.open();
+		showICSImportModal(this.app, this.calendarBundles, async (bundle, events, timezone) => {
+			const progressHandle = showICSImportProgressModal(this.app, events.length);
 
 			try {
 				const result = await importEventsToCalendar(this.app, bundle, events, timezone, (current, _total, title) => {
-					progressModal.updateProgress(current, title);
+					progressHandle.updateProgress(current, title);
 				});
 
-				progressModal.showComplete(result.successCount, result.errorCount, result.skippedCount);
+				progressHandle.showComplete(result.successCount, result.errorCount, result.skippedCount);
 			} catch (error) {
-				progressModal.showError(error instanceof Error ? error.message : "Import failed");
+				progressHandle.showError(error instanceof Error ? error.message : "Import failed");
 			}
-		}).open();
+		});
 	}
 
 	async syncSingleAccount(account: CalDAVAccount): Promise<void> {

@@ -9,9 +9,12 @@ import { formatRecurrenceLabel, isWeekdaySupported } from "../../types/recurring
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
 import { removeZettelId } from "../../utils/event-naming";
-import { type EventSeriesBasesViewConfig, EventSeriesBasesViewModal } from "../modals/event-series-bases-view-modal";
-import { showHeatmapModal } from "../modals/event-series-heatmap-modal";
-import { showTimelineModal } from "../modals/event-series-timeline-modal";
+import {
+	type EventSeriesBasesViewConfig,
+	showEventSeriesBasesViewModal,
+	showHeatmapModal,
+	showTimelineModal,
+} from "../modals";
 
 type SourceTab = "name" | "category" | "recurring";
 
@@ -641,7 +644,7 @@ export class EventSeriesModal extends Modal {
 			return;
 		}
 
-		new EventSeriesBasesViewModal(this.app, settings, config).open();
+		showEventSeriesBasesViewModal(this.app, settings, config);
 	}
 
 	// ─── Utilities ───────────────────────────────────────────────

@@ -3,13 +3,13 @@ import type { App } from "obsidian";
 import { DataSet } from "vis-data";
 import { Timeline, type TimelineOptions } from "vis-timeline";
 
-import type { CalendarBundle } from "../../core/calendar-bundle";
-import type { CalendarEvent } from "../../types/calendar";
-import type { SingleCalendarConfig } from "../../types/settings";
-import { resolveEventColor } from "../../utils/event-color";
-import { cleanupTitle } from "../../utils/event-naming";
-import { buildEventTooltip } from "../../utils/format";
-import { EventPreviewModal, type PreviewEventData } from "../event-preview-modal";
+import type { CalendarBundle } from "../../../core/calendar-bundle";
+import type { CalendarEvent } from "../../../types/calendar";
+import type { SingleCalendarConfig } from "../../../types/settings";
+import { resolveEventColor } from "../../../utils/event-color";
+import { cleanupTitle } from "../../../utils/event-naming";
+import { buildEventTooltip } from "../../../utils/format";
+import { type PreviewEventData, showEventPreviewModal } from "../preview/event-preview";
 
 export interface EventSeriesTimelineConfig {
 	events: CalendarEvent[];
@@ -115,7 +115,7 @@ export function renderTimelineInto(
 			allDay: event.type === "allDay",
 			extendedProps: { filePath: event.ref.filePath },
 		};
-		new EventPreviewModal(app, bundle, previewEvent).open();
+		showEventPreviewModal(app, bundle, previewEvent);
 	}
 
 	function buildTimeline(events: CalendarEvent[]): void {

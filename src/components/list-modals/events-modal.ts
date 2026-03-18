@@ -15,7 +15,7 @@ import { getEventName, removeZettelId } from "../../utils/event-naming";
 import { getCategoriesFromFilePath, openFileInNewTab } from "../../utils/obsidian";
 import { getStartDateTime } from "../../utils/recurring-utils";
 import type { CalendarComponent } from "../calendar-view";
-import { openCategoryAssignModal } from "../modals/assignment-modal";
+import { openCategoryAssignModal } from "../modals";
 import { EventSeriesModal } from "./event-series-modal";
 
 type TabId = "recurring" | "byCategory" | "byName";

@@ -31,11 +31,15 @@ import {
 	openFileInNewWindow,
 } from "../utils/obsidian";
 import type { CalendarHost } from "./calendar-host";
-import { EventPreviewModal, type PreviewEventData } from "./event-preview-modal";
 import { EventSeriesModal } from "./list-modals/event-series-modal";
-import { DeleteRecurringEventsModal, EventEditModal } from "./modals";
-import { openCategoryAssignModal } from "./modals/assignment-modal";
-import { MoveByModal } from "./modals/move-by-modal";
+import type { PreviewEventData } from "./modals";
+import {
+	EventEditModal,
+	openCategoryAssignModal,
+	showDeleteRecurringEventsModal,
+	showEventPreviewModal,
+	showMoveByModal,
+} from "./modals";
 
 interface CalendarEventInfo {
 	title: string;
@@ -525,7 +529,7 @@ export class EventContextMenu {
 			allDay: event.allDay || false,
 			extendedProps: event.extendedProps,
 		};
-		new EventPreviewModal(this.app, this.bundle, previewEvent).open();
+		showEventPreviewModal(this.app, this.bundle, previewEvent);
 	}
 
 	private showHoverPreview(
@@ -700,7 +704,7 @@ export class EventContextMenu {
 		const isAllDay = event.allDay || false;
 
 		void this.withFilePath(event, "move event", (filePath) => {
-			new MoveByModal(this.app, (result) => {
+			showMoveByModal(this.app, (result) => {
 				void (async () => {
 					if (isAllDay && !isTimeUnitAllowedForAllDay(result.unit)) {
 						console.warn(
@@ -716,7 +720,7 @@ export class EventContextMenu {
 						error: "Failed to move event",
 					});
 				})();
-			}).open();
+			});
 		});
 	}
 
@@ -785,7 +789,7 @@ export class EventContextMenu {
 
 		const physicalInstances = this.bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
 		if (physicalInstances.length > 0) {
-			new DeleteRecurringEventsModal(
+			showDeleteRecurringEventsModal(
 				this.app,
 				async () => {
 					await this.bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
@@ -794,7 +798,7 @@ export class EventContextMenu {
 				() => {
 					void onComplete();
 				}
-			).open();
+			);
 		} else {
 			await onComplete();
 		}

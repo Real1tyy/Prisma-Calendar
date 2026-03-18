@@ -8,7 +8,7 @@ import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettingsSchema } from "../../../types/settings";
 import { getCalendarById } from "../../../utils/calendar-settings";
 import { deleteFilesByPaths } from "../../../utils/obsidian";
-import { CalendarIntegrationDeleteEventsModal } from "../../modals";
+import { showCalendarIntegrationDeleteEventsModal } from "../../modals";
 import { ConfirmDeleteModal } from "../generic";
 import { AddICSSubscriptionModal } from "./add-modal";
 import { EditICSSubscriptionModal } from "./edit-modal";
@@ -172,7 +172,7 @@ export class ICSSubscriptionSettings {
 			return;
 		}
 
-		new CalendarIntegrationDeleteEventsModal(this.app, {
+		showCalendarIntegrationDeleteEventsModal(this.app, {
 			accountName: subscription.name,
 			eventCount: events.length,
 			onConfirm: async () => {
@@ -182,7 +182,7 @@ export class ICSSubscriptionSettings {
 			onCancel: async () => {
 				await this.deleteSubscription(subscription.id, container);
 			},
-		}).open();
+		});
 	}
 
 	private async deleteEventsForSubscription(bundle: CalendarBundle, subscriptionId: string): Promise<void> {
