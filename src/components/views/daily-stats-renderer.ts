@@ -30,18 +30,21 @@ export function renderDailyStatsInto(container: HTMLElement, bundle: CalendarBun
 	let chartComponent: ChartComponent | null = null;
 	let tableComponent: TableComponent | null = null;
 
-	const controlsRow = container.createDiv(cls("stats-controls-row"));
+	const headerBar = container.createDiv(cls("daily-stats-header-bar"));
 
-	const skipCheckboxContainer = controlsRow.createDiv(cls("stats-skip-checkbox-container"));
-	const skipLabel = skipCheckboxContainer.createEl("label", { cls: cls("stats-skip-checkbox-label") });
+	const headerLeft = headerBar.createDiv(cls("daily-stats-header-left"));
+	const dateLabel = headerBar.createDiv(cls("stats-tab-date-label"));
+	const headerRight = headerBar.createDiv(cls("daily-stats-header-right"));
+
+	const skipLabel = headerRight.createEl("label", { cls: cls("stats-skip-checkbox-label") });
 	const skipCheckbox = skipLabel.createEl("input", { type: "checkbox", cls: cls("stats-skip-checkbox") });
-	skipLabel.createSpan({ text: "Include skipped events", cls: cls("stats-skip-checkbox-text") });
+	skipLabel.createSpan({ text: "Include skipped", cls: cls("stats-skip-checkbox-text") });
 	skipCheckbox.addEventListener("change", () => {
 		includeSkippedEvents = skipCheckbox.checked;
 		void renderContent();
 	});
 
-	const aggregationToggle = controlsRow.createDiv(cls("stats-aggregation-toggle"));
+	const aggregationToggle = headerRight.createDiv(cls("stats-aggregation-toggle"));
 	aggregationToggle.createEl("span", { text: "Group by:", cls: cls("stats-mode-label") });
 	const toggleButton = aggregationToggle.createEl("button", {
 		text: aggregationMode === "name" ? "Event Name" : "Category",
@@ -53,7 +56,6 @@ export function renderDailyStatsInto(container: HTMLElement, bundle: CalendarBun
 		void renderContent();
 	});
 
-	const dateLabel = container.createDiv(cls("stats-tab-date-label"));
 	const contentContainer = container.createDiv(cls("stats-content"));
 
 	function destroyComponents(): void {
@@ -92,7 +94,8 @@ export function renderDailyStatsInto(container: HTMLElement, bundle: CalendarBun
 		const categoryProp = bundle.settingsStore.currentSettings.categoryProp || "Category";
 		const stats = aggregateDailyStats(filteredEvents, currentDate, aggregationMode, categoryProp);
 
-		const durationStat = contentContainer.createEl("button", {
+		headerLeft.empty();
+		const durationStat = headerLeft.createEl("button", {
 			cls: cls("stats-header-stat", "stats-duration-toggle"),
 		});
 		durationStat.setText(
@@ -103,13 +106,8 @@ export function renderDailyStatsInto(container: HTMLElement, bundle: CalendarBun
 			void renderContent();
 		});
 
-		const eventsStat = contentContainer.createDiv(cls("stats-header-stat"));
-		eventsStat.setText(`📅 ${stats.entries.reduce((sum, e) => sum + e.count, 0)} events`);
-
-		if (stats.entries.length === 0) {
-			contentContainer.createDiv({ text: "No events found for this day.", cls: cls("stats-empty") });
-			return;
-		}
+		const eventCount = stats.entries.reduce((sum, e) => sum + e.count, 0);
+		headerLeft.createDiv({ cls: cls("stats-header-stat") }).setText(`📅 ${eventCount} events`);
 
 		const settings = bundle.settingsStore.currentSettings;
 		if (settings.capacityTrackingEnabled) {
@@ -117,7 +115,14 @@ export function renderDailyStatsInto(container: HTMLElement, bundle: CalendarBun
 			const fmt = showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
 			const label = formatCapacityLabel(capacity, showDecimalHours);
 			const capacityEl = contentContainer.createDiv(cls("capacity-label"));
-			capacityEl.textContent = `Capacity: ${label} (${capacity.percentUsed.toFixed(0)}%) · ${fmt(capacity.remainingMs)} remaining`;
+			capacityEl.createSpan({ text: `⏱ ${label} (${capacity.percentUsed.toFixed(0)}%)`, cls: cls("capacity-used") });
+			capacityEl.createSpan({ text: "·" });
+			capacityEl.createSpan({ text: `${fmt(capacity.remainingMs)} remaining`, cls: cls("capacity-remaining") });
+		}
+
+		if (stats.entries.length === 0) {
+			contentContainer.createDiv({ text: "No events found for this day.", cls: cls("stats-empty") });
+			return;
 		}
 
 		chartComponent = new ChartComponent(contentContainer, stats.entries, { showToggle: false });

@@ -9472,7 +9472,53 @@ div.vis-tooltip {
 	width: fit-content;
 }
 
+.prisma-capacity-used {
+	color: var(--text-normal);
+}
+
+.prisma-capacity-remaining {
+	color: #4ade80;
+}
+
 /* ─── Daily Stats Renderer ───────────────────────────────────── */
+
+.prisma-daily-stats-header-bar {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.prisma-daily-stats-header-left {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	justify-self: start;
+}
+
+.prisma-daily-stats-header-left .prisma-stats-header-stat {
+	font-size: var(--font-ui-smaller);
+	padding: 4px 10px;
+}
+
+.prisma-daily-stats-header-bar .prisma-stats-tab-date-label {
+	font-size: var(--font-ui-medium);
+	font-weight: 600;
+	color: var(--text-normal);
+	padding: 0;
+	text-align: center;
+	white-space: nowrap;
+	justify-self: center;
+}
+
+.prisma-daily-stats-header-right {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	justify-self: end;
+}
 
 .prisma-stats-tab-date-label {
 	font-size: var(--font-ui-medium);
