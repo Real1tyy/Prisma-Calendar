@@ -200,7 +200,7 @@ export class LicenseManager {
 	private async getLicenseKey(): Promise<string | null> {
 		const secretName = this.getLicenseKeySecretName();
 		if (!secretName) return null;
-		return await this.app.secretStorage.getSecret(secretName);
+		return this.app.secretStorage.getSecret(secretName);
 	}
 
 	private async loadCachedToken(): Promise<void> {

@@ -119,6 +119,7 @@ export default defineConfig([
 			"@microsoft/sdl/no-inner-html": "off",
 			"@typescript-eslint/no-deprecated": "off",
 			"@typescript-eslint/await-thenable": "off",
+			"@typescript-eslint/no-explicit-any": "off",
 		},
 	},
 ]);

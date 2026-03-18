@@ -1,5 +1,6 @@
 import type { App, Plugin } from "obsidian";
 import { MarkdownRenderer, Modal } from "obsidian";
+
 import { formatChangelogSections, getChangelogSince } from "../string";
 
 /**
@@ -399,7 +400,7 @@ export class WhatsNewModal extends Modal {
 		});
 	}
 
-	async onOpen() {
+	override async onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
 
@@ -537,7 +538,7 @@ export class WhatsNewModal extends Modal {
 		});
 	}
 
-	onClose() {
+	override onClose() {
 		this.contentEl.empty();
 	}
 }

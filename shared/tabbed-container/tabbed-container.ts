@@ -12,7 +12,7 @@ function resolveVisibleTabs(config: TabbedContainerConfig): {
 	const { tabs, initialState } = config;
 	const renames = new Map<string, string>();
 	if (initialState?.renames) {
-		for (const [id, label] of Object.entries(initialState.renames) as [string, string][]) {
+		for (const [id, label] of Object.entries(initialState.renames)) {
 			renames.set(id, label);
 		}
 	}
@@ -89,7 +89,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		let panel = panelMap.get(tab.id);
 		if (!panel) {
 			panel = tabContent.createDiv({ cls: css.cls("tab-panel") });
-			panel.dataset.tabId = tab.id;
+			panel.dataset["tabId"] = tab.id;
 			panelMap.set(tab.id, panel);
 		}
 		return panel;
@@ -275,7 +275,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 
 			if (isVisible) {
 				row.setAttribute("draggable", "true");
-				row.dataset.tabId = tab.id;
+				row.dataset["tabId"] = tab.id;
 
 				row.addEventListener("dragstart", (e) => {
 					draggedId = tab.id;

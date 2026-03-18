@@ -137,7 +137,7 @@ function renderFormulasContent(formulas: readonly { name: string; expression: st
 
 // ── Properties rendering ────────────────────────────────────────────────
 
-function renderPropertiesSection(properties: readonly { key: string; displayName?: string }[]): string {
+function renderPropertiesSection(properties: readonly { key: string; displayName?: string | undefined }[]): string {
 	const lines: string[] = ["properties:"];
 	for (const prop of properties) {
 		lines.push(`  ${prop.key}:`);

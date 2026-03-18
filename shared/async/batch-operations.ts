@@ -1,7 +1,7 @@
 import { Notice } from "obsidian";
 
 /**
- * Runs a batch operation on a collection of items with error handling and optional result notification.
+ * Runs a batch operation on a collection of items with error handling and optional result.
  */
 export async function runBatchOperation<T>(
 	items: T[],

@@ -1,4 +1,5 @@
-import { App, Setting } from "obsidian";
+import type { App } from "obsidian";
+import { Setting } from "obsidian";
 import type { z, ZodObject, ZodRawShape } from "zod";
 
 import { SettingsNavigation } from "../components/settings-navigation";
@@ -60,7 +61,7 @@ function renderFieldFromDescriptor(
 	settingsStore?: SettingsStore<ZodObject<ZodRawShape>>
 ): void {
 	if (override?.render && settingsStore) {
-		const value = getNestedValue(settingsStore.currentSettings as Record<string, unknown>, prefixedKey);
+		const value = getNestedValue(settingsStore.currentSettings, prefixedKey);
 		override.render(containerEl, value, (v) => {
 			void settingsStore.updateSettings((current) => {
 				const clone = JSON.parse(JSON.stringify(current)) as Record<string, unknown>;
@@ -70,7 +71,7 @@ function renderFieldFromDescriptor(
 					target = target[keys[i]] as Record<string, unknown>;
 				}
 				target[keys[keys.length - 1]] = v;
-				return clone as z.infer<ZodObject<ZodRawShape>>;
+				return clone;
 			});
 		});
 		return;
@@ -78,7 +79,12 @@ function renderFieldFromDescriptor(
 
 	const name = resolveFieldName(descriptor, override);
 	const desc = resolveFieldDesc(override);
-	const baseConfig = { key: prefixedKey, name, desc, onChanged: override?.onChanged };
+	const baseConfig = {
+		key: prefixedKey,
+		name,
+		desc,
+		...(override?.onChanged !== undefined ? { onChanged: override.onChanged } : {}),
+	};
 
 	if (isOverrideType<DropdownFieldOverride>(override, "dropdown")) {
 		uiBuilder.addDropdown(containerEl, { ...baseConfig, options: override.options });
@@ -123,8 +129,8 @@ function renderStringSetting(
 	const textOverride = isOverrideType<TextFieldOverride>(override, "text") ? override : undefined;
 	uiBuilder.addText(containerEl, {
 		...baseConfig,
-		placeholder: textOverride?.placeholder,
-		commitOnChange: textOverride?.commitOnChange,
+		...(textOverride?.placeholder !== undefined ? { placeholder: textOverride.placeholder } : {}),
+		...(textOverride?.commitOnChange !== undefined ? { commitOnChange: textOverride.commitOnChange } : {}),
 	});
 }
 
@@ -142,9 +148,19 @@ function renderNumberSetting(
 	const hasBounds = min !== undefined && max !== undefined;
 
 	if (hasBounds) {
-		uiBuilder.addSlider(containerEl, { ...baseConfig, min, max, step });
+		uiBuilder.addSlider(containerEl, {
+			...baseConfig,
+			min,
+			max,
+			...(step !== undefined ? { step } : {}),
+		});
 	} else {
-		uiBuilder.addNumberInput(containerEl, { ...baseConfig, min, max, step });
+		uiBuilder.addNumberInput(containerEl, {
+			...baseConfig,
+			...(min !== undefined ? { min } : {}),
+			...(max !== undefined ? { max } : {}),
+			...(step !== undefined ? { step } : {}),
+		});
 	}
 }
 
@@ -171,7 +187,7 @@ function renderArraySetting(
 	const arrayOverride = isOverrideType<ArrayFieldOverride>(override, "array") ? override : undefined;
 	uiBuilder.addTextArray(containerEl, {
 		...baseConfig,
-		placeholder: arrayOverride?.placeholder,
+		...(arrayOverride?.placeholder !== undefined ? { placeholder: arrayOverride.placeholder } : {}),
 		itemType: descriptor.itemType,
 	});
 }
@@ -313,11 +329,15 @@ export function renderSchemaSettings<TSchema extends ZodObject<ZodRawShape>>(
 				if (!sectionSchema) return;
 				renderSchemaSection(el, sectionSchema, settingsStore, sectionConfig.schema, sectionConfig, app);
 			},
-			hide: sectionConfig.hide,
+			...(sectionConfig.hide !== undefined ? { hide: sectionConfig.hide } : {}),
 		};
 	});
 
-	const navigation = new SettingsNavigation({ cssPrefix, sections: navSections, footerLinks });
+	const navigation = new SettingsNavigation({
+		cssPrefix,
+		sections: navSections,
+		...(footerLinks !== undefined ? { footerLinks } : {}),
+	});
 	navigation.display(containerEl);
 	return navigation;
 }
@@ -328,8 +348,8 @@ function unwrapToObject(schema: z.ZodTypeAny): ZodObject<ZodRawShape> | undefine
 	}
 
 	const def = schema._def as unknown as Record<string, unknown>;
-	if ("innerType" in def && def.innerType) {
-		return unwrapToObject(def.innerType as z.ZodTypeAny);
+	if ("innerType" in def && def["innerType"]) {
+		return unwrapToObject(def["innerType"] as z.ZodTypeAny);
 	}
 
 	return undefined;

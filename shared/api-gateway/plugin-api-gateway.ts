@@ -231,7 +231,7 @@ export class PluginApiGateway<TActions extends ActionDefMap> {
 	}
 
 	private async dispatchProtocol(params: Record<string, string>): Promise<void> {
-		const call = params.call;
+		const call = params["call"];
 		if (!call) {
 			new Notice("Protocol URL missing 'call' parameter");
 			return;

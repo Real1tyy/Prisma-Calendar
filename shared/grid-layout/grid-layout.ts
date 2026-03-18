@@ -80,10 +80,10 @@ function resolveInitialState(config: GridLayoutConfig): {
 		cols: initialState.columns,
 		rows: initialState.rows,
 		cells: resolvedCells,
-		columnSizes: initialState.columnSizes,
-		rowSizes: initialState.rowSizes,
-		cellColumnSizes: initialState.cellColumnSizes,
-		cellRowSizes: initialState.cellRowSizes,
+		...(initialState.columnSizes !== undefined ? { columnSizes: initialState.columnSizes } : {}),
+		...(initialState.rowSizes !== undefined ? { rowSizes: initialState.rowSizes } : {}),
+		...(initialState.cellColumnSizes !== undefined ? { cellColumnSizes: initialState.cellColumnSizes } : {}),
+		...(initialState.cellRowSizes !== undefined ? { cellRowSizes: initialState.cellRowSizes } : {}),
 	};
 }
 
@@ -411,8 +411,8 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 
 		const el = parent.createDiv(css.cls("grid-cell"));
 		if (dividers) css.addCls(el, "grid-cell-divider");
-		el.dataset.row = String(row);
-		el.dataset.col = String(col);
+		el.dataset["row"] = String(row);
+		el.dataset["col"] = String(col);
 
 		if (perCell) {
 			el.style.minWidth = "0";
@@ -530,10 +530,26 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 		if (option.enlargeable) css.addCls(existing.element, "grid-cell-enlargeable");
 
 		existing.render = option.render;
-		existing.cleanup = option.cleanup;
-		existing.id = option.id;
-		existing.enlargeable = option.enlargeable;
-		existing.enlargeTitle = option.enlargeTitle;
+		if (option.cleanup !== undefined) {
+			existing.cleanup = option.cleanup;
+		} else {
+			delete existing.cleanup;
+		}
+		if (option.id !== undefined) {
+			existing.id = option.id;
+		} else {
+			delete existing.id;
+		}
+		if (option.enlargeable !== undefined) {
+			existing.enlargeable = option.enlargeable;
+		} else {
+			delete existing.enlargeable;
+		}
+		if (option.enlargeTitle !== undefined) {
+			existing.enlargeTitle = option.enlargeTitle;
+		} else {
+			delete existing.enlargeTitle;
+		}
 
 		if (existing.id) {
 			for (const [existingId, existingKey] of idMap) {
@@ -578,7 +594,14 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 			setGridVar(element, "--cell-col", `${col + 1} / span ${colSpan ?? 1}`);
 		}
 
-		const entry: CellEntry = { element, render, cleanup, id, enlargeable, enlargeTitle };
+		const entry: CellEntry = {
+			element,
+			render,
+			...(cleanup !== undefined ? { cleanup } : {}),
+			...(id !== undefined ? { id } : {}),
+			...(enlargeable !== undefined ? { enlargeable } : {}),
+			...(enlargeTitle !== undefined ? { enlargeTitle } : {}),
+		};
 		cellMap.set(key, entry);
 		if (id) idMap.set(id, key);
 
@@ -615,8 +638,12 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 				const oldId = existing.id;
 				if (oldId) idMap.delete(oldId);
 				existing.render = render;
-				existing.cleanup = cleanup;
-				existing.id = undefined;
+				if (cleanup !== undefined) {
+					existing.cleanup = cleanup;
+				} else {
+					delete existing.cleanup;
+				}
+				delete existing.id;
 				void render(existing.element);
 			} else {
 				addCell(row, col, render, cleanup);
@@ -638,7 +665,11 @@ export function createGridLayout(container: HTMLElement, config: GridLayoutConfi
 			existing.cleanup?.();
 			existing.element.empty();
 			existing.render = render;
-			existing.cleanup = cleanup;
+			if (cleanup !== undefined) {
+				existing.cleanup = cleanup;
+			} else {
+				delete existing.cleanup;
+			}
 
 			void render(existing.element);
 			onCellChange?.(row, col, id);

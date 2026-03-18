@@ -66,11 +66,13 @@ function notFound(entity: string, id: string) {
 }
 
 function parseListParams(raw: Record<string, string>, filterFields: FilterField[]): ListParams {
+	const limit = ParamCoercion.number(raw, "limit");
+	const offset = ParamCoercion.number(raw, "offset");
 	return {
 		filters: parseFilterParams(raw, filterFields),
 		sorts: parseSortParams(raw),
-		limit: ParamCoercion.number(raw, "limit"),
-		offset: ParamCoercion.number(raw, "offset"),
+		...(limit !== undefined ? { limit } : {}),
+		...(offset !== undefined ? { offset } : {}),
 	};
 }
 
@@ -171,7 +173,7 @@ function buildChildActions(
 				const row = await childTable.create({
 					fileName: params.fileName,
 					data: params.data,
-					content: params.content,
+					...(params.content !== undefined ? { content: params.content } : {}),
 				});
 				return { data: serializeRow(row) };
 			},
@@ -309,7 +311,7 @@ export class VaultTableRestApi<TData extends Record<string, unknown>> {
 				const row = await this.table.create({
 					fileName: params.fileName,
 					data: params.data as TData,
-					content: params.content,
+					...(params.content !== undefined ? { content: params.content } : {}),
 				});
 				return { data: serializeRow(row) };
 			},

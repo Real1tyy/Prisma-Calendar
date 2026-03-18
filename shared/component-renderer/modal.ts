@@ -4,7 +4,7 @@ import type { ModalComponentConfig, ModalContext } from "./types";
 
 export function showModal(config: ModalComponentConfig): void {
 	class ComponentModal extends Modal {
-		async onOpen(): Promise<void> {
+		override async onOpen(): Promise<void> {
 			const { contentEl, modalEl } = this;
 			contentEl.addClass(config.cls);
 			if (config.title) this.setTitle(config.title);
@@ -20,7 +20,7 @@ export function showModal(config: ModalComponentConfig): void {
 			await config.render(contentEl, ctx);
 		}
 
-		onClose(): void {
+		override onClose(): void {
 			config.cleanup?.();
 			this.contentEl.empty();
 		}

@@ -86,7 +86,7 @@ export class VaultTable<
 		this.schema = config.schema;
 		this.invalidStrategy = config.invalidStrategy ?? "skip";
 		this.nodeType = config.nodeType ?? "files";
-		this.fileNameFilter = config.fileNameFilter;
+		if (config.fileNameFilter !== undefined) this.fileNameFilter = config.fileNameFilter;
 		this.filePathResolver = config.filePathResolver ?? ((dir, name) => `${dir}/${name}.md`);
 
 		if (config.children && this.nodeType !== "folderNotes") {
@@ -114,8 +114,8 @@ export class VaultTable<
 		const includeFile = this.buildIncludeFile();
 		this.indexerConfigStore = new BehaviorSubject<IndexerConfig>({
 			includeFile,
-			debounceMs: config.debounceMs,
-			preloadedFiles: config.preloadedFiles,
+			...(config.debounceMs !== undefined ? { debounceMs: config.debounceMs } : {}),
+			...(config.preloadedFiles !== undefined ? { preloadedFiles: config.preloadedFiles } : {}),
 			directoryPrefix: config.directory,
 		});
 
@@ -557,7 +557,7 @@ export class VaultTable<
 					filePath,
 					oldRow,
 					newRow,
-					diff: event.frontmatterDiff,
+					...(event.frontmatterDiff !== undefined ? { diff: event.frontmatterDiff } : {}),
 					contentChanged,
 				});
 			}

@@ -71,7 +71,7 @@ export abstract class InputFilterManager<T> {
 		this.cssClass = cssClass;
 		this.cssPrefix = cssPrefix;
 		this.onFilterChange = onFilterChange;
-		this.onHide = onHide;
+		if (onHide !== undefined) this.onHide = onHide;
 
 		const classes = `${cssClass}-container${initiallyVisible ? "" : ` ${cssPrefix}-hidden`}`;
 		this.containerEl = this.parentEl.createEl("div", {

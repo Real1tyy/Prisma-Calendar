@@ -52,7 +52,7 @@ export function MountableView<TBase extends AbstractCtor<ItemView>>(Base: TBase,
 			this.registerEvent(ref);
 		}
 
-		async onOpen(): Promise<void> {
+		override async onOpen(): Promise<void> {
 			if (this.#mounted) return;
 			this.#mounted = true;
 			try {
@@ -63,7 +63,7 @@ export function MountableView<TBase extends AbstractCtor<ItemView>>(Base: TBase,
 			}
 		}
 
-		async onClose(): Promise<void> {
+		override async onClose(): Promise<void> {
 			try {
 				await this.unmount();
 			} finally {

@@ -58,6 +58,7 @@ export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 			if (!compiledFunc) {
 				const sanitized = sanitizeExpression(rule.expression, this.propertyMapping);
 				const params = Array.from(this.propertyMapping.values());
+
 				compiledFunc = new Function(...params, `"use strict"; return ${sanitized};`) as (...args: unknown[]) => boolean;
 				this.compiledFunctions.set(rule.id, compiledFunc);
 			}

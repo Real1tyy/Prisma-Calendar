@@ -280,7 +280,7 @@ function resolveSubmitAction<T>(config: SchemaModalConfig<T>, name: string, valu
 	if (config.upsert) {
 		return executeUpsert(config.upsert, !!config.existing, name, values);
 	}
-	return Promise.resolve(config.onSubmit!(name, values));
+	return Promise.resolve(config.onSubmit(name, values));
 }
 
 export function createSchemaFormRenderer<T>(config: SchemaModalConfig<T>) {

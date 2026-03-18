@@ -158,7 +158,7 @@ export function parseFilterParams(query: Record<string, string>, fields: FilterF
 }
 
 export function parseSortParams(query: Record<string, string>): ParsedSort[] {
-	const sortParam = query.sort;
+	const sortParam = query["sort"];
 	if (!sortParam) return [];
 
 	return sortParam.split(",").map((segment) => {

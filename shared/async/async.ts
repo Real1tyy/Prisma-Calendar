@@ -31,7 +31,7 @@ export function onceAsync<T>(fn: () => Promise<T>): () => Promise<T> {
 				promise = fn();
 			} catch (error) {
 				// Convert synchronous errors to rejected promises
-				promise = Promise.reject(error);
+				promise = Promise.reject(error instanceof Error ? error : new Error(String(error)));
 			}
 		}
 		return promise;
