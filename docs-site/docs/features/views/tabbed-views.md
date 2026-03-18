@@ -23,10 +23,13 @@ A two-column layout:
 
 - **Left column**: A simplified daily calendar (timeGridDay view) with basic prev/next/today navigation.
 - **Right column**: Daily statistics for the date shown in the adjacent calendar — pie chart distribution and event table. The statistics update automatically when you navigate to a different day.
+- **Keyboard navigation**: Use **Left/Right arrow keys** to navigate between days. The tab auto-focuses when opened so keyboard navigation works immediately.
 
 ## Dual Daily
 
 A two-column layout with two independent daily calendars side by side. Each calendar navigates independently, useful for comparing two different days.
+
+- **Keyboard navigation**: Use **Left/Right arrow keys** to navigate the focused calendar. Click on a calendar to focus it, then arrow keys will navigate that calendar's date.
 
 ## Managing Tabs
 

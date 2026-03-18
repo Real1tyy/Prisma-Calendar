@@ -19,6 +19,8 @@ export interface TabDefinition {
 	label: string;
 	render: (container: HTMLElement) => void | Promise<void>;
 	cleanup?: () => void;
+	/** Key handlers dispatched when this tab is active and the container was last interacted with. Keys are `KeyboardEvent.key` values (e.g. "ArrowLeft"). */
+	keyHandlers?: Record<string, (e: KeyboardEvent) => void>;
 }
 
 export interface TabbedContainerConfig {

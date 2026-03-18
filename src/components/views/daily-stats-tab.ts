@@ -13,6 +13,10 @@ export function createDailyStatsTabDefinition(app: App, bundle: CalendarBundle):
 	return {
 		id: "daily-stats",
 		label: "Daily + Stats",
+		keyHandlers: {
+			ArrowLeft: () => calendarHandle?.prev(),
+			ArrowRight: () => calendarHandle?.next(),
+		},
 		render: (el) => {
 			gridHandle = createGridLayout(el, {
 				cssPrefix: "prisma-daily-stats-",
@@ -51,17 +55,6 @@ export function createDailyStatsTabDefinition(app: App, bundle: CalendarBundle):
 						},
 					},
 				],
-			});
-
-			el.setAttribute("tabindex", "-1");
-			el.addEventListener("keydown", (e: KeyboardEvent) => {
-				if (e.key === "ArrowLeft") {
-					calendarHandle?.prev();
-					e.preventDefault();
-				} else if (e.key === "ArrowRight") {
-					calendarHandle?.next();
-					e.preventDefault();
-				}
 			});
 		},
 		cleanup: () => {
