@@ -1,22 +1,27 @@
 {
 	"compilerOptions": {
 		"baseUrl": ".",
-		"paths": {
-			"@real1ty-obsidian-plugins/*": ["shared/*"]
-		},
 		"inlineSourceMap": true,
 		"inlineSources": true,
 		"module": "ESNext",
-		"target": "ES6",
+		"target": "ES2022",
 		"allowJs": true,
-		"noImplicitAny": true,
 		"moduleResolution": "bundler",
 		"importHelpers": true,
 		"isolatedModules": true,
-		"strictNullChecks": true,
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
-		"lib": ["DOM", "ES5", "ES6", "ES7"]
+		"lib": ["DOM", "ES2022"],
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"exactOptionalPropertyTypes": true,
+		"paths": {
+			"@real1ty-obsidian-plugins/*": ["shared/*"]
+		}
 	},
 	"include": ["src/**/*.ts", "tests/**/*.ts", "shared/**/*.ts"],
 	"exclude": ["node_modules"]
