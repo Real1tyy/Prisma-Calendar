@@ -1,4 +1,4 @@
-import { createModalButtons as createModalButtonsBase, registerSubmitHotkey } from "@real1ty-obsidian-plugins";
+import { createModalButtons as createModalButtonsBase } from "@real1ty-obsidian-plugins";
 
 import { CSS_PREFIX } from "../constants";
 
@@ -39,5 +39,3 @@ export function createModalButtons(
 ): { submitButton: HTMLButtonElement; cancelButton: HTMLButtonElement } {
 	return createModalButtonsBase(container, { ...options, prefix: CSS_PREFIX });
 }
-
-export { registerSubmitHotkey };

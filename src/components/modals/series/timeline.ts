@@ -68,9 +68,6 @@ export function renderTimelineInto(
 		cls: cls("timeline-nav-btn"),
 	});
 
-	const shortcutHint = controls.createSpan(cls("timeline-nav-hint"));
-	shortcutHint.textContent = "Enter to navigate";
-
 	function navigateToInput(): void {
 		if (!timeline) return;
 

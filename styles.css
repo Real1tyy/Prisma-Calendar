@@ -4661,12 +4661,6 @@
 	background: var(--background-modifier-hover);
 }
 
-.prisma-timeline-nav-hint {
-	font-size: 0.75rem;
-	color: var(--text-faint);
-	margin-left: auto;
-}
-
 .prisma-timeline-modal-container {
 	flex: 1;
 	padding: 1rem;
@@ -7052,16 +7046,6 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	color: var(--text-normal);
 }
 
-.prisma-ics-import-section select {
-	padding: 0.5rem;
-	border-radius: var(--radius-s);
-	border: 1px solid var(--background-modifier-border);
-	background: var(--background-primary);
-}
-
-.prisma-ics-import-section .prisma-ics-import-calendar-select {
-	padding: 0.2rem;
-}
 
 .prisma-ics-import-preview {
 	padding: 1rem;
@@ -7101,12 +7085,6 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	margin: 0;
 }
 
-.prisma-ics-import-buttons {
-	display: flex;
-	justify-content: flex-end;
-	gap: 0.5rem;
-	margin-top: 0.5rem;
-}
 
 /* ICS Import Progress Modal */
 .prisma-ics-import-progress-modal {
@@ -7382,13 +7360,6 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 
 .prisma-change-deleted {
 	color: var(--text-error);
-}
-
-.prisma-modal-buttons {
-	display: flex;
-	gap: 0.5rem;
-	justify-content: flex-end;
-	margin-top: 1rem;
 }
 
 /* Category Assign Modal */

@@ -1,9 +1,9 @@
-import { addCls, cls, removeCls, showModal } from "@real1ty-obsidian-plugins";
+import { addCls, cls, registerSubmitHotkey, removeCls, showModal } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { createModalButtons, registerSubmitHotkey } from "../../../utils/dom-utils";
+import { createModalButtons } from "../../../utils/dom-utils";
 import { getAllFrontmatterProperties } from "../../../utils/event-frontmatter";
 
 interface FrontmatterProperty {
