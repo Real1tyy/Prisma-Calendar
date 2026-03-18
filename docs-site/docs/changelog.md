@@ -4,10 +4,11 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.7.0 - 3/17/2026
+## 2.7.0 - 3/18/2026
 
 ### Added
 
+- **Bases Calendar View** (Pro): Render Prisma Calendar events directly inside any Obsidian Base as a fully interactive calendar. Entries matching the Base query are cross-referenced with your calendar events and displayed in month, week, or day view — with full support for click, context menu, hover preview, and drag-and-drop rescheduling. Configure which calendar bundle to use and the default view from the Bases toolbar options. See [Bases Calendar View](./features/views/bases-calendar-view.md).
 - **Tabbed views**: The calendar view now features a tab bar with five tabs — Calendar (original view), Timeline, Heat Map, Daily + Stats, and Dual Daily. Timeline and Heat Map are now persistent embedded views instead of modal overlays. Daily + Stats shows a daily calendar alongside synced statistics with pie chart. Dual Daily shows two independent daily calendars side-by-side. Toolbar buttons for Timeline and Heatmap now switch to the corresponding tab. Tab state (active tab, visibility, order) persists across sessions. Tabs can be reordered, renamed, and hidden via right-click or the settings gear. See [Tabbed Views](./features/views/tabbed-views.md).
 - **Auto-assign category by substring match**: New "Auto-assign when name contains category" toggle in Settings → Categories → Auto-assign categories. When enabled, creating an event named "Youtube Analysis" will auto-assign the "Youtube" category — matching by substring instead of requiring an exact name match. See [Categories — Auto-Assignment](./features/organization/categories.md#1-auto-assignment-event-creation-and-editing).
 - **Timeline date navigation**: The timeline view now has a date navigation bar at the top with year, month, and day inputs. Enter a date and press Enter or click Go to center the timeline on that date while keeping the current zoom level. A Today button jumps to the current date. See [Event Groups — Timeline View](./features/events/event-groups.md#timeline-view).
@@ -24,6 +25,7 @@ All notable changes to this project will be documented here.
 - **Timeline toolbar button always visible**: The Timeline button in the calendar toolbar was always rendered regardless of toolbar button settings. It now correctly respects the toolbar configuration and is hidden when disabled.
 - **Time tracker break input NaN**: Starting or continuing the stopwatch with an empty break field caused `NaN` to propagate into the break input, triggering a browser warning. The break field now defaults to `0` when empty. See [Time Tracker](./features/events/time-tracker.md).
 - **Already Notified set when notifications disabled**: Creating or editing past/present events wrote `Already Notified: true` into frontmatter even when notifications were disabled. The property is now only set when notifications are enabled. See [Notifications](./features/management/notifications.md).
+- **Zoom button text duplication on monthly view**: Switching to month view caused the zoom button to display garbled duplicated text (e.g. "Zoom: 30minZoom: 30min"). The button text is now always kept in sync regardless of the active view.
 
 ---
 
