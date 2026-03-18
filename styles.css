@@ -1,10 +1,5 @@
 /* Custom Calendar Plugin Styles */
 
-/* Remove default Obsidian padding from view-content for calendar views */
-.workspace-leaf .view-content[class*="custom-calendar-view-"] {
-	padding-top: 0;
-}
-
 /* Utility classes */
 .prisma-hidden {
 	display: none;
@@ -15,21 +10,13 @@
 	transition: opacity 0.2s ease-out;
 }
 
-.prisma-calendar-view {
-	padding: 8px;
-	height: 100%;
-	min-height: 0;
-	overflow-y: auto;
-	overflow-x: hidden;
-	position: relative;
-}
-
 /* Tabbed view root: prevent Obsidian's .view-content from creating a competing
-   scroll context — let .prisma-tab-content be the sole scroll container so that
+   scroll context — .prisma-tab-content is the sole scroll container so that
    position: sticky on the toolbar / day-headers / all-day section works. */
 .view-content.prisma-calendar-view-root {
 	display: flex;
 	flex-direction: column;
+	height: 100%;
 	overflow: hidden;
 	padding: 0;
 }
