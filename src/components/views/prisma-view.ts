@@ -12,7 +12,9 @@ import {
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type CustomCalendarPlugin from "../../main";
 import { CalendarComponent } from "../calendar-view";
+import { type CapacityIndicatorHandle, createCapacityIndicator } from "../capacity-indicator";
 import { createDailyStatsTabDefinition } from "./daily-stats-tab";
+import { createDashboardTabDefinition } from "./dashboard-tab";
 import { createDualDailyTabDefinition } from "./dual-daily-tab";
 import { createHeatmapTabDefinition } from "./heatmap-tab";
 import { buildPageHeaderActions, DEFAULT_ACTION_IDS } from "./page-header-actions";
@@ -22,6 +24,7 @@ export interface PrismaViewRef {
 	calendarComponent: CalendarComponent | null;
 	tabbedHandle: TabbedContainerHandle | null;
 	pageHeaderHandle: PageHeaderHandle | null;
+	capacityIndicatorHandle: CapacityIndicatorHandle | null;
 }
 
 export function registerPrismaCalendarView(
@@ -58,8 +61,9 @@ export function registerPrismaCalendarView(
 			const heatmapTab = createHeatmapTabDefinition(app, bundle);
 			const dailyStatsTab = createDailyStatsTabDefinition(app, bundle);
 			const dualDailyTab = createDualDailyTabDefinition(app, bundle);
+			const dashboardTab = createDashboardTabDefinition(app, bundle);
 
-			const tabs = [calendarTab, timelineTab, heatmapTab, dailyStatsTab, dualDailyTab];
+			const tabs = [calendarTab, timelineTab, heatmapTab, dailyStatsTab, dualDailyTab, dashboardTab];
 
 			ref.tabbedHandle = createTabbedContainer(el, {
 				tabs,
@@ -84,6 +88,10 @@ export function registerPrismaCalendarView(
 				tabs.map((t) => t.label)
 			);
 
+			if (titleContainer) {
+				ref.capacityIndicatorHandle = createCapacityIndicator(titleContainer as HTMLElement, bundle);
+			}
+
 			const savedHeaderState = bundle.settingsStore.currentSettings.pageHeaderState;
 			ref.pageHeaderHandle = createPageHeader({
 				actions: buildPageHeaderActions(app),
@@ -105,6 +113,8 @@ export function registerPrismaCalendarView(
 		cleanup: () => {
 			ref.calendarComponent?.unload();
 			ref.calendarComponent = null;
+			ref.capacityIndicatorHandle?.destroy();
+			ref.capacityIndicatorHandle = null;
 			ref.pageHeaderHandle?.destroy();
 			ref.pageHeaderHandle = null;
 			ref.tabbedHandle?.destroy();

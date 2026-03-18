@@ -38,7 +38,7 @@ const sidebars: SidebarsConfig = {
 					type: "category",
 					label: "Views",
 					collapsible: true,
-					items: ["features/views/tabbed-views", "features/views/header-actions", "features/views/bases-calendar-view"],
+					items: ["features/views/tabbed-views", "features/views/dashboard", "features/views/header-actions", "features/views/bases-calendar-view", "features/views/capacity-tracking"],
 				},
 				{
 					type: "category",

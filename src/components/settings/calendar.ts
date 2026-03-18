@@ -302,6 +302,14 @@ export class CalendarSettings {
 			desc: "Text color used when event background is light or white (e.g., pastel colors) for better contrast",
 			fallback: DEFAULT_EVENT_TEXT_COLOR_ALT,
 		});
+
+		new Setting(containerEl).setHeading().setName("Capacity Tracking");
+
+		this.ui.addToggle(containerEl, {
+			key: "capacityTrackingEnabled",
+			name: "Enable capacity tracking",
+			desc: "Show used vs remaining hours in statistics and page header. Boundaries are inferred from the earliest and latest events in each period.",
+		});
 	}
 
 	private renderDayCellColoringSection(containerEl: HTMLElement): void {

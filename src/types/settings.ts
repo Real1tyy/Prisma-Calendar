@@ -173,6 +173,7 @@ const CalendarSettingsSchema = z
 		hideWeekends: z.boolean().catch(false),
 		showDecimalHours: z.boolean().catch(false), // Show durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m)
 		defaultAggregationMode: z.enum(["name", "category"]).catch("name"), // Default aggregation mode for statistics (name or category)
+		capacityTrackingEnabled: z.boolean().catch(true), // Show capacity tracking (used vs remaining hours) in stats and page header
 		hourStart: z.number().int().min(0).max(23).catch(7),
 		hourEnd: z.number().int().min(1).max(24).catch(23),
 		firstDayOfWeek: z.number().int().min(0).max(6).catch(0), // 0 = Sunday, 1 = Monday, etc.

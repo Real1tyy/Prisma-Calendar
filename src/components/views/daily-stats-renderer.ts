@@ -2,6 +2,7 @@ import { cls } from "@real1ty-obsidian-plugins";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
+import { calculateCapacityFromEvents, formatCapacityLabel } from "../../utils/capacity";
 import type { AggregationMode } from "../../utils/weekly-stats";
 import {
 	aggregateDailyStats,
@@ -108,6 +109,15 @@ export function renderDailyStatsInto(container: HTMLElement, bundle: CalendarBun
 		if (stats.entries.length === 0) {
 			contentContainer.createDiv({ text: "No events found for this day.", cls: cls("stats-empty") });
 			return;
+		}
+
+		const settings = bundle.settingsStore.currentSettings;
+		if (settings.capacityTrackingEnabled) {
+			const capacity = calculateCapacityFromEvents(filteredEvents, start, end, settings.hourStart, settings.hourEnd);
+			const fmt = showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
+			const label = formatCapacityLabel(capacity, showDecimalHours);
+			const capacityEl = contentContainer.createDiv(cls("capacity-label"));
+			capacityEl.textContent = `Capacity: ${label} (${capacity.percentUsed.toFixed(0)}%) · ${fmt(capacity.remainingMs)} remaining`;
 		}
 
 		chartComponent = new ChartComponent(contentContainer, stats.entries, { showToggle: false });
