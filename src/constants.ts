@@ -1,4 +1,5 @@
 const PLUGIN_ID = "prisma-calendar";
+export const CSS_PREFIX = "prisma-";
 // Concurrency control for parallel file processing
 // Higher values = faster initial scan but more memory/CPU usage
 export const SCAN_CONCURRENCY = 10;

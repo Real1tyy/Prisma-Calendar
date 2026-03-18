@@ -8,7 +8,6 @@ import {
 	type WhatsNewModalConfig,
 } from "@real1ty-obsidian-plugins";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
-import type { Subscription } from "rxjs";
 
 import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
 import { CustomCalendarSettingsTab } from "./components";
@@ -38,7 +37,6 @@ export default class CustomCalendarPlugin extends Plugin {
 	apiManager!: PrismaCalendarApiManager;
 	licenseManager!: LicenseManager;
 	private registeredViewTypes: Set<string> = new Set();
-	private licenseSubscription: Subscription | null = null;
 
 	get isProEnabled(): boolean {
 		return this.licenseManager.isPro;
@@ -66,13 +64,14 @@ export default class CustomCalendarPlugin extends Plugin {
 		this.registerCommands();
 		this.registerAIChatView();
 
-		this.licenseSubscription = this.licenseManager.isPro$.subscribe((isPro) => {
+		const licenseSubscription = this.licenseManager.isPro$.subscribe((isPro) => {
 			if (isPro) {
 				this.apiManager.expose();
 			} else {
 				this.apiManager.unexpose();
 			}
 		});
+		this.register(() => licenseSubscription.unsubscribe());
 
 		this.app.workspace.onLayoutReady(() => {
 			void waitForCacheReady(this.app).then(() => {
@@ -84,8 +83,6 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	override onunload(): void {
-		this.licenseSubscription?.unsubscribe();
-		this.licenseSubscription = null;
 		MinimizedModalManager.clear();
 
 		for (const bundle of this.calendarBundles) {
