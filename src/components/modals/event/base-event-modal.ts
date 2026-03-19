@@ -38,9 +38,11 @@ import {
 import type { EventPreset } from "../../../types/settings";
 import type { Weekday } from "../../../utils/date-recurrence";
 import {
-	assignListToFrontmatter,
 	parseCustomDoneProperty,
 	setEventBasics,
+	setMappedListProp,
+	setMappedNumberProp,
+	setMappedTextProp,
 	setUntrackedEventBasics,
 } from "../../../utils/event-frontmatter";
 import { autoAssignCategories, findAdjacentEvent } from "../../../utils/event-matching";
@@ -51,6 +53,7 @@ import { Stopwatch } from "../../stopwatch";
 import { TitleInputSuggest } from "../../title-input-suggest";
 import { openCategoryAssignModal, openPrerequisiteAssignModal } from "../category/assignment";
 import { showCategoryEventsModal } from "../series/bases-view";
+import { renderChipList } from "./chip-list-renderer";
 import { createFormField } from "./event-form-fields";
 import { showSavePresetModal } from "./save-preset";
 
@@ -746,38 +749,17 @@ export abstract class BaseEventModal extends Modal {
 	protected renderPrerequisites(): void {
 		if (!this.prerequisitesContainer) return;
 
-		this.prerequisitesContainer.empty();
-
-		if (this.selectedPrerequisites.length === 0) {
-			this.prerequisitesContainer.createEl("span", {
-				text: "No prerequisites",
-				cls: cls("no-categories-text"),
-			});
-			return;
-		}
-
-		for (const link of this.selectedPrerequisites) {
-			const item = this.prerequisitesContainer.createDiv(cls("category-item"));
-
-			const displayName = cleanupTitle(extractDisplayName(link));
-			item.createEl("span", {
-				text: displayName,
-				cls: cls("category-name"),
-				attr: { title: link },
-			});
-
-			const removeButton = item.createEl("span", {
-				text: "\u00D7",
-				cls: cls("category-remove-button"),
-				attr: { title: "Remove prerequisite" },
-			});
-			removeButton.addEventListener("click", (e) => {
-				e.preventDefault();
-				e.stopPropagation();
+		renderChipList({
+			container: this.prerequisitesContainer,
+			items: this.selectedPrerequisites,
+			emptyText: "No prerequisites",
+			getDisplayName: (link) => cleanupTitle(extractDisplayName(link)),
+			getTooltip: (link) => link,
+			onRemove: (link) => {
 				this.selectedPrerequisites = this.selectedPrerequisites.filter((p) => p !== link);
 				this.renderPrerequisites();
-			});
-		}
+			},
+		});
 	}
 
 	private openAssignPrerequisitesModal(): void {
@@ -1156,49 +1138,24 @@ export abstract class BaseEventModal extends Modal {
 	protected renderCategories(): void {
 		if (!this.categoriesContainer) return;
 
-		this.categoriesContainer.empty();
-
-		if (this.selectedCategories.length === 0) {
-			this.categoriesContainer.createEl("span", {
-				text: "No categories",
-				cls: cls("no-categories-text"),
-			});
-			return;
-		}
-
 		const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
-		const categoryColorMap = new Map(categoriesWithColors.map((c) => [c.name, c.color]));
+		const colorMap = new Map(categoriesWithColors.map((c) => [c.name, c.color]));
+		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
 
-		for (const categoryName of this.selectedCategories) {
-			const categoryItem = this.categoriesContainer.createDiv(cls("category-item"));
-
-			const colorDot = categoryItem.createEl("span", {
-				cls: cls("category-color-dot"),
-			});
-			const color = categoryColorMap.get(categoryName) || this.bundle.settingsStore.currentSettings.defaultNodeColor;
-			colorDot.style.setProperty("--category-color", color);
-
-			const nameSpan = categoryItem.createEl("span", {
-				text: categoryName,
-				cls: cls("category-name"),
-			});
-
-			nameSpan.addEventListener("click", () => {
-				this.openCategoryEventsModal(categoryName);
-			});
-
-			const removeButton = categoryItem.createEl("span", {
-				text: "\u00D7",
-				cls: cls("category-remove-button"),
-				attr: { title: "Remove category" },
-			});
-			removeButton.addEventListener("click", (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				this.selectedCategories = this.selectedCategories.filter((c) => c !== categoryName);
+		renderChipList({
+			container: this.categoriesContainer,
+			items: this.selectedCategories,
+			emptyText: "No categories",
+			renderPrefix: (chipEl, item) => {
+				const dot = chipEl.createEl("span", { cls: cls("category-color-dot") });
+				dot.style.setProperty("--category-color", colorMap.get(item) || defaultColor);
+			},
+			onNameClick: (item) => this.openCategoryEventsModal(item),
+			onRemove: (item) => {
+				this.selectedCategories = this.selectedCategories.filter((c) => c !== item);
 				this.renderCategories();
-			});
-		}
+			},
+		});
 	}
 
 	private openAssignCategoriesModal(): void {
@@ -1711,46 +1668,21 @@ export abstract class BaseEventModal extends Modal {
 			});
 		}
 
-		if (settings.categoryProp) {
-			assignListToFrontmatter(preservedFrontmatter, settings.categoryProp, this.selectedCategories);
-		}
+		const original = this.originalFrontmatter;
 
-		if (settings.locationProp && this.locationInput) {
-			const locationValue = this.locationInput.value.trim();
-			if (locationValue) {
-				preservedFrontmatter[settings.locationProp] = locationValue;
-			} else if (!(settings.locationProp in this.originalFrontmatter)) {
-				delete preservedFrontmatter[settings.locationProp];
-			}
-		}
-
-		if (settings.iconProp && this.iconInput) {
-			const iconValue = this.iconInput.value.trim();
-			if (iconValue) {
-				preservedFrontmatter[settings.iconProp] = iconValue;
-			} else if (!(settings.iconProp in this.originalFrontmatter)) {
-				delete preservedFrontmatter[settings.iconProp];
-			}
-		}
-
-		if (settings.participantsProp && this.participantsInput) {
-			const participantsList = parseIntoList(this.participantsInput.value).filter((p) => p.trim());
-			assignListToFrontmatter(preservedFrontmatter, settings.participantsProp, participantsList);
-		}
-
-		if (settings.prerequisiteProp) {
-			assignListToFrontmatter(preservedFrontmatter, settings.prerequisiteProp, this.selectedPrerequisites);
-		}
-
-		// Handle break property
-		if (settings.breakProp && this.breakInput) {
-			const breakValue = Number.parseFloat(this.breakInput.value);
-			if (!Number.isNaN(breakValue) && breakValue > 0) {
-				preservedFrontmatter[settings.breakProp] = breakValue;
-			} else {
-				delete preservedFrontmatter[settings.breakProp];
-			}
-		}
+		setMappedListProp(preservedFrontmatter, settings.categoryProp, this.selectedCategories);
+		setMappedListProp(preservedFrontmatter, settings.prerequisiteProp, this.selectedPrerequisites);
+		setMappedListProp(
+			preservedFrontmatter,
+			settings.participantsProp,
+			this.participantsInput ? parseIntoList(this.participantsInput.value).filter((p) => p.trim()) : []
+		);
+		setMappedTextProp(preservedFrontmatter, original, settings.locationProp, this.locationInput?.value);
+		setMappedTextProp(preservedFrontmatter, original, settings.iconProp, this.iconInput?.value);
+		setMappedNumberProp(preservedFrontmatter, settings.breakProp, this.breakInput?.value, {
+			parser: "float",
+			minValue: 0.01,
+		});
 
 		if (settings.statusProperty && this.markAsDoneCheckbox) {
 			const wasInitiallyChecked = this.initialMarkAsDoneState;
@@ -1848,15 +1780,14 @@ export abstract class BaseEventModal extends Modal {
 				delete preservedFrontmatter[settings.rruleSpecProp];
 			}
 
-			// Handle future instances count override
-			if (this.futureInstancesCountInput?.value) {
-				const futureCount = Number.parseInt(this.futureInstancesCountInput.value, 10);
-				if (!Number.isNaN(futureCount) && futureCount > 0) {
-					preservedFrontmatter[settings.futureInstancesCountProp] = futureCount;
+			setMappedNumberProp(
+				preservedFrontmatter,
+				settings.futureInstancesCountProp,
+				this.futureInstancesCountInput?.value,
+				{
+					minValue: 1,
 				}
-			} else {
-				delete preservedFrontmatter[settings.futureInstancesCountProp];
-			}
+			);
 
 			if (this.generatePastEventsCheckbox?.checked) {
 				preservedFrontmatter[settings.generatePastEventsProp] = true;
