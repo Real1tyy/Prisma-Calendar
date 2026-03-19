@@ -1,14 +1,15 @@
 import type { TabDefinition } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import type { Subscription } from "rxjs";
+import { debounceTime, merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { renderTimelineInto, type TimelineHandle } from "../modals";
 
+const REFRESH_DEBOUNCE_MS = 100;
+
 export function createTimelineTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let handle: TimelineHandle | null = null;
-	let eventStoreSub: Subscription | null = null;
-	let recurringEventSub: Subscription | null = null;
+	let mergedSub: Subscription | null = null;
 
 	return {
 		id: "timeline",
@@ -20,19 +21,15 @@ export function createTimelineTabDefinition(app: App, bundle: CalendarBundle): T
 				fillContainer: true,
 			});
 
-			eventStoreSub = bundle.eventStore.subscribe(() => {
-				handle?.refresh(bundle.eventStore.getAllEvents());
-			});
-
-			recurringEventSub = bundle.recurringEventManager.subscribe(() => {
-				handle?.refresh(bundle.eventStore.getAllEvents());
-			});
+			mergedSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$)
+				.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
+				.subscribe(() => {
+					handle?.refresh(bundle.eventStore.getAllEvents());
+				});
 		},
 		cleanup: () => {
-			eventStoreSub?.unsubscribe();
-			eventStoreSub = null;
-			recurringEventSub?.unsubscribe();
-			recurringEventSub = null;
+			mergedSub?.unsubscribe();
+			mergedSub = null;
 			handle?.destroy();
 			handle = null;
 		},

@@ -18,9 +18,22 @@ interface GlobalSearchFilters {
 }
 
 const PAGE_SIZE = 50;
+const SEARCH_YEAR_RANGE = 5;
+
+const dateFormatter = new Intl.DateTimeFormat(undefined, {
+	year: "numeric",
+	month: "short",
+	day: "numeric",
+});
+
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+	hour: "2-digit",
+	minute: "2-digit",
+});
 
 export class GlobalSearchModal extends BaseEventListModal {
 	private allEvents: EventListItem[] = [];
+	private rawEvents: CalendarEvent[] = [];
 	private filters: GlobalSearchFilters = {
 		recurring: "none",
 		allDay: "none",
@@ -84,21 +97,15 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 	protected onModalClose(): void {
 		this.colorEvaluator.destroy();
+		this.rawEvents = [];
 	}
 
 	protected override onBeforeRender(): void {
-		// Add custom CSS class for this modal
 		addCls(this.contentEl, "global-search-modal");
-
-		// Load all events from the store
-		this.loadAllEvents();
-
-		// Apply initial filters
 		this.applyFilters();
 	}
 
 	protected override renderCustomHeaderElements(contentEl: HTMLElement): void {
-		// Render filter toggles after title
 		this.renderFilterToggles(contentEl);
 	}
 
@@ -139,6 +146,16 @@ export class GlobalSearchModal extends BaseEventListModal {
 		this.renderNextPage();
 	}
 
+	protected override createEventItem(container: HTMLElement, item: EventListItem): void {
+		if (!item.categoryColor) {
+			const event = this.rawEvents.find((e) => e.ref.filePath === item.filePath);
+			if (event) {
+				item.categoryColor = resolveEventColor(event.meta, this.bundle, this.colorEvaluator);
+			}
+		}
+		super.createEventItem(container, item);
+	}
+
 	private renderNextPage(): void {
 		if (!this.listContainer) return;
 
@@ -166,87 +183,55 @@ export class GlobalSearchModal extends BaseEventListModal {
 		}
 	}
 
-	private loadAllEvents(): void {
-		try {
-			// Get a wide date range to capture all events
-			const start = new Date();
-			start.setFullYear(start.getFullYear() - 5);
-			const end = new Date();
-			end.setFullYear(end.getFullYear() + 5);
+	private fetchFilteredEvents(): CalendarEvent[] {
+		const start = new Date();
+		start.setFullYear(start.getFullYear() - SEARCH_YEAR_RANGE);
+		const end = new Date();
+		end.setFullYear(end.getFullYear() + SEARCH_YEAR_RANGE);
 
-			// Events are already filtered by global filter rules in the parser
-			const events = this.bundle.eventStore.getPhysicalEvents({
-				start: start.toISOString(),
-				end: end.toISOString(),
-			});
+		const events = this.bundle.eventStore.getPhysicalEvents({
+			start: start.toISOString(),
+			end: end.toISOString(),
+		});
 
-			const filteredEvents = events.filter((event) => !event.isVirtual);
+		let filtered = events.filter((event) => !event.isVirtual);
 
-			this.allEvents = filteredEvents.map((event) => ({
-				filePath: event.ref.filePath,
-				title: event.title,
-				subtitle: this.formatEventSubtitle(event),
-				id: event.id,
-				categoryColor: resolveEventColor(event.meta, this.bundle, this.colorEvaluator),
-			}));
-		} catch (error) {
-			console.error("[GlobalSearch] Error loading events for global search:", error);
-			this.allEvents = [];
+		if (this.filters.recurring === "skip") {
+			filtered = filtered.filter((event) => !event.metadata.rruleType);
+		} else if (this.filters.recurring === "only") {
+			filtered = filtered.filter((event) => !!event.metadata.rruleType);
 		}
+
+		if (this.filters.allDay === "skip") {
+			filtered = filtered.filter((event) => !event.allDay);
+		} else if (this.filters.allDay === "only") {
+			filtered = filtered.filter((event) => event.allDay);
+		}
+
+		if (this.filters.skipped === "skip") {
+			filtered = filtered.filter((event) => !event.skipped);
+		} else if (this.filters.skipped === "only") {
+			filtered = filtered.filter((event) => event.skipped);
+		}
+
+		return filtered;
 	}
 
-	private formatEventSubtitle(event: CalendarEvent): string {
-		const parts: string[] = [];
+	private applyFilters(): void {
+		try {
+			this.rawEvents = this.fetchFilteredEvents();
 
-		// Event type indicator
-		if (event.allDay) {
-			parts.push("📅 All-day");
-		} else {
-			parts.push("⏰ Timed");
+			this.allEvents = this.rawEvents.map((event) => ({
+				filePath: event.ref.filePath,
+				title: event.title,
+				subtitle: formatEventSubtitle(event),
+				id: event.id,
+			}));
+		} catch (error) {
+			console.error("[GlobalSearch] Error applying filters:", error);
+			this.allEvents = [];
+			this.rawEvents = [];
 		}
-
-		// Format date/time info
-		const startDate = new Date(event.start);
-		const dateOptions: Intl.DateTimeFormatOptions = {
-			year: "numeric",
-			month: "short",
-			day: "numeric",
-		};
-		const timeOptions: Intl.DateTimeFormatOptions = {
-			hour: "2-digit",
-			minute: "2-digit",
-		};
-
-		if (event.allDay) {
-			// All-day event: just show the date
-			const dateStr = startDate.toLocaleDateString(undefined, dateOptions);
-			parts.push(dateStr);
-		} else {
-			// Timed event: show date and time range
-			const dateStr = startDate.toLocaleDateString(undefined, dateOptions);
-			const startTimeStr = startDate.toLocaleTimeString(undefined, timeOptions);
-
-			if (event.end) {
-				const endDate = new Date(event.end);
-				const endTimeStr = endDate.toLocaleTimeString(undefined, timeOptions);
-				// Check if same day
-				if (dateStr === endDate.toLocaleDateString(undefined, dateOptions)) {
-					parts.push(`${dateStr} ${startTimeStr} - ${endTimeStr}`);
-				} else {
-					const endDateStr = endDate.toLocaleDateString(undefined, dateOptions);
-					parts.push(`${dateStr} ${startTimeStr} - ${endDateStr} ${endTimeStr}`);
-				}
-			} else {
-				parts.push(`${dateStr} ${startTimeStr}`);
-			}
-		}
-
-		// Add recurring indicator
-		if (event.metadata.rruleType) {
-			parts.push("🔄 Recurring");
-		}
-
-		return parts.join(" • ");
 	}
 
 	private renderFilterToggles(contentEl: HTMLElement): void {
@@ -274,7 +259,6 @@ export class GlobalSearchModal extends BaseEventListModal {
 		this.updateButtonText(button, label, this.filters[filterKey]);
 
 		button.addEventListener("click", () => {
-			// Cycle through states: none → only → skip → none
 			const currentState = this.filters[filterKey];
 			let nextState: FilterState;
 
@@ -302,64 +286,14 @@ export class GlobalSearchModal extends BaseEventListModal {
 		button.removeClass(cls("filter-state-skip"));
 		button.removeClass(cls("filter-state-only"));
 
-		// Add current state class
 		button.addClass(cls(`filter-state-${state}`));
 
-		// Update button text
 		if (state === "none") {
 			button.textContent = label;
 		} else if (state === "skip") {
 			button.textContent = `Skip ${label.toLowerCase()}`;
 		} else {
 			button.textContent = `Only ${label.toLowerCase()}`;
-		}
-	}
-
-	private applyFilters(): void {
-		try {
-			// Get fresh event data for filtering
-			const start = new Date();
-			start.setFullYear(start.getFullYear() - 5);
-			const end = new Date();
-			end.setFullYear(end.getFullYear() + 5);
-
-			// Use getPhysicalEvents for better performance (skips virtual event generation)
-			// Events are already filtered by global filter rules in the parser
-			const events = this.bundle.eventStore.getPhysicalEvents({
-				start: start.toISOString(),
-				end: end.toISOString(),
-			});
-
-			let filteredEvents = events.filter((event) => !event.isVirtual);
-
-			if (this.filters.recurring === "skip") {
-				filteredEvents = filteredEvents.filter((event) => !event.metadata.rruleType);
-			} else if (this.filters.recurring === "only") {
-				filteredEvents = filteredEvents.filter((event) => !!event.metadata.rruleType);
-			}
-
-			if (this.filters.allDay === "skip") {
-				filteredEvents = filteredEvents.filter((event) => !event.allDay);
-			} else if (this.filters.allDay === "only") {
-				filteredEvents = filteredEvents.filter((event) => event.allDay);
-			}
-
-			if (this.filters.skipped === "skip") {
-				filteredEvents = filteredEvents.filter((event) => !event.skipped);
-			} else if (this.filters.skipped === "only") {
-				filteredEvents = filteredEvents.filter((event) => event.skipped);
-			}
-
-			this.allEvents = filteredEvents.map((event) => ({
-				filePath: event.ref.filePath,
-				title: event.title,
-				subtitle: this.formatEventSubtitle(event),
-				id: event.id,
-				categoryColor: resolveEventColor(event.meta, this.bundle, this.colorEvaluator),
-			}));
-		} catch (error) {
-			console.error("[GlobalSearch] Error applying filters:", error);
-			this.allEvents = [];
 		}
 	}
 
@@ -380,31 +314,19 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 	private handleNavigateTo(item: EventListItem): void {
 		try {
-			// Find the event in the store to get its date
-			const start = new Date();
-			start.setFullYear(start.getFullYear() - 5);
-			const end = new Date();
-			end.setFullYear(end.getFullYear() + 5);
+			const event =
+				this.rawEvents.find((e) => e.ref.filePath === item.filePath) ??
+				this.bundle.eventStore.getEventByPath(item.filePath);
 
-			// Use getPhysicalEvents for better performance
-			const events = this.bundle.eventStore.getPhysicalEvents({
-				start: start.toISOString(),
-				end: end.toISOString(),
-			});
-
-			const event = events.find((e) => e.ref.filePath === item.filePath);
 			if (!event) {
 				new Notice(`Event not found: ${item.title}`);
 				return;
 			}
 
-			// Parse the event start date
 			const eventDate = new Date(event.start);
 
-			// Navigate to the week view at that date
 			this.calendarComponent.navigateToDate(eventDate, "timeGridWeek");
 
-			// Highlight the event
 			setTimeout(() => {
 				this.calendarComponent.highlightEventByPath(item.filePath, 5000);
 			}, 300);
@@ -416,4 +338,42 @@ export class GlobalSearchModal extends BaseEventListModal {
 			new Notice(`Failed to navigate to: ${item.filePath}`);
 		}
 	}
+}
+
+function formatEventSubtitle(event: CalendarEvent): string {
+	const parts: string[] = [];
+
+	if (event.allDay) {
+		parts.push("📅 All-day");
+	} else {
+		parts.push("⏰ Timed");
+	}
+
+	const startDate = new Date(event.start);
+
+	if (event.allDay) {
+		parts.push(dateFormatter.format(startDate));
+	} else {
+		const dateStr = dateFormatter.format(startDate);
+		const startTimeStr = timeFormatter.format(startDate);
+
+		if (event.end) {
+			const endDate = new Date(event.end);
+			const endDateStr = dateFormatter.format(endDate);
+			const endTimeStr = timeFormatter.format(endDate);
+			if (dateStr === endDateStr) {
+				parts.push(`${dateStr} ${startTimeStr} - ${endTimeStr}`);
+			} else {
+				parts.push(`${dateStr} ${startTimeStr} - ${endDateStr} ${endTimeStr}`);
+			}
+		} else {
+			parts.push(`${dateStr} ${startTimeStr}`);
+		}
+	}
+
+	if (event.metadata.rruleType) {
+		parts.push("🔄 Recurring");
+	}
+
+	return parts.join(" • ");
 }
