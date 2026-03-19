@@ -1,4 +1,4 @@
-import { addCls, formatWikiLink, removeCls, showModal, toggleCls } from "@real1ty-obsidian-plugins";
+import { addCls, removeCls, showModal, toDisplayLink, toggleCls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
@@ -456,7 +456,7 @@ export function openPrerequisiteAssignModal(
 
 	const items: AssignmentItem[] = allEvents.map((event) => {
 		const title = cleanupTitle(event.title);
-		const wikiLink = formatWikiLink(event.ref.filePath);
+		const wikiLink = toDisplayLink(event.ref.filePath);
 		const color = event.color ?? defaultColor;
 		const startDate = new Date(event.start);
 		const date = startDate.toLocaleDateString([], { month: "short", day: "numeric" });

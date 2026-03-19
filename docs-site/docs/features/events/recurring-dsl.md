@@ -235,6 +235,10 @@ Duplicate preserves frontmatter (RRuleID, Source, Instance Date), gets new [Zett
 - Duplicate an instance and later move it to a different day
 - Track both events independently in the instance list
 
+### Editing Physical Recurring Events
+
+Editing a physical instance via the edit modal preserves the instance date in the filename. The filename format `[Title] [YYYY-MM-DD]-[hash].md` is maintained even when the title is changed — for example, renaming "Team Meeting" to "Weekly Standup" produces `Weekly Standup 2025-02-03-00001125853328.md`, keeping the original instance date intact.
+
 ### Moving Physical Recurring Events
 
 Drag and drop updates date properties and renames filename. Normal instances preserve original `Recurring Instance Date`. Duplicated/ignored instances update `Recurring Instance Date` to match new date.
