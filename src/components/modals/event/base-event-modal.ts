@@ -1719,7 +1719,7 @@ export abstract class BaseEventModal extends Modal {
 			const locationValue = this.locationInput.value.trim();
 			if (locationValue) {
 				preservedFrontmatter[settings.locationProp] = locationValue;
-			} else {
+			} else if (!(settings.locationProp in this.originalFrontmatter)) {
 				delete preservedFrontmatter[settings.locationProp];
 			}
 		}
@@ -1728,7 +1728,7 @@ export abstract class BaseEventModal extends Modal {
 			const iconValue = this.iconInput.value.trim();
 			if (iconValue) {
 				preservedFrontmatter[settings.iconProp] = iconValue;
-			} else {
+			} else if (!(settings.iconProp in this.originalFrontmatter)) {
 				delete preservedFrontmatter[settings.iconProp];
 			}
 		}
@@ -1863,7 +1863,7 @@ export abstract class BaseEventModal extends Modal {
 			} else {
 				delete preservedFrontmatter[settings.generatePastEventsProp];
 			}
-		} else {
+		} else if (this.originalFrontmatter[settings.rruleProp]) {
 			delete preservedFrontmatter[settings.rruleProp];
 			delete preservedFrontmatter[settings.rruleSpecProp];
 			delete preservedFrontmatter[settings.rruleIdProp];
