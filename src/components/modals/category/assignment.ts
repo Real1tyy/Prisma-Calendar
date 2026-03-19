@@ -5,9 +5,11 @@ import { createModalButtons } from "../../../utils/dom-utils";
 
 export interface AssignmentItem {
 	name: string;
+	displayName?: string;
 	color: string;
 	subtitle?: string;
 	rightLabel?: string;
+	tooltip?: string;
 }
 
 export interface AssignmentModalConfig {
@@ -56,7 +58,7 @@ function renderAssignmentList(
 	const pageSize = config.pageSize ?? DEFAULT_PAGE_SIZE;
 	const allowCreateNew = config.allowCreateNew ?? true;
 	const colorRows = config.colorRows ?? false;
-	let renderedCount = 0;
+	const renderedIndices = new Set<number>();
 	let sortedItems: AssignmentItem[] = [];
 	let loadMoreButton: HTMLElement | null = null;
 
@@ -124,7 +126,6 @@ function renderAssignmentList(
 	}
 
 	function renderMatchingItems(searchTerm: string): void {
-		// Hide already-rendered items that don't match
 		let visibleCount = 0;
 		for (const state of states) {
 			if (state.isNew) continue;
@@ -133,10 +134,11 @@ function renderAssignmentList(
 			if (matches) visibleCount++;
 		}
 
-		// Render unrendered items that match, up to pageSize total visible
-		for (let i = renderedCount; i < sortedItems.length && visibleCount < pageSize; i++) {
+		for (let i = 0; i < sortedItems.length && visibleCount < pageSize; i++) {
+			if (renderedIndices.has(i)) continue;
 			const item = sortedItems[i]!;
 			if (getSearchableText(item).includes(searchTerm)) {
+				renderedIndices.add(i);
 				const itemEl = createCheckboxItem(item);
 				listContainer.appendChild(itemEl);
 				visibleCount++;
@@ -155,18 +157,20 @@ function renderAssignmentList(
 	}
 
 	function renderNextPage(): void {
-		const end = Math.min(renderedCount + pageSize, sortedItems.length);
-		for (let i = renderedCount; i < end; i++) {
+		let added = 0;
+		for (let i = 0; i < sortedItems.length && added < pageSize; i++) {
+			if (renderedIndices.has(i)) continue;
+			renderedIndices.add(i);
 			const itemEl = createCheckboxItem(sortedItems[i]!);
 			listContainer.appendChild(itemEl);
+			added++;
 		}
-		renderedCount = end;
 		updateLoadMoreButton();
 	}
 
 	function updateLoadMoreButton(): void {
 		if (!loadMoreButton) return;
-		const remaining = sortedItems.length - renderedCount;
+		const remaining = sortedItems.length - renderedIndices.size;
 		if (remaining > 0 && !searchInput.value.trim()) {
 			loadMoreButton.textContent = `Load more (${remaining} remaining)`;
 			removeCls(loadMoreButton, "hidden");
@@ -203,8 +207,11 @@ function renderAssignmentList(
 			colorDot.style.setProperty("--category-color", item.color);
 		}
 
-		const nameSpan = label.createEl("span", { text: item.name });
+		const nameSpan = label.createEl("span", { text: item.displayName ?? item.name });
 		addCls(nameSpan, "category-name");
+		if (item.tooltip) {
+			itemEl.title = item.tooltip;
+		}
 
 		if (item.subtitle) {
 			const subtitleSpan = label.createEl("span", { text: item.subtitle });
