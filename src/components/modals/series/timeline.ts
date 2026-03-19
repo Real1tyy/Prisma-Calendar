@@ -1,7 +1,7 @@
 import { cls, ColorEvaluator, showModal } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { DataSet } from "vis-data";
-import { Timeline, type TimelineOptions } from "vis-timeline";
+import { type DataItem, Timeline, type TimelineOptions } from "vis-timeline";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
@@ -22,6 +22,17 @@ export interface TimelineHandle {
 	refresh: (events: CalendarEvent[]) => void;
 }
 
+function findMinMaxDates(events: CalendarEvent[]): { minMs: number; maxMs: number } {
+	let minMs = Infinity;
+	let maxMs = -Infinity;
+	for (const event of events) {
+		const ms = new Date(event.start).getTime();
+		if (ms < minMs) minMs = ms;
+		if (ms > maxMs) maxMs = ms;
+	}
+	return { minMs, maxMs };
+}
+
 /**
  * Renders a vis-timeline visualization into any container element.
  * Returns a handle for cleanup and refreshing with new events.
@@ -33,6 +44,7 @@ export function renderTimelineInto(
 	config: EventSeriesTimelineConfig
 ): TimelineHandle {
 	let timeline: Timeline | null = null;
+	let items: DataSet<DataItem> | null = null;
 	const eventMap = new Map<string, CalendarEvent>();
 	const colorEvaluator = new ColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
 
@@ -139,40 +151,27 @@ export function renderTimelineInto(
 		};
 	}
 
-	function buildTimeline(events: CalendarEvent[]): void {
-		if (timeline) {
-			timeline.destroy();
-			timeline = null;
-		}
+	function computeRangeBounds(events: CalendarEvent[]): { rangeStart: Date; rangeEnd: Date } {
+		const { minMs, maxMs } = findMinMaxDates(events);
+		const timeSpan = maxMs - minMs;
+		const rangePadding = Math.max(timeSpan * 0.1, 86400000);
+		return {
+			rangeStart: new Date(minMs - rangePadding),
+			rangeEnd: new Date(maxMs + rangePadding),
+		};
+	}
 
-		if (events.length === 0) {
-			timelineContainer.empty();
-			timelineContainer.createEl("p", {
-				text: "No events to display",
-				cls: cls("timeline-modal-empty"),
-			});
-			return;
-		}
+	function initTimeline(events: CalendarEvent[]): void {
+		const settings = bundle.settingsStore.currentSettings;
+		const { rangeStart, rangeEnd } = computeRangeBounds(events);
 
 		eventMap.clear();
 		for (const event of events) {
 			eventMap.set(event.ref.filePath, event);
 		}
 
-		const settings = bundle.settingsStore.currentSettings;
-
-		const sortedEvents = [...events].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-		const firstEvent = new Date(sortedEvents[0].start);
-		const lastEvent = new Date(sortedEvents[sortedEvents.length - 1].start);
-
-		const timeSpan = lastEvent.getTime() - firstEvent.getTime();
-		const rangePadding = Math.max(timeSpan * 0.1, 86400000);
-		const rangeStart = new Date(firstEvent.getTime() - rangePadding);
-		const rangeEnd = new Date(lastEvent.getTime() + rangePadding);
-
 		const timelineItems = events.map((event) => toItem(event, settings));
-
-		const items = new DataSet(timelineItems);
+		items = new DataSet(timelineItems);
 
 		const nowMs = Date.now();
 		const halfWeek = 3.5 * 86400000;
@@ -221,6 +220,49 @@ export function renderTimelineInto(
 		});
 	}
 
+	function updateTimeline(events: CalendarEvent[]): void {
+		if (!timeline || !items) {
+			initTimeline(events);
+			return;
+		}
+
+		eventMap.clear();
+		for (const event of events) {
+			eventMap.set(event.ref.filePath, event);
+		}
+
+		const settings = bundle.settingsStore.currentSettings;
+		const timelineItems = events.map((event) => toItem(event, settings));
+
+		items.clear();
+		items.add(timelineItems);
+
+		const { rangeStart, rangeEnd } = computeRangeBounds(events);
+		timeline.setOptions({ min: rangeStart, max: rangeEnd });
+	}
+
+	function buildTimeline(events: CalendarEvent[]): void {
+		if (events.length === 0) {
+			if (timeline) {
+				timeline.destroy();
+				timeline = null;
+				items = null;
+			}
+			timelineContainer.empty();
+			timelineContainer.createEl("p", {
+				text: "No events to display",
+				cls: cls("timeline-modal-empty"),
+			});
+			return;
+		}
+
+		if (timeline && items) {
+			updateTimeline(events);
+		} else {
+			initTimeline(events);
+		}
+	}
+
 	buildTimeline(config.events);
 
 	return {
@@ -228,6 +270,7 @@ export function renderTimelineInto(
 			if (timeline) {
 				timeline.destroy();
 				timeline = null;
+				items = null;
 			}
 			colorEvaluator.destroy();
 			container.empty();
