@@ -219,6 +219,13 @@ export class PropertiesSettings {
 		});
 
 		this.ui.addText(containerEl, {
+			key: "prerequisiteProp",
+			name: "Prerequisite property",
+			desc: "Frontmatter property name for event prerequisites (wiki-links to other events that must complete before this event)",
+			placeholder: PROP_DEFAULTS.prerequisite,
+		});
+
+		this.ui.addText(containerEl, {
 			key: "minutesBeforeProp",
 			name: "Minutes before property",
 			desc: "Frontmatter property name for per-event notification times (timed events)",

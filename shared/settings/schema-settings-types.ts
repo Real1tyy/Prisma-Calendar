@@ -71,11 +71,17 @@ export interface SchemaSettingsSection {
 	hide?: () => void;
 }
 
+export type SchemaSettingsSectionOverride = Partial<
+	Pick<SchemaSettingsSection, "overrides" | "groups" | "fieldOrder" | "before" | "after" | "hide" | "label">
+>;
+
 export interface SchemaSettingsConfig<TSchema extends ZodObject<ZodRawShape>> {
 	containerEl: HTMLElement;
 	settingsStore: SettingsStore<TSchema>;
 	cssPrefix: string;
 	app?: App;
-	sections: SchemaSettingsSection[];
+	sections?: SchemaSettingsSection[];
+	sectionOverrides?: Record<string, SchemaSettingsSectionOverride>;
+	exclude?: string[];
 	footerLinks?: SettingsFooterLink[];
 }

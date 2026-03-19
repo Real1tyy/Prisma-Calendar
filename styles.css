@@ -9480,6 +9480,11 @@ div.vis-tooltip {
 	color: #4ade80;
 }
 
+.prisma-capacity-bounds {
+	color: var(--text-faint);
+	font-size: 0.9em;
+}
+
 /* ─── Daily Stats Renderer ───────────────────────────────────── */
 
 .prisma-daily-stats-header-bar {

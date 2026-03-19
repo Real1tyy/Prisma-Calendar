@@ -3,6 +3,8 @@ import {
 	afterRender,
 	calculateDurationMinutes,
 	cls,
+	extractFileName,
+	formatWikiLink,
 	parseAsLocalDate,
 	parseFrontmatterRecord,
 	parseIntoList,
@@ -47,7 +49,7 @@ import { formatDateOnly, formatDateTimeForInput, inputValueToISOString } from ".
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import { Stopwatch } from "../../stopwatch";
 import { TitleInputSuggest } from "../../title-input-suggest";
-import { openCategoryAssignModal } from "../category/assignment";
+import { type AssignmentItem, openCategoryAssignModal, showAssignmentModal } from "../category/assignment";
 import { showCategoryEventsModal } from "../series/bases-view";
 import { createFormField } from "./event-form-fields";
 import { showSavePresetModal } from "./save-preset";
@@ -102,6 +104,8 @@ export abstract class BaseEventModal extends Modal {
 	protected locationInput!: HTMLInputElement;
 	protected iconInput!: HTMLInputElement;
 	protected participantsInput!: HTMLInputElement;
+	protected prerequisitesContainer?: HTMLElement;
+	protected selectedPrerequisites: string[] = [];
 	protected breakInput!: HTMLInputElement;
 	protected markAsDoneCheckbox!: HTMLInputElement;
 	protected initialMarkAsDoneState: boolean = false;
@@ -439,6 +443,7 @@ export abstract class BaseEventModal extends Modal {
 		this.createLocationField(contentEl);
 		this.createIconField(contentEl);
 		this.createParticipantsField(contentEl);
+		this.createPrerequisiteField(contentEl);
 		this.createBreakField(contentEl);
 		this.createMarkAsDoneField(contentEl);
 		this.createSkipField(contentEl);
@@ -713,6 +718,94 @@ export abstract class BaseEventModal extends Modal {
 			placeholder: "Alice, Bob, Charlie",
 			description: "Comma-separated list of participants",
 		});
+	}
+
+	private createPrerequisiteField(contentEl: HTMLElement): void {
+		if (!this.bundle.settingsStore.currentSettings.prerequisiteProp) return;
+
+		const container = contentEl.createDiv(cls("setting-item"));
+		container.createEl("div", {
+			text: "Prerequisites",
+			cls: cls("setting-item-name"),
+		});
+
+		const content = container.createDiv(cls("category-display-content"));
+		this.prerequisitesContainer = content.createDiv(cls("categories-list"));
+
+		const assignButton = content.createEl("button", {
+			text: "Assign prerequisites",
+			cls: cls("assign-categories-button"),
+		});
+		assignButton.addEventListener("click", () => {
+			this.openAssignPrerequisitesModal();
+		});
+
+		this.renderPrerequisites();
+	}
+
+	protected renderPrerequisites(): void {
+		if (!this.prerequisitesContainer) return;
+
+		this.prerequisitesContainer.empty();
+
+		if (this.selectedPrerequisites.length === 0) {
+			this.prerequisitesContainer.createEl("span", {
+				text: "No prerequisites",
+				cls: cls("no-categories-text"),
+			});
+			return;
+		}
+
+		for (const link of this.selectedPrerequisites) {
+			const item = this.prerequisitesContainer.createDiv(cls("category-item"));
+
+			item.createEl("span", {
+				text: extractFileName(link),
+				cls: cls("category-name"),
+			});
+
+			const removeButton = item.createEl("span", {
+				text: "\u00D7",
+				cls: cls("category-remove-button"),
+				attr: { title: "Remove prerequisite" },
+			});
+			removeButton.addEventListener("click", (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				this.selectedPrerequisites = this.selectedPrerequisites.filter((p) => p !== link);
+				this.renderPrerequisites();
+			});
+		}
+	}
+
+	private openAssignPrerequisitesModal(): void {
+		const allEvents = this.bundle.eventStore.getAllEvents();
+		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
+
+		const items: AssignmentItem[] = allEvents.map((event) => ({
+			name: formatWikiLink(event.ref.filePath),
+			color: defaultColor,
+			subtitle: event.title,
+		}));
+
+		showAssignmentModal(
+			this.app,
+			items,
+			{
+				title: "Assign prerequisites",
+				description: "Select events that must complete before this event.",
+				searchPlaceholder: "Search events...",
+				createNewLabel: (n) => `Add: "${n}"`,
+				assignLabel: "Assign prerequisites",
+				removeLabel: "Remove prerequisites",
+				defaultColor,
+			},
+			this.selectedPrerequisites,
+			(selected) => {
+				this.selectedPrerequisites = selected;
+				this.renderPrerequisites();
+			}
+		);
 	}
 
 	private createBreakField(contentEl: HTMLElement): void {
@@ -1194,6 +1287,9 @@ export abstract class BaseEventModal extends Modal {
 			this.participantsInput.value = "";
 		}
 
+		this.selectedPrerequisites = [];
+		this.renderPrerequisites();
+
 		if (this.breakInput) {
 			this.breakInput.value = "";
 		}
@@ -1661,6 +1757,10 @@ export abstract class BaseEventModal extends Modal {
 		if (settings.participantsProp && this.participantsInput) {
 			const participantsList = parseIntoList(this.participantsInput.value).filter((p) => p.trim());
 			assignListToFrontmatter(preservedFrontmatter, settings.participantsProp, participantsList);
+		}
+
+		if (settings.prerequisiteProp) {
+			assignListToFrontmatter(preservedFrontmatter, settings.prerequisiteProp, this.selectedPrerequisites);
 		}
 
 		// Handle break property

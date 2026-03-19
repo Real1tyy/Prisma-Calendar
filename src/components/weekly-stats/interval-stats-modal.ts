@@ -3,7 +3,7 @@ import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
-import { calculateCapacityFromEvents, formatCapacityLabel } from "../../utils/capacity";
+import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../utils/capacity";
 import type { AggregationMode, Stats } from "../../utils/weekly-stats";
 import { formatDuration, formatDurationAsDecimalHours } from "../../utils/weekly-stats";
 import { StatsModal } from "./base-stats-modal";
@@ -140,6 +140,8 @@ export abstract class IntervalStatsModal extends StatsModal {
 			capacityEl.createSpan({ text: `⏱ ${label} (${capacity.percentUsed.toFixed(0)}%)`, cls: cls("capacity-used") });
 			capacityEl.createSpan({ text: "·" });
 			capacityEl.createSpan({ text: `${fmt(capacity.remainingMs)} remaining`, cls: cls("capacity-remaining") });
+			capacityEl.createSpan({ text: "·" });
+			capacityEl.createSpan({ text: formatBoundaryRange(capacity), cls: cls("capacity-bounds") });
 		}
 
 		this.chartComponent = new ChartComponent(this.contentContainer, stats.entries);

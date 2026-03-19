@@ -18,15 +18,15 @@ A compact badge in the view header shows today's capacity at a glance:
 
 > ⏱ 7h 30m / 11h (68%)
 
-The indicator updates automatically when events change. Hover to see the inferred time boundaries.
+The indicator updates automatically when events change. Hover to see the inferred time boundaries and remaining hours.
 
 ### Daily + Stats Tab
 
-The statistics panel in the Daily + Stats tab includes a capacity label above the event distribution chart showing used vs total hours, percentage, and remaining time.
+The statistics panel in the Daily + Stats tab includes a capacity label showing used vs total hours, percentage, remaining time, and the inferred time boundaries (e.g., `7:00–21:00`).
 
 ### Statistics Modals
 
-The daily, weekly, and monthly statistics modals all include a capacity label above the distribution chart when enabled. For multi-day periods (week, month), capacity is calculated as the number of days multiplied by the inferred hours per day.
+The daily, weekly, and monthly statistics modals all include a capacity label showing used vs total hours, percentage, remaining time, and the inferred boundaries. For multi-day periods (week, month), capacity is calculated as the number of days multiplied by the inferred hours per day.
 
 ## Enabling / Disabling
 

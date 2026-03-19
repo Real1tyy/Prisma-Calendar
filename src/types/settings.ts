@@ -120,6 +120,7 @@ const PropsSettingsSchema = z
 		caldavProp: z.string().catch("CalDAV"), // property name for CalDAV sync metadata
 		icsSubscriptionProp: z.string().catch("ICSSubscription"), // property name for ICS subscription sync metadata
 		iconProp: z.string().catch(PROP_DEFAULTS.icon), // property name for event icon override (emoji or text, takes precedence over integration icons)
+		prerequisiteProp: z.string().catch(PROP_DEFAULTS.prerequisite), // property name for event prerequisites (wiki-links to other events that must complete first)
 		basesViewProperties: z.array(z.string()).catch([]), // comma-separated list of properties to include in bases view for category events
 		basesViewType: z.enum(["table", "cards", "list"]).catch("cards"), // view type for bases views (table, cards, or list)
 	})

@@ -2,8 +2,8 @@ import { cls } from "@real1ty-obsidian-plugins";
 import type { Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
-import { calculateCapacityFromEvents, formatCapacityLabel } from "../utils/capacity";
-import { getDayBounds } from "../utils/weekly-stats";
+import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../utils/capacity";
+import { formatDuration, formatDurationAsDecimalHours, getDayBounds } from "../utils/weekly-stats";
 
 export interface CapacityIndicatorHandle {
 	setRange: (start: Date, end: Date) => void;
@@ -31,13 +31,9 @@ export function createCapacityIndicator(container: HTMLElement, bundle: Calendar
 
 		const capacity = calculateCapacityFromEvents(events, rangeStart, rangeEnd, settings.hourStart, settings.hourEnd);
 		const label = formatCapacityLabel(capacity, settings.showDecimalHours);
+		const fmt = settings.showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
 		badge.textContent = `⏱ ${label} (${capacity.percentUsed.toFixed(0)}%)`;
-		const fmtHour = (h: number): string => {
-			const hrs = Math.floor(h);
-			const mins = Math.round((h - hrs) * 60);
-			return `${hrs}:${String(mins).padStart(2, "0")}`;
-		};
-		badge.title = `${fmtHour(capacity.boundaryStart)}–${fmtHour(capacity.boundaryEnd)}`;
+		badge.title = `Bounds: ${formatBoundaryRange(capacity)}\nRemaining: ${fmt(capacity.remainingMs)}`;
 	}
 
 	void refresh();
