@@ -6005,6 +6005,28 @@
 	overflow: hidden;
 }
 
+.prisma-global-search-load-more {
+	display: block;
+	width: 100%;
+	padding: 0.5rem;
+	margin-top: 0.5rem;
+	background: var(--background-modifier-hover);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.prisma-global-search-load-more:hover {
+	background: var(--background-modifier-active-hover);
+	color: var(--text-normal);
+}
+
+.prisma-global-search-load-more.prisma-hidden {
+	display: none;
+}
+
 .prisma-global-search-filters {
 	padding: 0.75rem;
 	border: 1px solid var(--background-modifier-border);
@@ -7511,7 +7533,17 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 }
 
 .prisma-category-checkbox-item.prisma-colorized-row {
-	border-left: 4px solid var(--category-color);
+	background-color: color-mix(in srgb, var(--category-color) 15%, transparent);
+	border-left: 3px solid var(--category-color);
+}
+
+.prisma-category-checkbox-item.prisma-colorized-row:hover,
+.prisma-category-checkbox-item.prisma-colorized-row.prisma-highlighted {
+	background-color: color-mix(in srgb, var(--category-color) 25%, transparent);
+}
+
+.prisma-category-checkbox-item.prisma-colorized-row.prisma-checked {
+	background-color: color-mix(in srgb, var(--category-color) 35%, transparent);
 }
 
 .prisma-category-load-more-button {

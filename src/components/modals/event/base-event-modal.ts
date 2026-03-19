@@ -3,7 +3,7 @@ import {
 	afterRender,
 	calculateDurationMinutes,
 	cls,
-	extractFileName,
+	extractDisplayName,
 	formatWikiLink,
 	parseAsLocalDate,
 	parseFrontmatterRecord,
@@ -441,10 +441,10 @@ export abstract class BaseEventModal extends Modal {
 
 		this.createRecurringEventFields(contentEl);
 		this.createCategoryField(contentEl);
+		this.createPrerequisiteField(contentEl);
 		this.createLocationField(contentEl);
 		this.createIconField(contentEl);
 		this.createParticipantsField(contentEl);
-		this.createPrerequisiteField(contentEl);
 		this.createBreakField(contentEl);
 		this.createMarkAsDoneField(contentEl);
 		this.createSkipField(contentEl);
@@ -760,9 +760,11 @@ export abstract class BaseEventModal extends Modal {
 		for (const link of this.selectedPrerequisites) {
 			const item = this.prerequisitesContainer.createDiv(cls("category-item"));
 
+			const displayName = cleanupTitle(extractDisplayName(link));
 			item.createEl("span", {
-				text: extractFileName(link),
+				text: displayName,
 				cls: cls("category-name"),
+				attr: { title: link },
 			});
 
 			const removeButton = item.createEl("span", {
@@ -783,9 +785,17 @@ export abstract class BaseEventModal extends Modal {
 		const allEvents = this.bundle.eventStore.getAllEvents();
 		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
 
-		const items: AssignmentItem[] = allEvents.map((event) => {
+		// Deduplicate by file path (recurring events generate multiple instances for the same file)
+		const seen = new Set<string>();
+		const items: AssignmentItem[] = [];
+
+		for (const event of allEvents) {
+			const filePath = event.ref.filePath;
+			if (seen.has(filePath)) continue;
+			seen.add(filePath);
+
 			const title = cleanupTitle(event.title);
-			const wikiLink = formatWikiLink(event.ref.filePath);
+			const wikiLink = formatWikiLink(filePath);
 			const color = event.color ?? defaultColor;
 
 			let rightLabel: string;
@@ -799,8 +809,8 @@ export abstract class BaseEventModal extends Modal {
 				rightLabel = `${startDate.toLocaleDateString([], { month: "short", day: "numeric" })} · all-day`;
 			}
 
-			return { name: wikiLink, color, subtitle: title, rightLabel };
-		});
+			items.push({ name: wikiLink, displayName: title, color, rightLabel, tooltip: filePath });
+		}
 
 		showAssignmentModal(
 			this.app,
@@ -816,7 +826,7 @@ export abstract class BaseEventModal extends Modal {
 				pageSize: 20,
 				allowCreateNew: false,
 				colorRows: true,
-				searchFields: (item) => `${item.subtitle ?? ""} ${item.name}`,
+				searchFields: (item) => `${item.displayName ?? ""} ${item.rightLabel ?? ""}`,
 			},
 			this.selectedPrerequisites,
 			(selected) => {
