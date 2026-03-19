@@ -8,10 +8,6 @@ interface FormFieldConfig {
 	attrs?: Record<string, string>;
 }
 
-/**
- * Creates a standard setting-item form field with label, optional description, and input element.
- * Used across the event modal for simple fields (location, icon, participants, break, etc.).
- */
 export function createFormField(parent: HTMLElement, config: FormFieldConfig): HTMLInputElement {
 	const container = parent.createDiv(cls("setting-item"));
 	container.createEl("div", { text: config.label, cls: cls("setting-item-name") });

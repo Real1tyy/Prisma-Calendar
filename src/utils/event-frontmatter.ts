@@ -10,6 +10,12 @@ import { type App, TFile } from "obsidian";
 
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { CalendarEvent, Frontmatter, SingleCalendarConfig } from "../types";
+import {
+	DEDICATED_UI_PROP_KEYS,
+	NOTIFICATION_DEDICATED_UI_PROP_KEYS,
+	NOTIFICATION_SYSTEM_PROP_KEYS,
+	SYSTEM_PROP_KEYS,
+} from "../types/settings";
 import { getFileAndFrontmatter, getFileByPathOrThrow } from "./obsidian";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
@@ -195,60 +201,35 @@ export const parseCustomDoneProperty = (expression: string): { key: string; valu
 	return { key, value: rawValue };
 };
 
+const resolveKeys = (settings: SingleCalendarConfig, keys: readonly string[]): string[] =>
+	keys.map((key) => String(settings[key as keyof SingleCalendarConfig] ?? "")).filter((v) => v !== "");
+
 /**
  * Returns per-instance system properties that should NOT be copied from a source
  * recurring event to its physical instances. These are fields Prisma sets or
  * recalculates for each instance (timing, identity, recurrence metadata).
  *
- * User-configured event data (icon, location, participants, categories, etc.)
- * is intentionally excluded so it propagates to physical instances.
  */
 const getRecurringInstanceSystemProps = (settings: SingleCalendarConfig): Set<string> => {
-	return new Set(
-		[
-			settings.startProp,
-			settings.endProp,
-			settings.dateProp,
-			settings.breakProp,
-			settings.titleProp || "",
-			settings.calendarTitleProp,
-			settings.allDayProp,
-			settings.rruleProp,
-			settings.rruleSpecProp,
-			settings.rruleIdProp,
-			settings.sourceProp,
-			settings.skipProp,
-			settings.instanceDateProp,
-			settings.zettelIdProp || "",
-			settings.futureInstancesCountProp,
-			settings.alreadyNotifiedProp,
-			settings.caldavProp,
-			settings.icsSubscriptionProp,
-			settings.generatePastEventsProp,
-			settings.ignoreRecurringProp,
-		].filter((prop) => prop !== "")
-	);
+	return new Set([...resolveKeys(settings, SYSTEM_PROP_KEYS), ...resolveKeys(settings, NOTIFICATION_SYSTEM_PROP_KEYS)]);
 };
 
 /**
  * Returns ALL Prisma-managed internal properties that should not be displayed
  * in UI as regular display properties. Combines the recurring-instance system
  * props with user-facing props that have their own dedicated rendering.
+ *
+ * Driven by DEDICATED_UI_PROP_KEYS and NOTIFICATION_DEDICATED_UI_PROP_KEYS in settings.ts.
  */
 export function getInternalProperties(settings: SingleCalendarConfig): Set<string> {
 	const systemProps = getRecurringInstanceSystemProps(settings);
-	const additionalProps = [
-		settings.statusProperty,
-		settings.categoryProp,
-		settings.minutesBeforeProp,
-		settings.daysBeforeProp,
-		settings.iconProp,
-		settings.locationProp,
-		settings.participantsProp,
+	const dedicatedProps = [
+		...resolveKeys(settings, DEDICATED_UI_PROP_KEYS),
+		...resolveKeys(settings, NOTIFICATION_DEDICATED_UI_PROP_KEYS),
 		...INTERNAL_FRONTMATTER_PROPERTIES,
-	].filter((prop): prop is string => prop !== undefined && prop !== "");
+	];
 
-	return new Set([...systemProps, ...additionalProps]);
+	return new Set([...systemProps, ...dedicatedProps]);
 }
 
 /**

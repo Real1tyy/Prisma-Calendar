@@ -36,6 +36,7 @@ export interface DatetimeFieldDescriptor extends BaseFieldDescriptor {
 export interface EnumFieldDescriptor extends BaseFieldDescriptor {
 	type: "enum";
 	enumValues: string[];
+	enumLabels?: Record<string, string>;
 }
 
 export interface ToggleFieldDescriptor extends BaseFieldDescriptor {
