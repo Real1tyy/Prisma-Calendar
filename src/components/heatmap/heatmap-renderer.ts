@@ -17,17 +17,17 @@ const CELL_SIZE_YEARLY = 12;
 const CELL_GAP_YEARLY = 3;
 const CELL_SIZE_MONTHLY = 20;
 const CELL_GAP_MONTHLY = 3;
+const CELL_RADIUS_YEARLY = 2;
+const CELL_RADIUS_MONTHLY = 3;
 
 const DEFAULT_GRADIENT = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"];
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-function getColorBucket(count: number, maxCount: number): number {
-	if (count === 0 || maxCount === 0) return 0;
-	if (maxCount <= 4) return Math.min(count, 4);
-	const step = maxCount / 4;
-	if (count <= step) return 1;
-	if (count <= step * 2) return 2;
-	if (count <= step * 3) return 3;
+function getColorBucket(count: number, thresholds: [number, number, number]): number {
+	if (count === 0) return 0;
+	if (count <= thresholds[0]) return 1;
+	if (count <= thresholds[1]) return 2;
+	if (count <= thresholds[2]) return 3;
 	return 4;
 }
 
@@ -57,8 +57,67 @@ function normalizedDayOfWeek(dt: DateTime, firstDayOfWeek: number): number {
 	return (isoWeekday - 1 - firstDayOfWeek + 7) % 7;
 }
 
+function getYearlyColumn(day: DateTime, startDate: DateTime, firstDayOfWeek: number): number {
+	const startOffset = normalizedDayOfWeek(startDate, firstDayOfWeek);
+	const dayIndex = Math.floor(day.diff(startDate, "days").days);
+	return Math.floor((dayIndex + startOffset) / 7);
+}
+
 function formatDateLabel(dt: DateTime): string {
 	return dt.toFormat("LLL d, yyyy");
+}
+
+interface HeatmapCellParams {
+	x: number;
+	y: number;
+	size: number;
+	radius: number;
+	dateKey: string;
+	day: DateTime;
+	count: number;
+	categoryColor: string | undefined;
+	thresholds: [number, number, number];
+	events: CalendarEvent[];
+	onDayClick: ((date: string, events: CalendarEvent[]) => void) | undefined;
+}
+
+function createHeatmapCell(params: HeatmapCellParams): SVGRectElement {
+	const { x, y, size, radius, dateKey, day, count, categoryColor, thresholds, events, onDayClick } = params;
+
+	const bucket = getColorBucket(count, thresholds);
+	const rect = createSVGElement("rect", {
+		x: String(x),
+		y: String(y),
+		width: String(size),
+		height: String(size),
+		rx: String(radius),
+		ry: String(radius),
+		fill: getCellColor(bucket, categoryColor),
+		class: cls("heatmap-cell"),
+		"data-date": dateKey,
+		"data-count": String(count),
+	});
+
+	const title = createSVGElement("title");
+	title.textContent = `${formatDateLabel(day)}: ${count} event${count === 1 ? "" : "s"}`;
+	rect.appendChild(title);
+	rect.setAttribute("aria-label", title.textContent);
+
+	if (onDayClick) {
+		rect.setAttribute("tabindex", "0");
+		rect.setAttribute("role", "button");
+
+		const handleClick = () => onDayClick(dateKey, events);
+		rect.addEventListener("click", handleClick);
+		rect.addEventListener("keydown", (evt) => {
+			if (evt.key === "Enter" || evt.key === " ") {
+				evt.preventDefault();
+				handleClick();
+			}
+		});
+	}
+
+	return rect;
 }
 
 export function renderHeatmapSVG(container: HTMLElement, dataset: HeatmapDataset, options: HeatmapRenderOptions): void {
@@ -80,7 +139,6 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 	const startDate = DateTime.utc(year, 1, 1);
 	const endDate = DateTime.utc(year, 12, 31);
 
-	// Calculate week columns
 	const startOffset = normalizedDayOfWeek(startDate, firstDayOfWeek);
 	const totalDays = endDate.diff(startDate, "days").days + 1;
 	const totalWeeks = Math.ceil((totalDays + startOffset) / 7);
@@ -96,8 +154,7 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 		class: cls("heatmap-svg"),
 	});
 
-	// Day-of-week labels
-	const dayLabelIndices = [0, 2, 4]; // Mon, Wed, Fri (when firstDayOfWeek=0)
+	const dayLabelIndices = [0, 2, 4];
 	for (const i of dayLabelIndices) {
 		const adjustedIndex = (i + firstDayOfWeek) % 7;
 		const text = createSVGElement("text", {
@@ -109,74 +166,41 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 		svg.appendChild(text);
 	}
 
-	// Month labels
-	let currentMonth = -1;
-	let day = startDate;
-	let col = 0;
-
-	while (day <= endDate) {
-		const month = day.month;
-		if (month !== currentMonth) {
-			currentMonth = month;
-			const colX = labelWidth + col * step;
-			const text = createSVGElement("text", {
-				x: String(colX),
-				y: "12",
-				class: cls("heatmap-month-label"),
-			});
-			text.textContent = day.toFormat("LLL");
-			svg.appendChild(text);
-		}
-
-		const row = normalizedDayOfWeek(day, firstDayOfWeek);
-		if (row === 6) col++;
-		day = day.plus({ days: 1 });
+	for (let m = 1; m <= 12; m++) {
+		const firstOfMonth = DateTime.utc(year, m, 1);
+		const col = getYearlyColumn(firstOfMonth, startDate, firstDayOfWeek);
+		const text = createSVGElement("text", {
+			x: String(labelWidth + col * step),
+			y: "12",
+			class: cls("heatmap-month-label"),
+		});
+		text.textContent = firstOfMonth.toFormat("LLL");
+		svg.appendChild(text);
 	}
 
-	// Render cells
-	day = startDate;
-	col = 0;
-	let lastRow = -1;
-
+	let day = startDate;
 	while (day <= endDate) {
 		const row = normalizedDayOfWeek(day, firstDayOfWeek);
-		if (row <= lastRow) col++;
-		lastRow = row;
-
+		const col = getYearlyColumn(day, startDate, firstDayOfWeek);
 		const dateKey = day.toFormat("yyyy-MM-dd");
 		const dayData = dataset.days.get(dateKey);
-		const count = dayData?.count ?? 0;
-		const bucket = getColorBucket(count, dataset.maxCount);
 
-		const x = labelWidth + col * step;
-		const y = headerHeight + row * step;
+		svg.appendChild(
+			createHeatmapCell({
+				x: labelWidth + col * step,
+				y: headerHeight + row * step,
+				size: cellSize,
+				radius: CELL_RADIUS_YEARLY,
+				dateKey,
+				day,
+				count: dayData?.count ?? 0,
+				categoryColor,
+				thresholds: dataset.thresholds,
+				events: dayData?.events ?? [],
+				onDayClick,
+			})
+		);
 
-		const rect = createSVGElement("rect", {
-			x: String(x),
-			y: String(y),
-			width: String(cellSize),
-			height: String(cellSize),
-			rx: "2",
-			ry: "2",
-			fill: getCellColor(bucket, categoryColor),
-			class: cls("heatmap-cell"),
-			"data-date": dateKey,
-			"data-count": String(count),
-		});
-
-		const title = createSVGElement("title");
-		title.textContent = `${formatDateLabel(day)}: ${count} event${count === 1 ? "" : "s"}`;
-		rect.appendChild(title);
-
-		rect.setAttribute("aria-label", title.textContent);
-
-		if (onDayClick) {
-			rect.addEventListener("click", () => {
-				onDayClick(dateKey, dayData?.events ?? []);
-			});
-		}
-
-		svg.appendChild(rect);
 		day = day.plus({ days: 1 });
 	}
 
@@ -208,7 +232,6 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 		class: cls("heatmap-svg"),
 	});
 
-	// Day-of-week headers
 	for (let i = 0; i < 7; i++) {
 		const adjustedIndex = (i + firstDayOfWeek) % 7;
 		const text = createSVGElement("text", {
@@ -220,47 +243,32 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 		svg.appendChild(text);
 	}
 
-	// Render cells
 	for (let d = 1; d <= daysInMonth; d++) {
 		const day = DateTime.utc(year, month, d);
 		const offset = normalizedDayOfWeek(day, firstDayOfWeek);
 		const weekRow = Math.floor((d - 1 + startOffset) / 7);
-
 		const dateKey = day.toFormat("yyyy-MM-dd");
 		const dayData = dataset.days.get(dateKey);
-		const count = dayData?.count ?? 0;
-		const bucket = getColorBucket(count, dataset.maxCount);
 
 		const x = offset * step;
 		const y = headerHeight + weekRow * step;
 
-		const rect = createSVGElement("rect", {
-			x: String(x),
-			y: String(y),
-			width: String(cellSize),
-			height: String(cellSize),
-			rx: "3",
-			ry: "3",
-			fill: getCellColor(bucket, categoryColor),
-			class: cls("heatmap-cell"),
-			"data-date": dateKey,
-			"data-count": String(count),
-		});
+		svg.appendChild(
+			createHeatmapCell({
+				x,
+				y,
+				size: cellSize,
+				radius: CELL_RADIUS_MONTHLY,
+				dateKey,
+				day,
+				count: dayData?.count ?? 0,
+				categoryColor,
+				thresholds: dataset.thresholds,
+				events: dayData?.events ?? [],
+				onDayClick,
+			})
+		);
 
-		const title = createSVGElement("title");
-		title.textContent = `${formatDateLabel(day)}: ${count} event${count === 1 ? "" : "s"}`;
-		rect.appendChild(title);
-		rect.setAttribute("aria-label", title.textContent);
-
-		if (onDayClick) {
-			rect.addEventListener("click", () => {
-				onDayClick(dateKey, dayData?.events ?? []);
-			});
-		}
-
-		svg.appendChild(rect);
-
-		// Day number label
 		const label = createSVGElement("text", {
 			x: String(x + cellSize / 2),
 			y: String(y + cellSize / 2 + 4),
@@ -273,8 +281,11 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 	container.appendChild(svg);
 }
 
-function createSVGElement(tag: string, attrs?: Record<string, string>): SVGElement {
-	const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+function createSVGElement<K extends keyof SVGElementTagNameMap>(
+	tag: K,
+	attrs?: Record<string, string>
+): SVGElementTagNameMap[K] {
+	const el = document.createElementNS("http://www.w3.org/2000/svg", tag) as SVGElementTagNameMap[K];
 	if (attrs) {
 		for (const [key, value] of Object.entries(attrs)) {
 			el.setAttribute(key, value);
@@ -283,21 +294,27 @@ function createSVGElement(tag: string, attrs?: Record<string, string>): SVGEleme
 	return el;
 }
 
-export function renderHeatmapLegend(container: HTMLElement, maxCount: number, categoryColor?: string): void {
+export function renderHeatmapLegend(
+	container: HTMLElement,
+	thresholds: [number, number, number],
+	categoryColor?: string
+): void {
 	const legend = container.createDiv(cls("heatmap-legend"));
 	legend.createSpan({ text: "Less", cls: cls("heatmap-legend-label") });
+
+	const bucketLabels: [string, string, string, string, string] = [
+		"0 events",
+		`1–${thresholds[0]}`,
+		`${thresholds[0] + 1}–${thresholds[1]}`,
+		`${thresholds[1] + 1}–${thresholds[2]}`,
+		`${thresholds[2] + 1}+`,
+	];
 
 	for (let bucket = 0; bucket <= 4; bucket++) {
 		const swatch = legend.createDiv(cls("heatmap-legend-swatch"));
 		swatch.style.backgroundColor = getCellColor(bucket, categoryColor);
-
-		if (bucket > 0 && maxCount > 0) {
-			const threshold = Math.ceil((maxCount * bucket) / 4);
-			swatch.setAttribute("aria-label", `${threshold}+ events`);
-			swatch.title = `${threshold}+ events`;
-		} else if (bucket === 0) {
-			swatch.title = "0 events";
-		}
+		swatch.title = bucketLabels[bucket]!;
+		swatch.setAttribute("aria-label", bucketLabels[bucket]!);
 	}
 
 	legend.createSpan({ text: "More", cls: cls("heatmap-legend-label") });
