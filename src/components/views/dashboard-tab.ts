@@ -4,6 +4,7 @@ import type { App } from "obsidian";
 import type { Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
+import { PRO_FEATURES } from "../../core/license";
 import { formatRecurrenceLabel, isPresetType } from "../../types/recurring-event";
 import { removeZettelId } from "../../utils/event-naming";
 import { getCategoriesFromFilePath } from "../../utils/obsidian";
@@ -26,6 +27,10 @@ export function createDashboardTabDefinition(app: App, bundle: CalendarBundle): 
 		id: "dashboard",
 		label: "Dashboard",
 		render: (el) => {
+			if (!bundle.plugin.licenseManager.requirePro(PRO_FEATURES.DASHBOARD)) {
+				el.createDiv({ cls: cls("tab-pro-gate"), text: "Dashboard is a Pro feature." });
+				return;
+			}
 			dashboardHandle = renderDashboardInto(el, app, bundle);
 		},
 		cleanup: () => {
