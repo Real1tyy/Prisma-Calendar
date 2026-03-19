@@ -23,7 +23,6 @@ export function createDailyStatsTabDefinition(app: App, bundle: CalendarBundle):
 				columns: 2,
 				rows: 1,
 				gap: "12px",
-				resizable: "track",
 				dividers: true,
 				cells: [
 					{
