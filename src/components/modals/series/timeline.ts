@@ -226,19 +226,47 @@ export function renderTimelineInto(
 			return;
 		}
 
-		eventMap.clear();
+		const settings = bundle.settingsStore.currentSettings;
+		const newIds = new Set<string>();
+		const toAdd: ReturnType<typeof toItem>[] = [];
+		const toUpdate: ReturnType<typeof toItem>[] = [];
+
 		for (const event of events) {
-			eventMap.set(event.ref.filePath, event);
+			const id = event.ref.filePath;
+			newIds.add(id);
+
+			const existing = eventMap.get(id);
+			const item = toItem(event, settings);
+
+			if (!existing) {
+				toAdd.push(item);
+			} else if (
+				existing.start !== event.start ||
+				existing.title !== event.title ||
+				existing.skipped !== event.skipped
+			) {
+				toUpdate.push(item);
+			}
+
+			eventMap.set(id, event);
 		}
 
-		const settings = bundle.settingsStore.currentSettings;
-		const timelineItems = events.map((event) => toItem(event, settings));
+		const toRemove: string[] = [];
+		for (const id of eventMap.keys()) {
+			if (!newIds.has(id)) {
+				toRemove.push(id);
+				eventMap.delete(id);
+			}
+		}
 
-		items.clear();
-		items.add(timelineItems);
+		if (toRemove.length > 0) items.remove(toRemove);
+		if (toAdd.length > 0) items.add(toAdd);
+		if (toUpdate.length > 0) items.update(toUpdate);
 
-		const { rangeStart, rangeEnd } = computeRangeBounds(events);
-		timeline.setOptions({ min: rangeStart, max: rangeEnd });
+		if (toAdd.length > 0 || toRemove.length > 0) {
+			const { rangeStart, rangeEnd } = computeRangeBounds(events);
+			timeline.setOptions({ min: rangeStart, max: rangeEnd });
+		}
 	}
 
 	function buildTimeline(events: CalendarEvent[]): void {
