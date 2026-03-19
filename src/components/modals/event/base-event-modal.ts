@@ -6,14 +6,16 @@ import {
 	extractDisplayName,
 	parseAsLocalDate,
 	parseFrontmatterRecord,
-	parseIntoList,
 	registerSubmitHotkey,
 	removeCls,
+	renderSchemaForm,
+	type SchemaFormHandle,
 	serializeFrontmatterValue,
 	toggleCls,
 } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
 import type { Subscription } from "rxjs";
+import type { z } from "zod";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { FREE_MAX_EVENT_PRESETS } from "../../../core/license";
@@ -37,14 +39,6 @@ import {
 } from "../../../types/recurring-event";
 import type { EventPreset } from "../../../types/settings";
 import type { Weekday } from "../../../utils/date-recurrence";
-import {
-	parseCustomDoneProperty,
-	setEventBasics,
-	setMappedListProp,
-	setMappedNumberProp,
-	setMappedTextProp,
-	setUntrackedEventBasics,
-} from "../../../utils/event-frontmatter";
 import { autoAssignCategories, findAdjacentEvent } from "../../../utils/event-matching";
 import { cleanupTitle } from "../../../utils/event-naming";
 import { formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../../../utils/format";
@@ -54,7 +48,19 @@ import { TitleInputSuggest } from "../../title-input-suggest";
 import { openCategoryAssignModal, openPrerequisiteAssignModal } from "../category/assignment";
 import { showCategoryEventsModal } from "../series/bases-view";
 import { renderChipList } from "./chip-list-renderer";
-import { createFormField } from "./event-form-fields";
+import {
+	applyPresetToState,
+	createDefaultState,
+	type EventFormState,
+	extractPresetFromState,
+	SimpleEditableFieldsSchema,
+} from "./event-form-state";
+import {
+	applyDateFieldsToFrontmatter,
+	applyNotificationToFrontmatter,
+	applyRecurringFieldsToFrontmatter,
+	applySimpleFieldsToFrontmatter,
+} from "./event-frontmatter-mapper";
 import { showSavePresetModal } from "./save-preset";
 
 interface EventModalData {
@@ -104,15 +110,10 @@ export abstract class BaseEventModal extends Modal {
 
 	protected categoriesContainer?: HTMLElement;
 	protected selectedCategories: string[] = [];
-	protected locationInput!: HTMLInputElement;
-	protected iconInput!: HTMLInputElement;
-	protected participantsInput!: HTMLInputElement;
+	protected simpleFieldsHandle: SchemaFormHandle<Record<string, unknown>> | null = null;
 	protected prerequisitesContainer?: HTMLElement;
 	protected selectedPrerequisites: string[] = [];
-	protected breakInput!: HTMLInputElement;
-	protected markAsDoneCheckbox!: HTMLInputElement;
 	protected initialMarkAsDoneState: boolean = false;
-	protected skipCheckbox!: HTMLInputElement;
 	protected notificationInput!: HTMLInputElement;
 	protected notificationContainer!: HTMLElement;
 	protected notificationLabel!: HTMLElement;
@@ -444,12 +445,7 @@ export abstract class BaseEventModal extends Modal {
 		this.createRecurringEventFields(contentEl);
 		this.createCategoryField(contentEl);
 		this.createPrerequisiteField(contentEl);
-		this.createLocationField(contentEl);
-		this.createIconField(contentEl);
-		this.createParticipantsField(contentEl);
-		this.createBreakField(contentEl);
-		this.createMarkAsDoneField(contentEl);
-		this.createSkipField(contentEl);
+		this.renderSimpleFields(contentEl);
 		this.createNotificationField(contentEl);
 		this.createCustomPropertiesFields(contentEl);
 	}
@@ -468,7 +464,7 @@ export abstract class BaseEventModal extends Modal {
 		this.stopwatch = new Stopwatch(
 			{
 				onStart: (startTime: Date) => {
-					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value) || 0;
+					this.initialBreakMinutes = Number.parseFloat(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) || 0;
 					this.startInput.value = formatDateTimeForInput(startTime);
 
 					const endTime = new Date(startTime.getTime() + END_TIME_SYNC_INTERVAL_MS);
@@ -481,7 +477,7 @@ export abstract class BaseEventModal extends Modal {
 				onContinueRequested: () => {
 					// Continue uses the existing start time from the input field
 					// Reset the break counter and return the current start time
-					this.initialBreakMinutes = Number.parseFloat(this.breakInput?.value) || 0;
+					this.initialBreakMinutes = Number.parseFloat(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) || 0;
 					const startValue = this.startInput.value;
 					if (startValue) {
 						// If end date is in the past, update it to now
@@ -503,10 +499,8 @@ export abstract class BaseEventModal extends Modal {
 					this.endInput.dispatchEvent(event);
 				},
 				onBreakUpdate: (breakMinutes: number) => {
-					if (this.breakInput) {
-						const totalBreak = this.initialBreakMinutes + breakMinutes;
-						this.breakInput.value = totalBreak.toString();
-					}
+					const totalBreak = this.initialBreakMinutes + breakMinutes;
+					this.setSimpleFieldValues({ breakMinutes: totalBreak.toString() });
 				},
 			},
 			settings.showStopwatchStartWithoutFill
@@ -699,30 +693,6 @@ export abstract class BaseEventModal extends Modal {
 		this.renderCategories();
 	}
 
-	private createLocationField(contentEl: HTMLElement): void {
-		if (!this.bundle.settingsStore.currentSettings.locationProp) return;
-		this.locationInput = createFormField(contentEl, { label: "Location", type: "text", placeholder: "Event location" });
-	}
-
-	private createIconField(contentEl: HTMLElement): void {
-		if (!this.bundle.settingsStore.currentSettings.iconProp) return;
-		this.iconInput = createFormField(contentEl, {
-			label: "Icon",
-			type: "text",
-			placeholder: "Event icon (emoji or text)",
-		});
-	}
-
-	private createParticipantsField(contentEl: HTMLElement): void {
-		if (!this.bundle.settingsStore.currentSettings.participantsProp) return;
-		this.participantsInput = createFormField(contentEl, {
-			label: "Participants",
-			type: "text",
-			placeholder: "Alice, Bob, Charlie",
-			description: "Comma-separated list of participants",
-		});
-	}
-
 	private createPrerequisiteField(contentEl: HTMLElement): void {
 		if (!this.bundle.settingsStore.currentSettings.prerequisiteProp) return;
 
@@ -769,29 +739,45 @@ export abstract class BaseEventModal extends Modal {
 		});
 	}
 
-	private createBreakField(contentEl: HTMLElement): void {
-		if (!this.bundle.settingsStore.currentSettings.breakProp) return;
-		this.breakInput = createFormField(contentEl, {
-			label: "Break (min)",
-			type: "number",
-			description: "Time to subtract from duration in statistics (decimals supported)",
-			attrs: { min: "0", step: "any" },
-			placeholder: "0",
+	private renderSimpleFields(contentEl: HTMLElement): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const fullShape = SimpleEditableFieldsSchema.shape;
+
+		const settingsGuards: Record<string, string> = {
+			location: "locationProp",
+			icon: "iconProp",
+			participants: "participantsProp",
+			breakMinutes: "breakProp",
+			markAsDone: "statusProperty",
+			skip: "skipProp",
+		};
+
+		const shape: Record<string, z.ZodTypeAny> = {};
+		for (const [key, guard] of Object.entries(settingsGuards)) {
+			if (settings[guard as keyof typeof settings]) {
+				shape[key] = fullShape[key as keyof typeof fullShape];
+			}
+		}
+
+		if (Object.keys(shape).length === 0) return;
+
+		const container = contentEl.createDiv(cls("simple-fields-container"));
+		this.simpleFieldsHandle = renderSchemaForm(container, {
+			shape,
+			prefix: "prisma-",
+			fieldOverrides: {
+				participants: { placeholder: "Alice, Bob, Charlie" },
+				breakMinutes: { placeholder: "0" },
+			},
 		});
 	}
 
-	private createMarkAsDoneField(contentEl: HTMLElement): void {
-		if (!this.bundle.settingsStore.currentSettings.statusProperty) return;
-		this.markAsDoneCheckbox = createFormField(contentEl, { label: "Mark as done", type: "checkbox" });
+	protected getSimpleFieldValues(): Record<string, unknown> {
+		return this.simpleFieldsHandle?.getValues() ?? {};
 	}
 
-	private createSkipField(contentEl: HTMLElement): void {
-		if (!this.bundle.settingsStore.currentSettings.skipProp) return;
-		this.skipCheckbox = createFormField(contentEl, {
-			label: "Skip event",
-			type: "checkbox",
-			description: "Hide event from calendar",
-		});
+	protected setSimpleFieldValues(values: Partial<Record<string, unknown>>): void {
+		this.simpleFieldsHandle?.setValues(values);
 	}
 
 	private createNotificationField(contentEl: HTMLElement): void {
@@ -944,77 +930,55 @@ export abstract class BaseEventModal extends Modal {
 
 	// ─── Event Handlers ───────────────────────────────────────────
 
+	private syncDateModeUI(): void {
+		const isAllDay = this.allDayCheckbox.checked;
+		toggleCls(this.timedContainer, "hidden", isAllDay);
+		toggleCls(this.allDayContainer, "hidden", !isAllDay);
+		if (this.stopwatchContainer) {
+			toggleCls(this.stopwatchContainer, "hidden", isAllDay);
+		}
+		if (this.notificationLabel) {
+			this.notificationLabel.setText(isAllDay ? "Notify days before" : "Notify minutes before");
+		}
+	}
+
+	private syncDateValuesOnModeChange(): void {
+		if (this.allDayCheckbox.checked) {
+			if (this.startInput.value) {
+				this.dateInput.value = formatDateOnly(this.startInput.value);
+			}
+		} else {
+			if (this.dateInput.value) {
+				this.startInput.value = `${this.dateInput.value}T09:00`;
+				this.endInput.value = `${this.dateInput.value}T10:00`;
+				this.updateDurationFromDates();
+			}
+		}
+	}
+
+	private syncRecurrenceUI(): void {
+		toggleCls(this.recurringContainer, "hidden", !this.recurringCheckbox.checked);
+		const selectedValue = this.rruleSelect.value;
+		toggleCls(this.customIntervalContainer, "hidden", selectedValue !== "custom");
+		toggleCls(this.weekdayContainer, "hidden", selectedValue === "custom" || !isWeekdaySupported(selectedValue));
+	}
+
 	private setupEventHandlers(_contentEl: HTMLElement): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		// Handle all-day toggle
 		this.allDayCheckbox.addEventListener("change", () => {
-			if (this.allDayCheckbox.checked) {
-				// Switching TO all-day
-				addCls(this.timedContainer, "hidden");
-				removeCls(this.allDayContainer, "hidden");
-				// Hide stopwatch for all-day events
-				if (this.stopwatchContainer) {
-					addCls(this.stopwatchContainer, "hidden");
-				}
-				// Copy start date to date field if available
-				if (this.startInput.value) {
-					this.dateInput.value = formatDateOnly(this.startInput.value);
-				}
-				// Update notification label
-				if (this.notificationLabel) {
-					this.notificationLabel.setText("Notify days before");
-				}
-			} else {
-				// Switching TO timed
-				removeCls(this.timedContainer, "hidden");
-				addCls(this.allDayContainer, "hidden");
-				// Show stopwatch for timed events
-				if (this.stopwatchContainer) {
-					removeCls(this.stopwatchContainer, "hidden");
-				}
-				// Copy date to start field if available
-				if (this.dateInput.value) {
-					this.startInput.value = `${this.dateInput.value}T09:00`;
-					this.endInput.value = `${this.dateInput.value}T10:00`;
-					this.updateDurationFromDates();
-				}
-				// Update notification label
-				if (this.notificationLabel) {
-					this.notificationLabel.setText("Notify minutes before");
-				}
-			}
+			this.syncDateModeUI();
+			this.syncDateValuesOnModeChange();
 		});
 
 		if (settings.showDurationField && this.durationInput) {
-			this.startInput.addEventListener("change", () => {
-				this.updateDurationFromDates();
-			});
-			this.endInput.addEventListener("change", () => {
-				this.updateDurationFromDates();
-			});
-			this.durationInput.addEventListener("input", () => {
-				this.updateEndFromDuration();
-			});
+			this.startInput.addEventListener("change", () => this.updateDurationFromDates());
+			this.endInput.addEventListener("change", () => this.updateDurationFromDates());
+			this.durationInput.addEventListener("input", () => this.updateEndFromDuration());
 		}
 
-		// Handle recurring event checkbox toggle
-		this.recurringCheckbox.addEventListener("change", () => {
-			toggleCls(this.recurringContainer, "hidden", !this.recurringCheckbox.checked);
-		});
-
-		// Handle RRule type selection
-		this.rruleSelect.addEventListener("change", () => {
-			const selectedValue = this.rruleSelect.value;
-			if (selectedValue === "custom") {
-				removeCls(this.customIntervalContainer, "hidden");
-				addCls(this.weekdayContainer, "hidden");
-			} else {
-				addCls(this.customIntervalContainer, "hidden");
-				const showWeekdays = isWeekdaySupported(selectedValue);
-				toggleCls(this.weekdayContainer, "hidden", !showWeekdays);
-			}
-		});
+		this.recurringCheckbox.addEventListener("change", () => this.syncRecurrenceUI());
+		this.rruleSelect.addEventListener("change", () => this.syncRecurrenceUI());
 
 		registerSubmitHotkey(this.scope, () => this.saveWithAutoCategories());
 	}
@@ -1182,71 +1146,26 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	protected clearAllFields(): void {
-		this.titleInput.value = "";
-
-		this.allDayCheckbox.checked = false;
-		removeCls(this.timedContainer, "hidden");
-		addCls(this.allDayContainer, "hidden");
-
+		const defaults = createDefaultState();
 		this.startInput.value = "";
 		this.endInput.value = "";
 		this.dateInput.value = "";
-		if (this.durationInput) {
-			this.durationInput.value = "";
-		}
-
-		this.recurringCheckbox.checked = false;
-		removeCls(this.recurringContainer, "hidden");
+		if (this.durationInput) this.durationInput.value = "";
 		this.rruleSelect.value = Object.keys(RECURRENCE_TYPE_OPTIONS)[0]!;
-		addCls(this.weekdayContainer, "hidden");
-		addCls(this.customIntervalContainer, "hidden");
-		this.customFreqSelect.value = "DAILY";
-		this.customIntervalInput.value = "1";
-		for (const checkbox of this.weekdayCheckboxes.values()) {
-			checkbox.checked = false;
-		}
+		for (const checkbox of this.weekdayCheckboxes.values()) checkbox.checked = false;
 		this.futureInstancesCountInput.value = "";
-
-		this.selectedCategories = [];
 		this.suppressAutoCategories = false;
-		this.renderCategories();
-
-		if (this.locationInput) {
-			this.locationInput.value = "";
-		}
-
-		if (this.iconInput) {
-			this.iconInput.value = "";
-		}
-
-		if (this.participantsInput) {
-			this.participantsInput.value = "";
-		}
-
-		this.selectedPrerequisites = [];
-		this.renderPrerequisites();
-
-		if (this.breakInput) {
-			this.breakInput.value = "";
-		}
-
-		if (this.skipCheckbox) {
-			this.skipCheckbox.checked = false;
-		}
-
-		if (this.notificationInput) {
-			this.notificationInput.value = "";
-		}
-
 		this.stopwatch?.reset();
-
 		this.displayPropertiesContainer.empty();
 		this.otherPropertiesContainer.empty();
 		addCls(this.displayPropertiesContainer, "hidden");
 		addCls(this.otherPropertiesContainer, "hidden");
 		this.customProperties = [];
-
 		this.presetSelector.value = "";
+
+		this.applyStateToDom(defaults);
+		this.syncDateModeUI();
+		this.syncRecurrenceUI();
 		this.titleInput.focus();
 	}
 
@@ -1260,94 +1179,102 @@ export abstract class BaseEventModal extends Modal {
 
 	private applyPresetData(preset: PresetFormData): void {
 		const settings = this.bundle.settingsStore.currentSettings;
-
-		if (preset.title !== undefined) {
-			this.titleInput.value = preset.title;
-		}
-
-		// Apply all-day setting only if it's different from current state
-		if (preset.allDay !== undefined && this.allDayCheckbox.checked !== preset.allDay) {
-			this.allDayCheckbox.checked = preset.allDay;
-			const changeEvent = new Event("change", { bubbles: true });
-			this.allDayCheckbox.dispatchEvent(changeEvent);
-		}
+		const state = applyPresetToState(this.readStateFromDOM(), preset as EventPreset);
+		this.applyStateToDom(state);
 
 		if (preset.categories !== undefined) {
-			// Parse categories from preset (could be comma-separated string)
-			this.selectedCategories = parseIntoList(preset.categories);
 			this.suppressAutoCategories = true;
-			this.renderCategories();
-		}
-
-		if (preset.location !== undefined && this.locationInput) {
-			this.locationInput.value = preset.location;
-		}
-
-		if (preset.icon !== undefined && this.iconInput) {
-			this.iconInput.value = preset.icon;
-		}
-
-		if (preset.participants !== undefined && this.participantsInput) {
-			this.participantsInput.value = preset.participants;
-		}
-
-		if (preset.breakMinutes !== undefined && this.breakInput) {
-			this.breakInput.value = preset.breakMinutes.toString();
-		}
-
-		if (preset.skip !== undefined && this.skipCheckbox) {
-			this.skipCheckbox.checked = preset.skip;
-		}
-
-		if (preset.markAsDone !== undefined && this.markAsDoneCheckbox) {
-			this.markAsDoneCheckbox.checked = preset.markAsDone;
-			this.initialMarkAsDoneState = preset.markAsDone;
-		}
-
-		if (preset.notifyBefore !== undefined && this.notificationInput) {
-			this.notificationInput.value = preset.notifyBefore.toString();
-		}
-
-		if (preset.rruleType) {
-			this.recurringCheckbox.checked = true;
-			removeCls(this.recurringContainer, "hidden");
-
-			this.applyRruleTypeToForm(preset.rruleType);
-
-			// Trigger change to show/hide weekday selector and custom container
-			const rruleChangeEvent = new Event("change", { bubbles: true });
-			this.rruleSelect.dispatchEvent(rruleChangeEvent);
-
-			// Apply weekdays if set
-			if (preset.rruleSpec && isWeekdaySupported(preset.rruleType)) {
-				const weekdays = preset.rruleSpec.split(",").map((day) => day.trim().toLowerCase());
-				for (const weekday of weekdays) {
-					const checkbox = this.weekdayCheckboxes.get(weekday as Weekday);
-					if (checkbox) {
-						checkbox.checked = true;
-					}
-				}
-			}
-
-			if (preset.futureInstancesCount !== undefined && this.futureInstancesCountInput) {
-				this.futureInstancesCountInput.value = preset.futureInstancesCount.toString();
-			}
 		}
 
 		if (preset.customProperties) {
 			this.displayPropertiesContainer.empty();
 			this.otherPropertiesContainer.empty();
 
-			// Get display properties list to categorize based on preset's allDay setting
-			// Check both lists to handle presets that might be used for either event type
-			const timedDisplayProps = new Set(settings.frontmatterDisplayProperties || []);
-			const allDayDisplayProps = new Set(settings.frontmatterDisplayPropertiesAllDay || []);
-			const displayPropsSet = new Set([...timedDisplayProps, ...allDayDisplayProps]);
+			const displayPropsSet = new Set([
+				...(settings.frontmatterDisplayProperties || []),
+				...(settings.frontmatterDisplayPropertiesAllDay || []),
+			]);
 
 			for (const [key, value] of Object.entries(preset.customProperties)) {
-				const stringValue = serializeFrontmatterValue(value);
-				const section = displayPropsSet.has(key) ? "display" : "other";
-				this.addCustomProperty(key, stringValue, section);
+				this.addCustomProperty(key, serializeFrontmatterValue(value), displayPropsSet.has(key) ? "display" : "other");
+			}
+		}
+	}
+
+	private readStateFromDOM(): EventFormState {
+		const fv = this.getSimpleFieldValues();
+		return {
+			title: this.titleInput.value,
+			allDay: this.allDayCheckbox.checked,
+			start: this.startInput.value,
+			end: this.endInput.value,
+			date: this.dateInput.value,
+			categories: [...this.selectedCategories],
+			prerequisites: [...this.selectedPrerequisites],
+			location: String(fv["location"] ?? ""),
+			icon: String(fv["icon"] ?? ""),
+			participants: String(fv["participants"] ?? ""),
+			breakMinutes: String(fv["breakMinutes"] ?? ""),
+			markAsDone: fv["markAsDone"] === true,
+			skip: fv["skip"] === true,
+			notifyBefore: this.notificationInput?.value ?? "",
+			recurring: {
+				enabled: this.recurringCheckbox.checked,
+				rruleType: this.getEffectiveRruleType(),
+				weekdays: [...this.weekdayCheckboxes.entries()].filter(([, cb]) => cb.checked).map(([day]) => day),
+				customFreq: this.customFreqSelect?.value ?? "DAILY",
+				customInterval: this.customIntervalInput?.value ?? "1",
+				futureInstancesCount: this.futureInstancesCountInput?.value ?? "",
+				generatePastEvents: this.generatePastEventsCheckbox?.checked ?? false,
+			},
+		};
+	}
+
+	private applyStateToDom(state: EventFormState): void {
+		if (state.title !== undefined) {
+			this.titleInput.value = state.title;
+		}
+
+		if (this.allDayCheckbox.checked !== state.allDay) {
+			this.allDayCheckbox.checked = state.allDay;
+			this.allDayCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
+		}
+
+		this.selectedCategories = [...state.categories];
+		this.renderCategories();
+		this.selectedPrerequisites = [...state.prerequisites];
+		this.renderPrerequisites();
+
+		this.setSimpleFieldValues({
+			location: state.location,
+			icon: state.icon,
+			participants: state.participants,
+			breakMinutes: state.breakMinutes,
+			markAsDone: state.markAsDone,
+			skip: state.skip,
+		});
+
+		this.initialMarkAsDoneState = state.markAsDone;
+
+		if (this.notificationInput) {
+			this.notificationInput.value = state.notifyBefore;
+		}
+
+		if (state.recurring.enabled) {
+			this.recurringCheckbox.checked = true;
+			removeCls(this.recurringContainer, "hidden");
+			this.applyRruleTypeToForm(state.recurring.rruleType);
+			this.rruleSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+			if (isWeekdaySupported(state.recurring.rruleType)) {
+				for (const weekday of state.recurring.weekdays) {
+					const cb = this.weekdayCheckboxes.get(weekday as Weekday);
+					if (cb) cb.checked = true;
+				}
+			}
+
+			if (state.recurring.futureInstancesCount && this.futureInstancesCountInput) {
+				this.futureInstancesCountInput.value = state.recurring.futureInstancesCount;
 			}
 		}
 	}
@@ -1508,81 +1435,15 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	private extractPresetData(): PresetFormData {
-		const presetData: PresetFormData = {};
-
-		if (this.titleInput.value) {
-			presetData.title = this.titleInput.value;
-		}
-
-		presetData.allDay = this.allDayCheckbox.checked;
-
-		if (this.selectedCategories.length > 0) {
-			presetData.categories = this.selectedCategories.join(", ");
-		}
-
-		if (this.locationInput?.value.trim()) {
-			presetData.location = this.locationInput.value.trim();
-		}
-
-		if (this.iconInput?.value.trim()) {
-			presetData.icon = this.iconInput.value.trim();
-		}
-
-		if (this.participantsInput?.value.trim()) {
-			presetData.participants = this.participantsInput.value.trim();
-		}
-
-		if (this.breakInput?.value) {
-			const breakValue = Number.parseFloat(this.breakInput.value);
-			if (!Number.isNaN(breakValue) && breakValue > 0) {
-				presetData.breakMinutes = breakValue;
-			}
-		}
-
-		if (this.skipCheckbox) {
-			presetData.skip = this.skipCheckbox.checked;
-		}
-
-		if (this.markAsDoneCheckbox) {
-			presetData.markAsDone = this.markAsDoneCheckbox.checked;
-		}
-
-		if (this.notificationInput?.value) {
-			const notifyValue = Number.parseInt(this.notificationInput.value, 10);
-			if (!Number.isNaN(notifyValue) && notifyValue >= 0) {
-				presetData.notifyBefore = notifyValue;
-			}
-		}
-
-		if (this.recurringCheckbox.checked) {
-			presetData.rruleType = this.getEffectiveRruleType();
-
-			if (isWeekdaySupported(presetData.rruleType)) {
-				const selectedWeekdays: Weekday[] = [];
-				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
-					if (checkbox.checked) {
-						selectedWeekdays.push(weekday);
-					}
-				}
-				if (selectedWeekdays.length > 0) {
-					presetData.rruleSpec = selectedWeekdays.join(", ");
-				}
-			}
-
-			if (this.futureInstancesCountInput?.value) {
-				const futureCount = Number.parseInt(this.futureInstancesCountInput.value, 10);
-				if (!Number.isNaN(futureCount) && futureCount > 0) {
-					presetData.futureInstancesCount = futureCount;
-				}
-			}
-		}
+		const state = this.readStateFromDOM();
+		const preset = extractPresetFromState(state) as PresetFormData;
 
 		const customProps = this.getCustomProperties();
 		if (Object.keys(customProps).length > 0) {
-			presetData.customProperties = customProps;
+			preset.customProperties = customProps;
 		}
 
-		return presetData;
+		return preset;
 	}
 
 	private restoreFromState(state: MinimizedModalState): void {
@@ -1631,11 +1492,11 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 
 		// Start with original frontmatter to preserve all existing properties
-		const preservedFrontmatter = { ...this.originalFrontmatter };
+		const fm = { ...this.originalFrontmatter };
+		const original = this.originalFrontmatter;
 
-		// Update title if titleProp is configured and value is provided
 		if (this.titleInput.value && settings.titleProp) {
-			preservedFrontmatter[settings.titleProp] = this.titleInput.value;
+			fm[settings.titleProp] = this.titleInput.value;
 		}
 
 		let start = "";
@@ -1644,7 +1505,6 @@ export abstract class BaseEventModal extends Modal {
 
 		if (this.allDayCheckbox.checked) {
 			if (this.dateInput.value) {
-				// For FullCalendar compatibility, we still return ISO strings
 				start = `${this.dateInput.value}T00:00:00`;
 				end = `${this.dateInput.value}T23:59:59`;
 			} else {
@@ -1657,150 +1517,63 @@ export abstract class BaseEventModal extends Modal {
 			isUntracked = true;
 		}
 
-		if (isUntracked) {
-			setUntrackedEventBasics(preservedFrontmatter, settings);
-		} else {
-			setEventBasics(preservedFrontmatter, settings, {
-				title: this.titleInput.value,
-				start: start,
-				end: end ?? undefined,
-				allDay: this.allDayCheckbox.checked,
-			});
+		const dateData: { title: string; start: string; end?: string; allDay: boolean; isUntracked: boolean } = {
+			title: this.titleInput.value,
+			start,
+			allDay: this.allDayCheckbox.checked,
+			isUntracked,
+		};
+		if (end !== null) {
+			dateData.end = end;
 		}
 
-		const original = this.originalFrontmatter;
+		applyDateFieldsToFrontmatter(fm, settings, dateData);
 
-		setMappedListProp(preservedFrontmatter, settings.categoryProp, this.selectedCategories);
-		setMappedListProp(preservedFrontmatter, settings.prerequisiteProp, this.selectedPrerequisites);
-		setMappedListProp(
-			preservedFrontmatter,
-			settings.participantsProp,
-			this.participantsInput ? parseIntoList(this.participantsInput.value).filter((p) => p.trim()) : []
-		);
-		setMappedTextProp(preservedFrontmatter, original, settings.locationProp, this.locationInput?.value);
-		setMappedTextProp(preservedFrontmatter, original, settings.iconProp, this.iconInput?.value);
-		setMappedNumberProp(preservedFrontmatter, settings.breakProp, this.breakInput?.value, {
-			parser: "float",
-			minValue: 0.01,
+		const fv = this.getSimpleFieldValues();
+
+		applySimpleFieldsToFrontmatter(fm, original, settings, {
+			location: fv["location"] as string | undefined,
+			icon: fv["icon"] as string | undefined,
+			participants: fv["participants"] as string | undefined,
+			breakMinutes: fv["breakMinutes"] != null ? String(fv["breakMinutes"]) : undefined,
+			markAsDone: fv["markAsDone"] === true,
+			initialMarkAsDone: this.initialMarkAsDoneState,
+			skip: fv["skip"] === true,
+			categories: this.selectedCategories,
+			prerequisites: this.selectedPrerequisites,
 		});
 
-		if (settings.statusProperty && this.markAsDoneCheckbox) {
-			const wasInitiallyChecked = this.initialMarkAsDoneState;
-			const isNowChecked = this.markAsDoneCheckbox.checked;
+		applyNotificationToFrontmatter(
+			fm,
+			settings,
+			this.notificationInput?.value,
+			this.allDayCheckbox.checked,
+			!isUntracked && settings.skipNewlyCreatedNotifications && !this.bundle.plugin.syncStore.data.readOnly,
+			start
+		);
 
-			// Only update if state changed
-			if (wasInitiallyChecked !== isNowChecked) {
-				const customDoneProp = parseCustomDoneProperty(settings.customDoneProperty);
-
-				if (customDoneProp) {
-					// Custom done property configured: use it instead of status property
-					if (isNowChecked) {
-						preservedFrontmatter[customDoneProp.key] = customDoneProp.value;
-					} else {
-						const customUndoneProp = parseCustomDoneProperty(settings.customUndoneProperty);
-						if (customUndoneProp) {
-							preservedFrontmatter[customUndoneProp.key] = customUndoneProp.value;
-						} else {
-							delete preservedFrontmatter[customDoneProp.key];
-						}
-					}
-				} else {
-					// No custom property: fall back to status property
-					if (isNowChecked) {
-						preservedFrontmatter[settings.statusProperty] = settings.doneValue;
-					} else {
-						preservedFrontmatter[settings.statusProperty] = settings.notDoneValue;
-					}
-				}
-			}
-			// If state didn't change, do nothing (don't modify statusProperty)
-		}
-
-		if (settings.skipProp && this.skipCheckbox) {
-			if (this.skipCheckbox.checked) {
-				preservedFrontmatter[settings.skipProp] = true;
-			} else {
-				delete preservedFrontmatter[settings.skipProp];
+		const selectedWeekdays: string[] = [];
+		if (this.recurringCheckbox.checked && isWeekdaySupported(this.getEffectiveRruleType())) {
+			for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
+				if (checkbox.checked) selectedWeekdays.push(weekday);
 			}
 		}
 
-		// Handle notification property (minutes before for timed, days before for all-day)
-		if (this.notificationInput) {
-			const notifyValue = Number.parseInt(this.notificationInput.value, 10);
-			if (!Number.isNaN(notifyValue) && notifyValue >= 0) {
-				if (this.allDayCheckbox.checked) {
-					preservedFrontmatter[settings.daysBeforeProp] = notifyValue;
-					delete preservedFrontmatter[settings.minutesBeforeProp];
-				} else {
-					preservedFrontmatter[settings.minutesBeforeProp] = notifyValue;
-					delete preservedFrontmatter[settings.daysBeforeProp];
-				}
-			} else {
-				delete preservedFrontmatter[settings.minutesBeforeProp];
-				delete preservedFrontmatter[settings.daysBeforeProp];
-			}
-		}
+		applyRecurringFieldsToFrontmatter(
+			fm,
+			original,
+			settings,
+			{
+				enabled: this.recurringCheckbox.checked,
+				rruleType: this.getEffectiveRruleType(),
+				weekdays: selectedWeekdays,
+				futureInstancesCount: this.futureInstancesCountInput?.value,
+				generatePastEvents: this.generatePastEventsCheckbox?.checked ?? false,
+			},
+			isUntracked
+		);
 
-		if (
-			!isUntracked &&
-			settings.enableNotifications &&
-			settings.skipNewlyCreatedNotifications &&
-			settings.alreadyNotifiedProp &&
-			!this.bundle.plugin.syncStore.data.readOnly
-		) {
-			const startDate = parseAsLocalDate(start);
-			if (startDate) {
-				const oneMinuteFromNow = new Date(Date.now() + 60000);
-				if (startDate < oneMinuteFromNow) {
-					preservedFrontmatter[settings.alreadyNotifiedProp] = true;
-				}
-			}
-		}
-
-		// Handle recurring event properties
-		if (!isUntracked && this.recurringCheckbox.checked) {
-			const rruleType = this.getEffectiveRruleType();
-			preservedFrontmatter[settings.rruleProp] = rruleType;
-
-			// Handle weekdays for weekly-based events
-			if (isWeekdaySupported(rruleType)) {
-				const selectedWeekdays: Weekday[] = [];
-				for (const [weekday, checkbox] of this.weekdayCheckboxes.entries()) {
-					if (checkbox.checked) {
-						selectedWeekdays.push(weekday);
-					}
-				}
-
-				// Only add RRuleSpec if weekdays are selected
-				if (selectedWeekdays.length > 0) {
-					preservedFrontmatter[settings.rruleSpecProp] = selectedWeekdays.join(", ");
-				}
-			} else {
-				// Clear RRuleSpec for non-weekly events
-				delete preservedFrontmatter[settings.rruleSpecProp];
-			}
-
-			setMappedNumberProp(
-				preservedFrontmatter,
-				settings.futureInstancesCountProp,
-				this.futureInstancesCountInput?.value,
-				{
-					minValue: 1,
-				}
-			);
-
-			if (this.generatePastEventsCheckbox?.checked) {
-				preservedFrontmatter[settings.generatePastEventsProp] = true;
-			} else {
-				delete preservedFrontmatter[settings.generatePastEventsProp];
-			}
-		} else if (this.originalFrontmatter[settings.rruleProp]) {
-			delete preservedFrontmatter[settings.rruleProp];
-			delete preservedFrontmatter[settings.rruleSpecProp];
-			delete preservedFrontmatter[settings.rruleIdProp];
-			delete preservedFrontmatter[settings.futureInstancesCountProp];
-			delete preservedFrontmatter[settings.generatePastEventsProp];
-		}
+		const preservedFrontmatter = fm;
 
 		const customProps = this.getCustomProperties();
 		const currentCustomKeys = new Set(Object.keys(customProps));
@@ -1830,16 +1603,25 @@ export abstract class BaseEventModal extends Modal {
 	 * Handles both preset values and custom DSL strings.
 	 */
 	protected applyRruleTypeToForm(rruleType: string): void {
+		// Tests sometimes instantiate the modal without rendering all form controls.
+		// Guard against missing elements to keep save/build logic safe.
+		const rruleSelect = (this as unknown as { rruleSelect?: HTMLSelectElement }).rruleSelect;
+		if (!rruleSelect) return;
+
 		if (isPresetType(rruleType)) {
-			this.rruleSelect.value = rruleType;
+			rruleSelect.value = rruleType;
 			return;
 		}
 		// Custom DSL string — set to custom mode and populate fields
 		const parsed = parseRecurrenceType(rruleType);
 		if (parsed) {
-			this.rruleSelect.value = "custom";
-			this.customFreqSelect.value = parsed.freq;
-			this.customIntervalInput.value = String(parsed.interval);
+			const customFreqSelect = (this as unknown as { customFreqSelect?: HTMLSelectElement }).customFreqSelect;
+			const customIntervalInput = (this as unknown as { customIntervalInput?: HTMLInputElement }).customIntervalInput;
+			if (!customFreqSelect || !customIntervalInput) return;
+
+			rruleSelect.value = "custom";
+			customFreqSelect.value = parsed.freq;
+			customIntervalInput.value = String(parsed.interval);
 		}
 	}
 
@@ -1848,13 +1630,19 @@ export abstract class BaseEventModal extends Modal {
 	 * the DSL string from freq select and interval input. For presets, returns the select value.
 	 */
 	protected getEffectiveRruleType(): string {
-		if (this.rruleSelect.value === "custom") {
-			return buildCustomIntervalDSL(
-				this.customFreqSelect.value,
-				Number.parseInt(this.customIntervalInput.value, 10) || 1
-			);
+		// Tests sometimes instantiate the modal without rendering all recurrence form controls.
+		const rruleSelect = (this as unknown as { rruleSelect?: HTMLSelectElement }).rruleSelect;
+		if (!rruleSelect) return "";
+
+		if (rruleSelect.value === "custom") {
+			const customFreqSelect = (this as unknown as { customFreqSelect?: HTMLSelectElement }).customFreqSelect;
+			const customIntervalInput = (this as unknown as { customIntervalInput?: HTMLInputElement }).customIntervalInput;
+			if (!customFreqSelect || !customIntervalInput) return "custom";
+
+			return buildCustomIntervalDSL(customFreqSelect.value, Number.parseInt(customIntervalInput.value, 10) || 1);
 		}
-		return this.rruleSelect.value;
+
+		return rruleSelect.value;
 	}
 
 	protected loadExistingFrontmatter(): void {

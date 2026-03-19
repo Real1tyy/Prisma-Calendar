@@ -6,6 +6,7 @@ import type { Weekday } from "../../../utils/date-recurrence";
 import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/event-naming";
 import { categorizeProperties } from "../../../utils/format";
 import { BaseEventModal } from "./base-event-modal";
+import { loadSimpleFieldValues } from "./event-frontmatter-mapper";
 
 export class EventEditModal extends BaseEventModal {
 	private originalZettelId: string | null = null;
@@ -136,13 +137,8 @@ export class EventEditModal extends BaseEventModal {
 		}
 
 		this.loadRecurringEventData();
-		this.loadBreakData();
-		this.loadMarkAsDoneData();
-		this.loadSkipData();
+		this.loadSimpleFields();
 		this.loadNotificationData();
-		this.loadLocationData();
-		this.loadIconData();
-		this.loadParticipantsData();
 		this.loadPrerequisiteData();
 		this.loadCustomPropertiesData();
 
@@ -158,33 +154,21 @@ export class EventEditModal extends BaseEventModal {
 		}
 	}
 
-	private loadBreakData(): void {
+	private loadSimpleFields(): void {
 		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.breakProp || !this.breakInput) return;
+		const values = loadSimpleFieldValues(this.originalFrontmatter, settings);
 
-		const breakValue = this.originalFrontmatter[settings.breakProp];
-		if (typeof breakValue === "number" && breakValue > 0) {
-			this.breakInput.value = breakValue.toString();
-		}
-	}
+		this.setSimpleFieldValues({
+			location: values.location,
+			icon: values.icon,
+			participants: values.participants,
+			breakMinutes: values.breakMinutes,
+			markAsDone: values.markAsDone,
+			skip: values.skip,
+		});
 
-	private loadMarkAsDoneData(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.statusProperty || !this.markAsDoneCheckbox) return;
-
-		const statusValue = this.originalFrontmatter[settings.statusProperty];
-		const isDone = statusValue === settings.doneValue;
-		this.markAsDoneCheckbox.checked = isDone;
-		this.initialMarkAsDoneState = isDone;
-	}
-
-	private loadSkipData(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.skipProp || !this.skipCheckbox) return;
-
-		const skipValue = this.originalFrontmatter[settings.skipProp];
-		if (skipValue === true) {
-			this.skipCheckbox.checked = true;
+		if (values.markAsDone !== undefined) {
+			this.initialMarkAsDoneState = values.markAsDone;
 		}
 	}
 
@@ -199,30 +183,6 @@ export class EventEditModal extends BaseEventModal {
 		if (typeof notifyValue === "number" && notifyValue >= 0) {
 			this.notificationInput.value = notifyValue.toString();
 		}
-	}
-
-	private loadLocationData(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.locationProp || !this.locationInput) return;
-
-		const locationValue = this.originalFrontmatter[settings.locationProp];
-		this.locationInput.value = typeof locationValue === "string" ? locationValue : "";
-	}
-
-	private loadIconData(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.iconProp || !this.iconInput) return;
-
-		const iconValue = this.originalFrontmatter[settings.iconProp];
-		this.iconInput.value = typeof iconValue === "string" ? iconValue : "";
-	}
-
-	private loadParticipantsData(): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		if (!settings.participantsProp || !this.participantsInput) return;
-
-		const participantsList = parseIntoList(this.originalFrontmatter[settings.participantsProp]);
-		this.participantsInput.value = participantsList.join(", ");
 	}
 
 	private loadPrerequisiteData(): void {
