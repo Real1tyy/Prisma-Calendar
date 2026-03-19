@@ -873,7 +873,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
 </div>
 
 
-### [Programmatic API](features/advanced/programmatic-api) — Scripting
+### [Programmatic API](features/advanced/programmatic-api/overview) — Scripting
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls

@@ -129,7 +129,7 @@ Start and stop a timer directly from any event modal. Track actual time spent on
 Create reusable [event presets](/features/events/event-presets) so you can spin up new events with pre-filled frontmatter in seconds. Pair with [Templater integration](/features/advanced/templater) for even more powerful template-driven workflows.
 
 ### Scriptable via Programmatic API
-Prisma Calendar exposes a [programmatic API](/features/advanced/programmatic-api), so you can create, modify, and query events from scripts, Templater templates, or other plugins. Automate event creation, build custom workflows, and integrate your calendar into your broader Obsidian setup.
+Prisma Calendar exposes a [programmatic API](/features/advanced/programmatic-api/overview), so you can create, modify, and query events from scripts, Templater templates, or other plugins. Automate event creation, build custom workflows, and integrate your calendar into your broader Obsidian setup.
 
 ### CalDAV and ICS Integration
 Sync events from external CalDAV servers (Fastmail, Nextcloud, iCloud, and more) or import/export `.ics` files — compatible with Google Calendar, Microsoft Outlook, and any service that supports the ICS standard. Synced events become real Obsidian notes with full frontmatter. Connect multiple sources to different calendars with configurable auto-sync intervals. [Learn more →](/features/advanced/integrations)
