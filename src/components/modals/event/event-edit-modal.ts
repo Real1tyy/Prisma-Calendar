@@ -3,12 +3,14 @@ import { parseIntoList, parsePositiveInt, serializeFrontmatterValue } from "@rea
 import { MinimizedModalManager } from "../../../core/minimized-modal-manager";
 import { isWeekdaySupported } from "../../../types/recurring-event";
 import type { Weekday } from "../../../utils/date-recurrence";
-import { extractZettelId, removeZettelId } from "../../../utils/event-naming";
+import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/event-naming";
 import { categorizeProperties } from "../../../utils/format";
 import { BaseEventModal } from "./base-event-modal";
 
 export class EventEditModal extends BaseEventModal {
 	private originalZettelId: string | null = null;
+	private instanceDateStr: string | null = null;
+	private titleHadInstanceDate = false;
 	private displayTitle = "";
 	private ensureZettelIdOnSave = true;
 
@@ -38,14 +40,21 @@ export class EventEditModal extends BaseEventModal {
 			}
 		}
 
-		// If no ZettelID found in title, try to extract from filePath.
-		// This handles edge cases where the title doesn't include the ZettelID.
-		if (!this.originalZettelId && this.event.extendedProps?.filePath) {
-			const filePath = this.event.extendedProps.filePath;
-			const basename = filePath.split("/").pop()?.replace(/\.md$/, "") || "";
-			const zettelIdFromPath = extractZettelId(basename);
-			if (zettelIdFromPath) {
-				this.originalZettelId = `-${zettelIdFromPath}`;
+		// Extract zettel ID and instance date from the filename when the title
+		// doesn't contain them (e.g., cleanupTitle strips both via calendarTitleProp).
+		const basename = this.event.extendedProps?.filePath?.split("/").pop()?.replace(/\.md$/, "") || "";
+		if (basename) {
+			if (!this.originalZettelId) {
+				const zettelIdFromPath = extractZettelId(basename);
+				if (zettelIdFromPath) {
+					this.originalZettelId = `-${zettelIdFromPath}`;
+				}
+			}
+
+			const instanceDate = extractInstanceDate(basename);
+			if (instanceDate) {
+				this.instanceDateStr = instanceDate;
+				this.titleHadInstanceDate = this.displayTitle.includes(instanceDate);
 			}
 		}
 
@@ -220,9 +229,9 @@ export class EventEditModal extends BaseEventModal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (!settings.prerequisiteProp) return;
 
-		this.selectedPrerequisites = parseIntoList(this.originalFrontmatter[settings.prerequisiteProp]).filter((p) =>
-			p.trim()
-		);
+		this.selectedPrerequisites = parseIntoList(this.originalFrontmatter[settings.prerequisiteProp], {
+			splitCommas: false,
+		}).filter((p) => p.trim());
 		this.renderPrerequisites();
 	}
 
@@ -233,13 +242,19 @@ export class EventEditModal extends BaseEventModal {
 	public saveEvent(): void {
 		this.applyAutoCategories();
 
-		// Reconstruct the title with ZettelID before saving
+		// Reconstruct the title with instance date and ZettelID before saving.
+		// Physical recurring instances have filenames like "Title YYYY-MM-DD-ZETTELID".
+		// When the title was cleaned (instance date stripped by cleanupTitle),
+		// we must re-inject the instance date to prevent an unwanted rename.
 		const userTitle = this.titleInput.value;
 		let finalTitle = userTitle;
 
-		// If there was a ZettelID, append it back
 		if (this.originalZettelId) {
-			finalTitle = `${userTitle}${this.originalZettelId}`;
+			if (this.instanceDateStr && !this.titleHadInstanceDate) {
+				finalTitle = `${userTitle} ${this.instanceDateStr}${this.originalZettelId}`;
+			} else {
+				finalTitle = `${userTitle}${this.originalZettelId}`;
+			}
 		}
 
 		// Temporarily update the input value with the full title for building event data
