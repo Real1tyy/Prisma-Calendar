@@ -9,7 +9,7 @@ export { showUntrackedEventCreateModal } from "./event/untracked-event-create";
 
 // Category modals
 export type { AssignmentItem, AssignmentModalConfig } from "./category/assignment";
-export { openCategoryAssignModal, showAssignmentModal } from "./category/assignment";
+export { openCategoryAssignModal, openPrerequisiteAssignModal, showAssignmentModal } from "./category/assignment";
 export { showCategoryDeleteModal, showCategoryRenameModal } from "./category/category-operation";
 export { showCategorySelectModal } from "./category/category-select";
 

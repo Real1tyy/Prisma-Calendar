@@ -1,7 +1,10 @@
-import { addCls, removeCls, showModal, toggleCls } from "@real1ty-obsidian-plugins";
+import { addCls, formatWikiLink, removeCls, showModal, toggleCls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
+import type { CalendarBundle } from "../../../core/calendar-bundle";
+import { isTimedEvent } from "../../../types/calendar";
 import { createModalButtons } from "../../../utils/dom-utils";
+import { cleanupTitle } from "../../../utils/event-naming";
 
 export interface AssignmentItem {
 	name: string;
@@ -440,4 +443,47 @@ export function openCategoryAssignModal(
 		defaultColor,
 	};
 	showAssignmentModal(app, items, config, preSelected, onSubmit);
+}
+
+export function openPrerequisiteAssignModal(
+	app: App,
+	bundle: CalendarBundle,
+	preSelected: string[],
+	onSubmit: (selected: string[]) => void
+): void {
+	const allEvents = bundle.eventStore.getAllEvents();
+	const defaultColor = bundle.settingsStore.currentSettings.defaultNodeColor;
+
+	const items: AssignmentItem[] = allEvents.map((event) => {
+		const title = cleanupTitle(event.title);
+		const wikiLink = formatWikiLink(event.ref.filePath);
+		const color = event.color ?? defaultColor;
+		const startDate = new Date(event.start);
+		const date = startDate.toLocaleDateString([], { month: "short", day: "numeric" });
+		const rightLabel = isTimedEvent(event)
+			? `${date} ${startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}`
+			: `${date} · all-day`;
+
+		return { name: wikiLink, displayName: title, color, rightLabel, tooltip: event.ref.filePath };
+	});
+
+	showAssignmentModal(
+		app,
+		items,
+		{
+			title: "Assign prerequisites",
+			description: "Select events that must complete before this event.",
+			searchPlaceholder: "Search events...",
+			createNewLabel: (n) => `Add: "${n}"`,
+			assignLabel: "Assign prerequisites",
+			removeLabel: "Remove prerequisites",
+			defaultColor,
+			pageSize: 20,
+			allowCreateNew: false,
+			colorRows: true,
+			searchFields: (item) => `${item.displayName ?? ""} ${item.rightLabel ?? ""}`,
+		},
+		preSelected,
+		onSubmit
+	);
 }

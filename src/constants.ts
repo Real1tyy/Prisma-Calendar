@@ -209,6 +209,7 @@ export const CONTEXT_MENU_BUTTON_LABELS = {
 	viewEventGroups: "View event groups",
 	editEvent: "Edit event",
 	assignCategories: "Assign categories",
+	assignPrerequisites: "Assign prerequisites",
 	duplicateEvent: "Duplicate event",
 	moveBy: "Move by...",
 	markDone: "Mark as done/undone",
