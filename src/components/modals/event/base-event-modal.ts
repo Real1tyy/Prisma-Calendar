@@ -45,6 +45,7 @@ import {
 	setUntrackedEventBasics,
 } from "../../../utils/event-frontmatter";
 import { autoAssignCategories, findAdjacentEvent } from "../../../utils/event-matching";
+import { cleanupTitle } from "../../../utils/event-naming";
 import { formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../../../utils/format";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import { Stopwatch } from "../../stopwatch";
@@ -782,11 +783,24 @@ export abstract class BaseEventModal extends Modal {
 		const allEvents = this.bundle.eventStore.getAllEvents();
 		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
 
-		const items: AssignmentItem[] = allEvents.map((event) => ({
-			name: formatWikiLink(event.ref.filePath),
-			color: defaultColor,
-			subtitle: event.title,
-		}));
+		const items: AssignmentItem[] = allEvents.map((event) => {
+			const title = cleanupTitle(event.title);
+			const wikiLink = formatWikiLink(event.ref.filePath);
+			const color = event.color ?? defaultColor;
+
+			let rightLabel: string;
+			if (isTimedEvent(event)) {
+				const startDate = new Date(event.start);
+				const time = startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+				const date = startDate.toLocaleDateString([], { month: "short", day: "numeric" });
+				rightLabel = `${date} ${time}`;
+			} else {
+				const startDate = new Date(event.start);
+				rightLabel = `${startDate.toLocaleDateString([], { month: "short", day: "numeric" })} · all-day`;
+			}
+
+			return { name: wikiLink, color, subtitle: title, rightLabel };
+		});
 
 		showAssignmentModal(
 			this.app,
@@ -799,6 +813,10 @@ export abstract class BaseEventModal extends Modal {
 				assignLabel: "Assign prerequisites",
 				removeLabel: "Remove prerequisites",
 				defaultColor,
+				pageSize: 20,
+				allowCreateNew: false,
+				colorRows: true,
+				searchFields: (item) => `${item.subtitle ?? ""} ${item.name}`,
 			},
 			this.selectedPrerequisites,
 			(selected) => {

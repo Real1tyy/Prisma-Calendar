@@ -7,6 +7,7 @@ export interface AssignmentItem {
 	name: string;
 	color: string;
 	subtitle?: string;
+	rightLabel?: string;
 }
 
 export interface AssignmentModalConfig {
@@ -17,6 +18,10 @@ export interface AssignmentModalConfig {
 	assignLabel: string;
 	removeLabel: string;
 	defaultColor: string;
+	pageSize?: number;
+	allowCreateNew?: boolean;
+	colorRows?: boolean;
+	searchFields?: (item: AssignmentItem) => string;
 }
 
 interface CheckboxState {
@@ -25,6 +30,8 @@ interface CheckboxState {
 	element: HTMLElement;
 	isNew?: boolean;
 }
+
+const DEFAULT_PAGE_SIZE = 50;
 
 function renderAssignmentList(
 	el: HTMLElement,
@@ -45,6 +52,13 @@ function renderAssignmentList(
 	let listContainer: HTMLElement;
 	// eslint-disable-next-line prefer-const
 	let createNewContainer: HTMLElement;
+
+	const pageSize = config.pageSize ?? DEFAULT_PAGE_SIZE;
+	const allowCreateNew = config.allowCreateNew ?? true;
+	const colorRows = config.colorRows ?? false;
+	let renderedCount = 0;
+	let sortedItems: AssignmentItem[] = [];
+	let loadMoreButton: HTMLElement | null = null;
 
 	function getVisibleItems(): HTMLElement[] {
 		return states.filter((s) => !s.element.classList.contains("prisma-hidden")).map((s) => s.element);
@@ -93,43 +107,83 @@ function renderAssignmentList(
 		assignButton.textContent = selectedCount === 0 ? config.removeLabel : config.assignLabel;
 	}
 
+	function getSearchableText(item: AssignmentItem): string {
+		if (config.searchFields) return config.searchFields(item).toLowerCase();
+		return item.name.toLowerCase();
+	}
+
 	function filterItems(): void {
 		const searchTerm = searchInput.value.toLowerCase().trim();
-		for (const state of states) {
-			if (state.isNew) continue;
-			if (state.item.name.toLowerCase().includes(searchTerm)) {
-				removeCls(state.element, "hidden");
-			} else {
-				addCls(state.element, "hidden");
-			}
+
+		if (searchTerm) {
+			renderMatchingItems(searchTerm);
+		} else {
+			// When search cleared, go back to paged view
+			restorePagedView();
 		}
 	}
 
-	function updateCreateNewButton(): void {
-		const searchTerm = searchInput.value.trim();
-		if (!searchTerm) {
-			addCls(createNewContainer, "hidden");
-			return;
+	function renderMatchingItems(searchTerm: string): void {
+		// Hide already-rendered items that don't match
+		let visibleCount = 0;
+		for (const state of states) {
+			if (state.isNew) continue;
+			const matches = getSearchableText(state.item).includes(searchTerm);
+			toggleCls(state.element, "hidden", !matches);
+			if (matches) visibleCount++;
 		}
 
-		const exactMatch = allItems.some((item) => item.name.toLowerCase() === searchTerm.toLowerCase());
-		if (exactMatch) {
-			addCls(createNewContainer, "hidden");
-			return;
+		// Render unrendered items that match, up to pageSize total visible
+		for (let i = renderedCount; i < sortedItems.length && visibleCount < pageSize; i++) {
+			const item = sortedItems[i]!;
+			if (getSearchableText(item).includes(searchTerm)) {
+				const itemEl = createCheckboxItem(item);
+				listContainer.appendChild(itemEl);
+				visibleCount++;
+			}
 		}
 
-		removeCls(createNewContainer, "hidden");
-		createNewContainer.empty();
+		updateLoadMoreButton();
+	}
 
-		const createButton = createNewContainer.createEl("button", { text: config.createNewLabel(searchTerm) });
-		addCls(createButton, "category-create-new-button");
-		createButton.onclick = () => createNewItem(searchTerm);
+	function restorePagedView(): void {
+		for (const state of states) {
+			if (state.isNew) continue;
+			removeCls(state.element, "hidden");
+		}
+		updateLoadMoreButton();
+	}
+
+	function renderNextPage(): void {
+		const end = Math.min(renderedCount + pageSize, sortedItems.length);
+		for (let i = renderedCount; i < end; i++) {
+			const itemEl = createCheckboxItem(sortedItems[i]!);
+			listContainer.appendChild(itemEl);
+		}
+		renderedCount = end;
+		updateLoadMoreButton();
+	}
+
+	function updateLoadMoreButton(): void {
+		if (!loadMoreButton) return;
+		const remaining = sortedItems.length - renderedCount;
+		if (remaining > 0 && !searchInput.value.trim()) {
+			loadMoreButton.textContent = `Load more (${remaining} remaining)`;
+			removeCls(loadMoreButton, "hidden");
+		} else {
+			addCls(loadMoreButton, "hidden");
+		}
 	}
 
 	function createCheckboxItem(item: AssignmentItem, isNew = false): HTMLElement {
 		const itemEl = document.createElement("div");
 		addCls(itemEl, "category-checkbox-item");
 		if (isNew) addCls(itemEl, "category-new-item");
+
+		if (colorRows && item.color) {
+			itemEl.style.setProperty("--category-color", item.color);
+			addCls(itemEl, "colorized-row");
+		}
 
 		const isPreSelected = preSelected.includes(item.name);
 
@@ -143,9 +197,11 @@ function renderAssignmentList(
 		const label = itemEl.createEl("label");
 		addCls(label, "category-label");
 
-		const colorDot = label.createEl("span");
-		addCls(colorDot, "category-color-dot");
-		colorDot.style.setProperty("--category-color", item.color);
+		if (!colorRows) {
+			const colorDot = label.createEl("span");
+			addCls(colorDot, "category-color-dot");
+			colorDot.style.setProperty("--category-color", item.color);
+		}
 
 		const nameSpan = label.createEl("span", { text: item.name });
 		addCls(nameSpan, "category-name");
@@ -153,6 +209,11 @@ function renderAssignmentList(
 		if (item.subtitle) {
 			const subtitleSpan = label.createEl("span", { text: item.subtitle });
 			addCls(subtitleSpan, "category-item-subtitle");
+		}
+
+		if (item.rightLabel) {
+			const rightSpan = label.createEl("span", { text: item.rightLabel });
+			addCls(rightSpan, "category-item-right-label");
 		}
 
 		if (isNew) {
@@ -225,6 +286,32 @@ function renderAssignmentList(
 		return [...selected, ...unselected];
 	}
 
+	function updateCreateNewButton(): void {
+		if (!allowCreateNew) {
+			addCls(createNewContainer, "hidden");
+			return;
+		}
+
+		const searchTerm = searchInput.value.trim();
+		if (!searchTerm) {
+			addCls(createNewContainer, "hidden");
+			return;
+		}
+
+		const exactMatch = allItems.some((item) => item.name.toLowerCase() === searchTerm.toLowerCase());
+		if (exactMatch) {
+			addCls(createNewContainer, "hidden");
+			return;
+		}
+
+		removeCls(createNewContainer, "hidden");
+		createNewContainer.empty();
+
+		const createButton = createNewContainer.createEl("button", { text: config.createNewLabel(searchTerm) });
+		addCls(createButton, "category-create-new-button");
+		createButton.onclick = () => createNewItem(searchTerm);
+	}
+
 	el.createEl("h2", { text: config.title });
 
 	const description = el.createEl("p", { text: config.description });
@@ -252,10 +339,14 @@ function renderAssignmentList(
 		addCls(emptyState, "category-empty-state");
 		emptyState.textContent = "No items found. Type to create a new one.";
 	} else {
-		for (const item of sortItemsWithSelectedFirst()) {
-			listContainer.appendChild(createCheckboxItem(item));
-		}
+		sortedItems = sortItemsWithSelectedFirst();
+		renderNextPage();
 	}
+
+	loadMoreButton = el.createEl("button", { text: "Load more" });
+	addCls(loadMoreButton, "category-load-more-button", "hidden");
+	loadMoreButton.addEventListener("click", () => renderNextPage());
+	updateLoadMoreButton();
 
 	const { submitButton } = createModalButtons(el, {
 		submitText: config.removeLabel,

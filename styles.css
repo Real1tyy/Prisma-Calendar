@@ -7502,6 +7502,40 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	margin-left: 0.4rem;
 }
 
+.prisma-category-item-right-label {
+	font-size: 0.75em;
+	color: var(--text-faint);
+	margin-left: auto;
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+.prisma-category-checkbox-item.prisma-colorized-row {
+	border-left: 4px solid var(--category-color);
+}
+
+.prisma-category-load-more-button {
+	display: block;
+	width: 100%;
+	padding: 0.5rem;
+	margin-top: 0.5rem;
+	background: var(--background-modifier-hover);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.prisma-category-load-more-button:hover {
+	background: var(--background-modifier-active-hover);
+	color: var(--text-normal);
+}
+
+.prisma-category-load-more-button.prisma-hidden {
+	display: none;
+}
+
 /* Category display in event modal */
 .prisma-category-display-content {
 	display: flex;
