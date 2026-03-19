@@ -1,6 +1,10 @@
-# Dashboard
+# Dashboard (Pro)
 
 The Dashboard tab provides a comprehensive overview of all your events across three sections — Recurring Events, Categories, and By Name. Each section includes a pie chart distribution and a full sortable table with colored rows, giving you detailed statistics at a glance.
+
+:::info Pro Feature
+The Dashboard tab requires a Pro license. Free users will see a prompt to upgrade when switching to this tab.
+:::
 
 ## Sections
 
