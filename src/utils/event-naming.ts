@@ -3,6 +3,9 @@ import { nanoid } from "nanoid";
 import type { TFile } from "obsidian";
 import { type App } from "obsidian";
 
+const ZETTEL_ID_PATTERN = /[-\s](\d{14})$/;
+const PHYSICAL_INSTANCE_PATTERN = /^(.+)\s+(\d{4}-\d{2}-\d{2})-(\d{14})$/;
+
 /**
  * Extracts ZettelID from a filename or title.
  * Handles plugin-generated filename patterns:
@@ -14,7 +17,7 @@ import { type App } from "obsidian";
  * Returns the ZettelID string if found, null otherwise.
  */
 export const extractZettelId = (text: string): string | null => {
-	const match = text.match(/[-\s](\d{14})$/);
+	const match = text.match(ZETTEL_ID_PATTERN);
 	return match ? match[1] : null;
 };
 
@@ -121,7 +124,7 @@ export const extractNotesCoreName = (text: string): string => {
  * Also supports legacy formats (CalDAV ` - ` separator, space-separated) for backwards compatibility.
  */
 export const hasTimestamp = (baseName: string): boolean => {
-	return /[-\s]\d{14}$/.test(baseName);
+	return ZETTEL_ID_PATTERN.test(baseName);
 };
 
 export const generateUniqueRruleId = (): string => {
@@ -255,6 +258,16 @@ export const ensureFileHasZettelId = async (
 };
 
 /**
+ * Extracts the instance date from a physical recurring instance filename.
+ * Pattern: "Title YYYY-MM-DD-ZETTELID" -> "YYYY-MM-DD"
+ * Returns null if the basename doesn't match the physical instance pattern.
+ */
+export const extractInstanceDate = (basename: string): string | null => {
+	const match = basename.match(PHYSICAL_INSTANCE_PATTERN);
+	return match ? match[2] : null;
+};
+
+/**
  * Rebuilds a physical recurring instance filename with a new date.
  * Format: "Title YYYY-MM-DD-ZETTELID" -> "Title NEW-DATE-ZETTELID"
  *
@@ -263,8 +276,7 @@ export const ensureFileHasZettelId = async (
  * @returns New basename or null if the format is not recognized
  */
 export const rebuildPhysicalInstanceWithNewDate = (basename: string, newDate: string): string | null => {
-	// Pattern: "Title YYYY-MM-DD-ZETTELID" where ZETTELID is 14 digits
-	const match = basename.match(/^(.+)\s+(\d{4}-\d{2}-\d{2})-(\d{14})$/);
+	const match = basename.match(PHYSICAL_INSTANCE_PATTERN);
 	if (!match) return null;
 
 	const [, title, , zettelId] = match;
