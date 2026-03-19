@@ -116,6 +116,23 @@ export function assignCategories(
 	);
 }
 
+export function assignPrerequisites(
+	app: App,
+	bundle: CalendarBundle,
+	filePath: string,
+	prerequisites: string[]
+): FrontmatterUpdateCommand {
+	const settings = bundle.settingsStore.currentSettings;
+	return new FrontmatterUpdateCommand(
+		app,
+		filePath,
+		(fm) => {
+			assignListToFrontmatter(fm, settings.prerequisiteProp, prerequisites);
+		},
+		"assign-prerequisites"
+	);
+}
+
 export function moveEvent(
 	app: App,
 	bundle: CalendarBundle,

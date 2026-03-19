@@ -4,7 +4,6 @@ import {
 	calculateDurationMinutes,
 	cls,
 	extractDisplayName,
-	formatWikiLink,
 	parseAsLocalDate,
 	parseFrontmatterRecord,
 	parseIntoList,
@@ -50,7 +49,7 @@ import { formatDateOnly, formatDateTimeForInput, inputValueToISOString } from ".
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import { Stopwatch } from "../../stopwatch";
 import { TitleInputSuggest } from "../../title-input-suggest";
-import { type AssignmentItem, openCategoryAssignModal, showAssignmentModal } from "../category/assignment";
+import { openCategoryAssignModal, openPrerequisiteAssignModal } from "../category/assignment";
 import { showCategoryEventsModal } from "../series/bases-view";
 import { createFormField } from "./event-form-fields";
 import { showSavePresetModal } from "./save-preset";
@@ -782,58 +781,10 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	private openAssignPrerequisitesModal(): void {
-		const allEvents = this.bundle.eventStore.getAllEvents();
-		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
-
-		// Deduplicate by file path (recurring events generate multiple instances for the same file)
-		const seen = new Set<string>();
-		const items: AssignmentItem[] = [];
-
-		for (const event of allEvents) {
-			const filePath = event.ref.filePath;
-			if (seen.has(filePath)) continue;
-			seen.add(filePath);
-
-			const title = cleanupTitle(event.title);
-			const wikiLink = formatWikiLink(filePath);
-			const color = event.color ?? defaultColor;
-
-			let rightLabel: string;
-			if (isTimedEvent(event)) {
-				const startDate = new Date(event.start);
-				const time = startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
-				const date = startDate.toLocaleDateString([], { month: "short", day: "numeric" });
-				rightLabel = `${date} ${time}`;
-			} else {
-				const startDate = new Date(event.start);
-				rightLabel = `${startDate.toLocaleDateString([], { month: "short", day: "numeric" })} · all-day`;
-			}
-
-			items.push({ name: wikiLink, displayName: title, color, rightLabel, tooltip: filePath });
-		}
-
-		showAssignmentModal(
-			this.app,
-			items,
-			{
-				title: "Assign prerequisites",
-				description: "Select events that must complete before this event.",
-				searchPlaceholder: "Search events...",
-				createNewLabel: (n) => `Add: "${n}"`,
-				assignLabel: "Assign prerequisites",
-				removeLabel: "Remove prerequisites",
-				defaultColor,
-				pageSize: 20,
-				allowCreateNew: false,
-				colorRows: true,
-				searchFields: (item) => `${item.displayName ?? ""} ${item.rightLabel ?? ""}`,
-			},
-			this.selectedPrerequisites,
-			(selected) => {
-				this.selectedPrerequisites = selected;
-				this.renderPrerequisites();
-			}
-		);
+		openPrerequisiteAssignModal(this.app, this.bundle, this.selectedPrerequisites, (selected) => {
+			this.selectedPrerequisites = selected;
+			this.renderPrerequisites();
+		});
 	}
 
 	private createBreakField(contentEl: HTMLElement): void {

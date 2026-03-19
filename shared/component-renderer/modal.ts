@@ -6,7 +6,7 @@ export function showModal(config: ModalComponentConfig): void {
 	class ComponentModal extends Modal {
 		override async onOpen(): Promise<void> {
 			const { contentEl, modalEl } = this;
-			contentEl.addClass(config.cls);
+			modalEl.addClass(config.cls);
 			if (config.title) this.setTitle(config.title);
 
 			const ctx: ModalContext = {

@@ -6,6 +6,7 @@ import { type App, Menu, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
 	assignCategories,
+	assignPrerequisites,
 	CloneEventCommand,
 	DeleteEventCommand,
 	DuplicateRecurringEventCommand,
@@ -36,6 +37,7 @@ import type { PreviewEventData } from "./modals";
 import {
 	EventEditModal,
 	openCategoryAssignModal,
+	openPrerequisiteAssignModal,
 	showDeleteRecurringEventsModal,
 	showEventPreviewModal,
 	showMoveByModal,
@@ -203,6 +205,17 @@ export class EventContextMenu {
 						.setIcon("tag")
 						.onClick(() => {
 							void this.openAssignCategoriesModal(event);
+						});
+				});
+			}
+
+			if (shouldShow("assignPrerequisites")) {
+				menu.addItem((item) => {
+					item
+						.setTitle("Assign prerequisites")
+						.setIcon("workflow")
+						.onClick(() => {
+							void this.openAssignPrerequisitesModal(event);
 						});
 				});
 			}
@@ -842,6 +855,23 @@ export class EventContextMenu {
 				void this.runCommand(() => assignCategories(this.app, this.bundle, filePath, selected), {
 					success: "Categories updated",
 					error: "Failed to assign categories",
+				});
+			});
+		});
+	}
+
+	private async openAssignPrerequisitesModal(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "assign prerequisites", async (filePath) => {
+			getFileByPathOrThrow(this.app, filePath);
+			const { frontmatter } = getFileAndFrontmatter(this.app, filePath);
+
+			const settings = this.bundle.settingsStore.currentSettings;
+			const currentPrereqs = parseIntoList(frontmatter[settings.prerequisiteProp], { splitCommas: false });
+
+			openPrerequisiteAssignModal(this.app, this.bundle, currentPrereqs, (selected) => {
+				void this.runCommand(() => assignPrerequisites(this.app, this.bundle, filePath, selected), {
+					success: "Prerequisites updated",
+					error: "Failed to assign prerequisites",
 				});
 			});
 		});
