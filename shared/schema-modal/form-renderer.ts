@@ -102,6 +102,23 @@ export function coerceFormValues(
 	return result;
 }
 
+// ─── Field Metadata Resolution ──────────────────────────────
+
+function resolveLabel(desc: SchemaFieldDescriptor, override: FieldOverride | undefined): string {
+	return override?.label ?? desc.label;
+}
+
+function resolveDesc(desc: SchemaFieldDescriptor, override: FieldOverride | undefined): string {
+	return override?.desc ?? desc.description ?? "";
+}
+
+function applyFieldMeta(setting: Setting, desc: SchemaFieldDescriptor, override: FieldOverride | undefined): Setting {
+	setting.setName(resolveLabel(desc, override));
+	const fieldDesc = resolveDesc(desc, override);
+	if (fieldDesc) setting.setDesc(fieldDesc);
+	return setting;
+}
+
 // ─── Edit Mode Field Renderers ──────────────────────────────
 
 function renderStringField(
@@ -115,7 +132,7 @@ function renderStringField(
 		return;
 	}
 
-	new Setting(el).setName(override?.label ?? desc.label).addText((text) => {
+	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
 		text.setPlaceholder(override?.placeholder ?? "").setValue(String(values[desc.key] ?? ""));
 		text.onChange((v) => (values[desc.key] = v));
 	});
@@ -127,13 +144,16 @@ function renderNumberField(
 	override: FieldOverride | undefined,
 	values: Record<string, unknown>
 ): void {
-	const label = override?.label ?? desc.label;
+	const label = resolveLabel(desc, override);
 	const parts: string[] = [label];
 	if (desc.min !== undefined && desc.max !== undefined) {
 		parts.push(`(${desc.min}-${desc.max})`);
 	}
 
-	new Setting(el).setName(parts.join(" ")).addText((text) => {
+	const setting = new Setting(el).setName(parts.join(" "));
+	const fieldDesc = resolveDesc(desc, override);
+	if (fieldDesc) setting.setDesc(fieldDesc);
+	setting.addText((text) => {
 		text
 			.setPlaceholder(override?.placeholder ?? "0")
 			.setValue(values[desc.key] != null ? String(values[desc.key]) : "");
@@ -150,7 +170,7 @@ function renderBooleanField(
 	override: FieldOverride | undefined,
 	values: Record<string, unknown>
 ): void {
-	new Setting(el).setName(override?.label ?? desc.label).addToggle((toggle) => {
+	applyFieldMeta(new Setting(el), desc, override).addToggle((toggle) => {
 		toggle.setValue(coerceToggleValue(values[desc.key]));
 		toggle.onChange((v) => (values[desc.key] = v));
 	});
@@ -162,7 +182,7 @@ function renderDateField(
 	override: FieldOverride | undefined,
 	values: Record<string, unknown>
 ): void {
-	new Setting(el).setName(override?.label ?? desc.label).addText((text) => {
+	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
 		text.setPlaceholder(override?.placeholder ?? "YYYY-MM-DD").setValue(String(values[desc.key] ?? ""));
 		text.inputEl.type = "date";
 		text.onChange((v) => (values[desc.key] = v));
@@ -175,7 +195,7 @@ function renderDatetimeField(
 	override: FieldOverride | undefined,
 	values: Record<string, unknown>
 ): void {
-	new Setting(el).setName(override?.label ?? desc.label).addText((text) => {
+	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
 		text.setPlaceholder(override?.placeholder ?? "YYYY-MM-DDTHH:mm").setValue(String(values[desc.key] ?? ""));
 		text.inputEl.type = "datetime-local";
 		text.onChange((v) => (values[desc.key] = v));
@@ -202,7 +222,7 @@ function renderDropdownField(
 	values: Record<string, unknown>,
 	override?: FieldOverride
 ): void {
-	new Setting(el).setName(override?.label ?? desc.label).addDropdown((dropdown) => {
+	applyFieldMeta(new Setting(el), desc, override).addDropdown((dropdown) => {
 		if (desc.optional) dropdown.addOption("", "-- None --");
 		for (const [value, label] of entries) {
 			dropdown.addOption(value, label);
@@ -218,10 +238,9 @@ function renderArrayField(
 	override: FieldOverride | undefined,
 	values: Record<string, unknown>
 ): void {
-	const label = override?.label ?? desc.label;
 	const current = Array.isArray(values[desc.key]) ? (values[desc.key] as unknown[]) : [];
 
-	new Setting(el).setName(label).addText((text) => {
+	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
 		text.setPlaceholder(override?.placeholder ?? "Comma-separated values").setValue(current.join(", "));
 		text.onChange((v) => {
 			const items = v
@@ -292,9 +311,15 @@ function renderReadonlyField(
 	override: FieldOverride | undefined,
 	values: Record<string, unknown>
 ): void {
-	const label = override?.label ?? desc.label;
+	const label = resolveLabel(desc, override);
 	const value = formatReadonlyValue(desc, values[desc.key]);
-	new Setting(el).setName(label).setDesc(value);
+	const setting = new Setting(el).setName(label);
+	const fieldDesc = resolveDesc(desc, override);
+	if (fieldDesc) {
+		setting.setDesc(`${fieldDesc} — ${value}`);
+	} else {
+		setting.setDesc(value);
+	}
 }
 
 // ─── Core: renderSchemaForm ─────────────────────────────────
