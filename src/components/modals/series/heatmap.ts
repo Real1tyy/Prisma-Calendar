@@ -185,7 +185,7 @@ export function renderHeatmapInto(
 		updateLabel();
 		legendContainer.empty();
 		dayDetailPanel.empty();
-		renderHeatmapLegend(legendContainer, dataset.maxCount, config.categoryColor);
+		renderHeatmapLegend(legendContainer, dataset.thresholds, config.categoryColor);
 
 		const firstDayOfWeek = bundle.settingsStore.currentSettings.firstDayOfWeek ?? 0;
 		renderHeatmapSVG(svgContainer, dataset, {
