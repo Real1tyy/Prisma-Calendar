@@ -376,6 +376,116 @@ describe("EventEditModal - Custom Properties", () => {
 		});
 	});
 
+	describe("Instance date preservation for physical recurring events", () => {
+		it("should preserve instance date when title was cleaned by cleanupTitle", async () => {
+			const event = {
+				title: "Team Meeting",
+				start: "2025-10-07T10:15:00.000Z",
+				extendedProps: { filePath: "Events/Team Meeting 2025-10-07-00001125853328.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event);
+			await (modal as any).initialize();
+			modal.originalFrontmatter = {
+				"Start Date": "2025-10-07T10:15:00.000Z",
+			};
+
+			modal.getCustomProperties = vi.fn().mockReturnValue({});
+			modal.titleInput = { value: "Team Meeting" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+
+			modal.saveEvent();
+
+			expect(updateEventMock).toHaveBeenCalled();
+			const savedData = updateEventMock.mock.calls[0][0]!;
+			expect(savedData.title).toBe("Team Meeting 2025-10-07-00001125853328");
+		});
+
+		it("should not duplicate instance date when title already includes it", async () => {
+			const event = {
+				title: "Team Meeting 2025-10-07-00001125853328",
+				start: "2025-10-07T10:15:00.000Z",
+				extendedProps: { filePath: "Events/Team Meeting 2025-10-07-00001125853328.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event);
+			await (modal as any).initialize();
+			modal.originalFrontmatter = {
+				"Start Date": "2025-10-07T10:15:00.000Z",
+			};
+
+			modal.getCustomProperties = vi.fn().mockReturnValue({});
+			modal.titleInput = { value: "Team Meeting 2025-10-07" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+
+			modal.saveEvent();
+
+			expect(updateEventMock).toHaveBeenCalled();
+			const savedData = updateEventMock.mock.calls[0][0]!;
+			expect(savedData.title).toBe("Team Meeting 2025-10-07-00001125853328");
+		});
+
+		it("should preserve instance date when user changes the title", async () => {
+			const event = {
+				title: "Team Meeting",
+				start: "2025-10-07T10:15:00.000Z",
+				extendedProps: { filePath: "Events/Team Meeting 2025-10-07-00001125853328.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event);
+			await (modal as any).initialize();
+			modal.originalFrontmatter = {
+				"Start Date": "2025-10-07T10:15:00.000Z",
+			};
+
+			modal.getCustomProperties = vi.fn().mockReturnValue({});
+			modal.titleInput = { value: "Weekly Standup" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+
+			modal.saveEvent();
+
+			expect(updateEventMock).toHaveBeenCalled();
+			const savedData = updateEventMock.mock.calls[0][0]!;
+			expect(savedData.title).toBe("Weekly Standup 2025-10-07-00001125853328");
+		});
+
+		it("should not inject instance date for regular (non-recurring) events", async () => {
+			const event = {
+				title: "Regular Event",
+				start: "2025-10-07T10:15:00.000Z",
+				extendedProps: { filePath: "Events/Regular Event-20250203140530.md" },
+			};
+
+			const modal = new EventEditModal(mockApp, mockBundle, event);
+			await (modal as any).initialize();
+			modal.originalFrontmatter = {
+				"Start Date": "2025-10-07T10:15:00.000Z",
+			};
+
+			modal.getCustomProperties = vi.fn().mockReturnValue({});
+			modal.titleInput = { value: "Regular Event" } as HTMLInputElement;
+			modal.allDayCheckbox = { checked: false } as HTMLInputElement;
+			modal.startInput = { value: "2025-10-07T10:15" } as HTMLInputElement;
+			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
+			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
+
+			modal.saveEvent();
+
+			expect(updateEventMock).toHaveBeenCalled();
+			const savedData = updateEventMock.mock.calls[0][0]!;
+			expect(savedData.title).toBe("Regular Event-20250203140530");
+		});
+	});
+
 	describe("Category saving", () => {
 		const mockEmptyContainer = {
 			querySelectorAll: vi.fn().mockReturnValue([]),
