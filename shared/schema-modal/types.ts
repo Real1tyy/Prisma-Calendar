@@ -66,6 +66,7 @@ export type FieldOptions =
 
 export interface FieldOverride {
 	label?: string;
+	desc?: string;
 	hidden?: boolean;
 	placeholder?: string;
 	options?: FieldOptions;

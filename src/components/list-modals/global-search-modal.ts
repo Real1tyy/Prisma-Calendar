@@ -1,4 +1,4 @@
-import { addCls, cls, ColorEvaluator } from "@real1ty-obsidian-plugins";
+import { addCls, cls, ColorEvaluator, removeCls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 
@@ -17,6 +17,8 @@ interface GlobalSearchFilters {
 	skipped: FilterState;
 }
 
+const PAGE_SIZE = 50;
+
 export class GlobalSearchModal extends BaseEventListModal {
 	private allEvents: EventListItem[] = [];
 	private filters: GlobalSearchFilters = {
@@ -25,6 +27,8 @@ export class GlobalSearchModal extends BaseEventListModal {
 		skipped: "none",
 	};
 	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
+	private renderedCount = 0;
+	private loadMoreEl: HTMLElement | null = null;
 
 	constructor(
 		app: App,
@@ -104,7 +108,6 @@ export class GlobalSearchModal extends BaseEventListModal {
 		if (!normalizedSearch) {
 			this.filteredItems = [...this.items];
 		} else {
-			// Override to search both title and subtitle
 			this.filteredItems = this.items.filter((item) => {
 				const cleanTitle = item.title.toLowerCase();
 				const cleanSubtitle = item.subtitle?.toLowerCase() || "";
@@ -113,7 +116,54 @@ export class GlobalSearchModal extends BaseEventListModal {
 		}
 
 		this.updateEventCount();
+		this.renderedCount = 0;
 		this.renderItems();
+	}
+
+	protected override renderItems(): void {
+		if (!this.listContainer) return;
+
+		this.listContainer.empty();
+		this.renderedCount = 0;
+		this.loadMoreEl?.remove();
+		this.loadMoreEl = null;
+
+		if (this.filteredItems.length === 0) {
+			this.listContainer.createEl("p", {
+				text: "No events match your search.",
+				cls: cls("generic-event-list-empty"),
+			});
+			return;
+		}
+
+		this.renderNextPage();
+	}
+
+	private renderNextPage(): void {
+		if (!this.listContainer) return;
+
+		const end = Math.min(this.renderedCount + PAGE_SIZE, this.filteredItems.length);
+		for (let i = this.renderedCount; i < end; i++) {
+			this.createEventItem(this.listContainer, this.filteredItems[i]!);
+		}
+		this.renderedCount = end;
+		this.updateLoadMoreButton();
+	}
+
+	private updateLoadMoreButton(): void {
+		const remaining = this.filteredItems.length - this.renderedCount;
+		if (remaining > 0) {
+			if (!this.loadMoreEl) {
+				this.loadMoreEl = this.listContainer!.parentElement!.createEl("button", {
+					cls: cls("global-search-load-more"),
+				});
+				this.loadMoreEl.addEventListener("click", () => this.renderNextPage());
+			}
+			this.loadMoreEl.textContent = `Load more (${remaining} remaining)`;
+			removeCls(this.loadMoreEl, "hidden");
+		} else if (this.loadMoreEl) {
+			addCls(this.loadMoreEl, "hidden");
+		}
 	}
 
 	private loadAllEvents(): void {
