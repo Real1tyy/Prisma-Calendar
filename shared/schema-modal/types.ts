@@ -7,6 +7,7 @@ interface BaseFieldDescriptor {
 	key: string;
 	label: string;
 	description?: string;
+	placeholder?: string;
 	optional: boolean;
 	defaultValue?: unknown;
 }

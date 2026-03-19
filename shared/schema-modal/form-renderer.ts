@@ -133,7 +133,7 @@ function renderStringField(
 	}
 
 	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
-		text.setPlaceholder(override?.placeholder ?? "").setValue(String(values[desc.key] ?? ""));
+		text.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "").setValue(String(values[desc.key] ?? ""));
 		text.onChange((v) => (values[desc.key] = v));
 	});
 }
@@ -155,7 +155,7 @@ function renderNumberField(
 	if (fieldDesc) setting.setDesc(fieldDesc);
 	setting.addText((text) => {
 		text
-			.setPlaceholder(override?.placeholder ?? "0")
+			.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "0")
 			.setValue(values[desc.key] != null ? String(values[desc.key]) : "");
 		text.inputEl.type = "number";
 		if (desc.min !== undefined) text.inputEl.min = String(desc.min);
@@ -183,7 +183,9 @@ function renderDateField(
 	values: Record<string, unknown>
 ): void {
 	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
-		text.setPlaceholder(override?.placeholder ?? "YYYY-MM-DD").setValue(String(values[desc.key] ?? ""));
+		text
+			.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "YYYY-MM-DD")
+			.setValue(String(values[desc.key] ?? ""));
 		text.inputEl.type = "date";
 		text.onChange((v) => (values[desc.key] = v));
 	});
@@ -196,7 +198,9 @@ function renderDatetimeField(
 	values: Record<string, unknown>
 ): void {
 	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
-		text.setPlaceholder(override?.placeholder ?? "YYYY-MM-DDTHH:mm").setValue(String(values[desc.key] ?? ""));
+		text
+			.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "YYYY-MM-DDTHH:mm")
+			.setValue(String(values[desc.key] ?? ""));
 		text.inputEl.type = "datetime-local";
 		text.onChange((v) => (values[desc.key] = v));
 	});
@@ -243,7 +247,9 @@ function renderArrayField(
 	const current = Array.isArray(values[desc.key]) ? (values[desc.key] as unknown[]) : [];
 
 	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
-		text.setPlaceholder(override?.placeholder ?? "Comma-separated values").setValue(current.join(", "));
+		text
+			.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "Comma-separated values")
+			.setValue(current.join(", "));
 		text.onChange((v) => {
 			const items = v
 				.split(",")
