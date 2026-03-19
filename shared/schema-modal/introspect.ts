@@ -36,7 +36,14 @@ function resolveFieldDescriptor(key: string, prop: JSONSchemaProperty, optional:
 
 	switch (prop.type) {
 		case "string": {
-			if (prop.enum) return { ...base, type: "enum", enumValues: extractEnumValues(prop) };
+			if (prop.enum) {
+				return {
+					...base,
+					type: "enum",
+					enumValues: extractEnumValues(prop),
+					...(prop.enumLabels ? { enumLabels: prop.enumLabels } : {}),
+				};
+			}
 			if (prop.format === "date-time") return { ...base, type: "datetime" };
 			if (prop.format === "date" || DATE_KEY_PATTERN.test(key)) return { ...base, type: "date" };
 			return { ...base, type: "string" };

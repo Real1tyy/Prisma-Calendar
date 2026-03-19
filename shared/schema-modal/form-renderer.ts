@@ -210,7 +210,9 @@ function renderEnumField(
 ): void {
 	const entries: [string, string][] = override?.options
 		? normalizeOptions(override.options)
-		: desc.enumValues.map((v) => [v, v]);
+		: desc.enumLabels
+			? Object.entries(desc.enumLabels)
+			: desc.enumValues.map((v) => [v, v]);
 
 	renderDropdownField(el, desc, entries, values, override);
 }

@@ -174,7 +174,9 @@ function renderEnumSetting(
 ): void {
 	const dropdownOverride = isOverrideType<DropdownFieldOverride>(override, "dropdown") ? override : undefined;
 	const options =
-		dropdownOverride?.options ?? Object.fromEntries(descriptor.enumValues.map((v) => [v, camelCaseToLabel(v)]));
+		dropdownOverride?.options ??
+		descriptor.enumLabels ??
+		Object.fromEntries(descriptor.enumValues.map((v) => [v, camelCaseToLabel(v)]));
 	uiBuilder.addDropdown(containerEl, { ...baseConfig, options });
 }
 

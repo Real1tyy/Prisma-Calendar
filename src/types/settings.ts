@@ -126,6 +126,52 @@ const PropsSettingsSchema = z
 	})
 	.strip();
 
+type PropsKey = keyof z.infer<typeof PropsSettingsSchema>;
+
+/**
+ * Settings keys for per-instance system properties (timing, identity, recurrence).
+ * These are NOT copied from source recurring events to physical instances.
+ * When adding a new frontmatter property to the schema, add it here if Prisma
+ * manages it per-instance (the value differs between source and instance).
+ */
+export const SYSTEM_PROP_KEYS: PropsKey[] = [
+	"startProp",
+	"endProp",
+	"dateProp",
+	"breakProp",
+	"titleProp",
+	"calendarTitleProp",
+	"allDayProp",
+	"rruleProp",
+	"rruleSpecProp",
+	"rruleIdProp",
+	"sourceProp",
+	"skipProp",
+	"instanceDateProp",
+	"zettelIdProp",
+	"futureInstancesCountProp",
+	"caldavProp",
+	"icsSubscriptionProp",
+	"generatePastEventsProp",
+	"ignoreRecurringProp",
+];
+
+/**
+ * Settings keys for properties that have dedicated UI controls in the edit modal
+ * (category picker, prerequisite assigner, icon input, etc.).
+ * These must NOT appear in the "Custom Properties" section — otherwise the custom
+ * properties form will overwrite values set by the dedicated UI on save.
+ * When adding a new frontmatter property with its own modal control, add it here.
+ */
+export const DEDICATED_UI_PROP_KEYS: PropsKey[] = [
+	"statusProperty",
+	"categoryProp",
+	"prerequisiteProp",
+	"iconProp",
+	"locationProp",
+	"participantsProp",
+];
+
 const NotificationsSettingsSchema = z
 	.object({
 		enableNotifications: z.boolean().catch(true),
@@ -139,6 +185,16 @@ const NotificationsSettingsSchema = z
 		alreadyNotifiedProp: z.string().catch(PROP_DEFAULTS.alreadyNotified), // frontmatter property to mark events as already notified
 	})
 	.strip();
+
+type NotificationsKey = keyof z.infer<typeof NotificationsSettingsSchema>;
+
+/**
+ * Notification settings keys that map to frontmatter properties.
+ * alreadyNotifiedProp is a system prop (per-instance), while minutesBefore/daysBefore
+ * have dedicated UI controls in the edit modal.
+ */
+export const NOTIFICATION_SYSTEM_PROP_KEYS: NotificationsKey[] = ["alreadyNotifiedProp"];
+export const NOTIFICATION_DEDICATED_UI_PROP_KEYS: NotificationsKey[] = ["minutesBeforeProp", "daysBeforeProp"];
 
 const FilterPresetSchema = z
 	.object({
