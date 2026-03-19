@@ -8,11 +8,11 @@ The default tab. Shows the full Prisma Calendar with all views (month, week, day
 
 ## Timeline
 
-Displays all events on a horizontal vis-timeline. Navigate by date using the year/month/day inputs, or pan and zoom the timeline directly. Click an event to open its preview.
+Displays all events on a horizontal vis-timeline. Navigate by date using the year/month/day inputs, or pan and zoom the timeline directly. Click an event to open its preview. The "Show all events timeline" command navigates directly to this tab.
 
 ## Heat Map (Pro)
 
-A GitHub-style contribution heatmap showing event density over time. The tab uses a two-row layout:
+A GitHub-style contribution heatmap showing event density over time. The heatmap is centered in the view. The "Show all events heatmap" command navigates directly to this tab. The tab uses a two-row layout:
 
 - **Top row**: The heatmap visualization with yearly/monthly mode toggle and navigation controls.
 - **Bottom row**: Appears when you click a day cell, showing all events for that day with times and frontmatter properties. Each event row is tinted with its resolved color (from color rules or integration color) so you can visually identify categories at a glance.
@@ -43,7 +43,7 @@ A two-column resizable layout with two independent daily calendars side by side.
 - **Full calendar features**: Both calendars support the same interactions as the Daily + Stats calendar — event rendering, colors, icons, context menus, drag-and-drop, click-to-open, hover preview, and date/time selection.
 - **Resizable**: Drag the divider between columns to adjust the split.
 
-## Dashboard
+## Dashboard (Pro)
 
 A full-page overview of all events with three collapsible sections — Recurring Events, Categories, and By Name. Each section shows a pie chart distribution alongside a sortable, filterable table with colored rows. See [Dashboard](./dashboard.md) for details.
 

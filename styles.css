@@ -5290,6 +5290,7 @@
 .prisma-heatmap-header {
 	display: flex;
 	align-items: center;
+	justify-content: center;
 	gap: 16px;
 	padding: 1rem 1.5rem;
 	border-bottom: 1px solid var(--background-modifier-border);
@@ -5303,6 +5304,7 @@
 .prisma-heatmap-controls {
 	display: flex;
 	align-items: center;
+	justify-content: center;
 	gap: 16px;
 	padding: 0.5rem 1.5rem;
 	border-bottom: 1px solid var(--background-modifier-border);
@@ -5365,6 +5367,8 @@
 
 .prisma-heatmap-legend-container {
 	padding: 0.5rem 1.5rem;
+	display: flex;
+	justify-content: center;
 }
 
 .prisma-heatmap-legend {
@@ -5388,6 +5392,8 @@
 .prisma-heatmap-container {
 	padding: 0.75rem 1.5rem;
 	overflow-x: auto;
+	display: flex;
+	justify-content: center;
 }
 
 .prisma-heatmap-svg {

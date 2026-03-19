@@ -34,9 +34,15 @@ Prisma Calendar uses **timestamp-based unique identifiers (ZettelIDs)** that are
 
 ### ZettelID Format
 
-Format: `-YYYYMMDDHHmmss` (14-digit timestamp)
+**Regular events**: `-YYYYMMDDHHmmss` (14-digit timestamp)
 
-Example: `-20250106143022` = January 6, 2025 at 14:30:22
+Example: `Team Meeting-20250106143022.md`
+
+**Physical recurring instances**: `[Title] [YYYY-MM-DD]-[14-digit-hash].md`
+
+Example: `Team Meeting 2025-02-03-00001125853328.md`
+
+Recurring instances include the instance date between the title and ZettelID hash. This date is preserved when editing or renaming the event — only the title portion changes.
 
 This ensures every filename is unique, even when creating multiple events rapidly.
 

@@ -13,13 +13,7 @@ import CHANGELOG_CONTENT from "../../docs-site/docs/changelog.md";
 import { CustomCalendarSettingsTab } from "./components";
 import { AI_CHAT_VIEW_TYPE, AIChatView } from "./components/ai-chat-view";
 import type { CalendarComponent } from "./components/calendar-view";
-import {
-	showCalendarSelectModal,
-	showHeatmapModal,
-	showICSImportModal,
-	showICSImportProgressModal,
-	showTimelineModal,
-} from "./components/modals";
+import { showCalendarSelectModal, showICSImportModal, showICSImportProgressModal } from "./components/modals";
 import { registerPrismaBasesView } from "./components/views/bases-calendar-view";
 import { COMMAND_IDS } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, PrismaCalendarApiManager } from "./core";
@@ -360,8 +354,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				const bundle = this.getActiveBundleFromLeaf();
 				if (!bundle) return false;
 				if (!checking) {
-					const allEvents = bundle.eventStore.getAllEvents();
-					showTimelineModal(this.app, bundle, { events: allEvents, title: "All Events Timeline" });
+					bundle.viewRef.tabbedHandle?.switchTo("timeline");
 				}
 				return true;
 			},
@@ -374,8 +367,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				if (!bundle) return false;
 				if (!checking) {
 					if (!this.licenseManager.requirePro(PRO_FEATURES.HEATMAP)) return true;
-					const allEvents = bundle.eventStore.getAllEvents();
-					showHeatmapModal(this.app, bundle, { events: allEvents, title: "All Events Heatmap" });
+					bundle.viewRef.tabbedHandle?.switchTo("heatmap");
 				}
 				return true;
 			},
