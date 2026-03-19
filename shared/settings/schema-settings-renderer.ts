@@ -18,6 +18,7 @@ import type {
 	SchemaSettingsFieldOverride,
 	SchemaSettingsGroup,
 	SchemaSettingsSection,
+	SchemaSettingsSectionOverride,
 	TextFieldOverride,
 } from "./schema-settings-types";
 import type { SettingsStore } from "./settings-store";
@@ -31,8 +32,8 @@ function resolveFieldName(descriptor: SchemaFieldDescriptor, override?: SchemaSe
 	return override?.name ?? camelCaseToLabel(descriptor.key);
 }
 
-function resolveFieldDesc(override?: SchemaSettingsFieldOverride): string {
-	return override?.desc ?? "";
+function resolveFieldDesc(descriptor: SchemaFieldDescriptor, override?: SchemaSettingsFieldOverride): string {
+	return override?.desc ?? descriptor.description ?? "";
 }
 
 function getNestedValue(settings: Record<string, unknown>, key: string): unknown {
@@ -78,7 +79,7 @@ function renderFieldFromDescriptor(
 	}
 
 	const name = resolveFieldName(descriptor, override);
-	const desc = resolveFieldDesc(override);
+	const desc = resolveFieldDesc(descriptor, override);
 	const baseConfig = {
 		key: prefixedKey,
 		name,
@@ -313,11 +314,34 @@ export function renderSchemaSection<TSchema extends ZodObject<ZodRawShape>>(
 	sectionConfig.after?.(containerEl);
 }
 
+function deriveAutoSections(
+	rootShape: ZodRawShape,
+	exclude: string[],
+	sectionOverrides: Record<string, SchemaSettingsSectionOverride>
+): SchemaSettingsSection[] {
+	const excludeSet = new Set(exclude);
+
+	return Object.entries(rootShape)
+		.filter(([key, schema]) => !excludeSet.has(key) && unwrapToObject(schema as z.ZodTypeAny) !== undefined)
+		.map(([key]) => {
+			const override = sectionOverrides[key];
+			return {
+				id: key,
+				label: override?.label ?? camelCaseToLabel(key),
+				schema: key,
+				...override,
+			};
+		});
+}
+
 export function renderSchemaSettings<TSchema extends ZodObject<ZodRawShape>>(
 	config: SchemaSettingsConfig<TSchema>
 ): SettingsNavigation {
-	const { containerEl, settingsStore, cssPrefix, app, sections, footerLinks } = config;
+	const { containerEl, settingsStore, cssPrefix, app, footerLinks } = config;
 	const rootShape = settingsStore.validationSchema.shape;
+
+	const sections =
+		config.sections ?? deriveAutoSections(rootShape, config.exclude ?? [], config.sectionOverrides ?? {});
 
 	const navSections = sections.map((sectionConfig) => {
 		const sectionSchema = rootShape[sectionConfig.schema] as z.ZodTypeAny | undefined;

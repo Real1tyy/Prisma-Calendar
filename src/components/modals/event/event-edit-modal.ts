@@ -134,6 +134,7 @@ export class EventEditModal extends BaseEventModal {
 		this.loadLocationData();
 		this.loadIconData();
 		this.loadParticipantsData();
+		this.loadPrerequisiteData();
 		this.loadCustomPropertiesData();
 
 		// Trigger stopwatch: convert all-day → timed if needed, start stopwatch, save & auto-minimize
@@ -213,6 +214,16 @@ export class EventEditModal extends BaseEventModal {
 
 		const participantsList = parseIntoList(this.originalFrontmatter[settings.participantsProp]);
 		this.participantsInput.value = participantsList.join(", ");
+	}
+
+	private loadPrerequisiteData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.prerequisiteProp) return;
+
+		this.selectedPrerequisites = parseIntoList(this.originalFrontmatter[settings.prerequisiteProp]).filter((p) =>
+			p.trim()
+		);
+		this.renderPrerequisites();
 	}
 
 	setEnsureZettelIdOnSave(value: boolean): void {

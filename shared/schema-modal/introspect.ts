@@ -25,6 +25,7 @@ function resolveFieldDescriptor(key: string, prop: JSONSchemaProperty, optional:
 		key,
 		label,
 		optional,
+		...(prop.description !== undefined ? { description: prop.description } : {}),
 		...(prop.default !== undefined ? { defaultValue: prop.default } : {}),
 	};
 

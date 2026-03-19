@@ -88,3 +88,13 @@ export function formatCapacityLabel(result: CapacityResult, showDecimalHours: bo
 	const fmt = showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
 	return `${fmt(result.usedMs)} / ${fmt(result.capacityMs)}`;
 }
+
+export function formatBoundaryHour(h: number): string {
+	const hrs = Math.floor(h);
+	const mins = Math.round((h - hrs) * 60);
+	return `${hrs}:${String(mins).padStart(2, "0")}`;
+}
+
+export function formatBoundaryRange(result: CapacityResult): string {
+	return `${formatBoundaryHour(result.boundaryStart)}–${formatBoundaryHour(result.boundaryEnd)}`;
+}

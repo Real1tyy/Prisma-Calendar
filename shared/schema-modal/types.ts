@@ -6,6 +6,7 @@ import type { ComponentContext } from "../component-renderer/types";
 interface BaseFieldDescriptor {
 	key: string;
 	label: string;
+	description?: string;
 	optional: boolean;
 	defaultValue?: unknown;
 }

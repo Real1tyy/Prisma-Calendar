@@ -270,6 +270,12 @@ const ACTION_SPECS: CommandActionSpec[] = [
 		label: "All Events Heatmap",
 		icon: "flame",
 	},
+	{
+		id: "toggle-prerequisites",
+		commandId: FULL_COMMAND_IDS.TOGGLE_PREREQUISITE_CONNECTIONS,
+		label: "Toggle Prerequisite Connections",
+		icon: "workflow",
+	},
 
 	// ─── Categories ──────────────────────────────────────────────
 	{

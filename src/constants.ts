@@ -76,6 +76,7 @@ const COMMAND_KEYS = [
 	"SHOW_ALL_EVENTS_TIMELINE",
 	"SHOW_ALL_EVENTS_HEATMAP",
 	"OPEN_AI_CHAT",
+	"TOGGLE_PREREQUISITE_CONNECTIONS",
 ] as const;
 
 type CommandKey = (typeof COMMAND_KEYS)[number];
@@ -116,6 +117,7 @@ export const PROP_DEFAULTS = {
 	participants: "Participants",
 	break: "Break",
 	icon: "Icon",
+	prerequisite: "Prerequisite",
 	minutesBefore: "Minutes Before",
 	daysBefore: "Days Before",
 	alreadyNotified: "Already Notified",
