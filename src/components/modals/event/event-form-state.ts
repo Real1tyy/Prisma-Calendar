@@ -6,10 +6,14 @@ import type { EventPreset } from "../../../types/settings";
 // ─── Canonical field schemas — define once, use everywhere ───
 
 export const SimpleEditableFieldsSchema = z.object({
-	location: z.string().default("").describe("Event location"),
-	icon: z.string().default("").describe("Event icon (emoji or text)"),
-	participants: z.string().default("").describe("Comma-separated list of participants"),
-	breakMinutes: z.string().default("").describe("Break time in minutes"),
+	location: z.string().default("").describe("Event location").meta({ placeholder: "Event location" }),
+	icon: z.string().default("").describe("Event icon (emoji or text)").meta({ placeholder: "Emoji or text" }),
+	participants: z
+		.string()
+		.default("")
+		.describe("Comma-separated list of participants")
+		.meta({ placeholder: "Alice, Bob, Charlie" }),
+	breakMinutes: z.string().default("").describe("Break time in minutes").meta({ placeholder: "0" }),
 	markAsDone: z.boolean().default(false).describe("Mark as done"),
 	skip: z.boolean().default(false).describe("Hide event from calendar"),
 });

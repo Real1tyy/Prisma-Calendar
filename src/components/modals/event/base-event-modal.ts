@@ -762,14 +762,7 @@ export abstract class BaseEventModal extends Modal {
 		if (Object.keys(shape).length === 0) return;
 
 		const container = contentEl.createDiv(cls("simple-fields-container"));
-		this.simpleFieldsHandle = renderSchemaForm(container, {
-			shape,
-			prefix: "prisma-",
-			fieldOverrides: {
-				participants: { placeholder: "Alice, Bob, Charlie" },
-				breakMinutes: { placeholder: "0" },
-			},
-		});
+		this.simpleFieldsHandle = renderSchemaForm(container, { shape, prefix: "prisma-" });
 	}
 
 	protected getSimpleFieldValues(): Record<string, unknown> {
