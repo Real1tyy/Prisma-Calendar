@@ -18,13 +18,15 @@ export function renderProUpgradeBanner(
 
 	if (previewKey) {
 		const previewSrc = getFeaturePreviewSrc(previewKey);
-		const imgContainer = banner.createDiv(cls("pro-upgrade-preview"));
-		const img = imgContainer.createEl("img", {
-			cls: cls("pro-upgrade-preview-img"),
-			attr: { src: previewSrc, alt: `${featureName} preview`, loading: "lazy" },
-		});
-		img.setAttr("draggable", "false");
-		imgContainer.addEventListener("click", () => openImageLightbox(previewSrc, featureName));
+		if (previewSrc) {
+			const imgContainer = banner.createDiv(cls("pro-upgrade-preview"));
+			const img = imgContainer.createEl("img", {
+				cls: cls("pro-upgrade-preview-img"),
+				attr: { src: previewSrc, alt: `${featureName} preview`, loading: "lazy" },
+			});
+			img.setAttr("draggable", "false");
+			imgContainer.addEventListener("click", () => openImageLightbox(previewSrc, featureName));
+		}
 	}
 
 	banner.createEl("span", {
