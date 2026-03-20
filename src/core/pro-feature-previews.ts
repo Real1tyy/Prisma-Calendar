@@ -50,3 +50,7 @@ export function getFeatureDocUrl(featureKey: ProFeatureKey): string {
 export function getFeaturePurchaseUrl(featureKey: ProFeatureKey): string {
 	return `${PRO_PURCHASE_URL}?${buildUtmParams(featureKey)}`;
 }
+
+export function getProGateUrls(featureKey: ProFeatureKey): { docsUrl: string; purchaseUrl: string } {
+	return { docsUrl: getFeatureDocUrl(featureKey), purchaseUrl: getFeaturePurchaseUrl(featureKey) };
+}

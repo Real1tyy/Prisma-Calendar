@@ -21,6 +21,7 @@ import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
 import type { LicenseManager } from "./core/license";
 import { createLicenseManager, PRO_FEATURES } from "./core/license";
+import { getProGateUrls } from "./core/pro-feature-previews";
 import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
@@ -373,7 +374,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				const bundle = this.getActiveBundleFromLeaf();
 				if (!bundle) return false;
 				if (!checking) {
-					if (!this.licenseManager.requirePro(PRO_FEATURES.HEATMAP)) return true;
+					if (!this.licenseManager.requirePro(PRO_FEATURES.HEATMAP, getProGateUrls("HEATMAP"))) return true;
 					bundle.viewRef.tabbedHandle?.switchTo("heatmap");
 				}
 				return true;
@@ -400,7 +401,7 @@ export default class CustomCalendarPlugin extends Plugin {
 			id: COMMAND_IDS.SYNC_CALDAV,
 			name: "Sync calendar accounts",
 			callback: async () => {
-				if (!this.licenseManager.requirePro(PRO_FEATURES.CALDAV_SYNC)) {
+				if (!this.licenseManager.requirePro(PRO_FEATURES.CALDAV_SYNC, getProGateUrls("CALDAV_SYNC"))) {
 					return;
 				}
 				const caldavAccounts = this.settingsStore.currentSettings.caldav.accounts;
@@ -416,7 +417,7 @@ export default class CustomCalendarPlugin extends Plugin {
 			id: COMMAND_IDS.SYNC_ICS_SUBSCRIPTIONS,
 			name: "Sync ICS subscriptions",
 			callback: async () => {
-				if (!this.licenseManager.requirePro(PRO_FEATURES.ICS_SYNC)) {
+				if (!this.licenseManager.requirePro(PRO_FEATURES.ICS_SYNC, getProGateUrls("ICS_SYNC"))) {
 					return;
 				}
 				const subscriptions = this.settingsStore.currentSettings.icsSubscriptions.subscriptions;

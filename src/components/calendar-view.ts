@@ -28,6 +28,7 @@ import { fillTime, UpdateEventCommand, updateFrontmatter } from "../core/command
 import { buildDependencyGraph } from "../core/dependency-graph";
 import { PRO_FEATURES } from "../core/license";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
+import { getProGateUrls } from "../core/pro-feature-previews";
 import type {
 	CalendarEvent,
 	CalendarEventData,
@@ -2533,7 +2534,13 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	public toggleConnections(): void {
-		if (!this.bundle.plugin.licenseManager.requirePro(PRO_FEATURES.PREREQUISITE_CONNECTIONS)) return;
+		if (
+			!this.bundle.plugin.licenseManager.requirePro(
+				PRO_FEATURES.PREREQUISITE_CONNECTIONS,
+				getProGateUrls("PREREQUISITE_CONNECTIONS")
+			)
+		)
+			return;
 		this.showConnections = !this.showConnections;
 		if (this.showConnections) {
 			this.renderConnections();

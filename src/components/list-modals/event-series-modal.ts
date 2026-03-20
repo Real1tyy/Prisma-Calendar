@@ -4,6 +4,7 @@ import { type App, Modal, Setting } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
+import { getProGateUrls } from "../../core/pro-feature-previews";
 import type { CalendarEvent } from "../../types/calendar";
 import { formatRecurrenceLabel, isWeekdaySupported } from "../../types/recurring-event";
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -575,7 +576,7 @@ export class EventSeriesModal extends Modal {
 	}
 
 	private openHeatmapView(): void {
-		if (!this.bundle.plugin.licenseManager.requirePro(PRO_FEATURES.HEATMAP)) return;
+		if (!this.bundle.plugin.licenseManager.requirePro(PRO_FEATURES.HEATMAP, getProGateUrls("HEATMAP"))) return;
 
 		let events: CalendarEvent[] = [];
 		let title = "";

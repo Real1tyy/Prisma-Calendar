@@ -1,6 +1,28 @@
 # Header Actions
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/PageHeaderActions.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/PageHeaderActions.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Header actions are customizable shortcut buttons in the view header of your Prisma Calendar tab. They give you one-click access to any calendar command without memorizing hotkeys or navigating menus.
+
+## Managing Header Actions
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/PageHeaderActionsManagement.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/PageHeaderActionsManagement.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+Every aspect of header actions is fully customizable and all changes are persisted per calendar. You can rename actions, change their icons and colors, reorder them via drag-and-drop or arrow buttons, show or hide individual actions, and search through the full list to find exactly what you need.
 
 ## How It Works
 
