@@ -31,7 +31,6 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 
-- **Timezone offset in non-UTC zones**: Users in non-UTC timezones (e.g., CET, EST) could see event times shifted by their UTC offset. Internal time handling now uses local time throughout, eliminating the shift. See [Troubleshooting](./troubleshooting.md).
 - **Timeline toolbar button always visible**: The Timeline button in the calendar toolbar was always rendered regardless of toolbar button settings. It now correctly respects the toolbar configuration and is hidden when disabled.
 - **Time tracker break input NaN**: Starting or continuing the stopwatch with an empty break field caused `NaN` to propagate into the break input, triggering a browser warning. The break field now defaults to `0` when empty. See [Time Tracker](./features/management/time-tracker.md).
 - **Already Notified set when notifications disabled**: Creating or editing past/present events wrote `Already Notified: true` into frontmatter even when notifications were disabled. The property is now only set when notifications are enabled. See [Notifications](./features/management/notifications.md).
