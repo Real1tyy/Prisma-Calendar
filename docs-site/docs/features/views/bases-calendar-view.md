@@ -1,6 +1,16 @@
 # Bases Calendar View (Pro)
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 Render your Prisma Calendar events directly inside any Obsidian Base as a fully interactive calendar. Use Base queries to filter and sort events, then visualize them in month, week, or day layouts — with the same features as the main calendar view.
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/BasesCalendar.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/BasesCalendar.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ## Prerequisites
 
