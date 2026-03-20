@@ -2,6 +2,7 @@ import { SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 
 import {
+	DEFAULT_CONNECTION_COLOR,
 	DEFAULT_EVENT_TEXT_COLOR,
 	DEFAULT_EVENT_TEXT_COLOR_ALT,
 	DEFAULT_MONTH_EVEN_COLOR,
@@ -309,6 +310,33 @@ export class CalendarSettings {
 			key: "capacityTrackingEnabled",
 			name: "Enable capacity tracking",
 			desc: "Show used vs remaining hours in statistics and page header. Boundaries are inferred from the earliest and latest events in each period.",
+		});
+
+		new Setting(containerEl).setHeading().setName("Prerequisite Connection Arrows");
+
+		this.ui.addColorPicker(containerEl, {
+			key: "connectionColor",
+			name: "Arrow color",
+			desc: "Color of the prerequisite connection arrows on the Calendar tab",
+			fallback: DEFAULT_CONNECTION_COLOR,
+		});
+
+		this.ui.addSlider(containerEl, {
+			key: "connectionStrokeWidth",
+			name: "Line thickness",
+			desc: "Thickness of connection arrow lines in pixels (1–10)",
+			min: 1,
+			max: 10,
+			step: 1,
+		});
+
+		this.ui.addSlider(containerEl, {
+			key: "connectionArrowSize",
+			name: "Arrowhead size",
+			desc: "Size of connection arrowheads in pixels (4–24)",
+			min: 4,
+			max: 24,
+			step: 1,
 		});
 	}
 

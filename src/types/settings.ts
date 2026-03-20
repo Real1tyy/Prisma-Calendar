@@ -9,6 +9,9 @@ import { z } from "zod";
 import {
 	BATCH_BUTTON_IDS,
 	DEFAULT_BATCH_ACTION_BUTTONS,
+	DEFAULT_CONNECTION_ARROW_SIZE,
+	DEFAULT_CONNECTION_COLOR,
+	DEFAULT_CONNECTION_STROKE_WIDTH,
 	DEFAULT_CONTEXT_MENU_ITEMS,
 	DEFAULT_EVENT_COLOR,
 	DEFAULT_EVENT_TEXT_COLOR,
@@ -275,6 +278,9 @@ const CalendarSettingsSchema = z
 		monthOddColor: ColorSchema.catch(DEFAULT_MONTH_ODD_COLOR), // Background color for odd months
 		eventTextColor: ColorSchema.catch(DEFAULT_EVENT_TEXT_COLOR), // Default text color for events (used when it has sufficient contrast on background)
 		eventTextColorAlt: ColorSchema.catch(DEFAULT_EVENT_TEXT_COLOR_ALT), // Alternative text color (used when default has poor contrast)
+		connectionColor: ColorSchema.catch(DEFAULT_CONNECTION_COLOR), // Color of prerequisite connection arrows
+		connectionStrokeWidth: z.number().int().min(1).max(10).catch(DEFAULT_CONNECTION_STROKE_WIDTH), // Thickness of prerequisite connection arrow lines in pixels
+		connectionArrowSize: z.number().int().min(4).max(24).catch(DEFAULT_CONNECTION_ARROW_SIZE), // Size of prerequisite connection arrowheads in pixels
 		fileConcurrencyLimit: z.number().int().min(1).max(50).catch(10), // Maximum number of files to modify in parallel during batch operations (recurring propagation, series propagation, file deletions)
 	})
 	.strip();

@@ -8,7 +8,6 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import { buildDependencyGraph, isConnected } from "../../core/dependency-graph";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarEvent } from "../../types/calendar";
-import { toLocalDate } from "../../types/event";
 import { showEventPreviewModal } from "../modals";
 
 const REFRESH_DEBOUNCE_MS = 100;
@@ -91,8 +90,8 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 
 				showEventPreviewModal(app, bundle, {
 					title: event.title,
-					start: toLocalDate(event.start),
-					end: event.type === "timed" ? toLocalDate(event.end) : null,
+					start: new Date(event.start),
+					end: event.type === "timed" ? new Date(event.end) : null,
 					allDay: event.allDay,
 					extendedProps: { filePath: event.ref.filePath },
 				});

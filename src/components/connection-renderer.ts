@@ -1,16 +1,41 @@
+import type { Subscription } from "rxjs";
+import { distinctUntilChanged, map } from "rxjs";
+
+import { DEFAULT_CONNECTION_ARROW_SIZE, DEFAULT_CONNECTION_COLOR, DEFAULT_CONNECTION_STROKE_WIDTH } from "../constants";
 import type { DependencyGraph, EventIdMap } from "../core/dependency-graph";
+import type { CalendarSettingsStore } from "../core/settings-store";
 import type { CalendarEvent } from "../types/calendar";
 
 const ARROW_MARKER_ID = "prisma-arrow-head";
+
+interface ConnectionStyle {
+	color: string;
+	strokeWidth: number;
+	arrowSize: number;
+}
 
 export class ConnectionRenderer {
 	private svg: SVGSVGElement;
 	private resizeObserver: ResizeObserver;
 	private container: HTMLElement;
+	private scrollHandler: (() => void) | null = null;
+	private settingsSub: Subscription | null = null;
+	private style: ConnectionStyle = {
+		color: DEFAULT_CONNECTION_COLOR,
+		strokeWidth: DEFAULT_CONNECTION_STROKE_WIDTH,
+		arrowSize: DEFAULT_CONNECTION_ARROW_SIZE,
+	};
 	private width = 0;
 	private height = 0;
+	private renderArgs: {
+		graph: DependencyGraph;
+		eventIdMap: EventIdMap;
+		allEvents: CalendarEvent[];
+		viewStart: Date;
+		viewEnd: Date;
+	} | null = null;
 
-	constructor(container: HTMLElement) {
+	constructor(container: HTMLElement, settingsStore: CalendarSettingsStore) {
 		this.container = container;
 
 		this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -18,7 +43,7 @@ export class ConnectionRenderer {
 			position: "absolute",
 			inset: "0",
 			pointerEvents: "none",
-			zIndex: "10",
+			zIndex: "9999",
 			overflow: "visible",
 		});
 		container.appendChild(this.svg);
@@ -26,6 +51,33 @@ export class ConnectionRenderer {
 		this.resizeObserver = new ResizeObserver(() => this.syncSize());
 		this.resizeObserver.observe(container);
 		this.syncSize();
+
+		this.scrollHandler = () => {
+			if (this.renderArgs) {
+				const { graph, eventIdMap, allEvents, viewStart, viewEnd } = this.renderArgs;
+				this.render(graph, eventIdMap, allEvents, viewStart, viewEnd);
+			}
+		};
+		container.addEventListener("scroll", this.scrollHandler, { passive: true, capture: true });
+
+		this.settingsSub = settingsStore.settings$
+			.pipe(
+				map((s) => ({
+					color: s.connectionColor,
+					strokeWidth: s.connectionStrokeWidth,
+					arrowSize: s.connectionArrowSize,
+				})),
+				distinctUntilChanged(
+					(a, b) => a.color === b.color && a.strokeWidth === b.strokeWidth && a.arrowSize === b.arrowSize
+				)
+			)
+			.subscribe((newStyle) => {
+				this.style = newStyle;
+				if (this.renderArgs) {
+					const { graph, eventIdMap, allEvents, viewStart, viewEnd } = this.renderArgs;
+					this.render(graph, eventIdMap, allEvents, viewStart, viewEnd);
+				}
+			});
 	}
 
 	render(
@@ -35,11 +87,11 @@ export class ConnectionRenderer {
 		viewStart: Date,
 		viewEnd: Date
 	): void {
+		this.renderArgs = { graph, eventIdMap, allEvents, viewStart, viewEnd };
 		this.clear();
-		this.ensureMarker();
+		this.rebuildMarker();
 
 		const eventStartMap = new Map(allEvents.map((e) => [e.ref.filePath, new Date(e.start)]));
-
 		const svgRect = this.svg.getBoundingClientRect();
 
 		const findEl = (filePath: string): HTMLElement | null => {
@@ -53,7 +105,6 @@ export class ConnectionRenderer {
 
 			for (const prereqFilePath of prereqPaths) {
 				const prereqEl = findEl(prereqFilePath);
-
 				const prereqStart = eventStartMap.get(prereqFilePath);
 
 				if (prereqEl && depEl) {
@@ -78,24 +129,30 @@ export class ConnectionRenderer {
 
 	destroy(): void {
 		this.resizeObserver.disconnect();
+		this.settingsSub?.unsubscribe();
+		if (this.scrollHandler) {
+			this.container.removeEventListener("scroll", this.scrollHandler, { capture: true });
+		}
 		this.svg.remove();
 	}
 
-	private ensureMarker(): void {
-		if (this.svg.querySelector("defs")) return;
+	private rebuildMarker(): void {
+		const existing = this.svg.querySelector("defs");
+		if (existing) existing.remove();
 
+		const { arrowSize, color } = this.style;
 		const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
 		const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
 		marker.setAttribute("id", ARROW_MARKER_ID);
-		marker.setAttribute("markerWidth", "8");
-		marker.setAttribute("markerHeight", "8");
-		marker.setAttribute("refX", "6");
-		marker.setAttribute("refY", "3");
+		marker.setAttribute("markerWidth", String(arrowSize));
+		marker.setAttribute("markerHeight", String(arrowSize));
+		marker.setAttribute("refX", String(arrowSize - 2));
+		marker.setAttribute("refY", String(arrowSize / 2));
 		marker.setAttribute("orient", "auto");
 
 		const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-		poly.setAttribute("points", "0 0, 8 3, 0 6");
-		poly.setAttribute("fill", "var(--color-accent, #7c3aed)");
+		poly.setAttribute("points", `0 0, ${arrowSize} ${arrowSize / 2}, 0 ${arrowSize}`);
+		poly.setAttribute("fill", color);
 		marker.appendChild(poly);
 		defs.appendChild(marker);
 		this.svg.insertBefore(defs, this.svg.firstChild);
@@ -143,10 +200,10 @@ export class ConnectionRenderer {
 		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 		path.setAttribute("d", d);
 		path.setAttribute("fill", "none");
-		path.setAttribute("stroke", "var(--color-accent, #7c3aed)");
-		path.setAttribute("stroke-width", "2");
+		path.setAttribute("stroke", this.style.color);
+		path.setAttribute("stroke-width", String(this.style.strokeWidth));
 		path.setAttribute("marker-end", `url(#${ARROW_MARKER_ID})`);
-		if (dashed) path.setAttribute("stroke-dasharray", "6 4");
+		if (dashed) path.setAttribute("stroke-dasharray", "8 5");
 		this.svg.appendChild(path);
 	}
 }

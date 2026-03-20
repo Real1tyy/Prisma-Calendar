@@ -600,7 +600,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.updateToolbar();
 
 		this.zoomManager.initialize(this.calendar, this.container, this.hostEl);
-		this.zoomManager.setOnZoomChangeCallback(() => this.saveCurrentState());
+		this.zoomManager.setOnZoomChangeCallback(() => {
+			this.saveCurrentState();
+			if (this.showConnections) this.renderConnections();
+		});
 
 		this.initializeToolbarComponents(this.isMobileLayout ? settings.mobileToolbarButtons : settings.toolbarButtons);
 		this.scheduleStickyOffsetsUpdate();
@@ -2540,7 +2543,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	private renderConnections(): void {
 		if (!this.connectionRenderer) {
-			this.connectionRenderer = new ConnectionRenderer(this.container);
+			this.connectionRenderer = new ConnectionRenderer(this.container, this.bundle.settingsStore);
 		}
 		const { graph, eventIdMap } = buildDependencyGraph(
 			this.bundle.eventStore.getAllEvents(),
