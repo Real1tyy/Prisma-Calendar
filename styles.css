@@ -9897,3 +9897,41 @@ div.vis-tooltip {
 	text-align: right;
 	flex-shrink: 0;
 }
+
+/* ─── Gantt Tab ─────────────────────────────────────────── */
+
+.prisma-gantt-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 0;
+}
+
+.prisma-gantt-view-btn {
+	padding: 4px 10px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.prisma-gantt-filter-label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-left: auto;
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+}
+
+.prisma-gantt-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 200px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.prisma-gantt-wrapper {
+	overflow: auto;
+	max-height: 600px;
+}

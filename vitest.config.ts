@@ -18,6 +18,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			obsidian: path.resolve(__dirname, "tests/mocks/obsidian.ts"),
+			"frappe-gantt/dist/frappe-gantt.css": path.resolve(__dirname, "node_modules/frappe-gantt/dist/frappe-gantt.css"),
 		},
 		extensions: [".ts", ".tsx", ".js", ".mjs", ".json"],
 	},

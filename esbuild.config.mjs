@@ -46,25 +46,25 @@ const context = await esbuild.context({
 	minify: prod,
 	loader: {
 		".md": "text",
+		".css": "text",
 	},
 	plugins: [
-		{
-			name: "resolve-path-aliases",
-			setup(build) {
-				build.onResolve({ filter: /^@real1ty-obsidian-plugins\// }, (args) => {
-					const subpath = args.path.replace(/^@real1ty-obsidian-plugins\//, "");
-					return {
-						path: path.resolve(__dirname, "shared", subpath),
-					};
-				});
-			},
-		},
 		{
 			name: "resolve-changelog",
 			setup(build) {
 				build.onResolve({ filter: /.*docs-site\/docs\/changelog\.md$/ }, (_args) => {
 					return {
 						path: path.resolve(__dirname, "docs-site/docs/changelog.md"),
+					};
+				});
+			},
+		},
+		{
+			name: "resolve-frappe-gantt-css",
+			setup(build) {
+				build.onResolve({ filter: /^frappe-gantt\/dist\/frappe-gantt\.css$/ }, () => {
+					return {
+						path: path.resolve(__dirname, "node_modules/frappe-gantt/dist/frappe-gantt.css"),
 					};
 				});
 			},

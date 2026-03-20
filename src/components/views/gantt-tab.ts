@@ -1,5 +1,6 @@
 import { cls, type TabDefinition } from "@real1ty-obsidian-plugins";
-import Gantt, { type Task, type ViewMode } from "frappe-gantt";
+import Gantt, { type Task } from "frappe-gantt";
+import frappeGanttCss from "frappe-gantt/dist/frappe-gantt.css";
 import type { App } from "obsidian";
 import { debounceTime, merge, type Subscription } from "rxjs";
 
@@ -7,9 +8,11 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import { buildDependencyGraph, isConnected } from "../../core/dependency-graph";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarEvent } from "../../types/calendar";
+import { toLocalDate } from "../../types/event";
 import { showEventPreviewModal } from "../modals";
 
 const REFRESH_DEBOUNCE_MS = 100;
+const GANTT_STYLE_ID = "prisma-gantt-vendor-css";
 
 export function sanitizeGanttId(filePath: string): string {
 	return filePath.replace(/[^a-zA-Z0-9]/g, "_");
@@ -34,7 +37,7 @@ function buildTasks(events: CalendarEvent[], graph: Map<string, string[]>, conne
 		.map((event) => {
 			const { start, end } = getTaskDates(event);
 			const prereqs = graph.get(event.ref.filePath) ?? [];
-			const dependencies = prereqs.map(sanitizeGanttId).join(",");
+			const dependencies = prereqs.map(sanitizeGanttId);
 
 			const task: Task = {
 				id: sanitizeGanttId(event.ref.filePath),
@@ -44,7 +47,7 @@ function buildTasks(events: CalendarEvent[], graph: Map<string, string[]>, conne
 				progress: 0,
 			};
 
-			if (dependencies) {
+			if (dependencies.length > 0) {
 				task.dependencies = dependencies;
 			}
 
@@ -52,45 +55,72 @@ function buildTasks(events: CalendarEvent[], graph: Map<string, string[]>, conne
 		});
 }
 
+function injectVendorCss(): void {
+	if (document.getElementById(GANTT_STYLE_ID)) return;
+	const style = document.createElement("style");
+	style.id = GANTT_STYLE_ID;
+	style.textContent = frappeGanttCss;
+	document.head.appendChild(style);
+}
+
 export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let gantt: Gantt | null = null;
 	let mergedSub: Subscription | null = null;
-	let connectedOnly = false;
-	let currentViewMode: ViewMode = "Week";
+	let connectedOnly = true;
+	let wrapperEl: HTMLElement | null = null;
+	let emptyEl: HTMLElement | null = null;
+	let eventsSnapshot: CalendarEvent[] = [];
 
-	function rebuild(el: HTMLElement): void {
-		const events = bundle.eventStore.getAllEvents();
+	function createGantt(tasks: Task[]): void {
+		if (!wrapperEl) return;
+		wrapperEl.empty();
+
+		gantt = new Gantt(wrapperEl, tasks, {
+			view_mode: "Week",
+			view_mode_select: true,
+			view_modes: ["Day", "Week", "Month", "Year"],
+			readonly: true,
+			readonly_dates: true,
+			readonly_progress: true,
+			today_button: true,
+			scroll_to: "today",
+			popup: null,
+			on_click: (task: Task) => {
+				const event = eventsSnapshot.find((e) => sanitizeGanttId(e.ref.filePath) === task.id);
+				if (!event) return;
+
+				showEventPreviewModal(app, bundle, {
+					title: event.title,
+					start: toLocalDate(event.start),
+					end: event.type === "timed" ? toLocalDate(event.end) : null,
+					allDay: event.allDay,
+					extendedProps: { filePath: event.ref.filePath },
+				});
+			},
+		});
+	}
+
+	function rebuild(): void {
+		eventsSnapshot = bundle.eventStore.getAllEvents();
 		const settings = bundle.settingsStore.currentSettings;
-		const { graph } = buildDependencyGraph(events, settings, app);
-		const tasks = buildTasks(events, graph, connectedOnly);
+		const { graph } = buildDependencyGraph(eventsSnapshot, settings, app);
+		const tasks = buildTasks(eventsSnapshot, graph, connectedOnly);
+
+		if (tasks.length === 0) {
+			gantt = null;
+			wrapperEl?.empty();
+			if (emptyEl) emptyEl.style.display = "";
+			return;
+		}
+
+		if (emptyEl) emptyEl.style.display = "none";
 
 		if (gantt) {
 			gantt.refresh(tasks);
 			return;
 		}
 
-		const wrapper = el.querySelector<HTMLElement>(`.${cls("gantt-wrapper")}`);
-		if (!wrapper) return;
-
-		gantt = new Gantt(wrapper, tasks, {
-			view_mode: currentViewMode,
-			custom_popup_html: null,
-			on_click: (task: Task) => {
-				const event = events.find((e) => sanitizeGanttId(e.ref.filePath) === task.id);
-				if (!event) return;
-
-				const start = new Date(event.start);
-				const end = event.type === "timed" ? new Date(event.end) : null;
-
-				showEventPreviewModal(app, bundle, {
-					title: event.title,
-					start,
-					end,
-					allDay: event.allDay,
-					extendedProps: { filePath: event.ref.filePath },
-				});
-			},
-		});
+		createGantt(tasks);
 	}
 
 	return {
@@ -102,43 +132,42 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				return;
 			}
 
-			const toolbar = el.createDiv({ cls: cls("gantt-toolbar") });
+			injectVendorCss();
 
-			const viewModes: ViewMode[] = ["Day", "Week", "Month", "Year"];
-			for (const mode of viewModes) {
-				const btn = toolbar.createEl("button", { text: mode, cls: cls("gantt-view-btn") });
-				btn.addEventListener("click", () => {
-					currentViewMode = mode;
-					gantt?.change_view_mode(mode);
-				});
-			}
+			const toolbar = el.createDiv({ cls: cls("gantt-toolbar") });
 
 			const filterLabel = toolbar.createEl("label", { cls: cls("gantt-filter-label") });
 			const filterCheckbox = filterLabel.createEl("input", { type: "checkbox" });
+			filterCheckbox.checked = connectedOnly;
 			filterLabel.createSpan({ text: "Connected only" });
 
 			filterCheckbox.addEventListener("change", () => {
 				connectedOnly = filterCheckbox.checked;
-				gantt?.destroy();
 				gantt = null;
-				rebuild(el);
+				wrapperEl?.empty();
+				rebuild();
 			});
 
-			el.createDiv({ cls: cls("gantt-wrapper") });
+			emptyEl = el.createDiv({
+				cls: cls("gantt-empty"),
+				text: 'No events to display. Uncheck "Connected only" to show all events, or add prerequisite connections.',
+			});
+			wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
 
-			rebuild(el);
+			rebuild();
 
 			mergedSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$)
 				.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
 				.subscribe(() => {
-					rebuild(el);
+					rebuild();
 				});
 		},
 		cleanup: () => {
 			mergedSub?.unsubscribe();
 			mergedSub = null;
-			gantt?.destroy();
 			gantt = null;
+			wrapperEl = null;
+			emptyEl = null;
 		},
 	};
 }
