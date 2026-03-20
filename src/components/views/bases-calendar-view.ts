@@ -120,7 +120,7 @@ class PrismaBasesView extends BasesView {
 			renderProUpgradeBanner(
 				this.containerEl,
 				PRO_FEATURES.BASES_VIEW,
-				"Query and display your events using Obsidian Bases with table, list, card, timeline, and heatmap views.",
+				"Query and display your events using Obsidian Bases, allowing you to embed your calendar right alonside your personal notes.",
 				"BASES_VIEW"
 			);
 			return;

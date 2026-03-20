@@ -74,7 +74,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			renderProUpgradeBanner(
 				container,
 				PRO_FEATURES.AI_CHAT,
-				"AI chat with Claude and GPT, including query, manipulation, and planning modes, requires Prisma Calendar Pro.",
+				"AI chat with Claude and GPT, including query, manipulation, and planning modes. Leverage AI to automate events creations, updates and deletions.",
 				"AI_CHAT"
 			);
 

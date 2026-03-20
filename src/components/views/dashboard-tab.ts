@@ -158,7 +158,7 @@ function createDashboardChild(
 					renderProUpgradeBanner(
 						el,
 						PRO_FEATURES.DASHBOARD,
-						"Get a comprehensive overview of your calendar with charts, rankings, and key statistics — all in one place.",
+						"Get a comprehensive overview of your calendar with charts, rankings, and key statistics — all in one place. Organized by name, category and recurring event series. ",
 						"DASHBOARD"
 					);
 					return;
