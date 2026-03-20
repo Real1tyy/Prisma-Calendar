@@ -2,7 +2,17 @@
 sidebar_label: Dual Daily
 ---
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 # Dual Daily
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/DualDailyView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/DualDailyView.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 A two-column resizable layout with two independent daily calendars side by side. Each calendar has its own toolbar, search filter, and date state — useful for comparing two different days or dragging events between dates.
 

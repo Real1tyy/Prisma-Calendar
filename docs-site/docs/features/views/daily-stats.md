@@ -2,7 +2,17 @@
 sidebar_label: Daily + Stats
 ---
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 # Daily + Stats
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/DailyStatsView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/DailyStatsView.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 A two-column resizable layout with a daily calendar on the left and live statistics on the right.
 

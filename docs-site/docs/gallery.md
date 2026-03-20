@@ -276,6 +276,24 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
+### [Daily + Stats](features/views/daily-stats) — Daily Calendar with Statistics
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/DailyStatsView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/DailyStatsView.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+### [Dual Daily](features/views/dual-daily) — Two-Column Daily View
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/DualDailyView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/DualDailyView.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ### [Color Rules](features/organization/color-rules) - Prioritize Colors
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
@@ -977,6 +995,37 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
+### [Heat Map](features/views/heatmap)
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/HeatmapView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/HeatmapView.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+### [Heat Map — Events Modal](features/views/heatmap)
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video
+    controls
+    autoPlay
+    loop
+    muted
+    playsInline
+    style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
+  >
+    <source src={useBaseUrl("/video/HeatmapViewForEvents.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/HeatmapViewForEvents.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ## Screenshots
 
