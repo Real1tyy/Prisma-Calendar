@@ -7,10 +7,12 @@ import { PRO_FEATURES } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import type { PrismaCalendarSettingsStore } from "../../types";
-import type { SingleCalendarConfigSchema } from "../../types/settings";
+import { SingleCalendarConfigSchema } from "../../types/settings";
 import { CalDAVSettings } from "./caldav";
 import { ICSSubscriptionSettings } from "./ics-subscriptions";
 import { renderProUpgradeBanner } from "./pro-upgrade-banner";
+
+const S = SingleCalendarConfigSchema.shape;
 
 export class IntegrationsSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -60,12 +62,7 @@ export class IntegrationsSettings {
 			})
 			.setText("Documentation");
 
-		this.ui.addText(containerEl, {
-			key: "exportFolder",
-			name: "Export folder",
-			desc: "Folder where exported .ics files are saved",
-			placeholder: DEFAULT_EXPORT_FOLDER,
-		});
+		this.ui.addSchemaField(containerEl, { exportFolder: S.exportFolder }, { placeholder: DEFAULT_EXPORT_FOLDER });
 
 		const buttonsContainer = containerEl.createDiv(cls("settings-integrations-buttons"));
 

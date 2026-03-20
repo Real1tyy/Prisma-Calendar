@@ -87,9 +87,12 @@ export const CALDAV_PRESETS = {
 export const CalDAVSettingsSchema = z
 	.object({
 		accounts: z.array(CalDAVAccountSchema).catch([]),
-		enableAutoSync: z.boolean().catch(true),
-		syncOnStartup: z.boolean().catch(true),
-		notifyOnSync: z.boolean().catch(true),
+		enableAutoSync: z
+			.boolean()
+			.catch(true)
+			.describe("Enable automatic periodic syncing based on each account's sync interval"),
+		syncOnStartup: z.boolean().catch(true).describe("Automatically sync calendars when the app starts"),
+		notifyOnSync: z.boolean().catch(true).describe("Show notifications when calendar sync completes"),
 		integrationEventColor: z.string().catch("#8b5cf6"),
 	})
 	.loose();

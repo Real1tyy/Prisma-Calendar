@@ -10,7 +10,9 @@ import {
 	TOOLBAR_BUTTON_LABELS,
 } from "../../constants";
 import type { CalendarSettingsStore, ToolbarButtonsKey } from "../../core/settings-store";
-import type { SingleCalendarConfigSchema } from "../../types/settings";
+import { SingleCalendarConfigSchema } from "../../types/settings";
+
+const S = SingleCalendarConfigSchema.shape;
 
 export class ConfigurationSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -126,20 +128,12 @@ export class ConfigurationSettings {
 	private addPerformanceSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Performance").setHeading();
 
-		this.ui.addToggle(containerEl, {
-			key: "enableNameSeriesTracking",
-			name: "Enable name series tracking",
-			desc: "Track name-based event series (groups events sharing the same title). Used for name series propagation and series views. Disable to reduce memory usage in large vaults.",
-		});
-
-		this.ui.addSlider(containerEl, {
-			key: "fileConcurrencyLimit",
-			name: "File operation concurrency limit",
-			desc: "Maximum number of files to modify in parallel. Lower values reduce the risk of Obsidian freezing on large batch operations. Applies to recurring event propagation, name/category series propagation, and file deletions.",
-			min: 1,
-			max: 50,
-			step: 1,
-		});
+		this.ui.addSchemaField(containerEl, { enableNameSeriesTracking: S.enableNameSeriesTracking });
+		this.ui.addSchemaField(
+			containerEl,
+			{ fileConcurrencyLimit: S.fileConcurrencyLimit },
+			{ name: "File operation concurrency limit" }
+		);
 	}
 
 	private renderToolbarButtonToggles(containerEl: HTMLElement, key: ToolbarButtonsKey): void {

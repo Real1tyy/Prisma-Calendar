@@ -6,6 +6,8 @@ import type { PrismaCalendarSettingsStore } from "../../types";
 import { AI_DEFAULTS } from "../../types/ai";
 import { CustomCalendarSettingsSchema, type CustomPrompt } from "../../types/settings";
 
+const AIShape = CustomCalendarSettingsSchema.shape.ai.unwrap().shape;
+
 export class AISettings {
 	private ui: SettingsUIBuilder<typeof CustomCalendarSettingsSchema>;
 
@@ -49,33 +51,31 @@ export class AISettings {
 	private addManipulationSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Event Manipulation").setHeading();
 
-		this.ui.addToggle(containerEl, {
-			key: "ai.aiBatchExecution",
-			name: "Batch execution",
-			desc: "When enabled, all AI-suggested operations execute as a single batch — one undo reverts everything. When disabled, each operation is a separate undo entry.",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "ai.aiConfirmExecution",
-			name: "Confirm before execution",
-			desc: "When enabled, AI-suggested operations show a preview with an Execute button. When disabled, operations execute immediately without confirmation.",
-		});
+		this.ui.addSchemaField(
+			containerEl,
+			{ aiBatchExecution: AIShape.aiBatchExecution },
+			{ key: "ai.aiBatchExecution", name: "Batch execution" }
+		);
+		this.ui.addSchemaField(
+			containerEl,
+			{ aiConfirmExecution: AIShape.aiConfirmExecution },
+			{ key: "ai.aiConfirmExecution", name: "Confirm before execution" }
+		);
 	}
 
 	private addPlanningSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Planning").setHeading();
 
-		this.ui.addToggle(containerEl, {
-			key: "ai.aiPlanningGapDetection",
-			name: "Gap detection",
-			desc: "Validate that AI-planned events are contiguous with no gaps between consecutive events.",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "ai.aiPlanningDayCoverage",
-			name: "Day coverage",
-			desc: "Validate that AI plans cover every day in the interval.",
-		});
+		this.ui.addSchemaField(
+			containerEl,
+			{ aiPlanningGapDetection: AIShape.aiPlanningGapDetection },
+			{ key: "ai.aiPlanningGapDetection", name: "Gap detection" }
+		);
+		this.ui.addSchemaField(
+			containerEl,
+			{ aiPlanningDayCoverage: AIShape.aiPlanningDayCoverage },
+			{ key: "ai.aiPlanningDayCoverage", name: "Day coverage" }
+		);
 	}
 
 	private addCustomPromptsSection(containerEl: HTMLElement): void {

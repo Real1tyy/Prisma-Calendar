@@ -5,9 +5,11 @@ import type { Subscription } from "rxjs";
 import { FREE_MAX_EVENT_PRESETS } from "../../core/license";
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
-import type { SingleCalendarConfigSchema } from "../../types/settings";
+import { SingleCalendarConfigSchema } from "../../types/settings";
 import { LOCALE_OPTIONS } from "../../types/view";
 import { renderProUpgradeBanner } from "./pro-upgrade-banner";
+
+const S = SingleCalendarConfigSchema.shape;
 
 export class GeneralSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -55,49 +57,27 @@ export class GeneralSettings {
 	private addDirectorySettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Calendar directory").setHeading();
 
-		this.ui.addText(containerEl, {
-			key: "directory",
-			name: "Directory",
-			desc: "Folder to scan for calendar events and create new events in",
-			placeholder: "e.g., tasks, calendar, events",
-		});
+		this.ui.addSchemaField(containerEl, { directory: S.directory }, { placeholder: "e.g., tasks, calendar, events" });
+		this.ui.addSchemaField(
+			containerEl,
+			{ templatePath: S.templatePath },
+			{ placeholder: "e.g., Templates/event-template.md" }
+		);
+		this.ui.addSchemaField(containerEl, { locale: S.locale }, { options: LOCALE_OPTIONS });
+		this.ui.addSchemaField(containerEl, { showRibbonIcon: S.showRibbonIcon });
+		this.ui.addSchemaField(containerEl, { enableKeyboardNavigation: S.enableKeyboardNavigation });
 
-		this.ui.addText(containerEl, {
-			key: "templatePath",
-			name: "Template path",
-			desc: "Path to Templater template file for new events (optional, requires Templater plugin)",
-			placeholder: "e.g., Templates/event-template.md",
-		});
-
-		this.ui.addDropdown(containerEl, {
-			key: "locale",
-			name: "Locale",
-			desc: "Language and date format for calendar headings, day names, month names, toolbar labels, and date displays",
-			options: LOCALE_OPTIONS,
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "showRibbonIcon",
-			name: "Show ribbon icon",
-			desc: "Display a calendar icon in the left sidebar to quickly open this calendar",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "enableKeyboardNavigation",
-			name: "Enable keyboard navigation",
-			desc: "Use left/right arrow keys to navigate between calendar intervals. Automatically disabled when search or expression filter inputs are focused.",
-		});
-
-		this.ui.addDropdown(containerEl, {
-			key: "autoAssignZettelId",
-			name: "Auto-assign Zettel ID",
-			desc: "Automatically add a Zettel ID timestamp to filenames of events in the calendar directory that don't have one. Files are renamed from 'My Event.md' to 'My Event-20260216120000.md'.",
-			options: {
-				disabled: "Disabled",
-				calendarEvents: "Calendar events only",
-				allEvents: "All events",
-			},
-		});
+		this.ui.addSchemaField(
+			containerEl,
+			{ autoAssignZettelId: S.autoAssignZettelId },
+			{
+				options: {
+					disabled: "Disabled",
+					calendarEvents: "Calendar events only",
+					allEvents: "All events",
+				},
+			}
+		);
 
 		new Setting(containerEl)
 			.setName("Read-only mode")
@@ -114,68 +94,54 @@ export class GeneralSettings {
 	private addParsingSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Parsing").setHeading();
 
-		this.ui.addSlider(containerEl, {
-			key: "defaultDurationMinutes",
-			name: "Default duration (minutes)",
-			desc: "Default event duration when only start time is provided",
-			min: 1,
-			max: 240,
-			step: 1,
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "showDurationField",
-			name: "Show duration field in event modal",
-			desc: "Display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa.",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "markPastInstancesAsDone",
-			name: "Mark past events as done",
-			desc: "Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section.",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "titleAutocomplete",
-			name: "Title autocomplete",
-			desc: "Show inline type-ahead suggestions when typing event titles in the create/edit modal. Suggests categories, event presets, and frequently used event names.",
-		});
+		this.ui.addSchemaField(
+			containerEl,
+			{ defaultDurationMinutes: S.defaultDurationMinutes },
+			{ name: "Default duration (minutes)" }
+		);
+		this.ui.addSchemaField(
+			containerEl,
+			{ showDurationField: S.showDurationField },
+			{ name: "Show duration field in event modal" }
+		);
+		this.ui.addSchemaField(
+			containerEl,
+			{ markPastInstancesAsDone: S.markPastInstancesAsDone },
+			{ name: "Mark past events as done" }
+		);
+		this.ui.addSchemaField(containerEl, { titleAutocomplete: S.titleAutocomplete });
 	}
 
 	private addStopwatchSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Time tracker").setHeading();
 
-		this.ui.addToggle(containerEl, {
-			key: "showStopwatch",
-			name: "Show time tracker in event modal",
-			desc: "Display a stopwatch in the event creation/edit modal for precise time tracking. Start fills the start date, stop fills the end date, and break time is tracked automatically.",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "showStopwatchStartWithoutFill",
-			name: "Show 'continue' button",
-			desc: "Display a continue button that resumes time tracking from the existing start date. The timer calculates elapsed time based on the event's start time and continues from there, perfect for resuming work on existing events.",
-		});
+		this.ui.addSchemaField(
+			containerEl,
+			{ showStopwatch: S.showStopwatch },
+			{ name: "Show time tracker in event modal" }
+		);
+		this.ui.addSchemaField(
+			containerEl,
+			{ showStopwatchStartWithoutFill: S.showStopwatchStartWithoutFill },
+			{ name: "Show 'continue' button" }
+		);
 	}
 
 	private addStatisticsSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Statistics").setHeading();
 
-		this.ui.addToggle(containerEl, {
-			key: "showDecimalHours",
-			name: "Show decimal hours",
-			desc: "Display durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m) in statistics modals. Can be temporarily toggled by clicking the duration in the statistics header.",
-		});
-
-		this.ui.addDropdown(containerEl, {
-			key: "defaultAggregationMode",
-			name: "Default grouping mode",
-			desc: "Default grouping mode for statistics modals: group by event name or by category",
-			options: {
-				name: "Event Name",
-				category: "Category",
-			},
-		});
+		this.ui.addSchemaField(containerEl, { showDecimalHours: S.showDecimalHours });
+		this.ui.addSchemaField(
+			containerEl,
+			{ defaultAggregationMode: S.defaultAggregationMode },
+			{
+				name: "Default grouping mode",
+				options: {
+					name: "Event Name",
+					category: "Category",
+				},
+			}
+		);
 	}
 
 	private addEventPresetSettings(containerEl: HTMLElement): void {
@@ -186,7 +152,6 @@ export class GeneralSettings {
 			text: "Create presets with pre-configured event settings (duration, category, recurring pattern, etc.) for quick event creation. Select a preset from the dropdown when creating an event to auto-fill the form.",
 		});
 
-		// Examples section
 		const examplesContainer = desc.createDiv(cls("settings-info-box"));
 
 		examplesContainer.createEl("strong", { text: "Example presets:" });
@@ -218,7 +183,6 @@ export class GeneralSettings {
 			cls: cls("settings-muted"),
 		});
 
-		// Default preset selector
 		new Setting(containerEl)
 			.setName("Default preset")
 			.setDesc("Preset to auto-fill when opening the create event modal")
@@ -234,7 +198,6 @@ export class GeneralSettings {
 				});
 			});
 
-		// Presets list
 		this.presetsListContainer = containerEl.createDiv();
 		this.renderEventPresetsList(this.presetsListContainer);
 
@@ -297,11 +260,9 @@ export class GeneralSettings {
 		for (const preset of eventPresets) {
 			const presetContainer = container.createDiv(cls("event-preset-item"));
 
-			// Name
 			const nameEl = presetContainer.createDiv(cls("event-preset-name"));
 			nameEl.textContent = preset.name;
 
-			// Details (tags showing what's configured)
 			const detailsEl = presetContainer.createDiv(cls("event-preset-details"));
 
 			if (preset.allDay !== undefined) {
@@ -325,7 +286,6 @@ export class GeneralSettings {
 				this.createPresetTag(detailsEl, `${customPropsCount} props`);
 			}
 
-			// Controls - only delete button
 			const controlsEl = presetContainer.createDiv(cls("event-preset-controls"));
 
 			const deleteButton = controlsEl.createEl("button", {
@@ -336,7 +296,6 @@ export class GeneralSettings {
 				await this.settingsStore.updateSettings((s) => ({
 					...s,
 					eventPresets: (s.eventPresets || []).filter((p) => p.id !== preset.id),
-					// Clear default preset if it was deleted
 					defaultPresetId: s.defaultPresetId === preset.id ? undefined : s.defaultPresetId,
 				}));
 			};

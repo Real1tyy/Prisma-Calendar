@@ -8,10 +8,13 @@ import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker"
 import type { CalendarSettingsStore } from "../../core/settings-store";
 import type CustomCalendarPlugin from "../../main";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
-import type { CategoryAssignmentPreset, SingleCalendarConfigSchema } from "../../types/settings";
+import type { CategoryAssignmentPreset } from "../../types/settings";
+import { SingleCalendarConfigSchema } from "../../types/settings";
 import { type ChartDataItem, createChartCanvas, PieChartBuilder } from "../../utils/chart-utils";
 import { showCategoryDeleteModal, showCategoryEventsModal, showCategoryRenameModal } from "../modals";
 import { renderProUpgradeBanner } from "./pro-upgrade-banner";
+
+const S = SingleCalendarConfigSchema.shape;
 
 interface CategoryInfoWithCount extends CategoryInfo {
 	count: number;
@@ -164,17 +167,16 @@ export class CategoriesSettings {
 			text: "Automatically assign categories to events during creation based on the event name.",
 		});
 
-		this.ui.addToggle(containerEl, {
-			key: "autoAssignCategoryByName",
-			name: "Auto-assign when name matches category",
-			desc: "Automatically assign a category when the event name (without ZettelID) matches a category name (case-insensitive). Example: creating an event named 'Health' will auto-assign the 'health' category.",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "autoAssignCategoryByIncludes",
-			name: "Auto-assign when name contains category",
-			desc: "Automatically assign a category when the event name contains a category name (substring match, case-insensitive). Example: creating an event named 'Youtube Analysis' will auto-assign the 'Youtube' category.",
-		});
+		this.ui.addSchemaField(
+			containerEl,
+			{ autoAssignCategoryByName: S.autoAssignCategoryByName },
+			{ name: "Auto-assign when name matches category" }
+		);
+		this.ui.addSchemaField(
+			containerEl,
+			{ autoAssignCategoryByIncludes: S.autoAssignCategoryByIncludes },
+			{ name: "Auto-assign when name contains category" }
+		);
 
 		if (!this.plugin.isProEnabled) {
 			renderProUpgradeBanner(

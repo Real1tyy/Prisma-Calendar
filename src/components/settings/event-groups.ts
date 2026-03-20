@@ -1,9 +1,10 @@
 import { SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 
-import { DEFAULT_PHYSICAL_RECURRING_MARKER, DEFAULT_SOURCE_RECURRING_MARKER } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
-import type { SingleCalendarConfigSchema } from "../../types/settings";
+import { SingleCalendarConfigSchema } from "../../types/settings";
+
+const S = SingleCalendarConfigSchema.shape;
 
 export class EventGroupsSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -28,14 +29,7 @@ export class EventGroupsSettings {
 	private addRecurringEventSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Recurring events").setHeading();
 
-		this.ui.addSlider(containerEl, {
-			key: "futureInstancesCount",
-			name: "Future instances count",
-			desc: "Maximum number of future recurring event instances to generate (1-52)",
-			min: 1,
-			max: 52,
-			step: 1,
-		});
+		this.ui.addSchemaField(containerEl, { futureInstancesCount: S.futureInstancesCount });
 
 		this.ui.addMutuallyExclusiveToggles(
 			containerEl,
@@ -94,48 +88,18 @@ export class EventGroupsSettings {
 
 		new Setting(containerEl).setName("Shared propagation settings").setHeading();
 
-		this.ui.addText(containerEl, {
-			key: "excludedRecurringPropagatedProps",
-			name: "Excluded properties",
-			desc: "Comma-separated list of frontmatter property names to exclude from propagation. Applies to all propagation types: recurring instances, name series, and category series.",
-			placeholder: "Property1, Property2, Property3",
-		});
-
-		this.ui.addSlider(containerEl, {
-			key: "propagationDebounceMs",
-			name: "Propagation debounce delay",
-			desc: "Delay in milliseconds before propagating frontmatter changes. Multiple rapid changes within this window will be accumulated and applied together. Applies to all propagation types.",
-			min: 100,
-			max: 10000,
-			step: 100,
-		});
+		this.ui.addSchemaField(
+			containerEl,
+			{ excludedRecurringPropagatedProps: S.excludedRecurringPropagatedProps },
+			{ name: "Excluded properties", placeholder: "Property1, Property2, Property3" }
+		);
+		this.ui.addSchemaField(containerEl, { propagationDebounceMs: S.propagationDebounceMs }, { step: 100 });
 
 		new Setting(containerEl).setName("Event markers").setHeading();
 
-		this.ui.addToggle(containerEl, {
-			key: "showSourceRecurringMarker",
-			name: "Show source recurring marker",
-			desc: "Display a marker indicator on source recurring events (the original event that generates instances).",
-		});
-
-		this.ui.addText(containerEl, {
-			key: "sourceRecurringMarker",
-			name: "Source recurring marker",
-			desc: "Symbol/emoji to display on source recurring events in the top-right corner.",
-			placeholder: DEFAULT_SOURCE_RECURRING_MARKER,
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "showPhysicalRecurringMarker",
-			name: "Show physical recurring marker",
-			desc: "Display a marker indicator on physical recurring instance events (actual instances created from source).",
-		});
-
-		this.ui.addText(containerEl, {
-			key: "physicalRecurringMarker",
-			name: "Physical recurring marker",
-			desc: "Symbol/emoji to display on physical recurring instance events in the top-right corner.",
-			placeholder: DEFAULT_PHYSICAL_RECURRING_MARKER,
-		});
+		this.ui.addSchemaField(containerEl, { showSourceRecurringMarker: S.showSourceRecurringMarker });
+		this.ui.addSchemaField(containerEl, { sourceRecurringMarker: S.sourceRecurringMarker });
+		this.ui.addSchemaField(containerEl, { showPhysicalRecurringMarker: S.showPhysicalRecurringMarker });
+		this.ui.addSchemaField(containerEl, { physicalRecurringMarker: S.physicalRecurringMarker });
 	}
 }

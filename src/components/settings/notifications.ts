@@ -2,7 +2,10 @@ import { SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { Setting } from "obsidian";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";
-import type { SingleCalendarConfig, SingleCalendarConfigSchema } from "../../types/settings";
+import type { SingleCalendarConfig } from "../../types/settings";
+import { SingleCalendarConfigSchema } from "../../types/settings";
+
+const S = SingleCalendarConfigSchema.shape;
 
 export class NotificationsSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -18,32 +21,18 @@ export class NotificationsSettings {
 	private addNotificationSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Notifications").setHeading();
 
-		this.ui.addToggle(containerEl, {
-			key: "enableNotifications",
-			name: "Enable notifications",
-			desc: "Enable event notifications. When disabled, all notification settings below are ignored.",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "notificationSound",
-			name: "Play notification sound",
-			desc: "Play a system sound when notifications are shown",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "skipNewlyCreatedNotifications",
-			name: "Skip newly created events",
-			desc: "Automatically mark events as notified if they were created within the last minute. Prevents notifications for events created via Create Event, Stopwatch, or other creation methods.",
-		});
-
-		this.ui.addSlider(containerEl, {
-			key: "snoozeMinutes",
-			name: "Snooze duration (minutes)",
-			desc: "How many minutes to snooze a notification when pressing the Snooze button. The notification will be triggered again after this duration.",
-			min: 1,
-			max: 200,
-			step: 1,
-		});
+		this.ui.addSchemaField(containerEl, { enableNotifications: S.enableNotifications });
+		this.ui.addSchemaField(
+			containerEl,
+			{ notificationSound: S.notificationSound },
+			{ name: "Play notification sound" }
+		);
+		this.ui.addSchemaField(
+			containerEl,
+			{ skipNewlyCreatedNotifications: S.skipNewlyCreatedNotifications },
+			{ name: "Skip newly created events" }
+		);
+		this.ui.addSchemaField(containerEl, { snoozeMinutes: S.snoozeMinutes }, { name: "Snooze duration (minutes)" });
 
 		new Setting(containerEl).setName("Default notification times").setHeading();
 

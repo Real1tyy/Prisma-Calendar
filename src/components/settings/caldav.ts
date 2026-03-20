@@ -13,12 +13,15 @@ import {
 	type CalDAVAccount,
 	type CalDAVCalendarInfo,
 	type CalDAVPresetKey,
+	CalDAVSettingsSchema,
 } from "../../types/integrations";
 import type { CustomCalendarSettingsSchema } from "../../types/settings";
 import { getCalendarById } from "../../utils/calendar-settings";
 import { deleteFilesByPaths } from "../../utils/obsidian";
 import { showCalendarIntegrationDeleteEventsModal } from "../modals";
 import { showConfirmDeleteModal } from "./generic";
+
+const CaldavShape = CalDAVSettingsSchema.shape;
 
 export class CalDAVSettings {
 	private ui: SettingsUIBuilder<typeof CustomCalendarSettingsSchema>;
@@ -75,23 +78,17 @@ export class CalDAVSettings {
 	}
 
 	private renderGlobalSettings(containerEl: HTMLElement): void {
-		this.ui.addToggle(containerEl, {
-			key: "caldav.syncOnStartup",
-			name: "Sync on startup",
-			desc: "Automatically sync calendars when the app starts",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "caldav.enableAutoSync",
-			name: "Allow auto-sync",
-			desc: "Enable automatic periodic syncing based on each account's sync interval",
-		});
-
-		this.ui.addToggle(containerEl, {
-			key: "caldav.notifyOnSync",
-			name: "Show sync notifications",
-			desc: "Show notifications when calendar sync completes",
-		});
+		this.ui.addSchemaField(containerEl, { syncOnStartup: CaldavShape.syncOnStartup }, { key: "caldav.syncOnStartup" });
+		this.ui.addSchemaField(
+			containerEl,
+			{ enableAutoSync: CaldavShape.enableAutoSync },
+			{ key: "caldav.enableAutoSync", name: "Allow auto-sync" }
+		);
+		this.ui.addSchemaField(
+			containerEl,
+			{ notifyOnSync: CaldavShape.notifyOnSync },
+			{ key: "caldav.notifyOnSync", name: "Show sync notifications" }
+		);
 
 		this.ui.addOptionalColorPicker(containerEl, {
 			key: "caldav.integrationEventColor",

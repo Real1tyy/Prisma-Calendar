@@ -4,7 +4,9 @@ import { Setting } from "obsidian";
 
 import { DEFAULT_EVENT_COLOR } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
-import type { SingleCalendarConfigSchema } from "../../types/settings";
+import { SingleCalendarConfigSchema } from "../../types/settings";
+
+const S = SingleCalendarConfigSchema.shape;
 
 export class RulesSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
@@ -23,7 +25,6 @@ export class RulesSettings {
 	private addColorSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Event colors").setHeading();
 
-		// Default color setting with color picker
 		this.ui.addColorPicker(containerEl, {
 			key: "defaultNodeColor",
 			name: "Default event color",
@@ -31,7 +32,6 @@ export class RulesSettings {
 			fallback: DEFAULT_EVENT_COLOR,
 		});
 
-		// Color rules section
 		const colorRulesContainer = containerEl.createDiv();
 
 		const desc = colorRulesContainer.createDiv();
@@ -39,7 +39,6 @@ export class RulesSettings {
 			text: "Define color rules based on frontmatter properties. Rules are evaluated in order - the first matching rule determines the event color.",
 		});
 
-		// Examples section
 		const examplesContainer = desc.createDiv(cls("settings-info-box"));
 
 		examplesContainer.createEl("strong", { text: "Example color rules:" });
@@ -89,19 +88,16 @@ export class RulesSettings {
 			});
 		}
 
-		// Warning section
 		const warningContainer = desc.createDiv(cls("settings-warning-box"));
 		warningContainer.createEl("strong", { text: "⚠️ important:" });
 		warningContainer.createEl("p", {
 			text: "Use property names directly — invalid expressions will be ignored",
 		});
 
-		// Color rules list
 		const colorRulesListContainer = colorRulesContainer.createDiv();
 
 		this.renderColorRulesList(colorRulesListContainer);
 
-		// Add new color rule button
 		new Setting(colorRulesContainer)
 			.setName("Add color rule")
 			.setDesc("Add a new color rule")
@@ -120,7 +116,6 @@ export class RulesSettings {
 						colorRules: [...s.colorRules, newRule],
 					}));
 
-					// Re-render the list
 					this.renderColorRulesList(colorRulesListContainer);
 				});
 			});
@@ -139,10 +134,8 @@ export class RulesSettings {
 		colorRules.forEach((rule, index) => {
 			const ruleContainer = container.createDiv(cls("color-rule-item"));
 
-			// Single row with all controls
 			const mainRow = ruleContainer.createDiv(cls("color-rule-main-row"));
 
-			// Left section: order, checkbox, expression
 			const leftSection = mainRow.createDiv(cls("color-rule-left"));
 
 			leftSection.createEl("span", {
@@ -183,10 +176,8 @@ export class RulesSettings {
 				}
 			});
 
-			// Right section: color picker + controls
 			const rightSection = mainRow.createDiv(cls("color-rule-right"));
 
-			// Direct color picker without Setting wrapper
 			const colorInput = rightSection.createEl("input", {
 				type: "color",
 				value: rule.color,
@@ -200,7 +191,6 @@ export class RulesSettings {
 				}));
 			});
 
-			// Control buttons
 			const controlsSection = rightSection.createDiv(cls("color-rule-controls"));
 
 			if (index > 0) {
@@ -270,7 +260,6 @@ export class RulesSettings {
 			text: "Filter events based on their frontmatter properties using JavaScript expressions. Each expression should evaluate to true/false. Events must pass all filters to be included.",
 		});
 
-		// Examples section
 		const examplesContainer = desc.createDiv(cls("settings-info-box"));
 
 		examplesContainer.createEl("strong", {
@@ -313,20 +302,17 @@ export class RulesSettings {
 			});
 		}
 
-		// Warning section
 		const warningContainer = desc.createDiv(cls("settings-warning-box"));
 		warningContainer.createEl("strong", { text: "⚠️ important:" });
 		warningContainer.createEl("p", {
 			text: "Use property names directly (e.g., status, priority). Invalid expressions will be ignored and logged to console.",
 		});
 
-		this.ui.addTextArray(containerEl, {
-			key: "filterExpressions",
-			name: "Filter expressions",
-			desc: "JavaScript expressions to filter events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter. Note: Expect a brief lag when applying changes as it triggers full re-indexing.",
-			placeholder: "Status !== 'Inbox'\nPriority === 'High'",
-			multiline: true,
-		});
+		this.ui.addSchemaField(
+			containerEl,
+			{ filterExpressions: S.filterExpressions },
+			{ placeholder: "Status !== 'Inbox'\nPriority === 'High'" }
+		);
 	}
 
 	private addUntrackedFilterSettings(containerEl: HTMLElement): void {
@@ -374,13 +360,11 @@ export class RulesSettings {
 			text: "Use property names directly. Invalid expressions will be ignored and logged to console.",
 		});
 
-		this.ui.addTextArray(containerEl, {
-			key: "untrackedFilterExpressions",
-			name: "Untracked filter expressions",
-			desc: "JavaScript expressions to filter untracked events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter.",
-			placeholder: "Status !== 'Inbox'\nType === 'Task'",
-			multiline: true,
-		});
+		this.ui.addSchemaField(
+			containerEl,
+			{ untrackedFilterExpressions: S.untrackedFilterExpressions },
+			{ placeholder: "Status !== 'Inbox'\nType === 'Task'" }
+		);
 	}
 
 	private addFilterPresetSettings(containerEl: HTMLElement): void {
@@ -391,7 +375,6 @@ export class RulesSettings {
 			text: "Create named filter presets for quick access via a dropdown in the calendar toolbar. These presets auto-fill the filter expression input.",
 		});
 
-		// Examples section
 		const examplesContainer = desc.createDiv(cls("settings-info-box"));
 
 		examplesContainer.createEl("strong", { text: "Example filter presets" });
@@ -425,18 +408,15 @@ export class RulesSettings {
 			});
 		}
 
-		// Warning section
 		const warningContainer = desc.createDiv(cls("settings-warning-box"));
 		warningContainer.createEl("strong", { text: "💡 tip:" });
 		warningContainer.createEl("p", {
 			text: "Filter presets appear in a dropdown next to the zoom button. Click a preset to instantly apply its filter expression.",
 		});
 
-		// Presets list
 		const presetsListContainer = containerEl.createDiv();
 		this.renderFilterPresetsList(presetsListContainer);
 
-		// Add new preset button
 		new Setting(containerEl)
 			.setName("Add filter preset")
 			.setDesc("Add a new filter preset")
@@ -471,7 +451,6 @@ export class RulesSettings {
 		filterPresets.forEach((preset, index) => {
 			const presetContainer = container.createDiv(cls("filter-preset-item"));
 
-			// Name input
 			const nameInput = presetContainer.createEl("input", {
 				type: "text",
 				value: preset.name,
@@ -496,7 +475,6 @@ export class RulesSettings {
 				}
 			});
 
-			// Expression input
 			const expressionInput = presetContainer.createEl("input", {
 				type: "text",
 				value: preset.expression,
@@ -521,7 +499,6 @@ export class RulesSettings {
 				}
 			});
 
-			// Delete button
 			const deleteButton = presetContainer.createEl("button", {
 				text: "×",
 				attr: { title: "Delete preset" },
