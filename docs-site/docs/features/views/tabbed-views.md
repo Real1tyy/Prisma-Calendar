@@ -1,61 +1,34 @@
-import useBaseUrl from "@docusaurus/useBaseUrl";
-
 # Tabbed Views
 
-The calendar view features a tab bar in the view header with six tabs. Each tab provides a different perspective on your calendar data. Tabs render lazily — content loads only when you switch to a tab for the first time.
+The calendar view features a tab bar in the view header with seven tabs. Each tab provides a different perspective on your calendar data. Tabs render lazily — content loads only when you switch to a tab for the first time.
 
 ## Calendar
 
 The default tab. Shows the full Prisma Calendar with all views (month, week, day, list), toolbar buttons, filters, batch selection, and keyboard shortcuts — exactly as before.
 
-## Timeline
+## [Timeline](./timeline.md)
 
-Displays all events on a horizontal vis-timeline. Navigate by date using the year/month/day inputs, or pan and zoom the timeline directly. Click an event to open its preview. The "Show all events timeline" command navigates directly to this tab.
+Displays all events on a horizontal vis-timeline. Navigate by date, pan and zoom directly.
 
-<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
-    <source src={useBaseUrl("/video/TimelineView.webm")} type="video/webm" />
-    <source src={useBaseUrl("/video/TimelineView.mp4")} type="video/mp4" />
-    Your browser does not support the video tag.
-  </video>
-</div>
+## [Heat Map](./heatmap.md) (Pro)
 
-## Heat Map (Pro)
+A GitHub-style contribution heatmap showing event density over time.
 
-A GitHub-style contribution heatmap showing event density over time. The heatmap is centered in the view. The "Show all events heatmap" command navigates directly to this tab. The tab uses a two-row layout:
+## [Daily + Stats](./daily-stats.md)
 
-- **Top row**: The heatmap visualization with yearly/monthly mode toggle and navigation controls.
-- **Bottom row**: Appears when you click a day cell, showing all events for that day with times and frontmatter properties. Each event row is tinted with its resolved color (from color rules or integration color) so you can visually identify categories at a glance.
-- **Keyboard navigation**: Use **Left/Right arrow keys** to navigate between years (yearly mode) or months (monthly mode). Works immediately when the tab is active — no click needed.
+A two-column resizable layout with a daily calendar on the left and live statistics on the right.
 
-## Daily + Stats
+## [Dual Daily](./dual-daily.md)
 
-A two-column resizable layout with a daily calendar on the left and live statistics on the right:
+Two independent daily calendars side by side for comparing days or dragging events between dates.
 
-- **Left column — Daily calendar**: A simplified daily calendar (timeGridDay view) with prev/next/today toolbar buttons and a search filter. Shows the same event rendering, colors, icons, and context menus as the main calendar. Supports drag-and-drop rescheduling, click-to-open, hover preview, and date/time selection to create new events.
-- **Right column — Statistics panel**: Daily statistics for the date shown in the adjacent calendar. Updates automatically when you navigate to a different day. Contains:
-  - **Controls row**: "Include skipped events" checkbox and a "Group by" toggle (Event Name / Category).
-  - **Date label**: Shows the current day (e.g., "Wednesday, Mar 18, 2026").
-  - **Duration stat**: Total tracked time for the day. Click to toggle between formatted (2h 30m) and decimal (2.5h) display.
-  - **Event count**: Number of events for the day.
-  - **Pie chart**: Visual distribution of time across events or categories.
-  - **Table**: Paginated breakdown of each entry with name, duration, percentage, and event count. Navigate pages with First/Prev/Next/Last buttons or type a page number directly.
-  - **Capacity label** (when enabled): Shows used vs total hours and remaining time for the day. Boundaries are inferred from your earliest and latest events. See [Capacity Tracking](./capacity-tracking.md).
-- **Keyboard navigation**: Use **Left/Right arrow keys** to navigate between days. Works immediately when the tab is active — no click needed.
-- **Resizable**: Drag the divider between columns to adjust the split.
+## [Dashboard](./dashboard.md) (Pro)
 
-## Dual Daily
+A group tab with three subtabs — By Name, By Category, and Recurring — with pie charts, summary stats, rankings, and sortable tables.
 
-A two-column resizable layout with two independent daily calendars side by side. Each calendar has its own toolbar, search filter, and date state — useful for comparing two different days or dragging events between dates.
+## [Gantt](./gantt.md) (Pro)
 
-- **Independent navigation**: Each calendar navigates independently via its own prev/next/today buttons.
-- **Keyboard navigation**: Use **Left/Right arrow keys** to navigate the focused calendar. Click anywhere on a calendar to focus it, then arrow keys will move that calendar's date forward or backward. Defaults to the left calendar.
-- **Full calendar features**: Both calendars support the same interactions as the Daily + Stats calendar — event rendering, colors, icons, context menus, drag-and-drop, click-to-open, hover preview, and date/time selection.
-- **Resizable**: Drag the divider between columns to adjust the split.
-
-## Dashboard (Pro)
-
-A group tab with three subtabs — By Name, By Category, and Recurring — accessible via a dropdown on the tab button. Each subtab uses a resizable grid layout with a pie chart, summary stats, a Top 10 ranking, and a full sortable table. See [Dashboard](./dashboard.md) for details.
+A Gantt chart showing events as horizontal bars with dependency arrows between prerequisite pairs.
 
 ## Managing Tabs
 
