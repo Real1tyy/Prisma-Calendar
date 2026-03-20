@@ -24,6 +24,7 @@ import {
 	renderDashboardChart,
 	renderDashboardRanking,
 	renderDashboardTable,
+	type StatEntry,
 } from "./dashboard-section";
 
 const DASHBOARD_CSS_PREFIX = "prisma-dashboard-";
@@ -46,6 +47,7 @@ function createDashboardChild(
 		items: DashboardItem[];
 		columns: ColumnDef[];
 		chartData: ChartDataItem[];
+		stats: StatEntry[];
 		onItemClick?: (item: DashboardItem) => void;
 		emptyMessage: string;
 	}
@@ -72,7 +74,7 @@ function createDashboardChild(
 				columns: 2,
 				rows: 2,
 				cells: [],
-				rowSizes: [0.4, 1],
+				rowSizes: [0.25, 1],
 				columnSizes: undefined,
 				cellColumnSizes: undefined,
 				cellRowSizes: undefined,
@@ -97,7 +99,7 @@ function createDashboardChild(
 					row: 0,
 					col: 1,
 					render: (cellEl) => {
-						renderDashboardRanking(cellEl, data.items);
+						renderDashboardRanking(cellEl, data.items, data.stats);
 					},
 				},
 				{
@@ -177,6 +179,8 @@ function buildByNameData(app: App, bundle: CalendarBundle) {
 			extraProps: {},
 		}));
 
+		const totalEvents = items.reduce((sum, i) => sum + i.count, 0);
+
 		return {
 			items,
 			columns: [
@@ -184,6 +188,11 @@ function buildByNameData(app: App, bundle: CalendarBundle) {
 				{ key: "count", label: "Events", align: "center" as const },
 			],
 			chartData: buildChartDataFromItems(items),
+			stats: [
+				{ label: "Series", value: items.length },
+				{ label: "Total Events", value: totalEvents },
+				{ label: "Avg / Series", value: items.length > 0 ? Math.round(totalEvents / items.length) : 0 },
+			],
 			onItemClick: (item: DashboardItem) => {
 				new EventSeriesModal(app, bundle, item.key, null).open();
 			},
@@ -212,6 +221,10 @@ function buildByCategoryData(app: App, bundle: CalendarBundle) {
 			};
 		});
 
+		const totalEvents = items.reduce((sum, i) => sum + i.count, 0);
+		const totalTimed = items.reduce((sum, i) => sum + (i.extraProps["timed"] as number), 0);
+		const totalAllDay = items.reduce((sum, i) => sum + (i.extraProps["allDay"] as number), 0);
+
 		return {
 			items,
 			columns: [
@@ -223,6 +236,12 @@ function buildByCategoryData(app: App, bundle: CalendarBundle) {
 				{ key: "allDayPct", label: "All-day %", align: "center" as const },
 			],
 			chartData: buildChartDataFromItems(items),
+			stats: [
+				{ label: "Categories", value: items.length },
+				{ label: "Total Events", value: totalEvents },
+				{ label: "Timed", value: totalTimed },
+				{ label: "All-day", value: totalAllDay },
+			],
 			onItemClick: (item: DashboardItem) => {
 				new EventSeriesModal(app, bundle, null, null, [item.key]).open();
 			},
@@ -273,6 +292,9 @@ function buildRecurringData(app: App, bundle: CalendarBundle) {
 			}))
 		);
 
+		const enabledCount = allRecurring.filter((e) => !e.metadata.skip).length;
+		const totalInstances = items.reduce((sum, i) => sum + i.count, 0);
+
 		return {
 			items,
 			columns: [
@@ -283,6 +305,12 @@ function buildRecurringData(app: App, bundle: CalendarBundle) {
 				{ key: "status", label: "Status", align: "center" as const },
 			],
 			chartData,
+			stats: [
+				{ label: "Rules", value: allRecurring.length },
+				{ label: "Enabled", value: enabledCount },
+				{ label: "Disabled", value: allRecurring.length - enabledCount },
+				{ label: "Instances", value: totalInstances },
+			],
 			onItemClick: (item: DashboardItem) => {
 				new EventSeriesModal(app, bundle, item.title.toLowerCase(), item.key).open();
 			},

@@ -23,6 +23,11 @@ export interface DashboardItem {
 	extraProps: Record<string, string | number>;
 }
 
+export interface StatEntry {
+	label: string;
+	value: string | number;
+}
+
 export interface DashboardChartHandle {
 	destroy: () => void;
 }
@@ -60,7 +65,16 @@ export function renderDashboardChart(
 	};
 }
 
-export function renderDashboardRanking(container: HTMLElement, items: DashboardItem[]): void {
+export function renderDashboardRanking(container: HTMLElement, items: DashboardItem[], stats?: StatEntry[]): void {
+	if (stats && stats.length > 0) {
+		const grid = container.createDiv(cls("dashboard-stats-grid"));
+		for (const stat of stats) {
+			const card = grid.createDiv(cls("dashboard-stats-card"));
+			card.createDiv({ text: String(stat.value), cls: cls("dashboard-stats-value") });
+			card.createDiv({ text: stat.label, cls: cls("dashboard-stats-label") });
+		}
+	}
+
 	if (items.length === 0) {
 		container.createDiv({ text: "No data", cls: cls("dashboard-chart-empty") });
 		return;

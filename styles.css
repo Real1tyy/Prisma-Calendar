@@ -9805,13 +9805,45 @@ div.vis-tooltip {
 	font-size: var(--font-ui-small);
 }
 
+.prisma-dashboard-stats-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	padding: 8px 8px 4px;
+}
+
+.prisma-dashboard-stats-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	padding: 10px 16px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	min-width: 70px;
+}
+
+.prisma-dashboard-stats-value {
+	font-size: var(--font-ui-large);
+	font-weight: 700;
+	color: var(--text-normal);
+	line-height: 1.2;
+}
+
+.prisma-dashboard-stats-label {
+	font-size: 0.75em;
+	color: var(--text-muted);
+}
+
 .prisma-dashboard-ranking {
 	display: flex;
 	flex-direction: column;
 	gap: 3px;
-	padding: 8px;
+	padding: 4px 8px 8px;
 	overflow-y: auto;
-	height: 100%;
+	flex: 1;
+	min-height: 0;
 }
 
 .prisma-dashboard-ranking-row {
