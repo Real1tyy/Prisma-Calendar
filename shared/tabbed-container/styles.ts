@@ -249,6 +249,72 @@ function buildTabStyles(p: string): string {
 	font-size: var(--font-ui-small);
 	color: var(--text-muted);
 }
+.${p}tab-group {
+	display: inline-flex;
+	align-items: center;
+	gap: 0;
+	padding-right: 6px;
+}
+.${p}tab-group-chevron {
+	display: inline-flex;
+	align-items: center;
+	opacity: 0.4;
+	margin-left: 4px;
+	transition: opacity 150ms ease;
+}
+.${p}tab-group:hover .${p}tab-group-chevron {
+	opacity: 0.9;
+}
+.${p}tab-group-chevron svg {
+	width: 10px;
+	height: 10px;
+}
+.${p}tab-manager-group-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	background: none;
+	border: none;
+	border-radius: 3px;
+	color: var(--text-faint);
+	cursor: pointer;
+	padding: 0;
+	box-shadow: none;
+	flex-shrink: 0;
+	transition: color 100ms ease;
+}
+.${p}tab-manager-group-toggle:hover {
+	color: var(--text-normal);
+}
+.${p}tab-manager-group-toggle svg {
+	width: 14px;
+	height: 14px;
+}
+.${p}tab-manager-children {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	margin-left: 24px;
+	padding-left: 8px;
+	border-left: 2px solid var(--background-modifier-border);
+}
+.${p}tab-manager-children .${p}tab-manager-row {
+	background: var(--background-primary);
+	padding: 6px 10px;
+	border-radius: 6px;
+}
+.${p}tab-manager-children .${p}tab-manager-row-hidden {
+	opacity: 0.5;
+}
+.${p}tab-manager-children .${p}tab-manager-row-dragging {
+	opacity: 0.4;
+}
+.${p}tab-manager-children .${p}tab-manager-row-dragover {
+	border-color: var(--interactive-accent);
+	background: hsla(var(--color-accent-hsl), 0.06);
+}
 `;
 }
 

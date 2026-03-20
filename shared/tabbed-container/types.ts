@@ -9,6 +9,17 @@ export const TabbedContainerStateSchema = z.object({
 	renames: z.record(z.string(), z.string()).optional().catch(undefined),
 	/** Whether the settings gear button is shown in the tab bar. Default: true. */
 	showSettingsButton: z.boolean().optional().catch(undefined),
+	/** Per-group child state: visibility order and renames. */
+	groupState: z
+		.record(
+			z.string(),
+			z.object({
+				visibleChildIds: z.array(z.string()).optional().catch(undefined),
+				childRenames: z.record(z.string(), z.string()).optional().catch(undefined),
+			})
+		)
+		.optional()
+		.catch(undefined),
 });
 
 /** Serializable snapshot of tab container state. Safe to persist in plugin settings. */
@@ -23,8 +34,27 @@ export interface TabDefinition {
 	keyHandlers?: Record<string, (e: KeyboardEvent) => void>;
 }
 
+export interface GroupTabDefinition {
+	id: string;
+	label: string;
+	children: TabDefinition[];
+}
+
+export type TabEntry = TabDefinition | GroupTabDefinition;
+
+export function isGroupTab(entry: TabEntry): entry is GroupTabDefinition {
+	return "children" in entry && Array.isArray((entry as GroupTabDefinition).children);
+}
+
+export interface GroupChildState {
+	allChildren: TabDefinition[];
+	visibleChildren: TabDefinition[];
+	activeChildIndex: number;
+	childRenames: Map<string, string>;
+}
+
 export interface TabbedContainerConfig {
-	tabs: TabDefinition[];
+	tabs: TabEntry[];
 	cssPrefix: string;
 	lazy?: boolean;
 	/** Persisted state to restore. When provided, overrides tab order, visibility, and labels. */
@@ -34,6 +64,8 @@ export interface TabbedContainerConfig {
 	onStateChange?: (state: TabbedContainerState) => void;
 	/** When true, enables right-click context menu on tabs (hide, rename) and a "+" button to restore hidden tabs. Requires `app`. */
 	editable?: boolean;
+	/** When true, hovering over a group tab button opens its dropdown; moving the mouse away closes it. Default: false. */
+	hoverDropdown?: boolean;
 	/** Required when `editable: true`. */
 	app?: App;
 	/**
