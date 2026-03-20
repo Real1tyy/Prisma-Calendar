@@ -77,12 +77,34 @@ export class SingleCalendarSettings {
 			cssPrefix: "prisma-",
 			sections,
 			footerLinks: [
-				{ text: "Product Page", href: "https://matejvavroproductivity.com/tools/prisma-calendar/" },
-				{ text: "Documentation", href: "https://real1tyy.github.io/Prisma-Calendar/" },
-				{ text: "Changelog", href: "https://real1tyy.github.io/Prisma-Calendar/changelog" },
-				{ text: "Gallery", href: "https://real1tyy.github.io/Prisma-Calendar/gallery" },
-				{ text: "Other Plugins", href: "https://matejvavroproductivity.com/tools/" },
-				{ text: "Support", href: "https://matejvavroproductivity.com/support/" },
+				{
+					text: "Product Page",
+					href: "https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=obsidian-plugin&utm_medium=settings&utm_content=product-page",
+				},
+				{
+					text: "Documentation",
+					href: "https://real1tyy.github.io/Prisma-Calendar/?utm_source=obsidian-plugin&utm_medium=settings&utm_content=documentation",
+				},
+				{
+					text: "Changelog",
+					href: "https://real1tyy.github.io/Prisma-Calendar/changelog?utm_source=obsidian-plugin&utm_medium=settings&utm_content=changelog",
+				},
+				{
+					text: "Gallery",
+					href: "https://real1tyy.github.io/Prisma-Calendar/gallery?utm_source=obsidian-plugin&utm_medium=settings&utm_content=gallery",
+				},
+				{
+					text: "Free vs Pro",
+					href: "https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro?utm_source=obsidian-plugin&utm_medium=settings&utm_content=free-vs-pro",
+				},
+				{
+					text: "Other Plugins",
+					href: "https://matejvavroproductivity.com/tools/?utm_source=obsidian-plugin&utm_medium=settings&utm_content=other-plugins",
+				},
+				{
+					text: "Support",
+					href: "https://matejvavroproductivity.com/support/?utm_source=obsidian-plugin&utm_medium=settings&utm_content=support",
+				},
 				{ text: "Playlist", href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4" },
 			],
 		});

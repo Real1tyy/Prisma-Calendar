@@ -56,7 +56,7 @@ export class IntegrationsSettings {
 
 		descContainer
 			.createEl("a", {
-				href: "https://real1tyy.github.io/Prisma-Calendar/docs/features/integrations",
+				href: "https://real1tyy.github.io/Prisma-Calendar/features/integrations?utm_source=obsidian-plugin&utm_medium=settings&utm_content=integrations-docs",
 				cls: cls("settings-docs-link"),
 				attr: { target: "_blank" },
 			})

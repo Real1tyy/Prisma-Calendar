@@ -20,18 +20,18 @@ const UTM_SOURCE = "obsidian-plugin";
 const UTM_MEDIUM = "pro-gate";
 
 const PRO_FEATURE_CONFIG: Record<ProFeatureKey, ProFeatureConfig> = {
-	AI_CHAT: { docPath: "docs/features/advanced/ai-chat", preview: aiChatPreview },
-	CALDAV_SYNC: { docPath: "docs/features/advanced/integrations" },
-	ICS_SYNC: { docPath: "docs/features/advanced/integrations" },
-	PROGRAMMATIC_API: { docPath: "docs/features/advanced/programmatic-api/overview" },
-	CATEGORY_ASSIGNMENT_PRESETS: { docPath: "docs/features/organization/categories" },
-	UNLIMITED_CALENDARS: { docPath: "docs/features/calendar/multiple-calendars" },
-	UNLIMITED_EVENT_PRESETS: { docPath: "docs/features/events/event-presets" },
-	HEATMAP: { docPath: "docs/features/views/heatmap", preview: heatmapPreview },
-	BASES_VIEW: { docPath: "docs/features/views/bases-calendar-view", preview: basesViewPreview },
-	PREREQUISITE_CONNECTIONS: { docPath: "docs/features/advanced/prerequisite-connections" },
-	GANTT: { docPath: "docs/features/views/gantt", preview: ganttPreview },
-	DASHBOARD: { docPath: "docs/features/views/dashboard", preview: dashboardPreview },
+	AI_CHAT: { docPath: "features/advanced/ai-chat", preview: aiChatPreview },
+	CALDAV_SYNC: { docPath: "features/advanced/integrations" },
+	ICS_SYNC: { docPath: "features/advanced/integrations" },
+	PROGRAMMATIC_API: { docPath: "features/advanced/programmatic-api/overview" },
+	CATEGORY_ASSIGNMENT_PRESETS: { docPath: "features/organization/categories" },
+	UNLIMITED_CALENDARS: { docPath: "features/calendar/multiple-calendars" },
+	UNLIMITED_EVENT_PRESETS: { docPath: "features/events/event-presets" },
+	HEATMAP: { docPath: "features/views/heatmap", preview: heatmapPreview },
+	BASES_VIEW: { docPath: "features/views/bases-calendar-view", preview: basesViewPreview },
+	PREREQUISITE_CONNECTIONS: { docPath: "features/advanced/prerequisite-connections" },
+	GANTT: { docPath: "features/views/gantt", preview: ganttPreview },
+	DASHBOARD: { docPath: "features/views/dashboard", preview: dashboardPreview },
 };
 
 export function getFeaturePreviewSrc(featureKey: ProFeatureKey): string | null {

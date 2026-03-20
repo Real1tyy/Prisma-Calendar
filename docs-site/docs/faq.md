@@ -16,7 +16,7 @@ Yes! Prisma Calendar is free and fully-featured out of the box — no account, n
 
 Pro unlocks additional power-user features: AI chat, CalDAV & ICS sync, programmatic API, unlimited calendars/presets, and priority support.
 
-See [Free vs Pro](./features/free-vs-pro.md) for the full breakdown, or visit the [product page](https://matejvavroproductivity.com/tools/prisma-calendar/) to start a 30-day free trial.
+See [Free vs Pro](./features/free-vs-pro.md) for the full breakdown, or visit the [product page](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=docs-site&utm_medium=content&utm_content=faq-product-page) to start a 30-day free trial.
 
 </details>
 
@@ -213,6 +213,6 @@ Check the [Troubleshooting guide](./troubleshooting.md) for common issues and so
 <details>
 <summary>How can I support the project?</summary>
 
-The best way to support Prisma Calendar is by purchasing an [Advanced Features](./features/free-vs-pro.md) license — you get powerful capabilities while directly funding development. You can also subscribe to the [YouTube channel](https://www.youtube.com/@real1tyy), share the plugin with others, or [donate](https://matejvavroproductivity.com/support/). See the [Support page](./support.md) for all options.
+The best way to support Prisma Calendar is by purchasing an [Advanced Features](./features/free-vs-pro.md) license — you get powerful capabilities while directly funding development. You can also subscribe to the [YouTube channel](https://www.youtube.com/@real1tyy), share the plugin with others, or [donate](https://matejvavroproductivity.com/support/?utm_source=docs-site&utm_medium=content&utm_content=faq-donate). See the [Support page](./support.md) for all options.
 
 </details>

@@ -20,7 +20,7 @@ Every setting is configurable. Every change is reactive. Every action is undoabl
 
 Recurring events that generate real notes. Batch operations across dozens of events. Time-based statistics. CalDAV sync. A scriptable API. Prisma Calendar handles the workflows other calendars can't.
 
-**[View Full Product Page →](https://matejvavroproductivity.com/tools/prisma-calendar/)**
+**[View Full Product Page →](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=docs-site&utm_medium=content&utm_content=intro-product-page)**
 
 </div>
 

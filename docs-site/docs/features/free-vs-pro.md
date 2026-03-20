@@ -2,7 +2,7 @@
 
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
-**👉 [Visit the product page](https://matejvavroproductivity.com/tools/prisma-calendar/) to learn more or start a 30-day free trial.**
+**👉 [Visit the product page](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=docs-site&utm_medium=content&utm_content=free-vs-pro-top) to learn more or start a 30-day free trial.**
 
 Prisma Calendar follows a freemium model. The free version is not a demo — it's a fully-featured calendar plugin packed with more capabilities than most standalone calendar apps. Pro adds advanced power-user features for those who need AI assistance, external calendar sync, scripting, and more.
 
@@ -65,7 +65,7 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 
 ## How to Upgrade
 
-1. Visit [matejvavroproductivity.com/tools/prisma-calendar](https://matejvavroproductivity.com/tools/prisma-calendar) and start a 30-day free trial
+1. Visit [matejvavroproductivity.com/tools/prisma-calendar](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=docs-site&utm_medium=content&utm_content=free-vs-pro-upgrade) and start a 30-day free trial
 2. After subscribing, you'll receive a license key
 3. Enter the license key in **Settings → General → Obsidian Secrets → License key** to unlock Pro features
 4. Click **Verify now** to activate — Pro features unlock immediately, no restart required
