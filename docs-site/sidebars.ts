@@ -38,7 +38,7 @@ const sidebars: SidebarsConfig = {
 					type: "category",
 					label: "Views",
 					collapsible: true,
-					items: ["features/views/tabbed-views", "features/views/dashboard", "features/views/header-actions", "features/views/bases-calendar-view", "features/views/capacity-tracking"],
+					items: ["features/views/tabbed-views", "features/views/dashboard", "features/views/gantt", "features/views/header-actions", "features/views/bases-calendar-view", "features/views/capacity-tracking"],
 				},
 				{
 					type: "category",
@@ -83,6 +83,7 @@ const sidebars: SidebarsConfig = {
 						"features/advanced/templater",
 						"features/advanced/integrations",
 						"features/advanced/hotkeys",
+						"features/advanced/prerequisite-connections",
 						{
 							type: "category",
 							label: "Programmatic API",

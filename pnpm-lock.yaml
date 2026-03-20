@@ -35,6 +35,9 @@ importers:
       date-holidays:
         specifier: ^3.26.8
         version: 3.26.8
+      frappe-gantt:
+        specifier: ^1.2.2
+        version: 1.2.2
       ical.js:
         specifier: ^2.2.1
         version: 2.2.1
@@ -988,6 +991,9 @@ packages:
     resolution: {integrity: sha512-9XNj/o4wrRFyhSMJOvsuyMwy8aUfBaZ1VrqHVfohyXf0Sw0e+yfKG+xZaY3arGCOMdwFsqObtzVOc1gU9KiT9w==}
     engines: {node: '>=18.3.0'}
     hasBin: true
+
+  frappe-gantt@1.2.2:
+    resolution: {integrity: sha512-1+uPNRa92LBIeKiZCVhJMiGIifJk5ONaoerXI8eBREXWRZGGoTJR5ATpMpsnAQcyBA6Gnq5wIht4eL+e4eHMBA==}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -2164,6 +2170,8 @@ snapshots:
   formatly@0.3.0:
     dependencies:
       fd-package-json: 2.0.0
+
+  frappe-gantt@1.2.2: {}
 
   fsevents@2.3.3:
     optional: true

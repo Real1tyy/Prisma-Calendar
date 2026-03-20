@@ -39,6 +39,8 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 | [Bases Calendar View](./views/bases-calendar-view.md) | Render Prisma Calendar events inside any Obsidian Base as a fully interactive calendar with month/week/day views, drag-and-drop, and context menus. |
 | [Heatmap View](./events/event-groups.md#heatmap-view-pro) | GitHub-style contribution heatmap showing event density across months/year with yearly and monthly modes, category-colored gradients, and click-to-inspect details. |
 | [Dashboard](./views/dashboard.md) | Full-page overview of all events with pie charts and sortable tables for recurring events, categories, and name-based series. |
+| [Prerequisite Connections](./advanced/prerequisite-connections.md) | SVG arrow overlay on the Calendar tab showing directed dependency arrows between prerequisite events |
+| [Gantt View](./views/gantt.md) | Gantt tab with horizontal event bars on a date timeline and native dependency arrows between prerequisite pairs |
 | [CalDAV & ICS URL Sync](./advanced/integrations.md) | One-way read-only sync from Google Calendar, Apple Calendar, Fastmail, Nextcloud, iCloud, and any CalDAV server or public ICS URL. |
 | [Programmatic API](./advanced/programmatic-api/overview.md) | `window.PrismaCalendar` and URL scheme for full CRUD, batch ops, statistics, settings, and navigation from external scripts. |
 | [Custom Category Assignment Presets](./organization/categories.md) | Map comma-separated event names to categories. Events auto-match on creation. |

@@ -6,7 +6,6 @@ import {
 	registerPageHeaderCommands,
 	registerTabCommands,
 	type TabbedContainerHandle,
-	type TabEntry,
 	type ViewActivator,
 } from "@real1ty-obsidian-plugins";
 
@@ -17,6 +16,7 @@ import { type CapacityIndicatorHandle, createCapacityIndicator } from "../capaci
 import { createDailyStatsTabDefinition } from "./daily-stats-tab";
 import { createDashboardTabDefinition } from "./dashboard-tab";
 import { createDualDailyTabDefinition } from "./dual-daily-tab";
+import { createGanttTabDefinition } from "./gantt-tab";
 import { createHeatmapTabDefinition } from "./heatmap-tab";
 import { buildPageHeaderActions, DEFAULT_ACTION_IDS } from "./page-header-actions";
 import { createTimelineTabDefinition } from "./timeline-tab";
@@ -63,8 +63,9 @@ export function registerPrismaCalendarView(
 			const dailyStatsTab = createDailyStatsTabDefinition(app, bundle);
 			const dualDailyTab = createDualDailyTabDefinition(app, bundle);
 			const dashboardTab = createDashboardTabDefinition(app, bundle);
+			const ganttTab = createGanttTabDefinition(app, bundle);
 
-			const tabs: TabEntry[] = [calendarTab, timelineTab, heatmapTab, dailyStatsTab, dualDailyTab, dashboardTab];
+			const tabs = [calendarTab, timelineTab, heatmapTab, dailyStatsTab, dualDailyTab, dashboardTab, ganttTab];
 
 			ref.tabbedHandle = createTabbedContainer(el, {
 				tabs,

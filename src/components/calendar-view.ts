@@ -25,6 +25,8 @@ import { type App, Component, type Modal, TFile, type WorkspaceLeaf } from "obsi
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { fillTime, UpdateEventCommand, updateFrontmatter } from "../core/commands";
+import { buildDependencyGraph } from "../core/dependency-graph";
+import { PRO_FEATURES } from "../core/license";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import type {
 	CalendarEvent,
@@ -49,6 +51,7 @@ import { emitHover } from "../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import type { CalendarHost } from "./calendar-host";
+import { ConnectionRenderer } from "./connection-renderer";
 import { EventContextMenu } from "./event-context-menu";
 import { FilterPresetSelector } from "./filter-preset-selector";
 import { ExpressionFilterInputManager } from "./input-managers/expression-filter";
@@ -135,6 +138,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private cachedNow = new Date();
 	private cachedTodayStart = new Date();
 	private isRestoring = false;
+	private connectionRenderer: ConnectionRenderer | null = null;
+	private showConnections = false;
+	private currentViewStart = new Date();
+	private currentViewEnd = new Date();
 	readonly app: App;
 	private rootEl: HTMLElement;
 	private hostEl: HTMLElement;
@@ -175,6 +182,14 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		await this.waitForLayout(this.container);
 		this.initializeCalendar(this.container);
+
+		const isProSub = this.bundle.plugin.licenseManager.isPro$.subscribe((isPro) => {
+			if (!isPro && this.showConnections) {
+				this.showConnections = false;
+				this.connectionRenderer?.clear();
+			}
+		});
+		this.register(() => isProSub.unsubscribe());
 
 		this.setupKeyboardShortcuts();
 
@@ -268,6 +283,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.calendar = null;
 		this.colorEvaluator.destroy();
 		this.batchSelectionManager = null;
+		this.connectionRenderer?.destroy();
+		this.connectionRenderer = null;
 	}
 
 	// ─── Calendar Setup ──────────────────────────────────────────
@@ -536,6 +553,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				const view = this.calendar?.view;
 				if (view) {
 					this.bundle.viewRef.capacityIndicatorHandle?.setRange(view.activeStart, view.activeEnd);
+					this.currentViewStart = view.activeStart;
+					this.currentViewEnd = view.activeEnd;
 				}
 
 				this.scheduleRefreshEvents();
@@ -555,11 +574,14 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 							col.classList.toggle(cls("month-odd"), month % 2 !== 0);
 						}
 					});
+
+					if (this.showConnections) this.renderConnections();
 				});
 			},
 
 			eventsSet: () => {
 				this.batchSelectionManager?.refreshSelectionStyling();
+				if (this.showConnections) this.renderConnections();
 			},
 
 			height: "auto",
@@ -2504,6 +2526,34 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				}, durationMs);
 			}
 		}
+	}
+
+	public toggleConnections(): void {
+		if (!this.bundle.plugin.licenseManager.requirePro(PRO_FEATURES.PREREQUISITE_CONNECTIONS)) return;
+		this.showConnections = !this.showConnections;
+		if (this.showConnections) {
+			this.renderConnections();
+		} else {
+			this.connectionRenderer?.clear();
+		}
+	}
+
+	private renderConnections(): void {
+		if (!this.connectionRenderer) {
+			this.connectionRenderer = new ConnectionRenderer(this.container);
+		}
+		const { graph, eventIdMap } = buildDependencyGraph(
+			this.bundle.eventStore.getAllEvents(),
+			this.bundle.settingsStore.currentSettings,
+			this.app
+		);
+		this.connectionRenderer.render(
+			graph,
+			eventIdMap,
+			this.bundle.eventStore.getAllEvents(),
+			this.currentViewStart,
+			this.currentViewEnd
+		);
 	}
 
 	public highlightEventsWithoutCategories(): void {
