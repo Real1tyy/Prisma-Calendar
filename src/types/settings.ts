@@ -230,37 +230,125 @@ const CalendarSettingsSchema = z
 		propagationDebounceMs: z.number().int().min(100).max(10000).catch(3000), // debounce delay in milliseconds before propagating frontmatter changes to instances
 		defaultView: CalendarViewTypeSchema.catch("dayGridMonth"),
 		defaultMobileView: CalendarViewTypeSchema.catch("dayGridMonth"),
-		hideWeekends: z.boolean().catch(false),
+		hideWeekends: z.boolean().catch(false).describe("Hide Saturday and Sunday in calendar views"),
 		showDecimalHours: z.boolean().catch(false), // Show durations as decimal hours (e.g., 2.5h) instead of formatted (e.g., 2h 30m)
 		defaultAggregationMode: z.enum(["name", "category"]).catch("name"), // Default aggregation mode for statistics (name or category)
-		capacityTrackingEnabled: z.boolean().catch(true), // Show capacity tracking (used vs remaining hours) in stats and page header
-		hourStart: z.number().int().min(0).max(23).catch(7),
-		hourEnd: z.number().int().min(1).max(24).catch(23),
+		capacityTrackingEnabled: z
+			.boolean()
+			.catch(true)
+			.describe(
+				"Show used vs remaining hours in statistics and page header. Boundaries are inferred from the earliest and latest events in each period."
+			),
+		hourStart: z.number().int().min(0).max(23).catch(7).describe("First hour to show in time grid views"),
+		hourEnd: z.number().int().min(1).max(24).catch(23).describe("Last hour to show in time grid views"),
 		firstDayOfWeek: z.number().int().min(0).max(6).catch(0), // 0 = Sunday, 1 = Monday, etc.
-		slotDurationMinutes: z.number().int().min(1).max(60).catch(30), // time slot duration in minutes
-		snapDurationMinutes: z.number().int().min(1).max(60).catch(30), // snap duration for dragging/resizing in minutes
+		slotDurationMinutes: z
+			.number()
+			.int()
+			.min(1)
+			.max(60)
+			.catch(30)
+			.describe("Duration of time slots in the calendar grid (1-60 minutes)"),
+		snapDurationMinutes: z
+			.number()
+			.int()
+			.min(1)
+			.max(60)
+			.catch(30)
+			.describe("Snap interval when dragging or resizing events (1-60 minutes)"),
 		zoomLevels: z.array(z.number().int().min(1).max(60)).catch(DEFAULT_ZOOM_LEVELS.slice()), // available zoom levels for slot duration
 		density: z.enum(["comfortable", "compact"]).catch("comfortable"),
-		enableEventPreview: z.boolean().catch(true), // Enable hover preview for events
-		nowIndicator: z.boolean().catch(true), // Show current time indicator line
-		highlightUpcomingEvent: z.boolean().catch(true), // Highlight the next upcoming event
-		thickerHourLines: z.boolean().catch(true), // Make full-hour lines thicker in day/week views
-		pastEventContrast: z.number().int().min(0).max(100).catch(70), // Contrast of past events in %
-		eventOverlap: z.boolean().catch(true), // Allow events to visually overlap (all views)
-		slotEventOverlap: z.boolean().catch(true), // Allow events to overlap within the same time slot (timeGrid views only)
-		eventMaxStack: z.number().int().min(1).max(10).catch(1), // Maximum number of events to stack before showing "+ more" link
-		desktopMaxEventsPerDay: z.number().int().min(0).max(10).catch(0), // Maximum events to show per day on desktop before showing "+more" (0 = unlimited)
-		mobileMaxEventsPerDay: z.number().int().min(0).max(10).catch(4), // Maximum events to show per day on mobile before showing "+more"
-		showColorDots: z.boolean().catch(true), // Show color indicator dots in monthly view
-		skipUnderscoreProperties: z.boolean().catch(true), // Skip displaying properties that start with underscore
+		enableEventPreview: z
+			.boolean()
+			.catch(true)
+			.describe("Show preview of event notes when hovering over events in the calendar"),
+		nowIndicator: z
+			.boolean()
+			.catch(true)
+			.describe("Display a line showing the current time in weekly and daily calendar views"),
+		highlightUpcomingEvent: z
+			.boolean()
+			.catch(true)
+			.describe(
+				"Subtly highlight events that are currently active (if any), or the next upcoming event. Only visible when the current time is within the visible date range."
+			),
+		thickerHourLines: z
+			.boolean()
+			.catch(true)
+			.describe("Make full-hour lines (12:00, 13:00, etc.) thicker in day and week views for better visual contrast"),
+		pastEventContrast: z
+			.number()
+			.int()
+			.min(0)
+			.max(100)
+			.catch(70)
+			.describe("Visual contrast of past events (0% = invisible, 100% = normal)"),
+		eventOverlap: z
+			.boolean()
+			.catch(true)
+			.describe(
+				"Allow events to visually overlap in all calendar views. When disabled, overlapping events display side-by-side in columns."
+			),
+		slotEventOverlap: z
+			.boolean()
+			.catch(true)
+			.describe(
+				"Allow events to overlap within the same time slot in time grid views. Only affects events that share exact slot boundaries."
+			),
+		eventMaxStack: z
+			.number()
+			.int()
+			.min(1)
+			.max(10)
+			.catch(1)
+			.describe("Maximum number of events to stack vertically before showing '+ more' link"),
+		desktopMaxEventsPerDay: z
+			.number()
+			.int()
+			.min(0)
+			.max(10)
+			.catch(0)
+			.describe("Maximum events to show per day on desktop before showing '+more' link (0 = unlimited)"),
+		mobileMaxEventsPerDay: z
+			.number()
+			.int()
+			.min(0)
+			.max(10)
+			.catch(4)
+			.describe("Maximum events to show per day on mobile before showing '+more' link (0 = unlimited)"),
+		showColorDots: z.boolean().catch(true).describe("Show color indicator dots at the top of each day in monthly view"),
+		skipUnderscoreProperties: z
+			.boolean()
+			.catch(true)
+			.describe(
+				"Hide frontmatter properties that start with underscore (e.g., _ZettelID) in event previews and edit modals"
+			),
 		filterPresets: z.array(FilterPresetSchema).catch([]), // Named filter expressions for quick access
-		dragEdgeScrollDelayMs: z.number().int().min(50).max(2000).catch(600), // Delay in milliseconds before scrolling when dragging events near edge
+		dragEdgeScrollDelayMs: z
+			.number()
+			.int()
+			.min(50)
+			.max(2000)
+			.catch(600)
+			.describe("Delay in milliseconds before scrolling when dragging events near the edge"),
 		batchActionButtons: z.array(BatchActionButtonSchema).catch([...DEFAULT_BATCH_ACTION_BUTTONS]), // Which batch action buttons to show in batch selection mode toolbar
 		toolbarButtons: z.array(ToolbarButtonSchema).catch([...DEFAULT_TOOLBAR_BUTTONS]), // Which buttons to show in the calendar toolbar (desktop)
 		mobileToolbarButtons: z.array(ToolbarButtonSchema).catch([...DEFAULT_TOOLBAR_BUTTONS]), // Which buttons to show in the calendar toolbar (mobile)
-		stickyDayHeaders: z.boolean().catch(true), // Make day headers sticky during vertical scroll (timegrid views)
-		stickyAllDayEvents: z.boolean().catch(true), // Make all-day event section sticky during vertical scroll (timegrid views)
-		allDayEventHeight: z.number().int().min(30).max(500).catch(75), // Maximum height in pixels for all-day events section before overflow
+		stickyDayHeaders: z
+			.boolean()
+			.catch(true)
+			.describe("Keep day/date headers visible at the top when scrolling down in weekly and daily views"),
+		stickyAllDayEvents: z
+			.boolean()
+			.catch(true)
+			.describe("Keep all-day event section visible at the top when scrolling down in weekly and daily views"),
+		allDayEventHeight: z
+			.number()
+			.int()
+			.min(30)
+			.max(500)
+			.catch(75)
+			.describe("Maximum height in pixels for all-day events section before overflow"),
 		autoAssignCategoryByName: z.boolean().catch(true), // Automatically assign category when event name matches category name (case-insensitive)
 		autoAssignCategoryByIncludes: z.boolean().catch(false), // Automatically assign category when event name contains a category name (substring match, case-insensitive)
 		titleAutocomplete: z.boolean().catch(true), // Show inline type-ahead suggestions when typing event titles in the create/edit modal
@@ -272,15 +360,30 @@ const CalendarSettingsSchema = z
 		showPhysicalRecurringMarker: z.boolean().catch(true), // Show marker indicator on physical recurring instance events
 		sourceRecurringMarker: z.string().catch(DEFAULT_SOURCE_RECURRING_MARKER), // Symbol/emoji to display on source recurring events
 		physicalRecurringMarker: z.string().catch(DEFAULT_PHYSICAL_RECURRING_MARKER), // Symbol/emoji to display on physical recurring instance events
-		showDurationInTitle: z.boolean().catch(true), // Show event duration in the event title
+		showDurationInTitle: z
+			.boolean()
+			.catch(true)
+			.describe("Display event duration (e.g., 2h 30m) in parentheses after the event title for timed events"),
 		dayCellColoring: z.enum(["off", "uniform", "boundary"]).catch("off" as const), // Day cell background coloring mode: off, uniform single color, or alternating by month boundary
 		monthEvenColor: ColorSchema.catch(DEFAULT_MONTH_EVEN_COLOR), // Background color for even months / uniform day background
 		monthOddColor: ColorSchema.catch(DEFAULT_MONTH_ODD_COLOR), // Background color for odd months
 		eventTextColor: ColorSchema.catch(DEFAULT_EVENT_TEXT_COLOR), // Default text color for events (used when it has sufficient contrast on background)
 		eventTextColorAlt: ColorSchema.catch(DEFAULT_EVENT_TEXT_COLOR_ALT), // Alternative text color (used when default has poor contrast)
 		connectionColor: ColorSchema.catch(DEFAULT_CONNECTION_COLOR), // Color of prerequisite connection arrows
-		connectionStrokeWidth: z.number().int().min(1).max(10).catch(DEFAULT_CONNECTION_STROKE_WIDTH), // Thickness of prerequisite connection arrow lines in pixels
-		connectionArrowSize: z.number().int().min(4).max(24).catch(DEFAULT_CONNECTION_ARROW_SIZE), // Size of prerequisite connection arrowheads in pixels
+		connectionStrokeWidth: z
+			.number()
+			.int()
+			.min(1)
+			.max(10)
+			.catch(DEFAULT_CONNECTION_STROKE_WIDTH)
+			.describe("Thickness of connection arrow lines in pixels"),
+		connectionArrowSize: z
+			.number()
+			.int()
+			.min(4)
+			.max(24)
+			.catch(DEFAULT_CONNECTION_ARROW_SIZE)
+			.describe("Size of connection arrowheads in pixels"),
 		fileConcurrencyLimit: z.number().int().min(1).max(50).catch(10), // Maximum number of files to modify in parallel during batch operations (recurring propagation, series propagation, file deletions)
 	})
 	.strip();
