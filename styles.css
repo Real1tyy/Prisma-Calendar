@@ -9933,5 +9933,29 @@ div.vis-tooltip {
 
 .prisma-gantt-wrapper {
 	overflow: auto;
-	max-height: 600px;
+	height: 100%;
+	min-height: 400px;
+}
+
+.prisma-gantt-wrapper .gantt-container {
+	--g-arrow-color: var(--text-muted);
+	--g-bar-color: var(--background-modifier-hover);
+	--g-bar-border: var(--background-modifier-border);
+	--g-tick-color-thick: var(--background-modifier-border);
+	--g-tick-color: var(--background-modifier-border-hover);
+	--g-actions-background: var(--background-secondary);
+	--g-border-color: var(--background-modifier-border);
+	--g-text-muted: var(--text-muted);
+	--g-text-light: var(--text-on-accent);
+	--g-text-dark: var(--text-normal);
+	--g-progress-color: var(--background-modifier-hover);
+	--g-handle-color: var(--text-muted);
+	--g-weekend-label-color: var(--background-modifier-hover);
+	--g-expected-progress: var(--background-modifier-hover);
+	--g-header-background: var(--background-primary);
+	--g-row-color: var(--background-primary-alt);
+	--g-row-border-color: var(--background-modifier-border);
+	--g-today-highlight: var(--color-accent);
+	--g-popup-actions: var(--background-secondary);
+	--g-weekend-highlight-color: var(--background-secondary-alt);
 }

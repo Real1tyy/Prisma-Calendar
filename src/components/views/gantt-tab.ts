@@ -30,9 +30,9 @@ function getTaskDates(event: CalendarEvent): { start: string; end: string } {
 	return { start, end };
 }
 
-function buildTasks(events: CalendarEvent[], graph: Map<string, string[]>, connectedOnly: boolean): Task[] {
+function buildTasks(events: CalendarEvent[], graph: Map<string, string[]>): Task[] {
 	return events
-		.filter((event) => !connectedOnly || isConnected(graph, event.ref.filePath))
+		.filter((event) => isConnected(graph, event.ref.filePath))
 		.map((event) => {
 			const { start, end } = getTaskDates(event);
 			const prereqs = graph.get(event.ref.filePath) ?? [];
@@ -65,7 +65,6 @@ function injectVendorCss(): void {
 export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let gantt: Gantt | null = null;
 	let mergedSub: Subscription | null = null;
-	let connectedOnly = true;
 	let wrapperEl: HTMLElement | null = null;
 	let emptyEl: HTMLElement | null = null;
 	let eventsSnapshot: CalendarEvent[] = [];
@@ -83,7 +82,8 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 			readonly_progress: true,
 			today_button: true,
 			scroll_to: "today",
-			popup: null,
+			container_height: "auto",
+			popup: () => false,
 			on_click: (task: Task) => {
 				const event = eventsSnapshot.find((e) => sanitizeGanttId(e.ref.filePath) === task.id);
 				if (!event) return;
@@ -103,7 +103,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		eventsSnapshot = bundle.eventStore.getAllEvents();
 		const settings = bundle.settingsStore.currentSettings;
 		const { graph } = buildDependencyGraph(eventsSnapshot, settings, app);
-		const tasks = buildTasks(eventsSnapshot, graph, connectedOnly);
+		const tasks = buildTasks(eventsSnapshot, graph);
 
 		if (tasks.length === 0) {
 			gantt = null;
@@ -133,23 +133,9 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 
 			injectVendorCss();
 
-			const toolbar = el.createDiv({ cls: cls("gantt-toolbar") });
-
-			const filterLabel = toolbar.createEl("label", { cls: cls("gantt-filter-label") });
-			const filterCheckbox = filterLabel.createEl("input", { type: "checkbox" });
-			filterCheckbox.checked = connectedOnly;
-			filterLabel.createSpan({ text: "Connected only" });
-
-			filterCheckbox.addEventListener("change", () => {
-				connectedOnly = filterCheckbox.checked;
-				gantt = null;
-				wrapperEl?.empty();
-				rebuild();
-			});
-
 			emptyEl = el.createDiv({
 				cls: cls("gantt-empty"),
-				text: 'No events to display. Uncheck "Connected only" to show all events, or add prerequisite connections.',
+				text: "No prerequisite connections found. Add prerequisites to events to see them here.",
 			});
 			wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
 
