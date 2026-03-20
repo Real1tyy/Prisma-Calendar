@@ -169,8 +169,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 						| "friday"
 						| "saturday"
 					)[],
-					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 					allDay: false,
 				},
 				frontmatter: {
@@ -312,8 +312,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 						| "friday"
 						| "saturday"
 					)[],
-					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 					allDay: false,
 				},
 				frontmatter: {
@@ -452,8 +452,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "daily" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-01T09:30:00Z"), // Should extract this time
-						endTime: DateTime.fromISO("2024-01-01T10:15:00Z"), // Should extract this time
+						startTime: DateTime.fromISO("2024-01-01T09:30:00"), // Should extract this time
+						endTime: DateTime.fromISO("2024-01-01T10:15:00"), // Should extract this time
 						weekdays: [],
 					},
 					frontmatter: {
@@ -501,8 +501,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "weekly" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-01T10:00:00Z"), // Should extract this time
-						endTime: DateTime.fromISO("2024-01-01T11:30:00Z"), // Should extract this time
+						startTime: DateTime.fromISO("2024-01-01T10:00:00"), // Should extract this time
+						endTime: DateTime.fromISO("2024-01-01T11:30:00"), // Should extract this time
 						weekdays: ["tuesday", "thursday"] as const,
 					},
 					frontmatter: {
@@ -548,8 +548,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "bi-weekly" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-01T09:15:00Z"), // Should extract this time
-						endTime: DateTime.fromISO("2024-01-01T10:00:00Z"), // Should extract this time
+						startTime: DateTime.fromISO("2024-01-01T09:15:00"), // Should extract this time
+						endTime: DateTime.fromISO("2024-01-01T10:00:00"), // Should extract this time
 						weekdays: ["monday", "friday"] as const,
 					},
 					frontmatter: {
@@ -646,8 +646,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "monthly" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-25T14:30:00Z"), // 25th at 14:30 - should inherit both day and time
-						endTime: DateTime.fromISO("2024-01-25T16:00:00Z"), // 25th at 16:00 - should inherit both day and time
+						startTime: DateTime.fromISO("2024-01-25T14:30:00"), // 25th at 14:30 - should inherit both day and time
+						endTime: DateTime.fromISO("2024-01-25T16:00:00"), // 25th at 16:00 - should inherit both day and time
 						weekdays: [],
 					},
 					frontmatter: {
@@ -735,8 +735,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "yearly" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-03-12T18:00:00Z"), // March 12th at 18:00 - should inherit all
-						endTime: DateTime.fromISO("2024-03-12T22:30:00Z"), // March 12th at 22:30 - should inherit all
+						startTime: DateTime.fromISO("2024-03-12T18:00:00"), // March 12th at 18:00 - should inherit all
+						endTime: DateTime.fromISO("2024-03-12T22:30:00"), // March 12th at 22:30 - should inherit all
 						weekdays: [],
 					},
 					frontmatter: {
@@ -779,8 +779,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "monthly" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-15T14:30:00Z"), // January 15th
-						endTime: DateTime.fromISO("2024-01-15T16:00:00Z"),
+						startTime: DateTime.fromISO("2024-01-15T14:30:00"), // January 15th
+						endTime: DateTime.fromISO("2024-01-15T16:00:00"),
 						weekdays: [],
 					},
 					frontmatter: {
@@ -837,8 +837,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "daily" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-						endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+						startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+						endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 						weekdays: [],
 					},
 					frontmatter: {
@@ -854,8 +854,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "daily" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-01T14:00:00Z"),
-						endTime: DateTime.fromISO("2024-01-01T15:00:00Z"),
+						startTime: DateTime.fromISO("2024-01-01T14:00:00"),
+						endTime: DateTime.fromISO("2024-01-01T15:00:00"),
 						weekdays: [],
 					},
 					frontmatter: {
@@ -871,8 +871,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					rrules: {
 						type: "weekly" as const,
 						allDay: false,
-						startTime: DateTime.fromISO("2024-01-01T09:00:00Z"),
-						endTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
+						startTime: DateTime.fromISO("2024-01-01T09:00:00"),
+						endTime: DateTime.fromISO("2024-01-01T10:00:00"),
 						weekdays: [1], // Monday
 					},
 					frontmatter: {
@@ -922,8 +922,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				rrules: {
 					type: "daily" as const,
 					allDay: false,
-					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 					weekdays: [],
 				},
 				frontmatter: {
@@ -978,8 +978,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				rrules: {
 					type: "daily" as const,
 					allDay: false,
-					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 					weekdays: [],
 				},
 				frontmatter: {
@@ -1014,8 +1014,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				rrules: {
 					type: "daily" as const,
 					allDay: false,
-					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 					weekdays: [],
 				},
 				frontmatter: {
@@ -1026,7 +1026,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				content: "Test content",
 			};
 
-			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00");
 
 			// Generate path twice - should be identical
 			const path1 = (manager as any).generateNodeInstanceFilePath(recurringEvent, instanceDate);
@@ -1047,8 +1047,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				rrules: {
 					type: "daily" as const,
 					allDay: false,
-					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 					weekdays: [],
 				},
 				frontmatter: {
@@ -1059,8 +1059,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				content: "Test content",
 			};
 
-			const date1 = DateTime.fromISO("2024-01-15T00:00:00Z");
-			const date2 = DateTime.fromISO("2024-01-16T00:00:00Z");
+			const date1 = DateTime.fromISO("2024-01-15T00:00:00");
+			const date2 = DateTime.fromISO("2024-01-16T00:00:00");
 
 			const path1 = (manager as any).generateNodeInstanceFilePath(recurringEvent, date1);
 			const path2 = (manager as any).generateNodeInstanceFilePath(recurringEvent, date2);
@@ -1086,8 +1086,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				rrules: {
 					type: "daily" as const,
 					allDay: false,
-					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 					weekdays: [],
 				},
 				frontmatter: {},
@@ -1102,7 +1102,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				sourceFilePath: "source2.md",
 			};
 
-			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00");
 
 			const path1 = (manager as any).generateNodeInstanceFilePath(event1, instanceDate);
 			const path2 = (manager as any).generateNodeInstanceFilePath(event2, instanceDate);
@@ -1130,8 +1130,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				rrules: {
 					type: "daily" as const,
 					allDay: false,
-					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 					weekdays: [],
 				},
 				frontmatter: {
@@ -1142,7 +1142,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				content: "Test content",
 			};
 
-			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00");
 			const expectedPath = (manager as any).generateNodeInstanceFilePath(recurringEvent, instanceDate);
 
 			// Simulate file already exists
@@ -1169,8 +1169,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				rrules: {
 					type: "daily" as const,
 					allDay: false,
-					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 					weekdays: [],
 				},
 				frontmatter: {
@@ -1181,7 +1181,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				content: "Test content",
 			};
 
-			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00");
 
 			// File doesn't exist
 			vi.mocked(mockApp.vault.getAbstractFileByPath).mockReturnValue(null);
@@ -1204,8 +1204,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				rrules: {
 					type: "daily" as const,
 					allDay: false,
-					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 					weekdays: [],
 				},
 				frontmatter: {
@@ -1216,7 +1216,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				content: "Test content",
 			};
 
-			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00");
 
 			// First call: file doesn't exist, create it
 			vi.mocked(mockApp.vault.getAbstractFileByPath).mockReturnValueOnce(null);
@@ -1243,7 +1243,7 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 		it("should use consistent zettel hash for same rRuleId across title changes", async () => {
 			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
 
-			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00Z");
+			const instanceDate = DateTime.fromISO("2024-01-15T00:00:00");
 
 			const event1 = {
 				rRuleId: "1730000000000-abc12",
@@ -1251,8 +1251,8 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 				rrules: {
 					type: "daily" as const,
 					allDay: false,
-					startTime: DateTime.fromISO("2024-01-01T10:00:00Z"),
-					endTime: DateTime.fromISO("2024-01-01T11:00:00Z"),
+					startTime: DateTime.fromISO("2024-01-01T10:00:00"),
+					endTime: DateTime.fromISO("2024-01-01T11:00:00"),
 					weekdays: [],
 				},
 				frontmatter: {},

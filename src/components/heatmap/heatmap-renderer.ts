@@ -136,8 +136,8 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 	const gap = CELL_GAP_YEARLY;
 	const step = cellSize + gap;
 
-	const startDate = DateTime.utc(year, 1, 1);
-	const endDate = DateTime.utc(year, 12, 31);
+	const startDate = DateTime.local(year, 1, 1);
+	const endDate = DateTime.local(year, 12, 31);
 
 	const startOffset = normalizedDayOfWeek(startDate, firstDayOfWeek);
 	const totalDays = endDate.diff(startDate, "days").days + 1;
@@ -167,7 +167,7 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 	}
 
 	for (let m = 1; m <= 12; m++) {
-		const firstOfMonth = DateTime.utc(year, m, 1);
+		const firstOfMonth = DateTime.local(year, m, 1);
 		const col = getYearlyColumn(firstOfMonth, startDate, firstDayOfWeek);
 		const text = createSVGElement("text", {
 			x: String(labelWidth + col * step),
@@ -215,7 +215,7 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 	const gap = CELL_GAP_MONTHLY;
 	const step = cellSize + gap;
 
-	const startDate = DateTime.utc(year, month, 1);
+	const startDate = DateTime.local(year, month, 1);
 	const endDate = startDate.endOf("month");
 	const daysInMonth = endDate.day;
 
@@ -244,7 +244,7 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 	}
 
 	for (let d = 1; d <= daysInMonth; d++) {
-		const day = DateTime.utc(year, month, d);
+		const day = DateTime.local(year, month, d);
 		const offset = normalizedDayOfWeek(day, firstDayOfWeek);
 		const weekRow = Math.floor((d - 1 + startOffset) / 7);
 		const dateKey = day.toFormat("yyyy-MM-dd");

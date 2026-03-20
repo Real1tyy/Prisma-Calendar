@@ -79,7 +79,7 @@ export class HolidayStore {
 
 		return allHolidays
 			.filter((h) => {
-				const holidayDate = DateTime.fromISO(h.date, { zone: "utc" });
+				const holidayDate = DateTime.fromISO(h.date);
 				return holidayDate >= start && holidayDate < end;
 			})
 			.map((h) => this.holidayToCalendarEvent(h));

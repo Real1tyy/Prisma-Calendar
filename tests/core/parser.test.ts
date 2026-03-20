@@ -267,7 +267,7 @@ describe("Parser", () => {
 	});
 
 	describe("UTC handling", () => {
-		it("should store dates in UTC format", () => {
+		it("should store dates in local ISO format without Z suffix", () => {
 			const source = createRawEventSource({
 				filePath: "Events/meeting.md",
 				mtime: Date.now(),
@@ -282,9 +282,8 @@ describe("Parser", () => {
 			const events = parser.parseEventSource(source);
 
 			expect(events).toBeDefined();
-
-			// The stored start time should be in UTC (check the ISO string format)
-			expect(events!.start).toMatch(/Z$/); // Should end with Z indicating UTC
+			expect(events!.start).not.toMatch(/Z$/);
+			expect(events!.start).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
 		});
 	});
 

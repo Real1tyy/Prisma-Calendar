@@ -24,6 +24,7 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 
 import type { CalendarEvent, Frontmatter, PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
+import { stripZ, toInternalISO } from "../types/event";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getNextOccurrence } from "../utils/date-recurrence";
@@ -385,9 +386,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const { rruleId, instanceDate, ignoreRecurring, source } = metadata;
 
 		if (rruleId && instanceDate) {
-			const parsedInstanceDate = DateTime.fromISO(instanceDate, {
-				zone: "utc",
-			});
+			const parsedInstanceDate = DateTime.fromISO(stripZ(instanceDate));
 			if (parsedInstanceDate.isValid) {
 				let recurringData = this.recurringEventsMap.get(rruleId);
 
@@ -628,7 +627,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 				return;
 			}
 
-			const now = DateTime.now().toUTC();
+			const now = DateTime.now();
 			const generatePastEvents = recurringEvent.metadata.generatePastEvents;
 
 			const futureInstances = this.getPhysicalInstancesList(physicalInstances, true).filter(
@@ -764,8 +763,8 @@ export class RecurringEventManager extends DebouncedNotifier {
 				instanceFrontmatter[this.settings.allDayProp] = recurringEvent.rrules.allDay;
 			}
 
-			const instanceStartISO = instanceStart.toUTC().toISO();
-			const instanceEndISO = instanceEnd ? (instanceEnd.toUTC().toISO() ?? undefined) : undefined;
+			const instanceStartISO = toInternalISO(instanceStart);
+			const instanceEndISO = instanceEnd ? toInternalISO(instanceEnd) : undefined;
 			if (instanceStartISO) {
 				setEventBasics(instanceFrontmatter, this.settings, {
 					start: instanceStartISO,
@@ -778,7 +777,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			// Physical instances created by ensurePastInstances are always in the past;
 			// setting Status here ensures they're correct immediately without relying on
 			// the indexer (which may miss newly created files due to metadata cache delays).
-			const now = DateTime.now().toUTC();
+			const now = DateTime.now();
 			const isPast = instanceEnd && instanceEnd < now ? true : instanceStart < now;
 			if (
 				this.settings.markPastInstancesAsDone &&
@@ -922,7 +921,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const { recurringEvent, instanceDate } = occurrence;
 		const { instanceStart, instanceEnd } = this.calculateInstanceTimes(recurringEvent, instanceDate);
 		const isAllDay = recurringEvent.rrules.allDay;
-		const start = instanceStart.toISO({ suppressMilliseconds: true }) || "";
+		const start = toInternalISO(instanceStart);
 		const { metadata } = recurringEvent;
 
 		const baseEvent = {
@@ -953,7 +952,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			: {
 					...baseEvent,
 					type: "timed" as const,
-					end: instanceEnd ? instanceEnd.toISO({ suppressMilliseconds: true }) || "" : "",
+					end: instanceEnd ? toInternalISO(instanceEnd) : "",
 					allDay: false,
 				};
 	}
@@ -963,19 +962,16 @@ export class RecurringEventManager extends DebouncedNotifier {
 		instanceDate: DateTime
 	): { instanceStart: DateTime; instanceEnd: DateTime | null } {
 		const { rrules } = recurringEvent;
-		const sourceStart = getStartDateTime(rrules).toUTC();
-		const sourceEnd = rrules.allDay ? null : rrules.endTime?.toUTC() || null;
+		const sourceStart = getStartDateTime(rrules);
+		const sourceEnd = rrules.allDay ? null : rrules.endTime || null;
 
 		const normalizedInstanceDate = rrules.allDay
-			? DateTime.fromObject(
-					{
-						year: instanceDate.year,
-						month: instanceDate.month,
-						day: instanceDate.day,
-					},
-					{ zone: "utc" }
-				)
-			: instanceDate.toUTC();
+			? DateTime.fromObject({
+					year: instanceDate.year,
+					month: instanceDate.month,
+					day: instanceDate.day,
+				})
+			: instanceDate;
 
 		const instanceStart = applySourceTimeToInstanceDate(normalizedInstanceDate, sourceStart);
 		const instanceEnd = sourceEnd ? applySourceTimeToInstanceDate(normalizedInstanceDate, sourceEnd) : null;

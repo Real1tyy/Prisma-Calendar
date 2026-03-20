@@ -6,6 +6,7 @@ import BTree from "sorted-btree";
 import { MARK_DONE_SCAN_INTERVAL_MS } from "../../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
+import { stripZ } from "../../types/event";
 import type { ISO } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";
 import type { HolidayStore } from "../holidays";
@@ -140,8 +141,8 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	 */
 	async getEvents(query: EventQuery): Promise<CalendarEvent[]> {
 		const physical = this.queryNonSkippedPhysical(query);
-		const queryStart = DateTime.fromISO(query.start, { zone: "utc" });
-		const queryEnd = DateTime.fromISO(query.end, { zone: "utc" });
+		const queryStart = DateTime.fromISO(stripZ(query.start));
+		const queryEnd = DateTime.fromISO(stripZ(query.end));
 		const virtualEvents = this.recurringEventManager.generateAllVirtualInstances(queryStart, queryEnd);
 
 		let holidays: CalendarEvent[] = [];
@@ -394,11 +395,11 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private scanPastEventsForMarkDone(): void {
 		if (!this.settings.markPastInstancesAsDone) return;
 
-		const now = DateTime.now().toUTC();
-		const nowIso = now.toISO({ suppressMilliseconds: true }) ?? "";
+		const now = DateTime.now();
+		const nowIso = now.toISO({ suppressMilliseconds: true, includeOffset: false }) ?? "";
 		// All-day events are past only after the end of that day (23:59:59),
 		// matching the indexer's markPastEventAsDone logic
-		const endOfTodayIso = now.endOf("day").toISO({ suppressMilliseconds: true }) ?? "";
+		const endOfTodayIso = now.endOf("day").toISO({ suppressMilliseconds: true, includeOffset: false }) ?? "";
 		const doneValue = this.settings.doneValue;
 
 		for (const cached of this.cache.values()) {
@@ -421,20 +422,15 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	}
 
 	/**
-	 * Normalizes an ISO string to a consistent UTC format for BTree key comparison.
+	 * Normalizes an ISO string to a consistent format for BTree key comparison.
+	 * Strips any Z suffix and ensures a fixed-length `YYYY-MM-DDTHH:MM:SS` format.
 	 * Both keys and query bounds pass through this, ensuring consistent comparison.
-	 *
-	 * Fast path: stored events use 20-char `YYYY-MM-DDTHH:MM:SSZ` (Luxon suppressMilliseconds).
-	 * These are already valid ISO-8601 UTC — splice in `.000` to match Date.toISOString() format
-	 * without allocating a Date object. Query bounds (24-char with `.000Z`) and other formats
-	 * fall through to the Date constructor.
 	 */
 	private normIso(iso: string): string {
-		if (iso.length === 20 && iso.charCodeAt(19) === 90) {
-			// "YYYY-MM-DDTHH:MM:SSZ" → "YYYY-MM-DDTHH:MM:SS.000Z"
-			return `${iso.slice(0, 19)}.000Z`;
-		}
-		return new Date(iso).toISOString();
+		const stripped = stripZ(iso);
+		if (stripped.length === 19) return stripped;
+		if (stripped.length === 10) return `${stripped}T00:00:00`;
+		return stripped.slice(0, 19);
 	}
 
 	private makeTreeKey(time: string, filePath: string): string {

@@ -2,6 +2,8 @@ import { parseDateTimeString, parseIntoList, parseTimeString } from "@real1ty-ob
 import { DateTime } from "luxon";
 import { z } from "zod";
 
+import { stripZ } from "./iso";
+
 export type ISO = string;
 
 export const titleTransform = z
@@ -56,7 +58,8 @@ const parseDT = (s: string) => parseDateTimeString(s);
 const parseTime = (s: string) => parseTimeString(s);
 
 const parseISODateStart = (s: string) => {
-	const dt = DateTime.fromISO(s, { zone: "utc" });
+	const stripped = stripZ(s);
+	const dt = DateTime.fromISO(stripped);
 	return dt.isValid ? dt.startOf("day") : undefined;
 };
 

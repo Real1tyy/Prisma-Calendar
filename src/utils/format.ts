@@ -5,6 +5,7 @@ import type { CalendarEvent, CalendarEventData } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getInternalProperties } from "./event-frontmatter";
 import { cleanupTitle } from "./event-naming";
+import { stripZ } from "./iso";
 import { extractPropertyText, getDisplayProperties } from "./property-display";
 
 /**
@@ -13,7 +14,7 @@ import { extractPropertyText, getDisplayProperties } from "./property-display";
  * NOTE: This version accepts string | Date (unlike the shared version which is string-only).
  */
 export function formatDateTimeForInput(dateInput: string | Date): string {
-	const dateStr = typeof dateInput === "string" ? dateInput.replace(/Z$/, "") : dateInput;
+	const dateStr = typeof dateInput === "string" ? stripZ(dateInput) : dateInput;
 	const date = intoDate(dateStr);
 	if (!date) throw new Error("Invalid date input");
 
@@ -30,7 +31,7 @@ export function formatDateTimeForInput(dateInput: string | Date): string {
  * Strips Z suffix to treat as local time and returns YYYY-MM-DD format.
  */
 export function formatDateOnly(dateInput: string | Date): string {
-	const dateStr = typeof dateInput === "string" ? dateInput.replace(/Z$/, "") : dateInput;
+	const dateStr = typeof dateInput === "string" ? stripZ(dateInput) : dateInput;
 	const date = intoDate(dateStr);
 	if (!date) throw new Error("Invalid date input");
 

@@ -7,7 +7,7 @@ import { v5 as uuidv5 } from "uuid";
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../types/calendar";
 import type { EventMetadata } from "../types/event";
-import { convertToISO, parseEventFrontmatter } from "../types/event";
+import { parseEventFrontmatter, toInternalISO } from "../types/event";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
 import { applyDateNormalizationToFile } from "../utils/event-frontmatter";
 import { getEventName } from "../utils/event-naming";
@@ -67,7 +67,7 @@ export class Parser {
 		metadata: EventMetadata
 	): AllDayEvent {
 		const { filePath, frontmatter } = source;
-		const start = date.startOf("day").toUTC().toISO({ suppressMilliseconds: true }) || "";
+		const start = toInternalISO(date.startOf("day"));
 
 		const meta = this.createEventMeta(source);
 
@@ -96,10 +96,8 @@ export class Parser {
 		metadata: EventMetadata
 	): TimedEvent {
 		const { filePath, frontmatter } = source;
-		const start = convertToISO(startTime);
-		const end: ISO = endTime
-			? convertToISO(endTime)
-			: this.calculateDefaultEnd(startTime, false).toUTC().toISO({ suppressMilliseconds: true }) || "";
+		const start = toInternalISO(startTime);
+		const end: ISO = endTime ? toInternalISO(endTime) : toInternalISO(this.calculateDefaultEnd(startTime, false));
 
 		const meta = this.createEventMeta(source);
 		void applyDateNormalizationToFile(this.app, source.filePath, frontmatter, this.settings, start, end);

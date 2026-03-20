@@ -42,7 +42,7 @@ describe("EventStore", () => {
 			id: "test-event-1",
 			ref: { filePath: "Events/meeting.md" },
 			title: "Test Meeting",
-			start: "2024-01-15T10:00:00.000Z",
+			start: "2024-01-15T10:00:00",
 			meta: {
 				folder: "Events",
 				originalStart: "2024-01-15 10:00",
@@ -57,7 +57,7 @@ describe("EventStore", () => {
 
 		return createMockTimedEvent({
 			...baseOverrides,
-			end: ((overrides as any).end as string) ?? "2024-01-15T11:00:00.000Z",
+			end: ((overrides as any).end as string) ?? "2024-01-15T11:00:00",
 		});
 	};
 
@@ -70,8 +70,8 @@ describe("EventStore", () => {
 			eventStore.updateEvent("Events/meeting.md", event2, 1642204801000);
 
 			const query: EventQuery = {
-				start: "2024-01-15T00:00:00.000Z",
-				end: "2024-01-16T00:00:00.000Z",
+				start: "2024-01-15T00:00:00",
+				end: "2024-01-16T00:00:00",
 			};
 
 			const events = await eventStore.getEvents(query);
@@ -95,28 +95,28 @@ describe("EventStore", () => {
 			const event1 = createMockEvent({
 				id: "event-1",
 				title: "Morning Meeting",
-				start: "2024-01-15T09:00:00.000Z",
-				end: "2024-01-15T10:00:00.000Z",
+				start: "2024-01-15T09:00:00",
+				end: "2024-01-15T10:00:00",
 			});
 
 			const event2 = createMockEvent({
 				id: "event-2",
 				title: "Lunch Break",
-				start: "2024-01-15T12:00:00.000Z",
-				end: "2024-01-15T13:00:00.000Z",
+				start: "2024-01-15T12:00:00",
+				end: "2024-01-15T13:00:00",
 			});
 
 			const event3 = createMockEvent({
 				id: "event-3",
 				title: "Afternoon Meeting",
-				start: "2024-01-16T14:00:00.000Z",
-				end: "2024-01-16T15:00:00.000Z",
+				start: "2024-01-16T14:00:00",
+				end: "2024-01-16T15:00:00",
 			});
 
 			const allDayEvent = createMockEvent({
 				id: "event-4",
 				title: "Holiday",
-				start: "2024-01-17T00:00:00.000Z",
+				start: "2024-01-17T00:00:00",
 				allDay: true,
 			});
 
@@ -128,8 +128,8 @@ describe("EventStore", () => {
 
 		it("should return events within date range", async () => {
 			const query: EventQuery = {
-				start: "2024-01-15T00:00:00.000Z",
-				end: "2024-01-16T00:00:00.000Z",
+				start: "2024-01-15T00:00:00",
+				end: "2024-01-16T00:00:00",
 			};
 
 			const events = await eventStore.getEvents(query);
@@ -140,8 +140,8 @@ describe("EventStore", () => {
 
 		it("should return events sorted by start time", async () => {
 			const query: EventQuery = {
-				start: "2024-01-15T00:00:00.000Z",
-				end: "2024-01-17T00:00:00.000Z",
+				start: "2024-01-15T00:00:00",
+				end: "2024-01-17T00:00:00",
 			};
 
 			const events = await eventStore.getEvents(query);
@@ -155,8 +155,8 @@ describe("EventStore", () => {
 
 		it("should handle partial overlaps", async () => {
 			const query: EventQuery = {
-				start: "2024-01-15T09:30:00.000Z", // Middle of first event
-				end: "2024-01-15T12:30:00.000Z", // Middle of second event
+				start: "2024-01-15T09:30:00", // Middle of first event
+				end: "2024-01-15T12:30:00", // Middle of second event
 			};
 
 			const events = await eventStore.getEvents(query);
@@ -167,8 +167,8 @@ describe("EventStore", () => {
 
 		it("should return empty array for non-matching date range", async () => {
 			const query: EventQuery = {
-				start: "2024-01-20T00:00:00.000Z",
-				end: "2024-01-21T00:00:00.000Z",
+				start: "2024-01-20T00:00:00",
+				end: "2024-01-21T00:00:00",
 			};
 
 			const events = await eventStore.getEvents(query);
@@ -179,7 +179,7 @@ describe("EventStore", () => {
 		it("should handle invalid date ranges gracefully", async () => {
 			const query: EventQuery = {
 				start: "invalid-date",
-				end: "2024-01-16T00:00:00.000Z",
+				end: "2024-01-16T00:00:00",
 			};
 
 			const events = await eventStore.getEvents(query);
@@ -315,8 +315,8 @@ describe("EventStore", () => {
 			const parsedEvent = createMockEvent({
 				id: "test-1",
 				title: "Test Event",
-				start: "2024-01-15T10:00:00.000Z",
-				end: "2024-01-15T11:00:00.000Z",
+				start: "2024-01-15T10:00:00",
+				end: "2024-01-15T11:00:00",
 				allDay: false,
 				color: "#ff0000",
 				meta: { folder: "Events" },
@@ -325,8 +325,8 @@ describe("EventStore", () => {
 			eventStore.updateEvent("Events/test.md", parsedEvent, 1642204800000);
 
 			const query: EventQuery = {
-				start: "2024-01-15T00:00:00.000Z",
-				end: "2024-01-16T00:00:00.000Z",
+				start: "2024-01-15T00:00:00",
+				end: "2024-01-16T00:00:00",
 			};
 
 			const events = await eventStore.getEvents(query);
@@ -334,9 +334,9 @@ describe("EventStore", () => {
 
 			expect(event.id).toBe("test-1");
 			expect(event.title).toBe("Test Event");
-			expect(event.start).toBe("2024-01-15T10:00:00.000Z");
+			expect(event.start).toBe("2024-01-15T10:00:00");
 			if (event.type === "timed") {
-				expect(event.end).toBe("2024-01-15T11:00:00.000Z");
+				expect(event.end).toBe("2024-01-15T11:00:00");
 			}
 			expect(event.allDay).toBe(false);
 			expect(event.color).toBe("#ff0000");

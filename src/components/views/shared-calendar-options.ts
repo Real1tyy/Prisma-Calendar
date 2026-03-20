@@ -22,6 +22,7 @@ import { resolveEventColor } from "../../utils/event-color";
 import { hashFrontmatter } from "../../utils/event-diff";
 import { cleanupTitle } from "../../utils/event-naming";
 import { buildEventTooltip } from "../../utils/format";
+import { stripZ } from "../../utils/iso";
 import { emitHover } from "../../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../../utils/property-display";
 import type { BatchSelectionManager } from "../batch-selection-manager";
@@ -335,8 +336,8 @@ export function mapEventToPrismaInput(
 	colorEvaluator: ColorEvaluator<SingleCalendarConfig>
 ): PrismaEventInput {
 	const eventColor = resolveEventColor(event.meta ?? {}, bundle, colorEvaluator);
-	const start = event.start.replace(/Z$/, "");
-	const end = isTimedEvent(event) ? event.end.replace(/Z$/, "") : undefined;
+	const start = stripZ(event.start);
+	const end = isTimedEvent(event) ? stripZ(event.end) : undefined;
 
 	const classNames = ["regular-event"];
 	if (event.isVirtual) {

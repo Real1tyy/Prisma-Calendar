@@ -318,7 +318,7 @@ export class EventSeriesModal extends Modal {
 
 		const items: EventListItem[] = events.map((event) => {
 			const item: EventListItem = {
-				date: DateTime.fromISO(event.start, { zone: "utc" }),
+				date: DateTime.fromISO(event.start),
 				title: removeZettelId(event.title),
 				filePath: event.ref.filePath,
 				skipped: !!event.skipped,
@@ -364,7 +364,7 @@ export class EventSeriesModal extends Modal {
 		// Extra content before stats (e.g., recurrence info)
 		options.beforeStats?.(this.contentArea);
 
-		const now = DateTime.now().toUTC();
+		const now = DateTime.now();
 
 		const stats = calculateEventStatistics(items, now);
 

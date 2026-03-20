@@ -44,7 +44,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should track original custom property keys from frontmatter", () => {
 			const event = {
 				title: "My Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "test-event.md" },
 			};
 
@@ -75,7 +75,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should preserve array types", () => {
 			const event = {
 				title: "Test",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: null },
 			};
 
@@ -95,7 +95,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should preserve boolean types", () => {
 			const event = {
 				title: "Test",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: null },
 			};
 
@@ -112,7 +112,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should preserve number types", () => {
 			const event = {
 				title: "Test",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: null },
 			};
 
@@ -148,7 +148,7 @@ describe("EventEditModal - Custom Properties", () => {
 
 			const event = {
 				title: "Test Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				setExtendedProp: setExtendedPropMock,
 				get extendedProps() {
 					return { filePath };
@@ -178,7 +178,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should mark properties for deletion when removed from form", () => {
 			const event = {
 				title: "Test Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "test.md" },
 			};
 
@@ -231,7 +231,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should handle deleting all custom properties", () => {
 			const event = {
 				title: "Test Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "test.md" },
 			};
 
@@ -269,7 +269,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should handle adding new properties while keeping existing ones", () => {
 			const event = {
 				title: "Test Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "test.md" },
 			};
 
@@ -312,7 +312,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should handle empty custom properties", () => {
 			const event = {
 				title: "Test Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "test.md" },
 			};
 
@@ -338,7 +338,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should not delete system properties when processing custom properties", () => {
 			const event = {
 				title: "Test Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "test.md" },
 			};
 
@@ -380,7 +380,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should preserve instance date when title was cleaned by cleanupTitle", async () => {
 			const event = {
 				title: "Team Meeting",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "Events/Team Meeting 2025-10-07-00001125853328.md" },
 			};
 
@@ -407,7 +407,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should not duplicate instance date when title already includes it", async () => {
 			const event = {
 				title: "Team Meeting 2025-10-07-00001125853328",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "Events/Team Meeting 2025-10-07-00001125853328.md" },
 			};
 
@@ -434,7 +434,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should preserve instance date when user changes the title", async () => {
 			const event = {
 				title: "Team Meeting",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "Events/Team Meeting 2025-10-07-00001125853328.md" },
 			};
 
@@ -461,7 +461,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should not inject instance date for regular (non-recurring) events", async () => {
 			const event = {
 				title: "Regular Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "Events/Regular Event-20250203140530.md" },
 			};
 
@@ -494,7 +494,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should save single category as string", () => {
 			const event = {
 				title: "Test Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "test.md" },
 			};
 
@@ -527,7 +527,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should save multiple categories as array", () => {
 			const event = {
 				title: "Test Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "test.md" },
 			};
 
@@ -559,7 +559,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should set category to empty string when input is empty", () => {
 			const event = {
 				title: "Test Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "test.md" },
 			};
 
@@ -592,7 +592,7 @@ describe("EventEditModal - Custom Properties", () => {
 		it("should update existing category", () => {
 			const event = {
 				title: "Test Event",
-				start: "2025-10-07T10:15:00.000Z",
+				start: "2025-10-07T10:15:00",
 				extendedProps: { filePath: "test.md" },
 			};
 

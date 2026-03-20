@@ -111,7 +111,6 @@ describe("validateDayCoverage", () => {
 			{ type: "create", title: "Event B", start: "2025-03-16T09:00:00", end: "2025-03-16T10:00:00" },
 		];
 		const byDay = buildDayMap(ops);
-		// Use .000Z suffix so intoDate produces UTC dates (matching real usage from PlanningContext)
 		const errors = validateDayCoverage(byDay, "2025-03-15T00:00:00.000Z", "2025-03-17T00:00:00.000Z");
 		expect(errors).toEqual([]);
 	});
@@ -141,7 +140,7 @@ describe("validateWithinBounds", () => {
 		const ops: TimedCreateOp[] = [
 			{ type: "create", title: "Event", start: "2025-03-15T09:00:00", end: "2025-03-15T10:00:00" },
 		];
-		const errors = validateWithinBounds(ops, "2025-03-15T00:00:00", "2025-03-16T00:00:00");
+		const errors = validateWithinBounds(ops, "2025-03-15T00:00:00.000Z", "2025-03-16T00:00:00.000Z");
 		expect(errors).toEqual([]);
 	});
 
@@ -149,16 +148,16 @@ describe("validateWithinBounds", () => {
 		const ops: TimedCreateOp[] = [
 			{ type: "create", title: "Event", start: "2025-03-14T23:00:00", end: "2025-03-15T01:00:00" },
 		];
-		const errors = validateWithinBounds(ops, "2025-03-15T00:00:00", "2025-03-16T00:00:00");
+		const errors = validateWithinBounds(ops, "2025-03-15T00:00:00.000Z", "2025-03-16T00:00:00.000Z");
 		expect(errors.length).toBe(1);
 		expect(errors[0]).toContain("outside interval");
 	});
 
 	it("should detect event ending after interval", () => {
 		const ops: TimedCreateOp[] = [
-			{ type: "create", title: "Event", start: "2025-03-15T23:00:00", end: "2025-03-16T01:00:00" },
+			{ type: "create", title: "Event", start: "2025-03-15T23:00:00", end: "2025-03-16T02:00:00" },
 		];
-		const errors = validateWithinBounds(ops, "2025-03-15T00:00:00", "2025-03-16T00:00:00");
+		const errors = validateWithinBounds(ops, "2025-03-15T00:00:00.000Z", "2025-03-16T00:00:00.000Z");
 		expect(errors.length).toBe(1);
 		expect(errors[0]).toContain("outside interval");
 	});

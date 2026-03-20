@@ -67,7 +67,7 @@ export const SCENARIO = {
 			metadata: createDefaultMetadata({
 				rruleType: "weekly",
 				rruleId: "rrule-test-1",
-				instanceDate: "2024-03-22T09:00:00.000Z",
+				instanceDate: "2024-03-22T09:00:00",
 			}),
 			...overrides,
 		});
@@ -77,7 +77,7 @@ export const SCENARIO = {
 	allDayHoliday(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
 		return createMockAllDayEvent({
 			title: "Holiday",
-			start: "2024-12-25T00:00:00.000Z",
+			start: "2024-12-25T00:00:00",
 			...overrides,
 		});
 	},

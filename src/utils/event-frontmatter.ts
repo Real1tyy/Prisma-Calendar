@@ -10,6 +10,7 @@ import { type App, TFile } from "obsidian";
 
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { CalendarEvent, Frontmatter, SingleCalendarConfig } from "../types";
+import { appendZ, stripZ } from "../types/event";
 import {
 	DEDICATED_UI_PROP_KEYS,
 	NOTIFICATION_DEDICATED_UI_PROP_KEYS,
@@ -28,7 +29,7 @@ export const isAllDayEvent = (allDayValue: unknown): boolean => {
  * This creates cleaner, more sortable datetime values for external tools.
  */
 export const stripISOSuffix = (iso: string): string => {
-	return iso.replace(/\.000Z$/, "").replace(/Z$/, "");
+	return stripZ(iso);
 };
 
 const normalizesTimedEvents = (mode: string): boolean =>
@@ -95,13 +96,15 @@ export const applyDateNormalizationToFile = async (
 
 const shiftISO = (iso: unknown, duration?: DurationLike) => {
 	if (!iso || typeof iso !== "string" || !duration) return iso;
-	const dt = DateTime.fromISO(iso);
+	const stripped = stripZ(iso);
+	const dt = DateTime.fromISO(stripped);
 	if (!dt.isValid) return iso;
 	const shifted = dt.plus(duration);
-	if (!iso.includes("T")) {
+	if (!stripped.includes("T")) {
 		return shifted.toISODate();
 	}
-	return stripISOSuffix(shifted.toISO());
+	const bare = shifted.toISO({ suppressMilliseconds: true, includeOffset: false });
+	return iso.endsWith("Z") ? appendZ(bare ?? "") : bare;
 };
 
 export const applyStartEndOffsets = (
@@ -146,9 +149,8 @@ export const setEventBasics = (
 		fm[startProp] = "";
 		fm[endProp] = "";
 	} else {
-		// TIMED EVENT: Set startProp/endProp
-		fm[startProp] = data.start;
-		if (data.end) fm[endProp] = data.end;
+		fm[startProp] = appendZ(data.start);
+		if (data.end) fm[endProp] = appendZ(data.end);
 		fm[dateProp] = "";
 	}
 

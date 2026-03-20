@@ -36,7 +36,7 @@ export function createMockAllDayEvent(overrides: Partial<CalendarEvent> = {}): C
 		id: "test-1",
 		ref: { filePath: "test.md" },
 		title: "Test Event",
-		start: "2024-03-15T00:00:00.000Z",
+		start: "2024-03-15T00:00:00",
 		isVirtual: false,
 		skipped: false,
 		metadata: defaultMetadata(overrides.metadata),
@@ -52,7 +52,7 @@ export function createMockAllDayEvent(overrides: Partial<CalendarEvent> = {}): C
  * Metadata is merged with defaults internally.
  */
 export function createMockTimedEvent(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
-	const start = (overrides.start as string) ?? "2024-03-15T09:00:00.000Z";
+	const start = (overrides.start as string) ?? "2024-03-15T09:00:00";
 	const end = (overrides as { end?: string }).end !== undefined ? (overrides as { end: string }).end : start;
 
 	return {

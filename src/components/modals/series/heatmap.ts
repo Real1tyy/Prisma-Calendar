@@ -107,7 +107,7 @@ export function renderHeatmapInto(
 		if (mode === "yearly") {
 			controlsLabel.textContent = String(year);
 		} else {
-			const dt = DateTime.utc(year, month, 1);
+			const dt = DateTime.local(year, month, 1);
 			controlsLabel.textContent = dt.toFormat("LLLL yyyy");
 		}
 	}
@@ -115,7 +115,7 @@ export function renderHeatmapInto(
 	function showDayDetail(date: string, events: CalendarEvent[]): void {
 		dayDetailPanel.empty();
 
-		const dt = DateTime.fromISO(date, { zone: "utc" });
+		const dt = DateTime.fromISO(date);
 		const detailHeader = dayDetailPanel.createDiv(cls("heatmap-detail-header"));
 		detailHeader.createEl("h3", { text: dt.toFormat("EEEE, LLLL d, yyyy") });
 		detailHeader.createSpan({

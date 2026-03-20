@@ -47,6 +47,7 @@ import { findAdjacentEvent, getSourceEventInfoFromVirtual } from "../utils/event
 import { cleanupTitle } from "../utils/event-naming";
 import { invalidatePropertyExtractionCache } from "../utils/expression-utils";
 import { buildEventTooltip } from "../utils/format";
+import { stripZ } from "../utils/iso";
 import { emitHover } from "../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
 import { BatchSelectionManager } from "./batch-selection-manager";
@@ -1268,8 +1269,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			}
 			const eventColor = this.getEventColor(event);
 
-			const start = event.start.replace(/Z$/, "");
-			const end = isTimedEvent(event) ? event.end.replace(/Z$/, "") : undefined;
+			const start = stripZ(event.start);
+			const end = isTimedEvent(event) ? stripZ(event.end) : undefined;
 
 			// Index color by date for O(1) color-dot lookup
 			const dateKey = start.slice(0, 10);

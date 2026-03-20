@@ -1,4 +1,3 @@
-import type { DateTime } from "luxon";
 import { z } from "zod";
 
 import { isAllDayEvent } from "../utils/event-frontmatter";
@@ -13,7 +12,9 @@ import {
 	strictBooleanOptional,
 	titleTransform,
 } from "../utils/validation";
-import type { Frontmatter, ISO, SingleCalendarConfig } from "./index";
+import type { Frontmatter, SingleCalendarConfig } from "./index";
+
+export { appendZ, stripZ, toInternalISO } from "../utils/iso";
 
 const BaseEventFrontmatterSchema = z.object({
 	title: titleTransform,
@@ -125,8 +126,4 @@ export function parseEventFrontmatter(
 
 	const result = TimedEventFrontmatterSchema.safeParse(candidateData);
 	return result.success ? { datetime: result.data, metadata } : null;
-}
-
-export function convertToISO(parsedDateTime: DateTime): ISO {
-	return parsedDateTime.toUTC().toISO({ suppressMilliseconds: true }) || "";
 }
