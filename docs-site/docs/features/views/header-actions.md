@@ -14,6 +14,10 @@ Header action state is persisted **per calendar** — each calendar bundle remem
 
 Click the **gear icon** (⚙) at the right end of the header bar to open the **Manage Header Actions** modal. From here you can:
 
+### Search
+
+A search bar at the top of the modal lets you quickly find any action by typing part of its name. Matching actions show their full edit controls (rename, icon, color, visibility toggle). Ordering controls are hidden while searching — clear the search to reorder.
+
 ### Show and Hide
 
 Each action has an **eye toggle**. Click it to show or hide the action in the header. Hidden actions appear dimmed in the manager but remain available to re-enable at any time.

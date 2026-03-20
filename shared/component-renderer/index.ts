@@ -9,6 +9,7 @@ export type {
 	InlineContext,
 	ModalComponentConfig,
 	ModalContext,
+	ModalSearchConfig,
 	RenderTarget,
 	ViewActivator,
 	ViewComponentConfig,

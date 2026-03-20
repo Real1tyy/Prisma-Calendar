@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import { FuzzySuggestModal, getIconIds, setIcon, Setting } from "obsidian";
 
 import { showModal } from "../component-renderer/modal";
+import type { ModalContext } from "../component-renderer/types";
 import { createCssUtils } from "../core/css-utils";
 import type { HeaderActionDefinition } from "./types";
 
@@ -29,12 +30,16 @@ export function openActionManager(config: ActionManagerConfig): void {
 
 	let expandedActionId: string | null = null;
 
+	let modalCtx: ModalContext;
+
 	showModal({
 		app,
 		cls: css.cls("action-manager-modal"),
 		title: "Manage Header Actions",
-		render: (modalEl) => {
-			renderManagerList(modalEl);
+		search: { cssPrefix, placeholder: "Search actions..." },
+		render: (contentEl, ctx) => {
+			modalCtx = ctx as ModalContext;
+			renderManagerList(contentEl);
 		},
 	});
 
@@ -46,27 +51,49 @@ export function openActionManager(config: ActionManagerConfig): void {
 		return config.iconOverrides.get(action.id) ?? action.icon;
 	}
 
+	function matchesSearch(action: HeaderActionDefinition): boolean {
+		const query = modalCtx.searchQuery;
+		if (!query) return true;
+		return (
+			getLabel(action).toLowerCase().includes(query) ||
+			action.label.toLowerCase().includes(query) ||
+			action.id.toLowerCase().includes(query)
+		);
+	}
+
 	function renderManagerList(root: HTMLElement): void {
 		root.empty();
 
+		const isSearching = modalCtx.searchQuery.length > 0;
 		const visibleActions = config.getVisibleActions();
 
-		new Setting(root).setName("Show settings button").addToggle((toggle) => {
-			toggle.setValue(config.showSettingsButton);
-			toggle.onChange((value) => {
-				config.showSettingsButton = value;
-				config.onToggleSettingsButton(value);
+		if (!isSearching) {
+			new Setting(root).setName("Show settings button").addToggle((toggle) => {
+				toggle.setValue(config.showSettingsButton);
+				toggle.onChange((value) => {
+					config.showSettingsButton = value;
+					config.onToggleSettingsButton(value);
+				});
 			});
-		});
+		}
 
 		const list = root.createDiv(css.cls("action-manager-list"));
 
 		const visibleIds = new Set(visibleActions.map((a) => a.id));
 		const orderedActions = [...visibleActions, ...allActions.filter((a) => !visibleIds.has(a.id))];
+		const filteredActions = orderedActions.filter((a) => matchesSearch(a));
+
+		if (isSearching && filteredActions.length === 0) {
+			list.createDiv({
+				text: "No matching actions",
+				cls: css.cls("modal-search-empty"),
+			});
+			return;
+		}
 
 		let draggedId: string | null = null;
 
-		for (const action of orderedActions) {
+		for (const action of filteredActions) {
 			const isVisible = visibleIds.has(action.id);
 			const idx = visibleActions.findIndex((a) => a.id === action.id);
 			const isExpanded = expandedActionId === action.id;
@@ -74,7 +101,7 @@ export function openActionManager(config: ActionManagerConfig): void {
 			const row = list.createDiv(css.cls("action-manager-row"));
 			if (!isVisible) css.addCls(row, "action-manager-row-hidden");
 
-			if (isVisible) {
+			if (isVisible && !isSearching) {
 				row.setAttribute("draggable", "true");
 				row.dataset["actionId"] = action.id;
 
@@ -119,30 +146,32 @@ export function openActionManager(config: ActionManagerConfig): void {
 				});
 			}
 
-			const dragHandle = row.createDiv(css.cls("action-manager-drag"));
-			if (isVisible) {
-				const gripIcon = dragHandle.createEl("span", { cls: css.cls("action-manager-grip") });
-				setIcon(gripIcon, "grip-vertical");
-			}
+			if (!isSearching) {
+				const dragHandle = row.createDiv(css.cls("action-manager-drag"));
+				if (isVisible) {
+					const gripIcon = dragHandle.createEl("span", { cls: css.cls("action-manager-grip") });
+					setIcon(gripIcon, "grip-vertical");
+				}
 
-			const dragControls = row.createDiv(css.cls("action-manager-arrows"));
+				const dragControls = row.createDiv(css.cls("action-manager-arrows"));
 
-			if (isVisible && idx > 0) {
-				const upBtn = dragControls.createEl("button", { cls: css.cls("action-manager-drag-btn") });
-				setIcon(upBtn, "chevron-up");
-				upBtn.addEventListener("click", () => {
-					config.onMove(action.id, -1);
-					renderManagerList(root);
-				});
-			}
+				if (isVisible && idx > 0) {
+					const upBtn = dragControls.createEl("button", { cls: css.cls("action-manager-drag-btn") });
+					setIcon(upBtn, "chevron-up");
+					upBtn.addEventListener("click", () => {
+						config.onMove(action.id, -1);
+						renderManagerList(root);
+					});
+				}
 
-			if (isVisible && idx < visibleActions.length - 1) {
-				const downBtn = dragControls.createEl("button", { cls: css.cls("action-manager-drag-btn") });
-				setIcon(downBtn, "chevron-down");
-				downBtn.addEventListener("click", () => {
-					config.onMove(action.id, 1);
-					renderManagerList(root);
-				});
+				if (isVisible && idx < visibleActions.length - 1) {
+					const downBtn = dragControls.createEl("button", { cls: css.cls("action-manager-drag-btn") });
+					setIcon(downBtn, "chevron-down");
+					downBtn.addEventListener("click", () => {
+						config.onMove(action.id, 1);
+						renderManagerList(root);
+					});
+				}
 			}
 
 			const label = row.createDiv(css.cls("action-manager-label"));

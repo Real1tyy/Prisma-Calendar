@@ -10,6 +10,12 @@ export interface ModalContext {
 	close: () => void;
 	modalEl: HTMLElement;
 	scope: Scope;
+	searchQuery: string;
+}
+
+export interface ModalSearchConfig {
+	cssPrefix: string;
+	placeholder?: string;
 }
 
 export interface ViewContext {
@@ -37,6 +43,7 @@ export interface ModalComponentConfig {
 	render: ComponentRender;
 	cleanup?: ComponentCleanup;
 	title?: string;
+	search?: ModalSearchConfig;
 }
 
 export interface ViewComponentConfig {
