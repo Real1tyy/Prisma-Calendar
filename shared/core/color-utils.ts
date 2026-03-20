@@ -101,20 +101,17 @@ const COLOR_PALETTE: readonly string[] = [
  */
 export function generateColors(count: number): string[] {
 	if (count <= 0) return [];
-	const colors: string[] = [];
-	for (let i = 0; i < count; i++) {
+
+	return Array.from({ length: count }, (_, i) => {
 		const paletteIndex = i % COLOR_PALETTE.length;
 		const cycle = Math.floor(i / COLOR_PALETTE.length);
 		const base = COLOR_PALETTE[paletteIndex];
-		if (cycle === 0) {
-			colors.push(base);
-		} else {
-			// Shift lightness for subsequent cycles
-			const lightnessShift = cycle * 12;
-			colors.push(base.replace(/(\d+)%\)$/, (_, l) => `${Math.min(Number(l) + lightnessShift, 85)}%)`));
-		}
-	}
-	return colors;
+
+		if (cycle === 0) return base;
+
+		const lightnessShift = cycle * 12;
+		return base.replace(/(\d+)%\)$/, (_, l) => `${Math.min(Number(l) + lightnessShift, 85)}%)`);
+	});
 }
 
 export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {

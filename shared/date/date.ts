@@ -19,19 +19,34 @@ export function intoDate(input: unknown): Date | null {
 
 // ─── Date Formatting for Inputs ──────────────────────────────
 
+interface DateParts {
+	year: number;
+	month: string;
+	day: string;
+	hours: string;
+	minutes: string;
+	seconds: string;
+	ms: string;
+}
+
+function formatDateParts(date: Date): DateParts {
+	return {
+		year: date.getFullYear(),
+		month: String(date.getMonth() + 1).padStart(2, "0"),
+		day: String(date.getDate()).padStart(2, "0"),
+		hours: String(date.getHours()).padStart(2, "0"),
+		minutes: String(date.getMinutes()).padStart(2, "0"),
+		seconds: String(date.getSeconds()).padStart(2, "0"),
+		ms: String(date.getMilliseconds()).padStart(3, "0"),
+	};
+}
+
 export const formatDateTimeForInput = (dateString: string): string => {
 	if (!dateString) return "";
 
 	try {
-		const date = new Date(dateString);
-		// Format for datetime-local input (YYYY-MM-DDTHH:mm)
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, "0");
-		const day = String(date.getDate()).padStart(2, "0");
-		const hours = String(date.getHours()).padStart(2, "0");
-		const minutes = String(date.getMinutes()).padStart(2, "0");
-
-		return `${year}-${month}-${day}T${hours}:${minutes}`;
+		const p = formatDateParts(new Date(dateString));
+		return `${p.year}-${p.month}-${p.day}T${p.hours}:${p.minutes}`;
 	} catch {
 		return "";
 	}
@@ -41,12 +56,8 @@ export const formatDateForInput = (dateString: string): string => {
 	if (!dateString) return "";
 
 	try {
-		const date = new Date(dateString);
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, "0");
-		const day = String(date.getDate()).padStart(2, "0");
-
-		return `${year}-${month}-${day}`;
+		const p = formatDateParts(new Date(dateString));
+		return `${p.year}-${p.month}-${p.day}`;
 	} catch {
 		return "";
 	}
@@ -122,10 +133,6 @@ export const parseDateTimeString = (value: string | null): DateTime | undefined 
 	dt = DateTime.fromFormat(v, "yyyy-MM-dd", { setZone: true });
 	if (dt.isValid) return dt;
 
-	// 5. Try ISO date format (YYYY-MM-DD)
-	dt = DateTime.fromISO(v, { setZone: true });
-	if (dt.isValid) return dt;
-
 	return undefined;
 };
 
@@ -143,14 +150,8 @@ export function ensureISOSuffix(datetime: string): string {
 }
 
 export function toLocalISOString(date: Date): string {
-	const year = date.getFullYear();
-	const month = String(date.getMonth() + 1).padStart(2, "0");
-	const day = String(date.getDate()).padStart(2, "0");
-	const hours = String(date.getHours()).padStart(2, "0");
-	const minutes = String(date.getMinutes()).padStart(2, "0");
-	const seconds = String(date.getSeconds()).padStart(2, "0");
-	const ms = String(date.getMilliseconds()).padStart(3, "0");
-	return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${ms}Z`;
+	const p = formatDateParts(date);
+	return `${p.year}-${p.month}-${p.day}T${p.hours}:${p.minutes}:${p.seconds}.${p.ms}Z`;
 }
 
 export function getISODatePart(iso: string): string {

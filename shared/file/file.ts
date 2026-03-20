@@ -103,39 +103,22 @@ export function extractFileName(path: string): string {
 export function extractDisplayName(input: string): string {
 	if (!input) return "";
 
-	// Remove any surrounding whitespace
 	const trimmed = input.trim();
 
-	// Check if it's a wiki link format [[path|alias]] or [[path]]
 	const wikiLinkMatch = trimmed.match(/^\[\[([^\]]+)\]\]$/);
 
 	if (wikiLinkMatch) {
 		const innerContent = wikiLinkMatch[1];
-
-		// Check if there's an alias (pipe character)
 		const pipeIndex = innerContent.indexOf("|");
 
 		if (pipeIndex !== -1) {
-			// Return the alias (everything after the pipe)
 			return innerContent.substring(pipeIndex + 1).trim();
 		}
 
-		// No alias, extract filename from path
-		const path = innerContent.trim();
-
-		const lastSlashIndex = path.lastIndexOf("/");
-
-		const filename = lastSlashIndex !== -1 ? path.substring(lastSlashIndex + 1) : path;
-
-		return filename.replace(/\.md$/i, "");
+		return extractFileName(innerContent.trim());
 	}
 
-	// Not a wiki link, treat as regular path
-	const lastSlashIndex = trimmed.lastIndexOf("/");
-
-	const filename = lastSlashIndex !== -1 ? trimmed.substring(lastSlashIndex + 1) : trimmed;
-
-	return filename.replace(/\.md$/i, "");
+	return extractFileName(trimmed);
 }
 
 /**
@@ -562,40 +545,26 @@ export function getParentByFolder(app: App, filePath: string): string | null {
 export function getChildrenByFolder(app: App, filePath: string): string[] {
 	const allFiles = app.vault.getMarkdownFiles();
 
-	// Case 1: Folder note - get all files in the folder
 	if (isFolderNote(filePath)) {
 		const folderPath = getFolderPath(filePath);
 
-		const children: string[] = [];
+		return allFiles
+			.filter((file) => {
+				if (file.path === filePath) return false;
 
-		allFiles.forEach((file) => {
-			// Skip the folder note itself
-			if (file.path === filePath) return;
+				const fileFolder = getFolderPath(file.path);
 
-			const fileFolder = getFolderPath(file.path);
+				if (fileFolder === folderPath) return true;
 
-			// Direct child: file is in the same folder as the folder note
-			if (fileFolder === folderPath) {
-				children.push(file.path);
-
-				return;
-			}
-
-			// Subfolder note: file is a folder note one level deeper
-			// e.g., for "tasks/tasks.md", include "tasks/subtasks/subtasks.md"
-			if (fileFolder.startsWith(`${folderPath}/`)) {
-				// Check if it's exactly one level deeper and is a folder note
-				const relativePath = fileFolder.substring(folderPath.length + 1);
-
-				const isOneLevel = !relativePath.includes("/");
-
-				if (isOneLevel && isFolderNote(file.path)) {
-					children.push(file.path);
+				// Subfolder note one level deeper (e.g., "tasks/subtasks/subtasks.md")
+				if (fileFolder.startsWith(`${folderPath}/`)) {
+					const relativePath = fileFolder.substring(folderPath.length + 1);
+					return !relativePath.includes("/") && isFolderNote(file.path);
 				}
-			}
-		});
 
-		return children;
+				return false;
+			})
+			.map((file) => file.path);
 	}
 
 	// Case 2: Regular file - check for matching subfolder with folder note

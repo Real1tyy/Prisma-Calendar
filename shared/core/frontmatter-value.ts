@@ -201,33 +201,18 @@ export function normalizeProperty(value: unknown, propertyName?: string, options
 
 	// Handle array values
 	if (Array.isArray(value)) {
-		// Empty arrays
-		if (value.length === 0) {
-			return [];
-		}
-
-		// Filter to only string values
-		const stringValues = value.filter((item): item is string => {
-			if (typeof item === "string") {
-				return true;
-			}
-
-			// null and undefined are expected in YAML arrays, don't warn
-			if (item === null || item === undefined) {
+		return value
+			.filter((item): item is string => {
+				if (typeof item === "string") return true;
+				if (item !== null && item !== undefined && logWarnings && propertyName) {
+					console.warn(
+						`Property "${propertyName}" contains non-string value (${typeof item}), filtering it out:`,
+						item
+					);
+				}
 				return false;
-			}
-
-			// Log warning for truly unexpected types (numbers, booleans, objects, etc.)
-			if (logWarnings && propertyName) {
-				console.warn(`Property "${propertyName}" contains non-string value (${typeof item}), filtering it out:`, item);
-			}
-			return false;
-		});
-
-		// Filter out empty strings
-		const nonEmptyStrings = stringValues.filter((s) => s.trim() !== "");
-
-		return nonEmptyStrings;
+			})
+			.filter((s) => s.trim() !== "");
 	}
 
 	// Handle unexpected types (numbers, booleans, objects, etc.)
@@ -385,30 +370,14 @@ export function filterSpecificProperties<TSettings extends DisplaySettings>(
 	propertyNames: string[],
 	settings: TSettings
 ): Array<{ key: string; value: unknown }> {
-	const result: Array<{ key: string; value: unknown }> = [];
-
-	for (const propName of propertyNames) {
-		// Skip if property doesn't exist in frontmatter
-		if (!(propName in frontmatter)) {
-			continue;
-		}
-
-		const value = frontmatter[propName];
-
-		// Hide underscore properties if configured
-		if (settings.hideUnderscoreProperties && propName.startsWith("_")) {
-			continue;
-		}
-
-		// Hide empty properties if configured
-		if (settings.hideEmptyProperties && isEmptyValue(value)) {
-			continue;
-		}
-
-		result.push({ key: propName, value });
-	}
-
-	return result;
+	return propertyNames
+		.filter((propName) => propName in frontmatter)
+		.map((propName) => ({ key: propName, value: frontmatter[propName] }))
+		.filter(({ key, value }) => {
+			if (settings.hideUnderscoreProperties && key.startsWith("_")) return false;
+			if (settings.hideEmptyProperties && isEmptyValue(value)) return false;
+			return true;
+		});
 }
 
 // ============================================================================
