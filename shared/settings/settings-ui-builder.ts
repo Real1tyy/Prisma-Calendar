@@ -50,9 +50,8 @@ interface OptionalColorPickerSettingConfig {
 	fallback?: string;
 }
 
-export interface SchemaFieldConfig {
-	key: string;
-	field: z.ZodType;
+export interface SchemaFieldOverrides {
+	key?: string;
 	name?: string;
 	desc?: string;
 	step?: number;
@@ -858,17 +857,23 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 		}
 	}
 
-	addSchemaField(containerEl: HTMLElement, config: SchemaFieldConfig): void {
-		const fieldKey = config.key.includes(".") ? config.key.split(".").pop()! : config.key;
-		const descriptor = introspectField(fieldKey, config.field);
+	addSchemaField(
+		containerEl: HTMLElement,
+		fieldEntry: Record<string, z.ZodType>,
+		overrides?: SchemaFieldOverrides
+	): void {
+		const [entryKey, field] = Object.entries(fieldEntry)[0];
+		const settingsKey = overrides?.key ?? entryKey;
+		const fieldKey = settingsKey.includes(".") ? settingsKey.split(".").pop()! : settingsKey;
+		const descriptor = introspectField(fieldKey, field);
 
-		const name = config.name ?? descriptor.label;
-		const desc = config.desc ?? descriptor.description ?? "";
+		const name = overrides?.name ?? descriptor.label;
+		const desc = overrides?.desc ?? descriptor.description ?? "";
 		const baseConfig = {
-			key: config.key,
+			key: settingsKey,
 			name,
 			desc,
-			...(config.onChanged !== undefined ? { onChanged: config.onChanged } : {}),
+			...(overrides?.onChanged !== undefined ? { onChanged: overrides.onChanged } : {}),
 		};
 
 		switch (descriptor.type) {
@@ -877,22 +882,22 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 				this.addToggle(containerEl, baseConfig);
 				break;
 			case "number":
-				this.renderSchemaNumber(containerEl, descriptor, baseConfig, config);
+				this.renderSchemaNumber(containerEl, descriptor, baseConfig, overrides);
 				break;
 			case "enum":
-				this.renderSchemaEnum(containerEl, descriptor, baseConfig, config);
+				this.renderSchemaEnum(containerEl, descriptor, baseConfig, overrides);
 				break;
 			case "string":
 				this.addText(containerEl, {
 					...baseConfig,
-					placeholder: config.placeholder ?? descriptor.placeholder ?? "",
-					...(config.commitOnChange !== undefined ? { commitOnChange: config.commitOnChange } : {}),
+					placeholder: overrides?.placeholder ?? descriptor.placeholder ?? "",
+					...(overrides?.commitOnChange !== undefined ? { commitOnChange: overrides.commitOnChange } : {}),
 				});
 				break;
 			case "array":
 				this.addTextArray(containerEl, {
 					...baseConfig,
-					...(config.placeholder !== undefined ? { placeholder: config.placeholder } : {}),
+					...(overrides?.placeholder !== undefined ? { placeholder: overrides.placeholder } : {}),
 					itemType: descriptor.itemType,
 				});
 				break;
@@ -900,7 +905,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 			case "datetime":
 				this.addText(containerEl, {
 					...baseConfig,
-					placeholder: config.placeholder ?? (descriptor.type === "date" ? "YYYY-MM-DD" : "YYYY-MM-DDTHH:mm"),
+					placeholder: overrides?.placeholder ?? (descriptor.type === "date" ? "YYYY-MM-DD" : "YYYY-MM-DDTHH:mm"),
 				});
 				break;
 		}
@@ -910,7 +915,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 		containerEl: HTMLElement,
 		descriptor: NumberFieldDescriptor,
 		baseConfig: BaseSettingConfig,
-		config: SchemaFieldConfig
+		overrides?: SchemaFieldOverrides
 	): void {
 		const { min, max } = descriptor;
 		if (min !== undefined && max !== undefined) {
@@ -918,15 +923,15 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 				...baseConfig,
 				min,
 				max,
-				...(config.step !== undefined ? { step: config.step } : {}),
-				...(config.commitOnChange !== undefined ? { commitOnChange: config.commitOnChange } : {}),
+				...(overrides?.step !== undefined ? { step: overrides.step } : {}),
+				...(overrides?.commitOnChange !== undefined ? { commitOnChange: overrides.commitOnChange } : {}),
 			});
 		} else {
 			this.addNumberInput(containerEl, {
 				...baseConfig,
 				...(min !== undefined ? { min } : {}),
 				...(max !== undefined ? { max } : {}),
-				...(config.step !== undefined ? { step: config.step } : {}),
+				...(overrides?.step !== undefined ? { step: overrides.step } : {}),
 			});
 		}
 	}
@@ -935,10 +940,10 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 		containerEl: HTMLElement,
 		descriptor: EnumFieldDescriptor,
 		baseConfig: BaseSettingConfig,
-		config: SchemaFieldConfig
+		overrides?: SchemaFieldOverrides
 	): void {
 		const options =
-			config.options ??
+			overrides?.options ??
 			descriptor.enumLabels ??
 			Object.fromEntries(descriptor.enumValues.map((v) => [v, camelCaseToLabel(v)]));
 		this.addDropdown(containerEl, { ...baseConfig, options });
