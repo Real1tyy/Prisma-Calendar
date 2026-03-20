@@ -9,46 +9,26 @@ export function registerTabCommands(
 	handle: TabbedContainerHandle,
 	tabLabels: string[]
 ): void {
-	plugin.addCommand({
-		id: `${commandPrefix}:manage-tabs`,
-		name: `${displayName}: Manage tabs`,
-		checkCallback: (checking) => {
-			if (handle.tabCount === 0) return false;
-			if (!checking) handle.showTabManager();
-			return true;
-		},
-	});
-
-	plugin.addCommand({
-		id: `${commandPrefix}:next-tab`,
-		name: `${displayName}: Next tab`,
-		checkCallback: (checking) => {
-			if (handle.tabCount === 0) return false;
-			if (!checking) handle.next();
-			return true;
-		},
-	});
-
-	plugin.addCommand({
-		id: `${commandPrefix}:previous-tab`,
-		name: `${displayName}: Previous tab`,
-		checkCallback: (checking) => {
-			if (handle.tabCount === 0) return false;
-			if (!checking) handle.previous();
-			return true;
-		},
-	});
-
-	for (let i = 0; i < tabLabels.length; i++) {
-		const index = i;
+	const addTabCommand = (idSuffix: string, name: string, action: () => void): void => {
 		plugin.addCommand({
-			id: `${commandPrefix}:go-to-tab-${index + 1}`,
-			name: `${displayName}: Go to tab ${index + 1}: ${tabLabels[index]}`,
+			id: `${commandPrefix}:${idSuffix}`,
+			name: `${displayName}: ${name}`,
 			checkCallback: (checking) => {
 				if (handle.tabCount === 0) return false;
-				if (!checking) handle.switchTo(index);
+				if (!checking) action();
 				return true;
 			},
 		});
+	};
+
+	addTabCommand("manage-tabs", "Manage tabs", () => handle.showTabManager());
+	addTabCommand("next-tab", "Next tab", () => handle.next());
+	addTabCommand("previous-tab", "Previous tab", () => handle.previous());
+
+	for (let i = 0; i < tabLabels.length; i++) {
+		const index = i;
+		addTabCommand(`go-to-tab-${index + 1}`, `Go to tab ${index + 1}: ${tabLabels[index]}`, () =>
+			handle.switchTo(index)
+		);
 	}
 }

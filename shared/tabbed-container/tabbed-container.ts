@@ -431,7 +431,15 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		menu.showAtMouseEvent(e);
 	}
 
-	function showRenameModal(entry: TabEntry, onDone?: () => void): void {
+	interface RenameOps {
+		currentLabel: string;
+		originalLabel: string;
+		hasRename: boolean;
+		save: (label: string) => void;
+		reset: () => void;
+	}
+
+	function openRenameModal(ops: RenameOps, onDone?: () => void): void {
 		if (!config.app) return;
 
 		showModal({
@@ -441,20 +449,20 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 			render: (modalEl, ctx) => {
 				const input = modalEl.createEl("input", {
 					cls: css.cls("tab-rename-input"),
-					attr: { type: "text", value: getLabel(entry) },
+					attr: { type: "text", value: ops.currentLabel },
 				});
 				input.focus();
 				input.select();
 
 				const actions = modalEl.createDiv(css.cls("tab-rename-actions"));
 
-				if (renames.has(entry.id)) {
+				if (ops.hasRename) {
 					const resetBtn = actions.createEl("button", {
 						text: "Reset",
 						cls: css.cls("tab-rename-btn", "tab-rename-btn-reset"),
 					});
 					resetBtn.addEventListener("click", () => {
-						renames.delete(entry.id);
+						ops.reset();
 						rebuild();
 						onDone?.();
 						ctx.close();
@@ -467,10 +475,10 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 				});
 				saveBtn.addEventListener("click", () => {
 					const newLabel = input.value.trim();
-					if (newLabel && newLabel !== entry.label) {
-						renames.set(entry.id, newLabel);
+					if (newLabel && newLabel !== ops.originalLabel) {
+						ops.save(newLabel);
 					} else {
-						renames.delete(entry.id);
+						ops.reset();
 					}
 					rebuild();
 					onDone?.();
@@ -484,60 +492,32 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		});
 	}
 
+	function showRenameModal(entry: TabEntry, onDone?: () => void): void {
+		openRenameModal(
+			{
+				currentLabel: getLabel(entry),
+				originalLabel: entry.label,
+				hasRename: renames.has(entry.id),
+				save: (label) => renames.set(entry.id, label),
+				reset: () => renames.delete(entry.id),
+			},
+			onDone
+		);
+	}
+
 	function showChildRenameModal(groupId: string, child: TabDefinition, onDone?: () => void): void {
-		if (!config.app) return;
 		const gs = groupChildState.get(groupId);
 		if (!gs) return;
-
-		showModal({
-			app: config.app,
-			cls: css.cls("tab-rename-modal"),
-			title: "Rename tab",
-			render: (modalEl, ctx) => {
-				const currentLabel = gs.childRenames.get(child.id) ?? child.label;
-				const input = modalEl.createEl("input", {
-					cls: css.cls("tab-rename-input"),
-					attr: { type: "text", value: currentLabel },
-				});
-				input.focus();
-				input.select();
-
-				const actions = modalEl.createDiv(css.cls("tab-rename-actions"));
-
-				if (gs.childRenames.has(child.id)) {
-					const resetBtn = actions.createEl("button", {
-						text: "Reset",
-						cls: css.cls("tab-rename-btn", "tab-rename-btn-reset"),
-					});
-					resetBtn.addEventListener("click", () => {
-						gs.childRenames.delete(child.id);
-						rebuild();
-						onDone?.();
-						ctx.close();
-					});
-				}
-
-				const saveBtn = actions.createEl("button", {
-					text: "Save",
-					cls: css.cls("tab-rename-btn", "tab-rename-btn-save"),
-				});
-				saveBtn.addEventListener("click", () => {
-					const newLabel = input.value.trim();
-					if (newLabel && newLabel !== child.label) {
-						gs.childRenames.set(child.id, newLabel);
-					} else {
-						gs.childRenames.delete(child.id);
-					}
-					rebuild();
-					onDone?.();
-					ctx.close();
-				});
-
-				input.addEventListener("keydown", (ev) => {
-					if (ev.key === "Enter") saveBtn.click();
-				});
+		openRenameModal(
+			{
+				currentLabel: gs.childRenames.get(child.id) ?? child.label,
+				originalLabel: child.label,
+				hasRename: gs.childRenames.has(child.id),
+				save: (label) => gs.childRenames.set(child.id, label),
+				reset: () => gs.childRenames.delete(child.id),
 			},
-		});
+			onDone
+		);
 	}
 
 	function showTabManager(): void {
@@ -553,8 +533,156 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		});
 	}
 
+	interface ManagerRowConfig {
+		itemId: string;
+		displayLabel: string;
+		originalLabel: string;
+		isVisible: boolean;
+		visibleIndex: number;
+		visibleCount: number;
+		hasRename: boolean;
+		dragRef: { value: string | null };
+		onRename: (rerender: () => void) => void;
+		onHide: (() => void) | null;
+		onShow: (() => void) | null;
+		onMove: ((direction: -1 | 1) => void) | null;
+		onDrop: (fromId: string) => void;
+	}
+
+	function renderManagerRow(parent: HTMLElement, cfg: ManagerRowConfig, rerender: () => void): HTMLElement {
+		const row = parent.createDiv(css.cls("tab-manager-row"));
+		if (!cfg.isVisible) css.addCls(row, "tab-manager-row-hidden");
+
+		if (cfg.isVisible) {
+			row.setAttribute("draggable", "true");
+			row.dataset["tabId"] = cfg.itemId;
+
+			row.addEventListener("dragstart", (e) => {
+				cfg.dragRef.value = cfg.itemId;
+				css.addCls(row, "tab-manager-row-dragging");
+				if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
+			});
+			row.addEventListener("dragend", () => {
+				cfg.dragRef.value = null;
+				css.removeCls(row, "tab-manager-row-dragging");
+			});
+			row.addEventListener("dragover", (e) => {
+				e.preventDefault();
+				if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+				css.addCls(row, "tab-manager-row-dragover");
+			});
+			row.addEventListener("dragleave", () => {
+				css.removeCls(row, "tab-manager-row-dragover");
+			});
+			row.addEventListener("drop", (e) => {
+				e.preventDefault();
+				css.removeCls(row, "tab-manager-row-dragover");
+				if (!cfg.dragRef.value || cfg.dragRef.value === cfg.itemId) return;
+				cfg.onDrop(cfg.dragRef.value);
+				rerender();
+			});
+		}
+
+		const dragHandle = row.createDiv(css.cls("tab-manager-drag"));
+		if (cfg.isVisible) {
+			const gripIcon = dragHandle.createEl("span", { cls: css.cls("tab-manager-grip") });
+			setIcon(gripIcon, "grip-vertical");
+		}
+
+		const arrows = row.createDiv(css.cls("tab-manager-arrows"));
+		if (cfg.isVisible && cfg.onMove && cfg.visibleIndex > 0) {
+			const upBtn = arrows.createEl("button", { cls: css.cls("tab-manager-drag-btn") });
+			setIcon(upBtn, "chevron-up");
+			upBtn.addEventListener("click", () => {
+				cfg.onMove!(-1);
+				rerender();
+			});
+		}
+		if (cfg.isVisible && cfg.onMove && cfg.visibleIndex < cfg.visibleCount - 1) {
+			const downBtn = arrows.createEl("button", { cls: css.cls("tab-manager-drag-btn") });
+			setIcon(downBtn, "chevron-down");
+			downBtn.addEventListener("click", () => {
+				cfg.onMove!(1);
+				rerender();
+			});
+		}
+
+		const labelEl = row.createDiv(css.cls("tab-manager-label"));
+		labelEl.createEl("span", { text: cfg.displayLabel, cls: css.cls("tab-manager-label-text") });
+		if (cfg.hasRename) {
+			const badge = labelEl.createEl("span", {
+				text: cfg.originalLabel,
+				cls: css.cls("tab-manager-label-original"),
+			});
+			badge.setAttribute("title", "Original name");
+		}
+
+		const controls = row.createDiv(css.cls("tab-manager-controls"));
+
+		const renameBtn = controls.createEl("button", { cls: css.cls("tab-manager-btn") });
+		setIcon(renameBtn, "pencil");
+		renameBtn.setAttribute("title", "Rename");
+		renameBtn.addEventListener("click", () => cfg.onRename(rerender));
+
+		const toggleBtn = controls.createEl("button", { cls: css.cls("tab-manager-btn") });
+		if (cfg.isVisible) {
+			setIcon(toggleBtn, "eye");
+			toggleBtn.setAttribute("title", "Hide");
+			if (!cfg.onHide) toggleBtn.setAttribute("disabled", "true");
+			toggleBtn.addEventListener("click", () => {
+				cfg.onHide?.();
+				rerender();
+			});
+		} else {
+			setIcon(toggleBtn, "eye-off");
+			toggleBtn.setAttribute("title", "Show");
+			toggleBtn.addEventListener("click", () => {
+				cfg.onShow?.();
+				rerender();
+			});
+		}
+
+		return row;
+	}
+
+	function reorderList<T extends { id: string }>(items: T[], fromId: string, toId: string): T[] {
+		const fromIdx = items.findIndex((t) => t.id === fromId);
+		const toIdx = items.findIndex((t) => t.id === toId);
+		if (fromIdx < 0 || toIdx < 0) return items;
+		const updated = [...items];
+		const [moved] = updated.splice(fromIdx, 1);
+		updated.splice(toIdx, 0, moved);
+		return updated;
+	}
+
+	function moveGroupChild(gs: GroupChildState, childId: string, direction: -1 | 1): void {
+		const idx = gs.visibleChildren.findIndex((c) => c.id === childId);
+		const newIdx = idx + direction;
+		if (idx < 0 || newIdx < 0 || newIdx >= gs.visibleChildren.length) return;
+		const activeId = gs.visibleChildren[gs.activeChildIndex]?.id;
+		const arr = [...gs.visibleChildren];
+		[arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+		gs.visibleChildren = arr;
+		gs.activeChildIndex = Math.max(
+			0,
+			arr.findIndex((c) => c.id === activeId)
+		);
+		rebuild();
+	}
+
+	function reorderGroupChildren(gs: GroupChildState, fromId: string, toId: string): void {
+		const activeId = gs.visibleChildren[gs.activeChildIndex]?.id;
+		gs.visibleChildren = reorderList(gs.visibleChildren, fromId, toId);
+		gs.activeChildIndex = Math.max(
+			0,
+			gs.visibleChildren.findIndex((c) => c.id === activeId)
+		);
+		rebuild();
+	}
+
 	function renderManagerList(root: HTMLElement): void {
 		root.empty();
+		const rerender = () => renderManagerList(root);
 
 		new Setting(root).setName("Show settings button").addToggle((toggle) => {
 			toggle.setValue(showSettingsButton);
@@ -567,134 +695,41 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		});
 
 		const list = root.createDiv(css.cls("tab-manager-list"));
-
 		const visibleIds = new Set(visibleTabs.map((t) => t.id));
 		const orderedTabs = [...visibleTabs, ...allTabs.filter((t) => !visibleIds.has(t.id))];
-
-		let draggedId: string | null = null;
+		const dragRef = { value: null as string | null };
 
 		for (const tab of orderedTabs) {
 			const isVisible = visibleIds.has(tab.id);
 			const idx = visibleTabs.findIndex((t) => t.id === tab.id);
 
-			const row = list.createDiv(css.cls("tab-manager-row"));
-			if (!isVisible) css.addCls(row, "tab-manager-row-hidden");
-
-			if (isVisible) {
-				row.setAttribute("draggable", "true");
-				row.dataset["tabId"] = tab.id;
-
-				row.addEventListener("dragstart", (e) => {
-					draggedId = tab.id;
-					css.addCls(row, "tab-manager-row-dragging");
-					if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
-				});
-
-				row.addEventListener("dragend", () => {
-					draggedId = null;
-					css.removeCls(row, "tab-manager-row-dragging");
-				});
-
-				row.addEventListener("dragover", (e) => {
-					e.preventDefault();
-					if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
-					css.addCls(row, "tab-manager-row-dragover");
-				});
-
-				row.addEventListener("dragleave", () => {
-					css.removeCls(row, "tab-manager-row-dragover");
-				});
-
-				row.addEventListener("drop", (e) => {
-					e.preventDefault();
-					css.removeCls(row, "tab-manager-row-dragover");
-					if (!draggedId || draggedId === tab.id) return;
-
-					const fromIdx = visibleTabs.findIndex((t) => t.id === draggedId);
-					const toIdx = visibleTabs.findIndex((t) => t.id === tab.id);
-					if (fromIdx < 0 || toIdx < 0) return;
-
-					const activeId = visibleTabs[currentIndex]?.id;
-					const updated = [...visibleTabs];
-					const [moved] = updated.splice(fromIdx, 1);
-					updated.splice(toIdx, 0, moved);
-					visibleTabs = updated;
-
-					currentIndex = visibleTabs.findIndex((t) => t.id === activeId);
-					if (currentIndex < 0) currentIndex = 0;
-
-					rebuild();
-					renderManagerList(root);
-				});
-			}
-
-			const dragHandle = row.createDiv(css.cls("tab-manager-drag"));
-			if (isVisible) {
-				const gripIcon = dragHandle.createEl("span", { cls: css.cls("tab-manager-grip") });
-				setIcon(gripIcon, "grip-vertical");
-			}
-
-			const dragControls = row.createDiv(css.cls("tab-manager-arrows"));
-
-			if (isVisible && idx > 0) {
-				const upBtn = dragControls.createEl("button", { cls: css.cls("tab-manager-drag-btn") });
-				setIcon(upBtn, "chevron-up");
-				upBtn.addEventListener("click", () => {
-					moveTab(tab.id, -1);
-					renderManagerList(root);
-				});
-			}
-
-			if (isVisible && idx < visibleTabs.length - 1) {
-				const downBtn = dragControls.createEl("button", { cls: css.cls("tab-manager-drag-btn") });
-				setIcon(downBtn, "chevron-down");
-				downBtn.addEventListener("click", () => {
-					moveTab(tab.id, 1);
-					renderManagerList(root);
-				});
-			}
-
-			const label = row.createDiv(css.cls("tab-manager-label"));
-			label.createEl("span", { text: getLabel(tab), cls: css.cls("tab-manager-label-text") });
-
-			if (renames.has(tab.id)) {
-				const originalBadge = label.createEl("span", {
-					text: tab.label,
-					cls: css.cls("tab-manager-label-original"),
-				});
-				originalBadge.setAttribute("title", "Original name");
-			}
-
-			const controls = row.createDiv(css.cls("tab-manager-controls"));
-
-			const renameBtn = controls.createEl("button", { cls: css.cls("tab-manager-btn") });
-			setIcon(renameBtn, "pencil");
-			renameBtn.setAttribute("title", "Rename");
-			renameBtn.addEventListener("click", () => {
-				showRenameModal(tab, () => renderManagerList(root));
-			});
-
-			const toggleBtn = controls.createEl("button", { cls: css.cls("tab-manager-btn") });
-			if (isVisible) {
-				setIcon(toggleBtn, "eye");
-				toggleBtn.setAttribute("title", "Hide");
-				if (visibleTabs.length <= 1) {
-					toggleBtn.setAttribute("disabled", "true");
-				}
-				toggleBtn.addEventListener("click", () => {
-					if (visibleTabs.length > 1) {
-						hideTab(tab.id);
-						renderManagerList(root);
-					}
-				});
-			} else {
-				setIcon(toggleBtn, "eye-off");
-				toggleBtn.setAttribute("title", "Show");
-				toggleBtn.addEventListener("click", () => {
-					restoreTab(tab.id);
-					renderManagerList(root);
-				});
-			}
+			const row = renderManagerRow(
+				list,
+				{
+					itemId: tab.id,
+					displayLabel: getLabel(tab),
+					originalLabel: tab.label,
+					isVisible,
+					visibleIndex: idx,
+					visibleCount: visibleTabs.length,
+					hasRename: renames.has(tab.id),
+					dragRef,
+					onRename: (done) => showRenameModal(tab, done),
+					onHide: isVisible && visibleTabs.length > 1 ? () => hideTab(tab.id) : null,
+					onShow: !isVisible ? () => restoreTab(tab.id) : null,
+					onMove: isVisible ? (dir) => moveTab(tab.id, dir) : null,
+					onDrop: (fromId) => {
+						const activeId = visibleTabs[currentIndex]?.id;
+						visibleTabs = reorderList(visibleTabs, fromId, tab.id);
+						currentIndex = Math.max(
+							0,
+							visibleTabs.findIndex((t) => t.id === activeId)
+						);
+						rebuild();
+					},
+				},
+				rerender
+			);
 
 			if (isGroupTab(tab)) {
 				const groupToggleBtn = row.createEl("button", { cls: css.cls("tab-manager-group-toggle") });
@@ -720,153 +755,52 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 				if (gs) {
 					const visibleChildIds = new Set(gs.visibleChildren.map((c) => c.id));
 					const orderedChildren = [...gs.visibleChildren, ...gs.allChildren.filter((c) => !visibleChildIds.has(c.id))];
-					let childDraggedId: string | null = null;
+					const childDragRef = { value: null as string | null };
 
 					for (const child of orderedChildren) {
 						const childVisible = visibleChildIds.has(child.id);
 						const childIdx = gs.visibleChildren.findIndex((c) => c.id === child.id);
 
-						const childRow = childrenContainer.createDiv(css.cls("tab-manager-row"));
-						if (!childVisible) css.addCls(childRow, "tab-manager-row-hidden");
-
-						if (childVisible) {
-							childRow.setAttribute("draggable", "true");
-							childRow.dataset["tabId"] = child.id;
-
-							childRow.addEventListener("dragstart", (e) => {
-								childDraggedId = child.id;
-								css.addCls(childRow, "tab-manager-row-dragging");
-								if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
-							});
-							childRow.addEventListener("dragend", () => {
-								childDraggedId = null;
-								css.removeCls(childRow, "tab-manager-row-dragging");
-							});
-							childRow.addEventListener("dragover", (e) => {
-								e.preventDefault();
-								if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
-								css.addCls(childRow, "tab-manager-row-dragover");
-							});
-							childRow.addEventListener("dragleave", () => {
-								css.removeCls(childRow, "tab-manager-row-dragover");
-							});
-							childRow.addEventListener("drop", (e) => {
-								e.preventDefault();
-								css.removeCls(childRow, "tab-manager-row-dragover");
-								if (!childDraggedId || childDraggedId === child.id) return;
-								const fromIdx = gs.visibleChildren.findIndex((c) => c.id === childDraggedId);
-								const toIdx = gs.visibleChildren.findIndex((c) => c.id === child.id);
-								if (fromIdx < 0 || toIdx < 0) return;
-								const activeId = gs.visibleChildren[gs.activeChildIndex]?.id;
-								const updated = [...gs.visibleChildren];
-								const [moved] = updated.splice(fromIdx, 1);
-								updated.splice(toIdx, 0, moved);
-								gs.visibleChildren = updated;
-								gs.activeChildIndex = Math.max(
-									0,
-									updated.findIndex((c) => c.id === activeId)
-								);
-								rebuild();
-								renderManagerList(root);
-							});
-						}
-
-						const childDragHandle = childRow.createDiv(css.cls("tab-manager-drag"));
-						if (childVisible) {
-							const grip = childDragHandle.createEl("span", { cls: css.cls("tab-manager-grip") });
-							setIcon(grip, "grip-vertical");
-						}
-
-						const childArrows = childRow.createDiv(css.cls("tab-manager-arrows"));
-						if (childVisible && childIdx > 0) {
-							const upBtn = childArrows.createEl("button", { cls: css.cls("tab-manager-drag-btn") });
-							setIcon(upBtn, "chevron-up");
-							upBtn.addEventListener("click", () => {
-								const ci = gs.visibleChildren.findIndex((c) => c.id === child.id);
-								if (ci <= 0) return;
-								const activeId = gs.visibleChildren[gs.activeChildIndex]?.id;
-								const arr = [...gs.visibleChildren];
-								[arr[ci], arr[ci - 1]] = [arr[ci - 1], arr[ci]];
-								gs.visibleChildren = arr;
-								gs.activeChildIndex = Math.max(
-									0,
-									arr.findIndex((c) => c.id === activeId)
-								);
-								rebuild();
-								renderManagerList(root);
-							});
-						}
-						if (childVisible && childIdx >= 0 && childIdx < gs.visibleChildren.length - 1) {
-							const downBtn = childArrows.createEl("button", { cls: css.cls("tab-manager-drag-btn") });
-							setIcon(downBtn, "chevron-down");
-							downBtn.addEventListener("click", () => {
-								const ci = gs.visibleChildren.findIndex((c) => c.id === child.id);
-								if (ci < 0 || ci >= gs.visibleChildren.length - 1) return;
-								const activeId = gs.visibleChildren[gs.activeChildIndex]?.id;
-								const arr = [...gs.visibleChildren];
-								[arr[ci], arr[ci + 1]] = [arr[ci + 1], arr[ci]];
-								gs.visibleChildren = arr;
-								gs.activeChildIndex = Math.max(
-									0,
-									arr.findIndex((c) => c.id === activeId)
-								);
-								rebuild();
-								renderManagerList(root);
-							});
-						}
-
-						const childLabelEl = childRow.createDiv(css.cls("tab-manager-label"));
-						childLabelEl.createEl("span", {
-							text: getChildLabel(tab.id, child),
-							cls: css.cls("tab-manager-label-text"),
-						});
-						if (gs.childRenames.has(child.id)) {
-							const badge = childLabelEl.createEl("span", {
-								text: child.label,
-								cls: css.cls("tab-manager-label-original"),
-							});
-							badge.setAttribute("title", "Original name");
-						}
-
-						const childControls = childRow.createDiv(css.cls("tab-manager-controls"));
-
-						const childRenameBtn = childControls.createEl("button", { cls: css.cls("tab-manager-btn") });
-						setIcon(childRenameBtn, "pencil");
-						childRenameBtn.setAttribute("title", "Rename");
-						childRenameBtn.addEventListener("click", () => {
-							showChildRenameModal(tab.id, child, () => renderManagerList(root));
-						});
-
-						const eyeBtn = childControls.createEl("button", { cls: css.cls("tab-manager-btn") });
-						if (childVisible) {
-							setIcon(eyeBtn, "eye");
-							eyeBtn.setAttribute("title", "Hide");
-							if (gs.visibleChildren.length <= 1) eyeBtn.setAttribute("disabled", "true");
-							eyeBtn.addEventListener("click", () => {
-								if (gs.visibleChildren.length <= 1) return;
-								const activeId = gs.visibleChildren[gs.activeChildIndex]?.id;
-								gs.visibleChildren = gs.visibleChildren.filter((c) => c.id !== child.id);
-								if (activeId === child.id) {
-									gs.activeChildIndex = Math.min(gs.activeChildIndex, gs.visibleChildren.length - 1);
-								} else {
-									gs.activeChildIndex = Math.max(
-										0,
-										gs.visibleChildren.findIndex((c) => c.id === activeId)
-									);
-								}
-								rebuild();
-								renderManagerList(root);
-							});
-						} else {
-							setIcon(eyeBtn, "eye-off");
-							eyeBtn.setAttribute("title", "Show");
-							eyeBtn.addEventListener("click", () => {
-								gs.visibleChildren = [...gs.visibleChildren, child];
-								getOrCreatePanel(child);
-								rebuild();
-								renderManagerList(root);
-							});
-						}
+						renderManagerRow(
+							childrenContainer,
+							{
+								itemId: child.id,
+								displayLabel: getChildLabel(tab.id, child),
+								originalLabel: child.label,
+								isVisible: childVisible,
+								visibleIndex: childIdx,
+								visibleCount: gs.visibleChildren.length,
+								hasRename: gs.childRenames.has(child.id),
+								dragRef: childDragRef,
+								onRename: (done) => showChildRenameModal(tab.id, child, done),
+								onHide:
+									childVisible && gs.visibleChildren.length > 1
+										? () => {
+												const activeId = gs.visibleChildren[gs.activeChildIndex]?.id;
+												gs.visibleChildren = gs.visibleChildren.filter((c) => c.id !== child.id);
+												if (activeId === child.id) {
+													gs.activeChildIndex = Math.min(gs.activeChildIndex, gs.visibleChildren.length - 1);
+												} else {
+													gs.activeChildIndex = Math.max(
+														0,
+														gs.visibleChildren.findIndex((c) => c.id === activeId)
+													);
+												}
+												rebuild();
+											}
+										: null,
+								onShow: !childVisible
+									? () => {
+											gs.visibleChildren = [...gs.visibleChildren, child];
+											getOrCreatePanel(child);
+											rebuild();
+										}
+									: null,
+								onMove: childVisible ? (dir) => moveGroupChild(gs, child.id, dir) : null,
+								onDrop: (fromId) => reorderGroupChildren(gs, fromId, child.id),
+							},
+							rerender
+						);
 					}
 				}
 			}
