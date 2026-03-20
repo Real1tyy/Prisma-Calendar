@@ -4,7 +4,17 @@
 AI Chat requires [Prisma Calendar Pro](../free-vs-pro.md).
 :::
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 Prisma Calendar includes a built-in AI chat sidebar where you can ask questions about your calendar, get scheduling advice, or have a general conversation with an AI assistant.
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/AiChatQuery.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/AiChatQuery.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ## Opening the Chat
 
@@ -71,7 +81,15 @@ Ask read-only questions about your calendar. The AI sees your events, statistics
 
 ### Event Manipulation Mode
 
-Describe calendar changes in natural language. The AI responds with structured operations — creates, edits, and deletes — rendered as preview cards:
+Describe calendar changes in natural language — delete events, move them to different days, or combine multiple edits in a single prompt. The AI responds with structured operations — creates, edits, and deletes — rendered as preview cards:
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/AiChatManipulate.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/AiChatManipulate.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 - **Create** cards (green) show the new event's title and time range
 - **Edit** cards (blue) show the file path and changed fields

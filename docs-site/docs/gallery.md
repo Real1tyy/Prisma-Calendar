@@ -12,6 +12,24 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
 
 ## Videos
 
+### [AI Chat](features/advanced/ai-chat) — Query Mode
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/AiChatQuery.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/AiChatQuery.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+##### Manipulate Mode
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/AiChatManipulate.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/AiChatManipulate.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ### [Batch Operations](features/management/batch-operations) — Multi-Select
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
