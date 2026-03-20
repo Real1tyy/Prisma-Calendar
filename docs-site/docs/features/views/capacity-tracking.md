@@ -1,5 +1,15 @@
 # Capacity Tracking
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/CapacityTracking.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/CapacityTracking.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Capacity tracking shows how much of your day is filled by events versus remaining as free time. It answers the question: "How full is my calendar today/this week/this month?"
 
 ## How It Works

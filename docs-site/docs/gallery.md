@@ -267,6 +267,15 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
+### [Capacity Tracking](features/views/capacity-tracking) — Calendar Capacity
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/CapacityTracking.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/CapacityTracking.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ### [Color Rules](features/organization/color-rules) - Prioritize Colors
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
@@ -921,7 +930,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
 </div>
 
 
-### [Timeline View](features/events/event-groups) — Timeline
+### [Timeline View](features/views/tabbed-views) — Timeline
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -932,6 +941,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
     style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}
   >
     <source src={useBaseUrl("/video/TimelineView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/TimelineView.mp4")} type="video/mp4" />
     Your browser does not support the video tag.
   </video>
 </div>
