@@ -6,6 +6,7 @@ import {
 	registerPageHeaderCommands,
 	registerTabCommands,
 	type TabbedContainerHandle,
+	type TabEntry,
 	type ViewActivator,
 } from "@real1ty-obsidian-plugins";
 
@@ -63,7 +64,7 @@ export function registerPrismaCalendarView(
 			const dualDailyTab = createDualDailyTabDefinition(app, bundle);
 			const dashboardTab = createDashboardTabDefinition(app, bundle);
 
-			const tabs = [calendarTab, timelineTab, heatmapTab, dailyStatsTab, dualDailyTab, dashboardTab];
+			const tabs: TabEntry[] = [calendarTab, timelineTab, heatmapTab, dailyStatsTab, dualDailyTab, dashboardTab];
 
 			ref.tabbedHandle = createTabbedContainer(el, {
 				tabs,

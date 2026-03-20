@@ -6,6 +6,7 @@ type SortDirection = "asc" | "desc";
 
 const MAX_CHART_LABELS = 25;
 const ENTRIES_PER_PAGE = 20;
+const RANKING_LIMIT = 10;
 
 export interface ColumnDef {
 	key: string;
@@ -22,52 +23,89 @@ export interface DashboardItem {
 	extraProps: Record<string, string | number>;
 }
 
-export interface DashboardSectionConfig {
-	title: string;
-	items: DashboardItem[];
-	columns: ColumnDef[];
-	chartData: ChartDataItem[];
-	chartTooltipFormatter?: (label: string, value: number, percentage: string) => string;
-	onItemClick?: (item: DashboardItem) => void;
-	emptyMessage: string;
-}
-
-export interface DashboardSectionHandle {
+export interface DashboardChartHandle {
 	destroy: () => void;
 }
 
-export function renderDashboardSection(container: HTMLElement, config: DashboardSectionConfig): DashboardSectionHandle {
+export interface DashboardTableHandle {
+	destroy: () => void;
+}
+
+export function renderDashboardChart(
+	container: HTMLElement,
+	chartData: ChartDataItem[],
+	chartId: string,
+	tooltipFormatter?: (label: string, value: number, percentage: string) => string
+): DashboardChartHandle {
 	let chartBuilder: PieChartBuilder | null = null;
-	let collapsed = false;
-	let searchQuery = "";
-	let sortKey = "";
-	let sortDirection: SortDirection = "desc";
-	let currentPage = 0;
 
-	const section = container.createDiv(cls("dashboard-section"));
-
-	const header = section.createDiv(cls("dashboard-section-header"));
-	const chevron = header.createEl("span", { text: "\u25BC", cls: cls("dashboard-section-chevron") });
-	header.createEl("span", { text: `${config.title} (${config.items.length})` });
-
-	const contentEl = section.createDiv(cls("dashboard-section-content"));
-
-	header.addEventListener("click", () => {
-		collapsed = !collapsed;
-		chevron.textContent = collapsed ? "\u25B6" : "\u25BC";
-		if (collapsed) {
-			addCls(contentEl, "hidden");
-		} else {
-			contentEl.classList.remove("prisma-hidden");
-		}
-	});
-
-	if (config.items.length === 0) {
-		contentEl.createDiv({ text: config.emptyMessage, cls: cls("dashboard-section-empty") });
+	if (chartData.length === 0) {
+		container.createDiv({ text: "No data", cls: cls("dashboard-chart-empty") });
 		return { destroy: () => {} };
 	}
 
-	const controlsRow = contentEl.createDiv(cls("dashboard-controls"));
+	const canvas = createChartCanvas(container, `dashboard-chart-${chartId}`);
+	const limitedData = chartData.slice(0, MAX_CHART_LABELS);
+
+	chartBuilder = new PieChartBuilder(canvas, limitedData, {
+		...(tooltipFormatter ? { tooltipFormatter } : {}),
+	});
+	chartBuilder.render();
+
+	return {
+		destroy: () => {
+			chartBuilder?.destroy();
+			chartBuilder = null;
+		},
+	};
+}
+
+export function renderDashboardRanking(container: HTMLElement, items: DashboardItem[]): void {
+	if (items.length === 0) {
+		container.createDiv({ text: "No data", cls: cls("dashboard-chart-empty") });
+		return;
+	}
+
+	const sorted = [...items].sort((a, b) => b.count - a.count).slice(0, RANKING_LIMIT);
+	const maxCount = sorted[0].count;
+
+	const list = container.createDiv(cls("dashboard-ranking"));
+
+	for (const [i, item] of sorted.entries()) {
+		const row = list.createDiv(cls("dashboard-ranking-row"));
+		row.createEl("span", { text: `${i + 1}`, cls: cls("dashboard-ranking-pos") });
+
+		const barWrap = row.createDiv(cls("dashboard-ranking-bar-wrap"));
+		const bar = barWrap.createDiv(cls("dashboard-ranking-bar"));
+		const pct = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
+		bar.style.width = `${pct}%`;
+		if (item.color) bar.style.backgroundColor = item.color;
+		barWrap.createEl("span", { text: item.title, cls: cls("dashboard-ranking-name") });
+
+		row.createEl("span", { text: String(item.count), cls: cls("dashboard-ranking-count") });
+	}
+}
+
+export function renderDashboardTable(
+	container: HTMLElement,
+	config: {
+		items: DashboardItem[];
+		columns: ColumnDef[];
+		onItemClick?: (item: DashboardItem) => void;
+		emptyMessage: string;
+	}
+): DashboardTableHandle {
+	let searchQuery = "";
+	let sortKey = "count";
+	let sortDirection: SortDirection = "desc";
+	let currentPage = 0;
+
+	if (config.items.length === 0) {
+		container.createDiv({ text: config.emptyMessage, cls: cls("dashboard-section-empty") });
+		return { destroy: () => {} };
+	}
+
+	const controlsRow = container.createDiv(cls("dashboard-controls"));
 	const searchInput = controlsRow.createEl("input", {
 		type: "text",
 		placeholder: "Filter...",
@@ -79,21 +117,7 @@ export function renderDashboardSection(container: HTMLElement, config: Dashboard
 		renderTable();
 	});
 
-	const layout = contentEl.createDiv(cls("dashboard-section-layout"));
-
-	const chartPanel = layout.createDiv(cls("dashboard-chart-panel"));
-	if (config.chartData.length > 0) {
-		const canvas = createChartCanvas(chartPanel, `dashboard-chart-${config.title.replace(/\s+/g, "-").toLowerCase()}`);
-		const limitedData = config.chartData.slice(0, MAX_CHART_LABELS);
-
-		chartBuilder = new PieChartBuilder(canvas, limitedData, {
-			...(config.chartTooltipFormatter ? { tooltipFormatter: config.chartTooltipFormatter } : {}),
-		});
-		chartBuilder.render();
-	}
-
-	const tablePanel = layout.createDiv(cls("dashboard-table-panel"));
-	const tableEl = tablePanel.createEl("table", { cls: cls("dashboard-table") });
+	const tableEl = container.createEl("table", { cls: cls("dashboard-table") });
 	const thead = tableEl.createEl("thead");
 	const headerRow = thead.createEl("tr");
 
@@ -117,7 +141,7 @@ export function renderDashboardSection(container: HTMLElement, config: Dashboard
 	}
 
 	const tbody = tableEl.createEl("tbody");
-	const paginationEl = tablePanel.createDiv(cls("dashboard-pagination"));
+	const paginationEl = container.createDiv(cls("dashboard-pagination"));
 
 	function updateSortIndicators(): void {
 		const ths = headerRow.querySelectorAll("th");
@@ -247,17 +271,10 @@ export function renderDashboardSection(container: HTMLElement, config: Dashboard
 		});
 	}
 
-	sortKey = "count";
-	sortDirection = "desc";
 	renderTable();
 	updateSortIndicators();
 
-	return {
-		destroy: () => {
-			chartBuilder?.destroy();
-			chartBuilder = null;
-		},
-	};
+	return { destroy: () => {} };
 }
 
 export function buildChartDataFromItems(items: DashboardItem[]): ChartDataItem[] {

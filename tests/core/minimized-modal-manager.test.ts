@@ -1,6 +1,7 @@
 import { Subject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createDefaultState } from "../../src/components/modals/event/event-form-state";
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
 import type { IndexerEvent } from "../../src/core/indexer";
 import { MinimizedModalManager, type MinimizedModalState } from "../../src/core/minimized-modal-manager";
@@ -54,6 +55,7 @@ describe("MinimizedModalManager", () => {
 	});
 
 	const createMockState = (overrides: Partial<MinimizedModalState> = {}): MinimizedModalState => ({
+		formState: createDefaultState(),
 		stopwatch: createMockStopwatchSnapshot(),
 		modalType: "create",
 		filePath: null,

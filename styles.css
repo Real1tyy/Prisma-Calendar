@@ -9795,3 +9795,73 @@ div.vis-tooltip {
 		max-height: 300px;
 	}
 }
+
+.prisma-dashboard-chart-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	color: var(--text-faint);
+	font-size: var(--font-ui-small);
+}
+
+.prisma-dashboard-ranking {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	padding: 8px;
+	overflow-y: auto;
+	height: 100%;
+}
+
+.prisma-dashboard-ranking-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 3px 0;
+}
+
+.prisma-dashboard-ranking-pos {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+	min-width: 18px;
+	text-align: right;
+	flex-shrink: 0;
+}
+
+.prisma-dashboard-ranking-bar-wrap {
+	flex: 1;
+	position: relative;
+	min-width: 0;
+	height: 22px;
+	display: flex;
+	align-items: center;
+}
+
+.prisma-dashboard-ranking-bar {
+	position: absolute;
+	inset: 0;
+	border-radius: 4px;
+	background: hsla(var(--color-accent-hsl), 0.15);
+	transition: width 200ms ease;
+}
+
+.prisma-dashboard-ranking-name {
+	position: relative;
+	z-index: 1;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-normal);
+	padding-left: 6px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.prisma-dashboard-ranking-count {
+	font-size: var(--font-ui-smaller);
+	font-weight: 600;
+	color: var(--text-muted);
+	min-width: 30px;
+	text-align: right;
+	flex-shrink: 0;
+}
