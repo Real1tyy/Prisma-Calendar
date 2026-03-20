@@ -21,13 +21,12 @@ import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { FREE_MAX_EVENT_PRESETS } from "../../../core/license";
 import {
 	END_TIME_SYNC_INTERVAL_MS,
-	type FormData,
 	MinimizedModalManager,
 	type MinimizedModalState,
-	type PresetFormData,
 } from "../../../core/minimized-modal-manager";
 import type { Frontmatter } from "../../../types";
 import { isTimedEvent } from "../../../types/calendar";
+import { FormToFieldsSchema, PositiveFloat } from "../../../types/event-fields";
 import type { EventSaveData } from "../../../types/event-save";
 import {
 	buildCustomIntervalDSL,
@@ -42,6 +41,7 @@ import type { Weekday } from "../../../utils/date-recurrence";
 import { autoAssignCategories, findAdjacentEvent } from "../../../utils/event-matching";
 import { cleanupTitle } from "../../../utils/event-naming";
 import { formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../../../utils/format";
+import { writeMetadataToFrontmatter } from "../../../utils/frontmatter-writer";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import { Stopwatch } from "../../stopwatch";
 import { TitleInputSuggest } from "../../title-input-suggest";
@@ -59,7 +59,6 @@ import {
 	applyDateFieldsToFrontmatter,
 	applyNotificationToFrontmatter,
 	applyRecurringFieldsToFrontmatter,
-	applySimpleFieldsToFrontmatter,
 } from "./event-frontmatter-mapper";
 import { showSavePresetModal } from "./save-preset";
 
@@ -464,7 +463,8 @@ export abstract class BaseEventModal extends Modal {
 		this.stopwatch = new Stopwatch(
 			{
 				onStart: (startTime: Date) => {
-					this.initialBreakMinutes = Number.parseFloat(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) || 0;
+					this.initialBreakMinutes =
+						PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
 					this.startInput.value = formatDateTimeForInput(startTime);
 
 					const endTime = new Date(startTime.getTime() + END_TIME_SYNC_INTERVAL_MS);
@@ -477,7 +477,8 @@ export abstract class BaseEventModal extends Modal {
 				onContinueRequested: () => {
 					// Continue uses the existing start time from the input field
 					// Reset the break counter and return the current start time
-					this.initialBreakMinutes = Number.parseFloat(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) || 0;
+					this.initialBreakMinutes =
+						PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
 					const startValue = this.startInput.value;
 					if (startValue) {
 						// If end date is in the past, update it to now
@@ -1162,17 +1163,8 @@ export abstract class BaseEventModal extends Modal {
 		this.titleInput.focus();
 	}
 
-	protected applyPreset(preset: FormData | EventPreset): void {
-		if ("date" in preset || "startDate" in preset || "endDate" in preset) {
-			this.applyFormData(preset);
-		} else {
-			this.applyPresetData(preset as PresetFormData);
-		}
-	}
-
-	private applyPresetData(preset: PresetFormData): void {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const state = applyPresetToState(this.readStateFromDOM(), preset as EventPreset);
+	protected applyPreset(preset: EventPreset): void {
+		const state = applyPresetToState(this.readStateFromDOM(), preset);
 		this.applyStateToDom(state);
 
 		if (preset.categories !== undefined) {
@@ -1180,17 +1172,22 @@ export abstract class BaseEventModal extends Modal {
 		}
 
 		if (preset.customProperties) {
-			this.displayPropertiesContainer.empty();
-			this.otherPropertiesContainer.empty();
+			this.restoreCustomProperties(preset.customProperties);
+		}
+	}
 
-			const displayPropsSet = new Set([
-				...(settings.frontmatterDisplayProperties || []),
-				...(settings.frontmatterDisplayPropertiesAllDay || []),
-			]);
+	private restoreCustomProperties(customProperties: Record<string, unknown>): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		this.displayPropertiesContainer.empty();
+		this.otherPropertiesContainer.empty();
 
-			for (const [key, value] of Object.entries(preset.customProperties)) {
-				this.addCustomProperty(key, serializeFrontmatterValue(value), displayPropsSet.has(key) ? "display" : "other");
-			}
+		const displayPropsSet = new Set([
+			...(settings.frontmatterDisplayProperties || []),
+			...(settings.frontmatterDisplayPropertiesAllDay || []),
+		]);
+
+		for (const [key, value] of Object.entries(customProperties)) {
+			this.addCustomProperty(key, serializeFrontmatterValue(value), displayPropsSet.has(key) ? "display" : "other");
 		}
 	}
 
@@ -1272,25 +1269,6 @@ export abstract class BaseEventModal extends Modal {
 		}
 	}
 
-	private applyFormData(formData: FormData): void {
-		this.applyPresetData(formData);
-
-		if (formData.date) {
-			this.dateInput.value = formData.date;
-		}
-		if (formData.startDate) {
-			this.startInput.value = formatDateTimeForInput(formData.startDate);
-		}
-		if (formData.endDate) {
-			this.endInput.value = formatDateTimeForInput(formData.endDate);
-		}
-
-		if (formData.startDate && formData.endDate && this.durationInput) {
-			const durationMinutes = calculateDurationMinutes(formData.startDate, formData.endDate);
-			this.durationInput.value = durationMinutes.toString();
-		}
-	}
-
 	private refreshPresetSelector(presets: EventPreset[]): void {
 		if (!this.presetSelector) return;
 
@@ -1331,14 +1309,16 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const now = Date.now();
 
-		const formData = this.extractPresetData();
+		const presetFields = extractPresetFromState(this.readStateFromDOM());
+		const customProps = this.getCustomProperties();
 
 		const preset: EventPreset = {
-			...formData,
+			...presetFields,
+			...(Object.keys(customProps).length > 0 && { customProperties: customProps }),
 			id: overridePresetId || `preset-${now}`,
 			name: presetName,
 			createdAt: now,
-		};
+		} as EventPreset;
 
 		// If overriding, preserve the original createdAt
 		if (overridePresetId) {
@@ -1389,7 +1369,6 @@ export abstract class BaseEventModal extends Modal {
 	}
 
 	private extractMinimizedState(): MinimizedModalState {
-		const formData = this.extractFormData();
 		const stopwatchState = this.stopwatch?.exportState() ?? {
 			state: "idle" as const,
 			startTime: null,
@@ -1398,8 +1377,11 @@ export abstract class BaseEventModal extends Modal {
 			totalBreakMs: 0,
 		};
 
+		const customProps = this.getCustomProperties();
+
 		return {
-			...formData,
+			formState: this.readStateFromDOM(),
+			...(Object.keys(customProps).length > 0 && { customProperties: customProps }),
 			stopwatch: stopwatchState,
 			modalType: this.getModalType(),
 			filePath: this.event.extendedProps?.filePath ?? null,
@@ -1408,40 +1390,17 @@ export abstract class BaseEventModal extends Modal {
 		};
 	}
 
-	protected extractFormData(): FormData {
-		const formData: FormData = { ...this.extractPresetData() };
-
-		if (this.allDayCheckbox.checked) {
-			if (this.dateInput.value) {
-				formData.date = this.dateInput.value;
-			}
-		} else {
-			if (this.startInput.value) {
-				formData.startDate = inputValueToISOString(this.startInput.value);
-			}
-			if (this.endInput.value) {
-				formData.endDate = inputValueToISOString(this.endInput.value);
-			}
-		}
-
-		return formData;
-	}
-
-	private extractPresetData(): PresetFormData {
-		const state = this.readStateFromDOM();
-		const preset = extractPresetFromState(state) as PresetFormData;
-
-		const customProps = this.getCustomProperties();
-		if (Object.keys(customProps).length > 0) {
-			preset.customProperties = customProps;
-		}
-
-		return preset;
-	}
-
 	private restoreFromState(state: MinimizedModalState): void {
-		this.applyPreset(state);
+		this.applyStateToDom(state.formState);
 		this.originalFrontmatter = state.originalFrontmatter;
+
+		if (state.formState.categories.length > 0) {
+			this.suppressAutoCategories = true;
+		}
+
+		if (state.customProperties) {
+			this.restoreCustomProperties(state.customProperties);
+		}
 
 		if (this.stopwatch) {
 			this.stopwatch.importState(state.stopwatch);
@@ -1523,18 +1482,21 @@ export abstract class BaseEventModal extends Modal {
 		applyDateFieldsToFrontmatter(fm, settings, dateData);
 
 		const fv = this.getSimpleFieldValues();
+		const parsed = FormToFieldsSchema.parse(fv);
 
-		applySimpleFieldsToFrontmatter(fm, original, settings, {
-			location: fv["location"] as string | undefined,
-			icon: fv["icon"] as string | undefined,
-			participants: fv["participants"] as string | undefined,
-			breakMinutes: fv["breakMinutes"] != null ? String(fv["breakMinutes"]) : undefined,
-			markAsDone: fv["markAsDone"] === true,
-			initialMarkAsDone: this.initialMarkAsDoneState,
-			skip: fv["skip"] === true,
-			categories: this.selectedCategories,
-			prerequisites: this.selectedPrerequisites,
-		});
+		writeMetadataToFrontmatter(
+			fm,
+			settings,
+			{
+				...parsed,
+				categories: this.selectedCategories,
+			},
+			{
+				initialMarkAsDone: this.initialMarkAsDoneState,
+				prerequisites: this.selectedPrerequisites,
+				originalFrontmatter: original,
+			}
+		);
 
 		applyNotificationToFrontmatter(
 			fm,

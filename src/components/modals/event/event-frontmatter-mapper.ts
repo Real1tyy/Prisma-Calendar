@@ -1,23 +1,13 @@
 import { parseIntoList } from "@real1ty-obsidian-plugins";
-import { z } from "zod";
 
 import type { Frontmatter } from "../../../types";
+import type { EventEditableFormFields } from "../../../types/event-fields";
+import { NonNegativeInt, PositiveInt } from "../../../types/event-fields";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import {
-	parseCustomDoneProperty,
-	setEventBasics,
-	setMappedListProp,
-	setMappedNumberProp,
-	setMappedTextProp,
-	setUntrackedEventBasics,
-} from "../../../utils/event-frontmatter";
-import { SimpleEditableFieldsSchema } from "./event-form-state";
+import { setEventBasics, setUntrackedEventBasics } from "../../../utils/event-frontmatter";
+import { setBooleanProp } from "../../../utils/frontmatter-writer";
 
-export const SimpleFieldValuesSchema = SimpleEditableFieldsSchema.extend({
-	notifyBefore: z.string().default("").describe("Notification lead time"),
-});
-
-export type SimpleFieldValues = z.infer<typeof SimpleFieldValuesSchema>;
+export type SimpleFieldValues = EventEditableFormFields & { notifyBefore: string };
 
 export function loadSimpleFieldValues(
 	frontmatter: Frontmatter,
@@ -68,75 +58,14 @@ export function loadPrerequisites(frontmatter: Frontmatter, settings: SingleCale
 	return parseIntoList(frontmatter[settings.prerequisiteProp], { splitCommas: false }).filter((p) => p.trim());
 }
 
-export const SaveSimpleFieldsInputSchema = SimpleEditableFieldsSchema.partial().extend({
-	initialMarkAsDone: z.boolean(),
-	categories: z.array(z.string()),
-	prerequisites: z.array(z.string()),
-});
-
-export type SaveSimpleFieldsInput = z.input<typeof SaveSimpleFieldsInputSchema>;
-
-export function applySimpleFieldsToFrontmatter(
-	fm: Frontmatter,
-	original: Frontmatter,
-	settings: SingleCalendarConfig,
-	input: SaveSimpleFieldsInput
-): void {
-	setMappedListProp(fm, settings.categoryProp, input.categories);
-	setMappedListProp(fm, settings.prerequisiteProp, input.prerequisites);
-
-	if (settings.participantsProp && input.participants !== undefined) {
-		const list = parseIntoList(input.participants).filter((p) => p.trim());
-		setMappedListProp(fm, settings.participantsProp, list);
-	}
-
-	setMappedTextProp(fm, original, settings.locationProp, input.location);
-	setMappedTextProp(fm, original, settings.iconProp, input.icon);
-	setMappedNumberProp(fm, settings.breakProp, input.breakMinutes, { parser: "float", minValue: 0.01 });
-
-	if (settings.statusProperty && input.markAsDone !== undefined) {
-		const wasChecked = input.initialMarkAsDone;
-		const isNowChecked = input.markAsDone;
-
-		if (wasChecked !== isNowChecked) {
-			const customDoneProp = parseCustomDoneProperty(settings.customDoneProperty);
-
-			if (customDoneProp) {
-				if (isNowChecked) {
-					fm[customDoneProp.key] = customDoneProp.value;
-				} else {
-					const customUndoneProp = parseCustomDoneProperty(settings.customUndoneProperty);
-					if (customUndoneProp) {
-						fm[customUndoneProp.key] = customUndoneProp.value;
-					} else {
-						delete fm[customDoneProp.key];
-					}
-				}
-			} else {
-				fm[settings.statusProperty] = isNowChecked ? settings.doneValue : settings.notDoneValue;
-			}
-		}
-	}
-
-	if (settings.skipProp) {
-		if (input.skip) {
-			fm[settings.skipProp] = true;
-		} else {
-			delete fm[settings.skipProp];
-		}
-	}
+export interface RecurringFieldsInput {
+	enabled: boolean;
+	rruleType: string;
+	weekdays: string[];
+	customIntervalDSL?: string;
+	futureInstancesCount?: string;
+	generatePastEvents: boolean;
 }
-
-export const RecurringFieldsInputSchema = z.object({
-	enabled: z.boolean(),
-	rruleType: z.string(),
-	weekdays: z.array(z.string()),
-	customIntervalDSL: z.string().optional(),
-	futureInstancesCount: z.string().optional(),
-	generatePastEvents: z.boolean(),
-});
-
-export type RecurringFieldsInput = z.infer<typeof RecurringFieldsInputSchema>;
 
 export function applyRecurringFieldsToFrontmatter(
 	fm: Frontmatter,
@@ -154,13 +83,14 @@ export function applyRecurringFieldsToFrontmatter(
 			delete fm[settings.rruleSpecProp];
 		}
 
-		setMappedNumberProp(fm, settings.futureInstancesCountProp, input.futureInstancesCount, { minValue: 1 });
-
-		if (input.generatePastEvents) {
-			fm[settings.generatePastEventsProp] = true;
+		const futureCount = PositiveInt.parse(input.futureInstancesCount ?? "");
+		if (futureCount !== undefined) {
+			fm[settings.futureInstancesCountProp] = futureCount;
 		} else {
-			delete fm[settings.generatePastEventsProp];
+			delete fm[settings.futureInstancesCountProp];
 		}
+
+		setBooleanProp(fm, settings.generatePastEventsProp, input.generatePastEvents);
 	} else if (original[settings.rruleProp]) {
 		delete fm[settings.rruleProp];
 		delete fm[settings.rruleSpecProp];
@@ -180,8 +110,8 @@ export function applyNotificationToFrontmatter(
 ): void {
 	if (notifyValue === undefined) return;
 
-	const parsed = Number.parseInt(notifyValue, 10);
-	if (!Number.isNaN(parsed) && parsed >= 0) {
+	const parsed = NonNegativeInt.parse(notifyValue);
+	if (parsed !== undefined) {
 		if (isAllDay) {
 			fm[settings.daysBeforeProp] = parsed;
 			delete fm[settings.minutesBeforeProp];

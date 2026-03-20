@@ -1,22 +1,10 @@
 import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
+import { EventEditableFormFieldsSchema, NonNegativeInt, PositiveFloat, PositiveInt } from "../../../types/event-fields";
 import type { EventPreset } from "../../../types/settings";
 
-// ─── Canonical field schemas — define once, use everywhere ───
-
-export const SimpleEditableFieldsSchema = z.object({
-	location: z.string().default("").describe("Event location").meta({ placeholder: "Event location" }),
-	icon: z.string().default("").describe("Event icon (emoji or text)").meta({ placeholder: "Emoji or text" }),
-	participants: z
-		.string()
-		.default("")
-		.describe("Comma-separated list of participants")
-		.meta({ placeholder: "Alice, Bob, Charlie" }),
-	breakMinutes: z.string().default("").describe("Break time in minutes").meta({ placeholder: "0" }),
-	markAsDone: z.boolean().default(false).describe("Mark as done"),
-	skip: z.boolean().default(false).describe("Hide event from calendar"),
-});
+export const SimpleEditableFieldsSchema = EventEditableFormFieldsSchema.omit({ notifyBefore: true });
 
 export type SimpleEditableFields = z.infer<typeof SimpleEditableFieldsSchema>;
 
@@ -99,20 +87,20 @@ export function extractPresetFromState(state: EventFormState): Partial<EventPres
 		if (val) (preset as Record<string, unknown>)[presetKey] = val;
 	}
 
-	const breakValue = Number.parseFloat(state.breakMinutes);
-	if (!Number.isNaN(breakValue) && breakValue > 0) preset.breakMinutes = breakValue;
+	const breakValue = PositiveFloat.parse(state.breakMinutes);
+	if (breakValue !== undefined) preset.breakMinutes = breakValue;
 
 	preset.skip = state.skip;
 	preset.markAsDone = state.markAsDone;
 
-	const notifyValue = Number.parseInt(state.notifyBefore, 10);
-	if (!Number.isNaN(notifyValue) && notifyValue >= 0) preset.notifyBefore = notifyValue;
+	const notifyValue = NonNegativeInt.parse(state.notifyBefore);
+	if (notifyValue !== undefined) preset.notifyBefore = notifyValue;
 
 	if (state.recurring.enabled) {
 		preset.rruleType = state.recurring.rruleType;
 		if (state.recurring.weekdays.length > 0) preset.rruleSpec = state.recurring.weekdays.join(", ");
-		const futureCount = Number.parseInt(state.recurring.futureInstancesCount, 10);
-		if (!Number.isNaN(futureCount) && futureCount > 0) preset.futureInstancesCount = futureCount;
+		const futureCount = PositiveInt.parse(state.recurring.futureInstancesCount);
+		if (futureCount !== undefined) preset.futureInstancesCount = futureCount;
 	}
 
 	return preset;

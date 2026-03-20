@@ -430,43 +430,6 @@ export const assignListToFrontmatter = (fm: Frontmatter, prop: string, items: st
 	}
 };
 
-export const setMappedTextProp = (
-	fm: Frontmatter,
-	originalFm: Frontmatter,
-	prop: string | undefined,
-	value: string | undefined
-): void => {
-	if (!prop) return;
-	const trimmed = value?.trim();
-	if (trimmed) {
-		fm[prop] = trimmed;
-	} else if (!(prop in originalFm)) {
-		delete fm[prop];
-	}
-};
-
-export const setMappedListProp = (fm: Frontmatter, prop: string | undefined, items: string[]): void => {
-	if (!prop) return;
-	assignListToFrontmatter(fm, prop, items);
-};
-
-export const setMappedNumberProp = (
-	fm: Frontmatter,
-	prop: string | undefined,
-	value: string | undefined,
-	opts?: { parser?: "int" | "float"; minValue?: number }
-): void => {
-	if (!prop) return;
-	const parse = opts?.parser === "float" ? Number.parseFloat : (v: string) => Number.parseInt(v, 10);
-	const parsed = value ? parse(value) : NaN;
-	const min = opts?.minValue ?? 0;
-	if (!Number.isNaN(parsed) && parsed >= min) {
-		fm[prop] = parsed;
-	} else {
-		delete fm[prop];
-	}
-};
-
 /**
  * Removes properties from frontmatter that should not be cloned/duplicated.
  * These include recurring event metadata and notification status that are specific

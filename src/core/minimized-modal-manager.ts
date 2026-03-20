@@ -4,6 +4,7 @@ import { Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 
 import { EventCreateModal, EventEditModal, openCategoryAssignModal } from "../components/modals";
+import type { EventFormState } from "../components/modals/event/event-form-state";
 import type { Frontmatter } from "../types";
 import type { EventPreset } from "../types/settings";
 import type { StopwatchSnapshot } from "../types/stopwatch";
@@ -35,15 +36,14 @@ export interface FormData extends PresetFormData {
  * Extends FormData with stopwatch and modal metadata.
  */
 export interface MinimizedModalState extends FormData {
-	// Stopwatch state (for continuing time tracking)
+	formState: EventFormState;
+
 	stopwatch: StopwatchSnapshot;
 
-	// Modal metadata
 	modalType: "create" | "edit";
 	filePath: string | null;
 	originalFrontmatter: Frontmatter;
 
-	// References needed to reopen
 	calendarId: string;
 }
 
