@@ -1,6 +1,8 @@
 import { type App, Notice, SecretComponent, Setting } from "obsidian";
 import type { z, ZodArray, ZodNumber, ZodObject, ZodRawShape } from "zod";
 
+import { camelCaseToLabel, introspectField } from "../schema-modal/introspect";
+import type { EnumFieldDescriptor, NumberFieldDescriptor } from "../schema-modal/types";
 import type { SettingsStore } from "./settings-store";
 
 interface BaseSettingConfig {
@@ -46,6 +48,18 @@ interface OptionalColorPickerSettingConfig {
 	descWhenSet: string;
 	descWhenEmpty: string;
 	fallback?: string;
+}
+
+export interface SchemaFieldConfig {
+	key: string;
+	field: z.ZodType;
+	name?: string;
+	desc?: string;
+	step?: number;
+	commitOnChange?: boolean;
+	placeholder?: string;
+	options?: Record<string, string>;
+	onChanged?: () => void;
 }
 
 interface ArrayManagerConfig extends BaseSettingConfig {
@@ -842,5 +856,91 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 					})
 				);
 		}
+	}
+
+	addSchemaField(containerEl: HTMLElement, config: SchemaFieldConfig): void {
+		const fieldKey = config.key.includes(".") ? config.key.split(".").pop()! : config.key;
+		const descriptor = introspectField(fieldKey, config.field);
+
+		const name = config.name ?? descriptor.label;
+		const desc = config.desc ?? descriptor.description ?? "";
+		const baseConfig = {
+			key: config.key,
+			name,
+			desc,
+			...(config.onChanged !== undefined ? { onChanged: config.onChanged } : {}),
+		};
+
+		switch (descriptor.type) {
+			case "boolean":
+			case "toggle":
+				this.addToggle(containerEl, baseConfig);
+				break;
+			case "number":
+				this.renderSchemaNumber(containerEl, descriptor, baseConfig, config);
+				break;
+			case "enum":
+				this.renderSchemaEnum(containerEl, descriptor, baseConfig, config);
+				break;
+			case "string":
+				this.addText(containerEl, {
+					...baseConfig,
+					placeholder: config.placeholder ?? descriptor.placeholder ?? "",
+					...(config.commitOnChange !== undefined ? { commitOnChange: config.commitOnChange } : {}),
+				});
+				break;
+			case "array":
+				this.addTextArray(containerEl, {
+					...baseConfig,
+					...(config.placeholder !== undefined ? { placeholder: config.placeholder } : {}),
+					itemType: descriptor.itemType,
+				});
+				break;
+			case "date":
+			case "datetime":
+				this.addText(containerEl, {
+					...baseConfig,
+					placeholder: config.placeholder ?? (descriptor.type === "date" ? "YYYY-MM-DD" : "YYYY-MM-DDTHH:mm"),
+				});
+				break;
+		}
+	}
+
+	private renderSchemaNumber(
+		containerEl: HTMLElement,
+		descriptor: NumberFieldDescriptor,
+		baseConfig: BaseSettingConfig,
+		config: SchemaFieldConfig
+	): void {
+		const { min, max } = descriptor;
+		if (min !== undefined && max !== undefined) {
+			this.addSlider(containerEl, {
+				...baseConfig,
+				min,
+				max,
+				...(config.step !== undefined ? { step: config.step } : {}),
+				...(config.commitOnChange !== undefined ? { commitOnChange: config.commitOnChange } : {}),
+			});
+		} else {
+			this.addNumberInput(containerEl, {
+				...baseConfig,
+				...(min !== undefined ? { min } : {}),
+				...(max !== undefined ? { max } : {}),
+				...(config.step !== undefined ? { step: config.step } : {}),
+			});
+		}
+	}
+
+	private renderSchemaEnum(
+		containerEl: HTMLElement,
+		descriptor: EnumFieldDescriptor,
+		baseConfig: BaseSettingConfig,
+		config: SchemaFieldConfig
+	): void {
+		const options =
+			config.options ??
+			descriptor.enumLabels ??
+			Object.fromEntries(descriptor.enumValues.map((v) => [v, camelCaseToLabel(v)]));
+		this.addDropdown(containerEl, { ...baseConfig, options });
 	}
 }

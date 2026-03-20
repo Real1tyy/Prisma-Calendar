@@ -79,3 +79,11 @@ export function introspectShape(shape: ZodRawShape): SchemaFieldDescriptor[] {
 		return resolveFieldDescriptor(key, prop, optional);
 	});
 }
+
+export function introspectField(key: string, field: z.ZodType): SchemaFieldDescriptor {
+	const [descriptor] = introspectShape({ [key]: field });
+	if (!descriptor) {
+		throw new Error(`Could not introspect field "${key}"`);
+	}
+	return descriptor;
+}
