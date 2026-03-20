@@ -61,11 +61,18 @@ export class LicenseManager {
 		this.onStatusChange = callback;
 	}
 
-	requirePro(featureName: string): boolean {
+	requirePro(featureName: string, options?: { docsUrl?: string; purchaseUrl?: string }): boolean {
 		if (this.isPro) return true;
-		new Notice(
-			`${featureName} requires ${this.config.productName} Pro.\nVisit ${this.config.purchaseUrl} to learn more.`,
-			8000
+		const purchaseUrl = options?.purchaseUrl ?? this.config.purchaseUrl;
+		const docsUrl = options?.docsUrl;
+		const lines = [`${featureName} requires ${this.config.productName} Pro.`];
+		if (docsUrl) lines.push(`Docs: ${docsUrl}`);
+		lines.push(`Get Pro: ${purchaseUrl}`);
+		new Notice(lines.join("\n"), 8000);
+		console.log(
+			`[${this.config.productName}] Pro feature required: ${featureName}` +
+				(docsUrl ? `\n  Docs: ${docsUrl}` : "") +
+				`\n  Purchase: ${purchaseUrl}`
 		);
 		return false;
 	}
