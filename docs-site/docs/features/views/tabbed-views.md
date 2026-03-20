@@ -45,7 +45,7 @@ A two-column resizable layout with two independent daily calendars side by side.
 
 ## Dashboard (Pro)
 
-A full-page overview of all events with three collapsible sections — Recurring Events, Categories, and By Name. Each section shows a pie chart distribution alongside a sortable, filterable table with colored rows. See [Dashboard](./dashboard.md) for details.
+A group tab with three subtabs — By Name, By Category, and Recurring — accessible via a dropdown on the tab button. Each subtab uses a resizable grid layout with a pie chart, summary stats, a Top 10 ranking, and a full sortable table. See [Dashboard](./dashboard.md) for details.
 
 ## Managing Tabs
 
