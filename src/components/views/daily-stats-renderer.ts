@@ -127,7 +127,13 @@ export function renderDailyStatsInto(container: HTMLElement, bundle: CalendarBun
 			return;
 		}
 
-		chartComponent = new ChartComponent(contentContainer, stats.entries, { showToggle: false });
+		const chartOptions = {
+			showToggle: false,
+			...(aggregationMode === "category" && {
+				colorResolver: (label: string) => bundle.categoryTracker.getCategoryColor(label),
+			}),
+		};
+		chartComponent = new ChartComponent(contentContainer, stats.entries, chartOptions);
 		tableComponent = new TableComponent(contentContainer, stats.entries, stats.totalDuration, showDecimalHours);
 	}
 

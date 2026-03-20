@@ -7,6 +7,7 @@ const MAX_LABELS = 25; // to prevent label overflow
 
 export interface ChartComponentOptions {
 	showToggle?: boolean;
+	colorResolver?: (label: string) => string;
 }
 
 export class ChartComponent {
@@ -16,7 +17,7 @@ export class ChartComponent {
 
 	constructor(parentEl: HTMLElement, entries: WeeklyStatEntry[], options?: ChartComponentOptions) {
 		this.container = this.createChartSection(parentEl, options?.showToggle ?? true);
-		this.renderChart(entries);
+		this.renderChart(entries, options?.colorResolver);
 	}
 
 	private isMobileView(): boolean {
@@ -53,17 +54,17 @@ export class ChartComponent {
 		return chartSection;
 	}
 
-	private renderChart(entries: WeeklyStatEntry[]): void {
+	private renderChart(entries: WeeklyStatEntry[], colorResolver?: (label: string) => string): void {
 		const canvas = this.container.querySelector("canvas") as HTMLCanvasElement;
 
 		const limitedEntries = entries.slice(0, MAX_LABELS);
 		const isMobile = this.isMobileView();
-		const colors = generateColors(limitedEntries.length);
+		const fallbackColors = colorResolver ? [] : generateColors(limitedEntries.length);
 
 		const chartData: ChartDataItem[] = limitedEntries.map((entry, index) => ({
 			label: entry.name,
 			value: entry.duration,
-			color: colors[index],
+			color: colorResolver ? colorResolver(entry.name) : fallbackColors[index],
 		}));
 
 		this.chartBuilder = new PieChartBuilder(canvas, chartData, {

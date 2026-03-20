@@ -144,7 +144,11 @@ export abstract class IntervalStatsModal extends StatsModal {
 			capacityEl.createSpan({ text: formatBoundaryRange(capacity), cls: cls("capacity-bounds") });
 		}
 
-		this.chartComponent = new ChartComponent(this.contentContainer, stats.entries);
+		const chartOptions =
+			this.aggregationMode === "category"
+				? { colorResolver: (label: string) => this.bundle.categoryTracker.getCategoryColor(label) }
+				: undefined;
+		this.chartComponent = new ChartComponent(this.contentContainer, stats.entries, chartOptions);
 		this.tableComponent = new TableComponent(
 			this.contentContainer,
 			stats.entries,
