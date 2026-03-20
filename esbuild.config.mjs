@@ -47,6 +47,9 @@ const context = await esbuild.context({
 	loader: {
 		".md": "text",
 		".css": "text",
+		".webp": "dataurl",
+		".png": "dataurl",
+		".jpg": "dataurl",
 	},
 	plugins: [
 		{

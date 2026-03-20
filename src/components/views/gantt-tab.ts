@@ -2,13 +2,14 @@ import { cls, type TabDefinition } from "@real1ty-obsidian-plugins";
 import Gantt, { type Task } from "frappe-gantt";
 import frappeGanttCss from "frappe-gantt/dist/frappe-gantt.css";
 import type { App } from "obsidian";
-import { debounceTime, merge, type Subscription } from "rxjs";
+import { debounceTime, distinctUntilChanged, merge, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { buildDependencyGraph, isConnected } from "../../core/dependency-graph";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarEvent } from "../../types/calendar";
 import { showEventPreviewModal } from "../modals";
+import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 
 const REFRESH_DEBOUNCE_MS = 100;
 const GANTT_STYLE_ID = "prisma-gantt-vendor-css";
@@ -65,6 +66,7 @@ function injectVendorCss(): void {
 export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let gantt: Gantt | null = null;
 	let mergedSub: Subscription | null = null;
+	let isProSub: Subscription | null = null;
 	let wrapperEl: HTMLElement | null = null;
 	let emptyEl: HTMLElement | null = null;
 	let eventsSnapshot: CalendarEvent[] = [];
@@ -122,37 +124,57 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		createGantt(tasks);
 	}
 
+	function cleanupContent(): void {
+		mergedSub?.unsubscribe();
+		mergedSub = null;
+		gantt = null;
+		wrapperEl = null;
+		emptyEl = null;
+	}
+
 	return {
 		id: "gantt",
 		label: "Gantt",
 		render: (el) => {
-			if (!bundle.plugin.licenseManager.requirePro(PRO_FEATURES.PREREQUISITE_CONNECTIONS)) {
-				el.createDiv({ cls: cls("tab-pro-gate"), text: "Gantt view requires Prerequisite Connections (Pro)." });
-				return;
+			function renderTab(): void {
+				cleanupContent();
+				el.empty();
+
+				if (!bundle.plugin.licenseManager.isPro) {
+					renderProUpgradeBanner(
+						el,
+						PRO_FEATURES.GANTT,
+						"Define dependencies between events and visualize them in a Gantt chart. Track task order and project timelines.",
+						"GANTT"
+					);
+					return;
+				}
+
+				injectVendorCss();
+
+				emptyEl = el.createDiv({
+					cls: cls("gantt-empty"),
+					text: "No prerequisite connections found. Add prerequisites to events to see them here.",
+				});
+				wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
+
+				rebuild();
+
+				mergedSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$)
+					.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
+					.subscribe(() => {
+						rebuild();
+					});
 			}
 
-			injectVendorCss();
+			renderTab();
 
-			emptyEl = el.createDiv({
-				cls: cls("gantt-empty"),
-				text: "No prerequisite connections found. Add prerequisites to events to see them here.",
-			});
-			wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
-
-			rebuild();
-
-			mergedSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$)
-				.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
-				.subscribe(() => {
-					rebuild();
-				});
+			isProSub = bundle.plugin.licenseManager.isPro$.pipe(skip(1), distinctUntilChanged()).subscribe(() => renderTab());
 		},
 		cleanup: () => {
-			mergedSub?.unsubscribe();
-			mergedSub = null;
-			gantt = null;
-			wrapperEl = null;
-			emptyEl = null;
+			isProSub?.unsubscribe();
+			isProSub = null;
+			cleanupContent();
 		},
 	};
 }

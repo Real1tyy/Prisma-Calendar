@@ -9363,8 +9363,9 @@ div.vis-tooltip {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 8px;
-	padding: 24px 20px;
+	justify-content: center;
+	gap: 10px;
+	padding: 32px 24px;
 	margin: 16px 0;
 	border-radius: 12px;
 	border: 1px solid var(--interactive-accent);
@@ -9374,11 +9375,48 @@ div.vis-tooltip {
 		transparent
 	);
 	text-align: center;
+	min-height: 200px;
+}
+
+.prisma-pro-upgrade-preview {
+	width: 100%;
+	max-width: 720px;
+	border-radius: 10px;
+	overflow: hidden;
+	position: relative;
+	margin-bottom: 8px;
+	cursor: pointer;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+	transition:
+		transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+		box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.prisma-pro-upgrade-preview:hover {
+	transform: scale(1.04);
+	box-shadow:
+		0 32px 80px -16px rgba(124, 58, 237, 0.25),
+		0 0 0 1px rgba(124, 58, 237, 0.12);
+}
+
+.prisma-pro-upgrade-preview::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(to bottom, transparent 70%, var(--background-primary) 100%);
+	pointer-events: none;
+}
+
+.prisma-pro-upgrade-preview-img {
+	width: 100%;
+	height: auto;
+	display: block;
 }
 
 .prisma-pro-upgrade-badge {
 	display: inline-block;
-	padding: 2px 10px;
+	padding: 3px 12px;
 	border-radius: 999px;
 	font-size: 11px;
 	font-weight: 700;
@@ -9390,25 +9428,52 @@ div.vis-tooltip {
 
 .prisma-pro-upgrade-title {
 	margin: 4px 0 0;
-	font-size: 16px;
+	font-size: 18px;
 	font-weight: 600;
 	color: var(--text-normal);
 }
 
 .prisma-pro-upgrade-description {
 	margin: 0;
-	font-size: 13px;
+	font-size: 14px;
 	color: var(--text-muted);
 	line-height: 1.5;
-	max-width: 400px;
+	max-width: 500px;
+}
+
+.prisma-pro-upgrade-actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 4px;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.prisma-pro-upgrade-doc-link {
+	display: inline-block;
+	padding: 8px 18px;
+	border-radius: 8px;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--interactive-accent);
+	background: transparent;
+	border: 1px solid var(--interactive-accent);
+	text-decoration: none;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.prisma-pro-upgrade-doc-link:hover {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	text-decoration: none;
 }
 
 .prisma-pro-upgrade-link {
 	display: inline-block;
-	margin-top: 4px;
-	padding: 6px 16px;
+	padding: 8px 18px;
 	border-radius: 8px;
-	font-size: 13px;
+	font-size: 14px;
 	font-weight: 600;
 	color: var(--text-on-accent);
 	background: var(--interactive-accent);
@@ -9420,6 +9485,40 @@ div.vis-tooltip {
 	opacity: 0.85;
 	text-decoration: none;
 	color: var(--text-on-accent);
+}
+
+/* ─── Pro Feature Lightbox ────────────────────────────────────── */
+
+.prisma-pro-lightbox-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.8);
+	backdrop-filter: blur(4px);
+	cursor: zoom-out;
+	animation: prisma-lightbox-fade-in 0.2s ease;
+}
+
+.prisma-pro-lightbox-img {
+	max-width: 90vw;
+	max-height: 90vh;
+	border-radius: 12px;
+	box-shadow:
+		0 32px 80px -16px rgba(124, 58, 237, 0.3),
+		0 0 0 1px rgba(124, 58, 237, 0.15);
+	cursor: default;
+}
+
+@keyframes prisma-lightbox-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 /* ─── License Activations Badge ──────────────────────────────── */

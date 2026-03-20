@@ -1,5 +1,6 @@
 import { cls, MountableView } from "@real1ty-obsidian-plugins";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
+import { distinctUntilChanged, skip } from "rxjs";
 
 import { AIChatManager, type ChatMessage, ChatStore } from "../core/ai";
 import { type CategoryContext, type ManipulationContext, type PlanningContext } from "../core/ai/ai-context-builder";
@@ -66,17 +67,31 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	override async mount(): Promise<void> {
+		const container = this.containerEl.children[1] as HTMLElement;
+
 		if (!this.plugin.isProEnabled) {
-			const container = this.containerEl.children[1] as HTMLElement;
 			container.empty();
 			renderProUpgradeBanner(
 				container,
 				PRO_FEATURES.AI_CHAT,
-				"AI chat with Claude and GPT, including query, manipulation, and planning modes, requires Prisma Calendar Pro."
+				"AI chat with Claude and GPT, including query, manipulation, and planning modes, requires Prisma Calendar Pro.",
+				"AI_CHAT"
 			);
+
+			const sub = this.plugin.licenseManager.isPro$.pipe(skip(1), distinctUntilChanged()).subscribe((isPro) => {
+				if (isPro) {
+					sub.unsubscribe();
+					void this.mountProContent(container);
+				}
+			});
+			this.register(() => sub.unsubscribe());
 			return;
 		}
 
+		await this.mountProContent(container);
+	}
+
+	private async mountProContent(container: HTMLElement): Promise<void> {
 		this.markdownComponent.load();
 		await this.chatManager.initialize();
 
@@ -85,7 +100,6 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			this.currentMode = currentThread.mode as AIMode;
 		}
 
-		const container = this.containerEl.children[1] as HTMLElement;
 		container.empty();
 		container.addClass(cls("ai-chat-container"));
 

@@ -96,7 +96,8 @@ export class IntegrationsSettings {
 			renderProUpgradeBanner(
 				containerEl,
 				PRO_FEATURES.CALDAV_SYNC,
-				"Sync events with CalDAV servers like Nextcloud, iCloud, Google Calendar, and more."
+				"Sync events with CalDAV servers like Nextcloud, iCloud, Google Calendar, and more.",
+				"CALDAV_SYNC"
 			);
 			return;
 		}
@@ -110,7 +111,8 @@ export class IntegrationsSettings {
 			renderProUpgradeBanner(
 				containerEl,
 				PRO_FEATURES.ICS_SYNC,
-				"Subscribe to external ICS calendar URLs and sync events automatically."
+				"Subscribe to external ICS calendar URLs and sync events automatically.",
+				"ICS_SYNC"
 			);
 			return;
 		}

@@ -29,6 +29,7 @@ export const PRO_FEATURES = {
 	HEATMAP: "Heatmap View",
 	BASES_VIEW: "Bases Calendar View",
 	PREREQUISITE_CONNECTIONS: "Prerequisite Connections",
+	GANTT: "Gantt Diagram",
 	DASHBOARD: "Dashboard",
 } as const;
 

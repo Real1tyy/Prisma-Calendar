@@ -5,6 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { cls, ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { BasesQueryResult } from "obsidian";
 import { BasesView, Notice, type QueryController } from "obsidian";
+import { distinctUntilChanged, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
@@ -17,6 +18,7 @@ import { BatchSelectionManager } from "../batch-selection-manager";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
 import { EventCreateModal, openCategoryAssignModal, showBatchFrontmatterModal, showEventPreviewModal } from "../modals";
+import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 import { UntrackedEventsDropdown } from "../untracked-events-dropdown";
 import {
 	applyContainerStyles,
@@ -60,6 +62,7 @@ class PrismaBasesView extends BasesView {
 	private hasNavigatedInitially = false;
 	private currentViewType: string | null = null;
 	private currentBundleId: string | null = null;
+	private isProSub: Subscription | null = null;
 
 	constructor(
 		controller: QueryController,
@@ -80,9 +83,15 @@ class PrismaBasesView extends BasesView {
 				this.onDataUpdated();
 			}
 		});
+
+		this.isProSub = this.plugin.licenseManager.isPro$
+			.pipe(skip(1), distinctUntilChanged())
+			.subscribe(() => this.onDataUpdated());
 	}
 
 	override onunload(): void {
+		this.isProSub?.unsubscribe();
+		this.isProSub = null;
 		this.destroyCalendar();
 	}
 
@@ -106,12 +115,14 @@ class PrismaBasesView extends BasesView {
 			cachedQueryData = this.data;
 		}
 
-		if (!this.plugin.licenseManager.requirePro(PRO_FEATURES.BASES_VIEW)) {
+		if (!this.plugin.licenseManager.isPro) {
 			this.containerEl.empty();
-			this.containerEl.createDiv({
-				cls: cls("bases-view-pro-gate"),
-				text: "Bases Calendar View is a Pro feature.",
-			});
+			renderProUpgradeBanner(
+				this.containerEl,
+				PRO_FEATURES.BASES_VIEW,
+				"Query and display your events using Obsidian Bases with table, list, card, timeline, and heatmap views.",
+				"BASES_VIEW"
+			);
 			return;
 		}
 

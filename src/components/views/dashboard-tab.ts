@@ -4,9 +4,8 @@ import {
 	type GroupTabDefinition,
 	type TabDefinition,
 } from "@real1ty-obsidian-plugins";
-import { cls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import type { Subscription } from "rxjs";
+import { distinctUntilChanged, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
@@ -15,6 +14,7 @@ import type { ChartDataItem } from "../../utils/chart-utils";
 import { removeZettelId } from "../../utils/event-naming";
 import { getCategoriesFromFilePath } from "../../utils/obsidian";
 import { EventSeriesModal } from "../list-modals/event-series-modal";
+import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 import {
 	buildChartDataFromItems,
 	type ColumnDef,
@@ -134,36 +134,58 @@ function createDashboardChild(
 		renderContent(el);
 	}
 
+	let isProSub: Subscription | null = null;
+
+	function cleanupContent(): void {
+		if (state.debounceTimer) clearTimeout(state.debounceTimer);
+		state.chartHandle?.destroy();
+		state.tableHandle?.destroy();
+		state.gridHandle?.destroy();
+		state.gridHandle = null;
+		for (const sub of state.subscriptions) sub.unsubscribe();
+		state.subscriptions = [];
+	}
+
 	return {
 		id,
 		label,
 		render: (el) => {
-			if (!bundle.plugin.licenseManager.requirePro(PRO_FEATURES.DASHBOARD)) {
-				el.createDiv({ cls: cls("tab-pro-gate"), text: "Dashboard is a Pro feature." });
-				return;
+			function renderTab(): void {
+				cleanupContent();
+				el.empty();
+
+				if (!bundle.plugin.licenseManager.isPro) {
+					renderProUpgradeBanner(
+						el,
+						PRO_FEATURES.DASHBOARD,
+						"Get a comprehensive overview of your calendar with charts, rankings, and key statistics — all in one place.",
+						"DASHBOARD"
+					);
+					return;
+				}
+
+				renderContent(el);
+
+				const debouncedRender = (): void => {
+					if (state.debounceTimer) clearTimeout(state.debounceTimer);
+					state.debounceTimer = setTimeout(() => doRender(el), 300);
+				};
+
+				state.subscriptions = [
+					bundle.categoryTracker.categories$.subscribe(() => debouncedRender()),
+					bundle.eventStore.subscribe(() => debouncedRender()),
+					bundle.recurringEventManager.subscribe(() => debouncedRender()),
+				];
 			}
 
-			renderContent(el);
+			renderTab();
 
-			const debouncedRender = (): void => {
-				if (state.debounceTimer) clearTimeout(state.debounceTimer);
-				state.debounceTimer = setTimeout(() => doRender(el), 300);
-			};
-
-			state.subscriptions = [
-				bundle.categoryTracker.categories$.subscribe(() => debouncedRender()),
-				bundle.eventStore.subscribe(() => debouncedRender()),
-				bundle.recurringEventManager.subscribe(() => debouncedRender()),
-			];
+			isProSub = bundle.plugin.licenseManager.isPro$.pipe(skip(1), distinctUntilChanged()).subscribe(() => renderTab());
 		},
 		cleanup: () => {
-			if (state.debounceTimer) clearTimeout(state.debounceTimer);
-			state.chartHandle?.destroy();
-			state.tableHandle?.destroy();
-			state.gridHandle?.destroy();
-			state.gridHandle = null;
-			for (const sub of state.subscriptions) sub.unsubscribe();
-			state.subscriptions = [];
+			isProSub?.unsubscribe();
+			isProSub = null;
+			cleanupContent();
 		},
 	};
 }

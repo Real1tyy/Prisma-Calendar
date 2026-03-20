@@ -67,7 +67,8 @@ export class SingleCalendarSettings {
 						: renderProUpgradeBanner(
 								el,
 								PRO_FEATURES.AI_CHAT,
-								"AI chat with Claude and GPT, including query, manipulation, and planning modes, requires Prisma Calendar Pro."
+								"AI chat with Claude and GPT, including query, manipulation, and planning modes, requires Prisma Calendar Pro.",
+								"AI_CHAT"
 							),
 			},
 		];
