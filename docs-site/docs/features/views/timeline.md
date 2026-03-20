@@ -2,7 +2,7 @@
 
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
-Displays all events on a horizontal vis-timeline. Navigate by date using the year/month/day inputs, or pan and zoom the timeline directly. Click an event to open its preview. The "Show all events timeline" command navigates directly to this tab.
+A horizontal timeline showing all your events as points on a scrollable, zoomable axis. Great for getting a bird's-eye view of your schedule across days, weeks, or months.
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
@@ -12,6 +12,28 @@ Displays all events on a horizontal vis-timeline. Navigate by date using the yea
   </video>
 </div>
 
+## Navigation
+
+The timeline header provides date inputs and quick-jump buttons:
+
+- **Year / Month / Day inputs**: Type a date and press **Enter** or click **Go** to jump directly to that date.
+- **Today button**: Instantly centers the timeline on the current date and updates the input fields.
+- **Pan**: Click and drag the timeline horizontally to move forward or backward in time.
+- **Zoom**: Scroll up/down to zoom in (minimum 1 day) or out (maximum 10 years).
+
+The default view shows a one-week window centered on today.
+
+## Event Rendering
+
+Each event appears as a colored point on the timeline:
+
+- **Color**: Uses the event's resolved category color (from color rules or integration color).
+- **Stacking**: Events that overlap in time stack vertically so nothing is hidden.
+- **Tooltips**: Hover over an event to see its full details — title, dates, times, and categories.
+- **Visual indicators**: Skipped events and all-day events have distinct styling so you can tell them apart at a glance.
+
+Click any event to open its **Event Preview Modal**.
+
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
     <source src={useBaseUrl("/video/TimelineViewForEvents.webm")} type="video/webm" />
@@ -19,3 +41,13 @@ Displays all events on a horizontal vis-timeline. Navigate by date using the yea
     Your browser does not support the video tag.
   </video>
 </div>
+
+## Live Updates
+
+The timeline updates automatically when events change — new events appear, deleted events disappear, and edits are reflected instantly.
+
+## Command
+
+Use **Show all events timeline** (`Prisma Calendar: Show all events timeline`) to switch directly to the Timeline tab from anywhere.
+
+The Timeline is also available as a toolbar button (enabled by default).

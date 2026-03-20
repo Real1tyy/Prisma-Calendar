@@ -1,5 +1,15 @@
 # Dashboard (Pro)
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/DashboardView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/DashboardView.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 The Dashboard is a group tab with three subtabs — By Name, By Category, and Recurring — selectable via a dropdown chevron on the tab button. Hovering the button also opens the dropdown. Each subtab uses a two-column grid layout: a pie chart and summary stats with a Top 10 ranking on top, and a full sortable table spanning the bottom.
 
 :::info Pro Feature

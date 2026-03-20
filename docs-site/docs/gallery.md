@@ -285,6 +285,15 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
+### [Dashboard](features/views/dashboard) — Pro Analytics Dashboard
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/DashboardView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/DashboardView.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ### [Dual Daily](features/views/dual-daily) — Two-Column Daily View
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
