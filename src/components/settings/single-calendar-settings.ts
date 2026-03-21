@@ -1,4 +1,4 @@
-import { SettingsNavigation, type SettingsSection } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, SettingsNavigation, type SettingsSection } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import { PRO_FEATURES } from "../../core/license";
@@ -79,33 +79,71 @@ export class SingleCalendarSettings {
 			footerLinks: [
 				{
 					text: "Product Page",
-					href: "https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=obsidian-plugin&utm_medium=settings&utm_content=product-page",
+					href: buildUtmUrl(
+						"https://matejvavroproductivity.com/tools/prisma-calendar/",
+						"prisma-calendar",
+						"settings",
+						"product-page"
+					),
 				},
 				{
 					text: "Documentation",
-					href: "https://real1tyy.github.io/Prisma-Calendar/?utm_source=obsidian-plugin&utm_medium=settings&utm_content=documentation",
+					href: buildUtmUrl(
+						"https://real1tyy.github.io/Prisma-Calendar/",
+						"prisma-calendar",
+						"settings",
+						"documentation"
+					),
 				},
 				{
 					text: "Changelog",
-					href: "https://real1tyy.github.io/Prisma-Calendar/changelog?utm_source=obsidian-plugin&utm_medium=settings&utm_content=changelog",
+					href: buildUtmUrl(
+						"https://real1tyy.github.io/Prisma-Calendar/changelog",
+						"prisma-calendar",
+						"settings",
+						"changelog"
+					),
 				},
 				{
 					text: "Gallery",
-					href: "https://real1tyy.github.io/Prisma-Calendar/gallery?utm_source=obsidian-plugin&utm_medium=settings&utm_content=gallery",
+					href: buildUtmUrl(
+						"https://real1tyy.github.io/Prisma-Calendar/gallery",
+						"prisma-calendar",
+						"settings",
+						"gallery"
+					),
 				},
 				{
 					text: "Free vs Pro",
-					href: "https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro?utm_source=obsidian-plugin&utm_medium=settings&utm_content=free-vs-pro",
+					href: buildUtmUrl(
+						"https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro",
+						"prisma-calendar",
+						"settings",
+						"free-vs-pro"
+					),
 				},
 				{
 					text: "Other Plugins",
-					href: "https://matejvavroproductivity.com/tools/?utm_source=obsidian-plugin&utm_medium=settings&utm_content=other-plugins",
+					href: buildUtmUrl(
+						"https://matejvavroproductivity.com/tools/",
+						"prisma-calendar",
+						"settings",
+						"other-plugins"
+					),
 				},
 				{
 					text: "Support",
-					href: "https://matejvavroproductivity.com/support/?utm_source=obsidian-plugin&utm_medium=settings&utm_content=support",
+					href: buildUtmUrl("https://matejvavroproductivity.com/support/", "prisma-calendar", "settings", "support"),
 				},
-				{ text: "Playlist", href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4" },
+				{
+					text: "Playlist",
+					href: buildUtmUrl(
+						"https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4",
+						"prisma-calendar",
+						"settings",
+						"youtube"
+					),
+				},
 			],
 		});
 	}

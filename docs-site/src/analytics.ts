@@ -28,7 +28,7 @@ function getSessionAttribution(): UtmParams {
 	if (!sessionAttribution) {
 		const params = new URLSearchParams(window.location.search);
 		sessionAttribution = {
-			utmSource: params.get("utm_source") || "docs-site",
+			utmSource: params.get("utm_source") || `${getPluginSlug()}-docs`,
 			utmMedium: params.get("utm_medium") || "docs",
 			utmContent: params.get("utm_content") || getPluginSlug(),
 		};

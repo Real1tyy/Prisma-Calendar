@@ -1,5 +1,6 @@
 import {
 	activateView,
+	buildUtmUrl,
 	onceAsync,
 	SettingsStore,
 	SyncStore,
@@ -602,12 +603,24 @@ export default class CustomCalendarPlugin extends Plugin {
 				changelogContent: CHANGELOG_CONTENT,
 				links: {
 					github: "https://github.com/Real1tyy/Prisma-Calendar",
-					support:
-						"https://real1tyy.github.io/Prisma-Calendar/support?utm_source=obsidian-plugin&utm_medium=whats-new&utm_content=support",
-					changelog:
-						"https://real1tyy.github.io/Prisma-Calendar/changelog?utm_source=obsidian-plugin&utm_medium=whats-new&utm_content=changelog",
-					documentation:
-						"https://real1tyy.github.io/Prisma-Calendar/?utm_source=obsidian-plugin&utm_medium=whats-new&utm_content=documentation",
+					support: buildUtmUrl(
+						"https://real1tyy.github.io/Prisma-Calendar/support",
+						"prisma-calendar",
+						"whats-new",
+						"support"
+					),
+					changelog: buildUtmUrl(
+						"https://real1tyy.github.io/Prisma-Calendar/changelog",
+						"prisma-calendar",
+						"whats-new",
+						"changelog"
+					),
+					documentation: buildUtmUrl(
+						"https://real1tyy.github.io/Prisma-Calendar/",
+						"prisma-calendar",
+						"whats-new",
+						"documentation"
+					),
 				},
 			};
 

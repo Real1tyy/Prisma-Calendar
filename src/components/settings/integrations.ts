@@ -1,4 +1,4 @@
-import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { type App, Setting } from "obsidian";
 import type { Subscription } from "rxjs";
 
@@ -56,7 +56,12 @@ export class IntegrationsSettings {
 
 		descContainer
 			.createEl("a", {
-				href: "https://real1tyy.github.io/Prisma-Calendar/features/integrations?utm_source=obsidian-plugin&utm_medium=settings&utm_content=integrations-docs",
+				href: buildUtmUrl(
+					"https://real1tyy.github.io/Prisma-Calendar/features/integrations",
+					"prisma-calendar",
+					"settings",
+					"integrations-docs"
+				),
 				cls: cls("settings-docs-link"),
 				attr: { target: "_blank" },
 			})

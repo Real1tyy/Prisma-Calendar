@@ -1,6 +1,8 @@
 // esbuild inlines these as data:image/<format>;base64,... strings at build time.
 // Images live in docs-site/static/img/pro-previews/ so they're shared with the docs site.
 // Replace each placeholder .png with a real screenshot and rebuild.
+import { buildUtmUrl } from "@real1ty-obsidian-plugins";
+
 import aiChatPreview from "../../docs-site/static/img/pro-previews/ai-chat.png";
 import basesViewPreview from "../../docs-site/static/img/pro-previews/bases-view.png";
 import dashboardPreview from "../../docs-site/static/img/pro-previews/dashboard.png";
@@ -16,8 +18,6 @@ interface ProFeatureConfig {
 }
 
 const DOCS_BASE_URL = "https://real1tyy.github.io/Prisma-Calendar";
-const UTM_SOURCE = "obsidian-plugin";
-const UTM_MEDIUM = "pro-gate";
 
 const PRO_FEATURE_CONFIG: Record<ProFeatureKey, ProFeatureConfig> = {
 	AI_CHAT: { docPath: "features/advanced/ai-chat", preview: aiChatPreview },
@@ -38,17 +38,21 @@ export function getFeaturePreviewSrc(featureKey: ProFeatureKey): string | null {
 	return PRO_FEATURE_CONFIG[featureKey].preview ?? null;
 }
 
-function buildUtmParams(featureKey: ProFeatureKey): string {
-	const content = featureKey.toLowerCase().replace(/_/g, "-");
-	return `utm_source=${UTM_SOURCE}&utm_medium=${UTM_MEDIUM}&utm_content=${content}`;
+function featureContent(featureKey: ProFeatureKey): string {
+	return featureKey.toLowerCase().replace(/_/g, "-");
 }
 
 export function getFeatureDocUrl(featureKey: ProFeatureKey): string {
-	return `${DOCS_BASE_URL}/${PRO_FEATURE_CONFIG[featureKey].docPath}?${buildUtmParams(featureKey)}`;
+	return buildUtmUrl(
+		`${DOCS_BASE_URL}/${PRO_FEATURE_CONFIG[featureKey].docPath}`,
+		"prisma-calendar",
+		"pro-gate",
+		featureContent(featureKey)
+	);
 }
 
 export function getFeaturePurchaseUrl(featureKey: ProFeatureKey): string {
-	return `${PRO_PURCHASE_URL}?${buildUtmParams(featureKey)}`;
+	return buildUtmUrl(PRO_PURCHASE_URL, "prisma-calendar", "pro-gate", featureContent(featureKey));
 }
 
 export function getProGateUrls(featureKey: ProFeatureKey): { docsUrl: string; purchaseUrl: string } {
