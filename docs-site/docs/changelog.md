@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.8.0 - 3/21/2026
+
+### Fixed
+
+- **AI Manipulation modifying unrelated events**: In Manipulation mode, the AI would modify existing events that weren't mentioned by the user in order to resolve pre-existing overlaps. The no-overlap constraint now only applies to newly created events in Manipulation mode; existing events are only modified when the user explicitly requests it. See [AI Chat — Validation](./features/advanced/ai-chat.md#validation--auto-correction).
+
+---
+
 ## 2.7.0 - 3/18/2026
 
 ### Added

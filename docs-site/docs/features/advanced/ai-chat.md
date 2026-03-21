@@ -130,7 +130,7 @@ Switching between modes updates the current conversation's mode without clearing
 Both Manipulation and Planning modes validate the AI's response before showing it to you:
 
 - **Schema validation**: Every operation is checked for correct structure — valid ISO datetime formats, required fields, and proper types.
-- **Overlap detection**: Events on the same day must not overlap with each other or with existing events.
+- **Overlap detection**: Newly created events must not overlap with each other. In Planning mode, new events are also checked against existing events. In Manipulation mode, existing events are not included in the overlap check — the AI only modifies events the user explicitly mentioned.
 - **Gap detection** (Planning mode): Consecutive events should be back-to-back during active hours — gaps longer than 5 minutes are flagged.
 - **Day coverage** (Planning mode): Every day in the interval must have at least one event.
 - **Boundary check**: All events must fall within the current interval.

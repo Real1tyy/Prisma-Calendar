@@ -529,10 +529,10 @@ Rules (MANDATORY — violations will be rejected and you will be asked to fix th
 - For edits, only include fields that should change
 - For deletes, reference the filePath of the event to remove
 - To replace an event: delete the old one, then create a new one
-- Events overlap ONLY when one event's time range crosses into another's. Sharing a boundary is NOT an overlap — 09:00-10:00 and 10:00-11:00 do NOT overlap. NEVER create truly overlapping events.
-- When adjusting times, ensure events are contiguous with zero gaps — if one ends at 18:30, the next starts at 18:30 exactly.
-- When shifting events, preserve their durations. Shift rather than shrink
-- Verify no events overlap before responding
+- Only modify events the user explicitly mentioned or described. NEVER touch unrelated events to "fix" overlaps or gaps — existing calendar state is intentional.
+- When CREATING new events, ensure they do not overlap with existing events. Events overlap ONLY when one event's time range crosses into another's. Sharing a boundary is NOT an overlap — 09:00-10:00 and 10:00-11:00 do NOT overlap.
+- When shifting events, preserve their durations. Shift rather than shrink.
+- Only enforce no-overlap and contiguous scheduling across multiple events if the user explicitly requests it (e.g., "make sure nothing overlaps", "reorganize my schedule").
 
 ## Calendar Context
 - Calendar: ${context.calendarName}
