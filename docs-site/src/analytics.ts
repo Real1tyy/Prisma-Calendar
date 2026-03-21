@@ -2,6 +2,7 @@ import ExecutionEnvironment from "@docusaurus/ExecutionEnvironment";
 import type { ClientModule } from "@docusaurus/types";
 
 const ANALYTICS_ENDPOINT = "__ANALYTICS_ENDPOINT__";
+const TRACKING_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "ref"];
 
 type EventCategory = "click" | "download" | "search" | "navigation" | "conversion" | "engagement" | "error";
 
@@ -11,7 +12,7 @@ interface UtmParams {
 	utmContent: string | null;
 }
 
-// First-touch session attribution — cached once from the initial landing URL
+// First-touch session attribution — cached once from the initial landing URL before cleanup
 let sessionAttribution: UtmParams | null = null;
 let sessionPageCount = 0;
 let pageEntryTime = 0;
@@ -28,6 +29,23 @@ function getSessionAttribution(): UtmParams {
 		};
 	}
 	return sessionAttribution;
+}
+
+function cleanTrackingParams(): void {
+	const url = new URL(window.location.href);
+	let stripped = false;
+
+	for (const param of TRACKING_PARAMS) {
+		if (url.searchParams.has(param)) {
+			url.searchParams.delete(param);
+			stripped = true;
+		}
+	}
+
+	if (stripped) {
+		const clean = url.pathname + (url.search || "") + url.hash;
+		window.history.replaceState(window.history.state, "", clean);
+	}
 }
 
 function send(path: string, body: Record<string, unknown>): void {
@@ -66,7 +84,7 @@ function flushPageEngagement(): void {
 
 	send("/api/visit", {
 		path: currentPath,
-		documentReferrer: null,
+		referrer: null,
 		previousPath: null,
 		...getSessionAttribution(),
 		scrollDepth: maxScrollDepth,
@@ -86,17 +104,18 @@ function resetPageTracking(): void {
 	currentPath = window.location.pathname;
 }
 
-function trackPageView(previousPath?: string | null): void {
+function trackPageView(isInitial: boolean, previousPath?: string | null): void {
 	sessionPageCount++;
 	resetPageTracking();
 	send("/api/visit", {
 		path: window.location.pathname,
-		documentReferrer: previousPath ? null : document.referrer || null,
-		previousPath: previousPath ?? null,
+		referrer: isInitial ? document.referrer || null : null,
+		previousPath: isInitial ? null : previousPath ?? null,
 		...getSessionAttribution(),
 		scrollDepth: null,
 		duration: null,
 		sessionPageCount,
+		isEngagement: false,
 	});
 }
 
@@ -113,6 +132,7 @@ export function trackEvent(
 		label: label ?? null,
 		path: window.location.pathname,
 		utmSource: utm.utmSource,
+		utmMedium: utm.utmMedium,
 		utmContent: utm.utmContent,
 		value: value ?? null,
 	});
@@ -179,7 +199,10 @@ function setupUnloadFlush(): void {
 
 // Guard browser globals — only run in browser, not during SSR
 if (ExecutionEnvironment.canUseDOM) {
-	trackPageView();
+	// Cache UTM params BEFORE cleaning them from the URL
+	getSessionAttribution();
+	trackPageView(true);
+	cleanTrackingParams();
 	setupScrollTracking();
 	setupExternalLinkTracking();
 	setupCodeCopyTracking();
@@ -190,7 +213,7 @@ const clientModule: ClientModule = {
 	onRouteDidUpdate({ location, previousLocation }) {
 		if (location.pathname !== previousLocation?.pathname) {
 			flushPageEngagement();
-			trackPageView(previousLocation?.pathname ?? null);
+			trackPageView(false, previousLocation?.pathname ?? null);
 		}
 	},
 };
