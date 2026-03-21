@@ -8,7 +8,7 @@ All notable changes to this project will be documented here.
 
 ### Added
 
-- **Context menu customization**: Right-click any event and select "Manage menu items..." at the bottom of the context menu to fully customize it — reorder items via drag-and-drop or arrow buttons, rename labels, change icons, pick custom colors, and show/hide individual actions. All changes persist across sessions. No more digging through settings — configuration lives right where you use it. Existing show/hide preferences from previous versions are automatically migrated. See [Configuration — Context Menu](./configuration/toolbar-and-menus.md#context-menu).
+- **Context menu customization**: Right-click any event and select "Manage menu items..." at the bottom of the context menu to fully customize it. Items are grouped by section (Navigation, Edit, Move, Danger, Recurring) — reorder within sections via drag-and-drop or arrow buttons, drag items between sections to reassign them, rename labels, change icons, pick custom colors, and show/hide individual actions. All changes persist across sessions. No more digging through settings — configuration lives right where you use it. Existing show/hide preferences from previous versions are automatically migrated. See [Configuration — Context Menu](./configuration/toolbar-and-menus.md#context-menu).
 
 ### Improved
 

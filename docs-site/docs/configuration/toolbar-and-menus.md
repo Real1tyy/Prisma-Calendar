@@ -43,13 +43,15 @@ The context menu appears when you right-click any event. It is fully customizabl
 
 Click **"Manage menu items..."** at the bottom of the context menu to open the item manager. From there you can:
 
-- **Reorder**: Drag items or use the up/down arrow buttons to change their position in the menu.
+- **Sections**: Items are organized into sections (Navigation, Edit, Move, Danger, Recurring). Section headers appear in the manager to help you understand the grouping. Separators are inserted between sections in the actual context menu.
+- **Reorder within a section**: Use the up/down arrow buttons to move items within their section. Drag items to reorder within the same section.
+- **Move between sections**: Drag an item and drop it onto a different section to reassign it. The item adopts the target section's grouping and a separator will appear accordingly in the context menu.
 - **Rename**: Click the pencil icon on any item, then edit the Name field. A badge shows the original name for reference. Click the reset button to restore the default label.
 - **Change icon**: Click the pencil icon, then click the Icon button to pick from all available Obsidian icons.
 - **Change color**: Click the pencil icon, then use the Color picker to tint the item's icon.
-- **Show/Hide**: Click the eye icon to hide an item. Hidden items appear dimmed at the bottom of the manager. Click the eye-off icon to restore them. At least one item must remain visible.
+- **Show/Hide**: Click the eye icon to hide an item. Hidden items appear dimmed at the bottom of their section. Click the eye-off icon to restore them. At least one item must remain visible.
 - **Toggle settings button**: The toggle at the top of the manager controls whether the "Manage menu items..." entry appears in the context menu.
-- **Search**: Use the search bar at the top to filter items by name.
+- **Search**: Use the search bar at the top to filter items by name (flat list, ignoring sections).
 
 All changes persist automatically per calendar.
 
