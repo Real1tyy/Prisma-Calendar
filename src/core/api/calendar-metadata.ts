@@ -101,8 +101,8 @@ export async function getStatistics(
 	}));
 
 	return {
-		periodStart: bounds.start.toISOString(),
-		periodEnd: bounds.end.toISOString(),
+		periodStart: toLocalISOString(bounds.start),
+		periodEnd: toLocalISOString(bounds.end),
 		interval,
 		mode,
 		totalDuration: stats.totalDuration,

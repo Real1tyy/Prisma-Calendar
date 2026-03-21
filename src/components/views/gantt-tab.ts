@@ -1,4 +1,4 @@
-import { cls, type TabDefinition } from "@real1ty-obsidian-plugins";
+import { cls, type TabDefinition, toLocalISOString } from "@real1ty-obsidian-plugins";
 import Gantt, { type Task } from "frappe-gantt";
 import frappeGanttCss from "frappe-gantt/dist/frappe-gantt.css";
 import type { App } from "obsidian";
@@ -19,9 +19,9 @@ export function sanitizeGanttId(filePath: string): string {
 }
 
 function nextDay(dateStr: string): string {
-	const d = new Date(dateStr + "T00:00:00");
+	const d = new Date(dateStr + "T12:00:00");
 	d.setDate(d.getDate() + 1);
-	return d.toISOString().slice(0, 10);
+	return toLocalISOString(d).slice(0, 10);
 }
 
 function getTaskDates(event: CalendarEvent): { start: string; end: string } {

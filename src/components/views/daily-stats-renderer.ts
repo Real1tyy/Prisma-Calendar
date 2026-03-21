@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls, toLocalISOString } from "@real1ty-obsidian-plugins";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
@@ -80,7 +80,7 @@ export function renderDailyStatsInto(container: HTMLElement, bundle: CalendarBun
 			})
 		);
 
-		const query = { start: start.toISOString(), end: end.toISOString() };
+		const query = { start: toLocalISOString(start), end: toLocalISOString(end) };
 		const events = await bundle.eventStore.getEvents(query);
 
 		let filteredEvents: CalendarEvent[];

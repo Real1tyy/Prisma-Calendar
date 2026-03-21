@@ -14,7 +14,7 @@ import {
 } from "../utils/validation";
 import type { Frontmatter, SingleCalendarConfig } from "./index";
 
-export { appendZ, stripZ, toInternalISO } from "../utils/iso";
+export { stripZ, toInternalISO } from "../utils/iso";
 
 const BaseEventFrontmatterSchema = z.object({
 	title: titleTransform,

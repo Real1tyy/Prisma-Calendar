@@ -1,3 +1,5 @@
+import { toLocalISOString } from "@real1ty-obsidian-plugins";
+
 import type { CalendarEvent, SingleCalendarConfig } from "../types";
 import { isTimedEvent } from "../types/calendar";
 
@@ -58,7 +60,7 @@ export const findAdjacentEvent = (
 	currentFilePath: string | null | undefined,
 	direction: "next" | "previous"
 ) => {
-	const searchTime = new Date(currentStart || "").toISOString();
+	const searchTime = currentStart instanceof Date ? toLocalISOString(currentStart) : currentStart || "";
 	const excludeFilePath = currentFilePath || undefined;
 
 	return direction === "next"

@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -102,7 +102,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 		const { start, end } = this.intervalConfig.getBounds(this.currentDate);
 
-		const query = { start: start.toISOString(), end: end.toISOString() };
+		const query = { start: toLocalISOString(start), end: toLocalISOString(end) };
 		const events = await this.bundle.eventStore.getEvents(query);
 
 		let filteredEvents: CalendarEvent[];

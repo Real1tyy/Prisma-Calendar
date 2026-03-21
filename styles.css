@@ -30,6 +30,7 @@
 }
 
 .prisma-calendar-container {
+	position: relative;
 	height: auto;
 	min-height: max(100%, 400px);
 	--prisma-sticky-toolbar-offset: 0px;
@@ -7894,7 +7895,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 
 /* What's New Modal */
 .modal-container.mod-dim .modal:has(.prisma-whats-new-modal) {
-	max-width: 920px;
+	max-width: 750px;
 	width: 90%;
 }
 

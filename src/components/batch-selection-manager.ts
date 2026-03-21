@@ -1,6 +1,14 @@
 import type { Calendar, EventApi } from "@fullcalendar/core";
 import type { Command } from "@real1ty-obsidian-plugins";
-import { addCls, cls, getWeekDirection, pluralize, removeCls, runBatchOperation } from "@real1ty-obsidian-plugins";
+import {
+	addCls,
+	cls,
+	getWeekDirection,
+	pluralize,
+	removeCls,
+	runBatchOperation,
+	toLocalISOString,
+} from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
@@ -412,7 +420,7 @@ export class BatchSelectionManager {
 	private mapFCEventToCalendarEvent(fcEvent: EventApi): CalendarEvent {
 		const filePath = fcEvent.extendedProps["filePath"] as string;
 		const title = (fcEvent.extendedProps["originalTitle"] || fcEvent.title) as string;
-		const start = fcEvent.start?.toISOString() || "";
+		const start = fcEvent.start ? toLocalISOString(fcEvent.start) : "";
 		const isVirtual = (fcEvent.extendedProps["isVirtual"] as boolean) ?? false;
 		const skipped = (fcEvent.extendedProps["skipped"] as boolean) ?? false;
 		const meta = (fcEvent.extendedProps["frontmatterDisplayData"] as Record<string, unknown>) ?? {};
@@ -437,7 +445,7 @@ export class BatchSelectionManager {
 			: {
 					...baseEvent,
 					type: "timed" as const,
-					end: fcEvent.end?.toISOString() || start,
+					end: fcEvent.end ? toLocalISOString(fcEvent.end) : start,
 					allDay: false,
 				};
 	}

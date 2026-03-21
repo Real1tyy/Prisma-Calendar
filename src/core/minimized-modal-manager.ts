@@ -1,4 +1,4 @@
-import { formatMsToHHMMSS, formatMsToMMSS } from "@real1ty-obsidian-plugins";
+import { ensureISOSuffix, formatMsToHHMMSS, formatMsToMMSS, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
@@ -9,7 +9,6 @@ import type { Frontmatter } from "../types";
 import type { EventPreset } from "../types/settings";
 import type { StopwatchSnapshot } from "../types/stopwatch";
 import { getEventName } from "../utils/event-naming";
-import { formatDateTimeForInput, inputValueToISOString } from "../utils/format";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
 import { assignCategories } from "./commands/frontmatter-update-command";
@@ -139,7 +138,7 @@ class MinimizedModalManagerClass {
 		const file = this.app.vault.getAbstractFileByPath(this.savedState.filePath);
 		if (!(file instanceof TFile)) return;
 
-		const now = inputValueToISOString(formatDateTimeForInput(new Date()));
+		const now = ensureISOSuffix(toLocalISOString(new Date()));
 		await this.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
 			fm[settings.endProp] = now;
 		});

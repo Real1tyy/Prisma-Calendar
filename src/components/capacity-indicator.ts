@@ -1,4 +1,4 @@
-import { cls } from "@real1ty-obsidian-plugins";
+import { cls, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
@@ -26,7 +26,7 @@ export function createCapacityIndicator(container: HTMLElement, bundle: Calendar
 		}
 
 		badge.style.display = "";
-		const query = { start: rangeStart.toISOString(), end: rangeEnd.toISOString() };
+		const query = { start: toLocalISOString(rangeStart), end: toLocalISOString(rangeEnd) };
 		const events = await bundle.eventStore.getEvents(query);
 
 		const capacity = calculateCapacityFromEvents(events, rangeStart, rangeEnd, settings.hourStart, settings.hourEnd);

@@ -32,16 +32,20 @@ describe("stripZ", () => {
 });
 
 describe("appendZ", () => {
-	it("should append Z to bare ISO string", () => {
-		expect(appendZ("2026-03-19T08:50:00")).toBe("2026-03-19T08:50:00Z");
+	it("should append .000Z to bare ISO string", () => {
+		expect(appendZ("2026-03-19T08:50:00")).toBe("2026-03-19T08:50:00.000Z");
 	});
 
-	it("should not double-append Z", () => {
-		expect(appendZ("2026-03-19T08:50:00Z")).toBe("2026-03-19T08:50:00Z");
+	it("should normalize Z to .000Z", () => {
+		expect(appendZ("2026-03-19T08:50:00Z")).toBe("2026-03-19T08:50:00.000Z");
 	});
 
-	it("should handle date-only strings", () => {
-		expect(appendZ("2026-03-19")).toBe("2026-03-19Z");
+	it("should not double-append .000Z", () => {
+		expect(appendZ("2026-03-19T08:50:00.000Z")).toBe("2026-03-19T08:50:00.000Z");
+	});
+
+	it("should leave date-only strings unchanged", () => {
+		expect(appendZ("2026-03-19")).toBe("2026-03-19");
 	});
 });
 
@@ -89,7 +93,7 @@ describe("roundtrip: frontmatter → internal → frontmatter", () => {
 		const backToFrontmatter = appendZ(internal);
 
 		expect(internal).toBe("2026-03-19T08:50:00");
-		expect(backToFrontmatter).toBe("2026-03-19T08:50:00Z");
+		expect(backToFrontmatter).toBe("2026-03-19T08:50:00.000Z");
 		expect(stripZ(backToFrontmatter)).toBe(internal);
 	});
 

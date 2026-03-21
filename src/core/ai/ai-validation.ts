@@ -1,4 +1,4 @@
-import { calculateDurationMinutes, intoDate } from "@real1ty-obsidian-plugins";
+import { calculateDurationMinutes, intoDate, toLocalISOString } from "@real1ty-obsidian-plugins";
 
 import { stripISOSuffix } from "../../utils/event-frontmatter";
 import type { AIEventSummary } from "./ai-context-builder";
@@ -126,7 +126,7 @@ export function validateDayCoverage(byDay: DayMap, intervalStart: string, interv
 
 	const current = new Date(start);
 	while (current < end) {
-		const dayKey = current.toISOString().slice(0, 10);
+		const dayKey = toLocalISOString(current).slice(0, 10);
 		if (!byDay.has(dayKey)) {
 			errors.push(`Missing coverage: no events on ${dayKey}.`);
 		}

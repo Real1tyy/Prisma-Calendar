@@ -7,9 +7,12 @@ export function stripZ(iso: string): string {
 	return iso.replace(/\.000Z$|Z$/, "");
 }
 
-/** Append Z to an ISO string for frontmatter serialization (exit boundary). */
+/** Append .000Z to an ISO datetime string for frontmatter serialization (exit boundary). Date-only strings pass through unchanged. */
 export function appendZ(iso: string): string {
-	return iso.endsWith("Z") ? iso : iso + "Z";
+	if (!iso.includes("T")) return iso;
+	if (iso.endsWith(".000Z")) return iso;
+	if (iso.endsWith("Z")) return iso.slice(0, -1) + ".000Z";
+	return iso + ".000Z";
 }
 
 /** Convert a Luxon DateTime to internal ISO (no Z, no offset, no milliseconds). */

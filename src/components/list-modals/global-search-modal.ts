@@ -1,4 +1,4 @@
-import { addCls, cls, ColorEvaluator, removeCls } from "@real1ty-obsidian-plugins";
+import { addCls, cls, ColorEvaluator, removeCls, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 
@@ -190,8 +190,8 @@ export class GlobalSearchModal extends BaseEventListModal {
 		end.setFullYear(end.getFullYear() + SEARCH_YEAR_RANGE);
 
 		const events = this.bundle.eventStore.getPhysicalEvents({
-			start: start.toISOString(),
-			end: end.toISOString(),
+			start: toLocalISOString(start),
+			end: toLocalISOString(end),
 		});
 
 		let filtered = events.filter((event) => !event.isVirtual);

@@ -41,14 +41,6 @@ export function formatDateOnly(dateInput: string | Date): string {
 	return `${year}-${month}-${day}`;
 }
 
-/**
- * Converts datetime-local input value to ISO string with Z suffix (treating as local time).
- * NOTE: This version always returns string (unlike the shared version which returns string | null).
- */
-export function inputValueToISOString(inputValue: string): string {
-	return `${inputValue}:00.000Z`;
-}
-
 function formatEventDateSuffix(start: Date, end: Date | null, allDay: boolean, locale: string): string {
 	if (allDay) {
 		const dateStr = start.toLocaleDateString(locale, {

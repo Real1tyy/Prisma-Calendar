@@ -1,6 +1,7 @@
 import type { Command } from "@real1ty-obsidian-plugins";
 import {
 	backupFrontmatter,
+	ensureISOSuffix,
 	getTFileOrThrow,
 	parseFrontmatterRecord,
 	restoreFrontmatter,
@@ -161,7 +162,7 @@ export function fillTime(
 		app,
 		filePath,
 		(fm) => {
-			fm[propertyName] = newTimeValue;
+			fm[propertyName] = ensureISOSuffix(newTimeValue);
 		},
 		"fill-time"
 	);

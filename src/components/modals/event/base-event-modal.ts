@@ -3,6 +3,7 @@ import {
 	afterRender,
 	calculateDurationMinutes,
 	cls,
+	ensureISOSuffix,
 	extractDisplayName,
 	parseAsLocalDate,
 	parseFrontmatterRecord,
@@ -12,6 +13,7 @@ import {
 	type SchemaFormHandle,
 	serializeFrontmatterValue,
 	toggleCls,
+	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
 import { type App, Modal, Notice } from "obsidian";
 import type { Subscription } from "rxjs";
@@ -40,7 +42,7 @@ import type { EventPreset } from "../../../types/settings";
 import type { Weekday } from "../../../utils/date-recurrence";
 import { autoAssignCategories, findAdjacentEvent } from "../../../utils/event-matching";
 import { cleanupTitle } from "../../../utils/event-naming";
-import { formatDateOnly, formatDateTimeForInput, inputValueToISOString } from "../../../utils/format";
+import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
 import { writeMetadataToFrontmatter } from "../../../utils/frontmatter-writer";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
 import { Stopwatch } from "../../stopwatch";
@@ -1032,7 +1034,7 @@ export abstract class BaseEventModal extends Modal {
 		successMessage: string
 	): void {
 		// Get the current time from the input field (already in ISO format) instead of this.event.start (Date object in local timezone)
-		const currentTimeISO = this.allDayCheckbox.checked ? null : inputValueToISOString(this.startInput.value);
+		const currentTimeISO = this.allDayCheckbox.checked ? null : toLocalISOString(new Date(this.startInput.value));
 
 		const adjacentEvent = findAdjacentEvent(
 			this.bundle.eventStore,
@@ -1463,8 +1465,8 @@ export abstract class BaseEventModal extends Modal {
 				isUntracked = true;
 			}
 		} else if (this.startInput.value) {
-			start = inputValueToISOString(this.startInput.value);
-			end = this.endInput.value ? inputValueToISOString(this.endInput.value) : null;
+			start = ensureISOSuffix(this.startInput.value);
+			end = this.endInput.value ? ensureISOSuffix(this.endInput.value) : null;
 		} else {
 			isUntracked = true;
 		}

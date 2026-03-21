@@ -1,4 +1,4 @@
-import { type Command, MacroCommand } from "@real1ty-obsidian-plugins";
+import { type Command, MacroCommand, toLocalISOString } from "@real1ty-obsidian-plugins";
 
 import type CustomCalendarPlugin from "../../main";
 import { type AIOperation, AIOperationsSchema } from "../../types/ai-operation-schemas";
@@ -66,8 +66,8 @@ export async function gatherCalendarContext(
 	bundle: CalendarBundle,
 	viewContext: ActiveViewContext
 ): Promise<CalendarContext> {
-	const start = viewContext.currentStart.toISOString();
-	const end = viewContext.currentEnd.toISOString();
+	const start = toLocalISOString(viewContext.currentStart);
+	const end = toLocalISOString(viewContext.currentEnd);
 	const events = await bundle.eventStore.getEvents({ start, end });
 	const calendarName = bundle.settingsStore.currentSettings.name;
 	const categoryProp = bundle.settingsStore.currentSettings.categoryProp;
@@ -86,8 +86,8 @@ export async function gatherManipulationContext(
 	bundle: CalendarBundle,
 	viewContext: ActiveViewContext
 ): Promise<ManipulationContext> {
-	const start = viewContext.currentStart.toISOString();
-	const end = viewContext.currentEnd.toISOString();
+	const start = toLocalISOString(viewContext.currentStart);
+	const end = toLocalISOString(viewContext.currentEnd);
 	const events = await bundle.eventStore.getEvents({ start, end });
 	const calendarName = bundle.settingsStore.currentSettings.name;
 
@@ -115,12 +115,12 @@ export async function gatherPlanningContext(
 	}
 
 	const currentEvents = await bundle.eventStore.getEvents({
-		start: currentStart.toISOString(),
-		end: currentEnd.toISOString(),
+		start: toLocalISOString(currentStart),
+		end: toLocalISOString(currentEnd),
 	});
 	const previousEvents = await bundle.eventStore.getEvents({
-		start: previousStart.toISOString(),
-		end: previousEnd.toISOString(),
+		start: toLocalISOString(previousStart),
+		end: toLocalISOString(previousEnd),
 	});
 
 	const calendarName = bundle.settingsStore.currentSettings.name;

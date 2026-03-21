@@ -1,4 +1,5 @@
 import {
+	ensureISOSuffix,
 	type FrontmatterDiff,
 	parseIntoList,
 	serializeFrontmatterValue,
@@ -10,7 +11,7 @@ import { type App, TFile } from "obsidian";
 
 import { INTERNAL_FRONTMATTER_PROPERTIES } from "../constants";
 import type { CalendarEvent, Frontmatter, SingleCalendarConfig } from "../types";
-import { appendZ, stripZ } from "../types/event";
+import { stripZ } from "../types/event";
 import {
 	DEDICATED_UI_PROP_KEYS,
 	NOTIFICATION_DEDICATED_UI_PROP_KEYS,
@@ -104,7 +105,7 @@ const shiftISO = (iso: unknown, duration?: DurationLike) => {
 		return shifted.toISODate();
 	}
 	const bare = shifted.toISO({ suppressMilliseconds: true, includeOffset: false });
-	return iso.endsWith("Z") ? appendZ(bare ?? "") : bare;
+	return iso.endsWith("Z") ? ensureISOSuffix(bare ?? "") : bare;
 };
 
 export const applyStartEndOffsets = (
@@ -149,8 +150,8 @@ export const setEventBasics = (
 		fm[startProp] = "";
 		fm[endProp] = "";
 	} else {
-		fm[startProp] = appendZ(data.start);
-		if (data.end) fm[endProp] = appendZ(data.end);
+		fm[startProp] = ensureISOSuffix(data.start);
+		if (data.end) fm[endProp] = ensureISOSuffix(data.end);
 		fm[dateProp] = "";
 	}
 

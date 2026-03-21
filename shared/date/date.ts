@@ -70,7 +70,9 @@ export const formatDateForInput = (dateString: string): string => {
  */
 export const inputValueToISOString = (inputValue: string): string | null => {
 	try {
-		return new Date(inputValue).toISOString();
+		const date = new Date(inputValue);
+		if (Number.isNaN(date.getTime())) return null;
+		return toLocalISOString(date);
 	} catch {
 		return null;
 	}
@@ -151,7 +153,7 @@ export function ensureISOSuffix(datetime: string): string {
 
 export function toLocalISOString(date: Date): string {
 	const p = formatDateParts(date);
-	return `${p.year}-${p.month}-${p.day}T${p.hours}:${p.minutes}:${p.seconds}.${p.ms}Z`;
+	return `${p.year}-${p.month}-${p.day}T${p.hours}:${p.minutes}:${p.seconds}`;
 }
 
 export function getISODatePart(iso: string): string {

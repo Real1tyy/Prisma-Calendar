@@ -1,4 +1,4 @@
-import { cls, ColorEvaluator, showModal } from "@real1ty-obsidian-plugins";
+import { cls, ColorEvaluator, showModal, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { DataSet } from "vis-data";
 import { type DataItem, Timeline, type TimelineOptions } from "vis-timeline";
@@ -215,8 +215,8 @@ export function renderTimelineInto(
 			return filterEventsByRange(config.events, startMs, endMs);
 		}
 		return bundle.eventStore.getEvents({
-			start: new Date(startMs).toISOString(),
-			end: new Date(endMs).toISOString(),
+			start: toLocalISOString(new Date(startMs)),
+			end: toLocalISOString(new Date(endMs)),
 		});
 	}
 

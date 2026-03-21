@@ -955,9 +955,7 @@ export class EventContextMenu {
 				return;
 			}
 
-			const timeValueISO = new Date(timeValue).toISOString();
-
-			await this.runCommand(() => fillTime(this.app, filePath, config.propertyName, timeValueISO), {
+			await this.runCommand(() => fillTime(this.app, filePath, config.propertyName, timeValue), {
 				success: config.successMessage,
 				error: config.errorMessage,
 			});

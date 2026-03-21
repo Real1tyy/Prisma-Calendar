@@ -17,7 +17,9 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 
+- **Timezone conversion bugs**: Fixed a systemic UTC conversion issue that affected the entire plugin — most noticeably "Fill start time from previous event" and "Fill end time from next event" which could write incorrect times or clear values entirely. The same bug also affected event store queries, Gantt chart dates, AI context gathering, AI validation, batch selection, capacity indicators, statistics, timeline, and search. All datetime operations now use local time consistently.
 - **AI Manipulation modifying unrelated events**: In Manipulation mode, the AI would modify existing events that weren't mentioned by the user in order to resolve pre-existing overlaps. The no-overlap constraint now only applies to newly created events in Manipulation mode; existing events are only modified when the user explicitly requests it. See [AI Chat — Validation](./features/advanced/ai-chat.md#validation--auto-correction).
+- **Prerequisite connection arrows not updating on scroll**: Connection arrows were not reactive to scrolling or zoom changes — they stayed frozen in their initial positions. Arrows now update in real time as you scroll or change zoom levels, and render behind sticky headers (toolbar, day headers, all-day section) so they never obscure fixed UI elements. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
 
 ---
 

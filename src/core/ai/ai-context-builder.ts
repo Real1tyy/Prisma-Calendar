@@ -1,4 +1,4 @@
-import { minsToTimeStr, parseTimeToMins } from "@real1ty-obsidian-plugins";
+import { minsToTimeStr, parseTimeToMins, toLocalISOString } from "@real1ty-obsidian-plugins";
 
 import type { CalendarEvent } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
@@ -403,8 +403,8 @@ export function buildPlanningContext(
 	return {
 		calendarName,
 		currentDateRange: formatDateRange(currentStart, currentEnd),
-		currentStart: currentStart.toISOString(),
-		currentEnd: currentEnd.toISOString(),
+		currentStart: toLocalISOString(currentStart),
+		currentEnd: toLocalISOString(currentEnd),
 		currentEvents: currentEvents.map(mapEventToManipulationSummary),
 		previousDateRange: formatDateRange(previousStart, previousEnd),
 		previousEvents: previousEvents.map(mapEventToSummary),

@@ -4,10 +4,10 @@ import {
 	compareFrontmatter,
 	getTFileOrThrow,
 	restoreFrontmatter,
+	toLocalISOString,
 	withFrontmatter,
 } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
-import type { TFile } from "obsidian";
+import type { App, TFile } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import {
@@ -94,7 +94,7 @@ export class UpdateEventCommand implements Command {
 		if (!endTime && !this.newAllDay) {
 			const startDate = new Date(this.newStart);
 			startDate.setHours(startDate.getHours() + 1);
-			endTime = startDate.toISOString();
+			endTime = toLocalISOString(startDate);
 		}
 
 		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
