@@ -1,4 +1,4 @@
-import { cls, type TabDefinition, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { addCls, cls, removeCls, type TabDefinition, toLocalISOString } from "@real1ty-obsidian-plugins";
 import Gantt, { type Task } from "frappe-gantt";
 import frappeGanttCss from "frappe-gantt/dist/frappe-gantt.css";
 import type { App } from "obsidian";
@@ -36,7 +36,7 @@ function buildTasks(
 	graph: DependencyGraph,
 	tracker: CalendarBundle["prerequisiteTracker"]
 ): Task[] {
-	return events
+	const tasks = events
 		.filter((event) => tracker.isConnected(event.ref.filePath))
 		.map((event) => {
 			const { start, end } = getTaskDates(event);
@@ -57,6 +57,48 @@ function buildTasks(
 
 			return task;
 		});
+
+	return sortTasksByChain(tasks);
+}
+
+function sortTasksByChain(tasks: Task[]): Task[] {
+	if (tasks.length === 0) return tasks;
+
+	const taskById = new Map(tasks.map((t) => [t.id, t]));
+	const adjacency = new Map<string, Set<string>>();
+	for (const t of tasks) {
+		if (!adjacency.has(t.id)) adjacency.set(t.id, new Set());
+		for (const dep of t.dependencies ?? []) {
+			if (!taskById.has(dep)) continue;
+			if (!adjacency.has(dep)) adjacency.set(dep, new Set());
+			adjacency.get(t.id)!.add(dep);
+			adjacency.get(dep)!.add(t.id);
+		}
+	}
+
+	const visited = new Set<string>();
+	const components: Task[][] = [];
+
+	for (const task of tasks) {
+		if (visited.has(task.id)) continue;
+		const component: Task[] = [];
+		const queue = [task.id];
+		while (queue.length > 0) {
+			const id = queue.pop()!;
+			if (visited.has(id)) continue;
+			visited.add(id);
+			const t = taskById.get(id);
+			if (t) component.push(t);
+			for (const neighbor of adjacency.get(id) ?? []) {
+				if (!visited.has(neighbor)) queue.push(neighbor);
+			}
+		}
+		component.sort((a, b) => a.start.localeCompare(b.start));
+		components.push(component);
+	}
+
+	components.sort((a, b) => a[0].start.localeCompare(b[0].start));
+	return components.flat();
 }
 
 function injectVendorCss(): void {
@@ -74,6 +116,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	let wrapperEl: HTMLElement | null = null;
 	let emptyEl: HTMLElement | null = null;
 	let eventsSnapshot: CalendarEvent[] = [];
+	let wheelHandler: ((e: WheelEvent) => void) | null = null;
 
 	function createGantt(tasks: Task[]): void {
 		if (!wrapperEl) return;
@@ -89,6 +132,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 			today_button: true,
 			scroll_to: "today",
 			container_height: "auto",
+			infinite_padding: false,
 			popup: () => false,
 			on_click: (task: Task) => {
 				const event = eventsSnapshot.find((e) => sanitizeGanttId(e.ref.filePath) === task.id);
@@ -103,6 +147,17 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				});
 			},
 		});
+
+		const container = wrapperEl.querySelector<HTMLElement>(".gantt-container");
+		if (container) {
+			wheelHandler = (e: WheelEvent) => {
+				if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+					e.preventDefault();
+					container.scrollLeft += e.deltaY;
+				}
+			};
+			container.addEventListener("wheel", wheelHandler, { passive: false });
+		}
 	}
 
 	function rebuild(): void {
@@ -113,11 +168,11 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		if (tasks.length === 0) {
 			gantt = null;
 			wrapperEl?.empty();
-			if (emptyEl) emptyEl.style.display = "";
+			if (emptyEl) removeCls(emptyEl, "hidden");
 			return;
 		}
 
-		if (emptyEl) emptyEl.style.display = "none";
+		if (emptyEl) addCls(emptyEl, "hidden");
 
 		if (gantt) {
 			gantt.refresh(tasks);
@@ -130,6 +185,11 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	function cleanupContent(): void {
 		mergedSub?.unsubscribe();
 		mergedSub = null;
+		if (wheelHandler && wrapperEl) {
+			const container = wrapperEl.querySelector<HTMLElement>(".gantt-container");
+			container?.removeEventListener("wheel", wheelHandler);
+		}
+		wheelHandler = null;
 		gantt = null;
 		wrapperEl = null;
 		emptyEl = null;

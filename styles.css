@@ -10,6 +10,14 @@
 	transition: opacity 0.2s ease-out;
 }
 
+/* Keyboard-only focus rings for buttons and selects */
+[class*="prisma-"] button:focus-visible,
+button[class*="prisma-"]:focus-visible,
+select[class*="prisma-"]:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
 /* Tabbed view root: prevent Obsidian's .view-content from creating a competing
    scroll context — .prisma-tab-content is the sole scroll container so that
    position: sticky on the toolbar / day-headers / all-day section works. */
@@ -35,6 +43,11 @@
 	min-height: max(100%, 400px);
 	--prisma-sticky-toolbar-offset: 0px;
 	--prisma-sticky-day-header-height: 0px;
+	--prisma-connection-z: 12;
+}
+
+.prisma-connection-overlay {
+	z-index: var(--prisma-connection-z);
 }
 
 /* FullCalendar theme integration with Obsidian */
@@ -97,7 +110,7 @@
 	background-color: var(--interactive-hover);
 }
 
-.prisma-calendar-container .fc-button:focus {
+.prisma-calendar-container .fc-button:focus-visible {
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
@@ -843,7 +856,7 @@
    This CSS handles making the all-day event section sticky as well. */
 .prisma-calendar-container.prisma-sticky-day-headers .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
 	top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
-	z-index: 12;
+	z-index: 14;
 	border-top: 1px solid var(--background-modifier-border);
 }
 
@@ -1168,7 +1181,7 @@
 	width: 10px;
 	height: 10px;
 	border-radius: 50%;
-	background-color: var(--dot-color, #3788d8);
+	background-color: var(--dot-color, var(--interactive-accent));
 	flex-shrink: 0;
 }
 
@@ -2389,49 +2402,53 @@
    CATEGORY HIGHLIGHT (for both with/without category)
    ======================================== */
 
+.prisma-calendar-container {
+	--prisma-highlight-gold: hsl(45, 85%, 55%);
+}
+
 .prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-category-highlight {
 	box-shadow:
-		0 0 16px 6px color-mix(in srgb, hsl(45, 85%, 55%) 50%, transparent),
-		0 0 30px 12px color-mix(in srgb, hsl(45, 85%, 55%) 30%, transparent),
+		0 0 16px 6px color-mix(in srgb, var(--prisma-highlight-gold) 50%, transparent),
+		0 0 30px 12px color-mix(in srgb, var(--prisma-highlight-gold) 30%, transparent),
 		0 2px 6px rgba(0, 0, 0, 0.12);
 	z-index: 9;
 	transition:
 		box-shadow 0.3s ease,
 		border-color 0.3s ease;
-	border: 2px dashed color-mix(in srgb, hsl(45, 85%, 55%) 80%, var(--background-modifier-border));
+	border: 2px dashed color-mix(in srgb, var(--prisma-highlight-gold) 80%, var(--background-modifier-border));
 }
 
 .prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-category-highlight .fc-event-main {
-	border: 2px dashed color-mix(in srgb, hsl(45, 85%, 55%) 70%, var(--background-modifier-border));
+	border: 2px dashed color-mix(in srgb, var(--prisma-highlight-gold) 70%, var(--background-modifier-border));
 	border-radius: var(--radius-s);
 }
 
 .prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-category-highlight:hover {
 	box-shadow:
-		0 0 20px 8px color-mix(in srgb, hsl(45, 85%, 55%) 55%, transparent),
-		0 0 36px 14px color-mix(in srgb, hsl(45, 85%, 55%) 35%, transparent),
+		0 0 20px 8px color-mix(in srgb, var(--prisma-highlight-gold) 55%, transparent),
+		0 0 36px 14px color-mix(in srgb, var(--prisma-highlight-gold) 35%, transparent),
 		0 4px 10px rgba(0, 0, 0, 0.15);
-	border-color: color-mix(in srgb, hsl(45, 85%, 55%) 90%, var(--background-modifier-border));
+	border-color: color-mix(in srgb, var(--prisma-highlight-gold) 90%, var(--background-modifier-border));
 }
 
 .prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-category-highlight {
 	background: linear-gradient(90deg,
-			color-mix(in srgb, hsl(45, 85%, 55%) 15%, var(--background-primary)) 0%,
-			color-mix(in srgb, hsl(45, 85%, 55%) 8%, var(--background-primary)) 100%);
-	border-left: 4px dashed color-mix(in srgb, hsl(45, 85%, 55%) 75%, var(--background-modifier-border));
+			color-mix(in srgb, var(--prisma-highlight-gold) 15%, var(--background-primary)) 0%,
+			color-mix(in srgb, var(--prisma-highlight-gold) 8%, var(--background-primary)) 100%);
+	border-left: 4px dashed color-mix(in srgb, var(--prisma-highlight-gold) 75%, var(--background-modifier-border));
 	box-shadow:
-		0 0 12px 5px color-mix(in srgb, hsl(45, 85%, 55%) 30%, transparent),
+		0 0 12px 5px color-mix(in srgb, var(--prisma-highlight-gold) 30%, transparent),
 		0 2px 4px rgba(0, 0, 0, 0.1);
 	transition: all 0.3s ease;
 }
 
 .prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-category-highlight:hover {
 	background: linear-gradient(90deg,
-			color-mix(in srgb, hsl(45, 85%, 55%) 18%, var(--background-primary)) 0%,
-			color-mix(in srgb, hsl(45, 85%, 55%) 10%, var(--background-primary)) 100%);
-	border-left: 4px dashed color-mix(in srgb, hsl(45, 85%, 55%) 85%, var(--background-modifier-border));
+			color-mix(in srgb, var(--prisma-highlight-gold) 18%, var(--background-primary)) 0%,
+			color-mix(in srgb, var(--prisma-highlight-gold) 10%, var(--background-primary)) 100%);
+	border-left: 4px dashed color-mix(in srgb, var(--prisma-highlight-gold) 85%, var(--background-modifier-border));
 	box-shadow:
-		0 0 14px 6px color-mix(in srgb, hsl(45, 85%, 55%) 35%, transparent),
+		0 0 14px 6px color-mix(in srgb, var(--prisma-highlight-gold) 35%, transparent),
 		0 3px 6px rgba(0, 0, 0, 0.12);
 }
 
@@ -2554,7 +2571,7 @@
 	border-color: var(--background-modifier-border-hover);
 }
 
-.prisma-fc-filter-preset-select:focus {
+.prisma-fc-filter-preset-select:focus-visible {
 	outline: none;
 	background-color: var(--interactive-hover);
 	border-color: var(--interactive-accent);
@@ -3320,7 +3337,7 @@
 	border-color: var(--background-modifier-border-hover);
 }
 
-.prisma-event-preset-select:focus {
+.prisma-event-preset-select:focus-visible {
 	outline: none;
 	border-color: var(--interactive-accent);
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
@@ -6722,7 +6739,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	border-color: var(--interactive-accent);
 }
 
-.prisma-recurring-events-type-select:focus {
+.prisma-recurring-events-type-select:focus-visible {
 	outline: none;
 	border-color: var(--interactive-accent);
 	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
@@ -6774,101 +6791,28 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	transition: all 0.2s ease;
 }
 
-/* Type-specific colors - vibrant and distinct */
-.prisma-recurring-type-daily {
-	background-color: rgba(59, 130, 246, 0.15);
-	color: rgb(59, 130, 246);
-	border: 1px solid rgba(59, 130, 246, 0.3);
+/* Type-specific colors via CSS custom property pattern */
+.prisma-recurring-type-daily { --badge-color: 59, 130, 246; --badge-color-dark: 96, 165, 250; }
+.prisma-recurring-type-weekly { --badge-color: 34, 197, 94; --badge-color-dark: 74, 222, 128; }
+.prisma-recurring-type-bi-weekly { --badge-color: 168, 85, 247; --badge-color-dark: 192, 132, 252; }
+.prisma-recurring-type-monthly { --badge-color: 249, 115, 22; --badge-color-dark: 251, 146, 60; }
+.prisma-recurring-type-bi-monthly { --badge-color: 236, 72, 153; --badge-color-dark: 244, 114, 182; }
+.prisma-recurring-type-yearly { --badge-color: 20, 184, 166; --badge-color-dark: 45, 212, 191; }
+
+.prisma-recurring-type-badge[class*="prisma-recurring-type-"] {
+	background-color: rgba(var(--badge-color), 0.15);
+	color: rgb(var(--badge-color));
+	border: 1px solid rgba(var(--badge-color), 0.3);
 }
 
-.prisma-recurring-type-weekly {
-	background-color: rgba(34, 197, 94, 0.15);
-	color: rgb(34, 197, 94);
-	border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.prisma-recurring-type-bi-weekly {
-	background-color: rgba(168, 85, 247, 0.15);
-	color: rgb(168, 85, 247);
-	border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.prisma-recurring-type-monthly {
-	background-color: rgba(249, 115, 22, 0.15);
-	color: rgb(249, 115, 22);
-	border: 1px solid rgba(249, 115, 22, 0.3);
-}
-
-.prisma-recurring-type-bi-monthly {
-	background-color: rgba(236, 72, 153, 0.15);
-	color: rgb(236, 72, 153);
-	border: 1px solid rgba(236, 72, 153, 0.3);
-}
-
-.prisma-recurring-type-yearly {
-	background-color: rgba(20, 184, 166, 0.15);
-	color: rgb(20, 184, 166);
-	border: 1px solid rgba(20, 184, 166, 0.3);
-}
-
-/* Hover states for badges */
-.prisma-recurring-type-badge:hover {
+.prisma-recurring-type-badge[class*="prisma-recurring-type-"]:hover {
 	transform: scale(1.05);
+	background-color: rgba(var(--badge-color), 0.25);
 }
 
-.prisma-recurring-type-daily:hover {
-	background-color: rgba(59, 130, 246, 0.25);
-}
-
-.prisma-recurring-type-weekly:hover {
-	background-color: rgba(34, 197, 94, 0.25);
-}
-
-.prisma-recurring-type-bi-weekly:hover {
-	background-color: rgba(168, 85, 247, 0.25);
-}
-
-.prisma-recurring-type-monthly:hover {
-	background-color: rgba(249, 115, 22, 0.25);
-}
-
-.prisma-recurring-type-bi-monthly:hover {
-	background-color: rgba(236, 72, 153, 0.25);
-}
-
-.prisma-recurring-type-yearly:hover {
-	background-color: rgba(20, 184, 166, 0.25);
-}
-
-/* Dark theme adjustments for type badges */
-.theme-dark .prisma-recurring-type-daily {
-	background-color: rgba(59, 130, 246, 0.2);
-	color: rgb(96, 165, 250);
-}
-
-.theme-dark .prisma-recurring-type-weekly {
-	background-color: rgba(34, 197, 94, 0.2);
-	color: rgb(74, 222, 128);
-}
-
-.theme-dark .prisma-recurring-type-bi-weekly {
-	background-color: rgba(168, 85, 247, 0.2);
-	color: rgb(192, 132, 252);
-}
-
-.theme-dark .prisma-recurring-type-monthly {
-	background-color: rgba(249, 115, 22, 0.2);
-	color: rgb(251, 146, 60);
-}
-
-.theme-dark .prisma-recurring-type-bi-monthly {
-	background-color: rgba(236, 72, 153, 0.2);
-	color: rgb(244, 114, 182);
-}
-
-.theme-dark .prisma-recurring-type-yearly {
-	background-color: rgba(20, 184, 166, 0.2);
-	color: rgb(45, 212, 191);
+.theme-dark .prisma-recurring-type-badge[class*="prisma-recurring-type-"] {
+	background-color: rgba(var(--badge-color), 0.2);
+	color: rgb(var(--badge-color-dark));
 }
 
 /* Responsive adjustments */
@@ -7168,13 +7112,15 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 }
 
 .prisma-ics-import-progress-bar.complete {
-	background: linear-gradient(90deg, #4caf50, #66bb6a);
-	box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+	--prisma-success-rgb: 76, 175, 80;
+	background: linear-gradient(90deg, rgb(var(--prisma-success-rgb)), rgb(102, 187, 106));
+	box-shadow: 0 2px 8px rgba(var(--prisma-success-rgb), 0.3);
 }
 
 .prisma-ics-import-progress-bar.error {
-	background: linear-gradient(90deg, #f44336, #ef5350);
-	box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+	--prisma-error-rgb: 244, 67, 54;
+	background: linear-gradient(90deg, rgb(var(--prisma-error-rgb)), rgb(239, 83, 80));
+	box-shadow: 0 2px 8px rgba(var(--prisma-error-rgb), 0.3);
 }
 
 .prisma-ics-import-details {
@@ -9397,8 +9343,8 @@ div.vis-tooltip {
 .prisma-pro-upgrade-preview:hover {
 	transform: scale(1.04);
 	box-shadow:
-		0 32px 80px -16px rgba(124, 58, 237, 0.25),
-		0 0 0 1px rgba(124, 58, 237, 0.12);
+		0 32px 80px -16px rgba(var(--interactive-accent-rgb, 124, 58, 237), 0.25),
+		0 0 0 1px rgba(var(--interactive-accent-rgb, 124, 58, 237), 0.12);
 }
 
 .prisma-pro-upgrade-preview::after {
@@ -9508,8 +9454,8 @@ div.vis-tooltip {
 	max-height: 90vh;
 	border-radius: 12px;
 	box-shadow:
-		0 32px 80px -16px rgba(124, 58, 237, 0.3),
-		0 0 0 1px rgba(124, 58, 237, 0.15);
+		0 32px 80px -16px rgba(var(--interactive-accent-rgb, 124, 58, 237), 0.3),
+		0 0 0 1px rgba(var(--interactive-accent-rgb, 124, 58, 237), 0.15);
 	cursor: default;
 }
 
@@ -9649,7 +9595,7 @@ div.vis-tooltip {
 }
 
 .prisma-capacity-remaining {
-	color: #4ade80;
+	color: var(--text-success, #4ade80);
 }
 
 .prisma-capacity-bounds {
@@ -10058,4 +10004,29 @@ div.vis-tooltip {
 	--g-today-highlight: var(--color-accent);
 	--g-popup-actions: var(--background-secondary);
 	--g-weekend-highlight-color: var(--background-secondary-alt);
+}
+
+.prisma-gantt-wrapper .gantt-container .side-header .today-button {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	font-weight: 500;
+	font-size: var(--font-ui-smaller);
+	padding: 4px 12px;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	border: none;
+}
+
+.prisma-gantt-wrapper .gantt-container .side-header .today-button:hover {
+	background-color: var(--interactive-accent-hover);
+	filter: none;
+}
+
+.prisma-gantt-wrapper .gantt-container .side-header .viewmode-select {
+	font-size: var(--font-ui-smaller);
+	padding: 4px 8px;
+	border-radius: var(--radius-s);
+	background-color: var(--background-modifier-hover);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
 }

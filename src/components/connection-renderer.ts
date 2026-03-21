@@ -7,6 +7,9 @@ import type { CalendarSettingsStore } from "../core/settings-store";
 import type { CalendarEvent } from "../types/calendar";
 
 const ARROW_MARKER_ID = "prisma-arrow-head";
+const SVG_Z_VAR = "--prisma-connection-z";
+const Z_ABOVE_ALLDAY = "12";
+const Z_BELOW_ALLDAY = "5";
 
 interface ConnectionStyle {
 	color: string;
@@ -39,13 +42,14 @@ export class ConnectionRenderer {
 
 	constructor(container: HTMLElement, settingsStore: CalendarSettingsStore) {
 		this.container = container;
+		container.style.setProperty(SVG_Z_VAR, Z_ABOVE_ALLDAY);
 
 		this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		this.svg.classList.add("prisma-connection-overlay");
 		Object.assign(this.svg.style, {
 			position: "absolute",
 			inset: "0",
 			pointerEvents: "none",
-			zIndex: "5",
 			overflow: "visible",
 		});
 		container.appendChild(this.svg);
@@ -56,11 +60,9 @@ export class ConnectionRenderer {
 
 		this.scrollHandler = () => this.scheduleRender();
 
-		// Listen on the container (captures descendant scrollers like .fc-scroller)
 		container.addEventListener("scroll", this.scrollHandler, { passive: true, capture: true });
 
-		// Also listen on ancestor scroll containers (.prisma-tab-content / .view-content)
-		// because scroll events don't bubble — only capture works for descendants.
+		// scroll events don't bubble — listen on ancestor scroll containers directly
 		const scrollAncestor = container.closest(".prisma-tab-content") ?? container.closest(".view-content");
 		if (scrollAncestor && scrollAncestor !== container) {
 			this.scrollTargets.push(scrollAncestor as HTMLElement);
@@ -126,6 +128,8 @@ export class ConnectionRenderer {
 				}
 			}
 		}
+
+		this.updateZIndex();
 	}
 
 	clear(): void {
@@ -145,7 +149,29 @@ export class ConnectionRenderer {
 			}
 		}
 		this.scrollTargets = [];
+		this.container.style.removeProperty(SVG_Z_VAR);
 		this.svg.remove();
+	}
+
+	private updateZIndex(): void {
+		if (!this.container.classList.contains("prisma-sticky-all-day-events")) {
+			this.container.style.setProperty(SVG_Z_VAR, Z_ABOVE_ALLDAY);
+			return;
+		}
+
+		const allDay = this.container.querySelector<HTMLElement>(".fc-scrollgrid-section-body:first-of-type");
+		const scrollParent = this.scrollTargets[0];
+		if (!allDay || !scrollParent) {
+			this.container.style.setProperty(SVG_Z_VAR, Z_ABOVE_ALLDAY);
+			return;
+		}
+
+		const allDayTop = allDay.getBoundingClientRect().top;
+		const stickyTop = parseFloat(getComputedStyle(allDay).top) || 0;
+		const parentTop = scrollParent.getBoundingClientRect().top;
+		const isStuck = allDayTop <= parentTop + stickyTop + 1;
+
+		this.container.style.setProperty(SVG_Z_VAR, isStuck ? Z_BELOW_ALLDAY : Z_ABOVE_ALLDAY);
 	}
 
 	private scheduleRender(): void {

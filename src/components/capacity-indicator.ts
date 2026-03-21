@@ -1,4 +1,4 @@
-import { cls, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { addCls, cls, removeCls, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
@@ -21,11 +21,11 @@ export function createCapacityIndicator(container: HTMLElement, bundle: Calendar
 	async function refresh(): Promise<void> {
 		const settings = bundle.settingsStore.currentSettings;
 		if (!settings.capacityTrackingEnabled) {
-			badge.style.display = "none";
+			addCls(badge, "hidden");
 			return;
 		}
 
-		badge.style.display = "";
+		removeCls(badge, "hidden");
 		const query = { start: toLocalISOString(rangeStart), end: toLocalISOString(rangeEnd) };
 		const events = await bundle.eventStore.getEvents(query);
 
