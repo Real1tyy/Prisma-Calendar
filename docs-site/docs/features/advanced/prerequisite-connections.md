@@ -20,5 +20,5 @@ Toggle arrows on the Calendar tab with the **"Toggle prerequisite connection arr
 
 When active, directed SVG arrows draw from each prerequisite event to its dependent. If a connected event is outside the current view range, a **dashed stub arrow** appears at the left or right calendar edge to indicate a dependency continues off-screen.
 
-Arrows update automatically when you navigate dates or when events change.
+Arrows update automatically when you navigate dates, change zoom levels, or scroll the calendar. Connection lines render behind the sticky toolbar, day headers, and all-day section so they never obscure fixed UI elements.
 

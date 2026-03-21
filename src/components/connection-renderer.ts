@@ -19,6 +19,8 @@ export class ConnectionRenderer {
 	private resizeObserver: ResizeObserver;
 	private container: HTMLElement;
 	private scrollHandler: (() => void) | null = null;
+	private scrollTargets: HTMLElement[] = [];
+	private rafId: number | null = null;
 	private settingsSub: Subscription | null = null;
 	private style: ConnectionStyle = {
 		color: DEFAULT_CONNECTION_COLOR,
@@ -43,7 +45,7 @@ export class ConnectionRenderer {
 			position: "absolute",
 			inset: "0",
 			pointerEvents: "none",
-			zIndex: "9999",
+			zIndex: "5",
 			overflow: "visible",
 		});
 		container.appendChild(this.svg);
@@ -52,13 +54,18 @@ export class ConnectionRenderer {
 		this.resizeObserver.observe(container);
 		this.syncSize();
 
-		this.scrollHandler = () => {
-			if (this.renderArgs) {
-				const { graph, eventIdMap, allEvents, viewStart, viewEnd } = this.renderArgs;
-				this.render(graph, eventIdMap, allEvents, viewStart, viewEnd);
-			}
-		};
+		this.scrollHandler = () => this.scheduleRender();
+
+		// Listen on the container (captures descendant scrollers like .fc-scroller)
 		container.addEventListener("scroll", this.scrollHandler, { passive: true, capture: true });
+
+		// Also listen on ancestor scroll containers (.prisma-tab-content / .view-content)
+		// because scroll events don't bubble — only capture works for descendants.
+		const scrollAncestor = container.closest(".prisma-tab-content") ?? container.closest(".view-content");
+		if (scrollAncestor && scrollAncestor !== container) {
+			this.scrollTargets.push(scrollAncestor as HTMLElement);
+			scrollAncestor.addEventListener("scroll", this.scrollHandler, { passive: true });
+		}
 
 		this.settingsSub = settingsStore.settings$
 			.pipe(
@@ -130,10 +137,26 @@ export class ConnectionRenderer {
 	destroy(): void {
 		this.resizeObserver.disconnect();
 		this.settingsSub?.unsubscribe();
+		if (this.rafId !== null) cancelAnimationFrame(this.rafId);
 		if (this.scrollHandler) {
 			this.container.removeEventListener("scroll", this.scrollHandler, { capture: true });
+			for (const target of this.scrollTargets) {
+				target.removeEventListener("scroll", this.scrollHandler);
+			}
 		}
+		this.scrollTargets = [];
 		this.svg.remove();
+	}
+
+	private scheduleRender(): void {
+		if (this.rafId !== null) return;
+		this.rafId = requestAnimationFrame(() => {
+			this.rafId = null;
+			if (this.renderArgs) {
+				const { graph, eventIdMap, allEvents, viewStart, viewEnd } = this.renderArgs;
+				this.render(graph, eventIdMap, allEvents, viewStart, viewEnd);
+			}
+		});
 	}
 
 	private rebuildMarker(): void {
