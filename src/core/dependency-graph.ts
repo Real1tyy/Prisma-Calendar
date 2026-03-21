@@ -1,4 +1,4 @@
-import { parseIntoList, parseWikiLink } from "@real1ty-obsidian-plugins";
+import { parseLinkedList } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { CalendarEvent } from "../types/calendar";
@@ -8,12 +8,9 @@ export type DependencyGraph = Map<string, string[]>;
 export type EventIdMap = Map<string, string>;
 
 export function resolveWikiLinks(value: unknown, app: App): string[] {
-	return parseIntoList(value)
-		.map((item) => parseWikiLink(item.trim()))
-		.filter((linkpath): linkpath is string => linkpath != null)
-		.map((linkpath) => app.metadataCache.getFirstLinkpathDest(linkpath, ""))
-		.filter((file): file is NonNullable<typeof file> => file != null)
-		.map((file) => file.path);
+	return parseLinkedList(value, {
+		resolve: (linkPath) => app.metadataCache.getFirstLinkpathDest(linkPath, "")?.path,
+	});
 }
 
 export function buildDependencyGraph(

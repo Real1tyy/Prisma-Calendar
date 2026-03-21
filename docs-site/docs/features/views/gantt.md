@@ -21,3 +21,6 @@ Events must have the Prerequisite property configured. See [Properties](../../co
 
 Click any bar to open the event preview modal.
 
+## Performance
+
+Prerequisite relationships are tracked incrementally — when you add, edit, or delete an event, only that event's prerequisites are updated instead of rebuilding the entire dependency graph. This keeps the Gantt tab responsive even with large vaults.

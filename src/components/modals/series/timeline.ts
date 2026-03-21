@@ -11,32 +11,87 @@ import { cleanupTitle } from "../../../utils/event-naming";
 import { buildEventTooltip } from "../../../utils/format";
 import { type PreviewEventData, showEventPreviewModal } from "../preview/event-preview";
 
+const RANGE_CHANGE_DEBOUNCE_MS = 200;
+const RANGE_BUFFER_FACTOR = 0.25;
+
 export interface EventSeriesTimelineConfig {
-	events: CalendarEvent[];
+	/** Static event set (e.g., series/category subset). When omitted, queries eventStore by visible range. */
+	events?: CalendarEvent[];
 	title: string;
 	fillContainer?: boolean;
 }
 
 export interface TimelineHandle {
 	destroy: () => void;
-	refresh: (events: CalendarEvent[]) => void;
+	invalidateAndRefetch: () => void;
 }
 
-function findMinMaxDates(events: CalendarEvent[]): { minMs: number; maxMs: number } {
-	let minMs = Infinity;
-	let maxMs = -Infinity;
-	for (const event of events) {
-		const ms = new Date(event.start).getTime();
-		if (ms < minMs) minMs = ms;
-		if (ms > maxMs) maxMs = ms;
+// ─── Range Tracker ───────────────────────────────────────────
+
+interface FetchedRange {
+	start: number;
+	end: number;
+}
+
+class FetchedRangeTracker {
+	private ranges: FetchedRange[] = [];
+
+	addRange(start: number, end: number): void {
+		this.ranges.push({ start, end });
+		this.mergeOverlapping();
 	}
-	return { minMs, maxMs };
+
+	getUncoveredRanges(start: number, end: number): FetchedRange[] {
+		const uncovered: FetchedRange[] = [];
+		let cursor = start;
+
+		for (const range of this.ranges) {
+			if (range.start > cursor) {
+				uncovered.push({ start: cursor, end: Math.min(range.start, end) });
+			}
+			cursor = Math.max(cursor, range.end);
+			if (cursor >= end) break;
+		}
+
+		if (cursor < end) {
+			uncovered.push({ start: cursor, end });
+		}
+
+		return uncovered;
+	}
+
+	clear(): void {
+		this.ranges = [];
+	}
+
+	private mergeOverlapping(): void {
+		if (this.ranges.length <= 1) return;
+		this.ranges.sort((a, b) => a.start - b.start);
+		const merged: FetchedRange[] = [this.ranges[0]];
+		for (let i = 1; i < this.ranges.length; i++) {
+			const last = merged[merged.length - 1];
+			const curr = this.ranges[i];
+			if (curr.start <= last.end) {
+				last.end = Math.max(last.end, curr.end);
+			} else {
+				merged.push(curr);
+			}
+		}
+		this.ranges = merged;
+	}
 }
 
-/**
- * Renders a vis-timeline visualization into any container element.
- * Returns a handle for cleanup and refreshing with new events.
- */
+// ─── Helpers ─────────────────────────────────────────────────
+
+function filterEventsByRange(events: CalendarEvent[], startMs: number, endMs: number): CalendarEvent[] {
+	return events.filter((e) => {
+		const ms = new Date(e.start).getTime();
+		return ms >= startMs && ms <= endMs;
+	});
+}
+
+// ─── Rendering ───────────────────────────────────────────────
+
 export function renderTimelineInto(
 	container: HTMLElement,
 	app: App,
@@ -47,6 +102,8 @@ export function renderTimelineInto(
 	let items: DataSet<DataItem> | null = null;
 	const eventMap = new Map<string, CalendarEvent>();
 	const colorEvaluator = new ColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
+	const rangeTracker = new FetchedRangeTracker();
+	let rangeChangeTimer: ReturnType<typeof setTimeout> | null = null;
 
 	const header = container.createDiv(cls("timeline-modal-header"));
 	header.createEl("h2", { text: config.title });
@@ -151,32 +208,92 @@ export function renderTimelineInto(
 		};
 	}
 
-	function computeRangeBounds(events: CalendarEvent[]): { rangeStart: Date; rangeEnd: Date } {
-		const { minMs, maxMs } = findMinMaxDates(events);
-		const timeSpan = maxMs - minMs;
-		const rangePadding = Math.max(timeSpan * 0.1, 86400000);
-		return {
-			rangeStart: new Date(minMs - rangePadding),
-			rangeEnd: new Date(maxMs + rangePadding),
-		};
+	// ─── Data Fetching ───────────────────────────────────────
+
+	async function fetchEventsForRange(startMs: number, endMs: number): Promise<CalendarEvent[]> {
+		if (config.events) {
+			return filterEventsByRange(config.events, startMs, endMs);
+		}
+		return bundle.eventStore.getEvents({
+			start: new Date(startMs).toISOString(),
+			end: new Date(endMs).toISOString(),
+		});
 	}
 
-	function initTimeline(events: CalendarEvent[]): void {
-		const settings = bundle.settingsStore.currentSettings;
-		const { rangeStart, rangeEnd } = computeRangeBounds(events);
+	function mergeEvents(events: CalendarEvent[]): void {
+		if (!timeline || !items) return;
 
-		eventMap.clear();
+		const settings = bundle.settingsStore.currentSettings;
+		const toAdd: ReturnType<typeof toItem>[] = [];
+		const toUpdate: ReturnType<typeof toItem>[] = [];
+
 		for (const event of events) {
-			eventMap.set(event.ref.filePath, event);
+			const id = event.ref.filePath;
+			const existing = eventMap.get(id);
+			const item = toItem(event, settings);
+
+			if (!existing) {
+				toAdd.push(item);
+			} else if (
+				existing.start !== event.start ||
+				existing.title !== event.title ||
+				existing.skipped !== event.skipped
+			) {
+				toUpdate.push(item);
+			}
+
+			eventMap.set(id, event);
 		}
 
-		const timelineItems = events.map((event) => toItem(event, settings));
-		items = new DataSet(timelineItems);
+		if (toAdd.length > 0) items.add(toAdd);
+		if (toUpdate.length > 0) items.update(toUpdate);
+	}
+
+	async function fetchVisibleRange(): Promise<void> {
+		if (!timeline || !items) return;
+
+		const window = timeline.getWindow();
+		const windowSpan = window.end.getTime() - window.start.getTime();
+		const buffer = windowSpan * RANGE_BUFFER_FACTOR;
+		const fetchStart = window.start.getTime() - buffer;
+		const fetchEnd = window.end.getTime() + buffer;
+
+		const uncovered = rangeTracker.getUncoveredRanges(fetchStart, fetchEnd);
+		if (uncovered.length === 0) return;
+
+		for (const range of uncovered) {
+			const events = await fetchEventsForRange(range.start, range.end);
+			mergeEvents(events);
+			rangeTracker.addRange(range.start, range.end);
+		}
+	}
+
+	function onRangeChanged(): void {
+		if (rangeChangeTimer) clearTimeout(rangeChangeTimer);
+		rangeChangeTimer = setTimeout(() => {
+			rangeChangeTimer = null;
+			void fetchVisibleRange();
+		}, RANGE_CHANGE_DEBOUNCE_MS);
+	}
+
+	function invalidateAndRefetch(): void {
+		rangeTracker.clear();
+		eventMap.clear();
+		if (items) {
+			items.clear();
+		}
+		void fetchVisibleRange();
+	}
+
+	// ─── Timeline Init ───────────────────────────────────────
+
+	function initTimeline(): void {
+		items = new DataSet<DataItem>();
 
 		const nowMs = Date.now();
 		const halfWeek = 3.5 * 86400000;
-
 		const fillContainer = config.fillContainer === true;
+
 		const options: TimelineOptions = {
 			editable: false,
 			selectable: false,
@@ -192,9 +309,8 @@ export function renderTimelineInto(
 			zoomMax: 31536000000 * 10,
 			stack: true,
 			verticalScroll: true,
-			min: rangeStart,
-			max: rangeEnd,
 		};
+
 		if (!fillContainer) options.maxHeight = "600px";
 
 		timelineContainer.empty();
@@ -218,83 +334,21 @@ export function renderTimelineInto(
 			const event = eventMap.get(itemId);
 			if (event) openPreviewModal(event);
 		});
+
+		timeline.on("rangechanged", onRangeChanged);
 	}
 
-	function updateTimeline(events: CalendarEvent[]): void {
-		if (!timeline || !items) {
-			initTimeline(events);
-			return;
-		}
+	// ─── Initialize ──────────────────────────────────────────
 
-		const settings = bundle.settingsStore.currentSettings;
-		const newIds = new Set<string>();
-		const toAdd: ReturnType<typeof toItem>[] = [];
-		const toUpdate: ReturnType<typeof toItem>[] = [];
-
-		for (const event of events) {
-			const id = event.ref.filePath;
-			newIds.add(id);
-
-			const existing = eventMap.get(id);
-			const item = toItem(event, settings);
-
-			if (!existing) {
-				toAdd.push(item);
-			} else if (
-				existing.start !== event.start ||
-				existing.title !== event.title ||
-				existing.skipped !== event.skipped
-			) {
-				toUpdate.push(item);
-			}
-
-			eventMap.set(id, event);
-		}
-
-		const toRemove: string[] = [];
-		for (const id of eventMap.keys()) {
-			if (!newIds.has(id)) {
-				toRemove.push(id);
-				eventMap.delete(id);
-			}
-		}
-
-		if (toRemove.length > 0) items.remove(toRemove);
-		if (toAdd.length > 0) items.add(toAdd);
-		if (toUpdate.length > 0) items.update(toUpdate);
-
-		if (toAdd.length > 0 || toRemove.length > 0) {
-			const { rangeStart, rangeEnd } = computeRangeBounds(events);
-			timeline.setOptions({ min: rangeStart, max: rangeEnd });
-		}
-	}
-
-	function buildTimeline(events: CalendarEvent[]): void {
-		if (events.length === 0) {
-			if (timeline) {
-				timeline.destroy();
-				timeline = null;
-				items = null;
-			}
-			timelineContainer.empty();
-			timelineContainer.createEl("p", {
-				text: "No events to display",
-				cls: cls("timeline-modal-empty"),
-			});
-			return;
-		}
-
-		if (timeline && items) {
-			updateTimeline(events);
-		} else {
-			initTimeline(events);
-		}
-	}
-
-	buildTimeline(config.events);
+	initTimeline();
+	void fetchVisibleRange();
 
 	return {
 		destroy: () => {
+			if (rangeChangeTimer) {
+				clearTimeout(rangeChangeTimer);
+				rangeChangeTimer = null;
+			}
 			if (timeline) {
 				timeline.destroy();
 				timeline = null;
@@ -303,9 +357,7 @@ export function renderTimelineInto(
 			colorEvaluator.destroy();
 			container.empty();
 		},
-		refresh: (events: CalendarEvent[]) => {
-			buildTimeline(events);
-		},
+		invalidateAndRefetch,
 	};
 }
 

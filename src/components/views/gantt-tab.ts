@@ -5,7 +5,7 @@ import type { App } from "obsidian";
 import { debounceTime, distinctUntilChanged, merge, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { buildDependencyGraph, isConnected } from "../../core/dependency-graph";
+import type { DependencyGraph } from "../../core/dependency-graph";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarEvent } from "../../types/calendar";
 import { showEventPreviewModal } from "../modals";
@@ -31,9 +31,13 @@ function getTaskDates(event: CalendarEvent): { start: string; end: string } {
 	return { start, end };
 }
 
-function buildTasks(events: CalendarEvent[], graph: Map<string, string[]>): Task[] {
+function buildTasks(
+	events: CalendarEvent[],
+	graph: DependencyGraph,
+	tracker: CalendarBundle["prerequisiteTracker"]
+): Task[] {
 	return events
-		.filter((event) => isConnected(graph, event.ref.filePath))
+		.filter((event) => tracker.isConnected(event.ref.filePath))
 		.map((event) => {
 			const { start, end } = getTaskDates(event);
 			const prereqs = graph.get(event.ref.filePath) ?? [];
@@ -103,9 +107,8 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 
 	function rebuild(): void {
 		eventsSnapshot = bundle.eventStore.getAllEvents();
-		const settings = bundle.settingsStore.currentSettings;
-		const { graph } = buildDependencyGraph(eventsSnapshot, settings, app);
-		const tasks = buildTasks(eventsSnapshot, graph);
+		const graph = bundle.prerequisiteTracker.getGraph();
+		const tasks = buildTasks(eventsSnapshot, graph, bundle.prerequisiteTracker);
 
 		if (tasks.length === 0) {
 			gantt = null;
@@ -160,7 +163,11 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 
 				rebuild();
 
-				mergedSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$)
+				mergedSub = merge(
+					bundle.eventStore.changes$,
+					bundle.recurringEventManager.changes$,
+					bundle.prerequisiteTracker.graph$
+				)
 					.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
 					.subscribe(() => {
 						rebuild();

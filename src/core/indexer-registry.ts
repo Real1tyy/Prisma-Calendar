@@ -1,4 +1,5 @@
-import { normalizeDirectoryPath, SyncStore } from "@real1ty-obsidian-plugins";
+import type { SyncStore } from "@real1ty-obsidian-plugins";
+import { normalizeDirectoryPath } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 
@@ -11,6 +12,7 @@ import { Indexer } from "./indexer";
 import { NameSeriesTracker } from "./name-series-tracker";
 import { NotificationManager } from "./notification-manager";
 import { Parser } from "./parser";
+import { PrerequisiteTracker } from "./prerequisite-tracker";
 import { RecurringEventManager } from "./recurring-event-manager";
 
 interface IndexerEntry {
@@ -22,6 +24,7 @@ interface IndexerEntry {
 	notificationManager: NotificationManager;
 	categoryTracker: CategoryTracker;
 	nameSeriesTracker: NameSeriesTracker;
+	prerequisiteTracker: PrerequisiteTracker;
 	refCount: number;
 	calendarIds: Set<string>;
 }
@@ -36,6 +39,7 @@ type SharedInfrastructure = Pick<
 	| "notificationManager"
 	| "categoryTracker"
 	| "nameSeriesTracker"
+	| "prerequisiteTracker"
 >;
 
 /**
@@ -88,6 +92,7 @@ export class IndexerRegistry {
 			const eventStore = new EventStore(indexer, parser, recurringEventManager, settingsStore);
 			const categoryTracker = new CategoryTracker(this.app, indexer, eventStore, settingsStore);
 			const nameSeriesTracker = new NameSeriesTracker(this.app, indexer, eventStore, settingsStore);
+			const prerequisiteTracker = new PrerequisiteTracker(this.app, indexer, eventStore, settingsStore);
 			recurringEventManager.setEventStore(eventStore);
 			recurringEventManager.setCategoryTracker(categoryTracker);
 			const untrackedEventStore = new UntrackedEventStore(indexer, settingsStore);
@@ -101,6 +106,7 @@ export class IndexerRegistry {
 				notificationManager,
 				categoryTracker,
 				nameSeriesTracker,
+				prerequisiteTracker,
 				refCount: 1,
 				calendarIds: new Set([calendarId]),
 			} satisfies IndexerEntry;
@@ -117,6 +123,7 @@ export class IndexerRegistry {
 			notificationManager: entry.notificationManager,
 			categoryTracker: entry.categoryTracker,
 			nameSeriesTracker: entry.nameSeriesTracker,
+			prerequisiteTracker: entry.prerequisiteTracker,
 		};
 	}
 
@@ -144,6 +151,7 @@ export class IndexerRegistry {
 			entry.notificationManager.stop();
 			entry.categoryTracker.destroy();
 			entry.nameSeriesTracker.destroy();
+			entry.prerequisiteTracker.destroy();
 			this.registry.delete(normalizedDir);
 		}
 	}
@@ -158,6 +166,7 @@ export class IndexerRegistry {
 			entry.notificationManager.stop();
 			entry.categoryTracker.destroy();
 			entry.nameSeriesTracker.destroy();
+			entry.prerequisiteTracker.destroy();
 		}
 
 		this.registry.clear();

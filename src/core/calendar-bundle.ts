@@ -30,6 +30,7 @@ import { SyncState } from "./integrations/sync-state";
 import type { NameSeriesTracker } from "./name-series-tracker";
 import type { NotificationManager } from "./notification-manager";
 import type { Parser } from "./parser";
+import type { PrerequisiteTracker } from "./prerequisite-tracker";
 import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore } from "./settings-store";
 
@@ -44,6 +45,7 @@ export class CalendarBundle {
 	public readonly notificationManager: NotificationManager;
 	public readonly categoryTracker: CategoryTracker;
 	public readonly nameSeriesTracker: NameSeriesTracker;
+	public readonly prerequisiteTracker: PrerequisiteTracker;
 	public readonly templateService: TemplaterService;
 	public readonly viewStateManager: CalendarViewStateManager;
 	public readonly commandManager: CommandManager;
@@ -89,6 +91,7 @@ export class CalendarBundle {
 			notificationManager,
 			categoryTracker,
 			nameSeriesTracker,
+			prerequisiteTracker,
 		} = this.indexerRegistry.getOrCreateIndexer(this.calendarId, this.settingsStore.settings$);
 
 		this.indexer = indexer;
@@ -99,6 +102,7 @@ export class CalendarBundle {
 		this.notificationManager = notificationManager;
 		this.categoryTracker = categoryTracker;
 		this.nameSeriesTracker = nameSeriesTracker;
+		this.prerequisiteTracker = prerequisiteTracker;
 
 		this.templateService = new TemplaterService(this.app);
 		this.caldavSyncStateManager = new CalDAVSyncStateManager(this.app, this.indexer, this.settingsStore.settings$);

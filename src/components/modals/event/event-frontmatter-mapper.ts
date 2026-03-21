@@ -53,11 +53,6 @@ export function loadSimpleFieldValues(
 	return values;
 }
 
-export function loadPrerequisites(frontmatter: Frontmatter, settings: SingleCalendarConfig): string[] {
-	if (!settings.prerequisiteProp) return [];
-	return parseIntoList(frontmatter[settings.prerequisiteProp], { splitCommas: false }).filter((p) => p.trim());
-}
-
 export interface RecurringFieldsInput {
 	enabled: boolean;
 	rruleType: string;

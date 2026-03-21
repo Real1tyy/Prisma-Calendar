@@ -16,7 +16,6 @@ export function createTimelineTabDefinition(app: App, bundle: CalendarBundle): T
 		label: "Timeline",
 		render: (el) => {
 			handle = renderTimelineInto(el, app, bundle, {
-				events: bundle.eventStore.getAllEvents(),
 				title: "All Events Timeline",
 				fillContainer: true,
 			});
@@ -24,7 +23,7 @@ export function createTimelineTabDefinition(app: App, bundle: CalendarBundle): T
 			mergedSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$)
 				.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
 				.subscribe(() => {
-					handle?.refresh(bundle.eventStore.getAllEvents());
+					handle?.invalidateAndRefetch();
 				});
 		},
 		cleanup: () => {

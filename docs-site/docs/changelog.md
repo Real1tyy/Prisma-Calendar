@@ -6,6 +6,11 @@ All notable changes to this project will be documented here.
 
 ## 2.8.0 - 3/21/2026
 
+### Improved
+
+- **Timeline performance**: The timeline now loads events on demand as you pan and zoom, fetching only the visible time range instead of the entire event history. Previously, opening the timeline loaded every event in your vault at once. This applies to both the Timeline tab and series/category timeline modals. See [Timeline](./features/views/timeline.md).
+- **Gantt performance**: The Gantt tab now uses an incremental prerequisite tracker that updates in real time as events change, instead of rebuilding the entire dependency graph from scratch on every update. Prerequisite lookups are now instant regardless of vault size. See [Gantt View](./features/views/gantt.md).
+
 ### Fixed
 
 - **AI Manipulation modifying unrelated events**: In Manipulation mode, the AI would modify existing events that weren't mentioned by the user in order to resolve pre-existing overlaps. The no-overlap constraint now only applies to newly created events in Manipulation mode; existing events are only modified when the user explicitly requests it. See [AI Chat — Validation](./features/advanced/ai-chat.md#validation--auto-correction).

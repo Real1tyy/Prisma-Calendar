@@ -42,6 +42,12 @@ Click any event to open its **Event Preview Modal**.
   </video>
 </div>
 
+## On-Demand Loading
+
+The timeline only loads events for the time range you're currently viewing (plus a small buffer ahead and behind). As you pan or zoom, new events are fetched automatically. Ranges that have already been loaded are cached, so scrolling back to a previously visited area is instant.
+
+This means the timeline opens fast regardless of how many events are in your vault — it never loads everything at once.
+
 ## Live Updates
 
 The timeline updates automatically when events change — new events appear, deleted events disappear, and edits are reflected instantly.
