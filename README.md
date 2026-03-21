@@ -135,13 +135,21 @@ Prisma Calendar exposes a programmatic API, so you can create, modify, and query
 
 Sync events from external CalDAV servers (Fastmail, Nextcloud, iCloud, and more) or import/export `.ics` files — compatible with Google Calendar, Microsoft Outlook, and any service that supports the ICS standard. Synced events become real Obsidian notes with full frontmatter. Connect multiple sources to different calendars with configurable auto-sync intervals.
 
-### **Multiple Views, Full Control**
+### **Tabbed Views**
 
-Switch between month, week, day, and list views. Zoom into time slots from 1 to 60 minutes. Display extra frontmatter properties inside event chips. Filter events with complex expressions. Toggle holidays on or off. The calendar looks and works exactly how you want it to.
+Switch between Calendar (month/week/day/list), Timeline, Daily+Stats, and Dual Daily views — all in a persistent tabbed container. Tabs can be reordered, renamed, and hidden. Pro adds Heatmap (GitHub-style contribution view), Gantt (dependency-aware timeline), and Dashboard (pie charts, stat cards, sortable tables). Zoom into time slots from 1 to 60 minutes. Display frontmatter properties inside event chips. Filter with complex expressions.
+
+### **55+ Header Actions**
+
+One-click shortcut buttons for event creation, search, statistics, category highlighting, undo/redo, AI chat, and more — all customizable. Reorder, rename, change icons and colors, or hide actions via the gear button.
+
+### **Capacity Tracking**
+
+See at a glance how full your calendar is. A compact indicator shows today's used vs total hours (e.g., "7h 30m / 11h (68%)") with remaining time and inferred boundaries. No configuration needed — boundaries are detected automatically from your earliest and latest events.
 
 ### **Global Event Management**
 
-Browse, search, and manage all events across all your calendars from a single unified interface. No more hunting through folders — everything is accessible from one place.
+Browse, search, and manage all events across all your calendars from a single unified interface. Auto-group events by recurring rule, category, or name with the Event Series Modal. View series statistics, timelines, and heatmaps from one place.
 
 ---
 
@@ -163,36 +171,45 @@ Prisma Calendar is free and fully-featured out of the box. No account, no trial 
 
 ### What you get for free
 
-| Feature                    | Details                                                                       |
-| -------------------------- | ----------------------------------------------------------------------------- |
-| **4 Calendar Views**       | Month, Week, Day, List — with CTRL+scroll zoom and density options            |
-| **Up to 3 Calendars**      | Independent settings, directories, property mappings, and views               |
-| **Up to 2 Event Presets**  | Quick event creation with pre-filled frontmatter                              |
-| **Recurring Events**       | 9 recurrence types + custom intervals, real note generation, virtual previews |
-| **50-Action Undo/Redo**    | Full memento history for every operation                                      |
-| **10+ Batch Operations**   | Multi-select delete, duplicate, move, clone, skip, and more                   |
-| **Time Tracker**           | Built-in stopwatch with start, break, resume, minimize                        |
-| **Statistics Dashboard**   | Pie charts, category breakdowns, daily/weekly/monthly/all-time                |
-| **Color Rules**            | JavaScript expressions mapping frontmatter to colors                          |
-| **Advanced Filtering**     | Text search + JS expression filters + saved presets                           |
-| **Desktop Notifications**  | Configurable lead time, snooze, per-event overrides                           |
-| **Holidays**               | 50+ countries offline, ~20 language locales                                   |
-| **Title Autocomplete**     | Ghost text suggestions from categories, presets, and history                  |
-| **Auto-Assign Categories** | Automatic matching when event name matches category name                      |
-| **ICS Import/Export**      | Manual `.ics` file exchange with any calendar app                             |
-| **30+ Hotkeys**            | Full keyboard control for navigation and operations                           |
+| Feature                    | Details                                                                                                                           |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Tabbed View Navigation** | Calendar (Month, Week, Day, List), Timeline, Daily+Stats, Dual Daily — all in a persistent tabbed container with CTRL+scroll zoom |
+| **55+ Header Actions**     | Customizable one-click shortcut buttons for any calendar command — reorder, rename, change icons                                  |
+| **Up to 3 Calendars**      | Independent settings, directories, property mappings, and views                                                                   |
+| **Up to 2 Event Presets**  | Quick event creation with pre-filled frontmatter                                                                                  |
+| **Recurring Events**       | 9 recurrence types + custom intervals, real note generation, virtual previews                                                     |
+| **50-Action Undo/Redo**    | Full memento history for every operation                                                                                          |
+| **10+ Batch Operations**   | Multi-select delete, duplicate, move, clone, skip, and more                                                                       |
+| **Time Tracker**           | Built-in stopwatch with start, break, resume, minimize                                                                            |
+| **Capacity Tracking**      | Used vs total hours indicator with auto-inferred time boundaries                                                                  |
+| **Statistics Dashboard**   | Pie charts, category breakdowns, daily/weekly/monthly/all-time                                                                    |
+| **Event Groups**           | Auto-grouping by recurring rule, category, or name with series statistics and timeline                                            |
+| **Color Rules**            | JavaScript expressions mapping frontmatter to colors                                                                              |
+| **Advanced Filtering**     | Text search + JS expression filters + saved presets                                                                               |
+| **Desktop Notifications**  | Configurable lead time, snooze, per-event overrides                                                                               |
+| **Holidays**               | 50+ countries offline, ~20 language locales                                                                                       |
+| **Title Autocomplete**     | Ghost text suggestions from categories, presets, and history                                                                      |
+| **Auto-Assign Categories** | Name match or substring match — "Youtube Analysis" auto-assigns "Youtube" category                                                |
+| **Untracked Events Inbox** | Drag & drop undated notes onto the calendar with dedicated filtering                                                              |
+| **ICS Import/Export**      | Manual `.ics` file exchange with any calendar app                                                                                 |
+| **30+ Hotkeys**            | Full keyboard control for navigation and operations                                                                               |
 
 ### What Pro adds
 
-| Feature                     | Details                                                                                   |
-| --------------------------- | ----------------------------------------------------------------------------------------- |
-| **AI Chat**                 | Built-in sidebar with Claude and GPT — query, create, edit, and plan via natural language |
-| **CalDAV & ICS URL Sync**   | One-way read-only sync from Google Calendar, Apple Calendar, Fastmail, Nextcloud, iCloud  |
-| **Programmatic API**        | `window.PrismaCalendar` and URL scheme for full CRUD, batch ops, and scripting            |
-| **Custom Category Presets** | Map event names to categories with comma-separated rules                                  |
-| **Unlimited Calendars**     | Remove the 3-calendar limit                                                               |
-| **Unlimited Event Presets** | Remove the 2-preset limit                                                                 |
-| **Priority Support**        | First in line for help and feature requests                                               |
+| Feature                      | Details                                                                                                                                  |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **AI Chat**                  | Built-in sidebar with Claude and GPT — query, create, edit, and plan events via natural language                                         |
+| **Heatmap View**             | GitHub-style contribution heatmap with category-colored gradients, yearly/monthly modes, and click-to-inspect                            |
+| **Dashboard**                | Full-page overview with pie charts, stat cards, Top 10 bar charts, and sortable tables for recurring events, categories, and name series |
+| **Gantt View**               | Horizontal event bars on a date timeline with native dependency arrows between prerequisite pairs                                        |
+| **Bases Calendar View**      | Render Prisma events inside any Obsidian Base as a fully interactive calendar with drag-and-drop and context menus                       |
+| **Prerequisite Connections** | SVG arrow overlay showing directed dependencies between events on the Calendar and Gantt tabs                                            |
+| **CalDAV & ICS URL Sync**    | One-way read-only sync from Google Calendar, Apple Calendar, Fastmail, Nextcloud, iCloud                                                 |
+| **Programmatic API**         | `window.PrismaCalendar` and URL scheme for full CRUD, batch ops, statistics, AI, and scripting                                           |
+| **Custom Category Presets**  | Map event names to categories with comma-separated rules                                                                                 |
+| **Unlimited Calendars**      | Remove the 3-calendar limit                                                                                                              |
+| **Unlimited Event Presets**  | Remove the 2-preset limit                                                                                                                |
+| **Priority Support**         | First in line for help and feature requests                                                                                              |
 
 [Learn more about Free vs Pro →](https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro)
 

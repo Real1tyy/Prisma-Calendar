@@ -10,7 +10,8 @@ Prisma Calendar follows a freemium model. The free version is not a demo — it'
 
 Everything you need for a powerful, production-ready calendar experience ships for free, with no account required:
 
-- **4 calendar views** — Month, Week, Day, and List with CTRL+scroll zoom and density options
+- **Tabbed view navigation** — Calendar (Month, Week, Day, List), Timeline, Daily+Stats, and Dual Daily in a persistent tabbed container with CTRL+scroll zoom and density options
+- **55+ header actions** — customizable one-click shortcut buttons for any calendar command, fully reorderable with custom icons and colors
 - **Up to 3 calendars** — each with independent settings, directories, property mappings, and views
 - **Up to 2 event presets** — quick event creation with pre-filled frontmatter values
 - **Recurring events** — 9 built-in recurrence types + custom intervals (every N days/weeks/months) with real note generation and virtual previews
@@ -22,9 +23,11 @@ Everything you need for a powerful, production-ready calendar experience ships f
 - **Advanced filtering** — text search + JavaScript expression filters + saved filter presets
 - **Desktop notifications** — configurable lead time, snooze, and per-event overrides
 - **Holidays** — 50+ countries (offline), ~20 language locales
+- **Capacity tracking** — used vs total hours indicator with auto-inferred time boundaries
 - **Title autocomplete** — ghost text suggestions from categories, presets, and frequent names
-- **Auto-assign categories** — automatic category assignment when the event name matches a category name
-- **Event groups** — auto-grouping by recurring rule, category, or name
+- **Auto-assign categories** — by exact name match or substring match (e.g., "Youtube Analysis" auto-assigns "Youtube")
+- **Event groups** — auto-grouping by recurring rule, category, or name with series statistics and timeline
+- **Untracked events inbox** — drag & drop undated notes onto the calendar with dedicated filtering
 - **ICS import/export** — manual exchange of `.ics` files with any calendar application
 - **ZettelID naming**, Templater integration, and mobile support
 - **30+ hotkeys** — keyboard shortcuts for navigation, batch operations, and quick actions
@@ -40,7 +43,7 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 | [Heatmap View](./views/heatmap.md) | GitHub-style contribution heatmap showing event density across months/year with yearly and monthly modes, category-colored gradients, and click-to-inspect details. |
 | [Dashboard](./views/dashboard.md) | Full-page overview of all events with pie charts and sortable tables for recurring events, categories, and name-based series. |
 | [Prerequisite Connections](./advanced/prerequisite-connections.md) | SVG arrow overlay on the Calendar tab showing directed dependency arrows between prerequisite events |
-| [Gantt View](./views/gantt.md) | Gantt tab with horizontal event bars on a date timeline and native dependency arrows between prerequisite pairs |
+| [Gantt View](./views/gantt.md) | Gantt tab with horizontal event bars on a date timeline with Day/Week/Month/Year view modes and native dependency arrows between prerequisite pairs. "Connected only" filter shows exclusively events in prerequisite relationships. |
 | [CalDAV & ICS URL Sync](./advanced/integrations.md) | One-way read-only sync from Google Calendar, Apple Calendar, Fastmail, Nextcloud, iCloud, and any CalDAV server or public ICS URL. |
 | [Programmatic API](./advanced/programmatic-api/overview.md) | `window.PrismaCalendar` and URL scheme for full CRUD, batch ops, statistics, settings, and navigation from external scripts. |
 | [Custom Category Assignment Presets](./organization/categories.md) | Map comma-separated event names to categories. Events auto-match on creation. |
@@ -60,6 +63,8 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 | Heatmap View | — | Included |
 | Dashboard | — | Included |
 | CalDAV & ICS URL Sync | — | Included |
+| Prerequisite Connections | — | Included |
+| Gantt View | — | Included |
 | Programmatic API | — | Included |
 | Custom category presets | — | Included |
 

@@ -35,8 +35,32 @@ JavaScript expressions map frontmatter to colors (`Priority === 'High'` → `#ef
 ### [Statistics & Time Tracking](./organization/statistics)
 Daily, weekly, monthly, and all-time views with pie charts and breakdown tables. Dual aggregation modes (Event Name vs Category), break time support, smart grouping, period navigation, and paginated tables (20 entries per page).
 
+### [Tabbed Views](./views/tabbed-views)
+Persistent tab bar with Calendar (month/week/day/list), [Timeline](./views/timeline), [Daily+Stats](./views/daily-stats), and [Dual Daily](./views/dual-daily) — plus Pro-only [Heatmap](./views/heatmap), [Gantt](./views/gantt), and [Dashboard](./views/dashboard). Tabs can be reordered, renamed, and hidden. Group tabs support nested subtabs.
+
 ### [Calendar View](./calendar/calendar-view)
 Month, week, day, and list views with a fully customizable toolbar, CTRL+scroll zoom, display density options, event text coloring, sticky headers, event overlap control, and customizable time ranges.
+
+### [Header Actions](./views/header-actions)
+55+ customizable shortcut buttons in the view header for one-click access to any calendar command. Reorder, rename, change icons and colors, show/hide via the gear button. 19 shown by default.
+
+### [Capacity Tracking](./views/capacity-tracking)
+Compact indicator showing used vs total hours (e.g., "7h 30m / 11h (68%)") in the page header and statistics. Boundaries auto-inferred from earliest and latest events.
+
+### [Heatmap View](./views/heatmap) (Pro)
+GitHub-style contribution heatmap showing event density over time with yearly and monthly modes, category-colored gradients, click-to-inspect day details, and arrow-key navigation.
+
+### [Dashboard](./views/dashboard) (Pro)
+Full-page overview with three subtabs (By Name, By Category, Recurring) featuring a resizable 2x2 grid: pie chart, summary stat cards with Top 10 bar chart, and a sortable/searchable paginated table.
+
+### [Gantt View](./views/gantt) (Pro)
+Horizontal event bars on a date timeline with Day/Week/Month/Year view modes and native dependency arrows between prerequisite pairs. "Connected only" filter shows exclusively events in prerequisite relationships.
+
+### [Bases Calendar View](./views/bases-calendar-view) (Pro)
+Render Prisma events inside any Obsidian Base as a fully interactive calendar with month/week/day views, drag-and-drop, context menus, batch selection, and hover previews.
+
+### [Prerequisite Connections](./advanced/prerequisite-connections) (Pro)
+SVG arrow overlay on the Calendar tab showing directed dependencies between events. Dashed stub arrows appear at the calendar edge for off-screen connections. Toggled via command or header action.
 
 ### Frontmatter Display
 Display custom properties inside event chips with clickable wikilinks and configurable property selection. Configure in Settings → Calendar → Frontmatter display properties.
@@ -75,6 +99,9 @@ Save reusable templates with pre-filled values including title, dates, categorie
 
 ### [Event Skipping](./events/event-skipping)
 Mark events as skipped without deletion. Preserves recurring series integrity with management dialog and undo support.
+
+### [Untracked Events](./events/untracked-events)
+Inbox for notes without dates. Browse, filter, and drag & drop undated notes directly onto the calendar to assign dates. Dedicated filtering with JavaScript expressions.
 
 ---
 
