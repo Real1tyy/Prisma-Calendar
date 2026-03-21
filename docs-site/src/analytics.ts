@@ -19,13 +19,18 @@ let pageEntryTime = 0;
 let maxScrollDepth = 0;
 let currentPath = "";
 
+function getPluginSlug(): string {
+	const segment = window.location.pathname.split("/")[1];
+	return segment?.toLowerCase() || "unknown";
+}
+
 function getSessionAttribution(): UtmParams {
 	if (!sessionAttribution) {
 		const params = new URLSearchParams(window.location.search);
 		sessionAttribution = {
 			utmSource: params.get("utm_source") || "docs-site",
 			utmMedium: params.get("utm_medium") || "docs",
-			utmContent: params.get("utm_content") || "prisma-calendar",
+			utmContent: params.get("utm_content") || getPluginSlug(),
 		};
 	}
 	return sessionAttribution;
@@ -49,7 +54,7 @@ function cleanTrackingParams(): void {
 }
 
 function send(path: string, body: Record<string, unknown>): void {
-	const blob = new Blob([JSON.stringify(body)], { type: "application/json" });
+	const blob = new Blob([JSON.stringify(body)], { type: "text/plain" });
 	if (navigator.sendBeacon) {
 		navigator.sendBeacon(`${ANALYTICS_ENDPOINT}${path}`, blob);
 	} else {
@@ -82,7 +87,7 @@ function flushPageEngagement(): void {
 	const duration = getDuration();
 	if (duration < 1) return;
 
-	send("/api/visit", {
+	send("/b", {
 		path: currentPath,
 		referrer: null,
 		previousPath: null,
@@ -107,7 +112,7 @@ function resetPageTracking(): void {
 function trackPageView(isInitial: boolean, previousPath?: string | null): void {
 	sessionPageCount++;
 	resetPageTracking();
-	send("/api/visit", {
+	send("/b", {
 		path: window.location.pathname,
 		referrer: isInitial ? document.referrer || null : null,
 		previousPath: isInitial ? null : previousPath ?? null,
@@ -126,7 +131,7 @@ export function trackEvent(
 	value?: number | null,
 ): void {
 	const utm = getSessionAttribution();
-	send("/api/event", {
+	send("/d", {
 		category,
 		action,
 		label: label ?? null,
