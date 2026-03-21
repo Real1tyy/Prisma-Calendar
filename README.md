@@ -70,7 +70,23 @@ _Create and edit events with full frontmatter support, recurring event options, 
 ![Weekly Statistics](docs-site/static/img/statspie.png)
 _Visual time tracking with pie charts and detailed breakdown tables_
 
-Check out the [complete screenshots gallery](https://real1tyy.github.io/Prisma-Calendar/screenshots) in the documentation to see all the plugin's visuals, including calendar views, event modals, batch operations, statistics, settings, and more.
+### Pro Views
+
+<p align="center">
+<img src="docs-site/static/img/pro-previews/dashboard.png" alt="Dashboard" width="45%">
+<img src="docs-site/static/img/pro-previews/heatmap.png" alt="Heatmap View" width="45%">
+</p>
+
+_Dashboard with pie charts, stat cards, and sortable tables — Heatmap with GitHub-style contribution view_
+
+<p align="center">
+<img src="docs-site/static/img/pro-previews/gantt.png" alt="Gantt View" width="45%">
+<img src="docs-site/static/img/pro-previews/ai-chat.png" alt="AI Chat" width="45%">
+</p>
+
+_Gantt view with dependency arrows — AI Chat sidebar with Claude and GPT_
+
+Check out the [complete screenshots gallery](https://real1tyy.github.io/Prisma-Calendar/gallery) in the documentation to see all the plugin's visuals, including batch operations, settings, and more.
 
 ---
 
