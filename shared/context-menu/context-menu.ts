@@ -4,22 +4,26 @@ import { openItemManager } from "./item-manager";
 import { injectContextMenuStyles } from "./styles";
 import type { ContextMenuConfig, ContextMenuHandle, ContextMenuItemDefinition, ContextMenuState } from "./types";
 
+const DEFAULT_SECTION = "";
+
 function resolveVisibleItems(config: ContextMenuConfig): {
 	visibleItems: ContextMenuItemDefinition[];
 	renames: Map<string, string>;
 	iconOverrides: Map<string, string>;
 	colorOverrides: Map<string, string>;
+	sectionOverrides: Map<string, string>;
 	showSettingsButton: boolean;
 } {
 	const { items, initialState } = config;
 	const renames = new Map(initialState?.renames ? Object.entries(initialState.renames) : []);
 	const iconOverrides = new Map(initialState?.iconOverrides ? Object.entries(initialState.iconOverrides) : []);
 	const colorOverrides = new Map(initialState?.colorOverrides ? Object.entries(initialState.colorOverrides) : []);
+	const sectionOverrides = new Map(initialState?.sectionOverrides ? Object.entries(initialState.sectionOverrides) : []);
 
 	const showSettingsButton = initialState?.showSettingsButton !== false;
 
 	if (!initialState?.visibleItemIds) {
-		return { visibleItems: items, renames, iconOverrides, colorOverrides, showSettingsButton };
+		return { visibleItems: items, renames, iconOverrides, colorOverrides, sectionOverrides, showSettingsButton };
 	}
 
 	const itemMap = new Map(items.map((i) => [i.id, i]));
@@ -32,8 +36,31 @@ function resolveVisibleItems(config: ContextMenuConfig): {
 		renames,
 		iconOverrides,
 		colorOverrides,
+		sectionOverrides,
 		showSettingsButton,
 	};
+}
+
+/** Groups visible items by their resolved section, preserving per-section order. */
+function groupBySection(
+	items: ContextMenuItemDefinition[],
+	getSection: (item: ContextMenuItemDefinition) => string
+): { section: string; items: ContextMenuItemDefinition[] }[] {
+	const groups: { section: string; items: ContextMenuItemDefinition[] }[] = [];
+	const sectionMap = new Map<string, ContextMenuItemDefinition[]>();
+
+	for (const item of items) {
+		const section = getSection(item);
+		let group = sectionMap.get(section);
+		if (!group) {
+			group = [];
+			sectionMap.set(section, group);
+			groups.push({ section, items: group });
+		}
+		group.push(item);
+	}
+
+	return groups;
 }
 
 export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle {
@@ -46,6 +73,7 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 	const renames = resolved.renames;
 	const iconOverrides = resolved.iconOverrides;
 	const colorOverrides = resolved.colorOverrides;
+	const sectionOverrides = resolved.sectionOverrides;
 	let showSettingsButton = resolved.showSettingsButton;
 
 	let destroyed = false;
@@ -62,6 +90,10 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 		return colorOverrides.get(item.id) ?? item.color;
 	}
 
+	function getSection(item: ContextMenuItemDefinition): string {
+		return sectionOverrides.get(item.id) ?? item.section ?? DEFAULT_SECTION;
+	}
+
 	const defaultOrder = allItems.map((i) => i.id);
 
 	function buildState(): ContextMenuState {
@@ -70,6 +102,7 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 		if (renames.size > 0) state.renames = Object.fromEntries(renames);
 		if (iconOverrides.size > 0) state.iconOverrides = Object.fromEntries(iconOverrides);
 		if (colorOverrides.size > 0) state.colorOverrides = Object.fromEntries(colorOverrides);
+		if (sectionOverrides.size > 0) state.sectionOverrides = Object.fromEntries(sectionOverrides);
 
 		const currentOrder = visibleItems.map((i) => i.id);
 		if (currentOrder.length !== defaultOrder.length || currentOrder.some((id, i) => id !== defaultOrder[i])) {
@@ -95,18 +128,86 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 	function restoreItem(id: string): void {
 		const item = allItems.find((i) => i.id === id);
 		if (!item || visibleItems.some((i) => i.id === id)) return;
-		visibleItems = [...visibleItems, item];
+
+		// Insert at the end of the item's section
+		const section = getSection(item);
+		const groups = groupBySection(visibleItems, getSection);
+		const sectionGroup = groups.find((g) => g.section === section);
+
+		if (sectionGroup) {
+			const lastItemInSection = sectionGroup.items[sectionGroup.items.length - 1];
+			const insertIdx = visibleItems.indexOf(lastItemInSection) + 1;
+			visibleItems = [...visibleItems.slice(0, insertIdx), item, ...visibleItems.slice(insertIdx)];
+		} else {
+			visibleItems = [...visibleItems, item];
+		}
+
 		emitStateChange();
 	}
 
 	function moveItem(id: string, direction: -1 | 1): void {
 		const idx = visibleItems.findIndex((i) => i.id === id);
-		const newIdx = idx + direction;
-		if (idx < 0 || newIdx < 0 || newIdx >= visibleItems.length) return;
+		if (idx < 0) return;
+
+		const item = visibleItems[idx];
+		const section = getSection(item);
+
+		// Find section boundaries in the flat array
+		const sectionItems = visibleItems.filter((i) => getSection(i) === section);
+		const posInSection = sectionItems.indexOf(item);
+
+		const newPosInSection = posInSection + direction;
+		if (newPosInSection < 0 || newPosInSection >= sectionItems.length) return;
+
+		// Swap with the adjacent item within the section
+		const swapTarget = sectionItems[newPosInSection];
+		const swapIdx = visibleItems.indexOf(swapTarget);
 
 		const updated = [...visibleItems];
-		[updated[idx], updated[newIdx]] = [updated[newIdx], updated[idx]];
+		[updated[idx], updated[swapIdx]] = [updated[swapIdx], updated[idx]];
 		visibleItems = updated;
+
+		emitStateChange();
+	}
+
+	function moveItemToSection(id: string, targetSection: string, insertBeforeId?: string): void {
+		const itemIdx = visibleItems.findIndex((i) => i.id === id);
+		if (itemIdx < 0) return;
+
+		const item = visibleItems[itemIdx];
+		const currentSection = getSection(item);
+		if (currentSection === targetSection && !insertBeforeId) return;
+
+		// Update section override
+		const defaultSection = item.section ?? DEFAULT_SECTION;
+		if (targetSection !== defaultSection) {
+			sectionOverrides.set(id, targetSection);
+		} else {
+			sectionOverrides.delete(id);
+		}
+
+		// Remove from current position
+		const withoutItem = visibleItems.filter((i) => i.id !== id);
+
+		if (insertBeforeId) {
+			const insertIdx = withoutItem.findIndex((i) => i.id === insertBeforeId);
+			if (insertIdx >= 0) {
+				visibleItems = [...withoutItem.slice(0, insertIdx), item, ...withoutItem.slice(insertIdx)];
+			} else {
+				visibleItems = [...withoutItem, item];
+			}
+		} else {
+			// Append at end of target section
+			const groups = groupBySection(withoutItem, getSection);
+			const targetGroup = groups.find((g) => g.section === targetSection);
+			if (targetGroup) {
+				const lastItem = targetGroup.items[targetGroup.items.length - 1];
+				const insertIdx = withoutItem.indexOf(lastItem) + 1;
+				visibleItems = [...withoutItem.slice(0, insertIdx), item, ...withoutItem.slice(insertIdx)];
+			} else {
+				visibleItems = [...withoutItem, item];
+			}
+		}
 
 		emitStateChange();
 	}
@@ -119,6 +220,7 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 			cssPrefix: config.cssPrefix,
 			allItems,
 			getVisibleItems: () => visibleItems,
+			getSection,
 			renames,
 			iconOverrides,
 			colorOverrides,
@@ -126,6 +228,7 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 			onHide: hideItem,
 			onRestore: restoreItem,
 			onMove: moveItem,
+			onMoveToSection: moveItemToSection,
 			onRename: (id, label) => {
 				if (label) {
 					const item = allItems.find((i) => i.id === id);
@@ -180,10 +283,11 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 		for (const item of visibleItems) {
 			if (filterFn && !filterFn(item.id)) continue;
 
-			if (item.section !== undefined && lastSection !== undefined && item.section !== lastSection) {
+			const section = getSection(item);
+			if (section !== undefined && lastSection !== undefined && section !== lastSection) {
 				menu.addSeparator();
 			}
-			lastSection = item.section;
+			lastSection = section;
 
 			const label = titleOverrides?.[item.id] ?? getLabel(item);
 			const icon = getIcon(item);

@@ -11,6 +11,8 @@ export const ContextMenuStateSchema = z.object({
 	iconOverrides: z.record(z.string(), z.string()).optional().catch(undefined),
 	/** Custom colors keyed by item ID. */
 	colorOverrides: z.record(z.string(), z.string()).optional().catch(undefined),
+	/** Section reassignments keyed by item ID. Only stores overrides — items keep their default section unless moved. */
+	sectionOverrides: z.record(z.string(), z.string()).optional().catch(undefined),
 	/** Whether the settings gear item is shown at the bottom of the menu. Default: true. */
 	showSettingsButton: z.boolean().optional().catch(undefined),
 });

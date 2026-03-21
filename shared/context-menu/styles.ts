@@ -171,6 +171,27 @@ function buildContextMenuStyles(p: string): string {
 	height: 14px;
 }
 
+/* ─── Item Manager Sections ─── */
+
+.${p}item-manager-section {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.${p}item-manager-section + .${p}item-manager-section {
+	margin-top: 12px;
+}
+
+.${p}item-manager-section-header {
+	font-size: var(--font-ui-small);
+	font-weight: 600;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 4px 4px 2px;
+}
+
 /* ─── Item Manager Edit Form ─── */
 
 .${p}item-manager-edit-form {
