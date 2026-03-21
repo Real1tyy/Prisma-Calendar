@@ -25,7 +25,7 @@ Recurring events that generate real notes. Batch operations across dozens of eve
 </div>
 
 <div style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <img src={useBaseUrl("/video/LandingPage.gif")} alt="Prisma Calendar Preview" style={{"width": "100%", "maxWidth": "900px", "borderRadius": "12px", "boxShadow": "0 8px 30px rgba(0,0,0,0.3)"}} />
+  <video src={useBaseUrl("/video/LandingPage.mp4")} autoPlay muted loop playsInline style={{"width": "100%", "borderRadius": "12px", "boxShadow": "0 8px 30px rgba(0,0,0,0.3)"}} />
 </div>
 
 <div align="center">

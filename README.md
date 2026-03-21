@@ -18,7 +18,7 @@ Recurring events that generate real notes. Batch operations across dozens of eve
 
 </div>
 
-![Prisma Calendar Preview](docs-site/static/video/LandingPage.gif)
+<img src="docs-site/static/video/LandingPage.gif" alt="Prisma Calendar Preview" width="100%">
 
 <div align="center">
 
