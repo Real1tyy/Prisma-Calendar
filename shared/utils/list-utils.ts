@@ -1,3 +1,5 @@
+import { parseWikiLink } from "../file/link-parser";
+
 /**
  * Converts a value that could be a string, array, or other type into an array of strings.
  * Handles comma-separated strings, arrays, and other edge cases.
@@ -100,6 +102,49 @@ export function formatListLikeOriginal(categories: string[], originalValue: unkn
  */
 export function parseCategories(categoryValue: unknown): string[] {
 	return parseIntoList(categoryValue, { defaultValue: ["No Category"] });
+}
+
+export interface ParseLinkedListOptions<T = string> {
+	/** Whether to split comma-separated values (default: true) */
+	splitCommas?: boolean;
+	/**
+	 * Transform each parsed wiki-link path into a resolved value.
+	 * Return null/undefined to skip the item.
+	 * When omitted, raw link paths are returned as-is.
+	 */
+	resolve?: (linkPath: string) => T | null | undefined;
+}
+
+/**
+ * Parses a frontmatter property that contains wiki-links into resolved values.
+ * Pipeline: raw value → parseIntoList → parseWikiLink → resolve closure.
+ *
+ * Works for any list property containing [[wiki-links]]:
+ * prerequisites, participants, or any future linked property.
+ *
+ * @example
+ * // Resolve to file paths via Obsidian's metadata cache
+ * parseLinkedList(value, {
+ *   resolve: (linkPath) => app.metadataCache.getFirstLinkpathDest(linkPath, "")?.path,
+ * });
+ *
+ * @example
+ * // Just extract wiki-link paths without resolving
+ * parseLinkedList(value);
+ */
+export function parseLinkedList<T = string>(value: unknown, options: ParseLinkedListOptions<T> = {}): T[] {
+	const { splitCommas = true, resolve } = options;
+	const items = parseIntoList(value, { splitCommas });
+
+	const linkPaths = items
+		.map((item) => parseWikiLink(item.trim()))
+		.filter((linkPath): linkPath is string => linkPath != null);
+
+	if (!resolve) {
+		return linkPaths as unknown as T[];
+	}
+
+	return linkPaths.map((linkPath) => resolve(linkPath)).filter((resolved): resolved is T => resolved != null);
 }
 
 export function areSetsEqual<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean {
