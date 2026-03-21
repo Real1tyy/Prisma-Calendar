@@ -7,15 +7,17 @@
 }
 
 /* Collapsible details/summary styling (FAQ, Troubleshooting) */
-details {
-	border: 1px solid rgba(255, 255, 255, 0.3);
+.markdown details,
+article details {
+	border: 1px solid rgba(124, 58, 237, 0.4);
 	border-radius: 8px;
 	margin-bottom: 0.75em;
 	background: var(--ifm-color-primary-dark);
 	color: #fff;
 }
 
-details summary {
+.markdown details summary,
+article details summary {
 	padding: 0.75em 1em;
 	font-weight: 600;
 	cursor: pointer;
@@ -23,33 +25,40 @@ details summary {
 	transition: background 0.15s ease;
 }
 
-details summary:hover {
+.markdown details summary:hover,
+article details summary:hover {
 	background: var(--ifm-color-primary-darker);
 	border-radius: 8px;
 }
 
-details[open] summary {
+.markdown details[open] summary,
+article details[open] summary {
 	border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 	border-radius: 8px 8px 0 0;
 }
 
-details > :not(summary) {
+.markdown details > :not(summary),
+article details > :not(summary) {
 	padding: 0 1em;
 }
 
-details a {
+.markdown details a,
+article details a {
 	color: var(--ifm-color-primary-lighter);
 }
 
-[data-theme="light"] details {
+[data-theme="light"] .markdown details,
+[data-theme="light"] article details {
 	background: var(--ifm-color-primary);
-	border-color: rgba(255, 255, 255, 0.4);
+	border-color: rgba(124, 58, 237, 0.5);
 }
 
-[data-theme="light"] details summary {
+[data-theme="light"] .markdown details summary,
+[data-theme="light"] article details summary {
 	color: #fff;
 }
 
-[data-theme="light"] details a {
+[data-theme="light"] .markdown details a,
+[data-theme="light"] article details a {
 	color: #e0d0ff;
 }

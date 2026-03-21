@@ -54,16 +54,12 @@ function cleanTrackingParams(): void {
 }
 
 function send(path: string, body: Record<string, unknown>): void {
-	const blob = new Blob([JSON.stringify(body)], { type: "text/plain" });
-	if (navigator.sendBeacon) {
-		navigator.sendBeacon(`${ANALYTICS_ENDPOINT}${path}`, blob);
-	} else {
-		fetch(`${ANALYTICS_ENDPOINT}${path}`, {
-			method: "POST",
-			body: blob,
-			keepalive: true,
-		}).catch(() => {});
-	}
+	fetch(`${ANALYTICS_ENDPOINT}${path}`, {
+		method: "POST",
+		headers: { "Content-Type": "text/plain" },
+		body: JSON.stringify(body),
+		keepalive: true,
+	}).catch(() => {});
 }
 
 function getScrollDepth(): number {
