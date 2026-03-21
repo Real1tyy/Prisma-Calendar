@@ -1,7 +1,7 @@
 import ExecutionEnvironment from "@docusaurus/ExecutionEnvironment";
 import type { ClientModule } from "@docusaurus/types";
 
-const ANALYTICS_ENDPOINT = "__ANALYTICS_ENDPOINT__";
+const ANALYTICS_ENDPOINT = "https://h.matejvavroproductivity.com";
 const TRACKING_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "ref"];
 
 type EventCategory = "click" | "download" | "search" | "navigation" | "conversion" | "engagement" | "error";
