@@ -191,8 +191,6 @@ const TOOLBAR_BUTTONS = {
 	"Search Input": "searchInput",
 	"Expression Filter": "expressionFilter",
 	"Untracked Events": "untrackedEvents",
-	Timeline: "timeline",
-	Heatmap: "heatmap",
 } as const;
 
 export const TOOLBAR_BUTTON_IDS = Object.values(TOOLBAR_BUTTONS);
@@ -201,7 +199,7 @@ export const TOOLBAR_BUTTON_LABELS = Object.fromEntries(
 	Object.entries(TOOLBAR_BUTTONS).map(([label, id]) => [id, label])
 ) as Record<string, string>;
 
-export const DEFAULT_TOOLBAR_BUTTONS = TOOLBAR_BUTTON_IDS.filter((id) => id !== "heatmap");
+export const DEFAULT_TOOLBAR_BUTTONS = [...TOOLBAR_BUTTON_IDS];
 
 export const CONTEXT_MENU_BUTTON_LABELS = {
 	enlarge: "Enlarge",

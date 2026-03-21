@@ -32,6 +32,7 @@ Tell Prisma Calendar which frontmatter keys you use.
 - **Icon property**: frontmatter property name for event icon override (default: `Icon`). Accepts any emoji or text string (e.g., `🎉`, `📅`, `★`). The icon appears in the top-right corner of the event chip on the calendar, taking highest precedence over CalDAV account icons, ICS subscription icons, and recurring event markers. Shown as an input field in the Create/Edit Event modal when configured. See [Event Icons](../features/events/event-icons) for details.
 - **Prerequisite property**: frontmatter property name for event prerequisites (default: `Prerequisite`). Stores wiki-links to other events that must complete before this event. Assign prerequisites via a searchable modal in the create/edit event dialog or the right-click context menu — events are shown with clean names, colored rows, and date/time labels. Stored as a YAML list of wiki-links in frontmatter.
 - **CalDAV property**: property name for CalDAV sync metadata (default: `CalDAV`)
+- **ICS subscription property**: property name for ICS subscription sync metadata (default: `ICSSubscription`)
 
 ## Notification Property Names
 
@@ -45,6 +46,7 @@ These property names control per-event notification overrides. The notification 
 
 - **Future instances count property**: property name for per-event override of future instances count (default: `Future Instances Count`)
 - **Generate past events property**: property name for generating past recurring instances from source event start date (default: `Generate Past Events`)
+- **Instance date property**: property name for the date of a recurring instance, used to track which occurrence in the series a physical instance represents (default: `Recurring Instance Date`)
 
 ## Recurring (node-based)
 
@@ -94,6 +96,7 @@ Show extra frontmatter properties inside event chips (scrollable when space is t
 - **Display properties (timed events)**: comma-separated list of properties to show in timed event chips (e.g., `status, priority, project, tags`). Shown in weekly and daily views, hidden in monthly view.
 - **Display properties (all-day events)**: comma-separated list of properties to show in all-day event chips (can differ from timed events). Shown in weekly and daily views, hidden in monthly view.
 - **Display properties (untracked events)**: comma-separated list of properties to show in the untracked events dropdown (e.g., `status, priority, category`)
+- **Display properties (heatmap)**: comma-separated list of properties to show in the heatmap day detail panel when clicking a day
 
 Rendered example inside a chip:
 

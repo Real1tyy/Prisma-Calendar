@@ -84,21 +84,12 @@ See [Filtering](../organization/filtering) for full documentation on search, exp
 | Button | Action |
 |--------|--------|
 | **Untracked Events** | Opens a dropdown showing events without date properties. See [Untracked Events](../events/untracked-events). |
-| **Timeline** | Opens the timeline visualization showing all events in a horizontal layout. |
 
 <div style={{"textAlign": "center", "marginBottom": "2em"}}>
 
 #### Untracked Events Menu
 
 ![Untracked Events Menu](/img/Untracked.png)
-
-</div>
-
-<div style={{"textAlign": "center", "marginBottom": "2em"}}>
-
-#### Timeline View
-
-![Timeline View](/img/Timeline.png)
 
 </div>
 

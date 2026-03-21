@@ -12,7 +12,7 @@ See the [Integrations](../features/advanced/integrations) documentation for full
 
 ## CalDAV
 
-Configure CalDAV accounts for two-way sync with external calendar servers. See the [CalDAV](../features/advanced/integrations#caldav) documentation.
+Configure CalDAV accounts for one-way read-only sync from external calendar servers. See the [CalDAV](../features/advanced/integrations#caldav) documentation.
 
 ## ICS URL Subscriptions
 

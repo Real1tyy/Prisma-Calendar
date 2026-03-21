@@ -4,7 +4,7 @@
 
 Customize which buttons appear in the calendar's top toolbar on desktop. All buttons are enabled by default. Uncheck items to hide them and save space in narrow sidebars. Reopen the calendar view for changes to take effect.
 
-Available buttons: Previous/Next, Today, Now, Create Event, Zoom Level, Filter Presets, Search Input, Expression Filter, Untracked Events, Timeline.
+Available buttons: Previous/Next, Today, Now, Create Event, Zoom Level, Filter Presets, Search Input, Expression Filter, Untracked Events.
 
 For a detailed description of each toolbar button and what it does, see [Calendar View → Toolbar](../features/calendar/calendar-view#toolbar).
 
@@ -12,7 +12,7 @@ For a detailed description of each toolbar button and what it does, see [Calenda
 
 Customize which buttons appear in the calendar's top toolbar on mobile. Configured independently from desktop. All buttons are enabled by default. Uncheck items to hide them and save space on smaller screens. Reopen the calendar view for changes to take effect.
 
-Available buttons are the same as desktop: Previous/Next, Today, Now, Create Event, Zoom Level, Filter Presets, Search Input, Expression Filter, Untracked Events, Timeline.
+Available buttons are the same as desktop: Previous/Next, Today, Now, Create Event, Zoom Level, Filter Presets, Search Input, Expression Filter, Untracked Events.
 
 ## Batch Selection
 
@@ -46,6 +46,7 @@ Available buttons are the same as desktop: Previous/Next, Today, Now, Create Eve
   - **View event groups**: Open modal showing all event groups (recurring, by category, by name)
   - **Edit event**: Open event edit modal
   - **Assign categories**: Open category assignment modal
+  - **Assign prerequisites**: Open prerequisite assignment modal for linking dependent events
   - **Duplicate event**: Create a duplicate of the event
   - **Move by...**: Move event by a custom time offset
   - **Mark as done/undone**: Toggle event completion status

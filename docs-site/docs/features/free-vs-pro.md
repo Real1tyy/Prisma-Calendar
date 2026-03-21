@@ -37,7 +37,7 @@ Pro unlocks these additional capabilities on top of everything in the free tier:
 |---------|-------------|
 | [AI Chat](./advanced/ai-chat.md) | Built-in sidebar with Claude and GPT. Query your calendar, create/edit events via natural language, and auto-plan your schedule. |
 | [Bases Calendar View](./views/bases-calendar-view.md) | Render Prisma Calendar events inside any Obsidian Base as a fully interactive calendar with month/week/day views, drag-and-drop, and context menus. |
-| [Heatmap View](./events/event-groups.md#heatmap-view-pro) | GitHub-style contribution heatmap showing event density across months/year with yearly and monthly modes, category-colored gradients, and click-to-inspect details. |
+| [Heatmap View](./views/heatmap.md) | GitHub-style contribution heatmap showing event density across months/year with yearly and monthly modes, category-colored gradients, and click-to-inspect details. |
 | [Dashboard](./views/dashboard.md) | Full-page overview of all events with pie charts and sortable tables for recurring events, categories, and name-based series. |
 | [Prerequisite Connections](./advanced/prerequisite-connections.md) | SVG arrow overlay on the Calendar tab showing directed dependency arrows between prerequisite events |
 | [Gantt View](./views/gantt.md) | Gantt tab with horizontal event bars on a date timeline and native dependency arrows between prerequisite pairs |
