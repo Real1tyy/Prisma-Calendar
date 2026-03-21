@@ -2,6 +2,8 @@
 sidebar_label: Prerequisite Connections
 ---
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
 # Prerequisite Connections
 
 :::info Pro Feature
@@ -15,6 +17,14 @@ Prerequisite Connections makes dependency relationships between events visible d
 Events must have the Prerequisite property configured. See [Properties](../../configuration/properties.md) for setup. The property stores wiki-links to other event notes (e.g. `[[Team Meeting]]`).
 
 ## Connection Arrows
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/ConnectionRendererArrows.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/ConnectionRendererArrows.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 Toggle arrows on the Calendar tab with the **"Toggle prerequisite connection arrows"** command (bindable to any hotkey via Settings → Hotkeys, or via the header action button).
 
