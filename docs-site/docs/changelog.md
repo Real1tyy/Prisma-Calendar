@@ -6,6 +6,10 @@ All notable changes to this project will be documented here.
 
 ## 2.8.0 - 3/21/2026
 
+### Added
+
+- **Context menu customization**: Right-click any event and select "Manage menu items..." at the bottom of the context menu to fully customize it — reorder items via drag-and-drop or arrow buttons, rename labels, change icons, pick custom colors, and show/hide individual actions. All changes persist across sessions. No more digging through settings — configuration lives right where you use it. Existing show/hide preferences from previous versions are automatically migrated. See [Configuration — Context Menu](./configuration/toolbar-and-menus.md#context-menu).
+
 ### Improved
 
 - **Timeline performance**: The timeline now loads events on demand as you pan and zoom, fetching only the visible time range instead of the entire event history. Previously, opening the timeline loaded every event in your vault at once. This applies to both the Timeline tab and series/category timeline modals. See [Timeline](./features/views/timeline.md).

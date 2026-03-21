@@ -37,36 +37,57 @@ Available buttons are the same as desktop: Previous/Next, Today, Now, Create Eve
 
 ## Context Menu
 
-- **Context menu items**: customize which actions appear when right-clicking events. You can enable or disable individual context menu items to declutter the menu and keep only relevant actions:
-  - **Enlarge**: Open event preview in a modal
-  - **Preview**: Show hover preview for the event
-  - **Go to source**: Navigate to the source recurring event
-  - **Edit source event**: Open edit modal with source recurring event data (only appears on physical/virtual recurring instances)
-  - **Duplicate recurring instance**: Create a duplicate of a physical recurring instance
-  - **View event groups**: Open modal showing all event groups (recurring, by category, by name)
-  - **Edit event**: Open event edit modal
-  - **Assign categories**: Open category assignment modal
-  - **Assign prerequisites**: Open prerequisite assignment modal for linking dependent events
-  - **Duplicate event**: Create a duplicate of the event
-  - **Move by...**: Move event by a custom time offset
-  - **Mark as done/undone**: Toggle event completion status
-  - **Move to next week**: Move event forward one week
-  - **Clone to next week**: Duplicate event to next week
-  - **Move to previous week**: Move event back one week
-  - **Clone to previous week**: Duplicate event to previous week
-  - **Fill start time from current time**: Set event start to now
-  - **Fill end time from current time**: Set event end to now
-  - **Fill start time from previous event**: Set start to previous event's end time
-  - **Fill end time from next event**: Set end to next event's start time
-  - **Delete event**: Delete the event note
-  - **Skip event**: Hide event from calendar
-  - **Open file**: Open event note in editor
-  - **Open file in new window**: Open event note in a new window
-  - **Enable/Disable recurring event**: Toggle recurring event visibility
-  - **Trigger stopwatch**: Start or stop the time tracker for the event
-  - **Duplicate remaining week days**: Duplicate event to all remaining days of the current week (disabled by default)
+The context menu appears when you right-click any event. It is fully customizable — you can reorder, rename, change icons, pick colors, and show/hide individual items directly from the menu itself.
 
-  All items are enabled by default unless noted otherwise. Menu items that don't apply to a specific event (e.g., recurring-specific actions on non-recurring events) are automatically hidden.
+### Managing menu items
+
+Click **"Manage menu items..."** at the bottom of the context menu to open the item manager. From there you can:
+
+- **Reorder**: Drag items or use the up/down arrow buttons to change their position in the menu.
+- **Rename**: Click the pencil icon on any item, then edit the Name field. A badge shows the original name for reference. Click the reset button to restore the default label.
+- **Change icon**: Click the pencil icon, then click the Icon button to pick from all available Obsidian icons.
+- **Change color**: Click the pencil icon, then use the Color picker to tint the item's icon.
+- **Show/Hide**: Click the eye icon to hide an item. Hidden items appear dimmed at the bottom of the manager. Click the eye-off icon to restore them. At least one item must remain visible.
+- **Toggle settings button**: The toggle at the top of the manager controls whether the "Manage menu items..." entry appears in the context menu.
+- **Search**: Use the search bar at the top to filter items by name.
+
+All changes persist automatically per calendar.
+
+### Backward compatibility
+
+If you previously configured context menu visibility via the settings tab (prior to 2.8.0), your show/hide preferences are automatically migrated on first load.
+
+### Available items
+
+- **Enlarge**: Open event preview in a modal
+- **Preview**: Show hover preview for the event
+- **Go to source**: Navigate to the source recurring event
+- **Edit source event**: Open edit modal with source recurring event data (only appears on physical/virtual recurring instances)
+- **Duplicate recurring instance**: Create a duplicate of a physical recurring instance
+- **View event groups**: Open modal showing all event groups (recurring, by category, by name)
+- **Edit event**: Open event edit modal
+- **Assign categories**: Open category assignment modal
+- **Assign prerequisites**: Open prerequisite assignment modal for linking dependent events
+- **Duplicate event**: Create a duplicate of the event
+- **Move by...**: Move event by a custom time offset
+- **Mark as done/undone**: Toggle event completion status
+- **Move to next week**: Move event forward one week
+- **Clone to next week**: Duplicate event to next week
+- **Move to previous week**: Move event back one week
+- **Clone to previous week**: Duplicate event to previous week
+- **Fill start time from current time**: Set event start to now
+- **Fill end time from current time**: Set event end to now
+- **Fill start time from previous event**: Set start to previous event's end time
+- **Fill end time from next event**: Set end to next event's start time
+- **Delete event**: Delete the event note
+- **Skip event**: Hide event from calendar
+- **Open file**: Open event note in editor
+- **Open file in new window**: Open event note in a new window
+- **Enable/Disable recurring event**: Toggle recurring event visibility
+- **Trigger stopwatch**: Start or stop the time tracker for the event
+- **Duplicate remaining week days**: Duplicate event to all remaining days of the current week (hidden by default)
+
+All items are visible by default unless noted otherwise. Items that don't apply to a specific event type (e.g., recurring-specific actions on non-recurring events) are automatically hidden regardless of configuration.
 
 ## Performance
 

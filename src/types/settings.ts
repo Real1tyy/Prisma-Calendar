@@ -1,4 +1,5 @@
 import {
+	ContextMenuStateSchema,
 	normalizeDirectoryPath,
 	PageHeaderStateSchema,
 	type SettingsStore,
@@ -27,8 +28,7 @@ import {
 } from "../constants";
 import { ColorSchema } from "../utils/validation";
 import { AI_DEFAULTS } from "./ai";
-import { CalDAVSettingsSchema } from "./integrations";
-import { ICSSubscriptionSettingsSchema } from "./integrations";
+import { CalDAVSettingsSchema, ICSSubscriptionSettingsSchema } from "./integrations";
 import { CalendarViewTypeSchema, ContextMenuItemSchema, ToolbarButtonSchema } from "./view";
 
 // Use library's HolidayType definition
@@ -640,7 +640,8 @@ const CalendarSettingsSchema = z
 		categoryAssignmentPresets: z.array(CategoryAssignmentPresetSchema).catch([]), // Custom category assignment rules based on event name
 		activeTab: TabbedContainerStateSchema.optional().catch(undefined), // Persisted tab state (active tab, visibility, order)
 		pageHeaderState: PageHeaderStateSchema.optional().catch(undefined), // Persisted page header button state
-		contextMenuItems: z.array(ContextMenuItemSchema).catch([...DEFAULT_CONTEXT_MENU_ITEMS]), // Context menu items to show when right-clicking events
+		contextMenuItems: z.array(ContextMenuItemSchema).catch([...DEFAULT_CONTEXT_MENU_ITEMS]), // Legacy: simple list of enabled item IDs (kept for backward compatibility)
+		contextMenuState: ContextMenuStateSchema.optional().catch(undefined), // Persisted context menu state (order, renames, icons, colors)
 		showSourceRecurringMarker: z
 			.boolean()
 			.catch(true)

@@ -1,8 +1,20 @@
-import type { Frontmatter } from "@real1ty-obsidian-plugins";
-import { getObsidianLinkPath, intoDate, parseIntoList, toLocalISOString } from "@real1ty-obsidian-plugins";
-import { MacroCommand } from "@real1ty-obsidian-plugins";
-import { type App, Menu, Notice } from "obsidian";
+import type {
+	ContextMenuHandle,
+	ContextMenuItemDefinition,
+	ContextMenuState,
+	Frontmatter,
+} from "@real1ty-obsidian-plugins";
+import {
+	createContextMenu,
+	getObsidianLinkPath,
+	intoDate,
+	MacroCommand,
+	parseIntoList,
+	toLocalISOString,
+} from "@real1ty-obsidian-plugins";
+import { type App, Notice } from "obsidian";
 
+import { CONTEXT_MENU_BUTTON_LABELS, CSS_PREFIX } from "../constants";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
 	assignCategories,
@@ -18,7 +30,7 @@ import {
 } from "../core/commands";
 import { weekDuration } from "../core/commands/batch-commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
-import { type ContextMenuItem, isTimedEvent } from "../types";
+import { isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
 import { isTimeUnitAllowedForAllDay } from "../types/move-by";
 import { isEventDone, parseCustomDoneProperty } from "../utils/event-frontmatter";
@@ -66,7 +78,10 @@ export class EventContextMenu {
 	private app: App;
 	private bundle: CalendarBundle;
 	private calendarComponent: CalendarHost;
-	private currentMenu: Menu | null = null;
+	private handle: ContextMenuHandle;
+	private currentEvent: CalendarEventInfo | null = null;
+	private currentTargetEl: HTMLElement | null = null;
+	private currentContainerEl: HTMLElement | null = null;
 
 	// ─── Lifecycle ────────────────────────────────────────────────
 
@@ -74,6 +89,31 @@ export class EventContextMenu {
 		this.app = app;
 		this.bundle = bundle;
 		this.calendarComponent = calendarComponent;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const initialState = this.resolveInitialState(settings);
+
+		this.handle = createContextMenu({
+			items: this.buildItemDefinitions(),
+			cssPrefix: CSS_PREFIX,
+			...(initialState ? { initialState } : {}),
+			editable: true,
+			app,
+			onStateChange: (state) => {
+				void this.bundle.settingsStore.updateSettings((s) => ({
+					...s,
+					contextMenuState: state,
+				}));
+			},
+		});
+
+		// Eagerly persist migrated state so the legacy field is only read once
+		if (!settings.contextMenuState && initialState) {
+			void this.bundle.settingsStore.updateSettings((s) => ({
+				...s,
+				contextMenuState: initialState,
+			}));
+		}
 	}
 
 	// ─── Menu Display ─────────────────────────────────────────────
@@ -84,355 +124,337 @@ export class EventContextMenu {
 		targetEl?: HTMLElement,
 		containerEl?: HTMLElement
 	): void {
-		if (this.currentMenu) {
-			this.currentMenu.close();
-			this.currentMenu = null;
-		}
-
-		const menu = new Menu();
-		this.currentMenu = menu;
 		const event = info.event;
-		const filePath = event.extendedProps?.filePath;
+		this.currentEvent = event;
+		this.currentTargetEl = targetEl ?? null;
+		this.currentContainerEl = containerEl ?? null;
 
 		const kind = this.getEventKind(event);
 		const isRecurring = this.isRecurringEvent(event);
 		const isVirtual = kind === "virtual";
 		const isPhysical = kind === "physical";
+		const filePath = event.extendedProps?.filePath;
+		const isDone = this.isEventDone(event);
+		const isDisabled = isRecurring ? this.isSourceEventDisabled(event) : false;
 
-		const settings = this.bundle.settingsStore.currentSettings;
-		const enabledItems = new Set(settings.contextMenuItems || []);
-
-		const shouldShow = (item: ContextMenuItem): boolean => enabledItems.has(item);
-
-		if (shouldShow("enlarge")) {
-			menu.addItem((item) => {
-				item
-					.setTitle("Enlarge")
-					.setIcon("maximize-2")
-					.onClick(() => {
-						this.openEventPreview(event);
-					});
-			});
+		const titleOverrides: Record<string, string> = {};
+		if (isDone) {
+			titleOverrides["markDone"] = "Mark as undone";
+		}
+		if (isDisabled) {
+			titleOverrides["toggleRecurring"] = "Enable recurring event";
 		}
 
-		// Show preview button for non-virtual events with a file path
-		if (shouldShow("preview") && filePath && targetEl && containerEl) {
-			menu.addItem((item) => {
-				item
-					.setTitle("Preview")
-					.setIcon("eye")
-					.onClick((clickEvent) => {
-						this.showHoverPreview(targetEl, containerEl, clickEvent, filePath);
-					});
-			});
-		}
-
-		if (shouldShow("goToSource") && (isPhysical || isVirtual)) {
-			menu.addItem((item) => {
-				item
-					.setTitle("Go to source")
-					.setIcon("corner-up-left")
-					.onClick(() => {
-						this.goToSourceEvent(event);
-					});
-			});
-		}
-
-		if (shouldShow("editSourceEvent") && (isPhysical || isVirtual)) {
-			menu.addItem((item) => {
-				item
-					.setTitle("Edit source event")
-					.setIcon("pencil")
-					.onClick(() => {
-						this.editSourceEvent(event);
-					});
-			});
-		}
-
-		// Duplicate recurring instance - only available for physical events (not virtual)
-		if (shouldShow("duplicateRecurringInstance") && isPhysical) {
-			menu.addItem((item) => {
-				item
-					.setTitle("Duplicate recurring instance")
-					.setIcon("copy-plus")
-					.onClick(() => {
-						void this.duplicateRecurringEvent(event);
-					});
-			});
-		}
-
-		if (shouldShow("viewEventGroups")) {
-			menu.addItem((item) => {
-				item
-					.setTitle("View event groups")
-					.setIcon("list")
-					.onClick(() => {
-						this.showEventSeries(event);
-					});
-			});
-		}
-
-		// Only show file-based operations for non-virtual events
-		if (!isVirtual) {
-			menu.addSeparator();
-
-			if (shouldShow("editEvent")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Edit event")
-						.setIcon("edit")
-						.onClick(() => {
-							this.openEditModal(event);
-						});
-				});
-			}
-
-			if (shouldShow("triggerStopwatch")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Trigger stopwatch")
-						.setIcon("timer")
-						.onClick(() => {
-							void this.triggerStopwatch(event);
-						});
-				});
-			}
-
-			if (shouldShow("assignCategories")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Assign categories")
-						.setIcon("tag")
-						.onClick(() => {
-							void this.openAssignCategoriesModal(event);
-						});
-				});
-			}
-
-			if (shouldShow("assignPrerequisites")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Assign prerequisites")
-						.setIcon("workflow")
-						.onClick(() => {
-							void this.openAssignPrerequisitesModal(event);
-						});
-				});
-			}
-
-			if (shouldShow("duplicateEvent")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Duplicate event")
-						.setIcon("copy")
-						.onClick(() => {
-							void this.duplicateEvent(event);
-						});
-				});
-			}
-
-			if (shouldShow("duplicateRemainingWeekDays")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Duplicate remaining week days")
-						.setIcon("calendar-plus")
-						.onClick(() => {
-							void this.duplicateRemainingWeekDays(event);
-						});
-				});
-			}
-
-			menu.addSeparator();
-
-			if (shouldShow("moveBy")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Move by...")
-						.setIcon("move")
-						.onClick(() => {
-							this.moveEventBy(event);
-						});
-				});
-			}
-
-			const isDone = this.isEventDone(event);
-
-			if (shouldShow("markDone")) {
-				menu.addItem((item) => {
-					item
-						.setTitle(isDone ? "Mark as undone" : "Mark as done")
-						.setIcon(isDone ? "x" : "check")
-						.onClick(() => {
-							if (isDone) {
-								void this.markEventAsUndone(event);
-							} else {
-								void this.markEventAsDone(event);
-							}
-						});
-				});
-			}
-
-			if (shouldShow("moveToNextWeek")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Move to next week")
-						.setIcon("arrow-right")
-						.onClick(() => {
-							void this.moveEventByWeeks(event, 1);
-						});
-				});
-			}
-
-			if (shouldShow("cloneToNextWeek")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Clone to next week")
-						.setIcon("copy-plus")
-						.onClick(() => {
-							void this.cloneEventByWeeks(event, 1);
-						});
-				});
-			}
-
-			if (shouldShow("moveToPreviousWeek")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Move to previous week")
-						.setIcon("arrow-left")
-						.onClick(() => {
-							void this.moveEventByWeeks(event, -1);
-						});
-				});
-			}
-
-			if (shouldShow("cloneToPreviousWeek")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Clone to previous week")
-						.setIcon("copy-minus")
-						.onClick(() => {
-							void this.cloneEventByWeeks(event, -1);
-						});
-				});
-			}
-
-			// Fill time options - only for timed events
-			if (!event.allDay) {
-				if (shouldShow("fillStartTimeNow")) {
-					menu.addItem((item) => {
-						item
-							.setTitle("Fill start time from current time")
-							.setIcon("clock")
-							.onClick(() => {
-								void this.fillStartTimeFromNow(event);
-							});
-					});
+		this.handle.show(
+			eOrPosition,
+			(id) => {
+				switch (id) {
+					case "preview":
+						return !!filePath && !!targetEl && !!containerEl;
+					case "goToSource":
+					case "editSourceEvent":
+						return isPhysical || isVirtual;
+					case "duplicateRecurringInstance":
+						return isPhysical;
+					case "editEvent":
+					case "triggerStopwatch":
+					case "assignCategories":
+					case "assignPrerequisites":
+					case "duplicateEvent":
+					case "duplicateRemainingWeekDays":
+					case "moveBy":
+					case "markDone":
+					case "moveToNextWeek":
+					case "cloneToNextWeek":
+					case "moveToPreviousWeek":
+					case "cloneToPreviousWeek":
+					case "deleteEvent":
+					case "skipEvent":
+						return !isVirtual;
+					case "fillStartTimeNow":
+					case "fillEndTimeNow":
+					case "fillStartTimePrevious":
+					case "fillEndTimeNext":
+						return !isVirtual && !event.allDay;
+					case "openFile":
+					case "openFileNewWindow":
+						return !isVirtual && !!filePath;
+					case "toggleRecurring":
+						return isRecurring;
+					default:
+						return true;
 				}
-				if (shouldShow("fillEndTimeNow")) {
-					menu.addItem((item) => {
-						item
-							.setTitle("Fill end time from current time")
-							.setIcon("clock")
-							.onClick(() => {
-								void this.fillEndTimeFromNow(event);
-							});
-					});
-				}
-				if (shouldShow("fillStartTimePrevious")) {
-					menu.addItem((item) => {
-						item
-							.setTitle("Fill start time from previous event")
-							.setIcon("arrow-left")
-							.onClick(() => {
-								void this.fillStartTimeFromPrevious(event);
-							});
-					});
-				}
-				if (shouldShow("fillEndTimeNext")) {
-					menu.addItem((item) => {
-						item
-							.setTitle("Fill end time from next event")
-							.setIcon("arrow-right")
-							.onClick(() => {
-								void this.fillEndTimeFromNext(event);
-							});
-					});
-				}
-			}
+			},
+			titleOverrides
+		);
+	}
 
-			menu.addSeparator();
+	destroy(): void {
+		this.handle.destroy();
+	}
 
-			if (shouldShow("deleteEvent")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Delete event")
-						.setIcon("trash")
-						.onClick(() => {
-							void this.deleteEvent(event);
-						});
-				});
-			}
-			if (shouldShow("skipEvent")) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Skip event")
-						.setIcon("eye-off")
-						.onClick(() => {
-							void this.toggleSkipEvent(event);
-						});
-				});
-			}
-			if (shouldShow("openFile") && filePath) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Open file")
-						.setIcon("file-text")
-						.onClick(() => {
-							void this.app.workspace.openLinkText(filePath, "", false);
-						});
-				});
-			}
+	// ─── State Resolution ─────────────────────────────────────────
 
-			if (shouldShow("openFileNewWindow") && filePath) {
-				menu.addItem((item) => {
-					item
-						.setTitle("Open file in new window")
-						.setIcon("external-link")
-						.onClick(() => {
-							void openFileInNewWindow(this.app, filePath);
-						});
-				});
-			}
+	private resolveInitialState(settings: {
+		contextMenuState?: ContextMenuState | undefined;
+		contextMenuItems?: string[] | undefined;
+	}): ContextMenuState | undefined {
+		if (settings.contextMenuState) return settings.contextMenuState;
+
+		// Backward compatibility: migrate legacy contextMenuItems to contextMenuState
+		if (settings.contextMenuItems && settings.contextMenuItems.length > 0) {
+			return { visibleItemIds: settings.contextMenuItems };
 		}
 
-		menu.addSeparator();
+		return undefined;
+	}
 
-		// Show "Disable"/"Enable" button for recurring events (source, physical, virtual)
-		if (shouldShow("toggleRecurring") && isRecurring) {
-			// Determine if the source is currently disabled (skipped)
-			const isDisabled = this.isSourceEventDisabled(event);
+	// ─── Item Definitions ─────────────────────────────────────────
 
-			menu.addItem((item) => {
-				item
-					.setTitle(isDisabled ? "Enable recurring event" : "Disable recurring event")
-					.setIcon(isDisabled ? "eye" : "eye-off")
-					.onClick(() => {
-						void this.toggleRecurringEvent(event);
-					});
-			});
-		}
-
-		menu.onHide(() => {
-			if (this.currentMenu === menu) {
-				this.currentMenu = null;
-			}
-		});
-
-		if (eOrPosition instanceof MouseEvent) {
-			menu.showAtMouseEvent(eOrPosition);
-		} else {
-			menu.showAtPosition(eOrPosition);
-		}
+	private buildItemDefinitions(): ContextMenuItemDefinition[] {
+		return [
+			{
+				id: "enlarge",
+				label: CONTEXT_MENU_BUTTON_LABELS.enlarge,
+				icon: "maximize-2",
+				section: "navigation",
+				onAction: () => this.openEventPreview(this.currentEvent!),
+			},
+			{
+				id: "preview",
+				label: CONTEXT_MENU_BUTTON_LABELS.preview,
+				icon: "eye",
+				section: "navigation",
+				onAction: () => {
+					const filePath = this.currentEvent!.extendedProps?.filePath;
+					if (filePath && this.currentTargetEl && this.currentContainerEl) {
+						this.showHoverPreview(this.currentTargetEl, this.currentContainerEl, filePath);
+					}
+				},
+			},
+			{
+				id: "goToSource",
+				label: CONTEXT_MENU_BUTTON_LABELS.goToSource,
+				icon: "corner-up-left",
+				section: "navigation",
+				onAction: () => this.goToSourceEvent(this.currentEvent!),
+			},
+			{
+				id: "editSourceEvent",
+				label: CONTEXT_MENU_BUTTON_LABELS.editSourceEvent,
+				icon: "pencil",
+				section: "navigation",
+				onAction: () => this.editSourceEvent(this.currentEvent!),
+			},
+			{
+				id: "duplicateRecurringInstance",
+				label: CONTEXT_MENU_BUTTON_LABELS.duplicateRecurringInstance,
+				icon: "copy-plus",
+				section: "navigation",
+				onAction: () => {
+					void this.duplicateRecurringEvent(this.currentEvent!);
+				},
+			},
+			{
+				id: "viewEventGroups",
+				label: CONTEXT_MENU_BUTTON_LABELS.viewEventGroups,
+				icon: "list",
+				section: "navigation",
+				onAction: () => this.showEventSeries(this.currentEvent!),
+			},
+			{
+				id: "editEvent",
+				label: CONTEXT_MENU_BUTTON_LABELS.editEvent,
+				icon: "edit",
+				section: "edit",
+				onAction: () => this.openEditModal(this.currentEvent!),
+			},
+			{
+				id: "triggerStopwatch",
+				label: CONTEXT_MENU_BUTTON_LABELS.triggerStopwatch,
+				icon: "timer",
+				section: "edit",
+				onAction: () => {
+					void this.triggerStopwatch(this.currentEvent!);
+				},
+			},
+			{
+				id: "assignCategories",
+				label: CONTEXT_MENU_BUTTON_LABELS.assignCategories,
+				icon: "tag",
+				section: "edit",
+				onAction: () => {
+					void this.openAssignCategoriesModal(this.currentEvent!);
+				},
+			},
+			{
+				id: "assignPrerequisites",
+				label: CONTEXT_MENU_BUTTON_LABELS.assignPrerequisites,
+				icon: "workflow",
+				section: "edit",
+				onAction: () => {
+					void this.openAssignPrerequisitesModal(this.currentEvent!);
+				},
+			},
+			{
+				id: "duplicateEvent",
+				label: CONTEXT_MENU_BUTTON_LABELS.duplicateEvent,
+				icon: "copy",
+				section: "edit",
+				onAction: () => {
+					void this.duplicateEvent(this.currentEvent!);
+				},
+			},
+			{
+				id: "duplicateRemainingWeekDays",
+				label: CONTEXT_MENU_BUTTON_LABELS.duplicateRemainingWeekDays,
+				icon: "calendar-plus",
+				section: "edit",
+				onAction: () => {
+					void this.duplicateRemainingWeekDays(this.currentEvent!);
+				},
+			},
+			{
+				id: "moveBy",
+				label: CONTEXT_MENU_BUTTON_LABELS.moveBy,
+				icon: "move",
+				section: "move",
+				onAction: () => this.moveEventBy(this.currentEvent!),
+			},
+			{
+				id: "markDone",
+				label: CONTEXT_MENU_BUTTON_LABELS.markDone,
+				icon: "check",
+				section: "move",
+				onAction: () => {
+					const isDone = this.isEventDone(this.currentEvent!);
+					if (isDone) {
+						void this.markEventAsUndone(this.currentEvent!);
+					} else {
+						void this.markEventAsDone(this.currentEvent!);
+					}
+				},
+			},
+			{
+				id: "moveToNextWeek",
+				label: CONTEXT_MENU_BUTTON_LABELS.moveToNextWeek,
+				icon: "arrow-right",
+				section: "move",
+				onAction: () => {
+					void this.moveEventByWeeks(this.currentEvent!, 1);
+				},
+			},
+			{
+				id: "cloneToNextWeek",
+				label: CONTEXT_MENU_BUTTON_LABELS.cloneToNextWeek,
+				icon: "copy-plus",
+				section: "move",
+				onAction: () => {
+					void this.cloneEventByWeeks(this.currentEvent!, 1);
+				},
+			},
+			{
+				id: "moveToPreviousWeek",
+				label: CONTEXT_MENU_BUTTON_LABELS.moveToPreviousWeek,
+				icon: "arrow-left",
+				section: "move",
+				onAction: () => {
+					void this.moveEventByWeeks(this.currentEvent!, -1);
+				},
+			},
+			{
+				id: "cloneToPreviousWeek",
+				label: CONTEXT_MENU_BUTTON_LABELS.cloneToPreviousWeek,
+				icon: "copy-minus",
+				section: "move",
+				onAction: () => {
+					void this.cloneEventByWeeks(this.currentEvent!, -1);
+				},
+			},
+			{
+				id: "fillStartTimeNow",
+				label: CONTEXT_MENU_BUTTON_LABELS.fillStartTimeNow,
+				icon: "clock",
+				section: "move",
+				onAction: () => {
+					void this.fillStartTimeFromNow(this.currentEvent!);
+				},
+			},
+			{
+				id: "fillEndTimeNow",
+				label: CONTEXT_MENU_BUTTON_LABELS.fillEndTimeNow,
+				icon: "clock",
+				section: "move",
+				onAction: () => {
+					void this.fillEndTimeFromNow(this.currentEvent!);
+				},
+			},
+			{
+				id: "fillStartTimePrevious",
+				label: CONTEXT_MENU_BUTTON_LABELS.fillStartTimePrevious,
+				icon: "arrow-left",
+				section: "move",
+				onAction: () => {
+					void this.fillStartTimeFromPrevious(this.currentEvent!);
+				},
+			},
+			{
+				id: "fillEndTimeNext",
+				label: CONTEXT_MENU_BUTTON_LABELS.fillEndTimeNext,
+				icon: "arrow-right",
+				section: "move",
+				onAction: () => {
+					void this.fillEndTimeFromNext(this.currentEvent!);
+				},
+			},
+			{
+				id: "deleteEvent",
+				label: CONTEXT_MENU_BUTTON_LABELS.deleteEvent,
+				icon: "trash",
+				section: "danger",
+				onAction: () => {
+					void this.deleteEvent(this.currentEvent!);
+				},
+			},
+			{
+				id: "skipEvent",
+				label: CONTEXT_MENU_BUTTON_LABELS.skipEvent,
+				icon: "eye-off",
+				section: "danger",
+				onAction: () => {
+					void this.toggleSkipEvent(this.currentEvent!);
+				},
+			},
+			{
+				id: "openFile",
+				label: CONTEXT_MENU_BUTTON_LABELS.openFile,
+				icon: "file-text",
+				section: "danger",
+				onAction: () => {
+					const filePath = this.currentEvent!.extendedProps?.filePath;
+					if (filePath) void this.app.workspace.openLinkText(filePath, "", false);
+				},
+			},
+			{
+				id: "openFileNewWindow",
+				label: CONTEXT_MENU_BUTTON_LABELS.openFileNewWindow,
+				icon: "external-link",
+				section: "danger",
+				onAction: () => {
+					const filePath = this.currentEvent!.extendedProps?.filePath;
+					if (filePath) void openFileInNewWindow(this.app, filePath);
+				},
+			},
+			{
+				id: "toggleRecurring",
+				label: CONTEXT_MENU_BUTTON_LABELS.toggleRecurring,
+				icon: "eye-off",
+				section: "recurring",
+				onAction: () => {
+					void this.toggleRecurringEvent(this.currentEvent!);
+				},
+			},
+		];
 	}
 
 	// ─── Event Classification ─────────────────────────────────────
@@ -458,13 +480,11 @@ export class EventContextMenu {
 		const frontmatter = event.extendedProps?.frontmatterDisplayData;
 		const kind = this.getEventKind(event);
 
-		// Source events and physical events both have rruleIdProp in frontmatter
 		const rruleIdFromProp = frontmatter?.[settings.rruleIdProp];
 		if (rruleIdFromProp && typeof rruleIdFromProp === "string") {
 			return rruleIdFromProp;
 		}
 
-		// Virtual events have rruleId in meta
 		if (kind === "virtual") {
 			const virtualRruleId = frontmatter?.["rruleId"];
 			return typeof virtualRruleId === "string" ? virtualRruleId : null;
@@ -476,17 +496,8 @@ export class EventContextMenu {
 	private getSourceFilePath(event: CalendarEventInfo): string | null {
 		const kind = this.getEventKind(event);
 
-		// For source events, return the file path directly
-		if (kind === "source") {
-			return event.extendedProps?.filePath || null;
-		}
+		if (kind === "source" || kind === "virtual") return event.extendedProps?.filePath || null;
 
-		// For virtual events, the source file path is the event's file path
-		if (kind === "virtual") {
-			return event.extendedProps?.filePath || null;
-		}
-
-		// For physical instances, extract source file path from the source property
 		if (kind === "physical") {
 			const settings = this.bundle.settingsStore.currentSettings;
 			const frontmatter = event.extendedProps?.frontmatterDisplayData;
@@ -494,7 +505,6 @@ export class EventContextMenu {
 
 			if (!sourceLink || typeof sourceLink !== "string") return null;
 
-			// Use Obsidian's link resolution to get the actual file
 			const linkPath = getObsidianLinkPath(sourceLink);
 			const sourceFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, event.extendedProps?.filePath || "");
 
@@ -518,7 +528,6 @@ export class EventContextMenu {
 		const filePath = event.extendedProps?.filePath;
 		if (!filePath) return false;
 
-		// If custom done property is configured, check it first
 		const customProp = parseCustomDoneProperty(settings.customDoneProperty);
 		if (customProp) {
 			try {
@@ -545,13 +554,7 @@ export class EventContextMenu {
 		showEventPreviewModal(this.app, this.bundle, previewEvent);
 	}
 
-	private showHoverPreview(
-		targetEl: HTMLElement,
-		containerEl: HTMLElement,
-		_clickEvent: MouseEvent | KeyboardEvent,
-		filePath: string
-	): void {
-		// Create a synthetic mouse event positioned at the target element for the hover
+	private showHoverPreview(targetEl: HTMLElement, containerEl: HTMLElement, filePath: string): void {
 		const rect = targetEl.getBoundingClientRect();
 		const syntheticEvent = new MouseEvent("mouseover", {
 			clientX: rect.left + rect.width / 2,
@@ -562,10 +565,7 @@ export class EventContextMenu {
 			view: window,
 		});
 
-		// Dispatch the event on the target element first to simulate actual hover
 		targetEl.dispatchEvent(syntheticEvent);
-
-		// Then trigger Obsidian's hover-link event
 		emitHover(this.app, containerEl, targetEl, syntheticEvent, filePath, this.bundle.calendarId);
 	}
 
@@ -678,8 +678,7 @@ export class EventContextMenu {
 				return;
 			}
 
-			// JS getDay(): 0=Sun, 1=Mon, ..., 6=Sat
-			// Week runs Monday–Sunday, so Sunday (0) has 0 remaining days
+			// JS getDay(): 0=Sun, 1=Mon, ..., 6=Sat — Sunday has 0 remaining days
 			const dayOfWeek = startDate.getDay();
 			const remainingDays = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
 
@@ -833,7 +832,6 @@ export class EventContextMenu {
 			return;
 		}
 		await this.withFilePath(event, "trigger stopwatch", async () => {
-			// Stop any running minimized stopwatch first
 			if (MinimizedModalManager.hasMinimizedModal()) {
 				MinimizedModalManager.stopAndSaveCurrentEvent(this.app, this.bundle.plugin.calendarBundles);
 			}
