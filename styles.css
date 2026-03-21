@@ -7893,8 +7893,8 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 }
 
 /* What's New Modal */
-.prisma-whats-new-modal .modal {
-	max-width: 800px;
+.modal-container.mod-dim .modal:has(.prisma-whats-new-modal) {
+	max-width: 920px;
 	width: 90%;
 }
 

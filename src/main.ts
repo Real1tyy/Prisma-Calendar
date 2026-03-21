@@ -603,6 +603,12 @@ export default class CustomCalendarPlugin extends Plugin {
 				changelogContent: CHANGELOG_CONTENT,
 				links: {
 					github: "https://github.com/Real1tyy/Prisma-Calendar",
+					productPage: buildUtmUrl(
+						"https://matejvavroproductivity.com/tools/prisma-calendar/",
+						"prisma-calendar",
+						"whats-new",
+						"product-page"
+					),
 					support: buildUtmUrl(
 						"https://real1tyy.github.io/Prisma-Calendar/support",
 						"prisma-calendar",
@@ -621,6 +627,20 @@ export default class CustomCalendarPlugin extends Plugin {
 						"whats-new",
 						"documentation"
 					),
+				},
+				supportSection: {
+					heading: "Unlock the full experience with Pro",
+					description:
+						"Get Dashboard analytics, AI Chat with Claude & GPT, Gantt & Heatmap views, interactive Bases Calendar, CalDAV sync, unlimited calendars, and more.",
+					cta: {
+						text: "Get Prisma Pro",
+						href: buildUtmUrl(
+							"https://matejvavroproductivity.com/tools/prisma-calendar/",
+							"prisma-calendar",
+							"whats-new",
+							"product-page"
+						),
+					},
 				},
 			};
 

@@ -64,6 +64,11 @@ export interface WhatsNewModalConfig {
 		github: string;
 
 		/**
+		 * URL to the plugin's product page. When provided, adds a "Product Page" footer button.
+		 */
+		productPage?: string;
+
+		/**
 		 * URL to tools page showcasing all plugins and productivity tools.
 		 * Defaults to DEFAULT_WHATS_NEW_LINKS.TOOLS if not provided.
 		 */
@@ -74,6 +79,16 @@ export interface WhatsNewModalConfig {
 		 * Defaults to DEFAULT_WHATS_NEW_LINKS.YOUTUBE if not provided.
 		 */
 		youtube?: string;
+	};
+
+	/**
+	 * Override the support section content. When provided, replaces the default
+	 * support section entirely with custom heading, description, and CTA.
+	 */
+	supportSection?: {
+		heading: string;
+		description: string;
+		cta?: { text: string; href: string };
 	};
 }
 
@@ -437,19 +452,30 @@ export class WhatsNewModal extends Modal {
 			cls: this.cls("whats-new-support"),
 		});
 
-		supportSection.createEl("h3", { text: "Support the development of this plugin" });
+		if (this.config.supportSection) {
+			const { heading, description, cta } = this.config.supportSection;
+			supportSection.createEl("h3", { text: heading });
+			supportSection.createEl("p", { text: description });
+			if (cta) {
+				const ctaText = supportSection.createEl("p");
+				ctaText.createSpan({ text: "👉 " });
+				ctaText.createEl("a", { text: cta.text, href: cta.href });
+			}
+		} else {
+			supportSection.createEl("h3", { text: "Support the development of this plugin" });
 
-		const introText = supportSection.createEl("p");
-		introText.setText(
-			"If this plugin saves you time or improves how you work in Obsidian, consider supporting its development. Your support helps fund ongoing maintenance, new features, and long-term stability."
-		);
+			const introText = supportSection.createEl("p");
+			introText.setText(
+				"If this plugin saves you time or improves how you work in Obsidian, consider supporting its development. Your support helps fund ongoing maintenance, new features, and long-term stability."
+			);
 
-		const supportLinkText = supportSection.createEl("p");
-		supportLinkText.createSpan({ text: "👉 " });
-		supportLinkText.createEl("a", {
-			text: "Support my work",
-			href: this.config.links.support,
-		});
+			const supportLinkText = supportSection.createEl("p");
+			supportLinkText.createSpan({ text: "👉 " });
+			supportLinkText.createEl("a", {
+				text: "Support my work",
+				href: this.config.links.support,
+			});
+		}
 
 		const exploreText = supportSection.createEl("p");
 		exploreText.createSpan({ text: "You can also explore my " });
@@ -496,6 +522,15 @@ export class WhatsNewModal extends Modal {
 		const buttonContainer = stickyFooter.createDiv({
 			cls: this.cls("whats-new-buttons"),
 		});
+
+		if (this.config.links.productPage) {
+			const productPageBtn = buttonContainer.createEl("button", {
+				text: "Product Page",
+			});
+			productPageBtn.addEventListener("click", () => {
+				window.open(this.config.links.productPage!, "_blank");
+			});
+		}
 
 		// GitHub button
 		const githubBtn = buttonContainer.createEl("button", {
