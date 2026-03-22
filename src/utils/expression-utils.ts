@@ -109,10 +109,13 @@ export function normalizeFrontmatterForColorEvaluation(
 	// Also handle null/undefined values by converting them to empty arrays
 	for (const propName of arrayProperties) {
 		const value = normalized[propName];
-		// If property doesn't exist, is null, or is undefined, default to empty array
-		// This ensures .includes() calls don't throw errors
 		if (!(propName in normalized) || value === null || value === undefined) {
 			normalized[propName] = [];
+		} else if (typeof value === "string") {
+			// Wrap strings in arrays so .includes() does exact element matching
+			// instead of substring matching (e.g., "Productivity".includes("Prod") → true,
+			// but ["Productivity"].includes("Prod") → false)
+			normalized[propName] = [value];
 		}
 	}
 
