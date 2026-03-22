@@ -4,6 +4,7 @@ import { Setting } from "obsidian";
 
 import { DEFAULT_EVENT_COLOR } from "../../constants";
 import type { CalendarSettingsStore } from "../../core/settings-store";
+import { COLOR_MODE_OPTIONS } from "../../types/index";
 import { SingleCalendarConfigSchema } from "../../types/settings";
 
 const S = SingleCalendarConfigSchema.shape;
@@ -24,6 +25,19 @@ export class RulesSettings {
 
 	private addColorSettings(containerEl: HTMLElement): void {
 		new Setting(containerEl).setName("Event colors").setHeading();
+
+		this.ui.addDropdown(containerEl, {
+			key: "colorMode",
+			name: "Color mode",
+			desc: "Controls how many matched color rules are applied to each event. Multiple colors split the event width into equal segments.",
+			options: COLOR_MODE_OPTIONS,
+		});
+
+		this.ui.addSchemaField(
+			containerEl,
+			{ showEventColorDots: S.showEventColorDots },
+			{ name: "Show overflow color dots" }
+		);
 
 		this.ui.addColorPicker(containerEl, {
 			key: "defaultNodeColor",

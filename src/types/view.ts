@@ -30,6 +30,15 @@ export const DAY_CELL_COLORING_OPTIONS: Record<string, string> = {
 	boundary: "Month boundary",
 };
 
+export const COLOR_MODE_OPTIONS: Record<string, string> = {
+	off: "Don't color events",
+	"1": "Color events",
+	"2": "Color events with two colors",
+	"3": "Color events with three colors",
+	"4": "Color events with four colors",
+	"5": "Color events with five colors",
+};
+
 export const FIRST_DAY_OPTIONS: Record<number, string> = Object.entries(WEEKDAY_TO_NUMBER).reduce(
 	(acc, [weekday, number]) => {
 		acc[number] = WEEKDAY_OPTIONS[weekday as Weekday];

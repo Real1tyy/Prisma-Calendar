@@ -8,6 +8,8 @@ All notable changes to this project will be documented here.
 
 ### Added
 
+- **Multi-color event mode**: New "Color mode" dropdown in Settings → Rules → Event colors lets you apply up to four color rule matches per event, splitting the event width into equal segments. Options: Don't color events, Color events (default, single color), or 2/3/4 colors. See [Color Rules](./features/organization/color-rules.md).
+- **Overflow color dots**: New "Show overflow color dots" toggle in Settings → Rules → Event colors. When enabled, displays color dots for matched color rules that exceed the color mode limit, so you can see all matching rules at a glance. See [Color Rules](./features/organization/color-rules.md).
 - **Trigger current event stopwatch**: New hotkey command that converts the active note into a calendar event with start time set to now, starts the time tracker, and auto-minimizes — all in one action. See [Hotkeys — Trigger Current Event Stopwatch](./features/advanced/hotkeys.md#trigger-current-event-stopwatch).
 - **Context menu customization**: Right-click any event and select "Manage menu items..." at the bottom of the context menu to fully customize it. Items are grouped by section (Navigation, Edit, Move, Danger, Recurring) — reorder within sections via drag-and-drop or arrow buttons, drag items between sections to reassign them, rename labels, change icons, pick custom colors, and show/hide individual actions. All changes persist across sessions. No more digging through settings — configuration lives right where you use it. Existing show/hide preferences from previous versions are automatically migrated. See [Configuration — Context Menu](./configuration/toolbar-and-menus.md#context-menu).
 

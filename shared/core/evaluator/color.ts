@@ -30,8 +30,11 @@ export class ColorEvaluator<
 		return settings.colorRules;
 	}
 
+	evaluateAllColors(frontmatter: Record<string, unknown>): string[] {
+		return this.rules.filter((rule) => this.isTruthy(this.evaluateRule(rule, frontmatter))).map((rule) => rule.color);
+	}
+
 	evaluateColor(frontmatter: Record<string, unknown>): string {
-		const match = this.rules.find((rule) => this.isTruthy(this.evaluateRule(rule, frontmatter)));
-		return match?.color ?? this.defaultColor;
+		return this.evaluateAllColors(frontmatter)[0] ?? this.defaultColor;
 	}
 }

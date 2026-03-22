@@ -259,6 +259,23 @@ select[class*="prisma-"]:focus-visible {
 	display: none;
 }
 
+/* Event Color Dots — overflow color indicators positioned inside individual events */
+.prisma-event-color-dots {
+	position: absolute;
+	bottom: 2px;
+	right: 3px;
+	pointer-events: none;
+	flex: none;
+	min-width: auto;
+	overflow: visible;
+}
+
+.prisma-event-color-dots .prisma-day-color-dot {
+	width: 14px;
+	height: 14px;
+	border: 0.5px solid rgba(255, 255, 255, 0.4);
+}
+
 .prisma-calendar-event:hover {
 	transform: translateY(-1px);
 	filter: brightness(1.15) saturate(1.1);

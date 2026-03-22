@@ -18,7 +18,7 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent, CalendarEventData, PrismaEventInput } from "../../types/calendar";
 import { isTimedEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { resolveEventColor } from "../../utils/event-color";
+import { resolveAllEventColors, resolveEventColor } from "../../utils/event-color";
 import { hashFrontmatter } from "../../utils/event-diff";
 import { cleanupTitle } from "../../utils/event-naming";
 import { buildEventTooltip } from "../../utils/format";
@@ -205,7 +205,7 @@ export function buildSharedEventDidMount(
 
 		const isVirtual = event.extendedProps["isVirtual"];
 		const eventFilePath = event.extendedProps["filePath"];
-		const computedColor = event.extendedProps["computedColor"];
+		const computedColors = event.extendedProps.computedColors ?? [];
 		const displayData = (event.extendedProps["frontmatterDisplayData"] ?? {}) as Record<string, unknown>;
 
 		if (isVirtual) {
@@ -220,7 +220,7 @@ export function buildSharedEventDidMount(
 			getBatchSelectionManager()?.handleEventMount(event.id, el);
 		}
 
-		const eventColor = computedColor || resolveEventColor(displayData, deps.bundle, deps.colorEvaluator);
+		const eventColor = computedColors[0] || resolveEventColor(displayData, deps.bundle, deps.colorEvaluator);
 
 		el.style.setProperty("--event-color", eventColor);
 		const settings = deps.bundle.settingsStore.currentSettings;
@@ -335,7 +335,8 @@ export function mapEventToPrismaInput(
 	bundle: CalendarBundle,
 	colorEvaluator: ColorEvaluator<SingleCalendarConfig>
 ): PrismaEventInput {
-	const eventColor = resolveEventColor(event.meta ?? {}, bundle, colorEvaluator);
+	const allColors = resolveAllEventColors(event.meta ?? {}, bundle, colorEvaluator);
+	const eventColor = allColors[0] ?? bundle.settingsStore.currentSettings.defaultNodeColor;
 	const start = stripZ(event.start);
 	const end = isTimedEvent(event) ? stripZ(event.end) : undefined;
 
@@ -359,7 +360,7 @@ export function mapEventToPrismaInput(
 			originalTitle: event.title,
 			frontmatterDisplayData: meta,
 			isVirtual: event.isVirtual,
-			computedColor: eventColor,
+			computedColors: allColors,
 			frontmatterHash: hashFrontmatter(meta),
 		},
 		backgroundColor: eventColor,

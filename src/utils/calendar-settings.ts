@@ -34,6 +34,8 @@ export function getEventRenderingKey(settings: SingleCalendarConfig): string {
 	return JSON.stringify([
 		settings.colorRules,
 		settings.defaultNodeColor,
+		settings.colorMode,
+		settings.showEventColorDots,
 		settings.filterExpressions,
 		settings.untrackedFilterExpressions,
 		settings.caldavProp,

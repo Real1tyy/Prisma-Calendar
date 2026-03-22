@@ -41,7 +41,7 @@ import { isTimedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import { getEventRenderingKey } from "../utils/calendar-settings";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
-import { resolveEventColor } from "../utils/event-color";
+import { resolveAllEventColors, resolveEventColor } from "../utils/event-color";
 import { diffEvents, eventFingerprint, hashFrontmatter } from "../utils/event-diff";
 import { getCommonCategories, stripISOSuffix } from "../utils/event-frontmatter";
 import { findAdjacentEvent, getSourceEventInfoFromVirtual } from "../utils/event-matching";
@@ -1263,12 +1263,16 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		// Build color-dot index while mapping events (avoids a second O(n) pass)
 		this.colorDotIndex.clear();
 
+		const settings = this.bundle.settingsStore.currentSettings;
+
 		return visibleEvents.map((event) => {
 			const classNames = ["regular-event"];
 			if (event.isVirtual) {
 				classNames.push(cls("virtual-event"));
 			}
-			const eventColor = this.getEventColor(event);
+			const allColors = this.getAllEventColors(event);
+			const primaryColor = allColors[0] ?? settings.defaultNodeColor;
+			const displayColor = settings.colorMode === "off" ? settings.defaultNodeColor : primaryColor;
 
 			const start = stripZ(event.start);
 			const end = isTimedEvent(event) ? stripZ(event.end) : undefined;
@@ -1280,7 +1284,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				colorSet = new Set();
 				this.colorDotIndex.set(dateKey, colorSet);
 			}
-			colorSet.add(eventColor);
+			colorSet.add(primaryColor);
 
 			const folder = event.meta?.["folder"];
 			const folderStr = typeof folder === "string" ? folder : "";
@@ -1298,11 +1302,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 					originalTitle: event.title,
 					frontmatterDisplayData: meta,
 					isVirtual: event.isVirtual,
-					computedColor: eventColor,
+					computedColors: allColors,
 					frontmatterHash: hashFrontmatter(meta),
 				},
-				backgroundColor: eventColor,
-				borderColor: eventColor,
+				backgroundColor: displayColor,
+				borderColor: displayColor,
 				className: classNames.join(" "),
 			} as PrismaEventInput;
 		});
@@ -1540,6 +1544,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		return resolveEventColor(event.meta ?? {}, this.bundle, this.colorEvaluator);
 	}
 
+	private getAllEventColors(event: Pick<CalendarEvent, "meta">): string[] {
+		return resolveAllEventColors(event.meta ?? {}, this.bundle, this.colorEvaluator);
+	}
+
 	private handleEventMount(info: EventMountInfo): void {
 		if (info.event.extendedProps.isVirtual) {
 			info.el.classList.add(cls("virtual-event-italic"));
@@ -1548,12 +1556,26 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const element = info.el;
 		const event = info.event;
 
-		const eventColor =
-			event.extendedProps.computedColor ||
-			this.getEventColor({ meta: event.extendedProps.frontmatterDisplayData ?? {} });
+		const allColors = event.extendedProps.computedColors ?? [];
+		const eventColor = allColors[0] || this.getEventColor({ meta: event.extendedProps.frontmatterDisplayData ?? {} });
 
 		element.style.setProperty("--event-color", eventColor);
 		const settings = this.bundle.settingsStore.currentSettings;
+		const colorModeCount = settings.colorMode === "off" ? 0 : Number(settings.colorMode);
+
+		if (colorModeCount >= 2 && allColors.length >= 2) {
+			const appliedColors = allColors.slice(0, colorModeCount);
+			element.style.setProperty("background-image", buildColorGradient(appliedColors));
+			element.style.setProperty("border-color", appliedColors[0]);
+		}
+
+		if (settings.showEventColorDots) {
+			const appliedCount = settings.colorMode === "off" ? 0 : Math.min(colorModeCount, allColors.length);
+			const overflowColors = allColors.slice(appliedCount);
+			if (overflowColors.length > 0) {
+				this.appendEventColorDots(element, overflowColors);
+			}
+		}
 
 		// Cache parsed foreground RGB to avoid re-parsing the same setting for every event
 		if (this.cachedTextColorSource !== settings.eventTextColor) {
@@ -1623,6 +1645,13 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		}
 	}
 
+	private appendEventColorDots(element: HTMLElement, colors: string[]): void {
+		const container = buildColorDotsContainer(colors, 6);
+		container.classList.add(cls("event-color-dots"));
+		const main = element.querySelector(".fc-event-main") ?? element;
+		main.appendChild(container);
+	}
+
 	private updateColorDots(): void {
 		if (!this.calendar) return;
 
@@ -1653,22 +1682,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			const colors = this.colorDotIndex.get(dateAttr);
 			if (!colors || colors.size === 0) continue;
 
-			// Build dots in a DocumentFragment to minimize layout thrashing
 			const frag = document.createDocumentFragment();
-			const dotsContainer = document.createElement("div");
-			dotsContainer.className = cls("day-color-dots");
-
-			let count = 0;
-			for (const color of colors) {
-				if (count >= maxDots) break;
-				const dot = document.createElement("div");
-				dot.className = cls("day-color-dot");
-				dot.style.setProperty("--dot-color", color);
-				dotsContainer.appendChild(dot);
-				count++;
-			}
-			frag.appendChild(dotsContainer);
-
+			frag.appendChild(buildColorDotsContainer([...colors], maxDots));
 			dayCell.querySelector(".fc-daygrid-day-top")?.appendChild(frag);
 		}
 	}
@@ -2858,4 +2873,22 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private isMobileView(): boolean {
 		return window.innerWidth <= 768;
 	}
+}
+
+function buildColorDotsContainer(colors: string[], maxDots: number): HTMLDivElement {
+	const container = document.createElement("div");
+	container.className = cls("day-color-dots");
+	for (const color of colors.slice(0, maxDots)) {
+		const dot = document.createElement("div");
+		dot.className = cls("day-color-dot");
+		dot.style.setProperty("--dot-color", color);
+		container.appendChild(dot);
+	}
+	return container;
+}
+
+function buildColorGradient(colors: string[]): string {
+	const segmentSize = 100 / colors.length;
+	const stops = colors.map((color, i) => `${color} ${i * segmentSize}%, ${color} ${(i + 1) * segmentSize}%`).join(", ");
+	return `linear-gradient(90deg, ${stops})`;
 }

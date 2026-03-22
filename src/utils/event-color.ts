@@ -9,17 +9,7 @@ interface EventColorContext {
 	getICSSubscriptionSettings(): { integrationEventColor: string };
 }
 
-/**
- * Resolves the display color for an event using the full priority chain:
- * 1. Integration color (CalDAV/ICS) — highest priority
- * 2. Color rules via ColorEvaluator — user-defined expression rules
- * 3. Default color — fallback from ColorEvaluator
- */
-export function resolveEventColor(
-	meta: Record<string, unknown>,
-	bundle: EventColorContext,
-	colorEvaluator: ColorEvaluator<SingleCalendarConfig>
-): string {
+function resolveIntegrationColor(meta: Record<string, unknown>, bundle: EventColorContext): string | undefined {
 	const settings = bundle.settingsStore.currentSettings;
 
 	if (meta[settings.caldavProp]) {
@@ -32,6 +22,29 @@ export function resolveEventColor(
 		if (color) return color;
 	}
 
-	const normalized = normalizeFrontmatterForColorEvaluation(meta, settings.colorRules);
+	return undefined;
+}
+
+export function resolveAllEventColors(
+	meta: Record<string, unknown>,
+	bundle: EventColorContext,
+	colorEvaluator: ColorEvaluator<SingleCalendarConfig>
+): string[] {
+	const integrationColor = resolveIntegrationColor(meta, bundle);
+	if (integrationColor) return [integrationColor];
+
+	const normalized = normalizeFrontmatterForColorEvaluation(meta, bundle.settingsStore.currentSettings.colorRules);
+	return colorEvaluator.evaluateAllColors(normalized);
+}
+
+export function resolveEventColor(
+	meta: Record<string, unknown>,
+	bundle: EventColorContext,
+	colorEvaluator: ColorEvaluator<SingleCalendarConfig>
+): string {
+	const integrationColor = resolveIntegrationColor(meta, bundle);
+	if (integrationColor) return integrationColor;
+
+	const normalized = normalizeFrontmatterForColorEvaluation(meta, bundle.settingsStore.currentSettings.colorRules);
 	return colorEvaluator.evaluateColor(normalized);
 }

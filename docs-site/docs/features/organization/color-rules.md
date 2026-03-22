@@ -55,6 +55,29 @@ Difficulty >= 8                                   → #f59e0b
 Status === 'Active' && (Priority === 'High' || DueDate < new Date())  → #3b82f6
 ```
 
+## Color Mode
+
+By default, only the first matching color rule is applied to each event. The **Color mode** setting (Settings → Rules → Event colors) lets you apply multiple colors:
+
+- **Don't color events** — no color rules are applied; events use the default color
+- **Color events** — single color from the first match (default behavior)
+- **Color events with two colors** — the event is split into two equal halves, each colored by the first two matching rules
+- **Color events with three colors** — three equal segments
+- **Color events with four colors** — four equal segments
+- **Color events with five colors** — five equal segments (maximum)
+
+If fewer rules match than the selected mode allows, only the matched colors are shown.
+
+## Overflow Color Dots
+
+When **Show overflow color dots** is enabled (Settings → Rules → Event colors), any matched color rules that were not applied as the event background are displayed as small color dots in the bottom-right corner of the event.
+
+- If color mode is "Don't color events", all matched colors appear as dots
+- If color mode is set to 1 and 3 rules match, the remaining 2 appear as dots
+- If color mode is set to 3 and 5 rules match, the remaining 2 appear as dots
+
+This lets you see at a glance which rules an event matches beyond the visible background colors.
+
 ## Category Color Management
 
 For a convenient way to manage category colors without writing expressions manually, use the **Categories Settings** section (Settings → Categories). This interface automatically detects all categories from your events, displays event counts, and provides color pickers for each category. Behind the scenes, category colors are stored as color rules using expressions like `Category.includes('Work')`.

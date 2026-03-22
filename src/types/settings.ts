@@ -710,6 +710,18 @@ const RulesSettingsSchema = z
 			.describe(
 				"JavaScript expressions to filter untracked events (one per line). Changes apply when you click outside or press Ctrl/Cmd+Enter."
 			),
+		colorMode: z
+			.enum(["off", "1", "2", "3", "4", "5"])
+			.catch("1")
+			.describe(
+				"Controls how many color rule matches are applied to each event. Off: no coloring. 1: single color (default). 2-5: split the event width into equal segments, each colored by a successive matching rule."
+			),
+		showEventColorDots: z
+			.boolean()
+			.catch(false)
+			.describe(
+				"Show color dots in the bottom-right corner of events for matched color rules that were not applied as the event background. Displays overflow colors that exceed the color mode limit, or all matched colors when coloring is disabled."
+			),
 		defaultNodeColor: ColorSchema.catch(DEFAULT_EVENT_COLOR), // Default purple color
 		colorRules: z
 			.array(
