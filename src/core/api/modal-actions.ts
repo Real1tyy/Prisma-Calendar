@@ -3,12 +3,16 @@ import { Notice, TFile } from "obsidian";
 
 import { EventCreateModal, EventEditModal, showUntrackedEventCreateModal } from "../../components/modals";
 import type CustomCalendarPlugin from "../../main";
+import type { Frontmatter } from "../../types";
+import { isAllDayEvent } from "../../utils/event-frontmatter";
 import { openFileInNewTab } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 import { AddZettelIdCommand } from "../commands/update-commands";
 import { MinimizedModalManager } from "../minimized-modal-manager";
 import { isCalendarViewFocused, resolveBundleOrNotice } from "./bundle-resolver";
 import { createUntrackedEvent } from "./event-crud";
+
+// ─── Shared Helpers ──────────────────────────────────────────
 
 function resolveActiveFileWithBundle(
 	plugin: CustomCalendarPlugin,
@@ -26,10 +30,7 @@ function resolveActiveFileWithBundle(
 	return { bundle, activeFile };
 }
 
-function isAllDayEvent(frontmatter: Record<string, unknown>, allDayProp: string): boolean {
-	const value = frontmatter[allDayProp];
-	return value === true || value === "true";
-}
+// ─── Modal Actions ───────────────────────────────────────────
 
 export async function triggerCurrentEventStopwatch(
 	plugin: CustomCalendarPlugin,
@@ -39,8 +40,7 @@ export async function triggerCurrentEventStopwatch(
 	if (!resolved) return false;
 	const { bundle, activeFile } = resolved;
 
-	const settings = bundle.settingsStore.currentSettings;
-	if (!settings.showStopwatch) {
+	if (!bundle.settingsStore.currentSettings.showStopwatch) {
 		new Notice("Enable time tracker in settings to use this action");
 		return false;
 	}
@@ -48,41 +48,13 @@ export async function triggerCurrentEventStopwatch(
 	const command = new AddZettelIdCommand(plugin.app, bundle, activeFile.path);
 	await bundle.commandManager.executeCommand(command);
 
-	const filePath = command.getRenamedFilePath() ?? activeFile.path;
-	const file = plugin.app.vault.getAbstractFileByPath(filePath) as TFile;
-
 	if (MinimizedModalManager.hasMinimizedModal()) {
 		MinimizedModalManager.stopAndSaveCurrentEvent(plugin.app, plugin.calendarBundles);
 	}
 
-	const now = new Date();
-	const endDate = new Date(now);
-	endDate.setMinutes(endDate.getMinutes() + settings.defaultDurationMinutes);
-
-	const metadata = plugin.app.metadataCache.getFileCache(file);
-	const frontmatter = metadata?.frontmatter ?? {};
-	const allDay = isAllDayEvent(frontmatter, settings.allDayProp);
-
-	const startValue = allDay
-		? `${String(frontmatter[settings.dateProp] ?? toLocalISOString(now).slice(0, 10))}T00:00:00`
-		: toLocalISOString(now);
-
-	const eventData = {
-		title: file.basename,
-		start: startValue,
-		end: toLocalISOString(endDate),
-		allDay: false,
-		extendedProps: {
-			filePath,
-		},
-	};
-
-	const modal = new EventEditModal(plugin.app, bundle, eventData);
-	modal.setStartStopwatchAndMinimize();
-	modal.open();
-
-	void plugin.rememberLastUsedCalendar(bundle.calendarId);
-	return true;
+	return openEditActiveNoteModal(plugin, calendarId, {
+		configureModal: (modal) => modal.setStartStopwatchAndMinimize(),
+	});
 }
 
 export function openCreateUntrackedEventModal(plugin: CustomCalendarPlugin): void {
@@ -137,7 +109,15 @@ export async function openCreateEventModal(
 	return true;
 }
 
-export async function openEditActiveNoteModal(plugin: CustomCalendarPlugin, calendarId?: string): Promise<boolean> {
+interface OpenEditActiveNoteOptions {
+	configureModal?: (modal: EventEditModal) => void;
+}
+
+export async function openEditActiveNoteModal(
+	plugin: CustomCalendarPlugin,
+	calendarId?: string,
+	options?: OpenEditActiveNoteOptions
+): Promise<boolean> {
 	const resolved = resolveActiveFileWithBundle(plugin, calendarId);
 	if (!resolved) return false;
 	const { bundle, activeFile } = resolved;
@@ -149,8 +129,8 @@ export async function openEditActiveNoteModal(plugin: CustomCalendarPlugin, cale
 	}
 
 	const metadata = plugin.app.metadataCache.getFileCache(activeFile);
-	const frontmatter = metadata?.frontmatter ?? {};
-	const allDay = isAllDayEvent(frontmatter, settings.allDayProp);
+	const frontmatter = (metadata?.frontmatter as Frontmatter) ?? {};
+	const allDay = isAllDayEvent(frontmatter[settings.allDayProp]);
 
 	const now = new Date();
 	const roundedStart = roundToNearestHour(now);
@@ -176,7 +156,10 @@ export async function openEditActiveNoteModal(plugin: CustomCalendarPlugin, cale
 		},
 	};
 
-	new EventEditModal(plugin.app, bundle, eventData).open();
+	const modal = new EventEditModal(plugin.app, bundle, eventData);
+	options?.configureModal?.(modal);
+	modal.open();
+
 	void plugin.rememberLastUsedCalendar(bundle.calendarId);
 	return true;
 }
