@@ -144,6 +144,7 @@ export class EventEditModal extends BaseEventModal {
 		this.loadDateTimeFields();
 		this.loadRecurringEventData();
 		this.loadSimpleFields();
+		this.loadParticipantData();
 		this.loadNotificationData();
 		this.loadPrerequisiteData();
 		this.loadCustomPropertiesData();
@@ -186,7 +187,6 @@ export class EventEditModal extends BaseEventModal {
 		this.setSimpleFieldValues({
 			location: values.location,
 			icon: values.icon,
-			participants: values.participants,
 			breakMinutes: values.breakMinutes,
 			markAsDone: values.markAsDone,
 			skip: values.skip,
@@ -195,6 +195,14 @@ export class EventEditModal extends BaseEventModal {
 		if (values.markAsDone !== undefined) {
 			this.initialMarkAsDoneState = values.markAsDone;
 		}
+	}
+
+	private loadParticipantData(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		if (!settings.participantsProp) return;
+
+		this.selectedParticipants = parseIntoList(this.originalFrontmatter[settings.participantsProp]);
+		this.renderParticipants();
 	}
 
 	private loadNotificationData(): void {

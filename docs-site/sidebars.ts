@@ -32,6 +32,7 @@ const sidebars: SidebarsConfig = {
 						"features/events/virtual-events",
 						"features/events/recurring-dsl",
 						"features/events/untracked-events",
+						"features/events/participants",
 					],
 				},
 				{

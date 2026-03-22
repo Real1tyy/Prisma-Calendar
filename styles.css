@@ -7542,6 +7542,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 .prisma-category-display-content {
 	display: flex;
 	align-items: center;
+	flex-wrap: wrap;
 	gap: 0.75rem;
 }
 
@@ -7623,6 +7624,24 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 
 .prisma-assign-categories-button:hover {
 	background-color: var(--interactive-hover);
+}
+
+.prisma-participant-input-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	width: 100%;
+}
+
+.prisma-participant-input {
+	flex: 1;
+	min-width: 120px;
+	padding: 0.3rem 0.6rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-modifier-form-field);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
 }
 
 .prisma-category-modal {
@@ -9992,6 +10011,10 @@ div.vis-tooltip {
 	min-height: 200px;
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
+}
+
+.prisma-gantt-empty.prisma-hidden {
+	display: none;
 }
 
 .prisma-gantt-wrapper {

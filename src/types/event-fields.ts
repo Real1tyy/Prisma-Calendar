@@ -19,11 +19,6 @@ export type EventEditableFields = z.infer<typeof EventEditableFieldsSchema>;
 export const EventEditableFormFieldsSchema = z.object({
 	location: z.string().default("").describe("Event location").meta({ placeholder: "Event location" }),
 	icon: z.string().default("").describe("Event icon (emoji or text)").meta({ placeholder: "Emoji or text" }),
-	participants: z
-		.string()
-		.default("")
-		.describe("Comma-separated list of participants")
-		.meta({ placeholder: "Alice, Bob, Charlie" }),
 	breakMinutes: z.string().default("").describe("Break time in minutes").meta({ placeholder: "0" }),
 	notifyBefore: z.string().default("").describe("Notification lead time"),
 	markAsDone: z.boolean().default(false).describe("Mark as done"),
@@ -59,7 +54,6 @@ export const PositiveInt = z.string().transform((s: string) => {
 export const FormToFieldsSchema = z.object({
 	location: TrimmedOptionalString.optional(),
 	icon: TrimmedOptionalString.optional(),
-	participants: CommaDelimitedList.optional(),
 	breakMinutes: PositiveFloat.optional(),
 	markAsDone: z.boolean().optional().default(false),
 	skip: z.boolean().optional().default(false),

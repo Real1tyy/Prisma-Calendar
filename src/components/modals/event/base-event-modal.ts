@@ -5,6 +5,7 @@ import {
 	cls,
 	ensureISOSuffix,
 	extractDisplayName,
+	isObsidianLink,
 	parseAsLocalDate,
 	parseFrontmatterRecord,
 	registerSubmitHotkey,
@@ -114,6 +115,8 @@ export abstract class BaseEventModal extends Modal {
 	protected simpleFieldsHandle: SchemaFormHandle<Record<string, unknown>> | null = null;
 	protected prerequisitesContainer?: HTMLElement;
 	protected selectedPrerequisites: string[] = [];
+	protected participantsContainer?: HTMLElement;
+	protected selectedParticipants: string[] = [];
 	protected initialMarkAsDoneState: boolean = false;
 	protected notificationInput!: HTMLInputElement;
 	protected notificationContainer!: HTMLElement;
@@ -446,6 +449,7 @@ export abstract class BaseEventModal extends Modal {
 		this.createRecurringEventFields(contentEl);
 		this.createCategoryField(contentEl);
 		this.createPrerequisiteField(contentEl);
+		this.createParticipantField(contentEl);
 		this.renderSimpleFields(contentEl);
 		this.createNotificationField(contentEl);
 		this.createCustomPropertiesFields(contentEl);
@@ -742,6 +746,65 @@ export abstract class BaseEventModal extends Modal {
 		});
 	}
 
+	private createParticipantField(contentEl: HTMLElement): void {
+		if (!this.bundle.settingsStore.currentSettings.participantsProp) return;
+
+		const container = contentEl.createDiv(cls("setting-item"));
+		container.createEl("div", {
+			text: "Participants",
+			cls: cls("setting-item-name"),
+		});
+
+		const content = container.createDiv(cls("category-display-content"));
+		this.participantsContainer = content.createDiv(cls("categories-list"));
+
+		const inputRow = content.createDiv(cls("participant-input-row"));
+		const input = inputRow.createEl("input", {
+			type: "text",
+			cls: cls("participant-input"),
+			placeholder: "Name or [[Link]]",
+		});
+
+		const addParticipant = () => {
+			const value = input.value.trim();
+			if (!value || this.selectedParticipants.includes(value)) return;
+			this.selectedParticipants.push(value);
+			input.value = "";
+			this.renderParticipants();
+		};
+
+		input.addEventListener("keydown", (e) => {
+			if (e.key === "Enter") {
+				e.preventDefault();
+				addParticipant();
+			}
+		});
+
+		const addButton = inputRow.createEl("button", {
+			text: "Add",
+			cls: cls("assign-categories-button"),
+		});
+		addButton.addEventListener("click", addParticipant);
+
+		this.renderParticipants();
+	}
+
+	protected renderParticipants(): void {
+		if (!this.participantsContainer) return;
+
+		renderChipList({
+			container: this.participantsContainer,
+			items: this.selectedParticipants,
+			emptyText: "No participants",
+			getDisplayName: (item) => (isObsidianLink(item) ? cleanupTitle(extractDisplayName(item)) : item),
+			getTooltip: (item) => (isObsidianLink(item) ? item : ""),
+			onRemove: (item) => {
+				this.selectedParticipants = this.selectedParticipants.filter((p) => p !== item);
+				this.renderParticipants();
+			},
+		});
+	}
+
 	private renderSimpleFields(contentEl: HTMLElement): void {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const fullShape = SimpleEditableFieldsSchema.shape;
@@ -749,7 +812,6 @@ export abstract class BaseEventModal extends Modal {
 		const settingsGuards: Record<string, string> = {
 			location: "locationProp",
 			icon: "iconProp",
-			participants: "participantsProp",
 			breakMinutes: "breakProp",
 			markAsDone: "statusProperty",
 			skip: "skipProp",
@@ -1202,10 +1264,10 @@ export abstract class BaseEventModal extends Modal {
 			end: this.endInput.value,
 			date: this.dateInput.value,
 			categories: [...this.selectedCategories],
+			participants: [...this.selectedParticipants],
 			prerequisites: [...this.selectedPrerequisites],
 			location: String(fv["location"] ?? ""),
 			icon: String(fv["icon"] ?? ""),
-			participants: String(fv["participants"] ?? ""),
 			breakMinutes: String(fv["breakMinutes"] ?? ""),
 			markAsDone: fv["markAsDone"] === true,
 			skip: fv["skip"] === true,
@@ -1247,13 +1309,14 @@ export abstract class BaseEventModal extends Modal {
 
 		this.selectedCategories = [...state.categories];
 		this.renderCategories();
+		this.selectedParticipants = [...state.participants];
+		this.renderParticipants();
 		this.selectedPrerequisites = [...state.prerequisites];
 		this.renderPrerequisites();
 
 		this.setSimpleFieldValues({
 			location: state.location,
 			icon: state.icon,
-			participants: state.participants,
 			breakMinutes: state.breakMinutes,
 			markAsDone: state.markAsDone,
 			skip: state.skip,
@@ -1509,6 +1572,7 @@ export abstract class BaseEventModal extends Modal {
 			{
 				...parsed,
 				categories: this.selectedCategories,
+				participants: this.selectedParticipants.length > 0 ? this.selectedParticipants : undefined,
 			},
 			{
 				initialMarkAsDone: this.initialMarkAsDoneState,

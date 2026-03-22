@@ -26,6 +26,7 @@ export const EventFormStateSchema = z
 		end: z.string().default(""),
 		date: z.string().default(""),
 		categories: z.array(z.string()).default([]),
+		participants: z.array(z.string()).default([]),
 		prerequisites: z.array(z.string()).default([]),
 		notifyBefore: z.string().default(""),
 		recurring: RecurringFormStateSchema.default({
@@ -50,12 +51,13 @@ export function createDefaultState(): EventFormState {
 export function applyPresetToState(state: EventFormState, preset: EventPreset): EventFormState {
 	const patch: Record<string, unknown> = {};
 
-	const directKeys = ["title", "allDay", "location", "icon", "participants", "skip", "markAsDone"] as const;
+	const directKeys = ["title", "allDay", "location", "icon", "skip", "markAsDone"] as const;
 	for (const key of directKeys) {
 		if (preset[key] !== undefined) patch[key] = preset[key];
 	}
 
 	if (preset["categories"] !== undefined) patch["categories"] = parseIntoList(preset["categories"]);
+	if (preset["participants"] !== undefined) patch["participants"] = parseIntoList(preset["participants"]);
 	if (preset["breakMinutes"] !== undefined) patch["breakMinutes"] = preset["breakMinutes"].toString();
 	if (preset["notifyBefore"] !== undefined) patch["notifyBefore"] = preset["notifyBefore"].toString();
 
@@ -81,11 +83,13 @@ export function extractPresetFromState(state: EventFormState): Partial<EventPres
 	preset.allDay = state.allDay;
 	if (state.categories.length > 0) preset.categories = state.categories.join(", ");
 
-	const textFields = { location: "location", icon: "icon", participants: "participants" } as const;
+	const textFields = { location: "location", icon: "icon" } as const;
 	for (const [stateKey, presetKey] of Object.entries(textFields)) {
 		const val = (state[stateKey as keyof EventFormState] as string).trim();
 		if (val) (preset as Record<string, unknown>)[presetKey] = val;
 	}
+
+	if (state.participants.length > 0) preset.participants = state.participants.join(", ");
 
 	const breakValue = PositiveFloat.parse(state.breakMinutes);
 	if (breakValue !== undefined) preset.breakMinutes = breakValue;

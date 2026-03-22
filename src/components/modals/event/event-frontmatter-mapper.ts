@@ -1,5 +1,3 @@
-import { parseIntoList } from "@real1ty-obsidian-plugins";
-
 import type { Frontmatter } from "../../../types";
 import type { EventEditableFormFields } from "../../../types/event-fields";
 import { NonNegativeInt, PositiveInt } from "../../../types/event-fields";
@@ -23,10 +21,6 @@ export function loadSimpleFieldValues(
 	if (settings.iconProp) {
 		const v = frontmatter[settings.iconProp];
 		values.icon = typeof v === "string" ? v : "";
-	}
-
-	if (settings.participantsProp) {
-		values.participants = parseIntoList(frontmatter[settings.participantsProp]).join(", ");
 	}
 
 	if (settings.breakProp) {
