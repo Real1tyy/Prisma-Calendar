@@ -96,7 +96,7 @@ export function coerceFormValues(
 				}
 				break;
 			default:
-				result[desc.key] = raw === "" ? undefined : raw;
+				result[desc.key] = raw === "" && desc.optional ? undefined : raw;
 		}
 	}
 	return result;
