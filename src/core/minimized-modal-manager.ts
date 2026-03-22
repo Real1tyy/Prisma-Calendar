@@ -326,8 +326,8 @@ class MinimizedModalManagerClass {
 	private buildEventDataFromState(state: MinimizedModalState) {
 		return {
 			title: state.title ?? "",
-			start: state.startDate ?? null,
-			end: state.endDate ?? null,
+			start: state.startDate ?? (state.formState.start || null),
+			end: state.endDate ?? (state.formState.end || null),
 			allDay: state.allDay ?? false,
 			extendedProps: {
 				filePath: state.filePath,

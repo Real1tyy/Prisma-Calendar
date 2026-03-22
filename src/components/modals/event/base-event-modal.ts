@@ -1232,6 +1232,19 @@ export abstract class BaseEventModal extends Modal {
 			this.allDayCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
 		}
 
+		if (state.start) {
+			this.startInput.value = state.start;
+		}
+		if (state.end) {
+			this.endInput.value = state.end;
+		}
+		if (state.start || state.end) {
+			this.updateDurationFromDates();
+		}
+		if (state.date) {
+			this.dateInput.value = state.date;
+		}
+
 		this.selectedCategories = [...state.categories];
 		this.renderCategories();
 		this.selectedPrerequisites = [...state.prerequisites];
@@ -1267,6 +1280,10 @@ export abstract class BaseEventModal extends Modal {
 
 			if (state.recurring.futureInstancesCount && this.futureInstancesCountInput) {
 				this.futureInstancesCountInput.value = state.recurring.futureInstancesCount;
+			}
+
+			if (state.recurring.generatePastEvents && this.generatePastEventsCheckbox) {
+				this.generatePastEventsCheckbox.checked = true;
 			}
 		}
 	}
