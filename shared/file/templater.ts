@@ -1,7 +1,7 @@
 import { type App, normalizePath, Notice, TFile } from "obsidian";
 import { parse as parseYAML } from "yaml";
 
-import { waitForFileReady } from "./file-utils";
+import { ensureDirectory, waitForFileReady } from "./file-utils";
 import { createFileContentWithFrontmatter } from "./frontmatter-serialization";
 
 const TEMPLATER_ID = "templater-obsidian";
@@ -312,6 +312,9 @@ export async function createFileAtPathAtomic(
 		return existing;
 	}
 
+	const parentDir = filePath.substring(0, filePath.lastIndexOf("/"));
+	if (parentDir) await ensureDirectory(app, parentDir);
+
 	const releaseGuard = guardFromTemplater(app, filePath);
 	const sentinelFile = await app.vault.create(filePath, PENDING_WRITE_SENTINEL);
 
@@ -363,6 +366,9 @@ export async function createFileAtPath(
 		frontmatter && Object.keys(frontmatter).length > 0
 			? createFileContentWithFrontmatter(frontmatter, bodyContent)
 			: bodyContent;
+
+	const parentDir = filePath.substring(0, filePath.lastIndexOf("/"));
+	if (parentDir) await ensureDirectory(app, parentDir);
 
 	// Prevent Templater's folder-template handler from overwriting our file.
 	guardFromTemplater(app, filePath);
