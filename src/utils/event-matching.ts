@@ -131,13 +131,18 @@ export const autoAssignCategories = (
 
 	// Rule 2: Apply custom category assignment presets (Pro only)
 	if (isProEnabled && settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0) {
+		const useSubstring = settings.autoAssignCategoryByIncludes;
 		for (const preset of settings.categoryAssignmentPresets) {
 			const presetEventNames = preset.eventName
 				.split(",")
 				.map((name) => normalizeForComparison(name.trim()))
 				.filter((name) => name.length > 0);
 
-			if (presetEventNames.includes(normalizedEventName)) {
+			const matches = useSubstring
+				? presetEventNames.some((name) => normalizedEventName.includes(name))
+				: presetEventNames.includes(normalizedEventName);
+
+			if (matches) {
 				for (const category of preset.categories) {
 					categoriesToAssign.add(category);
 				}

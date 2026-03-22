@@ -629,7 +629,7 @@ const CalendarSettingsSchema = z
 			.boolean()
 			.catch(false)
 			.describe(
-				"Automatically assign a category when the event name contains a category name (substring match, case-insensitive). Example: creating an event named 'Youtube Analysis' will auto-assign the 'Youtube' category."
+				"Use substring matching (case-insensitive) for category auto-assignment and category assignment presets. When enabled, categories match if the event name contains the category name, and preset event names match if the event name contains the preset name. Example: 'Youtube Analysis' matches the 'Youtube' category and a preset with event name 'Youtube'."
 			),
 		titleAutocomplete: z
 			.boolean()

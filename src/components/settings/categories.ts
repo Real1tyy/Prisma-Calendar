@@ -175,7 +175,7 @@ export class CategoriesSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ autoAssignCategoryByIncludes: S.autoAssignCategoryByIncludes },
-			{ name: "Auto-assign when name contains category" }
+			{ name: "Substring matching for categories and presets" }
 		);
 
 		if (!this.plugin.isProEnabled) {
