@@ -19,6 +19,8 @@ All notable changes to this project will be documented here.
 - **Substring matching now applies to category presets**: The "Substring matching" toggle (Settings → Categories) now also applies to category assignment presets — when enabled, preset event names match as substrings instead of requiring exact matches. See [Categories — Substring Matching](./features/organization/categories.md#substring-matching-for-categories-and-presets).
 - **Timeline performance**: The timeline now loads events on demand as you pan and zoom, fetching only the visible time range instead of the entire event history. Previously, opening the timeline loaded every event in your vault at once. This applies to both the Timeline tab and series/category timeline modals. See [Timeline](./features/views/timeline.md).
 - **Gantt performance**: The Gantt tab now uses an incremental prerequisite tracker that updates in real time as events change, instead of rebuilding the entire dependency graph from scratch on every update. Prerequisite lookups are now instant regardless of vault size. See [Gantt View](./features/views/gantt.md).
+- **Heatmap day labels**: All seven day-of-week labels (Mon–Sun) now display on the heatmap's left axis, and label alignment has been adjusted to sit centered with their corresponding rows. See [Heatmap](./features/views/heatmap.md).
+- **Heatmap first day of week**: Both yearly and monthly heatmap views now correctly respect the "First day of week" setting — previously the day labels and cell positions were offset by one when set to Monday. See [Heatmap](./features/views/heatmap.md).
 
 ### Fixed
 

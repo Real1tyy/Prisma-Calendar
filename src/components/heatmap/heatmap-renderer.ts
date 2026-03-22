@@ -21,7 +21,7 @@ const CELL_RADIUS_YEARLY = 2;
 const CELL_RADIUS_MONTHLY = 3;
 
 const DEFAULT_GRADIENT = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"];
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function getColorBucket(count: number, thresholds: [number, number, number]): number {
 	if (count === 0) return 0;
@@ -53,8 +53,8 @@ function applyOpacity(color: string, opacity: number): string {
 }
 
 function normalizedDayOfWeek(dt: DateTime, firstDayOfWeek: number): number {
-	const isoWeekday = dt.weekday; // 1=Monday, 7=Sunday
-	return (isoWeekday - 1 - firstDayOfWeek + 7) % 7;
+	const jsDow = dt.weekday % 7; // 0=Sunday, 1=Monday, ..., 6=Saturday
+	return (jsDow - firstDayOfWeek + 7) % 7;
 }
 
 function getYearlyColumn(day: DateTime, startDate: DateTime, firstDayOfWeek: number): number {
@@ -154,12 +154,12 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 		class: cls("heatmap-svg"),
 	});
 
-	const dayLabelIndices = [0, 2, 4];
+	const dayLabelIndices = [0, 1, 2, 3, 4, 5, 6];
 	for (const i of dayLabelIndices) {
 		const adjustedIndex = (i + firstDayOfWeek) % 7;
 		const text = createSVGElement("text", {
 			x: String(labelWidth - 5),
-			y: String(headerHeight + i * step + cellSize),
+			y: String(headerHeight + i * step + cellSize * 0.7),
 			class: cls("heatmap-day-label"),
 		});
 		text.textContent = DAY_LABELS[adjustedIndex]!;
@@ -178,8 +178,8 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 		svg.appendChild(text);
 	}
 
-	let day = startDate;
-	while (day <= endDate) {
+	for (let d = 0; d < totalDays; d++) {
+		const day = startDate.plus({ days: d });
 		const row = normalizedDayOfWeek(day, firstDayOfWeek);
 		const col = getYearlyColumn(day, startDate, firstDayOfWeek);
 		const dateKey = day.toFormat("yyyy-MM-dd");
@@ -200,8 +200,6 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 				onDayClick,
 			})
 		);
-
-		day = day.plus({ days: 1 });
 	}
 
 	container.appendChild(svg);
