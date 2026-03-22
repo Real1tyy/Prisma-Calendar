@@ -4,14 +4,16 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.8.0 - 3/21/2026
+## 2.8.0 - 3/22/2026
 
 ### Added
 
+- **Trigger current event stopwatch**: New hotkey command that converts the active note into a calendar event with start time set to now, starts the time tracker, and auto-minimizes — all in one action. See [Hotkeys — Trigger Current Event Stopwatch](./features/advanced/hotkeys.md#trigger-current-event-stopwatch).
 - **Context menu customization**: Right-click any event and select "Manage menu items..." at the bottom of the context menu to fully customize it. Items are grouped by section (Navigation, Edit, Move, Danger, Recurring) — reorder within sections via drag-and-drop or arrow buttons, drag items between sections to reassign them, rename labels, change icons, pick custom colors, and show/hide individual actions. All changes persist across sessions. No more digging through settings — configuration lives right where you use it. Existing show/hide preferences from previous versions are automatically migrated. See [Configuration — Context Menu](./configuration/toolbar-and-menus.md#context-menu).
 
 ### Improved
 
+- **Substring matching now applies to category presets**: The "Substring matching" toggle (Settings → Categories) now also applies to category assignment presets — when enabled, preset event names match as substrings instead of requiring exact matches. See [Categories — Substring Matching](./features/organization/categories.md#substring-matching-for-categories-and-presets).
 - **Timeline performance**: The timeline now loads events on demand as you pan and zoom, fetching only the visible time range instead of the entire event history. Previously, opening the timeline loaded every event in your vault at once. This applies to both the Timeline tab and series/category timeline modals. See [Timeline](./features/views/timeline.md).
 - **Gantt performance**: The Gantt tab now uses an incremental prerequisite tracker that updates in real time as events change, instead of rebuilding the entire dependency graph from scratch on every update. Prerequisite lookups are now instant regardless of vault size. See [Gantt View](./features/views/gantt.md).
 

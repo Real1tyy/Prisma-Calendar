@@ -196,6 +196,18 @@ The **Open Current Note in Calendar** command provides quick navigation from any
     -   Writes ZettelID to the configured frontmatter property
 -   **Use Case**: Convert an existing note into a Prisma-compatible event skeleton
 
+### Trigger Current Event Stopwatch
+
+-   **Function**: Converts the currently active note into a calendar event and starts tracking time
+-   **Behavior**:
+    -   Adds a ZettelID to the note if missing
+    -   Opens the edit modal with start time set to now
+    -   Starts the time tracker and auto-minimizes the modal
+    -   If another stopwatch is running, it is stopped and saved first
+-   **Requirements**: Time tracker must be enabled in settings. The active note must be open.
+-   **Use Case**: Start tracking time on any note with a single hotkey — no need to manually create an event first
+-   **See Also**: [Time Tracker documentation](../management/time-tracker.md)
+
 ### Edit Last Focused Event
 
 -   **Function**: Opens the edit modal for the last event you hovered over

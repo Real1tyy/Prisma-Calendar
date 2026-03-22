@@ -4,10 +4,86 @@ import { Notice, TFile } from "obsidian";
 import { EventCreateModal, EventEditModal, showUntrackedEventCreateModal } from "../../components/modals";
 import type CustomCalendarPlugin from "../../main";
 import { openFileInNewTab } from "../../utils/obsidian";
+import type { CalendarBundle } from "../calendar-bundle";
 import { AddZettelIdCommand } from "../commands/update-commands";
 import { MinimizedModalManager } from "../minimized-modal-manager";
 import { isCalendarViewFocused, resolveBundleOrNotice } from "./bundle-resolver";
 import { createUntrackedEvent } from "./event-crud";
+
+function resolveActiveFileWithBundle(
+	plugin: CustomCalendarPlugin,
+	calendarId?: string
+): { bundle: CalendarBundle; activeFile: TFile } | null {
+	const bundle = resolveBundleOrNotice(plugin, calendarId);
+	if (!bundle) return null;
+
+	const activeFile = plugin.app.workspace.getActiveFile();
+	if (!(activeFile instanceof TFile)) {
+		new Notice("No file is currently open");
+		return null;
+	}
+
+	return { bundle, activeFile };
+}
+
+function isAllDayEvent(frontmatter: Record<string, unknown>, allDayProp: string): boolean {
+	const value = frontmatter[allDayProp];
+	return value === true || value === "true";
+}
+
+export async function triggerCurrentEventStopwatch(
+	plugin: CustomCalendarPlugin,
+	calendarId?: string
+): Promise<boolean> {
+	const resolved = resolveActiveFileWithBundle(plugin, calendarId);
+	if (!resolved) return false;
+	const { bundle, activeFile } = resolved;
+
+	const settings = bundle.settingsStore.currentSettings;
+	if (!settings.showStopwatch) {
+		new Notice("Enable time tracker in settings to use this action");
+		return false;
+	}
+
+	const command = new AddZettelIdCommand(plugin.app, bundle, activeFile.path);
+	await bundle.commandManager.executeCommand(command);
+
+	const filePath = command.getRenamedFilePath() ?? activeFile.path;
+	const file = plugin.app.vault.getAbstractFileByPath(filePath) as TFile;
+
+	if (MinimizedModalManager.hasMinimizedModal()) {
+		MinimizedModalManager.stopAndSaveCurrentEvent(plugin.app, plugin.calendarBundles);
+	}
+
+	const now = new Date();
+	const endDate = new Date(now);
+	endDate.setMinutes(endDate.getMinutes() + settings.defaultDurationMinutes);
+
+	const metadata = plugin.app.metadataCache.getFileCache(file);
+	const frontmatter = metadata?.frontmatter ?? {};
+	const allDay = isAllDayEvent(frontmatter, settings.allDayProp);
+
+	const startValue = allDay
+		? `${String(frontmatter[settings.dateProp] ?? toLocalISOString(now).slice(0, 10))}T00:00:00`
+		: toLocalISOString(now);
+
+	const eventData = {
+		title: file.basename,
+		start: startValue,
+		end: toLocalISOString(endDate),
+		allDay: false,
+		extendedProps: {
+			filePath,
+		},
+	};
+
+	const modal = new EventEditModal(plugin.app, bundle, eventData);
+	modal.setStartStopwatchAndMinimize();
+	modal.open();
+
+	void plugin.rememberLastUsedCalendar(bundle.calendarId);
+	return true;
+}
 
 export function openCreateUntrackedEventModal(plugin: CustomCalendarPlugin): void {
 	const bundle = resolveBundleOrNotice(plugin);
@@ -62,16 +138,9 @@ export async function openCreateEventModal(
 }
 
 export async function openEditActiveNoteModal(plugin: CustomCalendarPlugin, calendarId?: string): Promise<boolean> {
-	const bundle = resolveBundleOrNotice(plugin, calendarId);
-	if (!bundle) {
-		return false;
-	}
-
-	const activeFile = plugin.app.workspace.getActiveFile();
-	if (!(activeFile instanceof TFile)) {
-		new Notice("No file is currently open");
-		return false;
-	}
+	const resolved = resolveActiveFileWithBundle(plugin, calendarId);
+	if (!resolved) return false;
+	const { bundle, activeFile } = resolved;
 
 	const settings = bundle.settingsStore.currentSettings;
 	if (settings.directory && !activeFile.path.startsWith(settings.directory)) {
@@ -81,8 +150,7 @@ export async function openEditActiveNoteModal(plugin: CustomCalendarPlugin, cale
 
 	const metadata = plugin.app.metadataCache.getFileCache(activeFile);
 	const frontmatter = metadata?.frontmatter ?? {};
-	const allDayValue = frontmatter[settings.allDayProp];
-	const allDay = allDayValue === true || allDayValue === "true";
+	const allDay = isAllDayEvent(frontmatter, settings.allDayProp);
 
 	const now = new Date();
 	const roundedStart = roundToNearestHour(now);
@@ -114,16 +182,9 @@ export async function openEditActiveNoteModal(plugin: CustomCalendarPlugin, cale
 }
 
 export async function addZettelIdToActiveNote(plugin: CustomCalendarPlugin, calendarId?: string): Promise<boolean> {
-	const bundle = resolveBundleOrNotice(plugin, calendarId);
-	if (!bundle) {
-		return false;
-	}
-
-	const activeFile = plugin.app.workspace.getActiveFile();
-	if (!(activeFile instanceof TFile)) {
-		new Notice("No file is currently open");
-		return false;
-	}
+	const resolved = resolveActiveFileWithBundle(plugin, calendarId);
+	if (!resolved) return false;
+	const { bundle, activeFile } = resolved;
 
 	const command = new AddZettelIdCommand(plugin.app, bundle, activeFile.path);
 	await bundle.commandManager.executeCommand(command);

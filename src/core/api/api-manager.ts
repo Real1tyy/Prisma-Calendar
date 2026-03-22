@@ -22,6 +22,7 @@ import {
 	openCreateEventModal,
 	openCreateUntrackedEventModal,
 	openEditActiveNoteModal,
+	triggerCurrentEventStopwatch,
 } from "./modal-actions";
 import { navigateToDate } from "./navigation";
 import {
@@ -116,6 +117,10 @@ export class PrismaCalendarApiManager {
 
 	async addZettelIdToActiveNote(calendarId?: string): Promise<boolean> {
 		return addZettelIdToActiveNote(this.plugin, calendarId);
+	}
+
+	async triggerCurrentEventStopwatch(calendarId?: string): Promise<boolean> {
+		return triggerCurrentEventStopwatch(this.plugin, calendarId);
 	}
 
 	// ─── Event Creation ───────────────────────────────────────────
