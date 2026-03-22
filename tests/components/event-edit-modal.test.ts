@@ -1,3 +1,4 @@
+import { ChipList } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -510,7 +511,9 @@ describe("EventEditModal - Custom Properties", () => {
 			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
 			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
 			// @ts-expect-error - accessing protected property for testing
-			modal.selectedCategories = ["Work"];
+			modal.categoriesChipList = new ChipList({ cssPrefix: "prisma-", emptyText: "" });
+			// @ts-expect-error - accessing protected property for testing
+			modal.categoriesChipList.setItems(["Work"]);
 			// @ts-expect-error - accessing protected property for testing
 			modal.displayPropertiesContainer = mockEmptyContainer;
 			// @ts-expect-error - accessing protected property for testing
@@ -542,7 +545,9 @@ describe("EventEditModal - Custom Properties", () => {
 			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
 			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
 			// @ts-expect-error - accessing protected property for testing
-			modal.selectedCategories = ["Work", "Meeting", "Important"];
+			modal.categoriesChipList = new ChipList({ cssPrefix: "prisma-", emptyText: "" });
+			// @ts-expect-error - accessing protected property for testing
+			modal.categoriesChipList.setItems(["Work", "Meeting", "Important"]);
 			// @ts-expect-error - accessing protected property for testing
 			modal.displayPropertiesContainer = mockEmptyContainer;
 			// @ts-expect-error - accessing protected property for testing
@@ -575,7 +580,7 @@ describe("EventEditModal - Custom Properties", () => {
 			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
 			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
 			// @ts-expect-error - accessing protected property for testing
-			modal.selectedCategories = [];
+			modal.categoriesChipList = new ChipList({ cssPrefix: "prisma-", emptyText: "" });
 			// @ts-expect-error - accessing protected property for testing
 			modal.displayPropertiesContainer = mockEmptyContainer;
 			// @ts-expect-error - accessing protected property for testing
@@ -608,7 +613,9 @@ describe("EventEditModal - Custom Properties", () => {
 			modal.endInput = { value: "2025-10-07T11:15" } as HTMLInputElement;
 			modal.recurringCheckbox = { checked: false } as HTMLInputElement;
 			// @ts-expect-error - accessing protected property for testing
-			modal.selectedCategories = ["NewCategory"];
+			modal.categoriesChipList = new ChipList({ cssPrefix: "prisma-", emptyText: "" });
+			// @ts-expect-error - accessing protected property for testing
+			modal.categoriesChipList.setItems(["NewCategory"]);
 			// @ts-expect-error - accessing protected property for testing
 			modal.displayPropertiesContainer = mockEmptyContainer;
 			// @ts-expect-error - accessing protected property for testing

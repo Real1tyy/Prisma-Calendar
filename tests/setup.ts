@@ -92,6 +92,52 @@ export function createMockSingleCalendarSettingsStore(calendarOverrides?: any): 
 	return new BehaviorSubject(settings);
 }
 
+// Polyfill Obsidian's DOM augmentations for test environment
+function polyfillObsidianDOM(): void {
+	const proto = HTMLElement.prototype as any;
+	if (proto.createDiv) return;
+
+	proto.empty = function (this: HTMLElement) {
+		this.innerHTML = "";
+	};
+
+	proto.createDiv = function (this: HTMLElement, classNameOrOptions?: string | Record<string, any>) {
+		const div = document.createElement("div");
+		if (typeof classNameOrOptions === "string") {
+			div.className = classNameOrOptions;
+		}
+		this.appendChild(div);
+		return div;
+	};
+
+	proto.createEl = function (
+		this: HTMLElement,
+		tag: string,
+		options?: { text?: string; cls?: string; attr?: Record<string, string> }
+	) {
+		const el = document.createElement(tag);
+		if (options?.text) el.textContent = options.text;
+		if (options?.cls) el.className = options.cls;
+		if (options?.attr) {
+			for (const [k, v] of Object.entries(options.attr)) {
+				el.setAttribute(k, v);
+			}
+		}
+		this.appendChild(el);
+		return el;
+	};
+
+	(globalThis as any).createDiv = function (classNameOrOptions?: string | Record<string, any>) {
+		const div = document.createElement("div");
+		if (typeof classNameOrOptions === "string") {
+			div.className = classNameOrOptions;
+		}
+		return div;
+	};
+}
+
+polyfillObsidianDOM();
+
 // Setup DOM environment for FullCalendar tests
 beforeEach(() => {
 	document.body.replaceChildren();

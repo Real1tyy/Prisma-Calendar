@@ -144,6 +144,7 @@ export class EventEditModal extends BaseEventModal {
 		this.loadDateTimeFields();
 		this.loadRecurringEventData();
 		this.loadSimpleFields();
+		this.loadCategoryData();
 		this.loadParticipantData();
 		this.loadNotificationData();
 		this.loadPrerequisiteData();
@@ -201,8 +202,7 @@ export class EventEditModal extends BaseEventModal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (!settings.participantsProp) return;
 
-		this.selectedParticipants = parseIntoList(this.originalFrontmatter[settings.participantsProp]);
-		this.renderParticipants();
+		this.participantsChipList?.setItems(parseIntoList(this.originalFrontmatter[settings.participantsProp]));
 	}
 
 	private loadNotificationData(): void {
@@ -222,10 +222,11 @@ export class EventEditModal extends BaseEventModal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (!settings.prerequisiteProp) return;
 
-		this.selectedPrerequisites = parseIntoList(this.originalFrontmatter[settings.prerequisiteProp], {
-			splitCommas: false,
-		}).filter((p) => p.trim());
-		this.renderPrerequisites();
+		this.prerequisitesChipList?.setItems(
+			parseIntoList(this.originalFrontmatter[settings.prerequisiteProp], {
+				splitCommas: false,
+			}).filter((p) => p.trim())
+		);
 	}
 
 	setEnsureZettelIdOnSave(value: boolean): void {

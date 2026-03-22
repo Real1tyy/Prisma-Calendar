@@ -2,6 +2,7 @@ import {
 	addCls,
 	afterRender,
 	calculateDurationMinutes,
+	ChipList,
 	cls,
 	ensureISOSuffix,
 	extractDisplayName,
@@ -20,6 +21,7 @@ import { type App, Modal, Notice } from "obsidian";
 import type { Subscription } from "rxjs";
 import type { z } from "zod";
 
+import { CSS_PREFIX } from "../../../constants";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import { FREE_MAX_EVENT_PRESETS } from "../../../core/license";
 import {
@@ -50,7 +52,6 @@ import { Stopwatch } from "../../stopwatch";
 import { TitleInputSuggest } from "../../title-input-suggest";
 import { openCategoryAssignModal, openPrerequisiteAssignModal } from "../category/assignment";
 import { showCategoryEventsModal } from "../series/bases-view";
-import { renderChipList } from "./chip-list-renderer";
 import {
 	applyPresetToState,
 	createDefaultState,
@@ -110,13 +111,10 @@ export abstract class BaseEventModal extends Modal {
 	protected customFreqSelect!: HTMLSelectElement;
 	protected customIntervalInput!: HTMLInputElement;
 
-	protected categoriesContainer?: HTMLElement;
-	protected selectedCategories: string[] = [];
+	protected categoriesChipList?: ChipList;
 	protected simpleFieldsHandle: SchemaFormHandle<Record<string, unknown>> | null = null;
-	protected prerequisitesContainer?: HTMLElement;
-	protected selectedPrerequisites: string[] = [];
-	protected participantsContainer?: HTMLElement;
-	protected selectedParticipants: string[] = [];
+	protected prerequisitesChipList?: ChipList;
+	protected participantsChipList?: ChipList;
 	protected initialMarkAsDoneState: boolean = false;
 	protected notificationInput!: HTMLInputElement;
 	protected notificationContainer!: HTMLElement;
@@ -684,10 +682,19 @@ export abstract class BaseEventModal extends Modal {
 			this.suppressAutoCategories = true;
 		});
 
-		// Container for displaying selected categories
-		this.categoriesContainer = categoryContent.createDiv(cls("categories-list"));
+		this.categoriesChipList = new ChipList({
+			cssPrefix: CSS_PREFIX,
+			emptyText: "No categories",
+			renderPrefix: (chipEl, item) => {
+				const colorMap = new Map(this.bundle.categoryTracker.getCategoriesWithColors().map((c) => [c.name, c.color]));
+				const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
+				const dot = chipEl.createEl("span", { cls: cls("category-color-dot") });
+				dot.style.setProperty("--category-color", colorMap.get(item) || defaultColor);
+			},
+			onNameClick: (item) => this.openCategoryEventsModal(item),
+		});
+		categoryContent.appendChild(this.categoriesChipList.el);
 
-		// Assign Categories button
 		const assignButton = categoryContent.createEl("button", {
 			text: "Assign categories",
 			cls: cls("assign-categories-button"),
@@ -695,9 +702,6 @@ export abstract class BaseEventModal extends Modal {
 		assignButton.addEventListener("click", () => {
 			this.openAssignCategoriesModal();
 		});
-
-		// Render initial categories
-		this.renderCategories();
 	}
 
 	private createPrerequisiteField(contentEl: HTMLElement): void {
@@ -710,7 +714,14 @@ export abstract class BaseEventModal extends Modal {
 		});
 
 		const content = container.createDiv(cls("category-display-content"));
-		this.prerequisitesContainer = content.createDiv(cls("categories-list"));
+
+		this.prerequisitesChipList = new ChipList({
+			cssPrefix: CSS_PREFIX,
+			emptyText: "No prerequisites",
+			getDisplayName: (link) => cleanupTitle(extractDisplayName(link)),
+			getTooltip: (link) => link,
+		});
+		content.appendChild(this.prerequisitesChipList.el);
 
 		const assignButton = content.createEl("button", {
 			text: "Assign prerequisites",
@@ -719,30 +730,11 @@ export abstract class BaseEventModal extends Modal {
 		assignButton.addEventListener("click", () => {
 			this.openAssignPrerequisitesModal();
 		});
-
-		this.renderPrerequisites();
-	}
-
-	protected renderPrerequisites(): void {
-		if (!this.prerequisitesContainer) return;
-
-		renderChipList({
-			container: this.prerequisitesContainer,
-			items: this.selectedPrerequisites,
-			emptyText: "No prerequisites",
-			getDisplayName: (link) => cleanupTitle(extractDisplayName(link)),
-			getTooltip: (link) => link,
-			onRemove: (link) => {
-				this.selectedPrerequisites = this.selectedPrerequisites.filter((p) => p !== link);
-				this.renderPrerequisites();
-			},
-		});
 	}
 
 	private openAssignPrerequisitesModal(): void {
-		openPrerequisiteAssignModal(this.app, this.bundle, this.selectedPrerequisites, (selected) => {
-			this.selectedPrerequisites = selected;
-			this.renderPrerequisites();
+		openPrerequisiteAssignModal(this.app, this.bundle, this.prerequisitesChipList?.value ?? [], (selected) => {
+			this.prerequisitesChipList!.setItems(selected);
 		});
 	}
 
@@ -756,7 +748,14 @@ export abstract class BaseEventModal extends Modal {
 		});
 
 		const content = container.createDiv(cls("category-display-content"));
-		this.participantsContainer = content.createDiv(cls("categories-list"));
+
+		this.participantsChipList = new ChipList({
+			cssPrefix: CSS_PREFIX,
+			emptyText: "No participants",
+			getDisplayName: (item) => (isObsidianLink(item) ? cleanupTitle(extractDisplayName(item)) : item),
+			getTooltip: (item) => (isObsidianLink(item) ? item : ""),
+		});
+		content.appendChild(this.participantsChipList.el);
 
 		const inputRow = content.createDiv(cls("participant-input-row"));
 		const input = inputRow.createEl("input", {
@@ -767,10 +766,9 @@ export abstract class BaseEventModal extends Modal {
 
 		const addParticipant = () => {
 			const value = input.value.trim();
-			if (!value || this.selectedParticipants.includes(value)) return;
-			this.selectedParticipants.push(value);
+			if (!value) return;
+			this.participantsChipList!.add(value);
 			input.value = "";
-			this.renderParticipants();
 		};
 
 		input.addEventListener("keydown", (e) => {
@@ -785,24 +783,6 @@ export abstract class BaseEventModal extends Modal {
 			cls: cls("assign-categories-button"),
 		});
 		addButton.addEventListener("click", addParticipant);
-
-		this.renderParticipants();
-	}
-
-	protected renderParticipants(): void {
-		if (!this.participantsContainer) return;
-
-		renderChipList({
-			container: this.participantsContainer,
-			items: this.selectedParticipants,
-			emptyText: "No participants",
-			getDisplayName: (item) => (isObsidianLink(item) ? cleanupTitle(extractDisplayName(item)) : item),
-			getTooltip: (item) => (isObsidianLink(item) ? item : ""),
-			onRemove: (item) => {
-				this.selectedParticipants = this.selectedParticipants.filter((p) => p !== item);
-				this.renderParticipants();
-			},
-		});
 	}
 
 	private renderSimpleFields(contentEl: HTMLElement): void {
@@ -1152,32 +1132,8 @@ export abstract class BaseEventModal extends Modal {
 		);
 
 		if (autoAssignedCategories.length > 0) {
-			this.selectedCategories = autoAssignedCategories;
-			this.renderCategories();
+			this.categoriesChipList?.setItems(autoAssignedCategories);
 		}
-	}
-
-	protected renderCategories(): void {
-		if (!this.categoriesContainer) return;
-
-		const categoriesWithColors = this.bundle.categoryTracker.getCategoriesWithColors();
-		const colorMap = new Map(categoriesWithColors.map((c) => [c.name, c.color]));
-		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
-
-		renderChipList({
-			container: this.categoriesContainer,
-			items: this.selectedCategories,
-			emptyText: "No categories",
-			renderPrefix: (chipEl, item) => {
-				const dot = chipEl.createEl("span", { cls: cls("category-color-dot") });
-				dot.style.setProperty("--category-color", colorMap.get(item) || defaultColor);
-			},
-			onNameClick: (item) => this.openCategoryEventsModal(item),
-			onRemove: (item) => {
-				this.selectedCategories = this.selectedCategories.filter((c) => c !== item);
-				this.renderCategories();
-			},
-		});
 	}
 
 	private openAssignCategoriesModal(): void {
@@ -1186,10 +1142,15 @@ export abstract class BaseEventModal extends Modal {
 		const categories = this.bundle.categoryTracker.getCategoriesWithColors();
 		const defaultColor = this.bundle.settingsStore.currentSettings.defaultNodeColor;
 
-		openCategoryAssignModal(this.app, categories, defaultColor, this.selectedCategories, (selectedCategories) => {
-			this.selectedCategories = selectedCategories;
-			this.renderCategories();
-		});
+		openCategoryAssignModal(
+			this.app,
+			categories,
+			defaultColor,
+			this.categoriesChipList?.value ?? [],
+			(selectedCategories) => {
+				this.categoriesChipList!.setItems(selectedCategories);
+			}
+		);
 	}
 
 	private openCategoryEventsModal(categoryName: string): void {
@@ -1263,9 +1224,9 @@ export abstract class BaseEventModal extends Modal {
 			start: this.startInput.value,
 			end: this.endInput.value,
 			date: this.dateInput.value,
-			categories: [...this.selectedCategories],
-			participants: [...this.selectedParticipants],
-			prerequisites: [...this.selectedPrerequisites],
+			categories: this.categoriesChipList?.value ?? [],
+			participants: this.participantsChipList?.value ?? [],
+			prerequisites: this.prerequisitesChipList?.value ?? [],
 			location: String(fv["location"] ?? ""),
 			icon: String(fv["icon"] ?? ""),
 			breakMinutes: String(fv["breakMinutes"] ?? ""),
@@ -1307,12 +1268,9 @@ export abstract class BaseEventModal extends Modal {
 			this.dateInput.value = state.date;
 		}
 
-		this.selectedCategories = [...state.categories];
-		this.renderCategories();
-		this.selectedParticipants = [...state.participants];
-		this.renderParticipants();
-		this.selectedPrerequisites = [...state.prerequisites];
-		this.renderPrerequisites();
+		this.categoriesChipList?.setItems(state.categories);
+		this.participantsChipList?.setItems(state.participants);
+		this.prerequisitesChipList?.setItems(state.prerequisites);
 
 		this.setSimpleFieldValues({
 			location: state.location,
@@ -1513,8 +1471,7 @@ export abstract class BaseEventModal extends Modal {
 					this.bundle.plugin.isProEnabled
 				);
 				if (autoAssigned.length > 0) {
-					this.selectedCategories = autoAssigned;
-					this.renderCategories();
+					this.categoriesChipList?.setItems(autoAssigned);
 				}
 			}
 		}
@@ -1571,12 +1528,13 @@ export abstract class BaseEventModal extends Modal {
 			settings,
 			{
 				...parsed,
-				categories: this.selectedCategories,
-				participants: this.selectedParticipants.length > 0 ? this.selectedParticipants : undefined,
+				categories: this.categoriesChipList?.value ?? [],
+				participants:
+					(this.participantsChipList?.value ?? []).length > 0 ? this.participantsChipList!.value : undefined,
 			},
 			{
 				initialMarkAsDone: this.initialMarkAsDoneState,
-				prerequisites: this.selectedPrerequisites,
+				prerequisites: this.prerequisitesChipList?.value ?? [],
 				originalFrontmatter: original,
 			}
 		);
@@ -1690,15 +1648,21 @@ export abstract class BaseEventModal extends Modal {
 
 			const { frontmatter } = getFileAndFrontmatter(this.app, filePath);
 			this.originalFrontmatter = { ...frontmatter };
-
-			const settings = this.bundle.settingsStore.currentSettings;
-			this.selectedCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
-
-			if (this.selectedCategories.length > 0) {
-				this.suppressAutoCategories = true;
-			}
 		} catch (error) {
 			console.error("[EventModal] Error loading existing frontmatter:", error);
+		}
+	}
+
+	protected loadCategoryData(): void {
+		const filePath = this.event.extendedProps?.filePath;
+		if (!filePath) return;
+
+		const settings = this.bundle.settingsStore.currentSettings;
+		const categories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
+		this.categoriesChipList?.setItems(categories);
+
+		if (categories.length > 0) {
+			this.suppressAutoCategories = true;
 		}
 	}
 
