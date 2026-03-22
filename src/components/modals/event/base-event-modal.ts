@@ -1612,6 +1612,10 @@ export abstract class BaseEventModal extends Modal {
 
 			const settings = this.bundle.settingsStore.currentSettings;
 			this.selectedCategories = getCategoriesFromFilePath(this.app, filePath, settings.categoryProp);
+
+			if (this.selectedCategories.length > 0) {
+				this.suppressAutoCategories = true;
+			}
 		} catch (error) {
 			console.error("[EventModal] Error loading existing frontmatter:", error);
 		}
