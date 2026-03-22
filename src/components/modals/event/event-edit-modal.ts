@@ -1,10 +1,15 @@
-import { parseIntoList, parsePositiveInt, serializeFrontmatterValue } from "@real1ty-obsidian-plugins";
+import {
+	calculateDurationMinutes,
+	parseIntoList,
+	parsePositiveInt,
+	serializeFrontmatterValue,
+} from "@real1ty-obsidian-plugins";
 
 import { MinimizedModalManager } from "../../../core/minimized-modal-manager";
 import { isWeekdaySupported } from "../../../types/recurring-event";
 import type { Weekday } from "../../../utils/date-recurrence";
 import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/event-naming";
-import { categorizeProperties } from "../../../utils/format";
+import { categorizeProperties, formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
 import { BaseEventModal } from "./base-event-modal";
 import { loadSimpleFieldValues } from "./event-frontmatter-mapper";
 
@@ -136,6 +141,7 @@ export class EventEditModal extends BaseEventModal {
 			this.titleInput.value = this.displayTitle;
 		}
 
+		this.loadDateTimeFields();
 		this.loadRecurringEventData();
 		this.loadSimpleFields();
 		this.loadNotificationData();
@@ -151,6 +157,25 @@ export class EventEditModal extends BaseEventModal {
 			this.stopwatch?.start();
 			this.saveEvent();
 			return;
+		}
+	}
+
+	private loadDateTimeFields(): void {
+		const settings = this.bundle.settingsStore.currentSettings;
+		const fmStart = this.originalFrontmatter[settings.startProp];
+		const fmEnd = this.originalFrontmatter[settings.endProp];
+
+		if (typeof fmStart === "string" && fmStart) {
+			this.startInput.value = formatDateTimeForInput(fmStart);
+			this.dateInput.value = formatDateOnly(fmStart);
+		}
+
+		if (typeof fmEnd === "string" && fmEnd) {
+			this.endInput.value = formatDateTimeForInput(fmEnd);
+		}
+
+		if (this.durationInput && typeof fmStart === "string" && typeof fmEnd === "string" && fmStart && fmEnd) {
+			this.durationInput.value = calculateDurationMinutes(fmStart, fmEnd).toString();
 		}
 	}
 
