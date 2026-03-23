@@ -1,4 +1,5 @@
 export * from "./chip-list";
+export * from "./collapsible-section";
 export * from "./frontmatter-propagation-modal";
 export * from "./pie-chart";
 export * from "./progress-modal";
