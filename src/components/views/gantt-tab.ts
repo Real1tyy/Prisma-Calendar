@@ -13,6 +13,7 @@ import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 
 const REFRESH_DEBOUNCE_MS = 100;
 const GANTT_STYLE_ID = "prisma-gantt-vendor-css";
+const FALLBACK_HEIGHT = 500;
 
 export function sanitizeGanttId(filePath: string): string {
 	return filePath.replace(/[^a-zA-Z0-9]/g, "_");
@@ -36,7 +37,7 @@ function buildTasks(
 	graph: DependencyGraph,
 	tracker: CalendarBundle["prerequisiteTracker"]
 ): Task[] {
-	const tasks = events
+	return events
 		.filter((event) => tracker.isConnected(event.ref.filePath))
 		.map((event) => {
 			const { start, end } = getTaskDates(event);
@@ -57,48 +58,6 @@ function buildTasks(
 
 			return task;
 		});
-
-	return sortTasksByChain(tasks);
-}
-
-function sortTasksByChain(tasks: Task[]): Task[] {
-	if (tasks.length === 0) return tasks;
-
-	const taskById = new Map(tasks.map((t) => [t.id, t]));
-	const adjacency = new Map<string, Set<string>>();
-	for (const t of tasks) {
-		if (!adjacency.has(t.id)) adjacency.set(t.id, new Set());
-		for (const dep of t.dependencies ?? []) {
-			if (!taskById.has(dep)) continue;
-			if (!adjacency.has(dep)) adjacency.set(dep, new Set());
-			adjacency.get(t.id)!.add(dep);
-			adjacency.get(dep)!.add(t.id);
-		}
-	}
-
-	const visited = new Set<string>();
-	const components: Task[][] = [];
-
-	for (const task of tasks) {
-		if (visited.has(task.id)) continue;
-		const component: Task[] = [];
-		const queue = [task.id];
-		while (queue.length > 0) {
-			const id = queue.pop()!;
-			if (visited.has(id)) continue;
-			visited.add(id);
-			const t = taskById.get(id);
-			if (t) component.push(t);
-			for (const neighbor of adjacency.get(id) ?? []) {
-				if (!visited.has(neighbor)) queue.push(neighbor);
-			}
-		}
-		component.sort((a, b) => a.start.localeCompare(b.start));
-		components.push(component);
-	}
-
-	components.sort((a, b) => a[0].start.localeCompare(b[0].start));
-	return components.flat();
 }
 
 function injectVendorCss(): void {
@@ -109,6 +68,147 @@ function injectVendorCss(): void {
 	document.head.appendChild(style);
 }
 
+// ─── Row Packing ────────────────────────────────────────────
+
+interface InternalTask {
+	id: string;
+	name: string;
+	_start: Date;
+	_end: Date;
+	_index: number;
+	_arrayIndex: number;
+	dependencies: string[];
+}
+
+const LABEL_CHAR_WIDTH_PX = 7;
+const DEFAULT_COLUMN_WIDTH_PX = 45;
+const MS_PER_DAY = 86_400_000;
+
+/**
+ * Returns the visual end time of a task, accounting for the label
+ * extending to the right of short bars.
+ */
+function visualEndTime(task: InternalTask): number {
+	const barEnd = +task._end;
+	const labelWidthDays = Math.ceil((task.name.length * LABEL_CHAR_WIDTH_PX) / DEFAULT_COLUMN_WIDTH_PX);
+	const labelEnd = +task._start + labelWidthDays * MS_PER_DAY;
+	return Math.max(barEnd, labelEnd);
+}
+
+/**
+ * Greedy bin-packing: assigns `_index` (row) so that independent
+ * chains share rows when their time ranges don't overlap visually.
+ * Tasks with dependency relationships are forced onto separate rows
+ * (dependent always on a higher row than its prerequisite).
+ */
+export function packGanttRows(tasks: InternalTask[]): number {
+	if (tasks.length === 0) return 0;
+
+	const sorted = [...tasks].sort((a, b) => +a._start - +b._start);
+	const taskRowMap = new Map<string, number>();
+	const rowEndTimes: number[] = [];
+
+	for (const task of sorted) {
+		let minRow = 0;
+		for (const depId of task.dependencies) {
+			const depRow = taskRowMap.get(depId);
+			if (depRow !== undefined) {
+				minRow = Math.max(minRow, depRow + 1);
+			}
+		}
+
+		const vEnd = visualEndTime(task);
+
+		let placed = false;
+		for (let r = minRow; r < rowEndTimes.length; r++) {
+			if (+task._start >= rowEndTimes[r]) {
+				task._index = r;
+				taskRowMap.set(task.id, r);
+				rowEndTimes[r] = vEnd;
+				placed = true;
+				break;
+			}
+		}
+
+		if (!placed) {
+			task._index = rowEndTimes.length;
+			taskRowMap.set(task.id, rowEndTimes.length);
+			rowEndTimes.push(vEnd);
+		}
+	}
+
+	return rowEndTimes.length;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyGantt = any;
+
+/**
+ * Patches a frappe-gantt instance so that:
+ *  1. `setup_tasks` applies row packing after default index assignment
+ *  2. `make_arrows` looks up bars by `_arrayIndex` (array position)
+ *     instead of `_index` (which is now the packed row)
+ *  3. `make_grid_background` uses the packed row count for grid height
+ */
+function patchGanttInstance(ganttInst: AnyGantt): void {
+	let ArrowCtor: AnyGantt = null;
+	if (ganttInst.arrows?.length > 0) {
+		ArrowCtor = ganttInst.arrows[0].constructor;
+	}
+
+	const origSetupTasks = ganttInst.setup_tasks.bind(ganttInst);
+	ganttInst.setup_tasks = function (tasks: AnyGantt[]) {
+		origSetupTasks(tasks);
+
+		for (let i = 0; i < this.tasks.length; i++) {
+			this.tasks[i]._arrayIndex = i;
+		}
+		this._packedRowCount = packGanttRows(this.tasks);
+
+		if (!ArrowCtor && this.arrows?.length > 0) {
+			ArrowCtor = this.arrows[0].constructor;
+		}
+	};
+
+	const origMakeGridBg = ganttInst.make_grid_background.bind(ganttInst);
+	ganttInst.make_grid_background = function (this: AnyGantt) {
+		origMakeGridBg();
+
+		const count: number = this._packedRowCount ?? this.tasks.length;
+		const rowH: number = this.options.bar_height + this.options.padding;
+		const contentH = this.config.header_height + this.options.padding + rowH * count - 10;
+		const minH = typeof this.options.container_height === "number" ? this.options.container_height : 0;
+		const h = Math.max(contentH, minH);
+
+		this.grid_height = h;
+		const bg = this.$svg.querySelector(".grid-background");
+		if (bg) bg.setAttribute("height", String(h));
+		this.$svg.setAttribute("height", String(h));
+		this.$container.style.height = h + "px";
+	};
+
+	ganttInst.make_arrows = function (this: AnyGantt) {
+		this.arrows = [];
+		for (const task of this.tasks) {
+			const arrows = (task.dependencies as string[])
+				.map((taskId: string) => {
+					const dependency = this.get_task(taskId);
+					if (!dependency) return null;
+					const fromBar = this.bars[dependency._arrayIndex];
+					const toBar = this.bars[task._arrayIndex];
+					if (!fromBar || !toBar || !ArrowCtor) return null;
+					const arrow = new ArrowCtor(this, fromBar, toBar);
+					this.layers.arrow.appendChild(arrow.element);
+					return arrow;
+				})
+				.filter(Boolean);
+			this.arrows = this.arrows.concat(arrows);
+		}
+	};
+}
+
+// ─── Tab Definition ─────────────────────────────────────────
+
 export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let gantt: Gantt | null = null;
 	let mergedSub: Subscription | null = null;
@@ -116,23 +216,51 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	let wrapperEl: HTMLElement | null = null;
 	let emptyEl: HTMLElement | null = null;
 	let eventsSnapshot: CalendarEvent[] = [];
-	let wheelHandler: ((e: WheelEvent) => void) | null = null;
 
-	function createGantt(tasks: Task[]): void {
+	function enableDragToPan(container: HTMLElement): void {
+		let isDragging = false;
+		let startX = 0;
+		let startY = 0;
+		let scrollLeft = 0;
+		let scrollTop = 0;
+
+		container.addEventListener("mousedown", (e) => {
+			const target = e.target as HTMLElement;
+			if (target.closest(".bar-wrapper, .handle, .today-button, .viewmode-select")) return;
+			isDragging = true;
+			startX = e.clientX;
+			startY = e.clientY;
+			scrollLeft = container.scrollLeft;
+			scrollTop = container.scrollTop;
+			container.style.cursor = "grabbing";
+			e.preventDefault();
+		});
+
+		document.addEventListener("mousemove", (e) => {
+			if (!isDragging) return;
+			container.scrollLeft = scrollLeft - (e.clientX - startX);
+			container.scrollTop = scrollTop - (e.clientY - startY);
+		});
+
+		document.addEventListener("mouseup", () => {
+			if (!isDragging) return;
+			isDragging = false;
+			container.style.cursor = "";
+		});
+	}
+
+	function initGantt(tasks: Task[], containerHeight: number): void {
 		if (!wrapperEl) return;
 		wrapperEl.empty();
 
 		gantt = new Gantt(wrapperEl, tasks, {
-			view_mode: "Week",
-			view_mode_select: true,
-			view_modes: ["Day", "Week", "Month", "Year"],
+			view_mode: "Day",
 			readonly: true,
 			readonly_dates: true,
 			readonly_progress: true,
 			today_button: true,
 			scroll_to: "today",
-			container_height: "auto",
-			infinite_padding: false,
+			container_height: containerHeight,
 			popup: () => false,
 			on_click: (task: Task) => {
 				const event = eventsSnapshot.find((e) => sanitizeGanttId(e.ref.filePath) === task.id);
@@ -148,19 +276,19 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 			},
 		});
 
-		const container = wrapperEl.querySelector<HTMLElement>(".gantt-container");
-		if (container) {
-			wheelHandler = (e: WheelEvent) => {
-				if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-					e.preventDefault();
-					container.scrollLeft += e.deltaY;
-				}
-			};
-			container.addEventListener("wheel", wheelHandler, { passive: false });
+		patchGanttInstance(gantt);
+
+		const g = gantt as AnyGantt;
+		for (let i = 0; i < g.tasks.length; i++) {
+			g.tasks[i]._arrayIndex = i;
 		}
+		g._packedRowCount = packGanttRows(g.tasks);
+		g.change_view_mode();
+
+		enableDragToPan(g.$container);
 	}
 
-	function rebuild(): void {
+	function rebuild(el: HTMLElement): void {
 		eventsSnapshot = bundle.eventStore.getAllEvents();
 		const graph = bundle.prerequisiteTracker.getGraph();
 		const tasks = buildTasks(eventsSnapshot, graph, bundle.prerequisiteTracker);
@@ -179,17 +307,13 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 			return;
 		}
 
-		createGantt(tasks);
+		const containerHeight = el.clientHeight || FALLBACK_HEIGHT;
+		initGantt(tasks, containerHeight);
 	}
 
 	function cleanupContent(): void {
 		mergedSub?.unsubscribe();
 		mergedSub = null;
-		if (wheelHandler && wrapperEl) {
-			const container = wrapperEl.querySelector<HTMLElement>(".gantt-container");
-			container?.removeEventListener("wheel", wheelHandler);
-		}
-		wheelHandler = null;
 		gantt = null;
 		wrapperEl = null;
 		emptyEl = null;
@@ -216,12 +340,12 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				injectVendorCss();
 
 				emptyEl = el.createDiv({
-					cls: cls("gantt-empty"),
+					cls: cls("gantt-empty", "hidden"),
 					text: "No prerequisite connections found. Add prerequisites to events to see them here.",
 				});
 				wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
 
-				rebuild();
+				rebuild(el);
 
 				mergedSub = merge(
 					bundle.eventStore.changes$,
@@ -230,7 +354,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				)
 					.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
 					.subscribe(() => {
-						rebuild();
+						rebuild(el);
 					});
 			}
 

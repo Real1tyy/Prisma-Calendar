@@ -16,10 +16,13 @@ Events must have the Prerequisite property configured. See [Properties](../../co
 
 ## Controls
 
-- **View mode** (Day / Week / Month / Year): Switch the time scale of the chart.
-- **Connected only**: When checked, only events that participate in at least one prerequisite relationship are shown.
+- **Today button**: Scrolls the chart to the current date.
+- Click any bar to open the event preview modal.
+- **Drag to pan**: Left-click and drag anywhere on the canvas to scroll horizontally and vertically.
 
-Click any bar to open the event preview modal.
+## Layout
+
+The chart fills the full height of the tab. Events from independent prerequisite chains are packed into shared rows when their time ranges don't overlap, keeping the layout compact. Within a chain, dependent events are always placed below their prerequisites.
 
 ## Performance
 
