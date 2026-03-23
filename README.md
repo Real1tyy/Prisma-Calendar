@@ -12,7 +12,7 @@ It's not just a calendar. It's a way to **see your entire vault through time**.
 
 **Every setting is configurable. Every change is reactive. Every action is undoable.**
 
-Recurring events that generate real notes. Batch operations across dozens of events. Time-based statistics. CalDAV sync. A scriptable API. Prisma Calendar handles the workflows other calendars can't.
+Four dedicated views — Calendar, Timeline, Gantt, and Heatmap — each built for a different way of thinking about time. A full scripting API. External integrations sync. Recurring events that generate real notes. Batch operations, undo/redo history, and time-based analytics accross multiple series.
 
 **[View Full Product Page →](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=prisma-calendar&utm_medium=readme&utm_content=product-page)**
 
