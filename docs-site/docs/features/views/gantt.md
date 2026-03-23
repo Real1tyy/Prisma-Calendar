@@ -8,6 +8,16 @@ sidebar_label: Gantt
 The Gantt tab requires [Prisma Calendar Pro](../free-vs-pro.md).
 :::
 
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/GanttView.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/GanttView.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 The Gantt tab renders all events as horizontal bars on a date timeline, with native dependency arrows between prerequisite pairs.
 
 ## Prerequisites
