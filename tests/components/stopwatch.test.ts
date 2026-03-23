@@ -50,6 +50,18 @@ function setupObsidianDOMHelpers(element: HTMLElement) {
 		setupObsidianDOMHelpers(span);
 		return span;
 	};
+
+	(element as any).setText = function (text: string) {
+		this.textContent = text;
+	};
+
+	(element as any).addClass = function (cls: string) {
+		this.classList.add(cls);
+	};
+
+	(element as any).removeClass = function (cls: string) {
+		this.classList.remove(cls);
+	};
 }
 
 describe("Stopwatch", () => {

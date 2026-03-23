@@ -3968,40 +3968,28 @@ select[class*="prisma-"]:focus-visible {
 
 .prisma-stopwatch-container {
 	background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-secondary-alt) 100%);
-	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-m);
-	overflow: hidden;
 }
 
-.prisma-stopwatch-header {
-	display: flex;
-	align-items: center;
-	gap: 8px;
+.prisma-stopwatch-container .prisma-collapsible {
+	border: none;
+}
+
+.prisma-stopwatch-container .prisma-collapsible-header {
 	padding: 12px 16px;
-	cursor: pointer;
-	user-select: none;
-	transition: background-color 0.15s ease;
+	background: transparent;
 }
 
-.prisma-stopwatch-header:hover {
-	background-color: var(--background-modifier-hover);
-}
-
-.prisma-stopwatch-toggle-icon {
-	font-size: 10px;
-	color: var(--text-muted);
+.prisma-stopwatch-container .prisma-collapsible-toggle {
 	transition: transform 0.2s ease;
-	width: 12px;
-	text-align: center;
 }
 
-.prisma-stopwatch-header-text {
+.prisma-stopwatch-container .prisma-collapsible-label {
 	font-size: var(--font-ui-small);
 	font-weight: var(--font-weight-medium);
-	color: var(--text-normal);
 }
 
-.prisma-stopwatch-content {
+.prisma-stopwatch-container .prisma-collapsible-body {
 	padding: 16px;
 	border-top: 1px solid var(--background-modifier-border);
 }
@@ -4988,25 +4976,25 @@ select[class*="prisma-"]:focus-visible {
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.prisma-ai-chat-thread-list-header {
-	display: flex;
-	align-items: center;
+.prisma-ai-chat-thread-list .prisma-collapsible {
+	border: none;
+}
+
+.prisma-ai-chat-thread-list .prisma-collapsible-header {
 	gap: 6px;
 	padding: 8px 12px;
-	cursor: pointer;
+	background: transparent;
 	font-size: var(--font-ui-small);
 	color: var(--text-muted);
-	user-select: none;
 }
 
-.prisma-ai-chat-thread-list-header:hover {
+.prisma-ai-chat-thread-list .prisma-collapsible-header:hover {
 	color: var(--text-normal);
+	background: transparent;
 }
 
-.prisma-ai-chat-thread-list-icon {
-	font-size: 10px;
-	width: 12px;
-	text-align: center;
+.prisma-ai-chat-thread-list .prisma-collapsible-label {
+	font-weight: normal;
 }
 
 .prisma-ai-chat-thread-new-btn {
@@ -5024,7 +5012,7 @@ select[class*="prisma-"]:focus-visible {
 	color: var(--text-normal);
 }
 
-.prisma-ai-chat-thread-list-content {
+.prisma-ai-chat-thread-list .prisma-collapsible-body {
 	padding: 0 12px 8px;
 }
 

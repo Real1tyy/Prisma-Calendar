@@ -1,4 +1,4 @@
-import { cls, MountableView } from "@real1ty-obsidian-plugins";
+import { cls, MountableView, renderCollapsibleSection } from "@real1ty-obsidian-plugins";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { distinctUntilChanged, skip } from "rxjs";
 
@@ -36,13 +36,11 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	private textareaEl!: HTMLTextAreaElement;
 	private sendBtnEl!: HTMLButtonElement;
 	private threadListContentEl!: HTMLElement;
-	private threadListHeaderIconEl!: HTMLElement;
 	private isLoading = false;
 	private markdownComponent = new Component();
 	private selectedPromptIds = new Set<string>();
 	private pendingOperations: AIOperation[] = [];
 	private currentMode: AIMode = "query";
-	private threadListOpen = false;
 	private threadSearchQuery = "";
 
 	constructor(
@@ -176,47 +174,32 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 	}
 
 	private buildThreadList(container: HTMLElement): void {
-		const threadListEl = container.createDiv({ cls: cls("ai-chat-thread-list") });
+		const wrapper = container.createDiv({ cls: cls("ai-chat-thread-list") });
 
-		const header = threadListEl.createDiv({ cls: cls("ai-chat-thread-list-header") });
-
-		this.threadListHeaderIconEl = header.createSpan({ cls: cls("ai-chat-thread-list-icon"), text: "▶" });
-
-		header.createSpan({ text: "Conversations" });
-
-		const newBtn = header.createEl("button", {
-			cls: cls("ai-chat-thread-new-btn"),
-			text: "+",
-			attr: { "aria-label": "New conversation" },
-		});
-		newBtn.addEventListener("click", (e) => {
-			e.stopPropagation();
-			void this.chatManager.startNewThread(this.currentMode);
-			this.pendingOperations = [];
-			this.renderMessages();
-			this.renderThreadList();
-		});
-
-		header.addEventListener("click", () => {
-			this.toggleThreadList();
-		});
-
-		this.threadListContentEl = threadListEl.createDiv({
-			cls: `${cls("ai-chat-thread-list-content")} ${cls("hidden")}`,
+		renderCollapsibleSection(wrapper, {
+			cssPrefix: "prisma-",
+			label: "Conversations",
+			startCollapsed: true,
+			renderBody: (body) => {
+				this.threadListContentEl = body;
+			},
+			renderHeaderActions: (header) => {
+				const newBtn = header.createEl("button", {
+					cls: cls("ai-chat-thread-new-btn"),
+					text: "+",
+					attr: { "aria-label": "New conversation" },
+				});
+				newBtn.addEventListener("click", (e) => {
+					e.stopPropagation();
+					void this.chatManager.startNewThread(this.currentMode);
+					this.pendingOperations = [];
+					this.renderMessages();
+					this.renderThreadList();
+				});
+			},
 		});
 
 		this.renderThreadList();
-	}
-
-	private toggleThreadList(): void {
-		this.threadListOpen = !this.threadListOpen;
-		if (this.threadListOpen) {
-			this.threadListContentEl.removeClass(cls("hidden"));
-			this.threadListHeaderIconEl.setText("▼");
-		} else {
-			this.threadListContentEl.addClass(cls("hidden"));
-			this.threadListHeaderIconEl.setText("▶");
-		}
 	}
 
 	private renderThreadList(): void {

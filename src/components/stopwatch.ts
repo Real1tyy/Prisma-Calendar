@@ -1,5 +1,11 @@
-import { cls, formatMsToHHMMSS } from "@real1ty-obsidian-plugins";
+import {
+	cls,
+	type CollapsibleSectionHandle,
+	formatMsToHHMMSS,
+	renderCollapsibleSection,
+} from "@real1ty-obsidian-plugins";
 
+import { CSS_PREFIX } from "../constants";
 import type { StopwatchSnapshot, StopwatchState } from "../types/stopwatch";
 
 interface StopwatchCallbacks {
@@ -16,11 +22,8 @@ export class Stopwatch {
 	private sessionStartTime: Date | null = null;
 	private totalBreakMs = 0;
 	private intervalId: number | null = null;
-	private isExpanded = false;
-
 	private container!: HTMLElement;
-	private contentEl!: HTMLElement;
-	private toggleIcon!: HTMLElement;
+	private collapsibleHandle!: CollapsibleSectionHandle;
 	private displayEl!: HTMLElement;
 	private breakDisplayEl!: HTMLElement;
 	private midContainer!: HTMLElement;
@@ -45,27 +48,19 @@ export class Stopwatch {
 	render(parent: HTMLElement): HTMLElement {
 		this.container = parent.createDiv(cls("stopwatch-container"));
 
-		// Collapsible header
-		const header = this.container.createDiv(cls("stopwatch-header"));
-		header.addEventListener("click", () => {
-			this.toggleExpanded();
+		this.collapsibleHandle = renderCollapsibleSection(this.container, {
+			cssPrefix: CSS_PREFIX,
+			label: "Time tracker",
+			startCollapsed: true,
+			renderBody: (body) => this.renderBody(body),
 		});
 
-		this.toggleIcon = header.createSpan({
-			text: "▶",
-			cls: cls("stopwatch-toggle-icon"),
-		});
-		header.createSpan({
-			text: "Time tracker",
-			cls: cls("stopwatch-header-text"),
-		});
+		return this.container;
+	}
 
-		// Collapsible content (hidden by default)
-		this.contentEl = this.container.createDiv(cls("stopwatch-content"));
-		this.contentEl.classList.add("prisma-hidden");
-
+	private renderBody(contentEl: HTMLElement): void {
 		// Timer display section
-		const displaySection = this.contentEl.createDiv(cls("stopwatch-display-section"));
+		const displaySection = contentEl.createDiv(cls("stopwatch-display-section"));
 
 		// Main elapsed time display
 		const mainDisplay = displaySection.createDiv(cls("stopwatch-main-display"));
@@ -87,7 +82,7 @@ export class Stopwatch {
 		});
 
 		// Controls section
-		const controlsSection = this.contentEl.createDiv(cls("stopwatch-controls"));
+		const controlsSection = contentEl.createDiv(cls("stopwatch-controls"));
 
 		// Start button
 		this.startBtn = controlsSection.createEl("button", {
@@ -148,7 +143,7 @@ export class Stopwatch {
 		});
 
 		// Mid display (shows Session when running, Current Break when paused) - at bottom
-		const midDisplaySection = this.contentEl.createDiv(cls("stopwatch-mid-display-section"));
+		const midDisplaySection = contentEl.createDiv(cls("stopwatch-mid-display-section"));
 		this.midContainer = midDisplaySection.createDiv(cls("stopwatch-mid-display"));
 		this.midLabelEl = this.midContainer.createSpan({
 			text: "Session:",
@@ -159,20 +154,10 @@ export class Stopwatch {
 			cls: cls("stopwatch-mid-time"),
 		});
 		this.midContainer.classList.add("prisma-hidden");
-
-		return this.container;
 	}
 
 	expand(): void {
-		if (!this.isExpanded) {
-			this.toggleExpanded();
-		}
-	}
-
-	private toggleExpanded(): void {
-		this.isExpanded = !this.isExpanded;
-		this.contentEl.classList.toggle("prisma-hidden", !this.isExpanded);
-		this.toggleIcon.textContent = this.isExpanded ? "▼" : "▶";
+		this.collapsibleHandle.expand();
 	}
 
 	destroy(): void {
@@ -428,9 +413,7 @@ export class Stopwatch {
 		// If the stopwatch was running or paused, restart the interval
 		if (this.state === "running" || this.state === "paused") {
 			this.startInterval();
-			if (!this.isExpanded) {
-				this.toggleExpanded();
-			}
+			this.collapsibleHandle.expand();
 		}
 	}
 }
