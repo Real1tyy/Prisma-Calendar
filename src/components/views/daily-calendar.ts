@@ -182,6 +182,11 @@ export function createDailyCalendar(
 
 	applyContainerStyles(calendarContainer, settings);
 
+	const resizeObserver = new ResizeObserver(() => {
+		calendar.updateSize();
+	});
+	resizeObserver.observe(container);
+
 	// ─── Event Refresh ───────────────────────────────────────────
 
 	function scheduleRefresh(): void {
@@ -383,6 +388,7 @@ export function createDailyCalendar(
 		prev: () => calendar.prev(),
 		next: () => calendar.next(),
 		destroy: () => {
+			resizeObserver.disconnect();
 			if (refreshRafId !== null) {
 				cancelAnimationFrame(refreshRafId);
 				refreshRafId = null;

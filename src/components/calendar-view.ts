@@ -2775,6 +2775,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const keydownHandler = (e: KeyboardEvent) => {
 			if (!this.calendar) return;
 
+			// Skip when the calendar tab is not visible (hidden by tab container)
+			if (!this.container.offsetParent) return;
+
 			// Only handle arrow keys without any modifiers
 			if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
 
