@@ -1,4 +1,11 @@
-import { addCls, cls, removeCls, type TabDefinition, toLocalISOString } from "@real1ty-obsidian-plugins";
+import {
+	addCls,
+	cls,
+	ColorEvaluator,
+	removeCls,
+	type TabDefinition,
+	toLocalISOString,
+} from "@real1ty-obsidian-plugins";
 import Gantt, { type Task } from "frappe-gantt";
 import frappeGanttCss from "frappe-gantt/dist/frappe-gantt.css";
 import type { App } from "obsidian";
@@ -8,6 +15,8 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { DependencyGraph } from "../../core/dependency-graph";
 import { PRO_FEATURES } from "../../core/license";
 import type { CalendarEvent } from "../../types/calendar";
+import type { SingleCalendarConfig } from "../../types/settings";
+import { resolveEventColor } from "../../utils/event-color";
 import { showEventPreviewModal } from "../modals";
 import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 
@@ -35,7 +44,9 @@ function getTaskDates(event: CalendarEvent): { start: string; end: string } {
 function buildTasks(
 	events: CalendarEvent[],
 	graph: DependencyGraph,
-	tracker: CalendarBundle["prerequisiteTracker"]
+	tracker: CalendarBundle["prerequisiteTracker"],
+	bundle: CalendarBundle,
+	colorEvaluator: ColorEvaluator<SingleCalendarConfig>
 ): Task[] {
 	return events
 		.filter((event) => tracker.isConnected(event.ref.filePath))
@@ -43,6 +54,7 @@ function buildTasks(
 			const { start, end } = getTaskDates(event);
 			const prereqs = graph.get(event.ref.filePath) ?? [];
 			const dependencies = prereqs.map(sanitizeGanttId);
+			const color = resolveEventColor(event.meta ?? {}, bundle, colorEvaluator);
 
 			const task: Task = {
 				id: sanitizeGanttId(event.ref.filePath),
@@ -50,6 +62,7 @@ function buildTasks(
 				start,
 				end,
 				progress: 0,
+				color,
 			};
 
 			if (dependencies.length > 0) {
@@ -216,6 +229,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	let wrapperEl: HTMLElement | null = null;
 	let emptyEl: HTMLElement | null = null;
 	let eventsSnapshot: CalendarEvent[] = [];
+	let colorEvaluator: ColorEvaluator<SingleCalendarConfig> | null = null;
 
 	function enableDragToPan(container: HTMLElement): void {
 		let isDragging = false;
@@ -291,7 +305,8 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	function rebuild(el: HTMLElement): void {
 		eventsSnapshot = bundle.eventStore.getAllEvents();
 		const graph = bundle.prerequisiteTracker.getGraph();
-		const tasks = buildTasks(eventsSnapshot, graph, bundle.prerequisiteTracker);
+		if (!colorEvaluator) colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
+		const tasks = buildTasks(eventsSnapshot, graph, bundle.prerequisiteTracker, bundle, colorEvaluator);
 
 		if (tasks.length === 0) {
 			gantt = null;
@@ -314,6 +329,8 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	function cleanupContent(): void {
 		mergedSub?.unsubscribe();
 		mergedSub = null;
+		colorEvaluator?.destroy();
+		colorEvaluator = null;
 		gantt = null;
 		wrapperEl = null;
 		emptyEl = null;

@@ -20,6 +20,10 @@ Events must have the Prerequisite property configured. See [Properties](../../co
 - Click any bar to open the event preview modal.
 - **Drag to pan**: Left-click and drag anywhere on the canvas to scroll horizontally and vertically.
 
+## Colors
+
+Bars are colored using the same [Color Rules](../organization/color-rules.md) as the calendar view. Integration events (CalDAV, ICS) use their configured integration color.
+
 ## Layout
 
 The chart fills the full height of the tab. Events from independent prerequisite chains are packed into shared rows when their time ranges don't overlap, keeping the layout compact. Within a chain, dependent events are always placed below their prerequisites.

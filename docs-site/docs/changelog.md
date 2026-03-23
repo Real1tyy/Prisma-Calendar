@@ -11,6 +11,7 @@ All notable changes to this project will be documented here.
 - **Multi-color event mode**: New "Color mode" dropdown in Settings → Rules → Event colors lets you apply up to four color rule matches per event, splitting the event width into equal segments. Options: Don't color events, Color events (default, single color), or 2/3/4 colors. See [Color Rules](./features/organization/color-rules.md).
 - **Overflow color dots**: New "Show overflow color dots" toggle in Settings → Rules → Event colors. When enabled, displays color dots for matched color rules that exceed the color mode limit, so you can see all matching rules at a glance. See [Color Rules](./features/organization/color-rules.md).
 - **Trigger current event stopwatch**: New hotkey command that converts the active note into a calendar event with start time set to now, starts the time tracker, and auto-minimizes — all in one action. See [Hotkeys — Trigger Current Event Stopwatch](./features/advanced/hotkeys.md#trigger-current-event-stopwatch).
+- **Gantt event colors**: Gantt chart bars now use the same color rules as the calendar view. See [Gantt View](./features/views/gantt.md).
 
 ### Improved
 
