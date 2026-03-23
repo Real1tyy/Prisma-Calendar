@@ -4,21 +4,18 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.8.0 - 3/22/2026
+## 2.9.0 - 3/23/2026
 
 ### Added
 
 - **Multi-color event mode**: New "Color mode" dropdown in Settings → Rules → Event colors lets you apply up to four color rule matches per event, splitting the event width into equal segments. Options: Don't color events, Color events (default, single color), or 2/3/4 colors. See [Color Rules](./features/organization/color-rules.md).
 - **Overflow color dots**: New "Show overflow color dots" toggle in Settings → Rules → Event colors. When enabled, displays color dots for matched color rules that exceed the color mode limit, so you can see all matching rules at a glance. See [Color Rules](./features/organization/color-rules.md).
 - **Trigger current event stopwatch**: New hotkey command that converts the active note into a calendar event with start time set to now, starts the time tracker, and auto-minimizes — all in one action. See [Hotkeys — Trigger Current Event Stopwatch](./features/advanced/hotkeys.md#trigger-current-event-stopwatch).
-- **Context menu customization**: Right-click any event and select "Manage menu items..." at the bottom of the context menu to fully customize it. Items are grouped by section (Navigation, Edit, Move, Danger, Recurring) — reorder within sections via drag-and-drop or arrow buttons, drag items between sections to reassign them, rename labels, change icons, pick custom colors, and show/hide individual actions. All changes persist across sessions. No more digging through settings — configuration lives right where you use it. Existing show/hide preferences from previous versions are automatically migrated. See [Configuration — Context Menu](./configuration/toolbar-and-menus.md#context-menu).
 
 ### Improved
 
 - **Participants display**: Participants are now displayed individually with remove buttons instead of a plain comma-separated text field, matching how categories and prerequisites look. Supports both plain names and Obsidian `[[links]]`. See [Participants](./features/events/participants.md).
 - **Substring matching now applies to category presets**: The "Substring matching" toggle (Settings → Categories) now also applies to category assignment presets — when enabled, preset event names match as substrings instead of requiring exact matches. See [Categories — Substring Matching](./features/organization/categories.md#substring-matching-for-categories-and-presets).
-- **Timeline performance**: The timeline now loads events on demand as you pan and zoom, fetching only the visible time range instead of the entire event history. Previously, opening the timeline loaded every event in your vault at once. This applies to both the Timeline tab and series/category timeline modals. See [Timeline](./features/views/timeline.md).
-- **Gantt performance**: The Gantt tab now uses an incremental prerequisite tracker that updates in real time as events change, instead of rebuilding the entire dependency graph from scratch on every update. Prerequisite lookups are now instant regardless of vault size. See [Gantt View](./features/views/gantt.md).
 - **Heatmap day labels**: All seven day-of-week labels (Mon–Sun) now display on the heatmap's left axis, and label alignment has been adjusted to sit centered with their corresponding rows. See [Heatmap](./features/views/heatmap.md).
 - **Heatmap first day of week**: Both yearly and monthly heatmap views now correctly respect the "First day of week" setting — previously the day labels and cell positions were offset by one when set to Monday. See [Heatmap](./features/views/heatmap.md).
 
@@ -28,14 +25,30 @@ All notable changes to this project will be documented here.
 - **Gantt chart not filling the view height**: The chart only sized to its content instead of filling the available tab area. The Gantt container now fills the full view height. See [Gantt View](./features/views/gantt.md).
 - **Gantt chart stacking every event on a separate row**: Independent prerequisite chains were rendered as a single waterfall, wasting vertical space. Events from unrelated chains that don't overlap in time now share rows, producing a compact layout. See [Gantt View](./features/views/gantt.md).
 - **Gantt drag-to-pan navigation**: Left-click and drag anywhere on the Gantt chart canvas to pan horizontally and vertically. See [Gantt View](./features/views/gantt.md).
-- **Timezone conversion bugs**: Fixed a systemic UTC conversion issue that affected the entire plugin — most noticeably "Fill start time from previous event" and "Fill end time from next event" which could write incorrect times or clear values entirely. The same bug also affected event store queries, Gantt chart dates, AI context gathering, AI validation, batch selection, capacity indicators, statistics, timeline, and search. All datetime operations now use local time consistently.
-- **AI Manipulation modifying unrelated events**: In Manipulation mode, the AI would modify existing events that weren't mentioned by the user in order to resolve pre-existing overlaps. The no-overlap constraint now only applies to newly created events in Manipulation mode; existing events are only modified when the user explicitly requests it. See [AI Chat — Validation](./features/advanced/ai-chat.md#validation--auto-correction).
-- **Prerequisite connection arrows not updating on scroll**: Connection arrows were not reactive to scrolling or zoom changes — they stayed frozen in their initial positions. Arrows now update in real time as you scroll or change zoom levels, and render behind sticky headers (toolbar, day headers, all-day section) so they never obscure fixed UI elements. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
 - **Color rules matching categories by substring instead of exact name**: Color rules using `.includes()` (e.g., `Category.includes('Work')`) would incorrectly match categories containing that text as a substring (e.g., "Remote Work Planning"). Category values are now normalized to arrays before evaluation, ensuring exact element matching. See [Color Rules](./features/organization/color-rules.md).
 - **Edit modal using stale event data**: Editing an event could silently overwrite correct dates with outdated values if the file had been modified since the calendar last refreshed (e.g., after using "Fill end time from next event"). The edit modal now always reads the latest data from the file.
 - **Minimized modal losing date fields on restore and stopwatch trigger**: When restoring a minimized modal or triggering a new stopwatch while one was already running, date/time values were not carried through correctly — the previous event's end time could be lost and the restored modal showed empty Start Date and End Date fields. All form state (dates, duration, "generate past events" checkbox) is now fully preserved across minimize/restore cycles and stopwatch transitions. See [Time Tracker](./features/advanced/time-tracker.md).
 - **Keyboard navigation affecting calendar while on other tabs**: Arrow key navigation continued to move the calendar's date interval even when another tab (e.g., Daily Stats, Dual Daily) was active, causing the calendar to silently drift to an unintended date. Keyboard shortcuts are now disabled when the calendar tab is not visible.
 - **Daily Stats and Dual Daily calendars not rendering on tab switch**: Switching to Daily + Stats or Dual Daily tabs sometimes showed empty calendars with no events. The calendars were initialized while their container was still hidden, causing incorrect dimension calculations. Calendars also now automatically resize when their container dimensions change (e.g., opening developer tools).
+
+---
+
+## 2.8.0 - 3/21/2026
+
+### Added
+
+- **Context menu customization**: Right-click any event and select "Manage menu items..." at the bottom of the context menu to fully customize it. Items are grouped by section (Navigation, Edit, Move, Danger, Recurring) — reorder within sections via drag-and-drop or arrow buttons, drag items between sections to reassign them, rename labels, change icons, pick custom colors, and show/hide individual actions. All changes persist across sessions. No more digging through settings — configuration lives right where you use it. Existing show/hide preferences from previous versions are automatically migrated. See [Configuration — Context Menu](./configuration/toolbar-and-menus.md#context-menu).
+
+### Improved
+
+- **Timeline performance**: The timeline now loads events on demand as you pan and zoom, fetching only the visible time range instead of the entire event history. Previously, opening the timeline loaded every event in your vault at once. This applies to both the Timeline tab and series/category timeline modals. See [Timeline](./features/views/timeline.md).
+- **Gantt performance**: The Gantt tab now uses an incremental prerequisite tracker that updates in real time as events change, instead of rebuilding the entire dependency graph from scratch on every update. Prerequisite lookups are now instant regardless of vault size. See [Gantt View](./features/views/gantt.md).
+
+### Fixed
+
+- **Timezone conversion bugs**: Fixed a systemic UTC conversion issue that affected the entire plugin — most noticeably "Fill start time from previous event" and "Fill end time from next event" which could write incorrect times or clear values entirely. The same bug also affected event store queries, Gantt chart dates, AI context gathering, AI validation, batch selection, capacity indicators, statistics, timeline, and search. All datetime operations now use local time consistently.
+- **AI Manipulation modifying unrelated events**: In Manipulation mode, the AI would modify existing events that weren't mentioned by the user in order to resolve pre-existing overlaps. The no-overlap constraint now only applies to newly created events in Manipulation mode; existing events are only modified when the user explicitly requests it. See [AI Chat — Validation](./features/advanced/ai-chat.md#validation--auto-correction).
+- **Prerequisite connection arrows not updating on scroll**: Connection arrows were not reactive to scrolling or zoom changes — they stayed frozen in their initial positions. Arrows now update in real time as you scroll or change zoom levels, and render behind sticky headers (toolbar, day headers, all-day section) so they never obscure fixed UI elements. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
 
 ---
 
