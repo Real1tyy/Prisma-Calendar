@@ -680,10 +680,11 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 
 		const entry = visibleTabs[index];
 		const tab = getActiveChild(entry);
-		renderPanelIfNeeded(tab);
 		const panel = panelMap.get(tab.id);
-
 		if (panel) css.removeCls(panel, "tab-panel-hidden");
+
+		renderPanelIfNeeded(tab);
+
 		if (buttons[index]) css.addCls(buttons[index], "tab-active");
 		currentIndex = index;
 	}
