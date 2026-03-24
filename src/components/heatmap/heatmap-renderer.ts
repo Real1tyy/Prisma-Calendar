@@ -13,6 +13,23 @@ export interface HeatmapRenderOptions {
 	onDayClick?: (date: string, events: CalendarEvent[]) => void;
 }
 
+export interface HeatmapGridCell {
+	row: number;
+	col: number;
+	dateKey: string;
+	events: CalendarEvent[];
+	element: SVGRectElement;
+}
+
+export interface HeatmapGrid {
+	cells: HeatmapGridCell[];
+	lookup: Map<string, HeatmapGridCell>;
+	maxRow: number;
+	maxCol: number;
+}
+
+const DAYS_PER_WEEK = 7;
+
 const CELL_SIZE_YEARLY = 12;
 const CELL_GAP_YEARLY = 3;
 const CELL_SIZE_MONTHLY = 20;
@@ -120,17 +137,21 @@ function createHeatmapCell(params: HeatmapCellParams): SVGRectElement {
 	return rect;
 }
 
-export function renderHeatmapSVG(container: HTMLElement, dataset: HeatmapDataset, options: HeatmapRenderOptions): void {
+export function renderHeatmapSVG(
+	container: HTMLElement,
+	dataset: HeatmapDataset,
+	options: HeatmapRenderOptions
+): HeatmapGrid {
 	container.empty();
 
 	if (options.mode === "yearly") {
-		renderYearly(container, dataset, options);
+		return renderYearly(container, dataset, options);
 	} else {
-		renderMonthly(container, dataset, options);
+		return renderMonthly(container, dataset, options);
 	}
 }
 
-function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: HeatmapRenderOptions): void {
+function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: HeatmapRenderOptions): HeatmapGrid {
 	const { year, firstDayOfWeek, categoryColor, onDayClick } = options;
 	const cellSize = CELL_SIZE_YEARLY;
 	const gap = CELL_GAP_YEARLY;
@@ -178,36 +199,48 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 		svg.appendChild(text);
 	}
 
+	const gridCells: HeatmapGridCell[] = [];
+	const lookup = new Map<string, HeatmapGridCell>();
+	let maxCol = 0;
+
 	for (let d = 0; d < totalDays; d++) {
 		const day = startDate.plus({ days: d });
 		const row = normalizedDayOfWeek(day, firstDayOfWeek);
 		const col = getYearlyColumn(day, startDate, firstDayOfWeek);
 		const dateKey = day.toFormat("yyyy-MM-dd");
 		const dayData = dataset.days.get(dateKey);
+		const events = dayData?.events ?? [];
 
-		svg.appendChild(
-			createHeatmapCell({
-				x: labelWidth + col * step,
-				y: headerHeight + row * step,
-				size: cellSize,
-				radius: CELL_RADIUS_YEARLY,
-				dateKey,
-				day,
-				count: dayData?.count ?? 0,
-				categoryColor,
-				thresholds: dataset.thresholds,
-				events: dayData?.events ?? [],
-				onDayClick,
-			})
-		);
+		const rect = createHeatmapCell({
+			x: labelWidth + col * step,
+			y: headerHeight + row * step,
+			size: cellSize,
+			radius: CELL_RADIUS_YEARLY,
+			dateKey,
+			day,
+			count: dayData?.count ?? 0,
+			categoryColor,
+			thresholds: dataset.thresholds,
+			events,
+			onDayClick,
+		});
+		svg.appendChild(rect);
+
+		const gridCell: HeatmapGridCell = { row, col, dateKey, events, element: rect };
+		gridCells.push(gridCell);
+		lookup.set(`${row},${col}`, gridCell);
+		if (col > maxCol) maxCol = col;
 	}
 
 	container.appendChild(svg);
+
+	return { cells: gridCells, lookup, maxRow: DAYS_PER_WEEK - 1, maxCol };
 }
 
-function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options: HeatmapRenderOptions): void {
+function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options: HeatmapRenderOptions): HeatmapGrid {
 	const { year, month, firstDayOfWeek, categoryColor, onDayClick } = options;
-	if (!month) return;
+	const emptyGrid: HeatmapGrid = { cells: [], lookup: new Map(), maxRow: 0, maxCol: 0 };
+	if (!month) return emptyGrid;
 
 	const cellSize = CELL_SIZE_MONTHLY;
 	const gap = CELL_GAP_MONTHLY;
@@ -241,31 +274,40 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 		svg.appendChild(text);
 	}
 
+	const gridCells: HeatmapGridCell[] = [];
+	const lookup = new Map<string, HeatmapGridCell>();
+	let maxRow = 0;
+
 	for (let d = 1; d <= daysInMonth; d++) {
 		const day = DateTime.local(year, month, d);
-		const offset = normalizedDayOfWeek(day, firstDayOfWeek);
-		const weekRow = Math.floor((d - 1 + startOffset) / 7);
+		const col = normalizedDayOfWeek(day, firstDayOfWeek);
+		const row = Math.floor((d - 1 + startOffset) / 7);
 		const dateKey = day.toFormat("yyyy-MM-dd");
 		const dayData = dataset.days.get(dateKey);
+		const events = dayData?.events ?? [];
 
-		const x = offset * step;
-		const y = headerHeight + weekRow * step;
+		const x = col * step;
+		const y = headerHeight + row * step;
 
-		svg.appendChild(
-			createHeatmapCell({
-				x,
-				y,
-				size: cellSize,
-				radius: CELL_RADIUS_MONTHLY,
-				dateKey,
-				day,
-				count: dayData?.count ?? 0,
-				categoryColor,
-				thresholds: dataset.thresholds,
-				events: dayData?.events ?? [],
-				onDayClick,
-			})
-		);
+		const rect = createHeatmapCell({
+			x,
+			y,
+			size: cellSize,
+			radius: CELL_RADIUS_MONTHLY,
+			dateKey,
+			day,
+			count: dayData?.count ?? 0,
+			categoryColor,
+			thresholds: dataset.thresholds,
+			events,
+			onDayClick,
+		});
+		svg.appendChild(rect);
+
+		const gridCell: HeatmapGridCell = { row, col, dateKey, events, element: rect };
+		gridCells.push(gridCell);
+		lookup.set(`${row},${col}`, gridCell);
+		if (row > maxRow) maxRow = row;
 
 		const label = createSVGElement("text", {
 			x: String(x + cellSize / 2),
@@ -277,6 +319,8 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 	}
 
 	container.appendChild(svg);
+
+	return { cells: gridCells, lookup, maxRow, maxCol: DAYS_PER_WEEK - 1 };
 }
 
 function createSVGElement<K extends keyof SVGElementTagNameMap>(
@@ -290,6 +334,57 @@ function createSVGElement<K extends keyof SVGElementTagNameMap>(
 		}
 	}
 	return el;
+}
+
+function scanAxis(from: number, max: number, forward: boolean): number[] {
+	const indices: number[] = [];
+	if (forward) {
+		for (let i = from; i <= max; i++) indices.push(i);
+	} else {
+		for (let i = from; i >= 0; i--) indices.push(i);
+	}
+	return indices;
+}
+
+function wrapIndex(current: number, offset: number, max: number): number {
+	return (current + offset + max + 1) % (max + 1);
+}
+
+export function findAdjacentCell(
+	grid: HeatmapGrid,
+	current: HeatmapGridCell,
+	direction: "up" | "down" | "left" | "right"
+): HeatmapGridCell | null {
+	const { lookup, maxRow, maxCol } = grid;
+	const lookupKey = (row: number, col: number) => `${row},${col}`;
+
+	const isHorizontal = direction === "left" || direction === "right";
+	const forward = direction === "right" || direction === "down";
+
+	const primaryPos = isHorizontal ? current.col : current.row;
+	const secondaryPos = isHorizontal ? current.row : current.col;
+	const primaryMax = isHorizontal ? maxCol : maxRow;
+	const secondaryMax = isHorizontal ? maxRow : maxCol;
+
+	const toKey = isHorizontal
+		? (primary: number, secondary: number) => lookupKey(secondary, primary)
+		: (primary: number, secondary: number) => lookupKey(primary, secondary);
+
+	const nextPrimary = forward ? primaryPos + 1 : primaryPos - 1;
+	for (const primary of scanAxis(nextPrimary, primaryMax, forward)) {
+		const cell = lookup.get(toKey(primary, secondaryPos));
+		if (cell) return cell;
+	}
+
+	for (let secondaryOffset = 1; secondaryOffset <= secondaryMax; secondaryOffset++) {
+		const secondary = wrapIndex(secondaryPos, forward ? secondaryOffset : -secondaryOffset, secondaryMax);
+		for (const primary of scanAxis(forward ? 0 : primaryMax, primaryMax, forward)) {
+			const cell = lookup.get(toKey(primary, secondary));
+			if (cell) return cell;
+		}
+	}
+
+	return null;
 }
 
 export function renderHeatmapLegend(

@@ -33,7 +33,8 @@ Your mode selection is preserved as you navigate.
 
 - **← / → buttons**: Move backward/forward by one year (yearly mode) or one month (monthly mode).
 - **Now button**: Jump to the current year or month.
-- **Keyboard**: Press **Left/Right arrow keys** to navigate — works immediately when the tab is active, no click needed.
+- **Keyboard (no cell selected)**: Press **Left/Right arrow keys** to move between time periods — works immediately when the tab is active.
+- **Keyboard (cell selected)**: Click any cell to select it, then use **Arrow keys** to move between cells. Navigation wraps: moving down past the last row continues at the top of the next column, and vice versa. Click the same cell again to deselect and return to interval navigation.
 - **Header label**: Shows the current year (yearly) or "Month Year" (monthly) so you always know where you are.
 
 ## Color Intensity

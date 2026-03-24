@@ -26,8 +26,10 @@ export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): Ta
 		id: "heatmap",
 		label: "Heat Map",
 		keyHandlers: {
-			ArrowLeft: () => heatmapHandle?.navigate(-1),
-			ArrowRight: () => heatmapHandle?.navigate(1),
+			ArrowLeft: () => heatmapHandle?.handleArrow("left"),
+			ArrowRight: () => heatmapHandle?.handleArrow("right"),
+			ArrowUp: () => heatmapHandle?.handleArrow("up"),
+			ArrowDown: () => heatmapHandle?.handleArrow("down"),
 		},
 		render: (el) => {
 			function renderTab(): void {

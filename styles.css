@@ -5434,6 +5434,12 @@ select[class*="prisma-"]:focus-visible {
 	stroke-width: 1;
 }
 
+.prisma-heatmap-cell-selected {
+	stroke: var(--text-accent);
+	stroke-width: 2;
+	filter: brightness(1.15);
+}
+
 .prisma-heatmap-day-label {
 	font-size: 9px;
 	fill: var(--text-muted);

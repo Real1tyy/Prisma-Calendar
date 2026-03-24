@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.10.0 - 3/24/2026
+
+### Improved
+
+- **Heatmap cell keyboard navigation**: Click any heatmap cell to select it, then use arrow keys to move between cells. Navigation wraps across columns when reaching grid edges. Click the same cell again to deselect. See [Heatmap](./features/views/heatmap.md).
+
+---
+
 ## 2.9.0 - 3/23/2026
 
 ### Added

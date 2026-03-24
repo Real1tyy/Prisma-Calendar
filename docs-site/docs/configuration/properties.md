@@ -50,7 +50,7 @@ These property names control per-event notification overrides. The notification 
 
 ## Recurring (node-based)
 
-- **RRule property**: recurring event type (e.g., `daily`, `weekly`, `bi-weekly`, `monthly`, `bi-monthly`, `quarterly`, `semi-annual`, `yearly`)
+- **RRule property**: recurring event type — 9 built-in presets (`daily`, `bi-daily`, `weekly`, `bi-weekly`, `monthly`, `bi-monthly`, `quarterly`, `semi-annual`, `yearly`) or a custom interval using the DSL format `FREQUENCY;INTERVAL=N` (e.g., `DAILY;INTERVAL=5` for every 5 days, `WEEKLY;INTERVAL=3` for every 3 weeks, `MONTHLY;INTERVAL=4` for every 4 months)
 - **RRule specification property**: weekdays for weekly/bi-weekly (e.g., `monday, wednesday, friday`)
 - **RRule ID property**: unique identifier for recurrence
 - **Source property**: link to the source recurring event
@@ -128,7 +128,6 @@ Prisma Calendar automatically ensures that both date and time properties are alw
 - **Consistent structure**: All events have the same property structure, making templates and scripts easier to write
 - **No missing properties**: You can always reference `Date`, `Start`, or `End` without checking if they exist
 
-**Example - All-day event:**
 ```yaml
 ---
 Title: Holiday
@@ -139,7 +138,6 @@ All Day: true
 ---
 ```
 
-**Example - Timed event:**
 ```yaml
 ---
 Title: Meeting

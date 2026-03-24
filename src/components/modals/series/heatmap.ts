@@ -10,7 +10,13 @@ import { cleanupTitle } from "../../../utils/event-naming";
 import { emitHover } from "../../../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../../../utils/property-display";
 import { buildHeatmapDataset, type HeatmapDataset } from "../../heatmap/heatmap-data";
-import { renderHeatmapLegend, renderHeatmapSVG } from "../../heatmap/heatmap-renderer";
+import {
+	findAdjacentCell,
+	type HeatmapGrid,
+	type HeatmapGridCell,
+	renderHeatmapLegend,
+	renderHeatmapSVG,
+} from "../../heatmap/heatmap-renderer";
 
 export interface EventSeriesHeatmapConfig {
 	events: CalendarEvent[];
@@ -24,6 +30,7 @@ export interface HeatmapHandle {
 	destroy: () => void;
 	refresh: (events: CalendarEvent[]) => void;
 	navigate: (direction: number) => void;
+	handleArrow: (direction: "up" | "down" | "left" | "right") => void;
 }
 
 /**
@@ -42,6 +49,29 @@ export function renderHeatmapInto(
 	let year = now.year;
 	let month = now.month;
 	let dataset: HeatmapDataset;
+	let grid: HeatmapGrid | null = null;
+	let selectedCell: HeatmapGridCell | null = null;
+
+	const SELECTED_CLS = cls("heatmap-cell-selected");
+
+	function deselectCell(): void {
+		if (selectedCell) {
+			selectedCell.element.classList.remove(SELECTED_CLS);
+			selectedCell = null;
+			dayDetailPanel.empty();
+		}
+	}
+
+	function selectCell(cell: HeatmapGridCell): void {
+		if (selectedCell === cell) {
+			deselectCell();
+			return;
+		}
+		deselectCell();
+		selectedCell = cell;
+		cell.element.classList.add(SELECTED_CLS);
+		showDayDetail(cell.dateKey, cell.events);
+	}
 
 	const header = container.createDiv(cls("heatmap-header"));
 	header.createEl("h2", { text: config.title });
@@ -182,20 +212,34 @@ export function renderHeatmapInto(
 	}
 
 	function renderView(): void {
+		selectedCell = null;
 		updateLabel();
 		legendContainer.empty();
 		dayDetailPanel.empty();
 		renderHeatmapLegend(legendContainer, dataset.thresholds, config.categoryColor);
 
 		const firstDayOfWeek = bundle.settingsStore.currentSettings.firstDayOfWeek ?? 0;
-		renderHeatmapSVG(svgContainer, dataset, {
+		grid = renderHeatmapSVG(svgContainer, dataset, {
 			mode,
 			year,
 			month,
 			firstDayOfWeek,
 			...(config.categoryColor ? { categoryColor: config.categoryColor } : {}),
-			onDayClick: (date, events) => showDayDetail(date, events),
+			onDayClick: (date) => {
+				const clicked = grid!.cells.find((c) => c.dateKey === date)!;
+				selectCell(clicked);
+			},
 		});
+	}
+
+	function handleArrow(direction: "up" | "down" | "left" | "right"): void {
+		if (!selectedCell || !grid) {
+			if (direction === "left") navigate(-1);
+			else if (direction === "right") navigate(1);
+			return;
+		}
+		const next = findAdjacentCell(grid, selectedCell, direction);
+		if (next) selectCell(next);
 	}
 
 	dataset = buildHeatmapDataset(config.events);
@@ -211,6 +255,7 @@ export function renderHeatmapInto(
 			renderView();
 		},
 		navigate,
+		handleArrow,
 	};
 }
 
@@ -223,14 +268,19 @@ export function showHeatmapModal(app: App, bundle: CalendarBundle, config: Event
 			handle = renderHeatmapInto(el, app, bundle, config);
 
 			if (ctx.type === "modal") {
-				ctx.scope.register([], "ArrowLeft", () => {
-					handle?.navigate(-1);
-					return false;
-				});
-				ctx.scope.register([], "ArrowRight", () => {
-					handle?.navigate(1);
-					return false;
-				});
+				const arrowDirections = {
+					ArrowLeft: "left",
+					ArrowRight: "right",
+					ArrowUp: "up",
+					ArrowDown: "down",
+				} as const;
+
+				for (const [key, dir] of Object.entries(arrowDirections)) {
+					ctx.scope.register([], key, () => {
+						handle?.handleArrow(dir);
+						return false;
+					});
+				}
 			}
 		},
 		cleanup: () => {
