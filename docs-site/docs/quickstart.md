@@ -46,18 +46,18 @@ All Prisma Calendar commands start with `Prisma Calendar:` to make them easy to 
 
 ## Creating Your First Event
 
-Create an event note (via your template or manually) and add frontmatter like:
+There are two ways to create an event:
 
-```yaml
----
-Title: Doctor Appointment
-Start: 2025-02-10T14:00
-End: 2025-02-10T15:00
-AllDay: false
----
+- **Click on the calendar** — click any empty spot on the calendar canvas to create an event at that date/time.
+- **Create Event button** — click the **+ Create Event** button at the top left of the calendar view.
 
-Remember insurance card.
-```
+Both methods open the event creation modal where you can set the title, time, recurrence, and more.
+
+## Recurring Events
+
+To make an event recurring, check the **Recurring** checkbox in the event creation modal. From there you can configure the frequency (daily, weekly, monthly, yearly), select specific days, set an end date, and more.
+
+Set “Future instances count” in settings to control how many future notes are generated; beyond that, events appear as read-only virtual items.
 
 ## Interacting with Events
 
@@ -66,16 +66,3 @@ Once your calendar is open, you can:
 - **Click** to open the underlying file
 - **Drag** to move/resize; snap respects your Snap duration (Settings → UI Settings)
 - **Batch-select** to duplicate/delete or move/clone to next week
-
-### Recurring example
-
-```yaml
----
-Title: Standup
-Start: 2025-02-03T09:30
-RRule: weekly
-RRuleSpec: monday, tuesday, wednesday, thursday, friday
----
-```
-
-Set “Future instances count” to control how many future notes are generated; beyond that, events appear as read-only virtual items.
