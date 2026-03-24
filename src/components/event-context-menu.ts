@@ -152,7 +152,7 @@ export class EventContextMenu {
 			(id) => {
 				switch (id) {
 					case "preview":
-						return !!filePath && !!targetEl && !!containerEl;
+						return !isVirtual && !!filePath && !!targetEl && !!containerEl;
 					case "goToSource":
 					case "editSourceEvent":
 						return isPhysical || isVirtual;

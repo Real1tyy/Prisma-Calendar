@@ -61,9 +61,13 @@ The physical/virtual boundary is controlled by the **"Future instances count"** 
 
 Weekly team meetings with "Future instances count" = 2 creates 6 physical files (2 weeks × 3 days). Beyond that, virtual events display the pattern indefinitely without creating files.
 
-## Navigation
+## Context Menu
 
-Right-click any virtual event → "Go to source" to navigate to the source event in the calendar (switches to week view and highlights for 5 seconds).
+Right-click any virtual event to access limited context menu actions. Since virtual events have no backing file, actions like edit, delete, preview, and file operations are unavailable. Available actions:
+
+- **Go to source**: Navigate to the source event in the calendar (switches to week view and highlights for 5 seconds)
+- **Edit source event**: Open the source recurring event's edit modal
+- **Enlarge**: View the source event's properties in an enlarged modal
 
 ## Related
 

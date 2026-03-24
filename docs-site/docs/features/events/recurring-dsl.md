@@ -172,6 +172,7 @@ The recurring events modal (accessible via command palette: "Show recurring even
 
 ### Available RRule Values
 - `daily` - Every day
+- `bi-daily` - Every 2 days
 - `weekly` - Every week
 - `biweekly` - Every 2 weeks
 - `monthly` - Every month
@@ -221,6 +222,13 @@ RRuleSpec: saturday, sunday
 
 Use for critical events needing more instances or infrequent events needing fewer. Dynamic updates on reload.
 
+### Generate Past Events
+
+Enable "Generate Past Events" on a recurring event to backfill physical instances from the source event's start date up to and including today. Future instances are still generated as normal — this option adds historical instances in addition to the forward-looking ones.
+
+**Modal**: Enable "Recurring Event" → check "Generate Past Events"
+**Frontmatter**: Add `Generate Past Events: true` property
+
 ### Virtual Events
 Beyond generation horizon, read-only [virtual events](./virtual-events) show complete pattern without creating files.
 
@@ -228,12 +236,7 @@ Beyond generation horizon, read-only [virtual events](./virtual-events) show com
 
 Right-click physical instance → "Duplicate recurring instance"
 
-Duplicate preserves frontmatter (RRuleID, Source, Instance Date), gets new [ZettelID](../management/zettelid-naming), and receives `Ignore Recurring: true` property. Tracked in instance list but not counted toward "Future instances count" limit.
-
-**Multiple Instances Per Date**: The system supports multiple physical instances sharing the same instance date. When you duplicate an event, both the original and the duplicate appear on the calendar for the same day. This allows you to:
-- Create variations of a recurring event for the same day (e.g., multiple meetings based on the same template)
-- Duplicate an instance and later move it to a different day
-- Track both events independently in the instance list
+Duplicate copies the event's frontmatter and body into a new standalone event, stripping recurrence properties (RRuleID, Source, Instance Date). The duplicate gets a new [ZettelID](../management/zettelid-naming) and is completely independent from the recurring series — it won't be affected by self-healing or instance count limits.
 
 ### Editing Physical Recurring Events
 

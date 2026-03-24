@@ -10,6 +10,13 @@ All notable changes to this project will be documented here.
 
 - **Heatmap cell keyboard navigation**: Click any heatmap cell to select it, then use arrow keys to move between cells. Navigation wraps across columns when reaching grid edges. Click the same cell again to deselect. See [Heatmap](./features/views/heatmap.md).
 
+### Fixed
+
+- **Timeline all-day events overlapping**: All-day and timed events in the timeline view were rendered as points with no width, causing them to overlap instead of stacking vertically. Events now render as ranges with proper start/end times. See [Timeline](./features/views/timeline.md).
+- **Duplicate recurring instance immediately deleted**: Using "Duplicate Recurring Instance" created a file that was instantly trashed by self-healing. Duplicated instances are now standalone events — recurrence properties are stripped so they're independent from the series. The `Ignore Recurring` property and setting have been removed. See [Recurring Events](./features/events/recurring-dsl.md).
+- **"Generate past events" skipping today's instance**: When a recurring event had "Generate Past Events" enabled, instances were generated for past days and future days, but today's occurrence was skipped. Today's instance is now correctly included. See [Recurring Events](./features/events/recurring-dsl.md).
+- **Preview button shown for virtual events**: The hover preview context menu option was visible on virtual events, which have no backing file to preview. It is now hidden for virtual events. See [Virtual Events](./features/events/virtual-events.md).
+
 ---
 
 ## 2.9.0 - 3/23/2026
@@ -1307,19 +1314,13 @@ Anyone with access to your vault can read your credentials. Use with caution.
 
 #### Duplicate Recurring Instance
 - **Duplicate Without Affecting Future Generation**: New "Duplicate recurring instance" option in the context menu for physical recurring events
-- **Ignore Recurring Property**: Duplicated events get an `Ignore Recurring` property set to `true`, excluding them from future instance count calculations
-- **Preserved Tracking**: Duplicated events retain their `RRuleID`, `Source`, and `Recurring Instance Date` properties, allowing them to be tracked as part of the recurring series
-- **Property Name**: Configurable via settings (default: `Ignore Recurring`)
+- **Standalone Copy**: Duplicated events are created as independent standalone events — recurrence properties (RRuleID, Source, Instance Date) are stripped so the duplicate won't be affected by self-healing or instance count limits
 - **Use Cases**:
   - Create a one-off variation of a recurring event without disrupting the regular schedule
-  - Archive past recurring events while keeping them linked to their source
-- ⚠️ **Important**: The `Ignore Recurring` property is automatically managed by the system. Always use the "Duplicate recurring instance" context menu option.
+  - Archive past recurring events as standalone notes
 
 #### Smart Recurring Event Renaming on Drop
 - **Automatic Filename Update**: When you drag and drop a physical recurring event to a new date, the filename is automatically updated to reflect the new date
-- **Smart Instance Date Handling**:
-  - **Normal physical instances**: Only the filename is updated; `Recurring Instance Date` stays the same to preserve the original scheduled date
-  - **Duplicated/ignored instances** (`Ignore Recurring: true`): Both the filename AND `Recurring Instance Date` are updated to the new date
 - **Format Preserved**: Filename format remains consistent: `Title YYYY-MM-DD-ZettelID.md`
 - **Configurable Property**: The instance date property name (`Recurring Instance Date` by default) can be customized in Settings → Properties
 

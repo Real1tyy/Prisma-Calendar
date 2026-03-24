@@ -197,15 +197,26 @@ export function renderTimelineInto(
 
 		const style = eventColor ? `background-color: ${eventColor}; border-color: ${eventColor};` : "";
 
-		return {
+		const base = {
 			id: event.ref.filePath,
 			content,
 			title: tooltip,
 			start: startDate,
-			type: "point" as const,
 			className: classes.join(" "),
 			style,
 		};
+
+		if (event.type === "timed" && event.end) {
+			return { ...base, end: new Date(event.end), type: "range" as const };
+		}
+
+		if (event.type === "allDay") {
+			const endOfDay = new Date(startDate);
+			endOfDay.setHours(23, 59, 59, 999);
+			return { ...base, end: endOfDay, type: "range" as const };
+		}
+
+		return { ...base, type: "point" as const };
 	}
 
 	// ─── Data Fetching ───────────────────────────────────────

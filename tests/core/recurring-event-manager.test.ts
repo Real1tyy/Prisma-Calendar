@@ -10,7 +10,6 @@ import type { EventMetadata } from "../../src/types/event";
 const defaultMetadata: EventMetadata = {
 	skip: false,
 	alreadyNotified: false,
-	ignoreRecurring: false,
 	generatePastEvents: false,
 };
 
@@ -103,12 +102,17 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 					),
 				getAbstractFileByPath: vi.fn(() => null), // Return null = file doesn't exist
 				cachedRead: vi.fn().mockResolvedValue(""),
+				createFolder: vi.fn().mockResolvedValue(undefined),
+				getAbstractFileByPathInsensitive: vi.fn(() => null),
 			},
 			metadataCache: {
 				getFileCache: vi.fn(() => null),
 			},
 			fileManager: {
 				processFrontMatter: vi.fn().mockResolvedValue({}),
+			},
+			plugins: {
+				plugins: {},
 			},
 		};
 
@@ -1280,6 +1284,83 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			// Title parts should be different
 			expect(path1).toContain("Original Title");
 			expect(path2).toContain("Updated Title");
+
+			manager.destroy();
+		});
+	});
+
+	describe("Past Instance Generation", () => {
+		const today = DateTime.fromISO("2026-03-24T17:00:00");
+
+		function makeDailyRecurringEvent(startDate: DateTime, overrides: Partial<typeof defaultMetadata> = {}) {
+			return {
+				rRuleId: "past-gen-test",
+				title: "Daily Event",
+				rrules: {
+					type: "daily" as const,
+					allDay: true,
+					date: startDate.startOf("day"),
+					startTime: undefined,
+					endTime: undefined,
+					weekdays: [],
+				},
+				frontmatter: { Date: startDate.toISODate() },
+				futureInstancesCount: 2,
+				sourceFilePath: "recurring.md",
+				metadata: { ...defaultMetadata, ...overrides },
+				content: "",
+			};
+		}
+
+		function spyOnCreateInstanceIfMissing(manager: RecurringEventManager) {
+			const calledDates: string[] = [];
+			const original = (manager as any).createInstanceIfMissing.bind(manager);
+			(manager as any).createInstanceIfMissing = async (
+				_recurringEvent: any,
+				_physicalInstances: any,
+				instanceDate: DateTime
+			) => {
+				calledDates.push(instanceDate.toISODate()!);
+				return original(_recurringEvent, _physicalInstances, instanceDate);
+			};
+			return calledDates;
+		}
+
+		it("should generate an instance for today when generatePastEvents is enabled", async () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
+			const calledDates = spyOnCreateInstanceIfMissing(manager);
+			const event = makeDailyRecurringEvent(today.minus({ days: 3 }), { generatePastEvents: true });
+
+			await (manager as any).ensurePastInstances(event, new Map(), today);
+
+			expect(calledDates).toContain(today.toISODate());
+
+			manager.destroy();
+		});
+
+		it("should generate instances for all days between start and today inclusive", async () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
+			const calledDates = spyOnCreateInstanceIfMissing(manager);
+			const event = makeDailyRecurringEvent(today.minus({ days: 3 }), { generatePastEvents: true });
+
+			await (manager as any).ensurePastInstances(event, new Map(), today);
+
+			// Source date is skipped, so: day+1, day+2, day+3 (today) = 3 instances
+			expect(calledDates).toHaveLength(3);
+
+			manager.destroy();
+		});
+
+		it("should not skip today when it falls exactly on an occurrence boundary", async () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
+			const calledDates = spyOnCreateInstanceIfMissing(manager);
+			const midnight = DateTime.fromISO("2026-03-24T00:00:00");
+			const event = makeDailyRecurringEvent(midnight.minus({ days: 1 }), { generatePastEvents: true });
+
+			await (manager as any).ensurePastInstances(event, new Map(), midnight);
+
+			expect(calledDates).toHaveLength(1);
+			expect(calledDates[0]).toBe(midnight.toISODate());
 
 			manager.destroy();
 		});
