@@ -95,7 +95,7 @@ const GeneralSettingsSchema = z
 			),
 		showStopwatchStartWithoutFill: z
 			.boolean()
-			.catch(false)
+			.catch(true)
 			.describe(
 				"Display a continue button that resumes time tracking from the existing start date. The timer calculates elapsed time based on the event's start time and continues from there, perfect for resuming work on existing events."
 			),
