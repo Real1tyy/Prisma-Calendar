@@ -380,7 +380,6 @@ export abstract class BaseEventModal extends Modal {
 		});
 		this.allDayCheckbox.checked = this.event.allDay || false;
 
-		// Container for TIMED event fields (Start Date/Time + End Date/Time)
 		this.timedContainer = contentEl.createDiv(cls("timed-event-fields"));
 		if (this.event.allDay) {
 			addCls(this.timedContainer, "hidden");
@@ -423,7 +422,6 @@ export abstract class BaseEventModal extends Modal {
 			}
 		}
 
-		// Container for ALL-DAY event fields (Date only)
 		this.allDayContainer = contentEl.createDiv(cls("allday-event-fields"));
 		if (!this.event.allDay) {
 			addCls(this.allDayContainer, "hidden");
@@ -526,7 +524,6 @@ export abstract class BaseEventModal extends Modal {
 			cls: cls("setting-item-control"),
 		});
 
-		// Container for recurring event options (initially hidden)
 		this.recurringContainer = contentEl.createDiv(cls("recurring-event-fields"));
 		addCls(this.recurringContainer, "hidden");
 
@@ -540,15 +537,10 @@ export abstract class BaseEventModal extends Modal {
 			cls: cls("setting-item-control"),
 		});
 
-		// Add options to the select
 		for (const [value, label] of Object.entries(RECURRENCE_TYPE_OPTIONS)) {
-			const option = this.rruleSelect.createEl("option", {
-				value,
-				text: label,
-			});
-			option.value = value;
+			this.rruleSelect.createEl("option", { value, text: label });
 		}
-		// Add custom interval option
+
 		const customOption = this.rruleSelect.createEl("option", {
 			value: "custom",
 			text: "Custom interval...",
@@ -588,11 +580,9 @@ export abstract class BaseEventModal extends Modal {
 			{ value: "YEARLY", label: "Years" },
 		];
 		for (const { value, label } of freqOptions) {
-			const opt = this.customFreqSelect.createEl("option", { value, text: label });
-			opt.value = value;
+			this.customFreqSelect.createEl("option", { value, text: label });
 		}
 
-		// Weekday selection (initially hidden, shown when weekly/bi-weekly selected)
 		this.weekdayContainer = this.recurringContainer.createDiv(cls("setting-item", "weekday-selection"));
 		addCls(this.weekdayContainer, "hidden");
 		this.weekdayContainer.createEl("div", {
@@ -602,7 +592,6 @@ export abstract class BaseEventModal extends Modal {
 
 		const weekdayGrid = this.weekdayContainer.createDiv(cls("weekday-grid"));
 
-		// Create checkboxes for each weekday
 		for (const [value, label] of Object.entries(WEEKDAY_OPTIONS)) {
 			const weekdayItem = weekdayGrid.createDiv(cls("weekday-item"));
 
@@ -1451,31 +1440,9 @@ export abstract class BaseEventModal extends Modal {
 
 	protected saveWithAutoCategories(): void {
 		const eventName = this.titleInput.value.trim();
-		if (!eventName) {
-			this.saveEvent();
-			return;
+		if (eventName && !this.suppressAutoCategories) {
+			this.applyAutoCategories();
 		}
-
-		const settings = this.bundle.settingsStore.currentSettings;
-		const availableCategories = this.bundle.categoryTracker.getCategories();
-
-		if (!this.suppressAutoCategories) {
-			if (
-				settings.autoAssignCategoryByName ||
-				(settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0)
-			) {
-				const autoAssigned = autoAssignCategories(
-					eventName,
-					settings,
-					availableCategories,
-					this.bundle.plugin.isProEnabled
-				);
-				if (autoAssigned.length > 0) {
-					this.categoriesChipList?.setItems(autoAssigned);
-				}
-			}
-		}
-
 		this.saveEvent();
 	}
 

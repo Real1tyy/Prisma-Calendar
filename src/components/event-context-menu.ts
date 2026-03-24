@@ -74,6 +74,8 @@ interface CommandMessages {
 
 type EventKind = "source" | "physical" | "virtual" | "normal";
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
 export class EventContextMenu {
 	private app: App;
 	private bundle: CalendarBundle;
@@ -644,19 +646,20 @@ export class EventContextMenu {
 	// ─── Event Actions ────────────────────────────────────────────
 
 	async markEventAsDone(event: CalendarEventInfo): Promise<void> {
-		await this.withFilePath(event, "mark event as done", async (filePath) => {
-			await this.runCommand(() => markAsDone(this.app, this.bundle, filePath), {
-				success: "Event marked as done",
-				error: "Failed to mark event as done",
-			});
-		});
+		await this.toggleDoneState(event, true);
 	}
 
 	async markEventAsUndone(event: CalendarEventInfo): Promise<void> {
-		await this.withFilePath(event, "mark event as undone", async (filePath) => {
-			await this.runCommand(() => markAsUndone(this.app, this.bundle, filePath), {
-				success: "Event marked as undone",
-				error: "Failed to mark event as undone",
+		await this.toggleDoneState(event, false);
+	}
+
+	private async toggleDoneState(event: CalendarEventInfo, done: boolean): Promise<void> {
+		const label = done ? "done" : "undone";
+		const command = done ? markAsDone : markAsUndone;
+		await this.withFilePath(event, `mark event as ${label}`, async (filePath) => {
+			await this.runCommand(() => command(this.app, this.bundle, filePath), {
+				success: `Event marked as ${label}`,
+				error: `Failed to mark event as ${label}`,
 			});
 		});
 	}
@@ -687,13 +690,10 @@ export class EventContextMenu {
 				return;
 			}
 
-			const MS_PER_DAY = 24 * 60 * 60 * 1000;
-			const cloneCommands = [];
-
-			for (let i = 1; i <= remainingDays; i++) {
-				const offsetMs = i * MS_PER_DAY;
-				cloneCommands.push(new CloneEventCommand(this.app, this.bundle, filePath, offsetMs, offsetMs));
-			}
+			const cloneCommands = Array.from({ length: remainingDays }, (_, i) => {
+				const offsetMs = (i + 1) * MS_PER_DAY;
+				return new CloneEventCommand(this.app, this.bundle, filePath, offsetMs, offsetMs);
+			});
 
 			const macro = new MacroCommand(cloneCommands);
 			await this.runCommand(() => macro, {
@@ -737,25 +737,24 @@ export class EventContextMenu {
 	}
 
 	async moveEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
-		const direction = weeks > 0 ? "next" : "previous";
-
-		await this.withFilePath(event, "move event", async (filePath) => {
-			const offset = weekDuration(weeks);
-			await this.runCommand(() => moveEvent(this.app, this.bundle, filePath, offset, offset), {
-				success: `Event moved to ${direction} week`,
-				error: "Failed to move event",
-			});
-		});
+		await this.eventByWeeks(event, weeks, "move");
 	}
 
 	async cloneEventByWeeks(event: CalendarEventInfo, weeks: number): Promise<void> {
-		const direction = weeks > 0 ? "next" : "previous";
+		await this.eventByWeeks(event, weeks, "clone");
+	}
 
-		await this.withFilePath(event, "clone event", async (filePath) => {
+	private async eventByWeeks(event: CalendarEventInfo, weeks: number, mode: "move" | "clone"): Promise<void> {
+		const direction = weeks > 0 ? "next" : "previous";
+		await this.withFilePath(event, `${mode} event`, async (filePath) => {
 			const offset = weekDuration(weeks);
-			await this.runCommand(() => new CloneEventCommand(this.app, this.bundle, filePath, offset, offset), {
-				success: `Event cloned to ${direction} week`,
-				error: "Failed to clone event",
+			const command =
+				mode === "move"
+					? () => moveEvent(this.app, this.bundle, filePath, offset, offset)
+					: () => new CloneEventCommand(this.app, this.bundle, filePath, offset, offset);
+			await this.runCommand(command, {
+				success: `Event ${mode === "move" ? "moved" : "cloned"} to ${direction} week`,
+				error: `Failed to ${mode} event`,
 			});
 		});
 	}
@@ -900,23 +899,21 @@ export class EventContextMenu {
 	}
 
 	async fillStartTimeFromNow(event: CalendarEventInfo): Promise<void> {
-		const settings = this.bundle.settingsStore.currentSettings;
-		await this.withFilePath(event, "fill start time", async (filePath) => {
-			const now = toLocalISOString(new Date());
-			await this.runCommand(() => fillTime(this.app, filePath, settings.startProp, now), {
-				success: "Start time filled from current time",
-				error: "Failed to fill start time",
-			});
-		});
+		await this.fillTimeFromNow(event, "start");
 	}
 
 	async fillEndTimeFromNow(event: CalendarEventInfo): Promise<void> {
+		await this.fillTimeFromNow(event, "end");
+	}
+
+	private async fillTimeFromNow(event: CalendarEventInfo, field: "start" | "end"): Promise<void> {
 		const settings = this.bundle.settingsStore.currentSettings;
-		await this.withFilePath(event, "fill end time", async (filePath) => {
+		const propName = field === "start" ? settings.startProp : settings.endProp;
+		await this.withFilePath(event, `fill ${field} time`, async (filePath) => {
 			const now = toLocalISOString(new Date());
-			await this.runCommand(() => fillTime(this.app, filePath, settings.endProp, now), {
-				success: "End time filled from current time",
-				error: "Failed to fill end time",
+			await this.runCommand(() => fillTime(this.app, filePath, propName, now), {
+				success: `${field === "start" ? "Start" : "End"} time filled from current time`,
+				error: `Failed to fill ${field} time`,
 			});
 		});
 	}

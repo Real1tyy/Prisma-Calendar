@@ -314,57 +314,25 @@ export class Stopwatch {
 	}
 
 	private updateButtonStates(): void {
-		switch (this.state) {
-			case "idle":
-				this.startBtn.classList.remove("prisma-hidden");
-				this.startBtn.textContent = "▶ start";
-				if (this.continueBtn) {
-					this.continueBtn.classList.remove("prisma-hidden");
-					this.continueBtn.textContent = "▶ continue";
-				}
-				this.pauseBtn.classList.add("prisma-hidden");
-				this.stopBtn.classList.add("prisma-hidden");
-				this.resumeBtn.classList.add("prisma-hidden");
-				break;
+		const HIDDEN = "prisma-hidden";
+		const isIdleOrStopped = this.state === "idle" || this.state === "stopped";
+		const isRunningOrPaused = this.state === "running" || this.state === "paused";
 
-			case "running":
-				this.startBtn.classList.add("prisma-hidden");
-				if (this.continueBtn) {
-					this.continueBtn.classList.add("prisma-hidden");
-				}
-				this.pauseBtn.classList.remove("prisma-hidden");
-				this.pauseBtn.textContent = "⏸ break";
-				this.pauseBtn.classList.remove(cls("stopwatch-resume-btn"));
-				this.pauseBtn.classList.add(cls("stopwatch-pause-btn"));
-				this.stopBtn.classList.remove("prisma-hidden");
-				this.resumeBtn.classList.add("prisma-hidden");
-				break;
+		this.startBtn.classList.toggle(HIDDEN, !isIdleOrStopped);
+		this.startBtn.textContent = this.state === "stopped" ? "▶ start new" : "▶ start";
 
-			case "paused":
-				this.startBtn.classList.add("prisma-hidden");
-				if (this.continueBtn) {
-					this.continueBtn.classList.add("prisma-hidden");
-				}
-				this.pauseBtn.classList.remove("prisma-hidden");
-				this.pauseBtn.textContent = "▶ resume";
-				this.pauseBtn.classList.remove(cls("stopwatch-pause-btn"));
-				this.pauseBtn.classList.add(cls("stopwatch-resume-btn"));
-				this.stopBtn.classList.remove("prisma-hidden");
-				this.resumeBtn.classList.add("prisma-hidden");
-				break;
-
-			case "stopped":
-				this.startBtn.classList.remove("prisma-hidden");
-				this.startBtn.textContent = "▶ start new";
-				if (this.continueBtn) {
-					this.continueBtn.classList.remove("prisma-hidden");
-					this.continueBtn.textContent = "▶ continue";
-				}
-				this.pauseBtn.classList.add("prisma-hidden");
-				this.stopBtn.classList.add("prisma-hidden");
-				this.resumeBtn.classList.remove("prisma-hidden");
-				break;
+		if (this.continueBtn) {
+			this.continueBtn.classList.toggle(HIDDEN, !isIdleOrStopped);
+			this.continueBtn.textContent = "▶ continue";
 		}
+
+		this.pauseBtn.classList.toggle(HIDDEN, !isRunningOrPaused);
+		this.pauseBtn.textContent = this.state === "paused" ? "▶ resume" : "⏸ break";
+		this.pauseBtn.classList.toggle(cls("stopwatch-pause-btn"), this.state === "running");
+		this.pauseBtn.classList.toggle(cls("stopwatch-resume-btn"), this.state === "paused");
+
+		this.stopBtn.classList.toggle(HIDDEN, !isRunningOrPaused);
+		this.resumeBtn.classList.toggle(HIDDEN, this.state !== "stopped");
 	}
 
 	// ─── Public Query API ──────────────────────────────────────────

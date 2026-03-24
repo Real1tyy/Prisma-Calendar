@@ -636,16 +636,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		// Ensure initial events are loaded after calendar is fully rendered
 		this.scheduleRefreshEvents();
 
-		toggleCls(container, "thicker-hour-lines", settings.thickerHourLines);
-		toggleCls(container, "sticky-all-day-events", settings.stickyAllDayEvents);
-		// Note: sticky-day-headers class is still applied for CSS that depends on both settings
-		toggleCls(container, "sticky-day-headers", settings.stickyDayHeaders);
-		toggleCls(container, "month-boundary-colors", settings.dayCellColoring === "boundary");
-		toggleCls(container, "uniform-day-color", settings.dayCellColoring === "uniform");
-		container.style.setProperty("--month-even-color", settings.monthEvenColor);
-		container.style.setProperty("--month-odd-color", settings.monthOddColor);
-
-		container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
+		this.applyContainerStyles(container, settings);
 
 		this.setupMouseTracking(container);
 		this.startUpcomingEventCheck();
@@ -676,16 +667,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		this.filterPresetSelector.updatePresets(settings.filterPresets);
 
-		toggleCls(this.container, "thicker-hour-lines", settings.thickerHourLines);
-		toggleCls(this.container, "sticky-all-day-events", settings.stickyAllDayEvents);
-		// Note: sticky-day-headers class is still applied for CSS that depends on both settings
-		toggleCls(this.container, "sticky-day-headers", settings.stickyDayHeaders);
-		toggleCls(this.container, "month-boundary-colors", settings.dayCellColoring === "boundary");
-		toggleCls(this.container, "uniform-day-color", settings.dayCellColoring === "uniform");
-		this.container.style.setProperty("--month-even-color", settings.monthEvenColor);
-		this.container.style.setProperty("--month-odd-color", settings.monthOddColor);
-
-		this.container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
+		this.applyContainerStyles(this.container, settings);
 		this.scheduleStickyOffsetsUpdate();
 
 		// Restart or stop upcoming event check based on setting
@@ -707,6 +689,18 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			this.clearRenderedEventsCache();
 			this.scheduleRefreshEvents();
 		}
+	}
+
+	private applyContainerStyles(container: HTMLElement, settings: SingleCalendarConfig): void {
+		toggleCls(container, "thicker-hour-lines", settings.thickerHourLines);
+		toggleCls(container, "sticky-all-day-events", settings.stickyAllDayEvents);
+		// sticky-day-headers class is still applied for CSS that depends on both settings
+		toggleCls(container, "sticky-day-headers", settings.stickyDayHeaders);
+		toggleCls(container, "month-boundary-colors", settings.dayCellColoring === "boundary");
+		toggleCls(container, "uniform-day-color", settings.dayCellColoring === "uniform");
+		container.style.setProperty("--month-even-color", settings.monthEvenColor);
+		container.style.setProperty("--month-odd-color", settings.monthOddColor);
+		container.style.setProperty("--all-day-event-height", `${settings.allDayEventHeight}px`);
 	}
 
 	private initializeToolbarComponents(toolbarButtons: string[]): void {
@@ -1457,7 +1451,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			headerEl.appendChild(timeEl);
 		}
 
-		// Add title
 		const titleEl = document.createElement("div");
 		titleEl.className = cls("fc-event-title-custom");
 		let title = cleanupTitle(event.title);

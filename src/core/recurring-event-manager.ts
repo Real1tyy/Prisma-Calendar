@@ -560,18 +560,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		first?: Map<string, PhysicalInstance>,
 		second?: Map<string, PhysicalInstance>
 	): Map<string, PhysicalInstance> {
-		const merged = new Map<string, PhysicalInstance>();
-		if (first) {
-			for (const [dateKey, instance] of first) {
-				merged.set(dateKey, instance);
-			}
-		}
-		if (second) {
-			for (const [dateKey, instance] of second) {
-				merged.set(dateKey, instance);
-			}
-		}
-		return merged;
+		return new Map([...(first ?? []), ...(second ?? [])]);
 	}
 
 	private rebindPhysicalSourceMapping(sourcePath: string, oldRRuleId: string, newRRuleId: string): void {
@@ -739,13 +728,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 			}
 
 			const excludeProps = getRecurringInstanceExcludedProps(this.settings);
-			const instanceFrontmatter: Frontmatter = {};
-
-			for (const [key, value] of Object.entries(recurringEvent.frontmatter)) {
-				if (!excludeProps.has(key)) {
-					instanceFrontmatter[key] = value;
-				}
-			}
+			const instanceFrontmatter: Frontmatter = Object.fromEntries(
+				Object.entries(recurringEvent.frontmatter).filter(([key]) => !excludeProps.has(key))
+			);
 
 			// Set instance-specific properties - CRITICAL for duplication detection
 			instanceFrontmatter[this.settings.rruleIdProp] = recurringEvent.rRuleId;
@@ -1060,18 +1045,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	getDisabledRecurringEvents(): NodeRecurringEvent[] {
-		const disabledEvents: NodeRecurringEvent[] = [];
-
-		// Iterate through the already-tracked recurring events
-		for (const data of this.recurringEventsMap.values()) {
-			if (!data.recurringEvent) continue;
-
-			if (data.recurringEvent.metadata.skip) {
-				disabledEvents.push(data.recurringEvent);
-			}
-		}
-
-		return disabledEvents;
+		return Array.from(this.recurringEventsMap.values())
+			.filter((data) => data.recurringEvent?.metadata.skip)
+			.map((data) => data.recurringEvent as NodeRecurringEvent);
 	}
 
 	setEventStore(eventStore: EventStore): void {

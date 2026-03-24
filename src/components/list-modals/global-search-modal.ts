@@ -20,6 +20,12 @@ interface GlobalSearchFilters {
 const PAGE_SIZE = 50;
 const SEARCH_YEAR_RANGE = 5;
 
+function applyTriStateFilter<T>(items: T[], state: FilterState, predicate: (item: T) => boolean): T[] {
+	if (state === "skip") return items.filter((item) => !predicate(item));
+	if (state === "only") return items.filter(predicate);
+	return items;
+}
+
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
 	year: "numeric",
 	month: "short",
@@ -196,23 +202,9 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 		let filtered = events.filter((event) => !event.isVirtual);
 
-		if (this.filters.recurring === "skip") {
-			filtered = filtered.filter((event) => !event.metadata.rruleType);
-		} else if (this.filters.recurring === "only") {
-			filtered = filtered.filter((event) => !!event.metadata.rruleType);
-		}
-
-		if (this.filters.allDay === "skip") {
-			filtered = filtered.filter((event) => !event.allDay);
-		} else if (this.filters.allDay === "only") {
-			filtered = filtered.filter((event) => event.allDay);
-		}
-
-		if (this.filters.skipped === "skip") {
-			filtered = filtered.filter((event) => !event.skipped);
-		} else if (this.filters.skipped === "only") {
-			filtered = filtered.filter((event) => event.skipped);
-		}
+		filtered = applyTriStateFilter(filtered, this.filters.recurring, (e) => !!e.metadata.rruleType);
+		filtered = applyTriStateFilter(filtered, this.filters.allDay, (e) => e.allDay);
+		filtered = applyTriStateFilter(filtered, this.filters.skipped, (e) => e.skipped);
 
 		return filtered;
 	}

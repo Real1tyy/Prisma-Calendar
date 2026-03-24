@@ -232,18 +232,7 @@ class MinimizedModalManagerClass {
 			return;
 		}
 
-		const eventData = this.buildEventDataFromState(state);
-
-		let modal: EventCreateModal | EventEditModal;
-		if (state.modalType === "edit" && state.filePath) {
-			modal = new EventEditModal(app, bundle, eventData);
-		} else {
-			modal = new EventCreateModal(app, bundle, eventData);
-		}
-
-		modal.setRestoreState(state);
-		this.clear();
-		modal.open();
+		this.openRestoredModal(app, bundle, state, false);
 	}
 
 	/**
@@ -268,6 +257,15 @@ class MinimizedModalManagerClass {
 			return;
 		}
 
+		this.openRestoredModal(app, bundle, state, true);
+	}
+
+	private openRestoredModal(
+		app: App,
+		bundle: CalendarBundle,
+		state: MinimizedModalState,
+		silentStopAndSave: boolean
+	): void {
 		const eventData = this.buildEventDataFromState(state);
 
 		let modal: EventCreateModal | EventEditModal;
@@ -278,7 +276,9 @@ class MinimizedModalManagerClass {
 		}
 
 		modal.setRestoreState(state);
-		modal.setSilentStopAndSave();
+		if (silentStopAndSave) {
+			modal.setSilentStopAndSave();
+		}
 		this.clear();
 		modal.open();
 	}
