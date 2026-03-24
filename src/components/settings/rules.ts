@@ -9,6 +9,75 @@ import { SingleCalendarConfigSchema } from "../../types/settings";
 
 const S = SingleCalendarConfigSchema.shape;
 
+interface ExampleItem {
+	expression: string;
+	description: string;
+	color?: string;
+}
+
+export function swapRulePositions<T>(items: T[], fromIndex: number, direction: "up" | "down"): T[] {
+	const result = [...items];
+	const toIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1;
+	if (toIndex < 0 || toIndex >= result.length) return result;
+	[result[fromIndex], result[toIndex]] = [result[toIndex], result[fromIndex]];
+	return result;
+}
+
+function renderExamplesList(container: HTMLElement, title: string, examples: ExampleItem[]): void {
+	const examplesContainer = container.createDiv(cls("settings-info-box"));
+	examplesContainer.createEl("strong", { text: title });
+	const list = examplesContainer.createEl("ul");
+
+	for (const example of examples) {
+		const li = list.createEl("li", { cls: cls("color-example-item") });
+
+		li.createEl("code", {
+			text: example.expression,
+			cls: cls("settings-info-box-example"),
+		});
+
+		li.createSpan({ text: "→", cls: cls("color-arrow") });
+
+		if (example.color) {
+			const colorSpan = li.createEl("span", { cls: cls("color-example-dot") });
+			colorSpan.style.setProperty("--example-color", example.color);
+		}
+
+		li.createSpan({
+			text: example.description,
+			cls: cls("color-example-description"),
+		});
+	}
+}
+
+const COLOR_RULE_EXAMPLES: ExampleItem[] = [
+	{ expression: "Priority === 'High'", color: "#ef4444", description: "High priority events in red" },
+	{ expression: "Status === 'Done'", color: "#22c55e", description: "Completed events in green" },
+	{ expression: "Project === 'Work'", color: "#3b82f6", description: "Work projects in blue" },
+	{ expression: "Type === 'Meeting'", color: "#f59e0b", description: "Meetings in orange" },
+];
+
+const FILTER_EXAMPLES: ExampleItem[] = [
+	{ expression: "Status !== 'Inbox'", description: "Exclude inbox items" },
+	{ expression: "Priority === 'High'", description: "Only high priority events" },
+	{ expression: "Status === 'Done' || Status === 'In Progress'", description: "Active or completed events" },
+	{ expression: "!_Archived", description: "Exclude archived events" },
+	{ expression: "Array.isArray(Project) && Project.length > 0", description: "Events with projects assigned" },
+];
+
+const UNTRACKED_FILTER_EXAMPLES: ExampleItem[] = [
+	{ expression: "Status !== 'Inbox'", description: "Exclude inbox items" },
+	{ expression: "Type === 'Task'", description: "Only show tasks" },
+	{ expression: "!_Archived", description: "Exclude archived events" },
+];
+
+const FILTER_PRESET_EXAMPLES: ExampleItem[] = [
+	{ expression: "Status === 'Done'", description: "Done tasks preset" },
+	{ expression: "Priority === 'High'", description: "High priority preset" },
+	{ expression: "Project === 'Work'", description: "Work projects preset" },
+	{ expression: "!_Archived", description: "Not archived preset" },
+];
+
 export class RulesSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 
@@ -53,54 +122,7 @@ export class RulesSettings {
 			text: "Define color rules based on frontmatter properties. Rules are evaluated in order - the first matching rule determines the event color.",
 		});
 
-		const examplesContainer = desc.createDiv(cls("settings-info-box"));
-
-		examplesContainer.createEl("strong", { text: "Example color rules:" });
-		const examplesList = examplesContainer.createEl("ul");
-
-		const examples = [
-			{
-				expression: "Priority === 'High'",
-				color: "#ef4444",
-				description: "High priority events in red",
-			},
-			{
-				expression: "Status === 'Done'",
-				color: "#22c55e",
-				description: "Completed events in green",
-			},
-			{
-				expression: "Project === 'Work'",
-				color: "#3b82f6",
-				description: "Work projects in blue",
-			},
-			{
-				expression: "Type === 'Meeting'",
-				color: "#f59e0b",
-				description: "Meetings in orange",
-			},
-		];
-
-		for (const example of examples) {
-			const li = examplesList.createEl("li", {
-				cls: cls("color-example-item"),
-			});
-
-			li.createEl("code", {
-				text: example.expression,
-				cls: cls("settings-info-box-example"),
-			});
-
-			li.createSpan({ text: "→", cls: cls("color-arrow") });
-
-			const colorSpan = li.createEl("span", { cls: cls("color-example-dot") });
-			colorSpan.style.setProperty("--example-color", example.color);
-
-			li.createSpan({
-				text: example.description,
-				cls: cls("color-example-description"),
-			});
-		}
+		renderExamplesList(desc, "Example color rules:", COLOR_RULE_EXAMPLES);
 
 		const warningContainer = desc.createDiv(cls("settings-warning-box"));
 		warningContainer.createEl("strong", { text: "⚠️ important:" });
@@ -214,17 +236,11 @@ export class RulesSettings {
 					cls: cls("color-rule-btn"),
 				});
 				moveUpButton.onclick = async () => {
-					await this.settingsStore.updateSettings((s) => {
-						const currentRules = [...s.colorRules];
-						const ruleIndex = currentRules.findIndex((r) => r.id === rule.id);
-						if (ruleIndex > 0) {
-							[currentRules[ruleIndex], currentRules[ruleIndex - 1]] = [
-								currentRules[ruleIndex - 1],
-								currentRules[ruleIndex],
-							];
-						}
-						return { ...s, colorRules: currentRules };
-					});
+					const ruleIndex = this.settingsStore.currentSettings.colorRules.findIndex((r) => r.id === rule.id);
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						colorRules: swapRulePositions(s.colorRules, ruleIndex, "up"),
+					}));
 					this.renderColorRulesList(container);
 				};
 			}
@@ -236,17 +252,11 @@ export class RulesSettings {
 					cls: cls("color-rule-btn"),
 				});
 				moveDownButton.onclick = async () => {
-					await this.settingsStore.updateSettings((s) => {
-						const currentRules = [...s.colorRules];
-						const ruleIndex = currentRules.findIndex((r) => r.id === rule.id);
-						if (ruleIndex !== -1 && ruleIndex < currentRules.length - 1) {
-							[currentRules[ruleIndex], currentRules[ruleIndex + 1]] = [
-								currentRules[ruleIndex + 1],
-								currentRules[ruleIndex],
-							];
-						}
-						return { ...s, colorRules: currentRules };
-					});
+					const ruleIndex = this.settingsStore.currentSettings.colorRules.findIndex((r) => r.id === rule.id);
+					await this.settingsStore.updateSettings((s) => ({
+						...s,
+						colorRules: swapRulePositions(s.colorRules, ruleIndex, "down"),
+					}));
 					this.renderColorRulesList(container);
 				};
 			}
@@ -274,47 +284,7 @@ export class RulesSettings {
 			text: "Filter events based on their frontmatter properties using JavaScript expressions. Each expression should evaluate to true/false. Events must pass all filters to be included.",
 		});
 
-		const examplesContainer = desc.createDiv(cls("settings-info-box"));
-
-		examplesContainer.createEl("strong", {
-			text: "Example filter expressions",
-		});
-		const examplesList = examplesContainer.createEl("ul");
-
-		const examples = [
-			{ expression: "Status !== 'Inbox'", description: "Exclude inbox items" },
-			{
-				expression: "Priority === 'High'",
-				description: "Only high priority events",
-			},
-			{
-				expression: "Status === 'Done' || Status === 'In Progress'",
-				description: "Active or completed events",
-			},
-			{ expression: "!_Archived", description: "Exclude archived events" },
-			{
-				expression: "Array.isArray(Project) && Project.length > 0",
-				description: "Events with projects assigned",
-			},
-		];
-
-		for (const example of examples) {
-			const li = examplesList.createEl("li", {
-				cls: cls("color-example-item"),
-			});
-
-			li.createEl("code", {
-				text: example.expression,
-				cls: cls("settings-info-box-example"),
-			});
-
-			li.createSpan({ text: "→", cls: cls("color-arrow") });
-
-			li.createSpan({
-				text: example.description,
-				cls: cls("color-example-description"),
-			});
-		}
+		renderExamplesList(desc, "Example filter expressions", FILTER_EXAMPLES);
 
 		const warningContainer = desc.createDiv(cls("settings-warning-box"));
 		warningContainer.createEl("strong", { text: "⚠️ important:" });
@@ -337,36 +307,7 @@ export class RulesSettings {
 			text: "Filter untracked events (events without dates) based on their frontmatter properties. This works the same as event filtering but only applies to untracked events in the dropdown.",
 		});
 
-		const examplesContainer = desc.createDiv(cls("settings-info-box"));
-
-		examplesContainer.createEl("strong", {
-			text: "Example filter expressions",
-		});
-		const examplesList = examplesContainer.createEl("ul");
-
-		const examples = [
-			{ expression: "Status !== 'Inbox'", description: "Exclude inbox items" },
-			{ expression: "Type === 'Task'", description: "Only show tasks" },
-			{ expression: "!_Archived", description: "Exclude archived events" },
-		];
-
-		for (const example of examples) {
-			const li = examplesList.createEl("li", {
-				cls: cls("color-example-item"),
-			});
-
-			li.createEl("code", {
-				text: example.expression,
-				cls: cls("settings-info-box-example"),
-			});
-
-			li.createSpan({ text: "→", cls: cls("color-arrow") });
-
-			li.createSpan({
-				text: example.description,
-				cls: cls("color-example-description"),
-			});
-		}
+		renderExamplesList(desc, "Example filter expressions", UNTRACKED_FILTER_EXAMPLES);
 
 		const warningContainer = desc.createDiv(cls("settings-warning-box"));
 		warningContainer.createEl("strong", { text: "⚠️ important:" });
@@ -389,38 +330,7 @@ export class RulesSettings {
 			text: "Create named filter presets for quick access via a dropdown in the calendar toolbar. These presets auto-fill the filter expression input.",
 		});
 
-		const examplesContainer = desc.createDiv(cls("settings-info-box"));
-
-		examplesContainer.createEl("strong", { text: "Example filter presets" });
-		const examplesList = examplesContainer.createEl("ul");
-
-		const examples = [
-			{ expression: "Status === 'Done'", description: "Done tasks preset" },
-			{
-				expression: "Priority === 'High'",
-				description: "High priority preset",
-			},
-			{ expression: "Project === 'Work'", description: "Work projects preset" },
-			{ expression: "!_Archived", description: "Not archived preset" },
-		];
-
-		for (const example of examples) {
-			const li = examplesList.createEl("li", {
-				cls: cls("color-example-item"),
-			});
-
-			li.createEl("code", {
-				text: example.expression,
-				cls: cls("settings-info-box-example"),
-			});
-
-			li.createSpan({ text: "→", cls: cls("color-arrow") });
-
-			li.createSpan({
-				text: example.description,
-				cls: cls("color-example-description"),
-			});
-		}
+		renderExamplesList(desc, "Example filter presets", FILTER_PRESET_EXAMPLES);
 
 		const warningContainer = desc.createDiv(cls("settings-warning-box"));
 		warningContainer.createEl("strong", { text: "💡 tip:" });
