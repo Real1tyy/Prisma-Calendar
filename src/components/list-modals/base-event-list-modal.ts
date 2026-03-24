@@ -1,7 +1,13 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins";
-import { Modal, type Modifier, Notice } from "obsidian";
+import { addCls, cls, ColorEvaluator } from "@real1ty-obsidian-plugins";
+import { type App, Modal, type Modifier, Notice } from "obsidian";
+import type { BehaviorSubject } from "rxjs";
 
+import type { CalendarBundle } from "../../core/calendar-bundle";
+import type { CalendarEvent } from "../../types/calendar";
+import type { SingleCalendarConfig } from "../../types/settings";
+import { resolveEventColor } from "../../utils/event-color";
 import { removeZettelId } from "../../utils/event-naming";
+import { formatEventTimeInfo } from "../../utils/time-formatter";
 
 export interface EventListItem {
 	id?: string; // Optional unique identifier (used for skipped events)
@@ -23,6 +29,12 @@ export abstract class BaseEventListModal extends Modal {
 	protected listContainer: HTMLElement | null = null;
 	protected filteredItems: EventListItem[] = [];
 	protected items: EventListItem[] = [];
+	protected colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
+
+	constructor(app: App, settings$: BehaviorSubject<SingleCalendarConfig>) {
+		super(app);
+		this.colorEvaluator = new ColorEvaluator(settings$);
+	}
 
 	// ─── Abstract Interface ───────────────────────────────────────
 
@@ -34,7 +46,9 @@ export abstract class BaseEventListModal extends Modal {
 	protected abstract getActions(): EventListAction[];
 	protected abstract getHotkeyCommandId(): string | undefined;
 	protected abstract getSuccessMessage(): string | undefined;
-	protected abstract onModalClose(): void;
+	protected onModalClose(): void {
+		this.colorEvaluator.destroy();
+	}
 
 	// Optional hook for subclasses to render custom UI after title
 	protected renderCustomHeaderElements(_contentEl: HTMLElement): void {
@@ -300,4 +314,18 @@ export abstract class BaseEventListModal extends Modal {
 			}
 		}, 200);
 	}
+}
+
+export function mapEventToListItem(
+	event: CalendarEvent,
+	bundle: CalendarBundle,
+	colorEvaluator: ColorEvaluator<SingleCalendarConfig>
+): EventListItem {
+	return {
+		id: event.id,
+		filePath: event.ref.filePath,
+		title: event.title,
+		subtitle: formatEventTimeInfo(event),
+		categoryColor: resolveEventColor(event.meta, bundle, colorEvaluator),
+	};
 }

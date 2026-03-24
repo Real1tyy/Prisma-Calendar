@@ -410,33 +410,10 @@ export class EventSeriesModal extends Modal {
 		);
 		addCls(hideSkippedSetting.settingEl, "recurring-events-filter-toggle");
 
-		// Search input
 		this.createSearchInput(this.contentArea);
 
-		// Apply filters
-		let filtered = [...items];
+		const filtered = this.filterAndSortItems(items, options, now);
 
-		if (options.hidePast) {
-			filtered = filtered.filter((item) => item.date >= now.startOf("day"));
-		}
-
-		if (options.hideSkipped) {
-			filtered = filtered.filter((item) => !item.skipped);
-		}
-
-		if (this.searchQuery.trim()) {
-			const q = this.searchQuery.toLowerCase().trim();
-			filtered = filtered.filter((item) => item.title.toLowerCase().includes(q));
-		}
-
-		// Sort: ascending when hiding past (future first), descending otherwise
-		if (options.hidePast) {
-			filtered.sort((a, b) => a.date.toMillis() - b.date.toMillis());
-		} else {
-			filtered.sort((a, b) => b.date.toMillis() - a.date.toMillis());
-		}
-
-		// List container
 		const listContainer = this.contentArea.createDiv(cls("recurring-events-list-container"));
 
 		if (filtered.length === 0) {
@@ -445,32 +422,55 @@ export class EventSeriesModal extends Modal {
 		}
 
 		for (const item of filtered) {
-			const row = listContainer.createDiv(cls("recurring-event-row"));
-
-			if (item.date < now.startOf("day")) {
-				addCls(row, "recurring-event-past");
-			}
-
-			if (item.color) {
-				row.style.setProperty("--event-color", item.color);
-				addCls(row, "recurring-event-colorized");
-			}
-
-			const dateEl = row.createDiv(cls("recurring-event-date"));
-			dateEl.textContent = item.date.toFormat("yyyy-MM-dd (EEE)");
-
-			const titleEl = row.createDiv(cls("recurring-event-title"));
-			titleEl.textContent = item.title;
-
-			if (item.skipped) {
-				addCls(titleEl, "recurring-event-skipped");
-			}
-
-			row.onclick = () => {
-				void this.app.workspace.openLinkText(item.filePath, "", false);
-				this.close();
-			};
+			this.renderEventRow(listContainer, item, now);
 		}
+	}
+
+	private filterAndSortItems(items: EventListItem[], options: EventListOptions, now: DateTime): EventListItem[] {
+		const today = now.startOf("day");
+		const filtered = items.filter((item) => {
+			if (options.hidePast && item.date < today) return false;
+			if (options.hideSkipped && item.skipped) return false;
+			if (this.searchQuery.trim()) {
+				const q = this.searchQuery.toLowerCase().trim();
+				if (!item.title.toLowerCase().includes(q)) return false;
+			}
+			return true;
+		});
+
+		filtered.sort((a, b) =>
+			options.hidePast ? a.date.toMillis() - b.date.toMillis() : b.date.toMillis() - a.date.toMillis()
+		);
+
+		return filtered;
+	}
+
+	private renderEventRow(container: HTMLElement, item: EventListItem, now: DateTime): void {
+		const row = container.createDiv(cls("recurring-event-row"));
+
+		if (item.date < now.startOf("day")) {
+			addCls(row, "recurring-event-past");
+		}
+
+		if (item.color) {
+			row.style.setProperty("--event-color", item.color);
+			addCls(row, "recurring-event-colorized");
+		}
+
+		const dateEl = row.createDiv(cls("recurring-event-date"));
+		dateEl.textContent = item.date.toFormat("yyyy-MM-dd (EEE)");
+
+		const titleEl = row.createDiv(cls("recurring-event-title"));
+		titleEl.textContent = item.title;
+
+		if (item.skipped) {
+			addCls(titleEl, "recurring-event-skipped");
+		}
+
+		row.onclick = () => {
+			void this.app.workspace.openLinkText(item.filePath, "", false);
+			this.close();
+		};
 	}
 
 	private createSearchInput(container: HTMLElement): void {
@@ -546,65 +546,57 @@ export class EventSeriesModal extends Modal {
 		}
 	}
 
-	private openTimelineView(): void {
-		let events: CalendarEvent[] = [];
-		let title = "";
-
+	private resolveVisualizationData(label: string): {
+		events: CalendarEvent[];
+		title: string;
+		categoryColor?: string;
+	} | null {
 		if (this.activeTab === "recurring" && this.rruleId) {
 			const series = this.bundle.recurringEventManager.getRecurringEventSeries(this.rruleId);
-			if (series) {
-				events = series.instances.map((instance) => instance.event);
-				const displayName = removeZettelId(series.sourceTitle);
-				title = `Timeline for Recurring - ${displayName}`;
-			}
-		} else if (this.activeTab === "name" && this.nameKey) {
-			events = this.bundle.nameSeriesTracker.getEventsInNameSeries(this.nameKey);
-			const displayName = events.length > 0 ? removeZettelId(events[0].title) : this.nameKey;
-			title = `Timeline for Name - ${displayName}`;
-		} else if (this.activeTab === "category") {
-			const categoryValue =
-				this.selectedCategoryValue ?? (this.categoryValues?.length === 1 ? this.categoryValues[0] : null);
-			if (categoryValue) {
-				events = this.bundle.categoryTracker.getEventsWithCategory(categoryValue);
-				title = `Timeline for Category - ${categoryValue}`;
-			}
+			if (!series) return null;
+			return {
+				events: series.instances.map((instance) => instance.event),
+				title: `${label} for Recurring - ${removeZettelId(series.sourceTitle)}`,
+			};
 		}
 
-		if (events.length > 0) {
-			showTimelineModal(this.app, this.bundle, { events, title });
+		if (this.activeTab === "name" && this.nameKey) {
+			const events = this.bundle.nameSeriesTracker.getEventsInNameSeries(this.nameKey);
+			const displayName = events.length > 0 ? removeZettelId(events[0].title) : this.nameKey;
+			return { events, title: `${label} for Name - ${displayName}` };
+		}
+
+		if (this.activeTab === "category") {
+			const categoryValue =
+				this.selectedCategoryValue ?? (this.categoryValues?.length === 1 ? this.categoryValues[0] : null);
+			if (!categoryValue) return null;
+			return {
+				events: this.bundle.categoryTracker.getEventsWithCategory(categoryValue),
+				title: `${label} for Category - ${categoryValue}`,
+				categoryColor: this.bundle.categoryTracker.getCategoryColor(categoryValue),
+			};
+		}
+
+		return null;
+	}
+
+	private openTimelineView(): void {
+		const data = this.resolveVisualizationData("Timeline");
+		if (data && data.events.length > 0) {
+			showTimelineModal(this.app, this.bundle, { events: data.events, title: data.title });
 		}
 	}
 
 	private openHeatmapView(): void {
 		if (!this.bundle.plugin.licenseManager.requirePro(PRO_FEATURES.HEATMAP, getProGateUrls("HEATMAP"))) return;
 
-		let events: CalendarEvent[] = [];
-		let title = "";
-		let categoryColor: string | undefined;
-
-		if (this.activeTab === "recurring" && this.rruleId) {
-			const series = this.bundle.recurringEventManager.getRecurringEventSeries(this.rruleId);
-			if (series) {
-				events = series.instances.map((instance) => instance.event);
-				const displayName = removeZettelId(series.sourceTitle);
-				title = `Heatmap for Recurring - ${displayName}`;
-			}
-		} else if (this.activeTab === "name" && this.nameKey) {
-			events = this.bundle.nameSeriesTracker.getEventsInNameSeries(this.nameKey);
-			const displayName = events.length > 0 ? removeZettelId(events[0].title) : this.nameKey;
-			title = `Heatmap for Name - ${displayName}`;
-		} else if (this.activeTab === "category") {
-			const categoryValue =
-				this.selectedCategoryValue ?? (this.categoryValues?.length === 1 ? this.categoryValues[0] : null);
-			if (categoryValue) {
-				events = this.bundle.categoryTracker.getEventsWithCategory(categoryValue);
-				title = `Heatmap for Category - ${categoryValue}`;
-				categoryColor = this.bundle.categoryTracker.getCategoryColor(categoryValue);
-			}
-		}
-
-		if (events.length > 0) {
-			showHeatmapModal(this.app, this.bundle, { events, title, ...(categoryColor ? { categoryColor } : {}) });
+		const data = this.resolveVisualizationData("Heatmap");
+		if (data && data.events.length > 0) {
+			showHeatmapModal(this.app, this.bundle, {
+				events: data.events,
+				title: data.title,
+				...(data.categoryColor ? { categoryColor: data.categoryColor } : {}),
+			});
 		}
 	}
 

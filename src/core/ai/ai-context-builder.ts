@@ -68,6 +68,45 @@ Category matching rules:
 	return block;
 }
 
+const PATTERN_WINDOW_MINUTES = 30;
+const MIN_RECURRING_OCCURRENCES = 3;
+
+function groupByKey<T>(items: T[], keyFn: (item: T) => string): Map<string, T[]> {
+	return items.reduce((map, item) => {
+		const key = keyFn(item);
+		const group = map.get(key) ?? [];
+		group.push(item);
+		map.set(key, group);
+		return map;
+	}, new Map<string, T[]>());
+}
+
+function mapEventBase(event: CalendarEvent): AIEventSummary {
+	const summary: AIEventSummary = {
+		title: event.title,
+		start: event.start,
+		allDay: event.allDay,
+	};
+
+	if (isTimedEvent(event)) {
+		summary.end = event.end;
+	}
+
+	if (event.metadata?.categories && event.metadata.categories.length > 0) {
+		summary.categories = event.metadata.categories;
+	}
+
+	if (event.metadata?.location) {
+		summary.location = event.metadata.location;
+	}
+
+	if (event.metadata?.status) {
+		summary.status = event.metadata.status;
+	}
+
+	return summary;
+}
+
 const VIEW_TYPE_LABELS: Record<string, string> = {
 	dayGridMonth: "Monthly View",
 	timeGridWeek: "Weekly View",
@@ -107,29 +146,7 @@ export function buildCalendarContext(
 }
 
 function mapEventToSummary(event: CalendarEvent): AIEventSummary {
-	const summary: AIEventSummary = {
-		title: event.title,
-		start: event.start,
-		allDay: event.allDay,
-	};
-
-	if (isTimedEvent(event)) {
-		summary.end = event.end;
-	}
-
-	if (event.metadata?.categories && event.metadata.categories.length > 0) {
-		summary.categories = event.metadata.categories;
-	}
-
-	if (event.metadata?.location) {
-		summary.location = event.metadata.location;
-	}
-
-	if (event.metadata?.status) {
-		summary.status = event.metadata.status;
-	}
-
-	return summary;
+	return mapEventBase(event);
 }
 
 function mapStatsToEntries(stats: Stats): AIStatEntry[] {
@@ -218,30 +235,7 @@ export function buildManipulationContext(
 }
 
 function mapEventToManipulationSummary(event: CalendarEvent): AIEventSummary {
-	const summary: AIEventSummary = {
-		title: event.title,
-		filePath: event.ref.filePath,
-		start: event.start,
-		allDay: event.allDay,
-	};
-
-	if (isTimedEvent(event)) {
-		summary.end = event.end;
-	}
-
-	if (event.metadata?.categories && event.metadata.categories.length > 0) {
-		summary.categories = event.metadata.categories;
-	}
-
-	if (event.metadata?.location) {
-		summary.location = event.metadata.location;
-	}
-
-	if (event.metadata?.status) {
-		summary.status = event.metadata.status;
-	}
-
-	return summary;
+	return { ...mapEventBase(event), filePath: event.ref.filePath };
 }
 
 export interface PatternAnalysis {
@@ -275,17 +269,7 @@ export function analyzePreviousPatterns(events: AIEventSummary[]): PatternAnalys
 		};
 	}
 
-	// Group events by day (YYYY-MM-DD)
-	const byDay = new Map<string, AIEventSummary[]>();
-	for (const event of timedEvents) {
-		const dayKey = event.start.slice(0, 10);
-		const existing = byDay.get(dayKey);
-		if (existing) {
-			existing.push(event);
-		} else {
-			byDay.set(dayKey, [event]);
-		}
-	}
+	const byDay = groupByKey(timedEvents, (event) => event.start.slice(0, 10));
 
 	// Find earliest start and latest end across all days
 	let earliestMins = 24 * 60;
@@ -312,29 +296,22 @@ export function analyzePreviousPatterns(events: AIEventSummary[]): PatternAnalys
 	}
 	const activeDays = DAY_NAMES.filter((d) => activeDaysSet.has(d));
 
-	// Recurring block detection: group by title, find blocks appearing 3+ days at similar times
-	const titleOccurrences = new Map<string, Array<{ startMins: number; durationMins: number }>>();
-	for (const event of timedEvents) {
-		const startMins = parseTimeToMins(event.start);
-		const endMins = event.end ? parseTimeToMins(event.end) : startMins + 60;
-		const entry = titleOccurrences.get(event.title);
-		if (entry) {
-			entry.push({ startMins, durationMins: endMins - startMins });
-		} else {
-			titleOccurrences.set(event.title, [{ startMins, durationMins: endMins - startMins }]);
-		}
-	}
+	const eventsByTitle = groupByKey(timedEvents, (event) => event.title);
 
 	const recurringBlocks: PatternAnalysis["recurringBlocks"] = [];
-	for (const [title, occurrences] of titleOccurrences) {
-		if (occurrences.length < 3) continue;
+	for (const [title, titleEvents] of eventsByTitle) {
+		const occurrences = titleEvents.map((event) => {
+			const startMins = parseTimeToMins(event.start);
+			const endMins = event.end ? parseTimeToMins(event.end) : startMins + 60;
+			return { startMins, durationMins: endMins - startMins };
+		});
+		if (occurrences.length < MIN_RECURRING_OCCURRENCES) continue;
 
-		// Check if start times cluster within a 30-minute window
 		const sortedStarts = occurrences.map((o) => o.startMins).sort((a, b) => a - b);
 		const medianStart = sortedStarts[Math.floor(sortedStarts.length / 2)];
-		const inWindow = occurrences.filter((o) => Math.abs(o.startMins - medianStart) <= 30);
+		const inWindow = occurrences.filter((o) => Math.abs(o.startMins - medianStart) <= PATTERN_WINDOW_MINUTES);
 
-		if (inWindow.length >= 3) {
+		if (inWindow.length >= MIN_RECURRING_OCCURRENCES) {
 			const avgDuration = Math.round(inWindow.reduce((sum, o) => sum + o.durationMins, 0) / inWindow.length);
 			recurringBlocks.push({
 				title,

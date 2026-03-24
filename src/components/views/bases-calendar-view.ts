@@ -36,6 +36,7 @@ export const BASES_CALENDAR_VIEW_ID = "prisma-calendar";
 
 const DEFAULT_VIEW = "dayGridMonth";
 const CLICK_THRESHOLD_MS = 150;
+const SELECTION_GUARD_DELAY_MS = 50;
 
 // Obsidian skips onDataUpdated() when switching back to a view if data hasn't changed.
 // Cache the last query result so new instances can render immediately.
@@ -294,7 +295,7 @@ class PrismaBasesView extends BasesView {
 				if (!this.isHandlingSelection) this.handleDateClick(bundle, info);
 				setTimeout(() => {
 					this.isHandlingSelection = false;
-				}, 50);
+				}, SELECTION_GUARD_DELAY_MS);
 			},
 			select: (info: { start: Date; end: Date; allDay: boolean }) => {
 				if (Date.now() - this.mouseDownTime < CLICK_THRESHOLD_MS) {

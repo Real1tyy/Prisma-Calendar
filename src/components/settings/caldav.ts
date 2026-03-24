@@ -5,7 +5,6 @@ import { type App, Modal, Notice, SecretComponent, Setting } from "obsidian";
 import { CALDAV_DEFAULTS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { CalDAVClientService } from "../../core/integrations/caldav";
-import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
 import type CustomCalendarPlugin from "../../main";
 import type { PrismaCalendarSettingsStore } from "../../types";
 import {
@@ -17,9 +16,10 @@ import {
 } from "../../types/integrations";
 import type { CustomCalendarSettingsSchema } from "../../types/settings";
 import { getCalendarById } from "../../utils/calendar-settings";
-import { deleteFilesByPaths } from "../../utils/obsidian";
 import { showCalendarIntegrationDeleteEventsModal } from "../modals";
 import { showConfirmDeleteModal } from "./generic";
+import { renderIconField, renderSyncIntervalField, renderTimezoneField } from "./integration-form-fields";
+import { deleteTrackedIntegrationEvents } from "./integration-settings-helpers";
 
 const CaldavShape = CalDAVSettingsSchema.shape;
 
@@ -196,26 +196,14 @@ export class CalDAVSettings {
 
 	private async deleteEventsForAccount(bundle: CalendarBundle, accountId: string): Promise<void> {
 		const events = bundle.caldavSyncStateManager.getAllForAccount(accountId);
-		let deletedCount = events.length;
-
-		for (const event of events) {
-			const rruleId = bundle.recurringEventManager.getRRuleIdForSourcePath(event.filePath);
-			if (rruleId) {
-				const instances = bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
-				deletedCount += instances.length;
-				await bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
-			}
-		}
-
-		const filePaths = events.map((event) => event.filePath);
-		await deleteFilesByPaths(
+		await deleteTrackedIntegrationEvents(
 			this.app,
-			filePaths,
-			getCalendarById(this.settingsStore.currentSettings, this.calendarId)?.fileConcurrencyLimit
+			bundle,
+			events,
+			getCalendarById(this.settingsStore.currentSettings, this.calendarId)?.fileConcurrencyLimit,
+			"CalDAV",
+			`account ${accountId}`
 		);
-
-		console.log(`[CalDAV] Deleted ${deletedCount} event(s) for account ${accountId}`);
-		new Notice(`Deleted ${deletedCount} event(s)`);
 	}
 
 	private async deleteAccount(accountId: string, container: HTMLElement): Promise<void> {
@@ -315,47 +303,17 @@ class AddCalDAVAccountModal extends Modal {
 					});
 			});
 
-		new Setting(formContainer)
-			.setName("Sync interval (minutes)")
-			.setDesc("How often to automatically sync (1-1440 minutes)")
-			.addText((text) => {
-				text.inputEl.type = "number";
-				text.inputEl.min = "1";
-				text.inputEl.max = "1440";
-				text.inputEl.step = "1";
-				text.setValue(this.syncIntervalMinutes.toString());
-				text.onChange((value) => {
-					const numValue = parseInt(value, 10);
-					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
-						this.syncIntervalMinutes = numValue;
-					}
-				});
-			});
+		renderSyncIntervalField(formContainer, this.syncIntervalMinutes, (v) => {
+			this.syncIntervalMinutes = v;
+		});
 
-		new Setting(formContainer)
-			.setName("Timezone")
-			.setDesc("Timezone for event times. If it matches your calendar events, times are preserved as-is.")
-			.addDropdown((dropdown) => {
-				for (const tz of COMMON_TIMEZONES) {
-					dropdown.addOption(tz.id, tz.label);
-				}
-				dropdown.setValue(this.timezone);
-				dropdown.onChange((value) => {
-					this.timezone = value;
-				});
-			});
+		renderTimezoneField(formContainer, this.timezone, (v) => {
+			this.timezone = v;
+		});
 
-		new Setting(formContainer)
-			.setName("Calendar icon")
-			.setDesc("Optional icon/emoji to display on synced events (e.g., 📅, 🔄, ☁️)")
-			.addText((text) => {
-				text
-					.setPlaceholder("📅")
-					.setValue(this.icon)
-					.onChange((value) => {
-						this.icon = value;
-					});
-			});
+		renderIconField(formContainer, this.icon, (v) => {
+			this.icon = v;
+		});
 
 		new Setting(formContainer)
 			.setName("Server address")
@@ -598,47 +556,17 @@ class EditCalDAVAccountModal extends Modal {
 				});
 			});
 
-		new Setting(contentEl)
-			.setName("Sync interval (minutes)")
-			.setDesc("How often to automatically sync (1-1440 minutes)")
-			.addText((text) => {
-				text.inputEl.type = "number";
-				text.inputEl.min = "1";
-				text.inputEl.max = "1440";
-				text.inputEl.step = "1";
-				text.setValue(this.syncIntervalMinutes.toString());
-				text.onChange((value) => {
-					const numValue = parseInt(value, 10);
-					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
-						this.syncIntervalMinutes = numValue;
-					}
-				});
-			});
+		renderSyncIntervalField(contentEl, this.syncIntervalMinutes, (v) => {
+			this.syncIntervalMinutes = v;
+		});
 
-		new Setting(contentEl)
-			.setName("Timezone")
-			.setDesc("Timezone for event times. If it matches your calendar events, times are preserved as-is.")
-			.addDropdown((dropdown) => {
-				for (const tz of COMMON_TIMEZONES) {
-					dropdown.addOption(tz.id, tz.label);
-				}
-				dropdown.setValue(this.timezone);
-				dropdown.onChange((value) => {
-					this.timezone = value;
-				});
-			});
+		renderTimezoneField(contentEl, this.timezone, (v) => {
+			this.timezone = v;
+		});
 
-		new Setting(contentEl)
-			.setName("Calendar icon")
-			.setDesc("Optional icon/emoji to display on synced events (e.g., 📅, 🔄, ☁️)")
-			.addText((text) => {
-				text
-					.setPlaceholder("📅")
-					.setValue(this.icon)
-					.onChange((value) => {
-						this.icon = value;
-					});
-			});
+		renderIconField(contentEl, this.icon, (v) => {
+			this.icon = v;
+		});
 
 		const refreshButton = contentEl.createEl("button", {
 			text: "Refresh calendars",
@@ -787,26 +715,14 @@ class EditCalDAVAccountModal extends Modal {
 
 	private async deleteEventsForCalendar(bundle: CalendarBundle, accountId: string, calendarUrl: string): Promise<void> {
 		const events = bundle.caldavSyncStateManager.getAllForCalendar(accountId, calendarUrl);
-		let deletedCount = events.length;
-
-		for (const event of events) {
-			const rruleId = bundle.recurringEventManager.getRRuleIdForSourcePath(event.filePath);
-			if (rruleId) {
-				const instances = bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
-				deletedCount += instances.length;
-				await bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
-			}
-		}
-
-		const filePaths = events.map((event) => event.filePath);
-		await deleteFilesByPaths(
+		await deleteTrackedIntegrationEvents(
 			this.app,
-			filePaths,
-			getCalendarById(this.settingsStore.currentSettings, this.calendarId)?.fileConcurrencyLimit
+			bundle,
+			events,
+			getCalendarById(this.settingsStore.currentSettings, this.calendarId)?.fileConcurrencyLimit,
+			"CalDAV",
+			`calendar ${calendarUrl}`
 		);
-
-		console.log(`[CalDAV] Deleted ${deletedCount} event(s) for calendar ${calendarUrl}`);
-		new Notice(`Deleted ${deletedCount} event(s)`);
 	}
 
 	override onClose(): void {

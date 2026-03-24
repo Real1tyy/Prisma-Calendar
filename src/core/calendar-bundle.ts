@@ -368,48 +368,25 @@ export class CalendarBundle {
 
 			let file: TFile = abstractFile;
 			let finalFilePath = filePath;
-			let zettelIdCommand: AddZettelIdCommand | null = null;
 
-			// Ensure ZettelID if requested (wraps into a single undo entry with the edit)
-			if (options?.ensureZettelId) {
-				zettelIdCommand = new AddZettelIdCommand(this.app, this, filePath);
-				await zettelIdCommand.execute();
-				const renamedPath = zettelIdCommand.getRenamedFilePath();
-				if (renamedPath) {
-					finalFilePath = renamedPath;
-					const renamedFile = this.app.vault.getAbstractFileByPath(finalFilePath);
-					if (renamedFile instanceof TFile) {
-						file = renamedFile;
-					}
-				}
-			}
+			const {
+				file: zettelFile,
+				path: zettelPath,
+				command: zettelIdCommand,
+			} = await this.ensureZettelId(file, finalFilePath, options?.ensureZettelId ?? false);
+			file = zettelFile;
+			finalFilePath = zettelPath;
 
-			// Handle file renaming when titleProp is undefined/empty (title lives in the filename).
-			// Compare only the title portion (without zettel ID) to detect actual title changes,
-			// then rebuild the filename preserving any existing zettel ID suffix.
-			const settings = this.settingsStore.currentSettings;
-			let pathBeforeTitleRename: string | null = null;
-
-			if (eventData.title && !settings.titleProp) {
-				const newTitlePart = removeZettelId(eventData.title);
-				const sanitizedTitle = sanitizeForFilename(newTitlePart, {
-					style: "preserve",
-				});
-				const currentTitlePart = removeZettelId(file.basename);
-
-				if (sanitizedTitle && sanitizedTitle !== currentTitlePart) {
-					const currentZettelId = extractZettelId(file.basename);
-					const newBasename = currentZettelId ? `${sanitizedTitle}-${currentZettelId}` : sanitizedTitle;
-
-					pathBeforeTitleRename = finalFilePath;
-					const parentPath = file.parent?.path || "";
-					const { fullPath } = generateUniqueEventPath(this.app, parentPath, newBasename);
-					await this.app.fileManager.renameFile(file, fullPath);
-					finalFilePath = fullPath;
-					const titleRenamedFile = this.app.vault.getAbstractFileByPath(finalFilePath);
-					if (titleRenamedFile instanceof TFile) {
-						file = titleRenamedFile;
-					}
+			const { newPath: titleNewPath, oldPath: pathBeforeTitleRename } = await this.renameFileForTitle(
+				file,
+				finalFilePath,
+				eventData
+			);
+			if (titleNewPath) {
+				finalFilePath = titleNewPath;
+				const titleRenamedFile = this.app.vault.getAbstractFileByPath(finalFilePath);
+				if (titleRenamedFile instanceof TFile) {
+					file = titleRenamedFile;
 				}
 			}
 
@@ -420,8 +397,6 @@ export class CalendarBundle {
 			const editCommand = new EditEventCommand(this.app, finalFilePath, eventDataForCommand);
 
 			if (zettelIdCommand || pathBeforeTitleRename) {
-				// Execute the edit manually, then push a composite command as a single undo entry
-				// that covers: zettel ID rename + title rename + frontmatter edit
 				await editCommand.execute();
 				const titleRenameOldPath = pathBeforeTitleRename;
 				const titleRenameNewPath = finalFilePath;
@@ -456,6 +431,61 @@ export class CalendarBundle {
 			new Notice("Failed to update event");
 			return null;
 		}
+	}
+
+	private async ensureZettelId(
+		file: TFile,
+		filePath: string,
+		shouldEnsure: boolean
+	): Promise<{ file: TFile; path: string; command: AddZettelIdCommand | null }> {
+		if (!shouldEnsure) {
+			return { file, path: filePath, command: null };
+		}
+
+		const command = new AddZettelIdCommand(this.app, this, filePath);
+		await command.execute();
+		const renamedPath = command.getRenamedFilePath();
+		if (renamedPath) {
+			const renamedFile = this.app.vault.getAbstractFileByPath(renamedPath);
+			return {
+				file: renamedFile instanceof TFile ? renamedFile : file,
+				path: renamedPath,
+				command,
+			};
+		}
+		return { file, path: filePath, command };
+	}
+
+	/**
+	 * Handles file renaming when titleProp is undefined/empty (title lives in the filename).
+	 * Compares only the title portion (without zettel ID) to detect actual title changes,
+	 * then rebuilds the filename preserving any existing zettel ID suffix.
+	 */
+	private async renameFileForTitle(
+		file: TFile,
+		currentPath: string,
+		eventData: EventSaveData
+	): Promise<{ newPath: string | null; oldPath: string | null }> {
+		const settings = this.settingsStore.currentSettings;
+		if (!eventData.title || settings.titleProp) {
+			return { newPath: null, oldPath: null };
+		}
+
+		const newTitlePart = removeZettelId(eventData.title);
+		const sanitizedTitle = sanitizeForFilename(newTitlePart, { style: "preserve" });
+		const currentTitlePart = removeZettelId(file.basename);
+
+		if (!sanitizedTitle || sanitizedTitle === currentTitlePart) {
+			return { newPath: null, oldPath: null };
+		}
+
+		const currentZettelId = extractZettelId(file.basename);
+		const newBasename = currentZettelId ? `${sanitizedTitle}-${currentZettelId}` : sanitizedTitle;
+		const parentPath = file.parent?.path || "";
+		const { fullPath } = generateUniqueEventPath(this.app, parentPath, newBasename);
+		await this.app.fileManager.renameFile(file, fullPath);
+
+		return { newPath: fullPath, oldPath: currentPath };
 	}
 
 	// ─── CalDAV Sync ──────────────────────────────────────────────

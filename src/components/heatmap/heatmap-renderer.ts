@@ -37,6 +37,7 @@ const CELL_GAP_MONTHLY = 3;
 const CELL_RADIUS_YEARLY = 2;
 const CELL_RADIUS_MONTHLY = 3;
 
+const CATEGORY_BUCKET_OPACITIES = [0, 0.15, 0.35, 0.55, 0.75, 1.0];
 const DEFAULT_GRADIENT = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"];
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -52,8 +53,7 @@ function getCellColor(bucket: number, categoryColor?: string): string {
 	if (bucket === 0) return "var(--background-modifier-border)";
 
 	if (categoryColor) {
-		const opacities = [0, 0.15, 0.35, 0.55, 0.75, 1.0];
-		return applyOpacity(categoryColor, opacities[bucket]);
+		return applyOpacity(categoryColor, CATEGORY_BUCKET_OPACITIES[bucket]);
 	}
 
 	return DEFAULT_GRADIENT[bucket];

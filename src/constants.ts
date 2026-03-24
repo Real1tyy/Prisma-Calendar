@@ -247,3 +247,5 @@ export const MAX_PAST_NOTIFICATION_THRESHOLD = {
 	TIMED_EVENTS_MS: 5 * 60 * 60 * 1000, // 5 hours in milliseconds
 	ALL_DAY_EVENTS_MS: 24 * 60 * 60 * 1000, // 1 day in milliseconds
 } as const;
+
+export const NOTIFICATION_CHECK_INTERVAL_MS = 60_000;

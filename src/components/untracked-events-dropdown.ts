@@ -10,6 +10,13 @@ import { removeZettelId } from "../utils/event-naming";
 import { normalizeFrontmatterForColorEvaluation } from "../utils/expression-utils";
 import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
 
+const BUTTON_INJECT_DELAY_MS = 100;
+const SEARCH_FOCUS_DELAY_MS = 50;
+const DROP_CLICK_IGNORE_MS = 500;
+const DRAG_START_CLICK_IGNORE_MS = 1500;
+const DRAG_HOVER_HIDE_DELAY_MS = 1000;
+const DROP_END_CLICK_IGNORE_MS = 250;
+
 export class UntrackedEventsDropdown {
 	private buttonEl: HTMLButtonElement | null = null;
 	private dropdownEl: HTMLElement | null = null;
@@ -42,11 +49,11 @@ export class UntrackedEventsDropdown {
 			if (!this.storeSubscription) {
 				this.storeSubscription = this.bundle.untrackedEventStore.subscribe(() => {
 					// A drop often triggers a trailing click outside; don't let it close the dropdown.
-					this.ignoreOutsideClicksUntil = Date.now() + 500;
+					this.ignoreOutsideClicksUntil = Date.now() + DROP_CLICK_IGNORE_MS;
 					this.refreshEvents();
 				});
 			}
-		}, 100);
+		}, BUTTON_INJECT_DELAY_MS);
 	}
 
 	destroy(): void {
@@ -169,7 +176,7 @@ export class UntrackedEventsDropdown {
 			this.isTemporarilyHidden = false;
 
 			// Prevent the common "click after drop" from closing the dropdown.
-			this.ignoreOutsideClicksUntil = Date.now() + 1500;
+			this.ignoreOutsideClicksUntil = Date.now() + DRAG_START_CLICK_IGNORE_MS;
 		});
 
 		// Track pointer movement globally to detect hover over dropdown and hide after 1.5s.
@@ -196,7 +203,7 @@ export class UntrackedEventsDropdown {
 		removeCls(this.dropdownEl, "hidden");
 		addCls(this.buttonEl, "active");
 
-		setTimeout(() => this.searchInput?.focus(), 50);
+		setTimeout(() => this.searchInput?.focus(), SEARCH_FOCUS_DELAY_MS);
 	}
 
 	close(): void {
@@ -392,14 +399,14 @@ export class UntrackedEventsDropdown {
 		this.dragHoverTimeout = window.setTimeout(() => {
 			this.temporarilyHide();
 			this.dragHoverTimeout = null;
-		}, 1000);
+		}, DRAG_HOVER_HIDE_DELAY_MS);
 	};
 
 	private handleGlobalPointerUp = (): void => {
 		if (!this.isDragging) return;
 
 		this.isDragging = false;
-		this.ignoreOutsideClicksUntil = Date.now() + 250;
+		this.ignoreOutsideClicksUntil = Date.now() + DROP_END_CLICK_IGNORE_MS;
 
 		if (this.dragHoverTimeout) {
 			window.clearTimeout(this.dragHoverTimeout);

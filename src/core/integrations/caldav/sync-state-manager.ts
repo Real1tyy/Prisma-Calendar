@@ -2,7 +2,6 @@ import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { trashDuplicateFile } from "../../../utils/obsidian";
 import type { Indexer } from "../../indexer";
 import { BaseSyncStateManager, type TrackedSyncEvent } from "../base-sync-state-manager";
 import { type CalDAVSyncMetadata, CalDAVSyncMetadataSchema } from "./types";
@@ -50,9 +49,16 @@ export class CalDAVSyncStateManager extends BaseSyncStateManager<CalDAVSyncMetad
 	}
 
 	protected trackEvent(filePath: string, metadata: CalDAVSyncMetadata): void {
-		const existing = this.globalUidIndex.get(metadata.uid);
-		if (existing && existing.filePath !== filePath) {
-			trashDuplicateFile(this.app, filePath, `CalDAV event (UID: ${metadata.uid})`);
+		const tracked = { filePath, metadata };
+		if (
+			!this.tryTrackInGlobalIndex(
+				this.globalUidIndex,
+				metadata.uid,
+				filePath,
+				tracked,
+				`CalDAV event (UID: ${metadata.uid})`
+			)
+		) {
 			return;
 		}
 
@@ -68,21 +74,13 @@ export class CalDAVSyncStateManager extends BaseSyncStateManager<CalDAVSyncMetad
 			accountState.set(metadata.calendarHref, calendarState);
 		}
 
-		const tracked = { filePath, metadata };
 		calendarState.set(metadata.uid, tracked);
-		this.globalUidIndex.set(metadata.uid, tracked);
 	}
 
 	protected untrackByPath(filePath: string): boolean {
 		for (const accountState of this.syncState.values()) {
-			for (const calendarState of accountState.values()) {
-				for (const [uid, tracked] of calendarState.entries()) {
-					if (tracked.filePath === filePath) {
-						calendarState.delete(uid);
-						this.globalUidIndex.delete(uid);
-						return true;
-					}
-				}
+			if (this.untrackByPathFromMaps(accountState, this.globalUidIndex, filePath)) {
+				return true;
 			}
 		}
 		return false;

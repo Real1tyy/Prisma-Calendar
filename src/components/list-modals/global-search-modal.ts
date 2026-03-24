@@ -1,10 +1,9 @@
-import { addCls, cls, ColorEvaluator, removeCls, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { addCls, cls, removeCls, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
-import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
 import type { CalendarComponent } from "../calendar-view";
 import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
@@ -45,7 +44,6 @@ export class GlobalSearchModal extends BaseEventListModal {
 		allDay: "none",
 		skipped: "none",
 	};
-	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 	private renderedCount = 0;
 	private loadMoreEl: HTMLElement | null = null;
 
@@ -54,8 +52,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 		private bundle: CalendarBundle,
 		private calendarComponent: CalendarComponent
 	) {
-		super(app);
-		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
+		super(app, bundle.settingsStore.settings$);
 	}
 
 	protected getTitle(): string {
@@ -101,8 +98,8 @@ export class GlobalSearchModal extends BaseEventListModal {
 		return undefined;
 	}
 
-	protected onModalClose(): void {
-		this.colorEvaluator.destroy();
+	protected override onModalClose(): void {
+		super.onModalClose();
 		this.rawEvents = [];
 	}
 

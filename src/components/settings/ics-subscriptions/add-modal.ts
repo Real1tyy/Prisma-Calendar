@@ -3,10 +3,10 @@ import { nanoid } from "nanoid";
 import { type App, Modal, Notice, requestUrl, SecretComponent, Setting } from "obsidian";
 
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
-import { COMMON_TIMEZONES } from "../../../core/integrations/ics-export";
 import { parseICSContent } from "../../../core/integrations/ics-import";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
+import { renderIconField, renderSyncIntervalField, renderTimezoneField } from "../integration-form-fields";
 
 export class AddICSSubscriptionModal extends Modal {
 	private name = "";
@@ -56,47 +56,17 @@ export class AddICSSubscriptionModal extends Modal {
 				})
 			);
 
-		new Setting(formContainer)
-			.setName("Sync interval (minutes)")
-			.setDesc("How often to automatically sync (1-1440 minutes)")
-			.addText((text) => {
-				text.inputEl.type = "number";
-				text.inputEl.min = "1";
-				text.inputEl.max = "1440";
-				text.inputEl.step = "1";
-				text.setValue(this.syncIntervalMinutes.toString());
-				text.onChange((value) => {
-					const numValue = parseInt(value, 10);
-					if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= 1440) {
-						this.syncIntervalMinutes = numValue;
-					}
-				});
-			});
+		renderSyncIntervalField(formContainer, this.syncIntervalMinutes, (v) => {
+			this.syncIntervalMinutes = v;
+		});
 
-		new Setting(formContainer)
-			.setName("Timezone")
-			.setDesc("Timezone for event times. If it matches your calendar events, times are preserved as-is.")
-			.addDropdown((dropdown) => {
-				for (const tz of COMMON_TIMEZONES) {
-					dropdown.addOption(tz.id, tz.label);
-				}
-				dropdown.setValue(this.timezone);
-				dropdown.onChange((value) => {
-					this.timezone = value;
-				});
-			});
+		renderTimezoneField(formContainer, this.timezone, (v) => {
+			this.timezone = v;
+		});
 
-		new Setting(formContainer)
-			.setName("Calendar icon")
-			.setDesc("Optional icon/emoji to display on synced events (e.g., 📅, 🔄, ☁️)")
-			.addText((text) => {
-				text
-					.setPlaceholder("📅")
-					.setValue(this.icon)
-					.onChange((value) => {
-						this.icon = value;
-					});
-			});
+		renderIconField(formContainer, this.icon, (v) => {
+			this.icon = v;
+		});
 
 		const testButton = formContainer.createEl("button", {
 			text: "Test URL",

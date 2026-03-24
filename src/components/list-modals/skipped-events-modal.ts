@@ -1,25 +1,23 @@
-import { ColorEvaluator } from "@real1ty-obsidian-plugins";
 import { type App, Notice } from "obsidian";
 
 import { FULL_COMMAND_IDS } from "../../constants";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { toggleSkip } from "../../core/commands";
 import type { CalendarEvent } from "../../types/calendar";
-import type { SingleCalendarConfig } from "../../types/settings";
-import { resolveEventColor } from "../../utils/event-color";
-import { formatEventTimeInfo } from "../../utils/time-formatter";
-import { BaseEventListModal, type EventListAction, type EventListItem } from "./base-event-list-modal";
+import {
+	BaseEventListModal,
+	type EventListAction,
+	type EventListItem,
+	mapEventToListItem,
+} from "./base-event-list-modal";
 
 export class SkippedEventsModal extends BaseEventListModal {
-	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
-
 	constructor(
 		app: App,
 		private bundle: CalendarBundle,
 		private skippedEvents: CalendarEvent[]
 	) {
-		super(app);
-		this.colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
+		super(app, bundle.settingsStore.settings$);
 	}
 
 	protected getTitle(): string {
@@ -35,13 +33,7 @@ export class SkippedEventsModal extends BaseEventListModal {
 	}
 
 	protected getItems(): EventListItem[] {
-		return this.skippedEvents.map((event) => ({
-			id: event.id,
-			filePath: event.ref.filePath,
-			title: event.title,
-			subtitle: formatEventTimeInfo(event),
-			categoryColor: resolveEventColor(event.meta, this.bundle, this.colorEvaluator),
-		}));
+		return this.skippedEvents.map((event) => mapEventToListItem(event, this.bundle, this.colorEvaluator));
 	}
 
 	protected getActions(): EventListAction[] {
@@ -78,9 +70,5 @@ export class SkippedEventsModal extends BaseEventListModal {
 
 	protected getSuccessMessage(): string | undefined {
 		return "All events un-skipped!";
-	}
-
-	protected onModalClose(): void {
-		this.colorEvaluator.destroy();
 	}
 }

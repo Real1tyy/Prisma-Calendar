@@ -1,5 +1,5 @@
 import { cls, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
-import { type App, Notice, Setting } from "obsidian";
+import { type App, Setting } from "obsidian";
 
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type CustomCalendarPlugin from "../../../main";
@@ -7,9 +7,9 @@ import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettingsSchema } from "../../../types/settings";
 import { getCalendarById } from "../../../utils/calendar-settings";
-import { deleteFilesByPaths } from "../../../utils/obsidian";
 import { showCalendarIntegrationDeleteEventsModal } from "../../modals";
 import { showConfirmDeleteModal } from "../generic";
+import { deleteTrackedIntegrationEvents } from "../integration-settings-helpers";
 import { AddICSSubscriptionModal } from "./add-modal";
 import { EditICSSubscriptionModal } from "./edit-modal";
 
@@ -187,27 +187,14 @@ export class ICSSubscriptionSettings {
 
 	private async deleteEventsForSubscription(bundle: CalendarBundle, subscriptionId: string): Promise<void> {
 		const events = bundle.icsSubscriptionSyncStateManager.getAllForSubscription(subscriptionId);
-		let deletedCount = events.length;
-
-		// Also delete any recurring instances that were generated from imported events
-		for (const event of events) {
-			const rruleId = bundle.recurringEventManager.getRRuleIdForSourcePath(event.filePath);
-			if (rruleId) {
-				const instances = bundle.recurringEventManager.getPhysicalInstancesByRRuleId(rruleId);
-				deletedCount += instances.length;
-				await bundle.recurringEventManager.deleteAllPhysicalInstances(rruleId);
-			}
-		}
-
-		const filePaths = events.map((event) => event.filePath);
-		await deleteFilesByPaths(
+		await deleteTrackedIntegrationEvents(
 			this.app,
-			filePaths,
-			getCalendarById(this.settingsStore.currentSettings, this.calendarId)?.fileConcurrencyLimit
+			bundle,
+			events,
+			getCalendarById(this.settingsStore.currentSettings, this.calendarId)?.fileConcurrencyLimit,
+			"ICS Subscription",
+			`subscription ${subscriptionId}`
 		);
-
-		console.log(`[ICS Subscription] Deleted ${deletedCount} event(s) for subscription ${subscriptionId}`);
-		new Notice(`Deleted ${deletedCount} event(s)`);
 	}
 
 	private async deleteSubscription(subscriptionId: string, container: HTMLElement): Promise<void> {

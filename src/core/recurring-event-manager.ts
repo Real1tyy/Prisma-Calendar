@@ -48,6 +48,8 @@ import type { CategoryTracker } from "./category-tracker";
 import type { EventStore } from "./event-store";
 import type { Indexer, IndexerEvent } from "./indexer";
 
+const DATE_FORMAT = "yyyy-MM-dd";
+
 interface NodeRecurringEventInstance {
 	recurringEvent: NodeRecurringEvent;
 	instanceDate: DateTime;
@@ -725,51 +727,19 @@ export class RecurringEventManager extends DebouncedNotifier {
 				recurringEvent.content = content;
 			}
 
-			const excludeProps = getRecurringInstanceExcludedProps(this.settings);
-			const instanceFrontmatter: Frontmatter = Object.fromEntries(
-				Object.entries(recurringEvent.frontmatter).filter(([key]) => !excludeProps.has(key))
-			);
-
-			// Set instance-specific properties - CRITICAL for duplication detection
-			instanceFrontmatter[this.settings.rruleIdProp] = recurringEvent.rRuleId;
-			instanceFrontmatter[this.settings.instanceDateProp] = instanceDate.toISODate();
-
 			const sourceFile = this.app.vault.getAbstractFileByPath(recurringEvent.sourceFilePath);
-			if (sourceFile instanceof TFile) {
-				instanceFrontmatter[this.settings.sourceProp] = createFileLink(sourceFile);
-			}
-
+			const sourceLink = sourceFile instanceof TFile ? createFileLink(sourceFile) : undefined;
 			const { instanceStart, instanceEnd } = this.calculateInstanceTimes(recurringEvent, instanceDate);
 
-			// Set all day property if specified
-			if (recurringEvent.rrules.allDay !== undefined) {
-				instanceFrontmatter[this.settings.allDayProp] = recurringEvent.rrules.allDay;
-			}
+			const instanceFrontmatter = buildInstanceFrontmatter(recurringEvent.frontmatter, instanceDate, this.settings, {
+				rRuleId: recurringEvent.rRuleId,
+				sourceLink,
+				instanceStart,
+				instanceEnd,
+				allDay: recurringEvent.rrules.allDay,
+			});
 
-			const instanceStartISO = toInternalISO(instanceStart);
-			const instanceEndISO = instanceEnd ? toInternalISO(instanceEnd) : undefined;
-			if (instanceStartISO) {
-				setEventBasics(instanceFrontmatter, this.settings, {
-					start: instanceStartISO,
-					end: instanceEndISO,
-					allDay: recurringEvent.rrules.allDay,
-				});
-			}
-
-			// Mark past instances as Done at creation time when setting is enabled.
-			// Physical instances created by ensurePastInstances are always in the past;
-			// setting Status here ensures they're correct immediately without relying on
-			// the indexer (which may miss newly created files due to metadata cache delays).
-			const now = DateTime.now();
-			const isPast = instanceEnd && instanceEnd < now ? true : instanceStart < now;
-			if (
-				this.settings.markPastInstancesAsDone &&
-				isPast &&
-				this.settings.statusProperty &&
-				instanceFrontmatter[this.settings.statusProperty] !== this.settings.doneValue
-			) {
-				instanceFrontmatter[this.settings.statusProperty] = this.settings.doneValue;
-			}
+			markInstanceStatusIfPast(instanceFrontmatter, this.settings, instanceStart, instanceEnd);
 
 			const uniquePath = getUniqueFilePathFromFull(this.app, filePath);
 
@@ -814,7 +784,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	private generateNodeInstanceFilePath(recurringEvent: NodeRecurringEvent, instanceDate: DateTime): string {
-		const dateStr = instanceDate.toFormat("yyyy-MM-dd");
+		const dateStr = instanceDate.toFormat(DATE_FORMAT);
 		const titleNoZettel = removeZettelId(recurringEvent.title);
 		const zettelHash = hashRRuleIdToZettelFormat(recurringEvent.rRuleId);
 		const base = sanitizeForFilename(`${titleNoZettel} ${dateStr}`, {
@@ -1071,5 +1041,72 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 	private getPhysicalInstancesList(physicalInstances: Map<string, PhysicalInstance>): PhysicalInstance[] {
 		return Array.from(physicalInstances.values());
+	}
+}
+
+// ─── Extracted Pure Helpers ──────────────────────────────────────
+
+interface InstanceFrontmatterContext {
+	rRuleId: string;
+	sourceLink: string | undefined;
+	instanceStart: DateTime;
+	instanceEnd: DateTime | null;
+	allDay: boolean | undefined;
+}
+
+export function buildInstanceFrontmatter(
+	sourceFrontmatter: Frontmatter,
+	instanceDate: DateTime,
+	settings: SingleCalendarConfig,
+	ctx: InstanceFrontmatterContext
+): Frontmatter {
+	const excludeProps = getRecurringInstanceExcludedProps(settings);
+	const fm: Frontmatter = Object.fromEntries(
+		Object.entries(sourceFrontmatter).filter(([key]) => !excludeProps.has(key))
+	);
+
+	fm[settings.rruleIdProp] = ctx.rRuleId;
+	fm[settings.instanceDateProp] = instanceDate.toISODate();
+
+	if (ctx.sourceLink) {
+		fm[settings.sourceProp] = ctx.sourceLink;
+	}
+
+	if (ctx.allDay !== undefined) {
+		fm[settings.allDayProp] = ctx.allDay;
+	}
+
+	const instanceStartISO = toInternalISO(ctx.instanceStart);
+	const instanceEndISO = ctx.instanceEnd ? toInternalISO(ctx.instanceEnd) : undefined;
+	if (instanceStartISO) {
+		setEventBasics(fm, settings, {
+			start: instanceStartISO,
+			end: instanceEndISO,
+			allDay: ctx.allDay,
+		});
+	}
+
+	return fm;
+}
+
+/**
+ * Marks past instances as Done at creation time when the setting is enabled.
+ * Physical instances created by ensurePastInstances are always in the past;
+ * setting Status here ensures they're correct immediately without relying on
+ * the indexer (which may miss newly created files due to metadata cache delays).
+ */
+export function markInstanceStatusIfPast(
+	frontmatter: Frontmatter,
+	settings: SingleCalendarConfig,
+	instanceStart: DateTime,
+	instanceEnd: DateTime | null
+): void {
+	if (!settings.markPastInstancesAsDone || !settings.statusProperty) return;
+
+	const now = DateTime.now();
+	const isPast = instanceEnd && instanceEnd < now ? true : instanceStart < now;
+
+	if (isPast && frontmatter[settings.statusProperty] !== settings.doneValue) {
+		frontmatter[settings.statusProperty] = settings.doneValue;
 	}
 }

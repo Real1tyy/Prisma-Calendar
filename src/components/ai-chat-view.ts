@@ -24,6 +24,49 @@ import { renderProUpgradeBanner } from "./settings/pro-upgrade-banner";
 
 type AIMode = "query" | "manipulation" | "planning";
 
+interface RetryResult<T> {
+	response: T;
+	exhaustedRetries: boolean;
+}
+
+async function withValidationRetries<T>(
+	maxRetries: number,
+	sendFn: (message: string, isRetry: boolean) => Promise<T>,
+	validateFn: (response: T) => string[],
+	initialMessage: string
+): Promise<RetryResult<T>> {
+	let currentMessage = initialMessage;
+
+	for (let attempt = 0; attempt <= maxRetries; attempt++) {
+		const response = await sendFn(currentMessage, attempt > 0);
+
+		const errors = validateFn(response);
+		if (errors.length === 0) {
+			return { response, exhaustedRetries: false };
+		}
+
+		if (attempt < maxRetries) {
+			console.warn(
+				`[Prisma AI] Validation failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying. Errors:\n`,
+				errors.join("\n")
+			);
+			currentMessage =
+				"Your response had validation errors:\n" +
+				errors.join("\n") +
+				"\n\nFix these issues and respond with a corrected JSON array of operations.";
+			continue;
+		}
+
+		console.error(
+			`[Prisma AI] Validation still failing after ${maxRetries} retries. Remaining errors:\n`,
+			errors.join("\n")
+		);
+		return { response, exhaustedRetries: true };
+	}
+
+	throw new Error("Unreachable: retry loop exited without returning");
+}
+
 export const AI_CHAT_VIEW_TYPE = "prisma-ai-chat";
 
 export class AIChatView extends MountableView(ItemView, "prisma") {
@@ -437,55 +480,36 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 			dayCoverage: aiSettings.aiPlanningDayCoverage,
 		};
 
-		let currentMessage = userMessage;
-
 		const planningPromptFlags = planningContext
 			? { gapDetection: aiSettings.aiPlanningGapDetection, dayCoverage: aiSettings.aiPlanningDayCoverage }
 			: undefined;
 
-		for (let attempt = 0; attempt <= AI_DEFAULTS.MAX_REPROMPT_RETRIES; attempt++) {
-			const response = await this.chatManager.sendMessage(
-				currentMessage,
-				attempt === 0 ? selectedPrompts : undefined,
-				undefined,
-				manipulationContext,
-				planningContext,
-				categoryContext ?? undefined,
-				planningPromptFlags
-			);
+		const result = await withValidationRetries(
+			AI_DEFAULTS.MAX_REPROMPT_RETRIES,
+			(message, isRetry) =>
+				this.chatManager.sendMessage(
+					message,
+					isRetry ? undefined : selectedPrompts,
+					undefined,
+					manipulationContext,
+					planningContext,
+					categoryContext ?? undefined,
+					planningPromptFlags
+				),
+			(response) => {
+				const operations = parseOperations(response);
+				if (!operations) return [];
+				return validateOperationsSemantically(operations, validationContext);
+			},
+			userMessage
+		);
 
-			const operations = parseOperations(response);
-			if (!operations) {
-				break;
-			}
-
-			const errors = validateOperationsSemantically(operations, validationContext);
-			if (errors.length === 0) {
-				this.handleManipulationResponse(response);
-				return;
-			}
-
-			if (attempt < AI_DEFAULTS.MAX_REPROMPT_RETRIES) {
-				console.warn(
-					`[Prisma AI] Validation failed (attempt ${attempt + 1}/${AI_DEFAULTS.MAX_REPROMPT_RETRIES + 1}), retrying. Errors:\n`,
-					errors.join("\n")
-				);
-				currentMessage =
-					"Your response had validation errors:\n" +
-					errors.join("\n") +
-					"\n\nFix these issues and respond with a corrected JSON array of operations.";
-				continue;
-			}
-
-			console.error(
-				`[Prisma AI] Validation still failing after ${AI_DEFAULTS.MAX_REPROMPT_RETRIES} retries. Remaining errors:\n`,
-				errors.join("\n")
-			);
+		if (result.exhaustedRetries) {
 			new Notice(
 				`Prisma AI: Validation issues remain after ${AI_DEFAULTS.MAX_REPROMPT_RETRIES} retries. Review carefully.`
 			);
-			this.handleManipulationResponse(response);
 		}
+		this.handleManipulationResponse(result.response);
 	}
 
 	private handleManipulationResponse(response: string): void {

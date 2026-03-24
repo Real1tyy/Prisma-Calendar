@@ -5,6 +5,7 @@ import type { z } from "zod";
 
 import type { Frontmatter } from "../../types";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { trashDuplicateFile } from "../../utils/obsidian";
 import type { Indexer, IndexerEvent } from "../indexer";
 
 export interface TrackedSyncEvent<TMetadata> {
@@ -48,6 +49,38 @@ export abstract class BaseSyncStateManager<TMetadata> {
 	protected abstract clearState(): void;
 	protected abstract trackEvent(filePath: string, metadata: TMetadata): void;
 	protected abstract untrackByPath(filePath: string): boolean;
+	protected tryTrackInGlobalIndex(
+		globalUidIndex: Map<string, TrackedSyncEvent<TMetadata>>,
+		uid: string,
+		filePath: string,
+		tracked: TrackedSyncEvent<TMetadata>,
+		duplicateLabel: string
+	): boolean {
+		const existing = globalUidIndex.get(uid);
+		if (existing && existing.filePath !== filePath) {
+			trashDuplicateFile(this.app, filePath, duplicateLabel);
+			return false;
+		}
+		globalUidIndex.set(uid, tracked);
+		return true;
+	}
+
+	protected untrackByPathFromMaps(
+		outerMap: Map<string, Map<string, TrackedSyncEvent<TMetadata>>>,
+		globalUidIndex: Map<string, TrackedSyncEvent<TMetadata>>,
+		filePath: string
+	): boolean {
+		for (const innerMap of outerMap.values()) {
+			for (const [uid, tracked] of innerMap.entries()) {
+				if (tracked.filePath === filePath) {
+					innerMap.delete(uid);
+					globalUidIndex.delete(uid);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	private handleIndexerEvent(event: IndexerEvent): void {
 		switch (event.type) {

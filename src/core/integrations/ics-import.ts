@@ -1,5 +1,9 @@
-import { getFilenameFromPath, parseFrontmatterValue, sanitizeForFilename } from "@real1ty-obsidian-plugins";
-import { parseIntoList } from "@real1ty-obsidian-plugins";
+import {
+	getFilenameFromPath,
+	parseFrontmatterValue,
+	parseIntoList,
+	sanitizeForFilename,
+} from "@real1ty-obsidian-plugins";
 import ICAL from "ical.js";
 import { DateTime } from "luxon";
 import type { App, TFile } from "obsidian";
@@ -9,6 +13,8 @@ import type { RecurrenceType } from "../../types/recurring-event";
 import { setEventBasics } from "../../utils/event-frontmatter";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
+
+const MINUTES_PER_DAY = 24 * 60;
 
 export interface ImportedEvent {
 	title: string;
@@ -62,12 +68,15 @@ function parseVAlarmTrigger(vevent: ICAL.Component): number | undefined {
 	}
 
 	if (typeof trigger === "string") {
+		// Matches ISO 8601 duration format (e.g., "-P1DT2H30M") used by VALARM triggers.
+		// The optional leading minus indicates "before the event". Groups capture days, hours,
+		// minutes, and seconds separately because the spec allows any combination of components.
 		const match = trigger.match(/^-?P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/i);
 		if (match) {
 			const days = Number.parseInt(match[1] || "0", 10);
 			const hours = Number.parseInt(match[2] || "0", 10);
 			const mins = Number.parseInt(match[3] || "0", 10);
-			const totalMinutes = days * 24 * 60 + hours * 60 + mins;
+			const totalMinutes = days * MINUTES_PER_DAY + hours * 60 + mins;
 			return totalMinutes > 0 ? totalMinutes : undefined;
 		}
 	}
@@ -125,6 +134,77 @@ export function parseICSRRule(vevent: ICAL.Component): { type: RecurrenceType } 
 	return { type: `${freq};INTERVAL=${interval}` };
 }
 
+function parseVEvent(vevent: ICAL.Component): ImportedEvent | null {
+	const event = new ICAL.Event(vevent);
+
+	const dtstart = vevent.getFirstPropertyValue("dtstart") as ICAL.Time | null;
+	if (!dtstart) return null;
+
+	const allDay = isAllDayEvent(dtstart);
+
+	let endDate: Date | undefined;
+	const dtend = vevent.getFirstPropertyValue("dtend") as ICAL.Time | null;
+	if (dtend) {
+		endDate = icalTimeToDate(dtend);
+	} else {
+		const duration = vevent.getFirstPropertyValue("duration") as ICAL.Duration | null;
+		if (duration) {
+			const startDate = icalTimeToDate(dtstart);
+			const durationSeconds = duration.toSeconds();
+			endDate = new Date(startDate.getTime() + durationSeconds * 1000);
+		}
+	}
+
+	const categoriesProp = vevent.getFirstPropertyValue("categories");
+	const categories = parseIntoList(categoriesProp);
+	const parsedCategories = categories.length > 0 ? categories : undefined;
+
+	const locationValue = vevent.getFirstPropertyValue("location");
+	const location = locationValue ? String(locationValue) : undefined;
+
+	const attendeeProps = vevent.getAllProperties("attendee");
+	const participants = attendeeProps
+		.map((attendee) => {
+			const value = attendee.getFirstValue();
+			if (!value) return null;
+			const cn = attendee.getParameter("cn");
+			return cn ? String(cn) : String(value).replace(/^mailto:/i, "") || null;
+		})
+		.filter((p): p is string => p !== null);
+	const parsedParticipants = participants.length > 0 ? participants : undefined;
+
+	const reminderMinutes = parseVAlarmTrigger(vevent);
+	const frontmatter = parsePrismaFrontmatter(vevent);
+	const originalFilePath = getPrismaProperty(vevent, "x-prisma-file");
+	const uid = event.uid;
+	const rrule = parseICSRRule(vevent);
+
+	let lastModified: number | undefined;
+	const lastModifiedTime = vevent.getFirstPropertyValue("last-modified") as ICAL.Time | null;
+	if (lastModifiedTime) {
+		lastModified = icalTimeToDate(lastModifiedTime).getTime();
+	}
+
+	const imported: ImportedEvent = {
+		title: event.summary || "Untitled Event",
+		start: icalTimeToDate(dtstart),
+		allDay,
+		uid,
+	};
+	if (event.description) imported.description = event.description;
+	if (endDate) imported.end = endDate;
+	if (parsedCategories) imported.categories = parsedCategories;
+	if (location) imported.location = location;
+	if (parsedParticipants) imported.participants = parsedParticipants;
+	if (reminderMinutes !== undefined) imported.reminderMinutes = reminderMinutes;
+	if (frontmatter) imported.frontmatter = frontmatter;
+	if (originalFilePath) imported.originalFilePath = originalFilePath;
+	if (lastModified !== undefined) imported.lastModified = lastModified;
+	if (rrule) imported.rrule = rrule;
+
+	return imported;
+}
+
 export function parseICSContent(icsContent: string): ICSImportResult {
 	try {
 		const jcalData = ICAL.parse(icsContent) as string | unknown[];
@@ -139,84 +219,7 @@ export function parseICSContent(icsContent: string): ICSImportResult {
 			};
 		}
 
-		const events: ImportedEvent[] = [];
-
-		for (const vevent of vevents) {
-			const event = new ICAL.Event(vevent);
-
-			const dtstart = vevent.getFirstPropertyValue("dtstart") as ICAL.Time | null;
-			if (!dtstart) continue;
-
-			const allDay = isAllDayEvent(dtstart);
-
-			// Calculate end time: prefer DTEND, fall back to DURATION
-			let endDate: Date | undefined;
-			const dtend = vevent.getFirstPropertyValue("dtend") as ICAL.Time | null;
-			if (dtend) {
-				endDate = icalTimeToDate(dtend);
-			} else {
-				const duration = vevent.getFirstPropertyValue("duration") as ICAL.Duration | null;
-				if (duration) {
-					const startDate = icalTimeToDate(dtstart);
-					const durationSeconds = duration.toSeconds();
-					endDate = new Date(startDate.getTime() + durationSeconds * 1000);
-				}
-			}
-
-			const categoriesProp = vevent.getFirstPropertyValue("categories");
-			const categories = parseIntoList(categoriesProp);
-			const parsedCategories = categories.length > 0 ? categories : undefined;
-
-			const locationValue = vevent.getFirstPropertyValue("location");
-			const location = locationValue ? String(locationValue) : undefined;
-
-			const attendeeProps = vevent.getAllProperties("attendee");
-			const participants: string[] = [];
-			for (const attendee of attendeeProps) {
-				const value = attendee.getFirstValue();
-				if (value) {
-					const email = String(value).replace(/^mailto:/i, "");
-					const cn = attendee.getParameter("cn");
-					if (cn) {
-						participants.push(String(cn));
-					} else if (email) {
-						participants.push(email);
-					}
-				}
-			}
-			const parsedParticipants = participants.length > 0 ? participants : undefined;
-
-			const reminderMinutes = parseVAlarmTrigger(vevent);
-			const frontmatter = parsePrismaFrontmatter(vevent);
-			const originalFilePath = getPrismaProperty(vevent, "x-prisma-file");
-			const uid = event.uid;
-			const rrule = parseICSRRule(vevent);
-
-			// Extract last modified timestamp (LAST-MODIFIED only, not DTSTAMP which changes on every ICS export)
-			let lastModified: number | undefined;
-			const lastModifiedTime = vevent.getFirstPropertyValue("last-modified") as ICAL.Time | null;
-			if (lastModifiedTime) {
-				lastModified = icalTimeToDate(lastModifiedTime).getTime();
-			}
-
-			const imported: ImportedEvent = {
-				title: event.summary || "Untitled Event",
-				start: icalTimeToDate(dtstart),
-				allDay,
-				uid,
-			};
-			if (event.description) imported.description = event.description;
-			if (endDate) imported.end = endDate;
-			if (parsedCategories) imported.categories = parsedCategories;
-			if (location) imported.location = location;
-			if (parsedParticipants) imported.participants = parsedParticipants;
-			if (reminderMinutes !== undefined) imported.reminderMinutes = reminderMinutes;
-			if (frontmatter) imported.frontmatter = frontmatter;
-			if (originalFilePath) imported.originalFilePath = originalFilePath;
-			if (lastModified !== undefined) imported.lastModified = lastModified;
-			if (rrule) imported.rrule = rrule;
-			events.push(imported);
-		}
+		const events = vevents.map(parseVEvent).filter((e): e is ImportedEvent => e !== null);
 
 		return {
 			success: true,
@@ -280,7 +283,7 @@ export function buildFrontmatterFromImportedEvent(
 
 	if (event.allDay) {
 		if (event.reminderMinutes !== undefined) {
-			const days = Math.round(event.reminderMinutes / (24 * 60));
+			const days = Math.round(event.reminderMinutes / MINUTES_PER_DAY);
 			if (days > 0) {
 				fm[settings.daysBeforeProp] = days;
 			}

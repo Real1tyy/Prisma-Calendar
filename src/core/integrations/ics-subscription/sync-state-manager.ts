@@ -2,7 +2,6 @@ import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { trashDuplicateFile } from "../../../utils/obsidian";
 import type { Indexer } from "../../indexer";
 import { BaseSyncStateManager, type TrackedSyncEvent } from "../base-sync-state-manager";
 import { type ICSSubscriptionSyncMetadata, ICSSubscriptionSyncMetadataSchema } from "./types";
@@ -38,9 +37,16 @@ export class ICSSubscriptionSyncStateManager extends BaseSyncStateManager<ICSSub
 	}
 
 	protected trackEvent(filePath: string, metadata: ICSSubscriptionSyncMetadata): void {
-		const existing = this.globalUidIndex.get(metadata.uid);
-		if (existing && existing.filePath !== filePath) {
-			trashDuplicateFile(this.app, filePath, `ICS event (UID: ${metadata.uid})`);
+		const tracked = { filePath, metadata };
+		if (
+			!this.tryTrackInGlobalIndex(
+				this.globalUidIndex,
+				metadata.uid,
+				filePath,
+				tracked,
+				`ICS event (UID: ${metadata.uid})`
+			)
+		) {
 			return;
 		}
 
@@ -50,22 +56,11 @@ export class ICSSubscriptionSyncStateManager extends BaseSyncStateManager<ICSSub
 			this.syncState.set(metadata.subscriptionId, subscriptionState);
 		}
 
-		const tracked = { filePath, metadata };
 		subscriptionState.set(metadata.uid, tracked);
-		this.globalUidIndex.set(metadata.uid, tracked);
 	}
 
 	protected untrackByPath(filePath: string): boolean {
-		for (const subscriptionState of this.syncState.values()) {
-			for (const [uid, tracked] of subscriptionState.entries()) {
-				if (tracked.filePath === filePath) {
-					subscriptionState.delete(uid);
-					this.globalUidIndex.delete(uid);
-					return true;
-				}
-			}
-		}
-		return false;
+		return this.untrackByPathFromMaps(this.syncState, this.globalUidIndex, filePath);
 	}
 
 	protected clearState(): void {

@@ -4,7 +4,7 @@ import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
 import { showNotificationModal } from "../components/modals";
-import { MAX_PAST_NOTIFICATION_THRESHOLD } from "../constants";
+import { MAX_PAST_NOTIFICATION_THRESHOLD, NOTIFICATION_CHECK_INTERVAL_MS } from "../constants";
 import type { Frontmatter, PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
 import type { SingleCalendarConfig } from "../types/settings";
@@ -122,66 +122,32 @@ export class NotificationManager {
 		isAllDay: boolean,
 		metadata: EventMetadata
 	): void {
-		if (metadata.skip) {
+		if (metadata.skip || metadata.alreadyNotified) {
 			this.removeNotification(filePath);
 			return;
 		}
 
-		if (metadata.alreadyNotified) {
+		const notificationTime = calculateNotificationTime(frontmatter, isAllDay, metadata, this.settings);
+		if (!notificationTime) {
 			this.removeNotification(filePath);
 			return;
-		}
-
-		const dateProp = isAllDay ? this.settings.dateProp : this.settings.startProp;
-		const dateValue = frontmatter[dateProp];
-		const dateString = toSafeString(dateValue);
-
-		if (!dateString) {
-			this.removeNotification(filePath);
-			return;
-		}
-
-		const startDate = parseAsLocalDate(dateString);
-		if (!startDate) {
-			this.removeNotification(filePath);
-			return;
-		}
-
-		const defaultValue = isAllDay ? this.settings.defaultDaysBefore : this.settings.defaultMinutesBefore;
-		const typedNotificationValue = isAllDay ? metadata.daysBefore : metadata.minutesBefore;
-		const notificationAmount = typedNotificationValue !== undefined ? typedNotificationValue : defaultValue;
-
-		if (notificationAmount === undefined) {
-			this.removeNotification(filePath);
-			return;
-		}
-
-		const notificationMinutes = isAllDay ? notificationAmount * 24 * 60 : notificationAmount;
-		const notifyAt = new Date(startDate);
-		notifyAt.setMinutes(notifyAt.getMinutes() - notificationMinutes);
-
-		if (isAllDay) {
-			notifyAt.setHours(0, 0, 0, 0);
 		}
 
 		const title =
 			getEventName(this.settings.titleProp, frontmatter, filePath, this.settings.calendarTitleProp) || filePath;
-
 		const entry: NotificationEntry = {
 			eventId: filePath,
 			filePath,
 			title,
-			notifyAt,
-			startDate,
+			notifyAt: notificationTime.notifyAt,
+			startDate: notificationTime.startDate,
 			isAllDay,
 			frontmatter,
 		};
 
-		// Check if notification is due
 		const now = new Date();
-		if (notifyAt <= now) {
-			// Don't notify for events that are too far in the past
-			const timeSinceEvent = now.getTime() - startDate.getTime();
+		if (notificationTime.notifyAt <= now) {
+			const timeSinceEvent = now.getTime() - notificationTime.startDate.getTime();
 			const maxPastThreshold = isAllDay
 				? MAX_PAST_NOTIFICATION_THRESHOLD.ALL_DAY_EVENTS_MS
 				: MAX_PAST_NOTIFICATION_THRESHOLD.TIMED_EVENTS_MS;
@@ -229,7 +195,7 @@ export class NotificationManager {
 		// Check every minute
 		this.checkInterval = window.setInterval(() => {
 			this.checkPendingNotifications();
-		}, 60000);
+		}, NOTIFICATION_CHECK_INTERVAL_MS);
 	}
 
 	private stopPeriodicCheck(): void {
@@ -392,4 +358,35 @@ export class NotificationManager {
 			console.error(`[NotificationManager] ❌ Error snoozing notification for ${entry.filePath}:`, error);
 		}
 	}
+}
+
+// ─── Extracted Pure Helpers ──────────────────────────────────────
+
+export function calculateNotificationTime(
+	frontmatter: Frontmatter,
+	isAllDay: boolean,
+	metadata: EventMetadata,
+	settings: SingleCalendarConfig
+): { notifyAt: Date; startDate: Date } | null {
+	const dateProp = isAllDay ? settings.dateProp : settings.startProp;
+	const dateString = toSafeString(frontmatter[dateProp]);
+	if (!dateString) return null;
+
+	const startDate = parseAsLocalDate(dateString);
+	if (!startDate) return null;
+
+	const defaultValue = isAllDay ? settings.defaultDaysBefore : settings.defaultMinutesBefore;
+	const typedNotificationValue = isAllDay ? metadata.daysBefore : metadata.minutesBefore;
+	const notificationAmount = typedNotificationValue !== undefined ? typedNotificationValue : defaultValue;
+	if (notificationAmount === undefined) return null;
+
+	const notificationMinutes = isAllDay ? notificationAmount * 24 * 60 : notificationAmount;
+	const notifyAt = new Date(startDate);
+	notifyAt.setMinutes(notifyAt.getMinutes() - notificationMinutes);
+
+	if (isAllDay) {
+		notifyAt.setHours(0, 0, 0, 0);
+	}
+
+	return { notifyAt, startDate };
 }

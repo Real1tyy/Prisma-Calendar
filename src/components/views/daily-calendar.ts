@@ -39,6 +39,7 @@ export interface DailyCalendarConfig {
 }
 
 const CLICK_THRESHOLD_MS = 150;
+const SELECTION_GUARD_DELAY_MS = 50;
 
 /**
  * Creates a FullCalendar instance locked to timeGridDay view that reuses
@@ -146,7 +147,7 @@ export function createDailyCalendar(
 			}
 			setTimeout(() => {
 				isHandlingSelection = false;
-			}, 50);
+			}, SELECTION_GUARD_DELAY_MS);
 		},
 
 		select: (info) => {
