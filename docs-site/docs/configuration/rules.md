@@ -146,4 +146,4 @@ Define custom rules to map specific event names to multiple categories. Each pre
 - Event names: `Gym, Exercise, Workout` → Categories: Health, Fitness
 - Event names: `Reading, Study` → Categories: Learning, Personal Development
 
-See [Categories - Auto-Assignment](../features/organization/categories#1-auto-assignment-new-event-creation) for detailed usage and examples.
+See [Categories - Auto-Assignment](../features/organization/categories#1-auto-assignment-event-creation-and-editing) for detailed usage and examples.

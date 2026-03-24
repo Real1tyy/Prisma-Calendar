@@ -50,4 +50,4 @@ The dialog shows all skipped events with options to restore them. Each row is ti
 
 ## Technical
 
-Skipped events have `Skipped: true` in frontmatter (automatically managed). Files remain in vault, just hidden from calendar view. Fully reversible with undo support.
+Skipped events have `Skip: true` in frontmatter (automatically managed, property name configurable in Settings → Properties). Files remain in vault, just hidden from calendar view. Fully reversible with undo support.

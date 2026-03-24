@@ -43,6 +43,6 @@ Properties you add to "Additional properties" appear after the default columns. 
 - **attendees**: List event participants
 
 **See Also**:
-- [Event Series Bases Integration](../features/events/event-groups.md#bases-view-integration) for viewing event series in Bases
+- [Event Series Bases Views](../features/events/event-groups.md#bases-views) for viewing event series in Bases
 - [Hotkeys documentation](../features/advanced/hotkeys.md#show-current-interval-in-bases) for using the "Show current interval in Bases" command
 - [Categories documentation](../features/organization/categories.md) for category-based Bases views

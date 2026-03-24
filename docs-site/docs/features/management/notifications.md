@@ -66,7 +66,7 @@ Events older than these thresholds are automatically ignored without showing a m
 
 **Available**: Timed events only (not all-day)
 
-Postpones notification for configurable duration (default: 15 min, range: 1-120). Resets `Already Notified` to `false`, recalculates `Minutes Before`, and re-indexes file. Works for both future and past events with smart calculation.
+Postpones notification for configurable duration (default: 15 min). Resets `Already Notified` to `false`, recalculates `Minutes Before`, and re-indexes file. Works for both future and past events with smart calculation.
 
 **Configure**: Settings → Prisma Calendar → [Calendar] → Notifications → Snooze duration
 

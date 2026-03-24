@@ -16,7 +16,7 @@ Prisma Calendar offers three integration methods:
 2. **ICS URL Subscriptions** - Automatic read-only synchronization from public ICS URLs (Outlook, Google public links) to Obsidian
 3. **ICS Import/Export** - Manual exchange of event files with any calendar application
 
-**ICS Format**: Prisma Calendar stores all event times internally in **UTC**. When exporting or importing, you select a timezone for conversion. This ensures events display correctly in any calendar application.
+**ICS Format**: When exporting or importing ICS files, you select a timezone for conversion. Prisma Calendar converts between ICS timestamps and your local times during import/export to ensure events display correctly in any calendar application.
 
 **Compatible with**: Google Calendar, Apple Calendar (iCal), Microsoft Outlook, Nextcloud Calendar, Thunderbird, and any application supporting ICS/iCalendar format.
 
@@ -156,11 +156,9 @@ This applies to all import paths: manual ICS import, ICS URL subscriptions, and 
 
 ## Timezone Handling
 
-**Internal Storage**: All events stored in UTC (`2025-01-15T14:00:00Z`)
+**Export**: Event times from your vault are converted to the selected timezone for the ICS file. The ICS file includes `X-WR-TIMEZONE` so external calendar apps display the correct local time.
 
-**Export Conversion**: When exporting with timezone `Europe/Prague (UTC+1)`, event displays as `15:00-16:00` in Prague time. ICS file includes `X-WR-TIMEZONE:Europe/Prague`
-
-**Import Conversion**: Times converted from source timezone to UTC, stored in frontmatter as UTC timestamps
+**Import**: ICS event times are converted from the source timezone to your selected timezone and stored in frontmatter as local datetime strings.
 
 ## CalDAV Integration
 

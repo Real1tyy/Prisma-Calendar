@@ -12,7 +12,7 @@ Configure desktop notifications and alerts for upcoming events.
 
 - **Default minutes before** (timed events): minutes before timed events to notify (optional, leave empty for no default notification. 0 = notify when event starts, 15 = notify 15 minutes before)
 - **Default days before** (all-day events): days before all-day events to notify (optional, leave empty for no default notification. 0 = notify on the day of the event, 1 = notify 1 day before)
-- **Snooze duration (minutes)**: how many minutes to snooze notifications when pressing the Snooze button (default: 15 minutes, range: 1–200)
+- **Snooze duration (minutes)**: how many minutes to snooze notifications when pressing the Snooze button (default: 15 minutes)
 
 ## Property Names
 

@@ -101,9 +101,9 @@ Reopen the calendar view for toolbar changes to take effect.
 
 Configure the visible time range and slot behavior in **Settings → Calendar → Time Display**:
 
-- **Day start / end hour**: Visible time range in day and week grids (default: 7:00–22:00)
-- **Slot duration (minutes)**: Height of each grid slot (default: 10 minutes, range: 1–60)
-- **Snap duration (minutes)**: Drag and resize snapping interval (default: 10 minutes, range: 1–60)
+- **Day start / end hour**: Visible time range in day and week grids (default: 7:00–23:00)
+- **Slot duration (minutes)**: Height of each grid slot (default: 30 minutes, range: 1–60)
+- **Snap duration (minutes)**: Drag and resize snapping interval (default: 30 minutes, range: 1–60)
 - **Zoom levels (minutes)**: Comma-separated list for CTRL+scroll zoom (default: `1, 2, 3, 5, 10, 15, 20, 30, 45, 60`)
 
 ## Visual Appearance
