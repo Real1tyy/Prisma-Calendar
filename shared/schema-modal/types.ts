@@ -117,6 +117,7 @@ export type SchemaFormMode = "edit" | "readonly";
 export interface SchemaFormConfig<T> {
 	shape: ZodRawShape;
 	prefix: string;
+	app?: App | undefined;
 	mode?: SchemaFormMode | undefined;
 	fieldOverrides?: Record<string, FieldOverride> | undefined;
 	existing?: Partial<T> | undefined;

@@ -1,4 +1,4 @@
-import { Setting } from "obsidian";
+import { type App, SecretComponent, Setting } from "obsidian";
 import { z } from "zod";
 
 import { introspectShape } from "./introspect";
@@ -242,14 +242,16 @@ function renderSecretField(
 	el: HTMLElement,
 	desc: SchemaFieldDescriptor,
 	override: FieldOverride | undefined,
-	values: Record<string, unknown>
+	values: Record<string, unknown>,
+	app?: App
 ): void {
-	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
-		text.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "").setValue(String(values[desc.key] ?? ""));
-		text.inputEl.type = "password";
-		text.inputEl.autocomplete = "off";
-		text.onChange((v) => (values[desc.key] = v));
-	});
+	if (!app) return;
+
+	applyFieldMeta(new Setting(el), desc, override).addComponent((component) =>
+		new SecretComponent(app, component).setValue(String(values[desc.key] ?? "")).onChange((v) => {
+			values[desc.key] = v;
+		})
+	);
 }
 
 function renderArrayField(
@@ -278,7 +280,8 @@ function renderEditField(
 	el: HTMLElement,
 	desc: SchemaFieldDescriptor,
 	override: FieldOverride | undefined,
-	values: Record<string, unknown>
+	values: Record<string, unknown>,
+	app?: App
 ): void {
 	if (override?.render) {
 		override.render(el, values[desc.key], (v) => (values[desc.key] = v));
@@ -309,7 +312,7 @@ function renderEditField(
 			renderArrayField(el, desc, override, values);
 			break;
 		case "secret":
-			renderSecretField(el, desc, override, values);
+			renderSecretField(el, desc, override, values, app);
 			break;
 	}
 }
@@ -359,14 +362,17 @@ function renderFields(
 	overrides: Record<string, FieldOverride>,
 	values: Record<string, unknown>,
 	mode: SchemaFormMode,
-	extraFields?: (el: HTMLElement, values: Record<string, unknown>) => void
+	extraFields?: (el: HTMLElement, values: Record<string, unknown>) => void,
+	app?: App
 ): void {
-	const fieldRenderer = mode === "readonly" ? renderReadonlyField : renderEditField;
-
 	for (const desc of descriptors) {
 		const override = overrides[desc.key];
 		if (override?.hidden) continue;
-		fieldRenderer(container, desc, override, values);
+		if (mode === "readonly") {
+			renderReadonlyField(container, desc, override, values);
+		} else {
+			renderEditField(container, desc, override, values, app);
+		}
 	}
 
 	extraFields?.(container, values);
@@ -378,7 +384,7 @@ export function renderSchemaForm<T>(container: HTMLElement, config: SchemaFormCo
 	const values = initValues<T>(descriptors, overrides, config.existing);
 	let currentMode: SchemaFormMode = config.mode ?? "edit";
 
-	renderFields(container, descriptors, overrides, values, currentMode, config.extraFields);
+	renderFields(container, descriptors, overrides, values, currentMode, config.extraFields, config.app);
 
 	function validate(): SchemaFormValidationResult<T> {
 		const coerced = coerceFormValues(values, descriptors);
@@ -398,7 +404,7 @@ export function renderSchemaForm<T>(container: HTMLElement, config: SchemaFormCo
 	function setMode(mode: SchemaFormMode): void {
 		currentMode = mode;
 		container.empty();
-		renderFields(container, descriptors, overrides, values, currentMode, config.extraFields);
+		renderFields(container, descriptors, overrides, values, currentMode, config.extraFields, config.app);
 	}
 
 	function setValues(partial: Partial<Record<string, unknown>>): void {
@@ -406,7 +412,7 @@ export function renderSchemaForm<T>(container: HTMLElement, config: SchemaFormCo
 			if (val !== undefined) values[key] = val;
 		}
 		container.empty();
-		renderFields(container, descriptors, overrides, values, currentMode, config.extraFields);
+		renderFields(container, descriptors, overrides, values, currentMode, config.extraFields, config.app);
 	}
 
 	function destroy(): void {

@@ -45,6 +45,7 @@ export function createSchemaFormRenderer<T>(config: SchemaModalConfig<T>) {
 		const handle = renderSchemaForm(el, {
 			shape: config.shape,
 			prefix: "",
+			app: config.app,
 			fieldOverrides: config.fieldOverrides,
 			existing: config.existing?.data,
 			extraFields: config.extraFields ? (fieldEl, values) => config.extraFields!(fieldEl, values, ctx) : undefined,
