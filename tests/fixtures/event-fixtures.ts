@@ -18,7 +18,6 @@ function defaultMetadata(partial: Partial<EventMetadata> = {}): EventMetadata {
 		rruleId: undefined,
 		instanceDate: undefined,
 		source: undefined,
-		ignoreRecurring: false,
 		futureInstancesCount: undefined,
 		generatePastEvents: false,
 		caldav: undefined,

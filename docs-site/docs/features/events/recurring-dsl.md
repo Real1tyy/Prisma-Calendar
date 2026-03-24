@@ -120,7 +120,7 @@ When you change the start or end time of a source recurring event (e.g., moving 
 
 ### Start Date as Calculation Point
 
-For `weekly`/`biweekly`, system finds first day matching `RRuleSpec` on or after `Start` date. For `daily`/`monthly`/`quarterly`/`semiannual`/`yearly`, `Start` is typically the first instance.
+For `weekly`/`bi-weekly`, system finds first day matching `RRuleSpec` on or after `Start` date. For `daily`/`monthly`/`quarterly`/`semi-annual`/`yearly`, `Start` is typically the first instance.
 
 ### RRuleID Management
 
@@ -174,11 +174,11 @@ The recurring events modal (accessible via command palette: "Show recurring even
 - `daily` - Every day
 - `bi-daily` - Every 2 days
 - `weekly` - Every week
-- `biweekly` - Every 2 weeks
+- `bi-weekly` - Every 2 weeks
 - `monthly` - Every month
-- `bimonthly` - Every 2 months
+- `bi-monthly` - Every 2 months
 - `quarterly` - Every 3 months
-- `semiannual` - Every 6 months
+- `semi-annual` - Every 6 months
 - `yearly` - Every year
 
 ### Custom Intervals
@@ -199,7 +199,7 @@ RRule: DAILY;INTERVAL=5
 ```
 
 ### RRuleSpec for Weekly Patterns
-When using `weekly` or `biweekly`, specify days with `RRuleSpec`:
+When using `weekly` or `bi-weekly`, specify days with `RRuleSpec`:
 
 ```yaml
 RRuleSpec: monday, wednesday, friday
@@ -232,11 +232,11 @@ Enable "Generate Past Events" on a recurring event to backfill physical instance
 ### Virtual Events
 Beyond generation horizon, read-only [virtual events](./virtual-events) show complete pattern without creating files.
 
-### Duplicating Recurring Instances
+### Duplicating Physical Recurring Instances
 
-Right-click physical instance → "Duplicate recurring instance"
+Right-click physical instance → "Duplicate"
 
-Duplicate copies the event's frontmatter and body into a new standalone event, stripping recurrence properties (RRuleID, Source, Instance Date). The duplicate gets a new [ZettelID](../management/zettelid-naming) and is completely independent from the recurring series — it won't be affected by self-healing or instance count limits.
+Duplicate copies the event's frontmatter and body into a new standalone event, stripping recurrence properties (RRuleID, Source, Instance Date). The duplicate gets a new [ZettelID](../management/zettelid-naming) and is completely independent from the recurring series — it won't be affected by instance count limits.
 
 ### Editing Physical Recurring Events
 

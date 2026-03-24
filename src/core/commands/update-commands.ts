@@ -10,11 +10,7 @@ import {
 import type { App, TFile } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
-import {
-	isPhysicalRecurringEvent,
-	setEventBasics,
-	shouldUpdateInstanceDateOnMove,
-} from "../../utils/event-frontmatter";
+import { isPhysicalRecurringEvent, setEventBasics } from "../../utils/event-frontmatter";
 import { ensureFileHasZettelId, extractZettelId, rebuildPhysicalInstanceWithNewDate } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
 import type { EditEventData } from "./lifecycle-commands";
@@ -120,11 +116,9 @@ export class UpdateEventCommand implements Command {
 		const newDateStr = this.newStart.split("T")[0];
 		if (oldDateStr === newDateStr) return;
 
-		if (shouldUpdateInstanceDateOnMove(frontmatter, settings.ignoreRecurringProp)) {
-			await withFrontmatter(this.app, file, (fm) => {
-				fm[settings.instanceDateProp] = newDateStr;
-			});
-		}
+		await withFrontmatter(this.app, file, (fm) => {
+			fm[settings.instanceDateProp] = newDateStr;
+		});
 
 		const newBasename = rebuildPhysicalInstanceWithNewDate(file.basename, newDateStr);
 		if (!newBasename) return;

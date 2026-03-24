@@ -278,12 +278,6 @@ const PropsSettingsSchema = z
 			.describe(
 				"Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)"
 			),
-		ignoreRecurringProp: z
-			.string()
-			.catch(PROP_DEFAULTS.ignoreRecurring)
-			.describe(
-				"Frontmatter property name for excluding duplicated recurring events from future instance generation (events with this set to true are tracked but don't count towards the future instances limit)"
-			),
 		caldavProp: z.string().catch("CalDAV"),
 		icsSubscriptionProp: z.string().catch("ICSSubscription"),
 		iconProp: z
@@ -340,7 +334,6 @@ export const SYSTEM_PROP_KEYS: PropsKey[] = [
 	"caldavProp",
 	"icsSubscriptionProp",
 	"generatePastEventsProp",
-	"ignoreRecurringProp",
 ];
 
 /**

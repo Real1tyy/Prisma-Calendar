@@ -21,7 +21,6 @@ import {
 	assignPrerequisites,
 	CloneEventCommand,
 	DeleteEventCommand,
-	DuplicateRecurringEventCommand,
 	fillTime,
 	markAsDone,
 	markAsUndone,
@@ -156,8 +155,6 @@ export class EventContextMenu {
 					case "goToSource":
 					case "editSourceEvent":
 						return isPhysical || isVirtual;
-					case "duplicateRecurringInstance":
-						return isPhysical;
 					case "editEvent":
 					case "triggerStopwatch":
 					case "assignCategories":
@@ -247,15 +244,6 @@ export class EventContextMenu {
 				icon: "pencil",
 				section: "navigation",
 				onAction: () => this.editSourceEvent(this.currentEvent!),
-			},
-			{
-				id: "duplicateRecurringInstance",
-				label: CONTEXT_MENU_BUTTON_LABELS.duplicateRecurringInstance,
-				icon: "copy-plus",
-				section: "navigation",
-				onAction: () => {
-					void this.duplicateRecurringEvent(this.currentEvent!);
-				},
 			},
 			{
 				id: "viewEventGroups",
@@ -699,15 +687,6 @@ export class EventContextMenu {
 			await this.runCommand(() => macro, {
 				success: `Event duplicated to ${remainingDays} remaining day${remainingDays > 1 ? "s" : ""} of the week`,
 				error: "Failed to duplicate event to remaining week days",
-			});
-		});
-	}
-
-	async duplicateRecurringEvent(event: CalendarEventInfo): Promise<void> {
-		await this.withFilePath(event, "duplicate recurring event", async (filePath) => {
-			await this.runCommand(() => new DuplicateRecurringEventCommand(this.app, this.bundle, filePath), {
-				success: "Recurring instance duplicated",
-				error: "Failed to duplicate recurring event",
 			});
 		});
 	}

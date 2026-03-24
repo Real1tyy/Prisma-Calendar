@@ -108,11 +108,6 @@ export class PropertiesSettings {
 		);
 		this.ui.addSchemaField(
 			containerEl,
-			{ ignoreRecurringProp: S.ignoreRecurringProp },
-			{ name: "Ignore recurring property", placeholder: PROP_DEFAULTS.ignoreRecurring }
-		);
-		this.ui.addSchemaField(
-			containerEl,
 			{ futureInstancesCountProp: S.futureInstancesCountProp },
 			{ name: "Future instances count property", placeholder: PROP_DEFAULTS.futureInstancesCount }
 		);

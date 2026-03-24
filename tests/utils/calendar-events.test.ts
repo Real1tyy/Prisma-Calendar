@@ -6,7 +6,6 @@ import {
 	isEventDone,
 	isPhysicalRecurringEvent,
 	parseCustomDoneProperty,
-	shouldUpdateInstanceDateOnMove,
 } from "../../src/utils/event-frontmatter";
 import {
 	ensureFileHasZettelId,
@@ -836,52 +835,6 @@ describe("Physical Recurring Event Utilities", () => {
 				[customInstanceDateProp]: "2025-01-15",
 			};
 			expect(isPhysicalRecurringEvent(frontmatter, rruleIdProp, rruleProp, customInstanceDateProp)).toBe(true);
-		});
-	});
-
-	describe("shouldUpdateInstanceDateOnMove", () => {
-		const ignoreRecurringProp = "Ignore Recurring";
-
-		it("should return true when ignoreRecurring is true", () => {
-			const frontmatter = {
-				[ignoreRecurringProp]: true,
-				RRuleID: "1730000000000-abc12",
-			};
-			expect(shouldUpdateInstanceDateOnMove(frontmatter, ignoreRecurringProp)).toBe(true);
-		});
-
-		it("should return false when ignoreRecurring is false", () => {
-			const frontmatter = {
-				[ignoreRecurringProp]: false,
-				RRuleID: "1730000000000-abc12",
-			};
-			expect(shouldUpdateInstanceDateOnMove(frontmatter, ignoreRecurringProp)).toBe(false);
-		});
-
-		it("should return false when ignoreRecurring is not present", () => {
-			const frontmatter = {
-				RRuleID: "1730000000000-abc12",
-			};
-			expect(shouldUpdateInstanceDateOnMove(frontmatter, ignoreRecurringProp)).toBe(false);
-		});
-
-		it("should return false for undefined frontmatter", () => {
-			expect(shouldUpdateInstanceDateOnMove(undefined, ignoreRecurringProp)).toBe(false);
-		});
-
-		it("should return false when ignoreRecurring is string 'true' (not boolean)", () => {
-			const frontmatter = {
-				[ignoreRecurringProp]: "true",
-			};
-			expect(shouldUpdateInstanceDateOnMove(frontmatter, ignoreRecurringProp)).toBe(false);
-		});
-
-		it("should handle different prop names", () => {
-			const customProp = "Skip Instance";
-			const frontmatter = {
-				[customProp]: true,
-			};
-			expect(shouldUpdateInstanceDateOnMove(frontmatter, customProp)).toBe(true);
 		});
 	});
 
