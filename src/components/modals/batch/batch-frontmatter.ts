@@ -38,10 +38,7 @@ function buildPropertyMap(properties: FrontmatterProperty[]): Map<string, string
 				}
 			}
 		} else {
-			const value = property.value.trim();
-			if (value) {
-				propertyMap.set(key, value);
-			}
+			propertyMap.set(key, property.value.trim());
 		}
 	}
 
@@ -55,7 +52,7 @@ function renderBatchFrontmatterForm(
 	selectedEvents: CalendarEvent[],
 	onSubmit: (properties: Map<string, string | null>) => void,
 	close: () => void
-): void {
+): () => void {
 	const properties: FrontmatterProperty[] = [];
 
 	el.createEl("h2", { text: "Batch frontmatter management" });
@@ -156,6 +153,8 @@ function renderBatchFrontmatterForm(
 		}
 		addProperty("", "", false);
 	}
+
+	return applyChanges;
 }
 
 export function showBatchFrontmatterModal(
@@ -168,22 +167,9 @@ export function showBatchFrontmatterModal(
 		app,
 		cls: cls("batch-frontmatter-modal"),
 		render: (el, ctx) => {
-			renderBatchFrontmatterForm(el, app, settings, selectedEvents, onSubmit, ctx.close);
+			const applyChanges = renderBatchFrontmatterForm(el, app, settings, selectedEvents, onSubmit, ctx.close);
 			if (ctx.type === "modal") {
-				registerSubmitHotkey(ctx.scope, () => {
-					const propertyMap = buildPropertyMap(
-						Array.from(el.querySelectorAll(`.${cls("batch-frontmatter-row")}`)).map(() => ({
-							key: "",
-							value: "",
-							isExisting: false,
-							markedForDeletion: false,
-							originalKey: "",
-							originalValue: "",
-						}))
-					);
-					onSubmit(propertyMap);
-					ctx.close();
-				});
+				registerSubmitHotkey(ctx.scope, applyChanges);
 			}
 		},
 	});

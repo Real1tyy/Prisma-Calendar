@@ -12,6 +12,7 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 
+- **Batch frontmatter edit not applying new properties**: Adding a new frontmatter property via batch edit showed a success notice but did not actually write the property. The submit hotkey also discarded all input. Both issues are now fixed. See [Batch Operations](./features/management/batch-operations.md).
 - **Timeline all-day events overlapping**: All-day and timed events in the timeline view were rendered as points with no width, causing them to overlap instead of stacking vertically. Events now render as ranges with proper start/end times. See [Timeline](./features/views/timeline.md).
 
 ### Removed
