@@ -144,3 +144,6 @@ export const optionalTimeTransform = optionalParsed<DateTime>("time", parseTime)
 
 export const requiredDateTransform = requiredParsed<DateTime>("date", parseISODateStart);
 export const optionalDateTransform = optionalParsed<DateTime>("date", parseISODateStart);
+
+/** String field that renders as a password input in schema-driven forms. */
+export const zPassword = z.string().meta({ format: "password" });

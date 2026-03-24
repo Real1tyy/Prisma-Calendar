@@ -17,5 +17,6 @@ export type {
 	SchemaFormMode,
 	SchemaFormValidationResult,
 	SchemaModalConfig,
+	SecretFieldDescriptor,
 	UpsertHandler,
 } from "./types";

@@ -238,6 +238,20 @@ function renderDropdownField(
 	});
 }
 
+function renderSecretField(
+	el: HTMLElement,
+	desc: SchemaFieldDescriptor,
+	override: FieldOverride | undefined,
+	values: Record<string, unknown>
+): void {
+	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
+		text.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "").setValue(String(values[desc.key] ?? ""));
+		text.inputEl.type = "password";
+		text.inputEl.autocomplete = "off";
+		text.onChange((v) => (values[desc.key] = v));
+	});
+}
+
 function renderArrayField(
 	el: HTMLElement,
 	desc: ArrayFieldDescriptor,
@@ -294,10 +308,15 @@ function renderEditField(
 		case "array":
 			renderArrayField(el, desc, override, values);
 			break;
+		case "secret":
+			renderSecretField(el, desc, override, values);
+			break;
 	}
 }
 
 // ─── Readonly Mode Field Renderer ───────────────────────────
+
+const SECRET_MASK = "••••••••";
 
 function formatReadonlyValue(desc: SchemaFieldDescriptor, value: unknown): string {
 	if (value === undefined || value === null || value === "") return "—";
@@ -306,6 +325,8 @@ function formatReadonlyValue(desc: SchemaFieldDescriptor, value: unknown): strin
 		case "boolean":
 		case "toggle":
 			return coerceToggleValue(value) ? "Yes" : "No";
+		case "secret":
+			return SECRET_MASK;
 		case "array":
 			return Array.isArray(value) ? value.join(", ") || "—" : String(value);
 		default:

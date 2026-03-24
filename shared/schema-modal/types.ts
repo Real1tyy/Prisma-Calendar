@@ -49,6 +49,10 @@ export interface ArrayFieldDescriptor extends BaseFieldDescriptor {
 	itemType: "string" | "number";
 }
 
+export interface SecretFieldDescriptor extends BaseFieldDescriptor {
+	type: "secret";
+}
+
 export type SchemaFieldDescriptor =
 	| StringFieldDescriptor
 	| NumberFieldDescriptor
@@ -57,7 +61,8 @@ export type SchemaFieldDescriptor =
 	| DatetimeFieldDescriptor
 	| EnumFieldDescriptor
 	| ToggleFieldDescriptor
-	| ArrayFieldDescriptor;
+	| ArrayFieldDescriptor
+	| SecretFieldDescriptor;
 
 export type SchemaFieldType = SchemaFieldDescriptor["type"];
 
