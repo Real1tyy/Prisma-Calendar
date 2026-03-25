@@ -120,7 +120,20 @@ export class PrerequisiteTracker {
 		}
 		const hadDependents = this.fileToDependents.delete(filePath);
 
-		if (prereqs || hadDependents) {
+		let removedDanglingRefs = false;
+		for (const [file, filePrereqs] of this.fileToPrerequisites) {
+			const filtered = filePrereqs.filter((p) => p !== filePath);
+			if (filtered.length !== filePrereqs.length) {
+				removedDanglingRefs = true;
+				if (filtered.length > 0) {
+					this.fileToPrerequisites.set(file, filtered);
+				} else {
+					this.fileToPrerequisites.delete(file);
+				}
+			}
+		}
+
+		if (prereqs || hadDependents || removedDanglingRefs) {
 			this.rebuildConnectedFiles();
 			this.notifyChange();
 		}

@@ -4,6 +4,13 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.11.0 - 3/25/2026
+
+### Fixed
+- **Prerequisite tracker leaving dangling references**: Deleting a file that was listed as a prerequisite by other events left stale references — the dependency graph showed "depends on [deleted file]" and Gantt arrows pointed to nothing. Deleting a file now cleans up all references to it across the graph. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
+
+---
+
 ## 2.10.0 - 3/25/2026
 
 ### Improved

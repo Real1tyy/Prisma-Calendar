@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 
 import {
 	calculateInstanceDateTime,
-	calculateRecurringInstanceDateTime,
 	getNextBiWeeklyOccurrence,
 	getNextNWeeklyOccurrence,
 	getNextOccurrence,
@@ -788,52 +787,6 @@ describe("date-recurrence", () => {
 		});
 	});
 
-	describe("calculateRecurringInstanceDateTime", () => {
-		it("should preserve time for daily recurrence", () => {
-			const result = calculateRecurringInstanceDateTime(
-				date("2025-10-21"),
-				date("2025-10-20T14:30:00"),
-				"daily",
-				false
-			);
-			expect(result.hour).toBe(14);
-			expect(result.minute).toBe(30);
-			expect(result.toISODate()).toBe("2025-10-21");
-		});
-
-		it("should preserve day and time for monthly recurrence", () => {
-			const result = calculateRecurringInstanceDateTime(
-				date("2025-11-01"),
-				date("2025-10-15T09:00:00"),
-				"monthly",
-				false
-			);
-			expect(result.day).toBe(15);
-			expect(result.hour).toBe(9);
-			expect(result.toISODate()).toBe("2025-11-15");
-		});
-
-		it("should handle all-day events", () => {
-			const result = calculateRecurringInstanceDateTime(date("2025-10-21"), date("2025-10-20T14:30:00"), "daily", true);
-			expect(result.hour).toBe(0);
-			expect(result.minute).toBe(0);
-			expect(result.toISODate()).toBe("2025-10-21");
-		});
-
-		it("should preserve month and day for yearly recurrence", () => {
-			const result = calculateRecurringInstanceDateTime(
-				date("2026-01-01"),
-				date("2025-10-20T10:00:00"),
-				"yearly",
-				false
-			);
-			expect(result.month).toBe(10);
-			expect(result.day).toBe(20);
-			expect(result.hour).toBe(10);
-			expect(result.toISODate()).toBe("2026-10-20");
-		});
-	});
-
 	// ===========================
 	// Custom Recurrence Interval Tests
 	// ===========================
@@ -910,54 +863,34 @@ describe("date-recurrence", () => {
 		});
 	});
 
-	describe("Custom Recurrence Intervals - calculateRecurringInstanceDateTime", () => {
-		it("should preserve time for DAILY;INTERVAL=5", () => {
-			const result = calculateRecurringInstanceDateTime(
-				date("2025-10-25"),
-				date("2025-10-20T14:30:00"),
-				"DAILY;INTERVAL=5",
-				false
-			);
-			expect(result.hour).toBe(14);
-			expect(result.minute).toBe(30);
-			expect(result.toISODate()).toBe("2025-10-25");
+	describe("Monthly iteration alignment for day 29-31", () => {
+		it("should yield correct dates across short months for day-31 events", () => {
+			const occurrences = Array.from(
+				iterateOccurrencesInRange(date("2026-01-31"), { type: "monthly" }, date("2026-01-01"), date("2026-06-30"))
+			).map(toDate);
+
+			expect(occurrences).toContain("2026-01-31");
+			expect(occurrences.length).toBeGreaterThanOrEqual(5);
+		});
+	});
+
+	describe("Bi-weekly weekday ISO week boundary", () => {
+		it("should jump correctly from Sunday to Monday across weeks", () => {
+			const sunday = date("2026-03-22"); // Sunday (weekday 7)
+			expect(sunday.weekday).toBe(7);
+
+			const result = getNextNWeeklyOccurrence(sunday, ["monday"] as Weekday[], 2);
+			const daysDiff = result.diff(sunday, "days").days;
+
+			expect(result.weekday).toBe(1);
+			expect(daysDiff).toBeGreaterThanOrEqual(8);
 		});
 
-		it("should preserve day and time for MONTHLY;INTERVAL=4", () => {
-			const result = calculateRecurringInstanceDateTime(
-				date("2026-02-01"),
-				date("2025-10-15T09:00:00"),
-				"MONTHLY;INTERVAL=4",
-				false
-			);
-			expect(result.day).toBe(15);
-			expect(result.hour).toBe(9);
-			expect(result.toISODate()).toBe("2026-02-15");
-		});
-
-		it("should preserve month and day for YEARLY;INTERVAL=2", () => {
-			const result = calculateRecurringInstanceDateTime(
-				date("2027-01-01"),
-				date("2025-10-20T10:00:00"),
-				"YEARLY;INTERVAL=2",
-				false
-			);
-			expect(result.month).toBe(10);
-			expect(result.day).toBe(20);
-			expect(result.hour).toBe(10);
-			expect(result.toISODate()).toBe("2027-10-20");
-		});
-
-		it("should handle all-day for custom WEEKLY", () => {
-			const result = calculateRecurringInstanceDateTime(
-				date("2025-11-10"),
-				date("2025-10-20T14:30:00"),
-				"WEEKLY;INTERVAL=3",
-				true
-			);
-			expect(result.hour).toBe(0);
-			expect(result.minute).toBe(0);
-			expect(result.toISODate()).toBe("2025-11-10");
+		it("should stay in current week when later weekday available", () => {
+			const monday = date("2026-03-16"); // Monday (weekday 1)
+			const result = getNextNWeeklyOccurrence(monday, ["wednesday", "friday"] as Weekday[], 2);
+			expect(result.weekday).toBe(3);
+			expect(toDate(result)).toBe("2026-03-18");
 		});
 	});
 });

@@ -6,8 +6,8 @@ import type { Weekday } from "../types/weekday";
 import { WEEKDAY_TO_NUMBER } from "../types/weekday";
 
 export type { Weekday } from "../types/weekday";
-export type { RecurrenceType };
 export { WEEKDAY_TO_NUMBER };
+export type { RecurrenceType };
 
 /**
  * Checks if a given date matches any of the specified weekdays
@@ -183,69 +183,4 @@ export function calculateInstanceDateTime(instanceDate: DateTime, timeString?: s
 		second: 0,
 		millisecond: 0,
 	});
-}
-
-export function calculateRecurringInstanceDateTime(
-	nextInstanceDateTime: DateTime,
-	nodeRecuringEventDateTime: DateTime,
-	recurrenceType: RecurrenceType,
-	allDay?: boolean
-): DateTime {
-	const originalInTargetZone = nodeRecuringEventDateTime.setZone(nextInstanceDateTime.zone);
-	const parsed = parseRecurrenceType(recurrenceType);
-
-	if (!parsed) return nextInstanceDateTime.startOf("day");
-
-	switch (parsed.freq) {
-		case "DAILY":
-		case "WEEKLY": {
-			if (allDay) {
-				return nextInstanceDateTime.startOf("day");
-			}
-
-			return nextInstanceDateTime.set({
-				hour: originalInTargetZone.hour,
-				minute: originalInTargetZone.minute,
-				second: 0,
-				millisecond: 0,
-			});
-		}
-
-		case "MONTHLY": {
-			if (allDay) {
-				return nextInstanceDateTime.set({ day: originalInTargetZone.day }).startOf("day");
-			}
-
-			return nextInstanceDateTime.set({
-				day: originalInTargetZone.day,
-				hour: originalInTargetZone.hour,
-				minute: originalInTargetZone.minute,
-				second: 0,
-				millisecond: 0,
-			});
-		}
-
-		case "YEARLY": {
-			if (allDay) {
-				return nextInstanceDateTime
-					.set({
-						month: originalInTargetZone.month,
-						day: originalInTargetZone.day,
-					})
-					.startOf("day");
-			}
-
-			return nextInstanceDateTime.set({
-				month: originalInTargetZone.month,
-				day: originalInTargetZone.day,
-				hour: originalInTargetZone.hour,
-				minute: originalInTargetZone.minute,
-				second: 0,
-				millisecond: 0,
-			});
-		}
-
-		default:
-			return nextInstanceDateTime.startOf("day");
-	}
 }
