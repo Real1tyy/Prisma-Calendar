@@ -28,25 +28,6 @@ export class UntrackedEventStore extends IndexedCacheStore<UntrackedEvent> {
 		});
 	}
 
-	protected buildTemplate(source: RawEventSource): UntrackedEvent | null {
-		if (!this.filterEvaluator.evaluateFilters(source.frontmatter)) {
-			return null;
-		}
-
-		const title = this.extractTitle(source.frontmatter, source.filePath);
-
-		return {
-			id: source.filePath,
-			ref: { filePath: source.filePath },
-			title,
-			type: "untracked",
-			isVirtual: false,
-			skipped: false,
-			metadata: {},
-			meta: source.frontmatter,
-		};
-	}
-
 	protected override handleIndexerEvent(event: IndexerEvent): void {
 		switch (event.type) {
 			case "untracked-file-changed":
@@ -63,6 +44,25 @@ export class UntrackedEventStore extends IndexedCacheStore<UntrackedEvent> {
 				this.invalidate(event.filePath);
 				break;
 		}
+	}
+
+	protected override buildTemplate(source: RawEventSource): UntrackedEvent | null {
+		if (!this.filterEvaluator.evaluateFilters(source.frontmatter)) {
+			return null;
+		}
+
+		const title = this.extractTitle(source.frontmatter, source.filePath);
+
+		return {
+			id: source.filePath,
+			ref: { filePath: source.filePath },
+			title,
+			type: "untracked",
+			isVirtual: false,
+			skipped: false,
+			metadata: {},
+			meta: source.frontmatter,
+		};
 	}
 
 	getUntrackedEvents(): UntrackedEvent[] {
