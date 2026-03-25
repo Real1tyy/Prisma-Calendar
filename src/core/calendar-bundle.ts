@@ -539,6 +539,8 @@ export class CalendarBundle {
 	}
 
 	private startCalDAVAutoSync(): void {
+		if (!this.plugin.licenseManager.isPro) return;
+
 		this.startAutoSync({
 			syncState: this.caldavSync,
 			getSettings: () => this.mainSettingsStore.currentSettings.caldav,
@@ -588,6 +590,8 @@ export class CalendarBundle {
 	}
 
 	private startICSAutoSync(): void {
+		if (!this.plugin.licenseManager.isPro) return;
+
 		this.startAutoSync({
 			syncState: this.icsSubscriptionSync,
 			getSettings: () => this.mainSettingsStore.currentSettings.icsSubscriptions,
