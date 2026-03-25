@@ -6,6 +6,7 @@ import type { CalendarEvent } from "../../types/calendar";
 import { isAllDayEvent, isTimedEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { extractZettelId, removeZettelId } from "../../utils/event-naming";
+import { appendZ } from "../../utils/iso";
 
 interface NotificationSettings {
 	minutesBeforeProp?: string | undefined;
@@ -136,12 +137,14 @@ function parsedEventToVEvent(
 	vevent.addPropertyWithValue("last-modified", createdTime);
 	vevent.addPropertyWithValue("summary", strippedTitle);
 
-	const startDate = new Date(event.start);
+	// Internal ISO strings have no Z suffix (local-time-as-UTC convention).
+	// Append Z so `new Date()` interprets them as UTC, not browser-local time.
+	const startDate = new Date(appendZ(event.start));
 	const dtstart = dateToICALTime(startDate, event.allDay, timezone);
 	vevent.addPropertyWithValue("dtstart", dtstart);
 
 	if (isTimedEvent(event)) {
-		const endDate = new Date(event.end);
+		const endDate = new Date(appendZ(event.end));
 		const dtend = dateToICALTime(endDate, event.allDay, timezone);
 		vevent.addPropertyWithValue("dtend", dtend);
 	}
