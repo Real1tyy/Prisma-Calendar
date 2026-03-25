@@ -83,7 +83,7 @@ export const applyDateNormalizationToFile = async (
 	if (!result) return;
 
 	const { targetProp, value } = result;
-	if ((frontmatter[targetProp] as string | undefined) === value) return;
+	if (String(frontmatter[targetProp] ?? "") === value) return;
 
 	try {
 		const file = getFileByPathOrThrow(app, filePath);

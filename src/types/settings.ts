@@ -334,6 +334,7 @@ export const SYSTEM_PROP_KEYS: PropsKey[] = [
 	"caldavProp",
 	"icsSubscriptionProp",
 	"generatePastEventsProp",
+	"sortDateProp",
 ];
 
 /**
