@@ -1,10 +1,9 @@
-import { addCls, calculateEventStatistics, cls, ColorEvaluator, removeCls } from "@real1ty-obsidian-plugins";
+import { addCls, calculateEventStatistics, cls, ColorEvaluator, removeCls, showModal } from "@real1ty-obsidian-plugins";
 import { DateTime } from "luxon";
 import { type App, Modal, Setting } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
-import { getProGateUrls } from "../../core/pro-feature-previews";
 import type { CalendarEvent } from "../../types/calendar";
 import { formatRecurrenceLabel, isWeekdaySupported } from "../../types/recurring-event";
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -16,6 +15,7 @@ import {
 	showHeatmapModal,
 	showTimelineModal,
 } from "../modals";
+import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 
 type SourceTab = "name" | "category" | "recurring";
 
@@ -588,7 +588,21 @@ export class EventSeriesModal extends Modal {
 	}
 
 	private openHeatmapView(): void {
-		if (!this.bundle.plugin.licenseManager.requirePro(PRO_FEATURES.HEATMAP, getProGateUrls("HEATMAP"))) return;
+		if (!this.bundle.plugin.licenseManager.isPro) {
+			showModal({
+				app: this.app,
+				cls: cls("heatmap-pro-gate-modal"),
+				render: (el) => {
+					renderProUpgradeBanner(
+						el,
+						PRO_FEATURES.HEATMAP,
+						"Visualize your events over time with an interactive heatmap. See patterns, streaks, and activity density at a glance.",
+						"HEATMAP"
+					);
+				},
+			});
+			return;
+		}
 
 		const data = this.resolveVisualizationData("Heatmap");
 		if (data && data.events.length > 0) {
