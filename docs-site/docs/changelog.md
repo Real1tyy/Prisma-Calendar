@@ -28,6 +28,7 @@ All notable changes to this project will be documented here.
 - **"Generate past events" skipping today's instance**: When a recurring event had "Generate Past Events" enabled, instances were generated for past days and future days, but today's occurrence was skipped. Today's instance is now correctly included. See [Recurring Events](./features/events/recurring-dsl.md).
 - **Preview button shown for virtual events**: The hover preview context menu option was visible on virtual events, which have no backing file to preview. It is now hidden for virtual events. See [Virtual Events](./features/events/virtual-events.md).
 - **Changing desktop/mobile events per day broke calendar rendering**: Changing the "Desktop events per day" or "Mobile events per day" setting caused the calendar to stop rendering newly created events until a full plugin reload. The setting now applies immediately and triggers a proper event re-render. See [Calendar View](./features/calendar/calendar-view.md).
+- **Max events per day off by one**: Setting "max events per day" to 3 showed only 2 events plus a "+2 more" link instead of 3 events plus "+1 more". The "+more" link was incorrectly counted as one of the event rows. See [Calendar View](./features/calendar/calendar-view.md).
 
 ---
 
