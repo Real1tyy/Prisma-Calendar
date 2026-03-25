@@ -12,13 +12,11 @@ export const DEFAULT_ACTION_IDS = new Set([
 	"show-skipped",
 	"show-recurring",
 	"show-filtered",
-	"show-untracked",
+	"show-interval-bases",
 	"daily-stats",
 	"weekly-stats",
 	"monthly-stats",
 	"alltime-stats",
-	"all-events-timeline",
-	"all-events-heatmap",
 	"highlight-no-categories",
 	"highlight-category",
 	"undo",
@@ -42,45 +40,14 @@ const ACTION_SPECS: CommandActionSpec[] = [
 		label: "Create Untracked Event",
 		icon: "calendar-off",
 	},
-	{
-		id: "edit-current-note",
-		commandId: FULL_COMMAND_IDS.EDIT_CURRENT_NOTE_AS_EVENT,
-		label: "Edit Current Note as Event",
-		icon: "file-pen-line",
-	},
-	{
-		id: "add-zettel-id",
-		commandId: FULL_COMMAND_IDS.ADD_ZETTEL_ID_TO_CURRENT_NOTE,
-		label: "Add ZettelID to Current Note",
-		icon: "hash",
-	},
 
 	// ─── Navigation ──────────────────────────────────────────────
 	{ id: "go-to-today", commandId: FULL_COMMAND_IDS.GO_TO_TODAY, label: "Go to Today", icon: "calendar-check" },
 	{ id: "scroll-to-now", commandId: FULL_COMMAND_IDS.SCROLL_TO_NOW, label: "Scroll to Now", icon: "clock" },
 	{ id: "navigate-back", commandId: FULL_COMMAND_IDS.NAVIGATE_BACK, label: "Navigate Back", icon: "arrow-left" },
-	{
-		id: "open-note-in-calendar",
-		commandId: FULL_COMMAND_IDS.OPEN_CURRENT_NOTE_IN_CALENDAR,
-		label: "Open Current Note in Calendar",
-		icon: "calendar-search",
-	},
 
-	// ─── Search & Filter ─────────────────────────────────────────
+	// ─── Search ──────────────────────────────────────────────────
 	{ id: "global-search", commandId: FULL_COMMAND_IDS.GLOBAL_SEARCH, label: "Global Search", icon: "search" },
-	{ id: "focus-search", commandId: FULL_COMMAND_IDS.FOCUS_SEARCH, label: "Focus Search", icon: "text-search" },
-	{
-		id: "focus-expression-filter",
-		commandId: FULL_COMMAND_IDS.FOCUS_EXPRESSION_FILTER,
-		label: "Focus Expression Filter",
-		icon: "filter",
-	},
-	{
-		id: "filter-presets",
-		commandId: FULL_COMMAND_IDS.OPEN_FILTER_PRESET_SELECTOR,
-		label: "Filter Presets",
-		icon: "sliders-horizontal",
-	},
 
 	// ─── Event Lists ─────────────────────────────────────────────
 	{
@@ -102,48 +69,10 @@ const ACTION_SPECS: CommandActionSpec[] = [
 		icon: "list-filter",
 	},
 	{
-		id: "show-untracked",
-		commandId: FULL_COMMAND_IDS.SHOW_UNTRACKED_EVENTS,
-		label: "Toggle Untracked Events",
-		icon: "calendar-off",
-	},
-	{
 		id: "show-interval-bases",
 		commandId: FULL_COMMAND_IDS.SHOW_INTERVAL_BASES,
 		label: "Show Interval in Bases",
 		icon: "table-2",
-	},
-
-	// ─── Focused Event ───────────────────────────────────────────
-	{
-		id: "edit-focused",
-		commandId: FULL_COMMAND_IDS.EDIT_LAST_FOCUSED_EVENT,
-		label: "Edit Focused Event",
-		icon: "pencil",
-	},
-	{
-		id: "focused-start-now",
-		commandId: FULL_COMMAND_IDS.SET_LAST_FOCUSED_EVENT_START_TO_NOW,
-		label: "Set Focused Start to Now",
-		icon: "play",
-	},
-	{
-		id: "focused-end-now",
-		commandId: FULL_COMMAND_IDS.SET_LAST_FOCUSED_EVENT_END_TO_NOW,
-		label: "Set Focused End to Now",
-		icon: "square",
-	},
-	{
-		id: "focused-start-prev",
-		commandId: FULL_COMMAND_IDS.FILL_LAST_FOCUSED_EVENT_START_FROM_PREVIOUS,
-		label: "Fill Focused Start from Previous",
-		icon: "skip-back",
-	},
-	{
-		id: "focused-end-next",
-		commandId: FULL_COMMAND_IDS.FILL_LAST_FOCUSED_EVENT_END_FROM_NEXT,
-		label: "Fill Focused End from Next",
-		icon: "skip-forward",
 	},
 
 	// ─── Batch ───────────────────────────────────────────────────
@@ -152,70 +81,6 @@ const ACTION_SPECS: CommandActionSpec[] = [
 		commandId: FULL_COMMAND_IDS.TOGGLE_BATCH_SELECTION,
 		label: "Toggle Batch Selection",
 		icon: "check-square",
-	},
-	{
-		id: "batch-select-all",
-		commandId: FULL_COMMAND_IDS.BATCH_SELECT_ALL,
-		label: "Batch: Select All",
-		icon: "check-check",
-	},
-	{ id: "batch-clear", commandId: FULL_COMMAND_IDS.BATCH_CLEAR_SELECTION, label: "Batch: Clear Selection", icon: "x" },
-	{
-		id: "batch-duplicate",
-		commandId: FULL_COMMAND_IDS.BATCH_DUPLICATE_SELECTION,
-		label: "Batch: Duplicate",
-		icon: "copy",
-	},
-	{ id: "batch-delete", commandId: FULL_COMMAND_IDS.BATCH_DELETE_SELECTION, label: "Batch: Delete", icon: "trash-2" },
-	{ id: "batch-skip", commandId: FULL_COMMAND_IDS.BATCH_SKIP_SELECTION, label: "Batch: Skip", icon: "eye-off" },
-	{ id: "batch-done", commandId: FULL_COMMAND_IDS.BATCH_MARK_AS_DONE, label: "Batch: Mark Done", icon: "circle-check" },
-	{
-		id: "batch-not-done",
-		commandId: FULL_COMMAND_IDS.BATCH_MARK_AS_NOT_DONE,
-		label: "Batch: Mark Not Done",
-		icon: "circle",
-	},
-	{
-		id: "batch-categories",
-		commandId: FULL_COMMAND_IDS.BATCH_ASSIGN_CATEGORIES,
-		label: "Batch: Assign Categories",
-		icon: "tags",
-	},
-	{
-		id: "batch-frontmatter",
-		commandId: FULL_COMMAND_IDS.BATCH_UPDATE_FRONTMATTER,
-		label: "Batch: Update Frontmatter",
-		icon: "file-cog",
-	},
-	{
-		id: "batch-open",
-		commandId: FULL_COMMAND_IDS.BATCH_OPEN_SELECTION,
-		label: "Batch: Open All",
-		icon: "external-link",
-	},
-	{
-		id: "batch-clone-next",
-		commandId: FULL_COMMAND_IDS.BATCH_CLONE_NEXT_WEEK,
-		label: "Batch: Clone Next Week",
-		icon: "copy-plus",
-	},
-	{
-		id: "batch-clone-prev",
-		commandId: FULL_COMMAND_IDS.BATCH_CLONE_PREV_WEEK,
-		label: "Batch: Clone Prev Week",
-		icon: "copy-minus",
-	},
-	{
-		id: "batch-move-next",
-		commandId: FULL_COMMAND_IDS.BATCH_MOVE_NEXT_WEEK,
-		label: "Batch: Move Next Week",
-		icon: "arrow-right",
-	},
-	{
-		id: "batch-move-prev",
-		commandId: FULL_COMMAND_IDS.BATCH_MOVE_PREV_WEEK,
-		label: "Batch: Move Prev Week",
-		icon: "arrow-left",
 	},
 
 	// ─── Statistics ──────────────────────────────────────────────
@@ -258,18 +123,6 @@ const ACTION_SPECS: CommandActionSpec[] = [
 	},
 
 	// ─── Visualization ───────────────────────────────────────────
-	{
-		id: "all-events-timeline",
-		commandId: FULL_COMMAND_IDS.SHOW_ALL_EVENTS_TIMELINE,
-		label: "All Events Timeline",
-		icon: "git-branch",
-	},
-	{
-		id: "all-events-heatmap",
-		commandId: FULL_COMMAND_IDS.SHOW_ALL_EVENTS_HEATMAP,
-		label: "All Events Heatmap",
-		icon: "flame",
-	},
 	{
 		id: "toggle-prerequisites",
 		commandId: FULL_COMMAND_IDS.TOGGLE_PREREQUISITE_CONNECTIONS,
