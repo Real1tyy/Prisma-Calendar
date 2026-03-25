@@ -27,11 +27,13 @@ async function executeUpsert<T>(upsert: UpsertHandler<T>, isEdit: boolean, name:
 	}
 }
 
-function resolveSubmitAction<T>(config: SchemaModalConfig<T>, name: string, values: T): Promise<void> {
+async function resolveSubmitAction<T>(config: SchemaModalConfig<T>, name: string, values: T): Promise<boolean> {
 	if (config.upsert) {
-		return executeUpsert(config.upsert, !!config.existing, name, values);
+		await executeUpsert(config.upsert, !!config.existing, name, values);
+		return true;
 	}
-	return Promise.resolve(config.onSubmit(name, values));
+	const result = await config.onSubmit(name, values);
+	return result !== false;
 }
 
 export function createSchemaFormRenderer<T>(config: SchemaModalConfig<T>) {
@@ -48,7 +50,9 @@ export function createSchemaFormRenderer<T>(config: SchemaModalConfig<T>) {
 			app: config.app,
 			fieldOverrides: config.fieldOverrides,
 			existing: config.existing?.data,
-			extraFields: config.extraFields ? (fieldEl, values) => config.extraFields!(fieldEl, values, ctx) : undefined,
+			extraFields: config.extraFields
+				? (fieldEl, values, setValues) => config.extraFields!(fieldEl, values, ctx, setValues)
+				: undefined,
 		});
 
 		new Setting(el)
@@ -69,8 +73,9 @@ export function createSchemaFormRenderer<T>(config: SchemaModalConfig<T>) {
 						}
 
 						const name = config.existing?.id ?? nameRef.value;
-						const submitAction = resolveSubmitAction(config, name, result.data as T);
-						void submitAction.then(() => ctx.close());
+						void resolveSubmitAction(config, name, result.data as T).then((shouldClose) => {
+							if (shouldClose) ctx.close();
+						});
 					});
 			})
 			.addButton((btn) => {

@@ -362,8 +362,13 @@ function renderFields(
 	overrides: Record<string, FieldOverride>,
 	values: Record<string, unknown>,
 	mode: SchemaFormMode,
-	extraFields?: (el: HTMLElement, values: Record<string, unknown>) => void,
-	app?: App
+	app?: App,
+	extraFields?: (
+		el: HTMLElement,
+		values: Record<string, unknown>,
+		setValues: (partial: Partial<Record<string, unknown>>) => void
+	) => void,
+	setValuesFn?: (partial: Partial<Record<string, unknown>>) => void
 ): void {
 	for (const desc of descriptors) {
 		const override = overrides[desc.key];
@@ -375,7 +380,12 @@ function renderFields(
 		}
 	}
 
-	extraFields?.(container, values);
+	const noopSetValues = (partial: Partial<Record<string, unknown>>) => {
+		for (const [key, val] of Object.entries(partial)) {
+			if (val !== undefined) values[key] = val;
+		}
+	};
+	extraFields?.(container, values, setValuesFn ?? noopSetValues);
 }
 
 export function renderSchemaForm<T>(container: HTMLElement, config: SchemaFormConfig<T>): SchemaFormHandle<T> {
@@ -384,7 +394,17 @@ export function renderSchemaForm<T>(container: HTMLElement, config: SchemaFormCo
 	const values = initValues<T>(descriptors, overrides, config.existing);
 	let currentMode: SchemaFormMode = config.mode ?? "edit";
 
-	renderFields(container, descriptors, overrides, values, currentMode, config.extraFields, config.app);
+	const formEl = container.createDiv();
+
+	function setValues(partial: Partial<Record<string, unknown>>): void {
+		for (const [key, val] of Object.entries(partial)) {
+			if (val !== undefined) values[key] = val;
+		}
+		formEl.empty();
+		renderFields(formEl, descriptors, overrides, values, currentMode, config.app, config.extraFields, setValues);
+	}
+
+	renderFields(formEl, descriptors, overrides, values, currentMode, config.app, config.extraFields, setValues);
 
 	function validate(): SchemaFormValidationResult<T> {
 		const coerced = coerceFormValues(values, descriptors);
@@ -403,20 +423,12 @@ export function renderSchemaForm<T>(container: HTMLElement, config: SchemaFormCo
 
 	function setMode(mode: SchemaFormMode): void {
 		currentMode = mode;
-		container.empty();
-		renderFields(container, descriptors, overrides, values, currentMode, config.extraFields, config.app);
-	}
-
-	function setValues(partial: Partial<Record<string, unknown>>): void {
-		for (const [key, val] of Object.entries(partial)) {
-			if (val !== undefined) values[key] = val;
-		}
-		container.empty();
-		renderFields(container, descriptors, overrides, values, currentMode, config.extraFields, config.app);
+		formEl.empty();
+		renderFields(formEl, descriptors, overrides, values, currentMode, config.app, config.extraFields, setValues);
 	}
 
 	function destroy(): void {
-		container.empty();
+		formEl.empty();
 	}
 
 	return {

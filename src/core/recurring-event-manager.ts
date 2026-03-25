@@ -1022,9 +1022,9 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.categoryTracker = categoryTracker;
 	}
 
-	async deleteAllPhysicalInstances(rruleId: string): Promise<void> {
+	async deleteAllPhysicalInstances(rruleId: string): Promise<number> {
 		const data = this.recurringEventsMap.get(rruleId);
-		if (!data) return;
+		if (!data) return 0;
 
 		const physicalInstances = this.getPhysicalInstancesList(data.physicalInstances);
 		const filePaths = physicalInstances.map((instance) => instance.filePath);
@@ -1035,6 +1035,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		}
 		data.physicalInstances.clear();
 		this.scheduleRefresh();
+		return filePaths.length;
 	}
 
 	// ─── Utilities ────────────────────────────────────────────────

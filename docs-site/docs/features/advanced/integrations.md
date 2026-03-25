@@ -223,6 +223,8 @@ Configure automatic synchronization behavior:
 
 **Manual Sync**: Use **"Sync now"** button in CalDAV settings to trigger immediate synchronization.
 
+**Deleting an Account**: When deleting an account with synced events, you'll be prompted to choose whether to also delete the synced event notes. If you choose to delete events, a progress modal shows deletion progress with per-file status updates.
+
 **Calendar Icons**: When you set an icon for a CalDAV account, it appears in the top-right corner of all events synced from that calendar. This makes it easy to visually identify which external calendar each event came from. Icons use the same marker system as recurring events and holidays.
 
 ### How CalDAV Sync Works
@@ -360,7 +362,7 @@ Synced events include ICS subscription tracking in frontmatter:
 ### Deleting a Subscription
 
 When deleting a subscription that has synced events, you'll be prompted to choose:
-- **Delete subscription and events**: Removes the subscription and all locally synced event notes
+- **Delete subscription and events**: Removes the subscription and all locally synced event notes. A progress modal shows deletion progress with per-file status updates.
 - **Delete subscription only**: Removes the subscription but keeps the synced notes in your vault
 
 ## Related Features

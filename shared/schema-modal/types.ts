@@ -93,13 +93,18 @@ interface SchemaModalConfigBase<T> {
 	title: string;
 	shape: ZodRawShape;
 	fieldOverrides?: Record<string, FieldOverride>;
-	extraFields?: (el: HTMLElement, values: Record<string, unknown>, ctx: ComponentContext) => void;
+	extraFields?: (
+		el: HTMLElement,
+		values: Record<string, unknown>,
+		ctx: ComponentContext,
+		setValues: (partial: Partial<Record<string, unknown>>) => void
+	) => void;
 	existing?: { id: string; data: Partial<T> };
 	nameField?: boolean | { placeholder?: string };
 }
 
 interface SchemaModalWithSubmit<T> extends SchemaModalConfigBase<T> {
-	onSubmit: (name: string, values: T) => void | Promise<void>;
+	onSubmit: (name: string, values: T) => void | false | Promise<void | false>;
 	upsert?: never;
 }
 
@@ -121,7 +126,13 @@ export interface SchemaFormConfig<T> {
 	mode?: SchemaFormMode | undefined;
 	fieldOverrides?: Record<string, FieldOverride> | undefined;
 	existing?: Partial<T> | undefined;
-	extraFields?: ((el: HTMLElement, values: Record<string, unknown>) => void) | undefined;
+	extraFields?:
+		| ((
+				el: HTMLElement,
+				values: Record<string, unknown>,
+				setValues: (partial: Partial<Record<string, unknown>>) => void
+		  ) => void)
+		| undefined;
 }
 
 export interface SchemaFormValidationSuccess<T> {

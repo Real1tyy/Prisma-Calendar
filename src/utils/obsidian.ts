@@ -57,7 +57,13 @@ export async function batchedPromiseAll<T>(
  * Obsidian's event loop. Each deletion triggers indexer events, so unbounded
  * parallelism can freeze or crash the app on large sets.
  */
-export async function deleteFilesByPaths(app: App, filePaths: string[], batchSize = 10): Promise<void> {
+export async function deleteFilesByPaths(
+	app: App,
+	filePaths: string[],
+	batchSize = 10,
+	onProgress?: (deleted: number, filePath: string) => void
+): Promise<number> {
+	let deleted = 0;
 	await batchedPromiseAll(
 		filePaths,
 		async (filePath) => {
@@ -65,6 +71,8 @@ export async function deleteFilesByPaths(app: App, filePaths: string[], batchSiz
 				const file = app.vault.getAbstractFileByPath(filePath);
 				if (file instanceof TFile) {
 					await app.fileManager.trashFile(file);
+					deleted++;
+					onProgress?.(deleted, filePath);
 				}
 			} catch (error) {
 				console.error(`[Obsidian] Error deleting file ${filePath}:`, error);
@@ -72,6 +80,7 @@ export async function deleteFilesByPaths(app: App, filePaths: string[], batchSiz
 		},
 		batchSize
 	);
+	return deleted;
 }
 
 /**

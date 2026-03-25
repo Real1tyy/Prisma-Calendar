@@ -144,9 +144,9 @@ export abstract class BaseSyncService<TResult extends BaseSyncResult> {
 		if (result.created > 0) parts.push(`${result.created} created`);
 		if (result.updated > 0) parts.push(`${result.updated} updated`);
 		if (result.deleted > 0) parts.push(`${result.deleted} deleted`);
-		if (result.errors.length > 0) parts.push(`${result.errors.length} errors`);
+		if (result.errors.length > 0) parts.push(`${result.errors.length} error(s)`);
 
-		new Notice(`${this.getSyncName()}: ${parts.join(", ")}`);
+		new Notice(`Sync complete — ${this.getSyncName()}: ${parts.join(", ")}`);
 	}
 
 	protected showSyncErrorNotification(errorMsg: string): void {

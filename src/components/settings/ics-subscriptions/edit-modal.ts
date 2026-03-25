@@ -1,117 +1,54 @@
-import { cls } from "@real1ty-obsidian-plugins";
-import { type App, Modal, Notice, SecretComponent, Setting } from "obsidian";
+import { showSchemaModal } from "@real1ty-obsidian-plugins";
+import { type App, Notice } from "obsidian";
 
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
-import { renderIconField, renderSyncIntervalField, renderTimezoneField } from "../integration-form-fields";
+import { ICSSubscriptionEditFormShape, type ICSSubscriptionEditFormValues } from "../integration-form-shapes";
 
-export class EditICSSubscriptionModal extends Modal {
-	private name: string;
-	private enabled: boolean;
-	private urlSecretName: string;
-	private syncIntervalMinutes: number;
-	private timezone: string;
-	private icon: string;
-
-	constructor(
-		app: App,
-		private settingsStore: PrismaCalendarSettingsStore,
-		private subscription: ICSSubscription,
-		private onSave: () => void
-	) {
-		super(app);
-		this.name = subscription.name;
-		this.enabled = subscription.enabled;
-		this.urlSecretName = subscription.urlSecretName;
-		this.syncIntervalMinutes = subscription.syncIntervalMinutes ?? ICS_SUBSCRIPTION_DEFAULTS.SYNC_INTERVAL_MINUTES;
-		this.timezone = subscription.timezone ?? "UTC";
-		this.icon = subscription.icon ?? "";
-	}
-
-	override onOpen(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-		contentEl.addClass(cls("caldav-modal"));
-
-		contentEl.createEl("h2", { text: `Edit: ${this.subscription.name}` });
-
-		new Setting(contentEl).setName("Subscription name").addText((text) => {
-			text.setValue(this.name).onChange((value) => {
-				this.name = value;
-			});
-		});
-
-		new Setting(contentEl)
-			.setName("Enabled")
-			.setDesc("Enable or disable syncing for this subscription")
-			.addToggle((toggle) => {
-				toggle.setValue(this.enabled).onChange((value) => {
-					this.enabled = value;
-				});
-			});
-
-		new Setting(contentEl)
-			.setName("ICS URL")
-			.setDesc("Select a secret from SecretStorage containing the ICS calendar URL")
-			.addComponent((el) =>
-				new SecretComponent(this.app, el).setValue(this.urlSecretName).onChange((value) => {
-					this.urlSecretName = value;
-				})
-			);
-
-		renderSyncIntervalField(contentEl, this.syncIntervalMinutes, (v) => {
-			this.syncIntervalMinutes = v;
-		});
-
-		renderTimezoneField(contentEl, this.timezone, (v) => {
-			this.timezone = v;
-		});
-
-		renderIconField(contentEl, this.icon, (v) => {
-			this.icon = v;
-		});
-
-		new Setting(contentEl)
-			.addButton((button) => {
-				button.setButtonText("Cancel").onClick(() => this.close());
-			})
-			.addButton((button) => {
-				button
-					.setButtonText("Save")
-					.setCta()
-					.onClick(() => void this.saveSubscription());
-			});
-	}
-
-	private async saveSubscription(): Promise<void> {
-		await this.settingsStore.updateSettings((s) => ({
-			...s,
-			icsSubscriptions: {
-				...s.icsSubscriptions,
-				subscriptions: s.icsSubscriptions.subscriptions.map((sub) =>
-					sub.id === this.subscription.id
-						? {
-								...sub,
-								name: this.name,
-								enabled: this.enabled,
-								urlSecretName: this.urlSecretName,
-								syncIntervalMinutes: this.syncIntervalMinutes,
-								timezone: this.timezone,
-								icon: this.icon || undefined,
-							}
-						: sub
-				),
+export function showEditICSSubscriptionModal(
+	app: App,
+	settingsStore: PrismaCalendarSettingsStore,
+	subscription: ICSSubscription,
+	onSave: () => void
+): void {
+	showSchemaModal<ICSSubscriptionEditFormValues>({
+		app,
+		cls: "prisma-caldav-modal",
+		title: `Edit: ${subscription.name}`,
+		shape: ICSSubscriptionEditFormShape,
+		existing: {
+			id: subscription.id,
+			data: {
+				name: subscription.name,
+				enabled: subscription.enabled,
+				syncIntervalMinutes: subscription.syncIntervalMinutes ?? ICS_SUBSCRIPTION_DEFAULTS.SYNC_INTERVAL_MINUTES,
+				timezone: subscription.timezone ?? "UTC",
+				icon: subscription.icon ?? "",
 			},
-		}));
+		},
+		onSubmit: async (_name, values) => {
+			await settingsStore.updateSettings((s) => ({
+				...s,
+				icsSubscriptions: {
+					...s.icsSubscriptions,
+					subscriptions: s.icsSubscriptions.subscriptions.map((sub) =>
+						sub.id === subscription.id
+							? {
+									...sub,
+									name: values.name,
+									enabled: values.enabled,
+									syncIntervalMinutes: values.syncIntervalMinutes,
+									timezone: values.timezone,
+									icon: values.icon || undefined,
+								}
+							: sub
+					),
+				},
+			}));
 
-		new Notice(`Updated subscription: ${this.name}`);
-		this.onSave();
-		this.close();
-	}
-
-	override onClose(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
+			new Notice(`Updated subscription: ${values.name}`);
+			onSave();
+		},
+	});
 }

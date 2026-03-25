@@ -10,8 +10,8 @@ import { getCalendarById } from "../../../utils/calendar-settings";
 import { showCalendarIntegrationDeleteEventsModal } from "../../modals";
 import { showConfirmDeleteModal } from "../generic";
 import { deleteTrackedIntegrationEvents } from "../integration-settings-helpers";
-import { AddICSSubscriptionModal } from "./add-modal";
-import { EditICSSubscriptionModal } from "./edit-modal";
+import { showAddICSSubscriptionModal } from "./add-modal";
+import { showEditICSSubscriptionModal } from "./edit-modal";
 
 export class ICSSubscriptionSettings {
 	private ui: SettingsUIBuilder<typeof CustomCalendarSettingsSchema>;
@@ -63,9 +63,9 @@ export class ICSSubscriptionSettings {
 			cls: cls("caldav-add-account-button"),
 		});
 		addButton.addEventListener("click", () => {
-			new AddICSSubscriptionModal(this.app, this.settingsStore, this.calendarId, () => {
+			showAddICSSubscriptionModal(this.app, this.settingsStore, this.calendarId, () => {
 				this.refreshSubscriptionsList(wrapper);
-			}).open();
+			});
 		});
 	}
 
@@ -127,9 +127,9 @@ export class ICSSubscriptionSettings {
 			cls: cls("caldav-account-btn"),
 		});
 		editButton.addEventListener("click", () => {
-			new EditICSSubscriptionModal(this.app, this.settingsStore, subscription, () => {
+			showEditICSSubscriptionModal(this.app, this.settingsStore, subscription, () => {
 				this.refreshSubscriptionsList(container.parentElement!);
-			}).open();
+			});
 		});
 
 		const deleteButton = controlsEl.createEl("button", {
