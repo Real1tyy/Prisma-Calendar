@@ -68,6 +68,10 @@ Click **Batch Select** in the toolbar to enter selection mode. Click events to s
 - **Click a date** to create a new event.
 - **Click and drag a time range** to create an event with a specific start and end time.
 
+## Performance
+
+The calendar only renders events that fall within the currently visible date range. When you navigate to a different week or month, events are re-filtered from the query results — no matter how many total results the Base returns, only the visible slice is rendered. This keeps the view responsive even with thousands of events.
+
 ## Requirements
 
 - Prisma Calendar Pro license

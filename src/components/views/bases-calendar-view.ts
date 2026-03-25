@@ -11,7 +11,7 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
 import { PRO_FEATURES } from "../../core/license";
 import type CustomCalendarPlugin from "../../main";
-import type { CalendarEventData, EventUpdateInfo, ExtendedButtonInput } from "../../types/calendar";
+import type { CalendarEventData, EventUpdateInfo, ExtendedButtonInput, PrismaEventInput } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { getCommonCategories } from "../../utils/event-frontmatter";
 import { BatchSelectionManager } from "../batch-selection-manager";
@@ -42,6 +42,14 @@ const SELECTION_GUARD_DELAY_MS = 50;
 // Cache the last query result so new instances can render immediately.
 let cachedQueryData: BasesQueryResult | null = null;
 
+function eventOverlapsRange(event: PrismaEventInput, rangeStart: Date, rangeEnd: Date): boolean {
+	const startMs = new Date(event.start as string).getTime();
+	if (isNaN(startMs)) return false;
+
+	const endMs = event.end ? new Date(event.end as string).getTime() : startMs + 86_400_000;
+	return startMs < rangeEnd.getTime() && endMs > rangeStart.getTime();
+}
+
 class PrismaBasesView extends BasesView {
 	readonly type = BASES_CALENDAR_VIEW_ID;
 
@@ -52,6 +60,7 @@ class PrismaBasesView extends BasesView {
 	private batchSelectionManager: BatchSelectionManager | null = null;
 	private untrackedEventsDropdown: UntrackedEventsDropdown | null = null;
 	private calendarIconCache = new Map<string, string | undefined>();
+	private cachedPrismaEvents: PrismaEventInput[] = [];
 	private cachedNow = new Date();
 	private cachedTodayStart = new Date(
 		this.cachedNow.getFullYear(),
@@ -106,6 +115,7 @@ class PrismaBasesView extends BasesView {
 		this.colorEvaluator = null;
 		this.eventContextMenu = null;
 		this.calendarContainerEl = null;
+		this.cachedPrismaEvents = [];
 		this.currentViewType = null;
 		this.currentBundleId = null;
 		this.hasNavigatedInitially = false;
@@ -160,26 +170,21 @@ class PrismaBasesView extends BasesView {
 			this.calendar.changeView(desiredView);
 		}
 
+		// Build the full event list but only feed visible-range events to FullCalendar
 		const colorEvaluator = this.colorEvaluator;
-		const events = this.data.data
+		this.cachedPrismaEvents = this.data.data
 			.map((entry) => bundle.eventStore.getEventByPath(entry.file.path))
 			.filter((e) => e !== null)
 			.map((event) => mapEventToPrismaInput(event, bundle, colorEvaluator));
 
-		this.calendar.removeAllEvents();
-		this.calendar.batchRendering(() => {
-			for (const ev of events) {
-				this.calendar!.addEvent(ev);
-			}
-		});
-		this.calendar.updateSize();
+		this.calendar.refetchEvents();
 
 		if (!this.hasNavigatedInitially) {
 			this.hasNavigatedInitially = true;
 			this.navigateToInitialDate();
 		}
 
-		if (events.length === 0) {
+		if (this.cachedPrismaEvents.length === 0) {
 			this.ensureEmptyMessage();
 		} else {
 			this.removeEmptyMessage();
@@ -264,6 +269,10 @@ class PrismaBasesView extends BasesView {
 					click: () => this.toggleBatchSelection(bundle),
 				},
 			} as Record<string, CustomButtonInput>,
+			events: (fetchInfo: { start: Date; end: Date }, successCallback: (events: PrismaEventInput[]) => void) => {
+				const visible = this.cachedPrismaEvents.filter((ev) => eventOverlapsRange(ev, fetchInfo.start, fetchInfo.end));
+				successCallback(visible);
+			},
 			editable: true,
 			eventStartEditable: true,
 			eventDurationEditable: true,

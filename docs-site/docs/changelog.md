@@ -8,6 +8,8 @@ All notable changes to this project will be documented here.
 
 ### Improved
 
+- **Bases Calendar View performance**: The Bases Calendar View now only renders events within the visible date range instead of processing all query results at once. Switching to the calendar view and navigating between periods is significantly faster for large datasets. See [Bases Calendar View](./features/views/bases-calendar-view.md).
+- **Bases Calendar View layout**: The calendar embed inside Bases now uses a contained scroll context with a fixed height, so the toolbar and day headers stay visible when scrolling through the time grid. See [Bases Calendar View](./features/views/bases-calendar-view.md).
 - **Heatmap cell keyboard navigation**: Click any heatmap cell to select it, then use arrow keys to move between cells. Navigation wraps across columns when reaching grid edges. Click the same cell again to deselect. See [Heatmap](./features/views/heatmap.md).
 - **Integration event deletion progress**: Deleting a CalDAV account or ICS subscription with synced events now shows a progress modal with a progress bar, per-file status updates, and a completion summary. See [Integrations](./features/advanced/integrations.md).
 - **Sync notification clarity**: Sync notifications now show "Sync complete — Account: 3 created, 1 updated" instead of the ambiguous "Account: 3 created" format. See [Integrations](./features/advanced/integrations.md).
