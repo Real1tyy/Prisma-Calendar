@@ -25,9 +25,11 @@ The default view shows a one-week window centered on today.
 
 ## Event Rendering
 
-Each event appears as a colored point on the timeline:
+Each event appears as a colored range on the timeline:
 
 - **Color**: Uses the event's resolved category color (from color rules or integration color).
+- **Text color**: Automatically picks the primary or alternative text color based on contrast with the event's background — same logic as the calendar view.
+- **All-day events**: Rendered as 4-hour blocks.
 - **Stacking**: Events that overlap in time stack vertically so nothing is hidden.
 - **Tooltips**: Hover over an event to see its full details — title, dates, times, and categories.
 - **Visual indicators**: Skipped events and all-day events have distinct styling so you can tell them apart at a glance.

@@ -5231,6 +5231,22 @@ select[class*="prisma-"]:focus-visible {
 	border-radius: 4px;
 }
 
+.prisma-timeline-modal .vis-item.vis-range {
+	overflow: visible;
+	min-width: 80px;
+}
+
+.prisma-timeline-modal .vis-item .vis-item-overflow {
+	overflow: visible;
+}
+
+.prisma-timeline-modal .vis-item.vis-range .vis-item-content {
+	white-space: normal;
+	word-break: break-word;
+	overflow: visible;
+	min-width: 80px;
+}
+
 .prisma-timeline-modal .vis-item.vis-selected {
 	background-color: var(--interactive-accent-hover);
 	border-color: var(--interactive-accent-hover);

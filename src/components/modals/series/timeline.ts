@@ -1,4 +1,12 @@
-import { cls, ColorEvaluator, showModal, toLocalISOString } from "@real1ty-obsidian-plugins";
+import {
+	cls,
+	ColorEvaluator,
+	hasVeryCloseShadeFromRgb,
+	parseColorToRgb,
+	type RgbColor,
+	showModal,
+	toLocalISOString,
+} from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { DataSet } from "vis-data";
 import { type DataItem, Timeline, type TimelineOptions } from "vis-timeline";
@@ -13,6 +21,7 @@ import { type PreviewEventData, showEventPreviewModal } from "../preview/event-p
 
 const RANGE_CHANGE_DEBOUNCE_MS = 200;
 const RANGE_BUFFER_FACTOR = 0.25;
+const ALL_DAY_DISPLAY_HOURS = 4;
 
 export interface EventSeriesTimelineConfig {
 	/** Static event set (e.g., series/category subset). When omitted, queries eventStore by visible range. */
@@ -185,9 +194,25 @@ export function renderTimelineInto(
 		showEventPreviewModal(app, bundle, previewEvent);
 	}
 
+	let cachedTextColorRgb: RgbColor | null = null;
+	let cachedTextColorSource: string | null = null;
+
+	function resolveTextColor(eventColor: string | undefined, settings: SingleCalendarConfig): string | undefined {
+		if (!eventColor) return undefined;
+		if (cachedTextColorSource !== settings.eventTextColor) {
+			cachedTextColorRgb = parseColorToRgb(settings.eventTextColor);
+			cachedTextColorSource = settings.eventTextColor;
+		}
+		if (!cachedTextColorRgb) return settings.eventTextColor;
+		return hasVeryCloseShadeFromRgb(cachedTextColorRgb, eventColor)
+			? settings.eventTextColorAlt
+			: settings.eventTextColor;
+	}
+
 	function toItem(event: CalendarEvent, settings: SingleCalendarConfig) {
 		const startDate = new Date(event.start);
 		const eventColor = resolveEventColor(event.meta, bundle, colorEvaluator);
+		const textColor = resolveTextColor(eventColor, settings);
 		const content = cleanupTitle(event.title);
 		const tooltip = buildEventTooltip(event, settings);
 
@@ -195,7 +220,9 @@ export function renderTimelineInto(
 		if (event.skipped) classes.push(cls("timeline-item-skipped"));
 		classes.push(event.type === "allDay" ? cls("timeline-item-allday") : cls("timeline-item-timed"));
 
-		const style = eventColor ? `background-color: ${eventColor}; border-color: ${eventColor};` : "";
+		const styleParts: string[] = [];
+		if (eventColor) styleParts.push(`background-color: ${eventColor}; border-color: ${eventColor};`);
+		if (textColor) styleParts.push(`color: ${textColor};`);
 
 		const base = {
 			id: event.ref.filePath,
@@ -203,7 +230,7 @@ export function renderTimelineInto(
 			title: tooltip,
 			start: startDate,
 			className: classes.join(" "),
-			style,
+			style: styleParts.join(" "),
 		};
 
 		if (event.type === "timed" && event.end) {
@@ -211,9 +238,9 @@ export function renderTimelineInto(
 		}
 
 		if (event.type === "allDay") {
-			const endOfDay = new Date(startDate);
-			endOfDay.setHours(23, 59, 59, 999);
-			return { ...base, end: endOfDay, type: "range" as const };
+			const end = new Date(startDate);
+			end.setHours(startDate.getHours() + ALL_DAY_DISPLAY_HOURS);
+			return { ...base, end, type: "range" as const };
 		}
 
 		return { ...base, type: "point" as const };

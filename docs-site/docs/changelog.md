@@ -22,7 +22,8 @@ All notable changes to this project will be documented here.
 - **Highlight upcoming event not updating after changes**: The upcoming event highlight stopped applying after dragging, resizing, or editing events — it only worked on initial load. The highlight now correctly reapplies whenever events are re-rendered. See [Calendar View](./features/calendar/calendar-view.md).
 - **Changing "max events per day" breaking event rendering**: Changing the desktop or mobile max events per day setting applied the FullCalendar option but did not trigger a full event refresh, leaving the calendar in a stale state where new events stopped appearing. The setting change now forces a complete re-render. See [Calendar UI](./configuration/calendar-ui.md).
 - **Batch frontmatter edit not applying new properties**: Adding a new frontmatter property via batch edit showed a success notice but did not actually write the property. The submit hotkey also discarded all input. Both issues are now fixed. See [Batch Operations](./features/management/batch-operations.md).
-- **Timeline all-day events overlapping**: All-day and timed events in the timeline view were rendered as points with no width, causing them to overlap instead of stacking vertically. Events now render as ranges with proper start/end times. See [Timeline](./features/views/timeline.md).
+- **Timeline all-day events overlapping**: All-day and timed events in the timeline view were rendered as points with no width, causing them to overlap instead of stacking vertically. Events now render as compact 4-hour range blocks with proper start/end times. See [Timeline](./features/views/timeline.md).
+- **Timeline event text color ignoring settings**: Timeline events always used the default text color regardless of background color contrast. They now use the same primary/alternative text color logic as the calendar view. See [Timeline](./features/views/timeline.md).
 
 ### Removed
 
