@@ -550,13 +550,13 @@ const CalendarSettingsSchema = z
 			.boolean()
 			.catch(true)
 			.describe(
-				"Allow events to visually overlap in all calendar views. When disabled, overlapping events display side-by-side in columns."
+				"Allow events with overlapping times to render on top of each other. When disabled, overlapping events render side-by-side in columns (like Google Calendar). Applies to all calendar views."
 			),
 		slotEventOverlap: z
 			.boolean()
 			.catch(true)
 			.describe(
-				"Allow events to overlap within the same time slot in time grid views. Only affects events that share exact slot boundaries."
+				"In week/day time-grid views, allow events that share the exact same time-slot boundaries to render on top of each other. When disabled, events with identical start/end times are placed in separate columns within the slot. Has no effect when event overlap is disabled."
 			),
 		eventMaxStack: z
 			.number()
