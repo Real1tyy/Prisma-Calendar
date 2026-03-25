@@ -20,10 +20,26 @@ export class EventGroupsSettings {
 	}
 
 	private rerender(): void {
-		if (this.currentContainer) {
-			this.currentContainer.empty();
-			this.display(this.currentContainer);
+		if (!this.currentContainer) return;
+
+		const scrollParent = this.findScrollParent(this.currentContainer);
+		const savedScrollTop = scrollParent?.scrollTop ?? 0;
+
+		this.currentContainer.empty();
+		this.display(this.currentContainer);
+
+		if (scrollParent) {
+			scrollParent.scrollTop = savedScrollTop;
 		}
+	}
+
+	private findScrollParent(el: HTMLElement): HTMLElement | null {
+		let parent = el.parentElement;
+		while (parent) {
+			if (parent.scrollHeight > parent.clientHeight) return parent;
+			parent = parent.parentElement;
+		}
+		return null;
 	}
 
 	private addRecurringEventSettings(containerEl: HTMLElement): void {

@@ -14,8 +14,10 @@ All notable changes to this project will be documented here.
 - **CalDAV edit modal shows calendar names**: The calendar selector in the CalDAV edit modal now shows human-readable calendar names instead of raw URLs. See [Integrations](./features/advanced/integrations.md).
 
 - **Locale setting rendered as dropdown**: The locale setting now displays as a dropdown selector instead of a free-text field, making it easier to pick from supported languages. See [Calendar UI](./configuration/calendar-ui.md).
+- **Category rename/delete progress modal**: Renaming or deleting a category now shows a progress modal with a progress bar instead of just disabling the button. See [Categories](./features/events/categories.md).
 
 ### Fixed
+- **ICS export shifting event times by the local UTC offset**: Exported events were shifted by the user's timezone offset (e.g., 1 hour earlier in UTC+1) because internal ISO strings without a Z suffix were interpreted as local time by `new Date()`. A UTC round-trip (export + import with UTC) now preserves exact times. See [Import & Export](./features/advanced/import-export.md).
 - **Filter expressions rejecting events when referenced properties are missing**: Filter expressions like `_Archived !== true` or `Status !== 'Inbox'` incorrectly rejected events that didn't have the referenced property in their frontmatter. Missing properties now evaluate as `undefined` instead of failing, so `_Archived !== true` correctly passes for events without an `_Archived` property. See [Rules & Filters](./features/advanced/rules-filters.md).
 - **Highlight upcoming event not updating after changes**: The upcoming event highlight stopped applying after dragging, resizing, or editing events — it only worked on initial load. The highlight now correctly reapplies whenever events are re-rendered. See [Calendar View](./features/calendar/calendar-view.md).
 - **Changing "max events per day" breaking event rendering**: Changing the desktop or mobile max events per day setting applied the FullCalendar option but did not trigger a full event refresh, leaving the calendar in a stale state where new events stopped appearing. The setting change now forces a complete re-render. See [Calendar UI](./configuration/calendar-ui.md).
@@ -29,6 +31,8 @@ All notable changes to this project will be documented here.
 - **Preview button shown for virtual events**: The hover preview context menu option was visible on virtual events, which have no backing file to preview. It is now hidden for virtual events. See [Virtual Events](./features/events/virtual-events.md).
 - **Changing desktop/mobile events per day broke calendar rendering**: Changing the "Desktop events per day" or "Mobile events per day" setting caused the calendar to stop rendering newly created events until a full plugin reload. The setting now applies immediately and triggers a proper event re-render. See [Calendar View](./features/calendar/calendar-view.md).
 - **Max events per day off by one**: Setting "max events per day" to 3 showed only 2 events plus a "+2 more" link instead of 3 events plus "+1 more". The "+more" link was incorrectly counted as one of the event rows. See [Calendar View](./features/calendar/calendar-view.md).
+- **Name series and category series propagation not detecting property changes**: Editing frontmatter through Obsidian's Properties view did not trigger propagation to name series or category series members. See [Event Groups](./features/events/event-groups.md).
+- **Event groups settings scroll position lost on toggle**: Toggling a mutually exclusive setting (e.g., "Propagate frontmatter to name series") in the Event Groups settings tab caused the page to jump, losing the current scroll position. The scroll position is now preserved across re-renders. See [Event Groups](./features/events/event-groups.md).
 
 ---
 

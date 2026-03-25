@@ -3,6 +3,7 @@ import {
 	bulkRenameCategoryInFiles,
 	type CategoryOperationResult,
 	showModal,
+	showProgressModal,
 } from "@real1ty-obsidian-plugins";
 import { type App, Notice, Setting, TFile } from "obsidian";
 
@@ -24,7 +25,11 @@ interface CategoryOperationConfig {
 	progressText: string;
 	renderContent: (el: HTMLElement, eventsWithCategory: CalendarEvent[]) => void;
 	isActionEnabled?: () => boolean;
-	performOperation: (app: App, files: TFile[], settings: { categoryProp: string }) => Promise<CategoryOperationResult>;
+	performOperation: (
+		app: App,
+		files: TFile[],
+		settings: { categoryProp: string; onProgress: (completed: number) => void }
+	) => Promise<CategoryOperationResult>;
 	updateColorRules: (settingsStore: CalendarSettingsStore, categoryProp: string) => Promise<void>;
 	successMessage: (filesModified: number) => string;
 	errorMessage: (error: unknown) => string;
@@ -55,34 +60,44 @@ function renderCategoryOperation(el: HTMLElement, config: CategoryOperationConfi
 	async function handleOperation(): Promise<void> {
 		if (actionButton.disabled) return;
 
-		actionButton.disabled = true;
-		actionButton.setText(config.progressText);
+		const settings = config.settingsStore.currentSettings;
+		const events = config.categoryTracker.getEventsWithCategory(config.categoryName);
+		const files = events
+			.map((event) => config.app.vault.getAbstractFileByPath(event.ref.filePath))
+			.filter((file): file is TFile => file instanceof TFile);
+
+		close();
+
+		const progress = showProgressModal({
+			app: config.app,
+			cssPrefix: "prisma-",
+			total: files.length,
+			title: config.progressText,
+			statusTemplate: `${config.progressText.replace("...", "")} {current} of {total}...`,
+			initialDetails: `Processing "${config.categoryName}"...`,
+		});
 
 		try {
-			const settings = config.settingsStore.currentSettings;
-			const events = config.categoryTracker.getEventsWithCategory(config.categoryName);
-			const files = events
-				.map((event) => config.app.vault.getAbstractFileByPath(event.ref.filePath))
-				.filter((file): file is TFile => file instanceof TFile);
-
-			const result = await config.performOperation(config.app, files, { categoryProp: settings.categoryProp });
+			const result = await config.performOperation(config.app, files, {
+				categoryProp: settings.categoryProp,
+				onProgress: (completed: number) => {
+					progress.updateProgress(completed);
+				},
+			});
 			await config.updateColorRules(config.settingsStore, settings.categoryProp);
 
 			if (result.filesWithErrors.length > 0) {
-				new Notice(
-					`${config.successMessage(result.filesModified.length)}, but ${result.filesWithErrors.length} failed. Check console for details.`
-				);
 				console.error("[CategoryOperation] Errors in category operation:", result.filesWithErrors);
+				progress.showComplete([
+					config.successMessage(result.filesModified.length),
+					`${result.filesWithErrors.length} failed`,
+				]);
 			} else {
-				new Notice(config.successMessage(result.filesModified.length));
+				progress.showComplete([config.successMessage(result.filesModified.length)]);
 			}
-
-			close();
 		} catch (error) {
-			new Notice(config.errorMessage(error));
 			console.error("[CategoryOperation] Error in category operation:", error);
-			actionButton.disabled = false;
-			actionButton.setText(config.actionButtonText);
+			progress.showError(config.errorMessage(error));
 		}
 	}
 }
@@ -157,6 +172,7 @@ export function showCategoryRenameModal(
 				throw new Error("Name empty");
 			}
 			return bulkRenameCategoryInFiles(appInstance, files, categoryName, newCategoryName, settings.categoryProp, {
+				onProgress: settings.onProgress,
 				onComplete: () => setTimeout(onSuccess, 150),
 			});
 		},
@@ -210,6 +226,7 @@ export function showCategoryDeleteModal(
 		},
 		performOperation: async (appInstance, files, settings) => {
 			return bulkDeleteCategoryFromFiles(appInstance, files, categoryName, settings.categoryProp, {
+				onProgress: settings.onProgress,
 				onComplete: () => setTimeout(onSuccess, 150),
 			});
 		},

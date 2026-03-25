@@ -25,6 +25,12 @@ const DEFAULT_SCAN_CONCURRENCY = 10;
 const DEFAULT_DEBOUNCE_MS = 100;
 
 /**
+ * Obsidian-internal properties on FrontMatterCache that are not real
+ * frontmatter and must be excluded from diff comparison and caching.
+ */
+const OBSIDIAN_INTERNAL_FM_PROPS = new Set(["position"]);
+
+/**
  * Configuration for the generic indexer
  */
 export interface IndexerConfig {
@@ -416,8 +422,9 @@ export class Indexer {
 			folder: file.parent?.path || "",
 		};
 
+		const effectiveExcludedProps = new Set([...this.config.excludedDiffProps, ...OBSIDIAN_INTERNAL_FM_PROPS]);
 		const frontmatterDiff = oldFrontmatter
-			? compareFrontmatter(oldFrontmatter, frontmatter, this.config.excludedDiffProps)
+			? compareFrontmatter(oldFrontmatter, frontmatter, effectiveExcludedProps)
 			: undefined;
 
 		const event: IndexerEvent = {
@@ -429,8 +436,15 @@ export class Indexer {
 			...(frontmatterDiff !== undefined ? { frontmatterDiff } : {}),
 		};
 
-		// Update cache
-		this.frontmatterCache.set(file.path, { ...frontmatter });
+		// Deep clone to prevent Obsidian metadata cache mutations (e.g. Properties view)
+		// from silently corrupting our cached snapshot, and strip internal props.
+		const cleanFm: IndexerFrontmatter = {};
+		for (const key of Object.keys(frontmatter)) {
+			if (!OBSIDIAN_INTERNAL_FM_PROPS.has(key)) {
+				cleanFm[key] = frontmatter[key];
+			}
+		}
+		this.frontmatterCache.set(file.path, structuredClone(cleanFm));
 
 		return event;
 	}
