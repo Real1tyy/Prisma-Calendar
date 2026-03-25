@@ -66,12 +66,12 @@ export class SyncState<TService extends Destroyable> {
 			window.clearInterval(intervalId);
 		}
 		this.autoSyncIntervals.clear();
-		this.syncPromises.clear();
 	}
 
 	destroy(): void {
 		this.destroyed = true;
 		this.stopAutoSync();
+		this.syncPromises.clear();
 		for (const service of this.services.values()) {
 			service.destroy();
 		}
