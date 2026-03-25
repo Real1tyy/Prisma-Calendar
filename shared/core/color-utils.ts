@@ -115,6 +115,14 @@ export function generateColors(count: number): string[] {
 }
 
 export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+	const short = /^#?([a-f\d])([a-f\d])([a-f\d])$/i.exec(hex);
+	if (short) {
+		return {
+			r: Number.parseInt(short[1] + short[1], 16),
+			g: Number.parseInt(short[2] + short[2], 16),
+			b: Number.parseInt(short[3] + short[3], 16),
+		};
+	}
 	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 	return result
 		? {

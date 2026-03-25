@@ -317,6 +317,9 @@ export function formatArrayCompact(items: string[], maxLength: number): string {
 
 		if (testResult.length > maxLength - 5) {
 			const remaining = items.length - count;
+			if (!result) {
+				return remaining > 0 ? `+${remaining}` : "";
+			}
 			return `${result}${remaining > 0 ? `, +${remaining}` : ""}`;
 		}
 

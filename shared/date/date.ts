@@ -226,7 +226,7 @@ export function calculateEndTime(startTime: string, durationMinutes: number): st
 	const timePart = startTime.split(".")[0];
 	const [hours, minutes] = timePart.split(":").map(Number);
 	const endMinutes = minutes + durationMinutes;
-	const endHours = hours + Math.floor(endMinutes / 60);
+	const endHours = (hours + Math.floor(endMinutes / 60)) % 24;
 	const finalMinutes = endMinutes % 60;
 	return `${String(endHours).padStart(2, "0")}:${String(finalMinutes).padStart(2, "0")}:00.000Z`;
 }

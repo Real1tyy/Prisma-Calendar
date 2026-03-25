@@ -99,6 +99,10 @@ function deepEqual(a: unknown, b: unknown): boolean {
 
 	if (typeof a !== typeof b) return false;
 
+	if (a instanceof Date && b instanceof Date) {
+		return a.getTime() === b.getTime();
+	}
+
 	if (Array.isArray(a) && Array.isArray(b)) {
 		if (a.length !== b.length) return false;
 		return a.every((val, idx) => deepEqual(val, b[idx]));
@@ -148,9 +152,14 @@ export function mergeFrontmatterDiffs(diffs: FrontmatterDiff[]): FrontmatterDiff
 				changesByKey.set(change.key, { ...change });
 			} else {
 				existing.newValue = change.newValue;
-				existing.changeType = change.changeType;
 
-				if (existing.oldValue === change.newValue) {
+				if (change.changeType === "deleted" && existing.changeType === "added") {
+					changesByKey.delete(change.key);
+				} else if (existing.changeType !== "added") {
+					existing.changeType = change.changeType;
+				}
+
+				if (changesByKey.has(change.key) && deepEqual(existing.oldValue, existing.newValue)) {
 					changesByKey.delete(change.key);
 				}
 			}

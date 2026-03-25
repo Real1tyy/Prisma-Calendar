@@ -47,10 +47,14 @@ function optionalParsed<T>(what: string, parse: (s: string) => T | undefined) {
 const parseDT = (s: string) => parseDateTimeString(s);
 const parseTime = (s: string) => parseTimeString(s);
 
-const parseISODateStart = (s: string) => {
-	const dt = DateTime.fromISO(s, { zone: "utc" });
+/**
+ * Parses an ISO date string to start-of-day DateTime in the given timezone.
+ * Defaults to local timezone when no zone is specified.
+ */
+export function parseISODateStart(s: string, zone?: string): DateTime | undefined {
+	const dt = DateTime.fromISO(s, zone ? { zone } : undefined);
 	return dt.isValid ? dt.startOf("day") : undefined;
-};
+}
 
 export const titleTransform = z
 	.unknown()
@@ -142,8 +146,22 @@ export const optionalDateTimeTransform = optionalParsed<DateTime>("datetime", pa
 
 export const optionalTimeTransform = optionalParsed<DateTime>("time", parseTime);
 
-export const requiredDateTransform = requiredParsed<DateTime>("date", parseISODateStart);
-export const optionalDateTransform = optionalParsed<DateTime>("date", parseISODateStart);
+export const requiredDateTransform = requiredParsed<DateTime>("date", (s) => parseISODateStart(s));
+export const optionalDateTransform = optionalParsed<DateTime>("date", (s) => parseISODateStart(s));
+
+/**
+ * Creates date transforms that parse ISO dates in a specific timezone.
+ * Defaults to local timezone when no zone is specified.
+ *
+ * @param zone - IANA timezone (e.g. "America/New_York", "UTC") or undefined for local
+ */
+export function createDateTransforms(zone?: string) {
+	const parse = (s: string) => parseISODateStart(s, zone);
+	return {
+		requiredDateTransform: requiredParsed<DateTime>("date", parse),
+		optionalDateTransform: optionalParsed<DateTime>("date", parse),
+	};
+}
 
 /** String field that renders as Obsidian's SecretComponent in schema-driven forms. */
 export const zSecret = z.string().meta({ format: "secret" });
