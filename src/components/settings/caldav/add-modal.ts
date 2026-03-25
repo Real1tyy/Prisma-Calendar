@@ -11,7 +11,7 @@ import {
 	type CalDAVCalendarInfo,
 	type CalDAVPresetKey,
 } from "../../../types/integrations";
-import { CalDAVAddFormShape, type CalDAVAddFormValues } from "../integration-form-shapes";
+import { CalDAVAddFormShape, type CalDAVAddFormValues } from "../integration-shared";
 import { renderCalendarCheckboxes } from "./calendar-checkboxes";
 
 export function showAddCalDAVAccountModal(

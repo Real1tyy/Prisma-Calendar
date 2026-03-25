@@ -5,7 +5,7 @@ import { type App, Notice, requestUrl } from "obsidian";
 import { parseICSContent } from "../../../core/integrations/ics-import";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
-import { ICSSubscriptionAddFormShape, type ICSSubscriptionAddFormValues } from "../integration-form-shapes";
+import { ICSSubscriptionAddFormShape, type ICSSubscriptionAddFormValues } from "../integration-shared";
 
 export function showAddICSSubscriptionModal(
 	app: App,

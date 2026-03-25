@@ -10,7 +10,7 @@ import type { CustomCalendarSettingsSchema } from "../../../types/settings";
 import { getCalendarById } from "../../../utils/calendar-settings";
 import { showCalendarIntegrationDeleteEventsModal } from "../../modals";
 import { showConfirmDeleteModal } from "../generic";
-import { deleteTrackedIntegrationEvents } from "../integration-settings-helpers";
+import { deleteTrackedIntegrationEvents } from "../integration-shared";
 import { showAddCalDAVAccountModal } from "./add-modal";
 import { showEditCalDAVAccountModal } from "./edit-modal";
 

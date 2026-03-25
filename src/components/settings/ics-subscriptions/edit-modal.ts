@@ -4,7 +4,7 @@ import { type App, Notice } from "obsidian";
 import { ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
 import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { ICSSubscription } from "../../../types/integrations";
-import { ICSSubscriptionEditFormShape, type ICSSubscriptionEditFormValues } from "../integration-form-shapes";
+import { ICSSubscriptionEditFormShape, type ICSSubscriptionEditFormValues } from "../integration-shared";
 
 export function showEditICSSubscriptionModal(
 	app: App,

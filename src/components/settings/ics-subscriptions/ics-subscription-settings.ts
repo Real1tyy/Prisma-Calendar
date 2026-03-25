@@ -9,7 +9,7 @@ import type { CustomCalendarSettingsSchema } from "../../../types/settings";
 import { getCalendarById } from "../../../utils/calendar-settings";
 import { showCalendarIntegrationDeleteEventsModal } from "../../modals";
 import { showConfirmDeleteModal } from "../generic";
-import { deleteTrackedIntegrationEvents } from "../integration-settings-helpers";
+import { deleteTrackedIntegrationEvents } from "../integration-shared";
 import { showAddICSSubscriptionModal } from "./add-modal";
 import { showEditICSSubscriptionModal } from "./edit-modal";
 

@@ -1,8 +1,8 @@
 import { zSecret } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
-import { CALDAV_DEFAULTS, ICS_SUBSCRIPTION_DEFAULTS } from "../../constants";
-import { COMMON_TIMEZONES } from "../../core/integrations/ics-export";
+import { CALDAV_DEFAULTS, ICS_SUBSCRIPTION_DEFAULTS } from "../../../constants";
+import { COMMON_TIMEZONES } from "../../../core/integrations/ics-export";
 
 const TIMEZONE_IDS = COMMON_TIMEZONES.map((tz) => tz.id) as [string, ...string[]];
 const TIMEZONE_LABELS: Record<string, string> = Object.fromEntries(COMMON_TIMEZONES.map((tz) => [tz.id, tz.label]));

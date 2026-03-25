@@ -9,8 +9,7 @@ import type { PrismaCalendarSettingsStore } from "../../../types";
 import type { CalDAVAccount, CalDAVCalendarInfo } from "../../../types/integrations";
 import { getCalendarById } from "../../../utils/calendar-settings";
 import { showCalendarIntegrationDeleteEventsModal } from "../../modals";
-import { CalDAVEditFormShape, type CalDAVEditFormValues } from "../integration-form-shapes";
-import { deleteTrackedIntegrationEvents } from "../integration-settings-helpers";
+import { CalDAVEditFormShape, type CalDAVEditFormValues, deleteTrackedIntegrationEvents } from "../integration-shared";
 import { renderCalendarCheckboxes } from "./calendar-checkboxes";
 
 export function showEditCalDAVAccountModal(
