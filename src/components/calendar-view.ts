@@ -665,6 +665,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.calendar.setOption("eventOverlap", settings.eventOverlap);
 		this.calendar.setOption("slotEventOverlap", settings.slotEventOverlap);
 		this.calendar.setOption("eventMaxStack", settings.eventMaxStack);
+		this.calendar.setOption(
+			"dayMaxEventRows",
+			this.isMobileView() ? settings.mobileMaxEventsPerDay : settings.desktopMaxEventsPerDay || false
+		);
 
 		this.filterPresetSelector.updatePresets(settings.filterPresets);
 
@@ -1237,8 +1241,16 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const start = toLocalISOString(view.activeStart);
 		const end = toLocalISOString(view.activeEnd);
 
+		console.log("[CalendarView:DEBUG] buildCalendarEvents — querying eventStore", { start, end });
 		const nonSkipped = await this.bundle.eventStore.getEvents({ start, end });
 		const skippedCount = this.bundle.eventStore.countSkippedEvents({ start, end });
+		console.log(
+			"[CalendarView:DEBUG] buildCalendarEvents — eventStore returned",
+			nonSkipped.length,
+			"events,",
+			skippedCount,
+			"skipped"
+		);
 		this.updateSkippedEventsButton(skippedCount);
 
 		const visibleEvents: CalendarEvent[] = [];
@@ -1251,6 +1263,13 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 			(passesFilters ? visibleEvents : filteredEvents).push(event);
 		}
+
+		console.log(
+			"[CalendarView:DEBUG] buildCalendarEvents — visible:",
+			visibleEvents.length,
+			"filtered:",
+			filteredEvents.length
+		);
 
 		this.filteredEvents = filteredEvents;
 		this.updateFilteredEventsButton(filteredEvents.length);
@@ -1308,6 +1327,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private performInitialLoad(calendarEvents: PrismaEventInput[]): void {
+		console.log("[CalendarView:DEBUG] performInitialLoad — removing all events, then adding", calendarEvents.length);
 		this.calendar!.removeAllEvents();
 
 		this.calendar!.batchRendering(() => {
@@ -1318,6 +1338,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.populateRenderedEventsCache(calendarEvents);
 		this.hasPerformedInitialLoad = true;
 		this.updateColorDots();
+		console.log("[CalendarView:DEBUG] performInitialLoad — done, FC event count:", this.calendar!.getEvents().length);
 	}
 
 	/**
@@ -1327,7 +1348,19 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private performIncrementalUpdate(calendarEvents: PrismaEventInput[]): boolean {
 		const diff = diffEvents(this.renderedEvents, calendarEvents);
 
+		console.log("[CalendarView:DEBUG] performIncrementalUpdate — diff:", {
+			added: diff.added.length,
+			removed: diff.removed.length,
+			changed: diff.changed.length,
+			renderedCacheSize: this.renderedEvents.size,
+			incomingCount: calendarEvents.length,
+			addedIds: diff.added.map((e) => e.id),
+			removedIds: [...diff.removed],
+			changedIds: diff.changed.map((e) => e.id),
+		});
+
 		if (diff.added.length === 0 && diff.removed.length === 0 && diff.changed.length === 0) {
+			console.log("[CalendarView:DEBUG] performIncrementalUpdate — NO DIFF, skipping");
 			return false;
 		}
 
@@ -1357,6 +1390,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				this.calendar!.addEvent(ev);
 			}
 		});
+
+		console.log(
+			"[CalendarView:DEBUG] performIncrementalUpdate — after batchRendering, FC event count:",
+			this.calendar!.getEvents().length
+		);
 
 		for (const id of diff.removed) {
 			this.renderedEvents.delete(id);
@@ -1390,6 +1428,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private clearRenderedEventsCache(): void {
+		console.log(
+			"[CalendarView:DEBUG] clearRenderedEventsCache — clearing",
+			this.renderedEvents.size,
+			"entries, resetting hasPerformedInitialLoad"
+		);
 		this.renderedEvents.clear();
 		this.hasPerformedInitialLoad = false;
 		this.colorDotSnapshot = "";

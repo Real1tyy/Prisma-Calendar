@@ -4,7 +4,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.10.0 - 3/24/2026
+## 2.10.0 - 3/25/2026
 
 ### Improved
 
@@ -13,8 +13,12 @@ All notable changes to this project will be documented here.
 - **Sync notification clarity**: Sync notifications now show "Sync complete — Account: 3 created, 1 updated" instead of the ambiguous "Account: 3 created" format. See [Integrations](./features/advanced/integrations.md).
 - **CalDAV edit modal shows calendar names**: The calendar selector in the CalDAV edit modal now shows human-readable calendar names instead of raw URLs. See [Integrations](./features/advanced/integrations.md).
 
+- **Locale setting rendered as dropdown**: The locale setting now displays as a dropdown selector instead of a free-text field, making it easier to pick from supported languages. See [Calendar UI](./configuration/calendar-ui.md).
+
 ### Fixed
+- **Filter expressions rejecting events when referenced properties are missing**: Filter expressions like `_Archived !== true` or `Status !== 'Inbox'` incorrectly rejected events that didn't have the referenced property in their frontmatter. Missing properties now evaluate as `undefined` instead of failing, so `_Archived !== true` correctly passes for events without an `_Archived` property. See [Rules & Filters](./features/advanced/rules-filters.md).
 - **Highlight upcoming event not updating after changes**: The upcoming event highlight stopped applying after dragging, resizing, or editing events — it only worked on initial load. The highlight now correctly reapplies whenever events are re-rendered. See [Calendar View](./features/calendar/calendar-view.md).
+- **Changing "max events per day" breaking event rendering**: Changing the desktop or mobile max events per day setting applied the FullCalendar option but did not trigger a full event refresh, leaving the calendar in a stale state where new events stopped appearing. The setting change now forces a complete re-render. See [Calendar UI](./configuration/calendar-ui.md).
 - **Batch frontmatter edit not applying new properties**: Adding a new frontmatter property via batch edit showed a success notice but did not actually write the property. The submit hotkey also discarded all input. Both issues are now fixed. See [Batch Operations](./features/management/batch-operations.md).
 - **Timeline all-day events overlapping**: All-day and timed events in the timeline view were rendered as points with no width, causing them to overlap instead of stacking vertically. Events now render as ranges with proper start/end times. See [Timeline](./features/views/timeline.md).
 
@@ -23,6 +27,7 @@ All notable changes to this project will be documented here.
 - **Duplicate Recurring Instance command and Ignore Recurring property**: The "Duplicate recurring instance" context menu option and the `Ignore Recurring` frontmatter property have been removed. The feature was redundant — users can simply clone the event instead, which creates a standalone copy tracked by name. See [Recurring Events](./features/events/recurring-dsl.md).
 - **"Generate past events" skipping today's instance**: When a recurring event had "Generate Past Events" enabled, instances were generated for past days and future days, but today's occurrence was skipped. Today's instance is now correctly included. See [Recurring Events](./features/events/recurring-dsl.md).
 - **Preview button shown for virtual events**: The hover preview context menu option was visible on virtual events, which have no backing file to preview. It is now hidden for virtual events. See [Virtual Events](./features/events/virtual-events.md).
+- **Changing desktop/mobile events per day broke calendar rendering**: Changing the "Desktop events per day" or "Mobile events per day" setting caused the calendar to stop rendering newly created events until a full plugin reload. The setting now applies immediately and triggers a proper event re-render. See [Calendar View](./features/calendar/calendar-view.md).
 
 ---
 

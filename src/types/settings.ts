@@ -29,7 +29,7 @@ import {
 import { ColorSchema } from "../utils/validation";
 import { AI_DEFAULTS } from "./ai";
 import { CalDAVSettingsSchema, ICSSubscriptionSettingsSchema } from "./integrations";
-import { CalendarViewTypeSchema, ContextMenuItemSchema, ToolbarButtonSchema } from "./view";
+import { CalendarViewTypeSchema, ContextMenuItemSchema, LOCALE_KEYS, ToolbarButtonSchema } from "./view";
 
 // Use library's HolidayType definition
 const HolidayTypeSchema = z.enum(["public", "bank", "school", "observance", "optional"]);
@@ -104,7 +104,7 @@ const GeneralSettingsSchema = z
 			.catch(true)
 			.describe("Display a calendar icon in the left sidebar to quickly open this calendar"),
 		locale: z
-			.string()
+			.enum(LOCALE_KEYS)
 			.catch("en")
 			.describe(
 				"Language and date format for calendar headings, day names, month names, toolbar labels, and date displays"

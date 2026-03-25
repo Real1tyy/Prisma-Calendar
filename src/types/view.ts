@@ -47,7 +47,7 @@ export const FIRST_DAY_OPTIONS: Record<number, string> = Object.entries(WEEKDAY_
 	{} as Record<number, string>
 );
 
-export const LOCALE_OPTIONS: Record<string, string> = {
+export const LOCALE_OPTIONS = {
 	en: "English",
 	fr: "French (Français)",
 	de: "German (Deutsch)",
@@ -67,7 +67,9 @@ export const LOCALE_OPTIONS: Record<string, string> = {
 	da: "Danish (Dansk)",
 	fi: "Finnish (Suomi)",
 	nb: "Norwegian (Norsk bokmål)",
-};
+} as const;
+
+export const LOCALE_KEYS = Object.keys(LOCALE_OPTIONS) as [string, ...string[]];
 
 export type ContextMenuItem = keyof typeof CONTEXT_MENU_BUTTON_LABELS;
 

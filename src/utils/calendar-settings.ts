@@ -54,6 +54,11 @@ export function getEventRenderingKey(settings: SingleCalendarConfig): string {
 		settings.skipProp,
 		settings.titleProp,
 		settings.calendarTitleProp,
+		settings.eventOverlap,
+		settings.slotEventOverlap,
+		settings.eventMaxStack,
+		settings.desktopMaxEventsPerDay,
+		settings.mobileMaxEventsPerDay,
 	]);
 }
 
