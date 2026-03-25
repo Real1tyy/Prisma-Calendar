@@ -1,6 +1,6 @@
 import type { BehaviorSubject, Subscription } from "rxjs";
 
-import { buildPropertyMapping, sanitizeExpression } from "../expression-utils";
+import { buildPropertyMapping, extractExpressionIdentifiers, sanitizeExpression } from "../expression-utils";
 
 export interface BaseRule {
 	id: string;
@@ -40,8 +40,15 @@ export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 		}
 
 		try {
-			// Progressively build property mapping as we encounter new properties
+			// Progressively build property mapping from frontmatter keys AND expression identifiers.
+			// Expression identifiers must be included so that properties referenced in expressions
+			// but missing from the frontmatter are passed as `undefined` instead of causing ReferenceError.
 			const currentKeys = new Set(Object.keys(frontmatter));
+			const expressionIds = extractExpressionIdentifiers(rule.expression);
+			for (const id of expressionIds) {
+				currentKeys.add(id);
+			}
+
 			const existingKeys = new Set(this.propertyMapping.keys());
 			const newKeys = [...currentKeys].filter((key) => !existingKeys.has(key));
 
