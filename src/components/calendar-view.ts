@@ -584,6 +584,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			eventsSet: () => {
 				this.batchSelectionManager?.refreshSelectionStyling();
 				if (this.showConnections) this.renderConnections();
+				this.updateUpcomingEventHighlight();
 			},
 
 			height: "auto",
@@ -2681,30 +2682,18 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		const newUpcomingEventIds = this.findUpcomingEventIds();
 
-		// Check if the set of highlighted events has changed
-		const hasChanged =
-			newUpcomingEventIds.size !== this.currentUpcomingEventIds.size ||
-			Array.from(newUpcomingEventIds).some((id) => !this.currentUpcomingEventIds.has(id));
-
-		if (!hasChanged) {
-			return;
-		}
-
-		// Remove highlight from previous upcoming events that are no longer active
+		// Remove highlight from events that are no longer upcoming
 		for (const oldId of this.currentUpcomingEventIds) {
 			if (!newUpcomingEventIds.has(oldId)) {
 				toggleEventHighlight(oldId, cls("event-upcoming"), false, this.container);
 			}
 		}
 
-		// Add highlight to new upcoming events
+		// Always reapply highlight — DOM elements are recreated on FC re-renders
 		for (const newId of newUpcomingEventIds) {
-			if (!this.currentUpcomingEventIds.has(newId)) {
-				toggleEventHighlight(newId, cls("event-upcoming"), true, this.container);
-			}
+			toggleEventHighlight(newId, cls("event-upcoming"), true, this.container);
 		}
 
-		// Update tracked IDs
 		this.currentUpcomingEventIds = newUpcomingEventIds;
 	}
 
