@@ -114,6 +114,8 @@ export function renderTimelineInto(
 	const rangeTracker = new FetchedRangeTracker();
 	let rangeChangeTimer: ReturnType<typeof setTimeout> | null = null;
 
+	container.addClass(cls("timeline-modal"));
+
 	const header = container.createDiv(cls("timeline-modal-header"));
 	header.createEl("h2", { text: config.title });
 

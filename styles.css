@@ -9955,3 +9955,25 @@ div.vis-tooltip {
 	color: var(--text-normal);
 	border: 1px solid var(--background-modifier-border);
 }
+
+.prisma-gantt-wrapper .bar-label-fo {
+	overflow: visible;
+}
+
+.prisma-gantt-bar-label {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2px 4px;
+	box-sizing: border-box;
+	font-size: 12px;
+	font-family: var(--font-interface);
+	line-height: 1.2;
+	word-break: break-word;
+	overflow-wrap: break-word;
+	text-align: center;
+	overflow: hidden;
+	color: var(--g-text-dark, var(--text-normal));
+}

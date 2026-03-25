@@ -15,6 +15,7 @@ All notable changes to this project will be documented here.
 
 - **Locale setting rendered as dropdown**: The locale setting now displays as a dropdown selector instead of a free-text field, making it easier to pick from supported languages. See [Calendar UI](./configuration/calendar-ui.md).
 - **Category rename/delete progress modal**: Renaming or deleting a category now shows a progress modal with a progress bar instead of just disabling the button. See [Categories](./features/events/categories.md).
+- **Gantt bar label wrapping**: Long event titles in the Gantt view now word-wrap inside the bar instead of overflowing to the right, keeping the layout compact. See [Gantt View](./features/views/gantt.md).
 
 ### Fixed
 - **ICS export shifting event times by the local UTC offset**: Exported events were shifted by the user's timezone offset (e.g., 1 hour earlier in UTC+1) because internal ISO strings without a Z suffix were interpreted as local time by `new Date()`. A UTC round-trip (export + import with UTC) now preserves exact times. See [Import & Export](./features/advanced/import-export.md).

@@ -93,19 +93,42 @@ interface InternalTask {
 	dependencies: string[];
 }
 
-const LABEL_CHAR_WIDTH_PX = 7;
-const DEFAULT_COLUMN_WIDTH_PX = 45;
-const MS_PER_DAY = 86_400_000;
+const SVG_NS = "http://www.w3.org/2000/svg";
+const XHTML_NS = "http://www.w3.org/1999/xhtml";
 
 /**
- * Returns the visual end time of a task, accounting for the label
- * extending to the right of short bars.
+ * Replaces SVG `<text class="bar-label">` elements with `<foreignObject>` +
+ * word-wrapping HTML so that long titles wrap inside the bar instead of
+ * overflowing to the right.
  */
-function visualEndTime(task: InternalTask): number {
-	const barEnd = +task._end;
-	const labelWidthDays = Math.ceil((task.name.length * LABEL_CHAR_WIDTH_PX) / DEFAULT_COLUMN_WIDTH_PX);
-	const labelEnd = +task._start + labelWidthDays * MS_PER_DAY;
-	return Math.max(barEnd, labelEnd);
+function wrapBarLabels(container: HTMLElement): void {
+	const labels = Array.from(container.querySelectorAll(".bar-label")) as SVGTextElement[];
+	for (const label of labels) {
+		const barGroup = label.closest(".bar-wrapper");
+		if (!barGroup) continue;
+
+		const bar = barGroup.querySelector(".bar") as SVGRectElement | null;
+		if (!bar) continue;
+
+		const barX = parseFloat(bar.getAttribute("x") ?? "0");
+		const barY = parseFloat(bar.getAttribute("y") ?? "0");
+		const barW = parseFloat(bar.getAttribute("width") ?? "0");
+		const barH = parseFloat(bar.getAttribute("height") ?? "0");
+
+		const fo = document.createElementNS(SVG_NS, "foreignObject");
+		fo.setAttribute("x", String(barX));
+		fo.setAttribute("y", String(barY));
+		fo.setAttribute("width", String(barW));
+		fo.setAttribute("height", String(barH));
+		fo.classList.add("bar-label-fo");
+
+		const div = document.createElementNS(XHTML_NS, "div") as HTMLDivElement;
+		div.classList.add("prisma-gantt-bar-label");
+		div.textContent = label.textContent;
+		fo.appendChild(div);
+
+		label.replaceWith(fo);
+	}
 }
 
 /**
@@ -130,7 +153,7 @@ export function packGanttRows(tasks: InternalTask[]): number {
 			}
 		}
 
-		const vEnd = visualEndTime(task);
+		const vEnd = +task._end;
 
 		let placed = false;
 		for (let r = minRow; r < rowEndTimes.length; r++) {
@@ -298,6 +321,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		}
 		g._packedRowCount = packGanttRows(g.tasks);
 		g.change_view_mode();
+		requestAnimationFrame(() => wrapBarLabels(wrapperEl!));
 
 		enableDragToPan(g.$container);
 	}
@@ -319,6 +343,9 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 
 		if (gantt) {
 			gantt.refresh(tasks);
+			requestAnimationFrame(() => {
+				if (wrapperEl) wrapBarLabels(wrapperEl);
+			});
 			return;
 		}
 

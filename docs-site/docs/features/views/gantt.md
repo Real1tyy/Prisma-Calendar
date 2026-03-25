@@ -38,6 +38,8 @@ Bars are colored using the same [Color Rules](../organization/color-rules.md) as
 
 The chart fills the full height of the tab. Events from independent prerequisite chains are packed into shared rows when their time ranges don't overlap, keeping the layout compact. Within a chain, dependent events are always placed below their prerequisites.
 
+Long event titles word-wrap inside the bar rather than overflowing to the right, so the chart stays compact regardless of title length.
+
 ## Performance
 
 Prerequisite relationships are tracked incrementally — when you add, edit, or delete an event, only that event's prerequisites are updated instead of rebuilding the entire dependency graph. This keeps the Gantt tab responsive even with large vaults.

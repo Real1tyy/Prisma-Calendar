@@ -74,13 +74,13 @@ describe("packGanttRows", () => {
 		expect(tasks.find((t) => t.id === "b2")!._index).toBe(1);
 	});
 
-	it("keeps nearby short events on separate rows to avoid label overlap", () => {
+	it("packs nearby short events onto the same row (labels wrap inside bars)", () => {
 		const tasks = [
 			task("a", "2024-01-01", "2024-01-02", [], "Focus Session"),
 			task("b", "2024-01-03", "2024-01-04", [], "Exercise"),
 		];
 		const rows = packGanttRows(tasks);
-		expect(rows).toBe(2);
+		expect(rows).toBe(1);
 	});
 
 	it("handles single task", () => {
