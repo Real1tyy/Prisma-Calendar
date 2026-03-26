@@ -4,20 +4,27 @@ import { debounceTime, merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { renderTimelineInto, type TimelineHandle } from "../modals";
+import { createViewFilterBar, type ViewFilterBarHandle } from "../view-filter-bar";
 
 const REFRESH_DEBOUNCE_MS = 100;
 
 export function createTimelineTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let handle: TimelineHandle | null = null;
 	let mergedSub: Subscription | null = null;
+	let filterBar: ViewFilterBarHandle | null = null;
 
 	return {
 		id: "timeline",
 		label: "Timeline",
 		render: (el) => {
+			filterBar = createViewFilterBar(el, bundle, () => {
+				handle?.setEventFilter((e) => filterBar!.shouldInclude(e));
+			});
+
 			handle = renderTimelineInto(el, app, bundle, {
 				title: "All Events Timeline",
 				fillContainer: true,
+				eventFilter: (e) => filterBar!.shouldInclude(e),
 			});
 
 			mergedSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$)
@@ -29,6 +36,8 @@ export function createTimelineTabDefinition(app: App, bundle: CalendarBundle): T
 		cleanup: () => {
 			mergedSub?.unsubscribe();
 			mergedSub = null;
+			filterBar?.destroy();
+			filterBar = null;
 			handle?.destroy();
 			handle = null;
 		},

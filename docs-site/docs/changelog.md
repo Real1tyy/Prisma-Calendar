@@ -7,11 +7,11 @@ All notable changes to this project will be documented here.
 ## 2.11.0 - 3/26/2026
 
 ### Improved
+- **Unified filtering across all views**: Search bar, expression filter, and filter presets are now available in the Timeline, Heatmap, and Gantt views — not just the Calendar view. All four views share the same filtering behavior. See [Rules & Filters](./features/organization/filtering.md).
 - **Prerequisite assignment via click-to-select**: Right-clicking an event and selecting "Assign prerequisites" now enters a selection mode where you click events directly on the calendar instead of searching through a modal. A floating banner shows the target event, selection count, and Done/Cancel buttons. The modal-based assignment remains available from the event edit form. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
 - **Missing property settings exposed**: The recurring instance date, CalDAV, and ICS subscription properties are now configurable in Settings → Properties, matching all other frontmatter properties. See [Properties](./configuration/properties.md).
 
 ### Fixed
-- **Gantt bar text color ignoring settings**: Gantt bars always used the default text color regardless of background color contrast. They now use the same primary/alternative text color logic as the calendar and timeline views. See [Gantt View](./features/views/gantt.md).
 - **Prerequisite tracker leaving dangling references**: Deleting a file that was listed as a prerequisite by other events left stale references — the dependency graph showed "depends on [deleted file]" and Gantt arrows pointed to nothing. Deleting a file now cleans up all references to it across the graph. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
 
 ---

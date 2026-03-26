@@ -19,6 +19,7 @@ import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveEventColor } from "../../utils/event-color";
 import { showEventPreviewModal } from "../modals";
 import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
+import { createViewFilterBar, type ViewFilterBarHandle } from "../view-filter-bar";
 
 const REFRESH_DEBOUNCE_MS = 100;
 const GANTT_STYLE_ID = "prisma-gantt-vendor-css";
@@ -253,6 +254,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	let emptyEl: HTMLElement | null = null;
 	let eventsSnapshot: CalendarEvent[] = [];
 	let colorEvaluator: ColorEvaluator<SingleCalendarConfig> | null = null;
+	let filterBar: ViewFilterBarHandle | null = null;
 
 	function enableDragToPan(container: HTMLElement): void {
 		let isDragging = false;
@@ -327,7 +329,9 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	}
 
 	function rebuild(el: HTMLElement): void {
-		eventsSnapshot = bundle.eventStore.getAllEvents();
+		const allEvents = bundle.eventStore.getAllEvents();
+		const { visible } = filterBar ? filterBar.filterEvents(allEvents) : { visible: allEvents };
+		eventsSnapshot = visible;
 		const graph = bundle.prerequisiteTracker.getGraph();
 		if (!colorEvaluator) colorEvaluator = new ColorEvaluator(bundle.settingsStore.settings$);
 		const tasks = buildTasks(eventsSnapshot, graph, bundle.prerequisiteTracker, bundle, colorEvaluator);
@@ -358,6 +362,8 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		mergedSub = null;
 		colorEvaluator?.destroy();
 		colorEvaluator = null;
+		filterBar?.destroy();
+		filterBar = null;
 		gantt = null;
 		wrapperEl = null;
 		emptyEl = null;
@@ -382,6 +388,10 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				}
 
 				injectVendorCss();
+
+				filterBar = createViewFilterBar(el, bundle, () => {
+					rebuild(el);
+				});
 
 				emptyEl = el.createDiv({
 					cls: cls("gantt-empty", "hidden"),

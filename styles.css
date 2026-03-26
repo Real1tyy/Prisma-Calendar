@@ -9977,3 +9977,39 @@ div.vis-tooltip {
 	overflow: hidden;
 	color: var(--g-text-dark, var(--text-normal));
 }
+
+/* ─── View Filter Bar (Timeline, Heatmap, Gantt) ─────────── */
+
+.prisma-view-filter-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+}
+
+.prisma-view-filter-bar .prisma-fc-search-input,
+.prisma-view-filter-bar .prisma-fc-expression-input {
+	flex: 1 1 120px;
+	min-width: 100px;
+}
+
+.prisma-view-filter-bar .prisma-fc-filter-preset-wrapper {
+	flex: 0 0 auto;
+}
+
+.prisma-view-filter-bar .prisma-view-filter-preset-select {
+	border: 1px solid var(--background-modifier-border);
+}
+
+.prisma-view-filter-badge {
+	flex: 0 0 auto;
+	padding: 2px 8px;
+	border-radius: var(--radius-s);
+	background: var(--background-modifier-error);
+	color: var(--text-on-accent);
+	font-size: var(--font-ui-smaller);
+	white-space: nowrap;
+}

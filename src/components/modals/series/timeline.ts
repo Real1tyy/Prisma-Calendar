@@ -20,11 +20,13 @@ export interface EventSeriesTimelineConfig {
 	events?: CalendarEvent[];
 	title: string;
 	fillContainer?: boolean;
+	eventFilter?: (event: CalendarEvent) => boolean;
 }
 
 export interface TimelineHandle {
 	destroy: () => void;
 	invalidateAndRefetch: () => void;
+	setEventFilter: (filter: ((event: CalendarEvent) => boolean) | undefined) => void;
 }
 
 // ─── Range Tracker ───────────────────────────────────────────
@@ -242,11 +244,22 @@ export function renderTimelineInto(
 	function mergeEvents(events: CalendarEvent[]): void {
 		if (!timeline || !items) return;
 
+		const filtered = config.eventFilter ? events.filter(config.eventFilter) : events;
 		const settings = bundle.settingsStore.currentSettings;
 		const toAdd: ReturnType<typeof toItem>[] = [];
 		const toUpdate: ReturnType<typeof toItem>[] = [];
+		const toRemove: string[] = [];
 
-		for (const event of events) {
+		const filteredIds = new Set(filtered.map((e) => e.ref.filePath));
+
+		for (const [id] of eventMap) {
+			if (!filteredIds.has(id)) {
+				toRemove.push(id);
+				eventMap.delete(id);
+			}
+		}
+
+		for (const event of filtered) {
 			const id = event.ref.filePath;
 			const existing = eventMap.get(id);
 			const item = toItem(event, settings);
@@ -264,6 +277,7 @@ export function renderTimelineInto(
 			eventMap.set(id, event);
 		}
 
+		if (toRemove.length > 0) items.remove(toRemove);
 		if (toAdd.length > 0) items.add(toAdd);
 		if (toUpdate.length > 0) items.update(toUpdate);
 	}
@@ -377,6 +391,14 @@ export function renderTimelineInto(
 			container.empty();
 		},
 		invalidateAndRefetch,
+		setEventFilter: (filter) => {
+			if (filter) {
+				config.eventFilter = filter;
+			} else {
+				delete config.eventFilter;
+			}
+			invalidateAndRefetch();
+		},
 	};
 }
 

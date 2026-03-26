@@ -6,18 +6,26 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
 import { type HeatmapHandle, renderHeatmapInto } from "../modals";
 import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
+import { createViewFilterBar, type ViewFilterBarHandle } from "../view-filter-bar";
 
 export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let heatmapHandle: HeatmapHandle | null = null;
 	let eventStoreSub: Subscription | null = null;
 	let recurringEventSub: Subscription | null = null;
 	let isProSub: Subscription | null = null;
+	let filterBar: ViewFilterBarHandle | null = null;
+
+	function getFilteredEvents(): ReturnType<ViewFilterBarHandle["filterEvents"]> {
+		return filterBar!.filterEvents(bundle.eventStore.getAllEvents());
+	}
 
 	function cleanupContent(): void {
 		eventStoreSub?.unsubscribe();
 		eventStoreSub = null;
 		recurringEventSub?.unsubscribe();
 		recurringEventSub = null;
+		filterBar?.destroy();
+		filterBar = null;
 		heatmapHandle?.destroy();
 		heatmapHandle = null;
 	}
@@ -46,17 +54,26 @@ export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): Ta
 					return;
 				}
 
+				filterBar = createViewFilterBar(el, bundle, () => {
+					const { visible } = getFilteredEvents();
+					heatmapHandle?.refresh(visible);
+				});
+
+				const { visible } = getFilteredEvents();
+
 				heatmapHandle = renderHeatmapInto(el, app, bundle, {
-					events: bundle.eventStore.getAllEvents(),
+					events: visible,
 					title: "All Events Heatmap",
 				});
 
 				eventStoreSub = bundle.eventStore.subscribe(() => {
-					heatmapHandle?.refresh(bundle.eventStore.getAllEvents());
+					const { visible: v } = getFilteredEvents();
+					heatmapHandle?.refresh(v);
 				});
 
 				recurringEventSub = bundle.recurringEventManager.subscribe(() => {
-					heatmapHandle?.refresh(bundle.eventStore.getAllEvents());
+					const { visible: v } = getFilteredEvents();
+					heatmapHandle?.refresh(v);
 				});
 			}
 

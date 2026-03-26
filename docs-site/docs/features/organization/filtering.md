@@ -11,6 +11,16 @@ Prisma Calendar supports filtering for two types of events:
 
 Both use the same JavaScript expression syntax but are configured separately.
 
+## Unified Filtering Across All Views
+
+The search bar, expression filter, and filter presets are available across all four views:
+- **Calendar** — filter bar in the calendar toolbar
+- **Timeline** — filter bar above the timeline
+- **Heatmap** — filter bar above the heatmap grid
+- **Gantt** — filter bar above the Gantt chart
+
+All views share the same filtering behavior: title search, expression-based property filtering, and one-click filter presets. Filtering is applied in real time — the view updates as you type.
+
 ## Three Ways to Filter
 
 ### 1. Search Bar (Simple Text Filter)
@@ -29,9 +39,9 @@ Both use the same JavaScript expression syntax but are configured separately.
   </video>
 </div>
 
-The **Search Bar** in the calendar toolbar lets you quickly filter events by title:
+The **Search Bar** lets you quickly filter events by title:
 
-- **Location**: Calendar toolbar (left side)
+- **Location**: Calendar toolbar (left side), or the filter bar in Timeline, Heatmap, and Gantt views
 - **Usage**: Type any text to show only events whose titles contain that text
 - **Features**:
   - Case-insensitive search
@@ -61,7 +71,7 @@ Type "meeting" → Shows only events with "meeting" in the title
 
 The **Expression Filter** enables powerful, property-based filtering using JavaScript expressions:
 
-- **Location**: Calendar toolbar (next to search bar)
+- **Location**: Calendar toolbar (next to search bar), or the filter bar in Timeline, Heatmap, and Gantt views
 - **Usage**: Enter JavaScript expressions that reference frontmatter properties
 - **Features**:
   - Access any frontmatter property by name (e.g., `Status`, `Priority`)
@@ -106,7 +116,7 @@ Project === 'Work' && Priority === 'High' && Status !== 'Done'
 
 **Filter Presets** let you save and reuse common filter expressions:
 
-- **Location**: Dropdown (▼) in calendar toolbar
+- **Location**: Dropdown (▼) in calendar toolbar and filter bars across all views
 - **Setup**: Configure in Settings → Rules → Filter Presets
 - **Features**:
   - Save named presets with custom expressions

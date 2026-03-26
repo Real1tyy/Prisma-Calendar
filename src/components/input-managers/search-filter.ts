@@ -1,6 +1,7 @@
 import { cls } from "@real1ty-obsidian-plugins";
 
 import type { Frontmatter } from "../../types";
+import { matchesSearch } from "../../utils/filter-logic";
 import { InputFilterManager } from "./base";
 
 export class SearchFilterInputManager extends InputFilterManager {
@@ -9,9 +10,6 @@ export class SearchFilterInputManager extends InputFilterManager {
 	}
 
 	shouldInclude(data: { meta?: Frontmatter; title?: string }): boolean {
-		if (!this.currentFilterValue) return true;
-		const searchTerm = this.currentFilterValue.toLowerCase();
-		const title = (data.title || (data.meta?.["title"] as string) || "").toLowerCase();
-		return title.includes(searchTerm);
+		return matchesSearch(this.currentFilterValue, data);
 	}
 }
