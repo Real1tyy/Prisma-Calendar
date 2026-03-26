@@ -4,7 +4,10 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.11.0 - 3/25/2026
+## 2.11.0 - 3/26/2026
+
+### Improved
+- **Prerequisite assignment via click-to-select**: Right-clicking an event and selecting "Assign prerequisites" now enters a selection mode where you click events directly on the calendar instead of searching through a modal. A floating banner shows the target event, selection count, and Done/Cancel buttons. The modal-based assignment remains available from the event edit form. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
 
 ### Fixed
 - **Prerequisite tracker leaving dangling references**: Deleting a file that was listed as a prerequisite by other events left stale references — the dependency graph showed "depends on [deleted file]" and Gantt arrows pointed to nothing. Deleting a file now cleans up all references to it across the graph. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
@@ -16,12 +19,10 @@ All notable changes to this project will be documented here.
 ### Improved
 
 - **Bases Calendar View performance**: The Bases Calendar View now only renders events within the visible date range instead of processing all query results at once. Switching to the calendar view and navigating between periods is significantly faster for large datasets. See [Bases Calendar View](./features/views/bases-calendar-view.md).
-- **Bases Calendar View layout**: The calendar embed inside Bases now uses a contained scroll context with a fixed height, so the toolbar and day headers stay visible when scrolling through the time grid. See [Bases Calendar View](./features/views/bases-calendar-view.md).
 - **Heatmap cell keyboard navigation**: Click any heatmap cell to select it, then use arrow keys to move between cells. Navigation wraps across columns when reaching grid edges. Click the same cell again to deselect. See [Heatmap](./features/views/heatmap.md).
 - **Integration event deletion progress**: Deleting a CalDAV account or ICS subscription with synced events now shows a progress modal with a progress bar, per-file status updates, and a completion summary. See [Integrations](./features/advanced/integrations.md).
 - **Sync notification clarity**: Sync notifications now show "Sync complete — Account: 3 created, 1 updated" instead of the ambiguous "Account: 3 created" format. See [Integrations](./features/advanced/integrations.md).
 - **CalDAV edit modal shows calendar names**: The calendar selector in the CalDAV edit modal now shows human-readable calendar names instead of raw URLs. See [Integrations](./features/advanced/integrations.md).
-
 - **Locale setting rendered as dropdown**: The locale setting now displays as a dropdown selector instead of a free-text field, making it easier to pick from supported languages. See [Calendar UI](./configuration/calendar-ui.md).
 - **Category rename/delete progress modal**: Renaming or deleting a category now shows a progress modal with a progress bar instead of just disabling the button. See [Categories](./features/organization/categories.md).
 - **Gantt bar label wrapping**: Long event titles in the Gantt view now word-wrap inside the bar instead of overflowing to the right, keeping the layout compact. See [Gantt View](./features/views/gantt.md).
@@ -29,11 +30,11 @@ All notable changes to this project will be documented here.
 ### Fixed
 - **Sort Date propagating from source recurring event to all instances**: Sort Date is now excluded from frontmatter propagation and computed individually per instance. See [Recurring Events](./features/events/recurring-dsl.md).
 - **Page header actions cleanup**: Removed actions that don't work well as standalone buttons (batch operations, focused event actions, focus/filter commands, toggle untracked, timeline, heatmap). Added "Show Interval in Bases" to defaults. See [Page Header Actions](./features/calendar/calendar-view.md).
-- **ICS export shifting event times by the local UTC offset**: Exported events were shifted by the user's timezone offset (e.g., 1 hour earlier in UTC+1) because internal ISO strings without a Z suffix were interpreted as local time by `new Date()`. A UTC round-trip (export + import with UTC) now preserves exact times. See [Import & Export](./features/advanced/integrations.md).
+- **ICS export shifting event times by the local UTC offset**: Exported events were shifted by the user's timezone offset (e.g., 1 hour earlier in UTC+1)  and were interpreted as local time. See [Import & Export](./features/advanced/integrations.md).
 - **Filter expressions rejecting events when referenced properties are missing**: Filter expressions like `_Archived !== true` or `Status !== 'Inbox'` incorrectly rejected events that didn't have the referenced property in their frontmatter. Missing properties now evaluate as `undefined` instead of failing, so `_Archived !== true` correctly passes for events without an `_Archived` property. See [Rules & Filters](./features/organization/filtering.md).
 - **Highlight upcoming event not updating after changes**: The upcoming event highlight stopped applying after dragging, resizing, or editing events — it only worked on initial load. The highlight now correctly reapplies whenever events are re-rendered. See [Calendar View](./features/calendar/calendar-view.md).
 - **Changing "max events per day" breaking event rendering**: Changing the desktop or mobile max events per day setting applied the FullCalendar option but did not trigger a full event refresh, leaving the calendar in a stale state where new events stopped appearing. The setting change now forces a complete re-render. See [Calendar UI](./configuration/calendar-ui.md).
-- **Batch frontmatter edit not applying new properties**: Adding a new frontmatter property via batch edit showed a success notice but did not actually write the property. The submit hotkey also discarded all input. Both issues are now fixed. See [Batch Operations](./features/management/batch-operations.md).
+- **Batch frontmatter edit not applying new properties**: Adding a new frontmatter property via batch edit showed a success notice but did not actually write the property. See [Batch Operations](./features/management/batch-operations.md).
 - **Timeline all-day events overlapping**: All-day and timed events in the timeline view were rendered as points with no width, causing them to overlap instead of stacking vertically. Events now render as compact 4-hour range blocks with proper start/end times. See [Timeline](./features/views/timeline.md).
 - **Timeline event text color ignoring settings**: Timeline events always used the default text color regardless of background color contrast. They now use the same primary/alternative text color logic as the calendar view. See [Timeline](./features/views/timeline.md).
 
@@ -42,7 +43,6 @@ All notable changes to this project will be documented here.
 - **Duplicate Recurring Instance command and Ignore Recurring property**: The "Duplicate recurring instance" context menu option and the `Ignore Recurring` frontmatter property have been removed. The feature was redundant — users can simply clone the event instead, which creates a standalone copy tracked by name. See [Recurring Events](./features/events/recurring-dsl.md).
 - **"Generate past events" skipping today's instance**: When a recurring event had "Generate Past Events" enabled, instances were generated for past days and future days, but today's occurrence was skipped. Today's instance is now correctly included. See [Recurring Events](./features/events/recurring-dsl.md).
 - **Preview button shown for virtual events**: The hover preview context menu option was visible on virtual events, which have no backing file to preview. It is now hidden for virtual events. See [Virtual Events](./features/events/virtual-events.md).
-- **Changing desktop/mobile events per day broke calendar rendering**: Changing the "Desktop events per day" or "Mobile events per day" setting caused the calendar to stop rendering newly created events until a full plugin reload. The setting now applies immediately and triggers a proper event re-render. See [Calendar View](./features/calendar/calendar-view.md).
 - **Max events per day off by one**: Setting "max events per day" to 3 showed only 2 events plus a "+2 more" link instead of 3 events plus "+1 more". The "+more" link was incorrectly counted as one of the event rows. See [Calendar View](./features/calendar/calendar-view.md).
 - **Name series and category series propagation not detecting property changes**: Editing frontmatter through Obsidian's Properties view did not trigger propagation to name series or category series members. See [Event Groups](./features/events/event-groups.md).
 - **Event groups settings scroll position lost on toggle**: Toggling a mutually exclusive setting (e.g., "Propagate frontmatter to name series") in the Event Groups settings tab caused the page to jump, losing the current scroll position. The scroll position is now preserved across re-renders. See [Event Groups](./features/events/event-groups.md).
