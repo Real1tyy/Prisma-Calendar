@@ -1049,7 +1049,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Heat Map](features/views/heatmap)
+### [Heatmap](features/views/heatmap)
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls
@@ -1065,7 +1065,7 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
-### [Heat Map — Events Modal](features/views/heatmap)
+### [Heatmap — Events Modal](features/views/heatmap)
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video
     controls

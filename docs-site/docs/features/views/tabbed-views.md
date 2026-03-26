@@ -20,7 +20,7 @@ The default tab. Shows the full Prisma Calendar with all views (month, week, day
 
 Displays all events on a horizontal vis-timeline. Navigate by date, pan and zoom directly.
 
-## [Heat Map](./heatmap.md) (Pro)
+## [Heatmap](./heatmap.md) (Pro)
 
 A GitHub-style contribution heatmap showing event density over time.
 

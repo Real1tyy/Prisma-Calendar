@@ -1,13 +1,13 @@
 ---
-sidebar_label: Heat Map
+sidebar_label: Heatmap
 ---
 
-# Heat Map (Pro)
+# Heatmap (Pro)
 
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
 :::info Pro Feature
-The Heat Map tab requires [Prisma Calendar Pro](../free-vs-pro.md).
+The Heatmap tab requires [Prisma Calendar Pro](../free-vs-pro.md).
 :::
 
 A GitHub-style contribution heatmap showing event density over time. See patterns, streaks, and activity density at a glance — then click any day to drill into its events.
@@ -84,6 +84,6 @@ The heatmap is also available inside the events modal, giving you a quick densit
 
 ## Command
 
-Use **Show all events heatmap** (`Prisma Calendar: Show all events heatmap`) to switch directly to the Heat Map tab from anywhere.
+Use **Show all events heatmap** (`Prisma Calendar: Show all events heatmap`) to switch directly to the Heatmap tab from anywhere.
 
-The Heat Map is also available as a toolbar button (not enabled by default — add it via Settings → Toolbar).
+The Heatmap is also available as a toolbar button (not enabled by default — add it via Settings → Toolbar).
