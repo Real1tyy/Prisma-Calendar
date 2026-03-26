@@ -197,7 +197,10 @@ const PropsSettingsSchema = z
 			.string()
 			.catch(PROP_DEFAULTS.source)
 			.describe("Frontmatter property name for linking recurring event instances to their source event file"),
-		instanceDateProp: z.string().catch("Recurring Instance Date"),
+		instanceDateProp: z
+			.string()
+			.catch(PROP_DEFAULTS.instanceDate)
+			.describe("Frontmatter property name for the date of a physical recurring event instance"),
 		frontmatterDisplayProperties: z
 			.array(z.string())
 			.catch([])
@@ -278,8 +281,14 @@ const PropsSettingsSchema = z
 			.describe(
 				"Frontmatter property name for generating past recurring instances from source event start date (set to true to enable)"
 			),
-		caldavProp: z.string().catch("CalDAV"),
-		icsSubscriptionProp: z.string().catch("ICSSubscription"),
+		caldavProp: z
+			.string()
+			.catch(PROP_DEFAULTS.caldav)
+			.describe("Frontmatter property name for CalDAV integration metadata on synced events"),
+		icsSubscriptionProp: z
+			.string()
+			.catch(PROP_DEFAULTS.icsSubscription)
+			.describe("Frontmatter property name for ICS subscription metadata on synced events"),
 		iconProp: z
 			.string()
 			.catch(PROP_DEFAULTS.icon)

@@ -118,9 +118,12 @@ export const PROP_DEFAULTS = {
 	break: "Break",
 	icon: "Icon",
 	prerequisite: "Prerequisite",
+	instanceDate: "Recurring Instance Date",
 	minutesBefore: "Minutes Before",
 	daysBefore: "Days Before",
 	alreadyNotified: "Already Notified",
+	caldav: "CalDAV",
+	icsSubscription: "ICSSubscription",
 } as const;
 
 // Shared defaults used in both schema definitions and settings UI fallbacks

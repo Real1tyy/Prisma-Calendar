@@ -108,6 +108,11 @@ export class PropertiesSettings {
 		);
 		this.ui.addSchemaField(
 			containerEl,
+			{ instanceDateProp: S.instanceDateProp },
+			{ name: "Recurring instance date property", placeholder: PROP_DEFAULTS.instanceDate }
+		);
+		this.ui.addSchemaField(
+			containerEl,
 			{ futureInstancesCountProp: S.futureInstancesCountProp },
 			{ name: "Future instances count property", placeholder: PROP_DEFAULTS.futureInstancesCount }
 		);
@@ -173,6 +178,16 @@ export class PropertiesSettings {
 			containerEl,
 			{ alreadyNotifiedProp: S.alreadyNotifiedProp },
 			{ name: "Already notified property", placeholder: PROP_DEFAULTS.alreadyNotified }
+		);
+		this.ui.addSchemaField(
+			containerEl,
+			{ caldavProp: S.caldavProp },
+			{ name: "CalDAV property", placeholder: PROP_DEFAULTS.caldav }
+		);
+		this.ui.addSchemaField(
+			containerEl,
+			{ icsSubscriptionProp: S.icsSubscriptionProp },
+			{ name: "ICS subscription property", placeholder: PROP_DEFAULTS.icsSubscription }
 		);
 
 		const eventTypesDesc = containerEl.createDiv(cls("settings-info-box"));
