@@ -1,7 +1,32 @@
-import type { ColorEvaluator } from "@real1ty-obsidian-plugins";
+import {
+	type ColorEvaluator,
+	hasVeryCloseShadeFromRgb,
+	parseColorToRgb,
+	type RgbColor,
+} from "@real1ty-obsidian-plugins";
 
 import type { SingleCalendarConfig } from "../types/settings";
 import { normalizeFrontmatterForColorEvaluation } from "./expression-utils";
+
+export function createTextColorResolver(): (
+	eventColor: string | undefined,
+	settings: SingleCalendarConfig
+) => string | undefined {
+	let cachedTextColorRgb: RgbColor | null = null;
+	let cachedTextColorSource: string | null = null;
+
+	return (eventColor, settings) => {
+		if (!eventColor) return undefined;
+		if (cachedTextColorSource !== settings.eventTextColor) {
+			cachedTextColorRgb = parseColorToRgb(settings.eventTextColor);
+			cachedTextColorSource = settings.eventTextColor;
+		}
+		if (!cachedTextColorRgb) return settings.eventTextColor;
+		return hasVeryCloseShadeFromRgb(cachedTextColorRgb, eventColor)
+			? settings.eventTextColorAlt
+			: settings.eventTextColor;
+	};
+}
 
 interface EventColorContext {
 	settingsStore: { currentSettings: SingleCalendarConfig };

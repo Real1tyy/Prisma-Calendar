@@ -1,12 +1,4 @@
-import {
-	cls,
-	ColorEvaluator,
-	hasVeryCloseShadeFromRgb,
-	parseColorToRgb,
-	type RgbColor,
-	showModal,
-	toLocalISOString,
-} from "@real1ty-obsidian-plugins";
+import { cls, ColorEvaluator, showModal, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { DataSet } from "vis-data";
 import { type DataItem, Timeline, type TimelineOptions } from "vis-timeline";
@@ -14,7 +6,7 @@ import { type DataItem, Timeline, type TimelineOptions } from "vis-timeline";
 import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { CalendarEvent } from "../../../types/calendar";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import { resolveEventColor } from "../../../utils/event-color";
+import { createTextColorResolver, resolveEventColor } from "../../../utils/event-color";
 import { cleanupTitle } from "../../../utils/event-naming";
 import { buildEventTooltip } from "../../../utils/format";
 import { type PreviewEventData, showEventPreviewModal } from "../preview/event-preview";
@@ -196,20 +188,7 @@ export function renderTimelineInto(
 		showEventPreviewModal(app, bundle, previewEvent);
 	}
 
-	let cachedTextColorRgb: RgbColor | null = null;
-	let cachedTextColorSource: string | null = null;
-
-	function resolveTextColor(eventColor: string | undefined, settings: SingleCalendarConfig): string | undefined {
-		if (!eventColor) return undefined;
-		if (cachedTextColorSource !== settings.eventTextColor) {
-			cachedTextColorRgb = parseColorToRgb(settings.eventTextColor);
-			cachedTextColorSource = settings.eventTextColor;
-		}
-		if (!cachedTextColorRgb) return settings.eventTextColor;
-		return hasVeryCloseShadeFromRgb(cachedTextColorRgb, eventColor)
-			? settings.eventTextColorAlt
-			: settings.eventTextColor;
-	}
+	const resolveTextColor = createTextColorResolver();
 
 	function toItem(event: CalendarEvent, settings: SingleCalendarConfig) {
 		const startDate = new Date(event.start);
