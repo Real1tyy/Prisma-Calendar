@@ -1,36 +1,32 @@
 import ExecutionEnvironment from "@docusaurus/ExecutionEnvironment";
 import type { ClientModule } from "@docusaurus/types";
 
-const ANALYTICS_ENDPOINT = "https://h.matejvavroproductivity.com";
+const ANALYTICS_ENDPOINT = "https://h.matejvavroproductivity.com/b";
 const TRACKING_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "ref"];
 
-type EventCategory = "click" | "download" | "search" | "navigation" | "conversion" | "engagement" | "error";
-
 interface UtmParams {
+	utmCampaign: string | null;
 	utmSource: string | null;
 	utmMedium: string | null;
 	utmContent: string | null;
+	utmTerm: string | null;
 }
 
-// First-touch session attribution — cached once from the initial landing URL before cleanup
 let sessionAttribution: UtmParams | null = null;
 let sessionPageCount = 0;
 let pageEntryTime = 0;
 let maxScrollDepth = 0;
 let currentPath = "";
 
-function getPluginSlug(): string {
-	const segment = window.location.pathname.split("/")[1];
-	return segment?.toLowerCase() || "unknown";
-}
-
 function getSessionAttribution(): UtmParams {
 	if (!sessionAttribution) {
 		const params = new URLSearchParams(window.location.search);
 		sessionAttribution = {
-			utmSource: params.get("utm_source") || `${getPluginSlug()}-docs`,
-			utmMedium: params.get("utm_medium") || "docs",
-			utmContent: params.get("utm_content") || getPluginSlug(),
+			utmCampaign: params.get("utm_campaign") || null,
+			utmSource: params.get("utm_source") || null,
+			utmMedium: params.get("utm_medium") || null,
+			utmContent: params.get("utm_content") || null,
+			utmTerm: params.get("utm_term") || null,
 		};
 	}
 	return sessionAttribution;
@@ -53,13 +49,9 @@ function cleanTrackingParams(): void {
 	}
 }
 
-function send(path: string, body: Record<string, unknown>): void {
-	fetch(`${ANALYTICS_ENDPOINT}${path}`, {
-		method: "POST",
-		headers: { "Content-Type": "text/plain" },
-		body: JSON.stringify(body),
-		keepalive: true,
-	}).catch(() => {});
+function send(body: Record<string, unknown>): void {
+	const blob = new Blob([JSON.stringify(body)], { type: "application/json" });
+	navigator.sendBeacon(ANALYTICS_ENDPOINT, blob);
 }
 
 function getScrollDepth(): number {
@@ -83,7 +75,7 @@ function flushPageEngagement(): void {
 	const duration = getDuration();
 	if (duration < 1) return;
 
-	send("/b", {
+	send({
 		path: currentPath,
 		referrer: null,
 		previousPath: null,
@@ -94,7 +86,6 @@ function flushPageEngagement(): void {
 		isEngagement: true,
 	});
 
-	// Prevent duplicate flushes for the same page (route change + visibility hidden)
 	pageEntryTime = 0;
 	maxScrollDepth = 0;
 }
@@ -102,14 +93,14 @@ function flushPageEngagement(): void {
 function resetPageTracking(): void {
 	pageEntryTime = Date.now();
 	maxScrollDepth = 0;
-	currentPath = window.location.pathname;
+	currentPath = window.location.href;
 }
 
 function trackPageView(isInitial: boolean, previousPath?: string | null): void {
 	sessionPageCount++;
 	resetPageTracking();
-	send("/b", {
-		path: window.location.pathname,
+	send({
+		path: window.location.href,
 		referrer: isInitial ? document.referrer || null : null,
 		previousPath: isInitial ? null : previousPath ?? null,
 		...getSessionAttribution(),
@@ -117,25 +108,6 @@ function trackPageView(isInitial: boolean, previousPath?: string | null): void {
 		duration: null,
 		sessionPageCount,
 		isEngagement: false,
-	});
-}
-
-export function trackEvent(
-	category: EventCategory,
-	action: string,
-	label?: string | null,
-	value?: number | null,
-): void {
-	const utm = getSessionAttribution();
-	send("/d", {
-		category,
-		action,
-		label: label ?? null,
-		path: window.location.pathname,
-		utmSource: utm.utmSource,
-		utmMedium: utm.utmMedium,
-		utmContent: utm.utmContent,
-		value: value ?? null,
 	});
 }
 
@@ -154,40 +126,6 @@ function setupScrollTracking(): void {
 	});
 }
 
-function setupExternalLinkTracking(): void {
-	document.addEventListener("click", (e) => {
-		const anchor = (e.target as HTMLElement).closest("a[href]");
-		if (!anchor) return;
-
-		const href = anchor.getAttribute("href");
-		if (!href || !href.startsWith("http")) return;
-
-		try {
-			const url = new URL(href);
-			if (url.hostname === window.location.hostname) return;
-
-			if (url.hostname.includes("youtube.com") || url.hostname.includes("youtu.be")) {
-				trackEvent("navigation", "youtube_click", href);
-			} else {
-				trackEvent("navigation", "external_link", href);
-			}
-		} catch {
-			// Malformed URL — ignore
-		}
-	});
-}
-
-function setupCodeCopyTracking(): void {
-	document.addEventListener("click", (e) => {
-		const target = e.target as HTMLElement;
-		const copyButton = target.closest(".clean-btn[class*='copy']") ?? target.closest("button[class*='copy']");
-		if (!copyButton) return;
-		const codeBlock = copyButton.closest(".theme-code-block");
-		const language = codeBlock?.querySelector("[class*='language-']")?.className.match(/language-(\w+)/)?.[1] ?? null;
-		trackEvent("engagement", "code_copy", language);
-	});
-}
-
 function setupUnloadFlush(): void {
 	const flush = () => flushPageEngagement();
 
@@ -198,15 +136,11 @@ function setupUnloadFlush(): void {
 	window.addEventListener("pagehide", flush);
 }
 
-// Guard browser globals — only run in browser, not during SSR
 if (ExecutionEnvironment.canUseDOM) {
-	// Cache UTM params BEFORE cleaning them from the URL
 	getSessionAttribution();
-	trackPageView(true);
 	cleanTrackingParams();
+	trackPageView(true);
 	setupScrollTracking();
-	setupExternalLinkTracking();
-	setupCodeCopyTracking();
 	setupUnloadFlush();
 }
 
@@ -214,7 +148,10 @@ const clientModule: ClientModule = {
 	onRouteDidUpdate({ location, previousLocation }) {
 		if (location.pathname !== previousLocation?.pathname) {
 			flushPageEngagement();
-			trackPageView(false, previousLocation?.pathname ?? null);
+			const prevFullUrl = previousLocation
+				? `${window.location.origin}${previousLocation.pathname}`
+				: null;
+			trackPageView(false, prevFullUrl);
 		}
 	},
 };
