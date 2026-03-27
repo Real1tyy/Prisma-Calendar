@@ -37,25 +37,25 @@ export function buildSettingsFooterLinks(slug: PluginSlug, config: PluginLinksCo
 	if (config.productPageUrl) {
 		links.push({
 			text: "Product Page",
-			href: buildUtmUrl(config.productPageUrl, slug, "plugin", "in_app", "settings_product_page"),
+			href: buildUtmUrl(config.productPageUrl, slug, "plugin", "settings", "product_page"),
 		});
 	}
 	links.push({
 		text: "Documentation",
-		href: buildUtmUrl(config.docsBaseUrl, slug, "plugin", "in_app", "settings_documentation"),
+		href: buildUtmUrl(config.docsBaseUrl, slug, "plugin", "settings", "documentation"),
 	});
 	links.push({
 		text: "Changelog",
-		href: buildUtmUrl(`${config.docsBaseUrl}/changelog`, slug, "plugin", "in_app", "settings_changelog"),
+		href: buildUtmUrl(`${config.docsBaseUrl}/changelog`, slug, "plugin", "settings", "changelog"),
 	});
 	links.push({
 		text: "Support",
-		href: buildUtmUrl("https://matejvavroproductivity.com/support/", slug, "plugin", "in_app", "settings_support"),
+		href: buildUtmUrl("https://matejvavroproductivity.com/support/", slug, "plugin", "settings", "support"),
 	});
 	if (config.youtubeUrl) {
 		links.push({
 			text: "Video Tutorials",
-			href: buildUtmUrl(config.youtubeUrl, slug, "plugin", "in_app", "settings_youtube"),
+			href: buildUtmUrl(config.youtubeUrl, slug, "plugin", "settings", "youtube"),
 		});
 	}
 
@@ -73,18 +73,16 @@ export function buildWhatsNewLinks(
 	youtube: string;
 } {
 	return {
-		support: buildUtmUrl("https://matejvavroproductivity.com/support/", slug, "plugin", "in_app", "whats_new_support"),
-		changelog: buildUtmUrl(`${config.docsBaseUrl}/changelog`, slug, "plugin", "in_app", "whats_new_changelog"),
-		documentation: buildUtmUrl(config.docsBaseUrl, slug, "plugin", "in_app", "whats_new_documentation"),
-		...(config.githubUrl
-			? { github: buildUtmUrl(config.githubUrl, slug, "plugin", "in_app", "whats_new_github") }
-			: {}),
+		support: buildUtmUrl("https://matejvavroproductivity.com/support/", slug, "plugin", "whats_new", "support"),
+		changelog: buildUtmUrl(`${config.docsBaseUrl}/changelog`, slug, "plugin", "whats_new", "changelog"),
+		documentation: buildUtmUrl(config.docsBaseUrl, slug, "plugin", "whats_new", "documentation"),
+		...(config.githubUrl ? { github: buildUtmUrl(config.githubUrl, slug, "plugin", "whats_new", "github") } : {}),
 		youtube: buildUtmUrl(
 			"https://www.youtube.com/@MatejVavroProductivity?sub_confirmation=1",
 			slug,
 			"plugin",
-			"in_app",
-			"whats_new_youtube"
+			"whats_new",
+			"youtube"
 		),
 	};
 }
