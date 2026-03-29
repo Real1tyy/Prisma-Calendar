@@ -50,39 +50,14 @@ Prisma is production-ready, fully featured, and built for users who demand absol
 
 ---
 
-## 📸 Screenshots
-
-### Event Creation & Editing
+## 📸 Gallery
 
 <p align="center">
-<img src="docs-site/static/img/create_event_modal.png" alt="Create Event Modal" width="45%">
-<img src="docs-site/static/img/edit_event_modal.png" alt="Edit Event Modal" width="45%">
+<img src="docs-site/static/video/HeatmapViewPreview.gif" alt="Heatmap & Timeline View" width="49%">
+<img src="docs-site/static/video/DailyStatsViewPreview.gif" alt="Day View & Statistics" width="49%">
 </p>
 
-_Create and edit events with full frontmatter support, recurring event options, and built-in time tracker_
-
-### Weekly Statistics
-
-![Weekly Statistics](docs-site/static/img/statspie.png)
-_Visual time tracking with pie charts and detailed breakdown tables_
-
-### Pro Views
-
-<p align="center">
-<img src="docs-site/static/img/pro-previews/dashboard.png" alt="Dashboard" width="45%">
-<img src="docs-site/static/img/pro-previews/heatmap.png" alt="Heatmap View" width="45%">
-</p>
-
-_Dashboard with pie charts, stat cards, and sortable tables — Heatmap with GitHub-style contribution view_
-
-<p align="center">
-<img src="docs-site/static/img/pro-previews/gantt.png" alt="Gantt View" width="45%">
-<img src="docs-site/static/img/pro-previews/ai-chat.png" alt="AI Chat" width="45%">
-</p>
-
-_Gantt view with dependency arrows — AI Chat sidebar with Claude and GPT_
-
-Check out the [complete screenshots gallery](https://real1tyy.github.io/Prisma-Calendar/gallery?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_gallery) in the documentation to see all the plugin's visuals, including batch operations, settings, and more.
+Check out the [full gallery](https://real1tyy.github.io/Prisma-Calendar/gallery?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_gallery) in the documentation for more visuals.
 
 ---
 

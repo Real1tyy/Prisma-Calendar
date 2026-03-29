@@ -61,25 +61,16 @@ Prisma is production-ready, fully featured, and built for users who demand absol
 
 **[YouTube Playlist →](https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4)** — All Prisma Calendar videos.
 
-## Preview
+## Gallery
 
 </div>
 
-<div style={{"display": "flex", "flexWrap": "wrap", "gap": "1em", "justifyContent": "center", "marginBottom": "1em"}}>
-  <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
-    <source src={useBaseUrl("/video/StatisticPiechart.webm")} type="video/webm" />
+<div style={{"marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "borderRadius": "8px", "marginBottom": "1em"}}>
+    <source src={useBaseUrl("/video/HeatmapViewPreview.mp4")} type="video/mp4" />
   </video>
-  <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
-    <source src={useBaseUrl("/video/BatchFull.webm")} type="video/webm" />
-  </video>
-</div>
-
-<div style={{"display": "flex", "flexWrap": "wrap", "gap": "1em", "justifyContent": "center", "marginBottom": "2em"}}>
-  <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
-    <source src={useBaseUrl("/video/ReaccuringEvents.webm")} type="video/webm" />
-  </video>
-  <video controls autoPlay loop muted playsInline style={{"flex": "1 1 45%", "minWidth": "300px", "maxWidth": "50%", "borderRadius": "8px"}}>
-    <source src={useBaseUrl("/video/UntrackedEvents.webm")} type="video/webm" />
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/DailyStatsViewPreview.mp4")} type="video/mp4" />
   </video>
 </div>
 
