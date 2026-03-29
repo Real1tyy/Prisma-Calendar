@@ -82,8 +82,9 @@ export class SingleCalendarSettings {
 					href: buildUtmUrl(
 						"https://matejvavroproductivity.com/tools/prisma-calendar/",
 						"prisma-calendar",
+						"plugin",
 						"settings",
-						"product-page"
+						"product_page"
 					),
 				},
 				{
@@ -91,6 +92,7 @@ export class SingleCalendarSettings {
 					href: buildUtmUrl(
 						"https://real1tyy.github.io/Prisma-Calendar/",
 						"prisma-calendar",
+						"plugin",
 						"settings",
 						"documentation"
 					),
@@ -100,6 +102,7 @@ export class SingleCalendarSettings {
 					href: buildUtmUrl(
 						"https://real1tyy.github.io/Prisma-Calendar/changelog",
 						"prisma-calendar",
+						"plugin",
 						"settings",
 						"changelog"
 					),
@@ -109,6 +112,7 @@ export class SingleCalendarSettings {
 					href: buildUtmUrl(
 						"https://real1tyy.github.io/Prisma-Calendar/gallery",
 						"prisma-calendar",
+						"plugin",
 						"settings",
 						"gallery"
 					),
@@ -118,8 +122,9 @@ export class SingleCalendarSettings {
 					href: buildUtmUrl(
 						"https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro",
 						"prisma-calendar",
+						"plugin",
 						"settings",
-						"free-vs-pro"
+						"free_vs_pro"
 					),
 				},
 				{
@@ -127,19 +132,27 @@ export class SingleCalendarSettings {
 					href: buildUtmUrl(
 						"https://matejvavroproductivity.com/tools/",
 						"prisma-calendar",
+						"plugin",
 						"settings",
-						"other-plugins"
+						"other_plugins"
 					),
 				},
 				{
 					text: "Support",
-					href: buildUtmUrl("https://matejvavroproductivity.com/support/", "prisma-calendar", "settings", "support"),
+					href: buildUtmUrl(
+						"https://matejvavroproductivity.com/support/",
+						"prisma-calendar",
+						"plugin",
+						"settings",
+						"support"
+					),
 				},
 				{
 					text: "Playlist",
 					href: buildUtmUrl(
 						"https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4",
 						"prisma-calendar",
+						"plugin",
 						"settings",
 						"youtube"
 					),

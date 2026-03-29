@@ -14,7 +14,7 @@ It's not just a calendar. It's a way to **see your entire vault through time**.
 
 Four dedicated views — Calendar, Timeline, Gantt, and Heatmap — each built for a different way of thinking about time. A full scripting API. External integrations sync. Recurring events that generate real notes. Batch operations, undo/redo history, and time-based analytics accross multiple series.
 
-**[View Full Product Page →](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=prisma-calendar&utm_medium=readme&utm_content=product-page)**
+**[View Full Product Page →](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_product_page)**
 
 </div>
 
@@ -38,17 +38,17 @@ Prisma is production-ready, fully featured, and built for users who demand absol
 
 ## 🎬 Video Tutorials
 
-**[View All Video Tutorials →](https://real1tyy.github.io/Prisma-Calendar/videos?utm_source=prisma-calendar&utm_medium=readme&utm_content=video-tutorials)**
+**[View All Video Tutorials →](https://real1tyy.github.io/Prisma-Calendar/videos?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_video_tutorials)**
 
 ### Part 1: Feature Showcase — Core Capabilities
 
-<a href="https://www.youtube.com/watch?v=aULuB6petbU" target="_blank">
+<a href="https://www.youtube.com/watch?v=aULuB6petbU&utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_youtube_demo" target="_blank">
   <img src="https://img.youtube.com/vi/aULuB6petbU/maxresdefault.jpg" alt="Prisma Calendar - Feature Showcase (Part 1)" style="width:100%;">
 </a>
 
 **Core Features Walkthrough**: This video covers many of the fundamental features of Prisma Calendar including event creation, editing, batch operations, undo/redo system, recurring events, color rules, and more.
 
-For the **Full Tutorial** (Zero to Mastery), **Part 2** (Intelligence & Automation), and **Part 3** (Advanced Workflow Tools), visit the [complete video tutorial collection](https://real1tyy.github.io/Prisma-Calendar/videos?utm_source=prisma-calendar&utm_medium=readme&utm_content=video-collection).
+For the **Full Tutorial** (Zero to Mastery), **Part 2** (Intelligence & Automation), and **Part 3** (Advanced Workflow Tools), visit the [complete video tutorial collection](https://real1tyy.github.io/Prisma-Calendar/videos?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_video_collection).
 
 </div>
 
@@ -86,18 +86,18 @@ _Dashboard with pie charts, stat cards, and sortable tables — Heatmap with Git
 
 _Gantt view with dependency arrows — AI Chat sidebar with Claude and GPT_
 
-Check out the [complete screenshots gallery](https://real1tyy.github.io/Prisma-Calendar/gallery?utm_source=prisma-calendar&utm_medium=readme&utm_content=gallery) in the documentation to see all the plugin's visuals, including batch operations, settings, and more.
+Check out the [complete screenshots gallery](https://real1tyy.github.io/Prisma-Calendar/gallery?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_gallery) in the documentation to see all the plugin's visuals, including batch operations, settings, and more.
 
 ---
 
 ## 📚 Documentation
 
-**[View Full Documentation →](https://real1tyy.github.io/Prisma-Calendar/?utm_source=prisma-calendar&utm_medium=readme&utm_content=documentation)**
+**[View Full Documentation →](https://real1tyy.github.io/Prisma-Calendar/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_documentation)**
 
 Quick Links:
 
-- [Installation](https://real1tyy.github.io/Prisma-Calendar/installation?utm_source=prisma-calendar&utm_medium=readme&utm_content=installation) • [Quickstart](https://real1tyy.github.io/Prisma-Calendar/quickstart?utm_source=prisma-calendar&utm_medium=readme&utm_content=quickstart) • [Configuration](https://real1tyy.github.io/Prisma-Calendar/configuration?utm_source=prisma-calendar&utm_medium=readme&utm_content=configuration)
-- [Features Overview](https://real1tyy.github.io/Prisma-Calendar/features/overview?utm_source=prisma-calendar&utm_medium=readme&utm_content=features-overview) • [FAQ](https://real1tyy.github.io/Prisma-Calendar/faq?utm_source=prisma-calendar&utm_medium=readme&utm_content=faq) • [Troubleshooting](https://real1tyy.github.io/Prisma-Calendar/troubleshooting?utm_source=prisma-calendar&utm_medium=readme&utm_content=troubleshooting)
+- [Installation](https://real1tyy.github.io/Prisma-Calendar/installation?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_installation) • [Quickstart](https://real1tyy.github.io/Prisma-Calendar/quickstart?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_quickstart) • [Configuration](https://real1tyy.github.io/Prisma-Calendar/configuration?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_configuration)
+- [Features Overview](https://real1tyy.github.io/Prisma-Calendar/features/overview?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_features_overview) • [FAQ](https://real1tyy.github.io/Prisma-Calendar/faq?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_faq) • [Troubleshooting](https://real1tyy.github.io/Prisma-Calendar/troubleshooting?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_troubleshooting)
 
 ---
 
@@ -179,7 +179,7 @@ Core features work on mobile without any problems. The design is responsive, and
 
 Install via **BRAT**, the **Obsidian Community Plugin store**, or manually from [GitHub Releases](https://github.com/Real1tyy/Prisma-Calendar/releases).
 
-**[Full installation guide →](https://real1tyy.github.io/Prisma-Calendar/installation?utm_source=prisma-calendar&utm_medium=readme&utm_content=installation-guide)**
+**[Full installation guide →](https://real1tyy.github.io/Prisma-Calendar/installation?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_installation_guide)**
 
 ## Free vs Pro
 
@@ -227,23 +227,23 @@ Prisma Calendar is free and fully-featured out of the box. No account, no trial 
 | **Unlimited Event Presets**  | Remove the 2-preset limit                                                                                                                |
 | **Priority Support**         | First in line for help and feature requests                                                                                              |
 
-[Learn more about Free vs Pro →](https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro?utm_source=prisma-calendar&utm_medium=readme&utm_content=free-vs-pro)
+[Learn more about Free vs Pro →](https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_free_vs_pro)
 
 ---
 
 ## Support & Sponsorship
 
-The best way to support Prisma Calendar is by purchasing the **[Advanced Features](https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro?utm_source=prisma-calendar&utm_medium=readme&utm_content=advanced-features)** license. You get powerful pro capabilities, priority support, and you directly fund the continued development of the plugin — allowing me to dedicate my time to maintaining and improving it.
+The best way to support Prisma Calendar is by purchasing the **[Advanced Features](https://real1tyy.github.io/Prisma-Calendar/features/free-vs-pro?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_advanced_features)** license. You get powerful pro capabilities, priority support, and you directly fund the continued development of the plugin — allowing me to dedicate my time to maintaining and improving it.
 
 You can also support the project through a donation:
 
-- [View all donation options](https://matejvavroproductivity.com/support/?utm_source=prisma-calendar&utm_medium=readme&utm_content=donation)
+- [View all donation options](https://matejvavroproductivity.com/support/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_donation)
 
 Every contribution, no matter the size, is greatly appreciated!
 
 ## Third-Party Independence
 
-Prisma Calendar is developed by [Matej Vavro](https://matejvavroproductivity.com/?utm_source=prisma-calendar&utm_medium=readme&utm_content=author) and is an independent, third-party product. **We are not affiliated with, endorsed by, or sponsored by Obsidian (Dynalist Inc.).** Prisma Calendar is a third-party community plugin. All references to "Obsidian" are for descriptive and compatibility purposes only.
+Prisma Calendar is developed by [Matej Vavro](https://matejvavroproductivity.com/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_author) and is an independent, third-party product. **We are not affiliated with, endorsed by, or sponsored by Obsidian (Dynalist Inc.).** Prisma Calendar is a third-party community plugin. All references to "Obsidian" are for descriptive and compatibility purposes only.
 
 ## Privacy & Telemetry
 
@@ -262,9 +262,9 @@ This data is used solely for license validation, activation seat management (up 
 
 For full details, please review our legal documents:
 
-- [Privacy Policy](https://matejvavroproductivity.com/privacy/?utm_source=prisma-calendar&utm_medium=readme&utm_content=privacy)
-- [Terms of Service](https://matejvavroproductivity.com/terms/?utm_source=prisma-calendar&utm_medium=readme&utm_content=terms)
-- [Legal Notice / Imprint](https://matejvavroproductivity.com/legal/?utm_source=prisma-calendar&utm_medium=readme&utm_content=legal)
+- [Privacy Policy](https://matejvavroproductivity.com/privacy/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_privacy)
+- [Terms of Service](https://matejvavroproductivity.com/terms/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_terms)
+- [Legal Notice / Imprint](https://matejvavroproductivity.com/legal/?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_legal)
 
 ## License
 

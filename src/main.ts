@@ -609,25 +609,29 @@ export default class CustomCalendarPlugin extends Plugin {
 					productPage: buildUtmUrl(
 						"https://matejvavroproductivity.com/tools/prisma-calendar/",
 						"prisma-calendar",
-						"whats-new",
-						"product-page"
+						"plugin",
+						"whats_new",
+						"product_page"
 					),
 					support: buildUtmUrl(
 						"https://real1tyy.github.io/Prisma-Calendar/support",
 						"prisma-calendar",
-						"whats-new",
+						"plugin",
+						"whats_new",
 						"support"
 					),
 					changelog: buildUtmUrl(
 						"https://real1tyy.github.io/Prisma-Calendar/changelog",
 						"prisma-calendar",
-						"whats-new",
+						"plugin",
+						"whats_new",
 						"changelog"
 					),
 					documentation: buildUtmUrl(
 						"https://real1tyy.github.io/Prisma-Calendar/",
 						"prisma-calendar",
-						"whats-new",
+						"plugin",
+						"whats_new",
 						"documentation"
 					),
 				},
@@ -640,8 +644,9 @@ export default class CustomCalendarPlugin extends Plugin {
 						href: buildUtmUrl(
 							"https://matejvavroproductivity.com/tools/prisma-calendar/",
 							"prisma-calendar",
-							"whats-new",
-							"product-page"
+							"plugin",
+							"whats_new",
+							"product_page"
 						),
 					},
 				},

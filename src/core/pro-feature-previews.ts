@@ -46,13 +46,14 @@ export function getFeatureDocUrl(featureKey: ProFeatureKey): string {
 	return buildUtmUrl(
 		`${DOCS_BASE_URL}/${PRO_FEATURE_CONFIG[featureKey].docPath}`,
 		"prisma-calendar",
-		"pro-gate",
+		"plugin",
+		"pro_gate",
 		featureContent(featureKey)
 	);
 }
 
 export function getFeaturePurchaseUrl(featureKey: ProFeatureKey): string {
-	return buildUtmUrl(PRO_PURCHASE_URL, "prisma-calendar", "pro-gate", featureContent(featureKey));
+	return buildUtmUrl(PRO_PURCHASE_URL, "prisma-calendar", "plugin", "pro_gate", featureContent(featureKey));
 }
 
 export function getProGateUrls(featureKey: ProFeatureKey): { docsUrl: string; purchaseUrl: string } {

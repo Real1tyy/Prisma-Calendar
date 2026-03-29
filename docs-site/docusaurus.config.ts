@@ -115,17 +115,17 @@ const config: Config = {
 					position: "left",
 				},
 				{
-					href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4",
+					href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=youtube_playlist",
 					label: "YouTube Playlist",
 					position: "right",
 				},
 				{
-					href: "https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=prisma-calendar-docs&utm_medium=navbar&utm_content=website",
+					href: "https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=website",
 					label: "Website",
 					position: "right",
 				},
 				{
-					href: "https://matejvavroproductivity.com/tools/?utm_source=prisma-calendar-docs&utm_medium=navbar&utm_content=other-plugins",
+					href: "https://matejvavroproductivity.com/tools/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=other_plugins",
 					label: "Other Plugins",
 					position: "right",
 				},
@@ -202,19 +202,19 @@ const config: Config = {
 						},
 						{
 							label: "YouTube Playlist",
-							href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4",
+							href: "https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=youtube_playlist",
 						},
 						{
 							label: "YouTube Channel",
-							href: "https://www.youtube.com/@MatejVavroProductivity?sub_confirmation=1",
+							href: "https://www.youtube.com/@MatejVavroProductivity?sub_confirmation=1&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=youtube_channel",
 						},
 						{
 							label: "Website",
-							href: "https://matejvavroproductivity.com/tools/prisma-calendar/?utm_source=prisma-calendar-docs&utm_medium=footer&utm_content=website",
+							href: "https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=website",
 						},
 						{
 							label: "Other Plugins",
-							href: "https://matejvavroproductivity.com/tools/?utm_source=prisma-calendar-docs&utm_medium=footer&utm_content=other-plugins",
+							href: "https://matejvavroproductivity.com/tools/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=other_plugins",
 						},
 					],
 				},
@@ -227,7 +227,7 @@ const config: Config = {
 						},
 						{
 							label: "Sponsorship options",
-							href: "https://matejvavroproductivity.com/support/?utm_source=prisma-calendar-docs&utm_medium=footer&utm_content=sponsorship",
+							href: "https://matejvavroproductivity.com/support/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=sponsorship",
 						},
 						{
 							label: "Privacy Policy",

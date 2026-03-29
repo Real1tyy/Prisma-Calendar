@@ -10,7 +10,7 @@ If you find Prisma Calendar valuable and want to support its continued developme
 
 The best way to support my work is by using my tools. I build Obsidian plugins and productivity software designed to make your workflow better.
 
-**👉 [Browse all my tools](https://matejvavroproductivity.com/tools/?utm_source=docs-site&utm_medium=content&utm_content=support-browse-tools)**
+**👉 [Browse all my tools](https://matejvavroproductivity.com/tools/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=support&utm_content=browse_tools)**
 
 ## Get Advanced Features
 
@@ -30,7 +30,7 @@ I create **video content** about productivity, Obsidian, and digital setups, inc
 
 - **Share the videos** — Help others discover valuable productivity content
 
-**Check out my [YouTube channel](https://www.youtube.com/@real1tyy)**
+**Check out my [YouTube channel](https://www.youtube.com/@real1tyy?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=support&utm_content=youtube_channel)**
 
 ## Spread the Word
 
@@ -40,7 +40,7 @@ Help Prisma Calendar grow by sharing it with others. Every recommendation helps 
 
 If you'd like to support the development with a one-time or recurring donation, any contribution is **highly appreciated**. Donations help me focus more time on improving Prisma Calendar and creating new plugins for the Obsidian community.
 
-**👉 [View all donation options](https://matejvavroproductivity.com/support/?utm_source=docs-site&utm_medium=content&utm_content=support-donate)**
+**👉 [View all donation options](https://matejvavroproductivity.com/support/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=support&utm_content=donate)**
 
 ---
 

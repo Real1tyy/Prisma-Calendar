@@ -59,8 +59,9 @@ export class IntegrationsSettings {
 				href: buildUtmUrl(
 					"https://real1tyy.github.io/Prisma-Calendar/features/integrations",
 					"prisma-calendar",
+					"plugin",
 					"settings",
-					"integrations-docs"
+					"integrations_docs"
 				),
 				cls: cls("settings-docs-link"),
 				attr: { target: "_blank" },
