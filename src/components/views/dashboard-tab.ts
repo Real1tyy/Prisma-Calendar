@@ -5,7 +5,7 @@ import {
 	type TabDefinition,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import { distinctUntilChanged, skip, type Subscription } from "rxjs";
+import { debounceTime, distinctUntilChanged, merge, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
@@ -28,6 +28,7 @@ import {
 } from "./dashboard-section";
 
 const DASHBOARD_CSS_PREFIX = "prisma-dashboard-";
+const REFRESH_DEBOUNCE_MS = 300;
 const TOOLTIP_FORMATTER = (label: string, value: number, percentage: string): string =>
 	`${label}: ${value} event${value === 1 ? "" : "s"} (${percentage}%)`;
 
@@ -36,7 +37,6 @@ interface DashboardGridState {
 	chartHandle: DashboardChartHandle | null;
 	tableHandle: DashboardTableHandle | null;
 	subscriptions: Subscription[];
-	debounceTimer: ReturnType<typeof setTimeout> | null;
 }
 
 function createDashboardChild(
@@ -57,7 +57,6 @@ function createDashboardChild(
 		chartHandle: null,
 		tableHandle: null,
 		subscriptions: [],
-		debounceTimer: null,
 	};
 
 	function renderContent(el: HTMLElement): void {
@@ -137,7 +136,6 @@ function createDashboardChild(
 	let isProSub: Subscription | null = null;
 
 	function cleanupContent(): void {
-		if (state.debounceTimer) clearTimeout(state.debounceTimer);
 		state.chartHandle?.destroy();
 		state.tableHandle?.destroy();
 		state.gridHandle?.destroy();
@@ -166,15 +164,10 @@ function createDashboardChild(
 
 				renderContent(el);
 
-				const debouncedRender = (): void => {
-					if (state.debounceTimer) clearTimeout(state.debounceTimer);
-					state.debounceTimer = setTimeout(() => doRender(el), 300);
-				};
-
 				state.subscriptions = [
-					bundle.categoryTracker.categories$.subscribe(() => debouncedRender()),
-					bundle.eventStore.subscribe(() => debouncedRender()),
-					bundle.recurringEventManager.subscribe(() => debouncedRender()),
+					merge(bundle.categoryTracker.categories$, bundle.eventStore.changes$, bundle.recurringEventManager.changes$)
+						.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
+						.subscribe(() => doRender(el)),
 				];
 			}
 
