@@ -17,14 +17,14 @@ export function createTimelineTabDefinition(app: App, bundle: CalendarBundle): T
 		id: "timeline",
 		label: "Timeline",
 		render: (el) => {
-			filterBar = createViewFilterBar(el, bundle, () => {
+			filterBar = createViewFilterBar(bundle, () => {
 				handle?.setEventFilter((e) => filterBar!.shouldInclude(e));
 			});
 
 			handle = renderTimelineInto(el, app, bundle, {
-				title: "All Events Timeline",
 				fillContainer: true,
 				eventFilter: (e) => filterBar!.shouldInclude(e),
+				toolbarLeft: filterBar.el,
 			});
 
 			mergedSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$)

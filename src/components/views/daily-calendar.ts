@@ -4,7 +4,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { cls, ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import type { Subscription } from "rxjs";
+import { merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
@@ -366,11 +366,10 @@ export function createDailyCalendar(
 	});
 	subscriptions.push(indexingSub);
 
-	const eventStoreSub = bundle.eventStore.subscribe(() => scheduleRefresh());
-	subscriptions.push(eventStoreSub);
-
-	const recurringEventSub = bundle.recurringEventManager.subscribe(() => scheduleRefresh());
-	subscriptions.push(recurringEventSub);
+	const storeSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$).subscribe(() =>
+		scheduleRefresh()
+	);
+	subscriptions.push(storeSub);
 
 	const settingsSub = bundle.settingsStore.settings$.subscribe((s: SingleCalendarConfig) => {
 		syncCalendarSettings(calendar, s);

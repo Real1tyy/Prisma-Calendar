@@ -9,6 +9,7 @@ const SEARCH_DEBOUNCE_MS = 150;
 const EXPRESSION_DEBOUNCE_MS = 50;
 
 export interface ViewFilterBarHandle {
+	el: HTMLElement;
 	destroy: () => void;
 	shouldInclude: (event: CalendarEvent) => boolean;
 	filterEvents: (events: CalendarEvent[]) => FilterResult;
@@ -19,21 +20,17 @@ export interface FilterResult {
 	filteredCount: number;
 }
 
-export function createViewFilterBar(
-	container: HTMLElement,
-	bundle: CalendarBundle,
-	onFilterChange: () => void
-): ViewFilterBarHandle {
+export function createViewFilterBar(bundle: CalendarBundle, onFilterChange: () => void): ViewFilterBarHandle {
 	let searchValue = "";
 	let expressionValue = "";
 	const matcher = createExpressionMatcher(() => expressionValue);
 
-	const barEl = container.createDiv({ cls: cls("view-filter-bar") });
+	const barEl = document.createElement("div");
+	barEl.className = cls("view-filter-bar");
 
-	const searchInput = barEl.createEl("input", {
-		type: "text",
-		placeholder: "Search events...",
-		cls: cls("fc-search-input"),
+	const presetWrapper = barEl.createDiv({ cls: cls("fc-filter-preset-wrapper") });
+	const presetSelect = presetWrapper.createEl("select", {
+		cls: cls("fc-filter-preset-select"),
 	});
 
 	const expressionInput = barEl.createEl("input", {
@@ -42,9 +39,10 @@ export function createViewFilterBar(
 		cls: cls("fc-expression-input"),
 	});
 
-	const presetWrapper = barEl.createDiv({ cls: cls("fc-filter-preset-wrapper") });
-	const presetSelect = presetWrapper.createEl("select", {
-		cls: `${cls("fc-filter-preset-select")} ${cls("view-filter-preset-select")}`,
+	const searchInput = barEl.createEl("input", {
+		type: "text",
+		placeholder: "Search events...",
+		cls: cls("fc-search-input"),
 	});
 
 	function buildPresetOptions(presets: FilterPreset[]): void {
@@ -63,18 +61,6 @@ export function createViewFilterBar(
 	}
 
 	buildPresetOptions(bundle.settingsStore.currentSettings.filterPresets);
-
-	const badgeEl = barEl.createSpan({ cls: cls("view-filter-badge") });
-	badgeEl.style.display = "none";
-
-	function updateBadge(count: number): void {
-		if (count > 0) {
-			badgeEl.textContent = `${count} filtered`;
-			badgeEl.style.display = "";
-		} else {
-			badgeEl.style.display = "none";
-		}
-	}
 
 	function setExpressionValue(value: string): void {
 		expressionValue = value;
@@ -158,14 +144,11 @@ export function createViewFilterBar(
 
 	function filterEvents(events: CalendarEvent[]): FilterResult {
 		if (!searchValue && !expressionValue) {
-			updateBadge(0);
 			return { visible: events, filteredCount: 0 };
 		}
 
 		const visible = events.filter(shouldInclude);
-		const filteredCount = events.length - visible.length;
-		updateBadge(filteredCount);
-		return { visible, filteredCount };
+		return { visible, filteredCount: events.length - visible.length };
 	}
 
 	function destroy(): void {
@@ -175,5 +158,5 @@ export function createViewFilterBar(
 		barEl.remove();
 	}
 
-	return { destroy, shouldInclude, filterEvents };
+	return { el: barEl, destroy, shouldInclude, filterEvents };
 }

@@ -9982,34 +9982,47 @@ div.vis-tooltip {
 
 .prisma-view-filter-bar {
 	display: flex;
-	flex-wrap: wrap;
 	align-items: center;
 	gap: 6px;
-	padding: 6px 8px;
-	border-bottom: 1px solid var(--background-modifier-border);
-	background: var(--background-primary);
-}
-
-.prisma-view-filter-bar .prisma-fc-search-input,
-.prisma-view-filter-bar .prisma-fc-expression-input {
-	flex: 1 1 120px;
-	min-width: 100px;
+	flex: 1 1 0;
+	min-width: 0;
 }
 
 .prisma-view-filter-bar .prisma-fc-filter-preset-wrapper {
 	flex: 0 0 auto;
+	margin-left: 0;
 }
 
-.prisma-view-filter-bar .prisma-view-filter-preset-select {
-	border: 1px solid var(--background-modifier-border);
+/* ─── View Toolbar (shared across Timeline, Heatmap, Gantt) ── */
+
+.prisma-view-header-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	overflow: hidden;
 }
 
-.prisma-view-filter-badge {
+.prisma-view-header-left {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex: 1 1 0;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.prisma-view-header-left .prisma-fc-search-input,
+.prisma-view-header-left .prisma-fc-expression-input {
+	flex: 1 1 100px;
+	min-width: 60px;
+	width: auto;
+}
+
+.prisma-view-header-right {
+	display: flex;
+	align-items: center;
+	gap: 6px;
 	flex: 0 0 auto;
-	padding: 2px 8px;
-	border-radius: var(--radius-s);
-	background: var(--background-modifier-error);
-	color: var(--text-on-accent);
-	font-size: var(--font-ui-smaller);
-	white-space: nowrap;
 }

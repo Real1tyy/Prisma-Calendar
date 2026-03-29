@@ -1,6 +1,6 @@
 import { type TabDefinition } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
-import { distinctUntilChanged, skip, type Subscription } from "rxjs";
+import { distinctUntilChanged, merge, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
@@ -10,8 +10,7 @@ import { createViewFilterBar, type ViewFilterBarHandle } from "../view-filter-ba
 
 export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let heatmapHandle: HeatmapHandle | null = null;
-	let eventStoreSub: Subscription | null = null;
-	let recurringEventSub: Subscription | null = null;
+	let mergedSub: Subscription | null = null;
 	let isProSub: Subscription | null = null;
 	let filterBar: ViewFilterBarHandle | null = null;
 
@@ -20,10 +19,8 @@ export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): Ta
 	}
 
 	function cleanupContent(): void {
-		eventStoreSub?.unsubscribe();
-		eventStoreSub = null;
-		recurringEventSub?.unsubscribe();
-		recurringEventSub = null;
+		mergedSub?.unsubscribe();
+		mergedSub = null;
 		filterBar?.destroy();
 		filterBar = null;
 		heatmapHandle?.destroy();
@@ -54,7 +51,7 @@ export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): Ta
 					return;
 				}
 
-				filterBar = createViewFilterBar(el, bundle, () => {
+				filterBar = createViewFilterBar(bundle, () => {
 					const { visible } = getFilteredEvents();
 					heatmapHandle?.refresh(visible);
 				});
@@ -63,15 +60,10 @@ export function createHeatmapTabDefinition(app: App, bundle: CalendarBundle): Ta
 
 				heatmapHandle = renderHeatmapInto(el, app, bundle, {
 					events: visible,
-					title: "All Events Heatmap",
+					toolbarLeft: filterBar.el,
 				});
 
-				eventStoreSub = bundle.eventStore.subscribe(() => {
-					const { visible: v } = getFilteredEvents();
-					heatmapHandle?.refresh(v);
-				});
-
-				recurringEventSub = bundle.recurringEventManager.subscribe(() => {
+				mergedSub = merge(bundle.eventStore.changes$, bundle.recurringEventManager.changes$).subscribe(() => {
 					const { visible: v } = getFilteredEvents();
 					heatmapHandle?.refresh(v);
 				});

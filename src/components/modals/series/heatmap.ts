@@ -20,8 +20,11 @@ import {
 
 export interface EventSeriesHeatmapConfig {
 	events: CalendarEvent[];
-	title: string;
+	/** Optional title shown above the heatmap (used in modal context). */
+	title?: string;
 	categoryColor?: string;
+	/** Element to place in the left side of the toolbar (e.g., filter bar). */
+	toolbarLeft?: HTMLElement;
 }
 
 type HeatmapMode = "yearly" | "monthly";
@@ -73,10 +76,18 @@ export function renderHeatmapInto(
 		showDayDetail(cell.dateKey, cell.events);
 	}
 
-	const header = container.createDiv(cls("heatmap-header"));
-	header.createEl("h2", { text: config.title });
+	if (config.title) {
+		const titleHeader = container.createDiv(cls("heatmap-header"));
+		titleHeader.createEl("h2", { text: config.title });
+	}
 
-	const modeGroup = header.createDiv(cls("heatmap-mode-group"));
+	const toolbar = container.createDiv(cls("view-header-row"));
+	const toolbarLeft = toolbar.createDiv(cls("view-header-left"));
+	const toolbarRight = toolbar.createDiv(cls("view-header-right"));
+
+	if (config.toolbarLeft) toolbarLeft.appendChild(config.toolbarLeft);
+
+	const modeGroup = toolbarRight.createDiv(cls("heatmap-mode-group"));
 	const yearlyBtn = modeGroup.createEl("button", { text: "Yearly", cls: cls("heatmap-mode-btn") });
 	const monthlyBtn = modeGroup.createEl("button", { text: "Monthly", cls: cls("heatmap-mode-btn") });
 	addCls(yearlyBtn, "is-active");

@@ -18,9 +18,12 @@ const ALL_DAY_DISPLAY_HOURS = 4;
 export interface EventSeriesTimelineConfig {
 	/** Static event set (e.g., series/category subset). When omitted, queries eventStore by visible range. */
 	events?: CalendarEvent[];
-	title: string;
+	/** Optional title shown above the timeline (used in modal context). */
+	title?: string;
 	fillContainer?: boolean;
 	eventFilter?: (event: CalendarEvent) => boolean;
+	/** Element to place in the left side of the toolbar (e.g., filter bar). */
+	toolbarLeft?: HTMLElement;
 }
 
 export interface TimelineHandle {
@@ -110,11 +113,18 @@ export function renderTimelineInto(
 
 	container.addClass(cls("timeline-modal"));
 
-	const header = container.createDiv(cls("timeline-modal-header"));
-	header.createEl("h2", { text: config.title });
+	if (config.title) {
+		const titleHeader = container.createDiv(cls("timeline-modal-header"));
+		titleHeader.createEl("h2", { text: config.title });
+	}
 
-	const controls = container.createDiv(cls("timeline-nav-controls"));
-	const dateGroup = controls.createDiv(cls("timeline-nav-date-group"));
+	const headerRow = container.createDiv(cls("view-header-row"));
+	const headerLeft = headerRow.createDiv(cls("view-header-left"));
+	const headerRight = headerRow.createDiv(cls("view-header-right"));
+
+	if (config.toolbarLeft) headerLeft.appendChild(config.toolbarLeft);
+
+	const dateGroup = headerRight.createDiv(cls("timeline-nav-date-group"));
 
 	const createNumericInput = (placeholder: string, min: string, max: string): HTMLInputElement =>
 		dateGroup.createEl("input", {
@@ -132,12 +142,12 @@ export function renderTimelineInto(
 	monthInput.value = String(now.getMonth() + 1);
 	dayInput.value = String(now.getDate());
 
-	const goBtn = controls.createEl("button", {
+	const goBtn = dateGroup.createEl("button", {
 		text: "Go",
 		cls: cls("timeline-nav-btn"),
 	});
 
-	const todayBtn = controls.createEl("button", {
+	const todayBtn = dateGroup.createEl("button", {
 		text: "Today",
 		cls: cls("timeline-nav-btn"),
 	});

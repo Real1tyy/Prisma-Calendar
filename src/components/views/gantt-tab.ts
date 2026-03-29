@@ -1,11 +1,4 @@
-import {
-	addCls,
-	cls,
-	ColorEvaluator,
-	removeCls,
-	type TabDefinition,
-	toLocalISOString,
-} from "@real1ty-obsidian-plugins";
+import { cls, ColorEvaluator, type TabDefinition, toLocalISOString } from "@real1ty-obsidian-plugins";
 import Gantt, { type Task } from "frappe-gantt";
 import frappeGanttCss from "frappe-gantt/dist/frappe-gantt.css";
 import type { App } from "obsidian";
@@ -251,7 +244,6 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	let mergedSub: Subscription | null = null;
 	let isProSub: Subscription | null = null;
 	let wrapperEl: HTMLElement | null = null;
-	let emptyEl: HTMLElement | null = null;
 	let eventsSnapshot: CalendarEvent[] = [];
 	let colorEvaluator: ColorEvaluator<SingleCalendarConfig> | null = null;
 	let filterBar: ViewFilterBarHandle | null = null;
@@ -297,7 +289,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 			readonly: true,
 			readonly_dates: true,
 			readonly_progress: true,
-			today_button: true,
+			today_button: false,
 			scroll_to: "today",
 			container_height: containerHeight,
 			popup: () => false,
@@ -339,11 +331,8 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		if (tasks.length === 0) {
 			gantt = null;
 			wrapperEl?.empty();
-			if (emptyEl) removeCls(emptyEl, "hidden");
 			return;
 		}
-
-		if (emptyEl) addCls(emptyEl, "hidden");
 
 		if (gantt) {
 			gantt.refresh(tasks);
@@ -366,7 +355,6 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		filterBar = null;
 		gantt = null;
 		wrapperEl = null;
-		emptyEl = null;
 	}
 
 	return {
@@ -389,14 +377,22 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 
 				injectVendorCss();
 
-				filterBar = createViewFilterBar(el, bundle, () => {
+				filterBar = createViewFilterBar(bundle, () => {
 					rebuild(el);
 				});
 
-				emptyEl = el.createDiv({
-					cls: cls("gantt-empty", "hidden"),
-					text: "No prerequisite connections found. Add prerequisites to events to see them here.",
+				const headerRow = el.createDiv({ cls: cls("view-header-row") });
+				const headerLeft = headerRow.createDiv({ cls: cls("view-header-left") });
+				headerLeft.appendChild(filterBar.el);
+				const headerRight = headerRow.createDiv({ cls: cls("view-header-right") });
+				const todayBtn = headerRight.createEl("button", {
+					text: "Today",
+					cls: cls("timeline-nav-btn"),
 				});
+				todayBtn.addEventListener("click", () => {
+					(gantt as AnyGantt)?.scroll_current?.();
+				});
+
 				wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
 
 				rebuild(el);

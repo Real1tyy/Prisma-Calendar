@@ -1,5 +1,5 @@
 import { addCls, cls, removeCls, toLocalISOString } from "@real1ty-obsidian-plugins";
-import { debounceTime, merge, type Subscription } from "rxjs";
+import { merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../utils/capacity";
@@ -9,8 +9,6 @@ export interface CapacityIndicatorHandle {
 	setRange: (start: Date, end: Date) => void;
 	destroy: () => void;
 }
-
-const REFRESH_DEBOUNCE_MS = 300;
 
 export function createCapacityIndicator(container: HTMLElement, bundle: CalendarBundle): CapacityIndicatorHandle {
 	const badge = container.createDiv(cls("capacity-indicator"));
@@ -40,9 +38,7 @@ export function createCapacityIndicator(container: HTMLElement, bundle: Calendar
 
 	void refresh();
 
-	subscription = merge(bundle.eventStore.changes$, bundle.settingsStore.settings$)
-		.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
-		.subscribe(() => void refresh());
+	subscription = merge(bundle.eventStore.changes$, bundle.settingsStore.settings$).subscribe(() => void refresh());
 
 	return {
 		setRange: (start: Date, end: Date) => {
