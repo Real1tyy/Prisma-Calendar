@@ -2577,7 +2577,7 @@ select[class*="prisma-"]:focus-visible {
 		background-color 0.2s ease,
 		border-color 0.2s ease,
 		box-shadow 0.2s ease;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='currentColor' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
 	background-repeat: no-repeat;
 	background-position: right 6px center;
 	background-size: 10px;
@@ -9991,6 +9991,13 @@ div.vis-tooltip {
 .prisma-view-filter-bar .prisma-fc-filter-preset-wrapper {
 	flex: 0 0 auto;
 	margin-left: 0;
+}
+
+.prisma-view-filter-bar .prisma-fc-expression-input,
+.prisma-view-filter-bar .prisma-fc-search-input {
+	flex: 1 1 100px;
+	min-width: 60px;
+	width: auto;
 }
 
 /* ─── View Toolbar (shared across Timeline, Heatmap, Gantt) ── */
