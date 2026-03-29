@@ -52,10 +52,9 @@ Prisma is production-ready, fully featured, and built for users who demand absol
 
 ## 📸 Gallery
 
-<p align="center">
-<img src="docs-site/static/video/HeatmapViewPreview.gif" alt="Heatmap & Timeline View" width="49%">
-<img src="docs-site/static/video/DailyStatsViewPreview.gif" alt="Day View & Statistics" width="49%">
-</p>
+<img src="docs-site/static/video/HeatmapViewPreview.gif" alt="Heatmap View" width="100%">
+
+<img src="docs-site/static/video/DailyStatsViewPreview.gif" alt="Daily Stats View" width="100%">
 
 Check out the [full gallery](https://real1tyy.github.io/Prisma-Calendar/gallery?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_gallery) in the documentation for more visuals.
 
