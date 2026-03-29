@@ -2,6 +2,7 @@ import type { Calendar } from "@fullcalendar/core";
 import { Draggable } from "@fullcalendar/interaction";
 import { addCls, cls, ColorEvaluator, removeCls } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
+import { debounceTime } from "rxjs";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type { ParsedEvent } from "../types/calendar";
@@ -16,6 +17,7 @@ const DROP_CLICK_IGNORE_MS = 500;
 const DRAG_START_CLICK_IGNORE_MS = 1500;
 const DRAG_HOVER_HIDE_DELAY_MS = 1000;
 const DROP_END_CLICK_IGNORE_MS = 250;
+const REFRESH_DEBOUNCE_MS = 300;
 
 export class UntrackedEventsDropdown {
 	private buttonEl: HTMLButtonElement | null = null;
@@ -47,11 +49,12 @@ export class UntrackedEventsDropdown {
 			this.refreshEvents();
 
 			if (!this.storeSubscription) {
-				this.storeSubscription = this.bundle.untrackedEventStore.subscribe(() => {
-					// A drop often triggers a trailing click outside; don't let it close the dropdown.
-					this.ignoreOutsideClicksUntil = Date.now() + DROP_CLICK_IGNORE_MS;
-					this.refreshEvents();
-				});
+				this.storeSubscription = this.bundle.untrackedEventStore.changes$
+					.pipe(debounceTime(REFRESH_DEBOUNCE_MS))
+					.subscribe(() => {
+						this.ignoreOutsideClicksUntil = Date.now() + DROP_CLICK_IGNORE_MS;
+						this.refreshEvents();
+					});
 			}
 		}, BUTTON_INJECT_DELAY_MS);
 	}
