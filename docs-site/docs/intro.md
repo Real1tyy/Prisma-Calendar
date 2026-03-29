@@ -44,25 +44,22 @@ Prisma is production-ready, fully featured, and built for users who demand absol
 
 ---
 
-## 🎬 Video Tutorials
-
-:::tip Watch All Videos
-Check out the [complete video tutorial collection](/videos) with all videos, detailed chapters, and timestamps!
-:::
-
-### Part 1: Feature Showcase — Core Capabilities
+## 🎬 The Complete Encyclopedia
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <iframe
     style={{"width":"100%", "aspectRatio": "16/9"}}
-    src="https://www.youtube.com/embed/aULuB6petbU"
-    title="Prisma Calendar - Feature Showcase (Part 1)"
+    src="https://www.youtube.com/embed/HrcNKh6uFH8"
+    title="Prisma Calendar — The Complete Encyclopedia"
     frameBorder="0"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowFullScreen>
   </iframe>
-  <p><strong>Full walkthrough of core features:</strong> Event creation, editing, drag-and-drop, batch operations, undo/redo system, recurring events with source nodes, dynamic color rules, filtering, and calendar customization. See how Prisma Calendar gives you real control over your time-linked notes inside Obsidian.</p>
 </div>
+
+**Every feature systematically broken down from A to Z**: views, event management, recurring events, time tracking, categories, color rules, batch operations, filtering, integrations, AI, the programmatic API, and every setting explained. This is both a full walkthrough and a long-term reference — the definitive video for Prisma Calendar.
+
+**[YouTube Playlist →](https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4)** — All Prisma Calendar videos.
 
 ## Preview
 

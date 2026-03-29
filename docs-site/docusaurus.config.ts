@@ -100,8 +100,8 @@ const config: Config = {
 					position: "left",
 				},
 				{
-					to: "/videos",
-					label: "Videos",
+					href: "https://www.youtube.com/watch?v=HrcNKh6uFH8&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=navbar&utm_content=encyclopedia",
+					label: "Encyclopedia",
 					position: "left",
 				},
 				{
@@ -159,8 +159,8 @@ const config: Config = {
 							to: "/quickstart",
 						},
 						{
-							label: "Video Tutorials",
-							to: "/videos",
+							label: "Encyclopedia",
+							href: "https://www.youtube.com/watch?v=HrcNKh6uFH8&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=encyclopedia",
 						},
 						{
 							label: "Gallery",
@@ -189,8 +189,8 @@ const config: Config = {
 					title: "More",
 					items: [
 						{
-							label: "Video Tutorials",
-							to: "/videos",
+							label: "Encyclopedia",
+							href: "https://www.youtube.com/watch?v=HrcNKh6uFH8&utm_campaign=prisma_calendar&utm_source=docs&utm_medium=footer&utm_content=encyclopedia",
 						},
 						{
 							label: "Repository",

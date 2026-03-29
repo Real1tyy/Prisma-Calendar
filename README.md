@@ -36,19 +36,15 @@ Prisma is production-ready, fully featured, and built for users who demand absol
 
 ---
 
-## 🎬 Video Tutorials
+## 🎬 The Complete Encyclopedia
 
-**[View All Video Tutorials →](https://real1tyy.github.io/Prisma-Calendar/videos?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_video_tutorials)**
-
-### Part 1: Feature Showcase — Core Capabilities
-
-<a href="https://www.youtube.com/watch?v=aULuB6petbU&utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_youtube_demo" target="_blank">
-  <img src="https://img.youtube.com/vi/aULuB6petbU/maxresdefault.jpg" alt="Prisma Calendar - Feature Showcase (Part 1)" style="width:100%;">
+<a href="https://www.youtube.com/watch?v=HrcNKh6uFH8&utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_youtube_encyclopedia" target="_blank">
+  <img src="https://img.youtube.com/vi/HrcNKh6uFH8/maxresdefault.jpg" alt="Prisma Calendar — The Complete Encyclopedia" style="width:100%;">
 </a>
 
-**Core Features Walkthrough**: This video covers many of the fundamental features of Prisma Calendar including event creation, editing, batch operations, undo/redo system, recurring events, color rules, and more.
+**Every feature systematically broken down from A to Z**: views, event management, recurring events, time tracking, categories, color rules, batch operations, filtering, integrations, AI, the programmatic API, and every setting explained. This is both a full walkthrough and a long-term reference — the definitive video for Prisma Calendar.
 
-For the **Full Tutorial** (Zero to Mastery), **Part 2** (Intelligence & Automation), and **Part 3** (Advanced Workflow Tools), visit the [complete video tutorial collection](https://real1tyy.github.io/Prisma-Calendar/videos?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_video_collection).
+**[YouTube Playlist →](https://www.youtube.com/playlist?list=PLMVJknbUasLCULubO4MdCDvg9MyXu3kG4&utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_playlist)** — All Prisma Calendar videos.
 
 </div>
 

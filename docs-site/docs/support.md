@@ -22,7 +22,7 @@ Your contribution allows me to dedicate my time to maintaining, improving, and b
 
 ## 📺 YouTube Channel
 
-I create **video content** about productivity, Obsidian, and digital setups, including **tutorials on my Obsidian plugins** like Prisma Calendar. Your support here is incredibly meaningful:
+I create **video content** about productivity, Obsidian, and digital setups, including **tutorials on my Obsidian plugins** like Prisma Calendar. The **[Complete Encyclopedia](https://www.youtube.com/watch?v=HrcNKh6uFH8)** is the definitive video — every feature broken down from A to Z.
 
 - **Like my videos** — It helps the content reach more people
 

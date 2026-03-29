@@ -4,7 +4,10 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.11.0 - 3/26/2026
+## 2.11.0 - 3/29/2026
+
+### Added
+- **Complete Encyclopedia video**: Released the [definitive video guide](https://www.youtube.com/watch?v=HrcNKh6uFH8) covering every feature from A to Z — views, event management, recurring events, time tracking, categories, color rules, batch operations, filtering, integrations, AI, the programmatic API, and every setting explained.
 
 ### Improved
 - **Unified filtering across all views**: Search bar, expression filter, and filter presets are now available in the Timeline, Heatmap, and Gantt views — not just the Calendar view. All four views share the same filtering behavior. See [Rules & Filters](./features/organization/filtering.md).
