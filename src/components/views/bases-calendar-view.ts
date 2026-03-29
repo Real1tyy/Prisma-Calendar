@@ -83,16 +83,23 @@ class PrismaBasesView extends BasesView {
 	}
 
 	override onload(): void {
-		// Obsidian skips onDataUpdated when switching back if data hasn't changed.
-		// Defer so Obsidian finishes setting up this.config/this.data first.
-		requestAnimationFrame(() => {
-			if (!this.calendar && cachedQueryData) {
-				if (!this.data) {
-					this.data = cachedQueryData;
-				}
+		// Obsidian skips onDataUpdated() on view-switch when data hasn't changed.
+		// this.data may not be assigned until after the first animation frame.
+		const tryRender = (): void => {
+			if (this.calendar) return;
+
+			if (!this.data && cachedQueryData) {
+				this.data = cachedQueryData;
+			}
+
+			if (this.data) {
 				this.onDataUpdated();
 			}
-		});
+		};
+
+		requestAnimationFrame(() => tryRender());
+		requestAnimationFrame(() => requestAnimationFrame(() => tryRender()));
+		setTimeout(() => tryRender(), 100);
 
 		this.isProSub = this.plugin.licenseManager.isPro$
 			.pipe(skip(1), distinctUntilChanged())

@@ -16,6 +16,7 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 - **Prerequisite tracker leaving dangling references**: Deleting a file that was listed as a prerequisite by other events left stale references — the dependency graph showed "depends on [deleted file]" and Gantt arrows pointed to nothing. Deleting a file now cleans up all references to it across the graph. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
+- **Bases Calendar View blank on first load**: The Bases Calendar View could appear blank when switching to it for the first time or switching back before data had loaded. The view now reliably renders as soon as Obsidian delivers query data. See [Bases Calendar View](./features/views/bases-calendar-view.md).
 
 ---
 
