@@ -45,5 +45,9 @@ export * from "./page-header";
 export * from "./context-menu";
 // Schema-driven modal (auto-generated create/edit forms from Zod schemas)
 export * from "./schema-modal";
+// Gantt view (standalone dependency timeline renderer)
+export * from "./gantt-view";
+// Code editor (CodeMirror 6 wrapper for structured text editing)
+export * from "./code-editor";
 // Zod validation schemas (reusable transforms and primitives)
 export * from "./zod";

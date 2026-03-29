@@ -4,8 +4,9 @@
 	"description": "Prisma Calendar is a schema-agnostic visualization layer that turns any Obsidian note with a date into a first-class citizen on your timeline. No rigid schemas, no predefined fields — just your data, your rules, your filters, rendered exactly how you need it.",
 	"main": "main.js",
 	"scripts": {
+		"build:css": "sass src/styles/styles.scss styles.css --no-source-map --style=compressed",
 		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"build": "pnpm build:css && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"typecheck": "tsc -noEmit -skipLibCheck",
 		"test": "vitest run",
 		"test:watch": "vitest",
