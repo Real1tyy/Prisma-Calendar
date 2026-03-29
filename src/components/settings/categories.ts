@@ -1,7 +1,7 @@
 import { cls, hexToRgb, SettingsUIBuilder } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
 import { setIcon, Setting } from "obsidian";
-import type { Subscription } from "rxjs";
+import { debounceTime, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CategoryInfo, CategoryTracker } from "../../core/category-tracker";
@@ -15,6 +15,8 @@ import { showCategoryDeleteModal, showCategoryEventsModal, showCategoryRenameMod
 import { renderProUpgradeBanner } from "./pro-upgrade-banner";
 
 const S = SingleCalendarConfigSchema.shape;
+
+const RERENDER_DEBOUNCE_MS = 300;
 
 interface CategoryInfoWithCount extends CategoryInfo {
 	count: number;
@@ -83,9 +85,11 @@ export class CategoriesSettings {
 		this.categoriesListContainer = containerEl.createDiv();
 		this.renderCategoriesList(this.categoriesListContainer, this.categoryTracker, this.categoryProp);
 
-		this.categoriesSubscription = this.categoryTracker.categories$.subscribe(() => {
-			this.rerender();
-		});
+		this.categoriesSubscription = this.categoryTracker.categories$
+			.pipe(debounceTime(RERENDER_DEBOUNCE_MS))
+			.subscribe(() => {
+				this.rerender();
+			});
 
 		const chartSection = containerEl.createDiv(cls("categories-chart-section"));
 		chartSection.createEl("h3", { text: "Category distribution" });
