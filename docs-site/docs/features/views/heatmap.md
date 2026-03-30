@@ -20,14 +20,22 @@ A GitHub-style contribution heatmap showing event density over time. See pattern
   </video>
 </div>
 
-## View Modes
+## Toolbar
 
-Toggle between two modes using the buttons in the header:
+The toolbar above the heatmap contains filtering controls on the left and view mode toggles on the right.
+
+### Filtering and Search
+
+The heatmap toolbar includes the same filter bar available in all views — filter preset dropdown, expression filter, and search bar. Filtering is applied in real time as you type. See [Rules & Filters](../organization/filtering.md) for details on filtering syntax and presets.
+
+### View Mode Toggles
+
+Toggle between **Yearly** and **Monthly** using the buttons on the right side of the toolbar. Your mode selection is preserved as you navigate.
+
+## View Modes
 
 - **Yearly**: Shows all 365 days of a year in a compact grid. Day labels (Mon, Wed, Fri) appear on the left, month labels (Jan, Feb, ...) appear along the top.
 - **Monthly**: Shows one month at a time with larger cells and day numbers (1–31) inside each cell. Full day-of-week headers are displayed.
-
-Your mode selection is preserved as you navigate.
 
 ## Navigation
 

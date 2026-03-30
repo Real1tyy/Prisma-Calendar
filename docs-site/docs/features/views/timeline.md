@@ -12,9 +12,15 @@ A horizontal timeline showing all your events as points on a scrollable, zoomabl
   </video>
 </div>
 
-## Navigation
+## Toolbar
 
-The timeline header provides date inputs and quick-jump buttons:
+The toolbar above the timeline contains filtering controls on the left and navigation on the right.
+
+### Filtering and Search
+
+The timeline toolbar includes the same filter bar available in all views — filter preset dropdown, expression filter, and search bar. Filtering is applied in real time as you type. See [Rules & Filters](../organization/filtering.md) for details on filtering syntax and presets.
+
+### Navigation
 
 - **Year / Month / Day inputs**: Type a date and press **Enter** or click **Go** to jump directly to that date.
 - **Today button**: Instantly centers the timeline on the current date and updates the input fields.

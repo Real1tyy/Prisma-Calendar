@@ -9,6 +9,10 @@ All notable changes to this project will be documented here.
 ### Added
 - **Complete Encyclopedia video**: Released the [definitive video guide](https://www.youtube.com/watch?v=HrcNKh6uFH8) covering every feature from A to Z — views, event management, recurring events, time tracking, categories, color rules, batch operations, filtering, integrations, AI, the programmatic API, and every setting explained.
 
+- **Gantt context menu**: Right-click any bar in the Gantt view to access a fully customizable context menu with enlarge, edit, open file, mark as done, skip, assign prerequisites, assign categories, duplicate, and delete actions. Right-click any dependency arrow to remove that prerequisite relationship. See [Gantt View](./features/views/gantt.md).
+
+- **Gantt navigation toolbar**: The Gantt view now has a full navigation toolbar with month/week forward and back buttons, a Today button, and a Create button for creating events directly from the Gantt view. See [Gantt View](./features/views/gantt.md).
+
 ### Improved
 - **Unified filtering across all views**: Search bar, expression filter, and filter presets are now available in the Timeline, Heatmap, and Gantt views — not just the Calendar view. All four views share the same filtering behavior. See [Rules & Filters](./features/organization/filtering.md).
 - **Prerequisite assignment via click-to-select**: Right-clicking an event and selecting "Assign prerequisites" now enters a selection mode where you click an event directly on the Calendar or Gantt view to assign it as a prerequisite, instead of searching through a modal. The modal-based assignment remains available from the event edit form. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
