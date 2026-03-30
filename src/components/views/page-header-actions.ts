@@ -27,7 +27,7 @@ export const DEFAULT_ACTION_IDS = new Set([
 
 const ACTION_SPECS: CommandActionSpec[] = [
 	// ─── Core Actions ────────────────────────────────────────────
-	{ id: "create-event", commandId: FULL_COMMAND_IDS.CREATE_EVENT, label: "Create Event", icon: "calendar-plus" },
+	{ id: "create-event", commandId: FULL_COMMAND_IDS.CREATE_EVENT, label: "Create", icon: "calendar-plus" },
 	{
 		id: "create-event-stopwatch",
 		commandId: FULL_COMMAND_IDS.CREATE_EVENT_WITH_STOPWATCH,
