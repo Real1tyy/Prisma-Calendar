@@ -11,6 +11,7 @@ import type { ISO } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";
 import type { HolidayStore } from "../holidays";
 import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
+import { MinimizedModalManager } from "../minimized-modal-manager";
 import type { Parser } from "../parser";
 import type { RecurringEventManager } from "../recurring-event-manager";
 import { IndexedCacheStore } from "./indexed-cache-store";
@@ -401,12 +402,15 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		// matching the indexer's markPastEventAsDone logic
 		const endOfTodayIso = now.endOf("day").toISO({ suppressMilliseconds: true, includeOffset: false }) ?? "";
 		const doneValue = this.settings.doneValue;
+		const minimizedFilePath = MinimizedModalManager.getState()?.filePath ?? null;
 
 		for (const cached of this.cache.values()) {
 			const event = cached.template;
 			if (event.isVirtual) continue;
 			if (event.metadata.rruleType) continue;
 			if (event.metadata.status === doneValue) continue;
+			// Skip events actively being tracked by the stopwatch
+			if (event.ref.filePath === minimizedFilePath) continue;
 
 			const isPast = isTimedEvent(event) ? event.end < nowIso : event.start < endOfTodayIso;
 			if (!isPast) continue;
