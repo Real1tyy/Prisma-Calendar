@@ -5,7 +5,6 @@ import {
 	type ContextMenuHandle,
 	type ContextMenuItemDefinition,
 	createContextMenu,
-	extractDisplayName,
 	parseIntoList,
 	type TabDefinition,
 } from "@real1ty-obsidian-plugins";
@@ -36,7 +35,7 @@ import {
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { isEventDone } from "../../utils/event-frontmatter";
-import { cleanupTitle } from "../../utils/event-naming";
+import { extractCleanDisplayName } from "../../utils/event-naming";
 import { getFileAndFrontmatter, openFileInNewWindow } from "../../utils/obsidian";
 import { showEventPreviewModal } from "../modals";
 import { openCategoryAssignModal } from "../modals/category/assignment";
@@ -204,9 +203,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		prereqBannerEl = renderer.toolbarLeft.createDiv(cls("prereq-selection-banner"));
 
 		const textEl = prereqBannerEl.createDiv(cls("prereq-selection-banner-text"));
-		textEl.setText(
-			`Click a bar to assign it as a prerequisite for "${cleanupTitle(extractDisplayName(ev.ref.filePath))}"`
-		);
+		textEl.setText(`Click a bar to assign it as a prerequisite for "${extractCleanDisplayName(ev.ref.filePath)}"`);
 
 		const cancelBtn = prereqBannerEl.createEl("button", { text: "Cancel" });
 		addCls(cancelBtn, "prereq-selection-btn");

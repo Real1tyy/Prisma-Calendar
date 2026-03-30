@@ -1,10 +1,10 @@
 import type { Calendar } from "@fullcalendar/core";
-import { addCls, cls, extractDisplayName } from "@real1ty-obsidian-plugins";
+import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { addPrerequisite } from "../core/commands";
-import { cleanupTitle } from "../utils/event-naming";
+import { extractCleanDisplayName } from "../utils/event-naming";
 
 export class PrerequisiteSelectionManager {
 	private targetFilePath: string | null = null;
@@ -78,7 +78,7 @@ export class PrerequisiteSelectionManager {
 	// ─── Banner UI ────────────────────────────────────────────────
 
 	private showBanner(): void {
-		const targetName = this.targetFilePath ? cleanupTitle(extractDisplayName(this.targetFilePath)) : "event";
+		const targetName = this.targetFilePath ? extractCleanDisplayName(this.targetFilePath) : "event";
 
 		this.bannerEl = this.container.createDiv(cls("prereq-selection-banner"));
 

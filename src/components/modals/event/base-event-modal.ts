@@ -5,7 +5,6 @@ import {
 	ChipList,
 	cls,
 	ensureISOSuffix,
-	extractDisplayName,
 	isObsidianLink,
 	parseAsLocalDate,
 	parseFrontmatterRecord,
@@ -44,7 +43,7 @@ import {
 import type { EventPreset } from "../../../types/settings";
 import type { Weekday } from "../../../utils/date-recurrence";
 import { autoAssignCategories, findAdjacentEvent } from "../../../utils/event-matching";
-import { cleanupTitle } from "../../../utils/event-naming";
+import { extractCleanDisplayName } from "../../../utils/event-naming";
 import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
 import { writeMetadataToFrontmatter } from "../../../utils/frontmatter-writer";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
@@ -707,7 +706,7 @@ export abstract class BaseEventModal extends Modal {
 		this.prerequisitesChipList = new ChipList({
 			cssPrefix: CSS_PREFIX,
 			emptyText: "No prerequisites",
-			getDisplayName: (link) => cleanupTitle(extractDisplayName(link)),
+			getDisplayName: (link) => extractCleanDisplayName(link),
 			getTooltip: (link) => link,
 		});
 		content.appendChild(this.prerequisitesChipList.el);
@@ -741,7 +740,7 @@ export abstract class BaseEventModal extends Modal {
 		this.participantsChipList = new ChipList({
 			cssPrefix: CSS_PREFIX,
 			emptyText: "No participants",
-			getDisplayName: (item) => (isObsidianLink(item) ? cleanupTitle(extractDisplayName(item)) : item),
+			getDisplayName: (item) => (isObsidianLink(item) ? extractCleanDisplayName(item) : item),
 			getTooltip: (item) => (isObsidianLink(item) ? item : ""),
 		});
 		content.appendChild(this.participantsChipList.el);

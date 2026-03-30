@@ -55,6 +55,14 @@ export const cleanupTitle = (text: string): string => {
 };
 
 /**
+ * Extracts a display name from a file path or wiki link and cleans it up
+ * by removing ZettelID and recurring instance date suffixes.
+ */
+export const extractCleanDisplayName = (pathOrLink: string): string => {
+	return cleanupTitle(extractDisplayName(pathOrLink));
+};
+
+/**
  * Gets the event name from the calendar title property, title property, or the filename.
  * Priority: calendarTitleProp (auto-computed wiki link) > titleProp (manual) > filename derived from filePath.
  */
