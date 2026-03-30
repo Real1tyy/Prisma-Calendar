@@ -158,7 +158,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		cachedPacked = packRows(tasks, GANTT_DEFAULTS);
 		cachedTaskMap = new Map(cachedPacked.map((t) => [t.id, t]));
 		if (!renderer && wrapperEl) {
-			renderer = new GanttRenderer(wrapperEl, hooks);
+			renderer = new GanttRenderer(wrapperEl, hooks, { cssPrefix: "prisma-" });
 		}
 		renderer?.render(computeLayout, centerOnData ? cachedPacked : undefined);
 	}
@@ -197,9 +197,11 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				headerLeft.appendChild(filterBar.el);
 
 				const headerRight = headerRow.createDiv({ cls: cls("view-header-right") });
-				const createBtn = headerRight.createEl("button", { cls: cls("gantt-create-btn") });
+				const createBtn = headerRight.createEl("button", {
+					cls: cls("gantt-create-btn"),
+					text: "Create",
+				});
 				setIcon(createBtn, "plus");
-				createBtn.setAttribute("aria-label", "Create event");
 				createBtn.addEventListener("click", () => {
 					new EventCreateModal(app, bundle, { title: "", start: null }).open();
 				});

@@ -5,6 +5,7 @@ export type {
 	GanttConfig,
 	GanttInteractionHooks,
 	GanttRenderData,
+	GanttRendererConfig,
 	GanttTask,
 	LayoutFn,
 	PackedTask,
