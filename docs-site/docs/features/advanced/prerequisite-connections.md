@@ -18,6 +18,14 @@ Events must have the Prerequisite property configured. See [Properties](../../co
 
 ## Assigning Prerequisites
 
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/AssignPrerequisitesCalendar.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/AssignPrerequisitesCalendar.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 Right-click any event on the Calendar or Gantt view and select **"Assign prerequisites"** from the context menu. The view enters a selection mode — click any event to assign it as a prerequisite. The mode exits automatically after the assignment.
 
 Press **Escape** or click the **Cancel** button to exit without assigning.
