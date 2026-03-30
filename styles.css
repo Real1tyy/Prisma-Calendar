@@ -9863,115 +9863,158 @@ div.vis-tooltip {
 
 /* ─── Gantt Tab ─────────────────────────────────────────── */
 
-.prisma-gantt-toolbar {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 6px 0;
-}
-
-.prisma-gantt-view-btn {
-	padding: 4px 10px;
-	border-radius: 4px;
-	cursor: pointer;
-}
-
-.prisma-gantt-filter-label {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-	margin-left: auto;
-	font-size: var(--font-ui-smaller);
-	cursor: pointer;
-}
-
-.prisma-gantt-empty {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 200px;
-	color: var(--text-muted);
-	font-size: var(--font-ui-small);
-}
-
-.prisma-gantt-empty.prisma-hidden {
-	display: none;
-}
-
 .prisma-gantt-wrapper {
-	height: 100%;
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 0;
 	min-height: 400px;
+	position: relative;
+	overflow: hidden;
 }
 
-.prisma-gantt-wrapper .gantt-container {
-	cursor: grab;
-	--g-arrow-color: var(--text-muted);
-	--g-bar-color: var(--background-modifier-hover);
-	--g-bar-border: var(--background-modifier-border);
-	--g-tick-color-thick: var(--background-modifier-border);
-	--g-tick-color: var(--background-modifier-border-hover);
-	--g-actions-background: var(--background-secondary);
-	--g-border-color: var(--background-modifier-border);
-	--g-text-muted: var(--text-muted);
-	--g-text-light: var(--text-on-accent);
-	--g-text-dark: var(--text-normal);
-	--g-progress-color: var(--background-modifier-hover);
-	--g-handle-color: var(--text-muted);
-	--g-weekend-label-color: var(--background-modifier-hover);
-	--g-expected-progress: var(--background-modifier-hover);
-	--g-header-background: var(--background-primary);
-	--g-row-color: var(--background-primary-alt);
-	--g-row-border-color: var(--background-modifier-border);
-	--g-today-highlight: var(--color-accent);
-	--g-popup-actions: var(--background-secondary);
-	--g-weekend-highlight-color: var(--background-secondary-alt);
+.prisma-gantt-header-wrapper {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	overflow: hidden;
+	background: var(--background-primary);
+	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.prisma-gantt-wrapper .gantt-container .side-header .today-button {
-	background-color: var(--interactive-accent);
-	color: var(--text-on-accent);
-	font-weight: 500;
+.prisma-gantt-header {
+	position: relative;
+	height: 50px;
+}
+
+.prisma-gantt-month-label {
+	position: absolute;
+	top: 4px;
+	transform: translateX(-50%);
+	font-size: var(--font-ui-small);
+	font-weight: 600;
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+
+.prisma-gantt-day-tick {
+	position: absolute;
+	bottom: 4px;
+	text-align: center;
 	font-size: var(--font-ui-smaller);
-	padding: 4px 12px;
+	color: var(--text-muted);
+	box-sizing: border-box;
+}
+
+.prisma-gantt-body {
+	overflow: hidden;
+	overflow-y: auto;
+	flex: 1 1 0;
+	position: relative;
+	cursor: grab;
+}
+
+.prisma-gantt-content-wrapper {
+	position: relative;
+	will-change: transform;
+}
+
+.prisma-gantt-svg-layer {
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.prisma-gantt-row-alt {
+	fill: var(--background-secondary-alt);
+	opacity: 0.3;
+}
+
+.prisma-gantt-grid-line {
+	stroke: var(--background-modifier-border);
+	stroke-width: 1;
+}
+
+.prisma-gantt-today-line {
+	stroke: var(--color-accent);
+	stroke-width: 2;
+	stroke-dasharray: 4 2;
+}
+
+.prisma-gantt-bar-layer {
+	position: relative;
+	z-index: 2;
+}
+
+.prisma-gantt-bar {
+	position: absolute;
+	background-color: var(--interactive-accent);
 	border-radius: var(--radius-s);
 	cursor: pointer;
-	border: none;
+	display: flex;
+	align-items: center;
+	min-height: 40px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+	transition: filter 0.15s ease;
 }
 
-.prisma-gantt-wrapper .gantt-container .side-header .today-button:hover {
-	background-color: var(--interactive-accent-hover);
-	filter: none;
-}
-
-.prisma-gantt-wrapper .gantt-container .side-header .viewmode-select {
-	font-size: var(--font-ui-smaller);
-	padding: 4px 8px;
-	border-radius: var(--radius-s);
-	background-color: var(--background-modifier-hover);
-	color: var(--text-normal);
-	border: 1px solid var(--background-modifier-border);
-}
-
-.prisma-gantt-wrapper .bar-label-fo {
-	overflow: visible;
+.prisma-gantt-bar:hover {
+	filter: brightness(1.1);
 }
 
 .prisma-gantt-bar-label {
-	width: 100%;
-	height: 100%;
+	padding: 4px 8px;
+	font-size: var(--font-ui-small);
+	color: var(--text-on-accent);
+	line-height: 1.3;
+	word-break: break-word;
+	overflow-wrap: break-word;
+}
+
+.prisma-gantt-arrow-group {
+	pointer-events: stroke;
+	cursor: pointer;
+}
+
+.prisma-gantt-arrow-group:hover .prisma-gantt-arrow {
+	stroke: var(--text-normal);
+	stroke-width: 2.5;
+}
+
+.prisma-gantt-arrow-hit {
+	fill: none;
+	stroke: transparent;
+	stroke-width: 12;
+	pointer-events: stroke;
+}
+
+.prisma-gantt-arrow {
+	fill: none;
+	stroke: var(--text-muted);
+	stroke-width: 1.5;
+	pointer-events: none;
+}
+
+.prisma-gantt-arrowhead {
+	fill: var(--text-muted);
+}
+
+.prisma-gantt-create-btn {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 2px 4px;
-	box-sizing: border-box;
-	font-size: 12px;
-	font-family: var(--font-interface);
-	line-height: 1.2;
-	word-break: break-word;
-	overflow-wrap: break-word;
-	text-align: center;
-	overflow: hidden;
-	color: var(--g-text-dark, var(--text-normal));
+	padding: 4px;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	background: none;
+	border: none;
+	color: var(--text-muted);
+}
+
+.prisma-gantt-create-btn:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
 }
 
 /* ─── View Filter Bar (Timeline, Heatmap, Gantt) ─────────── */

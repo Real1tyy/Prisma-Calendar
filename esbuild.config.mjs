@@ -1,9 +1,9 @@
+import builtins from "builtin-modules";
+import esbuild from "esbuild";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import builtins from "builtin-modules";
-import esbuild from "esbuild";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -58,16 +58,6 @@ const context = await esbuild.context({
 				build.onResolve({ filter: /.*docs-site\/docs\/changelog\.md$/ }, (_args) => {
 					return {
 						path: path.resolve(__dirname, "docs-site/docs/changelog.md"),
-					};
-				});
-			},
-		},
-		{
-			name: "resolve-frappe-gantt-css",
-			setup(build) {
-				build.onResolve({ filter: /^frappe-gantt\/dist\/frappe-gantt\.css$/ }, () => {
-					return {
-						path: path.resolve(__dirname, "node_modules/frappe-gantt/dist/frappe-gantt.css"),
 					};
 				});
 			},
