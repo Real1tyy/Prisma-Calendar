@@ -251,23 +251,13 @@ export function renderTimelineInto(
 		});
 	}
 
-	function mergeEvents(events: CalendarEvent[]): void {
+	function addOrUpdateEvents(events: CalendarEvent[]): void {
 		if (!timeline || !items) return;
 
 		const filtered = config.eventFilter ? events.filter(config.eventFilter) : events;
 		const settings = bundle.settingsStore.currentSettings;
 		const toAdd: ReturnType<typeof toItem>[] = [];
 		const toUpdate: ReturnType<typeof toItem>[] = [];
-		const toRemove: string[] = [];
-
-		const filteredIds = new Set(filtered.map((e) => e.ref.filePath));
-
-		for (const [id] of eventMap) {
-			if (!filteredIds.has(id)) {
-				toRemove.push(id);
-				eventMap.delete(id);
-			}
-		}
 
 		for (const event of filtered) {
 			const id = event.ref.filePath;
@@ -285,6 +275,40 @@ export function renderTimelineInto(
 			}
 
 			eventMap.set(id, event);
+		}
+
+		if (toAdd.length > 0) items.add(toAdd);
+		if (toUpdate.length > 0) items.update(toUpdate);
+	}
+
+	function rebuildAllEvents(): void {
+		if (!timeline || !items) return;
+
+		const allEvents = [...eventMap.values()];
+		const filtered = config.eventFilter ? allEvents.filter(config.eventFilter) : allEvents;
+		const settings = bundle.settingsStore.currentSettings;
+
+		const filteredIds = new Set(filtered.map((e) => e.ref.filePath));
+		const toRemove: string[] = [];
+
+		for (const [id] of eventMap) {
+			if (!filteredIds.has(id)) {
+				toRemove.push(id);
+				eventMap.delete(id);
+			}
+		}
+
+		const toAdd: ReturnType<typeof toItem>[] = [];
+		const toUpdate: ReturnType<typeof toItem>[] = [];
+
+		for (const event of filtered) {
+			const id = event.ref.filePath;
+			const item = toItem(event, settings);
+			if (items.get(id)) {
+				toUpdate.push(item);
+			} else {
+				toAdd.push(item);
+			}
 		}
 
 		if (toRemove.length > 0) items.remove(toRemove);
@@ -306,7 +330,7 @@ export function renderTimelineInto(
 
 		for (const range of uncovered) {
 			const events = await fetchEventsForRange(range.start, range.end);
-			mergeEvents(events);
+			addOrUpdateEvents(events);
 			rangeTracker.addRange(range.start, range.end);
 		}
 	}
@@ -407,7 +431,7 @@ export function renderTimelineInto(
 			} else {
 				delete config.eventFilter;
 			}
-			invalidateAndRefetch();
+			rebuildAllEvents();
 		},
 	};
 }
