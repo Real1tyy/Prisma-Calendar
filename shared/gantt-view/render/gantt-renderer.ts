@@ -1,15 +1,16 @@
 import { createCssUtils } from "../../core/css-utils";
 import type { ArrowLayout, BarLayout, GanttConfig, GanttInteractionHooks, PackedTask, Viewport } from "../gantt-types";
-import { GANTT_DEFAULTS, MS_PER_DAY } from "../gantt-types";
+import { GANTT_DEFAULTS, MS_PER_DAY, SVG_NS } from "../gantt-types";
 import { injectGanttStyles } from "../styles";
-import { buildViewport } from "../time-scale";
+import { buildViewport, todayStartMs } from "../time-scale";
 import { renderArrows } from "./gantt-arrows";
 import { renderBars } from "./gantt-bars";
 import { renderGrid } from "./gantt-grid";
 import { renderHeader } from "./gantt-header";
 
-const SVG_NS = "http://www.w3.org/2000/svg";
 const DRAG_THRESHOLD_PX = 5;
+const WEEK_MS = 7 * MS_PER_DAY;
+const MONTH_MS = 30 * MS_PER_DAY;
 
 export interface GanttRendererConfig {
 	cssPrefix: string;
@@ -31,10 +32,14 @@ export class GanttRenderer {
 	private readonly hooks: GanttInteractionHooks;
 	private readonly cls: (...names: string[]) => string;
 	private readonly markerId: string;
+	readonly toolbarLeft: HTMLElement;
+	readonly toolbarRight: HTMLElement;
 	private headerContent: HTMLElement;
 	private bodyWrapper: HTMLElement;
-	private svgLayer: SVGElement;
+	private gridSvg: SVGElement;
 	private barLayer: HTMLElement;
+	private barContainer: HTMLElement;
+	private arrowSvg: SVGElement;
 	private viewportStartMs: number;
 	private layoutFn: LayoutFn | null = null;
 	private cleanupPan: (() => void) | null = null;
@@ -52,24 +57,56 @@ export class GanttRenderer {
 		this.markerId = `${rendererConfig.cssPrefix}gantt-arrowhead`;
 		injectGanttStyles(rendererConfig.cssPrefix);
 
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
-		const daysVisible = this.containerWidth / this.config.pxPerDay;
-		this.viewportStartMs = today.getTime() - (daysVisible / 2) * MS_PER_DAY;
+		this.viewportStartMs = todayStartMs() - (this.daysVisible / 2) * MS_PER_DAY;
+
+		const toolbar = container.createDiv({ cls: cls("gantt-toolbar") });
+		this.toolbarLeft = toolbar.createDiv({ cls: cls("gantt-toolbar-left") });
+		this.toolbarRight = toolbar.createDiv({ cls: cls("gantt-toolbar-right") });
+
+		this.buildNavButtons();
 
 		const headerWrapper = container.createDiv({ cls: cls("gantt-header-wrapper") });
 		this.headerContent = headerWrapper.createDiv({ cls: cls("gantt-header") });
 
 		this.bodyWrapper = container.createDiv({ cls: cls("gantt-body") });
 
-		this.svgLayer = document.createElementNS(SVG_NS, "svg");
-		this.svgLayer.classList.add(cls("gantt-svg-layer"));
-		this.bodyWrapper.appendChild(this.svgLayer);
+		this.gridSvg = document.createElementNS(SVG_NS, "svg");
+		this.gridSvg.classList.add(cls("gantt-grid-svg"));
+		this.bodyWrapper.appendChild(this.gridSvg);
 
 		this.barLayer = this.bodyWrapper.createDiv({ cls: cls("gantt-bar-layer") });
+		this.barContainer = this.barLayer.createDiv({ cls: cls("gantt-bar-container") });
+
+		this.arrowSvg = document.createElementNS(SVG_NS, "svg");
+		this.arrowSvg.classList.add(cls("gantt-arrow-svg"));
+		this.barLayer.appendChild(this.arrowSvg);
 
 		this.cleanupPan = this.setupPan();
-		this.setupCanvasContextMenu();
+	}
+
+	private buildNavButtons(): void {
+		const { cls } = this;
+		const nav = this.toolbarLeft.createDiv({ cls: cls("gantt-nav") });
+
+		const makeBtn = (label: string, icon: string, onClick: () => void): void => {
+			const btn = nav.createEl("button", { cls: cls("gantt-nav-btn"), attr: { "aria-label": label } });
+			btn.textContent = icon;
+			btn.addEventListener("click", onClick);
+		};
+
+		makeBtn("Back 1 month", "\u00AB", () => this.shiftViewport(-MONTH_MS));
+		makeBtn("Back 1 week", "\u2039", () => this.shiftViewport(-WEEK_MS));
+
+		const todayBtn = nav.createEl("button", { cls: cls("gantt-nav-btn", "gantt-today-btn"), text: "Today" });
+		todayBtn.addEventListener("click", () => this.scrollToToday());
+
+		makeBtn("Forward 1 week", "\u203A", () => this.shiftViewport(WEEK_MS));
+		makeBtn("Forward 1 month", "\u00BB", () => this.shiftViewport(MONTH_MS));
+	}
+
+	private shiftViewport(deltaMs: number): void {
+		this.viewportStartMs += deltaMs;
+		this.repaint();
 	}
 
 	private get containerWidth(): number {
@@ -80,26 +117,12 @@ export class GanttRenderer {
 		return this.bodyWrapper.clientHeight || this.container.clientHeight || 400;
 	}
 
-	private buildViewport(): Viewport {
-		return buildViewport(this.viewportStartMs, this.containerWidth, this.containerHeight, this.config.pxPerDay);
+	private get daysVisible(): number {
+		return this.containerWidth / this.config.pxPerDay;
 	}
 
-	private setupCanvasContextMenu(): void {
-		const barSel = `.${this.cls("gantt-bar")}`;
-		const arrowSel = `.${this.cls("gantt-arrow-group")}`;
-
-		this.bodyWrapper.addEventListener("contextmenu", (e) => {
-			const target = e.target as HTMLElement;
-			if (target.closest(barSel) || target.closest(arrowSel)) return;
-			if (!this.hooks.onCanvasContextMenu) return;
-
-			e.preventDefault();
-			const rect = this.bodyWrapper.getBoundingClientRect();
-			const x = e.clientX - rect.left;
-			const viewport = this.buildViewport();
-			const dateMs = viewport.toMs(x);
-			this.hooks.onCanvasContextMenu(dateMs, e);
-		});
+	private buildViewport(): Viewport {
+		return buildViewport(this.viewportStartMs, this.containerWidth, this.containerHeight, this.config.pxPerDay);
 	}
 
 	private setupPan(): () => void {
@@ -173,15 +196,18 @@ export class GanttRenderer {
 
 	private renderFrame(viewport: Viewport, data: GanttRenderData): void {
 		const dataHeight = data.rowCount * (this.config.barHeight + this.config.rowPadding) + this.config.rowPadding;
-		const contentHeight = Math.max(dataHeight, this.containerHeight);
+		const gridHeight = Math.max(dataHeight, this.containerHeight);
 
 		renderHeader(this.headerContent, viewport, this.config, this.cls);
-		renderGrid(this.svgLayer, viewport, data.rowCount, this.config, contentHeight, this.cls);
-		renderBars(this.barLayer, data.bars, data.taskMap, this.hooks, this.cls);
-		renderArrows(this.svgLayer, data.arrows, this.hooks, this.cls, this.markerId);
+		renderGrid(this.gridSvg, viewport, data.rowCount, this.config, gridHeight, this.cls);
+		renderBars(this.barContainer, data.bars, data.taskMap, this.hooks, this.cls);
+		renderArrows(this.arrowSvg, data.arrows, this.hooks, this.cls, this.markerId);
 
 		this.barLayer.style.width = `${viewport.widthPx}px`;
-		this.barLayer.style.minHeight = `${contentHeight}px`;
+		this.barLayer.style.minHeight = `${gridHeight}px`;
+
+		this.arrowSvg.setAttribute("width", String(viewport.widthPx));
+		this.arrowSvg.setAttribute("height", String(gridHeight));
 	}
 
 	render(layoutFn: LayoutFn, centerOnTasks?: { startMs: number; endMs: number }[]): void {
@@ -191,18 +217,14 @@ export class GanttRenderer {
 			const minStart = Math.min(...centerOnTasks.map((t) => t.startMs));
 			const maxEnd = Math.max(...centerOnTasks.map((t) => t.endMs));
 			const dataCenter = (minStart + maxEnd) / 2;
-			const daysVisible = this.containerWidth / this.config.pxPerDay;
-			this.viewportStartMs = dataCenter - (daysVisible / 2) * MS_PER_DAY;
+			this.viewportStartMs = dataCenter - (this.daysVisible / 2) * MS_PER_DAY;
 		}
 
 		this.repaint();
 	}
 
 	scrollToToday(): void {
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
-		const daysVisible = this.containerWidth / this.config.pxPerDay;
-		this.viewportStartMs = today.getTime() - (daysVisible / 2) * MS_PER_DAY;
+		this.viewportStartMs = todayStartMs() - (this.daysVisible / 2) * MS_PER_DAY;
 		this.repaint();
 	}
 

@@ -64,3 +64,4 @@ export const GANTT_DEFAULTS: GanttConfig = {
 };
 
 export const MS_PER_DAY = 86_400_000;
+export const SVG_NS = "http://www.w3.org/2000/svg";

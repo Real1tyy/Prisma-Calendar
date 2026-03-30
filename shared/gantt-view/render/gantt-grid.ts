@@ -1,8 +1,6 @@
 import type { ClsFn } from "../../core/css-utils";
 import type { GanttConfig, Viewport } from "../gantt-types";
-import { MS_PER_DAY } from "../gantt-types";
-
-const SVG_NS = "http://www.w3.org/2000/svg";
+import { MS_PER_DAY, SVG_NS } from "../gantt-types";
 
 export function renderGrid(
 	svg: SVGElement,
@@ -12,7 +10,7 @@ export function renderGrid(
 	contentHeight: number,
 	cls: ClsFn
 ): void {
-	while (svg.firstChild) svg.removeChild(svg.firstChild);
+	svg.replaceChildren();
 
 	svg.setAttribute("width", String(viewport.widthPx));
 	svg.setAttribute("height", String(contentHeight));

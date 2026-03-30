@@ -1,6 +1,12 @@
 import type { Viewport } from "./gantt-types";
 import { MS_PER_DAY } from "./gantt-types";
 
+export function todayStartMs(): number {
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+	return today.getTime();
+}
+
 export function buildViewport(startMs: number, widthPx: number, heightPx: number, pxPerDay: number): Viewport {
 	const daysVisible = widthPx / pxPerDay;
 	const endMs = startMs + daysVisible * MS_PER_DAY;
@@ -30,10 +36,8 @@ export function centerViewportOnTasks(
 	pxPerDay: number
 ): Viewport {
 	if (tasks.length === 0) {
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
 		const daysVisible = widthPx / pxPerDay;
-		const startMs = today.getTime() - (daysVisible / 2) * MS_PER_DAY;
+		const startMs = todayStartMs() - (daysVisible / 2) * MS_PER_DAY;
 		return buildViewport(startMs, widthPx, heightPx, pxPerDay);
 	}
 

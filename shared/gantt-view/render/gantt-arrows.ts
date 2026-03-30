@@ -1,7 +1,6 @@
 import type { ClsFn } from "../../core/css-utils";
 import type { ArrowLayout, GanttInteractionHooks } from "../gantt-types";
-
-const SVG_NS = "http://www.w3.org/2000/svg";
+import { SVG_NS } from "../gantt-types";
 
 function ensureArrowheadMarker(svg: SVGElement, markerId: string, cls: ClsFn): void {
 	if (svg.querySelector(`#${markerId}`)) return;
@@ -33,6 +32,9 @@ export function renderArrows(
 	cls: ClsFn,
 	markerId: string
 ): void {
+	const defs = svg.querySelector("defs");
+	svg.replaceChildren();
+	if (defs) svg.appendChild(defs);
 	ensureArrowheadMarker(svg, markerId, cls);
 
 	for (const arrow of arrows) {

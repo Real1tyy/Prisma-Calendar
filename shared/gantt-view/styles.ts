@@ -11,6 +11,66 @@ function buildGanttStyles(p: string): string {
 	overflow: hidden;
 }
 
+.${p}gantt-toolbar {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	flex-shrink: 0;
+	overflow: hidden;
+}
+
+.${p}gantt-toolbar-left {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: 6px;
+	flex: 1 1 0;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.${p}gantt-toolbar-right {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+.${p}gantt-nav {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+
+.${p}gantt-nav-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 28px;
+	height: 28px;
+	padding: 0 6px;
+	border: none;
+	border-radius: var(--radius-s);
+	background: none;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	cursor: pointer;
+}
+
+.${p}gantt-nav-btn:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+.${p}gantt-today-btn {
+	font-weight: 600;
+	color: var(--text-normal);
+}
+
 .${p}gantt-header-wrapper {
 	position: sticky;
 	top: 0;
@@ -52,7 +112,15 @@ function buildGanttStyles(p: string): string {
 	cursor: grab;
 }
 
-.${p}gantt-svg-layer {
+.${p}gantt-grid-svg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	pointer-events: none;
+}
+
+.${p}gantt-arrow-svg {
 	position: absolute;
 	top: 0;
 	left: 0;
