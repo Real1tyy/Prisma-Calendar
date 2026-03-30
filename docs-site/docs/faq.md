@@ -57,9 +57,9 @@ This data is used solely for license validation, activation seat management (up 
 <details>
 <summary>Where can I read the full legal terms?</summary>
 
-- [Privacy Policy](https://matejvavroproductivity.com/privacy/)
-- [Terms of Service](https://matejvavroproductivity.com/terms/)
-- [Legal Notice / Imprint](https://matejvavroproductivity.com/legal/)
+- [Privacy Policy](https://matejvavroproductivity.com/privacy/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=faq&utm_content=privacy)
+- [Terms of Service](https://matejvavroproductivity.com/terms/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=faq&utm_content=terms)
+- [Legal Notice / Imprint](https://matejvavroproductivity.com/legal/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=faq&utm_content=legal)
 
 </details>
 
