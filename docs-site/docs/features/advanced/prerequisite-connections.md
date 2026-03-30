@@ -16,6 +16,14 @@ Prerequisite Connections makes dependency relationships between events visible d
 
 Events must have the Prerequisite property configured. See [Properties](../../configuration/properties.md) for setup. The property stores wiki-links to other event notes (e.g. `[[Team Meeting]]`).
 
+## Assigning Prerequisites
+
+Right-click any event on the calendar and select **"Assign prerequisites"** from the context menu. The calendar enters a selection mode — click any event to assign it as a prerequisite. The mode exits automatically after the assignment.
+
+Press **Escape** or click the **Cancel** button to exit without assigning.
+
+You can also assign prerequisites from the event edit modal using the Prerequisites field.
+
 ## Connection Arrows
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>

@@ -235,6 +235,7 @@ class PrismaBasesView extends BasesView {
 		const calendarHost: CalendarHost = {
 			navigateToDate: (date) => this.calendar?.gotoDate(date),
 			highlightEventByPath: () => {},
+			enterPrerequisiteSelectionMode: () => {},
 		};
 
 		this.eventContextMenu = new EventContextMenu(this.app, bundle, calendarHost);

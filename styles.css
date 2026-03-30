@@ -1549,6 +1549,44 @@ button[class*="prisma-"]:focus-visible {
 	}
 }
 
+/* ─── Prerequisite Selection Banner ─────────────────────────── */
+
+.prisma-prereq-selection-banner {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 14px;
+	background-color: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	margin-bottom: 8px;
+	z-index: 10;
+}
+
+.prisma-prereq-selection-banner-text {
+	font-size: var(--font-ui-small);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+	flex: 1;
+}
+
+.prisma-prereq-selection-btn {
+	padding: 4px 12px;
+	border-radius: 4px;
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	white-space: nowrap;
+}
+
+.prisma-prereq-selection-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
 .prisma-virtual-event {
 	opacity: 0.6;
 	font-style: italic;

@@ -18,7 +18,6 @@ import { CONTEXT_MENU_BUTTON_LABELS, CSS_PREFIX } from "../constants";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
 	assignCategories,
-	assignPrerequisites,
 	CloneEventCommand,
 	DeleteEventCommand,
 	fillTime,
@@ -48,7 +47,6 @@ import type { PreviewEventData } from "./modals";
 import {
 	EventEditModal,
 	openCategoryAssignModal,
-	openPrerequisiteAssignModal,
 	showDeleteRecurringEventsModal,
 	showEventPreviewModal,
 	showMoveByModal,
@@ -283,7 +281,7 @@ export class EventContextMenu {
 				icon: "workflow",
 				section: "edit",
 				onAction: () => {
-					void this.openAssignPrerequisitesModal(this.currentEvent!);
+					void this.startPrerequisiteSelection(this.currentEvent!);
 				},
 			},
 			{
@@ -836,20 +834,10 @@ export class EventContextMenu {
 		});
 	}
 
-	private async openAssignPrerequisitesModal(event: CalendarEventInfo): Promise<void> {
+	private async startPrerequisiteSelection(event: CalendarEventInfo): Promise<void> {
 		await this.withFilePath(event, "assign prerequisites", async (filePath) => {
 			getFileByPathOrThrow(this.app, filePath);
-			const { frontmatter } = getFileAndFrontmatter(this.app, filePath);
-
-			const settings = this.bundle.settingsStore.currentSettings;
-			const currentPrereqs = parseIntoList(frontmatter[settings.prerequisiteProp], { splitCommas: false });
-
-			openPrerequisiteAssignModal(this.app, this.bundle, currentPrereqs, (selected) => {
-				void this.runCommand(() => assignPrerequisites(this.app, this.bundle, filePath, selected), {
-					success: "Prerequisites updated",
-					error: "Failed to assign prerequisites",
-				});
-			});
+			this.calendarComponent.enterPrerequisiteSelectionMode(filePath);
 		});
 	}
 

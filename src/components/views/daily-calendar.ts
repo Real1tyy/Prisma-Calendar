@@ -68,6 +68,7 @@ export function createDailyCalendar(
 	const calendarHost: CalendarHost = {
 		navigateToDate: (date) => calendar.gotoDate(date),
 		highlightEventByPath: () => {},
+		enterPrerequisiteSelectionMode: () => {},
 	};
 
 	const searchFilter = new SearchFilterInputManager(() => scheduleRefresh());

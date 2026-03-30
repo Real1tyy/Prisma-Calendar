@@ -6,4 +6,5 @@
 export interface CalendarHost {
 	navigateToDate(date: Date, viewType?: string): void;
 	highlightEventByPath(filePath: string, durationMs?: number): void;
+	enterPrerequisiteSelectionMode(targetFilePath: string): void;
 }

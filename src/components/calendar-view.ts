@@ -49,7 +49,7 @@ import { cleanupTitle } from "../utils/event-naming";
 import { invalidatePropertyExtractionCache } from "../utils/expression-utils";
 import { buildEventTooltip } from "../utils/format";
 import { stripZ } from "../utils/iso";
-import { emitHover } from "../utils/obsidian";
+import { emitHover, getFileByPathOrThrow } from "../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../utils/property-display";
 import { BatchSelectionManager } from "./batch-selection-manager";
 import type { CalendarHost } from "./calendar-host";
@@ -74,6 +74,7 @@ import {
 	showEventPreviewModal,
 	showIntervalEventsModal,
 } from "./modals";
+import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
@@ -83,6 +84,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private eventContextMenu: EventContextMenu;
 	private colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 	private batchSelectionManager: BatchSelectionManager | null = null;
+	private prerequisiteSelectionManager: PrerequisiteSelectionManager | null = null;
 	private zoomManager: ZoomManager;
 	private searchFilter: SearchFilterInputManager;
 	private expressionFilter: ExpressionFilterInputManager;
@@ -425,7 +427,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 
 			eventClick: (info) => {
-				if (this.batchSelectionManager?.isInSelectionMode()) {
+				if (this.prerequisiteSelectionManager?.isInSelectionMode()) {
+					if (!info.event.extendedProps["isVirtual"]) {
+						this.prerequisiteSelectionManager.handleEventClick(info.event.id);
+					}
+				} else if (this.batchSelectionManager?.isInSelectionMode()) {
 					if (!info.event.extendedProps["isVirtual"]) {
 						this.batchSelectionManager.handleEventClick(info.event.id);
 					}
@@ -443,7 +449,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 						info.el.classList.add(cls("holiday-event"));
 					}
 				} else {
-					// Only register non-virtual events for batch selection
 					this.batchSelectionManager?.handleEventMount(info.event.id, info.el);
 				}
 				this.handleEventMount(info);
@@ -600,6 +605,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			}
 			this.updateToolbar();
 		});
+		this.prerequisiteSelectionManager = new PrerequisiteSelectionManager(
+			this.app,
+			this.calendar,
+			this.bundle,
+			this.container
+		);
 		this.updateToolbar();
 
 		this.zoomManager.initialize(this.calendar, this.container, this.hostEl);
@@ -827,7 +838,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private buildRegularButtons(): Record<string, ExtendedButtonInput> {
 		return {
 			createEvent: {
-				text: "Create Event",
+				text: "Create",
 				click: () => this.openCreateEventModal(),
 			},
 			now: {
@@ -2247,9 +2258,22 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		};
 	}
 
+	// ─── Prerequisite Selection ──────────────────────────────────
+
+	enterPrerequisiteSelectionMode(targetFilePath: string): void {
+		if (this.batchSelectionManager?.isInSelectionMode()) {
+			this.toggleBatchSelection();
+		}
+		getFileByPathOrThrow(this.app, targetFilePath);
+		this.prerequisiteSelectionManager?.enter(targetFilePath);
+	}
+
 	// ─── Batch Selection ─────────────────────────────────────────
 
 	toggleBatchSelection(): void {
+		if (this.prerequisiteSelectionManager?.isInSelectionMode()) {
+			this.prerequisiteSelectionManager.exit();
+		}
 		const wasInSelectionMode = this.batchSelectionManager?.isInSelectionMode() ?? false;
 		this.batchSelectionManager?.toggleSelectionMode();
 

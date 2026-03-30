@@ -345,6 +345,7 @@ export const SYSTEM_PROP_KEYS: PropsKey[] = [
 	"generatePastEventsProp",
 	"sortDateProp",
 	"prerequisiteProp",
+	"statusProperty",
 ];
 
 /**
