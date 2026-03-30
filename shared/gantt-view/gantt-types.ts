@@ -47,9 +47,16 @@ export interface GanttConfig {
 	todayLineColor: string;
 }
 
+export interface GanttInteractionHooks {
+	onBarClick?: (taskId: string, e: MouseEvent) => void;
+	onBarContextMenu?: (taskId: string, e: MouseEvent) => void;
+	onArrowContextMenu?: (fromTaskId: string, toTaskId: string, e: MouseEvent) => void;
+	onCanvasContextMenu?: (dateMs: number, e: MouseEvent) => void;
+}
+
 export const GANTT_DEFAULTS: GanttConfig = {
 	barHeight: 40,
-	rowPadding: 16,
+	rowPadding: 24,
 	headerHeight: 50,
 	pxPerDay: 135,
 	labelCharWidth: 8,

@@ -32,16 +32,7 @@ function buildWrapAroundPath(fromX: number, fromY: number, toX: number, toY: num
 	const dropY = fromBarBottom + ARROW_GAP;
 	const leftX = toX - ARROW_GAP * 2;
 
-	return [
-		`M ${fromX},${fromY}`,
-		`V ${dropY - CURVE_RADIUS}`,
-		arc(-CURVE_RADIUS, CURVE_RADIUS, 1),
-		`H ${leftX + CURVE_RADIUS}`,
-		arc(-CURVE_RADIUS, CURVE_RADIUS, 0),
-		`V ${toY - CURVE_RADIUS}`,
-		arc(CURVE_RADIUS, CURVE_RADIUS, 0),
-		`H ${toX}`,
-	].join(" ");
+	return `M ${fromX},${fromY} V ${dropY} H ${leftX} V ${toY} H ${toX}`;
 }
 
 export function layoutArrows(tasks: PackedTask[], bars: Map<string, BarLayout>, _config: GanttConfig): ArrowLayout[] {

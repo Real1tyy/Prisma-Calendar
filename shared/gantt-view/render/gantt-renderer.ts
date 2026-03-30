@@ -1,5 +1,5 @@
 import { cls } from "../../core/css-utils";
-import type { ArrowLayout, BarLayout, GanttConfig, PackedTask, Viewport } from "../gantt-types";
+import type { ArrowLayout, BarLayout, GanttConfig, GanttInteractionHooks, PackedTask, Viewport } from "../gantt-types";
 import { GANTT_DEFAULTS, MS_PER_DAY } from "../gantt-types";
 import { buildViewport } from "../time-scale";
 import { renderArrows } from "./gantt-arrows";
@@ -9,6 +9,8 @@ import { renderHeader } from "./gantt-header";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const BAR_EXCLUDE_SELECTOR = ".prisma-gantt-bar";
+const ARROW_EXCLUDE_SELECTOR = ".prisma-gantt-arrow-group";
+const DRAG_THRESHOLD_PX = 5;
 
 export interface GanttRenderData {
 	taskMap: Map<string, PackedTask>;
@@ -22,6 +24,7 @@ export type LayoutFn = (viewport: Viewport) => GanttRenderData;
 
 export class GanttRenderer {
 	private readonly config: GanttConfig;
+	private readonly hooks: GanttInteractionHooks;
 	private headerContent: HTMLElement;
 	private bodyWrapper: HTMLElement;
 	private svgLayer: SVGElement;
@@ -32,10 +35,11 @@ export class GanttRenderer {
 
 	constructor(
 		private readonly container: HTMLElement,
-		private readonly onClick: (filePath: string) => void,
+		hooks: GanttInteractionHooks,
 		config?: Partial<GanttConfig>
 	) {
 		this.config = { ...GANTT_DEFAULTS, ...config };
+		this.hooks = hooks;
 
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
@@ -54,6 +58,7 @@ export class GanttRenderer {
 		this.barLayer = this.bodyWrapper.createDiv({ cls: cls("gantt-bar-layer") });
 
 		this.cleanupPan = this.setupPan();
+		this.setupCanvasContextMenu();
 	}
 
 	private get containerWidth(): number {
@@ -68,49 +73,78 @@ export class GanttRenderer {
 		return buildViewport(this.viewportStartMs, this.containerWidth, this.containerHeight, this.config.pxPerDay);
 	}
 
+	private setupCanvasContextMenu(): void {
+		this.bodyWrapper.addEventListener("contextmenu", (e) => {
+			const target = e.target as HTMLElement;
+			if (target.closest(BAR_EXCLUDE_SELECTOR) || target.closest(ARROW_EXCLUDE_SELECTOR)) return;
+			if (!this.hooks.onCanvasContextMenu) return;
+
+			e.preventDefault();
+			const rect = this.bodyWrapper.getBoundingClientRect();
+			const x = e.clientX - rect.left;
+			const viewport = this.buildViewport();
+			const dateMs = viewport.toMs(x);
+			this.hooks.onCanvasContextMenu(dateMs, e);
+		});
+	}
+
 	private setupPan(): () => void {
+		let isPending = false;
 		let isDragging = false;
 		let startX = 0;
 		let startY = 0;
 		let origStartMs = 0;
 		let origScrollTop = 0;
 
-		const onMouseDown = (e: MouseEvent): void => {
+		const onPointerDown = (e: PointerEvent): void => {
+			if (e.button !== 0) return;
 			const target = e.target as HTMLElement;
 			if (target.closest(BAR_EXCLUDE_SELECTOR)) return;
-			isDragging = true;
+
+			isPending = true;
+			isDragging = false;
 			startX = e.clientX;
 			startY = e.clientY;
 			origStartMs = this.viewportStartMs;
 			origScrollTop = this.bodyWrapper.scrollTop;
-			this.bodyWrapper.style.cursor = "grabbing";
 			e.preventDefault();
 		};
 
-		const onMouseMove = (e: MouseEvent): void => {
-			if (!isDragging) return;
+		const onPointerMove = (e: PointerEvent): void => {
+			if (!isPending && !isDragging) return;
+
 			const dx = e.clientX - startX;
 			const dy = e.clientY - startY;
+
+			if (isPending && !isDragging) {
+				if (Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD_PX) return;
+				isDragging = true;
+				isPending = false;
+				this.bodyWrapper.style.cursor = "grabbing";
+			}
+
+			if (!isDragging) return;
 			const msDelta = (dx / this.config.pxPerDay) * MS_PER_DAY;
 			this.viewportStartMs = origStartMs - msDelta;
 			this.bodyWrapper.scrollTop = origScrollTop - dy;
 			this.repaint();
 		};
 
-		const onMouseUp = (): void => {
+		const onPointerUp = (): void => {
+			isPending = false;
 			if (!isDragging) return;
 			isDragging = false;
 			this.bodyWrapper.style.cursor = "";
 		};
 
-		this.bodyWrapper.addEventListener("mousedown", onMouseDown);
-		document.addEventListener("mousemove", onMouseMove);
-		document.addEventListener("mouseup", onMouseUp);
+		this.bodyWrapper.addEventListener("pointerdown", onPointerDown);
+		document.addEventListener("pointermove", onPointerMove);
+		document.addEventListener("pointerup", onPointerUp);
 
 		return () => {
-			this.bodyWrapper.removeEventListener("mousedown", onMouseDown);
-			document.removeEventListener("mousemove", onMouseMove);
-			document.removeEventListener("mouseup", onMouseUp);
+			this.bodyWrapper.removeEventListener("pointerdown", onPointerDown);
+			document.removeEventListener("pointermove", onPointerMove);
+			document.removeEventListener("pointerup", onPointerUp);
 		};
 	}
 
@@ -127,8 +161,8 @@ export class GanttRenderer {
 
 		renderHeader(this.headerContent, viewport, this.config);
 		renderGrid(this.svgLayer, viewport, data.rowCount, this.config, contentHeight);
-		renderBars(this.barLayer, data.bars, data.taskMap, this.onClick);
-		renderArrows(this.svgLayer, data.arrows);
+		renderBars(this.barLayer, data.bars, data.taskMap, this.hooks);
+		renderArrows(this.svgLayer, data.arrows, this.hooks);
 
 		this.barLayer.style.width = `${viewport.widthPx}px`;
 		this.barLayer.style.minHeight = `${contentHeight}px`;

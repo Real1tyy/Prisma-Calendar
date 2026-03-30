@@ -1,5 +1,5 @@
 import { cls } from "../../core/css-utils";
-import type { ArrowLayout } from "../gantt-types";
+import type { ArrowLayout, GanttInteractionHooks } from "../gantt-types";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const MARKER_ID = "prisma-gantt-arrowhead";
@@ -19,6 +19,7 @@ function ensureArrowheadMarker(svg: SVGElement): void {
 
 	const polygon = document.createElementNS(SVG_NS, "path");
 	polygon.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+	polygon.setAttribute("fill", "var(--text-muted)");
 	polygon.classList.add(cls("gantt-arrowhead"));
 
 	marker.appendChild(polygon);
@@ -26,14 +27,31 @@ function ensureArrowheadMarker(svg: SVGElement): void {
 	svg.appendChild(defs);
 }
 
-export function renderArrows(svg: SVGElement, arrows: ArrowLayout[]): void {
+export function renderArrows(svg: SVGElement, arrows: ArrowLayout[], hooks: GanttInteractionHooks): void {
 	ensureArrowheadMarker(svg);
 
 	for (const arrow of arrows) {
-		const path = document.createElementNS(SVG_NS, "path");
-		path.setAttribute("d", arrow.path);
-		path.setAttribute("marker-end", `url(#${MARKER_ID})`);
-		path.classList.add(cls("gantt-arrow"));
-		svg.appendChild(path);
+		const group = document.createElementNS(SVG_NS, "g");
+		group.classList.add(cls("gantt-arrow-group"));
+
+		const hitArea = document.createElementNS(SVG_NS, "path");
+		hitArea.setAttribute("d", arrow.path);
+		hitArea.classList.add(cls("gantt-arrow-hit"));
+		group.appendChild(hitArea);
+
+		const visible = document.createElementNS(SVG_NS, "path");
+		visible.setAttribute("d", arrow.path);
+		visible.setAttribute("marker-end", `url(#${MARKER_ID})`);
+		visible.classList.add(cls("gantt-arrow"));
+		group.appendChild(visible);
+
+		group.addEventListener("contextmenu", (e) => {
+			if (hooks.onArrowContextMenu) {
+				e.preventDefault();
+				hooks.onArrowContextMenu(arrow.fromTaskId, arrow.toTaskId, e as MouseEvent);
+			}
+		});
+
+		svg.appendChild(group);
 	}
 }
