@@ -27,7 +27,11 @@ Recurring events that generate real notes. Batch operations across dozens of eve
 </div>
 
 <div style={{"textAlign": "center", "marginBottom": "2em"}}>
-  <video src={useBaseUrl("/video/LandingPage.mp4")} autoPlay muted loop playsInline style={{"width": "100%", "borderRadius": "12px", "boxShadow": "0 8px 30px rgba(0,0,0,0.3)"}} />
+  <video autoPlay muted loop playsInline style={{"width": "100%", "borderRadius": "12px", "boxShadow": "0 8px 30px rgba(0,0,0,0.3)"}}>
+    <source src={useBaseUrl("/video/LandingPageUnifiedViews.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/LandingPageUnifiedViews.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
 </div>
 
 <div align="center">

@@ -20,7 +20,7 @@ A full scripting API. External integrations sync. Recurring events that generate
 
 </div>
 
-<img src="docs-site/static/video/LandingPage.gif" alt="Prisma Calendar Preview" width="100%">
+<img src="docs-site/static/video/LandingPageUnifiedViews.gif" alt="Prisma Calendar Preview" width="100%">
 
 <div align="center">
 

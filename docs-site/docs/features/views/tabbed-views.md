@@ -6,6 +6,14 @@ The calendar view features a tab bar in the view header with seven tabs. Each ta
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/LandingPageUnifiedViews.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/LandingPageUnifiedViews.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
     <source src={useBaseUrl("/video/TabbedViewsManagement.webm")} type="video/webm" />
     <source src={useBaseUrl("/video/TabbedViewsManagement.mp4")} type="video/mp4" />
     Your browser does not support the video tag.
