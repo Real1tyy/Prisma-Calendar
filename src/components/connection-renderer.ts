@@ -1,3 +1,4 @@
+import { SVG, type Svg } from "@svgdotjs/svg.js";
 import type { Subscription } from "rxjs";
 import { distinctUntilChanged, map } from "rxjs";
 
@@ -18,7 +19,7 @@ interface ConnectionStyle {
 }
 
 export class ConnectionRenderer {
-	private svg: SVGSVGElement;
+	private svg: Svg;
 	private resizeObserver: ResizeObserver;
 	private container: HTMLElement;
 	private scrollHandler: (() => void) | null = null;
@@ -44,15 +45,8 @@ export class ConnectionRenderer {
 		this.container = container;
 		container.style.setProperty(SVG_Z_VAR, Z_ABOVE_ALLDAY);
 
-		this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-		this.svg.classList.add("prisma-connection-overlay");
-		Object.assign(this.svg.style, {
-			position: "absolute",
-			inset: "0",
-			pointerEvents: "none",
-			overflow: "visible",
-		});
-		container.appendChild(this.svg);
+		this.svg = SVG().addTo(container).addClass("prisma-connection-overlay");
+		this.svg.css({ position: "absolute", inset: "0", "pointer-events": "none", overflow: "visible" });
 
 		this.resizeObserver = new ResizeObserver(() => this.syncSize());
 		this.resizeObserver.observe(container);
@@ -101,7 +95,7 @@ export class ConnectionRenderer {
 		this.rebuildMarker();
 
 		const eventStartMap = new Map(allEvents.map((e) => [e.ref.filePath, new Date(e.start)]));
-		const svgRect = this.svg.getBoundingClientRect();
+		const svgRect = this.svg.node.getBoundingClientRect();
 
 		const findEl = (filePath: string): HTMLElement | null => {
 			const id = eventIdMap.get(filePath);
@@ -133,9 +127,9 @@ export class ConnectionRenderer {
 	}
 
 	clear(): void {
-		Array.from(this.svg.childNodes)
-			.filter((child) => (child as Element).tagName !== "defs")
-			.forEach((child) => this.svg.removeChild(child));
+		this.svg.children().forEach((child) => {
+			if (child.type !== "defs") child.remove();
+		});
 	}
 
 	destroy(): void {
@@ -186,32 +180,21 @@ export class ConnectionRenderer {
 	}
 
 	private rebuildMarker(): void {
-		const existing = this.svg.querySelector("defs");
-		if (existing) existing.remove();
+		this.svg.find("defs").forEach((d) => d.remove());
 
 		const { arrowSize, color } = this.style;
-		const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-		const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
-		marker.setAttribute("id", ARROW_MARKER_ID);
-		marker.setAttribute("markerWidth", String(arrowSize));
-		marker.setAttribute("markerHeight", String(arrowSize));
-		marker.setAttribute("refX", String(arrowSize - 2));
-		marker.setAttribute("refY", String(arrowSize / 2));
-		marker.setAttribute("orient", "auto");
-
-		const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-		poly.setAttribute("points", `0 0, ${arrowSize} ${arrowSize / 2}, 0 ${arrowSize}`);
-		poly.setAttribute("fill", color);
-		marker.appendChild(poly);
-		defs.appendChild(marker);
-		this.svg.insertBefore(defs, this.svg.firstChild);
+		this.svg
+			.defs()
+			.marker(arrowSize, arrowSize, function (add) {
+				add.polygon(`0 0, ${arrowSize} ${arrowSize / 2}, 0 ${arrowSize}`).fill(color);
+			})
+			.attr({ id: ARROW_MARKER_ID, refX: arrowSize - 2, refY: arrowSize / 2, orient: "auto" });
 	}
 
 	private syncSize(): void {
 		this.width = this.container.clientWidth;
 		this.height = this.container.clientHeight;
-		this.svg.setAttribute("width", String(this.width));
-		this.svg.setAttribute("height", String(this.height));
+		this.svg.size(this.width, this.height);
 	}
 
 	private toLocal(el: HTMLElement, svgRect: DOMRect): { x: number; y: number; w: number; h: number } {
@@ -246,13 +229,11 @@ export class ConnectionRenderer {
 	}
 
 	private appendPath(d: string, dashed: boolean): void {
-		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-		path.setAttribute("d", d);
-		path.setAttribute("fill", "none");
-		path.setAttribute("stroke", this.style.color);
-		path.setAttribute("stroke-width", String(this.style.strokeWidth));
-		path.setAttribute("marker-end", `url(#${ARROW_MARKER_ID})`);
-		if (dashed) path.setAttribute("stroke-dasharray", "8 5");
-		this.svg.appendChild(path);
+		const p = this.svg
+			.path(d)
+			.fill("none")
+			.stroke({ color: this.style.color, width: this.style.strokeWidth })
+			.attr({ "marker-end": `url(#${ARROW_MARKER_ID})` });
+		if (dashed) p.attr({ "stroke-dasharray": "8 5" });
 	}
 }

@@ -1,4 +1,5 @@
 import { cls } from "@real1ty-obsidian-plugins";
+import { SVG, type Svg } from "@svgdotjs/svg.js";
 import { DateTime } from "luxon";
 
 import type { CalendarEvent } from "../../types/calendar";
@@ -85,6 +86,7 @@ function formatDateLabel(dt: DateTime): string {
 }
 
 interface HeatmapCellParams {
+	svg: Svg;
 	x: number;
 	y: number;
 	size: number;
@@ -99,42 +101,38 @@ interface HeatmapCellParams {
 }
 
 function createHeatmapCell(params: HeatmapCellParams): SVGRectElement {
-	const { x, y, size, radius, dateKey, day, count, categoryColor, thresholds, events, onDayClick } = params;
+	const { svg, x, y, size, radius, dateKey, day, count, categoryColor, thresholds, events, onDayClick } = params;
 
 	const bucket = getColorBucket(count, thresholds);
-	const rect = createSVGElement("rect", {
-		x: String(x),
-		y: String(y),
-		width: String(size),
-		height: String(size),
-		rx: String(radius),
-		ry: String(radius),
-		fill: getCellColor(bucket, categoryColor),
-		class: cls("heatmap-cell"),
-		"data-date": dateKey,
-		"data-count": String(count),
-	});
+	const titleText = `${formatDateLabel(day)}: ${count} event${count === 1 ? "" : "s"}`;
 
-	const title = createSVGElement("title");
-	title.textContent = `${formatDateLabel(day)}: ${count} event${count === 1 ? "" : "s"}`;
-	rect.appendChild(title);
-	rect.setAttribute("aria-label", title.textContent);
+	const rect = svg
+		.rect(size, size)
+		.move(x, y)
+		.radius(radius)
+		.fill(getCellColor(bucket, categoryColor))
+		.addClass(cls("heatmap-cell"))
+		.attr({ "data-date": dateKey, "data-count": String(count), "aria-label": titleText });
+
+	const titleEl = document.createElementNS("http://www.w3.org/2000/svg", "title");
+	titleEl.textContent = titleText;
+	rect.node.appendChild(titleEl);
 
 	if (onDayClick) {
-		rect.setAttribute("tabindex", "0");
-		rect.setAttribute("role", "button");
+		rect.attr({ tabindex: "0", role: "button" });
 
 		const handleClick = () => onDayClick(dateKey, events);
-		rect.addEventListener("click", handleClick);
-		rect.addEventListener("keydown", (evt) => {
-			if (evt.key === "Enter" || evt.key === " ") {
-				evt.preventDefault();
+		rect.on("click", handleClick);
+		rect.on("keydown", (evt: Event) => {
+			const ke = evt as KeyboardEvent;
+			if (ke.key === "Enter" || ke.key === " ") {
+				ke.preventDefault();
 				handleClick();
 			}
 		});
 	}
 
-	return rect;
+	return rect.node as SVGRectElement;
 }
 
 export function renderHeatmapSVG(
@@ -169,34 +167,24 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 	const svgWidth = labelWidth + totalWeeks * step;
 	const svgHeight = headerHeight + 7 * step;
 
-	const svg = createSVGElement("svg", {
-		width: String(svgWidth),
-		height: String(svgHeight),
-		class: cls("heatmap-svg"),
-	});
+	const svg = SVG().addTo(container).size(svgWidth, svgHeight).addClass(cls("heatmap-svg"));
 
 	const dayLabelIndices = [0, 1, 2, 3, 4, 5, 6];
 	for (const i of dayLabelIndices) {
 		const adjustedIndex = (i + firstDayOfWeek) % 7;
-		const text = createSVGElement("text", {
-			x: String(labelWidth - 5),
-			y: String(headerHeight + i * step + cellSize * 0.7),
-			class: cls("heatmap-day-label"),
-		});
-		text.textContent = DAY_LABELS[adjustedIndex]!;
-		svg.appendChild(text);
+		svg
+			.plain(DAY_LABELS[adjustedIndex]!)
+			.attr({ x: labelWidth - 5, y: headerHeight + i * step + cellSize * 0.7 })
+			.addClass(cls("heatmap-day-label"));
 	}
 
 	for (let m = 1; m <= 12; m++) {
 		const firstOfMonth = DateTime.local(year, m, 1);
 		const col = getYearlyColumn(firstOfMonth, startDate, firstDayOfWeek);
-		const text = createSVGElement("text", {
-			x: String(labelWidth + col * step),
-			y: "12",
-			class: cls("heatmap-month-label"),
-		});
-		text.textContent = firstOfMonth.toFormat("LLL");
-		svg.appendChild(text);
+		svg
+			.plain(firstOfMonth.toFormat("LLL"))
+			.attr({ x: labelWidth + col * step, y: 12 })
+			.addClass(cls("heatmap-month-label"));
 	}
 
 	const gridCells: HeatmapGridCell[] = [];
@@ -211,7 +199,8 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 		const dayData = dataset.days.get(dateKey);
 		const events = dayData?.events ?? [];
 
-		const rect = createHeatmapCell({
+		const element = createHeatmapCell({
+			svg,
 			x: labelWidth + col * step,
 			y: headerHeight + row * step,
 			size: cellSize,
@@ -224,15 +213,12 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 			events,
 			onDayClick,
 		});
-		svg.appendChild(rect);
 
-		const gridCell: HeatmapGridCell = { row, col, dateKey, events, element: rect };
+		const gridCell: HeatmapGridCell = { row, col, dateKey, events, element };
 		gridCells.push(gridCell);
 		lookup.set(`${row},${col}`, gridCell);
 		if (col > maxCol) maxCol = col;
 	}
-
-	container.appendChild(svg);
 
 	return { cells: gridCells, lookup, maxRow: DAYS_PER_WEEK - 1, maxCol };
 }
@@ -257,21 +243,14 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 	const svgWidth = 7 * step;
 	const svgHeight = headerHeight + totalWeeks * step;
 
-	const svg = createSVGElement("svg", {
-		width: String(svgWidth),
-		height: String(svgHeight),
-		class: cls("heatmap-svg"),
-	});
+	const svg = SVG().addTo(container).size(svgWidth, svgHeight).addClass(cls("heatmap-svg"));
 
 	for (let i = 0; i < 7; i++) {
 		const adjustedIndex = (i + firstDayOfWeek) % 7;
-		const text = createSVGElement("text", {
-			x: String(i * step + cellSize / 2),
-			y: "14",
-			class: cls("heatmap-month-day-header"),
-		});
-		text.textContent = DAY_LABELS[adjustedIndex].charAt(0);
-		svg.appendChild(text);
+		svg
+			.plain(DAY_LABELS[adjustedIndex].charAt(0))
+			.attr({ x: i * step + cellSize / 2, y: 14 })
+			.addClass(cls("heatmap-month-day-header"));
 	}
 
 	const gridCells: HeatmapGridCell[] = [];
@@ -289,7 +268,8 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 		const x = col * step;
 		const y = headerHeight + row * step;
 
-		const rect = createHeatmapCell({
+		const element = createHeatmapCell({
+			svg,
 			x,
 			y,
 			size: cellSize,
@@ -302,38 +282,19 @@ function renderMonthly(container: HTMLElement, dataset: HeatmapDataset, options:
 			events,
 			onDayClick,
 		});
-		svg.appendChild(rect);
 
-		const gridCell: HeatmapGridCell = { row, col, dateKey, events, element: rect };
+		const gridCell: HeatmapGridCell = { row, col, dateKey, events, element };
 		gridCells.push(gridCell);
 		lookup.set(`${row},${col}`, gridCell);
 		if (row > maxRow) maxRow = row;
 
-		const label = createSVGElement("text", {
-			x: String(x + cellSize / 2),
-			y: String(y + cellSize / 2 + 4),
-			class: cls("heatmap-day-number"),
-		});
-		label.textContent = String(d);
-		svg.appendChild(label);
+		svg
+			.plain(String(d))
+			.attr({ x: x + cellSize / 2, y: y + cellSize / 2 + 4 })
+			.addClass(cls("heatmap-day-number"));
 	}
-
-	container.appendChild(svg);
 
 	return { cells: gridCells, lookup, maxRow, maxCol: DAYS_PER_WEEK - 1 };
-}
-
-function createSVGElement<K extends keyof SVGElementTagNameMap>(
-	tag: K,
-	attrs?: Record<string, string>
-): SVGElementTagNameMap[K] {
-	const el = document.createElementNS("http://www.w3.org/2000/svg", tag) as SVGElementTagNameMap[K];
-	if (attrs) {
-		for (const [key, value] of Object.entries(attrs)) {
-			el.setAttribute(key, value);
-		}
-	}
-	return el;
 }
 
 function scanAxis(from: number, max: number, forward: boolean): number[] {
