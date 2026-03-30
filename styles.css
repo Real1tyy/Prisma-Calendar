@@ -1559,8 +1559,12 @@ button[class*="prisma-"]:focus-visible {
 	background-color: var(--background-secondary);
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 8px;
-	margin-bottom: 8px;
 	z-index: 10;
+}
+
+.prisma-calendar-container > .prisma-prereq-selection-banner {
+	position: sticky;
+	bottom: 0;
 }
 
 .prisma-prereq-selection-banner-text {

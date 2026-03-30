@@ -4,6 +4,7 @@ import { type App, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { assignPrerequisites } from "../core/commands";
+import { cleanupTitle } from "../utils/event-naming";
 import { getFileAndFrontmatter } from "../utils/obsidian";
 
 export class PrerequisiteSelectionManager {
@@ -93,7 +94,7 @@ export class PrerequisiteSelectionManager {
 	// ─── Banner UI ────────────────────────────────────────────────
 
 	private showBanner(): void {
-		const targetName = this.targetFilePath ? extractDisplayName(this.targetFilePath) : "event";
+		const targetName = this.targetFilePath ? cleanupTitle(extractDisplayName(this.targetFilePath)) : "event";
 
 		this.bannerEl = this.container.createDiv(cls("prereq-selection-banner"));
 

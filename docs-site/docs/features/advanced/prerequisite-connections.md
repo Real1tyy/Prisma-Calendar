@@ -18,7 +18,7 @@ Events must have the Prerequisite property configured. See [Properties](../../co
 
 ## Assigning Prerequisites
 
-Right-click any event on the calendar and select **"Assign prerequisites"** from the context menu. The calendar enters a selection mode — click any event to assign it as a prerequisite. The mode exits automatically after the assignment.
+Right-click any event on the Calendar or Gantt view and select **"Assign prerequisites"** from the context menu. The view enters a selection mode — click any event to assign it as a prerequisite. The mode exits automatically after the assignment.
 
 Press **Escape** or click the **Cancel** button to exit without assigning.
 
