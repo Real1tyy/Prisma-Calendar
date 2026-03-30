@@ -132,7 +132,7 @@ function createHeatmapCell(params: HeatmapCellParams): SVGRectElement {
 		});
 	}
 
-	return rect.node as SVGRectElement;
+	return rect.node;
 }
 
 export function renderHeatmapSVG(
@@ -173,7 +173,7 @@ function renderYearly(container: HTMLElement, dataset: HeatmapDataset, options: 
 	for (const i of dayLabelIndices) {
 		const adjustedIndex = (i + firstDayOfWeek) % 7;
 		svg
-			.plain(DAY_LABELS[adjustedIndex]!)
+			.plain(DAY_LABELS[adjustedIndex])
 			.attr({ x: labelWidth - 5, y: headerHeight + i * step + cellSize * 0.7 })
 			.addClass(cls("heatmap-day-label"));
 	}
@@ -368,7 +368,7 @@ export function renderHeatmapLegend(
 		const swatch = legend.createDiv(cls("heatmap-legend-swatch"));
 		swatch.style.backgroundColor = getCellColor(bucket, categoryColor);
 		swatch.title = bucketLabels[bucket]!;
-		swatch.setAttribute("aria-label", bucketLabels[bucket]!);
+		swatch.setAttribute("aria-label", bucketLabels[bucket]);
 	}
 
 	legend.createSpan({ text: "More", cls: cls("heatmap-legend-label") });

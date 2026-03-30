@@ -6,7 +6,7 @@ export function renderCalendarCheckboxes(
 	selectedCalendars: string[],
 	onSelectionChanged: (selected: string[]) => void
 ): void {
-	let selectorContainer = container.querySelector(`.${cls("caldav-calendar-selector")}`) as HTMLElement | null;
+	let selectorContainer = container.querySelector(`.${cls("caldav-calendar-selector")}`);
 	if (selectorContainer) {
 		selectorContainer.empty();
 	} else {

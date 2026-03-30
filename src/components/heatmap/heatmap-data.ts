@@ -63,9 +63,9 @@ function computeQuantileThresholds(days: Map<string, HeatmapDayData>): [number, 
 	const counts = [...days.values()].map((d) => d.count).sort((a, b) => a - b);
 	const n = counts.length;
 
-	const p25 = counts[Math.floor((n - 1) * 0.25)]!;
-	const p50 = counts[Math.floor((n - 1) * 0.5)]!;
-	const p75 = counts[Math.floor((n - 1) * 0.75)]!;
+	const p25 = counts[Math.floor((n - 1) * 0.25)];
+	const p50 = counts[Math.floor((n - 1) * 0.5)];
+	const p75 = counts[Math.floor((n - 1) * 0.75)];
 
 	return [p25, p50, p75];
 }

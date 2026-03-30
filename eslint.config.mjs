@@ -1,8 +1,8 @@
 // eslint.config.mjs
 import js from "@eslint/js";
-import tseslint from "typescript-eslint";
-import { defineConfig } from "eslint/config";
 import obsidianmd from "eslint-plugin-obsidianmd";
+import { defineConfig } from "eslint/config";
+import tseslint from "typescript-eslint";
 
 export default defineConfig([
 	{
@@ -107,7 +107,7 @@ export default defineConfig([
 	},
 
 	{
-		files: ["**/*.test.ts", "**/*.spec.ts"],
+		files: ["**/*.test.ts", "**/*.spec.ts", "tests/**/*.ts"],
 		languageOptions: {
 			globals: {
 				global: "readonly",

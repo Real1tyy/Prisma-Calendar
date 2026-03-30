@@ -164,7 +164,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 
 		const end = Math.min(this.renderedCount + PAGE_SIZE, this.filteredItems.length);
 		for (let i = this.renderedCount; i < end; i++) {
-			this.createEventItem(this.listContainer, this.filteredItems[i]!);
+			this.createEventItem(this.listContainer, this.filteredItems[i]);
 		}
 		this.renderedCount = end;
 		this.updateLoadMoreButton();

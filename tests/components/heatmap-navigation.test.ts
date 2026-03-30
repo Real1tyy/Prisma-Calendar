@@ -32,7 +32,7 @@ function makeFullGrid(): { grid: HeatmapGrid; cells: HeatmapGridCell[][] } {
 		rows[r] = [];
 		for (let c = 0; c < 3; c++) {
 			const cell = makeCell(r, c);
-			rows[r]!.push(cell);
+			rows[r].push(cell);
 			allCells.push(cell);
 		}
 	}
@@ -43,68 +43,68 @@ describe("findAdjacentCell", () => {
 	describe("right", () => {
 		it("moves to next column in same row", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[1]![0]!, "right")).toBe(cells[1]![1]);
+			expect(findAdjacentCell(grid, cells[1][0], "right")).toBe(cells[1][1]);
 		});
 
 		it("wraps to next row when at last column", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[0]![2]!, "right")).toBe(cells[1]![0]);
+			expect(findAdjacentCell(grid, cells[0][2], "right")).toBe(cells[1][0]);
 		});
 
 		it("wraps from last cell to first cell", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[2]![2]!, "right")).toBe(cells[0]![0]);
+			expect(findAdjacentCell(grid, cells[2][2], "right")).toBe(cells[0][0]);
 		});
 	});
 
 	describe("left", () => {
 		it("moves to previous column in same row", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[1]![2]!, "left")).toBe(cells[1]![1]);
+			expect(findAdjacentCell(grid, cells[1][2], "left")).toBe(cells[1][1]);
 		});
 
 		it("wraps to previous row when at first column", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[1]![0]!, "left")).toBe(cells[0]![2]);
+			expect(findAdjacentCell(grid, cells[1][0], "left")).toBe(cells[0][2]);
 		});
 
 		it("wraps from first cell to last cell", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[0]![0]!, "left")).toBe(cells[2]![2]);
+			expect(findAdjacentCell(grid, cells[0][0], "left")).toBe(cells[2][2]);
 		});
 	});
 
 	describe("down", () => {
 		it("moves to next row in same column", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[0]![1]!, "down")).toBe(cells[1]![1]);
+			expect(findAdjacentCell(grid, cells[0][1], "down")).toBe(cells[1][1]);
 		});
 
 		it("wraps to next column when at last row", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[2]![0]!, "down")).toBe(cells[0]![1]);
+			expect(findAdjacentCell(grid, cells[2][0], "down")).toBe(cells[0][1]);
 		});
 
 		it("wraps from bottom-right to top-left", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[2]![2]!, "down")).toBe(cells[0]![0]);
+			expect(findAdjacentCell(grid, cells[2][2], "down")).toBe(cells[0][0]);
 		});
 	});
 
 	describe("up", () => {
 		it("moves to previous row in same column", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[2]![1]!, "up")).toBe(cells[1]![1]);
+			expect(findAdjacentCell(grid, cells[2][1], "up")).toBe(cells[1][1]);
 		});
 
 		it("wraps to previous column when at first row", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[0]![1]!, "up")).toBe(cells[2]![0]);
+			expect(findAdjacentCell(grid, cells[0][1], "up")).toBe(cells[2][0]);
 		});
 
 		it("wraps from top-left to bottom-right", () => {
 			const { grid, cells } = makeFullGrid();
-			expect(findAdjacentCell(grid, cells[0]![0]!, "up")).toBe(cells[2]![2]);
+			expect(findAdjacentCell(grid, cells[0][0], "up")).toBe(cells[2][2]);
 		});
 	});
 
@@ -171,14 +171,14 @@ describe("findAdjacentCell", () => {
 		it("navigates down within a column", () => {
 			const cells = Array.from({ length: 7 }, (_, r) => makeCell(r, 0));
 			const grid = makeGrid(cells, 6, 0);
-			expect(findAdjacentCell(grid, cells[2]!, "down")).toBe(cells[3]);
+			expect(findAdjacentCell(grid, cells[2], "down")).toBe(cells[3]);
 		});
 
 		it("wraps down from row 6 to next column row 0", () => {
 			const col0 = Array.from({ length: 7 }, (_, r) => makeCell(r, 0));
 			const col1 = Array.from({ length: 7 }, (_, r) => makeCell(r, 1));
 			const grid = makeGrid([...col0, ...col1], 6, 1);
-			expect(findAdjacentCell(grid, col0[6]!, "down")).toBe(col1[0]);
+			expect(findAdjacentCell(grid, col0[6], "down")).toBe(col1[0]);
 		});
 	});
 });

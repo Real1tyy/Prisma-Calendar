@@ -785,7 +785,7 @@ export abstract class BaseEventModal extends Modal {
 			skip: "skipProp",
 		};
 
-		const shape: Record<string, z.ZodTypeAny> = {};
+		const shape: Record<string, z.ZodType> = {};
 		for (const [key, guard] of Object.entries(settingsGuards)) {
 			if (settings[guard as keyof typeof settings]) {
 				shape[key] = fullShape[key as keyof typeof fullShape];

@@ -204,9 +204,9 @@ class PrismaBasesView extends BasesView {
 
 		const calendarId = this.config.get("calendarId");
 		if (typeof calendarId === "string" && calendarId) {
-			return bundles.find((b) => b.calendarId === calendarId) ?? bundles[0]!;
+			return bundles.find((b) => b.calendarId === calendarId) ?? bundles[0];
 		}
-		return bundles[0]!;
+		return bundles[0];
 	}
 
 	private navigateToInitialDate(): void {

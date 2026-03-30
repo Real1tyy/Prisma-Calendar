@@ -17,5 +17,5 @@ export function appendZ(iso: string): string {
 
 /** Convert a Luxon DateTime to internal ISO (no Z, no offset, no milliseconds). */
 export function toInternalISO(dt: DateTime): ISO {
-	return (dt.toISO({ suppressMilliseconds: true, includeOffset: false }) ?? "") as ISO;
+	return dt.toISO({ suppressMilliseconds: true, includeOffset: false }) ?? "";
 }
