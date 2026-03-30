@@ -4689,7 +4689,7 @@ button[class*="prisma-"]:focus-visible {
 .prisma-timeline-nav-date-group {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 1rem;
 }
 
 .prisma-timeline-nav-input {
@@ -5382,7 +5382,7 @@ button[class*="prisma-"]:focus-visible {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 16px;
+	gap: 1rem;
 	padding: 0.5rem 1.5rem;
 	border-bottom: 1px solid var(--background-modifier-border);
 }
@@ -5395,7 +5395,7 @@ button[class*="prisma-"]:focus-visible {
 
 .prisma-heatmap-mode-group {
 	display: flex;
-	gap: 4px;
+	gap: 1rem;
 }
 
 .prisma-heatmap-mode-btn {
@@ -5417,7 +5417,7 @@ button[class*="prisma-"]:focus-visible {
 .prisma-heatmap-nav-group {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 1rem;
 }
 
 .prisma-heatmap-nav-btn {
@@ -9927,7 +9927,7 @@ div.vis-tooltip {
 .prisma-view-filter-bar {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 1rem;
 	flex: 1 1 0;
 	min-width: 0;
 }
@@ -9951,7 +9951,7 @@ div.vis-tooltip {
 .prisma-view-header-row {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 1rem;
 	padding: 6px 8px;
 	border-bottom: 1px solid var(--background-modifier-border);
 	overflow: hidden;
@@ -9960,7 +9960,7 @@ div.vis-tooltip {
 .prisma-view-header-left {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 1rem;
 	flex: 0 1 auto;
 	min-width: 0;
 	overflow: hidden;
@@ -9969,6 +9969,13 @@ div.vis-tooltip {
 .prisma-view-header-right {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 1rem;
 	flex: 0 0 auto;
+}
+
+.prisma-view-header-divider {
+	width: 1px;
+	height: 20px;
+	background: var(--background-modifier-border);
+	flex-shrink: 0;
 }

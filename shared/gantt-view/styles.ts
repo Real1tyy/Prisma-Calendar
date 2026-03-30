@@ -15,7 +15,7 @@ function buildGanttStyles(p: string): string {
 	display: flex;
 	flex-wrap: nowrap;
 	align-items: center;
-	gap: 8px;
+	gap: 1rem;
 	padding: 6px 8px;
 	border-bottom: 1px solid var(--background-modifier-border);
 	flex-shrink: 0;
@@ -26,7 +26,7 @@ function buildGanttStyles(p: string): string {
 	display: flex;
 	flex-wrap: nowrap;
 	align-items: center;
-	gap: 6px;
+	gap: 1rem;
 	flex: 1 1 0;
 	min-width: 0;
 	overflow: hidden;
@@ -36,14 +36,16 @@ function buildGanttStyles(p: string): string {
 	display: flex;
 	flex-wrap: nowrap;
 	align-items: center;
-	gap: 6px;
+	gap: 1rem;
 	flex-shrink: 0;
 }
+
+
 
 .${p}gantt-nav {
 	display: flex;
 	align-items: center;
-	gap: 2px;
+	gap: 1rem;
 }
 
 .${p}gantt-nav-btn {
