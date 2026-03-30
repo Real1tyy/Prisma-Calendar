@@ -9,7 +9,7 @@ export type {
 	PackedTask,
 	Viewport,
 } from "./gantt-types";
-export { GANTT_DEFAULTS, MS_PER_DAY, SVG_NS } from "./gantt-types";
+export { GANTT_DEFAULTS, MS_PER_DAY } from "./gantt-types";
 export type { GanttRenderData, GanttRendererConfig, LayoutFn } from "./render/gantt-renderer";
 export { GanttRenderer } from "./render/gantt-renderer";
 export { packRows, visualEndTime } from "./row-packing";

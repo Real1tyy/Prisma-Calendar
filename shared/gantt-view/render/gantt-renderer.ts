@@ -1,6 +1,8 @@
+import { SVG, type Svg } from "@svgdotjs/svg.js";
+
 import { createCssUtils } from "../../core/css-utils";
 import type { ArrowLayout, BarLayout, GanttConfig, GanttInteractionHooks, PackedTask, Viewport } from "../gantt-types";
-import { GANTT_DEFAULTS, MS_PER_DAY, SVG_NS } from "../gantt-types";
+import { GANTT_DEFAULTS, MS_PER_DAY } from "../gantt-types";
 import { injectGanttStyles } from "../styles";
 import { buildViewport, todayStartMs } from "../time-scale";
 import { renderArrows } from "./gantt-arrows";
@@ -36,10 +38,10 @@ export class GanttRenderer {
 	readonly toolbarRight: HTMLElement;
 	private headerContent: HTMLElement;
 	private bodyWrapper: HTMLElement;
-	private gridSvg: SVGElement;
+	private gridSvg: Svg;
 	private barLayer: HTMLElement;
 	private barContainer: HTMLElement;
-	private arrowSvg: SVGElement;
+	private arrowSvg: Svg;
 	private viewportStartMs: number;
 	private layoutFn: LayoutFn | null = null;
 	private cleanupPan: (() => void) | null = null;
@@ -70,16 +72,12 @@ export class GanttRenderer {
 
 		this.bodyWrapper = container.createDiv({ cls: cls("gantt-body") });
 
-		this.gridSvg = document.createElementNS(SVG_NS, "svg");
-		this.gridSvg.classList.add(cls("gantt-grid-svg"));
-		this.bodyWrapper.appendChild(this.gridSvg);
+		this.gridSvg = SVG().addTo(this.bodyWrapper).addClass(cls("gantt-grid-svg"));
 
 		this.barLayer = this.bodyWrapper.createDiv({ cls: cls("gantt-bar-layer") });
 		this.barContainer = this.barLayer.createDiv({ cls: cls("gantt-bar-container") });
 
-		this.arrowSvg = document.createElementNS(SVG_NS, "svg");
-		this.arrowSvg.classList.add(cls("gantt-arrow-svg"));
-		this.barLayer.appendChild(this.arrowSvg);
+		this.arrowSvg = SVG().addTo(this.barLayer).addClass(cls("gantt-arrow-svg"));
 
 		this.cleanupPan = this.setupPan();
 	}
@@ -206,8 +204,7 @@ export class GanttRenderer {
 		this.barLayer.style.width = `${viewport.widthPx}px`;
 		this.barLayer.style.minHeight = `${gridHeight}px`;
 
-		this.arrowSvg.setAttribute("width", String(viewport.widthPx));
-		this.arrowSvg.setAttribute("height", String(gridHeight));
+		this.arrowSvg.size(viewport.widthPx, gridHeight);
 	}
 
 	render(layoutFn: LayoutFn, centerOnTasks?: { startMs: number; endMs: number }[]): void {
