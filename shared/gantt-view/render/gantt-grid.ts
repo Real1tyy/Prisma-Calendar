@@ -1,4 +1,4 @@
-import { cls } from "../../core/css-utils";
+import type { ClsFn } from "../../core/css-utils";
 import type { GanttConfig, Viewport } from "../gantt-types";
 import { MS_PER_DAY } from "../gantt-types";
 
@@ -9,7 +9,8 @@ export function renderGrid(
 	viewport: Viewport,
 	rowCount: number,
 	config: GanttConfig,
-	contentHeight: number
+	contentHeight: number,
+	cls: ClsFn
 ): void {
 	while (svg.firstChild) svg.removeChild(svg.firstChild);
 

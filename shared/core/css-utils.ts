@@ -1,6 +1,8 @@
 /**
  * Interface for CSS utility functions created by the factory.
  */
+export type ClsFn = (...classNames: string[]) => string;
+
 export interface CssUtils {
 	/**
 	 * Prefixes class names with the plugin prefix.

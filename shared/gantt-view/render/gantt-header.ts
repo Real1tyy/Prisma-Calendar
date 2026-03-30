@@ -1,4 +1,4 @@
-import { cls } from "../../core/css-utils";
+import type { ClsFn } from "../../core/css-utils";
 import type { GanttConfig, Viewport } from "../gantt-types";
 import { MS_PER_DAY } from "../gantt-types";
 
@@ -52,7 +52,7 @@ function collectMonthSpans(viewport: Viewport): MonthSpan[] {
 	return spans;
 }
 
-export function renderHeader(container: HTMLElement, viewport: Viewport, config: GanttConfig): void {
+export function renderHeader(container: HTMLElement, viewport: Viewport, config: GanttConfig, cls: ClsFn): void {
 	container.empty();
 	container.style.width = `${viewport.widthPx}px`;
 	container.style.height = `${config.headerHeight}px`;

@@ -1,15 +1,14 @@
-import { cls } from "../../core/css-utils";
+import type { ClsFn } from "../../core/css-utils";
 import type { ArrowLayout, GanttInteractionHooks } from "../gantt-types";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-const MARKER_ID = "prisma-gantt-arrowhead";
 
-function ensureArrowheadMarker(svg: SVGElement): void {
-	if (svg.querySelector(`#${MARKER_ID}`)) return;
+function ensureArrowheadMarker(svg: SVGElement, markerId: string, cls: ClsFn): void {
+	if (svg.querySelector(`#${markerId}`)) return;
 
 	const defs = document.createElementNS(SVG_NS, "defs");
 	const marker = document.createElementNS(SVG_NS, "marker");
-	marker.setAttribute("id", MARKER_ID);
+	marker.setAttribute("id", markerId);
 	marker.setAttribute("viewBox", "0 0 10 10");
 	marker.setAttribute("refX", "10");
 	marker.setAttribute("refY", "5");
@@ -27,8 +26,14 @@ function ensureArrowheadMarker(svg: SVGElement): void {
 	svg.appendChild(defs);
 }
 
-export function renderArrows(svg: SVGElement, arrows: ArrowLayout[], hooks: GanttInteractionHooks): void {
-	ensureArrowheadMarker(svg);
+export function renderArrows(
+	svg: SVGElement,
+	arrows: ArrowLayout[],
+	hooks: GanttInteractionHooks,
+	cls: ClsFn,
+	markerId: string
+): void {
+	ensureArrowheadMarker(svg, markerId, cls);
 
 	for (const arrow of arrows) {
 		const group = document.createElementNS(SVG_NS, "g");
@@ -41,7 +46,7 @@ export function renderArrows(svg: SVGElement, arrows: ArrowLayout[], hooks: Gant
 
 		const visible = document.createElementNS(SVG_NS, "path");
 		visible.setAttribute("d", arrow.path);
-		visible.setAttribute("marker-end", `url(#${MARKER_ID})`);
+		visible.setAttribute("marker-end", `url(#${markerId})`);
 		visible.classList.add(cls("gantt-arrow"));
 		group.appendChild(visible);
 

@@ -10,7 +10,8 @@ export type {
 	Viewport,
 } from "./gantt-types";
 export { GANTT_DEFAULTS, MS_PER_DAY } from "./gantt-types";
-export type { GanttRenderData, LayoutFn } from "./render/gantt-renderer";
+export type { GanttRenderData, GanttRendererConfig, LayoutFn } from "./render/gantt-renderer";
 export { GanttRenderer } from "./render/gantt-renderer";
 export { packRows, visualEndTime } from "./row-packing";
+export { injectGanttStyles } from "./styles";
 export { buildViewport, centerViewportOnTasks } from "./time-scale";

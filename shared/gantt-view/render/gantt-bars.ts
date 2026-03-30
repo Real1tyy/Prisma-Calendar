@@ -1,11 +1,12 @@
-import { cls } from "../../core/css-utils";
+import type { ClsFn } from "../../core/css-utils";
 import type { BarLayout, GanttInteractionHooks, PackedTask } from "../gantt-types";
 
 export function renderBars(
 	container: HTMLElement,
 	bars: BarLayout[],
 	taskMap: Map<string, PackedTask>,
-	hooks: GanttInteractionHooks
+	hooks: GanttInteractionHooks,
+	cls: ClsFn
 ): void {
 	container.empty();
 

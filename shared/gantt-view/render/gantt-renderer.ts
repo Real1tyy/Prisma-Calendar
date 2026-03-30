@@ -1,6 +1,7 @@
-import { cls } from "../../core/css-utils";
+import { createCssUtils } from "../../core/css-utils";
 import type { ArrowLayout, BarLayout, GanttConfig, GanttInteractionHooks, PackedTask, Viewport } from "../gantt-types";
 import { GANTT_DEFAULTS, MS_PER_DAY } from "../gantt-types";
+import { injectGanttStyles } from "../styles";
 import { buildViewport } from "../time-scale";
 import { renderArrows } from "./gantt-arrows";
 import { renderBars } from "./gantt-bars";
@@ -8,9 +9,12 @@ import { renderGrid } from "./gantt-grid";
 import { renderHeader } from "./gantt-header";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-const BAR_EXCLUDE_SELECTOR = ".prisma-gantt-bar";
-const ARROW_EXCLUDE_SELECTOR = ".prisma-gantt-arrow-group";
 const DRAG_THRESHOLD_PX = 5;
+
+export interface GanttRendererConfig {
+	cssPrefix: string;
+	ganttConfig?: Partial<GanttConfig>;
+}
 
 export interface GanttRenderData {
 	taskMap: Map<string, PackedTask>;
@@ -25,6 +29,8 @@ export type LayoutFn = (viewport: Viewport) => GanttRenderData;
 export class GanttRenderer {
 	private readonly config: GanttConfig;
 	private readonly hooks: GanttInteractionHooks;
+	private readonly cls: (...names: string[]) => string;
+	private readonly markerId: string;
 	private headerContent: HTMLElement;
 	private bodyWrapper: HTMLElement;
 	private svgLayer: SVGElement;
@@ -36,10 +42,15 @@ export class GanttRenderer {
 	constructor(
 		private readonly container: HTMLElement,
 		hooks: GanttInteractionHooks,
-		config?: Partial<GanttConfig>
+		rendererConfig: GanttRendererConfig
 	) {
-		this.config = { ...GANTT_DEFAULTS, ...config };
+		this.config = { ...GANTT_DEFAULTS, ...rendererConfig.ganttConfig };
 		this.hooks = hooks;
+
+		const { cls } = createCssUtils(rendererConfig.cssPrefix);
+		this.cls = cls;
+		this.markerId = `${rendererConfig.cssPrefix}gantt-arrowhead`;
+		injectGanttStyles(rendererConfig.cssPrefix);
 
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
@@ -74,9 +85,12 @@ export class GanttRenderer {
 	}
 
 	private setupCanvasContextMenu(): void {
+		const barSel = `.${this.cls("gantt-bar")}`;
+		const arrowSel = `.${this.cls("gantt-arrow-group")}`;
+
 		this.bodyWrapper.addEventListener("contextmenu", (e) => {
 			const target = e.target as HTMLElement;
-			if (target.closest(BAR_EXCLUDE_SELECTOR) || target.closest(ARROW_EXCLUDE_SELECTOR)) return;
+			if (target.closest(barSel) || target.closest(arrowSel)) return;
 			if (!this.hooks.onCanvasContextMenu) return;
 
 			e.preventDefault();
@@ -96,10 +110,12 @@ export class GanttRenderer {
 		let origStartMs = 0;
 		let origScrollTop = 0;
 
+		const barSel = `.${this.cls("gantt-bar")}`;
+
 		const onPointerDown = (e: PointerEvent): void => {
 			if (e.button !== 0) return;
 			const target = e.target as HTMLElement;
-			if (target.closest(BAR_EXCLUDE_SELECTOR)) return;
+			if (target.closest(barSel)) return;
 
 			isPending = true;
 			isDragging = false;
@@ -159,17 +175,13 @@ export class GanttRenderer {
 		const dataHeight = data.rowCount * (this.config.barHeight + this.config.rowPadding) + this.config.rowPadding;
 		const contentHeight = Math.max(dataHeight, this.containerHeight);
 
-		renderHeader(this.headerContent, viewport, this.config);
-		renderGrid(this.svgLayer, viewport, data.rowCount, this.config, contentHeight);
-		renderBars(this.barLayer, data.bars, data.taskMap, this.hooks);
-		renderArrows(this.svgLayer, data.arrows, this.hooks);
+		renderHeader(this.headerContent, viewport, this.config, this.cls);
+		renderGrid(this.svgLayer, viewport, data.rowCount, this.config, contentHeight, this.cls);
+		renderBars(this.barLayer, data.bars, data.taskMap, this.hooks, this.cls);
+		renderArrows(this.svgLayer, data.arrows, this.hooks, this.cls, this.markerId);
 
 		this.barLayer.style.width = `${viewport.widthPx}px`;
 		this.barLayer.style.minHeight = `${contentHeight}px`;
-	}
-
-	setLayoutFn(fn: LayoutFn): void {
-		this.layoutFn = fn;
 	}
 
 	render(layoutFn: LayoutFn, centerOnTasks?: { startMs: number; endMs: number }[]): void {
