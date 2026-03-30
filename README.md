@@ -141,13 +141,13 @@ Browse, search, and manage all events across all your calendars from a single un
 
 ## 📱 **Mobile Support**
 
-Core features work on mobile without any problems. The design is responsive, and I'm continuously tightening up the mobile experience based on feedback to make it rock solid. If you run into anything, please open a [GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues).
+Core features work on mobile without any problems. The design is responsive, and I'm continuously tightening up the mobile experience based on feedback to make it rock solid. If you run into anything, please open a [GitHub issue](https://github.com/Real1tyy/Prisma-Calendar/issues?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_issues).
 
 ---
 
 ## 📦 Installation
 
-Install via **BRAT**, the **Obsidian Community Plugin store**, or manually from [GitHub Releases](https://github.com/Real1tyy/Prisma-Calendar/releases).
+Install via **BRAT**, the **Obsidian Community Plugin store**, or manually from [GitHub Releases](https://github.com/Real1tyy/Prisma-Calendar/releases?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_releases).
 
 **[Full installation guide →](https://real1tyy.github.io/Prisma-Calendar/installation?utm_campaign=prisma_calendar&utm_source=github&utm_medium=repo&utm_content=readme_installation_guide)**
 
