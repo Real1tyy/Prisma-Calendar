@@ -1,5 +1,4 @@
 import {
-	addCls,
 	cls,
 	ColorEvaluator,
 	type ContextMenuHandle,
@@ -49,6 +48,7 @@ import { openCategoryAssignModal } from "../modals/category/assignment";
 import { EventCreateModal } from "../modals/event/event-create-modal";
 import { EventEditModal } from "../modals/event/event-edit-modal";
 import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
+import { createStickyBanner, type StickyBannerHandle } from "../sticky-banner";
 import { createViewFilterBar, type ViewFilterBarHandle } from "../view-filter-bar";
 
 const REFRESH_DEBOUNCE_MS = 100;
@@ -186,8 +186,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	let activeMenuTaskId: string | null = null;
 
 	let prereqTargetFilePath: string | null = null;
-	let prereqBannerEl: HTMLElement | null = null;
-	let prereqEscapeHandler: ((e: KeyboardEvent) => void) | null = null;
+	let prereqBanner: StickyBannerHandle | null = null;
 
 	function findEventByTaskId(taskId: string): CalendarEvent | undefined {
 		const task = cachedTaskMap.get(taskId);
@@ -207,37 +206,20 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		prereqTargetFilePath = ev.ref.filePath;
 
 		if (!renderer) return;
-		prereqBannerEl = renderer.toolbarLeft.createDiv(cls("prereq-selection-banner"));
-
-		const textEl = prereqBannerEl.createDiv(cls("prereq-selection-banner-text"));
-		textEl.setText(`Click a bar to assign it as a prerequisite for "${extractCleanDisplayName(ev.ref.filePath)}"`);
-
-		const cancelBtn = prereqBannerEl.createEl("button", { text: "Cancel" });
-		addCls(cancelBtn, "prereq-selection-btn");
-		cancelBtn.addEventListener("click", () => {
-			exitPrereqSelection();
-			new Notice("Prerequisite selection cancelled");
-		});
-
-		prereqEscapeHandler = (e: KeyboardEvent) => {
-			if (e.key === "Escape" && prereqTargetFilePath) {
-				e.preventDefault();
-				e.stopPropagation();
+		prereqBanner = createStickyBanner(
+			renderer.toolbarLeft,
+			`Click a bar to assign it as a prerequisite for "${extractCleanDisplayName(ev.ref.filePath)}"`,
+			() => {
 				exitPrereqSelection();
 				new Notice("Prerequisite selection cancelled");
 			}
-		};
-		document.addEventListener("keydown", prereqEscapeHandler, true);
+		);
 	}
 
 	function exitPrereqSelection(): void {
 		prereqTargetFilePath = null;
-		prereqBannerEl?.remove();
-		prereqBannerEl = null;
-		if (prereqEscapeHandler) {
-			document.removeEventListener("keydown", prereqEscapeHandler, true);
-			prereqEscapeHandler = null;
-		}
+		prereqBanner?.destroy();
+		prereqBanner = null;
 	}
 
 	function showArrowContextMenu(fromTaskId: string, toTaskId: string, e: MouseEvent): void {

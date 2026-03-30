@@ -1,16 +1,15 @@
 import type { Calendar } from "@fullcalendar/core";
-import { addCls, cls } from "@real1ty-obsidian-plugins";
 import { type App, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { addPrerequisite } from "../core/commands";
 import { extractCleanDisplayName } from "../utils/event-naming";
+import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 
 export class PrerequisiteSelectionManager {
 	private targetFilePath: string | null = null;
 	private isActive = false;
-	private bannerEl: HTMLElement | null = null;
-	private escapeHandler: ((e: KeyboardEvent) => void) | null = null;
+	private banner: StickyBannerHandle | null = null;
 
 	// ─── Lifecycle ────────────────────────────────────────────────
 
@@ -29,16 +28,23 @@ export class PrerequisiteSelectionManager {
 		this.targetFilePath = targetFilePath;
 		this.isActive = true;
 
-		this.showBanner();
-		this.registerEscapeHandler();
+		const targetName = extractCleanDisplayName(targetFilePath);
+		this.banner = createStickyBanner(
+			this.container,
+			`Click an event to assign it as a prerequisite for "${targetName}"`,
+			() => {
+				this.exit();
+				new Notice("Prerequisite selection cancelled");
+			}
+		);
 	}
 
 	exit(): void {
 		this.isActive = false;
 		this.targetFilePath = null;
 
-		this.removeBanner();
-		this.unregisterEscapeHandler();
+		this.banner?.destroy();
+		this.banner = null;
 	}
 
 	isInSelectionMode(): boolean {
@@ -73,49 +79,5 @@ export class PrerequisiteSelectionManager {
 				new Notice("Failed to assign prerequisite");
 			}
 		})();
-	}
-
-	// ─── Banner UI ────────────────────────────────────────────────
-
-	private showBanner(): void {
-		const targetName = this.targetFilePath ? extractCleanDisplayName(this.targetFilePath) : "event";
-
-		this.bannerEl = this.container.createDiv(cls("prereq-selection-banner"));
-
-		const textEl = this.bannerEl.createDiv(cls("prereq-selection-banner-text"));
-		textEl.setText(`Click an event to assign it as a prerequisite for "${targetName}"`);
-
-		const cancelBtn = this.bannerEl.createEl("button", { text: "Cancel" });
-		addCls(cancelBtn, "prereq-selection-btn");
-		cancelBtn.addEventListener("click", () => {
-			this.exit();
-			new Notice("Prerequisite selection cancelled");
-		});
-	}
-
-	private removeBanner(): void {
-		this.bannerEl?.remove();
-		this.bannerEl = null;
-	}
-
-	// ─── Keyboard ─────────────────────────────────────────────────
-
-	private registerEscapeHandler(): void {
-		this.escapeHandler = (e: KeyboardEvent) => {
-			if (e.key === "Escape" && this.isActive) {
-				e.preventDefault();
-				e.stopPropagation();
-				this.exit();
-				new Notice("Prerequisite selection cancelled");
-			}
-		};
-		document.addEventListener("keydown", this.escapeHandler, true);
-	}
-
-	private unregisterEscapeHandler(): void {
-		if (this.escapeHandler) {
-			document.removeEventListener("keydown", this.escapeHandler, true);
-			this.escapeHandler = null;
-		}
 	}
 }

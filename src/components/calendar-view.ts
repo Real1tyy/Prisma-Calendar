@@ -75,6 +75,7 @@ import {
 	showIntervalEventsModal,
 } from "./modals";
 import { PrerequisiteSelectionManager } from "./prerequisite-selection-manager";
+import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 import { UntrackedEventsDropdown } from "./untracked-events-dropdown";
 import { AllTimeStatsModal, DailyStatsModal, MonthlyStatsModal, WeeklyStatsModal } from "./weekly-stats";
 import { ZoomManager } from "./zoom-manager";
@@ -144,6 +145,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private isRestoring = false;
 	private connectionRenderer: ConnectionRenderer | null = null;
 	private showConnections = false;
+	private connectionBanner: StickyBannerHandle | null = null;
 	private currentViewStart = new Date();
 	private currentViewEnd = new Date();
 	readonly app: App;
@@ -189,8 +191,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		const isProSub = this.bundle.plugin.licenseManager.isPro$.subscribe((isPro) => {
 			if (!isPro && this.showConnections) {
-				this.showConnections = false;
-				this.connectionRenderer?.clear();
+				this.hideConnections();
 			}
 		});
 		this.register(() => isProSub.unsubscribe());
@@ -287,6 +288,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.calendar = null;
 		this.colorEvaluator.destroy();
 		this.batchSelectionManager = null;
+		this.removeConnectionBanner();
 		this.connectionRenderer?.destroy();
 		this.connectionRenderer = null;
 	}
@@ -2581,9 +2583,28 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.showConnections = !this.showConnections;
 		if (this.showConnections) {
 			this.renderConnections();
+			this.showConnectionBanner();
 		} else {
-			this.connectionRenderer?.clear();
+			this.hideConnections();
 		}
+	}
+
+	private hideConnections(): void {
+		this.showConnections = false;
+		this.connectionRenderer?.clear();
+		this.removeConnectionBanner();
+	}
+
+	private showConnectionBanner(): void {
+		this.removeConnectionBanner();
+		this.connectionBanner = createStickyBanner(this.container, "Prerequisite connections enabled", () =>
+			this.hideConnections()
+		);
+	}
+
+	private removeConnectionBanner(): void {
+		this.connectionBanner?.destroy();
+		this.connectionBanner = null;
 	}
 
 	private renderConnections(): void {
