@@ -1,10 +1,24 @@
-import { cls, ColorEvaluator, parseIntoList, type TabDefinition } from "@real1ty-obsidian-plugins";
-import { type App, Menu, setIcon } from "obsidian";
+import {
+	cls,
+	ColorEvaluator,
+	type ContextMenuHandle,
+	type ContextMenuItemDefinition,
+	createContextMenu,
+	parseIntoList,
+	type TabDefinition,
+} from "@real1ty-obsidian-plugins";
+import { type App, Menu } from "obsidian";
 import { debounceTime, distinctUntilChanged, merge, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { assignPrerequisites } from "../../core/commands/frontmatter-update-command";
-import { DeleteEventCommand } from "../../core/commands/lifecycle-commands";
+import {
+	assignCategories,
+	assignPrerequisites,
+	markAsDone,
+	markAsUndone,
+	toggleSkip,
+} from "../../core/commands/frontmatter-update-command";
+import { CloneEventCommand, DeleteEventCommand } from "../../core/commands/lifecycle-commands";
 import { PRO_FEATURES } from "../../core/license";
 import type { BarLayout, GanttInteractionHooks, GanttRenderData, PackedTask, Viewport } from "../../gantt";
 import {
@@ -18,9 +32,10 @@ import {
 } from "../../gantt";
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { getFileAndFrontmatter } from "../../utils/obsidian";
+import { isEventDone } from "../../utils/event-frontmatter";
+import { getFileAndFrontmatter, openFileInNewWindow } from "../../utils/obsidian";
 import { showEventPreviewModal } from "../modals";
-import { openPrerequisiteAssignModal } from "../modals/category/assignment";
+import { openCategoryAssignModal, openPrerequisiteAssignModal } from "../modals/category/assignment";
 import { EventCreateModal } from "../modals/event/event-create-modal";
 import { EventEditModal } from "../modals/event/event-edit-modal";
 import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
@@ -30,6 +45,128 @@ const REFRESH_DEBOUNCE_MS = 100;
 
 export { sanitizeGanttId };
 
+function buildBarMenuItems(
+	app: App,
+	bundle: CalendarBundle,
+	getEvent: () => CalendarEvent | undefined,
+	exec: (cmd: Parameters<typeof bundle.commandManager.executeCommand>[0]) => void
+): ContextMenuItemDefinition[] {
+	const act = (action: (ev: CalendarEvent) => void): (() => void) => {
+		return () => {
+			const ev = getEvent();
+			if (ev) action(ev);
+		};
+	};
+
+	return [
+		{
+			id: "enlarge",
+			label: "Enlarge",
+			icon: "maximize-2",
+			section: "view",
+			onAction: act((ev) => {
+				showEventPreviewModal(app, bundle, {
+					title: ev.title,
+					start: new Date(ev.start),
+					end: ev.type === "timed" ? new Date(ev.end) : null,
+					allDay: ev.allDay,
+					extendedProps: { filePath: ev.ref.filePath },
+				});
+			}),
+		},
+		{
+			id: "edit",
+			label: "Edit event",
+			icon: "pencil",
+			section: "view",
+			onAction: act((ev) => {
+				new EventEditModal(app, bundle, {
+					title: ev.title,
+					start: ev.start,
+					end: ev.type === "timed" ? ev.end : null,
+					allDay: ev.allDay,
+					extendedProps: { filePath: ev.ref.filePath },
+				}).open();
+			}),
+		},
+		{
+			id: "open-file",
+			label: "Open file",
+			icon: "file-text",
+			section: "view",
+			onAction: act((ev) => void app.workspace.openLinkText(ev.ref.filePath, "", false)),
+		},
+		{
+			id: "open-file-new-window",
+			label: "Open file in new window",
+			icon: "external-link",
+			section: "view",
+			onAction: act((ev) => openFileInNewWindow(app, ev.ref.filePath)),
+		},
+		{
+			id: "mark-done",
+			label: "Mark as done",
+			icon: "check",
+			section: "status",
+			onAction: act((ev) => {
+				const settings = bundle.settingsStore.currentSettings;
+				const done = isEventDone(app, ev.ref.filePath, settings.statusProperty, settings.doneValue);
+				exec(done ? markAsUndone(app, bundle, ev.ref.filePath) : markAsDone(app, bundle, ev.ref.filePath));
+			}),
+		},
+		{
+			id: "skip",
+			label: "Skip event",
+			icon: "eye-off",
+			section: "status",
+			onAction: act((ev) => exec(toggleSkip(app, bundle, ev.ref.filePath))),
+		},
+		{
+			id: "assign-prerequisites",
+			label: "Assign prerequisites",
+			icon: "link",
+			section: "organize",
+			onAction: act((ev) => {
+				const settings = bundle.settingsStore.currentSettings;
+				const { frontmatter } = getFileAndFrontmatter(app, ev.ref.filePath);
+				const currentPrereqs = parseIntoList(frontmatter[settings.prerequisiteProp], { splitCommas: false });
+				openPrerequisiteAssignModal(app, bundle, currentPrereqs, (selected: string[]) => {
+					exec(assignPrerequisites(app, bundle, ev.ref.filePath, selected));
+				});
+			}),
+		},
+		{
+			id: "assign-categories",
+			label: "Assign categories",
+			icon: "tag",
+			section: "organize",
+			onAction: act((ev) => {
+				const settings = bundle.settingsStore.currentSettings;
+				const { frontmatter } = getFileAndFrontmatter(app, ev.ref.filePath);
+				const currentCats = parseIntoList(frontmatter[settings.categoryProp], { splitCommas: true });
+				const categories = bundle.categoryTracker.getCategoriesWithColors();
+				openCategoryAssignModal(app, categories, settings.defaultNodeColor, currentCats, (selected: string[]) => {
+					exec(assignCategories(app, bundle, ev.ref.filePath, selected));
+				});
+			}),
+		},
+		{
+			id: "duplicate",
+			label: "Duplicate",
+			icon: "copy",
+			section: "actions",
+			onAction: act((ev) => exec(new CloneEventCommand(app, bundle, ev.ref.filePath))),
+		},
+		{
+			id: "delete",
+			label: "Delete event",
+			icon: "trash",
+			section: "danger",
+			onAction: act((ev) => exec(new DeleteEventCommand(app, bundle, ev.ref.filePath))),
+		},
+	];
+}
+
 export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let renderer: GanttRenderer | null = null;
 	let mergedSub: Subscription | null = null;
@@ -38,76 +175,23 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	let eventsByPath = new Map<string, CalendarEvent>();
 	let colorEvaluator: ColorEvaluator<SingleCalendarConfig> | null = null;
 	let filterBar: ViewFilterBarHandle | null = null;
+	let barContextMenu: ContextMenuHandle | null = null;
 
 	let cachedPacked: PackedTask[] = [];
 	let cachedTaskMap = new Map<string, PackedTask>();
+	let activeMenuTaskId: string | null = null;
 
 	function findEventByTaskId(taskId: string): CalendarEvent | undefined {
 		const task = cachedTaskMap.get(taskId);
 		return task ? eventsByPath.get(task.filePath) : undefined;
 	}
 
-	function openPreview(event: CalendarEvent): void {
-		showEventPreviewModal(app, bundle, {
-			title: event.title,
-			start: new Date(event.start),
-			end: event.type === "timed" ? new Date(event.end) : null,
-			allDay: event.allDay,
-			extendedProps: { filePath: event.ref.filePath },
-		});
+	function getActiveEvent(): CalendarEvent | undefined {
+		return activeMenuTaskId ? findEventByTaskId(activeMenuTaskId) : undefined;
 	}
 
-	function showBarContextMenu(taskId: string, e: MouseEvent): void {
-		const event = findEventByTaskId(taskId);
-		if (!event) return;
-		const menu = new Menu();
-
-		menu.addItem((item) =>
-			item
-				.setTitle("Preview")
-				.setIcon("eye")
-				.onClick(() => openPreview(event))
-		);
-		menu.addItem((item) =>
-			item
-				.setTitle("Edit event")
-				.setIcon("pencil")
-				.onClick(() => {
-					new EventEditModal(app, bundle, {
-						title: event.title,
-						start: event.start,
-						end: event.type === "timed" ? event.end : null,
-						allDay: event.allDay,
-						extendedProps: { filePath: event.ref.filePath },
-					}).open();
-				})
-		);
-		menu.addSeparator();
-		menu.addItem((item) =>
-			item
-				.setTitle("Assign prerequisites")
-				.setIcon("link")
-				.onClick(() => {
-					const settings = bundle.settingsStore.currentSettings;
-					const { frontmatter } = getFileAndFrontmatter(app, event.ref.filePath);
-					const currentPrereqs = parseIntoList(frontmatter[settings.prerequisiteProp], {
-						splitCommas: false,
-					});
-					openPrerequisiteAssignModal(app, bundle, currentPrereqs, (selected: string[]) => {
-						void bundle.commandManager.executeCommand(assignPrerequisites(app, bundle, event.ref.filePath, selected));
-					});
-				})
-		);
-		menu.addSeparator();
-		menu.addItem((item) =>
-			item
-				.setTitle("Delete event")
-				.setIcon("trash")
-				.onClick(() => {
-					void bundle.commandManager.executeCommand(new DeleteEventCommand(app, bundle, event.ref.filePath));
-				})
-		);
-		menu.showAtMouseEvent(e);
+	function exec(cmd: Parameters<typeof bundle.commandManager.executeCommand>[0]): void {
+		void bundle.commandManager.executeCommand(cmd);
 	}
 
 	function showArrowContextMenu(fromTaskId: string, toTaskId: string, e: MouseEvent): void {
@@ -122,7 +206,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				.onClick(() => {
 					const currentPrereqs = bundle.prerequisiteTracker.getPrerequisitesOf(toTask.filePath);
 					const updated = currentPrereqs.filter((p) => p !== fromTask.filePath);
-					void bundle.commandManager.executeCommand(assignPrerequisites(app, bundle, toTask.filePath, updated));
+					exec(assignPrerequisites(app, bundle, toTask.filePath, updated));
 				})
 		);
 		menu.showAtMouseEvent(e);
@@ -131,9 +215,29 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	const hooks: GanttInteractionHooks = {
 		onBarClick: (taskId) => {
 			const event = findEventByTaskId(taskId);
-			if (event) openPreview(event);
+			if (!event) return;
+			showEventPreviewModal(app, bundle, {
+				title: event.title,
+				start: new Date(event.start),
+				end: event.type === "timed" ? new Date(event.end) : null,
+				allDay: event.allDay,
+				extendedProps: { filePath: event.ref.filePath },
+			});
 		},
-		onBarContextMenu: showBarContextMenu,
+		onBarContextMenu: (taskId, e) => {
+			activeMenuTaskId = taskId;
+			if (!barContextMenu) return;
+
+			const event = findEventByTaskId(taskId);
+			if (!event) return;
+
+			const settings = bundle.settingsStore.currentSettings;
+			const done = isEventDone(app, event.ref.filePath, settings.statusProperty, settings.doneValue);
+			const titleOverrides: Record<string, string> = {};
+			if (done) titleOverrides["mark-done"] = "Mark as undone";
+
+			barContextMenu.show(e, undefined, titleOverrides);
+		},
 		onArrowContextMenu: showArrowContextMenu,
 	};
 
@@ -141,11 +245,8 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		const bars = layoutBars(cachedPacked, viewport, GANTT_DEFAULTS);
 		const barMap = new Map<string, BarLayout>(bars.map((b) => [b.taskId, b]));
 		const arrows = layoutArrows(cachedPacked, barMap, GANTT_DEFAULTS);
-		let maxRow = -1;
-		for (const t of cachedTaskMap.values()) {
-			if (t.row > maxRow) maxRow = t.row;
-		}
-		return { taskMap: cachedTaskMap, bars, barMap, arrows, rowCount: maxRow + 1 };
+		const rowCount = cachedPacked.length > 0 ? Math.max(...cachedPacked.map((t) => t.row)) + 1 : 0;
+		return { taskMap: cachedTaskMap, bars, barMap, arrows, rowCount };
 	}
 
 	function rebuild(centerOnData: boolean): void {
@@ -157,9 +258,6 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		const tasks = normalizeEvents(visible, graph, bundle.prerequisiteTracker, bundle, colorEvaluator);
 		cachedPacked = packRows(tasks, GANTT_DEFAULTS);
 		cachedTaskMap = new Map(cachedPacked.map((t) => [t.id, t]));
-		if (!renderer && wrapperEl) {
-			renderer = new GanttRenderer(wrapperEl, hooks, { cssPrefix: "prisma-" });
-		}
 		renderer?.render(computeLayout, centerOnData ? cachedPacked : undefined);
 	}
 
@@ -170,6 +268,8 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		colorEvaluator = null;
 		filterBar?.destroy();
 		filterBar = null;
+		barContextMenu?.destroy();
+		barContextMenu = null;
 		renderer?.destroy();
 		renderer = null;
 		wrapperEl = null;
@@ -191,22 +291,37 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 					);
 					return;
 				}
-				filterBar = createViewFilterBar(bundle, () => rebuild(false));
-				const headerRow = el.createDiv({ cls: cls("view-header-row") });
-				const headerLeft = headerRow.createDiv({ cls: cls("view-header-left") });
-				headerLeft.appendChild(filterBar.el);
 
-				const headerRight = headerRow.createDiv({ cls: cls("view-header-right") });
-				const createBtn = headerRight.createEl("button", {
+				barContextMenu = createContextMenu({
+					items: buildBarMenuItems(app, bundle, getActiveEvent, exec),
+					cssPrefix: "prisma-",
+					...(bundle.settingsStore.currentSettings.ganttContextMenuState
+						? { initialState: bundle.settingsStore.currentSettings.ganttContextMenuState }
+						: {}),
+					onStateChange: (state) => {
+						void bundle.settingsStore.updateSettings((s) => ({
+							...s,
+							ganttContextMenuState: state,
+						}));
+					},
+					editable: true,
+					app,
+				});
+
+				wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
+				renderer = new GanttRenderer(wrapperEl, hooks, { cssPrefix: "prisma-" });
+
+				const createBtn = renderer.toolbarLeft.createEl("button", {
 					cls: cls("gantt-create-btn"),
 					text: "Create",
 				});
-				setIcon(createBtn, "plus");
 				createBtn.addEventListener("click", () => {
 					new EventCreateModal(app, bundle, { title: "", start: null }).open();
 				});
 
-				wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
+				filterBar = createViewFilterBar(bundle, () => rebuild(false));
+				renderer.toolbarLeft.appendChild(filterBar.el);
+
 				rebuild(true);
 				mergedSub = merge(
 					bundle.eventStore.changes$,

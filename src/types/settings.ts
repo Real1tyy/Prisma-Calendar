@@ -344,6 +344,7 @@ export const SYSTEM_PROP_KEYS: PropsKey[] = [
 	"icsSubscriptionProp",
 	"generatePastEventsProp",
 	"sortDateProp",
+	"prerequisiteProp",
 ];
 
 /**
@@ -444,7 +445,7 @@ const CalendarSettingsSchema = z
 			),
 		askBeforePropagatingFrontmatter: z
 			.boolean()
-			.catch(true)
+			.catch(false)
 			.describe(
 				"Show a confirmation modal before propagating frontmatter changes to instances. Allows you to review changes before applying them."
 			),
@@ -645,6 +646,7 @@ const CalendarSettingsSchema = z
 		pageHeaderState: PageHeaderStateSchema.optional().catch(undefined), // Persisted page header button state
 		contextMenuItems: z.array(ContextMenuItemSchema).catch([...DEFAULT_CONTEXT_MENU_ITEMS]), // Legacy: simple list of enabled item IDs (kept for backward compatibility)
 		contextMenuState: ContextMenuStateSchema.optional().catch(undefined), // Persisted context menu state (order, renames, icons, colors)
+		ganttContextMenuState: ContextMenuStateSchema.optional().catch(undefined), // Persisted gantt bar context menu state
 		showSourceRecurringMarker: z
 			.boolean()
 			.catch(true)
