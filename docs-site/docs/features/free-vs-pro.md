@@ -30,7 +30,7 @@ Everything you need for a powerful, production-ready calendar experience ships f
 - **Untracked events inbox** — drag & drop undated notes onto the calendar with dedicated filtering
 - **ICS import/export** — manual exchange of `.ics` files with any calendar application
 - **ZettelID naming**, Templater integration, and mobile support
-- **30+ hotkeys** — keyboard shortcuts for navigation, batch operations, and quick actions
+- **60+ hotkeys** — keyboard shortcuts for navigation, batch operations, and quick actions
 
 ## What's Pro
 

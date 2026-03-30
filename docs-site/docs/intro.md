@@ -18,6 +18,8 @@ It's not just a calendar. It's a way to **see your entire vault through time**.
 
 Every setting is configurable. Every change is reactive. Every action is undoable.
 
+**Four dedicated views — four ways to understand time.** Calendar for scheduling, Timeline for sequencing, Heatmap for patterns, and Gantt for dependencies. Each reveals a different perspective, and together they turn Prisma into a complete temporal visualization engine.
+
 Recurring events that generate real notes. Batch operations across dozens of events. Time-based statistics. CalDAV sync. A scriptable API. Prisma Calendar handles the workflows other calendars can't.
 
 **[View Full Product Page →](https://matejvavroproductivity.com/tools/prisma-calendar/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=product_page)**
@@ -172,49 +174,15 @@ Install via **BRAT**, the **Obsidian Community Plugin store**, or manually from 
 
 Prisma Calendar is free and fully-featured out of the box — no account, no trial, no limitations on the core experience.
 
+[Learn more about Free vs Pro →](/features/free-vs-pro)
+
 ### What you get for free
 
-| Feature | Details |
-|---------|---------|
-| **Tabbed View Navigation** | Calendar (Month, Week, Day, List), Timeline, Daily+Stats, Dual Daily — all in a persistent tabbed container with CTRL+scroll zoom |
-| **55+ Header Actions** | Customizable one-click shortcut buttons for any calendar command — reorder, rename, change icons |
-| **Up to 3 Calendars** | Independent settings, directories, property mappings, and views |
-| **Up to 2 Event Presets** | Quick event creation with pre-filled frontmatter |
-| **Recurring Events** | 9 recurrence types + custom intervals, real notes, virtual previews |
-| **50-Action Undo/Redo** | Full memento history for every operation |
-| **10+ Batch Operations** | Multi-select delete, duplicate, move, clone, skip, and more |
-| **Time Tracker** | Built-in stopwatch with start, break, resume, minimize |
-| **Capacity Tracking** | Used vs total hours indicator with auto-inferred time boundaries |
-| **Statistics Dashboard** | Pie charts, category breakdowns, daily/weekly/monthly/all-time |
-| **Event Groups** | Auto-grouping by recurring rule, category, or name with series statistics and timeline |
-| **Color Rules** | JavaScript expressions mapping frontmatter to colors |
-| **Advanced Filtering** | Text search + JS expression filters + saved presets |
-| **Desktop Notifications** | Configurable lead time, snooze, per-event overrides |
-| **Holidays** | 50+ countries offline, ~20 language locales |
-| **Title Autocomplete** | Ghost text from categories, presets, and history |
-| **Auto-Assign Categories** | Name match or substring match — "Youtube Analysis" auto-assigns "Youtube" category |
-| **Untracked Events Inbox** | Drag & drop undated notes onto the calendar with dedicated filtering |
-| **ICS Import/Export** | Manual `.ics` file exchange with any calendar app |
-| **30+ Hotkeys** | Full keyboard control for navigation and operations |
+Tabbed view navigation (Calendar, Timeline, Daily+Stats, Dual Daily), 55+ customizable header actions, up to 3 independent calendars, up to 2 event presets, recurring events (9 types + custom intervals with real note generation), 50-action undo/redo, 10+ batch operations, built-in time tracker, capacity tracking, statistics dashboard, event groups, JavaScript color rules, advanced filtering with saved presets, desktop notifications, holidays (50+ countries), title autocomplete, auto-assign categories, untracked events inbox, ICS import/export, and 60+ hotkeys.
 
 ### What Pro adds
 
-| Feature | Details |
-|---------|---------|
-| **AI Chat** | Built-in sidebar with Claude and GPT — query, create, edit, and plan events via natural language |
-| **Heatmap View** | GitHub-style contribution heatmap with category-colored gradients, yearly/monthly modes, and click-to-inspect |
-| **Dashboard** | Full-page overview with pie charts, stat cards, Top 10 bar charts, and sortable tables for recurring events, categories, and name series |
-| **Gantt View** | Horizontal event bars on a date timeline with native dependency arrows between prerequisite pairs |
-| **Bases Calendar View** | Render Prisma events inside any Obsidian Base as a fully interactive calendar with drag-and-drop and context menus |
-| **Prerequisite Connections** | SVG arrow overlay showing directed dependencies between events on the Calendar and Gantt tabs |
-| **CalDAV & ICS URL Sync** | One-way read-only sync from Google Calendar, Apple Calendar, Fastmail, Nextcloud, iCloud |
-| **Programmatic API** | `window.PrismaCalendar` and URL scheme for full CRUD, batch ops, statistics, AI, and scripting |
-| **Custom Category Presets** | Map event names to categories with comma-separated rules |
-| **Unlimited Calendars** | Remove the 3-calendar limit |
-| **Unlimited Event Presets** | Remove the 2-preset limit |
-| **Priority Support** | First in line for help and feature requests |
-
-[Learn more about Free vs Pro →](/features/free-vs-pro)
+AI Chat (Claude & GPT), Heatmap View, Dashboard, Gantt View, Bases Calendar View, Prerequisite Connections, CalDAV & ICS URL Sync, Programmatic API, Custom Category Presets, Unlimited Calendars, Unlimited Event Presets, and Priority Support.
 
 ---
 
@@ -234,24 +202,9 @@ Prisma Calendar is developed by [Matej Vavro](https://matejvavroproductivity.com
 
 ## Privacy & Telemetry
 
-Prisma Calendar **does not include any client-side telemetry or analytics**. No vault content, file names, note content, or personal data from your Obsidian vault is ever transmitted.
+Prisma Calendar **does not include any client-side telemetry or analytics** — no vault content, file names, or personal data is ever transmitted. The only server communication happens during Pro license verification, which sends basic device and version info for activation seat management. **If you only use the free features, no data is collected at all.**
 
-**Server-side telemetry** is collected exclusively during license verification requests for Pro (advanced) features. When the plugin contacts the license server, the following data is transmitted:
-
-- License key
-- Plugin version
-- Obsidian version
-- Operating system / platform
-- Device identifier (a locally generated unique ID)
-- Device name
-
-This data is used solely for license validation, activation seat management (up to 5 devices per license), compatibility monitoring, abuse prevention, and product improvement. **If you only use the free features, no telemetry data is collected.**
-
-For full details, please review the legal documents:
-
-- [Privacy Policy](https://matejvavroproductivity.com/privacy/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=privacy)
-- [Terms of Service](https://matejvavroproductivity.com/terms/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=terms)
-- [Legal Notice / Imprint](https://matejvavroproductivity.com/legal/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=legal)
+[Privacy Policy](https://matejvavroproductivity.com/privacy/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=privacy) · [Terms of Service](https://matejvavroproductivity.com/terms/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=terms) · [Legal Notice](https://matejvavroproductivity.com/legal/?utm_campaign=prisma_calendar&utm_source=docs&utm_medium=intro&utm_content=legal)
 
 ---
 
