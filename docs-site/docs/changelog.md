@@ -11,7 +11,7 @@ All notable changes to this project will be documented here.
 
 ### Improved
 - **Unified filtering across all views**: Search bar, expression filter, and filter presets are now available in the Timeline, Heatmap, and Gantt views — not just the Calendar view. All four views share the same filtering behavior. See [Rules & Filters](./features/organization/filtering.md).
-- **Prerequisite assignment via click-to-select**: Right-clicking an event and selecting "Assign prerequisites" now enters a selection mode where you click an event directly on the calendar to assign it as a prerequisite, instead of searching through a modal. The modal-based assignment remains available from the event edit form. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
+- **Prerequisite assignment via click-to-select**: Right-clicking an event and selecting "Assign prerequisites" now enters a selection mode where you click an event directly on the Calendar or Gantt view to assign it as a prerequisite, instead of searching through a modal. The modal-based assignment remains available from the event edit form. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
 - **Missing property settings exposed**: The recurring instance date, CalDAV, and ICS subscription properties are now configurable in Settings → Properties, matching all other frontmatter properties. See [Properties](./configuration/properties.md).
 
 ### Fixed

@@ -1,13 +1,16 @@
 import {
+	addCls,
 	cls,
 	ColorEvaluator,
 	type ContextMenuHandle,
 	type ContextMenuItemDefinition,
 	createContextMenu,
+	extractDisplayName,
 	parseIntoList,
 	type TabDefinition,
+	toDisplayLink,
 } from "@real1ty-obsidian-plugins";
-import { type App, Menu } from "obsidian";
+import { type App, Menu, Notice } from "obsidian";
 import { debounceTime, distinctUntilChanged, merge, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
@@ -33,9 +36,10 @@ import {
 import type { CalendarEvent } from "../../types/calendar";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { isEventDone } from "../../utils/event-frontmatter";
+import { cleanupTitle } from "../../utils/event-naming";
 import { getFileAndFrontmatter, openFileInNewWindow } from "../../utils/obsidian";
 import { showEventPreviewModal } from "../modals";
-import { openCategoryAssignModal, openPrerequisiteAssignModal } from "../modals/category/assignment";
+import { openCategoryAssignModal } from "../modals/category/assignment";
 import { EventCreateModal } from "../modals/event/event-create-modal";
 import { EventEditModal } from "../modals/event/event-edit-modal";
 import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
@@ -49,7 +53,8 @@ function buildBarMenuItems(
 	app: App,
 	bundle: CalendarBundle,
 	getEvent: () => CalendarEvent | undefined,
-	exec: (cmd: Parameters<typeof bundle.commandManager.executeCommand>[0]) => void
+	exec: (cmd: Parameters<typeof bundle.commandManager.executeCommand>[0]) => void,
+	onAssignPrerequisite: (ev: CalendarEvent) => void
 ): ContextMenuItemDefinition[] {
 	const act = (action: (ev: CalendarEvent) => void): (() => void) => {
 		return () => {
@@ -126,14 +131,7 @@ function buildBarMenuItems(
 			label: "Assign prerequisites",
 			icon: "link",
 			section: "organize",
-			onAction: act((ev) => {
-				const settings = bundle.settingsStore.currentSettings;
-				const { frontmatter } = getFileAndFrontmatter(app, ev.ref.filePath);
-				const currentPrereqs = parseIntoList(frontmatter[settings.prerequisiteProp], { splitCommas: false });
-				openPrerequisiteAssignModal(app, bundle, currentPrereqs, (selected: string[]) => {
-					exec(assignPrerequisites(app, bundle, ev.ref.filePath, selected));
-				});
-			}),
+			onAction: act((ev) => onAssignPrerequisite(ev)),
 		},
 		{
 			id: "assign-categories",
@@ -181,6 +179,10 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	let cachedTaskMap = new Map<string, PackedTask>();
 	let activeMenuTaskId: string | null = null;
 
+	let prereqTargetFilePath: string | null = null;
+	let prereqBannerEl: HTMLElement | null = null;
+	let prereqEscapeHandler: ((e: KeyboardEvent) => void) | null = null;
+
 	function findEventByTaskId(taskId: string): CalendarEvent | undefined {
 		const task = cachedTaskMap.get(taskId);
 		return task ? eventsByPath.get(task.filePath) : undefined;
@@ -192,6 +194,46 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 
 	function exec(cmd: Parameters<typeof bundle.commandManager.executeCommand>[0]): void {
 		void bundle.commandManager.executeCommand(cmd);
+	}
+
+	function enterPrereqSelection(ev: CalendarEvent): void {
+		exitPrereqSelection();
+		prereqTargetFilePath = ev.ref.filePath;
+
+		if (!renderer) return;
+		prereqBannerEl = renderer.toolbarLeft.createDiv(cls("prereq-selection-banner"));
+
+		const textEl = prereqBannerEl.createDiv(cls("prereq-selection-banner-text"));
+		textEl.setText(
+			`Click a bar to assign it as a prerequisite for "${cleanupTitle(extractDisplayName(ev.ref.filePath))}"`
+		);
+
+		const cancelBtn = prereqBannerEl.createEl("button", { text: "Cancel" });
+		addCls(cancelBtn, "prereq-selection-btn");
+		cancelBtn.addEventListener("click", () => {
+			exitPrereqSelection();
+			new Notice("Prerequisite selection cancelled");
+		});
+
+		prereqEscapeHandler = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && prereqTargetFilePath) {
+				e.preventDefault();
+				e.stopPropagation();
+				exitPrereqSelection();
+				new Notice("Prerequisite selection cancelled");
+			}
+		};
+		document.addEventListener("keydown", prereqEscapeHandler, true);
+	}
+
+	function exitPrereqSelection(): void {
+		prereqTargetFilePath = null;
+		prereqBannerEl?.remove();
+		prereqBannerEl = null;
+		if (prereqEscapeHandler) {
+			document.removeEventListener("keydown", prereqEscapeHandler, true);
+			prereqEscapeHandler = null;
+		}
 	}
 
 	function showArrowContextMenu(fromTaskId: string, toTaskId: string, e: MouseEvent): void {
@@ -216,6 +258,24 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 		onBarClick: (taskId) => {
 			const event = findEventByTaskId(taskId);
 			if (!event) return;
+
+			if (prereqTargetFilePath) {
+				if (event.ref.filePath === prereqTargetFilePath) {
+					new Notice("Cannot assign an event as its own prerequisite");
+					return;
+				}
+				const { frontmatter } = getFileAndFrontmatter(app, prereqTargetFilePath);
+				const settings = bundle.settingsStore.currentSettings;
+				const existing = parseIntoList(frontmatter[settings.prerequisiteProp], { splitCommas: false });
+				const wikiLink = toDisplayLink(event.ref.filePath);
+				const updated = existing.includes(wikiLink) ? existing : [...existing, wikiLink];
+				const target = prereqTargetFilePath;
+				exitPrereqSelection();
+				exec(assignPrerequisites(app, bundle, target, updated));
+				new Notice("Prerequisite assigned");
+				return;
+			}
+
 			showEventPreviewModal(app, bundle, {
 				title: event.title,
 				start: new Date(event.start),
@@ -262,6 +322,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 	}
 
 	function cleanupContent(): void {
+		exitPrereqSelection();
 		mergedSub?.unsubscribe();
 		mergedSub = null;
 		colorEvaluator?.destroy();
@@ -293,7 +354,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				}
 
 				barContextMenu = createContextMenu({
-					items: buildBarMenuItems(app, bundle, getActiveEvent, exec),
+					items: buildBarMenuItems(app, bundle, getActiveEvent, exec, enterPrereqSelection),
 					cssPrefix: "prisma-",
 					...(bundle.settingsStore.currentSettings.ganttContextMenuState
 						? { initialState: bundle.settingsStore.currentSettings.ganttContextMenuState }
