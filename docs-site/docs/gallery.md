@@ -363,6 +363,15 @@ Visual guide to Prisma Calendar features. For detailed documentation on each fea
   </video>
 </div>
 
+### [Color Rules](features/organization/color-rules) — Multi-Color Events & Color Dots
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/MultiColorEventsAndColorDots.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/MultiColorEventsAndColorDots.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ### [Enlarged Preview](features/events/event-previews) — Quick Look
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video

@@ -55,6 +55,16 @@ Difficulty >= 8                                   → #f59e0b
 Status === 'Active' && (Priority === 'High' || DueDate < new Date())  → #3b82f6
 ```
 
+## Multi-Color Events & Overflow Color Dots
+
+<div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
+  <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
+    <source src={useBaseUrl("/video/MultiColorEventsAndColorDots.webm")} type="video/webm" />
+    <source src={useBaseUrl("/video/MultiColorEventsAndColorDots.mp4")} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ## Color Mode
 
 By default, only the first matching color rule is applied to each event. The **Color mode** setting (Settings → Rules → Event colors) lets you apply multiple colors:
