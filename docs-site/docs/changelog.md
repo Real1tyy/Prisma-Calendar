@@ -6,6 +6,8 @@ All notable changes to this project will be documented here.
 
 ## 2.11.0 - 3/30/2026
 
+> **TLDR:** Gantt view gets a full context menu and navigation toolbar. Filtering (search bar, expressions, presets) now works across all four views — not just Calendar. Prerequisite assignment uses click-to-select directly on the calendar/Gantt instead of a search modal. Also released the [complete Encyclopedia video](https://www.youtube.com/watch?v=HrcNKh6uFH8) covering every feature from A to Z.
+
 ### Added
 - **Complete Encyclopedia video**: Released the [definitive video guide](https://www.youtube.com/watch?v=HrcNKh6uFH8) covering every feature from A to Z — views, event management, recurring events, time tracking, categories, color rules, batch operations, filtering, integrations, AI, the programmatic API, and every setting explained.
 
@@ -23,7 +25,7 @@ All notable changes to this project will be documented here.
 - **Timeline events disappearing after scrolling**: Scrolling past events in the Timeline view and scrolling back caused them to vanish permanently. The lazy loader now correctly preserves previously loaded events across viewport changes. See [Timeline](./features/views/timeline.md).
 - **Prerequisite tracker leaving dangling references**: Deleting a file that was listed as a prerequisite by other events left stale references — the dependency graph showed "depends on [deleted file]" and Gantt arrows pointed to nothing. Deleting a file now cleans up all references to it across the graph. See [Prerequisite Connections](./features/advanced/prerequisite-connections.md).
 - **Bases Calendar View blank on first load**: The Bases Calendar View could appear blank when switching to it for the first time or switching back before data had loaded. The view now reliably renders as soon as Obsidian delivers query data. See [Bases Calendar View](./features/views/bases-calendar-view.md).
-- **Auto-complete marking stopwatch-tracked events as done**: Events with an active stopwatch running via a minimized modal were incorrectly marked as done by the periodic auto-complete engine once their end time passed. The engine now skips events being tracked by the minimized modal manager. See [Time Tracker](./features/events/time-tracker.md).
+- **Auto-complete marking stopwatch-tracked events as done**: Events with an active stopwatch running via a minimized modal were incorrectly marked as done by the periodic auto-complete engine once their end time passed. The engine now skips events being tracked by the minimized modal manager. See [Time Tracker](./features/management/time-tracker.md).
 
 ---
 
