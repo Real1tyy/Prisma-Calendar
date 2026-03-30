@@ -226,13 +226,15 @@ When you change a property on one event, the change propagates to all other even
 
 Configure in **Settings → [Your Calendar] → Category series propagation**.
 
-### Shared Settings
+### What Gets Propagated
 
-The **Excluded properties** and **Propagation debounce delay** settings (under "Shared propagation settings") apply to all propagation types: recurring instances, name series, and category series.
+Only **custom** frontmatter properties are propagated. All Prisma-managed internal properties — timing (Start, End, Date), recurrence metadata (RRule, RRuleID, Source), per-event state (Status, Prerequisite, Skip), integration metadata (CalDAV, ICS Subscription), and notification state (Already Notified) — are automatically excluded. These properties are either computed per-instance or represent per-event relationships that don't make sense to copy.
+
+You can exclude additional properties via the **Excluded properties** setting (comma-separated list). The **Propagation debounce delay** controls how long the system waits before applying accumulated changes.
 
 Loop prevention ensures that when a change propagates from event A to events B and C, the updates to B and C do not trigger further propagation back to A.
 
-See [Frontmatter Propagation](../../configuration/event-groups#frontmatter-propagation) for full configuration details.
+See [Frontmatter Propagation](../../configuration/event-groups#frontmatter-propagation) for the full list of automatically excluded properties and configuration details.
 
 ## Events Browser
 

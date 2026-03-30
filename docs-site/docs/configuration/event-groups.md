@@ -50,8 +50,38 @@ Category series require at least 2 events with the same category value to trigge
 
 These settings apply to all three propagation types (recurring, name series, category series):
 
-- **Excluded properties**: Comma-separated list of additional frontmatter property names to exclude from propagation. These properties, along with all Prisma-managed properties (Start, End, Date, RRule, RRuleID, Source, etc.), are never propagated to preserve instance-specific timing and system integrity.
+- **Excluded properties**: Comma-separated list of additional frontmatter property names to exclude from propagation (on top of the automatically excluded properties listed below).
 - **Propagation debounce delay**: Delay in milliseconds before propagating changes (100ms - 10,000ms, default: 3000ms). Multiple rapid changes within this window are accumulated and merged together. Lower values propagate faster; higher values accumulate more changes before propagating.
+
+### Automatically Excluded Properties
+
+The following Prisma-managed properties are **always** excluded from propagation. These are either per-instance system values (timing, identity, recurrence metadata) or per-event values that don't make sense to copy across events. You do not need to add them to the excluded properties setting — they are skipped automatically.
+
+| Property | Default name | Why excluded |
+|----------|-------------|--------------|
+| Start | `Start` | Per-instance timing |
+| End | `End` | Per-instance timing |
+| Date | `Date` | Per-instance timing |
+| Break | `Break` | Per-instance timing |
+| Title | `Calendar Title` | Per-instance identity |
+| All Day | `All Day` | Per-instance timing |
+| RRule | `RRule` | Recurrence metadata |
+| RRuleSpec | `RRuleSpec` | Recurrence metadata |
+| RRuleID | `RRuleID` | Recurrence metadata |
+| Source | `Source` | Recurrence metadata |
+| Instance Date | `Instance Date` | Recurrence metadata |
+| Skip | `Skip` | Per-instance state |
+| ZettelID | `ZettelID` | Per-instance identity |
+| Future Instances Count | `Future Instances Count` | Per-event config |
+| Generate Past Events | `Generate Past Events` | Per-event config |
+| CalDAV | `CalDAV` | Integration metadata |
+| ICS Subscription | `ICS Subscription` | Integration metadata |
+| Sort Date | `Sort Date` | Computed per-instance |
+| Prerequisite | `Prerequisite` | Per-event relationship |
+| Status | `Status` | Per-event state |
+| Already Notified | `Already Notified` | Per-instance notification state |
+
+All property names above use their default values. If you've renamed any of these in Settings → Properties, the renamed versions are excluded instead.
 
 ### How Propagation Works
 
