@@ -6,6 +6,7 @@ export type {
 	GanttInteractionHooks,
 	GanttRenderData,
 	GanttRendererConfig,
+	GanttRendererHandle,
 	GanttTask,
 	LayoutFn,
 	PackedTask,
@@ -14,8 +15,8 @@ export type {
 export {
 	buildViewport,
 	centerViewportOnTasks,
+	createGanttRenderer,
 	GANTT_DEFAULTS,
-	GanttRenderer,
 	layoutArrows,
 	layoutBars,
 	MS_PER_DAY,

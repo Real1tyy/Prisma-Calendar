@@ -22,10 +22,17 @@ import {
 } from "../../core/commands/frontmatter-update-command";
 import { CloneEventCommand, DeleteEventCommand } from "../../core/commands/lifecycle-commands";
 import { PRO_FEATURES } from "../../core/license";
-import type { BarLayout, GanttInteractionHooks, GanttRenderData, PackedTask, Viewport } from "../../gantt";
+import type {
+	BarLayout,
+	GanttInteractionHooks,
+	GanttRenderData,
+	GanttRendererHandle,
+	PackedTask,
+	Viewport,
+} from "../../gantt";
 import {
+	createGanttRenderer,
 	GANTT_DEFAULTS,
-	GanttRenderer,
 	layoutArrows,
 	layoutBars,
 	normalizeEvents,
@@ -165,7 +172,7 @@ function buildBarMenuItems(
 }
 
 export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
-	let renderer: GanttRenderer | null = null;
+	let renderer: GanttRendererHandle | null = null;
 	let mergedSub: Subscription | null = null;
 	let isProSub: Subscription | null = null;
 	let wrapperEl: HTMLElement | null = null;
@@ -362,7 +369,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				});
 
 				wrapperEl = el.createDiv({ cls: cls("gantt-wrapper") });
-				renderer = new GanttRenderer(wrapperEl, hooks, { cssPrefix: "prisma-" });
+				renderer = createGanttRenderer(wrapperEl, hooks, { cssPrefix: "prisma-" });
 
 				const createBtn = renderer.toolbarLeft.createEl("button", {
 					cls: cls("gantt-create-btn"),
@@ -375,7 +382,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				filterBar = createViewFilterBar(bundle, () => rebuild(false));
 				renderer.toolbarLeft.appendChild(filterBar.el);
 
-				rebuild(true);
+				rebuild(false);
 				mergedSub = merge(
 					bundle.eventStore.changes$,
 					bundle.recurringEventManager.changes$,
