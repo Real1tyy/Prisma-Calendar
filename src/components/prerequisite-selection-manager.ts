@@ -1,15 +1,13 @@
 import type { Calendar } from "@fullcalendar/core";
-import { addCls, cls, extractDisplayName, parseIntoList, toDisplayLink } from "@real1ty-obsidian-plugins";
+import { addCls, cls, extractDisplayName } from "@real1ty-obsidian-plugins";
 import { type App, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
-import { assignPrerequisites } from "../core/commands";
+import { addPrerequisite } from "../core/commands";
 import { cleanupTitle } from "../utils/event-naming";
-import { getFileAndFrontmatter } from "../utils/obsidian";
 
 export class PrerequisiteSelectionManager {
 	private targetFilePath: string | null = null;
-	private existingPrereqs: string[] = [];
 	private isActive = false;
 	private bannerEl: HTMLElement | null = null;
 	private escapeHandler: ((e: KeyboardEvent) => void) | null = null;
@@ -31,10 +29,6 @@ export class PrerequisiteSelectionManager {
 		this.targetFilePath = targetFilePath;
 		this.isActive = true;
 
-		const { frontmatter } = getFileAndFrontmatter(this.app, targetFilePath);
-		const settings = this.bundle.settingsStore.currentSettings;
-		this.existingPrereqs = parseIntoList(frontmatter[settings.prerequisiteProp], { splitCommas: false });
-
 		this.showBanner();
 		this.registerEscapeHandler();
 	}
@@ -42,7 +36,6 @@ export class PrerequisiteSelectionManager {
 	exit(): void {
 		this.isActive = false;
 		this.targetFilePath = null;
-		this.existingPrereqs = [];
 
 		this.removeBanner();
 		this.unregisterEscapeHandler();
@@ -68,27 +61,18 @@ export class PrerequisiteSelectionManager {
 			return;
 		}
 
-		const wikiLink = toDisplayLink(filePath);
-		const targetFilePath = this.targetFilePath;
-		const updatedPrereqs = this.existingPrereqs.includes(wikiLink)
-			? this.existingPrereqs
-			: [...this.existingPrereqs, wikiLink];
-
+		const command = addPrerequisite(this.app, this.bundle, this.targetFilePath, filePath);
 		this.exit();
-		void this.save(targetFilePath, updatedPrereqs);
-	}
 
-	// ─── Save ─────────────────────────────────────────────────────
-
-	private async save(targetFilePath: string, prerequisites: string[]): Promise<void> {
-		try {
-			const command = assignPrerequisites(this.app, this.bundle, targetFilePath, prerequisites);
-			await this.bundle.commandManager.executeCommand(command);
-			new Notice("Prerequisite assigned");
-		} catch (error) {
-			console.error("[PrerequisiteSelection] Failed to assign prerequisite:", error);
-			new Notice("Failed to assign prerequisite");
-		}
+		void (async () => {
+			try {
+				await this.bundle.commandManager.executeCommand(command);
+				new Notice("Prerequisite assigned");
+			} catch (error) {
+				console.error("[PrerequisiteSelection] Failed to assign prerequisite:", error);
+				new Notice("Failed to assign prerequisite");
+			}
+		})();
 	}
 
 	// ─── Banner UI ────────────────────────────────────────────────

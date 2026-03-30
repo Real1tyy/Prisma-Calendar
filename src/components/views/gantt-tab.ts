@@ -8,13 +8,13 @@ import {
 	extractDisplayName,
 	parseIntoList,
 	type TabDefinition,
-	toDisplayLink,
 } from "@real1ty-obsidian-plugins";
 import { type App, Menu, Notice } from "obsidian";
 import { debounceTime, distinctUntilChanged, merge, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import {
+	addPrerequisite,
 	assignCategories,
 	assignPrerequisites,
 	markAsDone,
@@ -264,14 +264,9 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 					new Notice("Cannot assign an event as its own prerequisite");
 					return;
 				}
-				const { frontmatter } = getFileAndFrontmatter(app, prereqTargetFilePath);
-				const settings = bundle.settingsStore.currentSettings;
-				const existing = parseIntoList(frontmatter[settings.prerequisiteProp], { splitCommas: false });
-				const wikiLink = toDisplayLink(event.ref.filePath);
-				const updated = existing.includes(wikiLink) ? existing : [...existing, wikiLink];
 				const target = prereqTargetFilePath;
 				exitPrereqSelection();
-				exec(assignPrerequisites(app, bundle, target, updated));
+				exec(addPrerequisite(app, bundle, target, event.ref.filePath));
 				new Notice("Prerequisite assigned");
 				return;
 			}

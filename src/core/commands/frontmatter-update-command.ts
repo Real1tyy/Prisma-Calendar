@@ -4,7 +4,9 @@ import {
 	ensureISOSuffix,
 	getTFileOrThrow,
 	parseFrontmatterRecord,
+	parseIntoList,
 	restoreFrontmatter,
+	toDisplayLink,
 	withFrontmatter,
 } from "@real1ty-obsidian-plugins";
 import type { DurationLike } from "luxon";
@@ -132,6 +134,21 @@ export function assignPrerequisites(
 		},
 		"assign-prerequisites"
 	);
+}
+
+export function addPrerequisite(
+	app: App,
+	bundle: CalendarBundle,
+	targetFilePath: string,
+	prerequisiteFilePath: string
+): FrontmatterUpdateCommand {
+	const settings = bundle.settingsStore.currentSettings;
+	const file = getTFileOrThrow(app, targetFilePath);
+	const frontmatter = app.metadataCache.getFileCache(file)?.frontmatter ?? {};
+	const existing = parseIntoList(frontmatter[settings.prerequisiteProp], { splitCommas: false });
+	const wikiLink = toDisplayLink(prerequisiteFilePath);
+	const updated = existing.includes(wikiLink) ? existing : [...existing, wikiLink];
+	return assignPrerequisites(app, bundle, targetFilePath, updated);
 }
 
 export function moveEvent(

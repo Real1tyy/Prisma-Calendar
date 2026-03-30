@@ -1,5 +1,6 @@
 export { BatchCommandFactory } from "./batch-commands";
 export {
+	addPrerequisite,
 	assignCategories,
 	assignPrerequisites,
 	fillTime,
