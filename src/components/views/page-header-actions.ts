@@ -8,6 +8,7 @@ type CommandActionSpec = Omit<HeaderActionDefinition, "onAction"> & { commandId:
 export const DEFAULT_ACTION_IDS = new Set([
 	"create-event-stopwatch",
 	"navigate-back",
+	"navigate-forward",
 	"global-search",
 	"show-skipped",
 	"show-recurring",
@@ -45,6 +46,12 @@ const ACTION_SPECS: CommandActionSpec[] = [
 	{ id: "go-to-today", commandId: FULL_COMMAND_IDS.GO_TO_TODAY, label: "Go to Today", icon: "calendar-check" },
 	{ id: "scroll-to-now", commandId: FULL_COMMAND_IDS.SCROLL_TO_NOW, label: "Scroll to Now", icon: "clock" },
 	{ id: "navigate-back", commandId: FULL_COMMAND_IDS.NAVIGATE_BACK, label: "Navigate Back", icon: "arrow-left" },
+	{
+		id: "navigate-forward",
+		commandId: FULL_COMMAND_IDS.NAVIGATE_FORWARD,
+		label: "Navigate Forward",
+		icon: "arrow-right",
+	},
 
 	// ─── Search ──────────────────────────────────────────────────
 	{ id: "global-search", commandId: FULL_COMMAND_IDS.GLOBAL_SEARCH, label: "Global Search", icon: "search" },
@@ -103,25 +110,6 @@ const ACTION_SPECS: CommandActionSpec[] = [
 		label: "All-Time Statistics",
 		icon: "trending-up",
 	},
-	{
-		id: "daily-stats-now",
-		commandId: FULL_COMMAND_IDS.SHOW_DAILY_STATS_FOR_NOW,
-		label: "Today's Statistics",
-		icon: "bar-chart-2",
-	},
-	{
-		id: "weekly-stats-now",
-		commandId: FULL_COMMAND_IDS.SHOW_WEEKLY_STATS_FOR_NOW,
-		label: "This Week's Statistics",
-		icon: "bar-chart-3",
-	},
-	{
-		id: "monthly-stats-now",
-		commandId: FULL_COMMAND_IDS.SHOW_MONTHLY_STATS_FOR_NOW,
-		label: "This Month's Statistics",
-		icon: "bar-chart-4",
-	},
-
 	// ─── Visualization ───────────────────────────────────────────
 	{
 		id: "toggle-prerequisites",

@@ -40,6 +40,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	override async onload() {
+		await this.migrateSharedExcludedProps();
 		this.settingsStore = new SettingsStore(this, CustomCalendarSettingsSchema);
 		await this.settingsStore.loadSettings();
 
@@ -78,6 +79,25 @@ export default class CustomCalendarPlugin extends Plugin {
 			void this.checkForUpdates();
 			void this.licenseManager.initialize();
 		});
+	}
+
+	private async migrateSharedExcludedProps(): Promise<void> {
+		const raw = await this.loadData();
+		if (!raw?.calendars || !Array.isArray(raw.calendars)) return;
+
+		let changed = false;
+		for (const cal of raw.calendars) {
+			const shared = cal.excludedRecurringPropagatedProps;
+			if (!shared) continue;
+
+			if (!cal.excludedRecurringInstanceProps) cal.excludedRecurringInstanceProps = shared;
+			if (!cal.excludedNameSeriesProps) cal.excludedNameSeriesProps = shared;
+			if (!cal.excludedCategorySeriesProps) cal.excludedCategorySeriesProps = shared;
+			delete cal.excludedRecurringPropagatedProps;
+			changed = true;
+		}
+
+		if (changed) await this.saveData(raw);
 	}
 
 	override onunload(): void {
@@ -318,15 +338,6 @@ export default class CustomCalendarPlugin extends Plugin {
 		addCalendarViewCommand(COMMAND_IDS.SHOW_ALLTIME_STATS, "Show all-time statistics", (view) => {
 			void view.showAllTimeStatsModal();
 		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_DAILY_STATS_FOR_NOW, "Show daily statistics for now", (view) => {
-			void view.showDailyStatsModal(new Date());
-		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_WEEKLY_STATS_FOR_NOW, "Show weekly statistics for now", (view) => {
-			void view.showWeeklyStatsModal(new Date());
-		});
-		addCalendarViewCommand(COMMAND_IDS.SHOW_MONTHLY_STATS_FOR_NOW, "Show monthly statistics for now", (view) => {
-			void view.showMonthlyStatsModal(new Date());
-		});
 		addCalendarViewCommand(COMMAND_IDS.REFRESH_CALENDAR, "Refresh calendar", (view) => {
 			void view.refreshCalendar();
 		});
@@ -342,6 +353,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		});
 		addCalendarViewCommand(COMMAND_IDS.NAVIGATE_BACK, "Navigate back", (view) => {
 			view.navigateBack();
+		});
+		addCalendarViewCommand(COMMAND_IDS.NAVIGATE_FORWARD, "Navigate forward", (view) => {
+			view.navigateForward();
 		});
 		addCalendarViewCommand(COMMAND_IDS.SHOW_INTERVAL_BASES, "Show current interval in Bases", (view) => {
 			void view.showIntervalEventsModal();

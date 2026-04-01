@@ -57,9 +57,6 @@ const COMMAND_KEYS = [
 	"SHOW_WEEKLY_STATS",
 	"SHOW_MONTHLY_STATS",
 	"SHOW_ALLTIME_STATS",
-	"SHOW_DAILY_STATS_FOR_NOW",
-	"SHOW_WEEKLY_STATS_FOR_NOW",
-	"SHOW_MONTHLY_STATS_FOR_NOW",
 	"REFRESH_CALENDAR",
 	"HIGHLIGHT_EVENTS_WITHOUT_CATEGORIES",
 	"HIGHLIGHT_EVENTS_WITH_CATEGORY",
@@ -70,6 +67,7 @@ const COMMAND_KEYS = [
 	"SYNC_CALDAV",
 	"SYNC_ICS_SUBSCRIPTIONS",
 	"NAVIGATE_BACK",
+	"NAVIGATE_FORWARD",
 	"SHOW_INTERVAL_BASES",
 	"SCROLL_TO_NOW",
 	"GO_TO_TODAY",
@@ -91,6 +89,8 @@ export const FULL_COMMAND_IDS = Object.fromEntries(
 ) as {
 	[K in keyof typeof COMMAND_IDS]: `${typeof PLUGIN_ID}:${(typeof COMMAND_IDS)[K]}`;
 };
+
+export const PROPAGATION_DEBOUNCE_MS = 3000;
 
 // Property name defaults (shared between schema definitions and settings UI placeholders)
 export const PROP_DEFAULTS = {
