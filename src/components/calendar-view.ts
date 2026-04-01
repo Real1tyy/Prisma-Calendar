@@ -331,6 +331,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				hour12: false,
 			},
 
+			buttonText: { today: "Today" },
+
 			headerToolbar: false, // Initially false, will be set by updateToolbar
 
 			eventContent: (arg) => {
