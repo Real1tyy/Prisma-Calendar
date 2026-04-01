@@ -5,6 +5,7 @@ export * from "./event-statistics";
 export * from "./expression-utils";
 export * from "./frontmatter-value";
 export * from "./generate";
+export * from "./history-stack";
 export * from "./indexer";
 export * from "./property-renderer";
 export * from "./validation";
