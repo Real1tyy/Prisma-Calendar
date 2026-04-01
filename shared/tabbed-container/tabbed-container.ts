@@ -735,6 +735,10 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 			return buildState();
 		},
 
+		getVisibleLabels(): string[] {
+			return visibleTabs.map((entry) => getLabel(entry));
+		},
+
 		get activeIndex(): number {
 			return currentIndex;
 		},

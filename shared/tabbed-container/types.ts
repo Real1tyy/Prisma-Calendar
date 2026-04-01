@@ -95,6 +95,8 @@ export interface TabbedContainerHandle {
 	showTabManager(): void;
 	/** Returns a serializable snapshot of the current tab state. */
 	getState(): TabbedContainerState;
+	/** Returns display labels for all visible tabs in their current order. */
+	getVisibleLabels(): string[];
 	readonly activeIndex: number;
 	readonly activeId: string;
 	readonly tabCount: number;
