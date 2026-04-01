@@ -1,4 +1,11 @@
-import { activateView, intoDate, onceAsync, sanitizeForFilename, TemplaterService } from "@real1ty-obsidian-plugins";
+import {
+	activateView,
+	type HistoryStack,
+	intoDate,
+	onceAsync,
+	sanitizeForFilename,
+	TemplaterService,
+} from "@real1ty-obsidian-plugins";
 import { type App, Notice, TFile } from "obsidian";
 import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from "rxjs";
 
@@ -28,6 +35,7 @@ import { ICSSubscriptionSyncService } from "./integrations/ics-subscription/sync
 import { ICSSubscriptionSyncStateManager } from "./integrations/ics-subscription/sync-state-manager";
 import { SyncState } from "./integrations/sync-state";
 import type { NameSeriesTracker } from "./name-series-tracker";
+import { createNavigationHistory, type NavigationEntry } from "./navigation-history-manager";
 import type { NotificationManager } from "./notification-manager";
 import type { Parser } from "./parser";
 import type { PrerequisiteTracker } from "./prerequisite-tracker";
@@ -48,6 +56,7 @@ export class CalendarBundle {
 	public readonly prerequisiteTracker: PrerequisiteTracker;
 	public readonly templateService: TemplaterService;
 	public readonly viewStateManager: CalendarViewStateManager;
+	public readonly navigationHistory: HistoryStack<NavigationEntry>;
 	public readonly commandManager: CommandManager;
 	public readonly batchCommandFactory: BatchCommandFactory;
 	public readonly caldavSyncStateManager: CalDAVSyncStateManager;
@@ -112,6 +121,7 @@ export class CalendarBundle {
 			this.settingsStore.settings$
 		);
 		this.viewStateManager = new CalendarViewStateManager();
+		this.navigationHistory = createNavigationHistory();
 		this.commandManager = new CommandManager();
 		this.batchCommandFactory = new BatchCommandFactory(this.app, this);
 		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays as HolidayConfig);

@@ -116,7 +116,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private lastEdgeScrollTime = 0;
 	private refreshRafId: number | null = null;
 	private lastMobileTapTime = 0;
-	private previousViewState: { date: Date; viewType: string } | null = null;
+	private get navigationHistory() {
+		return this.bundle.navigationHistory;
+	}
 	private lastFocusedEventInfo: CalendarEventData | null = null;
 	private mouseDownTime = 0;
 	private isHandlingSelection = false;
@@ -567,6 +569,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 					this.currentViewStart = view.activeStart;
 					this.currentViewEnd = view.activeEnd;
 				}
+
+				this.recordNavigationState();
 
 				this.scheduleRefreshEvents();
 				// Update zoom button, save state, and highlight after FC re-renders
@@ -2177,8 +2181,6 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	navigateToDate(date: Date, viewType?: string): void {
 		if (!this.calendar) return;
 
-		this.storePreviousViewState();
-
 		if (viewType) {
 			this.calendar.changeView(viewType, date);
 		} else {
@@ -2192,23 +2194,18 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	navigateBack(): boolean {
-		if (!this.calendar || !this.previousViewState) {
-			return false;
-		}
+		if (!this.calendar) return false;
+		const entry = this.navigationHistory.back();
+		if (!entry) return false;
+		this.calendar.changeView(entry.viewType, entry.date);
+		return true;
+	}
 
-		const { date, viewType } = this.previousViewState;
-
-		// Don't store the current state as previous when going back
-		// (to avoid creating a navigation loop)
-		const tempPrevious = this.previousViewState;
-		this.previousViewState = null;
-
-		this.calendar.changeView(viewType);
-		this.calendar.gotoDate(date);
-
-		// Restore the previous state reference
-		this.previousViewState = tempPrevious;
-
+	navigateForward(): boolean {
+		if (!this.calendar) return false;
+		const entry = this.navigationHistory.forward();
+		if (!entry) return false;
+		this.calendar.changeView(entry.viewType, entry.date);
 		return true;
 	}
 
@@ -2250,16 +2247,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		viewContent.scrollTop = scrollTop;
 	}
 
-	private storePreviousViewState(): void {
+	private recordNavigationState(): void {
 		if (!this.calendar) return;
-
-		const currentDate = this.calendar.getDate();
-		const currentViewType = this.calendar.view.type;
-
-		this.previousViewState = {
-			date: new Date(currentDate),
-			viewType: currentViewType,
-		};
+		this.navigationHistory.push({ date: new Date(this.calendar.getDate()), viewType: this.calendar.view.type });
 	}
 
 	// ─── Prerequisite Selection ──────────────────────────────────
