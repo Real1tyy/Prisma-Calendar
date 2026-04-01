@@ -15,6 +15,7 @@ import {
 	GeneralSettings,
 	IntegrationsSettings,
 	NotificationsSettings,
+	PerformanceSettings,
 	PropertiesSettings,
 	RulesSettings,
 } from ".";
@@ -35,6 +36,7 @@ export class SingleCalendarSettings {
 			calendar: new CalendarSettings(settingsStore),
 			eventGroups: new EventGroupsSettings(settingsStore),
 			configuration: new ConfigurationSettings(settingsStore),
+			performance: new PerformanceSettings(settingsStore),
 			notifications: new NotificationsSettings(settingsStore),
 			rules: new RulesSettings(settingsStore),
 			categories: new CategoriesSettings(settingsStore, plugin),
@@ -49,6 +51,7 @@ export class SingleCalendarSettings {
 			{ id: "calendar", label: "Calendar", display: (el) => settingsInstances.calendar.display(el) },
 			{ id: "event-groups", label: "Event Groups", display: (el) => settingsInstances.eventGroups.display(el) },
 			{ id: "configuration", label: "Configuration", display: (el) => settingsInstances.configuration.display(el) },
+			{ id: "performance", label: "Performance", display: (el) => settingsInstances.performance.display(el) },
 			{ id: "notifications", label: "Notifications", display: (el) => settingsInstances.notifications.display(el) },
 			{ id: "rules", label: "Rules", display: (el) => settingsInstances.rules.display(el) },
 			{ id: "categories", label: "Categories", display: (el) => settingsInstances.categories.display(el) },

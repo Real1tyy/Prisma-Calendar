@@ -6,6 +6,7 @@ export { EventGroupsSettings } from "./event-groups";
 export { GeneralSettings } from "./general";
 export { IntegrationsSettings } from "./integrations";
 export { NotificationsSettings } from "./notifications";
+export { PerformanceSettings } from "./performance";
 export { PropertiesSettings } from "./properties";
 export { RulesSettings } from "./rules";
 export { ConfigurationSettings } from "./toolbar-config";
