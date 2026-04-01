@@ -40,6 +40,7 @@ button[class*="prisma-"]:focus-visible {
 	position: relative;
 	height: auto;
 	min-height: max(100%, 400px);
+	overflow-x: clip;
 	--prisma-sticky-toolbar-offset: 0px;
 	--prisma-sticky-day-header-height: 0px;
 	--prisma-connection-z: 12;
@@ -7635,7 +7636,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	position: absolute;
 	top: calc(100% + 4px);
 	left: 0;
-	width: 450px;
+	width: min(450px, var(--dropdown-max-width, 450px));
 	max-height: 600px;
 	background-color: var(--background-primary);
 	border: 1px solid var(--background-modifier-border);
@@ -7768,19 +7769,9 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	font-weight: 500;
 	color: var(--text-normal);
 	margin-bottom: 4px;
-	white-space: nowrap;
-	overflow-x: auto;
-	overflow-y: hidden;
-	scrollbar-width: thin;
-}
-
-.prisma-untracked-dropdown-item-title::-webkit-scrollbar {
-	height: 4px;
-}
-
-.prisma-untracked-dropdown-item-title::-webkit-scrollbar-thumb {
-	background-color: var(--background-modifier-border);
-	border-radius: 2px;
+	padding-right: 28px;
+	overflow-wrap: break-word;
+	word-break: break-word;
 }
 
 .prisma-untracked-dropdown-item-props {

@@ -5,6 +5,7 @@ import type { App } from "obsidian";
 import { debounceTime } from "rxjs";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
+import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import type { ParsedEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/settings";
 import { removeZettelId } from "../utils/event-naming";
@@ -205,6 +206,7 @@ export class UntrackedEventsDropdown {
 		this.isTemporarilyHidden = false;
 		removeCls(this.dropdownEl, "hidden");
 		addCls(this.buttonEl, "active");
+		this.constrainDropdownWidth();
 
 		setTimeout(() => this.searchInput?.focus(), SEARCH_FOCUS_DELAY_MS);
 	}
@@ -239,6 +241,14 @@ export class UntrackedEventsDropdown {
 
 		this.isTemporarilyHidden = false;
 		removeCls(this.dropdownEl, "hidden");
+	}
+
+	private constrainDropdownWidth(): void {
+		if (!this.dropdownEl) return;
+		const container = this.dropdownEl.closest(`.${cls("calendar-container")}`);
+		if (!container) return;
+		const available = container.getBoundingClientRect().right - this.dropdownEl.getBoundingClientRect().left;
+		this.dropdownEl.style.setProperty("--dropdown-max-width", `${available}px`);
 	}
 
 	// ─── Event Filtering ──────────────────────────────────────────
@@ -323,6 +333,19 @@ export class UntrackedEventsDropdown {
 				}
 			}
 
+			if (settings.showStopwatch) {
+				const stopwatchBtn = eventRow.createEl("button", {
+					cls: cls("untracked-dropdown-item-stopwatch"),
+					attr: { title: "Start tracking", "aria-label": "Start tracking" },
+				});
+				stopwatchBtn.textContent = "▶";
+				stopwatchBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
+				stopwatchBtn.addEventListener("click", (e) => {
+					e.stopPropagation();
+					this.startStopwatch(event);
+				});
+			}
+
 			// Double-click to open file (single click starts drag)
 			eventRow.addEventListener("dblclick", (e) => {
 				e.stopPropagation();
@@ -346,6 +369,18 @@ export class UntrackedEventsDropdown {
 					},
 				};
 			},
+		});
+	}
+
+	// ─── Stopwatch ───────────────────────────────────────────────
+
+	private startStopwatch(event: ParsedEvent): void {
+		this.close();
+		MinimizedModalManager.startStopwatchSession(this.app, this.bundle, {
+			title: removeZettelId(event.title),
+			start: new Date(),
+			allDay: false,
+			extendedProps: { filePath: event.ref.filePath },
 		});
 	}
 

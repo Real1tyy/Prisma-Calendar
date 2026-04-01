@@ -66,7 +66,7 @@ import {
 } from "./event-frontmatter-mapper";
 import { showSavePresetModal } from "./save-preset";
 
-interface EventModalData {
+export interface EventModalData {
 	title: string;
 	start: string | Date | null;
 	end?: string | Date | null;

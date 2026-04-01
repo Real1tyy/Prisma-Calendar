@@ -808,12 +808,7 @@ export class EventContextMenu {
 			return;
 		}
 		await this.withFilePath(event, "trigger stopwatch", async () => {
-			if (MinimizedModalManager.hasMinimizedModal()) {
-				MinimizedModalManager.stopAndSaveCurrentEvent(this.app, this.bundle.plugin.calendarBundles);
-			}
-			const modal = new EventEditModal(this.app, this.bundle, event);
-			modal.setStartStopwatchAndMinimize();
-			modal.open();
+			MinimizedModalManager.startStopwatchSession(this.app, this.bundle, event);
 		});
 	}
 

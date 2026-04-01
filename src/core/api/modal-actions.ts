@@ -48,12 +48,11 @@ export async function triggerCurrentEventStopwatch(
 	const command = new AddZettelIdCommand(plugin.app, bundle, activeFile.path);
 	await bundle.commandManager.executeCommand(command);
 
-	if (MinimizedModalManager.hasMinimizedModal()) {
-		MinimizedModalManager.stopAndSaveCurrentEvent(plugin.app, plugin.calendarBundles);
-	}
-
 	return openEditActiveNoteModal(plugin, calendarId, {
-		configureModal: (modal) => modal.setStartStopwatchAndMinimize(),
+		configureModal: (modal) => {
+			MinimizedModalManager.stopAndSaveCurrentEvent(plugin.app, plugin.calendarBundles);
+			modal.setStartStopwatchAndMinimize();
+		},
 	});
 }
 

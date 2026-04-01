@@ -3,7 +3,7 @@ import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import type { Subscription } from "rxjs";
 
-import { EventCreateModal, EventEditModal, openCategoryAssignModal } from "../components/modals";
+import { EventCreateModal, EventEditModal, type EventModalData, openCategoryAssignModal } from "../components/modals";
 import type { EventFormState } from "../components/modals/event/event-form-state";
 import type { Frontmatter } from "../types";
 import type { EventPreset } from "../types/settings";
@@ -213,6 +213,17 @@ class MinimizedModalManagerClass {
 	}
 
 	// ─── Modal Operations ─────────────────────────────────────────
+
+	/**
+	 * Stop any running stopwatch session, then open an edit modal
+	 * with the stopwatch auto-started and minimized.
+	 */
+	startStopwatchSession(app: App, bundle: CalendarBundle, eventData: EventModalData): void {
+		this.stopAndSaveCurrentEvent(app, bundle.plugin.calendarBundles);
+		const modal = new EventEditModal(app, bundle, eventData);
+		modal.setStartStopwatchAndMinimize();
+		modal.open();
+	}
 
 	/**
 	 * Restore a minimized modal by reopening it with the saved state.

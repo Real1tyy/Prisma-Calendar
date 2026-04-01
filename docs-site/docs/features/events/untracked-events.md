@@ -52,6 +52,12 @@ Each event shows:
 - Color coding based on your color rules
 - Search bar to filter by title
 
+### Start Tracking
+
+Hover over any untracked event to reveal a **▶** button on the right side. Clicking it converts the untracked event into a full timed event and starts the time tracker. Any currently running time tracker session is automatically stopped first.
+
+Requires the time tracker to be enabled in **Settings → Time Tracker → Enable Time Tracker**.
+
 ### Create from Dropdown
 
 A **"+ Create untracked event"** button at the top of the dropdown opens the create modal — identical to the "Create new untracked event" command.

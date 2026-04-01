@@ -1,4 +1,5 @@
 // Event modals
+export type { EventModalData } from "./event/base-event-modal";
 export type { CalendarIntegrationDeleteEventsOptions } from "./event/delete-confirmation";
 export { showCalendarIntegrationDeleteEventsModal, showDeleteRecurringEventsModal } from "./event/delete-confirmation";
 export { EventCreateModal } from "./event/event-create-modal";
