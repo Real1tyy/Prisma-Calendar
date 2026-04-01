@@ -120,7 +120,7 @@ When you change the start or end time of a source recurring event (e.g., moving 
 
 ### Start Date as Calculation Point
 
-For `weekly`/`bi-weekly`, system finds first day matching `RRuleSpec` on or after `Start` date. For `daily`/`monthly`/`quarterly`/`semi-annual`/`yearly`, `Start` is typically the first instance.
+For `weekly`/`bi-weekly`/`weekdays`/`weekends`, system finds first day matching `RRuleSpec` on or after `Start` date. For `daily`/`monthly`/`quarterly`/`semi-annual`/`yearly`, `Start` is typically the first instance.
 
 ### RRuleID Management
 
@@ -173,6 +173,8 @@ The recurring events modal (accessible via command palette: "Show recurring even
 ### Available RRule Values
 - `daily` - Every day
 - `bi-daily` - Every 2 days
+- `weekdays` - Every weekday (Monday through Friday)
+- `weekends` - Every weekend day (Saturday and Sunday)
 - `weekly` - Every week
 - `bi-weekly` - Every 2 weeks
 - `monthly` - Every month
@@ -206,6 +208,8 @@ RRuleSpec: monday, wednesday, friday
 RRuleSpec: tuesday, thursday
 RRuleSpec: saturday, sunday
 ```
+
+The `weekdays` and `weekends` presets automatically set `RRuleSpec` to the appropriate days — no manual specification needed.
 
 ## Generation Control
 

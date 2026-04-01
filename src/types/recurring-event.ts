@@ -13,6 +13,8 @@ import { WEEKDAY_TO_NUMBER } from "./weekday";
 export const RECURRENCE_TYPE_OPTIONS = {
 	daily: "Daily",
 	"bi-daily": "Bi-daily (every 2 days)",
+	weekdays: "Weekdays (Mon–Fri)",
+	weekends: "Weekends (Sat–Sun)",
 	weekly: "Weekly",
 	"bi-weekly": "Bi-weekly (every 2 weeks)",
 	monthly: "Monthly",
@@ -26,7 +28,12 @@ export type RecurrencePreset = keyof typeof RECURRENCE_TYPE_OPTIONS;
 
 export type RecurrenceType = RecurrencePreset | string;
 
-export const WEEKDAY_SUPPORTED_TYPES = ["weekly", "bi-weekly"] as const;
+export const WEEKDAY_SUPPORTED_TYPES = ["weekly", "bi-weekly", "weekdays", "weekends"] as const;
+
+export const WEEKDAY_PRESET_DAYS: Record<string, Weekday[]> = {
+	weekdays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+	weekends: ["saturday", "sunday"],
+};
 
 export const WEEKDAY_OPTIONS = Object.keys(WEEKDAY_TO_NUMBER).reduce(
 	(acc, weekday) => {
@@ -50,6 +57,8 @@ export const CUSTOM_RRULE_PATTERN = /^(DAILY|WEEKLY|MONTHLY|YEARLY);INTERVAL=(\d
 const PRESET_TO_PARSED: Record<RecurrencePreset, ParsedRecurrence> = {
 	daily: { freq: "DAILY", interval: 1 },
 	"bi-daily": { freq: "DAILY", interval: 2 },
+	weekdays: { freq: "WEEKLY", interval: 1 },
+	weekends: { freq: "WEEKLY", interval: 1 },
 	weekly: { freq: "WEEKLY", interval: 1 },
 	"bi-weekly": { freq: "WEEKLY", interval: 2 },
 	monthly: { freq: "MONTHLY", interval: 1 },
@@ -103,6 +112,10 @@ export function formatRecurrenceLabel(value: string): string {
 
 export function isWeekdaySupported(value: string): boolean {
 	return (WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(value);
+}
+
+export function hasFixedWeekdays(value: string): boolean {
+	return value in WEEKDAY_PRESET_DAYS;
 }
 
 /**

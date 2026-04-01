@@ -39,6 +39,7 @@ import {
 	parseRecurrenceType,
 	RECURRENCE_TYPE_OPTIONS,
 	WEEKDAY_OPTIONS,
+	WEEKDAY_PRESET_DAYS,
 } from "../../../types/recurring-event";
 import type { EventPreset } from "../../../types/settings";
 import type { Weekday } from "../../../utils/date-recurrence";
@@ -987,6 +988,16 @@ export abstract class BaseEventModal extends Modal {
 		const selectedValue = this.rruleSelect.value;
 		toggleCls(this.customIntervalContainer, "hidden", selectedValue !== "custom");
 		toggleCls(this.weekdayContainer, "hidden", selectedValue === "custom" || !isWeekdaySupported(selectedValue));
+
+		const fixedDays = WEEKDAY_PRESET_DAYS[selectedValue];
+		for (const [day, cb] of this.weekdayCheckboxes.entries()) {
+			if (fixedDays) {
+				cb.checked = fixedDays.includes(day);
+				cb.disabled = true;
+			} else {
+				cb.disabled = false;
+			}
+		}
 	}
 
 	private setupEventHandlers(_contentEl: HTMLElement): void {

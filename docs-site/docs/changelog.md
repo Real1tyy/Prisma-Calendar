@@ -4,6 +4,18 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.12.0 - 4/1/2026
+
+> **TLDR:** Weekdays and Weekends recurrence presets. Fix for clearing icon, location, or break time not actually saving.
+
+### Added
+- **Weekdays and Weekends recurrence presets**: New "Weekdays (Mon–Fri)" and "Weekends (Sat–Sun)" options in the recurrence pattern dropdown. Selecting either preset automatically sets the correct days and locks the weekday checkboxes. See [Recurring Events](./features/events/recurring-dsl.md).
+
+### Fixed
+- **Clearing icon, location, or break time in the edit modal not saving**: Removing the icon, location, or break time from an existing event and pressing Save did not clear the property from frontmatter — the old value persisted. All three fields now correctly delete from frontmatter when cleared.
+
+---
+
 ## 2.11.0 - 3/30/2026
 
 > **TLDR:** Gantt view gets a full context menu and navigation toolbar. Filtering (search bar, expressions, presets) now works across all four views — not just Calendar. Prerequisite assignment uses click-to-select directly on the calendar/Gantt instead of a search modal. Also released the [complete Encyclopedia video](https://www.youtube.com/watch?v=HrcNKh6uFH8) covering every feature from A to Z.
