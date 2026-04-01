@@ -82,7 +82,7 @@ describe("Stopwatch", () => {
 			onBreakUpdate: vi.fn(),
 		};
 
-		stopwatch = new Stopwatch(mockCallbacks, true);
+		stopwatch = new Stopwatch(mockCallbacks);
 		container = document.createElement("div");
 		setupObsidianDOMHelpers(container);
 		stopwatch.render(container);
@@ -232,13 +232,13 @@ describe("Stopwatch", () => {
 		});
 
 		it("should import and restore state", () => {
-			const originalStopwatch = new Stopwatch(mockCallbacks, true);
+			const originalStopwatch = new Stopwatch(mockCallbacks);
 			originalStopwatch.render(container);
 			originalStopwatch.start();
 
 			const state = originalStopwatch.exportState();
 
-			const newStopwatch = new Stopwatch(mockCallbacks, true);
+			const newStopwatch = new Stopwatch(mockCallbacks);
 			newStopwatch.render(container);
 			newStopwatch.importState(state);
 
@@ -253,7 +253,7 @@ describe("Stopwatch", () => {
 			vi.advanceTimersByTime(60000);
 
 			const state = stopwatch.exportState();
-			const newStopwatch = new Stopwatch(mockCallbacks, true);
+			const newStopwatch = new Stopwatch(mockCallbacks);
 			const newContainer = document.createElement("div");
 			setupObsidianDOMHelpers(newContainer);
 			newStopwatch.render(newContainer);

@@ -7,12 +7,13 @@ import type { App } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 
+import { PROPAGATION_DEBOUNCE_MS } from "../constants";
 import type { CalendarEvent } from "../types/calendar";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import {
 	applyFrontmatterChangesToInstance,
 	filterExcludedPropsFromDiff,
-	getRecurringInstanceExcludedProps,
+	getExcludedProps,
 } from "../utils/event-frontmatter";
 import { getEventName } from "../utils/event-naming";
 import { batchedPromiseAll } from "../utils/obsidian";
@@ -55,9 +56,9 @@ export class NameSeriesTracker {
 	) {
 		this.settings = settingsStore.value;
 		this.propagationDebouncer = new FrontmatterPropagationDebouncer({
-			debounceMs: this.settings.propagationDebounceMs,
+			debounceMs: PROPAGATION_DEBOUNCE_MS,
 			filterDiff: (diff) =>
-				filterExcludedPropsFromDiff(diff, this.settings, getRecurringInstanceExcludedProps(this.settings)),
+				filterExcludedPropsFromDiff(diff, getExcludedProps(this.settings, this.settings.excludedNameSeriesProps)),
 		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
@@ -162,7 +163,7 @@ export class NameSeriesTracker {
 			this.propagatingFilePaths.add(fp);
 		}
 
-		const excludedProps = getRecurringInstanceExcludedProps(this.settings);
+		const excludedProps = getExcludedProps(this.settings, this.settings.excludedNameSeriesProps);
 
 		try {
 			await batchedPromiseAll(

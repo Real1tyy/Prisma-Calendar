@@ -18,7 +18,7 @@ import { SCAN_CONCURRENCY } from "../constants";
 import { type EventMetadata, parseEventMetadata } from "../types/event";
 import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types/index";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
-import { getRecurringInstanceExcludedProps } from "../utils/event-frontmatter";
+import { getExcludedProps } from "../utils/event-frontmatter";
 import { cleanupTitle, ensureFileHasZettelId, generateUniqueRruleId, hasTimestamp } from "../utils/event-naming";
 
 export interface RawEventSource {
@@ -84,7 +84,7 @@ export class Indexer {
 	) {
 		this.settings = settingsStore.value;
 		this.lastDirectory = this.settings.directory;
-		this.lastExcludedDiffProps = getRecurringInstanceExcludedProps(this.settings);
+		this.lastExcludedDiffProps = getExcludedProps(this.settings, this.settings.excludedRecurringInstanceProps);
 
 		const configStore = new BehaviorSubject<IndexerConfig>(this.buildIndexerConfig());
 		this.genericIndexer = new GenericIndexer(app, configStore);
@@ -110,7 +110,7 @@ export class Indexer {
 				const filtersChanged =
 					JSON.stringify(this.settings.filterExpressions) !== JSON.stringify(newSettings.filterExpressions);
 				const directoryChanged = this.lastDirectory !== newSettings.directory;
-				const nextExcludedDiffProps = getRecurringInstanceExcludedProps(newSettings);
+				const nextExcludedDiffProps = getExcludedProps(newSettings, newSettings.excludedRecurringInstanceProps);
 				const excludedDiffPropsChanged = !areSetsEqual(this.lastExcludedDiffProps, nextExcludedDiffProps);
 				this.settings = newSettings;
 
@@ -485,7 +485,7 @@ export class Indexer {
 	private buildIndexerConfig(): IndexerConfig {
 		return {
 			includeFile: this.includeFile,
-			excludedDiffProps: getRecurringInstanceExcludedProps(this.settings),
+			excludedDiffProps: getExcludedProps(this.settings, this.settings.excludedRecurringInstanceProps),
 			scanConcurrency: SCAN_CONCURRENCY,
 			debounceMs: 100,
 		};

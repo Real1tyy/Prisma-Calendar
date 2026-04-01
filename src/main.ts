@@ -26,6 +26,7 @@ import { getProGateUrls } from "./core/pro-feature-previews";
 import { CustomCalendarSettingsSchema, type PrismaCalendarSettingsStore, PrismaSyncDataSchema } from "./types";
 import { type CalDAVAccount, type ICSSubscription } from "./types/integrations";
 import { createDefaultCalendarConfig } from "./utils/calendar-settings";
+import { migrateSharedExcludedProps } from "./utils/settings-migrations";
 
 export default class CustomCalendarPlugin extends Plugin {
 	settingsStore!: PrismaCalendarSettingsStore;
@@ -40,7 +41,7 @@ export default class CustomCalendarPlugin extends Plugin {
 	}
 
 	override async onload() {
-		await this.migrateSharedExcludedProps();
+		await migrateSharedExcludedProps(this);
 		this.settingsStore = new SettingsStore(this, CustomCalendarSettingsSchema);
 		await this.settingsStore.loadSettings();
 
@@ -79,25 +80,6 @@ export default class CustomCalendarPlugin extends Plugin {
 			void this.checkForUpdates();
 			void this.licenseManager.initialize();
 		});
-	}
-
-	private async migrateSharedExcludedProps(): Promise<void> {
-		const raw = await this.loadData();
-		if (!raw?.calendars || !Array.isArray(raw.calendars)) return;
-
-		let changed = false;
-		for (const cal of raw.calendars) {
-			const shared = cal.excludedRecurringPropagatedProps;
-			if (!shared) continue;
-
-			if (!cal.excludedRecurringInstanceProps) cal.excludedRecurringInstanceProps = shared;
-			if (!cal.excludedNameSeriesProps) cal.excludedNameSeriesProps = shared;
-			if (!cal.excludedCategorySeriesProps) cal.excludedCategorySeriesProps = shared;
-			delete cal.excludedRecurringPropagatedProps;
-			changed = true;
-		}
-
-		if (changed) await this.saveData(raw);
 	}
 
 	override onunload(): void {

@@ -8,13 +8,14 @@ import type { App } from "obsidian";
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 
+import { PROPAGATION_DEBOUNCE_MS } from "../constants";
 import type { Frontmatter } from "../types";
 import type { CalendarEvent } from "../types/calendar";
 import type { SingleCalendarConfig } from "../types/index";
 import {
 	applyFrontmatterChangesToInstance,
 	filterExcludedPropsFromDiff,
-	getRecurringInstanceExcludedProps,
+	getExcludedProps,
 } from "../utils/event-frontmatter";
 import { batchedPromiseAll } from "../utils/obsidian";
 import type { EventStore } from "./event-store";
@@ -66,9 +67,9 @@ export class CategoryTracker {
 		this.settings = settingsStore.value;
 		this.categories$ = this.categoriesSubject.asObservable();
 		this.propagationDebouncer = new FrontmatterPropagationDebouncer({
-			debounceMs: this.settings.propagationDebounceMs,
+			debounceMs: PROPAGATION_DEBOUNCE_MS,
 			filterDiff: (diff) =>
-				filterExcludedPropsFromDiff(diff, this.settings, getRecurringInstanceExcludedProps(this.settings)),
+				filterExcludedPropsFromDiff(diff, getExcludedProps(this.settings, this.settings.excludedCategorySeriesProps)),
 		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
@@ -300,7 +301,7 @@ export class CategoryTracker {
 			this.propagatingFilePaths.add(fp);
 		}
 
-		const excludedProps = getRecurringInstanceExcludedProps(this.settings);
+		const excludedProps = getExcludedProps(this.settings, this.settings.excludedCategorySeriesProps);
 
 		try {
 			await batchedPromiseAll(

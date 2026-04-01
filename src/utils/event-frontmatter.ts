@@ -236,14 +236,14 @@ export function getInternalProperties(settings: SingleCalendarConfig): Set<strin
 }
 
 /**
- * Returns properties excluded when creating physical recurring event instances.
+ * Returns properties excluded from propagation.
  * Uses the per-instance system props as the base, plus any user-configured exclusions.
  */
-export const getRecurringInstanceExcludedProps = (settings: SingleCalendarConfig): Set<string> => {
+export const getExcludedProps = (settings: SingleCalendarConfig, userExcludedCsv: string): Set<string> => {
 	const systemProps = getRecurringInstanceSystemProps(settings);
 
-	if (settings.excludedRecurringPropagatedProps) {
-		const userExcludedProps = settings.excludedRecurringPropagatedProps
+	if (userExcludedCsv) {
+		const userExcludedProps = userExcludedCsv
 			.split(",")
 			.map((prop) => prop.trim())
 			.filter((prop) => prop !== "");
@@ -256,13 +256,7 @@ export const getRecurringInstanceExcludedProps = (settings: SingleCalendarConfig
  * Filters a frontmatter diff to remove excluded properties based on settings.
  * Returns a new diff with only non-excluded properties.
  */
-export const filterExcludedPropsFromDiff = (
-	diff: FrontmatterDiff,
-	settings: SingleCalendarConfig,
-	customExcludedProps?: Set<string>
-): FrontmatterDiff => {
-	const excludedProps = customExcludedProps ?? getRecurringInstanceExcludedProps(settings);
-
+export const filterExcludedPropsFromDiff = (diff: FrontmatterDiff, excludedProps: Set<string>): FrontmatterDiff => {
 	const filteredAdded = diff.added.filter((change) => !excludedProps.has(change.key));
 	const filteredModified = diff.modified.filter((change) => !excludedProps.has(change.key));
 	const filteredDeleted = diff.deleted.filter((change) => !excludedProps.has(change.key));

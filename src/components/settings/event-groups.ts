@@ -6,6 +6,8 @@ import { SingleCalendarConfigSchema } from "../../types/settings";
 
 const S = SingleCalendarConfigSchema.shape;
 
+const EXCLUDED_PROPS_OVERRIDES = { name: "Excluded properties", placeholder: "Property1, Property2, Property3" };
+
 export class EventGroupsSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
 	private currentContainer: HTMLElement | null = null;
@@ -64,6 +66,12 @@ export class EventGroupsSettings {
 			() => this.rerender()
 		);
 
+		this.ui.addSchemaField(
+			containerEl,
+			{ excludedRecurringInstanceProps: S.excludedRecurringInstanceProps },
+			EXCLUDED_PROPS_OVERRIDES
+		);
+
 		new Setting(containerEl).setName("Name series propagation").setHeading();
 
 		this.ui.addMutuallyExclusiveToggles(
@@ -81,6 +89,12 @@ export class EventGroupsSettings {
 				},
 			},
 			() => this.rerender()
+		);
+
+		this.ui.addSchemaField(
+			containerEl,
+			{ excludedNameSeriesProps: S.excludedNameSeriesProps },
+			EXCLUDED_PROPS_OVERRIDES
 		);
 
 		new Setting(containerEl).setName("Category series propagation").setHeading();
@@ -102,14 +116,11 @@ export class EventGroupsSettings {
 			() => this.rerender()
 		);
 
-		new Setting(containerEl).setName("Shared propagation settings").setHeading();
-
 		this.ui.addSchemaField(
 			containerEl,
-			{ excludedRecurringPropagatedProps: S.excludedRecurringPropagatedProps },
-			{ name: "Excluded properties", placeholder: "Property1, Property2, Property3" }
+			{ excludedCategorySeriesProps: S.excludedCategorySeriesProps },
+			EXCLUDED_PROPS_OVERRIDES
 		);
-		this.ui.addSchemaField(containerEl, { propagationDebounceMs: S.propagationDebounceMs }, { step: 100 });
 
 		new Setting(containerEl).setName("Event markers").setHeading();
 

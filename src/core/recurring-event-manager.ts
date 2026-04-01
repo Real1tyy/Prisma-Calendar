@@ -22,6 +22,7 @@ import type { App } from "obsidian";
 import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
+import { PROPAGATION_DEBOUNCE_MS } from "../constants";
 import type { CalendarEvent, Frontmatter, PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
 import { stripZ, toInternalISO } from "../types/event";
@@ -31,7 +32,7 @@ import { getNextOccurrence } from "../utils/date-recurrence";
 import {
 	applyFrontmatterChangesToInstance,
 	filterExcludedPropsFromDiff,
-	getRecurringInstanceExcludedProps,
+	getExcludedProps,
 	setEventBasics,
 	type TimePropagationDiff,
 } from "../utils/event-frontmatter";
@@ -99,8 +100,12 @@ export class RecurringEventManager extends DebouncedNotifier {
 		super();
 		this.settings = settingsStore.value;
 		this.propagationDebouncer = new FrontmatterPropagationDebouncer({
-			debounceMs: this.settings.propagationDebounceMs,
-			filterDiff: (diff) => filterExcludedPropsFromDiff(diff, this.settings),
+			debounceMs: PROPAGATION_DEBOUNCE_MS,
+			filterDiff: (diff) =>
+				filterExcludedPropsFromDiff(
+					diff,
+					getExcludedProps(this.settings, this.settings.excludedRecurringInstanceProps)
+				),
 		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
@@ -279,7 +284,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			return;
 		}
 
-		const excludedProps = getRecurringInstanceExcludedProps(this.settings);
+		const excludedProps = getExcludedProps(this.settings, this.settings.excludedRecurringInstanceProps);
 
 		await batchedPromiseAll(
 			this.getPhysicalInstancesList(data.physicalInstances),
@@ -1061,7 +1066,7 @@ export function buildInstanceFrontmatter(
 	settings: SingleCalendarConfig,
 	ctx: InstanceFrontmatterContext
 ): Frontmatter {
-	const excludeProps = getRecurringInstanceExcludedProps(settings);
+	const excludeProps = getExcludedProps(settings, settings.excludedRecurringInstanceProps);
 	const fm: Frontmatter = Object.fromEntries(
 		Object.entries(sourceFrontmatter).filter(([key]) => !excludeProps.has(key))
 	);
