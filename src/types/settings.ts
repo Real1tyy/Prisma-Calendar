@@ -93,12 +93,6 @@ const GeneralSettingsSchema = z
 			.describe(
 				"Display a stopwatch in the event creation/edit modal for precise time tracking. Start fills the start date, stop fills the end date, and break time is tracked automatically."
 			),
-		showStopwatchStartWithoutFill: z
-			.boolean()
-			.catch(true)
-			.describe(
-				"Display a continue button that resumes time tracking from the existing start date. The timer calculates elapsed time based on the event's start time and continues from there, perfect for resuming work on existing events."
-			),
 		showRibbonIcon: z
 			.boolean()
 			.catch(true)
@@ -450,6 +444,12 @@ const CalendarSettingsSchema = z
 			.describe(
 				"Show a confirmation modal before propagating frontmatter changes to instances. Allows you to review changes before applying them."
 			),
+		excludedRecurringInstanceProps: z
+			.string()
+			.catch("")
+			.describe(
+				"Comma-separated list of frontmatter property names to exclude when propagating changes from recurring event sources to physical instances."
+			),
 		enableNameSeriesTracking: z
 			.boolean()
 			.catch(true)
@@ -468,6 +468,12 @@ const CalendarSettingsSchema = z
 			.describe(
 				"Show a confirmation modal before propagating frontmatter changes to name series members. Allows you to review changes before applying them."
 			),
+		excludedNameSeriesProps: z
+			.string()
+			.catch("")
+			.describe(
+				"Comma-separated list of frontmatter property names to exclude when propagating changes across name series members."
+			),
 		propagateFrontmatterToCategorySeries: z
 			.boolean()
 			.catch(false)
@@ -480,20 +486,11 @@ const CalendarSettingsSchema = z
 			.describe(
 				"Show a confirmation modal before propagating frontmatter changes to category series members. Allows you to review changes before applying them."
 			),
-		excludedRecurringPropagatedProps: z
+		excludedCategorySeriesProps: z
 			.string()
 			.catch("")
 			.describe(
-				"Comma-separated list of frontmatter property names to exclude from propagation. Applies to all propagation types: recurring instances, name series, and category series."
-			),
-		propagationDebounceMs: z
-			.number()
-			.int()
-			.min(100)
-			.max(10000)
-			.catch(3000)
-			.describe(
-				"Delay in milliseconds before propagating frontmatter changes. Multiple rapid changes within this window will be accumulated and applied together. Applies to all propagation types."
+				"Comma-separated list of frontmatter property names to exclude when propagating changes across category series members."
 			),
 		defaultView: CalendarViewTypeSchema.catch("dayGridMonth"),
 		defaultMobileView: CalendarViewTypeSchema.catch("dayGridMonth"),

@@ -462,52 +462,47 @@ export abstract class BaseEventModal extends Modal {
 			addCls(this.stopwatchContainer, "hidden");
 		}
 
-		this.stopwatch = new Stopwatch(
-			{
-				onStart: (startTime: Date) => {
-					this.initialBreakMinutes =
-						PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
-					this.startInput.value = formatDateTimeForInput(startTime);
+		this.stopwatch = new Stopwatch({
+			onStart: (startTime: Date) => {
+				this.initialBreakMinutes = PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
+				this.startInput.value = formatDateTimeForInput(startTime);
 
-					const endTime = new Date(startTime.getTime() + END_TIME_SYNC_INTERVAL_MS);
-					this.endInput.value = formatDateTimeForInput(endTime);
+				const endTime = new Date(startTime.getTime() + END_TIME_SYNC_INTERVAL_MS);
+				this.endInput.value = formatDateTimeForInput(endTime);
 
-					const event = new Event("change", { bubbles: true });
-					this.startInput.dispatchEvent(event);
-					this.endInput.dispatchEvent(event);
-				},
-				onContinueRequested: () => {
-					// Continue uses the existing start time from the input field
-					// Reset the break counter and return the current start time
-					this.initialBreakMinutes =
-						PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
-					const startValue = this.startInput.value;
-					if (startValue) {
-						// If end date is in the past, update it to now
-						const endValue = this.endInput.value;
-						if (endValue) {
-							const endDate = parseAsLocalDate(endValue);
-							if (endDate && endDate.getTime() < Date.now()) {
-								this.endInput.value = formatDateTimeForInput(new Date());
-								this.endInput.dispatchEvent(new Event("change", { bubbles: true }));
-							}
-						}
-						return parseAsLocalDate(startValue);
-					}
-					return null;
-				},
-				onStop: (endTime: Date) => {
-					this.endInput.value = formatDateTimeForInput(endTime);
-					const event = new Event("change", { bubbles: true });
-					this.endInput.dispatchEvent(event);
-				},
-				onBreakUpdate: (breakMinutes: number) => {
-					const totalBreak = this.initialBreakMinutes + breakMinutes;
-					this.setSimpleFieldValues({ breakMinutes: totalBreak.toString() });
-				},
+				const event = new Event("change", { bubbles: true });
+				this.startInput.dispatchEvent(event);
+				this.endInput.dispatchEvent(event);
 			},
-			settings.showStopwatchStartWithoutFill
-		);
+			onContinueRequested: () => {
+				// Continue uses the existing start time from the input field
+				// Reset the break counter and return the current start time
+				this.initialBreakMinutes = PositiveFloat.parse(String(this.getSimpleFieldValues()["breakMinutes"] ?? "")) ?? 0;
+				const startValue = this.startInput.value;
+				if (startValue) {
+					// If end date is in the past, update it to now
+					const endValue = this.endInput.value;
+					if (endValue) {
+						const endDate = parseAsLocalDate(endValue);
+						if (endDate && endDate.getTime() < Date.now()) {
+							this.endInput.value = formatDateTimeForInput(new Date());
+							this.endInput.dispatchEvent(new Event("change", { bubbles: true }));
+						}
+					}
+					return parseAsLocalDate(startValue);
+				}
+				return null;
+			},
+			onStop: (endTime: Date) => {
+				this.endInput.value = formatDateTimeForInput(endTime);
+				const event = new Event("change", { bubbles: true });
+				this.endInput.dispatchEvent(event);
+			},
+			onBreakUpdate: (breakMinutes: number) => {
+				const totalBreak = this.initialBreakMinutes + breakMinutes;
+				this.setSimpleFieldValues({ breakMinutes: totalBreak.toString() });
+			},
+		});
 
 		this.stopwatch.render(this.stopwatchContainer);
 	}

@@ -120,11 +120,6 @@ export class GeneralSettings {
 			{ showStopwatch: S.showStopwatch },
 			{ name: "Show time tracker in event modal" }
 		);
-		this.ui.addSchemaField(
-			containerEl,
-			{ showStopwatchStartWithoutFill: S.showStopwatchStartWithoutFill },
-			{ name: "Show 'continue' button" }
-		);
 	}
 
 	private addStatisticsSettings(containerEl: HTMLElement): void {

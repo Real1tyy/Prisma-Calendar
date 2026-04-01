@@ -36,13 +36,11 @@ export class Stopwatch {
 	private resumeBtn!: HTMLButtonElement;
 
 	private callbacks: StopwatchCallbacks;
-	private showContinueButton: boolean;
 
 	// ─── Lifecycle ────────────────────────────────────────────────
 
-	constructor(callbacks: StopwatchCallbacks, showContinueButton: boolean) {
+	constructor(callbacks: StopwatchCallbacks) {
 		this.callbacks = callbacks;
-		this.showContinueButton = showContinueButton;
 	}
 
 	render(parent: HTMLElement): HTMLElement {
@@ -94,20 +92,17 @@ export class Stopwatch {
 			this.start();
 		});
 
-		// Continue button (conditional) - continues from existing start time
-		if (this.showContinueButton) {
-			this.continueBtn = controlsSection.createEl("button", {
-				text: "▶ continue",
-				cls: cls("stopwatch-btn stopwatch-continue-btn"),
-				type: "button",
-			});
-			this.continueBtn.addEventListener("click", () => {
-				const existingStartTime = this.callbacks.onContinueRequested();
-				if (existingStartTime) {
-					this.continueFromExisting(existingStartTime);
-				}
-			});
-		}
+		this.continueBtn = controlsSection.createEl("button", {
+			text: "▶ continue",
+			cls: cls("stopwatch-btn stopwatch-continue-btn"),
+			type: "button",
+		});
+		this.continueBtn.addEventListener("click", () => {
+			const existingStartTime = this.callbacks.onContinueRequested();
+			if (existingStartTime) {
+				this.continueFromExisting(existingStartTime);
+			}
+		});
 
 		// Pause/Resume button
 		this.pauseBtn = controlsSection.createEl("button", {
