@@ -1,6 +1,20 @@
 import type { App } from "obsidian";
 
+import { injectStyleSheet } from "../styles/inject";
 import { showModal } from "./modal";
+
+const CONFIRMATION_STYLES_ID = "confirmation-modal-styles";
+const CONFIRMATION_STYLES = `
+.confirmation-modal-buttons {
+	display: flex;
+	gap: 8px;
+	justify-content: flex-start;
+	align-items: center;
+	margin-top: 1rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--background-modifier-border);
+}
+`;
 
 export interface ConfirmationButton {
 	text: string;
@@ -66,6 +80,7 @@ function renderConfirmation(el: HTMLElement, config: ConfirmationModalConfig, cl
 }
 
 export function showConfirmationModal(app: App, config: ConfirmationModalConfig): void {
+	injectStyleSheet(CONFIRMATION_STYLES_ID, CONFIRMATION_STYLES);
 	showModal({
 		app,
 		cls: config.cls ?? "confirmation-modal",
