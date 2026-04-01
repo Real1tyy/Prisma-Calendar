@@ -922,6 +922,22 @@ button[class*="prisma-"]:focus-visible {
 	max-height: inherit;
 }
 
+/* All-day events as columns in daily view — events sit side by side when there
+   is enough horizontal space. Wraps to new rows when events don't fit.
+   Uses auto basis so width is proportional to content, not forced equal. */
+.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-day-events {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 2px;
+	align-items: stretch;
+}
+
+.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event-harness {
+	flex: 1 1 auto;
+	min-width: 200px;
+}
+
 .prisma-calendar-container .fc-timegrid-slot-label {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);
@@ -7716,6 +7732,35 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 
 .prisma-untracked-dropdown-item.prisma-dragging {
 	opacity: 0.5;
+}
+
+.prisma-untracked-dropdown-item-stopwatch {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: none;
+	border-radius: var(--radius-s);
+	background: transparent;
+	color: var(--text-muted);
+	font-size: 10px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.prisma-untracked-dropdown-item:hover .prisma-untracked-dropdown-item-stopwatch {
+	opacity: 1;
+}
+
+.prisma-untracked-dropdown-item-stopwatch:hover {
+	color: var(--text-accent);
+	background-color: var(--background-modifier-hover);
 }
 
 .prisma-untracked-dropdown-item-title {

@@ -144,6 +144,10 @@ Configure both in **Settings → Calendar → Visual Appearance**.
 
 ### Other Visual Options
 
+- **All-day event columns**: In the daily view, multiple all-day events sit side by side when there is enough horizontal space, with width proportional to content. Events wrap to new rows when they don't fit
+
+![All-day events as columns in daily view](/img/multiple_all_day_events_daily.png)
+
 - **All-day event height**: Maximum pixel height for all-day events before they scroll internally (30–500px, default: 75px)
 - **Past event contrast**: Dims past events (0% = invisible, 100% = normal, default: 70%)
 - **Show color dots**: Color indicator dots in monthly view cells (enabled by default)

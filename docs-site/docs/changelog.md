@@ -6,10 +6,17 @@ All notable changes to this project will be documented here.
 
 ## 2.12.0 - 4/1/2026
 
-> **TLDR:** Weekdays and Weekends recurrence presets. Fix for clearing icon, location, or break time not actually saving.
+> **TLDR:** Start tracking directly from the untracked events dropdown. Weekdays and Weekends recurrence presets. All-day events now display as columns in the daily view. Fix for clearing icon, location, or break time not actually saving.
 
 ### Added
+- **Start tracking from untracked events dropdown**: Hover over any untracked event in the dropdown to reveal a ▶ button that converts it to a timed event at the current time and immediately starts the time tracker. Requires time tracker to be enabled in settings. See [Untracked Events](./features/events/untracked-events.md).
 - **Weekdays and Weekends recurrence presets**: New "Weekdays (Mon–Fri)" and "Weekends (Sat–Sun)" options in the recurrence pattern dropdown. Selecting either preset automatically sets the correct days and locks the weekday checkboxes. See [Recurring Events](./features/events/recurring-dsl.md).
+
+### Improved
+- **All-day events as columns in day/week views**: All-day events now appear side by side as equal-width columns instead of stacking vertically, making better use of horizontal space when multiple all-day events exist. See [Calendar View](./features/calendar/calendar-view.md).
+- **Browser-style back/forward navigation**: The Navigate Back button now tracks all view and date changes (not just "Go to source" navigation). A new Navigate Forward button lets you move forward through your navigation history. Both are available as page header actions and commands. See [Calendar View](./features/calendar/calendar-view.md).
+- **Tab command names refresh on reorder/rename**: Obsidian commands for switching tabs (e.g., "Go to tab 2: Timeline") now update their names when you reorder or rename tabs via the tab manager.
+- **Simplified settings**: Removed the propagation debounce setting — uses a sensible default (3 seconds). Removed daily, weekly, and monthly statistics buttons from the default page header — they remain available via the toolbar customizer.
 
 ### Fixed
 - **Clearing icon, location, or break time in the edit modal not saving**: Removing the icon, location, or break time from an existing event and pressing Save did not clear the property from frontmatter — the old value persisted. All three fields now correctly delete from frontmatter when cleared.
