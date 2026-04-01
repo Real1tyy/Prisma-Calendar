@@ -44,6 +44,7 @@ export function buildCoreCalendarOptions(settings: SingleCalendarConfig): Partia
 		locale: settings.locale,
 		timeZone: "local",
 		nowIndicator: settings.nowIndicator,
+		defaultTimedEventDuration: "00:01:00",
 		eventTimeFormat: {
 			hour: "2-digit",
 			minute: "2-digit",
@@ -204,11 +205,16 @@ export function buildSharedEventDidMount(
 		const { el, event } = info;
 
 		const isVirtual = event.extendedProps["isVirtual"];
+		const isManualVirtual = event.extendedProps["isManualVirtual"];
 		const eventFilePath = event.extendedProps["filePath"];
 		const computedColors = event.extendedProps.computedColors ?? [];
 		const displayData = (event.extendedProps["frontmatterDisplayData"] ?? {}) as Record<string, unknown>;
 
-		if (isVirtual) {
+		if (isManualVirtual) {
+			el.classList.add(cls("virtual-event-opacity"));
+			el.title = "Virtual event (no backing file)";
+			el.classList.add(cls("virtual-event-italic"));
+		} else if (isVirtual) {
 			el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
 			const isHoliday = eventFilePath?.startsWith("holiday:");
 			el.title = isHoliday ? "Holiday (read-only)" : "Virtual recurring event (read-only)";
@@ -261,7 +267,7 @@ export function buildSharedEventDidMount(
 		el.setAttribute("title", tooltip);
 
 		// Async note preview on hover
-		if (eventFilePath && !isVirtual) {
+		if (eventFilePath && !isVirtual && !isManualVirtual) {
 			el.addEventListener("mouseenter", () => {
 				if (el.dataset["notesLoaded"]) return;
 				el.dataset["notesLoaded"] = "true";
@@ -292,7 +298,7 @@ export function buildSharedEventDidMount(
 		});
 
 		// Hover preview
-		if (!isVirtual && eventFilePath) {
+		if (!isVirtual && !isManualVirtual && eventFilePath) {
 			el.addEventListener("mouseenter", (e) => {
 				if (settings.enableEventPreview) {
 					emitHover(deps.app, deps.container, el, e, eventFilePath, deps.bundle.calendarId);
@@ -344,6 +350,9 @@ export function mapEventToPrismaInput(
 	if (event.isVirtual) {
 		classNames.push(cls("virtual-event"));
 	}
+	if (event.isManualVirtual) {
+		classNames.push(cls("manual-virtual-event"));
+	}
 
 	const folder = event.meta?.["folder"];
 	const folderStr = typeof folder === "string" ? folder : "";
@@ -360,6 +369,8 @@ export function mapEventToPrismaInput(
 			originalTitle: event.title,
 			frontmatterDisplayData: meta,
 			isVirtual: event.isVirtual,
+			isManualVirtual: event.isManualVirtual,
+			...(event.isManualVirtual ? { virtualEventId: event.id } : {}),
 			computedColors: allColors,
 			frontmatterHash: hashFrontmatter(meta),
 		},

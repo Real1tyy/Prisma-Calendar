@@ -6,9 +6,10 @@ All notable changes to this project will be documented here.
 
 ## 2.12.0 - 4/1/2026
 
-> **TLDR:** Start tracking directly from the untracked events dropdown. Weekdays and Weekends recurrence presets. Browser-style back/forward navigation. Settings cleanup — removed useless toggles, split excluded props per propagation type, dedicated Performance section. Fix for clearing icon, location, or break time not actually saving.
+> **TLDR:** Manual virtual events — create calendar time blocks without vault files. Start tracking directly from the untracked events dropdown. Weekdays and Weekends recurrence presets. Browser-style back/forward navigation. Settings cleanup — removed useless toggles, split excluded props per propagation type, dedicated Performance section. Fixes for clearing icon/location/break time not saving, zero-duration events rendering as 60 minutes, and stopwatch times dropping seconds.
 
 ### Added
+- **Manual Virtual Events**: Create calendar events without backing vault files for lightweight time blocking and planning. Check the "Virtual event" checkbox in the create/edit modal, or right-click any event to convert between virtual and physical. Virtual events are stored in a `Virtual Events.md` file per calendar folder. See [Virtual Events](./features/events/virtual-events.md#manual-virtual-events).
 - **Start tracking from untracked events dropdown**: Hover over any untracked event in the dropdown to reveal a ▶ button that converts it to a timed event at the current time and immediately starts the time tracker. Requires time tracker to be enabled in settings. See [Untracked Events](./features/events/untracked-events.md).
 - **Weekdays and Weekends recurrence presets**: New "Weekdays (Mon–Fri)" and "Weekends (Sat–Sun)" options in the recurrence pattern dropdown. Selecting either preset automatically sets the correct days and locks the weekday checkboxes. See [Recurring Events](./features/events/recurring-dsl.md).
 
@@ -22,6 +23,8 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 - **Clearing icon, location, or break time in the edit modal not saving**: Removing the icon, location, or break time from an existing event and pressing Save did not clear the property from frontmatter — the old value persisted. All three fields now correctly delete from frontmatter when cleared.
+- **Zero-duration events rendering as 60 minutes**: Events where start and end times are identical appeared as 1-hour blocks on the calendar. They now render as thin slivers matching their actual zero duration.
+- **Stopwatch times rounded to minutes, dropping seconds**: Starting and stopping the time tracker always saved times without seconds (e.g. `20:17:00` instead of `20:17:43`). Times now preserve full second-level precision. See [Time Tracker](./features/management/time-tracker.md).
 
 ---
 

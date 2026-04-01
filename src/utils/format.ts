@@ -10,7 +10,7 @@ import { extractPropertyText, getDisplayProperties } from "./property-display";
 
 /**
  * Formats a date/datetime for HTML datetime-local input fields.
- * Strips Z suffix to treat as local time and returns YYYY-MM-DDTHH:MM format.
+ * Includes seconds so stopwatch saves preserve full precision.
  * NOTE: This version accepts string | Date (unlike the shared version which is string-only).
  */
 export function formatDateTimeForInput(dateInput: string | Date): string {
@@ -23,7 +23,8 @@ export function formatDateTimeForInput(dateInput: string | Date): string {
 	const day = String(date.getDate()).padStart(2, "0");
 	const hours = String(date.getHours()).padStart(2, "0");
 	const minutes = String(date.getMinutes()).padStart(2, "0");
-	return `${year}-${month}-${day}T${hours}:${minutes}`;
+	const seconds = String(date.getSeconds()).padStart(2, "0");
+	return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 }
 
 /**

@@ -319,6 +319,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 			nowIndicator: settings.nowIndicator,
 
+			defaultTimedEventDuration: "00:01:00",
+
 			stickyHeaderDates: settings.stickyDayHeaders,
 
 			eventTimeFormat: {
@@ -429,7 +431,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 
 			eventAllow: (_dropInfo, draggedEvent) => {
-				return !draggedEvent?.extendedProps["isVirtual"];
+				return !draggedEvent?.extendedProps["isVirtual"] && !draggedEvent?.extendedProps["isManualVirtual"];
 			},
 
 			eventClick: (info) => {
@@ -447,7 +449,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 
 			eventDidMount: (info) => {
-				if (info.event.extendedProps["isVirtual"]) {
+				if (info.event.extendedProps["isManualVirtual"]) {
+					info.el.classList.add(cls("virtual-event-opacity"));
+					info.el.title = "Virtual event (no backing file)";
+				} else if (info.event.extendedProps["isVirtual"]) {
 					info.el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
 					const isHoliday = (info.event.extendedProps["filePath"] as string | undefined)?.startsWith("holiday:");
 					info.el.title = isHoliday ? "Holiday (read-only)" : "Virtual recurring event (read-only)";
@@ -488,7 +493,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				this.setupDragEdgeScrolling();
 				const filePath = info.event.extendedProps?.["filePath"];
 				const isVirtual = info.event.extendedProps?.["isVirtual"] ?? false;
-				this.isDraggingCalendarEvent = !isVirtual && typeof filePath === "string" && filePath.length > 0;
+				const isManualVirtual = info.event.extendedProps?.["isManualVirtual"] ?? false;
+				this.isDraggingCalendarEvent =
+					!isVirtual && !isManualVirtual && typeof filePath === "string" && filePath.length > 0;
 				this.draggingCalendarEventFilePath = this.isDraggingCalendarEvent ? filePath : null;
 			},
 
@@ -1288,6 +1295,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			if (event.isVirtual) {
 				classNames.push(cls("virtual-event"));
 			}
+			if (event.isManualVirtual) {
+				classNames.push(cls("manual-virtual-event"));
+			}
 			const allColors = this.getAllEventColors(event);
 			const primaryColor = allColors[0] ?? settings.defaultNodeColor;
 			const displayColor = settings.colorMode === "off" ? settings.defaultNodeColor : primaryColor;
@@ -1320,6 +1330,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 					originalTitle: event.title,
 					frontmatterDisplayData: meta,
 					isVirtual: event.isVirtual,
+					isManualVirtual: event.isManualVirtual,
+					...(event.isManualVirtual ? { virtualEventId: event.id } : {}),
 					computedColors: allColors,
 					frontmatterHash: hashFrontmatter(meta),
 				},
@@ -1566,7 +1578,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private handleEventMount(info: EventMountInfo): void {
-		if (info.event.extendedProps.isVirtual) {
+		if (info.event.extendedProps.isVirtual || info.event.extendedProps.isManualVirtual) {
 			info.el.classList.add(cls("virtual-event-italic"));
 		}
 
@@ -1984,7 +1996,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private async handleEventUpdate(info: EventUpdateInfo, errorMessage: string): Promise<void> {
-		if (info.event.extendedProps.isVirtual === true) {
+		if (info.event.extendedProps.isVirtual === true || info.event.extendedProps.isManualVirtual === true) {
 			info.revert();
 			return;
 		}
