@@ -79,10 +79,11 @@ export function registerPrismaCalendarView(
 					: {}),
 				onStateChange: (state) => {
 					void bundle.settingsStore.updateSettings((s) => ({ ...s, activeTab: state }));
+					tabCommandUpdater.updateLabels(ref.tabbedHandle!.getVisibleLabels());
 				},
 			});
 
-			registerTabCommands(
+			const tabCommandUpdater = registerTabCommands(
 				plugin,
 				"prisma-calendar",
 				"Prisma Calendar",
