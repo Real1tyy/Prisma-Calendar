@@ -75,7 +75,7 @@ Manual virtual events are calendar entries you create without a backing vault fi
 
 ### Creating Manual Virtual Events
 
-Check the **"Virtual event"** checkbox in the create or edit modal. The event appears on the calendar but no `.md` file is created.
+Toggle the **Virtual** pill in the modal header (next to the title). When active, the pill highlights in your accent color. The event appears on the calendar but no `.md` file is created.
 
 ### Storage
 
@@ -87,7 +87,7 @@ Each virtual event stores: title, start/end datetime, all-day flag, and frontmat
 
 - **Right-click a physical event → "Make virtual"**: Deletes the backing file and stores the event metadata as a virtual entry. Title, dates, and properties are preserved.
 - **Right-click a virtual event → "Make real"**: Creates a backing `.md` file from the stored metadata and removes the virtual entry.
-- **Edit modal**: Toggle the "Virtual event" checkbox to convert in either direction.
+- **Edit modal**: Toggle the **Virtual** pill in the modal header to convert in either direction.
 
 :::note
 Converting physical → virtual preserves frontmatter properties but not note body content.

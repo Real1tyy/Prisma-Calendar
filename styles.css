@@ -3318,6 +3318,27 @@ button[class*="prisma-"]:focus-visible {
 	flex: 1;
 }
 
+/* Virtual event toggle in modal header */
+.prisma-virtual-toggle {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-shrink: 0;
+}
+
+.prisma-virtual-toggle-label {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--text-muted);
+	user-select: none;
+}
+
+.prisma-virtual-toggle-checkbox {
+	cursor: pointer;
+	accent-color: var(--interactive-accent);
+	transform: scale(1.4);
+}
+
 .prisma-event-modal-header-controls {
 	display: flex;
 	align-items: center;
@@ -3378,9 +3399,9 @@ button[class*="prisma-"]:focus-visible {
 }
 
 .prisma-event-preset-label {
-	font-size: var(--font-ui-small);
+	font-size: 16px;
 	color: var(--text-muted);
-	font-weight: var(--font-weight-medium);
+	font-weight: 600;
 	flex-shrink: 0;
 }
 
@@ -3527,7 +3548,7 @@ button[class*="prisma-"]:focus-visible {
 	}
 
 	.prisma-event-preset-label {
-		font-size: 11px;
+		font-size: 14px;
 	}
 
 	.prisma-event-preset-select {

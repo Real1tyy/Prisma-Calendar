@@ -268,6 +268,8 @@ export abstract class BaseEventModal extends Modal {
 
 		headerContainer.createEl("h2", { text: this.getModalTitle() });
 
+		this.createVirtualEventToggle(headerContainer);
+
 		const controlsContainer = headerContainer.createDiv(cls("event-modal-header-controls"));
 
 		// Minimize button - saves modal state and allows reopening later
@@ -445,7 +447,6 @@ export abstract class BaseEventModal extends Modal {
 		this.createStopwatchField(contentEl);
 
 		this.createRecurringEventFields(contentEl);
-		this.createVirtualEventField(contentEl);
 		this.createCategoryField(contentEl);
 		this.createPrerequisiteField(contentEl);
 		this.createParticipantField(contentEl);
@@ -510,15 +511,12 @@ export abstract class BaseEventModal extends Modal {
 		this.stopwatch.render(this.stopwatchContainer);
 	}
 
-	private createVirtualEventField(contentEl: HTMLElement): void {
-		const virtualCheckboxContainer = contentEl.createDiv(cls("setting-item"));
-		virtualCheckboxContainer.createEl("div", {
-			text: "Virtual event",
-			cls: cls("setting-item-name"),
-		});
-		this.virtualCheckbox = virtualCheckboxContainer.createEl("input", {
+	private createVirtualEventToggle(headerContainer: HTMLElement): void {
+		const toggle = headerContainer.createDiv(cls("virtual-toggle"));
+		toggle.createEl("span", { text: "Virtual", cls: cls("virtual-toggle-label") });
+		this.virtualCheckbox = toggle.createEl("input", {
 			type: "checkbox",
-			cls: cls("setting-item-control"),
+			cls: cls("virtual-toggle-checkbox"),
 		});
 	}
 
