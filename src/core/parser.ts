@@ -6,6 +6,7 @@ import { v5 as uuidv5 } from "uuid";
 
 import { PRISMA_CALENDAR_NAMESPACE } from "../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../types/calendar";
+import { eventDefaults } from "../types/calendar";
 import type { EventMetadata } from "../types/event";
 import { parseEventFrontmatter, toInternalISO } from "../types/event";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
@@ -74,13 +75,13 @@ export class Parser {
 		void applyDateNormalizationToFile(this.app, filePath, frontmatter, this.settings, start, undefined, true);
 
 		return {
+			...eventDefaults(),
 			id,
 			ref: { filePath },
 			title,
 			type: "allDay",
 			start: start,
 			allDay: true,
-			isVirtual: false,
 			skipped: metadata.skip ?? false,
 			metadata,
 			meta,
@@ -103,6 +104,7 @@ export class Parser {
 		void applyDateNormalizationToFile(this.app, source.filePath, frontmatter, this.settings, start, end);
 
 		return {
+			...eventDefaults(),
 			id,
 			ref: { filePath },
 			title,
@@ -110,7 +112,6 @@ export class Parser {
 			start,
 			end,
 			allDay: false,
-			isVirtual: false,
 			skipped: metadata.skip ?? false,
 			metadata,
 			meta,

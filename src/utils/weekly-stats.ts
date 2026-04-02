@@ -148,7 +148,7 @@ export function aggregateStats(
 	const groups = new Map<string, { duration: number; count: number; isRecurring: boolean }>();
 
 	for (const event of timedEvents) {
-		const isRecurring = event.isVirtual;
+		const isRecurring = event.virtualKind === "recurring";
 		const duration = getEventDuration(event);
 
 		// Get all group keys for this event (may be multiple for category mode)

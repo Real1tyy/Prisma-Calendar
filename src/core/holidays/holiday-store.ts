@@ -2,6 +2,7 @@ import { DateTime } from "luxon";
 import type { App } from "obsidian";
 
 import type { CalendarEvent } from "../../types/calendar";
+import { eventDefaults } from "../../types/calendar";
 import { DateHolidaysProvider } from "./date-holidays-provider";
 import type { HolidayConfig, HolidayEvent, HolidayProvider } from "./types";
 
@@ -87,17 +88,14 @@ export class HolidayStore {
 
 	private holidayToCalendarEvent(holiday: HolidayEvent): CalendarEvent {
 		return {
+			...eventDefaults(),
 			id: holiday.id,
 			title: holiday.name,
 			type: "allDay",
 			start: holiday.date,
 			allDay: true,
-			ref: {
-				filePath: `holiday:${holiday.id}`,
-			},
-			isVirtual: true,
-			skipped: false,
-			metadata: {},
+			ref: { filePath: `holiday:${holiday.id}` },
+			virtualKind: "recurring" as const,
 			meta: {
 				holidayType: holiday.type,
 				holidaySource: "date-holidays",

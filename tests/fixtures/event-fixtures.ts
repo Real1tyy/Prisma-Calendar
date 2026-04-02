@@ -1,4 +1,5 @@
 import type { CalendarEvent } from "../../src/types/calendar";
+import { eventDefaults } from "../../src/types/calendar";
 import type { EventMetadata } from "../../src/types/event";
 
 function defaultMetadata(partial: Partial<EventMetadata> = {}): EventMetadata {
@@ -32,14 +33,12 @@ function defaultMetadata(partial: Partial<EventMetadata> = {}): EventMetadata {
  */
 export function createMockAllDayEvent(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
 	return {
+		...eventDefaults(),
 		id: "test-1",
 		ref: { filePath: "test.md" },
 		title: "Test Event",
 		start: "2024-03-15T00:00:00",
-		isVirtual: false,
-		skipped: false,
 		metadata: defaultMetadata(overrides.metadata),
-		meta: {},
 		...overrides,
 		type: "allDay" as const,
 		allDay: true as const,
@@ -55,15 +54,13 @@ export function createMockTimedEvent(overrides: Partial<CalendarEvent> = {}): Ca
 	const end = (overrides as { end?: string }).end !== undefined ? (overrides as { end: string }).end : start;
 
 	return {
+		...eventDefaults(),
 		id: "test-1",
 		ref: { filePath: "test.md" },
 		title: "Test Event",
 		start,
 		end,
-		isVirtual: false,
-		skipped: false,
 		metadata: defaultMetadata(overrides.metadata),
-		meta: {},
 		...overrides,
 		type: "timed" as const,
 		allDay: false as const,

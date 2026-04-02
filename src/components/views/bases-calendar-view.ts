@@ -289,13 +289,13 @@ class PrismaBasesView extends BasesView {
 			selectMirror: true,
 			unselectAuto: true,
 			eventAllow: (_dropInfo: unknown, draggedEvent: { extendedProps: Record<string, unknown> } | null) =>
-				!draggedEvent?.extendedProps["isVirtual"],
+				draggedEvent?.extendedProps["virtualKind"] === "none",
 			eventContent: eventContentCallback,
 			eventClassNames: eventClassNamesCallback,
 			eventDidMount: eventDidMountCallback,
 			eventClick: (info: { event: CalendarEventData & { id: string } }) => {
 				if (this.batchSelectionManager?.isInSelectionMode()) {
-					if (!info.event.extendedProps["isVirtual"]) {
+					if (info.event.extendedProps["virtualKind"] === "none") {
 						this.batchSelectionManager.handleEventClick(info.event.id);
 					}
 				} else {
@@ -557,12 +557,12 @@ class PrismaBasesView extends BasesView {
 		event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay">
 	): void {
 		const filePath = event.extendedProps.filePath;
-		const isVirtual = event.extendedProps.isVirtual;
+		const virtualKind = event.extendedProps.virtualKind;
 		const isHoliday = typeof filePath === "string" && filePath.startsWith("holiday:");
 
 		if (isHoliday) return;
 
-		if (isVirtual && typeof filePath === "string") {
+		if (virtualKind === "recurring" && typeof filePath === "string") {
 			showEventPreviewModal(this.app, bundle, {
 				title: event.title,
 				start: null,
@@ -640,7 +640,7 @@ class PrismaBasesView extends BasesView {
 	): Promise<void> {
 		if (!info) return;
 
-		if (info.event.extendedProps.isVirtual === true) {
+		if (info.event.extendedProps.virtualKind !== "none") {
 			info.revert();
 			return;
 		}

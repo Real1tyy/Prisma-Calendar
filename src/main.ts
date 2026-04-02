@@ -16,7 +16,8 @@ import { AI_CHAT_VIEW_TYPE, AIChatView } from "./components/ai-chat-view";
 import type { CalendarComponent } from "./components/calendar-view";
 import { showCalendarSelectModal, showICSImportModal, showICSImportProgressModal } from "./components/modals";
 import { registerPrismaBasesView } from "./components/views/bases-calendar-view";
-import { COMMAND_IDS } from "./constants";
+import { VirtualEventsBlockRenderer } from "./components/virtual-events-block";
+import { COMMAND_IDS, VIRTUAL_EVENTS_CODE_FENCE } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, PrismaCalendarApiManager } from "./core";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
@@ -57,6 +58,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		this.initializeCalendarBundles();
 		registerPrismaBasesView(this);
+		this.registerVirtualEventsCodeFence();
 		this.apiManager = new PrismaCalendarApiManager(this);
 		this.apiManager.exposeFree();
 		this.addSettingTab(new CustomCalendarSettingsTab(this.app, this));
@@ -115,6 +117,13 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		await this.syncStore.updateData({
 			lastUsedCalendarId: calendarId,
+		});
+	}
+
+	private registerVirtualEventsCodeFence(): void {
+		this.registerMarkdownCodeBlockProcessor(VIRTUAL_EVENTS_CODE_FENCE, (source, el, ctx) => {
+			const renderer = new VirtualEventsBlockRenderer(el, source);
+			ctx.addChild(renderer);
 		});
 	}
 

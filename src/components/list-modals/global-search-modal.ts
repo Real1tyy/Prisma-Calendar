@@ -197,7 +197,7 @@ export class GlobalSearchModal extends BaseEventListModal {
 			end: toLocalISOString(end),
 		});
 
-		let filtered = events.filter((event) => !event.isVirtual);
+		let filtered = events.filter((event) => event.virtualKind !== "recurring");
 
 		filtered = applyTriStateFilter(filtered, this.filters.recurring, (e) => !!e.metadata.rruleType);
 		filtered = applyTriStateFilter(filtered, this.filters.allDay, (e) => e.allDay);

@@ -39,6 +39,7 @@ export async function createUntrackedEvent(
 		start: "",
 		end: null,
 		allDay: false,
+		virtual: false,
 		preservedFrontmatter,
 	});
 
@@ -62,6 +63,7 @@ export async function createEvent(plugin: CustomCalendarPlugin, input: PrismaCre
 		start: normalizedStart,
 		end: normalizedEnd,
 		allDay: input.allDay ?? false,
+		virtual: false,
 		preservedFrontmatter: frontmatter,
 	});
 	if (filePath) {

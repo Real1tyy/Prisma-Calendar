@@ -99,6 +99,8 @@ export abstract class BaseEventModal extends Modal {
 	protected timedContainer!: HTMLElement;
 	protected allDayContainer!: HTMLElement;
 
+	public virtualCheckbox!: HTMLInputElement;
+
 	// Recurring event fields
 	public recurringCheckbox!: HTMLInputElement;
 	protected recurringContainer!: HTMLElement;
@@ -443,6 +445,7 @@ export abstract class BaseEventModal extends Modal {
 		this.createStopwatchField(contentEl);
 
 		this.createRecurringEventFields(contentEl);
+		this.createVirtualEventField(contentEl);
 		this.createCategoryField(contentEl);
 		this.createPrerequisiteField(contentEl);
 		this.createParticipantField(contentEl);
@@ -505,6 +508,18 @@ export abstract class BaseEventModal extends Modal {
 		});
 
 		this.stopwatch.render(this.stopwatchContainer);
+	}
+
+	private createVirtualEventField(contentEl: HTMLElement): void {
+		const virtualCheckboxContainer = contentEl.createDiv(cls("setting-item"));
+		virtualCheckboxContainer.createEl("div", {
+			text: "Virtual event",
+			cls: cls("setting-item-name"),
+		});
+		this.virtualCheckbox = virtualCheckboxContainer.createEl("input", {
+			type: "checkbox",
+			cls: cls("setting-item-control"),
+		});
 	}
 
 	private createRecurringEventFields(contentEl: HTMLElement): void {
@@ -1215,6 +1230,7 @@ export abstract class BaseEventModal extends Modal {
 		return {
 			title: this.titleInput.value,
 			allDay: this.allDayCheckbox.checked,
+			virtual: this.virtualCheckbox?.checked ?? false,
 			start: this.startInput.value,
 			end: this.endInput.value,
 			date: this.dateInput.value,
@@ -1247,6 +1263,10 @@ export abstract class BaseEventModal extends Modal {
 		if (this.allDayCheckbox.checked !== state.allDay) {
 			this.allDayCheckbox.checked = state.allDay;
 			this.allDayCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
+		}
+
+		if (state.virtual !== undefined && this.virtualCheckbox) {
+			this.virtualCheckbox.checked = state.virtual;
 		}
 
 		if (state.start) {
@@ -1562,6 +1582,7 @@ export abstract class BaseEventModal extends Modal {
 			start,
 			end,
 			allDay: isUntracked ? false : this.allDayCheckbox.checked,
+			virtual: this.virtualCheckbox?.checked ?? false,
 			preservedFrontmatter,
 		};
 	}

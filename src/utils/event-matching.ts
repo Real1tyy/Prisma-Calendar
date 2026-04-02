@@ -21,7 +21,7 @@ export interface SourceEventInfo {
 }
 
 export function getSourceEventInfoFromVirtual(
-	event: { extendedProps?: { isVirtual?: boolean; filePath?: string } },
+	event: { extendedProps?: { virtualKind?: string; filePath?: string } },
 	eventStore: EventLookup
 ): SourceEventInfo | null {
 	const sourceFilePath = event.extendedProps?.filePath;

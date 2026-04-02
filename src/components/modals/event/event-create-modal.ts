@@ -67,30 +67,33 @@ export class EventCreateModal extends BaseEventModal {
 
 		const eventData = this.buildEventData();
 
-		this.bundle
-			.createEvent(eventData)
-			.then(async (filePath) => {
-				if (filePath) {
-					this.setEventExtendedProp("filePath", filePath);
+		if (eventData.virtual) {
+			void this.bundle.virtualEventStore.addFromEventData(eventData);
+		} else {
+			this.bundle
+				.createEvent(eventData)
+				.then(async (filePath) => {
+					if (filePath) {
+						this.setEventExtendedProp("filePath", filePath);
 
-					if (this.isStopwatchActive()) {
-						const state = MinimizedModalManager.getState();
-						if (state && state.modalType === "create") {
-							state.modalType = "edit";
-							state.filePath = filePath;
-							MinimizedModalManager.saveState(state, this.bundle);
+						if (this.isStopwatchActive()) {
+							const state = MinimizedModalManager.getState();
+							if (state && state.modalType === "create") {
+								state.modalType = "edit";
+								state.filePath = filePath;
+								MinimizedModalManager.saveState(state, this.bundle);
+							}
+						}
+
+						if (this.openCreatedInNewTab) {
+							await openFileInNewTab(this.app, filePath);
 						}
 					}
-
-					if (this.openCreatedInNewTab) {
-						await openFileInNewTab(this.app, filePath);
-					}
-				}
-			})
-			.catch((error) => {
-				console.error("[EventCreate] Error creating event:", error);
-			});
-
+				})
+				.catch((error) => {
+					console.error("[EventCreate] Error creating event:", error);
+				});
+		}
 		this.close();
 	}
 }

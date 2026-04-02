@@ -69,6 +69,41 @@ Right-click any virtual event to access limited context menu actions. Since virt
 - **Edit source event**: Open the source recurring event's edit modal
 - **Enlarge**: View the source event's properties in an enlarged modal
 
+## Manual Virtual Events
+
+Manual virtual events are calendar entries you create without a backing vault file. Use them for lightweight time blocking and planning — reserve calendar time without cluttering your vault with extra notes.
+
+### Creating Manual Virtual Events
+
+Check the **"Virtual event"** checkbox in the create or edit modal. The event appears on the calendar but no `.md` file is created.
+
+### Storage
+
+Manual virtual events are stored in a `Virtual Events.md` file inside your calendar folder. The file contains a `prisma-virtual-events` code fence with JSON data. Opening the file shows an interactive table of all virtual events.
+
+Each virtual event stores: title, start/end datetime, all-day flag, and frontmatter properties.
+
+### Converting Between Virtual and Physical
+
+- **Right-click a physical event → "Make virtual"**: Deletes the backing file and stores the event metadata as a virtual entry. Title, dates, and properties are preserved.
+- **Right-click a virtual event → "Make real"**: Creates a backing `.md` file from the stored metadata and removes the virtual entry.
+- **Edit modal**: Toggle the "Virtual event" checkbox to convert in either direction.
+
+:::note
+Converting physical → virtual preserves frontmatter properties but not note body content.
+:::
+
+### Context Menu
+
+Manual virtual events support a subset of context menu actions:
+
+- **Edit event**: Open the edit modal to change title, dates, or properties
+- **Delete event**: Remove from the virtual events file
+- **Make real**: Convert to a physical event with a backing file
+- **Enlarge**: View event properties in an enlarged modal
+
+Actions that require a backing file (preview, open file, stopwatch, duplicate, move, skip) are unavailable.
+
 ## Related
 
 - [Recurring Events](./recurring-dsl.md) - Complete recurring event documentation

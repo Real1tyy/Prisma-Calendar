@@ -204,17 +204,16 @@ export function buildSharedEventDidMount(
 	return (info) => {
 		const { el, event } = info;
 
-		const isVirtual = event.extendedProps["isVirtual"];
-		const isManualVirtual = event.extendedProps["isManualVirtual"];
+		const virtualKind = event.extendedProps["virtualKind"] as string | undefined;
 		const eventFilePath = event.extendedProps["filePath"];
 		const computedColors = event.extendedProps.computedColors ?? [];
 		const displayData = (event.extendedProps["frontmatterDisplayData"] ?? {}) as Record<string, unknown>;
 
-		if (isManualVirtual) {
+		if (virtualKind === "manual") {
 			el.classList.add(cls("virtual-event-opacity"));
 			el.title = "Virtual event (no backing file)";
 			el.classList.add(cls("virtual-event-italic"));
-		} else if (isVirtual) {
+		} else if (virtualKind === "recurring") {
 			el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
 			const isHoliday = eventFilePath?.startsWith("holiday:");
 			el.title = isHoliday ? "Holiday (read-only)" : "Virtual recurring event (read-only)";
@@ -267,7 +266,7 @@ export function buildSharedEventDidMount(
 		el.setAttribute("title", tooltip);
 
 		// Async note preview on hover
-		if (eventFilePath && !isVirtual && !isManualVirtual) {
+		if (eventFilePath && virtualKind === "none") {
 			el.addEventListener("mouseenter", () => {
 				if (el.dataset["notesLoaded"]) return;
 				el.dataset["notesLoaded"] = "true";
@@ -298,7 +297,7 @@ export function buildSharedEventDidMount(
 		});
 
 		// Hover preview
-		if (!isVirtual && !isManualVirtual && eventFilePath) {
+		if (virtualKind === "none" && eventFilePath) {
 			el.addEventListener("mouseenter", (e) => {
 				if (settings.enableEventPreview) {
 					emitHover(deps.app, deps.container, el, e, eventFilePath, deps.bundle.calendarId);
@@ -347,10 +346,10 @@ export function mapEventToPrismaInput(
 	const end = isTimedEvent(event) ? stripZ(event.end) : undefined;
 
 	const classNames = ["regular-event"];
-	if (event.isVirtual) {
+	if (event.virtualKind === "recurring") {
 		classNames.push(cls("virtual-event"));
 	}
-	if (event.isManualVirtual) {
+	if (event.virtualKind === "manual") {
 		classNames.push(cls("manual-virtual-event"));
 	}
 
@@ -368,9 +367,8 @@ export function mapEventToPrismaInput(
 			folder: folderStr,
 			originalTitle: event.title,
 			frontmatterDisplayData: meta,
-			isVirtual: event.isVirtual,
-			isManualVirtual: event.isManualVirtual,
-			...(event.isManualVirtual ? { virtualEventId: event.id } : {}),
+			virtualKind: event.virtualKind,
+			...(event.virtualKind === "manual" ? { virtualEventId: event.id } : {}),
 			computedColors: allColors,
 			frontmatterHash: hashFrontmatter(meta),
 		},

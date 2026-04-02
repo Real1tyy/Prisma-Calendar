@@ -41,6 +41,7 @@ import type { Parser } from "./parser";
 import type { PrerequisiteTracker } from "./prerequisite-tracker";
 import type { RecurringEventManager } from "./recurring-event-manager";
 import { CalendarSettingsStore } from "./settings-store";
+import { VirtualEventStore } from "./virtual-event-store";
 
 export class CalendarBundle {
 	// ─── Lifecycle ───────────────────────────────────────────────
@@ -62,6 +63,7 @@ export class CalendarBundle {
 	public readonly caldavSyncStateManager: CalDAVSyncStateManager;
 	public readonly icsSubscriptionSyncStateManager: ICSSubscriptionSyncStateManager;
 	public readonly holidayStore: HolidayStore;
+	public readonly virtualEventStore: VirtualEventStore;
 	public readonly viewType: string;
 	private app: App;
 	private directory: string;
@@ -125,7 +127,9 @@ export class CalendarBundle {
 		this.commandManager = new CommandManager();
 		this.batchCommandFactory = new BatchCommandFactory(this.app, this);
 		this.holidayStore = new HolidayStore(this.app, this.settingsStore.currentSettings.holidays as HolidayConfig);
+		this.virtualEventStore = new VirtualEventStore(this.app, this.settingsStore.settings$);
 		this.eventStore.setHolidayStore(this.holidayStore);
+		this.eventStore.setVirtualEventStore(this.virtualEventStore);
 
 		this.subscriptions.push(
 			this.mainSettingsStore.settings$.subscribe(() => {
@@ -147,6 +151,7 @@ export class CalendarBundle {
 	async initialize(): Promise<void> {
 		return await onceAsync(async () => {
 			await this.notificationManager.start();
+			await this.virtualEventStore.initialize();
 			void this.indexer.start();
 			await firstValueFrom(this.indexer.indexingComplete$.pipe(filter((complete) => complete)));
 
@@ -230,6 +235,7 @@ export class CalendarBundle {
 		this.caldavSyncStateManager.destroy();
 		this.icsSubscriptionSyncStateManager.destroy();
 		this.holidayStore.clear();
+		this.virtualEventStore.destroy();
 
 		this.commandManager.clearHistory();
 

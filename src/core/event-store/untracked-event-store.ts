@@ -1,6 +1,7 @@
 import type { BehaviorSubject, Subscription } from "rxjs";
 
 import type { UntrackedEvent } from "../../types/calendar";
+import { eventDefaults } from "../../types/calendar";
 import type { Frontmatter, SingleCalendarConfig } from "../../types/index";
 import { UntrackedFilterEvaluator } from "../../utils/untracked-filter-evaluator";
 import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
@@ -54,13 +55,11 @@ export class UntrackedEventStore extends IndexedCacheStore<UntrackedEvent> {
 		const title = this.extractTitle(source.frontmatter, source.filePath);
 
 		return {
+			...eventDefaults(),
 			id: source.filePath,
 			ref: { filePath: source.filePath },
 			title,
 			type: "untracked",
-			isVirtual: false,
-			skipped: false,
-			metadata: {},
 			meta: source.frontmatter,
 		};
 	}

@@ -139,6 +139,8 @@ export const DEFAULT_ZOOM_LEVELS = [1, 2, 3, 5, 10, 15, 20, 30, 45, 60] as const
 export const DEFAULT_SOURCE_RECURRING_MARKER = "⦿";
 export const DEFAULT_PHYSICAL_RECURRING_MARKER = "🔄";
 export const DEFAULT_EXPORT_FOLDER = "Prisma-Exports";
+export const DEFAULT_VIRTUAL_EVENTS_FILE_NAME = "Virtual Events";
+export const VIRTUAL_EVENTS_CODE_FENCE = "prisma-virtual-events";
 export const BASE_NAME = "calendar";
 
 export const INTERNAL_FRONTMATTER_PROPERTIES = [
@@ -231,6 +233,8 @@ export const CONTEXT_MENU_BUTTON_LABELS = {
 	toggleRecurring: "Enable/Disable recurring event",
 	triggerStopwatch: "Trigger stopwatch",
 	duplicateRemainingWeekDays: "Duplicate remaining week days",
+	makeVirtual: "Make virtual",
+	makeReal: "Make real",
 } as const;
 
 export const CONTEXT_MENU_ITEM_IDS = Object.keys(

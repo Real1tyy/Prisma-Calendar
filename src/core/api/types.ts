@@ -48,7 +48,7 @@ export interface PrismaEventOutput {
 	start?: string;
 	end?: string;
 	allDay: boolean;
-	isVirtual: boolean;
+	virtualKind: string;
 	skipped: boolean;
 	color?: string;
 	categories?: string[];
@@ -136,7 +136,7 @@ export function serializeEvent(event: ParsedEvent): PrismaEventOutput {
 		title: event.title,
 		type: event.type,
 		allDay: event.type === "allDay",
-		isVirtual: event.isVirtual,
+		virtualKind: event.virtualKind,
 		skipped: event.skipped,
 	};
 

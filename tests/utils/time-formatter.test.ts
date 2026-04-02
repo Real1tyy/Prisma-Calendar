@@ -13,7 +13,7 @@ describe("formatEventTimeInfo", () => {
 				type: "allDay" as const,
 				start: "2024-03-15T00:00:00",
 				allDay: true as const,
-				isVirtual: false,
+				virtualKind: "none" as const,
 				skipped: false,
 				metadata: createDefaultMetadata(),
 				meta: {},

@@ -16,7 +16,7 @@ export function createPrismaEventInput(overrides: Partial<PrismaEventInput> & { 
 			folder: "events",
 			originalTitle: "Event",
 			frontmatterDisplayData: {},
-			isVirtual: false,
+			virtualKind: "none",
 		},
 		...overrides,
 	} as PrismaEventInput;

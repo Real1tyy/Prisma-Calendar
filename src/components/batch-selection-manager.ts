@@ -13,7 +13,7 @@ import { type App, Modal, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
-import type { CalendarEvent } from "../types/calendar";
+import type { CalendarEvent, VirtualKind } from "../types/calendar";
 import { isTimeUnitAllowedForAllDay } from "../types/move-by";
 import { showMoveByModal } from "./modals";
 
@@ -111,7 +111,7 @@ export class BatchSelectionManager {
 		const events = this.calendar.getEvents();
 
 		events
-			.filter((fcEvent) => !fcEvent.extendedProps["isVirtual"])
+			.filter((fcEvent) => fcEvent.extendedProps["virtualKind"] === "none")
 			.forEach((fcEvent) => {
 				const eventData = this.mapFCEventToCalendarEvent(fcEvent);
 				this.selectedEvents.set(fcEvent.id, eventData);
@@ -421,7 +421,7 @@ export class BatchSelectionManager {
 		const filePath = fcEvent.extendedProps["filePath"] as string;
 		const title = (fcEvent.extendedProps["originalTitle"] || fcEvent.title) as string;
 		const start = fcEvent.start ? toLocalISOString(fcEvent.start) : "";
-		const isVirtual = (fcEvent.extendedProps["isVirtual"] as boolean) ?? false;
+		const virtualKind = (fcEvent.extendedProps["virtualKind"] as VirtualKind) ?? "none";
 		const skipped = (fcEvent.extendedProps["skipped"] as boolean) ?? false;
 		const meta = (fcEvent.extendedProps["frontmatterDisplayData"] as Record<string, unknown>) ?? {};
 
@@ -430,7 +430,7 @@ export class BatchSelectionManager {
 			ref: { filePath },
 			title,
 			start,
-			isVirtual,
+			virtualKind,
 			skipped,
 			metadata: {},
 			meta,

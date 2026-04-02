@@ -4,6 +4,13 @@ import { z } from "zod";
 import { EventMetadataSchema } from "./event";
 import type { Frontmatter } from "./index";
 
+export const VirtualKindSchema = z.enum(["none", "recurring", "manual"]);
+export type VirtualKind = z.infer<typeof VirtualKindSchema>;
+
+export function isAnyVirtual(kind: VirtualKind | undefined): boolean {
+	return kind !== undefined && kind !== "none";
+}
+
 // Base properties shared by all event types
 const BaseEventSchema = z.object({
 	id: z.string(),
@@ -20,7 +27,7 @@ export const TimedEventSchema = BaseEventSchema.extend({
 	start: z.string(),
 	end: z.string(),
 	allDay: z.literal(false),
-	isVirtual: z.boolean(),
+	virtualKind: VirtualKindSchema.default("none"),
 	skipped: z.boolean(),
 	color: z.string().optional(),
 	meta: z.record(z.string(), z.unknown()),
@@ -31,7 +38,7 @@ export const AllDayEventSchema = BaseEventSchema.extend({
 	type: z.literal("allDay"),
 	start: z.string(),
 	allDay: z.literal(true),
-	isVirtual: z.boolean(),
+	virtualKind: VirtualKindSchema.default("none"),
 	skipped: z.boolean(),
 	color: z.string().optional(),
 	meta: z.record(z.string(), z.unknown()),
@@ -40,7 +47,7 @@ export const AllDayEventSchema = BaseEventSchema.extend({
 // Untracked Event: no start/end/allDay, cannot be virtual, cannot be skipped
 export const UntrackedEventSchema = BaseEventSchema.extend({
 	type: z.literal("untracked"),
-	isVirtual: z.literal(false),
+	virtualKind: z.literal("none"),
 	skipped: z.literal(false),
 	color: z.string().optional(),
 	meta: z.record(z.string(), z.unknown()),
@@ -60,6 +67,15 @@ export type UntrackedEvent = z.infer<typeof UntrackedEventSchema>;
 export type CalendarEvent = z.infer<typeof CalendarEventSchema>; // TimedEvent | AllDayEvent
 export type ParsedEvent = z.infer<typeof ParsedEventSchema>; // TimedEvent | AllDayEvent | UntrackedEvent
 
+export function eventDefaults(): {
+	virtualKind: "none";
+	skipped: false;
+	metadata: z.infer<typeof EventMetadataSchema>;
+	meta: Record<string, unknown>;
+} {
+	return { virtualKind: "none", skipped: false, metadata: {}, meta: {} };
+}
+
 export function isTimedEvent(event: ParsedEvent): event is TimedEvent {
 	return event.type === "timed";
 }
@@ -73,7 +89,8 @@ export interface PrismaExtendedProps {
 	folder: string;
 	originalTitle: string;
 	frontmatterDisplayData: Frontmatter;
-	isVirtual: boolean;
+	virtualKind: VirtualKind;
+	virtualEventId?: string;
 	computedColors?: string[];
 	frontmatterHash?: number;
 }
@@ -87,7 +104,8 @@ export interface FlexibleExtendedProps {
 	folder?: string;
 	originalTitle?: string;
 	frontmatterDisplayData?: Frontmatter;
-	isVirtual?: boolean;
+	virtualKind?: VirtualKind;
+	virtualEventId?: string;
 	computedColors?: string[];
 }
 

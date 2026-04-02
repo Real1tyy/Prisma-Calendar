@@ -70,7 +70,7 @@ describe("eventFingerprint", () => {
 				folder: "",
 				originalTitle: "Event",
 				frontmatterDisplayData: { Category: "Work" },
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		const b = makeEvent({
@@ -80,7 +80,7 @@ describe("eventFingerprint", () => {
 				folder: "",
 				originalTitle: "Event",
 				frontmatterDisplayData: { Category: "Personal" },
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
@@ -94,7 +94,7 @@ describe("eventFingerprint", () => {
 				folder: "events",
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		const b = makeEvent({
@@ -104,7 +104,7 @@ describe("eventFingerprint", () => {
 				folder: "events",
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
@@ -118,7 +118,7 @@ describe("eventFingerprint", () => {
 				folder: "events",
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		const b = makeEvent({
@@ -128,7 +128,7 @@ describe("eventFingerprint", () => {
 				folder: "archive",
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
@@ -142,7 +142,7 @@ describe("eventFingerprint", () => {
 				folder: "",
 				originalTitle: "Alpha",
 				frontmatterDisplayData: {},
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		const b = makeEvent({
@@ -152,13 +152,13 @@ describe("eventFingerprint", () => {
 				folder: "",
 				originalTitle: "Beta",
 				frontmatterDisplayData: {},
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
 	});
 
-	it("should differ when isVirtual changes", () => {
+	it("should differ when virtualKind changes", () => {
 		const a = makeEvent({
 			id: "a",
 			extendedProps: {
@@ -166,7 +166,7 @@ describe("eventFingerprint", () => {
 				folder: "",
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		const b = makeEvent({
@@ -176,7 +176,7 @@ describe("eventFingerprint", () => {
 				folder: "",
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
-				isVirtual: true,
+				virtualKind: "recurring",
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
@@ -210,7 +210,7 @@ describe("eventFingerprint", () => {
 					Tags: null,
 					Nested: { a: { b: "c" } },
 				},
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		const fp = eventFingerprint(ev);
@@ -228,7 +228,7 @@ describe("eventFingerprint", () => {
 					Tags: null,
 					Nested: { a: { b: "c" } },
 				},
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		expect(eventFingerprint(ev2)).toBe(fp);
@@ -242,7 +242,7 @@ describe("eventFingerprint", () => {
 				folder: "",
 				originalTitle: "Event",
 				frontmatterDisplayData: { Tags: ["a", "b"] },
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		const b = makeEvent({
@@ -252,7 +252,7 @@ describe("eventFingerprint", () => {
 				folder: "",
 				originalTitle: "Event",
 				frontmatterDisplayData: { Tags: ["b", "a"] },
-				isVirtual: false,
+				virtualKind: "none",
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
@@ -420,7 +420,7 @@ describe("diffEvents", () => {
 					folder: "",
 					originalTitle: "Event",
 					frontmatterDisplayData: {},
-					isVirtual: false,
+					virtualKind: "none",
 				},
 			});
 			const updated = makeEvent({
@@ -430,7 +430,7 @@ describe("diffEvents", () => {
 					folder: "",
 					originalTitle: "Event",
 					frontmatterDisplayData: {},
-					isVirtual: false,
+					virtualKind: "none",
 				},
 			});
 			const previous = buildPreviousMap([original]);
@@ -448,7 +448,7 @@ describe("diffEvents", () => {
 					folder: "",
 					originalTitle: "Event",
 					frontmatterDisplayData: { Status: "todo" },
-					isVirtual: false,
+					virtualKind: "none",
 				},
 			});
 			const updated = makeEvent({
@@ -458,7 +458,7 @@ describe("diffEvents", () => {
 					folder: "",
 					originalTitle: "Event",
 					frontmatterDisplayData: { Status: "done" },
-					isVirtual: false,
+					virtualKind: "none",
 				},
 			});
 			const previous = buildPreviousMap([original]);
@@ -638,7 +638,7 @@ describe("diffEvents", () => {
 			expect(diff.changed).toHaveLength(1);
 		});
 
-		it("should detect change when only isVirtual toggles", () => {
+		it("should detect change when only virtualKind toggles", () => {
 			const original = makeEvent({
 				id: "1",
 				extendedProps: {
@@ -646,7 +646,7 @@ describe("diffEvents", () => {
 					folder: "",
 					originalTitle: "Event",
 					frontmatterDisplayData: {},
-					isVirtual: false,
+					virtualKind: "none",
 				},
 			});
 			const updated = makeEvent({
@@ -656,7 +656,7 @@ describe("diffEvents", () => {
 					folder: "",
 					originalTitle: "Event",
 					frontmatterDisplayData: {},
-					isVirtual: true,
+					virtualKind: "recurring",
 				},
 			});
 			const previous = buildPreviousMap([original]);

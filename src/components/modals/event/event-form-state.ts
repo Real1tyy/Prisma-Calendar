@@ -22,6 +22,7 @@ export const EventFormStateSchema = z
 	.object({
 		title: z.string().default(""),
 		allDay: z.boolean().default(false),
+		virtual: z.boolean().default(false),
 		start: z.string().default(""),
 		end: z.string().default(""),
 		date: z.string().default(""),

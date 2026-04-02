@@ -117,7 +117,7 @@ export function createDailyCalendar(
 		fixedMirrorParent: document.body,
 
 		eventAllow: (_dropInfo, draggedEvent) => {
-			return !draggedEvent?.extendedProps["isVirtual"];
+			return draggedEvent?.extendedProps["virtualKind"] === "none";
 		},
 
 		eventContent: (arg) => eventContentCallback(arg),
@@ -250,12 +250,12 @@ export function createDailyCalendar(
 		_eventEl: HTMLElement
 	): void {
 		const filePath = event.extendedProps.filePath;
-		const isVirtual = event.extendedProps.isVirtual;
+		const virtualKind = event.extendedProps.virtualKind;
 		const isHoliday = typeof filePath === "string" && filePath.startsWith("holiday:");
 
 		if (isHoliday) return;
 
-		if (isVirtual && filePath && typeof filePath === "string") {
+		if (virtualKind === "recurring" && filePath && typeof filePath === "string") {
 			showEventPreviewModal(app, bundle, {
 				title: event.title,
 				start: null,
@@ -329,7 +329,7 @@ export function createDailyCalendar(
 	async function handleEventUpdate(info: EventUpdateInfo | null, errorMessage: string): Promise<void> {
 		if (!info) return;
 
-		if (info.event.extendedProps.isVirtual === true) {
+		if (info.event.extendedProps.virtualKind !== "none") {
 			info.revert();
 			return;
 		}

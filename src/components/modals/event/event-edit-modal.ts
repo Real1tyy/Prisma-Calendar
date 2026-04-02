@@ -4,8 +4,10 @@ import {
 	parsePositiveInt,
 	serializeFrontmatterValue,
 } from "@real1ty-obsidian-plugins";
+import { Notice, TFile } from "obsidian";
 
 import { MinimizedModalManager } from "../../../core/minimized-modal-manager";
+import type { EventSaveData } from "../../../types/event-save";
 import { isWeekdaySupported } from "../../../types/recurring-event";
 import type { Weekday } from "../../../utils/date-recurrence";
 import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/event-naming";
@@ -141,6 +143,11 @@ export class EventEditModal extends BaseEventModal {
 			this.titleInput.value = this.displayTitle;
 		}
 
+		// Check if this is a manual virtual event being edited
+		if (this.event.extendedProps?.["virtualKind"] === "manual") {
+			this.virtualCheckbox.checked = true;
+		}
+
 		this.loadDateTimeFields();
 		this.loadRecurringEventData();
 		this.loadSimpleFields();
@@ -260,6 +267,27 @@ export class EventEditModal extends BaseEventModal {
 		// Restore the input value
 		this.titleInput.value = originalInputValue;
 
+		const wasManualVirtual = this.event.extendedProps?.["virtualKind"] === "manual";
+		const virtualEventId = this.event.extendedProps?.["virtualEventId"] as string | undefined;
+
+		if (eventData.virtual && wasManualVirtual && virtualEventId) {
+			this.updateVirtualEvent(virtualEventId, eventData);
+			this.close();
+			return;
+		}
+
+		if (eventData.virtual && !wasManualVirtual) {
+			this.convertToVirtual(eventData);
+			this.close();
+			return;
+		}
+
+		if (!eventData.virtual && wasManualVirtual && virtualEventId) {
+			this.convertToReal(virtualEventId, eventData);
+			this.close();
+			return;
+		}
+
 		this.bundle
 			.updateEvent(eventData, { ensureZettelId: this.ensureZettelIdOnSave })
 			.then((newFilePath) => {
@@ -285,5 +313,32 @@ export class EventEditModal extends BaseEventModal {
 			});
 
 		this.close();
+	}
+
+	private updateVirtualEvent(id: string, eventData: EventSaveData): void {
+		void this.bundle.virtualEventStore.updateFromEventData(id, eventData);
+	}
+
+	private convertToVirtual(eventData: EventSaveData): void {
+		void this.bundle.virtualEventStore.addFromEventData(eventData).then(() => {
+			if (eventData.filePath) {
+				const file = this.app.vault.getAbstractFileByPath(eventData.filePath);
+				if (file instanceof TFile) {
+					void this.app.vault.trash(file, true);
+				}
+			}
+			new Notice("Event converted to virtual");
+		});
+	}
+
+	private convertToReal(virtualEventId: string, eventData: EventSaveData): void {
+		void this.bundle.virtualEventStore.remove(virtualEventId).then(() => {
+			void this.bundle.createEvent({
+				...eventData,
+				filePath: null,
+				virtual: false,
+			});
+			new Notice("Virtual event converted to real");
+		});
 	}
 }

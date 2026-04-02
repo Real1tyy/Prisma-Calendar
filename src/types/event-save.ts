@@ -6,5 +6,6 @@ export interface EventSaveData {
 	start: string;
 	end: string | null;
 	allDay: boolean;
+	virtual: boolean;
 	preservedFrontmatter: Frontmatter;
 }

@@ -23,6 +23,7 @@ import {
 	DEFAULT_PHYSICAL_RECURRING_MARKER,
 	DEFAULT_SOURCE_RECURRING_MARKER,
 	DEFAULT_TOOLBAR_BUTTONS,
+	DEFAULT_VIRTUAL_EVENTS_FILE_NAME,
 	DEFAULT_ZOOM_LEVELS,
 	PROP_DEFAULTS,
 } from "../constants";
@@ -113,6 +114,10 @@ const GeneralSettingsSchema = z
 			.describe(
 				"Automatically mark past events as done during startup by updating their status property. Configure the status property and done value in the Properties section."
 			),
+		virtualEventsFileName: z
+			.string()
+			.catch(DEFAULT_VIRTUAL_EVENTS_FILE_NAME)
+			.describe("File name for the virtual events storage file (without .md extension)"),
 		eventPresets: z.array(EventPresetSchema).catch([]),
 		defaultPresetId: z.string().optional(),
 		exportFolder: z.string().catch(DEFAULT_EXPORT_FOLDER).describe("Folder where exported .ics files are saved"),

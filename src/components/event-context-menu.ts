@@ -41,6 +41,7 @@ import {
 	getFileByPathOrThrow,
 	openFileInNewWindow,
 } from "../utils/obsidian";
+import { toSafeLocalISO, toSafeLocalISOOrNull } from "../utils/virtual-event-conversion";
 import type { CalendarHost } from "./calendar-host";
 import { EventSeriesModal } from "./list-modals/event-series-modal";
 import type { PreviewEventData } from "./modals";
@@ -59,7 +60,8 @@ interface CalendarEventInfo {
 	allDay?: boolean;
 	extendedProps?: {
 		filePath?: string;
-		isVirtual?: boolean;
+		virtualKind?: string;
+		virtualEventId?: string;
 		frontmatterDisplayData?: Frontmatter;
 	};
 }
@@ -69,7 +71,7 @@ interface CommandMessages {
 	error: string;
 }
 
-type EventKind = "source" | "physical" | "virtual" | "normal";
+type EventKind = "source" | "physical" | "virtual" | "manual" | "normal";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -130,7 +132,7 @@ export class EventContextMenu {
 
 		const kind = this.getEventKind(event);
 		const isRecurring = this.isRecurringEvent(event);
-		const isVirtual = kind === "virtual";
+		const isNormal = kind === "normal" || kind === "source" || kind === "physical";
 		const isPhysical = kind === "physical";
 		const filePath = event.extendedProps?.filePath;
 		const isDone = this.isEventDone(event);
@@ -149,11 +151,12 @@ export class EventContextMenu {
 			(id) => {
 				switch (id) {
 					case "preview":
-						return !isVirtual && !!filePath && !!targetEl && !!containerEl;
+						return isNormal && !!filePath && !!targetEl && !!containerEl;
 					case "goToSource":
 					case "editSourceEvent":
-						return isPhysical || isVirtual;
+						return isPhysical || kind === "virtual";
 					case "editEvent":
+						return kind !== "virtual";
 					case "triggerStopwatch":
 					case "assignCategories":
 					case "assignPrerequisites":
@@ -165,19 +168,24 @@ export class EventContextMenu {
 					case "cloneToNextWeek":
 					case "moveToPreviousWeek":
 					case "cloneToPreviousWeek":
-					case "deleteEvent":
 					case "skipEvent":
-						return !isVirtual;
+						return isNormal;
+					case "deleteEvent":
+						return kind !== "virtual";
 					case "fillStartTimeNow":
 					case "fillEndTimeNow":
 					case "fillStartTimePrevious":
 					case "fillEndTimeNext":
-						return !isVirtual && !event.allDay;
+						return isNormal && !event.allDay;
 					case "openFile":
 					case "openFileNewWindow":
-						return !isVirtual && !!filePath;
+						return isNormal && !!filePath;
 					case "toggleRecurring":
 						return isRecurring;
+					case "makeVirtual":
+						return isNormal;
+					case "makeReal":
+						return kind === "manual";
 					default:
 						return true;
 				}
@@ -442,6 +450,24 @@ export class EventContextMenu {
 					void this.toggleRecurringEvent(this.currentEvent!);
 				},
 			},
+			{
+				id: "makeVirtual",
+				label: CONTEXT_MENU_BUTTON_LABELS.makeVirtual,
+				icon: "cloud",
+				section: "edit",
+				onAction: () => {
+					void this.makeEventVirtual(this.currentEvent!);
+				},
+			},
+			{
+				id: "makeReal",
+				label: CONTEXT_MENU_BUTTON_LABELS.makeReal,
+				icon: "file-plus",
+				section: "edit",
+				onAction: () => {
+					void this.makeEventReal(this.currentEvent!);
+				},
+			},
 		];
 	}
 
@@ -451,8 +477,8 @@ export class EventContextMenu {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const frontmatter = event.extendedProps?.frontmatterDisplayData;
 
-		// Check isVirtual FIRST - virtual events have rruleProp in their meta but are not source events
-		if (event.extendedProps?.isVirtual) return "virtual";
+		if (event.extendedProps?.virtualKind === "manual") return "manual";
+		if (event.extendedProps?.virtualKind === "recurring") return "virtual";
 		if (frontmatter?.[settings.rruleProp]) return "source";
 		if (frontmatter?.[settings.rruleIdProp] && !frontmatter?.[settings.rruleProp]) return "physical";
 		return "normal";
@@ -737,8 +763,18 @@ export class EventContextMenu {
 	}
 
 	async deleteEvent(event: CalendarEventInfo): Promise<void> {
+		const kind = this.getEventKind(event);
+
+		if (kind === "manual") {
+			const virtualEventId = event.extendedProps?.virtualEventId;
+			if (virtualEventId) {
+				await this.bundle.virtualEventStore.remove(virtualEventId);
+				new Notice("Virtual event deleted");
+			}
+			return;
+		}
+
 		await this.withFilePath(event, "delete event", async (filePath) => {
-			const kind = this.getEventKind(event);
 			const isSourceRecurring = kind === "source";
 			const rruleId = isSourceRecurring ? this.getRRuleId(event) : null;
 
@@ -960,5 +996,61 @@ export class EventContextMenu {
 			return;
 		}
 		await fn(sourceFilePath);
+	}
+
+	// ─── Virtual Event Conversion ────────────────────────────────
+
+	private async makeEventVirtual(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "make virtual", async (filePath) => {
+			const result = getFileAndFrontmatter(this.app, filePath);
+			if (!result) return;
+
+			const { frontmatter } = result;
+			const start = toSafeLocalISO(event.start);
+			const end = toSafeLocalISOOrNull(event.end);
+
+			await this.bundle.virtualEventStore.add({
+				title: event.title,
+				start,
+				end,
+				allDay: event.allDay ?? false,
+				properties: frontmatter,
+			});
+
+			const file = this.app.vault.getAbstractFileByPath(filePath);
+			if (file) {
+				await this.app.vault.trash(file, true);
+			}
+
+			new Notice("Event converted to virtual");
+		});
+	}
+
+	private async makeEventReal(event: CalendarEventInfo): Promise<void> {
+		const virtualEventId = event.extendedProps?.virtualEventId;
+		if (!virtualEventId) {
+			new Notice("Failed to make real: no virtual event ID found");
+			return;
+		}
+
+		const virtualData = this.bundle.virtualEventStore.getById(virtualEventId);
+		if (!virtualData) {
+			new Notice("Failed to make real: virtual event not found");
+			return;
+		}
+
+		await this.bundle.virtualEventStore.remove(virtualEventId);
+
+		await this.bundle.createEvent({
+			filePath: null,
+			title: virtualData.title,
+			start: virtualData.start,
+			end: virtualData.end,
+			allDay: virtualData.allDay,
+			virtual: false,
+			preservedFrontmatter: virtualData.properties as Record<string, unknown>,
+		});
+
+		new Notice("Virtual event converted to real");
 	}
 }

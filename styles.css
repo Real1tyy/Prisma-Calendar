@@ -1619,6 +1619,10 @@ button[class*="prisma-"]:focus-visible {
 	cursor: not-allowed;
 }
 
+.prisma-manual-virtual-event {
+	border: 1px dashed var(--text-muted);
+}
+
 .prisma-view-header-title-container {
 	flex-grow: unset;
 	flex-shrink: 0;

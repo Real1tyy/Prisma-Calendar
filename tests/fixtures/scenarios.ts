@@ -63,7 +63,7 @@ export const SCENARIO = {
 	virtualRecurringInstance(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
 		return createMockTimedEvent({
 			title: "Recurring Instance",
-			isVirtual: true,
+			virtualKind: "recurring",
 			metadata: createDefaultMetadata({
 				rruleType: "weekly",
 				rruleId: "rrule-test-1",

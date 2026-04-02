@@ -5,15 +5,17 @@ import BTree from "sorted-btree";
 
 import { MARK_DONE_SCAN_INTERVAL_MS } from "../../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../../types/calendar";
-import { isTimedEvent } from "../../types/calendar";
+import { eventDefaults, isTimedEvent } from "../../types/calendar";
 import { stripZ } from "../../types/event";
 import type { ISO } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";
+import type { VirtualEventData } from "../../types/virtual-event";
 import type { HolidayStore } from "../holidays";
 import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
 import { MinimizedModalManager } from "../minimized-modal-manager";
 import type { Parser } from "../parser";
 import type { RecurringEventManager } from "../recurring-event-manager";
+import type { VirtualEventStore } from "../virtual-event-store";
 import { IndexedCacheStore } from "./indexed-cache-store";
 
 export interface EventQuery {
@@ -38,6 +40,8 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private skippedTimedByEndTime = new BTree<string, TimedEvent>();
 	private skippedAllDayByDate = new BTree<string, AllDayEvent>();
 	private holidayStore: HolidayStore | null = null;
+	private virtualEventStore: VirtualEventStore | null = null;
+	private virtualEventSubscription: Subscription | null = null;
 
 	// ─── Lifecycle ────────────────────────────────────────────────
 
@@ -85,6 +89,8 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 		this.indexingCompleteSubscription = null;
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
+		this.virtualEventSubscription?.unsubscribe();
+		this.virtualEventSubscription = null;
 		super.destroy();
 	}
 
@@ -138,7 +144,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	// ─── Public Event API ─────────────────────────────────────────
 
 	/**
-	 * Returns non-skipped events in the given range: physical + virtual + holidays.
+	 * Returns non-skipped events in the given range: physical + virtual + holidays + manual virtual.
 	 */
 	async getEvents(query: EventQuery): Promise<CalendarEvent[]> {
 		const physical = this.queryNonSkippedPhysical(query);
@@ -151,9 +157,15 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 			holidays = await this.holidayStore.getHolidaysForRange(queryStart, queryEnd);
 		}
 
+		const manualVirtual = this.virtualEventStore
+			? this.virtualEventStore
+					.getInRange(queryStart, queryEnd)
+					.map((v) => toCalendarEvent(v, this.virtualEventStore!.getFilePath()))
+			: [];
+
 		// Physical events are pre-sorted. Sort only the supplementary arrays
 		// (typically small) and merge, avoiding a full O(N log N) re-sort.
-		const supplementary = [...virtualEvents, ...holidays];
+		const supplementary = [...virtualEvents, ...holidays, ...manualVirtual];
 		if (supplementary.length === 0) return physical;
 
 		supplementary.sort(EventStore.compareByStart);
@@ -212,6 +224,14 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 	setHolidayStore(holidayStore: HolidayStore): void {
 		this.holidayStore = holidayStore;
+	}
+
+	setVirtualEventStore(store: VirtualEventStore): void {
+		this.virtualEventSubscription?.unsubscribe();
+		this.virtualEventStore = store;
+		this.virtualEventSubscription = store.changes$.subscribe(() => {
+			this.notifyChange();
+		});
 	}
 
 	// ─── Query Helpers ────────────────────────────────────────────
@@ -406,7 +426,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 		for (const cached of this.cache.values()) {
 			const event = cached.template;
-			if (event.isVirtual) continue;
+			if (event.virtualKind !== "none") continue;
 			if (event.metadata.rruleType) continue;
 			if (event.metadata.status === doneValue) continue;
 			// Skip events actively being tracked by the stopwatch
@@ -440,4 +460,30 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	private makeTreeKey(time: string, filePath: string): string {
 		return `${time}${EventStore.SEP}${filePath}`;
 	}
+}
+
+function toCalendarEvent(data: VirtualEventData, virtualFilePath: string): CalendarEvent {
+	const base = {
+		...eventDefaults(),
+		id: data.id,
+		ref: { filePath: virtualFilePath },
+		title: data.title,
+		virtualKind: "manual" as const,
+		meta: data.properties,
+	};
+
+	return data.allDay
+		? {
+				...base,
+				type: "allDay" as const,
+				start: data.start,
+				allDay: true as const,
+			}
+		: {
+				...base,
+				type: "timed" as const,
+				start: data.start,
+				end: data.end ?? data.start,
+				allDay: false as const,
+			};
 }

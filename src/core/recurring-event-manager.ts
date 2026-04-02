@@ -23,7 +23,7 @@ import { TFile } from "obsidian";
 import type { BehaviorSubject, Subscription } from "rxjs";
 
 import { PROPAGATION_DEBOUNCE_MS } from "../constants";
-import type { CalendarEvent, Frontmatter, PrismaSyncDataSchema } from "../types";
+import { type CalendarEvent, eventDefaults, type Frontmatter, type PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
 import { stripZ, toInternalISO } from "../types/event";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring-event";
@@ -879,15 +879,14 @@ export class RecurringEventManager extends DebouncedNotifier {
 		const { metadata } = recurringEvent;
 
 		const baseEvent = {
+			...eventDefaults(),
 			id: `${recurringEvent.rRuleId}-${instanceDate.toISODate()}`,
 			ref: { filePath: recurringEvent.sourceFilePath },
 			title: recurringEvent.title,
 			start: start,
-			isVirtual: true,
-			skipped: false,
+			virtualKind: "recurring" as const,
 			metadata: {
 				...metadata,
-				// Override instance-specific fields
 				rruleId: recurringEvent.rRuleId,
 				instanceDate: instanceDate.toISODate() ?? undefined,
 			},

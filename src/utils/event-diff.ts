@@ -63,7 +63,7 @@ export function eventFingerprint(ev: PrismaEventInput): string {
 		ev.extendedProps.filePath,
 		ev.extendedProps.folder,
 		ev.extendedProps.originalTitle,
-		ev.extendedProps.isVirtual ? "1" : "0",
+		ev.extendedProps.virtualKind ?? "none",
 	].join("\0");
 }
 
