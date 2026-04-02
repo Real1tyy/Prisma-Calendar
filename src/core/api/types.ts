@@ -1,5 +1,12 @@
+import { z } from "zod";
+
 import type { ParsedEvent } from "../../types";
 import type { AIMode } from "../../types/ai";
+import type { AIOperation } from "../../types/ai-operation-schemas";
+
+export type { AIOperation as PrismaAIOperation } from "../../types/ai-operation-schemas";
+
+// ─── Navigation ─────────────────────────────────────────────────────
 
 export type NavigateInput = {
 	date?: string;
@@ -7,38 +14,51 @@ export type NavigateInput = {
 	calendarId?: string;
 };
 
-export interface PrismaEventInput {
-	title?: string;
-	start?: string;
-	end?: string;
-	allDay?: boolean;
-	categories?: string[];
-	location?: string;
-	participants?: string[];
-	markAsDone?: boolean;
-	skip?: boolean;
-	frontmatter?: Record<string, unknown>;
-}
+// ─── Public Input Schemas ───────────────────────────────────────────
+// Validated at the API boundary when external consumers call our API.
 
-export interface PrismaCreateEventInput extends PrismaEventInput {
-	title: string;
-	calendarId?: string;
-}
+export const PrismaEventInputSchema = z.object({
+	title: z.string().optional(),
+	start: z.string().optional(),
+	end: z.string().optional(),
+	allDay: z.boolean().optional(),
+	categories: z.array(z.string()).optional(),
+	location: z.string().optional(),
+	participants: z.array(z.string()).optional(),
+	markAsDone: z.boolean().optional(),
+	skip: z.boolean().optional(),
+	frontmatter: z.record(z.string(), z.unknown()).optional(),
+});
 
-export interface PrismaEditEventInput extends PrismaEventInput {
-	filePath: string;
-	calendarId?: string;
-}
+export type PrismaEventInput = z.infer<typeof PrismaEventInputSchema>;
 
-export interface PrismaDeleteEventInput {
-	filePath: string;
-	calendarId?: string;
-}
+export const PrismaCreateEventInputSchema = PrismaEventInputSchema.extend({
+	title: z.string(),
+	calendarId: z.string().optional(),
+});
 
-export interface PrismaConvertEventInput extends PrismaEventInput {
-	filePath: string;
-	calendarId?: string;
-}
+export type PrismaCreateEventInput = z.infer<typeof PrismaCreateEventInputSchema>;
+
+export const PrismaEditEventInputSchema = PrismaEventInputSchema.extend({
+	filePath: z.string(),
+	calendarId: z.string().optional(),
+});
+
+export type PrismaEditEventInput = z.infer<typeof PrismaEditEventInputSchema>;
+
+export const PrismaDeleteEventInputSchema = z.object({
+	filePath: z.string(),
+	calendarId: z.string().optional(),
+});
+
+export type PrismaDeleteEventInput = z.infer<typeof PrismaDeleteEventInputSchema>;
+
+export const PrismaConvertEventInputSchema = PrismaEventInputSchema.extend({
+	filePath: z.string(),
+	calendarId: z.string().optional(),
+});
+
+export type PrismaConvertEventInput = z.infer<typeof PrismaConvertEventInputSchema>;
 
 export interface PrismaMakeVirtualInput {
 	filePath: string;
@@ -50,27 +70,29 @@ export interface PrismaMakeRealInput {
 	calendarId?: string;
 }
 
-// ─── Public Output Interfaces ────────────────────────────────
+// ─── Public Output Schemas ──────────────────────────────────────────
 
-export interface PrismaEventOutput {
-	filePath: string;
-	title: string;
-	type: "timed" | "allDay" | "untracked";
-	start?: string;
-	end?: string;
-	allDay: boolean;
-	virtualKind: string;
-	skipped: boolean;
-	color?: string;
-	categories?: string[];
-	location?: string;
-	participants?: string[];
-	status?: string;
-	icon?: string;
-	rruleType?: string;
-	rruleId?: string;
-	instanceDate?: string;
-}
+export const PrismaEventOutputSchema = z.object({
+	filePath: z.string(),
+	title: z.string(),
+	type: z.enum(["timed", "allDay", "untracked"]),
+	start: z.string().optional(),
+	end: z.string().optional(),
+	allDay: z.boolean(),
+	virtualKind: z.string(),
+	skipped: z.boolean(),
+	color: z.string().optional(),
+	categories: z.array(z.string()).optional(),
+	location: z.string().optional(),
+	participants: z.array(z.string()).optional(),
+	status: z.string().optional(),
+	icon: z.string().optional(),
+	rruleType: z.string().optional(),
+	rruleId: z.string().optional(),
+	instanceDate: z.string().optional(),
+});
+
+export type PrismaEventOutput = z.infer<typeof PrismaEventOutputSchema>;
 
 export interface PrismaCategoryOutput {
 	name: string;
@@ -111,11 +133,7 @@ export interface PrismaStatisticsOutput {
 	entries: PrismaStatEntry[];
 }
 
-// ─── AI API Interfaces ──────────────────────────────────────
-
-import type { AIOperation } from "../../types/ai-operation-schemas";
-
-export type { AIOperation as PrismaAIOperation } from "../../types/ai-operation-schemas";
+// ─── AI API ─────────────────────────────────────────────────────────
 
 export interface PrismaAIQueryInput {
 	message: string;

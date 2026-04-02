@@ -1,12 +1,13 @@
 import { DateTime } from "luxon";
 import type { BehaviorSubject } from "rxjs";
-import { afterEach, beforeEach, describe, expect, it, type MockedFunction, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { VIRTUAL_EVENTS_CODE_FENCE } from "../../src/constants";
 import { toVirtualInput, VirtualEventStore } from "../../src/core/virtual-event-store";
 import type { EventSaveData } from "../../src/types/event-save";
 import type { VirtualEventData } from "../../src/types/virtual-event";
 import { createVirtualEventData } from "../fixtures";
+import { createMockFile } from "../mocks/obsidian";
 import { createMockSingleCalendarSettingsStore } from "../setup";
 
 // ─── Helpers ─────────────────────────────────────────────────
@@ -16,16 +17,27 @@ function buildCodeFence(events: VirtualEventData[]): string {
 }
 
 function createMockVaultForStore() {
-	return {
+	const fileContents = new Map<string, string>();
+
+	const vault = {
 		getAbstractFileByPath: vi.fn(),
 		on: vi.fn().mockReturnValue({ id: "mock-ref" }),
 		offref: vi.fn(),
-		read: vi.fn().mockResolvedValue(""),
-		modify: vi.fn().mockResolvedValue(undefined),
-		create: vi.fn().mockResolvedValue(undefined),
+		read: vi.fn().mockImplementation(async (file: { path: string }) => fileContents.get(file.path) ?? ""),
+		modify: vi.fn().mockImplementation(async (file: { path: string }, content: string) => {
+			fileContents.set(file.path, content);
+		}),
+		create: vi.fn().mockImplementation(async (path: string, content: string) => {
+			fileContents.set(path, content);
+			const file = createMockFile(path);
+			vault.getAbstractFileByPath.mockImplementation((p: string) => (p === path ? file : null));
+			return file;
+		}),
 		createFolder: vi.fn().mockResolvedValue(undefined),
 		adapter: { exists: vi.fn().mockResolvedValue(true) },
 	};
+
+	return vault;
 }
 
 function createStore(
@@ -33,7 +45,7 @@ function createStore(
 	settingsStore?: BehaviorSubject<any>
 ): VirtualEventStore {
 	const store = settingsStore ?? createMockSingleCalendarSettingsStore();
-	const app = { vault } as any;
+	const app = { vault, workspace: { getActiveViewOfType: vi.fn().mockReturnValue(null) } } as any;
 	return new VirtualEventStore(app, store);
 }
 
@@ -140,7 +152,7 @@ describe("VirtualEventStore", () => {
 
 		it("should load events from existing file with code fence", async () => {
 			const events = [createVirtualEventData({ id: "e1", title: "Loaded Event" })];
-			const fakeFile = { path: store.getFilePath() };
+			const fakeFile = createMockFile(store.getFilePath());
 			vault.getAbstractFileByPath.mockReturnValue(fakeFile);
 			vault.read.mockResolvedValue(buildCodeFence(events));
 
@@ -159,8 +171,7 @@ describe("VirtualEventStore", () => {
 		});
 
 		it("should load empty array when file content has no code fence", async () => {
-			const fakeFile = { path: store.getFilePath() };
-			vault.getAbstractFileByPath.mockReturnValue(fakeFile);
+			vault.getAbstractFileByPath.mockReturnValue(createMockFile(store.getFilePath()));
 			vault.read.mockResolvedValue("# Some markdown\nNo code fence here.");
 
 			await store.initialize();
@@ -169,8 +180,7 @@ describe("VirtualEventStore", () => {
 		});
 
 		it("should load empty array when code fence has malformed JSON", async () => {
-			const fakeFile = { path: store.getFilePath() };
-			vault.getAbstractFileByPath.mockReturnValue(fakeFile);
+			vault.getAbstractFileByPath.mockReturnValue(createMockFile(store.getFilePath()));
 			vault.read.mockResolvedValue(`\`\`\`${VIRTUAL_EVENTS_CODE_FENCE}\n{broken json\n\`\`\``);
 
 			await store.initialize();
@@ -180,9 +190,9 @@ describe("VirtualEventStore", () => {
 	});
 
 	describe("CRUD operations", () => {
-		beforeEach(() => {
-			// Simulate no existing file so save creates a new one
+		beforeEach(async () => {
 			vault.getAbstractFileByPath.mockReturnValue(null);
+			await store.initialize();
 		});
 
 		it("should add an event and assign a UUID", async () => {
@@ -325,6 +335,7 @@ describe("VirtualEventStore", () => {
 	describe("getInRange", () => {
 		beforeEach(async () => {
 			vault.getAbstractFileByPath.mockReturnValue(null);
+			await store.initialize();
 
 			await store.add({
 				title: "March 10 Event",
@@ -380,6 +391,7 @@ describe("VirtualEventStore", () => {
 		it("should use start as end for events with null end", async () => {
 			vault.getAbstractFileByPath.mockReturnValue(null);
 			const noEndStore = createStore(vault, createMockSingleCalendarSettingsStore({ directory: "cal" }));
+			await noEndStore.initialize();
 
 			await noEndStore.add({
 				title: "No End",
@@ -401,6 +413,7 @@ describe("VirtualEventStore", () => {
 		it("should include events that span across the range boundary", async () => {
 			vault.getAbstractFileByPath.mockReturnValue(null);
 			const spanStore = createStore(vault, createMockSingleCalendarSettingsStore({ directory: "cal" }));
+			await spanStore.initialize();
 
 			await spanStore.add({
 				title: "Multi-day",
@@ -422,16 +435,10 @@ describe("VirtualEventStore", () => {
 	});
 
 	describe("save — file I/O", () => {
-		it("should create file when it does not exist", async () => {
+		it("should create file on initialize when it does not exist", async () => {
 			vault.getAbstractFileByPath.mockReturnValue(null);
 
-			await store.add({
-				title: "New",
-				start: "2025-03-15T09:00:00",
-				end: null,
-				allDay: false,
-				properties: {},
-			});
+			await store.initialize();
 
 			expect(vault.create).toHaveBeenCalledWith(
 				store.getFilePath(),
@@ -439,42 +446,28 @@ describe("VirtualEventStore", () => {
 			);
 		});
 
-		it("should replace existing code fence when file has one", async () => {
-			const fakeFile = { path: store.getFilePath() };
-			vault.getAbstractFileByPath.mockReturnValue(fakeFile);
-			vault.read.mockResolvedValue(`# Notes\n\n${buildCodeFence([createVirtualEventData({ id: "old" })])}\n`);
+		it("should persist through the repository on modify", async () => {
+			vault.getAbstractFileByPath.mockReturnValue(null);
+			await store.initialize();
 
 			await store.add({
-				title: "New Event",
+				title: "First",
 				start: "2025-03-15T09:00:00",
 				end: null,
 				allDay: false,
 				properties: {},
 			});
 
-			expect(vault.modify).toHaveBeenCalledWith(fakeFile, expect.stringContaining("New Event"));
-			const writtenContent = (vault.modify as MockedFunction<any>).mock.calls[0][1] as string;
-			expect(writtenContent).toContain("# Notes");
-			expect(writtenContent).not.toContain('"old"');
-		});
-
-		it("should append code fence when file exists but has no fence", async () => {
-			const fakeFile = { path: store.getFilePath() };
-			vault.getAbstractFileByPath.mockReturnValue(fakeFile);
-			vault.read.mockResolvedValue("# Just notes\nSome content.");
-
 			await store.add({
-				title: "Appended",
-				start: "2025-03-15T09:00:00",
+				title: "Second",
+				start: "2025-03-16T09:00:00",
 				end: null,
 				allDay: false,
 				properties: {},
 			});
 
-			expect(vault.modify).toHaveBeenCalledWith(fakeFile, expect.stringContaining("# Just notes"));
-			const writtenContent = (vault.modify as MockedFunction<any>).mock.calls[0][1] as string;
-			expect(writtenContent).toContain("Appended");
-			expect(writtenContent).toContain(VIRTUAL_EVENTS_CODE_FENCE);
+			expect(store.getAll()).toHaveLength(2);
+			expect(vault.modify).toHaveBeenCalled();
 		});
 	});
 
@@ -490,6 +483,7 @@ describe("VirtualEventStore", () => {
 
 		it("should emit after add", async () => {
 			vault.getAbstractFileByPath.mockReturnValue(null);
+			await store.initialize();
 			const values: VirtualEventData[][] = [];
 			const sub = store.changes$.subscribe((v) => values.push(v));
 
@@ -510,6 +504,7 @@ describe("VirtualEventStore", () => {
 
 		it("should emit after remove", async () => {
 			vault.getAbstractFileByPath.mockReturnValue(null);
+			await store.initialize();
 			const added = await store.add({
 				title: "Will Remove",
 				start: "2025-03-15T09:00:00",
@@ -530,8 +525,9 @@ describe("VirtualEventStore", () => {
 	});
 
 	describe("round-trip: add → remove → re-add preserves data", () => {
-		beforeEach(() => {
+		beforeEach(async () => {
 			vault.getAbstractFileByPath.mockReturnValue(null);
+			await store.initialize();
 		});
 
 		it("should preserve all fields through add → get → remove → re-add cycle", async () => {
@@ -610,8 +606,9 @@ describe("VirtualEventStore", () => {
 	});
 
 	describe("round-trip: EventSaveData → store → retrieve preserves data", () => {
-		beforeEach(() => {
+		beforeEach(async () => {
 			vault.getAbstractFileByPath.mockReturnValue(null);
+			await store.initialize();
 		});
 
 		it("should preserve all EventSaveData fields through addFromEventData → getById", async () => {
@@ -666,6 +663,7 @@ describe("VirtualEventStore", () => {
 	describe("round-trip: file persistence", () => {
 		it("should produce identical data after save → load cycle", async () => {
 			vault.getAbstractFileByPath.mockReturnValue(null);
+			await store.initialize();
 
 			const added = await store.add({
 				title: "Persist Me",
@@ -675,13 +673,8 @@ describe("VirtualEventStore", () => {
 				properties: { Category: "Work", Tags: ["important"] },
 			});
 
-			const writtenContent = (vault.create as MockedFunction<any>).mock.calls[0][1] as string;
-
+			// Fresh store loading from the same vault (content-tracking mock preserves writes)
 			const freshStore = createStore(vault, createMockSingleCalendarSettingsStore({ directory: "calendar" }));
-			const fakeFile = { path: freshStore.getFilePath() };
-			vault.getAbstractFileByPath.mockReturnValue(fakeFile);
-			vault.read.mockResolvedValue(writtenContent);
-
 			await freshStore.initialize();
 
 			const loaded = freshStore.getAll();
@@ -697,14 +690,9 @@ describe("VirtualEventStore", () => {
 
 		it("should preserve multiple events through save → load cycle", async () => {
 			vault.getAbstractFileByPath.mockReturnValue(null);
+			await store.initialize();
 
-			await store.add({
-				title: "First",
-				start: "2025-07-01T09:00:00",
-				end: null,
-				allDay: false,
-				properties: {},
-			});
+			await store.add({ title: "First", start: "2025-07-01T09:00:00", end: null, allDay: false, properties: {} });
 			await store.add({
 				title: "Second",
 				start: "2025-07-02T10:00:00",
@@ -712,23 +700,9 @@ describe("VirtualEventStore", () => {
 				allDay: false,
 				properties: { Status: "done" },
 			});
-			await store.add({
-				title: "Third",
-				start: "2025-07-03T00:00:00",
-				end: null,
-				allDay: true,
-				properties: {},
-			});
-
-			// The last create/modify call has the final state
-			const lastCall = (vault.create as MockedFunction<any>).mock.calls;
-			const writtenContent = lastCall[lastCall.length - 1][1] as string;
+			await store.add({ title: "Third", start: "2025-07-03T00:00:00", end: null, allDay: true, properties: {} });
 
 			const freshStore = createStore(vault, createMockSingleCalendarSettingsStore({ directory: "calendar" }));
-			const fakeFile = { path: freshStore.getFilePath() };
-			vault.getAbstractFileByPath.mockReturnValue(fakeFile);
-			vault.read.mockResolvedValue(writtenContent);
-
 			await freshStore.initialize();
 
 			const loaded = freshStore.getAll();

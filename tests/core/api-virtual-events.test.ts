@@ -9,16 +9,27 @@ import { createMockSingleCalendarSettingsStore } from "../setup";
 // ─── Helpers ─────────────────────────────────────────────────
 
 function createMockVault() {
-	return {
+	const fileContents = new Map<string, string>();
+
+	const vault = {
 		getAbstractFileByPath: vi.fn(),
 		on: vi.fn().mockReturnValue({ id: "mock-ref" }),
 		offref: vi.fn(),
-		read: vi.fn().mockResolvedValue(""),
-		modify: vi.fn().mockResolvedValue(undefined),
-		create: vi.fn().mockResolvedValue(undefined),
+		read: vi.fn().mockImplementation(async (file: { path: string }) => fileContents.get(file.path) ?? ""),
+		modify: vi.fn().mockImplementation(async (file: { path: string }, content: string) => {
+			fileContents.set(file.path, content);
+		}),
+		create: vi.fn().mockImplementation(async (path: string, content: string) => {
+			fileContents.set(path, content);
+			const file = createMockFile(path);
+			vault.getAbstractFileByPath.mockImplementation((p: string) => (p === path ? file : null));
+			return file;
+		}),
 		createFolder: vi.fn().mockResolvedValue(undefined),
 		adapter: { exists: vi.fn().mockResolvedValue(true) },
 	};
+
+	return vault;
 }
 
 function createTestContext() {
@@ -26,6 +37,7 @@ function createTestContext() {
 	const settingsStore = createMockSingleCalendarSettingsStore({ directory: "calendar" });
 	const app = {
 		vault,
+		workspace: { getActiveViewOfType: vi.fn().mockReturnValue(null) },
 		metadataCache: {
 			getFileCache: vi.fn().mockReturnValue({
 				frontmatter: {
@@ -126,9 +138,10 @@ describe("makeEventVirtual", () => {
 describe("makeEventReal", () => {
 	let ctx: ReturnType<typeof createTestContext>;
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		ctx = createTestContext();
 		ctx.vault.getAbstractFileByPath.mockReturnValue(null);
+		await ctx.store.initialize();
 	});
 
 	afterEach(() => {
@@ -167,6 +180,7 @@ describe("makeEventReal", () => {
 
 	it("should resolve the correct calendar by calendarId", async () => {
 		const otherStore = new VirtualEventStore(ctx.app, createMockSingleCalendarSettingsStore({ directory: "other" }));
+		await otherStore.initialize();
 		const added = await otherStore.add(createVirtualEventData({ title: "Other Calendar" }));
 
 		const otherBundle = {
@@ -197,6 +211,7 @@ describe("API round-trip: makeEventVirtual → makeEventReal", () => {
 	beforeEach(async () => {
 		ctx = createTestContext();
 		ctx.vault.getAbstractFileByPath.mockReturnValue(null);
+		await ctx.store.initialize();
 
 		const added = await ctx.store.add(
 			createVirtualEventData({

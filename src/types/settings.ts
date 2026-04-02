@@ -315,53 +315,26 @@ const PropsSettingsSchema = z
 	})
 	.strip();
 
-type PropsKey = keyof z.infer<typeof PropsSettingsSchema>;
+import {
+	computeDedicatedUIPropKeys,
+	computeNotificationDedicatedUIPropKeys,
+	computeNotificationSystemPropKeys,
+	computeSystemPropKeys,
+} from "./event-field-registry";
 
 /**
  * Settings keys for per-instance system properties (timing, identity, recurrence).
- * These are NOT copied from source recurring events to physical instances.
- * When adding a new frontmatter property to the schema, add it here if Prisma
- * manages it per-instance (the value differs between source and instance).
+ * Derived from PROP_CLASSIFICATIONS in event-field-registry.ts.
+ * When adding a new frontmatter property, add it to the registry instead.
  */
-export const SYSTEM_PROP_KEYS: PropsKey[] = [
-	"startProp",
-	"endProp",
-	"dateProp",
-	"breakProp",
-	"titleProp",
-	"calendarTitleProp",
-	"allDayProp",
-	"rruleProp",
-	"rruleSpecProp",
-	"rruleIdProp",
-	"sourceProp",
-	"skipProp",
-	"instanceDateProp",
-	"zettelIdProp",
-	"futureInstancesCountProp",
-	"caldavProp",
-	"icsSubscriptionProp",
-	"generatePastEventsProp",
-	"sortDateProp",
-	"prerequisiteProp",
-	"statusProperty",
-];
+export const SYSTEM_PROP_KEYS = computeSystemPropKeys();
 
 /**
- * Settings keys for properties that have dedicated UI controls in the edit modal
- * (category picker, prerequisite assigner, icon input, etc.).
- * These must NOT appear in the "Custom Properties" section — otherwise the custom
- * properties form will overwrite values set by the dedicated UI on save.
- * When adding a new frontmatter property with its own modal control, add it here.
+ * Settings keys for properties that have dedicated UI controls in the edit modal.
+ * Derived from PROP_CLASSIFICATIONS in event-field-registry.ts.
+ * When adding a new property with its own modal control, add it to the registry instead.
  */
-export const DEDICATED_UI_PROP_KEYS: PropsKey[] = [
-	"statusProperty",
-	"categoryProp",
-	"prerequisiteProp",
-	"iconProp",
-	"locationProp",
-	"participantsProp",
-];
+export const DEDICATED_UI_PROP_KEYS = computeDedicatedUIPropKeys();
 
 const NotificationsSettingsSchema = z
 	.object({
@@ -401,15 +374,11 @@ const NotificationsSettingsSchema = z
 	})
 	.strip();
 
-type NotificationsKey = keyof z.infer<typeof NotificationsSettingsSchema>;
-
 /**
- * Notification settings keys that map to frontmatter properties.
- * alreadyNotifiedProp is a system prop (per-instance), while minutesBefore/daysBefore
- * have dedicated UI controls in the edit modal.
+ * Notification settings keys derived from PROP_CLASSIFICATIONS in event-field-registry.ts.
  */
-export const NOTIFICATION_SYSTEM_PROP_KEYS: NotificationsKey[] = ["alreadyNotifiedProp"];
-export const NOTIFICATION_DEDICATED_UI_PROP_KEYS: NotificationsKey[] = ["minutesBeforeProp", "daysBeforeProp"];
+export const NOTIFICATION_SYSTEM_PROP_KEYS = computeNotificationSystemPropKeys();
+export const NOTIFICATION_DEDICATED_UI_PROP_KEYS = computeNotificationDedicatedUIPropKeys();
 
 const FilterPresetSchema = z
 	.object({

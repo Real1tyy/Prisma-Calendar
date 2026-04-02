@@ -16,7 +16,7 @@ import { BatchCommandFactory } from "../core/commands/batch-commands";
 import type { CalendarEvent } from "../types/calendar";
 import { isBatchSelectable, isVirtualEvent } from "../types/event-classification";
 import { isTimeUnitAllowedForAllDay } from "../types/move-by";
-import { getExtendedProps } from "../utils/extended-props";
+import { parseFCExtendedProps } from "../utils/extended-props";
 import { showMoveByModal } from "./modals";
 
 export class BatchSelectionManager {
@@ -306,7 +306,7 @@ export class BatchSelectionManager {
 		const virtualEventIds = Array.from(this.selectedEvents.values())
 			.map((event) => {
 				const fcEvent = this.calendar.getEventById(event.id);
-				return fcEvent && isVirtualEvent(fcEvent) ? getExtendedProps(fcEvent).virtualEventId : undefined;
+				return fcEvent && isVirtualEvent(fcEvent) ? parseFCExtendedProps(fcEvent).virtualEventId : undefined;
 			})
 			.filter((id): id is string => id !== undefined);
 
@@ -452,12 +452,12 @@ export class BatchSelectionManager {
 	}
 
 	private mapFCEventToCalendarEvent(fcEvent: EventApi): CalendarEvent {
-		const ep = getExtendedProps(fcEvent);
+		const ep = parseFCExtendedProps(fcEvent);
 		const filePath = ep.filePath;
 		const title = ep.originalTitle || fcEvent.title;
 		const start = fcEvent.start ? toLocalISOString(fcEvent.start) : "";
 		const virtualKind = ep.virtualKind;
-		const skipped = (fcEvent.extendedProps["skipped"] as boolean) ?? false;
+		const skipped = ep.skipped;
 		const meta = ep.frontmatterDisplayData;
 
 		const baseEvent = {

@@ -1,22 +1,29 @@
-import type { Frontmatter } from "./index";
+import { z } from "zod";
 
-interface BaseEventFields {
-	title: string;
-	start: string;
-	end: string | null;
-	allDay: boolean;
-	preservedFrontmatter: Frontmatter;
-}
+// ─── Save Boundary Schemas ───────────────────────────────────────────
+// Validated at the boundary when events are created or updated.
 
-export interface CreateEventData extends BaseEventFields {
-	virtual: boolean;
-}
+const BaseEventFieldsSchema = z.object({
+	title: z.string(),
+	start: z.string(),
+	end: z.string().nullable(),
+	allDay: z.boolean(),
+	preservedFrontmatter: z.record(z.string(), z.unknown()),
+});
 
-export interface UpdateEventData extends BaseEventFields {
-	filePath: string;
-}
+export const CreateEventDataSchema = BaseEventFieldsSchema.extend({
+	virtual: z.boolean(),
+});
 
-export interface EventSaveData extends BaseEventFields {
-	filePath: string | null;
-	virtual: boolean;
-}
+export const UpdateEventDataSchema = BaseEventFieldsSchema.extend({
+	filePath: z.string(),
+});
+
+export const EventSaveDataSchema = BaseEventFieldsSchema.extend({
+	filePath: z.string().nullable(),
+	virtual: z.boolean(),
+});
+
+export type CreateEventData = z.infer<typeof CreateEventDataSchema>;
+export type UpdateEventData = z.infer<typeof UpdateEventDataSchema>;
+export type EventSaveData = z.infer<typeof EventSaveDataSchema>;

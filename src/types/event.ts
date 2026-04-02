@@ -12,6 +12,7 @@ import {
 	strictBooleanOptional,
 	titleTransform,
 } from "../utils/validation";
+import { METADATA_FIELD_MAP } from "./event-field-registry";
 import type { Frontmatter, SingleCalendarConfig } from "./index";
 
 export { stripZ, toInternalISO } from "../utils/iso";
@@ -71,27 +72,13 @@ export const EventMetadataSchema = z.object({
 export type EventMetadata = z.infer<typeof EventMetadataSchema>;
 
 export function parseEventMetadata(frontmatter: Frontmatter, settings: SingleCalendarConfig): EventMetadata {
-	const candidate = {
-		skip: frontmatter[settings.skipProp],
-		location: frontmatter[settings.locationProp],
-		participants: frontmatter[settings.participantsProp],
-		categories: frontmatter[settings.categoryProp],
-		breakMinutes: frontmatter[settings.breakProp],
-		icon: frontmatter[settings.iconProp],
-		status: frontmatter[settings.statusProperty],
-		minutesBefore: frontmatter[settings.minutesBeforeProp],
-		daysBefore: frontmatter[settings.daysBeforeProp],
-		alreadyNotified: frontmatter[settings.alreadyNotifiedProp],
-		rruleType: frontmatter[settings.rruleProp],
-		rruleSpec: frontmatter[settings.rruleSpecProp],
-		rruleId: frontmatter[settings.rruleIdProp],
-		instanceDate: frontmatter[settings.instanceDateProp],
-		source: frontmatter[settings.sourceProp],
-		futureInstancesCount: frontmatter[settings.futureInstancesCountProp],
-		generatePastEvents: frontmatter[settings.generatePastEventsProp],
-		caldav: frontmatter[settings.caldavProp],
-		icsSubscription: frontmatter[settings.icsSubscriptionProp],
-	};
+	const candidate: Record<string, unknown> = {};
+	for (const { metadataKey, settingsProp } of METADATA_FIELD_MAP) {
+		const propName = settings[settingsProp];
+		if (typeof propName === "string") {
+			candidate[metadataKey] = frontmatter[propName];
+		}
+	}
 	// All fields have transforms with fallbacks — parse() never throws
 	return EventMetadataSchema.parse(candidate);
 }

@@ -1,9 +1,12 @@
+import { z } from "zod";
+
 import { getDisplayData, getVirtualKind } from "../utils/extended-props";
 import { isAnyVirtual } from "./calendar";
 import type { Frontmatter } from "./index";
 import type { SingleCalendarConfig } from "./settings";
 
-export type EventKind = "normal" | "source" | "physical" | "virtual" | "manual" | "holiday";
+export const EventKindSchema = z.enum(["normal", "source", "physical", "virtual", "manual", "holiday"]);
+export type EventKind = z.infer<typeof EventKindSchema>;
 
 interface ClassifiableEvent {
 	extendedProps?: {

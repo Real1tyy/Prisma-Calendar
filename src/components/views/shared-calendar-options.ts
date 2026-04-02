@@ -22,7 +22,7 @@ import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveAllEventColors, resolveEventColor } from "../../utils/event-color";
 import { hashFrontmatter } from "../../utils/event-diff";
 import { cleanupTitle } from "../../utils/event-naming";
-import { getExtendedProps } from "../../utils/extended-props";
+import { parseFCExtendedProps } from "../../utils/extended-props";
 import { buildEventTooltip } from "../../utils/format";
 import { stripZ } from "../../utils/iso";
 import { emitHover } from "../../utils/obsidian";
@@ -94,7 +94,7 @@ export function buildSharedEventContent(
 	return (arg) => {
 		const event = arg.event;
 		const settings = deps.bundle.settingsStore.currentSettings;
-		const displayData = getExtendedProps(event).frontmatterDisplayData;
+		const displayData = parseFCExtendedProps(event).frontmatterDisplayData;
 		const isSourceRecurring = displayData[settings.rruleProp];
 		const isPhysicalRecurring = displayData[settings.sourceProp];
 		const holiday = isHolidayEvent(event);
@@ -205,7 +205,7 @@ export function buildSharedEventDidMount(
 	return (info) => {
 		const { el, event } = info;
 
-		const ep = getExtendedProps(event);
+		const ep = parseFCExtendedProps(event);
 		const virtualKind = ep.virtualKind;
 		const eventFilePath = ep.filePath || undefined;
 		const computedColors = ep.computedColors ?? [];

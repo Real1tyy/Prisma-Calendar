@@ -1,56 +1,56 @@
+import { z } from "zod";
+
 import type { Frontmatter } from "../types";
 import { type VirtualKind, VirtualKindSchema } from "../types/calendar";
 
-/**
- * Typed result of extracting FullCalendar extendedProps.
- * All fields are guaranteed present (non-optional) to eliminate null checks at call sites.
- */
-export interface ExtractedExtendedProps {
-	filePath: string;
-	folder: string;
-	originalTitle: string;
-	frontmatterDisplayData: Frontmatter;
-	virtualKind: VirtualKind;
-	virtualEventId: string | undefined;
-	computedColors: string[] | undefined;
-	frontmatterHash: number | undefined;
-}
+// ─── Boundary Schema ─────────────────────────────────────────────────
+// Validates and transforms FullCalendar's untyped extendedProps bag into
+// clean typed data. Used at every boundary where FullCalendar events
+// enter our code (callbacks, event mounting, batch operations).
+//
+// Parse once at the boundary → trust the types everywhere inside.
+
+export const FCExtendedPropsSchema = z.object({
+	filePath: z.string().catch(""),
+	folder: z.string().catch(""),
+	originalTitle: z.string().catch(""),
+	frontmatterDisplayData: z.record(z.string(), z.unknown()).catch({}),
+	virtualKind: VirtualKindSchema.catch("none"),
+	virtualEventId: z.string().optional().catch(undefined),
+	computedColors: z.array(z.string()).optional().catch(undefined),
+	frontmatterHash: z.number().optional().catch(undefined),
+	skipped: z.boolean().catch(false),
+});
+
+export type FCExtendedProps = z.infer<typeof FCExtendedPropsSchema>;
+
+// ─── Boundary Parse ──────────────────────────────────────────────────
+
+type AnyEvent = { extendedProps?: Record<string, unknown> | object };
 
 /**
- * Type-safe accessor for FullCalendar extendedProps.
- * Accepts any object shape that has an `extendedProps` property (FullCalendar EventApi,
- * CalendarEventData, or any duck-typed equivalent).
- * Validates `virtualKind` through Zod — all other fields use typeof guards.
+ * Parse FullCalendar extendedProps through Zod at the boundary.
+ * Call once per callback entry point — downstream code uses the typed result.
  */
-export function getExtendedProps(event: { extendedProps?: Record<string, unknown> | object }): ExtractedExtendedProps {
-	const ep: Record<string, unknown> = (event.extendedProps ?? {}) as Record<string, unknown>;
-
-	return {
-		filePath: typeof ep["filePath"] === "string" ? ep["filePath"] : "",
-		folder: typeof ep["folder"] === "string" ? ep["folder"] : "",
-		originalTitle: typeof ep["originalTitle"] === "string" ? ep["originalTitle"] : "",
-		frontmatterDisplayData: (ep["frontmatterDisplayData"] ?? {}) as Frontmatter,
-		virtualKind: VirtualKindSchema.catch("none").parse(ep["virtualKind"]),
-		virtualEventId: typeof ep["virtualEventId"] === "string" ? ep["virtualEventId"] : undefined,
-		computedColors: Array.isArray(ep["computedColors"]) ? (ep["computedColors"] as string[]) : undefined,
-		frontmatterHash: typeof ep["frontmatterHash"] === "number" ? ep["frontmatterHash"] : undefined,
-	};
+export function parseFCExtendedProps(event: AnyEvent): FCExtendedProps {
+	return FCExtendedPropsSchema.parse(event.extendedProps ?? {});
 }
 
-/** Shorthand: extract just the virtualKind from an event's extendedProps. */
-export function getVirtualKind(event: { extendedProps?: Record<string, unknown> | object }): VirtualKind {
-	const ep: Record<string, unknown> = (event.extendedProps ?? {}) as Record<string, unknown>;
-	return VirtualKindSchema.catch("none").parse(ep["virtualKind"]);
+// ─── Convenience Accessors ───────────────────────────────────────────
+// Thin wrappers for call sites that only need a single field.
+// Each still validates through the schema.
+
+export function getVirtualKind(event: AnyEvent): VirtualKind {
+	const raw = (event.extendedProps ?? {}) as Record<string, unknown>;
+	return VirtualKindSchema.catch("none").parse(raw["virtualKind"]);
 }
 
-/** Shorthand: extract just the filePath from an event's extendedProps. */
-export function getFilePath(event: { extendedProps?: Record<string, unknown> | object }): string | undefined {
-	const ep: Record<string, unknown> = (event.extendedProps ?? {}) as Record<string, unknown>;
-	return typeof ep["filePath"] === "string" ? ep["filePath"] : undefined;
+export function getFilePath(event: AnyEvent): string | undefined {
+	const raw = (event.extendedProps ?? {}) as Record<string, unknown>;
+	return typeof raw["filePath"] === "string" ? raw["filePath"] : undefined;
 }
 
-/** Shorthand: extract the frontmatter display data from an event's extendedProps. */
-export function getDisplayData(event: { extendedProps?: Record<string, unknown> | object }): Frontmatter {
-	const ep: Record<string, unknown> = (event.extendedProps ?? {}) as Record<string, unknown>;
-	return (ep["frontmatterDisplayData"] ?? {}) as Frontmatter;
+export function getDisplayData(event: AnyEvent): Frontmatter {
+	const raw = (event.extendedProps ?? {}) as Record<string, unknown>;
+	return (raw["frontmatterDisplayData"] ?? {}) as Frontmatter;
 }

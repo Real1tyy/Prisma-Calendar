@@ -14,21 +14,33 @@ import { createMockSingleCalendarSettingsStore } from "../setup";
 // ─── Helpers ─────────────────────────────────────────────────
 
 function createMockVaultForCommands() {
-	return {
+	const fileContents = new Map<string, string>();
+
+	const vault = {
 		getAbstractFileByPath: vi.fn(),
 		on: vi.fn().mockReturnValue({ id: "mock-ref" }),
 		offref: vi.fn(),
-		read: vi.fn().mockResolvedValue(""),
-		modify: vi.fn().mockResolvedValue(undefined),
-		create: vi.fn().mockResolvedValue(undefined),
+		read: vi.fn().mockImplementation(async (file: { path: string }) => fileContents.get(file.path) ?? ""),
+		modify: vi.fn().mockImplementation(async (file: { path: string }, content: string) => {
+			fileContents.set(file.path, content);
+		}),
+		create: vi.fn().mockImplementation(async (path: string, content: string) => {
+			fileContents.set(path, content);
+			const file = createMockFile(path);
+			vault.getAbstractFileByPath.mockImplementation((p: string) => (p === path ? file : null));
+			return file;
+		}),
 		createFolder: vi.fn().mockResolvedValue(undefined),
 		adapter: { exists: vi.fn().mockResolvedValue(true) },
 	};
+
+	return vault;
 }
 
 function createMockApp(vault: ReturnType<typeof createMockVaultForCommands>) {
 	return {
 		vault,
+		workspace: { getActiveViewOfType: vi.fn().mockReturnValue(null) },
 		metadataCache: {
 			getFileCache: vi.fn().mockReturnValue(null),
 		},
@@ -59,10 +71,11 @@ describe("CreateVirtualEventCommand", () => {
 	let store: VirtualEventStore;
 	let bundle: any;
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		vault = createMockVaultForCommands();
 		vault.getAbstractFileByPath.mockReturnValue(null);
 		({ store, bundle } = createStoreAndBundle(vault));
+		await store.initialize();
 	});
 
 	afterEach(() => {
@@ -138,10 +151,11 @@ describe("DeleteVirtualEventCommand", () => {
 	let store: VirtualEventStore;
 	let bundle: any;
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		vault = createMockVaultForCommands();
 		vault.getAbstractFileByPath.mockReturnValue(null);
 		({ store, bundle } = createStoreAndBundle(vault));
+		await store.initialize();
 	});
 
 	afterEach(() => {
@@ -236,10 +250,11 @@ describe("ConvertToVirtualCommand", () => {
 		return fakeFile;
 	}
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		vault = createMockVaultForCommands();
 		vault.getAbstractFileByPath.mockReturnValue(null);
 		({ app, store, bundle } = createStoreAndBundle(vault));
+		await store.initialize();
 	});
 
 	afterEach(() => {
@@ -293,10 +308,11 @@ describe("ConvertToRealCommand", () => {
 
 	const CREATED_PATH = "calendar/New Event-202503151200.md";
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		vault = createMockVaultForCommands();
 		vault.getAbstractFileByPath.mockReturnValue(null);
 		({ app, store, bundle } = createStoreAndBundle(vault));
+		await store.initialize();
 	});
 
 	afterEach(() => {

@@ -1,4 +1,7 @@
-export type AIMode = "query" | "manipulation" | "planning";
+import { z } from "zod";
+
+export const AIModeSchema = z.enum(["query", "manipulation", "planning"]);
+export type AIMode = z.infer<typeof AIModeSchema>;
 
 export type AIProvider = "openai" | "anthropic";
 
