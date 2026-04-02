@@ -68,7 +68,7 @@ export class EventCreateModal extends BaseEventModal {
 		const eventData = this.buildEventData();
 
 		if (eventData.virtual) {
-			void this.bundle.virtualEventStore.addFromEventData(eventData);
+			void this.bundle.createVirtualEvent(eventData);
 		} else {
 			this.bundle
 				.createEvent(eventData)

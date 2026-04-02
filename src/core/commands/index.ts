@@ -13,4 +13,10 @@ export {
 } from "./frontmatter-update-command";
 export { CloneEventCommand, CreateEventCommand, DeleteEventCommand, type EventData } from "./lifecycle-commands";
 export { AddZettelIdCommand, ConvertFileToEventCommand, EditEventCommand, UpdateEventCommand } from "./update-commands";
+export {
+	ConvertToRealCommand,
+	ConvertToVirtualCommand,
+	CreateVirtualEventCommand,
+	DeleteVirtualEventCommand,
+} from "./virtual-event-commands";
 export { CommandManager } from "@real1ty-obsidian-plugins";

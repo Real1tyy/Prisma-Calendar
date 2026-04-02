@@ -42,7 +42,6 @@ import {
 	getFileByPathOrThrow,
 	openFileInNewWindow,
 } from "../utils/obsidian";
-import { toSafeLocalISO, toSafeLocalISOOrNull } from "../utils/virtual-event-conversion";
 import type { CalendarHost } from "./calendar-host";
 import { EventSeriesModal } from "./list-modals/event-series-modal";
 import type { PreviewEventData } from "./modals";
@@ -759,8 +758,7 @@ export class EventContextMenu {
 		if (kind === "manual") {
 			const virtualEventId = event.extendedProps?.virtualEventId;
 			if (virtualEventId) {
-				await this.bundle.virtualEventStore.remove(virtualEventId);
-				new Notice("Virtual event deleted");
+				await this.bundle.deleteVirtualEvent(virtualEventId);
 			}
 			return;
 		}
@@ -996,24 +994,18 @@ export class EventContextMenu {
 			const result = getFileAndFrontmatter(this.app, filePath);
 			if (!result) return;
 
-			const { frontmatter } = result;
-			const start = toSafeLocalISO(event.start);
-			const end = toSafeLocalISOOrNull(event.end);
+			const startDate = intoDate(event.start);
+			const endDate = event.end ? intoDate(event.end) : null;
 
-			await this.bundle.virtualEventStore.add({
+			await this.bundle.convertToVirtual(filePath, {
+				filePath,
 				title: event.title,
-				start,
-				end,
+				start: startDate ? toLocalISOString(startDate) : "",
+				end: endDate ? toLocalISOString(endDate) : null,
 				allDay: event.allDay ?? false,
-				properties: frontmatter,
+				virtual: true,
+				preservedFrontmatter: result.frontmatter,
 			});
-
-			const file = this.app.vault.getAbstractFileByPath(filePath);
-			if (file) {
-				await this.app.vault.trash(file, true);
-			}
-
-			new Notice("Event converted to virtual");
 		});
 	}
 
@@ -1024,23 +1016,6 @@ export class EventContextMenu {
 			return;
 		}
 
-		const virtualData = this.bundle.virtualEventStore.getById(virtualEventId);
-		if (!virtualData) {
-			new Notice("Failed to make real: virtual event not found");
-			return;
-		}
-
-		await this.bundle.virtualEventStore.remove(virtualEventId);
-
-		await this.bundle.createEvent({
-			title: virtualData.title,
-			start: virtualData.start,
-			end: virtualData.end,
-			allDay: virtualData.allDay,
-			virtual: false,
-			preservedFrontmatter: virtualData.properties as Record<string, unknown>,
-		});
-
-		new Notice("Virtual event converted to real");
+		await this.bundle.convertToReal(virtualEventId);
 	}
 }

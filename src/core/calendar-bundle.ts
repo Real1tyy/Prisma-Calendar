@@ -1,5 +1,6 @@
 import {
 	activateView,
+	type Command,
 	type HistoryStack,
 	intoDate,
 	onceAsync,
@@ -12,7 +13,7 @@ import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from 
 import { type PrismaViewRef, registerPrismaCalendarView } from "../components/views/prisma-view";
 import type CustomCalendarPlugin from "../main";
 import type { PrismaCalendarSettingsStore } from "../types";
-import type { CreateEventData, UpdateEventData } from "../types/event-save";
+import type { CreateEventData, EventSaveData, UpdateEventData } from "../types/event-save";
 import { getCalendarViewType } from "../utils/calendar-view-type";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/event-naming";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
@@ -21,9 +22,12 @@ import {
 	AddZettelIdCommand,
 	BatchCommandFactory,
 	CommandManager,
+	ConvertToRealCommand,
+	ConvertToVirtualCommand,
 	CreateEventCommand,
+	CreateVirtualEventCommand,
+	DeleteVirtualEventCommand,
 	EditEventCommand,
-	type EventData,
 } from "./commands";
 import type { EventStore, UntrackedEventStore } from "./event-store";
 import { type HolidayConfig, HolidayStore } from "./holidays";
@@ -171,6 +175,20 @@ export class CalendarBundle {
 				name: `Open ${this.settingsStore.currentSettings.name}`,
 				callback: () => {
 					void this.activateCalendarView();
+				},
+			});
+
+			this.plugin.addCommand({
+				id: `open-virtual-events-${this.calendarId}`,
+				name: `Open virtual events file (${this.settingsStore.currentSettings.name})`,
+				callback: () => {
+					const filePath = this.virtualEventStore.getFilePath();
+					const file = this.app.vault.getAbstractFileByPath(filePath);
+					if (file instanceof TFile) {
+						void this.app.workspace.getLeaf(false).openFile(file);
+					} else {
+						new Notice("Virtual events file not found. Create a virtual event first.");
+					}
 				},
 			});
 
@@ -343,30 +361,101 @@ export class CalendarBundle {
 		return this.mainSettingsStore.currentSettings.icsSubscriptions;
 	}
 
+	// ─── Command Execution ───────────────────────────────────────
+
+	private async runCommand<T extends Command>(
+		command: T,
+		successMessage: string,
+		errorMessage: string
+	): Promise<T | null> {
+		try {
+			await this.commandManager.executeCommand(command);
+			new Notice(successMessage);
+			return command;
+		} catch (error) {
+			console.error(`[CalendarBundle] ${errorMessage}:`, error);
+			new Notice(errorMessage);
+			return null;
+		}
+	}
+
 	// ─── Event CRUD ───────────────────────────────────────────────
 
 	async createEvent(eventData: CreateEventData): Promise<string | null> {
+		const command = await this.runCommand(
+			this.buildCreateEventCommand(eventData),
+			"Event created successfully",
+			"Failed to create event"
+		);
+		return command?.getCreatedFilePath() ?? null;
+	}
+
+	// Creates the file without registering a command — used by ConvertToRealCommand
+	// to avoid double-registration on the undo stack.
+	async createEventFile(eventData: Omit<CreateEventData, "virtual">): Promise<string | null> {
+		const command = this.buildCreateEventCommand(eventData);
+		await command.execute();
+		return command.getCreatedFilePath();
+	}
+
+	private buildCreateEventCommand(eventData: Omit<CreateEventData, "virtual">): CreateEventCommand {
 		const settings = this.settingsStore.currentSettings;
-		try {
-			const commandEventData: EventData = {
+		return new CreateEventCommand(
+			this.app,
+			this,
+			{
 				filePath: null,
 				title: eventData.title,
 				start: eventData.start,
 				end: eventData.end ?? undefined,
 				allDay: eventData.allDay,
 				preservedFrontmatter: eventData.preservedFrontmatter,
-			};
-
-			const command = new CreateEventCommand(this.app, this, commandEventData, settings.directory);
-			await this.commandManager.executeCommand(command);
-			new Notice("Event created successfully");
-			return command.getCreatedFilePath();
-		} catch (error) {
-			console.error("[CalendarBundle] Error creating new event:", error);
-			new Notice("Failed to create event");
-			return null;
-		}
+			},
+			settings.directory
+		);
 	}
+
+	// ─── Virtual Event CRUD ──────────────────────────────────────
+
+	async createVirtualEvent(eventData: CreateEventData): Promise<void> {
+		await this.runCommand(
+			new CreateVirtualEventCommand(this, {
+				title: eventData.title,
+				start: eventData.start,
+				end: eventData.end,
+				allDay: eventData.allDay,
+				properties: eventData.preservedFrontmatter,
+			}),
+			"Virtual event created",
+			"Failed to create virtual event"
+		);
+	}
+
+	async deleteVirtualEvent(virtualEventId: string): Promise<void> {
+		await this.runCommand(
+			new DeleteVirtualEventCommand(this, virtualEventId),
+			"Virtual event deleted",
+			"Failed to delete virtual event"
+		);
+	}
+
+	async convertToVirtual(filePath: string, eventData: EventSaveData): Promise<void> {
+		await this.runCommand(
+			new ConvertToVirtualCommand(this.app, this, filePath, eventData),
+			"Event converted to virtual",
+			"Failed to convert to virtual"
+		);
+	}
+
+	async convertToReal(virtualEventId: string): Promise<void> {
+		await this.runCommand(
+			new ConvertToRealCommand(this.app, this, virtualEventId),
+			"Virtual event converted to real",
+			"Failed to convert to real"
+		);
+	}
+
+	// ─── Event Update ────────────────────────────────────────────
 
 	async updateEvent(eventData: UpdateEventData, options?: { ensureZettelId?: boolean }): Promise<string | null> {
 		const { filePath } = eventData;

@@ -87,6 +87,11 @@ export class VirtualEventStore {
 		return event;
 	}
 
+	async addWithId(data: VirtualEventData): Promise<void> {
+		const events = [...this.events$.value, data];
+		await this.save(events);
+	}
+
 	async addFromEventData(data: EventSaveData): Promise<VirtualEventData> {
 		return this.add(toVirtualInput(data));
 	}

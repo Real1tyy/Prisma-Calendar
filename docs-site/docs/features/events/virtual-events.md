@@ -93,6 +93,21 @@ Each virtual event stores: title, start/end datetime, all-day flag, and frontmat
 Converting physical → virtual preserves frontmatter properties but not note body content.
 :::
 
+### Undo / Redo
+
+All virtual event operations are fully undoable:
+
+- **Creating** a virtual event (from create modal)
+- **Deleting** a virtual event (from context menu)
+- **Converting physical → virtual** (from edit modal or context menu)
+- **Converting virtual → physical** (from edit modal or context menu)
+
+Use the standard undo/redo hotkeys or the plugin's undo command to reverse any of these operations. Undoing a conversion restores the original state — the backing file is recreated or the virtual entry is restored with its original data.
+
+### Open Virtual Events File
+
+Use the command palette command **"Open virtual events file"** to navigate directly to the `Virtual Events.md` file for a calendar. You can assign a hotkey to this command in Settings → Hotkeys.
+
 ### Context Menu
 
 Manual virtual events support a subset of context menu actions:

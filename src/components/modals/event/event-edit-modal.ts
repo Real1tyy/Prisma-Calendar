@@ -4,7 +4,6 @@ import {
 	parsePositiveInt,
 	serializeFrontmatterValue,
 } from "@real1ty-obsidian-plugins";
-import { Notice, TFile } from "obsidian";
 
 import { MinimizedModalManager } from "../../../core/minimized-modal-manager";
 import type { EventSaveData, UpdateEventData } from "../../../types/event-save";
@@ -276,14 +275,14 @@ export class EventEditModal extends BaseEventModal {
 			return;
 		}
 
-		if (eventData.virtual && !wasManualVirtual) {
-			this.convertToVirtual(eventData);
+		if (eventData.virtual && !wasManualVirtual && eventData.filePath) {
+			void this.bundle.convertToVirtual(eventData.filePath, eventData);
 			this.close();
 			return;
 		}
 
 		if (!eventData.virtual && wasManualVirtual && virtualEventId) {
-			this.convertToReal(virtualEventId, eventData);
+			void this.bundle.convertToReal(virtualEventId);
 			this.close();
 			return;
 		}
@@ -322,24 +321,5 @@ export class EventEditModal extends BaseEventModal {
 
 	private updateVirtualEvent(id: string, eventData: EventSaveData): void {
 		void this.bundle.virtualEventStore.updateFromEventData(id, eventData);
-	}
-
-	private convertToVirtual(eventData: EventSaveData): void {
-		void this.bundle.virtualEventStore.addFromEventData(eventData).then(() => {
-			if (eventData.filePath) {
-				const file = this.app.vault.getAbstractFileByPath(eventData.filePath);
-				if (file instanceof TFile) {
-					void this.app.vault.trash(file, true);
-				}
-			}
-			new Notice("Event converted to virtual");
-		});
-	}
-
-	private convertToReal(virtualEventId: string, eventData: EventSaveData): void {
-		void this.bundle.virtualEventStore.remove(virtualEventId).then(() => {
-			void this.bundle.createEvent({ ...eventData, virtual: false });
-			new Notice("Virtual event converted to real");
-		});
 	}
 }

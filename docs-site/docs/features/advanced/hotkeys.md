@@ -346,7 +346,7 @@ The **Open Current Note in Calendar** command provides quick navigation from any
 
 ## Undo/Redo Commands
 
--   **Undo**: Reverses the last calendar operation
+-   **Undo**: Reverses the last calendar operation (create, delete, edit, move, convert to virtual, convert to real)
 -   **Redo**: Reapplies a previously undone operation
 
 ## Integration Commands
@@ -374,6 +374,15 @@ The **Open Current Note in Calendar** command provides quick navigation from any
 -   **Function**: Manually triggers ICS URL subscription synchronization
 -   **Use Case**: Force sync with external ICS URL subscriptions (Outlook, Google public links)
 -   **See Also**: [ICS URL Subscriptions documentation](./integrations.md#ics-url-subscriptions)
+
+## Virtual Events Commands
+
+### Open Virtual Events File
+
+-   **Function**: Opens the `Virtual Events.md` file for a calendar
+-   **Behavior**: Opens the file in the current leaf. If the file doesn't exist yet, shows a notice asking you to create a virtual event first.
+-   **Use Case**: Quickly inspect or manage stored virtual events without navigating through the vault file tree
+-   **See Also**: [Virtual Events documentation](../events/virtual-events.md#manual-virtual-events)
 
 ## Utility Commands
 
@@ -412,7 +421,7 @@ The API mirrors the functionality of the commands described above and uses the s
 ## Tips
 
 -   **Batch operations** require batch selection mode to be active first
--   **Undo/redo** supports all event modifications (create, delete, move, edit)
+-   **Undo/redo** supports all event modifications (create, delete, move, edit, virtual conversions)
 -   **Command palette**: Access all commands via `Ctrl/Cmd+P` → search "Prisma Calendar"
 -   **Filter commands** enable mouse-free navigation between filtering options
 -   **Navigation commands** work even when the calendar is not currently open
