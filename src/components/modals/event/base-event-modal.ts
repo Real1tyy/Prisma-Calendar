@@ -45,6 +45,7 @@ import type { EventPreset } from "../../../types/settings";
 import type { Weekday } from "../../../utils/date-recurrence";
 import { autoAssignCategories, findAdjacentEvent } from "../../../utils/event-matching";
 import { extractCleanDisplayName } from "../../../utils/event-naming";
+import { getVirtualKind } from "../../../utils/extended-props";
 import { formatDateOnly, formatDateTimeForInput } from "../../../utils/format";
 import { writeMetadataToFrontmatter } from "../../../utils/frontmatter-writer";
 import { getCategoriesFromFilePath, getFileAndFrontmatter } from "../../../utils/obsidian";
@@ -1636,6 +1637,9 @@ export abstract class BaseEventModal extends Modal {
 		try {
 			const filePath = this.event.extendedProps?.filePath;
 			if (!filePath) return;
+
+			const virtualKind = getVirtualKind(this.event);
+			if (virtualKind !== "none") return;
 
 			const { frontmatter } = getFileAndFrontmatter(this.app, filePath);
 			this.originalFrontmatter = { ...frontmatter };

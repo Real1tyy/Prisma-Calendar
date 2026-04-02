@@ -35,6 +35,7 @@ import { isTimeUnitAllowedForAllDay } from "../types/move-by";
 import { isEventDone, parseCustomDoneProperty } from "../utils/event-frontmatter";
 import { findAdjacentEvent } from "../utils/event-matching";
 import { getEventName } from "../utils/event-naming";
+import { getVirtualKind } from "../utils/extended-props";
 import {
 	emitHover,
 	getCategoriesFromFilePath,
@@ -531,6 +532,9 @@ export class EventContextMenu {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const filePath = event.extendedProps?.filePath;
 		if (!filePath) return false;
+
+		const virtualKind = getVirtualKind(event);
+		if (virtualKind !== "none") return false;
 
 		const customProp = parseCustomDoneProperty(settings.customDoneProperty);
 		if (customProp) {
