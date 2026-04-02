@@ -2,7 +2,6 @@ import { batchCommand, type MacroCommand } from "@real1ty-obsidian-plugins";
 import type { DurationLike } from "luxon";
 import type { App } from "obsidian";
 
-import type { EventSaveData } from "../../types/event-save";
 import type { CalendarBundle } from "../calendar-bundle";
 import {
 	assignCategories,
@@ -67,12 +66,8 @@ export class BatchCommandFactory {
 		return batchCommand(filePaths, (fp) => updateFrontmatter(this.app, fp, propertyUpdates));
 	}
 
-	createMakeVirtual(filePaths: string[], eventDataByPath: Map<string, EventSaveData>): MacroCommand {
-		return batchCommand(filePaths, (fp) => {
-			const data = eventDataByPath.get(fp);
-			if (!data) throw new Error(`No virtual event data for path: ${fp}`);
-			return new ConvertToVirtualCommand(this.app, this.bundle, fp, data);
-		});
+	createMakeVirtual(filePaths: string[]): MacroCommand {
+		return batchCommand(filePaths, (fp) => new ConvertToVirtualCommand(this.app, this.bundle, fp));
 	}
 
 	createMakeReal(virtualEventIds: string[]): MacroCommand {

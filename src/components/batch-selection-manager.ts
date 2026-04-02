@@ -14,7 +14,7 @@ import { type App, Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
 import type { CalendarEvent } from "../types/calendar";
-import { isFileBackedEvent } from "../types/event-classification";
+import { isBatchSelectable, isFileBackedEvent, isVirtualEvent } from "../types/event-classification";
 import { isTimeUnitAllowedForAllDay } from "../types/move-by";
 import { getExtendedProps } from "../utils/extended-props";
 import { showMoveByModal } from "./modals";
@@ -113,7 +113,7 @@ export class BatchSelectionManager {
 		const events = this.calendar.getEvents();
 
 		events
-			.filter((fcEvent) => isFileBackedEvent(fcEvent))
+			.filter((fcEvent) => isBatchSelectable(fcEvent))
 			.forEach((fcEvent) => {
 				const eventData = this.mapFCEventToCalendarEvent(fcEvent);
 				this.selectedEvents.set(fcEvent.id, eventData);
@@ -294,6 +294,35 @@ export class BatchSelectionManager {
 		);
 	}
 
+	async executeMakeVirtual(): Promise<void> {
+		await this.executeWithSelection(
+			(filePaths) => this.batchCommandFactory.createMakeVirtual(filePaths),
+			(count) => `Converted ${count} event${pluralize(count)} to virtual`,
+			"Failed to make events virtual"
+		);
+	}
+
+	async executeMakeReal(): Promise<void> {
+		const virtualEventIds = Array.from(this.selectedEvents.values())
+			.map((event) => {
+				const fcEvent = this.calendar.getEventById(event.id);
+				return fcEvent && isVirtualEvent(fcEvent) ? getExtendedProps(fcEvent).virtualEventId : undefined;
+			})
+			.filter((id): id is string => id !== undefined);
+
+		if (virtualEventIds.length === 0) {
+			new Notice("No virtual events selected");
+			return;
+		}
+
+		await this.executeCommand(
+			this.batchCommandFactory.createMakeReal(virtualEventIds),
+			virtualEventIds.length,
+			(count) => `Converted ${count} event${pluralize(count)} to real`,
+			"Failed to make events real"
+		);
+	}
+
 	// ─── Command Execution ────────────────────────────────────────
 
 	private async executeWithSelection<T extends Command>(
@@ -304,27 +333,30 @@ export class BatchSelectionManager {
 	): Promise<void> {
 		if (this.returnIfEmpty()) return;
 
+		const filePaths = Array.from(this.selectedEvents.values()).map((event) => event.ref.filePath);
+		await this.executeCommand(commandFactory(filePaths), filePaths.length, successMessage, errorMessage, postHook);
+	}
+
+	private async executeCommand(
+		command: Command,
+		count: number,
+		successMessage: (count: number) => string,
+		errorMessage: string,
+		postHook?: () => void
+	): Promise<void> {
 		try {
-			const filePaths = Array.from(this.selectedEvents.values()).map((event) => event.ref.filePath);
-			const command = commandFactory(filePaths);
-
 			await this.bundle.commandManager.executeCommand(command);
-
-			new Notice(successMessage(filePaths.length));
+			new Notice(successMessage(count));
 			this.clearSelection();
-
 			if (postHook) postHook();
 		} catch (error) {
 			console.error(`[BatchSelection] Failed operation: ${errorMessage}`, error);
 
-			// Check if this is a partial failure (some succeeded)
 			const errorMsg = error instanceof Error ? error.message : String(error);
 			if (errorMsg.includes("Completed")) {
-				// Partial success - show the detailed message
 				new Notice(errorMsg, 6000);
 				this.clearSelection();
 			} else {
-				// Complete failure
 				new Notice(errorMsg);
 			}
 		}

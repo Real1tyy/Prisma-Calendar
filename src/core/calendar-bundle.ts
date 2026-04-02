@@ -13,7 +13,7 @@ import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from 
 import { type PrismaViewRef, registerPrismaCalendarView } from "../components/views/prisma-view";
 import type CustomCalendarPlugin from "../main";
 import type { PrismaCalendarSettingsStore } from "../types";
-import type { CreateEventData, EventSaveData, UpdateEventData } from "../types/event-save";
+import type { CreateEventData, UpdateEventData } from "../types/event-save";
 import { getCalendarViewType } from "../utils/calendar-view-type";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/event-naming";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
@@ -287,6 +287,22 @@ export class CalendarBundle {
 		});
 	}
 
+	async navigateToEvent(dateISO: string, eventId?: string): Promise<void> {
+		const parsedDate = intoDate(dateISO);
+		if (!parsedDate) return;
+
+		await this.activateCalendarView();
+		const component = this.viewRef.calendarComponent;
+		if (component) {
+			component.navigateToDate(parsedDate, "timeGridWeek");
+			if (eventId) {
+				setTimeout(() => {
+					component.highlightEventById(eventId, 5000);
+				}, 100);
+			}
+		}
+	}
+
 	async openFileInCalendar(file: TFile): Promise<boolean> {
 		const settings = this.settingsStore.currentSettings;
 
@@ -439,9 +455,9 @@ export class CalendarBundle {
 		);
 	}
 
-	async convertToVirtual(filePath: string, eventData: EventSaveData): Promise<void> {
+	async convertToVirtual(filePath: string): Promise<void> {
 		await this.runCommand(
-			new ConvertToVirtualCommand(this.app, this, filePath, eventData),
+			new ConvertToVirtualCommand(this.app, this, filePath),
 			"Event converted to virtual",
 			"Failed to convert to virtual"
 		);

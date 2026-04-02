@@ -29,6 +29,9 @@ function createMockVaultForCommands() {
 function createMockApp(vault: ReturnType<typeof createMockVaultForCommands>) {
 	return {
 		vault,
+		metadataCache: {
+			getFileCache: vi.fn().mockReturnValue(null),
+		},
 		fileManager: {
 			trashFile: vi.fn().mockResolvedValue(undefined),
 		},
@@ -42,6 +45,7 @@ function createStoreAndBundle(vault: ReturnType<typeof createMockVaultForCommand
 
 	const bundle = {
 		virtualEventStore: store,
+		settingsStore: { currentSettings: settingsStore.value },
 		createEventFile: vi.fn().mockResolvedValue("calendar/New Event-202503151200.md"),
 	} as any;
 
@@ -217,6 +221,20 @@ describe("ConvertToVirtualCommand", () => {
 
 	const FILE_PATH = "calendar/meeting.md";
 	const FILE_CONTENT = "---\nStart Date: 2025-03-15T09:00:00\n---\nMeeting notes";
+	const MOCK_FRONTMATTER = {
+		"Start Date": "2025-03-15T09:00:00",
+		"End Date": "2025-03-15T10:00:00",
+		"All Day": false,
+		Category: "Work",
+	};
+
+	function setupFileWithFrontmatter(frontmatter: Record<string, unknown> = MOCK_FRONTMATTER) {
+		const fakeFile = createMockFile(FILE_PATH);
+		vault.getAbstractFileByPath.mockImplementation((p: string) => (p === FILE_PATH ? fakeFile : null));
+		vault.read.mockResolvedValue(FILE_CONTENT);
+		app.metadataCache.getFileCache.mockReturnValue({ frontmatter });
+		return fakeFile;
+	}
 
 	beforeEach(() => {
 		vault = createMockVaultForCommands();
@@ -229,47 +247,23 @@ describe("ConvertToVirtualCommand", () => {
 	});
 
 	it("should trash file and add virtual entry on execute", async () => {
-		const fakeFile = createMockFile(FILE_PATH);
-		vault.getAbstractFileByPath.mockImplementation((p: string) => (p === FILE_PATH ? fakeFile : null));
-		vault.read.mockResolvedValue(FILE_CONTENT);
-
-		const command = new ConvertToVirtualCommand(app, bundle, FILE_PATH, {
-			filePath: FILE_PATH,
-			title: "Meeting",
-			start: "2025-03-15T09:00:00",
-			end: "2025-03-15T10:00:00",
-			allDay: false,
-			virtual: true,
-			preservedFrontmatter: { Category: "Work" },
-		});
+		const fakeFile = setupFileWithFrontmatter();
+		const command = new ConvertToVirtualCommand(app, bundle, FILE_PATH);
 
 		await command.execute();
 
 		expect(app.fileManager.trashFile).toHaveBeenCalledWith(fakeFile);
 		expect(store.getAll()).toHaveLength(1);
-		expect(store.getAll()[0].title).toBe("Meeting");
+		expect(store.getAll()[0].title).toBe("meeting");
 	});
 
 	it("should recreate file and remove virtual entry on undo", async () => {
-		const fakeFile = createMockFile(FILE_PATH);
-		vault.getAbstractFileByPath.mockImplementation((p: string) => (p === FILE_PATH ? fakeFile : null));
-		vault.read.mockResolvedValue(FILE_CONTENT);
-
-		const command = new ConvertToVirtualCommand(app, bundle, FILE_PATH, {
-			filePath: FILE_PATH,
-			title: "Meeting",
-			start: "2025-03-15T09:00:00",
-			end: null,
-			allDay: false,
-			virtual: true,
-			preservedFrontmatter: {},
-		});
+		setupFileWithFrontmatter();
+		const command = new ConvertToVirtualCommand(app, bundle, FILE_PATH);
 
 		await command.execute();
 
-		// For undo, the file should no longer exist
 		vault.getAbstractFileByPath.mockReturnValue(null);
-
 		await command.undo();
 
 		expect(vault.create).toHaveBeenCalledWith(FILE_PATH, FILE_CONTENT);
@@ -277,19 +271,8 @@ describe("ConvertToVirtualCommand", () => {
 	});
 
 	it("should store original file content as memento", async () => {
-		const fakeFile = createMockFile(FILE_PATH);
-		vault.getAbstractFileByPath.mockImplementation((p: string) => (p === FILE_PATH ? fakeFile : null));
-		vault.read.mockResolvedValue(FILE_CONTENT);
-
-		const command = new ConvertToVirtualCommand(app, bundle, FILE_PATH, {
-			filePath: FILE_PATH,
-			title: "Meeting",
-			start: "2025-03-15T09:00:00",
-			end: null,
-			allDay: false,
-			virtual: true,
-			preservedFrontmatter: {},
-		});
+		setupFileWithFrontmatter();
+		const command = new ConvertToVirtualCommand(app, bundle, FILE_PATH);
 
 		await command.execute();
 		vault.getAbstractFileByPath.mockReturnValue(null);

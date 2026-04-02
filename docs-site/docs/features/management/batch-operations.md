@@ -223,6 +223,12 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 - **Undo Support**: Fully undoable — restores previous frontmatter state for all events
 - **Keyboard Shortcut**: Press Enter to apply changes
 
+### Make Virtual / Make Real
+
+- **Make Virtual**: Converts selected file-backed events into manual virtual events. The backing `.md` files are moved to trash, and event metadata (title, dates, properties) is stored in the virtual events file. Only applies to file-backed events in the selection — virtual events are skipped.
+- **Make Real**: Converts selected manual virtual events back into file-backed events. Creates new `.md` files with the stored metadata and removes the virtual entries. Only applies to virtual events in the selection — file-backed events are skipped.
+- Both operations are fully undoable
+
 ### Open All in Tabs
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>

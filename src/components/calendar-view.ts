@@ -38,7 +38,7 @@ import type {
 	PrismaEventInput,
 } from "../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../types/calendar";
-import { isFileBackedEvent, isHolidayEvent } from "../types/event-classification";
+import { isBatchSelectable, isFileBackedEvent, isHolidayEvent } from "../types/event-classification";
 import type { SingleCalendarConfig } from "../types/index";
 import { getEventRenderingKey } from "../utils/calendar-settings";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
@@ -442,7 +442,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 						this.prerequisiteSelectionManager.handleEventClick(info.event.id);
 					}
 				} else if (this.batchSelectionManager?.isInSelectionMode()) {
-					if (isFileBackedEvent(info.event)) {
+					if (isBatchSelectable(info.event)) {
 						this.batchSelectionManager.handleEventClick(info.event.id);
 					}
 				} else {
@@ -462,7 +462,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 					} else if (vk === "recurring") {
 						info.el.title = "Virtual recurring event (read-only)";
 					}
-				} else {
+				}
+				if (isBatchSelectable(info.event)) {
 					this.batchSelectionManager?.handleEventMount(info.event.id, info.el);
 				}
 				this.handleEventMount(info);
@@ -997,6 +998,20 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 					void this.openBatchFrontmatterModal();
 				},
 				className: `${clsBase} ${cls("frontmatter-btn")}`,
+			},
+			batchMakeVirtual: {
+				text: "Make Virtual",
+				click: () => {
+					void bsm.executeMakeVirtual();
+				},
+				className: `${clsBase} ${cls("make-virtual-btn")}`,
+			},
+			batchMakeReal: {
+				text: "Make Real",
+				click: () => {
+					void bsm.executeMakeReal();
+				},
+				className: `${clsBase} ${cls("make-real-btn")}`,
 			},
 			batchDelete: {
 				text: "Delete",
@@ -2549,6 +2564,18 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	// ─── Highlighting ─────────────────────────────────────────────
+
+	highlightEventById(eventId: string, durationMs = 5000): void {
+		if (!this.calendar) return;
+		const eventElements = this.container.querySelectorAll<HTMLElement>(`[data-event-id="${eventId}"]`);
+		for (let i = 0; i < eventElements.length; i++) {
+			const element = eventElements[i];
+			element.classList.add(cls("event-highlighted"));
+			setTimeout(() => {
+				element.classList.remove(cls("event-highlighted"));
+			}, durationMs);
+		}
+	}
 
 	highlightEventByPath(filePath: string, durationMs = 5000): void {
 		if (!this.calendar) return;

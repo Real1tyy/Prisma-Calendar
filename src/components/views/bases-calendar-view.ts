@@ -13,7 +13,7 @@ import { PRO_FEATURES } from "../../core/license";
 import type CustomCalendarPlugin from "../../main";
 import type { CalendarEventData, EventUpdateInfo, ExtendedButtonInput, PrismaEventInput } from "../../types/calendar";
 import { isAnyVirtual } from "../../types/calendar";
-import { isFileBackedEvent } from "../../types/event-classification";
+import { isBatchSelectable, isFileBackedEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { getCommonCategories } from "../../utils/event-frontmatter";
 import { getVirtualKind } from "../../utils/extended-props";
@@ -298,7 +298,7 @@ class PrismaBasesView extends BasesView {
 			eventDidMount: eventDidMountCallback,
 			eventClick: (info: { event: CalendarEventData & { id: string } }) => {
 				if (this.batchSelectionManager?.isInSelectionMode()) {
-					if (isFileBackedEvent(info.event)) {
+					if (isBatchSelectable(info.event)) {
 						this.batchSelectionManager.handleEventClick(info.event.id);
 					}
 				} else {
@@ -507,6 +507,20 @@ class PrismaBasesView extends BasesView {
 					void this.openBatchFrontmatterModal(bundle);
 				},
 				className: `${clsBase} ${cls("frontmatter-btn")}`,
+			},
+			batchMakeVirtual: {
+				text: "Make Virtual",
+				click: () => {
+					void bsm.executeMakeVirtual();
+				},
+				className: `${clsBase} ${cls("make-virtual-btn")}`,
+			},
+			batchMakeReal: {
+				text: "Make Real",
+				click: () => {
+					void bsm.executeMakeReal();
+				},
+				className: `${clsBase} ${cls("make-real-btn")}`,
 			},
 			batchDelete: {
 				text: "Delete",

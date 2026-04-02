@@ -1,12 +1,11 @@
 import type { Command } from "@real1ty-obsidian-plugins";
-import { getTFileOrThrow } from "@real1ty-obsidian-plugins";
+import { getTFileOrThrow, intoDate, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 
-import type { EventSaveData } from "../../types/event-save";
 import type { VirtualEventData } from "../../types/virtual-event";
+import { getFileAndFrontmatter } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
-import { toVirtualInput } from "../virtual-event-store";
 
 export class CreateVirtualEventCommand implements Command {
 	private createdId: string | null = null;
@@ -71,14 +70,30 @@ export class ConvertToVirtualCommand implements Command {
 	constructor(
 		private app: App,
 		private bundle: CalendarBundle,
-		private filePath: string,
-		private eventData: EventSaveData
+		private filePath: string
 	) {}
 
 	async execute(): Promise<void> {
 		const file = getTFileOrThrow(this.app, this.filePath);
 		this.originalFileContent = await this.app.vault.read(file);
-		const result = await this.bundle.virtualEventStore.add(toVirtualInput(this.eventData));
+
+		const { frontmatter } = getFileAndFrontmatter(this.app, this.filePath);
+		const settings = this.bundle.settingsStore.currentSettings;
+		const debugData = {
+			filePath: this.filePath,
+			frontmatter,
+			settings,
+		};
+		console.log("Converting to virtual with frontmatter:", JSON.stringify(debugData));
+
+		const result = await this.bundle.virtualEventStore.add({
+			title: (settings.titleProp ? (frontmatter[settings.titleProp] as string) : undefined) ?? file.basename,
+			start: toDateISO(frontmatter[settings.startProp]) ?? "",
+			end: toDateISO(frontmatter[settings.endProp]) ?? null,
+			allDay: frontmatter[settings.allDayProp] === true,
+			properties: frontmatter,
+		});
+
 		this.createdVirtualId = result.id;
 		await this.app.fileManager.trashFile(file);
 	}
@@ -147,4 +162,10 @@ export class ConvertToRealCommand implements Command {
 	getType(): string {
 		return "convert-to-real";
 	}
+}
+
+// Obsidian's metadataCache returns Date objects for YAML date values, not strings.
+function toDateISO(value: unknown): string | null {
+	const date = intoDate(value);
+	return date ? toLocalISOString(date) : null;
 }

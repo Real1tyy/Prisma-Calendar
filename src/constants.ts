@@ -174,6 +174,8 @@ const BATCH_BUTTONS = {
 	"Move Prev": "batchMovePrev",
 	"Open All": "batchOpenAll",
 	Skip: "batchSkip",
+	"Make Virtual": "batchMakeVirtual",
+	"Make Real": "batchMakeReal",
 	Delete: "batchDelete",
 } as const;
 
@@ -184,7 +186,16 @@ export const BATCH_BUTTON_LABELS = Object.fromEntries(
 ) as Record<string, string>;
 
 export const DEFAULT_BATCH_ACTION_BUTTONS = BATCH_BUTTON_IDS.filter(
-	(id) => !["batchMoveBy", "batchOpenAll", "batchMovePrev", "batchClonePrev", "batchFrontmatter"].includes(id)
+	(id) =>
+		![
+			"batchMoveBy",
+			"batchOpenAll",
+			"batchMovePrev",
+			"batchMoveNext",
+			"batchClonePrev",
+			"batchCloneNext",
+			"batchFrontmatter",
+		].includes(id)
 );
 
 const TOOLBAR_BUTTONS = {

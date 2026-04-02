@@ -276,7 +276,7 @@ export class EventEditModal extends BaseEventModal {
 		}
 
 		if (eventData.virtual && !wasManualVirtual && eventData.filePath) {
-			void this.bundle.convertToVirtual(eventData.filePath, eventData);
+			void this.bundle.convertToVirtual(eventData.filePath);
 			this.close();
 			return;
 		}

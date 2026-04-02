@@ -88,6 +88,7 @@ Each virtual event stores: title, start/end datetime, all-day flag, and frontmat
 - **Right-click a physical event → "Make virtual"**: Deletes the backing file and stores the event metadata as a virtual entry. Title, dates, and properties are preserved.
 - **Right-click a virtual event → "Make real"**: Creates a backing `.md` file from the stored metadata and removes the virtual entry.
 - **Edit modal**: Toggle the **Virtual** pill in the modal header to convert in either direction.
+- **Batch conversion**: Select multiple events in batch selection mode and use the "Make Virtual" or "Make Real" buttons to convert them all at once. See [Batch Operations](../management/batch-operations.md#make-virtual--make-real).
 
 :::note
 Converting physical → virtual preserves frontmatter properties but not note body content.

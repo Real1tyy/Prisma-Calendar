@@ -991,21 +991,7 @@ export class EventContextMenu {
 
 	private async makeEventVirtual(event: CalendarEventInfo): Promise<void> {
 		await this.withFilePath(event, "make virtual", async (filePath) => {
-			const result = getFileAndFrontmatter(this.app, filePath);
-			if (!result) return;
-
-			const startDate = intoDate(event.start);
-			const endDate = event.end ? intoDate(event.end) : null;
-
-			await this.bundle.convertToVirtual(filePath, {
-				filePath,
-				title: event.title,
-				start: startDate ? toLocalISOString(startDate) : "",
-				end: endDate ? toLocalISOString(endDate) : null,
-				allDay: event.allDay ?? false,
-				virtual: true,
-				preservedFrontmatter: result.frontmatter,
-			});
+			await this.bundle.convertToVirtual(filePath);
 		});
 	}
 
