@@ -406,11 +406,25 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 				const dateKey = parsedInstanceDate.toISODate();
 				if (dateKey) {
+					// When instanceDate changes (e.g. drag to new date), the same filePath
+					// may already be registered under the OLD dateKey. Remove the stale
+					// entry before the duplicate check so the rename flow doesn't trash
+					// the file it just moved.
+					for (const [oldKey, inst] of recurringData.physicalInstances.entries()) {
+						if (oldKey !== dateKey && inst.filePath === filePath) {
+							recurringData.physicalInstances.delete(oldKey);
+							break;
+						}
+					}
+
 					const existing = recurringData.physicalInstances.get(dateKey);
 					if (existing && existing.filePath !== filePath) {
-						// First file wins — trash the newcomer (matches ICS/CalDAV convention)
-						trashDuplicateFile(this.app, filePath, `recurring instance (rruleId: ${rruleId}, date: ${dateKey})`);
-						return;
+						const existingIsStale = !this.instanceFileToRRuleId.has(existing.filePath);
+						if (!existingIsStale) {
+							// First file wins — trash the newcomer (matches ICS/CalDAV convention)
+							trashDuplicateFile(this.app, filePath, `recurring instance (rruleId: ${rruleId}, date: ${dateKey})`);
+							return;
+						}
 					}
 
 					recurringData.physicalInstances.set(dateKey, {
@@ -445,16 +459,16 @@ export class RecurringEventManager extends DebouncedNotifier {
 	}
 
 	private handleFileDeleted(event: IndexerEvent): void {
-		const rruleId = this.sourceFileToRRuleId.get(event.filePath);
+		const sourceFileRruleId = this.sourceFileToRRuleId.get(event.filePath);
 
-		if (rruleId) {
+		if (sourceFileRruleId) {
 			if (event.isRename) {
 				// Rename: only remove the old path mapping, keep recurring event data
 				// and physical instances intact. The subsequent "recurring-event-found"
 				// event for the new path will re-associate the data and rename instances.
 				this.sourceFileToRRuleId.delete(event.filePath);
 			} else {
-				this.recurringEventsMap.delete(rruleId);
+				this.recurringEventsMap.delete(sourceFileRruleId);
 				this.sourceFileToRRuleId.delete(event.filePath);
 			}
 			this.scheduleRefresh();
@@ -474,7 +488,12 @@ export class RecurringEventManager extends DebouncedNotifier {
 					}
 				}
 			}
-			this.scheduleRefresh();
+
+			// Rename: skip refresh — the subsequent file-changed event for the new
+			// path will re-register the instance at the new date and trigger refresh.
+			if (!event.isRename) {
+				this.scheduleRefresh();
+			}
 		}
 	}
 
