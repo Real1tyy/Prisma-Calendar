@@ -2566,33 +2566,28 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	// ─── Highlighting ─────────────────────────────────────────────
 
 	highlightEventById(eventId: string, durationMs = 5000): void {
-		if (!this.calendar) return;
-		const eventElements = this.container.querySelectorAll<HTMLElement>(`[data-event-id="${eventId}"]`);
-		for (let i = 0; i < eventElements.length; i++) {
-			const element = eventElements[i];
-			element.classList.add(cls("event-highlighted"));
-			setTimeout(() => {
-				element.classList.remove(cls("event-highlighted"));
-			}, durationMs);
-		}
+		this.highlightElements(this.container.querySelectorAll<HTMLElement>(`[data-event-id="${eventId}"]`), durationMs);
 	}
 
 	highlightEventByPath(filePath: string, durationMs = 5000): void {
 		if (!this.calendar) return;
+		const matchingIds = this.calendar
+			.getEvents()
+			.filter((event) => event.extendedProps?.["filePath"] === filePath)
+			.map((event) => event.id);
 
-		// Find all events with matching file path
-		const events = this.calendar.getEvents();
-		const matchingEvents = events.filter((event) => event.extendedProps?.["filePath"] === filePath);
+		for (const id of matchingIds) {
+			this.highlightEventById(id, durationMs);
+		}
+	}
 
-		for (const event of matchingEvents) {
-			const eventElements = this.container.querySelectorAll<HTMLElement>(`[data-event-id="${event.id}"]`);
-			for (let i = 0; i < eventElements.length; i++) {
-				const element = eventElements[i];
-				element.classList.add(cls("event-highlighted"));
-				setTimeout(() => {
-					element.classList.remove(cls("event-highlighted"));
-				}, durationMs);
-			}
+	private highlightElements(elements: NodeListOf<HTMLElement>, durationMs: number): void {
+		for (let i = 0; i < elements.length; i++) {
+			const element = elements[i];
+			element.classList.add(cls("event-highlighted"));
+			setTimeout(() => {
+				element.classList.remove(cls("event-highlighted"));
+			}, durationMs);
 		}
 	}
 

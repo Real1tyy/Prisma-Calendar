@@ -26,7 +26,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 
 **Select:** Click events to add to selection. Use "Select All Visible" to grab everything on screen.
 
-**Note:** Virtual events (far future) are excluded from selection.
+**Note:** Far-future recurring virtual events and holiday events are excluded from selection. Manual virtual events can be selected.
 
 ## Available Actions
 
