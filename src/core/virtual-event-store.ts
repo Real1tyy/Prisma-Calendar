@@ -1,19 +1,22 @@
+import { type CodeBlockBinding, CodeBlockRepository } from "@real1ty-obsidian-plugins";
 import type { DateTime } from "luxon";
-import type { App, EventRef, TFile } from "obsidian";
-import { TFolder } from "obsidian";
+import type { App } from "obsidian";
 import { BehaviorSubject, type Subscription } from "rxjs";
 import { v4 as uuidv4 } from "uuid";
 
 import { VIRTUAL_EVENTS_CODE_FENCE } from "../constants";
 import type { EventSaveData } from "../types/event-save";
 import type { SingleCalendarConfig } from "../types/settings";
-import { type VirtualEventData, VirtualEventsFileSchema } from "../types/virtual-event";
-
-const FENCE_REGEX = new RegExp(`\`\`\`${VIRTUAL_EVENTS_CODE_FENCE}\\n([\\s\\S]*?)\`\`\``);
+import { type VirtualEventData, VirtualEventDataSchema } from "../types/virtual-event";
 
 export class VirtualEventStore {
+	private readonly repo = new CodeBlockRepository<VirtualEventData>({
+		codeFence: VIRTUAL_EVENTS_CODE_FENCE,
+		itemSchema: VirtualEventDataSchema,
+		idField: "id",
+	});
 	private events$ = new BehaviorSubject<VirtualEventData[]>([]);
-	private vaultEventRef: EventRef | null = null;
+	private binding: CodeBlockBinding | null = null;
 	private settingsSubscription: Subscription | null = null;
 	private directory: string;
 	private fileName: string;
@@ -31,8 +34,15 @@ export class VirtualEventStore {
 			const nameChanged = this.fileName !== newSettings.virtualEventsFileName;
 			this.directory = newSettings.directory;
 			this.fileName = newSettings.virtualEventsFileName;
-			if (dirChanged || nameChanged) {
-				void this.load();
+			if ((dirChanged || nameChanged) && this.binding) {
+				void this.repo
+					.rebind(this.binding, this.app, this.getFilePath(), {
+						onChange: () => this.emit(),
+						createIfMissing: true,
+					})
+					.then((b) => {
+						this.binding = b;
+					});
 			}
 		});
 	}
@@ -42,19 +52,15 @@ export class VirtualEventStore {
 	}
 
 	async initialize(): Promise<void> {
-		this.vaultEventRef = this.app.vault.on("modify", (file) => {
-			if (file.path === this.getFilePath()) {
-				void this.load();
-			}
+		this.binding = await this.repo.bind(this.app, this.getFilePath(), {
+			onChange: () => this.emit(),
+			createIfMissing: true,
 		});
-		await this.load();
 	}
 
 	destroy(): void {
-		if (this.vaultEventRef) {
-			this.app.vault.offref(this.vaultEventRef);
-			this.vaultEventRef = null;
-		}
+		this.binding?.unsubscribe();
+		this.binding = null;
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
 		this.events$.complete();
@@ -67,7 +73,7 @@ export class VirtualEventStore {
 	}
 
 	getById(id: string): VirtualEventData | undefined {
-		return this.events$.value.find((e) => e.id === id);
+		return this.repo.get(id);
 	}
 
 	getInRange(start: DateTime, end: DateTime): VirtualEventData[] {
@@ -82,14 +88,14 @@ export class VirtualEventStore {
 
 	async add(data: Omit<VirtualEventData, "id">): Promise<VirtualEventData> {
 		const event: VirtualEventData = { ...data, id: uuidv4() };
-		const events = [...this.events$.value, event];
-		await this.save(events);
+		await this.repo.create(event);
+		this.emit();
 		return event;
 	}
 
 	async addWithId(data: VirtualEventData): Promise<void> {
-		const events = [...this.events$.value, data];
-		await this.save(events);
+		await this.repo.create(data);
+		this.emit();
 	}
 
 	async addFromEventData(data: EventSaveData): Promise<VirtualEventData> {
@@ -97,8 +103,8 @@ export class VirtualEventStore {
 	}
 
 	async update(id: string, patch: Partial<Omit<VirtualEventData, "id">>): Promise<void> {
-		const events = this.events$.value.map((e) => (e.id === id ? { ...e, ...patch } : e));
-		await this.save(events);
+		await this.repo.update(id, patch);
+		this.emit();
 	}
 
 	async updateFromEventData(id: string, data: EventSaveData): Promise<void> {
@@ -106,69 +112,18 @@ export class VirtualEventStore {
 	}
 
 	async remove(id: string): Promise<void> {
-		const events = this.events$.value.filter((e) => e.id !== id);
-		await this.save(events);
+		await this.repo.delete(id);
+		this.emit();
 	}
 
-	// ─── File I/O ─────────────────────────────────────────────────
+	// ─── Query ────────────────────────────────────────────────────
 
 	getFilePath(): string {
 		return this.directory ? `${this.directory}/${this.fileName}.md` : `${this.fileName}.md`;
 	}
 
-	private async load(): Promise<void> {
-		const filePath = this.getFilePath();
-		const file = this.app.vault.getAbstractFileByPath(filePath);
-		if (!(file instanceof TFolder) && file) {
-			const content = await this.app.vault.read(file as TFile);
-			const parsed = this.parseCodeFence(content);
-			this.events$.next(parsed);
-		} else {
-			this.events$.next([]);
-		}
-	}
-
-	private async save(events: VirtualEventData[]): Promise<void> {
-		const filePath = this.getFilePath();
-		const json = JSON.stringify(events, null, 2);
-		const fenceContent = `\`\`\`${VIRTUAL_EVENTS_CODE_FENCE}\n${json}\n\`\`\``;
-
-		const existingFile = this.app.vault.getAbstractFileByPath(filePath);
-		if (existingFile && !(existingFile instanceof TFolder)) {
-			const content = await this.app.vault.read(existingFile as TFile);
-			if (FENCE_REGEX.test(content)) {
-				const updated = content.replace(FENCE_REGEX, fenceContent);
-				await this.app.vault.modify(existingFile as TFile, updated);
-			} else {
-				await this.app.vault.modify(existingFile as TFile, `${content}\n\n${fenceContent}\n`);
-			}
-		} else {
-			await this.ensureFolderExists();
-			await this.app.vault.create(filePath, `${fenceContent}\n`);
-		}
-
-		this.events$.next(events);
-	}
-
-	private parseCodeFence(content: string): VirtualEventData[] {
-		const match = content.match(FENCE_REGEX);
-		if (!match?.[1]) return [];
-
-		try {
-			const data = JSON.parse(match[1]);
-			const result = VirtualEventsFileSchema.safeParse(data);
-			return result.success ? result.data : [];
-		} catch {
-			return [];
-		}
-	}
-
-	private async ensureFolderExists(): Promise<void> {
-		if (!this.directory) return;
-		const exists = await this.app.vault.adapter.exists(this.directory);
-		if (!exists) {
-			await this.app.vault.createFolder(this.directory);
-		}
+	private emit(): void {
+		this.events$.next(this.repo.getAll());
 	}
 }
 
