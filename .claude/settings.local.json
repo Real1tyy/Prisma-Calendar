@@ -1,5 +1,0 @@
-{
-	"permissions": {
-		"allow": ["Bash(mise run:*)", "Bash(npm run build:*)", "Bash(npx vitest run:*)"]
-	}
-}
