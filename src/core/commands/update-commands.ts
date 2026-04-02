@@ -101,24 +101,24 @@ export class UpdateEventCommand implements Command {
 			});
 		});
 
-		await this.handleFileRenameIfNeeded(file, settings);
+		await this.renameInstanceFileIfNeeded(file, settings);
 	}
 
-	private async handleFileRenameIfNeeded(file: TFile, settings: SingleCalendarConfig): Promise<void> {
-		const metadata = this.app.metadataCache.getFileCache(file);
-		const frontmatter = metadata?.frontmatter as Frontmatter | undefined;
-
-		if (!isPhysicalRecurringEvent(frontmatter, settings.rruleIdProp, settings.rruleProp, settings.instanceDateProp)) {
+	private async renameInstanceFileIfNeeded(file: TFile, settings: SingleCalendarConfig): Promise<void> {
+		if (
+			!isPhysicalRecurringEvent(
+				this.originalFrontmatter,
+				settings.rruleIdProp,
+				settings.rruleProp,
+				settings.instanceDateProp
+			)
+		) {
 			return;
 		}
 
 		const oldDateStr = this.oldStart.split("T")[0];
 		const newDateStr = this.newStart.split("T")[0];
 		if (oldDateStr === newDateStr) return;
-
-		await withFrontmatter(this.app, file, (fm) => {
-			fm[settings.instanceDateProp] = newDateStr;
-		});
 
 		const newBasename = rebuildPhysicalInstanceWithNewDate(file.basename, newDateStr);
 		if (!newBasename) return;

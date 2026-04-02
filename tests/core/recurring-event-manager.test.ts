@@ -1359,4 +1359,168 @@ describe("RecurringEventManager Physical Instance Logic", () => {
 			manager.destroy();
 		});
 	});
+
+	describe("Immutable instanceDate (Drag to New Date)", () => {
+		function setupManagerWithInstance(manager: RecurringEventManager) {
+			const mockRecurringEvent = {
+				sourceFilePath: "recurring.md",
+				title: "Weekly Meeting",
+				rRuleId: "rrule-drag-test",
+				rrules: {
+					type: "weekly" as const,
+					weekdays: ["monday"] as (
+						| "sunday"
+						| "monday"
+						| "tuesday"
+						| "wednesday"
+						| "thursday"
+						| "friday"
+						| "saturday"
+					)[],
+					startTime: DateTime.fromISO("2024-01-01T00:00:00"),
+					endTime: null,
+					allDay: true,
+				},
+				frontmatter: {},
+				futureInstancesCount: 2,
+				metadata: defaultMetadata,
+				content: "",
+			};
+
+			(manager as any).handleIndexerEvent({
+				type: "recurring-event-found",
+				filePath: "recurring.md",
+				recurringEvent: mockRecurringEvent,
+			});
+
+			(manager as any).handleFileChanged("Calendar/Meeting 2024-04-01.md", {
+				rruleId: "rrule-drag-test",
+				instanceDate: "2024-04-01",
+			});
+
+			return (manager as any).recurringEventsMap.get("rrule-drag-test");
+		}
+
+		it("should keep the original dateKey when display date changes but instanceDate stays the same", () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
+			const recurringData = setupManagerWithInstance(manager);
+
+			// User drags event from April 1 to April 2 — only the display date (Date prop)
+			// changes. instanceDate stays "2024-04-01", so the file-changed event still
+			// reports the same instanceDate. The map entry should be unchanged.
+			(manager as any).handleFileChanged("Calendar/Meeting 2024-04-01.md", {
+				rruleId: "rrule-drag-test",
+				instanceDate: "2024-04-01",
+			});
+
+			expect(recurringData.physicalInstances.size).toBe(1);
+			expect(recurringData.physicalInstances.has("2024-04-01")).toBe(true);
+			expect(recurringData.physicalInstances.get("2024-04-01").filePath).toBe("Calendar/Meeting 2024-04-01.md");
+
+			manager.destroy();
+		});
+
+		it("should not trigger file rename or instanceDate mutation on drag", () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
+			const recurringData = setupManagerWithInstance(manager);
+
+			// Simulate multiple display-date changes (drag around) — instanceDate never changes
+			(manager as any).handleFileChanged("Calendar/Meeting 2024-04-01.md", {
+				rruleId: "rrule-drag-test",
+				instanceDate: "2024-04-01",
+			});
+			(manager as any).handleFileChanged("Calendar/Meeting 2024-04-01.md", {
+				rruleId: "rrule-drag-test",
+				instanceDate: "2024-04-01",
+			});
+
+			// Map should still have exactly one entry at the original generation date
+			expect(recurringData.physicalInstances.size).toBe(1);
+			expect(recurringData.physicalInstances.has("2024-04-01")).toBe(true);
+
+			manager.destroy();
+		});
+
+		it("should preserve the generation slot when instance is deleted and regenerated", () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
+			const recurringData = setupManagerWithInstance(manager);
+
+			// User deletes the instance
+			(manager as any).handleFileDeleted({
+				type: "file-deleted",
+				filePath: "Calendar/Meeting 2024-04-01.md",
+				isRename: false,
+			});
+
+			expect(recurringData.physicalInstances.size).toBe(0);
+
+			// Engine regenerates a new instance for the same slot
+			(manager as any).handleFileChanged("Calendar/Meeting 2024-04-01-new.md", {
+				rruleId: "rrule-drag-test",
+				instanceDate: "2024-04-01",
+			});
+
+			expect(recurringData.physicalInstances.size).toBe(1);
+			expect(recurringData.physicalInstances.has("2024-04-01")).toBe(true);
+
+			manager.destroy();
+		});
+
+		it("should not trigger refresh when an instance file is renamed", () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
+			const refreshSpy = vi.spyOn(manager as any, "scheduleRefresh");
+			setupManagerWithInstance(manager);
+
+			refreshSpy.mockClear();
+
+			(manager as any).handleFileDeleted({
+				type: "file-deleted",
+				filePath: "Calendar/Meeting 2024-04-01.md",
+				isRename: true,
+			});
+
+			expect(refreshSpy).not.toHaveBeenCalled();
+			manager.destroy();
+		});
+
+		it("should re-register instance at same dateKey with new filePath after rename", () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
+			const recurringData = setupManagerWithInstance(manager);
+
+			// File rename: delete old path, then file-changed for new path
+			// instanceDate stays the same — only the filename changes
+			(manager as any).handleFileDeleted({
+				type: "file-deleted",
+				filePath: "Calendar/Meeting 2024-04-01.md",
+				isRename: true,
+			});
+
+			(manager as any).handleFileChanged("Calendar/Meeting 2024-04-02.md", {
+				rruleId: "rrule-drag-test",
+				instanceDate: "2024-04-01",
+			});
+
+			expect(recurringData.physicalInstances.size).toBe(1);
+			expect(recurringData.physicalInstances.has("2024-04-01")).toBe(true);
+			expect(recurringData.physicalInstances.get("2024-04-01").filePath).toBe("Calendar/Meeting 2024-04-02.md");
+
+			manager.destroy();
+		});
+
+		it("should still trash genuine duplicate files at the same instanceDate", () => {
+			const manager = new RecurringEventManager(mockApp, mockSettingsStore, mockIndexer, null);
+			const recurringData = setupManagerWithInstance(manager);
+
+			// A different file claims the same instanceDate — this IS a real duplicate
+			(manager as any).handleFileChanged("Calendar/Meeting-copy 2024-04-01.md", {
+				rruleId: "rrule-drag-test",
+				instanceDate: "2024-04-01",
+			});
+
+			// Original file should still own the slot (first file wins)
+			expect(recurringData.physicalInstances.get("2024-04-01").filePath).toBe("Calendar/Meeting 2024-04-01.md");
+
+			manager.destroy();
+		});
+	});
 });

@@ -406,25 +406,11 @@ export class RecurringEventManager extends DebouncedNotifier {
 
 				const dateKey = parsedInstanceDate.toISODate();
 				if (dateKey) {
-					// When instanceDate changes (e.g. drag to new date), the same filePath
-					// may already be registered under the OLD dateKey. Remove the stale
-					// entry before the duplicate check so the rename flow doesn't trash
-					// the file it just moved.
-					for (const [oldKey, inst] of recurringData.physicalInstances.entries()) {
-						if (oldKey !== dateKey && inst.filePath === filePath) {
-							recurringData.physicalInstances.delete(oldKey);
-							break;
-						}
-					}
-
 					const existing = recurringData.physicalInstances.get(dateKey);
 					if (existing && existing.filePath !== filePath) {
-						const existingIsStale = !this.instanceFileToRRuleId.has(existing.filePath);
-						if (!existingIsStale) {
-							// First file wins — trash the newcomer (matches ICS/CalDAV convention)
-							trashDuplicateFile(this.app, filePath, `recurring instance (rruleId: ${rruleId}, date: ${dateKey})`);
-							return;
-						}
+						// First file wins — trash the newcomer (matches ICS/CalDAV convention)
+						trashDuplicateFile(this.app, filePath, `recurring instance (rruleId: ${rruleId}, date: ${dateKey})`);
+						return;
 					}
 
 					recurringData.physicalInstances.set(dateKey, {
@@ -490,7 +476,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			}
 
 			// Rename: skip refresh — the subsequent file-changed event for the new
-			// path will re-register the instance at the new date and trigger refresh.
+			// path will re-register the instance and trigger refresh then.
 			if (!event.isRename) {
 				this.scheduleRefresh();
 			}
