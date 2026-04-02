@@ -42,3 +42,11 @@ export function isFileBackedEvent(event: ClassifiableEvent): boolean {
 export function isVirtualEvent(event: ClassifiableEvent): boolean {
 	return isAnyVirtual(getVirtualKind(event));
 }
+
+export function isManualVirtualEvent(event: ClassifiableEvent): boolean {
+	return getVirtualKind(event) === "manual";
+}
+
+export function isBatchSelectable(event: ClassifiableEvent): boolean {
+	return isFileBackedEvent(event) || isManualVirtualEvent(event);
+}

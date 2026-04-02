@@ -17,7 +17,7 @@ import { type App, TFile } from "obsidian";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent, CalendarEventData, PrismaEventInput } from "../../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../../types/calendar";
-import { isHolidayEvent } from "../../types/event-classification";
+import { isBatchSelectable, isHolidayEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveAllEventColors, resolveEventColor } from "../../utils/event-color";
 import { hashFrontmatter } from "../../utils/event-diff";
@@ -221,7 +221,8 @@ export function buildSharedEventDidMount(
 			} else if (virtualKind === "recurring") {
 				el.title = "Virtual recurring event (read-only)";
 			}
-		} else {
+		}
+		if (isBatchSelectable(event)) {
 			getBatchSelectionManager()?.handleEventMount(event.id, el);
 		}
 

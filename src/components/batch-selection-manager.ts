@@ -14,7 +14,7 @@ import { type App, Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
 import type { CalendarEvent } from "../types/calendar";
-import { isBatchSelectable, isFileBackedEvent, isVirtualEvent } from "../types/event-classification";
+import { isBatchSelectable, isVirtualEvent } from "../types/event-classification";
 import { isTimeUnitAllowedForAllDay } from "../types/move-by";
 import { getExtendedProps } from "../utils/extended-props";
 import { showMoveByModal } from "./modals";
