@@ -1,9 +1,10 @@
 import type { Command } from "@real1ty-obsidian-plugins";
-import { getTFileOrThrow, intoDate, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { getTFileOrThrow } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { TFile } from "obsidian";
 
 import type { VirtualEventData } from "../../types/virtual-event";
+import { stripZ } from "../../utils/iso";
 import { getFileAndFrontmatter } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
 
@@ -79,18 +80,18 @@ export class ConvertToVirtualCommand implements Command {
 
 		const { frontmatter } = getFileAndFrontmatter(this.app, this.filePath);
 		const settings = this.bundle.settingsStore.currentSettings;
-		const debugData = {
-			filePath: this.filePath,
-			frontmatter,
-			settings,
-		};
-		console.log("Converting to virtual with frontmatter:", JSON.stringify(debugData));
+
+		const allDay = frontmatter[settings.allDayProp] === true;
+		const start = allDay
+			? stripZ(frontmatter[settings.dateProp] as string) || ""
+			: stripZ(frontmatter[settings.startProp] as string) || "";
+		const end = allDay ? null : stripZ(frontmatter[settings.endProp] as string) || null;
 
 		const result = await this.bundle.virtualEventStore.add({
 			title: (settings.titleProp ? (frontmatter[settings.titleProp] as string) : undefined) ?? file.basename,
-			start: toDateISO(frontmatter[settings.startProp]) ?? "",
-			end: toDateISO(frontmatter[settings.endProp]) ?? null,
-			allDay: frontmatter[settings.allDayProp] === true,
+			start,
+			end,
+			allDay,
 			properties: frontmatter,
 		});
 
@@ -158,14 +159,7 @@ export class ConvertToRealCommand implements Command {
 	canUndo(): boolean {
 		return this.storedVirtualData !== null && this.createdFilePath !== null;
 	}
-
 	getType(): string {
 		return "convert-to-real";
 	}
-}
-
-// Obsidian's metadataCache returns Date objects for YAML date values, not strings.
-function toDateISO(value: unknown): string | null {
-	const date = intoDate(value);
-	return date ? toLocalISOString(date) : null;
 }
