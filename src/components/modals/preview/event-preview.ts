@@ -14,7 +14,7 @@ import type { CalendarBundle } from "../../../core/calendar-bundle";
 import type { Frontmatter } from "../../../types";
 import { createTextDiv } from "../../../utils/dom-utils";
 import { removeZettelId } from "../../../utils/event-naming";
-import { categorizeProperties } from "../../../utils/format";
+import { categorizeProperties, formatDateOnlyDisplay, formatDateTimeDisplay } from "../../../utils/format";
 
 export interface PreviewEventData {
 	title: string;
@@ -42,12 +42,9 @@ function loadAllFrontmatter(app: App, filePath: string | undefined): Frontmatter
 	}
 }
 
-function formatDateTime(date: Date | null, allDay: boolean): string {
+function formatPreviewDateTime(date: Date | null, allDay: boolean): string {
 	if (!date || Number.isNaN(date.getTime())) return "N/A";
-	const options: Intl.DateTimeFormatOptions = allDay
-		? { year: "numeric", month: "long", day: "numeric" }
-		: { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
-	return date.toLocaleDateString(undefined, options);
+	return allDay ? formatDateOnlyDisplay(date) : formatDateTimeDisplay(date);
 }
 
 function renderProperty(container: HTMLElement, app: App, key: string, value: unknown, close: () => void): void {
@@ -119,12 +116,12 @@ function renderEventPreview(
 
 	const startItem = timeGrid.createDiv(cls("event-preview-time-item"));
 	createTextDiv(startItem, "Start", cls("event-preview-label"));
-	createTextDiv(startItem, formatDateTime(event.start, event.allDay), cls("event-preview-value"));
+	createTextDiv(startItem, formatPreviewDateTime(event.start, event.allDay), cls("event-preview-value"));
 
 	if (event.end) {
 		const endItem = timeGrid.createDiv(cls("event-preview-time-item"));
 		createTextDiv(endItem, "End", cls("event-preview-label"));
-		createTextDiv(endItem, formatDateTime(event.end, event.allDay), cls("event-preview-value"));
+		createTextDiv(endItem, formatPreviewDateTime(event.end, event.allDay), cls("event-preview-value"));
 	}
 
 	if (event.start && event.end && !event.allDay) {

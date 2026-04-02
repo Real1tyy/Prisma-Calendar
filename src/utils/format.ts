@@ -42,6 +42,30 @@ export function formatDateOnly(dateInput: string | Date): string {
 	return `${year}-${month}-${day}`;
 }
 
+export function formatDateTimeDisplay(dateInput: string | Date): string {
+	const dateStr = typeof dateInput === "string" ? stripZ(dateInput) : dateInput;
+	const date = intoDate(dateStr);
+	if (!date) return typeof dateInput === "string" ? dateInput : "";
+	return date.toLocaleString(undefined, {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+}
+
+export function formatDateOnlyDisplay(dateInput: string | Date): string {
+	const dateStr = typeof dateInput === "string" ? stripZ(dateInput) : dateInput;
+	const date = intoDate(dateStr);
+	if (!date) return typeof dateInput === "string" ? dateInput : "";
+	return date.toLocaleDateString(undefined, {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+	});
+}
+
 function formatEventDateSuffix(start: Date, end: Date | null, allDay: boolean, locale: string): string {
 	if (allDay) {
 		const dateStr = start.toLocaleDateString(locale, {

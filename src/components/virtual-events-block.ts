@@ -4,6 +4,8 @@ import { MarkdownRenderChild, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import type CustomCalendarPlugin from "../main";
 import { type VirtualEventData, VirtualEventsFileSchema } from "../types/virtual-event";
+import { formatDateOnlyDisplay, formatDateTimeDisplay } from "../utils/format";
+import { extractPropertyText } from "../utils/property-display";
 
 export class VirtualEventsBlockRenderer extends MarkdownRenderChild {
 	constructor(
@@ -56,9 +58,15 @@ export class VirtualEventsBlockRenderer extends MarkdownRenderChild {
 			row.createEl("td", { text: event.title });
 			row.createEl("td", { text: formatStart(event) });
 			row.createEl("td", { text: formatEnd(event) });
-			row.createEl("td", { text: getProperty(event, settings?.categoryProp) });
-			row.createEl("td", { text: getProperty(event, settings?.locationProp) });
-			row.createEl("td", { text: getProperty(event, settings?.participantsProp) });
+			row.createEl("td", {
+				text: settings?.categoryProp ? extractPropertyText(event.properties[settings.categoryProp]) : "",
+			});
+			row.createEl("td", {
+				text: settings?.locationProp ? extractPropertyText(event.properties[settings.locationProp]) : "",
+			});
+			row.createEl("td", {
+				text: settings?.participantsProp ? extractPropertyText(event.properties[settings.participantsProp]) : "",
+			});
 
 			const actionsCell = row.createEl("td", { cls: cls("virtual-events-actions") });
 
@@ -102,40 +110,10 @@ export class VirtualEventsBlockRenderer extends MarkdownRenderChild {
 }
 
 function formatStart(event: VirtualEventData): string {
-	return event.allDay ? formatDateOnly(event.start) : formatDateTime(event.start);
+	return event.allDay ? formatDateOnlyDisplay(event.start) : formatDateTimeDisplay(event.start);
 }
 
 function formatEnd(event: VirtualEventData): string {
 	if (!event.end) return "—";
-	return event.allDay ? formatDateOnly(event.end) : formatDateTime(event.end);
-}
-
-function formatDateTime(iso: string): string {
-	const date = new Date(iso);
-	if (Number.isNaN(date.getTime())) return iso;
-	return date.toLocaleString(undefined, {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-		hour: "2-digit",
-		minute: "2-digit",
-	});
-}
-
-function formatDateOnly(iso: string): string {
-	const date = new Date(iso);
-	if (Number.isNaN(date.getTime())) return iso;
-	return date.toLocaleDateString(undefined, {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-	});
-}
-
-function getProperty(event: VirtualEventData, propName: string | undefined): string {
-	if (!propName) return "";
-	const value = event.properties[propName];
-	if (value == null) return "";
-	if (Array.isArray(value)) return value.join(", ");
-	return String(value);
+	return event.allDay ? formatDateOnlyDisplay(event.end) : formatDateTimeDisplay(event.end);
 }
