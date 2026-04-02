@@ -34,7 +34,6 @@ export async function createUntrackedEvent(
 	setUntrackedEventBasics(preservedFrontmatter, settings);
 
 	const filePath = await bundle.createEvent({
-		filePath: null,
 		title,
 		start: "",
 		end: null,
@@ -58,7 +57,6 @@ export async function createEvent(plugin: CustomCalendarPlugin, input: PrismaCre
 	const normalizedStart = input.start ? ensureISOSuffix(input.start) : "";
 	const normalizedEnd = input.end ? ensureISOSuffix(input.end) : null;
 	const filePath = await bundle.createEvent({
-		filePath: null,
 		title: input.title,
 		start: normalizedStart,
 		end: normalizedEnd,

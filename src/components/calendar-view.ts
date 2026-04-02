@@ -37,7 +37,9 @@ import type {
 	ExtendedButtonInput,
 	PrismaEventInput,
 } from "../types/calendar";
-import { isTimedEvent } from "../types/calendar";
+import type { VirtualKind } from "../types/calendar";
+import { isAnyVirtual, isTimedEvent } from "../types/calendar";
+import { isFileBackedEvent, isHolidayEvent } from "../types/event-classification";
 import type { SingleCalendarConfig } from "../types/index";
 import { getEventRenderingKey } from "../utils/calendar-settings";
 import { isPointInsideElement, toggleEventHighlight } from "../utils/dom-utils";
@@ -431,16 +433,16 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 
 			eventAllow: (_dropInfo, draggedEvent) => {
-				return draggedEvent?.extendedProps["virtualKind"] === "none";
+				return draggedEvent ? isFileBackedEvent(draggedEvent) : false;
 			},
 
 			eventClick: (info) => {
 				if (this.prerequisiteSelectionManager?.isInSelectionMode()) {
-					if (info.event.extendedProps["virtualKind"] === "none") {
+					if (isFileBackedEvent(info.event)) {
 						this.prerequisiteSelectionManager.handleEventClick(info.event.id);
 					}
 				} else if (this.batchSelectionManager?.isInSelectionMode()) {
-					if (info.event.extendedProps["virtualKind"] === "none") {
+					if (isFileBackedEvent(info.event)) {
 						this.batchSelectionManager.handleEventClick(info.event.id);
 					}
 				} else {
@@ -449,29 +451,28 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 
 			eventDidMount: (info) => {
-				if (info.event.extendedProps["virtualKind"] === "manual") {
-					info.el.classList.add(cls("virtual-event-opacity"));
-					info.el.title = "Virtual event (no backing file)";
-				} else if (info.event.extendedProps["virtualKind"] === "recurring") {
+				const vk = info.event.extendedProps["virtualKind"] as VirtualKind | undefined;
+				if (isAnyVirtual(vk)) {
 					info.el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
-					const isHoliday = (info.event.extendedProps["filePath"] as string | undefined)?.startsWith("holiday:");
-					info.el.title = isHoliday ? "Holiday (read-only)" : "Virtual recurring event (read-only)";
-					if (isHoliday) {
+					if (vk === "holiday") {
 						info.el.classList.add(cls("holiday-event"));
+						info.el.title = "Holiday (read-only)";
+					} else if (vk === "manual") {
+						info.el.title = "Virtual event (no backing file)";
+					} else if (vk === "recurring") {
+						info.el.title = "Virtual recurring event (read-only)";
 					}
 				} else {
 					this.batchSelectionManager?.handleEventMount(info.event.id, info.el);
 				}
 				this.handleEventMount(info);
 
-				// Context menu — registered once per element (eventDidMount), not on every hover
 				info.el.addEventListener("contextmenu", (e) => {
 					e.preventDefault();
 					this.eventContextMenu.show(e, info, info.el, this.container);
 				});
 
-				// Hover preview — registered once per element for non-virtual events
-				if (info.event.extendedProps["virtualKind"] === "none") {
+				if (isFileBackedEvent(info.event)) {
 					const filePath = info.event.extendedProps["filePath"] as string | undefined;
 					if (filePath) {
 						info.el.addEventListener("mouseenter", (e) => {
@@ -492,8 +493,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				this.dragNavigatedInterval = false;
 				this.setupDragEdgeScrolling();
 				const filePath = info.event.extendedProps?.["filePath"];
-				const virtualKind = info.event.extendedProps?.["virtualKind"] ?? "none";
-				this.isDraggingCalendarEvent = virtualKind === "none" && typeof filePath === "string" && filePath.length > 0;
+				this.isDraggingCalendarEvent =
+					isFileBackedEvent(info.event) && typeof filePath === "string" && filePath.length > 0;
 				this.draggingCalendarEventFilePath = this.isDraggingCalendarEvent ? filePath : null;
 			},
 
@@ -1290,11 +1291,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		return visibleEvents.map((event) => {
 			const classNames = ["regular-event"];
-			if (event.virtualKind === "recurring") {
+			if (isAnyVirtual(event.virtualKind)) {
 				classNames.push(cls("virtual-event"));
-			}
-			if (event.virtualKind === "manual") {
-				classNames.push(cls("manual-virtual-event"));
 			}
 			const allColors = this.getAllEventColors(event);
 			const primaryColor = allColors[0] ?? settings.defaultNodeColor;
@@ -1444,16 +1442,15 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const displayData = event.extendedProps["frontmatterDisplayData"];
 		const isSourceRecurring = displayData?.[settings.rruleProp];
 		const isPhysicalRecurring = displayData?.[settings.sourceProp];
-		const isHoliday = (event.extendedProps["filePath"] as string | undefined)?.startsWith("holiday:");
+		const holiday = isHolidayEvent(event);
 
 		const { userIcon, integrationIcon } = this.getEventIcon(event);
 
-		// Precedence: user icon > recurring markers > integration icons > holiday
 		const hasRecurringMarker =
 			(isSourceRecurring && settings.showSourceRecurringMarker) ||
 			(isPhysicalRecurring && settings.showPhysicalRecurringMarker);
 
-		if (userIcon || hasRecurringMarker || integrationIcon || isHoliday) {
+		if (userIcon || hasRecurringMarker || integrationIcon || holiday) {
 			const markerEl = document.createElement("div");
 			markerEl.className = cls("event-marker");
 
@@ -1465,7 +1462,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				markerEl.textContent = settings.physicalRecurringMarker;
 			} else if (integrationIcon) {
 				markerEl.textContent = integrationIcon;
-			} else if (isHoliday) {
+			} else if (holiday) {
 				markerEl.textContent = "🏳️";
 			}
 
@@ -1575,7 +1572,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private handleEventMount(info: EventMountInfo): void {
-		if (info.event.extendedProps.virtualKind !== "none") {
+		if (isAnyVirtual(info.event.extendedProps.virtualKind as VirtualKind)) {
 			info.el.classList.add(cls("virtual-event-italic"));
 		}
 
@@ -1646,7 +1643,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		element.addClass(cls("calendar-event"));
 
 		const filePath = event.extendedProps?.["filePath"];
-		if (filePath && event.extendedProps?.["virtualKind"] === "none") {
+		if (filePath && isFileBackedEvent(event)) {
 			element.addEventListener("mouseenter", () => {
 				if (element.dataset["notesLoaded"]) return;
 				element.dataset["notesLoaded"] = "true";
@@ -1733,9 +1730,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const event = info.event;
 		const filePath = event.extendedProps.filePath;
 		const virtualKind = event.extendedProps.virtualKind;
-		const isHoliday = typeof filePath === "string" && filePath.startsWith("holiday:");
 
-		if (isHoliday) {
+		if (virtualKind === "holiday") {
 			return;
 		}
 
@@ -1948,7 +1944,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		const event = this.lastFocusedEventInfo;
 
-		if (event.extendedProps?.virtualKind !== "none") {
+		if (isAnyVirtual(event.extendedProps?.virtualKind as VirtualKind)) {
 			return;
 		}
 
@@ -1993,7 +1989,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private async handleEventUpdate(info: EventUpdateInfo, errorMessage: string): Promise<void> {
-		if (info.event.extendedProps.virtualKind !== "none") {
+		if (isAnyVirtual(info.event.extendedProps.virtualKind as VirtualKind)) {
 			info.revert();
 			return;
 		}
@@ -2688,7 +2684,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		const events = this.calendar.getEvents();
 		for (const event of events) {
-			if (event.extendedProps["virtualKind"] !== "none") continue;
+			if (isAnyVirtual(event.extendedProps["virtualKind"] as VirtualKind)) continue;
 
 			const filePath = event.extendedProps["filePath"] as string | undefined;
 			if (filePath && predicate(filePath)) {
@@ -2774,7 +2770,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		const events = this.calendar.getEvents();
 		for (const event of events) {
-			if (!event.start || event.allDay || event.extendedProps?.["virtualKind"] !== "none") continue;
+			if (!event.start || event.allDay || isAnyVirtual(event.extendedProps?.["virtualKind"] as VirtualKind)) continue;
 
 			const eventEnd = event.end || event.start;
 

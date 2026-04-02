@@ -16,7 +16,9 @@ import { type App, TFile } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent, CalendarEventData, PrismaEventInput } from "../../types/calendar";
-import { isTimedEvent } from "../../types/calendar";
+import type { VirtualKind } from "../../types/calendar";
+import { isAnyVirtual, isTimedEvent } from "../../types/calendar";
+import { isHolidayEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveAllEventColors, resolveEventColor } from "../../utils/event-color";
 import { hashFrontmatter } from "../../utils/event-diff";
@@ -95,8 +97,7 @@ export function buildSharedEventContent(
 		const displayData = event.extendedProps["frontmatterDisplayData"] as Record<string, unknown> | undefined;
 		const isSourceRecurring = displayData?.[settings.rruleProp];
 		const isPhysicalRecurring = displayData?.[settings.sourceProp];
-		const filePath = event.extendedProps["filePath"] as string | undefined;
-		const isHoliday = filePath?.startsWith("holiday:");
+		const holiday = isHolidayEvent(event);
 
 		const calendarIconCache = deps.getCalendarIconCache();
 		const { userIcon, integrationIcon } = getEventIcon(event, settings, calendarIconCache);
@@ -108,7 +109,7 @@ export function buildSharedEventContent(
 			(isSourceRecurring && settings.showSourceRecurringMarker) ||
 			(isPhysicalRecurring && settings.showPhysicalRecurringMarker);
 
-		if (userIcon || hasRecurringMarker || integrationIcon || isHoliday) {
+		if (userIcon || hasRecurringMarker || integrationIcon || holiday) {
 			const markerEl = document.createElement("div");
 			markerEl.className = cls("event-marker");
 
@@ -120,7 +121,7 @@ export function buildSharedEventContent(
 				markerEl.textContent = settings.physicalRecurringMarker;
 			} else if (integrationIcon) {
 				markerEl.textContent = integrationIcon;
-			} else if (isHoliday) {
+			} else if (holiday) {
 				markerEl.textContent = "🏳️";
 			}
 
@@ -209,18 +210,16 @@ export function buildSharedEventDidMount(
 		const computedColors = event.extendedProps.computedColors ?? [];
 		const displayData = (event.extendedProps["frontmatterDisplayData"] ?? {}) as Record<string, unknown>;
 
-		if (virtualKind === "manual") {
-			el.classList.add(cls("virtual-event-opacity"));
-			el.title = "Virtual event (no backing file)";
-			el.classList.add(cls("virtual-event-italic"));
-		} else if (virtualKind === "recurring") {
-			el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
-			const isHoliday = eventFilePath?.startsWith("holiday:");
-			el.title = isHoliday ? "Holiday (read-only)" : "Virtual recurring event (read-only)";
-			if (isHoliday) {
+		if (isAnyVirtual(virtualKind as VirtualKind)) {
+			el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"), cls("virtual-event-italic"));
+			if (virtualKind === "holiday") {
 				el.classList.add(cls("holiday-event"));
+				el.title = "Holiday (read-only)";
+			} else if (virtualKind === "manual") {
+				el.title = "Virtual event (no backing file)";
+			} else if (virtualKind === "recurring") {
+				el.title = "Virtual recurring event (read-only)";
 			}
-			el.classList.add(cls("virtual-event-italic"));
 		} else {
 			getBatchSelectionManager()?.handleEventMount(event.id, el);
 		}
@@ -266,7 +265,7 @@ export function buildSharedEventDidMount(
 		el.setAttribute("title", tooltip);
 
 		// Async note preview on hover
-		if (eventFilePath && virtualKind === "none") {
+		if (eventFilePath && !isAnyVirtual(virtualKind as VirtualKind)) {
 			el.addEventListener("mouseenter", () => {
 				if (el.dataset["notesLoaded"]) return;
 				el.dataset["notesLoaded"] = "true";
@@ -297,7 +296,7 @@ export function buildSharedEventDidMount(
 		});
 
 		// Hover preview
-		if (virtualKind === "none" && eventFilePath) {
+		if (!isAnyVirtual(virtualKind as VirtualKind) && eventFilePath) {
 			el.addEventListener("mouseenter", (e) => {
 				if (settings.enableEventPreview) {
 					emitHover(deps.app, deps.container, el, e, eventFilePath, deps.bundle.calendarId);
@@ -346,11 +345,8 @@ export function mapEventToPrismaInput(
 	const end = isTimedEvent(event) ? stripZ(event.end) : undefined;
 
 	const classNames = ["regular-event"];
-	if (event.virtualKind === "recurring") {
+	if (isAnyVirtual(event.virtualKind)) {
 		classNames.push(cls("virtual-event"));
-	}
-	if (event.virtualKind === "manual") {
-		classNames.push(cls("manual-virtual-event"));
 	}
 
 	const folder = event.meta?.["folder"];

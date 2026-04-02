@@ -14,6 +14,7 @@ import { type App, Modal, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
 import type { CalendarEvent, VirtualKind } from "../types/calendar";
+import { isFileBackedEvent } from "../types/event-classification";
 import { isTimeUnitAllowedForAllDay } from "../types/move-by";
 import { showMoveByModal } from "./modals";
 
@@ -111,7 +112,7 @@ export class BatchSelectionManager {
 		const events = this.calendar.getEvents();
 
 		events
-			.filter((fcEvent) => fcEvent.extendedProps["virtualKind"] === "none")
+			.filter((fcEvent) => isFileBackedEvent(fcEvent))
 			.forEach((fcEvent) => {
 				const eventData = this.mapFCEventToCalendarEvent(fcEvent);
 				this.selectedEvents.set(fcEvent.id, eventData);

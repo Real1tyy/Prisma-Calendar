@@ -12,7 +12,7 @@ import { distinctUntilChanged, filter, firstValueFrom, type Subscription } from 
 import { type PrismaViewRef, registerPrismaCalendarView } from "../components/views/prisma-view";
 import type CustomCalendarPlugin from "../main";
 import type { PrismaCalendarSettingsStore } from "../types";
-import type { EventSaveData } from "../types/event-save";
+import type { CreateEventData, UpdateEventData } from "../types/event-save";
 import { getCalendarViewType } from "../utils/calendar-view-type";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../utils/event-naming";
 import { CalendarViewStateManager } from "./calendar-view-state-manager";
@@ -345,7 +345,7 @@ export class CalendarBundle {
 
 	// ─── Event CRUD ───────────────────────────────────────────────
 
-	async createEvent(eventData: EventSaveData): Promise<string | null> {
+	async createEvent(eventData: CreateEventData): Promise<string | null> {
 		const settings = this.settingsStore.currentSettings;
 		try {
 			const commandEventData: EventData = {
@@ -368,12 +368,8 @@ export class CalendarBundle {
 		}
 	}
 
-	async updateEvent(eventData: EventSaveData, options?: { ensureZettelId?: boolean }): Promise<string | null> {
+	async updateEvent(eventData: UpdateEventData, options?: { ensureZettelId?: boolean }): Promise<string | null> {
 		const { filePath } = eventData;
-		if (!filePath) {
-			new Notice("Failed to update event: no file path found");
-			return null;
-		}
 
 		try {
 			const abstractFile = this.app.vault.getAbstractFileByPath(filePath);
@@ -480,7 +476,7 @@ export class CalendarBundle {
 	private async renameFileForTitle(
 		file: TFile,
 		currentPath: string,
-		eventData: EventSaveData
+		eventData: UpdateEventData
 	): Promise<{ newPath: string | null; oldPath: string | null }> {
 		const settings = this.settingsStore.currentSettings;
 		if (!eventData.title || settings.titleProp) {

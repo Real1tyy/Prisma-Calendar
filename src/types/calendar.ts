@@ -4,7 +4,7 @@ import { z } from "zod";
 import { EventMetadataSchema } from "./event";
 import type { Frontmatter } from "./index";
 
-export const VirtualKindSchema = z.enum(["none", "recurring", "manual"]);
+export const VirtualKindSchema = z.enum(["none", "recurring", "manual", "holiday"]);
 export type VirtualKind = z.infer<typeof VirtualKindSchema>;
 
 export function isAnyVirtual(kind: VirtualKind | undefined): boolean {

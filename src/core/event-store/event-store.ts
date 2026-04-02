@@ -5,7 +5,7 @@ import BTree from "sorted-btree";
 
 import { MARK_DONE_SCAN_INTERVAL_MS } from "../../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../../types/calendar";
-import { eventDefaults, isTimedEvent } from "../../types/calendar";
+import { eventDefaults, isAnyVirtual, isTimedEvent } from "../../types/calendar";
 import { stripZ } from "../../types/event";
 import type { ISO } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -426,7 +426,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 
 		for (const cached of this.cache.values()) {
 			const event = cached.template;
-			if (event.virtualKind !== "none") continue;
+			if (isAnyVirtual(event.virtualKind)) continue;
 			if (event.metadata.rruleType) continue;
 			if (event.metadata.status === doneValue) continue;
 			// Skip events actively being tracked by the stopwatch

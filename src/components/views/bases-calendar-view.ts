@@ -11,7 +11,15 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
 import { PRO_FEATURES } from "../../core/license";
 import type CustomCalendarPlugin from "../../main";
-import type { CalendarEventData, EventUpdateInfo, ExtendedButtonInput, PrismaEventInput } from "../../types/calendar";
+import type {
+	CalendarEventData,
+	EventUpdateInfo,
+	ExtendedButtonInput,
+	PrismaEventInput,
+	VirtualKind,
+} from "../../types/calendar";
+import { isAnyVirtual } from "../../types/calendar";
+import { isFileBackedEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { getCommonCategories } from "../../utils/event-frontmatter";
 import { BatchSelectionManager } from "../batch-selection-manager";
@@ -289,13 +297,13 @@ class PrismaBasesView extends BasesView {
 			selectMirror: true,
 			unselectAuto: true,
 			eventAllow: (_dropInfo: unknown, draggedEvent: { extendedProps: Record<string, unknown> } | null) =>
-				draggedEvent?.extendedProps["virtualKind"] === "none",
+				draggedEvent ? isFileBackedEvent(draggedEvent) : false,
 			eventContent: eventContentCallback,
 			eventClassNames: eventClassNamesCallback,
 			eventDidMount: eventDidMountCallback,
 			eventClick: (info: { event: CalendarEventData & { id: string } }) => {
 				if (this.batchSelectionManager?.isInSelectionMode()) {
-					if (info.event.extendedProps["virtualKind"] === "none") {
+					if (isFileBackedEvent(info.event)) {
 						this.batchSelectionManager.handleEventClick(info.event.id);
 					}
 				} else {
@@ -558,9 +566,8 @@ class PrismaBasesView extends BasesView {
 	): void {
 		const filePath = event.extendedProps.filePath;
 		const virtualKind = event.extendedProps.virtualKind;
-		const isHoliday = typeof filePath === "string" && filePath.startsWith("holiday:");
 
-		if (isHoliday) return;
+		if (virtualKind === "holiday") return;
 
 		if (virtualKind === "recurring" && typeof filePath === "string") {
 			showEventPreviewModal(this.app, bundle, {
@@ -640,7 +647,7 @@ class PrismaBasesView extends BasesView {
 	): Promise<void> {
 		if (!info) return;
 
-		if (info.event.extendedProps.virtualKind !== "none") {
+		if (isAnyVirtual(info.event.extendedProps.virtualKind as VirtualKind)) {
 			info.revert();
 			return;
 		}

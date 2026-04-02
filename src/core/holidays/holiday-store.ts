@@ -95,7 +95,7 @@ export class HolidayStore {
 			start: holiday.date,
 			allDay: true,
 			ref: { filePath: `holiday:${holiday.id}` },
-			virtualKind: "recurring" as const,
+			virtualKind: "holiday" as const,
 			meta: {
 				holidayType: holiday.type,
 				holidaySource: "date-holidays",

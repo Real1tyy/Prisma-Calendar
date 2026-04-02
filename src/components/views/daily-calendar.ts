@@ -8,7 +8,9 @@ import { merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
-import type { CalendarEventData, EventUpdateInfo, PrismaEventInput } from "../../types/calendar";
+import type { CalendarEventData, EventUpdateInfo, PrismaEventInput, VirtualKind } from "../../types/calendar";
+import { isAnyVirtual } from "../../types/calendar";
+import { isFileBackedEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
@@ -117,7 +119,7 @@ export function createDailyCalendar(
 		fixedMirrorParent: document.body,
 
 		eventAllow: (_dropInfo, draggedEvent) => {
-			return draggedEvent?.extendedProps["virtualKind"] === "none";
+			return draggedEvent ? isFileBackedEvent(draggedEvent) : false;
 		},
 
 		eventContent: (arg) => eventContentCallback(arg),
@@ -251,9 +253,8 @@ export function createDailyCalendar(
 	): void {
 		const filePath = event.extendedProps.filePath;
 		const virtualKind = event.extendedProps.virtualKind;
-		const isHoliday = typeof filePath === "string" && filePath.startsWith("holiday:");
 
-		if (isHoliday) return;
+		if (virtualKind === "holiday") return;
 
 		if (virtualKind === "recurring" && filePath && typeof filePath === "string") {
 			showEventPreviewModal(app, bundle, {
@@ -329,7 +330,7 @@ export function createDailyCalendar(
 	async function handleEventUpdate(info: EventUpdateInfo | null, errorMessage: string): Promise<void> {
 		if (!info) return;
 
-		if (info.event.extendedProps.virtualKind !== "none") {
+		if (isAnyVirtual(info.event.extendedProps.virtualKind as VirtualKind)) {
 			info.revert();
 			return;
 		}

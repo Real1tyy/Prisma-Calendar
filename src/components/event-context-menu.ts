@@ -30,6 +30,7 @@ import { weekDuration } from "../core/commands/batch-commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import { isTimedEvent } from "../types";
 import type { CalendarEvent } from "../types/calendar";
+import { type EventKind, getEventKind, isRecurringEventKind } from "../types/event-classification";
 import { isTimeUnitAllowedForAllDay } from "../types/move-by";
 import { isEventDone, parseCustomDoneProperty } from "../utils/event-frontmatter";
 import { findAdjacentEvent } from "../utils/event-matching";
@@ -70,8 +71,6 @@ interface CommandMessages {
 	success: string;
 	error: string;
 }
-
-type EventKind = "source" | "physical" | "virtual" | "manual" | "normal";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -130,7 +129,7 @@ export class EventContextMenu {
 		this.currentTargetEl = targetEl ?? null;
 		this.currentContainerEl = containerEl ?? null;
 
-		const kind = this.getEventKind(event);
+		const kind = this.getEventKindForEvent(event);
 		const isRecurring = this.isRecurringEvent(event);
 		const isNormal = kind === "normal" || kind === "source" || kind === "physical";
 		const isPhysical = kind === "physical";
@@ -473,26 +472,18 @@ export class EventContextMenu {
 
 	// ─── Event Classification ─────────────────────────────────────
 
-	private getEventKind(event: CalendarEventInfo): EventKind {
-		const settings = this.bundle.settingsStore.currentSettings;
-		const frontmatter = event.extendedProps?.frontmatterDisplayData;
-
-		if (event.extendedProps?.virtualKind === "manual") return "manual";
-		if (event.extendedProps?.virtualKind === "recurring") return "virtual";
-		if (frontmatter?.[settings.rruleProp]) return "source";
-		if (frontmatter?.[settings.rruleIdProp] && !frontmatter?.[settings.rruleProp]) return "physical";
-		return "normal";
+	private getEventKindForEvent(event: CalendarEventInfo): EventKind {
+		return getEventKind(event, this.bundle.settingsStore.currentSettings);
 	}
 
 	private isRecurringEvent(event: CalendarEventInfo): boolean {
-		const kind = this.getEventKind(event);
-		return kind === "source" || kind === "physical" || kind === "virtual";
+		return isRecurringEventKind(this.getEventKindForEvent(event));
 	}
 
 	private getRRuleId(event: CalendarEventInfo): string | null {
 		const settings = this.bundle.settingsStore.currentSettings;
 		const frontmatter = event.extendedProps?.frontmatterDisplayData;
-		const kind = this.getEventKind(event);
+		const kind = this.getEventKindForEvent(event);
 
 		const rruleIdFromProp = frontmatter?.[settings.rruleIdProp];
 		if (rruleIdFromProp && typeof rruleIdFromProp === "string") {
@@ -508,7 +499,7 @@ export class EventContextMenu {
 	}
 
 	private getSourceFilePath(event: CalendarEventInfo): string | null {
-		const kind = this.getEventKind(event);
+		const kind = this.getEventKindForEvent(event);
 
 		if (kind === "source" || kind === "virtual") return event.extendedProps?.filePath || null;
 
@@ -763,7 +754,7 @@ export class EventContextMenu {
 	}
 
 	async deleteEvent(event: CalendarEventInfo): Promise<void> {
-		const kind = this.getEventKind(event);
+		const kind = this.getEventKindForEvent(event);
 
 		if (kind === "manual") {
 			const virtualEventId = event.extendedProps?.virtualEventId;
@@ -1042,7 +1033,6 @@ export class EventContextMenu {
 		await this.bundle.virtualEventStore.remove(virtualEventId);
 
 		await this.bundle.createEvent({
-			filePath: null,
 			title: virtualData.title,
 			start: virtualData.start,
 			end: virtualData.end,

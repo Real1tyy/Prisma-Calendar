@@ -7,7 +7,7 @@ import {
 import { Notice, TFile } from "obsidian";
 
 import { MinimizedModalManager } from "../../../core/minimized-modal-manager";
-import type { EventSaveData } from "../../../types/event-save";
+import type { EventSaveData, UpdateEventData } from "../../../types/event-save";
 import { isWeekdaySupported } from "../../../types/recurring-event";
 import type { Weekday } from "../../../utils/date-recurrence";
 import { extractInstanceDate, extractZettelId, removeZettelId } from "../../../utils/event-naming";
@@ -288,8 +288,13 @@ export class EventEditModal extends BaseEventModal {
 			return;
 		}
 
+		if (!eventData.filePath) {
+			console.error("[EventEdit] Broken invariant: updateEvent reached without filePath. Please open an issue.");
+			return;
+		}
+
 		this.bundle
-			.updateEvent(eventData, { ensureZettelId: this.ensureZettelIdOnSave })
+			.updateEvent(eventData as UpdateEventData, { ensureZettelId: this.ensureZettelIdOnSave })
 			.then((newFilePath) => {
 				// If the user changed the title, the file may have been renamed.
 				// We must update the file path to prevent "invalid path" errors when
@@ -333,11 +338,7 @@ export class EventEditModal extends BaseEventModal {
 
 	private convertToReal(virtualEventId: string, eventData: EventSaveData): void {
 		void this.bundle.virtualEventStore.remove(virtualEventId).then(() => {
-			void this.bundle.createEvent({
-				...eventData,
-				filePath: null,
-				virtual: false,
-			});
+			void this.bundle.createEvent({ ...eventData, virtual: false });
 			new Notice("Virtual event converted to real");
 		});
 	}
