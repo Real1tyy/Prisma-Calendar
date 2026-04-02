@@ -462,7 +462,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	}
 }
 
-function toCalendarEvent(data: VirtualEventData, virtualFilePath: string): CalendarEvent {
+export function toCalendarEvent(data: VirtualEventData, virtualFilePath: string): CalendarEvent {
 	const base = {
 		...eventDefaults(),
 		id: data.id,

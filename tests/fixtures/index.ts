@@ -5,3 +5,4 @@ export { buildPreviousMap, createPrismaEventInput } from "./prisma-event-fixture
 export { createRawEventSource } from "./raw-event-source-fixtures";
 export { SCENARIO } from "./scenarios";
 export { createNotificationSettings, createParserSettings } from "./settings-fixtures";
+export { createAllDayVirtualEventData, createVirtualEventData } from "./virtual-event-fixtures";

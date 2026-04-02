@@ -167,7 +167,7 @@ export class VirtualEventStore {
 	}
 }
 
-function toVirtualInput(data: EventSaveData): Omit<VirtualEventData, "id"> {
+export function toVirtualInput(data: EventSaveData): Omit<VirtualEventData, "id"> {
 	return {
 		title: data.title,
 		start: data.start,
