@@ -1,6 +1,7 @@
 import { type ActionDefMap, ParamCoercion } from "@real1ty-obsidian-plugins";
 
 import type { SingleCalendarConfig } from "../../types";
+import type { AIMode } from "../../types/ai";
 import type { PrismaCalendarApiManager } from "./api-manager";
 import type {
 	NavigateInput,
@@ -9,6 +10,8 @@ import type {
 	PrismaCreateEventInput,
 	PrismaDeleteEventInput,
 	PrismaEditEventInput,
+	PrismaMakeRealInput,
+	PrismaMakeVirtualInput,
 } from "./types";
 
 export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
@@ -108,6 +111,24 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 				participants: ParamCoercion.stringArray(raw, "participants"),
 				markAsDone: ParamCoercion.boolean(raw, "markAsDone"),
 				skip: ParamCoercion.boolean(raw, "skip"),
+				calendarId: ParamCoercion.string(raw, "calendarId"),
+			}),
+		},
+		makeEventVirtual: {
+			handler: async (input: PrismaMakeVirtualInput) => {
+				await manager.makeEventVirtual(input);
+			},
+			parseParams: (raw: Record<string, string>) => ({
+				filePath: ParamCoercion.required.string(raw, "filePath"),
+				calendarId: ParamCoercion.string(raw, "calendarId"),
+			}),
+		},
+		makeEventReal: {
+			handler: async (input: PrismaMakeRealInput) => {
+				await manager.makeEventReal(input);
+			},
+			parseParams: (raw: Record<string, string>) => ({
+				virtualEventId: ParamCoercion.required.string(raw, "virtualEventId"),
 				calendarId: ParamCoercion.string(raw, "calendarId"),
 			}),
 		},
@@ -292,7 +313,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				message: ParamCoercion.required.string(raw, "message"),
-				mode: ParamCoercion.string(raw, "mode") as "query" | "manipulation" | "planning" | undefined,
+				mode: ParamCoercion.string(raw, "mode") as AIMode | undefined,
 				execute: ParamCoercion.boolean(raw, "execute"),
 				calendarId: ParamCoercion.string(raw, "calendarId"),
 			}),

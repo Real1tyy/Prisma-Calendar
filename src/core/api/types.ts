@@ -1,4 +1,5 @@
 import type { ParsedEvent } from "../../types";
+import type { AIMode } from "../../types/ai";
 
 export type NavigateInput = {
 	date?: string;
@@ -36,6 +37,16 @@ export interface PrismaDeleteEventInput {
 
 export interface PrismaConvertEventInput extends PrismaEventInput {
 	filePath: string;
+	calendarId?: string;
+}
+
+export interface PrismaMakeVirtualInput {
+	filePath: string;
+	calendarId?: string;
+}
+
+export interface PrismaMakeRealInput {
+	virtualEventId: string;
 	calendarId?: string;
 }
 
@@ -108,7 +119,7 @@ export type { AIOperation as PrismaAIOperation } from "../../types/ai-operation-
 
 export interface PrismaAIQueryInput {
 	message: string;
-	mode?: "query" | "manipulation" | "planning";
+	mode?: AIMode;
 	execute?: boolean;
 	customPromptIds?: string[];
 	calendarId?: string;
@@ -124,7 +135,7 @@ export interface PrismaAIQueryResult {
 	success: boolean;
 	error?: string;
 	response?: string;
-	mode?: "query" | "manipulation" | "planning";
+	mode?: AIMode;
 	operations?: AIOperation[];
 	validationErrors?: string[];
 	executionResult?: PrismaAIOperationResult;

@@ -1,7 +1,13 @@
 import { nanoid } from "nanoid";
 import { type App, normalizePath, type Plugin } from "obsidian";
 
-import type { StoredChatMessage, ThreadData, ThreadMeta } from "./ai-service";
+import {
+	type StoredChatMessage,
+	type ThreadData,
+	ThreadDataSchema,
+	ThreadIndexSchema,
+	type ThreadMeta,
+} from "./ai-service";
 
 export class ChatStore {
 	private readonly conversationsDir: string;
@@ -26,12 +32,8 @@ export class ChatStore {
 	async loadIndex(): Promise<void> {
 		try {
 			const content = await this.app.vault.adapter.read(this.indexPath);
-			const parsed = JSON.parse(content) as unknown;
-			if (Array.isArray(parsed)) {
-				this.index = parsed as ThreadMeta[];
-			} else {
-				this.index = [];
-			}
+			const result = ThreadIndexSchema.safeParse(JSON.parse(content));
+			this.index = result.success ? result.data : [];
 		} catch {
 			this.index = [];
 		}
@@ -50,7 +52,8 @@ export class ChatStore {
 		try {
 			const path = normalizePath(`${this.conversationsDir}/${id}.json`);
 			const content = await this.app.vault.adapter.read(path);
-			return JSON.parse(content) as ThreadData;
+			const result = ThreadDataSchema.safeParse(JSON.parse(content));
+			return result.success ? result.data : null;
 		} catch {
 			return null;
 		}

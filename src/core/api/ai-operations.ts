@@ -1,5 +1,5 @@
 import type CustomCalendarPlugin from "../../main";
-import { AI_DEFAULTS } from "../../types/ai";
+import { AI_DEFAULTS, type AIMode } from "../../types/ai";
 import type { AIOperation } from "../../types/ai-operation-schemas";
 import { AIChatManager, ChatStore } from "../ai";
 import type { ManipulationContext, PlanningContext } from "../ai/ai-context-builder";
@@ -15,8 +15,6 @@ import {
 import { type SemanticValidationContext, validateOperationsSemantically } from "../ai/ai-validation";
 import { resolveBundle } from "./bundle-resolver";
 import type { PrismaAIQueryInput, PrismaAIQueryResult } from "./types";
-
-type AIMode = "query" | "manipulation" | "planning";
 
 export async function aiQuery(plugin: CustomCalendarPlugin, input: PrismaAIQueryInput): Promise<PrismaAIQueryResult> {
 	const mode: AIMode = input.mode ?? "query";

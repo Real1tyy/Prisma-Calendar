@@ -1,5 +1,6 @@
 import type { RequestUrlResponse } from "obsidian";
 import { requestUrl } from "obsidian";
+import { z } from "zod";
 
 import { AI_DEFAULTS, type AIProvider } from "../../types/ai";
 
@@ -13,22 +14,30 @@ export interface StoredChatMessage extends ChatMessage {
 	createdAt: string;
 }
 
-export interface ThreadMeta {
-	id: string;
-	title: string;
-	mode: string;
-	createdAt: string;
-	updatedAt: string;
-}
+const StoredChatMessageSchema = z.object({
+	id: z.string(),
+	role: z.enum(["user", "assistant"]),
+	content: z.string(),
+	createdAt: z.string(),
+});
 
-export interface ThreadData {
-	id: string;
-	title: string;
-	mode: string;
-	createdAt: string;
-	updatedAt: string;
-	messages: StoredChatMessage[];
-}
+export const ThreadMetaSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	mode: z.string(),
+	createdAt: z.string(),
+	updatedAt: z.string(),
+});
+
+export type ThreadMeta = z.infer<typeof ThreadMetaSchema>;
+
+export const ThreadDataSchema = ThreadMetaSchema.extend({
+	messages: z.array(StoredChatMessageSchema),
+});
+
+export type ThreadData = z.infer<typeof ThreadDataSchema>;
+
+export const ThreadIndexSchema = z.array(ThreadMetaSchema);
 
 export class AIServiceError extends Error {
 	constructor(

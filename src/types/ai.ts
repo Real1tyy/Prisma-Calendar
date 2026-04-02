@@ -1,3 +1,5 @@
+export type AIMode = "query" | "manipulation" | "planning";
+
 export type AIProvider = "openai" | "anthropic";
 
 export interface AIModelOption {

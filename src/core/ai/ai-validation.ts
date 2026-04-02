@@ -1,5 +1,6 @@
 import { calculateDurationMinutes, intoDate, toLocalISOString } from "@real1ty-obsidian-plugins";
 
+import type { AIMode } from "../../types/ai";
 import { stripISOSuffix } from "../../utils/event-frontmatter";
 import type { AIEventSummary } from "./ai-context-builder";
 
@@ -25,8 +26,6 @@ export interface TimedCreateOp {
 	location?: string;
 	participants?: string[];
 }
-
-type AIMode = "query" | "manipulation" | "planning";
 
 export interface SemanticValidationContext {
 	mode: AIMode;

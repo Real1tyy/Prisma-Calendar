@@ -99,15 +99,7 @@ export interface PrismaEventInput extends EventInput {
 	extendedProps: PrismaExtendedProps;
 }
 
-export interface FlexibleExtendedProps {
-	filePath?: string;
-	folder?: string;
-	originalTitle?: string;
-	frontmatterDisplayData?: Frontmatter;
-	virtualKind?: VirtualKind;
-	virtualEventId?: string;
-	computedColors?: string[];
-}
+export type FlexibleExtendedProps = Partial<Omit<PrismaExtendedProps, "frontmatterHash">>;
 
 export interface CalendarEventData {
 	title: string;

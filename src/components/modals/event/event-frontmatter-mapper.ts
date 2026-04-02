@@ -5,13 +5,11 @@ import type { SingleCalendarConfig } from "../../../types/settings";
 import { setEventBasics, setUntrackedEventBasics } from "../../../utils/event-frontmatter";
 import { setBooleanProp } from "../../../utils/frontmatter-writer";
 
-export type SimpleFieldValues = EventEditableFormFields & { notifyBefore: string };
-
 export function loadSimpleFieldValues(
 	frontmatter: Frontmatter,
 	settings: SingleCalendarConfig
-): Partial<SimpleFieldValues> {
-	const values: Partial<SimpleFieldValues> = {};
+): Partial<EventEditableFormFields> {
+	const values: Partial<EventEditableFormFields> = {};
 
 	if (settings.locationProp) {
 		const v = frontmatter[settings.locationProp];
