@@ -32,6 +32,17 @@ export function resolveBundleOrNotice(plugin: CustomCalendarPlugin, calendarId?:
 	return bundle;
 }
 
+export async function withBundle<T>(
+	plugin: CustomCalendarPlugin,
+	calendarId: string | undefined,
+	fallback: T,
+	fn: (bundle: CalendarBundle) => Promise<T>
+): Promise<T> {
+	const bundle = resolveBundleOrNotice(plugin, calendarId);
+	if (!bundle) return fallback;
+	return fn(bundle);
+}
+
 export function isCalendarViewFocused(plugin: CustomCalendarPlugin): boolean {
 	return plugin.calendarBundles.some((bundle) => bundle.viewRef.calendarComponent !== null);
 }

@@ -5,7 +5,7 @@ import type CustomCalendarPlugin from "../../main";
 import { setUntrackedEventBasics } from "../../utils/event-frontmatter";
 import type { CalendarBundle } from "../calendar-bundle";
 import { ConvertFileToEventCommand } from "../commands/update-commands";
-import { resolveBundleOrNotice } from "./bundle-resolver";
+import { withBundle } from "./bundle-resolver";
 import { buildDeleteEventCommand, buildEditEventCommand } from "./command-builders";
 import { buildFrontmatterFromInput } from "./frontmatter-helpers";
 import type {
@@ -13,6 +13,8 @@ import type {
 	PrismaCreateEventInput,
 	PrismaDeleteEventInput,
 	PrismaEditEventInput,
+	PrismaMakeRealInput,
+	PrismaMakeVirtualInput,
 } from "./types";
 
 async function executeBuiltCommand(result: { command: Command; bundle: CalendarBundle } | null): Promise<boolean> {
@@ -26,48 +28,45 @@ export async function createUntrackedEvent(
 	title: string,
 	calendarId?: string
 ): Promise<string | null> {
-	const bundle = resolveBundleOrNotice(plugin, calendarId);
-	if (!bundle) return null;
+	return withBundle(plugin, calendarId, null, async (bundle) => {
+		const settings = bundle.settingsStore.currentSettings;
+		const preservedFrontmatter: Record<string, unknown> = {};
+		setUntrackedEventBasics(preservedFrontmatter, settings);
 
-	const settings = bundle.settingsStore.currentSettings;
-	const preservedFrontmatter: Record<string, unknown> = {};
-	setUntrackedEventBasics(preservedFrontmatter, settings);
+		const filePath = await bundle.createEvent({
+			title,
+			start: "",
+			end: null,
+			allDay: false,
+			virtual: false,
+			preservedFrontmatter,
+		});
 
-	const filePath = await bundle.createEvent({
-		title,
-		start: "",
-		end: null,
-		allDay: false,
-		virtual: false,
-		preservedFrontmatter,
+		if (filePath) {
+			void plugin.rememberLastUsedCalendar(bundle.calendarId);
+		}
+		return filePath;
 	});
-
-	if (filePath) {
-		void plugin.rememberLastUsedCalendar(bundle.calendarId);
-	}
-
-	return filePath;
 }
 
 export async function createEvent(plugin: CustomCalendarPlugin, input: PrismaCreateEventInput): Promise<string | null> {
-	const bundle = resolveBundleOrNotice(plugin, input.calendarId);
-	if (!bundle) return null;
-
-	const frontmatter = buildFrontmatterFromInput(bundle, input);
-	const normalizedStart = input.start ? ensureISOSuffix(input.start) : "";
-	const normalizedEnd = input.end ? ensureISOSuffix(input.end) : null;
-	const filePath = await bundle.createEvent({
-		title: input.title,
-		start: normalizedStart,
-		end: normalizedEnd,
-		allDay: input.allDay ?? false,
-		virtual: false,
-		preservedFrontmatter: frontmatter,
+	return withBundle(plugin, input.calendarId, null, async (bundle) => {
+		const frontmatter = buildFrontmatterFromInput(bundle, input);
+		const normalizedStart = input.start ? ensureISOSuffix(input.start) : "";
+		const normalizedEnd = input.end ? ensureISOSuffix(input.end) : null;
+		const filePath = await bundle.createEvent({
+			title: input.title,
+			start: normalizedStart,
+			end: normalizedEnd,
+			allDay: input.allDay ?? false,
+			virtual: false,
+			preservedFrontmatter: frontmatter,
+		});
+		if (filePath) {
+			void plugin.rememberLastUsedCalendar(bundle.calendarId);
+		}
+		return filePath;
 	});
-	if (filePath) {
-		void plugin.rememberLastUsedCalendar(bundle.calendarId);
-	}
-	return filePath;
 }
 
 export async function editEvent(plugin: CustomCalendarPlugin, input: PrismaEditEventInput): Promise<boolean> {
@@ -82,18 +81,37 @@ export async function convertFileToEvent(
 	plugin: CustomCalendarPlugin,
 	input: PrismaConvertEventInput
 ): Promise<boolean> {
-	const bundle = resolveBundleOrNotice(plugin, input.calendarId);
-	if (!bundle) return false;
+	return withBundle(plugin, input.calendarId, false, async (bundle) => {
+		const file = plugin.app.vault.getAbstractFileByPath(input.filePath);
+		if (!(file instanceof TFile)) {
+			new Notice(`File not found: ${input.filePath}`);
+			return false;
+		}
 
-	const file = plugin.app.vault.getAbstractFileByPath(input.filePath);
-	if (!(file instanceof TFile)) {
-		new Notice(`File not found: ${input.filePath}`);
-		return false;
-	}
+		const frontmatter = buildFrontmatterFromInput(bundle, input);
+		const command = new ConvertFileToEventCommand(plugin.app, bundle, file.path, frontmatter);
+		await bundle.commandManager.executeCommand(command);
+		void plugin.rememberLastUsedCalendar(bundle.calendarId);
+		return true;
+	});
+}
 
-	const frontmatter = buildFrontmatterFromInput(bundle, input);
-	const command = new ConvertFileToEventCommand(plugin.app, bundle, file.path, frontmatter);
-	await bundle.commandManager.executeCommand(command);
-	void plugin.rememberLastUsedCalendar(bundle.calendarId);
-	return true;
+export async function makeEventVirtual(plugin: CustomCalendarPlugin, input: PrismaMakeVirtualInput): Promise<boolean> {
+	return withBundle(plugin, input.calendarId, false, async (bundle) => {
+		await bundle.convertToVirtual(input.filePath);
+		return true;
+	});
+}
+
+export async function makeEventReal(plugin: CustomCalendarPlugin, input: PrismaMakeRealInput): Promise<boolean> {
+	return withBundle(plugin, input.calendarId, false, async (bundle) => {
+		const virtualData = bundle.virtualEventStore.getById(input.virtualEventId);
+		if (!virtualData) {
+			new Notice("Virtual event not found");
+			return false;
+		}
+
+		await bundle.convertToReal(input.virtualEventId);
+		return true;
+	});
 }

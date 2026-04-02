@@ -16,7 +16,15 @@ import {
 	updateSettings,
 } from "./calendar-metadata";
 import { buildCreateEventCommand, buildDeleteEventCommand, buildEditEventCommand } from "./command-builders";
-import { convertFileToEvent, createEvent, createUntrackedEvent, deleteEvent, editEvent } from "./event-crud";
+import {
+	convertFileToEvent,
+	createEvent,
+	createUntrackedEvent,
+	deleteEvent,
+	editEvent,
+	makeEventReal,
+	makeEventVirtual,
+} from "./event-crud";
 import {
 	addZettelIdToActiveNote,
 	openCreateEventModal,
@@ -45,6 +53,8 @@ import type {
 	PrismaDeleteEventInput,
 	PrismaEditEventInput,
 	PrismaEventOutput,
+	PrismaMakeRealInput,
+	PrismaMakeVirtualInput,
 	PrismaStatisticsOutput,
 } from "./types";
 
@@ -143,6 +153,14 @@ export class PrismaCalendarApiManager {
 
 	async convertFileToEvent(input: PrismaConvertEventInput): Promise<boolean> {
 		return convertFileToEvent(this.plugin, input);
+	}
+
+	async makeEventVirtual(input: PrismaMakeVirtualInput): Promise<boolean> {
+		return makeEventVirtual(this.plugin, input);
+	}
+
+	async makeEventReal(input: PrismaMakeRealInput): Promise<boolean> {
+		return makeEventReal(this.plugin, input);
 	}
 
 	// ─── Undo / Redo ─────────────────────────────────────────────
