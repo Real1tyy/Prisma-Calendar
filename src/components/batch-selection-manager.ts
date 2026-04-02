@@ -13,9 +13,10 @@ import { type App, Modal, Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { BatchCommandFactory } from "../core/commands/batch-commands";
-import type { CalendarEvent, VirtualKind } from "../types/calendar";
+import type { CalendarEvent } from "../types/calendar";
 import { isFileBackedEvent } from "../types/event-classification";
 import { isTimeUnitAllowedForAllDay } from "../types/move-by";
+import { getExtendedProps } from "../utils/extended-props";
 import { showMoveByModal } from "./modals";
 
 export class BatchSelectionManager {
@@ -419,12 +420,13 @@ export class BatchSelectionManager {
 	}
 
 	private mapFCEventToCalendarEvent(fcEvent: EventApi): CalendarEvent {
-		const filePath = fcEvent.extendedProps["filePath"] as string;
-		const title = (fcEvent.extendedProps["originalTitle"] || fcEvent.title) as string;
+		const ep = getExtendedProps(fcEvent);
+		const filePath = ep.filePath;
+		const title = ep.originalTitle || fcEvent.title;
 		const start = fcEvent.start ? toLocalISOString(fcEvent.start) : "";
-		const virtualKind = (fcEvent.extendedProps["virtualKind"] as VirtualKind) ?? "none";
+		const virtualKind = ep.virtualKind;
 		const skipped = (fcEvent.extendedProps["skipped"] as boolean) ?? false;
-		const meta = (fcEvent.extendedProps["frontmatterDisplayData"] as Record<string, unknown>) ?? {};
+		const meta = ep.frontmatterDisplayData;
 
 		const baseEvent = {
 			id: fcEvent.id,

@@ -4,6 +4,7 @@ import { type App, Notice } from "obsidian";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { addPrerequisite } from "../core/commands";
 import { extractCleanDisplayName } from "../utils/event-naming";
+import { getFilePath } from "../utils/extended-props";
 import { createStickyBanner, type StickyBannerHandle } from "./sticky-banner";
 
 export class PrerequisiteSelectionManager {
@@ -59,7 +60,7 @@ export class PrerequisiteSelectionManager {
 		const fcEvent = this.calendar.getEventById(eventId);
 		if (!fcEvent) return;
 
-		const filePath = fcEvent.extendedProps["filePath"] as string | undefined;
+		const filePath = getFilePath(fcEvent);
 		if (!filePath) return;
 
 		if (filePath === this.targetFilePath) {

@@ -16,13 +16,13 @@ import { type App, TFile } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent, CalendarEventData, PrismaEventInput } from "../../types/calendar";
-import type { VirtualKind } from "../../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../../types/calendar";
 import { isHolidayEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { resolveAllEventColors, resolveEventColor } from "../../utils/event-color";
 import { hashFrontmatter } from "../../utils/event-diff";
 import { cleanupTitle } from "../../utils/event-naming";
+import { getExtendedProps } from "../../utils/extended-props";
 import { buildEventTooltip } from "../../utils/format";
 import { stripZ } from "../../utils/iso";
 import { emitHover } from "../../utils/obsidian";
@@ -94,9 +94,9 @@ export function buildSharedEventContent(
 	return (arg) => {
 		const event = arg.event;
 		const settings = deps.bundle.settingsStore.currentSettings;
-		const displayData = event.extendedProps["frontmatterDisplayData"] as Record<string, unknown> | undefined;
-		const isSourceRecurring = displayData?.[settings.rruleProp];
-		const isPhysicalRecurring = displayData?.[settings.sourceProp];
+		const displayData = getExtendedProps(event).frontmatterDisplayData;
+		const isSourceRecurring = displayData[settings.rruleProp];
+		const isPhysicalRecurring = displayData[settings.sourceProp];
 		const holiday = isHolidayEvent(event);
 
 		const calendarIconCache = deps.getCalendarIconCache();
@@ -205,12 +205,13 @@ export function buildSharedEventDidMount(
 	return (info) => {
 		const { el, event } = info;
 
-		const virtualKind = event.extendedProps["virtualKind"] as string | undefined;
-		const eventFilePath = event.extendedProps["filePath"];
-		const computedColors = event.extendedProps.computedColors ?? [];
-		const displayData = (event.extendedProps["frontmatterDisplayData"] ?? {}) as Record<string, unknown>;
+		const ep = getExtendedProps(event);
+		const virtualKind = ep.virtualKind;
+		const eventFilePath = ep.filePath || undefined;
+		const computedColors = ep.computedColors ?? [];
+		const displayData = ep.frontmatterDisplayData;
 
-		if (isAnyVirtual(virtualKind as VirtualKind)) {
+		if (isAnyVirtual(virtualKind)) {
 			el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"), cls("virtual-event-italic"));
 			if (virtualKind === "holiday") {
 				el.classList.add(cls("holiday-event"));
@@ -265,7 +266,7 @@ export function buildSharedEventDidMount(
 		el.setAttribute("title", tooltip);
 
 		// Async note preview on hover
-		if (eventFilePath && !isAnyVirtual(virtualKind as VirtualKind)) {
+		if (eventFilePath && !isAnyVirtual(virtualKind)) {
 			el.addEventListener("mouseenter", () => {
 				if (el.dataset["notesLoaded"]) return;
 				el.dataset["notesLoaded"] = "true";
@@ -296,7 +297,7 @@ export function buildSharedEventDidMount(
 		});
 
 		// Hover preview
-		if (!isAnyVirtual(virtualKind as VirtualKind) && eventFilePath) {
+		if (!isAnyVirtual(virtualKind) && eventFilePath) {
 			el.addEventListener("mouseenter", (e) => {
 				if (settings.enableEventPreview) {
 					emitHover(deps.app, deps.container, el, e, eventFilePath, deps.bundle.calendarId);

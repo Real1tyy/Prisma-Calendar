@@ -1,6 +1,7 @@
-import type { VirtualKind } from "./calendar";
+import { getDisplayData, getVirtualKind } from "../utils/extended-props";
 import { isAnyVirtual } from "./calendar";
 import type { Frontmatter } from "./index";
+import type { SingleCalendarConfig } from "./settings";
 
 export type EventKind = "normal" | "source" | "physical" | "virtual" | "manual" | "holiday";
 
@@ -12,20 +13,17 @@ interface ClassifiableEvent {
 	};
 }
 
-interface RecurrenceSettings {
-	rruleProp: string;
-	rruleIdProp: string;
-}
+type RecurrenceSettings = Pick<SingleCalendarConfig, "rruleProp" | "rruleIdProp">;
 
 export function getEventKind(event: ClassifiableEvent, settings: RecurrenceSettings): EventKind {
-	const virtualKind = event.extendedProps?.virtualKind;
+	const virtualKind = getVirtualKind(event);
 	if (virtualKind === "holiday") return "holiday";
 	if (virtualKind === "manual") return "manual";
 	if (virtualKind === "recurring") return "virtual";
 
-	const frontmatter = event.extendedProps?.frontmatterDisplayData;
-	if (frontmatter?.[settings.rruleProp]) return "source";
-	if (frontmatter?.[settings.rruleIdProp] && !frontmatter?.[settings.rruleProp]) return "physical";
+	const frontmatter = getDisplayData(event);
+	if (frontmatter[settings.rruleProp]) return "source";
+	if (frontmatter[settings.rruleIdProp] && !frontmatter[settings.rruleProp]) return "physical";
 	return "normal";
 }
 
@@ -34,13 +32,13 @@ export function isRecurringEventKind(kind: EventKind): boolean {
 }
 
 export function isHolidayEvent(event: ClassifiableEvent): boolean {
-	return event.extendedProps?.virtualKind === "holiday";
+	return getVirtualKind(event) === "holiday";
 }
 
 export function isFileBackedEvent(event: ClassifiableEvent): boolean {
-	return !isAnyVirtual(event.extendedProps?.virtualKind as VirtualKind | undefined);
+	return !isAnyVirtual(getVirtualKind(event));
 }
 
 export function isVirtualEvent(event: ClassifiableEvent): boolean {
-	return isAnyVirtual(event.extendedProps?.virtualKind as VirtualKind | undefined);
+	return isAnyVirtual(getVirtualKind(event));
 }

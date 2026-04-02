@@ -37,7 +37,6 @@ import type {
 	ExtendedButtonInput,
 	PrismaEventInput,
 } from "../types/calendar";
-import type { VirtualKind } from "../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../types/calendar";
 import { isFileBackedEvent, isHolidayEvent } from "../types/event-classification";
 import type { SingleCalendarConfig } from "../types/index";
@@ -49,6 +48,7 @@ import { getCommonCategories, stripISOSuffix } from "../utils/event-frontmatter"
 import { findAdjacentEvent, getSourceEventInfoFromVirtual } from "../utils/event-matching";
 import { cleanupTitle } from "../utils/event-naming";
 import { invalidatePropertyExtractionCache } from "../utils/expression-utils";
+import { getFilePath, getVirtualKind } from "../utils/extended-props";
 import { buildEventTooltip } from "../utils/format";
 import { stripZ } from "../utils/iso";
 import { emitHover, getFileByPathOrThrow } from "../utils/obsidian";
@@ -451,7 +451,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			},
 
 			eventDidMount: (info) => {
-				const vk = info.event.extendedProps["virtualKind"] as VirtualKind | undefined;
+				const vk = getVirtualKind(info.event);
 				if (isAnyVirtual(vk)) {
 					info.el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
 					if (vk === "holiday") {
@@ -473,7 +473,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				});
 
 				if (isFileBackedEvent(info.event)) {
-					const filePath = info.event.extendedProps["filePath"] as string | undefined;
+					const filePath = getFilePath(info.event);
 					if (filePath) {
 						info.el.addEventListener("mouseenter", (e) => {
 							const settings = this.bundle.settingsStore.currentSettings;
@@ -1572,7 +1572,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private handleEventMount(info: EventMountInfo): void {
-		if (isAnyVirtual(info.event.extendedProps.virtualKind as VirtualKind)) {
+		if (isAnyVirtual(getVirtualKind(info.event))) {
 			info.el.classList.add(cls("virtual-event-italic"));
 		}
 
@@ -1944,7 +1944,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		const event = this.lastFocusedEventInfo;
 
-		if (isAnyVirtual(event.extendedProps?.virtualKind as VirtualKind)) {
+		if (isAnyVirtual(getVirtualKind(event))) {
 			return;
 		}
 
@@ -1989,7 +1989,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private async handleEventUpdate(info: EventUpdateInfo, errorMessage: string): Promise<void> {
-		if (isAnyVirtual(info.event.extendedProps.virtualKind as VirtualKind)) {
+		if (isAnyVirtual(getVirtualKind(info.event))) {
 			info.revert();
 			return;
 		}
@@ -2684,9 +2684,9 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		const events = this.calendar.getEvents();
 		for (const event of events) {
-			if (isAnyVirtual(event.extendedProps["virtualKind"] as VirtualKind)) continue;
+			if (isAnyVirtual(getVirtualKind(event))) continue;
 
-			const filePath = event.extendedProps["filePath"] as string | undefined;
+			const filePath = getFilePath(event);
 			if (filePath && predicate(filePath)) {
 				result.add(event.id);
 			}
@@ -2770,7 +2770,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 		const events = this.calendar.getEvents();
 		for (const event of events) {
-			if (!event.start || event.allDay || isAnyVirtual(event.extendedProps?.["virtualKind"] as VirtualKind)) continue;
+			if (!event.start || event.allDay || isAnyVirtual(getVirtualKind(event))) continue;
 
 			const eventEnd = event.end || event.start;
 

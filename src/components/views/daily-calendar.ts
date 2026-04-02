@@ -8,10 +8,11 @@ import { merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
-import type { CalendarEventData, EventUpdateInfo, PrismaEventInput, VirtualKind } from "../../types/calendar";
+import type { CalendarEventData, EventUpdateInfo, PrismaEventInput } from "../../types/calendar";
 import { isAnyVirtual } from "../../types/calendar";
 import { isFileBackedEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { getVirtualKind } from "../../utils/extended-props";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
 import { SearchFilterInputManager } from "../input-managers/search-filter";
@@ -330,7 +331,7 @@ export function createDailyCalendar(
 	async function handleEventUpdate(info: EventUpdateInfo | null, errorMessage: string): Promise<void> {
 		if (!info) return;
 
-		if (isAnyVirtual(info.event.extendedProps.virtualKind as VirtualKind)) {
+		if (isAnyVirtual(getVirtualKind(info.event))) {
 			info.revert();
 			return;
 		}

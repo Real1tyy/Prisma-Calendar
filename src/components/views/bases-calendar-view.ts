@@ -11,17 +11,12 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
 import { PRO_FEATURES } from "../../core/license";
 import type CustomCalendarPlugin from "../../main";
-import type {
-	CalendarEventData,
-	EventUpdateInfo,
-	ExtendedButtonInput,
-	PrismaEventInput,
-	VirtualKind,
-} from "../../types/calendar";
+import type { CalendarEventData, EventUpdateInfo, ExtendedButtonInput, PrismaEventInput } from "../../types/calendar";
 import { isAnyVirtual } from "../../types/calendar";
 import { isFileBackedEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { getCommonCategories } from "../../utils/event-frontmatter";
+import { getVirtualKind } from "../../utils/extended-props";
 import { BatchSelectionManager } from "../batch-selection-manager";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
@@ -647,7 +642,7 @@ class PrismaBasesView extends BasesView {
 	): Promise<void> {
 		if (!info) return;
 
-		if (isAnyVirtual(info.event.extendedProps.virtualKind as VirtualKind)) {
+		if (isAnyVirtual(getVirtualKind(info.event))) {
 			info.revert();
 			return;
 		}
