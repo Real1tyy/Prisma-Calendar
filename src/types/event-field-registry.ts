@@ -8,12 +8,17 @@ import type { SingleCalendarConfig } from "./settings";
 type MetadataKey = keyof EventMetadata;
 type SettingsPropKey = keyof SingleCalendarConfig;
 
-interface MetadataFieldEntry {
-	metadataKey: MetadataKey;
-	settingsProp: SettingsPropKey;
+interface MetadataFieldEntry<M extends MetadataKey = MetadataKey, S extends SettingsPropKey = SettingsPropKey> {
+	metadataKey: M;
+	settingsProp: S;
 }
 
-export const METADATA_FIELD_MAP: readonly MetadataFieldEntry[] = [
+// Helper: validates shape while preserving literal types from `as const`
+function defineMetadataFieldMap<const T extends readonly MetadataFieldEntry[]>(map: T): T {
+	return map;
+}
+
+export const METADATA_FIELD_MAP = defineMetadataFieldMap([
 	{ metadataKey: "skip", settingsProp: "skipProp" },
 	{ metadataKey: "location", settingsProp: "locationProp" },
 	{ metadataKey: "participants", settingsProp: "participantsProp" },
@@ -33,7 +38,28 @@ export const METADATA_FIELD_MAP: readonly MetadataFieldEntry[] = [
 	{ metadataKey: "generatePastEvents", settingsProp: "generatePastEventsProp" },
 	{ metadataKey: "caldav", settingsProp: "caldavProp" },
 	{ metadataKey: "icsSubscription", settingsProp: "icsSubscriptionProp" },
-] as const;
+]);
+
+// ─── Compile-Time Assertions ─────────────────────────────────────────
+// If you add a field to EventMetadataSchema without a registry entry (or vice versa),
+// TypeScript will produce a compile error on the corresponding line below.
+
+type RegistryMetadataKeys = (typeof METADATA_FIELD_MAP)[number]["metadataKey"];
+
+// Utility: resolves to `never` if A is not a subtype of B
+type Assert<A, B> = [A] extends [B] ? A : never;
+
+// Every EventMetadata key must appear in the registry
+type _SchemaFullyCovered = Assert<MetadataKey, RegistryMetadataKeys>;
+// Every registry key must exist in EventMetadata
+type _RegistryFullyValid = Assert<RegistryMetadataKeys, MetadataKey>;
+
+// These functions force TypeScript to evaluate the assertions.
+// If the types diverge, the parameter type becomes `never` and no value satisfies it.
+export function checkSchemaKeys(_k: _SchemaFullyCovered): void {}
+export function checkRegistryKeys(_k: _RegistryFullyValid): void {}
+checkSchemaKeys("skip" as MetadataKey);
+checkRegistryKeys("skip" as RegistryMetadataKeys);
 
 // ─── Settings Prop Classification ────────────────────────────────────
 // Tags for each settings prop key that controls how it's treated during
