@@ -1619,6 +1619,58 @@ button[class*="prisma-"]:focus-visible {
 	cursor: not-allowed;
 }
 
+.prisma-virtual-events-block {
+	padding: 8px 0;
+}
+
+.prisma-virtual-events-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--font-smaller);
+}
+
+.prisma-virtual-events-table th {
+	text-align: left;
+	padding: 6px 8px;
+	border-bottom: 2px solid var(--background-modifier-border);
+	font-weight: 600;
+	color: var(--text-muted);
+}
+
+.prisma-virtual-events-table td {
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.prisma-virtual-events-table tr:hover {
+	background: var(--background-modifier-hover);
+}
+
+.prisma-virtual-events-actions {
+	display: flex;
+	gap: 4px;
+	white-space: nowrap;
+}
+
+.prisma-virtual-events-action-btn {
+	padding: 2px 8px;
+	font-size: var(--font-smallest);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	background: var(--interactive-normal);
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+}
+
+.prisma-virtual-events-action-btn:hover {
+	background: var(--interactive-hover);
+}
+
+.prisma-virtual-events-empty {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
 .prisma-view-header-title-container {
 	flex-grow: unset;
 	flex-shrink: 0;

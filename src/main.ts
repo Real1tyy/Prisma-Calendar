@@ -122,7 +122,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 	private registerVirtualEventsCodeFence(): void {
 		this.registerMarkdownCodeBlockProcessor(VIRTUAL_EVENTS_CODE_FENCE, (source, el, ctx) => {
-			const renderer = new VirtualEventsBlockRenderer(el, source);
+			const renderer = new VirtualEventsBlockRenderer(el, source, this);
 			ctx.addChild(renderer);
 		});
 	}
