@@ -8,6 +8,7 @@ import { ensureDirectory, extractContentAfterFrontmatter, withFrontmatter } from
 import { correctFrontmatter, deleteInvalidFile } from "../file/frontmatter-repair";
 import { createFileContentWithFrontmatter } from "../file/frontmatter-serialization";
 import { createFileAtPathAtomic, guardFromTemplater } from "../file/templater";
+import type { Repository } from "../repository";
 import type { SerializableSchema } from "./create-mapped-schema";
 import {
 	HISTORY_MAX_SIZE,
@@ -406,6 +407,31 @@ export class VaultTable<
 
 	toClonedArray(): VaultRow<TData>[] {
 		return [...this.rows];
+	}
+
+	asRepository(): Repository<TData> {
+		return {
+			get: (id) => this.rowByFileName.get(id)?.data,
+			has: (id) => this.rowByFileName.has(id),
+			getAll: () => this.rows.map((r) => r.data),
+			create: async (item) => {
+				const fileName = this.deriveFileName(item);
+				const row = await this.create({ fileName, data: item });
+				return row.data;
+			},
+			update: async (id, patch) => {
+				const row = await this.update(id, patch);
+				return row.data;
+			},
+			delete: (id) => this.delete(id),
+		};
+	}
+
+	private deriveFileName(data: TData): string {
+		const record = data as Record<string, unknown>;
+		const name = record["name"] ?? record["title"] ?? record["fileName"];
+		if (typeof name === "string" && name.length > 0) return name;
+		return `item-${Date.now()}`;
 	}
 
 	query(sortFields?: SortField[]): VaultTableQuery<TData> {

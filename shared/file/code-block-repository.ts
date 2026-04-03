@@ -1,6 +1,7 @@
 import { type App, MarkdownView, type TFile, TFolder, type Vault } from "obsidian";
 import type { z } from "zod";
 
+import type { Repository } from "../repository";
 import { isFolderNote } from "./file";
 import { ensureDirectory } from "./file-utils";
 
@@ -21,7 +22,7 @@ export interface CodeBlockRepositoryConfig<T> {
 	sort?: (a: T, b: T) => number;
 }
 
-export class CodeBlockRepository<T> {
+export class CodeBlockRepository<T> implements Repository<T> {
 	private readonly codeFence: string;
 	private readonly itemSchema: z.ZodType<T>;
 	private readonly idField: (keyof T & string) | null;
@@ -133,7 +134,11 @@ export class CodeBlockRepository<T> {
 		return this.itemMap.get(id);
 	}
 
-	async create(item: T): Promise<void> {
+	has(id: string): boolean {
+		return this.itemMap.has(id);
+	}
+
+	async create(item: T): Promise<T> {
 		const key = this.extractId(item);
 		if (this.itemMap.has(key)) {
 			throw new Error(`Item with ID "${key}" already exists`);
@@ -141,9 +146,10 @@ export class CodeBlockRepository<T> {
 		this.itemMap.set(key, item);
 		this.rebuildSorted();
 		await this.persist();
+		return item;
 	}
 
-	async update(id: string, partial: Partial<T>): Promise<void> {
+	async update(id: string, partial: Partial<T>): Promise<T> {
 		const existing = this.itemMap.get(id);
 		if (!existing) {
 			throw new Error(`Item with ID "${id}" not found`);
@@ -157,6 +163,7 @@ export class CodeBlockRepository<T> {
 		this.itemMap.set(newKey, updated);
 		this.rebuildSorted();
 		await this.persist();
+		return updated;
 	}
 
 	async delete(id: string): Promise<void> {

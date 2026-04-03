@@ -2,6 +2,8 @@
 export * from "./api-gateway";
 // Command pattern
 export * from "./commands";
+// Repository interface
+export * from "./repository";
 // View utilities
 export * from "./activate-view";
 export * from "./mountable";
