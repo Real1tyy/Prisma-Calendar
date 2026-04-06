@@ -7,23 +7,22 @@ type CommandActionSpec = Omit<HeaderActionDefinition, "onAction"> & { commandId:
 
 export const DEFAULT_ACTION_IDS = new Set([
 	"create-event-stopwatch",
+	"undo",
+	"redo",
 	"navigate-back",
 	"navigate-forward",
+	"open-ai-chat",
+	"restore-minimized",
+	"toggle-prerequisites",
 	"global-search",
-	"show-skipped",
-	"show-recurring",
-	"show-filtered",
-	"show-interval-bases",
 	"daily-stats",
 	"weekly-stats",
 	"monthly-stats",
 	"alltime-stats",
-	"highlight-no-categories",
-	"highlight-category",
-	"undo",
-	"redo",
-	"restore-minimized",
-	"open-ai-chat",
+	"show-skipped",
+	"show-recurring",
+	"show-filtered",
+	"show-interval-bases",
 ]);
 
 const ACTION_SPECS: CommandActionSpec[] = [
