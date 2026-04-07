@@ -23,7 +23,7 @@ export interface PreviewEventData {
 	allDay: boolean;
 	extendedProps?:
 		| {
-				filePath?: string;
+				filePath?: string | undefined;
 				[key: string]: unknown;
 		  }
 		| undefined;
