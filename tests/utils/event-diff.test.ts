@@ -71,6 +71,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Event",
 				frontmatterDisplayData: { Category: "Work" },
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		const b = makeEvent({
@@ -81,6 +82,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Event",
 				frontmatterDisplayData: { Category: "Personal" },
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
@@ -95,6 +97,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		const b = makeEvent({
@@ -105,6 +108,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
@@ -119,6 +123,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		const b = makeEvent({
@@ -129,6 +134,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
@@ -143,6 +149,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Alpha",
 				frontmatterDisplayData: {},
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		const b = makeEvent({
@@ -153,6 +160,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Beta",
 				frontmatterDisplayData: {},
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
@@ -167,6 +175,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		const b = makeEvent({
@@ -177,6 +186,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Event",
 				frontmatterDisplayData: {},
 				virtualKind: "recurring",
+				skipped: false,
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
@@ -211,6 +221,7 @@ describe("eventFingerprint", () => {
 					Nested: { a: { b: "c" } },
 				},
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		const fp = eventFingerprint(ev);
@@ -229,6 +240,7 @@ describe("eventFingerprint", () => {
 					Nested: { a: { b: "c" } },
 				},
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		expect(eventFingerprint(ev2)).toBe(fp);
@@ -243,6 +255,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Event",
 				frontmatterDisplayData: { Tags: ["a", "b"] },
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		const b = makeEvent({
@@ -253,6 +266,7 @@ describe("eventFingerprint", () => {
 				originalTitle: "Event",
 				frontmatterDisplayData: { Tags: ["b", "a"] },
 				virtualKind: "none",
+				skipped: false,
 			},
 		});
 		expect(eventFingerprint(a)).not.toBe(eventFingerprint(b));
@@ -421,6 +435,7 @@ describe("diffEvents", () => {
 					originalTitle: "Event",
 					frontmatterDisplayData: {},
 					virtualKind: "none",
+					skipped: false,
 				},
 			});
 			const updated = makeEvent({
@@ -431,6 +446,7 @@ describe("diffEvents", () => {
 					originalTitle: "Event",
 					frontmatterDisplayData: {},
 					virtualKind: "none",
+					skipped: false,
 				},
 			});
 			const previous = buildPreviousMap([original]);
@@ -449,6 +465,7 @@ describe("diffEvents", () => {
 					originalTitle: "Event",
 					frontmatterDisplayData: { Status: "todo" },
 					virtualKind: "none",
+					skipped: false,
 				},
 			});
 			const updated = makeEvent({
@@ -459,6 +476,7 @@ describe("diffEvents", () => {
 					originalTitle: "Event",
 					frontmatterDisplayData: { Status: "done" },
 					virtualKind: "none",
+					skipped: false,
 				},
 			});
 			const previous = buildPreviousMap([original]);
@@ -647,6 +665,7 @@ describe("diffEvents", () => {
 					originalTitle: "Event",
 					frontmatterDisplayData: {},
 					virtualKind: "none",
+					skipped: false,
 				},
 			});
 			const updated = makeEvent({
@@ -657,6 +676,7 @@ describe("diffEvents", () => {
 					originalTitle: "Event",
 					frontmatterDisplayData: {},
 					virtualKind: "recurring",
+					skipped: false,
 				},
 			});
 			const previous = buildPreviousMap([original]);

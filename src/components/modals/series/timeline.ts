@@ -1,4 +1,4 @@
-import { cls, ColorEvaluator, showModal, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { cls, ColorEvaluator, MS_PER_DAY, showModal, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { DataSet } from "vis-data";
 import { type DataItem, Timeline, type TimelineOptions } from "vis-timeline";
@@ -358,7 +358,7 @@ export function renderTimelineInto(
 		items = new DataSet<DataItem>();
 
 		const nowMs = Date.now();
-		const halfWeek = 3.5 * 86400000;
+		const halfWeek = 3.5 * MS_PER_DAY;
 		const fillContainer = config.fillContainer === true;
 
 		const options: TimelineOptions = {
@@ -372,7 +372,7 @@ export function renderTimelineInto(
 			orientation: "top",
 			start: new Date(nowMs - halfWeek),
 			end: new Date(nowMs + halfWeek),
-			zoomMin: 86400000,
+			zoomMin: MS_PER_DAY,
 			zoomMax: 31536000000 * 10,
 			stack: true,
 			verticalScroll: true,

@@ -80,7 +80,7 @@ export class EventEditModal extends BaseEventModal {
 			this.applyRruleTypeToForm(rruleType);
 
 			// Trigger change to show/hide custom interval container and weekday grid
-			this.rruleSelect.dispatchEvent(new Event("change", { bubbles: true }));
+			this.rruleSelect?.dispatchEvent(new Event("change", { bubbles: true }));
 
 			// Load weekdays for preset weekly/bi-weekly types
 			if (isWeekdaySupported(rruleType)) {

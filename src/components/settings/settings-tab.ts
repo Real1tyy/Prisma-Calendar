@@ -1,5 +1,5 @@
-import { addCls, cls } from "@real1ty-obsidian-plugins";
-import { type App, Modal, PluginSettingTab, Setting } from "obsidian";
+import { addCls, cls, registerSubmitHotkey, showModal } from "@real1ty-obsidian-plugins";
+import { type App, PluginSettingTab, Setting } from "obsidian";
 
 import { FREE_MAX_CALENDARS } from "../../core/license";
 import { CalendarSettingsStore } from "../../core/settings-store";
@@ -270,91 +270,67 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			return;
 		}
 
-		new RenameCalendarModal(this.app, currentCalendar.name, (newName) => {
-			void (async () => {
-				if (newName && newName !== currentCalendar.name) {
-					await this.plugin.settingsStore.updateSettings((currentSettings) => ({
-						...currentSettings,
-						calendars: currentSettings.calendars.map((calendar) =>
-							calendar.id === this.selectedCalendarId ? { ...calendar, name: newName } : calendar
-						),
-					}));
+		showRenameCalendarModal(this.app, currentCalendar.name, async (newName) => {
+			if (newName && newName !== currentCalendar.name) {
+				await this.plugin.settingsStore.updateSettings((currentSettings) => ({
+					...currentSettings,
+					calendars: currentSettings.calendars.map((calendar) =>
+						calendar.id === this.selectedCalendarId ? { ...calendar, name: newName } : calendar
+					),
+				}));
 
-					await this.plugin.refreshCalendarBundles();
-					this.display();
-				}
-			})();
-		}).open();
+				await this.plugin.refreshCalendarBundles();
+				this.display();
+			}
+		});
 	}
 }
 
-class RenameCalendarModal extends Modal {
-	private newName: string;
-	private currentName: string;
-	private onSubmit: (name: string) => void;
+function showRenameCalendarModal(app: App, currentName: string, onSubmit: (name: string) => void): void {
+	let newName = currentName;
 
-	constructor(app: App, currentName: string, onSubmit: (name: string) => void) {
-		super(app);
-		this.currentName = currentName;
-		this.newName = currentName;
-		this.onSubmit = onSubmit;
-	}
+	showModal({
+		app,
+		cls: cls("rename-calendar-modal"),
+		render: (el, ctx) => {
+			el.createEl("h2", { text: "Rename calendar" });
 
-	override onOpen() {
-		const { contentEl } = this;
-		contentEl.empty();
-		contentEl.createEl("h2", { text: "Rename calendar" });
-
-		new Setting(contentEl)
-			.setName("Calendar name")
-			.setDesc("Enter the new name for the calendar.")
-			.addText((text) => {
-				text.setValue(this.currentName).onChange((value) => {
-					this.newName = value.trim();
+			new Setting(el)
+				.setName("Calendar name")
+				.setDesc("Enter the new name for the calendar.")
+				.addText((text) => {
+					text.setValue(currentName).onChange((value) => {
+						newName = value.trim();
+					});
+					text.inputEl.setAttribute("data-cy", "rename-calendar-input");
+					setTimeout(() => {
+						text.inputEl.focus();
+						text.inputEl.select();
+					}, 50);
 				});
-				text.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
-					if (e.key === "Enter") {
-						e.preventDefault();
-						this.submit();
-					}
-				});
-				text.inputEl.setAttribute("data-cy", "rename-calendar-input");
-			});
 
-		new Setting(contentEl)
-			.addButton((button) =>
-				button.setButtonText("Cancel").onClick(() => {
-					this.close();
-				})
-			)
-			.addButton((button) =>
-				button
-					.setButtonText("Save")
-					.setCta()
-					.onClick(() => {
-						this.submit();
+			new Setting(el)
+				.addButton((button) =>
+					button.setButtonText("Cancel").onClick(() => {
+						ctx.close();
 					})
-			);
+				)
+				.addButton((button) =>
+					button
+						.setButtonText("Save")
+						.setCta()
+						.onClick(() => {
+							onSubmit(newName);
+							ctx.close();
+						})
+				);
 
-		// Ensure the input is focused when the modal opens
-		setTimeout(() => {
-			const inputEl = this.contentEl.querySelector("input");
-			if (inputEl) {
-				inputEl.focus();
-				inputEl.select();
+			if (ctx.type === "modal") {
+				registerSubmitHotkey(ctx.scope, () => {
+					onSubmit(newName);
+					ctx.close();
+				});
 			}
-		}, 50);
-	}
-
-	submit() {
-		if (this.newName && this.newName !== this.currentName) {
-			this.onSubmit(this.newName);
-		}
-		this.close();
-	}
-
-	override onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
+		},
+	});
 }

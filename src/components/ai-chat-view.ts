@@ -1,4 +1,4 @@
-import { cls, MountableView, renderCollapsibleSection } from "@real1ty-obsidian-plugins";
+import { cls, MountableView, MS_PER_DAY, renderCollapsibleSection } from "@real1ty-obsidian-plugins";
 import { Component, ItemView, MarkdownRenderer, Notice, type WorkspaceLeaf } from "obsidian";
 import { distinctUntilChanged, skip } from "rxjs";
 
@@ -327,7 +327,7 @@ export class AIChatView extends MountableView(ItemView, "prisma") {
 		const diffMs = now.getTime() - date.getTime();
 		const diffMins = Math.floor(diffMs / 60000);
 		const diffHours = Math.floor(diffMs / 3600000);
-		const diffDays = Math.floor(diffMs / 86400000);
+		const diffDays = Math.floor(diffMs / MS_PER_DAY);
 
 		if (diffMins < 1) return "just now";
 		if (diffMins < 60) return `${diffMins}m ago`;

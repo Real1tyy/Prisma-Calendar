@@ -10,9 +10,9 @@ export type EventKind = z.infer<typeof EventKindSchema>;
 
 interface ClassifiableEvent {
 	extendedProps?: {
-		filePath?: string;
-		virtualKind?: string;
-		frontmatterDisplayData?: Frontmatter;
+		filePath?: string | undefined;
+		virtualKind?: string | undefined;
+		frontmatterDisplayData?: Frontmatter | undefined;
 	};
 }
 

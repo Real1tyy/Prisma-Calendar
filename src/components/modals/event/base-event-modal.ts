@@ -31,6 +31,7 @@ import {
 import type { Frontmatter } from "../../../types";
 import { isTimedEvent } from "../../../types/calendar";
 import { FormToFieldsSchema, PositiveFloat } from "../../../types/event-fields";
+import { EventEditableFormFieldsSchema } from "../../../types/event-fields";
 import type { EventSaveData } from "../../../types/event-save";
 import {
 	buildCustomIntervalDSL,
@@ -58,7 +59,6 @@ import {
 	createDefaultState,
 	type EventFormState,
 	extractPresetFromState,
-	SimpleEditableFieldsSchema,
 } from "./event-form-state";
 import {
 	applyDateFieldsToFrontmatter,
@@ -76,7 +76,7 @@ export interface EventModalData {
 	// EventApi exposes a setter for extended props while `extendedProps` itself is read-only (getter-only).
 	setExtendedProp?: (name: string, value: unknown) => void;
 	extendedProps?: {
-		filePath?: string | null;
+		filePath?: string | null | undefined;
 		[key: string]: unknown;
 	};
 }
@@ -105,14 +105,14 @@ export abstract class BaseEventModal extends Modal {
 	// Recurring event fields
 	public recurringCheckbox!: HTMLInputElement;
 	protected recurringContainer!: HTMLElement;
-	protected rruleSelect!: HTMLSelectElement;
+	protected rruleSelect?: HTMLSelectElement;
 	protected weekdayContainer!: HTMLElement;
 	protected weekdayCheckboxes: Map<Weekday, HTMLInputElement> = new Map();
 	protected futureInstancesCountInput!: HTMLInputElement;
 	protected generatePastEventsCheckbox!: HTMLInputElement;
 	protected customIntervalContainer!: HTMLElement;
-	protected customFreqSelect!: HTMLSelectElement;
-	protected customIntervalInput!: HTMLInputElement;
+	protected customFreqSelect?: HTMLSelectElement;
+	protected customIntervalInput?: HTMLInputElement;
 
 	protected categoriesChipList?: ChipList;
 	protected simpleFieldsHandle: SchemaFormHandle<Record<string, unknown>> | null = null;
@@ -785,7 +785,7 @@ export abstract class BaseEventModal extends Modal {
 
 	private renderSimpleFields(contentEl: HTMLElement): void {
 		const settings = this.bundle.settingsStore.currentSettings;
-		const fullShape = SimpleEditableFieldsSchema.shape;
+		const fullShape = EventEditableFormFieldsSchema.omit({ notifyBefore: true }).shape;
 
 		const settingsGuards: Record<string, string> = {
 			location: "locationProp",
@@ -994,6 +994,7 @@ export abstract class BaseEventModal extends Modal {
 
 	private syncRecurrenceUI(): void {
 		toggleCls(this.recurringContainer, "hidden", !this.recurringCheckbox.checked);
+		if (!this.rruleSelect) return;
 		const selectedValue = this.rruleSelect.value;
 		toggleCls(this.customIntervalContainer, "hidden", selectedValue !== "custom");
 		toggleCls(this.weekdayContainer, "hidden", selectedValue === "custom" || !isWeekdaySupported(selectedValue));
@@ -1024,7 +1025,7 @@ export abstract class BaseEventModal extends Modal {
 		}
 
 		this.recurringCheckbox.addEventListener("change", () => this.syncRecurrenceUI());
-		this.rruleSelect.addEventListener("change", () => this.syncRecurrenceUI());
+		this.rruleSelect?.addEventListener("change", () => this.syncRecurrenceUI());
 
 		registerSubmitHotkey(this.scope, () => this.saveWithAutoCategories());
 	}
@@ -1178,7 +1179,7 @@ export abstract class BaseEventModal extends Modal {
 		this.endInput.value = "";
 		this.dateInput.value = "";
 		if (this.durationInput) this.durationInput.value = "";
-		this.rruleSelect.value = Object.keys(RECURRENCE_TYPE_OPTIONS)[0]!;
+		if (this.rruleSelect) this.rruleSelect.value = Object.keys(RECURRENCE_TYPE_OPTIONS)[0]!;
 		for (const checkbox of this.weekdayCheckboxes.values()) checkbox.checked = false;
 		this.futureInstancesCountInput.value = "";
 		this.suppressAutoCategories = false;
@@ -1303,7 +1304,7 @@ export abstract class BaseEventModal extends Modal {
 			this.recurringCheckbox.checked = true;
 			removeCls(this.recurringContainer, "hidden");
 			this.applyRruleTypeToForm(state.recurring.rruleType);
-			this.rruleSelect.dispatchEvent(new Event("change", { bubbles: true }));
+			this.rruleSelect?.dispatchEvent(new Event("change", { bubbles: true }));
 
 			if (isWeekdaySupported(state.recurring.rruleType)) {
 				for (const weekday of state.recurring.weekdays) {
@@ -1526,7 +1527,6 @@ export abstract class BaseEventModal extends Modal {
 			{
 				initialMarkAsDone: this.initialMarkAsDoneState,
 				prerequisites: this.prerequisitesChipList?.value ?? [],
-				originalFrontmatter: original,
 			}
 		);
 
@@ -1592,24 +1592,20 @@ export abstract class BaseEventModal extends Modal {
 	 */
 	protected applyRruleTypeToForm(rruleType: string): void {
 		// Tests sometimes instantiate the modal without rendering all form controls.
-		// Guard against missing elements to keep save/build logic safe.
-		const rruleSelect = (this as unknown as { rruleSelect?: HTMLSelectElement }).rruleSelect;
-		if (!rruleSelect) return;
+		if (!this.rruleSelect) return;
 
 		if (isPresetType(rruleType)) {
-			rruleSelect.value = rruleType;
+			this.rruleSelect.value = rruleType;
 			return;
 		}
 		// Custom DSL string — set to custom mode and populate fields
 		const parsed = parseRecurrenceType(rruleType);
 		if (parsed) {
-			const customFreqSelect = (this as unknown as { customFreqSelect?: HTMLSelectElement }).customFreqSelect;
-			const customIntervalInput = (this as unknown as { customIntervalInput?: HTMLInputElement }).customIntervalInput;
-			if (!customFreqSelect || !customIntervalInput) return;
+			if (!this.customFreqSelect || !this.customIntervalInput) return;
 
-			rruleSelect.value = "custom";
-			customFreqSelect.value = parsed.freq;
-			customIntervalInput.value = String(parsed.interval);
+			this.rruleSelect.value = "custom";
+			this.customFreqSelect.value = parsed.freq;
+			this.customIntervalInput.value = String(parsed.interval);
 		}
 	}
 
@@ -1618,19 +1614,18 @@ export abstract class BaseEventModal extends Modal {
 	 * the DSL string from freq select and interval input. For presets, returns the select value.
 	 */
 	protected getEffectiveRruleType(): string {
-		// Tests sometimes instantiate the modal without rendering all recurrence form controls.
-		const rruleSelect = (this as unknown as { rruleSelect?: HTMLSelectElement }).rruleSelect;
-		if (!rruleSelect) return "";
+		if (!this.rruleSelect) return "";
 
-		if (rruleSelect.value === "custom") {
-			const customFreqSelect = (this as unknown as { customFreqSelect?: HTMLSelectElement }).customFreqSelect;
-			const customIntervalInput = (this as unknown as { customIntervalInput?: HTMLInputElement }).customIntervalInput;
-			if (!customFreqSelect || !customIntervalInput) return "custom";
+		if (this.rruleSelect.value === "custom") {
+			if (!this.customFreqSelect || !this.customIntervalInput) return "custom";
 
-			return buildCustomIntervalDSL(customFreqSelect.value, Number.parseInt(customIntervalInput.value, 10) || 1);
+			return buildCustomIntervalDSL(
+				this.customFreqSelect.value,
+				Number.parseInt(this.customIntervalInput.value, 10) || 1
+			);
 		}
 
-		return rruleSelect.value;
+		return this.rruleSelect.value;
 	}
 
 	protected loadExistingFrontmatter(): void {

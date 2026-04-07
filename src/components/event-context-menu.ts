@@ -9,6 +9,7 @@ import {
 	getObsidianLinkPath,
 	intoDate,
 	MacroCommand,
+	MS_PER_DAY,
 	parseIntoList,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
@@ -60,10 +61,10 @@ interface CalendarEventInfo {
 	end?: string | Date | null;
 	allDay?: boolean;
 	extendedProps?: {
-		filePath?: string;
-		virtualKind?: string;
-		virtualEventId?: string;
-		frontmatterDisplayData?: Frontmatter;
+		filePath?: string | undefined;
+		virtualKind?: string | undefined;
+		virtualEventId?: string | undefined;
+		frontmatterDisplayData?: Frontmatter | undefined;
 	};
 }
 
@@ -71,8 +72,6 @@ interface CommandMessages {
 	success: string;
 	error: string;
 }
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export class EventContextMenu {
 	private app: App;

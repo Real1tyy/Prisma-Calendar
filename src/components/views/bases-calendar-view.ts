@@ -2,7 +2,7 @@ import { Calendar, type CustomButtonInput } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { cls, ColorEvaluator, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { cls, ColorEvaluator, MS_PER_DAY, toLocalISOString } from "@real1ty-obsidian-plugins";
 import type { BasesQueryResult } from "obsidian";
 import { BasesView, Notice, type QueryController } from "obsidian";
 import { distinctUntilChanged, skip, type Subscription } from "rxjs";
@@ -49,7 +49,7 @@ function eventOverlapsRange(event: PrismaEventInput, rangeStart: Date, rangeEnd:
 	const startMs = new Date(event.start as string).getTime();
 	if (isNaN(startMs)) return false;
 
-	const endMs = event.end ? new Date(event.end as string).getTime() : startMs + 86_400_000;
+	const endMs = event.end ? new Date(event.end as string).getTime() : startMs + MS_PER_DAY;
 	return startMs < rangeEnd.getTime() && endMs > rangeStart.getTime();
 }
 
