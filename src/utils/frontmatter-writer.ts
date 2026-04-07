@@ -5,14 +5,13 @@ import { assignListToFrontmatter, parseCustomDoneProperty } from "./event-frontm
 export interface WriteMetadataOptions {
 	initialMarkAsDone?: boolean;
 	prerequisites?: string[];
-	originalFrontmatter?: Frontmatter;
 }
 
-export function setStringProp(fm: Frontmatter, prop: string, value: string, originalFrontmatter?: Frontmatter): void {
-	const trimmed = value.trim();
+export function setStringProp(fm: Frontmatter, prop: string, value: string | undefined): void {
+	const trimmed = (value ?? "").trim();
 	if (trimmed) {
 		fm[prop] = trimmed;
-	} else if (!originalFrontmatter || !(prop in originalFrontmatter)) {
+	} else {
 		delete fm[prop];
 	}
 }
@@ -83,16 +82,16 @@ export function writeMetadataToFrontmatter(
 		setListProp(fm, settings.participantsProp, fields.participants, (p) => Boolean(p.trim()));
 	}
 
-	if (fields.location !== undefined && settings.locationProp) {
-		setStringProp(fm, settings.locationProp, fields.location, options.originalFrontmatter);
+	if ("location" in fields && settings.locationProp) {
+		setStringProp(fm, settings.locationProp, fields.location);
 	}
 
-	if (fields.icon !== undefined && settings.iconProp) {
-		setStringProp(fm, settings.iconProp, fields.icon, options.originalFrontmatter);
+	if ("icon" in fields && settings.iconProp) {
+		setStringProp(fm, settings.iconProp, fields.icon);
 	}
 
-	if (fields.breakMinutes !== undefined && settings.breakProp) {
-		setNumericProp(fm, settings.breakProp, fields.breakMinutes);
+	if ("breakMinutes" in fields && settings.breakProp) {
+		setNumericProp(fm, settings.breakProp, fields.breakMinutes ?? 0);
 	}
 
 	if (fields.markAsDone !== undefined && settings.statusProperty) {
