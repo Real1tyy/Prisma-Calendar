@@ -6,7 +6,7 @@ All notable changes to this project will be documented here.
 
 ## 2.12.0 - 4/1/2026
 
-> **TLDR:** Manual virtual events — create calendar time blocks without vault files. Batch Make Virtual and Make Real actions. Start tracking directly from the untracked events dropdown. Weekdays and Weekends recurrence presets. Browser-style back/forward navigation. Settings cleanup — removed useless toggles, split excluded props per propagation type, dedicated Performance section. Fixes for clearing icon/location/break time not saving, zero-duration events rendering as 60 minutes, and stopwatch times dropping seconds.
+> **TLDR:** Manual virtual events — create calendar time blocks without vault files. Batch Make Virtual and Make Real actions to transform notes back and forth. Start tracking directly from the untracked events dropdown. Weekdays and Weekends recurrence presets. Browser-style back/forward navigation. Settings cleanup — removed useless toggles, split excluded props per propagation type, dedicated Performance section.
 
 ### Added
 - **Manual Virtual Events**: Create calendar events without backing vault files for lightweight time blocking and planning. Toggle the Virtual pill in the create/edit modal header, or right-click any event to convert between virtual and physical. All virtual event operations (create, delete, convert) are fully undoable. Use the "Open virtual events file" command to navigate to the storage file. Thanks to [@cweekly](https://github.com/cweekly) for the [idea](https://github.com/Real1tyy/Prisma-Calendar/issues/67). See [Virtual Events](./features/events/virtual-events.md#manual-virtual-events).
@@ -17,7 +17,6 @@ All notable changes to this project will be documented here.
 ### Improved
 - **All-day events as columns in day/week views**: All-day events now appear side by side as equal-width columns instead of stacking vertically, making better use of horizontal space when multiple all-day events exist. See [Calendar View](./features/calendar/calendar-view.md).
 - **Browser-style back/forward navigation**: The Navigate Back button now tracks all view and date changes (not just "Go to source" navigation). A new Navigate Forward button lets you move forward through your navigation history. Both are available as page header actions and commands. See [Calendar View](./features/calendar/calendar-view.md).
-- **Tab command names refresh on reorder/rename**: Obsidian commands for switching tabs (e.g., "Go to tab 2: Timeline") now update their names when you reorder or rename tabs via the tab manager.
 - **Simplified settings**: Removed settings that added complexity without real value. The propagation debounce and "show continue button" toggles are gone — they now always use sensible defaults. Removed the "for now" statistics commands (Today's/This Week's/This Month's Statistics) — they're redundant since you can open daily/weekly/monthly stats and click Today.
 - **Per-type excluded propagation properties**: The shared "excluded properties" setting has been split into three individual settings — one under each propagation section (recurring instances, name series, category series). You can now exclude different properties per propagation type. Existing values are automatically migrated to all three. See [Event Groups](./features/events/recurring-dsl.md).
 - **Performance settings section**: Performance settings (name series tracking, file concurrency limit) moved from Configuration into a dedicated Performance section for better discoverability.
@@ -27,6 +26,7 @@ All notable changes to this project will be documented here.
 - **Clearing icon, location, or break time in the edit modal not saving**: Removing the icon, location, or break time from an existing event and pressing Save did not clear the property from frontmatter — the old value persisted. All three fields now correctly delete from frontmatter when cleared.
 - **Zero-duration events rendering as 60 minutes**: Events where start and end times are identical appeared as 1-hour blocks on the calendar. They now render as thin slivers matching their actual zero duration.
 - **Stopwatch times rounded to minutes, dropping seconds**: Starting and stopping the time tracker always saved times without seconds (e.g. `20:17:00` instead of `20:17:43`). Times now preserve full second-level precision. See [Time Tracker](./features/management/time-tracker.md).
+- **Tab command names not refreshing on reorder/rename**: Obsidian commands for switching tabs (e.g., "Go to tab 2: Timeline") did not update their names when reordering or renaming tabs via the tab manager.
 
 ---
 
