@@ -1,0 +1,91 @@
+/* Time grid styling */
+.prisma-calendar-container .fc-timegrid-slot {
+	border-color: var(--background-modifier-border);
+}
+
+/* Make full-hour lines thicker for better visual contrast (when enabled) */
+.prisma-calendar-container.prisma-thicker-hour-lines .fc-timegrid-slot[data-time$=":00:00"] {
+	border-top-width: 1.5px;
+	border-top-color: var(--background-modifier-border-hover);
+}
+
+/* Sticky all-day events section (when enabled)
+   FullCalendar's built-in stickyHeaderDates handles day/date headers.
+   This CSS handles making the all-day event section sticky as well. */
+.prisma-calendar-container.prisma-sticky-day-headers .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
+	top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
+	z-index: 14;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.prisma-calendar-container.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type {
+	position: sticky;
+	z-index: 11;
+	background-color: var(--background-primary);
+}
+
+/* Position all-day section below sticky day headers when both are enabled
+   FullCalendar's sticky headers are at a higher z-index, so we position below them */
+.prisma-calendar-container.prisma-sticky-day-headers.prisma-sticky-all-day-events .fc-scrollgrid-section-body:first-of-type {
+	top: calc(var(--prisma-sticky-toolbar-offset) + var(--prisma-sticky-day-header-height) + 1px);
+}
+
+/* Position all-day section at top when only sticky all-day is enabled */
+.prisma-calendar-container.prisma-sticky-all-day-events:not(.prisma-sticky-day-headers) .fc-scrollgrid-section-body:first-of-type {
+	top: calc(var(--prisma-sticky-toolbar-offset) + 1px);
+}
+
+/* Remove FullCalendar's extra divider row border between all-day and timed grid.
+   The sticky stack already provides the intended single separator line. */
+.prisma-calendar-container .fc-timegrid-divider.fc-cell-shaded {
+	background: transparent;
+	border-width: 0;
+	padding: 0;
+}
+
+/* Limit individual all-day event height and enable overflow
+   Target the event harness and the event itself */
+.prisma-calendar-container .fc-daygrid-event-harness {
+	max-height: var(--all-day-event-height, 75px);
+	overflow: visible;
+	/* Allow the event inside to handle overflow */
+}
+
+.prisma-calendar-container .fc-daygrid-block-event {
+	max-height: var(--all-day-event-height, 75px);
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+/* Ensure the event main content can scroll */
+.prisma-calendar-container .fc-daygrid-block-event .fc-event-main {
+	overflow-y: auto;
+	overflow-x: hidden;
+	max-height: inherit;
+}
+
+/* All-day events as columns in daily view — events sit side by side when there
+   is enough horizontal space. Wraps to new rows when events don't fit.
+   Uses auto basis so width is proportional to content, not forced equal. */
+.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-day-events {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 2px;
+	align-items: stretch;
+}
+
+.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event-harness {
+	flex: 1 1 auto;
+	min-width: 200px;
+}
+
+.prisma-calendar-container .fc-timegrid-slot-label {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.prisma-calendar-container .fc-timegrid-axis {
+	background-color: var(--background-secondary);
+}
+

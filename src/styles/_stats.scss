@@ -1,0 +1,720 @@
+/* ===================================
+   Weekly Statistics Modal
+   =================================== */
+
+/* Use higher specificity to override default modal styles */
+.app-container .modal-container:has(.prisma-weekly-stats-modal)>.modal,
+body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
+	max-width: 1120px;
+	width: 90vw;
+	min-width: 800px;
+}
+
+.prisma-stats-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.prisma-stats-header-stat {
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-weight-semibold);
+	color: var(--text-normal);
+	padding: 0.5rem 1rem;
+	background-color: var(--background-secondary);
+	border-radius: var(--radius-s);
+	white-space: nowrap;
+}
+
+.prisma-stats-duration-toggle {
+	cursor: pointer;
+	border: 1px solid var(--background-modifier-border);
+	transition: all 0.2s ease;
+}
+
+.prisma-stats-duration-toggle:hover {
+	background-color: var(--interactive-hover);
+	border-color: var(--interactive-accent);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.prisma-stats-duration-toggle:active {
+	transform: translateY(0);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.prisma-stats-middle-section {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	flex: 1;
+}
+
+.prisma-stats-week-label {
+	font-size: var(--font-ui-large);
+	font-weight: var(--font-weight-bold);
+	color: var(--text-normal);
+	text-align: center;
+}
+
+.prisma-stats-controls-row {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.prisma-stats-aggregation-toggle {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.prisma-stats-skip-checkbox-container {
+	display: flex;
+	align-items: center;
+}
+
+.prisma-stats-skip-checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	cursor: pointer;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	user-select: none;
+}
+
+.prisma-stats-skip-checkbox {
+	cursor: pointer;
+	width: 16px;
+	height: 16px;
+	accent-color: var(--interactive-accent);
+}
+
+.prisma-stats-skip-checkbox-text {
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-weight-medium);
+}
+
+.prisma-stats-nav-group {
+	display: flex;
+	gap: 0.25rem;
+}
+
+.prisma-stats-nav-button {
+	background-color: var(--interactive-normal);
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+	padding: 0.5rem 0.75rem;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-weight-bold);
+	transition: background-color 0.2s;
+	min-width: 2rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.prisma-stats-nav-button:hover {
+	background-color: var(--interactive-hover);
+}
+
+.prisma-stats-nav-button-fast {
+	color: var(--text-muted);
+	font-size: var(--font-ui-large);
+}
+
+.prisma-stats-today-button {
+	background-color: var(--interactive-accent);
+	border: 1px solid var(--interactive-accent);
+	color: var(--text-on-accent);
+	padding: 0.35rem 0.75rem;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-weight-medium);
+	transition: all 0.2s;
+}
+
+.prisma-stats-today-button:hover {
+	background-color: var(--interactive-accent-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.prisma-stats-empty {
+	text-align: center;
+	padding: 2rem;
+	color: var(--text-muted);
+	font-size: var(--font-ui-medium);
+}
+
+.prisma-stats-chart-section {
+	margin-bottom: 1.5rem;
+	background-color: var(--background-secondary);
+	border-radius: var(--radius-m);
+}
+
+.prisma-stats-chart-header {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	margin-bottom: 0.5rem;
+	min-height: 2rem;
+}
+
+.prisma-stats-chart-header h3 {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	margin: 0;
+	font-size: var(--font-ui-medium);
+	color: var(--text-normal);
+	text-align: center;
+	pointer-events: none;
+}
+
+.prisma-stats-toggle-chart-btn {
+	background-color: var(--interactive-normal);
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+	padding: 0.35rem 0.75rem;
+	margin-right: 0.5rem;
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-ui-smaller);
+	transition: background-color 0.2s;
+}
+
+.prisma-stats-toggle-chart-btn:hover {
+	background-color: var(--interactive-hover);
+}
+
+.prisma-stats-chart-container:not(.prisma-hidden) {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 500px;
+	max-height: 600px;
+	padding-bottom: 2rem;
+	position: relative;
+}
+
+.prisma-stats-chart-container.prisma-hidden {
+	display: none;
+}
+
+.prisma-weekly-stats-modal .prisma-stats-chart-container canvas {
+	max-height: 600px;
+	width: 100%;
+	height: 100%;
+}
+
+.prisma-stats-table-container {
+	margin-top: 1.5rem;
+	text-align: center;
+}
+
+.prisma-stats-table-divider {
+	height: 1px;
+	background: linear-gradient(to right,
+			transparent,
+			var(--background-modifier-border) 20%,
+			var(--background-modifier-border) 80%,
+			transparent);
+}
+
+.prisma-stats-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--font-ui-small);
+}
+
+.prisma-weekly-stats-modal .prisma-stats-table th {
+	text-align: center;
+	padding: 0.75rem;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-weight: var(--font-weight-medium);
+	border-bottom: 2px solid var(--background-modifier-border);
+	border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.prisma-weekly-stats-modal .prisma-stats-table th:last-child {
+	border-right: none;
+}
+
+.prisma-weekly-stats-modal .prisma-stats-table td {
+	padding: 0.75rem;
+	border-bottom: 1px solid var(--background-modifier-border);
+	border-right: 1px solid rgba(255, 255, 255, 0.1);
+	color: var(--text-normal);
+}
+
+.prisma-weekly-stats-modal .prisma-stats-table td:last-child {
+	border-right: none;
+}
+
+.prisma-stats-table tr:last-child td {
+	border-bottom: none;
+}
+
+.prisma-stats-table tr:hover {
+	background-color: var(--background-secondary-alt);
+}
+
+.prisma-stats-recurring {
+	font-style: italic;
+	color: var(--text-accent);
+}
+
+/* Pagination Styles */
+.prisma-stats-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	margin-top: 1rem;
+	padding: 0.75rem;
+}
+
+.prisma-stats-pagination-button {
+	padding: 0.5rem 1rem;
+	background-color: var(--interactive-normal);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+	transition: background-color 0.2s;
+}
+
+.prisma-stats-pagination-button:hover:not(:disabled) {
+	background-color: var(--interactive-hover);
+}
+
+.prisma-stats-pagination-button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.prisma-stats-pagination-info {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+
+.prisma-stats-pagination-input-container {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.prisma-stats-pagination-label {
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	white-space: nowrap;
+}
+
+.prisma-stats-pagination-input {
+	width: 60px;
+	padding: 0.35rem 0.5rem;
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	text-align: center;
+	transition: border-color 0.2s;
+}
+
+.prisma-stats-pagination-input:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+}
+
+.prisma-stats-pagination-input::-webkit-inner-spin-button,
+.prisma-stats-pagination-input::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.prisma-stats-pagination-input[type="number"] {
+	appearance: textfield;
+	-moz-appearance: textfield;
+}
+
+/* Aggregation Mode Toggle Styles */
+.prisma-stats-mode-label {
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-muted);
+}
+
+.prisma-stats-mode-button-compact {
+	padding: 0.35rem 0.9rem;
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: 1px solid var(--interactive-accent);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-weight-medium);
+	transition: all 0.2s;
+	white-space: nowrap;
+}
+
+.prisma-stats-mode-button-compact:hover {
+	background-color: var(--interactive-accent-hover);
+	transform: translateY(-1px);
+}
+
+.prisma-stats-mode-button-compact:active {
+	transform: translateY(0);
+}
+
+/* ========================================
+   STATISTICS MODAL - MOBILE RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+
+	/* Override modal width for mobile */
+	.app-container .modal-container:has(.prisma-weekly-stats-modal)>.modal,
+	body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
+		max-width: 92vw;
+		width: 92vw;
+		min-width: unset;
+		margin: 0 auto;
+	}
+
+	/* Header: 2 rows instead of 6 */
+	.prisma-stats-header {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		grid-template-rows: auto auto;
+		gap: 8px 12px;
+		padding-bottom: 12px;
+		align-items: center;
+	}
+
+	/* Row 1: Previous | Duration + Date + Events | Next */
+	.prisma-stats-nav-button:first-child {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.prisma-stats-nav-button:last-child {
+		grid-column: 3;
+		grid-row: 1;
+	}
+
+	.prisma-stats-header-stat.prisma-stats-duration-toggle {
+		grid-column: 2;
+		grid-row: 1;
+		justify-self: start;
+	}
+
+	.prisma-stats-header-stat:not(.prisma-stats-duration-toggle) {
+		grid-column: 2;
+		grid-row: 1;
+		justify-self: end;
+	}
+
+	/* Row 2: Controls spanning full width */
+	.prisma-stats-middle-section {
+		grid-column: 1 / -1;
+		grid-row: 2;
+		width: 100%;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+	}
+
+	.prisma-stats-week-label {
+		font-size: 13px;
+		font-weight: 600;
+		flex: 0 0 100%;
+		text-align: center;
+	}
+
+	.prisma-stats-controls-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.prisma-stats-header-stat {
+		font-size: 11px;
+		padding: 4px 8px;
+	}
+
+	.prisma-stats-nav-button {
+		padding: 5px 10px;
+		font-size: 11px;
+	}
+
+	.prisma-stats-today-button {
+		padding: 4px 10px;
+		font-size: 11px;
+	}
+
+	.prisma-stats-mode-button-compact {
+		padding: 4px 8px;
+		font-size: 11px;
+	}
+
+	.prisma-stats-mode-label {
+		font-size: 10px;
+	}
+
+	.prisma-stats-aggregation-toggle {
+		gap: 4px;
+	}
+
+	.prisma-stats-skip-checkbox-label {
+		font-size: 10px;
+		gap: 4px;
+	}
+
+	.prisma-stats-skip-checkbox {
+		width: 14px;
+		height: 14px;
+	}
+
+	/* Chart: Much bigger pie chart */
+	.prisma-stats-chart-section {
+		margin-bottom: 1rem;
+	}
+
+	.prisma-stats-chart-header h3 {
+		font-size: 13px;
+	}
+
+	.prisma-stats-toggle-chart-btn {
+		font-size: 10px;
+		padding: 3px 6px;
+	}
+
+	.prisma-stats-chart-container:not(.prisma-hidden) {
+		min-height: 485px;
+		max-height: 600px;
+		padding-bottom: 1rem;
+	}
+
+	.prisma-weekly-stats-modal .prisma-stats-chart-container canvas {
+		max-height: 575px;
+	}
+
+	/* Table: Bigger text, better column proportions */
+	.prisma-stats-table {
+		font-size: 13px;
+		width: 100%;
+		table-layout: fixed;
+	}
+
+	/* Column widths: Name 40%, others ~20% each */
+	.prisma-weekly-stats-modal .prisma-stats-table th:nth-child(1),
+	.prisma-weekly-stats-modal .prisma-stats-table td:nth-child(1) {
+		width: 40%;
+	}
+
+	.prisma-weekly-stats-modal .prisma-stats-table th:nth-child(2),
+	.prisma-weekly-stats-modal .prisma-stats-table td:nth-child(2),
+	.prisma-weekly-stats-modal .prisma-stats-table th:nth-child(3),
+	.prisma-weekly-stats-modal .prisma-stats-table td:nth-child(3),
+	.prisma-weekly-stats-modal .prisma-stats-table th:nth-child(4),
+	.prisma-weekly-stats-modal .prisma-stats-table td:nth-child(4) {
+		width: 20%;
+	}
+
+	.prisma-weekly-stats-modal .prisma-stats-table th,
+	.prisma-weekly-stats-modal .prisma-stats-table td {
+		padding: 8px 6px;
+	}
+
+	/* Compact pagination */
+	.prisma-stats-pagination {
+		flex-wrap: wrap;
+		gap: 6px;
+		padding: 8px;
+	}
+
+	.prisma-stats-pagination-button {
+		padding: 4px 8px;
+		font-size: 11px;
+	}
+
+	.prisma-stats-pagination-info {
+		font-size: 11px;
+	}
+
+	.prisma-stats-pagination-input {
+		width: 50px;
+		padding: 3px 4px;
+		font-size: 11px;
+	}
+}
+
+/* ===================================
+   Recurring Events Modal - Type Filter & Badges
+   =================================== */
+
+/* Filters container - horizontal layout with items */
+.prisma-recurring-events-modal-filters {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+	margin-bottom: 1rem;
+	padding: 0.75rem 1rem;
+	background-color: var(--background-secondary);
+	border-radius: var(--radius-m);
+	border: 1px solid var(--background-modifier-border);
+	flex-wrap: wrap;
+}
+
+/* Type filter section */
+.prisma-recurring-events-type-filter {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.prisma-recurring-events-filter-label {
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-muted);
+}
+
+.prisma-recurring-events-type-select {
+	padding: 0.35rem 1.75rem 0.35rem 0.75rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	cursor: pointer;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='currentColor' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 0.5rem center;
+	background-size: 10px;
+	transition: all 0.15s ease;
+}
+
+.prisma-recurring-events-type-select:hover {
+	border-color: var(--interactive-accent);
+}
+
+.prisma-recurring-events-type-select:focus-visible {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+/* Toggle checkbox section */
+.prisma-recurring-events-toggle {
+	display: flex;
+	align-items: center;
+	margin-top: 0.75rem;
+}
+
+.prisma-recurring-events-checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	user-select: none;
+}
+
+.prisma-recurring-events-checkbox-label input[type="checkbox"] {
+	cursor: pointer;
+	width: 16px;
+	height: 16px;
+	accent-color: var(--interactive-accent);
+}
+
+/* Title row with type badge */
+.prisma-recurring-event-title-row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+/* Type badge base styles */
+.prisma-recurring-type-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: var(--font-weight-semibold);
+	letter-spacing: 0.3px;
+	text-transform: uppercase;
+	white-space: nowrap;
+	transition: all 0.2s ease;
+}
+
+/* Type-specific colors via CSS custom property pattern */
+.prisma-recurring-type-daily { --badge-color: 59, 130, 246; --badge-color-dark: 96, 165, 250; }
+.prisma-recurring-type-weekly { --badge-color: 34, 197, 94; --badge-color-dark: 74, 222, 128; }
+.prisma-recurring-type-bi-weekly { --badge-color: 168, 85, 247; --badge-color-dark: 192, 132, 252; }
+.prisma-recurring-type-monthly { --badge-color: 249, 115, 22; --badge-color-dark: 251, 146, 60; }
+.prisma-recurring-type-bi-monthly { --badge-color: 236, 72, 153; --badge-color-dark: 244, 114, 182; }
+.prisma-recurring-type-yearly { --badge-color: 20, 184, 166; --badge-color-dark: 45, 212, 191; }
+
+.prisma-recurring-type-badge[class*="prisma-recurring-type-"] {
+	background-color: rgba(var(--badge-color), 0.15);
+	color: rgb(var(--badge-color));
+	border: 1px solid rgba(var(--badge-color), 0.3);
+}
+
+.prisma-recurring-type-badge[class*="prisma-recurring-type-"]:hover {
+	transform: scale(1.05);
+	background-color: rgba(var(--badge-color), 0.25);
+}
+
+.theme-dark .prisma-recurring-type-badge[class*="prisma-recurring-type-"] {
+	background-color: rgba(var(--badge-color), 0.2);
+	color: rgb(var(--badge-color-dark));
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.prisma-recurring-events-modal-filters {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.75rem;
+	}
+
+	.prisma-recurring-event-title-row {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+	}
+
+	.prisma-recurring-type-badge {
+		font-size: 10px;
+		padding: 0.15rem 0.5rem;
+	}
+}
+
+

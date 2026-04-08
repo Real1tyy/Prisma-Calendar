@@ -1,0 +1,328 @@
+/* Settings Search */
+.prisma-settings-search {
+	margin-left: auto;
+	flex-shrink: 0;
+}
+
+.prisma-settings-search-input {
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	width: 150px;
+	transition: width 0.2s ease;
+}
+
+.prisma-settings-search-input:focus {
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+	width: 200px;
+}
+
+.prisma-settings-search-section {
+	margin-bottom: 8px;
+}
+
+.prisma-settings-search-no-results {
+	padding: 24px;
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+/* Settings Tabs */
+.prisma-settings-nav {
+	margin-bottom: 24px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	padding-bottom: 16px;
+}
+
+.prisma-nav-buttons {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.prisma-nav-buttons button {
+	padding: 8px 16px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.prisma-nav-buttons button.prisma-active {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.prisma-nav-buttons button:hover:not(.prisma-active) {
+	background-color: var(--background-modifier-hover);
+}
+
+.prisma-settings-info-box {
+	margin-top: 16px;
+	padding: 12px;
+	background-color: var(--background-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.prisma-settings-info-box h4 {
+	margin-top: 0;
+}
+
+.prisma-settings-info-box-example {
+	background-color: var(--background-primary);
+	padding: 8px;
+	border-radius: 4px;
+	margin-top: 8px;
+	font-size: 12px;
+	font-family: var(--font-monospace);
+	white-space: pre-wrap;
+}
+
+.prisma-settings-info-box ul {
+	margin-top: 4px;
+	padding-inline-start: 20px;
+}
+
+.prisma-settings-warning-box {
+	margin-top: 12px;
+	padding: 12px;
+	background-color: var(--background-modifier-error-rgb);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-error);
+}
+
+.prisma-settings-warning-box strong {
+	color: var(--text-error);
+}
+
+.prisma-frontmatter-display-example .prisma-example-event-box {
+	border: 1px solid var(--background-modifier-border);
+	padding: 8px;
+	border-radius: 4px;
+	max-width: 300px;
+	margin-top: 8px;
+}
+
+.prisma-example-event-box .prisma-title {
+	font-weight: 500;
+}
+
+.prisma-example-event-box .prisma-properties {
+	font-size: 0.9em;
+	color: var(--text-muted);
+	margin-top: 4px;
+}
+
+/* Color example list items */
+.prisma-color-example-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 6px;
+}
+
+.prisma-color-example-item .prisma-settings-info-box-example {
+	flex: 0 0 auto;
+}
+
+.prisma-color-arrow {
+	flex-shrink: 0;
+	color: var(--text-muted);
+}
+
+/* Color example dot in examples */
+.prisma-color-example-dot {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	border-radius: 3px;
+	background-color: var(--example-color);
+	border: 1px solid var(--background-modifier-border);
+	vertical-align: middle;
+	flex-shrink: 0;
+}
+
+.prisma-color-example-description {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+/* Color rule items - Compact single row layout */
+.prisma-color-rule-item {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 8px 12px;
+	margin-bottom: 8px;
+	background-color: var(--background-secondary);
+}
+
+.prisma-color-rule-main-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.prisma-color-rule-left {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1;
+	min-width: 0;
+}
+
+.prisma-color-rule-order {
+	font-size: 11px;
+	font-weight: bold;
+	color: var(--text-muted);
+	min-width: 20px;
+	flex-shrink: 0;
+}
+
+.prisma-color-rule-left input[type="checkbox"] {
+	flex-shrink: 0;
+	cursor: pointer;
+}
+
+.prisma-color-rule-expression-input {
+	flex: 1;
+	min-width: 0;
+	padding: 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-small);
+}
+
+.prisma-color-rule-expression-input:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+}
+
+.prisma-color-rule-right {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.prisma-color-rule-picker-wrapper {
+	display: flex;
+	align-items: center;
+}
+
+.prisma-color-rule-picker-wrapper .prisma-setting-item {
+	border: none;
+	padding: 0;
+	margin: 0;
+	background: transparent;
+}
+
+.prisma-color-rule-picker-wrapper .prisma-setting-item-control {
+	display: flex;
+	align-items: center;
+}
+
+.prisma-color-rule-controls {
+	display: flex;
+	gap: 4px;
+}
+
+.prisma-color-rule-btn {
+	padding: 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	cursor: pointer;
+	font-size: 14px;
+	line-height: 1;
+	transition: all 0.15s ease;
+}
+
+.prisma-color-rule-btn:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.prisma-color-rule-btn-delete {
+	color: var(--text-error);
+}
+
+.prisma-color-rule-btn-delete:hover {
+	background-color: var(--background-modifier-error);
+	border-color: var(--text-error);
+}
+
+/* Filter preset items */
+.prisma-filter-preset-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 8px 12px;
+	margin-bottom: 8px;
+	background-color: var(--background-secondary);
+}
+
+.prisma-filter-preset-name-input {
+	flex: 0 0 180px;
+	padding: 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-weight-medium);
+}
+
+.prisma-filter-preset-name-input:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+}
+
+.prisma-filter-preset-expression-input {
+	flex: 1;
+	min-width: 0;
+	padding: 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-small);
+}
+
+.prisma-filter-preset-expression-input:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+}
+
+.prisma-filter-preset-btn-delete {
+	padding: 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-error);
+	cursor: pointer;
+	font-size: 14px;
+	line-height: 1;
+	transition: all 0.15s ease;
+	flex-shrink: 0;
+}
+
+.prisma-filter-preset-btn-delete:hover {
+	background-color: var(--background-modifier-error);
+	border-color: var(--text-error);
+}
+

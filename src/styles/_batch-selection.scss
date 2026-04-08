@@ -1,0 +1,273 @@
+/* Batch Selection Styles - Now integrated into calendar toolbar */
+.fc-button.prisma-batch-action-btn {
+	background: var(--interactive-normal);
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	padding: 4px 8px;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	transition: all 0.15s ease;
+	white-space: nowrap;
+}
+
+.fc-button.prisma-batch-action-btn:hover {
+	background: var(--interactive-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-batch-counter {
+	font-weight: var(--font-weight-medium);
+	background: var(--background-secondary);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-select-all-btn {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-clear-btn {
+	background: var(--background-modifier-form-field);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-exit-btn {
+	background: var(--background-secondary);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-delete-btn {
+	background: var(--color-red);
+	color: white;
+	border-color: var(--color-red);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-delete-btn:hover {
+	background: var(--color-red-rgb);
+	box-shadow: 0 2px 8px rgba(var(--color-red-rgb), 0.3);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-clone-next-btn,
+.fc-button.prisma-batch-action-btn.prisma-clone-prev-btn,
+.fc-button.prisma-batch-action-btn.prisma-duplicate-btn {
+	background: var(--color-blue);
+	color: white;
+	border-color: var(--color-blue);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-move-next-btn,
+.fc-button.prisma-batch-action-btn.prisma-move-prev-btn {
+	background: var(--color-orange);
+	color: white;
+	border-color: var(--color-orange);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-open-all-btn {
+	background: var(--color-green);
+	color: white;
+	border-color: var(--color-green);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-skip-btn {
+	background: var(--color-yellow);
+	color: white;
+	border-color: var(--color-yellow);
+}
+
+.fc-button.prisma-batch-action-btn.prisma-move-by-btn {
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	border-color: var(--background-modifier-border);
+}
+
+/* Fix event collapsing in month view */
+.fc-daygrid-event.prisma-batch-selectable,
+.fc-daygrid-event.prisma-batch-selectable .fc-event-main {
+	overflow: visible;
+}
+
+/* Checkbox for dot events (timed events in month view) - no .fc-event-main */
+.fc-daygrid-dot-event.prisma-batch-selectable {
+	position: relative;
+}
+
+/* Shared checkbox styling for both block events (.fc-event-main::before) and dot events (::before) */
+.fc-event.prisma-batch-selectable .fc-event-main::before,
+.fc-daygrid-dot-event.prisma-batch-selectable::before {
+	content: "";
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	width: 16px;
+	height: 16px;
+	border: 2px solid rgba(255, 255, 255, 0.8);
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.2);
+	backdrop-filter: blur(2px);
+	z-index: 10;
+	opacity: 0.8;
+	transition: all 0.2s ease;
+}
+
+/* Adjust checkbox position for compact month view block events (all-day events only, not dots) */
+.fc-daygrid-block-event.prisma-batch-selectable .fc-event-main::before:not(.fc-daygrid-dot-event) {
+	top: 1px;
+	right: 1px;
+	width: 14px;
+	height: 14px;
+}
+
+/* Ensure dot events always use full size (override any compact sizing) */
+.fc-daygrid-dot-event.prisma-batch-selectable::before {
+	top: 4px;
+	right: 4px;
+	width: 16px;
+	height: 16px;
+}
+
+.fc-event.prisma-batch-selectable:hover .fc-event-main::before,
+.fc-daygrid-dot-event.prisma-batch-selectable:hover::before {
+	opacity: 1;
+	transform: scale(1.1);
+	border-color: var(--interactive-accent);
+}
+
+.fc-event.prisma-batch-selected .fc-event-main::before,
+.fc-daygrid-dot-event.prisma-batch-selected::before {
+	background: var(--interactive-accent);
+	border-color: white;
+	content: "✓";
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	font-weight: bold;
+	color: white;
+	opacity: 1;
+}
+
+/* Smaller checkmark for compact month view block events (all-day events only, not dots) */
+.fc-daygrid-block-event.prisma-batch-selected .fc-event-main::before:not(.fc-daygrid-dot-event) {
+	font-size: 9px;
+}
+
+/* Ensure dot events always use full size checkmark */
+.fc-daygrid-dot-event.prisma-batch-selected::before {
+	font-size: 10px;
+}
+
+/* Event Selection States - Updated for FullCalendar DOM structure */
+.fc-event.prisma-batch-selectable {
+	cursor: pointer;
+	transition:
+		box-shadow 0.2s ease,
+		z-index 0.2s ease;
+}
+
+/* Apply relative positioning to an inner element to avoid breaking FC's layout */
+.fc-event.prisma-batch-selectable .fc-event-main {
+	position: relative;
+	height: 100%;
+	width: 100%;
+}
+
+.fc-event.prisma-batch-selected,
+.fc-daygrid-dot-event.prisma-batch-selected {
+	box-shadow:
+		0 0 0 2px var(--interactive-accent),
+		0 4px 12px rgba(var(--interactive-accent-rgb), 0.3),
+		0 2px 4px rgba(0, 0, 0, 0.1);
+	z-index: 5;
+}
+
+.fc-event.prisma-batch-selected:hover {
+	box-shadow:
+		0 0 0 2px var(--interactive-accent),
+		0 6px 20px rgba(var(--interactive-accent-rgb), 0.4),
+		0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Selection animations */
+/* Removed animations that could affect event sizing */
+
+/* Removed keyframes that could cause event sizing issues */
+
+/* List view batch selection adjustments */
+.prisma-calendar-container .fc-list-event.prisma-batch-selectable {
+	position: relative;
+}
+
+.prisma-calendar-container .fc-list-event.prisma-batch-selectable .fc-list-event-graphic {
+	position: relative;
+}
+
+.prisma-calendar-container .fc-list-event.prisma-batch-selectable .fc-list-event-graphic::before {
+	content: "";
+	position: absolute;
+	left: -24px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 16px;
+	height: 16px;
+	border: 2px solid var(--text-faint);
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.2);
+}
+
+.prisma-calendar-container .fc-list-event.prisma-batch-selected .fc-list-event-graphic::before {
+	background: var(--interactive-accent);
+	border-color: white;
+	content: "✓";
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	font-weight: bold;
+	color: white;
+}
+
+/* Responsive batch selection */
+@media (max-width: 768px) {
+	.prisma-batch-selection-bar {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 4px;
+		margin-left: 4px;
+		padding: 2px 4px;
+	}
+
+	.prisma-batch-actions {
+		justify-content: center;
+		gap: 6px;
+	}
+
+	.prisma-batch-action-btn {
+		flex: 1;
+		min-width: 0;
+		font-size: var(--font-ui-smaller);
+		padding: 6px 4px;
+	}
+
+	.fc-event.prisma-batch-selectable .fc-event-main::before,
+	.fc-event.prisma-batch-selected .fc-event-main::before {
+		width: 14px;
+		height: 14px;
+		font-size: 9px;
+	}
+}
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+	.prisma-calendar-event {
+		transition: none;
+	}
+
+	.fc-event.prisma-batch-selectable .fc-event-main::before,
+	.fc-event.prisma-batch-selected .fc-event-main::before {
+		transition: none;
+	}
+
+	.prisma-batch-action-btn {
+		transition: none;
+	}
+}
+

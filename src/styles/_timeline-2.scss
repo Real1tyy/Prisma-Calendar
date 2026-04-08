@@ -1,0 +1,98 @@
+/* vis-timeline overrides for theme compatibility */
+
+.prisma-timeline-modal .vis-timeline {
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	font-family: var(--font-interface);
+}
+
+.prisma-timeline-modal .vis-item {
+	background-color: var(--interactive-accent);
+	border-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	font-size: 0.9em;
+	border-radius: 4px;
+}
+
+.prisma-timeline-modal .vis-item.vis-range {
+	overflow: visible;
+	min-width: 80px;
+}
+
+.prisma-timeline-modal .vis-item .vis-item-overflow {
+	overflow: visible;
+}
+
+.prisma-timeline-modal .vis-item.vis-range .vis-item-content {
+	white-space: normal;
+	word-break: break-word;
+	overflow: visible;
+	min-width: 80px;
+}
+
+.prisma-timeline-modal .vis-item.vis-selected {
+	background-color: var(--interactive-accent-hover);
+	border-color: var(--interactive-accent-hover);
+}
+
+.prisma-timeline-modal .vis-time-axis .vis-text {
+	color: var(--text-normal);
+}
+
+.prisma-timeline-modal .vis-time-axis .vis-grid.vis-minor {
+	border-color: var(--background-modifier-border);
+}
+
+.prisma-timeline-modal .vis-time-axis .vis-grid.vis-major {
+	border-color: var(--background-modifier-border-hover);
+}
+
+.prisma-timeline-modal .vis-panel.vis-background {
+	background: var(--background-primary);
+}
+
+.prisma-timeline-modal .vis-panel.vis-center {
+	background: var(--background-primary);
+}
+
+.prisma-timeline-modal .vis-current-time {
+	background-color: var(--text-error);
+}
+
+.prisma-timeline-modal .vis-item.prisma-timeline-item-skipped {
+	opacity: 0.5;
+}
+
+.prisma-timeline-modal .vis-item.prisma-timeline-item-skipped .vis-item-content {
+	text-decoration: line-through;
+}
+
+/* All-day events: hollow circle dot and dashed border */
+.prisma-timeline-modal .vis-item.prisma-timeline-item-allday {
+	border-style: dashed;
+}
+
+.prisma-timeline-modal .vis-item.prisma-timeline-item-allday .vis-dot {
+	background-color: transparent;
+	border-width: 3px;
+}
+
+/* Timed events: square dot */
+.prisma-timeline-modal .vis-item.prisma-timeline-item-timed .vis-dot {
+	border-radius: 2px;
+}
+
+.prisma-timeline-modal .vis-tooltip {
+	max-width: 350px;
+	white-space: pre-wrap;
+	word-break: break-word;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 8px 12px;
+	font-size: 1.05em;
+	line-height: 1.5;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+

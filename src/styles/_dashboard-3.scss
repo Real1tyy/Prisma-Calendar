@@ -1,0 +1,57 @@
+/* ─── View Filter Bar (Timeline, Heatmap, Gantt) ─────────── */
+
+.prisma-view-filter-bar {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.prisma-view-filter-bar .prisma-fc-filter-preset-wrapper {
+	flex: 0 0 auto;
+	margin-left: 0;
+}
+
+.prisma-view-filter-bar .prisma-fc-filter-preset-select {
+	padding: 4px 24px 4px 8px;
+	text-align: left;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 6px center;
+	background-size: 10px;
+}
+
+/* ─── View Toolbar (shared across Timeline, Heatmap, Gantt) ── */
+
+.prisma-view-header-row {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	overflow: hidden;
+}
+
+.prisma-view-header-left {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex: 0 1 auto;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.prisma-view-header-right {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex: 0 0 auto;
+}
+
+.prisma-view-header-divider {
+	width: 1px;
+	height: 20px;
+	background: var(--background-modifier-border);
+	flex-shrink: 0;
+}

@@ -1,0 +1,164 @@
+/* Settings Tab Styles */
+.prisma-settings-footer {
+	margin-top: 2rem;
+	text-align: center;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+}
+
+.prisma-settings-footer-links {
+	display: flex;
+	justify-content: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.prisma-settings-support-link {
+	text-decoration: none;
+	color: var(--text-accent);
+}
+
+/* Batch Action Buttons Settings */
+.prisma-batch-buttons-container {
+	margin-top: 10px;
+}
+
+.prisma-batch-button-setting {
+	border-top: none;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+/* Settings Integrations Section */
+.prisma-settings-integrations-desc {
+	margin-bottom: 1rem;
+}
+
+.prisma-settings-integrations-desc p {
+	margin: 0 0 0.5rem 0;
+	line-height: 1.5;
+}
+
+.prisma-settings-muted {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.prisma-settings-docs-link {
+	display: inline-block;
+	margin-top: 0.5rem;
+	color: var(--text-accent);
+	text-decoration: none;
+}
+
+.prisma-settings-docs-link:hover {
+	text-decoration: underline;
+}
+
+.prisma-settings-integrations-buttons {
+	display: flex;
+	gap: 0.75rem;
+	margin-top: 1rem;
+}
+
+.prisma-settings-integration-button {
+	padding: 0.5rem 1rem;
+	border-radius: var(--radius-s);
+	border: 1px solid var(--background-modifier-border);
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.prisma-settings-integration-button:hover {
+	background: var(--interactive-hover);
+	border-color: var(--interactive-accent);
+}
+
+.prisma-calendar-management-header {
+	margin-bottom: 24px;
+	padding: 16px;
+	background-color: var(--background-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.prisma-calendar-actions {
+	display: flex;
+	gap: 8px;
+	margin-top: 12px;
+	flex-wrap: wrap;
+}
+
+.prisma-calendar-action-button {
+	padding: 6px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-weight-medium);
+	transition: all 0.2s ease;
+	border: 1px solid transparent;
+	outline: none;
+}
+
+.prisma-calendar-action-button:hover:not(:disabled) {
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.prisma-calendar-action-button:active:not(:disabled) {
+	transform: translateY(0);
+}
+
+.prisma-calendar-create-button {
+	border: 1px solid var(--interactive-accent);
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.prisma-calendar-create-button:hover:not(:disabled) {
+	background-color: var(--interactive-accent-hover);
+	border-color: var(--interactive-accent-hover);
+}
+
+.prisma-calendar-clone-button,
+.prisma-calendar-rename-button {
+	border: 1px solid var(--background-modifier-border);
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+}
+
+.prisma-calendar-clone-button:hover:not(:disabled),
+.prisma-calendar-rename-button:hover:not(:disabled) {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--background-modifier-border-hover);
+}
+
+.prisma-calendar-delete-button {
+	border: 1px solid var(--text-error);
+	background-color: var(--background-primary);
+	color: var(--text-error);
+}
+
+.prisma-calendar-delete-button:hover:not(:disabled) {
+	background-color: var(--background-modifier-error);
+	border-color: var(--text-error);
+}
+
+.prisma-calendar-button-disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.prisma-calendar-button-disabled:hover {
+	transform: none;
+	box-shadow: none;
+}
+
+.prisma-calendar-count-info {
+	margin-top: 8px;
+	font-size: 12px;
+	color: var(--text-muted);
+}
+

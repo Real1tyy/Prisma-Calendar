@@ -1,0 +1,52 @@
+/* Custom Calendar Plugin Styles */
+
+/* Utility classes */
+.prisma-hidden {
+	display: none;
+}
+
+.prisma-fade-out {
+	opacity: 0;
+	transition: opacity 0.2s ease-out;
+}
+
+/* Keyboard-only focus rings for buttons */
+[class*="prisma-"] button:focus-visible,
+button[class*="prisma-"]:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
+/* Tabbed view root: prevent Obsidian's .view-content from creating a competing
+   scroll context — .prisma-tab-content is the sole scroll container so that
+   position: sticky on the toolbar / day-headers / all-day section works. */
+.view-content.prisma-calendar-view-root {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+	padding: 0;
+}
+
+/* Override shared tab-panel height so sticky positioning works —
+   the panel must grow with its content for sticky children to
+   remain attached to the scroll container (.prisma-tab-content). */
+.view-content.prisma-calendar-view-root .prisma-tab-panel {
+	height: auto;
+	min-height: 100%;
+}
+
+.prisma-calendar-container {
+	position: relative;
+	height: auto;
+	min-height: max(100%, 400px);
+	overflow-x: clip;
+	--prisma-sticky-toolbar-offset: 0px;
+	--prisma-sticky-day-header-height: 0px;
+	--prisma-connection-z: 12;
+}
+
+.prisma-connection-overlay {
+	z-index: var(--prisma-connection-z);
+}
+

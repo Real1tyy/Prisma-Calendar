@@ -1,0 +1,19 @@
+/* ─── Gantt Tab (overrides — base styles injected by shared library) ── */
+
+.prisma-gantt-create-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	background: none;
+	border: none;
+	color: var(--text-muted);
+}
+
+.prisma-gantt-create-btn:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
