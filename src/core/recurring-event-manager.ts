@@ -51,6 +51,29 @@ import type { Indexer, IndexerEvent } from "./indexer";
 
 const DATE_FORMAT = "yyyy-MM-dd";
 
+/**
+ * Returns the first valid recurrence date, skipping the source day if it matches.
+ * Recurring events should not generate an instance on the same day as the source note.
+ */
+function getInitialOccurrenceDate(rrules: NodeRecurringEvent["rrules"]): DateTime {
+	const firstValidDate = findFirstValidStartDate(rrules);
+	if (firstValidDate.hasSame(getStartDateTime(rrules), "day")) {
+		return getNextOccurrence(firstValidDate, rrules.type, rrules.weekdays);
+	}
+	return firstValidDate;
+}
+
+/**
+ * Advances a recurrence date forward until it is strictly past the given boundary.
+ */
+function advancePastDate(startDate: DateTime, boundary: DateTime, rrules: NodeRecurringEvent["rrules"]): DateTime {
+	let current = startDate;
+	while (current <= boundary) {
+		current = getNextOccurrence(current, rrules.type, rrules.weekdays);
+	}
+	return current;
+}
+
 interface NodeRecurringEventInstance {
 	recurringEvent: NodeRecurringEvent;
 	instanceDate: DateTime;
@@ -691,12 +714,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 		physicalInstances: Map<string, PhysicalInstance>,
 		now: DateTime
 	): Promise<void> {
-		const firstValidDate = findFirstValidStartDate(recurringEvent.rrules);
-
-		let currentDate = firstValidDate;
-		if (firstValidDate.hasSame(getStartDateTime(recurringEvent.rrules), "day")) {
-			currentDate = getNextOccurrence(firstValidDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
-		}
+		let currentDate = getInitialOccurrenceDate(recurringEvent.rrules);
 
 		while (currentDate <= now.startOf("day")) {
 			await this.createInstanceIfMissing(recurringEvent, physicalInstances, currentDate);
@@ -778,19 +796,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 			return getNextOccurrence(latestInstanceDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
 		}
 
-		const sourceDateTime = getStartDateTime(recurringEvent.rrules);
-		const firstValidDate = findFirstValidStartDate(recurringEvent.rrules);
-
-		let currentDate = firstValidDate;
-		if (firstValidDate.hasSame(sourceDateTime, "day")) {
-			currentDate = getNextOccurrence(firstValidDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
-		}
-
-		while (currentDate <= fromDate) {
-			currentDate = getNextOccurrence(currentDate, recurringEvent.rrules.type, recurringEvent.rrules.weekdays);
-		}
-
-		return currentDate;
+		return advancePastDate(getInitialOccurrenceDate(recurringEvent.rrules), fromDate, recurringEvent.rrules);
 	}
 
 	private generateNodeInstanceFilePath(recurringEvent: NodeRecurringEvent, instanceDate: DateTime): string {

@@ -307,24 +307,22 @@ class PrismaBasesView extends BasesView {
 					handleSharedEventClick(this.app, bundle, info.event);
 				}
 			},
-			eventDrop: (info: { event: CalendarEventData; oldEvent: CalendarEventData; revert: () => void }) => {
+			eventDrop: (info: { event: CalendarEventData; oldEvent: CalendarEventData; revert: () => void }) =>
 				void handleSharedEventUpdate(
 					this.app,
 					bundle,
 					extractSharedEventUpdateInfo(info),
 					"Error updating event dates:",
 					"BasesCalendarView"
-				);
-			},
-			eventResize: (info: { event: CalendarEventData; oldEvent: CalendarEventData; revert: () => void }) => {
+				),
+			eventResize: (info: { event: CalendarEventData; oldEvent: CalendarEventData; revert: () => void }) =>
 				void handleSharedEventUpdate(
 					this.app,
 					bundle,
 					extractSharedEventUpdateInfo(info),
 					"Error updating event duration:",
 					"BasesCalendarView"
-				);
-			},
+				),
 			dateClick: (info: { date: Date; allDay: boolean }) => {
 				if (!this.isHandlingSelection) handleSharedDateClick(this.app, bundle, this.calendar!, info);
 				setTimeout(() => {

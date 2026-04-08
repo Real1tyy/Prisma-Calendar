@@ -1,4 +1,4 @@
-import { Calendar, type CustomButtonInput } from "@fullcalendar/core";
+import { Calendar, type CustomButtonInput, type EventMountArg } from "@fullcalendar/core";
 import allLocales from "@fullcalendar/core/locales-all";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DropArg } from "@fullcalendar/interaction";
@@ -355,32 +355,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				return renderEventContent(arg, this.getEventRenderContext());
 			},
 
-			eventClassNames: (arg) => {
-				const eventEnd = arg.event.end || arg.event.start;
-				if (!eventEnd) return [];
-
-				const isAllDay = arg.event.allDay;
-				let isPast: boolean;
-
-				if (isAllDay) {
-					// For all-day events, compare dates only (not times)
-					const eventDate = new Date(eventEnd.getFullYear(), eventEnd.getMonth(), eventEnd.getDate());
-					isPast = eventDate < this.cachedTodayStart;
-				} else {
-					isPast = eventEnd < this.cachedNow;
-				}
-
-				const classes = [];
-				if (isPast) {
-					const contrast = this.bundle.settingsStore.currentSettings.pastEventContrast;
-					if (contrast === 0) {
-						classes.push(cls("past-event-hidden"));
-					} else if (contrast < 100) {
-						classes.push(cls("past-event-faded"));
-					}
-				}
-				return classes;
-			},
+			eventClassNames: (arg) => this.computeEventClassNames(arg),
 
 			customButtons: {}, // Initially empty, will be set by updateToolbar
 
@@ -399,26 +374,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 			dayMaxEvents: this.isMobileView() ? settings.mobileMaxEventsPerDay : settings.desktopMaxEventsPerDay || false,
 
-			windowResize: () => {
-				const currentSettings = this.bundle.settingsStore.currentSettings;
-				const isMobile = this.isMobileView();
-				const didMobileBreakpointChange = isMobile !== this.isMobileLayout;
-				if (isMobile !== this.isMobileLayout) {
-					this.isMobileLayout = isMobile;
-					if (isMobile) {
-						this.mobileControlsCollapsed = true;
-					}
-				}
-				this.applyMobileControlsCollapsedState();
-				if (didMobileBreakpointChange) {
-					this.updateToolbar();
-				}
-				this.calendar?.setOption(
-					"dayMaxEvents",
-					this.isMobileView() ? currentSettings.mobileMaxEventsPerDay : currentSettings.desktopMaxEventsPerDay || false
-				);
-				this.scheduleStickyOffsetsUpdate();
-			},
+			windowResize: () => this.handleWindowResize(),
 
 			editable: true,
 			eventStartEditable: true,
@@ -460,41 +416,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				}
 			},
 
-			eventDidMount: (info) => {
-				const vk = getVirtualKind(info.event);
-				if (isAnyVirtual(vk)) {
-					info.el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
-					if (vk === "holiday") {
-						info.el.classList.add(cls("holiday-event"));
-						info.el.title = "Holiday (read-only)";
-					} else if (vk === "manual") {
-						info.el.title = "Virtual event (no backing file)";
-					} else if (vk === "recurring") {
-						info.el.title = "Virtual recurring event (read-only)";
-					}
-				}
-				if (isBatchSelectable(info.event)) {
-					this.batchSelectionManager?.handleEventMount(info.event.id, info.el);
-				}
-				this.handleEventMount(info);
-
-				info.el.addEventListener("contextmenu", (e) => {
-					e.preventDefault();
-					this.eventContextMenu.show(e, info, info.el, this.container);
-				});
-
-				if (isFileBackedEvent(info.event)) {
-					const filePath = getFilePath(info.event);
-					if (filePath) {
-						info.el.addEventListener("mouseenter", (e) => {
-							const settings = this.bundle.settingsStore.currentSettings;
-							if (settings.enableEventPreview) {
-								emitHover(this.app, this.container, info.el, e, filePath, this.bundle.calendarId);
-							}
-						});
-					}
-				}
-			},
+			eventDidMount: (info) => this.handleEventDidMount(info),
 
 			eventMouseEnter: (info) => {
 				this.lastFocusedEventInfo = info.event;
@@ -773,6 +695,92 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		for (const subscription of icsSubscriptionSettings.subscriptions) {
 			if (subscription.icon) {
 				this.calendarIconCache.set(`ics:${subscription.id}`, subscription.icon);
+			}
+		}
+	}
+
+	// ─── Calendar Event Handlers ────────────────────────────────
+
+	private computeEventClassNames(arg: { event: { end: Date | null; start: Date | null; allDay: boolean } }): string[] {
+		const eventEnd = arg.event.end || arg.event.start;
+		if (!eventEnd) return [];
+
+		const isAllDay = arg.event.allDay;
+		let isPast: boolean;
+
+		if (isAllDay) {
+			// For all-day events, compare dates only (not times)
+			const eventDate = new Date(eventEnd.getFullYear(), eventEnd.getMonth(), eventEnd.getDate());
+			isPast = eventDate < this.cachedTodayStart;
+		} else {
+			isPast = eventEnd < this.cachedNow;
+		}
+
+		const classes: string[] = [];
+		if (isPast) {
+			const contrast = this.bundle.settingsStore.currentSettings.pastEventContrast;
+			if (contrast === 0) {
+				classes.push(cls("past-event-hidden"));
+			} else if (contrast < 100) {
+				classes.push(cls("past-event-faded"));
+			}
+		}
+		return classes;
+	}
+
+	private handleWindowResize(): void {
+		const currentSettings = this.bundle.settingsStore.currentSettings;
+		const isMobile = this.isMobileView();
+		const didMobileBreakpointChange = isMobile !== this.isMobileLayout;
+		if (isMobile !== this.isMobileLayout) {
+			this.isMobileLayout = isMobile;
+			if (isMobile) {
+				this.mobileControlsCollapsed = true;
+			}
+		}
+		this.applyMobileControlsCollapsedState();
+		if (didMobileBreakpointChange) {
+			this.updateToolbar();
+		}
+		this.calendar?.setOption(
+			"dayMaxEvents",
+			this.isMobileView() ? currentSettings.mobileMaxEventsPerDay : currentSettings.desktopMaxEventsPerDay || false
+		);
+		this.scheduleStickyOffsetsUpdate();
+	}
+
+	private handleEventDidMount(info: EventMountArg): void {
+		const vk = getVirtualKind(info.event);
+		if (isAnyVirtual(vk)) {
+			info.el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
+			if (vk === "holiday") {
+				info.el.classList.add(cls("holiday-event"));
+				info.el.title = "Holiday (read-only)";
+			} else if (vk === "manual") {
+				info.el.title = "Virtual event (no backing file)";
+			} else if (vk === "recurring") {
+				info.el.title = "Virtual recurring event (read-only)";
+			}
+		}
+		if (isBatchSelectable(info.event)) {
+			this.batchSelectionManager?.handleEventMount(info.event.id, info.el);
+		}
+		this.handleEventMount(info);
+
+		info.el.addEventListener("contextmenu", (e) => {
+			e.preventDefault();
+			this.eventContextMenu.show(e, info, info.el, this.container);
+		});
+
+		if (isFileBackedEvent(info.event)) {
+			const filePath = getFilePath(info.event);
+			if (filePath) {
+				info.el.addEventListener("mouseenter", (e) => {
+					const settings = this.bundle.settingsStore.currentSettings;
+					if (settings.enableEventPreview) {
+						emitHover(this.app, this.container, info.el, e, filePath, this.bundle.calendarId);
+					}
+				});
 			}
 		}
 	}
@@ -1555,70 +1563,65 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			return;
 		}
 
-		if (virtualKind === "recurring" && filePath && typeof filePath === "string") {
-			const sourceFile = this.app.vault.getAbstractFileByPath(filePath);
-			if (sourceFile instanceof TFile) {
-				const cache = this.app.metadataCache.getFileCache(sourceFile);
-				if (cache?.frontmatter) {
-					// Create a pseudo-event object with source file data for the preview
-					const sourceEvent = {
-						title: event.title,
-						extendedProps: {
-							filePath: filePath,
-							frontmatterDisplayData: cache.frontmatter,
-						},
-					};
-					const previewEvent: PreviewEventData = {
-						title: sourceEvent.title,
-						start: null,
-						end: null,
-						allDay: false,
-						extendedProps: sourceEvent.extendedProps,
-					};
-					showEventPreviewModal(this.app, this.bundle, previewEvent);
-					return;
-				}
-			}
-		}
-
-		// On mobile: single tap = context menu, double tap = open note
-		if (this.isMobileView()) {
-			const currentTime = Date.now();
-			const timeSinceLastTap = currentTime - this.lastMobileTapTime;
-			const DOUBLE_TAP_DELAY = DOUBLE_TAP_DELAY_MS;
-
-			if (timeSinceLastTap < DOUBLE_TAP_DELAY && timeSinceLastTap > 0) {
-				// Double tap - open the note
-				this.lastMobileTapTime = 0;
-				if (filePath && typeof filePath === "string") {
-					void this.app.workspace.openLinkText(filePath, "", false);
-				}
-				return;
-			}
-
-			// Single tap - show context menu
-			this.lastMobileTapTime = currentTime;
-			const rect = eventEl.getBoundingClientRect();
-			const menuEvent = {
-				title: event.title,
-				start: event.start,
-				end: event.end,
-				allDay: event.allDay,
-				extendedProps: event.extendedProps,
-			};
-			this.eventContextMenu.show(
-				{ x: rect.left + rect.width / 2, y: rect.top },
-				{ event: menuEvent },
-				eventEl,
-				this.container
-			);
+		if (virtualKind === "recurring" && this.handleRecurringEventClick(event)) {
 			return;
 		}
 
-		// For regular and physical events, open the file
+		if (this.isMobileView()) {
+			this.handleMobileEventClick(event, eventEl);
+			return;
+		}
+
 		if (filePath && typeof filePath === "string") {
 			void this.app.workspace.openLinkText(filePath, "", false);
 		}
+	}
+
+	private handleRecurringEventClick(event: Pick<CalendarEventData, "title" | "extendedProps">): boolean {
+		const filePath = event.extendedProps.filePath;
+		if (!filePath || typeof filePath !== "string") return false;
+
+		const sourceFile = this.app.vault.getAbstractFileByPath(filePath);
+		if (!(sourceFile instanceof TFile)) return false;
+
+		const cache = this.app.metadataCache.getFileCache(sourceFile);
+		if (!cache?.frontmatter) return false;
+
+		const previewEvent: PreviewEventData = {
+			title: event.title,
+			start: null,
+			end: null,
+			allDay: false,
+			extendedProps: {
+				filePath,
+				frontmatterDisplayData: cache.frontmatter,
+			},
+		};
+		showEventPreviewModal(this.app, this.bundle, previewEvent);
+		return true;
+	}
+
+	private handleMobileEventClick(
+		event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay">,
+		eventEl: HTMLElement
+	): void {
+		const currentTime = Date.now();
+		const timeSinceLastTap = currentTime - this.lastMobileTapTime;
+
+		// Double tap — open the note
+		if (timeSinceLastTap < DOUBLE_TAP_DELAY_MS && timeSinceLastTap > 0) {
+			this.lastMobileTapTime = 0;
+			const filePath = event.extendedProps.filePath;
+			if (filePath && typeof filePath === "string") {
+				void this.app.workspace.openLinkText(filePath, "", false);
+			}
+			return;
+		}
+
+		// Single tap — show context menu
+		this.lastMobileTapTime = currentTime;
+		const rect = eventEl.getBoundingClientRect();
+		this.eventContextMenu.show({ x: rect.left + rect.width / 2, y: rect.top }, { event }, eventEl, this.container);
 	}
 
 	private handleDateClick(info: { date: Date; allDay: boolean }): void {
@@ -2316,31 +2319,8 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const endDate = stripISOSuffix(toLocalISOString(adjustedEnd));
 
 		const settings = this.bundle.settingsStore.currentSettings;
-		let intervalLabel = "";
-		if (viewType.includes("Day")) {
-			const date = new Date(view.currentStart);
-			intervalLabel = date.toLocaleDateString(settings.locale, {
-				weekday: "long",
-				month: "short",
-				day: "numeric",
-				year: "numeric",
-			});
-		} else if (viewType.includes("Week")) {
-			const start = new Date(view.currentStart);
-			const end = new Date(view.currentEnd);
-			end.setDate(end.getDate() - 1);
-			intervalLabel = `${start.toLocaleDateString(settings.locale, { month: "short", day: "numeric" })} - ${end.toLocaleDateString(settings.locale, { month: "short", day: "numeric", year: "numeric" })}`;
-		} else if (viewType.includes("Month")) {
-			const date = new Date(view.currentStart);
-			intervalLabel = date.toLocaleDateString(settings.locale, {
-				month: "long",
-				year: "numeric",
-			});
-		} else {
-			intervalLabel = "Current View";
-		}
-
-		showIntervalEventsModal(this.app, intervalLabel, startDate, endDate, this.bundle.settingsStore.currentSettings);
+		const intervalLabel = this.formatIntervalLabel(viewType, view.currentStart, view.currentEnd, settings.locale);
+		showIntervalEventsModal(this.app, intervalLabel, startDate, endDate, settings);
 	}
 
 	private async toggleModal<T extends Modal>(
@@ -2506,19 +2486,18 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private findEventIdsByPredicate(predicate: (filePath: string) => boolean): Set<string> {
-		const result = new Set<string>();
-		if (!this.calendar) return result;
+		if (!this.calendar) return new Set();
 
-		const events = this.calendar.getEvents();
-		for (const event of events) {
-			if (isAnyVirtual(getVirtualKind(event))) continue;
-
-			const filePath = getFilePath(event);
-			if (filePath && predicate(filePath)) {
-				result.add(event.id);
-			}
-		}
-		return result;
+		return new Set(
+			this.calendar
+				.getEvents()
+				.filter((event) => !isAnyVirtual(getVirtualKind(event)))
+				.filter((event) => {
+					const filePath = getFilePath(event);
+					return filePath && predicate(filePath);
+				})
+				.map((event) => event.id)
+		);
 	}
 
 	private startUpcomingEventCheck(): void {
@@ -2726,6 +2705,29 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	isInBatchSelectionMode(): boolean {
 		return this.batchSelectionManager?.isInSelectionMode() ?? false;
+	}
+
+	private formatIntervalLabel(viewType: string, currentStart: Date, currentEnd: Date, locale: string): string {
+		if (viewType.includes("Day")) {
+			return new Date(currentStart).toLocaleDateString(locale, {
+				weekday: "long",
+				month: "short",
+				day: "numeric",
+				year: "numeric",
+			});
+		}
+		if (viewType.includes("Week")) {
+			const end = new Date(currentEnd);
+			end.setDate(end.getDate() - 1);
+			return `${new Date(currentStart).toLocaleDateString(locale, { month: "short", day: "numeric" })} - ${end.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })}`;
+		}
+		if (viewType.includes("Month")) {
+			return new Date(currentStart).toLocaleDateString(locale, {
+				month: "long",
+				year: "numeric",
+			});
+		}
+		return "Current View";
 	}
 
 	private isMobileView(): boolean {
