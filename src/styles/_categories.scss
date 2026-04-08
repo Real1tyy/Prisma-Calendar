@@ -14,15 +14,15 @@
 	border-radius: 8px;
 	padding: 14px 16px;
 	margin-bottom: 10px;
-	background-color: rgba(var(--category-color-rgb), 0.25);
+	background-color: rgb(var(--category-color-rgb), 0.25);
 	gap: 16px;
 	transition: all 0.2s ease;
 }
 
 .prisma-category-settings-item:hover {
-	background-color: rgba(var(--category-color-rgb), 0.4);
+	background-color: rgb(var(--category-color-rgb), 0.4);
 	border-color: var(--background-modifier-border-hover);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 	transform: translateY(-1px);
 }
 
@@ -42,7 +42,7 @@
 	background-color: var(--category-color);
 	border: 2px solid var(--background-modifier-border);
 	flex-shrink: 0;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 1px 3px rgb(0 0 0 / 15%);
 }
 
 .prisma-category-settings-name-container {
@@ -238,7 +238,7 @@
 }
 
 .prisma-category-assignment-tag-remove {
-	background: rgba(0, 0, 0, 0.2);
+	background: rgb(0 0 0 / 20%);
 	border: none;
 	color: white;
 	cursor: pointer;
@@ -257,7 +257,7 @@
 }
 
 .prisma-category-assignment-tag-remove:hover {
-	background: rgba(0, 0, 0, 0.4);
+	background: rgb(0 0 0 / 40%);
 	transform: scale(1.1);
 }
 

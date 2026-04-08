@@ -1,5 +1,5 @@
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-calendar-container .fc-toolbar {
 		flex-direction: column;
 		gap: 8px;
@@ -170,8 +170,7 @@
 		padding: 0;
 		gap: 2px;
 		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
+		flex-flow: row wrap;
 		align-items: baseline;
 		max-width: 100%;
 	}
@@ -269,7 +268,7 @@
 }
 
 /* Desktop: Slightly larger dots */
-@media (min-width: 769px) {
+@media (width >= 769px) {
 	.prisma-day-color-dot {
 		width: 12px;
 		height: 12px;

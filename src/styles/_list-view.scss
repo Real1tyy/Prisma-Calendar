@@ -71,8 +71,8 @@
 .prisma-calendar-container .fc-list-event:hover,
 .prisma-calendar-container tr.fc-list-event:hover,
 .prisma-calendar-container tr.fc-list-event:hover td {
-	background: rgba(var(--interactive-accent-rgb), 0.08);
-	background-color: rgba(var(--interactive-accent-rgb), 0.08);
+	background: rgb(var(--interactive-accent-rgb), 0.08);
+	background-color: rgb(var(--interactive-accent-rgb), 0.08);
 	border-left-color: var(--interactive-accent);
 }
 
@@ -83,8 +83,8 @@
 .prisma-calendar-container .fc-list-event:focus,
 .prisma-calendar-container tr.fc-list-event:active td,
 .prisma-calendar-container tr.fc-list-event:focus td {
-	background: rgba(var(--interactive-accent-rgb), 0.06);
-	background-color: rgba(var(--interactive-accent-rgb), 0.06);
+	background: rgb(var(--interactive-accent-rgb), 0.06);
+	background-color: rgb(var(--interactive-accent-rgb), 0.06);
 	outline: none;
 }
 
@@ -109,13 +109,13 @@
 	border-radius: 50%;
 	display: inline-block;
 	border: 2px solid var(--background-primary);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
 	transition: all 0.15s ease;
 }
 
 .prisma-calendar-container .fc-list-event:hover .fc-list-event-dot {
 	transform: scale(1.15);
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+	box-shadow: 0 2px 6px rgb(0 0 0 / 30%);
 }
 
 /* Event time column - compact */
@@ -181,16 +181,16 @@
 	align-items: center;
 	gap: 3px;
 	padding: 2px 6px;
-	background: rgba(var(--mono-rgb-0), 0.05);
+	background: rgb(var(--mono-rgb-0), 0.05);
 	border-radius: 3px;
 	font-size: 11px;
 	color: var(--text-muted);
-	border: 1px solid rgba(var(--mono-rgb-0), 0.08);
+	border: 1px solid rgb(var(--mono-rgb-0), 0.08);
 }
 
 .prisma-calendar-container .fc-list-event:hover .prisma-fc-event-prop {
-	background: rgba(var(--mono-rgb-0), 0.08);
-	border-color: rgba(var(--mono-rgb-0), 0.12);
+	background: rgb(var(--mono-rgb-0), 0.08);
+	border-color: rgb(var(--mono-rgb-0), 0.12);
 }
 
 .prisma-calendar-container .fc-list-event .prisma-fc-event-prop-key {
@@ -215,7 +215,7 @@
 }
 
 .prisma-calendar-container .fc-list-event .prisma-fc-event-prop-link:hover {
-	background: rgba(var(--interactive-accent-rgb), 0.1);
+	background: rgb(var(--interactive-accent-rgb), 0.1);
 	text-decoration: underline;
 	text-underline-offset: 2px;
 }
@@ -232,7 +232,7 @@
 }
 
 /* Responsive list view */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-calendar-container .fc-list-event-time {
 		width: 80px;
 		min-width: 80px;
@@ -273,7 +273,7 @@
 }
 
 .theme-dark .prisma-calendar-container .fc-list-event-dot {
-	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+	box-shadow: 0 1px 4px rgb(0 0 0 / 40%);
 }
 
 .theme-dark .prisma-calendar-container .fc-list-event .prisma-fc-event-prop {

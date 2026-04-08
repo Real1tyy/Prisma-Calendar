@@ -260,12 +260,12 @@
 }
 
 .prisma-dashboard-table tr.prisma-dashboard-table-row-colored {
-	background-color: rgba(var(--row-color-rgb), 0.12);
-	border-left: 3px solid rgba(var(--row-color-rgb), 1);
+	background-color: rgb(var(--row-color-rgb), 0.12);
+	border-left: 3px solid rgb(var(--row-color-rgb), 1);
 }
 
 .prisma-dashboard-table tr.prisma-dashboard-table-row-colored:hover {
-	background-color: rgba(var(--row-color-rgb), 0.22);
+	background-color: rgb(var(--row-color-rgb), 0.22);
 }
 
 .prisma-dashboard-table tr.prisma-dashboard-table-row-clickable {
@@ -303,7 +303,7 @@
 	color: var(--text-muted);
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-dashboard-section-layout {
 		grid-template-columns: 1fr;
 	}
@@ -392,7 +392,7 @@
 	position: absolute;
 	inset: 0;
 	border-radius: 4px;
-	background: hsla(var(--color-accent-hsl), 0.15);
+	background: hsl(var(--color-accent-hsl), 0.15);
 	transition: width 200ms ease;
 }
 

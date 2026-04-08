@@ -14,6 +14,7 @@
 		"lint:fix": "eslint --fix src/ tests/",
 		"format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
 		"format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+		"lint:css": "stylelint \"src/styles/**/*.scss\"",
 		"clean": "rm -f main.js",
 		"deps:check": "depcruise --config .dependency-cruiser.mjs src/main.ts",
 		"deps:graph": "depcruise --config .dependency-cruiser.mjs --output-type dot src/main.ts | dot -T svg > docs/dependency-graph.svg"
@@ -39,6 +40,8 @@
 		"builtin-modules": "5.0.0",
 		"esbuild": "0.25.11",
 		"sass": "^1.87.0",
+		"stylelint": "^16.20.0",
+		"stylelint-config-standard-scss": "^15.0.1",
 		"jsdom": "^27.4.0",
 		"knip": "^5.81.0",
 		"obsidian": "1.11.4",

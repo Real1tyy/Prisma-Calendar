@@ -44,8 +44,8 @@
 	opacity: 0.6;
 	font-style: italic;
 	background-image: repeating-linear-gradient(45deg,
-			rgba(0, 0, 0, 0.05),
-			rgba(0, 0, 0, 0.05) 10px,
+			rgb(0 0 0 / 5%),
+			rgb(0 0 0 / 5%) 10px,
 			transparent 10px,
 			transparent 20px);
 	cursor: not-allowed;

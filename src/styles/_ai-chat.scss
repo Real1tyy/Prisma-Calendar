@@ -82,6 +82,7 @@
 		opacity: 0.3;
 		transform: scale(0.8);
 	}
+
 	40% {
 		opacity: 1;
 		transform: scale(1);
@@ -150,7 +151,7 @@
 .prisma-ai-chat-mode-btn.prisma-ai-chat-mode-active {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
 }
 
 .prisma-ai-chat-mode-btn.prisma-ai-chat-mode-active:hover {

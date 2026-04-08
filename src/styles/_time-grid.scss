@@ -48,19 +48,18 @@
 .prisma-calendar-container .fc-daygrid-event-harness {
 	max-height: var(--all-day-event-height, 75px);
 	overflow: visible;
+
 	/* Allow the event inside to handle overflow */
 }
 
 .prisma-calendar-container .fc-daygrid-block-event {
 	max-height: var(--all-day-event-height, 75px);
-	overflow-y: auto;
-	overflow-x: hidden;
+	overflow: hidden auto;
 }
 
 /* Ensure the event main content can scroll */
 .prisma-calendar-container .fc-daygrid-block-event .fc-event-main {
-	overflow-y: auto;
-	overflow-x: hidden;
+	overflow: hidden auto;
 	max-height: inherit;
 }
 
@@ -69,8 +68,7 @@
    Uses auto basis so width is proportional to content, not forced equal. */
 .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-day-events {
 	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
+	flex-flow: row wrap;
 	gap: 2px;
 	align-items: stretch;
 }

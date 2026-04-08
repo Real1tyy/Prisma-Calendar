@@ -39,12 +39,12 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	background-color: var(--interactive-hover);
 	border-color: var(--interactive-accent);
 	transform: translateY(-1px);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 }
 
 .prisma-stats-duration-toggle:active {
 	transform: translateY(0);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
 }
 
 .prisma-stats-middle-section {
@@ -146,7 +146,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 .prisma-stats-today-button:hover {
 	background-color: var(--interactive-accent-hover);
 	transform: translateY(-1px);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 }
 
 .prisma-stats-empty {
@@ -247,7 +247,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	color: var(--text-normal);
 	font-weight: var(--font-weight-medium);
 	border-bottom: 2px solid var(--background-modifier-border);
-	border-right: 1px solid rgba(255, 255, 255, 0.1);
+	border-right: 1px solid rgb(255 255 255 / 10%);
 }
 
 .prisma-weekly-stats-modal .prisma-stats-table th:last-child {
@@ -257,7 +257,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 .prisma-weekly-stats-modal .prisma-stats-table td {
 	padding: 0.75rem;
 	border-bottom: 1px solid var(--background-modifier-border);
-	border-right: 1px solid rgba(255, 255, 255, 0.1);
+	border-right: 1px solid rgb(255 255 255 / 10%);
 	color: var(--text-normal);
 }
 
@@ -386,8 +386,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 /* ========================================
    STATISTICS MODAL - MOBILE RESPONSIVE
    ======================================== */
-@media (max-width: 768px) {
-
+@media (width <= 768px) {
 	/* Override modal width for mobile */
 	.app-container .modal-container:has(.prisma-weekly-stats-modal)>.modal,
 	body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
@@ -624,7 +623,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 .prisma-recurring-events-type-select:focus-visible {
 	outline: none;
 	border-color: var(--interactive-accent);
-	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+	box-shadow: 0 0 0 2px rgb(var(--interactive-accent-rgb), 0.2);
 }
 
 /* Toggle checkbox section */
@@ -682,23 +681,23 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 .prisma-recurring-type-yearly { --badge-color: 20, 184, 166; --badge-color-dark: 45, 212, 191; }
 
 .prisma-recurring-type-badge[class*="prisma-recurring-type-"] {
-	background-color: rgba(var(--badge-color), 0.15);
+	background-color: rgb(var(--badge-color), 0.15);
 	color: rgb(var(--badge-color));
-	border: 1px solid rgba(var(--badge-color), 0.3);
+	border: 1px solid rgb(var(--badge-color), 0.3);
 }
 
 .prisma-recurring-type-badge[class*="prisma-recurring-type-"]:hover {
 	transform: scale(1.05);
-	background-color: rgba(var(--badge-color), 0.25);
+	background-color: rgb(var(--badge-color), 0.25);
 }
 
 .theme-dark .prisma-recurring-type-badge[class*="prisma-recurring-type-"] {
-	background-color: rgba(var(--badge-color), 0.2);
+	background-color: rgb(var(--badge-color), 0.2);
 	color: rgb(var(--badge-color-dark));
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-recurring-events-modal-filters {
 		flex-direction: column;
 		align-items: flex-start;

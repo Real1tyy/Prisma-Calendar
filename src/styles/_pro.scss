@@ -12,7 +12,7 @@
 	border: 1px solid var(--interactive-accent);
 	background: linear-gradient(
 		160deg,
-		rgba(var(--interactive-accent-rgb, 124, 58, 237), 0.08),
+		rgb(var(--interactive-accent-rgb, 124, 58, 237), 0.08),
 		transparent
 	);
 	text-align: center;
@@ -27,8 +27,8 @@
 	position: relative;
 	margin-bottom: 8px;
 	cursor: pointer;
-	border: 1px solid rgba(255, 255, 255, 0.08);
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+	border: 1px solid rgb(255 255 255 / 8%);
+	box-shadow: 0 4px 20px rgb(0 0 0 / 20%);
 	transition:
 		transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
 		box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -37,8 +37,8 @@
 .prisma-pro-upgrade-preview:hover {
 	transform: scale(1.04);
 	box-shadow:
-		0 32px 80px -16px rgba(var(--interactive-accent-rgb, 124, 58, 237), 0.25),
-		0 0 0 1px rgba(var(--interactive-accent-rgb, 124, 58, 237), 0.12);
+		0 32px 80px -16px rgb(var(--interactive-accent-rgb, 124, 58, 237), 0.25),
+		0 0 0 1px rgb(var(--interactive-accent-rgb, 124, 58, 237), 0.12);
 }
 
 .prisma-pro-upgrade-preview::after {
@@ -137,7 +137,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(0, 0, 0, 0.8);
+	background: rgb(0 0 0 / 80%);
 	backdrop-filter: blur(4px);
 	cursor: zoom-out;
 	animation: prisma-lightbox-fade-in 0.2s ease;
@@ -148,8 +148,8 @@
 	max-height: 90vh;
 	border-radius: 12px;
 	box-shadow:
-		0 32px 80px -16px rgba(var(--interactive-accent-rgb, 124, 58, 237), 0.3),
-		0 0 0 1px rgba(var(--interactive-accent-rgb, 124, 58, 237), 0.15);
+		0 32px 80px -16px rgb(var(--interactive-accent-rgb, 124, 58, 237), 0.3),
+		0 0 0 1px rgb(var(--interactive-accent-rgb, 124, 58, 237), 0.15);
 	cursor: default;
 }
 
@@ -157,6 +157,7 @@
 	from {
 		opacity: 0;
 	}
+
 	to {
 		opacity: 1;
 	}

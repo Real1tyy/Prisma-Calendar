@@ -35,7 +35,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding: 32px 24px 24px 24px;
+	padding: 32px 24px 24px;
 	border-bottom: 2px solid var(--background-modifier-border);
 	background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-secondary-alt) 100%);
 	border-radius: 12px 12px 0 0;
@@ -66,7 +66,7 @@
 	background: var(--interactive-hover);
 	border-color: var(--interactive-accent);
 	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
 }
 
 .prisma-event-preview-close-btn {
@@ -164,7 +164,7 @@
 	background: var(--background-modifier-hover);
 	border-color: var(--text-accent);
 	transform: translateY(-1px);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 }
 
 .prisma-event-preview-props-grid {
@@ -226,13 +226,13 @@
 }
 
 /* Responsive adjustments for event preview modal */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-event-preview-modal .modal {
 		max-width: 95%;
 	}
 
 	.prisma-event-preview-header {
-		padding: 24px 16px 16px 16px;
+		padding: 24px 16px 16px;
 	}
 
 	.prisma-event-preview-header h2 {
@@ -707,7 +707,7 @@
 }
 
 /* Responsive adjustments for event modal */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-event-modal-header {
 		flex-direction: column;
 		align-items: stretch;
@@ -960,7 +960,7 @@
 	display: flex;
 	gap: 8px;
 	align-items: center;
-	padding: 8px 8px 4px 8px;
+	padding: 8px 8px 4px;
 	margin-top: 8px;
 }
 
@@ -1064,12 +1064,12 @@
 	background-color: var(--interactive-hover);
 	border-color: var(--interactive-accent);
 	transform: translateY(-1px);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 }
 
 .prisma-now-button:active {
 	transform: translateY(0);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
 }
 
 .prisma-fill-button {
@@ -1090,12 +1090,12 @@
 	background-color: var(--interactive-hover);
 	border-color: var(--interactive-accent);
 	transform: translateY(-1px);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 }
 
 .prisma-fill-button:active {
 	transform: translateY(0);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
 }
 
 /* Event Modal Category Field */
@@ -1149,7 +1149,7 @@
 	background-color: var(--background-primary);
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-m);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
 	z-index: 100;
 	overflow: hidden;
 }
@@ -1353,12 +1353,12 @@
 
 .prisma-stopwatch-btn:hover {
 	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
 }
 
 .prisma-stopwatch-btn:active {
 	transform: translateY(0);
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 6px rgb(0 0 0 / 10%);
 }
 
 .prisma-stopwatch-start-btn {
@@ -1402,7 +1402,7 @@
 }
 
 /* Responsive stopwatch adjustments */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-stopwatch-display-section {
 		flex-direction: column;
 		gap: 16px;
@@ -1430,7 +1430,7 @@
 }
 
 /* Event Modal Responsive */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-weekday-grid {
 		grid-template-columns: 1fr;
 	}
@@ -1495,7 +1495,7 @@
 .prisma-generic-event-search-input:focus {
 	border-color: var(--interactive-accent);
 	outline: none;
-	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
+	box-shadow: 0 0 0 2px rgb(var(--interactive-accent-rgb), 0.1);
 }
 
 .prisma-generic-event-search-input::placeholder {
@@ -1596,7 +1596,7 @@
 }
 
 .prisma-recurring-events-source-title {
-	margin: 0 0 0.25rem 0;
+	margin: 0 0 0.25rem;
 	cursor: pointer;
 	transition: all 0.2s ease;
 	padding: 0.5rem;
@@ -1686,7 +1686,7 @@
 .prisma-recurring-event-row:hover {
 	background-color: var(--background-modifier-hover);
 	border-color: var(--text-accent);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
 }
 
 .prisma-recurring-event-row.prisma-recurring-event-colorized {
@@ -1750,7 +1750,7 @@
 }
 
 .prisma-recurring-events-stats-text-secondary {
-	margin: 0.4rem 0 0 0;
+	margin: 0.4rem 0 0;
 	font-size: 0.85em;
 	font-weight: 400;
 	color: var(--text-muted);
@@ -1857,7 +1857,7 @@
 	color: var(--text-normal);
 	border-color: var(--interactive-accent);
 	transform: translateY(-1px);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 }
 
 .prisma-event-series-bases-btn:active {

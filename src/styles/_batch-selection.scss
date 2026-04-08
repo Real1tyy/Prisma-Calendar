@@ -14,7 +14,7 @@
 .fc-button.prisma-batch-action-btn:hover {
 	background: var(--interactive-hover);
 	transform: translateY(-1px);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 }
 
 .fc-button.prisma-batch-action-btn.prisma-batch-counter {
@@ -43,7 +43,7 @@
 
 .fc-button.prisma-batch-action-btn.prisma-delete-btn:hover {
 	background: var(--color-red-rgb);
-	box-shadow: 0 2px 8px rgba(var(--color-red-rgb), 0.3);
+	box-shadow: 0 2px 8px rgb(var(--color-red-rgb), 0.3);
 }
 
 .fc-button.prisma-batch-action-btn.prisma-clone-next-btn,
@@ -99,9 +99,9 @@
 	right: 4px;
 	width: 16px;
 	height: 16px;
-	border: 2px solid rgba(255, 255, 255, 0.8);
+	border: 2px solid rgb(255 255 255 / 80%);
 	border-radius: 50%;
-	background: rgba(0, 0, 0, 0.2);
+	background: rgb(0 0 0 / 20%);
 	backdrop-filter: blur(2px);
 	z-index: 10;
 	opacity: 0.8;
@@ -174,19 +174,20 @@
 .fc-daygrid-dot-event.prisma-batch-selected {
 	box-shadow:
 		0 0 0 2px var(--interactive-accent),
-		0 4px 12px rgba(var(--interactive-accent-rgb), 0.3),
-		0 2px 4px rgba(0, 0, 0, 0.1);
+		0 4px 12px rgb(var(--interactive-accent-rgb), 0.3),
+		0 2px 4px rgb(0 0 0 / 10%);
 	z-index: 5;
 }
 
 .fc-event.prisma-batch-selected:hover {
 	box-shadow:
 		0 0 0 2px var(--interactive-accent),
-		0 6px 20px rgba(var(--interactive-accent-rgb), 0.4),
-		0 4px 8px rgba(0, 0, 0, 0.1);
+		0 6px 20px rgb(var(--interactive-accent-rgb), 0.4),
+		0 4px 8px rgb(0 0 0 / 10%);
 }
 
 /* Selection animations */
+
 /* Removed animations that could affect event sizing */
 
 /* Removed keyframes that could cause event sizing issues */
@@ -210,7 +211,7 @@
 	height: 16px;
 	border: 2px solid var(--text-faint);
 	border-radius: 50%;
-	background: rgba(0, 0, 0, 0.2);
+	background: rgb(0 0 0 / 20%);
 }
 
 .prisma-calendar-container .fc-list-event.prisma-batch-selected .fc-list-event-graphic::before {
@@ -226,7 +227,7 @@
 }
 
 /* Responsive batch selection */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-batch-selection-bar {
 		flex-direction: column;
 		align-items: stretch;

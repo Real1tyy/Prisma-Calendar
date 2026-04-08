@@ -1,6 +1,6 @@
 /* Move By Modal - Compact Button-Based UI */
 .prisma-move-by-modal h3 {
-	margin: 0 0 16px 0;
+	margin: 0 0 16px;
 	font-size: var(--font-ui-large);
 	text-align: center;
 }
@@ -133,7 +133,7 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-move-by-row {
 		flex-direction: column;
 		align-items: flex-start;
@@ -177,7 +177,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding: 32px 24px 24px 24px;
+	padding: 32px 24px 24px;
 	background: var(--background-modifier-form-field);
 	border-bottom: 1px solid var(--background-modifier-border);
 	text-align: center;
@@ -368,14 +368,14 @@
 }
 
 /* Responsive adjustments for notification modal */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-event-notification-modal .modal {
 		max-width: 95%;
 		width: 95vw;
 	}
 
 	.prisma-event-notification-header {
-		padding: 16px 12px 12px 12px;
+		padding: 16px 12px 12px;
 	}
 
 	.prisma-event-notification-title {
@@ -430,8 +430,7 @@
 
 	/* Buttons in a row on mobile */
 	.prisma-event-notification-buttons {
-		flex-direction: row;
-		flex-wrap: wrap;
+		flex-flow: row wrap;
 		justify-content: center;
 		gap: 8px;
 		padding: 12px;

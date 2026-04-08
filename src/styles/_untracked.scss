@@ -111,8 +111,7 @@
 
 .prisma-untracked-dropdown-list {
 	flex: 1;
-	overflow-y: auto;
-	overflow-x: hidden;
+	overflow: hidden auto;
 	padding: 4px;
 }
 
@@ -188,8 +187,7 @@
 	flex-wrap: wrap;
 	gap: 6px;
 	margin-top: 6px;
-	overflow-x: auto;
-	overflow-y: hidden;
+	overflow: auto hidden;
 	white-space: nowrap;
 	scrollbar-width: thin;
 }
@@ -229,7 +227,7 @@
 }
 
 /* Mobile responsiveness */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.prisma-untracked-dropdown {
 		width: calc(100vw - 32px);
 		max-height: 400px;

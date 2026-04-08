@@ -75,7 +75,7 @@
 /* State: skip (hiding events) */
 .prisma-filter-cycle-button.prisma-filter-state-skip {
 	border-color: var(--text-error);
-	background-color: rgba(var(--color-red-rgb), 0.1);
+	background-color: rgb(var(--color-red-rgb), 0.1);
 	color: var(--text-error);
 }
 

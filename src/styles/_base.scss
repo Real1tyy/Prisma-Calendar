@@ -41,6 +41,7 @@ button[class*="prisma-"]:focus-visible {
 	height: auto;
 	min-height: max(100%, 400px);
 	overflow-x: clip;
+
 	--prisma-sticky-toolbar-offset: 0px;
 	--prisma-sticky-day-header-height: 0px;
 	--prisma-connection-z: 12;

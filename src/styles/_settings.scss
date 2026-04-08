@@ -17,7 +17,7 @@
 
 .prisma-settings-search-input:focus {
 	border-color: var(--interactive-accent);
-	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+	box-shadow: 0 0 0 2px rgb(var(--interactive-accent-rgb), 0.2);
 	width: 200px;
 }
 

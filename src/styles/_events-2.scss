@@ -52,7 +52,7 @@
 	box-shadow:
 		0 0 20px 9px color-mix(in srgb, var(--event-color) 55%, transparent),
 		0 0 38px 16px color-mix(in srgb, var(--event-color) 35%, transparent),
-		0 2px 8px rgba(0, 0, 0, 0.15);
+		0 2px 8px rgb(0 0 0 / 15%);
 	z-index: 10;
 	transition:
 		box-shadow 0.5s ease,
@@ -70,7 +70,7 @@
 	box-shadow:
 		0 0 24px 11px color-mix(in srgb, var(--event-color) 60%, transparent),
 		0 0 44px 18px color-mix(in srgb, var(--event-color) 40%, transparent),
-		0 4px 12px rgba(0, 0, 0, 0.2);
+		0 4px 12px rgb(0 0 0 / 20%);
 	filter: brightness(1.22) saturate(1.26) contrast(1.08);
 }
 
@@ -80,7 +80,7 @@
 	box-shadow:
 		0 0 22px 10px color-mix(in srgb, var(--event-color) 58%, transparent),
 		0 0 40px 17px color-mix(in srgb, var(--event-color) 38%, transparent),
-		0 3px 10px rgba(0, 0, 0, 0.18);
+		0 3px 10px rgb(0 0 0 / 18%);
 	filter: brightness(1.2) saturate(1.24) contrast(1.06);
 }
 
@@ -129,7 +129,7 @@
 	border-left: 4.5px solid color-mix(in srgb, var(--event-color) 90%, white);
 	box-shadow:
 		0 0 16px 7px color-mix(in srgb, var(--event-color) 35%, transparent),
-		0 2px 6px rgba(0, 0, 0, 0.12);
+		0 2px 6px rgb(0 0 0 / 12%);
 	transition:
 		background 0.5s ease,
 		box-shadow 0.5s ease,
@@ -141,7 +141,7 @@
 .prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-upcoming .fc-list-event-dot {
 	box-shadow:
 		0 0 16px 7px color-mix(in srgb, var(--event-color) 70%, transparent),
-		0 2px 6px rgba(0, 0, 0, 0.2);
+		0 2px 6px rgb(0 0 0 / 20%);
 	transform: scale(1.3);
 	filter: brightness(1.28) saturate(1.15);
 	transition: all 0.5s ease;
@@ -155,14 +155,14 @@
 	border-left: 4.5px solid color-mix(in srgb, var(--event-color) 95%, white);
 	box-shadow:
 		0 0 20px 9px color-mix(in srgb, var(--event-color) 40%, transparent),
-		0 3px 8px rgba(0, 0, 0, 0.15);
+		0 3px 8px rgb(0 0 0 / 15%);
 	filter: brightness(1.15) saturate(1.12);
 }
 
 .prisma-calendar-container .fc-list-event.prisma-calendar-event.prisma-event-upcoming:hover .fc-list-event-dot {
 	box-shadow:
 		0 0 20px 9px color-mix(in srgb, var(--event-color) 75%, transparent),
-		0 2px 8px rgba(0, 0, 0, 0.25);
+		0 2px 8px rgb(0 0 0 / 25%);
 	transform: scale(1.4);
 	filter: brightness(1.32) saturate(1.2);
 }
@@ -176,7 +176,7 @@
 	border-left: 4.5px solid color-mix(in srgb, var(--event-color) 92%, white);
 	box-shadow:
 		0 0 18px 8px color-mix(in srgb, var(--event-color) 38%, transparent),
-		0 2px 7px rgba(0, 0, 0, 0.14);
+		0 2px 7px rgb(0 0 0 / 14%);
 	filter: brightness(1.13) saturate(1.1);
 }
 
@@ -185,14 +185,14 @@
    ======================================== */
 
 .prisma-calendar-container {
-	--prisma-highlight-gold: hsl(45, 85%, 55%);
+	--prisma-highlight-gold: hsl(45deg 85% 55%);
 }
 
 .prisma-calendar-container .fc-event.prisma-calendar-event.prisma-event-category-highlight {
 	box-shadow:
 		0 0 16px 6px color-mix(in srgb, var(--prisma-highlight-gold) 50%, transparent),
 		0 0 30px 12px color-mix(in srgb, var(--prisma-highlight-gold) 30%, transparent),
-		0 2px 6px rgba(0, 0, 0, 0.12);
+		0 2px 6px rgb(0 0 0 / 12%);
 	z-index: 9;
 	transition:
 		box-shadow 0.3s ease,
@@ -209,7 +209,7 @@
 	box-shadow:
 		0 0 20px 8px color-mix(in srgb, var(--prisma-highlight-gold) 55%, transparent),
 		0 0 36px 14px color-mix(in srgb, var(--prisma-highlight-gold) 35%, transparent),
-		0 4px 10px rgba(0, 0, 0, 0.15);
+		0 4px 10px rgb(0 0 0 / 15%);
 	border-color: color-mix(in srgb, var(--prisma-highlight-gold) 90%, var(--background-modifier-border));
 }
 
@@ -220,7 +220,7 @@
 	border-left: 4px dashed color-mix(in srgb, var(--prisma-highlight-gold) 75%, var(--background-modifier-border));
 	box-shadow:
 		0 0 12px 5px color-mix(in srgb, var(--prisma-highlight-gold) 30%, transparent),
-		0 2px 4px rgba(0, 0, 0, 0.1);
+		0 2px 4px rgb(0 0 0 / 10%);
 	transition: all 0.3s ease;
 }
 
@@ -231,7 +231,7 @@
 	border-left: 4px dashed color-mix(in srgb, var(--prisma-highlight-gold) 85%, var(--background-modifier-border));
 	box-shadow:
 		0 0 14px 6px color-mix(in srgb, var(--prisma-highlight-gold) 35%, transparent),
-		0 3px 6px rgba(0, 0, 0, 0.12);
+		0 3px 6px rgb(0 0 0 / 12%);
 }
 
 @keyframes prisma-event-highlight-pulse-list {
