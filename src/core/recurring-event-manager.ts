@@ -1120,7 +1120,7 @@ export function markInstanceStatusIfPast(
 	if (!settings.markPastInstancesAsDone || !settings.statusProperty) return;
 
 	const now = DateTime.now();
-	const isPast = instanceEnd && instanceEnd < now ? true : instanceStart < now;
+	const isPast = instanceEnd ? instanceEnd < now : instanceStart.endOf("day") < now;
 
 	if (isPast && frontmatter[settings.statusProperty] !== settings.doneValue) {
 		frontmatter[settings.statusProperty] = settings.doneValue;

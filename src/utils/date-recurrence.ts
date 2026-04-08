@@ -152,6 +152,21 @@ export function* iterateOccurrencesInRange(
 			currentDate = currentDate.plus({ months: monthInterval });
 		}
 	} else {
+		// Align to the recurrence cycle when currentDate > normalizedStart.
+		// Without this, yearly or custom-interval daily events would yield
+		// rangeStart directly, which is almost never a valid occurrence date.
+		if (parsed && currentDate > normalizedStart) {
+			const unit = parsed.freq === "DAILY" ? "days" : "years";
+			const diff = Math.floor(currentDate.diff(normalizedStart, unit)[unit]);
+			const cycleOffset = diff % parsed.interval;
+
+			if (cycleOffset !== 0) {
+				currentDate = normalizedStart.plus({ [unit]: diff + (parsed.interval - cycleOffset) });
+			} else {
+				currentDate = normalizedStart.plus({ [unit]: diff });
+			}
+		}
+
 		while (currentDate <= normalizedRangeEnd) {
 			if (currentDate >= normalizedRangeStart) {
 				yield currentDate;
@@ -159,11 +174,11 @@ export function* iterateOccurrencesInRange(
 
 			const nextDate = getNextOccurrence(currentDate, rrules.type, rrules.weekdays);
 
-			if (nextDate <= normalizedRangeEnd) {
-				currentDate = nextDate;
-			} else {
+			if (nextDate <= currentDate) {
 				break;
 			}
+
+			currentDate = nextDate;
 		}
 	}
 }

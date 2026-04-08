@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 ---
 
+## 2.13.0 - 4/8/2026
+
+### Fixed
+- **Wrong virtual event dates for yearly and custom-interval recurrences**: Yearly and custom-interval daily events could appear on incorrect dates. Events now correctly align to their recurrence cycle. See [Recurring Events](./features/events/recurring-dsl.md).
+- **Events sometimes incorrectly marked as done**: Recurring instances could be prematurely marked as done — timed events were marked at start time instead of end time, and all-day events were marked at midnight instead of end of day. See [Recurring Events](./features/events/recurring-dsl.md).
+
+---
+
 ## 2.12.0 - 4/1/2026
 
 > **TLDR:** Manual virtual events — create calendar time blocks without vault files. Batch Make Virtual and Make Real actions to transform notes back and forth. Start tracking directly from the untracked events dropdown. Weekdays and Weekends recurrence presets. Browser-style back/forward navigation. Settings cleanup — removed useless toggles, split excluded props per propagation type, dedicated Performance section.

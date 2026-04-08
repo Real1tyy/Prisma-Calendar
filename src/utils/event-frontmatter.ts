@@ -350,6 +350,8 @@ export const getCommonCategories = (app: App, selectedEvents: CalendarEvent[], c
 		eventCategories.push(categories);
 	}
 
+	if (eventCategories.length === 0) return [];
+
 	const firstEventCategories = eventCategories[0];
 	const commonCategories = Array.from(firstEventCategories).filter((category) =>
 		eventCategories.every((eventCats) => eventCats.has(category))
