@@ -27,6 +27,7 @@ All notable changes to this project will be documented here.
 - **Zero-duration events rendering as 60 minutes**: Events where start and end times are identical appeared as 1-hour blocks on the calendar. They now render as thin slivers matching their actual zero duration.
 - **Stopwatch times rounded to minutes, dropping seconds**: Starting and stopping the time tracker always saved times without seconds (e.g. `20:17:00` instead of `20:17:43`). Times now preserve full second-level precision. See [Time Tracker](./features/management/time-tracker.md).
 - **Tab command names not refreshing on reorder/rename**: Obsidian commands for switching tabs (e.g., "Go to tab 2: Timeline") did not update their names when reordering or renaming tabs via the tab manager.
+- **Auto-assign ZettelID renaming folder notes**: Folder notes (notes with the same name as their parent folder) were being renamed by the auto-assign ZettelID feature, breaking the folder structure. Folder notes are now skipped. See [Event Naming](./features/management/zettelid-naming.md).
 
 ---
 

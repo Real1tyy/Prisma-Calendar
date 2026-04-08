@@ -54,7 +54,7 @@ You can configure Prisma to automatically add ZettelIDs to files in the calendar
 - **Calendar events only** — timed and all-day events
 - **All events** — including untracked events
 
-When active, files like `My Event.md` are renamed to `My Event-20260216120000.md` as they are indexed.
+When active, files like `My Event.md` are renamed to `My Event-20260216120000.md` as they are indexed. Folder notes (notes with the same name as their parent folder, e.g., `tasks/tasks.md`) are automatically skipped to preserve the folder structure.
 
 ### ZettelID Property
 

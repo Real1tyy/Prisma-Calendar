@@ -1,4 +1,4 @@
-import { extractDisplayName, generateZettelId, withFrontmatter } from "@real1ty-obsidian-plugins";
+import { extractDisplayName, generateZettelId, isFolderNote, withFrontmatter } from "@real1ty-obsidian-plugins";
 import { nanoid } from "nanoid";
 import type { TFile } from "obsidian";
 import { type App } from "obsidian";
@@ -247,6 +247,9 @@ export const ensureFileHasZettelId = async (
 		}
 		return { zettelId: existingZettelId, file };
 	}
+
+	// Folder notes must not be renamed — it would break the folder structure
+	if (isFolderNote(file.path)) return { zettelId: "", file };
 
 	// File doesn't have ZettelID, we need to add it
 	const baseNameWithoutZettel = file.basename;

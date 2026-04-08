@@ -6,6 +6,7 @@ import {
 	type IndexerConfig,
 	type IndexerEvent as GenericIndexerEvent,
 	intoDate,
+	isFolderNote,
 	PENDING_WRITE_SENTINEL_FM_KEY,
 	removeMarkdownExtension,
 	toSafeString,
@@ -403,6 +404,7 @@ export class Indexer {
 		if (mode === "calendarEvents" && isUntracked) return;
 		if (this.syncStore?.data.readOnly) return;
 		if (hasTimestamp(file.basename)) return;
+		if (isFolderNote(file.path)) return;
 
 		// Prevent re-entrant renames: if we're already renaming this file (by original path),
 		// skip. Also check the current path in case the event arrives after rename started.
