@@ -4,22 +4,19 @@ import { z } from "zod";
 
 import { AI_DEFAULTS, type AIProvider } from "../../types/ai";
 
-export interface ChatMessage {
-	role: "user" | "assistant";
-	content: string;
-}
-
-export interface StoredChatMessage extends ChatMessage {
-	id: string;
-	createdAt: string;
-}
-
-const StoredChatMessageSchema = z.object({
-	id: z.string(),
+const ChatMessageSchema = z.object({
 	role: z.enum(["user", "assistant"]),
 	content: z.string(),
+});
+
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+
+const StoredChatMessageSchema = ChatMessageSchema.extend({
+	id: z.string(),
 	createdAt: z.string(),
 });
+
+export type StoredChatMessage = z.infer<typeof StoredChatMessageSchema>;
 
 export const ThreadMetaSchema = z.object({
 	id: z.string(),

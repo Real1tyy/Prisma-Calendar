@@ -24,8 +24,6 @@ export interface EventData {
 	preservedFrontmatter: Frontmatter;
 }
 
-export type EditEventData = EventData;
-
 /** Shared base for commands that create a new file and support undo by trashing it. */
 abstract class CreatedFileCommand implements Command {
 	protected createdFilePath: string | null = null;

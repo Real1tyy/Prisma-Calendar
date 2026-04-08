@@ -13,7 +13,7 @@ import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { isPhysicalRecurringEvent, setEventBasics } from "../../utils/event-frontmatter";
 import { ensureFileHasZettelId, extractZettelId, rebuildPhysicalInstanceWithNewDate } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
-import type { EditEventData } from "./lifecycle-commands";
+import type { EventData } from "./lifecycle-commands";
 
 export class EditEventCommand implements Command {
 	private originalFrontmatter?: Frontmatter;
@@ -21,7 +21,7 @@ export class EditEventCommand implements Command {
 	constructor(
 		private app: App,
 		private filePath: string,
-		private newEventData: EditEventData
+		private newEventData: EventData
 	) {}
 
 	async execute(): Promise<void> {
