@@ -2,25 +2,22 @@ import { Calendar, type CustomButtonInput } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { cls, ColorEvaluator, MS_PER_DAY, toLocalISOString } from "@real1ty-obsidian-plugins";
+import { cls, ColorEvaluator, MS_PER_DAY } from "@real1ty-obsidian-plugins";
 import type { BasesQueryResult } from "obsidian";
 import { BasesView, Notice, type QueryController } from "obsidian";
 import { distinctUntilChanged, skip, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { UpdateEventCommand } from "../../core/commands";
 import { PRO_FEATURES } from "../../core/license";
 import type CustomCalendarPlugin from "../../main";
-import type { CalendarEventData, EventUpdateInfo, ExtendedButtonInput, PrismaEventInput } from "../../types/calendar";
-import { isAnyVirtual } from "../../types/calendar";
+import type { CalendarEventData, ExtendedButtonInput, PrismaEventInput } from "../../types/calendar";
 import { isBatchSelectable, isFileBackedEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { getCommonCategories } from "../../utils/event-frontmatter";
-import { getVirtualKind } from "../../utils/extended-props";
 import { BatchSelectionManager } from "../batch-selection-manager";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
-import { EventCreateModal, openCategoryAssignModal, showBatchFrontmatterModal, showEventPreviewModal } from "../modals";
+import { openCategoryAssignModal, showBatchFrontmatterModal } from "../modals";
 import { renderProUpgradeBanner } from "../settings/pro-upgrade-banner";
 import { UntrackedEventsDropdown } from "../untracked-events-dropdown";
 import {
@@ -30,7 +27,14 @@ import {
 	buildSharedEventClassNames,
 	buildSharedEventContent,
 	buildSharedEventDidMount,
+	CLICK_THRESHOLD_MS,
+	extractSharedEventUpdateInfo,
+	handleSharedDateClick,
+	handleSharedDateSelection,
+	handleSharedEventClick,
+	handleSharedEventUpdate,
 	mapEventToPrismaInput,
+	SELECTION_GUARD_DELAY_MS,
 	type SharedCalendarDeps,
 	syncCalendarSettings,
 } from "./shared-calendar-options";
@@ -38,8 +42,6 @@ import {
 export const BASES_CALENDAR_VIEW_ID = "prisma-calendar";
 
 const DEFAULT_VIEW = "dayGridMonth";
-const CLICK_THRESHOLD_MS = 150;
-const SELECTION_GUARD_DELAY_MS = 50;
 
 // Obsidian skips onDataUpdated() when switching back to a view if data hasn't changed.
 // Cache the last query result so new instances can render immediately.
@@ -302,17 +304,29 @@ class PrismaBasesView extends BasesView {
 						this.batchSelectionManager.handleEventClick(info.event.id);
 					}
 				} else {
-					this.handleEventClick(bundle, info.event);
+					handleSharedEventClick(this.app, bundle, info.event);
 				}
 			},
 			eventDrop: (info: { event: CalendarEventData; oldEvent: CalendarEventData; revert: () => void }) => {
-				void this.handleEventUpdate(bundle, this.extractEventUpdateInfo(info), "Error updating event dates:");
+				void handleSharedEventUpdate(
+					this.app,
+					bundle,
+					extractSharedEventUpdateInfo(info),
+					"Error updating event dates:",
+					"BasesCalendarView"
+				);
 			},
 			eventResize: (info: { event: CalendarEventData; oldEvent: CalendarEventData; revert: () => void }) => {
-				void this.handleEventUpdate(bundle, this.extractEventUpdateInfo(info), "Error updating event duration:");
+				void handleSharedEventUpdate(
+					this.app,
+					bundle,
+					extractSharedEventUpdateInfo(info),
+					"Error updating event duration:",
+					"BasesCalendarView"
+				);
 			},
 			dateClick: (info: { date: Date; allDay: boolean }) => {
-				if (!this.isHandlingSelection) this.handleDateClick(bundle, info);
+				if (!this.isHandlingSelection) handleSharedDateClick(this.app, bundle, this.calendar!, info);
 				setTimeout(() => {
 					this.isHandlingSelection = false;
 				}, SELECTION_GUARD_DELAY_MS);
@@ -322,7 +336,7 @@ class PrismaBasesView extends BasesView {
 					this.calendar!.unselect();
 				} else {
 					this.isHandlingSelection = true;
-					this.handleDateSelection(bundle, info);
+					handleSharedDateSelection(this.app, bundle, this.calendar!, info);
 				}
 			},
 			eventsSet: () => {
@@ -567,123 +581,6 @@ class PrismaBasesView extends BasesView {
 		const view = this.config.get("view");
 		if (typeof view === "string" && view) return view;
 		return DEFAULT_VIEW;
-	}
-
-	private handleEventClick(
-		bundle: CalendarBundle,
-		event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay">
-	): void {
-		const filePath = event.extendedProps.filePath;
-		const virtualKind = event.extendedProps.virtualKind;
-
-		if (virtualKind === "holiday") return;
-
-		if (virtualKind === "recurring" && typeof filePath === "string") {
-			showEventPreviewModal(this.app, bundle, {
-				title: event.title,
-				start: null,
-				end: null,
-				allDay: false,
-				extendedProps: {
-					filePath,
-					frontmatterDisplayData: event.extendedProps.frontmatterDisplayData,
-				},
-			});
-			return;
-		}
-
-		if (typeof filePath === "string") {
-			void this.app.workspace.openLinkText(filePath, "", false);
-		}
-	}
-
-	private handleDateClick(bundle: CalendarBundle, info: { date: Date; allDay: boolean }): void {
-		const currentSettings = bundle.settingsStore.currentSettings;
-		const endDate = new Date(info.date);
-		endDate.setMinutes(endDate.getMinutes() + currentSettings.defaultDurationMinutes);
-
-		new EventCreateModal(this.app, bundle, {
-			title: "",
-			start: toLocalISOString(info.date),
-			end: info.allDay ? null : toLocalISOString(endDate),
-			allDay: info.allDay,
-			extendedProps: { filePath: null as string | null },
-		}).open();
-		this.calendar?.unselect();
-	}
-
-	private handleDateSelection(bundle: CalendarBundle, info: { start: Date; end: Date; allDay: boolean }): void {
-		new EventCreateModal(this.app, bundle, {
-			title: "",
-			start: toLocalISOString(info.start),
-			end: toLocalISOString(info.end),
-			allDay: info.allDay,
-			extendedProps: { filePath: null as string | null },
-		}).open();
-		this.calendar?.unselect();
-	}
-
-	private extractEventUpdateInfo(info: {
-		event: CalendarEventData;
-		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
-		revert: () => void;
-	}): EventUpdateInfo | null {
-		if (!info.event.start) {
-			info.revert();
-			return null;
-		}
-		return {
-			event: {
-				title: info.event.title,
-				start: info.event.start,
-				end: info.event.end,
-				allDay: info.event.allDay,
-				extendedProps: info.event.extendedProps,
-			},
-			oldEvent: {
-				start: info.oldEvent.start || new Date(),
-				end: info.oldEvent.end,
-				allDay: info.oldEvent.allDay,
-			},
-			revert: info.revert,
-		};
-	}
-
-	private async handleEventUpdate(
-		bundle: CalendarBundle,
-		info: EventUpdateInfo | null,
-		errorMessage: string
-	): Promise<void> {
-		if (!info) return;
-
-		if (isAnyVirtual(getVirtualKind(info.event))) {
-			info.revert();
-			return;
-		}
-
-		const filePath = info.event.extendedProps.filePath;
-		if (!filePath || typeof filePath !== "string") {
-			info.revert();
-			return;
-		}
-
-		try {
-			const command = new UpdateEventCommand(
-				this.app,
-				bundle,
-				filePath,
-				toLocalISOString(info.event.start),
-				info.event.end ? toLocalISOString(info.event.end) : undefined,
-				info.event.allDay || false,
-				toLocalISOString(info.oldEvent.start),
-				info.oldEvent.end ? toLocalISOString(info.oldEvent.end) : undefined,
-				info.oldEvent.allDay || false
-			);
-			await bundle.commandManager.executeCommand(command);
-		} catch (error) {
-			console.error(`[BasesCalendarView] ${errorMessage}`, error);
-			info.revert();
-		}
 	}
 
 	private ensureEmptyMessage(): void {

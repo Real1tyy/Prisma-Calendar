@@ -7,16 +7,12 @@ import type { App } from "obsidian";
 import { merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { UpdateEventCommand } from "../../core/commands";
-import type { CalendarEventData, EventUpdateInfo, PrismaEventInput } from "../../types/calendar";
-import { isAnyVirtual } from "../../types/calendar";
+import type { PrismaEventInput } from "../../types/calendar";
 import { isFileBackedEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
-import { getVirtualKind } from "../../utils/extended-props";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
 import { SearchFilterInputManager } from "../input-managers/search-filter";
-import { EventCreateModal, showEventPreviewModal } from "../modals";
 import {
 	applyContainerStyles,
 	buildCalendarIconCache,
@@ -24,7 +20,14 @@ import {
 	buildSharedEventClassNames,
 	buildSharedEventContent,
 	buildSharedEventDidMount,
+	CLICK_THRESHOLD_MS,
+	extractSharedEventUpdateInfo,
+	handleSharedDateClick,
+	handleSharedDateSelection,
+	handleSharedEventClick,
+	handleSharedEventUpdate,
 	mapEventToPrismaInput,
+	SELECTION_GUARD_DELAY_MS,
 	type SharedCalendarDeps,
 	syncCalendarSettings,
 } from "./shared-calendar-options";
@@ -40,9 +43,6 @@ export interface DailyCalendarHandle {
 export interface DailyCalendarConfig {
 	onDateChange?: (date: Date) => void;
 }
-
-const CLICK_THRESHOLD_MS = 150;
-const SELECTION_GUARD_DELAY_MS = 50;
 
 /**
  * Creates a FullCalendar instance locked to timeGridDay view that reuses
@@ -132,22 +132,34 @@ export function createDailyCalendar(
 		},
 
 		eventClick: (info) => {
-			handleEventClick(info.event, info.el);
+			handleSharedEventClick(app, bundle, info.event);
 		},
 
 		eventMouseEnter: () => {},
 
 		eventDrop: (info) => {
-			void handleEventUpdate(extractEventUpdateInfo(info), "Error updating event dates:");
+			void handleSharedEventUpdate(
+				app,
+				bundle,
+				extractSharedEventUpdateInfo(info),
+				"Error updating event dates:",
+				"DailyCalendar"
+			);
 		},
 
 		eventResize: (info) => {
-			void handleEventUpdate(extractEventUpdateInfo(info), "Error updating event duration:");
+			void handleSharedEventUpdate(
+				app,
+				bundle,
+				extractSharedEventUpdateInfo(info),
+				"Error updating event duration:",
+				"DailyCalendar"
+			);
 		},
 
 		dateClick: (info) => {
 			if (!isHandlingSelection) {
-				handleDateClick(info);
+				handleSharedDateClick(app, bundle, calendar, info);
 			}
 			setTimeout(() => {
 				isHandlingSelection = false;
@@ -161,7 +173,7 @@ export function createDailyCalendar(
 				calendar.unselect();
 			} else {
 				isHandlingSelection = true;
-				handleDateSelection(info);
+				handleSharedDateSelection(app, bundle, calendar, info);
 			}
 		},
 
@@ -244,121 +256,6 @@ export function createDailyCalendar(
 		}
 
 		releaseRefreshLock();
-	}
-
-	// ─── Event Interaction ───────────────────────────────────────
-
-	function handleEventClick(
-		event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay">,
-		_eventEl: HTMLElement
-	): void {
-		const filePath = event.extendedProps.filePath;
-		const virtualKind = event.extendedProps.virtualKind;
-
-		if (virtualKind === "holiday") return;
-
-		if (virtualKind === "recurring" && filePath && typeof filePath === "string") {
-			showEventPreviewModal(app, bundle, {
-				title: event.title,
-				start: null,
-				end: null,
-				allDay: false,
-				extendedProps: {
-					filePath,
-					frontmatterDisplayData: event.extendedProps.frontmatterDisplayData,
-				},
-			});
-			return;
-		}
-
-		if (filePath && typeof filePath === "string") {
-			void app.workspace.openLinkText(filePath, "", false);
-		}
-	}
-
-	function handleDateClick(info: { date: Date; allDay: boolean }): void {
-		const currentSettings = bundle.settingsStore.currentSettings;
-		const endDate = new Date(info.date);
-		endDate.setMinutes(endDate.getMinutes() + currentSettings.defaultDurationMinutes);
-
-		new EventCreateModal(app, bundle, {
-			title: "",
-			start: toLocalISOString(info.date),
-			end: info.allDay ? null : toLocalISOString(endDate),
-			allDay: info.allDay,
-			extendedProps: { filePath: null as string | null },
-		}).open();
-		calendar.unselect();
-	}
-
-	function handleDateSelection(info: { start: Date; end: Date; allDay: boolean }): void {
-		new EventCreateModal(app, bundle, {
-			title: "",
-			start: toLocalISOString(info.start),
-			end: toLocalISOString(info.end),
-			allDay: info.allDay,
-			extendedProps: { filePath: null as string | null },
-		}).open();
-		calendar.unselect();
-	}
-
-	function extractEventUpdateInfo(info: {
-		event: CalendarEventData;
-		oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
-		revert: () => void;
-	}): EventUpdateInfo | null {
-		if (!info.event.start) {
-			info.revert();
-			return null;
-		}
-		return {
-			event: {
-				title: info.event.title,
-				start: info.event.start,
-				end: info.event.end,
-				allDay: info.event.allDay,
-				extendedProps: info.event.extendedProps,
-			},
-			oldEvent: {
-				start: info.oldEvent.start || new Date(),
-				end: info.oldEvent.end,
-				allDay: info.oldEvent.allDay,
-			},
-			revert: info.revert,
-		};
-	}
-
-	async function handleEventUpdate(info: EventUpdateInfo | null, errorMessage: string): Promise<void> {
-		if (!info) return;
-
-		if (isAnyVirtual(getVirtualKind(info.event))) {
-			info.revert();
-			return;
-		}
-
-		const filePath = info.event.extendedProps.filePath;
-		if (!filePath || typeof filePath !== "string") {
-			info.revert();
-			return;
-		}
-
-		try {
-			const command = new UpdateEventCommand(
-				app,
-				bundle,
-				filePath,
-				toLocalISOString(info.event.start),
-				info.event.end ? toLocalISOString(info.event.end) : undefined,
-				info.event.allDay || false,
-				toLocalISOString(info.oldEvent.start),
-				info.oldEvent.end ? toLocalISOString(info.oldEvent.end) : undefined,
-				info.oldEvent.allDay || false
-			);
-			await bundle.commandManager.executeCommand(command);
-		} catch (error) {
-			console.error(`[DailyCalendar] ${errorMessage}`, error);
-			info.revert();
-		}
 	}
 
 	// ─── Subscriptions ───────────────────────────────────────────

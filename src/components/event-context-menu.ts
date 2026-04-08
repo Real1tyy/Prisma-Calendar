@@ -9,13 +9,18 @@ import {
 	getObsidianLinkPath,
 	intoDate,
 	MacroCommand,
-	MS_PER_DAY,
 	parseIntoList,
 	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
 import { type App, Notice } from "obsidian";
 
-import { CONTEXT_MENU_BUTTON_LABELS, CSS_PREFIX } from "../constants";
+import {
+	CONTEXT_MENU_BUTTON_LABELS,
+	CSS_PREFIX,
+	EVENT_HIGHLIGHT_DURATION_MS,
+	GO_TO_SOURCE_HIGHLIGHT_DELAY_MS,
+	MS_PER_DAY,
+} from "../constants";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import {
 	assignCategories,
@@ -586,8 +591,8 @@ export class EventContextMenu {
 			this.calendarComponent.navigateToDate(eventDate, "timeGridWeek");
 
 			setTimeout(() => {
-				this.calendarComponent.highlightEventByPath(sourceFilePath, 5000);
-			}, 300);
+				this.calendarComponent.highlightEventByPath(sourceFilePath, EVENT_HIGHLIGHT_DURATION_MS);
+			}, GO_TO_SOURCE_HIGHLIGHT_DELAY_MS);
 
 			new Notice("Navigated to source event");
 		});

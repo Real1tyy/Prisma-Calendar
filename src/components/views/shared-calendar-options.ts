@@ -4,18 +4,15 @@ import {
 	calculateDuration,
 	cls,
 	type ColorEvaluator,
-	extractContentAfterFrontmatter,
 	formatDuration,
-	getNotePreviewLines,
-	hasVeryCloseShadeFromRgb,
-	parseColorToRgb,
-	type RgbColor,
 	toggleCls,
+	toLocalISOString,
 } from "@real1ty-obsidian-plugins";
-import { type App, TFile } from "obsidian";
+import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import type { CalendarEvent, CalendarEventData, PrismaEventInput } from "../../types/calendar";
+import { UpdateEventCommand } from "../../core/commands";
+import type { CalendarEvent, CalendarEventData, EventUpdateInfo, PrismaEventInput } from "../../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../../types/calendar";
 import { isBatchSelectable, isHolidayEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -23,13 +20,14 @@ import { resolveAllEventColors, resolveEventColor } from "../../utils/event-colo
 import { hashFrontmatter } from "../../utils/event-diff";
 import { cleanupTitle } from "../../utils/event-naming";
 import { parseFCExtendedProps } from "../../utils/extended-props";
-import { buildEventTooltip } from "../../utils/format";
 import { stripZ } from "../../utils/iso";
 import { emitHover } from "../../utils/obsidian";
 import { getDisplayProperties, renderPropertyValue } from "../../utils/property-display";
 import type { BatchSelectionManager } from "../batch-selection-manager";
+import { applyEventMountStyling, attachLazyNotePreview, type TextColorCache } from "../calendar-event-renderer";
 import type { CalendarHost } from "../calendar-host";
 import type { EventContextMenu } from "../event-context-menu";
+import { EventCreateModal, showEventPreviewModal } from "../modals";
 
 export interface SharedCalendarDeps {
 	app: App;
@@ -199,8 +197,7 @@ export function buildSharedEventDidMount(
 	eventContextMenu: EventContextMenu,
 	getBatchSelectionManager: () => BatchSelectionManager | null
 ): (info: SharedEventMountInfo) => void {
-	let cachedTextColorRgb: RgbColor | null = null;
-	let cachedTextColorSource: string | null = null;
+	const cachedTextColor: TextColorCache = { rgb: null, source: null };
 
 	return (info) => {
 		const { el, event } = info;
@@ -209,7 +206,6 @@ export function buildSharedEventDidMount(
 		const virtualKind = ep.virtualKind;
 		const eventFilePath = ep.filePath || undefined;
 		const computedColors = ep.computedColors ?? [];
-		const displayData = ep.frontmatterDisplayData;
 
 		if (isAnyVirtual(virtualKind)) {
 			el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"), cls("virtual-event-italic"));
@@ -226,69 +222,14 @@ export function buildSharedEventDidMount(
 			getBatchSelectionManager()?.handleEventMount(event.id, el);
 		}
 
-		const eventColor = computedColors[0] || resolveEventColor(displayData, deps.bundle, deps.colorEvaluator);
-
-		el.style.setProperty("--event-color", eventColor);
+		const eventColor =
+			computedColors[0] || resolveEventColor(ep.frontmatterDisplayData, deps.bundle, deps.colorEvaluator);
 		const settings = deps.bundle.settingsStore.currentSettings;
 
-		if (cachedTextColorSource !== settings.eventTextColor) {
-			cachedTextColorRgb = parseColorToRgb(settings.eventTextColor);
-			cachedTextColorSource = settings.eventTextColor;
-		}
+		applyEventMountStyling(el, event, settings, eventColor, computedColors, cachedTextColor);
 
-		const textColor = hasVeryCloseShadeFromRgb(cachedTextColorRgb!, eventColor)
-			? settings.eventTextColorAlt
-			: settings.eventTextColor;
-		el.style.setProperty("--event-text-color", textColor);
-		el.classList.add(cls("calendar-event"));
-
-		const now = new Date();
-		const eventStart = event.start;
-		const eventEnd = event.end || eventStart;
-		let isPast: boolean;
-
-		if (eventEnd === null) {
-			isPast = false;
-		} else if (event.allDay) {
-			const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-			const eventDate = new Date(eventEnd.getFullYear(), eventEnd.getMonth(), eventEnd.getDate());
-			isPast = eventDate < today;
-		} else {
-			isPast = eventEnd < now;
-		}
-
-		if (isPast) {
-			const contrast = settings.pastEventContrast;
-			const opacity = contrast / 100;
-			el.style.setProperty("--past-event-opacity", opacity.toString());
-		}
-
-		const tooltip = buildEventTooltip(event, settings);
-		el.setAttribute("title", tooltip);
-
-		// Async note preview on hover
 		if (eventFilePath && !isAnyVirtual(virtualKind)) {
-			el.addEventListener("mouseenter", () => {
-				if (el.dataset["notesLoaded"]) return;
-				el.dataset["notesLoaded"] = "true";
-				const currentTitle = el.getAttribute("title") ?? "";
-				el.removeAttribute("title");
-				void (async () => {
-					try {
-						const file = deps.app.vault.getAbstractFileByPath(eventFilePath);
-						if (!(file instanceof TFile)) {
-							el.setAttribute("title", currentTitle);
-							return;
-						}
-						const fullContent = await deps.app.vault.cachedRead(file);
-						const body = extractContentAfterFrontmatter(fullContent);
-						const preview = getNotePreviewLines(body, 3);
-						el.setAttribute("title", preview ? currentTitle + "\n---\n" + preview : currentTitle);
-					} catch {
-						el.setAttribute("title", currentTitle);
-					}
-				})();
-			});
+			attachLazyNotePreview(el, eventFilePath, deps.app);
 		}
 
 		// Context menu
@@ -369,6 +310,7 @@ export function mapEventToPrismaInput(
 			...(event.virtualKind === "manual" ? { virtualEventId: event.id } : {}),
 			computedColors: allColors,
 			frontmatterHash: hashFrontmatter(meta),
+			skipped: event.skipped,
 		},
 		backgroundColor: eventColor,
 		borderColor: eventColor,
@@ -399,6 +341,143 @@ export function buildCalendarIconCache(bundle: CalendarBundle): Map<string, stri
 
 	return cache;
 }
+
+// ─── Shared Interaction Handlers ─────────────────────────────────
+
+export const CLICK_THRESHOLD_MS = 150;
+export const SELECTION_GUARD_DELAY_MS = 50;
+
+export function handleSharedEventClick(
+	app: App,
+	bundle: CalendarBundle,
+	event: Pick<CalendarEventData, "title" | "extendedProps" | "start" | "end" | "allDay">
+): void {
+	const filePath = event.extendedProps.filePath;
+	const virtualKind = event.extendedProps.virtualKind;
+
+	if (virtualKind === "holiday") return;
+
+	if (virtualKind === "recurring" && filePath && typeof filePath === "string") {
+		showEventPreviewModal(app, bundle, {
+			title: event.title,
+			start: null,
+			end: null,
+			allDay: false,
+			extendedProps: {
+				filePath,
+				frontmatterDisplayData: event.extendedProps.frontmatterDisplayData,
+			},
+		});
+		return;
+	}
+
+	if (filePath && typeof filePath === "string") {
+		void app.workspace.openLinkText(filePath, "", false);
+	}
+}
+
+export function handleSharedDateClick(
+	app: App,
+	bundle: CalendarBundle,
+	calendar: Calendar,
+	info: { date: Date; allDay: boolean }
+): void {
+	const settings = bundle.settingsStore.currentSettings;
+	const endDate = new Date(info.date);
+	endDate.setMinutes(endDate.getMinutes() + settings.defaultDurationMinutes);
+
+	new EventCreateModal(app, bundle, {
+		title: "",
+		start: toLocalISOString(info.date),
+		end: info.allDay ? null : toLocalISOString(endDate),
+		allDay: info.allDay,
+		extendedProps: { filePath: null as string | null },
+	}).open();
+	calendar.unselect();
+}
+
+export function handleSharedDateSelection(
+	app: App,
+	bundle: CalendarBundle,
+	calendar: Calendar,
+	info: { start: Date; end: Date; allDay: boolean }
+): void {
+	new EventCreateModal(app, bundle, {
+		title: "",
+		start: toLocalISOString(info.start),
+		end: toLocalISOString(info.end),
+		allDay: info.allDay,
+		extendedProps: { filePath: null as string | null },
+	}).open();
+	calendar.unselect();
+}
+
+export function extractSharedEventUpdateInfo(info: {
+	event: CalendarEventData;
+	oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay">;
+	revert: () => void;
+}): EventUpdateInfo | null {
+	if (!info.event.start) {
+		info.revert();
+		return null;
+	}
+	return {
+		event: {
+			title: info.event.title,
+			start: info.event.start,
+			end: info.event.end,
+			allDay: info.event.allDay,
+			extendedProps: info.event.extendedProps,
+		},
+		oldEvent: {
+			start: info.oldEvent.start || new Date(),
+			end: info.oldEvent.end,
+			allDay: info.oldEvent.allDay,
+		},
+		revert: info.revert,
+	};
+}
+
+export async function handleSharedEventUpdate(
+	app: App,
+	bundle: CalendarBundle,
+	info: EventUpdateInfo | null,
+	errorMessage: string,
+	logPrefix: string
+): Promise<void> {
+	if (!info) return;
+
+	if (isAnyVirtual(info.event.extendedProps.virtualKind)) {
+		info.revert();
+		return;
+	}
+
+	const filePath = info.event.extendedProps.filePath;
+	if (!filePath || typeof filePath !== "string") {
+		info.revert();
+		return;
+	}
+
+	try {
+		const command = new UpdateEventCommand(
+			app,
+			bundle,
+			filePath,
+			toLocalISOString(info.event.start),
+			info.event.end ? toLocalISOString(info.event.end) : undefined,
+			info.event.allDay || false,
+			toLocalISOString(info.oldEvent.start),
+			info.oldEvent.end ? toLocalISOString(info.oldEvent.end) : undefined,
+			info.oldEvent.allDay || false
+		);
+		await bundle.commandManager.executeCommand(command);
+	} catch (error) {
+		console.error(`[${logPrefix}] ${errorMessage}`, error);
+		info.revert();
+	}
+}
+
+// ─── Internals ───────────────────────────────────────────────────
 
 function getEventIcon(
 	event: CalendarEventData,
