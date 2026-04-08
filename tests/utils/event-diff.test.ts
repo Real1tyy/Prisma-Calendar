@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import type { PrismaEventInput } from "../../src/types/calendar";
+import type { FCPrismaEventInput } from "../../src/types/calendar";
 import { diffEvents, eventFingerprint } from "../../src/utils/event-diff";
-import { buildPreviousMap, createPrismaEventInput as makeEvent } from "../fixtures";
+import { buildPreviousMap, createFCPrismaEventInput as makeEvent } from "../fixtures";
 
 // ---------------------------------------------------------------------------
 // eventFingerprint
@@ -548,7 +548,7 @@ describe("diffEvents", () => {
 	describe("large sets", () => {
 		it("should handle diffing many events efficiently", () => {
 			const count = 500;
-			const events: PrismaEventInput[] = [];
+			const events: FCPrismaEventInput[] = [];
 			for (let i = 0; i < count; i++) {
 				events.push(makeEvent({ id: `ev-${i}`, title: `Event ${i}` }));
 			}

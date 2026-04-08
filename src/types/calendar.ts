@@ -1,8 +1,8 @@
 import type { CustomButtonInput, EventInput } from "@fullcalendar/core";
 import { z } from "zod";
 
+import type { FCExtendedProps } from "../utils/extended-props";
 import { EventMetadataSchema } from "./event";
-import type { Frontmatter } from "./index";
 
 export const VirtualKindSchema = z.enum(["none", "recurring", "manual", "holiday"]);
 export type VirtualKind = z.infer<typeof VirtualKindSchema>;
@@ -84,22 +84,11 @@ export function isAllDayEvent(event: ParsedEvent): event is AllDayEvent {
 	return event.type === "allDay";
 }
 
-export interface PrismaExtendedProps {
-	filePath: string;
-	folder: string;
-	originalTitle: string;
-	frontmatterDisplayData: Frontmatter;
-	virtualKind: VirtualKind;
-	virtualEventId?: string;
-	computedColors?: string[];
-	frontmatterHash?: number;
+export interface FCPrismaEventInput extends EventInput {
+	extendedProps: FCExtendedProps;
 }
 
-export interface PrismaEventInput extends EventInput {
-	extendedProps: PrismaExtendedProps;
-}
-
-export type FlexibleExtendedProps = Partial<Omit<PrismaExtendedProps, "frontmatterHash">>;
+export type FlexibleExtendedProps = Partial<Omit<FCExtendedProps, "frontmatterHash">>;
 
 export interface CalendarEventData {
 	title: string;

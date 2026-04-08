@@ -7,7 +7,7 @@ import type { App } from "obsidian";
 import { merge, type Subscription } from "rxjs";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import type { PrismaEventInput } from "../../types/calendar";
+import type { FCPrismaEventInput } from "../../types/calendar";
 import { isFileBackedEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
 import type { CalendarHost } from "../calendar-host";
@@ -241,7 +241,7 @@ export function createDailyCalendar(
 			const end = toLocalISOString(activeEnd);
 
 			const events = await bundle.eventStore.getEvents({ start, end });
-			const visibleEvents: PrismaEventInput[] = events
+			const visibleEvents: FCPrismaEventInput[] = events
 				.filter((event) => searchFilter.shouldInclude({ meta: event.meta, title: event.title }))
 				.map((event) => mapEventToPrismaInput(event, bundle, colorEvaluator));
 

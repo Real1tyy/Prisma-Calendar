@@ -41,7 +41,7 @@ import type {
 	EventMountInfo,
 	EventUpdateInfo,
 	ExtendedButtonInput,
-	PrismaEventInput,
+	FCPrismaEventInput,
 } from "../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../types/calendar";
 import { isBatchSelectable, isFileBackedEvent } from "../types/event-classification";
@@ -1295,7 +1295,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		}
 	}
 
-	private async buildCalendarEvents(view: { activeStart: Date; activeEnd: Date }): Promise<PrismaEventInput[]> {
+	private async buildCalendarEvents(view: { activeStart: Date; activeEnd: Date }): Promise<FCPrismaEventInput[]> {
 		const start = toLocalISOString(view.activeStart);
 		const end = toLocalISOString(view.activeEnd);
 
@@ -1367,11 +1367,11 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				backgroundColor: displayColor,
 				borderColor: displayColor,
 				className: classNames.join(" "),
-			} as PrismaEventInput;
+			} as FCPrismaEventInput;
 		});
 	}
 
-	private performInitialLoad(calendarEvents: PrismaEventInput[]): void {
+	private performInitialLoad(calendarEvents: FCPrismaEventInput[]): void {
 		this.calendar!.removeAllEvents();
 
 		this.calendar!.batchRendering(() => {
@@ -1388,7 +1388,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	 * Diff against currently rendered events and apply only the changes.
 	 * Returns true if structural changes (adds/removes) occurred.
 	 */
-	private performIncrementalUpdate(calendarEvents: PrismaEventInput[]): boolean {
+	private performIncrementalUpdate(calendarEvents: FCPrismaEventInput[]): boolean {
 		const diff = diffEvents(this.renderedEvents, calendarEvents);
 
 		if (diff.added.length === 0 && diff.removed.length === 0 && diff.changed.length === 0) {
@@ -1446,7 +1446,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		}
 	}
 
-	private populateRenderedEventsCache(events: PrismaEventInput[]): void {
+	private populateRenderedEventsCache(events: FCPrismaEventInput[]): void {
 		this.renderedEvents.clear();
 		for (const ev of events) {
 			this.renderedEvents.set(ev.id as string, eventFingerprint(ev));

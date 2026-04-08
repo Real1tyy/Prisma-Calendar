@@ -1,8 +1,8 @@
-import type { PrismaEventInput } from "../../src/types/calendar";
+import type { FCPrismaEventInput } from "../../src/types/calendar";
 import { eventFingerprint } from "../../src/utils/event-diff";
 
-/** Factory for PrismaEventInput (FullCalendar EventInput format). */
-export function createPrismaEventInput(overrides: Partial<PrismaEventInput> & { id: string }): PrismaEventInput {
+/** Factory for FCPrismaEventInput (FullCalendar EventInput format). */
+export function createFCPrismaEventInput(overrides: Partial<FCPrismaEventInput> & { id: string }): FCPrismaEventInput {
 	return {
 		title: "Event",
 		start: "2024-03-15T09:00:00",
@@ -20,11 +20,11 @@ export function createPrismaEventInput(overrides: Partial<PrismaEventInput> & { 
 			skipped: false,
 		},
 		...overrides,
-	} as PrismaEventInput;
+	} as FCPrismaEventInput;
 }
 
 /** Build the `previous` map that `diffEvents` expects, from an array of events. */
-export function buildPreviousMap(events: PrismaEventInput[]): Map<string, string> {
+export function buildPreviousMap(events: FCPrismaEventInput[]): Map<string, string> {
 	const map = new Map<string, string>();
 	for (const ev of events) {
 		map.set(ev.id as string, eventFingerprint(ev));

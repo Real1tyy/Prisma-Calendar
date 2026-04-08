@@ -12,7 +12,7 @@ import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
-import type { CalendarEvent, CalendarEventData, EventUpdateInfo, PrismaEventInput } from "../../types/calendar";
+import type { CalendarEvent, CalendarEventData, EventUpdateInfo, FCPrismaEventInput } from "../../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../../types/calendar";
 import { isBatchSelectable, isHolidayEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -281,7 +281,7 @@ export function mapEventToPrismaInput(
 	event: CalendarEvent,
 	bundle: CalendarBundle,
 	colorEvaluator: ColorEvaluator<SingleCalendarConfig>
-): PrismaEventInput {
+): FCPrismaEventInput {
 	const allColors = resolveAllEventColors(event.meta ?? {}, bundle, colorEvaluator);
 	const eventColor = allColors[0] ?? bundle.settingsStore.currentSettings.defaultNodeColor;
 	const start = stripZ(event.start);
@@ -296,7 +296,7 @@ export function mapEventToPrismaInput(
 	const folderStr = typeof folder === "string" ? folder : "";
 	const meta = event.meta ?? {};
 
-	const input: PrismaEventInput = {
+	const input: FCPrismaEventInput = {
 		id: event.id,
 		title: event.title,
 		start,

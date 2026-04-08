@@ -10,7 +10,7 @@ import { distinctUntilChanged, skip, type Subscription } from "rxjs";
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { PRO_FEATURES } from "../../core/license";
 import type CustomCalendarPlugin from "../../main";
-import type { CalendarEventData, ExtendedButtonInput, PrismaEventInput } from "../../types/calendar";
+import type { CalendarEventData, ExtendedButtonInput, FCPrismaEventInput } from "../../types/calendar";
 import { isBatchSelectable, isFileBackedEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { getCommonCategories } from "../../utils/event-frontmatter";
@@ -47,7 +47,7 @@ const DEFAULT_VIEW = "dayGridMonth";
 // Cache the last query result so new instances can render immediately.
 let cachedQueryData: BasesQueryResult | null = null;
 
-function eventOverlapsRange(event: PrismaEventInput, rangeStart: Date, rangeEnd: Date): boolean {
+function eventOverlapsRange(event: FCPrismaEventInput, rangeStart: Date, rangeEnd: Date): boolean {
 	const startMs = new Date(event.start as string).getTime();
 	if (isNaN(startMs)) return false;
 
@@ -65,7 +65,7 @@ class PrismaBasesView extends BasesView {
 	private batchSelectionManager: BatchSelectionManager | null = null;
 	private untrackedEventsDropdown: UntrackedEventsDropdown | null = null;
 	private calendarIconCache = new Map<string, string | undefined>();
-	private cachedPrismaEvents: PrismaEventInput[] = [];
+	private cachedPrismaEvents: FCPrismaEventInput[] = [];
 	private cachedNow = new Date();
 	private cachedTodayStart = new Date(
 		this.cachedNow.getFullYear(),
@@ -282,7 +282,7 @@ class PrismaBasesView extends BasesView {
 					click: () => this.toggleBatchSelection(bundle),
 				},
 			} as Record<string, CustomButtonInput>,
-			events: (fetchInfo: { start: Date; end: Date }, successCallback: (events: PrismaEventInput[]) => void) => {
+			events: (fetchInfo: { start: Date; end: Date }, successCallback: (events: FCPrismaEventInput[]) => void) => {
 				const visible = this.cachedPrismaEvents.filter((ev) => eventOverlapsRange(ev, fetchInfo.start, fetchInfo.end));
 				successCallback(visible);
 			},

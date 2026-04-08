@@ -1,10 +1,10 @@
-import type { PrismaEventInput } from "../types/calendar";
+import type { FCPrismaEventInput } from "../types/calendar";
 import type { Frontmatter } from "../types/index";
 
 export interface EventDiff {
-	added: PrismaEventInput[];
+	added: FCPrismaEventInput[];
 	removed: string[];
-	changed: PrismaEventInput[];
+	changed: FCPrismaEventInput[];
 }
 
 /**
@@ -45,7 +45,7 @@ export function hashFrontmatter(data: Frontmatter): number {
  * Used to detect whether a FullCalendar event needs DOM updates.
  * When frontmatterHash is pre-computed, avoids expensive JSON.stringify per diff cycle.
  */
-export function eventFingerprint(ev: PrismaEventInput): string {
+export function eventFingerprint(ev: FCPrismaEventInput): string {
 	const fmPart =
 		ev.extendedProps.frontmatterHash !== undefined
 			? String(ev.extendedProps.frontmatterHash)
@@ -71,9 +71,9 @@ export function eventFingerprint(ev: PrismaEventInput): string {
  * Compares previously rendered events against the new event list.
  * Returns which events were added, removed, or changed (need in-place property updates).
  */
-export function diffEvents(previous: Map<string, string>, next: PrismaEventInput[]): EventDiff {
-	const added: PrismaEventInput[] = [];
-	const changed: PrismaEventInput[] = [];
+export function diffEvents(previous: Map<string, string>, next: FCPrismaEventInput[]): EventDiff {
+	const added: FCPrismaEventInput[] = [];
+	const changed: FCPrismaEventInput[] = [];
 	const seen = new Set<string>();
 
 	for (const ev of next) {
