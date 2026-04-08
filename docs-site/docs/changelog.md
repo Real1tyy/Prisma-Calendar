@@ -7,6 +7,8 @@ All notable changes to this project will be documented here.
 ## 2.12.0 - 4/1/2026
 
 > **TLDR:** Manual virtual events — create calendar time blocks without vault files. Batch Make Virtual and Make Real actions to transform notes back and forth. Start tracking directly from the untracked events dropdown. Weekdays and Weekends recurrence presets. Browser-style back/forward navigation. Settings cleanup — removed useless toggles, split excluded props per propagation type, dedicated Performance section.
+>
+> 📺 [Watch the 2.12 update video](https://youtu.be/-qOsV4OCphk) — a walkthrough of all the major changes in action. These update videos will be a regular thing going forward.
 
 ### Added
 - **Manual Virtual Events**: Create calendar events without backing vault files for lightweight time blocking and planning. Toggle the Virtual pill in the create/edit modal header, or right-click any event to convert between virtual and physical. All virtual event operations (create, delete, convert) are fully undoable. Use the "Open virtual events file" command to navigate to the storage file. Thanks to [@cweekly](https://github.com/cweekly) for the [idea](https://github.com/Real1tyy/Prisma-Calendar/issues/67). See [Virtual Events](./features/events/virtual-events.md#manual-virtual-events).
