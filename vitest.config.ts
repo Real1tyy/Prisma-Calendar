@@ -18,6 +18,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			obsidian: path.resolve(__dirname, "tests/mocks/obsidian.ts"),
+			"@real1ty-obsidian-plugins/testing": path.resolve(__dirname, "../shared/src/testing/index.ts"),
 		},
 		extensions: [".ts", ".tsx", ".js", ".mjs", ".json"],
 	},
