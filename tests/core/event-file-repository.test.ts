@@ -141,8 +141,21 @@ describe("EventFileRepository", () => {
 			});
 
 			expect(result["Status"]).toBe("done");
-			const row = repo.mockTable.get("meeting");
-			expect(row!.data["Status"]).toBe("done");
+			// Uses replace() not update() — verify via operation log
+			const ops = repo.mockTable.getOperationsOfType("update");
+			expect(ops).toHaveLength(1);
+		});
+
+		it("should support property deletion in updater (unskip bug fix)", async () => {
+			repo.mockTable.seed("meeting", createTimedFrontmatter({ Skip: true }));
+
+			const result = await repo.updateFrontmatterByPath("Events/meeting.md", (fm) => {
+				delete fm["Skip"];
+			});
+
+			// Property should be gone from returned data — replace() doesn't merge
+			expect("Skip" in result).toBe(false);
+			expect(result["Skip"]).toBeUndefined();
 		});
 
 		it("should throw when updating frontmatter of non-existent file", async () => {

@@ -89,6 +89,11 @@ export class EventFileRepository implements CalendarEventSource {
 		void this.table.start();
 	}
 
+	/** The underlying VaultTable — use for creating VaultTableViews or direct access */
+	getTable(): EventTable {
+		return this.table;
+	}
+
 	// ─── Row-level access ────────────────────────────────────────
 
 	getRow(key: string): VaultRow<Frontmatter> | undefined {
@@ -141,13 +146,19 @@ export class EventFileRepository implements CalendarEventSource {
 
 	// ─── Frontmatter operations ──────────────────────────────────
 
+	/**
+	 * Applies an updater function to the file's frontmatter.
+	 * Uses table.replace() (not table.update()) so property deletions in the
+	 * updater are properly reflected — update() merges partials and would
+	 * resurrect deleted keys from existing data.
+	 */
 	async updateFrontmatterByPath(filePath: string, updater: (fm: Frontmatter) => void): Promise<Frontmatter> {
 		const key = this.toKey(filePath);
 		const existing = this.table.get(key);
 		if (!existing) throw new Error(`Event file not found: ${key}`);
 		const updated = { ...existing.data };
 		updater(updated);
-		const row = await this.table.update(key, updated);
+		const row = await this.table.replace(key, updated);
 		return row.data;
 	}
 
@@ -490,6 +501,7 @@ export class EventFileRepository implements CalendarEventSource {
 			schema: createEventSchema(),
 			invalidStrategy: "skip",
 			debounceMs: 100,
+			emitCrudEvents: true,
 		});
 	}
 }
