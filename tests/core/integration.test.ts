@@ -1,92 +1,31 @@
 import { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { MockVaultTable } from "../../../shared/src/testing/mocks/vault-table";
-import { EventFileRepository } from "../../src/core/event-file-repository";
 import { EventStore } from "../../src/core/event-store";
-import type { Frontmatter } from "../../src/types";
 import type { CalendarEvent } from "../../src/types/calendar";
 import type { IndexerEvent } from "../../src/types/event-source";
-import { createParserSettings } from "../fixtures";
+import {
+	createMockParser,
+	createMockRecurringEventManager,
+	createRepoSettings,
+	TestableEventFileRepository,
+} from "../fixtures/event-file-repository-fixtures";
 import { createMockApp } from "../setup";
-
-// ─── Test Subclass ───────────────────────────────────────────
-
-class TestableEventFileRepository extends EventFileRepository {
-	readonly mockTable: MockVaultTable<Frontmatter>;
-
-	constructor(app: any, settingsStore: BehaviorSubject<any>, syncStore: any = null) {
-		super(app, settingsStore, syncStore);
-		this.mockTable = new MockVaultTable(settingsStore.value.directory);
-		(this as any).table = this.mockTable;
-	}
-
-	protected override createTable(): any {
-		return new MockVaultTable("temp");
-	}
-}
-
-// ─── Helpers ─────────────────────────────────────────────────
-
-function createSettings(overrides: Record<string, unknown> = {}) {
-	return createParserSettings({
-		directory: "Events",
-		statusProperty: "Status",
-		doneValue: "done",
-		rruleProp: "Recurrence",
-		rruleIdProp: "RecurrenceId",
-		rruleSpecProp: "RecurrenceSpec",
-		skipProp: "Skip",
-		calendarTitleProp: "",
-		autoAssignZettelId: "disabled",
-		markPastInstancesAsDone: false,
-		...overrides,
-	});
-}
-
-function mockParserReturningCalendarEvents() {
-	return {
-		parseEventSource: vi.fn().mockImplementation((source: any) => {
-			if (source.isUntracked) return null;
-			return {
-				id: `id-${source.filePath}`,
-				ref: { filePath: source.filePath },
-				title: source.frontmatter.Title || "Untitled",
-				start: source.frontmatter["Start Date"] || source.frontmatter.Date || "2024-01-01T00:00:00",
-				end: source.frontmatter["End Date"] || source.frontmatter["Start Date"] || "2024-01-01T01:00:00",
-				type: source.isAllDay ? "allDay" : "timed",
-				allDay: source.isAllDay,
-				skipped: false,
-				color: "",
-				meta: source.frontmatter,
-				metadata: source.metadata,
-				virtualKind: "none" as const,
-			};
-		}),
-	};
-}
-
-// ─── Integration Tests ───────────────────────────────────────
 
 describe("Integration: EventFileRepository → EventStore", () => {
 	let repo: TestableEventFileRepository;
 	let eventStore: EventStore;
 	let settingsStore: BehaviorSubject<any>;
 	let mockApp: any;
-	let mockParser: ReturnType<typeof mockParserReturningCalendarEvents>;
+	let mockParser: ReturnType<typeof createMockParser>;
 
 	beforeEach(async () => {
 		mockApp = createMockApp();
-		settingsStore = new BehaviorSubject(createSettings());
+		settingsStore = new BehaviorSubject(createRepoSettings());
 		repo = new TestableEventFileRepository(mockApp, settingsStore);
+		mockParser = createMockParser();
 
-		mockParser = mockParserReturningCalendarEvents();
-
-		const mockRecurringEventManager = {
-			generateAllVirtualInstances: vi.fn().mockReturnValue([]),
-		};
-
-		eventStore = new EventStore(repo, mockParser as any, mockRecurringEventManager as any, settingsStore);
+		eventStore = new EventStore(repo, mockParser as any, createMockRecurringEventManager() as any, settingsStore);
 		await repo.start();
 	});
 
@@ -96,7 +35,6 @@ describe("Integration: EventFileRepository → EventStore", () => {
 	});
 
 	it("should process a complete event lifecycle: create → update → delete", async () => {
-		// 1. Create
 		await repo.mockTable.create({
 			fileName: "meeting",
 			data: {
@@ -109,24 +47,20 @@ describe("Integration: EventFileRepository → EventStore", () => {
 		await vi.waitFor(() => expect(mockParser.parseEventSource).toHaveBeenCalled());
 		expect(eventStore.getEventByPath("Events/meeting.md")).toBeDefined();
 
-		// 2. Update
 		mockParser.parseEventSource.mockClear();
 		await repo.mockTable.update("meeting", { Title: "Updated Meeting" });
 
 		await vi.waitFor(() => expect(mockParser.parseEventSource).toHaveBeenCalled());
 
-		// 3. Delete
 		await repo.mockTable.delete("meeting");
 
 		await vi.waitFor(() => expect(eventStore.getEventByPath("Events/meeting.md")).toBeNull());
 
-		// Verify operation log
 		const ops = repo.mockTable.getOperations();
 		expect(ops.map((op: { type: string }) => op.type)).toEqual(["create", "update", "delete"]);
 	});
 
 	it("should handle file deletion correctly", async () => {
-		// Pre-seed and cache an event
 		repo.mockTable.seed("meeting", {
 			"Start Date": "2024-06-15T10:00:00",
 			"End Date": "2024-06-15T11:00:00",
@@ -150,7 +84,6 @@ describe("Integration: EventFileRepository → EventStore", () => {
 		eventStore.updateEvent("Events/meeting.md", cachedEvent, 999);
 		expect(eventStore.getEventByPath("Events/meeting.md")).toBeDefined();
 
-		// Delete triggers file-deleted IndexerEvent → EventStore invalidates
 		await repo.mockTable.delete("meeting");
 
 		await vi.waitFor(() => expect(eventStore.getEventByPath("Events/meeting.md")).toBeNull());
@@ -235,7 +168,6 @@ describe("Integration: EventFileRepository → EventStore", () => {
 
 		await vi.waitFor(() => expect(mockParser.parseEventSource).toHaveBeenCalled());
 
-		// Event should not be cached
 		expect(eventStore.getEventByPath("Events/bad-event.md")).toBeNull();
 	});
 });

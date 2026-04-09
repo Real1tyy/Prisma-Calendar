@@ -1,3 +1,12 @@
+export {
+	createAllDayFrontmatter,
+	createMockParser,
+	createMockRecurringEventManager,
+	createRepoSettings,
+	createRepoSettingsStore,
+	createTimedFrontmatter,
+	TestableEventFileRepository,
+} from "./event-file-repository-fixtures";
 export { createDefaultMetadata, createMockAllDayEvent, createMockTimedEvent } from "./event-fixtures";
 export { createICSExportOptions, createImportedEvent } from "./ics-fixtures";
 export { createMockIntegrationApp, createMockMetadataCache, createMockVault } from "./obsidian-fixtures";

@@ -1,72 +1,14 @@
-import { BehaviorSubject } from "rxjs";
+import type { BehaviorSubject } from "rxjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { MockVaultTable } from "../../../shared/src/testing/mocks/vault-table";
-import { EventFileRepository } from "../../src/core/event-file-repository";
-import type { Frontmatter } from "../../src/types";
 import type { IndexerEvent } from "../../src/types/event-source";
-import { createParserSettings } from "../fixtures";
+import {
+	createAllDayFrontmatter,
+	createRepoSettingsStore,
+	createTimedFrontmatter,
+	TestableEventFileRepository,
+} from "../fixtures/event-file-repository-fixtures";
 import { createMockApp } from "../setup";
-
-// ─── Test Subclass ───────────────────────────────────────────
-
-class TestableEventFileRepository extends EventFileRepository {
-	readonly mockTable: MockVaultTable<Frontmatter>;
-
-	constructor(app: any, settingsStore: BehaviorSubject<any>, syncStore: any = null) {
-		super(app, settingsStore, syncStore);
-		// Replace the internally created table with a mock
-		this.mockTable = new MockVaultTable(settingsStore.value.directory);
-		(this as any).table = this.mockTable;
-	}
-
-	protected override createTable(): any {
-		// Return a mock that won't throw — the real mock is set in constructor
-		return new MockVaultTable("temp");
-	}
-}
-
-// ─── Helpers ─────────────────────────────────────────────────
-
-function createSettings(overrides: Record<string, unknown> = {}) {
-	return createParserSettings({
-		directory: "Events",
-		statusProperty: "Status",
-		doneValue: "done",
-		rruleProp: "Recurrence",
-		rruleIdProp: "RecurrenceId",
-		rruleSpecProp: "RecurrenceSpec",
-		skipProp: "Skip",
-		calendarTitleProp: "",
-		autoAssignZettelId: "disabled",
-		markPastInstancesAsDone: false,
-		...overrides,
-	});
-}
-
-function createSettingsStore(overrides: Record<string, unknown> = {}) {
-	return new BehaviorSubject(createSettings(overrides));
-}
-
-function createTimedFrontmatter(overrides: Record<string, unknown> = {}): Frontmatter {
-	return {
-		"Start Date": "2024-06-15T10:00:00",
-		"End Date": "2024-06-15T11:00:00",
-		Title: "Team Meeting",
-		...overrides,
-	};
-}
-
-function createAllDayFrontmatter(overrides: Record<string, unknown> = {}): Frontmatter {
-	return {
-		Date: "2024-06-15",
-		"All Day": true,
-		Title: "Holiday",
-		...overrides,
-	};
-}
-
-// ─── Tests ───────────────────────────────────────────────────
 
 describe("EventFileRepository", () => {
 	let repo: TestableEventFileRepository;
@@ -75,7 +17,7 @@ describe("EventFileRepository", () => {
 
 	beforeEach(() => {
 		mockApp = createMockApp();
-		settingsStore = createSettingsStore();
+		settingsStore = createRepoSettingsStore();
 		repo = new TestableEventFileRepository(mockApp, settingsStore);
 	});
 
@@ -262,7 +204,6 @@ describe("EventFileRepository", () => {
 				data: createTimedFrontmatter(),
 			});
 
-			// Allow async processing
 			await vi.waitFor(() => expect(events.length).toBeGreaterThan(0));
 			const fileChanged = events.find((e) => e.type === "file-changed");
 			expect(fileChanged).toBeDefined();
@@ -489,7 +430,6 @@ describe("EventFileRepository", () => {
 
 			repo.destroy();
 
-			// Subject should be completed
 			expect(events.some((e) => e.filePath === "__complete__")).toBe(true);
 		});
 	});
