@@ -19,6 +19,11 @@
 	/* Use CSS custom property for dynamic colors */
 	background-color: var(--event-color);
 	border-color: var(--event-color);
+
+	&:hover {
+		transform: translateY(-1px);
+		filter: brightness(1.15) saturate(1.1);
+	}
 }
 
 .prisma-fc-event-hidden {
@@ -34,30 +39,27 @@
 	flex: none;
 	min-width: auto;
 	overflow: visible;
-}
 
-.prisma-event-color-dots .prisma-day-color-dot {
-	width: 14px;
-	height: 14px;
-	border: 0.5px solid rgb(255 255 255 / 40%);
-}
-
-.prisma-calendar-event:hover {
-	transform: translateY(-1px);
-	filter: brightness(1.15) saturate(1.1);
+	.prisma-day-color-dot {
+		width: 14px;
+		height: 14px;
+		border: 0.5px solid rgb(255 255 255 / 40%);
+	}
 }
 
 /* Prevent FullCalendar's default dark hover overlay */
-.prisma-calendar-container .fc-event:hover,
-.prisma-calendar-container .fc-daygrid-event:hover,
-.prisma-calendar-container .fc-daygrid-dot-event:hover {
-	filter: brightness(1.15) saturate(1.1);
-}
+.prisma-calendar-container {
+	.fc-event:hover,
+	.fc-daygrid-event:hover,
+	.fc-daygrid-dot-event:hover {
+		filter: brightness(1.15) saturate(1.1);
+	}
 
-/* Keep background color from being overridden on hover */
-.prisma-calendar-container .fc-event:hover {
-	background-color: var(--event-color);
-	border-color: var(--event-color);
+	/* Keep background color from being overridden on hover */
+	.fc-event:hover {
+		background-color: var(--event-color);
+		border-color: var(--event-color);
+	}
 }
 
 /* unified padding; remove inner borders */
@@ -72,6 +74,20 @@
 	overflow: hidden auto;
 	scrollbar-width: thin;
 	scrollbar-color: var(--scrollbar-thumb-bg) transparent;
+
+	/* Webkit scrollbar for event content wrapper */
+	&::-webkit-scrollbar {
+		width: 4px;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background-color: var(--scrollbar-thumb-bg);
+		border-radius: 2px;
+	}
 }
 
 /* Event marker indicator for recurring events */
@@ -91,20 +107,6 @@
 	text-shadow: 0 1px 2px rgb(0 0 0 / 30%);
 	backdrop-filter: blur(2px);
 	box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
-}
-
-/* Webkit scrollbar for event content wrapper */
-.prisma-fc-event-content-wrapper::-webkit-scrollbar {
-	width: 4px;
-}
-
-.prisma-fc-event-content-wrapper::-webkit-scrollbar-track {
-	background: transparent;
-}
-
-.prisma-fc-event-content-wrapper::-webkit-scrollbar-thumb {
-	background-color: var(--scrollbar-thumb-bg);
-	border-radius: 2px;
 }
 
 /* --- Header: time + title --- */
@@ -142,13 +144,13 @@
 	word-break: break-word;
 	overflow-wrap: break-word;
 	line-height: 1.3;
-}
 
-/* Optional subtle dot between time and title (no divider lines) */
-.prisma-fc-event-title-custom::before {
-	content: "•";
-	opacity: 0.7;
-	margin-right: 6px;
+	/* Optional subtle dot between time and title (no divider lines) */
+	&::before {
+		content: "•";
+		opacity: 0.7;
+		margin-right: 6px;
+	}
 }
 
 /* --- Properties: inline, chip-like, subdued --- */
@@ -177,115 +179,118 @@
 	/* translucent */
 	color: var(--event-text-color, white);
 	max-width: 100%;
-}
 
-.prisma-fc-event-prop-key {
-	opacity: 0.85;
+	&-key {
+		opacity: 0.85;
 
-	/* keys lighter */
-	flex: 0 0 auto;
-}
+		/* keys lighter */
+		flex: 0 0 auto;
+	}
 
-.prisma-fc-event-prop-value {
-	opacity: 1;
-	flex: 1 1 auto;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-	word-break: break-word;
-	min-width: 0;
-	display: inline;
-}
+	&-value {
+		opacity: 1;
+		flex: 1 1 auto;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		word-break: break-word;
+		min-width: 0;
+		display: inline;
+	}
 
-.prisma-fc-event-prop-link {
-	color: var(--event-text-color, white);
-	text-decoration: underline;
-	text-decoration-style: dotted;
-	text-decoration-thickness: 1.5px;
-	text-underline-offset: 2px;
-	cursor: pointer;
-	transition: all 0.2s ease;
-	font-weight: var(--font-weight-bold);
-	padding: 1px 3px;
-	border-radius: 2px;
-	background: rgb(255 255 255 / 10%);
-	text-shadow: 0 1px 2px rgb(0 0 0 / 30%);
-}
+	&-link {
+		color: var(--event-text-color, white);
+		text-decoration: underline;
+		text-decoration-style: dotted;
+		text-decoration-thickness: 1.5px;
+		text-underline-offset: 2px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		font-weight: var(--font-weight-bold);
+		padding: 1px 3px;
+		border-radius: 2px;
+		background: rgb(255 255 255 / 10%);
+		text-shadow: 0 1px 2px rgb(0 0 0 / 30%);
 
-.prisma-fc-event-prop-link:hover {
-	color: var(--event-text-color, white);
-	text-decoration-style: solid;
-	text-decoration-thickness: 2px;
-	background: rgb(255 255 255 / 20%);
-	text-shadow: 0 0 12px rgb(255 255 255 / 60%);
-	transform: translateY(-1px);
+		&:hover {
+			color: var(--event-text-color, white);
+			text-decoration-style: solid;
+			text-decoration-thickness: 2px;
+			background: rgb(255 255 255 / 20%);
+			text-shadow: 0 0 12px rgb(255 255 255 / 60%);
+			transform: translateY(-1px);
+		}
+	}
 }
 
 /* Time-grid / day-grid: ensure wrappers don't add extra padding */
-.prisma-calendar-container .fc-daygrid-event .fc-event-main,
-.prisma-calendar-container .fc-timegrid-event .fc-event-main {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	overflow: hidden;
-	padding: 0;
-}
+.prisma-calendar-container {
+	.fc-daygrid-event .fc-event-main,
+	.fc-timegrid-event .fc-event-main {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		overflow: hidden;
+		padding: 0;
+	}
 
-.prisma-calendar-container .fc-daygrid-event {
-	min-height: auto;
-	height: auto;
-	display: flex;
-	flex-direction: column;
-}
+	.fc-daygrid-event {
+		min-height: auto;
+		height: auto;
+		display: flex;
+		flex-direction: column;
+	}
 
-.prisma-calendar-container .fc-daygrid-event-harness {
-	min-height: auto;
-}
+	.fc-daygrid-event-harness {
+		min-height: auto;
+	}
 
-/* Month view specific styling - desktop defaults */
-.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-content-wrapper {
-	padding: 4px 6px;
-	gap: 4px;
-	overflow: visible;
-	height: auto;
-	min-height: auto;
-}
+	/* Month view specific styling - desktop defaults */
+	.fc-daygrid-event {
+		.prisma-fc-event-content-wrapper {
+			padding: 4px 6px;
+			gap: 4px;
+			overflow: visible;
+			height: auto;
+			min-height: auto;
+		}
 
-.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-header {
-	overflow: visible;
-	white-space: normal;
-	display: block;
-	word-break: break-word;
-	overflow-wrap: break-word;
-	width: 100%;
-}
+		.prisma-fc-event-header {
+			overflow: visible;
+			white-space: normal;
+			display: block;
+			word-break: break-word;
+			overflow-wrap: break-word;
+			width: 100%;
+		}
 
-.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-time {
-	font-size: var(--font-ui-smaller);
-	display: inline-block;
-	white-space: normal;
-	word-break: break-word;
-	overflow-wrap: break-word;
-}
+		.prisma-fc-event-time {
+			font-size: var(--font-ui-smaller);
+			display: inline-block;
+			white-space: normal;
+			word-break: break-word;
+			overflow-wrap: break-word;
+		}
 
-.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-title-custom {
-	font-size: var(--font-ui-smaller);
-	line-height: 1.2;
-	overflow: visible;
-	white-space: normal;
-	word-wrap: break-word;
-	word-break: break-word;
-	display: inline;
-}
+		.prisma-fc-event-title-custom {
+			font-size: var(--font-ui-smaller);
+			line-height: 1.2;
+			overflow: visible;
+			white-space: normal;
+			word-wrap: break-word;
+			word-break: break-word;
+			display: inline;
+		}
+	}
 
-/* Hide properties in month view to save space */
-.prisma-calendar-container .fc-dayGridMonth-view .fc-daygrid-event .prisma-fc-event-props {
-	display: none;
-}
+	/* Hide properties in month view to save space */
+	.fc-dayGridMonth-view .fc-daygrid-event .prisma-fc-event-props {
+		display: none;
+	}
 
-.prisma-calendar-container .fc-daygrid-event,
-.prisma-calendar-container .fc-timegrid-event {
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
+	.fc-daygrid-event,
+	.fc-timegrid-event {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
 }
-

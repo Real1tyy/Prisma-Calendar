@@ -1,192 +1,201 @@
 /* FullCalendar theme integration with Obsidian */
-.prisma-calendar-container .fc {
-	font-family: var(--font-interface);
-	font-size: var(--font-ui-small);
-	overflow: visible;
-}
+.prisma-calendar-container {
+	.fc {
+		font-family: var(--font-interface);
+		font-size: var(--font-ui-small);
+		overflow: visible;
+	}
 
-.prisma-calendar-container .fc-timegrid-now-indicator-line {
-	border-top-width: 2.5px;
-}
+	.fc-timegrid-now-indicator-line {
+		border-top-width: 2.5px;
+	}
 
-.prisma-calendar-container .fc-theme-standard .fc-scrollgrid {
-	border-color: var(--background-modifier-border);
-}
+	.fc-theme-standard {
+		.fc-scrollgrid {
+			border-color: var(--background-modifier-border);
+		}
 
-.prisma-calendar-container .fc-theme-standard th,
-.prisma-calendar-container .fc-theme-standard td {
-	border-color: var(--background-modifier-border);
-}
+		th,
+		td {
+			border-color: var(--background-modifier-border);
+		}
 
-.prisma-calendar-container .fc-theme-standard .fc-scrollgrid-section>* {
-	border-color: var(--background-modifier-border);
-}
+		.fc-scrollgrid-section > * {
+			border-color: var(--background-modifier-border);
+		}
+	}
 
-/* Header styling */
-.prisma-calendar-container .fc-header-toolbar.fc-toolbar {
-	margin-bottom: 0;
-	position: sticky;
-	top: 0;
-	z-index: 20;
-	background-color: var(--background-primary);
-	padding: 8px 0;
-	box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
-}
+	/* Header styling */
+	.fc-header-toolbar.fc-toolbar {
+		margin-bottom: 0;
+		position: sticky;
+		top: 0;
+		z-index: 20;
+		background-color: var(--background-primary);
+		padding: 8px 0;
+		box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
+	}
 
-.prisma-calendar-container .fc-toolbar-chunk {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem;
-}
+	.fc-toolbar-chunk {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
 
-.prisma-calendar-container .fc-toolbar-title {
-	color: var(--text-normal);
-	font-size: var(--font-ui-medium);
-	font-weight: var(--font-weight-medium);
-}
+	.fc-toolbar-title {
+		color: var(--text-normal);
+		font-size: var(--font-ui-medium);
+		font-weight: var(--font-weight-medium);
+	}
 
-.prisma-calendar-container .fc-button {
-	background-color: var(--interactive-normal);
-	border-color: var(--background-modifier-border);
-	color: var(--text-normal);
-	font-size: var(--font-ui-smaller);
-	padding: 4px 8px;
-	border-radius: var(--radius-s);
-}
+	.fc-button {
+		background-color: var(--interactive-normal);
+		border-color: var(--background-modifier-border);
+		color: var(--text-normal);
+		font-size: var(--font-ui-smaller);
+		padding: 4px 8px;
+		border-radius: var(--radius-s);
 
-.prisma-calendar-container .fc-button:hover {
-	background-color: var(--interactive-hover);
-}
+		&:hover {
+			background-color: var(--interactive-hover);
+		}
 
-.prisma-calendar-container .fc-button:focus-visible {
-	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
-}
+		&:focus-visible {
+			box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+		}
+	}
 
-.prisma-calendar-container .fc-button-active {
-	background-color: var(--interactive-accent);
-	color: var(--text-on-accent);
-}
+	.fc-button-active {
+		background-color: var(--interactive-accent);
+		color: var(--text-on-accent);
+	}
 
-/* Day headers */
-.prisma-calendar-container .fc-col-header-cell {
-	background-color: var(--background-secondary);
-	color: var(--text-muted);
-	font-weight: var(--font-weight-medium);
-	font-size: var(--font-ui-smaller);
-}
+	/* Day headers */
+	.fc-col-header-cell {
+		background-color: var(--background-secondary);
+		color: var(--text-muted);
+		font-weight: var(--font-weight-medium);
+		font-size: var(--font-ui-smaller);
+	}
 
-/* Day cells */
-.prisma-calendar-container .fc-daygrid-day {
-	background-color: var(--background-primary);
-}
+	/* Day cells */
+	.fc-daygrid-day {
+		background-color: var(--background-primary);
 
-.prisma-calendar-container .fc-daygrid-day:hover {
-	background-color: var(--background-modifier-hover);
-}
+		&:hover {
+			background-color: var(--background-modifier-hover);
+		}
+	}
 
-.prisma-calendar-container .fc-daygrid-day-top {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-	min-width: 0;
-}
+	.fc-daygrid-day-top {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		min-width: 0;
+	}
 
-/* Day number - fixed, never shrinks */
-.prisma-calendar-container .fc-daygrid-day-number {
-	flex-shrink: 0;
-}
+	/* Day number - fixed, never shrinks */
+	.fc-daygrid-day-number {
+		flex-shrink: 0;
+	}
 
-.prisma-calendar-container .fc-day-today {
-	background-color: var(--background-modifier-form-field);
-}
+	.fc-day-today {
+		background-color: var(--background-modifier-form-field);
+	}
 
-.prisma-calendar-container .fc-day-other {
-	background-color: var(--background-secondary-alt);
-	color: var(--text-faint);
-}
+	.fc-day-other {
+		background-color: var(--background-secondary-alt);
+		color: var(--text-faint);
+	}
 
-/* Day cell coloring — uniform mode: single color applied to all day cells */
-.prisma-calendar-container.prisma-uniform-day-color .fc-daygrid-day,
-.prisma-calendar-container.prisma-uniform-day-color .fc-timegrid-col[data-date] {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%,
-		color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%
-	);
-}
+	/* Day cell coloring — uniform mode: single color applied to all day cells */
+	&.prisma-uniform-day-color {
+		.fc-daygrid-day,
+		.fc-timegrid-col[data-date] {
+			background: linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%,
+				color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%
+			);
+		}
 
-.prisma-calendar-container.prisma-uniform-day-color .fc-day-other {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--month-even-color) 38%, transparent) 0%,
-		color-mix(in srgb, var(--month-even-color) 22%, transparent) 100%
-	);
-}
+		.fc-day-other {
+			background: linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--month-even-color) 38%, transparent) 0%,
+				color-mix(in srgb, var(--month-even-color) 22%, transparent) 100%
+			);
+		}
 
-/* Uniform — preserve today highlight */
-.prisma-calendar-container.prisma-uniform-day-color .fc-day-today {
-	background: var(--background-modifier-form-field);
-}
+		/* Uniform — preserve today highlight */
+		.fc-day-today {
+			background: var(--background-modifier-form-field);
+		}
 
-/* Uniform — preserve hover */
-.prisma-calendar-container.prisma-uniform-day-color .fc-daygrid-day:hover {
-	background: var(--background-modifier-hover);
-}
+		/* Uniform — preserve hover */
+		.fc-daygrid-day:hover {
+			background: var(--background-modifier-hover);
+		}
+	}
 
-/* Day cell coloring — boundary mode: alternate gradient backgrounds by even/odd month */
-.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even,
-.prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-even {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%,
-		color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%
-	);
-}
+	/* Day cell coloring — boundary mode: alternate gradient backgrounds by even/odd month */
+	&.prisma-month-boundary-colors {
+		.fc-daygrid-day.prisma-month-even,
+		.fc-timegrid-col.prisma-month-even {
+			background: linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%,
+				color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%
+			);
+		}
 
-.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd,
-.prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-odd {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--month-odd-color) 25%, transparent) 0%,
-		color-mix(in srgb, var(--month-odd-color) 12%, transparent) 100%
-	);
-}
+		.fc-daygrid-day.prisma-month-odd,
+		.fc-timegrid-col.prisma-month-odd {
+			background: linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--month-odd-color) 25%, transparent) 0%,
+				color-mix(in srgb, var(--month-odd-color) 12%, transparent) 100%
+			);
+		}
 
-/* Boundary — stronger tint for out-of-month overflow days */
-.prisma-calendar-container.prisma-month-boundary-colors .fc-day-other.prisma-month-even {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--month-even-color) 38%, transparent) 0%,
-		color-mix(in srgb, var(--month-even-color) 22%, transparent) 100%
-	);
-}
+		/* Boundary — stronger tint for out-of-month overflow days */
+		.fc-day-other.prisma-month-even {
+			background: linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--month-even-color) 38%, transparent) 0%,
+				color-mix(in srgb, var(--month-even-color) 22%, transparent) 100%
+			);
+		}
 
-.prisma-calendar-container.prisma-month-boundary-colors .fc-day-other.prisma-month-odd {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--month-odd-color) 38%, transparent) 0%,
-		color-mix(in srgb, var(--month-odd-color) 22%, transparent) 100%
-	);
-}
+		.fc-day-other.prisma-month-odd {
+			background: linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--month-odd-color) 38%, transparent) 0%,
+				color-mix(in srgb, var(--month-odd-color) 22%, transparent) 100%
+			);
+		}
 
-/* Boundary — preserve today highlight */
-.prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-even,
-.prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-odd {
-	background: var(--background-modifier-form-field);
-}
+		/* Boundary — preserve today highlight */
+		.fc-day-today.prisma-month-even,
+		.fc-day-today.prisma-month-odd {
+			background: var(--background-modifier-form-field);
+		}
 
-/* Boundary — preserve hover */
-.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even:hover,
-.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd:hover {
-	background: var(--background-modifier-hover);
-}
+		/* Boundary — preserve hover */
+		.fc-daygrid-day.prisma-month-even:hover,
+		.fc-daygrid-day.prisma-month-odd:hover {
+			background: var(--background-modifier-hover);
+		}
+	}
 
-/* Button visibility utilities - using proper selector chain for specificity without !important */
-.prisma-calendar-container .fc-header-toolbar .fc-toolbar-chunk .fc-button.prisma-fc-button-hidden {
-	display: none;
-}
+	/* Button visibility utilities - using proper selector chain for specificity without !important */
+	.fc-header-toolbar .fc-toolbar-chunk .fc-button {
+		&.prisma-fc-button-hidden {
+			display: none;
+		}
 
-.prisma-calendar-container .fc-header-toolbar .fc-toolbar-chunk .fc-button.prisma-fc-button-visible {
-	display: inline-block;
+		&.prisma-fc-button-visible {
+			display: inline-block;
+		}
+	}
 }
-

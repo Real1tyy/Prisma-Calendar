@@ -1,266 +1,277 @@
 /* Heatmap Modal */
 
-.prisma-heatmap-modal {
-	width: 68vw;
-	max-width: 900px;
-}
+.prisma-heatmap {
+	&-modal {
+		width: 68vw;
+		max-width: 900px;
 
-.prisma-heatmap-modal .modal-content {
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
-}
+		.modal-content {
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+		}
+	}
 
-.prisma-heatmap-header {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 16px;
-	padding: 1rem 1.5rem;
-	border-bottom: 1px solid var(--background-modifier-border);
-}
+	&-header {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 16px;
+		padding: 1rem 1.5rem;
+		border-bottom: 1px solid var(--background-modifier-border);
 
-.prisma-heatmap-header h2 {
-	margin: 0;
-	font-size: 1.3rem;
-}
+		h2 {
+			margin: 0;
+			font-size: 1.3rem;
+		}
+	}
 
-.prisma-heatmap-controls {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 1rem;
-	padding: 0.5rem 1.5rem;
-	border-bottom: 1px solid var(--background-modifier-border);
-}
+	&-controls {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		padding: 0.5rem 1.5rem;
+		border-bottom: 1px solid var(--background-modifier-border);
+	}
 
-.prisma-heatmap-shortcut-hint {
-	font-size: 0.75rem;
-	color: var(--text-faint);
-	margin-left: auto;
-}
+	&-shortcut-hint {
+		font-size: 0.75rem;
+		color: var(--text-faint);
+		margin-left: auto;
+	}
 
-.prisma-heatmap-mode-group {
-	display: flex;
-	gap: 1rem;
-}
+	&-mode {
+		&-group {
+			display: flex;
+			gap: 1rem;
+		}
 
-.prisma-heatmap-mode-btn {
-	padding: 4px 12px;
-	border-radius: 4px;
-	border: 1px solid var(--background-modifier-border);
-	background: var(--background-primary);
-	color: var(--text-muted);
-	cursor: pointer;
-	font-size: 0.85rem;
-}
+		&-btn {
+			padding: 4px 12px;
+			border-radius: 4px;
+			border: 1px solid var(--background-modifier-border);
+			background: var(--background-primary);
+			color: var(--text-muted);
+			cursor: pointer;
+			font-size: 0.85rem;
 
-.prisma-heatmap-mode-btn.prisma-is-active {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border-color: var(--interactive-accent);
-}
+			&.prisma-is-active {
+				background: var(--interactive-accent);
+				color: var(--text-on-accent);
+				border-color: var(--interactive-accent);
+			}
+		}
+	}
 
-.prisma-heatmap-nav-group {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-}
+	&-nav {
+		&-group {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+		}
 
-.prisma-heatmap-nav-btn {
-	padding: 4px 10px;
-	border-radius: 4px;
-	border: 1px solid var(--background-modifier-border);
-	background: var(--background-primary);
-	color: var(--text-normal);
-	cursor: pointer;
-	font-size: 0.9rem;
-}
+		&-btn {
+			padding: 4px 10px;
+			border-radius: 4px;
+			border: 1px solid var(--background-modifier-border);
+			background: var(--background-primary);
+			color: var(--text-normal);
+			cursor: pointer;
+			font-size: 0.9rem;
 
-.prisma-heatmap-nav-btn:hover {
-	background: var(--background-modifier-hover);
-}
+			&:hover {
+				background: var(--background-modifier-hover);
+			}
+		}
 
-.prisma-heatmap-nav-label {
-	font-size: 0.95rem;
-	font-weight: 600;
-	min-width: 120px;
-	text-align: center;
-	color: var(--text-normal);
-}
+		&-label {
+			font-size: 0.95rem;
+			font-weight: 600;
+			min-width: 120px;
+			text-align: center;
+			color: var(--text-normal);
+		}
+	}
 
-.prisma-heatmap-legend-container {
-	padding: 0.5rem 1.5rem;
-	display: flex;
-	justify-content: center;
-}
+	&-legend {
+		&-container {
+			padding: 0.5rem 1.5rem;
+			display: flex;
+			justify-content: center;
+		}
 
-.prisma-heatmap-legend {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-}
+		display: flex;
+		align-items: center;
+		gap: 4px;
 
-.prisma-heatmap-legend-label {
-	font-size: 0.75rem;
-	color: var(--text-muted);
-	margin: 0 4px;
-}
+		&-label {
+			font-size: 0.75rem;
+			color: var(--text-muted);
+			margin: 0 4px;
+		}
 
-.prisma-heatmap-legend-swatch {
-	width: 12px;
-	height: 12px;
-	border-radius: 2px;
-}
+		&-swatch {
+			width: 12px;
+			height: 12px;
+			border-radius: 2px;
+		}
+	}
 
-.prisma-heatmap-container {
-	padding: 0.75rem 1.5rem;
-	overflow-x: auto;
-	display: flex;
-	justify-content: center;
-}
+	&-container {
+		padding: 0.75rem 1.5rem;
+		overflow-x: auto;
+		display: flex;
+		justify-content: center;
+	}
 
-.prisma-heatmap-svg {
-	display: block;
-}
+	&-svg {
+		display: block;
+	}
 
-.prisma-heatmap-cell {
-	cursor: pointer;
-	transition: opacity 0.15s ease;
-}
+	&-cell {
+		cursor: pointer;
+		transition: opacity 0.15s ease;
 
-.prisma-heatmap-cell:hover {
-	opacity: 0.8;
-	stroke: var(--text-normal);
-	stroke-width: 1;
-}
+		&:hover {
+			opacity: 0.8;
+			stroke: var(--text-normal);
+			stroke-width: 1;
+		}
 
-.prisma-heatmap-cell-selected {
-	stroke: var(--text-accent);
-	stroke-width: 2;
-	filter: brightness(1.15);
-}
+		&-selected {
+			stroke: var(--text-accent);
+			stroke-width: 2;
+			filter: brightness(1.15);
+		}
+	}
 
-.prisma-heatmap-day-label {
-	font-size: 9px;
-	fill: var(--text-muted);
-	text-anchor: end;
-	dominant-baseline: middle;
-}
+	&-day {
+		&-label {
+			font-size: 9px;
+			fill: var(--text-muted);
+			text-anchor: end;
+			dominant-baseline: middle;
+		}
 
-.prisma-heatmap-month-label {
-	font-size: 10px;
-	fill: var(--text-muted);
-	text-anchor: start;
-}
+		&-number {
+			font-size: 8px;
+			fill: var(--text-muted);
+			text-anchor: middle;
+			dominant-baseline: middle;
+			pointer-events: none;
+		}
 
-.prisma-heatmap-month-day-header {
-	font-size: 10px;
-	fill: var(--text-muted);
-	text-anchor: middle;
-}
+		&-detail {
+			padding: 0 1.5rem 1rem;
+		}
+	}
 
-.prisma-heatmap-day-number {
-	font-size: 8px;
-	fill: var(--text-muted);
-	text-anchor: middle;
-	dominant-baseline: middle;
-	pointer-events: none;
-}
+	&-month {
+		&-label {
+			font-size: 10px;
+			fill: var(--text-muted);
+			text-anchor: start;
+		}
 
-.prisma-heatmap-day-detail {
-	padding: 0 1.5rem 1rem;
-}
+		&-day-header {
+			font-size: 10px;
+			fill: var(--text-muted);
+			text-anchor: middle;
+		}
+	}
 
-.prisma-heatmap-detail-header {
-	display: flex;
-	align-items: baseline;
-	gap: 12px;
-	margin-bottom: 8px;
-}
+	&-detail {
+		&-header {
+			display: flex;
+			align-items: baseline;
+			gap: 12px;
+			margin-bottom: 8px;
 
-.prisma-heatmap-detail-header h3 {
-	margin: 0;
-	font-size: 1rem;
-}
+			h3 {
+				margin: 0;
+				font-size: 1rem;
+			}
+		}
 
-.prisma-heatmap-detail-count {
-	font-size: 0.85rem;
-	color: var(--text-muted);
-}
+		&-count {
+			font-size: 0.85rem;
+			color: var(--text-muted);
+		}
 
-.prisma-heatmap-detail-empty {
-	color: var(--text-muted);
-	font-style: italic;
-}
+		&-empty {
+			color: var(--text-muted);
+			font-style: italic;
+		}
 
-.prisma-heatmap-detail-list {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
+		&-list {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
 
-.prisma-heatmap-detail-row {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	padding: 6px 10px;
-	border-radius: 4px;
-	cursor: pointer;
-	background: var(--background-secondary);
-}
+		&-row {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+			padding: 6px 10px;
+			border-radius: 4px;
+			cursor: pointer;
+			background: var(--background-secondary);
 
-.prisma-heatmap-detail-row.prisma-heatmap-detail-row-categorized {
-	background: color-mix(in srgb, var(--category-color) 15%, transparent);
-	border-left: 3px solid var(--category-color);
-}
+			&.prisma-heatmap-detail-row-categorized {
+				background: color-mix(in srgb, var(--category-color) 15%, transparent);
+				border-left: 3px solid var(--category-color);
 
-.prisma-heatmap-detail-row:hover {
-	background: var(--background-modifier-hover);
-}
+				&:hover {
+					background: color-mix(in srgb, var(--category-color) 25%, var(--background-modifier-hover));
+				}
+			}
 
-.prisma-heatmap-detail-row.prisma-heatmap-detail-row-categorized:hover {
-	background: color-mix(in srgb, var(--category-color) 25%, var(--background-modifier-hover));
-}
+			&:hover {
+				background: var(--background-modifier-hover);
+			}
 
-.prisma-heatmap-detail-row-main {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-}
+			&-main {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+			}
+		}
 
-.prisma-heatmap-detail-title {
-	font-size: 0.9rem;
-	color: var(--text-normal);
-}
+		&-title {
+			font-size: 0.9rem;
+			color: var(--text-normal);
+		}
 
-.prisma-heatmap-detail-time {
-	font-size: 0.8rem;
-	color: var(--text-muted);
-}
+		&-time {
+			font-size: 0.8rem;
+			color: var(--text-muted);
+		}
 
-.prisma-heatmap-detail-props {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 4px 12px;
-}
+		&-props {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 4px 12px;
+		}
 
-.prisma-heatmap-detail-prop {
-	font-size: 0.78rem;
-	color: var(--text-muted);
-}
+		&-prop {
+			font-size: 0.78rem;
+			color: var(--text-muted);
 
-.prisma-heatmap-detail-prop .prisma-prop-key {
-	color: var(--text-faint);
-}
+			.prisma-prop-key {
+				color: var(--text-faint);
+			}
 
-.prisma-heatmap-detail-prop .prisma-prop-link {
-	color: var(--link-color);
-	cursor: pointer;
-	text-decoration: none;
-}
+			.prisma-prop-link {
+				color: var(--link-color);
+				cursor: pointer;
+				text-decoration: none;
 
-.prisma-heatmap-detail-prop .prisma-prop-link:hover {
-	text-decoration: underline;
+				&:hover {
+					text-decoration: underline;
+				}
+			}
+		}
+	}
 }
-

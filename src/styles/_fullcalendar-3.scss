@@ -1,243 +1,249 @@
 /* Responsive adjustments */
 @media (width <= 768px) {
-	.prisma-calendar-container .fc-toolbar {
-		flex-direction: column;
-		gap: 8px;
-	}
+	.prisma-calendar-container {
+		.fc-toolbar {
+			flex-direction: column;
+			gap: 8px;
+		}
 
-	.prisma-calendar-container .fc-toolbar-chunk {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 6px;
-		width: 100%;
-		padding: 0 4px;
-	}
+		.fc-toolbar-chunk {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			gap: 6px;
+			width: 100%;
+			padding: 0 4px;
 
-	/* Mobile: Make buttons smaller */
-	.prisma-calendar-container .fc-toolbar-chunk .fc-button {
-		font-size: 11px;
-		padding: 4px 8px;
-	}
+			/* Mobile: Make buttons smaller */
+			.fc-button {
+				font-size: 11px;
+				padding: 4px 8px;
+			}
 
-	/* Mobile: Navigation buttons stay compact */
-	.prisma-calendar-container .fc-toolbar-chunk .fc-button-group {
-		flex-shrink: 0;
-	}
+			/* Mobile: Navigation buttons stay compact */
+			.fc-button-group {
+				flex-shrink: 0;
+			}
 
-	/* Mobile: Filter inputs take full width on their own row */
-	.prisma-calendar-container .fc-toolbar-chunk .prisma-fc-filter-wrapper {
-		flex: 1 1 100%;
-		min-width: 0;
-	}
+			/* Mobile: Filter inputs take full width on their own row */
+			.prisma-fc-filter-wrapper {
+				flex: 1 1 100%;
+				min-width: 0;
 
-	.prisma-calendar-container .fc-toolbar-chunk .prisma-fc-filter-wrapper input {
-		width: 100%;
-		font-size: 12px;
-	}
+				input {
+					width: 100%;
+					font-size: 12px;
+				}
+			}
 
-	/* Mobile: Filter preset selector */
-	.prisma-calendar-container .fc-toolbar-chunk .prisma-fc-filter-preset-wrapper {
-		flex: 0 1 auto;
-	}
+			/* Mobile: Filter preset selector */
+			.prisma-fc-filter-preset-wrapper {
+				flex: 0 1 auto;
+			}
 
-	.prisma-calendar-container .fc-toolbar-chunk .prisma-fc-filter-preset-select {
-		font-size: 11px;
-		padding: 4px 20px 4px 6px;
-	}
+			.prisma-fc-filter-preset-select {
+				font-size: 11px;
+				padding: 4px 20px 4px 6px;
+			}
 
-	/* Mobile: Hide zoom button text, show icon only would be nice but we hide it */
-	.prisma-calendar-container .fc-toolbar-chunk .fc-zoomLevel-button {
-		font-size: 10px;
-		padding: 4px 6px;
-	}
+			/* Mobile: Hide zoom button text, show icon only would be nice but we hide it */
+			.fc-zoomLevel-button {
+				font-size: 10px;
+				padding: 4px 6px;
+			}
+		}
 
-	/* Mobile: Collapse filter controls (zoom + preset + search + expression) by default, toggleable via "Filters" button */
-	.prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .fc-zoomLevel-button,
-	.prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-preset-wrapper,
-	.prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-wrapper {
-		display: none;
-	}
+		/* Mobile: Collapse filter controls (zoom + preset + search + expression) by default, toggleable via "Filters" button */
+		&.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child {
+			.fc-zoomLevel-button,
+			.prisma-fc-filter-preset-wrapper,
+			.prisma-fc-filter-wrapper {
+				display: none;
+			}
+		}
 
-	/* Mobile: "Filters" toggle button affordance */
-	.prisma-calendar-container .fc-mobileControls-button.prisma-mobile-controls-toggle {
-		position: relative;
-		padding-right: 18px;
-	}
+		/* Mobile: "Filters" toggle button affordance */
+		.fc-mobileControls-button.prisma-mobile-controls-toggle {
+			position: relative;
+			padding-right: 18px;
 
-	.prisma-calendar-container .fc-mobileControls-button.prisma-mobile-controls-toggle::after {
-		content: "▸";
-		position: absolute;
-		right: 6px;
-		top: 50%;
-		transform: translateY(-50%);
-		opacity: 0.8;
-	}
+			&::after {
+				content: "▸";
+				position: absolute;
+				right: 6px;
+				top: 50%;
+				transform: translateY(-50%);
+				opacity: 0.8;
+			}
 
-	.prisma-calendar-container .fc-mobileControls-button.prisma-mobile-controls-toggle.prisma-mobile-controls-toggle-expanded::after {
-		content: "▾";
-	}
+			&.prisma-mobile-controls-toggle-expanded::after {
+				content: "▾";
+			}
+		}
 
-	/* Mobile Monthly View: Compact event display - minimize gaps */
-	.prisma-calendar-container .fc-daygrid-event-harness {
-		min-height: auto;
-	}
+		/* Mobile Monthly View: Compact event display - minimize gaps */
+		.fc-daygrid-event-harness {
+			min-height: auto;
+		}
 
-	.prisma-calendar-container .fc-daygrid-event {
-		font-size: 11px;
-		padding: 1px 3px;
-		margin-bottom: 1px;
-	}
+		.fc-daygrid-event {
+			font-size: 11px;
+			padding: 1px 3px;
+			margin-bottom: 1px;
 
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-content-wrapper {
-		padding: 2px 4px;
-		gap: 2px;
-		overflow: visible;
-		min-height: auto;
-	}
+			.prisma-fc-event-content-wrapper {
+				padding: 2px 4px;
+				gap: 2px;
+				overflow: visible;
+				min-height: auto;
+			}
 
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-header {
-		gap: 3px;
-		overflow: visible;
-		align-items: flex-start;
-		flex-wrap: wrap;
-	}
+			.prisma-fc-event-header {
+				gap: 3px;
+				overflow: visible;
+				align-items: flex-start;
+				flex-wrap: wrap;
+			}
 
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-time {
-		font-size: 10px;
-	}
+			.prisma-fc-event-time {
+				font-size: 10px;
+			}
 
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-title-custom {
-		font-size: 10px;
-		white-space: normal;
-		word-break: break-word;
-		overflow-wrap: break-word;
-		line-height: 1.2;
-	}
+			.prisma-fc-event-title-custom {
+				font-size: 10px;
+				white-space: normal;
+				word-break: break-word;
+				overflow-wrap: break-word;
+				line-height: 1.2;
+			}
+		}
 
-	/* Mobile Weekly/Daily View: Compact event display */
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-content-wrapper,
-	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-content-wrapper {
-		padding: 1px 3px;
-		display: flex;
-		flex-direction: column;
-		overflow: visible;
-		max-width: 100%;
-	}
+		/* Mobile Weekly/Daily View: Compact event display */
+		.fc-daygrid-event .prisma-fc-event-content-wrapper,
+		.fc-timegrid-event .prisma-fc-event-content-wrapper {
+			padding: 1px 3px;
+			display: flex;
+			flex-direction: column;
+			overflow: visible;
+			max-width: 100%;
+		}
 
-	/* Header (time + title) always at top, never pushed down */
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-header,
-	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-header {
-		flex-shrink: 0;
-		order: -1;
-		max-width: 100%;
-		overflow: visible;
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-	}
+		/* Header (time + title) always at top, never pushed down */
+		.fc-daygrid-event .prisma-fc-event-header,
+		.fc-timegrid-event .prisma-fc-event-header {
+			flex-shrink: 0;
+			order: -1;
+			max-width: 100%;
+			overflow: visible;
+			display: flex;
+			flex-direction: column;
+			gap: 1px;
+		}
 
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-title-custom,
-	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-title-custom {
-		font-size: 9px;
-		word-break: break-word;
-		overflow-wrap: break-word;
-		white-space: normal;
-		line-height: 1.2;
-		max-width: 100%;
-		font-weight: 500;
-	}
+		.fc-daygrid-event .prisma-fc-event-title-custom,
+		.fc-timegrid-event .prisma-fc-event-title-custom {
+			font-size: 9px;
+			word-break: break-word;
+			overflow-wrap: break-word;
+			white-space: normal;
+			line-height: 1.2;
+			max-width: 100%;
+			font-weight: 500;
+		}
 
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-time,
-	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-time {
-		font-size: 8px;
-		opacity: 0.85;
-	}
+		.fc-daygrid-event .prisma-fc-event-time,
+		.fc-timegrid-event .prisma-fc-event-time {
+			font-size: 8px;
+			opacity: 0.85;
+		}
 
-	/* Mobile Weekly/Daily View: Compact frontmatter properties - lower priority, overflow downward */
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-props,
-	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-props {
-		margin-top: 1px;
-		gap: 1px;
-		flex-shrink: 1;
-		overflow: hidden;
-	}
+		/* Mobile Weekly/Daily View: Compact frontmatter properties - lower priority, overflow downward */
+		.fc-daygrid-event .prisma-fc-event-props,
+		.fc-timegrid-event .prisma-fc-event-props {
+			margin-top: 1px;
+			gap: 1px;
+			flex-shrink: 1;
+			overflow: hidden;
+		}
 
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop,
-	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop {
-		font-size: 7px;
-		line-height: 1.1;
-		padding: 0;
-		gap: 2px;
-		display: flex;
-		flex-flow: row wrap;
-		align-items: baseline;
-		max-width: 100%;
-	}
+		.fc-daygrid-event .prisma-fc-event-prop,
+		.fc-timegrid-event .prisma-fc-event-prop {
+			font-size: 7px;
+			line-height: 1.1;
+			padding: 0;
+			gap: 2px;
+			display: flex;
+			flex-flow: row wrap;
+			align-items: baseline;
+			max-width: 100%;
+		}
 
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop-key,
-	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-key {
-		font-size: 7px;
-		opacity: 0.7;
-		flex-shrink: 0;
-	}
+		.fc-daygrid-event .prisma-fc-event-prop-key,
+		.fc-timegrid-event .prisma-fc-event-prop-key {
+			font-size: 7px;
+			opacity: 0.7;
+			flex-shrink: 0;
+		}
 
-	.prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop-value,
-	.prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-value {
-		font-size: 7px;
-		word-break: break-word;
-		overflow-wrap: break-word;
-		flex: 1 1 auto;
-		min-width: 0;
-		max-width: 100%;
-	}
+		.fc-daygrid-event .prisma-fc-event-prop-value,
+		.fc-timegrid-event .prisma-fc-event-prop-value {
+			font-size: 7px;
+			word-break: break-word;
+			overflow-wrap: break-word;
+			flex: 1 1 auto;
+			min-width: 0;
+			max-width: 100%;
+		}
 
-	/* Mobile Daily View ONLY: Larger text since we have more horizontal space */
-	.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-title-custom,
-	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-title-custom {
-		font-size: 13px;
-		font-weight: 500;
-		line-height: 1.3;
-	}
+		/* Mobile Daily View ONLY: Larger text since we have more horizontal space */
+		.fc-timeGridDay-view {
+			.fc-daygrid-event .prisma-fc-event-title-custom,
+			.fc-timegrid-event .prisma-fc-event-title-custom {
+				font-size: 13px;
+				font-weight: 500;
+				line-height: 1.3;
+			}
 
-	.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-time,
-	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-time {
-		font-size: 11px;
-	}
+			.fc-daygrid-event .prisma-fc-event-time,
+			.fc-timegrid-event .prisma-fc-event-time {
+				font-size: 11px;
+			}
 
-	.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-props,
-	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-props {
-		margin-top: 4px;
-		gap: 3px;
-	}
+			.fc-daygrid-event .prisma-fc-event-props,
+			.fc-timegrid-event .prisma-fc-event-props {
+				margin-top: 4px;
+				gap: 3px;
+			}
 
-	.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop,
-	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop {
-		font-size: 10px;
-		line-height: 1.2;
-		padding: 1px 4px;
-		gap: 4px;
-	}
+			.fc-daygrid-event .prisma-fc-event-prop,
+			.fc-timegrid-event .prisma-fc-event-prop {
+				font-size: 10px;
+				line-height: 1.2;
+				padding: 1px 4px;
+				gap: 4px;
+			}
 
-	.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop-key,
-	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-key {
-		font-size: 10px;
-	}
+			.fc-daygrid-event .prisma-fc-event-prop-key,
+			.fc-timegrid-event .prisma-fc-event-prop-key {
+				font-size: 10px;
+			}
 
-	.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop-value,
-	.prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-value {
-		font-size: 10px;
-	}
+			.fc-daygrid-event .prisma-fc-event-prop-value,
+			.fc-timegrid-event .prisma-fc-event-prop-value {
+				font-size: 10px;
+			}
 
-	/* Mobile Daily View: All-day events - larger text */
-	.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-title-custom {
-		font-size: 13px;
-		font-weight: 500;
-		line-height: 1.3;
-	}
+			/* Mobile Daily View: All-day events - larger text */
+			.fc-daygrid-event .prisma-fc-event-title-custom {
+				font-size: 13px;
+				font-weight: 500;
+				line-height: 1.3;
+			}
 
-	.prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-content-wrapper {
-		padding: 4px 8px;
+			.fc-daygrid-event .prisma-fc-event-content-wrapper {
+				padding: 4px 8px;
+			}
+		}
 	}
 }
 
@@ -276,25 +282,26 @@
 }
 
 /* Popover styling - show time for events in the +more popover */
-.prisma-calendar-container .fc-popover .fc-popover-body .fc-daygrid-event {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 4px 8px;
-}
+.prisma-calendar-container .fc-popover .fc-popover-body {
+	.fc-daygrid-event {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 4px 8px;
+	}
 
-.prisma-calendar-container .fc-popover .fc-popover-body .fc-event-time {
-	display: inline-block;
-	font-size: 12px;
-	color: var(--text-muted);
-	flex-shrink: 0;
-	min-width: 50px;
-}
+	.fc-event-time {
+		display: inline-block;
+		font-size: 12px;
+		color: var(--text-muted);
+		flex-shrink: 0;
+		min-width: 50px;
+	}
 
-.prisma-calendar-container .fc-popover .fc-popover-body .fc-event-title {
-	flex: 1;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	.fc-event-title {
+		flex: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 }
-

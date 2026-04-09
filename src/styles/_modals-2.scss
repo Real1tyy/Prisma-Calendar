@@ -1,176 +1,174 @@
 /* ICS Import Modal */
-.prisma-ics-import-modal h2 {
-	margin-bottom: 1rem;
-	font-size: 1.2rem;
-	font-weight: 600;
+.prisma-ics-import {
+	&-modal h2 {
+		margin-bottom: 1rem;
+		font-size: 1.2rem;
+		font-weight: 600;
+	}
+
+	&-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	&-section {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+
+		label {
+			font-weight: 500;
+			color: var(--text-normal);
+		}
+	}
+
+	&-preview {
+		padding: 1rem;
+		background: var(--background-secondary);
+		border-radius: var(--radius-s);
+		max-height: 250px;
+		overflow-y: auto;
+
+		h4 {
+			margin: 0 0 0.75rem;
+			font-size: 0.95rem;
+		}
+	}
+
+	&-preview-placeholder {
+		color: var(--text-muted);
+		margin: 0;
+	}
+
+	&-event-list {
+		margin: 0;
+		padding-left: 1.25rem;
+
+		li {
+			margin-bottom: 0.5rem;
+			font-size: 0.9rem;
+		}
+	}
+
+	&-more {
+		color: var(--text-muted);
+		font-style: italic;
+	}
+
+	&-error {
+		color: var(--text-error);
+		margin: 0;
+	}
 }
-
-.prisma-ics-import-form {
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-}
-
-.prisma-ics-import-section {
-	display: flex;
-	flex-direction: column;
-	gap: 0.5rem;
-}
-
-.prisma-ics-import-section label {
-	font-weight: 500;
-	color: var(--text-normal);
-}
-
-
-.prisma-ics-import-preview {
-	padding: 1rem;
-	background: var(--background-secondary);
-	border-radius: var(--radius-s);
-	max-height: 250px;
-	overflow-y: auto;
-}
-
-.prisma-ics-import-preview h4 {
-	margin: 0 0 0.75rem;
-	font-size: 0.95rem;
-}
-
-.prisma-ics-import-preview-placeholder {
-	color: var(--text-muted);
-	margin: 0;
-}
-
-.prisma-ics-import-event-list {
-	margin: 0;
-	padding-left: 1.25rem;
-}
-
-.prisma-ics-import-event-list li {
-	margin-bottom: 0.5rem;
-	font-size: 0.9rem;
-}
-
-.prisma-ics-import-more {
-	color: var(--text-muted);
-	font-style: italic;
-}
-
-.prisma-ics-import-error {
-	color: var(--text-error);
-	margin: 0;
-}
-
 
 /* ICS Import Progress Modal */
 
-.prisma-settings-caldav-desc {
-	margin-bottom: 1rem;
+.prisma-caldav-accounts {
+	&-container {
+		margin: 1rem 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	&-empty {
+		padding: 1.5rem;
+		text-align: center;
+		color: var(--text-muted);
+		background: var(--background-secondary);
+		border-radius: var(--radius-s);
+	}
 }
 
-.prisma-settings-caldav-desc p {
-	margin: 0 0 0.5rem;
+.prisma-caldav-account {
+	&-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1rem;
+		background: var(--background-secondary);
+		border-radius: var(--radius-s);
+		border: 1px solid var(--background-modifier-border);
+	}
+
+	&-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		flex: 1;
+	}
+
+	&-name {
+		font-weight: 600;
+		font-size: 1rem;
+	}
+
+	&-url {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		word-break: break-all;
+	}
+
+	&-dir {
+		font-size: 0.85rem;
+		color: var(--text-accent);
+		font-family: var(--font-monospace);
+	}
+
+	&-status {
+		font-size: 0.8rem;
+		padding: 0.15rem 0.5rem;
+		border-radius: var(--radius-s);
+		width: fit-content;
+	}
+
+	&-calendars {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+	}
+
+	&-controls {
+		display: flex;
+		gap: 0.5rem;
+		flex-shrink: 0;
+	}
+
+	&-btn {
+		padding: 0.4rem 0.75rem;
+		font-size: 0.85rem;
+		border-radius: var(--radius-s);
+		cursor: pointer;
+		border: 1px solid var(--background-modifier-border);
+		background: var(--background-primary);
+		color: var(--text-normal);
+		transition: background 0.15s ease;
+
+		&:hover {
+			background: var(--background-modifier-hover);
+		}
+
+		&-delete {
+			color: var(--text-error);
+
+			&:hover {
+				background: var(--background-modifier-error);
+				color: var(--text-on-accent);
+			}
+		}
+	}
 }
 
-.prisma-caldav-accounts-container {
-	margin: 1rem 0;
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
-}
+.prisma-caldav-status {
+	&-enabled {
+		background: var(--background-modifier-success);
+		color: var(--text-on-accent);
+	}
 
-.prisma-caldav-accounts-empty {
-	padding: 1.5rem;
-	text-align: center;
-	color: var(--text-muted);
-	background: var(--background-secondary);
-	border-radius: var(--radius-s);
-}
-
-.prisma-caldav-account-item {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 1rem;
-	background: var(--background-secondary);
-	border-radius: var(--radius-s);
-	border: 1px solid var(--background-modifier-border);
-}
-
-.prisma-caldav-account-info {
-	display: flex;
-	flex-direction: column;
-	gap: 0.25rem;
-	flex: 1;
-}
-
-.prisma-caldav-account-name {
-	font-weight: 600;
-	font-size: 1rem;
-}
-
-.prisma-caldav-account-url {
-	font-size: 0.85rem;
-	color: var(--text-muted);
-	word-break: break-all;
-}
-
-.prisma-caldav-account-dir {
-	font-size: 0.85rem;
-	color: var(--text-accent);
-	font-family: var(--font-monospace);
-}
-
-.prisma-caldav-account-status {
-	font-size: 0.8rem;
-	padding: 0.15rem 0.5rem;
-	border-radius: var(--radius-s);
-	width: fit-content;
-}
-
-.prisma-caldav-status-enabled {
-	background: var(--background-modifier-success);
-	color: var(--text-on-accent);
-}
-
-.prisma-caldav-status-disabled {
-	background: var(--background-modifier-error);
-	color: var(--text-on-accent);
-}
-
-.prisma-caldav-account-calendars {
-	font-size: 0.85rem;
-	color: var(--text-muted);
-}
-
-.prisma-caldav-account-controls {
-	display: flex;
-	gap: 0.5rem;
-	flex-shrink: 0;
-}
-
-.prisma-caldav-account-btn {
-	padding: 0.4rem 0.75rem;
-	font-size: 0.85rem;
-	border-radius: var(--radius-s);
-	cursor: pointer;
-	border: 1px solid var(--background-modifier-border);
-	background: var(--background-primary);
-	color: var(--text-normal);
-	transition: background 0.15s ease;
-}
-
-.prisma-caldav-account-btn:hover {
-	background: var(--background-modifier-hover);
-}
-
-.prisma-caldav-account-btn-delete {
-	color: var(--text-error);
-}
-
-.prisma-caldav-account-btn-delete:hover {
-	background: var(--background-modifier-error);
-	color: var(--text-on-accent);
+	&-disabled {
+		background: var(--background-modifier-error);
+		color: var(--text-on-accent);
+	}
 }
 
 .prisma-caldav-add-account-button {
@@ -196,38 +194,40 @@
 	cursor: pointer;
 }
 
-.prisma-caldav-calendar-selector {
-	margin: 1rem 0;
-	padding: 1rem;
-	background: var(--background-secondary);
-	border-radius: var(--radius-s);
-}
+.prisma-caldav-calendar {
+	&-selector {
+		margin: 1rem 0;
+		padding: 1rem;
+		background: var(--background-secondary);
+		border-radius: var(--radius-s);
 
-.prisma-caldav-calendar-selector h3 {
-	margin: 0 0 0.75rem;
-	font-size: 0.95rem;
-}
+		h3 {
+			margin: 0 0 0.75rem;
+			font-size: 0.95rem;
+		}
+	}
 
-.prisma-caldav-calendar-item {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
-	padding: 0.5rem 0;
-	border-bottom: 1px solid var(--background-modifier-border);
-}
+	&-item {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.5rem 0;
+		border-bottom: 1px solid var(--background-modifier-border);
 
-.prisma-caldav-calendar-item:last-child {
-	border-bottom: none;
-}
+		&:last-child {
+			border-bottom: none;
+		}
 
-.prisma-caldav-calendar-item input[type="checkbox"] {
-	margin: 0;
-	cursor: pointer;
-}
+		input[type="checkbox"] {
+			margin: 0;
+			cursor: pointer;
+		}
 
-.prisma-caldav-calendar-item label {
-	flex: 1;
-	cursor: pointer;
+		label {
+			flex: 1;
+			cursor: pointer;
+		}
+	}
 }
 
 /* Frontmatter Propagation Modal */
@@ -242,39 +242,40 @@
 
 .prisma-changes-section {
 	margin-bottom: 1rem;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+
+	h4 {
+		margin: 0 0 0.5rem;
+		font-size: 0.9rem;
+		font-weight: 600;
+	}
+
+	ul {
+		margin: 0;
+		padding-left: 1.5rem;
+		list-style: none;
+	}
+
+	li {
+		padding: 0.25rem 0;
+		font-family: var(--font-monospace);
+		font-size: 0.85rem;
+	}
 }
 
-.prisma-changes-section:last-child {
-	margin-bottom: 0;
-}
+.prisma-change {
+	&-added {
+		color: var(--text-success);
+	}
 
-.prisma-changes-section h4 {
-	margin: 0 0 0.5rem;
-	font-size: 0.9rem;
-	font-weight: 600;
-}
+	&-modified {
+		color: var(--text-warning);
+	}
 
-.prisma-changes-section ul {
-	margin: 0;
-	padding-left: 1.5rem;
-	list-style: none;
+	&-deleted {
+		color: var(--text-error);
+	}
 }
-
-.prisma-changes-section li {
-	padding: 0.25rem 0;
-	font-family: var(--font-monospace);
-	font-size: 0.85rem;
-}
-
-.prisma-change-added {
-	color: var(--text-success);
-}
-
-.prisma-change-modified {
-	color: var(--text-warning);
-}
-
-.prisma-change-deleted {
-	color: var(--text-error);
-}
-

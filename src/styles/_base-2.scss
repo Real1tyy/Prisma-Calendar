@@ -1,26 +1,28 @@
 /* Loading state */
-.prisma-calendar-loading-container {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	height: 200px;
-	gap: 16px;
-}
+.prisma-calendar-loading {
+	&-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		height: 200px;
+		gap: 16px;
+	}
 
-.prisma-calendar-loading-spinner {
-	width: 32px;
-	height: 32px;
-	border: 3px solid var(--background-modifier-border);
-	border-top: 3px solid var(--interactive-accent);
-	border-radius: 50%;
-	animation: prisma-calendar-spin 1s linear infinite;
-}
+	&-spinner {
+		width: 32px;
+		height: 32px;
+		border: 3px solid var(--background-modifier-border);
+		border-top: 3px solid var(--interactive-accent);
+		border-radius: 50%;
+		animation: prisma-calendar-spin 1s linear infinite;
+	}
 
-.prisma-calendar-loading-text {
-	color: var(--text-muted);
-	font-size: var(--font-ui-small);
-	text-align: center;
+	&-text {
+		color: var(--text-muted);
+		font-size: var(--font-ui-small);
+		text-align: center;
+	}
 }
 
 @keyframes prisma-calendar-spin {
@@ -36,9 +38,8 @@
 /* Dark theme adjustments */
 .theme-dark .prisma-calendar-container .fc-button {
 	background-color: var(--background-modifier-form-field);
-}
 
-.theme-dark .prisma-calendar-container .fc-button:hover {
-	background-color: var(--background-modifier-form-field-highlighted);
+	&:hover {
+		background-color: var(--background-modifier-form-field-highlighted);
+	}
 }
-

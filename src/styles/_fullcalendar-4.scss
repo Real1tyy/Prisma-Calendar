@@ -1,41 +1,87 @@
 
 /* Zoom Button Styles */
-.prisma-calendar-container .fc-zoomLevel-button.prisma-zoom-button-hidden {
-	display: none;
-}
+.prisma-calendar-container {
+	.fc-zoomLevel-button {
+		cursor: pointer;
+		position: relative;
+		padding-right: 24px;
 
-/* Make zoom button look clickable */
-.prisma-calendar-container .fc-zoomLevel-button {
-	cursor: pointer;
-	position: relative;
-	padding-right: 24px;
-}
+		&.prisma-zoom-button-hidden {
+			display: none;
+		}
 
-/* Add dropdown indicator */
-.prisma-calendar-container .fc-zoomLevel-button::after {
-	content: "";
-	position: absolute;
-	right: 8px;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 0;
-	height: 0;
-	border-left: 4px solid transparent;
-	border-right: 4px solid transparent;
-	border-top: 5px solid currentcolor;
-	opacity: 0.7;
-}
+		/* Add dropdown indicator */
+		&::after {
+			content: "";
+			position: absolute;
+			right: 8px;
+			top: 50%;
+			transform: translateY(-50%);
+			width: 0;
+			height: 0;
+			border-left: 4px solid transparent;
+			border-right: 4px solid transparent;
+			border-top: 5px solid currentcolor;
+			opacity: 0.7;
+		}
 
-.prisma-calendar-container .fc-zoomLevel-button:hover::after {
-	opacity: 1;
+		&:hover::after {
+			opacity: 1;
+		}
+	}
 }
 
 /* Filter Input Styles (Search & Expression) */
-.prisma-fc-filter-wrapper {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	margin-left: 8px;
+.prisma-fc-filter {
+	&-wrapper {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		margin-left: 8px;
+	}
+
+	&-preset-wrapper {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		margin-left: 8px;
+	}
+
+	&-preset-select {
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		padding: 4px 8px;
+		text-align: center;
+		border: 1px solid var(--background-modifier-border);
+		border-radius: var(--radius-s);
+		background-color: var(--interactive-normal);
+		color: var(--text-normal);
+		font-size: var(--font-ui-smaller);
+		font-family: var(--font-interface);
+		cursor: pointer;
+		transition:
+			background-color 0.2s ease,
+			border-color 0.2s ease,
+			box-shadow 0.2s ease;
+
+		&:hover {
+			background-color: var(--interactive-hover);
+			border-color: var(--background-modifier-border-hover);
+		}
+
+		&:focus-visible {
+			outline: none;
+			background-color: var(--interactive-hover);
+			border-color: var(--background-modifier-border-hover);
+			box-shadow: none;
+		}
+
+		option {
+			background-color: var(--background-primary);
+			color: var(--text-normal);
+		}
+	}
 }
 
 .prisma-fc-search-input,
@@ -51,62 +97,15 @@
 	transition:
 		border-color 0.2s ease,
 		box-shadow 0.2s ease;
-}
 
-.prisma-fc-search-input:focus,
-.prisma-fc-expression-input:focus {
-	outline: none;
-	border-color: var(--interactive-accent);
-	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
-}
+	&:focus {
+		outline: none;
+		border-color: var(--interactive-accent);
+		box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+	}
 
-.prisma-fc-search-input::placeholder,
-.prisma-fc-expression-input::placeholder {
-	color: var(--text-faint);
-	font-style: italic;
+	&::placeholder {
+		color: var(--text-faint);
+		font-style: italic;
+	}
 }
-
-/* Filter Preset Selector */
-.prisma-fc-filter-preset-wrapper {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	margin-left: 8px;
-}
-
-.prisma-fc-filter-preset-select {
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
-	padding: 4px 8px;
-	text-align: center;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-s);
-	background-color: var(--interactive-normal);
-	color: var(--text-normal);
-	font-size: var(--font-ui-smaller);
-	font-family: var(--font-interface);
-	cursor: pointer;
-	transition:
-		background-color 0.2s ease,
-		border-color 0.2s ease,
-		box-shadow 0.2s ease;
-}
-
-.prisma-fc-filter-preset-select:hover {
-	background-color: var(--interactive-hover);
-	border-color: var(--background-modifier-border-hover);
-}
-
-.prisma-fc-filter-preset-select:focus-visible {
-	outline: none;
-	background-color: var(--interactive-hover);
-	border-color: var(--background-modifier-border-hover);
-	box-shadow: none;
-}
-
-.prisma-fc-filter-preset-select option {
-	background-color: var(--background-primary);
-	color: var(--text-normal);
-}
-

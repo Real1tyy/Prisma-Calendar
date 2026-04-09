@@ -2,285 +2,312 @@
    LIST VIEW STYLING - MODERN & PROFESSIONAL
    ======================================== */
 
-/* List view table structure */
-.prisma-calendar-container .fc-list {
-	border: none;
-	background: var(--background-primary);
-}
+.prisma-calendar-container {
+	/* List view table structure */
+	.fc-list {
+		border: none;
+		background: var(--background-primary);
+	}
 
-/* Date headers in list view - compact */
-.prisma-calendar-container .fc-list-day-cushion {
-	background: var(--background-secondary);
-	padding: 6px 12px;
-	font-weight: var(--font-weight-semibold);
-	font-size: var(--font-ui-smaller);
-	color: var(--text-normal);
-	border-top: 1px solid var(--background-modifier-border);
-	border-bottom: 1px solid var(--background-modifier-border);
-	position: sticky;
-	top: 0;
-	z-index: 3;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
+	/* Date headers in list view - compact */
+	.fc-list-day-cushion {
+		background: var(--background-secondary);
+		padding: 6px 12px;
+		font-weight: var(--font-weight-semibold);
+		font-size: var(--font-ui-smaller);
+		color: var(--text-normal);
+		border-top: 1px solid var(--background-modifier-border);
+		border-bottom: 1px solid var(--background-modifier-border);
+		position: sticky;
+		top: 0;
+		z-index: 3;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
 
-/* Empty state - no events message */
-.prisma-calendar-container .fc-list-empty {
-	background: var(--background-primary);
-	color: var(--text-muted);
-	padding: 32px;
-	text-align: center;
-	font-style: italic;
-	font-size: var(--font-ui-medium);
-}
+	/* Empty state - no events message */
+	.fc-list-empty {
+		background: var(--background-primary);
+		color: var(--text-muted);
+		padding: 32px;
+		text-align: center;
+		font-style: italic;
+		font-size: var(--font-ui-medium);
+	}
 
-.prisma-calendar-container .fc-list-empty-cushion {
-	padding: 24px;
-	background: var(--background-secondary);
-	border-radius: var(--radius-m);
-	margin: 16px;
-}
+	.fc-list-empty-cushion {
+		padding: 24px;
+		background: var(--background-secondary);
+		border-radius: var(--radius-m);
+		margin: 16px;
+	}
 
-/* List table structure */
-.prisma-calendar-container .fc-list-table {
-	border: none;
-}
+	/* List table structure */
+	.fc-list-table {
+		border: none;
 
-.prisma-calendar-container .fc-list-table tbody>tr:first-child>td {
-	border-top: none;
-}
+		tbody > tr:first-child > td {
+			border-top: none;
+		}
+	}
 
-/* Event row container */
-.prisma-calendar-container .fc-list-event {
-	cursor: pointer;
-	transition: all 0.15s ease;
-	border-bottom: 1px solid var(--background-modifier-border);
-	background: var(--background-primary);
-}
+	/* Event row container */
+	.fc-list-event {
+		cursor: pointer;
+		transition: all 0.15s ease;
+		border-bottom: 1px solid var(--background-modifier-border);
+		background: var(--background-primary);
 
-/* Apply event color to list view rows with transparency */
-.prisma-calendar-container .fc-list-event.prisma-calendar-event {
-	background: linear-gradient(90deg,
-			color-mix(in srgb, var(--event-color) 8%, var(--background-primary)) 0%,
-			var(--background-primary) 100%);
-	border-left: 3px solid var(--event-color);
-}
+		/* Apply event color to list view rows with transparency */
+		&.prisma-calendar-event {
+			background: linear-gradient(90deg,
+					color-mix(in srgb, var(--event-color) 8%, var(--background-primary)) 0%,
+					var(--background-primary) 100%);
+			border-left: 3px solid var(--event-color);
 
-/* Hover state - subtle blue accent, NO WHITE */
-.prisma-calendar-container .fc-list-event.prisma-calendar-event:hover,
-.prisma-calendar-container .fc-list-event:hover,
-.prisma-calendar-container tr.fc-list-event:hover,
-.prisma-calendar-container tr.fc-list-event:hover td {
-	background: rgb(var(--interactive-accent-rgb), 0.08);
-	background-color: rgb(var(--interactive-accent-rgb), 0.08);
-	border-left-color: var(--interactive-accent);
-}
+			/* Hover state - subtle blue accent, NO WHITE */
+			&:hover {
+				background: rgb(var(--interactive-accent-rgb), 0.08);
+				background-color: rgb(var(--interactive-accent-rgb), 0.08);
+				border-left-color: var(--interactive-accent);
+			}
 
-/* Active/focus state - slightly more accent, still NO WHITE */
-.prisma-calendar-container .fc-list-event.prisma-calendar-event:active,
-.prisma-calendar-container .fc-list-event.prisma-calendar-event:focus,
-.prisma-calendar-container .fc-list-event:active,
-.prisma-calendar-container .fc-list-event:focus,
-.prisma-calendar-container tr.fc-list-event:active td,
-.prisma-calendar-container tr.fc-list-event:focus td {
-	background: rgb(var(--interactive-accent-rgb), 0.06);
-	background-color: rgb(var(--interactive-accent-rgb), 0.06);
-	outline: none;
-}
+			/* Active/focus state - slightly more accent, still NO WHITE */
+			&:active,
+			&:focus {
+				background: rgb(var(--interactive-accent-rgb), 0.06);
+				background-color: rgb(var(--interactive-accent-rgb), 0.06);
+				outline: none;
+			}
+		}
 
-/* Event row cells - more compact */
-.prisma-calendar-container .fc-list-event>td {
-	padding: 8px 12px;
-	border: none;
-}
+		/* Hover state - subtle blue accent, NO WHITE */
+		&:hover {
+			background: rgb(var(--interactive-accent-rgb), 0.08);
+			background-color: rgb(var(--interactive-accent-rgb), 0.08);
+			border-left-color: var(--interactive-accent);
+		}
 
-/* Event dot/graphic column - compact */
-.prisma-calendar-container .fc-list-event-graphic {
-	padding: 8px 10px;
-	width: 32px;
-	min-width: 32px;
-	text-align: center;
-}
+		/* Active/focus state - slightly more accent, still NO WHITE */
+		&:active,
+		&:focus {
+			background: rgb(var(--interactive-accent-rgb), 0.06);
+			background-color: rgb(var(--interactive-accent-rgb), 0.06);
+			outline: none;
+		}
 
-/* Event color dot - inherit event color */
-.prisma-calendar-container .fc-list-event-dot {
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-	display: inline-block;
-	border: 2px solid var(--background-primary);
-	box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
-	transition: all 0.15s ease;
-}
+		/* Event row cells - more compact */
+		& > td {
+			padding: 8px 12px;
+			border: none;
+		}
 
-.prisma-calendar-container .fc-list-event:hover .fc-list-event-dot {
-	transform: scale(1.15);
-	box-shadow: 0 2px 6px rgb(0 0 0 / 30%);
-}
+		/* Event content wrapper - compact vertical layout */
+		.prisma-fc-event-content-wrapper {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 4px;
+			padding: 0;
+		}
 
-/* Event time column - compact */
-.prisma-calendar-container .fc-list-event-time {
-	width: 90px;
-	min-width: 90px;
-	padding: 8px 10px;
-	color: var(--text-muted);
-	font-size: var(--font-ui-smaller);
-	font-weight: var(--font-weight-medium);
-	font-variant-numeric: tabular-nums;
-	white-space: nowrap;
-}
+		/* Event title styling - prominent but compact */
+		.prisma-fc-event-title-custom {
+			font-weight: var(--font-weight-semibold);
+			color: var(--text-normal);
+			font-size: var(--font-ui-medium);
+			line-height: 1.3;
+			width: 100%;
+			letter-spacing: 0.01em;
+		}
 
-/* Event title/content column - compact */
-.prisma-calendar-container .fc-list-event-title {
-	padding: 8px 12px;
-	color: var(--text-normal);
-	font-size: var(--font-ui-medium);
-}
+		&:hover .prisma-fc-event-title-custom {
+			font-weight: var(--font-weight-bold);
+			color: var(--text-accent);
+		}
 
-/* Event content wrapper - compact vertical layout */
-.prisma-calendar-container .fc-list-event .prisma-fc-event-content-wrapper {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 4px;
-	padding: 0;
-}
+		/* Hide default FullCalendar title */
+		.fc-list-event-title > a {
+			display: none;
+		}
 
-/* Event title styling - prominent but compact */
-.prisma-calendar-container .fc-list-event .prisma-fc-event-title-custom {
-	font-weight: var(--font-weight-semibold);
-	color: var(--text-normal);
-	font-size: var(--font-ui-medium);
-	line-height: 1.3;
-	width: 100%;
-	letter-spacing: 0.01em;
-}
+		/* Event properties in list view - compact */
+		.prisma-fc-event-props {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 4px;
+			align-items: center;
+			margin-top: 2px;
+			width: 100%;
+		}
 
-.prisma-calendar-container .fc-list-event:hover .prisma-fc-event-title-custom {
-	font-weight: var(--font-weight-bold);
-	color: var(--text-accent);
-}
+		.prisma-fc-event-prop {
+			display: inline-flex;
+			align-items: center;
+			gap: 3px;
+			padding: 2px 6px;
+			background: rgb(var(--mono-rgb-0), 0.05);
+			border-radius: 3px;
+			font-size: 11px;
+			color: var(--text-muted);
+			border: 1px solid rgb(var(--mono-rgb-0), 0.08);
+		}
 
-/* Hide default FullCalendar title */
-.prisma-calendar-container .fc-list-event .fc-list-event-title>a {
-	display: none;
-}
+		&:hover .prisma-fc-event-prop {
+			background: rgb(var(--mono-rgb-0), 0.08);
+			border-color: rgb(var(--mono-rgb-0), 0.12);
+		}
 
-/* Event properties in list view - compact */
-.prisma-calendar-container .fc-list-event .prisma-fc-event-props {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 4px;
-	align-items: center;
-	margin-top: 2px;
-	width: 100%;
-}
+		.prisma-fc-event-prop-key {
+			font-weight: var(--font-weight-medium);
+			color: var(--text-muted);
+			opacity: 0.8;
+		}
 
-.prisma-calendar-container .fc-list-event .prisma-fc-event-prop {
-	display: inline-flex;
-	align-items: center;
-	gap: 3px;
-	padding: 2px 6px;
-	background: rgb(var(--mono-rgb-0), 0.05);
-	border-radius: 3px;
-	font-size: 11px;
-	color: var(--text-muted);
-	border: 1px solid rgb(var(--mono-rgb-0), 0.08);
-}
+		.prisma-fc-event-prop-value {
+			color: var(--text-normal);
+			opacity: 0.9;
+		}
 
-.prisma-calendar-container .fc-list-event:hover .prisma-fc-event-prop {
-	background: rgb(var(--mono-rgb-0), 0.08);
-	border-color: rgb(var(--mono-rgb-0), 0.12);
-}
+		/* Property links in list view */
+		.prisma-fc-event-prop-link {
+			color: var(--text-accent);
+			text-decoration: none;
+			font-weight: var(--font-weight-medium);
+			padding: 1px 3px;
+			border-radius: 2px;
+			transition: all 0.15s ease;
 
-.prisma-calendar-container .fc-list-event .prisma-fc-event-prop-key {
-	font-weight: var(--font-weight-medium);
-	color: var(--text-muted);
-	opacity: 0.8;
-}
+			&:hover {
+				background: rgb(var(--interactive-accent-rgb), 0.1);
+				text-decoration: underline;
+				text-underline-offset: 2px;
+			}
+		}
 
-.prisma-calendar-container .fc-list-event .prisma-fc-event-prop-value {
-	color: var(--text-normal);
-	opacity: 0.9;
-}
+		/* Virtual events in list view */
+		&.prisma-virtual-event {
+			opacity: 0.5;
+			font-style: italic;
 
-/* Property links in list view */
-.prisma-calendar-container .fc-list-event .prisma-fc-event-prop-link {
-	color: var(--text-accent);
-	text-decoration: none;
-	font-weight: var(--font-weight-medium);
-	padding: 1px 3px;
-	border-radius: 2px;
-	transition: all 0.15s ease;
-}
+			.fc-list-event-dot {
+				opacity: 0.4;
+				border-style: dashed;
+			}
+		}
+	}
 
-.prisma-calendar-container .fc-list-event .prisma-fc-event-prop-link:hover {
-	background: rgb(var(--interactive-accent-rgb), 0.1);
-	text-decoration: underline;
-	text-underline-offset: 2px;
-}
+	/* Hover state for tr-level selectors */
+	tr.fc-list-event:hover td {
+		background: rgb(var(--interactive-accent-rgb), 0.08);
+		background-color: rgb(var(--interactive-accent-rgb), 0.08);
+	}
 
-/* Virtual events in list view */
-.prisma-calendar-container .fc-list-event.prisma-virtual-event {
-	opacity: 0.5;
-	font-style: italic;
-}
+	tr.fc-list-event {
+		&:active td,
+		&:focus td {
+			background: rgb(var(--interactive-accent-rgb), 0.06);
+			background-color: rgb(var(--interactive-accent-rgb), 0.06);
+		}
+	}
 
-.prisma-calendar-container .fc-list-event.prisma-virtual-event .fc-list-event-dot {
-	opacity: 0.4;
-	border-style: dashed;
+	/* Event dot/graphic column - compact */
+	.fc-list-event-graphic {
+		padding: 8px 10px;
+		width: 32px;
+		min-width: 32px;
+		text-align: center;
+	}
+
+	/* Event color dot - inherit event color */
+	.fc-list-event-dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		display: inline-block;
+		border: 2px solid var(--background-primary);
+		box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+		transition: all 0.15s ease;
+	}
+
+	.fc-list-event:hover .fc-list-event-dot {
+		transform: scale(1.15);
+		box-shadow: 0 2px 6px rgb(0 0 0 / 30%);
+	}
+
+	/* Event time column - compact */
+	.fc-list-event-time {
+		width: 90px;
+		min-width: 90px;
+		padding: 8px 10px;
+		color: var(--text-muted);
+		font-size: var(--font-ui-smaller);
+		font-weight: var(--font-weight-medium);
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+
+	/* Event title/content column - compact */
+	.fc-list-event-title {
+		padding: 8px 12px;
+		color: var(--text-normal);
+		font-size: var(--font-ui-medium);
+	}
 }
 
 /* Responsive list view */
 @media (width <= 768px) {
-	.prisma-calendar-container .fc-list-event-time {
-		width: 80px;
-		min-width: 80px;
-		font-size: var(--font-ui-smaller);
-	}
+	.prisma-calendar-container {
+		.fc-list-event-time {
+			width: 80px;
+			min-width: 80px;
+			font-size: var(--font-ui-smaller);
+		}
 
-	.prisma-calendar-container .fc-list-event .prisma-fc-event-title-custom {
-		min-width: 150px;
-		font-size: var(--font-ui-small);
-	}
+		.fc-list-event .prisma-fc-event-title-custom {
+			min-width: 150px;
+			font-size: var(--font-ui-small);
+		}
 
-	.prisma-calendar-container .fc-list-day-cushion {
-		padding: 8px 12px;
-		font-size: var(--font-ui-small);
-	}
+		.fc-list-day-cushion {
+			padding: 8px 12px;
+			font-size: var(--font-ui-small);
+		}
 
-	.prisma-calendar-container .fc-list-event>td {
-		padding: 8px 10px;
-	}
+		.fc-list-event > td {
+			padding: 8px 10px;
+		}
 
-	.prisma-calendar-container .fc-list-event .prisma-fc-event-props {
-		gap: 4px;
-	}
+		.fc-list-event .prisma-fc-event-props {
+			gap: 4px;
+		}
 
-	.prisma-calendar-container .fc-list-event .prisma-fc-event-prop {
-		padding: 2px 6px;
-		font-size: 11px;
+		.fc-list-event .prisma-fc-event-prop {
+			padding: 2px 6px;
+			font-size: 11px;
+		}
 	}
 }
 
 /* Dark mode refinements for list view */
-.theme-dark .prisma-calendar-container .fc-list-day-cushion {
-	background: var(--background-secondary);
-}
+.theme-dark .prisma-calendar-container {
+	.fc-list-day-cushion {
+		background: var(--background-secondary);
+	}
 
-.theme-dark .prisma-calendar-container .fc-list-event:hover {
-	background: var(--background-modifier-hover);
-}
+	.fc-list-event:hover {
+		background: var(--background-modifier-hover);
+	}
 
-.theme-dark .prisma-calendar-container .fc-list-event-dot {
-	box-shadow: 0 1px 4px rgb(0 0 0 / 40%);
-}
+	.fc-list-event-dot {
+		box-shadow: 0 1px 4px rgb(0 0 0 / 40%);
+	}
 
-.theme-dark .prisma-calendar-container .fc-list-event .prisma-fc-event-prop {
-	background: var(--background-secondary);
-}
+	.fc-list-event .prisma-fc-event-prop {
+		background: var(--background-secondary);
+	}
 
-.theme-dark .prisma-calendar-container .fc-list-event:hover .prisma-fc-event-prop {
-	background: var(--background-modifier-hover);
+	.fc-list-event:hover .prisma-fc-event-prop {
+		background: var(--background-modifier-hover);
+	}
 }
-

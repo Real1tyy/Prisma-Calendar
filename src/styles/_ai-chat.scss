@@ -1,78 +1,355 @@
 /* AI Chat Sidebar */
 
-.prisma-ai-chat-container {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	padding: 0;
-}
+.prisma-ai-chat {
+	&-container {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 0;
+	}
 
-.prisma-ai-chat-messages {
-	flex: 1;
-	overflow-y: auto;
-	padding: 12px;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
+	&-messages {
+		flex: 1;
+		overflow-y: auto;
+		padding: 12px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
 
-.prisma-ai-chat-empty {
-	color: var(--text-muted);
-	font-size: var(--font-ui-small);
-	text-align: center;
-	padding: 2rem 1rem;
-}
+	&-empty {
+		color: var(--text-muted);
+		font-size: var(--font-ui-small);
+		text-align: center;
+		padding: 2rem 1rem;
+	}
 
-.prisma-ai-chat-message {
-	padding: 8px 12px;
-	border-radius: 8px;
-	max-width: 100%;
-	word-wrap: break-word;
-}
+	&-message {
+		padding: 8px 12px;
+		border-radius: 8px;
+		max-width: 100%;
+		word-wrap: break-word;
 
-.prisma-ai-chat-message-user {
-	background-color: var(--interactive-accent);
-	color: var(--text-on-accent);
-	align-self: flex-end;
-}
+		&-user {
+			background-color: var(--interactive-accent);
+			color: var(--text-on-accent);
+			align-self: flex-end;
+		}
 
-.prisma-ai-chat-message-assistant {
-	background-color: var(--background-secondary);
-	color: var(--text-normal);
-	align-self: flex-start;
-}
+		&-assistant {
+			background-color: var(--background-secondary);
+			color: var(--text-normal);
+			align-self: flex-start;
 
-.prisma-ai-chat-message-content {
-	font-size: var(--font-ui-small);
-	line-height: 1.5;
-}
+			.prisma-ai-chat-message-content p {
+				&:first-child {
+					margin-top: 0;
+				}
 
-/* Thinking indicator */
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
+		}
 
-.prisma-ai-chat-thinking-dots {
-	display: flex;
-	gap: 4px;
-	padding: 4px 0;
-}
+		&-content {
+			font-size: var(--font-ui-small);
+			line-height: 1.5;
+		}
+	}
 
-.prisma-ai-chat-thinking-dots span {
-	width: 6px;
-	height: 6px;
-	border-radius: 50%;
-	background: var(--text-muted);
-	animation: prisma-dot-bounce 1.4s infinite ease-in-out both;
-}
+	&-thinking-dots {
+		display: flex;
+		gap: 4px;
+		padding: 4px 0;
 
-.prisma-ai-chat-thinking-dots span:nth-child(1) {
-	animation-delay: 0s;
-}
+		span {
+			width: 6px;
+			height: 6px;
+			border-radius: 50%;
+			background: var(--text-muted);
+			animation: prisma-dot-bounce 1.4s infinite ease-in-out both;
 
-.prisma-ai-chat-thinking-dots span:nth-child(2) {
-	animation-delay: 0.16s;
-}
+			&:nth-child(1) {
+				animation-delay: 0s;
+			}
 
-.prisma-ai-chat-thinking-dots span:nth-child(3) {
-	animation-delay: 0.32s;
+			&:nth-child(2) {
+				animation-delay: 0.16s;
+			}
+
+			&:nth-child(3) {
+				animation-delay: 0.32s;
+			}
+		}
+	}
+
+	&-input-area {
+		border-top: 1px solid var(--background-modifier-border);
+		padding: 12px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	&-context-badge {
+		font-size: var(--font-smallest);
+		color: var(--text-muted);
+		padding: 4px 8px;
+		background: var(--background-secondary);
+		border-radius: 6px;
+		text-align: center;
+	}
+
+	&-mode {
+		&-toggle {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 6px;
+		}
+
+		&-group {
+			display: flex;
+			gap: 0;
+			background: var(--background-modifier-border);
+			border-radius: 8px;
+			padding: 3px;
+		}
+
+		&-btn {
+			padding: 5px 12px;
+			border: none;
+			border-radius: 6px;
+			background: transparent;
+			color: var(--text-muted);
+			font-size: var(--font-ui-smaller);
+			font-weight: 500;
+			cursor: pointer;
+			transition: all 0.15s ease;
+
+			&:hover {
+				color: var(--text-normal);
+				background: var(--background-primary-alt);
+			}
+
+			&.prisma-ai-chat-mode-active {
+				background: var(--interactive-accent);
+				color: var(--text-on-accent);
+				box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+
+				&:hover {
+					background: var(--interactive-accent);
+					color: var(--text-on-accent);
+				}
+			}
+		}
+	}
+
+	&-chips-separator {
+		width: 1px;
+		height: 20px;
+		background: var(--background-modifier-border);
+	}
+
+	&-chip {
+		padding: 3px 10px;
+		border-radius: 12px;
+		border: 1px solid var(--background-modifier-border);
+		background: var(--background-primary);
+		color: var(--text-muted);
+		font-size: 12px;
+		cursor: pointer;
+		transition: all 0.15s;
+
+		&:hover {
+			background: var(--background-modifier-hover);
+			color: var(--text-normal);
+		}
+
+		&-active {
+			background: var(--interactive-accent);
+			color: var(--text-on-accent);
+			border-color: var(--interactive-accent);
+
+			&:hover {
+				background: var(--interactive-accent-hover);
+				color: var(--text-on-accent);
+			}
+		}
+	}
+
+	&-textarea {
+		width: 100%;
+		resize: vertical;
+		min-height: 60px;
+		border: 1px solid var(--background-modifier-border);
+		border-radius: 6px;
+		padding: 8px;
+		background-color: var(--background-primary);
+		color: var(--text-normal);
+		font-size: var(--font-ui-small);
+		font-family: inherit;
+
+		&:focus {
+			border-color: var(--interactive-accent);
+			outline: none;
+		}
+
+		&:disabled {
+			opacity: 0.6;
+		}
+	}
+
+	&-btn-row {
+		display: flex;
+		justify-content: space-between;
+		gap: 8px;
+	}
+
+	&-send-btn {
+		padding: 6px 16px;
+		border-radius: 6px;
+		background-color: var(--interactive-accent);
+		color: var(--text-on-accent);
+		border: none;
+		cursor: pointer;
+		font-size: var(--font-ui-small);
+
+		&:hover {
+			opacity: 0.9;
+		}
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+	}
+
+	&-clear-btn {
+		padding: 6px 12px;
+		border-radius: 6px;
+		background-color: var(--background-modifier-border);
+		color: var(--text-muted);
+		border: none;
+		cursor: pointer;
+		font-size: var(--font-ui-small);
+
+		&:hover {
+			color: var(--text-normal);
+		}
+	}
+
+	&-thread {
+		&-list {
+			border-bottom: 1px solid var(--background-modifier-border);
+
+			.prisma-collapsible {
+				border: none;
+			}
+
+			.prisma-collapsible-header {
+				gap: 6px;
+				padding: 8px 12px;
+				background: transparent;
+				font-size: var(--font-ui-small);
+				color: var(--text-muted);
+
+				&:hover {
+					color: var(--text-normal);
+					background: transparent;
+				}
+			}
+
+			.prisma-collapsible-label {
+				font-weight: normal;
+			}
+
+			.prisma-collapsible-body {
+				padding: 0 12px 8px;
+			}
+		}
+
+		&-new-btn {
+			margin-left: auto;
+			background: none;
+			border: none;
+			color: var(--text-muted);
+			cursor: pointer;
+			font-size: 16px;
+			padding: 0 4px;
+			line-height: 1;
+
+			&:hover {
+				color: var(--text-normal);
+			}
+		}
+
+		&-search {
+			width: 100%;
+			padding: 4px 8px;
+			margin-bottom: 6px;
+			border: 1px solid var(--background-modifier-border);
+			border-radius: 4px;
+			background: var(--background-primary);
+			color: var(--text-normal);
+			font-size: var(--font-ui-smaller);
+		}
+
+		&-item {
+			display: flex;
+			align-items: center;
+			padding: 6px 8px;
+			border-radius: 4px;
+			cursor: pointer;
+			gap: 4px;
+
+			&:hover {
+				background: var(--background-modifier-hover);
+			}
+
+			&-active {
+				background: var(--background-modifier-active-hover);
+			}
+
+			&-info {
+				flex: 1;
+				min-width: 0;
+			}
+
+			&-title {
+				font-size: var(--font-ui-small);
+				color: var(--text-normal);
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			&-time {
+				font-size: var(--font-ui-smaller);
+				color: var(--text-muted);
+			}
+
+			&:hover .prisma-ai-chat-thread-delete-btn {
+				opacity: 1;
+			}
+		}
+
+		&-delete-btn {
+			background: none;
+			border: none;
+			color: var(--text-muted);
+			cursor: pointer;
+			font-size: 14px;
+			padding: 0 2px;
+			opacity: 0;
+			transition: opacity 0.15s;
+
+			&:hover {
+				color: var(--text-error);
+			}
+		}
+	}
 }
 
 @keyframes prisma-dot-bounce {
@@ -87,281 +364,6 @@
 		opacity: 1;
 		transform: scale(1);
 	}
-}
-
-.prisma-ai-chat-message-assistant .prisma-ai-chat-message-content p:first-child {
-	margin-top: 0;
-}
-
-.prisma-ai-chat-message-assistant .prisma-ai-chat-message-content p:last-child {
-	margin-bottom: 0;
-}
-
-.prisma-ai-chat-input-area {
-	border-top: 1px solid var(--background-modifier-border);
-	padding: 12px;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.prisma-ai-chat-context-badge {
-	font-size: var(--font-smallest);
-	color: var(--text-muted);
-	padding: 4px 8px;
-	background: var(--background-secondary);
-	border-radius: 6px;
-	text-align: center;
-}
-
-/* Mode toggle + prompt chips row */
-
-.prisma-ai-chat-mode-toggle {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 6px;
-}
-
-.prisma-ai-chat-mode-group {
-	display: flex;
-	gap: 0;
-	background: var(--background-modifier-border);
-	border-radius: 8px;
-	padding: 3px;
-}
-
-.prisma-ai-chat-mode-btn {
-	padding: 5px 12px;
-	border: none;
-	border-radius: 6px;
-	background: transparent;
-	color: var(--text-muted);
-	font-size: var(--font-ui-smaller);
-	font-weight: 500;
-	cursor: pointer;
-	transition: all 0.15s ease;
-}
-
-.prisma-ai-chat-mode-btn:hover {
-	color: var(--text-normal);
-	background: var(--background-primary-alt);
-}
-
-.prisma-ai-chat-mode-btn.prisma-ai-chat-mode-active {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
-}
-
-.prisma-ai-chat-mode-btn.prisma-ai-chat-mode-active:hover {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-}
-
-.prisma-ai-chat-chips-separator {
-	width: 1px;
-	height: 20px;
-	background: var(--background-modifier-border);
-}
-
-.prisma-ai-chat-chip {
-	padding: 3px 10px;
-	border-radius: 12px;
-	border: 1px solid var(--background-modifier-border);
-	background: var(--background-primary);
-	color: var(--text-muted);
-	font-size: 12px;
-	cursor: pointer;
-	transition: all 0.15s;
-}
-
-.prisma-ai-chat-chip:hover {
-	background: var(--background-modifier-hover);
-	color: var(--text-normal);
-}
-
-.prisma-ai-chat-chip-active {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border-color: var(--interactive-accent);
-}
-
-.prisma-ai-chat-chip-active:hover {
-	background: var(--interactive-accent-hover);
-	color: var(--text-on-accent);
-}
-
-.prisma-ai-chat-textarea {
-	width: 100%;
-	resize: vertical;
-	min-height: 60px;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
-	padding: 8px;
-	background-color: var(--background-primary);
-	color: var(--text-normal);
-	font-size: var(--font-ui-small);
-	font-family: inherit;
-}
-
-.prisma-ai-chat-textarea:focus {
-	border-color: var(--interactive-accent);
-	outline: none;
-}
-
-.prisma-ai-chat-textarea:disabled {
-	opacity: 0.6;
-}
-
-.prisma-ai-chat-btn-row {
-	display: flex;
-	justify-content: space-between;
-	gap: 8px;
-}
-
-.prisma-ai-chat-send-btn {
-	padding: 6px 16px;
-	border-radius: 6px;
-	background-color: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border: none;
-	cursor: pointer;
-	font-size: var(--font-ui-small);
-}
-
-.prisma-ai-chat-send-btn:hover {
-	opacity: 0.9;
-}
-
-.prisma-ai-chat-send-btn:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
-.prisma-ai-chat-clear-btn {
-	padding: 6px 12px;
-	border-radius: 6px;
-	background-color: var(--background-modifier-border);
-	color: var(--text-muted);
-	border: none;
-	cursor: pointer;
-	font-size: var(--font-ui-small);
-}
-
-.prisma-ai-chat-clear-btn:hover {
-	color: var(--text-normal);
-}
-
-/* AI Chat — Thread list */
-
-.prisma-ai-chat-thread-list {
-	border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.prisma-ai-chat-thread-list .prisma-collapsible {
-	border: none;
-}
-
-.prisma-ai-chat-thread-list .prisma-collapsible-header {
-	gap: 6px;
-	padding: 8px 12px;
-	background: transparent;
-	font-size: var(--font-ui-small);
-	color: var(--text-muted);
-}
-
-.prisma-ai-chat-thread-list .prisma-collapsible-header:hover {
-	color: var(--text-normal);
-	background: transparent;
-}
-
-.prisma-ai-chat-thread-list .prisma-collapsible-label {
-	font-weight: normal;
-}
-
-.prisma-ai-chat-thread-new-btn {
-	margin-left: auto;
-	background: none;
-	border: none;
-	color: var(--text-muted);
-	cursor: pointer;
-	font-size: 16px;
-	padding: 0 4px;
-	line-height: 1;
-}
-
-.prisma-ai-chat-thread-new-btn:hover {
-	color: var(--text-normal);
-}
-
-.prisma-ai-chat-thread-list .prisma-collapsible-body {
-	padding: 0 12px 8px;
-}
-
-.prisma-ai-chat-thread-search {
-	width: 100%;
-	padding: 4px 8px;
-	margin-bottom: 6px;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 4px;
-	background: var(--background-primary);
-	color: var(--text-normal);
-	font-size: var(--font-ui-smaller);
-}
-
-.prisma-ai-chat-thread-item {
-	display: flex;
-	align-items: center;
-	padding: 6px 8px;
-	border-radius: 4px;
-	cursor: pointer;
-	gap: 4px;
-}
-
-.prisma-ai-chat-thread-item:hover {
-	background: var(--background-modifier-hover);
-}
-
-.prisma-ai-chat-thread-item-active {
-	background: var(--background-modifier-active-hover);
-}
-
-.prisma-ai-chat-thread-item-info {
-	flex: 1;
-	min-width: 0;
-}
-
-.prisma-ai-chat-thread-item-title {
-	font-size: var(--font-ui-small);
-	color: var(--text-normal);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.prisma-ai-chat-thread-item-time {
-	font-size: var(--font-ui-smaller);
-	color: var(--text-muted);
-}
-
-.prisma-ai-chat-thread-delete-btn {
-	background: none;
-	border: none;
-	color: var(--text-muted);
-	cursor: pointer;
-	font-size: 14px;
-	padding: 0 2px;
-	opacity: 0;
-	transition: opacity 0.15s;
-}
-
-.prisma-ai-chat-thread-item:hover .prisma-ai-chat-thread-delete-btn {
-	opacity: 1;
-}
-
-.prisma-ai-chat-thread-delete-btn:hover {
-	color: var(--text-error);
 }
 
 /* AI Settings — shared UI primitives */
@@ -385,47 +387,49 @@
 	background: var(--background-primary);
 	color: var(--text-normal);
 	cursor: pointer;
+
+	&:hover {
+		background: var(--background-modifier-hover);
+	}
+
+	&-cta {
+		background: var(--interactive-accent);
+		color: var(--text-on-accent);
+		border-color: var(--interactive-accent);
+
+		&:hover {
+			background: var(--interactive-accent-hover);
+		}
+	}
+
+	&-warning {
+		color: var(--text-error);
+		border-color: var(--text-error);
+	}
+
+	&-add {
+		align-self: flex-start;
+		font-size: 12px;
+	}
 }
 
-.prisma-btn:hover {
-	background: var(--background-modifier-hover);
-}
+.prisma-filter {
+	&-label {
+		font-size: 12px;
+		font-weight: 600;
+		min-width: 80px;
+		color: var(--text-muted);
+	}
 
-.prisma-btn-cta {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border-color: var(--interactive-accent);
-}
-
-.prisma-btn-cta:hover {
-	background: var(--interactive-accent-hover);
-}
-
-.prisma-btn-warning {
-	color: var(--text-error);
-	border-color: var(--text-error);
-}
-
-.prisma-btn-add {
-	align-self: flex-start;
-	font-size: 12px;
-}
-
-.prisma-filter-label {
-	font-size: 12px;
-	font-weight: 600;
-	min-width: 80px;
-	color: var(--text-muted);
-}
-
-.prisma-filter-input {
-	flex: 1;
-	padding: 4px 8px;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 4px;
-	background: var(--background-primary);
-	color: var(--text-normal);
-	font-size: 12px;
+	&-input {
+		flex: 1;
+		padding: 4px 8px;
+		border: 1px solid var(--background-modifier-border);
+		border-radius: 4px;
+		background: var(--background-primary);
+		color: var(--text-normal);
+		font-size: 12px;
+	}
 }
 
 .prisma-transform-editor {
@@ -442,59 +446,60 @@
 
 /* AI Settings — custom prompts */
 
-.prisma-custom-prompt-list {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	padding: 4px 0;
-	margin-bottom: 16px;
-}
+.prisma-custom-prompt {
+	&-list {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 4px 0;
+		margin-bottom: 16px;
+	}
 
-.prisma-custom-prompt-item {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 8px 12px;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
-	gap: 16px;
-}
+	&-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 8px 12px;
+		border: 1px solid var(--background-modifier-border);
+		border-radius: 6px;
+		gap: 16px;
+	}
 
-.prisma-custom-prompt-info {
-	flex: 1;
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
+	&-info {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
 
-.prisma-custom-prompt-title {
-	font-weight: 600;
-	font-size: 14px;
-	color: var(--text-normal);
-}
+	&-title {
+		font-weight: 600;
+		font-size: 14px;
+		color: var(--text-normal);
+	}
 
-.prisma-custom-prompt-content {
-	font-size: 12px;
-	color: var(--text-muted);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
+	&-content {
+		font-size: 12px;
+		color: var(--text-muted);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 
-.prisma-custom-prompt-actions {
-	display: flex;
-	gap: 8px;
-	flex-shrink: 0;
-}
+	&-actions {
+		display: flex;
+		gap: 8px;
+		flex-shrink: 0;
+	}
 
-.prisma-custom-prompt-add {
-	margin-top: 4px;
-}
+	&-add {
+		margin-top: 4px;
+	}
 
-.prisma-custom-prompt-form {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
+	&-form {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
 }
-

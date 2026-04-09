@@ -1,135 +1,134 @@
 /* Move By Modal - Compact Button-Based UI */
-.prisma-move-by-modal h3 {
-	margin: 0 0 16px;
-	font-size: var(--font-ui-large);
-	text-align: center;
-}
+.prisma-move-by {
+	&-modal h3 {
+		margin: 0 0 16px;
+		font-size: var(--font-ui-large);
+		text-align: center;
+	}
 
-.prisma-move-by-form {
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
-	margin-bottom: 16px;
-}
+	&-form {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		margin-bottom: 16px;
+	}
 
-.prisma-move-by-row {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
+	&-row {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
 
-.prisma-move-by-label {
-	min-width: 80px;
-	font-size: var(--font-ui-small);
-	font-weight: var(--font-weight-medium);
-	color: var(--text-muted);
-}
+	&-label {
+		min-width: 80px;
+		font-size: var(--font-ui-small);
+		font-weight: var(--font-weight-medium);
+		color: var(--text-muted);
+	}
 
-/* Direction buttons */
-.prisma-move-by-button-group {
-	display: flex;
-	gap: 8px;
-}
+	&-button-group {
+		display: flex;
+		gap: 8px;
+	}
 
-.prisma-move-by-btn {
-	padding: 8px 24px;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-s);
-	background: var(--background-primary);
-	color: var(--text-normal);
-	font-size: var(--font-ui-medium);
-	font-weight: var(--font-weight-semibold);
-	cursor: pointer;
-	transition: all 0.15s ease;
-}
+	&-btn {
+		padding: 8px 24px;
+		border: 1px solid var(--background-modifier-border);
+		border-radius: var(--radius-s);
+		background: var(--background-primary);
+		color: var(--text-normal);
+		font-size: var(--font-ui-medium);
+		font-weight: var(--font-weight-semibold);
+		cursor: pointer;
+		transition: all 0.15s ease;
 
-.prisma-move-by-btn:hover {
-	background: var(--interactive-hover);
-}
+		&:hover {
+			background: var(--interactive-hover);
+		}
 
-.prisma-move-by-btn.prisma-is-active {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border-color: var(--interactive-accent);
-}
+		&.prisma-is-active {
+			background: var(--interactive-accent);
+			color: var(--text-on-accent);
+			border-color: var(--interactive-accent);
+		}
+	}
 
-/* Amount input group */
-.prisma-move-by-amount-group {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-}
+	&-amount-group {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
 
-.prisma-move-by-input {
-	width: 80px;
-	padding: 6px 8px;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-s);
-	background: var(--background-primary);
-	color: var(--text-normal);
-	font-size: var(--font-ui-medium);
-	text-align: center;
-}
+	&-input {
+		width: 80px;
+		padding: 6px 8px;
+		border: 1px solid var(--background-modifier-border);
+		border-radius: var(--radius-s);
+		background: var(--background-primary);
+		color: var(--text-normal);
+		font-size: var(--font-ui-medium);
+		text-align: center;
 
-.prisma-move-by-input:focus {
-	border-color: var(--interactive-accent);
-	outline: none;
-}
+		&:focus {
+			border-color: var(--interactive-accent);
+			outline: none;
+		}
+	}
 
-.prisma-move-by-increment-btn {
-	width: 32px;
-	height: 32px;
-	padding: 0;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-s);
-	background: var(--background-secondary);
-	color: var(--text-normal);
-	font-size: 18px;
-	font-weight: bold;
-	cursor: pointer;
-	transition: all 0.15s ease;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
+	&-increment-btn {
+		width: 32px;
+		height: 32px;
+		padding: 0;
+		border: 1px solid var(--background-modifier-border);
+		border-radius: var(--radius-s);
+		background: var(--background-secondary);
+		color: var(--text-normal);
+		font-size: 18px;
+		font-weight: bold;
+		cursor: pointer;
+		transition: all 0.15s ease;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 
-.prisma-move-by-increment-btn:hover {
-	background: var(--interactive-hover);
-	border-color: var(--interactive-accent);
-}
+		&:hover {
+			background: var(--interactive-hover);
+			border-color: var(--interactive-accent);
+		}
 
-.prisma-move-by-increment-btn:active {
-	transform: scale(0.95);
-}
+		&:active {
+			transform: scale(0.95);
+		}
+	}
 
-/* Time unit buttons */
-.prisma-move-by-unit-group {
-	display: flex;
-	gap: 6px;
-	flex-wrap: wrap;
-}
+	&-unit-group {
+		display: flex;
+		gap: 6px;
+		flex-wrap: wrap;
+	}
 
-.prisma-move-by-unit-btn {
-	padding: 6px 12px;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-s);
-	background: var(--background-primary);
-	color: var(--text-normal);
-	font-size: var(--font-ui-small);
-	font-weight: var(--font-weight-medium);
-	cursor: pointer;
-	transition: all 0.15s ease;
-	white-space: nowrap;
-}
+	&-unit-btn {
+		padding: 6px 12px;
+		border: 1px solid var(--background-modifier-border);
+		border-radius: var(--radius-s);
+		background: var(--background-primary);
+		color: var(--text-normal);
+		font-size: var(--font-ui-small);
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		transition: all 0.15s ease;
+		white-space: nowrap;
 
-.prisma-move-by-unit-btn:hover {
-	background: var(--interactive-hover);
-}
+		&:hover {
+			background: var(--interactive-hover);
+		}
 
-.prisma-move-by-unit-btn.prisma-is-active {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border-color: var(--interactive-accent);
+		&.prisma-is-active {
+			background: var(--interactive-accent);
+			color: var(--text-on-accent);
+			border-color: var(--interactive-accent);
+		}
+	}
 }
 
 /* Responsive adjustments */
@@ -161,210 +160,220 @@
 }
 
 /* Event Notification Modal */
-.prisma-event-notification-modal .modal {
-	max-width: 600px;
-	width: 90%;
-}
+.prisma-event-notification {
+	&-modal {
+		.modal {
+			max-width: 600px;
+			width: 90%;
+		}
 
-.prisma-event-notification-modal .modal-content {
-	padding: 0;
-	max-height: 70vh;
-	overflow-y: auto;
-	border-radius: 12px;
-}
+		.modal-content {
+			padding: 0;
+			max-height: 70vh;
+			overflow-y: auto;
+			border-radius: 12px;
+		}
+	}
 
-.prisma-event-notification-header {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding: 32px 24px 24px;
-	background: var(--background-modifier-form-field);
-	border-bottom: 1px solid var(--background-modifier-border);
-	text-align: center;
-}
+	&-header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 32px 24px 24px;
+		background: var(--background-modifier-form-field);
+		border-bottom: 1px solid var(--background-modifier-border);
+		text-align: center;
+	}
 
-.prisma-event-notification-timing {
-	font-size: var(--font-ui-medium);
-	font-weight: 600;
-	color: var(--text-accent);
-	margin-bottom: 12px;
-	padding: 8px 16px;
-	background: var(--background-modifier-success);
-	border-radius: var(--radius-m);
-	border: 1px solid var(--color-accent);
-}
+	&-timing {
+		font-size: var(--font-ui-medium);
+		font-weight: 600;
+		color: var(--text-accent);
+		margin-bottom: 12px;
+		padding: 8px 16px;
+		background: var(--background-modifier-success);
+		border-radius: var(--radius-m);
+		border: 1px solid var(--color-accent);
+	}
 
-.prisma-event-notification-title {
-	font-size: 24px;
-	font-weight: 700;
-	color: var(--text-normal);
-	margin: 0;
-	cursor: pointer;
-	transition: color 0.2s ease;
-	padding: 8px 16px;
-	border-radius: var(--radius-m);
-}
+	&-title {
+		font-size: 24px;
+		font-weight: 700;
+		color: var(--text-normal);
+		margin: 0;
+		cursor: pointer;
+		transition: color 0.2s ease;
+		padding: 8px 16px;
+		border-radius: var(--radius-m);
 
-.prisma-event-notification-title:hover {
-	color: var(--text-accent);
-	background: var(--background-modifier-hover);
-}
+		&:hover {
+			color: var(--text-accent);
+			background: var(--background-modifier-hover);
+		}
+	}
 
-.prisma-event-notification-section {
-	padding: 24px;
-	border-bottom: 1px solid var(--background-modifier-border-focus);
-}
+	&-section {
+		padding: 24px;
+		border-bottom: 1px solid var(--background-modifier-border-focus);
 
-.prisma-event-notification-section:last-child {
-	border-bottom: none;
-}
+		&:last-child {
+			border-bottom: none;
+		}
 
-.prisma-event-notification-section-title {
-	font-size: var(--font-ui-medium);
-	font-weight: 600;
-	color: var(--text-normal);
-	margin-bottom: 16px;
-	padding-bottom: 8px;
-	border-bottom: 1px solid var(--background-modifier-border);
-}
+		&-title {
+			font-size: var(--font-ui-medium);
+			font-weight: 600;
+			color: var(--text-normal);
+			margin-bottom: 16px;
+			padding-bottom: 8px;
+			border-bottom: 1px solid var(--background-modifier-border);
+		}
+	}
 
-.prisma-event-notification-time-grid {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 20px;
-	margin-bottom: 16px;
-}
+	&-time {
+		&-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 20px;
+			margin-bottom: 16px;
+		}
 
-.prisma-event-notification-time-item {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
+		&-item {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+	}
 
-.prisma-event-notification-label {
-	font-size: var(--font-ui-smaller);
-	font-weight: 600;
-	color: var(--text-muted);
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
+	&-label {
+		font-size: var(--font-ui-smaller);
+		font-weight: 600;
+		color: var(--text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
 
-.prisma-event-notification-value {
-	font-size: var(--font-ui-medium);
-	color: var(--text-normal);
-	font-weight: 500;
-}
+	&-value {
+		font-size: var(--font-ui-medium);
+		color: var(--text-normal);
+		font-weight: 500;
+	}
 
-.prisma-event-notification-file-link {
-	cursor: pointer;
-	color: var(--text-accent);
-	text-decoration: underline;
-	transition: color 0.2s ease;
-}
+	&-file-link {
+		cursor: pointer;
+		color: var(--text-accent);
+		text-decoration: underline;
+		transition: color 0.2s ease;
 
-.prisma-event-notification-file-link:hover {
-	color: var(--text-accent-hover);
-}
+		&:hover {
+			color: var(--text-accent-hover);
+		}
+	}
 
-.prisma-event-notification-props-grid {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 16px;
-}
+	&-props-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 16px;
+	}
 
-.prisma-event-notification-prop-item {
-	display: flex;
-	align-items: flex-start;
-	gap: 16px;
-	padding: 12px;
-	background: var(--background-secondary);
-	border-radius: var(--radius-s);
-	border: 1px solid var(--background-modifier-border);
-}
+	&-prop {
+		&-item {
+			display: flex;
+			align-items: flex-start;
+			gap: 16px;
+			padding: 12px;
+			background: var(--background-secondary);
+			border-radius: var(--radius-s);
+			border: 1px solid var(--background-modifier-border);
+		}
 
-.prisma-event-notification-prop-key {
-	font-size: var(--font-ui-small);
-	font-weight: 600;
-	color: var(--text-muted);
-	min-width: 120px;
-	flex-shrink: 0;
-}
+		&-key {
+			font-size: var(--font-ui-small);
+			font-weight: 600;
+			color: var(--text-muted);
+			min-width: 120px;
+			flex-shrink: 0;
+		}
 
-.prisma-event-notification-prop-value {
-	font-size: var(--font-ui-small);
-	color: var(--text-normal);
-	flex: 1;
-	word-break: break-word;
-}
+		&-value {
+			font-size: var(--font-ui-small);
+			color: var(--text-normal);
+			flex: 1;
+			word-break: break-word;
 
-.prisma-event-notification-prop-value-link {
-	color: var(--text-accent);
-	text-decoration: underline;
-	cursor: pointer;
-	transition: color 0.2s ease;
-}
+			&-link {
+				color: var(--text-accent);
+				text-decoration: underline;
+				cursor: pointer;
+				transition: color 0.2s ease;
 
-.prisma-event-notification-prop-value-link:hover {
-	color: var(--text-accent-hover);
-}
+				&:hover {
+					color: var(--text-accent-hover);
+				}
+			}
+		}
+	}
 
-.prisma-event-notification-buttons {
-	display: flex;
-	justify-content: flex-end;
-	align-items: center;
-	gap: 12px;
-	padding: 24px;
-	background: var(--background-secondary-alt);
-	border-top: 1px solid var(--background-modifier-border);
-}
+	&-buttons {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 12px;
+		padding: 24px;
+		background: var(--background-secondary-alt);
+		border-top: 1px solid var(--background-modifier-border);
 
-.prisma-event-notification-buttons button {
-	padding: 8px 16px;
-	border-radius: var(--radius-s);
-	font-size: var(--font-ui-small);
-	font-weight: 500;
-	cursor: pointer;
-	transition: all 0.2s ease;
-}
+		button {
+			padding: 8px 16px;
+			border-radius: var(--radius-s);
+			font-size: var(--font-ui-small);
+			font-weight: 500;
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+	}
 
-.prisma-event-notification-snooze-container {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
+	&-snooze {
+		&-container {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
 
-.prisma-event-notification-snooze-input-group {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 4px 10px;
-	background: var(--background-primary);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-s);
-}
+		&-input-group {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			padding: 4px 10px;
+			background: var(--background-primary);
+			border: 1px solid var(--background-modifier-border);
+			border-radius: var(--radius-s);
 
-.prisma-event-notification-snooze-input {
-	width: 50px;
-	padding: 4px;
-	border: none;
-	background: transparent;
-	color: var(--text-normal);
-	font-size: var(--font-ui-small);
-	text-align: center;
-}
+			&:focus-within {
+				border-color: var(--interactive-accent);
+			}
+		}
 
-.prisma-event-notification-snooze-input:focus {
-	outline: none;
-}
+		&-input {
+			width: 50px;
+			padding: 4px;
+			border: none;
+			background: transparent;
+			color: var(--text-normal);
+			font-size: var(--font-ui-small);
+			text-align: center;
 
-.prisma-event-notification-snooze-input-group:focus-within {
-	border-color: var(--interactive-accent);
-}
+			&:focus {
+				outline: none;
+			}
+		}
 
-.prisma-event-notification-snooze-unit {
-	color: var(--text-muted);
-	font-size: var(--font-ui-smaller);
-	user-select: none;
+		&-unit {
+			color: var(--text-muted);
+			font-size: var(--font-ui-smaller);
+			user-select: none;
+		}
+	}
 }
 
 /* Responsive adjustments for notification modal */
@@ -428,7 +437,6 @@
 		font-size: 12px;
 	}
 
-	/* Buttons in a row on mobile */
 	.prisma-event-notification-buttons {
 		flex-flow: row wrap;
 		justify-content: center;

@@ -1,21 +1,23 @@
 /* Category Assign Modal */
-.prisma-category-search-container {
-	margin-bottom: 1rem;
-}
+.prisma-category-search {
+	&-container {
+		margin-bottom: 1rem;
+	}
 
-.prisma-category-search-input {
-	width: 100%;
-	padding: 0.5rem;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 4px;
-	background-color: var(--background-primary);
-	color: var(--text-normal);
-	font-size: var(--font-ui-small);
-}
+	&-input {
+		width: 100%;
+		padding: 0.5rem;
+		border: 1px solid var(--background-modifier-border);
+		border-radius: 4px;
+		background-color: var(--background-primary);
+		color: var(--text-normal);
+		font-size: var(--font-ui-small);
 
-.prisma-category-search-input:focus {
-	outline: none;
-	border-color: var(--interactive-accent);
+		&:focus {
+			outline: none;
+			border-color: var(--interactive-accent);
+		}
+	}
 }
 
 .prisma-category-list-container {
@@ -27,26 +29,42 @@
 	margin-bottom: 1rem;
 }
 
-.prisma-category-checkbox-item {
-	display: flex;
-	align-items: center;
-	padding: 0.5rem;
-	border-radius: 4px;
-	cursor: pointer;
-	transition: background-color 0.15s ease;
-}
+.prisma-category-checkbox {
+	&-item {
+		display: flex;
+		align-items: center;
+		padding: 0.5rem;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: background-color 0.15s ease;
 
-.prisma-category-checkbox-item:hover,
-.prisma-category-checkbox-item.prisma-highlighted {
-	background-color: var(--background-modifier-hover);
-}
+		&:hover,
+		&.prisma-highlighted {
+			background-color: var(--background-modifier-hover);
+		}
 
-.prisma-category-checkbox-item.prisma-checked {
-	background-color: var(--background-modifier-active-hover);
-}
+		&.prisma-checked {
+			background-color: var(--background-modifier-active-hover);
+		}
 
-.prisma-category-checkbox-item.prisma-hidden {
-	display: none;
+		&.prisma-hidden {
+			display: none;
+		}
+
+		&.prisma-colorized-row {
+			background-color: color-mix(in srgb, var(--category-color) 15%, transparent);
+			border-left: 3px solid var(--category-color);
+
+			&:hover,
+			&.prisma-highlighted {
+				background-color: color-mix(in srgb, var(--category-color) 25%, transparent);
+			}
+
+			&.prisma-checked {
+				background-color: color-mix(in srgb, var(--category-color) 35%, transparent);
+			}
+		}
+	}
 }
 
 .prisma-category-checkbox {
@@ -83,72 +101,64 @@
 	font-size: var(--font-ui-medium);
 }
 
-.prisma-category-create-new-container {
-	margin-bottom: 1rem;
+.prisma-category-create-new {
+	&-container {
+		margin-bottom: 1rem;
+
+		&.prisma-hidden {
+			display: none;
+		}
+	}
+
+	&-button {
+		width: 100%;
+		padding: 0.75rem;
+		background-color: var(--interactive-accent);
+		color: var(--text-on-accent);
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: var(--font-ui-small);
+		font-weight: 500;
+		transition: background-color 0.15s ease;
+
+		&:hover {
+			background-color: var(--interactive-accent-hover);
+		}
+	}
 }
 
-.prisma-category-create-new-container.prisma-hidden {
-	display: none;
+.prisma-category-new {
+	&-item {
+		border: 2px solid var(--interactive-accent);
+		background-color: var(--background-modifier-form-field);
+	}
+
+	&-badge {
+		padding: 0.125rem 0.375rem;
+		background-color: var(--interactive-accent);
+		color: var(--text-on-accent);
+		border-radius: 3px;
+		font-size: 0.7em;
+		font-weight: 600;
+		letter-spacing: 0.5px;
+	}
 }
 
-.prisma-category-create-new-button {
-	width: 100%;
-	padding: 0.75rem;
-	background-color: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: var(--font-ui-small);
-	font-weight: 500;
-	transition: background-color 0.15s ease;
-}
+.prisma-category-item {
+	&-subtitle {
+		font-size: 0.8em;
+		color: var(--text-muted);
+		margin-left: 0.4rem;
+	}
 
-.prisma-category-create-new-button:hover {
-	background-color: var(--interactive-accent-hover);
-}
-
-.prisma-category-new-item {
-	border: 2px solid var(--interactive-accent);
-	background-color: var(--background-modifier-form-field);
-}
-
-.prisma-category-new-badge {
-	padding: 0.125rem 0.375rem;
-	background-color: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border-radius: 3px;
-	font-size: 0.7em;
-	font-weight: 600;
-	letter-spacing: 0.5px;
-}
-
-.prisma-category-item-subtitle {
-	font-size: 0.8em;
-	color: var(--text-muted);
-	margin-left: 0.4rem;
-}
-
-.prisma-category-item-right-label {
-	font-size: 0.75em;
-	color: var(--text-faint);
-	margin-left: auto;
-	flex-shrink: 0;
-	white-space: nowrap;
-}
-
-.prisma-category-checkbox-item.prisma-colorized-row {
-	background-color: color-mix(in srgb, var(--category-color) 15%, transparent);
-	border-left: 3px solid var(--category-color);
-}
-
-.prisma-category-checkbox-item.prisma-colorized-row:hover,
-.prisma-category-checkbox-item.prisma-colorized-row.prisma-highlighted {
-	background-color: color-mix(in srgb, var(--category-color) 25%, transparent);
-}
-
-.prisma-category-checkbox-item.prisma-colorized-row.prisma-checked {
-	background-color: color-mix(in srgb, var(--category-color) 35%, transparent);
+	&-right-label {
+		font-size: 0.75em;
+		color: var(--text-faint);
+		margin-left: auto;
+		flex-shrink: 0;
+		white-space: nowrap;
+	}
 }
 
 .prisma-category-load-more-button {
@@ -162,15 +172,15 @@
 	color: var(--text-muted);
 	cursor: pointer;
 	font-size: var(--font-ui-small);
-}
 
-.prisma-category-load-more-button:hover {
-	background: var(--background-modifier-active-hover);
-	color: var(--text-normal);
-}
+	&:hover {
+		background: var(--background-modifier-active-hover);
+		color: var(--text-normal);
+	}
 
-.prisma-category-load-more-button.prisma-hidden {
-	display: none;
+	&.prisma-hidden {
+		display: none;
+	}
 }
 
 /* Category display in event modal */
@@ -192,17 +202,19 @@
 	font-size: var(--font-ui-small);
 	transition: background-color 0.15s ease;
 	align-self: center;
+
+	&:hover {
+		background-color: var(--interactive-hover);
+	}
 }
 
-.prisma-assign-categories-button:hover {
-	background-color: var(--interactive-hover);
-}
-
-.prisma-participant-input-row {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	width: 100%;
+.prisma-participant-input {
+	&-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		width: 100%;
+	}
 }
 
 .prisma-participant-input {
@@ -220,4 +232,3 @@
 	width: 70vw;
 	max-width: 1100px;
 }
-

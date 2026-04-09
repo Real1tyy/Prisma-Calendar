@@ -26,14 +26,14 @@ button[class*="prisma-"]:focus-visible {
 	height: 100%;
 	overflow: hidden;
 	padding: 0;
-}
 
-/* Override shared tab-panel height so sticky positioning works —
-   the panel must grow with its content for sticky children to
-   remain attached to the scroll container (.prisma-tab-content). */
-.view-content.prisma-calendar-view-root .prisma-tab-panel {
-	height: auto;
-	min-height: 100%;
+	/* Override shared tab-panel height so sticky positioning works —
+	   the panel must grow with its content for sticky children to
+	   remain attached to the scroll container (.prisma-tab-content). */
+	.prisma-tab-panel {
+		height: auto;
+		min-height: 100%;
+	}
 }
 
 .prisma-calendar-container {
@@ -50,4 +50,3 @@ button[class*="prisma-"]:focus-visible {
 .prisma-connection-overlay {
 	z-index: var(--prisma-connection-z);
 }
-

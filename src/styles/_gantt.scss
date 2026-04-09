@@ -10,10 +10,9 @@
 	background: none;
 	border: none;
 	color: var(--text-muted);
-}
 
-.prisma-gantt-create-btn:hover {
-	color: var(--text-normal);
-	background: var(--background-modifier-hover);
+	&:hover {
+		color: var(--text-normal);
+		background: var(--background-modifier-hover);
+	}
 }
-

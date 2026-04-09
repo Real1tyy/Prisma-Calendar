@@ -9,80 +9,83 @@
 	cursor: pointer;
 	transition: all 0.15s ease;
 	white-space: nowrap;
-}
 
-.fc-button.prisma-batch-action-btn:hover {
-	background: var(--interactive-hover);
-	transform: translateY(-1px);
-	box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
-}
+	&:hover {
+		background: var(--interactive-hover);
+		transform: translateY(-1px);
+		box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
+	}
 
-.fc-button.prisma-batch-action-btn.prisma-batch-counter {
-	font-weight: var(--font-weight-medium);
-	background: var(--background-secondary);
-}
+	&.prisma-batch-counter {
+		font-weight: var(--font-weight-medium);
+		background: var(--background-secondary);
+	}
 
-.fc-button.prisma-batch-action-btn.prisma-select-all-btn {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-}
+	&.prisma-select-all-btn {
+		background: var(--interactive-accent);
+		color: var(--text-on-accent);
+	}
 
-.fc-button.prisma-batch-action-btn.prisma-clear-btn {
-	background: var(--background-modifier-form-field);
-}
+	&.prisma-clear-btn {
+		background: var(--background-modifier-form-field);
+	}
 
-.fc-button.prisma-batch-action-btn.prisma-exit-btn {
-	background: var(--background-secondary);
-}
+	&.prisma-exit-btn {
+		background: var(--background-secondary);
+	}
 
-.fc-button.prisma-batch-action-btn.prisma-delete-btn {
-	background: var(--color-red);
-	color: white;
-	border-color: var(--color-red);
-}
+	&.prisma-delete-btn {
+		background: var(--color-red);
+		color: white;
+		border-color: var(--color-red);
 
-.fc-button.prisma-batch-action-btn.prisma-delete-btn:hover {
-	background: var(--color-red-rgb);
-	box-shadow: 0 2px 8px rgb(var(--color-red-rgb), 0.3);
-}
+		&:hover {
+			background: var(--color-red-rgb);
+			box-shadow: 0 2px 8px rgb(var(--color-red-rgb), 0.3);
+		}
+	}
 
-.fc-button.prisma-batch-action-btn.prisma-clone-next-btn,
-.fc-button.prisma-batch-action-btn.prisma-clone-prev-btn,
-.fc-button.prisma-batch-action-btn.prisma-duplicate-btn {
-	background: var(--color-blue);
-	color: white;
-	border-color: var(--color-blue);
-}
+	&.prisma-clone-next-btn,
+	&.prisma-clone-prev-btn,
+	&.prisma-duplicate-btn {
+		background: var(--color-blue);
+		color: white;
+		border-color: var(--color-blue);
+	}
 
-.fc-button.prisma-batch-action-btn.prisma-move-next-btn,
-.fc-button.prisma-batch-action-btn.prisma-move-prev-btn {
-	background: var(--color-orange);
-	color: white;
-	border-color: var(--color-orange);
-}
+	&.prisma-move-next-btn,
+	&.prisma-move-prev-btn {
+		background: var(--color-orange);
+		color: white;
+		border-color: var(--color-orange);
+	}
 
-.fc-button.prisma-batch-action-btn.prisma-open-all-btn {
-	background: var(--color-green);
-	color: white;
-	border-color: var(--color-green);
-}
+	&.prisma-open-all-btn {
+		background: var(--color-green);
+		color: white;
+		border-color: var(--color-green);
+	}
 
-.fc-button.prisma-batch-action-btn.prisma-skip-btn {
-	background: var(--color-yellow);
-	color: white;
-	border-color: var(--color-yellow);
-}
+	&.prisma-skip-btn {
+		background: var(--color-yellow);
+		color: white;
+		border-color: var(--color-yellow);
+	}
 
-.fc-button.prisma-batch-action-btn.prisma-move-by-btn {
-	background: var(--interactive-normal);
-	color: var(--text-normal);
-	border-color: var(--background-modifier-border);
+	&.prisma-move-by-btn {
+		background: var(--interactive-normal);
+		color: var(--text-normal);
+		border-color: var(--background-modifier-border);
+	}
 }
 
 /* Fix event collapsing in month view */
-.fc-daygrid-event.prisma-batch-selectable,
-.fc-daygrid-event.prisma-batch-selectable .fc-event-main {
+.fc-daygrid-event.prisma-batch-selectable {
 	overflow: visible;
+
+	.fc-event-main {
+		overflow: visible;
+	}
 }
 
 /* Checkbox for dot events (timed events in month view) - no .fc-event-main */
@@ -91,7 +94,30 @@
 }
 
 /* Shared checkbox styling for both block events (.fc-event-main::before) and dot events (::before) */
-.fc-event.prisma-batch-selectable .fc-event-main::before,
+.fc-event.prisma-batch-selectable {
+	.fc-event-main::before {
+		content: "";
+		position: absolute;
+		top: 4px;
+		right: 4px;
+		width: 16px;
+		height: 16px;
+		border: 2px solid rgb(255 255 255 / 80%);
+		border-radius: 50%;
+		background: rgb(0 0 0 / 20%);
+		backdrop-filter: blur(2px);
+		z-index: 10;
+		opacity: 0.8;
+		transition: all 0.2s ease;
+	}
+
+	&:hover .fc-event-main::before {
+		opacity: 1;
+		transform: scale(1.1);
+		border-color: var(--interactive-accent);
+	}
+}
+
 .fc-daygrid-dot-event.prisma-batch-selectable::before {
 	content: "";
 	position: absolute;
@@ -124,14 +150,27 @@
 	height: 16px;
 }
 
-.fc-event.prisma-batch-selectable:hover .fc-event-main::before,
 .fc-daygrid-dot-event.prisma-batch-selectable:hover::before {
 	opacity: 1;
 	transform: scale(1.1);
 	border-color: var(--interactive-accent);
 }
 
-.fc-event.prisma-batch-selected .fc-event-main::before,
+.fc-event.prisma-batch-selected {
+	.fc-event-main::before {
+		background: var(--interactive-accent);
+		border-color: white;
+		content: "✓";
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 10px;
+		font-weight: bold;
+		color: white;
+		opacity: 1;
+	}
+}
+
 .fc-daygrid-dot-event.prisma-batch-selected::before {
 	background: var(--interactive-accent);
 	border-color: white;
@@ -161,13 +200,13 @@
 	transition:
 		box-shadow 0.2s ease,
 		z-index 0.2s ease;
-}
 
-/* Apply relative positioning to an inner element to avoid breaking FC's layout */
-.fc-event.prisma-batch-selectable .fc-event-main {
-	position: relative;
-	height: 100%;
-	width: 100%;
+	/* Apply relative positioning to an inner element to avoid breaking FC's layout */
+	.fc-event-main {
+		position: relative;
+		height: 100%;
+		width: 100%;
+	}
 }
 
 .fc-event.prisma-batch-selected,
@@ -193,37 +232,39 @@
 /* Removed keyframes that could cause event sizing issues */
 
 /* List view batch selection adjustments */
-.prisma-calendar-container .fc-list-event.prisma-batch-selectable {
-	position: relative;
-}
+.prisma-calendar-container {
+	.fc-list-event.prisma-batch-selectable {
+		position: relative;
 
-.prisma-calendar-container .fc-list-event.prisma-batch-selectable .fc-list-event-graphic {
-	position: relative;
-}
+		.fc-list-event-graphic {
+			position: relative;
 
-.prisma-calendar-container .fc-list-event.prisma-batch-selectable .fc-list-event-graphic::before {
-	content: "";
-	position: absolute;
-	left: -24px;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 16px;
-	height: 16px;
-	border: 2px solid var(--text-faint);
-	border-radius: 50%;
-	background: rgb(0 0 0 / 20%);
-}
+			&::before {
+				content: "";
+				position: absolute;
+				left: -24px;
+				top: 50%;
+				transform: translateY(-50%);
+				width: 16px;
+				height: 16px;
+				border: 2px solid var(--text-faint);
+				border-radius: 50%;
+				background: rgb(0 0 0 / 20%);
+			}
+		}
+	}
 
-.prisma-calendar-container .fc-list-event.prisma-batch-selected .fc-list-event-graphic::before {
-	background: var(--interactive-accent);
-	border-color: white;
-	content: "✓";
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 10px;
-	font-weight: bold;
-	color: white;
+	.fc-list-event.prisma-batch-selected .fc-list-event-graphic::before {
+		background: var(--interactive-accent);
+		border-color: white;
+		content: "✓";
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 10px;
+		font-weight: bold;
+		color: white;
+	}
 }
 
 /* Responsive batch selection */
@@ -271,4 +312,3 @@
 		transition: none;
 	}
 }
-
