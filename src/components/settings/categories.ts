@@ -174,12 +174,12 @@ export class CategoriesSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ autoAssignCategoryByName: S.autoAssignCategoryByName },
-			{ name: "Auto-assign when name matches category" }
+			{ label: "Auto-assign when name matches category" }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ autoAssignCategoryByIncludes: S.autoAssignCategoryByIncludes },
-			{ name: "Substring matching for categories and presets" }
+			{ label: "Substring matching for categories and presets" }
 		);
 
 		if (!this.plugin.isProEnabled) {

@@ -19,7 +19,7 @@ export class PerformanceSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ fileConcurrencyLimit: S.fileConcurrencyLimit },
-			{ name: "File operation concurrency limit" }
+			{ label: "File operation concurrency limit" }
 		);
 	}
 }

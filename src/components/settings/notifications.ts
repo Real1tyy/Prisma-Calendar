@@ -25,14 +25,14 @@ export class NotificationsSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ notificationSound: S.notificationSound },
-			{ name: "Play notification sound" }
+			{ label: "Play notification sound" }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ skipNewlyCreatedNotifications: S.skipNewlyCreatedNotifications },
-			{ name: "Skip newly created events" }
+			{ label: "Skip newly created events" }
 		);
-		this.ui.addSchemaField(containerEl, { snoozeMinutes: S.snoozeMinutes }, { name: "Snooze duration (minutes)" });
+		this.ui.addSchemaField(containerEl, { snoozeMinutes: S.snoozeMinutes }, { label: "Snooze duration (minutes)" });
 
 		new Setting(containerEl).setName("Default notification times").setHeading();
 

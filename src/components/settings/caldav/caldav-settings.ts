@@ -75,12 +75,12 @@ export class CalDAVSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ enableAutoSync: CaldavShape.enableAutoSync },
-			{ key: "caldav.enableAutoSync", name: "Allow auto-sync" }
+			{ key: "caldav.enableAutoSync", label: "Allow auto-sync" }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ notifyOnSync: CaldavShape.notifyOnSync },
-			{ key: "caldav.notifyOnSync", name: "Show sync notifications" }
+			{ key: "caldav.notifyOnSync", label: "Show sync notifications" }
 		);
 
 		this.ui.addOptionalColorPicker(containerEl, {

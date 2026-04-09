@@ -20,7 +20,7 @@ export class BasesSettings {
 			containerEl,
 			{ basesViewType: S.basesViewType },
 			{
-				name: "View type",
+				label: "View type",
 				options: {
 					cards: "Cards (Recommended)",
 					table: "Table",
@@ -32,7 +32,7 @@ export class BasesSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ basesViewProperties: S.basesViewProperties },
-			{ name: "Additional properties", placeholder: "priority, project, tags" }
+			{ label: "Additional properties", placeholder: "priority, project, tags" }
 		);
 	}
 }

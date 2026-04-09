@@ -54,12 +54,12 @@ export class AISettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ aiBatchExecution: AIShape.aiBatchExecution },
-			{ key: "ai.aiBatchExecution", name: "Batch execution" }
+			{ key: "ai.aiBatchExecution", label: "Batch execution" }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ aiConfirmExecution: AIShape.aiConfirmExecution },
-			{ key: "ai.aiConfirmExecution", name: "Confirm before execution" }
+			{ key: "ai.aiConfirmExecution", label: "Confirm before execution" }
 		);
 	}
 
@@ -69,12 +69,12 @@ export class AISettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ aiPlanningGapDetection: AIShape.aiPlanningGapDetection },
-			{ key: "ai.aiPlanningGapDetection", name: "Gap detection" }
+			{ key: "ai.aiPlanningGapDetection", label: "Gap detection" }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ aiPlanningDayCoverage: AIShape.aiPlanningDayCoverage },
-			{ key: "ai.aiPlanningDayCoverage", name: "Day coverage" }
+			{ key: "ai.aiPlanningDayCoverage", label: "Day coverage" }
 		);
 	}
 

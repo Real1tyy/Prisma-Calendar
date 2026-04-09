@@ -27,29 +27,29 @@ export class PropertiesSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ startProp: S.startProp },
-			{ name: "Start property", placeholder: PROP_DEFAULTS.start }
+			{ label: "Start property", placeholder: PROP_DEFAULTS.start }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ endProp: S.endProp },
-			{ name: "End property", placeholder: PROP_DEFAULTS.end }
+			{ label: "End property", placeholder: PROP_DEFAULTS.end }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ dateProp: S.dateProp },
-			{ name: "Date property", placeholder: PROP_DEFAULTS.date }
+			{ label: "Date property", placeholder: PROP_DEFAULTS.date }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ allDayProp: S.allDayProp },
-			{ name: "All-day property", placeholder: PROP_DEFAULTS.allDay }
+			{ label: "All-day property", placeholder: PROP_DEFAULTS.allDay }
 		);
 
 		this.ui.addSchemaField(
 			containerEl,
 			{ sortingStrategy: S.sortingStrategy },
 			{
-				name: "Sorting normalization strategy",
+				label: "Sorting normalization strategy",
 				options: {
 					none: "None",
 					startDate: "Timed events only — start datetime",
@@ -64,67 +64,67 @@ export class PropertiesSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ sortDateProp: S.sortDateProp },
-			{ name: "Sort date property", placeholder: PROP_DEFAULTS.sortDate }
+			{ label: "Sort date property", placeholder: PROP_DEFAULTS.sortDate }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ titleProp: S.titleProp },
-			{ name: "Title property", placeholder: PROP_DEFAULTS.title }
+			{ label: "Title property", placeholder: PROP_DEFAULTS.title }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ calendarTitleProp: S.calendarTitleProp },
-			{ name: "Calendar title property", placeholder: PROP_DEFAULTS.calendarTitle }
+			{ label: "Calendar title property", placeholder: PROP_DEFAULTS.calendarTitle }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ zettelIdProp: S.zettelIdProp },
-			{ name: "ZettelID property", placeholder: PROP_DEFAULTS.zettelId }
+			{ label: "ZettelID property", placeholder: PROP_DEFAULTS.zettelId }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ skipProp: S.skipProp },
-			{ name: "Skip property", placeholder: PROP_DEFAULTS.skip }
+			{ label: "Skip property", placeholder: PROP_DEFAULTS.skip }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ rruleProp: S.rruleProp },
-			{ name: "RRule property", placeholder: PROP_DEFAULTS.rrule }
+			{ label: "RRule property", placeholder: PROP_DEFAULTS.rrule }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ rruleSpecProp: S.rruleSpecProp },
-			{ name: "RRule specification property", placeholder: PROP_DEFAULTS.rruleSpec }
+			{ label: "RRule specification property", placeholder: PROP_DEFAULTS.rruleSpec }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ rruleIdProp: S.rruleIdProp },
-			{ name: "RRule ID property", placeholder: PROP_DEFAULTS.rruleId }
+			{ label: "RRule ID property", placeholder: PROP_DEFAULTS.rruleId }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ sourceProp: S.sourceProp },
-			{ name: "Source property", placeholder: PROP_DEFAULTS.source }
+			{ label: "Source property", placeholder: PROP_DEFAULTS.source }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ instanceDateProp: S.instanceDateProp },
-			{ name: "Recurring instance date property", placeholder: PROP_DEFAULTS.instanceDate }
+			{ label: "Recurring instance date property", placeholder: PROP_DEFAULTS.instanceDate }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ futureInstancesCountProp: S.futureInstancesCountProp },
-			{ name: "Future instances count property", placeholder: PROP_DEFAULTS.futureInstancesCount }
+			{ label: "Future instances count property", placeholder: PROP_DEFAULTS.futureInstancesCount }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ generatePastEventsProp: S.generatePastEventsProp },
-			{ name: "Generate past events property", placeholder: PROP_DEFAULTS.generatePastEvents }
+			{ label: "Generate past events property", placeholder: PROP_DEFAULTS.generatePastEvents }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ statusProperty: S.statusProperty },
-			{ name: "Status property", placeholder: PROP_DEFAULTS.status }
+			{ label: "Status property", placeholder: PROP_DEFAULTS.status }
 		);
 		this.ui.addSchemaField(containerEl, { doneValue: S.doneValue }, { placeholder: PROP_DEFAULTS.doneValue });
 		this.ui.addSchemaField(containerEl, { notDoneValue: S.notDoneValue }, { placeholder: PROP_DEFAULTS.notDoneValue });
@@ -137,57 +137,57 @@ export class PropertiesSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ categoryProp: S.categoryProp },
-			{ name: "Category property", placeholder: PROP_DEFAULTS.category }
+			{ label: "Category property", placeholder: PROP_DEFAULTS.category }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ locationProp: S.locationProp },
-			{ name: "Location property", placeholder: PROP_DEFAULTS.location }
+			{ label: "Location property", placeholder: PROP_DEFAULTS.location }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ participantsProp: S.participantsProp },
-			{ name: "Participants property", placeholder: PROP_DEFAULTS.participants }
+			{ label: "Participants property", placeholder: PROP_DEFAULTS.participants }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ breakProp: S.breakProp },
-			{ name: "Break property", placeholder: PROP_DEFAULTS.break }
+			{ label: "Break property", placeholder: PROP_DEFAULTS.break }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ iconProp: S.iconProp },
-			{ name: "Icon property", placeholder: PROP_DEFAULTS.icon }
+			{ label: "Icon property", placeholder: PROP_DEFAULTS.icon }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ prerequisiteProp: S.prerequisiteProp },
-			{ name: "Prerequisite property", placeholder: PROP_DEFAULTS.prerequisite }
+			{ label: "Prerequisite property", placeholder: PROP_DEFAULTS.prerequisite }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ minutesBeforeProp: S.minutesBeforeProp },
-			{ name: "Minutes before property", placeholder: PROP_DEFAULTS.minutesBefore }
+			{ label: "Minutes before property", placeholder: PROP_DEFAULTS.minutesBefore }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ daysBeforeProp: S.daysBeforeProp },
-			{ name: "Days before property", placeholder: PROP_DEFAULTS.daysBefore }
+			{ label: "Days before property", placeholder: PROP_DEFAULTS.daysBefore }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ alreadyNotifiedProp: S.alreadyNotifiedProp },
-			{ name: "Already notified property", placeholder: PROP_DEFAULTS.alreadyNotified }
+			{ label: "Already notified property", placeholder: PROP_DEFAULTS.alreadyNotified }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ caldavProp: S.caldavProp },
-			{ name: "CalDAV property", placeholder: PROP_DEFAULTS.caldav }
+			{ label: "CalDAV property", placeholder: PROP_DEFAULTS.caldav }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ icsSubscriptionProp: S.icsSubscriptionProp },
-			{ name: "ICS subscription property", placeholder: PROP_DEFAULTS.icsSubscription }
+			{ label: "ICS subscription property", placeholder: PROP_DEFAULTS.icsSubscription }
 		);
 
 		const eventTypesDesc = containerEl.createDiv(cls("settings-info-box"));
@@ -275,22 +275,22 @@ ${settings.futureInstancesCountProp}: 5
 		this.ui.addSchemaField(
 			containerEl,
 			{ frontmatterDisplayProperties: S.frontmatterDisplayProperties },
-			{ name: "Display properties (timed events)", placeholder: "status, priority, project, tags, category" }
+			{ label: "Display properties (timed events)", placeholder: "status, priority, project, tags, category" }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ frontmatterDisplayPropertiesAllDay: S.frontmatterDisplayPropertiesAllDay },
-			{ name: "Display properties (all-day events)", placeholder: "status, priority, project, tags, category" }
+			{ label: "Display properties (all-day events)", placeholder: "status, priority, project, tags, category" }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ frontmatterDisplayPropertiesUntracked: S.frontmatterDisplayPropertiesUntracked },
-			{ name: "Display properties (untracked events)", placeholder: "status, priority, project, tags, category" }
+			{ label: "Display properties (untracked events)", placeholder: "status, priority, project, tags, category" }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ frontmatterDisplayPropertiesHeatmap: S.frontmatterDisplayPropertiesHeatmap },
-			{ name: "Display properties (heatmap)", placeholder: "status, priority, project, tags, category" }
+			{ label: "Display properties (heatmap)", placeholder: "status, priority, project, tags, category" }
 		);
 	}
 }

@@ -105,7 +105,7 @@ export class RulesSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ showEventColorDots: S.showEventColorDots },
-			{ name: "Show overflow color dots" }
+			{ label: "Show overflow color dots" }
 		);
 
 		this.ui.addColorPicker(containerEl, {

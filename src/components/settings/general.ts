@@ -97,17 +97,17 @@ export class GeneralSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ defaultDurationMinutes: S.defaultDurationMinutes },
-			{ name: "Default duration (minutes)" }
+			{ label: "Default duration (minutes)" }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ showDurationField: S.showDurationField },
-			{ name: "Show duration field in event modal" }
+			{ label: "Show duration field in event modal" }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ markPastInstancesAsDone: S.markPastInstancesAsDone },
-			{ name: "Mark past events as done" }
+			{ label: "Mark past events as done" }
 		);
 		this.ui.addSchemaField(containerEl, { titleAutocomplete: S.titleAutocomplete });
 	}
@@ -118,7 +118,7 @@ export class GeneralSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ showStopwatch: S.showStopwatch },
-			{ name: "Show time tracker in event modal" }
+			{ label: "Show time tracker in event modal" }
 		);
 	}
 
@@ -130,7 +130,7 @@ export class GeneralSettings {
 			containerEl,
 			{ defaultAggregationMode: S.defaultAggregationMode },
 			{
-				name: "Default grouping mode",
+				label: "Default grouping mode",
 				options: {
 					name: "Event Name",
 					category: "Category",

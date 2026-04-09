@@ -63,7 +63,7 @@ export class CalendarSettings {
 		this.ui.addSchemaField(containerEl, { hideWeekends: S.hideWeekends });
 		this.ui.addSchemaField(containerEl, { enableEventPreview: S.enableEventPreview });
 		this.ui.addSchemaField(containerEl, { skipUnderscoreProperties: S.skipUnderscoreProperties });
-		this.ui.addSchemaField(containerEl, { nowIndicator: S.nowIndicator }, { name: "Show current time indicator" });
+		this.ui.addSchemaField(containerEl, { nowIndicator: S.nowIndicator }, { label: "Show current time indicator" });
 		this.ui.addSchemaField(containerEl, { highlightUpcomingEvent: S.highlightUpcomingEvent });
 		this.ui.addSchemaField(containerEl, { thickerHourLines: S.thickerHourLines });
 
@@ -72,7 +72,7 @@ export class CalendarSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ showDurationInTitle: S.showDurationInTitle },
-			{ name: "Show duration in event title" }
+			{ label: "Show duration in event title" }
 		);
 		this.ui.addSchemaField(containerEl, { stickyDayHeaders: S.stickyDayHeaders });
 		this.ui.addSchemaField(containerEl, { stickyAllDayEvents: S.stickyAllDayEvents });
@@ -101,8 +101,8 @@ export class CalendarSettings {
 					});
 			});
 
-		this.ui.addSchemaField(containerEl, { hourStart: S.hourStart }, { name: "Day start hour" });
-		this.ui.addSchemaField(containerEl, { hourEnd: S.hourEnd }, { name: "Day end hour" });
+		this.ui.addSchemaField(containerEl, { hourStart: S.hourStart }, { label: "Day start hour" });
+		this.ui.addSchemaField(containerEl, { hourEnd: S.hourEnd }, { label: "Day end hour" });
 		this.ui.addSchemaField(containerEl, { slotDurationMinutes: S.slotDurationMinutes });
 		this.ui.addSchemaField(containerEl, { snapDurationMinutes: S.snapDurationMinutes });
 		this.ui.addSchemaField(containerEl, { dragEdgeScrollDelayMs: S.dragEdgeScrollDelayMs }, { step: 50 });
@@ -150,18 +150,22 @@ export class CalendarSettings {
 
 		new Setting(containerEl).setName("Event overlap").setHeading();
 
-		this.ui.addSchemaField(containerEl, { eventOverlap: S.eventOverlap }, { name: "Allow event overlap" });
-		this.ui.addSchemaField(containerEl, { slotEventOverlap: S.slotEventOverlap }, { name: "Allow slot event overlap" });
-		this.ui.addSchemaField(containerEl, { eventMaxStack: S.eventMaxStack }, { name: "Event stack limit" });
+		this.ui.addSchemaField(containerEl, { eventOverlap: S.eventOverlap }, { label: "Allow event overlap" });
+		this.ui.addSchemaField(
+			containerEl,
+			{ slotEventOverlap: S.slotEventOverlap },
+			{ label: "Allow slot event overlap" }
+		);
+		this.ui.addSchemaField(containerEl, { eventMaxStack: S.eventMaxStack }, { label: "Event stack limit" });
 		this.ui.addSchemaField(
 			containerEl,
 			{ desktopMaxEventsPerDay: S.desktopMaxEventsPerDay },
-			{ name: "Desktop events per day" }
+			{ label: "Desktop events per day" }
 		);
 		this.ui.addSchemaField(
 			containerEl,
 			{ mobileMaxEventsPerDay: S.mobileMaxEventsPerDay },
-			{ name: "Mobile events per day" }
+			{ label: "Mobile events per day" }
 		);
 
 		this.ui.addSchemaField(containerEl, { showColorDots: S.showColorDots });
@@ -187,7 +191,7 @@ export class CalendarSettings {
 		this.ui.addSchemaField(
 			containerEl,
 			{ capacityTrackingEnabled: S.capacityTrackingEnabled },
-			{ name: "Enable capacity tracking" }
+			{ label: "Enable capacity tracking" }
 		);
 
 		new Setting(containerEl).setHeading().setName("Prerequisite Connection Arrows");
@@ -199,8 +203,12 @@ export class CalendarSettings {
 			fallback: DEFAULT_CONNECTION_COLOR,
 		});
 
-		this.ui.addSchemaField(containerEl, { connectionStrokeWidth: S.connectionStrokeWidth }, { name: "Line thickness" });
-		this.ui.addSchemaField(containerEl, { connectionArrowSize: S.connectionArrowSize }, { name: "Arrowhead size" });
+		this.ui.addSchemaField(
+			containerEl,
+			{ connectionStrokeWidth: S.connectionStrokeWidth },
+			{ label: "Line thickness" }
+		);
+		this.ui.addSchemaField(containerEl, { connectionArrowSize: S.connectionArrowSize }, { label: "Arrowhead size" });
 	}
 
 	private renderDayCellColoringSection(containerEl: HTMLElement): void {

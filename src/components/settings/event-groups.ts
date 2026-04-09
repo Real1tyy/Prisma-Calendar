@@ -6,7 +6,7 @@ import { SingleCalendarConfigSchema } from "../../types/settings";
 
 const S = SingleCalendarConfigSchema.shape;
 
-const EXCLUDED_PROPS_OVERRIDES = { name: "Excluded properties", placeholder: "Property1, Property2, Property3" };
+const EXCLUDED_PROPS_OVERRIDES = { label: "Excluded properties", placeholder: "Property1, Property2, Property3" };
 
 export class EventGroupsSettings {
 	private ui: SettingsUIBuilder<typeof SingleCalendarConfigSchema>;
