@@ -12,7 +12,13 @@ import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import { UpdateEventCommand } from "../../core/commands";
-import type { CalendarEvent, CalendarEventData, EventUpdateInfo, FCPrismaEventInput } from "../../types/calendar";
+import type {
+	CalendarEvent,
+	CalendarEventData,
+	EventDateTime,
+	EventUpdateInfo,
+	FCPrismaEventInput,
+} from "../../types/calendar";
 import { isAnyVirtual, isTimedEvent } from "../../types/calendar";
 import { isBatchSelectable, isHolidayEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
@@ -29,9 +35,12 @@ import type { CalendarHost } from "../calendar-host";
 import type { EventContextMenu } from "../event-context-menu";
 import { EventCreateModal, showEventPreviewModal } from "../modals";
 
-export interface SharedCalendarDeps {
+export interface ModalContext {
 	app: App;
 	bundle: CalendarBundle;
+}
+
+export interface SharedCalendarDeps extends ModalContext {
 	container: HTMLElement;
 	colorEvaluator: ColorEvaluator<SingleCalendarConfig>;
 	calendarHost: CalendarHost;
@@ -459,17 +468,17 @@ export async function handleSharedEventUpdate(
 	}
 
 	try {
-		const command = new UpdateEventCommand(
-			app,
-			bundle,
-			filePath,
-			toLocalISOString(info.event.start),
-			info.event.end ? toLocalISOString(info.event.end) : undefined,
-			info.event.allDay || false,
-			toLocalISOString(info.oldEvent.start),
-			info.oldEvent.end ? toLocalISOString(info.oldEvent.end) : undefined,
-			info.oldEvent.allDay || false
-		);
+		const newDateTime: EventDateTime = {
+			start: toLocalISOString(info.event.start),
+			end: info.event.end ? toLocalISOString(info.event.end) : undefined,
+			allDay: info.event.allDay || false,
+		};
+		const oldDateTime: EventDateTime = {
+			start: toLocalISOString(info.oldEvent.start),
+			end: info.oldEvent.end ? toLocalISOString(info.oldEvent.end) : undefined,
+			allDay: info.oldEvent.allDay || false,
+		};
+		const command = new UpdateEventCommand(app, bundle, filePath, newDateTime, oldDateTime);
 		await bundle.commandManager.executeCommand(command);
 	} catch (error) {
 		console.error(`[${logPrefix}] ${errorMessage}`, error);

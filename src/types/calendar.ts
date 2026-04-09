@@ -103,6 +103,12 @@ export interface EventMountInfo {
 	event: CalendarEventData;
 }
 
+export interface EventDateTime {
+	start: string;
+	end: string | undefined;
+	allDay: boolean;
+}
+
 export interface EventUpdateInfo {
 	event: CalendarEventData & { start: Date };
 	oldEvent: Pick<CalendarEventData, "start" | "end" | "allDay"> & {

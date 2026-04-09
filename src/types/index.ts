@@ -1,5 +1,5 @@
 export { type ISO } from "../utils/validation";
-export { type CalendarEvent, eventDefaults, isTimedEvent, type ParsedEvent } from "./calendar";
+export { type CalendarEvent, type EventDateTime, eventDefaults, isTimedEvent, type ParsedEvent } from "./calendar";
 export {
 	type CustomCalendarSettings,
 	CustomCalendarSettingsSchema,

@@ -38,6 +38,7 @@ import { getProGateUrls } from "../core/pro-feature-previews";
 import type {
 	CalendarEvent,
 	CalendarEventData,
+	EventDateTime,
 	EventMountInfo,
 	EventUpdateInfo,
 	ExtendedButtonInput,
@@ -1825,17 +1826,17 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		}
 
 		try {
-			const command = new UpdateEventCommand(
-				this.app,
-				this.bundle,
-				filePath,
-				toLocalISOString(info.event.start),
-				info.event.end ? toLocalISOString(info.event.end) : undefined,
-				info.event.allDay || false,
-				toLocalISOString(info.oldEvent.start),
-				info.oldEvent.end ? toLocalISOString(info.oldEvent.end) : undefined,
-				info.oldEvent.allDay || false
-			);
+			const newDateTime: EventDateTime = {
+				start: toLocalISOString(info.event.start),
+				end: info.event.end ? toLocalISOString(info.event.end) : undefined,
+				allDay: info.event.allDay || false,
+			};
+			const oldDateTime: EventDateTime = {
+				start: toLocalISOString(info.oldEvent.start),
+				end: info.oldEvent.end ? toLocalISOString(info.oldEvent.end) : undefined,
+				allDay: info.oldEvent.allDay || false,
+			};
+			const command = new UpdateEventCommand(this.app, this.bundle, filePath, newDateTime, oldDateTime);
 
 			await this.bundle.commandManager.executeCommand(command);
 		} catch (error) {

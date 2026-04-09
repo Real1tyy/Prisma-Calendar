@@ -9,7 +9,7 @@ import {
 } from "@real1ty-obsidian-plugins";
 import type { App, TFile } from "obsidian";
 
-import type { Frontmatter, SingleCalendarConfig } from "../../types";
+import type { EventDateTime, Frontmatter, SingleCalendarConfig } from "../../types";
 import { isPhysicalRecurringEvent, setEventBasics } from "../../utils/event-frontmatter";
 import { ensureFileHasZettelId, extractZettelId, rebuildPhysicalInstanceWithNewDate } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -68,12 +68,8 @@ export class UpdateEventCommand implements Command {
 		private app: App,
 		private bundle: CalendarBundle,
 		filePath: string,
-		private newStart: string,
-		private newEnd: string | undefined,
-		private newAllDay: boolean,
-		private oldStart: string,
-		private oldEnd: string | undefined,
-		private oldAllDay: boolean
+		private newDateTime: EventDateTime,
+		private oldDateTime: EventDateTime
 	) {
 		this.originalFilePath = filePath;
 	}
@@ -86,18 +82,18 @@ export class UpdateEventCommand implements Command {
 
 		const settings = this.bundle.settingsStore.currentSettings;
 
-		let endTime = this.newEnd;
-		if (!endTime && !this.newAllDay) {
-			const startDate = new Date(this.newStart);
+		let endTime = this.newDateTime.end;
+		if (!endTime && !this.newDateTime.allDay) {
+			const startDate = new Date(this.newDateTime.start);
 			startDate.setHours(startDate.getHours() + 1);
 			endTime = toLocalISOString(startDate);
 		}
 
 		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
 			setEventBasics(fm, settings, {
-				start: this.newStart,
+				start: this.newDateTime.start,
 				end: endTime,
-				allDay: this.newAllDay,
+				allDay: this.newDateTime.allDay,
 			});
 		});
 
@@ -116,8 +112,8 @@ export class UpdateEventCommand implements Command {
 			return;
 		}
 
-		const oldDateStr = this.oldStart.split("T")[0];
-		const newDateStr = this.newStart.split("T")[0];
+		const oldDateStr = this.oldDateTime.start.split("T")[0];
+		const newDateStr = this.newDateTime.start.split("T")[0];
 		if (oldDateStr === newDateStr) return;
 
 		const newBasename = rebuildPhysicalInstanceWithNewDate(file.basename, newDateStr);
@@ -138,9 +134,9 @@ export class UpdateEventCommand implements Command {
 
 		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
 			setEventBasics(fm, settings, {
-				start: this.oldStart,
-				end: this.oldEnd,
-				allDay: this.oldAllDay,
+				start: this.oldDateTime.start,
+				end: this.oldDateTime.end,
+				allDay: this.oldDateTime.allDay,
 			});
 		});
 
