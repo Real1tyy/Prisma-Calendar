@@ -1,5 +1,6 @@
 export * from "./mocks/license";
 export * from "./mocks/obsidian";
+export * from "./mocks/vault-table";
 // Re-export commonly used combinations
 export {
 	createMockApp,
