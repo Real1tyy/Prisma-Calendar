@@ -13,31 +13,29 @@ import type { EventDateTime, Frontmatter, SingleCalendarConfig } from "../../typ
 import { isPhysicalRecurringEvent, setEventBasics } from "../../utils/event-frontmatter";
 import { ensureFileHasZettelId, extractZettelId, rebuildPhysicalInstanceWithNewDate } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
+import type { EventFileRepository, FrontmatterSnapshot } from "../event-file-repository";
 import type { EventData } from "./lifecycle-commands";
 
 export class EditEventCommand implements Command {
-	private originalFrontmatter?: Frontmatter;
+	private snapshot: FrontmatterSnapshot | null = null;
 
 	constructor(
-		private app: App,
+		private repo: EventFileRepository,
 		private filePath: string,
 		private newEventData: EventData
 	) {}
 
 	async execute(): Promise<void> {
-		const file = getTFileOrThrow(this.app, this.filePath);
-		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
-		const diff = compareFrontmatter(this.originalFrontmatter, this.newEventData.preservedFrontmatter);
+		if (!this.snapshot) this.snapshot = await this.repo.snapshotByPath(this.filePath);
+		const diff = compareFrontmatter(this.snapshot.data, this.newEventData.preservedFrontmatter);
 
-		await withFrontmatter(this.app, file, (fm: Frontmatter) => {
+		await this.repo.updateFrontmatterByPath(this.filePath, (fm: Frontmatter) => {
 			for (const change of diff.deleted) {
 				delete fm[change.key];
 			}
-
 			for (const change of diff.modified) {
 				fm[change.key] = change.newValue;
 			}
-
 			for (const change of diff.added) {
 				fm[change.key] = change.newValue;
 			}
@@ -45,9 +43,8 @@ export class EditEventCommand implements Command {
 	}
 
 	async undo(): Promise<void> {
-		if (!this.originalFrontmatter) return;
-		const file = getTFileOrThrow(this.app, this.filePath);
-		await restoreFrontmatter(this.app, file, this.originalFrontmatter);
+		if (!this.snapshot) return;
+		await this.repo.restoreSnapshot(this.snapshot);
 	}
 
 	getType() {
@@ -55,7 +52,7 @@ export class EditEventCommand implements Command {
 	}
 
 	canUndo(): boolean {
-		return true;
+		return this.snapshot !== null;
 	}
 }
 

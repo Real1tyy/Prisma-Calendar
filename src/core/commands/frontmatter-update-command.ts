@@ -1,41 +1,30 @@
 import type { Command } from "@real1ty-obsidian-plugins";
-import {
-	backupFrontmatter,
-	ensureISOSuffix,
-	getTFileOrThrow,
-	parseFrontmatterRecord,
-	parseIntoList,
-	restoreFrontmatter,
-	toDisplayLink,
-	withFrontmatter,
-} from "@real1ty-obsidian-plugins";
+import { ensureISOSuffix, parseFrontmatterRecord, parseIntoList, toDisplayLink } from "@real1ty-obsidian-plugins";
 import type { DurationLike } from "luxon";
-import type { App } from "obsidian";
 
 import type { Frontmatter } from "../../types";
 import { applyStartEndOffsets, assignListToFrontmatter, parseCustomDoneProperty } from "../../utils/event-frontmatter";
 import type { CalendarBundle } from "../calendar-bundle";
+import type { EventFileRepository, FrontmatterSnapshot } from "../event-file-repository";
 
 export class FrontmatterUpdateCommand implements Command {
-	private originalFrontmatter?: Frontmatter;
+	private snapshot: FrontmatterSnapshot | null = null;
 
 	constructor(
-		private app: App,
+		private repo: EventFileRepository,
 		private filePath: string,
 		private updater: (fm: Frontmatter) => void,
 		private type: string
 	) {}
 
 	async execute(): Promise<void> {
-		const file = getTFileOrThrow(this.app, this.filePath);
-		if (!this.originalFrontmatter) this.originalFrontmatter = await backupFrontmatter(this.app, file);
-		await withFrontmatter(this.app, file, this.updater);
+		if (!this.snapshot) this.snapshot = await this.repo.snapshotByPath(this.filePath);
+		await this.repo.updateFrontmatterByPath(this.filePath, this.updater);
 	}
 
 	async undo(): Promise<void> {
-		if (!this.originalFrontmatter) return;
-		const file = getTFileOrThrow(this.app, this.filePath);
-		await restoreFrontmatter(this.app, file, this.originalFrontmatter);
+		if (!this.snapshot) return;
+		await this.repo.restoreSnapshot(this.snapshot);
 	}
 
 	getType(): string {
@@ -43,15 +32,15 @@ export class FrontmatterUpdateCommand implements Command {
 	}
 
 	canUndo(): boolean {
-		return this.originalFrontmatter !== undefined;
+		return this.snapshot !== null;
 	}
 }
 
-export function markAsDone(app: App, bundle: CalendarBundle, filePath: string): FrontmatterUpdateCommand {
+export function markAsDone(bundle: CalendarBundle, filePath: string): FrontmatterUpdateCommand {
 	const settings = bundle.settingsStore.currentSettings;
 	const customProp = parseCustomDoneProperty(settings.customDoneProperty);
 	return new FrontmatterUpdateCommand(
-		app,
+		bundle.fileRepository,
 		filePath,
 		(fm) => {
 			if (customProp) {
@@ -64,12 +53,12 @@ export function markAsDone(app: App, bundle: CalendarBundle, filePath: string): 
 	);
 }
 
-export function markAsUndone(app: App, bundle: CalendarBundle, filePath: string): FrontmatterUpdateCommand {
+export function markAsUndone(bundle: CalendarBundle, filePath: string): FrontmatterUpdateCommand {
 	const settings = bundle.settingsStore.currentSettings;
 	const doneProp = parseCustomDoneProperty(settings.customDoneProperty);
 	const undoneProp = parseCustomDoneProperty(settings.customUndoneProperty);
 	return new FrontmatterUpdateCommand(
-		app,
+		bundle.fileRepository,
 		filePath,
 		(fm) => {
 			if (doneProp) {
@@ -86,10 +75,10 @@ export function markAsUndone(app: App, bundle: CalendarBundle, filePath: string)
 	);
 }
 
-export function toggleSkip(app: App, bundle: CalendarBundle, filePath: string): FrontmatterUpdateCommand {
+export function toggleSkip(bundle: CalendarBundle, filePath: string): FrontmatterUpdateCommand {
 	const settings = bundle.settingsStore.currentSettings;
 	return new FrontmatterUpdateCommand(
-		app,
+		bundle.fileRepository,
 		filePath,
 		(fm) => {
 			if (fm[settings.skipProp] === true) {
@@ -103,14 +92,13 @@ export function toggleSkip(app: App, bundle: CalendarBundle, filePath: string): 
 }
 
 export function assignCategories(
-	app: App,
 	bundle: CalendarBundle,
 	filePath: string,
 	categories: string[]
 ): FrontmatterUpdateCommand {
 	const settings = bundle.settingsStore.currentSettings;
 	return new FrontmatterUpdateCommand(
-		app,
+		bundle.fileRepository,
 		filePath,
 		(fm) => {
 			assignListToFrontmatter(fm, settings.categoryProp, categories);
@@ -120,14 +108,13 @@ export function assignCategories(
 }
 
 export function assignPrerequisites(
-	app: App,
 	bundle: CalendarBundle,
 	filePath: string,
 	prerequisites: string[]
 ): FrontmatterUpdateCommand {
 	const settings = bundle.settingsStore.currentSettings;
 	return new FrontmatterUpdateCommand(
-		app,
+		bundle.fileRepository,
 		filePath,
 		(fm) => {
 			assignListToFrontmatter(fm, settings.prerequisiteProp, prerequisites);
@@ -137,22 +124,21 @@ export function assignPrerequisites(
 }
 
 export function addPrerequisite(
-	app: App,
 	bundle: CalendarBundle,
 	targetFilePath: string,
 	prerequisiteFilePath: string
 ): FrontmatterUpdateCommand {
 	const settings = bundle.settingsStore.currentSettings;
-	const file = getTFileOrThrow(app, targetFilePath);
-	const frontmatter = app.metadataCache.getFileCache(file)?.frontmatter ?? {};
-	const existing = parseIntoList(frontmatter[settings.prerequisiteProp], { splitCommas: false });
+	const existing = bundle.fileRepository.getByPath(targetFilePath);
+	const currentPrereqs = parseIntoList(existing?.[settings.prerequisiteProp as keyof typeof existing], {
+		splitCommas: false,
+	});
 	const wikiLink = toDisplayLink(prerequisiteFilePath);
-	const updated = existing.includes(wikiLink) ? existing : [...existing, wikiLink];
-	return assignPrerequisites(app, bundle, targetFilePath, updated);
+	const updated = currentPrereqs.includes(wikiLink) ? currentPrereqs : [...currentPrereqs, wikiLink];
+	return assignPrerequisites(bundle, targetFilePath, updated);
 }
 
 export function moveEvent(
-	app: App,
 	bundle: CalendarBundle,
 	filePath: string,
 	startOffset: DurationLike,
@@ -160,7 +146,7 @@ export function moveEvent(
 ): FrontmatterUpdateCommand {
 	const settings = bundle.settingsStore.currentSettings;
 	return new FrontmatterUpdateCommand(
-		app,
+		bundle.fileRepository,
 		filePath,
 		(fm) => {
 			applyStartEndOffsets(fm, settings, startOffset, endOffset);
@@ -170,13 +156,13 @@ export function moveEvent(
 }
 
 export function fillTime(
-	app: App,
+	bundle: CalendarBundle,
 	filePath: string,
 	propertyName: string,
 	newTimeValue: string
 ): FrontmatterUpdateCommand {
 	return new FrontmatterUpdateCommand(
-		app,
+		bundle.fileRepository,
 		filePath,
 		(fm) => {
 			fm[propertyName] = ensureISOSuffix(newTimeValue);
@@ -186,12 +172,12 @@ export function fillTime(
 }
 
 export function updateFrontmatter(
-	app: App,
+	bundle: CalendarBundle,
 	filePath: string,
 	propertyUpdates: Map<string, string | null>
 ): FrontmatterUpdateCommand {
 	return new FrontmatterUpdateCommand(
-		app,
+		bundle.fileRepository,
 		filePath,
 		(fm) => {
 			for (const [key, value] of propertyUpdates.entries()) {

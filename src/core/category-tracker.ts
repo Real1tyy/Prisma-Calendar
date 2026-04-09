@@ -11,6 +11,7 @@ import { filter } from "rxjs/operators";
 import { PROPAGATION_DEBOUNCE_MS } from "../constants";
 import type { Frontmatter } from "../types";
 import type { CalendarEvent } from "../types/calendar";
+import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { SingleCalendarConfig } from "../types/index";
 import {
 	applyFrontmatterChangesToInstance,
@@ -19,7 +20,6 @@ import {
 } from "../utils/event-frontmatter";
 import { batchedPromiseAll } from "../utils/obsidian";
 import type { EventStore } from "./event-store";
-import type { Indexer, IndexerEvent } from "./indexer";
 
 export interface CategoryInfo {
 	name: string;
@@ -60,7 +60,7 @@ export class CategoryTracker {
 
 	constructor(
 		private app: App,
-		private indexer: Indexer,
+		private eventSource: CalendarEventSource,
 		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
@@ -76,13 +76,13 @@ export class CategoryTracker {
 			this.settings = newSettings;
 		});
 
-		this.subscription = this.indexer.events$
+		this.subscription = this.eventSource.events$
 			.pipe(filter((event: IndexerEvent) => event.type === "file-changed" || event.type === "file-deleted"))
 			.subscribe((event: IndexerEvent) => {
 				this.handleIndexerEvent(event);
 			});
 
-		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
+		this.indexingCompleteSubscription = this.eventSource.indexingComplete$.subscribe((isComplete) => {
 			if (isComplete) {
 				this.rebuildCategoryMaps();
 			}

@@ -14,6 +14,7 @@ import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { applyStartEndOffsets, removeNonCloneableProperties } from "../../utils/event-frontmatter";
 import { ensureFileHasZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
+import type { EventFileRepository, FrontmatterSnapshot } from "../event-file-repository";
 
 export interface EventData {
 	filePath: string | null;
@@ -117,26 +118,21 @@ export class CreateEventCommand extends CreatedFileCommand {
 }
 
 export class DeleteEventCommand implements Command {
-	private originalContent: string | null = null;
-	private readonly originalPath: string;
+	private snapshot: FrontmatterSnapshot | null = null;
 
 	constructor(
-		private app: App,
-		_bundle: CalendarBundle,
+		private repo: EventFileRepository,
 		private filePath: string
-	) {
-		this.originalPath = filePath;
-	}
+	) {}
 
 	async execute(): Promise<void> {
-		const file = getTFileOrThrow(this.app, this.filePath);
-		this.originalContent = await this.app.vault.read(file);
-		await this.app.fileManager.trashFile(file);
+		this.snapshot = await this.repo.snapshotByPath(this.filePath);
+		await this.repo.deleteByPath(this.filePath);
 	}
 
 	async undo(): Promise<void> {
-		if (!this.originalContent) throw new Error("Cannot undo: original content not stored");
-		await this.app.vault.create(this.originalPath, this.originalContent);
+		if (!this.snapshot) throw new Error("Cannot undo: no snapshot stored");
+		await this.repo.restoreSnapshot(this.snapshot);
 	}
 
 	getType() {
@@ -144,8 +140,7 @@ export class DeleteEventCommand implements Command {
 	}
 
 	canUndo(): boolean {
-		if (!this.originalContent) return false;
-		return !(this.app.vault.getAbstractFileByPath(this.originalPath) instanceof TFile);
+		return this.snapshot !== null;
 	}
 }
 

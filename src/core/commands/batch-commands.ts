@@ -25,7 +25,7 @@ export class BatchCommandFactory {
 	) {}
 
 	createDelete(filePaths: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => new DeleteEventCommand(this.app, this.bundle, fp));
+		return batchCommand(filePaths, (fp) => new DeleteEventCommand(this.bundle.fileRepository, fp));
 	}
 
 	createDuplicate(filePaths: string[]): MacroCommand {
@@ -34,7 +34,7 @@ export class BatchCommandFactory {
 
 	createMove(filePaths: string[], weeks: number): MacroCommand {
 		const d = weekDuration(weeks);
-		return batchCommand(filePaths, (fp) => moveEvent(this.app, this.bundle, fp, d, d));
+		return batchCommand(filePaths, (fp) => moveEvent(this.bundle, fp, d, d));
 	}
 
 	createClone(filePaths: string[], weeks: number): MacroCommand {
@@ -43,27 +43,27 @@ export class BatchCommandFactory {
 	}
 
 	createSkip(filePaths: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => toggleSkip(this.app, this.bundle, fp));
+		return batchCommand(filePaths, (fp) => toggleSkip(this.bundle, fp));
 	}
 
 	createMoveBy(filePaths: string[], offset: DurationLike): MacroCommand {
-		return batchCommand(filePaths, (fp) => moveEvent(this.app, this.bundle, fp, offset, offset));
+		return batchCommand(filePaths, (fp) => moveEvent(this.bundle, fp, offset, offset));
 	}
 
 	createMarkAsDone(filePaths: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => markAsDone(this.app, this.bundle, fp));
+		return batchCommand(filePaths, (fp) => markAsDone(this.bundle, fp));
 	}
 
 	createMarkAsNotDone(filePaths: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => markAsUndone(this.app, this.bundle, fp));
+		return batchCommand(filePaths, (fp) => markAsUndone(this.bundle, fp));
 	}
 
 	createAssignCategories(filePaths: string[], categories: string[]): MacroCommand {
-		return batchCommand(filePaths, (fp) => assignCategories(this.app, this.bundle, fp, categories));
+		return batchCommand(filePaths, (fp) => assignCategories(this.bundle, fp, categories));
 	}
 
 	createUpdateFrontmatter(filePaths: string[], propertyUpdates: Map<string, string | null>): MacroCommand {
-		return batchCommand(filePaths, (fp) => updateFrontmatter(this.app, fp, propertyUpdates));
+		return batchCommand(filePaths, (fp) => updateFrontmatter(this.bundle, fp, propertyUpdates));
 	}
 
 	createMakeVirtual(filePaths: string[]): MacroCommand {

@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createDefaultState } from "../../src/components/modals/event/event-form-state";
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
-import type { IndexerEvent } from "../../src/core/indexer";
 import { MinimizedModalManager, type MinimizedModalState } from "../../src/core/minimized-modal-manager";
+import type { IndexerEvent } from "../../src/types/event-source";
 import type { StopwatchSnapshot } from "../../src/types/stopwatch";
 
 describe("MinimizedModalManager", () => {
@@ -23,7 +23,7 @@ describe("MinimizedModalManager", () => {
 			plugin: {
 				app: {},
 			} as any,
-			indexer: {
+			fileRepository: {
 				events$: mockIndexerEventsSubject.asObservable(),
 			} as any,
 			settingsStore: {

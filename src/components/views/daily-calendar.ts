@@ -260,7 +260,7 @@ export function createDailyCalendar(
 
 	// ─── Subscriptions ───────────────────────────────────────────
 
-	const indexingSub = bundle.indexer.indexingComplete$.subscribe((complete) => {
+	const indexingSub = bundle.fileRepository.indexingComplete$.subscribe((complete) => {
 		isIndexingComplete = complete;
 		if (complete) scheduleRefresh();
 	});

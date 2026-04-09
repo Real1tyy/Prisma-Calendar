@@ -43,7 +43,7 @@ export class SkippedEventsModal extends BaseEventListModal {
 				isPrimary: true,
 				handler: async (item, itemEl) => {
 					try {
-						const command = toggleSkip(this.app, this.bundle, item.filePath);
+						const command = toggleSkip(this.bundle, item.filePath);
 						await this.bundle.commandManager.executeCommand(command);
 
 						this.removeItem(itemEl, item);

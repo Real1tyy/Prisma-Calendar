@@ -1,8 +1,8 @@
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 
+import type { CalendarEventSource } from "../../../types/event-source";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import type { Indexer } from "../../indexer";
 import { BaseSyncStateManager, type TrackedSyncEvent } from "../base-sync-state-manager";
 import { type ICSSubscriptionSyncMetadata, ICSSubscriptionSyncMetadataSchema } from "./types";
 
@@ -19,8 +19,8 @@ export class ICSSubscriptionSyncStateManager extends BaseSyncStateManager<ICSSub
 	 */
 	private globalUidIndex: Map<string, TrackedICSSubscriptionEvent> = new Map();
 
-	constructor(app: App, indexer: Indexer, settings$: BehaviorSubject<SingleCalendarConfig>) {
-		super(app, indexer, settings$, (s) => s.icsSubscriptionProp, ICSSubscriptionSyncMetadataSchema);
+	constructor(app: App, eventSource: CalendarEventSource, settings$: BehaviorSubject<SingleCalendarConfig>) {
+		super(app, eventSource, settings$, (s) => s.icsSubscriptionProp, ICSSubscriptionSyncMetadataSchema);
 	}
 
 	findByUid(subscriptionId: string, uid: string): TrackedICSSubscriptionEvent | null {

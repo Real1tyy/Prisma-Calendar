@@ -1,5 +1,4 @@
 import type { Command } from "@real1ty-obsidian-plugins";
-import type { App } from "obsidian";
 
 import type CustomCalendarPlugin from "../../main";
 import type { CalendarBundle } from "../calendar-bundle";
@@ -12,13 +11,13 @@ import {
 import { CloneEventCommand } from "../commands/lifecycle-commands";
 import { resolveBundleOrNotice } from "./bundle-resolver";
 
-type CommandFactory = (app: App, bundle: CalendarBundle, filePath: string) => Command;
+type CommandFactory = (bundle: CalendarBundle, filePath: string) => Command;
 
 function statusOp(factory: CommandFactory) {
 	return async (plugin: CustomCalendarPlugin, input: { filePath: string; calendarId?: string }): Promise<boolean> => {
 		const bundle = resolveBundleOrNotice(plugin, input.calendarId);
 		if (!bundle) return false;
-		await bundle.commandManager.executeCommand(factory(plugin.app, bundle, input.filePath));
+		await bundle.commandManager.executeCommand(factory(bundle, input.filePath));
 		return true;
 	};
 }
@@ -45,8 +44,6 @@ export async function moveEvent(
 ): Promise<boolean> {
 	const bundle = resolveBundleOrNotice(plugin, input.calendarId);
 	if (!bundle) return false;
-	await bundle.commandManager.executeCommand(
-		moveEventCmd(plugin.app, bundle, input.filePath, input.offsetMs, input.offsetMs)
-	);
+	await bundle.commandManager.executeCommand(moveEventCmd(bundle, input.filePath, input.offsetMs, input.offsetMs));
 	return true;
 }

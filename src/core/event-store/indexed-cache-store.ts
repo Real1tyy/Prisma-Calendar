@@ -2,7 +2,7 @@ import { DebouncedNotifier } from "@real1ty-obsidian-plugins";
 import type { Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 
-import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
+import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../../types/event-source";
 
 export interface CacheEntry<T> {
 	template: T;
@@ -14,11 +14,11 @@ export abstract class IndexedCacheStore<TTemplate> extends DebouncedNotifier {
 	private subscription: Subscription | null = null;
 
 	constructor(
-		protected indexer: Indexer,
+		protected eventSource: CalendarEventSource,
 		private watchedTypes: ReadonlySet<IndexerEvent["type"]>
 	) {
 		super();
-		this.subscription = this.indexer.events$
+		this.subscription = this.eventSource.events$
 			.pipe(filter((event: IndexerEvent) => this.watchedTypes.has(event.type)))
 			.subscribe((event: IndexerEvent) => {
 				this.handleIndexerEvent(event);

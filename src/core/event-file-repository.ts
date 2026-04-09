@@ -1,0 +1,495 @@
+import type { FrontmatterDiff, SyncStore, VaultRow, VaultTableEvent } from "@real1ty-obsidian-plugins";
+import {
+	extractFileName,
+	intoDate,
+	isFolderNote,
+	removeMarkdownExtension,
+	toSafeString,
+	VaultTable,
+} from "@real1ty-obsidian-plugins";
+import { type App, TFile } from "obsidian";
+import { BehaviorSubject, type Observable, Subject, type Subscription } from "rxjs";
+
+import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "../types";
+import { parseEventMetadata } from "../types/event";
+import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../types/event-source";
+import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
+import { cleanupTitle, ensureFileHasZettelId, generateUniqueRruleId, hasTimestamp } from "../utils/event-naming";
+import { createEventSchema } from "./event-schema";
+
+export type FrontmatterSnapshot = {
+	key: string;
+	data: Frontmatter;
+	content: string;
+	filePath: string;
+};
+
+type EventTable = VaultTable<Frontmatter>;
+
+export class EventFileRepository implements CalendarEventSource {
+	private table: EventTable;
+	private settingsSub: Subscription | null = null;
+	private tableSub: Subscription | null = null;
+
+	private settings: SingleCalendarConfig;
+	private readonly eventsSubject = new Subject<IndexerEvent>();
+	private readonly indexingCompleteSubject = new BehaviorSubject<boolean>(false);
+
+	/** Per-file queue to serialize processFrontMatter calls */
+	private fmLocks = new Map<string, Promise<void>>();
+	/** Tracks files currently being renamed for ZettelID to prevent re-entrant triggers */
+	private zettelIdRenamesInFlight = new Set<string>();
+
+	public readonly events$: Observable<IndexerEvent>;
+	public readonly indexingComplete$: Observable<boolean>;
+
+	constructor(
+		private app: App,
+		settingsStore: BehaviorSubject<SingleCalendarConfig>,
+		private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
+	) {
+		this.settings = settingsStore.value;
+		this.table = this.createTable(this.settings);
+		this.events$ = this.eventsSubject.asObservable();
+		this.indexingComplete$ = this.indexingCompleteSubject.asObservable();
+
+		this.settingsSub = settingsStore.subscribe((newSettings) => {
+			this.settings = newSettings;
+			if (newSettings.directory !== this.table.directory) {
+				this.table.destroy();
+				this.table = this.createTable(newSettings);
+				this.wireTableEvents();
+				void this.table.start();
+			}
+		});
+	}
+
+	// ─── CalendarEventSource ─────────────────────────────────────
+
+	async markFileAsDone(filePath: string): Promise<void> {
+		if (this.syncStore?.data.readOnly) return;
+
+		const file = this.app.vault.getAbstractFileByPath(filePath);
+		if (!(file instanceof TFile)) return;
+
+		try {
+			await this.enqueueFrontmatterWrite(file, (fm: Frontmatter) => {
+				fm[this.settings.statusProperty] = this.settings.doneValue;
+			});
+		} catch (error) {
+			console.error(`[EventFileRepository] Error marking event as done: ${filePath}`, error);
+		}
+	}
+
+	resync(): void {
+		this.indexingCompleteSubject.next(false);
+		this.table.destroy();
+		this.table = this.createTable(this.settings);
+		this.wireTableEvents();
+		void this.table.start();
+	}
+
+	// ─── Row-level access ────────────────────────────────────────
+
+	getRow(key: string): VaultRow<Frontmatter> | undefined {
+		return this.table.get(key);
+	}
+
+	getRowByPath(filePath: string): VaultRow<Frontmatter> | undefined {
+		return this.getRow(this.toKey(filePath));
+	}
+
+	getAllRows(): ReadonlyArray<VaultRow<Frontmatter>> {
+		return this.table.toArray();
+	}
+
+	has(key: string): boolean {
+		return this.table.has(key);
+	}
+
+	// ─── Path resolution ─────────────────────────────────────────
+
+	toKey(filePath: string): string {
+		return extractFileName(filePath);
+	}
+
+	getByPath(filePath: string): Frontmatter | undefined {
+		return this.table.get(this.toKey(filePath))?.data;
+	}
+
+	// ─── CRUD ────────────────────────────────────────────────────
+
+	async create(fileName: string, data: Frontmatter, content?: string): Promise<VaultRow<Frontmatter>> {
+		return this.table.create({ fileName, data, ...(content !== undefined ? { content } : {}) });
+	}
+
+	async update(key: string, patch: Partial<Frontmatter>): Promise<VaultRow<Frontmatter>> {
+		return this.table.update(key, patch);
+	}
+
+	async updateByPath(filePath: string, patch: Partial<Frontmatter>): Promise<VaultRow<Frontmatter>> {
+		return this.update(this.toKey(filePath), patch);
+	}
+
+	async delete(key: string): Promise<void> {
+		await this.table.delete(key);
+	}
+
+	async deleteByPath(filePath: string): Promise<void> {
+		return this.delete(this.toKey(filePath));
+	}
+
+	// ─── Frontmatter operations ──────────────────────────────────
+
+	async updateFrontmatterByPath(filePath: string, updater: (fm: Frontmatter) => void): Promise<Frontmatter> {
+		const key = this.toKey(filePath);
+		const existing = this.table.get(key);
+		if (!existing) throw new Error(`Event file not found: ${key}`);
+		const updated = { ...existing.data };
+		updater(updated);
+		const row = await this.table.update(key, updated);
+		return row.data;
+	}
+
+	async snapshotByPath(filePath: string): Promise<FrontmatterSnapshot> {
+		const key = this.toKey(filePath);
+		const row = this.table.get(key);
+		if (!row) throw new Error(`Event file not found: ${key}`);
+		const rawContent = await this.app.vault.read(row.file);
+		return {
+			key,
+			data: { ...row.data },
+			content: rawContent,
+			filePath: row.filePath,
+		};
+	}
+
+	async restoreSnapshot(snapshot: FrontmatterSnapshot): Promise<void> {
+		const existing = this.table.get(snapshot.key);
+		if (existing) {
+			await this.app.vault.modify(existing.file, snapshot.content);
+		} else {
+			await this.app.vault.create(snapshot.filePath, snapshot.content);
+		}
+	}
+
+	// ─── Lifecycle ───────────────────────────────────────────────
+
+	async start(): Promise<void> {
+		this.wireTableEvents();
+		await this.table.start();
+	}
+
+	async waitUntilReady(): Promise<void> {
+		await this.table.waitUntilReady();
+	}
+
+	destroy(): void {
+		this.settingsSub?.unsubscribe();
+		this.settingsSub = null;
+		this.tableSub?.unsubscribe();
+		this.tableSub = null;
+		this.table.destroy();
+		this.eventsSubject.complete();
+		this.indexingCompleteSubject.complete();
+	}
+
+	// ─── VaultTable Event Bridge ─────────────────────────────────
+
+	private wireTableEvents(): void {
+		this.tableSub?.unsubscribe();
+
+		this.tableSub = this.table.events$.subscribe((event) => {
+			void this.handleTableEvent(event).catch((error) => {
+				console.error("[EventFileRepository] Error handling table event:", error);
+			});
+		});
+
+		this.table.ready$.subscribe((ready) => {
+			if (ready) {
+				this.indexingCompleteSubject.next(true);
+			}
+		});
+	}
+
+	private async handleTableEvent(event: VaultTableEvent<Frontmatter>): Promise<void> {
+		switch (event.type) {
+			case "row-created": {
+				await this.emitFileEvents(event.row, undefined, undefined);
+				break;
+			}
+			case "row-updated": {
+				await this.emitFileEvents(event.newRow, event.oldRow.data, event.diff);
+				break;
+			}
+			case "row-deleted": {
+				this.eventsSubject.next({
+					type: "file-deleted",
+					filePath: event.filePath,
+					oldFrontmatter: event.oldRow.data,
+				});
+				break;
+			}
+		}
+	}
+
+	private async emitFileEvents(
+		row: VaultRow<Frontmatter>,
+		oldFrontmatter: Frontmatter | undefined,
+		frontmatterDiff: FrontmatterDiff | undefined
+	): Promise<void> {
+		let frontmatter = row.data;
+		const settings = this.settings;
+
+		// Always add recurring events even if skipped - this allows navigation
+		// to source from physical instances and viewing recurring event lists.
+		// The RecurringEventManager will check skip property and not generate new instances.
+		const recurring = await this.tryParseRecurring(row, oldFrontmatter);
+		if (recurring) {
+			this.eventsSubject.next({
+				type: "recurring-event-found",
+				filePath: row.filePath,
+				recurringEvent: recurring,
+				...(oldFrontmatter ? { oldFrontmatter } : {}),
+				...(frontmatterDiff ? { frontmatterDiff } : {}),
+			});
+
+			// CRITICAL: Update frontmatter object with rRuleId from the recurring event
+			// tryParseRecurring returns a NodeRecurringEvent with the rRuleId (either existing or newly generated)
+			// We update the frontmatter object directly to ensure file-changed events have the correct data
+			if (!frontmatter[settings.rruleIdProp]) {
+				frontmatter = {
+					...frontmatter,
+					[settings.rruleIdProp]: recurring.rRuleId,
+				};
+			}
+		}
+
+		// Always emit file-changed events for files with start property OR date property OR neither (untracked)
+		// Let EventStore/Parser handle filtering - this ensures cached events
+		// get invalidated when properties change and no longer pass filters
+		// This allows recurring source files to ALSO appear as regular events on the calendar
+		const hasTimedEvent = frontmatter[settings.startProp];
+		const hasAllDayEvent = frontmatter[settings.dateProp];
+		const hasDateOrTime = hasTimedEvent || hasAllDayEvent;
+		const isUntracked = !hasDateOrTime;
+
+		if (hasDateOrTime || isUntracked) {
+			// Auto-assign ZettelID: fire-and-forget. The rename triggers a new
+			// event cycle with the updated path, so we don't need to await or update state here.
+			void this.autoAssignZettelId(row.file, isUntracked).catch((error) => {
+				console.error(`[EventFileRepository] Error auto-assigning ZettelID for ${row.filePath}:`, error);
+			});
+
+			if (settings.markPastInstancesAsDone && hasDateOrTime) {
+				void this.markPastEventAsDone(row.file, frontmatter).catch((error) => {
+					console.error(`[EventFileRepository] Error marking past event ${row.filePath}:`, error);
+				});
+			}
+
+			void this.updateCalendarTitleProperty(row.file, frontmatter).catch((error) => {
+				console.error(`[EventFileRepository] Error updating calendar title for ${row.filePath}:`, error);
+			});
+
+			const allDayProp = frontmatter[settings.allDayProp];
+			const isAllDay = allDayProp === true || allDayProp === "true";
+			const metadata = parseEventMetadata(frontmatter, settings);
+
+			const source: RawEventSource = {
+				filePath: row.filePath,
+				mtime: row.mtime,
+				frontmatter,
+				folder: row.file.parent?.path || "",
+				isAllDay,
+				isUntracked,
+				metadata,
+			};
+
+			this.eventsSubject.next({
+				type: isUntracked ? "untracked-file-changed" : "file-changed",
+				filePath: row.filePath,
+				source,
+				...(oldFrontmatter ? { oldFrontmatter } : {}),
+				...(frontmatterDiff ? { frontmatterDiff } : {}),
+			});
+		}
+	}
+
+	// ─── Recurring Event Detection ───────────────────────────────
+
+	private async tryParseRecurring(
+		row: VaultRow<Frontmatter>,
+		oldFrontmatter?: Frontmatter
+	): Promise<NodeRecurringEvent | null> {
+		const frontmatter = row.data;
+		const rrules = parseRRuleFromFrontmatter(frontmatter, this.settings);
+		if (!rrules) return null;
+
+		let rRuleId = toSafeString(frontmatter[this.settings.rruleIdProp]);
+		const frontmatterCopy = { ...frontmatter };
+		const previousRRuleId = toSafeString(oldFrontmatter?.[this.settings.rruleIdProp]);
+
+		// Guard against accidental ID churn: recurring source rRuleId is immutable once set.
+		// If a file suddenly reports a different id, keep the previous one and revert the file.
+		if (rRuleId && previousRRuleId && rRuleId !== previousRRuleId) {
+			rRuleId = previousRRuleId;
+			if (!this.syncStore?.data.readOnly) {
+				await this.enqueueFrontmatterWrite(row.file, (fm: Frontmatter) => {
+					fm[this.settings.rruleIdProp] = rRuleId;
+				});
+			}
+		}
+
+		if (!rRuleId) {
+			// vault.on("modify") fires BEFORE the metadata cache updates, so the rRuleId
+			// might already exist on disk but not be in the cache yet. Wait for the
+			// cache to catch up before deciding to generate a new ID — prevents duplicates.
+			await new Promise((resolve) => setTimeout(resolve, 200));
+			const freshCache = this.app.metadataCache.getFileCache(row.file);
+			const cachedId = toSafeString(freshCache?.frontmatter?.[this.settings.rruleIdProp]);
+
+			if (cachedId) {
+				rRuleId = cachedId;
+			} else if (this.syncStore?.data.readOnly) {
+				// In readOnly mode we can't write an rRuleId — skip this recurring event entirely.
+				// Without a stable ID, instances can't be deduplicated across reloads.
+				return null;
+			} else {
+				rRuleId = generateUniqueRruleId();
+				await this.enqueueFrontmatterWrite(row.file, (fm: Frontmatter) => {
+					fm[this.settings.rruleIdProp] = rRuleId;
+				});
+			}
+		}
+
+		frontmatterCopy[this.settings.rruleIdProp] = rRuleId;
+		const metadata = parseEventMetadata(frontmatterCopy, this.settings);
+
+		// Defer content reading - we'll read it lazily when needed
+		// This avoids blocking I/O during the initial scan
+		return {
+			sourceFilePath: row.filePath,
+			title: row.file.basename,
+			rRuleId,
+			rrules,
+			frontmatter: frontmatterCopy,
+			metadata,
+			content: undefined, // Empty initially - will be loaded on-demand by RecurringEventManager
+		};
+	}
+
+	// ─── Background File Updates ─────────────────────────────────
+
+	private async updateCalendarTitleProperty(file: TFile, frontmatter: Frontmatter): Promise<void> {
+		if (this.syncStore?.data.readOnly) return;
+
+		const { calendarTitleProp } = this.settings;
+		if (!calendarTitleProp) return;
+
+		const pathWithoutExt = removeMarkdownExtension(file.path);
+		const displayName = cleanupTitle(file.basename);
+		const titleLink = `[[${pathWithoutExt}|${displayName}]]`;
+
+		const currentTitle = frontmatter[calendarTitleProp];
+		if (currentTitle === titleLink) return;
+
+		await this.enqueueFrontmatterWrite(file, (fm: Frontmatter) => {
+			fm[calendarTitleProp] = titleLink;
+		});
+	}
+
+	/**
+	 * Auto-assigns a ZettelID to a file if the setting is enabled and the file doesn't have one.
+	 * Uses a Set to track in-flight renames and prevent re-entrant triggers from the rename event.
+	 * @param isUntracked - true if the file has no date/time properties (untracked event)
+	 */
+	private async autoAssignZettelId(file: TFile, isUntracked: boolean): Promise<void> {
+		const mode = this.settings.autoAssignZettelId;
+		if (mode === "disabled") return;
+		if (mode === "calendarEvents" && isUntracked) return;
+		if (this.syncStore?.data.readOnly) return;
+		if (hasTimestamp(file.basename)) return;
+		if (isFolderNote(file.path)) return;
+		// Prevent re-entrant renames: if we're already renaming this file (by original path),
+		// skip. Also check the current path in case the event arrives after rename started.
+		if (this.zettelIdRenamesInFlight.has(file.path)) return;
+
+		this.zettelIdRenamesInFlight.add(file.path);
+		try {
+			await ensureFileHasZettelId(this.app, file, this.settings.zettelIdProp);
+		} catch (error) {
+			console.error(`[EventFileRepository] Error auto-assigning ZettelID to ${file.path}:`, error);
+		} finally {
+			this.zettelIdRenamesInFlight.delete(file.path);
+		}
+	}
+
+	private async markPastEventAsDone(file: TFile, frontmatter: Frontmatter): Promise<void> {
+		if (this.syncStore?.data.readOnly) return;
+
+		// CRITICAL PROTECTION: Don't mark source recurring events as done
+		// Source recurring events (identified by the presence of rruleProp) are templates
+		// that generate virtual and physical instances. Marking them as done would:
+		// 1. Break the recurring event system
+		// 2. Prevent generation of future instances
+		// 3. Cause all instances to appear as "done" since they inherit from the source
+		const isSourceRecurringEvent = !!frontmatter[this.settings.rruleProp];
+		if (isSourceRecurringEvent) return;
+
+		const now = new Date();
+		let isPastEvent = false;
+
+		const allDayValue = frontmatter[this.settings.allDayProp];
+		const isAllDay = allDayValue === true || allDayValue === "true";
+
+		if (isAllDay) {
+			const rawDate = frontmatter[this.settings.dateProp];
+			const date = intoDate(rawDate);
+			if (date) {
+				date.setHours(23, 59, 59, 999);
+				isPastEvent = date < now;
+			}
+		} else {
+			const endValue = frontmatter[this.settings.endProp];
+			const endDate = intoDate(endValue);
+			if (endDate) {
+				isPastEvent = endDate < now;
+			}
+		}
+
+		if (isPastEvent) {
+			const currentStatus = frontmatter[this.settings.statusProperty];
+			if (currentStatus !== this.settings.doneValue) {
+				await this.markFileAsDone(file.path);
+			}
+		}
+	}
+
+	// ─── Utilities ───────────────────────────────────────────────
+
+	/**
+	 * Serialize processFrontMatter calls per file to prevent interleaving writes
+	 * and suppress the resulting file-changed events from our own writebacks.
+	 */
+	private enqueueFrontmatterWrite(file: TFile, fn: (fm: Frontmatter) => void): Promise<void> {
+		const path = file.path;
+		const prev = this.fmLocks.get(path) ?? Promise.resolve();
+		const next = prev
+			.then(() => this.app.fileManager.processFrontMatter(file, fn))
+			.finally(() => {
+				if (this.fmLocks.get(path) === next) this.fmLocks.delete(path);
+			});
+		this.fmLocks.set(path, next);
+		return next;
+	}
+
+	protected createTable(settings: SingleCalendarConfig): EventTable {
+		return new VaultTable({
+			app: this.app,
+			directory: settings.directory,
+			schema: createEventSchema(),
+			invalidStrategy: "skip",
+			debounceMs: 100,
+		});
+	}
+}

@@ -26,6 +26,7 @@ import { PROPAGATION_DEBOUNCE_MS } from "../constants";
 import { type CalendarEvent, eventDefaults, type Frontmatter, type PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
 import { stripZ, toInternalISO } from "../types/event";
+import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { NodeRecurringEvent, RecurringEventSeries } from "../types/recurring-event";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getNextOccurrence } from "../utils/date-recurrence";
@@ -47,7 +48,6 @@ import {
 import { calculateTargetInstanceCount, findFirstValidStartDate, getStartDateTime } from "../utils/recurring-utils";
 import type { CategoryTracker } from "./category-tracker";
 import type { EventStore } from "./event-store";
-import type { Indexer, IndexerEvent } from "./indexer";
 
 const DATE_FORMAT = "yyyy-MM-dd";
 
@@ -117,7 +117,7 @@ export class RecurringEventManager extends DebouncedNotifier {
 	constructor(
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
-		private indexer: Indexer,
+		private eventSource: CalendarEventSource,
 		private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
 	) {
 		super();
@@ -134,13 +134,13 @@ export class RecurringEventManager extends DebouncedNotifier {
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			this.settings = newSettings;
 		});
-		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
+		this.indexingCompleteSubscription = this.eventSource.indexingComplete$.subscribe((isComplete) => {
 			this.indexingComplete = isComplete;
 			if (isComplete) {
 				void this.processAllRecurringEvents();
 			}
 		});
-		this.subscription = this.indexer.events$.subscribe((event: IndexerEvent) => {
+		this.subscription = this.eventSource.events$.subscribe((event: IndexerEvent) => {
 			void this.handleIndexerEvent(event);
 		});
 	}

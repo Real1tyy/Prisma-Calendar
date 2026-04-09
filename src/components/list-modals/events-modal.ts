@@ -551,7 +551,7 @@ export class EventsModal extends Modal {
 			currentCategories,
 			async (selectedCategories) => {
 				try {
-					const command = assignCategories(this.app, this.bundle, item.filePath, selectedCategories);
+					const command = assignCategories(this.bundle, item.filePath, selectedCategories);
 					await this.bundle.commandManager.executeCommand(command);
 					new Notice("Categories updated");
 					this.renderContent();
@@ -587,7 +587,7 @@ export class EventsModal extends Modal {
 
 	private async handleToggleSkip(item: RecurringListItem, itemEl: HTMLElement): Promise<void> {
 		try {
-			const command = toggleSkip(this.app, this.bundle, item.filePath);
+			const command = toggleSkip(this.bundle, item.filePath);
 			await this.bundle.commandManager.executeCommand(command);
 
 			itemEl.classList.add("prisma-fade-out");

@@ -1,5 +1,5 @@
 import type { Calendar } from "@fullcalendar/core";
-import { type App, Notice } from "obsidian";
+import { Notice } from "obsidian";
 
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { addPrerequisite } from "../core/commands";
@@ -15,7 +15,6 @@ export class PrerequisiteSelectionManager {
 	// ─── Lifecycle ────────────────────────────────────────────────
 
 	constructor(
-		private app: App,
 		private calendar: Calendar,
 		private bundle: CalendarBundle,
 		private container: HTMLElement
@@ -68,7 +67,7 @@ export class PrerequisiteSelectionManager {
 			return;
 		}
 
-		const command = addPrerequisite(this.app, this.bundle, this.targetFilePath, filePath);
+		const command = addPrerequisite(this.bundle, this.targetFilePath, filePath);
 		this.exit();
 
 		void (async () => {

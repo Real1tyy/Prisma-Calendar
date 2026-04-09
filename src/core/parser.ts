@@ -9,10 +9,10 @@ import type { AllDayEvent, CalendarEvent, TimedEvent } from "../types/calendar";
 import { eventDefaults } from "../types/calendar";
 import type { EventMetadata } from "../types/event";
 import { parseEventFrontmatter, toInternalISO } from "../types/event";
+import type { RawEventSource } from "../types/event-source";
 import type { Frontmatter, ISO, SingleCalendarConfig } from "../types/index";
 import { applyDateNormalizationToFile } from "../utils/event-frontmatter";
 import { getEventName } from "../utils/event-naming";
-import type { RawEventSource } from "./indexer";
 
 export class Parser {
 	private settings: SingleCalendarConfig;

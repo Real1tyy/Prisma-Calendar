@@ -667,7 +667,7 @@ export class EventContextMenu {
 		const label = done ? "done" : "undone";
 		const command = done ? markAsDone : markAsUndone;
 		await this.withFilePath(event, `mark event as ${label}`, async (filePath) => {
-			await this.runCommand(() => command(this.app, this.bundle, filePath), {
+			await this.runCommand(() => command(this.bundle, filePath), {
 				success: `Event marked as ${label}`,
 				error: `Failed to mark event as ${label}`,
 			});
@@ -728,7 +728,7 @@ export class EventContextMenu {
 					}
 
 					const offset = { [result.unit]: result.value };
-					await this.runCommand(() => moveEvent(this.app, this.bundle, filePath, offset, offset), {
+					await this.runCommand(() => moveEvent(this.bundle, filePath, offset, offset), {
 						success: `Event moved by ${result.value} ${result.unit}`,
 						error: "Failed to move event",
 					});
@@ -751,7 +751,7 @@ export class EventContextMenu {
 			const offset = weekDuration(weeks);
 			const command =
 				mode === "move"
-					? () => moveEvent(this.app, this.bundle, filePath, offset, offset)
+					? () => moveEvent(this.bundle, filePath, offset, offset)
 					: () => new CloneEventCommand(this.app, this.bundle, filePath, offset, offset);
 			await this.runCommand(command, {
 				success: `Event ${mode === "move" ? "moved" : "cloned"} to ${direction} week`,
@@ -776,7 +776,7 @@ export class EventContextMenu {
 			const rruleId = isSourceRecurring ? this.getRRuleId(event) : null;
 
 			await this.handlePhysicalInstancesIfNeeded(rruleId, async () => {
-				await this.runCommand(() => new DeleteEventCommand(this.app, this.bundle, filePath), {
+				await this.runCommand(() => new DeleteEventCommand(this.bundle.fileRepository, filePath), {
 					success: "Event deleted successfully",
 					error: "Failed to delete event",
 				});
@@ -791,7 +791,7 @@ export class EventContextMenu {
 			const rruleId = willBeDisabled ? this.getRRuleId(event) : null;
 
 			await this.handlePhysicalInstancesIfNeeded(rruleId, async () => {
-				await this.runCommand(() => toggleSkip(this.app, this.bundle, sourceFilePath), {
+				await this.runCommand(() => toggleSkip(this.bundle, sourceFilePath), {
 					success: "Recurring event toggled",
 					error: "Failed to toggle recurring event",
 				});
@@ -827,7 +827,7 @@ export class EventContextMenu {
 
 	async toggleSkipEvent(event: CalendarEventInfo): Promise<void> {
 		await this.withFilePath(event, "toggle skip event", async (filePath) => {
-			await this.runCommand(() => toggleSkip(this.app, this.bundle, filePath), {
+			await this.runCommand(() => toggleSkip(this.bundle, filePath), {
 				success: "Event skip toggled",
 				error: "Failed to toggle skip event",
 			});
@@ -854,7 +854,7 @@ export class EventContextMenu {
 			const categories = this.bundle.categoryTracker.getCategoriesWithColors();
 
 			openCategoryAssignModal(this.app, categories, settings.defaultNodeColor, currentCategories, (selected) => {
-				void this.runCommand(() => assignCategories(this.app, this.bundle, filePath, selected), {
+				void this.runCommand(() => assignCategories(this.bundle, filePath, selected), {
 					success: "Categories updated",
 					error: "Failed to assign categories",
 				});
@@ -906,7 +906,7 @@ export class EventContextMenu {
 		const propName = field === "start" ? settings.startProp : settings.endProp;
 		await this.withFilePath(event, `fill ${field} time`, async (filePath) => {
 			const now = toLocalISOString(new Date());
-			await this.runCommand(() => fillTime(this.app, filePath, propName, now), {
+			await this.runCommand(() => fillTime(this.bundle, filePath, propName, now), {
 				success: `${field === "start" ? "Start" : "End"} time filled from current time`,
 				error: `Failed to fill ${field} time`,
 			});
@@ -947,7 +947,7 @@ export class EventContextMenu {
 				return;
 			}
 
-			await this.runCommand(() => fillTime(this.app, filePath, config.propertyName, timeValue), {
+			await this.runCommand(() => fillTime(this.bundle, filePath, config.propertyName, timeValue), {
 				success: config.successMessage,
 				error: config.errorMessage,
 			});

@@ -6,17 +6,17 @@ import type { BehaviorSubject } from "rxjs";
 import type { PrismaSyncDataSchema } from "../types";
 import type { SingleCalendarConfig } from "../types/settings";
 import { CategoryTracker } from "./category-tracker";
+import { EventFileRepository } from "./event-file-repository";
 import { EventStore } from "./event-store";
 import { UntrackedEventStore } from "./event-store";
-import { Indexer } from "./indexer";
 import { NameSeriesTracker } from "./name-series-tracker";
 import { NotificationManager } from "./notification-manager";
 import { Parser } from "./parser";
 import { PrerequisiteTracker } from "./prerequisite-tracker";
 import { RecurringEventManager } from "./recurring-event-manager";
 
-interface IndexerEntry {
-	indexer: Indexer;
+interface RegistryEntry {
+	fileRepository: EventFileRepository;
 	parser: Parser;
 	eventStore: EventStore;
 	untrackedEventStore: UntrackedEventStore;
@@ -30,8 +30,8 @@ interface IndexerEntry {
 }
 
 type SharedInfrastructure = Pick<
-	IndexerEntry,
-	| "indexer"
+	RegistryEntry,
+	| "fileRepository"
 	| "parser"
 	| "eventStore"
 	| "untrackedEventStore"
@@ -56,7 +56,7 @@ type SharedInfrastructure = Pick<
  */
 export class IndexerRegistry {
 	private static instance: IndexerRegistry | null = null;
-	private registry: Map<string, IndexerEntry> = new Map();
+	private registry: Map<string, RegistryEntry> = new Map();
 	private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null = null;
 
 	private constructor(private app: App) {}
@@ -79,26 +79,26 @@ export class IndexerRegistry {
 	getOrCreateIndexer(calendarId: string, settingsStore: BehaviorSubject<SingleCalendarConfig>): SharedInfrastructure {
 		const directory = normalizeDirectoryPath(settingsStore.value.directory);
 
-		let entry: IndexerEntry | undefined = this.registry.get(directory);
+		let entry: RegistryEntry | undefined = this.registry.get(directory);
 
 		if (entry) {
 			entry.refCount++;
 			entry.calendarIds.add(calendarId);
 		} else {
-			const indexer = new Indexer(this.app, settingsStore, this.syncStore);
-			const recurringEventManager = new RecurringEventManager(this.app, settingsStore, indexer, this.syncStore);
-			const notificationManager = new NotificationManager(this.app, settingsStore, indexer, this.syncStore);
+			const fileRepository = new EventFileRepository(this.app, settingsStore, this.syncStore);
+			const recurringEventManager = new RecurringEventManager(this.app, settingsStore, fileRepository, this.syncStore);
+			const notificationManager = new NotificationManager(this.app, settingsStore, fileRepository, this.syncStore);
 			const parser = new Parser(this.app, settingsStore);
-			const eventStore = new EventStore(indexer, parser, recurringEventManager, settingsStore);
-			const categoryTracker = new CategoryTracker(this.app, indexer, eventStore, settingsStore);
-			const nameSeriesTracker = new NameSeriesTracker(this.app, indexer, eventStore, settingsStore);
-			const prerequisiteTracker = new PrerequisiteTracker(this.app, indexer, eventStore, settingsStore);
+			const eventStore = new EventStore(fileRepository, parser, recurringEventManager, settingsStore);
+			const categoryTracker = new CategoryTracker(this.app, fileRepository, eventStore, settingsStore);
+			const nameSeriesTracker = new NameSeriesTracker(this.app, fileRepository, eventStore, settingsStore);
+			const prerequisiteTracker = new PrerequisiteTracker(this.app, fileRepository, eventStore, settingsStore);
 			recurringEventManager.setEventStore(eventStore);
 			recurringEventManager.setCategoryTracker(categoryTracker);
-			const untrackedEventStore = new UntrackedEventStore(indexer, settingsStore);
+			const untrackedEventStore = new UntrackedEventStore(fileRepository, settingsStore);
 
 			entry = {
-				indexer,
+				fileRepository,
 				parser,
 				eventStore,
 				untrackedEventStore,
@@ -109,13 +109,13 @@ export class IndexerRegistry {
 				prerequisiteTracker,
 				refCount: 1,
 				calendarIds: new Set([calendarId]),
-			} satisfies IndexerEntry;
+			} satisfies RegistryEntry;
 
 			this.registry.set(directory, entry);
 		}
 
 		return {
-			indexer: entry.indexer,
+			fileRepository: entry.fileRepository,
 			parser: entry.parser,
 			eventStore: entry.eventStore,
 			untrackedEventStore: entry.untrackedEventStore,
@@ -143,7 +143,7 @@ export class IndexerRegistry {
 		entry.refCount--;
 
 		if (entry.refCount <= 0) {
-			entry.indexer.stop();
+			entry.fileRepository.destroy();
 			entry.eventStore.destroy();
 			entry.untrackedEventStore.destroy();
 			entry.parser.destroy();
@@ -158,7 +158,7 @@ export class IndexerRegistry {
 
 	destroy(): void {
 		for (const entry of this.registry.values()) {
-			entry.indexer.stop();
+			entry.fileRepository.destroy();
 			entry.eventStore.destroy();
 			entry.untrackedEventStore.destroy();
 			entry.parser.destroy();

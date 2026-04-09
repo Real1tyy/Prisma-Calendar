@@ -259,7 +259,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		this.register(() => caldavSettingsSubscription.unsubscribe());
 
 		// Subscribe to indexing complete state
-		const indexingCompleteSubscription = this.bundle.indexer.indexingComplete$.subscribe((isComplete) => {
+		const indexingCompleteSubscription = this.bundle.fileRepository.indexingComplete$.subscribe((isComplete) => {
 			this.isIndexingComplete = isComplete;
 			if (isComplete) {
 				this.hideLoading();
@@ -553,12 +553,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			}
 			this.updateToolbar();
 		});
-		this.prerequisiteSelectionManager = new PrerequisiteSelectionManager(
-			this.app,
-			this.calendar,
-			this.bundle,
-			this.container
-		);
+		this.prerequisiteSelectionManager = new PrerequisiteSelectionManager(this.calendar, this.bundle, this.container);
 		this.updateToolbar();
 
 		this.zoomManager.initialize(this.calendar, this.container, this.hostEl);
@@ -1785,7 +1780,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		const settings = this.bundle.settingsStore.currentSettings;
 		const propertyName = propertyGetter(settings);
 
-		void this.bundle.commandManager.executeCommand(fillTime(this.app, filePath, propertyName, timeValue));
+		void this.bundle.commandManager.executeCommand(fillTime(this.bundle, filePath, propertyName, timeValue));
 	}
 
 	// ─── Drag & Drop ─────────────────────────────────────────────
@@ -1907,7 +1902,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 		propertyUpdates.set(settings.dateProp, null);
 		propertyUpdates.set(settings.allDayProp, null);
 
-		const command = updateFrontmatter(this.app, filePath, propertyUpdates);
+		const command = updateFrontmatter(this.bundle, filePath, propertyUpdates);
 		await this.bundle.commandManager.executeCommand(command);
 	}
 
@@ -1942,7 +1937,7 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 						propertyUpdates.set(settings.dateProp, null);
 					}
 
-					const command = updateFrontmatter(this.app, filePath, propertyUpdates);
+					const command = updateFrontmatter(this.bundle, filePath, propertyUpdates);
 					await this.bundle.commandManager.executeCommand(command);
 				}
 			} catch (error) {

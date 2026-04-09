@@ -4,9 +4,9 @@ import { filter } from "rxjs/operators";
 import type { z } from "zod";
 
 import type { Frontmatter } from "../../types";
+import type { CalendarEventSource, IndexerEvent } from "../../types/event-source";
 import type { SingleCalendarConfig } from "../../types/settings";
 import { trashDuplicateFile } from "../../utils/obsidian";
-import type { Indexer, IndexerEvent } from "../indexer";
 
 export interface TrackedSyncEvent<TMetadata> {
 	filePath: string;
@@ -20,7 +20,7 @@ export abstract class BaseSyncStateManager<TMetadata> {
 
 	constructor(
 		protected app: App,
-		indexer: Indexer,
+		eventSource: CalendarEventSource,
 		settings$: BehaviorSubject<SingleCalendarConfig>,
 		getPropFromSettings: (settings: SingleCalendarConfig) => string,
 		private schema: z.ZodType<TMetadata>
@@ -31,7 +31,7 @@ export abstract class BaseSyncStateManager<TMetadata> {
 			this.frontmatterProp = getPropFromSettings(settings);
 		});
 
-		this.indexerSubscription = indexer.events$
+		this.indexerSubscription = eventSource.events$
 			.pipe(filter((event: IndexerEvent) => event.type === "file-changed" || event.type === "file-deleted"))
 			.subscribe((event: IndexerEvent) => {
 				this.handleIndexerEvent(event);

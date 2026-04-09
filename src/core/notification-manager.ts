@@ -7,10 +7,10 @@ import { showNotificationModal } from "../components/modals";
 import { MAX_PAST_NOTIFICATION_THRESHOLD, NOTIFICATION_CHECK_INTERVAL_MS } from "../constants";
 import type { Frontmatter, PrismaSyncDataSchema } from "../types";
 import type { EventMetadata } from "../types/event";
+import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { SingleCalendarConfig } from "../types/settings";
 import { getEventName } from "../utils/event-naming";
 import { getFileByPathOrThrow, openFileInNewTab } from "../utils/obsidian";
-import type { Indexer, IndexerEvent } from "./indexer";
 
 interface NotificationEntry {
 	eventId: string;
@@ -44,7 +44,7 @@ export class NotificationManager {
 	constructor(
 		private app: App,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>,
-		private indexer: Indexer,
+		private eventSource: CalendarEventSource,
 		private syncStore: SyncStore<typeof PrismaSyncDataSchema> | null
 	) {
 		this.settings = settingsStore.value;
@@ -63,7 +63,7 @@ export class NotificationManager {
 		}
 
 		// Listen to indexer events
-		this.indexerSubscription = this.indexer.events$.subscribe((event) => {
+		this.indexerSubscription = this.eventSource.events$.subscribe((event) => {
 			this.handleIndexerEvent(event);
 		});
 

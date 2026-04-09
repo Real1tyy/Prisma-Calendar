@@ -5,9 +5,9 @@ import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
 
 import type { SingleCalendarConfig } from "../types";
+import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { DependencyGraph } from "./dependency-graph";
 import type { EventStore } from "./event-store";
-import type { Indexer, IndexerEvent } from "./indexer";
 
 export class PrerequisiteTracker {
 	private fileToPrerequisites = new Map<string, string[]>();
@@ -24,7 +24,7 @@ export class PrerequisiteTracker {
 
 	constructor(
 		private app: App,
-		private indexer: Indexer,
+		private eventSource: CalendarEventSource,
 		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
@@ -35,13 +35,13 @@ export class PrerequisiteTracker {
 			this.settings = newSettings;
 		});
 
-		this.subscription = this.indexer.events$
+		this.subscription = this.eventSource.events$
 			.pipe(filter((event: IndexerEvent) => event.type === "file-changed" || event.type === "file-deleted"))
 			.subscribe((event: IndexerEvent) => {
 				this.handleIndexerEvent(event);
 			});
 
-		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
+		this.indexingCompleteSubscription = this.eventSource.indexingComplete$.subscribe((isComplete) => {
 			if (isComplete) {
 				this.rebuildAll();
 			}

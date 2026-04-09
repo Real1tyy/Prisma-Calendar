@@ -1,8 +1,8 @@
 import type { App } from "obsidian";
 import type { BehaviorSubject } from "rxjs";
 
+import type { CalendarEventSource } from "../../../types/event-source";
 import type { SingleCalendarConfig } from "../../../types/settings";
-import type { Indexer } from "../../indexer";
 import { BaseSyncStateManager, type TrackedSyncEvent } from "../base-sync-state-manager";
 import { type CalDAVSyncMetadata, CalDAVSyncMetadataSchema } from "./types";
 
@@ -20,8 +20,8 @@ export class CalDAVSyncStateManager extends BaseSyncStateManager<CalDAVSyncMetad
 	 */
 	private globalUidIndex: Map<string, TrackedCalDAVEvent> = new Map();
 
-	constructor(app: App, indexer: Indexer, settings$: BehaviorSubject<SingleCalendarConfig>) {
-		super(app, indexer, settings$, (s) => s.caldavProp, CalDAVSyncMetadataSchema);
+	constructor(app: App, eventSource: CalendarEventSource, settings$: BehaviorSubject<SingleCalendarConfig>) {
+		super(app, eventSource, settings$, (s) => s.caldavProp, CalDAVSyncMetadataSchema);
 	}
 
 	findByUid(accountId: string, calendarHref: string, uid: string): TrackedCalDAVEvent | null {

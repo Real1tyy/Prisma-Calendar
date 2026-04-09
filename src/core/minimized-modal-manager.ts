@@ -6,13 +6,13 @@ import type { Subscription } from "rxjs";
 import { EventCreateModal, EventEditModal, type EventModalData, openCategoryAssignModal } from "../components/modals";
 import type { EventFormState } from "../components/modals/event/event-form-state";
 import type { Frontmatter } from "../types";
+import type { IndexerEvent } from "../types/event-source";
 import type { EventPreset } from "../types/settings";
 import type { StopwatchSnapshot } from "../types/stopwatch";
 import { getEventName } from "../utils/event-naming";
 import { getCategoriesFromFilePath } from "../utils/obsidian";
 import type { CalendarBundle } from "./calendar-bundle";
 import { assignCategories } from "./commands/frontmatter-update-command";
-import type { IndexerEvent } from "./indexer";
 
 /**
  * Base form data shared between presets and modal state.
@@ -156,7 +156,7 @@ class MinimizedModalManagerClass {
 	private subscribeToFileChanges(bundle: CalendarBundle): void {
 		this.unsubscribeFromFileChanges();
 
-		this.indexerSubscription = bundle.indexer.events$.subscribe((event: IndexerEvent) => {
+		this.indexerSubscription = bundle.fileRepository.events$.subscribe((event: IndexerEvent) => {
 			if (!this.savedState || !this.savedState.filePath) {
 				return;
 			}
@@ -320,7 +320,7 @@ class MinimizedModalManagerClass {
 		openCategoryAssignModal(app, categories, defaultColor, currentCategories, (selectedCategories) => {
 			void (async () => {
 				try {
-					const command = assignCategories(app, bundle, state.filePath!, selectedCategories);
+					const command = assignCategories(bundle, state.filePath!, selectedCategories);
 					await bundle.commandManager.executeCommand(command);
 					new Notice("Categories updated for minimized event");
 				} catch (error) {

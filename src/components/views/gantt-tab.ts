@@ -122,7 +122,7 @@ function buildBarMenuItems(
 			onAction: act((ev) => {
 				const settings = bundle.settingsStore.currentSettings;
 				const done = isEventDone(app, ev.ref.filePath, settings.statusProperty, settings.doneValue);
-				exec(done ? markAsUndone(app, bundle, ev.ref.filePath) : markAsDone(app, bundle, ev.ref.filePath));
+				exec(done ? markAsUndone(bundle, ev.ref.filePath) : markAsDone(bundle, ev.ref.filePath));
 			}),
 		},
 		{
@@ -130,7 +130,7 @@ function buildBarMenuItems(
 			label: "Skip event",
 			icon: "eye-off",
 			section: "status",
-			onAction: act((ev) => exec(toggleSkip(app, bundle, ev.ref.filePath))),
+			onAction: act((ev) => exec(toggleSkip(bundle, ev.ref.filePath))),
 		},
 		{
 			id: "assign-prerequisites",
@@ -150,7 +150,7 @@ function buildBarMenuItems(
 				const currentCats = parseIntoList(frontmatter[settings.categoryProp], { splitCommas: true });
 				const categories = bundle.categoryTracker.getCategoriesWithColors();
 				openCategoryAssignModal(app, categories, settings.defaultNodeColor, currentCats, (selected: string[]) => {
-					exec(assignCategories(app, bundle, ev.ref.filePath, selected));
+					exec(assignCategories(bundle, ev.ref.filePath, selected));
 				});
 			}),
 		},
@@ -166,7 +166,7 @@ function buildBarMenuItems(
 			label: "Delete event",
 			icon: "trash",
 			section: "danger",
-			onAction: act((ev) => exec(new DeleteEventCommand(app, bundle, ev.ref.filePath))),
+			onAction: act((ev) => exec(new DeleteEventCommand(bundle.fileRepository, ev.ref.filePath))),
 		},
 	];
 }
@@ -234,7 +234,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				.onClick(() => {
 					const currentPrereqs = bundle.prerequisiteTracker.getPrerequisitesOf(toTask.filePath);
 					const updated = currentPrereqs.filter((p) => p !== fromTask.filePath);
-					exec(assignPrerequisites(app, bundle, toTask.filePath, updated));
+					exec(assignPrerequisites(bundle, toTask.filePath, updated));
 				})
 		);
 		menu.showAtMouseEvent(e);
@@ -252,7 +252,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				}
 				const target = prereqTargetFilePath;
 				exitPrereqSelection();
-				exec(addPrerequisite(app, bundle, target, event.ref.filePath));
+				exec(addPrerequisite(bundle, target, event.ref.filePath));
 				new Notice("Prerequisite assigned");
 				return;
 			}

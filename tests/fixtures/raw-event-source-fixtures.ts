@@ -1,4 +1,4 @@
-import type { RawEventSource } from "../../src/core/indexer";
+import type { RawEventSource } from "../../src/types/event-source";
 import { createDefaultMetadata } from "./event-fixtures";
 
 /** Factory for RawEventSource with default metadata merging. */

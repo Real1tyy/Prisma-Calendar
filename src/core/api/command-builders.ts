@@ -71,7 +71,7 @@ export function buildEditEventCommand(
 		preservedFrontmatter: frontmatter,
 	};
 
-	const command = new EditEventCommand(plugin.app, file.path, eventData);
+	const command = new EditEventCommand(bundle.fileRepository, file.path, eventData);
 	return { command, bundle };
 }
 
@@ -88,6 +88,6 @@ export function buildDeleteEventCommand(
 		return null;
 	}
 
-	const command = new DeleteEventCommand(plugin.app, bundle, file.path);
+	const command = new DeleteEventCommand(bundle.fileRepository, file.path);
 	return { command, bundle };
 }

@@ -2,9 +2,9 @@ import type { BehaviorSubject, Subscription } from "rxjs";
 
 import type { UntrackedEvent } from "../../types/calendar";
 import { eventDefaults } from "../../types/calendar";
+import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../../types/event-source";
 import type { Frontmatter, SingleCalendarConfig } from "../../types/index";
 import { UntrackedFilterEvaluator } from "../../utils/untracked-filter-evaluator";
-import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
 import { IndexedCacheStore } from "./indexed-cache-store";
 
 export class UntrackedEventStore extends IndexedCacheStore<UntrackedEvent> {
@@ -12,8 +12,8 @@ export class UntrackedEventStore extends IndexedCacheStore<UntrackedEvent> {
 	private filterEvaluator: UntrackedFilterEvaluator;
 	private lastFilterExpressions: string[] = [];
 
-	constructor(indexer: Indexer, settingsStore: BehaviorSubject<SingleCalendarConfig>) {
-		super(indexer, new Set(["untracked-file-changed", "file-changed", "file-deleted"]));
+	constructor(eventSource: CalendarEventSource, settingsStore: BehaviorSubject<SingleCalendarConfig>) {
+		super(eventSource, new Set(["untracked-file-changed", "file-changed", "file-deleted"]));
 		this.filterEvaluator = new UntrackedFilterEvaluator(settingsStore);
 		this.lastFilterExpressions = settingsStore.value.untrackedFilterExpressions;
 
@@ -24,7 +24,7 @@ export class UntrackedEventStore extends IndexedCacheStore<UntrackedEvent> {
 			if (filtersChanged) {
 				this.lastFilterExpressions = newSettings.untrackedFilterExpressions;
 				this.cache.clear();
-				this.indexer.resync();
+				this.eventSource.resync();
 			}
 		});
 	}

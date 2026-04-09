@@ -7,11 +7,11 @@ import { MARK_DONE_SCAN_INTERVAL_MS } from "../../constants";
 import type { AllDayEvent, CalendarEvent, TimedEvent } from "../../types/calendar";
 import { eventDefaults, isAnyVirtual, isTimedEvent } from "../../types/calendar";
 import { stripZ } from "../../types/event";
+import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../../types/event-source";
 import type { ISO } from "../../types/index";
 import type { SingleCalendarConfig } from "../../types/settings";
 import type { VirtualEventData } from "../../types/virtual-event";
 import type { HolidayStore } from "../holidays";
-import type { Indexer, IndexerEvent, RawEventSource } from "../indexer";
 import { MinimizedModalManager } from "../minimized-modal-manager";
 import type { Parser } from "../parser";
 import type { RecurringEventManager } from "../recurring-event-manager";
@@ -46,12 +46,12 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 	// ─── Lifecycle ────────────────────────────────────────────────
 
 	constructor(
-		indexer: Indexer,
+		eventSource: CalendarEventSource,
 		private parser: Parser,
 		private recurringEventManager: RecurringEventManager,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
-		super(indexer, new Set(["file-changed", "untracked-file-changed", "file-deleted"]));
+		super(eventSource, new Set(["file-changed", "untracked-file-changed", "file-deleted"]));
 
 		this.settings = settingsStore.value;
 
@@ -68,7 +68,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 			}
 		});
 
-		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
+		this.indexingCompleteSubscription = this.eventSource.indexingComplete$.subscribe((isComplete) => {
 			if (isComplete) {
 				this.flushPendingRefresh();
 				if (this.settings.markPastInstancesAsDone) {
@@ -435,7 +435,7 @@ export class EventStore extends IndexedCacheStore<CalendarEvent> {
 			const isPast = isTimedEvent(event) ? event.end < nowIso : event.start < endOfTodayIso;
 			if (!isPast) continue;
 
-			void this.indexer.markFileAsDone(event.ref.filePath);
+			void this.eventSource.markFileAsDone(event.ref.filePath);
 		}
 	}
 

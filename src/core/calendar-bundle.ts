@@ -29,9 +29,9 @@ import {
 	DeleteVirtualEventCommand,
 	EditEventCommand,
 } from "./commands";
+import type { EventFileRepository } from "./event-file-repository";
 import type { EventStore, UntrackedEventStore } from "./event-store";
 import { type HolidayConfig, HolidayStore } from "./holidays";
-import type { Indexer } from "./indexer";
 import { IndexerRegistry } from "./indexer-registry";
 import { CalDAVSyncService } from "./integrations/caldav/sync";
 import { CalDAVSyncStateManager } from "./integrations/caldav/sync-state-manager";
@@ -50,7 +50,7 @@ import { VirtualEventStore } from "./virtual-event-store";
 export class CalendarBundle {
 	// ─── Lifecycle ───────────────────────────────────────────────
 	public readonly settingsStore: CalendarSettingsStore;
-	public readonly indexer: Indexer;
+	public readonly fileRepository: EventFileRepository;
 	public readonly parser: Parser;
 	public readonly eventStore: EventStore;
 	public readonly untrackedEventStore: UntrackedEventStore;
@@ -98,7 +98,7 @@ export class CalendarBundle {
 		this.indexerRegistry = IndexerRegistry.getInstance(this.app);
 
 		const {
-			indexer,
+			fileRepository,
 			parser,
 			eventStore,
 			untrackedEventStore,
@@ -109,7 +109,7 @@ export class CalendarBundle {
 			prerequisiteTracker,
 		} = this.indexerRegistry.getOrCreateIndexer(this.calendarId, this.settingsStore.settings$);
 
-		this.indexer = indexer;
+		this.fileRepository = fileRepository;
 		this.parser = parser;
 		this.eventStore = eventStore;
 		this.untrackedEventStore = untrackedEventStore;
@@ -120,10 +120,14 @@ export class CalendarBundle {
 		this.prerequisiteTracker = prerequisiteTracker;
 
 		this.templateService = new TemplaterService(this.app);
-		this.caldavSyncStateManager = new CalDAVSyncStateManager(this.app, this.indexer, this.settingsStore.settings$);
+		this.caldavSyncStateManager = new CalDAVSyncStateManager(
+			this.app,
+			this.fileRepository,
+			this.settingsStore.settings$
+		);
 		this.icsSubscriptionSyncStateManager = new ICSSubscriptionSyncStateManager(
 			this.app,
-			this.indexer,
+			this.fileRepository,
 			this.settingsStore.settings$
 		);
 		this.viewStateManager = new CalendarViewStateManager();
@@ -155,9 +159,9 @@ export class CalendarBundle {
 	async initialize(): Promise<void> {
 		return await onceAsync(async () => {
 			await this.notificationManager.start();
+			await this.fileRepository.start();
 			await this.virtualEventStore.initialize();
-			void this.indexer.start();
-			await firstValueFrom(this.indexer.indexingComplete$.pipe(filter((complete) => complete)));
+			await firstValueFrom(this.fileRepository.indexingComplete$.pipe(filter((complete) => complete)));
 
 			registerPrismaCalendarView(this.plugin, this, this.viewRef);
 
@@ -259,7 +263,7 @@ export class CalendarBundle {
 
 		// Release shared infrastructure through registry (will only destroy if no other calendars are using it)
 		this.indexerRegistry.releaseIndexer(this.calendarId, this.directory);
-		// Don't destroy indexer/parser/eventStore/recurringEventManager directly - the registry handles that
+		// Don't destroy fileRepository/parser/eventStore/recurringEventManager directly - the registry handles that
 		this.settingsStore?.destroy?.();
 	}
 
@@ -366,7 +370,7 @@ export class CalendarBundle {
 		// whose mtime hasn't changed, causing the refresh to have no effect
 		this.eventStore.clearWithoutNotify();
 		this.recurringEventManager.clearWithoutNotify();
-		this.indexer.resync();
+		this.fileRepository.resync();
 	}
 
 	getCalDAVSettings() {
@@ -511,7 +515,7 @@ export class CalendarBundle {
 				...eventData,
 				end: eventData.end ?? undefined,
 			};
-			const editCommand = new EditEventCommand(this.app, finalFilePath, eventDataForCommand);
+			const editCommand = new EditEventCommand(this.fileRepository, finalFilePath, eventDataForCommand);
 
 			if (zettelIdCommand || pathBeforeTitleRename) {
 				await editCommand.execute();

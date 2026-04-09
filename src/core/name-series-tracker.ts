@@ -9,6 +9,7 @@ import { filter } from "rxjs/operators";
 
 import { PROPAGATION_DEBOUNCE_MS } from "../constants";
 import type { CalendarEvent } from "../types/calendar";
+import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { Frontmatter, SingleCalendarConfig } from "../types/index";
 import {
 	applyFrontmatterChangesToInstance,
@@ -18,7 +19,6 @@ import {
 import { getEventName } from "../utils/event-naming";
 import { batchedPromiseAll } from "../utils/obsidian";
 import type { EventStore } from "./event-store";
-import type { Indexer, IndexerEvent } from "./indexer";
 
 /**
  * Tracks name-based event series and handles frontmatter propagation
@@ -50,7 +50,7 @@ export class NameSeriesTracker {
 
 	constructor(
 		private app: App,
-		private indexer: Indexer,
+		private eventSource: CalendarEventSource,
 		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
@@ -73,13 +73,13 @@ export class NameSeriesTracker {
 			}
 		});
 
-		this.subscription = this.indexer.events$
+		this.subscription = this.eventSource.events$
 			.pipe(filter((event: IndexerEvent) => event.type === "file-changed" || event.type === "file-deleted"))
 			.subscribe((event: IndexerEvent) => {
 				this.handleIndexerEvent(event);
 			});
 
-		this.indexingCompleteSubscription = this.indexer.indexingComplete$.subscribe((isComplete) => {
+		this.indexingCompleteSubscription = this.eventSource.indexingComplete$.subscribe((isComplete) => {
 			if (isComplete) {
 				this.rebuild();
 			}
