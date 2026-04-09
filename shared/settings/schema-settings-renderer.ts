@@ -29,7 +29,7 @@ function buildFieldKey(keyPrefix: string, fieldKey: string): string {
 }
 
 function resolveFieldName(descriptor: SchemaFieldDescriptor, override?: SchemaSettingsFieldOverride): string {
-	return override?.name ?? camelCaseToLabel(descriptor.key);
+	return override?.label ?? camelCaseToLabel(descriptor.key);
 }
 
 function resolveFieldDesc(descriptor: SchemaFieldDescriptor, override?: SchemaSettingsFieldOverride): string {

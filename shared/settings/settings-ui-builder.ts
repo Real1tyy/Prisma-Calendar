@@ -52,7 +52,7 @@ interface OptionalColorPickerSettingConfig {
 
 export interface SchemaFieldOverrides {
 	key?: string;
-	name?: string;
+	label?: string;
 	desc?: string;
 	step?: number;
 	commitOnChange?: boolean;
@@ -867,7 +867,7 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 		const fieldKey = settingsKey.includes(".") ? settingsKey.split(".").pop()! : settingsKey;
 		const descriptor = introspectField(fieldKey, field);
 
-		const name = overrides?.name ?? descriptor.label;
+		const name = overrides?.label ?? descriptor.label;
 		const desc = overrides?.desc ?? descriptor.description ?? "";
 		const baseConfig = {
 			key: settingsKey,

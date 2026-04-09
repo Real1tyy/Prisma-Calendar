@@ -1,18 +1,12 @@
 import type { App, ItemView, WorkspaceLeaf } from "obsidian";
 import { z } from "zod";
 
+import { CustomizableUIBaseStateSchema } from "../core/customizable-ui-state";
+
 /** Zod schema for persisted page header state. Embed in plugin settings schemas. */
-export const PageHeaderStateSchema = z.object({
+export const PageHeaderStateSchema = CustomizableUIBaseStateSchema.extend({
 	/** Ordered list of visible action IDs. When absent, all actions shown in default order. */
 	visibleActionIds: z.array(z.string()).optional().catch(undefined),
-	/** Custom labels keyed by action ID. */
-	renames: z.record(z.string(), z.string()).optional().catch(undefined),
-	/** Custom icons keyed by action ID. */
-	iconOverrides: z.record(z.string(), z.string()).optional().catch(undefined),
-	/** Custom colors keyed by action ID. */
-	colorOverrides: z.record(z.string(), z.string()).optional().catch(undefined),
-	/** Whether the settings gear button is shown in the header. Default: true. */
-	showSettingsButton: z.boolean().optional().catch(undefined),
 });
 
 /** Serializable snapshot of page header state. Safe to persist in plugin settings. */

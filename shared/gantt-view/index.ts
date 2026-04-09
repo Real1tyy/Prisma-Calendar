@@ -9,7 +9,7 @@ export type {
 	PackedTask,
 	Viewport,
 } from "./gantt-types";
-export { GANTT_DEFAULTS, MS_PER_DAY } from "./gantt-types";
+export { GANTT_DEFAULTS, GanttConfigSchema, MS_PER_DAY } from "./gantt-types";
 export type { PanState } from "./pan-handler";
 export { createPanHandler } from "./pan-handler";
 export type { GanttRenderData, GanttRendererConfig, GanttRendererHandle, LayoutFn } from "./render/gantt-renderer";

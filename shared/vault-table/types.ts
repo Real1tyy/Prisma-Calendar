@@ -71,6 +71,14 @@ export type VaultTableConfig<
 > = VaultTableDef<TData, TSchema, TChildren> & {
 	app: App;
 	directory: string;
+	/**
+	 * When true, CRUD methods (create/update/delete) emit events$ immediately
+	 * instead of relying on the indexer to detect the change on disk.
+	 * By default, VaultTable suppresses events for self-initiated writes
+	 * (mtime dedup) so only external file changes produce events.
+	 * Enable this when consumers subscribe to events$ for reactivity.
+	 */
+	emitCrudEvents?: boolean;
 };
 
 export interface VaultRow<TData> {

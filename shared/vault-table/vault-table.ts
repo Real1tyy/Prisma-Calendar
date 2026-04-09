@@ -59,6 +59,7 @@ export class VaultTable<
 	private readonly fileNameFilter?: (fileName: string) => boolean;
 	private readonly filePathResolver: (directory: string, fileName: string) => string;
 	private readonly childDefs: TChildren | undefined;
+	private readonly emitCrudEvents: boolean;
 	private templatePath: string | undefined;
 	private parentLink: { property: string; displayLink: string } | undefined;
 
@@ -94,6 +95,7 @@ export class VaultTable<
 			throw new Error('VaultTable: children are only supported when nodeType is "folderNotes"');
 		}
 		this.childDefs = config.children;
+		this.emitCrudEvents = config.emitCrudEvents ?? false;
 		this.templatePath = config.templatePath;
 
 		this.commandManager = this.buildCommandManager(config.history);
@@ -280,6 +282,10 @@ export class VaultTable<
 		const row = this.buildRow(id, file, filePath, validated, content, file.stat.mtime);
 		this.insertRow(row);
 
+		if (this.emitCrudEvents) {
+			this.eventsSubject.next({ type: "row-created", id, filePath, row });
+		}
+
 		return row;
 	}
 
@@ -304,6 +310,17 @@ export class VaultTable<
 		this.removeRow(existing.id);
 		this.insertRow(newRow);
 
+		if (this.emitCrudEvents) {
+			this.eventsSubject.next({
+				type: "row-updated",
+				id: key,
+				filePath: newRow.filePath,
+				oldRow: { ...existing },
+				newRow,
+				contentChanged: false,
+			});
+		}
+
 		return newRow;
 	}
 
@@ -323,6 +340,17 @@ export class VaultTable<
 		this.removeRow(existing.id);
 		this.insertRow(newRow);
 
+		if (this.emitCrudEvents) {
+			this.eventsSubject.next({
+				type: "row-updated",
+				id: key,
+				filePath: newRow.filePath,
+				oldRow: { ...existing },
+				newRow,
+				contentChanged: true,
+			});
+		}
+
 		return newRow;
 	}
 
@@ -330,6 +358,10 @@ export class VaultTable<
 		const existing = this.require(key);
 		await this.app.vault.trash(existing.file, true);
 		this.removeRow(existing.id);
+
+		if (this.emitCrudEvents) {
+			this.eventsSubject.next({ type: "row-deleted", id: key, filePath: existing.filePath, oldRow: { ...existing } });
+		}
 	}
 
 	private async doReadFileContent(key: string): Promise<string> {

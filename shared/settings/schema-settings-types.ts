@@ -5,7 +5,7 @@ import type { SettingsFooterLink } from "../components/settings-navigation";
 import type { SettingsStore } from "./settings-store";
 
 interface BaseFieldOverride {
-	name?: string;
+	label?: string;
 	desc?: string;
 	hidden?: boolean;
 	render?: (el: HTMLElement, value: unknown, onChange: (v: unknown) => void) => void;

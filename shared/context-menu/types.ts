@@ -1,20 +1,14 @@
 import type { App } from "obsidian";
 import { z } from "zod";
 
+import { CustomizableUIBaseStateSchema } from "../core/customizable-ui-state";
+
 /** Zod schema for persisted context menu state. Embed in plugin settings schemas. */
-export const ContextMenuStateSchema = z.object({
+export const ContextMenuStateSchema = CustomizableUIBaseStateSchema.extend({
 	/** Ordered list of visible item IDs. When absent, all items shown in default order. */
 	visibleItemIds: z.array(z.string()).optional().catch(undefined),
-	/** Custom labels keyed by item ID. */
-	renames: z.record(z.string(), z.string()).optional().catch(undefined),
-	/** Custom icons keyed by item ID. */
-	iconOverrides: z.record(z.string(), z.string()).optional().catch(undefined),
-	/** Custom colors keyed by item ID. */
-	colorOverrides: z.record(z.string(), z.string()).optional().catch(undefined),
 	/** Section reassignments keyed by item ID. Only stores overrides — items keep their default section unless moved. */
 	sectionOverrides: z.record(z.string(), z.string()).optional().catch(undefined),
-	/** Whether the settings gear item is shown at the bottom of the menu. Default: true. */
-	showSettingsButton: z.boolean().optional().catch(undefined),
 });
 
 /** Serializable snapshot of context menu state. Safe to persist in plugin settings. */
