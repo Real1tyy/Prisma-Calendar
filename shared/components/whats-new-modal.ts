@@ -2,6 +2,7 @@ import type { App, Plugin } from "obsidian";
 import { MarkdownRenderer, Modal } from "obsidian";
 
 import { formatChangelogSections, getChangelogSince } from "../string";
+import { injectWhatsNewStyles } from "./whats-new-styles";
 
 /**
  * Default URLs for the What's New modal.
@@ -416,6 +417,8 @@ export class WhatsNewModal extends Modal {
 	}
 
 	override async onOpen() {
+		injectWhatsNewStyles(this.config.cssPrefix);
+
 		const { contentEl } = this;
 		contentEl.empty();
 
