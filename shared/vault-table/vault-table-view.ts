@@ -1,6 +1,7 @@
 import { type Observable, Subject, type Subscription } from "rxjs";
 
 import type { SerializableSchema } from "./create-mapped-schema";
+import { ReactiveGroupBy, ReactiveMultiGroupBy } from "./reactive-group-by";
 import type { VaultRow, VaultTableEvent } from "./types";
 import type { VaultTable } from "./vault-table";
 
@@ -106,6 +107,20 @@ export class VaultTableView<TData, TSchema extends SerializableSchema<TData> = S
 
 	every(predicate: (row: VaultRow<TData>) => boolean): boolean {
 		return this.rows.every(predicate);
+	}
+
+	// =========================================================================
+	// Reactive Grouping
+	// =========================================================================
+
+	/** Creates a reactive 1:1 grouped index that stays in sync with this view */
+	createGroupBy<K>(keyFn: (row: VaultRow<TData>) => K | null): ReactiveGroupBy<TData, K> {
+		return new ReactiveGroupBy(this.toArray(), this.events$, keyFn);
+	}
+
+	/** Creates a reactive multi-group index (row → multiple keys) that stays in sync */
+	createMultiGroupBy<K>(keysFn: (row: VaultRow<TData>) => K[]): ReactiveMultiGroupBy<TData, K> {
+		return new ReactiveMultiGroupBy(this.toArray(), this.events$, keysFn);
 	}
 
 	// =========================================================================

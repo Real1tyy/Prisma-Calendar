@@ -1,5 +1,6 @@
 export * from "./create-mapped-schema";
 export * from "./note-decorator";
+export * from "./reactive-group-by";
 export * from "./table-view";
 export * from "./types";
 export * from "./vault-table";
