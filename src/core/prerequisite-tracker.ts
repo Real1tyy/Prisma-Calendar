@@ -1,22 +1,25 @@
-import type { Frontmatter } from "@real1ty-obsidian-plugins";
-import { areSetsEqual, parseLinkedList } from "@real1ty-obsidian-plugins";
+import type { Frontmatter, VaultTableEvent } from "@real1ty-obsidian-plugins";
+import { areSetsEqual, parseLinkedList, VaultTableView } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
-import { filter } from "rxjs/operators";
 
 import type { SingleCalendarConfig } from "../types";
-import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { DependencyGraph } from "./dependency-graph";
+import type { EventFileRepository } from "./event-file-repository";
 import type { EventStore } from "./event-store";
 
-export class PrerequisiteTracker {
+/**
+ * Tracks task dependencies (prerequisites → dependents) as a directed graph.
+ * Extends VaultTableView over all tracked files — the view manages file lifecycle,
+ * and the graph is rebuilt incrementally from view events.
+ */
+export class PrerequisiteTracker extends VaultTableView<Frontmatter> {
 	private fileToPrerequisites = new Map<string, string[]>();
 	private fileToDependents = new Map<string, Set<string>>();
 	private connectedFiles = new Set<string>();
 	private graphSubject = new BehaviorSubject<DependencyGraph>(new Map());
 
-	private subscription: Subscription | null = null;
-	private indexingCompleteSubscription: Subscription | null = null;
+	private viewEventsSub: Subscription | null = null;
 	private settingsSubscription: Subscription | null = null;
 	private settings: SingleCalendarConfig;
 
@@ -24,10 +27,12 @@ export class PrerequisiteTracker {
 
 	constructor(
 		private app: App,
-		private eventSource: CalendarEventSource,
+		repo: EventFileRepository,
 		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
+		super(repo.getTable(), { filter: () => true });
+
 		this.settings = settingsStore.value;
 		this.graph$ = this.graphSubject.asObservable();
 
@@ -35,30 +40,23 @@ export class PrerequisiteTracker {
 			this.settings = newSettings;
 		});
 
-		this.subscription = this.eventSource.events$
-			.pipe(filter((event: IndexerEvent) => event.type === "file-changed" || event.type === "file-deleted"))
-			.subscribe((event: IndexerEvent) => {
-				this.handleIndexerEvent(event);
-			});
-
-		this.indexingCompleteSubscription = this.eventSource.indexingComplete$.subscribe((isComplete) => {
-			if (isComplete) {
-				this.rebuildAll();
-			}
+		this.viewEventsSub = this.events$.subscribe((event) => {
+			this.handleViewEvent(event);
 		});
 	}
 
-	// ─── Event Handling ──────────────────────────────────────────
+	// ─── View Event Handling ─────────────────────────────────────
 
-	private handleIndexerEvent(event: IndexerEvent): void {
+	private handleViewEvent(event: VaultTableEvent<Frontmatter>): void {
 		switch (event.type) {
-			case "file-changed":
-				if (event.source) {
-					this.updateFile(event.filePath, event.source.frontmatter);
-				}
+			case "row-created":
+				this.updateFileGraph(event.filePath, event.row.data);
 				break;
-			case "file-deleted":
-				this.removeFile(event.filePath);
+			case "row-updated":
+				this.updateFileGraph(event.filePath, event.newRow.data);
+				break;
+			case "row-deleted":
+				this.removeFileFromGraph(event.filePath);
 				break;
 		}
 	}
@@ -89,9 +87,7 @@ export class PrerequisiteTracker {
 		}
 	}
 
-	// ─── Incremental Updates ─────────────────────────────────────
-
-	private updateFile(filePath: string, frontmatter: Frontmatter): void {
+	private updateFileGraph(filePath: string, frontmatter: Frontmatter): void {
 		const prerequisiteProp = this.settings.prerequisiteProp;
 		if (!prerequisiteProp) return;
 
@@ -112,7 +108,7 @@ export class PrerequisiteTracker {
 		this.notifyChange();
 	}
 
-	private removeFile(filePath: string): void {
+	private removeFileFromGraph(filePath: string): void {
 		const prereqs = this.fileToPrerequisites.get(filePath);
 		if (prereqs) {
 			this.unlinkPrerequisites(filePath, prereqs);
@@ -139,9 +135,8 @@ export class PrerequisiteTracker {
 		}
 	}
 
-	// ─── Full Rebuild ────────────────────────────────────────────
-
-	private rebuildAll(): void {
+	/** Rebuilds the full dependency graph from EventStore — called after initial indexing */
+	rebuildAll(): void {
 		this.fileToPrerequisites.clear();
 		this.fileToDependents.clear();
 		this.connectedFiles.clear();
@@ -206,13 +201,12 @@ export class PrerequisiteTracker {
 
 	// ─── Lifecycle ───────────────────────────────────────────────
 
-	destroy(): void {
-		this.subscription?.unsubscribe();
-		this.subscription = null;
-		this.indexingCompleteSubscription?.unsubscribe();
-		this.indexingCompleteSubscription = null;
+	override destroy(): void {
+		this.viewEventsSub?.unsubscribe();
+		this.viewEventsSub = null;
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
 		this.graphSubject.complete();
+		super.destroy();
 	}
 }

@@ -1,24 +1,19 @@
 import {
-	type FrontmatterDiff,
-	FrontmatterPropagationDebouncer,
+	FrontmatterPropagator,
 	parseIntoList,
+	type ReactiveMultiGroupBy,
 	showFrontmatterPropagationModal,
+	VaultTableView,
 } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
-import { filter } from "rxjs/operators";
 
 import { PROPAGATION_DEBOUNCE_MS } from "../constants";
 import type { Frontmatter } from "../types";
 import type { CalendarEvent } from "../types/calendar";
-import type { CalendarEventSource, IndexerEvent } from "../types/event-source";
 import type { SingleCalendarConfig } from "../types/index";
-import {
-	applyFrontmatterChangesToInstance,
-	filterExcludedPropsFromDiff,
-	getExcludedProps,
-} from "../utils/event-frontmatter";
-import { batchedPromiseAll } from "../utils/obsidian";
+import { applyFrontmatterChangesToInstance, getExcludedProps } from "../utils/event-frontmatter";
+import type { EventFileRepository } from "./event-file-repository";
 import type { EventStore } from "./event-store";
 
 export interface CategoryInfo {
@@ -34,170 +29,125 @@ export interface CategoryStats {
 
 /**
  * Tracks all unique categories across events in the calendar.
- * Maintains a map of category -> CalendarEvent[] for efficient access.
- * Categories are extracted from frontmatter during indexing and maintained
- * as a reactive map that updates as events are added, modified, or deleted.
- * Also resolves category colors from color rules in settings.
+ * Extends VaultTableView filtered to files that have categories.
+ * Uses ReactiveMultiGroupBy for category grouping.
  */
-export class CategoryTracker {
-	private categoryToEvents = new Map<string, CalendarEvent[]>();
-	private fileToCategories = new Map<string, Set<string>>();
+export class CategoryTracker extends VaultTableView<Frontmatter> {
 	private categoriesSubject = new BehaviorSubject<CategoryInfo[]>([]);
-	private subscription: Subscription | null = null;
-	private indexingCompleteSubscription: Subscription | null = null;
+	private viewEventsSub: Subscription | null = null;
 	private settingsSubscription: Subscription | null = null;
 	private settings: SingleCalendarConfig;
-
-	/** File paths currently being propagated to — prevents infinite loops */
-	private propagatingFilePaths = new Set<string>();
-	private propagationDebouncer: FrontmatterPropagationDebouncer<{
-		sourceFrontmatter: Frontmatter;
-		filePath: string;
-		categoryValue: string;
-	}>;
+	private readonly propagator: FrontmatterPropagator;
+	private readonly categoryGroups: ReactiveMultiGroupBy<Frontmatter, string>;
 
 	public readonly categories$: Observable<CategoryInfo[]>;
 
 	constructor(
-		private app: App,
-		private eventSource: CalendarEventSource,
+		app: App,
+		repo: EventFileRepository,
 		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
-		this.settings = settingsStore.value;
+		const settings = settingsStore.value;
+		super(repo.getTable(), {
+			filter: (row) => {
+				if (!settings.categoryProp) return false;
+				return parseIntoList(row.data[settings.categoryProp]).length > 0;
+			},
+		});
+
+		this.settings = settings;
 		this.categories$ = this.categoriesSubject.asObservable();
-		this.propagationDebouncer = new FrontmatterPropagationDebouncer({
+
+		this.categoryGroups = this.createMultiGroupBy((row) =>
+			settings.categoryProp ? parseIntoList(row.data[settings.categoryProp]) : []
+		);
+
+		this.propagator = new FrontmatterPropagator(app, {
 			debounceMs: PROPAGATION_DEBOUNCE_MS,
-			filterDiff: (diff) =>
-				filterExcludedPropsFromDiff(diff, getExcludedProps(this.settings, this.settings.excludedCategorySeriesProps)),
+			debounceKeyPrefix: "category",
+			isEnabled: () => this.settings.propagateFrontmatterToCategorySeries,
+			isAskBefore: () => this.settings.askBeforePropagatingToCategorySeries,
+			getExcludedProps: () => getExcludedProps(this.settings, this.settings.excludedCategorySeriesProps),
+			getModalTitle: (groupKey) => `Category series: ${groupKey}`,
+			showModal: showFrontmatterPropagationModal,
+			applyChanges: (a, targetPath, sourceFm, diff) =>
+				applyFrontmatterChangesToInstance(
+					a,
+					targetPath,
+					sourceFm,
+					diff,
+					getExcludedProps(this.settings, this.settings.excludedCategorySeriesProps)
+				),
+			resolveTargets: (filePath, groupKey) => this.getFilePathsWithCategory(groupKey).filter((fp) => fp !== filePath),
 		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
 			this.settings = newSettings;
 		});
 
-		this.subscription = this.eventSource.events$
-			.pipe(filter((event: IndexerEvent) => event.type === "file-changed" || event.type === "file-deleted"))
-			.subscribe((event: IndexerEvent) => {
-				this.handleIndexerEvent(event);
-			});
+		this.viewEventsSub = this.events$.subscribe((event) => {
+			this.categoriesSubject.next(this.buildCategoryInfoList());
 
-		this.indexingCompleteSubscription = this.eventSource.indexingComplete$.subscribe((isComplete) => {
-			if (isComplete) {
-				this.rebuildCategoryMaps();
+			if (event.type === "row-updated" && event.diff?.hasChanges && !this.propagator.isPropagating(event.filePath)) {
+				const categoryProp = this.settings.categoryProp;
+				if (categoryProp) {
+					for (const cat of parseIntoList(event.newRow.data[categoryProp])) {
+						if (this.categoryGroups.getGroup(cat).length >= 2) {
+							this.propagator.handleDiff(event.filePath, event.newRow.data, event.diff, cat);
+						}
+					}
+				}
 			}
 		});
 	}
 
-	private handleIndexerEvent(event: IndexerEvent): void {
-		switch (event.type) {
-			case "file-changed":
-				if (event.source) {
-					this.updateFileCategories(event.filePath, event.source.frontmatter);
+	// ─── Public Query API ────────────────────────────────────────
 
-					// Handle category propagation if there's a frontmatter diff
-					if (event.frontmatterDiff?.hasChanges && !this.propagatingFilePaths.has(event.filePath)) {
-						this.handleCategoryPropagation(event.filePath, event.source.frontmatter, event.frontmatterDiff);
-					}
-				}
-				break;
-			case "file-deleted":
-				this.removeFile(event.filePath);
-				break;
-		}
+	getCategories(): string[] {
+		return this.categoryGroups.getKeys().sort((a, b) => a.localeCompare(b));
 	}
 
-	private addEventToCategories(event: CalendarEvent): void {
-		if (!this.settings.categoryProp) return;
-
-		const categories = event.metadata.categories ?? [];
-		for (const category of categories) {
-			if (!this.categoryToEvents.has(category)) {
-				this.categoryToEvents.set(category, []);
-			}
-			const events = this.categoryToEvents.get(category)!;
-			const existingIndex = events.findIndex((e) => e.ref.filePath === event.ref.filePath);
-			if (existingIndex >= 0) {
-				events[existingIndex] = event;
-			} else {
-				events.push(event);
-			}
-		}
+	getCategoriesWithColors(): CategoryInfo[] {
+		return this.buildCategoryInfoList();
 	}
 
-	private rebuildCategoryMaps(): void {
-		this.categoryToEvents.clear();
-
-		const allEvents = this.eventStore.getAllEvents();
-		for (const event of allEvents) {
-			this.addEventToCategories(event);
-		}
-
-		this.notifyChange();
+	getEventsWithCategory(category: string): CalendarEvent[] {
+		return this.categoryGroups
+			.getGroup(category)
+			.map((row) => this.eventStore.getEventByPath(row.filePath))
+			.filter((e): e is CalendarEvent => e !== null);
 	}
 
-	private removeCategoriesFromFile(filePath: string, categoriesToRemove: Set<string>): void {
-		for (const category of categoriesToRemove) {
-			const events = this.categoryToEvents.get(category);
-			if (events) {
-				const filtered = events.filter((e) => e.ref.filePath !== filePath);
-				if (filtered.length === 0) {
-					this.categoryToEvents.delete(category);
-				} else {
-					this.categoryToEvents.set(category, filtered);
-				}
-			} else {
-				console.error(
-					`[CategoryTracker] Category ${category} not found for file ${filePath}, this should not happen, please report this as a bug.`
-				);
-			}
-		}
+	getCategoryStats(category: string): CategoryStats {
+		const events = this.getEventsWithCategory(category);
+		return {
+			total: events.length,
+			timed: events.filter((e) => e.type === "timed").length,
+			allDay: events.filter((e) => e.type === "allDay").length,
+		};
 	}
 
-	private updateFileCategories(filePath: string, frontmatter: Frontmatter): void {
-		const categoryProp = this.settings.categoryProp;
-		if (!categoryProp) return;
-
-		const oldCategories = this.fileToCategories.get(filePath) || new Set<string>();
-		const newCategories = new Set<string>(parseIntoList(frontmatter[categoryProp]));
-		const categoriesToRemove = new Set([...oldCategories].filter((cat) => !newCategories.has(cat)));
-
-		if (categoriesToRemove.size > 0) {
-			this.removeCategoriesFromFile(filePath, categoriesToRemove);
-		}
-
-		if (newCategories.size > 0) {
-			this.fileToCategories.set(filePath, newCategories);
-		} else {
-			this.fileToCategories.delete(filePath);
-		}
-
-		const event = this.eventStore.getEventByPath(filePath);
-		if (event) {
-			this.addEventToCategories(event);
-		}
-
-		this.notifyChange();
+	getAllFilesWithCategories(): Set<string> {
+		return new Set(this.toArray().map((row) => row.filePath));
 	}
 
-	private removeFile(filePath: string): void {
-		const categories = this.fileToCategories.get(filePath);
-		if (!categories) return;
-
-		this.removeCategoriesFromFile(filePath, categories);
-
-		this.fileToCategories.delete(filePath);
-		this.notifyChange();
+	getCategoryColor(category: string): string {
+		return this.resolveCategoryColor(category);
 	}
 
-	private notifyChange(): void {
-		const categories = this.buildCategoryInfoList();
-		this.categoriesSubject.next(categories);
+	clear(): void {
+		this.categoriesSubject.next([]);
+	}
+
+	// ─── Internal ────────────────────────────────────────────────
+
+	private getFilePathsWithCategory(category: string): string[] {
+		return this.categoryGroups.getGroup(category).map((row) => row.filePath);
 	}
 
 	private buildCategoryInfoList(): CategoryInfo[] {
-		const categoryNames = Array.from(this.categoryToEvents.keys()).sort((a, b) => a.localeCompare(b));
-		return categoryNames.map((name) => ({
+		return this.getCategories().map((name) => ({
 			name,
 			color: this.resolveCategoryColor(name),
 		}));
@@ -219,114 +169,14 @@ export class CategoryTracker {
 		return this.settings.defaultNodeColor;
 	}
 
-	getCategories(): string[] {
-		return Array.from(this.categoryToEvents.keys()).sort((a, b) => a.localeCompare(b));
-	}
-
-	getCategoriesWithColors(): CategoryInfo[] {
-		return this.buildCategoryInfoList();
-	}
-
-	getEventsWithCategory(category: string): CalendarEvent[] {
-		return this.categoryToEvents.get(category) || [];
-	}
-
-	getCategoryStats(category: string): CategoryStats {
-		const events = this.getEventsWithCategory(category);
-		return {
-			total: events.length,
-			timed: events.filter((e) => e.type === "timed").length,
-			allDay: events.filter((e) => e.type === "allDay").length,
-		};
-	}
-
-	getAllFilesWithCategories(): Set<string> {
-		return new Set(this.fileToCategories.keys());
-	}
-
-	getCategoryColor(category: string): string {
-		return this.resolveCategoryColor(category);
-	}
-
-	clear(): void {
-		this.categoryToEvents.clear();
-		this.fileToCategories.clear();
-		this.notifyChange();
-	}
-
-	// --- Category propagation ---
-
-	private handleCategoryPropagation(filePath: string, sourceFrontmatter: Frontmatter, diff: FrontmatterDiff): void {
-		const enabled =
-			this.settings.propagateFrontmatterToCategorySeries || this.settings.askBeforePropagatingToCategorySeries;
-		if (!enabled) return;
-
-		const categoryProp = this.settings.categoryProp;
-		if (!categoryProp) return;
-
-		const categoryValues = parseIntoList(sourceFrontmatter[categoryProp]);
-		for (const categoryValue of categoryValues) {
-			const categoryEvents = this.getEventsWithCategory(categoryValue);
-			if (categoryEvents.length >= 2) {
-				const debounceKey = `category:${categoryValue}`;
-				const context = { sourceFrontmatter, filePath, categoryValue };
-
-				this.propagationDebouncer.schedule(debounceKey, diff, context, (filteredDiff, ctx) => {
-					const targetFilePaths = this.getEventsWithCategory(ctx.categoryValue)
-						.map((e) => e.ref.filePath)
-						.filter((fp) => fp !== ctx.filePath);
-					if (targetFilePaths.length === 0) return;
-
-					if (this.settings.propagateFrontmatterToCategorySeries) {
-						void this.propagateToMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths);
-					} else if (this.settings.askBeforePropagatingToCategorySeries) {
-						showFrontmatterPropagationModal(this.app, {
-							eventTitle: `Category series: ${ctx.categoryValue}`,
-							diff: filteredDiff,
-							instanceCount: targetFilePaths.length,
-							onConfirm: () => this.propagateToMembers(ctx.sourceFrontmatter, filteredDiff, targetFilePaths),
-						});
-					}
-				});
-			}
-		}
-	}
-
-	private async propagateToMembers(
-		sourceFrontmatter: Frontmatter,
-		diff: FrontmatterDiff,
-		targetFilePaths: string[]
-	): Promise<void> {
-		for (const fp of targetFilePaths) {
-			this.propagatingFilePaths.add(fp);
-		}
-
-		const excludedProps = getExcludedProps(this.settings, this.settings.excludedCategorySeriesProps);
-
-		try {
-			await batchedPromiseAll(
-				targetFilePaths,
-				(fp) => applyFrontmatterChangesToInstance(this.app, fp, sourceFrontmatter, diff, excludedProps),
-				this.settings.fileConcurrencyLimit
-			);
-		} finally {
-			setTimeout(() => {
-				for (const fp of targetFilePaths) {
-					this.propagatingFilePaths.delete(fp);
-				}
-			}, 2000);
-		}
-	}
-
-	destroy(): void {
-		this.subscription?.unsubscribe();
-		this.subscription = null;
-		this.indexingCompleteSubscription?.unsubscribe();
-		this.indexingCompleteSubscription = null;
+	override destroy(): void {
+		this.viewEventsSub?.unsubscribe();
+		this.viewEventsSub = null;
 		this.settingsSubscription?.unsubscribe();
 		this.settingsSubscription = null;
-		this.propagationDebouncer.destroy();
-		this.propagatingFilePaths.clear();
+		this.propagator.destroy();
+		this.categoryGroups.destroy();
 		this.categoriesSubject.complete();
+		super.destroy();
 	}
 }
