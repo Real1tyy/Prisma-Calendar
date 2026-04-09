@@ -7,7 +7,9 @@ const INJECTED = new Set<string>();
  */
 export function injectStyleSheet(id: string, css: string): void {
 	if (INJECTED.has(id)) return;
-	if (document.getElementById(id)) {
+	const existing = document.getElementById(id);
+	if (existing) {
+		existing.textContent = css;
 		INJECTED.add(id);
 		return;
 	}
