@@ -27,6 +27,7 @@ import {
 	type CommandWithResult,
 	CreateRowCommand,
 	DeleteRowCommand,
+	ReplaceRowCommand,
 	UpdateContentRowCommand,
 	UpdateRowCommand,
 	type VaultTableOps,
@@ -102,6 +103,7 @@ export class VaultTable<
 		this.ops = {
 			create: (insert) => this.doCreate(insert),
 			update: (key, data) => this.doUpdate(key, data),
+			replace: (key, data) => this.doReplace(key, data),
 			updateContent: (key, content) => this.doUpdateContent(key, content),
 			delete: (key) => this.doDelete(key),
 			get: (key) => this.rowByFileName.get(key),
@@ -198,6 +200,15 @@ export class VaultTable<
 		return this.executeWithHistory(new UpdateRowCommand(key, data, this.ops), () => this.doUpdate(key, data));
 	}
 
+	/**
+	 * Replaces the entire data object for a row without merging with existing data.
+	 * Use this instead of update() when the updater may delete properties —
+	 * update() merges partials and would resurrect deleted keys from existing data.
+	 */
+	async replace(key: string, data: TData): Promise<VaultRow<TData>> {
+		return this.executeWithHistory(new ReplaceRowCommand(key, data, this.ops), () => this.doReplace(key, data));
+	}
+
 	async updateContent(key: string, content: string): Promise<VaultRow<TData>> {
 		return this.executeWithHistory(new UpdateContentRowCommand(key, content, this.ops), () =>
 			this.doUpdateContent(key, content)
@@ -287,6 +298,48 @@ export class VaultTable<
 		}
 
 		return row;
+	}
+
+	private async doReplace(key: string, data: TData): Promise<VaultRow<TData>> {
+		const existing = this.require(key);
+		const validated = this.schema.parse(data) as TData;
+		const serialized = this.serialize(validated);
+
+		// Clear existing frontmatter and write the replacement — unlike doUpdate
+		// which merges, this removes properties that exist in the old data but
+		// not in the new data (e.g., when an updater deletes a property)
+		await withFrontmatter(this.app, existing.file, (fm) => {
+			for (const key of Object.keys(fm)) {
+				if (!(key in serialized)) {
+					delete fm[key];
+				}
+			}
+			Object.assign(fm, serialized);
+		});
+
+		const newRow = this.buildRow(
+			existing.id,
+			existing.file,
+			existing.filePath,
+			validated,
+			existing.content,
+			existing.file.stat.mtime
+		);
+		this.removeRow(existing.id);
+		this.insertRow(newRow);
+
+		if (this.emitCrudEvents) {
+			this.eventsSubject.next({
+				type: "row-updated",
+				id: key,
+				filePath: newRow.filePath,
+				oldRow: { ...existing },
+				newRow,
+				contentChanged: false,
+			});
+		}
+
+		return newRow;
 	}
 
 	private async doUpdate(key: string, data: Partial<TData>): Promise<VaultRow<TData>> {
@@ -589,6 +642,14 @@ export class VaultTable<
 
 		const existingRow = this.rowByFileName.get(id);
 
+		// Suppress indexer events for self-initiated CRUD writes (mtime dedup).
+		// CRUD methods eagerly update the in-memory row with the new mtime from disk.
+		// When the indexer later detects the same file change, the mtime matches → skip.
+		//
+		// When emitCrudEvents is true, CRUD methods emit events directly because:
+		// - Creates: row was eagerly inserted → indexer would see it as update, not create
+		// - Deletes: row was eagerly removed → indexer finds nothing to emit
+		// - The mtime dedup here prevents double-emission from the indexer path.
 		if (existingRow && existingRow.mtime === event.source.mtime) {
 			return;
 		}

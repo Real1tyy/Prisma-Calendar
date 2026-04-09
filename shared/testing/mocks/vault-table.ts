@@ -93,6 +93,25 @@ export class MockVaultTable<TData extends Record<string, unknown> = Record<strin
 		return newRow;
 	}
 
+	/** Replaces the entire data object without merging — supports property deletion */
+	async replace(key: string, data: TData): Promise<VaultRow<TData>> {
+		const oldRow = this.require(key);
+		const newRow = this.buildRow(key, data, oldRow.content);
+		this.rowsByKey.set(key, newRow);
+
+		this.operationLog.push({ type: "update", key, data, previousData: oldRow.data });
+		this.eventsSubject.next({
+			type: "row-updated",
+			id: key,
+			filePath: newRow.filePath,
+			oldRow,
+			newRow,
+			contentChanged: false,
+		});
+
+		return newRow;
+	}
+
 	async updateContent(key: string, content: string): Promise<VaultRow<TData>> {
 		const oldRow = this.require(key);
 		const newRow = this.buildRow(key, oldRow.data, content);
