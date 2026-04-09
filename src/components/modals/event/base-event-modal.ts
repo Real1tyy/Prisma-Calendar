@@ -1521,8 +1521,7 @@ export abstract class BaseEventModal extends Modal {
 			{
 				...parsed,
 				categories: this.categoriesChipList?.value ?? [],
-				participants:
-					(this.participantsChipList?.value ?? []).length > 0 ? this.participantsChipList!.value : undefined,
+				participants: this.participantsChipList?.value ?? [],
 			},
 			{
 				initialMarkAsDone: this.initialMarkAsDoneState,
