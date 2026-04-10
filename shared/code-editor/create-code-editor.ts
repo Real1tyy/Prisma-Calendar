@@ -1,9 +1,9 @@
 import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { bracketMatching, defaultHighlightStyle, indentOnInput, syntaxHighlighting } from "@codemirror/language";
-import { type Diagnostic,linter } from "@codemirror/lint";
+import { type Diagnostic, linter } from "@codemirror/lint";
 import { EditorState, type Extension } from "@codemirror/state";
-import { EditorView, highlightActiveLine, keymap, lineNumbers,placeholder as cmPlaceholder } from "@codemirror/view";
+import { EditorView, highlightActiveLine, keymap, lineNumbers, placeholder as cmPlaceholder } from "@codemirror/view";
 
 function jsonLinter(): Extension {
 	return linter((view) => {
