@@ -12,7 +12,7 @@ export type PluginSlug =
 
 export function buildUtmUrl(url: string, slug: PluginSlug, source: string, medium: string, content: string): string {
 	const u = new URL(url);
-	u.searchParams.set("utm_campaign", slug.replaceAll("-", "_"));
+	u.searchParams.set("utm_campaign", slug.replace(/-/g, "_"));
 	u.searchParams.set("utm_source", source);
 	u.searchParams.set("utm_medium", medium);
 	u.searchParams.set("utm_content", content);
