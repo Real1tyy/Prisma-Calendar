@@ -186,6 +186,11 @@ export function applyFilters<T extends Record<string, unknown>>(items: T[], filt
 	return items.filter((item) => filters.every((f) => matchesFilter(item, f)));
 }
 
+/** Tests whether a single record matches all filters. Used by VaultTableQuery for zero-allocation filtering. */
+export function matchesAllFilters(item: Record<string, unknown>, filters: ParsedFilter[]): boolean {
+	return filters.every((f) => matchesFilter(item, f));
+}
+
 function matchesFilter(item: Record<string, unknown>, filter: ParsedFilter): boolean {
 	const val = item[filter.field];
 	if (val === undefined || val === null) return false;
@@ -247,6 +252,43 @@ export function applySorts<T extends Record<string, unknown>>(
 			if (bVal === undefined) return -1;
 
 			const cmp = compareSortValues(aVal, bVal, fieldDef.type);
+			if (cmp !== 0) return sort.direction === "desc" ? -cmp : cmp;
+		}
+		return 0;
+	});
+}
+
+/** Returns a sorted copy of items by accessing a nested data object via accessor. */
+export function sortByFields<T>(
+	items: T[],
+	sorts: ParsedSort[],
+	fields: SortField[],
+	accessor: (item: T) => Record<string, unknown>
+): T[] {
+	if (sorts.length === 0) return items;
+
+	const fieldMap = new Map(fields.map((f) => [f.key, f]));
+	const resolvedSorts = sorts
+		.map((sort) => {
+			const field = fieldMap.get(sort.field);
+			return field ? { field: sort.field, direction: sort.direction, fieldType: field.type } : null;
+		})
+		.filter((x): x is { field: string; direction: ParsedSort["direction"]; fieldType: FieldType } => x !== null);
+
+	if (resolvedSorts.length === 0) return items;
+
+	return [...items].sort((a, b) => {
+		const aData = accessor(a);
+		const bData = accessor(b);
+		for (const sort of resolvedSorts) {
+			const aVal = aData[sort.field];
+			const bVal = bData[sort.field];
+
+			if (aVal === undefined && bVal === undefined) continue;
+			if (aVal === undefined) return 1;
+			if (bVal === undefined) return -1;
+
+			const cmp = compareSortValues(aVal, bVal, sort.fieldType);
 			if (cmp !== 0) return sort.direction === "desc" ? -cmp : cmp;
 		}
 		return 0;

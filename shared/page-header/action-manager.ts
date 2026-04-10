@@ -1,8 +1,9 @@
 import type { App } from "obsidian";
-import { FuzzySuggestModal, getIconIds, setIcon, Setting } from "obsidian";
+import { setIcon, Setting } from "obsidian";
 
 import { showModal } from "../component-renderer/modal";
 import type { ModalContext } from "../component-renderer/types";
+import { renderManagerEditForm } from "../components/manager-edit-form";
 import { createCssUtils } from "../core/css-utils";
 import type { HeaderActionDefinition } from "./types";
 
@@ -230,94 +231,21 @@ export function openActionManager(config: ActionManagerConfig): void {
 	}
 
 	function renderEditForm(row: HTMLElement, action: HeaderActionDefinition, root: HTMLElement): void {
-		const form = row.createDiv(css.cls("action-manager-edit-form"));
-
-		const hasRenameOverride = config.renames.has(action.id);
-		const hasIconOverride = config.iconOverrides.has(action.id);
-		const hasColorOverride = config.colorOverrides.has(action.id);
-
-		const nameSetting = new Setting(form).setName("Name");
-		nameSetting.addText((text) => {
-			text.setValue(getLabel(action));
-			text.setPlaceholder(action.label);
-			text.onChange((value) => {
-				const trimmed = value.trim();
-				const resolvedLabel = trimmed && trimmed !== action.label ? trimmed : undefined;
-				config.onRename(action.id, resolvedLabel);
-			});
+		renderManagerEditForm(row, {
+			app,
+			css,
+			formPrefix: "action-manager",
+			item: action,
+			currentLabel: getLabel(action),
+			currentIcon: getIconName(action),
+			currentColor: config.colorOverrides.get(action.id) ?? action.color ?? "#ffffff",
+			hasRenameOverride: config.renames.has(action.id),
+			hasIconOverride: config.iconOverrides.has(action.id),
+			hasColorOverride: config.colorOverrides.has(action.id),
+			onRename: config.onRename,
+			onIconChange: config.onIconChange,
+			onColorChange: config.onColorChange,
+			rerender: () => renderManagerList(root),
 		});
-		if (hasRenameOverride) {
-			nameSetting.addExtraButton((btn) => {
-				btn.setIcon("rotate-ccw");
-				btn.setTooltip(`Reset to "${action.label}"`);
-				btn.onClick(() => {
-					config.onRename(action.id, undefined);
-					renderManagerList(root);
-				});
-			});
-		}
-
-		const iconSetting = new Setting(form).setName("Icon");
-		iconSetting.addButton((btn) => {
-			btn.setButtonText(getIconName(action));
-			btn.onClick(() => {
-				showIconPicker(app, (icon) => {
-					const resolvedIcon = icon !== action.icon ? icon : undefined;
-					config.onIconChange(action.id, resolvedIcon);
-					renderManagerList(root);
-				});
-			});
-		});
-		if (hasIconOverride) {
-			iconSetting.addExtraButton((btn) => {
-				btn.setIcon("rotate-ccw");
-				btn.setTooltip(`Reset to "${action.icon}"`);
-				btn.onClick(() => {
-					config.onIconChange(action.id, undefined);
-					renderManagerList(root);
-				});
-			});
-		}
-
-		const currentColor = config.colorOverrides.get(action.id) ?? action.color ?? "#ffffff";
-		const colorSetting = new Setting(form).setName("Color");
-		colorSetting.addColorPicker((picker) => {
-			picker.setValue(currentColor);
-			picker.onChange((value) => {
-				const defaultColor = action.color ?? "#ffffff";
-				const resolved = value !== defaultColor ? value : undefined;
-				config.onColorChange(action.id, resolved);
-			});
-		});
-		if (hasColorOverride) {
-			colorSetting.addExtraButton((btn) => {
-				btn.setIcon("rotate-ccw");
-				btn.setTooltip("Reset to default color");
-				btn.onClick(() => {
-					config.onColorChange(action.id, undefined);
-					renderManagerList(root);
-				});
-			});
-		}
 	}
-}
-
-function showIconPicker(app: App, onDone: (icon: string) => void): void {
-	class IconPickerModal extends FuzzySuggestModal<string> {
-		getItems(): string[] {
-			return getIconIds();
-		}
-
-		getItemText(item: string): string {
-			return item;
-		}
-
-		onChooseItem(item: string): void {
-			onDone(item);
-		}
-	}
-
-	const modal = new IconPickerModal(app);
-	modal.setPlaceholder("Choose an icon...");
-	modal.open();
 }

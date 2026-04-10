@@ -482,14 +482,8 @@ export function formatValueForNode(value: unknown, maxLength = 20): string {
 		return "";
 	}
 
-	// Booleans: reuse formatValue logic
-	if (typeof value === "boolean") {
-		return value ? "Yes" : "No";
-	}
-
-	// Numbers: reuse formatValue logic
-	if (typeof value === "number") {
-		return value.toString();
+	if (typeof value === "boolean" || typeof value === "number") {
+		return formatValue(value);
 	}
 
 	// Arrays: extract strings and format compactly

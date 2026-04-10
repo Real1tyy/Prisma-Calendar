@@ -716,7 +716,7 @@ export function toDisplayLink(filePath: string): string {
 }
 
 export const getFilenameFromPath = (filePath: string): string => {
-	return filePath.split("/").pop() || "Unknown";
+	return extractFileName(filePath) || "Unknown";
 };
 
 export function getParentDirectoryName(filePath: string): string {

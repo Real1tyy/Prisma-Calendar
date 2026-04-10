@@ -1,8 +1,9 @@
 import { type App, Notice, SecretComponent, Setting } from "obsidian";
-import type { z, ZodArray, ZodNumber, ZodObject, ZodRawShape } from "zod";
+import type { z, ZodObject, ZodRawShape } from "zod";
 
 import { camelCaseToLabel, introspectField } from "../schema-modal/introspect";
 import type { EnumFieldDescriptor, NumberFieldDescriptor } from "../schema-modal/types";
+import { getNestedValue, inferArrayItemType, inferSliderBounds, setNestedValue } from "./schema-navigation";
 import type { SettingsStore } from "./settings-store";
 
 interface BaseSettingConfig {
@@ -93,46 +94,12 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 		return this.settingsStore.validationSchema;
 	}
 
-	/**
-	 * Gets a nested property value using dot notation (e.g., "basesView.tasksDirectory")
-	 */
 	private getNestedValue(key: string): unknown {
-		const keys = key.split(".");
-		let value: any = this.settings;
-
-		for (const k of keys) {
-			if (value === undefined || value === null) {
-				return undefined;
-			}
-			value = (value as Record<string, any>)[k];
-		}
-
-		return value;
+		return getNestedValue(this.settings as Record<string, unknown>, key);
 	}
 
-	/**
-	 * Sets a nested property value using dot notation and returns updated settings
-	 */
 	private setNestedValue(key: string, value: unknown): z.infer<TSchema> {
-		const keys = key.split(".");
-		const newSettings = JSON.parse(JSON.stringify(this.settings)) as Record<string, any>; // Deep clone
-
-		let current: Record<string, any> = newSettings;
-
-		// Navigate to the parent of the target property
-		for (let i = 0; i < keys.length - 1; i++) {
-			const k = keys[i];
-			if (!(k in current)) {
-				current[k] = {};
-			}
-			current = current[k] as Record<string, any>;
-		}
-
-		// Set the final property
-		const lastKey = keys[keys.length - 1];
-		current[lastKey] = value;
-
-		return newSettings as z.infer<TSchema>;
+		return setNestedValue(this.settings as Record<string, unknown>, key, value) as z.infer<TSchema>;
 	}
 
 	private async updateSetting(key: string, value: unknown): Promise<void> {
@@ -151,124 +118,12 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 		await this.settingsStore.updateSettings(() => result.data as z.infer<TSchema>);
 	}
 
-	private inferSliderBounds(key: string): { min?: number; max?: number; step?: number } {
-		try {
-			// Navigate nested schema using dot notation
-			const keys = key.split(".");
-			let fieldSchema: any = this.schema.shape;
-
-			for (const k of keys) {
-				if (!fieldSchema) return {};
-
-				// Unwrap nested schemas
-
-				while (fieldSchema && typeof fieldSchema === "object" && "_def" in fieldSchema && fieldSchema._def?.innerType) {
-					fieldSchema = fieldSchema._def.innerType;
-				}
-
-				if (fieldSchema && typeof fieldSchema === "object" && "shape" in fieldSchema) {
-					fieldSchema = fieldSchema.shape?.[k];
-				} else if (fieldSchema && typeof fieldSchema === "object" && k in fieldSchema) {
-					fieldSchema = fieldSchema[k];
-				} else {
-					return {};
-				}
-			}
-
-			if (!fieldSchema) return {};
-
-			let innerSchema: any = fieldSchema;
-
-			while (innerSchema && typeof innerSchema === "object" && "_def" in innerSchema && innerSchema._def?.innerType) {
-				innerSchema = innerSchema._def.innerType;
-			}
-
-			if (
-				innerSchema &&
-				typeof innerSchema === "object" &&
-				"_def" in innerSchema &&
-				innerSchema._def?.typeName === "ZodNumber"
-			) {
-				const checks = ((innerSchema as ZodNumber)._def as any).checks || [];
-				let min: number | undefined;
-				let max: number | undefined;
-
-				for (const check of checks) {
-					if (check.kind === "min") {
-						min = check.value;
-					}
-
-					if (check.kind === "max") {
-						max = check.value;
-					}
-				}
-
-				return {
-					...(min !== undefined ? { min } : {}),
-					...(max !== undefined ? { max } : {}),
-				};
-			}
-		} catch (error) {
-			console.warn(`Failed to infer slider bounds for key ${key}:`, error);
-		}
-
-		return {};
+	private inferSliderBounds(key: string): { min?: number; max?: number } {
+		return inferSliderBounds(this.schema.shape, key);
 	}
 
 	private inferArrayItemType(key: string): "string" | "number" | undefined {
-		try {
-			// Navigate nested schema using dot notation
-			const keys = key.split(".");
-
-			let fieldSchema: any = this.schema.shape;
-
-			for (const k of keys) {
-				if (!fieldSchema) return undefined;
-
-				// Unwrap nested schemas
-
-				while (fieldSchema && typeof fieldSchema === "object" && "_def" in fieldSchema && fieldSchema._def?.innerType) {
-					fieldSchema = fieldSchema._def.innerType;
-				}
-
-				if (fieldSchema && typeof fieldSchema === "object" && "shape" in fieldSchema) {
-					fieldSchema = fieldSchema.shape?.[k];
-				} else if (fieldSchema && typeof fieldSchema === "object" && k in fieldSchema) {
-					fieldSchema = fieldSchema[k];
-				} else {
-					return undefined;
-				}
-			}
-
-			if (!fieldSchema) return undefined;
-
-			let innerSchema: any = fieldSchema;
-
-			while (innerSchema && typeof innerSchema === "object" && "_def" in innerSchema && innerSchema._def?.innerType) {
-				innerSchema = innerSchema._def.innerType;
-			}
-
-			if (
-				innerSchema &&
-				typeof innerSchema === "object" &&
-				"_def" in innerSchema &&
-				innerSchema._def?.typeName === "ZodArray"
-			) {
-				const elementType = ((innerSchema as ZodArray<any>)._def as any).type;
-
-				if (elementType && elementType._def?.typeName === "ZodNumber") {
-					return "number";
-				}
-
-				if (elementType && elementType._def?.typeName === "ZodString") {
-					return "string";
-				}
-			}
-		} catch (error) {
-			console.warn(`Failed to infer array item type for key ${key}:`, error);
-		}
-
-		return undefined;
+		return inferArrayItemType(this.schema.shape, key);
 	}
 
 	addToggle(containerEl: HTMLElement, config: BaseSettingConfig): void {
@@ -320,39 +175,24 @@ export class SettingsUIBuilder<TSchema extends ZodObject<ZodRawShape>> {
 	): void {
 		const { toggleA, toggleB } = config;
 
-		new Setting(containerEl)
-			.setName(toggleA.name)
-			.setDesc(toggleA.desc)
-			.addToggle((toggle) =>
-				toggle.setValue(Boolean(this.getNestedValue(toggleA.key))).onChange(async (value) => {
-					const newSettings = this.setNestedValue(toggleA.key, value);
-					if (value) {
-						const keys = toggleB.key.split(".");
-						let current: Record<string, any> = newSettings as Record<string, any>;
-						for (let i = 0; i < keys.length - 1; i++) current = current[keys[i]];
-						current[keys[keys.length - 1]] = false;
-					}
-					await this.settingsStore.updateSettings(() => newSettings);
-					rerender();
-				})
-			);
+		const renderToggle = (thisToggle: BaseSettingConfig, otherKey: string): void => {
+			new Setting(containerEl)
+				.setName(thisToggle.name)
+				.setDesc(thisToggle.desc)
+				.addToggle((toggle) =>
+					toggle.setValue(Boolean(this.getNestedValue(thisToggle.key))).onChange(async (value) => {
+						let newSettings = this.setNestedValue(thisToggle.key, value);
+						if (value) {
+							newSettings = setNestedValue(newSettings as Record<string, unknown>, otherKey, false) as z.infer<TSchema>;
+						}
+						await this.settingsStore.updateSettings(() => newSettings);
+						rerender();
+					})
+				);
+		};
 
-		new Setting(containerEl)
-			.setName(toggleB.name)
-			.setDesc(toggleB.desc)
-			.addToggle((toggle) =>
-				toggle.setValue(Boolean(this.getNestedValue(toggleB.key))).onChange(async (value) => {
-					const newSettings = this.setNestedValue(toggleB.key, value);
-					if (value) {
-						const keys = toggleA.key.split(".");
-						let current: Record<string, any> = newSettings as Record<string, any>;
-						for (let i = 0; i < keys.length - 1; i++) current = current[keys[i]];
-						current[keys[keys.length - 1]] = false;
-					}
-					await this.settingsStore.updateSettings(() => newSettings);
-					rerender();
-				})
-			);
+		renderToggle(toggleA, toggleB.key);
+		renderToggle(toggleB, toggleA.key);
 	}
 
 	private resolveSliderConfig(config: SliderSettingConfig): {

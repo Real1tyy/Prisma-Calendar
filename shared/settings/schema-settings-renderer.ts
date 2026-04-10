@@ -10,6 +10,7 @@ import type {
 	NumberFieldDescriptor,
 	SchemaFieldDescriptor,
 } from "../schema-modal/types";
+import { getNestedValue } from "./schema-navigation";
 import type {
 	ArrayFieldOverride,
 	DropdownFieldOverride,
@@ -34,16 +35,6 @@ function resolveFieldName(descriptor: SchemaFieldDescriptor, override?: SchemaSe
 
 function resolveFieldDesc(descriptor: SchemaFieldDescriptor, override?: SchemaSettingsFieldOverride): string {
 	return override?.desc ?? descriptor.description ?? "";
-}
-
-function getNestedValue(settings: Record<string, unknown>, key: string): unknown {
-	const keys = key.split(".");
-	let value: unknown = settings;
-	for (const k of keys) {
-		if (value === undefined || value === null) return undefined;
-		value = (value as Record<string, unknown>)[k];
-	}
-	return value;
 }
 
 function isOverrideType<T extends SchemaSettingsFieldOverride>(

@@ -7,7 +7,7 @@ import type {
 	RestSortDirection,
 	SortField,
 } from "./zod-filter-sort";
-import { applyFilters, applySorts } from "./zod-filter-sort";
+import { matchesAllFilters, sortByFields } from "./zod-filter-sort";
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -168,16 +168,11 @@ export class VaultTableQuery<TData> {
 		const total = rows.length;
 
 		if (this.filters.length > 0) {
-			const dataItems = rows.map((r) => ({ ...(r.data as Record<string, unknown>), __rowId: r.id }));
-			const filtered = applyFilters(dataItems, this.filters);
-			const filteredIds = new Set(filtered.map((f) => f.__rowId));
-			rows = rows.filter((r) => filteredIds.has(r.id));
+			rows = rows.filter((r) => matchesAllFilters(r.data as Record<string, unknown>, this.filters));
 		}
 
 		if (this.sorts.length > 0 && this.sortFields.length > 0) {
-			const indexed = rows.map((r) => ({ ...(r.data as Record<string, unknown>), __row: r }));
-			const sorted = applySorts(indexed, this.sorts, this.sortFields);
-			rows = sorted.map((s) => s.__row);
+			rows = sortByFields(rows, this.sorts, this.sortFields, (r) => r.data as Record<string, unknown>);
 		}
 
 		const filtered = rows.length;

@@ -10,6 +10,7 @@ import { createFileContentWithFrontmatter } from "../file/frontmatter-serializat
 import { createFileAtPathAtomic, guardFromTemplater } from "../file/templater";
 import type { Repository } from "../repository";
 import type { SerializableSchema } from "./create-mapped-schema";
+import { ReadableTableMixin } from "./readable-table";
 import {
 	HISTORY_MAX_SIZE,
 	HISTORY_SHOW_NOTICES,
@@ -51,7 +52,7 @@ export class VaultTable<
 	TSchema extends SerializableSchema<TData> = SerializableSchema<TData>,
 	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	TChildren extends VaultTableDefMap = {},
-> {
+> extends ReadableTableMixin<TData> {
 	readonly app: App;
 	readonly directory: string;
 	private readonly schema: TSchema;
@@ -71,6 +72,7 @@ export class VaultTable<
 
 	private readonly rowByFileName = new Map<string, VaultRow<TData>>();
 	private rows: VaultRow<TData>[] = [];
+	private rowsDirty = false;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private readonly childCacheByPath = new Map<string, Map<string, VaultTable<any, any, any>>>();
 
@@ -84,6 +86,7 @@ export class VaultTable<
 	public readonly ready$: Observable<boolean>;
 
 	constructor(config: VaultTableConfig<TData, TSchema, TChildren>) {
+		super();
 		this.app = config.app;
 		this.directory = config.directory;
 		this.schema = config.schema;
@@ -125,6 +128,22 @@ export class VaultTable<
 		});
 
 		this.indexer = new Indexer(this.app, this.indexerConfigStore);
+	}
+
+	// =========================================================================
+	// ReadableTableMixin — abstract method implementations
+	// =========================================================================
+
+	protected getRowByFileName(): ReadonlyMap<string, VaultRow<TData>> {
+		return this.rowByFileName;
+	}
+
+	protected getRows(): ReadonlyArray<VaultRow<TData>> {
+		if (this.rowsDirty) {
+			this.rows = Array.from(this.rowByFileName.values());
+			this.rowsDirty = false;
+		}
+		return this.rows;
 	}
 
 	private buildCommandManager(history: VaultTableHistoryConfig | undefined): CommandManager | null {
@@ -184,6 +203,7 @@ export class VaultTable<
 		this.childCacheByPath.clear();
 		this.rowByFileName.clear();
 		this.rows = [];
+		this.rowsDirty = false;
 		this.eventsSubject.complete();
 		this.readySubject.complete();
 	}
@@ -462,43 +482,14 @@ export class VaultTable<
 	}
 
 	// =========================================================================
-	// Reads
+	// Repository
 	// =========================================================================
-
-	get(name: string): VaultRow<TData> | undefined {
-		return this.rowByFileName.get(name);
-	}
-
-	has(name: string): boolean {
-		return this.rowByFileName.has(name);
-	}
-
-	count(): number {
-		return this.rowByFileName.size;
-	}
-
-	first(predicate?: (row: VaultRow<TData>) => boolean): VaultRow<TData> | undefined {
-		if (!predicate) return this.rows[0];
-		return this.rows.find(predicate);
-	}
-
-	// =========================================================================
-	// Collection Access
-	// =========================================================================
-
-	toArray(): ReadonlyArray<VaultRow<TData>> {
-		return this.rows;
-	}
-
-	toClonedArray(): VaultRow<TData>[] {
-		return [...this.rows];
-	}
 
 	asRepository(): Repository<TData> {
 		return {
 			get: (id) => this.rowByFileName.get(id)?.data,
 			has: (id) => this.rowByFileName.has(id),
-			getAll: () => this.rows.map((r) => r.data),
+			getAll: () => this.getRows().map((r) => r.data),
 			create: async (item) => {
 				const fileName = this.deriveFileName(item);
 				const row = await this.create({ fileName, data: item });
@@ -521,48 +512,6 @@ export class VaultTable<
 
 	query(sortFields?: SortField[]): VaultTableQuery<TData> {
 		return VaultTableQuery.from(this, sortFields);
-	}
-
-	// =========================================================================
-	// Queries
-	// =========================================================================
-
-	where(predicate: (row: VaultRow<TData>) => boolean): VaultRow<TData>[] {
-		return this.rows.filter(predicate);
-	}
-
-	findBy<K extends keyof TData>(key: K, value: TData[K]): VaultRow<TData>[] {
-		return this.rows.filter((row) => row.data[key] === value);
-	}
-
-	orderBy(comparator: (a: VaultRow<TData>, b: VaultRow<TData>) => number): VaultRow<TData>[] {
-		return [...this.rows].sort(comparator);
-	}
-
-	groupBy<K>(keyFn: (row: VaultRow<TData>) => K): Map<K, VaultRow<TData>[]> {
-		const groups = new Map<K, VaultRow<TData>[]>();
-		for (const row of this.rows) {
-			const key = keyFn(row);
-			const group = groups.get(key);
-			if (group) {
-				group.push(row);
-			} else {
-				groups.set(key, [row]);
-			}
-		}
-		return groups;
-	}
-
-	pluck<K extends keyof TData>(key: K): TData[K][] {
-		return this.rows.map((row) => row.data[key]);
-	}
-
-	some(predicate: (row: VaultRow<TData>) => boolean): boolean {
-		return this.rows.some(predicate);
-	}
-
-	every(predicate: (row: VaultRow<TData>) => boolean): boolean {
-		return this.rows.every(predicate);
 	}
 
 	// =========================================================================
@@ -731,7 +680,7 @@ export class VaultTable<
 
 	private insertRow(row: VaultRow<TData>): void {
 		this.rowByFileName.set(row.id, row);
-		this.rows = Array.from(this.rowByFileName.values());
+		this.rowsDirty = true;
 	}
 
 	private removeRow(id: string): void {
@@ -739,7 +688,7 @@ export class VaultTable<
 		if (!row) return;
 		this.destroyRowChildren(row);
 		this.rowByFileName.delete(id);
-		this.rows = Array.from(this.rowByFileName.values());
+		this.rowsDirty = true;
 	}
 
 	private buildIncludeFile(): (path: string) => boolean {

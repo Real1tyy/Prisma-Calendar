@@ -4,11 +4,12 @@ import type { VaultRow, VaultTableEvent } from "./types";
 
 /**
  * Base class for reactive grouped indices over a VaultTableView.
- * Maintains a Map<K, VaultRow[]> that updates automatically as the source emits events.
+ * Maintains a Map<K, Map<id, VaultRow>> that updates automatically as the source emits events.
+ * Uses Map per group for O(1) add/remove instead of array-based O(n) filter on every removal.
  * Subclasses define how rows map to group keys (1:1 vs 1:many).
  */
 abstract class BaseReactiveGroupBy<TData, K> {
-	protected readonly groups = new Map<K, VaultRow<TData>[]>();
+	protected readonly groups = new Map<K, Map<string, VaultRow<TData>>>();
 	private subscription: Subscription | null = null;
 
 	constructor(sourceEvents$: Observable<VaultTableEvent<TData>>) {
@@ -37,12 +38,17 @@ abstract class BaseReactiveGroupBy<TData, K> {
 
 	/** Returns the current grouped map */
 	getGroups(): ReadonlyMap<K, ReadonlyArray<VaultRow<TData>>> {
-		return this.groups;
+		const result = new Map<K, ReadonlyArray<VaultRow<TData>>>();
+		for (const [key, map] of this.groups) {
+			result.set(key, Array.from(map.values()));
+		}
+		return result;
 	}
 
 	/** Returns rows for a specific group key */
 	getGroup(key: K): ReadonlyArray<VaultRow<TData>> {
-		return this.groups.get(key) ?? [];
+		const group = this.groups.get(key);
+		return group ? Array.from(group.values()) : [];
 	}
 
 	/** Returns all unique group keys */
@@ -53,8 +59,8 @@ abstract class BaseReactiveGroupBy<TData, K> {
 	/** Returns groups with 2+ members */
 	getMultiMemberGroups(): Map<K, VaultRow<TData>[]> {
 		const result = new Map<K, VaultRow<TData>[]>();
-		for (const [key, rows] of this.groups) {
-			if (rows.length >= 2) result.set(key, rows);
+		for (const [key, map] of this.groups) {
+			if (map.size >= 2) result.set(key, Array.from(map.values()));
 		}
 		return result;
 	}
@@ -67,22 +73,20 @@ abstract class BaseReactiveGroupBy<TData, K> {
 	}
 
 	protected addToGroup(key: K, row: VaultRow<TData>): void {
-		const group = this.groups.get(key);
-		if (group) {
-			group.push(row);
-		} else {
-			this.groups.set(key, [row]);
+		let group = this.groups.get(key);
+		if (!group) {
+			group = new Map();
+			this.groups.set(key, group);
 		}
+		group.set(row.id, row);
 	}
 
 	protected removeFromGroup(key: K, id: string): void {
 		const group = this.groups.get(key);
 		if (!group) return;
-		const filtered = group.filter((r) => r.id !== id);
-		if (filtered.length === 0) {
+		group.delete(id);
+		if (group.size === 0) {
 			this.groups.delete(key);
-		} else {
-			this.groups.set(key, filtered);
 		}
 	}
 
