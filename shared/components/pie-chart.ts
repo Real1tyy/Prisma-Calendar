@@ -21,7 +21,7 @@ export interface PieChartConfig {
 	/** The data to render */
 	data: PieChartData;
 	/** The Chart constructor from chart.js — injected so shared doesn't depend on chart.js at runtime */
-
+	 
 	ChartJS: new (canvas: HTMLCanvasElement, config: ChartConfiguration<"pie">) => Chart<"pie">;
 	/** Max legend items before grouping overflow into "Other (N)" (default: 20) */
 	maxLegendItems?: number;

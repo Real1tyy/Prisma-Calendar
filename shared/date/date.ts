@@ -143,11 +143,13 @@ export const parseDateTimeString = (value: string | null): DateTime | undefined 
 export function ensureISOSuffix(datetime: string): string {
 	if (!datetime.includes("T")) return datetime;
 	if (datetime.endsWith(".000Z")) return datetime;
-	const stripped = datetime.endsWith("Z") ? datetime.slice(0, -1) : datetime;
-	const timePart = stripped.split("T")[1];
+
+	// Strip trailing timezone info: Z, +HH:MM, -HH:MM, +HHMM, -HHMM
+	const withoutTz = datetime.replace(/([+-]\d{2}:?\d{2}|Z)$/, "");
+	const timePart = withoutTz.split("T")[1];
 	const parts = timePart.split(":");
-	if (parts.length === 2) return `${stripped}:00.000Z`;
-	const base = stripped.includes(".") ? stripped.split(".")[0] : stripped;
+	if (parts.length === 2) return `${withoutTz}:00.000Z`;
+	const base = withoutTz.includes(".") ? withoutTz.split(".")[0] : withoutTz;
 	return `${base}.000Z`;
 }
 
@@ -171,7 +173,9 @@ export function replaceISOTime(iso: string, newTimePart: string): string {
 }
 
 export function parseTimeToMins(isoStr: string): number {
-	const timePart = isoStr.slice(11, 16);
+	const tIdx = isoStr.indexOf("T");
+	if (tIdx === -1) return NaN;
+	const timePart = isoStr.slice(tIdx + 1, tIdx + 6);
 	const [hours, minutes] = timePart.split(":").map(Number);
 	return hours * 60 + minutes;
 }

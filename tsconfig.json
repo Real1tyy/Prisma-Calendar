@@ -11,7 +11,10 @@
 		"isolatedModules": true,
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
-		"lib": ["DOM", "ES2022"],
+		"lib": [
+			"DOM",
+			"ES2022"
+		],
 		"strict": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
@@ -20,9 +23,19 @@
 		"noPropertyAccessFromIndexSignature": true,
 		"exactOptionalPropertyTypes": true,
 		"paths": {
-			"@real1ty-obsidian-plugins/*": ["shared/*"]
+			"@real1ty-obsidian-plugins/*": [
+				"shared/*"
+			],
+			"@real1ty-obsidian-plugins": [
+				"shared/index.ts"
+			]
 		}
 	},
-	"include": ["src/**/*.ts", "tests/**/*.ts", "shared/**/*.ts"],
-	"exclude": ["node_modules"]
+	"include": [
+		"src/**/*.ts",
+		"tests/**/*.ts"
+	],
+	"exclude": [
+		"node_modules"
+	]
 }

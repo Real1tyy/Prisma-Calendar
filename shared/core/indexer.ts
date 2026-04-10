@@ -2,6 +2,7 @@ import { type App, type CachedMetadata, type MetadataCache, type TAbstractFile, 
 import {
 	type BehaviorSubject,
 	BehaviorSubject as RxBehaviorSubject,
+	EMPTY,
 	from,
 	fromEventPattern,
 	lastValueFrom,
@@ -11,7 +12,7 @@ import {
 	Subject,
 	type Subscription,
 } from "rxjs";
-import { debounceTime, filter, groupBy, map, mergeMap, toArray } from "rxjs/operators";
+import { catchError, debounceTime, filter, groupBy, map, mergeMap, toArray } from "rxjs/operators";
 
 import { waitForCacheReady } from "../async/wait-for-cache-ready";
 import { compareFrontmatter, type FrontmatterDiff } from "../file/frontmatter-diff";
@@ -196,7 +197,7 @@ export class Indexer {
 		this.configSubscription?.unsubscribe();
 		this.configSubscription = null;
 		this._descendantFiles = [];
-		this.indexingCompleteSubject.complete();
+		this.indexingCompleteSubject.next(false);
 	}
 
 	resync(): void {
@@ -399,7 +400,13 @@ export class Indexer {
 					});
 				}
 
-				return from(this.buildEvent(intent.file, intent.oldPath)).pipe(filter((e): e is IndexerEvent => e !== null));
+				return from(this.buildEvent(intent.file, intent.oldPath)).pipe(
+					filter((e): e is IndexerEvent => e !== null),
+					catchError((error) => {
+						console.error(`Error building event for ${intent.path}:`, error);
+						return EMPTY;
+					})
+				);
 			}, this.config.scanConcurrency)
 		);
 	}

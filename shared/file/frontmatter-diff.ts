@@ -109,12 +109,14 @@ function deepEqual(a: unknown, b: unknown): boolean {
 	}
 
 	if (typeof a === "object" && typeof b === "object") {
-		const keysA = Object.keys(a as Record<string, unknown>);
-		const keysB = Object.keys(b as Record<string, unknown>);
+		const objA = a as Record<string, unknown>;
+		const objB = b as Record<string, unknown>;
+		const keysA = Object.keys(objA);
+		const keysB = Object.keys(objB);
 
 		if (keysA.length !== keysB.length) return false;
 
-		return keysA.every((key) => deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key]));
+		return keysA.every((key) => key in objB && deepEqual(objA[key], objB[key]));
 	}
 
 	return false;
