@@ -256,6 +256,9 @@ export default class CustomCalendarPlugin extends Plugin {
 		addApiCommand(COMMAND_IDS.ADD_ZETTEL_ID_TO_CURRENT_NOTE, "Add ZettelID to current note", () => {
 			void this.apiManager.addZettelIdToActiveNote();
 		});
+		addApiCommand(COMMAND_IDS.DUPLICATE_CURRENT_EVENT, "Duplicate current event", () => {
+			void this.apiManager.duplicateCurrentEvent();
+		});
 		addApiCommand(COMMAND_IDS.TRIGGER_CURRENT_EVENT_STOPWATCH, "Trigger current event stopwatch", () => {
 			void this.apiManager.triggerCurrentEventStopwatch();
 		});

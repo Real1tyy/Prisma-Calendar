@@ -77,6 +77,24 @@ Adds ZettelID to the currently active note (same as "Add ZettelID to current not
 const ok = await window.PrismaCalendar.addZettelIdToActiveNote();
 ```
 
+## `duplicateCurrentEvent(options?)`
+
+Duplicates the currently active note as a new event with a fresh ZettelID (same as "Duplicate current event" command). Copies all frontmatter and body content, strips recurrence-specific properties. Works on any event note including untracked events — no need to open the calendar.
+
+**Options:**
+
+| Property     | Type   | Description                  |
+| ------------ | ------ | ---------------------------- |
+| `calendarId` | string?| Target calendar ID           |
+
+**Returns:** `Promise<boolean>` — `true` if the event was duplicated, `false` otherwise.
+
+**Example:**
+
+```javascript
+const ok = await window.PrismaCalendar.duplicateCurrentEvent();
+```
+
 ## `navigateToDate(input)`
 
 Opens the calendar and navigates to a specific date and view type.

@@ -7,6 +7,7 @@ import type { Frontmatter } from "../../types";
 import { isAllDayEvent } from "../../utils/event-frontmatter";
 import { openFileInNewTab } from "../../utils/obsidian";
 import type { CalendarBundle } from "../calendar-bundle";
+import { CloneEventCommand } from "../commands/lifecycle-commands";
 import { AddZettelIdCommand } from "../commands/update-commands";
 import { MinimizedModalManager } from "../minimized-modal-manager";
 import { isCalendarViewFocused, resolveBundleOrNotice } from "./bundle-resolver";
@@ -175,6 +176,24 @@ export async function addZettelIdToActiveNote(plugin: CustomCalendarPlugin, cale
 		new Notice("ZettelID added and file renamed");
 	} else {
 		new Notice("ZettelID already present");
+	}
+
+	void plugin.rememberLastUsedCalendar(bundle.calendarId);
+	return true;
+}
+
+export async function duplicateCurrentEvent(plugin: CustomCalendarPlugin, calendarId?: string): Promise<boolean> {
+	const resolved = resolveActiveFileWithBundle(plugin, calendarId);
+	if (!resolved) return false;
+	const { bundle, activeFile } = resolved;
+
+	const command = new CloneEventCommand(plugin.app, bundle, activeFile.path);
+	await bundle.commandManager.executeCommand(command);
+
+	const createdPath = command.getCreatedFilePath();
+	if (createdPath) {
+		new Notice("Event duplicated");
+		await openFileInNewTab(plugin.app, createdPath);
 	}
 
 	void plugin.rememberLastUsedCalendar(bundle.calendarId);

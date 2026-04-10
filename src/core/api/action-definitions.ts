@@ -140,6 +140,14 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 				calendarId: ParamCoercion.string(raw, "calendarId"),
 			}),
 		},
+		duplicateCurrentEvent: {
+			handler: async (options?: { calendarId?: string }) => {
+				await manager.duplicateCurrentEvent(options?.calendarId);
+			},
+			parseParams: (raw: Record<string, string>) => ({
+				calendarId: ParamCoercion.string(raw, "calendarId"),
+			}),
+		},
 		navigateToDate: {
 			handler: async (input: NavigateInput) => {
 				await manager.navigateToDate(input);

@@ -44,6 +44,7 @@ Virtually every operation in the calendar is tracked, giving you complete contro
 -   **Edit Event**: Undoing reverts any changes made in the edit dialog.
 -   **Delete Event**: Undoing brings the deleted event right back.
 -   **Clone Event**: Undoing removes the cloned copy.
+-   **Duplicate Current Event**: Undoing removes the duplicated copy.
 -   **Move Event**: Undoing moves the event back to its original date.
 
 ### Drag-and-Drop and Resizing

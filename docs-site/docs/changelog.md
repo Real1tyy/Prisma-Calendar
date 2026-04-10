@@ -4,7 +4,10 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.13.0 - 4/8/2026
+## 2.13.0 - 4/10/2026
+
+### Added
+- **Duplicate current event command**: Duplicate any event note from the command palette or a hotkey — no need to open the calendar. Works on untracked events too. See [Hotkeys](./features/advanced/hotkeys.md#duplicate-current-event).
 
 ### Fixed
 - **Wrong virtual event dates for yearly and custom-interval recurrences**: Yearly and custom-interval daily events could appear on incorrect dates. Events now correctly align to their recurrence cycle. See [Recurring Events](./features/events/recurring-dsl.md).

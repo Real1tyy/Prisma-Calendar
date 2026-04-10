@@ -27,6 +27,7 @@ import {
 } from "./event-crud";
 import {
 	addZettelIdToActiveNote,
+	duplicateCurrentEvent,
 	openCreateEventModal,
 	openCreateUntrackedEventModal,
 	openEditActiveNoteModal,
@@ -127,6 +128,10 @@ export class PrismaCalendarApiManager {
 
 	async addZettelIdToActiveNote(calendarId?: string): Promise<boolean> {
 		return addZettelIdToActiveNote(this.plugin, calendarId);
+	}
+
+	async duplicateCurrentEvent(calendarId?: string): Promise<boolean> {
+		return duplicateCurrentEvent(this.plugin, calendarId);
 	}
 
 	async triggerCurrentEventStopwatch(calendarId?: string): Promise<boolean> {

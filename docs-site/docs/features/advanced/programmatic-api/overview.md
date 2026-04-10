@@ -66,7 +66,7 @@ Use `calendarId` when you need to target a specific calendar.
 
 ## Undo / Redo Support
 
-All API methods that modify files are fully undoable and redoable via **Ctrl+Z** / **Ctrl+Shift+Z** (or the Undo/Redo toolbar buttons). This includes `createEvent`, `editEvent`, `deleteEvent`, `markAsDone`, `markAsUndone`, `toggleSkip`, `cloneEvent`, `moveEvent`, all batch operations, and modal-based operations. Undo reverts frontmatter changes and any file renames (e.g., ZettelID addition), and Redo re-applies them.
+All API methods that modify files are fully undoable and redoable via **Ctrl+Z** / **Ctrl+Shift+Z** (or the Undo/Redo toolbar buttons). This includes `createEvent`, `editEvent`, `deleteEvent`, `markAsDone`, `markAsUndone`, `toggleSkip`, `cloneEvent`, `moveEvent`, `duplicateCurrentEvent`, all batch operations, and modal-based operations. Undo reverts frontmatter changes and any file renames (e.g., ZettelID addition), and Redo re-applies them.
 
 Undo and Redo commands are available globally — they work from the command palette regardless of whether the calendar view is focused. The commands automatically resolve the last used calendar.
 
@@ -114,7 +114,7 @@ obsidian://prisma-calendar?call=getStatistics&date=2026-02-24&interval=week&mode
 
 ### Available URL actions
 
-The following actions are URL-accessible: `openCreateEventModal`, `openEditActiveNoteModal`, `createUntrackedEvent`, `createEvent`, `editEvent`, `deleteEvent`, `convertFileToEvent`, `addZettelIdToActiveNote`, `navigateToDate`, `markAsDone`, `markAsUndone`, `toggleSkip`, `cloneEvent`, `moveEvent`, `refreshCalendar`, `getStatistics`, and `aiQuery`. The parameters match the corresponding JavaScript API — see the method documentation in each sub-page.
+The following actions are URL-accessible: `openCreateEventModal`, `openEditActiveNoteModal`, `createUntrackedEvent`, `createEvent`, `editEvent`, `deleteEvent`, `convertFileToEvent`, `addZettelIdToActiveNote`, `duplicateCurrentEvent`, `navigateToDate`, `markAsDone`, `markAsUndone`, `toggleSkip`, `cloneEvent`, `moveEvent`, `refreshCalendar`, `getStatistics`, and `aiQuery`. The parameters match the corresponding JavaScript API — see the method documentation in each sub-page.
 
 Read operations (`getEvents`, `getAllEvents`, `getEventByPath`, etc.), settings operations (`getSettings`, `updateSettings`), and batch operations are window-API-only since they return data or accept complex objects that don't serialize well to URL query params.
 

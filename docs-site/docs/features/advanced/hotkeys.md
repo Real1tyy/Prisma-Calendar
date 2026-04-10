@@ -196,6 +196,17 @@ The **Open Current Note in Calendar** command provides quick navigation from any
     -   Writes ZettelID to the configured frontmatter property
 -   **Use Case**: Convert an existing note into a Prisma-compatible event skeleton
 
+### Duplicate Current Event
+
+-   **Function**: Creates a copy of the currently active note as a new event with a fresh ZettelID
+-   **Behavior**:
+    -   Ensures the source note has a ZettelID (adds one if missing)
+    -   Creates a duplicate with a new unique ZettelID, copying all frontmatter and body content
+    -   Strips recurrence-specific properties (RRuleID, Source, Instance Date) from the duplicate
+    -   Opens the duplicated note in a new tab if the calendar view isn't focused
+-   **Requirements**: The active note must be in the selected calendar's directory
+-   **Use Case**: Duplicate any event note without opening the calendar — works on untracked events too. Assign a hotkey for quick access
+
 ### Trigger Current Event Stopwatch
 
 -   **Function**: Converts the currently active note into a calendar event and starts tracking time
@@ -413,6 +424,7 @@ Prisma Calendar exposes a **scripting API** on `window.PrismaCalendar` that lets
 - **Create events** — `createEvent()` and `createUntrackedEvent()` create Prisma notes programmatically with full frontmatter support
 - **Open modals** — `openCreateEventModal()` and `openEditActiveNoteModal()` open the same create/edit UI as the hotkey commands
 - **Convert notes** — `convertFileToEvent()` and `addZettelIdToActiveNote()` turn existing notes into Prisma-compatible events
+- **Duplicate notes** — `duplicateCurrentEvent()` creates a copy of the active note with a fresh ZettelID
 
 The API mirrors the functionality of the commands described above and uses the same calendar selection (last opened or first enabled). Ideal for Templater templates, QuickAdd, Dataview automation, or custom plugin integrations.
 
