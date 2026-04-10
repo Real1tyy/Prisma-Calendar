@@ -12,7 +12,7 @@ import {
 	Subject,
 	type Subscription,
 } from "rxjs";
-import { catchError, debounceTime, filter, groupBy, map, mergeMap, toArray } from "rxjs/operators";
+import { catchError, filter, map, mergeMap, toArray } from "rxjs/operators";
 
 import { waitForCacheReady } from "../async/wait-for-cache-ready";
 import { compareFrontmatter, type FrontmatterDiff } from "../file/frontmatter-diff";
@@ -136,6 +136,7 @@ export class Indexer {
 	private scanEventsSubject = new Subject<IndexerEvent>();
 	private indexingCompleteSubject = new RxBehaviorSubject<boolean>(false);
 	private frontmatterCache: Map<string, IndexerFrontmatter> = new Map();
+	private effectiveExcludedProps: Set<string> = new Set();
 	private _descendantFiles: TFile[] = [];
 
 	public readonly events$: Observable<IndexerEvent>;
@@ -150,10 +151,12 @@ export class Indexer {
 		this.vault = app.vault;
 		this.metadataCache = app.metadataCache;
 		this.config = this.normalizeConfig(configStore.value);
+		this.rebuildExcludedProps();
 
 		this.configSubscription = configStore.subscribe((newConfig) => {
 			const includeFileChanged = this.config.includeFile !== this.normalizeConfig(newConfig).includeFile;
 			this.config = this.normalizeConfig(newConfig);
+			this.rebuildExcludedProps();
 
 			if (includeFileChanged) {
 				this.indexingCompleteSubject.next(false);
@@ -163,6 +166,10 @@ export class Indexer {
 
 		this.events$ = this.scanEventsSubject.asObservable();
 		this.indexingComplete$ = this.indexingCompleteSubject.asObservable();
+	}
+
+	private rebuildExcludedProps(): void {
+		this.effectiveExcludedProps = new Set([...this.config.excludedDiffProps, ...OBSIDIAN_INTERNAL_FM_PROPS]);
 	}
 
 	private normalizeConfig(config: IndexerConfig): NormalizedIndexerConfig {
@@ -311,14 +318,51 @@ export class Indexer {
 	}
 
 	/**
-	 * Debounce events by file path
+	 * Debounce events by file path using a manual Map instead of RxJS groupBy.
+	 * groupBy creates inner observables whose per-key groups live until the source
+	 * completes. On a long-lived stream like Obsidian file events, that means
+	 * unbounded retention of stale key-groups for every file path ever seen.
+	 * This manual version only keeps keys with active debounce timers and
+	 * cleans them up when the timer fires or the subscription is torn down.
 	 */
 	private debounceByPath<T>(ms: number, key: (x: T) => string) {
 		return (source: Observable<T>) =>
-			source.pipe(
-				groupBy(key),
-				mergeMap((g$) => g$.pipe(debounceTime(ms)))
-			);
+			new Observable<T>((subscriber) => {
+				const pending = new Map<string, { timer: ReturnType<typeof setTimeout>; value: T }>();
+
+				const sub = source.subscribe({
+					next: (value) => {
+						const k = key(value);
+						const existing = pending.get(k);
+						if (existing) clearTimeout(existing.timer);
+						pending.set(k, {
+							value,
+							timer: setTimeout(() => {
+								const entry = pending.get(k);
+								if (!entry) return;
+								pending.delete(k);
+								subscriber.next(entry.value);
+							}, ms),
+						});
+					},
+					error: (err) => subscriber.error(err),
+					complete: () => {
+						// Flush pending debounced values on complete instead of dropping them
+						for (const { timer, value } of pending.values()) {
+							clearTimeout(timer);
+							subscriber.next(value);
+						}
+						pending.clear();
+						subscriber.complete();
+					},
+				});
+
+				return () => {
+					sub.unsubscribe();
+					for (const { timer } of pending.values()) clearTimeout(timer);
+					pending.clear();
+				};
+			});
 	}
 
 	/**
@@ -429,9 +473,8 @@ export class Indexer {
 			folder: file.parent?.path || "",
 		};
 
-		const effectiveExcludedProps = new Set([...this.config.excludedDiffProps, ...OBSIDIAN_INTERNAL_FM_PROPS]);
 		const frontmatterDiff = oldFrontmatter
-			? compareFrontmatter(oldFrontmatter, frontmatter, effectiveExcludedProps)
+			? compareFrontmatter(oldFrontmatter, frontmatter, this.effectiveExcludedProps)
 			: undefined;
 
 		const event: IndexerEvent = {

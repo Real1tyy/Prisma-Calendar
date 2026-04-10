@@ -15,6 +15,7 @@ export interface BaseRule {
 export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 	protected rules: TRule[] = [];
 	private compiledFunctions = new Map<string, ((...args: unknown[]) => boolean) | null>();
+	private expressionIdCache = new Map<string, string[]>();
 	private propertyMapping = new Map<string, string>();
 	private subscription: Subscription | null = null;
 
@@ -22,6 +23,7 @@ export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 		this.subscription = settingsStore.subscribe((settings) => {
 			this.rules = this.extractRules(settings);
 			this.compiledFunctions.clear();
+			this.expressionIdCache.clear();
 			this.propertyMapping.clear();
 		});
 	}
@@ -31,6 +33,7 @@ export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 	destroy(): void {
 		this.subscription?.unsubscribe();
 		this.compiledFunctions.clear();
+		this.expressionIdCache.clear();
 		this.propertyMapping.clear();
 	}
 
@@ -44,7 +47,11 @@ export abstract class BaseEvaluator<TRule extends BaseRule, TSettings> {
 			// Expression identifiers must be included so that properties referenced in expressions
 			// but missing from the frontmatter are passed as `undefined` instead of causing ReferenceError.
 			const currentKeys = new Set(Object.keys(frontmatter));
-			const expressionIds = extractExpressionIdentifiers(rule.expression);
+			let expressionIds = this.expressionIdCache.get(rule.id);
+			if (!expressionIds) {
+				expressionIds = extractExpressionIdentifiers(rule.expression);
+				this.expressionIdCache.set(rule.id, expressionIds);
+			}
 			for (const id of expressionIds) {
 				currentKeys.add(id);
 			}
