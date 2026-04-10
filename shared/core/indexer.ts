@@ -14,8 +14,8 @@ import {
 } from "rxjs";
 import { catchError, filter, map, mergeMap, toArray } from "rxjs/operators";
 
-import { waitForCacheReady } from "../async/wait-for-cache-ready";
-import { compareFrontmatter, type FrontmatterDiff } from "../file/frontmatter-diff";
+import { waitForCacheReady } from "../utils/async/wait-for-cache-ready";
+import { compareFrontmatter, type FrontmatterDiff } from "./frontmatter/frontmatter-diff";
 
 /**
  * Generic frontmatter object type for indexer

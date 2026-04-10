@@ -1,7 +1,7 @@
 import { BehaviorSubject, type Observable, Subject } from "rxjs";
 
-import type { FrontmatterDiff } from "../../file/frontmatter-diff";
-import type { InsertVaultRow, VaultRow, VaultTableEvent } from "../../vault-table/types";
+import type { FrontmatterDiff } from "../../core/frontmatter/frontmatter-diff";
+import type { InsertVaultRow, VaultRow, VaultTableEvent } from "../../core/vault-table/types";
 import { TFile } from "./obsidian";
 
 // ─── Operation Log ───────────────────────────────────────────

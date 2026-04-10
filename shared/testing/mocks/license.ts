@@ -1,6 +1,6 @@
 import { BehaviorSubject } from "rxjs";
 
-import type { LicenseManager } from "../../license/license-manager";
+import type { LicenseManager } from "../../core/license/license-manager";
 
 export function createProLicenseStore(): LicenseManager {
 	const subject = new BehaviorSubject<boolean>(true);

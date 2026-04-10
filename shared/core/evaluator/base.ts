@@ -1,6 +1,6 @@
 import type { BehaviorSubject, Subscription } from "rxjs";
 
-import { buildPropertyMapping, extractExpressionIdentifiers, sanitizeExpression } from "../expression-utils";
+import { buildPropertyMapping, extractExpressionIdentifiers, sanitizeExpression } from "../../utils/expression-utils";
 
 export interface BaseRule {
 	id: string;

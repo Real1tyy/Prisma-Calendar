@@ -1,4 +1,4 @@
-import { parseWikiLink } from "../file/link-parser";
+import { parseWikiLink } from "../core/file/link-parser";
 
 /**
  * Converts a value that could be a string, array, or other type into an array of strings.
