@@ -10,6 +10,7 @@ All notable changes to this project will be documented here.
 - **Wrong virtual event dates for yearly and custom-interval recurrences**: Yearly and custom-interval daily events could appear on incorrect dates. Events now correctly align to their recurrence cycle. See [Recurring Events](./features/events/recurring-dsl.md).
 - **Events sometimes incorrectly marked as done**: Recurring instances could be prematurely marked as done — timed events were marked at start time instead of end time, and all-day events were marked at midnight instead of end of day. See [Recurring Events](./features/events/recurring-dsl.md).
 - **Removing last participant in edit modal not saving**: Clearing all participants from an event and saving did not remove them from frontmatter — the old value persisted. See [Participants](./features/events/participants.md).
+- **Back/forward navigation losing forward history**: Navigating back and then performing any view change permanently destroyed forward history, making the forward button unusable. Both back and forward navigation now work reliably.
 
 ---
 

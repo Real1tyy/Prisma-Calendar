@@ -2019,18 +2019,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 
 	navigateBack(): boolean {
 		if (!this.calendar) return false;
-		const entry = this.navigationHistory.back();
-		if (!entry) return false;
-		this.calendar.changeView(entry.viewType, entry.date);
-		return true;
+		return this.navigationHistory.navigate("back", (e) => this.calendar!.changeView(e.viewType, e.date));
 	}
 
 	navigateForward(): boolean {
 		if (!this.calendar) return false;
-		const entry = this.navigationHistory.forward();
-		if (!entry) return false;
-		this.calendar.changeView(entry.viewType, entry.date);
-		return true;
+		return this.navigationHistory.navigate("forward", (e) => this.calendar!.changeView(e.viewType, e.date));
 	}
 
 	scrollToNow(): void {

@@ -35,20 +35,24 @@ export class HistoryStack<T> {
 
 	back(): T | null {
 		if (!this.canGoBack()) return null;
-
-		this.locked = true;
 		this.index--;
-		this.locked = false;
 		return this.entries[this.index];
 	}
 
 	forward(): T | null {
 		if (!this.canGoForward()) return null;
-
-		this.locked = true;
 		this.index++;
-		this.locked = false;
 		return this.entries[this.index];
+	}
+
+	/** Navigate back/forward and run a callback while pushes are suppressed. */
+	navigate(direction: "back" | "forward", apply: (entry: T) => void): boolean {
+		const entry = direction === "back" ? this.back() : this.forward();
+		if (!entry) return false;
+		this.locked = true;
+		apply(entry);
+		this.locked = false;
+		return true;
 	}
 
 	current(): T | null {
