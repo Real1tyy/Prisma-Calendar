@@ -22,8 +22,9 @@
 		"incremental": true,
 		"tsBuildInfoFile": ".tsbuildinfo",
 		"paths": {
-			"@real1ty-obsidian-plugins/testing": ["../shared/src/testing/index.ts"],
 			"@real1ty-obsidian-plugins": ["shared/index.ts"],
+			"@real1ty-obsidian-plugins/core": ["../shared/src/core/index.ts"],
+			"@real1ty-obsidian-plugins/testing": ["../shared/src/testing/index.ts"],
 			"@real1ty-obsidian-plugins/*": ["shared/*"]
 		}
 	},
