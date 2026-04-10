@@ -38,7 +38,7 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 	private settingsSubscription: Subscription | null = null;
 	private settings: SingleCalendarConfig;
 	private readonly propagator: FrontmatterPropagator;
-	private readonly categoryGroups: ReactiveMultiGroupBy<Frontmatter, string>;
+	private categoryGroups: ReactiveMultiGroupBy<Frontmatter, string>;
 
 	public readonly categories$: Observable<CategoryInfo[]>;
 
@@ -50,18 +50,14 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 	) {
 		const settings = settingsStore.value;
 		super(repo.getTable(), {
-			filter: (row) => {
-				if (!settings.categoryProp) return false;
-				return parseIntoList(row.data[settings.categoryProp]).length > 0;
-			},
+			filter: (row) => this.hasCategoryValues(row.data, settings.categoryProp),
+			distinctBy: (oldRow, newRow) => this.categoryValuesEqual(oldRow.data, newRow.data, this.settings.categoryProp),
 		});
 
 		this.settings = settings;
 		this.categories$ = this.categoriesSubject.asObservable();
 
-		this.categoryGroups = this.createMultiGroupBy((row) =>
-			settings.categoryProp ? parseIntoList(row.data[settings.categoryProp]) : []
-		);
+		this.categoryGroups = this.buildCategoryGroups();
 
 		this.propagator = new FrontmatterPropagator(app, {
 			debounceMs: PROPAGATION_DEBOUNCE_MS,
@@ -83,7 +79,14 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
+			const categoryPropChanged = newSettings.categoryProp !== this.settings.categoryProp;
 			this.settings = newSettings;
+			if (categoryPropChanged) {
+				this.updateFilter((row) => this.hasCategoryValues(row.data, newSettings.categoryProp));
+				this.categoryGroups.destroy();
+				this.categoryGroups = this.buildCategoryGroups();
+				this.categoriesSubject.next(this.buildCategoryInfoList());
+			}
 		});
 
 		this.viewEventsSub = this.events$.subscribe((event) => {
@@ -151,6 +154,25 @@ export class CategoryTracker extends VaultTableView<Frontmatter> {
 			name,
 			color: this.resolveCategoryColor(name),
 		}));
+	}
+
+	private buildCategoryGroups(): ReactiveMultiGroupBy<Frontmatter, string> {
+		return this.createMultiGroupBy((row) => {
+			const prop = this.settings.categoryProp;
+			return prop ? parseIntoList(row.data[prop]) : [];
+		});
+	}
+
+	private hasCategoryValues(data: Frontmatter, categoryProp: string | undefined): boolean {
+		if (!categoryProp) return false;
+		return parseIntoList(data[categoryProp]).length > 0;
+	}
+
+	private categoryValuesEqual(oldData: Frontmatter, newData: Frontmatter, categoryProp: string | undefined): boolean {
+		if (!categoryProp) return true;
+		const oldVal = oldData[categoryProp];
+		const newVal = newData[categoryProp];
+		return String(oldVal ?? "") === String(newVal ?? "");
 	}
 
 	private resolveCategoryColor(category: string): string {

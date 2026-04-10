@@ -25,7 +25,7 @@ export class NameSeriesTracker extends VaultTableView<Frontmatter> {
 	private settingsSubscription: Subscription | null = null;
 	private settings: SingleCalendarConfig;
 	private readonly propagator: FrontmatterPropagator;
-	private readonly nameGroups: ReactiveGroupBy<Frontmatter, string>;
+	private nameGroups: ReactiveGroupBy<Frontmatter, string>;
 
 	constructor(
 		app: App,
@@ -33,7 +33,13 @@ export class NameSeriesTracker extends VaultTableView<Frontmatter> {
 		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
-		super(repo.getTable(), { filter: () => true });
+		super(repo.getTable(), {
+			filter: () => true,
+			distinctBy: (oldRow, newRow) => {
+				const titleProp = this.settings?.titleProp;
+				return titleProp !== undefined && oldRow.data[titleProp] === newRow.data[titleProp];
+			},
+		});
 
 		this.settings = settingsStore.value;
 
@@ -64,7 +70,12 @@ export class NameSeriesTracker extends VaultTableView<Frontmatter> {
 		});
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
+			const titlePropChanged = newSettings.titleProp !== this.settings.titleProp;
 			this.settings = newSettings;
+			if (titlePropChanged) {
+				this.nameGroups.destroy();
+				this.nameGroups = this.createGroupBy((row) => this.getNameKey(row.data, row.filePath));
+			}
 		});
 
 		this.viewEventsSub = this.events$.subscribe((event) => {

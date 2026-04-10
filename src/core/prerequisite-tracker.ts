@@ -31,13 +31,24 @@ export class PrerequisiteTracker extends VaultTableView<Frontmatter> {
 		private eventStore: EventStore,
 		settingsStore: BehaviorSubject<SingleCalendarConfig>
 	) {
-		super(repo.getTable(), { filter: () => true });
+		super(repo.getTable(), {
+			filter: () => true,
+			distinctBy: (oldRow, newRow) => {
+				const prereqProp = this.settings?.prerequisiteProp;
+				if (!prereqProp) return true;
+				return String(oldRow.data[prereqProp] ?? "") === String(newRow.data[prereqProp] ?? "");
+			},
+		});
 
 		this.settings = settingsStore.value;
 		this.graph$ = this.graphSubject.asObservable();
 
 		this.settingsSubscription = settingsStore.subscribe((newSettings) => {
+			const prereqPropChanged = newSettings.prerequisiteProp !== this.settings.prerequisiteProp;
 			this.settings = newSettings;
+			if (prereqPropChanged) {
+				this.rebuildAll();
+			}
 		});
 
 		this.viewEventsSub = this.events$.subscribe((event) => {
