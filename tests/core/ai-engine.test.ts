@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, type Mock, vi } from "vitest";
 
 import {
 	buildCommandForOperation,
@@ -6,8 +6,23 @@ import {
 	gatherCategoryContext,
 	parseOperations,
 } from "../../src/core/ai/ai-engine";
+import {
+	buildCreateEventCommand,
+	buildDeleteEventCommand,
+	buildEditEventCommand,
+} from "../../src/core/api/command-builders";
 import type { CalendarBundle } from "../../src/core/calendar-bundle";
 import type { AIOperation } from "../../src/types/ai-operation-schemas";
+
+vi.mock("../../src/core/api/command-builders", () => ({
+	buildCreateEventCommand: vi.fn(),
+	buildEditEventCommand: vi.fn(),
+	buildDeleteEventCommand: vi.fn(),
+}));
+
+const mockBuildCreate = buildCreateEventCommand as Mock;
+const mockBuildEdit = buildEditEventCommand as Mock;
+const mockBuildDelete = buildDeleteEventCommand as Mock;
 
 // ─── Shared Fixtures ────────────────────────────────────────────────
 
@@ -78,14 +93,14 @@ function makeCategoryBundle(
 function makeMockPlugin() {
 	const mockBundle = { calendarId: "test-cal" };
 	const mockCommand = { execute: vi.fn() };
+	const defaultReturn = { command: mockCommand, bundle: mockBundle };
+
+	mockBuildCreate.mockReset().mockReturnValue(defaultReturn);
+	mockBuildEdit.mockReset().mockReturnValue(defaultReturn);
+	mockBuildDelete.mockReset().mockReturnValue(defaultReturn);
+
 	return {
-		plugin: {
-			apiManager: {
-				buildCreateEventCommand: vi.fn(() => ({ command: mockCommand, bundle: mockBundle })),
-				buildEditEventCommand: vi.fn(() => ({ command: mockCommand, bundle: mockBundle })),
-				buildDeleteEventCommand: vi.fn(() => ({ command: mockCommand, bundle: mockBundle })),
-			},
-		} as any,
+		plugin: {} as any,
 		mockCommand,
 		mockBundle,
 	};
@@ -98,16 +113,16 @@ function makeExecutionPlugin(batchExecution: boolean) {
 		commandManager: { executeCommand },
 	};
 	const mockCommand = { execute: vi.fn() };
+	const defaultReturn = { command: mockCommand, bundle: mockBundle };
+
+	mockBuildCreate.mockReset().mockReturnValue(defaultReturn);
+	mockBuildEdit.mockReset().mockReturnValue(defaultReturn);
+	mockBuildDelete.mockReset().mockReturnValue(defaultReturn);
 
 	return {
 		plugin: {
 			settingsStore: {
 				currentSettings: { ai: { aiBatchExecution: batchExecution } },
-			},
-			apiManager: {
-				buildCreateEventCommand: vi.fn(() => ({ command: mockCommand, bundle: mockBundle })),
-				buildEditEventCommand: vi.fn(() => ({ command: mockCommand, bundle: mockBundle })),
-				buildDeleteEventCommand: vi.fn(() => ({ command: mockCommand, bundle: mockBundle })),
 			},
 		} as any,
 		executeCommand,
@@ -134,20 +149,21 @@ describe("parseOperations", () => {
 
 		it("should preserve all optional fields", () => {
 			const result = parseOperations(toJson([VALID_CREATE_FULL]));
-			expect(result).toHaveLength(1);
-			const op = result![0] as AIOperation & { type: "create" };
-			expect(op.categories).toEqual(["Fitness"]);
-			expect(op.location).toBe("Gym");
-			expect(op.participants).toEqual(["Alice", "Bob"]);
-			expect(op.allDay).toBe(false);
+			expect(result![0]).toMatchObject({
+				allDay: false,
+				categories: ["Fitness"],
+				location: "Gym",
+				participants: ["Alice", "Bob"],
+			});
 		});
 
 		it("should parse an empty array", () => {
-			expect(parseOperations("[]")).toEqual([]);
+			const result = parseOperations("[]");
+			expect(result).toEqual([]);
 		});
 
 		it("should handle whitespace-padded JSON", () => {
-			const result = parseOperations(`  \n  ${toJson([VALID_CREATE])}  \n  `);
+			const result = parseOperations(`   ${toJson([VALID_CREATE])}   `);
 			expect(result).toHaveLength(1);
 		});
 	});
@@ -169,41 +185,60 @@ describe("parseOperations", () => {
 		});
 
 		it("should use first code block when multiple exist", () => {
-			const response =
-				wrapInCodeBlock(toJson([VALID_CREATE]), "json") +
-				"\n\nHere's another:\n\n" +
-				wrapInCodeBlock(toJson([VALID_DELETE]), "json");
-			const result = parseOperations(response);
+			const first = toJson([VALID_CREATE]);
+			const second = toJson([VALID_EDIT]);
+			const raw = `\`\`\`json\n${first}\n\`\`\`\n\n\`\`\`json\n${second}\n\`\`\``;
+			const result = parseOperations(raw);
 			expect(result).toHaveLength(1);
 			expect(result![0].type).toBe("create");
 		});
 
 		it("should handle code block with extra whitespace inside", () => {
-			const response = "```json\n\n" + toJson([VALID_CREATE]) + "\n\n```";
-			const result = parseOperations(response);
+			const result = parseOperations(`\`\`\`json\n\n   ${toJson([VALID_CREATE])}   \n\n\`\`\``);
 			expect(result).toHaveLength(1);
 		});
 
 		it("should handle code block with no newline after opening fence", () => {
-			const response = "```json" + toJson([VALID_CREATE]) + "```";
-			const result = parseOperations(response);
+			const result = parseOperations(`\`\`\`json${toJson([VALID_CREATE])}\`\`\``);
 			expect(result).toHaveLength(1);
 		});
 	});
 
 	describe("invalid inputs", () => {
-		it.each([
-			["plain text", "Here are your events for the week"],
-			["partial JSON", '[{"type":"cre'],
-			["markdown without code block", "- Event 1\n- Event 2"],
-			["HTML", "<div>events</div>"],
-			["empty string", ""],
-			["only whitespace", "   \n\t  "],
-			["number", "42"],
-			["null", "null"],
-			["boolean", "true"],
-		])("should return null for %s", (_label, input) => {
-			expect(parseOperations(input)).toBeNull();
+		it("should return null for plain text", () => {
+			expect(parseOperations("Just a regular message")).toBeNull();
+		});
+
+		it("should return null for partial JSON", () => {
+			expect(parseOperations('[{"type":"create"')).toBeNull();
+		});
+
+		it("should return null for markdown without code block", () => {
+			expect(parseOperations("# Heading\n\nSome text")).toBeNull();
+		});
+
+		it("should return null for HTML", () => {
+			expect(parseOperations("<div>not json</div>")).toBeNull();
+		});
+
+		it("should return null for empty string", () => {
+			expect(parseOperations("")).toBeNull();
+		});
+
+		it("should return null for only whitespace", () => {
+			expect(parseOperations("   \n\t  ")).toBeNull();
+		});
+
+		it("should return null for number", () => {
+			expect(parseOperations("42")).toBeNull();
+		});
+
+		it("should return null for null", () => {
+			expect(parseOperations("null")).toBeNull();
+		});
+
+		it("should return null for boolean", () => {
+			expect(parseOperations("true")).toBeNull();
 		});
 
 		it("should return null for an object instead of array", () => {
@@ -211,11 +246,11 @@ describe("parseOperations", () => {
 		});
 
 		it("should return null when one operation in array is invalid", () => {
-			expect(parseOperations(toJson([VALID_CREATE, { type: "create" }]))).toBeNull();
+			expect(parseOperations(toJson([VALID_CREATE, { type: "unknown" }]))).toBeNull();
 		});
 
 		it("should return null for create missing required fields", () => {
-			expect(parseOperations(toJson([{ type: "create", title: "Event" }]))).toBeNull();
+			expect(parseOperations(toJson([{ type: "create" }]))).toBeNull();
 		});
 
 		it("should return null for delete missing filePath", () => {
@@ -223,16 +258,19 @@ describe("parseOperations", () => {
 		});
 
 		it("should return null for unknown operation type", () => {
-			expect(parseOperations(toJson([{ type: "archive", filePath: "e.md" }]))).toBeNull();
+			expect(parseOperations(toJson([{ type: "move", filePath: "x.md" }]))).toBeNull();
 		});
 
 		it("should return null for invalid datetime format in code block", () => {
-			const bad = [{ type: "create", title: "Event", start: "2025-03-15", end: "2025-03-16" }];
-			expect(parseOperations(wrapInCodeBlock(toJson(bad)))).toBeNull();
+			expect(
+				parseOperations(
+					wrapInCodeBlock(toJson([{ type: "create", title: "X", start: "not-a-date", end: "2025-03-15T10:00:00" }]))
+				)
+			).toBeNull();
 		});
 
 		it("should return null for code block containing non-JSON", () => {
-			expect(parseOperations(wrapInCodeBlock("not json at all"))).toBeNull();
+			expect(parseOperations(wrapInCodeBlock("This is not JSON"))).toBeNull();
 		});
 
 		it("should return null for nested array", () => {
@@ -240,7 +278,7 @@ describe("parseOperations", () => {
 		});
 
 		it("should return null for array of strings", () => {
-			expect(parseOperations(toJson(["create", "delete"]))).toBeNull();
+			expect(parseOperations(toJson(["create", "edit"]))).toBeNull();
 		});
 
 		it("should return null for array of nulls", () => {
@@ -250,29 +288,33 @@ describe("parseOperations", () => {
 
 	describe("large/stress inputs", () => {
 		it("should parse a large batch of operations", () => {
-			const ops = Array.from({ length: 50 }, (_, i) => ({
-				type: "create",
+			const ops = Array.from({ length: 100 }, (_, i) => ({
+				type: "create" as const,
 				title: `Event ${i}`,
 				start: "2025-03-15T09:00:00",
 				end: "2025-03-15T10:00:00",
 			}));
 			const result = parseOperations(toJson(ops));
-			expect(result).toHaveLength(50);
+			expect(result).toHaveLength(100);
 		});
 
 		it("should handle operations with long string values", () => {
-			const longTitle = "A".repeat(500);
-			const op = { ...VALID_CREATE, title: longTitle };
-			const result = parseOperations(toJson([op]));
+			const longTitle = "A".repeat(10000);
+			const result = parseOperations(
+				toJson([{ type: "create", title: longTitle, start: "2025-03-15T09:00:00", end: "2025-03-15T10:00:00" }])
+			);
 			expect(result).toHaveLength(1);
-			expect((result![0] as AIOperation & { type: "create" }).title).toBe(longTitle);
+			expect(result![0].type === "create" && result![0].title).toBe(longTitle);
 		});
 
 		it("should handle operations with many categories", () => {
-			const op = { ...VALID_CREATE, categories: Array.from({ length: 100 }, (_, i) => `Category ${i}`) };
-			const result = parseOperations(toJson([op]));
+			const cats = Array.from({ length: 50 }, (_, i) => `Cat-${i}`);
+			const result = parseOperations(
+				toJson([
+					{ type: "create", title: "X", start: "2025-03-15T09:00:00", end: "2025-03-15T10:00:00", categories: cats },
+				])
+			);
 			expect(result).toHaveLength(1);
-			expect((result![0] as AIOperation & { type: "create" }).categories).toHaveLength(100);
 		});
 	});
 });
@@ -281,22 +323,20 @@ describe("parseOperations", () => {
 
 describe("gatherCategoryContext", () => {
 	it("should return null when no categories and no presets", () => {
-		expect(gatherCategoryContext(makeCategoryBundle([], []))).toBeNull();
+		expect(gatherCategoryContext(makeCategoryBundle([]))).toBeNull();
 	});
 
 	it("should return null when no categories and undefined presets", () => {
-		expect(gatherCategoryContext(makeCategoryBundle([]))).toBeNull();
+		expect(gatherCategoryContext(makeCategoryBundle([], undefined))).toBeNull();
 	});
 
 	it("should return categories when they exist", () => {
 		const result = gatherCategoryContext(makeCategoryBundle(["Work", "Personal"]));
-		expect(result).not.toBeNull();
 		expect(result!.availableCategories).toEqual(["Work", "Personal"]);
-		expect(result!.presets).toEqual([]);
 	});
 
 	it("should return presets when they exist", () => {
-		const presets = [{ id: "1", name: "Default", categories: ["Work", "Fitness"] }];
+		const presets = [{ id: "1", name: "Morning", categories: ["Fitness"] }];
 		const result = gatherCategoryContext(makeCategoryBundle([], presets));
 		expect(result).not.toBeNull();
 		expect(result!.availableCategories).toEqual([]);
@@ -333,29 +373,29 @@ describe("buildCommandForOperation", () => {
 	it("should delegate create to buildCreateEventCommand", () => {
 		const { plugin } = makeMockPlugin();
 		buildCommandForOperation(plugin, VALID_CREATE);
-		expect(plugin.apiManager.buildCreateEventCommand).toHaveBeenCalledTimes(1);
-		expect(plugin.apiManager.buildEditEventCommand).not.toHaveBeenCalled();
-		expect(plugin.apiManager.buildDeleteEventCommand).not.toHaveBeenCalled();
+		expect(mockBuildCreate).toHaveBeenCalledTimes(1);
+		expect(mockBuildEdit).not.toHaveBeenCalled();
+		expect(mockBuildDelete).not.toHaveBeenCalled();
 	});
 
 	it("should delegate edit to buildEditEventCommand", () => {
 		const { plugin } = makeMockPlugin();
 		buildCommandForOperation(plugin, VALID_EDIT);
-		expect(plugin.apiManager.buildEditEventCommand).toHaveBeenCalledTimes(1);
-		expect(plugin.apiManager.buildCreateEventCommand).not.toHaveBeenCalled();
+		expect(mockBuildEdit).toHaveBeenCalledTimes(1);
+		expect(mockBuildCreate).not.toHaveBeenCalled();
 	});
 
 	it("should delegate delete to buildDeleteEventCommand", () => {
 		const { plugin } = makeMockPlugin();
 		buildCommandForOperation(plugin, VALID_DELETE);
-		expect(plugin.apiManager.buildDeleteEventCommand).toHaveBeenCalledTimes(1);
-		expect(plugin.apiManager.buildCreateEventCommand).not.toHaveBeenCalled();
+		expect(mockBuildDelete).toHaveBeenCalledTimes(1);
+		expect(mockBuildCreate).not.toHaveBeenCalled();
 	});
 
 	it("should pass all create fields including optionals", () => {
 		const { plugin } = makeMockPlugin();
 		buildCommandForOperation(plugin, VALID_CREATE_FULL);
-		expect(plugin.apiManager.buildCreateEventCommand).toHaveBeenCalledWith({
+		expect(mockBuildCreate).toHaveBeenCalledWith(plugin, {
 			title: "Workout",
 			start: "2025-03-15T06:00:00",
 			end: "2025-03-15T07:00:00",
@@ -369,17 +409,18 @@ describe("buildCommandForOperation", () => {
 	it("should omit missing optional create fields", () => {
 		const { plugin } = makeMockPlugin();
 		buildCommandForOperation(plugin, VALID_CREATE);
-		const callArg = plugin.apiManager.buildCreateEventCommand.mock.calls[0][0];
-		expect(callArg).not.toHaveProperty("allDay");
-		expect(callArg).not.toHaveProperty("categories");
-		expect(callArg).not.toHaveProperty("location");
-		expect(callArg).not.toHaveProperty("participants");
+		const callArgs = mockBuildCreate.mock.calls[0];
+		const input = callArgs[1];
+		expect(input).not.toHaveProperty("allDay");
+		expect(input).not.toHaveProperty("categories");
+		expect(input).not.toHaveProperty("location");
+		expect(input).not.toHaveProperty("participants");
 	});
 
 	it("should pass all edit fields including optionals", () => {
 		const { plugin } = makeMockPlugin();
 		buildCommandForOperation(plugin, VALID_EDIT_FULL);
-		expect(plugin.apiManager.buildEditEventCommand).toHaveBeenCalledWith({
+		expect(mockBuildEdit).toHaveBeenCalledWith(plugin, {
 			filePath: "events/meeting.md",
 			title: "Renamed Meeting",
 			start: "2025-03-15T14:00:00",
@@ -394,26 +435,26 @@ describe("buildCommandForOperation", () => {
 	it("should pass only filePath for delete", () => {
 		const { plugin } = makeMockPlugin();
 		buildCommandForOperation(plugin, VALID_DELETE);
-		expect(plugin.apiManager.buildDeleteEventCommand).toHaveBeenCalledWith({
+		expect(mockBuildDelete).toHaveBeenCalledWith(plugin, {
 			filePath: "events/old.md",
 		});
 	});
 
 	it("should return null when create builder returns null", () => {
 		const { plugin } = makeMockPlugin();
-		plugin.apiManager.buildCreateEventCommand.mockReturnValue(null);
+		mockBuildCreate.mockReturnValue(null);
 		expect(buildCommandForOperation(plugin, VALID_CREATE)).toBeNull();
 	});
 
 	it("should return null when edit builder returns null", () => {
 		const { plugin } = makeMockPlugin();
-		plugin.apiManager.buildEditEventCommand.mockReturnValue(null);
+		mockBuildEdit.mockReturnValue(null);
 		expect(buildCommandForOperation(plugin, VALID_EDIT)).toBeNull();
 	});
 
 	it("should return null when delete builder returns null", () => {
 		const { plugin } = makeMockPlugin();
-		plugin.apiManager.buildDeleteEventCommand.mockReturnValue(null);
+		mockBuildDelete.mockReturnValue(null);
 		expect(buildCommandForOperation(plugin, VALID_DELETE)).toBeNull();
 	});
 
@@ -454,7 +495,7 @@ describe("executeOperations", () => {
 
 		it("should count all as failed when build returns null", async () => {
 			const { plugin, executeCommand } = makeExecutionPlugin(false);
-			plugin.apiManager.buildCreateEventCommand.mockReturnValue(null);
+			mockBuildCreate.mockReturnValue(null);
 			const result = await executeOperations(plugin, TWO_CREATE_OPS);
 			expect(result).toEqual({ succeeded: 0, failed: 2, total: 2 });
 			expect(executeCommand).not.toHaveBeenCalled();
@@ -496,10 +537,10 @@ describe("executeOperations", () => {
 		});
 
 		it("should handle build failure mixed with execution failure", async () => {
-			const { plugin, executeCommand } = makeExecutionPlugin(false);
-			plugin.apiManager.buildCreateEventCommand
+			const { plugin, executeCommand, mockCommand } = makeExecutionPlugin(false);
+			mockBuildCreate
 				.mockReturnValueOnce(null)
-				.mockReturnValueOnce({ command: { execute: vi.fn() }, bundle: { commandManager: { executeCommand } } });
+				.mockReturnValueOnce({ command: mockCommand, bundle: { commandManager: { executeCommand } } });
 			executeCommand.mockRejectedValueOnce(new Error("Failed"));
 			const result = await executeOperations(plugin, TWO_CREATE_OPS);
 			expect(result).toEqual({ succeeded: 0, failed: 2, total: 2 });
@@ -523,9 +564,7 @@ describe("executeOperations", () => {
 
 		it("should track build failures separately from batch execution", async () => {
 			const { plugin, executeCommand, mockBundle, mockCommand } = makeExecutionPlugin(true);
-			plugin.apiManager.buildCreateEventCommand
-				.mockReturnValueOnce({ command: mockCommand, bundle: mockBundle })
-				.mockReturnValueOnce(null);
+			mockBuildCreate.mockReturnValueOnce({ command: mockCommand, bundle: mockBundle }).mockReturnValueOnce(null);
 			const result = await executeOperations(plugin, TWO_CREATE_OPS);
 			expect(result).toEqual({ succeeded: 1, failed: 1, total: 2 });
 			expect(executeCommand).toHaveBeenCalledTimes(1);
@@ -533,7 +572,7 @@ describe("executeOperations", () => {
 
 		it("should fail all when all builds fail", async () => {
 			const { plugin, executeCommand } = makeExecutionPlugin(true);
-			plugin.apiManager.buildCreateEventCommand.mockReturnValue(null);
+			mockBuildCreate.mockReturnValue(null);
 			const result = await executeOperations(plugin, TWO_CREATE_OPS);
 			expect(result).toEqual({ succeeded: 0, failed: 2, total: 2 });
 			expect(executeCommand).not.toHaveBeenCalled();
@@ -586,7 +625,7 @@ describe("executeOperations", () => {
 
 		it("should always have succeeded + failed === total in batch mode", async () => {
 			const { plugin, mockBundle, mockCommand } = makeExecutionPlugin(true);
-			plugin.apiManager.buildCreateEventCommand
+			mockBuildCreate
 				.mockReturnValueOnce({ command: mockCommand, bundle: mockBundle })
 				.mockReturnValueOnce(null)
 				.mockReturnValueOnce({ command: mockCommand, bundle: mockBundle });

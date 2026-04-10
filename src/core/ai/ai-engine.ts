@@ -2,6 +2,7 @@ import { type Command, MacroCommand, toLocalISOString } from "@real1ty-obsidian-
 
 import type CustomCalendarPlugin from "../../main";
 import { type AIOperation, AIOperationsSchema } from "../../types/ai-operation-schemas";
+import { buildCreateEventCommand, buildDeleteEventCommand, buildEditEventCommand } from "../api/command-builders";
 import type { PrismaCreateEventInput, PrismaEditEventInput, PrismaEventInput } from "../api/types";
 import type { CalendarBundle } from "../calendar-bundle";
 import {
@@ -176,16 +177,16 @@ export function buildCommandForOperation(
 	if (op.type === "create") {
 		const input: PrismaCreateEventInput = { title: op.title, start: op.start, end: op.end };
 		applyOptionalFields(input, op);
-		return plugin.apiManager.buildCreateEventCommand(input);
+		return buildCreateEventCommand(plugin, input);
 	} else if (op.type === "edit") {
 		const input: PrismaEditEventInput = { filePath: op.filePath };
 		if (op.title !== undefined) input.title = op.title;
 		if (op.start !== undefined) input.start = op.start;
 		if (op.end !== undefined) input.end = op.end;
 		applyOptionalFields(input, op);
-		return plugin.apiManager.buildEditEventCommand(input);
+		return buildEditEventCommand(plugin, input);
 	} else {
-		return plugin.apiManager.buildDeleteEventCommand({ filePath: op.filePath });
+		return buildDeleteEventCommand(plugin, { filePath: op.filePath });
 	}
 }
 

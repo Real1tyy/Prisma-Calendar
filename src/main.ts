@@ -19,6 +19,15 @@ import { registerPrismaBasesView } from "./components/views/bases-calendar-view"
 import { VirtualEventsBlockRenderer } from "./components/virtual-events-block";
 import { COMMAND_IDS, VIRTUAL_EVENTS_CODE_FENCE } from "./constants";
 import { CalendarBundle, IndexerRegistry, MinimizedModalManager, PrismaCalendarApiManager } from "./core";
+import {
+	addZettelIdToActiveNote,
+	duplicateCurrentEvent,
+	openCreateEventModal,
+	openCreateUntrackedEventModal,
+	openEditActiveNoteModal,
+	triggerCurrentEventStopwatch,
+} from "./core/api/modal-actions";
+import { redo, undo } from "./core/api/read-operations";
 import { exportCalendarAsICS } from "./core/integrations/ics-export";
 import { importEventsToCalendar } from "./core/integrations/ics-import";
 import type { LicenseManager } from "./core/license";
@@ -231,36 +240,36 @@ export default class CustomCalendarPlugin extends Plugin {
 		addBatchCommand(COMMAND_IDS.BATCH_MOVE_PREV_WEEK, "Move to previous week", (view) => view.moveSelection(-1));
 
 		addApiCommand(COMMAND_IDS.UNDO, "Undo", () => {
-			void this.apiManager.undo().then((success) => {
+			void undo(this).then((success) => {
 				if (!success) new Notice("Nothing to undo");
 			});
 		});
 		addApiCommand(COMMAND_IDS.REDO, "Redo", () => {
-			void this.apiManager.redo().then((success) => {
+			void redo(this).then((success) => {
 				if (!success) new Notice("Nothing to redo");
 			});
 		});
 
 		addApiCommand(COMMAND_IDS.CREATE_EVENT, "Create new event", () => {
-			void this.apiManager.openCreateEventModal(undefined, false, true);
+			void openCreateEventModal(this, undefined, false, true);
 		});
 		addApiCommand(COMMAND_IDS.CREATE_EVENT_WITH_STOPWATCH, "Create new event with stopwatch", () => {
-			void this.apiManager.openCreateEventModal(undefined, true, true);
+			void openCreateEventModal(this, undefined, true, true);
 		});
 		addApiCommand(COMMAND_IDS.CREATE_UNTRACKED_EVENT, "Create new untracked event", () => {
-			this.apiManager.openCreateUntrackedEventModal();
+			openCreateUntrackedEventModal(this);
 		});
 		addApiCommand(COMMAND_IDS.EDIT_CURRENT_NOTE_AS_EVENT, "Edit current note as event", () => {
-			void this.apiManager.openEditActiveNoteModal();
+			void openEditActiveNoteModal(this);
 		});
 		addApiCommand(COMMAND_IDS.ADD_ZETTEL_ID_TO_CURRENT_NOTE, "Add ZettelID to current note", () => {
-			void this.apiManager.addZettelIdToActiveNote();
+			void addZettelIdToActiveNote(this);
 		});
 		addApiCommand(COMMAND_IDS.DUPLICATE_CURRENT_EVENT, "Duplicate current event", () => {
-			void this.apiManager.duplicateCurrentEvent();
+			void duplicateCurrentEvent(this);
 		});
 		addApiCommand(COMMAND_IDS.TRIGGER_CURRENT_EVENT_STOPWATCH, "Trigger current event stopwatch", () => {
-			void this.apiManager.triggerCurrentEventStopwatch();
+			void triggerCurrentEventStopwatch(this);
 		});
 		addCalendarViewCommand(COMMAND_IDS.EDIT_LAST_FOCUSED_EVENT, "Edit last focused event", (view) => {
 			view.openEditModalForFocusedEvent();

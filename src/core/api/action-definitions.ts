@@ -1,8 +1,36 @@
 import { type ActionDefMap, ParamCoercion } from "@real1ty-obsidian-plugins";
 
+import type CustomCalendarPlugin from "../../main";
 import type { SingleCalendarConfig } from "../../types";
 import type { AIMode } from "../../types/ai";
-import type { PrismaCalendarApiManager } from "./api-manager";
+import { aiQuery } from "./ai-operations";
+import { batchDelete, batchMarkAsDone, batchMarkAsUndone, batchToggleSkip } from "./batch-operations";
+import {
+	getCalendarInfo,
+	getSettings,
+	getStatistics,
+	listCalendars,
+	refreshCalendar,
+	updateSettings,
+} from "./calendar-metadata";
+import {
+	convertFileToEvent,
+	createEvent,
+	createUntrackedEvent,
+	deleteEvent,
+	editEvent,
+	makeEventReal,
+	makeEventVirtual,
+} from "./event-crud";
+import {
+	addZettelIdToActiveNote,
+	duplicateCurrentEvent,
+	openCreateEventModal,
+	openEditActiveNoteModal,
+} from "./modal-actions";
+import { navigateToDate } from "./navigation";
+import { getAllEvents, getCategories, getEventByPath, getEvents, getUntrackedEvents } from "./read-operations";
+import { cloneEvent, markAsDone, markAsUndone, moveEvent, toggleSkip } from "./status-lifecycle";
 import type {
 	NavigateInput,
 	PrismaAIQueryInput,
@@ -14,16 +42,17 @@ import type {
 	PrismaMakeVirtualInput,
 } from "./types";
 
-export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
+export function buildActions(plugin: CustomCalendarPlugin): ActionDefMap {
 	return {
 		isPro: {
 			handler: () => {
-				return manager.isPro();
+				return plugin.isProEnabled;
 			},
 		},
 		openCreateEventModal: {
 			handler: (options?: { calendarId?: string; autoStartStopwatch?: boolean; openCreatedInNewTab?: boolean }) => {
-				void manager.openCreateEventModal(
+				void openCreateEventModal(
+					plugin,
 					options?.calendarId,
 					options?.autoStartStopwatch ?? false,
 					options?.openCreatedInNewTab ?? false
@@ -37,7 +66,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		openEditActiveNoteModal: {
 			handler: async (options?: { calendarId?: string }) => {
-				await manager.openEditActiveNoteModal(options?.calendarId);
+				await openEditActiveNoteModal(plugin, options?.calendarId);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				calendarId: ParamCoercion.string(raw, "calendarId"),
@@ -45,7 +74,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		createUntrackedEvent: {
 			handler: async (input: { title: string; calendarId?: string }) => {
-				await manager.createUntrackedEvent(input.title, input.calendarId);
+				await createUntrackedEvent(plugin, input.title, input.calendarId);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				title: ParamCoercion.required.string(raw, "title"),
@@ -54,7 +83,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		createEvent: {
 			handler: async (input: PrismaCreateEventInput) => {
-				await manager.createEvent(input);
+				await createEvent(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				title: ParamCoercion.required.string(raw, "title"),
@@ -71,7 +100,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		editEvent: {
 			handler: async (input: PrismaEditEventInput) => {
-				await manager.editEvent(input);
+				await editEvent(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				filePath: ParamCoercion.required.string(raw, "filePath"),
@@ -89,7 +118,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		deleteEvent: {
 			handler: async (input: PrismaDeleteEventInput) => {
-				await manager.deleteEvent(input);
+				await deleteEvent(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				filePath: ParamCoercion.required.string(raw, "filePath"),
@@ -98,7 +127,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		convertFileToEvent: {
 			handler: async (input: PrismaConvertEventInput) => {
-				await manager.convertFileToEvent(input);
+				await convertFileToEvent(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				filePath: ParamCoercion.required.string(raw, "filePath"),
@@ -116,7 +145,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		makeEventVirtual: {
 			handler: async (input: PrismaMakeVirtualInput) => {
-				await manager.makeEventVirtual(input);
+				await makeEventVirtual(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				filePath: ParamCoercion.required.string(raw, "filePath"),
@@ -125,7 +154,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		makeEventReal: {
 			handler: async (input: PrismaMakeRealInput) => {
-				await manager.makeEventReal(input);
+				await makeEventReal(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				virtualEventId: ParamCoercion.required.string(raw, "virtualEventId"),
@@ -134,7 +163,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		addZettelIdToActiveNote: {
 			handler: async (options?: { calendarId?: string }) => {
-				await manager.addZettelIdToActiveNote(options?.calendarId);
+				await addZettelIdToActiveNote(plugin, options?.calendarId);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				calendarId: ParamCoercion.string(raw, "calendarId"),
@@ -142,7 +171,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		duplicateCurrentEvent: {
 			handler: async (options?: { calendarId?: string }) => {
-				await manager.duplicateCurrentEvent(options?.calendarId);
+				await duplicateCurrentEvent(plugin, options?.calendarId);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				calendarId: ParamCoercion.string(raw, "calendarId"),
@@ -150,7 +179,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		navigateToDate: {
 			handler: async (input: NavigateInput) => {
-				await manager.navigateToDate(input);
+				await navigateToDate(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				date: ParamCoercion.string(raw, "date"),
@@ -163,27 +192,27 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 
 		getEvents: {
 			handler: async (input: { start: string; end: string; calendarId?: string }) => {
-				return await manager.getEvents(input);
+				return await getEvents(plugin, input);
 			},
 		},
 		getEventByPath: {
 			handler: (input: { filePath: string; calendarId?: string }) => {
-				return manager.getEventByPath(input);
+				return getEventByPath(plugin, input);
 			},
 		},
 		getAllEvents: {
 			handler: (input?: { calendarId?: string }) => {
-				return manager.getAllEvents(input);
+				return getAllEvents(plugin, input);
 			},
 		},
 		getCategories: {
 			handler: (input?: { calendarId?: string }) => {
-				return manager.getCategories(input);
+				return getCategories(plugin, input);
 			},
 		},
 		getUntrackedEvents: {
 			handler: (input?: { calendarId?: string }) => {
-				return manager.getUntrackedEvents(input);
+				return getUntrackedEvents(plugin, input);
 			},
 		},
 
@@ -191,7 +220,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 
 		markAsDone: {
 			handler: async (input: { filePath: string; calendarId?: string }) => {
-				return await manager.markAsDone(input);
+				return await markAsDone(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				filePath: ParamCoercion.required.string(raw, "filePath"),
@@ -200,7 +229,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		markAsUndone: {
 			handler: async (input: { filePath: string; calendarId?: string }) => {
-				return await manager.markAsUndone(input);
+				return await markAsUndone(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				filePath: ParamCoercion.required.string(raw, "filePath"),
@@ -209,7 +238,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		toggleSkip: {
 			handler: async (input: { filePath: string; calendarId?: string }) => {
-				return await manager.toggleSkip(input);
+				return await toggleSkip(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				filePath: ParamCoercion.required.string(raw, "filePath"),
@@ -218,7 +247,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		cloneEvent: {
 			handler: async (input: { filePath: string; offsetMs?: number; calendarId?: string }) => {
-				return await manager.cloneEvent(input);
+				return await cloneEvent(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				filePath: ParamCoercion.required.string(raw, "filePath"),
@@ -228,7 +257,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		moveEvent: {
 			handler: async (input: { filePath: string; offsetMs: number; calendarId?: string }) => {
-				return await manager.moveEvent(input);
+				return await moveEvent(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				filePath: ParamCoercion.required.string(raw, "filePath"),
@@ -241,22 +270,22 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 
 		batchMarkAsDone: {
 			handler: async (input: { filePaths: string[]; calendarId?: string }) => {
-				return await manager.batchMarkAsDone(input);
+				return await batchMarkAsDone(plugin, input);
 			},
 		},
 		batchMarkAsUndone: {
 			handler: async (input: { filePaths: string[]; calendarId?: string }) => {
-				return await manager.batchMarkAsUndone(input);
+				return await batchMarkAsUndone(plugin, input);
 			},
 		},
 		batchDelete: {
 			handler: async (input: { filePaths: string[]; calendarId?: string }) => {
-				return await manager.batchDelete(input);
+				return await batchDelete(plugin, input);
 			},
 		},
 		batchToggleSkip: {
 			handler: async (input: { filePaths: string[]; calendarId?: string }) => {
-				return await manager.batchToggleSkip(input);
+				return await batchToggleSkip(plugin, input);
 			},
 		},
 
@@ -264,7 +293,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 
 		refreshCalendar: {
 			handler: (input?: { calendarId?: string }) => {
-				manager.refreshCalendar(input);
+				refreshCalendar(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				calendarId: ParamCoercion.string(raw, "calendarId"),
@@ -272,12 +301,12 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 		},
 		getCalendarInfo: {
 			handler: (input?: { calendarId?: string }) => {
-				return manager.getCalendarInfo(input);
+				return getCalendarInfo(plugin, input);
 			},
 		},
 		listCalendars: {
 			handler: () => {
-				return manager.listCalendars();
+				return listCalendars(plugin);
 			},
 		},
 
@@ -290,7 +319,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 				mode?: "name" | "category";
 				calendarId?: string;
 			}) => {
-				return await manager.getStatistics(input);
+				return await getStatistics(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				date: ParamCoercion.string(raw, "date"),
@@ -304,12 +333,12 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 
 		getSettings: {
 			handler: (input?: { calendarId?: string }) => {
-				return manager.getSettings(input);
+				return getSettings(plugin, input);
 			},
 		},
 		updateSettings: {
 			handler: async (input: { settings: Partial<SingleCalendarConfig>; calendarId?: string }) => {
-				return await manager.updateSettings(input);
+				return await updateSettings(plugin, input);
 			},
 		},
 
@@ -317,7 +346,7 @@ export function buildActions(manager: PrismaCalendarApiManager): ActionDefMap {
 
 		aiQuery: {
 			handler: async (input: PrismaAIQueryInput) => {
-				return await manager.aiQuery(input);
+				return await aiQuery(plugin, input);
 			},
 			parseParams: (raw: Record<string, string>) => ({
 				message: ParamCoercion.required.string(raw, "message"),

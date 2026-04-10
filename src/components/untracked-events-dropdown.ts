@@ -4,6 +4,7 @@ import { addCls, cls, ColorEvaluator, removeCls } from "@real1ty-obsidian-plugin
 import type { App } from "obsidian";
 import { debounceTime } from "rxjs";
 
+import { openCreateUntrackedEventModal } from "../core/api/modal-actions";
 import type { CalendarBundle } from "../core/calendar-bundle";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
 import type { ParsedEvent } from "../types/calendar";
@@ -135,7 +136,7 @@ export class UntrackedEventsDropdown {
 		createBtnEl.addEventListener("click", (e) => {
 			e.stopPropagation();
 			this.close();
-			this.bundle.plugin.apiManager.openCreateUntrackedEventModal();
+			openCreateUntrackedEventModal(this.bundle.plugin);
 		});
 
 		const searchContainer = this.dropdownEl.createDiv(cls("untracked-dropdown-search"));
