@@ -1,5 +1,5 @@
 /* ICS Import Modal */
-.prisma-ics-import {
+.prisma-ics-import  {
 	&-modal h2 {
 		margin-bottom: 1rem;
 		font-size: 1.2rem;
@@ -12,7 +12,7 @@
 		gap: 1rem;
 	}
 
-	&-section {
+	&-section  {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
@@ -23,7 +23,7 @@
 		}
 	}
 
-	&-preview {
+	&-preview  {
 		padding: 1rem;
 		background: var(--background-secondary);
 		border-radius: var(--radius-s);
@@ -41,7 +41,7 @@
 		margin: 0;
 	}
 
-	&-event-list {
+	&-event-list  {
 		margin: 0;
 		padding-left: 1.25rem;
 
@@ -64,7 +64,7 @@
 
 /* ICS Import Progress Modal */
 
-.prisma-caldav-accounts {
+.prisma-caldav-accounts  {
 	&-container {
 		margin: 1rem 0;
 		display: flex;
@@ -81,7 +81,7 @@
 	}
 }
 
-.prisma-caldav-account {
+.prisma-caldav-account  {
 	&-item {
 		display: flex;
 		justify-content: space-between;
@@ -110,12 +110,6 @@
 		word-break: break-all;
 	}
 
-	&-dir {
-		font-size: 0.85rem;
-		color: var(--text-accent);
-		font-family: var(--font-monospace);
-	}
-
 	&-status {
 		font-size: 0.8rem;
 		padding: 0.15rem 0.5rem;
@@ -134,7 +128,7 @@
 		flex-shrink: 0;
 	}
 
-	&-btn {
+	&-btn  {
 		padding: 0.4rem 0.75rem;
 		font-size: 0.85rem;
 		border-radius: var(--radius-s);
@@ -148,7 +142,7 @@
 			background: var(--background-modifier-hover);
 		}
 
-		&-delete {
+		&-delete  {
 			color: var(--text-error);
 
 			&:hover {
@@ -159,7 +153,7 @@
 	}
 }
 
-.prisma-caldav-status {
+.prisma-caldav-status  {
 	&-enabled {
 		background: var(--background-modifier-success);
 		color: var(--text-on-accent);
@@ -183,19 +177,14 @@
 	min-width: 500px;
 }
 
-.prisma-caldav-form {
-	margin: 1rem 0;
-}
-
-.prisma-caldav-test-button,
-.prisma-caldav-refresh-button {
+.prisma-caldav-test-button, .prisma-caldav-refresh-button {
 	margin-top: 0.5rem;
 	padding: 0.5rem 1rem;
 	cursor: pointer;
 }
 
-.prisma-caldav-calendar {
-	&-selector {
+.prisma-caldav-calendar  {
+	&-selector  {
 		margin: 1rem 0;
 		padding: 1rem;
 		background: var(--background-secondary);
@@ -207,7 +196,7 @@
 		}
 	}
 
-	&-item {
+	&-item  {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
@@ -240,33 +229,7 @@
 	overflow-y: auto;
 }
 
-.prisma-changes-section {
-	margin-bottom: 1rem;
-
-	&:last-child {
-		margin-bottom: 0;
-	}
-
-	h4 {
-		margin: 0 0 0.5rem;
-		font-size: 0.9rem;
-		font-weight: 600;
-	}
-
-	ul {
-		margin: 0;
-		padding-left: 1.5rem;
-		list-style: none;
-	}
-
-	li {
-		padding: 0.25rem 0;
-		font-family: var(--font-monospace);
-		font-size: 0.85rem;
-	}
-}
-
-.prisma-change {
+.prisma-change  {
 	&-added {
 		color: var(--text-success);
 	}

@@ -11,8 +11,7 @@
 }
 
 /* Keyboard-only focus rings for buttons */
-[class*="prisma-"] button:focus-visible,
-button[class*="prisma-"]:focus-visible {
+[class*="prisma-"] button:focus-visible, button[class*="prisma-"]:focus-visible {
 	outline: 2px solid var(--interactive-accent);
 	outline-offset: 2px;
 }
@@ -20,7 +19,7 @@ button[class*="prisma-"]:focus-visible {
 /* Tabbed view root: prevent Obsidian's .view-content from creating a competing
    scroll context — .prisma-tab-content is the sole scroll container so that
    position: sticky on the toolbar / day-headers / all-day section works. */
-.view-content.prisma-calendar-view-root {
+.view-content.prisma-calendar-view-root  {
 	display: flex;
 	flex-direction: column;
 	height: 100%;

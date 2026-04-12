@@ -1,7 +1,7 @@
 /* ─── Prerequisite Selection Banner ─────────────────────────── */
 
-.prisma-prereq-selection {
-	&-banner {
+.prisma-prereq-selection  {
+	&-banner  {
 		display: flex;
 		align-items: center;
 		gap: 12px;
@@ -26,7 +26,7 @@
 		flex: 1;
 	}
 
-	&-btn {
+	&-btn  {
 		padding: 4px 12px;
 		border-radius: 4px;
 		font-size: var(--font-ui-smaller);
@@ -53,12 +53,12 @@
 	cursor: not-allowed;
 }
 
-.prisma-virtual-events {
+.prisma-virtual-events  {
 	&-block {
 		padding: 8px 0;
 	}
 
-	&-table {
+	&-table  {
 		width: 100%;
 		border-collapse: collapse;
 		font-size: var(--font-smaller);
@@ -87,7 +87,7 @@
 		white-space: nowrap;
 	}
 
-	&-action-btn {
+	&-action-btn  {
 		padding: 2px 8px;
 		font-size: var(--font-smallest);
 		border-radius: var(--radius-s);

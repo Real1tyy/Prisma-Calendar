@@ -3,15 +3,14 @@
    =================================== */
 
 /* Use higher specificity to override default modal styles */
-.app-container .modal-container:has(.prisma-weekly-stats-modal)>.modal,
-body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
+.app-container .modal-container:has(.prisma-weekly-stats-modal)>.modal, body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	max-width: 1120px;
 	width: 90vw;
 	min-width: 800px;
 }
 
-.prisma-stats {
-	&-header {
+.prisma-stats  {
+	&-header  {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -30,7 +29,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		}
 	}
 
-	&-duration-toggle {
+	&-duration-toggle  {
 		cursor: pointer;
 		border: 1px solid var(--background-modifier-border);
 		transition: all 0.2s ease;
@@ -75,7 +74,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		gap: 0.5rem;
 	}
 
-	&-skip-checkbox {
+	&-skip-checkbox  {
 		&-container {
 			display: flex;
 			align-items: center;
@@ -104,13 +103,13 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		}
 	}
 
-	&-nav {
+	&-nav  {
 		&-group {
 			display: flex;
 			gap: 0.25rem;
 		}
 
-		&-button {
+		&-button  {
 			background-color: var(--interactive-normal);
 			border: 1px solid var(--background-modifier-border);
 			color: var(--text-normal);
@@ -136,7 +135,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		}
 	}
 
-	&-today-button {
+	&-today-button  {
 		background-color: var(--interactive-accent);
 		border: 1px solid var(--interactive-accent);
 		color: var(--text-on-accent);
@@ -161,14 +160,14 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		font-size: var(--font-ui-medium);
 	}
 
-	&-chart {
+	&-chart  {
 		&-section {
 			margin-bottom: 1.5rem;
 			background-color: var(--background-secondary);
 			border-radius: var(--radius-m);
 		}
 
-		&-header {
+		&-header  {
 			position: relative;
 			display: flex;
 			align-items: center;
@@ -188,7 +187,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 			}
 		}
 
-		&-container {
+		&-container  {
 			&:not(.prisma-hidden) {
 				display: flex;
 				justify-content: center;
@@ -205,7 +204,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		}
 	}
 
-	&-toggle-chart-btn {
+	&-toggle-chart-btn  {
 		background-color: var(--interactive-normal);
 		border: 1px solid var(--background-modifier-border);
 		color: var(--text-normal);
@@ -223,7 +222,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		}
 	}
 
-	&-table {
+	&-table  {
 		&-container {
 			margin-top: 1.5rem;
 			text-align: center;
@@ -238,12 +237,12 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 					transparent);
 		}
 
-		& {
+		&  {
 			width: 100%;
 			border-collapse: collapse;
 			font-size: var(--font-ui-small);
 
-			tr {
+			tr  {
 				&:last-child td {
 					border-bottom: none;
 				}
@@ -260,7 +259,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		color: var(--text-accent);
 	}
 
-	&-pagination {
+	&-pagination  {
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -268,7 +267,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		margin-top: 1rem;
 		padding: 0.75rem;
 
-		&-button {
+		&-button  {
 			padding: 0.5rem 1rem;
 			background-color: var(--interactive-normal);
 			color: var(--text-normal);
@@ -294,14 +293,14 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 			white-space: nowrap;
 		}
 
-		&-input {
+		&-input  {
 			&-container {
 				display: flex;
 				align-items: center;
 				gap: 0.5rem;
 			}
 
-			& {
+			&  {
 				width: 60px;
 				padding: 0.35rem 0.5rem;
 				background-color: var(--background-primary);
@@ -317,8 +316,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 					border-color: var(--interactive-accent);
 				}
 
-				&::-webkit-inner-spin-button,
-				&::-webkit-outer-spin-button {
+				&::-webkit-inner-spin-button, &::-webkit-outer-spin-button {
 					-webkit-appearance: none;
 					margin: 0;
 				}
@@ -337,14 +335,14 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		}
 	}
 
-	&-mode {
+	&-mode  {
 		&-label {
 			font-size: var(--font-ui-smaller);
 			font-weight: var(--font-weight-medium);
 			color: var(--text-muted);
 		}
 
-		&-button-compact {
+		&-button-compact  {
 			padding: 0.35rem 0.9rem;
 			background-color: var(--interactive-accent);
 			color: var(--text-on-accent);
@@ -368,15 +366,15 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	}
 }
 
-.prisma-weekly-stats-modal {
+.prisma-weekly-stats-modal  {
 	.prisma-stats-chart-container canvas {
 		max-height: 600px;
 		width: 100%;
 		height: 100%;
 	}
 
-	.prisma-stats-table {
-		th {
+	.prisma-stats-table  {
+		th  {
 			text-align: center;
 			padding: 0.75rem;
 			background-color: var(--background-secondary);
@@ -390,7 +388,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 			}
 		}
 
-		td {
+		td  {
 			padding: 0.75rem;
 			border-bottom: 1px solid var(--background-modifier-border);
 			border-right: 1px solid rgb(255 255 255 / 10%);
@@ -408,8 +406,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
    ======================================== */
 @media (width <= 768px) {
 	/* Override modal width for mobile */
-	.app-container .modal-container:has(.prisma-weekly-stats-modal)>.modal,
-	body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
+	.app-container .modal-container:has(.prisma-weekly-stats-modal)>.modal, body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		max-width: 92vw;
 		width: 92vw;
 		min-width: unset;
@@ -427,7 +424,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	}
 
 	/* Row 1: Previous | Duration + Date + Events | Next */
-	.prisma-stats-nav-button {
+	.prisma-stats-nav-button  {
 		&:first-child {
 			grid-column: 1;
 			grid-row: 1;
@@ -439,7 +436,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		}
 	}
 
-	.prisma-stats-header-stat {
+	.prisma-stats-header-stat  {
 		&.prisma-stats-duration-toggle {
 			grid-column: 2;
 			grid-row: 1;
@@ -508,7 +505,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		gap: 4px;
 	}
 
-	.prisma-stats-skip-checkbox {
+	.prisma-stats-skip-checkbox  {
 		&-label {
 			font-size: 10px;
 			gap: 4px;
@@ -521,7 +518,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	}
 
 	/* Chart: Much bigger pie chart */
-	.prisma-stats-chart {
+	.prisma-stats-chart  {
 		&-section {
 			margin-bottom: 1rem;
 		}
@@ -554,29 +551,22 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	}
 
 	/* Column widths: Name 40%, others ~20% each */
-	.prisma-weekly-stats-modal .prisma-stats-table {
-		th:nth-child(1),
-		td:nth-child(1) {
+	.prisma-weekly-stats-modal .prisma-stats-table  {
+		th:nth-child(1), td:nth-child(1) {
 			width: 40%;
 		}
 
-		th:nth-child(2),
-		td:nth-child(2),
-		th:nth-child(3),
-		td:nth-child(3),
-		th:nth-child(4),
-		td:nth-child(4) {
+		th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3), th:nth-child(4), td:nth-child(4) {
 			width: 20%;
 		}
 
-		th,
-		td {
+		th, td {
 			padding: 8px 6px;
 		}
 	}
 
 	/* Compact pagination */
-	.prisma-stats-pagination {
+	.prisma-stats-pagination  {
 		flex-wrap: wrap;
 		gap: 6px;
 		padding: 8px;
@@ -616,14 +606,14 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 }
 
 /* Type filter section */
-.prisma-recurring-events-type {
+.prisma-recurring-events-type  {
 	&-filter {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
 	}
 
-	&-select {
+	&-select  {
 		padding: 0.35rem 1.75rem 0.35rem 0.75rem;
 		border: 1px solid var(--background-modifier-border);
 		border-radius: var(--radius-s);
@@ -652,7 +642,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 	}
 }
 
-.prisma-recurring-events {
+.prisma-recurring-events  {
 	&-filter-label {
 		font-size: var(--font-ui-small);
 		font-weight: var(--font-weight-medium);
@@ -665,7 +655,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		margin-top: 0.75rem;
 	}
 
-	&-checkbox-label {
+	&-checkbox-label  {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
@@ -692,8 +682,8 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 }
 
 /* Type badge base styles */
-.prisma-recurring-type {
-	&-badge {
+.prisma-recurring-type  {
+	&-badge  {
 		display: inline-flex;
 		align-items: center;
 		padding: 0.2rem 0.6rem;
@@ -705,7 +695,7 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		white-space: nowrap;
 		transition: all 0.2s ease;
 
-		&[class*="prisma-recurring-type-"] {
+		&[class*="prisma-recurring-type-"]  {
 			background-color: rgb(var(--badge-color), 0.15);
 			color: rgb(var(--badge-color));
 			border: 1px solid rgb(var(--badge-color), 0.3);
@@ -717,7 +707,6 @@ body .modal-container:has(.prisma-weekly-stats-modal)>.modal {
 		}
 	}
 
-	/* Type-specific colors via CSS custom property pattern */
 	&-daily { --badge-color: 59, 130, 246; --badge-color-dark: 96, 165, 250; }
 	&-weekly { --badge-color: 34, 197, 94; --badge-color-dark: 74, 222, 128; }
 	&-bi-weekly { --badge-color: 168, 85, 247; --badge-color-dark: 192, 132, 252; }

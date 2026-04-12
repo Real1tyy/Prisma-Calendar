@@ -1,5 +1,5 @@
 /* Time grid styling */
-.prisma-calendar-container {
+.prisma-calendar-container  {
 	.fc-timegrid-slot {
 		border-color: var(--background-modifier-border);
 	}
@@ -53,7 +53,7 @@
 		/* Allow the event inside to handle overflow */
 	}
 
-	.fc-daygrid-block-event {
+	.fc-daygrid-block-event  {
 		max-height: var(--all-day-event-height, 75px);
 		overflow: hidden auto;
 
@@ -66,7 +66,7 @@
 	/* All-day events as columns in daily view — events sit side by side when there
 	   is enough horizontal space. Wraps to new rows when events don't fit.
 	   Uses auto basis so width is proportional to content, not forced equal. */
-	.fc-timeGridDay-view {
+	.fc-timeGridDay-view  {
 		.fc-daygrid-day-events {
 			display: flex;
 			flex-flow: row wrap;

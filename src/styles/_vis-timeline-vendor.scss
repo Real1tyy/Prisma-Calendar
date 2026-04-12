@@ -364,8 +364,7 @@ input.vis-configuration.vis-config-range:focus::-ms-fill-upper {
   transition: opacity 0.3s ease-in-out;
 }
 
-.vis-configuration-popup::after,
-.vis-configuration-popup::before {
+.vis-configuration-popup::after, .vis-configuration-popup::before {
   left: 100%;
   top: 50%;
   border: solid transparent;
@@ -704,8 +703,7 @@ div.vis-tooltip {
   -webkit-transition: 0.4s;
 }
 
-.vis-item .vis-delete,
-.vis-item .vis-delete-rtl {
+.vis-item .vis-delete, .vis-item .vis-delete-rtl {
   position: absolute;
   top: 0;
   width: 24px;
@@ -728,8 +726,7 @@ div.vis-tooltip {
   left: -24px;
 }
 
-.vis-item .vis-delete::after,
-.vis-item .vis-delete-rtl::after {
+.vis-item .vis-delete::after, .vis-item .vis-delete-rtl::after {
   content: "\00D7"; /* MULTIPLICATION SIGN */
   color: red;
   font-family: arial, sans-serif;
@@ -742,13 +739,11 @@ div.vis-tooltip {
   transition: color 0.2s linear;
 }
 
-.vis-item .vis-delete:hover,
-.vis-item .vis-delete-rtl:hover {
+.vis-item .vis-delete:hover, .vis-item .vis-delete-rtl:hover {
   background: red;
 }
 
-.vis-item .vis-delete:hover::after,
-.vis-item .vis-delete-rtl:hover::after {
+.vis-item .vis-delete:hover::after, .vis-item .vis-delete-rtl:hover::after {
   color: white;
 }
 
@@ -783,8 +778,7 @@ div.vis-tooltip {
   cursor: e-resize;
 }
 
-.vis-range.vis-item.vis-readonly .vis-drag-left,
-.vis-range.vis-item.vis-readonly .vis-drag-right {
+.vis-range.vis-item.vis-readonly .vis-drag-left, .vis-range.vis-item.vis-readonly .vis-drag-right {
   cursor: auto;
 }
 
@@ -818,8 +812,7 @@ div.vis-tooltip {
   box-sizing: border-box;
 }
 
-.vis-itemset .vis-background,
-.vis-itemset .vis-foreground {
+.vis-itemset .vis-background, .vis-itemset .vis-foreground {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -991,8 +984,7 @@ div.vis-tooltip {
 }
 
 /* expanded/collapsed indicators */
-.vis-label.vis-nesting-group::before,
-.vis-label.vis-nesting-group::before {
+.vis-label.vis-nesting-group::before, .vis-label.vis-nesting-group::before {
   display: inline-block;
   width: 15px;
 }
@@ -1074,24 +1066,17 @@ div.vis-tooltip {
   box-sizing: border-box;
 }
 
-.vis-panel.vis-center,
-.vis-panel.vis-left,
-.vis-panel.vis-right,
-.vis-panel.vis-top,
-.vis-panel.vis-bottom {
+.vis-panel.vis-center, .vis-panel.vis-left, .vis-panel.vis-right, .vis-panel.vis-top, .vis-panel.vis-bottom {
   border: 1px #bfbfbf;
 }
 
-.vis-panel.vis-center,
-.vis-panel.vis-left,
-.vis-panel.vis-right {
+.vis-panel.vis-center, .vis-panel.vis-left, .vis-panel.vis-right {
   border-top-style: solid;
   border-bottom-style: solid;
   overflow: hidden;
 }
 
-.vis-left.vis-panel.vis-vertical-scroll,
-.vis-right.vis-panel.vis-vertical-scroll {
+.vis-left.vis-panel.vis-vertical-scroll, .vis-right.vis-panel.vis-vertical-scroll {
   height: 100%;
   overflow: hidden scroll;
 }
@@ -1112,9 +1097,7 @@ div.vis-tooltip {
   direction: rtl;
 }
 
-.vis-panel.vis-center,
-.vis-panel.vis-top,
-.vis-panel.vis-bottom {
+.vis-panel.vis-center, .vis-panel.vis-top, .vis-panel.vis-bottom {
   border-left-style: solid;
   border-right-style: solid;
 }

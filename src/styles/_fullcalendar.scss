@@ -1,5 +1,5 @@
 /* FullCalendar theme integration with Obsidian */
-.prisma-calendar-container {
+.prisma-calendar-container  {
 	.fc {
 		font-family: var(--font-interface);
 		font-size: var(--font-ui-small);
@@ -10,13 +10,12 @@
 		border-top-width: 2.5px;
 	}
 
-	.fc-theme-standard {
+	.fc-theme-standard  {
 		.fc-scrollgrid {
 			border-color: var(--background-modifier-border);
 		}
 
-		th,
-		td {
+		th, td {
 			border-color: var(--background-modifier-border);
 		}
 
@@ -48,7 +47,7 @@
 		font-weight: var(--font-weight-medium);
 	}
 
-	.fc-button {
+	.fc-button  {
 		background-color: var(--interactive-normal);
 		border-color: var(--background-modifier-border);
 		color: var(--text-normal);
@@ -79,7 +78,7 @@
 	}
 
 	/* Day cells */
-	.fc-daygrid-day {
+	.fc-daygrid-day  {
 		background-color: var(--background-primary);
 
 		&:hover {
@@ -109,9 +108,8 @@
 	}
 
 	/* Day cell coloring — uniform mode: single color applied to all day cells */
-	&.prisma-uniform-day-color {
-		.fc-daygrid-day,
-		.fc-timegrid-col[data-date] {
+	&.prisma-uniform-day-color  {
+		.fc-daygrid-day, .fc-timegrid-col[data-date] {
 			background: linear-gradient(
 				180deg,
 				color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%,
@@ -139,9 +137,8 @@
 	}
 
 	/* Day cell coloring — boundary mode: alternate gradient backgrounds by even/odd month */
-	&.prisma-month-boundary-colors {
-		.fc-daygrid-day.prisma-month-even,
-		.fc-timegrid-col.prisma-month-even {
+	&.prisma-month-boundary-colors  {
+		.fc-daygrid-day.prisma-month-even, .fc-timegrid-col.prisma-month-even {
 			background: linear-gradient(
 				180deg,
 				color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%,
@@ -149,8 +146,7 @@
 			);
 		}
 
-		.fc-daygrid-day.prisma-month-odd,
-		.fc-timegrid-col.prisma-month-odd {
+		.fc-daygrid-day.prisma-month-odd, .fc-timegrid-col.prisma-month-odd {
 			background: linear-gradient(
 				180deg,
 				color-mix(in srgb, var(--month-odd-color) 25%, transparent) 0%,
@@ -176,20 +172,18 @@
 		}
 
 		/* Boundary — preserve today highlight */
-		.fc-day-today.prisma-month-even,
-		.fc-day-today.prisma-month-odd {
+		.fc-day-today.prisma-month-even, .fc-day-today.prisma-month-odd {
 			background: var(--background-modifier-form-field);
 		}
 
 		/* Boundary — preserve hover */
-		.fc-daygrid-day.prisma-month-even:hover,
-		.fc-daygrid-day.prisma-month-odd:hover {
+		.fc-daygrid-day.prisma-month-even:hover, .fc-daygrid-day.prisma-month-odd:hover {
 			background: var(--background-modifier-hover);
 		}
 	}
 
 	/* Button visibility utilities - using proper selector chain for specificity without !important */
-	.fc-header-toolbar .fc-toolbar-chunk .fc-button {
+	.fc-header-toolbar .fc-toolbar-chunk .fc-button  {
 		&.prisma-fc-button-hidden {
 			display: none;
 		}

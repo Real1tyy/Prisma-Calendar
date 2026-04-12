@@ -2,7 +2,7 @@
    LIST VIEW STYLING - MODERN & PROFESSIONAL
    ======================================== */
 
-.prisma-calendar-container {
+.prisma-calendar-container  {
 	/* List view table structure */
 	.fc-list {
 		border: none;
@@ -43,7 +43,7 @@
 	}
 
 	/* List table structure */
-	.fc-list-table {
+	.fc-list-table  {
 		border: none;
 
 		tbody > tr:first-child > td {
@@ -52,14 +52,14 @@
 	}
 
 	/* Event row container */
-	.fc-list-event {
+	.fc-list-event  {
 		cursor: pointer;
 		transition: all 0.15s ease;
 		border-bottom: 1px solid var(--background-modifier-border);
 		background: var(--background-primary);
 
 		/* Apply event color to list view rows with transparency */
-		&.prisma-calendar-event {
+		&.prisma-calendar-event  {
 			background: linear-gradient(90deg,
 					color-mix(in srgb, var(--event-color) 8%, var(--background-primary)) 0%,
 					var(--background-primary) 100%);
@@ -73,8 +73,7 @@
 			}
 
 			/* Active/focus state - slightly more accent, still NO WHITE */
-			&:active,
-			&:focus {
+			&:active, &:focus {
 				background: rgb(var(--interactive-accent-rgb), 0.06);
 				background-color: rgb(var(--interactive-accent-rgb), 0.06);
 				outline: none;
@@ -89,8 +88,7 @@
 		}
 
 		/* Active/focus state - slightly more accent, still NO WHITE */
-		&:active,
-		&:focus {
+		&:active, &:focus {
 			background: rgb(var(--interactive-accent-rgb), 0.06);
 			background-color: rgb(var(--interactive-accent-rgb), 0.06);
 			outline: none;
@@ -170,7 +168,7 @@
 		}
 
 		/* Property links in list view */
-		.prisma-fc-event-prop-link {
+		.prisma-fc-event-prop-link  {
 			color: var(--text-accent);
 			text-decoration: none;
 			font-weight: var(--font-weight-medium);
@@ -186,7 +184,7 @@
 		}
 
 		/* Virtual events in list view */
-		&.prisma-virtual-event {
+		&.prisma-virtual-event  {
 			opacity: 0.5;
 			font-style: italic;
 
@@ -203,9 +201,8 @@
 		background-color: rgb(var(--interactive-accent-rgb), 0.08);
 	}
 
-	tr.fc-list-event {
-		&:active td,
-		&:focus td {
+	tr.fc-list-event  {
+		&:active td, &:focus td {
 			background: rgb(var(--interactive-accent-rgb), 0.06);
 			background-color: rgb(var(--interactive-accent-rgb), 0.06);
 		}
@@ -257,7 +254,7 @@
 
 /* Responsive list view */
 @media (width <= 768px) {
-	.prisma-calendar-container {
+	.prisma-calendar-container  {
 		.fc-list-event-time {
 			width: 80px;
 			min-width: 80px;
@@ -290,7 +287,7 @@
 }
 
 /* Dark mode refinements for list view */
-.theme-dark .prisma-calendar-container {
+.theme-dark .prisma-calendar-container  {
 	.fc-list-day-cushion {
 		background: var(--background-secondary);
 	}

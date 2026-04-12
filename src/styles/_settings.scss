@@ -1,9 +1,9 @@
 /* Settings Search */
-.prisma-settings-search {
+.prisma-settings-search  {
 	margin-left: auto;
 	flex-shrink: 0;
 
-	&-input {
+	&-input  {
 		padding: 6px 10px;
 		border: 1px solid var(--background-modifier-border);
 		border-radius: 6px;
@@ -39,13 +39,13 @@
 	padding-bottom: 16px;
 }
 
-.prisma-nav-buttons {
+.prisma-nav-buttons  {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	flex-wrap: wrap;
 
-	button {
+	button  {
 		padding: 8px 16px;
 		border: 1px solid var(--background-modifier-border);
 		border-radius: 6px;
@@ -65,7 +65,7 @@
 	}
 }
 
-.prisma-settings-info-box {
+.prisma-settings-info-box  {
 	margin-top: 16px;
 	padding: 12px;
 	background-color: var(--background-secondary);
@@ -92,7 +92,7 @@
 	}
 }
 
-.prisma-settings-warning-box {
+.prisma-settings-warning-box  {
 	margin-top: 12px;
 	padding: 12px;
 	background-color: var(--background-modifier-error-rgb);
@@ -104,29 +104,9 @@
 	}
 }
 
-.prisma-frontmatter-display-example .prisma-example-event-box {
-	border: 1px solid var(--background-modifier-border);
-	padding: 8px;
-	border-radius: 4px;
-	max-width: 300px;
-	margin-top: 8px;
-}
-
-.prisma-example-event-box {
-	.prisma-title {
-		font-weight: 500;
-	}
-
-	.prisma-properties {
-		font-size: 0.9em;
-		color: var(--text-muted);
-		margin-top: 4px;
-	}
-}
-
 /* Color example list items */
-.prisma-color-example {
-	&-item {
+.prisma-color-example  {
+	&-item  {
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -160,7 +140,7 @@
 }
 
 /* Color rule items - Compact single row layout */
-.prisma-color-rule {
+.prisma-color-rule  {
 	&-item {
 		border: 1px solid var(--background-modifier-border);
 		border-radius: 6px;
@@ -175,7 +155,7 @@
 		gap: 12px;
 	}
 
-	&-left {
+	&-left  {
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -196,7 +176,7 @@
 		flex-shrink: 0;
 	}
 
-	&-expression-input {
+	&-expression-input  {
 		flex: 1;
 		min-width: 0;
 		padding: 4px 8px;
@@ -220,29 +200,12 @@
 		flex-shrink: 0;
 	}
 
-	&-picker-wrapper {
-		display: flex;
-		align-items: center;
-
-		.prisma-setting-item {
-			border: none;
-			padding: 0;
-			margin: 0;
-			background: transparent;
-		}
-
-		.prisma-setting-item-control {
-			display: flex;
-			align-items: center;
-		}
-	}
-
 	&-controls {
 		display: flex;
 		gap: 4px;
 	}
 
-	&-btn {
+	&-btn  {
 		padding: 4px 8px;
 		border: 1px solid var(--background-modifier-border);
 		border-radius: 4px;
@@ -257,7 +220,7 @@
 			background-color: var(--background-modifier-hover);
 		}
 
-		&-delete {
+		&-delete  {
 			color: var(--text-error);
 
 			&:hover {
@@ -269,7 +232,7 @@
 }
 
 /* Filter preset items */
-.prisma-filter-preset {
+.prisma-filter-preset  {
 	&-item {
 		display: flex;
 		align-items: center;
@@ -281,7 +244,7 @@
 		background-color: var(--background-secondary);
 	}
 
-	&-name-input {
+	&-name-input  {
 		flex: 0 0 180px;
 		padding: 4px 8px;
 		border: 1px solid var(--background-modifier-border);
@@ -297,7 +260,7 @@
 		}
 	}
 
-	&-expression-input {
+	&-expression-input  {
 		flex: 1;
 		min-width: 0;
 		padding: 4px 8px;
@@ -314,7 +277,7 @@
 		}
 	}
 
-	&-btn-delete {
+	&-btn-delete  {
 		padding: 4px 8px;
 		border: 1px solid var(--background-modifier-border);
 		border-radius: 4px;

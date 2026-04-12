@@ -1,10 +1,4 @@
 /* Color Picker Styles */
-.prisma-color-picker-container {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	flex: 1;
-}
 
 /* Color Example Dot */
 .prisma-color-example-dot {
@@ -19,8 +13,8 @@
 }
 
 /* Event Preview Modal */
-.prisma-event-preview {
-	&-modal {
+.prisma-event-preview  {
+	&-modal  {
 		.modal {
 			max-width: 600px;
 			width: 90%;
@@ -34,7 +28,7 @@
 		}
 	}
 
-	&-header {
+	&-header  {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -47,7 +41,7 @@
 		z-index: 10;
 		gap: 16px;
 
-		h2 {
+		h2  {
 			margin: 0;
 			font-size: 28px;
 			font-weight: var(--font-weight-extrabold);
@@ -72,36 +66,7 @@
 		}
 	}
 
-	&-close-btn {
-		position: absolute;
-		top: 16px;
-		right: 16px;
-		width: 32px;
-		height: 32px;
-		border: none;
-		background: var(--interactive-normal);
-		color: var(--text-normal);
-		border-radius: 6px;
-		font-size: 24px;
-		line-height: 1;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		transition: all 0.2s ease;
-		flex-shrink: 0;
-
-		&:hover {
-			background: var(--interactive-hover);
-			transform: scale(1.05);
-		}
-
-		&:active {
-			transform: scale(0.95);
-		}
-	}
-
-	&-section {
+	&-section  {
 		padding: 20px 24px;
 		border-bottom: 1px solid var(--background-modifier-border);
 
@@ -135,7 +100,7 @@
 		font-weight: var(--font-weight-medium);
 	}
 
-	&-time {
+	&-time  {
 		&-grid {
 			display: grid;
 			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -150,35 +115,13 @@
 		}
 	}
 
-	&-file-link {
-		display: inline-block;
-		padding: 8px 12px;
-		background: var(--background-primary);
-		border: 1px solid var(--background-modifier-border);
-		border-radius: 6px;
-		color: var(--text-accent);
-		text-decoration: none;
-		font-family: var(--font-monospace);
-		font-size: var(--font-ui-small);
-		transition: all 0.2s ease;
-		cursor: pointer;
-		word-break: break-all;
-
-		&:hover {
-			background: var(--background-modifier-hover);
-			border-color: var(--text-accent);
-			transform: translateY(-1px);
-			box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
-		}
-	}
-
 	&-props-grid {
 		display: grid;
 		gap: 12px;
 	}
 
-	&-prop {
-		&-item {
+	&-prop  {
+		&-item  {
 			background: var(--background-primary);
 			padding: 12px 16px;
 			border-radius: 8px;
@@ -203,12 +146,12 @@
 			white-space: nowrap;
 		}
 
-		&-value {
+		&-value  {
 			font-size: var(--font-ui-small);
 			color: var(--text-normal);
 			word-break: break-word;
 
-			&-link {
+			&-link  {
 				color: var(--text-accent);
 				text-decoration: none;
 				cursor: pointer;
@@ -224,23 +167,16 @@
 			}
 		}
 	}
-
-	&-empty-message {
-		text-align: center;
-		color: var(--text-muted);
-		font-style: italic;
-		margin: 12px 0;
-	}
 }
 
 /* Responsive adjustments for event preview modal */
 @media (width <= 768px) {
-	.prisma-event-preview {
+	.prisma-event-preview  {
 		&-modal .modal {
 			max-width: 95%;
 		}
 
-		&-header {
+		&-header  {
 			padding: 24px 16px 16px;
 
 			h2 {
@@ -256,17 +192,12 @@
 		&-time-grid {
 			grid-template-columns: 1fr;
 		}
-
-		&-close-btn {
-			top: 12px;
-			right: 12px;
-		}
 	}
 }
 
 /* Event Modal - Header with Preset Selector */
-.prisma-event-modal {
-	&-header {
+.prisma-event-modal  {
+	&-header  {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -289,7 +220,7 @@
 		}
 	}
 
-	&-minimize-button {
+	&-minimize-button  {
 		width: 28px;
 		height: 28px;
 		padding: 0;
@@ -314,7 +245,7 @@
 		}
 	}
 
-	&-clear-button {
+	&-clear-button  {
 		padding: 4px 12px;
 		font-size: var(--font-ui-small);
 		background-color: var(--background-modifier-hover);
@@ -332,11 +263,10 @@
 }
 
 /* Event Modal - Content and internal layout */
-.prisma-event-modal {
+.prisma-event-modal  {
 	/* Content container: flex column with scrollable body and sticky footer
 	   Note: Obsidian's actual scroll container is usually `.modal-content`, so we style both. */
-	.modal-content,
-	.prisma-event-modal-content {
+	.modal-content, .prisma-event-modal-content {
 		display: flex;
 		flex-direction: column;
 		max-height: min(100vh, 740px);
@@ -364,7 +294,7 @@
 	}
 
 	/* Obsidian-like setting layout (prefixed classes) */
-	.prisma-setting-item {
+	.prisma-setting-item  {
 		display: flex;
 		align-items: center;
 		gap: 1rem;
@@ -397,7 +327,7 @@
 			overflow-wrap: break-word;
 		}
 
-		&-control {
+		&-control  {
 			flex: 1;
 			min-width: 0;
 
@@ -419,7 +349,7 @@
 	/* Inputs/selects styling */
 	.prisma-setting-item-control:is(input:not([type="checkbox"]), select),
 	input.prisma-setting-item-control:not([type="checkbox"]),
-	select.prisma-setting-item-control {
+	select.prisma-setting-item-control  {
 		width: 100%;
 		padding: 6px 10px;
 		border: 1px solid var(--background-modifier-border);
@@ -439,7 +369,7 @@
 	}
 
 	/* Custom interval controls - right-aligned row with gap */
-	.prisma-custom-interval-controls {
+	.prisma-custom-interval-controls  {
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
@@ -472,7 +402,7 @@
 		font-size: var(--font-ui-small);
 	}
 
-	.prisma-mod-cta {
+	.prisma-mod-cta  {
 		background-color: var(--interactive-accent);
 		border: 1px solid var(--interactive-accent);
 		color: var(--text-on-accent);
@@ -508,7 +438,7 @@
 }
 
 /* Title input autocomplete */
-.prisma-title {
+.prisma-title  {
 	&-input-wrapper {
 		position: relative;
 		flex: 1;
@@ -541,7 +471,7 @@
 	text-align: center;
 }
 
-.prisma-suggest {
+.prisma-suggest  {
 	&-item {
 		display: flex;
 		justify-content: space-between;
@@ -561,7 +491,7 @@
 }
 
 /* Virtual event toggle in modal header */
-.prisma-virtual-toggle {
+.prisma-virtual-toggle  {
 	display: flex;
 	align-items: center;
 	gap: 10px;
@@ -582,7 +512,7 @@
 }
 
 /* Event Preset Selector */
-.prisma-event-preset {
+.prisma-event-preset  {
 	&-selector-wrapper {
 		display: flex;
 		align-items: center;
@@ -599,7 +529,7 @@
 		flex-shrink: 0;
 	}
 
-	&-select {
+	&-select  {
 		padding: 4px 24px 4px 8px;
 		border: 1px solid var(--background-modifier-border);
 		border-radius: var(--radius-s);
@@ -635,8 +565,7 @@
 		}
 	}
 
-	/* Event Preset Settings */
-	&-item {
+	&-item  {
 		display: flex;
 		align-items: center;
 		gap: 12px;
@@ -687,7 +616,7 @@
 		flex-shrink: 0;
 	}
 
-	&-btn {
+	&-btn  {
 		padding: 4px 10px;
 		border: 1px solid var(--background-modifier-border);
 		border-radius: 4px;
@@ -701,7 +630,7 @@
 			background-color: var(--interactive-hover);
 		}
 
-		&-delete {
+		&-delete  {
 			color: var(--text-error);
 
 			&:hover {
@@ -724,8 +653,8 @@
 
 /* Responsive adjustments for event modal */
 @media (width <= 768px) {
-	.prisma-event-modal {
-		&-header {
+	.prisma-event-modal  {
+		&-header  {
 			flex-direction: column;
 			align-items: stretch;
 			gap: 8px;
@@ -738,14 +667,13 @@
 			}
 		}
 
-		&-minimize-button,
-		&-clear-button {
+		&-minimize-button, &-clear-button {
 			padding: 4px 8px;
 			font-size: 11px;
 		}
 
 		/* Mobile: Stack setting item label above control */
-		.prisma-setting-item {
+		.prisma-setting-item  {
 			flex-direction: column;
 			align-items: stretch;
 
@@ -754,15 +682,12 @@
 				padding-bottom: 6px;
 			}
 
-			&-control {
+			&-control  {
 				&:is(input:not([type="checkbox"]), select) {
 					width: 100%;
 				}
 
-				input[type="text"],
-				input[type="number"],
-				input[type="datetime-local"],
-				select {
+				input[type="text"], input[type="number"], input[type="datetime-local"], select {
 					width: 100%;
 				}
 
@@ -774,7 +699,7 @@
 		}
 	}
 
-	.prisma-event-preset {
+	.prisma-event-preset  {
 		&-selector-wrapper {
 			flex: 1 1 auto;
 			min-width: 0;
@@ -817,7 +742,7 @@
 	border: 1px solid var(--background-modifier-border);
 }
 
-.prisma-weekday {
+.prisma-weekday  {
 	&-selection {
 		margin-top: 12px;
 	}
@@ -829,7 +754,7 @@
 		margin-top: 8px;
 	}
 
-	&-item {
+	&-item  {
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -856,7 +781,6 @@
 }
 
 /* Event Modal - Custom Properties Section */
-.prisma-custom-properties-container,
 .prisma-property-container {
 	display: flex;
 	flex-direction: column;
@@ -864,7 +788,7 @@
 	margin-top: 8px;
 }
 
-.prisma-property {
+.prisma-property  {
 	&-container.prisma-hidden {
 		display: none;
 	}
@@ -887,12 +811,11 @@
 }
 
 /* Button positioning in setting-item for property sections - scoped to plugin modals only */
-.modal.prisma-generic-event-list-modal .prisma-setting-item button.prisma-mod-cta,
-.modal-container:has(.prisma-custom-properties-container) .prisma-setting-item button.prisma-mod-cta {
+.modal.prisma-generic-event-list-modal .prisma-setting-item button.prisma-mod-cta {
 	margin-left: auto;
 }
 
-.prisma-custom-property-row {
+.prisma-custom-property-row  {
 	display: flex;
 	gap: 8px;
 	align-items: center;
@@ -901,7 +824,7 @@
 	border-radius: 6px;
 	border: 1px solid var(--background-modifier-border);
 
-	input[type="text"] {
+	input[type="text"]  {
 		flex: 1;
 		padding: 6px 8px;
 		border: 1px solid var(--background-modifier-border);
@@ -917,7 +840,7 @@
 		}
 	}
 
-	button {
+	button  {
 		padding: 6px 12px;
 		border-radius: 4px;
 		border: 1px solid var(--background-modifier-border);
@@ -935,8 +858,8 @@
 }
 
 /* Batch Frontmatter Modal Styles */
-.prisma-batch-frontmatter {
-	&-modal {
+.prisma-batch-frontmatter  {
+	&-modal  {
 		min-width: 500px;
 		max-width: 700px;
 
@@ -947,7 +870,7 @@
 			margin-bottom: 1rem;
 		}
 
-		.prisma-setting-item-control {
+		.prisma-setting-item-control  {
 			padding: 6px 10px;
 			border: 1px solid var(--background-modifier-border);
 			border-radius: 4px;
@@ -983,7 +906,7 @@
 		margin-top: 4px;
 	}
 
-	&-header {
+	&-header  {
 		&-row {
 			display: flex;
 			gap: 8px;
@@ -992,7 +915,7 @@
 			margin-top: 8px;
 		}
 
-		&-label {
+		&-label  {
 			font-size: var(--font-ui-smaller);
 			font-weight: var(--font-weight-medium);
 			color: var(--text-muted);
@@ -1034,7 +957,7 @@
 		border-left: 3px solid var(--interactive-accent);
 	}
 
-	&-marked-deletion {
+	&-marked-deletion  {
 		opacity: 0.5;
 		text-decoration: line-through;
 
@@ -1044,7 +967,7 @@
 		}
 	}
 
-	&-remove-button {
+	&-remove-button  {
 		padding: 6px 10px;
 		border-radius: 4px;
 		border: 1px solid var(--background-modifier-border);
@@ -1063,7 +986,7 @@
 }
 
 /* Event Modal DateTime Input with Now Button */
-.prisma-datetime-input-wrapper {
+.prisma-datetime-input-wrapper  {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -1075,7 +998,7 @@
 	}
 }
 
-.prisma-now-button {
+.prisma-now-button  {
 	padding: 6px 12px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-s);
@@ -1102,7 +1025,7 @@
 	}
 }
 
-.prisma-fill-button {
+.prisma-fill-button  {
 	padding: 6px 12px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-s);
@@ -1129,12 +1052,9 @@
 }
 
 /* Event Modal Category Field */
-.prisma-category {
-	&-field {
-		margin-top: 8px;
-	}
+.prisma-category  {
 
-	&-input-wrapper {
+	&-input-wrapper  {
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -1147,7 +1067,7 @@
 	}
 
 	/* Searchable Category Dropdown */
-	&-dropdown {
+	&-dropdown  {
 		&-container {
 			position: relative;
 			flex-shrink: 0;
@@ -1169,25 +1089,7 @@
 		}
 	}
 
-	&-add-button {
-		padding: 6px 12px;
-		border: 1px solid var(--background-modifier-border);
-		border-radius: var(--radius-s);
-		background-color: var(--interactive-normal);
-		color: var(--text-normal);
-		font-size: var(--font-ui-smaller);
-		font-weight: var(--font-weight-medium);
-		cursor: pointer;
-		transition: all 0.15s ease;
-		white-space: nowrap;
-
-		&:hover {
-			background-color: var(--interactive-hover);
-			border-color: var(--interactive-accent);
-		}
-	}
-
-	&-search-input {
+	&-search-input  {
 		width: 100%;
 		padding: 8px 12px;
 		border: none;
@@ -1207,11 +1109,11 @@
 		}
 	}
 
-	&-list {
+	&-list  {
 		max-height: 200px;
 		overflow-y: auto;
 
-		&-item {
+		&-item  {
 			padding: 8px 12px;
 			cursor: pointer;
 			color: var(--text-normal);
@@ -1250,12 +1152,12 @@
 /* ===================================
    Stopwatch / Time Tracker
    =================================== */
-.prisma-stopwatch {
+.prisma-stopwatch  {
 	&-field {
 		margin-bottom: 8px;
 	}
 
-	&-container {
+	&-container  {
 		background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-secondary-alt) 100%);
 		border-radius: var(--radius-m);
 
@@ -1306,7 +1208,7 @@
 		gap: 4px;
 	}
 
-	&-mid-display {
+	&-mid-display  {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -1374,7 +1276,7 @@
 		flex-wrap: wrap;
 	}
 
-	&-btn {
+	&-btn  {
 		padding: 10px 20px;
 		border-radius: var(--radius-s);
 		font-size: var(--font-ui-medium);
@@ -1395,7 +1297,7 @@
 		}
 	}
 
-	&-start-btn {
+	&-start-btn  {
 		background: linear-gradient(135deg, var(--color-green) 0%, color-mix(in srgb, var(--color-green) 80%, black) 100%);
 		color: white;
 		border-color: var(--color-green);
@@ -1405,7 +1307,7 @@
 		}
 	}
 
-	&-pause-btn {
+	&-pause-btn  {
 		background: linear-gradient(135deg, var(--color-orange) 0%, color-mix(in srgb, var(--color-orange) 80%, black) 100%);
 		color: white;
 		border-color: var(--color-orange);
@@ -1415,7 +1317,7 @@
 		}
 	}
 
-	&-resume-btn {
+	&-resume-btn  {
 		background: linear-gradient(135deg, var(--color-cyan) 0%, color-mix(in srgb, var(--color-cyan) 80%, black) 100%);
 		color: white;
 		border-color: var(--color-cyan);
@@ -1425,7 +1327,7 @@
 		}
 	}
 
-	&-stop-btn {
+	&-stop-btn  {
 		background: linear-gradient(135deg, var(--color-red) 0%, color-mix(in srgb, var(--color-red) 80%, black) 100%);
 		color: white;
 		border-color: var(--color-red);
@@ -1438,7 +1340,7 @@
 
 /* Responsive stopwatch adjustments */
 @media (width <= 768px) {
-	.prisma-stopwatch {
+	.prisma-stopwatch  {
 		&-display-section {
 			flex-direction: column;
 			gap: 16px;
@@ -1472,7 +1374,7 @@
 		grid-template-columns: 1fr;
 	}
 
-	.prisma-custom-property-row {
+	.prisma-custom-property-row  {
 		flex-direction: column;
 		align-items: stretch;
 
@@ -1497,8 +1399,8 @@
 }
 
 /* Generic Event List Modal (used by Skipped Events and Recurring Events) */
-.prisma-generic-event {
-	&-list {
+.prisma-generic-event  {
+	&-list  {
 		&-modal h2 {
 			margin-bottom: 1rem;
 		}
@@ -1527,7 +1429,7 @@
 			font-style: italic;
 		}
 
-		&-item {
+		&-item  {
 			padding: 0.75rem;
 			margin-bottom: 0.5rem;
 			border: 1px solid var(--background-modifier-border);
@@ -1540,7 +1442,7 @@
 			position: relative;
 			cursor: pointer;
 
-			&.prisma-recurring-event-categorized {
+			&.prisma-recurring-event-categorized  {
 				background-color: color-mix(in srgb, var(--category-color) 15%, transparent);
 				border-left: 3px solid var(--category-color);
 
@@ -1574,7 +1476,7 @@
 		}
 	}
 
-	&-search-input {
+	&-search-input  {
 		flex: 1;
 		min-width: 0;
 		padding: 0.35rem 0.6rem;
@@ -1612,16 +1514,8 @@
 }
 
 /* Recurring Events Modal - Toggle Styles */
-.prisma-recurring-events-toggle {
+.prisma-recurring-events-toggle  {
 	margin-bottom: 1rem;
-
-	.prisma-checkbox-label {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		cursor: pointer;
-		color: var(--text-normal);
-	}
 
 	input[type="checkbox"] {
 		cursor: pointer;
@@ -1629,12 +1523,12 @@
 }
 
 /* Recurring Events List Modal (Legacy) */
-.prisma-recurring-events {
-	&-list {
-		&-modal {
+.prisma-recurring-events  {
+	&-list  {
+		&-modal  {
 			padding: 1.5rem;
 
-			&-categorized {
+			&-categorized  {
 				background: linear-gradient(135deg,
 						color-mix(in srgb, var(--source-category-color) 8%, var(--background-primary)) 0%,
 						color-mix(in srgb, var(--source-category-color) 3%, var(--background-primary)) 100%);
@@ -1673,7 +1567,7 @@
 		}
 	}
 
-	&-source-title {
+	&-source-title  {
 		margin: 0 0 0.25rem;
 		cursor: pointer;
 		transition: all 0.2s ease;
@@ -1687,7 +1581,7 @@
 		}
 	}
 
-	&-info {
+	&-info  {
 		background-color: var(--background-secondary);
 		border: 1px solid var(--background-modifier-border);
 		border-radius: 6px;
@@ -1712,7 +1606,7 @@
 		flex-wrap: wrap;
 	}
 
-	&-stats {
+	&-stats  {
 		background-color: var(--background-primary-alt);
 		border: 1px solid var(--background-modifier-border);
 		border-radius: 6px;
@@ -1720,7 +1614,7 @@
 		margin-bottom: 0.75rem;
 		text-align: center;
 
-		&-text {
+		&-text  {
 			margin: 0;
 			font-size: 0.95em;
 			font-weight: 500;
@@ -1750,7 +1644,7 @@
 	gap: 0.5rem;
 }
 
-.modal .prisma-recurring-events-list-modal .prisma-recurring-events-filter-toggle.setting-item {
+.modal .prisma-recurring-events-list-modal .prisma-recurring-events-filter-toggle.setting-item  {
 	.setting-item-info {
 		flex: 0 0 auto;
 		padding: 0;
@@ -1773,8 +1667,8 @@
 }
 
 /* Recurring Event Row */
-.prisma-recurring-event {
-	&-row {
+.prisma-recurring-event  {
+	&-row  {
 		display: flex;
 		gap: 1rem;
 		padding: 0.875rem 1rem;
@@ -1791,7 +1685,7 @@
 			box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
 		}
 
-		&.prisma-recurring-event-colorized {
+		&.prisma-recurring-event-colorized  {
 			background-color: color-mix(in srgb, var(--event-color) 12%, var(--background-primary));
 			border-left: 3px solid var(--event-color);
 
@@ -1812,7 +1706,7 @@
 		font-family: var(--font-monospace);
 	}
 
-	&-title {
+	&-title  {
 		flex: 1;
 		color: var(--text-normal);
 
@@ -1825,7 +1719,7 @@
 }
 
 /* Event Series Tab Buttons */
-.prisma-event-series {
+.prisma-event-series  {
 	&-tabs {
 		display: flex;
 		flex-direction: row;
@@ -1833,7 +1727,7 @@
 		margin-bottom: 1rem;
 	}
 
-	&-tab-btn {
+	&-tab-btn  {
 		padding: 0.4rem 0.8rem;
 		border-radius: 6px;
 		border: 1px solid var(--background-modifier-border);
@@ -1855,7 +1749,7 @@
 		}
 	}
 
-	&-back-btn {
+	&-back-btn  {
 		padding: 0.3rem 0.7rem;
 		border-radius: 6px;
 		border: 1px solid var(--background-modifier-border);
@@ -1872,9 +1766,8 @@
 		}
 	}
 
-	/* Event Series Bases Footer */
-	&-bases {
-		&-footer {
+	&-bases  {
+		&-footer  {
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -1893,7 +1786,7 @@
 			}
 		}
 
-		&-btn {
+		&-btn  {
 			padding: 0.5rem 1rem;
 			border-radius: 6px;
 			border: 1px solid var(--background-modifier-border);

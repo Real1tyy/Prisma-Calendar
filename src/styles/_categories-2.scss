@@ -1,6 +1,6 @@
 /* Category Select Modal */
-.prisma-category-select {
-	&-modal {
+.prisma-category-select  {
+	&-modal  {
 		min-width: 400px;
 		max-width: 500px;
 
@@ -34,7 +34,7 @@
 		gap: 1rem;
 	}
 
-	&-section {
+	&-section  {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
@@ -46,7 +46,7 @@
 		}
 	}
 
-	&-button {
+	&-button  {
 		width: 100%;
 		padding: 0.5rem;
 		border-radius: var(--radius-s);
@@ -71,7 +71,7 @@
 		}
 	}
 
-	&-info {
+	&-info  {
 		padding: 0.75rem;
 		background: var(--background-secondary);
 		border-radius: var(--radius-s);
@@ -91,7 +91,7 @@
 	}
 }
 
-.prisma-category-selected {
+.prisma-category-selected  {
 	&-display {
 		margin-top: 1rem;
 		padding: 0.75rem;
@@ -110,7 +110,7 @@
 		flex-shrink: 0;
 	}
 
-	&-item {
+	&-item  {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
@@ -132,32 +132,6 @@
 		font-weight: var(--font-weight-medium);
 		color: var(--text-normal);
 	}
-}
-
-.prisma-delete-physical-events-modal {
-	min-width: 400px;
-
-	h2 {
-		margin-bottom: 1rem;
-		font-size: 1.2rem;
-		font-weight: 600;
-	}
-}
-
-.prisma-modal-message {
-	margin-bottom: 1.5rem;
-
-	p {
-		margin: 0;
-		color: var(--text-normal);
-		line-height: 1.5;
-	}
-}
-
-.prisma-modal-buttons {
-	display: flex;
-	justify-content: flex-end;
-	gap: 0.5rem;
 }
 
 /* General modal button container - used across all modals */

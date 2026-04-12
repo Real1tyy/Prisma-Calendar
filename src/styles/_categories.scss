@@ -6,8 +6,8 @@
 	font-style: italic;
 }
 
-.prisma-category-settings {
-	&-item {
+.prisma-category-settings  {
+	&-item  {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -43,18 +43,7 @@
 		}
 	}
 
-	&-color-dot {
-		display: inline-block;
-		width: 24px;
-		height: 24px;
-		border-radius: 6px;
-		background-color: var(--category-color);
-		border: 2px solid var(--background-modifier-border);
-		flex-shrink: 0;
-		box-shadow: 0 1px 3px rgb(0 0 0 / 15%);
-	}
-
-	&-name-container {
+	&-name-container  {
 		display: flex;
 		align-items: center;
 		gap: 10px;
@@ -80,8 +69,7 @@
 		font-weight: 500;
 	}
 
-	&-edit-button,
-	&-delete-button {
+	&-edit-button, &-delete-button {
 		opacity: 0.7;
 		transition: opacity 0.2s ease;
 	}
@@ -97,8 +85,8 @@
 	}
 }
 
-.prisma-categories-chart {
-	&-section {
+.prisma-categories-chart  {
+	&-section  {
 		margin-top: 32px;
 
 		h3 {
@@ -115,7 +103,7 @@
 }
 
 /* Event Statistics */
-.prisma-categories-stats {
+.prisma-categories-stats  {
 	&-container {
 		margin-bottom: 24px;
 		margin-top: 16px;
@@ -132,7 +120,7 @@
 	}
 }
 
-.prisma-category-stat {
+.prisma-category-stat  {
 	&-item {
 		display: flex;
 		flex-direction: column;
@@ -163,7 +151,7 @@
 }
 
 /* Category Assignment Presets */
-.prisma-category-assignment {
+.prisma-category-assignment  {
 	&-empty {
 		padding: 16px;
 		text-align: center;
@@ -184,7 +172,7 @@
 		flex-wrap: wrap;
 	}
 
-	&-name-input {
+	&-name-input  {
 		flex: 0 1 auto;
 		min-width: 180px;
 		max-width: 300px;
@@ -211,12 +199,6 @@
 		min-width: 0;
 	}
 
-	&-label {
-		font-size: var(--font-ui-small);
-		font-weight: 500;
-		color: var(--text-muted);
-	}
-
 	&-select-container {
 		display: flex;
 		align-items: center;
@@ -239,7 +221,7 @@
 		font-size: var(--font-ui-smaller);
 	}
 
-	&-tag {
+	&-tag  {
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -251,7 +233,7 @@
 		font-weight: 500;
 		white-space: nowrap;
 
-		&-remove {
+		&-remove  {
 			background: rgb(0 0 0 / 20%);
 			border: none;
 			color: white;
@@ -282,7 +264,7 @@
 		flex-shrink: 0;
 	}
 
-	&-add-button {
+	&-add-button  {
 		width: 24px;
 		height: 24px;
 		padding: 0;
@@ -323,7 +305,7 @@
 		flex-shrink: 0;
 	}
 
-	&-delete-button {
+	&-delete-button  {
 		width: 24px;
 		height: 24px;
 		padding: 0;

@@ -1,12 +1,12 @@
 /* Responsive adjustments */
 @media (width <= 768px) {
-	.prisma-calendar-container {
+	.prisma-calendar-container  {
 		.fc-toolbar {
 			flex-direction: column;
 			gap: 8px;
 		}
 
-		.fc-toolbar-chunk {
+		.fc-toolbar-chunk  {
 			display: flex;
 			flex-wrap: wrap;
 			justify-content: center;
@@ -26,7 +26,7 @@
 			}
 
 			/* Mobile: Filter inputs take full width on their own row */
-			.prisma-fc-filter-wrapper {
+			.prisma-fc-filter-wrapper  {
 				flex: 1 1 100%;
 				min-width: 0;
 
@@ -54,16 +54,14 @@
 		}
 
 		/* Mobile: Collapse filter controls (zoom + preset + search + expression) by default, toggleable via "Filters" button */
-		&.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child {
-			.fc-zoomLevel-button,
-			.prisma-fc-filter-preset-wrapper,
-			.prisma-fc-filter-wrapper {
+		&.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child  {
+			.fc-zoomLevel-button, .prisma-fc-filter-preset-wrapper, .prisma-fc-filter-wrapper {
 				display: none;
 			}
 		}
 
 		/* Mobile: "Filters" toggle button affordance */
-		.fc-mobileControls-button.prisma-mobile-controls-toggle {
+		.fc-mobileControls-button.prisma-mobile-controls-toggle  {
 			position: relative;
 			padding-right: 18px;
 
@@ -86,7 +84,7 @@
 			min-height: auto;
 		}
 
-		.fc-daygrid-event {
+		.fc-daygrid-event  {
 			font-size: 11px;
 			padding: 1px 3px;
 			margin-bottom: 1px;
@@ -119,8 +117,7 @@
 		}
 
 		/* Mobile Weekly/Daily View: Compact event display */
-		.fc-daygrid-event .prisma-fc-event-content-wrapper,
-		.fc-timegrid-event .prisma-fc-event-content-wrapper {
+		.fc-daygrid-event .prisma-fc-event-content-wrapper, .fc-timegrid-event .prisma-fc-event-content-wrapper {
 			padding: 1px 3px;
 			display: flex;
 			flex-direction: column;
@@ -129,8 +126,7 @@
 		}
 
 		/* Header (time + title) always at top, never pushed down */
-		.fc-daygrid-event .prisma-fc-event-header,
-		.fc-timegrid-event .prisma-fc-event-header {
+		.fc-daygrid-event .prisma-fc-event-header, .fc-timegrid-event .prisma-fc-event-header {
 			flex-shrink: 0;
 			order: -1;
 			max-width: 100%;
@@ -140,8 +136,7 @@
 			gap: 1px;
 		}
 
-		.fc-daygrid-event .prisma-fc-event-title-custom,
-		.fc-timegrid-event .prisma-fc-event-title-custom {
+		.fc-daygrid-event .prisma-fc-event-title-custom, .fc-timegrid-event .prisma-fc-event-title-custom {
 			font-size: 9px;
 			word-break: break-word;
 			overflow-wrap: break-word;
@@ -151,23 +146,20 @@
 			font-weight: 500;
 		}
 
-		.fc-daygrid-event .prisma-fc-event-time,
-		.fc-timegrid-event .prisma-fc-event-time {
+		.fc-daygrid-event .prisma-fc-event-time, .fc-timegrid-event .prisma-fc-event-time {
 			font-size: 8px;
 			opacity: 0.85;
 		}
 
 		/* Mobile Weekly/Daily View: Compact frontmatter properties - lower priority, overflow downward */
-		.fc-daygrid-event .prisma-fc-event-props,
-		.fc-timegrid-event .prisma-fc-event-props {
+		.fc-daygrid-event .prisma-fc-event-props, .fc-timegrid-event .prisma-fc-event-props {
 			margin-top: 1px;
 			gap: 1px;
 			flex-shrink: 1;
 			overflow: hidden;
 		}
 
-		.fc-daygrid-event .prisma-fc-event-prop,
-		.fc-timegrid-event .prisma-fc-event-prop {
+		.fc-daygrid-event .prisma-fc-event-prop, .fc-timegrid-event .prisma-fc-event-prop {
 			font-size: 7px;
 			line-height: 1.1;
 			padding: 0;
@@ -178,15 +170,13 @@
 			max-width: 100%;
 		}
 
-		.fc-daygrid-event .prisma-fc-event-prop-key,
-		.fc-timegrid-event .prisma-fc-event-prop-key {
+		.fc-daygrid-event .prisma-fc-event-prop-key, .fc-timegrid-event .prisma-fc-event-prop-key {
 			font-size: 7px;
 			opacity: 0.7;
 			flex-shrink: 0;
 		}
 
-		.fc-daygrid-event .prisma-fc-event-prop-value,
-		.fc-timegrid-event .prisma-fc-event-prop-value {
+		.fc-daygrid-event .prisma-fc-event-prop-value, .fc-timegrid-event .prisma-fc-event-prop-value {
 			font-size: 7px;
 			word-break: break-word;
 			overflow-wrap: break-word;
@@ -196,40 +186,34 @@
 		}
 
 		/* Mobile Daily View ONLY: Larger text since we have more horizontal space */
-		.fc-timeGridDay-view {
-			.fc-daygrid-event .prisma-fc-event-title-custom,
-			.fc-timegrid-event .prisma-fc-event-title-custom {
+		.fc-timeGridDay-view  {
+			.fc-daygrid-event .prisma-fc-event-title-custom, .fc-timegrid-event .prisma-fc-event-title-custom {
 				font-size: 13px;
 				font-weight: 500;
 				line-height: 1.3;
 			}
 
-			.fc-daygrid-event .prisma-fc-event-time,
-			.fc-timegrid-event .prisma-fc-event-time {
+			.fc-daygrid-event .prisma-fc-event-time, .fc-timegrid-event .prisma-fc-event-time {
 				font-size: 11px;
 			}
 
-			.fc-daygrid-event .prisma-fc-event-props,
-			.fc-timegrid-event .prisma-fc-event-props {
+			.fc-daygrid-event .prisma-fc-event-props, .fc-timegrid-event .prisma-fc-event-props {
 				margin-top: 4px;
 				gap: 3px;
 			}
 
-			.fc-daygrid-event .prisma-fc-event-prop,
-			.fc-timegrid-event .prisma-fc-event-prop {
+			.fc-daygrid-event .prisma-fc-event-prop, .fc-timegrid-event .prisma-fc-event-prop {
 				font-size: 10px;
 				line-height: 1.2;
 				padding: 1px 4px;
 				gap: 4px;
 			}
 
-			.fc-daygrid-event .prisma-fc-event-prop-key,
-			.fc-timegrid-event .prisma-fc-event-prop-key {
+			.fc-daygrid-event .prisma-fc-event-prop-key, .fc-timegrid-event .prisma-fc-event-prop-key {
 				font-size: 10px;
 			}
 
-			.fc-daygrid-event .prisma-fc-event-prop-value,
-			.fc-timegrid-event .prisma-fc-event-prop-value {
+			.fc-daygrid-event .prisma-fc-event-prop-value, .fc-timegrid-event .prisma-fc-event-prop-value {
 				font-size: 10px;
 			}
 
@@ -282,7 +266,7 @@
 }
 
 /* Popover styling - show time for events in the +more popover */
-.prisma-calendar-container .fc-popover .fc-popover-body {
+.prisma-calendar-container .fc-popover .fc-popover-body  {
 	.fc-daygrid-event {
 		display: flex;
 		align-items: center;

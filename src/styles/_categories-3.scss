@@ -1,10 +1,10 @@
 /* Category Assign Modal */
-.prisma-category-search {
+.prisma-category-search  {
 	&-container {
 		margin-bottom: 1rem;
 	}
 
-	&-input {
+	&-input  {
 		width: 100%;
 		padding: 0.5rem;
 		border: 1px solid var(--background-modifier-border);
@@ -29,8 +29,8 @@
 	margin-bottom: 1rem;
 }
 
-.prisma-category-checkbox {
-	&-item {
+.prisma-category-checkbox  {
+	&-item  {
 		display: flex;
 		align-items: center;
 		padding: 0.5rem;
@@ -38,8 +38,7 @@
 		cursor: pointer;
 		transition: background-color 0.15s ease;
 
-		&:hover,
-		&.prisma-highlighted {
+		&:hover, &.prisma-highlighted {
 			background-color: var(--background-modifier-hover);
 		}
 
@@ -51,12 +50,11 @@
 			display: none;
 		}
 
-		&.prisma-colorized-row {
+		&.prisma-colorized-row  {
 			background-color: color-mix(in srgb, var(--category-color) 15%, transparent);
 			border-left: 3px solid var(--category-color);
 
-			&:hover,
-			&.prisma-highlighted {
+			&:hover, &.prisma-highlighted {
 				background-color: color-mix(in srgb, var(--category-color) 25%, transparent);
 			}
 
@@ -101,8 +99,8 @@
 	font-size: var(--font-ui-medium);
 }
 
-.prisma-category-create-new {
-	&-container {
+.prisma-category-create-new  {
+	&-container  {
 		margin-bottom: 1rem;
 
 		&.prisma-hidden {
@@ -110,7 +108,7 @@
 		}
 	}
 
-	&-button {
+	&-button  {
 		width: 100%;
 		padding: 0.75rem;
 		background-color: var(--interactive-accent);
@@ -128,7 +126,7 @@
 	}
 }
 
-.prisma-category-new {
+.prisma-category-new  {
 	&-item {
 		border: 2px solid var(--interactive-accent);
 		background-color: var(--background-modifier-form-field);
@@ -145,7 +143,7 @@
 	}
 }
 
-.prisma-category-item {
+.prisma-category-item  {
 	&-subtitle {
 		font-size: 0.8em;
 		color: var(--text-muted);
@@ -161,7 +159,7 @@
 	}
 }
 
-.prisma-category-load-more-button {
+.prisma-category-load-more-button  {
 	display: block;
 	width: 100%;
 	padding: 0.5rem;
@@ -191,7 +189,7 @@
 	gap: 0.75rem;
 }
 
-.prisma-assign-categories-button {
+.prisma-assign-categories-button  {
 	flex-shrink: 0;
 	padding: 0.4rem 0.8rem;
 	background-color: var(--interactive-normal);
@@ -208,7 +206,7 @@
 	}
 }
 
-.prisma-participant-input {
+.prisma-participant-input  {
 	&-row {
 		display: flex;
 		align-items: center;

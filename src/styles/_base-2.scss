@@ -1,28 +1,5 @@
 /* Loading state */
 .prisma-calendar-loading {
-	&-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		height: 200px;
-		gap: 16px;
-	}
-
-	&-spinner {
-		width: 32px;
-		height: 32px;
-		border: 3px solid var(--background-modifier-border);
-		border-top: 3px solid var(--interactive-accent);
-		border-radius: 50%;
-		animation: prisma-calendar-spin 1s linear infinite;
-	}
-
-	&-text {
-		color: var(--text-muted);
-		font-size: var(--font-ui-small);
-		text-align: center;
-	}
 }
 
 @keyframes prisma-calendar-spin {
@@ -36,7 +13,7 @@
 }
 
 /* Dark theme adjustments */
-.theme-dark .prisma-calendar-container .fc-button {
+.theme-dark .prisma-calendar-container .fc-button  {
 	background-color: var(--background-modifier-form-field);
 
 	&:hover {

@@ -1,6 +1,6 @@
 /* AI Chat Sidebar */
 
-.prisma-ai-chat {
+.prisma-ai-chat  {
 	&-container {
 		display: flex;
 		flex-direction: column;
@@ -24,7 +24,7 @@
 		padding: 2rem 1rem;
 	}
 
-	&-message {
+	&-message  {
 		padding: 8px 12px;
 		border-radius: 8px;
 		max-width: 100%;
@@ -36,12 +36,12 @@
 			align-self: flex-end;
 		}
 
-		&-assistant {
+		&-assistant  {
 			background-color: var(--background-secondary);
 			color: var(--text-normal);
 			align-self: flex-start;
 
-			.prisma-ai-chat-message-content p {
+			.prisma-ai-chat-message-content p  {
 				&:first-child {
 					margin-top: 0;
 				}
@@ -58,12 +58,12 @@
 		}
 	}
 
-	&-thinking-dots {
+	&-thinking-dots  {
 		display: flex;
 		gap: 4px;
 		padding: 4px 0;
 
-		span {
+		span  {
 			width: 6px;
 			height: 6px;
 			border-radius: 50%;
@@ -101,7 +101,7 @@
 		text-align: center;
 	}
 
-	&-mode {
+	&-mode  {
 		&-toggle {
 			display: flex;
 			flex-wrap: wrap;
@@ -117,7 +117,7 @@
 			padding: 3px;
 		}
 
-		&-btn {
+		&-btn  {
 			padding: 5px 12px;
 			border: none;
 			border-radius: 6px;
@@ -133,7 +133,7 @@
 				background: var(--background-primary-alt);
 			}
 
-			&.prisma-ai-chat-mode-active {
+			&.prisma-ai-chat-mode-active  {
 				background: var(--interactive-accent);
 				color: var(--text-on-accent);
 				box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
@@ -152,7 +152,7 @@
 		background: var(--background-modifier-border);
 	}
 
-	&-chip {
+	&-chip  {
 		padding: 3px 10px;
 		border-radius: 12px;
 		border: 1px solid var(--background-modifier-border);
@@ -167,7 +167,7 @@
 			color: var(--text-normal);
 		}
 
-		&-active {
+		&-active  {
 			background: var(--interactive-accent);
 			color: var(--text-on-accent);
 			border-color: var(--interactive-accent);
@@ -179,7 +179,7 @@
 		}
 	}
 
-	&-textarea {
+	&-textarea  {
 		width: 100%;
 		resize: vertical;
 		min-height: 60px;
@@ -207,7 +207,7 @@
 		gap: 8px;
 	}
 
-	&-send-btn {
+	&-send-btn  {
 		padding: 6px 16px;
 		border-radius: 6px;
 		background-color: var(--interactive-accent);
@@ -226,7 +226,7 @@
 		}
 	}
 
-	&-clear-btn {
+	&-clear-btn  {
 		padding: 6px 12px;
 		border-radius: 6px;
 		background-color: var(--background-modifier-border);
@@ -240,15 +240,15 @@
 		}
 	}
 
-	&-thread {
-		&-list {
+	&-thread  {
+		&-list  {
 			border-bottom: 1px solid var(--background-modifier-border);
 
 			.prisma-collapsible {
 				border: none;
 			}
 
-			.prisma-collapsible-header {
+			.prisma-collapsible-header  {
 				gap: 6px;
 				padding: 8px 12px;
 				background: transparent;
@@ -270,7 +270,7 @@
 			}
 		}
 
-		&-new-btn {
+		&-new-btn  {
 			margin-left: auto;
 			background: none;
 			border: none;
@@ -296,7 +296,7 @@
 			font-size: var(--font-ui-smaller);
 		}
 
-		&-item {
+		&-item  {
 			display: flex;
 			align-items: center;
 			padding: 6px 8px;
@@ -335,7 +335,7 @@
 			}
 		}
 
-		&-delete-btn {
+		&-delete-btn  {
 			background: none;
 			border: none;
 			color: var(--text-muted);
@@ -380,7 +380,7 @@
 	gap: 8px;
 }
 
-.prisma-btn {
+.prisma-btn  {
 	padding: 4px 10px;
 	border-radius: 4px;
 	border: 1px solid var(--background-modifier-border);
@@ -392,7 +392,7 @@
 		background: var(--background-modifier-hover);
 	}
 
-	&-cta {
+	&-cta  {
 		background: var(--interactive-accent);
 		color: var(--text-on-accent);
 		border-color: var(--interactive-accent);
@@ -413,7 +413,7 @@
 	}
 }
 
-.prisma-filter {
+.prisma-filter  {
 	&-label {
 		font-size: 12px;
 		font-weight: 600;
@@ -446,7 +446,7 @@
 
 /* AI Settings — custom prompts */
 
-.prisma-custom-prompt {
+.prisma-custom-prompt  {
 	&-list {
 		display: flex;
 		flex-direction: column;

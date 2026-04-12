@@ -1,5 +1,5 @@
 /* --- Event card base --- */
-.prisma-calendar-event {
+.prisma-calendar-event  {
 	border-radius: var(--radius-s);
 	font-size: var(--font-ui-smaller);
 	cursor: pointer;
@@ -26,12 +26,8 @@
 	}
 }
 
-.prisma-fc-event-hidden {
-	display: none;
-}
-
 /* Event Color Dots — overflow color indicators positioned inside individual events */
-.prisma-event-color-dots {
+.prisma-event-color-dots  {
 	position: absolute;
 	bottom: 2px;
 	right: 3px;
@@ -48,10 +44,8 @@
 }
 
 /* Prevent FullCalendar's default dark hover overlay */
-.prisma-calendar-container {
-	.fc-event:hover,
-	.fc-daygrid-event:hover,
-	.fc-daygrid-dot-event:hover {
+.prisma-calendar-container  {
+	.fc-event:hover, .fc-daygrid-event:hover, .fc-daygrid-dot-event:hover {
 		filter: brightness(1.15) saturate(1.1);
 	}
 
@@ -63,7 +57,7 @@
 }
 
 /* unified padding; remove inner borders */
-.prisma-fc-event-content-wrapper {
+.prisma-fc-event-content-wrapper  {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
@@ -134,7 +128,7 @@
 }
 
 /* Title, bold, wraps to multiple lines */
-.prisma-fc-event-title-custom {
+.prisma-fc-event-title-custom  {
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -164,7 +158,7 @@
 	opacity: 0.95;
 }
 
-.prisma-fc-event-prop {
+.prisma-fc-event-prop  {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: baseline;
@@ -197,7 +191,7 @@
 		display: inline;
 	}
 
-	&-link {
+	&-link  {
 		color: var(--event-text-color, white);
 		text-decoration: underline;
 		text-decoration-style: dotted;
@@ -223,9 +217,8 @@
 }
 
 /* Time-grid / day-grid: ensure wrappers don't add extra padding */
-.prisma-calendar-container {
-	.fc-daygrid-event .fc-event-main,
-	.fc-timegrid-event .fc-event-main {
+.prisma-calendar-container  {
+	.fc-daygrid-event .fc-event-main, .fc-timegrid-event .fc-event-main {
 		display: flex;
 		flex-direction: column;
 		height: 100%;
@@ -245,7 +238,7 @@
 	}
 
 	/* Month view specific styling - desktop defaults */
-	.fc-daygrid-event {
+	.fc-daygrid-event  {
 		.prisma-fc-event-content-wrapper {
 			padding: 4px 6px;
 			gap: 4px;
@@ -287,8 +280,7 @@
 		display: none;
 	}
 
-	.fc-daygrid-event,
-	.fc-timegrid-event {
+	.fc-daygrid-event, .fc-timegrid-event {
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;

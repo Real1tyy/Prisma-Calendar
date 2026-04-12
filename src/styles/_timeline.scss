@@ -1,6 +1,6 @@
 /* Timeline Modal */
 
-.prisma-timeline-modal {
+.prisma-timeline-modal  {
 	width: 98vw;
 	max-width: none;
 	height: 90vh;
@@ -12,7 +12,7 @@
 		padding: 0;
 	}
 
-	&-header {
+	&-header  {
 		padding: 1.5rem 2rem 1rem;
 		border-bottom: 1px solid var(--background-modifier-border);
 
@@ -29,23 +29,9 @@
 		overflow: auto;
 		min-height: 0;
 	}
-
-	&-empty {
-		text-align: center;
-		color: var(--text-muted);
-		padding: 4rem 2rem;
-		font-size: 1.1rem;
-	}
 }
 
-.prisma-timeline-nav {
-	&-controls {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding: 0.5rem 2rem;
-		border-bottom: 1px solid var(--background-modifier-border);
-	}
+.prisma-timeline-nav  {
 
 	&-date-group {
 		display: flex;
@@ -53,7 +39,7 @@
 		gap: 1rem;
 	}
 
-	&-input {
+	&-input  {
 		width: 65px;
 		padding: 4px 8px;
 		border-radius: 4px;
@@ -69,7 +55,7 @@
 		}
 	}
 
-	&-btn {
+	&-btn  {
 		padding: 4px 12px;
 		border-radius: 4px;
 		border: 1px solid var(--background-modifier-border);
@@ -85,12 +71,11 @@
 }
 
 /* Fill parent when timeline is in a tab leaf */
-.prisma-tab-panel {
+.prisma-tab-panel  {
 	display: flex;
 	flex-direction: column;
 
-	> .prisma-timeline-modal-header,
-	> .prisma-timeline-nav-controls {
+	> .prisma-timeline-modal-header {
 		padding-left: 1rem;
 		padding-right: 1rem;
 	}

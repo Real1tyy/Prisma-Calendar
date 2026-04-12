@@ -1,5 +1,5 @@
 /* Move By Modal - Compact Button-Based UI */
-.prisma-move-by {
+.prisma-move-by  {
 	&-modal h3 {
 		margin: 0 0 16px;
 		font-size: var(--font-ui-large);
@@ -26,12 +26,7 @@
 		color: var(--text-muted);
 	}
 
-	&-button-group {
-		display: flex;
-		gap: 8px;
-	}
-
-	&-btn {
+	&-btn  {
 		padding: 8px 24px;
 		border: 1px solid var(--background-modifier-border);
 		border-radius: var(--radius-s);
@@ -59,7 +54,7 @@
 		gap: 4px;
 	}
 
-	&-input {
+	&-input  {
 		width: 80px;
 		padding: 6px 8px;
 		border: 1px solid var(--background-modifier-border);
@@ -75,7 +70,7 @@
 		}
 	}
 
-	&-increment-btn {
+	&-increment-btn  {
 		width: 32px;
 		height: 32px;
 		padding: 0;
@@ -107,7 +102,7 @@
 		flex-wrap: wrap;
 	}
 
-	&-unit-btn {
+	&-unit-btn  {
 		padding: 6px 12px;
 		border: 1px solid var(--background-modifier-border);
 		border-radius: var(--radius-s);
@@ -144,9 +139,7 @@
 		width: 100%;
 	}
 
-	.prisma-move-by-button-group,
-	.prisma-move-by-amount-group,
-	.prisma-move-by-unit-group {
+	.prisma-move-by-amount-group, .prisma-move-by-unit-group {
 		width: 100%;
 	}
 
@@ -160,8 +153,8 @@
 }
 
 /* Event Notification Modal */
-.prisma-event-notification {
-	&-modal {
+.prisma-event-notification  {
+	&-modal  {
 		.modal {
 			max-width: 600px;
 			width: 90%;
@@ -196,7 +189,7 @@
 		border: 1px solid var(--color-accent);
 	}
 
-	&-title {
+	&-title  {
 		font-size: 24px;
 		font-weight: 700;
 		color: var(--text-normal);
@@ -212,7 +205,7 @@
 		}
 	}
 
-	&-section {
+	&-section  {
 		padding: 24px;
 		border-bottom: 1px solid var(--background-modifier-border-focus);
 
@@ -230,7 +223,7 @@
 		}
 	}
 
-	&-time {
+	&-time  {
 		&-grid {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
@@ -259,7 +252,7 @@
 		font-weight: 500;
 	}
 
-	&-file-link {
+	&-file-link  {
 		cursor: pointer;
 		color: var(--text-accent);
 		text-decoration: underline;
@@ -276,7 +269,7 @@
 		gap: 16px;
 	}
 
-	&-prop {
+	&-prop  {
 		&-item {
 			display: flex;
 			align-items: flex-start;
@@ -295,13 +288,13 @@
 			flex-shrink: 0;
 		}
 
-		&-value {
+		&-value  {
 			font-size: var(--font-ui-small);
 			color: var(--text-normal);
 			flex: 1;
 			word-break: break-word;
 
-			&-link {
+			&-link  {
 				color: var(--text-accent);
 				text-decoration: underline;
 				cursor: pointer;
@@ -314,7 +307,7 @@
 		}
 	}
 
-	&-buttons {
+	&-buttons  {
 		display: flex;
 		justify-content: flex-end;
 		align-items: center;
@@ -333,14 +326,14 @@
 		}
 	}
 
-	&-snooze {
+	&-snooze  {
 		&-container {
 			display: flex;
 			align-items: center;
 			gap: 8px;
 		}
 
-		&-input-group {
+		&-input-group  {
 			display: flex;
 			align-items: center;
 			gap: 6px;
@@ -354,7 +347,7 @@
 			}
 		}
 
-		&-input {
+		&-input  {
 			width: 50px;
 			padding: 4px;
 			border: none;

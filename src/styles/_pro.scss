@@ -1,6 +1,6 @@
 /* ─── Pro Upgrade Banner ──────────────────────────────────────── */
 
-.prisma-pro-upgrade {
+.prisma-pro-upgrade  {
 	&-banner {
 		display: flex;
 		flex-direction: column;
@@ -20,7 +20,7 @@
 		min-height: 200px;
 	}
 
-	&-preview {
+	&-preview  {
 		width: 100%;
 		max-width: 720px;
 		border-radius: 10px;
@@ -92,7 +92,7 @@
 		justify-content: center;
 	}
 
-	&-doc-link {
+	&-doc-link  {
 		display: inline-block;
 		padding: 8px 18px;
 		border-radius: 8px;
@@ -111,7 +111,7 @@
 		}
 	}
 
-	&-link {
+	&-link  {
 		display: inline-block;
 		padding: 8px 18px;
 		border-radius: 8px;
@@ -132,7 +132,7 @@
 
 /* ─── Pro Feature Lightbox ────────────────────────────────────── */
 
-.prisma-pro-lightbox {
+.prisma-pro-lightbox  {
 	&-overlay {
 		position: fixed;
 		inset: 0;
@@ -183,18 +183,8 @@
 
 /* ─── Tab Pro Gate ───────────────────────────────────────────── */
 
-.prisma-tab-pro-gate {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 48px 24px;
-	color: var(--text-muted);
-	font-size: var(--font-ui-medium);
-}
-
 /* ─── Bases Calendar View ────────────────────────────────────── */
 
-.prisma-bases-view-pro-gate,
 .prisma-bases-view-empty {
 	display: flex;
 	align-items: center;
@@ -208,14 +198,13 @@
 
 /* ─── Daily + Stats / Dual Daily Grid Overrides ──────────────── */
 
-.prisma-daily-stats-grid,
-.prisma-dual-daily-grid {
+.prisma-daily-stats-grid, .prisma-dual-daily-grid {
 	flex: 1;
 	min-height: 0;
 }
 
 .prisma-daily-stats-grid-cell,
-.prisma-dual-daily-grid-cell {
+.prisma-dual-daily-grid-cell  {
 	overflow-y: auto;
 
 	.prisma-calendar-container {

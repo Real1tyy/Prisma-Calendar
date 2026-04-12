@@ -1,7 +1,7 @@
 
 /* Zoom Button Styles */
-.prisma-calendar-container {
-	.fc-zoomLevel-button {
+.prisma-calendar-container  {
+	.fc-zoomLevel-button  {
 		cursor: pointer;
 		position: relative;
 		padding-right: 24px;
@@ -32,7 +32,7 @@
 }
 
 /* Filter Input Styles (Search & Expression) */
-.prisma-fc-filter {
+.prisma-fc-filter  {
 	&-wrapper {
 		position: relative;
 		display: inline-flex;
@@ -47,7 +47,7 @@
 		margin-left: 8px;
 	}
 
-	&-preset-select {
+	&-preset-select  {
 		-webkit-appearance: none;
 		-moz-appearance: none;
 		appearance: none;
@@ -85,7 +85,7 @@
 }
 
 .prisma-fc-search-input,
-.prisma-fc-expression-input {
+.prisma-fc-expression-input  {
 	padding: 4px 8px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-s);

@@ -1,7 +1,7 @@
 /* Heatmap Modal */
 
-.prisma-heatmap {
-	&-modal {
+.prisma-heatmap  {
+	&-modal  {
 		width: 68vw;
 		max-width: 900px;
 
@@ -12,7 +12,7 @@
 		}
 	}
 
-	&-header {
+	&-header  {
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -35,19 +35,13 @@
 		border-bottom: 1px solid var(--background-modifier-border);
 	}
 
-	&-shortcut-hint {
-		font-size: 0.75rem;
-		color: var(--text-faint);
-		margin-left: auto;
-	}
-
-	&-mode {
+	&-mode  {
 		&-group {
 			display: flex;
 			gap: 1rem;
 		}
 
-		&-btn {
+		&-btn  {
 			padding: 4px 12px;
 			border-radius: 4px;
 			border: 1px solid var(--background-modifier-border);
@@ -64,14 +58,14 @@
 		}
 	}
 
-	&-nav {
+	&-nav  {
 		&-group {
 			display: flex;
 			align-items: center;
 			gap: 1rem;
 		}
 
-		&-btn {
+		&-btn  {
 			padding: 4px 10px;
 			border-radius: 4px;
 			border: 1px solid var(--background-modifier-border);
@@ -94,7 +88,7 @@
 		}
 	}
 
-	&-legend {
+	&-legend  {
 		&-container {
 			padding: 0.5rem 1.5rem;
 			display: flex;
@@ -129,7 +123,7 @@
 		display: block;
 	}
 
-	&-cell {
+	&-cell  {
 		cursor: pointer;
 		transition: opacity 0.15s ease;
 
@@ -146,7 +140,7 @@
 		}
 	}
 
-	&-day {
+	&-day  {
 		&-label {
 			font-size: 9px;
 			fill: var(--text-muted);
@@ -167,7 +161,7 @@
 		}
 	}
 
-	&-month {
+	&-month  {
 		&-label {
 			font-size: 10px;
 			fill: var(--text-muted);
@@ -181,8 +175,8 @@
 		}
 	}
 
-	&-detail {
-		&-header {
+	&-detail  {
+		&-header  {
 			display: flex;
 			align-items: baseline;
 			gap: 12px;
@@ -210,7 +204,7 @@
 			gap: 4px;
 		}
 
-		&-row {
+		&-row  {
 			display: flex;
 			flex-direction: column;
 			gap: 2px;
@@ -219,7 +213,7 @@
 			cursor: pointer;
 			background: var(--background-secondary);
 
-			&.prisma-heatmap-detail-row-categorized {
+			&.prisma-heatmap-detail-row-categorized  {
 				background: color-mix(in srgb, var(--category-color) 15%, transparent);
 				border-left: 3px solid var(--category-color);
 
@@ -255,7 +249,7 @@
 			gap: 4px 12px;
 		}
 
-		&-prop {
+		&-prop  {
 			font-size: 0.78rem;
 			color: var(--text-muted);
 
@@ -263,7 +257,7 @@
 				color: var(--text-faint);
 			}
 
-			.prisma-prop-link {
+			.prisma-prop-link  {
 				color: var(--link-color);
 				cursor: pointer;
 				text-decoration: none;

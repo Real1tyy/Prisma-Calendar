@@ -11,8 +11,7 @@
 }
 
 /* Keyboard-only focus rings for buttons */
-[class*=prisma-] button:focus-visible,
-button[class*=prisma-]:focus-visible {
+[class*=prisma-] button:focus-visible, button[class*=prisma-]:focus-visible {
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;
 }
@@ -61,8 +60,7 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container .fc-theme-standard .fc-scrollgrid {
   border-color: var(--background-modifier-border);
 }
-.prisma-calendar-container .fc-theme-standard th,
-.prisma-calendar-container .fc-theme-standard td {
+.prisma-calendar-container .fc-theme-standard th, .prisma-calendar-container .fc-theme-standard td {
   border-color: var(--background-modifier-border);
 }
 .prisma-calendar-container .fc-theme-standard .fc-scrollgrid-section > * {
@@ -148,8 +146,7 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container {
   /* Day cell coloring — uniform mode: single color applied to all day cells */
 }
-.prisma-calendar-container.prisma-uniform-day-color .fc-daygrid-day,
-.prisma-calendar-container.prisma-uniform-day-color .fc-timegrid-col[data-date] {
+.prisma-calendar-container.prisma-uniform-day-color .fc-daygrid-day, .prisma-calendar-container.prisma-uniform-day-color .fc-timegrid-col[data-date] {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%);
 }
 .prisma-calendar-container.prisma-uniform-day-color .fc-day-other {
@@ -170,12 +167,10 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container {
   /* Day cell coloring — boundary mode: alternate gradient backgrounds by even/odd month */
 }
-.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even,
-.prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-even {
+.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even, .prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-even {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-even-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-even-color) 12%, transparent) 100%);
 }
-.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd,
-.prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-odd {
+.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd, .prisma-calendar-container.prisma-month-boundary-colors .fc-timegrid-col.prisma-month-odd {
   background: linear-gradient(180deg, color-mix(in srgb, var(--month-odd-color) 25%, transparent) 0%, color-mix(in srgb, var(--month-odd-color) 12%, transparent) 100%);
 }
 .prisma-calendar-container.prisma-month-boundary-colors {
@@ -190,15 +185,13 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container.prisma-month-boundary-colors {
   /* Boundary — preserve today highlight */
 }
-.prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-even,
-.prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-odd {
+.prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-even, .prisma-calendar-container.prisma-month-boundary-colors .fc-day-today.prisma-month-odd {
   background: var(--background-modifier-form-field);
 }
 .prisma-calendar-container.prisma-month-boundary-colors {
   /* Boundary — preserve hover */
 }
-.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even:hover,
-.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd:hover {
+.prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-even:hover, .prisma-calendar-container.prisma-month-boundary-colors .fc-daygrid-day.prisma-month-odd:hover {
   background: var(--background-modifier-hover);
 }
 .prisma-calendar-container {
@@ -231,10 +224,6 @@ button[class*=prisma-]:focus-visible {
   filter: brightness(1.15) saturate(1.1);
 }
 
-.prisma-fc-event-hidden {
-  display: none;
-}
-
 /* Event Color Dots — overflow color indicators positioned inside individual events */
 .prisma-event-color-dots {
   position: absolute;
@@ -252,9 +241,7 @@ button[class*=prisma-]:focus-visible {
 }
 
 /* Prevent FullCalendar's default dark hover overlay */
-.prisma-calendar-container .fc-event:hover,
-.prisma-calendar-container .fc-daygrid-event:hover,
-.prisma-calendar-container .fc-daygrid-dot-event:hover {
+.prisma-calendar-container .fc-event:hover, .prisma-calendar-container .fc-daygrid-event:hover, .prisma-calendar-container .fc-daygrid-dot-event:hover {
   filter: brightness(1.15) saturate(1.1);
 }
 .prisma-calendar-container {
@@ -413,8 +400,7 @@ button[class*=prisma-]:focus-visible {
 }
 
 /* Time-grid / day-grid: ensure wrappers don't add extra padding */
-.prisma-calendar-container .fc-daygrid-event .fc-event-main,
-.prisma-calendar-container .fc-timegrid-event .fc-event-main {
+.prisma-calendar-container .fc-daygrid-event .fc-event-main, .prisma-calendar-container .fc-timegrid-event .fc-event-main {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -470,8 +456,7 @@ button[class*=prisma-]:focus-visible {
 .prisma-calendar-container .fc-dayGridMonth-view .fc-daygrid-event .prisma-fc-event-props {
   display: none;
 }
-.prisma-calendar-container .fc-daygrid-event,
-.prisma-calendar-container .fc-timegrid-event {
+.prisma-calendar-container .fc-daygrid-event, .prisma-calendar-container .fc-timegrid-event {
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -967,9 +952,7 @@ button[class*=prisma-]:focus-visible {
   .prisma-calendar-container {
     /* Mobile: Collapse filter controls (zoom + preset + search + expression) by default, toggleable via "Filters" button */
   }
-  .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .fc-zoomLevel-button,
-  .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-preset-wrapper,
-  .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-wrapper {
+  .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .fc-zoomLevel-button, .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-preset-wrapper, .prisma-calendar-container.prisma-mobile-controls-collapsed .fc-toolbar-chunk:first-child .prisma-fc-filter-wrapper {
     display: none;
   }
   .prisma-calendar-container {
@@ -1026,8 +1009,7 @@ button[class*=prisma-]:focus-visible {
   .prisma-calendar-container {
     /* Mobile Weekly/Daily View: Compact event display */
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-content-wrapper,
-  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-content-wrapper {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-content-wrapper, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-content-wrapper {
     padding: 1px 3px;
     display: flex;
     flex-direction: column;
@@ -1037,8 +1019,7 @@ button[class*=prisma-]:focus-visible {
   .prisma-calendar-container {
     /* Header (time + title) always at top, never pushed down */
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-header,
-  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-header {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-header, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-header {
     flex-shrink: 0;
     order: -1;
     max-width: 100%;
@@ -1047,8 +1028,7 @@ button[class*=prisma-]:focus-visible {
     flex-direction: column;
     gap: 1px;
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-title-custom,
-  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-title-custom {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-title-custom, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-title-custom {
     font-size: 9px;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -1057,23 +1037,20 @@ button[class*=prisma-]:focus-visible {
     max-width: 100%;
     font-weight: 500;
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-time,
-  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-time {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-time, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-time {
     font-size: 8px;
     opacity: 0.85;
   }
   .prisma-calendar-container {
     /* Mobile Weekly/Daily View: Compact frontmatter properties - lower priority, overflow downward */
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-props,
-  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-props {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-props, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-props {
     margin-top: 1px;
     gap: 1px;
     flex-shrink: 1;
     overflow: hidden;
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop,
-  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop {
     font-size: 7px;
     line-height: 1.1;
     padding: 0;
@@ -1083,14 +1060,12 @@ button[class*=prisma-]:focus-visible {
     align-items: baseline;
     max-width: 100%;
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop-key,
-  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-key {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop-key, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-key {
     font-size: 7px;
     opacity: 0.7;
     flex-shrink: 0;
   }
-  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop-value,
-  .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-value {
+  .prisma-calendar-container .fc-daygrid-event .prisma-fc-event-prop-value, .prisma-calendar-container .fc-timegrid-event .prisma-fc-event-prop-value {
     font-size: 7px;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -1101,34 +1076,28 @@ button[class*=prisma-]:focus-visible {
   .prisma-calendar-container {
     /* Mobile Daily View ONLY: Larger text since we have more horizontal space */
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-title-custom,
-  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-title-custom {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-title-custom, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-title-custom {
     font-size: 13px;
     font-weight: 500;
     line-height: 1.3;
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-time,
-  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-time {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-time, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-time {
     font-size: 11px;
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-props,
-  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-props {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-props, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-props {
     margin-top: 4px;
     gap: 3px;
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop,
-  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop {
     font-size: 10px;
     line-height: 1.2;
     padding: 1px 4px;
     gap: 4px;
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop-key,
-  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-key {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop-key, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-key {
     font-size: 10px;
   }
-  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop-value,
-  .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-value {
+  .prisma-calendar-container .fc-timeGridDay-view .fc-daygrid-event .prisma-fc-event-prop-value, .prisma-calendar-container .fc-timeGridDay-view .fc-timegrid-event .prisma-fc-event-prop-value {
     font-size: 10px;
   }
   .prisma-calendar-container .fc-timeGridDay-view {
@@ -1198,28 +1167,6 @@ button[class*=prisma-]:focus-visible {
 }
 
 /* Loading state */
-.prisma-calendar-loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  gap: 16px;
-}
-.prisma-calendar-loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--background-modifier-border);
-  border-top: 3px solid var(--interactive-accent);
-  border-radius: 50%;
-  animation: prisma-calendar-spin 1s linear infinite;
-}
-.prisma-calendar-loading-text {
-  color: var(--text-muted);
-  font-size: var(--font-ui-small);
-  text-align: center;
-}
-
 @keyframes prisma-calendar-spin {
   0% {
     transform: rotate(0deg);
@@ -1423,8 +1370,7 @@ button[class*=prisma-]:focus-visible {
   width: 100%;
 }
 
-.fc-event.prisma-batch-selected,
-.fc-daygrid-dot-event.prisma-batch-selected {
+.fc-event.prisma-batch-selected, .fc-daygrid-dot-event.prisma-batch-selected {
   box-shadow: 0 0 0 2px var(--interactive-accent), 0 4px 12px rgb(var(--interactive-accent-rgb), 0.3), 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 5;
 }
@@ -1469,25 +1415,13 @@ button[class*=prisma-]:focus-visible {
 
 /* Responsive batch selection */
 @media (width <= 768px) {
-  .prisma-batch-selection-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-    margin-left: 4px;
-    padding: 2px 4px;
-  }
-  .prisma-batch-actions {
-    justify-content: center;
-    gap: 6px;
-  }
   .prisma-batch-action-btn {
     flex: 1;
     min-width: 0;
     font-size: var(--font-ui-smaller);
     padding: 6px 4px;
   }
-  .fc-event.prisma-batch-selectable .fc-event-main::before,
-  .fc-event.prisma-batch-selected .fc-event-main::before {
+  .fc-event.prisma-batch-selectable .fc-event-main::before, .fc-event.prisma-batch-selected .fc-event-main::before {
     width: 14px;
     height: 14px;
     font-size: 9px;
@@ -1498,8 +1432,7 @@ button[class*=prisma-]:focus-visible {
   .prisma-calendar-event {
     transition: none;
   }
-  .fc-event.prisma-batch-selectable .fc-event-main::before,
-  .fc-event.prisma-batch-selected .fc-event-main::before {
+  .fc-event.prisma-batch-selectable .fc-event-main::before, .fc-event.prisma-batch-selected .fc-event-main::before {
     transition: none;
   }
   .prisma-batch-action-btn {
@@ -1694,23 +1627,6 @@ button[class*=prisma-]:focus-visible {
   color: var(--text-error);
 }
 
-.prisma-frontmatter-display-example .prisma-example-event-box {
-  border: 1px solid var(--background-modifier-border);
-  padding: 8px;
-  border-radius: 4px;
-  max-width: 300px;
-  margin-top: 8px;
-}
-
-.prisma-example-event-box .prisma-title {
-  font-weight: 500;
-}
-.prisma-example-event-box .prisma-properties {
-  font-size: 0.9em;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
 /* Color example list items */
 .prisma-color-example-item {
   display: flex;
@@ -1792,20 +1708,6 @@ button[class*=prisma-]:focus-visible {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-}
-.prisma-color-rule-picker-wrapper {
-  display: flex;
-  align-items: center;
-}
-.prisma-color-rule-picker-wrapper .prisma-setting-item {
-  border: none;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-}
-.prisma-color-rule-picker-wrapper .prisma-setting-item-control {
-  display: flex;
-  align-items: center;
 }
 .prisma-color-rule-controls {
   display: flex;
@@ -1929,16 +1831,6 @@ button[class*=prisma-]:focus-visible {
   justify-content: center;
   flex-shrink: 0;
   gap: 12px;
-}
-.prisma-category-settings-color-dot {
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background-color: var(--category-color);
-  border: 2px solid var(--background-modifier-border);
-  flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 .prisma-category-settings-name-container {
   display: flex;
@@ -2072,11 +1964,6 @@ button[class*=prisma-]:focus-visible {
   flex: 1;
   min-width: 0;
 }
-.prisma-category-assignment-label {
-  font-size: var(--font-ui-small);
-  font-weight: 500;
-  color: var(--text-muted);
-}
 .prisma-category-assignment-select-container {
   display: flex;
   align-items: center;
@@ -2207,16 +2094,7 @@ button[class*=prisma-]:focus-visible {
 }
 
 /* Holiday Event Styles - special styling to distinguish from regular virtual events */
-.prisma-calendar__holiday-event {
-  border-left: 3px solid var(--interactive-accent);
-  font-weight: 500;
-}
-
 /* Hidden Element */
-.prisma-element-hidden {
-  display: none;
-}
-
 /* Past Event Contrast - Applied via JavaScript based on settings */
 .prisma-calendar-container {
   --prisma-highlight-gold: hsl(45deg 85% 55%);
@@ -2631,13 +2509,6 @@ button[class*=prisma-]:focus-visible {
 }
 
 /* Color Picker Styles */
-.prisma-color-picker-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-
 /* Color Example Dot */
 .prisma-color-example-dot {
   display: inline-block;
@@ -2696,32 +2567,6 @@ button[class*=prisma-]:focus-visible {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-.prisma-event-preview-close-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: var(--interactive-normal);
-  color: var(--text-normal);
-  border-radius: 6px;
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-.prisma-event-preview-close-btn:hover {
-  background: var(--interactive-hover);
-  transform: scale(1.05);
-}
-.prisma-event-preview-close-btn:active {
-  transform: scale(0.95);
-}
 .prisma-event-preview-section {
   padding: 20px 24px;
   border-bottom: 1px solid var(--background-modifier-border);
@@ -2761,26 +2606,6 @@ button[class*=prisma-]:focus-visible {
   padding: 12px;
   border-radius: 8px;
   border: 1px solid var(--background-modifier-border);
-}
-.prisma-event-preview-file-link {
-  display: inline-block;
-  padding: 8px 12px;
-  background: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
-  color: var(--text-accent);
-  text-decoration: none;
-  font-family: var(--font-monospace);
-  font-size: var(--font-ui-small);
-  transition: all 0.2s ease;
-  cursor: pointer;
-  word-break: break-all;
-}
-.prisma-event-preview-file-link:hover {
-  background: var(--background-modifier-hover);
-  border-color: var(--text-accent);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 .prisma-event-preview-props-grid {
   display: grid;
@@ -2826,12 +2651,6 @@ button[class*=prisma-]:focus-visible {
   background: var(--background-modifier-hover);
   text-decoration: underline;
 }
-.prisma-event-preview-empty-message {
-  text-align: center;
-  color: var(--text-muted);
-  font-style: italic;
-  margin: 12px 0;
-}
 
 /* Responsive adjustments for event preview modal */
 @media (width <= 768px) {
@@ -2850,10 +2669,6 @@ button[class*=prisma-]:focus-visible {
   }
   .prisma-event-preview-time-grid {
     grid-template-columns: 1fr;
-  }
-  .prisma-event-preview-close-btn {
-    top: 12px;
-    right: 12px;
   }
 }
 /* Event Modal - Header with Preset Selector */
@@ -2920,8 +2735,7 @@ button[class*=prisma-]:focus-visible {
   /* Content container: flex column with scrollable body and sticky footer
      Note: Obsidian's actual scroll container is usually `.modal-content`, so we style both. */
 }
-.prisma-event-modal .modal-content,
-.prisma-event-modal .prisma-event-modal-content {
+.prisma-event-modal .modal-content, .prisma-event-modal .prisma-event-modal-content {
   display: flex;
   flex-direction: column;
   max-height: min(100vh, 740px);
@@ -3195,9 +3009,6 @@ button[class*=prisma-]:focus-visible {
   background-color: var(--background-primary);
   color: var(--text-normal);
 }
-.prisma-event-preset {
-  /* Event Preset Settings */
-}
 .prisma-event-preset-item {
   display: flex;
   align-items: center;
@@ -3304,10 +3115,7 @@ button[class*=prisma-]:focus-visible {
   .prisma-event-modal .prisma-setting-item-control:is(input:not([type=checkbox]), select) {
     width: 100%;
   }
-  .prisma-event-modal .prisma-setting-item-control input[type=text],
-  .prisma-event-modal .prisma-setting-item-control input[type=number],
-  .prisma-event-modal .prisma-setting-item-control input[type=datetime-local],
-  .prisma-event-modal .prisma-setting-item-control select {
+  .prisma-event-modal .prisma-setting-item-control input[type=text], .prisma-event-modal .prisma-setting-item-control input[type=number], .prisma-event-modal .prisma-setting-item-control input[type=datetime-local], .prisma-event-modal .prisma-setting-item-control select {
     width: 100%;
   }
   .prisma-event-modal .prisma-setting-item-control[type=checkbox] {
@@ -3381,7 +3189,6 @@ button[class*=prisma-]:focus-visible {
 }
 
 /* Event Modal - Custom Properties Section */
-.prisma-custom-properties-container,
 .prisma-property-container {
   display: flex;
   flex-direction: column;
@@ -3408,8 +3215,7 @@ button[class*=prisma-]:focus-visible {
 }
 
 /* Button positioning in setting-item for property sections - scoped to plugin modals only */
-.modal.prisma-generic-event-list-modal .prisma-setting-item button.prisma-mod-cta,
-.modal-container:has(.prisma-custom-properties-container) .prisma-setting-item button.prisma-mod-cta {
+.modal.prisma-generic-event-list-modal .prisma-setting-item button.prisma-mod-cta {
   margin-left: auto;
 }
 
@@ -3619,9 +3425,6 @@ button[class*=prisma-]:focus-visible {
 }
 
 /* Event Modal Category Field */
-.prisma-category-field {
-  margin-top: 8px;
-}
 .prisma-category-input-wrapper {
   display: flex;
   align-items: center;
@@ -3652,22 +3455,6 @@ button[class*=prisma-]:focus-visible {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 100;
   overflow: hidden;
-}
-.prisma-category-add-button {
-  padding: 6px 12px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s);
-  background-color: var(--interactive-normal);
-  color: var(--text-normal);
-  font-size: var(--font-ui-smaller);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-.prisma-category-add-button:hover {
-  background-color: var(--interactive-hover);
-  border-color: var(--interactive-accent);
 }
 .prisma-category-search-input {
   width: 100%;
@@ -4027,13 +3814,6 @@ button[class*=prisma-]:focus-visible {
 .prisma-recurring-events-toggle {
   margin-bottom: 1rem;
 }
-.prisma-recurring-events-toggle .prisma-checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  color: var(--text-normal);
-}
 .prisma-recurring-events-toggle input[type=checkbox] {
   cursor: pointer;
 }
@@ -4240,9 +4020,6 @@ button[class*=prisma-]:focus-visible {
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
-.prisma-event-series {
-  /* Event Series Bases Footer */
-}
 .prisma-event-series-bases-footer {
   display: flex;
   align-items: center;
@@ -4314,20 +4091,7 @@ button[class*=prisma-]:focus-visible {
   overflow: auto;
   min-height: 0;
 }
-.prisma-timeline-modal-empty {
-  text-align: center;
-  color: var(--text-muted);
-  padding: 4rem 2rem;
-  font-size: 1.1rem;
-}
 
-.prisma-timeline-nav-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0.5rem 2rem;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
 .prisma-timeline-nav-date-group {
   display: flex;
   align-items: center;
@@ -4365,8 +4129,7 @@ button[class*=prisma-]:focus-visible {
   display: flex;
   flex-direction: column;
 }
-.prisma-tab-panel > .prisma-timeline-modal-header,
-.prisma-tab-panel > .prisma-timeline-nav-controls {
+.prisma-tab-panel > .prisma-timeline-modal-header {
   padding-left: 1rem;
   padding-right: 1rem;
 }
@@ -4911,11 +4674,6 @@ button[class*=prisma-]:focus-visible {
   padding: 0.5rem 1.5rem;
   border-bottom: 1px solid var(--background-modifier-border);
 }
-.prisma-heatmap-shortcut-hint {
-  font-size: 0.75rem;
-  color: var(--text-faint);
-  margin-left: auto;
-}
 .prisma-heatmap-mode-group {
   display: flex;
   gap: 1rem;
@@ -5126,10 +4884,6 @@ button[class*=prisma-]:focus-visible {
   font-weight: var(--font-weight-medium);
   color: var(--text-muted);
 }
-.prisma-move-by-button-group {
-  display: flex;
-  gap: 8px;
-}
 .prisma-move-by-btn {
   padding: 8px 24px;
   border: 1px solid var(--background-modifier-border);
@@ -5228,9 +4982,7 @@ button[class*=prisma-]:focus-visible {
     min-width: 0;
     width: 100%;
   }
-  .prisma-move-by-button-group,
-  .prisma-move-by-amount-group,
-  .prisma-move-by-unit-group {
+  .prisma-move-by-amount-group, .prisma-move-by-unit-group {
     width: 100%;
   }
   .prisma-move-by-btn {
@@ -5592,8 +5344,7 @@ button[class*=prisma-]:focus-visible {
    Weekly Statistics Modal
    =================================== */
 /* Use higher specificity to override default modal styles */
-.app-container .modal-container:has(.prisma-weekly-stats-modal) > .modal,
-body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
+.app-container .modal-container:has(.prisma-weekly-stats-modal) > .modal, body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   max-width: 1120px;
   width: 90vw;
   min-width: 800px;
@@ -5919,8 +5670,7 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
    ======================================== */
 @media (width <= 768px) {
   /* Override modal width for mobile */
-  .app-container .modal-container:has(.prisma-weekly-stats-modal) > .modal,
-  body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
+  .app-container .modal-container:has(.prisma-weekly-stats-modal) > .modal, body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
     max-width: 92vw;
     width: 92vw;
     min-width: unset;
@@ -6034,20 +5784,13 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
     table-layout: fixed;
   }
   /* Column widths: Name 40%, others ~20% each */
-  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(1),
-  .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(1) {
+  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(1), .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(1) {
     width: 40%;
   }
-  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(2),
-  .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(2),
-  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(3),
-  .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(3),
-  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(4),
-  .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(4) {
+  .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(2), .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(2), .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(3), .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(3), .prisma-weekly-stats-modal .prisma-stats-table th:nth-child(4), .prisma-weekly-stats-modal .prisma-stats-table td:nth-child(4) {
     width: 20%;
   }
-  .prisma-weekly-stats-modal .prisma-stats-table th,
-  .prisma-weekly-stats-modal .prisma-stats-table td {
+  .prisma-weekly-stats-modal .prisma-stats-table th, .prisma-weekly-stats-modal .prisma-stats-table td {
     padding: 8px 6px;
   }
   /* Compact pagination */
@@ -6172,9 +5915,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 .prisma-recurring-type-badge[class*=prisma-recurring-type-]:hover {
   transform: scale(1.05);
   background-color: rgb(var(--badge-color), 0.25);
-}
-.prisma-recurring-type {
-  /* Type-specific colors via CSS custom property pattern */
 }
 .prisma-recurring-type-daily {
   --badge-color: 59, 130, 246;
@@ -6339,30 +6079,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   color: var(--text-normal);
 }
 
-.prisma-delete-physical-events-modal {
-  min-width: 400px;
-}
-.prisma-delete-physical-events-modal h2 {
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.prisma-modal-message {
-  margin-bottom: 1.5rem;
-}
-.prisma-modal-message p {
-  margin: 0;
-  color: var(--text-normal);
-  line-height: 1.5;
-}
-
-.prisma-modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
 /* General modal button container - used across all modals */
 .prisma-modal-button-container {
   display: flex;
@@ -6463,11 +6179,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   color: var(--text-muted);
   word-break: break-all;
 }
-.prisma-caldav-account-dir {
-  font-size: 0.85rem;
-  color: var(--text-accent);
-  font-family: var(--font-monospace);
-}
 .prisma-caldav-account-status {
   font-size: 0.8rem;
   padding: 0.15rem 0.5rem;
@@ -6524,12 +6235,7 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   min-width: 500px;
 }
 
-.prisma-caldav-form {
-  margin: 1rem 0;
-}
-
-.prisma-caldav-test-button,
-.prisma-caldav-refresh-button {
+.prisma-caldav-test-button, .prisma-caldav-refresh-button {
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
   cursor: pointer;
@@ -6572,28 +6278,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   border-radius: var(--radius-s);
   max-height: 400px;
   overflow-y: auto;
-}
-
-.prisma-changes-section {
-  margin-bottom: 1rem;
-}
-.prisma-changes-section:last-child {
-  margin-bottom: 0;
-}
-.prisma-changes-section h4 {
-  margin: 0 0 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-.prisma-changes-section ul {
-  margin: 0;
-  padding-left: 1.5rem;
-  list-style: none;
-}
-.prisma-changes-section li {
-  padding: 0.25rem 0;
-  font-family: var(--font-monospace);
-  font-size: 0.85rem;
 }
 
 .prisma-change-added {
@@ -6840,14 +6524,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
 }
-.prisma-untracked-dropdown-button.prisma-has-events {
-  color: white;
-}
-.prisma-untracked-dropdown-button.prisma-drag-over {
-  background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
-  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
-}
 .prisma-untracked-dropdown {
   position: absolute;
   top: calc(100% + 4px);
@@ -6865,10 +6541,6 @@ body .modal-container:has(.prisma-weekly-stats-modal) > .modal {
 }
 .prisma-untracked-dropdown.prisma-hidden {
   display: none;
-}
-.prisma-untracked-dropdown.prisma-drag-over {
-  border-color: var(--interactive-accent);
-  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
 }
 .prisma-untracked-dropdown-create-btn {
   display: flex;
@@ -7312,8 +6984,7 @@ input.vis-configuration.vis-config-range:focus::-ms-fill-upper {
   transition: opacity 0.3s ease-in-out;
 }
 
-.vis-configuration-popup::after,
-.vis-configuration-popup::before {
+.vis-configuration-popup::after, .vis-configuration-popup::before {
   left: 100%;
   top: 50%;
   border: solid transparent;
@@ -7649,8 +7320,7 @@ div.vis-tooltip {
   -webkit-transition: 0.4s;
 }
 
-.vis-item .vis-delete,
-.vis-item .vis-delete-rtl {
+.vis-item .vis-delete, .vis-item .vis-delete-rtl {
   position: absolute;
   top: 0;
   width: 24px;
@@ -7673,8 +7343,7 @@ div.vis-tooltip {
   left: -24px;
 }
 
-.vis-item .vis-delete::after,
-.vis-item .vis-delete-rtl::after {
+.vis-item .vis-delete::after, .vis-item .vis-delete-rtl::after {
   content: "×"; /* MULTIPLICATION SIGN */
   color: red;
   font-family: arial, sans-serif;
@@ -7687,13 +7356,11 @@ div.vis-tooltip {
   transition: color 0.2s linear;
 }
 
-.vis-item .vis-delete:hover,
-.vis-item .vis-delete-rtl:hover {
+.vis-item .vis-delete:hover, .vis-item .vis-delete-rtl:hover {
   background: red;
 }
 
-.vis-item .vis-delete:hover::after,
-.vis-item .vis-delete-rtl:hover::after {
+.vis-item .vis-delete:hover::after, .vis-item .vis-delete-rtl:hover::after {
   color: white;
 }
 
@@ -7728,8 +7395,7 @@ div.vis-tooltip {
   cursor: e-resize;
 }
 
-.vis-range.vis-item.vis-readonly .vis-drag-left,
-.vis-range.vis-item.vis-readonly .vis-drag-right {
+.vis-range.vis-item.vis-readonly .vis-drag-left, .vis-range.vis-item.vis-readonly .vis-drag-right {
   cursor: auto;
 }
 
@@ -7763,8 +7429,7 @@ div.vis-tooltip {
   box-sizing: border-box;
 }
 
-.vis-itemset .vis-background,
-.vis-itemset .vis-foreground {
+.vis-itemset .vis-background, .vis-itemset .vis-foreground {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -7936,8 +7601,7 @@ div.vis-tooltip {
 }
 
 /* expanded/collapsed indicators */
-.vis-label.vis-nesting-group::before,
-.vis-label.vis-nesting-group::before {
+.vis-label.vis-nesting-group::before, .vis-label.vis-nesting-group::before {
   display: inline-block;
   width: 15px;
 }
@@ -8019,24 +7683,17 @@ div.vis-tooltip {
   box-sizing: border-box;
 }
 
-.vis-panel.vis-center,
-.vis-panel.vis-left,
-.vis-panel.vis-right,
-.vis-panel.vis-top,
-.vis-panel.vis-bottom {
+.vis-panel.vis-center, .vis-panel.vis-left, .vis-panel.vis-right, .vis-panel.vis-top, .vis-panel.vis-bottom {
   border: 1px #bfbfbf;
 }
 
-.vis-panel.vis-center,
-.vis-panel.vis-left,
-.vis-panel.vis-right {
+.vis-panel.vis-center, .vis-panel.vis-left, .vis-panel.vis-right {
   border-top-style: solid;
   border-bottom-style: solid;
   overflow: hidden;
 }
 
-.vis-left.vis-panel.vis-vertical-scroll,
-.vis-right.vis-panel.vis-vertical-scroll {
+.vis-left.vis-panel.vis-vertical-scroll, .vis-right.vis-panel.vis-vertical-scroll {
   height: 100%;
   overflow: hidden scroll;
 }
@@ -8057,9 +7714,7 @@ div.vis-tooltip {
   direction: rtl;
 }
 
-.vis-panel.vis-center,
-.vis-panel.vis-top,
-.vis-panel.vis-bottom {
+.vis-panel.vis-center, .vis-panel.vis-top, .vis-panel.vis-bottom {
   border-left-style: solid;
   border-right-style: solid;
 }
@@ -8420,17 +8075,7 @@ div.vis-tooltip {
 }
 
 /* ─── Tab Pro Gate ───────────────────────────────────────────── */
-.prisma-tab-pro-gate {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  color: var(--text-muted);
-  font-size: var(--font-ui-medium);
-}
-
 /* ─── Bases Calendar View ────────────────────────────────────── */
-.prisma-bases-view-pro-gate,
 .prisma-bases-view-empty {
   display: flex;
   align-items: center;
@@ -8442,8 +8087,7 @@ div.vis-tooltip {
 
 /* ─── Grid Layouts (Heatmap, Daily+Stats, Dual Daily) ────────── */
 /* ─── Daily + Stats / Dual Daily Grid Overrides ──────────────── */
-.prisma-daily-stats-grid,
-.prisma-dual-daily-grid {
+.prisma-daily-stats-grid, .prisma-dual-daily-grid {
   flex: 1;
   min-height: 0;
 }
@@ -8472,31 +8116,6 @@ div.vis-tooltip {
   border-radius: 12px;
   white-space: nowrap;
   vertical-align: middle;
-}
-.prisma-capacity-chart-section {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--background-modifier-border);
-}
-.prisma-capacity-chart-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.prisma-capacity-chart-header h3 {
-  margin: 0;
-  font-size: var(--font-ui-medium);
-  font-weight: 600;
-  color: var(--text-normal);
-}
-.prisma-capacity-chart-container {
-  height: 160px;
-  position: relative;
-}
-.prisma-capacity-summary-text {
-  font-size: var(--font-ui-small);
-  color: var(--text-muted);
 }
 .prisma-capacity-label {
   display: flex;
@@ -8881,11 +8500,4 @@ div.vis-tooltip {
   align-items: center;
   gap: 1rem;
   flex: 0 0 auto;
-}
-
-.prisma-view-header-divider {
-  width: 1px;
-  height: 20px;
-  background: var(--background-modifier-border);
-  flex-shrink: 0;
 }
