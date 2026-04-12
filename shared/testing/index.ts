@@ -1,7 +1,6 @@
+// ─── Mocks (vi.fn()-based, for lightweight stubbing) ─────────────
 export * from "./mocks/license";
 export * from "./mocks/obsidian";
-export * from "./mocks/vault-table";
-// Re-export commonly used combinations
 export {
 	createMockApp,
 	createMockFile,
@@ -23,3 +22,28 @@ export {
 	setupMockReturnValue,
 	verifyMockCalls,
 } from "./mocks/utils";
+export * from "./mocks/vault-table";
+
+// ─── Fakes (in-memory implementations with real semantics) ───────
+export type {
+	FakeAppResult,
+	FakeFileManager,
+	FakeMetadataCache,
+	FakeVaultInstance,
+	FakeVaultOptions,
+	FakeWorkspace,
+} from "./fakes/fake-vault";
+export { createFakeApp } from "./fakes/fake-vault";
+
+// ─── Async test primitives ───────────────────────────────────────
+export type { Deferred, DeferredVoid } from "./deferred";
+export { createDeferred, createDeferredVoid } from "./deferred";
+
+// ─── Approval / snapshot test helpers ────────────────────────────
+export { normalizeApprovalOutput, renderToApprovalString } from "./approval";
+
+// ─── Time control ────────────────────────────────────────────────
+export { advanceDebounce, advanceTimersAndFlush, pinDateNow, withFakeTimers } from "./time";
+
+// ─── Event helpers ───────────────────────────────────────────────
+export { captureEvents, createTestEventEmitter, waitForEvent } from "./event-helpers";
