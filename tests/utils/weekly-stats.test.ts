@@ -107,6 +107,36 @@ describe("getEventDuration", () => {
 		expect(duration).toBe(8 * 60 * 60 * 1000); // 8 hours
 	});
 
+	it("should clamp malformed crossing-midnight events (end before start) to 0", () => {
+		// Stopwatch or import forgot to advance the end date — e.g. started at 23:00,
+		// saved end as 01:00 *same day* instead of +1 day. Raw subtraction would yield
+		// ~-22h and poison aggregate totals/percentages.
+		const event = createMockTimedEvent({
+			id: "1",
+			ref: { filePath: "test.md" },
+			title: "Malformed overnight event",
+			start: "2026-04-12T23:00:00",
+			end: "2026-04-12T01:00:00",
+		});
+
+		const duration = getEventDuration(event);
+		expect(duration).toBe(0);
+	});
+
+	it("should clamp to 0 for malformed events even when breakMinutes is absent", () => {
+		const event = createMockTimedEvent({
+			id: "1",
+			ref: { filePath: "test.md" },
+			title: "Backwards event",
+			start: "2026-04-12T15:00:00",
+			end: "2026-04-12T14:00:00",
+			metadata: createDefaultMetadata({ breakMinutes: undefined }),
+		});
+
+		const duration = getEventDuration(event);
+		expect(duration).toBe(0);
+	});
+
 	it("should handle events with same start and end time", () => {
 		const event = createMockTimedEvent({
 			id: "1",

@@ -42,7 +42,11 @@ export function getEventDuration(event: CalendarEvent): number {
 		return 0;
 	}
 
-	let duration = end.getTime() - start.getTime();
+	// Clamp malformed events (end < start) to 0 instead of letting a negative duration
+	// poison aggregate totals, percentages, and capacity math. Happens in practice when
+	// an import or stopwatch save records a crossing-midnight event without advancing
+	// the end date (e.g. start 23:00, end 01:00 same day).
+	let duration = Math.max(0, end.getTime() - start.getTime());
 
 	const breakMinutes = event.metadata?.breakMinutes;
 	if (typeof breakMinutes === "number" && breakMinutes > 0) {
