@@ -69,7 +69,6 @@
 		"chart.js": "^4.5.1",
 		"colord": "^2.9.3",
 		"date-holidays": "^3.26.8",
-		"frappe-gantt": "^1.2.2",
 		"ical.js": "^2.2.1",
 		"jose": "^6.2.1",
 		"luxon": "^3.7.2",

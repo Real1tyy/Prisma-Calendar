@@ -106,16 +106,6 @@ export const optionalPositiveNumber = z
 	})
 	.pipe(z.number().optional());
 
-/** Unknown → non-negative integer, undefined otherwise */
-export const optionalNonNegativeInt = z
-	.unknown()
-	.transform((v) => {
-		if (v == null) return undefined;
-		const n = Number.parseInt(String(v), 10);
-		return !Number.isNaN(n) && n >= 0 ? n : undefined;
-	})
-	.pipe(z.number().optional());
-
 /** Unknown → number (any valid finite number), undefined otherwise */
 export const optionalNumber = z
 	.unknown()
@@ -125,12 +115,6 @@ export const optionalNumber = z
 		return Number.isFinite(n) ? n : undefined;
 	})
 	.pipe(z.number().optional());
-
-/** Unknown → true if boolean true or string "true" */
-export const strictBooleanTransform = z
-	.unknown()
-	.transform((v) => v === true || v === "true")
-	.pipe(z.boolean());
 
 /** Optional unknown → boolean | undefined; missing/undefined stays undefined so the key can be omitted */
 export const strictBooleanOptional = z

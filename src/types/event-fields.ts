@@ -1,4 +1,3 @@
-import { parseIntoList } from "@real1ty-obsidian-plugins";
 import { z } from "zod";
 
 export const EventEditableFieldsSchema = z.object({
@@ -30,11 +29,6 @@ export type EventEditableFormFields = z.infer<typeof EventEditableFormFieldsSche
 // --- Zod transform primitives for form string → domain type coercion ---
 
 export const TrimmedOptionalString = z.string().transform((s: string) => s.trim() || undefined);
-
-export const CommaDelimitedList = z.string().transform((s: string) => {
-	const items = parseIntoList(s).filter((p: string) => p.trim());
-	return items.length > 0 ? items : undefined;
-});
 
 export const PositiveFloat = z.string().transform((s: string) => {
 	const n = Number.parseFloat(s);

@@ -114,10 +114,6 @@ export function isWeekdaySupported(value: string): boolean {
 	return (WEEKDAY_SUPPORTED_TYPES as readonly string[]).includes(value);
 }
 
-export function hasFixedWeekdays(value: string): boolean {
-	return value in WEEKDAY_PRESET_DAYS;
-}
-
 /**
  * Constructs a custom interval DSL string from a frequency and interval.
  * Clamps interval to a minimum of 1.

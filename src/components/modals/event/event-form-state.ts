@@ -4,10 +4,6 @@ import { z } from "zod";
 import { EventEditableFormFieldsSchema, NonNegativeInt, PositiveFloat, PositiveInt } from "../../../types/event-fields";
 import type { EventPreset } from "../../../types/settings";
 
-export const SimpleEditableFieldsSchema = EventEditableFormFieldsSchema.omit({ notifyBefore: true });
-
-export type SimpleEditableFields = z.infer<typeof SimpleEditableFieldsSchema>;
-
 export const RecurringFormStateSchema = z.object({
 	enabled: z.boolean().default(false),
 	rruleType: z.string().default(""),
@@ -40,9 +36,8 @@ export const EventFormStateSchema = z
 			generatePastEvents: false,
 		}),
 	})
-	.extend(SimpleEditableFieldsSchema.shape);
+	.extend(EventEditableFormFieldsSchema.omit({ notifyBefore: true }).shape);
 
-export type RecurringFormState = z.infer<typeof RecurringFormStateSchema>;
 export type EventFormState = z.infer<typeof EventFormStateSchema>;
 
 export function createDefaultState(): EventFormState {
