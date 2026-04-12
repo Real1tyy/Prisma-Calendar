@@ -618,6 +618,7 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		if (lastSeenVersion !== currentVersion) {
 			const config: WhatsNewModalConfig = {
+				slug: "prisma-calendar",
 				cssPrefix: "prisma",
 				pluginName: "Prisma Calendar",
 				changelogContent: CHANGELOG_CONTENT,
