@@ -3,9 +3,9 @@ import {
 	buildUtmUrl,
 	onceAsync,
 	SettingsStore,
+	showWhatsNewModal,
 	SyncStore,
 	waitForCacheReady,
-	WhatsNewModal,
 	type WhatsNewModalConfig,
 } from "@real1ty-obsidian-plugins";
 import { Notice, Plugin, TFile, type View, type WorkspaceLeaf } from "obsidian";
@@ -618,7 +618,6 @@ export default class CustomCalendarPlugin extends Plugin {
 
 		if (lastSeenVersion !== currentVersion) {
 			const config: WhatsNewModalConfig = {
-				slug: "prisma-calendar",
 				cssPrefix: "prisma",
 				pluginName: "Prisma Calendar",
 				changelogContent: CHANGELOG_CONTENT,
@@ -670,7 +669,7 @@ export default class CustomCalendarPlugin extends Plugin {
 				},
 			};
 
-			new WhatsNewModal(this.app, this, config, lastSeenVersion, currentVersion).open();
+			showWhatsNewModal(this.app, this, config, lastSeenVersion, currentVersion);
 			await this.settingsStore.updateSettings((settings) => ({
 				...settings,
 				version: currentVersion,
