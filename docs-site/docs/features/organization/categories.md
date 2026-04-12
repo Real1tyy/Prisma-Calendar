@@ -116,6 +116,8 @@ Define custom rules to automatically assign specific categories based on event n
 **How it works:**
 - When you finish typing the event title (lose focus from the title field), the system checks for matches
 - If the event name matches **any** of the comma-separated names in a preset, those categories are assigned
+- **Presets take precedence:** when a preset matches, the "auto-assign when name matches category" and substring-match rules are skipped — only the preset's categories apply
+- If no preset matches, the system falls back to the name/substring category matching rules
 - If a match is found, categories are replaced with the auto-assigned ones
 - If no match is found, your manually selected categories remain unchanged
 - This makes the behavior intentional and predictable - you see exactly what gets assigned

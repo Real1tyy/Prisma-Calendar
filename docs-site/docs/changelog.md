@@ -14,6 +14,9 @@ All notable changes to this project will be documented here.
 - **Make untracked context menu action**: Right-click any event and pick "Make untracked" to clear its date/time and move it into the untracked events dropdown — the same result as dragging it there. See [Untracked Events](./features/events/untracked-events.md).
 - **Drag events between Dual Daily panes**: Drag an event from one daily pane onto the other to reschedule it to that day. The drop time becomes the event's new start time and both panes refresh automatically. See [Dual Daily](./features/views/dual-daily.md).
 
+### Improved
+- **Category assignment presets take precedence**: When a custom category assignment preset matches an event name (by exact or substring match), the "auto-assign when name matches category" and substring-match rules are now skipped — only the preset's categories apply. Previously both rules stacked, which pulled in unwanted categories alongside the preset's. See [Categories](./features/organization/categories.md#custom-presets).
+
 ### Fixed
 - **Negative stats totals from malformed events**: Events with end before start (e.g. crossing-midnight entries where the end date wasn't advanced) produced negative durations that broke monthly/daily totals, pie percentages, and capacity math. Now clamped per-event to zero.
 - **Stale Sort Date when event type changes**: Converting a timed event to all-day (or vice versa) under a single-type sorting strategy, or making an event untracked, left a stale `Sort Date` value in frontmatter. The property is now cleared so sort data stays in sync with the current event type. See [Sorting Normalization](./configuration/properties.md#sorting-normalization-for-external-tools).

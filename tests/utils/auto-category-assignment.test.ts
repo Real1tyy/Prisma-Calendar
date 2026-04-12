@@ -290,7 +290,7 @@ describe("Auto-Category Assignment", () => {
 		});
 
 		describe("with both features enabled", () => {
-			it("should apply both name matching and presets", () => {
+			it("preset match takes precedence and suppresses name matching", () => {
 				const settings = {
 					...mockSettings,
 					autoAssignCategoryByName: true,
@@ -305,29 +305,44 @@ describe("Auto-Category Assignment", () => {
 
 				const result = autoAssignCategories("Health", settings, availableCategories, true);
 
-				// Should match both the category name AND the preset
-				expect(result).toContain("Health"); // From name matching
-				expect(result).toContain("Business"); // From preset
+				expect(result).toEqual(["Business"]);
 			});
 
-			it("should deduplicate across both features", () => {
+			it("falls back to name matching when no preset matches", () => {
 				const settings = {
 					...mockSettings,
 					autoAssignCategoryByName: true,
 					categoryAssignmentPresets: [
 						{
 							id: "1",
-							eventName: "Health",
-							categories: ["Health", "Business"],
+							eventName: "Productivity",
+							categories: ["Business"],
 						},
 					],
 				} as SingleCalendarConfig;
 
 				const result = autoAssignCategories("Health", settings, availableCategories, true);
 
-				// Health should only appear once
-				expect(result.filter((c) => c === "Health")).toHaveLength(1);
-				expect(result).toContain("Business");
+				expect(result).toEqual(["Health"]);
+			});
+
+			it("preset match takes precedence and suppresses substring matching", () => {
+				const categories = ["Health", "Business"];
+				const settings = {
+					...mockSettings,
+					autoAssignCategoryByIncludes: true,
+					categoryAssignmentPresets: [
+						{
+							id: "1",
+							eventName: "Health Checkup",
+							categories: ["Personal"],
+						},
+					],
+				} as SingleCalendarConfig;
+
+				const result = autoAssignCategories("Health Checkup", settings, categories, true);
+
+				expect(result).toEqual(["Personal"]);
 			});
 		});
 

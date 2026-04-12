@@ -111,27 +111,11 @@ export const autoAssignCategories = (
 	const categoriesToAssign = new Set<string>();
 	const normalizeForComparison = (name: string): string => name.toLowerCase().trim();
 
-	// Rule 1: Auto-assign when event name matches category name (case-insensitive)
-	if (settings.autoAssignCategoryByName) {
-		for (const category of availableCategories) {
-			if (normalizedEventName === normalizeForComparison(category)) {
-				categoriesToAssign.add(category);
-			}
-		}
-	}
-
-	// Rule 1b: Auto-assign when event name contains category name (substring match, case-insensitive)
-	if (settings.autoAssignCategoryByIncludes) {
-		for (const category of availableCategories) {
-			if (normalizedEventName.includes(normalizeForComparison(category))) {
-				categoriesToAssign.add(category);
-			}
-		}
-	}
-
-	// Rule 2: Apply custom category assignment presets (Pro only)
+	// Custom category assignment presets take precedence (Pro only).
+	// When any preset matches, skip the name/substring category matching below.
 	if (isProEnabled && settings.categoryAssignmentPresets && settings.categoryAssignmentPresets.length > 0) {
 		const useSubstring = settings.autoAssignCategoryByIncludes;
+		let presetMatched = false;
 		for (const preset of settings.categoryAssignmentPresets) {
 			const presetEventNames = preset.eventName
 				.split(",")
@@ -143,9 +127,29 @@ export const autoAssignCategories = (
 				: presetEventNames.includes(normalizedEventName);
 
 			if (matches) {
+				presetMatched = true;
 				for (const category of preset.categories) {
 					categoriesToAssign.add(category);
 				}
+			}
+		}
+		if (presetMatched) {
+			return Array.from(categoriesToAssign);
+		}
+	}
+
+	if (settings.autoAssignCategoryByName) {
+		for (const category of availableCategories) {
+			if (normalizedEventName === normalizeForComparison(category)) {
+				categoriesToAssign.add(category);
+			}
+		}
+	}
+
+	if (settings.autoAssignCategoryByIncludes) {
+		for (const category of availableCategories) {
+			if (normalizedEventName.includes(normalizeForComparison(category))) {
+				categoriesToAssign.add(category);
 			}
 		}
 	}
