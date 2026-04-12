@@ -145,3 +145,46 @@ export const toggleCls = defaultUtils.toggleCls;
  * hasCls(element, "active")
  */
 export const hasCls = defaultUtils.hasCls;
+
+// ============================================================================
+// DOM / style helpers
+// ============================================================================
+
+/**
+ * Sets a CSS custom property (variable) on an element.
+ *
+ * @example
+ * setCssVar(element, "category-color", "#ff0000");
+ * setCssVar(element, "percentage-width", "75%");
+ */
+export function setCssVar(element: HTMLElement, name: string, value: string): void {
+	element.style.setProperty(`--${name}`, value);
+}
+
+/**
+ * Finds or creates a child element with the specified class name.
+ * Avoids unnecessary DOM churn by reusing existing elements.
+ *
+ * @example
+ * const div = upsertElement(container, "div", "my-plugin-summary");
+ * const button = upsertElement(container, "button", "my-plugin-action-btn", (btn) => {
+ *   btn.textContent = "Click me";
+ * });
+ */
+export function upsertElement<K extends keyof HTMLElementTagNameMap>(
+	parent: ParentNode,
+	tag: K,
+	className: string,
+	init?: (el: HTMLElementTagNameMap[K]) => void
+): HTMLElementTagNameMap[K] {
+	let el = parent.querySelector<HTMLElementTagNameMap[K]>(`.${className}`);
+
+	if (!el) {
+		el = document.createElement(tag);
+		el.className = className;
+		parent.appendChild(el);
+	}
+
+	init?.(el);
+	return el;
+}

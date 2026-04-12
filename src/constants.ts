@@ -1,5 +1,9 @@
+import { createCssUtils } from "@real1ty-obsidian-plugins";
+
 const PLUGIN_ID = "prisma-calendar";
 export const CSS_PREFIX = "prisma-";
+
+export const { cls, addCls, removeCls, toggleCls, hasCls } = createCssUtils(CSS_PREFIX);
 // Concurrency control for parallel file processing
 // Higher values = faster initial scan but more memory/CPU usage
 export const SCAN_CONCURRENCY = 10;
