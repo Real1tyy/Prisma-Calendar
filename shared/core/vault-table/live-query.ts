@@ -1,36 +1,36 @@
 import { BehaviorSubject, type Observable, type Subscription } from "rxjs";
 
 import type { ReadableTable } from "./readable-table";
-import type { VaultRow } from "./types";
+import type { DataRow, VaultRow } from "./types";
 import type { ParsedFilter, ParsedSort, SortField } from "./zod-filter-sort";
 import { matchesAllFilters, sortByFields } from "./zod-filter-sort";
 
-export interface LiveQueryConfig<TData> {
+export interface LiveQueryConfig<TData, TRow extends DataRow<TData> = VaultRow<TData>> {
 	filters: ParsedFilter[];
 	sorts: ParsedSort[];
 	sortFields: SortField[];
 	limit?: number;
 	offset?: number;
-	predicate?: (row: VaultRow<TData>) => boolean;
+	predicate?: (row: TRow) => boolean;
 }
 
 const DEFAULT_LIVE_QUERY_LIMIT = 100;
 
 /**
  * A reactive query that re-evaluates automatically when the source emits events.
- * Returns an Observable<VaultRow[]> that emits new results whenever the underlying data changes.
+ * Generic over the row type — works with VaultRow or DataRow sources.
  */
-export class LiveQuery<TData> {
-	private readonly subject: BehaviorSubject<ReadonlyArray<VaultRow<TData>>>;
+export class LiveQuery<TData, TRow extends DataRow<TData> = VaultRow<TData>> {
+	private readonly subject: BehaviorSubject<ReadonlyArray<TRow>>;
 	private readonly subscription: Subscription;
 
-	public readonly results$: Observable<ReadonlyArray<VaultRow<TData>>>;
+	public readonly results$: Observable<ReadonlyArray<TRow>>;
 
 	constructor(
-		private readonly source: ReadableTable<TData>,
-		private readonly config: LiveQueryConfig<TData>
+		private readonly source: ReadableTable<TData, TRow>,
+		private readonly config: LiveQueryConfig<TData, TRow>
 	) {
-		this.subject = new BehaviorSubject<ReadonlyArray<VaultRow<TData>>>(this.execute());
+		this.subject = new BehaviorSubject<ReadonlyArray<TRow>>(this.execute());
 		this.results$ = this.subject.asObservable();
 
 		this.subscription = this.source.events$.subscribe(() => {
@@ -39,7 +39,7 @@ export class LiveQuery<TData> {
 	}
 
 	/** Returns the current query result snapshot */
-	value(): ReadonlyArray<VaultRow<TData>> {
+	value(): ReadonlyArray<TRow> {
 		return this.subject.value;
 	}
 
@@ -48,7 +48,7 @@ export class LiveQuery<TData> {
 		this.subject.complete();
 	}
 
-	private execute(): ReadonlyArray<VaultRow<TData>> {
+	private execute(): ReadonlyArray<TRow> {
 		let rows = this.source.toClonedArray();
 
 		if (this.config.predicate) {
@@ -71,23 +71,23 @@ export class LiveQuery<TData> {
 
 // ─── Builder ────────────────────────────────────────────────────
 
-export class LiveQueryBuilder<TData> {
+export class LiveQueryBuilder<TData, TRow extends DataRow<TData> = VaultRow<TData>> {
 	private readonly filters: ParsedFilter[] = [];
 	private readonly sorts: ParsedSort[] = [];
 	private readonly sortFields: SortField[];
 	private _limit: number | undefined;
 	private _offset: number | undefined;
-	private _predicate: ((row: VaultRow<TData>) => boolean) | undefined;
+	private _predicate: ((row: TRow) => boolean) | undefined;
 
 	constructor(
-		private readonly source: ReadableTable<TData>,
+		private readonly source: ReadableTable<TData, TRow>,
 		sortFields?: SortField[]
 	) {
 		this.sortFields = sortFields ?? [];
 	}
 
 	/** Add a programmatic filter predicate */
-	filter(predicate: (row: VaultRow<TData>) => boolean): this {
+	filter(predicate: (row: TRow) => boolean): this {
 		this._predicate = predicate;
 		return this;
 	}
@@ -121,8 +121,8 @@ export class LiveQueryBuilder<TData> {
 	}
 
 	/** Build and start the live query */
-	build(): LiveQuery<TData> {
-		const config: LiveQueryConfig<TData> = {
+	build(): LiveQuery<TData, TRow> {
+		const config: LiveQueryConfig<TData, TRow> = {
 			filters: this.filters,
 			sorts: this.sorts,
 			sortFields: this.sortFields,

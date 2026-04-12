@@ -1,9 +1,12 @@
-import { type App, MarkdownView, type TFile, TFolder, type Vault } from "obsidian";
+import type { App, TFile } from "obsidian";
+import type { Observable } from "rxjs";
+import { Subject } from "rxjs";
 import type { z } from "zod";
 
-import { isFolderNote } from "../file/file";
-import { ensureDirectory } from "../file/file-utils";
-import type { Repository } from "./repository";
+import { ReactiveGroupBy, ReactiveMultiGroupBy } from "../vault-table/reactive-group-by";
+import { ReadableTableMixin } from "../vault-table/readable-table";
+import type { DataRow, VaultTableEvent } from "../vault-table/types";
+import { CodeBlockFile } from "./code-block-file";
 
 export interface CodeBlockBinding {
 	unsubscribe: () => void;
@@ -22,36 +25,83 @@ export interface CodeBlockRepositoryConfig<T> {
 	sort?: (a: T, b: T) => number;
 }
 
-export class CodeBlockRepository<T> implements Repository<T> {
-	private readonly codeFence: string;
-	private readonly itemSchema: z.ZodType<T>;
+/**
+ * Reactive repository for items stored as a JSON array inside a fenced code block.
+ * Extends ReadableTableMixin directly — query methods (get, toArray, where, findBy,
+ * groupBy, orderBy, pluck, etc.) all operate on DataRow<T> wrappers. CRUD methods
+ * (create, update, delete) take and return raw T items.
+ *
+ * Unwrap pattern: `repo.get(id)?.data`, `repo.toArray().map(r => r.data)`.
+ */
+export class CodeBlockRepository<T> extends ReadableTableMixin<T, DataRow<T>> {
+	private readonly file: CodeBlockFile<T>;
 	private readonly idField: (keyof T & string) | null;
 	private readonly sortComparator: ((a: T, b: T) => number) | null;
 
-	private itemMap = new Map<string, T>();
-	private sortedItems: T[] = [];
+	private rowMap = new Map<string, DataRow<T>>();
+	private sortedRows: DataRow<T>[] = [];
+	private sortedDirty = false;
 	private boundFile: { app: App; file: TFile } | null = null;
 	// Incremented before our own writes, decremented in the vault listener to skip self-triggered reloads.
 	private pendingSelfWrites = 0;
 
+	private readonly eventsSubject = new Subject<VaultTableEvent<T, DataRow<T>>>();
+	public readonly events$: Observable<VaultTableEvent<T, DataRow<T>>> = this.eventsSubject.asObservable();
+
 	constructor(config: CodeBlockRepositoryConfig<T>) {
-		this.codeFence = config.codeFence;
-		this.itemSchema = config.itemSchema;
+		super();
+		this.file = new CodeBlockFile({ codeFence: config.codeFence, itemSchema: config.itemSchema });
 		this.idField = config.idField ?? null;
 		this.sortComparator = config.sort ?? null;
 	}
 
-	// --- CRUD API (requires idField + sort) ---
+	// =========================================================================
+	// ReadableTableMixin — abstract method implementations
+	// =========================================================================
+
+	protected getRowById(): ReadonlyMap<string, DataRow<T>> {
+		return this.rowMap;
+	}
+
+	protected getRows(): ReadonlyArray<DataRow<T>> {
+		if (this.sortedDirty) {
+			this.sortedRows = [...this.rowMap.values()];
+			if (this.sortComparator) {
+				const cmp = this.sortComparator;
+				this.sortedRows.sort((a, b) => cmp(a.data, b.data));
+			}
+			this.sortedDirty = false;
+		}
+		return this.sortedRows;
+	}
+
+	// =========================================================================
+	// Reactive grouping
+	// =========================================================================
+
+	/** Creates a reactive 1:1 grouped index that stays in sync */
+	createGroupBy<K>(keyFn: (row: DataRow<T>) => K | null): ReactiveGroupBy<T, K, DataRow<T>> {
+		return new ReactiveGroupBy(this.toArray(), this.events$, keyFn);
+	}
+
+	/** Creates a reactive multi-group index (row → multiple keys) that stays in sync */
+	createMultiGroupBy<K>(keysFn: (row: DataRow<T>) => K[]): ReactiveMultiGroupBy<T, K, DataRow<T>> {
+		return new ReactiveMultiGroupBy(this.toArray(), this.events$, keysFn);
+	}
+
+	// =========================================================================
+	// Binding / loading
+	// =========================================================================
 
 	async load(app: App, file: TFile): Promise<void> {
 		this.boundFile = { app, file };
-		const items = await this.read(app.vault, file);
+		const items = await this.file.read(app.vault, file);
 		this.populateIndex(items);
 	}
 
 	loadFromRaw(raw: string, app: App, file: TFile): void {
 		this.boundFile = { app, file };
-		const items = this.parse(raw);
+		const items = this.file.parse(raw);
 		this.populateIndex(items);
 	}
 
@@ -64,10 +114,10 @@ export class CodeBlockRepository<T> implements Repository<T> {
 	async bind(app: App, filePath: string, options?: CodeBlockBindOptions): Promise<CodeBlockBinding> {
 		const { onChange, createIfMissing = false } = options ?? {};
 
-		let file = this.resolveFile(app, filePath);
+		let file = this.file.resolveFile(app, filePath);
 
 		if (!file && createIfMissing) {
-			file = await this.createBackingFile(app, filePath);
+			file = await this.file.createBackingFile(app, filePath);
 		}
 
 		if (file) {
@@ -81,7 +131,7 @@ export class CodeBlockRepository<T> implements Repository<T> {
 				this.pendingSelfWrites--;
 				return;
 			}
-			const current = this.resolveFile(app, filePath);
+			const current = this.file.resolveFile(app, filePath);
 			if (current) {
 				void this.load(app, current).then(() => onChange?.());
 			}
@@ -105,90 +155,118 @@ export class CodeBlockRepository<T> implements Repository<T> {
 		options?: CodeBlockBindOptions
 	): Promise<CodeBlockBinding> {
 		oldBinding.unsubscribe();
-		this.itemMap.clear();
-		this.sortedItems = [];
+		this.rowMap.clear();
+		this.sortedRows = [];
+		this.sortedDirty = false;
 		this.boundFile = null;
 		return this.bind(app, filePath, options);
 	}
 
-	private resolveFile(app: App, filePath: string): TFile | null {
-		const file = app.vault.getAbstractFileByPath(filePath);
-		if (!file || file instanceof TFolder) return null;
-		return file as TFile;
-	}
-
-	private async createBackingFile(app: App, filePath: string): Promise<TFile> {
-		const lastSlash = filePath.lastIndexOf("/");
-		if (lastSlash > 0) {
-			await ensureDirectory(app, filePath.substring(0, lastSlash));
-		}
-		const content = `\`\`\`${this.codeFence}\n[]\n\`\`\`\n`;
-		return (await app.vault.create(filePath, content)) as TFile;
-	}
-
-	getAll(): T[] {
-		return [...this.sortedItems];
-	}
-
-	get(id: string): T | undefined {
-		return this.itemMap.get(id);
-	}
-
-	has(id: string): boolean {
-		return this.itemMap.has(id);
-	}
+	// =========================================================================
+	// CRUD (item-level — takes/returns T, emits row-level events)
+	// =========================================================================
 
 	async create(item: T): Promise<T> {
 		const key = this.extractId(item);
-		if (this.itemMap.has(key)) {
+		if (this.rowMap.has(key)) {
 			throw new Error(`Item with ID "${key}" already exists`);
 		}
-		this.itemMap.set(key, item);
-		this.rebuildSorted();
+		const row: DataRow<T> = { id: key, data: item };
+		this.rowMap.set(key, row);
+		this.sortedDirty = true;
 		await this.persist();
+		this.eventsSubject.next({ type: "row-created", id: key, filePath: "", row });
 		return item;
 	}
 
 	async update(id: string, partial: Partial<T>): Promise<T> {
-		const existing = this.itemMap.get(id);
-		if (!existing) {
+		const existingRow = this.rowMap.get(id);
+		if (!existingRow) {
 			throw new Error(`Item with ID "${id}" not found`);
 		}
-		const updated = { ...existing, ...partial };
+		const updated = { ...existingRow.data, ...partial };
 		const newKey = this.extractId(updated);
+		const newRow: DataRow<T> = { id: newKey, data: updated };
 
 		if (newKey !== id) {
-			this.itemMap.delete(id);
+			this.rowMap.delete(id);
 		}
-		this.itemMap.set(newKey, updated);
-		this.rebuildSorted();
+		this.rowMap.set(newKey, newRow);
+		this.sortedDirty = true;
 		await this.persist();
+		this.eventsSubject.next({
+			type: "row-updated",
+			id: newKey,
+			filePath: "",
+			oldRow: existingRow,
+			newRow,
+			contentChanged: false,
+		});
 		return updated;
 	}
 
 	async delete(id: string): Promise<void> {
-		if (!this.itemMap.has(id)) return;
-		this.itemMap.delete(id);
-		this.rebuildSorted();
+		const existingRow = this.rowMap.get(id);
+		if (!existingRow) return;
+		this.rowMap.delete(id);
+		this.sortedDirty = true;
 		await this.persist();
+		this.eventsSubject.next({ type: "row-deleted", id, filePath: "", oldRow: existingRow });
 	}
 
-	// --- Index helpers ---
+	// =========================================================================
+	// File I/O pass-through (kept for external callers like host plugin file-open hooks)
+	// =========================================================================
+
+	/** Ensures the code fence block exists in the given file. */
+	async ensureBlock(app: App, file: TFile, defaultEntries?: T[]): Promise<void> {
+		return this.file.ensureBlock(app, file, defaultEntries);
+	}
+
+	// =========================================================================
+	// Lifecycle
+	// =========================================================================
+
+	destroy(): void {
+		this.eventsSubject.complete();
+		this.rowMap.clear();
+		this.sortedRows = [];
+		this.sortedDirty = false;
+	}
+
+	// =========================================================================
+	// Internal helpers
+	// =========================================================================
 
 	private populateIndex(items: T[]): void {
-		this.itemMap.clear();
+		const newMap = new Map<string, DataRow<T>>();
 		for (const item of items) {
 			const key = this.extractId(item);
-			this.itemMap.set(key, item);
+			newMap.set(key, { id: key, data: item });
 		}
-		this.rebuildSorted();
+
+		// Diff old vs new to emit granular events
+		const oldMap = this.rowMap;
+		this.rowMap = newMap;
+		this.sortedDirty = true;
+
+		for (const [id, oldRow] of oldMap) {
+			const newRow = newMap.get(id);
+			if (!newRow) {
+				this.eventsSubject.next({ type: "row-deleted", id, filePath: "", oldRow });
+			} else if (!this.itemsEqual(oldRow.data, newRow.data)) {
+				this.eventsSubject.next({ type: "row-updated", id, filePath: "", oldRow, newRow, contentChanged: false });
+			}
+		}
+		for (const [id, row] of newMap) {
+			if (!oldMap.has(id)) {
+				this.eventsSubject.next({ type: "row-created", id, filePath: "", row });
+			}
+		}
 	}
 
-	private rebuildSorted(): void {
-		this.sortedItems = [...this.itemMap.values()];
-		if (this.sortComparator) {
-			this.sortedItems.sort(this.sortComparator);
-		}
+	private itemsEqual(a: T, b: T): boolean {
+		return JSON.stringify(a) === JSON.stringify(b);
 	}
 
 	private extractId(item: T): string {
@@ -202,97 +280,13 @@ export class CodeBlockRepository<T> implements Repository<T> {
 		if (!this.boundFile) {
 			throw new Error("Cannot persist: no file bound. Call load() or loadFromRaw() first");
 		}
-		await this.write(this.boundFile.app, this.boundFile.file, this.sortedItems);
-	}
-
-	// --- Existing methods ---
-
-	async extractRaw(vault: Vault, file: TFile): Promise<string | null> {
-		try {
-			const content = await vault.read(file);
-			const regex = new RegExp(`\`\`\`${this.codeFence}\\n([\\s\\S]*?)\`\`\``, "");
-			const match = content.match(regex);
-			return match?.[1] ?? null;
-		} catch (error) {
-			console.debug(`Error reading file ${file.path}:`, error);
-			return null;
-		}
-	}
-
-	parse(raw: string): T[] {
-		try {
-			const parsed: unknown = JSON.parse(raw);
-			if (!Array.isArray(parsed)) return [];
-			return parsed.filter((item) => this.itemSchema.safeParse(item).success);
-		} catch {
-			return [];
-		}
-	}
-
-	async read(vault: Vault, file: TFile): Promise<T[]> {
-		const raw = await this.extractRaw(vault, file);
-		if (raw === null) return [];
-		return this.parse(raw);
-	}
-
-	serialize(entries: T[]): string {
-		if (entries.length === 0) return "[]";
-		const lines = entries.map((entry) => `  ${JSON.stringify(entry)}`);
-		return `[\n${lines.join(",\n")}\n]`;
-	}
-
-	async write(app: App, file: TFile, entries: T[]): Promise<void> {
-		const newContent = this.serialize(entries);
-		await this.writeRaw(app, file, newContent);
-	}
-
-	async writeRaw(app: App, file: TFile, raw: string): Promise<void> {
-		const activeView = app.workspace.getActiveViewOfType(MarkdownView);
-		const shouldPreserveEditorState = activeView?.file?.path === file.path;
-
-		const cursor = shouldPreserveEditorState ? activeView.editor.getCursor() : null;
-		const scrollInfo = shouldPreserveEditorState ? activeView.editor.getScrollInfo() : null;
-
-		const content = await app.vault.read(file);
-		const updatedContent = content.replace(
-			new RegExp(`\`\`\`${this.codeFence}\\n[\\s\\S]*?\`\`\``, ""),
-			`\`\`\`${this.codeFence}\n${raw}\n\`\`\``
+		await this.file.write(
+			this.boundFile.app,
+			this.boundFile.file,
+			this.getRows().map((r) => r.data),
+			() => {
+				this.pendingSelfWrites++;
+			}
 		);
-
-		this.pendingSelfWrites++;
-		await app.vault.modify(file, updatedContent);
-
-		if (shouldPreserveEditorState && cursor && scrollInfo) {
-			await new Promise<void>((resolve) => setTimeout(resolve, 0));
-			requestAnimationFrame(() => {
-				const viewAfter = app.workspace.getActiveViewOfType(MarkdownView);
-				if (viewAfter?.file?.path !== file.path) return;
-
-				viewAfter.editor.setCursor(cursor);
-				viewAfter.editor.scrollTo(scrollInfo.left, scrollInfo.top);
-			});
-		}
-	}
-
-	async ensureBlock(app: App, file: TFile, defaultEntries?: T[]): Promise<void> {
-		if (isFolderNote(file.path)) return;
-
-		const content = await app.vault.read(file);
-		if (content.includes(`\`\`\`${this.codeFence}`)) return;
-
-		const serialized = defaultEntries ? this.serialize(defaultEntries) : "[]";
-		const codeBlock = `\`\`\`${this.codeFence}\n${serialized}\n\`\`\`\n\n`;
-
-		const frontmatterMatch = content.match(/^---\n[\s\S]*?\n---\n?/);
-		let updatedContent: string;
-		if (frontmatterMatch) {
-			const frontmatter = frontmatterMatch[0];
-			const rest = content.slice(frontmatter.length);
-			updatedContent = `${frontmatter}\n${codeBlock}${rest}`;
-		} else {
-			updatedContent = `${codeBlock}${content}`;
-		}
-
-		await app.vault.modify(file, updatedContent);
 	}
 }

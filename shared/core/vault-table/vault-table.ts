@@ -134,7 +134,7 @@ export class VaultTable<
 	// ReadableTableMixin — abstract method implementations
 	// =========================================================================
 
-	protected getRowByFileName(): ReadonlyMap<string, VaultRow<TData>> {
+	protected getRowById(): ReadonlyMap<string, VaultRow<TData>> {
 		return this.rowByFileName;
 	}
 
