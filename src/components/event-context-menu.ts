@@ -31,6 +31,7 @@ import {
 	markAsUndone,
 	moveEvent,
 	toggleSkip,
+	updateFrontmatter,
 } from "../core/commands";
 import { weekDuration } from "../core/commands/batch-commands";
 import { MinimizedModalManager } from "../core/minimized-modal-manager";
@@ -189,6 +190,8 @@ export class EventContextMenu {
 						return isNormal;
 					case "makeReal":
 						return kind === "manual";
+					case "makeUntracked":
+						return isNormal && !!filePath;
 					default:
 						return true;
 				}
@@ -469,6 +472,15 @@ export class EventContextMenu {
 				section: "edit",
 				onAction: () => {
 					void this.makeEventReal(this.currentEvent!);
+				},
+			},
+			{
+				id: "makeUntracked",
+				label: CONTEXT_MENU_BUTTON_LABELS.makeUntracked,
+				icon: "calendar-off",
+				section: "edit",
+				onAction: () => {
+					void this.makeEventUntracked(this.currentEvent!);
 				},
 			},
 		];
@@ -1000,6 +1012,22 @@ export class EventContextMenu {
 	private async makeEventVirtual(event: CalendarEventInfo): Promise<void> {
 		await this.withFilePath(event, "make virtual", async (filePath) => {
 			await this.bundle.convertToVirtual(filePath);
+		});
+	}
+
+	private async makeEventUntracked(event: CalendarEventInfo): Promise<void> {
+		await this.withFilePath(event, "make event untracked", async (filePath) => {
+			const settings = this.bundle.settingsStore.currentSettings;
+			const propertyUpdates = new Map<string, string | null>([
+				[settings.startProp, null],
+				[settings.endProp, null],
+				[settings.dateProp, null],
+				[settings.allDayProp, null],
+			]);
+			await this.runCommand(() => updateFrontmatter(this.bundle, filePath, propertyUpdates), {
+				success: "Event moved to untracked",
+				error: "Failed to move event to untracked",
+			});
 		});
 	}
 

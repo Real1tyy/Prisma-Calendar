@@ -252,6 +252,7 @@ export const CONTEXT_MENU_BUTTON_LABELS = {
 	duplicateRemainingWeekDays: "Duplicate remaining week days",
 	makeVirtual: "Make virtual",
 	makeReal: "Make real",
+	makeUntracked: "Make untracked",
 } as const;
 
 export const CONTEXT_MENU_ITEM_IDS = Object.keys(

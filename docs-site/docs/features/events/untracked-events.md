@@ -86,6 +86,10 @@ Remove dates from calendar events to make them untracked again:
 
 Date properties (Start Date, End Date, Date, All Day) are all cleared.
 
+### Make Untracked — Context Menu
+
+Right-click any event on the calendar and pick **"Make untracked"** to clear its date properties and move it back into the dropdown. This is the keyboard/right-click equivalent of dragging the event onto the Untracked button — identical effect, no drag required.
+
 ### Smart Behavior
 
 - **Auto-hide while dragging**: If you hover over the dropdown for over 1 second while dragging, it temporarily hides to unblock the calendar view
