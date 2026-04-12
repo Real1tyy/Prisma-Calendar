@@ -8,7 +8,7 @@ import {
 } from "@real1ty-obsidian-plugins";
 import type { DurationLike } from "luxon";
 import type { App } from "obsidian";
-import { TFile } from "obsidian";
+import { getFrontMatterInfo, parseYaml, TFile } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import { applyStartEndOffsets, removeNonCloneableProperties } from "../../utils/event-frontmatter";
@@ -66,8 +66,10 @@ async function prepareFileCopy(
 	const directory = sourceFile.parent?.path || "";
 	const { fullPath, zettelId } = generateUniqueEventPath(app, directory, baseNameWithoutZettel);
 
-	const cache = app.metadataCache.getFileCache(sourceFile);
-	const frontmatter: Frontmatter = cache?.frontmatter ? { ...cache.frontmatter } : {};
+	// Parse frontmatter from the just-read file content rather than metadataCache —
+	// the cache can be stale immediately after ensureFileHasZettelId rewrites the file.
+	const fmInfo = getFrontMatterInfo(content);
+	const frontmatter: Frontmatter = fmInfo.exists ? (parseYaml(fmInfo.frontmatter) ?? {}) : {};
 	const body = extractContentAfterFrontmatter(content);
 
 	if (settings.zettelIdProp) {
