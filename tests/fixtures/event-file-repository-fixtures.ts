@@ -1,7 +1,7 @@
+import { MockVaultTable } from "@real1ty-obsidian-plugins/testing";
 import { BehaviorSubject } from "rxjs";
 import { vi } from "vitest";
 
-import { MockVaultTable } from "../../../shared/src/testing/mocks/vault-table";
 import { EventFileRepository } from "../../src/core/event-file-repository";
 import type { Frontmatter } from "../../src/types";
 import { createParserSettings } from "./settings-fixtures";
@@ -82,7 +82,7 @@ export function createMockParser() {
 				end: source.frontmatter["End Date"] || source.frontmatter["Start Date"] || "2024-01-01T01:00:00",
 				type: source.isAllDay ? "allDay" : "timed",
 				allDay: source.isAllDay,
-				skipped: false,
+				skipped: source.metadata?.skip ?? false,
 				color: "",
 				meta: source.frontmatter,
 				metadata: source.metadata,
