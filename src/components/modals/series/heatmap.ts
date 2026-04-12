@@ -18,6 +18,14 @@ import {
 	renderHeatmapSVG,
 } from "../../heatmap/heatmap-renderer";
 
+export type HeatmapMode = "yearly" | "monthly";
+
+export interface HeatmapNavigationState {
+	mode: HeatmapMode;
+	year: number;
+	month: number;
+}
+
 export interface EventSeriesHeatmapConfig {
 	events: CalendarEvent[];
 	/** Optional title shown above the heatmap (used in modal context). */
@@ -25,9 +33,13 @@ export interface EventSeriesHeatmapConfig {
 	categoryColor?: string;
 	/** Element to place in the left side of the toolbar (e.g., filter bar). */
 	toolbarLeft?: HTMLElement;
+	/** Initial view mode (defaults to "yearly"). */
+	initialMode?: HeatmapMode;
+	/** Hides the yearly/monthly toggle so the mode stays fixed. */
+	lockMode?: boolean;
+	/** Called whenever the viewed period changes (navigate, mode switch, now). */
+	onNavigate?: (state: HeatmapNavigationState) => void;
 }
-
-type HeatmapMode = "yearly" | "monthly";
 
 export interface HeatmapHandle {
 	destroy: () => void;
@@ -47,7 +59,7 @@ export function renderHeatmapInto(
 	config: EventSeriesHeatmapConfig
 ): HeatmapHandle {
 	const colorEvaluator = new ColorEvaluator<SingleCalendarConfig>(bundle.settingsStore.settings$);
-	let mode: HeatmapMode = "yearly";
+	let mode: HeatmapMode = config.initialMode ?? "yearly";
 	const now = DateTime.now();
 	let year = now.year;
 	let month = now.month;
@@ -87,26 +99,28 @@ export function renderHeatmapInto(
 
 	if (config.toolbarLeft) toolbarLeft.appendChild(config.toolbarLeft);
 
-	const modeGroup = toolbarRight.createDiv(cls("heatmap-mode-group"));
-	const yearlyBtn = modeGroup.createEl("button", { text: "Yearly", cls: cls("heatmap-mode-btn") });
-	const monthlyBtn = modeGroup.createEl("button", { text: "Monthly", cls: cls("heatmap-mode-btn") });
-	addCls(yearlyBtn, "is-active");
+	if (!config.lockMode) {
+		const modeGroup = toolbarRight.createDiv(cls("heatmap-mode-group"));
+		const yearlyBtn = modeGroup.createEl("button", { text: "Yearly", cls: cls("heatmap-mode-btn") });
+		const monthlyBtn = modeGroup.createEl("button", { text: "Monthly", cls: cls("heatmap-mode-btn") });
+		addCls(mode === "yearly" ? yearlyBtn : monthlyBtn, "is-active");
 
-	yearlyBtn.addEventListener("click", () => {
-		mode = "yearly";
-		yearlyBtn.className = cls("heatmap-mode-btn");
-		addCls(yearlyBtn, "is-active");
-		monthlyBtn.className = cls("heatmap-mode-btn");
-		renderView();
-	});
+		yearlyBtn.addEventListener("click", () => {
+			mode = "yearly";
+			yearlyBtn.className = cls("heatmap-mode-btn");
+			addCls(yearlyBtn, "is-active");
+			monthlyBtn.className = cls("heatmap-mode-btn");
+			renderView();
+		});
 
-	monthlyBtn.addEventListener("click", () => {
-		mode = "monthly";
-		yearlyBtn.className = cls("heatmap-mode-btn");
-		monthlyBtn.className = cls("heatmap-mode-btn");
-		addCls(monthlyBtn, "is-active");
-		renderView();
-	});
+		monthlyBtn.addEventListener("click", () => {
+			mode = "monthly";
+			yearlyBtn.className = cls("heatmap-mode-btn");
+			monthlyBtn.className = cls("heatmap-mode-btn");
+			addCls(monthlyBtn, "is-active");
+			renderView();
+		});
+	}
 
 	const controls = container.createDiv(cls("heatmap-controls"));
 	const navGroup = controls.createDiv(cls("heatmap-nav-group"));
@@ -228,6 +242,7 @@ export function renderHeatmapInto(
 		legendContainer.empty();
 		dayDetailPanel.empty();
 		renderHeatmapLegend(legendContainer, dataset.thresholds, config.categoryColor);
+		config.onNavigate?.({ mode, year, month });
 
 		const firstDayOfWeek = bundle.settingsStore.currentSettings.firstDayOfWeek ?? 0;
 		grid = renderHeatmapSVG(svgContainer, dataset, {

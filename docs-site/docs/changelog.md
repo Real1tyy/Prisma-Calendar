@@ -4,12 +4,16 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.13.0 - 4/10/2026
+## 2.13.0 - 4/12/2026
+
+> **TLDR:** New **Heatmap Monthly + Stats** tab pairs a month-locked heatmap with a live monthly pie chart. Also fixes negative stats totals from malformed crossing-midnight events, plus a Duplicate current event command and a handful of recurrence, sort-date, and navigation fixes.
 
 ### Added
+- **Heatmap Monthly + Stats tab (Pro)**: New tab pairing a month-locked heatmap on the left with a live monthly pie chart and breakdown table on the right. Navigating a month on the heatmap re-aggregates the stats panel instantly, giving you "when" and "what" in one view for monthly retrospectives. See [Heatmap Monthly + Stats](./features/views/heatmap-monthly-stats.md).
 - **Duplicate current event command**: Duplicate any event note from the command palette or a hotkey — no need to open the calendar. Works on untracked events too. See [Hotkeys](./features/advanced/hotkeys.md#duplicate-current-event).
 
 ### Fixed
+- **Negative stats totals from malformed events**: Events with end before start (e.g. crossing-midnight entries where the end date wasn't advanced) produced negative durations that broke monthly/daily totals, pie percentages, and capacity math. Now clamped per-event to zero.
 - **Stale Sort Date when event type changes**: Converting a timed event to all-day (or vice versa) under a single-type sorting strategy, or making an event untracked, left a stale `Sort Date` value in frontmatter. The property is now cleared so sort data stays in sync with the current event type. See [Sorting Normalization](./configuration/properties.md#sorting-normalization-for-external-tools).
 - **Wrong virtual event dates for yearly and custom-interval recurrences**: Yearly and custom-interval daily events could appear on incorrect dates. Events now correctly align to their recurrence cycle. See [Recurring Events](./features/events/recurring-dsl.md).
 - **Events sometimes incorrectly marked as done**: Recurring instances could be prematurely marked as done — timed events were marked at start time instead of end time, and all-day events were marked at midnight instead of end of day. See [Recurring Events](./features/events/recurring-dsl.md).

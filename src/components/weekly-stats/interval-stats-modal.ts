@@ -3,12 +3,10 @@ import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { CalendarEvent } from "../../types/calendar";
-import { calculateCapacityFromEvents, formatBoundaryRange, formatCapacityLabel } from "../../utils/capacity";
 import type { AggregationMode, Stats } from "../../utils/weekly-stats";
 import { formatDuration, formatDurationAsDecimalHours } from "../../utils/weekly-stats";
+import { renderIntervalStatsBody } from "../views/interval-stats-view";
 import { StatsModal } from "./base-stats-modal";
-import { ChartComponent } from "./chart-component";
-import { TableComponent } from "./table-component";
 
 export interface IntervalConfig {
 	getBounds(date: Date): { start: Date; end: Date };
@@ -124,37 +122,18 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 		this.renderHeader(this.contentContainer, start, end, stats);
 
-		if (stats.entries.length === 0) {
-			this.contentContainer.createDiv({
-				text: "No events found for this period.",
-				cls: cls("stats-empty"),
-			});
-			return Promise.resolve();
-		}
-
-		if (settings.capacityTrackingEnabled) {
-			const capacity = calculateCapacityFromEvents(filteredEvents, start, end, settings.hourStart, settings.hourEnd);
-			const fmt = this.showDecimalHours ? formatDurationAsDecimalHours : formatDuration;
-			const label = formatCapacityLabel(capacity, this.showDecimalHours);
-			const capacityEl = this.contentContainer.createDiv(cls("capacity-label"));
-			capacityEl.createSpan({ text: `⏱ ${label} (${capacity.percentUsed.toFixed(0)}%)`, cls: cls("capacity-used") });
-			capacityEl.createSpan({ text: "·" });
-			capacityEl.createSpan({ text: `${fmt(capacity.remainingMs)} remaining`, cls: cls("capacity-remaining") });
-			capacityEl.createSpan({ text: "·" });
-			capacityEl.createSpan({ text: formatBoundaryRange(capacity), cls: cls("capacity-bounds") });
-		}
-
-		const chartOptions =
-			this.aggregationMode === "category"
-				? { colorResolver: (label: string) => this.bundle.categoryTracker.getCategoryColor(label) }
-				: undefined;
-		this.chartComponent = new ChartComponent(this.contentContainer, stats.entries, chartOptions);
-		this.tableComponent = new TableComponent(
-			this.contentContainer,
-			stats.entries,
-			stats.totalDuration,
-			this.showDecimalHours
-		);
+		const body = renderIntervalStatsBody(this.contentContainer, this.bundle, {
+			stats,
+			filteredEvents,
+			start,
+			end,
+			showDecimalHours: this.showDecimalHours,
+			aggregationMode: this.aggregationMode,
+			includeCapacity: true,
+			emptyMessage: "No events found for this period.",
+		});
+		this.chartComponent = body.chart;
+		this.tableComponent = body.table;
 
 		return Promise.resolve();
 	}

@@ -17,7 +17,7 @@ export { showCategorySelectModal } from "./category/category-select";
 // Series modals
 export type { EventSeriesBasesViewConfig } from "./series/bases-view";
 export { showCategoryEventsModal, showEventSeriesBasesViewModal, showIntervalEventsModal } from "./series/bases-view";
-export type { EventSeriesHeatmapConfig, HeatmapHandle } from "./series/heatmap";
+export type { EventSeriesHeatmapConfig, HeatmapHandle, HeatmapMode, HeatmapNavigationState } from "./series/heatmap";
 export { renderHeatmapInto, showHeatmapModal } from "./series/heatmap";
 export type { EventSeriesTimelineConfig, TimelineHandle } from "./series/timeline";
 export { renderTimelineInto, showTimelineModal } from "./series/timeline";

@@ -2,7 +2,7 @@
 
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
-The calendar view features a tab bar in the view header with seven tabs. Each tab provides a different perspective on your calendar data. Tabs render lazily — content loads only when you switch to a tab for the first time.
+The calendar view features a tab bar in the view header with eight tabs. Each tab provides a different perspective on your calendar data. Tabs render lazily — content loads only when you switch to a tab for the first time.
 
 <div className="video-container" style={{"textAlign": "center", "marginBottom": "2em"}}>
   <video controls autoPlay loop muted playsInline style={{"width": "100%", "maxWidth": "800px", "borderRadius": "8px"}}>
@@ -35,6 +35,10 @@ A GitHub-style contribution heatmap showing event density over time.
 ## [Daily + Stats](./daily-stats.md)
 
 A two-column resizable layout with a daily calendar on the left and live statistics on the right.
+
+## [Heatmap Monthly + Stats](./heatmap-monthly-stats.md) (Pro)
+
+A two-column resizable layout pairing a month-locked heatmap on the left with a monthly pie chart and breakdown table on the right. The monthly analogue of Daily + Stats.
 
 ## [Dual Daily](./dual-daily.md)
 
