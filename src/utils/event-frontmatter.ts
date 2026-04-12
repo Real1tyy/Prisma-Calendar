@@ -1,8 +1,10 @@
 import {
 	ensureISOSuffix,
 	type FrontmatterDiff,
+	parseAsLocalDate,
 	parseIntoList,
 	serializeFrontmatterValue,
+	toSafeString,
 	withFrontmatter,
 } from "@real1ty-obsidian-plugins";
 import type { DurationLike } from "luxon";
@@ -22,6 +24,45 @@ import { getFileAndFrontmatter, getFileByPathOrThrow } from "./obsidian";
 
 export const isAllDayEvent = (allDayValue: unknown): boolean => {
 	return allDayValue === true || (typeof allDayValue === "string" && allDayValue.toLowerCase() === "true");
+};
+
+/**
+ * Decides whether a file-change observer should auto-mark an event as done.
+ *
+ * CRITICAL PROTECTION: Don't mark source recurring events as done.
+ * Source recurring events (identified by the presence of rruleProp) are templates
+ * that generate virtual and physical instances. Marking them as done would:
+ * 1. Break the recurring event system
+ * 2. Prevent generation of future instances
+ * 3. Cause all instances to appear as "done" since they inherit from the source
+ */
+export const shouldEventBeMarkedAsDone = (frontmatter: Frontmatter, settings: SingleCalendarConfig): boolean => {
+	if (!settings.markPastInstancesAsDone) return false;
+	if (frontmatter[settings.rruleProp]) return false;
+	if (frontmatter[settings.statusProperty] === settings.doneValue) return false;
+	return isEventPastFromFrontmatter(frontmatter, settings);
+};
+
+/**
+ * Parses a frontmatter value as a local-time Date. Prisma writes local datetimes with
+ * a `.000Z` suffix for sortability — they must not be interpreted as UTC when compared
+ * against `new Date()` (local now). Returns null if the value is missing or unparseable.
+ */
+const frontmatterValueAsLocalDate = (value: unknown): Date | null => {
+	const raw = toSafeString(value);
+	return raw ? parseAsLocalDate(raw) : null;
+};
+
+/**
+ * Returns true when the event represented by the given frontmatter is entirely in the past.
+ * All-day events use end-of-day on the Date property; timed events use the End property.
+ */
+export const isEventPastFromFrontmatter = (frontmatter: Frontmatter, settings: SingleCalendarConfig): boolean => {
+	const isAllDay = isAllDayEvent(frontmatter[settings.allDayProp]);
+	const date = frontmatterValueAsLocalDate(frontmatter[isAllDay ? settings.dateProp : settings.endProp]);
+	if (!date) return false;
+	if (isAllDay) date.setHours(23, 59, 59, 999);
+	return date < new Date();
 };
 
 /**
@@ -80,7 +121,19 @@ export const applyDateNormalizationToFile = async (
 	allDay?: boolean
 ): Promise<void> => {
 	const result = computeSortDateValue(settings, start, end, allDay);
-	if (!result) return;
+
+	if (!result) {
+		if (!settings.sortDateProp || !(settings.sortDateProp in frontmatter)) return;
+		try {
+			const file = getFileByPathOrThrow(app, filePath);
+			await app.fileManager.processFrontMatter(file, (fm: Frontmatter) => {
+				delete fm[settings.sortDateProp];
+			});
+		} catch (error) {
+			console.error(`[CalendarEvents] Error clearing sort date on file ${filePath}:`, error);
+		}
+		return;
+	}
 
 	const { targetProp, value } = result;
 	if (String(frontmatter[targetProp] ?? "") === value) return;

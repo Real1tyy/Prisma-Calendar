@@ -10,6 +10,7 @@ All notable changes to this project will be documented here.
 - **Duplicate current event command**: Duplicate any event note from the command palette or a hotkey — no need to open the calendar. Works on untracked events too. See [Hotkeys](./features/advanced/hotkeys.md#duplicate-current-event).
 
 ### Fixed
+- **Stale Sort Date when event type changes**: Converting a timed event to all-day (or vice versa) under a single-type sorting strategy, or making an event untracked, left a stale `Sort Date` value in frontmatter. The property is now cleared so sort data stays in sync with the current event type. See [Sorting Normalization](./configuration/properties.md#sorting-normalization-for-external-tools).
 - **Wrong virtual event dates for yearly and custom-interval recurrences**: Yearly and custom-interval daily events could appear on incorrect dates. Events now correctly align to their recurrence cycle. See [Recurring Events](./features/events/recurring-dsl.md).
 - **Events sometimes incorrectly marked as done**: Recurring instances could be prematurely marked as done — timed events were marked at start time instead of end time, and all-day events were marked at midnight instead of end of day. See [Recurring Events](./features/events/recurring-dsl.md).
 - **Removing last participant in edit modal not saving**: Clearing all participants from an event and saving did not remove them from frontmatter — the old value persisted. See [Participants](./features/events/participants.md).

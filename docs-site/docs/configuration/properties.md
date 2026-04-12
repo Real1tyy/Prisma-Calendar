@@ -152,6 +152,8 @@ The `Sort Date` property is separate from the `Date` property used by all-day ev
 
 All datetime values are written without the `.000Z` suffix. All-day events get `T00:00:00` appended so they sort consistently alongside timed events.
 
+**Cleanup on event type change:** When an event switches to a type the active strategy does not cover (e.g. a timed event converted to all-day while "Timed only — start" is selected, or an event becoming untracked), Prisma removes the stale `Sort Date` value from frontmatter so sort data stays in sync with the current event type.
+
 **Sort date property:**
 
 The property name defaults to `Sort Date`. Change it in the "Sort date property" setting if you prefer a different name.

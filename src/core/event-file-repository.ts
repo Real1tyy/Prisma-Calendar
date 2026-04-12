@@ -1,7 +1,6 @@
 import type { FrontmatterDiff, SyncStore, VaultRow, VaultTableEvent } from "@real1ty-obsidian-plugins";
 import {
 	extractFileName,
-	intoDate,
 	isFolderNote,
 	removeMarkdownExtension,
 	toSafeString,
@@ -14,6 +13,7 @@ import type { Frontmatter, PrismaSyncDataSchema, SingleCalendarConfig } from "..
 import { parseEventMetadata } from "../types/event";
 import type { CalendarEventSource, IndexerEvent, RawEventSource } from "../types/event-source";
 import { type NodeRecurringEvent, parseRRuleFromFrontmatter } from "../types/recurring-event";
+import { shouldEventBeMarkedAsDone } from "../utils/event-frontmatter";
 import { cleanupTitle, ensureFileHasZettelId, generateUniqueRruleId, hasTimestamp } from "../utils/event-naming";
 import { createEventSchema } from "./event-schema";
 
@@ -292,14 +292,8 @@ export class EventFileRepository implements CalendarEventSource {
 				console.error(`[EventFileRepository] Error auto-assigning ZettelID for ${row.filePath}:`, error);
 			});
 
-			if (settings.markPastInstancesAsDone && hasDateOrTime) {
-				void this.markPastEventAsDone(row.file, frontmatter).catch((error) => {
-					console.error(`[EventFileRepository] Error marking past event ${row.filePath}:`, error);
-				});
-			}
-
-			void this.updateCalendarTitleProperty(row.file, frontmatter).catch((error) => {
-				console.error(`[EventFileRepository] Error updating calendar title for ${row.filePath}:`, error);
+			void this.applyBackgroundFrontmatterUpdates(row.file, frontmatter, isUntracked).catch((error) => {
+				console.error(`[EventFileRepository] Error applying background updates for ${row.filePath}:`, error);
 			});
 
 			const allDayProp = frontmatter[settings.allDayProp];
@@ -391,21 +385,29 @@ export class EventFileRepository implements CalendarEventSource {
 
 	// ─── Background File Updates ─────────────────────────────────
 
-	private async updateCalendarTitleProperty(file: TFile, frontmatter: Frontmatter): Promise<void> {
+	private async applyBackgroundFrontmatterUpdates(
+		file: TFile,
+		frontmatter: Frontmatter,
+		isUntracked: boolean
+	): Promise<void> {
 		if (this.syncStore?.data.readOnly) return;
 
-		const { calendarTitleProp } = this.settings;
-		if (!calendarTitleProp) return;
+		const settings = this.settings;
+		const { calendarTitleProp, sortDateProp, statusProperty, doneValue } = settings;
 
 		const pathWithoutExt = removeMarkdownExtension(file.path);
 		const displayName = cleanupTitle(file.basename);
 		const titleLink = `[[${pathWithoutExt}|${displayName}]]`;
+		const needsTitleUpdate = !!calendarTitleProp && frontmatter[calendarTitleProp] !== titleLink;
+		const needsSortDateCleanup = isUntracked && !!sortDateProp && sortDateProp in frontmatter;
+		const needsMarkAsDone = !isUntracked && shouldEventBeMarkedAsDone(frontmatter, settings);
 
-		const currentTitle = frontmatter[calendarTitleProp];
-		if (currentTitle === titleLink) return;
+		if (!needsTitleUpdate && !needsSortDateCleanup && !needsMarkAsDone) return;
 
 		await this.enqueueFrontmatterWrite(file, (fm: Frontmatter) => {
-			fm[calendarTitleProp] = titleLink;
+			if (needsTitleUpdate) fm[calendarTitleProp] = titleLink;
+			if (needsSortDateCleanup) delete fm[sortDateProp];
+			if (needsMarkAsDone) fm[statusProperty] = doneValue;
 		});
 	}
 
@@ -432,47 +434,6 @@ export class EventFileRepository implements CalendarEventSource {
 			console.error(`[EventFileRepository] Error auto-assigning ZettelID to ${file.path}:`, error);
 		} finally {
 			this.zettelIdRenamesInFlight.delete(file.path);
-		}
-	}
-
-	private async markPastEventAsDone(file: TFile, frontmatter: Frontmatter): Promise<void> {
-		if (this.syncStore?.data.readOnly) return;
-
-		// CRITICAL PROTECTION: Don't mark source recurring events as done
-		// Source recurring events (identified by the presence of rruleProp) are templates
-		// that generate virtual and physical instances. Marking them as done would:
-		// 1. Break the recurring event system
-		// 2. Prevent generation of future instances
-		// 3. Cause all instances to appear as "done" since they inherit from the source
-		const isSourceRecurringEvent = !!frontmatter[this.settings.rruleProp];
-		if (isSourceRecurringEvent) return;
-
-		const now = new Date();
-		let isPastEvent = false;
-
-		const allDayValue = frontmatter[this.settings.allDayProp];
-		const isAllDay = allDayValue === true || allDayValue === "true";
-
-		if (isAllDay) {
-			const rawDate = frontmatter[this.settings.dateProp];
-			const date = intoDate(rawDate);
-			if (date) {
-				date.setHours(23, 59, 59, 999);
-				isPastEvent = date < now;
-			}
-		} else {
-			const endValue = frontmatter[this.settings.endProp];
-			const endDate = intoDate(endValue);
-			if (endDate) {
-				isPastEvent = endDate < now;
-			}
-		}
-
-		if (isPastEvent) {
-			const currentStatus = frontmatter[this.settings.statusProperty];
-			if (currentStatus !== this.settings.doneValue) {
-				await this.markFileAsDone(file.path);
-			}
 		}
 	}
 
