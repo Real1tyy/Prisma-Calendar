@@ -73,7 +73,7 @@ export class VirtualEventStore {
 	}
 
 	getById(id: string): VirtualEventData | undefined {
-		return this.repo.get(id);
+		return this.repo.get(id)?.data;
 	}
 
 	getInRange(start: DateTime, end: DateTime): VirtualEventData[] {
@@ -123,7 +123,7 @@ export class VirtualEventStore {
 	}
 
 	private emit(): void {
-		this.events$.next(this.repo.getAll());
+		this.events$.next(this.repo.toArray().map((r) => r.data));
 	}
 }
 
