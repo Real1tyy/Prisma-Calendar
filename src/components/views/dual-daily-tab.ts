@@ -2,13 +2,14 @@ import { createGridLayout, type GridLayoutHandle, type TabDefinition } from "@re
 import type { App } from "obsidian";
 
 import type { CalendarBundle } from "../../core/calendar-bundle";
-import { createDailyCalendar, type DailyCalendarHandle } from "./daily-calendar";
+import { createDailyCalendar, type DailyCalendarHandle, type DailyDragState } from "./daily-calendar";
 
 export function createDualDailyTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let gridHandle: GridLayoutHandle | null = null;
 	let leftCalendar: DailyCalendarHandle | null = null;
 	let rightCalendar: DailyCalendarHandle | null = null;
 	let focusedSide: "left" | "right" = "left";
+	const sharedDragState: DailyDragState = { current: null };
 
 	function getFocusedCalendar(): DailyCalendarHandle | null {
 		return focusedSide === "left" ? leftCalendar : rightCalendar;
@@ -35,7 +36,7 @@ export function createDualDailyTabDefinition(app: App, bundle: CalendarBundle): 
 						row: 0,
 						col: 0,
 						render: (cellEl) => {
-							leftCalendar = createDailyCalendar(cellEl, app, bundle);
+							leftCalendar = createDailyCalendar(cellEl, app, bundle, { sharedDragState });
 							cellEl.addEventListener("pointerdown", () => {
 								focusedSide = "left";
 							});
@@ -51,7 +52,7 @@ export function createDualDailyTabDefinition(app: App, bundle: CalendarBundle): 
 						row: 0,
 						col: 1,
 						render: (cellEl) => {
-							rightCalendar = createDailyCalendar(cellEl, app, bundle);
+							rightCalendar = createDailyCalendar(cellEl, app, bundle, { sharedDragState });
 							cellEl.addEventListener("pointerdown", () => {
 								focusedSide = "right";
 							});

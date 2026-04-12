@@ -10,6 +10,7 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import type { FCPrismaEventInput } from "../../types/calendar";
 import { isFileBackedEvent } from "../../types/event-classification";
 import type { SingleCalendarConfig } from "../../types/settings";
+import { parseFCExtendedProps } from "../../utils/extended-props";
 import type { CalendarHost } from "../calendar-host";
 import { EventContextMenu } from "../event-context-menu";
 import { SearchFilterInputManager } from "../input-managers/search-filter";
@@ -32,6 +33,23 @@ import {
 	syncCalendarSettings,
 } from "./shared-calendar-options";
 
+export interface DailyDragCapture {
+	filePath: string;
+	oldStart: Date;
+	oldEnd: Date | null;
+	allDay: boolean;
+}
+
+/**
+ * Shared state that lets sibling daily-calendar instances (e.g. the two panes
+ * of Dual Daily) coordinate a cross-calendar drag. The source pane writes the
+ * original event datetime here on drag start; the destination pane reads it in
+ * eventReceive to build the update command.
+ */
+export interface DailyDragState {
+	current: DailyDragCapture | null;
+}
+
 export interface DailyCalendarHandle {
 	calendar: Calendar;
 	destroy: () => void;
@@ -42,6 +60,7 @@ export interface DailyCalendarHandle {
 
 export interface DailyCalendarConfig {
 	onDateChange?: (date: Date) => void;
+	sharedDragState?: DailyDragState;
 }
 
 /**
@@ -117,10 +136,52 @@ export function createDailyCalendar(
 		unselectAuto: true,
 		unselectCancel: ".modal",
 
+		droppable: true,
+
 		fixedMirrorParent: document.body,
 
 		eventAllow: (_dropInfo, draggedEvent) => {
 			return draggedEvent ? isFileBackedEvent(draggedEvent) : false;
+		},
+
+		eventDragStart: (info) => {
+			const state = config?.sharedDragState;
+			if (!state) return;
+			if (!info.event.start || !isFileBackedEvent(info.event)) {
+				state.current = null;
+				return;
+			}
+			state.current = {
+				filePath: parseFCExtendedProps(info.event).filePath,
+				oldStart: info.event.start,
+				oldEnd: info.event.end,
+				allDay: info.event.allDay,
+			};
+		},
+
+		eventReceive: (info) => {
+			const state = config?.sharedDragState;
+			const capture = state?.current ?? null;
+			if (state) state.current = null;
+
+			// Drop the ghost event: the event store will re-add the real event
+			// at its new datetime once the file write propagates.
+			info.event.remove();
+
+			if (!capture) return;
+
+			const updateInfo = extractSharedEventUpdateInfo({
+				event: {
+					title: info.event.title,
+					start: info.event.start,
+					end: info.event.end,
+					allDay: info.event.allDay,
+					extendedProps: { ...info.event.extendedProps, filePath: capture.filePath },
+				},
+				oldEvent: { start: capture.oldStart, end: capture.oldEnd, allDay: capture.allDay },
+				revert: () => {},
+			});
+			void handleSharedEventUpdate(app, bundle, updateInfo, "Error moving event across panes:", "DailyCalendar");
 		},
 
 		eventContent: (arg) => eventContentCallback(arg),

@@ -12,6 +12,7 @@ All notable changes to this project will be documented here.
 - **Heatmap Monthly + Stats tab (Pro)**: New tab pairing a month-locked heatmap on the left with a live monthly pie chart and breakdown table on the right. Navigating a month on the heatmap re-aggregates the stats panel instantly, giving you "when" and "what" in one view for monthly retrospectives. See [Heatmap Monthly + Stats](./features/views/heatmap-monthly-stats.md).
 - **Duplicate current event command**: Duplicate any event note from the command palette or a hotkey — no need to open the calendar. Works on untracked events too. See [Hotkeys](./features/advanced/hotkeys.md#duplicate-current-event).
 - **Make untracked context menu action**: Right-click any event and pick "Make untracked" to clear its date/time and move it into the untracked events dropdown — the same result as dragging it there. See [Untracked Events](./features/events/untracked-events.md).
+- **Drag events between Dual Daily panes**: Drag an event from one daily pane onto the other to reschedule it to that day. The drop time becomes the event's new start time and both panes refresh automatically. See [Dual Daily](./features/views/dual-daily.md).
 
 ### Fixed
 - **Negative stats totals from malformed events**: Events with end before start (e.g. crossing-midnight entries where the end date wasn't advanced) produced negative durations that broke monthly/daily totals, pie percentages, and capacity math. Now clamped per-event to zero.
