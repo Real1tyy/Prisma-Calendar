@@ -289,19 +289,7 @@ export async function withFileContext<T>(
  */
 export function getUniqueFilePath(app: App, folder: string, baseName: string): string {
 	const normalizedFolder = folder && folder !== "/" ? folder : "";
-	const folderPath = normalizedFolder ? `${normalizedFolder}/` : "";
-
-	let fileName = `${baseName}.md`;
-	let fullPath = `${folderPath}${fileName}`;
-	let counter = 1;
-
-	while (app.vault.getAbstractFileByPath(fullPath)) {
-		fileName = `${baseName} ${counter}.md`;
-		fullPath = `${folderPath}${fileName}`;
-		counter++;
-	}
-
-	return fullPath;
+	return getUniqueFilePathFromFull(app, `${normalizedFolder ? `${normalizedFolder}/` : ""}${baseName}.md`);
 }
 
 /**

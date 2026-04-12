@@ -4,7 +4,7 @@ import { setIcon, Setting } from "obsidian";
 import { createCssUtils } from "../../utils/css-utils";
 import { showModal } from "../component-renderer/modal";
 import type { ModalContext } from "../component-renderer/types";
-import { renderManagerEditForm } from "../primitives/manager-edit-form";
+import { renderManagerRowContent } from "../primitives/manager-row";
 import type { ContextMenuItemDefinition } from "./types";
 
 export interface ItemManagerConfig {
@@ -57,19 +57,12 @@ export function openItemManager(config: ItemManagerConfig): void {
 		},
 	});
 
-	function getLabel(item: ContextMenuItemDefinition): string {
-		return config.renames.get(item.id) ?? item.label;
-	}
-
-	function getIconName(item: ContextMenuItemDefinition): string {
-		return config.iconOverrides.get(item.id) ?? item.icon;
-	}
-
 	function matchesSearch(item: ContextMenuItemDefinition): boolean {
 		const query = modalCtx.searchQuery;
 		if (!query) return true;
+		const displayLabel = config.renames.get(item.id) ?? item.label;
 		return (
-			getLabel(item).toLowerCase().includes(query) ||
+			displayLabel.toLowerCase().includes(query) ||
 			item.label.toLowerCase().includes(query) ||
 			item.id.toLowerCase().includes(query)
 		);
@@ -298,72 +291,31 @@ export function openItemManager(config: ItemManagerConfig): void {
 		visibleItems: ContextMenuItemDefinition[],
 		root: HTMLElement
 	): void {
-		const label = row.createDiv(css.cls("item-manager-label"));
-		const iconSpan = label.createEl("span", { cls: css.cls("item-manager-icon") });
-		setIcon(iconSpan, getIconName(item));
-		const color = config.colorOverrides.get(item.id) ?? item.color;
-		if (color && color !== "#000000") {
-			iconSpan.style.setProperty("color", color);
-		}
-		label.createEl("span", { text: getLabel(item), cls: css.cls("item-manager-label-text") });
-
-		if (config.renames.has(item.id)) {
-			const originalBadge = label.createEl("span", {
-				text: item.label,
-				cls: css.cls("item-manager-label-original"),
-			});
-			originalBadge.setAttribute("title", "Original name");
-		}
-
-		const controls = row.createDiv(css.cls("item-manager-controls"));
-
-		const editBtn = controls.createEl("button", { cls: css.cls("item-manager-btn") });
-		setIcon(editBtn, isExpanded ? "chevron-up" : "pencil");
-		editBtn.setAttribute("title", isExpanded ? "Collapse" : "Edit");
-		editBtn.addEventListener("click", () => {
-			expandedItemId = isExpanded ? null : item.id;
-			renderManagerList(root);
-		});
-
-		const toggleBtn = controls.createEl("button", { cls: css.cls("item-manager-btn") });
-		if (isVisible) {
-			setIcon(toggleBtn, "eye");
-			toggleBtn.setAttribute("title", "Hide");
-			if (visibleItems.length <= 1) {
-				toggleBtn.setAttribute("disabled", "true");
-			}
-			toggleBtn.addEventListener("click", () => {
+		renderManagerRowContent(row, {
+			app,
+			css,
+			rowPrefix: "item-manager",
+			item,
+			isVisible,
+			isExpanded,
+			visibleCount: visibleItems.length,
+			renames: config.renames,
+			iconOverrides: config.iconOverrides,
+			colorOverrides: config.colorOverrides,
+			onToggleExpand: () => {
+				expandedItemId = isExpanded ? null : item.id;
+				renderManagerList(root);
+			},
+			onHide: () => {
 				if (config.getVisibleItems().length > 1) {
 					config.onHide(item.id);
 					renderManagerList(root);
 				}
-			});
-		} else {
-			setIcon(toggleBtn, "eye-off");
-			toggleBtn.setAttribute("title", "Show");
-			toggleBtn.addEventListener("click", () => {
+			},
+			onRestore: () => {
 				config.onRestore(item.id);
 				renderManagerList(root);
-			});
-		}
-
-		if (isExpanded) {
-			renderEditForm(row, item, root);
-		}
-	}
-
-	function renderEditForm(row: HTMLElement, item: ContextMenuItemDefinition, root: HTMLElement): void {
-		renderManagerEditForm(row, {
-			app,
-			css,
-			formPrefix: "item-manager",
-			item,
-			currentLabel: getLabel(item),
-			currentIcon: getIconName(item),
-			currentColor: config.colorOverrides.get(item.id) ?? item.color ?? "#ffffff",
-			hasRenameOverride: config.renames.has(item.id),
-			hasIconOverride: config.iconOverrides.has(item.id),
-			hasColorOverride: config.colorOverrides.has(item.id),
+			},
 			onRename: config.onRename,
 			onIconChange: config.onIconChange,
 			onColorChange: config.onColorChange,

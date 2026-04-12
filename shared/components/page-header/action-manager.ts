@@ -4,7 +4,7 @@ import { setIcon, Setting } from "obsidian";
 import { createCssUtils } from "../../utils/css-utils";
 import { showModal } from "../component-renderer/modal";
 import type { ModalContext } from "../component-renderer/types";
-import { renderManagerEditForm } from "../primitives/manager-edit-form";
+import { renderManagerRowContent } from "../primitives/manager-row";
 import type { HeaderActionDefinition } from "./types";
 
 export interface ActionManagerConfig {
@@ -44,19 +44,12 @@ export function openActionManager(config: ActionManagerConfig): void {
 		},
 	});
 
-	function getLabel(action: HeaderActionDefinition): string {
-		return config.renames.get(action.id) ?? action.label;
-	}
-
-	function getIconName(action: HeaderActionDefinition): string {
-		return config.iconOverrides.get(action.id) ?? action.icon;
-	}
-
 	function matchesSearch(action: HeaderActionDefinition): boolean {
 		const query = modalCtx.searchQuery;
 		if (!query) return true;
+		const displayLabel = config.renames.get(action.id) ?? action.label;
 		return (
-			getLabel(action).toLowerCase().includes(query) ||
+			displayLabel.toLowerCase().includes(query) ||
 			action.label.toLowerCase().includes(query) ||
 			action.id.toLowerCase().includes(query)
 		);
@@ -175,77 +168,36 @@ export function openActionManager(config: ActionManagerConfig): void {
 				}
 			}
 
-			const label = row.createDiv(css.cls("action-manager-label"));
-			const iconSpan = label.createEl("span", { cls: css.cls("action-manager-icon") });
-			setIcon(iconSpan, getIconName(action));
-			const color = config.colorOverrides.get(action.id) ?? action.color;
-			if (color && color !== "#000000") {
-				iconSpan.style.setProperty("color", color);
-			}
-			label.createEl("span", { text: getLabel(action), cls: css.cls("action-manager-label-text") });
-
-			if (config.renames.has(action.id)) {
-				const originalBadge = label.createEl("span", {
-					text: action.label,
-					cls: css.cls("action-manager-label-original"),
-				});
-				originalBadge.setAttribute("title", "Original name");
-			}
-
-			const controls = row.createDiv(css.cls("action-manager-controls"));
-
-			const editBtn = controls.createEl("button", { cls: css.cls("action-manager-btn") });
-			setIcon(editBtn, isExpanded ? "chevron-up" : "pencil");
-			editBtn.setAttribute("title", isExpanded ? "Collapse" : "Edit");
-			editBtn.addEventListener("click", () => {
-				expandedActionId = isExpanded ? null : action.id;
-				renderManagerList(root);
-			});
-
-			const toggleBtn = controls.createEl("button", { cls: css.cls("action-manager-btn") });
-			if (isVisible) {
-				setIcon(toggleBtn, "eye");
-				toggleBtn.setAttribute("title", "Hide");
-				if (visibleActions.length <= 1) {
-					toggleBtn.setAttribute("disabled", "true");
-				}
-				toggleBtn.addEventListener("click", () => {
+			renderManagerRowContent(row, {
+				app,
+				css,
+				rowPrefix: "action-manager",
+				item: action,
+				isVisible,
+				isExpanded,
+				visibleCount: visibleActions.length,
+				renames: config.renames,
+				iconOverrides: config.iconOverrides,
+				colorOverrides: config.colorOverrides,
+				onToggleExpand: () => {
+					expandedActionId = isExpanded ? null : action.id;
+					renderManagerList(root);
+				},
+				onHide: () => {
 					if (config.getVisibleActions().length > 1) {
 						config.onHide(action.id);
 						renderManagerList(root);
 					}
-				});
-			} else {
-				setIcon(toggleBtn, "eye-off");
-				toggleBtn.setAttribute("title", "Show");
-				toggleBtn.addEventListener("click", () => {
+				},
+				onRestore: () => {
 					config.onRestore(action.id);
 					renderManagerList(root);
-				});
-			}
-
-			if (isExpanded) {
-				renderEditForm(row, action, root);
-			}
+				},
+				onRename: config.onRename,
+				onIconChange: config.onIconChange,
+				onColorChange: config.onColorChange,
+				rerender: () => renderManagerList(root),
+			});
 		}
-	}
-
-	function renderEditForm(row: HTMLElement, action: HeaderActionDefinition, root: HTMLElement): void {
-		renderManagerEditForm(row, {
-			app,
-			css,
-			formPrefix: "action-manager",
-			item: action,
-			currentLabel: getLabel(action),
-			currentIcon: getIconName(action),
-			currentColor: config.colorOverrides.get(action.id) ?? action.color ?? "#ffffff",
-			hasRenameOverride: config.renames.has(action.id),
-			hasIconOverride: config.iconOverrides.has(action.id),
-			hasColorOverride: config.colorOverrides.has(action.id),
-			onRename: config.onRename,
-			onIconChange: config.onIconChange,
-			onColorChange: config.onColorChange,
-			rerender: () => renderManagerList(root),
-		});
 	}
 }

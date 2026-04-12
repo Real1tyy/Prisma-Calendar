@@ -3,6 +3,7 @@ export * from "./collapsible-section";
 export * from "./frontmatter-propagation-modal";
 export * from "./icon-picker";
 export * from "./manager-edit-form";
+export * from "./manager-row";
 export * from "./pie-chart";
 export * from "./progress-modal";
 export * from "./registered-events-component";
