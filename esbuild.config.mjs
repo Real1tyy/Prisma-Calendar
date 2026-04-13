@@ -21,6 +21,9 @@ const context = await esbuild.context({
 	},
 	entryPoints: ["src/main.ts"],
 	bundle: true,
+	define: {
+		"process.env.NODE_ENV": prod ? '"production"' : '"development"',
+	},
 	external: [
 		"obsidian",
 		"electron",

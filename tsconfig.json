@@ -11,6 +11,7 @@
 		"isolatedModules": true,
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
+		"jsx": "react-jsx",
 		"lib": ["DOM", "ES2022"],
 		"strict": true,
 		"noUnusedLocals": true,
@@ -29,6 +30,6 @@
 			"@real1ty-obsidian-plugins/*": ["shared/*"]
 		}
 	},
-	"include": ["src/**/*.ts", "tests/**/*.ts"],
+	"include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx"],
 	"exclude": ["node_modules"]
 }
