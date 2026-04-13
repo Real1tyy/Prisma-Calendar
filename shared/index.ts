@@ -6,5 +6,7 @@ export * from "./components";
 export * from "./utils";
 // External system adapters
 export * from "./integrations";
+// React bridge layer (React 19 mounting primitives for Obsidian)
+export * from "./react";
 // Test infrastructure is intentionally NOT re-exported here — doing so pulls vitest
 // into plugin production bundles. Import from "@real1ty-obsidian-plugins/testing" instead.
