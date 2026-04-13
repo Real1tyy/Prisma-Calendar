@@ -25,6 +25,7 @@
 			"@real1ty-obsidian-plugins": ["shared/index.ts"],
 			"@real1ty-obsidian-plugins/core": ["../shared/src/core/index.ts"],
 			"@real1ty-obsidian-plugins/testing": ["../shared/src/testing/index.ts"],
+			"@real1ty-obsidian-plugins/testing/visual": ["../shared/src/testing/visual/index.ts"],
 			"@real1ty-obsidian-plugins/*": ["shared/*"]
 		}
 	},

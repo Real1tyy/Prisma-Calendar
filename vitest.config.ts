@@ -9,6 +9,8 @@ export default defineConfig({
 		globals: true,
 		environment: "jsdom",
 		setupFiles: ["./tests/setup.ts"],
+		// Playwright owns *.visual.spec.ts — vitest should skip them.
+		exclude: ["**/node_modules/**", "**/dist/**", "**/*.visual.spec.ts"],
 		server: {
 			deps: {
 				inline: ["@real1ty-obsidian-plugins"],
@@ -16,10 +18,17 @@ export default defineConfig({
 		},
 	},
 	resolve: {
-		alias: {
-			obsidian: path.resolve(__dirname, "tests/mocks/obsidian.ts"),
-			"@real1ty-obsidian-plugins/testing": path.resolve(__dirname, "../shared/src/testing/index.ts"),
-		},
+		alias: [
+			{ find: "obsidian", replacement: path.resolve(__dirname, "tests/mocks/obsidian.ts") },
+			{
+				find: "@real1ty-obsidian-plugins/testing/visual",
+				replacement: path.resolve(__dirname, "../shared/src/testing/visual/index.ts"),
+			},
+			{
+				find: "@real1ty-obsidian-plugins/testing",
+				replacement: path.resolve(__dirname, "../shared/src/testing/index.ts"),
+			},
+		],
 		extensions: [".ts", ".tsx", ".js", ".mjs", ".json"],
 	},
 	// Ensure external dependencies can find obsidian

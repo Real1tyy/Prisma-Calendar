@@ -1,0 +1,4 @@
+# Generated HTML fixtures — regenerated on every `pnpm test`.
+# The committed source of truth is the baseline PNGs next to fixtures.visual.spec.ts.
+fixtures/
+test-results/
