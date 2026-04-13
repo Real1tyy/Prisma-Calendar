@@ -3,7 +3,7 @@ import { memo } from "react";
 
 interface SettingItemProps {
 	name: string;
-	description?: string | undefined;
+	description?: ReactNode;
 	children: ReactNode;
 }
 
@@ -12,7 +12,9 @@ export const SettingItem = memo(function SettingItem({ name, description, childr
 		<div className="setting-item">
 			<div className="setting-item-info">
 				<div className="setting-item-name">{name}</div>
-				{description && <div className="setting-item-description">{description}</div>}
+				{description !== undefined && description !== null && description !== false && (
+					<div className="setting-item-description">{description}</div>
+				)}
 			</div>
 			<div className="setting-item-control">{children}</div>
 		</div>

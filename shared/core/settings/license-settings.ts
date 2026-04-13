@@ -31,7 +31,7 @@ function getLicenseStatusText(status: LicenseStatus): string {
 }
 
 function refreshStatusDesc(setting: Setting, licenseManager: LicenseManager, cssPrefix: string): void {
-	const status = licenseManager.getStatus();
+	const status = licenseManager.status;
 	const fragment = document.createDocumentFragment();
 	fragment.appendText(getLicenseStatusText(status));
 	if (status.state === "valid") {

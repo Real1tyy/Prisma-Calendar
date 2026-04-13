@@ -8,6 +8,12 @@ interface BaseFieldDescriptor {
 	label: string;
 	description?: string;
 	placeholder?: string;
+	/**
+	 * Explicit widget hint from `.meta({ widget: "..." })` on the schema.
+	 * Renderers treat this as the highest-priority signal, overriding type-based
+	 * auto-inference. Unknown values are ignored by the renderer.
+	 */
+	widget?: string;
 	optional: boolean;
 	defaultValue?: unknown;
 }

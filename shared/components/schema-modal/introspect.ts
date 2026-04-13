@@ -20,13 +20,14 @@ function isBooleanStringUnion(prop: JSONSchemaProperty): boolean {
 }
 
 function resolveFieldDescriptor(key: string, prop: JSONSchemaProperty, optional: boolean): SchemaFieldDescriptor {
-	const label = camelCaseToLabel(key);
+	const label = prop.title ?? camelCaseToLabel(key);
 	const base = {
 		key,
 		label,
 		optional,
 		...(prop.description !== undefined ? { description: prop.description } : {}),
 		...(prop.placeholder !== undefined ? { placeholder: prop.placeholder } : {}),
+		...(prop.widget !== undefined ? { widget: prop.widget } : {}),
 		...(prop.default !== undefined ? { defaultValue: prop.default } : {}),
 	};
 

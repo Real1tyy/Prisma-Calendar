@@ -1,26 +1,24 @@
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback } from "react";
 import type { BehaviorSubject } from "rxjs";
 
-interface SettingsStorelike<T> {
+import { useExternalSnapshot } from "./use-external-snapshot";
+
+/**
+ * Minimal shape the settings hook needs. `currentSettings` is intentionally
+ * NOT required — `settings$.getValue()` covers it via BehaviorSubject.
+ * Concrete stores can still expose it for non-React consumers.
+ */
+export interface SettingsStorelike<T> {
 	settings$: BehaviorSubject<T>;
-	currentSettings: T;
 	updateSettings: (updater: (settings: T) => T) => Promise<void>;
 }
 
-export function useSettingsStore<T>(store: SettingsStorelike<T>): [T, (updater: (settings: T) => T) => Promise<void>] {
-	const subscribe = useCallback(
-		(onStoreChange: () => void) => {
-			const sub = store.settings$.subscribe(onStoreChange);
-			return () => sub.unsubscribe();
-		},
-		[store]
-	);
+export type SettingsUpdater<T> = (updater: (settings: T) => T) => Promise<void>;
 
-	const getSnapshot = useCallback(() => store.currentSettings, [store]);
+export function useSettingsStore<T>(store: SettingsStorelike<T>): [T, SettingsUpdater<T>] {
+	const settings = useExternalSnapshot(store.settings$);
 
-	const settings = useSyncExternalStore(subscribe, getSnapshot);
-
-	const update = useCallback((updater: (settings: T) => T) => store.updateSettings(updater), [store]);
+	const update = useCallback<SettingsUpdater<T>>((updater) => store.updateSettings(updater), [store]);
 
 	return [settings, update];
 }

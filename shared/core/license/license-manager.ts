@@ -23,13 +23,16 @@ export class LicenseManager {
 	private config: LicenseManagerConfig;
 	private deviceId = "";
 	private cachedPublicKey: CryptoKey | null = null;
-	private status: LicenseStatus = LicenseStatusSchema.parse({});
-	private onStatusChange: (() => void) | null = null;
+	readonly status$: BehaviorSubject<LicenseStatus>;
 	private readonly subject = new BehaviorSubject<boolean>(false);
 	readonly isPro$: Observable<boolean> = this.subject.asObservable();
 
 	get isPro(): boolean {
 		return this.subject.getValue();
+	}
+
+	get status(): LicenseStatus {
+		return this.status$.getValue();
 	}
 
 	get purchaseUrl(): string {
@@ -45,20 +48,13 @@ export class LicenseManager {
 		this.getLicenseKeySecretName = getLicenseKeySecretName;
 		this.pluginVersion = pluginVersion;
 		this.config = config;
+		this.status$ = new BehaviorSubject<LicenseStatus>(LicenseStatusSchema.parse({}));
 	}
 
 	async initialize(): Promise<void> {
 		this.deviceId = this.getOrCreateDeviceId();
 		await this.loadCachedToken();
 		await this.refreshLicense();
-	}
-
-	getStatus(): LicenseStatus {
-		return { ...this.status };
-	}
-
-	setOnStatusChange(callback: () => void): void {
-		this.onStatusChange = callback;
 	}
 
 	requirePro(featureName: string, options?: { docsUrl?: string; purchaseUrl?: string }): boolean {
@@ -154,15 +150,14 @@ export class LicenseManager {
 	}
 
 	private activateLicense(activationsCurrent: number, activationsLimit: number, expiresAt: string): void {
-		this.status = {
+		this.status$.next({
 			state: "valid",
 			activationsCurrent,
 			activationsLimit,
 			expiresAt,
 			errorMessage: null,
-		};
+		});
 		this.setLicenseActive(true);
-		this.onStatusChange?.();
 	}
 
 	private setLicenseActive(active: boolean): void {
@@ -186,13 +181,12 @@ export class LicenseManager {
 	}
 
 	private updateStatus(state: LicenseStatus["state"], errorMessage: string | null = null): void {
-		this.status = {
-			...this.status,
+		this.status$.next({
+			...this.status$.getValue(),
 			state,
 			errorMessage,
-		};
+		});
 		this.setLicenseActive(state === "valid");
-		this.onStatusChange?.();
 	}
 
 	private getOrCreateDeviceId(): string {
