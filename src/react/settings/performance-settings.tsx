@@ -1,4 +1,4 @@
-import { SchemaSection } from "@real1ty-obsidian-plugins/react";
+import { SchemaSection } from "@real1ty-obsidian-plugins-react";
 import { memo } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";

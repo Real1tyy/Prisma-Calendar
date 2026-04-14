@@ -1,6 +1,6 @@
 import { cls } from "@real1ty-obsidian-plugins";
-import type { SchemaFieldOverride } from "@real1ty-obsidian-plugins/react";
-import { SchemaSection, useSettingsStore } from "@real1ty-obsidian-plugins/react";
+import type { SchemaFieldOverride } from "@real1ty-obsidian-plugins-react";
+import { SchemaSection, useSettingsStore } from "@real1ty-obsidian-plugins-react";
 import { memo } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";

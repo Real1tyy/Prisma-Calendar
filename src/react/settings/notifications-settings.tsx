@@ -1,4 +1,4 @@
-import { SchemaSection, SettingHeading, SettingItem } from "@real1ty-obsidian-plugins/react";
+import { SchemaSection, SettingHeading, SettingItem } from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useEffect, useState } from "react";
 
 import type { CalendarSettingsStore } from "../../core/settings-store";

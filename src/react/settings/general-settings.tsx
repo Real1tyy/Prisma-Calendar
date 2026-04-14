@@ -7,7 +7,7 @@ import {
 	TextInput,
 	Toggle,
 	useSettingsStore,
-} from "@real1ty-obsidian-plugins/react";
+} from "@real1ty-obsidian-plugins-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { renderProUpgradeBanner } from "../../components/settings/pro-upgrade-banner";

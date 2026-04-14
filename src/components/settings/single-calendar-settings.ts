@@ -1,5 +1,5 @@
 import { buildUtmUrl, SettingsNavigation, type SettingsSection } from "@real1ty-obsidian-plugins";
-import { renderReactInline } from "@real1ty-obsidian-plugins/react";
+import { renderReactInline } from "@real1ty-obsidian-plugins-react";
 import type { App } from "obsidian";
 import { createElement } from "react";
 
