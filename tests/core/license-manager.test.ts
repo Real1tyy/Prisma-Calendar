@@ -135,7 +135,7 @@ describe("LicenseManager", () => {
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("none");
+			expect(manager.status.state).toBe("none");
 			expect(mockRequestUrl).not.toHaveBeenCalled();
 		});
 
@@ -151,7 +151,7 @@ describe("LicenseManager", () => {
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("none");
+			expect(manager.status.state).toBe("none");
 			expect(mockRequestUrl).not.toHaveBeenCalled();
 		});
 	});
@@ -173,7 +173,7 @@ describe("LicenseManager", () => {
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(true);
-			expect(manager.getStatus().state).toBe("valid");
+			expect(manager.status.state).toBe("valid");
 		});
 
 		it("should store activation counts from response", async () => {
@@ -187,7 +187,7 @@ describe("LicenseManager", () => {
 			);
 			await manager.initialize();
 
-			const status = manager.getStatus();
+			const status = manager.status;
 			expect(status.activationsCurrent).toBe(3);
 			expect(status.activationsLimit).toBe(5);
 		});
@@ -204,7 +204,7 @@ describe("LicenseManager", () => {
 			);
 			await manager.initialize();
 
-			expect(manager.getStatus().expiresAt).toBe(expiresAt);
+			expect(manager.status.expiresAt).toBe(expiresAt);
 		});
 
 		it("should cache token in localStorage", async () => {
@@ -256,7 +256,7 @@ describe("LicenseManager", () => {
 			expect(body.platform).toBe("linux");
 		});
 
-		it("should fire onStatusChange callback", async () => {
+		it("should emit on status$ observable", async () => {
 			mockRequestUrl.mockResolvedValue(successResponse());
 
 			const manager = new LicenseManager(
@@ -266,10 +266,12 @@ describe("LicenseManager", () => {
 				TEST_CONFIG
 			);
 			const callback = vi.fn();
-			manager.setOnStatusChange(callback);
+			const sub = manager.status$.subscribe(callback);
+			callback.mockClear();
 			await manager.initialize();
 
 			expect(callback).toHaveBeenCalled();
+			sub.unsubscribe();
 		});
 
 		it("should emit true on isPro$ observable", async () => {
@@ -302,8 +304,8 @@ describe("LicenseManager", () => {
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("error");
-			expect(manager.getStatus().errorMessage).toContain("token verification failed");
+			expect(manager.status.state).toBe("error");
+			expect(manager.status.errorMessage).toContain("token verification failed");
 		});
 	});
 
@@ -324,8 +326,8 @@ describe("LicenseManager", () => {
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("invalid");
-			expect(manager.getStatus().errorMessage).toContain("Invalid license key");
+			expect(manager.status.state).toBe("invalid");
+			expect(manager.status.errorMessage).toContain("Invalid license key");
 		});
 
 		it("should clear cached token", async () => {
@@ -364,8 +366,8 @@ describe("LicenseManager", () => {
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("device_limit");
-			expect(manager.getStatus().errorMessage).toContain("Device limit reached");
+			expect(manager.status.state).toBe("device_limit");
+			expect(manager.status.errorMessage).toContain("Device limit reached");
 		});
 
 		it("should treat other 403 as expired/canceled", async () => {
@@ -380,8 +382,8 @@ describe("LicenseManager", () => {
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("invalid");
-			expect(manager.getStatus().errorMessage).toContain("expired or canceled");
+			expect(manager.status.state).toBe("invalid");
+			expect(manager.status.errorMessage).toContain("expired or canceled");
 		});
 
 		it("should clear cached token on 403", async () => {
@@ -417,7 +419,7 @@ describe("LicenseManager", () => {
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(true);
-			expect(manager.getStatus().state).toBe("valid");
+			expect(manager.status.state).toBe("valid");
 		});
 
 		it("should use cached activation data", async () => {
@@ -436,7 +438,7 @@ describe("LicenseManager", () => {
 			);
 			await manager.initialize();
 
-			const status = manager.getStatus();
+			const status = manager.status;
 			expect(status.activationsCurrent).toBe(4);
 			expect(status.activationsLimit).toBe(10);
 		});
@@ -457,8 +459,8 @@ describe("LicenseManager", () => {
 			);
 			await manager.initialize();
 
-			expect(manager.getStatus().state).toBe("valid");
-			expect(manager.getStatus().errorMessage).toBeNull();
+			expect(manager.status.state).toBe("valid");
+			expect(manager.status.errorMessage).toBeNull();
 		});
 
 		it("should keep pro active on repeated network failures with valid cache", async () => {
@@ -506,7 +508,7 @@ describe("LicenseManager", () => {
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("error");
+			expect(manager.status.state).toBe("error");
 		});
 
 		it("should show expired message when cached token JWT is expired on network failure", async () => {
@@ -530,8 +532,8 @@ describe("LicenseManager", () => {
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("expired");
-			expect(manager.getStatus().errorMessage).toContain("Cached license expired");
+			expect(manager.status.state).toBe("expired");
+			expect(manager.status.errorMessage).toContain("Cached license expired");
 		});
 	});
 
@@ -558,7 +560,7 @@ describe("LicenseManager", () => {
 			// loadCachedToken clears the expired cache, then handleNetworkFailure
 			// finds no cache and sets generic error
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("error");
+			expect(manager.status.state).toBe("error");
 		});
 	});
 
@@ -576,7 +578,7 @@ describe("LicenseManager", () => {
 			await manager.initialize();
 
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("error");
+			expect(manager.status.state).toBe("error");
 		});
 	});
 
@@ -687,13 +689,13 @@ describe("LicenseManager", () => {
 			);
 			await manager.initialize();
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("invalid");
+			expect(manager.status.state).toBe("invalid");
 
 			mockRequestUrl.mockRejectedValueOnce(new Error("Network error"));
 			await manager.refreshLicense();
 
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("error");
+			expect(manager.status.state).toBe("error");
 		});
 
 		it("should NOT activate pro when cache was cleared by 403 and network then fails", async () => {
@@ -739,7 +741,7 @@ describe("LicenseManager", () => {
 			await manager.refreshLicense();
 
 			expect(manager.isPro).toBe(true);
-			expect(manager.getStatus().state).toBe("valid");
+			expect(manager.status.state).toBe("valid");
 		});
 
 		it("should deactivate pro on failed refresh", async () => {
@@ -759,7 +761,7 @@ describe("LicenseManager", () => {
 			await manager.refreshLicense();
 
 			expect(manager.isPro).toBe(false);
-			expect(manager.getStatus().state).toBe("invalid");
+			expect(manager.status.state).toBe("invalid");
 		});
 	});
 
@@ -796,8 +798,8 @@ describe("LicenseManager", () => {
 		});
 	});
 
-	describe("Status immutability", () => {
-		it("should return a copy from getStatus()", async () => {
+	describe("Status snapshots", () => {
+		it("should emit a new reference on each transition", async () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
 			mockRequestUrl.mockResolvedValue(successResponse());
 
@@ -807,12 +809,16 @@ describe("LicenseManager", () => {
 				"2.6.0",
 				TEST_CONFIG
 			);
-			await manager.initialize();
 
-			const status1 = manager.getStatus();
-			const status2 = manager.getStatus();
-			expect(status1).toEqual(status2);
-			expect(status1).not.toBe(status2);
+			const snapshots: Array<{ state: string }> = [];
+			const sub = manager.status$.subscribe((s) => snapshots.push(s));
+			await manager.initialize();
+			sub.unsubscribe();
+
+			expect(snapshots.length).toBeGreaterThan(1);
+			for (let i = 1; i < snapshots.length; i++) {
+				expect(snapshots[i]).not.toBe(snapshots[i - 1]);
+			}
 		});
 	});
 

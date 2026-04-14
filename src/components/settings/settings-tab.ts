@@ -50,7 +50,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 		const firstCalendar = this.plugin.settingsStore.currentSettings.calendars[0];
 		this.selectedCalendarId = firstCalendar.id;
 
-		this.plugin.licenseManager.setOnStatusChange(() => {
+		this.plugin.licenseManager.status$.subscribe(() => {
 			if (this.containerEl.isShown()) {
 				this.display();
 			}
