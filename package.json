@@ -10,6 +10,8 @@
 		"typecheck": "tsc -noEmit -skipLibCheck",
 		"test": "vitest run",
 		"test:watch": "vitest",
+		"test:changed": "vitest run --changed",
+		"test:since": "vitest run --changed HEAD~1",
 		"test:visual": "pnpm build:css && pnpm exec vitest run tests/visual/generate-fixtures.test.ts && playwright test",
 		"test:visual:update": "pnpm build:css && pnpm exec vitest run tests/visual/generate-fixtures.test.ts && playwright test --update-snapshots",
 		"lint": "eslint src/ tests/",
