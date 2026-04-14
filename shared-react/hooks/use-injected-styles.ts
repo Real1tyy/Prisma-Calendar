@@ -1,6 +1,5 @@
+import { injectStyleSheet } from "@real1ty-obsidian-plugins";
 import { useEffect } from "react";
-
-import { injectStyleSheet } from "../../utils/styles/inject";
 
 /**
  * Inject a stylesheet into `document.head` once per id on mount. Idempotent —

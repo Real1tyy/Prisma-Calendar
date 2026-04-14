@@ -1,7 +1,7 @@
+import { injectStyleSheet } from "@real1ty-obsidian-plugins";
 import { SliderComponent } from "obsidian";
 import { memo, useCallback, useEffect, useRef } from "react";
 
-import { injectStyleSheet } from "../../utils/styles/inject";
 import { useActivatable } from "../hooks/use-activatable";
 
 interface ToggleProps {

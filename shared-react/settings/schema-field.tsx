@@ -1,7 +1,7 @@
+import type { SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
+import { introspectField } from "@real1ty-obsidian-plugins";
 import { memo, useMemo } from "react";
 
-import { introspectField } from "../../components/schema-modal/introspect";
-import type { SchemaFieldDescriptor } from "../../components/schema-modal/types";
 import { SettingItem } from "../components/setting-item";
 import type { SettingsStorelike } from "../hooks/use-schema-field";
 import { useSchemaField } from "../hooks/use-schema-field";

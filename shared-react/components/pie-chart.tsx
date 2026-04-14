@@ -1,13 +1,13 @@
-import type { Chart, ChartConfiguration } from "chart.js";
-import { memo, useEffect, useRef } from "react";
-
 import {
 	buildChartConfig,
 	buildPieChartStyles,
 	normalizeData,
 	type PieChartConfig as ImperativePieChartConfig,
 	type PieChartData,
-} from "../../components/primitives/pie-chart";
+} from "@real1ty-obsidian-plugins";
+import type { Chart, ChartConfiguration } from "chart.js";
+import { memo, useEffect, useRef } from "react";
+
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { EmptyHint } from "./empty-hint";
 

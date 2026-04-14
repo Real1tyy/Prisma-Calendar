@@ -1,7 +1,7 @@
+import { buildChipListStyles } from "@real1ty-obsidian-plugins";
 import type { ReactNode } from "react";
 import { memo, useCallback } from "react";
 
-import { buildChipListStyles } from "../../components/primitives/chip-list";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 import { Chip } from "./chip";
 import { EmptyHint } from "./empty-hint";

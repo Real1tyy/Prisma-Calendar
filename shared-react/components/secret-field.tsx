@@ -1,7 +1,7 @@
+import { injectStyleSheet } from "@real1ty-obsidian-plugins";
 import { SecretComponent } from "obsidian";
 import { memo, useEffect, useRef } from "react";
 
-import { injectStyleSheet } from "../../utils/styles/inject";
 import { useApp } from "../contexts/app-context";
 
 interface SecretFieldProps {

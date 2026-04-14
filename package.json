@@ -77,6 +77,7 @@
 		"@fullcalendar/list": "^6.1.20",
 		"@fullcalendar/timegrid": "^6.1.20",
 		"@real1ty-obsidian-plugins": "file:./shared",
+		"@real1ty-obsidian-plugins-react": "file:./shared-react",
 		"@svgdotjs/svg.js": "^3.2.4",
 		"chart.js": "^4.5.1",
 		"colord": "^2.9.3",

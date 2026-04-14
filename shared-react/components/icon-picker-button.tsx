@@ -1,7 +1,7 @@
+import { showIconPicker } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 import { memo, useCallback, useContext } from "react";
 
-import { showIconPicker } from "../../components/primitives/icon-picker";
 import { AppContext } from "../contexts/app-context";
 import { ObsidianIcon } from "./obsidian-icon";
 

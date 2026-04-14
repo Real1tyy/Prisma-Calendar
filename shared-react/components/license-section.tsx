@@ -1,6 +1,6 @@
+import type { LicenseManager, LicenseStatus } from "@real1ty-obsidian-plugins";
 import { memo, type ReactNode, useCallback, useState } from "react";
 
-import type { LicenseManager, LicenseStatus } from "../../core/license";
 import { useExternalSnapshot } from "../hooks/use-external-snapshot";
 import { SecretField } from "./secret-field";
 import { SettingHeading, SettingItem } from "./setting-item";

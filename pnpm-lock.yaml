@@ -26,6 +26,9 @@ importers:
       '@real1ty-obsidian-plugins':
         specifier: file:./shared
         version: shared@file:shared(@codemirror/state@6.6.0)(@codemirror/view@6.41.0)
+      '@real1ty-obsidian-plugins-react':
+        specifier: file:./shared-react
+        version: shared-react@file:shared-react(@codemirror/state@6.6.0)(@codemirror/view@6.41.0)
       '@svgdotjs/svg.js':
         specifier: ^3.2.4
         version: 3.2.5
@@ -1984,6 +1987,9 @@ packages:
     resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
     engines: {node: '>=10'}
     hasBin: true
+
+  shared-react@file:shared-react:
+    resolution: {directory: shared-react, type: directory}
 
   shared@file:shared:
     resolution: {directory: shared, type: directory}
@@ -3997,6 +4003,19 @@ snapshots:
 
   semver@7.7.4: {}
 
+  shared-react@file:shared-react(@codemirror/state@6.6.0)(@codemirror/view@6.41.0):
+    dependencies:
+      '@real1ty-obsidian-plugins': shared@file:shared(@codemirror/state@6.6.0)(@codemirror/view@6.41.0)
+      obsidian: 1.11.4(@codemirror/state@6.6.0)(@codemirror/view@6.41.0)
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+      rxjs: 7.8.2
+      tslib: 2.8.1
+      zod: 4.3.5
+    transitivePeerDependencies:
+      - '@codemirror/state'
+      - '@codemirror/view'
+
   shared@file:shared(@codemirror/state@6.6.0)(@codemirror/view@6.41.0):
     dependencies:
       '@svgdotjs/svg.js': 3.2.5
@@ -4004,8 +4023,6 @@ snapshots:
       jose: 6.2.1
       luxon: 3.7.2
       obsidian: 1.11.4(@codemirror/state@6.6.0)(@codemirror/view@6.41.0)
-      react: 19.2.5
-      react-dom: 19.2.5(react@19.2.5)
       rxjs: 7.8.2
       tslib: 2.8.1
       yaml: 2.8.3

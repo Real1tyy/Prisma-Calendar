@@ -1,6 +1,6 @@
+import { getNestedValue, setNestedValue } from "@real1ty-obsidian-plugins";
 import { useCallback, useMemo } from "react";
 
-import { getNestedValue, setNestedValue } from "../../core/settings/schema-navigation";
 import { type SnapshotSubscribable, useExternalSnapshot } from "./use-external-snapshot";
 import type { SettingsStorelike as BaseSettingsStorelike } from "./use-settings-store";
 

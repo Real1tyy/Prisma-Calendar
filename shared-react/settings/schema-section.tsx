@@ -1,8 +1,8 @@
+import type { SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
+import { introspectShape } from "@real1ty-obsidian-plugins";
 import { memo, useMemo } from "react";
 import type { ZodRawShape } from "zod";
 
-import { introspectShape } from "../../components/schema-modal/introspect";
-import type { SchemaFieldDescriptor } from "../../components/schema-modal/types";
 import { SettingHeading } from "../components/setting-item";
 import type { SettingsStorelike } from "../hooks/use-schema-field";
 import type { SchemaFieldOverride } from "./override";

@@ -1,4 +1,5 @@
-import type { SchemaFieldDescriptor } from "../../components/schema-modal/types";
+import type { SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
+
 import type { SchemaFieldOverride } from "./override";
 import type { BUILTIN_WIDGETS } from "./widgets";
 

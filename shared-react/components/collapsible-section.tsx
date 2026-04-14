@@ -1,7 +1,7 @@
+import { buildCollapsibleStyles } from "@real1ty-obsidian-plugins";
 import type { ReactNode } from "react";
 import { memo, useState } from "react";
 
-import { buildCollapsibleStyles } from "../../components/primitives/collapsible-section";
 import { useActivatable } from "../hooks/use-activatable";
 import { useInjectedStyles } from "../hooks/use-injected-styles";
 

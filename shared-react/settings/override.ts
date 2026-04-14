@@ -1,6 +1,6 @@
+import type { SchemaFieldDescriptor } from "@real1ty-obsidian-plugins";
 import type { ReactNode } from "react";
 
-import type { SchemaFieldDescriptor } from "../../components/schema-modal/types";
 import type { SchemaFieldBinding } from "../hooks/use-schema-field";
 
 /**
