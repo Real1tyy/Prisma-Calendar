@@ -11,8 +11,6 @@ import {
 } from "../../utils/zod/introspection";
 import type { SchemaFieldDescriptor } from "./types";
 
-const DATE_KEY_PATTERN = /date/i;
-
 function isBooleanStringUnion(prop: JSONSchemaProperty): boolean {
 	if (!prop.anyOf || prop.anyOf.length !== 2) return false;
 	const types = new Set(prop.anyOf.map((p) => p.type));
@@ -48,7 +46,7 @@ function resolveFieldDescriptor(key: string, prop: JSONSchemaProperty, optional:
 			}
 			if (prop.format === "secret") return { ...base, type: "secret" };
 			if (prop.format === "date-time") return { ...base, type: "datetime" };
-			if (prop.format === "date" || DATE_KEY_PATTERN.test(key)) return { ...base, type: "date" };
+			if (prop.format === "date") return { ...base, type: "date" };
 			return { ...base, type: "string" };
 		}
 		case "number":

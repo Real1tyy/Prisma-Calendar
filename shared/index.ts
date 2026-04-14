@@ -6,7 +6,8 @@ export * from "./components";
 export * from "./utils";
 // External system adapters
 export * from "./integrations";
-// React bridge layer (React 19 mounting primitives for Obsidian)
-export * from "./react";
+// React bridge layer is exposed via the `@real1ty-obsidian-plugins/react`
+// subpath, not re-exported here — names like `ChipList` intentionally overlap
+// with imperative classes during the parallel-exposure migration window.
 // Test infrastructure is intentionally NOT re-exported here — doing so pulls vitest
 // into plugin production bundles. Import from "@real1ty-obsidian-plugins/testing" instead.

@@ -34,7 +34,7 @@ const EMPTY_SUFFIX = "chip-empty";
 
 // ─── Styles ───
 
-function buildChipListStyles(p: string): string {
+export function buildChipListStyles(p: string): string {
 	return `
 .${p}${LIST_SUFFIX} {
 	display: flex;

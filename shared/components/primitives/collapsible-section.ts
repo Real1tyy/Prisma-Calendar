@@ -42,7 +42,7 @@ const HIDDEN_SUFFIX = "collapsible-hidden";
 
 // ─── Styles ───
 
-function buildCollapsibleStyles(p: string): string {
+export function buildCollapsibleStyles(p: string): string {
 	return `
 .${p}${SECTION_SUFFIX} {
 	border: 1px solid var(--background-modifier-border);

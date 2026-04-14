@@ -55,7 +55,7 @@ const EMPTY_SUFFIX = "chart-empty";
 
 // ─── Styles ───
 
-function buildPieChartStyles(p: string): string {
+export function buildPieChartStyles(p: string): string {
 	return `
 .${p}${CELL_SUFFIX} {
 	display: flex;
@@ -91,13 +91,13 @@ function buildPieChartStyles(p: string): string {
 
 // ─── Data normalization ───
 
-interface NormalizedData {
+export interface NormalizedData {
 	labels: string[];
 	values: number[];
 	colors: string[];
 }
 
-function normalizeData(data: PieChartData, maxLegendItems: number): NormalizedData {
+export function normalizeData(data: PieChartData, maxLegendItems: number): NormalizedData {
 	let labels: string[];
 	let values: number[];
 	let colors: string[];
@@ -126,7 +126,7 @@ function normalizeData(data: PieChartData, maxLegendItems: number): NormalizedDa
 
 // ─── Chart.js config ───
 
-function buildChartConfig(normalized: NormalizedData, config: PieChartConfig): ChartConfiguration<"pie"> {
+export function buildChartConfig(normalized: NormalizedData, config: PieChartConfig): ChartConfiguration<"pie"> {
 	const { valueFormatter, legendFontSize = DEFAULT_LEGEND_FONT_SIZE } = config;
 	const total = normalized.values.reduce((a, b) => a + b, 0);
 

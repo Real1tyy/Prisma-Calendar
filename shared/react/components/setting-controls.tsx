@@ -1,4 +1,8 @@
-import { memo, useCallback, useRef, useState } from "react";
+import { SliderComponent } from "obsidian";
+import { memo, useCallback, useEffect, useRef } from "react";
+
+import { injectStyleSheet } from "../../utils/styles/inject";
+import { useActivatable } from "../hooks/use-activatable";
 
 interface ToggleProps {
 	value: boolean;
@@ -6,21 +10,15 @@ interface ToggleProps {
 }
 
 export const Toggle = memo(function Toggle({ value, onChange }: ToggleProps) {
-	const handleClick = useCallback(() => onChange(!value), [value, onChange]);
+	const handleToggle = useCallback(() => onChange(!value), [value, onChange]);
+	const activate = useActivatable(handleToggle);
 
 	return (
 		<div
+			{...activate}
 			className={`checkbox-container${value ? " is-enabled" : ""}`}
-			onClick={handleClick}
 			role="switch"
 			aria-checked={value}
-			tabIndex={0}
-			onKeyDown={(e) => {
-				if (e.key === "Enter" || e.key === " ") {
-					e.preventDefault();
-					handleClick();
-				}
-			}}
 		/>
 	);
 });
@@ -100,18 +98,13 @@ export const TextareaInput = memo(function TextareaInput({
 	rows = 4,
 	onChange,
 }: TextareaInputProps) {
-	const [localValue, setLocalValue] = useState(value);
-	const commitRef = useRef(onChange);
-	commitRef.current = onChange;
-
 	return (
 		<textarea
 			className="setting-input"
 			placeholder={placeholder}
 			rows={rows}
-			value={localValue}
-			onChange={(e) => setLocalValue(e.target.value)}
-			onBlur={() => commitRef.current(localValue)}
+			value={value}
+			onChange={(e) => onChange(e.target.value)}
 		/>
 	);
 });
@@ -161,28 +154,33 @@ interface SliderProps {
 }
 
 export const Slider = memo(function Slider({ value, min, max, step, onChange }: SliderProps) {
-	const clamped = Math.min(max, Math.max(min, value));
-	const handleChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const parsed = e.target.valueAsNumber;
-			if (Number.isNaN(parsed)) return;
-			onChange(Math.min(max, Math.max(min, parsed)));
-		},
-		[onChange, min, max]
-	);
+	injectStyleSheet("setting-slider-host-styles", ".setting-slider-host { display: contents; }");
+	const hostRef = useRef<HTMLSpanElement>(null);
+	const componentRef = useRef<SliderComponent | null>(null);
+	const onChangeRef = useRef(onChange);
+	onChangeRef.current = onChange;
 
-	return (
-		<span className="setting-slider">
-			<input type="range" className="slider" min={min} max={max} step={step} value={clamped} onChange={handleChange} />
-			<input
-				type="number"
-				className="setting-input"
-				min={min}
-				max={max}
-				step={step}
-				value={clamped}
-				onChange={handleChange}
-			/>
-		</span>
-	);
+	useEffect(() => {
+		const el = hostRef.current;
+		if (!el) return;
+		const component = new SliderComponent(el)
+			.setLimits(min, max, step ?? 1)
+			.setValue(value)
+			.setDynamicTooltip()
+			.onChange((next) => onChangeRef.current(next));
+		componentRef.current = component;
+		return () => {
+			el.replaceChildren();
+			componentRef.current = null;
+		};
+		// Rebuild when bounds change; value updates are forwarded via the
+		// setValue effect below. Rebuilding on every value change would fight
+		// the user mid-drag.
+	}, [min, max, step]);
+
+	useEffect(() => {
+		componentRef.current?.setValue(value);
+	}, [value]);
+
+	return <span ref={hostRef} className="setting-slider-host" />;
 });

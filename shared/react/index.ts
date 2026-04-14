@@ -1,7 +1,17 @@
-export type { CsvInputProps } from "./components/csv-input";
-export { CsvInput } from "./components/csv-input";
+export type { ChipProps } from "./components/chip";
+export { Chip } from "./components/chip";
+export type { ChipListProps } from "./components/chip-list";
+export { ChipList } from "./components/chip-list";
+export type { CollapsibleSectionProps, SectionBodyProps, SectionHeaderProps } from "./components/collapsible-section";
+export { CollapsibleSection, SectionBody, SectionHeader } from "./components/collapsible-section";
+export type { EmptyHintProps } from "./components/empty-hint";
+export { EmptyHint } from "./components/empty-hint";
+export type { IconPickerButtonProps } from "./components/icon-picker-button";
+export { IconPickerButton, useIconPicker } from "./components/icon-picker-button";
 export { LicenseSection } from "./components/license-section";
 export { ObsidianIcon } from "./components/obsidian-icon";
+export type { ChartJSCtor, ChartTitleProps, PieCanvasProps, PieChartData, PieChartProps } from "./components/pie-chart";
+export { ChartTitle, PieCanvas, PieChart } from "./components/pie-chart";
 export { SecretField } from "./components/secret-field";
 export {
 	ColorInput,
@@ -16,8 +26,17 @@ export {
 } from "./components/setting-controls";
 export { SettingHeading, SettingItem } from "./components/setting-item";
 export { AppContext, useApp } from "./contexts/app-context";
+export type { ActivatableProps } from "./hooks/use-activatable";
+export { useActivatable } from "./hooks/use-activatable";
+export { useDomEvent } from "./hooks/use-dom-event";
+export { useEnterKey, type UseEnterKeyOptions } from "./hooks/use-enter-key";
+export { useEscapeKey } from "./hooks/use-escape-key";
 export type { SnapshotSubscribable } from "./hooks/use-external-snapshot";
 export { useExternalSnapshot } from "./hooks/use-external-snapshot";
+export { useInjectedStyles } from "./hooks/use-injected-styles";
+export { useKeyDown } from "./hooks/use-key-down";
+export type { Emitterlike } from "./hooks/use-obsidian-event";
+export { useObsidianEvent } from "./hooks/use-obsidian-event";
 export type { SchemaFieldBinding, SettingsStorelike } from "./hooks/use-schema-field";
 export { useSchemaField } from "./hooks/use-schema-field";
 export type { SettingsStorelike as SettingsStoreShape, SettingsUpdater } from "./hooks/use-settings-store";

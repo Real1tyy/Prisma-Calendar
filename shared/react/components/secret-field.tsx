@@ -1,6 +1,7 @@
 import { SecretComponent } from "obsidian";
 import { memo, useEffect, useRef } from "react";
 
+import { injectStyleSheet } from "../../utils/styles/inject";
 import { useApp } from "../contexts/app-context";
 
 interface SecretFieldProps {
@@ -19,6 +20,7 @@ interface SecretFieldProps {
  * `ReactModal` / `registerReactView`).
  */
 export const SecretField = memo(function SecretField({ value, onChange }: SecretFieldProps) {
+	injectStyleSheet("setting-secret-host-styles", ".setting-secret-host { display: contents; }");
 	const app = useApp();
 	const containerRef = useRef<HTMLSpanElement>(null);
 	const componentRef = useRef<SecretComponent | null>(null);
