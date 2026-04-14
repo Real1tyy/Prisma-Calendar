@@ -75,7 +75,8 @@ const GeneralSettingsSchema = z
 			.string()
 			.catch("")
 			.transform(normalizeDirectoryPath)
-			.describe("Folder to scan for calendar events and create new events in"),
+			.describe("Folder to scan for calendar events and create new events in")
+			.meta({ placeholder: "e.g., tasks, calendar, events" }),
 		defaultDurationMinutes: z
 			.number()
 			.int()
@@ -107,7 +108,8 @@ const GeneralSettingsSchema = z
 		templatePath: z
 			.string()
 			.optional()
-			.describe("Path to Templater template file for new events (optional, requires Templater plugin)"),
+			.describe("Path to Templater template file for new events (optional, requires Templater plugin)")
+			.meta({ placeholder: "e.g., Templates/event-template.md" }),
 		markPastInstancesAsDone: z
 			.boolean()
 			.catch(false)
@@ -163,7 +165,8 @@ const PropsSettingsSchema = z
 		titleProp: z
 			.string()
 			.optional()
-			.describe("Frontmatter property name for event title (optional, defaults to file name)"),
+			.describe("Frontmatter property name for event title (optional, defaults to file name)")
+			.meta({ placeholder: PROP_DEFAULTS.title }),
 		calendarTitleProp: z
 			.string()
 			.catch(PROP_DEFAULTS.calendarTitle)
@@ -173,10 +176,10 @@ const PropsSettingsSchema = z
 		zettelIdProp: z
 			.string()
 			.optional()
-			.meta({ title: "ZettelID property" })
 			.describe(
 				"Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)"
-			),
+			)
+			.meta({ title: "ZettelID property", placeholder: PROP_DEFAULTS.zettelId }),
 		skipProp: z
 			.string()
 			.catch(PROP_DEFAULTS.skip)
@@ -248,17 +251,17 @@ const PropsSettingsSchema = z
 		customDoneProperty: z
 			.string()
 			.catch("")
-			.meta({ placeholder: "archived true" })
 			.describe(
 				'Overrides the status property for manual mark-as-done actions. Format: "propertyName value" (e.g., "archived true"). When set, this is used instead of the status property. Leave empty to use the default behavior.'
-			),
+			)
+			.meta({ placeholder: "archived true" }),
 		customUndoneProperty: z
 			.string()
 			.catch("")
-			.meta({ placeholder: "archived false" })
 			.describe(
 				'Overrides what happens when marking as undone. Format: "propertyName value" (e.g., "archived false"). Requires "Custom done property" to be configured. If empty, the custom done property key is removed on undone instead.'
-			),
+			)
+			.meta({ placeholder: "archived false" }),
 		categoryProp: z
 			.string()
 			.catch(PROP_DEFAULTS.category)
@@ -436,7 +439,8 @@ const CalendarSettingsSchema = z
 			.catch("")
 			.describe(
 				"Comma-separated list of frontmatter property names to exclude when propagating changes from recurring event sources to physical instances."
-			),
+			)
+			.meta({ placeholder: "tags, internal_id" }),
 		enableNameSeriesTracking: z
 			.boolean()
 			.catch(true)
@@ -460,7 +464,8 @@ const CalendarSettingsSchema = z
 			.catch("")
 			.describe(
 				"Comma-separated list of frontmatter property names to exclude when propagating changes across name series members."
-			),
+			)
+			.meta({ placeholder: "tags, internal_id" }),
 		propagateFrontmatterToCategorySeries: z
 			.boolean()
 			.catch(false)
@@ -478,7 +483,8 @@ const CalendarSettingsSchema = z
 			.catch("")
 			.describe(
 				"Comma-separated list of frontmatter property names to exclude when propagating changes across category series members."
-			),
+			)
+			.meta({ placeholder: "tags, internal_id" }),
 		defaultView: CalendarViewTypeSchema.catch("dayGridMonth"),
 		defaultMobileView: CalendarViewTypeSchema.catch("dayGridMonth"),
 		hideWeekends: z.boolean().catch(false).describe("Hide Saturday and Sunday in calendar views"),
