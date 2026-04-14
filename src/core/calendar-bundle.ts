@@ -244,7 +244,6 @@ export class CalendarBundle {
 		// Don't detach leaves here - Obsidian handles that automatically during plugin updates
 		// Detaching in onunload causes leaves to reset to their original positions
 		// See: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60
-
 		for (const sub of this.subscriptions) sub.unsubscribe();
 
 		if (this.ribbonIconEl) {
@@ -260,7 +259,6 @@ export class CalendarBundle {
 		this.virtualEventStore.destroy();
 
 		this.commandManager.clearHistory();
-
 		// Release shared infrastructure through registry (will only destroy if no other calendars are using it)
 		this.indexerRegistry.releaseIndexer(this.calendarId, this.directory);
 		// Don't destroy fileRepository/parser/eventStore/recurringEventManager directly - the registry handles that
@@ -310,12 +308,10 @@ export class CalendarBundle {
 	async openFileInCalendar(file: TFile): Promise<boolean> {
 		const settings = this.settingsStore.currentSettings;
 
-		// Check if file is within this calendar's directory
 		if (!file.path.startsWith(settings.directory)) {
 			return false;
 		}
 
-		// Get frontmatter and extract date
 		const cache = this.app.metadataCache.getFileCache(file);
 		const frontmatter = cache?.frontmatter;
 
@@ -323,9 +319,7 @@ export class CalendarBundle {
 			return false;
 		}
 
-		// Try to find a date property (start date, date, or start)
-		const dateValue: unknown =
-			frontmatter[settings.startProp] || frontmatter[settings.dateProp] || frontmatter["Start"] || frontmatter["Date"];
+		const dateValue: unknown = frontmatter[settings.startProp] || frontmatter[settings.dateProp];
 
 		const parsedDate = intoDate(dateValue);
 
@@ -333,7 +327,6 @@ export class CalendarBundle {
 			return false;
 		}
 
-		// Activate calendar view
 		await this.activateCalendarView();
 
 		// Get the calendar view and navigate to the date
