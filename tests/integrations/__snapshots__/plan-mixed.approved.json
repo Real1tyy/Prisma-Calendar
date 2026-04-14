@@ -1,0 +1,39 @@
+{
+	"actions": [
+		{
+			"kind": "create",
+			"uid": "u-new",
+			"title": "Newcomer"
+		},
+		{
+			"kind": "skip-unchanged",
+			"uid": "u-same",
+			"filePath": "Events/same.md"
+		},
+		{
+			"kind": "update",
+			"uid": "u-changed",
+			"filePath": "Events/changed.md",
+			"title": "Changed v2",
+			"lastModified": 200
+		},
+		{
+			"kind": "skip-foreign-uid",
+			"uid": "u-foreign",
+			"ownedBy": "sub-other"
+		},
+		{
+			"kind": "delete",
+			"uid": "u-gone",
+			"filePath": "Events/gone.md"
+		}
+	],
+	"summary": {
+		"create": 1,
+		"update": 1,
+		"delete": 1,
+		"skipUnchanged": 1,
+		"skipMissingUid": 0,
+		"skipForeignUid": 1
+	}
+}

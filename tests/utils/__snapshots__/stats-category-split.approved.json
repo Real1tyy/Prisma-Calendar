@@ -1,0 +1,25 @@
+{
+	"periodStart": "2026-04-13T00:00:00.000Z",
+	"periodEnd": "2026-04-20T00:00:00.000Z",
+	"entries": [
+		{
+			"name": "Work",
+			"duration": 3600000,
+			"count": 1,
+			"isRecurring": false
+		},
+		{
+			"name": "Focus",
+			"duration": 3600000,
+			"count": 1,
+			"isRecurring": false
+		},
+		{
+			"name": "Fitness",
+			"duration": 3600000,
+			"count": 1,
+			"isRecurring": false
+		}
+	],
+	"totalDuration": 10800000
+}

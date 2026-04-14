@@ -1,0 +1,3 @@
+Pair Programming - 02:00 PM - 03:30 PM (1h 30m)
+Pair: Alice
+Project: Atlas

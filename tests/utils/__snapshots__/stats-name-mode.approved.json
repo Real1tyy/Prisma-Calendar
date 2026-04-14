@@ -1,0 +1,25 @@
+{
+	"periodStart": "2026-04-13T00:00:00.000Z",
+	"periodEnd": "2026-04-20T00:00:00.000Z",
+	"entries": [
+		{
+			"name": "Team Meeting",
+			"duration": 9000000,
+			"count": 2,
+			"isRecurring": false
+		},
+		{
+			"name": "Design Review",
+			"duration": 3600000,
+			"count": 1,
+			"isRecurring": false
+		},
+		{
+			"name": "1:1 Sync",
+			"duration": 1800000,
+			"count": 1,
+			"isRecurring": false
+		}
+	],
+	"totalDuration": 14400000
+}

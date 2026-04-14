@@ -1,0 +1,14 @@
+{
+	"All Day": false,
+	"Category": ["Work"],
+	"Date": "",
+	"End Date": "2026-04-15T11:30:00.000Z",
+	"Location": "Conference Room A",
+	"Minutes Before": 15,
+	"Participants": ["Alice", "Bob"],
+	"Priority": 1,
+	"Recurrence": "weekly",
+	"Skip": true,
+	"Start Date": "2026-04-15T10:00:00.000Z",
+	"Title": "Project Planning"
+}

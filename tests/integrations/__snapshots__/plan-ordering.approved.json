@@ -1,0 +1,27 @@
+{
+	"actions": [
+		{
+			"kind": "create",
+			"uid": "u-3",
+			"title": "Gamma"
+		},
+		{
+			"kind": "create",
+			"uid": "u-1",
+			"title": "Alpha"
+		},
+		{
+			"kind": "create",
+			"uid": "u-2",
+			"title": "Beta"
+		}
+	],
+	"summary": {
+		"create": 3,
+		"update": 0,
+		"delete": 0,
+		"skipUnchanged": 0,
+		"skipMissingUid": 0,
+		"skipForeignUid": 0
+	}
+}

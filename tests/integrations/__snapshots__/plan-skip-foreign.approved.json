@@ -1,0 +1,17 @@
+{
+	"actions": [
+		{
+			"kind": "skip-foreign-uid",
+			"uid": "u-1",
+			"ownedBy": "sub-other"
+		}
+	],
+	"summary": {
+		"create": 0,
+		"update": 0,
+		"delete": 0,
+		"skipUnchanged": 0,
+		"skipMissingUid": 0,
+		"skipForeignUid": 1
+	}
+}
