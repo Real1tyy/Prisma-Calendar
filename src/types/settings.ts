@@ -173,6 +173,7 @@ const PropsSettingsSchema = z
 		zettelIdProp: z
 			.string()
 			.optional()
+			.meta({ title: "ZettelID property" })
 			.describe(
 				"Frontmatter property name for auto-generated ZettelID (optional, generates timestamp-based ID on creation/cloning)"
 			),
@@ -183,14 +184,17 @@ const PropsSettingsSchema = z
 		rruleProp: z
 			.string()
 			.catch(PROP_DEFAULTS.rrule)
+			.meta({ title: "RRule property" })
 			.describe("Frontmatter property name for recurring event type (daily, weekly, monthly, etc.)"),
 		rruleSpecProp: z
 			.string()
 			.catch(PROP_DEFAULTS.rruleSpec)
+			.meta({ title: "RRule specification property" })
 			.describe("Frontmatter property name for recurring event specification (weekdays for weekly/bi-weekly events)"),
 		rruleIdProp: z
 			.string()
 			.catch(PROP_DEFAULTS.rruleId)
+			.meta({ title: "RRule ID property" })
 			.describe("Frontmatter property name for recurring event unique identifier"),
 		sourceProp: z
 			.string()
@@ -199,28 +203,33 @@ const PropsSettingsSchema = z
 		instanceDateProp: z
 			.string()
 			.catch(PROP_DEFAULTS.instanceDate)
+			.meta({ title: "Recurring instance date property" })
 			.describe("Frontmatter property name for the date of a physical recurring event instance"),
 		frontmatterDisplayProperties: z
 			.array(z.string())
 			.catch([])
+			.meta({ title: "Display properties (timed events)" })
 			.describe(
 				"Comma-separated list of frontmatter property names to display in timed events (events with start and end times). Properties are shown in weekly and daily views, but hidden in monthly view to save space."
 			),
 		frontmatterDisplayPropertiesAllDay: z
 			.array(z.string())
 			.catch([])
+			.meta({ title: "Display properties (all-day events)" })
 			.describe(
 				"Comma-separated list of frontmatter property names to display in all-day events. Properties are shown in weekly and daily views, but hidden in monthly view to save space."
 			),
 		frontmatterDisplayPropertiesUntracked: z
 			.array(z.string())
 			.catch([])
+			.meta({ title: "Display properties (untracked events)" })
 			.describe(
 				"Comma-separated list of frontmatter property names to display in untracked events (events without dates). These appear in the untracked events sidebar."
 			),
 		frontmatterDisplayPropertiesHeatmap: z
 			.array(z.string())
 			.catch([])
+			.meta({ title: "Display properties (heatmap)" })
 			.describe(
 				"Comma-separated list of frontmatter property names to display in the heatmap day detail panel when inspecting events. Properties appear below each event title with links rendered interactively."
 			),
@@ -239,12 +248,14 @@ const PropsSettingsSchema = z
 		customDoneProperty: z
 			.string()
 			.catch("")
+			.meta({ placeholder: "archived true" })
 			.describe(
 				'Overrides the status property for manual mark-as-done actions. Format: "propertyName value" (e.g., "archived true"). When set, this is used instead of the status property. Leave empty to use the default behavior.'
 			),
 		customUndoneProperty: z
 			.string()
 			.catch("")
+			.meta({ placeholder: "archived false" })
 			.describe(
 				'Overrides what happens when marking as undone. Format: "propertyName value" (e.g., "archived false"). Requires "Custom done property" to be configured. If empty, the custom done property key is removed on undone instead.'
 			),
@@ -283,10 +294,12 @@ const PropsSettingsSchema = z
 		caldavProp: z
 			.string()
 			.catch(PROP_DEFAULTS.caldav)
+			.meta({ title: "CalDAV property" })
 			.describe("Frontmatter property name for CalDAV integration metadata on synced events"),
 		icsSubscriptionProp: z
 			.string()
 			.catch(PROP_DEFAULTS.icsSubscription)
+			.meta({ title: "ICS subscription property" })
 			.describe("Frontmatter property name for ICS subscription metadata on synced events"),
 		iconProp: z
 			.string()
@@ -667,6 +680,7 @@ const CalendarSettingsSchema = z
 			.min(1)
 			.max(50)
 			.catch(10)
+			.meta({ title: "File operation concurrency limit" })
 			.describe(
 				"Maximum number of files to modify in parallel. Lower values reduce the risk of Obsidian freezing on large batch operations. Applies to recurring event propagation, name/category series propagation, and file deletions."
 			),

@@ -1,0 +1,335 @@
+import {
+	Dropdown,
+	LicenseSection,
+	NumberInput,
+	SettingHeading,
+	SettingItem,
+	TextInput,
+	Toggle,
+	useSettingsStore,
+} from "@real1ty-obsidian-plugins/react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+
+import { renderProUpgradeBanner } from "../../components/settings/pro-upgrade-banner";
+import { FREE_MAX_EVENT_PRESETS } from "../../core/license";
+import type { CalendarSettingsStore } from "../../core/settings-store";
+import type CustomCalendarPlugin from "../../main";
+import type { SingleCalendarConfig } from "../../types/settings";
+import { LOCALE_OPTIONS } from "../../types/view";
+
+interface GeneralSettingsProps {
+	settingsStore: CalendarSettingsStore;
+	plugin: CustomCalendarPlugin;
+}
+
+export const GeneralSettingsReact = memo(function GeneralSettingsReact({
+	settingsStore,
+	plugin,
+}: GeneralSettingsProps) {
+	const [settings, updateSettings] = useSettingsStore(settingsStore);
+	const [mainSettings, updateMainSettings] = useSettingsStore(plugin.settingsStore);
+
+	const updateField = useCallback(
+		<K extends keyof SingleCalendarConfig>(key: K, value: SingleCalendarConfig[K]) => {
+			void updateSettings((s) => ({ ...s, [key]: value }));
+		},
+		[updateSettings]
+	);
+
+	const onSecretChange = useCallback(
+		async (value: string) => {
+			await updateMainSettings((s) => ({ ...s, licenseKeySecretName: value }));
+		},
+		[updateMainSettings]
+	);
+
+	return (
+		<>
+			<LicenseSection
+				licenseManager={plugin.licenseManager}
+				currentSecretName={mainSettings.licenseKeySecretName}
+				onSecretChange={onSecretChange}
+				cssPrefix="prisma-"
+			/>
+			<DirectorySection settings={settings} updateField={updateField} plugin={plugin} />
+			<ParsingSection settings={settings} updateField={updateField} />
+			<StopwatchSection settings={settings} updateField={updateField} />
+			<StatisticsSection settings={settings} updateField={updateField} />
+			<EventPresetsSection settings={settings} updateField={updateField} plugin={plugin} />
+		</>
+	);
+});
+
+type UpdateField = <K extends keyof SingleCalendarConfig>(key: K, value: SingleCalendarConfig[K]) => void;
+
+interface SectionProps {
+	settings: SingleCalendarConfig;
+	updateField: UpdateField;
+}
+
+interface DirectorySectionProps extends SectionProps {
+	plugin: CustomCalendarPlugin;
+}
+
+const DirectorySection = memo(function DirectorySection({ settings, updateField, plugin }: DirectorySectionProps) {
+	const [readOnly, setReadOnly] = useState(plugin.syncStore.data.readOnly);
+	const handleReadOnlyChange = useCallback(
+		(value: boolean) => {
+			setReadOnly(value);
+			void plugin.syncStore.updateData({ readOnly: value });
+		},
+		[plugin]
+	);
+
+	return (
+		<>
+			<SettingHeading name="Calendar directory" />
+			<SettingItem name="Directory" description="Folder to scan for calendar events and create new events in">
+				<TextInput
+					value={settings.directory}
+					placeholder="e.g., tasks, calendar, events"
+					onChange={(v) => updateField("directory", v)}
+				/>
+			</SettingItem>
+			<SettingItem
+				name="Template path"
+				description="Path to Templater template file for new events (optional, requires Templater plugin)"
+			>
+				<TextInput
+					value={settings.templatePath ?? ""}
+					placeholder="e.g., Templates/event-template.md"
+					onChange={(v) => updateField("templatePath", v || undefined)}
+				/>
+			</SettingItem>
+			<SettingItem
+				name="Locale"
+				description="Language and date format for calendar headings, day names, month names, toolbar labels, and date displays"
+			>
+				<Dropdown
+					value={settings.locale}
+					options={LOCALE_OPTIONS}
+					onChange={(v) => updateField("locale", v as SingleCalendarConfig["locale"])}
+				/>
+			</SettingItem>
+			<SettingItem
+				name="Show ribbon icon"
+				description="Display a calendar icon in the left sidebar to quickly open this calendar"
+			>
+				<Toggle value={settings.showRibbonIcon} onChange={(v) => updateField("showRibbonIcon", v)} />
+			</SettingItem>
+			<SettingItem
+				name="Enable keyboard navigation"
+				description="Use left/right arrow keys to navigate between calendar intervals. Automatically disabled when search or expression filter inputs are focused."
+			>
+				<Toggle
+					value={settings.enableKeyboardNavigation}
+					onChange={(v) => updateField("enableKeyboardNavigation", v)}
+				/>
+			</SettingItem>
+			<SettingItem
+				name="Auto assign zettel ID"
+				description="Automatically add a Zettel ID timestamp to filenames of events in the calendar directory that don't have one."
+			>
+				<Dropdown
+					value={settings.autoAssignZettelId}
+					options={{
+						disabled: "Disabled",
+						calendarEvents: "Calendar events only",
+						allEvents: "All events",
+					}}
+					onChange={(v) => updateField("autoAssignZettelId", v as SingleCalendarConfig["autoAssignZettelId"])}
+				/>
+			</SettingItem>
+			<SettingItem
+				name="Read-only mode"
+				description="Prevent automatic file modifications. When enabled, the plugin will not automatically write to files (notifications, recurring event generation). Manual actions like propagation will still work. Stored in sync.json to prevent syncing across devices."
+			>
+				<Toggle value={readOnly} onChange={handleReadOnlyChange} />
+			</SettingItem>
+		</>
+	);
+});
+
+const ParsingSection = memo(function ParsingSection({ settings, updateField }: SectionProps) {
+	return (
+		<>
+			<SettingHeading name="Parsing" />
+			<SettingItem
+				name="Default duration (minutes)"
+				description="Default event duration when only start time is provided"
+			>
+				<NumberInput
+					value={settings.defaultDurationMinutes}
+					min={1}
+					onChange={(v) => updateField("defaultDurationMinutes", v)}
+				/>
+			</SettingItem>
+			<SettingItem
+				name="Show duration field in event modal"
+				description="Display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa."
+			>
+				<Toggle value={settings.showDurationField} onChange={(v) => updateField("showDurationField", v)} />
+			</SettingItem>
+			<SettingItem
+				name="Mark past events as done"
+				description="Automatically mark past events as done during startup by updating their status property."
+			>
+				<Toggle value={settings.markPastInstancesAsDone} onChange={(v) => updateField("markPastInstancesAsDone", v)} />
+			</SettingItem>
+			<SettingItem
+				name="Title autocomplete"
+				description="Show autocomplete suggestions based on existing event titles when typing in the title field"
+			>
+				<Toggle value={settings.titleAutocomplete} onChange={(v) => updateField("titleAutocomplete", v)} />
+			</SettingItem>
+		</>
+	);
+});
+
+const StopwatchSection = memo(function StopwatchSection({ settings, updateField }: SectionProps) {
+	return (
+		<>
+			<SettingHeading name="Time tracker" />
+			<SettingItem
+				name="Show time tracker in event modal"
+				description="Display a stopwatch in the event creation/edit modal for precise time tracking."
+			>
+				<Toggle value={settings.showStopwatch} onChange={(v) => updateField("showStopwatch", v)} />
+			</SettingItem>
+		</>
+	);
+});
+
+const StatisticsSection = memo(function StatisticsSection({ settings, updateField }: SectionProps) {
+	return (
+		<>
+			<SettingHeading name="Statistics" />
+			<SettingItem name="Show decimal hours" description="Display durations as decimal hours instead of hours:minutes">
+				<Toggle value={settings.showDecimalHours} onChange={(v) => updateField("showDecimalHours", v)} />
+			</SettingItem>
+			<SettingItem name="Default grouping mode" description="How to group events in statistics views">
+				<Dropdown
+					value={settings.defaultAggregationMode}
+					options={{
+						name: "Event Name",
+						category: "Category",
+					}}
+					onChange={(v) => updateField("defaultAggregationMode", v as SingleCalendarConfig["defaultAggregationMode"])}
+				/>
+			</SettingItem>
+		</>
+	);
+});
+
+const PRESET_EXAMPLES: Array<{ name: string; description: string }> = [
+	{ name: "30 min meeting", description: "Duration: 30 minutes" },
+	{ name: "1 hour focus block", description: "Duration: 60 minutes, Category: Focus" },
+	{ name: "Daily standup", description: "Duration: 15 min, Recurring: daily" },
+	{ name: "All-day event", description: "All-day: enabled" },
+];
+
+const EventPresetsSection = memo(function EventPresetsSection({
+	settings,
+	updateField,
+	plugin,
+}: SectionProps & { plugin: CustomCalendarPlugin }) {
+	const presets = settings.eventPresets ?? [];
+	const showBanner = !plugin.isProEnabled && presets.length >= FREE_MAX_EVENT_PRESETS;
+
+	const bannerRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		const el = bannerRef.current;
+		if (!el) return;
+		el.empty();
+		if (showBanner) {
+			renderProUpgradeBanner(
+				el,
+				"Unlimited Event Presets",
+				`Free plan supports up to ${FREE_MAX_EVENT_PRESETS} event presets. Upgrade to Pro for unlimited presets.`
+			);
+		}
+	}, [showBanner]);
+
+	const handleDelete = useCallback(
+		(presetId: string) => {
+			updateField(
+				"eventPresets",
+				presets.filter((p) => p.id !== presetId)
+			);
+			if (settings.defaultPresetId === presetId) {
+				updateField("defaultPresetId", undefined);
+			}
+		},
+		[presets, settings.defaultPresetId, updateField]
+	);
+
+	const presetOptions: Record<string, string> = { "": "None" };
+	for (const preset of presets) {
+		presetOptions[preset.id] = preset.name;
+	}
+
+	return (
+		<>
+			<SettingHeading name="Event presets" />
+			<div className="setting-item-description">
+				<p>
+					Create presets with pre-configured event settings (duration, category, recurring pattern, etc.) for quick
+					event creation. Select a preset from the dropdown when creating an event to auto-fill the form.
+				</p>
+				<div className="prisma-settings-info-box">
+					<strong>Example presets:</strong>
+					<ul>
+						{PRESET_EXAMPLES.map((ex) => (
+							<li key={ex.name} className="prisma-color-example-item">
+								<strong>{ex.name}</strong>
+								<span>{` — ${ex.description}`}</span>
+							</li>
+						))}
+					</ul>
+				</div>
+				<p className="prisma-settings-muted">
+					Create and edit presets from the event modal. Here you can select a default preset and delete existing ones.
+				</p>
+			</div>
+			<SettingItem name="Default preset" description="Preset to auto-fill when opening the create event modal">
+				<Dropdown
+					value={settings.defaultPresetId ?? ""}
+					options={presetOptions}
+					onChange={(v) => updateField("defaultPresetId", v || undefined)}
+				/>
+			</SettingItem>
+			<div ref={bannerRef} />
+			{presets.length === 0 ? (
+				<div className="prisma-event-preset-empty">No event presets defined. Create presets from the event modal.</div>
+			) : (
+				presets.map((preset) => (
+					<div key={preset.id} className="prisma-event-preset-item">
+						<div className="prisma-event-preset-name">{preset.name}</div>
+						<div className="prisma-event-preset-details">
+							{preset.allDay !== undefined && (
+								<span className="prisma-event-preset-tag">{preset.allDay ? "All-day" : "Timed"}</span>
+							)}
+							{preset.categories && <span className="prisma-event-preset-tag">{preset.categories}</span>}
+							{preset.rruleType && <span className="prisma-event-preset-tag">{preset.rruleType}</span>}
+							{preset.futureInstancesCount && (
+								<span className="prisma-event-preset-tag">{`${preset.futureInstancesCount} instances`}</span>
+							)}
+							{Object.keys(preset.customProperties ?? {}).length > 0 && (
+								<span className="prisma-event-preset-tag">{`${Object.keys(preset.customProperties ?? {}).length} props`}</span>
+							)}
+						</div>
+						<div className="prisma-event-preset-controls">
+							<button
+								type="button"
+								className="prisma-event-preset-btn prisma-event-preset-btn-delete"
+								onClick={() => handleDelete(preset.id)}
+							>
+								Delete
+							</button>
+						</div>
+					</div>
+				))
+			)}
+		</>
+	);
+});

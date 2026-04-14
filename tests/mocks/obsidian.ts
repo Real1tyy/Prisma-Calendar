@@ -283,6 +283,40 @@ export class SecretComponent {
 	onChange = vi.fn().mockReturnThis();
 }
 
+// SliderComponent mock — renders a functional range input so Testing Library
+// tests can locate the slider via `getByRole("slider")`.
+export class SliderComponent {
+	sliderEl: HTMLInputElement;
+	private changeHandler: ((value: number) => void) | null = null;
+	constructor(el: HTMLElement) {
+		this.sliderEl = document.createElement("input");
+		this.sliderEl.type = "range";
+		this.sliderEl.className = "slider";
+		this.sliderEl.addEventListener("input", () => {
+			this.changeHandler?.(Number(this.sliderEl.value));
+		});
+		el.appendChild(this.sliderEl);
+	}
+	setLimits(min: number, max: number, step: number): this {
+		this.sliderEl.min = String(min);
+		this.sliderEl.max = String(max);
+		this.sliderEl.step = String(step);
+		return this;
+	}
+	setValue(value: number): this {
+		this.sliderEl.value = String(value);
+		this.sliderEl.setAttribute("aria-valuenow", String(value));
+		return this;
+	}
+	setDynamicTooltip(): this {
+		return this;
+	}
+	onChange(handler: (value: number) => void): this {
+		this.changeHandler = handler;
+		return this;
+	}
+}
+
 // MarkdownRenderer mock
 export const MarkdownRenderer = {
 	render: vi.fn().mockResolvedValue(undefined),

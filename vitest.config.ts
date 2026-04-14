@@ -28,6 +28,10 @@ export default defineConfig({
 				find: "@real1ty-obsidian-plugins/testing",
 				replacement: path.resolve(__dirname, "../shared/src/testing/index.ts"),
 			},
+			{
+				find: "@real1ty-obsidian-plugins/react",
+				replacement: path.resolve(__dirname, "../shared/src/react/index.ts"),
+			},
 		],
 		extensions: [".ts", ".tsx", ".js", ".mjs", ".json"],
 	},

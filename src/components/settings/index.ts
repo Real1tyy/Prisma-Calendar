@@ -1,12 +1,6 @@
 export { AISettings } from "./ai";
-export { BasesSettings } from "./bases";
 export { CalendarSettings } from "./calendar";
 export { CategoriesSettings } from "./categories";
 export { EventGroupsSettings } from "./event-groups";
-export { GeneralSettings } from "./general";
 export { IntegrationsSettings } from "./integrations";
-export { NotificationsSettings } from "./notifications";
-export { PerformanceSettings } from "./performance";
-export { PropertiesSettings } from "./properties";
 export { RulesSettings } from "./rules";
-export { ConfigurationSettings } from "./toolbar-config";

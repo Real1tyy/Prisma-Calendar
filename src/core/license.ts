@@ -1,4 +1,4 @@
-import { LicenseManager, type LicenseManagerConfig } from "@real1ty-obsidian-plugins";
+import { buildUtmUrl, LicenseManager, type LicenseManagerConfig } from "@real1ty-obsidian-plugins";
 import type { App } from "obsidian";
 
 import type { PrismaCalendarSettingsStore } from "../types";
@@ -35,7 +35,7 @@ export const PRO_FEATURES = {
 
 const LICENSE_CONFIG: LicenseManagerConfig = {
 	productName: "Prisma Calendar",
-	purchaseUrl: PRO_PURCHASE_URL,
+	purchaseUrl: buildUtmUrl(PRO_PURCHASE_URL, "prisma-calendar", "plugin", "settings", "license_section"),
 	deviceIdStorageKey: DEVICE_ID_STORAGE_KEY,
 	licenseCacheStorageKey: LICENSE_CACHE_STORAGE_KEY,
 };
