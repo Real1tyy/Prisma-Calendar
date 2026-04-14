@@ -4,6 +4,7 @@ import type { ICSSubscription } from "../../../types/integrations";
 import type { CustomCalendarSettings } from "../../../types/settings";
 import { BaseSyncService, type BaseSyncServiceOptions, yieldToMainThread } from "../base-sync-service";
 import { type ImportedEvent, parseICSContent } from "../ics-import";
+import { computeIcsSubscriptionSyncPlan } from "./sync-planner";
 import type { ICSSubscriptionSyncStateManager } from "./sync-state-manager";
 import type { ICSSubscriptionSyncMetadata, ICSSubscriptionSyncResult } from "./types";
 
@@ -85,62 +86,44 @@ export class ICSSubscriptionSyncService extends BaseSyncService<ICSSubscriptionS
 				throw new Error(parsed.error?.message || "Failed to parse ICS content");
 			}
 
-			const remoteUids = new Set<string>();
+			const plan = computeIcsSubscriptionSyncPlan({
+				subscriptionId: this.subscription.id,
+				remoteEvents: parsed.events,
+				trackedBySubscription: this.syncStateManager.getAllForSubscription(this.subscription.id),
+				findByUidGlobal: (uid) => this.syncStateManager.findByUidGlobal(uid),
+			});
 
 			let processedCount = 0;
-			for (const event of parsed.events) {
+			for (const action of plan.actions) {
 				if (this.destroyed) break;
 
-				const uid = event.uid;
-				if (!uid) continue;
-
-				remoteUids.add(uid);
-
 				try {
-					const existingEvent = this.syncStateManager.findByUid(this.subscription.id, uid);
-
-					if (existingEvent) {
-						if (existingEvent.metadata.lastModified === event.lastModified) {
-							continue;
-						}
-						const wasUpdated = await this.updateNoteFromEvent(existingEvent.filePath, event, uid);
-						if (wasUpdated) {
-							result.updated++;
-						}
-					} else {
-						// Skip if another subscription already tracks this event (same uid)
-						if (this.syncStateManager.findByUidGlobal(uid)) {
-							continue;
-						}
-						await this.createNoteFromEvent(event, uid);
+					if (action.kind === "create") {
+						await this.createNoteFromEvent(action.event, action.uid);
 						result.created++;
-					}
-
-					processedCount++;
-					if (processedCount % 3 === 0) {
-						await yieldToMainThread();
-					}
-				} catch (error) {
-					const errorMsg = `Failed to sync event "${event.title}": ${error}`;
-					console.error(`[ICS Subscription] ${errorMsg}`);
-					result.errors.push(errorMsg);
-				}
-			}
-
-			const trackedEvents = this.syncStateManager.getAllForSubscription(this.subscription.id);
-			for (const tracked of this.destroyed ? [] : trackedEvents) {
-				if (!remoteUids.has(tracked.metadata.uid)) {
-					try {
-						const file = this.app.vault.getAbstractFileByPath(tracked.filePath);
+					} else if (action.kind === "update") {
+						const wasUpdated = await this.updateNoteFromEvent(action.filePath, action.event, action.uid);
+						if (wasUpdated) result.updated++;
+					} else if (action.kind === "delete") {
+						const file = this.app.vault.getAbstractFileByPath(action.filePath);
 						if (file instanceof TFile) {
 							await this.app.fileManager.trashFile(file);
 							result.deleted++;
 						}
-					} catch (error) {
-						const errorMsg = `Failed to delete event "${tracked.filePath}": ${error}`;
-						console.error(`[ICS Subscription] ${errorMsg}`);
-						result.errors.push(errorMsg);
 					}
+					// skip-* actions are intentional no-ops.
+					if (action.kind === "create" || action.kind === "update") {
+						processedCount++;
+						if (processedCount % 3 === 0) {
+							await yieldToMainThread();
+						}
+					}
+				} catch (error) {
+					const label =
+						"event" in action ? action.event.title : action.kind === "delete" ? action.filePath : action.kind;
+					const errorMsg = `Failed to sync "${label}": ${error}`;
+					console.error(`[ICS Subscription] ${errorMsg}`);
+					result.errors.push(errorMsg);
 				}
 			}
 
