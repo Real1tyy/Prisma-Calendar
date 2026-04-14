@@ -18,3 +18,4 @@ export {
 	TextWidget,
 	ToggleWidget,
 } from "./widgets";
+export { resolvePlaceholder } from "./widgets/common";
