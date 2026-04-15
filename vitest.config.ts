@@ -9,8 +9,8 @@ export default defineConfig({
 		globals: true,
 		environment: "jsdom",
 		setupFiles: ["./tests/setup.ts"],
-		// Playwright owns *.visual.spec.ts — vitest should skip them.
-		exclude: ["**/node_modules/**", "**/dist/**", "**/*.visual.spec.ts"],
+		// Playwright owns *.visual.spec.ts and the e2e/ suite — vitest should skip them.
+		exclude: ["**/node_modules/**", "**/dist/**", "**/*.visual.spec.ts", "e2e/**"],
 		server: {
 			deps: {
 				inline: ["@real1ty-obsidian-plugins"],
