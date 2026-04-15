@@ -71,18 +71,24 @@ export { debounce, ItemView, Modal, Notice, Plugin, PluginSettingTab, SuggestMod
 export const createMockApp = createMockAppImpl;
 export const createMockFile = createMockFileImpl;
 
+let cachedDefaultSettings: CustomCalendarSettings | undefined;
+function getDefaultSettings(): CustomCalendarSettings {
+	if (!cachedDefaultSettings) {
+		cachedDefaultSettings = CustomCalendarSettingsSchema.parse({});
+	}
+	return structuredClone(cachedDefaultSettings);
+}
+
 export function createMockSettingsStore(
 	initialSettings?: Partial<CustomCalendarSettings>
 ): BehaviorSubject<CustomCalendarSettings> {
-	const defaultSettings = CustomCalendarSettingsSchema.parse({});
-	const settings = { ...defaultSettings, ...initialSettings };
+	const settings = { ...getDefaultSettings(), ...initialSettings };
 	return new BehaviorSubject<CustomCalendarSettings>(settings);
 }
 
 // Create a mock single calendar config for testing individual calendar settings
 export function createMockSingleCalendarSettings() {
-	const fullSettings = CustomCalendarSettingsSchema.parse({});
-	return fullSettings.calendars[0]; // Return the default calendar
+	return getDefaultSettings().calendars[0]; // Return the default calendar
 }
 
 // Create a mock settings store that returns single calendar settings (for legacy test compatibility)
@@ -94,6 +100,7 @@ export function createMockSingleCalendarSettingsStore(calendarOverrides?: any): 
 
 // Polyfill Obsidian's DOM augmentations for test environment
 function polyfillObsidianDOM(): void {
+	if (typeof HTMLElement === "undefined") return;
 	const proto = HTMLElement.prototype as any;
 	if (proto.createDiv) return;
 
@@ -186,7 +193,7 @@ polyfillObsidianDOM();
 
 // Setup DOM environment for FullCalendar tests
 beforeEach(() => {
-	document.body.replaceChildren();
-
-	// Add any global test setup here
+	if (typeof document !== "undefined") {
+		document.body.replaceChildren();
+	}
 });

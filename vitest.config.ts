@@ -4,18 +4,51 @@ import { defineConfig } from "vitest/config";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Test files/directories that need a DOM environment. Single source of truth
+// used by both the jsdom project's `include` and the node project's `exclude`.
+const JSDOM_PATTERNS = [
+	"tests/components/**/*.test.ts",
+	"tests/integrations/calendar-bundle.test.ts",
+	"tests/core/minimized-modal-manager.test.ts",
+	"tests/core/notification-manager.test.ts",
+	"tests/utils/event-tooltip-snapshots.test.ts",
+	"tests/visual/generate-fixtures.test.ts",
+];
+
+const SHARED_EXCLUDE = ["**/node_modules/**", "**/dist/**", "**/*.visual.spec.ts", "e2e/**"];
+
 export default defineConfig({
 	test: {
 		globals: true,
-		environment: "jsdom",
 		setupFiles: ["./tests/setup.ts"],
 		// Playwright owns *.visual.spec.ts and the e2e/ suite — vitest should skip them.
-		exclude: ["**/node_modules/**", "**/dist/**", "**/*.visual.spec.ts", "e2e/**"],
+		exclude: SHARED_EXCLUDE,
+		pool: "threads",
+		isolate: false,
 		server: {
 			deps: {
 				inline: ["@real1ty-obsidian-plugins"],
 			},
 		},
+		projects: [
+			{
+				extends: true,
+				test: {
+					name: "node",
+					environment: "node",
+					include: ["tests/**/*.test.ts"],
+					exclude: [...SHARED_EXCLUDE, ...JSDOM_PATTERNS],
+				},
+			},
+			{
+				extends: true,
+				test: {
+					name: "jsdom",
+					environment: "jsdom",
+					include: JSDOM_PATTERNS,
+				},
+			},
+		],
 	},
 	resolve: {
 		alias: [
