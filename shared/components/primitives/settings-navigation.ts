@@ -165,6 +165,7 @@ export class SettingsNavigation {
 			const button = buttonContainer.createEl("button", {
 				text: section.label,
 			});
+			button.setAttribute("data-testid", `${this.cssPrefix}settings-tab-${section.id}`);
 			if (!this.searchQuery && this.activeSectionIndex === index) {
 				this.css.addCls(button, "active");
 			}

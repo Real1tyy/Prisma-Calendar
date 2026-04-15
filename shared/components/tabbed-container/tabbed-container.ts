@@ -245,7 +245,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 			if (isGroupTab(entry)) {
 				const button = tabBar.createEl("button", {
 					cls: css.cls("tab", "tab-group"),
-					attr: { "data-tab-id": entry.id },
+					attr: { "data-tab-id": entry.id, "data-testid": `${cssPrefix}view-tab-${entry.id}` },
 				});
 				button.createEl("span", { text: getLabel(entry) });
 				const chevron = button.createEl("span", { cls: css.cls("tab-group-chevron") });
@@ -292,7 +292,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 				const button = tabBar.createEl("button", {
 					text: getLabel(entry),
 					cls: css.cls("tab"),
-					attr: { "data-tab-id": entry.id },
+					attr: { "data-tab-id": entry.id, "data-testid": `${cssPrefix}view-tab-${entry.id}` },
 				});
 				button.addEventListener("click", () => handle.switchTo(entry.id));
 

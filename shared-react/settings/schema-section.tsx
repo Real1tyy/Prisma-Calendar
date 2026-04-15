@@ -31,6 +31,12 @@ interface SchemaSectionProps {
 	 * doesn't supply a label.
 	 */
 	labelTransform?: (descriptor: SchemaFieldDescriptor) => string;
+	/**
+	 * Optional base for auto-stamping `data-testid` onto each rendered field.
+	 * When set, each field row gets `${testIdPrefix}field-<key>` and the inner
+	 * control receives `${testIdPrefix}control-<key>`.
+	 */
+	testIdPrefix?: string;
 }
 
 export const SchemaSection = memo(function SchemaSection({
@@ -41,6 +47,7 @@ export const SchemaSection = memo(function SchemaSection({
 	overrides,
 	pathPrefix,
 	labelTransform,
+	testIdPrefix,
 }: SchemaSectionProps) {
 	const descriptors = useMemo(() => {
 		const all = introspectShape(shape);
@@ -69,6 +76,12 @@ export const SchemaSection = memo(function SchemaSection({
 						descriptor={descriptor}
 						path={path}
 						{...(finalOverride ? { override: finalOverride } : {})}
+						{...(testIdPrefix
+							? {
+									testId: `${testIdPrefix}field-${descriptor.key}`,
+									controlTestId: `${testIdPrefix}control-${descriptor.key}`,
+								}
+							: {})}
 					/>
 				);
 			})}

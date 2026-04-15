@@ -7,9 +7,10 @@ import { useActivatable } from "../hooks/use-activatable";
 interface ToggleProps {
 	value: boolean;
 	onChange: (value: boolean) => void;
+	testId?: string;
 }
 
-export const Toggle = memo(function Toggle({ value, onChange }: ToggleProps) {
+export const Toggle = memo(function Toggle({ value, onChange, testId }: ToggleProps) {
 	const handleToggle = useCallback(() => onChange(!value), [value, onChange]);
 	const activate = useActivatable(handleToggle);
 
@@ -19,6 +20,7 @@ export const Toggle = memo(function Toggle({ value, onChange }: ToggleProps) {
 			className={`checkbox-container${value ? " is-enabled" : ""}`}
 			role="switch"
 			aria-checked={value}
+			{...(testId ? { "data-testid": testId } : {})}
 		/>
 	);
 });
@@ -27,9 +29,10 @@ interface TextInputProps {
 	value: string;
 	placeholder?: string | undefined;
 	onChange: (value: string) => void;
+	testId?: string;
 }
 
-export const TextInput = memo(function TextInput({ value, placeholder, onChange }: TextInputProps) {
+export const TextInput = memo(function TextInput({ value, placeholder, onChange, testId }: TextInputProps) {
 	return (
 		<input
 			type="text"
@@ -37,6 +40,7 @@ export const TextInput = memo(function TextInput({ value, placeholder, onChange 
 			placeholder={placeholder}
 			value={value}
 			onChange={(e) => onChange(e.target.value)}
+			{...(testId ? { "data-testid": testId } : {})}
 		/>
 	);
 });
@@ -45,11 +49,17 @@ interface DropdownProps {
 	value: string;
 	options: Record<string, string>;
 	onChange: (value: string) => void;
+	testId?: string;
 }
 
-export const Dropdown = memo(function Dropdown({ value, options, onChange }: DropdownProps) {
+export const Dropdown = memo(function Dropdown({ value, options, onChange, testId }: DropdownProps) {
 	return (
-		<select className="dropdown" value={value} onChange={(e) => onChange(e.target.value)}>
+		<select
+			className="dropdown"
+			value={value}
+			onChange={(e) => onChange(e.target.value)}
+			{...(testId ? { "data-testid": testId } : {})}
+		>
 			{Object.entries(options).map(([optValue, label]) => (
 				<option key={optValue} value={optValue}>
 					{label}
@@ -65,9 +75,10 @@ interface NumberInputProps {
 	max?: number;
 	step?: number;
 	onChange: (value: number) => void;
+	testId?: string;
 }
 
-export const NumberInput = memo(function NumberInput({ value, min, max, step, onChange }: NumberInputProps) {
+export const NumberInput = memo(function NumberInput({ value, min, max, step, onChange, testId }: NumberInputProps) {
 	return (
 		<input
 			type="number"
@@ -81,6 +92,7 @@ export const NumberInput = memo(function NumberInput({ value, min, max, step, on
 				if (Number.isNaN(parsed)) return;
 				onChange(parsed);
 			}}
+			{...(testId ? { "data-testid": testId } : {})}
 		/>
 	);
 });
@@ -90,6 +102,7 @@ interface TextareaInputProps {
 	placeholder?: string | undefined;
 	rows?: number;
 	onChange: (value: string) => void;
+	testId?: string;
 }
 
 export const TextareaInput = memo(function TextareaInput({
@@ -97,6 +110,7 @@ export const TextareaInput = memo(function TextareaInput({
 	placeholder,
 	rows = 4,
 	onChange,
+	testId,
 }: TextareaInputProps) {
 	return (
 		<textarea
@@ -105,6 +119,7 @@ export const TextareaInput = memo(function TextareaInput({
 			rows={rows}
 			value={value}
 			onChange={(e) => onChange(e.target.value)}
+			{...(testId ? { "data-testid": testId } : {})}
 		/>
 	);
 });
@@ -112,35 +127,57 @@ export const TextareaInput = memo(function TextareaInput({
 interface DateInputProps {
 	value: string;
 	onChange: (value: string) => void;
+	testId?: string;
 }
 
-export const DateInput = memo(function DateInput({ value, onChange }: DateInputProps) {
-	return <input type="date" className="setting-input" value={value} onChange={(e) => onChange(e.target.value)} />;
+export const DateInput = memo(function DateInput({ value, onChange, testId }: DateInputProps) {
+	return (
+		<input
+			type="date"
+			className="setting-input"
+			value={value}
+			onChange={(e) => onChange(e.target.value)}
+			{...(testId ? { "data-testid": testId } : {})}
+		/>
+	);
 });
 
 interface DatetimeLocalInputProps {
 	value: string;
 	onChange: (value: string) => void;
+	testId?: string;
 }
 
-export const DatetimeLocalInput = memo(function DatetimeLocalInput({ value, onChange }: DatetimeLocalInputProps) {
+export const DatetimeLocalInput = memo(function DatetimeLocalInput({
+	value,
+	onChange,
+	testId,
+}: DatetimeLocalInputProps) {
 	return (
-		<input type="datetime-local" className="setting-input" value={value} onChange={(e) => onChange(e.target.value)} />
+		<input
+			type="datetime-local"
+			className="setting-input"
+			value={value}
+			onChange={(e) => onChange(e.target.value)}
+			{...(testId ? { "data-testid": testId } : {})}
+		/>
 	);
 });
 
 interface ColorInputProps {
 	value: string;
 	onChange: (value: string) => void;
+	testId?: string;
 }
 
-export const ColorInput = memo(function ColorInput({ value, onChange }: ColorInputProps) {
+export const ColorInput = memo(function ColorInput({ value, onChange, testId }: ColorInputProps) {
 	return (
 		<input
 			type="color"
 			className="setting-input setting-input--color"
 			value={value || "#000000"}
 			onChange={(e) => onChange(e.target.value)}
+			{...(testId ? { "data-testid": testId } : {})}
 		/>
 	);
 });
