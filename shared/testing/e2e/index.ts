@@ -11,3 +11,4 @@ export {
 } from "./bootstrap";
 export { ensurePluginBuilt, type EnsurePluginBuiltOptions } from "./build";
 export { countPluginCommands, executeCommand, isPluginLoaded, openNote, openSettingsTab } from "./helpers";
+export type { ObsidianApp, ObsidianPluginsRegistry, ObsidianWindow } from "./types";

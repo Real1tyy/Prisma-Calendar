@@ -146,7 +146,14 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 	const log = options.logger ?? NOOP_LOGGER;
 	const vaultsRoot = options.vaultsRoot ?? join(tmpdir(), "obsidian-e2e-vaults");
 	const cdpPort = options.cdpPort ?? 9222;
-	const id = `${options.prefix ?? "run"}-${randomUUID().slice(0, 8)}`;
+	// Vault dir name is `YYYY-MM-DD-HHmm-<prefix>-<uuid8>` so `ls -lt` shows runs
+	// chronologically and the cleanup task (mise run test-e2e-clean) can parse
+	// the date prefix to decide what's stale. The uuid segment keeps runs from
+	// the same minute collision-free and is what XDG uses below — we need a
+	// short stable id for the /tmp socket dir (108-byte socket path cap).
+	const uuid = randomUUID().slice(0, 8);
+	const timestamp = formatRunTimestamp(new Date());
+	const id = `${timestamp}-${options.prefix ?? "run"}-${uuid}`;
 	log.info(`bootstrap start id=${id}`);
 
 	mkdirSync(vaultsRoot, { recursive: true });
@@ -188,8 +195,9 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 	const sandboxArgs = process.platform === "linux" ? ["--no-sandbox"] : [];
 	const gpuArgs = process.platform === "linux" ? ["--disable-gpu", "--disable-software-rasterizer"] : [];
 	// Must be a *short* path — see the XDG_RUNTIME_DIR note at the top of this
-	// file. 8 chars of the run id keeps us well under the 108-byte socket limit.
-	const xdgRuntimeDir = `/tmp/o-e2e-${id.slice(0, 8)}`;
+	// file. Uuid8 keeps us well under the 108-byte socket limit regardless of
+	// how long the timestamped vault id grows.
+	const xdgRuntimeDir = `/tmp/o-e2e-${uuid}`;
 	mkdirSync(xdgRuntimeDir, { recursive: true, mode: 0o700 });
 	log.debug(`XDG_RUNTIME_DIR=${xdgRuntimeDir}`);
 
@@ -420,4 +428,15 @@ function pipeRendererConsole(page: Page, log: Logger): void {
 	// up without requiring --debug.
 	page.on("pageerror", (err) => log.info(`pageerror: ${err.message}\n${err.stack ?? ""}`));
 	page.on("crash", () => log.info(`PAGE CRASHED`));
+}
+
+// Format: YYYY-MM-DD-HHmm (local time) — chronologically sortable in `ls`, and
+// easy for the cleanup task to parse. Local (not UTC) because humans reading
+// their own .cache/vaults/ expect wall-clock time.
+function formatRunTimestamp(date: Date): string {
+	const pad = (n: number): string => String(n).padStart(2, "0");
+	return (
+		`${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+		`-${pad(date.getHours())}${pad(date.getMinutes())}`
+	);
 }

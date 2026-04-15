@@ -1,18 +1,12 @@
 import type { Page } from "@playwright/test";
 
+import type { ObsidianWindow } from "./types";
+
 // Action helpers that run against the Obsidian renderer (`window.app`).
 // Keep them generic — plugin-specific helpers belong in the plugin's own e2e dir.
-
-type ObsidianWindow = {
-	app: {
-		commands: { executeCommandById: (id: string) => boolean; commands?: Record<string, unknown> };
-		workspace: {
-			openLinkText: (link: string, source: string, newLeaf?: boolean) => Promise<void>;
-		};
-		plugins: { plugins: Record<string, unknown> };
-		setting: { open: () => void; openTabById: (id: string) => void };
-	};
-};
+// All casts go through the shared `ObsidianWindow` type so the shape lives in
+// one place (shared/src/testing/e2e/types.ts) instead of being re-declared per
+// helper.
 
 /** Execute an Obsidian command by ID. Yields to the event loop so async side effects settle. */
 export async function executeCommand(page: Page, commandId: string): Promise<boolean> {
