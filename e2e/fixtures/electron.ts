@@ -36,6 +36,24 @@ export async function bootstrapObsidian(options: { prefix?: string } = {}): Prom
 		env: {
 			PRISMA_LOG_LEVEL: VERBOSE ? "debug" : "warn",
 		},
+		onRendererReady: async (page: Page) => {
+			// Silence Prisma's raw `console.log/info/debug` calls under the default
+			// E2E run; they drown out Playwright's summary. `warn`/`error` still
+			// flow through so real issues surface. Restore everything with
+			// E2E_VERBOSE=1.
+			if (VERBOSE) return;
+			await page.evaluate(() => {
+				const w = window as unknown as { E2E?: boolean };
+				w.E2E = true;
+				const noop = (): void => {};
+
+				console.log = noop;
+
+				console.info = noop;
+
+				console.debug = noop;
+			});
+		},
 		seedPluginData: (pluginDir, { manifest }) => {
 			// Pre-seed Prisma data.json so the calendar points at Events/, AND
 			// suppress the "What's new" modal by pre-setting `version` to the

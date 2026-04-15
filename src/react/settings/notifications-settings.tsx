@@ -28,6 +28,7 @@ export const NotificationsSettingsReact = memo(function NotificationsSettingsRea
 				heading="Notifications"
 				fields={MAIN_FIELDS}
 				overrides={MAIN_OVERRIDES}
+				testIdPrefix="prisma-settings-"
 			/>
 			<SettingHeading name="Default notification times" />
 			<OptionalNumberField
@@ -90,8 +91,14 @@ const OptionalNumberField = memo(function OptionalNumberField({
 	);
 
 	return (
-		<SettingItem name={name} description={description}>
-			<TextInputWithCommit value={draft} placeholder={placeholder} onChange={setDraft} onCommit={commit} />
+		<SettingItem name={name} description={description} testId={`prisma-settings-field-${fieldKey}`}>
+			<TextInputWithCommit
+				value={draft}
+				placeholder={placeholder}
+				onChange={setDraft}
+				onCommit={commit}
+				testId={`prisma-settings-control-${fieldKey}`}
+			/>
 		</SettingItem>
 	);
 });
@@ -101,6 +108,7 @@ interface TextInputWithCommitProps {
 	placeholder: string;
 	onChange: (value: string) => void;
 	onCommit: (value: string) => void;
+	testId?: string;
 }
 
 const TextInputWithCommit = memo(function TextInputWithCommit({
@@ -108,6 +116,7 @@ const TextInputWithCommit = memo(function TextInputWithCommit({
 	placeholder,
 	onChange,
 	onCommit,
+	testId,
 }: TextInputWithCommitProps) {
 	return (
 		<input
@@ -123,6 +132,7 @@ const TextInputWithCommit = memo(function TextInputWithCommit({
 					(e.target as HTMLInputElement).blur();
 				}
 			}}
+			{...(testId ? { "data-testid": testId } : {})}
 		/>
 	);
 });

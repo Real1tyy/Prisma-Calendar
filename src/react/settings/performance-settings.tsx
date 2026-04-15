@@ -19,6 +19,7 @@ export const PerformanceSettingsReact = memo(function PerformanceSettingsReact({
 			shape={SingleCalendarConfigSchema.shape}
 			heading="Performance"
 			fields={FIELDS}
+			testIdPrefix="prisma-settings-"
 		/>
 	);
 });

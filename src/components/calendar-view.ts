@@ -807,7 +807,28 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 				this.zoomManager.updateZoomLevelButton();
 			}
 			this.scheduleStickyOffsetsUpdate();
+			this.stampToolbarTestIds();
 		});
+	}
+
+	private stampToolbarTestIds(): void {
+		const root = this.container;
+		if (!root) return;
+		const map: Array<[string, string]> = [
+			[".fc-prev-button", "prisma-cal-toolbar-prev"],
+			[".fc-next-button", "prisma-cal-toolbar-next"],
+			[".fc-today-button", "prisma-cal-toolbar-today"],
+			[".fc-now-button", "prisma-cal-toolbar-goto-now"],
+			[".fc-dayGridMonth-button", "prisma-cal-toolbar-view-month"],
+			[".fc-timeGridWeek-button", "prisma-cal-toolbar-view-week"],
+			[".fc-timeGridDay-button", "prisma-cal-toolbar-view-day"],
+		];
+		for (const [selector, testId] of map) {
+			const el = root.querySelector(selector);
+			if (el instanceof HTMLElement && !el.hasAttribute("data-testid")) {
+				el.setAttribute("data-testid", testId);
+			}
+		}
 	}
 
 	private buildToolbarConfig(inSelectionMode: boolean): {

@@ -278,7 +278,7 @@ export abstract class BaseEventModal extends Modal {
 			text: "−",
 			cls: cls("event-modal-minimize-button"),
 			type: "button",
-			attr: { title: "Minimize modal (preserves all form data)" },
+			attr: { title: "Minimize modal (preserves all form data)", "data-testid": "prisma-event-btn-minimize" },
 		});
 		minimizeButton.addEventListener("click", () => {
 			this.minimize();
@@ -289,6 +289,7 @@ export abstract class BaseEventModal extends Modal {
 			text: "Clear",
 			cls: cls("event-modal-clear-button"),
 			type: "button",
+			attr: { "data-testid": "prisma-event-btn-clear" },
 		});
 		clearButton.addEventListener("click", () => {
 			this.clearAllFields();
@@ -338,6 +339,7 @@ export abstract class BaseEventModal extends Modal {
 
 		const cancelButton = buttonContainer.createEl("button", {
 			text: "Cancel",
+			attr: { "data-testid": "prisma-event-btn-cancel" },
 		});
 		cancelButton.addEventListener("click", () => {
 			this.close();
@@ -346,6 +348,7 @@ export abstract class BaseEventModal extends Modal {
 		// Save as Preset button - available in both Create and Edit modals
 		const savePresetButton = buttonContainer.createEl("button", {
 			text: "Save as preset",
+			attr: { "data-testid": "prisma-event-btn-save-preset" },
 		});
 		savePresetButton.addEventListener("click", () => {
 			this.openSavePresetModal();
@@ -354,6 +357,7 @@ export abstract class BaseEventModal extends Modal {
 		const saveButton = buttonContainer.createEl("button", {
 			text: this.getSaveButtonText(),
 			cls: cls("mod-cta"),
+			attr: { "data-testid": "prisma-event-btn-save" },
 		});
 		saveButton.addEventListener("click", () => {
 			this.saveWithAutoCategories();
@@ -364,6 +368,7 @@ export abstract class BaseEventModal extends Modal {
 
 	private createFormFields(contentEl: HTMLElement): void {
 		const titleContainer = contentEl.createDiv(cls("setting-item"));
+		titleContainer.setAttribute("data-testid", "prisma-event-field-title");
 		titleContainer.createEl("div", {
 			text: "Title",
 			cls: cls("setting-item-name"),
@@ -372,9 +377,11 @@ export abstract class BaseEventModal extends Modal {
 			type: "text",
 			value: this.event.title || "",
 			cls: cls("setting-item-control"),
+			attr: { "data-testid": "prisma-event-control-title" },
 		});
 
 		const allDayContainer = contentEl.createDiv(cls("setting-item"));
+		allDayContainer.setAttribute("data-testid", "prisma-event-field-allDay");
 		allDayContainer.createEl("div", {
 			text: "All day",
 			cls: cls("setting-item-name"),
@@ -382,6 +389,7 @@ export abstract class BaseEventModal extends Modal {
 		this.allDayCheckbox = allDayContainer.createEl("input", {
 			type: "checkbox",
 			cls: cls("setting-item-control"),
+			attr: { "data-testid": "prisma-event-control-allDay" },
 		});
 		this.allDayCheckbox.checked = this.event.allDay || false;
 
@@ -408,6 +416,7 @@ export abstract class BaseEventModal extends Modal {
 		const settings = this.bundle.settingsStore.currentSettings;
 		if (settings.showDurationField) {
 			this.durationContainer = this.timedContainer.createDiv(cls("setting-item"));
+			this.durationContainer.setAttribute("data-testid", "prisma-event-field-duration");
 			this.durationContainer.createEl("div", {
 				text: "Duration (min)",
 				cls: cls("setting-item-name"),
@@ -418,6 +427,7 @@ export abstract class BaseEventModal extends Modal {
 				attr: {
 					min: "0",
 					step: "1",
+					"data-testid": "prisma-event-control-duration",
 				},
 			});
 
@@ -434,6 +444,7 @@ export abstract class BaseEventModal extends Modal {
 
 		// Date field (for all-day events)
 		const dateContainer = this.allDayContainer.createDiv(cls("setting-item"));
+		dateContainer.setAttribute("data-testid", "prisma-event-field-date");
 		dateContainer.createEl("div", {
 			text: "Date",
 			cls: cls("setting-item-name"),
@@ -442,6 +453,7 @@ export abstract class BaseEventModal extends Modal {
 			type: "date",
 			value: this.event.start ? formatDateOnly(this.event.start) : "",
 			cls: cls("setting-item-control"),
+			attr: { "data-testid": "prisma-event-control-date" },
 		});
 
 		// Stopwatch for time tracking (only for timed events)
@@ -524,6 +536,7 @@ export abstract class BaseEventModal extends Modal {
 	private createRecurringEventFields(contentEl: HTMLElement): void {
 		// Recurring event checkbox
 		const recurringCheckboxContainer = contentEl.createDiv(cls("setting-item"));
+		recurringCheckboxContainer.setAttribute("data-testid", "prisma-event-field-rrule");
 		recurringCheckboxContainer.createEl("div", {
 			text: "Recurring event",
 			cls: cls("setting-item-name"),
@@ -531,6 +544,7 @@ export abstract class BaseEventModal extends Modal {
 		this.recurringCheckbox = recurringCheckboxContainer.createEl("input", {
 			type: "checkbox",
 			cls: cls("setting-item-control"),
+			attr: { "data-testid": "prisma-event-control-rrule" },
 		});
 
 		this.recurringContainer = contentEl.createDiv(cls("recurring-event-fields"));
@@ -668,6 +682,7 @@ export abstract class BaseEventModal extends Modal {
 		if (!settings.categoryProp) return;
 
 		const categoryContainer = contentEl.createDiv(cls("setting-item"));
+		categoryContainer.setAttribute("data-testid", "prisma-event-field-categories");
 		categoryContainer.createEl("div", {
 			text: "Categories",
 			cls: cls("setting-item-name"),
@@ -740,6 +755,7 @@ export abstract class BaseEventModal extends Modal {
 		if (!this.bundle.settingsStore.currentSettings.participantsProp) return;
 
 		const container = contentEl.createDiv(cls("setting-item"));
+		container.setAttribute("data-testid", "prisma-event-field-participants");
 		container.createEl("div", {
 			text: "Participants",
 			cls: cls("setting-item-name"),
@@ -760,6 +776,7 @@ export abstract class BaseEventModal extends Modal {
 			type: "text",
 			cls: cls("participant-input"),
 			placeholder: "Name or [[Link]]",
+			attr: { "data-testid": "prisma-event-control-participants" },
 		});
 
 		const addParticipant = () => {
@@ -805,6 +822,10 @@ export abstract class BaseEventModal extends Modal {
 		if (Object.keys(shape).length === 0) return;
 
 		const container = contentEl.createDiv(cls("simple-fields-container"));
+		// TODO(e2e): location/icon/skip/breakMinutes/markAsDone fields are rendered via
+		// shared `renderSchemaForm`; per-field `data-testid` stamping would require
+		// changes to shared form-rendering. Skipped for now — target by ordinal
+		// or field name from the shared markup until shared helper supports testIds.
 		this.simpleFieldsHandle = renderSchemaForm(container, { shape, prefix: "prisma-" });
 	}
 
@@ -924,6 +945,14 @@ export abstract class BaseEventModal extends Modal {
 
 	private createDateTimeInputWithNowButton(parent: HTMLElement, label: string, initialValue: string): HTMLInputElement {
 		const container = parent.createDiv(cls("setting-item"));
+		const fieldKey = label.toLowerCase().includes("start")
+			? "start"
+			: label.toLowerCase().includes("end")
+				? "end"
+				: null;
+		if (fieldKey) {
+			container.setAttribute("data-testid", `prisma-event-field-${fieldKey}`);
+		}
 		container.createEl("div", { text: label, cls: cls("setting-item-name") });
 		const inputWrapper = container.createDiv(cls("datetime-input-wrapper"));
 
@@ -947,6 +976,7 @@ export abstract class BaseEventModal extends Modal {
 			type: "datetime-local",
 			value: initialValue,
 			cls: cls("setting-item-control"),
+			...(fieldKey ? { attr: { "data-testid": `prisma-event-control-${fieldKey}` } } : {}),
 		});
 
 		nowButton.addEventListener("click", () => {

@@ -14,7 +14,10 @@ export default defineConfig({
 	expect: { timeout: 30_000 },
 	forbidOnly: !!process.env.CI,
 	retries: 0,
-	reporter: [["list"], ["html", { open: "never", outputFolder: "./playwright-report" }]],
+	// `line` keeps output to one line per test (not per attempt) so the summary
+	// is readable even when several specs run. Full detail still lands in the
+	// HTML report + `.cache/last-run.log`.
+	reporter: [["line"], ["html", { open: "never", outputFolder: "./playwright-report" }]],
 	use: {
 		trace: "retain-on-failure",
 		screenshot: "only-on-failure",

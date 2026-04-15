@@ -5,6 +5,10 @@ import type { CalendarBundle } from "../../core/calendar-bundle";
 import { createDailyCalendar, type DailyCalendarHandle } from "./daily-calendar";
 import { type DailyStatsHandle, renderDailyStatsInto } from "./daily-stats-renderer";
 
+// TODO(e2e): Stats range buttons (daily/weekly/monthly/alltime) are rendered
+// across separate stats modals (weekly-stats/*-stats-modal.ts) — no single
+// toolbar exists. Stamping requires deciding on the modal vs inline toolbar
+// story first; left unstamped for now.
 export function createDailyStatsTabDefinition(app: App, bundle: CalendarBundle): TabDefinition {
 	let gridHandle: GridLayoutHandle | null = null;
 	let calendarHandle: DailyCalendarHandle | null = null;

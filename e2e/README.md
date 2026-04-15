@@ -77,8 +77,9 @@ delete on test close.
 
 The shared bootstrap logger is level-aware:
 
-- **info** (default): one-liners per test (`bootstrap start`, `bootstrap ready`,
-  `pageerror`, `PAGE CRASHED`). Clean enough to read the suite output.
+- **info** (default): one line per test (`bootstrap ok id=… (2.1s)`, plus
+  `pageerror` / `PAGE CRASHED` when something breaks). Clean enough to read
+  the suite summary on stderr.
 - **debug** (`E2E_VERBOSE=1` or `--debug`): everything — stdout/stderr, CDP
   handshake, renderer `console.*`, the enable-plugin trace, vault paths, etc.
 
@@ -86,7 +87,16 @@ Both levels always write to `e2e/.cache/last-run.log`, so a failed run still has
 full detail even when you ran without `--debug`.
 
 Prisma's own plugin logging is controlled by `PRISMA_LOG_LEVEL`. The harness sets
-it to `warn` by default and `debug` under `E2E_VERBOSE=1`.
+it to `warn` by default and `debug` under `E2E_VERBOSE=1`. Renderer
+`console.log/info/debug` are no-op'd by default too; `console.warn` /
+`console.error` still flow through. Set `E2E_VERBOSE=1` to restore everything.
+
+Environment flags:
+
+- `E2E_VERBOSE=1` — full debug logs + restore renderer `console.*`.
+- `E2E_BOOTSTRAP_LOGS=1` — restore the legacy two-line `bootstrap start` /
+  `bootstrap ready` breadcrumbs (useful when diagnosing a hang).
+- `E2E_CLEANUP=1` — delete per-run vault on close instead of retaining it.
 
 ## Problems we hit getting Playwright to drive Obsidian
 

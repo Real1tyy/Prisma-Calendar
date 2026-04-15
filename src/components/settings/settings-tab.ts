@@ -96,6 +96,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			text: "Create new",
 			cls: `${cls("calendar-action-button")} ${cls("calendar-create-button")}`,
 		});
+		createButton.setAttribute("data-testid", "prisma-settings-calendar-add");
 
 		this.configureMaxCalendarsButton(createButton);
 		createButton.addEventListener("click", () => {
@@ -107,6 +108,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			text: "Clone current",
 			cls: `${cls("calendar-action-button")} ${cls("calendar-clone-button")}`,
 		});
+		cloneButton.setAttribute("data-testid", "prisma-settings-calendar-clone");
 
 		this.configureMaxCalendarsButton(cloneButton);
 		cloneButton.addEventListener("click", () => {
@@ -118,6 +120,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			text: "Rename current",
 			cls: `${cls("calendar-action-button")} ${cls("calendar-rename-button")}`,
 		});
+		renameButton.setAttribute("data-testid", "prisma-settings-calendar-rename");
 
 		renameButton.addEventListener("click", () => {
 			void this.renameCurrentCalendar();
@@ -128,6 +131,7 @@ export class CustomCalendarSettingsTab extends PluginSettingTab {
 			text: "Delete current",
 			cls: `${cls("calendar-action-button")} ${cls("calendar-delete-button")}`,
 		});
+		deleteButton.setAttribute("data-testid", "prisma-settings-calendar-delete");
 
 		this.configureMinCalendarsButton(deleteButton);
 		deleteButton.addEventListener("click", () => {

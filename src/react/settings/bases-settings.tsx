@@ -33,6 +33,7 @@ export const BasesSettingsReact = memo(function BasesSettingsReact({ settingsSto
 			heading="Bases"
 			fields={FIELDS}
 			overrides={OVERRIDES}
+			testIdPrefix="prisma-settings-"
 		/>
 	);
 });

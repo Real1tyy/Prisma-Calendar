@@ -90,6 +90,7 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 				fields={FRONTMATTER_PROPERTY_FIELDS as string[]}
 				overrides={PROPERTY_OVERRIDES}
 				labelTransform={propLabel}
+				testIdPrefix="prisma-settings-"
 			/>
 			<EventTypesInfo settings={settings} />
 			<RecurringEventsInfo settings={settings} />
@@ -99,6 +100,7 @@ export const PropertiesSettingsReact = memo(function PropertiesSettingsReact({
 				shape={SHAPE}
 				heading="Frontmatter display"
 				fields={FRONTMATTER_DISPLAY_FIELDS as string[]}
+				testIdPrefix="prisma-settings-"
 			/>
 		</>
 	);

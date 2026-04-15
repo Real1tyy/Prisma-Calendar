@@ -84,51 +84,68 @@ const DirectorySection = memo(function DirectorySection({ settings, updateField,
 	return (
 		<>
 			<SettingHeading name="Calendar directory" />
-			<SettingItem name="Directory" description="Folder to scan for calendar events and create new events in">
+			<SettingItem
+				name="Directory"
+				description="Folder to scan for calendar events and create new events in"
+				testId="prisma-settings-field-directory"
+			>
 				<TextInput
 					value={settings.directory}
 					placeholder="e.g., tasks, calendar, events"
 					onChange={(v) => updateField("directory", v)}
+					testId="prisma-settings-control-directory"
 				/>
 			</SettingItem>
 			<SettingItem
 				name="Template path"
 				description="Path to Templater template file for new events (optional, requires Templater plugin)"
+				testId="prisma-settings-field-templatePath"
 			>
 				<TextInput
 					value={settings.templatePath ?? ""}
 					placeholder="e.g., Templates/event-template.md"
 					onChange={(v) => updateField("templatePath", v || undefined)}
+					testId="prisma-settings-control-templatePath"
 				/>
 			</SettingItem>
 			<SettingItem
 				name="Locale"
 				description="Language and date format for calendar headings, day names, month names, toolbar labels, and date displays"
+				testId="prisma-settings-field-locale"
 			>
 				<Dropdown
 					value={settings.locale}
 					options={LOCALE_OPTIONS}
 					onChange={(v) => updateField("locale", v as SingleCalendarConfig["locale"])}
+					testId="prisma-settings-control-locale"
 				/>
 			</SettingItem>
 			<SettingItem
 				name="Show ribbon icon"
 				description="Display a calendar icon in the left sidebar to quickly open this calendar"
+				testId="prisma-settings-field-showRibbonIcon"
 			>
-				<Toggle value={settings.showRibbonIcon} onChange={(v) => updateField("showRibbonIcon", v)} />
+				<Toggle
+					value={settings.showRibbonIcon}
+					onChange={(v) => updateField("showRibbonIcon", v)}
+					testId="prisma-settings-control-showRibbonIcon"
+				/>
 			</SettingItem>
 			<SettingItem
 				name="Enable keyboard navigation"
 				description="Use left/right arrow keys to navigate between calendar intervals. Automatically disabled when search or expression filter inputs are focused."
+				testId="prisma-settings-field-enableKeyboardNavigation"
 			>
 				<Toggle
 					value={settings.enableKeyboardNavigation}
 					onChange={(v) => updateField("enableKeyboardNavigation", v)}
+					testId="prisma-settings-control-enableKeyboardNavigation"
 				/>
 			</SettingItem>
 			<SettingItem
 				name="Auto assign zettel ID"
 				description="Automatically add a Zettel ID timestamp to filenames of events in the calendar directory that don't have one."
+				testId="prisma-settings-field-autoAssignZettelId"
 			>
 				<Dropdown
 					value={settings.autoAssignZettelId}
@@ -138,13 +155,15 @@ const DirectorySection = memo(function DirectorySection({ settings, updateField,
 						allEvents: "All events",
 					}}
 					onChange={(v) => updateField("autoAssignZettelId", v as SingleCalendarConfig["autoAssignZettelId"])}
+					testId="prisma-settings-control-autoAssignZettelId"
 				/>
 			</SettingItem>
 			<SettingItem
 				name="Read-only mode"
 				description="Prevent automatic file modifications. When enabled, the plugin will not automatically write to files (notifications, recurring event generation). Manual actions like propagation will still work. Stored in sync.json to prevent syncing across devices."
+				testId="prisma-settings-field-readOnly"
 			>
-				<Toggle value={readOnly} onChange={handleReadOnlyChange} />
+				<Toggle value={readOnly} onChange={handleReadOnlyChange} testId="prisma-settings-control-readOnly" />
 			</SettingItem>
 		</>
 	);
@@ -157,30 +176,47 @@ const ParsingSection = memo(function ParsingSection({ settings, updateField }: S
 			<SettingItem
 				name="Default duration (minutes)"
 				description="Default event duration when only start time is provided"
+				testId="prisma-settings-field-defaultDurationMinutes"
 			>
 				<NumberInput
 					value={settings.defaultDurationMinutes}
 					min={1}
 					onChange={(v) => updateField("defaultDurationMinutes", v)}
+					testId="prisma-settings-control-defaultDurationMinutes"
 				/>
 			</SettingItem>
 			<SettingItem
 				name="Show duration field in event modal"
 				description="Display a duration in minutes field in the event creation/edit modal for quick editing. Changes to duration automatically update the end date, and vice versa."
+				testId="prisma-settings-field-showDurationField"
 			>
-				<Toggle value={settings.showDurationField} onChange={(v) => updateField("showDurationField", v)} />
+				<Toggle
+					value={settings.showDurationField}
+					onChange={(v) => updateField("showDurationField", v)}
+					testId="prisma-settings-control-showDurationField"
+				/>
 			</SettingItem>
 			<SettingItem
 				name="Mark past events as done"
 				description="Automatically mark past events as done during startup by updating their status property."
+				testId="prisma-settings-field-markPastInstancesAsDone"
 			>
-				<Toggle value={settings.markPastInstancesAsDone} onChange={(v) => updateField("markPastInstancesAsDone", v)} />
+				<Toggle
+					value={settings.markPastInstancesAsDone}
+					onChange={(v) => updateField("markPastInstancesAsDone", v)}
+					testId="prisma-settings-control-markPastInstancesAsDone"
+				/>
 			</SettingItem>
 			<SettingItem
 				name="Title autocomplete"
 				description="Show autocomplete suggestions based on existing event titles when typing in the title field"
+				testId="prisma-settings-field-titleAutocomplete"
 			>
-				<Toggle value={settings.titleAutocomplete} onChange={(v) => updateField("titleAutocomplete", v)} />
+				<Toggle
+					value={settings.titleAutocomplete}
+					onChange={(v) => updateField("titleAutocomplete", v)}
+					testId="prisma-settings-control-titleAutocomplete"
+				/>
 			</SettingItem>
 		</>
 	);
@@ -193,8 +229,13 @@ const StopwatchSection = memo(function StopwatchSection({ settings, updateField 
 			<SettingItem
 				name="Show time tracker in event modal"
 				description="Display a stopwatch in the event creation/edit modal for precise time tracking."
+				testId="prisma-settings-field-showStopwatch"
 			>
-				<Toggle value={settings.showStopwatch} onChange={(v) => updateField("showStopwatch", v)} />
+				<Toggle
+					value={settings.showStopwatch}
+					onChange={(v) => updateField("showStopwatch", v)}
+					testId="prisma-settings-control-showStopwatch"
+				/>
 			</SettingItem>
 		</>
 	);
@@ -204,10 +245,22 @@ const StatisticsSection = memo(function StatisticsSection({ settings, updateFiel
 	return (
 		<>
 			<SettingHeading name="Statistics" />
-			<SettingItem name="Show decimal hours" description="Display durations as decimal hours instead of hours:minutes">
-				<Toggle value={settings.showDecimalHours} onChange={(v) => updateField("showDecimalHours", v)} />
+			<SettingItem
+				name="Show decimal hours"
+				description="Display durations as decimal hours instead of hours:minutes"
+				testId="prisma-settings-field-showDecimalHours"
+			>
+				<Toggle
+					value={settings.showDecimalHours}
+					onChange={(v) => updateField("showDecimalHours", v)}
+					testId="prisma-settings-control-showDecimalHours"
+				/>
 			</SettingItem>
-			<SettingItem name="Default grouping mode" description="How to group events in statistics views">
+			<SettingItem
+				name="Default grouping mode"
+				description="How to group events in statistics views"
+				testId="prisma-settings-field-defaultAggregationMode"
+			>
 				<Dropdown
 					value={settings.defaultAggregationMode}
 					options={{
@@ -215,6 +268,7 @@ const StatisticsSection = memo(function StatisticsSection({ settings, updateFiel
 						category: "Category",
 					}}
 					onChange={(v) => updateField("defaultAggregationMode", v as SingleCalendarConfig["defaultAggregationMode"])}
+					testId="prisma-settings-control-defaultAggregationMode"
 				/>
 			</SettingItem>
 		</>
@@ -291,11 +345,16 @@ const EventPresetsSection = memo(function EventPresetsSection({
 					Create and edit presets from the event modal. Here you can select a default preset and delete existing ones.
 				</p>
 			</div>
-			<SettingItem name="Default preset" description="Preset to auto-fill when opening the create event modal">
+			<SettingItem
+				name="Default preset"
+				description="Preset to auto-fill when opening the create event modal"
+				testId="prisma-settings-field-defaultPresetId"
+			>
 				<Dropdown
 					value={settings.defaultPresetId ?? ""}
 					options={presetOptions}
 					onChange={(v) => updateField("defaultPresetId", v || undefined)}
+					testId="prisma-settings-control-defaultPresetId"
 				/>
 			</SettingItem>
 			<div ref={bannerRef} />
