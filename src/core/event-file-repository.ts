@@ -39,6 +39,14 @@ export class EventFileRepository implements CalendarEventSource {
 	private fmLocks = new Map<string, Promise<void>>();
 	/** Tracks files currently being renamed for ZettelID to prevent re-entrant triggers */
 	private zettelIdRenamesInFlight = new Set<string>();
+	/**
+	 * Background frontmatter writes (auto ZettelID, title sync, etc.) are deferred until after
+	 * the initial scan completes. Writing during the cold-start scan triggers a cascade of
+	 * file-modify events that block the calendar from rendering. Files touched before ready
+	 * are queued here and drained once the table emits ready.
+	 */
+	private tableReady = false;
+	private deferredBackgroundFiles = new Set<string>();
 
 	public readonly events$: Observable<IndexerEvent>;
 	public readonly indexingComplete$: Observable<boolean>;
@@ -209,6 +217,8 @@ export class EventFileRepository implements CalendarEventSource {
 
 	private wireTableEvents(): void {
 		this.tableSub?.unsubscribe();
+		this.tableReady = false;
+		this.deferredBackgroundFiles.clear();
 
 		this.tableSub = this.table.events$.subscribe((event) => {
 			void this.handleTableEvent(event).catch((error) => {
@@ -218,6 +228,10 @@ export class EventFileRepository implements CalendarEventSource {
 
 		this.table.ready$.subscribe((ready) => {
 			if (ready) {
+				if (!this.tableReady) {
+					this.tableReady = true;
+					this.drainDeferredBackgroundUpdates();
+				}
 				this.indexingCompleteSubject.next(true);
 			}
 		});
@@ -286,15 +300,11 @@ export class EventFileRepository implements CalendarEventSource {
 		const isUntracked = !hasDateOrTime;
 
 		if (hasDateOrTime || isUntracked) {
-			// Auto-assign ZettelID: fire-and-forget. The rename triggers a new
-			// event cycle with the updated path, so we don't need to await or update state here.
-			void this.autoAssignZettelId(row.file, isUntracked).catch((error) => {
-				console.error(`[EventFileRepository] Error auto-assigning ZettelID for ${row.filePath}:`, error);
-			});
-
-			void this.applyBackgroundFrontmatterUpdates(row.file, frontmatter, isUntracked).catch((error) => {
-				console.error(`[EventFileRepository] Error applying background updates for ${row.filePath}:`, error);
-			});
+			if (this.tableReady) {
+				this.runBackgroundUpdates(row.file, frontmatter, isUntracked);
+			} else {
+				this.deferredBackgroundFiles.add(row.filePath);
+			}
 
 			const allDayProp = frontmatter[settings.allDayProp];
 			const isAllDay = allDayProp === true || allDayProp === "true";
@@ -384,6 +394,29 @@ export class EventFileRepository implements CalendarEventSource {
 	}
 
 	// ─── Background File Updates ─────────────────────────────────
+
+	private runBackgroundUpdates(file: TFile, frontmatter: Frontmatter, isUntracked: boolean): void {
+		// Auto-assign ZettelID: fire-and-forget. The rename triggers a new
+		// event cycle with the updated path, so we don't need to await or update state here.
+		void this.autoAssignZettelId(file, isUntracked).catch((error) => {
+			console.error(`[EventFileRepository] Error auto-assigning ZettelID for ${file.path}:`, error);
+		});
+		void this.applyBackgroundFrontmatterUpdates(file, frontmatter, isUntracked).catch((error) => {
+			console.error(`[EventFileRepository] Error applying background updates for ${file.path}:`, error);
+		});
+	}
+
+	private drainDeferredBackgroundUpdates(): void {
+		const paths = Array.from(this.deferredBackgroundFiles);
+		this.deferredBackgroundFiles.clear();
+		const settings = this.settings;
+		for (const path of paths) {
+			const row = this.table.get(this.toKey(path));
+			if (!row) continue;
+			const isUntracked = !row.data[settings.startProp] && !row.data[settings.dateProp];
+			this.runBackgroundUpdates(row.file, row.data, isUntracked);
+		}
+	}
 
 	private async applyBackgroundFrontmatterUpdates(
 		file: TFile,
