@@ -154,7 +154,12 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 	const uuid = randomUUID().slice(0, 8);
 	const timestamp = formatRunTimestamp(new Date());
 	const id = `${timestamp}-${options.prefix ?? "run"}-${uuid}`;
-	log.info(`bootstrap start id=${id}`);
+	const bootstrapStart = Date.now();
+	// Legacy two-line `start` + `ready` logs are verbose under `--reporter=line`.
+	// Default to a single `bootstrap ok id=… (Xs)` at the end; set
+	// `E2E_BOOTSTRAP_LOGS=1` to restore the per-phase breadcrumbs.
+	const verboseBootstrap = process.env["E2E_BOOTSTRAP_LOGS"] === "1";
+	if (verboseBootstrap) log.info(`bootstrap start id=${id}`);
 
 	mkdirSync(vaultsRoot, { recursive: true });
 	const vaultDir = join(vaultsRoot, id, "vault");
@@ -295,7 +300,12 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 		await options.afterPluginLoaded(page);
 	}
 
-	log.info(`bootstrap ready id=${id} plugin=${options.plugin.id}`);
+	const elapsed = ((Date.now() - bootstrapStart) / 1000).toFixed(1);
+	if (verboseBootstrap) {
+		log.info(`bootstrap ready id=${id} plugin=${options.plugin.id}`);
+	} else {
+		log.info(`bootstrap ok id=${id} plugin=${options.plugin.id} (${elapsed}s)`);
+	}
 
 	return {
 		browser,
