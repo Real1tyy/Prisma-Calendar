@@ -1,0 +1,84 @@
+[
+  {
+    "type": "row-updated",
+    "id": "mike",
+    "filePath": "Notes/mike.md",
+    "oldRow": {
+      "id": "mike",
+      "filePath": "Notes/mike.md",
+      "data": {
+        "Title": "Mike",
+        "Status": "open"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "mike",
+      "filePath": "Notes/mike.md",
+      "data": {
+        "Title": "Mike",
+        "Status": "doing"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "mike",
+    "filePath": "Notes/mike.md",
+    "oldRow": {
+      "id": "mike",
+      "filePath": "Notes/mike.md",
+      "data": {
+        "Title": "Mike",
+        "Status": "doing"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "mike",
+      "filePath": "Notes/mike.md",
+      "data": {
+        "Title": "Mike",
+        "Status": "paused"
+      },
+      "content": ""
+    },
+    "contentChanged": false,
+    "diff": {
+      "added": {},
+      "removed": {},
+      "changed": {
+        "Status": {
+          "from": "doing",
+          "to": "paused"
+        }
+      }
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "mike",
+    "filePath": "Notes/mike.md",
+    "oldRow": {
+      "id": "mike",
+      "filePath": "Notes/mike.md",
+      "data": {
+        "Title": "Mike",
+        "Status": "paused"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "mike",
+      "filePath": "Notes/mike.md",
+      "data": {
+        "Title": "Mike",
+        "Status": "done"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  }
+]

@@ -1,0 +1,36 @@
+[
+  {
+    "type": "row-updated",
+    "id": "hotel",
+    "filePath": "Notes/hotel.md",
+    "oldRow": {
+      "id": "hotel",
+      "filePath": "Notes/hotel.md",
+      "data": {
+        "Title": "Hotel",
+        "Status": "open"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "hotel",
+      "filePath": "Notes/hotel.md",
+      "data": {
+        "Title": "Hotel",
+        "Status": "done"
+      },
+      "content": ""
+    },
+    "contentChanged": false,
+    "diff": {
+      "added": {},
+      "removed": {},
+      "changed": {
+        "Status": {
+          "from": "open",
+          "to": "done"
+        }
+      }
+    }
+  }
+]

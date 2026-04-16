@@ -1,0 +1,52 @@
+[
+  {
+    "type": "row-created",
+    "id": "oscar",
+    "filePath": "Notes/oscar.md",
+    "row": {
+      "id": "oscar",
+      "filePath": "Notes/oscar.md",
+      "data": {
+        "Title": "Oscar"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "oscar",
+    "filePath": "Notes/oscar.md",
+    "oldRow": {
+      "id": "oscar",
+      "filePath": "Notes/oscar.md",
+      "data": {
+        "Title": "Oscar"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "oscar",
+      "filePath": "Notes/oscar.md",
+      "data": {
+        "Title": "Oscar",
+        "Status": "open"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-deleted",
+    "id": "oscar",
+    "filePath": "Notes/oscar.md",
+    "oldRow": {
+      "id": "oscar",
+      "filePath": "Notes/oscar.md",
+      "data": {
+        "Title": "Oscar",
+        "Status": "open"
+      },
+      "content": ""
+    }
+  }
+]

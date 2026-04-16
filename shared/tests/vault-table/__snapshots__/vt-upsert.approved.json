@@ -1,0 +1,50 @@
+[
+  {
+    "type": "row-created",
+    "id": "foxtrot",
+    "filePath": "Notes/foxtrot.md",
+    "row": {
+      "id": "foxtrot",
+      "filePath": "Notes/foxtrot.md",
+      "data": {
+        "Title": "Foxtrot"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "foxtrot",
+    "filePath": "Notes/foxtrot.md",
+    "oldRow": {
+      "id": "foxtrot",
+      "filePath": "Notes/foxtrot.md",
+      "data": {
+        "Title": "Foxtrot"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "foxtrot",
+      "filePath": "Notes/foxtrot.md",
+      "data": {
+        "Title": "Foxtrot v2"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-created",
+    "id": "golf",
+    "filePath": "Notes/golf.md",
+    "row": {
+      "id": "golf",
+      "filePath": "Notes/golf.md",
+      "data": {
+        "Title": "Golf"
+      },
+      "content": ""
+    }
+  }
+]

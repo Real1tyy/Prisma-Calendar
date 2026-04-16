@@ -1,0 +1,59 @@
+[
+  {
+    "type": "row-created",
+    "id": "charlie",
+    "filePath": "Notes/charlie.md",
+    "row": {
+      "id": "charlie",
+      "filePath": "Notes/charlie.md",
+      "data": {
+        "Title": "Charlie"
+      },
+      "content": "original body"
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "charlie",
+    "filePath": "Notes/charlie.md",
+    "oldRow": {
+      "id": "charlie",
+      "filePath": "Notes/charlie.md",
+      "data": {
+        "Title": "Charlie"
+      },
+      "content": "original body"
+    },
+    "newRow": {
+      "id": "charlie",
+      "filePath": "Notes/charlie.md",
+      "data": {
+        "Title": "Charlie Renamed"
+      },
+      "content": "original body"
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "charlie",
+    "filePath": "Notes/charlie.md",
+    "oldRow": {
+      "id": "charlie",
+      "filePath": "Notes/charlie.md",
+      "data": {
+        "Title": "Charlie Renamed"
+      },
+      "content": "original body"
+    },
+    "newRow": {
+      "id": "charlie",
+      "filePath": "Notes/charlie.md",
+      "data": {
+        "Title": "Charlie Renamed"
+      },
+      "content": "new body"
+    },
+    "contentChanged": true
+  }
+]

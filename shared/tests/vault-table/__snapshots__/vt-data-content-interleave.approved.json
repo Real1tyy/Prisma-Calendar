@@ -1,0 +1,106 @@
+[
+  {
+    "type": "row-created",
+    "id": "kilo",
+    "filePath": "Notes/kilo.md",
+    "row": {
+      "id": "kilo",
+      "filePath": "Notes/kilo.md",
+      "data": {
+        "Title": "Kilo"
+      },
+      "content": "v1"
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "kilo",
+    "filePath": "Notes/kilo.md",
+    "oldRow": {
+      "id": "kilo",
+      "filePath": "Notes/kilo.md",
+      "data": {
+        "Title": "Kilo"
+      },
+      "content": "v1"
+    },
+    "newRow": {
+      "id": "kilo",
+      "filePath": "Notes/kilo.md",
+      "data": {
+        "Title": "Kilo v2"
+      },
+      "content": "v1"
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "kilo",
+    "filePath": "Notes/kilo.md",
+    "oldRow": {
+      "id": "kilo",
+      "filePath": "Notes/kilo.md",
+      "data": {
+        "Title": "Kilo v2"
+      },
+      "content": "v1"
+    },
+    "newRow": {
+      "id": "kilo",
+      "filePath": "Notes/kilo.md",
+      "data": {
+        "Title": "Kilo v2"
+      },
+      "content": "v2"
+    },
+    "contentChanged": true
+  },
+  {
+    "type": "row-updated",
+    "id": "kilo",
+    "filePath": "Notes/kilo.md",
+    "oldRow": {
+      "id": "kilo",
+      "filePath": "Notes/kilo.md",
+      "data": {
+        "Title": "Kilo v2"
+      },
+      "content": "v2"
+    },
+    "newRow": {
+      "id": "kilo",
+      "filePath": "Notes/kilo.md",
+      "data": {
+        "Title": "Kilo v2",
+        "Status": "done"
+      },
+      "content": "v2"
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "kilo",
+    "filePath": "Notes/kilo.md",
+    "oldRow": {
+      "id": "kilo",
+      "filePath": "Notes/kilo.md",
+      "data": {
+        "Title": "Kilo v2",
+        "Status": "done"
+      },
+      "content": "v2"
+    },
+    "newRow": {
+      "id": "kilo",
+      "filePath": "Notes/kilo.md",
+      "data": {
+        "Title": "Kilo v2",
+        "Status": "done"
+      },
+      "content": "v3"
+    },
+    "contentChanged": true
+  }
+]

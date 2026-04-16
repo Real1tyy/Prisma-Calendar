@@ -1,0 +1,41 @@
+[
+  {
+    "type": "row-created",
+    "id": "echo",
+    "filePath": "Notes/echo.md",
+    "row": {
+      "id": "echo",
+      "filePath": "Notes/echo.md",
+      "data": {
+        "Title": "Echo",
+        "Status": "open",
+        "Count": 1
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "echo",
+    "filePath": "Notes/echo.md",
+    "oldRow": {
+      "id": "echo",
+      "filePath": "Notes/echo.md",
+      "data": {
+        "Title": "Echo",
+        "Status": "open",
+        "Count": 1
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "echo",
+      "filePath": "Notes/echo.md",
+      "data": {
+        "Title": "Echo Replaced"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  }
+]

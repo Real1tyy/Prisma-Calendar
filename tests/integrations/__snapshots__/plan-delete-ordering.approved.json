@@ -1,27 +1,27 @@
 {
-	"actions": [
-		{
-			"kind": "skip-unchanged",
-			"uid": "u-keep",
-			"filePath": "Events/keep.md"
-		},
-		{
-			"kind": "delete",
-			"uid": "u-gone-a",
-			"filePath": "Events/gone-a.md"
-		},
-		{
-			"kind": "delete",
-			"uid": "u-gone-b",
-			"filePath": "Events/gone-b.md"
-		}
-	],
-	"summary": {
-		"create": 0,
-		"update": 0,
-		"delete": 2,
-		"skipUnchanged": 1,
-		"skipMissingUid": 0,
-		"skipForeignUid": 0
-	}
+  "actions": [
+    {
+      "kind": "skip-unchanged",
+      "uid": "u-keep",
+      "filePath": "Events/keep.md"
+    },
+    {
+      "kind": "delete",
+      "uid": "u-gone-a",
+      "filePath": "Events/gone-a.md"
+    },
+    {
+      "kind": "delete",
+      "uid": "u-gone-b",
+      "filePath": "Events/gone-b.md"
+    }
+  ],
+  "summary": {
+    "create": 0,
+    "update": 0,
+    "delete": 2,
+    "skipUnchanged": 1,
+    "skipMissingUid": 0,
+    "skipForeignUid": 0
+  }
 }

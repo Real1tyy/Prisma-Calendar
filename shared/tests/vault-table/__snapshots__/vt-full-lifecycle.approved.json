@@ -1,0 +1,229 @@
+[
+  {
+    "type": "row-created",
+    "id": "p-1",
+    "filePath": "Notes/p-1.md",
+    "row": {
+      "id": "p-1",
+      "filePath": "Notes/p-1.md",
+      "data": {
+        "Title": "P1",
+        "Status": "open"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-created",
+    "id": "p-2",
+    "filePath": "Notes/p-2.md",
+    "row": {
+      "id": "p-2",
+      "filePath": "Notes/p-2.md",
+      "data": {
+        "Title": "P2",
+        "Status": "open"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-created",
+    "id": "p-3",
+    "filePath": "Notes/p-3.md",
+    "row": {
+      "id": "p-3",
+      "filePath": "Notes/p-3.md",
+      "data": {
+        "Title": "P3",
+        "Status": "open"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "p-1",
+    "filePath": "Notes/p-1.md",
+    "oldRow": {
+      "id": "p-1",
+      "filePath": "Notes/p-1.md",
+      "data": {
+        "Title": "P1",
+        "Status": "open"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "p-1",
+      "filePath": "Notes/p-1.md",
+      "data": {
+        "Title": "P1",
+        "Status": "doing"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "p-2",
+    "filePath": "Notes/p-2.md",
+    "oldRow": {
+      "id": "p-2",
+      "filePath": "Notes/p-2.md",
+      "data": {
+        "Title": "P2",
+        "Status": "open"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "p-2",
+      "filePath": "Notes/p-2.md",
+      "data": {
+        "Title": "P2",
+        "Status": "blocked"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "p-1",
+    "filePath": "Notes/p-1.md",
+    "oldRow": {
+      "id": "p-1",
+      "filePath": "Notes/p-1.md",
+      "data": {
+        "Title": "P1",
+        "Status": "doing"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "p-1",
+      "filePath": "Notes/p-1.md",
+      "data": {
+        "Title": "P1",
+        "Status": "doing"
+      },
+      "content": "detailed notes"
+    },
+    "contentChanged": true
+  },
+  {
+    "type": "row-updated",
+    "id": "p-3",
+    "filePath": "Notes/p-3.md",
+    "oldRow": {
+      "id": "p-3",
+      "filePath": "Notes/p-3.md",
+      "data": {
+        "Title": "P3",
+        "Status": "open"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "p-3",
+      "filePath": "Notes/p-3.md",
+      "data": {
+        "Title": "P3",
+        "Status": "doing"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-deleted",
+    "id": "p-2",
+    "filePath": "Notes/p-2.md",
+    "oldRow": {
+      "id": "p-2",
+      "filePath": "Notes/p-2.md",
+      "data": {
+        "Title": "P2",
+        "Status": "blocked"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "p-1",
+    "filePath": "Notes/p-1.md",
+    "oldRow": {
+      "id": "p-1",
+      "filePath": "Notes/p-1.md",
+      "data": {
+        "Title": "P1",
+        "Status": "doing"
+      },
+      "content": "detailed notes"
+    },
+    "newRow": {
+      "id": "p-1",
+      "filePath": "Notes/p-1.md",
+      "data": {
+        "Title": "P1",
+        "Status": "done"
+      },
+      "content": "detailed notes"
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-created",
+    "id": "p-4",
+    "filePath": "Notes/p-4.md",
+    "row": {
+      "id": "p-4",
+      "filePath": "Notes/p-4.md",
+      "data": {
+        "Title": "P4"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-deleted",
+    "id": "p-3",
+    "filePath": "Notes/p-3.md",
+    "oldRow": {
+      "id": "p-3",
+      "filePath": "Notes/p-3.md",
+      "data": {
+        "Title": "P3",
+        "Status": "doing"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "p-1",
+    "filePath": "Notes/p-1.md",
+    "oldRow": {
+      "id": "p-1",
+      "filePath": "Notes/p-1.md",
+      "data": {
+        "Title": "P1",
+        "Status": "done"
+      },
+      "content": "detailed notes"
+    },
+    "newRow": {
+      "id": "p-1",
+      "filePath": "Notes/p-1.md",
+      "data": {
+        "Title": "P1 (archived)",
+        "Status": "done"
+      },
+      "content": "detailed notes"
+    },
+    "contentChanged": false
+  }
+]

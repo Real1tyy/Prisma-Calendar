@@ -55,15 +55,15 @@ export default defineConfig({
 			{ find: "obsidian", replacement: path.resolve(__dirname, "tests/mocks/obsidian.ts") },
 			{
 				find: "@real1ty-obsidian-plugins/testing/visual",
-				replacement: path.resolve(__dirname, "../shared/src/testing/visual/index.ts"),
+				replacement: path.resolve(__dirname, "./shared/src/testing/visual/index.ts"),
 			},
 			{
 				find: "@real1ty-obsidian-plugins/testing",
-				replacement: path.resolve(__dirname, "../shared/src/testing/index.ts"),
+				replacement: path.resolve(__dirname, "./shared/src/testing/index.ts"),
 			},
 			{
 				find: "@real1ty-obsidian-plugins-react",
-				replacement: path.resolve(__dirname, "../shared/src/react/index.ts"),
+				replacement: path.resolve(__dirname, "./shared/src/react/index.ts"),
 			},
 		],
 		extensions: [".ts", ".tsx", ".js", ".mjs", ".json"],

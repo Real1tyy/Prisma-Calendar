@@ -1,0 +1,64 @@
+[
+  {
+    "type": "row-created",
+    "id": "lima",
+    "filePath": "Notes/lima.md",
+    "row": {
+      "id": "lima",
+      "filePath": "Notes/lima.md",
+      "data": {
+        "Title": "Lima",
+        "Count": 1
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "lima",
+    "filePath": "Notes/lima.md",
+    "oldRow": {
+      "id": "lima",
+      "filePath": "Notes/lima.md",
+      "data": {
+        "Title": "Lima",
+        "Count": 1
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "lima",
+      "filePath": "Notes/lima.md",
+      "data": {
+        "Title": "Lima v2",
+        "Count": 2
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "lima",
+    "filePath": "Notes/lima.md",
+    "oldRow": {
+      "id": "lima",
+      "filePath": "Notes/lima.md",
+      "data": {
+        "Title": "Lima v2",
+        "Count": 2
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "lima",
+      "filePath": "Notes/lima.md",
+      "data": {
+        "Title": "Lima v2",
+        "Count": 3
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  }
+]

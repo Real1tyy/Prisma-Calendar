@@ -1,0 +1,94 @@
+[
+  {
+    "type": "row-created",
+    "id": "india",
+    "filePath": "Notes/india.md",
+    "row": {
+      "id": "india",
+      "filePath": "Notes/india.md",
+      "data": {
+        "Title": "India",
+        "Status": "open",
+        "Count": 99
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "india",
+    "filePath": "Notes/india.md",
+    "oldRow": {
+      "id": "india",
+      "filePath": "Notes/india.md",
+      "data": {
+        "Title": "India",
+        "Status": "open",
+        "Count": 99
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "india",
+      "filePath": "Notes/india.md",
+      "data": {
+        "Title": "India",
+        "Status": "open",
+        "Count": 100
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-deleted",
+    "id": "india",
+    "filePath": "Notes/india.md",
+    "oldRow": {
+      "id": "india",
+      "filePath": "Notes/india.md",
+      "data": {
+        "Title": "India",
+        "Status": "open",
+        "Count": 100
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-created",
+    "id": "india",
+    "filePath": "Notes/india.md",
+    "row": {
+      "id": "india",
+      "filePath": "Notes/india.md",
+      "data": {
+        "Title": "India Reborn"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "india",
+    "filePath": "Notes/india.md",
+    "oldRow": {
+      "id": "india",
+      "filePath": "Notes/india.md",
+      "data": {
+        "Title": "India Reborn"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "india",
+      "filePath": "Notes/india.md",
+      "data": {
+        "Title": "India Reborn",
+        "Status": "open"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  }
+]

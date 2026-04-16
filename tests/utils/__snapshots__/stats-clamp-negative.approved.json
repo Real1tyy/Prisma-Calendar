@@ -1,19 +1,19 @@
 {
-	"periodStart": "2026-04-13T00:00:00.000Z",
-	"periodEnd": "2026-04-20T00:00:00.000Z",
-	"entries": [
-		{
-			"name": "Good",
-			"duration": 3600000,
-			"count": 1,
-			"isRecurring": false
-		},
-		{
-			"name": "Malformed",
-			"duration": 0,
-			"count": 1,
-			"isRecurring": false
-		}
-	],
-	"totalDuration": 3600000
+  "periodStart": "2026-04-13T00:00:00.000Z",
+  "periodEnd": "2026-04-20T00:00:00.000Z",
+  "entries": [
+    {
+      "name": "Good",
+      "duration": 3600000,
+      "count": 1,
+      "isRecurring": false
+    },
+    {
+      "name": "Malformed",
+      "duration": 0,
+      "count": 1,
+      "isRecurring": false
+    }
+  ],
+  "totalDuration": 3600000
 }

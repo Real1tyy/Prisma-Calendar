@@ -12,7 +12,10 @@
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
 		"jsx": "react-jsx",
-		"lib": ["DOM", "ES2022"],
+		"lib": [
+			"DOM",
+			"ES2022"
+		],
 		"strict": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
@@ -23,15 +26,36 @@
 		"incremental": true,
 		"tsBuildInfoFile": ".tsbuildinfo",
 		"paths": {
-			"@real1ty-obsidian-plugins": ["shared/index.ts"],
-			"@real1ty-obsidian-plugins/core": ["../shared/src/core/index.ts"],
-			"@real1ty-obsidian-plugins/testing": ["../shared/src/testing/index.ts"],
-			"@real1ty-obsidian-plugins/testing/visual": ["../shared/src/testing/visual/index.ts"],
-			"@real1ty-obsidian-plugins/*": ["shared/*"],
-			"@real1ty-obsidian-plugins-react": ["shared-react/index.ts"],
-			"@real1ty-obsidian-plugins-react/*": ["shared-react/*"]
+			"@real1ty-obsidian-plugins": [
+				"shared/src/index.ts"
+			],
+			"@real1ty-obsidian-plugins/core": [
+				"shared/src/core/index.ts"
+			],
+			"@real1ty-obsidian-plugins/testing": [
+				"shared/src/testing/index.ts"
+			],
+			"@real1ty-obsidian-plugins/testing/visual": [
+				"shared/src/testing/visual/index.ts"
+			],
+			"@real1ty-obsidian-plugins/*": [
+				"shared/src/*"
+			],
+			"@real1ty-obsidian-plugins-react": [
+				"shared-react/src/index.ts"
+			],
+			"@real1ty-obsidian-plugins-react/*": [
+				"shared-react/src/*"
+			]
 		}
 	},
-	"include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx"],
-	"exclude": ["node_modules"]
+	"include": [
+		"src/**/*.ts",
+		"src/**/*.tsx",
+		"tests/**/*.ts",
+		"tests/**/*.tsx"
+	],
+	"exclude": [
+		"node_modules"
+	]
 }

@@ -1,0 +1,15 @@
+[
+  {
+    "type": "row-created",
+    "id": "alpha",
+    "filePath": "Notes/alpha.md",
+    "row": {
+      "id": "alpha",
+      "filePath": "Notes/alpha.md",
+      "data": {
+        "Title": "Alpha"
+      },
+      "content": ""
+    }
+  }
+]

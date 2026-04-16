@@ -1,11 +1,11 @@
 {
-	"entries": [
-		{
-			"name": "Task",
-			"duration": 7200000,
-			"count": 2,
-			"isRecurring": false
-		}
-	],
-	"totalDuration": 7200000
+  "entries": [
+    {
+      "name": "Task",
+      "duration": 7200000,
+      "count": 2,
+      "isRecurring": false
+    }
+  ],
+  "totalDuration": 7200000
 }

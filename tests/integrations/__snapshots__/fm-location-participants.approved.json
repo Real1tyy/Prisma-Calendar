@@ -1,9 +1,12 @@
 {
-	"All Day": false,
-	"Date": "",
-	"End Date": "2026-04-15T15:00:00.000Z",
-	"Location": "Conference Room A",
-	"Participants": ["Alice", "Bob"],
-	"Start Date": "2026-04-15T14:00:00.000Z",
-	"Title": "Team Meeting"
+  "All Day": false,
+  "Date": "",
+  "End Date": "2026-04-15T15:00:00.000Z",
+  "Location": "Conference Room A",
+  "Participants": [
+    "Alice",
+    "Bob"
+  ],
+  "Start Date": "2026-04-15T14:00:00.000Z",
+  "Title": "Team Meeting"
 }

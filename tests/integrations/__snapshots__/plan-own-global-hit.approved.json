@@ -1,19 +1,19 @@
 {
-	"actions": [
-		{
-			"kind": "update",
-			"uid": "u-1",
-			"filePath": "Events/alpha.md",
-			"title": "Alpha",
-			"lastModified": 200
-		}
-	],
-	"summary": {
-		"create": 0,
-		"update": 1,
-		"delete": 0,
-		"skipUnchanged": 0,
-		"skipMissingUid": 0,
-		"skipForeignUid": 0
-	}
+  "actions": [
+    {
+      "kind": "update",
+      "uid": "u-1",
+      "filePath": "Events/alpha.md",
+      "title": "Alpha",
+      "lastModified": 200
+    }
+  ],
+  "summary": {
+    "create": 0,
+    "update": 1,
+    "delete": 0,
+    "skipUnchanged": 0,
+    "skipMissingUid": 0,
+    "skipForeignUid": 0
+  }
 }

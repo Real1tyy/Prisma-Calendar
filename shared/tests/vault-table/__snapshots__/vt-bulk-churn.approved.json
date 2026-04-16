@@ -1,0 +1,136 @@
+[
+  {
+    "type": "row-created",
+    "id": "juliet",
+    "filePath": "Notes/juliet.md",
+    "row": {
+      "id": "juliet",
+      "filePath": "Notes/juliet.md",
+      "data": {
+        "Title": "Juliet",
+        "Count": 0
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "juliet",
+    "filePath": "Notes/juliet.md",
+    "oldRow": {
+      "id": "juliet",
+      "filePath": "Notes/juliet.md",
+      "data": {
+        "Title": "Juliet",
+        "Count": 0
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "juliet",
+      "filePath": "Notes/juliet.md",
+      "data": {
+        "Title": "Juliet",
+        "Count": 1
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "juliet",
+    "filePath": "Notes/juliet.md",
+    "oldRow": {
+      "id": "juliet",
+      "filePath": "Notes/juliet.md",
+      "data": {
+        "Title": "Juliet",
+        "Count": 1
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "juliet",
+      "filePath": "Notes/juliet.md",
+      "data": {
+        "Title": "Juliet",
+        "Count": 2
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "juliet",
+    "filePath": "Notes/juliet.md",
+    "oldRow": {
+      "id": "juliet",
+      "filePath": "Notes/juliet.md",
+      "data": {
+        "Title": "Juliet",
+        "Count": 2
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "juliet",
+      "filePath": "Notes/juliet.md",
+      "data": {
+        "Title": "Juliet",
+        "Count": 3
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "juliet",
+    "filePath": "Notes/juliet.md",
+    "oldRow": {
+      "id": "juliet",
+      "filePath": "Notes/juliet.md",
+      "data": {
+        "Title": "Juliet",
+        "Count": 3
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "juliet",
+      "filePath": "Notes/juliet.md",
+      "data": {
+        "Title": "Juliet",
+        "Count": 4
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "juliet",
+    "filePath": "Notes/juliet.md",
+    "oldRow": {
+      "id": "juliet",
+      "filePath": "Notes/juliet.md",
+      "data": {
+        "Title": "Juliet",
+        "Count": 4
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "juliet",
+      "filePath": "Notes/juliet.md",
+      "data": {
+        "Title": "Juliet",
+        "Count": 5
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  }
+]

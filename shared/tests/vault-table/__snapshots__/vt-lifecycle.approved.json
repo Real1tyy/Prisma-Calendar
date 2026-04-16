@@ -1,0 +1,54 @@
+[
+  {
+    "type": "row-created",
+    "id": "delta",
+    "filePath": "Notes/delta.md",
+    "row": {
+      "id": "delta",
+      "filePath": "Notes/delta.md",
+      "data": {
+        "Title": "Delta",
+        "Count": 1
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "delta",
+    "filePath": "Notes/delta.md",
+    "oldRow": {
+      "id": "delta",
+      "filePath": "Notes/delta.md",
+      "data": {
+        "Title": "Delta",
+        "Count": 1
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "delta",
+      "filePath": "Notes/delta.md",
+      "data": {
+        "Title": "Delta",
+        "Count": 2
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-deleted",
+    "id": "delta",
+    "filePath": "Notes/delta.md",
+    "oldRow": {
+      "id": "delta",
+      "filePath": "Notes/delta.md",
+      "data": {
+        "Title": "Delta",
+        "Count": 2
+      },
+      "content": ""
+    }
+  }
+]

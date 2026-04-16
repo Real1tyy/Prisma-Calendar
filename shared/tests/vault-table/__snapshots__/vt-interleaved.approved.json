@@ -1,0 +1,116 @@
+[
+  {
+    "type": "row-created",
+    "id": "task-1",
+    "filePath": "Notes/task-1.md",
+    "row": {
+      "id": "task-1",
+      "filePath": "Notes/task-1.md",
+      "data": {
+        "Title": "Task 1",
+        "Status": "todo"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-created",
+    "id": "task-2",
+    "filePath": "Notes/task-2.md",
+    "row": {
+      "id": "task-2",
+      "filePath": "Notes/task-2.md",
+      "data": {
+        "Title": "Task 2",
+        "Status": "todo"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "task-1",
+    "filePath": "Notes/task-1.md",
+    "oldRow": {
+      "id": "task-1",
+      "filePath": "Notes/task-1.md",
+      "data": {
+        "Title": "Task 1",
+        "Status": "todo"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "task-1",
+      "filePath": "Notes/task-1.md",
+      "data": {
+        "Title": "Task 1",
+        "Status": "doing"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-created",
+    "id": "task-3",
+    "filePath": "Notes/task-3.md",
+    "row": {
+      "id": "task-3",
+      "filePath": "Notes/task-3.md",
+      "data": {
+        "Title": "Task 3",
+        "Status": "todo"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "task-2",
+    "filePath": "Notes/task-2.md",
+    "oldRow": {
+      "id": "task-2",
+      "filePath": "Notes/task-2.md",
+      "data": {
+        "Title": "Task 2",
+        "Status": "todo"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "task-2",
+      "filePath": "Notes/task-2.md",
+      "data": {
+        "Title": "Task 2",
+        "Status": "done"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-updated",
+    "id": "task-1",
+    "filePath": "Notes/task-1.md",
+    "oldRow": {
+      "id": "task-1",
+      "filePath": "Notes/task-1.md",
+      "data": {
+        "Title": "Task 1",
+        "Status": "doing"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "task-1",
+      "filePath": "Notes/task-1.md",
+      "data": {
+        "Title": "Task 1",
+        "Status": "done"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  }
+]

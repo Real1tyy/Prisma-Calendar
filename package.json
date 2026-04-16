@@ -1,7 +1,7 @@
 {
 	"name": "prisma-calendar",
 	"version": "2.12.0",
-	"description": "Prisma Calendar is a schema-agnostic visualization layer that turns any Obsidian note with a date into a first-class citizen on your timeline. No rigid schemas, no predefined fields — just your data, your rules, your filters, rendered exactly how you need it.",
+	"description": "Prisma Calendar is a schema-agnostic visualization layer that turns any Obsidian note with a date into a first-class citizen on your timeline. No rigid schemas, no predefined fields \u2014 just your data, your rules, your filters, rendered exactly how you need it.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -108,5 +108,10 @@
 		"vis-timeline": "^8.5.0",
 		"yaml": "^2.8.2",
 		"zod": "^4.3.5"
+	},
+	"pnpm": {
+		"overrides": {
+			"esbuild": "0.25.11"
+		}
 	}
 }

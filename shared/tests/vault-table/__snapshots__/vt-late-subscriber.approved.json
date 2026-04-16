@@ -1,0 +1,40 @@
+[
+  {
+    "type": "row-updated",
+    "id": "november",
+    "filePath": "Notes/november.md",
+    "oldRow": {
+      "id": "november",
+      "filePath": "Notes/november.md",
+      "data": {
+        "Title": "November",
+        "Status": "open"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "november",
+      "filePath": "Notes/november.md",
+      "data": {
+        "Title": "November",
+        "Status": "done"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  },
+  {
+    "type": "row-deleted",
+    "id": "november",
+    "filePath": "Notes/november.md",
+    "oldRow": {
+      "id": "november",
+      "filePath": "Notes/november.md",
+      "data": {
+        "Title": "November",
+        "Status": "done"
+      },
+      "content": ""
+    }
+  }
+]

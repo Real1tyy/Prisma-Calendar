@@ -1,0 +1,40 @@
+[
+  {
+    "type": "row-created",
+    "id": "bravo",
+    "filePath": "Notes/bravo.md",
+    "row": {
+      "id": "bravo",
+      "filePath": "Notes/bravo.md",
+      "data": {
+        "Title": "Bravo",
+        "Status": "open"
+      },
+      "content": ""
+    }
+  },
+  {
+    "type": "row-updated",
+    "id": "bravo",
+    "filePath": "Notes/bravo.md",
+    "oldRow": {
+      "id": "bravo",
+      "filePath": "Notes/bravo.md",
+      "data": {
+        "Title": "Bravo",
+        "Status": "open"
+      },
+      "content": ""
+    },
+    "newRow": {
+      "id": "bravo",
+      "filePath": "Notes/bravo.md",
+      "data": {
+        "Title": "Bravo",
+        "Status": "done"
+      },
+      "content": ""
+    },
+    "contentChanged": false
+  }
+]

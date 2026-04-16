@@ -1,22 +1,22 @@
 {
-	"actions": [
-		{
-			"kind": "skip-unchanged",
-			"uid": "u-1",
-			"filePath": "Events/alpha.md"
-		},
-		{
-			"kind": "delete",
-			"uid": "u-stale",
-			"filePath": "Events/stale.md"
-		}
-	],
-	"summary": {
-		"create": 0,
-		"update": 0,
-		"delete": 1,
-		"skipUnchanged": 1,
-		"skipMissingUid": 0,
-		"skipForeignUid": 0
-	}
+  "actions": [
+    {
+      "kind": "skip-unchanged",
+      "uid": "u-1",
+      "filePath": "Events/alpha.md"
+    },
+    {
+      "kind": "delete",
+      "uid": "u-stale",
+      "filePath": "Events/stale.md"
+    }
+  ],
+  "summary": {
+    "create": 0,
+    "update": 0,
+    "delete": 1,
+    "skipUnchanged": 1,
+    "skipMissingUid": 0,
+    "skipForeignUid": 0
+  }
 }
