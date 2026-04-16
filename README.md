@@ -198,3 +198,7 @@ Prisma Calendar **does not include any client-side telemetry or analytics** — 
 ## Credits & Acknowledgments
 
 Prisma Calendar is built using [FullCalendar](https://fullcalendar.io/), a powerful and flexible JavaScript calendar library. FullCalendar provides the robust calendar rendering engine that powers Prisma Calendar's views and interactions. We're grateful to the FullCalendar team for creating such an excellent foundation.
+
+---
+
+> **This repository is a public, read-only mirror.** Development happens in a private monorepo — this mirror exists for transparency and to follow the Obsidian convention of one repo per plugin. The code is licensed AGPL-3.0.
