@@ -31,18 +31,21 @@ export function createViewFilterBar(bundle: CalendarBundle, onFilterChange: () =
 	const presetWrapper = barEl.createDiv({ cls: cls("fc-filter-preset-wrapper") });
 	const presetSelect = presetWrapper.createEl("select", {
 		cls: cls("fc-filter-preset-select"),
+		attr: { "data-testid": "prisma-filter-preset" },
 	});
 
 	const expressionInput = barEl.createEl("input", {
 		type: "text",
 		placeholder: "Status === 'Done'",
 		cls: cls("fc-expression-input"),
+		attr: { "data-testid": "prisma-filter-expression" },
 	});
 
 	const searchInput = barEl.createEl("input", {
 		type: "text",
 		placeholder: "Search events...",
 		cls: cls("fc-search-input"),
+		attr: { "data-testid": "prisma-filter-search" },
 	});
 
 	function buildPresetOptions(presets: FilterPreset[]): void {

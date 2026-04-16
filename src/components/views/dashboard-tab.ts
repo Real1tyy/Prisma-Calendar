@@ -85,6 +85,7 @@ function createDashboardChild(
 					row: 0,
 					col: 0,
 					render: (cellEl) => {
+						cellEl.setAttribute("data-testid", "prisma-dashboard-cell-chart");
 						state.chartHandle = renderDashboardChart(cellEl, data.chartData, id, TOOLTIP_FORMATTER);
 					},
 					cleanup: () => {
@@ -98,6 +99,7 @@ function createDashboardChild(
 					row: 0,
 					col: 1,
 					render: (cellEl) => {
+						cellEl.setAttribute("data-testid", "prisma-dashboard-cell-ranking");
 						renderDashboardRanking(cellEl, data.items, data.stats);
 					},
 				},
@@ -108,6 +110,7 @@ function createDashboardChild(
 					col: 0,
 					colSpan: 2,
 					render: (cellEl) => {
+						cellEl.setAttribute("data-testid", "prisma-dashboard-cell-table");
 						state.tableHandle = renderDashboardTable(cellEl, {
 							items: data.items,
 							columns: data.columns,

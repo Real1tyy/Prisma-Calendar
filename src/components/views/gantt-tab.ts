@@ -356,6 +356,7 @@ export function createGanttTabDefinition(app: App, bundle: CalendarBundle): TabD
 				const createBtn = renderer.toolbarLeft.createEl("button", {
 					cls: cls("gantt-create-btn"),
 					text: "Create",
+					attr: { "data-testid": "prisma-gantt-create" },
 				});
 				createBtn.addEventListener("click", () => {
 					new EventCreateModal(app, bundle, { title: "", start: null }).open();

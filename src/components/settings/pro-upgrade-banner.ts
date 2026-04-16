@@ -15,6 +15,9 @@ export function renderProUpgradeBanner(
 	previewKey?: ProFeatureKey
 ): void {
 	const banner = containerEl.createDiv(cls("pro-upgrade-banner"));
+	if (previewKey) {
+		banner.setAttribute("data-testid", `prisma-pro-gate-${previewKey}`);
+	}
 
 	if (previewKey) {
 		const previewSrc = getFeaturePreviewSrc(previewKey);

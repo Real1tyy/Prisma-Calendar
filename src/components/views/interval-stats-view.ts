@@ -62,7 +62,8 @@ export function renderIntervalStatsBody(
 	}
 
 	if (stats.entries.length === 0) {
-		container.createDiv({ text: emptyMessage, cls: cls("stats-empty") });
+		const emptyEl = container.createDiv({ text: emptyMessage, cls: cls("stats-empty") });
+		emptyEl.setAttribute("data-testid", "prisma-stats-empty");
 		return { chart: null, table: null };
 	}
 
