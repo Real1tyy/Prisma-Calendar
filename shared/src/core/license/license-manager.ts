@@ -57,6 +57,18 @@ export class LicenseManager {
 		await this.refreshLicense();
 	}
 
+	/**
+	 * Test-only seam for E2E specs to unlock Pro features without hitting the
+	 * license API. Guarded by `window.E2E === true`, which the test harness
+	 * sets during bootstrap. No-op in production builds' runtime context.
+	 */
+	__setProForTesting(value: boolean): void {
+		if (typeof window === "undefined" || (window as unknown as { E2E?: boolean }).E2E !== true) {
+			return;
+		}
+		this.subject.next(value);
+	}
+
 	requirePro(featureName: string, options?: { docsUrl?: string; purchaseUrl?: string }): boolean {
 		if (this.isPro) return true;
 		const purchaseUrl = options?.purchaseUrl ?? this.config.purchaseUrl;

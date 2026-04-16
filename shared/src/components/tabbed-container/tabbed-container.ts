@@ -349,6 +349,8 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 				item.setTitle(getChildLabel(group.id, child)).onClick(() => {
 					switchGroupChildInternal(group.id, child.id);
 				});
+				const row = (item as unknown as { dom?: HTMLElement }).dom;
+				if (row) row.setAttribute("data-testid", `${cssPrefix}view-tab-${child.id}`);
 			});
 		}
 

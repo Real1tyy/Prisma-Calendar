@@ -167,6 +167,7 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 			});
 
 			el.addClass(buttonCls);
+			el.setAttribute("data-testid", `${config.cssPrefix}toolbar-${action.id}`);
 			const color = getColor(action);
 			if (color && color !== "#000000") {
 				applyColorToElement(el, color);
