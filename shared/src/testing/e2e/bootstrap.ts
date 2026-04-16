@@ -1,6 +1,6 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { appendFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { appendFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -69,6 +69,16 @@ export type PluginArtifact = {
 	files?: readonly string[];
 };
 
+export type LeanVaultOptions = {
+	/**
+	 * Vault-root entries to preserve verbatim after close. Everything else at
+	 * the vault root is deleted. `.obsidian/` is always kept (reduced to
+	 * `plugins/<id>/` with only the staged artifact files — `plugin.files` —
+	 * removed; anything the plugin wrote at runtime stays), regardless of this list.
+	 */
+	keep: readonly string[];
+};
+
 export type ObsidianVersion = {
 	appVersion: string;
 	installerVersion: string;
@@ -114,6 +124,16 @@ export type BootstrapOptions = {
 	onRendererReady?: (page: Page) => void | Promise<void>;
 	/** Hook invoked after the plugin is loaded; use this to wait for plugin-specific runtime structures. */
 	afterPluginLoaded?: (page: Page) => void | Promise<void>;
+	/**
+	 * When set, retained vaults (those not wiped by `E2E_CLEANUP=1`) are stripped
+	 * down on close: only the listed vault-root entries survive, `.obsidian/` is
+	 * reduced to our `plugins/<id>/` folder with the staged artifact files
+	 * (`plugin.files`: main.js / manifest.json / styles.css by default) removed —
+	 * anything the plugin wrote at runtime (data.json, snippets, logs, …) is
+	 * preserved. Lets `ls e2e/.cache/vaults/` stay browsable for post-mortem
+	 * without carrying gigabytes of Obsidian config + plugin builds.
+	 */
+	leanVaultOnClose?: LeanVaultOptions;
 	/** Optional sink for progress/debug lines. Defaults to a no-op. */
 	logger?: Logger;
 };
@@ -397,11 +417,66 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 			if (process.env["E2E_CLEANUP"] === "1") {
 				rmSync(join(vaultsRoot, id), { recursive: true, force: true });
 				log.debug(`vault cleaned`);
+			} else if (options.leanVaultOnClose) {
+				leanVault(vaultDir, options.plugin.id, files, options.leanVaultOnClose, log);
+				log.debug(`vault leaned at ${join(vaultsRoot, id)} (set E2E_CLEANUP=1 to delete)`);
 			} else {
 				log.debug(`vault kept at ${join(vaultsRoot, id)} (set E2E_CLEANUP=1 to delete)`);
 			}
 		},
 	};
+}
+
+function leanVault(
+	vaultDir: string,
+	pluginId: string,
+	stripPluginArtifacts: readonly string[],
+	lean: LeanVaultOptions,
+	log: Logger
+): void {
+	// Vault root: keep only the caller-nominated entries plus `.obsidian`. Delete everything else.
+	const keep = new Set<string>([...lean.keep, ".obsidian"]);
+	for (const entry of readdirSync(vaultDir)) {
+		if (keep.has(entry)) continue;
+		rmSync(join(vaultDir, entry), { recursive: true, force: true });
+	}
+
+	const obsidianDir = join(vaultDir, ".obsidian");
+	if (!existsSync(obsidianDir)) return;
+
+	// .obsidian/: keep only the `plugins/` subtree. `app.json`, `appearance.json`,
+	// `core-plugins.json`, `workspace.json`, etc. are all reproducible from a
+	// fresh boot — no point hoarding copies.
+	for (const entry of readdirSync(obsidianDir)) {
+		if (entry !== "plugins") {
+			rmSync(join(obsidianDir, entry), { recursive: true, force: true });
+		}
+	}
+
+	const pluginsDir = join(obsidianDir, "plugins");
+	if (!existsSync(pluginsDir)) return;
+
+	// plugins/: drop every other plugin's folder; we only care about ours.
+	for (const entry of readdirSync(pluginsDir)) {
+		if (entry !== pluginId) {
+			rmSync(join(pluginsDir, entry), { recursive: true, force: true });
+		}
+	}
+
+	// plugins/<pluginId>/: remove only the staged artifacts (main.js, manifest.json,
+	// styles.css — whatever the plugin passes as `files`). Everything the plugin
+	// wrote at runtime (data.json, snippets, logs, etc.) is preserved as-is.
+	const pluginDir = join(pluginsDir, pluginId);
+	if (existsSync(pluginDir)) {
+		for (const name of stripPluginArtifacts) {
+			const target = join(pluginDir, name);
+			if (existsSync(target)) rmSync(target, { recursive: true, force: true });
+		}
+	}
+
+	log.debug(
+		`leanVault: stripped ${vaultDir} (kept roots: ${[...lean.keep].join(", ")}; dropped plugin artifacts: ${stripPluginArtifacts.join(", ")})`
+	);
 }
 
 async function buildUserDataDir(

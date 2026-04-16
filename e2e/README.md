@@ -87,8 +87,41 @@ Each test gets its own temp directory containing:
 5. a short, run-specific `XDG_RUNTIME_DIR` so the Obsidian single-instance socket
    can't collide with a desktop Obsidian session (see below).
 
+Vault dirs are named
+`e2e/.cache/vaults/YYYY-MM-DD-HHmm-<spec>-<test-title>-<uuid>/vault/` — the spec
+file name and test title get slugged into the prefix so you can tell at a glance
+which spec produced which retained vault.
+
+### Retention & leaning
+
 Directories are retained by default for post-mortem; set `E2E_CLEANUP=1` to
 delete on test close.
+
+On close, retained vaults are **trimmed** to keep `.cache/vaults/` lean:
+
+- the vault root keeps only `Events/`,
+- `.obsidian/` is reduced to `plugins/prisma-calendar/data.json`,
+- staged plugin artifacts (`main.js`, `manifest.json`, `styles.css`) are dropped.
+
+That's enough to reproduce what the test wrote without dragging along ~100 MB of
+Obsidian internals per run. Opt in from other plugins via `leanVaultOnClose:
+{ keep: [...] }` on the shared bootstrap.
+
+### Periodic cleanup
+
+From the monorepo root:
+
+```bash
+# every plugin that has an e2e/ dir
+mise run test-e2e-clean
+
+# single plugin
+mise run test-e2e-clean -- --plugin=Prisma-Calendar
+
+# forward flags to clean-vaults.ts
+mise run test-e2e-clean -- --days=7
+mise run test-e2e-clean -- --all --dry-run
+```
 
 ## Logging
 

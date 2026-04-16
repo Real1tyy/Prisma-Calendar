@@ -4,6 +4,7 @@ export {
 	type BootstrappedObsidian,
 	createFileLogger,
 	type CreateFileLoggerOptions,
+	type LeanVaultOptions,
 	type Logger,
 	type LogLevel,
 	type ObsidianVersion,
@@ -32,3 +33,4 @@ export {
 } from "./frontmatter";
 export { countPluginCommands, executeCommand, isPluginLoaded, openNote, openSettingsTab } from "./helpers";
 export type { ObsidianApp, ObsidianPluginsRegistry, ObsidianWindow } from "./types";
+export { buildVaultPrefix, slug as slugifyVaultSegment, type VaultPrefixOptions } from "./vault-prefix";

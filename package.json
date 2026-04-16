@@ -22,6 +22,7 @@
 		"test:e2e:ui": "pnpm run test:e2e:prepare && E2E_HEADED=1 bash ../shared/scripts/e2e/run-playwright.sh --ui",
 		"test:e2e:debug": "pnpm run test:e2e:prepare && E2E_HEADED=1 PWDEBUG=1 bash ../shared/scripts/e2e/run-playwright.sh",
 		"test:e2e:demo": "pnpm run test:e2e:prepare && PW_DEMO=1 bash ../shared/scripts/e2e/run-playwright.sh",
+		"test:e2e:clean": "rm -rf e2e/.cache e2e/test-results e2e/playwright-report",
 		"lint": "eslint src/ tests/",
 		"lint:fix": "eslint --fix src/ tests/",
 		"format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",

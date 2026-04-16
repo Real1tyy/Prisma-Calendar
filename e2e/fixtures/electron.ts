@@ -5,6 +5,7 @@ import { type Page, test as base } from "@playwright/test";
 import {
 	bootstrapObsidian as sharedBootstrap,
 	type BootstrappedObsidian,
+	buildVaultPrefix,
 	createFileLogger,
 } from "@real1ty-obsidian-plugins/testing/e2e";
 
@@ -50,6 +51,10 @@ export async function bootstrapObsidian(options: { prefix?: string } = {}): Prom
 		prefix: options.prefix ?? "run",
 		plugin: { id: PLUGIN_ID, rootDir: PLUGIN_ROOT },
 		logger: log,
+		// Retained vaults are trimmed to just the events folder and the plugin's
+		// data.json on close — everything else (seeded Obsidian config, staged
+		// plugin artifacts) is regeneratable and bloats the cache.
+		leanVaultOnClose: { keep: ["Events"] },
 		env: {
 			PRISMA_LOG_LEVEL: VERBOSE ? "debug" : "warn",
 		},
@@ -138,8 +143,8 @@ export async function bootstrapObsidian(options: { prefix?: string } = {}): Prom
 
 export const test = base.extend<{ obsidian: BootstrappedObsidian }>({
 	// eslint-disable-next-line no-empty-pattern
-	obsidian: async ({}, use) => {
-		const handle = await bootstrapObsidian({ prefix: "spec" });
+	obsidian: async ({}, use, testInfo) => {
+		const handle = await bootstrapObsidian({ prefix: buildVaultPrefix(testInfo.file, testInfo.title) });
 		await use(handle);
 		await handle.close();
 	},
