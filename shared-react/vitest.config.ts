@@ -12,6 +12,7 @@ export default defineConfig({
 		globals: true,
 		environment: "jsdom",
 		setupFiles: ["../shared/src/testing/obsidian-dom-setup.ts", "./tests/setup-rtl.ts"],
+		pool: "threads",
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json-summary", "html"],

@@ -8,6 +8,7 @@
 		"build": "pnpm build:css && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"build:css": "sass src/styles/styles.scss styles.css --no-source-map",
 		"typecheck": "tsc -noEmit -skipLibCheck",
+		"check-css": "node scripts/check-unused-css.mjs . --summary --no-fail",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:changed": "vitest run --changed",
