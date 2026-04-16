@@ -1,21 +1,17 @@
 import type { Page } from "@playwright/test";
-import { clickButton, setDateTimeInput, setNumberInput, setTextInput } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import type { RecurrenceFreq, RecurrencePreset } from "../../../src/types/recurring-event";
 import type { Weekday } from "../../../src/types/weekday";
 
-// Convenience wrapper for filling the Prisma event create/edit modal. Fields
-// stamped with stable `data-testid` values are driven through the DOM (title,
-// all-day, start/end/date, duration). Fields without testids (ChipLists behind
-// the assign modal, schema-form simple fields, custom properties, notifications)
-// are driven through a bridge that reaches into `window.__prismaActiveEventModal`
-// — a deliberate local coupling until those fields grow testids. The bridge
-// lives in this one file so every reach-in is visible at a glance.
-//
-// Every input field is optional. The modal must already be open on `page`.
+// UI-driven event-modal helpers. Every field is interacted with the same way
+// a real user would — click the stamped testid, type, press Enter. No reach-ins
+// through `window.app` or internal plugin state. Fields added here must have
+// a `data-testid` stamped on the source; if one is missing, add it in the
+// plugin first rather than falling back to a DOM-walking shortcut.
 
 const SAVE_BUTTON_SCROLL_TIMEOUT_MS = 5_000;
-const MODAL_CLOSE_TIMEOUT_MS = 10_000;
+const MODAL_CLOSE_TIMEOUT_MS = 15_000;
+const ASSIGN_MODAL_SELECTOR = ".prisma-assignment-modal";
 
 export type RRuleType = RecurrencePreset | "custom";
 
@@ -44,34 +40,10 @@ export interface EventModalInput {
 	};
 }
 
-export interface ChipListHandle {
-	setItems?: (items: string[]) => void;
-	value?: string[];
-}
-
-export type ChipField = "categoriesChipList" | "prerequisitesChipList" | "participantsChipList";
-
-export interface ActiveEventModal extends Partial<Record<ChipField, ChipListHandle>> {
-	setSimpleFieldValues?: (values: Record<string, unknown>) => void;
-	notificationInput?: HTMLInputElement;
-	allDayCheckbox?: HTMLInputElement;
-	addCustomProperty?: (key: string, value: string, section: "display" | "other") => void;
-	recurringCheckbox?: HTMLInputElement;
-	rruleSelect?: HTMLSelectElement;
-	customFreqSelect?: HTMLSelectElement;
-	customIntervalInput?: HTMLInputElement;
-	weekdayCheckboxes?: Map<string, HTMLInputElement>;
-}
-
-export interface E2EWindow {
-	__prismaActiveEventModal?: ActiveEventModal;
-}
-
 /**
- * Reject input combinations the plugin cannot represent. Kept minimal on
- * purpose: only rules that map to real constraints, so legitimate tests aren't
- * locked out. Over-validation turns this helper from a convenience into a
- * gatekeeper that fights the suite.
+ * Reject input combinations the UI cannot represent. Kept narrow on purpose:
+ * only rules that map to actual plugin constraints — overreach here locks out
+ * legitimate test combinations.
  */
 export function validateEventModalInput(data: EventModalInput): void {
 	if (data.minutesBefore !== undefined && data.daysBefore !== undefined) {
@@ -88,145 +60,174 @@ export function validateEventModalInput(data: EventModalInput): void {
 	}
 }
 
-async function setChipListViaModalInstance(page: Page, chipField: ChipField, values: string[]): Promise<void> {
-	await page.evaluate(
-		({ field, vals }) => {
-			const w = window as unknown as E2EWindow;
-			const list = w.__prismaActiveEventModal?.[field];
-			if (!list || typeof list.setItems !== "function") {
-				throw new Error(`Active event modal has no ${field}`);
-			}
-			list.setItems(vals);
-		},
-		{ field: chipField, vals: values }
-	);
+async function fillTestIdInput(page: Page, testId: string, value: string): Promise<void> {
+	const locator = page.locator(`[data-testid="${testId}"]`);
+	await locator.waitFor({ state: "visible", timeout: 10_000 });
+	await locator.scrollIntoViewIfNeeded().catch(() => {});
+	await locator.fill(value);
+	await locator.blur();
 }
 
-async function setSimpleField(page: Page, key: string, value: unknown): Promise<void> {
-	await page.evaluate(
-		({ k, v }) => {
-			const w = window as unknown as E2EWindow;
-			const modal = w.__prismaActiveEventModal;
-			if (!modal?.setSimpleFieldValues) throw new Error("Active event modal missing simple field setter");
-			modal.setSimpleFieldValues({ [k]: v });
-		},
-		{ k: key, v: value }
-	);
+async function setTestIdCheckbox(page: Page, testId: string, on: boolean): Promise<void> {
+	const cb = page.locator(`[data-testid="${testId}"]`);
+	await cb.waitFor({ state: "visible", timeout: 10_000 });
+	await cb.scrollIntoViewIfNeeded().catch(() => {});
+	const checked = await cb.isChecked();
+	if (checked !== on) await cb.click();
 }
 
-async function setNotification(page: Page, value: number, field: "minutesBefore" | "daysBefore"): Promise<void> {
-	// The notification input is a single DOM element whose meaning (minutes vs
-	// days) flips with the all-day checkbox. Caller decides which one to pass
-	// based on the intended mode — validated at top of `fillEventModal`.
-	await page.evaluate(
-		({ v, f }) => {
-			const w = window as unknown as E2EWindow;
-			const modal = w.__prismaActiveEventModal;
-			if (!modal?.notificationInput) throw new Error("Active event modal has no notification input");
-			const isAllDay = modal.allDayCheckbox?.checked ?? false;
-			const expectedAllDay = f === "daysBefore";
-			if (isAllDay !== expectedAllDay) {
-				throw new Error(`Notification field ${f} requires allDay=${expectedAllDay}, got ${isAllDay}`);
-			}
-			modal.notificationInput.value = String(v);
-			modal.notificationInput.dispatchEvent(new Event("input", { bubbles: true }));
-			modal.notificationInput.dispatchEvent(new Event("change", { bubbles: true }));
-		},
-		{ v: value, f: field }
-	);
+async function selectTestIdOption(page: Page, testId: string, value: string): Promise<void> {
+	const select = page.locator(`[data-testid="${testId}"]`);
+	await select.waitFor({ state: "visible", timeout: 10_000 });
+	await select.scrollIntoViewIfNeeded().catch(() => {});
+	await select.selectOption(value);
+}
+
+async function openAssignModal(page: Page, buttonTestId: string): Promise<void> {
+	await page.locator(`[data-testid="${buttonTestId}"]`).click();
+	await page.locator(`${ASSIGN_MODAL_SELECTOR} [data-testid="prisma-assign-search"]`).waitFor({
+		state: "visible",
+		timeout: 10_000,
+	});
+}
+
+/**
+ * Drive the assign modal as a user does: type each value into the search,
+ * press Enter (picks an existing item or creates new), then click the submit
+ * button. Same routine for categories / prerequisites / any future
+ * assign-modal-backed chip list.
+ */
+async function driveAssignModal(
+	page: Page,
+	buttonTestId: string,
+	values: string[],
+	options: { allowCreateNew?: boolean } = {}
+): Promise<void> {
+	const allowCreateNew = options.allowCreateNew ?? true;
+	await openAssignModal(page, buttonTestId);
+	const search = page.locator(`${ASSIGN_MODAL_SELECTOR} [data-testid="prisma-assign-search"]`);
+
+	for (const value of values) {
+		await search.fill(value);
+		const existing = page.locator(
+			`${ASSIGN_MODAL_SELECTOR} [data-testid="prisma-assign-item"][data-assign-name="${value}"]`
+		);
+		const existingCount = await existing.count();
+		if (existingCount > 0) {
+			await existing.first().click();
+		} else if (allowCreateNew) {
+			const create = page.locator(`${ASSIGN_MODAL_SELECTOR} [data-testid="prisma-assign-create-new"]`);
+			await create.waitFor({ state: "visible", timeout: 5_000 });
+			await create.click();
+		} else {
+			throw new Error(`Assign modal: "${value}" not found and createNew is disabled`);
+		}
+		await search.fill("");
+	}
+	await page.locator(`${ASSIGN_MODAL_SELECTOR} [data-testid="prisma-assign-submit"]`).click();
+	await page.locator(ASSIGN_MODAL_SELECTOR).waitFor({ state: "hidden", timeout: 5_000 });
+
+	// Sanity: the parent event modal must still be open after assign modal
+	// closes. If it's gone, something in the interaction tore it down — fail
+	// loudly here with the DOM state rather than propagating into a confusing
+	// "field not visible" timeout on the next step.
+	const eventModalStillOpen = await page.locator('[data-testid="prisma-event-field-title"]').count();
+	if (eventModalStillOpen === 0) {
+		throw new Error(
+			`Event modal closed unexpectedly after driveAssignModal(${buttonTestId}). ` +
+				`Values attempted: ${JSON.stringify(values)}.`
+		);
+	}
+}
+
+async function addParticipant(page: Page, value: string): Promise<void> {
+	const input = page.locator('[data-testid="prisma-event-control-participants"]');
+	const count = await input.count();
+	if (count === 0) {
+		const modalCount = await page.locator('[data-testid="prisma-event-field-title"]').count();
+		const allParticipantsFields = await page.locator('[data-testid="prisma-event-field-participants"]').count();
+		throw new Error(
+			`addParticipant("${value}"): input not in DOM. ` +
+				`event-modal-title count=${modalCount}, participants-field count=${allParticipantsFields}. ` +
+				`Either the event modal closed, or participantsProp is unset.`
+		);
+	}
+	await input.scrollIntoViewIfNeeded().catch(() => {});
+	await input.waitFor({ state: "visible", timeout: 10_000 });
+	await input.fill(value);
+	await input.press("Enter");
 }
 
 async function addCustomProperty(page: Page, key: string, value: string): Promise<void> {
-	await page.evaluate(
-		({ k, v }) => {
-			const w = window as unknown as E2EWindow;
-			const modal = w.__prismaActiveEventModal;
-			if (!modal?.addCustomProperty) throw new Error("Active event modal missing addCustomProperty");
-			modal.addCustomProperty(k, v, "other");
-		},
-		{ k: key, v: value }
-	);
-}
-
-async function setAllDay(page: Page, on: boolean): Promise<void> {
-	await page.evaluate((target) => {
-		const w = window as unknown as E2EWindow;
-		const cb = w.__prismaActiveEventModal?.allDayCheckbox;
-		if (!cb) throw new Error("Active event modal has no allDayCheckbox");
-		if (cb.checked === target) return;
-		cb.checked = target;
-		cb.dispatchEvent(new Event("input", { bubbles: true }));
-		cb.dispatchEvent(new Event("change", { bubbles: true }));
-	}, on);
+	await page.locator('[data-testid="prisma-event-btn-add-custom-prop-other"]').click();
+	// The new row is appended — find the last key/value inputs in the "other" section.
+	const keyInputs = page.locator('[data-testid="prisma-event-custom-prop-key-other"]');
+	const valueInputs = page.locator('[data-testid="prisma-event-custom-prop-value-other"]');
+	const idx = (await keyInputs.count()) - 1;
+	await keyInputs.nth(idx).fill(key);
+	await valueInputs.nth(idx).fill(value);
+	await valueInputs.nth(idx).blur();
 }
 
 async function setRecurring(page: Page, recurring: NonNullable<EventModalInput["recurring"]>): Promise<void> {
-	await page.evaluate((r) => {
-		const w = window as unknown as E2EWindow;
-		const modal = w.__prismaActiveEventModal;
-		if (!modal?.recurringCheckbox || !modal.rruleSelect) {
-			throw new Error("Active event modal missing recurring UI");
+	await setTestIdCheckbox(page, "prisma-event-control-rrule", true);
+
+	const type = recurring.rruleType ?? "weekly";
+	await selectTestIdOption(page, "prisma-event-control-rrule-type", type);
+
+	if (type === "custom") {
+		if (recurring.customFreq !== undefined) {
+			await selectTestIdOption(page, "prisma-event-control-custom-freq", recurring.customFreq);
 		}
-		const fire = (el: HTMLElement): void => {
-			el.dispatchEvent(new Event("input", { bubbles: true }));
-			el.dispatchEvent(new Event("change", { bubbles: true }));
-		};
-
-		modal.recurringCheckbox.checked = true;
-		fire(modal.recurringCheckbox);
-
-		const type = r.rruleType ?? "weekly";
-		modal.rruleSelect.value = type;
-		fire(modal.rruleSelect);
-
-		if (type === "custom") {
-			if (modal.customFreqSelect) {
-				modal.customFreqSelect.value = r.customFreq ?? "DAILY";
-				fire(modal.customFreqSelect);
-			}
-			if (modal.customIntervalInput) {
-				modal.customIntervalInput.value = String(r.customInterval ?? 1);
-				fire(modal.customIntervalInput);
-			}
+		if (recurring.customInterval !== undefined) {
+			await fillTestIdInput(page, "prisma-event-control-custom-interval", String(recurring.customInterval));
 		}
+	}
 
-		if (r.weekdays && modal.weekdayCheckboxes) {
-			const wanted = new Set<string>(r.weekdays);
-			for (const [day, cb] of modal.weekdayCheckboxes.entries()) {
-				const shouldBeChecked = wanted.has(day);
-				if (cb.checked !== shouldBeChecked) {
-					cb.checked = shouldBeChecked;
-					fire(cb);
-				}
-			}
+	if (recurring.weekdays) {
+		for (const day of recurring.weekdays) {
+			await setTestIdCheckbox(page, `prisma-event-control-weekday-${day}`, true);
 		}
-	}, recurring);
+	}
 }
 
 export async function fillEventModal(page: Page, data: EventModalInput): Promise<void> {
 	validateEventModalInput(data);
 
-	if (data.title !== undefined) await setTextInput(page, "prisma-event-control-title", data.title);
-	if (data.allDay !== undefined) await setAllDay(page, data.allDay);
-	if (data.start !== undefined) await setDateTimeInput(page, "prisma-event-control-start", data.start);
-	if (data.end !== undefined) await setDateTimeInput(page, "prisma-event-control-end", data.end);
-	if (data.date !== undefined) await setDateTimeInput(page, "prisma-event-control-date", data.date);
-	if (data.duration !== undefined) await setNumberInput(page, "prisma-event-control-duration", data.duration);
+	if (data.title !== undefined) await fillTestIdInput(page, "prisma-event-control-title", data.title);
+	if (data.allDay !== undefined) await setTestIdCheckbox(page, "prisma-event-control-allDay", data.allDay);
+	if (data.start !== undefined) await fillTestIdInput(page, "prisma-event-control-start", data.start);
+	if (data.end !== undefined) await fillTestIdInput(page, "prisma-event-control-end", data.end);
+	if (data.date !== undefined) await fillTestIdInput(page, "prisma-event-control-date", data.date);
+	if (data.duration !== undefined) await fillTestIdInput(page, "prisma-event-control-duration", String(data.duration));
 
-	if (data.categories) await setChipListViaModalInstance(page, "categoriesChipList", data.categories);
-	if (data.prerequisites) await setChipListViaModalInstance(page, "prerequisitesChipList", data.prerequisites);
-	if (data.participants) await setChipListViaModalInstance(page, "participantsChipList", data.participants);
+	if (data.categories && data.categories.length > 0) {
+		await driveAssignModal(page, "prisma-event-btn-assign-categories", data.categories);
+	}
+	if (data.prerequisites && data.prerequisites.length > 0) {
+		await driveAssignModal(page, "prisma-event-btn-assign-prerequisites", data.prerequisites, {
+			allowCreateNew: false,
+		});
+	}
+	if (data.participants && data.participants.length > 0) {
+		for (const value of data.participants) {
+			await addParticipant(page, value);
+		}
+	}
 
-	if (data.location !== undefined) await setSimpleField(page, "location", data.location);
-	if (data.icon !== undefined) await setSimpleField(page, "icon", data.icon);
-	if (data.skip !== undefined) await setSimpleField(page, "skip", data.skip);
-	// breakMinutes is backed by a text input in the schema form; the form
-	// reads values as strings, so pass the string representation even though
-	// the input type is number.
-	if (data.breakMinutes !== undefined) await setSimpleField(page, "breakMinutes", String(data.breakMinutes));
+	if (data.location !== undefined) await fillTestIdInput(page, "prisma-event-control-location", data.location);
+	if (data.icon !== undefined) await fillTestIdInput(page, "prisma-event-control-icon", data.icon);
+	if (data.skip !== undefined) await setTestIdCheckbox(page, "prisma-event-control-skip", data.skip);
+	if (data.breakMinutes !== undefined) {
+		await fillTestIdInput(page, "prisma-event-control-breakMinutes", String(data.breakMinutes));
+	}
 
-	if (data.minutesBefore !== undefined) await setNotification(page, data.minutesBefore, "minutesBefore");
-	if (data.daysBefore !== undefined) await setNotification(page, data.daysBefore, "daysBefore");
+	if (data.minutesBefore !== undefined) {
+		await fillTestIdInput(page, "prisma-event-control-notify-before", String(data.minutesBefore));
+	}
+	if (data.daysBefore !== undefined) {
+		await fillTestIdInput(page, "prisma-event-control-notify-before", String(data.daysBefore));
+	}
 
 	if (data.customProperties) {
 		for (const [key, value] of Object.entries(data.customProperties)) {
@@ -238,22 +239,15 @@ export async function fillEventModal(page: Page, data: EventModalInput): Promise
 }
 
 /**
- * Click save. Default: wait for the event modal to tear down before returning,
- * so callers don't have to remember a follow-up `waitForModalClosed` every
- * time. Pass `{ waitForClose: false }` when a test needs to inspect post-save
- * state while the modal is still disappearing.
+ * Click save. Default: wait for the event modal to tear down so callers don't
+ * need a follow-up `waitForModalClosed`. Pass `{ waitForClose: false }` when
+ * a test needs to inspect mid-close state.
  */
 export async function saveEventModal(page: Page, options: { waitForClose?: boolean } = {}): Promise<void> {
 	const { waitForClose = true } = options;
-	// The save button lives in a sticky footer; in a tall modal the content
-	// scroll position can leave the footer outside the viewport bounds that
-	// Playwright's visibility check honours. Force it into view first.
-	await page
-		.locator('[data-testid="prisma-event-btn-save"]')
-		.first()
-		.scrollIntoViewIfNeeded({ timeout: SAVE_BUTTON_SCROLL_TIMEOUT_MS })
-		.catch(() => {});
-	await clickButton(page, "prisma-event-btn-save");
+	const saveBtn = page.locator('[data-testid="prisma-event-btn-save"]').first();
+	await saveBtn.scrollIntoViewIfNeeded({ timeout: SAVE_BUTTON_SCROLL_TIMEOUT_MS }).catch(() => {});
+	await saveBtn.click();
 	if (waitForClose) {
 		await page.waitForFunction(
 			() => document.querySelectorAll('[data-testid="prisma-event-field-title"]').length === 0,

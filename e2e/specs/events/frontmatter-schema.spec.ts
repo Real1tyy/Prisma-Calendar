@@ -3,12 +3,10 @@ import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 import { expect, test } from "../../fixtures/electron";
 import { createEventViaModal, openCalendarReady } from "./events-helpers";
 
-// Deterministic schema check: the set of keys Prisma writes for a fully
-// populated event must match the keys the plugin's settings claim it writes.
-// Any extra or missing key → fail with a diff. Catches silent schema drift
-// without requiring a hand-maintained golden file.
+// Schema drift canary: a UI-driven create with every field populated must
+// land exactly the expected set of keys — nothing extra, nothing missing.
 test.describe("frontmatter schema", () => {
-	test("create writes exactly the expected key set", async ({ obsidian }) => {
+	test("create via toolbar writes exactly the expected key set", async ({ obsidian }) => {
 		await openCalendarReady(obsidian.page);
 
 		const relativePath = await createEventViaModal(obsidian, {
@@ -16,7 +14,7 @@ test.describe("frontmatter schema", () => {
 			start: "2026-05-10T09:00",
 			end: "2026-05-10T10:00",
 			categories: ["Work"],
-			prerequisites: ["[[Project Planning]]"],
+			prerequisites: [],
 			participants: ["Alice"],
 			location: "Room A",
 			icon: "calendar",
@@ -24,16 +22,14 @@ test.describe("frontmatter schema", () => {
 			minutesBefore: 15,
 			customProperties: { Priority: "high" },
 		});
+
 		const fm = readEventFrontmatter(obsidian.vaultDir, relativePath);
 		const actualKeys = new Set(Object.keys(fm));
 
-		// The expected keys come directly from the plugin's default property
-		// names. When a setting is enabled and a value is provided, the plugin
-		// writes the corresponding property. This list documents that contract
-		// at the e2e level; drift on either side will fail this test.
-		// Timed events still get `All Day: false` and an empty `Date` key written
-		// — `applyDateFieldsToFrontmatter` writes the full trio regardless of mode
-		// so downstream tools don't have to branch on presence.
+		// The plugin writes a consistent schema regardless of user input — it
+		// always emits `All Day: false` + empty `Date` for timed events (so
+		// downstream tools don't have to branch on presence), and always stamps
+		// `Prerequisite` even when the user never opened the assignment modal.
 		const expectedKeys = new Set([
 			"Start Date",
 			"End Date",

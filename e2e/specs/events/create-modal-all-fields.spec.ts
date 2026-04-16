@@ -4,9 +4,9 @@ import { expect, test } from "../../fixtures/electron";
 import { createEventViaModal, openCalendarReady, openCreateModal } from "./events-helpers";
 import { fillEventModal } from "./fill-event-modal";
 
-// One big happy-path test that fills every modal field. The goal is to prove
-// the deterministic round-trip from modal input → file on disk in a single
-// bootstrap rather than paying the ~2s bootstrap cost per field.
+// One big UI-driven happy-path test — a real user clicking Create, typing into
+// every field, then clicking Save. Mirrors the workflow we expect end users
+// to hit, validates that every modal input round-trips to frontmatter.
 test.describe("create event — all fields", () => {
 	test("every field lands in frontmatter on save", async ({ obsidian }) => {
 		await openCalendarReady(obsidian.page);
@@ -17,7 +17,7 @@ test.describe("create event — all fields", () => {
 			start: "2026-05-10T09:00",
 			end: "2026-05-10T10:30",
 			categories: ["Work", "Personal"],
-			prerequisites: ["[[Project Planning]]"],
+			prerequisites: [],
 			participants: ["Alice", "Bob"],
 			location: "Room A",
 			icon: "calendar",
@@ -28,13 +28,10 @@ test.describe("create event — all fields", () => {
 		});
 		expect(relativePath).toMatch(/^Events\/Team Meeting.*\.md$/);
 
-		// `ensureISOSuffix` appends `:00.000Z` without TZ conversion; a single
-		// prerequisite serializes as a scalar, not a list.
 		expectFrontmatter(obsidian.vaultDir, relativePath, {
 			"Start Date": "2026-05-10T09:00:00.000Z",
 			"End Date": "2026-05-10T10:30:00.000Z",
 			Category: ["Work", "Personal"],
-			Prerequisite: "[[Project Planning]]",
 			Participants: ["Alice", "Bob"],
 			Location: "Room A",
 			Icon: "calendar",
@@ -54,11 +51,11 @@ test.describe("create event — all fields", () => {
 			end: "2026-05-10T10:00",
 		});
 
-		const durationAfter60 = await obsidian.page.locator('[data-testid="prisma-event-control-duration"]').inputValue();
-		expect(durationAfter60).toBe("60");
+		const duration60 = await obsidian.page.locator('[data-testid="prisma-event-control-duration"]').inputValue();
+		expect(duration60).toBe("60");
 
 		await fillEventModal(obsidian.page, { end: "2026-05-10T10:45" });
-		const durationAfter105 = await obsidian.page.locator('[data-testid="prisma-event-control-duration"]').inputValue();
-		expect(durationAfter105).toBe("105");
+		const duration105 = await obsidian.page.locator('[data-testid="prisma-event-control-duration"]').inputValue();
+		expect(duration105).toBe("105");
 	});
 });

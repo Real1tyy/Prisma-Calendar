@@ -1,31 +1,37 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { executeCommand, expectFrontmatter, openNote } from "@real1ty-obsidian-plugins/testing/e2e";
+import { expectFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
-import { waitForEventModalOpen, waitForModalClosed, waitForWorkspaceReady } from "./events-helpers";
-import { type E2EWindow, fillEventModal, saveEventModal } from "./fill-event-modal";
+import {
+	chipsForField,
+	EVENT_MODAL_SELECTOR,
+	formatLocalDate,
+	openCalendarReady,
+	removeChip,
+	rightClickEventMenu,
+} from "./events-helpers";
+import { fillEventModal, saveEventModal } from "./fill-event-modal";
 
-// Edit-side parity: seed a fully-populated event on disk, open the edit modal
-// via the command, mutate every field, save, and assert the frontmatter shows
-// the new values. Proves the edit modal reads every field from frontmatter and
-// writes every field back.
+// Edit-side parity: seed a fully-populated event on disk so FullCalendar
+// renders a block for it, then right-click the block → click Edit event in
+// the context menu → mutate every field → save → re-read frontmatter.
+// Drives the full "real user edits an existing event" flow.
 test.describe("edit event — all fields", () => {
-	test("reads every field, mutates, round-trips back to disk", async ({ obsidian }) => {
-		// Pre-bake the ZettelID suffix into the seed filename so the edit path's
-		// `ensureZettelIdOnSave = true` is a no-op — the rename→snapshot race
-		// inside `updateEvent` otherwise swallows the first frontmatter diff.
+	test("right-click → Edit event reads fields, saves mutations", async ({ obsidian }) => {
+		// Anchor today so FullCalendar's default month view contains the block.
+		const today = formatLocalDate(new Date());
+		// Pre-bake the ZettelID so ensureZettelIdOnSave is a no-op on save; the
+		// rename-then-write path otherwise races the file indexer.
 		const seedPath = "Events/Editable Event-20250101000000.md";
 		const seed = `---
-Start Date: 2026-05-10T09:00
-End Date: 2026-05-10T10:00
+Start Date: ${today}T09:00
+End Date: ${today}T10:00
 Category:
   - Work
 Participants:
   - Alice
-Prerequisite:
-  - "[[Project Planning]]"
 Location: Room A
 Icon: calendar
 Break: 5
@@ -37,36 +43,35 @@ Priority: high
 `;
 		writeFileSync(join(obsidian.vaultDir, seedPath), seed, "utf8");
 
-		// Let Obsidian pick the new file up before opening it — metadataCache
-		// otherwise races with the command that reads frontmatter. Also wait
-		// for a tab group to exist; `openNote` calls `getUnpinnedLeaf()` which
-		// throws on a bare workspace.
-		await waitForWorkspaceReady(obsidian.page);
-		await obsidian.page.waitForTimeout(500);
-		await openNote(obsidian.page, "Events/Editable Event-20250101000000");
+		await openCalendarReady(obsidian.page);
 
-		const executed = await executeCommand(obsidian.page, "prisma-calendar:edit-current-note-as-event");
-		expect(executed).toBe(true);
-		await waitForEventModalOpen(obsidian.page, 15_000);
+		await obsidian.page
+			.locator(".fc-event", { hasText: "Editable Event" })
+			.first()
+			.waitFor({ state: "visible", timeout: 15_000 });
 
-		// Edit modal should load categories/participants/prerequisites into chips.
-		const loadedCategories = await obsidian.page.evaluate(() => {
-			const w = window as unknown as E2EWindow;
-			return w.__prismaActiveEventModal?.categoriesChipList?.value ?? [];
-		});
-		expect(loadedCategories).toContain("Work");
+		await rightClickEventMenu(obsidian.page, "Editable Event", "editEvent");
+		await obsidian.page.locator(EVENT_MODAL_SELECTOR).waitFor({ state: "visible", timeout: 15_000 });
 
-		// Mutate every field except the title. Title edits trigger a
-		// rename-then-write path that races the plugin's file-indexer; covering
-		// title-driven renames belongs to a dedicated spec that can wait on the
-		// indexer settling. The rest of the fields exercise the edit→frontmatter
-		// round-trip on a stable file path.
+		const categoryChips = chipsForField(obsidian.page, "prisma-event-field-categories");
+		await expect(categoryChips).toHaveCount(1);
+		await expect(categoryChips.first()).toHaveAttribute("data-chip-value", "Work");
+
+		// A real user replacing chip-list values clicks × on each existing chip
+		// before adding new ones — that's what we drive here.
+		await removeChip(obsidian.page, "prisma-event-field-categories", "Work");
+		await expect(categoryChips).toHaveCount(0);
+
+		const participantChips = chipsForField(obsidian.page, "prisma-event-field-participants");
+		await removeChip(obsidian.page, "prisma-event-field-participants", "Alice");
+		await expect(participantChips).toHaveCount(0);
+
+		// Mutate every field except title (title rename races the indexer).
 		await fillEventModal(obsidian.page, {
-			start: "2026-05-11T14:00",
-			end: "2026-05-11T15:30",
+			start: `${today}T14:00`,
+			end: `${today}T15:30`,
 			categories: ["Personal", "Fitness"],
 			participants: ["Charlie"],
-			prerequisites: ["[[Team Meeting]]"],
 			location: "Room B",
 			icon: "dumbbell",
 			breakMinutes: 10,
@@ -75,12 +80,8 @@ Priority: high
 		});
 
 		await saveEventModal(obsidian.page);
-		await waitForModalClosed(obsidian.page, 15_000);
 		await obsidian.page.waitForTimeout(1_000);
 
-		// Title edits can rename the file (title becomes filename). The updated
-		// file lives wherever Obsidian chose to put it — resolve by scanning
-		// Events/ for the one file (we only created one).
 		const currentFile = await obsidian.page.evaluate(() => {
 			const w = window as unknown as {
 				app: { vault: { getMarkdownFiles: () => Array<{ path: string }> } };
@@ -88,16 +89,15 @@ Priority: high
 			return w.app.vault
 				.getMarkdownFiles()
 				.map((f) => f.path)
-				.find((p) => p.startsWith("Events/"));
+				.find((p) => p.startsWith("Events/") && p.includes("Editable"));
 		});
 		expect(currentFile).toBeTruthy();
 
 		expectFrontmatter(obsidian.vaultDir, currentFile!, {
-			"Start Date": "2026-05-11T14:00:00.000Z",
-			"End Date": "2026-05-11T15:30:00.000Z",
+			"Start Date": `${today}T14:00:00.000Z`,
+			"End Date": `${today}T15:30:00.000Z`,
 			Category: ["Personal", "Fitness"],
 			Participants: "Charlie",
-			Prerequisite: "[[Team Meeting]]",
 			Location: "Room B",
 			Icon: "dumbbell",
 			Break: 10,

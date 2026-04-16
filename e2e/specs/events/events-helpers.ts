@@ -1,23 +1,25 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { expect, type Page } from "@playwright/test";
-import { executeCommand, listEventFiles } from "@real1ty-obsidian-plugins/testing/e2e";
+import { type Locator, type Page } from "@playwright/test";
+import { listEventFiles } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { openCalendarView } from "../../fixtures/helpers";
 import { type EventModalInput, fillEventModal, saveEventModal } from "./fill-event-modal";
 
 export const PLUGIN_ID = "prisma-calendar";
 
-export const EVENT_MODAL_TITLE_SELECTOR = '[data-testid="prisma-event-field-title"]';
+export const EVENT_MODAL_SELECTOR = '[data-testid="prisma-event-field-title"]';
+export const TOOLBAR_CREATE_SELECTOR = '[data-testid="prisma-cal-toolbar-create"]';
+export const TOOLBAR_VIEW_MONTH_SELECTOR = '[data-testid="prisma-cal-toolbar-view-month"]';
+export const TOOLBAR_VIEW_WEEK_SELECTOR = '[data-testid="prisma-cal-toolbar-view-week"]';
+export const TOOLBAR_VIEW_DAY_SELECTOR = '[data-testid="prisma-cal-toolbar-view-day"]';
 
 const NEW_FILE_POLL_INTERVAL_MS = 100;
 const NEW_FILE_TIMEOUT_MS = 10_000;
-const MODAL_WAIT_TIMEOUT_MS = 10_000;
-const MODAL_CLOSE_TIMEOUT_MS = 5_000;
-const CALENDAR_READY_SETTLE_MS = 150;
+const MODAL_WAIT_TIMEOUT_MS = 15_000;
+const MODAL_CLOSE_TIMEOUT_MS = 15_000;
 
-/** Subset of the Playwright fixture we need to drive the event-create flow. */
+/** Subset of the Playwright fixture we need to drive the event flows. */
 export interface ObsidianHandle {
 	page: Page;
 	vaultDir: string;
@@ -29,10 +31,9 @@ export function snapshotEventFiles(vaultDir: string): Set<string> {
 }
 
 /**
- * Wait until the Events/ directory contains `count` more files than the
- * baseline, then return the relative paths of the newly created files.
- * Polls disk because `createEvent` resolves asynchronously — the modal close
- * is not a "file is on disk" signal.
+ * Wait until `count` new files exist under Events/ compared to the baseline.
+ * Polling disk because the plugin's file creation is async — modal close is
+ * not a signal that the file has been written and indexed.
  */
 export async function waitForNewEventFiles(
 	vaultDir: string,
@@ -56,13 +57,7 @@ export async function waitForNewEventFiles(
 	}
 }
 
-/**
- * Wait for Obsidian's workspace to be layout-ready. Uses the documented
- * `onLayoutReady` callback rather than poking `getLeaf()` — calling getLeaf
- * with `false` actually creates a new leaf when none exists, which competes
- * with the plugin's own view-activation path and leaves the calendar without
- * an active bundle (so subsequent `prisma-calendar:create-event` no-ops).
- */
+/** Wait for Obsidian's workspace to be layout-ready. */
 export async function waitForWorkspaceReady(page: Page): Promise<void> {
 	await page.evaluate(
 		() =>
@@ -84,74 +79,108 @@ export async function waitForWorkspaceReady(page: Page): Promise<void> {
 	);
 }
 
-/** Open the calendar view once the workspace is guaranteed interactive. */
+/**
+ * Open the calendar view by clicking Obsidian's ribbon / activating the
+ * calendar leaf. The fixture initializes bundles but doesn't activate a view —
+ * specs opt in by calling this and then clicking around.
+ */
+export async function openCalendarView(page: Page, calendarId = "default"): Promise<void> {
+	await page.evaluate(
+		async ({ id, pid }) => {
+			const w = window as unknown as {
+				app: {
+					plugins: {
+						plugins: Record<
+							string,
+							{
+								calendarBundles?: Array<{
+									calendarId: string;
+									activateCalendarView?: () => Promise<void>;
+								}>;
+							}
+						>;
+					};
+				};
+			};
+			const plugin = w.app.plugins.plugins[pid];
+			const bundle = plugin?.calendarBundles?.find((b) => b.calendarId === id) ?? plugin?.calendarBundles?.[0];
+			if (!bundle || typeof bundle.activateCalendarView !== "function") {
+				throw new Error(`No CalendarBundle for id=${id} (bundles: ${plugin?.calendarBundles?.length ?? 0})`);
+			}
+			await bundle.activateCalendarView();
+		},
+		{ id: calendarId, pid: PLUGIN_ID }
+	);
+	await page.locator(".fc").waitFor({ state: "visible", timeout: MODAL_WAIT_TIMEOUT_MS });
+	await page.locator(TOOLBAR_CREATE_SELECTOR).waitFor({ state: "visible", timeout: MODAL_WAIT_TIMEOUT_MS });
+}
+
+/** Open the calendar and wait for the toolbar to be interactive. */
 export async function openCalendarReady(page: Page): Promise<void> {
 	await waitForWorkspaceReady(page);
 	await openCalendarView(page);
-	await page.waitForTimeout(CALENDAR_READY_SETTLE_MS);
+}
+
+/** Switch to the FullCalendar week time-grid by clicking the toolbar button. */
+export async function switchToWeekView(page: Page): Promise<void> {
+	await page.locator(TOOLBAR_VIEW_WEEK_SELECTOR).click();
+	await page.locator(".fc-timegrid").waitFor({ state: "visible", timeout: 10_000 });
 }
 
 /**
- * Wait for the event modal's title field to attach and become visible. Shared
- * between the command-triggered create path and the drag-to-create path. On
- * attach timeout, dumps the open-modal HTML into the error so a future
- * React/DOM churn is diagnosable from the failure log alone.
+ * Click the toolbar "Create" button and wait for the event modal to open.
+ * Dumps the open-modal HTML into the error on attach-timeout so DOM churn is
+ * diagnosable from the failure log alone.
  */
-export async function waitForEventModalOpen(page: Page, timeoutMs = MODAL_WAIT_TIMEOUT_MS): Promise<void> {
-	const title = page.locator(EVENT_MODAL_TITLE_SELECTOR);
+export async function openCreateModal(page: Page): Promise<void> {
+	await page.locator(TOOLBAR_CREATE_SELECTOR).click();
+	const title = page.locator(EVENT_MODAL_SELECTOR);
 	try {
-		await title.waitFor({ state: "attached", timeout: timeoutMs });
+		await title.waitFor({ state: "attached", timeout: MODAL_WAIT_TIMEOUT_MS });
 	} catch (err) {
 		const modalHtml = await page
 			.locator(".modal")
 			.first()
 			.evaluate((el) => (el as HTMLElement).outerHTML.slice(0, 2_000))
 			.catch(() => "<no .modal element>");
-		throw new Error(`prisma-event-field-title never attached. Modal DOM:\n${modalHtml}\n\nOriginal: ${String(err)}`);
+		throw new Error(`event modal never attached. Modal DOM:\n${modalHtml}\n\nOriginal: ${String(err)}`);
 	}
-	await title.waitFor({ state: "visible", timeout: timeoutMs });
+	await title.waitFor({ state: "visible", timeout: MODAL_WAIT_TIMEOUT_MS });
 }
 
 /**
- * Execute the create-event command and wait for the modal to become visible.
- * Mirrors the passing `event-create.spec.ts` flow: the shared `executeCommand`
- * includes a 200ms post-execute settle, then we wait for the generic `.modal`
- * class before narrowing to the stamped testid.
+ * Right-click a calendar event by its title text, then click the context-menu
+ * entry by id (e.g. `editEvent`, `deleteEvent`, `skipEvent`). Stable against
+ * label localisation/renames because menu items are stamped with testids
+ * derived from their id.
  */
-export async function openCreateModal(page: Page): Promise<void> {
-	const executed = await executeCommand(page, "prisma-calendar:create-event");
-	expect(executed).toBe(true);
-	await page.locator(".modal").first().waitFor({ state: "visible", timeout: MODAL_WAIT_TIMEOUT_MS });
-	await waitForEventModalOpen(page, MODAL_WAIT_TIMEOUT_MS);
+export async function rightClickEventMenu(page: Page, eventTitle: string, menuItemId: string): Promise<void> {
+	const eventBlock = page.locator(".fc-event", { hasText: eventTitle }).first();
+	await eventBlock.waitFor({ state: "visible", timeout: 10_000 });
+	await eventBlock.click({ button: "right" });
+	const menuItem = page.locator(`[data-testid="prisma-context-menu-item-${menuItemId}"]`);
+	await menuItem.waitFor({ state: "visible", timeout: 5_000 });
+	await menuItem.click();
 }
 
-/**
- * Wait for the event modal to close (the event modal specifically — the
- * generic `.modal` count can go non-zero due to notices, Obsidian's internal
- * overlays, or the confirmation prompts Prisma shows post-save, which would
- * otherwise race with this wait).
- */
+/** Wait for the event modal to close. */
 export async function waitForModalClosed(page: Page, timeoutMs = MODAL_CLOSE_TIMEOUT_MS): Promise<void> {
-	await page.waitForFunction(
-		(selector) => document.querySelectorAll(selector).length === 0,
-		EVENT_MODAL_TITLE_SELECTOR,
-		{ timeout: timeoutMs }
-	);
+	await page.waitForFunction((selector) => document.querySelectorAll(selector).length === 0, EVENT_MODAL_SELECTOR, {
+		timeout: timeoutMs,
+	});
 }
 
-/** Read the raw YAML frontmatter block from an absolute file path. */
 export function readRawFrontmatter(absolutePath: string): string {
 	const raw = readFileSync(absolutePath, "utf8");
 	const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
 	return match ? match[1]! : "";
 }
 
-/** Read the raw frontmatter of a single vault file relative to the vault root. */
 export function readRawFrontmatterFromVault(vaultDir: string, relativePath: string): string {
 	return readRawFrontmatter(join(vaultDir, relativePath));
 }
 
-/** Format a Date as `YYYY-MM-DD` in local time (matches what the modal accepts). */
+/** Format a Date as `YYYY-MM-DD` in local time (matches the modal's date input). */
 export function formatLocalDate(date: Date): string {
 	const yyyy = date.getFullYear();
 	const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -160,17 +189,27 @@ export function formatLocalDate(date: Date): string {
 }
 
 /**
- * Full create flow: snapshot baseline → open create modal → fill fields →
- * save → wait for modal close → wait for the new file on disk. Returns the
- * relative path of the created event.
+ * Full UI-driven create flow: snapshot baseline → toolbar Create → fill →
+ * save → wait for the new file on disk. Returns the relative vault path.
  */
 export async function createEventViaModal(obsidian: ObsidianHandle, input: EventModalInput): Promise<string> {
 	const baseline = snapshotEventFiles(obsidian.vaultDir);
 	await openCreateModal(obsidian.page);
 	await fillEventModal(obsidian.page, input);
 	await saveEventModal(obsidian.page);
-	await waitForModalClosed(obsidian.page);
 	const [relativePath] = await waitForNewEventFiles(obsidian.vaultDir, baseline, 1);
 	if (!relativePath) throw new Error("createEventViaModal: no new event file appeared");
 	return relativePath;
+}
+
+/** Locator for all chip items in a given event-modal field (categories, participants, …). */
+export function chipsForField(page: Page, fieldTestId: string): Locator {
+	return page.locator(`[data-testid="${fieldTestId}"] [data-testid="prisma-chip-item"]`);
+}
+
+/** Click the × on a chip identified by its parent field testid + chip value. */
+export async function removeChip(page: Page, fieldTestId: string, chipValue: string): Promise<void> {
+	await page
+		.locator(`[data-testid="${fieldTestId}"] [data-chip-value="${chipValue}"] [data-testid="prisma-chip-remove"]`)
+		.click();
 }

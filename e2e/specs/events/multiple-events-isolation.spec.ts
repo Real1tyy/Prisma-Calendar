@@ -6,24 +6,19 @@ import {
 	openCalendarReady,
 	openCreateModal,
 	snapshotEventFiles,
-	waitForModalClosed,
 	waitForNewEventFiles,
 } from "./events-helpers";
 import { fillEventModal, saveEventModal } from "./fill-event-modal";
 
-// Five quick creates in a row must produce five distinct files with unique
-// filenames. Catches filename collision / shared-state bugs that only manifest
-// under back-to-back creation.
+// Five quick creates via the toolbar Create button — catches filename
+// collisions and shared-state bugs that only show up under back-to-back
+// creation.
 test.describe("multiple events — isolation", () => {
-	test("five creates produce five distinct files", async ({ obsidian }) => {
+	test("five create-button clicks produce five distinct files", async ({ obsidian }) => {
 		await openCalendarReady(obsidian.page);
 		const baseline = snapshotEventFiles(obsidian.vaultDir);
 
-		// Anchor events to today so the default month view contains them, then
-		// assert filenames on disk — the render count check is flaky because
-		// FullCalendar paints asynchronously and some views cap concurrent events.
 		const today = formatLocalDate(new Date());
-
 		const titles = ["Event A", "Event B", "Event C", "Event D", "Event E"];
 		for (let i = 0; i < titles.length; i++) {
 			const hour = String(9 + i).padStart(2, "0");
@@ -34,7 +29,6 @@ test.describe("multiple events — isolation", () => {
 				end: `${today}T${hour}:30`,
 			});
 			await saveEventModal(obsidian.page);
-			await waitForModalClosed(obsidian.page);
 		}
 
 		const newFiles = await waitForNewEventFiles(obsidian.vaultDir, baseline, titles.length);

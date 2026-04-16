@@ -19,9 +19,6 @@ test.describe("create event — all-day", () => {
 			"All Day": true,
 		});
 
-		// All-day writes should leave Start/End Date as falsy (missing or empty string);
-		// the plugin may still emit the keys on untracked paths but never with a
-		// real datetime value.
 		const fm = readEventFrontmatter(obsidian.vaultDir, relativePath);
 		expect(fm["Start Date"] || "").toBe("");
 		expect(fm["End Date"] || "").toBe("");

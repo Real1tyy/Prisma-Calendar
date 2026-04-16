@@ -1,38 +1,13 @@
 import { expect, test } from "../../fixtures/electron";
-import { openCalendarReady, waitForEventModalOpen } from "./events-helpers";
+import { EVENT_MODAL_SELECTOR, openCalendarReady, switchToWeekView } from "./events-helpers";
 
-// Drag-selecting on the FullCalendar time grid must open the event modal
-// pre-populated with the selected range. Coordinates target the current
-// week's time grid — tolerance is ±1 minute because FullCalendar snaps to
-// its configured slot duration.
-//
-// TODO(foundation): hoist a `dragSelectTimeGrid(page, opts)` helper once
-// Agent 04 (Calendar) lands its shared drag primitives.
+// Drag-select on FullCalendar's time grid must open the event modal with the
+// selected range pre-filled. The drag path is a real workflow — users drag
+// across slots to pick a time range, not type dates into inputs.
 test.describe("create event — from calendar drag", () => {
 	test("drag on time grid pre-fills start/end", async ({ obsidian }) => {
 		await openCalendarReady(obsidian.page);
-
-		// Default calendar view is month — flip the active FullCalendar instance
-		// to the week time-grid. Going through the FC API is more reliable than
-		// clicking the toolbar button, whose class names churn across versions.
-		await obsidian.page.waitForSelector(".fc", { timeout: 10_000 });
-		await obsidian.page.evaluate(() => {
-			// FullCalendar attaches `_context.calendarApi` to the root DOM node;
-			// the public global we can reach from Playwright is just the DOM, so
-			// we walk to the nearest `.fc-view-harness` and reach its calendar.
-			const fcRoot = document.querySelector(".fc") as HTMLElement | null;
-			if (!fcRoot) throw new Error("FullCalendar root not found");
-			const instance =
-				(fcRoot as unknown as { _fullCalendar?: { changeView: (v: string) => void } })._fullCalendar ??
-				(fcRoot as unknown as { __fullCalendar?: { changeView: (v: string) => void } }).__fullCalendar;
-			if (instance && typeof instance.changeView === "function") {
-				instance.changeView("timeGridWeek");
-				return;
-			}
-			// Fallback: click the toolbar button if the internal handle isn't exposed.
-			const button = document.querySelector(".fc-timeGridWeek-button") as HTMLButtonElement | null;
-			button?.click();
-		});
+		await switchToWeekView(obsidian.page);
 
 		const slot = obsidian.page.locator(".fc-timegrid-slot-lane").first();
 		await slot.waitFor({ state: "visible", timeout: 15_000 });
@@ -50,7 +25,9 @@ test.describe("create event — from calendar drag", () => {
 		await obsidian.page.mouse.move(startX, endY, { steps: 10 });
 		await obsidian.page.mouse.up();
 
-		await waitForEventModalOpen(obsidian.page, 15_000);
+		const modal = obsidian.page.locator(EVENT_MODAL_SELECTOR);
+		await modal.waitFor({ state: "attached", timeout: 15_000 });
+		await modal.waitFor({ state: "visible", timeout: 15_000 });
 
 		const start = await obsidian.page.locator('[data-testid="prisma-event-control-start"]').inputValue();
 		expect(start).not.toBe("");
