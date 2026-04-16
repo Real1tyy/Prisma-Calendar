@@ -119,6 +119,11 @@ export async function bootstrapObsidian(options: { prefix?: string } = {}): Prom
 			// Pre-seed Prisma data.json so the calendar points at Events/, AND
 			// suppress the "What's new" modal by pre-setting `version` to the
 			// current plugin version (the modal fires when stored version differs).
+			//
+			// `pageHeaderState.visibleActionIds` is seeded so every toolbar button
+			// an analytics E2E spec might click is present on first paint — the
+			// production defaults hide several (including the plain "Create"
+			// action) behind the gear menu.
 			const manifestVersion = manifest["version"] as string;
 			writeFileSync(
 				join(pluginDir, "data.json"),
@@ -126,6 +131,24 @@ export async function bootstrapObsidian(options: { prefix?: string } = {}): Prom
 					{
 						version: manifestVersion,
 						calendars: [{ id: "default", name: "Main Calendar", enabled: true, directory: "Events" }],
+						pageHeaderState: {
+							visibleActionIds: [
+								"create-event",
+								"create-untracked",
+								"go-to-today",
+								"scroll-to-now",
+								"navigate-back",
+								"navigate-forward",
+								"global-search",
+								"toggle-batch",
+								"daily-stats",
+								"weekly-stats",
+								"monthly-stats",
+								"alltime-stats",
+								"toggle-prerequisites",
+								"refresh",
+							],
+						},
 					},
 					null,
 					2

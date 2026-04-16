@@ -256,11 +256,30 @@ export async function saveEventModal(page: Page): Promise<void> {
  * Click a Prisma view tab. Supported ids: calendar, stats, timeline, heatmap,
  * gantt, dashboard — matches the `prisma-view-tab-<id>` testid stamped by the
  * view renderer.
+ *
+ * For group tabs (like `dashboard` which has `dashboard-by-name` etc. as
+ * children), clicking the group button opens a dropdown but does NOT activate
+ * any child panel. Use `switchToGroupChild` to drill in.
  */
 export async function switchView(page: Page, viewId: string): Promise<void> {
 	const tab = page.locator(`[data-testid="prisma-view-tab-${viewId}"]`).first();
 	await tab.waitFor({ state: "visible", timeout: 10_000 });
 	await tab.click();
+}
+
+/**
+ * Activate a child tab inside a group tab (e.g. `dashboard` → `dashboard-by-name`).
+ * Clicks the group's tab button, waits for the dropdown, clicks the child row.
+ * The child rows are stamped with the same `prisma-view-tab-<childId>` testid
+ * as leaf tabs, so the test locator is stable.
+ */
+export async function switchToGroupChild(page: Page, groupId: string, childId: string): Promise<void> {
+	const group = page.locator(`[data-testid="prisma-view-tab-${groupId}"]`).first();
+	await group.waitFor({ state: "visible", timeout: 10_000 });
+	await group.click();
+	const child = page.locator(`[data-testid="prisma-view-tab-${childId}"]`).first();
+	await child.waitFor({ state: "visible", timeout: 5_000 });
+	await child.click();
 }
 
 /**
@@ -273,4 +292,125 @@ export async function waitForPluginReady(page: Page, calendarId = DEFAULT_CALEND
 		.locator(`[data-testid="prisma-ribbon-open-${calendarId}"]`)
 		.first()
 		.waitFor({ state: "visible", timeout: 60_000 });
+}
+
+// ── Analytics helpers ───────────────────────────────────────────────────────
+// Added for the analytics E2E suite. Extends the click-only contract above
+// to page-header toolbar actions, the Pro-unlock test seam, and the Gantt
+// renderer.
+
+/**
+ * Click a button in the Prisma page header toolbar. `actionId` matches an
+ * entry in `buildPageHeaderActions()` (e.g. `create-event`, `daily-stats`,
+ * `refresh`). Relies on `data-testid="prisma-toolbar-<id>"` stamped once
+ * at the shared `createPageHeader` render site.
+ *
+ * If the button isn't currently visible in the toolbar (user has it stashed
+ * behind the "+" overflow), this will fail — the bootstrap seed in
+ * `electron.ts` pre-populates a visible set that covers every toolbar id
+ * the analytics suite clicks.
+ */
+export async function clickToolbar(page: Page, actionId: string): Promise<void> {
+	const btn = page.locator(`${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-toolbar-${actionId}"]`).first();
+	await btn.waitFor({ state: "visible", timeout: 5_000 });
+	await btn.click();
+}
+
+export interface CreateEventInput {
+	title: string;
+	/**
+	 * For timed events: `YYYY-MM-DDTHH:mm` — typed into the Start Date
+	 * datetime-local input. For all-day events: `YYYY-MM-DD` — typed into
+	 * the Date input.
+	 */
+	start?: string;
+	/** For timed events only: `YYYY-MM-DDTHH:mm` typed into the End Date input. */
+	end?: string;
+	allDay?: boolean;
+}
+
+/**
+ * End-to-end create flow: click `create-event` → fill modal → Save. Composes
+ * the existing helpers (`createEventViaToolbar` + `fillEventModalMinimal` +
+ * `saveEventModal`) with additional fields so analytics specs can seed
+ * deterministic data through the real UI.
+ *
+ * Date-field routing matches the modal's mutually-exclusive containers:
+ * - Timed events: Start Date + End Date datetime-local inputs are visible,
+ *   the Date input is hidden behind `.prisma-hidden`.
+ * - All-day events: the reverse — Date input is visible, Start/End aren't.
+ */
+export async function createEventViaUI(page: Page, input: CreateEventInput): Promise<void> {
+	await createEventViaToolbar(page);
+	await fillEventModalMinimal(page, { title: input.title });
+
+	if (input.allDay) {
+		const allDayToggle = page.locator('.modal [data-testid="prisma-event-control-allDay"]').first();
+		await allDayToggle.check({ force: true });
+		if (input.start) {
+			const dateOnly = input.start.includes("T") ? input.start.slice(0, 10) : input.start;
+			const dateControl = page.locator('.modal [data-testid="prisma-event-control-date"]').first();
+			await dateControl.waitFor({ state: "visible", timeout: 5_000 });
+			await dateControl.fill(dateOnly);
+			await dateControl.dispatchEvent("change");
+		}
+	} else {
+		if (input.start) {
+			const startControl = page.locator('.modal [data-testid="prisma-event-control-start"]').first();
+			await startControl.waitFor({ state: "visible", timeout: 5_000 });
+			await startControl.fill(input.start);
+			await startControl.dispatchEvent("change");
+		}
+		if (input.end) {
+			const endControl = page.locator('.modal [data-testid="prisma-event-control-end"]').first();
+			await endControl.waitFor({ state: "visible", timeout: 5_000 });
+			await endControl.fill(input.end);
+			await endControl.dispatchEvent("change");
+		}
+	}
+
+	await saveEventModal(page);
+}
+
+/**
+ * Flip the Prisma-Calendar license into Pro mode for the current session via
+ * the license-manager's `__setProForTesting` public seam (guarded by
+ * `window.E2E === true`, which the bootstrap sets). No user path for this —
+ * license validation is network-backed.
+ */
+export async function unlockPro(page: Page): Promise<void> {
+	await page.evaluate((pid) => {
+		const w = window as unknown as {
+			app: {
+				plugins: {
+					plugins: Record<
+						string,
+						{
+							licenseManager?: {
+								__setProForTesting?: (v: boolean) => void;
+							};
+						}
+					>;
+				};
+			};
+		};
+		const lm = w.app.plugins.plugins[pid]?.licenseManager;
+		if (!lm?.__setProForTesting) {
+			throw new Error(`licenseManager.__setProForTesting missing on ${pid}`);
+		}
+		lm.__setProForTesting(true);
+	}, PLUGIN_ID);
+}
+
+/** Locate a Gantt bar whose label matches `title`. */
+export function ganttBarLocator(page: Page, title: string): Locator {
+	return page
+		.locator(`.prisma-gantt-bar:has(.prisma-gantt-bar-label:text-is("${title.replace(/"/g, '\\"')}"))`)
+		.first();
+}
+
+export async function rightClickGanttBar(page: Page, title: string): Promise<void> {
+	const bar = ganttBarLocator(page, title);
+	await bar.waitFor({ state: "visible", timeout: 5_000 });
+	await bar.click({ button: "right" });
 }
