@@ -5,7 +5,6 @@ import { type Page, test as base } from "@playwright/test";
 import {
 	bootstrapObsidian as sharedBootstrap,
 	type BootstrappedObsidian,
-	buildVaultPrefix,
 	createFileLogger,
 } from "@real1ty-obsidian-plugins/testing/e2e";
 
@@ -24,8 +23,16 @@ const log = createFileLogger(LOG_FILE, { verbose: VERBOSE });
 // Demo mode: `PW_DEMO=1` (or any positive int value, interpreted as ms) slows
 // every Playwright operation so you can watch what the suite does. The wrapper
 // script also forces headed mode when PW_DEMO is set, so a visible Obsidian
-// window shows up. Defaults to 500ms when enabled without a custom value.
+// window shows up.
+//
+// slowMo only paces Playwright's own input primitives (click/fill/press). Most
+// of `fill-event-modal.ts` drives fields via `page.evaluate()` against the
+// exposed `__prismaActiveEventModal` — those calls bypass slowMo entirely, so
+// the visible pacing came out much faster than the raw slowMo value suggested.
+// The `demoPause` helper is sprinkled between those evaluate-driven steps to
+// restore the intended pacing.
 const DEMO_DEFAULT_SLOW_MO_MS = 500;
+const DEMO_DEFAULT_HOLD_SECONDS = 10;
 
 function resolveDemoSlowMo(): number {
 	const raw = process.env["PW_DEMO"];
@@ -35,7 +42,35 @@ function resolveDemoSlowMo(): number {
 	return Number.isFinite(parsed) && parsed > 0 ? parsed : DEMO_DEFAULT_SLOW_MO_MS;
 }
 
+function resolveDemoHoldMs(slowMoMs: number): number {
+	// Hold only makes sense when demo is active; otherwise CI would block 10s per
+	// spec for no reason.
+	if (slowMoMs <= 0) return 0;
+	const raw = process.env["PW_DEMO_HOLD"];
+	if (raw === undefined || raw === "") return DEMO_DEFAULT_HOLD_SECONDS * 1000;
+	if (raw === "0" || raw === "false") return 0;
+	const parsed = Number.parseInt(raw, 10);
+	return Number.isFinite(parsed) && parsed > 0 ? parsed * 1000 : DEMO_DEFAULT_HOLD_SECONDS * 1000;
+}
+
 const DEMO_SLOW_MO_MS = resolveDemoSlowMo();
+const DEMO_HOLD_MS = resolveDemoHoldMs(DEMO_SLOW_MO_MS);
+
+/**
+ * Pause between evaluate-driven field sets in demo mode so glass-box steps
+ * (chip lists, schema-form fields, custom properties, recurring widgets) pace
+ * at the same visible speed as slowMo'd clicks. No-op outside demo mode.
+ */
+export async function demoPause(page: Page): Promise<void> {
+	if (DEMO_SLOW_MO_MS <= 0) return;
+	await page.waitForTimeout(DEMO_SLOW_MO_MS);
+}
+
+export const demoMode = {
+	slowMoMs: DEMO_SLOW_MO_MS,
+	holdMs: DEMO_HOLD_MS,
+	enabled: DEMO_SLOW_MO_MS > 0,
+};
 
 export async function bootstrapObsidian(options: { prefix?: string } = {}): Promise<BootstrappedObsidian> {
 	const version = JSON.parse(readFileSync(VERSION_FILE, "utf8")) as {
@@ -143,9 +178,19 @@ export async function bootstrapObsidian(options: { prefix?: string } = {}): Prom
 
 export const test = base.extend<{ obsidian: BootstrappedObsidian }>({
 	// eslint-disable-next-line no-empty-pattern
-	obsidian: async ({}, use, testInfo) => {
-		const handle = await bootstrapObsidian({ prefix: buildVaultPrefix(testInfo.file, testInfo.title) });
+	obsidian: async ({}, use) => {
+		const handle = await bootstrapObsidian({ prefix: "spec" });
 		await use(handle);
+		// Demo mode: hold the window open so a human can poke around the vault
+		// state before teardown. If the user closes Obsidian manually during the
+		// hold the subsequent `handle.close()` no-ops (browser/process `close()`
+		// already tolerates a dead target).
+		if (DEMO_HOLD_MS > 0) {
+			log.info(
+				`demo hold: keeping Obsidian open for ${DEMO_HOLD_MS / 1000}s — inspect the vault, close manually to skip`
+			);
+			await handle.page.waitForTimeout(DEMO_HOLD_MS).catch(() => {});
+		}
 		await handle.close();
 	},
 });

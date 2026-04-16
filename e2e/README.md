@@ -34,16 +34,32 @@ pnpm --filter Prisma-Calendar run test:e2e:debug -- specs/plugin-load.spec.ts
 ### Demo mode
 
 `PW_DEMO=1` forces headed mode (xvfb off) and feeds `slowMo` into the Playwright
-CDP connection so every click / fill / press is paced at 500ms. Use it when you
-want to watch a flow execute without a debugger. Override the pacing with any
-positive integer (milliseconds):
+CDP connection so every click / fill / press is paced at 0.5s. The same pacing
+is applied between field sets in `fillEventModal` — Playwright's native `slowMo`
+only covers its own input primitives, but most chip/notification/recurring
+fields go through `page.evaluate()` against `__prismaActiveEventModal`, so a
+matching `demoPause()` is inserted between those steps. Override the pacing
+with any positive integer (milliseconds):
 
 ```bash
-PW_DEMO=250  pnpm --filter Prisma-Calendar run test:e2e -- specs/events/create-allday.spec.ts
-PW_DEMO=1200 pnpm --filter Prisma-Calendar run test:e2e -- specs/events/recurring.spec.ts
+PW_DEMO=800  pnpm --filter Prisma-Calendar run test:e2e -- specs/events/create-allday.spec.ts
+PW_DEMO=2500 pnpm --filter Prisma-Calendar run test:e2e -- specs/events/recurring.spec.ts
 ```
 
-Demo mode is local-only; CI always runs headless and unthrottled.
+After each spec finishes, demo mode holds Obsidian open for **10 seconds** so
+you can poke around the vault and the rendered UI before teardown. Override
+with `PW_DEMO_HOLD=<seconds>` (set to `0` to skip). Closing Obsidian manually
+during the hold is fine — the fixture teardown tolerates a dead target.
+
+```bash
+PW_DEMO=1 PW_DEMO_HOLD=60 pnpm --filter Prisma-Calendar run test:e2e -- specs/events/create-modal-all-fields.spec.ts
+```
+
+Demo mode also stretches Playwright's `timeout` (→ 1800s) and `expect.timeout`
+(→ 120s) so the slower pacing doesn't trip per-test / per-assertion budgets.
+
+Demo mode is local-only; CI always runs headless, unthrottled, and without a
+post-test hold.
 
 First run downloads the pinned Obsidian binary + asar via `obsidian-launcher` into
 its cache (`~/.obsidian-cache/` on Linux). Subsequent runs reuse it.
@@ -87,41 +103,8 @@ Each test gets its own temp directory containing:
 5. a short, run-specific `XDG_RUNTIME_DIR` so the Obsidian single-instance socket
    can't collide with a desktop Obsidian session (see below).
 
-Vault dirs are named
-`e2e/.cache/vaults/YYYY-MM-DD-HHmm-<spec>-<test-title>-<uuid>/vault/` — the spec
-file name and test title get slugged into the prefix so you can tell at a glance
-which spec produced which retained vault.
-
-### Retention & leaning
-
 Directories are retained by default for post-mortem; set `E2E_CLEANUP=1` to
 delete on test close.
-
-On close, retained vaults are **trimmed** to keep `.cache/vaults/` lean:
-
-- the vault root keeps only `Events/`,
-- `.obsidian/` is reduced to `plugins/prisma-calendar/data.json`,
-- staged plugin artifacts (`main.js`, `manifest.json`, `styles.css`) are dropped.
-
-That's enough to reproduce what the test wrote without dragging along ~100 MB of
-Obsidian internals per run. Opt in from other plugins via `leanVaultOnClose:
-{ keep: [...] }` on the shared bootstrap.
-
-### Periodic cleanup
-
-From the monorepo root:
-
-```bash
-# every plugin that has an e2e/ dir
-mise run test-e2e-clean
-
-# single plugin
-mise run test-e2e-clean -- --plugin=Prisma-Calendar
-
-# forward flags to clean-vaults.ts
-mise run test-e2e-clean -- --days=7
-mise run test-e2e-clean -- --all --dry-run
-```
 
 ## Logging
 
