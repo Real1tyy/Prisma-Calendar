@@ -1,6 +1,7 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { appendFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -84,7 +85,12 @@ export type BootstrapOptions = {
 	vaultsRoot?: string;
 	/** Short tag included in the vault directory name for debugging. */
 	prefix?: string;
-	/** CDP port for the spawned Obsidian. Default 9222. */
+	/**
+	 * CDP port for the spawned Obsidian. Defaults to an OS-picked ephemeral free
+	 * port. A hardcoded port collides with leftover E2E processes (Chromium holds
+	 * the debug socket open even after the renderer dies) and with parallel
+	 * workers; per-run picking removes both failure modes.
+	 */
 	cdpPort?: number;
 	/** Additional env-vars passed to the spawned Obsidian process. */
 	env?: Record<string, string>;
@@ -142,10 +148,60 @@ export function createFileLogger(logFile: string, options: CreateFileLoggerOptio
 
 const NOOP_LOGGER: Logger = { info: () => {}, debug: () => {} };
 
+/**
+ * Ask the OS for a free TCP port by binding a transient listener on port 0,
+ * reading back the assigned port, and closing. Still race-prone in principle
+ * — another process could grab the port between close and spawn — but in
+ * practice that window is microseconds and Chromium will at worst emit a
+ * "address in use" error into stderr that the caller already surfaces.
+ */
+async function pickFreePort(): Promise<number> {
+	return new Promise((resolve, reject) => {
+		const server = createServer();
+
+		let settled = false;
+		const finishResolve = (port: number): void => {
+			if (settled) return;
+			settled = true;
+			resolve(port);
+		};
+		const finishReject = (error: Error): void => {
+			if (settled) return;
+			settled = true;
+			reject(error);
+		};
+
+		server.unref();
+
+		server.once("error", (error) => {
+			finishReject(error instanceof Error ? error : new Error(String(error)));
+		});
+
+		server.listen(0, "127.0.0.1", () => {
+			const address = server.address();
+
+			if (!address || typeof address !== "object") {
+				server.close((closeError) => {
+					if (closeError) finishReject(closeError);
+					else finishReject(new Error("failed to read ephemeral port from transient server"));
+				});
+				return;
+			}
+
+			const { port } = address;
+			server.close((closeError) => {
+				if (closeError) finishReject(closeError);
+				else finishResolve(port);
+			});
+		});
+	});
+}
+
 export async function bootstrapObsidian(options: BootstrapOptions): Promise<BootstrappedObsidian> {
 	const log = options.logger ?? NOOP_LOGGER;
 	const vaultsRoot = options.vaultsRoot ?? join(tmpdir(), "obsidian-e2e-vaults");
-	const cdpPort = options.cdpPort ?? 9222;
+	const cdpPort = options.cdpPort ?? (await pickFreePort());
+	log.debug(`cdpPort=${cdpPort}`);
 	// Vault dir name is `YYYY-MM-DD-HHmm-<prefix>-<uuid8>` so `ls -lt` shows runs
 	// chronologically and the cleanup task (mise run test-e2e-clean) can parse
 	// the date prefix to decide what's stale. The uuid segment keeps runs from
