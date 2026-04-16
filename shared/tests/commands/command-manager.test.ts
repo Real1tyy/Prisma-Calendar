@@ -1,5 +1,6 @@
 import type { Command } from "../../src/core/commands/command";
 import { CommandManager } from "../../src/core/commands/command-manager";
+import { silenceConsole } from "../../src/testing/silence-console";
 
 function createMockCommand(type = "MockCommand"): Command & { executeCalls: number; undoCalls: number } {
 	const cmd = {
@@ -33,6 +34,8 @@ function createFailingCommand(type = "FailingCommand"): Command {
 }
 
 describe("CommandManager", () => {
+	silenceConsole();
+
 	describe("constructor", () => {
 		it("uses default maxHistorySize of 50", () => {
 			const manager = new CommandManager();

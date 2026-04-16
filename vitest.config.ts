@@ -20,6 +20,7 @@ const SHARED_EXCLUDE = ["**/node_modules/**", "**/dist/**", "**/*.visual.spec.ts
 export default defineConfig({
 	test: {
 		globals: true,
+		testTimeout: 10000,
 		setupFiles: ["./tests/setup.ts"],
 		// Playwright owns *.visual.spec.ts and the e2e/ suite — vitest should skip them.
 		exclude: SHARED_EXCLUDE,

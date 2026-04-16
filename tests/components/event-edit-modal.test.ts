@@ -1,4 +1,5 @@
 import { ChipList } from "@real1ty-obsidian-plugins";
+import { silenceConsole } from "@real1ty-obsidian-plugins/testing";
 import type { App } from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -378,6 +379,8 @@ describe("EventEditModal - Custom Properties", () => {
 	});
 
 	describe("Instance date preservation for physical recurring events", () => {
+		silenceConsole();
+
 		it("should preserve instance date when title was cleaned by cleanupTitle", async () => {
 			const event = {
 				title: "Team Meeting",

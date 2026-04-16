@@ -1,6 +1,9 @@
+import { silenceConsole } from "../../src/testing/silence-console";
 import { runBatchOperation, withLock } from "../../src/utils/async/batch-operations";
 
 describe("runBatchOperation", () => {
+	silenceConsole();
+
 	it("returns zero counts for an empty batch", async () => {
 		const result = await runBatchOperation([], "Test Op", async () => {}, false);
 		expect(result).toEqual({ successCount: 0, errorCount: 0 });

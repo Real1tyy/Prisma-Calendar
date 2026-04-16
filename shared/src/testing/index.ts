@@ -47,3 +47,6 @@ export { advanceDebounce, advanceTimersAndFlush, pinDateNow, withFakeTimers } fr
 
 // ─── Event helpers ───────────────────────────────────────────────
 export { captureEvents, createTestEventEmitter, waitForEvent } from "./event-helpers";
+
+// ─── Console noise suppression ───────────────────────────────────
+export { silenceConsole } from "./silence-console";

@@ -1,4 +1,5 @@
 import type { CachedLicenseData, LicenseVerifyResponse } from "@real1ty-obsidian-plugins";
+import { silenceConsole } from "@real1ty-obsidian-plugins/testing";
 import { Notice, requestUrl } from "obsidian";
 import { BehaviorSubject } from "rxjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -766,6 +767,8 @@ describe("LicenseManager", () => {
 	});
 
 	describe("requirePro", () => {
+		silenceConsole(["log", "info", "warn", "error"]);
+
 		it("should return true when pro is active", async () => {
 			app.secretStorage.getSecret.mockReturnValue("PRISM-VALID-KEY");
 			mockRequestUrl.mockResolvedValue(successResponse());

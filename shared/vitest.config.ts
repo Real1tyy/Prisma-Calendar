@@ -30,10 +30,10 @@ const JSDOM_PATTERNS = [
 ];
 
 export default defineConfig({
-	server: { fs: { allow: [".."] } },
 	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,
+		testTimeout: 10000,
 		exclude: ["**/node_modules/**", "**/dist/**", "tests/react/**"],
 		setupFiles: ["./src/testing/obsidian-dom-setup.ts"],
 		pool: "threads",

@@ -1,5 +1,6 @@
 import type { Command } from "../../src/core/commands/command";
 import { MacroCommand } from "../../src/core/commands/macro-command";
+import { silenceConsole } from "../../src/testing/silence-console";
 
 function createMockCommand(
 	type = "MockCommand",
@@ -25,6 +26,8 @@ function createMockCommand(
 }
 
 describe("MacroCommand", () => {
+	silenceConsole();
+
 	describe("constructor and basic properties", () => {
 		it("creates an empty macro", () => {
 			const macro = new MacroCommand();

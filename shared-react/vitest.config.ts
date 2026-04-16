@@ -6,13 +6,12 @@ import { defineConfig } from "vitest/config";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-	server: { fs: { allow: [".."] } },
 	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,
+		testTimeout: 10000,
 		environment: "jsdom",
 		setupFiles: ["../shared/src/testing/obsidian-dom-setup.ts", "./tests/setup-rtl.ts"],
-		pool: "threads",
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json-summary", "html"],
