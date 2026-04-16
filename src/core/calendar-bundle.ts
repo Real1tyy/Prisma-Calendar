@@ -272,6 +272,7 @@ export class CalendarBundle {
 			this.ribbonIconEl = this.plugin.addRibbonIcon("calendar-days", this.settingsStore.currentSettings.name, () => {
 				void this.activateCalendarView();
 			});
+			this.ribbonIconEl.setAttribute("data-testid", `prisma-ribbon-open-${this.calendarId}`);
 		} else if (!show && this.ribbonIconEl) {
 			this.ribbonIconEl.remove();
 			this.ribbonIconEl = null;

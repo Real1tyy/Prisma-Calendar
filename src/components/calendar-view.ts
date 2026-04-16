@@ -746,6 +746,10 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	}
 
 	private handleEventDidMount(info: EventMountArg): void {
+		info.el.setAttribute("data-testid", "prisma-cal-event");
+		info.el.setAttribute("data-event-title", info.event.title);
+		const filePathForTestId = getFilePath(info.event);
+		if (filePathForTestId) info.el.setAttribute("data-event-file-path", filePathForTestId);
 		const vk = getVirtualKind(info.event);
 		if (isAnyVirtual(vk)) {
 			info.el.classList.add(cls("virtual-event-opacity"), cls("virtual-event-cursor"));
@@ -824,10 +828,13 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			[".fc-timeGridDay-button", "prisma-cal-toolbar-view-day"],
 			[".fc-listWeek-button", "prisma-cal-toolbar-view-list"],
 			[".fc-createEvent-button", "prisma-cal-toolbar-create"],
+			[".fc-zoomLevel-button", "prisma-cal-toolbar-zoom-level"],
 			[".fc-batchSelect-button", "prisma-cal-toolbar-batch-select"],
+			[".fc-batchExit-button", "prisma-cal-toolbar-batch-exit"],
 			[".fc-eventsButton-button", "prisma-cal-toolbar-events"],
 			[".fc-filteredEvents-button", "prisma-cal-toolbar-filtered-events"],
 			[".fc-skippedEvents-button", "prisma-cal-toolbar-skipped-events"],
+			[".fc-mobileControls-button", "prisma-cal-toolbar-mobile-controls"],
 		];
 		for (const [selector, testId] of map) {
 			const el = root.querySelector(selector);

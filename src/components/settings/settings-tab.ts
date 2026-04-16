@@ -307,6 +307,7 @@ function showRenameCalendarModal(app: App, currentName: string, onSubmit: (name:
 						newName = value.trim();
 					});
 					text.inputEl.setAttribute("data-cy", "rename-calendar-input");
+					text.inputEl.setAttribute("data-testid", "prisma-settings-calendar-rename-input");
 					setTimeout(() => {
 						text.inputEl.focus();
 						text.inputEl.select();
@@ -314,20 +315,22 @@ function showRenameCalendarModal(app: App, currentName: string, onSubmit: (name:
 				});
 
 			new Setting(el)
-				.addButton((button) =>
+				.addButton((button) => {
 					button.setButtonText("Cancel").onClick(() => {
 						ctx.close();
-					})
-				)
-				.addButton((button) =>
+					});
+					button.buttonEl.setAttribute("data-testid", "prisma-settings-calendar-rename-cancel");
+				})
+				.addButton((button) => {
 					button
 						.setButtonText("Save")
 						.setCta()
 						.onClick(() => {
 							onSubmit(newName);
 							ctx.close();
-						})
-				);
+						});
+					button.buttonEl.setAttribute("data-testid", "prisma-settings-calendar-rename-save");
+				});
 
 			if (ctx.type === "modal") {
 				registerSubmitHotkey(ctx.scope, () => {
