@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { type Page, test as base } from "@playwright/test";
+import { type ConsoleMessage, type Page, test as base } from "@playwright/test";
 import {
 	bootstrapObsidian as sharedBootstrap,
 	type BootstrappedObsidian,
@@ -180,6 +180,21 @@ export const test = base.extend<{ obsidian: BootstrappedObsidian }>({
 	// eslint-disable-next-line no-empty-pattern
 	obsidian: async ({}, use) => {
 		const handle = await bootstrapObsidian({ prefix: "spec" });
+		// Surface renderer-side failures as spec failures. `console.error` is
+		// kept live by the onRendererReady silencer (only log/info/debug are
+		// nooped), and uncaught exceptions reach us via `pageerror`. Collecting
+		// both here replaces the standalone plugin-load "no console errors"
+		// smoke test with a guard that fires on every spec.
+		const consoleErrors: string[] = [];
+		const onConsole = (msg: ConsoleMessage): void => {
+			if (msg.type() === "error") consoleErrors.push(msg.text());
+		};
+		const onPageError = (err: Error): void => {
+			consoleErrors.push(`pageerror: ${err.message}`);
+		};
+		handle.page.on("console", onConsole);
+		handle.page.on("pageerror", onPageError);
+
 		await use(handle);
 		// Demo mode: hold the window open so a human can poke around the vault
 		// state before teardown. If the user closes Obsidian manually during the
@@ -191,7 +206,12 @@ export const test = base.extend<{ obsidian: BootstrappedObsidian }>({
 			);
 			await handle.page.waitForTimeout(DEMO_HOLD_MS).catch(() => {});
 		}
+		handle.page.off("console", onConsole);
+		handle.page.off("pageerror", onPageError);
 		await handle.close();
+		if (consoleErrors.length > 0) {
+			throw new Error(`renderer emitted ${consoleErrors.length} error(s):\n${consoleErrors.join("\n")}`);
+		}
 	},
 });
 
