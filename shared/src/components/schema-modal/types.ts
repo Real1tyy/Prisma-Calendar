@@ -132,6 +132,12 @@ export interface SchemaFormConfig<T> {
 	mode?: SchemaFormMode | undefined;
 	fieldOverrides?: Record<string, FieldOverride> | undefined;
 	existing?: Partial<T> | undefined;
+	/**
+	 * When set, every field's control (input/select/toggle) gets a stable
+	 * `data-testid="${testIdPrefix}-${fieldKey}"`. Lets E2E tests target
+	 * individual schema-form fields without scraping by label or ordinal.
+	 */
+	testIdPrefix?: string | undefined;
 	extraFields?:
 		| ((
 				el: HTMLElement,

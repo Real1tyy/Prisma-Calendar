@@ -121,20 +121,26 @@ function applyFieldMeta(setting: Setting, desc: SchemaFieldDescriptor, override:
 
 // ─── Edit Mode Field Renderers ──────────────────────────────
 
+function stampTestId(el: HTMLElement, testId: string | undefined): void {
+	if (testId) el.setAttribute("data-testid", testId);
+}
+
 function renderStringField(
 	el: HTMLElement,
 	desc: SchemaFieldDescriptor,
 	override: FieldOverride | undefined,
-	values: Record<string, unknown>
+	values: Record<string, unknown>,
+	testId: string | undefined
 ): void {
 	if (override?.options) {
-		renderDropdownField(el, desc, normalizeOptions(override.options), values);
+		renderDropdownField(el, desc, normalizeOptions(override.options), values, override, testId);
 		return;
 	}
 
 	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
 		text.setPlaceholder(override?.placeholder ?? desc.placeholder ?? "").setValue(String(values[desc.key] ?? ""));
 		text.onChange((v) => (values[desc.key] = v));
+		stampTestId(text.inputEl, testId);
 	});
 }
 
@@ -142,7 +148,8 @@ function renderNumberField(
 	el: HTMLElement,
 	desc: NumberFieldDescriptor,
 	override: FieldOverride | undefined,
-	values: Record<string, unknown>
+	values: Record<string, unknown>,
+	testId: string | undefined
 ): void {
 	const label = resolveLabel(desc, override);
 	const parts: string[] = [label];
@@ -161,6 +168,7 @@ function renderNumberField(
 		if (desc.min !== undefined) text.inputEl.min = String(desc.min);
 		if (desc.max !== undefined) text.inputEl.max = String(desc.max);
 		text.onChange((v) => (values[desc.key] = v));
+		stampTestId(text.inputEl, testId);
 	});
 }
 
@@ -168,11 +176,13 @@ function renderBooleanField(
 	el: HTMLElement,
 	desc: SchemaFieldDescriptor,
 	override: FieldOverride | undefined,
-	values: Record<string, unknown>
+	values: Record<string, unknown>,
+	testId: string | undefined
 ): void {
 	applyFieldMeta(new Setting(el), desc, override).addToggle((toggle) => {
 		toggle.setValue(coerceToggleValue(values[desc.key]));
 		toggle.onChange((v) => (values[desc.key] = v));
+		stampTestId(toggle.toggleEl, testId);
 	});
 }
 
@@ -180,7 +190,8 @@ function renderDateField(
 	el: HTMLElement,
 	desc: SchemaFieldDescriptor,
 	override: FieldOverride | undefined,
-	values: Record<string, unknown>
+	values: Record<string, unknown>,
+	testId: string | undefined
 ): void {
 	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
 		text
@@ -188,6 +199,7 @@ function renderDateField(
 			.setValue(String(values[desc.key] ?? ""));
 		text.inputEl.type = "date";
 		text.onChange((v) => (values[desc.key] = v));
+		stampTestId(text.inputEl, testId);
 	});
 }
 
@@ -195,7 +207,8 @@ function renderDatetimeField(
 	el: HTMLElement,
 	desc: SchemaFieldDescriptor,
 	override: FieldOverride | undefined,
-	values: Record<string, unknown>
+	values: Record<string, unknown>,
+	testId: string | undefined
 ): void {
 	applyFieldMeta(new Setting(el), desc, override).addText((text) => {
 		text
@@ -203,6 +216,7 @@ function renderDatetimeField(
 			.setValue(String(values[desc.key] ?? ""));
 		text.inputEl.type = "datetime-local";
 		text.onChange((v) => (values[desc.key] = v));
+		stampTestId(text.inputEl, testId);
 	});
 }
 
@@ -210,7 +224,8 @@ function renderEnumField(
 	el: HTMLElement,
 	desc: EnumFieldDescriptor,
 	override: FieldOverride | undefined,
-	values: Record<string, unknown>
+	values: Record<string, unknown>,
+	testId: string | undefined
 ): void {
 	const entries: [string, string][] = override?.options
 		? normalizeOptions(override.options)
@@ -218,7 +233,7 @@ function renderEnumField(
 			? Object.entries(desc.enumLabels)
 			: desc.enumValues.map((v) => [v, v]);
 
-	renderDropdownField(el, desc, entries, values, override);
+	renderDropdownField(el, desc, entries, values, override, testId);
 }
 
 function renderDropdownField(
@@ -226,7 +241,8 @@ function renderDropdownField(
 	desc: SchemaFieldDescriptor,
 	entries: [string, string][],
 	values: Record<string, unknown>,
-	override?: FieldOverride
+	override: FieldOverride | undefined,
+	testId: string | undefined
 ): void {
 	applyFieldMeta(new Setting(el), desc, override).addDropdown((dropdown) => {
 		if (desc.optional) dropdown.addOption("", "-- None --");
@@ -235,6 +251,7 @@ function renderDropdownField(
 		}
 		dropdown.setValue(String(values[desc.key] ?? ""));
 		dropdown.onChange((v) => (values[desc.key] = v));
+		stampTestId(dropdown.selectEl, testId);
 	});
 }
 
@@ -258,7 +275,8 @@ function renderArrayField(
 	el: HTMLElement,
 	desc: ArrayFieldDescriptor,
 	override: FieldOverride | undefined,
-	values: Record<string, unknown>
+	values: Record<string, unknown>,
+	testId: string | undefined
 ): void {
 	const current = Array.isArray(values[desc.key]) ? (values[desc.key] as unknown[]) : [];
 
@@ -273,6 +291,7 @@ function renderArrayField(
 				.filter((s) => s.length > 0);
 			values[desc.key] = desc.itemType === "number" ? items.map(Number).filter((n) => !Number.isNaN(n)) : items;
 		});
+		stampTestId(text.inputEl, testId);
 	});
 }
 
@@ -281,7 +300,8 @@ function renderEditField(
 	desc: SchemaFieldDescriptor,
 	override: FieldOverride | undefined,
 	values: Record<string, unknown>,
-	app?: App
+	app: App | undefined,
+	testId: string | undefined
 ): void {
 	if (override?.render) {
 		override.render(el, values[desc.key], (v) => (values[desc.key] = v));
@@ -290,26 +310,26 @@ function renderEditField(
 
 	switch (desc.type) {
 		case "string":
-			renderStringField(el, desc, override, values);
+			renderStringField(el, desc, override, values, testId);
 			break;
 		case "number":
-			renderNumberField(el, desc, override, values);
+			renderNumberField(el, desc, override, values, testId);
 			break;
 		case "boolean":
 		case "toggle":
-			renderBooleanField(el, desc, override, values);
+			renderBooleanField(el, desc, override, values, testId);
 			break;
 		case "date":
-			renderDateField(el, desc, override, values);
+			renderDateField(el, desc, override, values, testId);
 			break;
 		case "datetime":
-			renderDatetimeField(el, desc, override, values);
+			renderDatetimeField(el, desc, override, values, testId);
 			break;
 		case "enum":
-			renderEnumField(el, desc, override, values);
+			renderEnumField(el, desc, override, values, testId);
 			break;
 		case "array":
-			renderArrayField(el, desc, override, values);
+			renderArrayField(el, desc, override, values, testId);
 			break;
 		case "secret":
 			renderSecretField(el, desc, override, values, app);
@@ -362,6 +382,7 @@ function renderFields(
 	overrides: Record<string, FieldOverride>,
 	values: Record<string, unknown>,
 	mode: SchemaFormMode,
+	testIdPrefix: string | undefined,
 	app?: App,
 	extraFields?: (
 		el: HTMLElement,
@@ -376,7 +397,8 @@ function renderFields(
 		if (mode === "readonly") {
 			renderReadonlyField(container, desc, override, values);
 		} else {
-			renderEditField(container, desc, override, values, app);
+			const testId = testIdPrefix ? `${testIdPrefix}-${desc.key}` : undefined;
+			renderEditField(container, desc, override, values, app, testId);
 		}
 	}
 
@@ -401,10 +423,30 @@ export function renderSchemaForm<T>(container: HTMLElement, config: SchemaFormCo
 			if (val !== undefined) values[key] = val;
 		}
 		formEl.empty();
-		renderFields(formEl, descriptors, overrides, values, currentMode, config.app, config.extraFields, setValues);
+		renderFields(
+			formEl,
+			descriptors,
+			overrides,
+			values,
+			currentMode,
+			config.testIdPrefix,
+			config.app,
+			config.extraFields,
+			setValues
+		);
 	}
 
-	renderFields(formEl, descriptors, overrides, values, currentMode, config.app, config.extraFields, setValues);
+	renderFields(
+		formEl,
+		descriptors,
+		overrides,
+		values,
+		currentMode,
+		config.testIdPrefix,
+		config.app,
+		config.extraFields,
+		setValues
+	);
 
 	function validate(): SchemaFormValidationResult<T> {
 		const coerced = coerceFormValues(values, descriptors);
@@ -424,7 +466,17 @@ export function renderSchemaForm<T>(container: HTMLElement, config: SchemaFormCo
 	function setMode(mode: SchemaFormMode): void {
 		currentMode = mode;
 		formEl.empty();
-		renderFields(formEl, descriptors, overrides, values, currentMode, config.app, config.extraFields, setValues);
+		renderFields(
+			formEl,
+			descriptors,
+			overrides,
+			values,
+			currentMode,
+			config.testIdPrefix,
+			config.app,
+			config.extraFields,
+			setValues
+		);
 	}
 
 	function destroy(): void {

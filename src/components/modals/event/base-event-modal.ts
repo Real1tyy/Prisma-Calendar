@@ -565,6 +565,7 @@ export abstract class BaseEventModal extends Modal {
 		});
 		this.rruleSelect = rruleContainer.createEl("select", {
 			cls: cls("setting-item-control"),
+			attr: { "data-testid": "prisma-event-control-rrule-type" },
 		});
 
 		for (const [value, label] of Object.entries(RECURRENCE_TYPE_OPTIONS)) {
@@ -596,12 +597,13 @@ export abstract class BaseEventModal extends Modal {
 		this.customIntervalInput = customControlsRow.createEl("input", {
 			type: "number",
 			cls: cls("custom-interval-input"),
-			attr: { min: "1", step: "1", value: "1" },
+			attr: { min: "1", step: "1", value: "1", "data-testid": "prisma-event-control-custom-interval" },
 		});
 
 		// Frequency select
 		this.customFreqSelect = customControlsRow.createEl("select", {
 			cls: cls("custom-freq-select"),
+			attr: { "data-testid": "prisma-event-control-custom-freq" },
 		});
 		const freqOptions: Array<{ value: string; label: string }> = [
 			{ value: "DAILY", label: "Days" },
@@ -630,6 +632,7 @@ export abstract class BaseEventModal extends Modal {
 				type: "checkbox",
 				attr: {
 					"data-weekday": value,
+					"data-testid": `prisma-event-control-weekday-${value}`,
 					id: checkboxId,
 				},
 			});
@@ -666,6 +669,7 @@ export abstract class BaseEventModal extends Modal {
 				min: "1",
 				step: "1",
 				placeholder: "Default",
+				"data-testid": "prisma-event-control-future-instances-count",
 			},
 		});
 
@@ -681,6 +685,7 @@ export abstract class BaseEventModal extends Modal {
 		this.generatePastEventsCheckbox = generatePastContainer.createEl("input", {
 			type: "checkbox",
 			cls: cls("setting-item-control"),
+			attr: { "data-testid": "prisma-event-control-generate-past-events" },
 		});
 	}
 
@@ -718,6 +723,7 @@ export abstract class BaseEventModal extends Modal {
 		const assignButton = categoryContent.createEl("button", {
 			text: "Assign categories",
 			cls: cls("assign-categories-button"),
+			attr: { "data-testid": "prisma-event-btn-assign-categories" },
 		});
 		assignButton.addEventListener("click", () => {
 			this.openAssignCategoriesModal();
@@ -728,6 +734,7 @@ export abstract class BaseEventModal extends Modal {
 		if (!this.bundle.settingsStore.currentSettings.prerequisiteProp) return;
 
 		const container = contentEl.createDiv(cls("setting-item"));
+		container.setAttribute("data-testid", "prisma-event-field-prerequisites");
 		container.createEl("div", {
 			text: "Prerequisites",
 			cls: cls("setting-item-name"),
@@ -746,6 +753,7 @@ export abstract class BaseEventModal extends Modal {
 		const assignButton = content.createEl("button", {
 			text: "Assign prerequisites",
 			cls: cls("assign-categories-button"),
+			attr: { "data-testid": "prisma-event-btn-assign-prerequisites" },
 		});
 		assignButton.addEventListener("click", () => {
 			this.openAssignPrerequisitesModal();
@@ -795,7 +803,12 @@ export abstract class BaseEventModal extends Modal {
 
 		input.addEventListener("keydown", (e) => {
 			if (e.key === "Enter") {
+				// Prevent propagation so the modal-scope submit hotkey doesn't
+				// interpret this Enter as "save the whole event" — the user
+				// expects Enter in the participants input to just commit the
+				// participant they typed.
 				e.preventDefault();
+				e.stopPropagation();
 				addParticipant();
 			}
 		});
@@ -803,6 +816,7 @@ export abstract class BaseEventModal extends Modal {
 		const addButton = inputRow.createEl("button", {
 			text: "Add",
 			cls: cls("assign-categories-button"),
+			attr: { "data-testid": "prisma-event-btn-add-participant" },
 		});
 		addButton.addEventListener("click", addParticipant);
 	}
@@ -829,11 +843,15 @@ export abstract class BaseEventModal extends Modal {
 		if (Object.keys(shape).length === 0) return;
 
 		const container = contentEl.createDiv(cls("simple-fields-container"));
-		// TODO(e2e): location/icon/skip/breakMinutes/markAsDone fields are rendered via
-		// shared `renderSchemaForm`; per-field `data-testid` stamping would require
-		// changes to shared form-rendering. Skipped for now — target by ordinal
-		// or field name from the shared markup until shared helper supports testIds.
-		this.simpleFieldsHandle = renderSchemaForm(container, { shape, prefix: "prisma-" });
+		// Per-field `data-testid` stamping is honoured by renderSchemaForm when
+		// `testIdPrefix` is set — every control ends up as
+		// `prisma-event-control-<fieldKey>` (location, icon, skip, breakMinutes,
+		// markAsDone), so E2E specs target them by stable testid.
+		this.simpleFieldsHandle = renderSchemaForm(container, {
+			shape,
+			prefix: "prisma-",
+			testIdPrefix: "prisma-event-control",
+		});
 	}
 
 	protected getSimpleFieldValues(): Record<string, unknown> {
@@ -867,23 +885,30 @@ export abstract class BaseEventModal extends Modal {
 				min: "0",
 				step: "1",
 				placeholder: "Default",
+				"data-testid": "prisma-event-control-notify-before",
 			},
 		});
 	}
 
 	private createCustomPropertiesFields(contentEl: HTMLElement): void {
-		this.displayPropertiesContainer = this.createPropertySection(contentEl, "Display Properties", () =>
+		this.displayPropertiesContainer = this.createPropertySection(contentEl, "Display Properties", "display", () =>
 			this.addCustomProperty("", "", "display")
 		);
 
 		const otherSectionParent = contentEl.createDiv(cls("other-section-spacing"));
-		this.otherPropertiesContainer = this.createPropertySection(otherSectionParent, "Other Properties", () =>
+		this.otherPropertiesContainer = this.createPropertySection(otherSectionParent, "Other Properties", "other", () =>
 			this.addCustomProperty("", "", "other")
 		);
 	}
 
-	private createPropertySection(parent: HTMLElement, title: string, onAddClick: () => void): HTMLElement {
+	private createPropertySection(
+		parent: HTMLElement,
+		title: string,
+		section: "display" | "other",
+		onAddClick: () => void
+	): HTMLElement {
 		const headerContainer = parent.createDiv(cls("setting-item", "property-section-header"));
+		headerContainer.setAttribute("data-testid", `prisma-event-custom-props-${section}`);
 
 		const headerDiv = headerContainer.createDiv(cls("setting-item-name"));
 		const toggleIcon = headerDiv.createEl("span", {
@@ -898,6 +923,7 @@ export abstract class BaseEventModal extends Modal {
 		const addButton = headerContainer.createEl("button", {
 			text: "Add property",
 			cls: cls("mod-cta"),
+			attr: { "data-testid": `prisma-event-btn-add-custom-prop-${section}` },
 		});
 		addButton.addEventListener("click", () => {
 			// Auto-expand when adding a property
@@ -909,6 +935,7 @@ export abstract class BaseEventModal extends Modal {
 		});
 
 		const container = parent.createDiv(cls("property-container"));
+		container.setAttribute("data-testid", `prisma-event-custom-props-${section}-container`);
 		// Collapsed by default
 		addCls(container, "hidden");
 
@@ -924,12 +951,14 @@ export abstract class BaseEventModal extends Modal {
 	protected addCustomProperty(key = "", value = "", section: "display" | "other" = "other"): void {
 		const container = section === "display" ? this.displayPropertiesContainer : this.otherPropertiesContainer;
 		const propertyRow = container.createDiv(cls("custom-property-row"));
+		propertyRow.setAttribute("data-testid", `prisma-event-custom-prop-row-${section}`);
 
 		propertyRow.createEl("input", {
 			type: "text",
 			placeholder: "Property name",
 			value: key,
 			cls: cls("setting-item-control"),
+			attr: { "data-testid": `prisma-event-custom-prop-key-${section}` },
 		});
 
 		propertyRow.createEl("input", {
@@ -937,10 +966,12 @@ export abstract class BaseEventModal extends Modal {
 			placeholder: "Value",
 			value: value,
 			cls: cls("setting-item-control"),
+			attr: { "data-testid": `prisma-event-custom-prop-value-${section}` },
 		});
 
 		const removeButton = propertyRow.createEl("button", {
 			text: "Remove",
+			attr: { "data-testid": `prisma-event-btn-remove-custom-prop-${section}` },
 		});
 		removeButton.addEventListener("click", () => {
 			propertyRow.remove();

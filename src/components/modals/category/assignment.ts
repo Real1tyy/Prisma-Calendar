@@ -185,6 +185,8 @@ function renderAssignmentList(
 	function createCheckboxItem(item: AssignmentItem, isNew = false): HTMLElement {
 		const itemEl = document.createElement("div");
 		addCls(itemEl, "category-checkbox-item");
+		itemEl.setAttribute("data-testid", "prisma-assign-item");
+		itemEl.setAttribute("data-assign-name", item.name);
 		if (isNew) addCls(itemEl, "category-new-item");
 
 		if (colorRows && item.color) {
@@ -319,6 +321,7 @@ function renderAssignmentList(
 
 		const createButton = createNewContainer.createEl("button", { text: config.createNewLabel(searchTerm) });
 		addCls(createButton, "category-create-new-button");
+		createButton.setAttribute("data-testid", "prisma-assign-create-new");
 		createButton.onclick = () => createNewItem(searchTerm);
 	}
 
@@ -331,6 +334,7 @@ function renderAssignmentList(
 	addCls(searchContainer, "category-search-container");
 	searchInput = searchContainer.createEl("input", { type: "text", placeholder: config.searchPlaceholder });
 	addCls(searchInput, "category-search-input");
+	searchInput.setAttribute("data-testid", "prisma-assign-search");
 
 	searchInput.addEventListener("input", () => {
 		clearHighlight();
@@ -364,6 +368,7 @@ function renderAssignmentList(
 		onCancel: close,
 	});
 	assignButton = submitButton;
+	assignButton.setAttribute("data-testid", "prisma-assign-submit");
 	updateAssignButtonText();
 
 	registerKeyboard?.({

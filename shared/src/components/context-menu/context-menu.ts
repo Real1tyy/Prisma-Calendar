@@ -1,10 +1,30 @@
-import { Menu } from "obsidian";
+import { Menu, type MenuItem as ObsidianMenuItem } from "obsidian";
 
 import { openItemManager } from "./item-manager";
 import { injectContextMenuStyles } from "./styles";
 import type { ContextMenuConfig, ContextMenuHandle, ContextMenuItemDefinition, ContextMenuState } from "./types";
 
 const DEFAULT_SECTION = "";
+
+/**
+ * Obsidian's MenuItem exposes `dom` (the `<div>` row) and `iconEl` as
+ * undocumented instance properties. The public typings don't declare them, so
+ * every access needs a cast. Keep the cast contained to this one shape so the
+ * rest of the file reads as plain code — if the typings ever grow the public
+ * fields, only this type alias needs updating.
+ */
+type MenuItemInternals = ObsidianMenuItem & {
+	dom?: HTMLElement;
+	iconEl?: HTMLElement;
+};
+
+function getMenuItemDom(item: ObsidianMenuItem): HTMLElement | undefined {
+	return (item as MenuItemInternals).dom;
+}
+
+function getMenuItemIconEl(item: ObsidianMenuItem): HTMLElement | undefined {
+	return (item as MenuItemInternals).iconEl;
+}
 
 function resolveVisibleItems(config: ContextMenuConfig): {
 	visibleItems: ContextMenuItemDefinition[];
@@ -279,6 +299,7 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 
 		const menu = new Menu();
 		let lastSection: string | undefined;
+		const testIdPrefix = `${config.cssPrefix}context-menu-item-`;
 
 		for (const item of visibleItems) {
 			if (filterFn && !filterFn(item.id)) continue;
@@ -298,9 +319,11 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 					.setTitle(label)
 					.setIcon(icon)
 					.onClick(() => item.onAction());
+				// Stable testid per item id — E2E specs click entries by id rather
+				// than by label (which drifts with localization and renames).
+				getMenuItemDom(menuItem)?.setAttribute("data-testid", `${testIdPrefix}${item.id}`);
 				if (color) {
-					const iconEl = (menuItem as unknown as { iconEl?: HTMLElement }).iconEl;
-					if (iconEl) iconEl.style.setProperty("color", color);
+					getMenuItemIconEl(menuItem)?.style.setProperty("color", color);
 				}
 			});
 		}
@@ -312,6 +335,7 @@ export function createContextMenu(config: ContextMenuConfig): ContextMenuHandle 
 					.setTitle("Manage menu items...")
 					.setIcon("settings-2")
 					.onClick(() => showItemManager());
+				getMenuItemDom(menuItem)?.setAttribute("data-testid", `${testIdPrefix}__manage`);
 			});
 		}
 

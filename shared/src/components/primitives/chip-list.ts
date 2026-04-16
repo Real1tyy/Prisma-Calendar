@@ -151,8 +151,17 @@ export class ChipList {
 			return;
 		}
 
+		// Testids mirror the CSS class naming — each plugin's `cssPrefix` gives
+		// it its own testid namespace (e.g., `prisma-chip`, `fusion-chip`), so
+		// E2E suites in different plugins can't collide when a test walks the
+		// DOM across multiple ChipList instances.
+		const chipTestId = `${this.config.cssPrefix}${ITEM_SUFFIX}`;
+		const removeTestId = `${this.config.cssPrefix}${REMOVE_SUFFIX}`;
+
 		for (const item of this.items) {
 			const chipEl = this.el.createDiv(this.css.cls(ITEM_SUFFIX));
+			chipEl.setAttribute("data-testid", chipTestId);
+			chipEl.setAttribute("data-chip-value", item);
 
 			this.config.renderPrefix?.(chipEl, item);
 
@@ -176,6 +185,7 @@ export class ChipList {
 				text: "\u00D7",
 				cls: this.css.cls(REMOVE_SUFFIX),
 			});
+			removeButton.setAttribute("data-testid", removeTestId);
 			removeButton.addEventListener("click", (e) => {
 				e.preventDefault();
 				e.stopPropagation();

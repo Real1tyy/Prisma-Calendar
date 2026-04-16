@@ -822,6 +822,12 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			[".fc-dayGridMonth-button", "prisma-cal-toolbar-view-month"],
 			[".fc-timeGridWeek-button", "prisma-cal-toolbar-view-week"],
 			[".fc-timeGridDay-button", "prisma-cal-toolbar-view-day"],
+			[".fc-listWeek-button", "prisma-cal-toolbar-view-list"],
+			[".fc-createEvent-button", "prisma-cal-toolbar-create"],
+			[".fc-batchSelect-button", "prisma-cal-toolbar-batch-select"],
+			[".fc-eventsButton-button", "prisma-cal-toolbar-events"],
+			[".fc-filteredEvents-button", "prisma-cal-toolbar-filtered-events"],
+			[".fc-skippedEvents-button", "prisma-cal-toolbar-skipped-events"],
 		];
 		for (const [selector, testId] of map) {
 			const el = root.querySelector(selector);
