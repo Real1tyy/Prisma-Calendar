@@ -29,6 +29,11 @@ pnpm --filter Prisma-Calendar run test:e2e:ui
 
 # single spec, with Playwright inspector
 pnpm --filter Prisma-Calendar run test:e2e:debug -- specs/plugin-load.spec.ts
+
+# scope a run to a feature folder under e2e/specs/<feature>/
+# (any --<name> matching an existing e2e/specs/<name>/ dir gets translated to a path filter)
+pnpm --filter Prisma-Calendar run test:e2e -- --events
+pnpm --filter Prisma-Calendar run test:e2e:headed -- --events
 ```
 
 ### Demo mode
