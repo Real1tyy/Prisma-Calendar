@@ -2,6 +2,8 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
+import { sharedVitestAliases } from "./shared/src/testing/vitest-aliases.ts";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Test files/directories that need a DOM environment. Single source of truth
@@ -26,11 +28,6 @@ export default defineConfig({
 		exclude: SHARED_EXCLUDE,
 		pool: "threads",
 		isolate: false,
-		server: {
-			deps: {
-				inline: ["@real1ty-obsidian-plugins"],
-			},
-		},
 		projects: [
 			{
 				extends: true,
@@ -54,18 +51,7 @@ export default defineConfig({
 	resolve: {
 		alias: [
 			{ find: "obsidian", replacement: path.resolve(__dirname, "tests/mocks/obsidian.ts") },
-			{
-				find: "@real1ty-obsidian-plugins/testing/visual",
-				replacement: path.resolve(__dirname, "./shared/src/testing/visual/index.ts"),
-			},
-			{
-				find: "@real1ty-obsidian-plugins/testing",
-				replacement: path.resolve(__dirname, "./shared/src/testing/index.ts"),
-			},
-			{
-				find: "@real1ty-obsidian-plugins-react",
-				replacement: path.resolve(__dirname, "./shared/src/react/index.ts"),
-			},
+			...sharedVitestAliases(__dirname),
 		],
 		extensions: [".ts", ".tsx", ".js", ".mjs", ".json"],
 	},

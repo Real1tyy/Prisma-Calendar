@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
+import { sharedVitestAliases } from "../shared/src/testing/vitest-aliases.ts";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
@@ -21,10 +23,9 @@ export default defineConfig({
 		},
 	},
 	resolve: {
-		alias: {
-			obsidian: path.resolve(__dirname, "../shared/src/testing/mocks/obsidian.ts"),
-			"@real1ty-obsidian-plugins/testing": path.resolve(__dirname, "../shared/src/testing/index.ts"),
-			"@real1ty-obsidian-plugins": path.resolve(__dirname, "../shared/src/index.ts"),
-		},
+		alias: [
+			{ find: "obsidian", replacement: path.resolve(__dirname, "../shared/src/testing/mocks/obsidian.ts") },
+			...sharedVitestAliases(__dirname),
+		],
 	},
 });
