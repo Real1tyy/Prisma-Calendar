@@ -1,3 +1,4 @@
+import * as fs from "node:fs";
 import * as path from "node:path";
 
 /**
@@ -10,10 +11,20 @@ import * as path from "node:path";
  *
  * Must be imported via a relative path from plugin configs (not via the package
  * alias itself) to avoid a chicken-and-egg at config load time.
+ *
+ * Layout-aware: in the monorepo, `shared/` is a sibling of each plugin; in
+ * public mirrors, the sync script nests `shared/` inside the plugin root. We
+ * prefer the nested copy when present and fall back to the sibling layout.
  */
+function resolveSharedPackageSrc(pluginDir: string, name: string): string {
+	const nested = path.resolve(pluginDir, name, "src");
+	if (fs.existsSync(path.join(nested, "index.ts"))) return nested;
+	return path.resolve(pluginDir, "..", name, "src");
+}
+
 export function sharedVitestAliases(pluginDir: string) {
-	const sharedSrc = path.resolve(pluginDir, "../shared/src");
-	const sharedReactSrc = path.resolve(pluginDir, "../shared-react/src");
+	const sharedSrc = resolveSharedPackageSrc(pluginDir, "shared");
+	const sharedReactSrc = resolveSharedPackageSrc(pluginDir, "shared-react");
 	return [
 		{
 			find: /^@real1ty-obsidian-plugins-react$/,
