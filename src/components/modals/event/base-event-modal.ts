@@ -174,6 +174,13 @@ export abstract class BaseEventModal extends Modal {
 		addCls(this.modalEl, "event-modal");
 		addCls(contentEl, cls("event-modal-content"));
 
+		// E2E testability hook: expose the active modal instance for Playwright to
+		// reach chip lists / internal state without re-implementing the assign modal
+		// drive-through. Guarded to the E2E bootstrap flag so it never runs in prod.
+		if ((window as unknown as { E2E?: boolean }).E2E) {
+			(window as unknown as { __prismaActiveEventModal?: unknown }).__prismaActiveEventModal = this;
+		}
+
 		// Allow subclasses to perform initialization
 		void this.initialize();
 
