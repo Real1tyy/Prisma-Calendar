@@ -20,6 +20,22 @@ const VERSION_FILE = join(E2E_ROOT, "obsidian-version.json");
 const VERBOSE = process.env["E2E_VERBOSE"] === "1" || process.env["E2E_DEBUG"] === "1";
 const log = createFileLogger(LOG_FILE, { verbose: VERBOSE });
 
+// Demo mode: `PW_DEMO=1` (or any positive int value, interpreted as ms) slows
+// every Playwright operation so you can watch what the suite does. The wrapper
+// script also forces headed mode when PW_DEMO is set, so a visible Obsidian
+// window shows up. Defaults to 500ms when enabled without a custom value.
+const DEMO_DEFAULT_SLOW_MO_MS = 500;
+
+function resolveDemoSlowMo(): number {
+	const raw = process.env["PW_DEMO"];
+	if (!raw || raw === "0" || raw === "false") return 0;
+	if (raw === "1" || raw === "true") return DEMO_DEFAULT_SLOW_MO_MS;
+	const parsed = Number.parseInt(raw, 10);
+	return Number.isFinite(parsed) && parsed > 0 ? parsed : DEMO_DEFAULT_SLOW_MO_MS;
+}
+
+const DEMO_SLOW_MO_MS = resolveDemoSlowMo();
+
 export async function bootstrapObsidian(options: { prefix?: string } = {}): Promise<BootstrappedObsidian> {
 	const version = JSON.parse(readFileSync(VERSION_FILE, "utf8")) as {
 		appVersion: string;
@@ -28,6 +44,7 @@ export async function bootstrapObsidian(options: { prefix?: string } = {}): Prom
 
 	return sharedBootstrap({
 		version,
+		slowMoMs: DEMO_SLOW_MO_MS,
 		vaultSeedDir: join(E2E_ROOT, "fixtures", "vault-seed"),
 		vaultsRoot: VAULTS_ROOT,
 		prefix: options.prefix ?? "run",

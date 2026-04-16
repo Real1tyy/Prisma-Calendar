@@ -97,6 +97,12 @@ export type BootstrapOptions = {
 	/** Additional CLI args appended after the defaults. */
 	extraArgs?: readonly string[];
 	/**
+	 * Slow every Playwright operation by the given milliseconds. Forwarded to
+	 * `chromium.connectOverCDP({ slowMo })`. Used by demo/debug mode so the
+	 * browser is easy to watch. Defaults to 0 (no throttle).
+	 */
+	slowMoMs?: number;
+	/**
 	 * Hook invoked after the plugin files are staged; use this to write
 	 * `data.json` into the plugin folder. Typical use: pre-seed settings AND
 	 * set `version: manifest.version` to suppress the plugin's "What's new"
@@ -310,7 +316,9 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 	});
 	log.debug(`got CDP wsEndpoint=${wsEndpoint}`);
 
-	const browser = await chromium.connectOverCDP(wsEndpoint, { timeout: 30_000 });
+	const slowMo = options.slowMoMs && options.slowMoMs > 0 ? options.slowMoMs : 0;
+	if (slowMo > 0) log.info(`slowMo=${slowMo}ms (demo mode)`);
+	const browser = await chromium.connectOverCDP(wsEndpoint, { timeout: 30_000, slowMo });
 	log.debug(`connected (contexts=${browser.contexts().length})`);
 
 	const context = browser.contexts()[0];

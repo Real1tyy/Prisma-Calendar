@@ -21,12 +21,29 @@ pnpm --filter Prisma-Calendar run test:e2e -- --debug
 # headed (watch Obsidian actually do things)
 pnpm --filter Prisma-Calendar run test:e2e:headed
 
+# demo mode — headed + slowMo so every action is easy to follow visually
+pnpm --filter Prisma-Calendar run test:e2e:demo -- specs/events/create-allday.spec.ts
+
 # interactive Playwright UI mode
 pnpm --filter Prisma-Calendar run test:e2e:ui
 
 # single spec, with Playwright inspector
 pnpm --filter Prisma-Calendar run test:e2e:debug -- specs/plugin-load.spec.ts
 ```
+
+### Demo mode
+
+`PW_DEMO=1` forces headed mode (xvfb off) and feeds `slowMo` into the Playwright
+CDP connection so every click / fill / press is paced at 500ms. Use it when you
+want to watch a flow execute without a debugger. Override the pacing with any
+positive integer (milliseconds):
+
+```bash
+PW_DEMO=250  pnpm --filter Prisma-Calendar run test:e2e -- specs/events/create-allday.spec.ts
+PW_DEMO=1200 pnpm --filter Prisma-Calendar run test:e2e -- specs/events/recurring.spec.ts
+```
+
+Demo mode is local-only; CI always runs headless and unthrottled.
 
 First run downloads the pinned Obsidian binary + asar via `obsidian-launcher` into
 its cache (`~/.obsidian-cache/` on Linux). Subsequent runs reuse it.

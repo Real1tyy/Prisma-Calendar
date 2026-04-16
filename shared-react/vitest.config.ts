@@ -8,6 +8,7 @@ import { sharedVitestAliases } from "../shared/src/testing/vitest-aliases.ts";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+	server: { fs: { allow: [".."] } },
 	plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
 	test: {
 		globals: true,
