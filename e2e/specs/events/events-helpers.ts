@@ -13,6 +13,8 @@ export const TOOLBAR_CREATE_SELECTOR = '[data-testid="prisma-cal-toolbar-create"
 export const TOOLBAR_VIEW_MONTH_SELECTOR = '[data-testid="prisma-cal-toolbar-view-month"]';
 export const TOOLBAR_VIEW_WEEK_SELECTOR = '[data-testid="prisma-cal-toolbar-view-week"]';
 export const TOOLBAR_VIEW_DAY_SELECTOR = '[data-testid="prisma-cal-toolbar-view-day"]';
+export const TOOLBAR_NEXT_SELECTOR = '[data-testid="prisma-cal-toolbar-next"]';
+export const TOOLBAR_PREV_SELECTOR = '[data-testid="prisma-cal-toolbar-prev"]';
 
 const NEW_FILE_POLL_INTERVAL_MS = 100;
 const NEW_FILE_TIMEOUT_MS = 10_000;
@@ -125,6 +127,31 @@ export async function openCalendarReady(page: Page): Promise<void> {
 export async function switchToWeekView(page: Page): Promise<void> {
 	await page.locator(TOOLBAR_VIEW_WEEK_SELECTOR).click();
 	await page.locator(".fc-timegrid").waitFor({ state: "visible", timeout: 10_000 });
+}
+
+/**
+ * Click the toolbar prev/next button to advance the view by `monthDiff`
+ * "pages". In month view each click is ±1 month; in week/day views the
+ * semantics follow whatever the view advances by. Negative = back.
+ */
+export async function navigateCalendar(page: Page, monthDiff: number): Promise<void> {
+	if (monthDiff === 0) return;
+	const selector = monthDiff > 0 ? TOOLBAR_NEXT_SELECTOR : TOOLBAR_PREV_SELECTOR;
+	for (let i = 0; i < Math.abs(monthDiff); i++) {
+		await page.locator(selector).click();
+	}
+}
+
+/** Months between today and an ISO-ish date string (YYYY-MM-DD or YYYY-MM-DDTHH:MM). */
+export function monthsFromTodayTo(isoDate: string): number {
+	const today = new Date();
+	const target = new Date(isoDate);
+	return (target.getFullYear() - today.getFullYear()) * 12 + (target.getMonth() - today.getMonth());
+}
+
+/** Wait for at least one `.fc-event` block whose label contains `title` to be visible. */
+export async function expectEventVisible(page: Page, title: string, timeoutMs = 15_000): Promise<void> {
+	await page.locator(".fc-event", { hasText: title }).first().waitFor({ state: "visible", timeout: timeoutMs });
 }
 
 /**

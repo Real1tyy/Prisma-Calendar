@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { expectFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
+import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
 import {
@@ -80,20 +80,12 @@ Priority: high
 		});
 
 		await saveEventModal(obsidian.page);
-		await obsidian.page.waitForTimeout(1_000);
 
-		const currentFile = await obsidian.page.evaluate(() => {
-			const w = window as unknown as {
-				app: { vault: { getMarkdownFiles: () => Array<{ path: string }> } };
-			};
-			return w.app.vault
-				.getMarkdownFiles()
-				.map((f) => f.path)
-				.find((p) => p.startsWith("Events/") && p.includes("Editable"));
-		});
-		expect(currentFile).toBeTruthy();
+		await expect
+			.poll(() => readEventFrontmatter(obsidian.vaultDir, seedPath)["Location"], { timeout: 10_000 })
+			.toBe("Room B");
 
-		expectFrontmatter(obsidian.vaultDir, currentFile!, {
+		expectFrontmatter(obsidian.vaultDir, seedPath, {
 			"Start Date": `${today}T14:00:00.000Z`,
 			"End Date": `${today}T15:30:00.000Z`,
 			Category: ["Personal", "Fitness"],

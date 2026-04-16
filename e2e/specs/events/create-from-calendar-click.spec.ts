@@ -1,11 +1,20 @@
 import { expect, test } from "../../fixtures/electron";
-import { EVENT_MODAL_SELECTOR, openCalendarReady, switchToWeekView } from "./events-helpers";
+import {
+	EVENT_MODAL_SELECTOR,
+	expectEventVisible,
+	openCalendarReady,
+	snapshotEventFiles,
+	switchToWeekView,
+	waitForNewEventFiles,
+} from "./events-helpers";
+import { fillEventModal, saveEventModal } from "./fill-event-modal";
 
 // Drag-select on FullCalendar's time grid must open the event modal with the
-// selected range pre-filled. The drag path is a real workflow — users drag
-// across slots to pick a time range, not type dates into inputs.
+// selected range pre-filled, accept a title, and render the saved block back
+// into the grid. The drag path is a real workflow — users drag across slots
+// to pick a time range, not type dates into inputs.
 test.describe("create event — from calendar drag", () => {
-	test("drag on time grid pre-fills start/end", async ({ obsidian }) => {
+	test("drag on time grid pre-fills start/end and renders saved block", async ({ obsidian }) => {
 		await openCalendarReady(obsidian.page);
 		await switchToWeekView(obsidian.page);
 
@@ -16,6 +25,7 @@ test.describe("create event — from calendar drag", () => {
 		expect(slotBox).not.toBeNull();
 		if (!slotBox) return;
 
+		const baseline = snapshotEventFiles(obsidian.vaultDir);
 		const startX = slotBox.x + slotBox.width / 2;
 		const startY = slotBox.y + 2;
 		const endY = slotBox.y + slotBox.height * 2;
@@ -34,5 +44,11 @@ test.describe("create event — from calendar drag", () => {
 
 		const end = await obsidian.page.locator('[data-testid="prisma-event-control-end"]').inputValue();
 		expect(end).not.toBe("");
+
+		await fillEventModal(obsidian.page, { title: "Dragged Event" });
+		await saveEventModal(obsidian.page);
+		await waitForNewEventFiles(obsidian.vaultDir, baseline, 1);
+
+		await expectEventVisible(obsidian.page, "Dragged Event");
 	});
 });
