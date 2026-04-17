@@ -124,13 +124,56 @@ export async function bootstrapObsidian(options: { prefix?: string } = {}): Prom
 			// an analytics E2E spec might click is present on first paint — the
 			// production defaults hide several (including the plain "Create"
 			// action) behind the gear menu.
+			//
+			// Also write `.obsidian/app.json` with `alwaysUpdateLinks: true` so
+			// the "Update links" modal never appears when the plugin renames an
+			// event file (e.g. on zettel-id assignment or title change). That
+			// modal blocks subsequent test clicks.
+			const obsidianDir = join(pluginDir, "..", "..");
+			writeFileSync(
+				join(obsidianDir, "app.json"),
+				JSON.stringify({ alwaysUpdateLinks: true, promptDelete: false }, null, 2),
+				"utf8"
+			);
+
 			const manifestVersion = manifest["version"] as string;
+			// Enable every batch-action button up front so specs can exercise ones that
+			// the production default hides (batchCloneNext / batchMoveNext / etc. are
+			// off by default — see DEFAULT_BATCH_ACTION_BUTTONS in src/constants.ts).
+			// Kept inline rather than imported from src to keep the fixture build-free.
+			const ALL_BATCH_BUTTONS = [
+				"batchSelectAll",
+				"batchClear",
+				"batchDuplicate",
+				"batchMoveBy",
+				"batchMarkAsDone",
+				"batchMarkAsNotDone",
+				"batchCategories",
+				"batchFrontmatter",
+				"batchCloneNext",
+				"batchClonePrev",
+				"batchMoveNext",
+				"batchMovePrev",
+				"batchOpenAll",
+				"batchSkip",
+				"batchMakeVirtual",
+				"batchMakeReal",
+				"batchDelete",
+			];
 			writeFileSync(
 				join(pluginDir, "data.json"),
 				JSON.stringify(
 					{
 						version: manifestVersion,
-						calendars: [{ id: "default", name: "Main Calendar", enabled: true, directory: "Events" }],
+						calendars: [
+							{
+								id: "default",
+								name: "Main Calendar",
+								enabled: true,
+								directory: "Events",
+								batchActionButtons: ALL_BATCH_BUTTONS,
+							},
+						],
 						pageHeaderState: {
 							visibleActionIds: [
 								"create-event",

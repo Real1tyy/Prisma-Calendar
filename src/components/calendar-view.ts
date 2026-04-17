@@ -818,6 +818,21 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 	private stampToolbarTestIds(): void {
 		const root = this.container;
 		if (!root) return;
+		// FullCalendar v6 recycles button DOM elements across `setOption("headerToolbar")`
+		// calls and rewrites their `fc-<name>-button` class. A button that used to be
+		// `.fc-filteredEvents-button` can become `.fc-batchCounter-button` on the next
+		// render, so any `data-testid` we stamped earlier would now be wrong. Clear the
+		// stale testids before re-stamping so the map below is authoritative.
+		//
+		// Also note: the `className` field on CustomButtonInput is IGNORED by FC v6 —
+		// only `fc-<buttonName>-button` is applied. Stamping must key off those, never
+		// off the prisma-prefixed class names passed to `customButtons`.
+		const toolbar = root.querySelector(".fc-header-toolbar");
+		if (toolbar) {
+			toolbar
+				.querySelectorAll<HTMLElement>('[data-testid^="prisma-cal-toolbar-"], [data-testid^="prisma-cal-batch-"]')
+				.forEach((el) => el.removeAttribute("data-testid"));
+		}
 		const map: Array<[string, string]> = [
 			[".fc-prev-button", "prisma-cal-toolbar-prev"],
 			[".fc-next-button", "prisma-cal-toolbar-next"],
@@ -835,10 +850,33 @@ export class CalendarComponent extends MountableComponent(Component, "prisma") i
 			[".fc-filteredEvents-button", "prisma-cal-toolbar-filtered-events"],
 			[".fc-skippedEvents-button", "prisma-cal-toolbar-skipped-events"],
 			[".fc-mobileControls-button", "prisma-cal-toolbar-mobile-controls"],
+			// Batch-mode toolbar buttons — only rendered while selection mode is on.
+			// Key off FC's own `fc-<customButtonKey>-button` class (e.g. `batchCounter`
+			// → `.fc-batchCounter-button`). The `className` on these CustomButtonInput
+			// objects is NOT applied by FC, so the prisma-prefixed classes never land
+			// on the DOM.
+			[".fc-batchCounter-button", "prisma-cal-batch-counter"],
+			[".fc-batchSelectAll-button", "prisma-cal-batch-select-all"],
+			[".fc-batchClear-button", "prisma-cal-batch-clear"],
+			[".fc-batchDuplicate-button", "prisma-cal-batch-duplicate"],
+			[".fc-batchDelete-button", "prisma-cal-batch-delete"],
+			[".fc-batchSkip-button", "prisma-cal-batch-skip"],
+			[".fc-batchMarkAsDone-button", "prisma-cal-batch-mark-done"],
+			[".fc-batchMarkAsNotDone-button", "prisma-cal-batch-mark-not-done"],
+			[".fc-batchCategories-button", "prisma-cal-batch-categories"],
+			[".fc-batchFrontmatter-button", "prisma-cal-batch-frontmatter"],
+			[".fc-batchCloneNext-button", "prisma-cal-batch-clone-next"],
+			[".fc-batchClonePrev-button", "prisma-cal-batch-clone-prev"],
+			[".fc-batchMoveNext-button", "prisma-cal-batch-move-next"],
+			[".fc-batchMovePrev-button", "prisma-cal-batch-move-prev"],
+			[".fc-batchMoveBy-button", "prisma-cal-batch-move-by"],
+			[".fc-batchOpenAll-button", "prisma-cal-batch-open-all"],
+			[".fc-batchMakeVirtual-button", "prisma-cal-batch-make-virtual"],
+			[".fc-batchMakeReal-button", "prisma-cal-batch-make-real"],
 		];
 		for (const [selector, testId] of map) {
 			const el = root.querySelector(selector);
-			if (el instanceof HTMLElement && !el.hasAttribute("data-testid")) {
+			if (el instanceof HTMLElement) {
 				el.setAttribute("data-testid", testId);
 			}
 		}

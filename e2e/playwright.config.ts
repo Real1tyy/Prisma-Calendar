@@ -24,6 +24,11 @@ const DEBUG_ON = !!process.env.PWDEBUG || process.argv.includes("--ui") || proce
 
 const TEST_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 1_800_000 : 90_000;
 const EXPECT_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 10_000;
+// `actionTimeout` caps every `waitFor` / `click` / `fill` that doesn't pass its
+// own `timeout`. Mirrors EXPECT_TIMEOUT so specs can omit per-call timeouts
+// entirely — see feedback_e2e_no_timeout_overrides. Without this, actions fall
+// back to testTimeout (90s) and a single hung wait eats the whole spec.
+const ACTION_TIMEOUT = DEBUG_ON ? 0 : DEMO_ON ? 120_000 : 10_000;
 
 export default defineConfig({
 	outputDir: "./test-results",
@@ -41,6 +46,7 @@ export default defineConfig({
 		trace: "retain-on-failure",
 		screenshot: "only-on-failure",
 		video: "retain-on-failure",
+		actionTimeout: ACTION_TIMEOUT,
 	},
 	projects: [
 		{

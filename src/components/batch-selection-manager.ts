@@ -380,12 +380,16 @@ export class BatchSelectionManager {
 		});
 
 		const buttonContainer = contentEl.createDiv(cls("modal-button-container"));
-		buttonContainer.createEl("button", { text: "Cancel" }).onclick = () => confirmModal.close();
+		buttonContainer.setAttribute("data-testid", "prisma-batch-confirm-modal");
+		const cancelBtn = buttonContainer.createEl("button", { text: "Cancel" });
+		cancelBtn.setAttribute("data-testid", "prisma-batch-confirm-cancel");
+		cancelBtn.onclick = () => confirmModal.close();
 
 		const confirmBtn = buttonContainer.createEl("button", {
 			text: confirmationTitle,
 			cls: "mod-warning",
 		});
+		confirmBtn.setAttribute("data-testid", "prisma-batch-confirm-submit");
 		confirmBtn.onclick = async () => {
 			confirmModal.close();
 
