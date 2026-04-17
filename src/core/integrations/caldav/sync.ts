@@ -3,6 +3,7 @@ import type { CustomCalendarSettings } from "../../../types/settings";
 import { BaseSyncService, type BaseSyncServiceOptions, yieldToMainThread } from "../base-sync-service";
 import { parseICSContent } from "../ics-import";
 import { CalDAVClientService, type CalDAVFetchedEvent } from "./client";
+import { computeCaldavSyncPlan } from "./sync-planner";
 import type { CalDAVSyncStateManager } from "./sync-state-manager";
 import type { CalDAVSyncMetadata, CalDAVSyncResult } from "./types";
 
@@ -78,29 +79,34 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 				calendar: this.calendar,
 			});
 
+			const plan = computeCaldavSyncPlan({
+				accountId: this.account.id,
+				calendarHref: this.calendar.url,
+				remoteEvents: events,
+				findByUid: (uid) => this.syncStateManager.findByUid(this.account.id, this.calendar.url, uid),
+				findByUidGlobal: (uid) => this.syncStateManager.findByUidGlobal(uid),
+			});
+
 			let processedCount = 0;
-			for (const event of events) {
+			for (const action of plan.actions) {
 				if (this.destroyed) break;
 
+				// Every branch that performs IO wraps its own try/catch so a
+				// single object-level failure (one bad ICS payload, one write
+				// error) doesn't abort the rest of the batch. Mirrors the
+				// per-event try/catch the pre-planner code had.
 				try {
-					const uid = event.uid ?? "";
-					const existingEvent = this.syncStateManager.findByUid(this.account.id, this.calendar.url, uid);
-
-					if (existingEvent) {
-						if (existingEvent.metadata.etag === event.etag) {
-							continue;
-						}
-						const wasUpdated = await this.updateNoteFromEvent(existingEvent.filePath, event);
-						if (wasUpdated) {
-							result.updated++;
-						}
-					} else {
-						// Skip if another account/calendar already tracks this event (same uid)
-						if (this.syncStateManager.findByUidGlobal(uid)) {
-							continue;
-						}
-						await this.createNoteFromEvent(event);
+					if (action.kind === "create") {
+						await this.createNoteFromEvent(action.event);
 						result.created++;
+					} else if (action.kind === "update") {
+						const wasUpdated = await this.updateNoteFromEvent(action.filePath, action.event);
+						if (wasUpdated) result.updated++;
+					} else {
+						// skip-unchanged / skip-foreign-uid / skip-missing-uid:
+						// no IO, no counter increment. The planner has already
+						// decided these are no-ops.
+						continue;
 					}
 
 					processedCount++;
@@ -108,7 +114,8 @@ export class CalDAVSyncService extends BaseSyncService<CalDAVSyncResult> {
 						await yieldToMainThread();
 					}
 				} catch (error) {
-					const errorMsg = `Failed to sync event ${event.url}: ${error}`;
+					const url = action.kind === "create" || action.kind === "update" ? action.event.url : "";
+					const errorMsg = `Failed to sync event ${url}: ${error}`;
 					console.error(`[CalDAV Sync] ${errorMsg}`);
 					result.errors.push(errorMsg);
 				}
