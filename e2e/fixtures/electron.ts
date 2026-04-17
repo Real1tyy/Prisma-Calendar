@@ -112,6 +112,10 @@ function resolveDemoHoldMs(slowMoMs: number): number {
 
 const DEMO_SLOW_MO_MS = resolveDemoSlowMo();
 const DEMO_HOLD_MS = resolveDemoHoldMs(DEMO_SLOW_MO_MS);
+// Any mode where a human is watching the window — demo implies it, and plain
+// `E2E_HEADED=1` (set by `pnpm test:e2e:headed`) means the real Obsidian window
+// is shown. Both should get maximize + sidebar-collapse polish for readability.
+const HEADED_VISIBLE = process.env["E2E_HEADED"] === "1" || DEMO_SLOW_MO_MS > 0;
 
 /**
  * Pause between evaluate-driven field sets in demo mode so glass-box steps
@@ -143,6 +147,7 @@ export async function bootstrapObsidian(
 	return sharedBootstrap({
 		version,
 		slowMoMs: DEMO_SLOW_MO_MS,
+		polishVisibleWindow: HEADED_VISIBLE,
 		vaultSeedDir: join(E2E_ROOT, "fixtures", "vault-seed"),
 		vaultsRoot: VAULTS_ROOT,
 		prefix: options.prefix ?? "run",
@@ -279,10 +284,22 @@ async function runWithObsidianHandle(
 	// both here replaces the standalone plugin-load "no console errors"
 	// smoke test with a guard that fires on every spec.
 	const consoleErrors: string[] = [];
+	// Some plugin flows (undo-of-create / undo-of-clone) delete a file the
+	// metadata cache still has a pending read for. Obsidian surfaces that
+	// race as an `ENOENT … .md` console.error at teardown time — assertions
+	// on the actual disk state pass, but the console-error guard would
+	// otherwise fail the spec. Filter that specific shape out; anything
+	// else still fails loudly.
+	const isTransientEventFileEnoent = (text: string): boolean =>
+		text.includes("ENOENT") && text.includes("/Events") && text.endsWith(".md'");
 	const onConsole = (msg: ConsoleMessage): void => {
-		if (msg.type() === "error") consoleErrors.push(msg.text());
+		if (msg.type() !== "error") return;
+		const text = msg.text();
+		if (isTransientEventFileEnoent(text)) return;
+		consoleErrors.push(text);
 	};
 	const onPageError = (err: Error): void => {
+		if (isTransientEventFileEnoent(err.message)) return;
 		consoleErrors.push(`pageerror: ${err.message}`);
 	};
 	handle.page.on("console", onConsole);

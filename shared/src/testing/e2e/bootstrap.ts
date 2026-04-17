@@ -113,6 +113,15 @@ export type BootstrapOptions = {
 	 */
 	slowMoMs?: number;
 	/**
+	 * Maximize the Obsidian window and collapse the left sidebar once the
+	 * renderer is ready. Intended for modes where a human watches the run
+	 * (E2E_HEADED / PW_DEMO). Demo mode (slowMoMs > 0) implies this too, so
+	 * callers only need to set it for plain headed runs. Default false —
+	 * headless CI keeps the CDP-default viewport so screenshots stay
+	 * deterministic.
+	 */
+	polishVisibleWindow?: boolean;
+	/**
 	 * Hook invoked after the plugin files are staged; use this to write
 	 * `data.json` into the plugin folder. Typical use: pre-seed settings AND
 	 * set `version: manifest.version` to suppress the plugin's "What's new"
@@ -384,6 +393,15 @@ export async function bootstrapObsidian(options: BootstrapOptions): Promise<Boot
 		await options.afterPluginLoaded(page);
 	}
 
+	// Demo/headed polish: maximize the window and collapse Obsidian's left
+	// sidebar so what the human sees is the plugin UI, not chrome. Triggered
+	// whenever the caller opts in via `polishVisibleWindow` OR slowMo > 0
+	// (PW_DEMO implies a watched run). In a plain headless CI run the viewport
+	// stays at CDP defaults.
+	if (slowMo > 0 || options.polishVisibleWindow) {
+		await configureDemoViewport(page, log);
+	}
+
 	const elapsed = ((Date.now() - bootstrapStart) / 1000).toFixed(1);
 	if (verboseBootstrap) {
 		log.info(`bootstrap ready id=${id} plugin=${options.plugin.id}`);
@@ -577,6 +595,37 @@ function pipeRendererConsole(page: Page, log: Logger): void {
 	// up without requiring --debug.
 	page.on("pageerror", (err) => log.info(`pageerror: ${err.message}\n${err.stack ?? ""}`));
 	page.on("crash", () => log.info(`PAGE CRASHED`));
+}
+
+// Maximize the Obsidian window and collapse the left sidebar so the watched
+// run shows the plugin UI instead of workspace chrome. Maximize goes through
+// `@electron/remote`, which Obsidian enables for its renderer — external CDP
+// approaches (Browser.setWindowBounds, window.resizeTo, Chromium's
+// --start-maximized CLI switch) all fail against Obsidian because the app
+// sets explicit BrowserWindow bounds during startup and overrides them.
+// Both steps are best-effort: a failure here is cosmetic and must not fail
+// the spec run.
+async function configureDemoViewport(page: Page, log: Logger): Promise<void> {
+	log.debug("demo viewport: maximizing window and collapsing left sidebar");
+
+	await page
+		.evaluate(() => {
+			const w = window as unknown as { require?: (m: string) => unknown };
+			const remote = w.require?.("@electron/remote") as { getCurrentWindow?: () => { maximize?: () => void } };
+			remote?.getCurrentWindow?.()?.maximize?.();
+		})
+		.catch((err) => log.debug(`demo viewport: maximize failed: ${String(err)}`));
+
+	try {
+		const btn = page.locator(".sidebar-toggle-button.mod-left").first();
+		await btn.waitFor({ state: "visible", timeout: 5_000 });
+		const alreadyCollapsed = await page.evaluate(
+			() => document.querySelector(".mod-left-split")?.classList.contains("is-collapsed") ?? false
+		);
+		if (!alreadyCollapsed) await btn.click();
+	} catch (err) {
+		log.debug(`demo viewport: sidebar collapse failed: ${String(err)}`);
+	}
 }
 
 // Format: YYYY-MM-DD-HHmm (local time) — chronologically sortable in `ls`, and
