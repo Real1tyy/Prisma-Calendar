@@ -233,7 +233,7 @@ export class ConnectionRenderer {
 			.path(d)
 			.fill("none")
 			.stroke({ color: this.style.color, width: this.style.strokeWidth })
-			.attr({ "marker-end": `url(#${ARROW_MARKER_ID})` });
-		if (dashed) p.attr({ "stroke-dasharray": "8 5" });
+			.attr({ "marker-end": `url(#${ARROW_MARKER_ID})`, "data-testid": "prisma-connection-arrow" });
+		if (dashed) p.attr({ "stroke-dasharray": "8 5", "data-arrow-stub": "true" });
 	}
 }
