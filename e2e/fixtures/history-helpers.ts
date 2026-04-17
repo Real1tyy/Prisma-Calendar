@@ -12,9 +12,14 @@
 // `fixtures/helpers.ts` and delete the duplicate here.
 
 import { expect, type Locator, type Page } from "@playwright/test";
-import { listEventFiles, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
+import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
-import { openCreateModal, snapshotEventFiles, waitForNewEventFiles } from "../specs/events/events-helpers";
+import {
+	listEventFiles,
+	openCreateModal,
+	snapshotEventFiles,
+	waitForNewEventFiles,
+} from "../specs/events/events-helpers";
 import { fillEventModal, saveEventModal } from "../specs/events/fill-event-modal";
 
 const ACTIVE_CALENDAR_LEAF = ".workspace-leaf.mod-active";

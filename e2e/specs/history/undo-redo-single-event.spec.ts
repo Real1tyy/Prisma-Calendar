@@ -1,4 +1,4 @@
-import { listEventFiles, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
+import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
 import {
@@ -13,7 +13,7 @@ import {
 	waitForFileExists,
 	waitForFrontmatter,
 } from "../../fixtures/history-helpers";
-import { openCalendarReady, rightClickEventMenu } from "../events/events-helpers";
+import { listEventFiles, openCalendarReady, rightClickEventMenu } from "../events/events-helpers";
 import { fillEventModal, saveEventModal } from "../events/fill-event-modal";
 
 // Every action is driven through the real UI: toolbar Create, right-click →

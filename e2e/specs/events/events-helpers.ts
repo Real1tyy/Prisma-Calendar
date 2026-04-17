@@ -2,11 +2,29 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { type Locator, type Page } from "@playwright/test";
-import { listEventFiles } from "@real1ty-obsidian-plugins/testing/e2e";
+import { listEventFiles as listAllMarkdownFiles } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { type EventModalInput, fillEventModal, saveEventModal } from "./fill-event-modal";
 
 export const PLUGIN_ID = "prisma-calendar";
+
+// Prisma-Calendar seeds `Virtual Events.md` into every calendar directory on
+// bundle init (via `VirtualEventStore` with `createIfMissing: true`). That
+// sentinel is not a user event — counting it inflates absolute assertions
+// (`.toBe(0)`, `.toBe(1)`) and silently breaks delta arithmetic when a new
+// calendar is added mid-spec. Every event-listing call in this plugin's e2e
+// suite must go through this filtered version instead of the raw shared
+// helper, so the sentinel can never leak into assertions.
+const VIRTUAL_EVENTS_FILE = "Virtual Events.md";
+
+/**
+ * List calendar event files under `subdir`, excluding the Virtual Events
+ * sentinel. This is the default event-listing helper for Prisma-Calendar
+ * e2e specs — prefer it over the shared `listEventFiles` primitive.
+ */
+export function listEventFiles(vaultDir: string, subdir = "Events"): string[] {
+	return listAllMarkdownFiles(vaultDir, subdir).filter((p) => !p.endsWith(`/${VIRTUAL_EVENTS_FILE}`));
+}
 
 export const EVENT_MODAL_SELECTOR = '[data-testid="prisma-event-field-title"]';
 export const TOOLBAR_CREATE_SELECTOR = '[data-testid="prisma-cal-toolbar-create"]';

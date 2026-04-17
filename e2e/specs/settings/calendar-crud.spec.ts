@@ -1,4 +1,4 @@
-import { listEventFiles, readPluginData, setTextInput, settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
+import { readPluginData, setTextInput, settleSettings } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
 import {
@@ -11,6 +11,7 @@ import {
 	setSchemaTextInput,
 	switchSettingsTab,
 } from "../../fixtures/helpers";
+import { listEventFiles } from "../events/events-helpers";
 
 const PLUGIN_ID = "prisma-calendar";
 

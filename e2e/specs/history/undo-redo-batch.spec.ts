@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { listEventFiles, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
+import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
 import {
@@ -19,7 +19,7 @@ import {
 	waitForFileExists,
 	waitForFrontmatter,
 } from "../../fixtures/history-helpers";
-import { openCalendarReady } from "../events/events-helpers";
+import { listEventFiles, openCalendarReady } from "../events/events-helpers";
 
 // Every batch op is driven through: toolbar Create (per event) → toolbar
 // Batch Select → click each event → click the batch action button. Partial

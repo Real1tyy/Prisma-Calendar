@@ -1,5 +1,3 @@
-import { listEventFiles } from "@real1ty-obsidian-plugins/testing/e2e";
-
 import { expect, test } from "../../fixtures/electron";
 import {
 	clickBatchButton,
@@ -16,7 +14,7 @@ import {
 	waitForFileExists,
 	waitForFrontmatter,
 } from "../../fixtures/history-helpers";
-import { openCalendarReady, rightClickEventMenu } from "../events/events-helpers";
+import { listEventFiles, openCalendarReady, rightClickEventMenu } from "../events/events-helpers";
 import { fillEventModal, saveEventModal } from "../events/fill-event-modal";
 
 // History bugs usually manifest in chains, not single actions. These specs

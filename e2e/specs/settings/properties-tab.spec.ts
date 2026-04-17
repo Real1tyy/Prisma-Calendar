@@ -1,6 +1,5 @@
 import {
 	expectPluginData,
-	listEventFiles,
 	readEventFrontmatter,
 	readPluginData,
 	settleSettings,
@@ -18,6 +17,7 @@ import {
 	switchSettingsTab,
 	waitForPluginReady,
 } from "../../fixtures/helpers";
+import { listEventFiles } from "../events/events-helpers";
 
 const PLUGIN_ID = "prisma-calendar";
 

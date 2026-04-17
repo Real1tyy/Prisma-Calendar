@@ -1,13 +1,14 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { expectFrontmatter, listEventFiles, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
+import { expectFrontmatter, readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { expect, test } from "../../fixtures/electron";
 import {
 	createEventViaModal,
 	expectEventVisible,
 	formatLocalDate,
+	listEventFiles,
 	monthsFromTodayTo,
 	navigateCalendar,
 	openCalendarReady,
