@@ -4,7 +4,7 @@ All notable changes to this project will be documented here.
 
 ---
 
-## 2.13.0 - 4/12/2026
+## 2.13.0 - 4/17/2026
 
 > **TLDR:** New **Heatmap Monthly + Stats** tab pairs a month-locked heatmap with a live monthly pie chart. Also fixes negative stats totals from malformed crossing-midnight events, plus a Duplicate current event command and a handful of recurrence, sort-date, and navigation fixes.
 
@@ -25,6 +25,7 @@ All notable changes to this project will be documented here.
 - **Events sometimes incorrectly marked as done**: Recurring instances could be prematurely marked as done — timed events were marked at start time instead of end time, and all-day events were marked at midnight instead of end of day. See [Recurring Events](./features/events/recurring-dsl.md).
 - **Removing last participant in edit modal not saving**: Clearing all participants from an event and saving did not remove them from frontmatter — the old value persisted. See [Participants](./features/events/participants.md).
 - **Back/forward navigation losing forward history**: Navigating back and then performing any view change permanently destroyed forward history, making the forward button unusable. Both back and forward navigation now work reliably.
+- **Imported all-day events off by one day outside UTC**: Importing an ICS feed on any non-UTC machine shifted all-day events back by a day (e.g. 2026-06-04 arrived as 2026-06-03 in GMT+2). Imported dates now survive the round-trip regardless of your system timezone. See [Integrations](./features/advanced/integrations.md).
 
 ---
 

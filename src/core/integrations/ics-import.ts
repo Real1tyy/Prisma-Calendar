@@ -10,7 +10,7 @@ import type { App, TFile } from "obsidian";
 
 import type { Frontmatter, SingleCalendarConfig } from "../../types";
 import type { RecurrenceType } from "../../types/recurring-event";
-import { setEventBasics } from "../../utils/event-frontmatter";
+import { assignListToFrontmatter, setEventBasics } from "../../utils/event-frontmatter";
 import { extractZettelId, generateUniqueEventPath, removeZettelId } from "../../utils/event-naming";
 import type { CalendarBundle } from "../calendar-bundle";
 
@@ -47,6 +47,16 @@ export interface ICSImportResult {
 }
 
 function icalTimeToDate(icalTime: ICAL.Time): Date {
+	// For date-only values (all-day events), ical.js's toJSDate() constructs a
+	// Date at *local-zone* midnight of the stored y/m/d. The caller then pipes
+	// it through Luxon `{ zone: "utc" }` which reads UTC wall-clock — so on any
+	// non-UTC system the date shifts one day backwards (e.g. 2026-06-04 local
+	// midnight in GMT+2 is 2026-06-03T22:00Z → imported as "2026-06-03"). Force
+	// UTC construction so the stored calendar date survives the round-trip
+	// regardless of where the test runner lives.
+	if (icalTime.isDate) {
+		return new Date(Date.UTC(icalTime.year, icalTime.month - 1, icalTime.day));
+	}
 	return icalTime.toJSDate();
 }
 
@@ -295,7 +305,7 @@ export function buildFrontmatterFromImportedEvent(
 	}
 
 	if (event.categories && event.categories.length > 0) {
-		fm[settings.categoryProp] = event.categories;
+		assignListToFrontmatter(fm, settings.categoryProp, event.categories);
 	}
 
 	if (event.location && settings.locationProp) {
@@ -303,7 +313,7 @@ export function buildFrontmatterFromImportedEvent(
 	}
 
 	if (event.participants && event.participants.length > 0 && settings.participantsProp) {
-		fm[settings.participantsProp] = event.participants;
+		assignListToFrontmatter(fm, settings.participantsProp, event.participants);
 	}
 
 	if (event.rrule) {
