@@ -99,10 +99,15 @@ export function renderIntervalStatsInto(
 	const headerBar = container.createDiv(cls("daily-stats-header-bar"));
 	const headerLeft = headerBar.createDiv(cls("daily-stats-header-left"));
 	const dateLabel = headerBar.createDiv(cls("stats-tab-date-label"));
+	dateLabel.setAttribute("data-testid", "prisma-stats-date-label");
 	const headerRight = headerBar.createDiv(cls("daily-stats-header-right"));
 
 	const skipLabel = headerRight.createEl("label", { cls: cls("stats-skip-checkbox-label") });
-	const skipCheckbox = skipLabel.createEl("input", { type: "checkbox", cls: cls("stats-skip-checkbox") });
+	const skipCheckbox = skipLabel.createEl("input", {
+		type: "checkbox",
+		cls: cls("stats-skip-checkbox"),
+		attr: { "data-testid": "prisma-stats-skip-checkbox" },
+	});
 	skipLabel.createSpan({ text: "Include skipped", cls: cls("stats-skip-checkbox-text") });
 	skipCheckbox.addEventListener("change", () => {
 		includeSkippedEvents = skipCheckbox.checked;
@@ -114,6 +119,7 @@ export function renderIntervalStatsInto(
 	const toggleButton = aggregationToggle.createEl("button", {
 		text: aggregationMode === "name" ? "Event Name" : "Category",
 		cls: cls("stats-mode-button-compact"),
+		attr: { "data-testid": "prisma-stats-mode-button" },
 	});
 	toggleButton.addEventListener("click", () => {
 		aggregationMode = aggregationMode === "name" ? "category" : "name";
@@ -147,6 +153,7 @@ export function renderIntervalStatsInto(
 		headerLeft.empty();
 		const durationStat = headerLeft.createEl("button", {
 			cls: cls("stats-header-stat", "stats-duration-toggle"),
+			attr: { "data-testid": "prisma-stats-total-duration" },
 		});
 		durationStat.setText(
 			`⏱ ${showDecimalHours ? formatDurationAsDecimalHours(stats.totalDuration) : formatDuration(stats.totalDuration)}`
@@ -157,7 +164,9 @@ export function renderIntervalStatsInto(
 		});
 
 		const eventCount = stats.entries.reduce((sum, e) => sum + e.count, 0);
-		headerLeft.createDiv({ cls: cls("stats-header-stat") }).setText(`📅 ${eventCount} events`);
+		const countEl = headerLeft.createDiv({ cls: cls("stats-header-stat") });
+		countEl.setAttribute("data-testid", "prisma-stats-total-count");
+		countEl.setText(`📅 ${eventCount} events`);
 
 		const body = renderIntervalStatsBody(contentContainer, bundle, {
 			stats,

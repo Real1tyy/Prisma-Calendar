@@ -13,6 +13,7 @@ const createMockElement = () => ({
 	createEl: mockCreateEl.mockReturnThis(),
 	empty: mockEmpty.mockReturnThis(),
 	setText: vi.fn().mockReturnThis(),
+	setAttribute: vi.fn().mockReturnThis(),
 	appendChild: vi.fn(),
 	addEventListener: vi.fn(),
 	disabled: false,

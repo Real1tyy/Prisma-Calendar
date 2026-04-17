@@ -94,6 +94,7 @@ export abstract class BaseEventListModal extends Modal {
 			type: "text",
 			placeholder: "Search events... (Ctrl/Cmd+F)",
 			cls: cls("generic-event-search-input"),
+			attr: { "data-testid": "prisma-event-list-search" },
 		});
 
 		this.searchInput.addEventListener("input", (e) => {
@@ -119,6 +120,7 @@ export abstract class BaseEventListModal extends Modal {
 		// Event list
 		this.listContainer = contentEl.createEl("div", {
 			cls: cls("generic-event-list"),
+			attr: { "data-testid": "prisma-event-list-container" },
 		});
 
 		this.renderItems();
@@ -243,6 +245,7 @@ export abstract class BaseEventListModal extends Modal {
 	protected createEventItem(container: HTMLElement, item: EventListItem): void {
 		const itemEl = container.createEl("div", {
 			cls: cls("generic-event-list-item"),
+			attr: { "data-testid": `prisma-event-list-item-${item.title}`, "data-event-title": item.title },
 		});
 
 		if (item.categoryColor) {

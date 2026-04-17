@@ -153,6 +153,7 @@ export class EventsModal extends Modal {
 		const btn = container.createEl("button", {
 			text: label,
 			cls: cls("event-series-tab-btn"),
+			attr: { "data-testid": `prisma-events-modal-tab-${tabId}` },
 		});
 		if (tabId === this.activeTab) {
 			addCls(btn, "is-active");
@@ -256,7 +257,10 @@ export class EventsModal extends Modal {
 		}
 
 		for (const item of items) {
-			const itemEl = listContainer.createDiv(cls("generic-event-list-item"));
+			const itemEl = listContainer.createDiv({
+				cls: cls("generic-event-list-item"),
+				attr: { "data-testid": `prisma-event-list-item-${item.title}`, "data-event-title": item.title },
+			});
 			itemEl.addEventListener("click", item.onClick);
 
 			const infoEl = itemEl.createDiv(cls("generic-event-info"));

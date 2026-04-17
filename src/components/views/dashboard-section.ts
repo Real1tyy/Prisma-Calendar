@@ -70,7 +70,12 @@ export function renderDashboardRanking(container: HTMLElement, items: DashboardI
 		const grid = container.createDiv(cls("dashboard-stats-grid"));
 		for (const stat of stats) {
 			const card = grid.createDiv(cls("dashboard-stats-card"));
-			card.createDiv({ text: String(stat.value), cls: cls("dashboard-stats-value") });
+			card.setAttribute("data-testid", `prisma-dashboard-stat-${stat.label}`);
+			card.createDiv({
+				text: String(stat.value),
+				cls: cls("dashboard-stats-value"),
+				attr: { "data-testid": `prisma-dashboard-stat-value-${stat.label}` },
+			});
 			card.createDiv({ text: stat.label, cls: cls("dashboard-stats-label") });
 		}
 	}
@@ -87,6 +92,8 @@ export function renderDashboardRanking(container: HTMLElement, items: DashboardI
 
 	for (const [i, item] of sorted.entries()) {
 		const row = list.createDiv(cls("dashboard-ranking-row"));
+		row.setAttribute("data-testid", `prisma-dashboard-ranking-row-${item.title}`);
+		row.setAttribute("data-item-title", item.title);
 		row.createEl("span", { text: `${i + 1}`, cls: cls("dashboard-ranking-pos") });
 
 		const barWrap = row.createDiv(cls("dashboard-ranking-bar-wrap"));
@@ -226,6 +233,8 @@ export function renderDashboardTable(
 
 		for (const item of pageItems) {
 			const row = tbody.createEl("tr");
+			row.setAttribute("data-testid", `prisma-dashboard-table-row-${item.title}`);
+			row.setAttribute("data-item-title", item.title);
 
 			if (item.color) {
 				const rgb = hexToRgb(item.color);

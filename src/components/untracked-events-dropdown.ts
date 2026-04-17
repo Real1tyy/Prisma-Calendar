@@ -134,6 +134,7 @@ export class UntrackedEventsDropdown {
 		const createBtnEl = this.dropdownEl.createEl("button", {
 			text: "+ Create untracked event",
 			cls: cls("untracked-dropdown-create-btn"),
+			attr: { "data-testid": "prisma-untracked-create" },
 		});
 		createBtnEl.addEventListener("click", (e) => {
 			e.stopPropagation();
@@ -146,6 +147,7 @@ export class UntrackedEventsDropdown {
 			type: "text",
 			placeholder: "Search untracked events...",
 			cls: cls("untracked-dropdown-search-input"),
+			attr: { "data-testid": "prisma-untracked-search" },
 		});
 
 		this.searchInput.addEventListener("input", (e) => {

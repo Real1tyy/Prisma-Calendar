@@ -28,7 +28,10 @@ export class TableComponent {
 
 		tableContainer.createDiv(cls("stats-table-divider"));
 
-		const table = tableContainer.createEl("table", { cls: cls("stats-table") });
+		const table = tableContainer.createEl("table", {
+			cls: cls("stats-table"),
+			attr: { "data-testid": "prisma-stats-table" },
+		});
 
 		// Table header
 		const thead = table.createEl("thead");
@@ -60,13 +63,19 @@ export class TableComponent {
 		// Render current page entries
 		for (const entry of pageEntries) {
 			const row = this.tableBody.createEl("tr");
+			row.setAttribute("data-testid", `prisma-stats-entry-${entry.name}`);
+			row.setAttribute("data-entry-name", entry.name);
 			row.createEl("td", {
 				text: entry.name,
 				cls: entry.isRecurring ? cls("stats-recurring") : "",
 			});
-			row.createEl("td", { text: entry.count.toString() });
+			row.createEl("td", {
+				text: entry.count.toString(),
+				attr: { "data-testid": `prisma-stats-entry-count-${entry.name}` },
+			});
 			row.createEl("td", {
 				text: this.showDecimalHours ? formatDurationAsDecimalHours(entry.duration) : formatDuration(entry.duration),
+				attr: { "data-testid": `prisma-stats-entry-duration-${entry.name}` },
 			});
 			row.createEl("td", {
 				text: formatPercentage(entry.duration, this.totalDuration),

@@ -99,6 +99,7 @@ export class EventSeriesModal extends Modal {
 				const btn = tabsContainer.createEl("button", {
 					text: tab.label,
 					cls: cls("event-series-tab-btn"),
+					attr: { "data-testid": `prisma-event-series-tab-${tab.id}` },
 				});
 				if (tab.id === this.activeTab) {
 					addCls(btn, "is-active");
@@ -534,6 +535,7 @@ export class EventSeriesModal extends Modal {
 			const btn = buttonsContainer.createEl("button", {
 				text: viewType.charAt(0).toUpperCase() + viewType.slice(1),
 				cls: cls("event-series-bases-btn"),
+				attr: { "data-testid": `prisma-event-series-bases-${viewType}` },
 			});
 
 			if (viewType === "timeline") {

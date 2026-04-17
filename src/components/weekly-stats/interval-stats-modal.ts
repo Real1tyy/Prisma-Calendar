@@ -146,6 +146,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		const fastPrevButton = leftNavGroup.createEl("button", {
 			text: "«",
 			cls: cls("stats-nav-button", "stats-nav-button-fast"),
+			attr: { "data-testid": "prisma-stats-modal-fast-prev" },
 		});
 		fastPrevButton.ariaLabel = "Fast previous";
 		fastPrevButton.addEventListener("click", () => {
@@ -155,6 +156,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		const prevButton = leftNavGroup.createEl("button", {
 			text: "‹",
 			cls: cls("stats-nav-button"),
+			attr: { "data-testid": "prisma-stats-modal-prev" },
 		});
 		prevButton.ariaLabel = "Previous";
 		prevButton.addEventListener("click", () => {
@@ -163,6 +165,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 
 		const durationStat = header.createEl("button", {
 			cls: cls("stats-header-stat", "stats-duration-toggle"),
+			attr: { "data-testid": "prisma-stats-modal-total-duration" },
 		});
 		durationStat.setText(
 			`⏱ ${this.showDecimalHours ? formatDurationAsDecimalHours(stats.totalDuration) : formatDuration(stats.totalDuration)}`
@@ -174,6 +177,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		const middleSection = header.createDiv(cls("stats-middle-section"));
 
 		const periodLabel = middleSection.createDiv(cls("stats-week-label"));
+		periodLabel.setAttribute("data-testid", "prisma-stats-modal-period-label");
 		periodLabel.setText(
 			this.intervalConfig.formatDateRange(start, end, this.bundle.settingsStore.currentSettings.locale)
 		);
@@ -186,6 +190,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		const todayButton = controlsRow.createEl("button", {
 			text: "Today",
 			cls: cls("stats-today-button"),
+			attr: { "data-testid": "prisma-stats-modal-today" },
 		});
 		todayButton.addEventListener("click", () => {
 			void this.navigateToToday();
@@ -202,6 +207,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		const nextButton = rightNavGroup.createEl("button", {
 			text: "›",
 			cls: cls("stats-nav-button"),
+			attr: { "data-testid": "prisma-stats-modal-next" },
 		});
 		nextButton.ariaLabel = "Next";
 		nextButton.addEventListener("click", () => {
@@ -211,6 +217,7 @@ export abstract class IntervalStatsModal extends StatsModal {
 		const fastNextButton = rightNavGroup.createEl("button", {
 			text: "»",
 			cls: cls("stats-nav-button", "stats-nav-button-fast"),
+			attr: { "data-testid": "prisma-stats-modal-fast-next" },
 		});
 		fastNextButton.ariaLabel = "Fast next";
 		fastNextButton.addEventListener("click", () => {
