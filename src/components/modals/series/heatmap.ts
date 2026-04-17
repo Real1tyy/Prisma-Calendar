@@ -155,7 +155,10 @@ export function renderHeatmapInto(
 	});
 
 	const legendContainer = container.createDiv(cls("heatmap-legend-container"));
-	const svgContainer = container.createDiv(cls("heatmap-container"));
+	const svgContainer = container.createDiv({
+		cls: cls("heatmap-container"),
+		attr: { "data-testid": "prisma-heatmap-container" },
+	});
 	const dayDetailPanel = container.createDiv(cls("heatmap-day-detail"));
 
 	function updateLabel(): void {

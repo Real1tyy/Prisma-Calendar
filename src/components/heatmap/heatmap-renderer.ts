@@ -112,7 +112,12 @@ function createHeatmapCell(params: HeatmapCellParams): SVGRectElement {
 		.radius(radius)
 		.fill(getCellColor(bucket, categoryColor))
 		.addClass(cls("heatmap-cell"))
-		.attr({ "data-date": dateKey, "data-count": String(count), "aria-label": titleText });
+		.attr({
+			"data-testid": "prisma-heatmap-cell",
+			"data-date": dateKey,
+			"data-count": String(count),
+			"aria-label": titleText,
+		});
 
 	const titleEl = document.createElementNS("http://www.w3.org/2000/svg", "title");
 	titleEl.textContent = titleText;

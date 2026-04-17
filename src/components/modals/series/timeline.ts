@@ -187,7 +187,10 @@ export function renderTimelineInto(
 	monthInput.addEventListener("keydown", onEnter);
 	dayInput.addEventListener("keydown", onEnter);
 
-	const timelineContainer = container.createDiv(cls("timeline-modal-container"));
+	const timelineContainer = container.createDiv({
+		cls: cls("timeline-modal-container"),
+		attr: { "data-testid": "prisma-timeline-container" },
+	});
 
 	function openPreviewModal(event: CalendarEvent): void {
 		const previewEvent: PreviewEventData = {
@@ -209,7 +212,7 @@ export function renderTimelineInto(
 		const content = cleanupTitle(event.title);
 		const tooltip = buildEventTooltip(event, settings);
 
-		const classes: string[] = [];
+		const classes: string[] = [cls("timeline-item")];
 		if (event.skipped) classes.push(cls("timeline-item-skipped"));
 		classes.push(event.type === "allDay" ? cls("timeline-item-allday") : cls("timeline-item-timed"));
 
