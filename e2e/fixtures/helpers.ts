@@ -327,6 +327,11 @@ export interface CreateEventInput {
 	/** For timed events only: `YYYY-MM-DDTHH:mm` typed into the End Date input. */
 	end?: string;
 	allDay?: boolean;
+	/**
+	 * Category names to attach via the "Assign categories" picker modal. Each
+	 * is created on the fly if it doesn't already exist in the vault.
+	 */
+	categories?: string[];
 }
 
 /**
@@ -369,7 +374,23 @@ export async function createEventViaUI(page: Page, input: CreateEventInput): Pro
 		}
 	}
 
+	if (input.categories && input.categories.length > 0) {
+		await assignCategoriesViaModal(page, input.categories);
+	}
+
 	await saveEventModal(page);
+}
+
+/**
+ * Seed a batch of events through the UI and drain the resulting stack of
+ * "Event created successfully" notices so they don't intercept subsequent
+ * toolbar clicks.
+ */
+export async function seedEvents(page: Page, events: CreateEventInput[]): Promise<void> {
+	for (const input of events) {
+		await createEventViaUI(page, input);
+	}
+	await waitForNoticesClear(page);
 }
 
 /**
@@ -413,4 +434,106 @@ export async function rightClickGanttBar(page: Page, title: string): Promise<voi
 	const bar = ganttBarLocator(page, title);
 	await bar.waitFor({ state: "visible", timeout: 5_000 });
 	await bar.click({ button: "right" });
+}
+
+// ── Phase 2: category assignment + list modals + untracked dropdown ─────────
+
+/**
+ * Drive the "Assign categories" picker modal from inside the open event modal.
+ * Clicks the Assign button, ticks each named category checkbox, and saves.
+ * The picker is `openCategoryAssignModal` in `modals/category/assignment.ts`;
+ * rows are stamped `data-testid="prisma-assign-item"` + `data-assign-name="<name>"`.
+ */
+export async function assignCategoriesViaModal(page: Page, categories: string[]): Promise<void> {
+	const modalsBefore = await page.locator(".modal").count();
+	await page.locator('.modal [data-testid="prisma-event-btn-assign-categories"]').first().click();
+	await page.waitForFunction((n) => document.querySelectorAll(".modal").length > n, modalsBefore, { timeout: 5_000 });
+
+	// The assign modal is the top one (highest index). Obsidian stacks them.
+	const assignModalIdx = modalsBefore; // zero-based index of the new modal
+	const assignModal = page.locator(".modal").nth(assignModalIdx);
+
+	for (const name of categories) {
+		const row = assignModal.locator(`[data-testid="prisma-assign-item"][data-assign-name="${name}"]`).first();
+		if ((await row.count()) === 0) {
+			// Category doesn't exist — type the name into the search input to
+			// surface the "Create new" button, then click it. `createNewItem`
+			// adds the entry AND checks it automatically (see assignment.ts).
+			const searchInput = assignModal.locator('[data-testid="prisma-assign-search"]').first();
+			await searchInput.fill(name);
+			await searchInput.dispatchEvent("input");
+			const createBtn = assignModal.locator('[data-testid="prisma-assign-create-new"]').first();
+			await createBtn.waitFor({ state: "visible", timeout: 5_000 });
+			await createBtn.click();
+			await row.waitFor({ state: "visible", timeout: 5_000 });
+		} else {
+			const checkbox = row.locator('input[type="checkbox"]').first();
+			if (!(await checkbox.isChecked())) await row.click();
+		}
+	}
+
+	await assignModal.locator('[data-testid="prisma-assign-submit"]').first().click();
+	await page.waitForFunction((n) => document.querySelectorAll(".modal").length <= n, modalsBefore, {
+		timeout: 5_000,
+	});
+}
+
+/**
+ * Click the "Events" group button (recurring events list) via its toolbar
+ * action id. Pairs with the `show-recurring` page-header action.
+ */
+export async function openEventsModal(page: Page): Promise<void> {
+	await clickToolbar(page, "show-recurring");
+	await page.locator(".modal").first().waitFor({ state: "visible", timeout: 5_000 });
+}
+
+/** Click a tab inside the multi-tab EventsModal (recurring / byCategory / byName). */
+export async function switchEventsModalTab(page: Page, tabId: "recurring" | "byCategory" | "byName"): Promise<void> {
+	const tab = page.locator(`[data-testid="prisma-events-modal-tab-${tabId}"]`).first();
+	await tab.waitFor({ state: "visible", timeout: 5_000 });
+	await tab.click();
+}
+
+/** Click a list item inside any event-list modal by its title. Drills into series/details. */
+export async function clickEventListItem(page: Page, title: string): Promise<void> {
+	const item = page.locator(`[data-testid="prisma-event-list-item-${title}"]`).first();
+	await item.waitFor({ state: "visible", timeout: 5_000 });
+	await item.click();
+}
+
+/**
+ * Inside an event-series modal, click one of the Bases-footer visualisation
+ * buttons: table / list / cards / timeline / heatmap. Each opens its own
+ * visualisation modal on top of the series modal.
+ */
+export async function pickSeriesBasesView(
+	page: Page,
+	viewType: "table" | "list" | "cards" | "timeline" | "heatmap"
+): Promise<void> {
+	const btn = page.locator(`[data-testid="prisma-event-series-bases-${viewType}"]`).first();
+	await btn.waitFor({ state: "visible", timeout: 5_000 });
+	await btn.click();
+}
+
+/**
+ * Wait for all Obsidian `.notice` overlays to clear so they don't intercept
+ * subsequent clicks. Useful after a batch of `createEventViaUI` calls that
+ * each emit a success notice — notices can stack and block clicks on the
+ * calendar toolbar for multiple seconds.
+ */
+export async function waitForNoticesClear(page: Page, timeoutMs = 10_000): Promise<void> {
+	await page
+		.locator(".notice-container .notice")
+		.first()
+		.waitFor({ state: "detached", timeout: timeoutMs })
+		.catch(() => {
+			/* nothing to wait for */
+		});
+}
+
+/** Click the calendar toolbar's Untracked-events "⋮" button to open the dropdown. */
+export async function openUntrackedDropdown(page: Page): Promise<void> {
+	const toggle = page.locator(`${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-untracked-dropdown-button"]`).first();
+	await toggle.waitFor({ state: "visible", timeout: 10_000 });
+	await toggle.click();
 }

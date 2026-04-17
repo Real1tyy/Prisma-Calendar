@@ -1,3 +1,4 @@
+import { todayStamp } from "../../fixtures/analytics-helpers";
 import { expect, test } from "../../fixtures/electron";
 import {
 	clickContextMenuItem,
@@ -5,16 +6,6 @@ import {
 	openCalendarViewViaRibbon,
 	rightClickEvent,
 } from "../../fixtures/helpers";
-
-function todayStamp(hours: number, minutes = 0): string {
-	const d = new Date();
-	const yyyy = d.getFullYear();
-	const mm = String(d.getMonth() + 1).padStart(2, "0");
-	const dd = String(d.getDate()).padStart(2, "0");
-	const hh = String(hours).padStart(2, "0");
-	const mi = String(minutes).padStart(2, "0");
-	return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
-}
 
 test.describe("analytics: event context menu", () => {
 	test("right-clicking an event then picking Edit opens the edit modal prefilled with the event's data", async ({
