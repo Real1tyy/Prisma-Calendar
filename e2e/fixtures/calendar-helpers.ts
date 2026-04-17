@@ -134,4 +134,49 @@ export async function rightClickEventByTitle(page: Page, title: string): Promise
 	return page.locator(".menu").last();
 }
 
+type CalendarViewName = "day" | "week" | "month" | "list";
+
+const VIEW_BUTTON_TESTID: Record<CalendarViewName, string> = {
+	day: "prisma-cal-toolbar-view-day",
+	week: "prisma-cal-toolbar-view-week",
+	month: "prisma-cal-toolbar-view-month",
+	list: "prisma-cal-toolbar-view-list",
+};
+
+// FullCalendar applies `.fc-{viewType}-view` on the outer view container. We
+// also accept the generic `.fc-timegrid` / `.fc-daygrid` / `.fc-list` fallback
+// because the specific class isn't always stamped until the first paint cycle.
+const VIEW_READY_SELECTOR: Record<CalendarViewName, string> = {
+	day: ".fc-timeGridDay-view, .fc-timegrid",
+	week: ".fc-timeGridWeek-view, .fc-timegrid",
+	month: ".fc-dayGridMonth-view, .fc-daygrid",
+	list: ".fc-listWeek-view, .fc-list",
+};
+
+/**
+ * Click the toolbar button for the given FullCalendar view and wait for the
+ * view container to render. Mirrors the four registered view types in
+ * `calendar-view.ts` (`dayGridMonth`, `timeGridWeek`, `timeGridDay`, `listWeek`).
+ */
+export async function switchToView(page: Page, view: CalendarViewName): Promise<void> {
+	const btn = page.locator(`[data-testid="${VIEW_BUTTON_TESTID[view]}"]`).first();
+	await btn.waitFor({ state: "visible", timeout: 10_000 });
+	await btn.click();
+	await page.locator(VIEW_READY_SELECTOR[view]).first().waitFor({ state: "visible", timeout: 5_000 });
+}
+
+/**
+ * Locator for a list-view row matched by its title. FullCalendar renders list
+ * events as `.fc-list-event` rows with a `.fc-list-event-title` cell; the row
+ * itself (not the title cell) is what `hasText` filters.
+ */
+export function listEventRow(page: Page, title: string): Locator {
+	return page.locator(`${ACTIVE_CALENDAR_LEAF} .fc-list-event`).filter({ hasText: title }).first();
+}
+
+/** Locator for a `dayGridMonth` cell keyed by ISO date (`YYYY-MM-DD`). */
+export function monthCellForDate(page: Page, isoDate: string): Locator {
+	return page.locator(`${ACTIVE_CALENDAR_LEAF} .fc-daygrid-day[data-date="${isoDate}"]`).first();
+}
+
 void PLUGIN_ID;

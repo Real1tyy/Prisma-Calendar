@@ -1,4 +1,4 @@
-import { gotoToday } from "../../fixtures/calendar-helpers";
+import { gotoToday, switchToView } from "../../fixtures/calendar-helpers";
 import { expect, test } from "../../fixtures/electron";
 import { openCalendar } from "../../fixtures/helpers";
 
@@ -79,4 +79,25 @@ test.describe("calendar navigation", () => {
 		const indicator = page.locator(".fc-timegrid-now-indicator-line").first();
 		await expect(indicator).toBeInViewport({ ratio: 0.01 });
 	});
+
+	// The toolbar title format is driven by FullCalendar's `titleFormat` option,
+	// which we don't explicitly set — so we rely on FC's built-in per-view
+	// defaults. Day embeds a day-of-month; week shows a range; month drops the
+	// day entirely; list shows a week-of label. A regression here would point
+	// at a titleFormat config change slipping in.
+	for (const { view, pattern, description } of [
+		{ view: "day", pattern: /\d{1,2}/, description: "day number" },
+		{ view: "week", pattern: /\d{1,2}.*[–-].*\d{1,2}/, description: "day range" },
+		{ view: "month", pattern: /^[A-Z][a-z]+\s+\d{4}$/, description: "Month Year only" },
+		{ view: "list", pattern: /\w+/, description: "non-empty string" },
+	] as const) {
+		test(`${view} view toolbar title matches its expected format (${description})`, async ({ obsidian }) => {
+			const { page } = obsidian;
+			await openCalendar(page);
+			await gotoToday(page);
+			await switchToView(page, view);
+
+			await expect(page.locator(".fc-toolbar-title").first()).toHaveText(pattern);
+		});
+	}
 });
