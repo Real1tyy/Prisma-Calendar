@@ -231,6 +231,10 @@ export function buildSharedEventDidMount(
 			getBatchSelectionManager()?.handleEventMount(event.id, el);
 		}
 
+		el.setAttribute("data-testid", "prisma-cal-event");
+		if (event.title) el.setAttribute("data-event-title", event.title);
+		if (eventFilePath) el.setAttribute("data-event-file-path", eventFilePath);
+
 		const eventColor =
 			computedColors[0] || resolveEventColor(ep.frontmatterDisplayData, deps.bundle, deps.colorEvaluator);
 		const settings = deps.bundle.settingsStore.currentSettings;

@@ -8,7 +8,7 @@ export class ExpressionFilterInputManager extends InputFilterManager {
 	private matcher: ExpressionMatcher;
 
 	constructor(onFilterChange: () => void) {
-		super(onFilterChange, "Status === 'Done'", cls("fc-expression-input"), 50);
+		super(onFilterChange, "Status === 'Done'", cls("fc-expression-input"), 50, "prisma-filter-expression");
 		this.matcher = createExpressionMatcher(() => this.currentFilterValue);
 	}
 

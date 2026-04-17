@@ -17,7 +17,8 @@ export abstract class InputFilterManager {
 		protected onFilterChange: FilterChangeCallback,
 		protected placeholder: string,
 		protected cssClass: string,
-		debounceMs: number = DEFAULT_DEBOUNCE_MS
+		debounceMs: number = DEFAULT_DEBOUNCE_MS,
+		protected testId?: string
 	) {
 		this.debounceMs = debounceMs;
 	}
@@ -60,6 +61,9 @@ export abstract class InputFilterManager {
 		this.input.type = "text";
 		this.input.placeholder = this.placeholder;
 		this.input.className = this.cssClass;
+		if (this.testId) {
+			this.input.setAttribute("data-testid", this.testId);
+		}
 
 		this.input.addEventListener("input", () => {
 			this.handleInputChange();

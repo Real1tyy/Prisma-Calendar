@@ -6,7 +6,7 @@ import { InputFilterManager } from "./base";
 
 export class SearchFilterInputManager extends InputFilterManager {
 	constructor(onFilterChange: () => void) {
-		super(onFilterChange, "Search events...", cls("fc-search-input"));
+		super(onFilterChange, "Search events...", cls("fc-search-input"), undefined, "prisma-filter-search");
 	}
 
 	shouldInclude(data: { meta?: Frontmatter; title?: string }): boolean {
