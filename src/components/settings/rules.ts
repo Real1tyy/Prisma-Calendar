@@ -139,6 +139,7 @@ export class RulesSettings {
 			.setDesc("Add a new color rule")
 			.addButton((button) => {
 				button.setButtonText("Add rule");
+				button.buttonEl.setAttribute("data-testid", "prisma-rules-add-color-rule");
 				button.onClick(async () => {
 					const newRule: ColorRule = {
 						id: `color-rule-${Date.now()}`,
@@ -193,6 +194,7 @@ export class RulesSettings {
 				value: rule.expression,
 				placeholder: "Priority === 'High'",
 				cls: cls("color-rule-expression-input"),
+				attr: { "data-testid": `prisma-rules-color-expression-${index}` },
 			});
 
 			const updateExpression = async () => {
@@ -218,6 +220,7 @@ export class RulesSettings {
 				type: "color",
 				value: rule.color,
 				cls: cls("color-rule-picker"),
+				attr: { "data-testid": `prisma-rules-color-picker-${index}` },
 			});
 			colorInput.addEventListener("input", (e) => {
 				const target = e.target as HTMLInputElement;

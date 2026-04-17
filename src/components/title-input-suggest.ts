@@ -93,6 +93,9 @@ export class TitleInputSuggest extends AbstractInputSuggest<TitleSuggestion> {
 
 	override renderSuggestion(suggestion: TitleSuggestion, el: HTMLElement): void {
 		el.addClass(cls("suggest-item"));
+		el.setAttribute("data-testid", "prisma-title-suggest-item");
+		el.setAttribute("data-suggest-source", suggestion.source);
+		el.setAttribute("data-suggest-text", suggestion.text);
 
 		el.createSpan({ text: suggestion.text });
 

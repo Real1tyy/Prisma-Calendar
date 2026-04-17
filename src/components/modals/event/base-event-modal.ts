@@ -325,6 +325,7 @@ export abstract class BaseEventModal extends Modal {
 
 		this.presetSelector = selectorWrapper.createEl("select", {
 			cls: cls("event-preset-select"),
+			attr: { "data-testid": "prisma-event-control-preset" },
 		});
 
 		this.refreshPresetSelector(presets);

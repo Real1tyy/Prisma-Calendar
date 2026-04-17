@@ -99,10 +99,15 @@ function renderEventPreview(
 	const filePath = event.extendedProps?.filePath;
 	const allFrontmatter = loadAllFrontmatter(app, filePath);
 
+	el.setAttribute("data-testid", "prisma-event-preview-modal");
+
 	const header = el.createDiv(cls("event-preview-header"));
 	const title = event.title || "Untitled Event";
 	const cleanTitle = removeZettelId(title);
-	const titleEl = header.createEl("h2", { text: cleanTitle });
+	const titleEl = header.createEl("h2", {
+		text: cleanTitle,
+		attr: { "data-testid": "prisma-event-preview-title" },
+	});
 
 	if (filePath) {
 		titleEl.onclick = () => {
