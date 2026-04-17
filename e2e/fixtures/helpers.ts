@@ -436,6 +436,34 @@ export async function rightClickGanttBar(page: Page, title: string): Promise<voi
 	await bar.click({ button: "right" });
 }
 
+/**
+ * Drive the calendar-event prerequisite-assignment flow through the UI:
+ * right-click the dependant event → "Assign prerequisites" → click the
+ * prerequisite event tile. Both events must already be rendered on the
+ * calendar. Kicks the plugin into `isConnected` state for the Gantt chart.
+ */
+export async function assignPrerequisiteViaUI(page: Page, dependant: string, prerequisite: string): Promise<void> {
+	await rightClickEvent(page, { title: dependant });
+	await clickContextMenuItem(page, "assignPrerequisites");
+
+	const prereqTile = page
+		.locator(`${ACTIVE_CALENDAR_LEAF} [data-testid="prisma-cal-event"][data-event-title="${prerequisite}"]`)
+		.first();
+	await prereqTile.waitFor({ state: "visible", timeout: 5_000 });
+	await prereqTile.click();
+
+	// Sticky "Click an event to assign it as a prerequisite" banner detaches
+	// once the selection resolves. Waiting for it keeps follow-up clicks from
+	// racing the in-flight frontmatter update.
+	await page
+		.locator(".prisma-prereq-selection-banner")
+		.first()
+		.waitFor({ state: "detached", timeout: 5_000 })
+		.catch(() => {
+			/* best-effort */
+		});
+}
+
 // ── Phase 2: category assignment + list modals + untracked dropdown ─────────
 
 /**
