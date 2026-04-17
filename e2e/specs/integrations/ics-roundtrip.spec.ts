@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 
+import type { Page } from "@playwright/test";
 import { readEventFrontmatter } from "@real1ty-obsidian-plugins/testing/e2e";
 
 import { runCommand } from "../../fixtures/commands";
@@ -20,115 +21,17 @@ import {
 //   and importing the produced .ics with timezone=UTC must reproduce every
 //   event with the same set of Prisma-understood properties.
 //
-// What we compare per event (byte-for-byte):
-//   • Title            (via summary / filename)
-//   • Start Date       (timed)   – canonical `YYYY-MM-DDTHH:mm:ss.000Z`
-//   • End Date         (timed)
-//   • Date             (all-day) – `YYYY-MM-DD`
-//   • Category         – single or multi-value
-//   • Location
-//   • Participants     – list preserved verbatim
-//   • Custom frontmatter keys   – preserved via X-PRISMA-FM-* round-trip
-//   • RRule                     – preserved via X-PRISMA-FM-*
-//
-// What regenerates (not asserted):
-//   • ZettelID in filename — the seeded files have no IDs; import generates
-//     fresh 14-digit ones. We only check the format.
-//   • The `All Day` boolean flag — importer always writes it; seed omits it
-//     for timed events. Both are semantically equivalent; we skip that key
-//     in the diff.
+// What we compare per event (byte-for-byte): start/end dates, date (all-day),
+// category, location, participants, custom frontmatter keys (preserved via
+// X-PRISMA-FM-*), and RRule. ZettelID is regenerated on import (14-digit
+// suffix in filename — format-checked, not value-checked). The `All Day`
+// boolean is not asserted for timed events because the seed omits it.
 
 const EVENTS_DIR = "Events";
 const EXPORTS_DIR = "Prisma-Exports";
 const EXPORT_SUBMIT = '[data-testid="prisma-ics-export-submit"]';
 const IMPORT_FILE_INPUT = '[data-testid="prisma-ics-import-file"]';
 const IMPORT_SUBMIT = '[data-testid="prisma-ics-import-submit"]';
-
-interface SeededEvent extends SeedEventInput {
-	expected: Record<string, unknown>;
-}
-
-const SEED: readonly SeededEvent[] = [
-	{
-		title: "Team Meeting",
-		startDate: "2026-06-01T10:00",
-		endDate: "2026-06-01T11:00",
-		category: "Work",
-		location: "Room 3",
-		participants: ["alice@example.com", "bob@example.com"],
-		extra: { Icon: "briefcase" },
-		expected: {
-			"Start Date": "2026-06-01T10:00:00.000Z",
-			"End Date": "2026-06-01T11:00:00.000Z",
-			Category: "Work",
-			Location: "Room 3",
-			Participants: ["alice@example.com", "bob@example.com"],
-			Icon: "briefcase",
-		},
-	},
-	{
-		title: "Weekly Review",
-		startDate: "2026-06-02T14:00",
-		endDate: "2026-06-02T15:00",
-		category: "Work",
-		expected: {
-			"Start Date": "2026-06-02T14:00:00.000Z",
-			"End Date": "2026-06-02T15:00:00.000Z",
-			Category: "Work",
-		},
-	},
-	{
-		title: "Workout",
-		startDate: "2026-06-03T07:00",
-		endDate: "2026-06-03T08:00",
-		category: "Fitness",
-		location: "Gym",
-		expected: {
-			"Start Date": "2026-06-03T07:00:00.000Z",
-			"End Date": "2026-06-03T08:00:00.000Z",
-			Category: "Fitness",
-			Location: "Gym",
-		},
-	},
-	{
-		title: "Conference Day",
-		date: "2026-06-04",
-		allDay: true,
-		category: "Work",
-		expected: {
-			Date: "2026-06-04",
-			"All Day": true,
-			Category: "Work",
-		},
-	},
-	{
-		title: "Holiday Break",
-		date: "2026-12-25",
-		allDay: true,
-		extra: { Icon: "tree" },
-		expected: {
-			Date: "2026-12-25",
-			"All Day": true,
-			Icon: "tree",
-		},
-	},
-	{
-		title: "Yearly Review",
-		startDate: "2026-12-31T16:00",
-		endDate: "2026-12-31T17:00",
-		category: "Work",
-		rrule: "FREQ=YEARLY;INTERVAL=1",
-		extra: { Icon: "clock", Priority: 2 },
-		expected: {
-			"Start Date": "2026-12-31T16:00:00.000Z",
-			"End Date": "2026-12-31T17:00:00.000Z",
-			Category: "Work",
-			RRule: "FREQ=YEARLY;INTERVAL=1",
-			Icon: "clock",
-			Priority: 2,
-		},
-	},
-];
 
 function listEventMarkdown(vaultDir: string): string[] {
 	const dir = join(vaultDir, EVENTS_DIR);
@@ -141,14 +44,52 @@ function titleFromFilename(filename: string): string {
 	return filename.replace(/-\d{14}(?=\.md$)/, "").replace(/\.md$/, "");
 }
 
-test("ICS roundtrip: export → delete → import preserves every Prisma-understood property", async ({ obsidian }) => {
-	const { page, vaultDir } = obsidian;
+/**
+ * Derive the frontmatter shape the importer should write for a given seed.
+ * Single source of truth — previously every seed entry duplicated its
+ * frontmatter in an `expected` field. The transformation mirrors how
+ * `seedEvent` writes the disk file, with the timed-event date fields promoted
+ * to the canonical `:ss.000Z` shape Prisma normalises to during import.
+ */
+function expectedFromSeed(event: SeedEventInput): Record<string, unknown> {
+	const out: Record<string, unknown> = {};
+	if (event.startDate) out["Start Date"] = `${event.startDate}:00.000Z`;
+	if (event.endDate) out["End Date"] = `${event.endDate}:00.000Z`;
+	if (event.date) out["Date"] = event.date;
+	if (event.allDay) out["All Day"] = true;
+	if (event.category) out["Category"] = event.category;
+	if (event.location) out["Location"] = event.location;
+	if (event.participants && event.participants.length > 0) out["Participants"] = event.participants;
+	if (event.rrule) out["RRule"] = event.rrule;
+	if (event.extra) Object.assign(out, event.extra);
+	return out;
+}
 
-	seedEvents(vaultDir, SEED);
+interface RoundTripHandles {
+	icsPath: string;
+	exportedIcs: string;
+}
+
+/**
+ * Seed → export → scorch → import. Every test that exercises a different
+ * flavour of events runs through this identical pipeline, asserting against
+ * the returned ICS + on-disk state.
+ */
+async function runRoundTrip(
+	{ page, vaultDir }: { page: Page; vaultDir: string },
+	seed: readonly SeedEventInput[]
+): Promise<RoundTripHandles> {
+	// Clear the vault-seed's pre-existing event (Team Meeting.md) so the
+	// exported VEVENT count equals the seed length exactly. Seed titles that
+	// happen to collide with the existing file would otherwise be coupled to
+	// whatever the vault-seed ships.
+	for (const md of listEventMarkdown(vaultDir)) {
+		unlinkSync(join(vaultDir, EVENTS_DIR, md));
+	}
+	seedEvents(vaultDir, seed);
 	await refreshCalendar(page);
-	await waitForEventCount(page, SEED.length);
+	await waitForEventCount(page, seed.length);
 
-	// ── Export via palette → submit ──────────────────────────────────────
 	await runCommand(page, "Prisma Calendar: Export calendar as .ics");
 	await page.locator(EXPORT_SUBMIT).first().click();
 
@@ -159,42 +100,162 @@ test("ICS roundtrip: export → delete → import preserves every Prisma-underst
 
 	const icsPath = join(exportsDir, readdirSync(exportsDir).find((f) => f.endsWith(".ics"))!);
 	const exportedIcs = readFileSync(icsPath, "utf8");
-	expect((exportedIcs.match(/BEGIN:VEVENT/g) ?? []).length).toBe(SEED.length);
-	for (const event of SEED) expect(exportedIcs).toContain(`SUMMARY:${event.title}`);
+	expect((exportedIcs.match(/BEGIN:VEVENT/g) ?? []).length).toBe(seed.length);
 
-	// ── Scorched earth: delete every seeded event note ───────────────────
 	for (const md of listEventMarkdown(vaultDir)) {
 		unlinkSync(join(vaultDir, EVENTS_DIR, md));
 	}
 	await refreshCalendar(page);
 	expect(listEventMarkdown(vaultDir)).toHaveLength(0);
 
-	// ── Import the .ics back ─────────────────────────────────────────────
 	await runCommand(page, "Prisma Calendar: Import .ics file");
 	await page.locator(IMPORT_FILE_INPUT).first().setInputFiles(icsPath);
 	const importSubmit = page.locator(IMPORT_SUBMIT).first();
 	await expect(importSubmit).toBeEnabled();
 	await importSubmit.click();
 
-	await expect.poll(() => listEventMarkdown(vaultDir).length).toBe(SEED.length);
+	await expect.poll(() => listEventMarkdown(vaultDir).length).toBe(seed.length);
 	await refreshCalendar(page);
-	await expect.poll(() => getEventCount(page)).toBeGreaterThanOrEqual(SEED.length);
+	await expect.poll(() => getEventCount(page)).toBe(seed.length);
 
-	// ── Compare imported frontmatter against expected ────────────────────
+	return { icsPath, exportedIcs };
+}
+
+/**
+ * Walk every seed, find its imported file by title, and assert every key
+ * `expectedFromSeed` produces round-trips byte-for-byte.
+ */
+function assertRoundTripFidelity(vaultDir: string, seed: readonly SeedEventInput[]): void {
 	const importedFilenames = listEventMarkdown(vaultDir);
 	const byTitle = new Map<string, string>(importedFilenames.map((f) => [titleFromFilename(f), f]));
 
-	expect([...byTitle.keys()].sort()).toEqual(SEED.map((e) => e.title).sort());
+	expect([...byTitle.keys()].sort()).toEqual(seed.map((e) => e.title).sort());
 
-	for (const event of SEED) {
+	for (const event of seed) {
 		const filename = byTitle.get(event.title);
 		expect(filename, `imported file for "${event.title}" missing`).toBeDefined();
 		expect(filename!, `zettel id must be re-stamped on "${event.title}"`).toMatch(/-\d{14}\.md$/);
 
 		const fm = readEventFrontmatter(vaultDir, `${EVENTS_DIR}/${filename!}`);
-
-		for (const [key, expected] of Object.entries(event.expected)) {
-			expect(fm[key], `"${event.title}" → ${key} must round-trip byte-for-byte`).toEqual(expected);
+		for (const [key, value] of Object.entries(expectedFromSeed(event))) {
+			expect(fm[key], `"${event.title}" → ${key} must round-trip byte-for-byte`).toEqual(value);
 		}
 	}
+}
+
+test.describe("ICS roundtrip", () => {
+	test("basic events (timed, all-day, categories, participants, location, custom keys)", async ({ obsidian }) => {
+		const seed: SeedEventInput[] = [
+			{
+				title: "Team Meeting",
+				startDate: "2026-06-01T10:00",
+				endDate: "2026-06-01T11:00",
+				category: "Work",
+				location: "Room 3",
+				participants: ["alice@example.com", "bob@example.com"],
+				extra: { Icon: "briefcase" },
+			},
+			{
+				title: "Weekly Review",
+				startDate: "2026-06-02T14:00",
+				endDate: "2026-06-02T15:00",
+				category: "Work",
+			},
+			{
+				title: "Workout",
+				startDate: "2026-06-03T07:00",
+				endDate: "2026-06-03T08:00",
+				category: "Fitness",
+				location: "Gym",
+			},
+			{
+				title: "Conference Day",
+				date: "2026-06-04",
+				allDay: true,
+				category: "Work",
+			},
+			{
+				title: "Holiday Break",
+				date: "2026-12-25",
+				allDay: true,
+				extra: { Icon: "tree" },
+			},
+			{
+				title: "Yearly Review",
+				startDate: "2026-12-31T16:00",
+				endDate: "2026-12-31T17:00",
+				category: "Work",
+				rrule: "FREQ=YEARLY;INTERVAL=1",
+				extra: { Icon: "clock", Priority: 2 },
+			},
+		];
+
+		const { exportedIcs } = await runRoundTrip(obsidian, seed);
+		for (const event of seed) expect(exportedIcs).toContain(`SUMMARY:${event.title}`);
+		assertRoundTripFidelity(obsidian.vaultDir, seed);
+	});
+
+	test("recurrence patterns (daily, weekly, monthly, yearly) preserve RRULE", async ({ obsidian }) => {
+		const seed: SeedEventInput[] = [
+			{
+				title: "Daily Standup",
+				startDate: "2026-06-01T09:00",
+				endDate: "2026-06-01T09:15",
+				category: "Work",
+				rrule: "FREQ=DAILY;INTERVAL=1",
+			},
+			{
+				title: "Monthly Planning",
+				startDate: "2026-06-01T15:00",
+				endDate: "2026-06-01T16:00",
+				category: "Work",
+				rrule: "FREQ=MONTHLY;INTERVAL=1",
+			},
+			{
+				title: "Quarterly Review",
+				startDate: "2026-06-15T10:00",
+				endDate: "2026-06-15T11:30",
+				category: "Work",
+				rrule: "FREQ=MONTHLY;INTERVAL=3",
+			},
+			{
+				title: "Birthday",
+				date: "2026-07-04",
+				allDay: true,
+				rrule: "FREQ=YEARLY;INTERVAL=1",
+			},
+		];
+
+		await runRoundTrip(obsidian, seed);
+		assertRoundTripFidelity(obsidian.vaultDir, seed);
+	});
+
+	test("custom frontmatter keys round-trip via X-PRISMA-FM-*", async ({ obsidian }) => {
+		const seed: SeedEventInput[] = [
+			{
+				title: "Project Planning",
+				startDate: "2026-08-01T10:00",
+				endDate: "2026-08-01T12:00",
+				extra: {
+					Priority: 1,
+					Project: "Phoenix",
+					Status: "In Progress",
+					Effort: 5,
+				},
+			},
+			{
+				title: "Design Review",
+				startDate: "2026-08-02T14:00",
+				endDate: "2026-08-02T15:00",
+				extra: {
+					ReviewRound: 2,
+					Blocked: false,
+				},
+			},
+		];
+
+		const { exportedIcs } = await runRoundTrip(obsidian, seed);
+		expect(exportedIcs).toMatch(/X-PRISMA-FM-/);
+		assertRoundTripFidelity(obsidian.vaultDir, seed);
+	});
 });
