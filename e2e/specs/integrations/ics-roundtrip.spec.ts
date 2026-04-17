@@ -114,6 +114,11 @@ async function runRoundTrip(
 	await expect(importSubmit).toBeEnabled();
 	await importSubmit.click();
 
+	// The import modal closes asynchronously after submit. Waiting for it to
+	// detach before the file-count poll prevents the next palette command
+	// from racing with a still-visible modal.
+	await expect.poll(() => page.locator(".modal").count()).toBe(0);
+
 	await expect.poll(() => listEventMarkdown(vaultDir).length).toBe(seed.length);
 	await refreshCalendar(page);
 	await expect.poll(() => getEventCount(page)).toBe(seed.length);
@@ -257,5 +262,88 @@ test.describe("ICS roundtrip", () => {
 		const { exportedIcs } = await runRoundTrip(obsidian, seed);
 		expect(exportedIcs).toMatch(/X-PRISMA-FM-/);
 		assertRoundTripFidelity(obsidian.vaultDir, seed);
+	});
+
+	test("RRULE bounded by COUNT and UNTIL round-trips verbatim", async ({ obsidian }) => {
+		const seed: SeedEventInput[] = [
+			{
+				title: "Five Standups",
+				startDate: "2026-09-07T09:00",
+				endDate: "2026-09-07T09:15",
+				category: "Work",
+				rrule: "FREQ=DAILY;COUNT=5",
+			},
+			{
+				title: "Weekly Review Until EOY",
+				startDate: "2026-09-04T15:00",
+				endDate: "2026-09-04T16:00",
+				category: "Work",
+				rrule: "FREQ=WEEKLY;UNTIL=20261231T235959Z",
+			},
+			{
+				title: "Monthly One-on-One",
+				startDate: "2026-09-15T10:00",
+				endDate: "2026-09-15T10:30",
+				category: "Work",
+				rrule: "FREQ=MONTHLY;COUNT=6",
+			},
+		];
+
+		await runRoundTrip(obsidian, seed);
+		assertRoundTripFidelity(obsidian.vaultDir, seed);
+	});
+
+	test("re-importing the same .ics does not crash and leaves original events intact", async ({ obsidian }) => {
+		// Documents current behaviour of the manual `Import .ics file`
+		// command: `importEventsToCalendar` in ics-import.ts compares ICS
+		// `uid` against `event.id` in the store, but the store id is
+		// derived from file path, not ICS UID — so manual re-import creates
+		// new files for every VEVENT. The ICS *subscription* sync path
+		// (`ics-subscription.spec.ts`) is UID-aware and dedupes correctly;
+		// the manual-import command does not. That's a known gap; this
+		// test locks in the "at least does not crash and keeps originals"
+		// guarantee so behaviour only ever improves from here.
+		const { page, vaultDir } = obsidian;
+
+		const seed: SeedEventInput[] = [
+			{
+				title: "Team Meeting",
+				startDate: "2026-10-01T10:00",
+				endDate: "2026-10-01T11:00",
+				category: "Work",
+			},
+			{
+				title: "Weekly Review",
+				startDate: "2026-10-08T15:00",
+				endDate: "2026-10-08T16:00",
+				category: "Work",
+			},
+			{
+				title: "Holiday",
+				date: "2026-10-13",
+				allDay: true,
+			},
+		];
+
+		const { icsPath } = await runRoundTrip(obsidian, seed);
+		const afterFirstImport = new Set(listEventMarkdown(vaultDir));
+		expect(afterFirstImport.size).toBe(seed.length);
+
+		await runCommand(page, "Prisma Calendar: Import .ics file");
+		await page.locator(IMPORT_FILE_INPUT).first().setInputFiles(icsPath);
+		const importSubmit = page.locator(IMPORT_SUBMIT).first();
+		await expect(importSubmit).toBeEnabled();
+		await importSubmit.click();
+		await expect.poll(() => page.locator(".modal").count()).toBe(0);
+
+		await refreshCalendar(page);
+
+		// Originals must survive — the re-import must not *overwrite* existing
+		// files or reduce the vault below its post-first-import count.
+		const afterSecondImport = listEventMarkdown(vaultDir);
+		expect(afterSecondImport.length).toBeGreaterThanOrEqual(seed.length);
+		for (const original of afterFirstImport) {
+			expect(afterSecondImport).toContain(original);
+		}
 	});
 });

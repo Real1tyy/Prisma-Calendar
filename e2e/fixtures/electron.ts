@@ -364,6 +364,33 @@ export const testResilience = base.extend<{ obsidian: BootstrappedObsidian }>({
 	},
 });
 
+/**
+ * Patterns the ICS subscription E2E suite expects to see. The subscription
+ * sync service logs `[ICS Subscription] Sync failed: …` on every error path
+ * it handles (403, malformed ICS body, network failure). The whole point of
+ * those specs is to prove the *plugin* stays up when those errors fire, so
+ * the renderer error must not fail the test harness.
+ */
+export const ICS_SUBSCRIPTION_EXPECTED_ERRORS: readonly RegExp[] = [
+	/\[ICS Subscription\].*Sync failed/,
+	/\[ICSImport\] Failed to import event/,
+];
+
+/**
+ * Variant of `test` for integration specs that exercise network/error paths
+ * the plugin legitimately logs to the renderer console. Use for ICS
+ * subscription and (future) CalDAV specs.
+ */
+export const testIntegrations = base.extend<{ obsidian: BootstrappedObsidian }>({
+	// eslint-disable-next-line no-empty-pattern
+	obsidian: async ({}, use) => {
+		await runWithObsidianHandle(
+			{ prefix: "integration-spec", expectedErrorPatterns: ICS_SUBSCRIPTION_EXPECTED_ERRORS },
+			use
+		);
+	},
+});
+
 const NOTIFICATIONS_ON_OVERRIDES: BootstrapOverrides = {
 	calendars: [{ ...DEFAULT_CALENDAR, enableNotifications: true }],
 };
