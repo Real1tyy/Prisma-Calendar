@@ -11,6 +11,13 @@ export interface ManagerRowConfig<T extends EditableItem> {
 	app: App;
 	css: CssUtils;
 	rowPrefix: string;
+	/**
+	 * CSS/testid prefix for the consuming plugin (e.g. "prisma-"). When provided,
+	 * the row stamps per-item `data-testid` attributes on its edit and toggle
+	 * buttons so E2E specs can locate them deterministically. When omitted, no
+	 * testids are stamped.
+	 */
+	testIdPrefix?: string;
 	item: T;
 	isVisible: boolean;
 	isExpanded: boolean;
@@ -55,9 +62,15 @@ export function renderManagerRowContent<T extends EditableItem>(row: HTMLElement
 	const editBtn = controls.createEl("button", { cls: css.cls(`${rowPrefix}-btn`) });
 	setIcon(editBtn, isExpanded ? "chevron-up" : "pencil");
 	editBtn.setAttribute("title", isExpanded ? "Collapse" : "Edit");
+	if (config.testIdPrefix) {
+		editBtn.setAttribute("data-testid", `${config.testIdPrefix}${rowPrefix}-edit-${item.id}`);
+	}
 	editBtn.addEventListener("click", () => config.onToggleExpand());
 
 	const toggleBtn = controls.createEl("button", { cls: css.cls(`${rowPrefix}-btn`) });
+	if (config.testIdPrefix) {
+		toggleBtn.setAttribute("data-testid", `${config.testIdPrefix}${rowPrefix}-toggle-${item.id}`);
+	}
 	if (isVisible) {
 		setIcon(toggleBtn, "eye");
 		toggleBtn.setAttribute("title", "Hide");

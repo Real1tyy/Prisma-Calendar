@@ -53,6 +53,7 @@ export function openItemManager(config: ItemManagerConfig): void {
 		search: { cssPrefix, placeholder: "Search items..." },
 		render: (contentEl, ctx) => {
 			modalCtx = ctx as ModalContext;
+			contentEl.setAttribute("data-testid", `${cssPrefix}item-manager-modal`);
 			renderManagerList(contentEl);
 		},
 	});
@@ -168,6 +169,7 @@ export function openItemManager(config: ItemManagerConfig): void {
 				const isExpanded = expandedItemId === item.id;
 
 				const row = sectionEl.createDiv(css.cls("item-manager-row"));
+				row.setAttribute("data-testid", `${cssPrefix}item-manager-row-${item.id}`);
 				if (!isVisible) css.addCls(row, "item-manager-row-hidden");
 
 				if (isVisible) {
@@ -277,6 +279,7 @@ export function openItemManager(config: ItemManagerConfig): void {
 			const isExpanded = expandedItemId === item.id;
 
 			const row = list.createDiv(css.cls("item-manager-row"));
+			row.setAttribute("data-testid", `${cssPrefix}item-manager-row-${item.id}`);
 			if (!isVisible) css.addCls(row, "item-manager-row-hidden");
 
 			renderItemContent(row, item, isVisible, isExpanded, visibleItems, list.parentElement!);
@@ -295,6 +298,7 @@ export function openItemManager(config: ItemManagerConfig): void {
 			app,
 			css,
 			rowPrefix: "item-manager",
+			testIdPrefix: cssPrefix,
 			item,
 			isVisible,
 			isExpanded,

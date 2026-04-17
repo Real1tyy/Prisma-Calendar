@@ -40,6 +40,7 @@ export function openActionManager(config: ActionManagerConfig): void {
 		search: { cssPrefix, placeholder: "Search actions..." },
 		render: (contentEl, ctx) => {
 			modalCtx = ctx as ModalContext;
+			contentEl.setAttribute("data-testid", `${cssPrefix}action-manager-modal`);
 			renderManagerList(contentEl);
 		},
 	});
@@ -93,6 +94,7 @@ export function openActionManager(config: ActionManagerConfig): void {
 			const isExpanded = expandedActionId === action.id;
 
 			const row = list.createDiv(css.cls("action-manager-row"));
+			row.setAttribute("data-testid", `${cssPrefix}action-manager-row-${action.id}`);
 			if (!isVisible) css.addCls(row, "action-manager-row-hidden");
 
 			if (isVisible && !isSearching) {
@@ -152,6 +154,7 @@ export function openActionManager(config: ActionManagerConfig): void {
 				if (isVisible && idx > 0) {
 					const upBtn = dragControls.createEl("button", { cls: css.cls("action-manager-drag-btn") });
 					setIcon(upBtn, "chevron-up");
+					upBtn.setAttribute("data-testid", `${cssPrefix}action-manager-up-${action.id}`);
 					upBtn.addEventListener("click", () => {
 						config.onMove(action.id, -1);
 						renderManagerList(root);
@@ -161,6 +164,7 @@ export function openActionManager(config: ActionManagerConfig): void {
 				if (isVisible && idx < visibleActions.length - 1) {
 					const downBtn = dragControls.createEl("button", { cls: css.cls("action-manager-drag-btn") });
 					setIcon(downBtn, "chevron-down");
+					downBtn.setAttribute("data-testid", `${cssPrefix}action-manager-down-${action.id}`);
 					downBtn.addEventListener("click", () => {
 						config.onMove(action.id, 1);
 						renderManagerList(root);
@@ -172,6 +176,7 @@ export function openActionManager(config: ActionManagerConfig): void {
 				app,
 				css,
 				rowPrefix: "action-manager",
+				testIdPrefix: cssPrefix,
 				item: action,
 				isVisible,
 				isExpanded,

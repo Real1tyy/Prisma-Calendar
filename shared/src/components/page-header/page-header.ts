@@ -153,6 +153,7 @@ export function createPageHeader(config: PageHeaderConfig): PageHeaderHandle {
 			});
 			settingsEl.addClass(buttonCls);
 			settingsEl.addClass(settingsBtnCls);
+			settingsEl.setAttribute("data-testid", `${config.cssPrefix}page-header-manage`);
 			leafState.settingsButton = settingsEl;
 		}
 

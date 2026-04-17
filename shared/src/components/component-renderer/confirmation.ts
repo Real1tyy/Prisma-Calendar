@@ -44,6 +44,7 @@ function resolveButton(
 }
 
 function renderConfirmation(el: HTMLElement, config: ConfirmationModalConfig, close: () => void): void {
+	el.setAttribute("data-testid", "confirmation-modal");
 	el.createEl("h2", { text: config.title });
 
 	if (typeof config.message === "string") {
@@ -58,6 +59,7 @@ function renderConfirmation(el: HTMLElement, config: ConfirmationModalConfig, cl
 	const buttonRow = el.createDiv("confirmation-modal-buttons");
 
 	const cancelButton = buttonRow.createEl("button", { text: cancel.text });
+	cancelButton.setAttribute("data-testid", "confirmation-modal-cancel");
 	if (cancel.cls) cancelButton.addClass(cancel.cls);
 	cancelButton.addEventListener("click", () => {
 		const result = config.onCancel?.();
@@ -68,6 +70,7 @@ function renderConfirmation(el: HTMLElement, config: ConfirmationModalConfig, cl
 	});
 
 	const confirmButton = buttonRow.createEl("button", { text: confirm.text });
+	confirmButton.setAttribute("data-testid", "confirmation-modal-confirm");
 	if (confirm.cls) confirmButton.addClass(confirm.cls);
 	confirmButton.addEventListener("click", () => {
 		void Promise.resolve(config.onConfirm())

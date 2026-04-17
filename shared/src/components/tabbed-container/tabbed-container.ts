@@ -310,6 +310,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 		if (editable && config.app && showSettingsButton) {
 			const settingsBtn = tabBar.createEl("button", { cls: css.cls("tab", "tab-settings") });
 			setIcon(settingsBtn, "settings-2");
+			settingsBtn.setAttribute("data-testid", `${cssPrefix}tabbed-container-manage`);
 			settingsBtn.addEventListener("click", () => handle.showTabManager());
 		}
 	}
@@ -480,6 +481,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 			cls: css.cls("tab-manager-modal"),
 			title: "Manage Tabs",
 			render: (modalEl) => {
+				modalEl.setAttribute("data-testid", `${cssPrefix}tab-manager-modal`);
 				renderManagerList(modalEl);
 			},
 		});
@@ -519,6 +521,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 					visibleCount: visibleTabs.length,
 					hasRename: renames.has(tab.id),
 					dragRef,
+					testIdPrefix: cssPrefix,
 					onRename: (done) => showRenameModal(tab, done),
 					onHide: isVisible && visibleTabs.length > 1 ? () => hideTab(tab.id) : null,
 					onShow: !isVisible ? () => restoreTab(tab.id) : null,
@@ -578,6 +581,7 @@ export function createTabbedContainer(container: HTMLElement, config: TabbedCont
 								visibleCount: gs.visibleChildren.length,
 								hasRename: gs.childRenames.has(child.id),
 								dragRef: childDragRef,
+								testIdPrefix: cssPrefix,
 								onRename: (done) => showChildRenameModal(tab.id, child, done),
 								onHide:
 									childVisible && gs.visibleChildren.length > 1

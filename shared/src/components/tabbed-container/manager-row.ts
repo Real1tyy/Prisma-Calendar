@@ -11,6 +11,12 @@ export interface ManagerRowConfig {
 	visibleCount: number;
 	hasRename: boolean;
 	dragRef: { value: string | null };
+	/**
+	 * Plugin CSS/testid prefix (e.g. "prisma-"). When provided, stamps per-item
+	 * `data-testid` attributes on the row and its rename/toggle/up/down buttons
+	 * so E2E specs can locate them deterministically.
+	 */
+	testIdPrefix?: string;
 	onRename: (rerender: () => void) => void;
 	onHide: (() => void) | null;
 	onShow: (() => void) | null;
@@ -25,6 +31,9 @@ export function renderManagerRow(
 	rerender: () => void
 ): HTMLElement {
 	const row = parent.createDiv(css.cls("tab-manager-row"));
+	if (cfg.testIdPrefix) {
+		row.setAttribute("data-testid", `${cfg.testIdPrefix}tab-manager-row-${cfg.itemId}`);
+	}
 	if (!cfg.isVisible) css.addCls(row, "tab-manager-row-hidden");
 
 	if (cfg.isVisible) {
@@ -67,6 +76,9 @@ export function renderManagerRow(
 	if (cfg.isVisible && cfg.onMove && cfg.visibleIndex > 0) {
 		const upBtn = arrows.createEl("button", { cls: css.cls("tab-manager-drag-btn") });
 		setIcon(upBtn, "chevron-up");
+		if (cfg.testIdPrefix) {
+			upBtn.setAttribute("data-testid", `${cfg.testIdPrefix}tab-manager-up-${cfg.itemId}`);
+		}
 		upBtn.addEventListener("click", () => {
 			cfg.onMove!(-1);
 			rerender();
@@ -75,6 +87,9 @@ export function renderManagerRow(
 	if (cfg.isVisible && cfg.onMove && cfg.visibleIndex < cfg.visibleCount - 1) {
 		const downBtn = arrows.createEl("button", { cls: css.cls("tab-manager-drag-btn") });
 		setIcon(downBtn, "chevron-down");
+		if (cfg.testIdPrefix) {
+			downBtn.setAttribute("data-testid", `${cfg.testIdPrefix}tab-manager-down-${cfg.itemId}`);
+		}
 		downBtn.addEventListener("click", () => {
 			cfg.onMove!(1);
 			rerender();
@@ -96,9 +111,15 @@ export function renderManagerRow(
 	const renameBtn = controls.createEl("button", { cls: css.cls("tab-manager-btn") });
 	setIcon(renameBtn, "pencil");
 	renameBtn.setAttribute("title", "Rename");
+	if (cfg.testIdPrefix) {
+		renameBtn.setAttribute("data-testid", `${cfg.testIdPrefix}tab-manager-rename-${cfg.itemId}`);
+	}
 	renameBtn.addEventListener("click", () => cfg.onRename(rerender));
 
 	const toggleBtn = controls.createEl("button", { cls: css.cls("tab-manager-btn") });
+	if (cfg.testIdPrefix) {
+		toggleBtn.setAttribute("data-testid", `${cfg.testIdPrefix}tab-manager-toggle-${cfg.itemId}`);
+	}
 	if (cfg.isVisible) {
 		setIcon(toggleBtn, "eye");
 		toggleBtn.setAttribute("title", "Hide");
